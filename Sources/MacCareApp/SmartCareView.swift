@@ -60,7 +60,8 @@ final class SmartCareViewModel {
             modules[index].state = .scanning(found: 0, bytes: 0)
             var found = 0
             var bytes: Int64 = 0
-            let engine = ScanEngine()
+            let excluded = (try? await AppEnvironment.shared.store?.exclusions()) ?? []
+            let engine = ScanEngine(configuration: ScanConfiguration(excludedPaths: excluded))
             for await event in engine.run(rules: UserCleanupRules.all) {
                 switch event {
                 case let .finding(finding):

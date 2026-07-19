@@ -78,12 +78,24 @@ public struct ScanConfiguration: Sendable {
     public var home: URL
     public var maxConcurrency: Int
     public var followSymlinks: Bool
+    /// Absolute paths (and their subtrees) excluded from every scan.
+    public var excludedPaths: [String]
+
+    /// Strips the "/private" prefix Foundation adds/removes inconsistently for
+    /// /var, /tmp and /etc, so path comparisons are stable.
+    static func canonical(_ path: String) -> String {
+        path.hasPrefix("/private/") ? String(path.dropFirst("/private".count)) : path
+    }
 
     public init(home: URL = FileManager.default.homeDirectoryForCurrentUser,
-                maxConcurrency: Int = 3, followSymlinks: Bool = false) {
+                maxConcurrency: Int = 3, followSymlinks: Bool = false,
+                excludedPaths: [String] = []) {
         self.home = home
         self.maxConcurrency = min(max(maxConcurrency, 1), 4)
         self.followSymlinks = followSymlinks
+        self.excludedPaths = excludedPaths.map {
+            Self.canonical(URL(fileURLWithPath: $0).standardizedFileURL.path)
+        }
     }
 }
 
@@ -119,6 +131,7 @@ public struct ScanEngine: Sendable {
                         if Task.isCancelled { break }
                         guard fm.fileExists(atPath: root.path) else { continue }
                         Self.scanRoot(root, rule: rule, cutoff: cutoff,
+                                      excludedPaths: config.excludedPaths,
                                       scanned: &scanned, totalBytes: &totalBytes,
                                       continuation: continuation)
                     }
@@ -134,6 +147,7 @@ public struct ScanEngine: Sendable {
     /// Kept out of the async context because FileManager.DirectoryEnumerator
     /// iteration is unavailable in async functions.
     private static func scanRoot(_ root: URL, rule: ScanRule, cutoff: Date,
+                                 excludedPaths: [String],
                                  scanned: inout Int, totalBytes: inout Int64,
                                  continuation: AsyncStream<ScanEvent>.Continuation) {
         guard let enumerator = FileManager.default.enumerator(
@@ -146,6 +160,11 @@ public struct ScanEngine: Sendable {
             if Task.isCancelled { break }
             guard let values = try? url.resourceValues(forKeys: Set(resourceKeys)) else {
                 continuation.yield(.error(path: url.path, message: "unreadable"))
+                continue
+            }
+            let canonicalPath = ScanConfiguration.canonical(url.path)
+            if excludedPaths.contains(where: { canonicalPath == $0 || canonicalPath.hasPrefix($0 + "/") }) {
+                enumerator.skipDescendants()
                 continue
             }
             // ponytail: symlinks skipped entirely for now; follow-with-loop-guard later.
