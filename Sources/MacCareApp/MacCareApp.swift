@@ -58,8 +58,12 @@ struct MainWindow: View {
                 SmartCareView()
             case .cleanup:
                 CleanupView()
+            case .myClutter:
+                MyClutterView()
             case .myActivity:
                 MyActivityView()
+            case .settings:
+                MCSettingsView()
             default:
                 PlaceholderView(module: selection ?? .smartCare)
             }
