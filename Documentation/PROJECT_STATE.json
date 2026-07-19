@@ -19,13 +19,27 @@
     "ScanCore: no pause/resume, no persistence, symlinks skipped not followed"
   ],
   "not_started": [
-    "Smart Care", "Protection/ClamAV", "Performance", "Applications/Leftovers",
-    "My Clutter/duplicates", "Space Lens", "Cloud Cleanup", "My Activity",
-    "Menu Bar agent", "Privileged helper", "Persistence/SQLite", "Settings",
-    "Onboarding/permissions", "Animations", "Privacy Cleaner"
+    "Smart Care",
+    "Protection/ClamAV",
+    "Performance",
+    "Applications/Leftovers",
+    "My Clutter/duplicates",
+    "Space Lens",
+    "Cloud Cleanup",
+    "My Activity",
+    "Menu Bar agent",
+    "Privileged helper",
+    "Persistence/SQLite",
+    "Settings",
+    "Onboarding/permissions",
+    "Animations",
+    "Privacy Cleaner"
   ],
-  "tests": { "passing": 24, "failing": 0 },
-  "last_build": "swift build + swift test green (Debug)",
+  "tests": {
+    "passing": 24,
+    "failing": 0
+  },
+  "last_build": "Debug + Release green; build/MacCare Local.app (arm64, ad-hoc signed) produced",
   "next_goals": [
     "Persistence module (SQLite actor + migrations)",
     "Group Cleanup findings by rule with per-category toggles",
@@ -38,5 +52,5 @@
     "App bundle unsigned beyond ad-hoc; Full Disk Access must be granted manually"
   ],
   "open_decisions": [],
-  "git_commit": "pending initial commit"
+  "git_commit": "7bf18bb"
 }
