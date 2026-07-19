@@ -85,6 +85,8 @@ struct ApplicationsView: View {
                 .tabItem { Label("Installed", systemImage: "square.grid.2x2") }
             LeftoversView()
                 .tabItem { Label("Leftovers", systemImage: "trash.slash") }
+            AppUpdatesView()
+                .tabItem { Label("Updates", systemImage: "arrow.triangle.2.circlepath") }
         }
         .padding(8)
         .navigationTitle("Applications")
