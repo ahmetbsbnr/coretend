@@ -12,14 +12,17 @@ let package = Package(
         .library(name: "DesignSystem", targets: ["DesignSystem"]),
         .library(name: "Persistence", targets: ["Persistence"]),
         .library(name: "SystemMetrics", targets: ["SystemMetrics"]),
+        .library(name: "AppDiscovery", targets: ["AppDiscovery"]),
     ],
     targets: [
         .executableTarget(
             name: "MacCareApp",
-            dependencies: ["ScanCore", "SafetyCore", "FileRules", "DesignSystem", "Persistence", "SystemMetrics"]
+            dependencies: ["ScanCore", "SafetyCore", "FileRules", "DesignSystem", "Persistence", "SystemMetrics", "AppDiscovery"]
         ),
         .target(name: "Persistence"),
         .target(name: "SystemMetrics"),
+        .target(name: "AppDiscovery"),
+        .testTarget(name: "AppDiscoveryTests", dependencies: ["AppDiscovery"]),
         .testTarget(name: "PersistenceTests", dependencies: ["Persistence"]),
         .testTarget(name: "SystemMetricsTests", dependencies: ["SystemMetrics"]),
         .target(name: "ScanCore", dependencies: ["SafetyCore"]),
