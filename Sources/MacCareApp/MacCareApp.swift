@@ -54,6 +54,8 @@ struct MainWindow: View {
             .navigationSplitViewColumnWidth(min: 180, ideal: MCTheme.sidebarWidth)
         } detail: {
             switch selection {
+            case .smartCare:
+                SmartCareView()
             case .cleanup:
                 CleanupView()
             case .myActivity:

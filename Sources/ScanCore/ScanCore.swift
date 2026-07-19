@@ -52,9 +52,12 @@ public struct ScanRule: Sendable {
     public let minimumAgeDays: Int
     public let risk: RiskLevel
     public let preselect: Bool
+    /// Optional per-file filter (e.g. only partial-download extensions). nil = match all.
+    public let matches: (@Sendable (URL) -> Bool)?
 
     public init(id: String, name: String, category: String, explanation: String,
                 minimumAgeDays: Int = 0, risk: RiskLevel, preselect: Bool,
+                matches: (@Sendable (URL) -> Bool)? = nil,
                 roots: @escaping @Sendable (URL) -> [URL]) {
         self.id = id
         self.name = name
@@ -64,6 +67,7 @@ public struct ScanRule: Sendable {
         self.minimumAgeDays = minimumAgeDays
         self.risk = risk
         self.preselect = preselect
+        self.matches = matches
     }
 }
 
@@ -153,6 +157,7 @@ public struct ScanEngine: Sendable {
             guard values.isDirectory != true else { continue }
             let size = Int64(values.fileSize ?? 0)
             if let modified = values.contentModificationDate, modified > cutoff { continue }
+            if let matches = rule.matches, !matches(url) { continue }
             totalBytes += size
             continuation.yield(.finding(ScanFinding(
                 url: url,
