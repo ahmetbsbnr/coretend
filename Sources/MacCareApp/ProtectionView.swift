@@ -69,6 +69,19 @@ final class ProtectionViewModel {
 }
 
 struct ProtectionView: View {
+    var body: some View {
+        TabView {
+            MalwareScanView()
+                .tabItem { Label("Malware", systemImage: "shield") }
+            PrivacyCleanerView()
+                .tabItem { Label("Privacy", systemImage: "hand.raised") }
+        }
+        .padding(8)
+        .navigationTitle("Protection")
+    }
+}
+
+struct MalwareScanView: View {
     @State private var model = ProtectionViewModel()
 
     var body: some View {
@@ -83,7 +96,6 @@ struct ProtectionView: View {
             }
             .padding(24)
         }
-        .navigationTitle("Protection")
         .task { await model.refreshQuarantine() }
     }
 
