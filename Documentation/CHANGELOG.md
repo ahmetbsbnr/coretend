@@ -15,3 +15,10 @@
   Protection (ClamAV + quarantaine, état honnête), Cloud Cleanup (empreinte locale),
   barre de menus, onboarding avec sonde FDA réelle.
 - 46 tests verts, 0 warning, paquet Release arm64.
+
+## 0.3.0 — 2026-07-19
+- Protection: onglet Privacy (profils navigateurs, nettoyage caches uniquement,
+  avertissement navigateur ouvert; historique/cookies affichés mais non modifiés).
+- Applications: onglet Updates (canal de mise à jour par app, aucun téléchargement).
+- Accessibilité: labels VoiceOver sur les cases de sélection.
+- Script create-test-volume.sh (image APFS isolée pour tests destructifs).

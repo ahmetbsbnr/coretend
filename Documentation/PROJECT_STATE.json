@@ -1,6 +1,6 @@
 {
   "project": "MacCare Local",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "phase": "2 — all modules functional",
   "toolchain": "Swift 6.3.2 via CommandLineTools (no Xcode installed)",
   "build_system": "SwiftPM; app bundle assembled by Scripts/package-local.sh",
@@ -22,30 +22,32 @@
     "Menu bar extra (samples only while open)",
     "Onboarding (real FDA probe)",
     "Settings (dry-run default, exclusions, menu bar toggle)",
-    "Docs complete; 0 build warnings"
+    "Docs complete; 0 build warnings",
+    "Privacy Cleaner (profiles Chrome/Firefox/Safari, cache-only clean, browser-running warning)",
+    "App Updater (App Store receipt / Sparkle feed detection, no downloads)",
+    "Accessibility labels on selection toggles",
+    "create-test-volume.sh"
   ],
   "partial": [
     "Protection: engine unavailable on this machine (ClamAV not installed) — UI states it honestly",
     "Cleanup findings list capped at 5000 rows"
   ],
   "not_started": [
-    "Privacy Cleaner (browser data)",
-    "App Updater",
     "Privileged helper (blocked: no Developer ID signing)",
     "Localizations",
-    "FSEvents watch"
+    "FSEvents downloads watch",
+    "browser history/cookie removal (deliberately deferred: db corruption risk)"
   ],
   "tests": {
     "passing": 46,
     "failing": 0
   },
-  "last_build": "Debug + Release green, 0 warnings; build/MacCare Local.app packaged (arm64, ad-hoc)",
+  "last_build": "Debug + Release green, 0 warnings; v0.3.0 packaged",
   "next_goals": [
-    "Privacy Cleaner (Safari/Chrome/Firefox caches with sqlite backup)",
-    "App Updater (Sparkle feed detection)",
-    "FSEvents downloads watch for Protection",
-    "accessibility audit pass",
-    "localization fr/en"
+    "fr localization",
+    "FSEvents watch (requires ClamAV)",
+    "helper privilégié si identité de signature disponible",
+    "perf profiling with os_signpost"
   ],
   "limitations": [
     "No Xcode: ad-hoc signing only, no UI tests, no notarization",
