@@ -58,6 +58,8 @@ struct MainWindow: View {
                 SmartCareView()
             case .cleanup:
                 CleanupView()
+            case .applications:
+                ApplicationsView()
             case .performance:
                 PerformanceView()
             case .spaceLens:
