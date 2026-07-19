@@ -66,8 +66,9 @@ final class CleanupViewModel {
         selectedIDs = []
         scannedCount = 0
         totalBytes = 0
-        let engine = ScanEngine()
         scanTask = Task {
+            let excluded = (try? await AppEnvironment.shared.store?.exclusions()) ?? []
+            let engine = ScanEngine(configuration: ScanConfiguration(excludedPaths: excluded))
             for await event in engine.run(rules: UserCleanupRules.all) {
                 switch event {
                 case .started: break
