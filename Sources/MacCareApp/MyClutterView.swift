@@ -74,6 +74,8 @@ struct MyClutterView: View {
                 .tabItem { Label("Large & Old", systemImage: "doc") }
             DuplicatesView()
                 .tabItem { Label("Duplicates", systemImage: "doc.on.doc") }
+            SimilarImagesView()
+                .tabItem { Label("Similar Images", systemImage: "photo.on.rectangle.angled") }
         }
         .padding(8)
         .navigationTitle("My Clutter")

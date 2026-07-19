@@ -1,0 +1,116 @@
+import Foundation
+import Vision
+import UniformTypeIdentifiers
+
+/// A cluster of visually similar images.
+public struct SimilarImageGroup: Sendable, Identifiable {
+    public let id: String
+    public let urls: [URL]
+    public let totalBytes: Int64
+}
+
+public enum SimilarImagesEvent: Sendable {
+    case progress(processed: Int, total: Int)
+    case finished(groups: [SimilarImageGroup])
+    case cancelled
+    case unavailable(String)
+}
+
+/// Groups images by Vision feature-print distance. All processing is local;
+/// feature prints are kept in memory only for the run.
+public struct SimilarImagesEngine: Sendable {
+    public let roots: [URL]
+    public let distanceThreshold: Float
+    public let maxImages: Int
+
+    public init(roots: [URL], distanceThreshold: Float = 0.55, maxImages: Int = 1500) {
+        self.roots = roots
+        self.distanceThreshold = distanceThreshold
+        self.maxImages = maxImages
+    }
+
+    private static let imageExtensions: Set<String> = ["jpg", "jpeg", "png", "heic", "gif", "tiff", "webp", "bmp"]
+
+    public func run() -> AsyncStream<SimilarImagesEvent> {
+        let roots = roots
+        let threshold = distanceThreshold
+        let maxImages = maxImages
+        return AsyncStream { continuation in
+            let task = Task.detached(priority: .utility) {
+                // Inventory.
+                var images: [(URL, Int64)] = []
+                for root in roots {
+                    Self.collectImages(in: root, limit: maxImages, into: &images)
+                    if images.count >= maxImages || Task.isCancelled { break }
+                }
+                guard !Task.isCancelled else {
+                    continuation.yield(.cancelled); continuation.finish(); return
+                }
+
+                // Feature prints (sequential; Vision already parallelizes internally).
+                var prints: [(URL, Int64, VNFeaturePrintObservation)] = []
+                for (index, (url, size)) in images.enumerated() {
+                    if Task.isCancelled { break }
+                    if index % 16 == 0 {
+                        continuation.yield(.progress(processed: index, total: images.count))
+                    }
+                    let request = VNGenerateImageFeaturePrintRequest()
+                    let handler = VNImageRequestHandler(url: url)
+                    guard (try? handler.perform([request])) != nil,
+                          let observation = request.results?.first as? VNFeaturePrintObservation else { continue }
+                    prints.append((url, size, observation))
+                }
+                guard !Task.isCancelled else {
+                    continuation.yield(.cancelled); continuation.finish(); return
+                }
+
+                // Greedy clustering against cluster representatives.
+                // ponytail: O(n·k) greedy; fine for ≤1500 images, revisit if scaled up.
+                var clusters: [[(URL, Int64)]] = []
+                var representatives: [VNFeaturePrintObservation] = []
+                for (url, size, observation) in prints {
+                    var assigned = false
+                    for (index, representative) in representatives.enumerated() {
+                        var distance: Float = .greatestFiniteMagnitude
+                        try? observation.computeDistance(&distance, to: representative)
+                        if distance < threshold {
+                            clusters[index].append((url, size))
+                            assigned = true
+                            break
+                        }
+                    }
+                    if !assigned {
+                        clusters.append([(url, size)])
+                        representatives.append(observation)
+                    }
+                }
+                let groups = clusters.filter { $0.count > 1 }.map { members in
+                    SimilarImageGroup(
+                        id: members.first!.0.path,
+                        urls: members.map(\.0),
+                        totalBytes: members.reduce(0) { $0 + $1.1 })
+                }
+                .sorted { $0.totalBytes > $1.totalBytes }
+                continuation.yield(.finished(groups: groups))
+                continuation.finish()
+            }
+            continuation.onTermination = { _ in task.cancel() }
+        }
+    }
+
+    private static func collectImages(in root: URL, limit: Int, into images: inout [(URL, Int64)]) {
+        guard let enumerator = FileManager.default.enumerator(
+            at: root, includingPropertiesForKeys: [.fileSizeKey, .isSymbolicLinkKey, .isDirectoryKey],
+            options: [.skipsPackageDescendants, .skipsHiddenFiles]) else { return }
+        for case let url as URL in enumerator {
+            if images.count >= limit || Task.isCancelled { break }
+            // Never look inside Photos libraries.
+            if url.pathExtension == "photoslibrary" { enumerator.skipDescendants(); continue }
+            guard let values = try? url.resourceValues(forKeys: [.fileSizeKey, .isSymbolicLinkKey, .isDirectoryKey]) else { continue }
+            if values.isSymbolicLink == true { enumerator.skipDescendants(); continue }
+            guard values.isDirectory != true,
+                  imageExtensions.contains(url.pathExtension.lowercased()) else { continue }
+            images.append((url, Int64(values.fileSize ?? 0)))
+        }
+    }
+}
