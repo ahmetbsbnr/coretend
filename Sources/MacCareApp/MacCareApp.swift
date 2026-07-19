@@ -60,6 +60,8 @@ struct MainWindow: View {
                 CleanupView()
             case .performance:
                 PerformanceView()
+            case .spaceLens:
+                SpaceLensView()
             case .myClutter:
                 MyClutterView()
             case .myActivity:
