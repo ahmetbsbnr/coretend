@@ -1,0 +1,214 @@
+import SwiftUI
+import ScanCore
+import SafetyCore
+import DesignSystem
+import Persistence
+
+@MainActor
+@Observable
+final class DuplicatesViewModel {
+    enum Phase: Equatable { case idle, scanning(processed: Int, total: Int), results, empty, executing, finished(freed: Int64, dryRun: Bool) }
+
+    var phase: Phase = .idle
+    var groups: [DuplicateGroup] = []
+    var selectedPaths: Set<String> = []   // paths selected for removal
+    var dryRun = true
+
+    private var scanTask: Task<Void, Never>?
+    private var scannedRoots: [URL] = []
+
+    var wastedBytes: Int64 { groups.reduce(0) { $0 + $1.wastedBytes } }
+    var selectedBytes: Int64 {
+        groups.reduce(0) { sum, group in
+            sum + group.fileSize * Int64(group.urls.filter { selectedPaths.contains($0.path) }.count)
+        }
+    }
+
+    func start() {
+        if case .scanning = phase { return }
+        phase = .scanning(processed: 0, total: 0)
+        groups = []
+        selectedPaths = []
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        scannedRoots = ["Downloads", "Documents", "Desktop"].map { home.appendingPathComponent($0) }
+        let engine = DuplicateEngine(roots: scannedRoots)
+        scanTask = Task {
+            for await event in engine.run() {
+                switch event {
+                case let .progress(_, processed, total):
+                    phase = .scanning(processed: processed, total: total)
+                case let .group(group):
+                    if groups.count < 1000 {
+                        let index = groups.firstIndex { $0.wastedBytes < group.wastedBytes } ?? groups.count
+                        groups.insert(group, at: index)
+                        // Preselect everything except the suggested keeper.
+                        for url in group.urls where url.path != group.keeper.path {
+                            selectedPaths.insert(url.path)
+                        }
+                    }
+                case let .finished(count, wasted):
+                    phase = groups.isEmpty ? .empty : .results
+                    AppEnvironment.shared.record(ActivityRecord(
+                        kind: .scan, summary: "Duplicate scan: \(count) groups",
+                        itemCount: count, bytes: wasted, dryRun: true))
+                case .cancelled:
+                    phase = groups.isEmpty ? .idle : .results
+                }
+            }
+        }
+    }
+
+    func cancel() { scanTask?.cancel() }
+
+    func removeSelected() {
+        guard phase == .results, !selectedPaths.isEmpty else { return }
+        // Never allow a whole group to be removed: at least one copy must survive.
+        for group in groups where group.urls.allSatisfy({ selectedPaths.contains($0.path) }) {
+            selectedPaths.remove(group.keeper.path)
+        }
+        phase = .executing
+        let toRemove = groups.flatMap { group in
+            group.urls.filter { selectedPaths.contains($0.path) }.map { ($0, group.fileSize) }
+        }
+        let isDryRun = dryRun
+        let roots = scannedRoots
+        Task {
+            let center = SafetyCenter(validator: PathValidator(allowedRoots: roots), dryRun: isDryRun)
+            var approved: [ApprovedFileOperation] = []
+            for (url, size) in toRemove {
+                if let op = try? await center.approve(url: url, logicalSize: size,
+                                                      ruleID: "clutter.duplicates", risk: .medium) {
+                    approved.append(op)
+                }
+            }
+            let result = await center.execute(approved)
+            let freed = result.executed.reduce(0) { $0 + $1.logicalSize }
+            phase = .finished(freed: freed, dryRun: result.wasDryRun)
+            AppEnvironment.shared.record(ActivityRecord(
+                kind: .cleanup,
+                summary: result.wasDryRun
+                    ? "Duplicates dry run: \(result.executed.count) copies"
+                    : "Moved \(result.executed.count) duplicate copies to Trash",
+                itemCount: result.executed.count, bytes: freed, dryRun: result.wasDryRun))
+        }
+    }
+}
+
+struct DuplicatesView: View {
+    @State private var model = DuplicatesViewModel()
+
+    var body: some View {
+        VStack(spacing: 0) {
+            switch model.phase {
+            case .idle: idleView
+            case let .scanning(processed, total): scanningView(processed, total)
+            case .empty: emptyView
+            case .results, .executing: resultsView
+            case let .finished(freed, dryRun): finishedView(freed, dryRun)
+            }
+        }
+    }
+
+    private var idleView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "doc.on.doc.fill")
+                .font(.system(size: 56)).foregroundStyle(MCTheme.accentSecondary)
+            Text("Find duplicate files").font(.title2.weight(.semibold))
+            Text("Compares content with staged hashing in Downloads, Documents and Desktop.\nOne copy of each group is always kept — the suggestion is reviewable.")
+                .multilineTextAlignment(.center).foregroundStyle(.secondary)
+            Button("Find Duplicates") { model.start() }
+                .buttonStyle(.borderedProminent)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func scanningView(_ processed: Int, _ total: Int) -> some View {
+        VStack(spacing: 16) {
+            if total > 0 {
+                ProgressView(value: Double(processed), total: Double(total))
+                    .frame(width: 260)
+                Text("Comparing \(processed) of \(total) candidates").monospacedDigit()
+            } else {
+                ProgressView()
+                Text("Building file inventory…")
+            }
+            Button("Cancel") { model.cancel() }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var emptyView: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "checkmark.circle")
+                .font(.system(size: 48)).foregroundStyle(MCTheme.success)
+            Text("No duplicates found").font(.title3.weight(.semibold))
+            Button("Scan Again") { model.start() }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private var resultsView: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Text("\(model.groups.count) groups — \(mcFormatBytes(model.selectedBytes)) selected of \(mcFormatBytes(model.wastedBytes)) reclaimable")
+                    .font(.headline)
+                Spacer()
+                Toggle("Dry run", isOn: $model.dryRun).toggleStyle(.switch)
+                Button(model.dryRun ? "Simulate Removal" : "Move Copies to Trash") {
+                    model.removeSelected()
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(model.selectedPaths.isEmpty || model.phase == .executing)
+            }
+            .padding()
+            List {
+                ForEach(model.groups) { group in
+                    Section {
+                        ForEach(group.urls, id: \.path) { url in
+                            HStack {
+                                Toggle("", isOn: Binding(
+                                    get: { model.selectedPaths.contains(url.path) },
+                                    set: { on in
+                                        if on { model.selectedPaths.insert(url.path) }
+                                        else { model.selectedPaths.remove(url.path) }
+                                    }
+                                ))
+                                .labelsHidden()
+                                Text(url.lastPathComponent)
+                                if url.path == group.keeper.path {
+                                    Text("Suggested keeper")
+                                        .font(.caption2.weight(.medium))
+                                        .padding(.horizontal, 6).padding(.vertical, 2)
+                                        .background(MCTheme.accent.opacity(0.2), in: Capsule())
+                                }
+                                Spacer()
+                                Text(url.deletingLastPathComponent().path)
+                                    .font(.caption).foregroundStyle(.secondary)
+                                    .lineLimit(1).truncationMode(.middle)
+                                Button {
+                                    NSWorkspace.shared.activateFileViewerSelecting([url])
+                                } label: { Image(systemName: "magnifyingglass") }
+                                .buttonStyle(.borderless)
+                            }
+                        }
+                    } header: {
+                        Text("\(group.urls.count) copies × \(mcFormatBytes(group.fileSize))")
+                    }
+                }
+            }
+            .listStyle(.inset)
+        }
+    }
+
+    private func finishedView(_ freed: Int64, _ dryRun: Bool) -> some View {
+        VStack(spacing: 12) {
+            Image(systemName: "checkmark.seal")
+                .font(.system(size: 48)).foregroundStyle(MCTheme.success)
+            Text(dryRun ? "Dry run: \(mcFormatBytes(freed)) would be reclaimed"
+                        : "\(mcFormatBytes(freed)) moved to Trash")
+                .font(.title3.weight(.semibold))
+            Button("Scan Again") { model.start() }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
