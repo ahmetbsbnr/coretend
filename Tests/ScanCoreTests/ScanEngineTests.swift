@@ -98,3 +98,27 @@ struct ScanEngineTests {
         #expect(count == 5)
     }
 }
+
+@Suite("ScanRule matches filter")
+struct ScanRuleMatchesTests {
+    @Test func matchesPredicateFiltersFindings() async throws {
+        let root = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("maccare-match-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(
+            at: root.appendingPathComponent("Downloads"), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try Data("x".utf8).write(to: root.appendingPathComponent("Downloads/file.crdownload"))
+        try Data("x".utf8).write(to: root.appendingPathComponent("Downloads/document.pdf"))
+        let rule = ScanRule(id: "t.partial", name: "t", category: "t", explanation: "t",
+                            risk: .low, preselect: true,
+                            matches: { $0.pathExtension == "crdownload" }) { home in
+            [home.appendingPathComponent("Downloads")]
+        }
+        let engine = ScanEngine(configuration: ScanConfiguration(home: root))
+        var found: [String] = []
+        for await event in engine.run(rules: [rule]) {
+            if case let .finding(f) = event { found.append(f.url.lastPathComponent) }
+        }
+        #expect(found == ["file.crdownload"])
+    }
+}

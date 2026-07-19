@@ -52,7 +52,49 @@ public enum UserCleanupRules {
         [home.appendingPathComponent("Library/Developer/Xcode/DerivedData")]
     }
 
-    public static let all: [ScanRule] = [userCaches, userLogs, crashReports, xcodeDerivedData]
+    public static let incompleteDownloads = ScanRule(
+        id: "user.incompletedownloads",
+        name: "Incomplete downloads",
+        category: "Cleanup",
+        explanation: "Partial download files (.download, .crdownload, .part) in ~/Downloads older than 7 days.",
+        minimumAgeDays: 7,
+        risk: .low,
+        preselect: true,
+        matches: { url in
+            ["download", "crdownload", "part", "partial"].contains(url.pathExtension.lowercased())
+        }
+    ) { home in
+        [home.appendingPathComponent("Downloads")]
+    }
+
+    public static let xcodeDeviceSupport = ScanRule(
+        id: "dev.xcode.devicesupport",
+        name: "Xcode device support",
+        category: "Cleanup",
+        explanation: "Debug symbols for old iOS devices. Regenerated when a device reconnects.",
+        minimumAgeDays: 90,
+        risk: .medium,
+        preselect: false
+    ) { home in
+        [home.appendingPathComponent("Library/Developer/Xcode/iOS DeviceSupport")]
+    }
+
+    public static let iosBackups = ScanRule(
+        id: "user.iosbackups",
+        name: "iOS device backups",
+        category: "Cleanup",
+        explanation: "Local iPhone/iPad backups older than 180 days. Verify you no longer need them before removing.",
+        minimumAgeDays: 180,
+        risk: .high,
+        preselect: false
+    ) { home in
+        [home.appendingPathComponent("Library/Application Support/MobileSync/Backup")]
+    }
+
+    public static let all: [ScanRule] = [
+        userCaches, userLogs, crashReports, xcodeDerivedData,
+        incompleteDownloads, xcodeDeviceSupport, iosBackups,
+    ]
 
     /// Allowed deletion roots corresponding to the rules above.
     public static func allowedRoots(home: URL) -> [URL] {
@@ -60,6 +102,9 @@ public enum UserCleanupRules {
             home.appendingPathComponent("Library/Caches"),
             home.appendingPathComponent("Library/Logs"),
             home.appendingPathComponent("Library/Developer/Xcode/DerivedData"),
+            home.appendingPathComponent("Library/Developer/Xcode/iOS DeviceSupport"),
+            home.appendingPathComponent("Library/Application Support/MobileSync/Backup"),
+            home.appendingPathComponent("Downloads"),
         ]
     }
 }
