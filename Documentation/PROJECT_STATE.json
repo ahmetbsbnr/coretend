@@ -1,56 +1,57 @@
 {
   "project": "MacCare Local",
-  "version": "0.1.0",
-  "phase": "1 — foundation",
+  "version": "0.2.0",
+  "phase": "2 — all modules functional",
   "toolchain": "Swift 6.3.2 via CommandLineTools (no Xcode installed)",
   "build_system": "SwiftPM; app bundle assembled by Scripts/package-local.sh",
   "test_framework": "Swift Testing (XCTest unavailable without Xcode); run via Scripts/test.sh",
   "done": [
-    "Git repo + SwiftPM structure",
-    "SafetyCore: PathValidator (protected roots, allowlist, .., symlink escape, boundary check), SafetyCenter actor (approve/execute, dry-run default, re-validation at execution, audit log, Trash-only)",
-    "ScanCore: ScanRule/ScanConfiguration/ScanEngine streaming AsyncStream, cancellation, min-age filter, symlink skip, resource keys batch",
-    "FileRules: user caches, user logs, crash reports, Xcode DerivedData + deletion allowlist",
-    "DesignSystem: MCTheme tokens, MCCard, byte formatting",
-    "App shell: NavigationSplitView sidebar (10 modules), Cleanup module fully wired (scan -> review -> dry-run/trash -> done), reveal in Finder",
-    "Tests: 24 passing (path traversal, symlink swap, unicode, long paths, cancellation, rule coverage)"
+    "SafetyCore (validator, center, dry-run default, re-validation, audit)",
+    "ScanCore (streaming rules, exclusions, min-size/age, matches filter)",
+    "DuplicateEngine (size→partial→SHA-256, hard-link aware, keeper suggestion)",
+    "SpaceLensEngine + treemap UI (breadcrumbs, list fallback, Other bucket)",
+    "SimilarImagesEngine (Vision feature prints, greedy clustering, lazy QuickLook thumbnails, photoslibrary excluded)",
+    "Persistence (SQLite actor, migrations, activity/exclusions/settings)",
+    "SystemMetrics (CPU/mem/pressure/disk/thermal) + Performance view + LaunchAgent inspection",
+    "AppDiscovery (inventory, associated data, leftovers) + uninstall via Trash",
+    "MalwareEngine (ClamAV wrapper, honest unavailable state, quarantine restore/delete)",
+    "Cloud Cleanup (local vs logical footprint, no downloads, analysis only)",
+    "Smart Care orchestrator (dry-run, low-risk-only execution)",
+    "Cleanup (7 rules grouped by rule, exclusions honored)",
+    "My Activity (history, filters, clear)",
+    "Menu bar extra (samples only while open)",
+    "Onboarding (real FDA probe)",
+    "Settings (dry-run default, exclusions, menu bar toggle)",
+    "Docs complete; 0 build warnings"
   ],
   "partial": [
-    "Cleanup UI: findings capped at 5000 rows, no grouping by rule yet",
-    "ScanCore: no pause/resume, no persistence, symlinks skipped not followed"
+    "Protection: engine unavailable on this machine (ClamAV not installed) — UI states it honestly",
+    "Cleanup findings list capped at 5000 rows"
   ],
   "not_started": [
-    "Smart Care",
-    "Protection/ClamAV",
-    "Performance",
-    "Applications/Leftovers",
-    "My Clutter/duplicates",
-    "Space Lens",
-    "Cloud Cleanup",
-    "My Activity",
-    "Menu Bar agent",
-    "Privileged helper",
-    "Persistence/SQLite",
-    "Settings",
-    "Onboarding/permissions",
-    "Animations",
-    "Privacy Cleaner"
+    "Privacy Cleaner (browser data)",
+    "App Updater",
+    "Privileged helper (blocked: no Developer ID signing)",
+    "Localizations",
+    "FSEvents watch"
   ],
   "tests": {
-    "passing": 24,
+    "passing": 46,
     "failing": 0
   },
-  "last_build": "Debug + Release green; build/MacCare Local.app (arm64, ad-hoc signed) produced",
+  "last_build": "Debug + Release green, 0 warnings; build/MacCare Local.app packaged (arm64, ad-hoc)",
   "next_goals": [
-    "Persistence module (SQLite actor + migrations)",
-    "Group Cleanup findings by rule with per-category toggles",
-    "Smart Care orchestrator in dry-run",
-    "Release build + package-local.sh verification"
+    "Privacy Cleaner (Safari/Chrome/Firefox caches with sqlite backup)",
+    "App Updater (Sparkle feed detection)",
+    "FSEvents downloads watch for Protection",
+    "accessibility audit pass",
+    "localization fr/en"
   ],
   "limitations": [
-    "No Xcode: no .xcodeproj, no UI tests, no signing identity (ad-hoc codesign only)",
-    "XCTest unavailable; Swift Testing used instead",
-    "App bundle unsigned beyond ad-hoc; Full Disk Access must be granted manually"
+    "No Xcode: ad-hoc signing only, no UI tests, no notarization",
+    "ClamAV optional runtime dependency",
+    "helper privilégié bloqué (signature)"
   ],
   "open_decisions": [],
-  "git_commit": "7bf18bb"
+  "git_commit": "HEAD"
 }
