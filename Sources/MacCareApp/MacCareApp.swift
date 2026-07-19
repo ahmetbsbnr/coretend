@@ -122,6 +122,8 @@ struct MainWindow: View {
                 SmartCareView()
             case .cleanup:
                 CleanupView()
+            case .protection:
+                ProtectionView()
             case .applications:
                 ApplicationsView()
             case .performance:
