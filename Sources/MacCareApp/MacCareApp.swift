@@ -56,6 +56,8 @@ struct MainWindow: View {
             switch selection {
             case .cleanup:
                 CleanupView()
+            case .myActivity:
+                MyActivityView()
             default:
                 PlaceholderView(module: selection ?? .smartCare)
             }

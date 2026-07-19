@@ -3,6 +3,7 @@ import ScanCore
 import SafetyCore
 import FileRules
 import DesignSystem
+import Persistence
 
 @MainActor
 @Observable
@@ -22,6 +23,40 @@ final class CleanupViewModel {
 
     var selectedBytes: Int64 {
         findings.filter { selectedIDs.contains($0.id) }.reduce(0) { $0 + $1.logicalSize }
+    }
+
+    struct RuleGroup: Identifiable {
+        let ruleID: String
+        let name: String
+        let explanation: String
+        var findings: [ScanFinding]
+        var bytes: Int64 { findings.reduce(0) { $0 + $1.logicalSize } }
+        var id: String { ruleID }
+    }
+
+    /// Findings grouped by rule, largest group first.
+    var groups: [RuleGroup] {
+        var byRule: [String: RuleGroup] = [:]
+        let names = Dictionary(uniqueKeysWithValues: UserCleanupRules.all.map { ($0.id, ($0.name, $0.explanation)) })
+        for finding in findings {
+            byRule[finding.ruleID, default: RuleGroup(
+                ruleID: finding.ruleID,
+                name: names[finding.ruleID]?.0 ?? finding.ruleID,
+                explanation: names[finding.ruleID]?.1 ?? finding.explanation,
+                findings: []
+            )].findings.append(finding)
+        }
+        return byRule.values.sorted { $0.bytes > $1.bytes }
+    }
+
+    func selectionState(for group: RuleGroup) -> Bool {
+        group.findings.allSatisfy { selectedIDs.contains($0.id) }
+    }
+
+    func setSelection(_ on: Bool, for group: RuleGroup) {
+        for finding in group.findings {
+            if on { selectedIDs.insert(finding.id) } else { selectedIDs.remove(finding.id) }
+        }
     }
 
     func startScan() {
@@ -50,6 +85,9 @@ final class CleanupViewModel {
                     scannedCount = scanned
                     totalBytes = bytes
                     phase = .review
+                    AppEnvironment.shared.record(ActivityRecord(
+                        kind: .scan, summary: "Cleanup scan: \(findings.count) items found",
+                        itemCount: findings.count, bytes: bytes, dryRun: true))
                 case .cancelled:
                     phase = .idle
                 }
@@ -82,6 +120,12 @@ final class CleanupViewModel {
             let result = await center.execute(approved)
             let freed = result.executed.reduce(0) { $0 + $1.logicalSize }
             phase = .done(freed: freed, dryRun: result.wasDryRun)
+            AppEnvironment.shared.record(ActivityRecord(
+                kind: .cleanup,
+                summary: result.wasDryRun
+                    ? "Dry run: \(result.executed.count) items simulated"
+                    : "Moved \(result.executed.count) items to Trash",
+                itemCount: result.executed.count, bytes: freed, dryRun: result.wasDryRun))
         }
     }
 }
@@ -147,35 +191,63 @@ struct CleanupView: View {
                 .buttonStyle(.borderedProminent)
                 .disabled(model.phase == .running || model.selectedIDs.isEmpty)
             }
-            List(model.findings) { finding in
-                HStack {
-                    Toggle("", isOn: Binding(
-                        get: { model.selectedIDs.contains(finding.id) },
-                        set: { on in
-                            if on { model.selectedIDs.insert(finding.id) }
-                            else { model.selectedIDs.remove(finding.id) }
+            List {
+                ForEach(model.groups) { group in
+                    DisclosureGroup {
+                        ForEach(group.findings) { finding in
+                            findingRow(finding)
                         }
-                    ))
-                    .labelsHidden()
-                    VStack(alignment: .leading) {
-                        Text(finding.url.lastPathComponent)
-                        Text(finding.url.deletingLastPathComponent().path)
-                            .font(.caption).foregroundStyle(.secondary)
-                            .lineLimit(1).truncationMode(.middle)
-                    }
-                    Spacer()
-                    Text(mcFormatBytes(finding.logicalSize))
-                        .monospacedDigit().foregroundStyle(.secondary)
-                    Button {
-                        NSWorkspace.shared.activateFileViewerSelecting([finding.url])
                     } label: {
-                        Image(systemName: "magnifyingglass")
+                        HStack {
+                            Toggle("", isOn: Binding(
+                                get: { model.selectionState(for: group) },
+                                set: { model.setSelection($0, for: group) }
+                            ))
+                            .labelsHidden()
+                            VStack(alignment: .leading) {
+                                Text(group.name).font(.headline)
+                                Text(group.explanation)
+                                    .font(.caption).foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            Text("\(group.findings.count) items")
+                                .font(.caption).foregroundStyle(.secondary)
+                            Text(mcFormatBytes(group.bytes))
+                                .monospacedDigit().font(.callout.weight(.medium))
+                        }
                     }
-                    .buttonStyle(.borderless)
-                    .help("Reveal in Finder")
                 }
             }
             .listStyle(.inset)
+        }
+    }
+
+    private func findingRow(_ finding: ScanFinding) -> some View {
+        HStack {
+            Toggle("", isOn: Binding(
+                get: { model.selectedIDs.contains(finding.id) },
+                set: { on in
+                    if on { model.selectedIDs.insert(finding.id) }
+                    else { model.selectedIDs.remove(finding.id) }
+                }
+            ))
+            .labelsHidden()
+            VStack(alignment: .leading) {
+                Text(finding.url.lastPathComponent)
+                Text(finding.url.deletingLastPathComponent().path)
+                    .font(.caption).foregroundStyle(.secondary)
+                    .lineLimit(1).truncationMode(.middle)
+            }
+            Spacer()
+            Text(mcFormatBytes(finding.logicalSize))
+                .monospacedDigit().foregroundStyle(.secondary)
+            Button {
+                NSWorkspace.shared.activateFileViewerSelecting([finding.url])
+            } label: {
+                Image(systemName: "magnifyingglass")
+            }
+            .buttonStyle(.borderless)
+            .help("Reveal in Finder")
         }
     }
 
