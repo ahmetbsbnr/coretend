@@ -233,6 +233,7 @@ struct CleanupView: View {
                 }
             ))
             .labelsHidden()
+            .accessibilityLabel("Select \(finding.url.lastPathComponent)")
             VStack(alignment: .leading) {
                 Text(finding.url.lastPathComponent)
                 Text(finding.url.deletingLastPathComponent().path)

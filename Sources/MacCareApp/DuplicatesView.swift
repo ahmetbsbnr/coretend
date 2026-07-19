@@ -174,6 +174,7 @@ struct DuplicatesView: View {
                                     }
                                 ))
                                 .labelsHidden()
+                                .accessibilityLabel("Select copy \(url.lastPathComponent)")
                                 Text(url.lastPathComponent)
                                 if url.path == group.keeper.path {
                                     Text("Suggested keeper")
