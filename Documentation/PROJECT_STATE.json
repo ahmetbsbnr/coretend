@@ -1,0 +1,42 @@
+{
+  "project": "MacCare Local",
+  "version": "0.1.0",
+  "phase": "1 — foundation",
+  "toolchain": "Swift 6.3.2 via CommandLineTools (no Xcode installed)",
+  "build_system": "SwiftPM; app bundle assembled by Scripts/package-local.sh",
+  "test_framework": "Swift Testing (XCTest unavailable without Xcode); run via Scripts/test.sh",
+  "done": [
+    "Git repo + SwiftPM structure",
+    "SafetyCore: PathValidator (protected roots, allowlist, .., symlink escape, boundary check), SafetyCenter actor (approve/execute, dry-run default, re-validation at execution, audit log, Trash-only)",
+    "ScanCore: ScanRule/ScanConfiguration/ScanEngine streaming AsyncStream, cancellation, min-age filter, symlink skip, resource keys batch",
+    "FileRules: user caches, user logs, crash reports, Xcode DerivedData + deletion allowlist",
+    "DesignSystem: MCTheme tokens, MCCard, byte formatting",
+    "App shell: NavigationSplitView sidebar (10 modules), Cleanup module fully wired (scan -> review -> dry-run/trash -> done), reveal in Finder",
+    "Tests: 24 passing (path traversal, symlink swap, unicode, long paths, cancellation, rule coverage)"
+  ],
+  "partial": [
+    "Cleanup UI: findings capped at 5000 rows, no grouping by rule yet",
+    "ScanCore: no pause/resume, no persistence, symlinks skipped not followed"
+  ],
+  "not_started": [
+    "Smart Care", "Protection/ClamAV", "Performance", "Applications/Leftovers",
+    "My Clutter/duplicates", "Space Lens", "Cloud Cleanup", "My Activity",
+    "Menu Bar agent", "Privileged helper", "Persistence/SQLite", "Settings",
+    "Onboarding/permissions", "Animations", "Privacy Cleaner"
+  ],
+  "tests": { "passing": 24, "failing": 0 },
+  "last_build": "swift build + swift test green (Debug)",
+  "next_goals": [
+    "Persistence module (SQLite actor + migrations)",
+    "Group Cleanup findings by rule with per-category toggles",
+    "Smart Care orchestrator in dry-run",
+    "Release build + package-local.sh verification"
+  ],
+  "limitations": [
+    "No Xcode: no .xcodeproj, no UI tests, no signing identity (ad-hoc codesign only)",
+    "XCTest unavailable; Swift Testing used instead",
+    "App bundle unsigned beyond ad-hoc; Full Disk Access must be granted manually"
+  ],
+  "open_decisions": [],
+  "git_commit": "pending initial commit"
+}
