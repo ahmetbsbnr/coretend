@@ -58,6 +58,8 @@ struct MainWindow: View {
                 SmartCareView()
             case .cleanup:
                 CleanupView()
+            case .performance:
+                PerformanceView()
             case .myClutter:
                 MyClutterView()
             case .myActivity:
