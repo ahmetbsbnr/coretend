@@ -41,9 +41,15 @@ final class SettingsViewModel {
 
 struct MCSettingsView: View {
     @State private var model = SettingsViewModel()
+    @AppStorage("menuBarEnabled") private var menuBarEnabled = true
 
     var body: some View {
         Form {
+            Section("Menu Bar") {
+                Toggle("Show MacCare in the menu bar", isOn: $menuBarEnabled)
+                Text("The menu bar item samples system metrics only while its panel is open.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             Section("Cleaning") {
                 Toggle("Dry run by default", isOn: $model.dryRunDefault)
                     .onChange(of: model.dryRunDefault) { model.saveDryRun() }
