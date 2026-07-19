@@ -68,6 +68,19 @@ final class MyClutterViewModel {
 }
 
 struct MyClutterView: View {
+    var body: some View {
+        TabView {
+            LargeOldFilesView()
+                .tabItem { Label("Large & Old", systemImage: "doc") }
+            DuplicatesView()
+                .tabItem { Label("Duplicates", systemImage: "doc.on.doc") }
+        }
+        .padding(8)
+        .navigationTitle("My Clutter")
+    }
+}
+
+struct LargeOldFilesView: View {
     @State private var model = MyClutterViewModel()
 
     var body: some View {
@@ -79,7 +92,6 @@ struct MyClutterView: View {
             case .results: resultsView
             }
         }
-        .navigationTitle("My Clutter")
     }
 
     private var idleView: some View {
