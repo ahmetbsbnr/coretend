@@ -10,12 +10,15 @@ let package = Package(
         .library(name: "SafetyCore", targets: ["SafetyCore"]),
         .library(name: "FileRules", targets: ["FileRules"]),
         .library(name: "DesignSystem", targets: ["DesignSystem"]),
+        .library(name: "Persistence", targets: ["Persistence"]),
     ],
     targets: [
         .executableTarget(
             name: "MacCareApp",
-            dependencies: ["ScanCore", "SafetyCore", "FileRules", "DesignSystem"]
+            dependencies: ["ScanCore", "SafetyCore", "FileRules", "DesignSystem", "Persistence"]
         ),
+        .target(name: "Persistence"),
+        .testTarget(name: "PersistenceTests", dependencies: ["Persistence"]),
         .target(name: "ScanCore", dependencies: ["SafetyCore"]),
         .target(name: "SafetyCore"),
         .target(name: "FileRules", dependencies: ["ScanCore", "SafetyCore"]),
