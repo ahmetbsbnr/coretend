@@ -1,14 +1,76 @@
 import SwiftUI
 import DesignSystem
+import SystemMetrics
 
 @main
 struct MacCareApp: App {
+    @AppStorage("menuBarEnabled") private var menuBarEnabled = true
+
     var body: some Scene {
         WindowGroup("MacCare Local") {
             MainWindow()
                 .frame(minWidth: 900, minHeight: 600)
         }
         .windowStyle(.automatic)
+
+        MenuBarExtra("MacCare", systemImage: "heart.circle", isInserted: $menuBarEnabled) {
+            MenuBarView()
+        }
+        .menuBarExtraStyle(.window)
+    }
+}
+
+/// Lightweight status popover. Samples only while the menu is open.
+struct MenuBarView: View {
+    @State private var snapshot: MetricsSnapshot?
+    @State private var collector = MetricsCollector()
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("MacCare Local").font(.headline)
+            if let snap = snapshot {
+                metricRow(icon: "cpu", label: "CPU", value: "\(Int(snap.cpuUsedFraction * 100))%",
+                          warn: snap.cpuUsedFraction > 0.85)
+                metricRow(icon: "memorychip", label: "Memory",
+                          value: "\(Int(snap.memoryUsedFraction * 100))% — \(snap.memoryPressureLevel)",
+                          warn: snap.memoryPressureLevel != "normal")
+                metricRow(icon: "internaldrive", label: "Free space",
+                          value: mcFormatBytes(snap.diskFreeBytes),
+                          warn: snap.diskFreeBytes < 20_000_000_000)
+                metricRow(icon: "thermometer.medium", label: "Thermal",
+                          value: snap.thermalState.capitalized,
+                          warn: snap.thermalState == "serious" || snap.thermalState == "critical")
+            } else {
+                ProgressView().controlSize(.small)
+            }
+            Divider()
+            Button("Open MacCare Local") {
+                NSApp.activate(ignoringOtherApps: true)
+                NSApp.windows.first { $0.title == "MacCare Local" }?.makeKeyAndOrderFront(nil)
+            }
+            Button("Quit") { NSApp.terminate(nil) }
+        }
+        .padding(14)
+        .frame(width: 260)
+        .task {
+            // Adaptive: only samples while this view exists (menu open).
+            _ = await collector.snapshot()
+            while !Task.isCancelled {
+                snapshot = await collector.snapshot()
+                try? await Task.sleep(for: .seconds(2))
+            }
+        }
+    }
+
+    private func metricRow(icon: String, label: String, value: String, warn: Bool) -> some View {
+        HStack {
+            Image(systemName: icon).frame(width: 18)
+                .foregroundStyle(warn ? MCTheme.warning : MCTheme.accent)
+            Text(label)
+            Spacer()
+            Text(value).foregroundStyle(.secondary).monospacedDigit()
+        }
+        .font(.callout)
     }
 }
 

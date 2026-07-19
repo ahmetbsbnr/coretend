@@ -79,6 +79,19 @@ final class ApplicationsViewModel {
 }
 
 struct ApplicationsView: View {
+    var body: some View {
+        TabView {
+            InstalledAppsView()
+                .tabItem { Label("Installed", systemImage: "square.grid.2x2") }
+            LeftoversView()
+                .tabItem { Label("Leftovers", systemImage: "trash.slash") }
+        }
+        .padding(8)
+        .navigationTitle("Applications")
+    }
+}
+
+struct InstalledAppsView: View {
     @State private var model = ApplicationsViewModel()
 
     var body: some View {
@@ -88,7 +101,6 @@ struct ApplicationsView: View {
             detail
                 .frame(minWidth: 360, maxWidth: .infinity, maxHeight: .infinity)
         }
-        .navigationTitle("Applications")
         .task { await model.load() }
     }
 
