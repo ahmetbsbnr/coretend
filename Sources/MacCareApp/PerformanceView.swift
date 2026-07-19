@@ -29,6 +29,39 @@ final class PerformanceViewModel {
     }
 }
 
+/// One user LaunchAgent with validity check (does its program still exist?).
+struct LaunchAgentInfo: Identifiable {
+    let id: String
+    let label: String
+    let programPath: String?
+    let broken: Bool
+}
+
+enum LaunchAgentInspector {
+    static func userAgents() -> [LaunchAgentInfo] {
+        let dir = FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/LaunchAgents")
+        guard let files = try? FileManager.default.contentsOfDirectory(
+            at: dir, includingPropertiesForKeys: nil) else { return [] }
+        return files.filter { $0.pathExtension == "plist" }.compactMap { url in
+            guard let data = try? Data(contentsOf: url),
+                  let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any]
+            else {
+                return LaunchAgentInfo(id: url.path, label: url.lastPathComponent, programPath: nil, broken: true)
+            }
+            let program = plist["Program"] as? String
+                ?? (plist["ProgramArguments"] as? [String])?.first
+            let broken = program.map { !FileManager.default.fileExists(atPath: $0) } ?? false
+            return LaunchAgentInfo(
+                id: url.path,
+                label: plist["Label"] as? String ?? url.deletingPathExtension().lastPathComponent,
+                programPath: program,
+                broken: broken)
+        }
+        .sorted { ($0.broken ? 0 : 1, $0.label) < ($1.broken ? 0 : 1, $1.label) }
+    }
+}
+
 struct PerformanceView: View {
     @State private var model = PerformanceViewModel()
 
@@ -61,6 +94,7 @@ struct PerformanceView: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
+                    launchAgentsCard
                 } else {
                     ProgressView().padding(48)
                 }
@@ -102,6 +136,42 @@ struct PerformanceView: View {
             }
             .frame(maxWidth: .infinity)
         }
+    }
+
+    @State private var agents: [LaunchAgentInfo] = []
+
+    private var launchAgentsCard: some View {
+        MCCard {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Login LaunchAgents").font(.headline)
+                Text("Third-party agents started at login (~/Library/LaunchAgents). Broken entries point to programs that no longer exist. Inspection only — disable them in System Settings › Login Items.")
+                    .font(.caption).foregroundStyle(.secondary)
+                if agents.isEmpty {
+                    Text("No user LaunchAgents.").font(.caption).foregroundStyle(.secondary)
+                }
+                ForEach(agents) { agent in
+                    HStack {
+                        Image(systemName: agent.broken ? "exclamationmark.triangle.fill" : "checkmark.circle")
+                            .foregroundStyle(agent.broken ? MCTheme.warning : MCTheme.success)
+                        VStack(alignment: .leading) {
+                            Text(agent.label).font(.callout)
+                            if let program = agent.programPath {
+                                Text(agent.broken ? "missing: \(program)" : program)
+                                    .font(.caption).foregroundStyle(.secondary)
+                                    .lineLimit(1).truncationMode(.middle)
+                            }
+                        }
+                        Spacer()
+                        Button {
+                            NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: agent.id)])
+                        } label: { Image(systemName: "magnifyingglass") }
+                        .buttonStyle(.borderless)
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .onAppear { agents = LaunchAgentInspector.userAgents() }
     }
 
     private func formatUptime(_ seconds: Int64) -> String {
