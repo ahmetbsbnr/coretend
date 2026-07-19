@@ -129,6 +129,7 @@ struct LeftoversView: View {
                         }
                     ))
                     .labelsHidden()
+                    .accessibilityLabel("Select \(item.url.lastPathComponent)")
                     VStack(alignment: .leading) {
                         Text(item.url.lastPathComponent)
                         Text("\(item.kind.rawValue) — app with this identifier is not installed")
