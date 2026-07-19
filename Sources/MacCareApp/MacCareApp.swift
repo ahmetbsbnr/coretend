@@ -132,6 +132,8 @@ struct MainWindow: View {
                 SpaceLensView()
             case .myClutter:
                 MyClutterView()
+            case .cloudCleanup:
+                CloudCleanupView()
             case .myActivity:
                 MyActivityView()
             case .settings:
