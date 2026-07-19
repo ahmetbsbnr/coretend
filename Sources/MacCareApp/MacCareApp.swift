@@ -105,7 +105,9 @@ enum ModuleID: String, CaseIterable, Identifiable {
 }
 
 struct MainWindow: View {
-    @State private var selection: ModuleID? = .cleanup
+    @State private var selection: ModuleID? = .smartCare
+    @AppStorage("onboardingDone") private var onboardingDone = false
+    @State private var showOnboarding = false
 
     var body: some View {
         NavigationSplitView {
@@ -135,6 +137,10 @@ struct MainWindow: View {
             default:
                 PlaceholderView(module: selection ?? .smartCare)
             }
+        }
+        .onAppear { if !onboardingDone { showOnboarding = true } }
+        .sheet(isPresented: $showOnboarding, onDismiss: { onboardingDone = true }) {
+            OnboardingView(isPresented: $showOnboarding)
         }
     }
 }
