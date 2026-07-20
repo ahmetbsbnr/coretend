@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Download — MacCare Local</title>
+<meta name="description" content="A local-only, open source utility to scan, clean, organize and optimize Apple Silicon Macs.">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html"><span class="mark"></span>MacCare Local</a>
+    <nav class="primary"><a href="index.html" class="">Home</a>
+<a href="features.html" class="">Features</a>
+<a href="download.html" class="active">Download</a>
+<a href="documentation.html" class="">Documentation</a>
+<a href="open-source.html" class="">Open Source</a>
+<a href="roadmap.html" class="">Roadmap</a>
+<a href="faq.html" class="">FAQ</a></nav>
+    <div class="lang-switch"><a href="../en/download.html" class="active">EN</a><a href="../fr/download.html" class="">FR</a></div>
+  </div>
+</header>
+<main>
+  <div class="wrap">
+
+<h1>Download</h1>
+<div class="status-box">
+  <p><strong>Public release in preparation.</strong> There is no stable
+  release yet. This page is a placeholder for the future release — it does
+  not link to any local build or ad-hoc artifact.</p>
+</div>
+
+<h2>What the release will look like</h2>
+<p>The first public artifact will be named exactly:</p>
+<pre>MacCare-Local-&lt;version&gt;-arm64-unsigned.zip</pre>
+
+<table>
+  <tr><th>Field</th><th>Status</th></tr>
+  <tr><td>Version</td><td>not yet released</td></tr>
+  <tr><td>Checksum (SHA-256)</td><td>will be published alongside the release</td></tr>
+  <tr><td>Code signing</td><td><strong>unsigned</strong> — this will always be disclosed, never hidden</td></tr>
+  <tr><td>Notarization</td><td>not yet available (requires an Apple Developer ID; out of scope pre-1.0)</td></tr>
+</table>
+
+<h2>Planned install steps (once a release exists)</h2>
+<ol>
+  <li>Download and verify the SHA-256 checksum against the published value.</li>
+  <li>Unzip and move MacCare Local.app to /Applications.</li>
+  <li>Because the app is unsigned, macOS Gatekeeper will require an explicit
+  right-click &rarr; Open the first time.</li>
+  <li>Grant Full Disk Access if you want full-coverage scanning (see the
+  Documentation).</li>
+</ol>
+<p>Until then, building from source is documented in
+<a href="documentation.html">Documentation</a>.</p>
+
+  </div>
+</main>
+<footer class="site">
+  <div class="wrap">
+    <span>&copy; MacCare Local contributors. Open source — see LICENSE.</span>
+    <nav><a href="privacy.html">Privacy</a>
+<a href="security.html">Security</a>
+<a href="changelog.html">Changelog</a>
+<a href="licenses.html">Licenses</a>
+<a href="legal.html">Legal notice</a></nav>
+  </div>
+</footer>
+</body>
+</html>
