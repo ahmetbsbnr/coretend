@@ -56,3 +56,23 @@ Release app packaged. See PROJECT_STATE.json + FEATURE_MATRIX.md.
   Step D (audit visuel final -> 0.5.0) restent à faire — non commencés cette
   session faute de temps. Voir VISUAL_QA.md / VISUAL_DIRECTION.md pour le detail
   des specs par module.
+
+## Step B — en cours (v0.4.1 code, 2026-07-20)
+- `Sources/DesignSystem/MeshView.swift`: `MCMeshView`, motif maille de
+  confinement pour Protection (nœuds+rayons sur anneau, Canvas, statique —
+  aucun timer). Complétude reflète l'état réel (moteur absent → maille
+  clairsemée/pointillée; prêt → complète; scan → partielle; détection →
+  distorsion ambre, jamais rouge). VoiceOver via `accessibilityDescription`.
+  Câblé dans `ProtectionView.swift` (carte indisponible + carte scan).
+- 60 tests verts, build release + package + lancement bundle réel vérifiés.
+- **Pas commencé**: Cleanup (fragments/regroupement/troncature), Space Lens
+  (continuité spatiale), Applications (capsules), My Clutter (superposition),
+  My Activity (chronologie), Cloud Cleanup (plein/contour), Performance
+  (harmonisation), menu bar, Settings (états permission). Step C (fr) et
+  Step D (audit final 0.5.0) non commencés.
+- **Reprise**: continuer Step B dans l'ordre — Cleanup ensuite, puis Space
+  Lens, Applications, My Clutter, My Activity, Cloud Cleanup, Performance,
+  menu bar, Settings. Pour chaque module: implémenter en SwiftUI natif,
+  build release, test, package, lancer, capturer via `Scripts/capture.sh`
+  clair+sombre, mettre à jour VISUAL_QA.md honnêtement, commit atomique.
+  Ne pas passer à 0.5.0 avant que Step B/C/D soient réellement complets.
