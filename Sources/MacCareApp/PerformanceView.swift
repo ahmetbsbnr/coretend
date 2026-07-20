@@ -64,6 +64,7 @@ enum LaunchAgentInspector {
 
 struct PerformanceView: View {
     @State private var model = PerformanceViewModel()
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         ScrollView {
@@ -111,8 +112,13 @@ struct PerformanceView: View {
             .padding(24)
         }
         .navigationTitle("Performance")
-        .onAppear { model.start() }
+        .onAppear { if scenePhase == .active { model.start() } }
         .onDisappear { model.stop() }
+        // Idle-window behavior: stop sampling while the app is hidden/backgrounded
+        // (window occluded, minimized, or app not frontmost) so no timer runs unseen.
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .active { model.start() } else { model.stop() }
+        }
     }
 
     private func statusColor(_ fraction: Double, base: Color) -> Color {
