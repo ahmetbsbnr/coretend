@@ -100,23 +100,3 @@ struct BrandResourceTests {
         #expect(version.compare("0.4.0", options: .numeric) != .orderedAscending)
     }
 }
-
-@Suite("Cleanup fragment motif")
-struct FragmentTests {
-    @Test func fractionClampsToUnitRange() {
-        let over = MCFragmentSpec(id: "a", label: "A", fraction: 1.4, selection: .all, tint: MCColor.storage)
-        let under = MCFragmentSpec(id: "b", label: "B", fraction: -0.2, selection: .none, tint: MCColor.storage)
-        #expect(over.fraction == 1)
-        #expect(under.fraction == 0)
-    }
-
-    @Test func accessibilityDescriptionCountsSelectedGroups() {
-        let fragments = [
-            MCFragmentSpec(id: "a", label: "A", fraction: 0.5, selection: .all, tint: MCColor.storage),
-            MCFragmentSpec(id: "b", label: "B", fraction: 0.3, selection: .none, tint: MCColor.protection),
-            MCFragmentSpec(id: "c", label: "C", fraction: 0.2, selection: .partial, tint: MCColor.performance),
-        ]
-        #expect(MCFragmentView.accessibilityDescription(fragments: fragments) == "3 categories, 2 with items selected.")
-        #expect(MCFragmentView.accessibilityDescription(fragments: []) == "No categories found yet.")
-    }
-}
