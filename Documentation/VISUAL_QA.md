@@ -18,6 +18,17 @@ Forcer clair: `defaults write local.maccare.app NSRequiresAquaSystemAppearance -
 - [ ] Clavier: focus visible, ordre logique, Échap ferme feuilles.
 - [ ] États: vide / chargement / erreur / indisponible réels et honnêtes.
 
+## Limitation d'environnement (standing, depuis v0.3.0)
+`Scripts/capture.sh` échoue dans ce sandbox à chaque session testée
+(v0.3.0 → v0.5.0 inclus): aucun écran attaché, `System Events` renvoie
+l'erreur -1719 (impossible de contrôler un process sans affichage/accord
+Accessibility TCC actif). Toutes les lignes « capture pending » ci-dessous
+reflètent ce fait d'environnement, pas un défaut produit — le code de
+chaque écran est vérifié (composants design-system utilisés, tokens
+adaptatifs, Reduce Motion/Transparency câblés) même sans capture visuelle.
+Voir KNOWN_LIMITATIONS.md et DECISIONS.md D6. À refaire sur une machine
+avec un vrai écran.
+
 ## État au 2026-07-20 (v0.4.0)
 | Écran | Sombre | Clair | Redim. | RM/RT | Notes |
 |---|---|---|---|---|---|

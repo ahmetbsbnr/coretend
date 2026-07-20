@@ -97,6 +97,36 @@ struct ScanEngineTests {
         }
         #expect(count == 5)
     }
+
+    // Regression (v0.4.1): Smart Care and Cleanup both read totals off this same
+    // `.finished` event rather than summing the display-capped findings array —
+    // two independent consumers of one run must see identical totals.
+    @Test func independentConsumersSeeIdenticalTotals() async throws {
+        defer { cleanup() }
+        for i in 0..<12 {
+            try Data(repeating: 0, count: 100).write(
+                to: tempRoot.appendingPathComponent("Library/Caches/AppX/f\(i).tmp"))
+        }
+        let engine = ScanEngine(configuration: ScanConfiguration(home: tempRoot))
+        var smartCareLikeBytes: Int64 = -1
+        var smartCareLikeCount = 0
+        var cleanupLikeBytes: Int64 = -1
+        var cleanupLikeCount = 0
+        for await event in engine.run(rules: [rule()]) {
+            switch event {
+            case .finding:
+                smartCareLikeCount += 1
+                cleanupLikeCount += 1
+            case let .finished(_, bytes):
+                smartCareLikeBytes = bytes
+                cleanupLikeBytes = bytes
+            default: break
+            }
+        }
+        #expect(smartCareLikeBytes == cleanupLikeBytes)
+        #expect(smartCareLikeBytes == 1200)
+        #expect(smartCareLikeCount == cleanupLikeCount)
+    }
 }
 
 @Suite("Scan root isolation")

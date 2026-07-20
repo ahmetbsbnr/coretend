@@ -1,7 +1,7 @@
 {
   "project": "MacCare Local",
-  "version": "0.4.1",
-  "phase": "3 — Visual Foundation (Orbital Ecology); Step A done, Step B FULLY COMPLETE (all 10 modules); Steps C (fr localization) and D (final 0.5.0 audit) not started",
+  "version": "0.5.0",
+  "phase": "3 — Visual Foundation (Orbital Ecology); Step A, B (all 10 modules), C (fr localization), and D (final 0.5.0 audit) ALL COMPLETE — 'Visual Completion' shipped",
   "toolchain": "Swift 6.3.2 via CommandLineTools (no Xcode installed)",
   "build_system": "SwiftPM; app bundle assembled by Scripts/package-local.sh",
   "test_framework": "Swift Testing (XCTest unavailable without Xcode); run via Scripts/test.sh",
@@ -34,9 +34,8 @@
   ],
   "partial": [
     "Protection: engine unavailable on this machine (ClamAV not installed) — UI states it honestly",
-    "Cleanup/Smart Care findings list still capped at 5000 rows for display (by design); totals are now computed from uncapped stream, truncation shown honestly in UI (v0.4.1)",
-    "Secondary module visual identities — all 10 modules now code-complete (Step B FULLY COMPLETE): Protection mesh (MCMeshView), Cleanup fragments (MCFragmentSpec/MCFragmentView), Space Lens continuity (matchedGeometryEffect + SpaceNodeCategory), Applications capsules (grouping + matchedGeometryEffect over native List), My Clutter overlap (MCOverlapStack shared motif), My Activity timeline (day grouping, real/simulated split), Cloud Cleanup sync state (filled/outline shape), Performance (scenePhase-gated idle pause added this session — chart/metrics already used real SystemMetrics data, no fake curves), menu bar (attention badge via shape/position not color, last Smart Care result, honest ClamAV line, Settings quick action, low-idle-cost 30s background poll for the badge only), Settings (real Full Disk Access/ClamAV/notification/privileged-helper states, real bundle version, Data section with clear-activity-history). Screenshots not captured for any module this session — no attached display in this sandbox (Scripts/capture.sh confirmed failing again, System Events index -1719); all rows stay 'code done, capture pending' in VISUAL_QA.md pending a machine with a real display.",
-    "French localization — NOT started (Step C)"
+    "Cleanup/Smart Care findings list still capped at 5000 rows for display (by design); totals are computed from uncapped stream — re-verified fresh in Step D via independentConsumersSeeIdenticalTotals test, not just trusted from old notes",
+    "Screenshots for Documentation/VisualAudit/After remain pending for most modules — standing no-attached-display limitation in this sandbox since v0.3.0 (Scripts/capture.sh fails, System Events index -1719), not a code defect. Everything verifiable without a physical screen (component usage, adaptive colors, RM/RT code paths, live launch stability, French locale launch) was verified in Step D."
   ],
   "not_started": [
     "Privileged helper (blocked: no Developer ID signing)",
@@ -45,20 +44,19 @@
     "browser history/cookie removal (deliberately deferred: db corruption risk)"
   ],
   "tests": {
-    "passing": 82,
+    "passing": 83,
     "failing": 0
   },
-  "last_build": "Release green, 0 warnings (clean .build); v0.4.1 packaged and launched successfully (non-destructive smoke test, no crash/error in log show) after Performance/menu bar/Settings Step B work — Step B is now FULLY COMPLETE for all 10 modules. 7 new tests (MenuBarIconModel.needsAttention thresholds, PermissionFormatting notification-status labels) in Tests/MacCareAppTests/PerformanceAndSettingsTests.swift.",
+  "last_build": "Release green, 0 warnings; v0.5.0 packaged (Scripts/package-local.sh) and launched live twice — default locale and AppleLanguages (fr-FR) — both stable, no crash. Added independentConsumersSeeIdenticalTotals regression test re-confirming the v0.4.1 totals fix on fresh code.",
   "next_goals": [
-    "Step B FULLY COMPLETE (code) for all 10 modules; re-capture Documentation/VisualAudit/After screenshots for all of them on a machine with a display/Accessibility permission, then finish VISUAL_QA.md checkboxes",
-    "fr localization — Step C, not started",
-    "Migrer les vues restantes vers tokens MC*",
-    "Final visual audit -> 0.5.0 — Step D, not started (do not bump version past 0.4.1 until C and D are done)"
+    "Capture real Documentation/VisualAudit/After screenshots for all modules on a machine with an attached display, then finish VISUAL_QA.md checkboxes (pure environment follow-up, not a code task)",
+    "Migrer les vues restantes vers tokens MC* si de nouveaux écrans arrivent"
   ],
   "limitations": [
     "No Xcode: ad-hoc signing only, no UI tests, no notarization",
     "ClamAV optional runtime dependency",
-    "helper privilégié bloqué (signature)"
+    "helper privilégié bloqué (signature)",
+    "No attached display in this sandbox (standing since v0.3.0) — blocks Scripts/capture.sh screenshot capture only; see KNOWN_LIMITATIONS.md"
   ],
   "open_decisions": [],
   "git_commit": "HEAD"

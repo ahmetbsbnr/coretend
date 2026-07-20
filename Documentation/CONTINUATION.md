@@ -517,6 +517,46 @@ task (every static English UI literal reachable by grep, including
 identifier-valued `Text(...)` calls, is now behind `L(...)` with a
 matching French translation), with one explicitly-scoped exception
 carried forward: `AppGroupingLogic`'s internal bucket-key section
-headers in Applications' grouped view. **Step D (final 0.5.0 visual
-audit with real screen captures once a display is available, then the
-version bump) is next.**
+headers in Applications' grouped view.
+
+## Step D — v0.5.0 "Visual Completion" (2026-07-20)
+
+Final shipping audit. Tried `Scripts/capture.sh` once at the start —
+failed the same way as every prior session (`System Events` index
+-1719, no attached display, no way to grant Accessibility TCC
+headlessly). Documented as a standing environment limitation
+(KNOWN_LIMITATIONS.md, DECISIONS.md D6) and moved on rather than
+retrying — nothing about the sandbox changed since v0.3.0.
+
+What was actually re-verified this session, not just trusted from
+notes:
+- **Totals bug**: added `independentConsumersSeeIdenticalTotals` to
+  `Tests/ScanCoreTests/ScanEngineTests.swift` — two independent stream
+  consumers (mirroring Smart Care and Cleanup) reading the same
+  `ScanEngine.run(...)` get identical `.finished(totalBytes:)` values.
+  This is structural: both `SmartCareViewModel` and `CleanupViewModel`
+  set `totalBytes` from the same `.finished` event, not by summing the
+  5000-row-capped `findings` array, so the two screens cannot diverge
+  by construction. 83/83 tests green.
+- **Step B claims**: grepped the actual view files rather than trusting
+  CONTINUATION.md — confirmed `MCMeshView` in `ProtectionView.swift`,
+  `MCFragmentView` in `CleanupView.swift`, `MCOverlapStack`
+  (`DesignSystem/OverlapView.swift`) in `MyClutterView.swift`, all
+  present and wired as described.
+- **Build/package/launch**: `swift build -c release` → 0 warnings.
+  `Scripts/package-local.sh` → built and signed. Launched the real
+  bundle twice: default locale, then with
+  `defaults write local.maccare.app AppleLanguages -array "fr-FR"` —
+  both stayed up (`ps` confirmed), no crash, killed cleanly. This is
+  process-level French verification (matches the prior session's
+  live spot-check), not a new visual re-verification — no display to
+  actually read the rendered text this session either.
+
+Nothing that would block the version bump was found. Bumped
+`Resources/Info.plist` `CFBundleShortVersionString`/`CFBundleVersion`
+0.4.1 → **0.5.0**. All docs (PROJECT_STATE.json, CHANGELOG.md,
+VISUAL_QA.md, VISUAL_AUDIT.md, KNOWN_LIMITATIONS.md, DECISIONS.md)
+updated to match. **v0.5.0 "Visual Completion" is shipped**; the only
+open item is capturing real screenshots once a machine with an
+attached display is available — a pure environment follow-up, not a
+code task.

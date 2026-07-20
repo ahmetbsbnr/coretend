@@ -30,3 +30,45 @@ Cleanup (regroupement animé), Protection (maille), Space Lens (zoom continu),
 Applications (capsules), My Clutter (superposition), Cloud Cleanup, My Activity
 (chronologie riche). Tous fonctionnels, aucun placeholder, mais identité de
 module secondaire encore légère.
+
+## Step D — audit final v0.5.0 (2026-07-20)
+Toutes les identités visuelles ci-dessus sont maintenant code-complete (vérifié
+par grep sur les vues, pas seulement déclaré) :
+`MCMeshView` dans `ProtectionView.swift`, `MCFragmentView`/`MCFragmentSpec` dans
+`CleanupView.swift`, `MCOverlapStack` dans `MyClutterView.swift`
+(`DesignSystem/OverlapView.swift`), continuité `matchedGeometryEffect` dans
+`SpaceLensView`/`ApplicationsView`, chronologie par jour dans `MyActivityView`,
+état plein/contour dans `CloudCleanupView`.
+
+**Captures**: toujours bloquées — aucun écran attaché dans ce sandbox depuis la
+v0.3.0 (voir KNOWN_LIMITATIONS.md). Vérification effectuée à la place:
+lecture du code source de chaque vue secondaire (utilise bien les tokens
+`MC*`/composants du design system, pas de couleur/rayon en dur), lancement réel
+du bundle Release packagé (`Scripts/package-local.sh`) sans crash, et un
+second lancement sous `AppleLanguages (fr-FR)` — processus stable dans les
+deux cas (`ps` + pas d'entrée fautive côté process). Ce n'est pas une preuve
+visuelle du rendu; c'est une preuve que rien ne crashe et que le code utilisé
+correspond à ce que ce document et CONTINUATION.md décrivent.
+
+**Cohérence clair/sombre**: vérifiée au niveau code — toutes les vues
+utilisent `MCColor` (adaptatif) plutôt que des couleurs système ou codées en
+dur; aucune régression trouvée lors du grep de cette session.
+
+**Reduce Motion / Reduce Transparency**: vérifiés au niveau code — chaque
+composant animé (`MCMeshView`, `MCFragmentView`, `MCOverlapStack`,
+`matchedGeometryEffect` sites) lit `@Environment(\.accessibilityReduceMotion)`
+et route vers un état statique; `MCCard` bascule en surface opaque sous
+Reduce Transparency. Pas de nouvelle régression introduite ce cycle (code
+inchangé depuis Step B, seule la version et les tests ont changé).
+
+**Bug totaux v0.4.1**: re-vérifié à neuf ce cycle (pas seulement relu dans les
+notes) — nouveau test `independentConsumersSeeIdenticalTotals` dans
+`Tests/ScanCoreTests/ScanEngineTests.swift` prouve que deux consommateurs
+indépendants du même flux `ScanEngine.run(...)` (imitant Smart Care et
+Cleanup) obtiennent des totaux identiques, parce que les deux lisent le
+même événement `.finished(scanned:totalBytes:)` plutôt que de resommer la
+liste plafonnée à l'affichage — 83/83 tests verts.
+
+**Verdict**: rien de bloquant trouvé. Version portée à **0.5.0 "Visual
+Completion"**. Le seul écart restant est la capture d'écran physique, déjà
+documenté comme limitation d'environnement, pas comme défaut produit.

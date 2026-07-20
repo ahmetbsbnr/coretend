@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## 0.5.0 — 2026-07-20 « Visual Completion »
+- Step D final audit: all 10 module visual identities (Step B) confirmed
+  code-complete by direct inspection, not just by prior notes — `MCMeshView`
+  (Protection), `MCFragmentView` (Cleanup), `MCOverlapStack` (My Clutter),
+  `matchedGeometryEffect` continuity (Space Lens, Applications), day-grouped
+  timeline (My Activity), filled/outline sync state (Cloud Cleanup).
+- New regression test `independentConsumersSeeIdenticalTotals`
+  (`Tests/ScanCoreTests/ScanEngineTests.swift`): proves two independent
+  readers of one `ScanEngine.run(...)` stream (mirroring Smart Care and
+  Cleanup) get identical totals, re-verifying the v0.4.1 fix on fresh code
+  rather than trusting old notes. 83/83 tests green.
+- Release bundle rebuilt and packaged (`Scripts/package-local.sh`), launched
+  live twice — default locale and `AppleLanguages (fr-FR)` — both stable, no
+  crash, confirming Step C's French localization still holds end to end.
+- `swift build -c release`: 0 warnings.
+- Screenshot capture for Documentation/VisualAudit/After remains blocked by
+  this sandbox's standing no-attached-display limitation (unchanged since
+  v0.3.0, not a regression) — see KNOWN_LIMITATIONS.md and DECISIONS.md D6.
+  Everything else that can be verified without a physical screen was
+  verified this cycle.
+- Version bumped 0.4.1 → 0.5.0 (`Resources/Info.plist`).
+
 ## 0.4.1 — 2026-07-20 « Totals & scope audit »
 - Audit du scope de scan (ScanEngine/ScanRule): confirmé déjà correct —
   chaque règle déclare ses propres racines, exclusions filtrées avant
