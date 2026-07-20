@@ -1,0 +1,23 @@
+{
+  "_comment": "Single source of truth for public release metadata. Copy to PublicIdentity.local.json (gitignored) to override with real values once known. Never commit real legal/security identity here.",
+  "product": "MacCare Local",
+  "bundleId": "local.maccare.app",
+  "marketingVersion": "0.6.0",
+  "buildNumber": "0.6.0",
+  "channel": "prerelease",
+  "architecture": "arm64",
+  "deploymentTarget": "26.0",
+  "maintainerGitHub": "ahmetbsbnr",
+  "repository": "ahmetbsbnr/mac-care-local",
+  "repositoryURL": "https://github.com/ahmetbsbnr/mac-care-local",
+  "developerDomain": "ahmetbsbnr.com",
+  "websiteURL": "https://maccare.ahmetbsbnr.com",
+  "signed": false,
+  "notarized": false,
+  "telemetry": false,
+  "accountRequired": false,
+  "securityContact": "[SECURITY_CONTACT_TO_DEFINE]",
+  "legalEntity": "[LEGAL_ENTITY_TO_DEFINE]",
+  "legalAddress": "[LEGAL_ADDRESS_TO_DEFINE]",
+  "publisherOfRecord": "[PUBLISHER_OF_RECORD_TO_DEFINE]"
+}
