@@ -162,3 +162,10 @@
 "clutter.new_analysis" = "New Analysis";
 "clutter.modified" = "modified %@";
 "clutter.quick_look" = "Quick Look";
+
+/* App Updates */
+"updates.loading" = "Reading update mechanisms…";
+"updates.version_source" = "v%@ — %@";
+"updates.open_app_store" = "Open App Store Updates";
+"updates.open_app" = "Open App to Update";
+"updates.footer" = "MacCare detects each app's own update channel and sends you there. It never downloads or replaces app binaries itself.";
