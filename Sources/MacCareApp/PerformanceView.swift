@@ -71,25 +71,25 @@ struct PerformanceView: View {
             VStack(spacing: 16) {
                 if let snap = model.snapshot {
                     HStack(spacing: MCSpacing.md) {
-                        MCMetricCard(title: "CPU",
+                        MCMetricCard(title: L("performance.cpu"),
                                      value: "\(Int(snap.cpuUsedFraction * 100))%",
-                                     detail: "of all cores",
+                                     detail: L("performance.of_all_cores"),
                                      fraction: snap.cpuUsedFraction,
                                      color: statusColor(snap.cpuUsedFraction, base: MCColor.performance))
-                        MCMetricCard(title: "Memory",
+                        MCMetricCard(title: L("performance.memory"),
                                      value: "\(Int(snap.memoryUsedFraction * 100))%",
-                                     detail: "\(mcFormatBytes(snap.memoryUsedBytes)) of \(mcFormatBytes(snap.memoryTotalBytes))",
+                                     detail: L("performance.memory_detail", mcFormatBytes(snap.memoryUsedBytes), mcFormatBytes(snap.memoryTotalBytes)),
                                      fraction: snap.memoryUsedFraction,
                                      color: statusColor(snap.memoryUsedFraction, base: MCColor.protection))
-                        MCMetricCard(title: "Storage",
+                        MCMetricCard(title: L("performance.storage"),
                                      value: "\(Int(snap.diskUsedFraction * 100))%",
-                                     detail: "\(mcFormatBytes(snap.diskFreeBytes)) free",
+                                     detail: L("performance.free_detail", mcFormatBytes(snap.diskFreeBytes)),
                                      fraction: snap.diskUsedFraction,
                                      color: statusColor(snap.diskUsedFraction, base: MCColor.storage))
                     }
                     MCCard {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("CPU — last 2 minutes").font(.headline)
+                            Text(L("performance.cpu_chart_title")).font(.headline)
                             cpuChart
                                 .frame(height: MCSize.chartHeight)
                         }
@@ -97,10 +97,10 @@ struct PerformanceView: View {
                     }
                     MCCard {
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("System").font(.headline)
-                            LabeledContent("Memory pressure", value: snap.memoryPressureLevel.capitalized)
-                            LabeledContent("Thermal state", value: snap.thermalState.capitalized)
-                            LabeledContent("Uptime", value: formatUptime(snap.uptimeSeconds))
+                            Text(L("performance.system")).font(.headline)
+                            LabeledContent(L("performance.memory_pressure"), value: snap.memoryPressureLevel.capitalized)
+                            LabeledContent(L("performance.thermal_state"), value: snap.thermalState.capitalized)
+                            LabeledContent(L("performance.uptime"), value: formatUptime(snap.uptimeSeconds))
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -111,7 +111,7 @@ struct PerformanceView: View {
             }
             .padding(24)
         }
-        .navigationTitle("Performance")
+        .navigationTitle(L("performance.nav_title"))
         .onAppear { if scenePhase == .active { model.start() } }
         .onDisappear { model.stop() }
         // Idle-window behavior: stop sampling while the app is hidden/backgrounded
@@ -153,9 +153,9 @@ struct PerformanceView: View {
                     startPoint: .zero, endPoint: CGPoint(x: 0, y: size.height)))
                 context.stroke(line, with: .color(MCColor.performance), lineWidth: 2)
             }
-            .accessibilityLabel("CPU usage chart, currently \(Int((model.history.last ?? 0) * 100)) percent")
+            .accessibilityLabel(L("performance.chart_a11y", Int((model.history.last ?? 0) * 100)))
         } else {
-            Text("Collecting samples…")
+            Text(L("performance.collecting_samples"))
                 .font(MCFont.caption).foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -166,11 +166,11 @@ struct PerformanceView: View {
     private var launchAgentsCard: some View {
         MCCard {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Login LaunchAgents").font(.headline)
-                Text("Third-party agents started at login (~/Library/LaunchAgents). Broken entries point to programs that no longer exist. Inspection only — disable them in System Settings › Login Items.")
+                Text(L("performance.launchagents.title")).font(.headline)
+                Text(L("performance.launchagents.subtitle"))
                     .font(.caption).foregroundStyle(.secondary)
                 if agents.isEmpty {
-                    Text("No user LaunchAgents.").font(.caption).foregroundStyle(.secondary)
+                    Text(L("performance.launchagents.empty")).font(.caption).foregroundStyle(.secondary)
                 }
                 ForEach(agents) { agent in
                     HStack {
@@ -179,7 +179,7 @@ struct PerformanceView: View {
                         VStack(alignment: .leading) {
                             Text(agent.label).font(.callout)
                             if let program = agent.programPath {
-                                Text(agent.broken ? "missing: \(program)" : program)
+                                Text(agent.broken ? L("performance.launchagents.missing", program) : program)
                                     .font(.caption).foregroundStyle(.secondary)
                                     .lineLimit(1).truncationMode(.middle)
                             }

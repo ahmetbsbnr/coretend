@@ -270,3 +270,23 @@
 "cloud.state.local_a11y" = "fully local";
 "cloud.state.partial_a11y" = "partially local";
 "cloud.state.placeholder_a11y" = "online only, not downloaded";
+
+/* Performance */
+"performance.nav_title" = "Performance";
+"performance.cpu" = "CPU";
+"performance.memory" = "Memory";
+"performance.storage" = "Storage";
+"performance.of_all_cores" = "of all cores";
+"performance.memory_detail" = "%@ of %@";
+"performance.free_detail" = "%@ free";
+"performance.cpu_chart_title" = "CPU — last 2 minutes";
+"performance.system" = "System";
+"performance.memory_pressure" = "Memory pressure";
+"performance.thermal_state" = "Thermal state";
+"performance.uptime" = "Uptime";
+"performance.chart_a11y" = "CPU usage chart, currently %d percent";
+"performance.collecting_samples" = "Collecting samples…";
+"performance.launchagents.title" = "Login LaunchAgents";
+"performance.launchagents.subtitle" = "Third-party agents started at login (~/Library/LaunchAgents). Broken entries point to programs that no longer exist. Inspection only — disable them in System Settings › Login Items.";
+"performance.launchagents.empty" = "No user LaunchAgents.";
+"performance.launchagents.missing" = "missing: %@";
