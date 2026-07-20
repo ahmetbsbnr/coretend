@@ -20,3 +20,18 @@
   run `Scripts/capture.sh` per Documentation/VISUAL_QA.md to fill in the still-pending
   captures; this is an environment fact, not a product defect, and does not block
   shipping.
+- **Built binary embeds the repo checkout's absolute build path as a dead fallback
+  string** (SwiftPM limitation, discovered by `Scripts/test-distribution.sh`):
+  the compiler-generated `Bundle.module` accessor (`resource_bundle_accessor.swift`)
+  hardcodes both `Bundle.main`'s expected resource path and a `.build/...` absolute
+  path as a fallback if the first lookup fails. In the packaged app the first path
+  always resolves (resources are copied into `Contents/Resources` by
+  `package-local.sh`), so the fallback string is never *read* at runtime — but the
+  string itself is still present in the binary's data section (`strings` finds it).
+  This is a build-tool artifact, not a tracked-file leak or a runtime behavior; it
+  does not expose the developer's username since the path is a project-relative
+  checkout location, not `$HOME`. No fix available without moving off SwiftPM
+  resource bundles (e.g. an Xcode-project build) or a post-build binary string
+  patch, both out of scope for this distribution slice. `test-distribution.sh`
+  reports this as a FAIL rather than hiding it — treat it as a known, low-severity
+  gap, not a green light to claim "no repo-path leakage" in release docs.
