@@ -239,3 +239,76 @@ Release app packaged. See PROJECT_STATE.json + FEATURE_MATRIX.md.
   Applications, My Clutter, My Activity, Cloud Cleanup — once a machine
   with a display is available). Do not bump the version past 0.4.1 until
   B/C/D are done.
+
+## Step B — Performance + menu bar + Settings done, STEP B FULLY COMPLETE
+## (v0.4.1 code, 2026-07-20, isolated worktree session)
+- Confirmed again no attached display (`Scripts/capture.sh` fails the same
+  way: `System Events` process index -1719) — every touched screen stays
+  "code done, capture pending" in `VISUAL_QA.md`, honestly.
+- **Performance** (`Sources/MacCareApp/PerformanceView.swift`): this was a
+  harmonization/audit pass, not a rebuild. Confirmed already correct: tokens
+  consistent with Cleanup/Protection, CPU/memory/disk data 100% real
+  (`SystemMetrics.MetricsCollector`, no decorative curves), 2s refresh
+  cadence reasonable, units correctly labeled, VoiceOver already present
+  on `MCMetricCard` (value+detail as text) and the CPU chart
+  (`accessibilityLabel`), Reduce Motion trivially satisfied (no explicit
+  animation on redraw). One real gap found and fixed: nothing paused
+  sampling when the window was hidden/backgrounded — added
+  `@Environment(\.scenePhase)` gating `PerformanceViewModel.start()`/
+  `.stop()` alongside the existing `onAppear`/`onDisappear`.
+- **Menu bar** (`Sources/MacCareApp/MacCareApp.swift`): kept the existing
+  monochrome template icon (`MenuBarTemplate.png`, `isTemplate=true`,
+  18px) and the panel's "sample only while open" behavior (already
+  correct — a `.task` scoped to the popover view's lifecycle). Added
+  `MenuBarIconModel` — a slow (30s), independent-of-panel background poll
+  whose only job is a shape-based "attention" badge (small triangle
+  overlay at a fixed offset, not a color change) driven by real
+  thermal/memory-pressure/disk-free thresholds via the same
+  `MetricsCollector` pipeline (no duplicate collection). The pure
+  threshold function `MenuBarIconModel.needsAttention` is unit tested.
+  Panel gained: last Smart Care result read from `Store.activity` (first
+  record whose summary starts with "Smart Care" — reuses existing
+  `ActivityRecord` schema, no new persistence), an honest Protection line
+  (`ClamAVScanner().isAvailable`), and a "Settings…" quick action
+  alongside the existing Open/Quit (reuses the `.mcNavigate`
+  `NotificationCenter` mechanism `MainWindow` already observes).
+- **Settings** (`Sources/MacCareApp/SettingsView.swift`): reorganized into
+  General / Appearance / Scans & Cleanup / Protection / Monitoring &
+  Permissions / Exclusions / Data / About, all native `Form`/`Section`/
+  `Toggle`/`LabeledContent` — no custom-drawn controls. Every permission
+  state shown now comes from a real system query, never simulated: Full
+  Disk Access reuses the existing `PermissionProbe.hasFullDiskAccess()`
+  (with Open System Settings + Re-check), ClamAV reuses
+  `ClamAVScanner().isAvailable`, notifications query
+  `UNUserNotificationCenter.current().notificationSettings()` (the app
+  doesn't request notifications today, so this is honestly usually
+  "Not requested" — never fabricated as granted), and the privileged
+  helper is shown as genuinely unavailable (no signing identity, per
+  `FEATURE_MATRIX.md` — not a bug, not a fake progress bar). Fixed the
+  About section's hardcoded "0.1.0" to read the real
+  `CFBundleShortVersionString` from the bundle (was stale since v0.1; app
+  is actually v0.4.1). Added a Data section wiring the previously-unused
+  `Store.clearActivity()` behind a confirmation dialog — the only new
+  persistence-adjacent UI, no new persistence logic. Extracted
+  `PermissionFormatting.notificationLabel/Icon` as pure functions so
+  permission-state text formatting is directly testable.
+- Added `Tests/MacCareAppTests/PerformanceAndSettingsTests.swift` (7
+  tests: 4 attention-threshold cases, 3 notification-label formatting
+  cases). 82 tests green (was 75).
+- Verification loop run in full: `swift build` clean incremental,
+  `swift build -c release` from a clean `.build` — 0 warnings,
+  `Scripts/test.sh` 82/82 green, `Scripts/package-local.sh` succeeded,
+  bundle launched (`ps` confirmed process up, `log show` checked — no
+  error/fault entries), quit cleanly via `osascript`.
+- **Step B is now FULLY COMPLETE** — all 10 modules (Cleanup, Protection,
+  Space Lens, Applications, My Clutter, My Activity, Cloud Cleanup,
+  Performance, menu bar, Settings) have their visual/harmonization work
+  done in code.
+- **Reprise**: Step C (French localization) and Step D (final 0.5.0
+  audit — real screen captures for all 10 modules once a machine with a
+  display is available, plus bumping to 0.5.0 only once C and D's exit
+  criteria are genuinely met) are next. Do not bump the version past
+  0.4.1 until then. This session ran in an isolated worktree per
+  instructions — the orchestrating session should reconcile/merge these
+  three commits (`fix(performance)`, `feat(menubar)`, `feat(settings)`)
+  against any concurrent work on the same files.
