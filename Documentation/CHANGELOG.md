@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 0.4.1 — 2026-07-20 « Totals & scope audit »
+- Audit du scope de scan (ScanEngine/ScanRule): confirmé déjà correct —
+  chaque règle déclare ses propres racines, exclusions filtrées avant
+  descente (`skipDescendants`), symlinks jamais suivis, chemins canonicalisés.
+  Ajout de tests de régression (`Scan root isolation`) prouvant qu'un scan
+  Downloads-only ne touche jamais Music/Documents/Library, et qu'un run
+  multi-règles (style Smart Care) ne visite que les racines de ses règles.
+- Correction des totaux Smart Care / Cleanup: `totalFoundBytes` de Smart Care
+  était calculé sur la liste `findings` plafonnée à l'affichage (5000), ce qui
+  pouvait diverger du total réel affiché dans l'état "done" du module. Les
+  deux vues exposent maintenant `totalFindingCount`/`totalFoundBytes` accumulés
+  pendant le streaming (jamais depuis la liste plafonnée), avec indicateur de
+  troncature honnête ("N of M shown") quand un scan dépasse 5000 résultats.
+- Nouveau test `ScanCoreTests`: 5001 résultats synthétiques, confirme que le
+  moteur ne plafonne jamais en interne (le cap est strictement un choix UI).
+- 60 tests verts (57 → 60), 0 warning.
+
 ## 0.4.0 — 2026-07-20 « Visual Foundation »
 - Direction artistique « Orbital Ecology »; signature Core Bloom (noyau + 3 arcs
   asymétriques) partagée logo/icône/héro (MCBloomGeometry).

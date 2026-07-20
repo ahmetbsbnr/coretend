@@ -1,7 +1,7 @@
 {
   "project": "MacCare Local",
-  "version": "0.4.0",
-  "phase": "3 — Visual Foundation (Orbital Ecology)",
+  "version": "0.4.1",
+  "phase": "3 — Visual Foundation (Orbital Ecology); Step A (data bugs) done, Steps B/C/D not started this session",
   "toolchain": "Swift 6.3.2 via CommandLineTools (no Xcode installed)",
   "build_system": "SwiftPM; app bundle assembled by Scripts/package-local.sh",
   "test_framework": "Swift Testing (XCTest unavailable without Xcode); run via Scripts/test.sh",
@@ -34,7 +34,9 @@
   ],
   "partial": [
     "Protection: engine unavailable on this machine (ClamAV not installed) — UI states it honestly",
-    "Cleanup findings list capped at 5000 rows"
+    "Cleanup/Smart Care findings list still capped at 5000 rows for display (by design); totals are now computed from uncapped stream, truncation shown honestly in UI (v0.4.1)",
+    "Secondary module visual identities (Cleanup fragments, Protection mesh, Space Lens continuity, Applications capsules, etc.) — NOT started this session (Step B of the large backlog, out of scope for this pass)",
+    "French localization — NOT started this session (Step C)"
   ],
   "not_started": [
     "Privileged helper (blocked: no Developer ID signing)",
@@ -43,15 +45,15 @@
     "browser history/cookie removal (deliberately deferred: db corruption risk)"
   ],
   "tests": {
-    "passing": 57,
+    "passing": 60,
     "failing": 0
   },
-  "last_build": "Release green, 0 warnings; v0.4.0 packaged with brand assets",
+  "last_build": "Release green, 0 warnings; v0.4.1 packaged and launched successfully (non-destructive smoke test)",
   "next_goals": [
-    "Identités secondaires modules (Cleanup regroupement animé, Protection maille, Space Lens zoom continu)",
-    "Corriger: scan déclenche TCC Apple Music (exclure bibliothèques média), totaux plafonnés à 5000 findings",
-    "fr localization",
-    "Migrer les vues restantes vers tokens MC*"
+    "Identités secondaires modules (Cleanup regroupement animé, Protection maille, Space Lens zoom continu) — Step B, not started",
+    "fr localization — Step C, not started",
+    "Migrer les vues restantes vers tokens MC*",
+    "Final visual audit -> 0.5.0 — Step D, not started"
   ],
   "limitations": [
     "No Xcode: ad-hoc signing only, no UI tests, no notarization",

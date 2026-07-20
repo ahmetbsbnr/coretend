@@ -35,3 +35,24 @@ Release app packaged. See PROJECT_STATE.json + FEATURE_MATRIX.md.
   + iconutil (voir ASSET_PIPELINE.md). package-local.sh copie dans le bundle.
 - Reprise: densifier identités secondaires des modules (voir VISUAL_QA tableau),
   puis corriger les 2 bugs données notés dans VISUAL_AUDIT.md.
+
+## v0.4.1 — Totals & scope audit (2026-07-20)
+- Bug "scan scope leak" (Downloads scan touchant Music): audité en profondeur
+  (ScanEngine.scanRoot, ScanRule.roots, exclusions). Le code était déjà correct
+  — chaque règle a ses propres racines explicites, exclusions filtrées avant
+  `enumerator.skipDescendants()`, symlinks jamais suivis. Pas de code à
+  changer; ajouté `Scan root isolation` suite dans ScanCoreTests pour verrouiller
+  ce comportement (Downloads-only + multi-règles).
+- Bug "totaux tronqués à 5000": réel. `SmartCareViewModel.totalFoundBytes`
+  était un computed property sur `findings` (plafonné UI), divergeant du total
+  réel accumulé pendant le stream. Fix: `totalFindingCount`/`totalFoundBytes`
+  sont maintenant des propriétés stockées mises à jour à chaque `.finding`
+  event (jamais depuis la liste plafonnée), dans CleanupViewModel et
+  SmartCareViewModel. `isDisplayTruncated` + texte "N of M shown" ajoutés aux
+  deux vues. Ajouté test ScanCoreTests avec 5001 résultats synthétiques
+  prouvant que le moteur ne plafonne jamais en interne.
+- 60 tests verts, build release + package + lancement bundle réel vérifiés.
+- **Reprise**: Step B (identités secondaires modules), Step C (fr localization),
+  Step D (audit visuel final -> 0.5.0) restent à faire — non commencés cette
+  session faute de temps. Voir VISUAL_QA.md / VISUAL_DIRECTION.md pour le detail
+  des specs par module.
