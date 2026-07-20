@@ -1,6 +1,8 @@
 import SwiftUI
 import DesignSystem
 import SystemMetrics
+import Persistence
+import MalwareEngine
 
 @main
 struct MacCareApp: App {
@@ -25,21 +27,72 @@ struct MacCareApp: App {
         MenuBarExtra(isInserted: $menuBarEnabled) {
             MenuBarView()
         } label: {
-            if let image = Self.menuBarImage {
-                Image(nsImage: image)
-            } else {
-                Image(systemName: "circle.hexagonpath")
-            }
+            MenuBarLabel()
             Text("MacCare")
         }
         .menuBarExtraStyle(.window)
     }
 }
 
-/// Lightweight status popover. Samples only while the menu is open.
+/// Menu-bar icon content. Polls at a slow, low-idle-cost cadence (independent
+/// of whether the panel is open) purely to know whether an attention badge
+/// should show — never duplicates the panel's metric collection pipeline.
+@MainActor
+@Observable
+final class MenuBarIconModel {
+    var needsAttention = false
+    private let collector = MetricsCollector()
+    private var task: Task<Void, Never>?
+
+    func start() {
+        guard task == nil else { return }
+        task = Task {
+            while !Task.isCancelled {
+                let snap = await collector.snapshot()
+                needsAttention = Self.needsAttention(
+                    thermalState: snap.thermalState,
+                    memoryPressureLevel: snap.memoryPressureLevel,
+                    diskFreeBytes: snap.diskFreeBytes)
+                try? await Task.sleep(for: .seconds(30))
+            }
+        }
+    }
+
+    /// Pure so it's directly testable without a live metrics collector.
+    nonisolated static func needsAttention(thermalState: String, memoryPressureLevel: String, diskFreeBytes: Int64) -> Bool {
+        thermalState == "serious" || thermalState == "critical"
+            || memoryPressureLevel == "critical"
+            || diskFreeBytes < 5_000_000_000
+    }
+}
+
+struct MenuBarLabel: View {
+    @State private var iconModel = MenuBarIconModel()
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            if let image = MacCareApp.menuBarImage {
+                Image(nsImage: image)
+            } else {
+                Image(systemName: "circle.hexagonpath")
+            }
+            if iconModel.needsAttention {
+                // Shape + position carries the meaning, not color alone.
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 8))
+                    .offset(x: 5, y: -5)
+            }
+        }
+        .task { iconModel.start() }
+    }
+}
+
+/// Lightweight status popover. Samples system metrics only while the menu is open.
 struct MenuBarView: View {
     @State private var snapshot: MetricsSnapshot?
     @State private var collector = MetricsCollector()
+    @State private var lastSmartCare: ActivityRecord?
+    private let scanner = ClamAVScanner()
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -59,10 +112,24 @@ struct MenuBarView: View {
             } else {
                 ProgressView().controlSize(.small)
             }
+            metricRow(icon: "shield", label: "Protection",
+                      value: scanner.isAvailable ? "ClamAV ready" : "ClamAV not installed",
+                      warn: !scanner.isAvailable)
             Divider()
-            Button("Open MacCare Local") {
-                NSApp.activate(ignoringOtherApps: true)
-                NSApp.windows.first { $0.title == "MacCare Local" }?.makeKeyAndOrderFront(nil)
+            if let last = lastSmartCare {
+                Text("Last Smart Care: \(last.summary)")
+                    .font(.caption).foregroundStyle(.secondary)
+                Text(last.date, style: .relative)
+                    .font(.caption2).foregroundStyle(.tertiary)
+            } else {
+                Text("No Smart Care run yet.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Divider()
+            Button("Open MacCare Local") { openWindow() }
+            Button("Settings…") {
+                openWindow()
+                NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.settings)
             }
             Button("Quit") { NSApp.terminate(nil) }
         }
@@ -76,6 +143,16 @@ struct MenuBarView: View {
                 try? await Task.sleep(for: .seconds(2))
             }
         }
+        .task {
+            guard let store = AppEnvironment.shared.store else { return }
+            let recent = (try? await store.activity(limit: 20)) ?? []
+            lastSmartCare = recent.first { $0.summary.hasPrefix("Smart Care") }
+        }
+    }
+
+    private func openWindow() {
+        NSApp.activate(ignoringOtherApps: true)
+        NSApp.windows.first { $0.title == "MacCare Local" }?.makeKeyAndOrderFront(nil)
     }
 
     private func metricRow(icon: String, label: String, value: String, warn: Bool) -> some View {
