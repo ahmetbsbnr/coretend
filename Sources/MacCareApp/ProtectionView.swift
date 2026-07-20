@@ -100,35 +100,46 @@ struct MalwareScanView: View {
     }
 
     private var unavailableCard: some View {
-        MCCard {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Image(systemName: "shield.slash").font(.title2).foregroundStyle(MCTheme.warning)
-                    Text("Malware engine not installed").font(.headline)
+        let mesh = MCMeshView(completeness: 0.25, style: .incomplete)
+        return MCCard {
+            HStack(alignment: .top, spacing: 16) {
+                mesh.frame(width: 64, height: 64)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "shield.slash").font(.title2).foregroundStyle(MCTheme.warning)
+                        Text("Malware engine not installed").font(.headline)
+                    }
+                    Text("MacCare Local uses the open-source ClamAV engine for local malware scanning. It is not installed on this Mac, so scanning is unavailable — this module will not pretend otherwise.")
+                        .foregroundStyle(.secondary)
+                    Text("To enable it: install ClamAV (for example `brew install clamav`), run `freshclam` once to download signatures, then reopen this screen.")
+                        .font(.caption).foregroundStyle(.secondary)
+                    Text("Note: this scanner is a local signature check, not a commercial antivirus or real-time protection.")
+                        .font(.caption).foregroundStyle(.secondary)
                 }
-                Text("MacCare Local uses the open-source ClamAV engine for local malware scanning. It is not installed on this Mac, so scanning is unavailable — this module will not pretend otherwise.")
-                    .foregroundStyle(.secondary)
-                Text("To enable it: install ClamAV (for example `brew install clamav`), run `freshclam` once to download signatures, then reopen this screen.")
-                    .font(.caption).foregroundStyle(.secondary)
-                Text("Note: this scanner is a local signature check, not a commercial antivirus or real-time protection.")
-                    .font(.caption).foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(mesh.accessibilityDescription)
         }
     }
 
     @ViewBuilder
     private var availableContent: some View {
+        let meshStyle: MCMeshView.Style = model.phase == .scanning ? .scanning : (model.findings.isEmpty ? .ready : .alert)
+        let mesh = MCMeshView(completeness: model.phase == .scanning ? 0.7 : 1.0, style: meshStyle)
         MCCard {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    Image(systemName: "shield").font(.title2).foregroundStyle(MCTheme.accent)
-                    Text("Local malware scan (ClamAV)").font(.headline)
-                    Spacer()
-                    if model.phase == .scanning { ProgressView().controlSize(.small) }
-                }
-                Text("Signature-based scan. Not a commercial antivirus; no real-time protection.")
-                    .font(.caption).foregroundStyle(.secondary)
+            HStack(alignment: .top, spacing: 16) {
+                mesh.frame(width: 64, height: 64).accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Image(systemName: "shield").font(.title2).foregroundStyle(MCTheme.accent)
+                        Text("Local malware scan (ClamAV)").font(.headline)
+                        Spacer()
+                        if model.phase == .scanning { ProgressView().controlSize(.small) }
+                    }
+                    Text("Signature-based scan. Not a commercial antivirus; no real-time protection.")
+                        .font(.caption).foregroundStyle(.secondary)
                 HStack {
                     Button("Scan Downloads") {
                         Task { await model.scan(paths: [FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads")]) }
@@ -149,8 +160,9 @@ struct MalwareScanView: View {
                 if case let .failed(message) = model.phase {
                     Text(message).font(.caption).foregroundStyle(MCTheme.danger)
                 }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
         if model.phase == .results {
             if model.findings.isEmpty {
