@@ -76,3 +76,55 @@ Release app packaged. See PROJECT_STATE.json + FEATURE_MATRIX.md.
   build release, test, package, lancer, capturer via `Scripts/capture.sh`
   clair+sombre, mettre à jour VISUAL_QA.md honnêtement, commit atomique.
   Ne pas passer à 0.5.0 avant que Step B/C/D soient réellement complets.
+
+## Step B — Cleanup + Space Lens done (v0.4.1 code, 2026-07-20, resumed session)
+- Picked up uncommitted work from a prior session killed by a network error
+  (no commits had landed). Diff was already substantially complete.
+- `Sources/DesignSystem/FragmentView.swift` (new): `MCFragmentSpec`/
+  `MCFragmentView` — Cleanup's motif. One fragment per rule group, width =
+  real byte share (never per-file, never decorative), selection shown via
+  fill+outline+checkmark together (never color alone), dashed outline for
+  unselected, opacity phases for moving/settled (calm success, no confetti).
+  Reduce Transparency → opaque fills; Reduce Motion respected via
+  `MCMotion.animation(reduce:)`. `accessibilityDescription(fragments:)` gives
+  the VoiceOver summary; the existing findings `List` remains the accessible
+  detail view. Wired into `CleanupView`/`CleanupViewModel` (scanning/review/
+  done phases) using the existing `totalFindingCount`/`totalFoundBytes`/
+  `isDisplayTruncated` truncation plumbing — no new truncation logic needed.
+  `doneView` also now surfaces `failedCount` (items that couldn't be trashed)
+  instead of silently dropping it.
+- `Sources/MacCareApp/SpaceLensView.swift` / `Sources/ScanCore/SpaceLensEngine.swift`:
+  `matchedGeometryEffect` zoom continuity between treemap and drill-down
+  (`@Namespace`, `navigate(_:)` wraps real state changes only), breadcrumb
+  keyboard shortcut, hover/selection/keyboard-focus state, semantic
+  `SpaceNodeCategory` (folder/media/document/archive/code/other) coloring by
+  type instead of index-cycling. `SpaceNode` gained `isAccessDenied` /
+  `isCloudPlaceholder` (real signals from `contentsOfDirectory` failure and
+  `ubiquitousItemDownloadingStatusKey`) surfaced as pattern overlays + tooltip
+  text, not just color, so permission/iCloud caveats are honest. Accessible
+  `List` fallback retained.
+- **Bug found & fixed via testing** (not previously caught): `MCFragmentView`
+  conforms to `View`, so Swift inferred `@MainActor` on *all* its members,
+  including the plain-data `static func accessibilityDescription`. Swift
+  Testing runs off the main actor, so calling it crashed with SIGTRAP
+  (`dispatch_assert_queue_fail`) on the first non-trivial test — not a test
+  logic bug, a real isolation bug that would have hit any nonisolated caller.
+  Fixed with `nonisolated static func`. Full diagnostic trace is in
+  `~/Library/Logs/DiagnosticReports/swiftpm-testing-helper-*.ips` if useful.
+- 62 tests verts (was 60; +2 new fragment tests), `swift build -c release`
+  clean at 0 warnings, `Scripts/package-local.sh` succeeded, app launched.
+- **Screenshots NOT captured this session**: this sandbox has no attached
+  display (`screencapture` errors "could not create image from display")
+  and no way to grant Accessibility/TCC permission headlessly, so
+  `Scripts/capture.sh` cannot run here at all (not even `System Events`
+  window queries succeed). VISUAL_QA.md documents this honestly instead of
+  faking captures. **Reprise**: on a machine with a real display, launch the
+  packaged bundle, run `Scripts/capture.sh` light+dark for Cleanup and Space
+  Lens per VISUAL_QA.md's procedure, save to `Documentation/VisualAudit/After/`,
+  and tick the checklist boxes for those two rows.
+- **Still pending in Step B**: Applications (capsules), My Clutter
+  (overlap), My Activity (chronologie), Cloud Cleanup (plein/contour),
+  Performance (harmonisation), menu bar, Settings (états permission) — not
+  started, stay scoped to Cleanup + Space Lens was the instruction this
+  session. Then Step C (fr localization), then Step D (final 0.5.0 audit).
+  Do not bump the version past 0.4.1 until Step B/C/D are genuinely done.

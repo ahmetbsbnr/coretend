@@ -35,7 +35,7 @@
   "partial": [
     "Protection: engine unavailable on this machine (ClamAV not installed) — UI states it honestly",
     "Cleanup/Smart Care findings list still capped at 5000 rows for display (by design); totals are now computed from uncapped stream, truncation shown honestly in UI (v0.4.1)",
-    "Secondary module visual identities — Protection mesh motif implemented (MCMeshView: incomplete/ready/scanning/alert states, static Canvas, VoiceOver summary); Cleanup fragments, Space Lens continuity, Applications capsules, My Clutter overlap, My Activity, Cloud Cleanup still NOT started (Step B, in progress)",
+    "Secondary module visual identities — Protection mesh motif implemented (MCMeshView: incomplete/ready/scanning/alert states, static Canvas, VoiceOver summary); Cleanup fragments (MCFragmentSpec/MCFragmentView: aggregated per-category strip, real byte-share width, selection via fill+outline+checkmark, Reduce Motion/Transparency aware, VoiceOver summary) and Space Lens continuity (matchedGeometryEffect zoom, semantic color-by-type SpaceNodeCategory, hover/selection/keyboard focus, access-denied/cloud-placeholder honesty via SpaceNode.isAccessDenied/isCloudPlaceholder, accessible list fallback) now implemented and wired in; screenshots not re-captured this session (no display in this sandbox — see VISUAL_QA.md). Applications capsules, My Clutter overlap, My Activity, Cloud Cleanup still NOT started (Step B, in progress)",
     "French localization — NOT started this session (Step C)"
   ],
   "not_started": [
@@ -45,12 +45,13 @@
     "browser history/cookie removal (deliberately deferred: db corruption risk)"
   ],
   "tests": {
-    "passing": 60,
+    "passing": 62,
     "failing": 0
   },
-  "last_build": "Release green, 0 warnings; v0.4.1 packaged and launched successfully (non-destructive smoke test)",
+  "last_build": "Release green, 0 warnings; v0.4.1 packaged and launched successfully (non-destructive smoke test). Fixed a real crash found via testing: MCFragmentView.accessibilityDescription inherited @MainActor isolation (type conforms to View) and crashed (SIGTRAP/dispatch_assert_queue_fail) when Swift Testing called it off the main actor — fixed with `nonisolated`.",
   "next_goals": [
-    "Identités secondaires modules (Cleanup regroupement animé, Protection maille, Space Lens zoom continu) — Step B, not started",
+    "Cleanup + Space Lens visual identities done (code); re-capture Documentation/VisualAudit/After screenshots on a machine with a display/Accessibility permission, then finish VISUAL_QA.md checkboxes for those two rows",
+    "Remaining Step B modules: Applications capsules, My Clutter overlap, My Activity, Cloud Cleanup, Performance, menu bar, Settings — not started",
     "fr localization — Step C, not started",
     "Migrer les vues restantes vers tokens MC*",
     "Final visual audit -> 0.5.0 — Step D, not started"
