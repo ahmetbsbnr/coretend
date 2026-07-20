@@ -1,0 +1,36 @@
+# Default: normalize line endings to LF in the repo, checkout as-is.
+* text=auto eol=lf
+
+# Swift / source
+*.swift text eol=lf diff=swift
+*.md text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.sh text eol=lf
+*.strings text eol=lf working-tree-encoding=UTF-16 -diff
+
+# Xcode / SwiftPM project files: treat as text but avoid noisy diffs
+*.pbxproj -diff merge=union linguist-generated=true
+Package.resolved linguist-generated=true
+
+# Binary assets — never diff, never line-ending-normalize
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.icns binary
+*.pdf binary
+*.dmg binary
+*.zip binary
+*.tar.gz binary
+*.p12 binary
+*.mobileprovision binary
+*.cer binary
+
+# Executable scripts keep their bit; git tracks it, this is documentation only.
+Scripts/*.sh text eol=lf
+
+# Linguist hints: keep generated/vendored-looking assets out of language stats
+Documentation/VisualAudit/** linguist-generated=true
+Sources/**/Resources/**/*.strings linguist-generated=false
