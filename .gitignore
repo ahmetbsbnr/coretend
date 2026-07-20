@@ -4,15 +4,24 @@ build/
 DerivedData/
 *.xcarchive
 *.dSYM
+.swiftpm/
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
 
-# Packaged output (release binaries never live in the source repo)
+# Packaged output (release binaries/archives never live in the source repo)
 *.dmg
 *.zip
 *.pkg
+*.tar
+*.tar.gz
+*.tgz
 dist/
 
 # macOS
 .DS_Store
+.AppleDouble
+.LSOverride
 
 # Local runtime/user data (never real user data in the repo)
 *.sqlite
@@ -22,6 +31,11 @@ dist/
 *.db
 *.log
 *.diag
+*.diagsession
+Quarantine/
+LocalScans/
+*.scan-output
+*.scanresult
 
 # Secrets / signing material — never commit
 .env
@@ -44,4 +58,12 @@ node_modules/
 
 # Temp captures / scratch
 *.tmp
+*.temp
 Documentation/VisualAudit/_tmp/
+/tmp/
+Documentation/VisualAudit/_capture_*/
+
+# Generated/local-only test artifacts
+*.generated.swift
+TestResults/
+*.xcresult
