@@ -169,3 +169,18 @@
 "updates.open_app_store" = "Open App Store Updates";
 "updates.open_app" = "Open App to Update";
 "updates.footer" = "MacCare detects each app's own update channel and sends you there. It never downloads or replaces app binaries itself.";
+
+/* Leftovers */
+"leftovers.idle.title" = "Find leftovers from removed apps";
+"leftovers.idle.subtitle" = "Looks for support data whose application is no longer installed.\nMatching is conservative; nothing is preselected.";
+"leftovers.scan" = "Scan for Leftovers";
+"leftovers.scanning" = "Scanning…";
+"leftovers.none_found" = "No leftovers found";
+"leftovers.finished.dryrun" = "Dry run: %@ would be reclaimed";
+"leftovers.finished.moved" = "%@ moved to Trash";
+"leftovers.results.summary" = "%d candidates — %@ selected of %@";
+"leftovers.simulate" = "Simulate Removal";
+"leftovers.select_item" = "Select %@";
+"leftovers.shared_ambiguous_a11y" = "shared or ambiguous";
+"leftovers.shared_review" = "Shared / review";
+"leftovers.not_installed" = "%@ — app with this identifier is not installed";

@@ -88,21 +88,21 @@ struct LeftoversView: View {
                 VStack(spacing: 16) {
                     Image(systemName: "trash.slash")
                         .font(.system(size: 56)).foregroundStyle(MCTheme.accent)
-                    Text("Find leftovers from removed apps").font(.title2.weight(.semibold))
-                    Text("Looks for support data whose application is no longer installed.\nMatching is conservative; nothing is preselected.")
+                    Text(L("leftovers.idle.title")).font(.title2.weight(.semibold))
+                    Text(L("leftovers.idle.subtitle"))
                         .multilineTextAlignment(.center).foregroundStyle(.secondary)
-                    Button("Scan for Leftovers") { Task { await model.scan() } }
+                    Button(L("leftovers.scan")) { Task { await model.scan() } }
                         .buttonStyle(.borderedProminent)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .scanning:
-                ProgressView("Scanning…").frame(maxWidth: .infinity, maxHeight: .infinity)
+                ProgressView(L("leftovers.scanning")).frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
                 VStack(spacing: 12) {
                     Image(systemName: "checkmark.circle")
                         .font(.system(size: 48)).foregroundStyle(MCTheme.success)
-                    Text("No leftovers found").font(.title3.weight(.semibold))
-                    Button("Scan Again") { Task { await model.scan() } }
+                    Text(L("leftovers.none_found")).font(.title3.weight(.semibold))
+                    Button(L("smartcare.scan_again")) { Task { await model.scan() } }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .results:
@@ -111,10 +111,10 @@ struct LeftoversView: View {
                 VStack(spacing: 12) {
                     Image(systemName: "checkmark.seal")
                         .font(.system(size: 48)).foregroundStyle(MCTheme.success)
-                    Text(dryRun ? "Dry run: \(mcFormatBytes(freed)) would be reclaimed"
-                                : "\(mcFormatBytes(freed)) moved to Trash")
+                    Text(dryRun ? L("leftovers.finished.dryrun", mcFormatBytes(freed))
+                                : L("leftovers.finished.moved", mcFormatBytes(freed)))
                         .font(.title3.weight(.semibold))
-                    Button("Scan Again") { Task { await model.scan() } }
+                    Button(L("smartcare.scan_again")) { Task { await model.scan() } }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -124,11 +124,11 @@ struct LeftoversView: View {
     private var resultsView: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text("\(model.leftovers.count) candidates — \(mcFormatBytes(model.selectedBytes)) selected of \(mcFormatBytes(model.totalBytes))")
+                Text(L("leftovers.results.summary", model.leftovers.count, mcFormatBytes(model.selectedBytes), mcFormatBytes(model.totalBytes)))
                     .font(.headline)
                 Spacer()
-                Toggle("Dry run", isOn: $model.dryRun).toggleStyle(.switch)
-                Button(model.dryRun ? "Simulate Removal" : "Move to Trash") {
+                Toggle(L("common.dry_run"), isOn: $model.dryRun).toggleStyle(.switch)
+                Button(model.dryRun ? L("leftovers.simulate") : L("cleanup.move_to_trash")) {
                     Task { await model.removeSelected() }
                 }
                 .buttonStyle(.borderedProminent)
@@ -145,19 +145,19 @@ struct LeftoversView: View {
                         }
                     ))
                     .labelsHidden()
-                    .accessibilityLabel("Select \(item.url.lastPathComponent)\(model.isAmbiguous(item) ? ", shared or ambiguous" : "")")
+                    .accessibilityLabel("\(L("leftovers.select_item", item.url.lastPathComponent))\(model.isAmbiguous(item) ? ", \(L("leftovers.shared_ambiguous_a11y"))" : "")")
                     VStack(alignment: .leading) {
                         HStack(spacing: MCSpacing.xxs) {
                             Text(item.url.lastPathComponent)
                             if model.isAmbiguous(item) {
-                                Text("Shared / review")
+                                Text(L("leftovers.shared_review"))
                                     .font(.caption2.weight(.semibold))
                                     .padding(.horizontal, MCSpacing.xxs).padding(.vertical, 1)
                                     .background(MCColor.attention.opacity(0.18), in: Capsule())
                                     .foregroundStyle(MCColor.attention)
                             }
                         }
-                        Text("\(item.kind.rawValue) — app with this identifier is not installed")
+                        Text(L("leftovers.not_installed", item.kind.rawValue))
                             .font(.caption).foregroundStyle(.secondary)
                     }
                     Spacer()
