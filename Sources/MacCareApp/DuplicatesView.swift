@@ -4,6 +4,12 @@ import SafetyCore
 import DesignSystem
 import Persistence
 
+/// Identifiable wrapper so raw `URL`s can drive `MCOverlapStack`.
+private struct DupMember: Identifiable {
+    let id: String   // path
+    let url: URL
+}
+
 @MainActor
 @Observable
 final class DuplicatesViewModel {
@@ -114,7 +120,7 @@ struct DuplicatesView: View {
             Image(systemName: "doc.on.doc.fill")
                 .font(.system(size: 56)).foregroundStyle(MCTheme.accentSecondary)
             Text("Find duplicate files").font(.title2.weight(.semibold))
-            Text("Compares content with staged hashing in Downloads, Documents and Desktop.\nOne copy of each group is always kept — the suggestion is reviewable.")
+            Text("Compares content with staged hashing in Downloads, Documents and Desktop.\nOne copy of each group is always kept — the suggestion is reviewable.\nHard links to the same file are already the same data and are never counted as duplicates.")
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
             Button("Find Duplicates") { model.start() }
                 .buttonStyle(.borderedProminent)
@@ -164,6 +170,17 @@ struct DuplicatesView: View {
             List {
                 ForEach(model.groups) { group in
                     Section {
+                        // Overlap motif: near-duplicate copies shown slightly
+                        // overlapping, separating on hover — the rows below
+                        // remain the real accessible detail and controls.
+                        MCOverlapStack(items: group.urls.map { DupMember(id: $0.path, url: $0) },
+                                       markedID: group.keeper.path) { member in
+                            Image(nsImage: NSWorkspace.shared.icon(forFile: member.url.path))
+                                .resizable().frame(width: 32, height: 32)
+                                .padding(4)
+                                .background(MCColor.elevatedBackground, in: RoundedRectangle(cornerRadius: MCRadius.small))
+                        }
+                        .padding(.vertical, MCSpacing.xxs)
                         ForEach(group.urls, id: \.path) { url in
                             HStack {
                                 Toggle("", isOn: Binding(

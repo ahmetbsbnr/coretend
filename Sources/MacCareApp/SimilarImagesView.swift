@@ -50,6 +50,12 @@ final class SimilarImagesViewModel {
     func cancel() { scanTask?.cancel() }
 }
 
+/// Identifiable wrapper so raw `URL`s can drive `MCOverlapStack`.
+private struct ImageMember: Identifiable {
+    let id: String   // path
+    let url: URL
+}
+
 /// Loads a small thumbnail on demand; never keeps full images in memory.
 struct AsyncThumbnail: View {
     let url: URL
@@ -118,23 +124,37 @@ struct SimilarImagesView: View {
             case .results:
                 List {
                     ForEach(model.groups) { group in
+                        let members = group.urls.map { ImageMember(id: $0.path, url: $0) }
+                        let best = group.bestResolutionURL
                         Section("\(group.urls.count) similar — \(mcFormatBytes(group.totalBytes))") {
-                            ScrollView(.horizontal) {
-                                HStack(spacing: 8) {
-                                    ForEach(group.urls, id: \.path) { url in
-                                        VStack(spacing: 4) {
-                                            AsyncThumbnail(url: url)
-                                            Text(url.lastPathComponent)
-                                                .font(.caption2).lineLimit(1)
-                                                .frame(width: 76)
-                                        }
-                                        .onTapGesture {
-                                            NSWorkspace.shared.activateFileViewerSelecting([url])
-                                        }
-                                        .help("Click to reveal in Finder: \(url.path)")
+                            // Overlap motif: near-duplicates shown slightly
+                            // overlapping, separating on hover. Decorative —
+                            // the rows below carry the real accessible detail.
+                            MCOverlapStack(items: members, markedID: best?.path) { member in
+                                AsyncThumbnail(url: member.url)
+                                    .onTapGesture {
+                                        NSWorkspace.shared.activateFileViewerSelecting([member.url])
                                     }
+                            }
+                            .padding(.vertical, MCSpacing.xs)
+                            ForEach(group.urls, id: \.path) { url in
+                                HStack {
+                                    Text(url.lastPathComponent).lineLimit(1)
+                                    if url == best {
+                                        Text("Best resolution")
+                                            .font(.caption2.weight(.semibold))
+                                            .padding(.horizontal, MCSpacing.xxs).padding(.vertical, 1)
+                                            .background(MCColor.coreMint.opacity(0.18), in: Capsule())
+                                            .foregroundStyle(MCColor.coreMint)
+                                    }
+                                    Spacer()
+                                    Button {
+                                        NSWorkspace.shared.activateFileViewerSelecting([url])
+                                    } label: { Image(systemName: "magnifyingglass") }
+                                    .buttonStyle(.borderless)
+                                    .accessibilityLabel("Reveal \(url.lastPathComponent) in Finder\(url == best ? ", best resolution" : "")")
                                 }
-                                .padding(.vertical, 4)
+                                .font(.caption)
                             }
                         }
                     }
