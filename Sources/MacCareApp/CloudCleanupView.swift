@@ -153,8 +153,8 @@ struct CloudCleanupView: View {
                 VStack(spacing: 12) {
                     Image(systemName: "icloud.slash")
                         .font(.system(size: 48)).foregroundStyle(.secondary)
-                    Text("No cloud folders found").font(.title3.weight(.semibold))
-                    Text("iCloud Drive, Dropbox, Google Drive and OneDrive local folders are detected automatically when present.")
+                    Text(L("cloud.empty.title")).font(.title3.weight(.semibold))
+                    Text(L("cloud.empty.subtitle"))
                         .foregroundStyle(.secondary).multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -163,22 +163,22 @@ struct CloudCleanupView: View {
             case .scanning:
                 VStack(spacing: 12) {
                     ProgressView()
-                    Text("Measuring local footprint…")
+                    Text(L("cloud.measuring"))
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .results:
                 resultsView
             }
         }
-        .navigationTitle("Cloud Cleanup")
+        .navigationTitle(L("cloud.nav_title"))
         .onAppear { if model.phase == .detecting { model.detect() } }
     }
 
     private var providerPicker: some View {
         VStack(spacing: 16) {
             Image(systemName: "icloud").font(.system(size: 56)).foregroundStyle(MCTheme.accent)
-            Text("Analyze cloud storage footprint").font(.title2.weight(.semibold))
-            Text("Shows which synced files actually occupy disk space on this Mac.\nAnalysis only — deleting synced files would remove them on every device.")
+            Text(L("cloud.picker.title")).font(.title2.weight(.semibold))
+            Text(L("cloud.picker.subtitle"))
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
             ForEach(model.providers) { provider in
                 Button {
@@ -198,11 +198,11 @@ struct CloudCleanupView: View {
             HStack {
                 VStack(alignment: .leading) {
                     Text(model.selectedProvider?.name ?? "").font(.headline)
-                    Text("\(mcFormatBytes(model.recoverableLocalBytes)) on this Mac of \(mcFormatBytes(model.totalLogical)) total — analysis only, nothing downloaded or deleted")
+                    Text(L("cloud.results.summary", mcFormatBytes(model.recoverableLocalBytes), mcFormatBytes(model.totalLogical)))
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
-                Button("Back") { model.phase = .ready }
+                Button(L("cloud.back")) { model.phase = .ready }
             }
             .padding()
             List(model.entries) { entry in
@@ -216,18 +216,18 @@ struct CloudCleanupView: View {
                     stateBadge(for: entry.syncState)
                     Spacer()
                     VStack(alignment: .trailing) {
-                        Text("\(mcFormatBytes(entry.localBytes)) local").monospacedDigit()
-                        Text("\(mcFormatBytes(entry.logicalBytes)) total")
+                        Text(L("cloud.local_bytes", mcFormatBytes(entry.localBytes))).monospacedDigit()
+                        Text(L("cloud.total_bytes", mcFormatBytes(entry.logicalBytes)))
                             .font(.caption).foregroundStyle(.secondary).monospacedDigit()
                     }
                     Button {
                         NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: entry.id)])
                     } label: { Image(systemName: "magnifyingglass") }
                     .buttonStyle(.borderless)
-                    .accessibilityLabel("Reveal \(entry.name) in Finder")
+                    .accessibilityLabel(L("cloud.reveal_a11y", entry.name))
                 }
                 .accessibilityElement(children: .combine)
-                .accessibilityLabel("\(entry.name), \(accessibilityStateText(entry.syncState)), \(mcFormatBytes(entry.localBytes)) local of \(mcFormatBytes(entry.logicalBytes)) total")
+                .accessibilityLabel(L("cloud.entry_a11y", entry.name, accessibilityStateText(entry.syncState), mcFormatBytes(entry.localBytes), mcFormatBytes(entry.logicalBytes)))
             }
             .listStyle(.inset)
         }
@@ -243,9 +243,9 @@ struct CloudCleanupView: View {
             switch state {
             case .local: EmptyView()
             case .partial:
-                badge("partially local", color: MCTheme.warning)
+                badge(L("cloud.state.partial"), color: MCTheme.warning)
             case .placeholder:
-                badge("online only", color: .secondary)
+                badge(L("cloud.state.placeholder"), color: .secondary)
             }
         }
     }
@@ -260,9 +260,9 @@ struct CloudCleanupView: View {
 
     private func accessibilityStateText(_ state: CloudCleanupViewModel.SyncState) -> String {
         switch state {
-        case .local: return "fully local"
-        case .partial: return "partially local"
-        case .placeholder: return "online only, not downloaded"
+        case .local: return L("cloud.state.local_a11y")
+        case .partial: return L("cloud.state.partial_a11y")
+        case .placeholder: return L("cloud.state.placeholder_a11y")
         }
     }
 }
