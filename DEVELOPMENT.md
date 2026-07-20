@@ -68,5 +68,13 @@ for a narrative walkthrough of one end-to-end flow.
 
 ```sh
 Scripts/clean.sh             # build artifacts
-Scripts/uninstall-local.sh   # this app's local data (see Documentation/UNINSTALL.md)
+Scripts/uninstall-local.sh   # this app's local data, original two-path version (see Documentation/UNINSTALL.md)
+Scripts/uninstall.sh         # public-facing uninstaller: --dry-run (default) / --keep-quarantine / --remove-all
+Scripts/test-uninstall.sh    # shell tests for uninstall.sh (dry-run no-ops, allowlist, symlink refusal)
 ```
+
+`Scripts/uninstall.sh` supersedes `uninstall-local.sh` for anyone following
+the public docs: same two owned paths (Application Support dir + prefs
+plist) plus the app bundle, but with explicit modes, a strict allowlist of
+canonicalized paths, and refusal to follow symlinks. `uninstall-local.sh` is
+kept working as-is rather than deleted.
