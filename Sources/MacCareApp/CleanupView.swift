@@ -52,6 +52,14 @@ final class CleanupViewModel {
         return byRule.values.sorted { $0.bytes > $1.bytes }
     }
 
+    /// Each group's share of found bytes, largest first — feeds MCFragmentView's cluster sizes.
+    var normalizedGroupWeights: [Double] {
+        let all = groups
+        let total = all.reduce(0) { $0 + $1.bytes }
+        guard total > 0 else { return [] }
+        return all.map { max(0.1, Double($0.bytes) / Double(total)) }
+    }
+
     func selectionState(for group: RuleGroup) -> Bool {
         group.findings.allSatisfy { selectedIDs.contains($0.id) }
     }
@@ -160,9 +168,9 @@ struct CleanupView: View {
 
     private var idleView: some View {
         VStack(spacing: 16) {
-            Image(systemName: "sparkles")
-                .font(.system(size: 56))
-                .foregroundStyle(MCTheme.accent)
+            MCFragmentView(groupWeights: [], phase: .rest)
+                .frame(width: 120, height: 120)
+                .accessibilityLabel(MCFragmentView(groupWeights: [], phase: .rest).accessibilityDescription)
             Text("Scan for safe-to-remove files").font(.title2.weight(.semibold))
             Text("Scans user caches, logs, crash reports and Xcode build data.\nNothing is deleted during a scan.")
                 .multilineTextAlignment(.center)
@@ -176,7 +184,9 @@ struct CleanupView: View {
 
     private var scanningView: some View {
         VStack(spacing: 16) {
-            ProgressView()
+            MCFragmentView(groupWeights: model.normalizedGroupWeights, phase: .scanning)
+                .frame(width: 120, height: 120)
+                .accessibilityLabel(MCFragmentView(groupWeights: [], phase: .scanning).accessibilityDescription)
             Text("Scanned \(model.scannedCount) items — \(mcFormatBytes(model.totalBytes)) found")
                 .monospacedDigit()
             Button("Cancel") { model.cancelScan() }
@@ -187,6 +197,10 @@ struct CleanupView: View {
     private var reviewView: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
+                MCFragmentView(groupWeights: model.normalizedGroupWeights,
+                               phase: model.phase == .running ? .executing : .review)
+                    .frame(width: 48, height: 48)
+                    .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(model.findings.count) items — \(mcFormatBytes(model.selectedBytes)) selected")
                         .font(.headline)
@@ -266,9 +280,9 @@ struct CleanupView: View {
 
     private func doneView(freed: Int64, dryRun: Bool) -> some View {
         VStack(spacing: 16) {
-            Image(systemName: "checkmark.circle")
-                .font(.system(size: 56))
-                .foregroundStyle(MCTheme.success)
+            MCFragmentView(groupWeights: model.normalizedGroupWeights, phase: .success)
+                .frame(width: 120, height: 120)
+                .accessibilityLabel(MCFragmentView(groupWeights: [], phase: .success).accessibilityDescription)
             Text(dryRun
                  ? "Dry run: \(mcFormatBytes(freed)) would be moved to Trash"
                  : "\(mcFormatBytes(freed)) moved to Trash")
