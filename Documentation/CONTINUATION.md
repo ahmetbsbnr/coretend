@@ -240,50 +240,75 @@ Release app packaged. See PROJECT_STATE.json + FEATURE_MATRIX.md.
   with a display is available). Do not bump the version past 0.4.1 until
   B/C/D are done.
 
-## Menu bar extra harmonization (v0.4.1 code, 2026-07-20, new session)
-- Found existing `MenuBarExtra`/`MenuBarView` in `Sources/MacCareApp/MacCareApp.swift`
-  already fairly close to spec: monochrome template icon, adaptive sampling
-  only while the popover is open (`.task` cancelled by SwiftUI on close),
-  Open/Quit actions. Extended rather than rebuilt.
-- `Sources/SystemMetrics/SystemMetrics.swift`: added `networkBytesPerSecond`
-  to `MetricsSnapshot` and a `networkThroughput()` sampler to the *existing*
-  `MetricsCollector` (delta of cumulative `getifaddrs` counters over wall
-  time, same pattern as the existing CPU-tick delta) — deliberately not a
-  second metrics pipeline, per the task constraint.
-- New `Sources/MacCareApp/MenuBarStatus.swift`: pure, testable derivation of
-  (a) protection status from `ClamAVScanner().isAvailable` +
-  the `ActivityRecord` log (never claims "Protected" when ClamAV is
-  missing, even if a clean scan is on record from before it was removed;
-  surfaces the most recent malware-scan finding as a warning otherwise),
-  and (b) the last Smart Care run summary from the same log. No new
-  persistence, no shared cross-window "is running" state — that would have
-  required touching `SmartCareViewModel`/`ProtectionViewModel`, which are
-  the orchestrators explicitly off-limits this session; "active state" is
-  therefore the last *completed* run's honest outcome, not a live flag.
-  `ponytail:` if a live "Smart Care is running right now" indicator is
-  wanted later, add a small `NotificationCenter` broadcast from those view
-  models (same mechanism already used for `.mcNavigate`) rather than a new
-  state bus.
-- `MacCareApp.swift`: `MenuBarView` popover now shows CPU/Memory/Free
-  space/Network/Thermal (all from the one `MetricsCollector`), a
-  Protection row and a Smart Care row from `MenuBarStatus`, plus a new
-  "Settings…" quick-launch button (reuses the `.mcNavigate` notification
-  `MainWindow` already observes). No color-only signaling — warning state
-  is carried in the row text, not just tint.
-- Added `Tests/MacCareAppTests/MenuBarStatusTests.swift` (6 tests) covering
-  the ClamAV-missing-overrides-clean-scan case, clean/threat states, no-scan
-  state, last-run summary selection, and relative-time bucketing. 81 tests
-  green (was 75).
-- Verification: `Scripts/test.sh` 81/81 green, `swift build -c release` 0
-  warnings, `Scripts/package-local.sh` succeeded, bundle launched via
-  `open`, confirmed alive via `ps` (0.0% CPU idle after settle, no crash
-  log), menu bar item clicked via `osascript`, dark capture taken
-  (`Documentation/VisualAudit/After/2026-07-20-menubar-dark.png`) showing
-  real CPU/Memory/Free space/Network/Thermal numbers and the honest
-  "ClamAV not installed" protection row. Light-mode capture skipped for
-  session time budget, not a technical block — noted honestly in
-  `VISUAL_QA.md` rather than faked.
-- **Reprise**: Settings & permission states not started this session
-  (would be the next Step B item per plan: Full Disk Access/ClamAV/
-  privileged helper/notifications/menu bar agent/folder access states,
-  native controls only, never simulate a granted permission).
+## Step B — Performance + menu bar + Settings done, STEP B FULLY COMPLETE
+## (v0.4.1 code, 2026-07-20, isolated worktree session)
+- Confirmed again no attached display (`Scripts/capture.sh` fails the same
+  way: `System Events` process index -1719) — every touched screen stays
+  "code done, capture pending" in `VISUAL_QA.md`, honestly.
+- **Performance** (`Sources/MacCareApp/PerformanceView.swift`): this was a
+  harmonization/audit pass, not a rebuild. Confirmed already correct: tokens
+  consistent with Cleanup/Protection, CPU/memory/disk data 100% real
+  (`SystemMetrics.MetricsCollector`, no decorative curves), 2s refresh
+  cadence reasonable, units correctly labeled, VoiceOver already present
+  on `MCMetricCard` (value+detail as text) and the CPU chart
+  (`accessibilityLabel`), Reduce Motion trivially satisfied (no explicit
+  animation on redraw). One real gap found and fixed: nothing paused
+  sampling when the window was hidden/backgrounded — added
+  `@Environment(\.scenePhase)` gating `PerformanceViewModel.start()`/
+  `.stop()` alongside the existing `onAppear`/`onDisappear`.
+- **Menu bar** (`Sources/MacCareApp/MacCareApp.swift`): kept the existing
+  monochrome template icon (`MenuBarTemplate.png`, `isTemplate=true`,
+  18px) and the panel's "sample only while open" behavior (already
+  correct — a `.task` scoped to the popover view's lifecycle). Added
+  `MenuBarIconModel` — a slow (30s), independent-of-panel background poll
+  whose only job is a shape-based "attention" badge (small triangle
+  overlay at a fixed offset, not a color change) driven by real
+  thermal/memory-pressure/disk-free thresholds via the same
+  `MetricsCollector` pipeline (no duplicate collection). The pure
+  threshold function `MenuBarIconModel.needsAttention` is unit tested.
+  Panel gained: last Smart Care result read from `Store.activity` (first
+  record whose summary starts with "Smart Care" — reuses existing
+  `ActivityRecord` schema, no new persistence), an honest Protection line
+  (`ClamAVScanner().isAvailable`), and a "Settings…" quick action
+  alongside the existing Open/Quit (reuses the `.mcNavigate`
+  `NotificationCenter` mechanism `MainWindow` already observes).
+- **Settings** (`Sources/MacCareApp/SettingsView.swift`): reorganized into
+  General / Appearance / Scans & Cleanup / Protection / Monitoring &
+  Permissions / Exclusions / Data / About, all native `Form`/`Section`/
+  `Toggle`/`LabeledContent` — no custom-drawn controls. Every permission
+  state shown now comes from a real system query, never simulated: Full
+  Disk Access reuses the existing `PermissionProbe.hasFullDiskAccess()`
+  (with Open System Settings + Re-check), ClamAV reuses
+  `ClamAVScanner().isAvailable`, notifications query
+  `UNUserNotificationCenter.current().notificationSettings()` (the app
+  doesn't request notifications today, so this is honestly usually
+  "Not requested" — never fabricated as granted), and the privileged
+  helper is shown as genuinely unavailable (no signing identity, per
+  `FEATURE_MATRIX.md` — not a bug, not a fake progress bar). Fixed the
+  About section's hardcoded "0.1.0" to read the real
+  `CFBundleShortVersionString` from the bundle (was stale since v0.1; app
+  is actually v0.4.1). Added a Data section wiring the previously-unused
+  `Store.clearActivity()` behind a confirmation dialog — the only new
+  persistence-adjacent UI, no new persistence logic. Extracted
+  `PermissionFormatting.notificationLabel/Icon` as pure functions so
+  permission-state text formatting is directly testable.
+- Added `Tests/MacCareAppTests/PerformanceAndSettingsTests.swift` (7
+  tests: 4 attention-threshold cases, 3 notification-label formatting
+  cases). 82 tests green (was 75).
+- Verification loop run in full: `swift build` clean incremental,
+  `swift build -c release` from a clean `.build` — 0 warnings,
+  `Scripts/test.sh` 82/82 green, `Scripts/package-local.sh` succeeded,
+  bundle launched (`ps` confirmed process up, `log show` checked — no
+  error/fault entries), quit cleanly via `osascript`.
+- **Step B is now FULLY COMPLETE** — all 10 modules (Cleanup, Protection,
+  Space Lens, Applications, My Clutter, My Activity, Cloud Cleanup,
+  Performance, menu bar, Settings) have their visual/harmonization work
+  done in code.
+- **Reprise**: Step C (French localization) and Step D (final 0.5.0
+  audit — real screen captures for all 10 modules once a machine with a
+  display is available, plus bumping to 0.5.0 only once C and D's exit
+  criteria are genuinely met) are next. Do not bump the version past
+  0.4.1 until then. This session ran in an isolated worktree per
+  instructions — the orchestrating session should reconcile/merge these
+  three commits (`fix(performance)`, `feat(menubar)`, `feat(settings)`)
+  against any concurrent work on the same files.
