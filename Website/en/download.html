@@ -32,6 +32,52 @@
   not link to any local build or ad-hoc artifact.</p>
 </div>
 
+<div id="release-status" class="status-box" aria-live="polite"></div>
+<script>
+// Renders release state from a latest.json-shaped object. Today this is a
+// local stub (no public manifest exists yet); once a real release ships,
+// point MANIFEST_URL at the published Release/latest.json and this same
+// renderer handles every state below without further changes.
+const MANIFEST_URL = null; // e.g. "https://github.com/<org>/<repo>/releases/latest/download/latest.json"
+const STUB_MANIFEST = null; // in-preparation: no manifest at all yet
+
+function renderReleaseStatus(manifest) {
+  const el = document.getElementById("release-status");
+  if (!el) return;
+  if (!manifest) {
+    el.innerHTML = "<p><strong>No release manifest published yet.</strong> Nothing to download or verify until one exists.</p>";
+    return;
+  }
+  const rows = [];
+  rows.push(["Version", manifest.version || "unknown"]);
+  rows.push(["Channel", manifest.prerelease ? "prerelease" : (manifest.channel || "unknown")]);
+  rows.push(["Architecture", manifest.architecture || "unknown"]);
+  rows.push(["Minimum macOS", manifest.minimumMacOS || "unknown"]);
+  rows.push(["Code signing", manifest.signed ? "signed" : "unsigned"]);
+  rows.push(["Notarization", manifest.notarized ? "notarized" : "not notarized"]);
+  rows.push(["Checksum (SHA-256)", manifest.zipSHA256 || "unavailable"]);
+  const fileAvailable = !!manifest.zipName;
+  let html = "<table>" + rows.map(r => `<tr><th>${r[0]}</th><td>${r[1]}</td></tr>`).join("") + "</table>";
+  html += fileAvailable
+    ? "<p>Download link will appear here once a public release exists.</p>"
+    : "<p><strong>File unavailable.</strong> The manifest exists but no downloadable artifact is attached yet.</p>";
+  el.innerHTML = html;
+}
+
+if (MANIFEST_URL) {
+  fetch(MANIFEST_URL).then(r => r.ok ? r.json() : null).then(renderReleaseStatus).catch(() => renderReleaseStatus(null));
+} else {
+  renderReleaseStatus(STUB_MANIFEST);
+}
+</script>
+
+<h2>Source code</h2>
+<p>MacCare Local's source will be published on GitHub once the public
+repository is created (see the project's
+<a href="open-source.html">Open Source</a> page). There is no live
+source-code link yet — the repository is not public. This page will link
+directly to it as soon as that happens.</p>
+
 <h2>What the release will look like</h2>
 <p>The first public artifact will be named exactly:</p>
 <pre>MacCare-Local-&lt;version&gt;-arm64-unsigned.zip</pre>
