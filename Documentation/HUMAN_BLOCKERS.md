@@ -4,16 +4,34 @@ Things that cannot be automated and require a real decision by the
 project owner before public release. Nothing below should block the
 automatable work in this phase — it's tracked here so it isn't lost.
 
+## RESOLVED / KNOWN
+
+These are no longer open — the values are known and centralized in
+`Configuration/PublicIdentity.example.json`, even though the actions
+that use them (creating the repo, pushing, deploying) are still open
+below.
+
+| Item | Known value |
+|---|---|
+| GitHub maintainer handle | `ahmetbsbnr` |
+| Planned public repository | `ahmetbsbnr/mac-care-local` (`https://github.com/ahmetbsbnr/mac-care-local`) |
+| Planned production domain / subdomain | `ahmetbsbnr.com` / `maccare.ahmetbsbnr.com` |
+
+## OPEN
+
 | Blocker | Why it needs a human | Tracked placeholder |
 |---|---|---|
-| Exact GitHub maintainer handle for CODEOWNERS | Requires a real GitHub account decision | see `.github/CODEOWNERS` |
-| Final public repository URL | Not yet decided/created | referenced as `[REPO_URL_TO_DEFINE]` in docs |
 | Security contact address/channel | Needs a real, monitored inbox or private reporting tool | `[SECURITY_CONTACT_TO_DEFINE]` (SECURITY.md, CODE_OF_CONDUCT.md) |
 | Legal identity (publisher name/address) for legal notice pages | Real personal/legal info must not be invented | Website legal pages, `[LEGAL_NAME_TO_DEFINE]`, `[LEGAL_ADDRESS_TO_DEFINE]` |
-| Final production domain | Not registered/decided | Website config, `[DOMAIN_TO_DEFINE]` |
-| Decision to actually make the repo public | Irreversible, deliberate act | N/A — explicitly not done this phase |
+| Legal address | Real personal/legal info must not be invented | `[LEGAL_ADDRESS_TO_DEFINE]` |
+| Publisher of record | Real legal/business info must not be invented | `[PUBLISHER_OF_RECORD_TO_DEFINE]` (`Configuration/PublicIdentity.example.json`) |
+| Approval to actually create the public GitHub repository | Irreversible, deliberate act | N/A — explicitly not done this phase |
+| Approval to push to the public repository | Irreversible, deliberate act | N/A — explicitly not done this phase |
+| Approval to deploy the website | Irreversible, deliberate act | N/A — explicitly not done this phase |
+| Final screenshots for the website/App listing | Requires a real display/session, not available in this sandbox | `Website/README.md` dev placeholder box |
+| Multi-Mac / multi-macOS-version testing | Only one physical Mac (macOS 26.5.1, arm64) is available in this environment | `Documentation/API_AVAILABILITY_AUDIT.md` |
 | First public GitHub Release (signing/notarization) | Requires Apple Developer ID (out of scope this phase) | Documentation/PUBLIC_RELEASE_READINESS.md |
-| Production deploy of the website | Deliberate act, out of scope this phase | Documentation/WEBSITE_DEPLOYMENT.md |
+| Publication of the first public release | Deliberate act, requires the repo to exist first | `Release/latest.json` (no downloadURL yet) |
 
 All placeholders above are also tracked centrally in
 Documentation/PUBLICATION_PLACEHOLDERS.md so a pre-publication check can
@@ -40,6 +58,15 @@ pre-release). The homepage screenshot uses a clearly labeled dev
 placeholder box instead of a real screenshot — tracked in
 `Website/README.md`, not a bracket token so `check-placeholders.sh` won't
 catch it; must be manually replaced before any production deploy.
+
+## This session: distribution-gate progress (compat audit, ZIP, DMG, checksums, manifest, release notes, CI draft workflow, install guide)
+
+No new placeholder tokens were invented. Maintainer handle, planned repo,
+and planned domain — already known values from
+`Configuration/PublicIdentity.example.json` — are now marked RESOLVED
+above since they're facts, not blockers; the *actions* that use them
+(create repo, push, deploy) remain OPEN and unperformed this session, per
+the safety rules for this work.
 
 ## Open item: Dependabot Swift Package Manager ecosystem support
 
