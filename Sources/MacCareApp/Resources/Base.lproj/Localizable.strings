@@ -334,3 +334,22 @@
 "settings.clear_activity_message" = "This removes the local record of past scans and cleanups. It does not restore or delete any files.";
 "settings.about" = "About";
 "settings.version" = "Version";
+
+/* Onboarding */
+"onboarding.step0.subtitle" = "Storage, protection and performance care for this Mac — nothing more, nothing hidden.";
+"onboarding.step1.title" = "Everything stays here";
+"onboarding.step1.bullet1" = "All analysis runs on this Mac. No accounts, no telemetry, no network calls.";
+"onboarding.step1.bullet2" = "Your history lives in a local database you can clear at any time.";
+"onboarding.step1.bullet3" = "MacCare is not an antivirus replacement and never claims otherwise.";
+"onboarding.step2.title" = "Full Disk Access — optional";
+"onboarding.step2.subtitle" = "Without it, some folders (Mail, Safari data…) can't be scanned. The app works either way. You can grant or revoke it any time in System Settings.";
+"onboarding.step3.title" = "Reversible by design";
+"onboarding.step3.bullet1" = "Scans never delete anything. Cleaning is a separate, reviewed step.";
+"onboarding.step3.bullet2" = "Removal uses the system Trash — you can always restore.";
+"onboarding.step3.bullet3" = "Dry-run is on by default: actions are simulated until you turn it off.";
+"onboarding.skip" = "Skip";
+"onboarding.step_of" = "%d of %d";
+"onboarding.step_a11y" = "Step %d of %d";
+"onboarding.back" = "Back";
+"onboarding.get_started" = "Get Started";
+"onboarding.continue" = "Continue";

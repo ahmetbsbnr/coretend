@@ -55,7 +55,7 @@ struct OnboardingView: View {
                     .frame(width: 96, height: 96)
                     .padding(.bottom, MCSpacing.sm)
                 Text("MacCare Local").font(MCFont.heroTitle)
-                Text("Storage, protection and performance care for this Mac — nothing more, nothing hidden.")
+                Text(L("onboarding.step0.subtitle"))
                     .font(MCFont.body).foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 400)
@@ -65,11 +65,11 @@ struct OnboardingView: View {
                 Image(systemName: "lock.laptopcomputer")
                     .font(.system(size: 56, weight: .light))
                     .foregroundStyle(MCColor.protection)
-                Text("Everything stays here").font(MCFont.heroTitle)
+                Text(L("onboarding.step1.title")).font(MCFont.heroTitle)
                 VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                    bullet("internaldrive", "All analysis runs on this Mac. No accounts, no telemetry, no network calls.")
-                    bullet("clock.arrow.circlepath", "Your history lives in a local database you can clear at any time.")
-                    bullet("xmark.shield", "MacCare is not an antivirus replacement and never claims otherwise.")
+                    bullet("internaldrive", L("onboarding.step1.bullet1"))
+                    bullet("clock.arrow.circlepath", L("onboarding.step1.bullet2"))
+                    bullet("xmark.shield", L("onboarding.step1.bullet3"))
                 }
                 .frame(maxWidth: 420)
             }
@@ -78,17 +78,17 @@ struct OnboardingView: View {
                 Image(systemName: "folder.badge.questionmark")
                     .font(.system(size: 56, weight: .light))
                     .foregroundStyle(MCColor.storage)
-                Text("Full Disk Access — optional").font(MCFont.heroTitle)
-                Text("Without it, some folders (Mail, Safari data…) can't be scanned. The app works either way. You can grant or revoke it any time in System Settings.")
+                Text(L("onboarding.step2.title")).font(MCFont.heroTitle)
+                Text(L("onboarding.step2.subtitle"))
                     .font(MCFont.body).foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 420)
                 HStack(spacing: MCSpacing.sm) {
-                    MCStatusBadge(fdaGranted ? "Granted" : "Not granted",
+                    MCStatusBadge(fdaGranted ? L("settings.granted") : L("settings.not_granted"),
                                   status: fdaGranted ? .success : .neutral)
                     if !fdaGranted {
-                        Button("Open System Settings") { PermissionProbe.openFullDiskAccessSettings() }
-                        Button("Re-check") { fdaGranted = PermissionProbe.hasFullDiskAccess() }
+                        Button(L("settings.open_system_settings")) { PermissionProbe.openFullDiskAccessSettings() }
+                        Button(L("settings.recheck")) { fdaGranted = PermissionProbe.hasFullDiskAccess() }
                     }
                 }
             }
@@ -97,11 +97,11 @@ struct OnboardingView: View {
                 Image(systemName: "arrow.uturn.backward.circle")
                     .font(.system(size: 56, weight: .light))
                     .foregroundStyle(MCColor.success)
-                Text("Reversible by design").font(MCFont.heroTitle)
+                Text(L("onboarding.step3.title")).font(MCFont.heroTitle)
                 VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                    bullet("magnifyingglass", "Scans never delete anything. Cleaning is a separate, reviewed step.")
-                    bullet("trash", "Removal uses the system Trash — you can always restore.")
-                    bullet("hand.raised", "Dry-run is on by default: actions are simulated until you turn it off.")
+                    bullet("magnifyingglass", L("onboarding.step3.bullet1"))
+                    bullet("trash", L("onboarding.step3.bullet2"))
+                    bullet("hand.raised", L("onboarding.step3.bullet3"))
                 }
                 .frame(maxWidth: 420)
             }
@@ -110,19 +110,19 @@ struct OnboardingView: View {
 
     private var footer: some View {
         HStack {
-            Button("Skip") { finish() }
+            Button(L("onboarding.skip")) { finish() }
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)
             Spacer()
             // Step indicator: position + text, not color alone.
-            Text("\(step + 1) of \(stepCount)")
+            Text(L("onboarding.step_of", step + 1, stepCount))
                 .font(MCFont.caption).foregroundStyle(.secondary)
-                .accessibilityLabel("Step \(step + 1) of \(stepCount)")
+                .accessibilityLabel(L("onboarding.step_a11y", step + 1, stepCount))
             Spacer()
             if step > 0 {
-                Button("Back") { step -= 1 }
+                Button(L("onboarding.back")) { step -= 1 }
             }
-            Button(step == stepCount - 1 ? "Get Started" : "Continue") {
+            Button(step == stepCount - 1 ? L("onboarding.get_started") : L("onboarding.continue")) {
                 if step == stepCount - 1 { finish() } else { step += 1 }
             }
             .buttonStyle(.borderedProminent)

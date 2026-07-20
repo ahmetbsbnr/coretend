@@ -334,3 +334,22 @@
 "settings.clear_activity_message" = "Ceci supprime l'enregistrement local des analyses et nettoyages passés. Cela ne restaure ni ne supprime aucun fichier.";
 "settings.about" = "À propos";
 "settings.version" = "Version";
+
+/* Onboarding */
+"onboarding.step0.subtitle" = "Prendre soin du stockage, de la protection et des performances de ce Mac — rien de plus, rien de caché.";
+"onboarding.step1.title" = "Tout reste ici";
+"onboarding.step1.bullet1" = "Toute l'analyse s'exécute sur ce Mac. Aucun compte, aucune télémétrie, aucun appel réseau.";
+"onboarding.step1.bullet2" = "Votre historique vit dans une base de données locale que vous pouvez effacer à tout moment.";
+"onboarding.step1.bullet3" = "MacCare ne remplace pas un antivirus et ne prétend jamais l'être.";
+"onboarding.step2.title" = "Accès complet au disque — facultatif";
+"onboarding.step2.subtitle" = "Sans lui, certains dossiers (Mail, données Safari…) ne peuvent pas être analysés. L'application fonctionne dans les deux cas. Vous pouvez l'accorder ou le révoquer à tout moment dans les Réglages Système.";
+"onboarding.step3.title" = "Réversible par conception";
+"onboarding.step3.bullet1" = "Les analyses ne suppriment jamais rien. Le nettoyage est une étape séparée et vérifiée.";
+"onboarding.step3.bullet2" = "La suppression utilise la Corbeille système — vous pouvez toujours restaurer.";
+"onboarding.step3.bullet3" = "La simulation est activée par défaut : les actions sont simulées tant que vous ne la désactivez pas.";
+"onboarding.skip" = "Passer";
+"onboarding.step_of" = "%d sur %d";
+"onboarding.step_a11y" = "Étape %d sur %d";
+"onboarding.back" = "Retour";
+"onboarding.get_started" = "Commencer";
+"onboarding.continue" = "Continuer";
