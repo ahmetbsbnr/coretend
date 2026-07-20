@@ -36,6 +36,19 @@ enum AppGrouping: String, CaseIterable, Identifiable {
     case updateState = "Update State"
     case lastUsed = "Last Used"
     var id: String { rawValue }
+
+    /// Localized label for display. `rawValue` stays the internal grouping/sort
+    /// key (used by `AppGroupingLogic`'s dictionary keys and `order` arrays) —
+    /// only the picker text is translated.
+    var displayName: String {
+        switch self {
+        case .none: L("apps.grouping.none")
+        case .publisher: L("apps.grouping.publisher")
+        case .size: L("apps.grouping.size")
+        case .updateState: L("apps.grouping.update_state")
+        case .lastUsed: L("apps.grouping.last_used")
+        }
+    }
 }
 
 struct AppGroup: Identifiable {
@@ -212,7 +225,7 @@ struct InstalledAppsView: View {
                 .textFieldStyle(.roundedBorder)
                 .padding(.horizontal, MCSpacing.sm).padding(.top, MCSpacing.sm)
             Picker(L("apps.group_by"), selection: $model.grouping) {
-                ForEach(AppGrouping.allCases) { Text($0.rawValue).tag($0) }
+                ForEach(AppGrouping.allCases) { Text($0.displayName).tag($0) }
             }
             .pickerStyle(.segmented)
             .labelsHidden()

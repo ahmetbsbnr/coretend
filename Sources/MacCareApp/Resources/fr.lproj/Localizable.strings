@@ -353,3 +353,11 @@
 "onboarding.back" = "Retour";
 "onboarding.get_started" = "Commencer";
 "onboarding.continue" = "Continuer";
+"smartcare.nav_title" = "Smart Care";
+
+/* Applications — grouping picker (display only; AppGroupingLogic bucket keys stay English internally) */
+"apps.grouping.none" = "Aucun";
+"apps.grouping.publisher" = "Éditeur";
+"apps.grouping.size" = "Taille";
+"apps.grouping.update_state" = "État des mises à jour";
+"apps.grouping.last_used" = "Dernière utilisation";
