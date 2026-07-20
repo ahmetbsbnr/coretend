@@ -24,7 +24,7 @@ Forcer clair: `defaults write local.maccare.app NSRequiresAquaSystemAppearance -
 | Smart Care | ✅ | ✅ | ✅ | ✅ code (RM via env) | hero validé idle/scanning/review dans le bundle |
 | Performance | ✅ | ✅ | ✅ | ✅ | anneaux OK, graphe grille+aire |
 | Onboarding ×4 | ✅ | — | fixe 560×460 | ✅ | étapes capturées |
-| Cleanup | ✅ | ✅ | — | — | à densifier (identité module) |
+| Cleanup | ✅ | ✅ | — | ✅ code (RM guarded) | MCFragmentView motif verified in Release bundle, rest state captured light+dark: cleanup-fragments-{dark,light}.png |
 | Protection | ✅ | — | — | — | état ClamAV honnête, refonte maille à venir |
 | Applications | ✅ | — | — | — | |
 | My Clutter | ✅ | — | — | — | |

@@ -87,3 +87,14 @@ Release app packaged. See PROJECT_STATE.json + FEATURE_MATRIX.md.
   and VISUAL_QA.md update NOT done this pass (time-boxed).
 - **Reprise**: Release build + package + capture(clair/sombre) for Cleanup,
   update VISUAL_QA.md row, then move to Space Lens identity next.
+
+## Step B — Cleanup fragment flow finishing pass (2026-07-20, continued)
+- Release build (60 tests green) + package + real bundle launch verified.
+- Captured rest-state Cleanup screen light+dark into
+  Documentation/VisualAudit/After/cleanup-fragments-{dark,light}.png —
+  MCFragmentView rest-state scattered dots visible and legible in both themes.
+  VISUAL_QA.md Cleanup row updated honestly (RM code-level only, not visually
+  re-verified against a live Reduce Motion toggle this pass).
+- **Reprise**: Space Lens continuous-zoom identity next, then Applications,
+  My Clutter, My Activity, Cloud Cleanup, Performance harmonization, menu
+  bar, Settings — in that order per the Step B plan already on file.
