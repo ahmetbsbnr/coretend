@@ -35,7 +35,7 @@
   "partial": [
     "Protection: engine unavailable on this machine (ClamAV not installed) — UI states it honestly",
     "Cleanup/Smart Care findings list still capped at 5000 rows for display (by design); totals are now computed from uncapped stream, truncation shown honestly in UI (v0.4.1)",
-    "Secondary module visual identities — Protection mesh motif implemented (MCMeshView: incomplete/ready/scanning/alert states, static Canvas, VoiceOver summary); Cleanup fragments (MCFragmentSpec/MCFragmentView) and Space Lens continuity (matchedGeometryEffect zoom, SpaceNodeCategory) implemented and wired in; Applications capsules (grouping by publisher/size/update-state/last-used over the native List, matchedGeometryEffect row transitions, real Spotlight/quarantine-derived data) and My Clutter overlap (MCOverlapStack shared motif across Duplicates/Similar Images, best-resolution marking via real ImageIO pixel dimensions, Large & Old sort/QuickLook) now implemented and wired in; screenshots not captured for any of these five modules this session (no display in this sandbox — see VISUAL_QA.md). My Activity, Cloud Cleanup, Performance, menu bar, Settings still NOT started (Step B continues)",
+    "Secondary module visual identities — Protection mesh motif implemented (MCMeshView: incomplete/ready/scanning/alert states, static Canvas, VoiceOver summary); Cleanup fragments (MCFragmentSpec/MCFragmentView) and Space Lens continuity (matchedGeometryEffect zoom, SpaceNodeCategory) implemented and wired in; Applications capsules (grouping by publisher/size/update-state/last-used over the native List, matchedGeometryEffect row transitions, real Spotlight/quarantine-derived data) and My Clutter overlap (MCOverlapStack shared motif across Duplicates/Similar Images, best-resolution marking via real ImageIO pixel dimensions, Large & Old sort/QuickLook) implemented and wired in; My Activity (day-grouped timeline via ActivityGrouping.byDay, date-range + kind filters, real-vs-simulated freed bytes summary via ActivityImpactSummary, CSV export, quarantine restore now logged as a .restore ActivityRecord and cross-linked to Protection via NotificationCenter) and Cloud Cleanup (SyncState local/partial/placeholder classification from the real ubiquitousItemDownloadingStatusKey signal, filled-vs-outline SF Symbol shape for local/remote, honest recoverableLocalBytes total, no pinned badge since no public API reports Finder's Keep-Downloaded pin state) now implemented and wired in; screenshots not captured for any of these seven modules this session (no display in this sandbox — see VISUAL_QA.md). Performance, menu bar, Settings still NOT started (Step B continues)",
     "French localization — NOT started this session (Step C)"
   ],
   "not_started": [
@@ -45,13 +45,13 @@
     "browser history/cookie removal (deliberately deferred: db corruption risk)"
   ],
   "tests": {
-    "passing": 70,
+    "passing": 75,
     "failing": 0
   },
-  "last_build": "Release green, 0 warnings; v0.4.1 packaged and launched successfully (non-destructive smoke test) after Applications + My Clutter Step B work. New MacCareAppTests target added (Package.swift) to cover pure grouping/ambiguity logic that lives in the MacCareApp executable target; SimilarImageGroup best-resolution tests added to ScanCoreTests.",
+  "last_build": "Release green, 0 warnings; v0.4.1 packaged and launched successfully (non-destructive smoke test) after My Activity + Cloud Cleanup Step B work. 5 new tests in Tests/MacCareAppTests/MyActivityGroupingTests.swift (day grouping, date-range filter, real/simulated byte separation, Cloud Cleanup SyncState classification).",
   "next_goals": [
-    "Cleanup + Space Lens + Applications + My Clutter visual identities done (code); re-capture Documentation/VisualAudit/After screenshots on a machine with a display/Accessibility permission, then finish VISUAL_QA.md checkboxes for those four rows",
-    "Remaining Step B modules: My Activity, Cloud Cleanup, Performance, menu bar, Settings — not started",
+    "Cleanup + Space Lens + Applications + My Clutter + My Activity + Cloud Cleanup visual identities done (code); re-capture Documentation/VisualAudit/After screenshots on a machine with a display/Accessibility permission, then finish VISUAL_QA.md checkboxes for those six rows",
+    "Remaining Step B modules: Performance, menu bar, Settings — not started",
     "fr localization — Step C, not started",
     "Migrer les vues restantes vers tokens MC*",
     "Final visual audit -> 0.5.0 — Step D, not started"

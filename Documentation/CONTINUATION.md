@@ -188,3 +188,54 @@ Release app packaged. See PROJECT_STATE.json + FEATURE_MATRIX.md.
   screen captures for every module done so far — Cleanup, Space Lens,
   Applications, My Clutter — once a machine with a display is
   available). Do not bump the version past 0.4.1 until B/C/D are done.
+
+## Step B — My Activity + Cloud Cleanup done (v0.4.1 code, 2026-07-20, resumed session)
+- Confirmed no attached display again (`Scripts/capture.sh` errors with
+  `System Events` process-index -1719, same as prior sessions) — captures
+  stay marked capture-pending in `VISUAL_QA.md`, honest per instructions.
+- **My Activity** (`Sources/MacCareApp/MyActivityView.swift`): backed by
+  real `ActivityRecord`s only (`Persistence.Store.activity`), no invented
+  event kinds — the `Kind` enum stays `scan/cleanup/restore/error` as it was.
+  Added pure/tested `ActivityGrouping.byDay` (calendar-day grouping),
+  `ActivityDateRange` (all/7d/30d filter), and `ActivityImpactSummary`
+  (real freed bytes vs simulated/dry-run bytes, kept strictly separate,
+  cleanup-kind only — scans never count as "freed"). Timeline uses `List`
+  `Section`s per day with a small connector dot (native, no new Canvas
+  view — this is a data table with light identity, per the module spec,
+  not a heavy visualization like Cleanup's fragments). Rows are
+  `DisclosureGroup`s showing real/simulated status in explicit text.
+  CSV export via `NSSavePanel`, no new persistence. Quarantine restore
+  previously wasn't logged at all despite `ActivityRecord.Kind.restore`
+  existing since v0.2 — `ProtectionViewModel.restore(_:)` now records one
+  on success, and `.restore` rows in My Activity link back to Protection
+  via a small `NotificationCenter` `.mcNavigate` post that `MainWindow`
+  observes to switch sidebar `selection` (reused mechanism, not a new
+  restore path).
+- **Cloud Cleanup** (`Sources/MacCareApp/CloudCleanupView.swift`): added
+  `SyncState` (local/partial/placeholder), classified primarily from the
+  real `URLResourceKey.ubiquitousItemDownloadingStatusKey` signal read in
+  `measure()` (byte-ratio is only a fallback when that signal is absent).
+  Local vs remote rendered as filled vs outline SF Symbols (`folder.fill`
+  vs `folder`) plus a text badge — shape carries the meaning, not color
+  alone. Deliberately **no pinned badge**: there is no public API to read
+  Finder's "Keep Downloaded" pin state for an arbitrary iCloud Drive item,
+  so the module doesn't fabricate one (documented in code and
+  VISUAL_QA.md). Renamed the local-bytes total to `recoverableLocalBytes`
+  with copy stating this is analysis-only; verified `measure()` only
+  calls `resourceValues`/`contentsOfDirectory` — never
+  `startDownloadingUbiquitousItem` — so it genuinely never triggers a
+  download, matching what the UI already claimed.
+- Added `Tests/MacCareAppTests/MyActivityGroupingTests.swift` (5 tests:
+  day grouping, date-range filter, real/simulated separation, 3 `SyncState`
+  classification cases). 75 tests green (was 70).
+- Verification loop run in full: `swift build -c release` 0 warnings,
+  `Scripts/test.sh` 75/75 green, `Scripts/package-local.sh` succeeded,
+  bundle launched (`ps` confirmed process up), quit cleanly via
+  `osascript`, no crash/error.
+- **Reprise**: remaining Step B modules are Performance (harmonisation),
+  menu bar, Settings (états permission) — none started. After Step B,
+  Step C (fr localization), then Step D (final 0.5.0 audit, needs real
+  screen captures for every module done so far — Cleanup, Space Lens,
+  Applications, My Clutter, My Activity, Cloud Cleanup — once a machine
+  with a display is available). Do not bump the version past 0.4.1 until
+  B/C/D are done.
