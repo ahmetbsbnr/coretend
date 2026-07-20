@@ -1,12 +1,25 @@
 import Foundation
 import Vision
 import UniformTypeIdentifiers
+import ImageIO
 
 /// A cluster of visually similar images.
 public struct SimilarImageGroup: Sendable, Identifiable {
     public let id: String
     public let urls: [URL]
     public let totalBytes: Int64
+    /// Pixel width×height per url (0 when unreadable), used only to mark the
+    /// suggested best-resolution copy — never to auto-select or delete.
+    public let pixelCounts: [URL: Int64]
+
+    /// Highest real pixel-count member; ties fall back to largest file.
+    public var bestResolutionURL: URL? {
+        urls.max { lhs, rhs in
+            let l = pixelCounts[lhs] ?? 0
+            let r = pixelCounts[rhs] ?? 0
+            return l == r ? false : l < r
+        }
+    }
 }
 
 public enum SimilarImagesEvent: Sendable {
@@ -84,11 +97,14 @@ public struct SimilarImagesEngine: Sendable {
                         representatives.append(observation)
                     }
                 }
-                let groups = clusters.filter { $0.count > 1 }.map { members in
-                    SimilarImageGroup(
+                let groups = clusters.filter { $0.count > 1 }.map { members -> SimilarImageGroup in
+                    var pixelCounts: [URL: Int64] = [:]
+                    for (url, _) in members { pixelCounts[url] = Self.pixelCount(of: url) }
+                    return SimilarImageGroup(
                         id: members.first!.0.path,
                         urls: members.map(\.0),
-                        totalBytes: members.reduce(0) { $0 + $1.1 })
+                        totalBytes: members.reduce(0) { $0 + $1.1 },
+                        pixelCounts: pixelCounts)
                 }
                 .sorted { $0.totalBytes > $1.totalBytes }
                 continuation.yield(.finished(groups: groups))
@@ -96,6 +112,16 @@ public struct SimilarImagesEngine: Sendable {
             }
             continuation.onTermination = { _ in task.cancel() }
         }
+    }
+
+    /// Cheap real pixel dimensions read from image metadata — no full decode.
+    static func pixelCount(of url: URL) -> Int64 {
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+              let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+              let width = props[kCGImagePropertyPixelWidth] as? Int,
+              let height = props[kCGImagePropertyPixelHeight] as? Int
+        else { return 0 }
+        return Int64(width) * Int64(height)
     }
 
     private static func collectImages(in root: URL, limit: Int, into images: inout [(URL, Int64)]) {

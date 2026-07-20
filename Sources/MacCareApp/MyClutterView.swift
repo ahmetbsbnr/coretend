@@ -4,6 +4,7 @@ import SafetyCore
 import DesignSystem
 import Persistence
 import QuickLookUI
+import QuickLook
 
 /// My Clutter — Large & Old Files. Read-only analysis: findings can be revealed
 /// in Finder, never auto-deleted (user-content locations are out of the deletion
@@ -13,15 +14,34 @@ import QuickLookUI
 final class MyClutterViewModel {
     enum Phase: Equatable { case idle, scanning, results, empty }
 
+    enum SortOption: String, CaseIterable, Identifiable {
+        case size = "Size", age = "Age"
+        var id: String { rawValue }
+    }
+
     var phase: Phase = .idle
     var findings: [ScanFinding] = []
     var scannedCount = 0
     var minSizeMB: Int = 100
     var minAgeDays: Int = 30
+    var sortOption: SortOption = .size
+    var previewURL: URL?
 
     private var scanTask: Task<Void, Never>?
 
     var totalBytes: Int64 { findings.reduce(0) { $0 + $1.logicalSize } }
+
+    /// Native sort over the same real findings — size (default, largest
+    /// first) or age (oldest modification date first).
+    var sortedFindings: [ScanFinding] {
+        switch sortOption {
+        case .size: return findings.sorted { $0.logicalSize > $1.logicalSize }
+        case .age:
+            return findings.sorted {
+                ($0.modificationDate ?? .distantFuture) < ($1.modificationDate ?? .distantFuture)
+            }
+        }
+    }
 
     func start() {
         guard phase != .scanning else { return }
@@ -153,10 +173,15 @@ struct LargeOldFilesView: View {
                 Text("\(model.findings.count) files — \(mcFormatBytes(model.totalBytes))")
                     .font(.headline)
                 Spacer()
+                Picker("Sort by", selection: $model.sortOption) {
+                    ForEach(MyClutterViewModel.SortOption.allCases) { Text($0.rawValue).tag($0) }
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 160)
                 Button("New Analysis") { model.phase = .idle }
             }
             .padding()
-            List(model.findings) { finding in
+            List(model.sortedFindings) { finding in
                 HStack {
                     Image(systemName: "doc")
                         .foregroundStyle(MCTheme.accentSecondary)
@@ -172,8 +197,17 @@ struct LargeOldFilesView: View {
                         .font(.caption).foregroundStyle(.secondary)
                     }
                     Spacer()
+                    // Large, legible metric number — this screen is
+                    // primarily a data table, size is the number that matters.
                     Text(mcFormatBytes(finding.logicalSize))
-                        .monospacedDigit().font(.callout.weight(.medium))
+                        .monospacedDigit().font(.title3.weight(.semibold))
+                    Button {
+                        model.previewURL = finding.url
+                    } label: {
+                        Image(systemName: "eye")
+                    }
+                    .buttonStyle(.borderless)
+                    .help("Quick Look")
                     Button {
                         NSWorkspace.shared.activateFileViewerSelecting([finding.url])
                     } label: {
@@ -184,6 +218,7 @@ struct LargeOldFilesView: View {
                 }
             }
             .listStyle(.inset)
+            .quickLookPreview($model.previewURL)
         }
     }
 }

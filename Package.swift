@@ -36,5 +36,6 @@ let package = Package(
         .testTarget(name: "ScanCoreTests", dependencies: ["ScanCore"]),
         .testTarget(name: "SafetyCoreTests", dependencies: ["SafetyCore"]),
         .testTarget(name: "FileRulesTests", dependencies: ["FileRules"]),
+        .testTarget(name: "MacCareAppTests", dependencies: ["MacCareApp"]),
     ]
 )
