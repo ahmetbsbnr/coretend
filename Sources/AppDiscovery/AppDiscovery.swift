@@ -9,9 +9,10 @@ public struct InstalledApp: Sendable, Identifiable {
     public let path: URL
     public let sizeBytes: Int64
     public let architectures: [String]
+    public let lastUsedDate: Date?
 
     public init(name: String, bundleIdentifier: String?, version: String?,
-                path: URL, sizeBytes: Int64, architectures: [String]) {
+                path: URL, sizeBytes: Int64, architectures: [String], lastUsedDate: Date? = nil) {
         self.id = path.path
         self.name = name
         self.bundleIdentifier = bundleIdentifier
@@ -19,7 +20,22 @@ public struct InstalledApp: Sendable, Identifiable {
         self.path = path
         self.sizeBytes = sizeBytes
         self.architectures = architectures
+        self.lastUsedDate = lastUsedDate
     }
+
+    /// Best-effort publisher label derived from the bundle identifier's second
+    /// component (e.g. "com.apple.Safari" → "Apple"). Real signal, not a guess
+    /// beyond what the identifier itself encodes.
+    public var publisher: String {
+        guard let bundleIdentifier, let part = bundleIdentifier.split(separator: ".").dropFirst().first,
+              !part.isEmpty else { return "Unknown" }
+        return part.prefix(1).uppercased() + part.dropFirst()
+    }
+
+    /// True when the app has no bundle identifier, meaning MacCare cannot do
+    /// exact-match lookup of its Application Support/Caches/Containers data —
+    /// its data location is genuinely ambiguous, not merely unlabeled.
+    public var isDataLocationAmbiguous: Bool { bundleIdentifier == nil }
 }
 
 /// A file or directory associated with an app (caches, prefs, containers…).
@@ -90,13 +106,15 @@ public struct AppDiscovery: Sendable {
             ?? (plist["CFBundleName"] as? String)
             ?? bundle.deletingPathExtension().lastPathComponent
         let version = plist["CFBundleShortVersionString"] as? String ?? plist["CFBundleVersion"] as? String
+        let lastUsed = try? bundle.resourceValues(forKeys: [.contentAccessDateKey]).contentAccessDate
         return InstalledApp(
             name: name,
             bundleIdentifier: plist["CFBundleIdentifier"] as? String,
             version: version,
             path: bundle,
             sizeBytes: Self.directorySize(bundle),
-            architectures: Self.architectures(of: bundle, plist: plist))
+            architectures: Self.architectures(of: bundle, plist: plist),
+            lastUsedDate: lastUsed ?? nil)
     }
 
     /// Finds files associated with a bundle identifier using exact-id matching only.

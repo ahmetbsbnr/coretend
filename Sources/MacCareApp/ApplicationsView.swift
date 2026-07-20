@@ -95,6 +95,7 @@ struct ApplicationsView: View {
 
 struct InstalledAppsView: View {
     @State private var model = ApplicationsViewModel()
+    @State private var showConstellation = false
 
     var body: some View {
         HSplitView {
@@ -111,6 +112,31 @@ struct InstalledAppsView: View {
             TextField("Search apps", text: $model.searchText)
                 .textFieldStyle(.roundedBorder)
                 .padding(8)
+            if model.phase == .ready {
+                Picker("View", selection: $showConstellation) {
+                    Text("List").tag(false)
+                    Text("Constellation").tag(true)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .padding(.horizontal, 8)
+                .padding(.bottom, 6)
+            }
+            if showConstellation, model.phase == .ready {
+                ScrollView {
+                    AppConstellationView(apps: model.filteredApps) { app in
+                        Task { await model.select(app) }
+                    }
+                    .padding(8)
+                }
+            } else {
+                installedListBody
+            }
+        }
+    }
+
+    private var installedListBody: some View {
+        Group {
             switch model.phase {
             case .loading:
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -164,6 +190,11 @@ struct InstalledAppsView: View {
                                 Text(mcFormatBytes(app.sizeBytes))
                             }
                             .font(.caption).foregroundStyle(.secondary)
+                            if app.isDataLocationAmbiguous {
+                                Label("Data location ambiguous — no bundle identifier to match against",
+                                      systemImage: "exclamationmark.triangle")
+                                    .font(.caption).foregroundStyle(MCTheme.warning)
+                            }
                         }
                     }
                     MCCard {
@@ -219,6 +250,114 @@ struct InstalledAppsView: View {
                 Text("Select an application").foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+}
+
+/// Applications' visual layer: apps as capsules grouped into a constellation
+/// by publisher/size/update-state/last-used. Sits alongside the native list —
+/// never replaces it. Capsule width encodes real byte weight within its
+/// group; color encodes update state; a ring flags ambiguous data location.
+/// No timers, no motion at rest — layout only, so Reduce Motion has nothing
+/// to reduce.
+struct AppConstellationView: View {
+    let apps: [InstalledApp]
+    var onSelect: (InstalledApp) -> Void
+
+    @State private var mode: AppGroupMode = .publisher
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    private var groups: [(label: String, apps: [InstalledApp])] {
+        AppGrouping.grouped(apps, by: mode)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: MCSpacing.md) {
+            Picker("Group by", selection: $mode) {
+                ForEach(AppGroupMode.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+            }
+            .pickerStyle(.menu)
+            .frame(maxWidth: 220)
+
+            ForEach(groups, id: \.label) { group in
+                VStack(alignment: .leading, spacing: MCSpacing.xs) {
+                    Text(group.label)
+                        .font(.subheadline.weight(.semibold))
+                        .accessibilityLabel(AppGrouping.accessibilityDescription(label: group.label, apps: group.apps))
+                    FlowLayout(spacing: MCSpacing.xs) {
+                        ForEach(group.apps) { app in
+                            capsule(for: app, groupMaxBytes: group.apps.map(\.sizeBytes).max() ?? 1)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func capsule(for app: InstalledApp, groupMaxBytes: Int64) -> some View {
+        let weight = groupMaxBytes > 0 ? Double(app.sizeBytes) / Double(groupMaxBytes) : 0
+        let update = AppGrouping.updateState(for: app)
+        let tint = update == .manual ? MCColor.secondaryText : MCTheme.accent
+        return Button {
+            onSelect(app)
+        } label: {
+            HStack(spacing: 6) {
+                Image(nsImage: NSWorkspace.shared.icon(forFile: app.path.path))
+                    .resizable().frame(width: 16, height: 16)
+                Text(app.name).font(.caption).lineLimit(1)
+                Text(mcFormatBytes(app.sizeBytes)).font(.caption2).foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 10 + CGFloat(weight * 10))
+            .padding(.vertical, 6)
+            .background(
+                Capsule().fill(reduceTransparency ? tint.opacity(0.35) : tint.opacity(0.16))
+            )
+            .overlay(
+                Capsule().strokeBorder(
+                    app.isDataLocationAmbiguous ? MCTheme.warning : tint.opacity(0.4),
+                    lineWidth: app.isDataLocationAmbiguous ? 1.5 : 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Self.accessibilityDescription(app: app, updateState: update))
+    }
+
+    /// VoiceOver label for one capsule — real fields only, no decoration.
+    nonisolated static func accessibilityDescription(app: InstalledApp, updateState: AppUpdateState) -> String {
+        var text = "\(app.name), version \(app.version ?? "unknown"), \(mcFormatBytes(app.sizeBytes)), \(updateState.rawValue) updates."
+        if app.isDataLocationAmbiguous { text += " Data location ambiguous." }
+        return text
+    }
+}
+
+/// Minimal wrapping flow layout for variable-width capsule chips.
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? .infinity
+        var x: CGFloat = 0, y: CGFloat = 0, rowHeight: CGFloat = 0
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if x + size.width > width, x > 0 {
+                x = 0; y += rowHeight + spacing; rowHeight = 0
+            }
+            x += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
+        }
+        return CGSize(width: width.isFinite ? width : x, height: y + rowHeight)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var x = bounds.minX, y = bounds.minY, rowHeight: CGFloat = 0
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if x + size.width > bounds.maxX, x > bounds.minX {
+                x = bounds.minX; y += rowHeight + spacing; rowHeight = 0
+            }
+            subview.place(at: CGPoint(x: x, y: y), proposal: .unspecified)
+            x += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
         }
     }
 }
