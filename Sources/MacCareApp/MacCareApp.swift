@@ -6,6 +6,15 @@ import SystemMetrics
 struct MacCareApp: App {
     @AppStorage("menuBarEnabled") private var menuBarEnabled = true
 
+    /// Core Bloom menu-bar template (adapts to menu bar appearance).
+    static let menuBarImage: NSImage? = {
+        guard let path = Bundle.main.path(forResource: "MenuBarTemplate", ofType: "png"),
+              let image = NSImage(contentsOfFile: path) else { return nil }
+        image.isTemplate = true
+        image.size = NSSize(width: 18, height: 18)
+        return image
+    }()
+
     var body: some Scene {
         WindowGroup("MacCare Local") {
             MainWindow()
@@ -13,8 +22,15 @@ struct MacCareApp: App {
         }
         .windowStyle(.automatic)
 
-        MenuBarExtra("MacCare", systemImage: "heart.circle", isInserted: $menuBarEnabled) {
+        MenuBarExtra(isInserted: $menuBarEnabled) {
             MenuBarView()
+        } label: {
+            if let image = Self.menuBarImage {
+                Image(nsImage: image)
+            } else {
+                Image(systemName: "circle.hexagonpath")
+            }
+            Text("MacCare")
         }
         .menuBarExtraStyle(.window)
     }

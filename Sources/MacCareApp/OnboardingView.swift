@@ -25,59 +25,125 @@ enum PermissionProbe {
     }
 }
 
+/// Short, skippable, resumable onboarding. Four steps, no forced permission.
 struct OnboardingView: View {
     @Binding var isPresented: Bool
+    @AppStorage("onboardingStep") private var step = 0
     @State private var fdaGranted = PermissionProbe.hasFullDiskAccess()
 
+    private let stepCount = 4
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            HStack {
-                Image(systemName: "heart.circle.fill")
-                    .font(.system(size: 40)).foregroundStyle(MCTheme.accent)
-                Text("Welcome to MacCare Local").font(.title.weight(.semibold))
+        VStack(spacing: 0) {
+            content
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                .padding(MCSpacing.xl)
+            Divider()
+            footer
+                .padding(.horizontal, MCSpacing.xl)
+                .padding(.vertical, MCSpacing.md)
+        }
+        .frame(width: 560, height: 460)
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch step {
+        case 0:
+            page {
+                CoreBloomMark(tint: [MCColor.storage, MCColor.protection, MCColor.performance])
+                    .frame(width: 96, height: 96)
+                    .padding(.bottom, MCSpacing.sm)
+                Text("MacCare Local").font(MCFont.heroTitle)
+                Text("Storage, protection and performance care for this Mac — nothing more, nothing hidden.")
+                    .font(MCFont.body).foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 400)
             }
-            VStack(alignment: .leading, spacing: 12) {
-                bullet("magnifyingglass", "Scans never delete anything. Cleaning is always a separate, reviewed step.")
-                bullet("trash", "Removal uses the system Trash — you can always restore.")
-                bullet("lock.shield", "Everything stays on this Mac. No accounts, no telemetry, no network calls.")
-                bullet("hand.raised", "Dry-run mode is on by default: actions are simulated until you turn it off.")
-                bullet("xmark.shield", "MacCare is not an antivirus replacement and never claims otherwise.")
+        case 1:
+            page {
+                Image(systemName: "lock.laptopcomputer")
+                    .font(.system(size: 56, weight: .light))
+                    .foregroundStyle(MCColor.protection)
+                Text("Everything stays here").font(MCFont.heroTitle)
+                VStack(alignment: .leading, spacing: MCSpacing.sm) {
+                    bullet("internaldrive", "All analysis runs on this Mac. No accounts, no telemetry, no network calls.")
+                    bullet("clock.arrow.circlepath", "Your history lives in a local database you can clear at any time.")
+                    bullet("xmark.shield", "MacCare is not an antivirus replacement and never claims otherwise.")
+                }
+                .frame(maxWidth: 420)
             }
-            MCCard {
-                HStack {
-                    Image(systemName: fdaGranted ? "checkmark.circle.fill" : "exclamationmark.circle")
-                        .foregroundStyle(fdaGranted ? MCTheme.success : MCTheme.warning)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Full Disk Access").font(.headline)
-                        Text(fdaGranted
-                             ? "Granted — all cleanup categories are available."
-                             : "Not granted. Some folders (Mail, Safari data…) can't be scanned. You can grant it in System Settings, then click Re-check.")
-                            .font(.caption).foregroundStyle(.secondary)
-                    }
-                    Spacer()
+        case 2:
+            page {
+                Image(systemName: "folder.badge.questionmark")
+                    .font(.system(size: 56, weight: .light))
+                    .foregroundStyle(MCColor.storage)
+                Text("Full Disk Access — optional").font(MCFont.heroTitle)
+                Text("Without it, some folders (Mail, Safari data…) can't be scanned. The app works either way. You can grant or revoke it any time in System Settings.")
+                    .font(MCFont.body).foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 420)
+                HStack(spacing: MCSpacing.sm) {
+                    MCStatusBadge(fdaGranted ? "Granted" : "Not granted",
+                                  status: fdaGranted ? .success : .neutral)
                     if !fdaGranted {
-                        Button("Open Settings") { PermissionProbe.openFullDiskAccessSettings() }
+                        Button("Open System Settings") { PermissionProbe.openFullDiskAccessSettings() }
                         Button("Re-check") { fdaGranted = PermissionProbe.hasFullDiskAccess() }
                     }
                 }
             }
-            Text("To uninstall completely: quit the app, delete it from Applications, and remove ~/Library/Application Support/MacCareLocal. Details in Settings.")
-                .font(.caption).foregroundStyle(.secondary)
-            HStack {
-                Spacer()
-                Button("Get Started") { isPresented = false }
-                    .buttonStyle(.borderedProminent)
-                    .keyboardShortcut(.defaultAction)
+        default:
+            page {
+                Image(systemName: "arrow.uturn.backward.circle")
+                    .font(.system(size: 56, weight: .light))
+                    .foregroundStyle(MCColor.success)
+                Text("Reversible by design").font(MCFont.heroTitle)
+                VStack(alignment: .leading, spacing: MCSpacing.sm) {
+                    bullet("magnifyingglass", "Scans never delete anything. Cleaning is a separate, reviewed step.")
+                    bullet("trash", "Removal uses the system Trash — you can always restore.")
+                    bullet("hand.raised", "Dry-run is on by default: actions are simulated until you turn it off.")
+                }
+                .frame(maxWidth: 420)
             }
         }
-        .padding(28)
-        .frame(width: 560)
+    }
+
+    private var footer: some View {
+        HStack {
+            Button("Skip") { finish() }
+                .buttonStyle(.plain)
+                .foregroundStyle(.secondary)
+            Spacer()
+            // Step indicator: position + text, not color alone.
+            Text("\(step + 1) of \(stepCount)")
+                .font(MCFont.caption).foregroundStyle(.secondary)
+                .accessibilityLabel("Step \(step + 1) of \(stepCount)")
+            Spacer()
+            if step > 0 {
+                Button("Back") { step -= 1 }
+            }
+            Button(step == stepCount - 1 ? "Get Started" : "Continue") {
+                if step == stepCount - 1 { finish() } else { step += 1 }
+            }
+            .buttonStyle(.borderedProminent)
+            .keyboardShortcut(.defaultAction)
+        }
+    }
+
+    private func finish() {
+        step = 0
+        isPresented = false
+    }
+
+    private func page(@ViewBuilder _ content: () -> some View) -> some View {
+        VStack(spacing: MCSpacing.md) { content() }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private func bullet(_ icon: String, _ text: String) -> some View {
-        HStack(alignment: .top, spacing: 10) {
-            Image(systemName: icon).frame(width: 20).foregroundStyle(MCTheme.accent)
-            Text(text)
+        HStack(alignment: .top, spacing: MCSpacing.xs) {
+            Image(systemName: icon).frame(width: 20).foregroundStyle(MCColor.coreMint)
+            Text(text).font(MCFont.secondaryBody)
         }
     }
 }
