@@ -1,0 +1,77 @@
+name: Security
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: macos-14
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: No-private-data check
+        run: Scripts/check-private-data.sh
+
+      - name: Placeholder check
+        run: Scripts/check-placeholders.sh
+
+      - name: License check
+        run: Scripts/check-licenses.sh
+
+      - name: Secret scan (grep-based)
+        run: |
+          set -eu
+          # ponytail: plain grep, not a full entropy scanner; upgrade to
+          # gitleaks/trufflehog if false negatives show up in practice.
+          pattern='(AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----|sk-[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]{10,})'
+          if git grep -nE "$pattern" -- . ':!Scripts/check-private-data.sh' ':!.github/workflows/security.yml'; then
+            echo "Possible secret literal found — see matches above."
+            exit 1
+          fi
+          echo "No obvious secret literals found."
+
+      - name: Dangerous-script check (no curl|sh, no unrestricted sudo)
+        run: |
+          set -eu
+          fail=0
+          if git grep -nE 'curl[^|]*\|\s*(sudo\s+)?(sh|bash|zsh)\b' -- '*.sh' '*.yml' '*.yaml'; then
+            echo "Found a curl-pipe-to-shell pattern."
+            fail=1
+          fi
+          if git grep -nE '\bsudo\s' -- 'Scripts/*.sh' | grep -v '^Scripts/doctor.sh' ; then
+            echo "Found unexpected sudo usage in Scripts/."
+            fail=1
+          fi
+          exit $fail
+
+      - name: Absolute-path check (no hardcoded developer machine paths)
+        run: |
+          set -eu
+          if git grep -nE '/Users/[A-Za-z0-9_.-]+/(Documents|Desktop)' -- . ':!Documentation/*.md' ':!.github/workflows/security.yml'; then
+            echo "Found a hardcoded developer-machine absolute path."
+            exit 1
+          fi
+          echo "No hardcoded developer-machine paths found."
+
+      - name: Forbidden-file check
+        run: |
+          set -eu
+          if git ls-files | grep -iE '\.(env|pem|p12|mobileprovision)$|id_rsa|id_ed25519'; then
+            echo "Forbidden file type tracked in repo."
+            exit 1
+          fi
+          echo "No forbidden files tracked."
