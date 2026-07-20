@@ -197,6 +197,23 @@ enum ModuleID: String, CaseIterable, Identifiable {
     }
 
     var systemImage: String { identity.icon }
+
+    /// Localized display label. `rawValue` stays the internal stable identity
+    /// (matched against `ActivityRecord.summary` prefixes elsewhere).
+    var label: String {
+        switch self {
+        case .smartCare: L("smartcare.nav_title")
+        case .cleanup: L("cleanup.title")
+        case .protection: L("module.protection")
+        case .performance: L("performance.nav_title")
+        case .applications: L("apps.title")
+        case .myClutter: L("clutter.title")
+        case .spaceLens: L("spacelens.title")
+        case .cloudCleanup: L("cloud.nav_title")
+        case .myActivity: L("module.my_activity")
+        case .settings: L("settings.nav_title")
+        }
+    }
 }
 
 /// Sidebar groups — logical, quiet, native.
@@ -227,7 +244,7 @@ struct MainWindow: View {
                     Section {
                         ForEach(group.modules) { module in
                             Label {
-                                Text(module.rawValue)
+                                Text(module.label)
                             } icon: {
                                 Image(systemName: module.systemImage)
                                     .foregroundStyle(selection == module ? module.identity.color : Color.secondary)
@@ -287,7 +304,7 @@ struct PlaceholderView: View {
             Image(systemName: module.systemImage)
                 .font(.system(size: 48))
                 .foregroundStyle(MCTheme.accent)
-            Text(module.rawValue).font(.title2.weight(.semibold))
+            Text(module.label).font(.title2.weight(.semibold))
             Text(L("placeholder.under_construction"))
                 .foregroundStyle(.secondary)
         }
