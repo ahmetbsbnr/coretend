@@ -57,7 +57,14 @@ final class ProtectionViewModel {
 
     func restore(_ item: Quarantine.Item) async {
         guard let quarantine else { return }
-        try? await quarantine.restore(item)
+        do {
+            try await quarantine.restore(item)
+            AppEnvironment.shared.record(ActivityRecord(
+                kind: .restore, summary: "Restored from quarantine: \(URL(fileURLWithPath: item.originalPath).lastPathComponent)",
+                itemCount: 1, bytes: 0, dryRun: false))
+        } catch {
+            statusMessage = "Restore failed: \(error.localizedDescription)"
+        }
         await refreshQuarantine()
     }
 
