@@ -133,3 +133,32 @@
 "apps.simulate_uninstall" = "Simuler la désinstallation";
 "apps.uninstall" = "Désinstaller (déplacer vers la Corbeille)";
 "apps.select_prompt" = "Sélectionnez une application";
+
+/* My Clutter */
+"clutter.tab.large_old" = "Volumineux et anciens";
+"clutter.tab.duplicates" = "Doublons";
+"clutter.tab.similar_images" = "Images similaires";
+"clutter.title" = "Mes fichiers encombrants";
+"clutter.idle.title" = "Trouvez les fichiers volumineux et oubliés";
+"clutter.idle.subtitle" = "Analyse Téléchargements, Documents, Bureau et les dossiers média.\nRien n'est jamais supprimé automatiquement — vous examinez et agissez dans le Finder.";
+"clutter.larger_than" = "Plus grand que";
+"clutter.size.50mb" = "50 Mo";
+"clutter.size.100mb" = "100 Mo";
+"clutter.size.500mb" = "500 Mo";
+"clutter.size.1gb" = "1 Go";
+"clutter.older_than" = "Plus ancien que";
+"clutter.age.30d" = "30 jours";
+"clutter.age.90d" = "90 jours";
+"clutter.age.180d" = "180 jours";
+"clutter.age.1y" = "1 an";
+"clutter.analyze" = "Analyser";
+"clutter.scanning_progress" = "%d éléments analysés — %d correspondances";
+"clutter.no_matches" = "Aucun fichier correspondant";
+"clutter.change_criteria" = "Modifier les critères";
+"clutter.results.summary" = "%d fichiers — %@";
+"clutter.sort_by" = "Trier par";
+"clutter.sort.size" = "Taille";
+"clutter.sort.age" = "Ancienneté";
+"clutter.new_analysis" = "Nouvelle analyse";
+"clutter.modified" = "modifié le %@";
+"clutter.quick_look" = "Aperçu rapide";
