@@ -108,3 +108,34 @@ $ (session 2) fix: build-release.sh now auto-syncs Release/latest.json zipSHA256
 $ bash Scripts/build-release.sh 0.7.0 && bash Scripts/test-release-manifest.sh
 => ALL CHECKS PASSED (SHA256SUMS verifies, latest.json zip/dmg SHA+size match SHA256SUMS and actual files).
 Added regression check to Scripts/test-release-manifest.sh: runs build-release.sh again and confirms latest.json resyncs to the newly-rebuilt (differently-hashed) artifacts, so the drift class cannot silently return.
+
+$ (session 3) bash Scripts/test.sh
+exit 0 => 86/86 Swift tests pass, 27 suites. No regression from session-2 baseline.
+
+$ (session 3) key-set diff, FR vs EN Localizable.strings (upgrade from session-1's line-count-only check)
+comm -23 /tmp/en_keys.txt /tmp/fr_keys.txt | wc -l   # keys only in EN
+comm -13 /tmp/en_keys.txt /tmp/fr_keys.txt | wc -l   # keys only in FR
+=> both 0. Real key-by-key parity confirmed (372/372 lines, 0 drift) — I18N-001.
+
+$ (session 3) grep -rn "Color(hex\|Color(red:\|#[0-9A-Fa-f]\{6\}" Sources/MacCareApp Sources/DesignSystem | grep -v "MCColor\|Colors.swift"
+=> 3 matches, all in Sources/MacCareApp/SpaceLensView.swift:72-75 (hardcoded category colors, bypass MCColor) — VIS-003 finding.
+
+$ (session 3) grep -rn "\.font(\.system(size:" Sources/MacCareApp
+=> 25 matches (bypass MCFont token) — VIS-003 finding.
+
+$ (session 3) grep -rn "ncreaseContrast\|educeTransparency" Sources/
+=> 0 matches anywhere in Sources/ — A11Y-003 finding (no explicit code-level handling).
+
+$ (session 3) grep -rl "accessibilityLabel\|accessibilityValue\|accessibilityHint" Sources/MacCareApp Sources/DesignSystem
+=> 14 files (out of 20 MacCareApp views + DesignSystem) — A11Y-001 finding.
+
+$ (session 3) grep -rn 'Text("' Sources/MacCareApp/*.swift | grep -v 'L('
+=> 1 match: OnboardingView.swift:57 Text("MacCare Local") — brand name literal, I18N-002.
+
+$ (session 3) full read of Sources/MacCareApp/AppUpdatesView.swift + AppUpdateSource.detect (ApplicationsView.swift)
+=> corrects an initial wrong assumption: App Updates does real per-app update-*mechanism* detection
+   (App Store / Sparkle / none), not a bare deep-link as an earlier framing suggested. Does not check
+   update *availability* though — FUNC-005 finding, README wording is accurate but could be misread.
+
+$ (session 3) grep -rn "Sparkle" Sources/
+=> 4 matches, all comments/enum-label/mechanism-routing, zero HTTP/feed-parsing code.

@@ -2,15 +2,26 @@
 
 AUDITED_SOURCE_COMMIT: `b33c06b8d68b9b03316821c3f6cfb17252f35011`.
 
-None of the 28 requirements in `Documentation/MASTER_REQUIREMENTS_BASELINE.md` carry a
-DEFERRED_APPROVED or SUPERSEDED status in `Documentation/REQUIREMENTS_TRACEABILITY_MATRIX.md` this
-session — every requirement resolved to COMPLIANT_VERIFIED or COMPLIANT_PARTIAL (see
-`REQUIREMENTS_COMPLIANCE_SUMMARY.md`). `Documentation/REQUIREMENTS_DECISION_HISTORY.md` (session 1)
-was re-read for explicitly superseded decisions and contains none — every decision it records
-("holds," "confirmed") rather than "superseded by."
+None of the 69 requirements in `Documentation/MASTER_REQUIREMENTS_BASELINE.md` (28 from session 2 +
+41 new session-3 entries) carry a DEFERRED_APPROVED or SUPERSEDED status in
+`Documentation/REQUIREMENTS_TRACEABILITY_MATRIX.md` — every requirement resolved to one of
+COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED, NON_COMPLIANT, BLOCKED_ENVIRONMENT, or
+UNKNOWN (see `REQUIREMENTS_COMPLIANCE_SUMMARY.md`). None of the new statuses is a deferral — they are
+honestly-reported gaps in *verification*, not requirements the project has decided to postpone or
+supersede.
 
 This file exists as the place those entries will go once any exist, per the session brief's
 document set. It stays empty and honest rather than being padded with a fabricated deferral.
+
+## Genuinely UNKNOWN this session (not deferred, just not yet checked)
+
+- **A11Y-004** (text alternatives to charts/treemap) — `SpaceLensView.swift`/`PerformanceView.swift`
+  not read for this specifically.
+- **I18N-003** (pluralization/sizes/dates correctness) — `L10n.swift` formatting helpers not read.
+- **PERF-003** (on-demand vs eager thumbnail generation) — thumbnail code path not read.
+
+These are candidates for session 4's remaining scope, not deferrals — the difference matters: a
+deferral means "we decided not to do this now," UNKNOWN means "we haven't looked yet."
 
 ## Related, but not a requirement deferral
 
