@@ -28,7 +28,7 @@ struct MacCareApp: App {
             MenuBarView()
         } label: {
             MenuBarLabel()
-            Text("MacCare")
+            Text(verbatim: "MacCare")
         }
         .menuBarExtraStyle(.window)
     }
@@ -96,42 +96,42 @@ struct MenuBarView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("MacCare Local").font(.headline)
+            Text(verbatim: "MacCare Local").font(.headline)
             if let snap = snapshot {
-                metricRow(icon: "cpu", label: "CPU", value: "\(Int(snap.cpuUsedFraction * 100))%",
+                metricRow(icon: "cpu", label: L("menubar.cpu"), value: "\(Int(snap.cpuUsedFraction * 100))%",
                           warn: snap.cpuUsedFraction > 0.85)
-                metricRow(icon: "memorychip", label: "Memory",
+                metricRow(icon: "memorychip", label: L("menubar.memory"),
                           value: "\(Int(snap.memoryUsedFraction * 100))% — \(snap.memoryPressureLevel)",
                           warn: snap.memoryPressureLevel != "normal")
-                metricRow(icon: "internaldrive", label: "Free space",
+                metricRow(icon: "internaldrive", label: L("menubar.free_space"),
                           value: mcFormatBytes(snap.diskFreeBytes),
                           warn: snap.diskFreeBytes < 20_000_000_000)
-                metricRow(icon: "thermometer.medium", label: "Thermal",
+                metricRow(icon: "thermometer.medium", label: L("menubar.thermal"),
                           value: snap.thermalState.capitalized,
                           warn: snap.thermalState == "serious" || snap.thermalState == "critical")
             } else {
                 ProgressView().controlSize(.small)
             }
-            metricRow(icon: "shield", label: "Protection",
-                      value: scanner.isAvailable ? "ClamAV ready" : "ClamAV not installed",
+            metricRow(icon: "shield", label: L("menubar.protection"),
+                      value: scanner.isAvailable ? L("menubar.clamav_ready") : L("menubar.clamav_missing"),
                       warn: !scanner.isAvailable)
             Divider()
             if let last = lastSmartCare {
-                Text("Last Smart Care: \(last.summary)")
+                Text(L("menubar.last_smart_care", last.summary))
                     .font(.caption).foregroundStyle(.secondary)
                 Text(last.date, style: .relative)
                     .font(.caption2).foregroundStyle(.tertiary)
             } else {
-                Text("No Smart Care run yet.")
+                Text(L("menubar.no_smart_care_yet"))
                     .font(.caption).foregroundStyle(.secondary)
             }
             Divider()
-            Button("Open MacCare Local") { openWindow() }
-            Button("Settings…") {
+            Button(L("menubar.open_app")) { openWindow() }
+            Button(L("menubar.settings")) {
                 openWindow()
                 NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.settings)
             }
-            Button("Quit") { NSApp.terminate(nil) }
+            Button(L("menubar.quit")) { NSApp.terminate(nil) }
         }
         .padding(14)
         .frame(width: 260)
@@ -207,11 +207,11 @@ struct SidebarGroup: Identifiable {
 
     static let all: [SidebarGroup] = [
         SidebarGroup(id: "care", title: nil, modules: [.smartCare]),
-        SidebarGroup(id: "space", title: "Free Up Space",
+        SidebarGroup(id: "space", title: L("sidebar.free_up_space"),
                      modules: [.cleanup, .myClutter, .spaceLens, .cloudCleanup]),
-        SidebarGroup(id: "optimize", title: "Optimize", modules: [.performance, .applications]),
-        SidebarGroup(id: "protect", title: "Protect", modules: [.protection]),
-        SidebarGroup(id: "track", title: "Activity", modules: [.myActivity, .settings]),
+        SidebarGroup(id: "optimize", title: L("sidebar.optimize"), modules: [.performance, .applications]),
+        SidebarGroup(id: "protect", title: L("sidebar.protect"), modules: [.protection]),
+        SidebarGroup(id: "track", title: L("sidebar.activity"), modules: [.myActivity, .settings]),
     ]
 }
 
@@ -288,7 +288,7 @@ struct PlaceholderView: View {
                 .font(.system(size: 48))
                 .foregroundStyle(MCTheme.accent)
             Text(module.rawValue).font(.title2.weight(.semibold))
-            Text("This module is under construction. Coming in a later slice.")
+            Text(L("placeholder.under_construction"))
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

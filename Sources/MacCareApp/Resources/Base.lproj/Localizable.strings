@@ -1,0 +1,55 @@
+/* Base (English) strings */
+
+/* Common */
+"common.cancel" = "Cancel";
+"common.dry_run" = "Dry run";
+"common.running" = "Running…";
+
+/* Sidebar */
+"sidebar.free_up_space" = "Free Up Space";
+"sidebar.optimize" = "Optimize";
+"sidebar.protect" = "Protect";
+"sidebar.activity" = "Activity";
+
+/* Placeholder */
+"placeholder.under_construction" = "This module is under construction. Coming in a later slice.";
+
+/* Menu bar */
+"menubar.cpu" = "CPU";
+"menubar.memory" = "Memory";
+"menubar.free_space" = "Free space";
+"menubar.thermal" = "Thermal";
+"menubar.protection" = "Protection";
+"menubar.clamav_ready" = "ClamAV ready";
+"menubar.clamav_missing" = "ClamAV not installed";
+"menubar.last_smart_care" = "Last Smart Care: %@";
+"menubar.no_smart_care_yet" = "No Smart Care run yet.";
+"menubar.open_app" = "Open MacCare Local";
+"menubar.settings" = "Settings…";
+"menubar.quit" = "Quit";
+
+/* Smart Care */
+"smartcare.protection_unavailable" = "Malware scanning not yet available";
+"smartcare.performance_unavailable" = "Maintenance tasks not yet available";
+"smartcare.applications_unavailable" = "App analysis not yet available";
+"smartcare.care_categories" = "Care categories";
+"smartcare.hero.idle_title" = "Ready to look after this Mac";
+"smartcare.hero.scanning_title" = "Scanning…";
+"smartcare.hero.review_title" = "%@ safe to clean";
+"smartcare.hero.cleaning_title" = "Cleaning…";
+"smartcare.hero.finished_dryrun_title" = "Dry run: %@ would be freed";
+"smartcare.hero.finished_title" = "%@ moved to Trash";
+"smartcare.hero.idle_subtitle" = "A scan looks at storage first. Nothing is deleted during a scan.";
+"smartcare.hero.scanning_subtitle" = "Reading caches, logs and build data. You can cancel at any time.";
+"smartcare.hero.review_subtitle_truncated" = "%@ found in total (%d of %d shown). Only low-risk, reversible items are preselected.";
+"smartcare.hero.review_subtitle" = "%@ found in total. Only low-risk, reversible items are preselected.";
+"smartcare.hero.executing_subtitle" = "Items go to the Trash — you can put them back.";
+"smartcare.hero.finished_subtitle" = "Details are in My Activity.";
+"smartcare.module.waiting" = "Waiting to scan";
+"smartcare.module.scanning" = "Scanning… %d items, %@";
+"smartcare.module.done" = "%d items — %@";
+"smartcare.start_scan" = "Start Smart Care Scan";
+"smartcare.simulate_care" = "Simulate Care";
+"smartcare.run_care" = "Run Care";
+"smartcare.review_details_hint" = "Review details in the Cleanup module.";
+"smartcare.scan_again" = "Scan Again";

@@ -42,11 +42,11 @@ final class SmartCareViewModel {
         [
             CareModule(id: "cleanup", name: "Cleanup", icon: "sparkles", enabled: true, state: .pending),
             CareModule(id: "protection", name: "Protection", icon: "shield", enabled: false,
-                       state: .unavailable("Malware scanning not yet available")),
+                       state: .unavailable(L("smartcare.protection_unavailable"))),
             CareModule(id: "performance", name: "Performance", icon: "gauge.with.needle", enabled: false,
-                       state: .unavailable("Maintenance tasks not yet available")),
+                       state: .unavailable(L("smartcare.performance_unavailable"))),
             CareModule(id: "applications", name: "Applications", icon: "square.grid.2x2", enabled: false,
-                       state: .unavailable("App analysis not yet available")),
+                       state: .unavailable(L("smartcare.applications_unavailable"))),
         ]
     }
 
@@ -141,7 +141,7 @@ struct SmartCareView: View {
             VStack(spacing: MCSpacing.lg) {
                 hero
                 footer
-                MCSectionHeader("Care categories")
+                MCSectionHeader(L("smartcare.care_categories"))
                 moduleList
             }
             .padding(MCSpacing.page)
@@ -184,25 +184,25 @@ struct SmartCareView: View {
 
     private var heroTitle: String {
         switch model.phase {
-        case .idle: "Ready to look after this Mac"
-        case .running: "Scanning…"
-        case .review: "\(mcFormatBytes(model.preselectedBytes)) safe to clean"
-        case .executing: "Cleaning…"
+        case .idle: L("smartcare.hero.idle_title")
+        case .running: L("smartcare.hero.scanning_title")
+        case .review: L("smartcare.hero.review_title", mcFormatBytes(model.preselectedBytes))
+        case .executing: L("smartcare.hero.cleaning_title")
         case let .finished(freed, dryRun):
-            dryRun ? "Dry run: \(mcFormatBytes(freed)) would be freed"
-                   : "\(mcFormatBytes(freed)) moved to Trash"
+            dryRun ? L("smartcare.hero.finished_dryrun_title", mcFormatBytes(freed))
+                   : L("smartcare.hero.finished_title", mcFormatBytes(freed))
         }
     }
 
     private var heroSubtitle: String {
         switch model.phase {
-        case .idle: "A scan looks at storage first. Nothing is deleted during a scan."
-        case .running: "Reading caches, logs and build data. You can cancel at any time."
+        case .idle: L("smartcare.hero.idle_subtitle")
+        case .running: L("smartcare.hero.scanning_subtitle")
         case .review: model.isDisplayTruncated
-            ? "\(mcFormatBytes(model.totalFoundBytes)) found in total (\(model.findings.count) of \(model.totalFindingCount) shown). Only low-risk, reversible items are preselected."
-            : "\(mcFormatBytes(model.totalFoundBytes)) found in total. Only low-risk, reversible items are preselected."
-        case .executing: "Items go to the Trash — you can put them back."
-        case .finished: "Details are in My Activity."
+            ? L("smartcare.hero.review_subtitle_truncated", mcFormatBytes(model.totalFoundBytes), model.findings.count, model.totalFindingCount)
+            : L("smartcare.hero.review_subtitle", mcFormatBytes(model.totalFoundBytes))
+        case .executing: L("smartcare.hero.executing_subtitle")
+        case .finished: L("smartcare.hero.finished_subtitle")
         }
     }
 
@@ -240,9 +240,9 @@ struct SmartCareView: View {
     @ViewBuilder
     private func stateText(_ state: SmartCareViewModel.ModuleState) -> some View {
         switch state {
-        case .pending: Text("Waiting to scan")
-        case let .scanning(found, bytes): Text("Scanning… \(found) items, \(mcFormatBytes(bytes))")
-        case let .done(found, bytes): Text("\(found) items — \(mcFormatBytes(bytes))")
+        case .pending: Text(L("smartcare.module.waiting"))
+        case let .scanning(found, bytes): Text(L("smartcare.module.scanning", found, mcFormatBytes(bytes)))
+        case let .done(found, bytes): Text(L("smartcare.module.done", found, mcFormatBytes(bytes)))
         case let .unavailable(reason): Text(reason)
         }
     }
@@ -261,32 +261,32 @@ struct SmartCareView: View {
     private var footer: some View {
         switch model.phase {
         case .idle:
-            Button("Start Smart Care Scan") { model.start() }
+            Button(L("smartcare.start_scan")) { model.start() }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
         case .running:
-            Button("Cancel") { model.cancel() }
+            Button(L("common.cancel")) { model.cancel() }
         case .review:
             VStack(spacing: MCSpacing.xs) {
                 HStack {
-                    Toggle("Dry run", isOn: $model.dryRun).toggleStyle(.switch)
-                    Button(model.dryRun ? "Simulate Care" : "Run Care") { model.runCare() }
+                    Toggle(L("common.dry_run"), isOn: $model.dryRun).toggleStyle(.switch)
+                    Button(model.dryRun ? L("smartcare.simulate_care") : L("smartcare.run_care")) { model.runCare() }
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
                 }
-                Text("Review details in the Cleanup module.")
+                Text(L("smartcare.review_details_hint"))
                     .font(MCFont.caption).foregroundStyle(.secondary)
             }
         case .executing:
-            ProgressView("Running…")
+            ProgressView(L("common.running"))
         case let .finished(freed, dryRun):
             VStack(spacing: 8) {
                 Image(systemName: "checkmark.seal")
                     .font(.system(size: 40)).foregroundStyle(MCTheme.success)
-                Text(dryRun ? "Dry run: \(mcFormatBytes(freed)) would be freed"
-                            : "\(mcFormatBytes(freed)) moved to Trash")
+                Text(dryRun ? L("smartcare.hero.finished_dryrun_title", mcFormatBytes(freed))
+                            : L("smartcare.hero.finished_title", mcFormatBytes(freed)))
                     .font(.headline)
-                Button("Scan Again") { model.start() }
+                Button(L("smartcare.scan_again")) { model.start() }
             }
         }
     }
