@@ -91,14 +91,14 @@ struct MyClutterView: View {
     var body: some View {
         TabView {
             LargeOldFilesView()
-                .tabItem { Label("Large & Old", systemImage: "doc") }
+                .tabItem { Label(L("clutter.tab.large_old"), systemImage: "doc") }
             DuplicatesView()
-                .tabItem { Label("Duplicates", systemImage: "doc.on.doc") }
+                .tabItem { Label(L("clutter.tab.duplicates"), systemImage: "doc.on.doc") }
             SimilarImagesView()
-                .tabItem { Label("Similar Images", systemImage: "photo.on.rectangle.angled") }
+                .tabItem { Label(L("clutter.tab.similar_images"), systemImage: "photo.on.rectangle.angled") }
         }
         .padding(8)
-        .navigationTitle("My Clutter")
+        .navigationTitle(L("clutter.title"))
     }
 }
 
@@ -120,26 +120,26 @@ struct LargeOldFilesView: View {
         VStack(spacing: 16) {
             Image(systemName: "doc.on.doc")
                 .font(.system(size: 56)).foregroundStyle(MCTheme.accent)
-            Text("Find large, forgotten files").font(.title2.weight(.semibold))
-            Text("Analyzes Downloads, Documents, Desktop and media folders.\nNothing is ever deleted automatically — you review and act in Finder.")
+            Text(L("clutter.idle.title")).font(.title2.weight(.semibold))
+            Text(L("clutter.idle.subtitle"))
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
             HStack(spacing: 16) {
-                Picker("Larger than", selection: $model.minSizeMB) {
-                    Text("50 MB").tag(50)
-                    Text("100 MB").tag(100)
-                    Text("500 MB").tag(500)
-                    Text("1 GB").tag(1000)
+                Picker(L("clutter.larger_than"), selection: $model.minSizeMB) {
+                    Text(L("clutter.size.50mb")).tag(50)
+                    Text(L("clutter.size.100mb")).tag(100)
+                    Text(L("clutter.size.500mb")).tag(500)
+                    Text(L("clutter.size.1gb")).tag(1000)
                 }
                 .frame(width: 180)
-                Picker("Older than", selection: $model.minAgeDays) {
-                    Text("30 days").tag(30)
-                    Text("90 days").tag(90)
-                    Text("180 days").tag(180)
-                    Text("1 year").tag(365)
+                Picker(L("clutter.older_than"), selection: $model.minAgeDays) {
+                    Text(L("clutter.age.30d")).tag(30)
+                    Text(L("clutter.age.90d")).tag(90)
+                    Text(L("clutter.age.180d")).tag(180)
+                    Text(L("clutter.age.1y")).tag(365)
                 }
                 .frame(width: 180)
             }
-            Button("Analyze") { model.start() }
+            Button(L("clutter.analyze")) { model.start() }
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
         }
@@ -150,9 +150,9 @@ struct LargeOldFilesView: View {
     private var scanningView: some View {
         VStack(spacing: 16) {
             ProgressView()
-            Text("Scanned \(model.scannedCount) items — \(model.findings.count) matches")
+            Text(L("clutter.scanning_progress", model.scannedCount, model.findings.count))
                 .monospacedDigit()
-            Button("Cancel") { model.cancel() }
+            Button(L("common.cancel")) { model.cancel() }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -161,8 +161,8 @@ struct LargeOldFilesView: View {
         VStack(spacing: 12) {
             Image(systemName: "checkmark.circle")
                 .font(.system(size: 48)).foregroundStyle(MCTheme.success)
-            Text("No matching files").font(.title3.weight(.semibold))
-            Button("Change Criteria") { model.phase = .idle }
+            Text(L("clutter.no_matches")).font(.title3.weight(.semibold))
+            Button(L("clutter.change_criteria")) { model.phase = .idle }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -170,15 +170,17 @@ struct LargeOldFilesView: View {
     private var resultsView: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text("\(model.findings.count) files — \(mcFormatBytes(model.totalBytes))")
+                Text(L("clutter.results.summary", model.findings.count, mcFormatBytes(model.totalBytes)))
                     .font(.headline)
                 Spacer()
-                Picker("Sort by", selection: $model.sortOption) {
-                    ForEach(MyClutterViewModel.SortOption.allCases) { Text($0.rawValue).tag($0) }
+                Picker(L("clutter.sort_by"), selection: $model.sortOption) {
+                    ForEach(MyClutterViewModel.SortOption.allCases) { option in
+                        Text(option == .size ? L("clutter.sort.size") : L("clutter.sort.age")).tag(option)
+                    }
                 }
                 .pickerStyle(.segmented)
                 .frame(width: 160)
-                Button("New Analysis") { model.phase = .idle }
+                Button(L("clutter.new_analysis")) { model.phase = .idle }
             }
             .padding()
             List(model.sortedFindings) { finding in
@@ -191,7 +193,7 @@ struct LargeOldFilesView: View {
                             Text(finding.url.deletingLastPathComponent().path)
                                 .lineLimit(1).truncationMode(.middle)
                             if let date = finding.modificationDate {
-                                Text("modified \(date.formatted(date: .abbreviated, time: .omitted))")
+                                Text(L("clutter.modified", date.formatted(date: .abbreviated, time: .omitted)))
                             }
                         }
                         .font(.caption).foregroundStyle(.secondary)
@@ -207,14 +209,14 @@ struct LargeOldFilesView: View {
                         Image(systemName: "eye")
                     }
                     .buttonStyle(.borderless)
-                    .help("Quick Look")
+                    .help(L("clutter.quick_look"))
                     Button {
                         NSWorkspace.shared.activateFileViewerSelecting([finding.url])
                     } label: {
                         Image(systemName: "magnifyingglass")
                     }
                     .buttonStyle(.borderless)
-                    .help("Reveal in Finder")
+                    .help(L("common.reveal_in_finder"))
                 }
             }
             .listStyle(.inset)

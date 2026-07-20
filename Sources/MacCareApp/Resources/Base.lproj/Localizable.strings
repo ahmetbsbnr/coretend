@@ -133,3 +133,32 @@
 "apps.simulate_uninstall" = "Simulate Uninstall";
 "apps.uninstall" = "Uninstall (move to Trash)";
 "apps.select_prompt" = "Select an application";
+
+/* My Clutter */
+"clutter.tab.large_old" = "Large & Old";
+"clutter.tab.duplicates" = "Duplicates";
+"clutter.tab.similar_images" = "Similar Images";
+"clutter.title" = "My Clutter";
+"clutter.idle.title" = "Find large, forgotten files";
+"clutter.idle.subtitle" = "Analyzes Downloads, Documents, Desktop and media folders.\nNothing is ever deleted automatically — you review and act in Finder.";
+"clutter.larger_than" = "Larger than";
+"clutter.size.50mb" = "50 MB";
+"clutter.size.100mb" = "100 MB";
+"clutter.size.500mb" = "500 MB";
+"clutter.size.1gb" = "1 GB";
+"clutter.older_than" = "Older than";
+"clutter.age.30d" = "30 days";
+"clutter.age.90d" = "90 days";
+"clutter.age.180d" = "180 days";
+"clutter.age.1y" = "1 year";
+"clutter.analyze" = "Analyze";
+"clutter.scanning_progress" = "Scanned %d items — %d matches";
+"clutter.no_matches" = "No matching files";
+"clutter.change_criteria" = "Change Criteria";
+"clutter.results.summary" = "%d files — %@";
+"clutter.sort_by" = "Sort by";
+"clutter.sort.size" = "Size";
+"clutter.sort.age" = "Age";
+"clutter.new_analysis" = "New Analysis";
+"clutter.modified" = "modified %@";
+"clutter.quick_look" = "Quick Look";
