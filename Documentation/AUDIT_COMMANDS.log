@@ -103,3 +103,8 @@ exit 0 => see Documentation/ARCHITECTURE_INVENTORY.md and repository-statistics.
    Single Process() shell-out: Sources/MalwareEngine/MalwareEngine.swift:56 (invokes ClamAV `clamscan`).
    18 files use @MainActor, 4 files use AsyncStream. fr.lproj and Base.lproj Localizable.strings both
    372 lines (parity at line-count level; string-content parity not verified key-by-key this session).
+
+$ (session 2) fix: build-release.sh now auto-syncs Release/latest.json zipSHA256/zipSize/dmgSHA256/dmgSize from the artifacts it just built, instead of requiring a hand edit. Root cause: DMG/ZIP output is not byte-reproducible run to run (embedded timestamps), so the old hand-edit workflow silently desynced on every rebuild — exactly what session 1 caught. Verified via:
+$ bash Scripts/build-release.sh 0.7.0 && bash Scripts/test-release-manifest.sh
+=> ALL CHECKS PASSED (SHA256SUMS verifies, latest.json zip/dmg SHA+size match SHA256SUMS and actual files).
+Added regression check to Scripts/test-release-manifest.sh: runs build-release.sh again and confirms latest.json resyncs to the newly-rebuilt (differently-hashed) artifacts, so the drift class cannot silently return.

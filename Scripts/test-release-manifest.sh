@@ -91,6 +91,22 @@ else
   bad "found a dangerous command presented without a 'never/do not' warning nearby (see UNWARNED lines above)"
 fi
 
+echo "== build-release.sh resyncs latest.json after a rebuild (regression: DMG/ZIP output is not byte-reproducible run to run, so a rebuild without resync silently desyncs the manifest — see AUDIT_COMMANDS.log session 1) =="
+if [ "${SKIP_REBUILD_CHECK:-}" = "1" ]; then
+  echo "SKIP: rebuild check disabled via SKIP_REBUILD_CHECK=1"
+else
+  BEFORE_ZIP_SHA=$(json_get Release/latest.json zipSHA256)
+  BEFORE_DMG_SHA=$(json_get Release/latest.json dmgSHA256)
+  bash Scripts/build-release.sh "$(json_get Release/latest.json version)" >/tmp/build-release-rebuild.out 2>&1
+  AFTER_ZIP_ACTUAL=$(shasum -a 256 "Release/$(json_get Release/latest.json zipName)" | awk '{print $1}')
+  AFTER_DMG_ACTUAL=$(shasum -a 256 "Release/$(json_get Release/latest.json dmgName)" | awk '{print $1}')
+  MANIFEST_ZIP_SHA=$(json_get Release/latest.json zipSHA256)
+  MANIFEST_DMG_SHA=$(json_get Release/latest.json dmgSHA256)
+  [ "$MANIFEST_ZIP_SHA" = "$AFTER_ZIP_ACTUAL" ] && [ "$MANIFEST_DMG_SHA" = "$AFTER_DMG_ACTUAL" ] \
+    && ok "latest.json auto-resynced to the freshly rebuilt artifacts (proves the fix, not just today's snapshot)" \
+    || bad "latest.json did NOT resync after rebuild — see /tmp/build-release-rebuild.out"
+fi
+
 echo "== summary =="
 [ "$fail" -eq 0 ] && echo "ALL CHECKS PASSED" || echo "ONE OR MORE CHECKS FAILED"
 exit $fail
