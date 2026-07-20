@@ -1,14 +1,14 @@
 MacCare Local — Licensing
 
 This repository uses more than one license depending on content type.
-See Documentation/LICENSING.md for the full breakdown.
+See Documentation/LEGAL_AND_LICENSE_STATUS.md for the full breakdown.
 
 - Source code: Apache License 2.0 — see LICENSES/Apache-2.0.txt
 - Original documentation and illustrations: CC-BY-4.0 — see LICENSES/CC-BY-4.0.txt
 - "MacCare Local" name and logo: see TRADEMARKS.md (not covered by the
   above code/content licenses)
 - Third-party dependencies: keep their own upstream licenses — see
-  THIRD_PARTY_NOTICES.md
+  Documentation/THIRD_PARTY.md
 
 Unless a file states otherwise, source code (*.swift, *.sh, build
 configuration) is licensed under Apache-2.0 (full text below).
