@@ -94,3 +94,18 @@
 "protection.quarantine_was" = "was: %@";
 "protection.restore" = "Restore";
 "protection.delete_permanently" = "Delete Permanently";
+
+/* Space Lens */
+"spacelens.title" = "Space Lens";
+"spacelens.idle.title" = "Visualize your storage";
+"spacelens.idle.subtitle" = "Builds an interactive size map. Analysis only — nothing is modified.";
+"spacelens.scan_home" = "Scan Home Folder";
+"spacelens.choose_folder" = "Choose Folder…";
+"spacelens.scanning_progress" = "Measured %d items…";
+"spacelens.new_scan" = "New Scan";
+"spacelens.treemap.accessibility" = "Storage treemap. Use the list below for keyboard navigation.";
+"spacelens.fragment.help" = "%@ — %@";
+"spacelens.access_denied_suffix" = "permission denied, size is a lower bound";
+"spacelens.cloud_placeholder_suffix" = "iCloud placeholder, not fully downloaded";
+"spacelens.access_denied_short" = "permission denied";
+"spacelens.cloud_placeholder_short" = "iCloud placeholder";

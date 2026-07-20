@@ -93,22 +93,22 @@ struct SpaceLensView: View {
             case .ready: readyView
             }
         }
-        .navigationTitle("Space Lens")
+        .navigationTitle(L("spacelens.title"))
     }
 
     private var idleView: some View {
         VStack(spacing: 16) {
             Image(systemName: "circle.hexagongrid")
                 .font(.system(size: 56)).foregroundStyle(MCTheme.accent)
-            Text("Visualize your storage").font(.title2.weight(.semibold))
-            Text("Builds an interactive size map. Analysis only — nothing is modified.")
+            Text(L("spacelens.idle.title")).font(.title2.weight(.semibold))
+            Text(L("spacelens.idle.subtitle"))
                 .foregroundStyle(.secondary)
             HStack {
-                Button("Scan Home Folder") {
+                Button(L("spacelens.scan_home")) {
                     model.start(url: FileManager.default.homeDirectoryForCurrentUser)
                 }
                 .buttonStyle(.borderedProminent)
-                Button("Choose Folder…") {
+                Button(L("spacelens.choose_folder")) {
                     let panel = NSOpenPanel()
                     panel.canChooseDirectories = true
                     panel.canChooseFiles = false
@@ -124,8 +124,8 @@ struct SpaceLensView: View {
     private func scanningView(_ items: Int) -> some View {
         VStack(spacing: 16) {
             ProgressView()
-            Text("Measured \(items) items…").monospacedDigit()
-            Button("Cancel") { model.cancel() }
+            Text(L("spacelens.scanning_progress", items)).monospacedDigit()
+            Button(L("common.cancel")) { model.cancel() }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -157,7 +157,7 @@ struct SpaceLensView: View {
                 Spacer()
                 Text(mcFormatBytes(model.current?.size ?? 0))
                     .font(.headline).monospacedDigit()
-                Button("New Scan") { model.phase = .idle }
+                Button(L("spacelens.new_scan")) { model.phase = .idle }
                     .keyboardShortcut(.cancelAction)
             }
         }
@@ -187,7 +187,7 @@ struct SpaceLensView: View {
             .matchedGeometryEffect(id: node.id, in: zoomSpace, isSource: false)
         }
         .frame(minHeight: 260, maxHeight: 380)
-        .accessibilityLabel("Storage treemap. Use the list below for keyboard navigation.")
+        .accessibilityLabel(L("spacelens.treemap.accessibility"))
     }
 
     @ViewBuilder
@@ -245,9 +245,9 @@ struct SpaceLensView: View {
                 navigate { model.descend(into: rect.node) }
             }
             .onHover { hovering in hoveredID = hovering ? rect.node.id : nil }
-            .help("\(rect.node.path) — \(mcFormatBytes(rect.node.size))"
-                  + (rect.node.isAccessDenied ? " — permission denied, size is a lower bound" : "")
-                  + (rect.node.isCloudPlaceholder ? " — iCloud placeholder, not fully downloaded" : ""))
+            .help(L("spacelens.fragment.help", rect.node.path, mcFormatBytes(rect.node.size))
+                  + (rect.node.isAccessDenied ? " — \(L("spacelens.access_denied_suffix"))" : "")
+                  + (rect.node.isCloudPlaceholder ? " — \(L("spacelens.cloud_placeholder_suffix"))" : ""))
     }
 
     private func childList(for node: SpaceNode) -> some View {
@@ -258,11 +258,11 @@ struct SpaceLensView: View {
                 Text(child.name)
                 if child.isAccessDenied {
                     Image(systemName: "lock.fill").font(.caption2).foregroundStyle(.secondary)
-                        .accessibilityLabel("Permission denied, size is a lower bound")
+                        .accessibilityLabel(L("spacelens.access_denied_suffix"))
                 }
                 if child.isCloudPlaceholder {
                     Image(systemName: "icloud.fill").font(.caption2).foregroundStyle(.secondary)
-                        .accessibilityLabel("iCloud placeholder, not fully downloaded")
+                        .accessibilityLabel(L("spacelens.cloud_placeholder_suffix"))
                 }
                 Spacer()
                 Text(mcFormatBytes(child.size)).monospacedDigit().foregroundStyle(.secondary)
@@ -278,13 +278,13 @@ struct SpaceLensView: View {
                         NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: child.path)])
                     } label: { Image(systemName: "magnifyingglass") }
                     .buttonStyle(.borderless)
-                    .help("Reveal in Finder")
+                    .help(L("common.reveal_in_finder"))
                 }
             }
             .accessibilityElement(children: .combine)
             .accessibilityLabel("\(child.name), \(mcFormatBytes(child.size))"
-                                + (child.isAccessDenied ? ", permission denied" : "")
-                                + (child.isCloudPlaceholder ? ", iCloud placeholder" : ""))
+                                + (child.isAccessDenied ? ", \(L("spacelens.access_denied_short"))" : "")
+                                + (child.isCloudPlaceholder ? ", \(L("spacelens.cloud_placeholder_short"))" : ""))
         }
         .listStyle(.inset)
         .focusable()
