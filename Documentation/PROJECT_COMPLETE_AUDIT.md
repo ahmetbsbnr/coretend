@@ -8,6 +8,22 @@ evidence appendix, next-phase recommendations) were completed this session with 
 content. All items from the session-3 brief's priority list (1-10) were reached. See §25-38 and the
 Conclusion at the bottom for what remains honestly un-covered.
 
+**Session-4 update (requirements-compliance audit, separate vocabulary from this file)**: a distinct,
+later audit pass (sessions 2-4 of the *requirements-reconciliation* effort, not this file's 3
+sessions) built a sourced 69-requirement baseline
+(`Documentation/MASTER_REQUIREMENTS_BASELINE.md`) and scored it against the codebase using a
+different status vocabulary (COMPLIANT_VERIFIED / COMPLIANT_PARTIAL / IMPLEMENTED_UNVERIFIED /
+NON_COMPLIANT / BLOCKED_* — not this file's VERIFIED_COMPLETE / VERIFIED_PARTIAL /
+IMPLEMENTED_UNVERIFIED used in §9/§11 below). **These are two different audits answering two
+different questions**: this file (`PROJECT_COMPLETE_AUDIT.md`) asks "does each of the 41 named
+features in `FEATURE_INVENTORY.md` exist and work?" (41 features, 31 VERIFIED_COMPLETE). The
+requirements audit asks "does the product meet each of 69 requirements sourced from
+SAFETY_MODEL.md/SECURITY_AUDIT/LICENSE/README/design docs/etc?" (69 requirements, 54 MUST). Do not
+quote one audit's numbers as if they were the other's. **Final requirements-compliance verdict:
+MOSTLY_CONFORMING** — see `Documentation/FINAL_COMPLIANCE_SCORECARD.md` for the full scoring and
+`Documentation/REQUIREMENTS_COMPLIANCE_SUMMARY.md` for the rollup. This supersedes any verdict
+language below in §4 that predates the requirements audit.
+
 ## 0. Cover page
 
 - Product: MacCare Local (SwiftUI macOS app)
@@ -49,6 +65,14 @@ delivered `SECURITY_AUDIT_CURRENT.md`, `PRIVACY_AUDIT_CURRENT.md`, `LEGAL_AND_LI
 `DISTRIBUTION_AUDIT.md`, `WEBSITE_AUDIT.md`, `TECHNICAL_DEBT.md`, `PRODUCT_DEBT.md`, and
 `PUBLIC_READINESS_SCORECARD.md` — see those files and `Documentation/DOCUMENT_INDEX.md` for the current
 verdict, not this paragraph.
+
+**Current canonical verdict (session 4 of the requirements-reconciliation effort, supersedes both the
+paragraph above and this file's own §22 INTERNAL_READY label for compliance purposes)**: per the
+sourced 69-requirement traceability matrix, scored per the original brief's §23 formula, the verdict
+is **MOSTLY_CONFORMING** — zero MUST requirement is NON_COMPLIANT or BLOCKED_*, weighted MUST score
+81.9% (44.25/54), but 15 of 54 MUST requirements are below COMPLIANT_VERIFIED (6 COMPLIANT_PARTIAL, 9
+IMPLEMENTED_UNVERIFIED), which rules out FULLY_CONFORMING_VERIFIED per the brief's own capping rule.
+Full breakdown: `Documentation/FINAL_COMPLIANCE_SCORECARD.md`.
 
 ## 5. What MacCare Local is / is not (from evidence gathered this session)
 

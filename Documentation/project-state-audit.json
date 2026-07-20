@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "auditDate": "2026-07-20",
   "auditSession": 1,
-  "historicalSnapshotNote": "This file is session 1's point-in-time snapshot, kept as-is for history. The 'pending-session-2' fields below were resolved by later sessions (2-3) with real evidence — see Documentation/DOCUMENT_INDEX.md for current status per topic, not this file.",
+  "historicalSnapshotNote": "This file is session 1's point-in-time snapshot, kept as-is for history. The 'pending-session-2' fields below were resolved by later sessions (2-3) with real evidence \u2014 see Documentation/DOCUMENT_INDEX.md for current status per topic, not this file.",
   "product": "MacCare Local",
-  "version": "0.7.0 (string only — not a published/tagged release)",
+  "version": "0.7.0 (string only \u2014 not a published/tagged release)",
   "commit": "b33c06b8d68b9b03316821c3f6cfb17252f35011",
   "branch": "feat/public-distribution",
   "repositoryClean": true,
@@ -54,5 +54,22 @@
     "latest.json dmgSize off by 3 bytes from actual DMG",
     "binary contains literal repo checkout path (documented pre-existing limitation, not fixed)"
   ],
-  "scores": "pending-session-2 (no readiness scorecard computed yet)"
+  "scores": "pending-session-2 (no readiness scorecard computed yet)",
+  "requirementsCompliance": {
+    "note": "Added session 4 of the requirements-reconciliation effort (separate from this file own session numbering). See Documentation/FINAL_COMPLIANCE_SCORECARD.md and Documentation/requirements-traceability.json for full detail.",
+    "totalRequirements": 69,
+    "mustRequirements": 54,
+    "shouldRequirements": 14,
+    "statusCounts": {
+      "COMPLIANT_VERIFIED": 44,
+      "COMPLIANT_PARTIAL": 10,
+      "IMPLEMENTED_UNVERIFIED": 10,
+      "NON_COMPLIANT": 1,
+      "BLOCKED_HUMAN": 0,
+      "BLOCKED_ENVIRONMENT": 1,
+      "UNKNOWN": 3
+    },
+    "mustWeightedScorePercent": 81.9,
+    "verdict": "MOSTLY_CONFORMING"
+  }
 }

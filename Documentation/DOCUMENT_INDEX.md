@@ -146,6 +146,20 @@ notes, fine to include but not user-facing).
 | `REQUIREMENTS_DECISION_HISTORY.md` | Verified settled-decision history (Apple/product/architecture/data/site/licensing stances) | current, new this session | public |
 | `DOCUMENT_INDEX.md` | This file | current, new this session | internal |
 
+## This reconciliation phase's session 2-4 documents (requirements-compliance vocabulary)
+
+| File | Role | Status | Audience |
+|---|---|---|---|
+| `MASTER_REQUIREMENTS_BASELINE.md` | 69-requirement sourced baseline (extended session 3) | current, source of truth | public |
+| `REQUIREMENTS_TRACEABILITY_MATRIX.md` + `.json`/`.csv` | Per-requirement evidence, status, corrected session 4 (A11Y-003) | current, source of truth | internal |
+| `REQUIREMENTS_COMPLIANCE_SUMMARY.md` | Rollup counts by priority/domain, updated session 4 | current, source of truth | public |
+| `NON_COMPLIANCE_REGISTER.md` | Every non-clean finding, prioritized P0-P4, corrected session 4 | current | internal |
+| `DEFERRED_REQUIREMENTS.md` | Requirements explicitly deferred, with rationale | current | internal |
+| `REQUIREMENTS_VERIFICATION_EVIDENCE.md` | Supporting evidence detail for the matrix | current | internal |
+| `MANUAL_ACCEPTANCE_TEST_PLAN.md` | Manual/interactive test steps for BLOCKED_ENVIRONMENT items | current | internal |
+| `FINAL_COMPLIANCE_SCORECARD.md` | **New session 4.** Full MUST/SHOULD scoring per brief §23 formula, verdict MOSTLY_CONFORMING | current, source of truth | public |
+| `public-readiness.json` | **New session 4.** Machine-readable twin of the scorecard above | current | internal |
+
 ## Notes on reconciliation performed this session
 
 - Every audit-report file listed above with an old-commit reference (`b8266a29e7ebdbae1791c1c7afb887a8529763eb`,

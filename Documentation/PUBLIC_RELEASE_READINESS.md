@@ -5,6 +5,11 @@ publishable, and what still blocks it. This is a running record, not a
 promise — see `Documentation/HUMAN_BLOCKERS.md` for decisions only a human
 can make.
 
+For the formal, sourced-requirements compliance verdict (69 requirements, MUST/SHOULD scoring,
+verdict MOSTLY_CONFORMING), see `Documentation/FINAL_COMPLIANCE_SCORECARD.md` — that is the
+canonical readiness scoring artifact as of the requirements-reconciliation phase; this file remains
+a narrative build/verification log and is not restated here to avoid duplication drift.
+
 ## Reproducible clean-clone build verification (2026-07-20)
 
 Performed on branch `feat/open-source-foundation`, HEAD at the time

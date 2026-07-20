@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "note": "Created session 4 of the requirements-reconciliation effort. Machine-readable twin of Documentation/FINAL_COMPLIANCE_SCORECARD.md — the requirements-compliance vocabulary (COMPLIANT_VERIFIED etc). Distinct from Documentation/PUBLIC_READINESS_SCORECARD.md, which uses the separate 41-feature-inventory vocabulary (VERIFIED_COMPLETE etc, /100 axis scores). See Documentation/PROJECT_COMPLETE_AUDIT.md for the cross-reference between the two vocabularies.",
+  "auditedSourceCommit": "b7cad75",
+  "totalRequirements": 69,
+  "mustRequirements": 54,
+  "shouldRequirements": 14,
+  "otherRequirements": 1,
+  "statusCounts": {
+    "COMPLIANT_VERIFIED": 44,
+    "COMPLIANT_PARTIAL": 10,
+    "IMPLEMENTED_UNVERIFIED": 10,
+    "NON_COMPLIANT": 1,
+    "BLOCKED_HUMAN": 0,
+    "BLOCKED_ENVIRONMENT": 1,
+    "DEFERRED_APPROVED": 0,
+    "SUPERSEDED": 0,
+    "NOT_APPLICABLE": 0,
+    "UNKNOWN": 3
+  },
+  "mustStatusCounts": {
+    "COMPLIANT_VERIFIED": 39,
+    "COMPLIANT_PARTIAL": 6,
+    "IMPLEMENTED_UNVERIFIED": 9,
+    "NON_COMPLIANT": 0,
+    "BLOCKED_HUMAN": 0,
+    "BLOCKED_ENVIRONMENT": 0
+  },
+  "scoring": {
+    "formula": "COMPLIANT_VERIFIED=1, COMPLIANT_PARTIAL=0.5, IMPLEMENTED_UNVERIFIED=0.25, NON_COMPLIANT=0, BLOCKED_*=0, UNKNOWN=0; DEFERRED_APPROVED/SUPERSEDED/NOT_APPLICABLE excluded from denominator",
+    "mustPointsEarned": 44.25,
+    "mustPointsPossible": 54,
+    "mustScorePercent": 81.9,
+    "shouldPointsEarned": 6.25,
+    "shouldPointsPossible": 14,
+    "shouldScorePercent": 44.6,
+    "overallPointsEarned": 51.5,
+    "overallPointsPossible": 69,
+    "overallScorePercent": 74.6
+  },
+  "verdict": "MOSTLY_CONFORMING",
+  "verdictJustification": "Zero MUST requirement is NON_COMPLIANT or BLOCKED_*; 39/54 MUST are COMPLIANT_VERIFIED; but 15/54 MUST are below COMPLIANT_VERIFIED (6 COMPLIANT_PARTIAL, 9 IMPLEMENTED_UNVERIFIED), which disqualifies FULLY_CONFORMING_VERIFIED per the audit brief's own capping rule.",
+  "sources": [
+    "Documentation/requirements-traceability.json",
+    "Documentation/REQUIREMENTS_TRACEABILITY_MATRIX.md",
+    "Documentation/REQUIREMENTS_COMPLIANCE_SUMMARY.md",
+    "Documentation/FINAL_COMPLIANCE_SCORECARD.md",
+    "Documentation/NON_COMPLIANCE_REGISTER.md"
+  ]
+}
