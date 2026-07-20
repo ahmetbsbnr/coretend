@@ -71,3 +71,31 @@ jobs:
             echo "Localization key count mismatch between Base and fr."
             exit 1
           fi
+
+  distribution-check:
+    runs-on: macos-14
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Doctor (toolchain/prereqs)
+        run: Scripts/doctor.sh
+
+      - name: Version consistency check
+        run: Scripts/check-version-consistency.sh
+
+      - name: Placeholder / license / private-data checks
+        run: |
+          Scripts/check-placeholders.sh
+          Scripts/check-licenses.sh
+          Scripts/check-private-data.sh
+
+      - name: Package ZIP and DMG, verify checksums, run distribution tests
+        run: Scripts/test-distribution.sh 0.0.0-ci
+
+      - name: Release-manifest / checksum / dangerous-command checks
+        run: Scripts/test-release-manifest.sh
+
+      - name: Uninstall script tests
+        run: Scripts/test-uninstall.sh
