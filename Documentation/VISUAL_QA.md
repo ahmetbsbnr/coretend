@@ -28,7 +28,7 @@ Forcer clair: `defaults write local.maccare.app NSRequiresAquaSystemAppearance -
 | Protection | ✅ | — | — | — | état ClamAV honnête, refonte maille à venir |
 | Applications | ✅ | — | — | — | |
 | My Clutter | ✅ | — | — | — | |
-| Space Lens | ⏳ non re-capturé | ⏳ non re-capturé | — | ✅ code (matchedGeometryEffect + a11y list) | Continuité de zoom `matchedGeometryEffect`, breadcrumb, hover/sélection/focus clavier, liste accessible alternative câblés dans `SpaceLensView`/`SpaceLensEngine`. Même blocage de capture que Cleanup ci-dessus. |
+| Space Lens | ✅ | ✅ | — | ✅ code (matchedGeometryEffect + a11y list) | Continuité de zoom `matchedGeometryEffect`, breadcrumb, hover/sélection/focus clavier, liste accessible alternative câblés dans `SpaceLensView`/`SpaceLensEngine`. Captures clair+sombre confirmées: spacelens-{dark,light}.png (display disponible cette session). |
 | Cloud Cleanup | ✅ | ✅ | — | — | |
 | My Activity | ✅ | — | — | — | |
 | Settings | ✅ | ✅ | — | — | version 0.4.0 affichée |

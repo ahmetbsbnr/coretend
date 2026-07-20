@@ -128,3 +128,20 @@ Release app packaged. See PROJECT_STATE.json + FEATURE_MATRIX.md.
   started, stay scoped to Cleanup + Space Lens was the instruction this
   session. Then Step C (fr localization), then Step D (final 0.5.0 audit).
   Do not bump the version past 0.4.1 until Step B/C/D are genuinely done.
+
+## Step B — Space Lens capture verification (v0.4.1, 2026-07-20, resumed session)
+- This environment has an attached display this time (`screencapture` works).
+  Ran `Scripts/package-local.sh`, launched the real bundle, captured Space
+  Lens in light + dark via `Scripts/capture.sh` — both saved to
+  `Documentation/VisualAudit/After/spacelens-{dark,light}.png`. Reviewed
+  visually: sidebar/typography/icon tinting consistent with the rest of the
+  app in both themes, no orphaned text, single focal point. VISUAL_QA.md
+  Space Lens row updated to ✅/✅ (was ⏳/⏳).
+- 60 tests green, release build 0 warnings, package + real launch verified.
+- **Still pending in Step B**: Applications (capsules), My Clutter
+  (overlap), My Activity (chronologie), Cloud Cleanup (plein/contour),
+  Performance (harmonisation), menu bar, Settings (états permission) —
+  not started this session (ran out of reasoning/session budget after the
+  capture-verification pass). Step C (fr) and Step D (0.5.0 audit) not
+  started. Resume with Applications next, per the ordered list in
+  PROJECT_STATE.json / the top-level task instructions.
