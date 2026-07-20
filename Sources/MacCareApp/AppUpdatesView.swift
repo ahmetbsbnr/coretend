@@ -9,10 +9,9 @@ import DesignSystem
 @Observable
 final class AppUpdatesViewModel {
     struct UpdateInfo: Identifiable {
-        enum Source: String { case appStore = "App Store", sparkle = "Sparkle feed", none = "In-app / manual" }
         let id: String
         let app: InstalledApp
-        let source: Source
+        let source: AppUpdateSource
         let feedURL: URL?
     }
 
@@ -26,18 +25,7 @@ final class AppUpdatesViewModel {
         let result = await Task.detached(priority: .utility) { () -> [UpdateInfo] in
             let apps = AppDiscovery().discoverApps()
             return apps.map { app in
-                let plistURL = app.path.appendingPathComponent("Contents/Info.plist")
-                var source: UpdateInfo.Source = .none
-                var feed: URL?
-                if FileManager.default.fileExists(atPath: app.path.appendingPathComponent("Contents/_MASReceipt").path) {
-                    source = .appStore
-                } else if let data = try? Data(contentsOf: plistURL),
-                          let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any],
-                          let feedString = plist["SUFeedURL"] as? String,
-                          let feedURL = URL(string: feedString), feedURL.scheme == "https" {
-                    source = .sparkle
-                    feed = feedURL
-                }
+                let (source, feed) = AppUpdateSource.detect(for: app)
                 return UpdateInfo(id: app.id, app: app, source: source, feedURL: feed)
             }
             .sorted { ($0.source == .none ? 1 : 0, $0.app.name) < ($1.source == .none ? 1 : 0, $1.app.name) }

@@ -4,6 +4,100 @@ import SafetyCore
 import DesignSystem
 import Persistence
 
+/// Real, non-invented update-mechanism detection shared by the Updates tab
+/// and the "by update state" grouping — one place reads Sparkle/App Store
+/// signals so both stay in sync.
+public enum AppUpdateSource: String, Sendable {
+    case appStore = "App Store"
+    case sparkle = "Sparkle feed"
+    case none = "In-app / manual"
+
+    public static func detect(for app: InstalledApp) -> (source: AppUpdateSource, feedURL: URL?) {
+        if FileManager.default.fileExists(atPath: app.path.appendingPathComponent("Contents/_MASReceipt").path) {
+            return (.appStore, nil)
+        }
+        let plistURL = app.path.appendingPathComponent("Contents/Info.plist")
+        if let data = try? Data(contentsOf: plistURL),
+           let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any],
+           let feedString = plist["SUFeedURL"] as? String,
+           let feedURL = URL(string: feedString), feedURL.scheme == "https" {
+            return (.sparkle, feedURL)
+        }
+        return (.none, nil)
+    }
+}
+
+/// Grouping strategies for the Applications list — every key is derived
+/// strictly from real `InstalledApp`/`AppUpdateSource` data.
+enum AppGrouping: String, CaseIterable, Identifiable {
+    case none = "None"
+    case publisher = "Publisher"
+    case size = "Size"
+    case updateState = "Update State"
+    case lastUsed = "Last Used"
+    var id: String { rawValue }
+}
+
+struct AppGroup: Identifiable {
+    let id: String
+    let apps: [InstalledApp]
+}
+
+enum AppGroupingLogic {
+    /// Vendor label from the bundle identifier's second component
+    /// (e.g. "com.acme.App" → "Acme"). Real data; falls back to "Unknown"
+    /// rather than inventing a name when there's no bundle id.
+    static func publisher(_ app: InstalledApp) -> String {
+        guard let id = app.bundleIdentifier else { return "Unknown" }
+        let parts = id.split(separator: ".")
+        guard parts.count >= 2 else { return "Unknown" }
+        return parts[1].capitalized
+    }
+
+    static func sizeBucket(_ app: InstalledApp) -> String {
+        let mb = Double(app.sizeBytes) / 1_000_000
+        switch mb {
+        case ..<50: return "Under 50 MB"
+        case ..<250: return "50–250 MB"
+        case ..<1000: return "250 MB–1 GB"
+        default: return "Over 1 GB"
+        }
+    }
+
+    static func updateState(_ app: InstalledApp) -> String {
+        AppUpdateSource.detect(for: app).source.rawValue
+    }
+
+    static func lastUsedBucket(_ app: InstalledApp) -> String {
+        guard let date = app.lastUsedDate else { return "Unknown" }
+        let days = Calendar.current.dateComponents([.day], from: date, to: Date()).day ?? 0
+        switch days {
+        case ..<7: return "This week"
+        case ..<30: return "This month"
+        case ..<90: return "Last 3 months"
+        case ..<365: return "This year"
+        default: return "Over a year ago"
+        }
+    }
+
+    static func groups(for apps: [InstalledApp], by grouping: AppGrouping) -> [AppGroup] {
+        guard grouping != .none else { return [AppGroup(id: "All Applications", apps: apps)] }
+        let key: (InstalledApp) -> String
+        let order: [String]?
+        switch grouping {
+        case .none: key = { _ in "" }; order = nil
+        case .publisher: key = publisher; order = nil
+        case .size: key = sizeBucket; order = ["Under 50 MB", "50–250 MB", "250 MB–1 GB", "Over 1 GB"]
+        case .updateState: key = updateState; order = [AppUpdateSource.appStore.rawValue, AppUpdateSource.sparkle.rawValue, AppUpdateSource.none.rawValue]
+        case .lastUsed: key = lastUsedBucket; order = ["This week", "This month", "Last 3 months", "This year", "Over a year ago", "Unknown"]
+        }
+        var buckets: [String: [InstalledApp]] = [:]
+        for app in apps { buckets[key(app), default: []].append(app) }
+        let ids = order?.filter { buckets[$0] != nil } ?? buckets.keys.sorted()
+        return ids.map { AppGroup(id: $0, apps: buckets[$0] ?? []) }
+    }
+}
+
 @MainActor
 @Observable
 final class ApplicationsViewModel {
@@ -17,12 +111,17 @@ final class ApplicationsViewModel {
     var selectedAssociatedPaths: Set<String> = []
     var uninstallResult: String?
     var dryRun = true
+    var grouping: AppGrouping = .none
 
     private let discovery = AppDiscovery()
 
     var filteredApps: [InstalledApp] {
         guard !searchText.isEmpty else { return apps }
         return apps.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+    }
+
+    var groupedApps: [AppGroup] {
+        AppGroupingLogic.groups(for: filteredApps, by: grouping)
     }
 
     func load() async {
@@ -95,11 +194,12 @@ struct ApplicationsView: View {
 
 struct InstalledAppsView: View {
     @State private var model = ApplicationsViewModel()
+    @Namespace private var rowTransition
 
     var body: some View {
         HSplitView {
             appList
-                .frame(minWidth: 280)
+                .frame(minWidth: 300)
             detail
                 .frame(minWidth: 360, maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -110,7 +210,13 @@ struct InstalledAppsView: View {
         VStack(spacing: 0) {
             TextField("Search apps", text: $model.searchText)
                 .textFieldStyle(.roundedBorder)
-                .padding(8)
+                .padding(.horizontal, MCSpacing.sm).padding(.top, MCSpacing.sm)
+            Picker("Group by", selection: $model.grouping) {
+                ForEach(AppGrouping.allCases) { Text($0.rawValue).tag($0) }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .padding(MCSpacing.sm)
             switch model.phase {
             case .loading:
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -118,30 +224,61 @@ struct InstalledAppsView: View {
                 Text("No applications found").foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .ready:
-                List(model.filteredApps, selection: Binding(
+                // Native, reliable list is always the primary view — grouping
+                // only changes section boundaries, never replaces the list.
+                List(selection: Binding(
                     get: { model.selectedApp?.id },
                     set: { id in
                         if let app = model.apps.first(where: { $0.id == id }) {
                             Task { await model.select(app) }
                         }
                     }
-                )) { app in
-                    HStack {
-                        Image(nsImage: NSWorkspace.shared.icon(forFile: app.path.path))
-                            .resizable().frame(width: 28, height: 28)
-                        VStack(alignment: .leading) {
-                            Text(app.name)
-                            Text(app.version ?? "").font(.caption).foregroundStyle(.secondary)
+                )) {
+                    ForEach(model.groupedApps) { group in
+                        Section(group.id) {
+                            ForEach(group.apps) { app in
+                                appCapsuleRow(app)
+                                    .tag(app.id)
+                                    .matchedGeometryEffect(id: app.id, in: rowTransition)
+                            }
                         }
-                        Spacer()
-                        Text(mcFormatBytes(app.sizeBytes))
-                            .font(.caption).monospacedDigit().foregroundStyle(.secondary)
                     }
-                    .tag(app.id)
                 }
                 .listStyle(.inset)
+                .animation(MCMotion.snappy, value: model.grouping)
             }
         }
+    }
+
+    private func appCapsuleRow(_ app: InstalledApp) -> some View {
+        let update = AppUpdateSource.detect(for: app).source
+        return HStack(spacing: MCSpacing.sm) {
+            Image(nsImage: NSWorkspace.shared.icon(forFile: app.path.path))
+                .resizable().frame(width: 28, height: 28)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(app.name)
+                HStack(spacing: MCSpacing.xxs) {
+                    Text(app.version ?? "—")
+                    if app.isQuarantined {
+                        Label("Downloaded", systemImage: "arrow.down.circle")
+                            .labelStyle(.iconOnly)
+                            .help("Downloaded from the web or mail and passed Gatekeeper")
+                    }
+                    if update != .none {
+                        Text(update.rawValue)
+                            .padding(.horizontal, MCSpacing.xxs)
+                            .background(MCColor.protection.opacity(0.15), in: Capsule())
+                    }
+                }
+                .font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            Text(mcFormatBytes(app.sizeBytes))
+                .font(.caption).monospacedDigit().foregroundStyle(.secondary)
+        }
+        .padding(.vertical, MCSpacing.xxs)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(app.name), version \(app.version ?? "unknown"), \(mcFormatBytes(app.sizeBytes)), \(update.rawValue)\(app.isQuarantined ? ", downloaded" : "")")
     }
 
     @ViewBuilder
@@ -162,6 +299,11 @@ struct InstalledAppsView: View {
                                     Text(app.architectures.joined(separator: ", "))
                                 }
                                 Text(mcFormatBytes(app.sizeBytes))
+                                if let lastUsed = app.lastUsedDate {
+                                    Text("last used \(lastUsed.formatted(date: .abbreviated, time: .omitted))")
+                                } else {
+                                    Text("last used: unknown")
+                                }
                             }
                             .font(.caption).foregroundStyle(.secondary)
                         }
