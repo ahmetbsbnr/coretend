@@ -312,3 +312,77 @@ Release app packaged. See PROJECT_STATE.json + FEATURE_MATRIX.md.
   instructions — the orchestrating session should reconcile/merge these
   three commits (`fix(performance)`, `feat(menubar)`, `feat(settings)`)
   against any concurrent work on the same files.
+
+## Step C (French localization) — session progress, partial
+
+Worked directly on `main` (no worktree), one commit per module, 82/82
+tests green and `swift build -c release` 0 warnings before every commit.
+
+**Modules localized this session** (added `L("...")` calls in the View
+files, added matching key/value pairs to both
+`Sources/MacCareApp/Resources/Base.lproj/Localizable.strings` and
+`fr.lproj/Localizable.strings`):
+- `CleanupView.swift` (`cleanup.*` keys)
+- `ProtectionView.swift` (`protection.*` keys) — includes the malware-tab
+  and Privacy-tab container strings; `PrivacyCleanerView.swift` itself
+  (the Privacy tab's content) was **not** reached this session
+- `SpaceLensView.swift` (`spacelens.*` keys)
+- `ApplicationsView.swift` (`apps.*` keys) — the `AppGrouping` enum's
+  `rawValue`s (used both as SwiftUI picker labels and as dictionary
+  grouping/sort keys inside `AppGroupingLogic`) were deliberately **not**
+  localized: they're a hybrid of display text and internal logic key,
+  and localizing just the display side would desync the `order` arrays
+  that string-match against them. Left as a known gap — see below.
+- `MyClutterView.swift` (`clutter.*` keys) — the tab container only;
+  `DuplicatesView.swift` and `SimilarImagesView.swift` (its other two
+  tabs) were **not** reached this session
+- `AppUpdatesView.swift` (`updates.*` keys)
+- `LeftoversView.swift` (`leftovers.*` keys)
+
+**Key naming**: kept the established `<module>.<sub>.<name>` lowercase
+dotted convention (e.g. `cleanup.review.truncated`,
+`protection.quarantine_empty`). Shared strings reused existing
+`common.*` keys (`common.cancel`, `common.dry_run`,
+`common.reveal_in_finder` — added `reveal_in_finder` as a new shared
+key since three modules had identical "Reveal in Finder" `.help()` text)
+or `smartcare.scan_again` where the English text was identical to an
+existing key.
+
+**Translation style**: matched the existing natural/professional
+register (not literal) — e.g. "Libérer de l'espace"-style phrasing,
+"Simuler le nettoyage" not "Nettoyage de simulation", "à faible risque"
+constructions kept consistent with Smart Care's hero copy. French
+punctuation spacing before `:` and `»`-style em dashes followed the
+existing file's conventions.
+
+**What was intentionally left untouched** (per task constraints): all
+`ActivityRecord(summary: ...)` strings (internal activity-log text, not
+shown localized anywhere else in the codebase — confirmed by checking
+`SmartCareView.swift`, which already established this same
+English-only-for-activity-log pattern) and all engine/model logic in
+SafetyCore/ScanCore/AppDiscovery/MalwareEngine.
+
+**Verification performed**: grep-based key diff confirms
+`Base.lproj/Localizable.strings` and `fr.lproj/Localizable.strings`
+keys match 1:1 (`diff` of sorted key lists — empty). A second grep
+confirms every `L("...")` call anywhere under `Sources/MacCareApp`
+resolves to a key present in `Base.lproj/Localizable.strings` — no
+dangling references. No live locale-override launch was performed
+(no `Scripts/package-local.sh`/`Scripts/capture.sh` run this session —
+not attempted due to session time constraints, not because it failed).
+
+**Step C is NOT complete.** Modules still needing the same treatment:
+`PrivacyCleanerView.swift`, `DuplicatesView.swift`,
+`SimilarImagesView.swift`, `MyActivityView.swift`,
+`CloudCleanupView.swift`, `PerformanceView.swift`, menu bar
+(`AppEnvironment.swift` / wherever the menu-bar extra lives),
+`SettingsView.swift`, `OnboardingView.swift`, `MacCareApp.swift`, plus a
+final whole-tree grep sweep for any remaining bare `Text("...")` /
+`Button("...")` / `.alert(...)` / `Toggle("...", ...)` literals (alert/
+confirmation-dialog copy specifically was not audited this session).
+Also unresolved: the `AppGrouping`/sort-bucket rawValue strings in
+`ApplicationsView.swift` need a proper fix (e.g. separate a
+localized-display label from the internal grouping key) rather than
+being skipped indefinitely.
+
+Do not start Step D yet — Step C must be finished and verified first.
