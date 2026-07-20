@@ -18,3 +18,22 @@ automatable work in this phase — it's tracked here so it isn't lost.
 All placeholders above are also tracked centrally in
 Documentation/PUBLICATION_PLACEHOLDERS.md so a pre-publication check can
 grep for them.
+
+## New placeholder usages added this session (same tokens, new files)
+
+`[MAINTAINER_HANDLE_TO_DEFINE]` now also appears in `.github/CODEOWNERS`
+(four owner lines) and `.github/ISSUE_TEMPLATE/config.yml`/
+`GOVERNANCE.md`. `[REPO_URL_TO_DEFINE]` appears in
+`.github/ISSUE_TEMPLATE/config.yml`'s contact links. No new placeholder
+tokens were invented — reused exactly what's already tracked above.
+
+## Open item: Dependabot Swift Package Manager ecosystem support
+
+`.github/dependabot.yml` only enables the `github-actions` ecosystem.
+Whether GitHub Dependabot supports a Swift Package Manager ecosystem
+entry was not verified this session (no network check performed); rather
+than guess at a config key that might silently no-op, this was left as a
+documented follow-up in the file itself. Not currently blocking — the
+project has zero external SPM dependencies (see
+Documentation/DEPENDENCIES.md) — but should be revisited before or when a
+real dependency is added.

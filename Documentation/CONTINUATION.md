@@ -611,3 +611,62 @@ Resume with: read the remaining numbered items in the session brief
 that spawned this entry, start at item 5 (user docs), and read the
 actual views/engines before writing each doc — do not invent
 behavior.
+
+## Session 3 (this session)
+
+Completed items 1-5 from the session brief, all source-grounded:
+
+1. **User docs** (Documentation/): USER_GUIDE, INSTALLATION,
+   FIRST_LAUNCH, FULL_DISK_ACCESS, CLEANUP_GUIDE, SMART_CARE,
+   PROTECTION, EXCLUSIONS, RESTORE, QUARANTINE, TROUBLESHOOTING, FAQ,
+   DATA_LOCATIONS. (UNINSTALL.md already existed from an earlier
+   session — left as-is, it was accurate.) Read
+   Sources/MacCareApp/{SmartCareView,CleanupView,ProtectionView,
+   OnboardingView,SettingsView}.swift, Sources/MalwareEngine/
+   MalwareEngine.swift, Sources/Persistence/Store.swift,
+   Sources/SafetyCore/SafetyCore.swift before writing each doc.
+2. **Developer docs**: root DEVELOPMENT.md,
+   Documentation/{ARCHITECTURE_OVERVIEW,BUILD_SYSTEM,TESTING,
+   SAFETYCORE,SCANCORE,PERSISTENCE,MIGRATIONS,LOCALIZATION,
+   RELEASE_PROCESS_DRAFT}.md. (DESIGN_SYSTEM.md already existed.)
+   Verified against Package.swift, Sources/Persistence/{Store,
+   Database}.swift, Sources/SafetyCore/SafetyCore.swift,
+   Sources/ScanCore/ScanCore.swift, Sources/MacCareApp/L10n.swift.
+3. **Governance/support**: GOVERNANCE.md, SUPPORT.md,
+   Documentation/GOOD_FIRST_ISSUES.md, Documentation/RFC_TEMPLATE.md.
+   Simple maintainer-led model, DCO (Signed-off-by), no CLA.
+4. **GitHub community files**: `.github/ISSUE_TEMPLATE/` (config.yml
+   + 6 YAML forms: bug_report, feature_request, compatibility_issue,
+   performance_issue, accessibility_issue, documentation_issue — each
+   requires version/macOS/chip/repro + an explicit
+   no-private-data-attached checkbox), `.github/PULL_REQUEST_TEMPLATE.md`,
+   `.github/CODEOWNERS` (placeholder handle), `.github/dependabot.yml`
+   (github-actions ecosystem only — SPM/"swift" ecosystem support was
+   unverified at write time, left as a documented follow-up rather
+   than guessed at). All YAML validated with `ruby -ryaml`.
+5. **CI workflows**: `.github/workflows/ci.yml` (doctor →
+   repository-doctor → check-licenses/private-data/placeholders →
+   debug build → tests → release build with a warnings-fail-the-build
+   step → package → bundle sanity check → localization key-parity
+   check) and `security.yml` (private-data/placeholder/license checks,
+   a grep-based secret scan, curl-pipe-to-shell / stray-sudo check,
+   hardcoded-developer-path check, forbidden-file-type check). Both:
+   `permissions: contents: read`, `macos-14`, `timeout-minutes` set,
+   no `pull_request_target`, no signing/notarization, no auto-release.
+   Every grep-based check in security.yml was run locally against the
+   current tree and confirmed clean before committing. Reuses
+   Scripts/check-*.sh rather than duplicating logic in YAML, per the
+   brief.
+
+Not started (explicitly out of scope for this phase per the brief):
+website foundation, version bump to 0.6.0, reproducible-clean-clone
+build verification.
+
+83 tests green, `swift build -c release` clean (0 warnings), tree
+committed in small chunks throughout (one commit per doc group / file
+group), no push to any remote.
+
+Resume with: re-read Documentation/HUMAN_BLOCKERS.md, then either (a)
+start the reproducible-clean-clone-build verification, or (b) start
+the website foundation, or (c) polish/expand any doc above if gaps
+are found in review — whichever the project owner prioritizes next.
