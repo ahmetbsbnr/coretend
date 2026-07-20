@@ -1246,3 +1246,10 @@ entries verify against the extracted files; JSON files parse; manifest numbers m
 `FINAL_COMPLIANCE_SCORECARD.md`/`public-readiness.json`; no `/Users/ahmetbasbunar` path found via
 grep across the extracted tree. No push, no deploy, no version bump, no release publication. Real
 repo tree confirmed clean before and after all staging work (`AuditPackages/` never tracked).
+
+AUDIT_OUTPUT_COMMIT for this session: `dfe0ea8` (the prior commit in this session, referenced inside
+the package's own `AUDIT_PACKAGE_MANIFEST.json`). Zip path (local, not tracked):
+`AuditPackages/MacCare-Local-Full-Audit-2026-07-21-4fb406f.zip`, size 23,800,836 bytes, SHA-256
+`ed0b415082928723f96337b4f0b7d827b20b969497ed75413ae13061c160ce18`. Copied to
+`~/Desktop/MacCare-Local-Full-Audit-2026-07-21-4fb406f.zip` (same checksum). 380 files inside the
+package, all checksums verified against `AUDIT_PACKAGE_SHA256SUMS` post-extraction.
