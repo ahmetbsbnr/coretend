@@ -270,3 +270,23 @@
 "cloud.state.local_a11y" = "entièrement local";
 "cloud.state.partial_a11y" = "partiellement local";
 "cloud.state.placeholder_a11y" = "en ligne uniquement, non téléchargé";
+
+/* Performance */
+"performance.nav_title" = "Performance";
+"performance.cpu" = "CPU";
+"performance.memory" = "Mémoire";
+"performance.storage" = "Stockage";
+"performance.of_all_cores" = "de tous les cœurs";
+"performance.memory_detail" = "%@ sur %@";
+"performance.free_detail" = "%@ libres";
+"performance.cpu_chart_title" = "CPU — 2 dernières minutes";
+"performance.system" = "Système";
+"performance.memory_pressure" = "Pression mémoire";
+"performance.thermal_state" = "État thermique";
+"performance.uptime" = "Disponibilité";
+"performance.chart_a11y" = "Graphique d'utilisation du CPU, actuellement %d pour cent";
+"performance.collecting_samples" = "Collecte des échantillons…";
+"performance.launchagents.title" = "Agents de connexion (LaunchAgents)";
+"performance.launchagents.subtitle" = "Agents tiers lancés à la connexion (~/Library/LaunchAgents). Les entrées rompues pointent vers des programmes qui n'existent plus. Inspection uniquement — désactivez-les dans Réglages Système › Éléments de connexion.";
+"performance.launchagents.empty" = "Aucun LaunchAgent utilisateur.";
+"performance.launchagents.missing" = "manquant : %@";
