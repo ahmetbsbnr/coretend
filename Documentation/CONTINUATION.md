@@ -128,3 +128,63 @@ Release app packaged. See PROJECT_STATE.json + FEATURE_MATRIX.md.
   started, stay scoped to Cleanup + Space Lens was the instruction this
   session. Then Step C (fr localization), then Step D (final 0.5.0 audit).
   Do not bump the version past 0.4.1 until Step B/C/D are genuinely done.
+
+## Step B — Applications + My Clutter done (v0.4.1 code, 2026-07-20, resumed session)
+- **Applications**: `Sources/MacCareApp/ApplicationsView.swift` gained
+  `AppGrouping` (none/publisher/size/update state/last used) and
+  `AppGroupingLogic`, all derived from real data only — no invented
+  fields. Extended `InstalledApp` (`Sources/AppDiscovery/AppDiscovery.swift`)
+  with `lastUsedDate` (Spotlight `kMDItemLastUsedDate` via `MDItemCopyAttribute`,
+  `nil` when genuinely unindexed) and `isQuarantined` (real
+  `com.apple.quarantine` xattr via `.quarantinePropertiesKey`). Added
+  `AppUpdateSource` (App Store receipt / Sparkle feed / manual) as a
+  shared public enum so `AppUpdatesView` and the new "update state"
+  grouping read the same detection logic instead of duplicating it.
+  The native `List` stays the sole primary view — grouping only changes
+  `Section` boundaries — with `matchedGeometryEffect` per row so
+  position is preserved across grouping transitions (no separate
+  "constellation" canvas was built; the spec called it optional and the
+  reliable list already carries the real identity/state/size data per
+  row). `LeftoversView` now flags `group.*` container ids and any
+  bundle-id vendor prefix shared by more than one leftover as
+  "Shared / review" (badge + color, never color alone) via
+  `LeftoversViewModel.isAmbiguous`.
+- **My Clutter**: new `Sources/DesignSystem/OverlapView.swift`
+  (`MCOverlapStack`) is the shared overlap/similarity motif — items
+  overlap by default and separate on real `onHover` state (or when
+  Reduce Motion is on), decorative/`accessibilityHidden`, same pattern
+  as `MCMeshView`/`MCFragmentView`. Wired into `DuplicatesView` (icon
+  strip above the existing accessible rows; confirmed via the
+  pre-existing `hardLinksNotTreatedAsDuplicates` test that
+  `DuplicateEngine` already excludes hard links at the inode-collapse
+  stage, never counts them as duplicate bytes — just made that explicit
+  in the UI copy, no engine change needed) and `SimilarImagesView`
+  (wraps the existing `AsyncThumbnail`/QuickLook pipeline — no second
+  thumbnail path). `SimilarImagesEngine`/`SimilarImageGroup`
+  (`Sources/ScanCore/SimilarImagesEngine.swift`) gained real per-member
+  pixel dimensions read via `ImageIO`/`CGImageSourceCopyPropertiesAtIndex`
+  (no full decode) and `bestResolutionURL`, marked in the UI by badge +
+  label, never auto-selected or auto-deleted. `LargeOldFilesView`
+  (`Sources/MacCareApp/MyClutterView.swift`) got a native size/age sort
+  picker, `.quickLookPreview` Quick Look integration, and larger metric
+  numbers (it stays a data table by design, not a heavy visualization).
+- Added a `MacCareAppTests` test target (`Package.swift`) since the new
+  grouping/ambiguity logic lives in the `MacCareApp` executable target,
+  which previously had no test coverage — `@testable import MacCareApp`
+  works fine for an `executableTarget` under SwiftPM 6. 8 new tests
+  (grouping buckets, leftover ambiguity, `SimilarImageGroup`
+  best-resolution) — 70 total, up from 62, all green.
+- Verification loop run in full: `swift build -c release` 0 warnings
+  (from a clean `.build`), `Scripts/test.sh` 70/70 green,
+  `Scripts/package-local.sh` succeeded, bundle launched and stayed up
+  (`ps` + `log show` checked, no crash/error), quit cleanly.
+- **Screenshots NOT captured this session** — same no-attached-display
+  constraint as the Cleanup/Space Lens session; `VISUAL_QA.md` documents
+  Applications and My Clutter as code-done/capture-pending truthfully.
+- **Reprise**: remaining Step B modules are My Activity (chronologie),
+  Cloud Cleanup (plein/contour), Performance (harmonisation), menu bar,
+  Settings (états permission) — none started. After Step B, Step C (fr
+  localization), then Step D (final 0.5.0 audit, which also needs real
+  screen captures for every module done so far — Cleanup, Space Lens,
+  Applications, My Clutter — once a machine with a display is
+  available). Do not bump the version past 0.4.1 until B/C/D are done.
