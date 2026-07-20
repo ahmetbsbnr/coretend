@@ -24,7 +24,7 @@ Forcer clair: `defaults write local.maccare.app NSRequiresAquaSystemAppearance -
 | Smart Care | ✅ | ✅ | ✅ | ✅ code (RM via env) | hero validé idle/scanning/review dans le bundle |
 | Performance | ✅ | ✅ | ✅ | ✅ | anneaux OK, graphe grille+aire |
 | Onboarding ×4 | ✅ | — | fixe 560×460 | ✅ | étapes capturées |
-| Cleanup | ⏳ non re-capturé | ⏳ non re-capturé | — | ✅ code (RM/RT branchés dans MCFragmentView) | Motif fragments agrégés implémenté (`MCFragmentSpec`/`MCFragmentView`), câblé dans `CleanupView`; build release 0 warning + tests verts. Capture bloquée: session sans écran attaché (`screencapture` échoue, aucun accès Accessibility TCC) — à recapturer sur une machine avec affichage. |
+| Cleanup | ✅ | ✅ | — | ✅ code (RM guarded) | MCFragmentView motif verified in Release bundle, rest state captured light+dark: cleanup-fragments-{dark,light}.png |
 | Protection | ✅ | — | — | — | état ClamAV honnête, refonte maille à venir |
 | Applications | ✅ | — | — | — | |
 | My Clutter | ✅ | — | — | — | |
