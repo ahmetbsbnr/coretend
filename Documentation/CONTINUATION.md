@@ -693,3 +693,43 @@ committed in small chunks throughout, no push to any remote.
 Resume with: re-read `Documentation/HUMAN_BLOCKERS.md`; next real work
 is either resolving those human-only decisions, capturing real website/
 app screenshots, or continuing app feature work per `ROADMAP.md`.
+
+## Session: public-distribution punch list (partial — item 1 of 8 only)
+
+Worked from a fixed 8-item public-distribution punch list on
+`feat/public-distribution` (HEAD started at 197aee4). Session budget
+only covered item 1 before running out; items 2-8 below are untouched,
+not started, not stubbed.
+
+1. **DONE**: `Scripts/uninstall.sh` — public-facing uninstaller with
+   `--dry-run` (default)/`--keep-quarantine`/`--remove-all`, strict
+   canonicalized allowlist (app bundle, `~/Library/Application
+   Support/MacCareLocal`, prefs plist — confirmed via grep of
+   `Sources/Persistence/Store.swift` and `Documentation/UNINSTALL.md`
+   that this is the app's *complete* owned-path set; no separate
+   caches/logs dir, no LaunchAgent installed by the app itself),
+   refuses `/` and full `$HOME`, never follows symlinks, no sudo.
+   `Scripts/test-uninstall.sh` added (shell tests against a fake
+   `$HOME`: dry-run no-ops, remove-all/keep-quarantine behavior,
+   symlink-refusal). Relationship to the older `uninstall-local.sh`
+   documented in `DEVELOPMENT.md` and in a header comment in the new
+   script rather than silently duplicated. 83 Swift tests still green,
+   `swift build -c release` not re-verified this session (no Swift
+   source changed).
+2. **NOT STARTED**: anonymized diagnostic export audit/extension +
+   redaction test.
+3. **NOT STARTED**: bug report template update (attach-after-review
+   warning).
+4. **NOT STARTED**: `Documentation/RESTORE.md` extension from actual
+   restore code.
+5. **NOT STARTED**: `Scripts/test-distribution.sh` out-of-repo bundle
+   test.
+6. **NOT STARTED**: distribution test suite (version consistency, arch,
+   resources, checksums, manifest consistency, etc.).
+7. **NOT STARTED**: CI `distribution-check` job.
+8. **NOT STARTED**: website download page extension.
+
+No version bump (still correctly at whatever `Info.plist` says
+pre-this-session — untouched). No push, no repo creation, no DNS/site
+deploy. Resume by picking up item 2: grep `Sources/` for
+"diagnostic"/"export" to find the existing diagnostic code first.
