@@ -733,3 +733,67 @@ No version bump (still correctly at whatever `Info.plist` says
 pre-this-session — untouched). No push, no repo creation, no DNS/site
 deploy. Resume by picking up item 2: grep `Sources/` for
 "diagnostic"/"export" to find the existing diagnostic code first.
+
+## Session: public-distribution punch list, continued (items 2-7 of 8)
+
+Continued from HEAD ad4fa9d (item 1 done in prior session). This
+session completed items 2-7:
+
+2. **DONE**: `Sources/MacCareApp/DiagnosticReport.swift` — anonymized
+   diagnostic export, wired into Settings > Data with a mandatory
+   preview sheet before save. `Tests/MacCareAppTests/DiagnosticReportTests.swift`
+   asserts a fixture with fake sensitive strings never leaks into the
+   built report.
+3. **DONE**: `.github/ISSUE_TEMPLATE/bug_report.yml` updated with a
+   review-before-attaching warning pointing at the new diagnostic export.
+4. **DONE**: `Documentation/RESTORE.md` extended with the real,
+   code-verified behavior of `Quarantine.restore()` — no collision
+   handling, no parent-dir recreation, no missing-volume handling,
+   permission-denied fails cleanly, no bulk restore so no partial-restore
+   case, and (an honest gap) failed restores are only a transient UI
+   message, never logged to Activity/diagnostics.
+5. **DONE**: `Scripts/test-distribution.sh` — out-of-repo bundle test
+   (packages ZIP/DMG, extracts/mounts in mktemp dirs, checks structure/
+   resources/licenses/localizations/arch, non-destructive launch-and-quit
+   smoke test, fresh-DB-init check, full cleanup). Surfaced a genuine
+   SwiftPM `Bundle.module` limitation — the generated accessor embeds an
+   unused `.build` absolute-path fallback string in the binary — documented
+   in `Documentation/KNOWN_LIMITATIONS.md`, not hidden.
+6. **DONE**: `Scripts/test-release-manifest.sh` — checksum/manifest
+   consistency (SHA256SUMS verifies on disk, `latest.json` matches
+   SHA256SUMS and real file sizes), signed/notarized:false declared
+   consistently, and a context-aware scan for dangerous Gatekeeper/SIP
+   commands presented without a "never/do not" warning nearby.
+7. **DONE**: `.github/workflows/ci.yml` `distribution-check` job running
+   version-consistency, placeholder/license/private-data checks,
+   `test-distribution.sh`, `test-release-manifest.sh`, and
+   `test-uninstall.sh`. Publishes nothing. YAML validated with
+   `ruby -ryaml`.
+8. **DONE**: `Website/generate.py` download page extended — a
+   `renderReleaseStatus()` stub driven by a `latest.json`-shaped object
+   (handles manifest-absent/prerelease/stable/signed/notarized/checksum/
+   arch/min-macOS/file-unavailable states; today `MANIFEST_URL` and
+   `STUB_MANIFEST` are both `null` since no public manifest exists) plus
+   a "Source code" section stating GitHub is the future source with no
+   live link yet. Regenerated via `python3 Website/generate.py`, no
+   hand-edits to output HTML.
+
+**NOT DONE**: item 8 of the original 8-item list (the v0.7.0 gate
+check / version bump). Ran out of session budget before doing a full,
+careful pass over every gate criterion — per the explicit instruction
+("if unsure, don't bump"), no version bump was made. `Info.plist` /
+`Configuration/PublicIdentity.example.json` remain at 0.6.0.
+`Documentation/PUBLIC_RELEASE_READINESS.md` and
+`Documentation/FIRST_PUBLIC_RELEASE_CHECKLIST.md` were not updated/created
+this session.
+
+All 86 Swift tests + shell tests green, `swift build -c release` 0
+warnings, tree clean before each commit. No push, no repo creation, no
+DNS/site deploy this session.
+
+Resume by: (a) reviewing `Documentation/PUBLIC_RELEASE_READINESS.md`
+criterion-by-criterion against what's now actually true, (b) creating
+`Documentation/FIRST_PUBLIC_RELEASE_CHECKLIST.md` if the gate genuinely
+passes, (c) bumping version + updating CHANGELOG.md/PROJECT_STATE.json/
+ROADMAP.md/DECISIONS.md/KNOWN_LIMITATIONS.md/HUMAN_BLOCKERS.md only if
+every criterion is genuinely met.
