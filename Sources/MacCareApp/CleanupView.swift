@@ -17,9 +17,12 @@ final class CleanupViewModel {
     var selectedIDs: Set<UUID> = []
     var scannedCount = 0
     var totalBytes: Int64 = 0
+    var totalFindingCount = 0
     var dryRun = true
 
     private var scanTask: Task<Void, Never>?
+
+    var isDisplayTruncated: Bool { totalFindingCount > findings.count }
 
     var selectedBytes: Int64 {
         findings.filter { selectedIDs.contains($0.id) }.reduce(0) { $0 + $1.logicalSize }
@@ -66,6 +69,7 @@ final class CleanupViewModel {
         selectedIDs = []
         scannedCount = 0
         totalBytes = 0
+        totalFindingCount = 0
         scanTask = Task {
             let excluded = (try? await AppEnvironment.shared.store?.exclusions()) ?? []
             let engine = ScanEngine(configuration: ScanConfiguration(excludedPaths: excluded))
@@ -80,6 +84,7 @@ final class CleanupViewModel {
                         findings.append(finding)
                         if finding.preselected { selectedIDs.insert(finding.id) }
                     }
+                    totalFindingCount += 1
                     totalBytes += finding.logicalSize
                 case .error: break
                 case let .finished(scanned, bytes):
@@ -182,8 +187,14 @@ struct CleanupView: View {
     private var reviewView: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("\(model.findings.count) items — \(mcFormatBytes(model.selectedBytes)) selected")
-                    .font(.headline)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(model.findings.count) items — \(mcFormatBytes(model.selectedBytes)) selected")
+                        .font(.headline)
+                    if model.isDisplayTruncated {
+                        Text("\(model.findings.count) of \(model.totalFindingCount) shown — \(mcFormatBytes(model.totalBytes)) found in total")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                }
                 Spacer()
                 Toggle("Dry run", isOn: $model.dryRun).toggleStyle(.switch)
                 Button(model.dryRun ? "Simulate Cleanup" : "Move to Trash") {
