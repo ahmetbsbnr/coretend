@@ -1,3 +1,47 @@
+# Build artifacts
 .build/
 build/
+DerivedData/
+*.xcarchive
+*.dSYM
+
+# Packaged output (release binaries never live in the source repo)
+*.dmg
+*.zip
+*.pkg
+dist/
+
+# macOS
 .DS_Store
+
+# Local runtime/user data (never real user data in the repo)
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.db
+*.log
+*.diag
+
+# Secrets / signing material — never commit
+.env
+.env.*
+*.p12
+*.mobileprovision
+*.cer
+*.pem
+*.key
+*Certificate*.p12
+
+# Node / website tooling
+node_modules/
+.vercel/
+
+# Local agent/editor tooling state
+.claude/
+.vscode/
+.idea/
+
+# Temp captures / scratch
+*.tmp
+Documentation/VisualAudit/_tmp/
