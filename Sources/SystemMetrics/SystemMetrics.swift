@@ -12,6 +12,7 @@ public struct MetricsSnapshot: Sendable {
     public let diskTotalBytes: Int64
     public let uptimeSeconds: Int64
     public let thermalState: String
+    public let networkBytesPerSecond: Int64  // combined in+out, since previous sample (0 on first sample)
 
     public var memoryUsedFraction: Double {
         memoryTotalBytes > 0 ? Double(memoryUsedBytes) / Double(memoryTotalBytes) : 0
@@ -25,6 +26,7 @@ public struct MetricsSnapshot: Sendable {
 /// keeps the previous sample between calls.
 public actor MetricsCollector {
     private var previousTicks: (user: UInt64, system: UInt64, idle: UInt64, nice: UInt64)?
+    private var previousNetwork: (bytes: UInt64, date: Date)?
 
     public init() {}
 
@@ -38,7 +40,33 @@ public actor MetricsCollector {
             diskFreeBytes: diskFree().free,
             diskTotalBytes: diskFree().total,
             uptimeSeconds: Int64(ProcessInfo.processInfo.systemUptime),
-            thermalState: thermalStateName())
+            thermalState: thermalStateName(),
+            networkBytesPerSecond: networkThroughput())
+    }
+
+    /// Combined in+out bytes/sec across all non-loopback interfaces, derived
+    /// from the cumulative counters `getifaddrs` exposes (delta over wall time).
+    private func networkThroughput() -> Int64 {
+        var totalBytes: UInt64 = 0
+        var head: UnsafeMutablePointer<ifaddrs>?
+        guard getifaddrs(&head) == 0, let first = head else { return 0 }
+        defer { freeifaddrs(first) }
+        var cursor: UnsafeMutablePointer<ifaddrs>? = first
+        while let ifa = cursor {
+            defer { cursor = ifa.pointee.ifa_next }
+            let flags = Int32(ifa.pointee.ifa_flags)
+            guard flags & IFF_LOOPBACK == 0, flags & IFF_UP != 0,
+                  ifa.pointee.ifa_addr?.pointee.sa_family == UInt8(AF_LINK),
+                  let data = ifa.pointee.ifa_data else { continue }
+            let network = data.withMemoryRebound(to: if_data.self, capacity: 1) { $0.pointee }
+            totalBytes += UInt64(network.ifi_ibytes) + UInt64(network.ifi_obytes)
+        }
+        let now = Date()
+        defer { previousNetwork = (totalBytes, now) }
+        guard let prev = previousNetwork else { return 0 }
+        let elapsed = now.timeIntervalSince(prev.date)
+        guard elapsed > 0, totalBytes >= prev.bytes else { return 0 }
+        return Int64(Double(totalBytes - prev.bytes) / elapsed)
     }
 
     private func cpuUsage() -> Double {

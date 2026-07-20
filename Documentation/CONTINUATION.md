@@ -239,3 +239,51 @@ Release app packaged. See PROJECT_STATE.json + FEATURE_MATRIX.md.
   Applications, My Clutter, My Activity, Cloud Cleanup — once a machine
   with a display is available). Do not bump the version past 0.4.1 until
   B/C/D are done.
+
+## Menu bar extra harmonization (v0.4.1 code, 2026-07-20, new session)
+- Found existing `MenuBarExtra`/`MenuBarView` in `Sources/MacCareApp/MacCareApp.swift`
+  already fairly close to spec: monochrome template icon, adaptive sampling
+  only while the popover is open (`.task` cancelled by SwiftUI on close),
+  Open/Quit actions. Extended rather than rebuilt.
+- `Sources/SystemMetrics/SystemMetrics.swift`: added `networkBytesPerSecond`
+  to `MetricsSnapshot` and a `networkThroughput()` sampler to the *existing*
+  `MetricsCollector` (delta of cumulative `getifaddrs` counters over wall
+  time, same pattern as the existing CPU-tick delta) — deliberately not a
+  second metrics pipeline, per the task constraint.
+- New `Sources/MacCareApp/MenuBarStatus.swift`: pure, testable derivation of
+  (a) protection status from `ClamAVScanner().isAvailable` +
+  the `ActivityRecord` log (never claims "Protected" when ClamAV is
+  missing, even if a clean scan is on record from before it was removed;
+  surfaces the most recent malware-scan finding as a warning otherwise),
+  and (b) the last Smart Care run summary from the same log. No new
+  persistence, no shared cross-window "is running" state — that would have
+  required touching `SmartCareViewModel`/`ProtectionViewModel`, which are
+  the orchestrators explicitly off-limits this session; "active state" is
+  therefore the last *completed* run's honest outcome, not a live flag.
+  `ponytail:` if a live "Smart Care is running right now" indicator is
+  wanted later, add a small `NotificationCenter` broadcast from those view
+  models (same mechanism already used for `.mcNavigate`) rather than a new
+  state bus.
+- `MacCareApp.swift`: `MenuBarView` popover now shows CPU/Memory/Free
+  space/Network/Thermal (all from the one `MetricsCollector`), a
+  Protection row and a Smart Care row from `MenuBarStatus`, plus a new
+  "Settings…" quick-launch button (reuses the `.mcNavigate` notification
+  `MainWindow` already observes). No color-only signaling — warning state
+  is carried in the row text, not just tint.
+- Added `Tests/MacCareAppTests/MenuBarStatusTests.swift` (6 tests) covering
+  the ClamAV-missing-overrides-clean-scan case, clean/threat states, no-scan
+  state, last-run summary selection, and relative-time bucketing. 81 tests
+  green (was 75).
+- Verification: `Scripts/test.sh` 81/81 green, `swift build -c release` 0
+  warnings, `Scripts/package-local.sh` succeeded, bundle launched via
+  `open`, confirmed alive via `ps` (0.0% CPU idle after settle, no crash
+  log), menu bar item clicked via `osascript`, dark capture taken
+  (`Documentation/VisualAudit/After/2026-07-20-menubar-dark.png`) showing
+  real CPU/Memory/Free space/Network/Thermal numbers and the honest
+  "ClamAV not installed" protection row. Light-mode capture skipped for
+  session time budget, not a technical block — noted honestly in
+  `VISUAL_QA.md` rather than faked.
+- **Reprise**: Settings & permission states not started this session
+  (would be the next Step B item per plan: Full Disk Access/ClamAV/
+  privileged helper/notifications/menu bar agent/folder access states,
+  native controls only, never simulate a granted permission).
