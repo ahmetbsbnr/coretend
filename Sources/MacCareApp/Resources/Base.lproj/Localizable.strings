@@ -184,3 +184,45 @@
 "leftovers.shared_ambiguous_a11y" = "shared or ambiguous";
 "leftovers.shared_review" = "Shared / review";
 "leftovers.not_installed" = "%@ — app with this identifier is not installed";
+
+/* Privacy Cleaner */
+"privacy.detecting" = "Detecting browser profiles…";
+"privacy.empty.title" = "No browser data found";
+"privacy.empty.subtitle" = "Safari data requires Full Disk Access; Chrome and Firefox profiles are detected automatically when present.";
+"privacy.finished.dryrun" = "Dry run: %@ of caches would move to Trash";
+"privacy.finished.moved" = "%@ of caches moved to Trash";
+"privacy.running_warning" = "%@ is running — cache files may be locked. Quit the browser first for a complete clean.";
+"privacy.caches_selected" = "Browser caches — %@ selected";
+"privacy.simulate_clean" = "Simulate Clean";
+"privacy.clean_caches" = "Clean Caches";
+"privacy.browser_profile" = "%@ — %@";
+"privacy.cache_size" = "Cache %@";
+"privacy.history_size" = "History %@";
+"privacy.cookies_size" = "Cookies %@";
+"privacy.footer" = "Only caches are cleaned (rebuilt automatically, moved to Trash). History, cookies and sessions are shown for information; removing them is not yet supported to avoid corrupting browser databases or logging you out.";
+
+/* Duplicates */
+"dupes.idle.title" = "Find duplicate files";
+"dupes.idle.subtitle" = "Compares content with staged hashing in Downloads, Documents and Desktop.\nOne copy of each group is always kept — the suggestion is reviewable.\nHard links to the same file are already the same data and are never counted as duplicates.";
+"dupes.find" = "Find Duplicates";
+"dupes.comparing" = "Comparing %d of %d candidates";
+"dupes.building_inventory" = "Building file inventory…";
+"dupes.none_found" = "No duplicates found";
+"dupes.results.summary" = "%d groups — %@ selected of %@ reclaimable";
+"dupes.move_to_trash" = "Move Copies to Trash";
+"dupes.select_copy" = "Select copy %@";
+"dupes.suggested_keeper" = "Suggested keeper";
+"dupes.group_header" = "%d copies × %@";
+
+/* Similar Images */
+"similar.idle.title" = "Find visually similar images";
+"similar.idle.subtitle" = "Uses on-device Vision analysis of Pictures, Downloads and Desktop.\nPhotos libraries are never touched. Review in Finder; nothing is deleted here.";
+"similar.analyze" = "Analyze Images";
+"similar.analyzing" = "Analyzing %d of %d images";
+"similar.collecting" = "Collecting images…";
+"similar.none_found" = "No similar image groups found";
+"similar.analyze_again" = "Analyze Again";
+"similar.group_header" = "%d similar — %@";
+"similar.best_resolution" = "Best resolution";
+"similar.reveal_a11y" = "Reveal %@ in Finder";
+"similar.best_resolution_a11y" = "best resolution";

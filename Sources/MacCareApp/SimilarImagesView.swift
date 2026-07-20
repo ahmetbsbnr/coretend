@@ -93,10 +93,10 @@ struct SimilarImagesView: View {
                 VStack(spacing: 16) {
                     Image(systemName: "photo.on.rectangle.angled")
                         .font(.system(size: 56)).foregroundStyle(MCTheme.accent)
-                    Text("Find visually similar images").font(.title2.weight(.semibold))
-                    Text("Uses on-device Vision analysis of Pictures, Downloads and Desktop.\nPhotos libraries are never touched. Review in Finder; nothing is deleted here.")
+                    Text(L("similar.idle.title")).font(.title2.weight(.semibold))
+                    Text(L("similar.idle.subtitle"))
                         .multilineTextAlignment(.center).foregroundStyle(.secondary)
-                    Button("Analyze Images") { model.start() }
+                    Button(L("similar.analyze")) { model.start() }
                         .buttonStyle(.borderedProminent)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -105,20 +105,20 @@ struct SimilarImagesView: View {
                     if total > 0 {
                         ProgressView(value: Double(processed), total: Double(total))
                             .frame(width: 260)
-                        Text("Analyzing \(processed) of \(total) images").monospacedDigit()
+                        Text(L("similar.analyzing", processed, total)).monospacedDigit()
                     } else {
                         ProgressView()
-                        Text("Collecting images…")
+                        Text(L("similar.collecting"))
                     }
-                    Button("Cancel") { model.cancel() }
+                    Button(L("common.cancel")) { model.cancel() }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
                 VStack(spacing: 12) {
                     Image(systemName: "checkmark.circle")
                         .font(.system(size: 48)).foregroundStyle(MCTheme.success)
-                    Text("No similar image groups found").font(.title3.weight(.semibold))
-                    Button("Analyze Again") { model.start() }
+                    Text(L("similar.none_found")).font(.title3.weight(.semibold))
+                    Button(L("similar.analyze_again")) { model.start() }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .results:
@@ -126,7 +126,7 @@ struct SimilarImagesView: View {
                     ForEach(model.groups) { group in
                         let members = group.urls.map { ImageMember(id: $0.path, url: $0) }
                         let best = group.bestResolutionURL
-                        Section("\(group.urls.count) similar — \(mcFormatBytes(group.totalBytes))") {
+                        Section(L("similar.group_header", group.urls.count, mcFormatBytes(group.totalBytes))) {
                             // Overlap motif: near-duplicates shown slightly
                             // overlapping, separating on hover. Decorative —
                             // the rows below carry the real accessible detail.
@@ -141,7 +141,7 @@ struct SimilarImagesView: View {
                                 HStack {
                                     Text(url.lastPathComponent).lineLimit(1)
                                     if url == best {
-                                        Text("Best resolution")
+                                        Text(L("similar.best_resolution"))
                                             .font(.caption2.weight(.semibold))
                                             .padding(.horizontal, MCSpacing.xxs).padding(.vertical, 1)
                                             .background(MCColor.coreMint.opacity(0.18), in: Capsule())
@@ -152,7 +152,7 @@ struct SimilarImagesView: View {
                                         NSWorkspace.shared.activateFileViewerSelecting([url])
                                     } label: { Image(systemName: "magnifyingglass") }
                                     .buttonStyle(.borderless)
-                                    .accessibilityLabel("Reveal \(url.lastPathComponent) in Finder\(url == best ? ", best resolution" : "")")
+                                    .accessibilityLabel("\(L("similar.reveal_a11y", url.lastPathComponent))\(url == best ? ", \(L("similar.best_resolution_a11y"))" : "")")
                                 }
                                 .font(.caption)
                             }

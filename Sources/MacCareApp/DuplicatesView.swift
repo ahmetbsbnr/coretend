@@ -119,10 +119,10 @@ struct DuplicatesView: View {
         VStack(spacing: 16) {
             Image(systemName: "doc.on.doc.fill")
                 .font(.system(size: 56)).foregroundStyle(MCTheme.accentSecondary)
-            Text("Find duplicate files").font(.title2.weight(.semibold))
-            Text("Compares content with staged hashing in Downloads, Documents and Desktop.\nOne copy of each group is always kept — the suggestion is reviewable.\nHard links to the same file are already the same data and are never counted as duplicates.")
+            Text(L("dupes.idle.title")).font(.title2.weight(.semibold))
+            Text(L("dupes.idle.subtitle"))
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
-            Button("Find Duplicates") { model.start() }
+            Button(L("dupes.find")) { model.start() }
                 .buttonStyle(.borderedProminent)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -133,12 +133,12 @@ struct DuplicatesView: View {
             if total > 0 {
                 ProgressView(value: Double(processed), total: Double(total))
                     .frame(width: 260)
-                Text("Comparing \(processed) of \(total) candidates").monospacedDigit()
+                Text(L("dupes.comparing", processed, total)).monospacedDigit()
             } else {
                 ProgressView()
-                Text("Building file inventory…")
+                Text(L("dupes.building_inventory"))
             }
-            Button("Cancel") { model.cancel() }
+            Button(L("common.cancel")) { model.cancel() }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -147,8 +147,8 @@ struct DuplicatesView: View {
         VStack(spacing: 12) {
             Image(systemName: "checkmark.circle")
                 .font(.system(size: 48)).foregroundStyle(MCTheme.success)
-            Text("No duplicates found").font(.title3.weight(.semibold))
-            Button("Scan Again") { model.start() }
+            Text(L("dupes.none_found")).font(.title3.weight(.semibold))
+            Button(L("smartcare.scan_again")) { model.start() }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -156,11 +156,11 @@ struct DuplicatesView: View {
     private var resultsView: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text("\(model.groups.count) groups — \(mcFormatBytes(model.selectedBytes)) selected of \(mcFormatBytes(model.wastedBytes)) reclaimable")
+                Text(L("dupes.results.summary", model.groups.count, mcFormatBytes(model.selectedBytes), mcFormatBytes(model.wastedBytes)))
                     .font(.headline)
                 Spacer()
-                Toggle("Dry run", isOn: $model.dryRun).toggleStyle(.switch)
-                Button(model.dryRun ? "Simulate Removal" : "Move Copies to Trash") {
+                Toggle(L("common.dry_run"), isOn: $model.dryRun).toggleStyle(.switch)
+                Button(model.dryRun ? L("leftovers.simulate") : L("dupes.move_to_trash")) {
                     model.removeSelected()
                 }
                 .buttonStyle(.borderedProminent)
@@ -191,10 +191,10 @@ struct DuplicatesView: View {
                                     }
                                 ))
                                 .labelsHidden()
-                                .accessibilityLabel("Select copy \(url.lastPathComponent)")
+                                .accessibilityLabel(L("dupes.select_copy", url.lastPathComponent))
                                 Text(url.lastPathComponent)
                                 if url.path == group.keeper.path {
-                                    Text("Suggested keeper")
+                                    Text(L("dupes.suggested_keeper"))
                                         .font(.caption2.weight(.medium))
                                         .padding(.horizontal, 6).padding(.vertical, 2)
                                         .background(MCTheme.accent.opacity(0.2), in: Capsule())
@@ -210,7 +210,7 @@ struct DuplicatesView: View {
                             }
                         }
                     } header: {
-                        Text("\(group.urls.count) copies × \(mcFormatBytes(group.fileSize))")
+                        Text(L("dupes.group_header", group.urls.count, mcFormatBytes(group.fileSize)))
                     }
                 }
             }
@@ -222,10 +222,10 @@ struct DuplicatesView: View {
         VStack(spacing: 12) {
             Image(systemName: "checkmark.seal")
                 .font(.system(size: 48)).foregroundStyle(MCTheme.success)
-            Text(dryRun ? "Dry run: \(mcFormatBytes(freed)) would be reclaimed"
-                        : "\(mcFormatBytes(freed)) moved to Trash")
+            Text(dryRun ? L("leftovers.finished.dryrun", mcFormatBytes(freed))
+                        : L("leftovers.finished.moved", mcFormatBytes(freed)))
                 .font(.title3.weight(.semibold))
-            Button("Scan Again") { model.start() }
+            Button(L("smartcare.scan_again")) { model.start() }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
