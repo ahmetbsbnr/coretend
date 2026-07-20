@@ -67,3 +67,7 @@ Documentation/VisualAudit/_capture_*/
 *.generated.swift
 TestResults/
 *.xcresult
+
+# Real public-identity values (legal/security contact) — never commit real data here.
+# See Configuration/PublicIdentity.example.json for the template this overrides.
+Configuration/PublicIdentity.local.json
