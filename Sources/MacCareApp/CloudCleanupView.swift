@@ -15,13 +15,33 @@ final class CloudCleanupViewModel {
         let root: URL
     }
 
+    /// Local-vs-remote classification. `placeholder` comes from the real
+    /// `ubiquitousItemDownloadingStatusKey` signal (not downloaded); `partial`
+    /// is a byte-ratio fallback for folders that mix downloaded and
+    /// not-downloaded children. There is no public API to detect Finder's
+    /// "Keep Downloaded" pin state for arbitrary iCloud Drive items, so this
+    /// module does not claim a pinned state it cannot verify.
+    enum SyncState: String, Sendable {
+        case local, partial, placeholder
+
+        static func classify(logicalBytes: Int64, localBytes: Int64, isCloudPlaceholder: Bool) -> SyncState {
+            if isCloudPlaceholder { return .placeholder }
+            guard logicalBytes > 0 else { return .local }
+            if localBytes >= logicalBytes { return .local }
+            if localBytes < logicalBytes / 10 { return .placeholder }
+            return .partial
+        }
+    }
+
     struct Entry: Identifiable {
         let id: String
         let name: String
         let isDirectory: Bool
         let logicalBytes: Int64
         let localBytes: Int64
-        var isMostlyRemote: Bool { logicalBytes > 0 && localBytes < logicalBytes / 10 }
+        let isCloudPlaceholder: Bool
+        var syncState: SyncState { SyncState.classify(logicalBytes: logicalBytes, localBytes: localBytes, isCloudPlaceholder: isCloudPlaceholder) }
+        var isMostlyRemote: Bool { syncState != .local }
     }
 
     enum Phase: Equatable { case detecting, noProviders, ready, scanning, results }
@@ -33,6 +53,10 @@ final class CloudCleanupViewModel {
 
     var totalLogical: Int64 { entries.reduce(0) { $0 + $1.logicalBytes } }
     var totalLocal: Int64 { entries.reduce(0) { $0 + $1.localBytes } }
+    /// Real bytes this module could ever recover locally (i.e. what's
+    /// actually on disk today). This module never downloads or deletes
+    /// anything itself — this is informational, not an action total.
+    var recoverableLocalBytes: Int64 { totalLocal }
 
     func detect() {
         let home = FileManager.default.homeDirectoryForCurrentUser
@@ -79,9 +103,12 @@ final class CloudCleanupViewModel {
     }
 
     /// Synchronous walk (DirectoryEnumerator can't be iterated in async contexts).
+    /// Read-only: only `resourceValues`/`contentsOfDirectory` are used, never
+    /// `startDownloadingUbiquitousItem` — this never triggers a cloud download.
     nonisolated private static func measure(root: URL) -> [Entry] {
                 let fm = FileManager.default
-                let keys: Set<URLResourceKey> = [.isDirectoryKey, .fileSizeKey, .totalFileAllocatedSizeKey, .isSymbolicLinkKey]
+                let keys: Set<URLResourceKey> = [.isDirectoryKey, .fileSizeKey, .totalFileAllocatedSizeKey,
+                                                  .isSymbolicLinkKey, .ubiquitousItemDownloadingStatusKey]
                 guard let top = try? fm.contentsOfDirectory(at: root, includingPropertiesForKeys: Array(keys),
                                                             options: [.skipsHiddenFiles]) else { return [] }
                 var entries: [Entry] = []
@@ -91,19 +118,23 @@ final class CloudCleanupViewModel {
                     if values.isDirectory == true {
                         var logical: Int64 = 0
                         var local: Int64 = 0
+                        var anyPlaceholder = false
                         if let enumerator = fm.enumerator(at: item, includingPropertiesForKeys: Array(keys)) {
                             for case let sub as URL in enumerator {
                                 guard let v = try? sub.resourceValues(forKeys: keys), v.isDirectory != true else { continue }
                                 logical += Int64(v.fileSize ?? 0)
                                 local += Int64(v.totalFileAllocatedSize ?? 0)
+                                if v.ubiquitousItemDownloadingStatus.map({ $0 != .current }) ?? false { anyPlaceholder = true }
                             }
                         }
                         entries.append(Entry(id: item.path, name: item.lastPathComponent,
-                                             isDirectory: true, logicalBytes: logical, localBytes: local))
+                                             isDirectory: true, logicalBytes: logical, localBytes: local,
+                                             isCloudPlaceholder: anyPlaceholder))
                     } else {
                         entries.append(Entry(id: item.path, name: item.lastPathComponent, isDirectory: false,
                                              logicalBytes: Int64(values.fileSize ?? 0),
-                                             localBytes: Int64(values.totalFileAllocatedSize ?? 0)))
+                                             localBytes: Int64(values.totalFileAllocatedSize ?? 0),
+                                             isCloudPlaceholder: values.ubiquitousItemDownloadingStatus.map { $0 != .current } ?? false))
                     }
                 }
                 return entries.sorted { $0.localBytes > $1.localBytes }
@@ -167,7 +198,7 @@ struct CloudCleanupView: View {
             HStack {
                 VStack(alignment: .leading) {
                     Text(model.selectedProvider?.name ?? "").font(.headline)
-                    Text("\(mcFormatBytes(model.totalLocal)) on this Mac of \(mcFormatBytes(model.totalLogical)) total")
+                    Text("\(mcFormatBytes(model.recoverableLocalBytes)) on this Mac of \(mcFormatBytes(model.totalLogical)) total — analysis only, nothing downloaded or deleted")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
@@ -176,15 +207,13 @@ struct CloudCleanupView: View {
             .padding()
             List(model.entries) { entry in
                 HStack {
-                    Image(systemName: entry.isDirectory ? "folder" : "doc")
-                        .foregroundStyle(entry.isMostlyRemote ? .secondary : MCTheme.accent)
+                    // Filled shape = real local bytes on disk; outline shape = online-only
+                    // placeholder not present locally. Shape carries the meaning, not color alone.
+                    Image(systemName: symbolName(for: entry))
+                        .foregroundStyle(entry.syncState == .local ? MCTheme.accent : .secondary)
+                        .accessibilityHidden(true)
                     Text(entry.name)
-                    if entry.isMostlyRemote {
-                        Text("mostly online")
-                            .font(.caption2.weight(.medium))
-                            .padding(.horizontal, 6).padding(.vertical, 2)
-                            .background(.quaternary, in: Capsule())
-                    }
+                    stateBadge(for: entry.syncState)
                     Spacer()
                     VStack(alignment: .trailing) {
                         Text("\(mcFormatBytes(entry.localBytes)) local").monospacedDigit()
@@ -195,9 +224,45 @@ struct CloudCleanupView: View {
                         NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: entry.id)])
                     } label: { Image(systemName: "magnifyingglass") }
                     .buttonStyle(.borderless)
+                    .accessibilityLabel("Reveal \(entry.name) in Finder")
                 }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("\(entry.name), \(accessibilityStateText(entry.syncState)), \(mcFormatBytes(entry.localBytes)) local of \(mcFormatBytes(entry.logicalBytes)) total")
             }
             .listStyle(.inset)
+        }
+    }
+
+    private func symbolName(for entry: CloudCleanupViewModel.Entry) -> String {
+        let base = entry.isDirectory ? "folder" : "doc"
+        return entry.syncState == .local ? "\(base).fill" : base
+    }
+
+    private func stateBadge(for state: CloudCleanupViewModel.SyncState) -> some View {
+        Group {
+            switch state {
+            case .local: EmptyView()
+            case .partial:
+                badge("partially local", color: MCTheme.warning)
+            case .placeholder:
+                badge("online only", color: .secondary)
+            }
+        }
+    }
+
+    private func badge(_ text: String, color: Color) -> some View {
+        Text(text)
+            .font(.caption2.weight(.medium))
+            .padding(.horizontal, 6).padding(.vertical, 2)
+            .background(color.opacity(0.16), in: Capsule())
+            .foregroundStyle(color)
+    }
+
+    private func accessibilityStateText(_ state: CloudCleanupViewModel.SyncState) -> String {
+        switch state {
+        case .local: return "fully local"
+        case .partial: return "partially local"
+        case .placeholder: return "online only, not downloaded"
         }
     }
 }
