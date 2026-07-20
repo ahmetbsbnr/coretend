@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: macos-14
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Doctor (toolchain/prereqs)
+        run: Scripts/doctor.sh
+
+      - name: Repository checks (policy files, private data, placeholders)
+        run: Scripts/repository-doctor.sh
+
+      - name: License check
+        run: Scripts/check-licenses.sh
+
+      - name: Private-data check
+        run: Scripts/check-private-data.sh
+
+      - name: Placeholder check
+        run: Scripts/check-placeholders.sh
+
+      - name: Debug build
+        run: Scripts/build.sh
+
+      - name: Tests
+        run: Scripts/test.sh
+
+      - name: Release build (0 warnings expected)
+        run: swift build -c release 2>&1 | tee /tmp/release-build.log
+
+      - name: Fail on release-build warnings
+        run: |
+          if grep -q "warning:" /tmp/release-build.log; then
+            echo "Release build produced warnings — see log above."
+            exit 1
+          fi
+
+      - name: Package local app bundle
+        run: Scripts/package-local.sh
+
+      - name: Bundle sanity check
+        run: |
+          test -d "build/MacCare Local.app" || { echo "app bundle not found"; exit 1; }
+          test -f "build/MacCare Local.app/Contents/Info.plist" || { echo "Info.plist missing"; exit 1; }
+
+      - name: Localization key-parity check
+        run: |
+          base="Sources/MacCareApp/Resources/Base.lproj/Localizable.strings"
+          fr="Sources/MacCareApp/Resources/fr.lproj/Localizable.strings"
+          base_count=$(grep -c '^"' "$base")
+          fr_count=$(grep -c '^"' "$fr")
+          echo "Base: $base_count keys, fr: $fr_count keys"
+          if [ "$base_count" != "$fr_count" ]; then
+            echo "Localization key count mismatch between Base and fr."
+            exit 1
+          fi
