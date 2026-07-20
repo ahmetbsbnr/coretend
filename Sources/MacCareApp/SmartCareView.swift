@@ -30,6 +30,12 @@ final class SmartCareViewModel {
     var findings: [ScanFinding] = []
     var dryRun = true
 
+    /// Real aggregates from the full stream — never derived from `findings`,
+    /// which is capped for UI display. Keeps Smart Care and Cleanup in agreement.
+    var totalFindingCount = 0
+    var totalFoundBytes: Int64 = 0
+    var isDisplayTruncated: Bool { totalFindingCount > findings.count }
+
     private var scanTask: Task<Void, Never>?
 
     static func initialModules() -> [CareModule] {
@@ -44,13 +50,14 @@ final class SmartCareViewModel {
         ]
     }
 
-    var totalFoundBytes: Int64 { findings.reduce(0) { $0 + $1.logicalSize } }
     var preselectedBytes: Int64 { findings.filter(\.preselected).reduce(0) { $0 + $1.logicalSize } }
 
     func start() {
         guard phase != .running else { return }
         phase = .running
         findings = []
+        totalFindingCount = 0
+        totalFoundBytes = 0
         modules = Self.initialModules()
         scanTask = Task {
             guard let index = modules.firstIndex(where: { $0.id == "cleanup" }), modules[index].enabled else {
@@ -65,9 +72,13 @@ final class SmartCareViewModel {
             for await event in engine.run(rules: UserCleanupRules.all) {
                 switch event {
                 case let .finding(finding):
+                    // ponytail: findings capped at 5000 for UI display only;
+                    // found/bytes below are the real, uncapped totals.
                     if findings.count < 5000 { findings.append(finding) }
                     found += 1
                     bytes += finding.logicalSize
+                    totalFindingCount = found
+                    totalFoundBytes = bytes
                     if found % 64 == 0 {
                         modules[index].state = .scanning(found: found, bytes: bytes)
                     }
@@ -187,7 +198,9 @@ struct SmartCareView: View {
         switch model.phase {
         case .idle: "A scan looks at storage first. Nothing is deleted during a scan."
         case .running: "Reading caches, logs and build data. You can cancel at any time."
-        case .review: "\(mcFormatBytes(model.totalFoundBytes)) found in total. Only low-risk, reversible items are preselected."
+        case .review: model.isDisplayTruncated
+            ? "\(mcFormatBytes(model.totalFoundBytes)) found in total (\(model.findings.count) of \(model.totalFindingCount) shown). Only low-risk, reversible items are preselected."
+            : "\(mcFormatBytes(model.totalFoundBytes)) found in total. Only low-risk, reversible items are preselected."
         case .executing: "Items go to the Trash — you can put them back."
         case .finished: "Details are in My Activity."
         }
