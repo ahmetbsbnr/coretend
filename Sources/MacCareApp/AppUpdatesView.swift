@@ -54,10 +54,10 @@ struct AppUpdatesView: View {
         VStack(spacing: 0) {
             switch model.phase {
             case .loading:
-                ProgressView("Reading update mechanisms…")
+                ProgressView(L("updates.loading"))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
-                Text("No applications found").foregroundStyle(.secondary)
+                Text(L("apps.empty")).foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .ready:
                 List {
@@ -68,19 +68,19 @@ struct AppUpdatesView: View {
                                     .resizable().frame(width: 24, height: 24)
                                 VStack(alignment: .leading) {
                                     Text(info.app.name)
-                                    Text("v\(info.app.version ?? "?") — \(info.source.rawValue)")
+                                    Text(L("updates.version_source", info.app.version ?? "?", info.source.rawValue))
                                         .font(.caption).foregroundStyle(.secondary)
                                 }
                                 Spacer()
-                                Button(info.source == .appStore ? "Open App Store Updates"
-                                       : info.source == .sparkle ? "Open App to Update"
-                                       : "Reveal in Finder") {
+                                Button(info.source == .appStore ? L("updates.open_app_store")
+                                       : info.source == .sparkle ? L("updates.open_app")
+                                       : L("common.reveal_in_finder")) {
                                     model.open(info)
                                 }
                             }
                         }
                     } footer: {
-                        Text("MacCare detects each app's own update channel and sends you there. It never downloads or replaces app binaries itself.")
+                        Text(L("updates.footer"))
                             .font(.caption).foregroundStyle(.secondary)
                     }
                 }

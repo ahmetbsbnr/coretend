@@ -162,3 +162,10 @@
 "clutter.new_analysis" = "Nouvelle analyse";
 "clutter.modified" = "modifié le %@";
 "clutter.quick_look" = "Aperçu rapide";
+
+/* App Updates */
+"updates.loading" = "Lecture des mécanismes de mise à jour…";
+"updates.version_source" = "v%@ — %@";
+"updates.open_app_store" = "Ouvrir les mises à jour App Store";
+"updates.open_app" = "Ouvrir l'application pour mettre à jour";
+"updates.footer" = "MacCare détecte le canal de mise à jour propre à chaque application et vous y redirige. Il ne télécharge ni ne remplace jamais les binaires d'applications lui-même.";
