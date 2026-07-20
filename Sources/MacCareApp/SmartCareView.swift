@@ -148,7 +148,7 @@ struct SmartCareView: View {
             .frame(maxWidth: 720)
             .frame(maxWidth: .infinity)
         }
-        .navigationTitle("Smart Care")
+        .navigationTitle(L("smartcare.nav_title"))
     }
 
     private var heroState: MCHeroState {
