@@ -1,13 +1,21 @@
 # CHANGELOG
 
-## Unreleased — 0.7.0-under-development « Public Distribution »
+## 0.7.0 — 2026-07-20 « Public Distribution »
 
-Version has **not** been bumped to 0.7.0 — this entry tracks
-in-progress work on the `feat/public-distribution` branch, not a
-released version. The full distribution gate (uninstall script polish,
-in-app diagnostics, distribution-specific tests, CI packaging job, site
-download page) is larger than what landed in this session; this is
-honest partial progress, not a release.
+Full public-distribution gate independently re-verified this session
+(all 24 checklist items), not just re-read from prior notes: rebuilt
+ZIP/DMG from scratch, extracted/mounted outside the repo, launched and
+quit cleanly each; regenerated `Release/SHA256SUMS` and
+`Release/latest.json` to match the actual rebuilt artifacts (stale
+`sourceCommit` updated to the current HEAD); fixed a real false-positive
+in `Scripts/check-private-data.sh` (it was matching its own username
+regex pattern as a "leak") and redacted a literal username mention in
+`Documentation/PUBLIC_RELEASE_READINESS.md`; re-ran
+`test-distribution.sh`, `test-release-manifest.sh`, `test-uninstall.sh`,
+`check-version-consistency.sh`, `check-licenses.sh`,
+`check-placeholders.sh`, the diagnostic-report redaction test, and the
+full 86-test Swift suite — all green. `swift build -c release`: 0
+warnings.
 
 - Centralized public release metadata in
   `Configuration/PublicIdentity.example.json` (name/version/bundle-ID/

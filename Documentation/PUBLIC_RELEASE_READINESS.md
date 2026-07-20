@@ -53,9 +53,11 @@ absolute build-tree fallback path is no longer reached.
 ### Path-independence checks
 
 - `strings -a` over the packaged binary: no occurrence of `MACCLEAN`
-  (original repo dirname) or the developer's account name
-  (`ahmetbasbunar`). The only absolute path found was the harmless SwiftPM
-  fallback described above (unreached once the bundle fix is in place).
+  (original repo dirname) or the developer's real macOS account name
+  (redacted here deliberately — see `Scripts/check-private-data.sh`, which
+  greps for it across tracked files). The only absolute path found was the
+  harmless SwiftPM fallback described above (unreached once the bundle fix
+  is in place).
 - `~/Library/Application Support/MacCareLocal/store.sqlite` (WAL mode)
   initialized correctly and was actively written to during the clean-clone
   app's run — persistence path is keyed off the app's bundle identifier,

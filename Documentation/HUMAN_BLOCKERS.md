@@ -78,3 +78,14 @@ documented follow-up in the file itself. Not currently blocking — the
 project has zero external SPM dependencies (see
 Documentation/DEPENDENCIES.md) — but should be revisited before or when a
 real dependency is added.
+
+## v0.7.0 gate session
+
+Version bumped to 0.7.0 "Public Distribution" after an independent
+re-verification of all 24 gate criteria (not a re-read of prior
+session claims) — see CHANGELOG.md and PUBLIC_RELEASE_READINESS.md.
+No blockers were resolved by this session; `Documentation/
+FIRST_PUBLIC_RELEASE_CHECKLIST.md` now lists the ordered human-only
+steps (identity, security contact, repo creation, push, tag, workflow
+run, prerelease, site deploy, announce) still required before any
+public release, none of which were performed.

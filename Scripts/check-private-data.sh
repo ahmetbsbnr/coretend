@@ -13,7 +13,8 @@ echo "Checking for the developer's real macOS username in tracked files..."
 # Excludes Documentation/PUBLICATION_AUDIT.md and REPOSITORY_SANITIZATION.md,
 # which intentionally *document* that this path was checked and found clean.
 if git grep -nIE 'ahmetbasbunar' -- '*.swift' '*.md' '*.json' '*.sh' '*.yml' '*.yaml' \
-    ':!Documentation/PUBLICATION_AUDIT.md' ':!Documentation/REPOSITORY_SANITIZATION.md' 2>/dev/null; then
+    ':!Documentation/PUBLICATION_AUDIT.md' ':!Documentation/REPOSITORY_SANITIZATION.md' \
+    ':!Scripts/check-private-data.sh' 2>/dev/null; then
   echo "FAIL: found the developer's real macOS username above."
   fail=1
 else
