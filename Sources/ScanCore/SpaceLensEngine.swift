@@ -9,14 +9,23 @@ public struct SpaceNode: Sendable, Identifiable {
     public let isDirectory: Bool
     public let size: Int64
     public var children: [SpaceNode]   // largest first; only for directories
+    /// True when this directory's contents couldn't be fully enumerated
+    /// (permission denied) — its size is a lower bound, not exact.
+    public let isAccessDenied: Bool
+    /// True when this file is an iCloud placeholder not downloaded locally —
+    /// its size reflects the placeholder, not the full remote item.
+    public let isCloudPlaceholder: Bool
 
-    public init(name: String, path: String, isDirectory: Bool, size: Int64, children: [SpaceNode] = []) {
+    public init(name: String, path: String, isDirectory: Bool, size: Int64, children: [SpaceNode] = [],
+                isAccessDenied: Bool = false, isCloudPlaceholder: Bool = false) {
         self.id = path
         self.name = name
         self.path = path
         self.isDirectory = isDirectory
         self.size = size
         self.children = children
+        self.isAccessDenied = isAccessDenied
+        self.isCloudPlaceholder = isCloudPlaceholder
     }
 }
 
@@ -62,6 +71,7 @@ public struct SpaceLensEngine: Sendable {
 
     private static let keys: Set<URLResourceKey> = [
         .isDirectoryKey, .isSymbolicLinkKey, .totalFileAllocatedSizeKey, .fileSizeKey, .isPackageKey,
+        .ubiquitousItemDownloadingStatusKey,
     ]
 
     private static func size(directory: URL, depth: Int, maxDepth: Int, minChildSize: Int64,
@@ -70,9 +80,11 @@ public struct SpaceLensEngine: Sendable {
         var otherBytes: Int64 = 0
         var total: Int64 = 0
 
-        let contents = (try? FileManager.default.contentsOfDirectory(
+        let enumeration = try? FileManager.default.contentsOfDirectory(
             at: directory, includingPropertiesForKeys: Array(keys),
-            options: [])) ?? []
+            options: [])
+        let accessDenied = enumeration == nil
+        let contents = enumeration ?? []
 
         for url in contents {
             if Task.isCancelled { break }
@@ -100,10 +112,12 @@ public struct SpaceLensEngine: Sendable {
                 }
             } else {
                 let bytes = Int64(values.totalFileAllocatedSize ?? values.fileSize ?? 0)
+                let isCloudPlaceholder = values.ubiquitousItemDownloadingStatus.map { $0 != .current } ?? false
                 total += bytes
                 if bytes >= minChildSize {
                     children.append(SpaceNode(name: url.lastPathComponent, path: url.path,
-                                              isDirectory: false, size: bytes))
+                                              isDirectory: false, size: bytes,
+                                              isCloudPlaceholder: isCloudPlaceholder))
                 } else { otherBytes += bytes }
             }
         }
@@ -115,7 +129,8 @@ public struct SpaceLensEngine: Sendable {
                                       isDirectory: false, size: otherBytes))
         }
         return SpaceNode(name: directory.lastPathComponent.isEmpty ? directory.path : directory.lastPathComponent,
-                         path: directory.path, isDirectory: true, size: total, children: children)
+                         path: directory.path, isDirectory: true, size: total, children: children,
+                         isAccessDenied: accessDenied)
     }
 
     /// Total allocated size of a subtree without materializing nodes.
