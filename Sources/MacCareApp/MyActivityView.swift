@@ -132,16 +132,16 @@ struct MyActivityView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .navigationTitle("My Activity")
+        .navigationTitle(L("activity.title"))
         .toolbar {
-            Picker("Range", selection: $model.dateRange) {
+            Picker(L("activity.range"), selection: $model.dateRange) {
                 ForEach(ActivityDateRange.allCases) { range in
-                    Text(range.rawValue).tag(range)
+                    Text(activityRangeLabel(range)).tag(range)
                 }
             }
             .pickerStyle(.menu)
-            Picker("Filter", selection: $model.filter) {
-                Text("All kinds").tag(ActivityRecord.Kind?.none)
+            Picker(L("activity.filter"), selection: $model.filter) {
+                Text(L("activity.all_kinds")).tag(ActivityRecord.Kind?.none)
                 ForEach(ActivityRecord.Kind.allCases, id: \.self) { kind in
                     Text(kind.rawValue.capitalized).tag(Optional(kind))
                 }
@@ -150,10 +150,10 @@ struct MyActivityView: View {
             Button {
                 exportToDownloads()
             } label: {
-                Label("Export CSV", systemImage: "square.and.arrow.up")
+                Label(L("activity.export_csv"), systemImage: "square.and.arrow.up")
             }
             .disabled(model.records.isEmpty)
-            Button("Clear History", role: .destructive) {
+            Button(L("activity.clear_history"), role: .destructive) {
                 Task { await model.clear() }
             }
             .disabled(model.allRecords.isEmpty)
@@ -161,14 +161,22 @@ struct MyActivityView: View {
         .task(id: model.filter) { await model.load() }
     }
 
+    private func activityRangeLabel(_ range: ActivityDateRange) -> String {
+        switch range {
+        case .all: L("activity.range.all")
+        case .last7: L("activity.range.last7")
+        case .last30: L("activity.range.last30")
+        }
+    }
+
     private var emptyState: some View {
         VStack(spacing: 12) {
             Image(systemName: "clock.arrow.circlepath")
                 .font(.system(size: 48)).foregroundStyle(MCTheme.accent)
                 .accessibilityHidden(true)
-            Text(model.filter == nil ? "No activity yet" : "No activity of this kind yet")
+            Text(model.filter == nil ? L("activity.empty") : L("activity.empty_kind"))
                 .font(.title3.weight(.semibold))
-            Text("Scans and cleanups will appear here. Everything stays on this Mac.")
+            Text(L("activity.empty.subtitle"))
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -178,7 +186,7 @@ struct MyActivityView: View {
         VStack(spacing: 0) {
             summaryBar
             if model.records.isEmpty {
-                Text("No activity in this range.")
+                Text(L("activity.empty_range"))
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
@@ -206,9 +214,9 @@ struct MyActivityView: View {
 
     private var summaryBar: some View {
         HStack(spacing: MCSpacing.lg) {
-            summaryMetric(label: "Freed (real)", value: mcFormatBytes(model.summary.realFreedBytes), color: MCTheme.success)
-            summaryMetric(label: "Simulated (dry run)", value: mcFormatBytes(model.summary.simulatedFreedBytes), color: .secondary)
-            summaryMetric(label: "Items", value: "\(model.summary.itemCount)", color: .primary)
+            summaryMetric(label: L("activity.freed_real"), value: mcFormatBytes(model.summary.realFreedBytes), color: MCTheme.success)
+            summaryMetric(label: L("activity.simulated_dryrun"), value: mcFormatBytes(model.summary.simulatedFreedBytes), color: .secondary)
+            summaryMetric(label: L("activity.items"), value: "\(model.summary.itemCount)", color: .primary)
             Spacer()
         }
         .padding(MCSpacing.md)
@@ -243,13 +251,14 @@ private struct ActivityRow: View {
             VStack(alignment: .leading, spacing: MCSpacing.xxs) {
                 Text(record.date.formatted(date: .abbreviated, time: .shortened))
                     .font(.caption).foregroundStyle(.secondary)
-                Text("\(record.itemCount) item\(record.itemCount == 1 ? "" : "s") · \(mcFormatBytes(record.bytes)) \(record.dryRun ? "(simulated, no files were changed)" : "(real, applied to disk)")")
+                Text(L("activity.row.detail", record.itemCount, mcFormatBytes(record.bytes),
+                       record.dryRun ? L("activity.row.simulated_suffix") : L("activity.row.real_suffix")))
                     .font(.caption)
                 if record.kind == .restore {
                     Button {
                         NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.protection)
                     } label: {
-                        Label("Open Protection", systemImage: "shield")
+                        Label(L("activity.open_protection"), systemImage: "shield")
                     }
                     .buttonStyle(.link)
                 }
@@ -264,7 +273,7 @@ private struct ActivityRow: View {
                 Text(record.summary)
                 Spacer()
                 if record.kind == .cleanup {
-                    Text(record.dryRun ? "Dry run" : "Completed")
+                    Text(record.dryRun ? L("common.dry_run") : L("activity.completed"))
                         .font(.caption2.weight(.medium))
                         .padding(.horizontal, 6).padding(.vertical, 2)
                         .background(record.dryRun ? Color(nsColor: .quaternaryLabelColor) : MCTheme.success.opacity(0.18), in: Capsule())
@@ -274,7 +283,7 @@ private struct ActivityRow: View {
                     .monospacedDigit().foregroundStyle(.secondary)
             }
         }
-        .accessibilityLabel("\(record.summary), \(record.date.formatted(date: .abbreviated, time: .shortened)), \(record.dryRun ? "simulated" : "real"), \(mcFormatBytes(record.bytes))")
+        .accessibilityLabel("\(record.summary), \(record.date.formatted(date: .abbreviated, time: .shortened)), \(record.dryRun ? L("activity.row.simulated_a11y") : L("activity.row.real_a11y")), \(mcFormatBytes(record.bytes))")
     }
 
     private func icon(for kind: ActivityRecord.Kind) -> String {

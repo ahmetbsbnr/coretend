@@ -226,3 +226,47 @@
 "similar.best_resolution" = "Meilleure résolution";
 "similar.reveal_a11y" = "Afficher %@ dans le Finder";
 "similar.best_resolution_a11y" = "meilleure résolution";
+
+/* My Activity */
+"activity.title" = "Mon activité";
+"activity.range" = "Période";
+"activity.filter" = "Filtre";
+"activity.all_kinds" = "Tous les types";
+"activity.export_csv" = "Exporter en CSV";
+"activity.clear_history" = "Effacer l'historique";
+"activity.range.all" = "Depuis toujours";
+"activity.range.last7" = "7 derniers jours";
+"activity.range.last30" = "30 derniers jours";
+"activity.empty" = "Aucune activité pour l'instant";
+"activity.empty_kind" = "Aucune activité de ce type pour l'instant";
+"activity.empty.subtitle" = "Les analyses et nettoyages apparaîtront ici. Tout reste sur ce Mac.";
+"activity.empty_range" = "Aucune activité sur cette période.";
+"activity.freed_real" = "Libéré (réel)";
+"activity.simulated_dryrun" = "Simulé (essai)";
+"activity.items" = "Éléments";
+"activity.row.detail" = "%d éléments · %@ %@";
+"activity.row.simulated_suffix" = "(simulé, aucun fichier n'a été modifié)";
+"activity.row.real_suffix" = "(réel, appliqué sur le disque)";
+"activity.open_protection" = "Ouvrir Protection";
+"activity.completed" = "Terminé";
+"activity.row.simulated_a11y" = "simulé";
+"activity.row.real_a11y" = "réel";
+
+/* Cloud Cleanup */
+"cloud.nav_title" = "Cloud Cleanup";
+"cloud.empty.title" = "Aucun dossier cloud trouvé";
+"cloud.empty.subtitle" = "Les dossiers locaux d'iCloud Drive, Dropbox, Google Drive et OneDrive sont détectés automatiquement s'ils sont présents.";
+"cloud.measuring" = "Mesure de l'empreinte locale…";
+"cloud.picker.title" = "Analyser l'empreinte du stockage cloud";
+"cloud.picker.subtitle" = "Indique quels fichiers synchronisés occupent réellement de l'espace disque sur ce Mac.\nAnalyse uniquement — supprimer des fichiers synchronisés les retirerait de tous les appareils.";
+"cloud.results.summary" = "%@ sur ce Mac sur %@ au total — analyse uniquement, rien n'est téléchargé ni supprimé";
+"cloud.back" = "Retour";
+"cloud.local_bytes" = "%@ en local";
+"cloud.total_bytes" = "%@ au total";
+"cloud.reveal_a11y" = "Afficher %@ dans le Finder";
+"cloud.entry_a11y" = "%@, %@, %@ en local sur %@ au total";
+"cloud.state.partial" = "partiellement local";
+"cloud.state.placeholder" = "en ligne uniquement";
+"cloud.state.local_a11y" = "entièrement local";
+"cloud.state.partial_a11y" = "partiellement local";
+"cloud.state.placeholder_a11y" = "en ligne uniquement, non téléchargé";
