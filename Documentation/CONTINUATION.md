@@ -979,3 +979,65 @@ regeneration, and — the eventual deliverable — building the sanitized extern
 
 86 tests green throughout. `git status` clean before/after each commit. No push, no `--no-verify`, no
 amend.
+
+## Requirements-reconciliation phase, session 2 (2026-07-20)
+
+Delivered the core traceability matrix promised at the end of session 1:
+`Documentation/REQUIREMENTS_TRACEABILITY_MATRIX.md` +
+`Documentation/requirements-traceability.json` + `.csv` (28/28 requirements, mutually consistent),
+`Documentation/REQUIREMENTS_COMPLIANCE_SUMMARY.md`, `Documentation/NON_COMPLIANCE_REGISTER.md`,
+`Documentation/DEFERRED_REQUIREMENTS.md`, `Documentation/REQUIREMENTS_VERIFICATION_EVIDENCE.md`,
+`Documentation/MANUAL_ACCEPTANCE_TEST_PLAN.md`.
+
+**Result**: 25/25 MUST requirements COMPLIANT_VERIFIED, 1 SHOULD COMPLIANT_VERIFIED, 1 SHOULD
+(DIST-003) COMPLIANT_PARTIAL, 1 disclosed-limitation entry (MAC-003) COMPLIANT_VERIFIED as a
+disclosure. Zero NON_COMPLIANT, zero BLOCKED_*. Several requirements the session-1 baseline
+explicitly flagged as "not independently re-verified" (SAFE-002, SEC-001, SEC-002, PRIV-001) were
+re-verified this session with fresh commands/code reads.
+
+**Real regression found and fixed** (not rubber-stamped): `Scripts/test-release-manifest.sh` was
+actually FAILING at session start — session 1's own `REQUIREMENTS_DECISION_HISTORY.md` mentioned
+`sudo spctl --master-disable` with its "Do not..." warning on the line *after* the mention, which
+the script's look-behind-only heuristic didn't credit as warned. Fixed by reordering the sentence
+(`fix(audit)` commit); re-ran `Scripts/build-release.sh` + `Scripts/test-release-manifest.sh` end
+to end afterward — ALL CHECKS PASSED.
+
+**Extra-rigor items specifically checked, per this session's brief:**
+- SafetyCore audit log: confirmed in-memory only (`public private(set) var auditLog: [String]`,
+  no SQLite backing) — matches what `SAFETY_MODEL.md` already discloses; no baseline requirement
+  claims persistence, so not a compliance failure, but called out rather than assumed.
+- Cleanup rules enumerated directly from `ruleID:` literals in `Sources/`: `apps.leftovers`,
+  `apps.uninstall`, `apps.uninstall.associated`, `clutter.duplicates`, `privacy.browsercache` —
+  five rules exist in code today, nothing pulled from `ROADMAP.md`.
+- "Check for Updates" confirmed to just open `macappstore://showUpdatesPage` via
+  `NSWorkspace.shared.open` — not a real update check (`Sources/MacCareApp/AppUpdatesView.swift:40`).
+- Protection/ClamAV: `ClamAVScanner.isAvailable` gates the real-scan UI structurally; `clamscan`
+  absent in this environment so the honest-unavailable path is what's actually exercised; not
+  visually screenshotted (headless).
+- GitHub workflows and Vercel: no workflow-related or Vercel-hosting claim in the current
+  28-requirement baseline, so nothing to mark here, but the manual test plan documents exactly why
+  they'd be IMPLEMENTED_UNVERIFIED/BLOCKED_HUMAN if such requirements are added later.
+
+Ran fresh this session: `Scripts/doctor.sh` (pass), `Scripts/repository-doctor.sh` (fails only on
+the pre-existing, expected `check-placeholders.sh` count — 132 placeholder tokens, pre-release as
+documented), `Scripts/check-private-data.sh` (fails — flags the developer's real username inside
+`Documentation/PROJECT_COMPLETE_AUDIT.md:25`, a pre-existing self-referential mention, not new this
+session — flagged here for the eventual sanitization pass, not fixed, since scrubbing audit-trail
+docs is real content-editing work out of this session's scope), `Scripts/check-placeholders.sh`
+(132, expected), `Scripts/check-licenses.sh` (pass), `Scripts/check-version-consistency.sh` (pass,
+0.7.0), `bash Scripts/test.sh` (86/86), `Scripts/build-release.sh` + `Scripts/test-release-manifest.sh`
+(pass after the fix above), `Scripts/test-distribution.sh` (fails only on the known, documented
+`Bundle.module` fallback-path-string limitation — does not affect runtime), `Scripts/test-uninstall.sh`
+(pass), `Scripts/verify-download.sh` (usage-only smoke check, needs real args to do more).
+
+**Not reached this session, queued for session 3:** module-by-module functional re-verification
+pass (15 `IMPLEMENTED_UNVERIFIED` `MacCareApp` views per `PROJECT_COMPLETE_AUDIT.md` §9), visual/
+design-charter re-verification against `VISUAL_DIRECTION.md`/`BRAND_SYSTEM.md`/`DESIGN_TOKENS.md`/
+`MOTION_SYSTEM.md`, accessibility re-verification, localization parity re-check, final canonical
+report regeneration (sync `PROJECT_COMPLETE_AUDIT.md` and all JSON/CSV to match this matrix), and
+— not before the matrix and canonical reports are solid, likely session 4+ — the sanitized
+external-audit ZIP construction. The `check-private-data.sh` username finding above should be
+resolved as part of that sanitization pass.
+
+86 tests green throughout this session too. `git status` clean before/after each commit. No push,
+no `--no-verify`, no amend, no version bump.
