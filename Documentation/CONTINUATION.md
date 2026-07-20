@@ -76,3 +76,14 @@ Release app packaged. See PROJECT_STATE.json + FEATURE_MATRIX.md.
   build release, test, package, lancer, capturer via `Scripts/capture.sh`
   clair+sombre, mettre à jour VISUAL_QA.md honnêtement, commit atomique.
   Ne pas passer à 0.5.0 avant que Step B/C/D soient réellement complets.
+
+## Step B — Cleanup fragment flow (2026-07-20, continued)
+- `Sources/DesignSystem/FragmentView.swift`: `MCFragmentView` — rest/scanning/
+  review/executing/success phases, cluster sizes weighted by real per-rule
+  byte totals (`CleanupViewModel.normalizedGroupWeights`), static Canvas,
+  Reduce Motion honored (animation only applied when not reduced).
+  Wired into `CleanupView` idle/scanning/review/done states.
+- 60 tests verts, debug build clean. Release build/package/launch/capture
+  and VISUAL_QA.md update NOT done this pass (time-boxed).
+- **Reprise**: Release build + package + capture(clair/sombre) for Cleanup,
+  update VISUAL_QA.md row, then move to Space Lens identity next.
