@@ -55,6 +55,17 @@ body:
     attributes:
       label: Anonymized logs (optional)
       description: Remove any personal file paths, names, or content before pasting.
+  - type: markdown
+    attributes:
+      value: |
+        **Diagnostic report:** Settings → Data → "Export diagnostic
+        report…" generates an anonymized report (versions, permission
+        states, counts — no usernames, paths, filenames, or app lists).
+        It shows a full preview before you save anything.
+
+        ⚠️ **Always check the contents before posting to GitHub.** Only
+        attach it after you've reviewed every line yourself. Never
+        attach a raw SQLite database or an unredacted full log.
   - type: checkboxes
     id: no-private-data
     attributes:
@@ -62,3 +73,5 @@ body:
       options:
         - label: I have not attached any private data, personal files, or unredacted logs.
           required: true
+        - label: If I attached the diagnostic report, I reviewed its full contents first.
+          required: false
