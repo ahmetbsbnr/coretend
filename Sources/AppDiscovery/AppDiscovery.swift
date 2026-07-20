@@ -1,4 +1,5 @@
 import Foundation
+import CoreServices
 
 /// Metadata for one installed application.
 public struct InstalledApp: Sendable, Identifiable {
@@ -9,9 +10,18 @@ public struct InstalledApp: Sendable, Identifiable {
     public let path: URL
     public let sizeBytes: Int64
     public let architectures: [String]
+    /// Spotlight's `kMDItemLastUsedDate` for the bundle, when indexed. Real
+    /// signal, not synthesized — `nil` means genuinely unknown (Spotlight
+    /// disabled/not yet indexed), never guessed.
+    public let lastUsedDate: Date?
+    /// True when the bundle carries `com.apple.quarantine` (i.e. it arrived
+    /// via a browser/mail download and passed Gatekeeper) — a real xattr,
+    /// used as an honest provenance signal rather than a guess.
+    public let isQuarantined: Bool
 
     public init(name: String, bundleIdentifier: String?, version: String?,
-                path: URL, sizeBytes: Int64, architectures: [String]) {
+                path: URL, sizeBytes: Int64, architectures: [String],
+                lastUsedDate: Date? = nil, isQuarantined: Bool = false) {
         self.id = path.path
         self.name = name
         self.bundleIdentifier = bundleIdentifier
@@ -19,6 +29,8 @@ public struct InstalledApp: Sendable, Identifiable {
         self.path = path
         self.sizeBytes = sizeBytes
         self.architectures = architectures
+        self.lastUsedDate = lastUsedDate
+        self.isQuarantined = isQuarantined
     }
 }
 
@@ -96,7 +108,22 @@ public struct AppDiscovery: Sendable {
             version: version,
             path: bundle,
             sizeBytes: Self.directorySize(bundle),
-            architectures: Self.architectures(of: bundle, plist: plist))
+            architectures: Self.architectures(of: bundle, plist: plist),
+            lastUsedDate: Self.lastUsedDate(of: bundle),
+            isQuarantined: Self.isQuarantined(bundle))
+    }
+
+    /// Reads Spotlight's real "last used" attribute; `nil` if unindexed.
+    static func lastUsedDate(of bundle: URL) -> Date? {
+        guard let item = MDItemCreate(nil, bundle.path as CFString) else { return nil }
+        guard let value = MDItemCopyAttribute(item, kMDItemLastUsedDate) else { return nil }
+        return value as? Date
+    }
+
+    /// True when the bundle still carries the quarantine xattr set by
+    /// browsers/mail on download.
+    static func isQuarantined(_ bundle: URL) -> Bool {
+        (try? bundle.resourceValues(forKeys: [.quarantinePropertiesKey]))?.quarantineProperties != nil
     }
 
     /// Finds files associated with a bundle identifier using exact-id matching only.
