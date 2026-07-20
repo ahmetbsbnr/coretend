@@ -1041,3 +1041,77 @@ resolved as part of that sanitization pass.
 
 86 tests green throughout this session too. `git status` clean before/after each commit. No push,
 no `--no-verify`, no amend, no version bump.
+
+---
+
+## Session 3 — baseline gap fixed: PROD/FUNC/VIS/MOTION/A11Y/I18N/PERF/WEB/DOC/OPS domains added
+
+Session 2's compliance summary was suspiciously clean (27/28 COMPLIANT_VERIFIED) because its
+baseline only covered the "easy," mechanically-checkable domains (safety/security/distribution/
+platform/legal). This session's explicit job was to fix that gap: extend
+`MASTER_REQUIREMENTS_BASELINE.md` with the 10 missing prefixes the original audit brief required,
+re-verify each against real code/docs, and update the matrix/summary/register/deferred files to
+match — a harder, messier pass than session 2's, by design.
+
+**Delivered:**
+- `MASTER_REQUIREMENTS_BASELINE.md`: 41 new requirements (PROD ×4, FUNC ×10, VIS ×3, MOTION ×2,
+  A11Y ×4, I18N ×3, PERF ×4, WEB ×5, DOC ×2, OPS ×4), sourced from `README.md`,
+  `FEATURE_INVENTORY.md`, `VISUAL_DIRECTION.md`, `MOTION_SYSTEM.md`, `DESIGN_TOKENS.md`,
+  `WEBSITE_AUDIT.md`, `GOVERNANCE.md`/`SUPPORT.md`/`CONTRIBUTING.md`/`SECURITY.md`, and direct code
+  reads — not invented. Total baseline: **69 requirements** (28 + 41).
+- `REQUIREMENTS_TRACEABILITY_MATRIX.md` + `.json` + `.csv`: all 41 new entries added with real
+  evidence, all three kept in sync (CSV mechanically regenerated from JSON this session, not
+  hand-typed, to guarantee sync going forward).
+- `REQUIREMENTS_COMPLIANCE_SUMMARY.md`: updated totals — 44 COMPLIANT_VERIFIED, 9 COMPLIANT_PARTIAL,
+  10 IMPLEMENTED_UNVERIFIED, 2 NON_COMPLIANT, 1 BLOCKED_ENVIRONMENT, 3 UNKNOWN, out of 69. A much
+  more realistic mix than session 2's near-perfect score — exactly the point of this session.
+- `NON_COMPLIANCE_REGISTER.md` / `DEFERRED_REQUIREMENTS.md`: extended with the new findings.
+
+**Real re-verification performed this session (not copied forward, not rubber-stamped):**
+- **I18N-001**: fresh FR/EN key-set diff (not just a line-count match like session 1) —
+  372/372 lines, **0 keys only in EN, 0 keys only in FR**. Genuine parity confirmed.
+- **VIS-003 (new NON_COMPLIANT finding)**: grepped for hardcoded colors/fonts bypassing the
+  `MCColor`/`MCFont` design-token system — found real drift: 3 hardcoded `Color(red:...)` values in
+  `SpaceLensView.swift:72-75`, and 25 raw `.font(.system(size:` call sites in `Sources/MacCareApp`.
+- **A11Y-003 (new NON_COMPLIANT finding)**: grepped for Increase Contrast / Reduce Transparency
+  handling — zero matches anywhere in `Sources/`. The app relies entirely on system materials for
+  this, unverified and undocumented as a deliberate choice.
+- **A11Y-001**: 14 of 20 `MacCareApp` view files (+ DesignSystem) contain accessibility-label calls;
+  6 do not (not individually enumerated this session — queued).
+- **I18N-002**: 1 bare `Text("MacCare Local")` literal found (`OnboardingView.swift:57`) — brand
+  name, arguably fine, logged as minor.
+- **FUNC-005**: full read of `AppUpdatesView.swift` + `AppUpdateSource.detect`
+  (`ApplicationsView.swift`) **corrected a wrong initial assumption** made earlier in this same
+  session (that "Check for Updates" was a bare App Store deep-link with no real detection, per
+  session 2's older framing). It actually does real per-app update-*mechanism* classification
+  (App Store / Sparkle feed / none) and routes to the right place — but does not check whether an
+  update is actually *available* (no feed-parsing/version-comparison code exists). README's wording
+  is accurate but could be misread; logged as a minor clarification opportunity, not a defect.
+- **FUNC-003**: re-confirmed the Protection live-scan path (`Process()` invoking `clamscan`) remains
+  genuinely BLOCKED_ENVIRONMENT — no ClamAV installed on this machine, same as every prior session.
+
+**Not reached / genuinely UNKNOWN this session** (flagged honestly, not guessed): A11Y-004 (chart/
+treemap text alternatives), I18N-003 (pluralization/dates/sizes formatting correctness), PERF-003
+(thumbnail generation eagerness). `Scripts/capture.sh` was not re-attempted this session — no
+display access assumed unchanged from every prior session, but this assumption should be spot-checked
+again in session 4/5 rather than treated as permanent.
+
+Ran fresh this session: `bash Scripts/test.sh` (86/86, no regression). Full command list appended to
+`Documentation/AUDIT_COMMANDS.log`.
+
+**Queued for session 4 (final canonical report regeneration, per the original brief):**
+1. Synchronize `PROJECT_COMPLETE_AUDIT.md` and ALL machine-readable JSON/CSV (including
+   `project-state-audit.json`, `feature-inventory.json/csv`) to match the now-69-requirement matrix
+   — these still reflect the old 28-requirement world.
+2. Final scoring per §23 of the original brief: MUST/SHOULD/MAY breakdown (this session computed
+   54 MUST / 14 SHOULD / 1 disclosed-limitation — see `REQUIREMENTS_COMPLIANCE_SUMMARY.md`) and a
+   verdict from NON_CONFORMING through FULLY_CONFORMING_VERIFIED. **Note for session 4**: with 15 of
+   54 MUST requirements not COMPLIANT_VERIFIED (5 COMPLIANT_PARTIAL, 9 IMPLEMENTED_UNVERIFIED, 1
+   NON_COMPLIANT — A11Y-003), the verdict is capped below FULLY_CONFORMING_VERIFIED per the brief's
+   own scoring rule — do not round this up.
+3. Only once the canonical reports are solid: sanitized external-audit ZIP construction (session
+   5+, not before). The pre-existing `check-private-data.sh` finding (developer username in
+   `PROJECT_COMPLETE_AUDIT.md:25`) should be resolved as part of that sanitization pass, still not
+   fixed as of this session (out of scope, correctly deferred, not forgotten).
+
+`git status` clean before/after each commit. No push, no `--no-verify`, no amend, no version bump.
