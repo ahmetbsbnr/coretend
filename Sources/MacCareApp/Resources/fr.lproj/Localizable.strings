@@ -109,3 +109,27 @@
 "spacelens.cloud_placeholder_suffix" = "espace réservé iCloud, non entièrement téléchargé";
 "spacelens.access_denied_short" = "accès refusé";
 "spacelens.cloud_placeholder_short" = "espace réservé iCloud";
+
+/* Applications */
+"apps.uninstall.dryrun_result" = "Simulation : %d éléments (%@) seraient déplacés vers la Corbeille";
+"apps.uninstall.result" = "%d éléments (%@) déplacés vers la Corbeille";
+"apps.tab.installed" = "Installées";
+"apps.tab.leftovers" = "Résidus";
+"apps.tab.updates" = "Mises à jour";
+"apps.title" = "Applications";
+"apps.search" = "Rechercher une application";
+"apps.group_by" = "Regrouper par";
+"apps.empty" = "Aucune application trouvée";
+"apps.downloaded" = "Téléchargée";
+"apps.downloaded.help" = "Téléchargée depuis le web ou un e-mail et validée par Gatekeeper";
+"apps.a11y.version" = "version %@";
+"apps.unknown" = "inconnue";
+"apps.unknown_bundle_id" = "identifiant de bundle inconnu";
+"apps.version_prefix" = "v%@";
+"apps.last_used" = "dernière utilisation %@";
+"apps.last_used_unknown" = "dernière utilisation : inconnue";
+"apps.associated_data" = "Données associées";
+"apps.associated_data.empty" = "Aucun fichier associé trouvé pour cet identifiant de bundle.";
+"apps.simulate_uninstall" = "Simuler la désinstallation";
+"apps.uninstall" = "Désinstaller (déplacer vers la Corbeille)";
+"apps.select_prompt" = "Sélectionnez une application";
