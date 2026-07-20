@@ -445,3 +445,78 @@ the two deliberate brand-name exceptions and the one flagged
 screen captures for all modules, then version bump) is next.** Do not
 start it in this session per instructions; the orchestrating session
 should pick it up.
+
+## Step C — follow-up correction session (same day, second peer)
+
+A second concurrent session (also on `main`, same reasons as above —
+network drops force short overlapping sessions) picked up right after
+the "COMPLETE" entry above and found it was not quite accurate:
+
+- The whole-tree sweep in the prior entry grepped for literal-quote
+  patterns like `Text("`, which cannot catch `Text(someVariable)`
+  calls. Two real gaps slipped through on that basis:
+  - `MacCareApp.swift`: the sidebar list (`Text(module.rawValue)`) and
+    `PlaceholderView` (`Text(module.rawValue)`) rendered `ModuleID`'s
+    raw English case values directly — "Protection", "My Activity",
+    etc. — untranslated, even though the sidebar *group headers*
+    (`sidebar.*` keys) were already localized. Fixed by adding
+    `ModuleID.label` (a switch over `L(...)` keys, reusing existing
+    keys like `apps.title`/`clutter.title` where they matched, adding
+    two new ones — `module.protection`, `module.my_activity` — where
+    no equivalent existed) and switching both call sites to it.
+    `rawValue` is untouched and still used for `Identifiable`/`tag`
+    and the `lastSmartCare` prefix-match in `MacCareApp.swift`.
+  - `SmartCareView.swift`'s `.navigationTitle("Smart Care")` — the
+    prior entry called this an intentional brand-name-style exception;
+    on reflection it's just a missed wrap (unlike "MacCare Local",
+    "Smart Care" is a translatable feature name, not the app's brand).
+    Wrapped as `L("smartcare.nav_title")`.
+- **`AppGrouping` gap partially closed, not fully**: added
+  `AppGrouping.displayName` (switch over new `apps.grouping.*` keys)
+  and pointed the picker (`ForEach(AppGrouping.allCases) { Text($0.displayName)... }`)
+  at it. `rawValue` is now display-only-decoupled for the *picker*.
+  **Still open**: `AppGroupingLogic.groups(for:by:)`'s bucket keys —
+  `sizeBucket`/`lastUsedBucket`/publisher names/`AppUpdateSource.rawValue`
+  — are used both as `Dictionary` keys *and* as the `Section(group.id)`
+  header text rendered in the list, so those section headers (e.g.
+  "Under 50 MB", "This week", "App Store") are still English-only.
+  Splitting that properly needs a bucket-key/display-label pair per
+  bucket (not just per grouping mode), which touches
+  `AppGroupingLogic`'s internals more than a pure string-wrap pass —
+  left as a scoped follow-up, not attempted here to avoid touching
+  grouping/sort logic under a localization task.
+- Re-ran the full grep sweep with a pattern that also catches
+  parenthesized identifiers, not just literal strings, across every
+  `Text(`/`Button(`/`Label(`/`Toggle(`/`navigationTitle(`/
+  `LabeledContent(`/`MCStatusBadge(`/`.confirmationDialog(`/
+  `ProgressView(`/`.help(`/`.accessibilityLabel(`/`.accessibilityHint(`
+  call site. Two remaining un-wrapped literals confirmed intentional:
+  `Text("MacCare Local")` (`OnboardingView.swift`, brand name) and the
+  dynamic `.accessibilityLabel("\(child.name), ...")` string in
+  `SpaceLensView.swift` (interpolates real file data; its own
+  suffixes are already `L(...)`-wrapped).
+- Key-consistency re-verified: `Base.lproj`/`fr.lproj` sorted key lists
+  are identical (empty diff); no dangling `L("...")` references.
+- **Live verification actually performed this time**:
+  `Scripts/package-local.sh` built and signed `build/MacCare Local.app`;
+  launched `Contents/MacOS/MacCareLocal -AppleLanguages "(fr)"`
+  directly (no display attached, so `Scripts/capture.sh` still fails
+  the same way as every prior session —
+  `System Events` process index -1719). `ps` confirmed the process
+  came up and stayed up; `log show --predicate 'process == "MacCareLocal"'`
+  over the run showed no fault/error entries; quit cleanly via
+  `osascript`. This is process-level verification (no crash, no
+  logged fault under a French locale), not visual proof of correct
+  text rendering — real screen captures for all 17 modules remain
+  Step D's job, as already planned.
+- `swift build -c release` 0 warnings, `Scripts/test.sh` 82/82 green
+  before every commit in this follow-up session too.
+
+**Step C is genuinely complete** for the string-wrapping scope of this
+task (every static English UI literal reachable by grep, including
+identifier-valued `Text(...)` calls, is now behind `L(...)` with a
+matching French translation), with one explicitly-scoped exception
+carried forward: `AppGroupingLogic`'s internal bucket-key section
+headers in Applications' grouped view. **Step D (final 0.5.0 visual
+audit with real screen captures once a display is available, then the
+version bump) is next.**
