@@ -361,3 +361,7 @@
 "apps.grouping.size" = "Taille";
 "apps.grouping.update_state" = "État des mises à jour";
 "apps.grouping.last_used" = "Dernière utilisation";
+
+/* Module display names (sidebar / placeholder) */
+"module.protection" = "Protection";
+"module.my_activity" = "Mon activité";
