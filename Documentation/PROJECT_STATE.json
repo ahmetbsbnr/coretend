@@ -1,7 +1,7 @@
 {
   "project": "MacCare Local",
-  "version": "0.3.0",
-  "phase": "2 — all modules functional",
+  "version": "0.4.0",
+  "phase": "3 — Visual Foundation (Orbital Ecology)",
   "toolchain": "Swift 6.3.2 via CommandLineTools (no Xcode installed)",
   "build_system": "SwiftPM; app bundle assembled by Scripts/package-local.sh",
   "test_framework": "Swift Testing (XCTest unavailable without Xcode); run via Scripts/test.sh",
@@ -26,7 +26,11 @@
     "Privacy Cleaner (profiles Chrome/Firefox/Safari, cache-only clean, browser-running warning)",
     "App Updater (App Store receipt / Sparkle feed detection, no downloads)",
     "Accessibility labels on selection toggles",
-    "create-test-volume.sh"
+    "create-test-volume.sh",
+    "Orbital Ecology design system (MCColor/MCSpacing/MCMotion/MCFont, composants, Reduce Motion/Transparency)",
+    "Core Bloom: icône app native (CG->icns 16-1024), menu bar template, hero Smart Care",
+    "Sidebar groupée, Smart Care hero états réels, Performance metric cards, onboarding 4 étapes",
+    "Scripts/capture.sh (QA visuelle bundle réel), captures Before/After"
   ],
   "partial": [
     "Protection: engine unavailable on this machine (ClamAV not installed) — UI states it honestly",
@@ -39,15 +43,15 @@
     "browser history/cookie removal (deliberately deferred: db corruption risk)"
   ],
   "tests": {
-    "passing": 46,
+    "passing": 57,
     "failing": 0
   },
-  "last_build": "Debug + Release green, 0 warnings; v0.3.0 packaged",
+  "last_build": "Release green, 0 warnings; v0.4.0 packaged with brand assets",
   "next_goals": [
+    "Identités secondaires modules (Cleanup regroupement animé, Protection maille, Space Lens zoom continu)",
+    "Corriger: scan déclenche TCC Apple Music (exclure bibliothèques média), totaux plafonnés à 5000 findings",
     "fr localization",
-    "FSEvents watch (requires ClamAV)",
-    "helper privilégié si identité de signature disponible",
-    "perf profiling with os_signpost"
+    "Migrer les vues restantes vers tokens MC*"
   ],
   "limitations": [
     "No Xcode: ad-hoc signing only, no UI tests, no notarization",

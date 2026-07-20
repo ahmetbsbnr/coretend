@@ -1,5 +1,28 @@
 # CHANGELOG
 
+## 0.4.0 — 2026-07-20 « Visual Foundation »
+- Direction artistique « Orbital Ecology »; signature Core Bloom (noyau + 3 arcs
+  asymétriques) partagée logo/icône/héro (MCBloomGeometry).
+- DesignSystem refondu: MCColor adaptatif clair/sombre (Core Mint, Ion Violet,
+  Solar Amber, Pulse Coral + rôles), MCSpacing/MCRadius/MCSize/MCMotion/MCOpacity,
+  MCFont, composants (MCCard+, MCSectionHeader, MCStatusBadge, MCMetricCard,
+  MCEmptyState/MCErrorState, MCModuleIdentity, CoreBloomMark, OrbitalProgressView,
+  MCHeroCoreView). Reduce Motion/Transparency respectés à la source.
+- Icône macOS générée nativement (CoreGraphics → iconset → icns, 16→1024 px),
+  icône barre des menus template; assets copiés dans le bundle (plus de
+  dépendance au dépôt). Version 0.4.0.
+- Sidebar groupée (Soin/Espace/Optimiser/Protéger/Activité), fenêtre min 860×580,
+  tint Core Mint.
+- Smart Care recomposé: Hero Core lié aux états réels (idle/scanning/review/
+  executing/success), microcopy honnête, footer dédupliqué.
+- Performance: MCMetricCard (fini les troncatures), graphe CPU grille+aire+état vide.
+- Onboarding 4 étapes, skippable, reprenable (étape persistée), FDA honnête.
+- Tests design system (tokens, géométrie, couleurs adaptatives, ressources): 57 verts.
+- Docs: VISUAL_DIRECTION, BRAND_SYSTEM, DESIGN_TOKENS, MOTION_SYSTEM,
+  VISUAL_AUDIT, VISUAL_QA, VISUAL_TOOLING, ASSET_PIPELINE; captures Before/After.
+- Bugs données consignés (prompts TCC média pendant scan; totaux plafonnés 5000)
+  → prochain audit fonctionnel.
+
 ## 0.1.0 — 2026-07-19
 - SwiftPM foundation, SafetyCore, ScanCore, FileRules (4 user cleanup rules),
   DesignSystem tokens, SwiftUI shell with working Cleanup module

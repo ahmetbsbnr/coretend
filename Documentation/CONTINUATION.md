@@ -24,3 +24,14 @@ Release app packaged. See PROJECT_STATE.json + FEATURE_MATRIX.md.
 - DirectoryEnumerator iteration is banned in async contexts → sync static helpers.
 - /var vs /private/var: use ScanConfiguration.canonical for path comparisons.
 - @Observable stored property initializers cannot reference covariant Self.
+
+## v0.4.0 — Visual Foundation (2026-07-20)
+- Direction: Orbital Ecology / Core Bloom. Tout est documenté dans
+  VISUAL_DIRECTION.md, BRAND_SYSTEM.md, DESIGN_TOKENS.md, MOTION_SYSTEM.md,
+  VISUAL_AUDIT.md (+ bugs données à corriger), VISUAL_QA.md, ASSET_PIPELINE.md.
+- QA visuelle: `Scripts/capture.sh out.png "Nom Module"` sur le bundle réel;
+  clair via defaults NSRequiresAquaSystemAppearance.
+- Assets: régénérer via swift Resources/Brand/Sources/generate-brand-assets.swift
+  + iconutil (voir ASSET_PIPELINE.md). package-local.sh copie dans le bundle.
+- Reprise: densifier identités secondaires des modules (voir VISUAL_QA tableau),
+  puis corriger les 2 bugs données notés dans VISUAL_AUDIT.md.

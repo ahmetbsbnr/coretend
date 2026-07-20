@@ -191,11 +191,11 @@ struct MainWindow: View {
                 PlaceholderView(module: selection ?? .smartCare)
             }
         }
-        .tint(MCColor.coreMint)
         .onAppear { if !onboardingDone { showOnboarding = true } }
         .sheet(isPresented: $showOnboarding, onDismiss: { onboardingDone = true }) {
             OnboardingView(isPresented: $showOnboarding)
         }
+        .tint(MCColor.coreMint)
     }
 }
 
