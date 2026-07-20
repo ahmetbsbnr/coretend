@@ -1,6 +1,8 @@
 import SwiftUI
 import DesignSystem
 import SystemMetrics
+import MalwareEngine
+import Persistence
 
 @main
 struct MacCareApp: App {
@@ -36,10 +38,15 @@ struct MacCareApp: App {
     }
 }
 
-/// Lightweight status popover. Samples only while the menu is open.
+/// Lightweight status popover. Samples only while the menu is open; the
+/// sampling loop is a SwiftUI `.task`, which SwiftUI cancels automatically
+/// when the view leaves the hierarchy (menu closed) — no separate teardown
+/// needed to keep idle CPU low.
 struct MenuBarView: View {
     @State private var snapshot: MetricsSnapshot?
     @State private var collector = MetricsCollector()
+    @State private var protectionStatus: MenuBarStatus.ProtectionStatus?
+    @State private var lastSmartCare: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -53,6 +60,8 @@ struct MenuBarView: View {
                 metricRow(icon: "internaldrive", label: "Free space",
                           value: mcFormatBytes(snap.diskFreeBytes),
                           warn: snap.diskFreeBytes < 20_000_000_000)
+                metricRow(icon: "network", label: "Network",
+                          value: "\(mcFormatBytes(snap.networkBytesPerSecond))/s", warn: false)
                 metricRow(icon: "thermometer.medium", label: "Thermal",
                           value: snap.thermalState.capitalized,
                           warn: snap.thermalState == "serious" || snap.thermalState == "critical")
@@ -60,15 +69,32 @@ struct MenuBarView: View {
                 ProgressView().controlSize(.small)
             }
             Divider()
+            if let protectionStatus {
+                metricRow(icon: "shield", label: "Protection", value: protectionStatus.text,
+                          warn: protectionStatus.isWarning)
+            }
+            if let lastSmartCare {
+                metricRow(icon: "sparkles", label: "Smart Care", value: lastSmartCare, warn: false)
+            }
+            Divider()
             Button("Open MacCare Local") {
                 NSApp.activate(ignoringOtherApps: true)
                 NSApp.windows.first { $0.title == "MacCare Local" }?.makeKeyAndOrderFront(nil)
             }
+            Button("Settings…") {
+                NSApp.activate(ignoringOtherApps: true)
+                NSApp.windows.first { $0.title == "MacCare Local" }?.makeKeyAndOrderFront(nil)
+                NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.settings)
+            }
             Button("Quit") { NSApp.terminate(nil) }
         }
         .padding(14)
-        .frame(width: 260)
+        .frame(width: 280)
         .task {
+            let activity: [ActivityRecord] = (try? await AppEnvironment.shared.store?.activity(limit: 50)) ?? []
+            protectionStatus = MenuBarStatus.protectionStatus(
+                clamAvailable: ClamAVScanner().isAvailable, activity: activity)
+            lastSmartCare = MenuBarStatus.lastSmartCareSummary(activity: activity)
             // Adaptive: only samples while this view exists (menu open).
             _ = await collector.snapshot()
             while !Task.isCancelled {
@@ -79,12 +105,13 @@ struct MenuBarView: View {
     }
 
     private func metricRow(icon: String, label: String, value: String, warn: Bool) -> some View {
-        HStack {
+        HStack(alignment: .top) {
             Image(systemName: icon).frame(width: 18)
                 .foregroundStyle(warn ? MCTheme.warning : MCTheme.accent)
             Text(label)
             Spacer()
             Text(value).foregroundStyle(.secondary).monospacedDigit()
+                .multilineTextAlignment(.trailing)
         }
         .font(.callout)
     }
