@@ -20,6 +20,16 @@
   run `Scripts/capture.sh` per Documentation/VISUAL_QA.md to fill in the still-pending
   captures; this is an environment fact, not a product defect, and does not block
   shipping.
+  **Update, audit session 3 (2026-07-20):** this "no display" fact is
+  environment-dependent, not universal — in this session's sandbox, `screencapture -x`
+  successfully captured the live desktop (confirmed a real, non-trivial PNG). Did not
+  proceed to run `Scripts/capture.sh` this session (the live screen showed unrelated
+  foreground content, and driving the real desktop via AppleScript for a fresh capture
+  was judged out of scope for a non-interactive audit pass) — so `VisualAudit/After/`
+  is still the v0.4.0-era set, not refreshed. Future sessions should re-check display
+  availability rather than assuming this limitation still applies; see
+  `Documentation/PROJECT_COMPLETE_AUDIT.md` §15 and `AUDIT_EVIDENCE.md`
+  EVIDENCE-ENV-001.
 - **Built binary embeds the repo checkout's absolute build path as a dead fallback
   string** (SwiftPM limitation, discovered by `Scripts/test-distribution.sh`):
   the compiler-generated `Bundle.module` accessor (`resource_bundle_accessor.swift`)

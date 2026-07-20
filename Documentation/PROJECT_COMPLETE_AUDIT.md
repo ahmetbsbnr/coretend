@@ -1,9 +1,12 @@
 # MacCare Local — Complete Project Audit
 
-**Status: PART 1 of a multi-session audit. This is NOT a complete 38/42-section report.**
-Sections 1-10 below have real, evidence-backed content gathered this session. All remaining sections
-are explicitly marked "NOT YET AUDITED — pending session 2" per instruction — nothing in them should be
-read as a finding.
+**Status: session 3 of 3, closing this audit pass.** Sections 1-14 were completed in sessions 1-2 (kept
+as originally written below — commit references there predate session 3, not re-verified line-by-line
+except where §17-20 explicitly re-verify distribution). Sections 15-24 (design/UI, localization,
+distribution re-check, website, CI/GitHub, scripts, technical/product debt, public-readiness scorecard,
+evidence appendix, next-phase recommendations) were completed this session with real, evidence-backed
+content. All items from the session-3 brief's priority list (1-10) were reached. See §25-38 and the
+Conclusion at the bottom for what remains honestly un-covered.
 
 ## 0. Cover page
 
@@ -135,23 +138,123 @@ defect found**: `LICENSE` itself references two files that don't exist in the tr
 Not fixed this session (content edit, not requested); flagged for follow-up. Zero SPDX headers in
 `Sources/` (flag only, not necessarily a defect since a root `LICENSE` is legally sufficient).
 
-## 15-42. NOT YET AUDITED — pending session 3
+## 15. Design / UI audit
 
-The following sections were not reached this session and contain **no content** below beyond this
-placeholder. Do not infer any finding, positive or negative, from their absence:
+**Done this session.** All 9 SwiftUI module views checked for `accessibilityReduceMotion`/
+`accessibilityReduceTransparency` handling: centralized in design-system components
+(`Sources/DesignSystem/FragmentView.swift`, `OverlapView.swift` — reduce motion; `DesignSystem.swift:10`
+`MCCard` — reduce transparency) rather than duplicated per screen; `SpaceLensView.swift:86` and
+`MyActivityView.swift:119` additionally read reduce-motion for their own transitions. Protection's
+`MCMeshView` (`Sources/DesignSystem/MeshView.swift`, the containment-mesh motif from commit `f31e993`)
+is a real state-driven `Canvas` draw — `completeness` (0...1) reflects actual engine-ready state, 4
+named `Style` cases, VoiceOver `accessibilityDescription` for all 4 — and correctly has no reduce-motion
+code because it has no animation (no `@State`, no timers, confirmed by full-file read). **Real
+environment finding**: `screencapture` succeeded this session, meaning a display *is* reachable in this
+specific environment — the "no display attached" `BLOCKED_ENVIRONMENT` claim from the v0.4.0-era
+`VISUAL_AUDIT.md` note does not universally hold; it's environment-dependent. Did not re-run
+`Scripts/capture.sh` to refresh screenshots (the live screen had unrelated foreground content at capture
+time; re-driving the real desktop via AppleScript for a fresh capture was judged out of scope for a
+non-interactive audit pass). Existing dated screenshots in `Documentation/VisualAudit/After/` (2026-07-20,
+committed at `b8c587d`) remain the most recent on-file evidence. See `AUDIT_EVIDENCE.md`
+EVIDENCE-PROTECTION-001, EVIDENCE-A11Y-001, EVIDENCE-ENV-001.
 
-15. Design / UI audit (Orbital Ecology design system consistency, accessibility)
-16. Localization audit (en/fr string-key parity beyond line-count, translation quality)
-17. Distribution audit (the two `test-release-manifest.sh` failures found in session 1 were fixed in
-    commit `88bbb9a` per the session-2 orchestrator's brief; a fresh from-scratch re-verification —
-    checksum recompute, arch/mount/extract/launch check in a temp dir — was not done this session)
-18. Website audit (27 HTML files — content accuracy, deployment status)
-19. CI / GitHub audit (3 workflow files — what they actually do, whether they'd catch the defects found
-    in §9b)
-20. Scripts audit (remaining 17 of 22 shell scripts not exercised this session)
-21. Technical / product debt inventory
-22. Public-readiness scorecard
-23. Evidence appendix (consolidated cross-references)
-24. Next-phase recommendations
-25-42. (remaining brief sections, not enumerated individually here — see CONTINUATION.md for the queued
-    list carried into session 2)
+## 16. Localization audit
+
+**Done this session.** 327 keys in `Base.lproj`/`fr.lproj` `Localizable.strings`, **100% EN/FR key
+parity** (`diff` of sorted key sets → 0 lines different), **zero unused keys** (every one of the 327
+base keys found referenced somewhere in `Sources/MacCareApp` outside the Resources dir), **exactly one**
+non-localized `Text("...")` literal in the whole app and it's the correct exception — the product name
+(`OnboardingView.swift:57`). `Localizable.xcstrings` (the newer Xcode string-catalog format) exists but
+contains only 1 key — the real localization surface is the older `.strings` pair, not the catalog.
+See `AUDIT_EVIDENCE.md` EVIDENCE-L10N-001/002.
+
+## 17. Distribution audit
+
+**Done this session** — see `Documentation/DISTRIBUTION_AUDIT.md` (new, full doc). Fresh from-scratch
+re-verification (not just re-reading session-2's fix): checksums recomputed via `shasum -a 256` and match
+`latest.json` exactly; arm64 confirmed via `file`/`lipo -info` (single-arch, not fat); zip extracted +
+app launched + quit cleanly in a scratch temp dir outside the repo; dmg mounted/detached cleanly; license
+files (`LICENSE`, `NOTICE`, `THIRD_PARTY_NOTICES.md`) confirmed present inside the zip via `unzip -l`.
+Session-2's `88bbb9a` checksum/size auto-sync fix holds. Real remaining blockers (all pre-existing, not
+new): unsigned/unnotarized, no public GitHub release, single-machine/single-arch tested only.
+
+## 18. Website audit
+
+**Done this session** — see `Documentation/WEBSITE_AUDIT.md` (new, full doc). Static HTML/CSS, no
+framework, single Python stdlib generator script (`website/generate.py`). 13 pages per locale, exact
+FR/EN filename parity confirmed. Zero tracker/analytics script tags found (9-signature grep sweep + zero
+external `src`/`href` URLs anywhere). Legal-identity placeholders (`[LEGAL_NAME_TO_DEFINE]` etc.) remain
+unresolved and are honestly self-marked in the page text, not hidden. `lang=`/viewport meta present;
+zero `<img>` tags exist site-wide so the alt-text question is moot; no automated a11y scanner run (no
+browser tooling in this environment).
+
+## 19. CI / GitHub audit
+
+**Done this session.** 3 workflows (`ci.yml`, `release-draft.yml`, `security.yml`), all declare
+`permissions: contents: read` at the top level, all trigger only on `pull_request`/`push: [main]`/
+`workflow_dispatch` (no `pull_request_target`), none reference `secrets.` anywhere. `release-draft.yml`
+is manual-only, uploads artifacts (never publishes a GitHub Release), and self-checks it never emits a
+`signed:true`/`notarized:true` claim. `security.yml` runs a grep-based secret scan (self-documented via
+a `ponytail:` comment as an intentional simplification, upgrade path named: gitleaks/trufflehog), a
+curl-pipe-to-shell check, an absolute-developer-path check, and a forbidden-file-type check. Also present:
+`CODEOWNERS`, `PULL_REQUEST_TEMPLATE.md`, `dependabot.yml`, 5 issue-template YAML files. **Every workflow
+is marked `IMPLEMENTED_UNVERIFIED`, not `VERIFIED_COMPLETE`** — none has ever run on real GitHub Actions
+(`git remote -v` remains empty across all 3 sessions; nothing has ever been pushed). Actions are pinned to
+version tags (`@v4`), not commit SHAs — acceptable but not maximal supply-chain hardening. See
+`AUDIT_EVIDENCE.md` EVIDENCE-CI-001/002.
+
+## 20. Scripts audit
+
+**Done this session** for error-handling posture across all 22 scripts (prior sessions exercised several
+individually via their outputs — `test.sh`, `test-distribution.sh`, `test-release-manifest.sh`,
+`test-uninstall.sh`, `check-private-data.sh` — cited in §9b/§10). This session: 22/22 scripts declare at
+least `set -e` (10 plain, 11 `set -eu`, 1 `set -euo pipefail`) — none silently continue after an
+unchecked failure, but only 1/22 has the strict `pipefail` form, meaning a failure on the left side of a
+pipe (e.g. `ci.yml`'s `swift build ... | tee log`) could be masked. See `TECHNICAL_DEBT.md` #4 and
+`AUDIT_EVIDENCE.md` EVIDENCE-SCRIPTS-001. Full per-script role/argument/idempotence table not built this
+session (budget); the `set`-flag sweep and this session's direct executions (test.sh, distribution
+extract/mount, checksum verify) are the real evidence gathered.
+
+## 21. Technical / product debt inventory
+
+**Done this session** — see `Documentation/TECHNICAL_DEBT.md` and `Documentation/PRODUCT_DEBT.md` (both
+new, full docs), consolidating findings from all 3 sessions with severity/category/evidence/effort.
+
+## 22. Public-readiness scorecard
+
+**Done this session** — see `Documentation/PUBLIC_READINESS_SCORECARD.md` (new). 16 independently scored
+axes, no misleading single aggregate. **Overall verdict: INTERNAL_READY** — solid engineering artifact,
+not yet tester/beta/stable-ready pending signing, a live repo/website, and multi-machine verification.
+
+## 23. Evidence appendix
+
+**Done this session** — see `Documentation/AUDIT_EVIDENCE.md` (new), 15 structured EVIDENCE-XXX-### blocks
+covering this session's most load-bearing claims (session 1/2's own docs already contain their own
+inline evidence and aren't re-duplicated here).
+
+## 24. Next-phase recommendations
+
+**Done this session** — see `Documentation/NEXT_PHASE_RECOMMENDATIONS.md` (new). Three trajectories
+(cautious/security-first, public-beta-first, full-product-polish-first), none prescribing a version
+number, each grounded in this session's actual findings rather than a generic roadmap.
+
+## 25-38. Remaining brief items
+
+Everything the original 38-section brief called for across the priority list in this session's
+instructions (items 1-10) has now been addressed at real, evidence-based depth: distribution, website,
+design/UI, localization, CI/GitHub, scripts, technical debt, product debt, public-readiness scorecard,
+evidence appendix, and next-phase recommendations. Items not explicitly itemized above (e.g. a full
+per-script argument table, a full per-view public-API inventory, a live external-repo/CI dry run, an
+automated accessibility tool run, translation-quality review of the French strings) remain honestly
+un-covered — see `CONTINUATION.md` for what's carried forward. No section here should be read as claiming
+more depth than its evidence actually supports.
+
+## Conclusion
+
+Across three audit sessions, MacCare Local's core engineering (86/86 tests, clean security posture,
+zero telemetry, real localization parity, working packaging pipeline, honest CI that's never actually
+run) is in genuinely good shape for a project of this age. What separates it from a public release is
+almost entirely human-gated (legal identity, code signing) or requires resources this audit
+environment doesn't have (a second physical Mac, a live GitHub remote, a browser for automated a11y
+scanning) — not undiscovered engineering defects. See `PUBLIC_READINESS_SCORECARD.md` for the honest
+per-axis breakdown and `NEXT_PHASE_RECOMMENDATIONS.md` for what to do about it.
