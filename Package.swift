@@ -24,6 +24,7 @@ let package = Package(
         .target(name: "SystemMetrics"),
         .target(name: "AppDiscovery"),
         .target(name: "MalwareEngine"),
+        .testTarget(name: "DesignSystemTests", dependencies: ["DesignSystem"]),
         .testTarget(name: "MalwareEngineTests", dependencies: ["MalwareEngine"]),
         .testTarget(name: "AppDiscoveryTests", dependencies: ["AppDiscovery"]),
         .testTarget(name: "PersistenceTests", dependencies: ["Persistence"]),

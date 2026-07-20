@@ -254,16 +254,15 @@ struct SmartCareView: View {
         case .running:
             Button("Cancel") { model.cancel() }
         case .review:
-            VStack(spacing: 8) {
-                Text("\(mcFormatBytes(model.preselectedBytes)) safe to clean of \(mcFormatBytes(model.totalFoundBytes)) found")
-                    .font(.headline)
-                Text("Only low-risk, reversible items are cleaned automatically. Review details in the Cleanup module.")
-                    .font(.caption).foregroundStyle(.secondary)
+            VStack(spacing: MCSpacing.xs) {
                 HStack {
                     Toggle("Dry run", isOn: $model.dryRun).toggleStyle(.switch)
                     Button(model.dryRun ? "Simulate Care" : "Run Care") { model.runCare() }
                         .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
                 }
+                Text("Review details in the Cleanup module.")
+                    .font(MCFont.caption).foregroundStyle(.secondary)
             }
         case .executing:
             ProgressView("Running…")
