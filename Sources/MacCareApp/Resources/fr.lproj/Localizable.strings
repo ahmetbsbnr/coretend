@@ -328,6 +328,11 @@
 "settings.add_folder" = "Ajouter un dossier…";
 "settings.data" = "Données";
 "settings.data_detail" = "MacCare Local est entièrement hors ligne. Aucune télémétrie, aucun compte, aucun appel réseau. Toutes les données restent sur ce Mac.";
+"settings.export_diagnostic" = "Exporter un rapport de diagnostic…";
+"settings.export_diagnostic_detail" = "Génère un rapport anonymisé (versions, états de permission, compteurs) pour le dépannage. Aucun nom d'utilisateur, chemin, nom de fichier ou liste d'applications n'est inclus. Vous le relisez avant de l'enregistrer.";
+"diagnostic.title" = "Rapport de diagnostic";
+"diagnostic.review_notice" = "Vérifiez toujours le contenu avant de le publier sur GitHub ou de l'envoyer à qui que ce soit.";
+"diagnostic.save" = "Enregistrer…";
 "settings.clear_activity" = "Effacer l'historique d'activité…";
 "settings.clear_activity_confirm" = "Effacer tout l'historique d'activité ?";
 "settings.clear_history" = "Effacer l'historique";
