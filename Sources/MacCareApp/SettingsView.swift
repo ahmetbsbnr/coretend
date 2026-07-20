@@ -61,10 +61,10 @@ final class SettingsViewModel {
 enum PermissionFormatting {
     static func notificationLabel(_ status: UNAuthorizationStatus) -> String {
         switch status {
-        case .authorized, .provisional, .ephemeral: "Authorized"
-        case .denied: "Denied"
-        case .notDetermined: "Not requested"
-        @unknown default: "Unknown"
+        case .authorized, .provisional, .ephemeral: L("settings.notif.authorized")
+        case .denied: L("settings.notif.denied")
+        case .notDetermined: L("settings.notif.not_requested")
+        @unknown default: L("settings.notif.unknown")
         }
     }
 
@@ -88,68 +88,68 @@ struct MCSettingsView: View {
 
     var body: some View {
         Form {
-            Section("General") {
-                Toggle("Show MacCare in the menu bar", isOn: $menuBarEnabled)
-                Text("The menu bar item samples system metrics only while its panel is open, or every 30s in the background just to show the attention indicator.")
+            Section(L("settings.general")) {
+                Toggle(L("settings.show_menu_bar"), isOn: $menuBarEnabled)
+                Text(L("settings.menu_bar_detail"))
                     .font(.caption).foregroundStyle(.secondary)
             }
-            Section("Appearance") {
-                Text("MacCare Local follows the system light/dark appearance. There is no separate in-app theme.")
+            Section(L("settings.appearance")) {
+                Text(L("settings.appearance_detail"))
                     .font(.caption).foregroundStyle(.secondary)
             }
-            Section("Scans & Cleanup") {
-                Toggle("Dry run by default", isOn: $model.dryRunDefault)
+            Section(L("settings.scans_cleanup")) {
+                Toggle(L("settings.dry_run_default"), isOn: $model.dryRunDefault)
                     .onChange(of: model.dryRunDefault) { model.saveDryRun() }
-                Text("When enabled, cleanups simulate their result instead of moving files to the Trash.")
+                Text(L("settings.dry_run_detail"))
                     .font(.caption).foregroundStyle(.secondary)
-                LabeledContent("Deletion method", value: "System Trash (reversible)")
+                LabeledContent(L("settings.deletion_method"), value: L("settings.deletion_method_value"))
             }
-            Section("Protection") {
-                LabeledContent("ClamAV engine") {
-                    Label(model.scanner.isAvailable ? "Installed" : "Not installed",
+            Section(L("settings.protection")) {
+                LabeledContent(L("settings.clamav_engine")) {
+                    Label(model.scanner.isAvailable ? L("settings.installed") : L("settings.not_installed"),
                           systemImage: model.scanner.isAvailable ? "checkmark.circle.fill" : "xmark.circle")
                         .foregroundStyle(model.scanner.isAvailable ? MCTheme.success : .secondary)
                 }
                 if !model.scanner.isAvailable {
-                    Text("Install with `brew install clamav`, run `freshclam` once, then reopen Protection.")
+                    Text(L("settings.clamav_install_hint"))
                         .font(.caption).foregroundStyle(.secondary)
                 }
-                LabeledContent("Privileged helper") {
-                    Label("Unavailable", systemImage: "xmark.circle")
+                LabeledContent(L("settings.privileged_helper")) {
+                    Label(L("settings.unavailable"), systemImage: "xmark.circle")
                         .foregroundStyle(.secondary)
                 }
-                Text("Not implemented — this build has no signing identity to install a privileged helper. Every feature works unprivileged; this is a known, honest limitation, not a bug.")
+                Text(L("settings.privileged_helper_detail"))
                     .font(.caption).foregroundStyle(.secondary)
             }
-            Section("Monitoring & Permissions") {
-                LabeledContent("Full Disk Access") {
-                    Label(model.fullDiskAccess ? "Granted" : "Not granted",
+            Section(L("settings.monitoring_permissions")) {
+                LabeledContent(L("settings.full_disk_access")) {
+                    Label(model.fullDiskAccess ? L("settings.granted") : L("settings.not_granted"),
                           systemImage: model.fullDiskAccess ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                         .foregroundStyle(model.fullDiskAccess ? MCTheme.success : MCTheme.warning)
                 }
                 if !model.fullDiskAccess {
                     HStack {
-                        Button("Open System Settings") { PermissionProbe.openFullDiskAccessSettings() }
-                        Button("Re-check") { Task { await model.refreshPermissions() } }
+                        Button(L("settings.open_system_settings")) { PermissionProbe.openFullDiskAccessSettings() }
+                        Button(L("settings.recheck")) { Task { await model.refreshPermissions() } }
                     }
                 }
-                LabeledContent("Notifications") {
+                LabeledContent(L("settings.notifications")) {
                     Label(notificationStatusLabel, systemImage: notificationStatusIcon)
                         .foregroundStyle(notificationStatusColor)
                 }
                 if model.notificationStatus == .denied {
-                    Button("Open System Settings") {
+                    Button(L("settings.open_system_settings")) {
                         if let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications") {
                             NSWorkspace.shared.open(url)
                         }
                     }
                 }
-                Text("MacCare Local does not currently send notifications; this reflects the real system-level authorization state only.")
+                Text(L("settings.notifications_detail"))
                     .font(.caption).foregroundStyle(.secondary)
             }
-            Section("Exclusions") {
+            Section(L("settings.exclusions")) {
                 if model.exclusions.isEmpty {
-                    Text("No excluded folders. Excluded locations are never scanned or cleaned.")
+                    Text(L("settings.exclusions_empty"))
                         .foregroundStyle(.secondary)
                 }
                 ForEach(model.exclusions, id: \.self) { path in
@@ -164,7 +164,7 @@ struct MCSettingsView: View {
                         .buttonStyle(.borderless)
                     }
                 }
-                Button("Add Folder…") {
+                Button(L("settings.add_folder")) {
                     let panel = NSOpenPanel()
                     panel.canChooseDirectories = true
                     panel.canChooseFiles = false
@@ -174,23 +174,23 @@ struct MCSettingsView: View {
                     }
                 }
             }
-            Section("Data") {
-                Text("MacCare Local is fully offline. No telemetry, no accounts, no network calls. All data stays on this Mac.")
+            Section(L("settings.data")) {
+                Text(L("settings.data_detail"))
                     .font(.caption).foregroundStyle(.secondary)
-                Button("Clear Activity History…", role: .destructive) { showClearConfirm = true }
-                    .confirmationDialog("Clear all Activity history?", isPresented: $showClearConfirm) {
-                        Button("Clear History", role: .destructive) { model.clearActivityHistory() }
-                        Button("Cancel", role: .cancel) {}
+                Button(L("settings.clear_activity"), role: .destructive) { showClearConfirm = true }
+                    .confirmationDialog(L("settings.clear_activity_confirm"), isPresented: $showClearConfirm) {
+                        Button(L("settings.clear_history"), role: .destructive) { model.clearActivityHistory() }
+                        Button(L("common.cancel"), role: .cancel) {}
                     } message: {
-                        Text("This removes the local record of past scans and cleanups. It does not restore or delete any files.")
+                        Text(L("settings.clear_activity_message"))
                     }
             }
-            Section("About") {
-                LabeledContent("Version", value: appVersion)
+            Section(L("settings.about")) {
+                LabeledContent(L("settings.version"), value: appVersion)
             }
         }
         .formStyle(.grouped)
-        .navigationTitle("Settings")
+        .navigationTitle(L("settings.nav_title"))
         .task { await model.load() }
     }
 
