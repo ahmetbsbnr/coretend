@@ -1,6 +1,6 @@
 # Repository Map — Audit Session 1
 
-Evidence: `git ls-files`, `find`, `du -sh */` at commit `b8266a29e7ebdbae1791c1c7afb887a8529763eb`,
+Evidence: `git ls-files`, `find`, `du -sh */` at commit `b33c06b8d68b9b03316821c3f6cfb17252f35011`,
 branch `feat/public-distribution`, 2026-07-20.
 
 | Directory | Role | Tracked? | Notes |

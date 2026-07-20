@@ -11,10 +11,11 @@ Conclusion at the bottom for what remains honestly un-covered.
 ## 0. Cover page
 
 - Product: MacCare Local (SwiftUI macOS app)
-- Audited commit: `b8266a29e7ebdbae1791c1c7afb887a8529763eb`
+- Audited commit: `b33c06b8d68b9b03316821c3f6cfb17252f35011`
 - Branch: `feat/public-distribution`
 - Audit date: 2026-07-20
-- Audit type: evidence-based, session 1 of N
+- Audit type: evidence-based. Written incrementally across 3 sessions (see the status note
+  at the top of this file and `Documentation/CONTINUATION.md` for what each session covered)
 
 ## 1. Date / environment
 
@@ -25,7 +26,7 @@ Conclusion at the bottom for what remains honestly un-covered.
 
 ## 2. Version / commit
 
-- HEAD: `b8266a29e7ebdbae1791c1c7afb887a8529763eb` — "release: prepare v0.7.0 public distribution"
+- HEAD: `b33c06b8d68b9b03316821c3f6cfb17252f35011` — "release: prepare v0.7.0 public distribution"
 - No git tags exist (local or remote). No remotes configured. Nothing has been pushed anywhere.
   **"v0.7.0" is a string in commit messages/manifests, not a published release.**
 
@@ -41,9 +42,13 @@ pre-existing limitation (repo path leakage in the binary, said not to affect run
 
 ## 4. Verdict
 
-**Partial — session 2 required.** This session did not reach the public-readiness scorecard (security,
-privacy, legal/license, design/UI, localization, distribution, website, CI, scripts, and technical-debt
-audits are all still pending). No verdict on public-readiness can be honestly given yet.
+**Historical note (session 1 wrote this section):** at the time this paragraph was written, the
+public-readiness scorecard (security, privacy, legal/license, design/UI, localization, distribution,
+website, CI, scripts, and technical-debt audits) had not yet been reached. Sessions 2-3 subsequently
+delivered `SECURITY_AUDIT_CURRENT.md`, `PRIVACY_AUDIT_CURRENT.md`, `LEGAL_AND_LICENSE_STATUS.md`,
+`DISTRIBUTION_AUDIT.md`, `WEBSITE_AUDIT.md`, `TECHNICAL_DEBT.md`, `PRODUCT_DEBT.md`, and
+`PUBLIC_READINESS_SCORECARD.md` — see those files and `Documentation/DOCUMENT_INDEX.md` for the current
+verdict, not this paragraph.
 
 ## 5. What MacCare Local is / is not (from evidence gathered this session)
 
@@ -76,8 +81,11 @@ architecture, scan flow, delete/restore/quarantine flow, Smart Care orchestratio
 ## 9. Module inventory (partial — target-level only, not full public-API inventory)
 
 See `Documentation/ARCHITECTURE_INVENTORY.md` "Key public types" section for the target-level inventory
-gathered this session. A full per-view, per-service public-API inventory is **NOT YET AUDITED — pending
-session 2**.
+gathered in session 1. **Still genuinely not done** as of this reconciliation pass: a full per-view,
+per-service public-API inventory. Session 2 grep-verified (not line-by-line read) the 15 `MacCareApp`
+view files and marked them `IMPLEMENTED_UNVERIFIED` in `FEATURE_INVENTORY.md` rather than claiming full
+verification — that gap is real and still open, not resolved by a later session. See
+`Documentation/CONTINUATION.md` session-2 entry for the exact file list.
 
 ## 9b. Test audit (real evidence, this session)
 

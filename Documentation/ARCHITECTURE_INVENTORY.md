@@ -1,7 +1,7 @@
 # Architecture Inventory — Audit Session 1
 
 Evidence: `Package.swift`, `Sources/` tree walk, and `grep -n "^public\|^actor\|^struct\|^enum\|^final class"`
-on each target's top-level files, commit `b8266a29e7ebdbae1791c1c7afb887a8529763eb`.
+on each target's top-level files, commit `b33c06b8d68b9b03316821c3f6cfb17252f35011`.
 
 ## Targets (from Package.swift, swift-tools-version 6.0)
 

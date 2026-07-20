@@ -1,12 +1,12 @@
 AUDIT SESSION 1 — command log
 Date: 2026-07-20
 Directory: <PROJECT_ROOT> (/Users/ahmetbasbunar/Documents/MACCLEAN)
-Branch: feat/public-distribution @ b8266a29e7ebdbae1791c1c7afb887a8529763eb
+Branch: feat/public-distribution @ b33c06b8d68b9b03316821c3f6cfb17252f35011
 ---
 
 $ git rev-parse --abbrev-ref HEAD && git rev-parse HEAD && git rev-list --count HEAD && git tag && git remote -v && git branch -a && git status --porcelain=v1 | wc -l
 exit 0
-=> branch feat/public-distribution, HEAD b8266a29e7ebdbae1791c1c7afb887a8529763eb, 115 commits total,
+=> branch feat/public-distribution, HEAD b33c06b8d68b9b03316821c3f6cfb17252f35011, 115 commits total,
    no tags, no remotes configured, local branches: backup-main-duplicate-cleanup, feat/open-source-foundation,
    feat/public-distribution(current), main, plus 7 stray "worktree-agent-*" branches (leftover from prior
    agent sessions using git worktrees — not part of intended branch set), 0 uncommitted changes (clean tree).
