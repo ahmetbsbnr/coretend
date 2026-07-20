@@ -1,5 +1,64 @@
 # CHANGELOG
 
+## Unreleased — 0.7.0-under-development « Public Distribution »
+
+Version has **not** been bumped to 0.7.0 — this entry tracks
+in-progress work on the `feat/public-distribution` branch, not a
+released version. The full distribution gate (uninstall script polish,
+in-app diagnostics, distribution-specific tests, CI packaging job, site
+download page) is larger than what landed in this session; this is
+honest partial progress, not a release.
+
+- Centralized public release metadata in
+  `Configuration/PublicIdentity.example.json` (name/version/bundle-ID/
+  repo/site/maintainer/signed/notarized, with bracket-placeholder tokens
+  for unknowns) and `Scripts/check-version-consistency.sh`.
+- Compatibility audit: `Documentation/COMPATIBILITY.md`,
+  `API_AVAILABILITY_AUDIT.md`, `SUPPORTED_MACS.md`,
+  `MACOS_VERSION_POLICY.md`. Verified every API used against the macOS
+  14.0 deployment target by grepping every import and SwiftUI/
+  Observation symbol against known introduction versions — `@Observable`
+  (16 files) is the binding constraint, nothing above 14.0 floor found
+  in use, no `@available` guards needed. Explicitly documents that only
+  one physical Mac (macOS 26.5.1, arm64) is available in this
+  environment, so this is a static audit, not multi-OS verification.
+- Unsigned ZIP artifact: `Scripts/package-zip.sh` (extends
+  `package-local.sh`), produces `MacCare-Local-0.7.0-arm64-unsigned.zip`
+  with LICENSE/NOTICE/THIRD_PARTY_NOTICES.md alongside the app. Verified
+  arm64-only, ad-hoc signed, launches and quits cleanly from an
+  unrelated extraction path, no user data/logs/quarantine data included.
+  Found (not fixed, tracked): the binary still embeds an absolute
+  `.build` fallback path from SwiftPM's `Bundle.module` codegen — harmless
+  at runtime since the real resource bundle ships alongside it, but a
+  known cosmetic leak of the local build machine's username.
+- Unsigned DMG artifact: `Scripts/package-dmg.sh`, plain functional DMG
+  (no custom background art — no guaranteed display to author one
+  safely). Verified full mount → copy → eject → launch round-trip.
+- Checksums: `Release/SHA256SUMS` (ZIP + DMG + manifest),
+  `Scripts/verify-download.sh <file> <sha256>` (tested against both a
+  matching and deliberately wrong checksum).
+- Release manifest `Release/latest.json` for 0.7.0: signed=false,
+  notarized=false, prerelease=true, telemetry=false,
+  accountRequired=false, sourceCommit pinned to the actual commit, no
+  downloadURL (no public release exists).
+- Bilingual release notes `Release/Notes/0.7.0.{en,fr}.md`.
+- Manual-only GitHub Actions workflow `.github/workflows/release-draft.yml`
+  (`workflow_dispatch` trigger only): builds/tests/packages, generates
+  and self-verifies checksums, hard-fails if the manifest ever claims
+  signed/notarized true, uploads artifacts with 14-day retention. Does
+  not publish a release, move a tag, or need an Apple secret.
+- `Documentation/INSTALL_UNSIGNED.md`: verify-before-open install guide;
+  explicitly tells users never to use `spctl --master-disable`, disable
+  SIP, or run `xattr -cr` routinely.
+- `Documentation/HUMAN_BLOCKERS.md`: maintainer handle, planned repo, and
+  planned domain moved to RESOLVED/KNOWN (they're facts already
+  centralized in `PublicIdentity.example.json`); the irreversible actions
+  that use them (create repo, push, deploy) remain OPEN, along with
+  security contact, legal identity/address, publisher of record, final
+  screenshots, and multi-Mac testing.
+- 83/83 tests passing throughout; `swift build -c release` at 0 warnings
+  after every chunk.
+
 ## 0.6.0 — 2026-07-20 « Open Source Foundation »
 - Full open source foundation: LICENSE/LICENSES/NOTICE/COPYRIGHT/
   TRADEMARKS.md/THIRD_PARTY_NOTICES.md, public README, SECURITY.md,
