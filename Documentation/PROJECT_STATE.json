@@ -35,7 +35,7 @@
   "partial": [
     "Protection: engine unavailable on this machine (ClamAV not installed) — UI states it honestly",
     "Cleanup/Smart Care findings list still capped at 5000 rows for display (by design); totals are now computed from uncapped stream, truncation shown honestly in UI (v0.4.1)",
-    "Secondary module visual identities (Cleanup fragments, Protection mesh, Space Lens continuity, Applications capsules, etc.) — NOT started this session (Step B of the large backlog, out of scope for this pass)",
+    "Secondary module visual identities — Protection mesh motif implemented (MCMeshView: incomplete/ready/scanning/alert states, static Canvas, VoiceOver summary); Cleanup fragments, Space Lens continuity, Applications capsules, My Clutter overlap, My Activity, Cloud Cleanup still NOT started (Step B, in progress)",
     "French localization — NOT started this session (Step C)"
   ],
   "not_started": [
