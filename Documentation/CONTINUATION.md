@@ -1115,3 +1115,97 @@ Ran fresh this session: `bash Scripts/test.sh` (86/86, no regression). Full comm
    fixed as of this session (out of scope, correctly deferred, not forgotten).
 
 `git status` clean before/after each commit. No push, no `--no-verify`, no amend, no version bump.
+
+---
+
+## Session 4 — final canonical report regeneration and scoring
+
+**Step 1 — spot-checked the carried-forward findings, didn't rubber-stamp them:**
+- **VIS-003** (design-token drift): re-ran `grep -rn "Color(red:\|\.font(\.system(size:"
+  Sources/MacCareApp Sources/DesignSystem` — 3 hardcoded `Color(red:)` values in
+  `SpaceLensView.swift:72-75` and 29 raw `.font(.system(size:` sites (count moved from 25 to 29 —
+  more code since session 3, direction unchanged). Genuinely still NON_COMPLIANT. Left unfixed:
+  fixing the fonts is mechanical but fixing the 3 category colors properly needs new named tokens
+  (`MCColor.chartSeries` only has 4 entries, `SpaceNodeCategory` needs 6) — a real design decision,
+  not a one-line fix, correctly out of this session's scope per the "no major feature changes" rule.
+- **A11Y-003** (Increase Contrast/Reduce Transparency): re-ran the exact same grep command from the
+  matrix and this time actually read the hit instead of trusting session 3's "zero matches" claim —
+  `Sources/DesignSystem/DesignSystem.swift:10,22` (`MCCard`) genuinely handles
+  `@Environment(\.accessibilityReduceTransparency)`, predating session 3 (part of commit `c2dff93`,
+  the original design-system commit). Session 3's finding was simply wrong, not a regression.
+  Increase Contrast remains unhandled (confirmed, zero matches for that half). **Downgraded
+  NON_COMPLIANT → COMPLIANT_PARTIAL** across `REQUIREMENTS_TRACEABILITY_MATRIX.md`,
+  `requirements-traceability.json`/`.csv`, `NON_COMPLIANCE_REGISTER.md`,
+  `REQUIREMENTS_COMPLIANCE_SUMMARY.md`. This is a docs-accuracy correction (the code was already
+  compliant), not a code fix — no `fix(...)` commit needed or made.
+- **FUNC-003** (Protection BLOCKED_ENVIRONMENT): re-ran `which clamscan` — still not installed on
+  this machine. Genuinely still BLOCKED_ENVIRONMENT, unchanged.
+
+Net effect: **0 MUST requirements NON_COMPLIANT** (was 1), 1 SHOULD NON_COMPLIANT (VIS-003, was
+already SHOULD), 1 BLOCKED_ENVIRONMENT (FUNC-003, unchanged).
+
+**Step 2 — final scoring**: computed `Documentation/FINAL_COMPLIANCE_SCORECARD.md` for real from
+`requirements-traceability.json` (not estimated) — full MUST/SHOULD/MAY breakdown per domain, using
+the brief's exact formula. MUST score 44.25/54 = **81.9%**. SHOULD score 6.25/14 = **44.6%**. Overall
+51.5/69 = **74.6%**. Domain-by-domain points-earned/missing and required actions are in the
+scorecard, not repeated here.
+
+**Step 3 — verdict**: **MOSTLY_CONFORMING**. Zero MUST requirement is NON_COMPLIANT or BLOCKED_* (a
+real fact, not rounded up), but 15/54 MUST requirements are below COMPLIANT_VERIFIED (6
+COMPLIANT_PARTIAL, 9 IMPLEMENTED_UNVERIFIED) — this rules out both FULLY_CONFORMING_VERIFIED and
+FULLY_CONFORMING_UNVERIFIED_MANUAL (the latter requires zero COMPLIANT_PARTIAL MUSTs) per the
+brief's own rule. Verdict tier definitions (not given numerically in the original brief) are
+documented explicitly in the scorecard for future-session consistency. Full justification in the
+scorecard's Verdict section.
+
+**Step 4 — synchronized canonical reports**:
+- `PROJECT_COMPLETE_AUDIT.md`: added a prominent cross-reference block right after the title
+  explaining the two separate audit vocabularies (this file's 41-feature VERIFIED_COMPLETE
+  vocabulary vs. the requirements audit's 69-requirement COMPLIANT_VERIFIED vocabulary — never to be
+  quoted interchangeably) and stated the current MOSTLY_CONFORMING verdict in §4, explicitly
+  superseding older verdict language in that section.
+- `REQUIREMENTS_COMPLIANCE_SUMMARY.md`: confirmed already reflected 69/54-MUST from session 3;
+  updated its status-count tables for the A11Y-003 correction and added a session-4 section.
+- `project-state-audit.json`: added a new `requirementsCompliance` block (69 reqs, status counts,
+  MUST score, verdict) without disturbing the file's own historical session-1 snapshot fields.
+- `public-readiness.json`: created — machine-readable twin of the final scorecard.
+- `requirements-traceability.json`/`.csv`: updated for the A11Y-003 correction; CSV mechanically
+  regenerated from JSON (not hand-typed) to keep them in lockstep, per session-3's own practice.
+- `DOCUMENT_INDEX.md`: added a table for the session 2-4 requirements-compliance documents
+  (MASTER_REQUIREMENTS_BASELINE, REQUIREMENTS_TRACEABILITY_MATRIX, REQUIREMENTS_COMPLIANCE_SUMMARY,
+  NON_COMPLIANCE_REGISTER, DEFERRED_REQUIREMENTS, REQUIREMENTS_VERIFICATION_EVIDENCE,
+  MANUAL_ACCEPTANCE_TEST_PLAN, FINAL_COMPLIANCE_SCORECARD, public-readiness.json), all marked current.
+- `PUBLIC_RELEASE_READINESS.md`: added one cross-reference line to the new scorecard rather than
+  duplicating its content (nothing new surfaced this session that changes that file's own findings,
+  so `KNOWN_LIMITATIONS.md`/`HUMAN_BLOCKERS.md` were left untouched — correctly, per this session's
+  instructions to only touch them if something new changes them).
+- Final grep sweep across `Documentation/` for "session 1 of N", "pending-session", old commit hashes
+  (`b8266a2`, `b8266a29...`), and "28 requirement"/"27/28" numeric leftovers: all remaining hits are
+  in `CONTINUATION.md` (this running log, expected) or are deliberate historical-commit prose already
+  reviewed and left unchanged by session 1 (e.g. `PROJECT_HISTORY_FROM_ZERO.md:77`,
+  `MASTER_REQUIREMENTS_BASELINE.md:144`, `DOCUMENT_INDEX.md`'s own notes section) — no new stale hits
+  found or fixed.
+
+**Step 5 — validation**: all 7 `Documentation/*.json` files (including the 2 new/changed this
+session) parse with `python3 -c "import json; json.load(open(...))"` — all OK.
+`requirements-traceability.csv` re-checked with `csv.reader` — 70 rows (69 + header), matches JSON
+count. Cross-references between `PROJECT_COMPLETE_AUDIT.md` / `REQUIREMENTS_COMPLIANCE_SUMMARY.md` /
+`FINAL_COMPLIANCE_SCORECARD.md` / `DOCUMENT_INDEX.md` all point at consistent numbers (69 total, 54
+MUST, MOSTLY_CONFORMING verdict) — no dead file references introduced.
+
+**Step 6**: `bash Scripts/test.sh` re-run after all doc changes — **86/86 passing, no regressions**
+(expected: no source code was touched this session, only `Documentation/`).
+
+**No `fix(...)` commit this session** — the one NON_COMPLIANT finding investigated (A11Y-003) turned
+out to be a documentation-accuracy error, not a real code defect, so correcting the docs was the
+right and complete fix. VIS-003 remains a genuine, correctly-deferred code gap.
+
+Commits this session: `docs(compliance): correct A11Y-003 status and compute final scorecard/verdict`,
+`docs(compliance): synchronize canonical reports with 69-requirement matrix`. `git status` clean
+before/after each. No push, no `--no-verify`, no amend, no version bump.
+
+**Not started this session, as instructed**: the sanitized external-audit ZIP package construction.
+That is session 5's entire job — staging directory, exclusions, manifest, README, SHA256SUMS,
+zip-integrity test, copy to Desktop. The canonical reports are now genuinely synchronized to the
+69-requirement matrix and the MOSTLY_CONFORMING verdict; session 5 can proceed directly to packaging
+without further reconciliation work.
