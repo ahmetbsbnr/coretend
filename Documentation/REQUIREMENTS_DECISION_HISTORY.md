@@ -12,9 +12,9 @@ distribution OK if honestly disclosed, no Gatekeeper bypass.
 
 - `Release/latest.json`: `"signed": false, "notarized": false` — confirmed current (this session
   rebuilt and re-verified via `Scripts/test-release-manifest.sh`, all checks pass).
-- `Documentation/INSTALL_UNSIGNED.md` states the unsigned/non-notarized status and explicitly instructs
-  **against** `sudo spctl --master-disable` or any system-wide Gatekeeper disable (line 72-84): "Do not
-  work around Gatekeeper by disabling platform security instead of trusting this specific app."
+- `Documentation/INSTALL_UNSIGNED.md` explicitly warns, "Do not work around Gatekeeper by disabling
+  platform security instead of trusting this specific app" (line 72-84) — i.e. never run
+  `sudo spctl --master-disable` or any system-wide Gatekeeper disable.
 - No App Store artifacts anywhere in the repo (no `.storekit`, no `ExportOptions.plist` for App Store,
   no `Documentation/*APP_STORE*`). `DISTRIBUTION_AUDIT.md` and `FIRST_PUBLIC_RELEASE_CHECKLIST.md`
   confirm distribution is direct-download ZIP/DMG only.
