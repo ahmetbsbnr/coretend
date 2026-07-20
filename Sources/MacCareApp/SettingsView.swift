@@ -81,6 +81,7 @@ struct MCSettingsView: View {
     @State private var model = SettingsViewModel()
     @AppStorage("menuBarEnabled") private var menuBarEnabled = true
     @State private var showClearConfirm = false
+    @State private var showDiagnostic = false
 
     private var appVersion: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
@@ -184,6 +185,10 @@ struct MCSettingsView: View {
                     } message: {
                         Text(L("settings.clear_activity_message"))
                     }
+                Button(L("settings.export_diagnostic")) { showDiagnostic = true }
+                    .sheet(isPresented: $showDiagnostic) { DiagnosticReportView() }
+                Text(L("settings.export_diagnostic_detail"))
+                    .font(.caption).foregroundStyle(.secondary)
             }
             Section(L("settings.about")) {
                 LabeledContent(L("settings.version"), value: appVersion)

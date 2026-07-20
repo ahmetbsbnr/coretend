@@ -328,6 +328,11 @@
 "settings.add_folder" = "Add Folder…";
 "settings.data" = "Data";
 "settings.data_detail" = "MacCare Local is fully offline. No telemetry, no accounts, no network calls. All data stays on this Mac.";
+"settings.export_diagnostic" = "Export diagnostic report…";
+"settings.export_diagnostic_detail" = "Generates an anonymized report (versions, permission states, counts) for troubleshooting. No usernames, paths, filenames, or app lists are included. You review it before saving.";
+"diagnostic.title" = "Diagnostic Report";
+"diagnostic.review_notice" = "Always check the contents before posting this to GitHub or sending it to anyone.";
+"diagnostic.save" = "Save…";
 "settings.clear_activity" = "Clear Activity History…";
 "settings.clear_activity_confirm" = "Clear all Activity history?";
 "settings.clear_history" = "Clear History";
