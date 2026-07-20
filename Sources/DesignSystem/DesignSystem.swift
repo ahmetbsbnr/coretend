@@ -1,21 +1,13 @@
 import SwiftUI
 
-/// MacCare Local design tokens. Original identity — calm teal/indigo palette,
-/// generous spacing, native macOS materials.
-public enum MCTheme {
-    public static let accent = Color(red: 0.18, green: 0.62, blue: 0.58)
-    public static let accentSecondary = Color(red: 0.35, green: 0.40, blue: 0.85)
-    public static let warning = Color(red: 0.90, green: 0.60, blue: 0.15)
-    public static let danger = Color(red: 0.85, green: 0.25, blue: 0.30)
-    public static let success = Color(red: 0.20, green: 0.70, blue: 0.40)
-
-    public static let cornerRadius: CGFloat = 12
-    public static let cardPadding: CGFloat = 16
-    public static let sidebarWidth: CGFloat = 220
-}
+// MacCare Local design system — Orbital Ecology.
+// Tokens: Tokens.swift / Colors.swift / Typography.swift
+// Brand:  CoreBloom.swift   Components: Components.swift
 
 /// Card container used across all module screens.
+/// Falls back to an opaque surface under Reduce Transparency.
 public struct MCCard<Content: View>: View {
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     private let content: Content
 
     public init(@ViewBuilder content: () -> Content) {
@@ -23,9 +15,18 @@ public struct MCCard<Content: View>: View {
     }
 
     public var body: some View {
+        let shape = RoundedRectangle(cornerRadius: MCRadius.card)
         content
-            .padding(MCTheme.cardPadding)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: MCTheme.cornerRadius))
+            .padding(MCSpacing.md)
+            .background {
+                if reduceTransparency {
+                    shape.fill(MCColor.elevatedBackground)
+                } else {
+                    shape.fill(.regularMaterial)
+                        .overlay(shape.fill(Color.primary.opacity(0.035)))
+                }
+            }
+            .overlay(shape.strokeBorder(MCColor.separator.opacity(0.6), lineWidth: 1))
     }
 }
 
