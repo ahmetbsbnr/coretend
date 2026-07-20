@@ -1,6 +1,7 @@
 import SwiftUI
 import Persistence
 import DesignSystem
+import UserNotifications
 
 @MainActor
 @Observable
@@ -8,12 +9,26 @@ final class SettingsViewModel {
     var dryRunDefault = true
     var exclusions: [String] = []
     var loaded = false
+    var permissionRows: [SettingsPermissionRow] = []
 
     func load() async {
         guard let store = AppEnvironment.shared.store else { return }
         dryRunDefault = (try? await store.setting("dryRunDefault")) != "false"
         exclusions = (try? await store.exclusions()) ?? []
         loaded = true
+        await refreshPermissions()
+    }
+
+    func refreshPermissions(menuBarEnabled: Bool = true) async {
+        let notifStatus = await SettingsPermissionProbe.notificationAuthorizationStatus()
+        permissionRows = [
+            SettingsPermissions.fullDiskAccessRow(granted: SettingsPermissionProbe.hasFullDiskAccess()),
+            SettingsPermissions.clamAVRow(available: SettingsPermissionProbe.clamAVAvailable()),
+            SettingsPermissions.privilegedHelperRow(),
+            SettingsPermissions.notificationRow(status: notifStatus),
+            SettingsPermissions.menuBarRow(enabled: menuBarEnabled),
+            SettingsPermissions.folderAccessRow(exclusionCount: exclusions.count),
+        ]
     }
 
     func saveDryRun() {
@@ -49,6 +64,23 @@ struct MCSettingsView: View {
                 Toggle("Show MacCare in the menu bar", isOn: $menuBarEnabled)
                 Text("The menu bar item samples system metrics only while its panel is open.")
                     .font(.caption).foregroundStyle(.secondary)
+            }
+            Section {
+                ForEach(model.permissionRows) { row in
+                    LabeledContent {
+                        MCStatusBadge(badgeText(row.state), status: badgeStatus(row.state))
+                    } label: {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(row.title)
+                            Text(row.detail).font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                Button("Re-test Permissions") {
+                    Task { await model.refreshPermissions(menuBarEnabled: menuBarEnabled) }
+                }
+            } header: {
+                Text("Permissions & Access")
             }
             Section("Cleaning") {
                 Toggle("Dry run by default", isOn: $model.dryRunDefault)
@@ -95,5 +127,26 @@ struct MCSettingsView: View {
         .formStyle(.grouped)
         .navigationTitle("Settings")
         .task { await model.load() }
+        .onChange(of: menuBarEnabled) {
+            Task { await model.refreshPermissions(menuBarEnabled: menuBarEnabled) }
+        }
+    }
+
+    private func badgeText(_ state: PermissionState) -> String {
+        switch state {
+        case .granted: "Granted"
+        case .notGranted: "Not granted"
+        case .denied: "Denied"
+        case .notApplicable: "N/A"
+        }
+    }
+
+    private func badgeStatus(_ state: PermissionState) -> MCStatus {
+        switch state {
+        case .granted: .success
+        case .notGranted: .neutral
+        case .denied: .error
+        case .notApplicable: .neutral
+        }
     }
 }
