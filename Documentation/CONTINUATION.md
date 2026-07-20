@@ -560,3 +560,54 @@ updated to match. **v0.5.0 "Visual Completion" is shipped**; the only
 open item is capturing real screenshots once a machine with an
 attached display is available — a pure environment follow-up, not a
 code task.
+
+## Phase 0.6.0 "Open Source Foundation" — session 2 progress
+
+Continuing on `feat/open-source-foundation` (still v0.5.0, no version
+bump this session). Completed this session, each in its own commit:
+
+1. `Documentation/DEPENDENCIES.md` — audit matrix. Confirmed via
+   `Package.swift` that this repo has **zero external SwiftPM
+   dependencies** (every target is first-party); documented the one
+   runtime, non-linked external tool (`clamscan`, shelled out to,
+   never bundled).
+2. `Documentation/CLAMAV.md` and `Documentation/PROTECTION_LIMITATIONS.md`
+   — re-verified against `Sources/MalwareEngine/MalwareEngine.swift`
+   and `Sources/MacCareApp/ProtectionView.swift`: libclamav is never
+   linked, no ClamAV binaries/signatures are bundled, `ClamAVScanner`
+   only probes known Homebrew/MacPorts paths for a user-installed
+   `clamscan`, and the Protection tab renders an honest
+   "unavailable" card when it's absent. The rest of the app is
+   unaffected by ClamAV's presence or absence.
+3. `.gitignore` hardened (`.swiftpm/`, `xcuserdata/`, quarantine/scan
+   output dirs, `.xcresult`, generated test files, etc.) and
+   `.gitattributes` added (LF normalization, binary handling,
+   linguist hints). Verified `git ls-files | git check-ignore` is
+   empty both before and after — nothing tracked was newly ignored.
+4. Six new scripts in `Scripts/`: `bootstrap.sh`, `doctor.sh`,
+   `repository-doctor.sh`, `clean.sh`, `uninstall-local.sh`,
+   `check-licenses.sh`. All idempotent, no sudo, cwd-independent,
+   no hardcoded developer-machine paths, ran and smoke-tested
+   locally. `repository-doctor.sh` surfaces a **pre-existing**
+   self-matching false positive in `Scripts/check-private-data.sh`
+   (its own `git grep` pattern for the developer's username matches
+   the literal string inside the script file itself) — not fixed
+   this session, out of scope for this task list, flagged here for
+   whoever picks it up next.
+
+Remaining from the session brief, not yet started: user docs (item 5:
+USER_GUIDE, INSTALLATION, FIRST_LAUNCH, FULL_DISK_ACCESS,
+CLEANUP_GUIDE, SMART_CARE, PROTECTION, EXCLUSIONS, RESTORE,
+QUARANTINE, UNINSTALL-extend, TROUBLESHOOTING, FAQ,
+DATA_LOCATIONS, KNOWN_LIMITATIONS-extend), developer docs (item 6),
+governance/support (item 7), `.github/` community files (item 8),
+CI workflows (item 9). Deliberately stopped after items 1–4 rather
+than rush grounded-in-code documentation for the remaining items
+under a tight budget — better to hand off a clean, verified stopping
+point than fabricate app behavior. 83 tests green,
+`swift build -c release` clean, tree committed after every chunk.
+
+Resume with: read the remaining numbered items in the session brief
+that spawned this entry, start at item 5 (user docs), and read the
+actual views/engines before writing each doc — do not invent
+behavior.
