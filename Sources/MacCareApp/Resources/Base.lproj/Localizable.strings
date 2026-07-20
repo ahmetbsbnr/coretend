@@ -226,3 +226,47 @@
 "similar.best_resolution" = "Best resolution";
 "similar.reveal_a11y" = "Reveal %@ in Finder";
 "similar.best_resolution_a11y" = "best resolution";
+
+/* My Activity */
+"activity.title" = "My Activity";
+"activity.range" = "Range";
+"activity.filter" = "Filter";
+"activity.all_kinds" = "All kinds";
+"activity.export_csv" = "Export CSV";
+"activity.clear_history" = "Clear History";
+"activity.range.all" = "All time";
+"activity.range.last7" = "Last 7 days";
+"activity.range.last30" = "Last 30 days";
+"activity.empty" = "No activity yet";
+"activity.empty_kind" = "No activity of this kind yet";
+"activity.empty.subtitle" = "Scans and cleanups will appear here. Everything stays on this Mac.";
+"activity.empty_range" = "No activity in this range.";
+"activity.freed_real" = "Freed (real)";
+"activity.simulated_dryrun" = "Simulated (dry run)";
+"activity.items" = "Items";
+"activity.row.detail" = "%d items · %@ %@";
+"activity.row.simulated_suffix" = "(simulated, no files were changed)";
+"activity.row.real_suffix" = "(real, applied to disk)";
+"activity.open_protection" = "Open Protection";
+"activity.completed" = "Completed";
+"activity.row.simulated_a11y" = "simulated";
+"activity.row.real_a11y" = "real";
+
+/* Cloud Cleanup */
+"cloud.nav_title" = "Cloud Cleanup";
+"cloud.empty.title" = "No cloud folders found";
+"cloud.empty.subtitle" = "iCloud Drive, Dropbox, Google Drive and OneDrive local folders are detected automatically when present.";
+"cloud.measuring" = "Measuring local footprint…";
+"cloud.picker.title" = "Analyze cloud storage footprint";
+"cloud.picker.subtitle" = "Shows which synced files actually occupy disk space on this Mac.\nAnalysis only — deleting synced files would remove them on every device.";
+"cloud.results.summary" = "%@ on this Mac of %@ total — analysis only, nothing downloaded or deleted";
+"cloud.back" = "Back";
+"cloud.local_bytes" = "%@ local";
+"cloud.total_bytes" = "%@ total";
+"cloud.reveal_a11y" = "Reveal %@ in Finder";
+"cloud.entry_a11y" = "%@, %@, %@ local of %@ total";
+"cloud.state.partial" = "partially local";
+"cloud.state.placeholder" = "online only";
+"cloud.state.local_a11y" = "fully local";
+"cloud.state.partial_a11y" = "partially local";
+"cloud.state.placeholder_a11y" = "online only, not downloaded";
