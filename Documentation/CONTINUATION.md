@@ -796,4 +796,51 @@ criterion-by-criterion against what's now actually true, (b) creating
 `Documentation/FIRST_PUBLIC_RELEASE_CHECKLIST.md` if the gate genuinely
 passes, (c) bumping version + updating CHANGELOG.md/PROJECT_STATE.json/
 ROADMAP.md/DECISIONS.md/KNOWN_LIMITATIONS.md/HUMAN_BLOCKERS.md only if
+
+## AUDIT SESSION 1 (2026-07-20) — evidence-based audit, not a dev session
+
+Ran the first of a planned multi-session comprehensive audit at commit
+`b8266a29e7ebdbae1791c1c7afb887a8529763eb` on `feat/public-distribution`.
+No version bump, no push, no publish, no build/engine/design/localization
+code changes — audit only, per explicit instruction.
+
+**Audited this session (real evidence, see files below):**
+- Git/repo state: clean tree, 115 commits, single author, no tags, no
+  remotes, 7 stray leftover `worktree-agent-*` branches (flagged, not
+  removed). → `Documentation/REPOSITORY_MAP.md`, `AUDIT_COMMANDS.log`.
+- Repository statistics: 283 tracked files, 59 Swift files / 8296 lines,
+  16 test files, 22 shell scripts, 82 docs, 27 website HTML files, 0
+  external deps, 3 GitHub workflows. → `Documentation/repository-statistics.json`.
+- Full test run via `bash Scripts/test.sh`: **86/86 tests passed, 27
+  suites, 0.938s.** Plus shell-level scripts: `test-uninstall.sh` PASS,
+  `test-distribution.sh` 9/10 (1 known pre-existing limitation),
+  `test-release-manifest.sh` **2 real defects found** (SHA256SUMS doesn't
+  verify against a freshly rebuilt zip/dmg; `latest.json` dmgSize off by 3
+  bytes from actual), `check-private-data.sh` PASS. →
+  `Documentation/TEST_INVENTORY.md`, `test-inventory.json`.
+- Architecture: 9 SwiftPM targets read from `Package.swift` + source,
+  public types cataloged, concurrency posture (18 files `@MainActor`, 4
+  `AsyncStream`, exactly one `Process()` shell-out at
+  `Sources/MalwareEngine/MalwareEngine.swift:56`), 4 real Mermaid diagrams
+  built from actually-read code paths. → `Documentation/ARCHITECTURE_INVENTORY.md`.
+- History: real chronology from `git log` cross-checked against
+  `git show --stat` on key commits, not trusted from messages alone. →
+  `Documentation/PROJECT_HISTORY_FROM_ZERO.md`.
+- Master report skeleton started with sections 0-10 filled from the above,
+  sections 11-42 explicitly marked "NOT YET AUDITED — pending session 2"
+  rather than fabricated. → `Documentation/PROJECT_COMPLETE_AUDIT.md`,
+  `Documentation/project-state-audit.json`.
+
+**Queued for audit session 2** (none of these were touched this session):
+module-by-module feature inventory, security audit (start from the single
+`Process()` call site and `PathValidator` coverage), privacy audit,
+legal/license audit, design/UI audit, localization audit (only line-count
+parity checked, not key-by-key), distribution audit (root-cause the two
+release-manifest defects found this session), website audit (27 HTML files,
+deploy status unknown), CI/GitHub audit (3 workflows not inspected in
+depth), scripts audit (17 of 22 shell scripts not exercised), technical/
+product debt inventory, public-readiness scorecard, evidence appendix,
+next-phase recommendations.
+
+No code was changed this session — audit deliverables only, one commit.
 every criterion is genuinely met.

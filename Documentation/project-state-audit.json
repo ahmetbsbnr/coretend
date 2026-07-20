@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "auditDate": "2026-07-20",
+  "auditSession": 1,
+  "product": "MacCare Local",
+  "version": "0.7.0 (string only — not a published/tagged release)",
+  "commit": "b8266a29e7ebdbae1791c1c7afb887a8529763eb",
+  "branch": "feat/public-distribution",
+  "repositoryClean": true,
+  "repositoryPublic": false,
+  "repositoryPushed": false,
+  "remotesConfigured": 0,
+  "tagsConfigured": 0,
+  "websiteDeployed": "UNKNOWN - not audited this session",
+  "releasePublished": false,
+  "tests": {
+    "framework": "swift-testing via bash Scripts/test.sh",
+    "total": 86,
+    "passed": 86,
+    "failed": 0,
+    "suites": 27,
+    "durationSeconds": 0.938
+  },
+  "shellTests": {
+    "test-uninstall.sh": "PASS",
+    "test-distribution.sh": "FAIL (1/10 checks, known documented limitation)",
+    "test-release-manifest.sh": "FAIL (2 real defects found this session)",
+    "check-private-data.sh": "PASS"
+  },
+  "builds": {
+    "debugBuildDurationSeconds": "NOT_MEASURED_session1",
+    "releaseBuildDurationSeconds": "NOT_MEASURED_session1",
+    "distributionBuildThisSession": "ran via test-distribution.sh: app/zip/dmg built successfully into local Release/"
+  },
+  "artifacts": {
+    "dmgSizeActualBytes": 2950739,
+    "dmgSizeManifestBytes": 2950742,
+    "dmgSizeMatchesManifest": false,
+    "sha256sumsVerifiesAgainstCurrentBuild": false
+  },
+  "modules": "pending-session-2",
+  "security": "pending-session-2",
+  "privacy": "pending-session-2",
+  "legal": "pending-session-2",
+  "design": "pending-session-2",
+  "localization": "pending-session-2",
+  "distribution": "pending-session-2 (deep root-cause; surface defects already found this session, see artifacts field)",
+  "website": "pending-session-2",
+  "ci": "pending-session-2",
+  "scripts": "pending-session-2 (17 of 22 scripts not yet exercised)",
+  "blockers": [
+    "SHA256SUMS manifest does not verify against currently-built zip/dmg artifacts",
+    "latest.json dmgSize off by 3 bytes from actual DMG",
+    "binary contains literal repo checkout path (documented pre-existing limitation, not fixed)"
+  ],
+  "scores": "pending-session-2 (no readiness scorecard computed yet)"
+}

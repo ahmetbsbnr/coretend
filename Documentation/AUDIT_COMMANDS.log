@@ -1,0 +1,105 @@
+AUDIT SESSION 1 — command log
+Date: 2026-07-20
+Directory: <PROJECT_ROOT> (/Users/ahmetbasbunar/Documents/MACCLEAN)
+Branch: feat/public-distribution @ b8266a29e7ebdbae1791c1c7afb887a8529763eb
+---
+
+$ git rev-parse --abbrev-ref HEAD && git rev-parse HEAD && git rev-list --count HEAD && git tag && git remote -v && git branch -a && git status --porcelain=v1 | wc -l
+exit 0
+=> branch feat/public-distribution, HEAD b8266a29e7ebdbae1791c1c7afb887a8529763eb, 115 commits total,
+   no tags, no remotes configured, local branches: backup-main-duplicate-cleanup, feat/open-source-foundation,
+   feat/public-distribution(current), main, plus 7 stray "worktree-agent-*" branches (leftover from prior
+   agent sessions using git worktrees — not part of intended branch set), 0 uncommitted changes (clean tree).
+
+$ git ls-files | wc -l
+exit 0 => 283 tracked files
+
+$ git ls-files | grep '\.swift$' | wc -l
+exit 0 => 59 Swift files
+
+$ git ls-files | grep '\.swift$' | xargs wc -l | tail -1
+exit 0 => 8296 total Swift lines (tracked files only)
+
+$ git ls-files | grep -i 'Tests/.*\.swift$' | wc -l
+exit 0 => 16 test files
+
+$ git ls-files | grep '\.sh$' | wc -l
+exit 0 => 22 shell scripts
+
+$ git ls-files | grep '\.md$' | wc -l
+exit 0 => 82 markdown docs
+
+$ du -sh .git
+exit 0 => 14M
+
+$ du -sh .
+exit 0 => 5.6G  (NOTE: this includes an untracked .claude/worktrees/ directory left over from prior
+   agent sessions, containing full duplicate checkouts + .build products; NOT part of the git repo.
+   `git ls-files` / `.git` size above are the real repo-content numbers.)
+
+$ git log --reverse --format='%ad %s' --date=short | head -1 ; git log -1 --format='%ad %s' --date=short
+exit 0 => first commit 2026-07-19 "Foundation: SafetyCore, ScanCore, FileRules, app shell with working
+   Cleanup module"; last commit 2026-07-20 "release: prepare v0.7.0 public distribution"
+
+$ git log --format='%an <%ae>' | sort -u
+exit 0 => single author: ahmetbsbnr <your-email@example.com>  (placeholder email present in every commit
+   — flagged for later privacy/legal audit, not fixed this session per scope)
+
+$ git status --porcelain / --untracked-files=all
+exit 0 => clean, no untracked files reported inside the tracked tree (the .claude/ dir is gitignored)
+
+$ du -sh */ (top-level breakdown)
+exit 0 => Documentation/ 12M, build/ 5.8M, Release/ 5.2M, Resources/ 3.1M, Sources/ 460K, Website/ 164K,
+   Scripts/ 100K, Tests/ 80K, LICENSES/ 32K, Configuration/ 4.0K
+   (build/ and Release/ are gitignored local artifacts, not tracked)
+
+$ cat Package.swift
+exit 0 => swift-tools-version 6.0, 1 executable target (MacCareApp) + 8 library targets
+   (ScanCore, SafetyCore, FileRules, DesignSystem, Persistence, SystemMetrics, AppDiscovery, MalwareEngine),
+   9 test targets total.
+
+$ cat .gitignore
+exit 0 => covers build artifacts, packaged output, macOS cruft, local runtime data, secrets, node_modules,
+   .claude/, temp captures, generated test artifacts, and Configuration/PublicIdentity.local.json (real
+   legal/security contact data explicitly excluded).
+
+$ find . -iname "*.html" (excluding .build/.git)
+exit 0 => 27 website HTML files
+
+$ find . -iname "*.xcstrings" -o -iname "*.strings" (excluding nothing, so build/ and .claude echoed too)
+exit 0 => real tracked source-of-truth files: Sources/MacCareApp/Resources/Localizable.xcstrings,
+   Base.lproj/Localizable.strings, fr.lproj/Localizable.strings (build/ and .claude/worktrees copies
+   are generated/duplicate, ignored for counting purposes)
+
+$ time bash Scripts/test.sh
+exit 0 => "Test run with 86 tests in 27 suites passed after 0.938 seconds." Wall time ~2.1s including
+   swift build/toolchain startup. ALL 86 TESTS PASSED, 0 failures. This is the authoritative test count —
+   see Documentation/TEST_INVENTORY.md for the full per-suite breakdown read from actual test source.
+
+$ bash Scripts/test-uninstall.sh
+exit 0 => 4/4 shell-level assertions PASS (dry-run deletes nothing; --remove-all removes allowlisted
+   paths; --keep-quarantine keeps DB and removes prefs; refuses to follow a symlinked target). Uses a
+   fake $HOME via mktemp -d, never touched the real machine.
+
+$ bash Scripts/test-distribution.sh
+exit 1 => builds a real unsigned .app/.zip/.dmg into Release/ (non-destructive, local only) and runs
+   10 structural checks. 9/10 checks OK. 1 FAIL: "binary contains the literal repo checkout path" —
+   script's own comment identifies this as a "known SwiftPM Bundle.module fallback-string limitation,
+   see Documentation/KNOWN_LIMITATIONS.md — does not affect runtime behavior since the real bundle
+   resolves first, but the string is present." Pre-existing, not introduced this session, not fixed
+   (out of audit scope — documented as a finding, see TEST_INVENTORY.md).
+
+$ bash Scripts/test-release-manifest.sh
+exit 1 => 2 FAILs: (1) SHA256SUMS does not verify against the just-rebuilt zip/dmg in Release/ (the
+   manifest was generated for a prior build of the same version number, then test-distribution.sh
+   produced fresh artifacts on top — a real, reproducible drift between checked-in manifest and
+   on-disk artifacts for this version); (2) dmgSize in latest.json (2950742) mismatches actual file
+   size (2950739), a 3-byte drift. Both are real defects in the release-artifact pipeline as of this
+   HEAD, not fixed this session (out of scope) — documented as findings.
+
+$ find Sources -type d ; per-target wc -l ; grep -rn "Process()" Sources ; grep -rl "@MainActor" Sources | wc -l ;
+  grep -rln "AsyncStream" Sources | wc -l ; wc -l Sources/MacCareApp/Resources/{fr,Base}.lproj/Localizable.strings
+exit 0 => see Documentation/ARCHITECTURE_INVENTORY.md and repository-statistics.json for full figures.
+   Single Process() shell-out: Sources/MalwareEngine/MalwareEngine.swift:56 (invokes ClamAV `clamscan`).
+   18 files use @MainActor, 4 files use AsyncStream. fr.lproj and Base.lproj Localizable.strings both
+   372 lines (parity at line-count level; string-content parity not verified key-by-key this session).
