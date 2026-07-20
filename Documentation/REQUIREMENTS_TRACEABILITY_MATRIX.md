@@ -950,19 +950,19 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 ### A11Y-003
 - **Priority**: MUST
 - **Source**: VISUAL_DIRECTION.md; DESIGN_TOKENS.md
-- **Status**: **NON_COMPLIANT**
-- **Files**: Sources/DesignSystem
-- **Symbols**: MCColor
+- **Status**: **COMPLIANT_PARTIAL** (corrected session 4 — was wrongly NON_COMPLIANT)
+- **Files**: Sources/DesignSystem/DesignSystem.swift (MCCard)
+- **Symbols**: MCCard; accessibilityReduceTransparency
 - **Views**: —
 - **Test**: none
 - **Command**: `grep -rn "ncreaseContrast\|educeTransparency" Sources/`
 - **Runtime evidence**: n/a
 - **Bundle evidence**: n/a
 - **Visual evidence**: n/a
-- **Limitation**: No explicit code-level handling of Increase Contrast / Reduce Transparency found; relies on system materials by default (unverified assumption).
-- **User impact**: potentially real for users with these settings enabled
-- **Risk**: medium
-- **Needed fix**: add explicit @Environment(\.accessibilityReduceTransparency)/increaseContrast handling or verify system materials suffice
+- **Limitation**: Session-4 recheck found the session-3 finding was inaccurate: `MCCard` (Sources/DesignSystem/DesignSystem.swift:10-27) DOES handle `@Environment(\.accessibilityReduceTransparency)`, falling back to an opaque `MCColor.elevatedBackground` fill instead of `.regularMaterial`. Increase Contrast has zero handling anywhere in `Sources/` — that half of the original finding is confirmed correct. Net: partial, not zero, compliance.
+- **User impact**: low for Reduce Transparency (handled); potentially real for Increase Contrast users (unhandled)
+- **Risk**: low
+- **Needed fix**: add explicit `@Environment(\.accessibilityIncreaseContrast)` handling (border/contrast boost) — Reduce Transparency already handled, no fix needed there
 - **Recommended version**: n/a
 
 ### A11Y-004

@@ -13,14 +13,14 @@ charter compliance, accessibility, localization, performance, website, docs, gov
 which are genuinely BLOCKED_ENVIRONMENT (no display this session) or UNKNOWN (not yet read). That is
 the intended, honest result of extending into harder territory, not a regression in rigor.
 
-## Overall status counts
+## Overall status counts (updated session 4 — see correction note below)
 
 | Status | Count |
 |---|---|
 | COMPLIANT_VERIFIED | 44 |
-| COMPLIANT_PARTIAL | 9 |
+| COMPLIANT_PARTIAL | 10 |
 | IMPLEMENTED_UNVERIFIED | 10 |
-| NON_COMPLIANT | 2 |
+| NON_COMPLIANT | 1 |
 | BLOCKED_HUMAN | 0 |
 | BLOCKED_ENVIRONMENT | 1 |
 | DEFERRED_APPROVED | 0 |
@@ -29,27 +29,31 @@ the intended, honest result of extending into harder territory, not a regression
 | UNKNOWN | 3 |
 | **Total** | **69** |
 
-Two genuine NON_COMPLIANT findings this session (VIS-003 design-token drift, A11Y-003 missing
-Increase Contrast/Reduce Transparency handling), plus 10 IMPLEMENTED_UNVERIFIED, 1 BLOCKED_ENVIRONMENT,
-and 3 UNKNOWN — this is the "harder, less-clean-cut" result the session was explicitly asked to
-surface instead of rubber-stamping. See `Documentation/NON_COMPLIANCE_REGISTER.md` for full detail on
-every non-clean entry.
+**Session-4 correction**: A11Y-003 was re-verified and downgraded from NON_COMPLIANT to
+COMPLIANT_PARTIAL — the session-3 grep hit (`MCCard` in `DesignSystem.swift` handling
+`accessibilityReduceTransparency`) was misread as "zero matches" when it was in fact a real match;
+Reduce Transparency is genuinely handled, only Increase Contrast remains unhandled. See
+`Documentation/NON_COMPLIANCE_REGISTER.md` and `Documentation/REQUIREMENTS_TRACEABILITY_MATRIX.md`
+for the corrected entry. VIS-003 (design-token drift — 3 hardcoded colors, 25 raw font-size sites)
+was re-confirmed genuinely NON_COMPLIANT this session, unchanged. See
+`Documentation/FINAL_COMPLIANCE_SCORECARD.md` for the full session-4 scoring and verdict.
 
 ## Breakdown by priority (explicit, as required)
 
 | Priority | COMPLIANT_VERIFIED | COMPLIANT_PARTIAL | IMPLEMENTED_UNVERIFIED | NON_COMPLIANT | BLOCKED_ENVIRONMENT | UNKNOWN | Total |
 |---|---|---|---|---|---|---|---|
-| MUST | 39 | 5 | 9 | 1 | 0 | 0 | 54 |
+| MUST | 39 | 6 | 9 | 0 | 0 | 0 | 54 |
 | SHOULD | 4 | 4 | 1 | 1 | 1 | 3 | 14 |
 | n/a (disclosed limitation, MAC-003) | 1 | 0 | 0 | 0 | 0 | 0 | 1 |
-| **Total** | **44** | **9** | **10** | **2** | **1** | **3** | **69** |
+| **Total** | **44** | **10** | **10** | **1** | **1** | **3** | **69** |
 
 **A MUST that is COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED, NON_COMPLIANT, or BLOCKED_* caps the
 overall verdict below FULLY_CONFORMING_VERIFIED** (per the original brief's §23 scoring rule) — of 54
-MUST requirements, 15 are not COMPLIANT_VERIFIED (5 COMPLIANT_PARTIAL, 9 IMPLEMENTED_UNVERIFIED, 1
-NON_COMPLIANT: A11Y-003). The current verdict is well short of FULLY_CONFORMING_VERIFIED. Final
-scoring and a verdict label are session 4's job (see `Documentation/CONTINUATION.md`), not asserted
-here.
+MUST requirements, 15 are not COMPLIANT_VERIFIED (6 COMPLIANT_PARTIAL including the corrected
+A11Y-003, 9 IMPLEMENTED_UNVERIFIED, 0 NON_COMPLIANT MUST — the sole remaining NON_COMPLIANT, VIS-003,
+is SHOULD priority). The verdict is short of FULLY_CONFORMING_VERIFIED but with zero NON_COMPLIANT or
+BLOCKED_* MUSTs and a weighted MUST score of 44.25/54 (81.9%). See
+`Documentation/FINAL_COMPLIANCE_SCORECARD.md` for the computed verdict: **MOSTLY_CONFORMING**.
 
 ## Breakdown by domain
 
@@ -69,13 +73,16 @@ here.
 | **FUNC** (new) | 10 | 6 | 3 | 2 (FUNC-006/007) | 0 | 0 | 0 |
 | **VIS** (new) | 3 | 0 | 1 | 1 | 1 | 0 | 0 |
 | **MOTION** (new) | 2 | 0 | 0 | 2 | 0 | 0 | 0 |
-| **A11Y** (new) | 4 | 0 | 1 | 0 | 1 | 1 | 1 |
+| **A11Y** (new) | 4 | 0 | 2 | 0 | 0 | 1 | 1 |
 | **I18N** (new) | 3 | 1 | 1 | 0 | 0 | 0 | 1 |
 | **PERF** (new) | 4 | 0 | 0 | 3 | 0 | 0 | 1 |
 | **WEB** (new) | 5 | 4 | 1 | 0 | 0 | 0 | 0 |
 | **DOC** (new) | 2 | 2 | 0 | 0 | 0 | 0 | 0 |
 | **OPS** (new) | 4 | 3 | 0 | 1 | 0 | 0 | 0 |
-| **Total** | **69** | **44** | **9** | **10** | **2** | **1** | **3** |
+| **Total** | **69** | **44** | **10** | **10** | **1** | **1** | **3** |
+
+(A11Y row updated session 4: A11Y-003 moved from NON_COMPLIANT to COMPLIANT_PARTIAL; A11Y-002 remains
+BLOCKED_ENVIRONMENT — column above reflects COMPLIANT_PARTIAL=2 i.e. A11Y-001 + A11Y-003.)
 
 ## What changed this session vs. the session-1 baseline
 
@@ -121,10 +128,28 @@ here.
 - 3 UNKNOWN entries (A11Y-004, I18N-003, PERF-003) are genuinely unread this session — logged
   honestly rather than guessed at.
 - `PROJECT_COMPLETE_AUDIT.md` and the machine-readable JSON/CSV twins of the *audit report itself*
-  (not the traceability matrix, which is in sync) still reflect the old 28-requirement world —
-  reconciling those is explicitly deferred to session 4 per `Documentation/CONTINUATION.md`.
+  now synchronized to the 69-requirement matrix as of session 4 (see
+  `Documentation/FINAL_COMPLIANCE_SCORECARD.md` and `Documentation/CONTINUATION.md`).
 
-## Session 3 additions (this session)
+## Session 4 additions (this session)
+
+- Spot-checked the 2 session-3 NON_COMPLIANT findings + 1 BLOCKED_ENVIRONMENT finding before doing
+  anything else, per this session's brief. VIS-003 (design-token drift) re-confirmed genuinely
+  NON_COMPLIANT — unchanged, left as a documented gap rather than rushed (fixing 25 raw font-size
+  call sites plus adding new category-color tokens is real design-system work out of this session's
+  scope). A11Y-003 was re-verified and found to be **inaccurate as recorded**: the code already
+  handles Reduce Transparency (`MCCard` in `DesignSystem.swift`, predating session 3's audit) —
+  downgraded NON_COMPLIANT → COMPLIANT_PARTIAL. This is a docs-accuracy correction, not a code
+  change (no `fix(...)` commit needed; the underlying code was already compliant).
+- Computed the final compliance scorecard and verdict per the original brief's §23 formula:
+  `Documentation/FINAL_COMPLIANCE_SCORECARD.md`. Verdict: **MOSTLY_CONFORMING** (zero NON_COMPLIANT
+  or BLOCKED_* MUSTs, weighted MUST score 44.25/54 = 81.9%, but 15/54 MUST requirements below
+  COMPLIANT_VERIFIED — disqualifies FULLY_CONFORMING_VERIFIED per the brief's own rule).
+- Synchronized `PROJECT_COMPLETE_AUDIT.md`, `project-state-audit.json`, `public-readiness.json`
+  (created), `DOCUMENT_INDEX.md`, and did a final repo-wide grep pass for stale numbers
+  (28-requirement/27-of-28 era) and stale session/commit references.
+
+## Session 3 additions
 
 - Extended `MASTER_REQUIREMENTS_BASELINE.md` with 41 new requirements across PROD (4), FUNC (10),
   VIS (3), MOTION (2), A11Y (4), I18N (3), PERF (4), WEB (5), DOC (2), OPS (4) — sourced from

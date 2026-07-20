@@ -58,23 +58,25 @@ expected, honest result of covering the harder domains session 2 skipped — see
 - **Fix**: migrate `SpaceLensView`'s category colors to `MCColor.chartSeries`; migrate `.font(.system(size:` call sites to `MCFont` tokens.
 - **Recommended version**: 0.7.x or 0.8.0 (small, mechanical cleanup).
 
-### A11Y-003 — No explicit Increase Contrast / Reduce Transparency handling found
-- **Status**: NON_COMPLIANT (MUST priority)
-- **Evidence**: `grep -rn "ncreaseContrast\|educeTransparency" Sources/` → zero matches anywhere in
-  `Sources/`. The app relies entirely on system materials providing this behavior automatically,
-  which is a reasonable but explicitly *unverified* assumption (no code-level opt-in/adaptation
-  logic exists to confirm or override it).
-- **Priority**: P2 (accessibility MUST with no code-level evidence of compliance — real risk for
-  users who rely on these settings, even if native materials likely cover most of it).
-- **User impact**: potentially real for users with Increase Contrast or Reduce Transparency enabled;
-  unverifiable without a live interactive session.
-- **Fix**: add explicit `@Environment(\.accessibilityReduceTransparency)` /
-  `NSWorkspace.shared.accessibilityDisplayShouldIncreaseContrast` handling, or verify (with a live
-  session) that system materials genuinely suffice and document that decision explicitly rather than
-  leaving it implicit.
+### A11Y-003 — Increase Contrast unhandled (Reduce Transparency IS handled) — DOWNGRADED session 4
+- **Status**: COMPLIANT_PARTIAL (MUST priority) — corrected session 4, was wrongly NON_COMPLIANT
+- **Session-4 re-verification**: re-ran `grep -rn "ncreaseContrast\|educeTransparency" Sources/` and
+  this time actually read the hit: `Sources/DesignSystem/DesignSystem.swift:10-27` (`MCCard`) DOES
+  handle `@Environment(\.accessibilityReduceTransparency)`, falling back to an opaque
+  `MCColor.elevatedBackground` fill instead of `.regularMaterial` when the setting is on. This code
+  predates session 3 (part of the original Orbital Ecology design-system commit `c2dff93`) — the
+  session-3 finding of "zero matches" was a mistaken read of the grep output, not a code regression.
+  Increase Contrast remains genuinely unhandled — zero matches for that half.
+- **Priority**: P3 (half of the original MUST gap is closed; the remaining half — Increase Contrast
+  — is real but narrower in scope).
+- **User impact**: none for Reduce Transparency users (handled); potentially real for Increase
+  Contrast users (unhandled, unverifiable without a live session).
+- **Fix**: add explicit `@Environment(\.accessibilityDifferentiateWithoutColor)` /
+  `NSWorkspace.shared.accessibilityDisplayShouldIncreaseContrast` handling for Increase Contrast only
+  — Reduce Transparency needs no further work.
 - **Tests needed**: none automatable without a live accessibility-settings toggle; add to
   `MANUAL_ACCEPTANCE_TEST_PLAN.md`.
-- **Recommended version**: 0.8.0 (accessibility hardening pass).
+- **Recommended version**: 0.8.0 (accessibility hardening pass, narrower scope than originally logged).
 
 ### FUNC-003 — Protection live-scan path is BLOCKED_ENVIRONMENT
 - **Status**: COMPLIANT_PARTIAL (MUST priority)
