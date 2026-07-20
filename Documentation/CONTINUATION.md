@@ -800,7 +800,7 @@ ROADMAP.md/DECISIONS.md/KNOWN_LIMITATIONS.md/HUMAN_BLOCKERS.md only if
 ## AUDIT SESSION 1 (2026-07-20) — evidence-based audit, not a dev session
 
 Ran the first of a planned multi-session comprehensive audit at commit
-`b8266a29e7ebdbae1791c1c7afb887a8529763eb` on `feat/public-distribution`.
+`b33c06b8d68b9b03316821c3f6cfb17252f35011` on `feat/public-distribution`.
 No version bump, no push, no publish, no build/engine/design/localization
 code changes — audit only, per explicit instruction.
 
@@ -919,3 +919,63 @@ line-by-line reads of the 15 `MacCareApp` view files that were only grep-verifie
 
 No destructive operations performed. No version bump. No push. One or a small number of
 `docs(audit): session 2 —` commits this session, no `--no-verify`, no amend.
+
+## REQUIREMENTS RECONCILIATION — SESSION 1 (2026-07-20)
+
+New phase, distinct from the prior 3-session feature/security/design audit above ("AUDIT SESSION 1-3").
+That prior effort produced the feature/security/privacy/legal/distribution/website/debt audits and the
+readiness scorecard. This phase's job is full requirements traceability + an eventual sanitized
+external-audit ZIP. Started at HEAD `b33c06b` (= the same commit as "AUDIT SESSION 3"'s output — no
+commits landed between the two phases). No version bump, no push, no build/engine code changes except
+one real dead-reference fix (below).
+
+**Verified this session, not trusted from prior sessions' claims:**
+- `bash Scripts/test.sh`: fresh run, **86/86 tests, 27 suites, 0.938-1.0s**, matches `TEST_INVENTORY.md`.
+- Confirmed the user's report was correct: several audit docs did contain a stale commit hash
+  (`b8266a29e7ebdbae1791c1c7afb887a8529763eb`, from before the v0.7.0 release commit) and
+  `PROJECT_COMPLETE_AUDIT.md` still had "session 1 of N" / "pending session 2" language that later
+  sessions had actually resolved.
+- Re-ran `Scripts/build-release.sh` + `Scripts/test-release-manifest.sh` fresh: **ALL CHECKS PASSED**.
+  Session 2's checksum-desync fix (`88bbb9a`) genuinely still holds under a real rebuild. Also found and
+  fixed a real drift: `Release/latest.json`'s `sourceCommit` was stuck at `99bbe12` (a pre-release-commit
+  hash) with no script wiring to auto-update it — updated by hand to `b33c06b`, flagged in
+  `MASTER_REQUIREMENTS_BASELINE.md` DIST-003 that `build-release.sh` should stamp this from
+  `git rev-parse HEAD` automatically as a follow-up (not done this session — script behavior change,
+  out of scope for a docs-reconciliation pass).
+
+**Delivered this session:**
+1. `Documentation/MASTER_REQUIREMENTS_BASELINE.md` — requirement register with stable IDs (SAFE-,
+   PROTECTION-, SEC-, DIST-, MAC-, LEGAL-, OSS-, TEST-, ARCH-, PRIV-), each with wording, evidence,
+   priority, current scope. Honestly scoped to the highest-signal sources (DECISIONS.md, SAFETY_MODEL/
+   SAFETYCORE, KNOWN_LIMITATIONS, COMPATIBILITY/MACOS_VERSION_POLICY, CLAMAV/PROTECTION_LIMITATIONS,
+   LEGAL_AND_LICENSE_STATUS, prior audit reports) — a VIS-/MOTION-/A11Y-/I18N-/PERF- pass over the
+   visual-system docs is explicitly deferred to session 2, not padded with shallow entries.
+2. `Documentation/REQUIREMENTS_DECISION_HISTORY.md` — verified, against real repo evidence, all six
+   settled-decision areas the task named (Apple stance, product positioning, architecture, data stance,
+   site stance, licensing). All six hold. One caveat noted: the "no network access" privacy claim relies
+   on session 2's one-time grep sweep, not re-run independently this session — flagged for session 2 of
+   this phase.
+3. `Documentation/DOCUMENT_INDEX.md` — every doc in `Documentation/` plus root legal/policy files,
+   with role/source-of-truth/status/superseded-by/audience columns.
+4. Stale-reference reconciliation: fixed the old commit hash in `REPOSITORY_MAP.md`,
+   `ARCHITECTURE_INVENTORY.md`, `PROJECT_COMPLETE_AUDIT.md`, `AUDIT_COMMANDS.log`, `test-inventory.json`,
+   `project-state-audit.json`, `repository-statistics.json`, `TEST_INVENTORY.md`, and this file (9
+   files) — except the one genuine historical reference in `PROJECT_HISTORY_FROM_ZERO.md:77`, left
+   unchanged on purpose. Removed confusing "session 1 of N"/"pending session 2" language from
+   `PROJECT_COMPLETE_AUDIT.md`'s cover page, §4 Verdict, and §9 — pointing readers at the sessions that
+   actually resolved each item, except §9's full per-view API inventory, which is genuinely still open
+   and is kept honestly marked as such, not declared fixed.
+5. **Real dead-reference fix** (`fix(legal)` commit, separate from the docs commits): `LICENSE`
+   referenced `Documentation/LICENSING.md` and `THIRD_PARTY_NOTICES.md`, neither of which exist — a
+   defect `LEGAL_AND_LICENSE_STATUS.md` had already found and flagged in session 2 but not fixed. Now
+   points at `Documentation/LEGAL_AND_LICENSE_STATUS.md` and `Documentation/THIRD_PARTY.md`.
+
+**Not reached this session, queued for session 2 of this phase:** the actual traceability matrix
+(matching every MUST requirement in `MASTER_REQUIREMENTS_BASELINE.md` to specific code/test evidence,
+not just to a source doc), functional re-verification per module (closing the 15-view
+`IMPLEMENTED_UNVERIFIED` gap), visual/accessibility/localization re-verification, a fresh independent
+network/telemetry grep sweep (to stop relying on session 2's one-time check), final report
+regeneration, and — the eventual deliverable — building the sanitized external-audit ZIP.
+
+86 tests green throughout. `git status` clean before/after each commit. No push, no `--no-verify`, no
+amend.

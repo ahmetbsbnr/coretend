@@ -1,0 +1,161 @@
+# Document Index
+
+Map of every document in `Documentation/` (plus root-level legal/policy files), for later sessions and
+the eventual external-audit ZIP manifest. Built by reading each file's title/opening and, for the audit
+reports, their own stated session/date. AUDITED_SOURCE_COMMIT for this index: `b33c06b8d68b9b03316821c3f6cfb17252f35011`.
+
+Columns: **Role**, **Source of truth** (current = describes present-day reality; historical = a record
+of a past session, kept for provenance, not meant to be re-read as "still true"), **Status**,
+**Superseded by**, **Audience** (public = safe for external audit ZIP as-is; internal = dev-process
+notes, fine to include but not user-facing).
+
+## Root-level
+
+| File | Role | Source of truth | Status | Superseded by | Audience |
+|---|---|---|---|---|---|
+| `LICENSE` | Legal license grant + license-map pointer | current | active (fixed this session, see `REQUIREMENTS_DECISION_HISTORY.md`) | — | public |
+| `README.md` | Project entry point | current | active | — | public |
+| `PRIVACY.md` | Privacy statement | current | active | — | public |
+| `SECURITY.md` | Security policy / vuln reporting | current | active | — | public |
+| `CONTRIBUTING.md` | Contribution guide | current | active | — | public |
+| `TRADEMARKS.md` | Trademark/branding terms | current | active | — | public |
+| `GOVERNANCE.md` | Maintainer model, DCO | current | active | — | public |
+| `SUPPORT.md` | Support channels | current | active | — | public |
+
+## Core product / architecture docs (current)
+
+| File | Role | Status | Audience |
+|---|---|---|---|
+| `ARCHITECTURE.md` | High-level architecture | current | public |
+| `ARCHITECTURE_OVERVIEW.md` | Developer-facing architecture detail | current | internal/public |
+| `BUILD_SYSTEM.md` | SwiftPM build mechanics | current | internal |
+| `BUILD_AND_INSTALL.md` | Build+install combined guide | current | public |
+| `DESIGN_SYSTEM.md` | Component/token system reference | current | internal |
+| `TESTING.md` | How to run tests (`Scripts/test.sh`) | current | internal |
+| `PERSISTENCE.md` | SQLite store design | current | internal |
+| `MIGRATIONS.md` | DB migration approach | current | internal |
+| `LOCALIZATION.md` | en/fr localization mechanics | current | internal |
+| `SAFETYCORE.md` | `SafetyCore` module contract | current | internal |
+| `SAFETY_MODEL.md` | High-level deletion-safety rules | current | public |
+| `SCANCORE.md` | `ScanCore` engines | current | internal |
+| `PROTECTION.md` | Protection/malware feature | current | public |
+| `PROTECTION_LIMITATIONS.md` | Honest ClamAV/Protection gaps | current | public |
+| `CLAMAV.md` | ClamAV integration specifics | current | internal |
+| `PRIVILEGED_HELPER.md` | Privileged-helper design (unshipped) | current | internal |
+| `SMART_CARE.md` | Smart Care feature | current | public |
+| `QUARANTINE.md` | Quarantine mechanics | current | public |
+| `RESTORE.md` | Restore/undo behavior (code-verified) | current | public |
+| `EXCLUSIONS.md` | Scan-exclusion rules | current | public |
+| `DATA_LOCATIONS.md` | Where the app stores data on disk | current | public |
+| `THREAT_MODEL.md` | Condensed threat model | current | public |
+| `PRODUCT_REQUIREMENTS.md` | Abridged product requirements | current, partially superseded | see `MASTER_REQUIREMENTS_BASELINE.md` for the fuller reconstruction | public |
+| `FEATURE_MATRIX.md` | Feature x status matrix | current, cross-check against `FEATURE_INVENTORY.md` | public |
+| `RELEASE_PROCESS_DRAFT.md` | Draft release process | current (still a draft) | internal |
+| `TEST_PLAN.md` | Test planning notes | current | internal |
+
+## Platform / compatibility
+
+| File | Role | Status | Audience |
+|---|---|---|---|
+| `COMPATIBILITY.md` | Single entry point for platform support | current | public |
+| `MACOS_VERSION_POLICY.md` | Why macOS 14.0 is the floor | current | public |
+| `SUPPORTED_MACS.md` | Hardware support (arm64 only) | current | public |
+| `API_AVAILABILITY_AUDIT.md` | API-floor audit backing MACOS_VERSION_POLICY | current | internal |
+
+## Visual / design (current, session-2-and-3-audited for consistency, not re-mined this session)
+
+| File | Role | Status | Audience |
+|---|---|---|---|
+| `VISUAL_DIRECTION.md` | "Orbital Ecology" design direction | current | public |
+| `BRAND_SYSTEM.md` | Brand system spec | current | public |
+| `DESIGN_TOKENS.md` | Token values | current | internal |
+| `MOTION_SYSTEM.md` | Motion/animation rules | current | internal |
+| `VISUAL_QA.md` | Per-screen QA checklist | current, some rows still capture-pending (no attached display — see `KNOWN_LIMITATIONS.md`) | internal |
+| `VISUAL_AUDIT.md` | Baseline visual audit (v0.3.0) | historical baseline, still referenced | internal |
+| `VISUAL_TOOLING.md` | `Scripts/capture.sh` tooling notes | current | internal |
+| `ASSET_PIPELINE.md` | Brand asset generation | current | internal |
+| `ASSET_PROVENANCE.md` | Asset origin/licensing | current | public |
+
+## Distribution / release / website
+
+| File | Role | Status | Audience |
+|---|---|---|---|
+| `INSTALLATION.md` | End-user install guide | current | public |
+| `INSTALL_UNSIGNED.md` | Unsigned-build install specifics | current | public |
+| `FIRST_LAUNCH.md` | First-launch walkthrough | current | public |
+| `FULL_DISK_ACCESS.md` | FDA permission guide | current | public |
+| `UNINSTALL.md` | Uninstall guide | current | public |
+| `TROUBLESHOOTING.md` | User troubleshooting | current | public |
+| `FAQ.md` | User FAQ | current | public |
+| `CLEANUP_GUIDE.md` | Cleanup feature guide | current | public |
+| `KNOWN_LIMITATIONS.md` | Standing, honestly-tracked limitations | current, actively maintained | public |
+| `FIRST_PUBLIC_RELEASE_CHECKLIST.md` | Release gate checklist | current, gate not yet fully passed (see `HUMAN_BLOCKERS.md`) | internal |
+| `PUBLIC_RELEASE_READINESS.md` | Readiness narrative | current | internal |
+| `HUMAN_BLOCKERS.md` | Items only a human can resolve (identity, domain, legal entity) | current, still open | internal |
+| `WEBSITE_ARCHITECTURE.md` | Website structure | current | internal |
+| `WEBSITE_DEPLOYMENT.md` | Deployment plan (not yet deployed) | current | internal |
+| `WEBSITE_PRIVACY.md` | Website privacy stance | current | public |
+| `WEBSITE_SECURITY.md` | Website security stance | current | public |
+| `REPOSITORY_SANITIZATION.md` | Pre-publication sanitization log | current | internal |
+| `PUBLICATION_PLACEHOLDERS.md` | Tracked bracket-placeholders (URLs, contact, legal identity) | current, still has real placeholders | internal |
+| `THIRD_PARTY.md` | Third-party license/dependency notices | current | public |
+| `DEPENDENCIES.md` | Dependency audit (zero external SwiftPM deps) | current | public |
+
+## Process / community
+
+| File | Role | Status | Audience |
+|---|---|---|---|
+| `DECISIONS.md` | Architecture Decision Records (D1-D6) | current, append-only | public |
+| `ROADMAP.md` | Forward-looking roadmap | current | public |
+| `CHANGELOG.md` | Version history | current | public |
+| `GOOD_FIRST_ISSUES.md` | Contributor onboarding | current | public |
+| `RFC_TEMPLATE.md` | RFC template | current | public |
+| `USER_GUIDE.md` | Full user guide | current | public |
+
+## Audit reports (this multi-session effort — historical unless noted)
+
+| File | Role | Source of truth | Status | Superseded by |
+|---|---|---|---|---|
+| `PROJECT_COMPLETE_AUDIT.md` | Master audit report, sections written across sessions 1-3 | mixed: §0-10 historical (session 1), §11-14 historical (session 2), §15-38 historical (session 3) | active document, edited this session to remove confusing "session 1 of N"/"pending session 2" language where later sessions resolved it (see file's own status banner) | this file + `MASTER_REQUIREMENTS_BASELINE.md` + `DOCUMENT_INDEX.md` (this reconciliation phase) |
+| `AUDIT_COMMANDS.log` | Raw command transcript, session 1 | historical | active, commit ref fixed this session | — |
+| `REPOSITORY_MAP.md` | Repo file-tree snapshot, session 1 | historical | active, commit ref fixed this session | — |
+| `repository-statistics.json` | Repo stats snapshot, session 1 | historical | active, commit ref fixed this session | — |
+| `ARCHITECTURE_INVENTORY.md` | Target/type inventory, session 1 | historical | active, commit ref fixed this session | — |
+| `PROJECT_HISTORY_FROM_ZERO.md` | Git-log-derived chronology, session 1 | historical | active | — |
+| `TEST_INVENTORY.md` + `test-inventory.json` | Test-suite inventory, session 1 (86/86) | current — re-verified this session, numbers still accurate | active, commit ref fixed this session | — |
+| `project-state-audit.json` | Session-1 point-in-time JSON snapshot | historical (explicitly, via `historicalSnapshotNote` added this session) | active as a historical record | see `DOCUMENT_INDEX.md` / `PUBLIC_READINESS_SCORECARD.md` for current status |
+| `FEATURE_INVENTORY.md` + `.json`/`.csv` | Feature-by-feature inventory, session 2 | current, with an explicit `IMPLEMENTED_UNVERIFIED` flag on 15 un-read view files | active | full traceability matrix (session 2 of this new phase) |
+| `SECURITY_AUDIT_CURRENT.md` | Security audit, session 2 | current | active | — |
+| `PRIVACY_AUDIT_CURRENT.md` | Privacy audit, session 2 | current | active | — |
+| `LEGAL_AND_LICENSE_STATUS.md` | Legal/license audit, session 2 (found the LICENSE dead-link defect) | current | active, the defect it found is now fixed | see `REQUIREMENTS_DECISION_HISTORY.md` "Licensing stance" for the fix confirmation |
+| `DISTRIBUTION_AUDIT.md` | Distribution deep-dive, session 3 | current | active | see this session's fresh `Scripts/test-release-manifest.sh` re-run for current manifest status |
+| `WEBSITE_AUDIT.md` | Website audit, session 3 | current | active | — |
+| `TECHNICAL_DEBT.md` | Technical debt inventory, sessions 1-3 | current | active | — |
+| `PRODUCT_DEBT.md` | Product debt inventory, sessions 1-3 | current | active | — |
+| `PUBLIC_READINESS_SCORECARD.md` | Readiness scorecard, session 3 | current | active | — |
+| `AUDIT_EVIDENCE.md` | Load-bearing evidence appendix, session 3 | current | active | — |
+| `NEXT_PHASE_RECOMMENDATIONS.md` | Recommendations from sessions 1-3 | historical (written before this reconciliation phase existed) | active, this phase (requirements reconciliation) is one of its recommendations, now underway | — |
+| `PUBLICATION_AUDIT.md` | v0.6.0 "Open Source Foundation" publication audit | historical (superseded by v0.7.0 work) | historical | `PUBLIC_READINESS_SCORECARD.md` |
+| `PUBLIC_READINESS_SCORECARD.md` | see above | | | |
+
+## This reconciliation phase's own new documents (session 1)
+
+| File | Role | Status | Audience |
+|---|---|---|---|
+| `MASTER_REQUIREMENTS_BASELINE.md` | Reconstructed requirements register with stable IDs | current, new this session | public |
+| `REQUIREMENTS_DECISION_HISTORY.md` | Verified settled-decision history (Apple/product/architecture/data/site/licensing stances) | current, new this session | public |
+| `DOCUMENT_INDEX.md` | This file | current, new this session | internal |
+
+## Notes on reconciliation performed this session
+
+- Every audit-report file listed above with an old-commit reference (`b8266a29e7ebdbae1791c1c7afb887a8529763eb`,
+  short form `b8266a2`) had that reference updated to the current AUDITED_SOURCE_COMMIT `b33c06b8d68b9b03316821c3f6cfb17252f35011`,
+  **except** `PROJECT_HISTORY_FROM_ZERO.md:77`, where `b8266a2` is a genuine historical commit being
+  discussed in prose ("pre-audit commits before `b8266a2`"), not a stale "current HEAD" claim — left
+  unchanged deliberately.
+- `PROJECT_COMPLETE_AUDIT.md`'s "session 1 of N" / "pending session 2" language (cover page, §4
+  Verdict, §9 module inventory) was rewritten to either point at the session that actually resolved it,
+  or — for the one genuinely still-open item (§9's full per-view API inventory) — kept honestly marked
+  open rather than declared resolved.
+- `project-state-audit.json` kept as a historical snapshot (its own `auditSession: 1` field is accurate
+  history), with one new field added pointing readers at where current status actually lives.
