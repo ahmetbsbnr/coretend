@@ -1,0 +1,55 @@
+/* French strings */
+
+/* Common */
+"common.cancel" = "Annuler";
+"common.dry_run" = "Simulation";
+"common.running" = "En cours…";
+
+/* Sidebar */
+"sidebar.free_up_space" = "Libérer de l'espace";
+"sidebar.optimize" = "Optimiser";
+"sidebar.protect" = "Protéger";
+"sidebar.activity" = "Activité";
+
+/* Placeholder */
+"placeholder.under_construction" = "Ce module est en construction. Il arrivera dans une prochaine version.";
+
+/* Menu bar */
+"menubar.cpu" = "Processeur";
+"menubar.memory" = "Mémoire";
+"menubar.free_space" = "Espace libre";
+"menubar.thermal" = "Thermique";
+"menubar.protection" = "Protection";
+"menubar.clamav_ready" = "ClamAV prêt";
+"menubar.clamav_missing" = "ClamAV non installé";
+"menubar.last_smart_care" = "Dernier Smart Care : %@";
+"menubar.no_smart_care_yet" = "Aucun Smart Care exécuté pour l'instant.";
+"menubar.open_app" = "Ouvrir MacCare Local";
+"menubar.settings" = "Réglages…";
+"menubar.quit" = "Quitter";
+
+/* Smart Care */
+"smartcare.protection_unavailable" = "Analyse antimalware pas encore disponible";
+"smartcare.performance_unavailable" = "Tâches de maintenance pas encore disponibles";
+"smartcare.applications_unavailable" = "Analyse des applications pas encore disponible";
+"smartcare.care_categories" = "Catégories de soin";
+"smartcare.hero.idle_title" = "Prêt à prendre soin de ce Mac";
+"smartcare.hero.scanning_title" = "Analyse en cours…";
+"smartcare.hero.review_title" = "%@ à nettoyer en toute sécurité";
+"smartcare.hero.cleaning_title" = "Nettoyage en cours…";
+"smartcare.hero.finished_dryrun_title" = "Simulation : %@ seraient libérés";
+"smartcare.hero.finished_title" = "%@ déplacés dans la Corbeille";
+"smartcare.hero.idle_subtitle" = "Une analyse commence par le stockage. Rien n'est supprimé pendant l'analyse.";
+"smartcare.hero.scanning_subtitle" = "Lecture des caches, journaux et fichiers de compilation. Vous pouvez annuler à tout moment.";
+"smartcare.hero.review_subtitle_truncated" = "%@ trouvés au total (%d sur %d affichés). Seuls les éléments à faible risque et réversibles sont présélectionnés.";
+"smartcare.hero.review_subtitle" = "%@ trouvés au total. Seuls les éléments à faible risque et réversibles sont présélectionnés.";
+"smartcare.hero.executing_subtitle" = "Les éléments vont dans la Corbeille — vous pouvez les récupérer.";
+"smartcare.hero.finished_subtitle" = "Les détails se trouvent dans My Activity.";
+"smartcare.module.waiting" = "En attente d'analyse";
+"smartcare.module.scanning" = "Analyse en cours… %d éléments, %@";
+"smartcare.module.done" = "%d éléments — %@";
+"smartcare.start_scan" = "Démarrer le Smart Care";
+"smartcare.simulate_care" = "Simuler le soin";
+"smartcare.run_care" = "Lancer le soin";
+"smartcare.review_details_hint" = "Consultez les détails dans le module Nettoyage.";
+"smartcare.scan_again" = "Analyser à nouveau";

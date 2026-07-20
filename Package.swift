@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "MacCareLocal",
+    defaultLocalization: "en",
     platforms: [.macOS(.v14)],
     products: [
         .executable(name: "MacCareLocal", targets: ["MacCareApp"]),
@@ -18,7 +19,8 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "MacCareApp",
-            dependencies: ["ScanCore", "SafetyCore", "FileRules", "DesignSystem", "Persistence", "SystemMetrics", "AppDiscovery", "MalwareEngine"]
+            dependencies: ["ScanCore", "SafetyCore", "FileRules", "DesignSystem", "Persistence", "SystemMetrics", "AppDiscovery", "MalwareEngine"],
+            resources: [.process("Resources")]
         ),
         .target(name: "Persistence"),
         .target(name: "SystemMetrics"),
