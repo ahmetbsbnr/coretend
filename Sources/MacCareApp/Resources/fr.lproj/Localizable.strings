@@ -70,3 +70,27 @@
 "cleanup.select_item" = "Sélectionner %@";
 "cleanup.done.dryrun" = "Simulation : %@ seraient déplacés vers la Corbeille";
 "cleanup.done.moved" = "%@ déplacés vers la Corbeille";
+
+/* Protection */
+"protection.scan_info" = "%@ analysé en %@s — %d menaces";
+"protection.moved_to_quarantine" = "Mis en quarantaine : %@";
+"protection.quarantine_failed" = "Échec de la mise en quarantaine : %@";
+"protection.restore_failed" = "Échec de la restauration : %@";
+"protection.tab.malware" = "Malware";
+"protection.tab.privacy" = "Confidentialité";
+"protection.unavailable.title" = "Moteur antimalware non installé";
+"protection.unavailable.body" = "MacCare Local utilise le moteur open-source ClamAV pour l'analyse antimalware locale. Il n'est pas installé sur ce Mac, l'analyse est donc indisponible — ce module ne fera pas semblant du contraire.";
+"protection.unavailable.howto" = "Pour l'activer : installez ClamAV (par exemple `brew install clamav`), lancez `freshclam` une fois pour télécharger les signatures, puis rouvrez cet écran.";
+"protection.unavailable.note" = "Remarque : ce scanner est une vérification de signatures locale, pas un antivirus commercial ni une protection en temps réel.";
+"protection.scan.title" = "Analyse antimalware locale (ClamAV)";
+"protection.scan.subtitle" = "Analyse par signatures. Pas un antivirus commercial ; pas de protection en temps réel.";
+"protection.scan_downloads" = "Analyser Téléchargements";
+"protection.scan_folder" = "Analyser un dossier…";
+"protection.no_threats" = "Aucune menace trouvée";
+"protection.findings" = "Résultats";
+"protection.quarantine" = "Mettre en quarantaine";
+"protection.quarantine_section" = "Quarantaine";
+"protection.quarantine_empty" = "Vide. Les fichiers en quarantaine sont stockés localement, privés des droits d'exécution, et peuvent être restaurés ou supprimés définitivement.";
+"protection.quarantine_was" = "était : %@";
+"protection.restore" = "Restaurer";
+"protection.delete_permanently" = "Supprimer définitivement";
