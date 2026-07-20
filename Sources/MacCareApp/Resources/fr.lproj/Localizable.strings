@@ -4,6 +4,7 @@
 "common.cancel" = "Annuler";
 "common.dry_run" = "Simulation";
 "common.running" = "En cours…";
+"common.reveal_in_finder" = "Afficher dans le Finder";
 
 /* Sidebar */
 "sidebar.free_up_space" = "Libérer de l'espace";
@@ -53,3 +54,19 @@
 "smartcare.run_care" = "Lancer le soin";
 "smartcare.review_details_hint" = "Consultez les détails dans le module Nettoyage.";
 "smartcare.scan_again" = "Analyser à nouveau";
+
+/* Cleanup */
+"cleanup.title" = "Nettoyage";
+"cleanup.failed" = "Échec du nettoyage : %@";
+"cleanup.idle.title" = "Rechercher les fichiers à supprimer sans risque";
+"cleanup.idle.subtitle" = "Analyse les caches, journaux, rapports de plantage et fichiers de compilation Xcode.\nRien n'est supprimé pendant l'analyse.";
+"cleanup.start_scan" = "Démarrer l'analyse";
+"cleanup.scanning_progress" = "%d éléments analysés — %@ trouvés";
+"cleanup.review.selected" = "%d éléments — %@ sélectionnés";
+"cleanup.review.truncated" = "%d sur %d affichés — %@ trouvés au total";
+"cleanup.simulate" = "Simuler le nettoyage";
+"cleanup.move_to_trash" = "Déplacer vers la Corbeille";
+"cleanup.group.item_count" = "%d éléments";
+"cleanup.select_item" = "Sélectionner %@";
+"cleanup.done.dryrun" = "Simulation : %@ seraient déplacés vers la Corbeille";
+"cleanup.done.moved" = "%@ déplacés vers la Corbeille";

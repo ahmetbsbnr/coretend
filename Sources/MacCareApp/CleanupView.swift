@@ -159,11 +159,11 @@ struct CleanupView: View {
             case let .done(freed, dryRun):
                 doneView(freed: freed, dryRun: dryRun)
             case let .failed(message):
-                Text("Cleanup failed: \(message)").foregroundStyle(MCTheme.danger)
+                Text(L("cleanup.failed", message)).foregroundStyle(MCTheme.danger)
             }
         }
         .padding(24)
-        .navigationTitle("Cleanup")
+        .navigationTitle(L("cleanup.title"))
     }
 
     private var idleView: some View {
@@ -171,11 +171,11 @@ struct CleanupView: View {
             MCFragmentView(groupWeights: [], phase: .rest)
                 .frame(width: 120, height: 120)
                 .accessibilityLabel(MCFragmentView(groupWeights: [], phase: .rest).accessibilityDescription)
-            Text("Scan for safe-to-remove files").font(.title2.weight(.semibold))
-            Text("Scans user caches, logs, crash reports and Xcode build data.\nNothing is deleted during a scan.")
+            Text(L("cleanup.idle.title")).font(.title2.weight(.semibold))
+            Text(L("cleanup.idle.subtitle"))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
-            Button("Start Scan") { model.startScan() }
+            Button(L("cleanup.start_scan")) { model.startScan() }
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
         }
@@ -187,9 +187,9 @@ struct CleanupView: View {
             MCFragmentView(groupWeights: model.normalizedGroupWeights, phase: .scanning)
                 .frame(width: 120, height: 120)
                 .accessibilityLabel(MCFragmentView(groupWeights: [], phase: .scanning).accessibilityDescription)
-            Text("Scanned \(model.scannedCount) items — \(mcFormatBytes(model.totalBytes)) found")
+            Text(L("cleanup.scanning_progress", model.scannedCount, mcFormatBytes(model.totalBytes)))
                 .monospacedDigit()
-            Button("Cancel") { model.cancelScan() }
+            Button(L("common.cancel")) { model.cancelScan() }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -202,16 +202,16 @@ struct CleanupView: View {
                     .frame(width: 48, height: 48)
                     .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("\(model.findings.count) items — \(mcFormatBytes(model.selectedBytes)) selected")
+                    Text(L("cleanup.review.selected", model.findings.count, mcFormatBytes(model.selectedBytes)))
                         .font(.headline)
                     if model.isDisplayTruncated {
-                        Text("\(model.findings.count) of \(model.totalFindingCount) shown — \(mcFormatBytes(model.totalBytes)) found in total")
+                        Text(L("cleanup.review.truncated", model.findings.count, model.totalFindingCount, mcFormatBytes(model.totalBytes)))
                             .font(.caption).foregroundStyle(.secondary)
                     }
                 }
                 Spacer()
-                Toggle("Dry run", isOn: $model.dryRun).toggleStyle(.switch)
-                Button(model.dryRun ? "Simulate Cleanup" : "Move to Trash") {
+                Toggle(L("common.dry_run"), isOn: $model.dryRun).toggleStyle(.switch)
+                Button(model.dryRun ? L("cleanup.simulate") : L("cleanup.move_to_trash")) {
                     model.runCleanup()
                 }
                 .buttonStyle(.borderedProminent)
@@ -236,7 +236,7 @@ struct CleanupView: View {
                                     .font(.caption).foregroundStyle(.secondary)
                             }
                             Spacer()
-                            Text("\(group.findings.count) items")
+                            Text(L("cleanup.group.item_count", group.findings.count))
                                 .font(.caption).foregroundStyle(.secondary)
                             Text(mcFormatBytes(group.bytes))
                                 .monospacedDigit().font(.callout.weight(.medium))
@@ -258,7 +258,7 @@ struct CleanupView: View {
                 }
             ))
             .labelsHidden()
-            .accessibilityLabel("Select \(finding.url.lastPathComponent)")
+            .accessibilityLabel(L("cleanup.select_item", finding.url.lastPathComponent))
             VStack(alignment: .leading) {
                 Text(finding.url.lastPathComponent)
                 Text(finding.url.deletingLastPathComponent().path)
@@ -274,7 +274,7 @@ struct CleanupView: View {
                 Image(systemName: "magnifyingglass")
             }
             .buttonStyle(.borderless)
-            .help("Reveal in Finder")
+            .help(L("common.reveal_in_finder"))
         }
     }
 
@@ -284,10 +284,10 @@ struct CleanupView: View {
                 .frame(width: 120, height: 120)
                 .accessibilityLabel(MCFragmentView(groupWeights: [], phase: .success).accessibilityDescription)
             Text(dryRun
-                 ? "Dry run: \(mcFormatBytes(freed)) would be moved to Trash"
-                 : "\(mcFormatBytes(freed)) moved to Trash")
+                 ? L("cleanup.done.dryrun", mcFormatBytes(freed))
+                 : L("cleanup.done.moved", mcFormatBytes(freed)))
                 .font(.title3.weight(.semibold))
-            Button("Scan Again") { model.startScan() }
+            Button(L("smartcare.scan_again")) { model.startScan() }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
