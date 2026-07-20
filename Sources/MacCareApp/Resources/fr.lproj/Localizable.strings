@@ -184,3 +184,45 @@
 "leftovers.shared_ambiguous_a11y" = "partagé ou ambigu";
 "leftovers.shared_review" = "Partagé / à vérifier";
 "leftovers.not_installed" = "%@ — l'application avec cet identifiant n'est plus installée";
+
+/* Privacy Cleaner */
+"privacy.detecting" = "Détection des profils de navigateur…";
+"privacy.empty.title" = "Aucune donnée de navigateur trouvée";
+"privacy.empty.subtitle" = "Les données Safari nécessitent l'accès complet au disque ; les profils Chrome et Firefox sont détectés automatiquement s'ils sont présents.";
+"privacy.finished.dryrun" = "Simulation : %@ de caches seraient déplacés vers la Corbeille";
+"privacy.finished.moved" = "%@ de caches déplacés vers la Corbeille";
+"privacy.running_warning" = "%@ est en cours d'exécution — les fichiers de cache peuvent être verrouillés. Quittez d'abord le navigateur pour un nettoyage complet.";
+"privacy.caches_selected" = "Caches de navigateur — %@ sélectionnés";
+"privacy.simulate_clean" = "Simuler le nettoyage";
+"privacy.clean_caches" = "Nettoyer les caches";
+"privacy.browser_profile" = "%@ — %@";
+"privacy.cache_size" = "Cache %@";
+"privacy.history_size" = "Historique %@";
+"privacy.cookies_size" = "Cookies %@";
+"privacy.footer" = "Seuls les caches sont nettoyés (reconstruits automatiquement, déplacés vers la Corbeille). Historique, cookies et sessions sont affichés à titre indicatif ; leur suppression n'est pas encore prise en charge pour éviter de corrompre les bases de données du navigateur ou de vous déconnecter.";
+
+/* Duplicates */
+"dupes.idle.title" = "Trouver les fichiers en double";
+"dupes.idle.subtitle" = "Compare le contenu par hachage échelonné dans Téléchargements, Documents et Bureau.\nUne copie de chaque groupe est toujours conservée — la suggestion est modifiable.\nLes liens physiques vers le même fichier représentent déjà les mêmes données et ne sont jamais comptés comme doublons.";
+"dupes.find" = "Rechercher les doublons";
+"dupes.comparing" = "Comparaison de %d sur %d candidats";
+"dupes.building_inventory" = "Construction de l'inventaire des fichiers…";
+"dupes.none_found" = "Aucun doublon trouvé";
+"dupes.results.summary" = "%d groupes — %@ sélectionnés sur %@ récupérables";
+"dupes.move_to_trash" = "Déplacer les copies vers la Corbeille";
+"dupes.select_copy" = "Sélectionner la copie %@";
+"dupes.suggested_keeper" = "Copie à conserver";
+"dupes.group_header" = "%d copies × %@";
+
+/* Similar Images */
+"similar.idle.title" = "Trouver les images visuellement similaires";
+"similar.idle.subtitle" = "Utilise l'analyse Vision sur l'appareil de Photos, Téléchargements et Bureau.\nLes bibliothèques Photos ne sont jamais touchées. Examinez dans le Finder ; rien n'est supprimé ici.";
+"similar.analyze" = "Analyser les images";
+"similar.analyzing" = "Analyse de %d sur %d images";
+"similar.collecting" = "Collecte des images…";
+"similar.none_found" = "Aucun groupe d'images similaires trouvé";
+"similar.analyze_again" = "Analyser à nouveau";
+"similar.group_header" = "%d similaires — %@";
+"similar.best_resolution" = "Meilleure résolution";
+"similar.reveal_a11y" = "Afficher %@ dans le Finder";
+"similar.best_resolution_a11y" = "meilleure résolution";

@@ -147,14 +147,14 @@ struct PrivacyCleanerView: View {
         VStack(spacing: 0) {
             switch model.phase {
             case .scanning:
-                ProgressView("Detecting browser profiles…")
+                ProgressView(L("privacy.detecting"))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
                 VStack(spacing: 12) {
                     Image(systemName: "hand.raised")
                         .font(.system(size: 48)).foregroundStyle(.secondary)
-                    Text("No browser data found").font(.title3.weight(.semibold))
-                    Text("Safari data requires Full Disk Access; Chrome and Firefox profiles are detected automatically when present.")
+                    Text(L("privacy.empty.title")).font(.title3.weight(.semibold))
+                    Text(L("privacy.empty.subtitle"))
                         .foregroundStyle(.secondary).multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -164,10 +164,10 @@ struct PrivacyCleanerView: View {
                 VStack(spacing: 12) {
                     Image(systemName: "checkmark.seal")
                         .font(.system(size: 48)).foregroundStyle(MCTheme.success)
-                    Text(dryRun ? "Dry run: \(mcFormatBytes(freed)) of caches would move to Trash"
-                                : "\(mcFormatBytes(freed)) of caches moved to Trash")
+                    Text(dryRun ? L("privacy.finished.dryrun", mcFormatBytes(freed))
+                                : L("privacy.finished.moved", mcFormatBytes(freed)))
                         .font(.title3.weight(.semibold))
-                    Button("Scan Again") { Task { await model.scan() } }
+                    Button(L("smartcare.scan_again")) { Task { await model.scan() } }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
@@ -179,17 +179,17 @@ struct PrivacyCleanerView: View {
         VStack(alignment: .leading, spacing: 0) {
             let running = model.runningBrowsers()
             if !running.isEmpty {
-                Label("\(running.joined(separator: ", ")) is running — cache files may be locked. Quit the browser first for a complete clean.",
+                Label(L("privacy.running_warning", running.joined(separator: ", ")),
                       systemImage: "exclamationmark.triangle")
                     .font(.callout).foregroundStyle(MCTheme.warning)
                     .padding(.horizontal).padding(.top, 12)
             }
             HStack {
-                Text("Browser caches — \(mcFormatBytes(model.selectedCacheBytes)) selected")
+                Text(L("privacy.caches_selected", mcFormatBytes(model.selectedCacheBytes)))
                     .font(.headline)
                 Spacer()
-                Toggle("Dry run", isOn: $model.dryRun).toggleStyle(.switch)
-                Button(model.dryRun ? "Simulate Clean" : "Clean Caches") {
+                Toggle(L("common.dry_run"), isOn: $model.dryRun).toggleStyle(.switch)
+                Button(model.dryRun ? L("privacy.simulate_clean") : L("privacy.clean_caches")) {
                     Task { await model.cleanCaches() }
                 }
                 .buttonStyle(.borderedProminent)
@@ -208,11 +208,11 @@ struct PrivacyCleanerView: View {
                     .labelsHidden()
                     .disabled(profile.cacheURLs.isEmpty)
                     VStack(alignment: .leading) {
-                        Text("\(profile.browser) — \(profile.profileName)")
+                        Text(L("privacy.browser_profile", profile.browser, profile.profileName))
                         HStack(spacing: 12) {
-                            Text("Cache \(mcFormatBytes(profile.cacheBytes))")
-                            Text("History \(mcFormatBytes(profile.historyBytes))")
-                            Text("Cookies \(mcFormatBytes(profile.cookieBytes))")
+                            Text(L("privacy.cache_size", mcFormatBytes(profile.cacheBytes)))
+                            Text(L("privacy.history_size", mcFormatBytes(profile.historyBytes)))
+                            Text(L("privacy.cookies_size", mcFormatBytes(profile.cookieBytes)))
                         }
                         .font(.caption).foregroundStyle(.secondary)
                     }
@@ -220,7 +220,7 @@ struct PrivacyCleanerView: View {
                 }
             }
             .listStyle(.inset)
-            Text("Only caches are cleaned (rebuilt automatically, moved to Trash). History, cookies and sessions are shown for information; removing them is not yet supported to avoid corrupting browser databases or logging you out.")
+            Text(L("privacy.footer"))
                 .font(.caption).foregroundStyle(.secondary)
                 .padding()
         }
