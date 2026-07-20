@@ -99,6 +99,99 @@ struct ScanEngineTests {
     }
 }
 
+@Suite("Scan root isolation")
+struct ScanRootIsolationTests {
+    let tempRoot: URL
+
+    init() throws {
+        tempRoot = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("maccare-isolation-\(UUID().uuidString)")
+        let fm = FileManager.default
+        for dir in ["Downloads", "Music", "Documents", "Library/Caches", "Library/Logs"] {
+            try fm.createDirectory(at: tempRoot.appendingPathComponent(dir), withIntermediateDirectories: true)
+            try Data("marker".utf8).write(to: tempRoot.appendingPathComponent(dir).appendingPathComponent("file-in-\(dir.replacingOccurrences(of: "/", with: "-")).bin"))
+        }
+    }
+
+    private func cleanup() { try? FileManager.default.removeItem(at: tempRoot) }
+
+    private func downloadsRule() -> ScanRule {
+        ScanRule(id: "downloads.only", name: "Downloads", category: "Cleanup", explanation: "t",
+                 risk: .low, preselect: true) { home in [home.appendingPathComponent("Downloads")] }
+    }
+
+    /// Regression: a Downloads-scoped rule must never yield findings or progress
+    /// paths outside Downloads — no leak into sibling directories like Music.
+    @Test func downloadsOnlyScanNeverTouchesSiblingDirectories() async throws {
+        defer { cleanup() }
+        let engine = ScanEngine(configuration: ScanConfiguration(home: tempRoot))
+        var findingPaths: [String] = []
+        var progressPaths: [String] = []
+        for await event in engine.run(rules: [downloadsRule()]) {
+            switch event {
+            case let .finding(f): findingPaths.append(f.url.path)
+            case let .progress(_, path): progressPaths.append(path)
+            default: break
+            }
+        }
+        #expect(findingPaths.count == 1)
+        #expect(findingPaths.allSatisfy { $0.contains("/Downloads/") })
+        #expect(!findingPaths.contains { $0.contains("/Music/") || $0.contains("/Documents/") || $0.contains("/Library/") })
+        #expect(!progressPaths.contains { $0.contains("/Music/") || $0.contains("/Documents/") })
+    }
+
+    /// Smart Care-style multi-category run: only the enabled rules' roots are ever visited.
+    @Test func multipleRulesOnlyVisitTheirOwnRoots() async throws {
+        defer { cleanup() }
+        let cachesRule = ScanRule(id: "caches", name: "Caches", category: "Cleanup", explanation: "t",
+                                   risk: .low, preselect: true) { home in [home.appendingPathComponent("Library/Caches")] }
+        let engine = ScanEngine(configuration: ScanConfiguration(home: tempRoot))
+        var findingPaths: [String] = []
+        for await event in engine.run(rules: [downloadsRule(), cachesRule]) {
+            if case let .finding(f) = event { findingPaths.append(f.url.path) }
+        }
+        #expect(findingPaths.count == 2)
+        #expect(findingPaths.allSatisfy { $0.contains("/Downloads/") || $0.contains("/Library/Caches/") })
+        #expect(!findingPaths.contains { $0.contains("/Music/") || $0.contains("/Documents/") || $0.contains("/Logs/") })
+    }
+}
+
+@Suite("Totals beyond display cap")
+struct ScanTotalsBeyondCapTests {
+    /// The engine itself must never cap or drop findings — any display cap is a
+    /// UI-layer concern. Regression for totals disagreeing between Smart Care
+    /// and Cleanup when a scan yields more than the 5000-row UI cap.
+    @Test func engineStreamsAllFindingsUncappedAt5001() async throws {
+        let root = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("maccare-cap-\(UUID().uuidString)")
+        let dir = root.appendingPathComponent("Library/Caches")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let count = 5001
+        for i in 0..<count {
+            try Data(repeating: 1, count: 10).write(to: dir.appendingPathComponent("f\(i).tmp"))
+        }
+        let rule = ScanRule(id: "t", name: "t", category: "t", explanation: "t",
+                             risk: .low, preselect: true) { home in [home.appendingPathComponent("Library/Caches")] }
+        let engine = ScanEngine(configuration: ScanConfiguration(home: root))
+        var streamed = 0
+        var finishedScanned = 0
+        var finishedBytes: Int64 = -1
+        for await event in engine.run(rules: [rule]) {
+            switch event {
+            case .finding: streamed += 1
+            case let .finished(scanned, bytes):
+                finishedScanned = scanned
+                finishedBytes = bytes
+            default: break
+            }
+        }
+        #expect(streamed == count, "engine must stream every finding, never capping internally")
+        #expect(finishedScanned == count)
+        #expect(finishedBytes == Int64(count) * 10)
+    }
+}
+
 @Suite("ScanRule matches filter")
 struct ScanRuleMatchesTests {
     @Test func matchesPredicateFiltersFindings() async throws {
