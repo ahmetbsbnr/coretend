@@ -9,7 +9,7 @@ struct MacCareApp: App {
     var body: some Scene {
         WindowGroup("MacCare Local") {
             MainWindow()
-                .frame(minWidth: 900, minHeight: 600)
+                .frame(minWidth: MCSize.windowMinWidth, minHeight: MCSize.windowMinHeight)
         }
         .windowStyle(.automatic)
 
@@ -88,20 +88,38 @@ enum ModuleID: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var systemImage: String {
+    var identity: MCModuleIdentity {
         switch self {
-        case .smartCare: "heart.text.square"
-        case .cleanup: "sparkles"
-        case .protection: "shield"
-        case .performance: "gauge.with.needle"
-        case .applications: "square.grid.2x2"
-        case .myClutter: "doc.on.doc"
-        case .spaceLens: "circle.hexagongrid"
-        case .cloudCleanup: "icloud"
-        case .myActivity: "clock.arrow.circlepath"
-        case .settings: "gearshape"
+        case .smartCare: .smartCare
+        case .cleanup: .cleanup
+        case .protection: .protection
+        case .performance: .performance
+        case .applications: .applications
+        case .myClutter: .myClutter
+        case .spaceLens: .spaceLens
+        case .cloudCleanup: .cloudCleanup
+        case .myActivity: .myActivity
+        case .settings: .settings
         }
     }
+
+    var systemImage: String { identity.icon }
+}
+
+/// Sidebar groups — logical, quiet, native.
+struct SidebarGroup: Identifiable {
+    let id: String
+    let title: String?
+    let modules: [ModuleID]
+
+    static let all: [SidebarGroup] = [
+        SidebarGroup(id: "care", title: nil, modules: [.smartCare]),
+        SidebarGroup(id: "space", title: "Free Up Space",
+                     modules: [.cleanup, .myClutter, .spaceLens, .cloudCleanup]),
+        SidebarGroup(id: "optimize", title: "Optimize", modules: [.performance, .applications]),
+        SidebarGroup(id: "protect", title: "Protect", modules: [.protection]),
+        SidebarGroup(id: "track", title: "Activity", modules: [.myActivity, .settings]),
+    ]
 }
 
 struct MainWindow: View {
@@ -111,11 +129,26 @@ struct MainWindow: View {
 
     var body: some View {
         NavigationSplitView {
-            List(ModuleID.allCases, selection: $selection) { module in
-                Label(module.rawValue, systemImage: module.systemImage)
-                    .tag(module)
+            List(selection: $selection) {
+                ForEach(SidebarGroup.all) { group in
+                    Section {
+                        ForEach(group.modules) { module in
+                            Label {
+                                Text(module.rawValue)
+                            } icon: {
+                                Image(systemName: module.systemImage)
+                                    .foregroundStyle(selection == module ? module.identity.color : Color.secondary)
+                            }
+                            .tag(module)
+                        }
+                    } header: {
+                        if let title = group.title {
+                            Text(title)
+                        }
+                    }
+                }
             }
-            .navigationSplitViewColumnWidth(min: 180, ideal: MCTheme.sidebarWidth)
+            .navigationSplitViewColumnWidth(min: MCSize.sidebarMin, ideal: MCSize.sidebarIdeal)
         } detail: {
             switch selection {
             case .smartCare:
@@ -142,6 +175,7 @@ struct MainWindow: View {
                 PlaceholderView(module: selection ?? .smartCare)
             }
         }
+        .tint(MCColor.coreMint)
         .onAppear { if !onboardingDone { showOnboarding = true } }
         .sheet(isPresented: $showOnboarding, onDismiss: { onboardingDone = true }) {
             OnboardingView(isPresented: $showOnboarding)

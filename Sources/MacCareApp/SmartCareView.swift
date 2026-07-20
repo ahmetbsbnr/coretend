@@ -126,12 +126,71 @@ struct SmartCareView: View {
     @State private var model = SmartCareViewModel()
 
     var body: some View {
-        VStack(spacing: 20) {
-            moduleList
-            footer
+        ScrollView {
+            VStack(spacing: MCSpacing.lg) {
+                hero
+                footer
+                MCSectionHeader("Care categories")
+                moduleList
+            }
+            .padding(MCSpacing.page)
+            .frame(maxWidth: 720)
+            .frame(maxWidth: .infinity)
         }
-        .padding(24)
         .navigationTitle("Smart Care")
+    }
+
+    private var heroState: MCHeroState {
+        switch model.phase {
+        case .idle: .idle
+        case .running:
+            .scanning(storage: scanFraction, protection: nil, performance: nil)
+        case .review: .review
+        case .executing: .running
+        case .finished: .success
+        }
+    }
+
+    /// Real progress proxy: cleanup module state (only implemented category).
+    private var scanFraction: Double? {
+        if case .scanning = model.modules.first?.state { return nil }
+        return nil
+    }
+
+    private var hero: some View {
+        VStack(spacing: MCSpacing.sm) {
+            MCHeroCoreView(state: heroState)
+            Text(heroTitle)
+                .font(MCFont.heroTitle)
+            Text(heroSubtitle)
+                .font(MCFont.secondaryBody)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, MCSpacing.md)
+    }
+
+    private var heroTitle: String {
+        switch model.phase {
+        case .idle: "Ready to look after this Mac"
+        case .running: "Scanning…"
+        case .review: "\(mcFormatBytes(model.preselectedBytes)) safe to clean"
+        case .executing: "Cleaning…"
+        case let .finished(freed, dryRun):
+            dryRun ? "Dry run: \(mcFormatBytes(freed)) would be freed"
+                   : "\(mcFormatBytes(freed)) moved to Trash"
+        }
+    }
+
+    private var heroSubtitle: String {
+        switch model.phase {
+        case .idle: "A scan looks at storage first. Nothing is deleted during a scan."
+        case .running: "Reading caches, logs and build data. You can cancel at any time."
+        case .review: "\(mcFormatBytes(model.totalFoundBytes)) found in total. Only low-risk, reversible items are preselected."
+        case .executing: "Items go to the Trash — you can put them back."
+        case .finished: "Details are in My Activity."
+        }
     }
 
     private var moduleList: some View {
@@ -141,7 +200,7 @@ struct SmartCareView: View {
                     HStack {
                         Image(systemName: module.icon)
                             .font(.title2)
-                            .foregroundStyle(module.enabled ? MCTheme.accent : .secondary)
+                            .foregroundStyle(module.enabled ? moduleColor(module.id) : .secondary)
                             .frame(width: 36)
                         VStack(alignment: .leading) {
                             Text(module.name).font(.headline)
@@ -153,6 +212,15 @@ struct SmartCareView: View {
                     }
                 }
             }
+        }
+    }
+
+    private func moduleColor(_ id: String) -> Color {
+        switch id {
+        case "cleanup": MCColor.storage
+        case "protection": MCColor.protection
+        case "performance": MCColor.performance
+        default: MCColor.protection
         }
     }
 

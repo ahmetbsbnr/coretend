@@ -69,19 +69,28 @@ struct PerformanceView: View {
         ScrollView {
             VStack(spacing: 16) {
                 if let snap = model.snapshot {
-                    HStack(spacing: 16) {
-                        gaugeCard(title: "CPU", fraction: snap.cpuUsedFraction,
-                                  detail: "\(Int(snap.cpuUsedFraction * 100))%")
-                        gaugeCard(title: "Memory", fraction: snap.memoryUsedFraction,
-                                  detail: "\(mcFormatBytes(snap.memoryUsedBytes)) of \(mcFormatBytes(snap.memoryTotalBytes))")
-                        gaugeCard(title: "Storage", fraction: snap.diskUsedFraction,
-                                  detail: "\(mcFormatBytes(snap.diskFreeBytes)) free")
+                    HStack(spacing: MCSpacing.md) {
+                        MCMetricCard(title: "CPU",
+                                     value: "\(Int(snap.cpuUsedFraction * 100))%",
+                                     detail: "of all cores",
+                                     fraction: snap.cpuUsedFraction,
+                                     color: statusColor(snap.cpuUsedFraction, base: MCColor.performance))
+                        MCMetricCard(title: "Memory",
+                                     value: "\(Int(snap.memoryUsedFraction * 100))%",
+                                     detail: "\(mcFormatBytes(snap.memoryUsedBytes)) of \(mcFormatBytes(snap.memoryTotalBytes))",
+                                     fraction: snap.memoryUsedFraction,
+                                     color: statusColor(snap.memoryUsedFraction, base: MCColor.protection))
+                        MCMetricCard(title: "Storage",
+                                     value: "\(Int(snap.diskUsedFraction * 100))%",
+                                     detail: "\(mcFormatBytes(snap.diskFreeBytes)) free",
+                                     fraction: snap.diskUsedFraction,
+                                     color: statusColor(snap.diskUsedFraction, base: MCColor.storage))
                     }
                     MCCard {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("CPU — last 2 minutes").font(.headline)
                             cpuChart
-                                .frame(height: 80)
+                                .frame(height: MCSize.chartHeight)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -106,35 +115,43 @@ struct PerformanceView: View {
         .onDisappear { model.stop() }
     }
 
-    private var cpuChart: some View {
-        Canvas { context, size in
-            guard model.history.count > 1 else { return }
-            let step = size.width / CGFloat(max(model.history.count - 1, 1))
-            var path = Path()
-            for (index, value) in model.history.enumerated() {
-                let point = CGPoint(x: CGFloat(index) * step,
-                                    y: size.height * (1 - CGFloat(value)))
-                if index == 0 { path.move(to: point) } else { path.addLine(to: point) }
-            }
-            context.stroke(path, with: .color(MCTheme.accent), lineWidth: 2)
-        }
-        .accessibilityLabel("CPU usage chart, currently \(Int((model.history.last ?? 0) * 100)) percent")
+    private func statusColor(_ fraction: Double, base: Color) -> Color {
+        fraction > 0.9 ? MCColor.destructive : fraction > 0.75 ? MCColor.attention : base
     }
 
-    private func gaugeCard(title: String, fraction: Double, detail: String) -> some View {
-        MCCard {
-            VStack(spacing: 8) {
-                Gauge(value: min(max(fraction, 0), 1)) {
-                    Text(title)
-                } currentValueLabel: {
-                    Text("\(Int(fraction * 100))%")
+    @ViewBuilder
+    private var cpuChart: some View {
+        if model.history.count > 1 {
+            Canvas { context, size in
+                // Grid: 25 / 50 / 75 %
+                for level in [0.25, 0.5, 0.75] {
+                    let y = size.height * (1 - level)
+                    var grid = Path()
+                    grid.move(to: CGPoint(x: 0, y: y))
+                    grid.addLine(to: CGPoint(x: size.width, y: y))
+                    context.stroke(grid, with: .color(MCColor.graphGrid.opacity(0.4)), lineWidth: 1)
                 }
-                .gaugeStyle(.accessoryCircular)
-                .tint(fraction > 0.85 ? MCTheme.danger : fraction > 0.65 ? MCTheme.warning : MCTheme.accent)
-                Text(title).font(.headline)
-                Text(detail).font(.caption).foregroundStyle(.secondary)
+                let step = size.width / CGFloat(max(model.history.count - 1, 1))
+                var line = Path()
+                for (index, value) in model.history.enumerated() {
+                    let point = CGPoint(x: CGFloat(index) * step,
+                                        y: size.height * (1 - CGFloat(value)))
+                    if index == 0 { line.move(to: point) } else { line.addLine(to: point) }
+                }
+                var fill = line
+                fill.addLine(to: CGPoint(x: CGFloat(model.history.count - 1) * step, y: size.height))
+                fill.addLine(to: CGPoint(x: 0, y: size.height))
+                fill.closeSubpath()
+                context.fill(fill, with: .linearGradient(
+                    Gradient(colors: [Color(MCColor.performance).opacity(0.25), .clear]),
+                    startPoint: .zero, endPoint: CGPoint(x: 0, y: size.height)))
+                context.stroke(line, with: .color(MCColor.performance), lineWidth: 2)
             }
-            .frame(maxWidth: .infinity)
+            .accessibilityLabel("CPU usage chart, currently \(Int((model.history.last ?? 0) * 100)) percent")
+        } else {
+            Text("Collecting samples…")
+                .font(MCFont.caption).foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 
