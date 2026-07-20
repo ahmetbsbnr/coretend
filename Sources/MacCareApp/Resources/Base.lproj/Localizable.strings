@@ -70,3 +70,27 @@
 "cleanup.select_item" = "Select %@";
 "cleanup.done.dryrun" = "Dry run: %@ would be moved to Trash";
 "cleanup.done.moved" = "%@ moved to Trash";
+
+/* Protection */
+"protection.scan_info" = "Scanned %@ in %@s — %d threats";
+"protection.moved_to_quarantine" = "Moved to quarantine: %@";
+"protection.quarantine_failed" = "Quarantine failed: %@";
+"protection.restore_failed" = "Restore failed: %@";
+"protection.tab.malware" = "Malware";
+"protection.tab.privacy" = "Privacy";
+"protection.unavailable.title" = "Malware engine not installed";
+"protection.unavailable.body" = "MacCare Local uses the open-source ClamAV engine for local malware scanning. It is not installed on this Mac, so scanning is unavailable — this module will not pretend otherwise.";
+"protection.unavailable.howto" = "To enable it: install ClamAV (for example `brew install clamav`), run `freshclam` once to download signatures, then reopen this screen.";
+"protection.unavailable.note" = "Note: this scanner is a local signature check, not a commercial antivirus or real-time protection.";
+"protection.scan.title" = "Local malware scan (ClamAV)";
+"protection.scan.subtitle" = "Signature-based scan. Not a commercial antivirus; no real-time protection.";
+"protection.scan_downloads" = "Scan Downloads";
+"protection.scan_folder" = "Scan Folder…";
+"protection.no_threats" = "No threats found";
+"protection.findings" = "Findings";
+"protection.quarantine" = "Quarantine";
+"protection.quarantine_section" = "Quarantine";
+"protection.quarantine_empty" = "Empty. Quarantined files are stored locally, stripped of execute permission, and can be restored or permanently deleted.";
+"protection.quarantine_was" = "was: %@";
+"protection.restore" = "Restore";
+"protection.delete_permanently" = "Delete Permanently";

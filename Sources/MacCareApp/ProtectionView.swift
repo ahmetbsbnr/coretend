@@ -31,7 +31,7 @@ final class ProtectionViewModel {
         do {
             let result = try await scanner.scan(paths: paths)
             findings = result.findings
-            lastScanInfo = "Scanned \(paths.map(\.lastPathComponent).joined(separator: ", ")) in \(String(format: "%.1f", result.duration))s — \(result.findings.count) threats"
+            lastScanInfo = L("protection.scan_info", paths.map(\.lastPathComponent).joined(separator: ", "), String(format: "%.1f", result.duration), result.findings.count)
             phase = .results
             AppEnvironment.shared.record(ActivityRecord(
                 kind: result.findings.isEmpty ? .scan : .error,
@@ -48,10 +48,10 @@ final class ProtectionViewModel {
             _ = try await quarantine.quarantine(fileAt: URL(fileURLWithPath: finding.path),
                                                 signature: finding.signature)
             findings.removeAll { $0.id == finding.id }
-            statusMessage = "Moved to quarantine: \(finding.path)"
+            statusMessage = L("protection.moved_to_quarantine", finding.path)
             await refreshQuarantine()
         } catch {
-            statusMessage = "Quarantine failed: \(error.localizedDescription)"
+            statusMessage = L("protection.quarantine_failed", error.localizedDescription)
         }
     }
 
@@ -63,7 +63,7 @@ final class ProtectionViewModel {
                 kind: .restore, summary: "Restored from quarantine: \(URL(fileURLWithPath: item.originalPath).lastPathComponent)",
                 itemCount: 1, bytes: 0, dryRun: false))
         } catch {
-            statusMessage = "Restore failed: \(error.localizedDescription)"
+            statusMessage = L("protection.restore_failed", error.localizedDescription)
         }
         await refreshQuarantine()
     }
@@ -79,12 +79,12 @@ struct ProtectionView: View {
     var body: some View {
         TabView {
             MalwareScanView()
-                .tabItem { Label("Malware", systemImage: "shield") }
+                .tabItem { Label(L("protection.tab.malware"), systemImage: "shield") }
             PrivacyCleanerView()
-                .tabItem { Label("Privacy", systemImage: "hand.raised") }
+                .tabItem { Label(L("protection.tab.privacy"), systemImage: "hand.raised") }
         }
         .padding(8)
-        .navigationTitle("Protection")
+        .navigationTitle(L("sidebar.protect"))
     }
 }
 
@@ -115,13 +115,13 @@ struct MalwareScanView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Image(systemName: "shield.slash").font(.title2).foregroundStyle(MCTheme.warning)
-                        Text("Malware engine not installed").font(.headline)
+                        Text(L("protection.unavailable.title")).font(.headline)
                     }
-                    Text("MacCare Local uses the open-source ClamAV engine for local malware scanning. It is not installed on this Mac, so scanning is unavailable — this module will not pretend otherwise.")
+                    Text(L("protection.unavailable.body"))
                         .foregroundStyle(.secondary)
-                    Text("To enable it: install ClamAV (for example `brew install clamav`), run `freshclam` once to download signatures, then reopen this screen.")
+                    Text(L("protection.unavailable.howto"))
                         .font(.caption).foregroundStyle(.secondary)
-                    Text("Note: this scanner is a local signature check, not a commercial antivirus or real-time protection.")
+                    Text(L("protection.unavailable.note"))
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -141,17 +141,17 @@ struct MalwareScanView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
                         Image(systemName: "shield").font(.title2).foregroundStyle(MCTheme.accent)
-                        Text("Local malware scan (ClamAV)").font(.headline)
+                        Text(L("protection.scan.title")).font(.headline)
                         Spacer()
                         if model.phase == .scanning { ProgressView().controlSize(.small) }
                     }
-                    Text("Signature-based scan. Not a commercial antivirus; no real-time protection.")
+                    Text(L("protection.scan.subtitle"))
                         .font(.caption).foregroundStyle(.secondary)
                 HStack {
-                    Button("Scan Downloads") {
+                    Button(L("protection.scan_downloads")) {
                         Task { await model.scan(paths: [FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads")]) }
                     }
-                    Button("Scan Folder…") {
+                    Button(L("protection.scan_folder")) {
                         let panel = NSOpenPanel()
                         panel.canChooseDirectories = true
                         panel.canChooseFiles = true
@@ -176,14 +176,14 @@ struct MalwareScanView: View {
                 MCCard {
                     HStack {
                         Image(systemName: "checkmark.shield.fill").foregroundStyle(MCTheme.success)
-                        Text("No threats found").font(.headline)
+                        Text(L("protection.no_threats")).font(.headline)
                         Spacer()
                     }
                 }
             } else {
                 MCCard {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Findings").font(.headline)
+                        Text(L("protection.findings")).font(.headline)
                         ForEach(model.findings) { finding in
                             HStack {
                                 Image(systemName: "exclamationmark.shield.fill")
@@ -194,7 +194,7 @@ struct MalwareScanView: View {
                                         .lineLimit(1).truncationMode(.middle)
                                 }
                                 Spacer()
-                                Button("Quarantine") {
+                                Button(L("protection.quarantine")) {
                                     Task { await model.quarantineFinding(finding) }
                                 }
                                 Button {
@@ -216,9 +216,9 @@ struct MalwareScanView: View {
     private var quarantineCard: some View {
         MCCard {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Quarantine").font(.headline)
+                Text(L("protection.quarantine_section")).font(.headline)
                 if model.quarantineItems.isEmpty {
-                    Text("Empty. Quarantined files are stored locally, stripped of execute permission, and can be restored or permanently deleted.")
+                    Text(L("protection.quarantine_empty"))
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 ForEach(model.quarantineItems) { item in
@@ -226,12 +226,12 @@ struct MalwareScanView: View {
                         Image(systemName: "archivebox").foregroundStyle(MCTheme.warning)
                         VStack(alignment: .leading) {
                             Text(item.signature).font(.callout.weight(.medium))
-                            Text("was: \(item.originalPath)").font(.caption).foregroundStyle(.secondary)
+                            Text(L("protection.quarantine_was", item.originalPath)).font(.caption).foregroundStyle(.secondary)
                                 .lineLimit(1).truncationMode(.middle)
                         }
                         Spacer()
-                        Button("Restore") { Task { await model.restore(item) } }
-                        Button("Delete Permanently", role: .destructive) {
+                        Button(L("protection.restore")) { Task { await model.restore(item) } }
+                        Button(L("protection.delete_permanently"), role: .destructive) {
                             Task { await model.delete(item) }
                         }
                     }
