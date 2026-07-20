@@ -109,3 +109,27 @@
 "spacelens.cloud_placeholder_suffix" = "iCloud placeholder, not fully downloaded";
 "spacelens.access_denied_short" = "permission denied";
 "spacelens.cloud_placeholder_short" = "iCloud placeholder";
+
+/* Applications */
+"apps.uninstall.dryrun_result" = "Dry run: %d items (%@) would move to Trash";
+"apps.uninstall.result" = "Moved %d items (%@) to Trash";
+"apps.tab.installed" = "Installed";
+"apps.tab.leftovers" = "Leftovers";
+"apps.tab.updates" = "Updates";
+"apps.title" = "Applications";
+"apps.search" = "Search apps";
+"apps.group_by" = "Group by";
+"apps.empty" = "No applications found";
+"apps.downloaded" = "Downloaded";
+"apps.downloaded.help" = "Downloaded from the web or mail and passed Gatekeeper";
+"apps.a11y.version" = "version %@";
+"apps.unknown" = "unknown";
+"apps.unknown_bundle_id" = "unknown bundle id";
+"apps.version_prefix" = "v%@";
+"apps.last_used" = "last used %@";
+"apps.last_used_unknown" = "last used: unknown";
+"apps.associated_data" = "Associated data";
+"apps.associated_data.empty" = "No associated files found for this bundle identifier.";
+"apps.simulate_uninstall" = "Simulate Uninstall";
+"apps.uninstall" = "Uninstall (move to Trash)";
+"apps.select_prompt" = "Select an application";

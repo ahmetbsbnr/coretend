@@ -167,8 +167,8 @@ final class ApplicationsViewModel {
         let result = await center.execute(approved)
         let freed = result.executed.reduce(0) { $0 + $1.logicalSize }
         uninstallResult = result.wasDryRun
-            ? "Dry run: \(result.executed.count) items (\(mcFormatBytes(freed))) would move to Trash"
-            : "Moved \(result.executed.count) items (\(mcFormatBytes(freed))) to Trash"
+            ? L("apps.uninstall.dryrun_result", result.executed.count, mcFormatBytes(freed))
+            : L("apps.uninstall.result", result.executed.count, mcFormatBytes(freed))
         AppEnvironment.shared.record(ActivityRecord(
             kind: .cleanup,
             summary: "\(result.wasDryRun ? "Dry run uninstall" : "Uninstalled") \(app.name)",
@@ -181,14 +181,14 @@ struct ApplicationsView: View {
     var body: some View {
         TabView {
             InstalledAppsView()
-                .tabItem { Label("Installed", systemImage: "square.grid.2x2") }
+                .tabItem { Label(L("apps.tab.installed"), systemImage: "square.grid.2x2") }
             LeftoversView()
-                .tabItem { Label("Leftovers", systemImage: "trash.slash") }
+                .tabItem { Label(L("apps.tab.leftovers"), systemImage: "trash.slash") }
             AppUpdatesView()
-                .tabItem { Label("Updates", systemImage: "arrow.triangle.2.circlepath") }
+                .tabItem { Label(L("apps.tab.updates"), systemImage: "arrow.triangle.2.circlepath") }
         }
         .padding(8)
-        .navigationTitle("Applications")
+        .navigationTitle(L("apps.title"))
     }
 }
 
@@ -208,10 +208,10 @@ struct InstalledAppsView: View {
 
     private var appList: some View {
         VStack(spacing: 0) {
-            TextField("Search apps", text: $model.searchText)
+            TextField(L("apps.search"), text: $model.searchText)
                 .textFieldStyle(.roundedBorder)
                 .padding(.horizontal, MCSpacing.sm).padding(.top, MCSpacing.sm)
-            Picker("Group by", selection: $model.grouping) {
+            Picker(L("apps.group_by"), selection: $model.grouping) {
                 ForEach(AppGrouping.allCases) { Text($0.rawValue).tag($0) }
             }
             .pickerStyle(.segmented)
@@ -221,7 +221,7 @@ struct InstalledAppsView: View {
             case .loading:
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
-                Text("No applications found").foregroundStyle(.secondary)
+                Text(L("apps.empty")).foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .ready:
                 // Native, reliable list is always the primary view — grouping
@@ -260,9 +260,9 @@ struct InstalledAppsView: View {
                 HStack(spacing: MCSpacing.xxs) {
                     Text(app.version ?? "—")
                     if app.isQuarantined {
-                        Label("Downloaded", systemImage: "arrow.down.circle")
+                        Label(L("apps.downloaded"), systemImage: "arrow.down.circle")
                             .labelStyle(.iconOnly)
-                            .help("Downloaded from the web or mail and passed Gatekeeper")
+                            .help(L("apps.downloaded.help"))
                     }
                     if update != .none {
                         Text(update.rawValue)
@@ -278,7 +278,7 @@ struct InstalledAppsView: View {
         }
         .padding(.vertical, MCSpacing.xxs)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(app.name), version \(app.version ?? "unknown"), \(mcFormatBytes(app.sizeBytes)), \(update.rawValue)\(app.isQuarantined ? ", downloaded" : "")")
+        .accessibilityLabel("\(app.name), \(L("apps.a11y.version", app.version ?? L("apps.unknown"))), \(mcFormatBytes(app.sizeBytes)), \(update.rawValue)\(app.isQuarantined ? ", \(L("apps.downloaded"))" : "")")
     }
 
     @ViewBuilder
@@ -291,18 +291,18 @@ struct InstalledAppsView: View {
                             .resizable().frame(width: 56, height: 56)
                         VStack(alignment: .leading) {
                             Text(app.name).font(.title2.weight(.semibold))
-                            Text(app.bundleIdentifier ?? "unknown bundle id")
+                            Text(app.bundleIdentifier ?? L("apps.unknown_bundle_id"))
                                 .font(.caption).foregroundStyle(.secondary)
                             HStack(spacing: 8) {
-                                if let version = app.version { Text("v\(version)") }
+                                if let version = app.version { Text(L("apps.version_prefix", version)) }
                                 if !app.architectures.isEmpty {
                                     Text(app.architectures.joined(separator: ", "))
                                 }
                                 Text(mcFormatBytes(app.sizeBytes))
                                 if let lastUsed = app.lastUsedDate {
-                                    Text("last used \(lastUsed.formatted(date: .abbreviated, time: .omitted))")
+                                    Text(L("apps.last_used", lastUsed.formatted(date: .abbreviated, time: .omitted)))
                                 } else {
-                                    Text("last used: unknown")
+                                    Text(L("apps.last_used_unknown"))
                                 }
                             }
                             .font(.caption).foregroundStyle(.secondary)
@@ -310,9 +310,9 @@ struct InstalledAppsView: View {
                     }
                     MCCard {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Associated data").font(.headline)
+                            Text(L("apps.associated_data")).font(.headline)
                             if model.associated.isEmpty {
-                                Text("No associated files found for this bundle identifier.")
+                                Text(L("apps.associated_data.empty"))
                                     .font(.caption).foregroundStyle(.secondary)
                             }
                             ForEach(model.associated) { item in
@@ -339,12 +339,12 @@ struct InstalledAppsView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack {
-                        Toggle("Dry run", isOn: $model.dryRun).toggleStyle(.switch)
-                        Button(model.dryRun ? "Simulate Uninstall" : "Uninstall (move to Trash)", role: .destructive) {
+                        Toggle(L("common.dry_run"), isOn: $model.dryRun).toggleStyle(.switch)
+                        Button(model.dryRun ? L("apps.simulate_uninstall") : L("apps.uninstall"), role: .destructive) {
                             Task { await model.uninstall() }
                         }
                         .buttonStyle(.borderedProminent)
-                        Button("Reveal in Finder") {
+                        Button(L("common.reveal_in_finder")) {
                             NSWorkspace.shared.activateFileViewerSelecting([app.path])
                         }
                     }
@@ -358,7 +358,7 @@ struct InstalledAppsView: View {
             VStack(spacing: 12) {
                 Image(systemName: "square.grid.2x2")
                     .font(.system(size: 48)).foregroundStyle(MCTheme.accent)
-                Text("Select an application").foregroundStyle(.secondary)
+                Text(L("apps.select_prompt")).foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
