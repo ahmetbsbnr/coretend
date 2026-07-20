@@ -24,11 +24,11 @@ Forcer clair: `defaults write local.maccare.app NSRequiresAquaSystemAppearance -
 | Smart Care | ✅ | ✅ | ✅ | ✅ code (RM via env) | hero validé idle/scanning/review dans le bundle |
 | Performance | ✅ | ✅ | ✅ | ✅ | anneaux OK, graphe grille+aire |
 | Onboarding ×4 | ✅ | — | fixe 560×460 | ✅ | étapes capturées |
-| Cleanup | ✅ | ✅ | — | — | à densifier (identité module) |
+| Cleanup | ⏳ non re-capturé | ⏳ non re-capturé | — | ✅ code (RM/RT branchés dans MCFragmentView) | Motif fragments agrégés implémenté (`MCFragmentSpec`/`MCFragmentView`), câblé dans `CleanupView`; build release 0 warning + tests verts. Capture bloquée: session sans écran attaché (`screencapture` échoue, aucun accès Accessibility TCC) — à recapturer sur une machine avec affichage. |
 | Protection | ✅ | — | — | — | état ClamAV honnête, refonte maille à venir |
 | Applications | ✅ | — | — | — | |
 | My Clutter | ✅ | — | — | — | |
-| Space Lens | ✅ | — | — | — | |
+| Space Lens | ⏳ non re-capturé | ⏳ non re-capturé | — | ✅ code (matchedGeometryEffect + a11y list) | Continuité de zoom `matchedGeometryEffect`, breadcrumb, hover/sélection/focus clavier, liste accessible alternative câblés dans `SpaceLensView`/`SpaceLensEngine`. Même blocage de capture que Cleanup ci-dessus. |
 | Cloud Cleanup | ✅ | ✅ | — | — | |
 | My Activity | ✅ | — | — | — | |
 | Settings | ✅ | ✅ | — | — | version 0.4.0 affichée |
