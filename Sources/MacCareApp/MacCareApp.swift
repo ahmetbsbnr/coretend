@@ -195,6 +195,9 @@ struct MainWindow: View {
         .sheet(isPresented: $showOnboarding, onDismiss: { onboardingDone = true }) {
             OnboardingView(isPresented: $showOnboarding)
         }
+        .onReceive(NotificationCenter.default.publisher(for: .mcNavigate)) { note in
+            if let module = note.object as? ModuleID { selection = module }
+        }
         .tint(MCColor.coreMint)
     }
 }
