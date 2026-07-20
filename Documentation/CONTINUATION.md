@@ -1209,3 +1209,40 @@ That is session 5's entire job — staging directory, exclusions, manifest, READ
 zip-integrity test, copy to Desktop. The canonical reports are now genuinely synchronized to the
 69-requirement matrix and the MOSTLY_CONFORMING verdict; session 5 can proceed directly to packaging
 without further reconciliation work.
+
+## Session 5 — sanitized external-audit ZIP package (2026-07-21)
+
+AUDITED_SOURCE_COMMIT: `4fb406f` (HEAD at session start, per session-4's handoff). AUDIT_OUTPUT_COMMIT:
+this commit.
+
+Ran `Scripts/check-private-data.sh` (fails only on the pre-existing, already-tracked finding —
+`Documentation/PROJECT_COMPLETE_AUDIT.md:41` states the developer's real absolute path as
+audit-narrative prose, not a secret or functional path; left untouched in the real repo per this
+session's instructions, sanitized in generated evidence files inside the staged copy only) and
+`Scripts/check-placeholders.sh` (133 bracket placeholders in `Website/`, expected pre-release state,
+unchanged). Confirmed `Configuration/PublicIdentity.local.json` does not exist. No secrets, `.env`
+files, tracked SQLite/DB files, or quarantine directories found. `bash Scripts/test.sh` re-run clean:
+86/86 passing, 0 failing, no source touched this session.
+
+Staged `AuditPackages/MacCare-Local-Full-Audit-2026-07-21-4fb406f/` (gitignored, added
+`AuditPackages/` to `.gitignore` as a separate small commit first) containing full `Documentation/`,
+verification sources (`Sources/`, `Tests/`, `Scripts/`, `Website/`, `Resources/`,
+`Configuration/PublicIdentity.example.json` only, `Package.swift`, `.github/`, license/governance
+files), `AuditEvidence/Git/` (fresh plain-text git provenance: branch, log, status, tags/remotes
+confirmed empty/local-only, tracked-file list), `AuditEvidence/Distribution/` (fresh `file`/`lipo`/
+`codesign -dv` output on a freshly rebuilt binary, fresh ZIP/DMG build output, fresh
+`Scripts/test-distribution.sh` output — one known, already-documented FAIL on the SwiftPM
+`Bundle.module` fallback-string limitation, see `KNOWN_LIMITATIONS.md`, not a new finding — release
+notes, and ZIP/DMG content inventories with the binaries themselves excluded for size per
+`EXCLUDED_ARTIFACTS.md`), and `AuditEvidence/Visual/` (26 real app-window screenshots from
+`VisualAudit/After/`, `Resources/Brand/`, `VISUAL_QA.md`). Wrote `AUDIT_PACKAGE_README.md`,
+`AUDIT_PACKAGE_MANIFEST.json`, `AUDIT_PACKAGE_FILELIST.txt`, `AUDIT_PACKAGE_SHA256SUMS`,
+`AUDIT_PACKAGE_EXCLUSIONS.md` at the staging root. Zipped with `zip -X -r` from inside
+`AuditPackages/` (clean relative paths), computed SHA-256, copied to `~/Desktop/`.
+
+Verified: `unzip -t` integrity OK; extracted to a fresh temp dir and confirmed no `.git`, `.build`,
+`build`, `DerivedData`, `.claude`, or `PublicIdentity.local.json` present; `AUDIT_PACKAGE_SHA256SUMS`
+entries verify against the extracted files; JSON files parse; manifest numbers match
+`FINAL_COMPLIANCE_SCORECARD.md`/`public-readiness.json`; no `/Users/ahmetbasbunar` path found via
+grep across the extracted tree. No push, no deploy, no version bump, no release publication. Real
+repo tree confirmed clean before and after all staging work (`AuditPackages/` never tracked).
