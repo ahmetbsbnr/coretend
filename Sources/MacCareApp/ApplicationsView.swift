@@ -4,6 +4,100 @@ import SafetyCore
 import DesignSystem
 import Persistence
 
+/// Real, non-invented update-mechanism detection shared by the Updates tab
+/// and the "by update state" grouping — one place reads Sparkle/App Store
+/// signals so both stay in sync.
+public enum AppUpdateSource: String, Sendable {
+    case appStore = "App Store"
+    case sparkle = "Sparkle feed"
+    case none = "In-app / manual"
+
+    public static func detect(for app: InstalledApp) -> (source: AppUpdateSource, feedURL: URL?) {
+        if FileManager.default.fileExists(atPath: app.path.appendingPathComponent("Contents/_MASReceipt").path) {
+            return (.appStore, nil)
+        }
+        let plistURL = app.path.appendingPathComponent("Contents/Info.plist")
+        if let data = try? Data(contentsOf: plistURL),
+           let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any],
+           let feedString = plist["SUFeedURL"] as? String,
+           let feedURL = URL(string: feedString), feedURL.scheme == "https" {
+            return (.sparkle, feedURL)
+        }
+        return (.none, nil)
+    }
+}
+
+/// Grouping strategies for the Applications list — every key is derived
+/// strictly from real `InstalledApp`/`AppUpdateSource` data.
+enum AppGrouping: String, CaseIterable, Identifiable {
+    case none = "None"
+    case publisher = "Publisher"
+    case size = "Size"
+    case updateState = "Update State"
+    case lastUsed = "Last Used"
+    var id: String { rawValue }
+}
+
+struct AppGroup: Identifiable {
+    let id: String
+    let apps: [InstalledApp]
+}
+
+enum AppGroupingLogic {
+    /// Vendor label from the bundle identifier's second component
+    /// (e.g. "com.acme.App" → "Acme"). Real data; falls back to "Unknown"
+    /// rather than inventing a name when there's no bundle id.
+    static func publisher(_ app: InstalledApp) -> String {
+        guard let id = app.bundleIdentifier else { return "Unknown" }
+        let parts = id.split(separator: ".")
+        guard parts.count >= 2 else { return "Unknown" }
+        return parts[1].capitalized
+    }
+
+    static func sizeBucket(_ app: InstalledApp) -> String {
+        let mb = Double(app.sizeBytes) / 1_000_000
+        switch mb {
+        case ..<50: return "Under 50 MB"
+        case ..<250: return "50–250 MB"
+        case ..<1000: return "250 MB–1 GB"
+        default: return "Over 1 GB"
+        }
+    }
+
+    static func updateState(_ app: InstalledApp) -> String {
+        AppUpdateSource.detect(for: app).source.rawValue
+    }
+
+    static func lastUsedBucket(_ app: InstalledApp) -> String {
+        guard let date = app.lastUsedDate else { return "Unknown" }
+        let days = Calendar.current.dateComponents([.day], from: date, to: Date()).day ?? 0
+        switch days {
+        case ..<7: return "This week"
+        case ..<30: return "This month"
+        case ..<90: return "Last 3 months"
+        case ..<365: return "This year"
+        default: return "Over a year ago"
+        }
+    }
+
+    static func groups(for apps: [InstalledApp], by grouping: AppGrouping) -> [AppGroup] {
+        guard grouping != .none else { return [AppGroup(id: "All Applications", apps: apps)] }
+        let key: (InstalledApp) -> String
+        let order: [String]?
+        switch grouping {
+        case .none: key = { _ in "" }; order = nil
+        case .publisher: key = publisher; order = nil
+        case .size: key = sizeBucket; order = ["Under 50 MB", "50–250 MB", "250 MB–1 GB", "Over 1 GB"]
+        case .updateState: key = updateState; order = [AppUpdateSource.appStore.rawValue, AppUpdateSource.sparkle.rawValue, AppUpdateSource.none.rawValue]
+        case .lastUsed: key = lastUsedBucket; order = ["This week", "This month", "Last 3 months", "This year", "Over a year ago", "Unknown"]
+        }
+        var buckets: [String: [InstalledApp]] = [:]
+        for app in apps { buckets[key(app), default: []].append(app) }
+        let ids = order?.filter { buckets[$0] != nil } ?? buckets.keys.sorted()
+        return ids.map { AppGroup(id: $0, apps: buckets[$0] ?? []) }
+    }
+}
+
 @MainActor
 @Observable
 final class ApplicationsViewModel {
@@ -17,12 +111,17 @@ final class ApplicationsViewModel {
     var selectedAssociatedPaths: Set<String> = []
     var uninstallResult: String?
     var dryRun = true
+    var grouping: AppGrouping = .none
 
     private let discovery = AppDiscovery()
 
     var filteredApps: [InstalledApp] {
         guard !searchText.isEmpty else { return apps }
         return apps.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+    }
+
+    var groupedApps: [AppGroup] {
+        AppGroupingLogic.groups(for: filteredApps, by: grouping)
     }
 
     func load() async {
@@ -95,12 +194,12 @@ struct ApplicationsView: View {
 
 struct InstalledAppsView: View {
     @State private var model = ApplicationsViewModel()
-    @State private var showConstellation = false
+    @Namespace private var rowTransition
 
     var body: some View {
         HSplitView {
             appList
-                .frame(minWidth: 280)
+                .frame(minWidth: 300)
             detail
                 .frame(minWidth: 360, maxWidth: .infinity, maxHeight: .infinity)
         }
@@ -111,32 +210,13 @@ struct InstalledAppsView: View {
         VStack(spacing: 0) {
             TextField("Search apps", text: $model.searchText)
                 .textFieldStyle(.roundedBorder)
-                .padding(8)
-            if model.phase == .ready {
-                Picker("View", selection: $showConstellation) {
-                    Text("List").tag(false)
-                    Text("Constellation").tag(true)
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .padding(.horizontal, 8)
-                .padding(.bottom, 6)
+                .padding(.horizontal, MCSpacing.sm).padding(.top, MCSpacing.sm)
+            Picker("Group by", selection: $model.grouping) {
+                ForEach(AppGrouping.allCases) { Text($0.rawValue).tag($0) }
             }
-            if showConstellation, model.phase == .ready {
-                ScrollView {
-                    AppConstellationView(apps: model.filteredApps) { app in
-                        Task { await model.select(app) }
-                    }
-                    .padding(8)
-                }
-            } else {
-                installedListBody
-            }
-        }
-    }
-
-    private var installedListBody: some View {
-        Group {
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .padding(MCSpacing.sm)
             switch model.phase {
             case .loading:
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -144,30 +224,61 @@ struct InstalledAppsView: View {
                 Text("No applications found").foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .ready:
-                List(model.filteredApps, selection: Binding(
+                // Native, reliable list is always the primary view — grouping
+                // only changes section boundaries, never replaces the list.
+                List(selection: Binding(
                     get: { model.selectedApp?.id },
                     set: { id in
                         if let app = model.apps.first(where: { $0.id == id }) {
                             Task { await model.select(app) }
                         }
                     }
-                )) { app in
-                    HStack {
-                        Image(nsImage: NSWorkspace.shared.icon(forFile: app.path.path))
-                            .resizable().frame(width: 28, height: 28)
-                        VStack(alignment: .leading) {
-                            Text(app.name)
-                            Text(app.version ?? "").font(.caption).foregroundStyle(.secondary)
+                )) {
+                    ForEach(model.groupedApps) { group in
+                        Section(group.id) {
+                            ForEach(group.apps) { app in
+                                appCapsuleRow(app)
+                                    .tag(app.id)
+                                    .matchedGeometryEffect(id: app.id, in: rowTransition)
+                            }
                         }
-                        Spacer()
-                        Text(mcFormatBytes(app.sizeBytes))
-                            .font(.caption).monospacedDigit().foregroundStyle(.secondary)
                     }
-                    .tag(app.id)
                 }
                 .listStyle(.inset)
+                .animation(MCMotion.snappy, value: model.grouping)
             }
         }
+    }
+
+    private func appCapsuleRow(_ app: InstalledApp) -> some View {
+        let update = AppUpdateSource.detect(for: app).source
+        return HStack(spacing: MCSpacing.sm) {
+            Image(nsImage: NSWorkspace.shared.icon(forFile: app.path.path))
+                .resizable().frame(width: 28, height: 28)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(app.name)
+                HStack(spacing: MCSpacing.xxs) {
+                    Text(app.version ?? "—")
+                    if app.isQuarantined {
+                        Label("Downloaded", systemImage: "arrow.down.circle")
+                            .labelStyle(.iconOnly)
+                            .help("Downloaded from the web or mail and passed Gatekeeper")
+                    }
+                    if update != .none {
+                        Text(update.rawValue)
+                            .padding(.horizontal, MCSpacing.xxs)
+                            .background(MCColor.protection.opacity(0.15), in: Capsule())
+                    }
+                }
+                .font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            Text(mcFormatBytes(app.sizeBytes))
+                .font(.caption).monospacedDigit().foregroundStyle(.secondary)
+        }
+        .padding(.vertical, MCSpacing.xxs)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(app.name), version \(app.version ?? "unknown"), \(mcFormatBytes(app.sizeBytes)), \(update.rawValue)\(app.isQuarantined ? ", downloaded" : "")")
     }
 
     @ViewBuilder
@@ -188,13 +299,13 @@ struct InstalledAppsView: View {
                                     Text(app.architectures.joined(separator: ", "))
                                 }
                                 Text(mcFormatBytes(app.sizeBytes))
+                                if let lastUsed = app.lastUsedDate {
+                                    Text("last used \(lastUsed.formatted(date: .abbreviated, time: .omitted))")
+                                } else {
+                                    Text("last used: unknown")
+                                }
                             }
                             .font(.caption).foregroundStyle(.secondary)
-                            if app.isDataLocationAmbiguous {
-                                Label("Data location ambiguous — no bundle identifier to match against",
-                                      systemImage: "exclamationmark.triangle")
-                                    .font(.caption).foregroundStyle(MCTheme.warning)
-                            }
                         }
                     }
                     MCCard {
@@ -250,114 +361,6 @@ struct InstalledAppsView: View {
                 Text("Select an application").foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-        }
-    }
-}
-
-/// Applications' visual layer: apps as capsules grouped into a constellation
-/// by publisher/size/update-state/last-used. Sits alongside the native list —
-/// never replaces it. Capsule width encodes real byte weight within its
-/// group; color encodes update state; a ring flags ambiguous data location.
-/// No timers, no motion at rest — layout only, so Reduce Motion has nothing
-/// to reduce.
-struct AppConstellationView: View {
-    let apps: [InstalledApp]
-    var onSelect: (InstalledApp) -> Void
-
-    @State private var mode: AppGroupMode = .publisher
-    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
-
-    private var groups: [(label: String, apps: [InstalledApp])] {
-        AppGrouping.grouped(apps, by: mode)
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: MCSpacing.md) {
-            Picker("Group by", selection: $mode) {
-                ForEach(AppGroupMode.allCases, id: \.self) { Text($0.rawValue).tag($0) }
-            }
-            .pickerStyle(.menu)
-            .frame(maxWidth: 220)
-
-            ForEach(groups, id: \.label) { group in
-                VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                    Text(group.label)
-                        .font(.subheadline.weight(.semibold))
-                        .accessibilityLabel(AppGrouping.accessibilityDescription(label: group.label, apps: group.apps))
-                    FlowLayout(spacing: MCSpacing.xs) {
-                        ForEach(group.apps) { app in
-                            capsule(for: app, groupMaxBytes: group.apps.map(\.sizeBytes).max() ?? 1)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private func capsule(for app: InstalledApp, groupMaxBytes: Int64) -> some View {
-        let weight = groupMaxBytes > 0 ? Double(app.sizeBytes) / Double(groupMaxBytes) : 0
-        let update = AppGrouping.updateState(for: app)
-        let tint = update == .manual ? MCColor.secondaryText : MCTheme.accent
-        return Button {
-            onSelect(app)
-        } label: {
-            HStack(spacing: 6) {
-                Image(nsImage: NSWorkspace.shared.icon(forFile: app.path.path))
-                    .resizable().frame(width: 16, height: 16)
-                Text(app.name).font(.caption).lineLimit(1)
-                Text(mcFormatBytes(app.sizeBytes)).font(.caption2).foregroundStyle(.secondary)
-            }
-            .padding(.horizontal, 10 + CGFloat(weight * 10))
-            .padding(.vertical, 6)
-            .background(
-                Capsule().fill(reduceTransparency ? tint.opacity(0.35) : tint.opacity(0.16))
-            )
-            .overlay(
-                Capsule().strokeBorder(
-                    app.isDataLocationAmbiguous ? MCTheme.warning : tint.opacity(0.4),
-                    lineWidth: app.isDataLocationAmbiguous ? 1.5 : 1)
-            )
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(Self.accessibilityDescription(app: app, updateState: update))
-    }
-
-    /// VoiceOver label for one capsule — real fields only, no decoration.
-    nonisolated static func accessibilityDescription(app: InstalledApp, updateState: AppUpdateState) -> String {
-        var text = "\(app.name), version \(app.version ?? "unknown"), \(mcFormatBytes(app.sizeBytes)), \(updateState.rawValue) updates."
-        if app.isDataLocationAmbiguous { text += " Data location ambiguous." }
-        return text
-    }
-}
-
-/// Minimal wrapping flow layout for variable-width capsule chips.
-struct FlowLayout: Layout {
-    var spacing: CGFloat = 8
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let width = proposal.width ?? .infinity
-        var x: CGFloat = 0, y: CGFloat = 0, rowHeight: CGFloat = 0
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            if x + size.width > width, x > 0 {
-                x = 0; y += rowHeight + spacing; rowHeight = 0
-            }
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
-        return CGSize(width: width.isFinite ? width : x, height: y + rowHeight)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        var x = bounds.minX, y = bounds.minY, rowHeight: CGFloat = 0
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            if x + size.width > bounds.maxX, x > bounds.minX {
-                x = bounds.minX; y += rowHeight + spacing; rowHeight = 0
-            }
-            subview.place(at: CGPoint(x: x, y: y), proposal: .unspecified)
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
         }
     }
 }

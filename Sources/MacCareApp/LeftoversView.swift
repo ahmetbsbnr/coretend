@@ -19,6 +19,22 @@ final class LeftoversViewModel {
         leftovers.filter { selectedPaths.contains($0.url.path) }.reduce(0) { $0 + $1.sizeBytes }
     }
 
+    /// Ambiguous/shared items: an explicit `group.` container id (Apple's own
+    /// convention for data shared across an app family), or a bundle-id
+    /// vendor prefix that appears on more than one leftover — either signal
+    /// means deleting it could affect more than the one app it looks tied to.
+    /// Derived from the real scanned leftovers, never a guess.
+    func isAmbiguous(_ item: AssociatedItem) -> Bool {
+        let name = item.url.deletingPathExtension().lastPathComponent
+        if name.hasPrefix("group.") { return true }
+        let vendorPrefix = name.split(separator: ".").prefix(2).joined(separator: ".")
+        guard !vendorPrefix.isEmpty else { return false }
+        let sharedCount = leftovers.filter {
+            $0.url.deletingPathExtension().lastPathComponent.split(separator: ".").prefix(2).joined(separator: ".") == vendorPrefix
+        }.count
+        return sharedCount > 1
+    }
+
     func scan() async {
         phase = .scanning
         leftovers = []
@@ -129,9 +145,18 @@ struct LeftoversView: View {
                         }
                     ))
                     .labelsHidden()
-                    .accessibilityLabel("Select \(item.url.lastPathComponent)")
+                    .accessibilityLabel("Select \(item.url.lastPathComponent)\(model.isAmbiguous(item) ? ", shared or ambiguous" : "")")
                     VStack(alignment: .leading) {
-                        Text(item.url.lastPathComponent)
+                        HStack(spacing: MCSpacing.xxs) {
+                            Text(item.url.lastPathComponent)
+                            if model.isAmbiguous(item) {
+                                Text("Shared / review")
+                                    .font(.caption2.weight(.semibold))
+                                    .padding(.horizontal, MCSpacing.xxs).padding(.vertical, 1)
+                                    .background(MCColor.attention.opacity(0.18), in: Capsule())
+                                    .foregroundStyle(MCColor.attention)
+                            }
+                        }
                         Text("\(item.kind.rawValue) — app with this identifier is not installed")
                             .font(.caption).foregroundStyle(.secondary)
                     }

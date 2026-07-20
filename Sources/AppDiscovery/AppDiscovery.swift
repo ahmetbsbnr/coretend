@@ -1,4 +1,5 @@
 import Foundation
+import CoreServices
 
 /// Metadata for one installed application.
 public struct InstalledApp: Sendable, Identifiable {
@@ -9,10 +10,18 @@ public struct InstalledApp: Sendable, Identifiable {
     public let path: URL
     public let sizeBytes: Int64
     public let architectures: [String]
+    /// Spotlight's `kMDItemLastUsedDate` for the bundle, when indexed. Real
+    /// signal, not synthesized — `nil` means genuinely unknown (Spotlight
+    /// disabled/not yet indexed), never guessed.
     public let lastUsedDate: Date?
+    /// True when the bundle carries `com.apple.quarantine` (i.e. it arrived
+    /// via a browser/mail download and passed Gatekeeper) — a real xattr,
+    /// used as an honest provenance signal rather than a guess.
+    public let isQuarantined: Bool
 
     public init(name: String, bundleIdentifier: String?, version: String?,
-                path: URL, sizeBytes: Int64, architectures: [String], lastUsedDate: Date? = nil) {
+                path: URL, sizeBytes: Int64, architectures: [String],
+                lastUsedDate: Date? = nil, isQuarantined: Bool = false) {
         self.id = path.path
         self.name = name
         self.bundleIdentifier = bundleIdentifier
@@ -21,21 +30,8 @@ public struct InstalledApp: Sendable, Identifiable {
         self.sizeBytes = sizeBytes
         self.architectures = architectures
         self.lastUsedDate = lastUsedDate
+        self.isQuarantined = isQuarantined
     }
-
-    /// Best-effort publisher label derived from the bundle identifier's second
-    /// component (e.g. "com.apple.Safari" → "Apple"). Real signal, not a guess
-    /// beyond what the identifier itself encodes.
-    public var publisher: String {
-        guard let bundleIdentifier, let part = bundleIdentifier.split(separator: ".").dropFirst().first,
-              !part.isEmpty else { return "Unknown" }
-        return part.prefix(1).uppercased() + part.dropFirst()
-    }
-
-    /// True when the app has no bundle identifier, meaning MacCare cannot do
-    /// exact-match lookup of its Application Support/Caches/Containers data —
-    /// its data location is genuinely ambiguous, not merely unlabeled.
-    public var isDataLocationAmbiguous: Bool { bundleIdentifier == nil }
 }
 
 /// A file or directory associated with an app (caches, prefs, containers…).
@@ -106,7 +102,6 @@ public struct AppDiscovery: Sendable {
             ?? (plist["CFBundleName"] as? String)
             ?? bundle.deletingPathExtension().lastPathComponent
         let version = plist["CFBundleShortVersionString"] as? String ?? plist["CFBundleVersion"] as? String
-        let lastUsed = try? bundle.resourceValues(forKeys: [.contentAccessDateKey]).contentAccessDate
         return InstalledApp(
             name: name,
             bundleIdentifier: plist["CFBundleIdentifier"] as? String,
@@ -114,7 +109,21 @@ public struct AppDiscovery: Sendable {
             path: bundle,
             sizeBytes: Self.directorySize(bundle),
             architectures: Self.architectures(of: bundle, plist: plist),
-            lastUsedDate: lastUsed ?? nil)
+            lastUsedDate: Self.lastUsedDate(of: bundle),
+            isQuarantined: Self.isQuarantined(bundle))
+    }
+
+    /// Reads Spotlight's real "last used" attribute; `nil` if unindexed.
+    static func lastUsedDate(of bundle: URL) -> Date? {
+        guard let item = MDItemCreate(nil, bundle.path as CFString) else { return nil }
+        guard let value = MDItemCopyAttribute(item, kMDItemLastUsedDate) else { return nil }
+        return value as? Date
+    }
+
+    /// True when the bundle still carries the quarantine xattr set by
+    /// browsers/mail on download.
+    static func isQuarantined(_ bundle: URL) -> Bool {
+        (try? bundle.resourceValues(forKeys: [.quarantinePropertiesKey]))?.quarantineProperties != nil
     }
 
     /// Finds files associated with a bundle identifier using exact-id matching only.
