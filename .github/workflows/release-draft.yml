@@ -1,0 +1,116 @@
+name: Release Draft (manual, artifacts only)
+
+# Manual-only build/package/verify workflow. It does NOT publish a GitHub
+# Release, does NOT move or create a tag, does NOT need any Apple secret,
+# does NOT simulate/claim notarization or signing. Output is uploaded as
+# workflow artifacts for a human to inspect and decide what to do with —
+# publishing a real release remains a separate, deliberate, human action.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Artifact version label (e.g. 0.7.0)"
+        required: true
+        default: "0.7.0"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-draft-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-package-verify:
+    runs-on: macos-14
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Doctor (toolchain/prereqs)
+        run: Scripts/doctor.sh
+
+      - name: Repository checks (policy files, private data, placeholders)
+        run: Scripts/repository-doctor.sh
+
+      - name: License check
+        run: Scripts/check-licenses.sh
+
+      - name: Private-data check
+        run: Scripts/check-private-data.sh
+
+      - name: Version consistency check
+        run: Scripts/check-version-consistency.sh
+
+      - name: Test suite
+        run: Scripts/test.sh
+
+      - name: Release build (0 warnings expected)
+        run: swift build -c release 2>&1 | tee /tmp/release-build.log
+
+      - name: Fail on release-build warnings
+        run: |
+          if grep -q "warning:" /tmp/release-build.log; then
+            echo "Release build produced warnings — see log above."
+            exit 1
+          fi
+
+      - name: Build ZIP and DMG artifacts
+        run: |
+          bash Scripts/package-zip.sh "${{ inputs.version }}"
+          bash Scripts/package-dmg.sh "${{ inputs.version }}"
+
+      - name: Generate SHA256SUMS
+        run: |
+          cd Release
+          shasum -a 256 \
+            "MacCare-Local-${{ inputs.version }}-arm64-unsigned.zip" \
+            "MacCare-Local-${{ inputs.version }}-arm64-unsigned.dmg" \
+            > SHA256SUMS
+          cat SHA256SUMS
+
+      - name: Verify checksums (self-check, never executes artifacts)
+        run: |
+          cd Release
+          while read -r sha file; do
+            bash ../Scripts/verify-download.sh "$file" "$sha"
+          done < SHA256SUMS
+
+      - name: Verify artifacts do not claim signed/notarized status
+        run: |
+          if grep -riE '"signed"[[:space:]]*:[[:space:]]*true|"notarized"[[:space:]]*:[[:space:]]*true' Release/latest.json 2>/dev/null; then
+            echo "Release manifest claims signed/notarized — this workflow must never publish that claim."
+            exit 1
+          fi
+          echo "OK: no signed/notarized:true claim present."
+
+      - name: Check for unresolved placeholder tokens (informational)
+        # Not a hard gate: pre-release placeholder tokens (e.g. security
+        # contact) are expected until Documentation/HUMAN_BLOCKERS.md is
+        # resolved by a human. Logged for visibility, doesn't fail the run.
+        run: Scripts/check-placeholders.sh || true
+
+      - name: Upload ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: MacCare-Local-${{ inputs.version }}-arm64-unsigned-zip
+          path: Release/MacCare-Local-${{ inputs.version }}-arm64-unsigned.zip
+          retention-days: 14
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: MacCare-Local-${{ inputs.version }}-arm64-unsigned-dmg
+          path: Release/MacCare-Local-${{ inputs.version }}-arm64-unsigned.dmg
+          retention-days: 14
+
+      - name: Upload checksums and manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: MacCare-Local-${{ inputs.version }}-checksums-and-manifest
+          path: |
+            Release/SHA256SUMS
+            Release/latest.json
+          retention-days: 14
