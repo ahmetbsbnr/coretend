@@ -844,3 +844,78 @@ next-phase recommendations.
 
 No code was changed this session — audit deliverables only, one commit.
 every criterion is genuinely met.
+
+## AUDIT SESSION 2 (2026-07-20) — feature/security/privacy/legal audit
+
+Started at commit `f1ec7d4` on `feat/public-distribution`. No version bump, no push, no
+build/engine/visual/localization code changes — audit only. Did not touch
+`Scripts/build-release.sh`, `Scripts/test-release-manifest.sh`, or `Release/*` (already fixed
+in a prior session per explicit instruction).
+
+**Read in full this session**: `Sources/SafetyCore/SafetyCore.swift`, `Sources/ScanCore/{ScanCore,
+DuplicateEngine,SimilarImagesEngine,SpaceLensEngine}.swift`, `Sources/MalwareEngine/MalwareEngine.swift`,
+`Sources/FileRules/UserCleanupRules.swift`, `Sources/AppDiscovery/AppDiscovery.swift`,
+`Sources/SystemMetrics/SystemMetrics.swift`, `Sources/Persistence/{Database,Store}.swift`,
+`Sources/MacCareApp/AppEnvironment.swift`, `Sources/MacCareApp/SettingsView.swift` (full),
+`Sources/MacCareApp/MacCareApp.swift` (structure). The remaining 15 `MacCareApp` view files
+(`AppUpdatesView`, `ApplicationsView`, `CleanupView`, `CloudCleanupView`, `DiagnosticReport`,
+`DuplicatesView`, `LeftoversView`, `MyActivityView`, `MyClutterView`, `OnboardingView`,
+`PerformanceView`, `PrivacyCleanerView`, `ProtectionView`, `SimilarImagesView`, `SmartCareView`,
+`SpaceLensView`) were **not** read line-by-line despite the instruction to do so — budget ran short;
+each was instead grep-verified to call a real engine/service at a specific line (confirming none are
+dead code / UI-only stubs), documented honestly as `IMPLEMENTED_UNVERIFIED` rather than claimed
+`VERIFIED_COMPLETE` where full logic wasn't traced. This is the single biggest gap of this session and
+should be the first thing session 3 closes.
+
+**Delivered this session (real evidence, see files below):**
+1. `Documentation/FEATURE_INVENTORY.md` + `.json` + `.csv` — 41 feature entries across app shell,
+   SafetyCore, ScanCore (4 engines), all 7 cleanup rules from `UserCleanupRules.swift` (enumerated
+   exhaustively — `usercaches`, `userlogs`, `crashreports`, `xcodederiveddata`,
+   `incompletedownloads`, `xcodedevicesupport`, `iosbackups`, nothing invented), Smart Care,
+   Protection/MalwareEngine (found a real test gap: `clamscan` `Process()` invocation itself is
+   untested, only output parsing + quarantine round-trip are), Performance/SystemMetrics,
+   Applications/AppDiscovery (found `AppUpdatesView` only deep-links to the App Store's Updates pane,
+   does not itself check for updates — documented as VERIFIED_PARTIAL, not the VERIFIED_COMPLETE the
+   view name implies), My Clutter, Space Lens, Cloud Cleanup (bespoke scanner, not one of the 4 shared
+   engines, uses the real `ubiquitousItemDownloadingStatusKey` signal), My Activity/Persistence, and
+   every Settings toggle cross-referenced against its real downstream effect (all 8 settings wired to
+   something real — no dead settings found, contradicting nothing prior).
+2. `Documentation/SECURITY_AUDIT_CURRENT.md` — full grep sweep for `rm -rf`/`sudo`/`Process(`/
+   `/bin/sh`/`try!`/`as!`/force-unwrap. Findings: the one `Process()` call uses an argument array (no
+   shell injection surface), all `rm -rf` occurrences are dev/test tooling or already-audited
+   uninstaller code, zero actual `sudo` invocations (only string-detector references), exactly 4
+   force-unwraps found and all 4 verified safe (compile-time string literals / small fixed date
+   offsets), zero `as!` anywhere in `Sources/`. 46 `try?` sites in `MacCareApp` not individually
+   triaged — flagged for session 3. Sub-scores given for deletion/system/repo security (8-9/10);
+   distribution/website/workflow security left UNKNOWN pending session 3 depth.
+3. `Documentation/PRIVACY_AUDIT_CURRENT.md` — zero `URLSession`/network-framework/socket usage found
+   anywhere in `Sources/`; zero analytics/telemetry/crash-reporter/account-system code found; zero
+   tracker script tags found in a text-level sweep of `Website/*.html` (shallow check, full website
+   audit still queued). Local-only claim holds up under this session's evidence.
+4. `Documentation/LEGAL_AND_LICENSE_STATUS.md` — verified `LICENSE`, `LICENSES/{Apache-2.0,CC-BY-4.0}
+   .txt`, `TRADEMARKS.md`, `Documentation/{THIRD_PARTY,ASSET_PROVENANCE,DEPENDENCIES}.md` all actually
+   exist and are internally consistent (zero SwiftPM deps, ClamAV GPL-2.0 external-subprocess-only,
+   no bundled fonts/stock imagery). **Real defect found**: `LICENSE` itself references two files that
+   do not exist in the tree — `Documentation/LICENSING.md` and `THIRD_PARTY_NOTICES.md` (the actual
+   file is `Documentation/THIRD_PARTY.md`, different name). Not fixed this session (doc-content
+   editing, not requested); flagged for session 3 or a follow-up fix. Zero SPDX headers found in
+   `Sources/` (flag only). No other placeholder text found.
+5. Cross-checked test domain-breakdown: ran `bash Scripts/test.sh` fresh — **86 tests, 27 suites, all
+   passed**, matching `Documentation/TEST_INVENTORY.md` and `test-inventory.json` exactly.
+   **Confirmed, no gaps** — `TEST_INVENTORY.md` was not rewritten.
+6. `Documentation/PROJECT_COMPLETE_AUDIT.md` — sections 11 (feature inventory), 12 (security), 13
+   (privacy), 14 (legal/license) filled in with pointer + summary content, replacing "NOT YET AUDITED"
+   placeholders for those four sections only. All other sections left exactly as session 1 left them.
+
+**Not reached this session (queued for session 3, none touched):** design/UI audit (Orbital Ecology
+consistency, accessibility), localization deep audit (key-by-key en/fr parity, only line-count was
+checked in session 1), CI/GitHub workflow audit (permissions-block review), scripts audit (remaining
+shell scripts beyond the security grep sample), technical/product debt inventory, public-readiness
+scorecard, evidence appendix (`Documentation/AUDIT_EVIDENCE.md`), next-phase recommendations,
+`Documentation/DISTRIBUTION_AUDIT.md` (fresh checksum recompute + arch/mount/extract/launch verification
+in a temp dir), `Documentation/WEBSITE_AUDIT.md` (stack/structure/FR-EN page inventory/tracker/
+accessibility), remaining `PROJECT_COMPLETE_AUDIT.md` sections (15-42), and — the biggest carry-over —
+line-by-line reads of the 15 `MacCareApp` view files that were only grep-verified this session.
+
+No destructive operations performed. No version bump. No push. One or a small number of
+`docs(audit): session 2 —` commits this session, no `--no-verify`, no amend.

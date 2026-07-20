@@ -91,20 +91,60 @@ from prior sessions (not cleaned up, flagged only).
 
 ---
 
-## 11-42. NOT YET AUDITED — pending session 2
+## 11. Feature-by-feature functional inventory (module-by-module)
 
-The following sections from the original 38/42-section brief were not reached this session and contain
-**no content** below beyond this placeholder. Do not infer any finding, positive or negative, from their
-absence:
+**Done this session** — see `Documentation/FEATURE_INVENTORY.md` + `feature-inventory.json`/`.csv`. 41
+entries across app shell, SafetyCore, ScanCore (4 engines), all 7 real cleanup rules from
+`UserCleanupRules.swift`, Smart Care, Protection/MalwareEngine, Performance/SystemMetrics,
+Applications/AppDiscovery, My Clutter, Space Lens, Cloud Cleanup, My Activity/Persistence, and every
+Settings toggle. Status breakdown: mostly VERIFIED_COMPLETE, 5 VERIFIED_PARTIAL (in-memory-only audit
+log, restore edge cases, App Updates deep-link-only, Cloud Cleanup view logic not fully traced), 5
+IMPLEMENTED_UNVERIFIED (My Clutter/Duplicates/Similar Images/Space Lens view-layer logic — engines
+themselves confirmed real and wired, but the surrounding view code wasn't read line-by-line this
+session). Real findings: `AppUpdatesView` only deep-links to the App Store's Updates pane rather than
+checking for updates itself; no test exercises the actual ClamAV `Process()` invocation (only its
+output parser and quarantine round-trip); no dead/unwired Settings toggle found.
 
-11. Feature-by-feature functional inventory (module-by-module)
-12. Security audit (threat model around the `Process()` shell-out, path validation coverage, sandboxing)
-13. Privacy audit (data handling, telemetry, local-only claims verification)
-14. Legal / license audit (LICENSES/, THIRD_PARTY_NOTICES.md, contact info accuracy)
+## 12. Security audit (threat model around the `Process()` shell-out, path validation coverage, sandboxing)
+
+**Done this session** — see `Documentation/SECURITY_AUDIT_CURRENT.md`. The single `Process()` call
+(`MalwareEngine.swift:56`) uses an argument array, never a shell — no injection surface; binary path
+restricted to 3 known install locations. `PathValidator` (`SafetyCore.swift`) provides protected-root
+blocklist + allowlist + symlink-escape resolution + re-validation at execute time, backed by 13 passing
+tests. Exactly 4 force-unwraps in the whole codebase, all on safe compile-time-constant inputs; zero
+`as!`; zero actual `sudo` invocations. Sub-scores: deletion safety 9/10, system security 8/10, repo
+security 8/10; distribution/website/workflow security left UNKNOWN pending session-3 depth.
+
+## 13. Privacy audit (data handling, telemetry, local-only claims verification)
+
+**Done this session** — see `Documentation/PRIVACY_AUDIT_CURRENT.md`. Zero `URLSession`/network-
+framework/socket usage found anywhere in `Sources/`; zero telemetry, analytics, crash reporters, or
+account systems found. The only external-facing action is a user-initiated `macappstore://` deep link
+(system handoff, not the app's own network call). Website text-level tracker sweep found no analytics
+script tags in the 27 tracked HTML files (shallow check; full website audit still queued for session 3).
+**Local-only claim holds up under this session's evidence.**
+
+## 14. Legal / license audit (LICENSES/, THIRD_PARTY_NOTICES.md, contact info accuracy)
+
+**Done this session** — see `Documentation/LEGAL_AND_LICENSE_STATUS.md`. `LICENSE`, both texts in
+`LICENSES/`, `TRADEMARKS.md`, and `Documentation/{THIRD_PARTY,ASSET_PROVENANCE,DEPENDENCIES}.md` all
+verified to actually exist and be internally consistent (Apache-2.0 code / CC-BY-4.0 docs-art split,
+zero SwiftPM deps, ClamAV GPL-2.0 external-subprocess-only, no bundled fonts/stock imagery). **Real
+defect found**: `LICENSE` itself references two files that don't exist in the tree
+(`Documentation/LICENSING.md`, `THIRD_PARTY_NOTICES.md` — the real file is `Documentation/THIRD_PARTY.md`).
+Not fixed this session (content edit, not requested); flagged for follow-up. Zero SPDX headers in
+`Sources/` (flag only, not necessarily a defect since a root `LICENSE` is legally sufficient).
+
+## 15-42. NOT YET AUDITED — pending session 3
+
+The following sections were not reached this session and contain **no content** below beyond this
+placeholder. Do not infer any finding, positive or negative, from their absence:
+
 15. Design / UI audit (Orbital Ecology design system consistency, accessibility)
 16. Localization audit (en/fr string-key parity beyond line-count, translation quality)
-17. Distribution audit (deep dive on the two `test-release-manifest.sh` failures found this session,
-    root-causing rather than just reporting)
+17. Distribution audit (the two `test-release-manifest.sh` failures found in session 1 were fixed in
+    commit `88bbb9a` per the session-2 orchestrator's brief; a fresh from-scratch re-verification —
+    checksum recompute, arch/mount/extract/launch check in a temp dir — was not done this session)
 18. Website audit (27 HTML files — content accuracy, deployment status)
 19. CI / GitHub audit (3 workflow files — what they actually do, whether they'd catch the defects found
     in §9b)
