@@ -4,6 +4,7 @@
 "common.cancel" = "Cancel";
 "common.dry_run" = "Dry run";
 "common.running" = "Running…";
+"common.reveal_in_finder" = "Reveal in Finder";
 
 /* Sidebar */
 "sidebar.free_up_space" = "Free Up Space";
@@ -53,3 +54,19 @@
 "smartcare.run_care" = "Run Care";
 "smartcare.review_details_hint" = "Review details in the Cleanup module.";
 "smartcare.scan_again" = "Scan Again";
+
+/* Cleanup */
+"cleanup.title" = "Cleanup";
+"cleanup.failed" = "Cleanup failed: %@";
+"cleanup.idle.title" = "Scan for safe-to-remove files";
+"cleanup.idle.subtitle" = "Scans user caches, logs, crash reports and Xcode build data.\nNothing is deleted during a scan.";
+"cleanup.start_scan" = "Start Scan";
+"cleanup.scanning_progress" = "Scanned %d items — %@ found";
+"cleanup.review.selected" = "%d items — %@ selected";
+"cleanup.review.truncated" = "%d of %d shown — %@ found in total";
+"cleanup.simulate" = "Simulate Cleanup";
+"cleanup.move_to_trash" = "Move to Trash";
+"cleanup.group.item_count" = "%d items";
+"cleanup.select_item" = "Select %@";
+"cleanup.done.dryrun" = "Dry run: %@ would be moved to Trash";
+"cleanup.done.moved" = "%@ moved to Trash";
