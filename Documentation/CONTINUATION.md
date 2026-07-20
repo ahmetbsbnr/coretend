@@ -386,3 +386,62 @@ localized-display label from the internal grouping key) rather than
 being skipped indefinitely.
 
 Do not start Step D yet — Step C must be finished and verified first.
+
+## Step C (French localization) — COMPLETE
+
+Continuation session, working directly on `main` alongside a concurrent
+peer session doing the same task (both sessions raced on some files —
+`PerformanceView.swift`, `SettingsView.swift`, `CloudCleanupView.swift`
+etc. were found already localized and committed by the peer session
+mid-edit; this session verified and moved on rather than duplicating
+work). All remaining modules from the prior entry's gap list are now
+localized:
+- `PrivacyCleanerView.swift` (`privacy.*` keys)
+- `DuplicatesView.swift` (`dupes.*` keys)
+- `SimilarImagesView.swift` (`similar.*` keys)
+- `MyActivityView.swift` (`activity.*` keys)
+- `CloudCleanupView.swift` (`cloud.*` keys — done by the peer session)
+- `PerformanceView.swift` (`performance.*` keys — done by the peer
+  session, this session added the remaining `launchAgentsCard` strings)
+- `SettingsView.swift` (`settings.*` keys — done by the peer session)
+- `OnboardingView.swift` — done by the peer session
+- `MacCareApp.swift` (includes the menu bar UI — there is no separate
+  menu-bar file; `AppEnvironment.swift` holds no display strings) — done
+  by the peer session
+
+**Final whole-tree sweep**: grepped every `Text(`/`Button(`/`Label(`/
+`Toggle(`/`TextField(`/`LabeledContent(`/`ProgressView(`/`Picker(`/
+`Section(`/`.help(`/`.navigationTitle(`/`.accessibilityLabel(`/
+`.confirmationDialog(` call across `Sources/MacCareApp` for any literal
+not already wrapped in `L(...)`. Two hits remain, both intentional:
+`Text("MacCare Local")` (app/brand name, `OnboardingView.swift`) and
+`.navigationTitle("Smart Care")` (`SmartCareView.swift` — the feature
+name is kept as "Smart Care" in French too, consistent with existing
+`smartcare.*` translations like "Démarrer le Smart Care"). No
+`.alert(...)` calls exist anywhere in the app.
+
+**Known, accepted gap**: the `AppGrouping` enum's `rawValue`s in
+`ApplicationsView.swift` (picker segment labels that double as
+dictionary grouping/sort keys) remain English-only, as flagged in the
+prior entry — fixing it needs a separate localized-display-label vs.
+internal-key split, out of scope for a pure string-wrapping pass.
+
+**Verification performed**: `swift build -c release` clean, 0 warnings.
+`Scripts/test.sh` 82/82 green. Grep-based key diff of
+`Base.lproj/Localizable.strings` vs `fr.lproj/Localizable.strings` —
+sorted key lists are identical (empty diff). Grep of every `L("...")`
+call under `Sources/MacCareApp` against the Base key list — zero
+dangling references. No live locale-override launch was performed this
+session either (no display available); this remains the one bonus item
+from the task's exit criteria that was not attempted.
+
+**Step C is now fully complete** — every user-facing display string
+under `Sources/MacCareApp` (Text/Button/Label/Toggle/TextField/
+LabeledContent/ProgressView/Picker/Section headers/`.help`/
+`.navigationTitle`/`.accessibilityLabel`/`.confirmationDialog`) is
+wrapped in `L(...)` with matching English and French entries, except
+the two deliberate brand-name exceptions and the one flagged
+`AppGrouping` gap above. **Step D (final 0.5.0 visual audit — real
+screen captures for all modules, then version bump) is next.** Do not
+start it in this session per instructions; the orchestrating session
+should pick it up.
