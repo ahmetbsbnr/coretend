@@ -95,8 +95,35 @@ MUST verify per-step completeness against source, not just this file:
   stays DEFERRED (no closed-browser+backup+tested-restore path yet). Added test
   `cacheOnlyValidatorAcceptsCachesRejectsHistoryAndCookies` proving the
   enforcement gate rejects History/Cookies paths (185 tests total).
-- **Step 6 (My Clutter)**: Large&Old / Duplicates / Similar Images — largely
-  unverified this phase; audit against the full checklist in the plan.
+- **Step 6 (My Clutter)**: audited against the plan checklist (`30337dc`,
+  `cee99e1`). 191 tests (was 185).
+  - **Large & Old** (`LargeOldFilesView`/`MyClutterViewModel` + `ScanEngine`):
+    VERIFIED read-only — no deletion path, findings only revealed in Finder /
+    Quick Look, so nothing can be auto-deleted. Size + age filters, size/age
+    sort, Quick Look, Finder-reveal, 2000-item cap, and graceful `.error`
+    handling (permission-denied/unreadable ignored, no crash) all confirmed.
+    Added `MyClutterSortTests` for the `sortedFindings` UI seam. DEFERRED
+    (enhancement, not safety): name search field, per-volume awareness, and
+    UI-exposed exclusions — engine supports `excludedPaths` (tested) but the
+    Large & Old screen wires the default config.
+  - **Duplicates** (`DuplicateEngine` + `DuplicatesView`): VERIFIED pipeline
+    (size→64KB partial→full SHA-256, hard-link collapse, symlink skip,
+    remote-only iCloud skip, shallowest-path keeper, `wastedBytes` counts
+    copies-minus-keeper so the keeper is never double-counted, keeper never
+    fully removable, Trash-based via SafetyCenter). FIXED: added mid-scan-edit
+    guard — `hasChangedOnDisk` (fresh-URL read to defeat URL resource-value
+    caching) deselects any copy whose mtime changed since the scan before
+    trashing. History/restore ride the shared SafetyCenter store.
+  - **Similar Images** (`SimilarImagesEngine` + `SimilarImagesView`): VERIFIED
+    Vision feature-print pipeline, jpg/png/heic/gif/tiff/webp/bmp, EXIF
+    orientation (via `VNImageRequestHandler(url:)`), metadata-only pixel-count
+    (no full decode → memory-bounded), corrupt image skipped via `try?`,
+    Photos-library + remote-only iCloud skipped, async QL thumbnails off the
+    main actor, configurable threshold, greedy clustering, best-resolution
+    suggestion. VERIFIED no deletion path exists at all — reveal-only, so
+    deletion can never be automatic. Added end-to-end `SimilarImagesEngineTests`.
+    The view's `.unavailable` branch is currently unreachable (engine never
+    emits it) — harmless dead branch, left for a future Vision-unavailable path.
 - **Step 10**: macOS compatibility audit — not started.
 - **Step 11**: stress tests — partially pre-covered (`engineStreamsAllFindingsUncappedAt5001`,
   12-consumer totals, hard-link collapsing) but large SQLite history / bursty
