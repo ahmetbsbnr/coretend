@@ -8,11 +8,13 @@ in step 19 of the plan is genuinely met. See
 table (the authoritative tracker), plus `CURRENT_PROJECT_STATE.json`.
 
 ## HEAD this phase
-`e0021fa`. Commits added this session: `323d3b5` (cleanup rules),
-`e0021fa` (dryRunDefault orphan fix). Started from `0c1394d`.
+`846617c`. Commits added this latest session (started from `0ed32cd`):
+`995a49b` (settings matrix + orphan gate + flaky-test fix, Step 9 DONE),
+`846617c` (Smart Care audit + safety tests, Step 2 DONE). Earlier session:
+`323d3b5` (cleanup rules), `e0021fa` (dryRunDefault orphan fix).
 
 ## Baseline verified this phase
-- 125 tests / 32 suites green (`bash Scripts/test.sh`), 0 warnings.
+- 130 tests / 34 suites green (`bash Scripts/test.sh`), 0 warnings.
 - Debug + Release `swift build` succeed.
 - Dev gates green: doctor, repository-doctor, check-private-data, check-licenses,
   check-feature-inventory, check-version-consistency, check-markdown-links.
@@ -26,14 +28,24 @@ table (the authoritative tracker), plus `CURRENT_PROJECT_STATE.json`.
   (incremental cross-module reads have corrupted twice historically).
 
 ## Task just finished
-Step 9 (partial): fixed a real orphaned setting — `dryRunDefault` was persisted
-in Settings but never read by Cleanup/Smart Care. Wired via shared pure helper
-`AppEnvironment.dryRunEnabled(fromSetting:)` + 3 tests. The full @AppStorage/
-store settings surface (menuBarEnabled, onboardingDone/Step, dryRunDefault,
-exclusions) is small and now all consumers verified — no remaining orphans. A
-script-generated SETTINGS_MATRIX.md / settings-matrix.json is still TODO.
+- Step 9 DONE (`995a49b`): `Scripts/generate-settings-matrix.py` derives
+  `Documentation/SETTINGS_MATRIX.md` from `settings-matrix.json` (5 real
+  settings). It discovers actual keys from `Sources/` (@AppStorage / setSetting
+  / setting / .exclusions()) and fails on any orphaned or undocumented setting —
+  the no-orphan gate, wired into `repository-doctor.sh` (`--check`). Also fixed a
+  flaky 5s ClamAV process-timeout test (three result tests → 30s; the dedicated
+  0.3s timeout test is unaffected). This flakiness is why the earlier "125 green"
+  claim intermittently showed 1 failure.
+- Step 2 DONE (`846617c`): Smart Care audit. Extracted pure nonisolated
+  `SmartCareViewModel.autoExecutableFindings` (only reversible low-risk
+  preselected findings auto-execute) + `SmartCareSafetyTests` +
+  `CleanupRuleCatalogTests` (no preselected medium/high rule can exist).
+  `Documentation/SMART_CARE_AUDIT.md` maps every safety property to code + test.
+  Protection/Performance/Applications module *implementations* remain Steps 3/5
+  (honestly shown unavailable, not simulated).
 
-Earlier this session — Step 1 (partial): added 3 built-in cleanup rules in
+## Older completed work
+Step 1 (partial): added 3 built-in cleanup rules in
 `Sources/FileRules/UserCleanupRules.swift` — `user.oldinstallers`
 (`.dmg/.pkg/.mpkg`, Downloads-only, 30d+), `user.oldarchives`
 (archive extensions, Downloads-only, ≥1 MB, 30d+, no archive parsing),
@@ -43,14 +55,16 @@ Added the Xcode Archives root to `allowedRoots`. 4 new tests in
 table, ROADMAP.md deferred list, new FUNCTIONAL_COMPLETION_EXECUTION_PLAN.md.
 
 ## Next task
-Good next automatable slices (existing code, no display/human needed):
-- Step 9 remainder: write `Scripts/generate-settings-matrix.py` deriving
-  `Documentation/settings-matrix.json` + SETTINGS_MATRIX.md from source
-  (@AppStorage keys + store settings + their consumers).
-- Step 2: Smart Care audit matrix doc + integration tests over the existing
-  orchestrator (category × engine × risk × preselect × reversibility).
-- Step 11: deterministic stress-test fixtures (10k findings, duplicate/hardlink
-  groups) — pure, CI-safe assertions.
+Steps 9 and 2 are now DONE. Remaining ordered work is mostly real feature
+implementation (larger than the doc/audit slices just finished):
+- Step 11 (stress tests): partially pre-covered — `engineStreamsAllFindingsUncappedAt5001`
+  and the 12-consumer totals test already exist; DuplicateEngine already collapses
+  hard links, honors min-size, picks keeper. Remaining stress fixtures (large SQLite
+  history, deep/wide trees) depend on Steps 3/7 engines not yet built.
+- Steps 3-8, 13-14: FSEvents watch, Privacy browser detection, app-update detection,
+  My Clutter (duplicates/similar images), Space Lens, Cloud Cleanup, onboarding
+  wizard, installer animation — each a real implementation slice + tests.
+- Step 10: macOS compatibility audit (@available + fallbacks).
 Steps needing environment/human stay BLOCKED (12 VoiceOver, 15 screenshots,
 19-21 version bump/artifacts — do NOT bump to 0.8.0; criteria far from met).
 

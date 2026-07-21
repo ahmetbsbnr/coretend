@@ -10,7 +10,7 @@ is genuinely true — it is not yet.
 |---|------|--------|--------|-------|
 | 0 | Verify state + baseline gates | DONE | 0c1394d | 118→122 tests, 0 warnings, Debug+Release build, all dev gates green, clean tree |
 | 1 | Cleanup finalization | PARTIAL | (this) | Added old-installers, old-archives, Xcode-archives rules (Downloads/Developer-scoped, never preselected) + 4 tests. Simulators / Trash-empty / Mail attachments / broken LaunchAgents = DEFERRED (need dedicated safety engines, not blind extension rules) |
-| 2 | Smart Care full audit | TODO | | |
+| 2 | Smart Care full audit | DONE | 846617c | Audited orchestrator against safety matrix (SMART_CARE_AUDIT.md). Extracted pure `autoExecutableFindings` (only low-risk+preselected auto-executes) + SmartCareSafetyTests + catalog invariant (no preselected medium/high rule). Module *implementations* for Protection/Performance/Applications remain Steps 3/5 (honestly shown unavailable) |
 | 3 | Protection / FSEvents watch | TODO | | ClamAV-gated; honestly unavailable without it |
 | 4 | Privacy Cleaner honesty | TODO | | keep cache-only unless full closed-browser+backup path proven |
 | 5 | Applications & updates | TODO | | detect-only, no downloads |
