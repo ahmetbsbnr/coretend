@@ -286,6 +286,7 @@ struct CleanupView: View {
                 Image(systemName: "magnifyingglass")
             }
             .buttonStyle(.borderless)
+            .accessibilityLabel(L("common.reveal_in_finder"))
             .help(L("common.reveal_in_finder"))
         }
     }
