@@ -386,3 +386,7 @@
 "safetylog.a11y.rule" = "règle %@";
 "safetylog.a11y.risk" = "risque %@";
 "activity.open_safety_log" = "Voir le journal de sécurité";
+
+/* Privacy Cleaner — per-profile running-browser handling */
+"privacy.profile_running_reason" = "%@ est en cours d'exécution — le nettoyage est désactivé pour ce profil tant qu'il n'est pas fermé.";
+"privacy.close_and_rescan" = "Fermer le navigateur et rescanner";

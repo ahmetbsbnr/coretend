@@ -36,6 +36,28 @@ final class PrivacyCleanerViewModel {
             .compactMap(\.localizedName)
     }
 
+    /// Per-profile check — a global "some browser is running" banner isn't
+    /// enough: Chrome running must not block cleaning a Firefox profile.
+    func isRunning(_ profile: BrowserProfile) -> Bool {
+        NSWorkspace.shared.runningApplications.contains { $0.bundleIdentifier == profile.bundleID }
+    }
+
+    /// Quits the browser owning this profile (regular terminate, not
+    /// force-kill — gives it a chance to save state/tabs) and rescans once
+    /// it's confirmed gone, so the cache profile becomes cleanable.
+    func closeBrowserAndRescan(_ profile: BrowserProfile) async {
+        let running = NSWorkspace.shared.runningApplications.filter { $0.bundleIdentifier == profile.bundleID }
+        guard !running.isEmpty else { await scan(); return }
+        for app in running { app.terminate() }
+        for _ in 0..<50 {  // up to ~5s
+            if !NSWorkspace.shared.runningApplications.contains(where: { $0.bundleIdentifier == profile.bundleID }) {
+                break
+            }
+            try? await Task.sleep(nanoseconds: 100_000_000)
+        }
+        await scan()
+    }
+
     func scan() async {
         phase = .scanning
         let home = FileManager.default.homeDirectoryForCurrentUser
@@ -113,9 +135,12 @@ final class PrivacyCleanerViewModel {
         profiles.filter { selectedProfileIDs.contains($0.id) }.reduce(0) { $0 + $1.cacheBytes }
     }
 
-    /// Moves selected profiles' cache directories to the Trash.
+    /// Moves selected profiles' cache directories to the Trash. Re-checks
+    /// each profile's browser is still closed right before acting — the
+    /// UI already disables selection for a running browser, but state can
+    /// go stale between scan and the click (browser relaunched meanwhile).
     func cleanCaches() async {
-        let selected = profiles.filter { selectedProfileIDs.contains($0.id) }
+        let selected = profiles.filter { selectedProfileIDs.contains($0.id) && !isRunning($0) }
         guard !selected.isEmpty else { return }
         let home = FileManager.default.homeDirectoryForCurrentUser
         let center = SafetyCenter(
@@ -183,6 +208,7 @@ struct PrivacyCleanerView: View {
                       systemImage: "exclamationmark.triangle")
                     .font(.callout).foregroundStyle(MCTheme.warning)
                     .padding(.horizontal).padding(.top, 12)
+                    .accessibilityElement(children: .combine)
             }
             HStack {
                 Text(L("privacy.caches_selected", mcFormatBytes(model.selectedCacheBytes)))
@@ -197,27 +223,47 @@ struct PrivacyCleanerView: View {
             }
             .padding()
             List(model.profiles) { profile in
-                HStack {
-                    Toggle("", isOn: Binding(
-                        get: { model.selectedProfileIDs.contains(profile.id) },
-                        set: { on in
-                            if on { model.selectedProfileIDs.insert(profile.id) }
-                            else { model.selectedProfileIDs.remove(profile.id) }
+                let profileIsRunning = model.isRunning(profile)
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Toggle("", isOn: Binding(
+                            get: { model.selectedProfileIDs.contains(profile.id) },
+                            set: { on in
+                                if on { model.selectedProfileIDs.insert(profile.id) }
+                                else { model.selectedProfileIDs.remove(profile.id) }
+                            }
+                        ))
+                        .labelsHidden()
+                        .disabled(profile.cacheURLs.isEmpty || profileIsRunning)
+                        VStack(alignment: .leading) {
+                            Text(L("privacy.browser_profile", profile.browser, profile.profileName))
+                            HStack(spacing: 12) {
+                                Text(L("privacy.cache_size", mcFormatBytes(profile.cacheBytes)))
+                                Text(L("privacy.history_size", mcFormatBytes(profile.historyBytes)))
+                                Text(L("privacy.cookies_size", mcFormatBytes(profile.cookieBytes)))
+                            }
+                            .font(.caption).foregroundStyle(.secondary)
                         }
-                    ))
-                    .labelsHidden()
-                    .disabled(profile.cacheURLs.isEmpty)
-                    VStack(alignment: .leading) {
-                        Text(L("privacy.browser_profile", profile.browser, profile.profileName))
-                        HStack(spacing: 12) {
-                            Text(L("privacy.cache_size", mcFormatBytes(profile.cacheBytes)))
-                            Text(L("privacy.history_size", mcFormatBytes(profile.historyBytes)))
-                            Text(L("privacy.cookies_size", mcFormatBytes(profile.cookieBytes)))
-                        }
-                        .font(.caption).foregroundStyle(.secondary)
+                        Spacer()
                     }
-                    Spacer()
+                    if profileIsRunning {
+                        HStack(spacing: 8) {
+                            Image(systemName: "lock.circle").foregroundStyle(MCTheme.warning)
+                                .accessibilityHidden(true)
+                            Text(L("privacy.profile_running_reason", profile.browser))
+                                .font(.caption).foregroundStyle(MCTheme.warning)
+                            Spacer()
+                            Button(L("privacy.close_and_rescan")) {
+                                Task { await model.closeBrowserAndRescan(profile) }
+                            }
+                            .buttonStyle(.link)
+                            .font(.caption)
+                        }
+                        .padding(.leading, 28)
+                        .accessibilityElement(children: .combine)
+                    }
                 }
+                .accessibilityElement(children: .contain)
             }
             .listStyle(.inset)
             Text(L("privacy.footer"))
