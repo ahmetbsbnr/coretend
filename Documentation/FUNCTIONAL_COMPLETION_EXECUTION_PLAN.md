@@ -18,7 +18,7 @@ is genuinely true — it is not yet.
 | 7 | Space Lens | TODO | | |
 | 8 | Cloud Cleanup | TODO | | |
 | 9 | Settings matrix | DONE | 995a49b | dryRunDefault orphan fix (e0021fa) + `Scripts/generate-settings-matrix.py`: derives SETTINGS_MATRIX.md from settings-matrix.json (5 settings), discovers real keys from Sources/ and fails on any orphaned/undocumented setting — no-orphan gate wired into repository-doctor. Also fixed a flaky 5s ClamAV process-timeout test (→30s) |
-| 10 | macOS compatibility audit | TODO | | |
+| 10 | macOS compatibility audit | DONE | (this) | Re-ran full API grep across Sources/ (imports, MenuBarExtra, Vision, FSEvents, ubiquitous-item keys, QuickLook, SQLite3, systempreferences deep-links, @Observable×18). Every API is at or below the macOS 14 floor: MenuBarExtra/NavigationSplitView=13, Vision feature-print=10.15, QLThumbnailGenerator=10.15, FSEvents/ubiquitous/SQLite3=ancient, @Observable=14 (exactly at floor, the binding constraint). No API exceeds the target ⇒ **zero `@available` guards needed** (adding them would be dead defensive code per scope rules). No ServiceManagement/SMAppService present. Confirms existing `API_AVAILABILITY_AUDIT.md`. Added `.github/workflows/compat-matrix.yml` (macos-14+macos-15 build+test matrix) = IMPLEMENTED_UNVERIFIED (never pushed/run here; no Xcode/2nd Mac). Static grep audit only — not compiled against the 14.0 SDK (single dev machine is macOS 26). |
 | 11 | Stress tests | TODO | | |
 | 12 | Accessibility | TODO | | interactive VoiceOver = BLOCKED_ENVIRONMENT |
 | 13 | Installer & first-run wizard | TODO | | |

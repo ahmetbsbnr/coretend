@@ -55,3 +55,22 @@ fallback was needed because nothing above the target was found.
 This audit does not substitute for compiling against the macOS 14.0 SDK
 or running on a macOS 14 machine, neither of which is available here —
 see the honest gap noted in `Documentation/COMPATIBILITY.md`.
+
+## Re-verification (Step 10, functional-completion phase)
+
+Grep re-run at HEAD on this branch confirmed the table above unchanged:
+still 0 `@available` in `Sources/`, `@Observable` now in 18 files (was
+16), no new post-14 API. `MenuBarExtra` (`MacCareApp.swift:27`),
+`NavigationSplitView` (`:241`), `VNGenerateImageFeaturePrintRequest` /
+`VNImageRequestHandler` (`SimilarImagesEngine.swift:70-71`, feature-print
+= macOS 10.15), `QLThumbnailGenerator` (`SimilarImagesView.swift:76`,
+macOS 10.15), `FSEventStream` (`ProtectionWatcher.swift:221`),
+ubiquitous-item resource keys, `SQLite3`, and the
+`x-apple.systempreferences:` deep-links all sit at or below the macOS 14
+floor. No `ServiceManagement`/`SMAppService` in the tree. Result stands:
+no guard or fallback needed.
+
+To close the "static-only" gap without a second Mac, a
+`.github/workflows/compat-matrix.yml` builds+tests on macos-14 and
+macos-15 GitHub-hosted runners. It is **IMPLEMENTED_UNVERIFIED** — never
+pushed or run in this environment.
