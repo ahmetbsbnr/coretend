@@ -63,7 +63,7 @@ struct OnboardingView: View {
         case 1:
             page {
                 Image(systemName: "lock.laptopcomputer")
-                    .font(.system(size: 56, weight: .light))
+                    .font(.system(size: MCIconSize.emptyStateProminent, weight: .light))
                     .foregroundStyle(MCColor.protection)
                 Text(L("onboarding.step1.title")).font(MCFont.heroTitle)
                 VStack(alignment: .leading, spacing: MCSpacing.sm) {
@@ -76,7 +76,7 @@ struct OnboardingView: View {
         case 2:
             page {
                 Image(systemName: "folder.badge.questionmark")
-                    .font(.system(size: 56, weight: .light))
+                    .font(.system(size: MCIconSize.emptyStateProminent, weight: .light))
                     .foregroundStyle(MCColor.storage)
                 Text(L("onboarding.step2.title")).font(MCFont.heroTitle)
                 Text(L("onboarding.step2.subtitle"))
@@ -95,7 +95,7 @@ struct OnboardingView: View {
         default:
             page {
                 Image(systemName: "arrow.uturn.backward.circle")
-                    .font(.system(size: 56, weight: .light))
+                    .font(.system(size: MCIconSize.emptyStateProminent, weight: .light))
                     .foregroundStyle(MCColor.success)
                 Text(L("onboarding.step3.title")).font(MCFont.heroTitle)
                 VStack(alignment: .leading, spacing: MCSpacing.sm) {

@@ -39,6 +39,17 @@ public enum MCColor {
     public static let chartSeries: [Color] = [storage, protection, performance, .secondary]
     public static let graphGrid = Color.secondary.opacity(0.15)
 
+    // File-type category colors (Space Lens treemap). A distinct hue family
+    // from the app-level storage/protection/performance roles above — this
+    // is a different semantic axis (file type within storage), so reusing
+    // e.g. `storage` here would be a false equivalence, not a simplification.
+    public static let novaMagenta = adaptive("novaMagenta",
+        light: (0.70, 0.40, 0.70), dark: (0.90, 0.62, 0.90))
+    public static let glacierBlue = adaptive("glacierBlue",
+        light: (0.30, 0.60, 0.82), dark: (0.55, 0.80, 0.95))
+    public static let mossGreen = adaptive("mossGreen",
+        light: (0.48, 0.62, 0.28), dark: (0.68, 0.82, 0.52))
+
     // Surfaces — prefer system semantics for adaptivity.
     public static let background = Color(nsColor: .windowBackgroundColor)
     public static let elevatedBackground = Color(nsColor: .controlBackgroundColor)

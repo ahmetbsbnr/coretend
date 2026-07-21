@@ -152,7 +152,7 @@ struct CloudCleanupView: View {
             case .noProviders:
                 VStack(spacing: 12) {
                     Image(systemName: "icloud.slash")
-                        .font(.system(size: 48)).foregroundStyle(.secondary)
+                        .font(.system(size: MCIconSize.emptyState)).foregroundStyle(.secondary)
                     Text(L("cloud.empty.title")).font(.title3.weight(.semibold))
                     Text(L("cloud.empty.subtitle"))
                         .foregroundStyle(.secondary).multilineTextAlignment(.center)

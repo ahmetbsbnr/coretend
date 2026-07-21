@@ -16,3 +16,14 @@ public enum MCFont {
     public static let badge = Font.caption2.weight(.semibold)
     public static let tableHeader = Font.caption.weight(.medium)
 }
+
+/// Icon glyph point sizes (Image(systemName:).font(.system(size:))). These
+/// were previously repeated as bare numeric literals (48/56) at ~18 call
+/// sites across per-view empty/success states — named here so a future
+/// change to the convention is one edit, not a grep-and-replace.
+public enum MCIconSize {
+    /// Secondary empty/error/success-state glyph.
+    public static let emptyState: CGFloat = 48
+    /// Primary/prominent empty-state glyph (module landing states).
+    public static let emptyStateProminent: CGFloat = 56
+}

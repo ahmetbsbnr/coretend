@@ -302,7 +302,7 @@ struct PlaceholderView: View {
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: module.systemImage)
-                .font(.system(size: 48))
+                .font(.system(size: MCIconSize.emptyState))
                 .foregroundStyle(MCTheme.accent)
             Text(module.label).font(.title2.weight(.semibold))
             Text(L("placeholder.under_construction"))

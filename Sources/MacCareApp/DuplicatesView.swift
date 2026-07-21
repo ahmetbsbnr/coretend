@@ -118,7 +118,7 @@ struct DuplicatesView: View {
     private var idleView: some View {
         VStack(spacing: 16) {
             Image(systemName: "doc.on.doc.fill")
-                .font(.system(size: 56)).foregroundStyle(MCTheme.accentSecondary)
+                .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accentSecondary)
             Text(L("dupes.idle.title")).font(.title2.weight(.semibold))
             Text(L("dupes.idle.subtitle"))
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
@@ -146,7 +146,7 @@ struct DuplicatesView: View {
     private var emptyView: some View {
         VStack(spacing: 12) {
             Image(systemName: "checkmark.circle")
-                .font(.system(size: 48)).foregroundStyle(MCTheme.success)
+                .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
             Text(L("dupes.none_found")).font(.title3.weight(.semibold))
             Button(L("smartcare.scan_again")) { model.start() }
         }
@@ -221,7 +221,7 @@ struct DuplicatesView: View {
     private func finishedView(_ freed: Int64, _ dryRun: Bool) -> some View {
         VStack(spacing: 12) {
             Image(systemName: "checkmark.seal")
-                .font(.system(size: 48)).foregroundStyle(MCTheme.success)
+                .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
             Text(dryRun ? L("leftovers.finished.dryrun", mcFormatBytes(freed))
                         : L("leftovers.finished.moved", mcFormatBytes(freed)))
                 .font(.title3.weight(.semibold))
