@@ -205,3 +205,124 @@ struct SimilarImagesScaleTests {
         #expect(elapsed < .seconds(60), "Vision throughput bound; generous ceiling")
     }
 }
+
+// MARK: - Area 4: Space Lens at scale
+
+@Suite("Space Lens at scale")
+struct SpaceLensScaleTests {
+    /// Wide tree: thousands of sibling files in a single directory. Traversal +
+    /// sort + "Other" bucketing must complete quickly and roll bytes up exactly.
+    @Test func wideTreeThousandsOfSiblingsCompletesAndCountsBytes() async throws {
+        let root = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("maccare-stress-lens-wide-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let siblings = 5000
+        let each = 20
+        let payload = Data(repeating: 1, count: each)
+        for i in 0..<siblings { try payload.write(to: root.appendingPathComponent("f\(i).bin")) }
+
+        let clock = ContinuousClock()
+        let start = clock.now
+        var result: SpaceNode?
+        // minChildSize 1 so every byte counts; all files fall below it and merge
+        // into "Other", exercising the bucketing path at scale.
+        for await event in SpaceLensEngine(root: root, minChildSize: 1_000_000).run() {
+            if case let .finished(node) = event { result = node }
+        }
+        let elapsed = start.duration(to: clock.now)
+        print("[stress] space lens wide: \(siblings) siblings in \(elapsed)")
+
+        let node = try #require(result)
+        #expect(node.size >= Int64(siblings) * Int64(each))
+        #expect(elapsed < .seconds(20))
+    }
+
+    /// Deep tree: many nested levels beyond the engine's default maxDepth. Must
+    /// not stack-overflow or hang; bytes below the depth cap are still summed via
+    /// shallowSize. Thousands of nodes total across the chain.
+    @Test func deepTreeManyLevelsDoesNotCrashAndSumsBelowCap() async throws {
+        let root = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("maccare-stress-lens-deep-\(UUID().uuidString)")
+        // 60 nested levels, a payload file at each level.
+        var cursor = root
+        let depth = 60
+        try FileManager.default.createDirectory(at: cursor, withIntermediateDirectories: true)
+        let payload = Data(repeating: 2, count: 10_000)
+        for level in 0..<depth {
+            try payload.write(to: cursor.appendingPathComponent("file\(level).bin"))
+            cursor = cursor.appendingPathComponent("d\(level)")
+            try FileManager.default.createDirectory(at: cursor, withIntermediateDirectories: true)
+        }
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let clock = ContinuousClock()
+        let start = clock.now
+        var result: SpaceNode?
+        for await event in SpaceLensEngine(root: root, maxDepth: 6, minChildSize: 1).run() {
+            if case let .finished(node) = event { result = node }
+        }
+        let elapsed = start.duration(to: clock.now)
+        print("[stress] space lens deep: \(depth) levels in \(elapsed)")
+
+        let node = try #require(result)
+        // Every level's payload is counted, even the ones past the depth cap.
+        #expect(node.size >= Int64(depth) * 10_000)
+        #expect(elapsed < .seconds(20))
+    }
+}
+
+// MARK: - Area 7: Rapid cancellation
+
+@Suite("Rapid cancellation")
+struct RapidCancellationTests {
+    /// Cancel a Space Lens scan almost immediately after starting it (by breaking
+    /// out of the event loop, which terminates the stream and cancels the task).
+    /// Teardown must be clean and fast — no hang waiting for the full walk.
+    @Test func spaceLensCancelledImmediatelyTearsDownFast() async throws {
+        let root = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("maccare-stress-cancel-\(UUID().uuidString)")
+        let dir = root.appendingPathComponent("big")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let payload = Data(repeating: 3, count: 20)
+        for i in 0..<8000 { try payload.write(to: dir.appendingPathComponent("f\(i).bin")) }
+
+        let clock = ContinuousClock()
+        let start = clock.now
+        // Break on the very first event; the stream's onTermination cancels the
+        // detached scan task. The consumer returns without waiting for finish.
+        for await _ in SpaceLensEngine(root: root, minChildSize: 1).run() {
+            break
+        }
+        let elapsed = start.duration(to: clock.now)
+        print("[stress] rapid cancel (space lens): returned in \(elapsed)")
+        // If cancellation didn't propagate, we'd block until all 8000 files are
+        // walked. A tight ceiling proves prompt teardown.
+        #expect(elapsed < .seconds(5))
+    }
+
+    /// Same for the ScanEngine cleanup path.
+    @Test func scanEngineCancelledImmediatelyTearsDownFast() async throws {
+        let root = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("maccare-stress-cancel2-\(UUID().uuidString)")
+        let caches = root.appendingPathComponent("Library/Caches")
+        try FileManager.default.createDirectory(at: caches, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let payload = Data(repeating: 3, count: 20)
+        for i in 0..<8000 { try payload.write(to: caches.appendingPathComponent("f\(i).tmp")) }
+
+        let rule = ScanRule(id: "t", name: "t", category: "t", explanation: "t",
+                            risk: .low, preselect: true) { [$0.appendingPathComponent("Library/Caches")] }
+        let clock = ContinuousClock()
+        let start = clock.now
+        for await event in ScanEngine(configuration: ScanConfiguration(home: root)).run(rules: [rule]) {
+            if case .started = event { continue }
+            break   // bail at the first non-started event
+        }
+        let elapsed = start.duration(to: clock.now)
+        print("[stress] rapid cancel (scan engine): returned in \(elapsed)")
+        #expect(elapsed < .seconds(5))
+    }
+}
