@@ -139,3 +139,305 @@ $ (session 3) full read of Sources/MacCareApp/AppUpdatesView.swift + AppUpdateSo
 
 $ (session 3) grep -rn "Sparkle" Sources/
 => 4 matches, all comments/enum-label/mechanism-routing, zero HTTP/feed-parsing code.
+
+$ (audit 2026-07-21, commit 4c36e90) Scripts/test.sh
+[0/1] Planning build
+Building for debugging...
+[0/4] Write swift-version--1AB21518FC5DEDBE.txt
+Build complete! (0.21s)
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+◇ Suite "Cloud Cleanup sync state" started.
+◇ Suite "AppDiscovery" started.
+◇ Suite "Leftover shared/ambiguous detection" started.
+◇ Suite "UserCleanupRules" started.
+◇ Suite "Menu bar attention detection" started.
+◇ Suite "SafetyCenter" started.
+◇ Suite "Store" started.
+◇ Suite "Permission-state formatting" started.
+◇ Suite "SafetyCenter audit sink" started.
+◇ Suite "PathValidator" started.
+◇ Suite "Diagnostic report redaction" started.
+◇ Suite "Semantic colors" started.
+◇ Suite "ScanConfiguration exclusions" started.
+◇ Suite "Scan root isolation" started.
+◇ Suite "Design tokens" started.
+◇ Suite "Brand resources" started.
+◇ Suite "Bloom geometry" started.
+◇ Suite "MetricsCollector" started.
+◇ Suite "Applications grouping" started.
+◇ Suite "SimilarImageGroup best-resolution marking" started.
+◇ Suite "ScanRule matches filter" started.
+◇ Suite "Quarantine" started.
+◇ Suite "My Activity day grouping" started.
+◇ Suite "ClamAVScanner process execution (fake clamscan)" started.
+◇ Suite "SpaceLensEngine" started.
+◇ Suite "Totals beyond display cap" started.
+◇ Suite "ScanEngine" started.
+◇ Suite "Real ClamAV EICAR scan (only if installed)" started.
+◇ Suite "DuplicateEngine" started.
+◇ Suite "ClamAV output parsing" started.
+◇ Test noRuleTargetsUserContent() started.
+◇ Test allowedRootsCoverAllRuleRoots() started.
+◇ Test allRulesHaveStableUniqueIDs() started.
+◇ Test "critical thermal state triggers attention" started.
+◇ Test "low free disk space triggers attention" started.
+◇ Test "critical memory pressure triggers attention" started.
+◇ Test vanishedFileSkippedAtExecution() started.
+◇ Test dryRunDoesNotDelete() started.
+◇ Test symlinkSwappedAfterApprovalRejected() started.
+◇ Test "denied reads as Denied" started.
+◇ Test "authorized statuses read as Authorized" started.
+◇ Test "normal readings never trigger attention" started.
+◇ Test "near-zero local bytes without explicit signal still reads as placeholder" started.
+◇ Test "not determined reads as Not requested, never claims granted" started.
+◇ Test "fully local file with no placeholder signal classifies local" started.
+◇ Test safetyLogPersistsDryRunAndExecutedSeparately() started.
+◇ Test activityRoundTrip() started.
+◇ Test safetyLogPurgeIsAllOrNothing() started.
+◇ Test "real ubiquitous placeholder signal always wins, even with stale byte counts" started.
+◇ Test safetyLogNeverStoresRawHomePath() started.
+◇ Test unicodeSummarySurvives() started.
+◇ Test settingsUpsert() started.
+◇ Test "mixed local/remote bytes without a placeholder signal is partial" started.
+◇ Test migrationsApplyOnceAndAreIdempotent() started.
+◇ Test exclusionsUniqueAndRemovable() started.
+◇ Test leftoversExcludeAppleAndInstalled() started.
+◇ Test realExecutionEmitsExecutedNotDryRun() started.
+◇ Test "group. prefixed containers are always flagged ambiguous" started.
+◇ Test dryRunEmitsApprovedThenDryRunNeverExecuted() started.
+◇ Test safetyLogSurvivesRelaunch() started.
+◇ Test inspectReadsFakeBundle() started.
+◇ Test unicodePathPasses() started.
+◇ Test invalidPathEmitsErrorEvent() started.
+◇ Test dotDotTraversalRejected() started.
+◇ Test prefixBoundaryNotConfused() started.
+◇ Test "redactPath strips the real home directory and username" started.
+◇ Test bundleIDHeuristic() started.
+◇ Test vanishedFileEmitsSkippedEvent() started.
+◇ Test binSbinUsrRejected(path:) started.
+◇ Test systemRejected() started.
+◇ Test veryLongPathHandled() started.
+◇ Test categoryColorsAreMutuallyDistinct() started.
+◇ Test excludedSubtreeSkipped() started.
+◇ Test "redactPath strips arbitrary /Users/<name> paths" started.
+◇ Test brandColorsAdapt() started.
+◇ Test symlinkEscapingAllowlistRejected() started.
+◇ Test chartSeriesHasDistinctLeadColors() started.
+◇ Test categoryColorsAdapt() started.
+◇ Test outsideAllowedRootsRejected() started.
+◇ Test downloadsOnlyScanNeverTouchesSiblingDirectories() started.
+◇ Test multipleRulesOnlyVisitTheirOwnRoots() started.
+◇ Test rootRejected() started.
+◇ Test homeDirectoryItselfRejected() started.
+◇ Test "two leftovers sharing a vendor prefix are flagged, a lone one is not" started.
+◇ Test spacingScaleIsMonotonic() started.
+◇ Test generatedAssetsExist() started.
+◇ Test reduceMotionSuppressesAnimation() started.
+◇ Test symlinkInsideAllowlistPasses() started.
+◇ Test arcSpansStayPartial() started.
+◇ Test "report never contains injected sensitive strings" started.
+◇ Test iconsetCoversAllSizes() started.
+◇ Test "highest real pixel count wins, never a guess" started.
+◇ Test motionDurationsAreReasonable() started.
+◇ Test matchesPredicateFiltersFindings() started.
+◇ Test snapshotHasPlausibleValues() started.
+◇ Test threeAsymmetricArcs() started.
+◇ Test radiiAreOrdered() started.
+◇ Test restoreThrowsWhenQuarantinedFileIsMissingOnDisk() started.
+◇ Test validFileInsideRootPasses() started.
+◇ Test infoPlistDeclaresIconAndVersion() started.
+◇ Test emptyPathRejected() started.
+◇ Test quarantineRecordsRichMetadata() started.
+◇ Test deleteThrowsWhenQuarantinedFileAlreadyGone() started.
+◇ Test restoreRecreatesMissingParentDirectory() started.
+◇ Test deleteRemovesPermanently() started.
+◇ Test quarantineAndRestoreRoundTrip() started.
+◇ Test restoreNeverSilentlyOverwritesExistingFile() started.
+◇ Test errorExitThrowsScanFailedWithStderrDetail() started.
+◇ Test restorePreservesOriginalPermissions() started.
+◇ Test "date range filters honestly by real elapsed time" started.
+◇ Test treemapLayoutCoversBoundsProportionally() started.
+◇ Test infectedResultReturnsFindingsAndDoesNotThrow() started.
+◇ Test "groups records by calendar day, preserving order" started.
+◇ Test "real vs simulated cleanup bytes never merge" started.
+◇ Test timeoutTerminatesAndThrowsPromptly() started.
+◇ Test taskCancellationTerminatesProcessAndThrowsCancelled() started.
+◇ Test sizesTreeAndBucketsSmallItems() started.
+◇ Test pathValidationRejectsRelativeOriginalPath() started.
+◇ Test cleanResultReturnsNoFindings() started.
+◇ Test engineStreamsAllFindingsUncappedAt5001() started.
+◇ Test "last-used buckets: nil date is Unknown, never guessed" started.
+◇ Test "groups by publisher from bundle id, unknowns fall back honestly" started.
+◇ Test restoreThrowsWhenVolumeIsMissing() started.
+◇ Test "grouping by none returns a single group preserving all apps" started.
+◇ Test "missing pixel data defaults to zero, never crashes or fabricates" started.
+◇ Test "size buckets never invent data, use real byte thresholds" started.
+◇ Test realEICARFileIsDetected() started.
+◇ Test cancellationStopsStream() started.
+◇ Test symlinkedDirectoryNotDescended() started.
+◇ Test ignoresCleanAndNoise() started.
+◇ Test minimumAgeExcludesFreshFiles() started.
+◇ Test scannedCountFallsBackWhenSummaryLineMissing() started.
+◇ Test argumentsArrayNeverUsesAShell() started.
+◇ Test defaultLimitsAddNoFlags() started.
+◇ Test detectsIdenticalFilesAndSkipsUniques() started.
+◇ Test scanFindsFilesAndReportsSizes() started.
+◇ Test parsesFoundLines() started.
+◇ Test missingBinaryReportsUnavailable() started.
+◇ Test missingRootYieldsFinishedNotError() started.
+◇ Test honestScannedCountPrefersSummaryLineOverInputPathCount() started.
+◇ Test hardLinksNotTreatedAsDuplicates() started.
+◇ Test independentConsumersSeeIdenticalTotals() started.
+◇ Test filesBelowMinimumSizeIgnored() started.
+◇ Test keeperPrefersShallowestPath() started.
+◇ Test case passing 1 argument path → "/bin/ls" to binSbinUsrRejected(path:) started.
+◇ Test case passing 1 argument path → "/sbin/mount" to binSbinUsrRejected(path:) started.
+◇ Test case passing 1 argument path → "/usr/bin/env" to binSbinUsrRejected(path:) started.
+◇ Test case passing 1 argument path → "/usr/lib/dyld" to binSbinUsrRejected(path:) started.
+✔ Test allRulesHaveStableUniqueIDs() passed after 0.052 seconds.
+✔ Test allowedRootsCoverAllRuleRoots() passed after 0.052 seconds.
+✔ Test noRuleTargetsUserContent() passed after 0.052 seconds.
+✔ Test "critical thermal state triggers attention" passed after 0.052 seconds.
+✔ Test "critical memory pressure triggers attention" passed after 0.052 seconds.
+✔ Test "normal readings never trigger attention" passed after 0.052 seconds.
+✔ Test "low free disk space triggers attention" passed after 0.052 seconds.
+✔ Test "near-zero local bytes without explicit signal still reads as placeholder" passed after 0.053 seconds.
+✔ Test "fully local file with no placeholder signal classifies local" passed after 0.054 seconds.
+✔ Test dryRunDoesNotDelete() passed after 0.054 seconds.
+✔ Test vanishedFileSkippedAtExecution() passed after 0.055 seconds.
+✔ Test symlinkSwappedAfterApprovalRejected() passed after 0.055 seconds.
+✔ Test "real ubiquitous placeholder signal always wins, even with stale byte counts" passed after 0.055 seconds.
+✔ Test "authorized statuses read as Authorized" passed after 0.055 seconds.
+✔ Test "denied reads as Denied" passed after 0.055 seconds.
+✔ Test "not determined reads as Not requested, never claims granted" passed after 0.055 seconds.
+✔ Test safetyLogPurgeIsAllOrNothing() passed after 0.055 seconds.
+✔ Test activityRoundTrip() passed after 0.055 seconds.
+✔ Test "mixed local/remote bytes without a placeholder signal is partial" passed after 0.055 seconds.
+✔ Test safetyLogPersistsDryRunAndExecutedSeparately() passed after 0.056 seconds.
+✔ Test leftoversExcludeAppleAndInstalled() passed after 0.059 seconds.
+✔ Test dryRunEmitsApprovedThenDryRunNeverExecuted() passed after 0.059 seconds.
+✔ Test settingsUpsert() passed after 0.059 seconds.
+✔ Test safetyLogNeverStoresRawHomePath() passed after 0.059 seconds.
+✔ Test unicodeSummarySurvives() passed after 0.059 seconds.
+✔ Test unicodePathPasses() passed after 0.059 seconds.
+✔ Test migrationsApplyOnceAndAreIdempotent() passed after 0.059 seconds.
+✔ Test "redactPath strips the real home directory and username" passed after 0.059 seconds.
+✔ Test bundleIDHeuristic() passed after 0.059 seconds.
+✔ Test exclusionsUniqueAndRemovable() passed after 0.059 seconds.
+✔ Test prefixBoundaryNotConfused() passed after 0.059 seconds.
+✔ Test binSbinUsrRejected(path:) with 4 test cases passed after 0.059 seconds.
+✔ Test dotDotTraversalRejected() passed after 0.059 seconds.
+✔ Test invalidPathEmitsErrorEvent() passed after 0.059 seconds.
+✔ Test vanishedFileEmitsSkippedEvent() passed after 0.059 seconds.
+✔ Test "redactPath strips arbitrary /Users/<name> paths" passed after 0.059 seconds.
+✔ Test systemRejected() passed after 0.059 seconds.
+✔ Test symlinkEscapingAllowlistRejected() passed after 0.059 seconds.
+✔ Test chartSeriesHasDistinctLeadColors() passed after 0.059 seconds.
+✔ Test outsideAllowedRootsRejected() passed after 0.059 seconds.
+✔ Test safetyLogSurvivesRelaunch() passed after 0.061 seconds.
+✔ Test rootRejected() passed after 0.061 seconds.
+✔ Test realExecutionEmitsExecutedNotDryRun() passed after 0.061 seconds.
+✔ Test spacingScaleIsMonotonic() passed after 0.061 seconds.
+✔ Test generatedAssetsExist() passed after 0.061 seconds.
+✔ Test reduceMotionSuppressesAnimation() passed after 0.061 seconds.
+✔ Test veryLongPathHandled() passed after 0.061 seconds.
+✔ Test arcSpansStayPartial() passed after 0.061 seconds.
+✔ Test homeDirectoryItselfRejected() passed after 0.061 seconds.
+✔ Test iconsetCoversAllSizes() passed after 0.061 seconds.
+✔ Test symlinkInsideAllowlistPasses() passed after 0.061 seconds.
+✔ Test motionDurationsAreReasonable() passed after 0.061 seconds.
+✔ Test "report never contains injected sensitive strings" passed after 0.061 seconds.
+✔ Test threeAsymmetricArcs() passed after 0.063 seconds.
+✔ Test radiiAreOrdered() passed after 0.063 seconds.
+✔ Test validFileInsideRootPasses() passed after 0.063 seconds.
+✔ Test "highest real pixel count wins, never a guess" passed after 0.063 seconds.
+✔ Test infoPlistDeclaresIconAndVersion() passed after 0.063 seconds.
+✔ Test emptyPathRejected() passed after 0.063 seconds.
+✔ Test quarantineRecordsRichMetadata() passed after 0.063 seconds.
+✔ Test deleteThrowsWhenQuarantinedFileAlreadyGone() passed after 0.063 seconds.
+✔ Test restoreThrowsWhenQuarantinedFileIsMissingOnDisk() passed after 0.063 seconds.
+✔ Test deleteRemovesPermanently() passed after 0.063 seconds.
+✔ Test restoreRecreatesMissingParentDirectory() passed after 0.063 seconds.
+✔ Test quarantineAndRestoreRoundTrip() passed after 0.063 seconds.
+✔ Test "date range filters honestly by real elapsed time" passed after 0.063 seconds.
+✔ Test treemapLayoutCoversBoundsProportionally() passed after 0.063 seconds.
+✔ Test restoreNeverSilentlyOverwritesExistingFile() passed after 0.063 seconds.
+✔ Test "real vs simulated cleanup bytes never merge" passed after 0.063 seconds.
+✔ Test "groups records by calendar day, preserving order" passed after 0.063 seconds.
+✔ Test restorePreservesOriginalPermissions() passed after 0.063 seconds.
+✔ Test "last-used buckets: nil date is Unknown, never guessed" passed after 0.064 seconds.
+✔ Test pathValidationRejectsRelativeOriginalPath() passed after 0.064 seconds.
+✔ Test "grouping by none returns a single group preserving all apps" passed after 0.064 seconds.
+✔ Test "groups by publisher from bundle id, unknowns fall back honestly" passed after 0.064 seconds.
+✔ Test "missing pixel data defaults to zero, never crashes or fabricates" passed after 0.064 seconds.
+✔ Test "size buckets never invent data, use real byte thresholds" passed after 0.064 seconds.
+✔ Test realEICARFileIsDetected() passed after 0.063 seconds.
+✔ Test restoreThrowsWhenVolumeIsMissing() passed after 0.064 seconds.
+✔ Test categoryColorsAreMutuallyDistinct() passed after 0.064 seconds.
+✔ Test ignoresCleanAndNoise() passed after 0.063 seconds.
+✔ Test categoryColorsAdapt() passed after 0.064 seconds.
+✔ Test argumentsArrayNeverUsesAShell() passed after 0.058 seconds.
+✔ Test defaultLimitsAddNoFlags() passed after 0.058 seconds.
+✔ Test brandColorsAdapt() passed after 0.065 seconds.
+✔ Test scannedCountFallsBackWhenSummaryLineMissing() passed after 0.058 seconds.
+✔ Test parsesFoundLines() passed after 0.058 seconds.
+✔ Test missingBinaryReportsUnavailable() passed after 0.058 seconds.
+✔ Test honestScannedCountPrefersSummaryLineOverInputPathCount() passed after 0.058 seconds.
+✔ Test excludedSubtreeSkipped() passed after 0.065 seconds.
+✔ Test downloadsOnlyScanNeverTouchesSiblingDirectories() passed after 0.066 seconds.
+✔ Test multipleRulesOnlyVisitTheirOwnRoots() passed after 0.066 seconds.
+✔ Test matchesPredicateFiltersFindings() passed after 0.066 seconds.
+✔ Suite "UserCleanupRules" passed after 0.068 seconds.
+✔ Suite "Menu bar attention detection" passed after 0.068 seconds.
+✔ Suite "Cloud Cleanup sync state" passed after 0.068 seconds.
+✔ Suite "SafetyCenter" passed after 0.068 seconds.
+✔ Suite "Permission-state formatting" passed after 0.068 seconds.
+✔ Test minimumAgeExcludesFreshFiles() passed after 0.063 seconds.
+✔ Test sizesTreeAndBucketsSmallItems() passed after 0.067 seconds.
+✔ Suite "Store" passed after 0.068 seconds.
+✔ Suite "SafetyCenter audit sink" passed after 0.068 seconds.
+✔ Suite "Diagnostic report redaction" passed after 0.068 seconds.
+✔ Suite "PathValidator" passed after 0.068 seconds.
+✔ Suite "Semantic colors" passed after 0.068 seconds.
+✔ Suite "Bloom geometry" passed after 0.068 seconds.
+✔ Suite "Design tokens" passed after 0.068 seconds.
+✔ Suite "Brand resources" passed after 0.068 seconds.
+✔ Suite "Quarantine" passed after 0.068 seconds.
+✔ Suite "My Activity day grouping" passed after 0.068 seconds.
+✔ Test inspectReadsFakeBundle() passed after 0.068 seconds.
+✔ Suite "Applications grouping" passed after 0.068 seconds.
+✔ Suite "Real ClamAV EICAR scan (only if installed)" passed after 0.068 seconds.
+✔ Test symlinkedDirectoryNotDescended() passed after 0.066 seconds.
+✔ Test scanFindsFilesAndReportsSizes() passed after 0.061 seconds.
+✔ Suite "ClamAV output parsing" passed after 0.068 seconds.
+✔ Suite "ScanConfiguration exclusions" passed after 0.068 seconds.
+✔ Suite "Scan root isolation" passed after 0.068 seconds.
+✔ Suite "ScanRule matches filter" passed after 0.068 seconds.
+✔ Test "group. prefixed containers are always flagged ambiguous" passed after 0.068 seconds.
+✔ Test "two leftovers sharing a vendor prefix are flagged, a lone one is not" passed after 0.067 seconds.
+✔ Suite "SpaceLensEngine" passed after 0.068 seconds.
+✔ Suite "AppDiscovery" passed after 0.069 seconds.
+✔ Suite "Leftover shared/ambiguous detection" passed after 0.069 seconds.
+✔ Suite "SimilarImageGroup best-resolution marking" passed after 0.068 seconds.
+✔ Test missingRootYieldsFinishedNotError() passed after 0.061 seconds.
+✔ Test hardLinksNotTreatedAsDuplicates() passed after 0.062 seconds.
+✔ Test filesBelowMinimumSizeIgnored() passed after 0.046 seconds.
+✔ Test independentConsumersSeeIdenticalTotals() passed after 0.052 seconds.
+✔ Test keeperPrefersShallowestPath() passed after 0.052 seconds.
+✔ Test detectsIdenticalFilesAndSkipsUniques() passed after 0.071 seconds.
+✔ Suite "DuplicateEngine" passed after 0.078 seconds.
+✔ Test snapshotHasPlausibleValues() passed after 0.091 seconds.
+✔ Suite "MetricsCollector" passed after 0.092 seconds.
+✔ Test cancellationStopsStream() passed after 0.099 seconds.
+✔ Suite "ScanEngine" passed after 0.101 seconds.
+✔ Test taskCancellationTerminatesProcessAndThrowsCancelled() passed after 0.254 seconds.
+✔ Test cleanResultReturnsNoFindings() passed after 0.319 seconds.
+✔ Test timeoutTerminatesAndThrowsPromptly() passed after 0.365 seconds.
+✔ Test infectedResultReturnsFindingsAndDoesNotThrow() passed after 0.628 seconds.
+✔ Test errorExitThrowsScanFailedWithStderrDetail() passed after 0.817 seconds.
+✔ Suite "ClamAVScanner process execution (fake clamscan)" passed after 0.818 seconds.
+✔ Test engineStreamsAllFindingsUncappedAt5001() passed after 0.969 seconds.
+✔ Suite "Totals beyond display cap" passed after 0.970 seconds.
+✔ Test run with 114 tests in 30 suites passed after 0.970 seconds.

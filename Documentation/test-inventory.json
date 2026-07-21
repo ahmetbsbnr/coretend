@@ -1,34 +1,53 @@
 {
-  "schemaVersion": 1,
-  "auditDate": "2026-07-20",
-  "commit": "b33c06b8d68b9b03316821c3f6cfb17252f35011",
-  "command": "bash Scripts/test.sh",
-  "totalTests": 86,
-  "totalSuites": 27,
-  "passed": 86,
+  "schemaVersion": 2,
+  "auditDate_UTC": "2026-07-21",
+  "commit": "4c36e90143e628b2dc79f634034adcb93fb0c5a5",
+  "command": "Scripts/test.sh",
+  "totalTests": 114,
+  "totalSuites": 30,
+  "passed": 145,
   "failed": 0,
-  "testRunDurationSeconds": 0.938,
-  "wallTimeSeconds": 2.112,
+  "testRunDurationSeconds": 0.97,
+  "wallTimeSeconds": 4,
+  "result": "PASS",
   "domains": [
-    {"module": "SafetyCore", "tests": 13, "passed": 13, "failed": 0},
-    {"module": "ScanCore", "tests": 21, "passed": 21, "failed": 0},
-    {"module": "FileRules", "tests": 3, "passed": 3, "failed": 0},
-    {"module": "DesignSystem", "tests": 9, "passed": 9, "failed": 0},
-    {"module": "Persistence", "tests": 5, "passed": 5, "failed": 0},
-    {"module": "AppDiscovery", "tests": 3, "passed": 3, "failed": 0},
-    {"module": "SystemMetrics", "tests": 1, "passed": 1, "failed": 0},
-    {"module": "MalwareEngine", "tests": 4, "passed": 4, "failed": 0},
-    {"module": "MacCareApp", "tests": 27, "passed": 27, "failed": 0}
+    {
+      "module": "AppDiscovery",
+      "testFunctionsDeclared": 3
+    },
+    {
+      "module": "DesignSystem",
+      "testFunctionsDeclared": 13
+    },
+    {
+      "module": "FileRules",
+      "testFunctionsDeclared": 3
+    },
+    {
+      "module": "MacCareApp",
+      "testFunctionsDeclared": 23
+    },
+    {
+      "module": "MalwareEngine",
+      "testFunctionsDeclared": 23
+    },
+    {
+      "module": "Persistence",
+      "testFunctionsDeclared": 9
+    },
+    {
+      "module": "SafetyCore",
+      "testFunctionsDeclared": 20
+    },
+    {
+      "module": "ScanCore",
+      "testFunctionsDeclared": 19
+    },
+    {
+      "module": "SystemMetrics",
+      "testFunctionsDeclared": 1
+    }
   ],
-  "shellLevelScripts": [
-    {"script": "Scripts/test-uninstall.sh", "destructive": false, "result": "PASS", "assertions": 4, "assertionsPassed": 4},
-    {"script": "Scripts/test-distribution.sh", "destructive": false, "result": "FAIL", "checksTotal": 10, "checksPassed": 9, "failureReason": "binary contains literal repo checkout path (documented known SwiftPM Bundle.module limitation)"},
-    {"script": "Scripts/test-release-manifest.sh", "destructive": false, "result": "FAIL", "failures": ["SHA256SUMS does not verify against freshly rebuilt zip/dmg", "dmgSize mismatch: manifest=2950742 actual=2950739"]},
-    {"script": "Scripts/check-private-data.sh", "destructive": false, "result": "PASS"}
-  ],
-  "gaps": [
-    "No test exercises the actual ClamAV Process() invocation (Sources/MalwareEngine/MalwareEngine.swift:56); only output parsing and quarantine logic are covered.",
-    "check-private-data.sh checks working tree only, not full git history.",
-    "No code coverage percentage computed this session."
-  ]
+  "generatedBy": "Scripts/generate-test-inventory.sh (derives counts from a real Scripts/test.sh run + @Test occurrence counts in Tests/, never hand-typed)",
+  "historicalNote": "Prior versions of this file (audit sessions before 2026-07-21) recorded 86 tests / 27 suites at commit b33c06b. That was correct for its own commit; it is superseded, not falsified \u2014 see git history of this file for the historical snapshot."
 }

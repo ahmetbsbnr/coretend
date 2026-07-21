@@ -1253,3 +1253,37 @@ the package's own `AUDIT_PACKAGE_MANIFEST.json`). Zip path (local, not tracked):
 `ed0b415082928723f96337b4f0b7d827b20b969497ed75413ae13061c160ce18`. Copied to
 `~/Desktop/MacCare-Local-Full-Audit-2026-07-21-4fb406f.zip` (same checksum). 380 files inside the
 package, all checksums verified against `AUDIT_PACKAGE_SHA256SUMS` post-extraction.
+
+## v0.7.1 Compliance Hardening — closeout (2026-07-21, this session)
+
+Re-verified HEAD, status, log from scratch rather than trusting prior notes (which had drifted: stale
+commit refs, version 0.7.0 in CURRENT_PROJECT_STATE.json vs 0.7.1 in the manifest, test count stuck at
+86 vs the real 114, AUDIT_PACKAGE_COMMIT null, AUDIT_PACKAGE_README.md missing). CURRENT_REPOSITORY_HEAD
+at session start: `4c36e90143e628b2dc79f634034adcb93fb0c5a5`, tree clean.
+
+Work this session:
+- Ran `Scripts/test.sh` for real: 114 tests, 30 suites, all passing. Added `Scripts/generate-test-inventory.sh`
+  to derive `Documentation/test-inventory.json`/`TEST_INVENTORY.md` from an actual run instead of hand-typed
+  numbers; regenerated both, appended the raw run to `Documentation/AUDIT_COMMANDS.log`.
+- Read `Sources/` before writing status: `Documentation/FEATURE_MATRIX.md` and `ROADMAP.md` wrongly claimed
+  Privacy Cleaner, App Updater, and Similar Images were absent/not-started; all three ship
+  (`Sources/MacCareApp/PrivacyCleanerView.swift`, `AppUpdatesView.swift`, `Sources/ScanCore/SimilarImagesEngine.swift`
+  + `SimilarImagesView.swift`) and are covered by passing tests. Rewrote both files with the required status
+  vocabulary (COMPLETE/PARTIAL/IMPLEMENTED_UNVERIFIED/BLOCKED_ENVIRONMENT/BLOCKED_HUMAN/DEFERRED/NOT_STARTED).
+- Spot-checked `Documentation/requirements-traceability.json` (69 requirements, 54 MUST, from session 2) against
+  the same modules — already scored correctly there, so left the historical `auditedSourceCommit` untouched
+  and added a `reverifiedAt` block rather than fabricating a new baseline or a new total.
+- Marked the visual campaign explicitly `BLOCKED_ENVIRONMENT` (no display/window-capture access in this
+  non-interactive session) in `FEATURE_MATRIX.md`. No screenshots or sidecar JSON fabricated.
+- Ran the local gates: `doctor.sh` OK, `check-version-consistency.sh` OK (0.7.1), `check-feature-inventory.sh`
+  OK (42 features), `check-private-data.sh` PASS, `check-licenses.sh` PASS. `check-publish-readiness.sh`
+  correctly stays red — `Configuration/PublicIdentity.local.json` doesn't exist and legal name/domain/security
+  contact are undecided; these are genuine BLOCKED_HUMAN items, not fixed here, listed in
+  `Documentation/NON_COMPLIANCE_REGISTER.md`/`DEFERRED_REQUIREMENTS.md`.
+- Built a new audit ZIP (superseding both prior `AuditPackages/` archives) via an extended
+  `Scripts/build-audit-package.sh` that now also emits `AUDIT_PACKAGE_README.md`, `AUDIT_PACKAGE_SHA256SUMS`,
+  and `AUDIT_PACKAGE_FILELIST.txt`, and fills in `AUDIT_PACKAGE_COMMIT` (previously null) with the real HEAD
+  at packaging time. Verified `git status --short` clean immediately before zipping.
+
+No push, no deploy, no version bump past 0.7.1, no external publication. Exact zip name/path/SHA-256/size
+recorded in the session's closeout report (not duplicated here to avoid a second source of truth going stale).

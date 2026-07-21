@@ -31,6 +31,20 @@ regenerated to match, the exact kind of drift `Scripts/check-feature-inventory.s
 `Documentation/CURRENT_PROJECT_STATE.json` for the current figure; the "41/31" sentence above is left
 as originally written (this file's own historical record of what session 3 concluded), not rewritten.
 
+**v0.7.1 closeout update (2026-07-21, this session)**: re-verified against `git rev-parse HEAD`
+(`4c36e90143e628b2dc79f634034adcb93fb0c5a5`) rather than trusting the figures above. Findings: (1) test
+count is 114 passing in 30 suites (real `Scripts/test.sh` run, see `Documentation/test-inventory.json`),
+not the 86 recorded in older snapshots; (2) `Documentation/FEATURE_MATRIX.md` incorrectly listed Privacy
+Cleaner, App Updater, and Similar Images as absent/not-started when `Sources/` shows all three shipped
+and tested — corrected this session; (3) the requirements-traceability baseline (69 requirements, 54
+MUST) was spot-checked against `Sources/` for the same modules and found already correctly scored, so
+its historical `auditedSourceCommit` field was left as an honest historical record with a new
+`reverifiedAt` block added rather than overwritten; (4) built a new audit ZIP superseding both prior
+`AuditPackages/` archives, with `AUDIT_PACKAGE_README.md`/`AUDIT_PACKAGE_SHA256SUMS`/
+`AUDIT_PACKAGE_FILELIST.txt` added (previously missing) and `AUDIT_PACKAGE_COMMIT` populated
+(previously null). See `Documentation/CURRENT_PROJECT_STATE.json` and `Documentation/CURRENT_AUDIT_STATE.json`
+for the current authoritative fields.
+
 ## 0. Cover page
 
 - Product: MacCare Local (SwiftUI macOS app)

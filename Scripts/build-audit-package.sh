@@ -68,24 +68,54 @@ excluded_count=$(wc -l < "$excluded_list" | tr -d ' ')
 tracked_count=$(wc -l < /tmp/audit-pkg-tracked.txt | tr -d ' ')
 
 # AUDIT_PACKAGE_MANIFEST.json — four distinct commit fields, never one reused.
+# AUDIT_PACKAGE_COMMIT is CURRENT_HEAD at packaging time: this script requires a clean
+# tree (checked below) before zipping, so "the commit that generated this package" and
+# "current HEAD" are the same real commit, not a future/invented hash.
 PRODUCT_SOURCE_COMMIT=$(git log -1 --format=%H -- Sources/ Tests/)
 REQUIREMENTS_AUDIT_COMMIT=$(git log -1 --format=%H -- Documentation/requirements-traceability.json Documentation/MASTER_REQUIREMENTS_BASELINE.md)
 CURRENT_HEAD=$(git rev-parse HEAD)
 
-/usr/bin/python3 - "$STAGE" "$CURRENT_HEAD" "$PRODUCT_SOURCE_COMMIT" "$REQUIREMENTS_AUDIT_COMMIT" "$tracked_count" "$included_count" "$excluded_count" <<'PYEOF'
+if [ -n "$(git status --short)" ]; then
+  echo "FAIL: working tree not clean — refusing to build an audit package from a dirty tree."
+  git status --short
+  exit 1
+fi
+
+TESTS_JSON="Documentation/test-inventory.json"
+TESTS_PASSED=$(/usr/bin/python3 -c "import json;print(json.load(open('$TESTS_JSON'))['passed'])")
+TESTS_FAILED=$(/usr/bin/python3 -c "import json;print(json.load(open('$TESTS_JSON'))['failed'])")
+TESTS_TOTAL=$(/usr/bin/python3 -c "import json;print(json.load(open('$TESTS_JSON'))['totalTests'])")
+REQ_TOTAL=$(/usr/bin/python3 -c "import json;print(json.load(open('Documentation/requirements-traceability.json'))['requirementCount'])")
+
+/usr/bin/python3 - "$STAGE" "$CURRENT_HEAD" "$PRODUCT_SOURCE_COMMIT" "$REQUIREMENTS_AUDIT_COMMIT" "$tracked_count" "$included_count" "$excluded_count" "$TESTS_TOTAL" "$TESTS_PASSED" "$TESTS_FAILED" "$REQ_TOTAL" <<'PYEOF'
 import json, sys
-stage, current_head, product_commit, req_commit, tracked, included, excluded = sys.argv[1:8]
+stage, current_head, product_commit, req_commit, tracked, included, excluded, tests_total, tests_passed, tests_failed, req_total = sys.argv[1:12]
 manifest = {
-    "schemaVersion": 2,
+    "schemaVersion": 3,
     "product": "MacCare Local",
     "productVersion": "0.7.1",
+    "branch": "feat/public-distribution",
     "auditDate_UTC": __import__("datetime").datetime.utcnow().strftime("%Y-%m-%d"),
     "CURRENT_HEAD": current_head,
     "PRODUCT_SOURCE_COMMIT": product_commit,
+    "COMPLIANCE_AUDIT_COMMIT": current_head,
+    "AUDIT_PACKAGE_SOURCE_COMMIT": current_head,
+    "AUDIT_PACKAGE_GENERATION_COMMIT": current_head,
+    "AUDIT_PACKAGE_COMMIT": current_head,
     "REQUIREMENTS_AUDIT_COMMIT": req_commit,
+    "commitFieldNote": "This package was generated from a verified-clean working tree at CURRENT_HEAD "
+                        "(git status --short was empty immediately before zipping). No new commit is made "
+                        "purely to record a packaging event, so AUDIT_PACKAGE_COMMIT/AUDIT_PACKAGE_SOURCE_COMMIT/"
+                        "AUDIT_PACKAGE_GENERATION_COMMIT/COMPLIANCE_AUDIT_COMMIT are all CURRENT_HEAD by "
+                        "construction, not four independently-tracked values.",
     "trackedFileCount": int(tracked),
     "includedFileCount": int(included),
     "excludedFileCount": int(excluded),
+    "testResults": {"total": int(tests_total), "passed": int(tests_passed), "failed": int(tests_failed),
+                     "source": "Documentation/test-inventory.json"},
+    "requirementsTotal": int(req_total),
+    "featureStatusSource": "Documentation/feature-inventory.json",
+    "visualCaptureStatus": "BLOCKED_ENVIRONMENT — no display/window-capture access when this package was built",
     "completenessCheck": "every tracked file is either included or listed in AUDIT_PACKAGE_EXCLUSIONS.md with a reason",
     "generatedBy": "Scripts/build-audit-package.sh",
 }
@@ -102,9 +132,70 @@ fi
 echo "OK: completeness check — every tracked file is included ($included_count) or documented as excluded ($excluded_count)"
 echo "Staged: $STAGE ($included_count included, $excluded_count excluded of $tracked_count tracked files)"
 
+# AUDIT_PACKAGE_FILELIST.txt — every file actually staged, relative paths.
+( cd "$STAGE" && find . -type f | sed 's|^\./||' | sort ) > "$STAGE/AUDIT_PACKAGE_FILELIST.txt"
+
+# AUDIT_PACKAGE_README.md — human explanation of the package.
+cat > "$STAGE/AUDIT_PACKAGE_README.md" <<EOF
+# MacCare Local — Audit Package (${NAME})
+
+## What is in this package
+A sanitized mirror of every git-tracked file in the repository at commit \`${CURRENT_HEAD}\`
+(branch \`feat/public-distribution\`, version 0.7.1), plus generated evidence:
+- \`AuditEvidence/Git/\` — real \`git log\`, \`git status\`, \`git branch -vv\` output captured at build time.
+- \`AUDIT_PACKAGE_MANIFEST.json\` — machine-readable commit identities, test results, requirement count,
+  feature-status source, and capture status.
+- \`AUDIT_PACKAGE_EXCLUSIONS.md\` — every tracked file NOT staged, with a reason (binaries, VCS internals,
+  build output, local-only config).
+- \`AUDIT_PACKAGE_FILELIST.txt\` — flat list of every file actually staged in this package.
+- \`AUDIT_PACKAGE_SHA256SUMS\` — SHA-256 of every staged file, for tamper detection after extraction.
+
+## Which commit is which
+- **PRODUCT_SOURCE_COMMIT** (\`${PRODUCT_SOURCE_COMMIT}\`): the latest commit touching \`Sources/\` or
+  \`Tests/\` — this is the actual app being audited.
+- **COMPLIANCE_AUDIT_COMMIT / AUDIT_PACKAGE_SOURCE_COMMIT / AUDIT_PACKAGE_GENERATION_COMMIT /
+  AUDIT_PACKAGE_COMMIT** (all \`${CURRENT_HEAD}\`): this package was built from a verified-clean working
+  tree at this commit. No separate "packaging commit" was made — see \`commitFieldNote\` in the manifest.
+- **REQUIREMENTS_AUDIT_COMMIT** (\`${REQUIREMENTS_AUDIT_COMMIT}\`): the latest commit touching the
+  requirements-traceability doc set.
+
+## Historical vs current
+Anything under \`AuditPackages/\` from a prior build, or any doc section explicitly marked
+\`HISTORICAL\`/\`session N\` inside \`Documentation/\`, reflects an earlier point in the repo's history and
+is preserved as a record, not restated as current. Current status lives in
+\`Documentation/CURRENT_PROJECT_STATE.json\` and \`Documentation/CURRENT_AUDIT_STATE.json\`.
+
+## Limitations
+- No code signing or notarization (no Apple Developer ID available in this environment).
+- No real-machine screenshot capture — this package was built in a non-interactive session with no
+  display/window-capture access; see \`AUDIT_PACKAGE_MANIFEST.json\`'s \`visualCaptureStatus\` and
+  \`Documentation/NON_COMPLIANCE_REGISTER.md\` (VIS-CAMPAIGN).
+- Public-release identity fields (legal name/address, domain, security contact) are undecided
+  placeholders — see \`Documentation/HUMAN_BLOCKERS.md\`.
+
+## How to verify this archive
+1. \`shasum -a 256 -c AUDIT_PACKAGE_SHA256SUMS\` from inside the extracted package root — every listed
+   file must report OK.
+2. Compare \`AUDIT_PACKAGE_MANIFEST.json\`'s \`CURRENT_HEAD\` against \`AuditEvidence/Git/log.txt\`'s top
+   commit — they must match.
+3. Cross-check \`testResults\` in the manifest against \`Documentation/test-inventory.json\` inside the
+   package — same numbers, same source.
+4. \`AuditEvidence/Git/status.txt\` should show a clean tree, confirming this was built from a
+   non-dirty checkout.
+EOF
+
 ( cd AuditPackages && zip -X -r -q "${NAME}.zip" "${NAME}" )
 SHA=$(shasum -a 256 "AuditPackages/${NAME}.zip" | awk '{print $1}')
 SIZE=$(stat -f%z "AuditPackages/${NAME}.zip")
+
+# AUDIT_PACKAGE_SHA256SUMS — checksums of every staged file (computed pre-zip, from the stage dir).
+( cd "$STAGE" && find . -type f ! -name AUDIT_PACKAGE_SHA256SUMS | sed 's|^\./||' | sort | xargs shasum -a 256 ) > "$STAGE/AUDIT_PACKAGE_SHA256SUMS"
+# Re-zip once more so the SHA256SUMS file itself (computed after everything else existed) is included.
+rm -f "AuditPackages/${NAME}.zip"
+( cd AuditPackages && zip -X -r -q "${NAME}.zip" "${NAME}" )
+SHA=$(shasum -a 256 "AuditPackages/${NAME}.zip" | awk '{print $1}')
+SIZE=$(stat -f%z "AuditPackages/${NAME}.zip")
+
 echo "Built: AuditPackages/${NAME}.zip"
 echo "SHA-256: $SHA"
 echo "Size: $SIZE bytes"

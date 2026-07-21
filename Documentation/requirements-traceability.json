@@ -1495,5 +1495,11 @@
       "neededFix": "read SECURITY.md content, confirm real reporting path (email/issue template)",
       "recommendedVersion": "n/a"
     }
-  ]
+  ],
+  "_comment": "auditedSourceCommit/sessionOutputBaseCommit are HISTORICAL (session 2, 2026-07-20) and intentionally left unchanged to preserve the original audit record. reverifiedAt below records a later pass that spot-checked module-level statuses against Sources/ and confirmed no status flips were needed (Persistence, Smart Care, Space Lens, Similar Images, Privacy Cleaner, App Updater were already correctly tracked as COMPLIANT_VERIFIED under FUNC-009 and related IDs).",
+  "reverifiedAt": {
+    "date_UTC": "2026-07-21",
+    "CURRENT_HEAD": "4c36e90143e628b2dc79f634034adcb93fb0c5a5",
+    "method": "grep for module names across requirements[]; confirmed each shipped module (Persistence, Smart Care, Space Lens, Similar Images, Privacy Cleaner, App Updater) already maps to a COMPLIANT status, not NOT_STARTED. Full re-derivation of the 69-requirement count from source docs was not redone this pass \u2014 no evidence surfaced that it is wrong, see Documentation/FEATURE_MATRIX.md for the module-level corrections that WERE needed this pass."
+  }
 }

@@ -109,3 +109,35 @@ expected, honest result of covering the harder domains session 2 skipped — see
 - **Fix**: full line-by-line reads in a future session, per the still-open §9
   `PROJECT_COMPLETE_AUDIT.md` 15-view gap.
 - **Recommended version**: n/a (verification work, not a code change).
+
+### VIS-CAMPAIGN — After-screenshot visual QA campaign
+- **Status**: BLOCKED_ENVIRONMENT
+- **Evidence**: this session (2026-07-21, v0.7.1 closeout) runs with no display/window-capture access
+  — `Scripts/capture.sh` requires an attached display and System Events automation, neither available
+  in this non-interactive execution context. No screenshots or sidecar JSON were fabricated to fill
+  this gap.
+- **Priority**: P2 (blocks finishing `Documentation/VISUAL_QA.md` checkboxes, does not block function).
+- **Fix**: re-run `Scripts/capture.sh` on a machine with an attached display and computer-use/GUI access.
+- **Recommended version**: whenever that environment is available; not tied to a version number.
+
+### HUMAN-IDENTITY — Public release identity fields undecided
+- **Status**: BLOCKED_HUMAN
+- **Evidence**: `Configuration/PublicIdentity.local.json` does not exist (`Scripts/check-publish-readiness.sh`
+  fails on this check by design pre-release). Legal name, legal address, domain, and security-contact
+  values are all placeholder tokens in `Website/generate.py` and its generated `Website/*/legal.html`,
+  `privacy.html`, `security.html`, `documentation.html` output (133 placeholder occurrences per
+  `Scripts/check-placeholders.sh`, expected pre-release).
+- **Priority**: P1 for public launch, P4 for this compliance-hardening pass (no code fix possible here).
+- **Fix**: maintainer decides legal entity name/address, registers/confirms a domain, sets a reachable
+  security contact, copies `Configuration/PublicIdentity.example.json` to `PublicIdentity.local.json`
+  and fills it in, then regenerates the website.
+- **Recommended version**: before any real public push/deploy; explicitly not part of 0.7.1 or 0.8.0
+  scope by themselves.
+
+### HUMAN-SIGNING — No code signing / notarization
+- **Status**: BLOCKED_HUMAN
+- **Evidence**: no Apple Developer ID configured anywhere in this repo or environment; the privileged
+  helper and any future signed/notarized distribution both depend on it.
+- **Priority**: P1 for public launch, out of scope for a local/unsigned build.
+- **Fix**: maintainer enrolls in the Apple Developer Program and configures signing.
+- **Recommended version**: before any notarized public release.

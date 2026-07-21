@@ -48,8 +48,10 @@
     "browser history/cookie removal (deliberately deferred: db corruption risk)"
   ],
   "tests": {
-    "passing": 86,
-    "failing": 0
+    "passing": 114,
+    "failing": 0,
+    "suites": 30,
+    "note": "Re-run and regenerated 2026-07-21 via Scripts/generate-test-inventory.sh; supersedes the 86-test figure recorded earlier in v0.7.0."
   },
   "last_build": "Release green, 0 warnings; v0.7.0 gate independently re-verified this session: package-zip.sh/package-dmg.sh rebuilt from scratch, ZIP extracted and DMG mounted outside the repo and both launched/quit cleanly, SHA256SUMS+latest.json regenerated to match the rebuilt artifacts (sourceCommit updated to 99bbe120...), test-distribution.sh and test-release-manifest.sh both pass, check-private-data.sh false-positive on its own script fixed, test-uninstall.sh (86 Swift tests + diagnostic redaction test) green, swift build -c release clean.",
   "next_goals": [
