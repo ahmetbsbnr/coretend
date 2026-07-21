@@ -8,7 +8,19 @@ in step 19 of the plan is genuinely met. See
 table (the authoritative tracker), plus `CURRENT_PROJECT_STATE.json`.
 
 ## HEAD this phase
-Latest: `a7ac701` — Step 7 (Space Lens) + Step 8 (Cloud Cleanup) testability
+Latest: `f336475` — Step 10 (macOS compatibility audit). Re-ran the full
+API grep across `Sources/`; every API (MenuBarExtra=13, Vision
+feature-print/QLThumbnailGenerator=10.15, FSEvents/ubiquitous/SQLite3
+ancient, `@Observable`=14 exactly at floor) sits at or below the declared
+macOS 14 target, so **no `@available` guards were needed** — confirms the
+existing `API_AVAILABILITY_AUDIT.md`. Added
+`.github/workflows/compat-matrix.yml` (macos-14 + macos-15 build+test),
+status IMPLEMENTED_UNVERIFIED (never pushed/run — no Xcode/2nd Mac). Static
+grep + single-machine `swift build`/`Scripts/test.sh` only; NOT compiled
+against the 14.0 SDK. 191 tests / 41 suites green. Prior HEADs this phase
+`cee99e1`→`c3900dc` = Step 6 (My Clutter) partial.
+
+Earlier: `a7ac701` — Step 7 (Space Lens) + Step 8 (Cloud Cleanup) testability
 pass. `CloudCleanupViewModel.detectProviders(home:)` / `.measure(root:)` made
 static+nonisolated for fixture-based testing (Google Drive `CloudStorage`
 layout, Dropbox root, symlink skip, byte-descending sort). `SpaceLensEngine`
@@ -51,6 +63,10 @@ than discarded. Lesson applied going forward: commit smaller and more often.
   (incremental cross-module reads have corrupted twice historically).
 
 ## Task just finished
+- Step 10 (`f336475`): macOS compatibility audit. Grep-verified all APIs
+  ≤ macOS 14 floor ⇒ zero `@available` fixes. `compat-matrix.yml` drafted
+  (IMPLEMENTED_UNVERIFIED). Docs: Step 10 row + `API_AVAILABILITY_AUDIT.md`
+  re-verification section.
 - Step 7/8 (`a7ac701`): Space Lens navigation logic tests + Cloud Cleanup
   provider-detection/measure made testable (see above). Space Lens engine
   edge cases (symlinks, nested rollup, depth cap, empty dirs) covered.
