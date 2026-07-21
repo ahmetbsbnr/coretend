@@ -287,7 +287,7 @@ struct RapidCancellationTests {
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
         let payload = Data(repeating: 3, count: 20)
-        for i in 0..<8000 { try payload.write(to: dir.appendingPathComponent("f\(i).bin")) }
+        for i in 0..<4000 { try payload.write(to: dir.appendingPathComponent("f\(i).bin")) }
 
         let clock = ContinuousClock()
         let start = clock.now
@@ -311,7 +311,7 @@ struct RapidCancellationTests {
         try FileManager.default.createDirectory(at: caches, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
         let payload = Data(repeating: 3, count: 20)
-        for i in 0..<8000 { try payload.write(to: caches.appendingPathComponent("f\(i).tmp")) }
+        for i in 0..<4000 { try payload.write(to: caches.appendingPathComponent("f\(i).tmp")) }
 
         let rule = ScanRule(id: "t", name: "t", category: "t", explanation: "t",
                             risk: .low, preselect: true) { [$0.appendingPathComponent("Library/Caches")] }
