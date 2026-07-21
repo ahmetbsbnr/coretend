@@ -492,3 +492,4 @@
 "onboarding.summary.privacy" = "Rien ne quitte ce Mac. Aucun compte, aucune télémétrie.";
 "onboarding.summary.restore" = "Les suppressions vont à la Corbeille et sont restaurables.";
 "onboarding.summary.docs" = "Lire la documentation";
+"settings.rerun_setup" = "Relancer l’assistant de configuration";
