@@ -161,9 +161,17 @@ struct MenuBarView: View {
                 .foregroundStyle(warn ? MCTheme.warning : MCTheme.accent)
             Text(label)
             Spacer()
+            // Non-color warning signal: a glyph, not just the tinted icon above.
+            if warn {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.caption2).foregroundStyle(MCTheme.warning)
+                    .accessibilityHidden(true)
+            }
             Text(value).foregroundStyle(.secondary).monospacedDigit()
         }
         .font(.callout)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(label), \(value)" + (warn ? ", \(L("menubar.warning_a11y"))" : ""))
     }
 }
 
