@@ -75,17 +75,23 @@ struct PerformanceView: View {
                                      value: "\(Int(snap.cpuUsedFraction * 100))%",
                                      detail: L("performance.of_all_cores"),
                                      fraction: snap.cpuUsedFraction,
-                                     color: statusColor(snap.cpuUsedFraction, base: MCColor.performance))
+                                     color: statusColor(snap.cpuUsedFraction, base: MCColor.performance),
+                                     isElevated: snap.cpuUsedFraction > 0.75,
+                                     elevatedLabel: L("performance.elevated"))
                         MCMetricCard(title: L("performance.memory"),
                                      value: "\(Int(snap.memoryUsedFraction * 100))%",
                                      detail: L("performance.memory_detail", mcFormatBytes(snap.memoryUsedBytes), mcFormatBytes(snap.memoryTotalBytes)),
                                      fraction: snap.memoryUsedFraction,
-                                     color: statusColor(snap.memoryUsedFraction, base: MCColor.protection))
+                                     color: statusColor(snap.memoryUsedFraction, base: MCColor.protection),
+                                     isElevated: snap.memoryUsedFraction > 0.75,
+                                     elevatedLabel: L("performance.elevated"))
                         MCMetricCard(title: L("performance.storage"),
                                      value: "\(Int(snap.diskUsedFraction * 100))%",
                                      detail: L("performance.free_detail", mcFormatBytes(snap.diskFreeBytes)),
                                      fraction: snap.diskUsedFraction,
-                                     color: statusColor(snap.diskUsedFraction, base: MCColor.storage))
+                                     color: statusColor(snap.diskUsedFraction, base: MCColor.storage),
+                                     isElevated: snap.diskUsedFraction > 0.75,
+                                     elevatedLabel: L("performance.elevated"))
                     }
                     MCCard {
                         VStack(alignment: .leading, spacing: 8) {

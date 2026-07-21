@@ -178,6 +178,7 @@ struct PrivacyCleanerView: View {
                 VStack(spacing: 12) {
                     Image(systemName: "hand.raised")
                         .font(.system(size: MCIconSize.emptyState)).foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
                     Text(L("privacy.empty.title")).font(.title3.weight(.semibold))
                     Text(L("privacy.empty.subtitle"))
                         .foregroundStyle(.secondary).multilineTextAlignment(.center)
@@ -189,6 +190,7 @@ struct PrivacyCleanerView: View {
                 VStack(spacing: 12) {
                     Image(systemName: "checkmark.seal")
                         .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
+                        .accessibilityHidden(true)
                     Text(dryRun ? L("privacy.finished.dryrun", mcFormatBytes(freed))
                                 : L("privacy.finished.moved", mcFormatBytes(freed)))
                         .font(.title3.weight(.semibold))

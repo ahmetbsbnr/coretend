@@ -390,3 +390,10 @@
 /* Privacy Cleaner — per-profile running-browser handling */
 "privacy.profile_running_reason" = "%@ est en cours d'exécution — le nettoyage est désactivé pour ce profil tant qu'il n'est pas fermé.";
 "privacy.close_and_rescan" = "Fermer le navigateur et rescanner";
+
+/* Accessibility labels — AppUpdatesView, SettingsView */
+"updates.action_hint" = "Ouvre le mécanisme de mise à jour de %@";
+"settings.remove_exclusion" = "Supprimer l'exclusion %@";
+
+/* Accessibility — Differentiate Without Color for elevated metrics */
+"performance.elevated" = "élevé";

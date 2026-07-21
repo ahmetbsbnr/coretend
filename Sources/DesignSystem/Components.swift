@@ -98,18 +98,31 @@ public struct MCStatusBadge: View {
 // MARK: - Metric card (ring + value + caption)
 
 public struct MCMetricCard: View {
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
+
     private let title: String
     private let value: String
     private let detail: String
     private let fraction: Double
     private let color: Color
+    /// True once the ring color has escalated to an "attention"/"destructive"
+    /// status color — the ring color alone is the only signal of that today,
+    /// so under Differentiate Without Color a small glyph is added too.
+    /// `elevatedLabel` is a caller-supplied, already-localized word (e.g.
+    /// "elevated") appended to the accessibility label in that state —
+    /// DesignSystem has no localization table of its own.
+    private let isElevated: Bool
+    private let elevatedLabel: String
 
-    public init(title: String, value: String, detail: String, fraction: Double, color: Color) {
+    public init(title: String, value: String, detail: String, fraction: Double, color: Color,
+                isElevated: Bool = false, elevatedLabel: String = "") {
         self.title = title
         self.value = value
         self.detail = detail
         self.fraction = min(max(fraction, 0), 1)
         self.color = color
+        self.isElevated = isElevated
+        self.elevatedLabel = elevatedLabel
     }
 
     public var body: some View {
@@ -127,6 +140,13 @@ public struct MCMetricCard: View {
                         .minimumScaleFactor(0.6)
                         .lineLimit(1)
                         .padding(MCSpacing.xs)
+                    if isElevated && differentiateWithoutColor {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.caption2)
+                            .foregroundStyle(color)
+                            .offset(x: MCSize.metricRing * 0.32, y: -MCSize.metricRing * 0.32)
+                            .accessibilityHidden(true)
+                    }
                 }
                 .frame(width: MCSize.metricRing, height: MCSize.metricRing)
                 Text(title).font(MCFont.cardTitle)
@@ -136,7 +156,9 @@ public struct MCMetricCard: View {
             .frame(maxWidth: .infinity)
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(title): \(value), \(detail)")
+        .accessibilityLabel(isElevated && !elevatedLabel.isEmpty
+            ? "\(title): \(value), \(detail), \(elevatedLabel)"
+            : "\(title): \(value), \(detail)")
     }
 }
 
