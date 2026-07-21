@@ -13,7 +13,8 @@ import json
 import sys
 from collections import Counter, OrderedDict
 
-ROOT = "/Users/ahmetbasbunar/Documents/MACCLEAN"
+import os
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 JSON_PATH = f"{ROOT}/Documentation/feature-inventory.json"
 MD_PATH = f"{ROOT}/Documentation/FEATURE_INVENTORY.md"
 CSV_PATH = f"{ROOT}/Documentation/feature-inventory.csv"

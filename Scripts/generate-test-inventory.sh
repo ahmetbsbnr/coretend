@@ -28,8 +28,17 @@ WALL=$((END - START))
 SUMMARY_LINE=$(grep -E "Test run with [0-9]+ tests? in [0-9]+ suites? " "$RAW" | tail -1)
 TOTAL=$(printf '%s' "$SUMMARY_LINE" | sed -E 's/.*Test run with ([0-9]+) tests?.*/\1/')
 SUITES=$(printf '%s' "$SUMMARY_LINE" | sed -E 's/.*in ([0-9]+) suites?.*/\1/')
-PASSED=$(grep -c '^✔' "$RAW" || true)
-FAILED=$(grep -c '^✘' "$RAW" || true)
+# Parameterized tests expand to multiple cases on one printed line, so counting
+# lines undercounts; trust the run's own summary line instead: it says "passed"
+# only when every one of TOTAL tests passed, otherwise the harness prints a
+# distinct failure summary we treat conservatively as "not fully accounted".
+if printf '%s' "$SUMMARY_LINE" | grep -q ' passed after '; then
+  PASSED="$TOTAL"
+  FAILED=0
+else
+  PASSED=0
+  FAILED="$TOTAL"
+fi
 DURATION=$(printf '%s' "$SUMMARY_LINE" | sed -E 's/.*passed after ([0-9.]+) seconds.*/\1/')
 
 /usr/bin/python3 - "$COMMIT" "$DATE" "$TOTAL" "$SUITES" "$PASSED" "$FAILED" "$DURATION" "$WALL" "$RESULT" <<'PYEOF'

@@ -18,7 +18,7 @@ echo "Checking for the developer's real macOS username in tracked files..."
 # (states the session's working directory as an audit fact — previously
 # manually re-explained as "pre-existing" in every package manifest instead
 # of being fixed at the source; fixed here instead).
-if git grep -nIE 'ahmetbasbunar' -- '*.swift' '*.md' '*.json' '*.sh' '*.yml' '*.yaml' \
+if git grep -nIE 'ahmetbasbunar' -- '*.swift' '*.md' '*.json' '*.sh' '*.yml' '*.yaml' '*.py' \
     ':!Documentation/PUBLICATION_AUDIT.md' ':!Documentation/REPOSITORY_SANITIZATION.md' \
     ':!Documentation/CONTINUATION.md' ':!Documentation/PROJECT_COMPLETE_AUDIT.md' \
     ':!Scripts/check-private-data.sh' 2>/dev/null; then

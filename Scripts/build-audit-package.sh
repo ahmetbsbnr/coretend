@@ -38,7 +38,10 @@ done < /tmp/audit-pkg-tracked.txt
 mkdir -p "$STAGE/AuditEvidence/Git"
 git log --oneline -30 > "$STAGE/AuditEvidence/Git/log.txt"
 git status > "$STAGE/AuditEvidence/Git/status.txt"
-git branch -vv > "$STAGE/AuditEvidence/Git/branches.txt"
+# git branch -vv prints absolute worktree paths, which leak the local
+# developer's home directory — redact to a placeholder, same as PathValidator
+# already does for on-disk paths (see Sources/SafetyCore redactPath).
+git branch -vv | sed "s|$HOME|~|g" > "$STAGE/AuditEvidence/Git/branches.txt"
 
 # AUDIT_PACKAGE_EXCLUSIONS.md — every excluded tracked file, with a reason.
 {
