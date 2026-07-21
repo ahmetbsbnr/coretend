@@ -125,15 +125,19 @@ public struct SimilarImagesEngine: Sendable {
     }
 
     private static func collectImages(in root: URL, limit: Int, into images: inout [(URL, Int64)]) {
+        let baseKeys: Set<URLResourceKey> = [.fileSizeKey, .isSymbolicLinkKey, .isDirectoryKey]
+        let keys = baseKeys.union(CloudFile.inventoryKeys)
         guard let enumerator = FileManager.default.enumerator(
-            at: root, includingPropertiesForKeys: [.fileSizeKey, .isSymbolicLinkKey, .isDirectoryKey],
+            at: root, includingPropertiesForKeys: Array(keys),
             options: [.skipsPackageDescendants, .skipsHiddenFiles]) else { return }
         for case let url as URL in enumerator {
             if images.count >= limit || Task.isCancelled { break }
             // Never look inside Photos libraries.
             if url.pathExtension == "photoslibrary" { enumerator.skipDescendants(); continue }
-            guard let values = try? url.resourceValues(forKeys: [.fileSizeKey, .isSymbolicLinkKey, .isDirectoryKey]) else { continue }
+            guard let values = try? url.resourceValues(forKeys: keys) else { continue }
             if values.isSymbolicLink == true { enumerator.skipDescendants(); continue }
+            // Never hydrate a remote-only iCloud placeholder just to feature-print it.
+            if CloudFile.isRemoteOnly(values) { continue }
             guard values.isDirectory != true,
                   imageExtensions.contains(url.pathExtension.lowercased()) else { continue }
             images.append((url, Int64(values.fileSize ?? 0)))
