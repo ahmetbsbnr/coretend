@@ -18,6 +18,65 @@ final class ProtectionViewModel {
 
     private var quarantine: Quarantine? = try? Quarantine(directory: (try? Quarantine.defaultDirectory()) ?? FileManager.default.temporaryDirectory.appendingPathComponent("MacCareQuarantine"))
 
+    // MARK: Optional background watch (Step 3). Off by default each launch —
+    // a background scanner should never silently turn itself on. Never
+    // auto-quarantines: it only raises alerts for the user to review.
+    var watchEnabled = false
+    var watchAlerts: [ProtectionWatcher.Alert] = []
+    private var watcher: ProtectionWatcher?
+    private var producer: FSEventsProducer?
+    private var watchTask: Task<Void, Never>?
+    private var pollTask: Task<Void, Never>?
+
+    /// Folders watched when protection watch is on: Downloads, /Applications,
+    /// ~/Applications. Only those that exist are passed to FSEvents.
+    private var watchPaths: [URL] {
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        return [home.appendingPathComponent("Downloads"),
+                URL(fileURLWithPath: "/Applications"),
+                home.appendingPathComponent("Applications")]
+            .filter { FileManager.default.fileExists(atPath: $0.path) }
+    }
+
+    func toggleWatch() {
+        watchEnabled ? stopWatch() : startWatch()
+    }
+
+    private func startWatch() {
+        guard scanner.isAvailable, watcher == nil else { return }
+        let fpURL = (try? Quarantine.defaultDirectory())?
+            .deletingLastPathComponent().appendingPathComponent("watch-fingerprints.json")
+        let watcher = ProtectionWatcher(scanner: scanner, fingerprintURL: fpURL)
+        let producer = FSEventsProducer()
+        let stream = producer.start(paths: watchPaths)
+        self.watcher = watcher
+        self.producer = producer
+        self.watchEnabled = true
+        watchTask = Task { await watcher.consume(stream) }
+        pollTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                guard let self else { break }
+                let current = await watcher.alerts
+                await MainActor.run { self.watchAlerts = current }
+            }
+        }
+    }
+
+    private func stopWatch() {
+        producer?.stop()
+        Task { [watcher] in await watcher?.stop() }
+        watchTask?.cancel(); pollTask?.cancel()
+        watcher = nil; producer = nil
+        watchTask = nil; pollTask = nil
+        watchEnabled = false
+    }
+
+    func quarantineWatchAlert(_ alert: ProtectionWatcher.Alert) async {
+        await quarantineFinding(MalwareFinding(path: alert.path, signature: alert.signature))
+        watchAlerts.removeAll { $0.id == alert.id }
+    }
+
     func refreshQuarantine() async {
         guard let quarantine else { return }
         quarantineItems = await quarantine.items()
@@ -96,6 +155,7 @@ struct MalwareScanView: View {
             VStack(alignment: .leading, spacing: 16) {
                 if model.scanner.isAvailable {
                     availableContent
+                    watchCard
                 } else {
                     unavailableCard
                 }
@@ -210,6 +270,48 @@ struct MalwareScanView: View {
         }
         if let message = model.statusMessage {
             Text(message).font(.caption).foregroundStyle(.secondary)
+        }
+    }
+
+    private var watchCard: some View {
+        MCCard {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack {
+                    Image(systemName: model.watchEnabled ? "eye" : "eye.slash")
+                        .foregroundStyle(model.watchEnabled ? MCTheme.accent : .secondary)
+                    Text(L("protection.watch.title")).font(.headline)
+                    Spacer()
+                    Toggle("", isOn: Binding(get: { model.watchEnabled },
+                                             set: { _ in model.toggleWatch() }))
+                        .labelsHidden()
+                        .accessibilityLabel(L("protection.watch.toggle"))
+                }
+                Text(L("protection.watch.subtitle"))
+                    .font(.caption).foregroundStyle(.secondary)
+                if model.watchEnabled {
+                    if model.watchAlerts.isEmpty {
+                        Text(L("protection.watch.alerts_none"))
+                            .font(.caption).foregroundStyle(.secondary)
+                    } else {
+                        ForEach(model.watchAlerts) { alert in
+                            HStack {
+                                Image(systemName: "exclamationmark.shield.fill")
+                                    .foregroundStyle(MCTheme.danger)
+                                VStack(alignment: .leading) {
+                                    Text(alert.signature).font(.callout.weight(.medium))
+                                    Text(alert.path).font(.caption).foregroundStyle(.secondary)
+                                        .lineLimit(1).truncationMode(.middle)
+                                }
+                                Spacer()
+                                Button(L("protection.quarantine")) {
+                                    Task { await model.quarantineWatchAlert(alert) }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 

@@ -397,3 +397,7 @@
 
 /* Accessibility — Differentiate Without Color for elevated metrics */
 "performance.elevated" = "élevé";
+"protection.watch.title" = "Surveillance en arrière-plan";
+"protection.watch.subtitle" = "Optionnel. Surveille les Téléchargements et vos dossiers Applications pour détecter les nouveaux fichiers et analyse chacun avec ClamAV une fois qu'il ne change plus. Rien n'est jamais supprimé automatiquement — les détections sont listées ici pour que vous les examiniez et les mettiez en quarantaine vous-même.";
+"protection.watch.toggle" = "Activer la surveillance en arrière-plan";
+"protection.watch.alerts_none" = "Surveillance active. Aucune menace détectée dans les dossiers surveillés.";
