@@ -13,7 +13,7 @@ is genuinely true — it is not yet.
 | 2 | Smart Care full audit | DONE | 846617c | Audited orchestrator against safety matrix (SMART_CARE_AUDIT.md). Extracted pure `autoExecutableFindings` (only low-risk+preselected auto-executes) + SmartCareSafetyTests + catalog invariant (no preselected medium/high rule). Module *implementations* for Protection/Performance/Applications remain Steps 3/5 (honestly shown unavailable) |
 | 3 | Protection / FSEvents watch | TODO | | ClamAV-gated; honestly unavailable without it |
 | 4 | Privacy Cleaner honesty | TODO | | keep cache-only unless full closed-browser+backup path proven |
-| 5 | Applications & updates | TODO | | detect-only, no downloads |
+| 5 | Applications & updates | PARTIAL | (this) | Centralized update-mechanism detection into tested `AppDiscovery.updateMechanism` engine (`UpdateMechanism` enum): App Store receipt, safe-https Sparkle feed (rejects http/file/javascript/no-host as dangerous), download-origin `kMDItemWhereFroms`, honest `.unknown`; non-overpromising `actionLabel` ("Show Update Options", never "Available"). UI `AppUpdateSource.detect` now delegates (single source of truth). +9 tests. Homebrew Cask origin = DEFERRED (no reliable offline app→cask link without fuzzy matching) |
 | 6 | My Clutter | TODO | | |
 | 7 | Space Lens | TODO | | |
 | 8 | Cloud Cleanup | TODO | | |

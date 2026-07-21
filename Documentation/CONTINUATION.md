@@ -8,10 +8,13 @@ in step 19 of the plan is genuinely met. See
 table (the authoritative tracker), plus `CURRENT_PROJECT_STATE.json`.
 
 ## HEAD this phase
-`846617c`. Commits added this latest session (started from `0ed32cd`):
-`995a49b` (settings matrix + orphan gate + flaky-test fix, Step 9 DONE),
-`846617c` (Smart Care audit + safety tests, Step 2 DONE). Earlier session:
-`323d3b5` (cleanup rules), `e0021fa` (dryRunDefault orphan fix).
+Latest: Step 5 (Applications & updates) PARTIAL — centralized update-mechanism
+detection into the tested `AppDiscovery.updateMechanism` engine
+(`UpdateMechanism` enum) with dangerous-URL rejection + download-origin signal;
+UI `AppUpdateSource.detect` delegates to it (single source of truth). +9 tests
+(130→139). Homebrew Cask origin left DEFERRED (no reliable offline signal).
+Prior: `846617c` (Smart Care audit, Step 2 DONE), `995a49b` (settings matrix,
+Step 9 DONE), `323d3b5` (cleanup rules), `e0021fa` (dryRunDefault orphan fix).
 
 ## Baseline verified this phase
 - 130 tests / 34 suites green (`bash Scripts/test.sh`), 0 warnings.

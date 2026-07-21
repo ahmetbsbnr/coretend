@@ -52,4 +52,79 @@ struct AppDiscoveryTests {
         let names = leftovers.map { $0.url.lastPathComponent }
         #expect(names == ["com.gone.app"])
     }
+
+    // MARK: - Update source detection (Step 5)
+
+    @Test func appStoreReceiptWinsOverEverything() {
+        let source = AppDiscovery.classify(
+            hasMASReceipt: true,
+            plist: ["SUFeedURL": "https://example.com/appcast.xml"],
+            hasSparkleFramework: true,
+            whereFroms: "https://download.example.com/App.dmg")
+        #expect(source == .appStore)
+    }
+
+    @Test func sparkleWithSafeFeed() {
+        let source = AppDiscovery.classify(
+            hasMASReceipt: false,
+            plist: ["SUFeedURL": "https://example.com/appcast.xml"],
+            hasSparkleFramework: true, whereFroms: nil)
+        #expect(source == .sparkle(feedURL: URL(string: "https://example.com/appcast.xml")))
+    }
+
+    @Test func sparkleWithDangerousFeedYieldsNoURL() {
+        for dangerous in ["http://insecure.example.com/appcast.xml",
+                          "file:///etc/passwd",
+                          "javascript:alert(1)",
+                          "not a url at all",
+                          "https:///no-host"] {
+            let source = AppDiscovery.classify(
+                hasMASReceipt: false, plist: ["SUFeedURL": dangerous],
+                hasSparkleFramework: true, whereFroms: nil)
+            #expect(source == .sparkle(feedURL: nil), "\(dangerous) must be rejected")
+        }
+    }
+
+    @Test func sparkleFrameworkWithoutFeed() {
+        let source = AppDiscovery.classify(
+            hasMASReceipt: false, plist: [:], hasSparkleFramework: true, whereFroms: nil)
+        #expect(source == .sparkle(feedURL: nil))
+    }
+
+    @Test func manualFromWhereFroms() {
+        let source = AppDiscovery.classify(
+            hasMASReceipt: false, plist: [:], hasSparkleFramework: false,
+            whereFroms: "https://download.example.com/App.dmg")
+        #expect(source == .manual(source: "https://download.example.com/App.dmg"))
+    }
+
+    @Test func unknownWhenNoSignals() {
+        let source = AppDiscovery.classify(
+            hasMASReceipt: false, plist: [:], hasSparkleFramework: false, whereFroms: nil)
+        #expect(source == .unknown)
+    }
+
+    @Test func unknownWhenWhereFromsUnsafe() {
+        let source = AppDiscovery.classify(
+            hasMASReceipt: false, plist: [:], hasSparkleFramework: false,
+            whereFroms: "http://insecure.example.com/App.dmg")
+        #expect(source == .unknown)
+    }
+
+    @Test func labelsNeverOverpromise() {
+        #expect(UpdateMechanism.sparkle(feedURL: nil).actionLabel == "Update Options Unavailable")
+        #expect(UpdateMechanism.unknown.actionLabel == "Update Mechanism Unavailable")
+        #expect(!UpdateMechanism.sparkle(feedURL: URL(string: "https://x.example/y")).actionLabel.contains("Available"))
+    }
+
+    @Test func updateSourceReadsRealReceiptBundle() throws {
+        let root = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("maccare-mas-\(UUID().uuidString)")
+        let bundle = root.appendingPathComponent("Fake.app")
+        try FileManager.default.createDirectory(
+            at: bundle.appendingPathComponent("Contents/_MASReceipt"), withIntermediateDirectories: true)
+        try Data([0]).write(to: bundle.appendingPathComponent("Contents/_MASReceipt/receipt"))
+        defer { try? FileManager.default.removeItem(at: root) }
+        #expect(AppDiscovery().updateMechanism(for: bundle) == .appStore)
+    }
 }
