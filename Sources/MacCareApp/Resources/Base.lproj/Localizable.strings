@@ -21,6 +21,7 @@
 "menubar.free_space" = "Free space";
 "menubar.thermal" = "Thermal";
 "menubar.protection" = "Protection";
+"menubar.warning_a11y" = "needs attention";
 "menubar.clamav_ready" = "ClamAV ready";
 "menubar.clamav_missing" = "ClamAV not installed";
 "menubar.last_smart_care" = "Last Smart Care: %@";
