@@ -19,8 +19,19 @@ final class CleanupViewModel {
     var totalBytes: Int64 = 0
     var totalFindingCount = 0
     var dryRun = true
+    private var dryRunDefaultLoaded = false
 
     private var scanTask: Task<Void, Never>?
+
+    /// Applies the persisted "dry-run by default" setting once, before the user
+    /// has a chance to toggle it manually. Without this the Settings toggle is
+    /// orphaned — the view would always start in dry-run regardless of the setting.
+    func loadDryRunDefault() async {
+        guard !dryRunDefaultLoaded else { return }
+        dryRunDefaultLoaded = true
+        dryRun = AppEnvironment.dryRunEnabled(
+            fromSetting: (try? await AppEnvironment.shared.store?.setting("dryRunDefault")) ?? nil)
+    }
 
     var isDisplayTruncated: Bool { totalFindingCount > findings.count }
 
@@ -164,6 +175,7 @@ struct CleanupView: View {
         }
         .padding(24)
         .navigationTitle(L("cleanup.title"))
+        .task { await model.loadDryRunDefault() }
     }
 
     private var idleView: some View {

@@ -43,3 +43,23 @@ struct PermissionFormattingTests {
         #expect(PermissionFormatting.notificationLabel(.notDetermined) == "Not requested")
     }
 }
+
+@Suite("Dry-run default setting")
+struct DryRunDefaultTests {
+    @Test("absent setting keeps dry-run ON (safe default)")
+    func absentIsDryRun() {
+        #expect(AppEnvironment.dryRunEnabled(fromSetting: nil) == true)
+    }
+
+    @Test("only literal \"false\" opts out of dry-run")
+    func explicitFalseOptsOut() {
+        #expect(AppEnvironment.dryRunEnabled(fromSetting: "false") == false)
+    }
+
+    @Test("any other value keeps dry-run ON")
+    func otherValuesStayDryRun() {
+        #expect(AppEnvironment.dryRunEnabled(fromSetting: "true") == true)
+        #expect(AppEnvironment.dryRunEnabled(fromSetting: "") == true)
+        #expect(AppEnvironment.dryRunEnabled(fromSetting: "FALSE") == true)  // case-sensitive on purpose
+    }
+}

@@ -18,7 +18,7 @@ final class SettingsViewModel {
 
     func load() async {
         guard let store = AppEnvironment.shared.store else { return }
-        dryRunDefault = (try? await store.setting("dryRunDefault")) != "false"
+        dryRunDefault = AppEnvironment.dryRunEnabled(fromSetting: try? await store.setting("dryRunDefault"))
         exclusions = (try? await store.exclusions()) ?? []
         loaded = true
         await refreshPermissions()
