@@ -67,6 +67,14 @@ if [ -x Scripts/check-feature-inventory.sh ]; then
   fi
 fi
 
+echo "-- Markdown links: zero broken internal links/anchors --"
+if python3 Scripts/check-markdown-links.py; then
+  :
+else
+  echo "  FAIL: broken markdown links found (see above)"
+  fail=1
+fi
+
 echo "-- .gitignore sanity: nothing tracked is newly ignored --"
 tmp_dir=$(mktemp -d)
 trap 'rm -rf "$tmp_dir"' EXIT
