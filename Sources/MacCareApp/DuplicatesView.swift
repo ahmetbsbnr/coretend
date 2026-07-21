@@ -215,6 +215,7 @@ struct DuplicatesView: View {
                                     NSWorkspace.shared.activateFileViewerSelecting([url])
                                 } label: { Image(systemName: "magnifyingglass") }
                                 .buttonStyle(.borderless)
+                                .accessibilityLabel(L("common.reveal_in_finder"))
                             }
                         }
                     } header: {
