@@ -29,6 +29,16 @@ final class SmartCareViewModel {
     var modules: [CareModule] = SmartCareViewModel.initialModules()
     var findings: [ScanFinding] = []
     var dryRun = true
+    private var dryRunDefaultLoaded = false
+
+    /// Applies the persisted "dry-run by default" setting once, before the user
+    /// toggles it. Without this the Settings toggle is orphaned for Smart Care.
+    func loadDryRunDefault() async {
+        guard !dryRunDefaultLoaded else { return }
+        dryRunDefaultLoaded = true
+        dryRun = AppEnvironment.dryRunEnabled(
+            fromSetting: (try? await AppEnvironment.shared.store?.setting("dryRunDefault")) ?? nil)
+    }
 
     /// Real aggregates from the full stream — never derived from `findings`,
     /// which is capped for UI display. Keeps Smart Care and Cleanup in agreement.
@@ -149,6 +159,7 @@ struct SmartCareView: View {
             .frame(maxWidth: .infinity)
         }
         .navigationTitle(L("smartcare.nav_title"))
+        .task { await model.loadDryRunDefault() }
     }
 
     private var heroState: MCHeroState {
