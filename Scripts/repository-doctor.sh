@@ -67,6 +67,14 @@ if [ -x Scripts/check-feature-inventory.sh ]; then
   fi
 fi
 
+echo "-- Settings matrix: rendered from JSON, no orphaned/undocumented setting vs Sources/ --"
+if python3 Scripts/generate-settings-matrix.py --check; then
+  :
+else
+  echo "  FAIL: settings-matrix.json/.md drifted or a public setting is orphaned/undocumented"
+  fail=1
+fi
+
 echo "-- Markdown links: zero broken internal links/anchors --"
 if python3 Scripts/check-markdown-links.py; then
   :

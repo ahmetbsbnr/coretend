@@ -1,0 +1,71 @@
+{
+  "_comment": "Canonical source for the settings matrix. One object per real user-facing/persisted setting. Rendered to SETTINGS_MATRIX.md by Scripts/generate-settings-matrix.py, which ALSO verifies this key set exactly matches the settings actually present in Sources/ (no orphaned or missing setting). Do not hand-edit SETTINGS_MATRIX.md.",
+  "schemaVersion": 1,
+  "settings": [
+    {
+      "id": "menuBarEnabled",
+      "label": "Menu bar item enabled",
+      "default": "true",
+      "storage": "@AppStorage (UserDefaults)",
+      "type": "Bool",
+      "consumer": "MacCareApp.swift (MenuBarExtra isInserted), SettingsView.swift toggle",
+      "effect": "Inserts/removes the Core Bloom menu-bar item live.",
+      "restartRequired": "no",
+      "availability": "always",
+      "test": "generate-settings-matrix.py --check (repository-doctor gate)",
+      "status": "VERIFIED_COMPLETE"
+    },
+    {
+      "id": "onboardingDone",
+      "label": "Onboarding completed",
+      "default": "false",
+      "storage": "@AppStorage (UserDefaults)",
+      "type": "Bool",
+      "consumer": "MacCareApp.swift MainWindow (gates first-run onboarding sheet)",
+      "effect": "When false, the first-run onboarding is shown on launch; set true on completion.",
+      "restartRequired": "no",
+      "availability": "always",
+      "test": "generate-settings-matrix.py --check (repository-doctor gate)",
+      "status": "VERIFIED_COMPLETE"
+    },
+    {
+      "id": "onboardingStep",
+      "label": "Onboarding step index",
+      "default": "0",
+      "storage": "@AppStorage (UserDefaults)",
+      "type": "Int",
+      "consumer": "OnboardingView.swift (current wizard step)",
+      "effect": "Persists progress through the onboarding wizard so it resumes at the same step.",
+      "restartRequired": "no",
+      "availability": "always",
+      "test": "generate-settings-matrix.py --check (repository-doctor gate)",
+      "status": "VERIFIED_COMPLETE"
+    },
+    {
+      "id": "dryRunDefault",
+      "label": "Dry run by default",
+      "default": "true",
+      "storage": "Persistence Store settings table (key/value)",
+      "type": "Bool (stored as \"true\"/\"false\")",
+      "consumer": "CleanupView.swift, SmartCareView.swift (via AppEnvironment.dryRunEnabled), SettingsView.swift toggle",
+      "effect": "Controls whether Cleanup and Smart Care start in dry-run (preview) mode instead of acting.",
+      "restartRequired": "no (loaded on view appear)",
+      "availability": "always",
+      "test": "AppEnvironmentDryRunTests, generate-settings-matrix.py --check (repository-doctor gate)",
+      "status": "VERIFIED_COMPLETE"
+    },
+    {
+      "id": "exclusions",
+      "label": "Excluded paths",
+      "default": "[] (empty)",
+      "storage": "Persistence Store exclusions table (path list)",
+      "type": "[String] (paths)",
+      "consumer": "CleanupView.swift, SmartCareView.swift (filters findings), SettingsView.swift (add/remove), DiagnosticReport.swift (count)",
+      "effect": "Paths the user has excluded are never included in cleanup/care findings.",
+      "restartRequired": "no",
+      "availability": "always",
+      "test": "generate-settings-matrix.py --check (repository-doctor gate)",
+      "status": "VERIFIED_COMPLETE"
+    }
+  ]
+}
