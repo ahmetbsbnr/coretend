@@ -6,7 +6,7 @@
 # Never touches files the app quarantined-and-restored, never touches any
 # other app's data, never uses sudo. Requires interactive confirmation
 # unless --yes is passed. Dry-run by default with --dry-run.
-set -eu
+set -euo pipefail
 
 DRY_RUN=0
 ASSUME_YES=0

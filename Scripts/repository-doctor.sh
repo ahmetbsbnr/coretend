@@ -2,7 +2,7 @@
 # Repo-hygiene checks for the open-source foundation: required policy files
 # present, private-data scan clean, placeholder scan clean. Read-only.
 # Safe to run from any working directory.
-set -eu
+set -euo pipefail
 
 ROOT_DIR=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT_DIR"

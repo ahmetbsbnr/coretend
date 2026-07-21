@@ -2,7 +2,7 @@
 # Removes build artifacts only (.build, DerivedData under this repo, test
 # result bundles). Never touches app-installed data, ~/Library, or files
 # outside the repo. No sudo. Safe to run from any working directory.
-set -eu
+set -euo pipefail
 
 ROOT_DIR=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT_DIR"

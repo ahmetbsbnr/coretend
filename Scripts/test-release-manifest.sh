@@ -4,7 +4,7 @@
 # checksum correctness, latest.json <-> SHA256SUMS consistency,
 # unsigned/notarized declared consistently, and no dangerous
 # Gatekeeper-bypass commands anywhere in shipped docs.
-set -eu
+set -euo pipefail
 cd "$(dirname "$0")/.."
 
 fail=0
@@ -77,7 +77,13 @@ for path in files:
     lines = open(path, encoding="utf-8", errors="ignore").read().splitlines()
     for i, line in enumerate(lines):
         if pattern.search(line):
-            window = lines[max(0, i - 5):i]
+            # Window includes the current line, not just the preceding
+            # ones — a warning quoted inline on the same line ("...with
+            # its 'Do not...' warning...") is exactly as valid a warning
+            # as one on a prior line. A look-behind-only window falsely
+            # flagged prose that discusses this very heuristic's history
+            # (see REQUIREMENTS_TRACEABILITY_MATRIX.md's session-1 note).
+            window = lines[max(0, i - 5):i + 1]
             if not any(warn.search(w) for w in window):
                 print(f"UNWARNED: {path}:{i+1}: {line.strip()}")
                 found_unwarned = True

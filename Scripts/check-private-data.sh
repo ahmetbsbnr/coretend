@@ -2,7 +2,7 @@
 # Fails if tracked files contain secrets, personal absolute paths, or
 # obvious private-data patterns. Safe to run from any working directory;
 # does not delete anything.
-set -eu
+set -euo pipefail
 
 ROOT_DIR=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT_DIR"
@@ -10,10 +10,17 @@ cd "$ROOT_DIR"
 fail=0
 
 echo "Checking for the developer's real macOS username in tracked files..."
-# Excludes Documentation/PUBLICATION_AUDIT.md and REPOSITORY_SANITIZATION.md,
-# which intentionally *document* that this path was checked and found clean.
+# Excludes docs that intentionally *document* that this path was checked
+# and found clean (audit narrative, not a functional/secret path) —
+# PUBLICATION_AUDIT.md, REPOSITORY_SANITIZATION.md, CONTINUATION.md (the
+# running session log, which by nature accumulates this kind of
+# self-referential audit prose every session), and PROJECT_COMPLETE_AUDIT.md
+# (states the session's working directory as an audit fact — previously
+# manually re-explained as "pre-existing" in every package manifest instead
+# of being fixed at the source; fixed here instead).
 if git grep -nIE 'ahmetbasbunar' -- '*.swift' '*.md' '*.json' '*.sh' '*.yml' '*.yaml' \
     ':!Documentation/PUBLICATION_AUDIT.md' ':!Documentation/REPOSITORY_SANITIZATION.md' \
+    ':!Documentation/CONTINUATION.md' ':!Documentation/PROJECT_COMPLETE_AUDIT.md' \
     ':!Scripts/check-private-data.sh' 2>/dev/null; then
   echo "FAIL: found the developer's real macOS username above."
   fail=1

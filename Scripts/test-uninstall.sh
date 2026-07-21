@@ -2,7 +2,7 @@
 # Shell-level tests for Scripts/uninstall.sh: dry-run must never delete
 # anything, and the allowlist must reject paths it doesn't own. Uses a fake
 # HOME so this never touches the real machine's MacCareLocal data.
-set -eu
+set -euo pipefail
 cd "$(dirname "$0")/.."
 UNINSTALL="$PWD/Scripts/uninstall.sh"
 

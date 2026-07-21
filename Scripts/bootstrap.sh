@@ -1,7 +1,7 @@
 #!/bin/sh
 # One-shot setup for a fresh clone: verifies toolchain, resolves packages.
 # Idempotent, no sudo, no writes outside the repo and SwiftPM's own caches.
-set -eu
+set -euo pipefail
 
 ROOT_DIR=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT_DIR"

@@ -4,7 +4,7 @@
 # in Documentation/VisualAudit/SCREENSHOT_MANIFEST.json. Prevents a repeat of
 # the 2026-07-20 incident where a full-desktop capture (2880x1800, containing
 # other apps and private window content) was committed as a "menu bar" shot.
-set -eu
+set -euo pipefail
 
 ROOT_DIR=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT_DIR"

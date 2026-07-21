@@ -5,7 +5,7 @@
 # (this repo currently declares zero external SwiftPM dependencies — if
 # that ever changes, this check will start failing on purpose).
 # Read-only. Safe to run from any working directory.
-set -eu
+set -euo pipefail
 
 ROOT_DIR=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT_DIR"

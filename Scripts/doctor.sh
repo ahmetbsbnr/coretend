@@ -2,7 +2,7 @@
 # Diagnoses a dev environment: toolchain version, platform, macOS version,
 # repo cleanliness. Read-only — never modifies anything. Safe to run from
 # any working directory or machine.
-set -eu
+set -euo pipefail
 
 ROOT_DIR=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT_DIR"

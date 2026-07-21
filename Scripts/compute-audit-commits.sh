@@ -7,7 +7,7 @@
 #   REQUIREMENTS_AUDIT_COMMIT - latest commit touching the requirements/compliance doc set
 #   AUDIT_PACKAGE_COMMIT      - HEAD at the moment the external ZIP is built (caller supplies
 #                               this after zipping, since it must be recorded post-hoc)
-set -eu
+set -euo pipefail
 cd "$(dirname "$0")/.."
 
 CURRENT_HEAD=$(git rev-parse HEAD)

@@ -26,7 +26,7 @@
 #   --remove-all    removes the app bundle, Application Support dir
 #                    (including quarantine), and prefs plist. Requires
 #                    confirmation.
-set -eu
+set -euo pipefail
 
 MODE="dry-run"
 ASSUME_YES=0

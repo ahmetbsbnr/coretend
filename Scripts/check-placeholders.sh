@@ -3,7 +3,7 @@
 # Documentation/PUBLICATION_PLACEHOLDERS.md). This is a *gate*, not a
 # bug report: before a real public release, this must print zero
 # matches; until then, nonzero is expected.
-set -eu
+set -euo pipefail
 
 ROOT_DIR=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT_DIR"
