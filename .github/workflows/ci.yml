@@ -39,6 +39,9 @@ jobs:
       - name: Feature inventory totals (recomputed, never hand-typed)
         run: Scripts/check-feature-inventory.sh
 
+      - name: Markdown link check (zero broken internal links/anchors)
+        run: python3 Scripts/check-markdown-links.py
+
       - name: Debug build
         run: Scripts/build.sh
 

@@ -92,7 +92,7 @@ explains what each permission unlocks. See
 
 ## Known limitations
 
-See [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) for the current,
+See [KNOWN_LIMITATIONS.md](Documentation/KNOWN_LIMITATIONS.md) for the current,
 honest list (e.g. no code signing/notarization yet, ClamAV is an
 optional external dependency, no privileged helper yet).
 
@@ -105,7 +105,7 @@ tracked in [Documentation/GOOD_FIRST_ISSUES.md](Documentation/GOOD_FIRST_ISSUES.
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) and [CHANGELOG.md](CHANGELOG.md).
+See [ROADMAP.md](Documentation/ROADMAP.md) and [CHANGELOG.md](Documentation/CHANGELOG.md).
 
 ## Security
 
@@ -120,4 +120,4 @@ documentation and illustrations are licensed under
 covered separately — see [TRADEMARKS.md](TRADEMARKS.md). Third-party
 components keep their own licenses — see
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Full breakdown:
-[Documentation/LICENSING.md](Documentation/LICENSING.md).
+[Documentation/LEGAL_AND_LICENSE_STATUS.md](Documentation/LEGAL_AND_LICENSE_STATUS.md).
