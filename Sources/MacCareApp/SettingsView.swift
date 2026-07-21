@@ -193,6 +193,9 @@ struct MCSettingsView: View {
             }
             Section(L("settings.about")) {
                 LabeledContent(L("settings.version"), value: appVersion)
+                Button(L("settings.rerun_setup")) {
+                    NotificationCenter.default.post(name: .mcShowOnboarding, object: nil)
+                }
             }
         }
         .formStyle(.grouped)

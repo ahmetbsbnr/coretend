@@ -66,6 +66,19 @@
       "availability": "always",
       "test": "generate-settings-matrix.py --check (repository-doctor gate)",
       "status": "VERIFIED_COMPLETE"
+    },
+    {
+      "id": "securityProfile",
+      "label": "Security profile",
+      "default": "recommended",
+      "storage": "Persistence Store settings table (key/value)",
+      "type": "String (recommended/cautious/custom)",
+      "consumer": "OnboardingView.swift (persists the first-run wizard profile choice)",
+      "effect": "Records which security profile the user picked at first run. Informational; the only live knob a profile sets is dryRunDefault.",
+      "restartRequired": "no",
+      "availability": "always",
+      "test": "OnboardingLogicTests (profile→config mapping), generate-settings-matrix.py --check (repository-doctor gate)",
+      "status": "VERIFIED_COMPLETE"
     }
   ]
 }

@@ -492,3 +492,4 @@
 "onboarding.summary.privacy" = "Nothing leaves this Mac. No account, no telemetry.";
 "onboarding.summary.restore" = "Removals go to the Trash and can be restored.";
 "onboarding.summary.docs" = "Read the documentation";
+"settings.rerun_setup" = "Run setup assistant again";

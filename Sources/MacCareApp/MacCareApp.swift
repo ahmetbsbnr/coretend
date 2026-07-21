@@ -300,6 +300,9 @@ struct MainWindow: View {
         .onReceive(NotificationCenter.default.publisher(for: .mcNavigate)) { note in
             if let module = note.object as? ModuleID { selection = module }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .mcShowOnboarding)) { _ in
+            showOnboarding = true
+        }
         .tint(MCColor.coreMint)
     }
 }
