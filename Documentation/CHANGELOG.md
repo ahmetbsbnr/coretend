@@ -1,5 +1,28 @@
 # CHANGELOG
 
+## 0.7.1 — 2026-07-21 « Compliance Hardening »
+
+Audit-and-package repair phase, no feature scope beyond hardening. Real HEAD/commit
+fields separated (no more single reused `auditedSourceCommit`); removed a full-desktop
+screenshot that had been committed by mistake, recaptured window-only, added a packaging
+control script that rejects any screenshot outside its approved manifest; SafetyCore's
+audit log is now persisted to SQLite (append-only) instead of in-memory only; Quarantine
+records richer metadata (permissions/size/hash/volume) and handles missing
+parent/volume/collision/permission-denied cases without ever silently overwriting;
+ClamAV wrapper gained a configurable timeout, real cancellation, and an honest
+scanned-file count parsed from clamscan's own summary; Privacy Cleaner now disables
+cleaning per-profile while that profile's browser is running, with a close-and-rescan
+action; fixed three raw, non-adaptive Space Lens colors and consolidated repeated icon
+size literals into tokens; added real accessibility support (labels/grouping across 5
+previously-unannotated views, Increase Contrast, Differentiate Without Color, and
+verified Reduce Transparency) to the design system; CI split into a normal (always-green)
+path and a separate manual publish-readiness gate, fixed two real bugs that were
+failing CI (a private-data-scan false positive, a dangerous-command-scan false positive),
+pinned GitHub Actions to full commit SHAs; corrected a stale feature-inventory summary
+that had drifted from the underlying data and made regeneration automatic
+(`Scripts/generate-feature-inventory.py`); fixed 4 broken README links and added a
+recursive Markdown link validator (0 broken internal links).
+
 ## 0.7.0 — 2026-07-20 « Public Distribution »
 
 Full public-distribution gate independently re-verified this session
