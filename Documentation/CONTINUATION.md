@@ -141,9 +141,17 @@ MUST verify per-step completeness against source, not just this file:
     The view's `.unavailable` branch is currently unreachable (engine never
     emits it) — harmless dead branch, left for a future Vision-unavailable path.
 - **Step 10**: macOS compatibility audit — not started.
-- **Step 11**: stress tests — partially pre-covered (`engineStreamsAllFindingsUncappedAt5001`,
-  12-consumer totals, hard-link collapsing) but large SQLite history / bursty
-  FSEvents / deep-wide-tree fixtures not yet built.
+- **Step 11**: stress tests — DONE. 9 stress fixtures added (191→200 tests),
+  all synthetic/no-personal-data, kept in the normal suite with count assertions
+  + generous wall-clock ceilings (durations printed, not asserted). Covered:
+  cleanup 12k findings (uncapped streaming), duplicates 10k same-size candidates
+  incl. hard links + sparse (correct + sub-quadratic), similar images 157 incl.
+  4×5000² (metadata-only pixel-count, memory-bounded), Space Lens wide 5k
+  siblings + deep 60 levels, SQLite history 8k×2 rows (bounded indexed reads
+  measured ~0.01s), FSEvents burst 20k events/50 paths (coalesces to 50 scans),
+  rapid cancellation of Space Lens + ScanEngine (fast teardown). No bugs found.
+  Suite wall clock ~7s → ~12s real. Details + measured-vs-qualitative breakdown
+  in `Documentation/STRESS_TEST_REPORT.md`.
 - **Steps 12-14, 16-17**: accessibility audit, first-run wizard, installer
   animation, site copy sync, doc set — not started.
 Steps needing environment/human stay BLOCKED (12's interactive VoiceOver
