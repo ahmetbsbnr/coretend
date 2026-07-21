@@ -163,6 +163,7 @@ struct PrivacyCleanerView: View {
                             }
                         ))
                         .labelsHidden()
+                        .accessibilityLabel(L("privacy.browser_profile", profile.browser, profile.profileName))
                         .disabled(profile.cacheURLs.isEmpty || profileIsRunning)
                         VStack(alignment: .leading) {
                             Text(L("privacy.browser_profile", profile.browser, profile.profileName))

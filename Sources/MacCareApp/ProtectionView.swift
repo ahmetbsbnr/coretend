@@ -261,6 +261,7 @@ struct MalwareScanView: View {
                                     NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: finding.path)])
                                 } label: { Image(systemName: "magnifyingglass") }
                                 .buttonStyle(.borderless)
+                                .accessibilityLabel(L("common.reveal_in_finder"))
                             }
                         }
                     }
