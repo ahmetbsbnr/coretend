@@ -5,7 +5,10 @@ import SwiftUI
 // Brand:  CoreBloom.swift   Components: Components.swift
 
 /// Card container used across all module screens.
-/// Falls back to an opaque surface under Reduce Transparency.
+/// Falls back to an opaque surface under Reduce Transparency, and a
+/// stronger, wider border under Increase Contrast (the default 0.6-opacity
+/// hairline is deliberately subtle and fails to read as a boundary once the
+/// system's contrast preference says subtle isn't wanted).
 public struct MCCard<Content: View>: View {
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     private let content: Content
@@ -15,6 +18,11 @@ public struct MCCard<Content: View>: View {
     }
 
     public var body: some View {
+        // Read directly (not via @Environment — macOS SwiftUI has no
+        // accessibilityIncreaseContrast environment key); Observation
+        // tracks this read and re-renders the card when the system
+        // setting changes, same effect as an environment value.
+        let increaseContrast = MCAccessibilityState.shared.increaseContrast
         let shape = RoundedRectangle(cornerRadius: MCRadius.card)
         content
             .padding(MCSpacing.md)
@@ -26,7 +34,8 @@ public struct MCCard<Content: View>: View {
                         .overlay(shape.fill(Color.primary.opacity(0.035)))
                 }
             }
-            .overlay(shape.strokeBorder(MCColor.separator.opacity(0.6), lineWidth: 1))
+            .overlay(shape.strokeBorder(MCColor.separator.opacity(increaseContrast ? 1.0 : 0.6),
+                                         lineWidth: increaseContrast ? 1.5 : 1))
     }
 }
 

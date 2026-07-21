@@ -163,6 +163,7 @@ struct MCSettingsView: View {
                             Image(systemName: "minus.circle")
                         }
                         .buttonStyle(.borderless)
+                        .accessibilityLabel(L("settings.remove_exclusion", path))
                     }
                 }
                 Button(L("settings.add_folder")) {

@@ -170,7 +170,10 @@ struct SmartCareView: View {
 
     private var hero: some View {
         VStack(spacing: MCSpacing.sm) {
+            // Decorative — the state it represents is already spelled out
+            // in heroTitle/heroSubtitle right below, which VoiceOver reads.
             MCHeroCoreView(state: heroState)
+                .accessibilityHidden(true)
             Text(heroTitle)
                 .font(MCFont.heroTitle)
             Text(heroSubtitle)
@@ -180,6 +183,7 @@ struct SmartCareView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.top, MCSpacing.md)
+        .accessibilityElement(children: .combine)
     }
 
     private var heroTitle: String {
@@ -215,6 +219,7 @@ struct SmartCareView: View {
                             .font(.title2)
                             .foregroundStyle(module.enabled ? moduleColor(module.id) : .secondary)
                             .frame(width: 36)
+                            .accessibilityHidden(true)
                         VStack(alignment: .leading) {
                             Text(module.name).font(.headline)
                             stateText(module.state)
@@ -222,8 +227,10 @@ struct SmartCareView: View {
                         }
                         Spacer()
                         stateAccessory(module.state)
+                            .accessibilityHidden(true)
                     }
                 }
+                .accessibilityElement(children: .combine)
             }
         }
     }

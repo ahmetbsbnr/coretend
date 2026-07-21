@@ -66,17 +66,20 @@ struct AppUpdatesView: View {
                             HStack {
                                 Image(nsImage: NSWorkspace.shared.icon(forFile: info.app.path.path))
                                     .resizable().frame(width: 24, height: 24)
+                                    .accessibilityHidden(true)
                                 VStack(alignment: .leading) {
                                     Text(info.app.name)
                                     Text(L("updates.version_source", info.app.version ?? "?", info.source.rawValue))
                                         .font(.caption).foregroundStyle(.secondary)
                                 }
+                                .accessibilityElement(children: .combine)
                                 Spacer()
                                 Button(info.source == .appStore ? L("updates.open_app_store")
                                        : info.source == .sparkle ? L("updates.open_app")
                                        : L("common.reveal_in_finder")) {
                                     model.open(info)
                                 }
+                                .accessibilityHint(L("updates.action_hint", info.app.name))
                             }
                         }
                     } footer: {

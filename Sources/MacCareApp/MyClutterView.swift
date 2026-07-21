@@ -120,6 +120,7 @@ struct LargeOldFilesView: View {
         VStack(spacing: 16) {
             Image(systemName: "doc.on.doc")
                 .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
+                .accessibilityHidden(true)
             Text(L("clutter.idle.title")).font(.title2.weight(.semibold))
             Text(L("clutter.idle.subtitle"))
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
@@ -161,6 +162,7 @@ struct LargeOldFilesView: View {
         VStack(spacing: 12) {
             Image(systemName: "checkmark.circle")
                 .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
+                .accessibilityHidden(true)
             Text(L("clutter.no_matches")).font(.title3.weight(.semibold))
             Button(L("clutter.change_criteria")) { model.phase = .idle }
         }
@@ -187,6 +189,7 @@ struct LargeOldFilesView: View {
                 HStack {
                     Image(systemName: "doc")
                         .foregroundStyle(MCTheme.accentSecondary)
+                        .accessibilityHidden(true)
                     VStack(alignment: .leading) {
                         Text(finding.url.lastPathComponent)
                         HStack(spacing: 8) {
@@ -203,6 +206,7 @@ struct LargeOldFilesView: View {
                     // primarily a data table, size is the number that matters.
                     Text(mcFormatBytes(finding.logicalSize))
                         .monospacedDigit().font(.title3.weight(.semibold))
+                        .accessibilityHidden(true) // folded into the row's combined label below
                     Button {
                         model.previewURL = finding.url
                     } label: {
@@ -210,6 +214,7 @@ struct LargeOldFilesView: View {
                     }
                     .buttonStyle(.borderless)
                     .help(L("clutter.quick_look"))
+                    .accessibilityLabel(L("clutter.quick_look"))
                     Button {
                         NSWorkspace.shared.activateFileViewerSelecting([finding.url])
                     } label: {
@@ -217,7 +222,10 @@ struct LargeOldFilesView: View {
                     }
                     .buttonStyle(.borderless)
                     .help(L("common.reveal_in_finder"))
+                    .accessibilityLabel(L("common.reveal_in_finder"))
                 }
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("\(finding.url.lastPathComponent), \(mcFormatBytes(finding.logicalSize))")
             }
             .listStyle(.inset)
             .quickLookPreview($model.previewURL)
