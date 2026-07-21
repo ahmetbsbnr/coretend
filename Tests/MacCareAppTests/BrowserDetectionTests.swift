@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import SafetyCore
 @testable import MacCareApp
 
 @Suite("Browser profile detection")
@@ -64,6 +65,27 @@ struct BrowserDetectionTests {
         let profiles = BrowserCatalog.detect(home: home)
         #expect(profiles.contains { $0.browser == "Firefox" && $0.cacheBytes == 100 })
         #expect(profiles.contains { $0.browser == "Safari" && $0.cacheBytes == 300 })
+    }
+
+    /// Enforcement gate: the same `Library/Caches`-scoped validator `cleanCaches`
+    /// builds must accept every detected cacheURL and *reject* the profile's
+    /// History/Cookies paths — so a live-DB path can never be trashed even if a
+    /// future bug slipped one into `cacheURLs`.
+    @Test func cacheOnlyValidatorAcceptsCachesRejectsHistoryAndCookies() throws {
+        let home = try makeHome()
+        defer { try? fm.removeItem(at: home) }
+        let support = home.appendingPathComponent("Library/Application Support/Google/Chrome/Default")
+        try write(support.appendingPathComponent("History"), bytes: 500)
+        try write(support.appendingPathComponent("Cookies"), bytes: 500)
+        try write(home.appendingPathComponent("Library/Caches/Google/Chrome/Default/cache.bin"), bytes: 4096)
+
+        let chrome = try #require(BrowserCatalog.detect(home: home).first { $0.browser == "Google Chrome" })
+        let validator = PathValidator(allowedRoots: [home.appendingPathComponent("Library/Caches")])
+        for url in chrome.cacheURLs {
+            #expect((try? validator.validate(url)) != nil)
+        }
+        #expect((try? validator.validate(support.appendingPathComponent("History"))) == nil)
+        #expect((try? validator.validate(support.appendingPathComponent("Cookies"))) == nil)
     }
 
     @Test func absentBrowsersProduceNoProfiles() throws {

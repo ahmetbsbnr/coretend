@@ -80,11 +80,21 @@ MUST verify per-step completeness against source, not just this file:
   simulated-stream test matrix from the plan (burst, dedup, temp-file,
   deleted-before-scan, unmounted volume, ClamAV-absent, cancel, restart) is
   actually present; add what's missing.
-- **Step 4 (Privacy Cleaner)**: Chromium-family detection landed — verify
-  Safari/Firefox detection exist too, and that the browser-running state
-  actually gates UI actions with an explanation + close-then-rescan offer
-  (not just detection logic sitting unused). Confirm cache-only default and
-  that history/cookies/session deletion is NOT silently enabled anywhere.
+- **Step 4 (Privacy Cleaner)**: VERIFIED COMPLETE (audit pass). Detection is
+  real for Chromium family (Chrome/Edge/Brave/Vivaldi/Chromium), Firefox, and
+  Safari — `BrowserCatalog.detect(home:)` walks known on-disk layouts, no
+  fuzzy matching. Browser-running state genuinely gates the UI: `isRunning`
+  disables the per-profile selection toggle, shows `privacy.profile_running_reason`,
+  and offers `Close Browser & Rescan` (`closeBrowserAndRescan`); `cleanCaches`
+  also re-filters `!isRunning` before acting, so a mid-scan relaunch can't slip
+  through. Default is genuinely cache-only: `cleanCaches` only touches
+  `profile.cacheURLs` (always under `Library/Caches`) through a SafetyCenter
+  whose PathValidator is scoped to `Library/Caches`; History/Cookies bytes are
+  reported for transparency, never deleted. UI copy (footer + strings, EN/FR)
+  is honest — no "full privacy cleanup" claim. History/cookies/session deletion
+  stays DEFERRED (no closed-browser+backup+tested-restore path yet). Added test
+  `cacheOnlyValidatorAcceptsCachesRejectsHistoryAndCookies` proving the
+  enforcement gate rejects History/Cookies paths (185 tests total).
 - **Step 6 (My Clutter)**: Large&Old / Duplicates / Similar Images — largely
   unverified this phase; audit against the full checklist in the plan.
 - **Step 10**: macOS compatibility audit — not started.
