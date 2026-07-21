@@ -116,6 +116,7 @@ final class MyActivityViewModel {
 
 struct MyActivityView: View {
     @State private var model = MyActivityViewModel()
+    @State private var showingSafetyLog = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -157,7 +158,13 @@ struct MyActivityView: View {
                 Task { await model.clear() }
             }
             .disabled(model.allRecords.isEmpty)
+            Button {
+                showingSafetyLog = true
+            } label: {
+                Label(L("activity.open_safety_log"), systemImage: "checklist")
+            }
         }
+        .sheet(isPresented: $showingSafetyLog) { SafetyLogView() }
         .task(id: model.filter) { await model.load() }
     }
 

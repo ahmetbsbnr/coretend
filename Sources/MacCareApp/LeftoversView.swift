@@ -58,7 +58,7 @@ final class LeftoversViewModel {
         let home = FileManager.default.homeDirectoryForCurrentUser
         let center = SafetyCenter(
             validator: PathValidator(allowedRoots: [home.appendingPathComponent("Library")]),
-            dryRun: dryRun)
+            dryRun: dryRun, sink: AppEnvironment.shared.store)
         var approved: [ApprovedFileOperation] = []
         for item in items {
             if let op = try? await center.approve(url: item.url, logicalSize: item.sizeBytes,

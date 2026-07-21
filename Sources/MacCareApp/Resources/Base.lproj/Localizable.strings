@@ -370,3 +370,19 @@
 /* Module display names (sidebar / placeholder) */
 "module.protection" = "Protection";
 "module.my_activity" = "My Activity";
+
+/* Safety log (SafetyCore audit trail persistence) */
+"common.done" = "Done";
+"safetylog.title" = "Safety Log";
+"safetylog.subtitle" = "%d executed · %d simulated (dry run)";
+"safetylog.empty" = "No safety log entries yet.";
+"safetylog.unavailable" = "Local database unavailable";
+"safetylog.purge" = "Purge Log";
+"safetylog.stage.approved" = "Approved";
+"safetylog.stage.dryrun" = "Dry Run";
+"safetylog.stage.executed" = "Executed";
+"safetylog.stage.skipped" = "Skipped";
+"safetylog.stage.error" = "Error";
+"safetylog.a11y.rule" = "rule %@";
+"safetylog.a11y.risk" = "risk %@";
+"activity.open_safety_log" = "View Safety Log";

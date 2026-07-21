@@ -177,3 +177,70 @@ struct SafetyCenterTests {
         #expect(FileManager.default.fileExists(atPath: outside.path))
     }
 }
+
+private actor MockAuditSink: SafetyAuditSink {
+    private(set) var events: [SafetyAuditEvent] = []
+    func recordSafetyEvent(_ event: SafetyAuditEvent) async { events.append(event) }
+}
+
+@Suite("SafetyCenter audit sink")
+struct SafetyCenterAuditSinkTests {
+    let tempRoot: URL
+
+    init() throws {
+        tempRoot = try makeTempRoot("maccare-audit-sink")
+    }
+
+    private func cleanup() {
+        try? FileManager.default.removeItem(at: tempRoot)
+    }
+
+    @Test func dryRunEmitsApprovedThenDryRunNeverExecuted() async throws {
+        defer { cleanup() }
+        let file = tempRoot.appendingPathComponent("victim.txt")
+        try Data("data".utf8).write(to: file)
+        let sink = MockAuditSink()
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), dryRun: true, sink: sink)
+        let op = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
+        _ = await center.execute([op])
+        let stages = await sink.events.map(\.stage)
+        #expect(stages == [.approved, .dryRun])
+        #expect(!stages.contains(.executed), "a dry run must never be recorded as executed")
+    }
+
+    @Test func realExecutionEmitsExecutedNotDryRun() async throws {
+        defer { cleanup() }
+        let file = tempRoot.appendingPathComponent("victim.txt")
+        try Data("data".utf8).write(to: file)
+        let sink = MockAuditSink()
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), dryRun: false, sink: sink)
+        let op = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
+        _ = await center.execute([op])
+        let stages = await sink.events.map(\.stage)
+        #expect(stages == [.approved, .executed])
+        #expect(!stages.contains(.dryRun))
+    }
+
+    @Test func invalidPathEmitsErrorEvent() async throws {
+        defer { cleanup() }
+        let sink = MockAuditSink()
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), dryRun: true, sink: sink)
+        _ = try? await center.approve(url: URL(fileURLWithPath: "/System/Library"), logicalSize: 0, ruleID: "test", risk: .low)
+        let events = await sink.events
+        #expect(events.count == 1)
+        #expect(events.first?.stage == .error)
+    }
+
+    @Test func vanishedFileEmitsSkippedEvent() async throws {
+        defer { cleanup() }
+        let file = tempRoot.appendingPathComponent("gone.txt")
+        try Data("data".utf8).write(to: file)
+        let sink = MockAuditSink()
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), dryRun: true, sink: sink)
+        let op = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
+        try FileManager.default.removeItem(at: file)
+        _ = await center.execute([op])
+        let stages = await sink.events.map(\.stage)
+        #expect(stages == [.approved, .skipped])
+    }
+}

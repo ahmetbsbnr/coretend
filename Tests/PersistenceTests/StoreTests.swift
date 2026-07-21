@@ -1,6 +1,7 @@
 import Testing
 import Foundation
 @testable import Persistence
+import SafetyCore
 
 private func tempDBPath() -> String {
     URL(fileURLWithPath: NSTemporaryDirectory())
@@ -13,10 +14,10 @@ struct StoreTests {
         let path = tempDBPath()
         defer { try? FileManager.default.removeItem(atPath: path) }
         let store = try Store(path: path)
-        #expect(try await store.schemaVersion() == 1)
+        #expect(try await store.schemaVersion() == 2)
         // Re-opening must not re-run migrations or fail.
         let store2 = try Store(path: path)
-        #expect(try await store2.schemaVersion() == 1)
+        #expect(try await store2.schemaVersion() == 2)
     }
 
     @Test func activityRoundTrip() async throws {
@@ -67,5 +68,66 @@ struct StoreTests {
         try await store.recordActivity(ActivityRecord(
             kind: .error, summary: "Échec — fichier « été🙂 »", itemCount: 0, bytes: 0, dryRun: true))
         #expect(try await store.activity().first?.summary == "Échec — fichier « été🙂 »")
+    }
+
+    // MARK: - Safety log (append-only)
+
+    @Test func safetyLogPersistsDryRunAndExecutedSeparately() async throws {
+        let path = tempDBPath()
+        defer { try? FileManager.default.removeItem(atPath: path) }
+        let store = try Store(path: path)
+        let opID = UUID()
+        await store.recordSafetyEvent(SafetyAuditEvent(
+            operationID: opID, stage: .approved, path: "/Users/alice/Downloads/foo.zip",
+            ruleID: "downloads.archives", risk: .low, size: 1024, result: "approved"))
+        await store.recordSafetyEvent(SafetyAuditEvent(
+            operationID: opID, stage: .dryRun, path: "/Users/alice/Downloads/foo.zip",
+            ruleID: "downloads.archives", risk: .low, size: 1024, result: "simulated"))
+        let log = try await store.safetyLog()
+        #expect(log.count == 2)
+        // Simulation must never be recorded with the same stage as a real action.
+        #expect(log.contains { $0.stage == .dryRun })
+        #expect(!log.contains { $0.stage == .executed })
+    }
+
+    @Test func safetyLogNeverStoresRawHomePath() async throws {
+        let path = tempDBPath()
+        defer { try? FileManager.default.removeItem(atPath: path) }
+        let store = try Store(path: path)
+        let home = NSHomeDirectory()
+        await store.recordSafetyEvent(SafetyAuditEvent(
+            operationID: UUID(), stage: .executed, path: "\(home)/Documents/secret-project/notes.txt",
+            ruleID: "cleanup.rule", risk: .medium, size: 42, result: "moved to trash"))
+        let entry = try await store.safetyLog().first
+        #expect(entry != nil)
+        #expect(entry?.redactedPath.hasPrefix("<home>") == true)
+        #expect(entry?.redactedPath.contains(home) == false)
+        #expect(entry?.redactedPath.contains("notes.txt") == true, "shape is kept, just the personal prefix is redacted")
+    }
+
+    @Test func safetyLogSurvivesRelaunch() async throws {
+        let path = tempDBPath()
+        defer { try? FileManager.default.removeItem(atPath: path) }
+        do {
+            let store = try Store(path: path)
+            await store.recordSafetyEvent(SafetyAuditEvent(
+                operationID: UUID(), stage: .executed, path: "/tmp/a", ruleID: "r", risk: .low, size: 1, result: "ok"))
+        }
+        // Fresh Store instance over the same file — simulates an app relaunch.
+        let reopened = try Store(path: path)
+        #expect(try await reopened.safetyLog().count == 1)
+    }
+
+    @Test func safetyLogPurgeIsAllOrNothing() async throws {
+        let path = tempDBPath()
+        defer { try? FileManager.default.removeItem(atPath: path) }
+        let store = try Store(path: path)
+        for _ in 0..<3 {
+            await store.recordSafetyEvent(SafetyAuditEvent(
+                operationID: UUID(), stage: .skipped, path: "/tmp/x", ruleID: "r", risk: .low, size: 0, result: "fileVanished"))
+        }
+        #expect(try await store.safetyLog().count == 3)
+        try await store.purgeSafetyLog()
+        #expect(try await store.safetyLog().isEmpty)
     }
 }
