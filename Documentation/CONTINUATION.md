@@ -62,7 +62,27 @@ than discarded. Lesson applied going forward: commit smaller and more often.
 - After changing a public struct's stored layout, `rm -rf .build` once
   (incremental cross-module reads have corrupted twice historically).
 
-## Task just finished (Step 12 — Accessibility, code-level)
+## Task just finished (Step 13 — First-run wizard)
+Extended `OnboardingView.swift` (was 4 basic steps) into the full 8-step plan
+wizard, split into a tested pure-logic file + a view. Three atomic commits:
+1. `OnboardingLogic.swift` + `OnboardingLogicTests.swift` (+15 tests, 200→215):
+   SecurityProfile→SecurityConfig (safe-default invariant), LaunchLocation.detect,
+   SystemCheck.items/overall (worst-wins), ClamAVVersionInfo.parse.
+2. The 8-step wizard view (Welcome→Summary) driven by that logic. Move-to-
+   Applications is a user-space FileManager copy (fallback ~/Applications, then
+   reveal-for-drag) — no sudo/privilege escalation. Notification toggle requests
+   real macOS auth, never claims grant; FDA step only opens Settings + rechecks.
+3. Re-launchable from Settings ("Run setup assistant again" → .mcShowOnboarding
+   observed by MainWindow); new persisted `securityProfile` setting documented
+   in settings-matrix.json (regenerated SETTINGS_MATRIX.md, no-orphan gate green).
+EN+FR strings added (UTF-16 files). **Tested vs view-only**: the three logic
+pieces are unit-tested; the SwiftUI layout of every step is view-only (SwiftUI
+view bodies aren't unit-testable). **Deferred**: actual installer/DMG packaging
+(this slice is the first-run wizard only — no 0.8.0 zip per scope). **Blocked**:
+interactive on-display verification = BLOCKED_ENVIRONMENT. 215/215 tests green,
+Debug+Release build green, repository-doctor all checks passed.
+
+## Task before that (Step 12 — Accessibility, code-level)
 Code-level accessibility audit of every SwiftUI view (MacCareApp + shared
 DesignSystem views). Codebase was already strong; found and fixed a small set
 of real gaps in 4 atomic commits (all modifier-only, no new tests — SwiftUI
@@ -179,8 +199,9 @@ MUST verify per-step completeness against source, not just this file:
   rapid cancellation of Space Lens + ScanEngine (fast teardown). No bugs found.
   Suite wall clock ~7s → ~12s real. Details + measured-vs-qualitative breakdown
   in `Documentation/STRESS_TEST_REPORT.md`.
-- **Steps 12-14, 16-17**: accessibility audit, first-run wizard, installer
-  animation, site copy sync, doc set — not started.
+- **Step 12** (accessibility) and **Step 13** (first-run wizard): DONE (see
+  above / plan rows). **Steps 14, 16-17**: installer animation, site copy sync,
+  doc set — not started.
 Steps needing environment/human stay BLOCKED (12's interactive VoiceOver
 portion, 15 screenshots, 19-21 version bump/artifacts — do NOT bump to
 0.8.0; criteria far from met).
