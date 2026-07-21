@@ -37,6 +37,7 @@ for per-module detail and `Documentation/CHANGELOG.md` for the version history.
 - NOT_STARTED — Privileged helper: no Developer ID signing identity available; every current feature works unprivileged, so this was deferred by choice rather than blocked mid-build.
 - DEFERRED — Browser history/cookie removal in Privacy Cleaner: deliberately deferred, DB-corruption risk on live browser profiles judged not worth it for marginal space gain.
 - DEFERRED — FSEvents live downloads watch: nice-to-have, not required for any v0.7.1 commitment.
+- DEFERRED — Extended cleanup rules needing dedicated safety engines rather than plain extension/age rules: iOS Simulators (distinguish caches/unavailable-devices/runtimes/active devices; use official `simctl` mechanisms, never blind delete), Trash-emptying (separate strong-confirmation action, never automatic), Mail attachments (never touch Mail DBs; report-only), broken LaunchAgents (detect invalid plist/missing target; reveal/exclude, Trash plist only after review). Not shipped as blind rules.
 - BLOCKED_ENVIRONMENT — Real-machine screenshot capture for `Documentation/VisualAudit/After` (no attached display / window capture in any automated session to date, including this one).
 - BLOCKED_HUMAN — Public identity fields (`Configuration/PublicIdentity.local.json`: legal name, address, domain, security contact) and code signing/notarization — both require the maintainer's real-world decisions/credentials, not more engineering.
 

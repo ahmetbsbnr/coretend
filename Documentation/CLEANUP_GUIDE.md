@@ -34,6 +34,26 @@ gated by `SafetyCore`'s `PathValidator` (see [SAFETYCORE.md](SAFETYCORE.md))
 so protected system paths and your Documents/Desktop/Pictures/Music/Movies
 roots are never auto-selected.
 
+## Built-in cleanup rules (`Sources/FileRules/UserCleanupRules.swift`)
+
+Low-risk, preselected: user caches, user logs (7d+), crash reports (30d+),
+Xcode DerivedData, incomplete downloads (7d+).
+
+Medium/high-risk, **never preselected** — manual review required:
+
+| Rule | Scope | Age | Notes |
+|------|-------|-----|-------|
+| Xcode device support | `~/Library/Developer/Xcode/iOS DeviceSupport` | 90d+ | regenerated on reconnect |
+| Old installers | `~/Downloads` only, `.dmg/.pkg/.mpkg` | 30d+ | re-downloadable, not restorable from a rebuild |
+| Old archives | `~/Downloads` only, `.zip/.tar/.gz/.tgz/.bz2/.xz/.7z/.rar` ≥1 MB | 30d+ | never extracted or opened; extension match only, no archive parsing |
+| Xcode archives | `~/Library/Developer/Xcode/Archives` | 30d+ | may hold the only copy of a shipped build |
+| iOS device backups | `~/Library/Application Support/MobileSync/Backup` | 180d+ | high risk |
+
+All removals go to the Trash (reversible). Simulators, Trash-emptying, Mail
+attachments and broken LaunchAgents are tracked as deferred in
+[ROADMAP.md](ROADMAP.md) — they need dedicated safety handling and are not
+shipped as blind extension rules.
+
 ## Safety
 
 Every candidate path is risk-rated (`RiskLevel`: low/medium/high) before
