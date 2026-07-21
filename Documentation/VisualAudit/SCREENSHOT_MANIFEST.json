@@ -1,0 +1,306 @@
+{
+  "schemaVersion": 1,
+  "description": "Approved screenshot frames for Documentation/VisualAudit/After. Any tracked screenshot not listed here, or whose pixel dimensions differ from the recorded width/height, fails Scripts/check-screenshot-scope.sh.",
+  "maxWidth": 2000,
+  "maxHeight": 1500,
+  "disallowedFullScreenResolutions": [
+    [
+      1440,
+      900
+    ],
+    [
+      2880,
+      1800
+    ],
+    [
+      1680,
+      1050
+    ],
+    [
+      3360,
+      2100
+    ],
+    [
+      1920,
+      1080
+    ],
+    [
+      3840,
+      2160
+    ],
+    [
+      1920,
+      1200
+    ],
+    [
+      3840,
+      2400
+    ],
+    [
+      2560,
+      1440
+    ],
+    [
+      5120,
+      2880
+    ],
+    [
+      2560,
+      1600
+    ],
+    [
+      5120,
+      3200
+    ],
+    [
+      1366,
+      768
+    ],
+    [
+      2732,
+      1536
+    ],
+    [
+      1280,
+      800
+    ],
+    [
+      2560,
+      1600
+    ],
+    [
+      3456,
+      2234
+    ],
+    [
+      1728,
+      1117
+    ],
+    [
+      3024,
+      1964
+    ],
+    [
+      1512,
+      982
+    ],
+    [
+      3512,
+      2234
+    ],
+    [
+      1756,
+      1117
+    ]
+  ],
+  "entries": [
+    {
+      "file": "2026-07-20-applications-dark.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "dark",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "2026-07-20-applications-light.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "light",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "2026-07-20-cleanup-dark.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "dark",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "2026-07-20-cleanup-light.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "light",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "2026-07-20-cloudcleanup-dark.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "dark",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "2026-07-20-menubar-dark.png",
+      "width": 520,
+      "height": 676,
+      "mode": "dark",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "2026-07-20-myactivity-dark.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "dark",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "2026-07-20-myclutter-dark.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "dark",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "2026-07-20-onboarding-1-dark.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "dark",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "2026-07-20-onboarding-2-dark.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "dark",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "2026-07-20-onboarding-3-dark.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "dark",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "2026-07-20-onboarding-4-dark.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "dark",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "2026-07-20-performance-dark.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "dark",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "2026-07-20-performance-light.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "light",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "2026-07-20-protection-dark.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "dark",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "2026-07-20-settings-dark.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "dark",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "2026-07-20-settings-light.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "light",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "2026-07-20-smartcare-dark.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "dark",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "2026-07-20-smartcare-light.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "light",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "cleanup-fragments-dark.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "dark",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "cleanup-fragments-light.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "light",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "my-activity-dark.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "dark",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "my-activity-light.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "light",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "settings-light.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "light",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "spacelens-dark.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "dark",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "spacelens-light.png",
+      "width": 1800,
+      "height": 1304,
+      "mode": "light",
+      "approved": true,
+      "note": "app window / menu bar popover capture only, no desktop"
+    }
+  ]
+}
