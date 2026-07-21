@@ -106,11 +106,13 @@ already-queued module-by-module re-verification backlog. Zero MUST requirement i
 BLOCKED_HUMAN. This is a real, non-flattering, non-rounded-up verdict: it is not
 FULLY_CONFORMING_VERIFIED and should not be represented as such anywhere in this documentation set.
 
-## Cross-reference to the separate 41-feature audit vocabulary
+## Cross-reference to the separate feature audit vocabulary
 
 This scorecard uses the **requirements-compliance vocabulary** (COMPLIANT_VERIFIED, etc., 69
-requirements). A separate, earlier audit — `Documentation/FEATURE_INVENTORY.md` — uses a **different
-vocabulary** (VERIFIED_COMPLETE, etc., 41 features, 31 verified) for a different question ("does
-each named feature exist and work?" vs. "does the product meet each sourced requirement?"). The two
-are not comparable line-for-line and should never be quoted interchangeably. See
+requirements). A separate, earlier audit — `Documentation/FEATURE_INVENTORY.md`, generated from the
+canonical `Documentation/feature-inventory.json` (never hand-typed, see
+`Scripts/generate-feature-inventory.py`) — uses a **different vocabulary** (VERIFIED_COMPLETE, etc.,
+42 features, 34 VERIFIED_COMPLETE) for a different question ("does each named feature exist and
+work?" vs. "does the product meet each sourced requirement?"). The two are not comparable
+line-for-line and should never be quoted interchangeably. See
 `Documentation/PROJECT_COMPLETE_AUDIT.md` for the explicit cross-reference paragraph.

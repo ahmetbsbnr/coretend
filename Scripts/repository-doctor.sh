@@ -57,6 +57,16 @@ else
   echo "  WARN: Scripts/check-placeholders.sh missing or not executable"
 fi
 
+echo "-- Feature inventory: totals/status-counts recomputed from the JSON, not hand-typed --"
+if [ -x Scripts/check-feature-inventory.sh ]; then
+  if Scripts/check-feature-inventory.sh; then
+    echo "  OK: feature-inventory.json/.md/.csv agree"
+  else
+    echo "  FAIL: feature-inventory.json/.md/.csv have drifted — run Scripts/generate-feature-inventory.py"
+    fail=1
+  fi
+fi
+
 echo "-- .gitignore sanity: nothing tracked is newly ignored --"
 tmp_dir=$(mktemp -d)
 trap 'rm -rf "$tmp_dir"' EXIT

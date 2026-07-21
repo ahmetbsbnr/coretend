@@ -24,6 +24,13 @@ MOSTLY_CONFORMING** — see `Documentation/FINAL_COMPLIANCE_SCORECARD.md` for th
 `Documentation/REQUIREMENTS_COMPLIANCE_SUMMARY.md` for the rollup. This supersedes any verdict
 language below in §4 that predates the requirements audit.
 
+**Compliance-hardening update**: the "41 features, 31 VERIFIED_COMPLETE" figure above is now stale —
+`feature-inventory.json` had grown to 42 entries (34 VERIFIED_COMPLETE, 4 VERIFIED_PARTIAL, 4
+IMPLEMENTED_UNVERIFIED) without the summary line above or `FEATURE_INVENTORY.md` ever being
+regenerated to match, the exact kind of drift `Scripts/check-feature-inventory.sh` now catches. See
+`Documentation/CURRENT_PROJECT_STATE.json` for the current figure; the "41/31" sentence above is left
+as originally written (this file's own historical record of what session 3 concluded), not rewritten.
+
 ## 0. Cover page
 
 - Product: MacCare Local (SwiftUI macOS app)

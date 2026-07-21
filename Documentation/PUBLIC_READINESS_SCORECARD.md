@@ -6,7 +6,7 @@ session-1/2/3 doc that backs the score.
 
 | Axis | Score | Why |
 |---|---|---|
-| Functionality | 70/100 | 31/41 features `VERIFIED_COMPLETE`, 10 partial/blocked (`FEATURE_INVENTORY.md`). Core scan/clean/quarantine paths solid; App Updates, audit-log persistence, several view-layer paths unverified or partial. |
+| Functionality | 70/100 | 34/42 features `VERIFIED_COMPLETE`, 8 partial/unverified (`FEATURE_INVENTORY.md`, generated from `feature-inventory.json`). Core scan/clean/quarantine paths solid; audit-log persistence now real (SQLite), a few view-layer paths still unverified or partial — see `Scripts/check-feature-inventory.sh`. |
 | Data security | 80/100 | Single `Process()` call is argument-array-only, no shell injection surface; `PathValidator` blocklist+allowlist+symlink-escape; 0 secrets found; 0 `.env`/forbidden files tracked; CI has a dedicated `security.yml` (`SECURITY_AUDIT_CURRENT.md`, this session's CI audit). Points withheld: no external pen-test, no fuzzing of the file-path validator beyond unit tests. |
 | Stability | 75/100 | 86/86 tests pass, release build target is warning-gated in CI. Points withheld: only ever run on one physical machine — no crash telemetry (by design, local-only) means real-world stability under varied hardware/macOS versions is unknown, not just unverified. |
 | Tests | 75/100 | 86 tests, 27 suites, sub-second run time, exercises engines/persistence/duplicate-detection/totals-consistency. Points withheld: no UI/view-layer tests (SwiftUI view logic for Cloud Cleanup/My Clutter/Duplicates is `IMPLEMENTED_UNVERIFIED`), no `Process()`-invocation integration test for the real ClamAV binary. |

@@ -36,6 +36,9 @@ jobs:
       - name: Placeholder check
         run: Scripts/check-placeholders.sh
 
+      - name: Feature inventory totals (recomputed, never hand-typed)
+        run: Scripts/check-feature-inventory.sh
+
       - name: Debug build
         run: Scripts/build.sh
 
