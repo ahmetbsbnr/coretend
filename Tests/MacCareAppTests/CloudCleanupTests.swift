@@ -25,6 +25,58 @@ struct CloudCleanupTests {
         #expect(SyncState.classify(logicalBytes: 0, localBytes: 0, isCloudPlaceholder: false) == .local)
     }
 
+    @Test func detectsKnownProviderRootsUnderFixtureHome() throws {
+        let home = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("maccare-cloud-\(UUID().uuidString)")
+        let fm = FileManager.default
+        defer { try? fm.removeItem(at: home) }
+        try fm.createDirectory(at: home.appendingPathComponent("Dropbox"), withIntermediateDirectories: true)
+        // Provider-named CloudStorage directory (Google Drive File Provider layout).
+        try fm.createDirectory(
+            at: home.appendingPathComponent("Library/CloudStorage/GoogleDrive-user@example.com"),
+            withIntermediateDirectories: true)
+
+        let found = CloudCleanupViewModel.detectProviders(home: home)
+        #expect(found.contains { $0.name == "Dropbox" })
+        #expect(found.contains { $0.name == "Google Drive" })
+        // No iCloud/OneDrive roots exist in the fixture — they must not appear.
+        #expect(!found.contains { $0.name == "OneDrive" })
+        #expect(!found.contains { $0.name == "iCloud Drive" })
+    }
+
+    @Test func emptyHomeYieldsNoProviders() throws {
+        let home = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("maccare-cloud-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: home) }
+        #expect(CloudCleanupViewModel.detectProviders(home: home).isEmpty)
+    }
+
+    @Test func measureWalksTreeSkipsSymlinksAndSortsByLocalBytes() throws {
+        let root = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("maccare-cloud-\(UUID().uuidString)")
+        let fm = FileManager.default
+        let sub = root.appendingPathComponent("folder")
+        try fm.createDirectory(at: sub, withIntermediateDirectories: true)
+        defer { try? fm.removeItem(at: root) }
+        try Data(repeating: 0, count: 4000).write(to: root.appendingPathComponent("small.txt"))
+        try Data(repeating: 0, count: 40_000).write(to: sub.appendingPathComponent("big.bin"))
+        // A symlink at top level must be skipped, not measured.
+        try fm.createSymbolicLink(
+            at: root.appendingPathComponent("link"), withDestinationURL: sub)
+
+        let entries = CloudCleanupViewModel.measure(root: root)
+        let names = entries.map(\.name)
+        #expect(!names.contains("link"))
+        #expect(names.contains("folder"))
+        #expect(names.contains("small.txt"))
+        // Sorted by local bytes descending: the 40 KB folder outranks the 4 KB file.
+        #expect(entries.first?.name == "folder")
+        let folder = try #require(entries.first { $0.name == "folder" })
+        #expect(folder.isDirectory)
+        #expect(folder.localBytes >= 40_000)
+    }
+
     @Test func recoverableCountsOnlyBytesActuallyOnDiskNeverLogical() {
         // A remote-only placeholder contributes its (near-zero) LOCAL bytes to the
         // recoverable figure — never its logical size. This is the core honesty
