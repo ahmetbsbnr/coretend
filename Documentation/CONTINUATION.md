@@ -62,7 +62,34 @@ than discarded. Lesson applied going forward: commit smaller and more often.
 - After changing a public struct's stored layout, `rm -rf .build` once
   (incremental cross-module reads have corrupted twice historically).
 
-## Task just finished
+## Task just finished (Step 12 — Accessibility, code-level)
+Code-level accessibility audit of every SwiftUI view (MacCareApp + shared
+DesignSystem views). Codebase was already strong; found and fixed a small set
+of real gaps in 4 atomic commits (all modifier-only, no new tests — SwiftUI
+modifier presence isn't unit-testable):
+- Reveal-in-Finder icon buttons in Cleanup/Protection/Duplicates/Leftovers/
+  Performance now have `accessibilityLabel` (MyClutter/CloudCleanup/
+  SimilarImages already did).
+- Privacy per-profile selection toggle labeled.
+- Space Lens treemap: `accessibilityElement(children:.ignore)` + item-count/
+  size summary label (fragments no longer leak to VoiceOver; child list is the
+  keyboard-navigable equivalent, unchanged).
+- Menu-bar metric rows: non-color warning glyph + combined "needs attention"
+  VoiceOver label (CPU/free-space warns were color-only).
+- MCEmptyState/MCErrorState decorative icons `accessibilityHidden`.
+New EN/FR strings: `spacelens.treemap.a11y_summary`, `menubar.warning_a11y`.
+No functional/safety behavior changed. 200/200 tests green throughout.
+**Interactive VoiceOver + real-display verification = BLOCKED_ENVIRONMENT**
+(headless CommandLineTools, no display/VoiceOver session). What needed no
+change: DesignSystem already wires Reduce Motion/Transparency/Differentiate-
+Without-Color + MCAccessibilityState.increaseContrast; decorative animation
+views (Fragment/Mesh/Overlap/CoreBloom/HeroCore) already hidden + expose
+accessibilityDescription; status badges are symbol+text; Duplicates keeper is
+a text badge; Protection threats are icon+color; Settings toggles/exclusion
+buttons and Applications rows already labeled; AppUpdates/MyActivity/
+Onboarding/SafetyLog had no unlabeled controls.
+
+## Task before that
 - Step 10 (`f336475`): macOS compatibility audit. Grep-verified all APIs
   ≤ macOS 14 floor ⇒ zero `@available` fixes. `compat-matrix.yml` drafted
   (IMPLEMENTED_UNVERIFIED). Docs: Step 10 row + `API_AVAILABILITY_AUDIT.md`
