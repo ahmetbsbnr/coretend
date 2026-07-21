@@ -17,7 +17,7 @@ is genuinely true — it is not yet.
 | 6 | My Clutter | TODO | | |
 | 7 | Space Lens | TODO | | |
 | 8 | Cloud Cleanup | TODO | | |
-| 9 | Settings matrix | PARTIAL | (this) | Found + fixed a real orphan: `dryRunDefault` was persisted/toggled in Settings but Cleanup/SmartCare hard-coded `dryRun=true` and never read it. Wired both view models to load it on appear via a shared pure `AppEnvironment.dryRunEnabled(fromSetting:)` helper (3 call sites now route through it) + 3 tests. Full SETTINGS_MATRIX.md / settings-matrix.json generator still TODO |
+| 9 | Settings matrix | DONE | 995a49b | dryRunDefault orphan fix (e0021fa) + `Scripts/generate-settings-matrix.py`: derives SETTINGS_MATRIX.md from settings-matrix.json (5 settings), discovers real keys from Sources/ and fails on any orphaned/undocumented setting — no-orphan gate wired into repository-doctor. Also fixed a flaky 5s ClamAV process-timeout test (→30s) |
 | 10 | macOS compatibility audit | TODO | | |
 | 11 | Stress tests | TODO | | |
 | 12 | Accessibility | TODO | | interactive VoiceOver = BLOCKED_ENVIRONMENT |

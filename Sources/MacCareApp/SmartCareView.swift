@@ -62,6 +62,16 @@ final class SmartCareViewModel {
 
     var preselectedBytes: Int64 { findings.filter(\.preselected).reduce(0) { $0 + $1.logicalSize } }
 
+    /// The ONLY findings Smart Care may act on automatically: reversible,
+    /// low-risk, and preselected. Medium/high-risk rules (all the new
+    /// installer/archive/Xcode rules ship `preselect:false` + risk ≥ .medium)
+    /// are structurally excluded here — never auto-executed, even if a bug
+    /// elsewhere left one preselected. Pure + static so it is unit-testable
+    /// without the view model, the store, or the filesystem.
+    nonisolated static func autoExecutableFindings(_ findings: [ScanFinding]) -> [ScanFinding] {
+        findings.filter { $0.preselected && $0.risk == .low }
+    }
+
     func start() {
         guard phase != .running else { return }
         phase = .running
@@ -115,7 +125,7 @@ final class SmartCareViewModel {
     func runCare() {
         guard phase == .review else { return }
         phase = .executing
-        let selected = findings.filter { $0.preselected && $0.risk == .low }
+        let selected = Self.autoExecutableFindings(findings)
         let isDryRun = dryRun
         Task {
             let home = FileManager.default.homeDirectoryForCurrentUser
