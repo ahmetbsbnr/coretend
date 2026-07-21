@@ -386,3 +386,7 @@
 "safetylog.a11y.rule" = "rule %@";
 "safetylog.a11y.risk" = "risk %@";
 "activity.open_safety_log" = "View Safety Log";
+
+/* Privacy Cleaner — per-profile running-browser handling */
+"privacy.profile_running_reason" = "%@ is running — cleaning is disabled for this profile until it's closed.";
+"privacy.close_and_rescan" = "Close Browser & Rescan";
