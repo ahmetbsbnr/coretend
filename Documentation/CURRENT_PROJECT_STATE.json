@@ -1,0 +1,19 @@
+{
+  "_comment": "Single current-state source of truth. Historical snapshots (project-state-audit.json, old session logs) keep their own original commit and are never updated to match this file.",
+  "schemaVersion": 1,
+  "CURRENT_HEAD": "da5878ea8a9e6b72537a0157a7a98f653d6eea54",
+  "PRODUCT_SOURCE_COMMIT": "b8fb716700246d35c1fc128f9e0214c457b84660",
+  "REQUIREMENTS_AUDIT_COMMIT": "5b1fe7cfa1bb0f80784eff8d339c6046603181fb",
+  "branch": "feat/public-distribution",
+  "version": "0.7.0",
+  "phase": "0.7.1 Compliance Hardening (in progress)",
+  "repositoryClean": true,
+  "repositoryPushed": false,
+  "releasePublished": false,
+  "tests": { "passing": 114, "failing": 0 },
+  "features": { "total": 42, "verifiedComplete": 34, "verifiedPartial": 4, "implementedUnverified": 4,
+    "source": "Documentation/feature-inventory.json (generated, see Scripts/generate-feature-inventory.py)" },
+  "requirements": { "total": 69, "must": 54,
+    "source": "Documentation/requirements-traceability.json" },
+  "note": "Regenerate CURRENT_HEAD/PRODUCT_SOURCE_COMMIT/REQUIREMENTS_AUDIT_COMMIT via Scripts/compute-audit-commits.sh --json before trusting this file after further commits."
+}

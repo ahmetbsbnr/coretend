@@ -1,0 +1,18 @@
+{
+  "_comment": "Single current-audit source of truth, distinct from CURRENT_PROJECT_STATE.json. AUDIT_PACKAGE_COMMIT is recorded post-hoc after each external ZIP build, never conflated with the other two commit fields (see Scripts/compute-audit-commits.sh).",
+  "schemaVersion": 1,
+  "CURRENT_HEAD": "da5878ea8a9e6b72537a0157a7a98f653d6eea54",
+  "REQUIREMENTS_AUDIT_COMMIT": "5b1fe7cfa1bb0f80784eff8d339c6046603181fb",
+  "AUDIT_PACKAGE_COMMIT": null,
+  "previousAuditPackage": {
+    "archiveName": "MacCare-Local-Full-Audit-2026-07-21-4fb406f.zip",
+    "auditedSourceCommitField": "4fb406f (stale single field, superseded)",
+    "status": "superseded by this session's compliance-hardening pass"
+  },
+  "knownNonConformitiesAtThisCommit": [
+    "Public release placeholders not yet filled (see Scripts/check-publish-readiness.sh)",
+    "No code signing / notarization",
+    "Requirements baseline not claimed exhaustive (see MASTER_REQUIREMENTS_BASELINE.md)"
+  ],
+  "note": "AUDIT_PACKAGE_COMMIT is filled in by the packaging script at zip-build time, after this file's other fields are already committed."
+}
