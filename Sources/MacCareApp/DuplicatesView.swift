@@ -68,10 +68,18 @@ final class DuplicatesViewModel {
 
     func removeSelected() {
         guard phase == .results, !selectedPaths.isEmpty else { return }
+        // Drop any copy that changed on disk since the scan: it is no longer
+        // known to be a duplicate, so trashing it could lose real data.
+        for group in groups {
+            for url in group.urls where group.hasChangedOnDisk(url) {
+                selectedPaths.remove(url.path)
+            }
+        }
         // Never allow a whole group to be removed: at least one copy must survive.
         for group in groups where group.urls.allSatisfy({ selectedPaths.contains($0.path) }) {
             selectedPaths.remove(group.keeper.path)
         }
+        guard !selectedPaths.isEmpty else { return }
         phase = .executing
         let toRemove = groups.flatMap { group in
             group.urls.filter { selectedPaths.contains($0.path) }.map { ($0, group.fileSize) }

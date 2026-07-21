@@ -6,10 +6,38 @@ public struct DuplicateGroup: Sendable, Identifiable {
     public let id: String          // full content hash
     public let fileSize: Int64
     public let urls: [URL]
+    /// Modification date captured at scan time, per url. Used to detect a file
+    /// that changed between the scan and the moment the user confirms deletion —
+    /// such a file is no longer known to be a duplicate and must not be trashed.
+    public let modificationDates: [URL: Date]
+
+    public init(id: String, fileSize: Int64, urls: [URL], modificationDates: [URL: Date] = [:]) {
+        self.id = id
+        self.fileSize = fileSize
+        self.urls = urls
+        self.modificationDates = modificationDates
+    }
+
     /// Suggested file to keep: oldest path, shortest depth wins.
     public var keeper: URL { urls.min { ($0.pathComponents.count, $0.path) < ($1.pathComponents.count, $1.path) }! }
     /// Bytes reclaimable if all but the keeper are removed.
     public var wastedBytes: Int64 { fileSize * Int64(urls.count - 1) }
+
+    /// True when the file on disk no longer matches its scan-time modification
+    /// date (changed, or vanished). Callers must skip such a url before deleting:
+    /// its duplicate status is stale.
+    public func hasChangedOnDisk(_ url: URL) -> Bool {
+        guard let scanned = modificationDates[url] else { return true }
+        // Read through a fresh URL: URL instances cache resource values, so the
+        // scan-time date would otherwise be returned instead of the disk truth.
+        let fresh = URL(fileURLWithPath: url.path)
+        let current = (try? fresh.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
+        guard let current else { return true }   // unreadable/missing → treat as changed
+        // Tolerance absorbs sub-second timestamp precision drift between the
+        // enumerator's cached values and a fresh read; a real edit moves the
+        // mtime by far more than a second.
+        return abs(current.timeIntervalSince(scanned)) > 1
+    }
 }
 
 public enum DuplicateEvent: Sendable {
@@ -38,15 +66,17 @@ public struct DuplicateEngine: Sendable {
                 // Stage 1: inventory by size, collapsing hard links per (device, inode).
                 var bySize: [Int64: [URL]] = [:]
                 var seenInodes = Set<String>()
+                var modDates: [URL: Date] = [:]
                 let baseKeys: Set<URLResourceKey> = [.isDirectoryKey, .isSymbolicLinkKey,
-                                                     .fileSizeKey, .fileResourceIdentifierKey]
+                                                     .fileSizeKey, .fileResourceIdentifierKey,
+                                                     .contentModificationDateKey]
                 let keys = baseKeys.union(CloudFile.inventoryKeys)
                 for root in roots {
                     guard let enumerator = FileManager.default.enumerator(
                         at: root, includingPropertiesForKeys: Array(keys),
                         options: [.skipsPackageDescendants]) else { continue }
                     Self.inventory(enumerator, keys: keys, minimumSize: minimumSize,
-                                   bySize: &bySize, seenInodes: &seenInodes)
+                                   bySize: &bySize, seenInodes: &seenInodes, modDates: &modDates)
                     if Task.isCancelled { break }
                 }
 
@@ -76,10 +106,13 @@ public struct DuplicateEngine: Sendable {
                             byFull[full, default: []].append(url)
                         }
                         for (hash, dupes) in byFull where dupes.count > 1 {
+                            let sortedDupes = dupes.sorted { $0.path < $1.path }
                             let group = DuplicateGroup(
                                 id: hash.map { String(format: "%02x", $0) }.joined(),
                                 fileSize: size,
-                                urls: dupes.sorted { $0.path < $1.path })
+                                urls: sortedDupes,
+                                modificationDates: Dictionary(uniqueKeysWithValues:
+                                    sortedDupes.map { ($0, modDates[$0] ?? .distantPast) }))
                             groupCount += 1
                             wasted += group.wastedBytes
                             continuation.yield(.group(group))
@@ -95,7 +128,8 @@ public struct DuplicateEngine: Sendable {
 
     private static func inventory(_ enumerator: FileManager.DirectoryEnumerator,
                                   keys: Set<URLResourceKey>, minimumSize: Int64,
-                                  bySize: inout [Int64: [URL]], seenInodes: inout Set<String>) {
+                                  bySize: inout [Int64: [URL]], seenInodes: inout Set<String>,
+                                  modDates: inout [URL: Date]) {
         for case let url as URL in enumerator {
             if Task.isCancelled { break }
             guard let values = try? url.resourceValues(forKeys: keys) else { continue }
@@ -114,6 +148,7 @@ public struct DuplicateEngine: Sendable {
                 seenInodes.insert(key)
             }
             bySize[size, default: []].append(url)
+            modDates[url] = values.contentModificationDate ?? .distantPast
         }
     }
 
