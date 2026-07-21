@@ -397,3 +397,7 @@
 
 /* Accessibility — Differentiate Without Color for elevated metrics */
 "performance.elevated" = "elevated";
+"protection.watch.title" = "Background watch";
+"protection.watch.subtitle" = "Optional. Watches Downloads and your Applications folders for new files and scans each one with ClamAV once it stops changing. It never removes anything automatically — anything found is listed here for you to review and quarantine yourself.";
+"protection.watch.toggle" = "Enable background watch";
+"protection.watch.alerts_none" = "Watching. No threats detected in watched folders.";
