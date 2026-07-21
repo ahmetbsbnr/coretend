@@ -205,8 +205,8 @@ def features_body(l):
         ("Similar Images", "Groups visually similar photos and marks a best-resolution keeper — nothing is removed automatically."),
         ("Space Lens", "A visual map of what is using disk space, down to individual folders."),
         ("Applications", "Finds full app leftovers (caches, preferences, support files) left behind after uninstalling."),
-        ("Protection", "Local malware scanning via the optional ClamAV engine — never a guarantee, always disclosed as a heuristic aid."),
-        ("Privacy Cleaner", "Clears caches, logs and other reclaimable local files, explained per category."),
+        ("Protection", "Optional local malware scan that requires the separately-installed ClamAV engine. It flags suspect files for your review — no automatic quarantine, no security guarantee."),
+        ("Privacy Cleaner", "Clears browser caches only (Chrome-family, Firefox, Safari), and only while the browser is closed. History and cookies are shown for transparency but never deleted."),
         ("Cloud Cleanup", "Reviews cloud-synced local copies (e.g. iCloud Drive placeholders) for reclaimable local space."),
     ]
     rows_fr = [
@@ -215,8 +215,8 @@ def features_body(l):
         ("Images similaires", "Regroupe les photos visuellement similaires et repère la meilleure résolution — rien n'est supprimé automatiquement."),
         ("Space Lens", "Une carte visuelle de l'utilisation de l'espace disque, jusqu'au niveau des dossiers individuels."),
         ("Applications", "Trouve les résidus complets d'applications (caches, préférences, fichiers de support) laissés après désinstallation."),
-        ("Protection", "Analyse antimalware locale via le moteur optionnel ClamAV — jamais une garantie, toujours présentée comme une aide heuristique."),
-        ("Nettoyeur de confidentialité", "Nettoie les caches, journaux et autres fichiers locaux récupérables, expliqués par catégorie."),
+        ("Protection", "Analyse antimalware locale optionnelle qui nécessite le moteur ClamAV installé séparément. Elle signale les fichiers suspects pour votre examen — aucune mise en quarantaine automatique, aucune garantie de sécurité."),
+        ("Nettoyeur de confidentialité", "Nettoie uniquement les caches des navigateurs (famille Chrome, Firefox, Safari), et seulement lorsque le navigateur est fermé. L'historique et les cookies sont affichés à titre indicatif mais jamais supprimés."),
         ("Cloud Cleanup", "Examine les copies locales synchronisées avec le cloud (ex. placeholders iCloud Drive) pour libérer de l'espace local."),
     ]
     rows = rows_en if l == "en" else rows_fr
