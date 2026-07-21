@@ -67,6 +67,44 @@ struct DuplicateEngineTests {
         #expect(groups == 0)
     }
 
+    @Test func capturesScanTimeModificationDates() async throws {
+        defer { cleanup() }
+        let payload = Data(repeating: 5, count: 1_500_000)
+        _ = try write("a.bin", payload)
+        _ = try write("sub/b.bin", payload)
+        var group: DuplicateGroup?
+        for await event in DuplicateEngine(roots: [root]).run() {
+            if case let .group(g) = event { group = g }
+        }
+        let g = try #require(group)
+        #expect(g.urls.allSatisfy { g.modificationDates[$0] != nil })
+    }
+
+    @Test func hasChangedOnDiskDetectsPostScanEdit() async throws {
+        defer { cleanup() }
+        let payload = Data(repeating: 5, count: 1_500_000)
+        _ = try write("a.bin", payload)
+        _ = try write("sub/b.bin", payload)
+        var group: DuplicateGroup?
+        for await event in DuplicateEngine(roots: [root]).run() {
+            if case let .group(g) = event { group = g }
+        }
+        let g = try #require(group)
+        // Use a url straight from the group — the same object the UI passes back.
+        let a = try #require(g.urls.first { $0.lastPathComponent == "a.bin" })
+        #expect(g.hasChangedOnDisk(a) == false)   // untouched since scan
+        // Touch the file's modification date forward.
+        try FileManager.default.setAttributes(
+            [.modificationDate: Date().addingTimeInterval(60)], ofItemAtPath: a.path)
+        #expect(g.hasChangedOnDisk(a) == true)    // changed → must not be trashed
+    }
+
+    @Test func hasChangedOnDiskTreatsMissingFileAsChanged() {
+        let ghost = root.appendingPathComponent("gone.bin")
+        let g = DuplicateGroup(id: "x", fileSize: 1, urls: [ghost], modificationDates: [:])
+        #expect(g.hasChangedOnDisk(ghost) == true)
+    }
+
     @Test func keeperPrefersShallowestPath() async throws {
         defer { cleanup() }
         let payload = Data(repeating: 5, count: 1_500_000)
