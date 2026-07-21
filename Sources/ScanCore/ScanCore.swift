@@ -114,28 +114,62 @@ public struct ScanEngine: Sendable {
 
     /// Runs the given rules and streams events. Consumers drive backpressure
     /// through the AsyncStream buffer; results are never accumulated in memory here.
+    ///
+    /// Rules execute with bounded concurrency: at most `configuration.maxConcurrency`
+    /// rules walk the filesystem at once. Each rule computes its own (scanned, bytes)
+    /// subtotal in isolation; the parent task sums those subtotals as they arrive, so
+    /// aggregation is single-threaded and cannot double-count. The finding *set* is
+    /// independent of concurrency (only interleaving order differs); the AsyncStream
+    /// continuation is safe to yield to from concurrent tasks. Cancellation propagates
+    /// from stream termination → parent task → the child task group.
     public func run(rules: [ScanRule]) -> AsyncStream<ScanEvent> {
         let config = configuration
         return AsyncStream { continuation in
             let task = Task.detached(priority: .utility) {
                 continuation.yield(.started)
+                let cutoffCache = Date()
                 var scanned = 0
                 var totalBytes: Int64 = 0
-                let fm = FileManager.default
-                let cutoffCache = Date()
 
-                for rule in rules {
-                    if Task.isCancelled { break }
-                    let cutoff = cutoffCache.addingTimeInterval(-Double(rule.minimumAgeDays) * 86_400)
-                    for root in rule.roots(config.home) {
-                        if Task.isCancelled { break }
-                        guard fm.fileExists(atPath: root.path) else { continue }
-                        Self.scanRoot(root, rule: rule, cutoff: cutoff,
-                                      excludedPaths: config.excludedPaths,
-                                      scanned: &scanned, totalBytes: &totalBytes,
-                                      continuation: continuation)
+                await withTaskGroup(of: (Int, Int64).self) { group in
+                    var index = 0
+                    var inFlight = 0
+                    let limit = config.maxConcurrency
+
+                    func addRule(_ rule: ScanRule) {
+                        let cutoff = cutoffCache.addingTimeInterval(-Double(rule.minimumAgeDays) * 86_400)
+                        group.addTask(priority: .utility) {
+                            if Task.isCancelled { return (0, 0) }
+                            var localScanned = 0
+                            var localBytes: Int64 = 0
+                            let fm = FileManager.default
+                            for root in rule.roots(config.home) {
+                                if Task.isCancelled { break }
+                                guard fm.fileExists(atPath: root.path) else { continue }
+                                Self.scanRoot(root, rule: rule, cutoff: cutoff,
+                                              excludedPaths: config.excludedPaths,
+                                              scanned: &localScanned, totalBytes: &localBytes,
+                                              continuation: continuation)
+                            }
+                            return (localScanned, localBytes)
+                        }
+                    }
+
+                    // Prime the pool up to the concurrency limit, then refill as
+                    // each rule finishes — bounded in-flight count, no unbounded
+                    // task accumulation regardless of rule count.
+                    while index < rules.count && inFlight < limit {
+                        addRule(rules[index]); index += 1; inFlight += 1
+                    }
+                    while inFlight > 0 {
+                        guard let (s, b) = await group.next() else { break }
+                        scanned += s; totalBytes += b; inFlight -= 1
+                        if index < rules.count && !Task.isCancelled {
+                            addRule(rules[index]); index += 1; inFlight += 1
+                        }
                     }
                 }
+
                 continuation.yield(Task.isCancelled ? .cancelled : .finished(scanned: scanned, totalBytes: totalBytes))
                 continuation.finish()
             }
@@ -143,9 +177,10 @@ public struct ScanEngine: Sendable {
         }
     }
 
-    /// Synchronous directory walk; called from the detached scan task.
+    /// Synchronous directory walk; called from a rule's scan task.
     /// Kept out of the async context because FileManager.DirectoryEnumerator
-    /// iteration is unavailable in async functions.
+    /// iteration is unavailable in async functions. Writes only to the caller's
+    /// local counters, so concurrent rules never share mutable state.
     private static func scanRoot(_ root: URL, rule: ScanRule, cutoff: Date,
                                  excludedPaths: [String],
                                  scanned: inout Int, totalBytes: inout Int64,
