@@ -11,17 +11,6 @@ import Persistence
 @MainActor
 @Observable
 final class PrivacyCleanerViewModel {
-    struct BrowserProfile: Identifiable {
-        let id: String
-        let browser: String
-        let bundleID: String
-        let profileName: String
-        let cacheURLs: [URL]
-        let cacheBytes: Int64
-        let historyBytes: Int64
-        let cookieBytes: Int64
-    }
-
     enum Phase: Equatable { case scanning, results, empty, finished(freed: Int64, dryRun: Bool) }
 
     var phase: Phase = .scanning
@@ -61,70 +50,8 @@ final class PrivacyCleanerViewModel {
     func scan() async {
         phase = .scanning
         let home = FileManager.default.homeDirectoryForCurrentUser
-        let found = await Task.detached(priority: .utility) { () -> [BrowserProfile] in
-            var profiles: [BrowserProfile] = []
-            let fm = FileManager.default
-
-            func size(_ url: URL) -> Int64 {
-                guard fm.fileExists(atPath: url.path) else { return 0 }
-                if let values = try? url.resourceValues(forKeys: [.isDirectoryKey, .fileSizeKey]),
-                   values.isDirectory != true { return Int64(values.fileSize ?? 0) }
-                guard let enumerator = fm.enumerator(at: url, includingPropertiesForKeys: [.fileSizeKey]) else { return 0 }
-                var total: Int64 = 0
-                for case let item as URL in enumerator {
-                    total += Int64((try? item.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0)
-                }
-                return total
-            }
-
-            // Chrome (and Chromium-based profiles under the same layout).
-            let chromeSupport = home.appendingPathComponent("Library/Application Support/Google/Chrome")
-            let chromeCaches = home.appendingPathComponent("Library/Caches/Google/Chrome")
-            if fm.fileExists(atPath: chromeSupport.path) {
-                let entries = (try? fm.contentsOfDirectory(at: chromeSupport, includingPropertiesForKeys: nil)) ?? []
-                for entry in entries where entry.lastPathComponent == "Default" || entry.lastPathComponent.hasPrefix("Profile ") {
-                    let name = entry.lastPathComponent
-                    let cacheDir = chromeCaches.appendingPathComponent(name)
-                    profiles.append(BrowserProfile(
-                        id: "chrome-\(name)", browser: "Google Chrome", bundleID: "com.google.Chrome",
-                        profileName: name,
-                        cacheURLs: [cacheDir].filter { fm.fileExists(atPath: $0.path) },
-                        cacheBytes: size(cacheDir),
-                        historyBytes: size(entry.appendingPathComponent("History")),
-                        cookieBytes: size(entry.appendingPathComponent("Cookies"))))
-                }
-            }
-
-            // Firefox.
-            let firefoxProfiles = home.appendingPathComponent("Library/Application Support/Firefox/Profiles")
-            let firefoxCaches = home.appendingPathComponent("Library/Caches/Firefox/Profiles")
-            if fm.fileExists(atPath: firefoxProfiles.path) {
-                let entries = (try? fm.contentsOfDirectory(at: firefoxProfiles, includingPropertiesForKeys: nil)) ?? []
-                for entry in entries {
-                    let name = entry.lastPathComponent
-                    let cacheDir = firefoxCaches.appendingPathComponent(name)
-                    profiles.append(BrowserProfile(
-                        id: "firefox-\(name)", browser: "Firefox", bundleID: "org.mozilla.firefox",
-                        profileName: name,
-                        cacheURLs: [cacheDir].filter { fm.fileExists(atPath: $0.path) },
-                        cacheBytes: size(cacheDir),
-                        historyBytes: size(entry.appendingPathComponent("places.sqlite")),
-                        cookieBytes: size(entry.appendingPathComponent("cookies.sqlite"))))
-                }
-            }
-
-            // Safari: cache lives behind TCC (Full Disk Access) in ~/Library/Caches/com.apple.Safari.
-            let safariCache = home.appendingPathComponent("Library/Caches/com.apple.Safari")
-            if fm.fileExists(atPath: safariCache.path) {
-                profiles.append(BrowserProfile(
-                    id: "safari", browser: "Safari", bundleID: "com.apple.Safari",
-                    profileName: "Default",
-                    cacheURLs: [safariCache],
-                    cacheBytes: size(safariCache),
-                    historyBytes: size(home.appendingPathComponent("Library/Safari/History.db")),
-                    cookieBytes: 0))
-            }
-            return profiles.sorted { $0.cacheBytes > $1.cacheBytes }
+        let found = await Task.detached(priority: .utility) {
+            BrowserCatalog.detect(home: home)
         }.value
         profiles = found
         selectedProfileIDs = []
