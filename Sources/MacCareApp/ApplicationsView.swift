@@ -7,18 +7,26 @@ import Persistence
 /// Real, non-invented update-mechanism detection shared by the Updates tab
 /// and the "by update state" grouping — one place reads Sparkle/App Store
 /// signals so both stay in sync.
+/// Built once per process — the Caskroom doesn't change mid-session, so we scan
+/// it lazily on first use rather than per app. A global `let` is initialized
+/// atomically and is Sendable.
+public let sharedCaskIndex = HomebrewCaskIndex.build()
+
 public enum AppUpdateSource: String, Sendable {
     case appStore = "App Store"
+    case homebrew = "Homebrew Cask"
     case sparkle = "Sparkle feed"
     case none = "In-app / manual"
 
     /// Delegates to the tested `AppDiscovery.updateMechanism` engine so the
-    /// classification (App Store receipt, safe-https Sparkle feed, download
-    /// origin) lives in one unit-tested place. `.manual`/`.unknown` both map to
-    /// `.none` here — neither offers an in-app auto-update mechanism.
-    public static func detect(for app: InstalledApp) -> (source: AppUpdateSource, feedURL: URL?) {
-        switch AppDiscovery().updateMechanism(for: app.path) {
+    /// classification (App Store receipt, Homebrew Cask token, safe-https Sparkle
+    /// feed, download origin) lives in one unit-tested place. `.manual`/`.unknown`
+    /// both map to `.none` here — neither offers an in-app auto-update mechanism.
+    public static func detect(for app: InstalledApp,
+                              caskIndex: HomebrewCaskIndex = sharedCaskIndex) -> (source: AppUpdateSource, feedURL: URL?) {
+        switch AppDiscovery().updateMechanism(for: app.path, caskIndex: caskIndex) {
         case .appStore: return (.appStore, nil)
+        case .homebrewCask: return (.homebrew, nil)
         case .sparkle(let feedURL): return (.sparkle, feedURL)
         case .manual, .unknown: return (.none, nil)
         }
@@ -99,7 +107,7 @@ enum AppGroupingLogic {
         case .none: key = { _ in "" }; order = nil
         case .publisher: key = publisher; order = nil
         case .size: key = sizeBucket; order = ["Under 50 MB", "50–250 MB", "250 MB–1 GB", "Over 1 GB"]
-        case .updateState: key = updateState; order = [AppUpdateSource.appStore.rawValue, AppUpdateSource.sparkle.rawValue, AppUpdateSource.none.rawValue]
+        case .updateState: key = updateState; order = [AppUpdateSource.appStore.rawValue, AppUpdateSource.homebrew.rawValue, AppUpdateSource.sparkle.rawValue, AppUpdateSource.none.rawValue]
         case .lastUsed: key = lastUsedBucket; order = ["This week", "This month", "Last 3 months", "This year", "Over a year ago", "Unknown"]
         }
         var buckets: [String: [InstalledApp]] = [:]

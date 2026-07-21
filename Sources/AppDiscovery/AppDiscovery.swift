@@ -44,6 +44,9 @@ public enum UpdateMechanism: Sendable, Equatable {
     /// `SUFeedURL` is a safe https URL; otherwise `nil` (framework present but
     /// no surfaced feed) — we never surface an unsafe or malformed feed.
     case sparkle(feedURL: URL?)
+    /// Installed by Homebrew Cask. `token` is the exact cask token from the
+    /// Caskroom metadata (non-fuzzy: matched by exact `.app` artifact name).
+    case homebrewCask(token: String)
     /// A known download origin recorded by macOS (`kMDItemWhereFroms`).
     case manual(source: String)
     /// No reliable update mechanism could be determined on disk.
@@ -55,6 +58,7 @@ public enum UpdateMechanism: Sendable, Equatable {
     public var actionLabel: String {
         switch self {
         case .appStore: return "Open in App Store"
+        case .homebrewCask: return "Managed by Homebrew"
         case .sparkle(let url): return url == nil ? "Update Options Unavailable" : "Show Update Options"
         case .manual: return "Show Download Source"
         case .unknown: return "Update Mechanism Unavailable"
@@ -205,7 +209,9 @@ public struct AppDiscovery: Sendable {
     }
 
     /// Determines an app's update source from real on-disk signals only.
-    public func updateMechanism(for bundle: URL) -> UpdateMechanism {
+    /// Pass a prebuilt `caskIndex` (built once for the whole app list) to also
+    /// detect Homebrew Cask origin.
+    public func updateMechanism(for bundle: URL, caskIndex: HomebrewCaskIndex? = nil) -> UpdateMechanism {
         let fm = FileManager.default
         let hasReceipt = fm.fileExists(
             atPath: bundle.appendingPathComponent("Contents/_MASReceipt/receipt").path)
@@ -217,13 +223,18 @@ public struct AppDiscovery: Sendable {
             atPath: bundle.appendingPathComponent("Contents/Frameworks/Sparkle.framework").path)
         return Self.classify(hasMASReceipt: hasReceipt, plist: plist,
                              hasSparkleFramework: hasSparkle,
-                             whereFroms: Self.whereFromsURL(of: bundle))
+                             whereFroms: Self.whereFromsURL(of: bundle),
+                             caskToken: caskIndex?.token(forAppNamed: bundle.lastPathComponent))
     }
 
     /// Pure classification core (no filesystem) — the unit-testable heart.
     static func classify(hasMASReceipt: Bool, plist: [String: Any],
-                         hasSparkleFramework: Bool, whereFroms: String?) -> UpdateMechanism {
+                         hasSparkleFramework: Bool, whereFroms: String?,
+                         caskToken: String? = nil) -> UpdateMechanism {
         if hasMASReceipt { return .appStore }
+        // A cask is the canonical "how do I update this" answer (brew upgrade),
+        // so it outranks Sparkle/manual origin signals.
+        if let caskToken { return .homebrewCask(token: caskToken) }
         if let feed = plist["SUFeedURL"] as? String {
             return .sparkle(feedURL: safeFeedURL(feed))
         }
@@ -286,5 +297,89 @@ public struct AppDiscovery: Sendable {
             return cpu == 0x0100000C ? ["arm64"] : cpu == 0x01000007 ? ["x86_64"] : ["unknown"]
         default: return []
         }
+    }
+}
+
+/// Maps installed `.app` bundle names to their Homebrew Cask token by reading
+/// the Caskroom install metadata — a concrete, non-fuzzy signal. Homebrew writes
+/// `<Caskroom>/<token>/.metadata/<version>/<ts>/Casks/<token>.json`, whose
+/// `artifacts` array carries an exact `{"app": ["Name.app"]}` stanza. We match
+/// only on that exact bundle name (including a rename `target`), never by fuzzy
+/// string similarity. No network, no shelling out to `brew`.
+public struct HomebrewCaskIndex: Sendable {
+    private let appNameToToken: [String: String]
+
+    public init(appNameToToken: [String: String]) { self.appNameToToken = appNameToToken }
+
+    public var isEmpty: Bool { appNameToToken.isEmpty }
+
+    /// `name` is a bundle name like "AlDente.app".
+    public func token(forAppNamed name: String) -> String? { appNameToToken[name] }
+
+    public static let caskroomRoots = ["/opt/homebrew/Caskroom", "/usr/local/Caskroom"]
+
+    /// Scans the real Caskroom(s). Returns an empty index if Homebrew Cask isn't
+    /// installed — the caller then simply gets no cask origins, never a guess.
+    public static func build(roots: [String] = caskroomRoots,
+                             fileManager fm: FileManager = .default) -> HomebrewCaskIndex {
+        var map: [String: String] = [:]
+        for root in roots {
+            let rootURL = URL(fileURLWithPath: root)
+            guard let casks = try? fm.contentsOfDirectory(at: rootURL, includingPropertiesForKeys: nil) else { continue }
+            for caskDir in casks where caskDir.hasDirectoryPath {
+                let metadata = caskDir.appendingPathComponent(".metadata")
+                guard let jsonURLs = caskJSONURLs(under: metadata, fm: fm) else { continue }
+                let token = caskDir.lastPathComponent
+                for jsonURL in jsonURLs {
+                    for appName in appArtifactNames(inCaskJSONAt: jsonURL) {
+                        map[appName] = token
+                    }
+                }
+            }
+        }
+        return HomebrewCaskIndex(appNameToToken: map)
+    }
+
+    /// All `Casks/*.json` files under a cask's `.metadata` tree.
+    static func caskJSONURLs(under metadata: URL, fm: FileManager) -> [URL]? {
+        guard let enumerator = fm.enumerator(at: metadata, includingPropertiesForKeys: nil) else { return nil }
+        var result: [URL] = []
+        for case let url as URL in enumerator
+        where url.pathExtension == "json" && url.deletingLastPathComponent().lastPathComponent == "Casks" {
+            result.append(url)
+        }
+        return result.isEmpty ? nil : result
+    }
+
+    /// Extracts the exact `.app` names from a cask JSON's `artifacts` array.
+    /// Handles both `{"app": ["Name.app"]}` and a rename form
+    /// `{"app": ["Src.app", {"target": "Installed.app"}]}` — the installed name
+    /// is the `target` when present, otherwise the source string.
+    static func appArtifactNames(inCaskJSONAt url: URL) -> [String] {
+        guard let data = try? Data(contentsOf: url),
+              let root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let artifacts = root["artifacts"] as? [[String: Any]] else { return [] }
+        return appArtifactNames(fromArtifacts: artifacts)
+    }
+
+    /// Pure parser split out for testing without touching disk.
+    static func appArtifactNames(fromArtifacts artifacts: [[String: Any]]) -> [String] {
+        var names: [String] = []
+        for artifact in artifacts {
+            guard let appEntries = artifact["app"] as? [Any] else { continue }
+            var pendingSource: String?
+            for entry in appEntries {
+                if let source = entry as? String {
+                    if let pendingSource { names.append(pendingSource) }
+                    pendingSource = source
+                } else if let dict = entry as? [String: Any], let target = dict["target"] as? String {
+                    // rename: the target is what actually lands in /Applications.
+                    names.append(target)
+                    pendingSource = nil
+                }
+            }
+            if let pendingSource { names.append(pendingSource) }
+        }
+        return names.filter { $0.hasSuffix(".app") }
     }
 }

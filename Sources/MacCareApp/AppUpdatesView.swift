@@ -41,7 +41,9 @@ final class AppUpdatesViewModel {
         case .sparkle:
             // Open the app itself; Sparkle checks are driven by the app's own UI.
             NSWorkspace.shared.open(info.app.path)
-        case .none:
+        case .homebrew, .none:
+            // Homebrew updates run from the user's own terminal (`brew upgrade`);
+            // we never shell out to brew, so reveal the app rather than overpromise.
             NSWorkspace.shared.activateFileViewerSelecting([info.app.path])
         }
     }

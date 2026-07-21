@@ -127,4 +127,70 @@ struct AppDiscoveryTests {
         defer { try? FileManager.default.removeItem(at: root) }
         #expect(AppDiscovery().updateMechanism(for: bundle) == .appStore)
     }
+
+    // MARK: - Homebrew Cask origin (Step 5, non-fuzzy)
+
+    @Test func caskArtifactParsingExactAppNameNotFuzzy() {
+        let artifacts: [[String: Any]] = [
+            ["uninstall": [["quit": "com.x.y"]]],
+            ["app": ["AlDente.app"]],
+            ["zap": [["trash": ["~/Library/Caches/com.x.y"]]]],
+        ]
+        #expect(HomebrewCaskIndex.appArtifactNames(fromArtifacts: artifacts) == ["AlDente.app"])
+    }
+
+    @Test func caskArtifactRenameTargetIsTheInstalledName() {
+        let artifacts: [[String: Any]] = [
+            ["app": ["Source.app", ["target": "Installed.app"]]],
+        ]
+        #expect(HomebrewCaskIndex.appArtifactNames(fromArtifacts: artifacts) == ["Installed.app"])
+    }
+
+    @Test func caskArtifactNonAppEntriesIgnored() {
+        let artifacts: [[String: Any]] = [["binary": ["foo"]], ["pkg": ["bar.pkg"]]]
+        #expect(HomebrewCaskIndex.appArtifactNames(fromArtifacts: artifacts).isEmpty)
+    }
+
+    @Test func caskIndexClassificationOutranksSparkleAndManual() {
+        let index = HomebrewCaskIndex(appNameToToken: ["Widget.app": "widget"])
+        // Even with a Sparkle feed + download origin present, a cask token wins.
+        let source = AppDiscovery.classify(
+            hasMASReceipt: false, plist: ["SUFeedURL": "https://x.example/a.xml"],
+            hasSparkleFramework: true, whereFroms: "https://d.example/w.dmg",
+            caskToken: index.token(forAppNamed: "Widget.app"))
+        #expect(source == .homebrewCask(token: "widget"))
+    }
+
+    @Test func appStoreStillOutranksCask() {
+        let source = AppDiscovery.classify(
+            hasMASReceipt: true, plist: [:], hasSparkleFramework: false,
+            whereFroms: nil, caskToken: "widget")
+        #expect(source == .appStore)
+    }
+
+    @Test func caskIndexBuildsFromFixtureCaskroomTree() throws {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("caskroom-\(UUID())")
+        let jsonDir = root.appendingPathComponent("aldente/.metadata/1.0/20260101000000.000/Casks")
+        try fm.createDirectory(at: jsonDir, withIntermediateDirectories: true)
+        // also a stray version dir under the app bundle that must be ignored.
+        try fm.createDirectory(at: root.appendingPathComponent("aldente/1.0/AlDente.app"),
+                               withIntermediateDirectories: true)
+        let json = #"{"artifacts":[{"app":["AlDente.app"]}]}"#
+        try json.write(to: jsonDir.appendingPathComponent("aldente.json"), atomically: true, encoding: .utf8)
+        defer { try? fm.removeItem(at: root) }
+
+        let index = HomebrewCaskIndex.build(roots: [root.path])
+        #expect(index.token(forAppNamed: "AlDente.app") == "aldente")
+        #expect(index.token(forAppNamed: "Other.app") == nil)
+    }
+
+    @Test func caskIndexEmptyWhenNoCaskroom() {
+        let index = HomebrewCaskIndex.build(roots: ["/nonexistent-caskroom-\(UUID().uuidString)"])
+        #expect(index.isEmpty)
+    }
+
+    @Test func caskActionLabelDoesNotOverpromise() {
+        #expect(UpdateMechanism.homebrewCask(token: "x").actionLabel == "Managed by Homebrew")
+    }
 }
