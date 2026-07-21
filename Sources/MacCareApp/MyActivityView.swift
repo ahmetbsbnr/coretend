@@ -179,7 +179,7 @@ struct MyActivityView: View {
     private var emptyState: some View {
         VStack(spacing: 12) {
             Image(systemName: "clock.arrow.circlepath")
-                .font(.system(size: 48)).foregroundStyle(MCTheme.accent)
+                .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.accent)
                 .accessibilityHidden(true)
             Text(model.filter == nil ? L("activity.empty") : L("activity.empty_kind"))
                 .font(.title3.weight(.semibold))

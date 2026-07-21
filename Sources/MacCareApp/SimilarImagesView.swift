@@ -92,7 +92,7 @@ struct SimilarImagesView: View {
             case .idle:
                 VStack(spacing: 16) {
                     Image(systemName: "photo.on.rectangle.angled")
-                        .font(.system(size: 56)).foregroundStyle(MCTheme.accent)
+                        .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
                     Text(L("similar.idle.title")).font(.title2.weight(.semibold))
                     Text(L("similar.idle.subtitle"))
                         .multilineTextAlignment(.center).foregroundStyle(.secondary)
@@ -116,7 +116,7 @@ struct SimilarImagesView: View {
             case .empty:
                 VStack(spacing: 12) {
                     Image(systemName: "checkmark.circle")
-                        .font(.system(size: 48)).foregroundStyle(MCTheme.success)
+                        .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
                     Text(L("similar.none_found")).font(.title3.weight(.semibold))
                     Button(L("similar.analyze_again")) { model.start() }
                 }

@@ -87,7 +87,7 @@ struct LeftoversView: View {
             case .idle:
                 VStack(spacing: 16) {
                     Image(systemName: "trash.slash")
-                        .font(.system(size: 56)).foregroundStyle(MCTheme.accent)
+                        .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
                     Text(L("leftovers.idle.title")).font(.title2.weight(.semibold))
                     Text(L("leftovers.idle.subtitle"))
                         .multilineTextAlignment(.center).foregroundStyle(.secondary)
@@ -100,7 +100,7 @@ struct LeftoversView: View {
             case .empty:
                 VStack(spacing: 12) {
                     Image(systemName: "checkmark.circle")
-                        .font(.system(size: 48)).foregroundStyle(MCTheme.success)
+                        .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
                     Text(L("leftovers.none_found")).font(.title3.weight(.semibold))
                     Button(L("smartcare.scan_again")) { Task { await model.scan() } }
                 }
@@ -110,7 +110,7 @@ struct LeftoversView: View {
             case let .finished(freed, dryRun):
                 VStack(spacing: 12) {
                     Image(systemName: "checkmark.seal")
-                        .font(.system(size: 48)).foregroundStyle(MCTheme.success)
+                        .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
                     Text(dryRun ? L("leftovers.finished.dryrun", mcFormatBytes(freed))
                                 : L("leftovers.finished.moved", mcFormatBytes(freed)))
                         .font(.title3.weight(.semibold))

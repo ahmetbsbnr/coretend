@@ -119,7 +119,7 @@ struct LargeOldFilesView: View {
     private var idleView: some View {
         VStack(spacing: 16) {
             Image(systemName: "doc.on.doc")
-                .font(.system(size: 56)).foregroundStyle(MCTheme.accent)
+                .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
             Text(L("clutter.idle.title")).font(.title2.weight(.semibold))
             Text(L("clutter.idle.subtitle"))
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
@@ -160,7 +160,7 @@ struct LargeOldFilesView: View {
     private var emptyView: some View {
         VStack(spacing: 12) {
             Image(systemName: "checkmark.circle")
-                .font(.system(size: 48)).foregroundStyle(MCTheme.success)
+                .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
             Text(L("clutter.no_matches")).font(.title3.weight(.semibold))
             Button(L("clutter.change_criteria")) { model.phase = .idle }
         }

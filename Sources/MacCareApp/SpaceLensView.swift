@@ -69,10 +69,10 @@ enum SpaceNodeCategory: String {
     var color: Color {
         switch self {
         case .folder: return MCTheme.accent
-        case .media: return Color(red: 0.75, green: 0.45, blue: 0.75)
-        case .document: return Color(red: 0.35, green: 0.65, blue: 0.85)
+        case .media: return MCColor.novaMagenta
+        case .document: return MCColor.glacierBlue
         case .archive: return MCTheme.warning
-        case .code: return Color(red: 0.55, green: 0.72, blue: 0.35)
+        case .code: return MCColor.mossGreen
         case .other: return .secondary
         }
     }
@@ -99,7 +99,7 @@ struct SpaceLensView: View {
     private var idleView: some View {
         VStack(spacing: 16) {
             Image(systemName: "circle.hexagongrid")
-                .font(.system(size: 56)).foregroundStyle(MCTheme.accent)
+                .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
             Text(L("spacelens.idle.title")).font(.title2.weight(.semibold))
             Text(L("spacelens.idle.subtitle"))
                 .foregroundStyle(.secondary)

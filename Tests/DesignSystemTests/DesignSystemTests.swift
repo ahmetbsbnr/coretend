@@ -66,6 +66,29 @@ struct ColorTests {
     @Test func chartSeriesHasDistinctLeadColors() {
         #expect(MCColor.chartSeries.count >= 3)
     }
+
+    /// Space Lens category colors — previously raw Color(red:green:blue:)
+    /// literals that never changed between light/dark. Now real adaptive
+    /// tokens; must pass the same check as the brand palette.
+    @Test func categoryColorsAdapt() {
+        for color in [MCColor.novaMagenta, MCColor.glacierBlue, MCColor.mossGreen] {
+            let ns = NSColor(color)
+            var light = NSColor.black, dark = NSColor.black
+            NSAppearance(named: .aqua)!.performAsCurrentDrawingAppearance {
+                light = ns.usingColorSpace(.sRGB) ?? ns
+            }
+            NSAppearance(named: .darkAqua)!.performAsCurrentDrawingAppearance {
+                dark = ns.usingColorSpace(.sRGB) ?? ns
+            }
+            #expect(light != dark)
+        }
+    }
+
+    @Test func categoryColorsAreMutuallyDistinct() {
+        let colors = [MCColor.novaMagenta, MCColor.glacierBlue, MCColor.mossGreen]
+        let hexes = Set(colors.map { NSColor($0).usingColorSpace(.sRGB) ?? NSColor($0) })
+        #expect(hexes.count == colors.count, "category colors must be visually distinguishable from each other")
+    }
 }
 
 @Suite("Brand resources")
