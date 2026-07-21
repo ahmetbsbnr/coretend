@@ -370,3 +370,19 @@
 /* Module display names (sidebar / placeholder) */
 "module.protection" = "Protection";
 "module.my_activity" = "Mon activité";
+
+/* Safety log (SafetyCore audit trail persistence) */
+"common.done" = "Terminé";
+"safetylog.title" = "Journal de sécurité";
+"safetylog.subtitle" = "%d exécutées · %d simulées (simulation)";
+"safetylog.empty" = "Aucune entrée dans le journal de sécurité pour le moment.";
+"safetylog.unavailable" = "Base de données locale indisponible";
+"safetylog.purge" = "Purger le journal";
+"safetylog.stage.approved" = "Approuvée";
+"safetylog.stage.dryrun" = "Simulation";
+"safetylog.stage.executed" = "Exécutée";
+"safetylog.stage.skipped" = "Ignorée";
+"safetylog.stage.error" = "Erreur";
+"safetylog.a11y.rule" = "règle %@";
+"safetylog.a11y.risk" = "risque %@";
+"activity.open_safety_log" = "Voir le journal de sécurité";

@@ -120,7 +120,7 @@ final class PrivacyCleanerViewModel {
         let home = FileManager.default.homeDirectoryForCurrentUser
         let center = SafetyCenter(
             validator: PathValidator(allowedRoots: [home.appendingPathComponent("Library/Caches")]),
-            dryRun: dryRun)
+            dryRun: dryRun, sink: AppEnvironment.shared.store)
         var approved: [ApprovedFileOperation] = []
         for profile in selected {
             for url in profile.cacheURLs {

@@ -1,4 +1,5 @@
 import Foundation
+import SafetyCore
 
 /// One recorded activity entry (scan, cleanup, restore, error…).
 public struct ActivityRecord: Sendable, Identifiable {
@@ -52,6 +53,23 @@ public actor Store {
             key TEXT PRIMARY KEY,
             value TEXT NOT NULL
         );
+        """,
+        // v2 — append-only SafetyCore audit log. Rows are never updated;
+        // purgeSafetyLog() is the only deletion path, and it's an explicit
+        // all-or-nothing user action, never automatic.
+        """
+        CREATE TABLE safety_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            operation_id TEXT NOT NULL,
+            stage TEXT NOT NULL,
+            redacted_path TEXT NOT NULL,
+            rule_id TEXT NOT NULL,
+            risk TEXT NOT NULL,
+            size INTEGER NOT NULL DEFAULT 0,
+            date REAL NOT NULL,
+            result TEXT NOT NULL
+        );
+        CREATE INDEX idx_safety_log_date ON safety_log(date);
         """,
     ]
 
@@ -161,5 +179,73 @@ public actor Store {
 
     public func setting(_ key: String) throws -> String? {
         try db.query("SELECT value FROM settings WHERE key = ?", [key]).first?["value"] as? String
+    }
+
+    // MARK: - Safety log (append-only)
+
+    public func safetyLog(limit: Int = 500) throws -> [SafetyLogRecord] {
+        try db.query("SELECT * FROM safety_log ORDER BY date DESC LIMIT ?", [limit])
+            .compactMap { row in
+                guard let id = row["id"] as? Int64,
+                      let operationID = row["operation_id"] as? String,
+                      let stageRaw = row["stage"] as? String,
+                      let stage = SafetyAuditEvent.Stage(rawValue: stageRaw),
+                      let path = row["redacted_path"] as? String,
+                      let ruleID = row["rule_id"] as? String,
+                      let risk = row["risk"] as? String,
+                      let date = row["date"] as? Double,
+                      let result = row["result"] as? String else { return nil }
+                return SafetyLogRecord(
+                    id: id, operationID: operationID, stage: stage, redactedPath: path,
+                    ruleID: ruleID, risk: risk, size: row["size"] as? Int64 ?? 0,
+                    date: Date(timeIntervalSince1970: date), result: result)
+            }
+    }
+
+    /// Explicit, user-initiated, all-or-nothing deletion. The only way rows
+    /// ever leave safety_log — normal operation never mutates or deletes rows.
+    public func purgeSafetyLog() throws {
+        try db.run("DELETE FROM safety_log")
+    }
+}
+
+/// One durable, redacted-path row of the SafetyCore audit trail. `stage`
+/// distinguishes a dry-run simulation from a real executed action — callers
+/// (e.g. My Activity) must never merge the two into a single count.
+public struct SafetyLogRecord: Sendable, Identifiable {
+    public let id: Int64
+    public let operationID: String
+    public let stage: SafetyAuditEvent.Stage
+    public let redactedPath: String
+    public let ruleID: String
+    public let risk: String
+    public let size: Int64
+    public let date: Date
+    public let result: String
+}
+
+extension Store: SafetyAuditSink {
+    /// Redacts a filesystem path to a shape that carries no personal
+    /// information ("<home>/…/name" or "/Users/<redacted>/…") before it
+    /// ever reaches disk. Mirrors MacCareApp's DiagnosticReport.redactPath —
+    /// this is the canonical copy; safety_log never stores a raw path.
+    public static func redactPath(_ path: String) -> String {
+        let home = NSHomeDirectory()
+        var p = path
+        if p.hasPrefix(home) { p = "<home>" + p.dropFirst(home.count) }
+        if p.hasPrefix("/Users/") {
+            let comps = p.split(separator: "/", omittingEmptySubsequences: true)
+            if comps.count >= 2 { p = "/Users/<redacted>/" + comps.dropFirst(2).joined(separator: "/") }
+        }
+        return p
+    }
+
+    public func recordSafetyEvent(_ event: SafetyAuditEvent) async {
+        let redacted = Store.redactPath(event.path)
+        try? db.run("""
+            INSERT INTO safety_log (operation_id, stage, redacted_path, rule_id, risk, size, date, result)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, [event.operationID.uuidString, event.stage.rawValue, redacted, event.ruleID,
+                  event.risk.rawValue, event.size, event.date.timeIntervalSince1970, event.result])
     }
 }

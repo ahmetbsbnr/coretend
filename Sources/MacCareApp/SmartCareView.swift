@@ -110,7 +110,7 @@ final class SmartCareViewModel {
         Task {
             let home = FileManager.default.homeDirectoryForCurrentUser
             let validator = PathValidator(allowedRoots: UserCleanupRules.allowedRoots(home: home))
-            let center = SafetyCenter(validator: validator, dryRun: isDryRun)
+            let center = SafetyCenter(validator: validator, dryRun: isDryRun, sink: AppEnvironment.shared.store)
             var approved: [ApprovedFileOperation] = []
             for finding in selected {
                 if let op = try? await center.approve(

@@ -79,7 +79,7 @@ final class DuplicatesViewModel {
         let isDryRun = dryRun
         let roots = scannedRoots
         Task {
-            let center = SafetyCenter(validator: PathValidator(allowedRoots: roots), dryRun: isDryRun)
+            let center = SafetyCenter(validator: PathValidator(allowedRoots: roots), dryRun: isDryRun, sink: AppEnvironment.shared.store)
             var approved: [ApprovedFileOperation] = []
             for (url, size) in toRemove {
                 if let op = try? await center.approve(url: url, logicalSize: size,

@@ -165,7 +165,7 @@ final class ApplicationsViewModel {
         let home = FileManager.default.homeDirectoryForCurrentUser
         var allowedRoots: [URL] = [app.path.deletingLastPathComponent()]
         allowedRoots.append(home.appendingPathComponent("Library"))
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: allowedRoots), dryRun: dryRun)
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: allowedRoots), dryRun: dryRun, sink: AppEnvironment.shared.store)
         var approved: [ApprovedFileOperation] = []
         if let op = try? await center.approve(url: app.path, logicalSize: app.sizeBytes,
                                               ruleID: "apps.uninstall", risk: .medium) {
