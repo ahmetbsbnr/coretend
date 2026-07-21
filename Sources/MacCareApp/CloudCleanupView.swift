@@ -59,7 +59,15 @@ final class CloudCleanupViewModel {
     var recoverableLocalBytes: Int64 { totalLocal }
 
     func detect() {
-        let home = FileManager.default.homeDirectoryForCurrentUser
+        let found = Self.detectProviders(home: FileManager.default.homeDirectoryForCurrentUser)
+        providers = found
+        phase = found.isEmpty ? .noProviders : .ready
+    }
+
+    /// Pure provider detection over a home directory — no shared state, so it is
+    /// testable against a fixture home. Only checks for existence of known local
+    /// cloud roots; never opens or downloads anything.
+    nonisolated static func detectProviders(home: URL) -> [Provider] {
         let fm = FileManager.default
         var found: [Provider] = []
         let candidates: [(String, String, URL)] = [
@@ -81,8 +89,7 @@ final class CloudCleanupViewModel {
                 else if name.hasPrefix("Dropbox") { found.append(Provider(id: entry.path, name: "Dropbox", icon: "icloud", root: entry)) }
             }
         }
-        providers = found
-        phase = found.isEmpty ? .noProviders : .ready
+        return found
     }
 
     func scan(_ provider: Provider) {
@@ -105,7 +112,7 @@ final class CloudCleanupViewModel {
     /// Synchronous walk (DirectoryEnumerator can't be iterated in async contexts).
     /// Read-only: only `resourceValues`/`contentsOfDirectory` are used, never
     /// `startDownloadingUbiquitousItem` — this never triggers a cloud download.
-    nonisolated private static func measure(root: URL) -> [Entry] {
+    nonisolated static func measure(root: URL) -> [Entry] {
                 let fm = FileManager.default
                 let keys: Set<URLResourceKey> = [.isDirectoryKey, .fileSizeKey, .totalFileAllocatedSizeKey,
                                                   .isSymbolicLinkKey, .ubiquitousItemDownloadingStatusKey]
