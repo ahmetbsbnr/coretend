@@ -91,9 +91,60 @@ public enum UserCleanupRules {
         [home.appendingPathComponent("Library/Application Support/MobileSync/Backup")]
     }
 
+    /// Old disk-image / package installers left in ~/Downloads. Never preselected:
+    /// the user may still need them, and they can be re-downloaded but not restored
+    /// from a rebuild. Downloads only — never system roots.
+    public static let oldInstallers = ScanRule(
+        id: "user.oldinstallers",
+        name: "Old installers",
+        category: "Cleanup",
+        explanation: "Disk images and installer packages (.dmg/.pkg/.mpkg) in ~/Downloads older than 30 days. Review each — never auto-selected.",
+        minimumAgeDays: 30,
+        risk: .medium,
+        preselect: false,
+        matches: { url in
+            ["dmg", "pkg", "mpkg"].contains(url.pathExtension.lowercased())
+        }
+    ) { home in
+        [home.appendingPathComponent("Downloads")]
+    }
+
+    /// Old archives in ~/Downloads. Never auto-extracted or opened; matched by
+    /// extension only (no archive parsing), size + age gated, never preselected.
+    public static let oldArchives = ScanRule(
+        id: "user.oldarchives",
+        name: "Old archives",
+        category: "Cleanup",
+        explanation: "Archive files (.zip/.tar/.gz/.bz2/.xz/.7z/.rar) in ~/Downloads older than 30 days. Contents are never inspected; review before removing.",
+        minimumAgeDays: 30,
+        risk: .medium,
+        preselect: false,
+        matches: { url in
+            ["zip", "tar", "gz", "tgz", "bz2", "xz", "7z", "rar"].contains(url.pathExtension.lowercased())
+        },
+        minimumSizeBytes: 1_048_576
+    ) { home in
+        [home.appendingPathComponent("Downloads")]
+    }
+
+    /// Xcode archives (build products from Organizer). Recent ones are unchecked
+    /// by default and never auto-deleted; they may hold the only copy of a build.
+    public static let xcodeArchives = ScanRule(
+        id: "dev.xcode.archives",
+        name: "Xcode archives",
+        category: "Cleanup",
+        explanation: "Archived builds in ~/Library/Developer/Xcode/Archives older than 30 days. May contain your only copy of a shipped build — review before removing.",
+        minimumAgeDays: 30,
+        risk: .medium,
+        preselect: false
+    ) { home in
+        [home.appendingPathComponent("Library/Developer/Xcode/Archives")]
+    }
+
     public static let all: [ScanRule] = [
         userCaches, userLogs, crashReports, xcodeDerivedData,
         incompleteDownloads, xcodeDeviceSupport, iosBackups,
+        oldInstallers, oldArchives, xcodeArchives,
     ]
 
     /// Allowed deletion roots corresponding to the rules above.
@@ -103,6 +154,7 @@ public enum UserCleanupRules {
             home.appendingPathComponent("Library/Logs"),
             home.appendingPathComponent("Library/Developer/Xcode/DerivedData"),
             home.appendingPathComponent("Library/Developer/Xcode/iOS DeviceSupport"),
+            home.appendingPathComponent("Library/Developer/Xcode/Archives"),
             home.appendingPathComponent("Library/Application Support/MobileSync/Backup"),
             home.appendingPathComponent("Downloads"),
         ]
