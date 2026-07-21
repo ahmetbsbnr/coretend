@@ -107,6 +107,13 @@ else
     || bad "latest.json did NOT resync after rebuild — see /tmp/build-release-rebuild.out"
 fi
 
+echo "== latest.json sourceCommit matches real git HEAD (never hand-edited) =="
+REAL_HEAD=$(git rev-parse HEAD)
+MANIFEST_SOURCE_COMMIT=$(json_get Release/latest.json sourceCommit)
+[ "$MANIFEST_SOURCE_COMMIT" = "$REAL_HEAD" ] \
+  && ok "sourceCommit ($MANIFEST_SOURCE_COMMIT) equals git rev-parse HEAD" \
+  || bad "sourceCommit mismatch: manifest=$MANIFEST_SOURCE_COMMIT real HEAD=$REAL_HEAD (build-release.sh must set this automatically, never by hand)"
+
 echo "== summary =="
 [ "$fail" -eq 0 ] && echo "ALL CHECKS PASSED" || echo "ONE OR MORE CHECKS FAILED"
 exit $fail
