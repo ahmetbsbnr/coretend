@@ -38,8 +38,9 @@ public struct DuplicateEngine: Sendable {
                 // Stage 1: inventory by size, collapsing hard links per (device, inode).
                 var bySize: [Int64: [URL]] = [:]
                 var seenInodes = Set<String>()
-                let keys: Set<URLResourceKey> = [.isDirectoryKey, .isSymbolicLinkKey,
-                                                 .fileSizeKey, .fileResourceIdentifierKey]
+                let baseKeys: Set<URLResourceKey> = [.isDirectoryKey, .isSymbolicLinkKey,
+                                                     .fileSizeKey, .fileResourceIdentifierKey]
+                let keys = baseKeys.union(CloudFile.inventoryKeys)
                 for root in roots {
                     guard let enumerator = FileManager.default.enumerator(
                         at: root, includingPropertiesForKeys: Array(keys),
@@ -103,6 +104,8 @@ public struct DuplicateEngine: Sendable {
                 continue
             }
             guard values.isDirectory != true else { continue }
+            // Never hydrate a remote-only iCloud placeholder just to hash it.
+            if CloudFile.isRemoteOnly(values) { continue }
             let size = Int64(values.fileSize ?? 0)
             guard size >= minimumSize else { continue }
             if let identifier = values.fileResourceIdentifier {
