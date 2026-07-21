@@ -34,6 +34,34 @@ public struct InstalledApp: Sendable, Identifiable {
     }
 }
 
+/// How an installed app can be updated, derived only from on-disk signals.
+/// No network is ever touched; `.unknown` is returned honestly rather than
+/// guessing a mechanism that may not exist.
+public enum UpdateMechanism: Sendable, Equatable {
+    /// Carries a Mac App Store receipt (`Contents/_MASReceipt/receipt`).
+    case appStore
+    /// Self-updates via Sparkle. `feedURL` is populated only when the app's
+    /// `SUFeedURL` is a safe https URL; otherwise `nil` (framework present but
+    /// no surfaced feed) — we never surface an unsafe or malformed feed.
+    case sparkle(feedURL: URL?)
+    /// A known download origin recorded by macOS (`kMDItemWhereFroms`).
+    case manual(source: String)
+    /// No reliable update mechanism could be determined on disk.
+    case unknown
+
+    /// Non-overpromising action label. We only ever offer to *show* options —
+    /// we never claim an update "is available" because no version comparison
+    /// or network check has happened.
+    public var actionLabel: String {
+        switch self {
+        case .appStore: return "Open in App Store"
+        case .sparkle(let url): return url == nil ? "Update Options Unavailable" : "Show Update Options"
+        case .manual: return "Show Download Source"
+        case .unknown: return "Update Mechanism Unavailable"
+        }
+    }
+}
+
 /// A file or directory associated with an app (caches, prefs, containers…).
 public struct AssociatedItem: Sendable, Identifiable {
     public enum Kind: String, Sendable, CaseIterable {
@@ -174,6 +202,51 @@ public struct AppDiscovery: Sendable {
             }
         }
         return results.sorted { $0.sizeBytes > $1.sizeBytes }
+    }
+
+    /// Determines an app's update source from real on-disk signals only.
+    public func updateMechanism(for bundle: URL) -> UpdateMechanism {
+        let fm = FileManager.default
+        let hasReceipt = fm.fileExists(
+            atPath: bundle.appendingPathComponent("Contents/_MASReceipt/receipt").path)
+        let plistURL = bundle.appendingPathComponent("Contents/Info.plist")
+        let plist = (try? Data(contentsOf: plistURL)).flatMap {
+            try? PropertyListSerialization.propertyList(from: $0, format: nil) as? [String: Any]
+        } ?? [:]
+        let hasSparkle = fm.fileExists(
+            atPath: bundle.appendingPathComponent("Contents/Frameworks/Sparkle.framework").path)
+        return Self.classify(hasMASReceipt: hasReceipt, plist: plist,
+                             hasSparkleFramework: hasSparkle,
+                             whereFroms: Self.whereFromsURL(of: bundle))
+    }
+
+    /// Pure classification core (no filesystem) — the unit-testable heart.
+    static func classify(hasMASReceipt: Bool, plist: [String: Any],
+                         hasSparkleFramework: Bool, whereFroms: String?) -> UpdateMechanism {
+        if hasMASReceipt { return .appStore }
+        if let feed = plist["SUFeedURL"] as? String {
+            return .sparkle(feedURL: safeFeedURL(feed))
+        }
+        if hasSparkleFramework { return .sparkle(feedURL: nil) }
+        if let source = whereFroms, safeFeedURL(source) != nil { return .manual(source: source) }
+        return .unknown
+    }
+
+    /// Accepts only well-formed https URLs with a host. Rejects http, file,
+    /// javascript, and any other scheme as unsafe/untrustworthy → `nil`.
+    static func safeFeedURL(_ string: String) -> URL? {
+        guard let url = URL(string: string),
+              url.scheme?.lowercased() == "https",
+              let host = url.host, !host.isEmpty else { return nil }
+        return url
+    }
+
+    /// Reads macOS's real download-origin attribute via Spotlight; `nil` if absent.
+    static func whereFromsURL(of bundle: URL) -> String? {
+        guard let item = MDItemCreate(nil, bundle.path as CFString),
+              let value = MDItemCopyAttribute(item, kMDItemWhereFroms),
+              let list = value as? [String] else { return nil }
+        return list.first { safeFeedURL($0) != nil }
     }
 
     static func looksLikeBundleID(_ name: String) -> Bool {

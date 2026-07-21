@@ -12,18 +12,16 @@ public enum AppUpdateSource: String, Sendable {
     case sparkle = "Sparkle feed"
     case none = "In-app / manual"
 
+    /// Delegates to the tested `AppDiscovery.updateMechanism` engine so the
+    /// classification (App Store receipt, safe-https Sparkle feed, download
+    /// origin) lives in one unit-tested place. `.manual`/`.unknown` both map to
+    /// `.none` here — neither offers an in-app auto-update mechanism.
     public static func detect(for app: InstalledApp) -> (source: AppUpdateSource, feedURL: URL?) {
-        if FileManager.default.fileExists(atPath: app.path.appendingPathComponent("Contents/_MASReceipt").path) {
-            return (.appStore, nil)
+        switch AppDiscovery().updateMechanism(for: app.path) {
+        case .appStore: return (.appStore, nil)
+        case .sparkle(let feedURL): return (.sparkle, feedURL)
+        case .manual, .unknown: return (.none, nil)
         }
-        let plistURL = app.path.appendingPathComponent("Contents/Info.plist")
-        if let data = try? Data(contentsOf: plistURL),
-           let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any],
-           let feedString = plist["SUFeedURL"] as? String,
-           let feedURL = URL(string: feedString), feedURL.scheme == "https" {
-            return (.sparkle, feedURL)
-        }
-        return (.none, nil)
     }
 }
 
