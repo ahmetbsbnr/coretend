@@ -103,6 +103,7 @@
 "spacelens.choose_folder" = "Choose Folder…";
 "spacelens.scanning_progress" = "Measured %d items…";
 "spacelens.new_scan" = "New Scan";
+"spacelens.treemap.a11y_summary" = "%d items, %@ total.";
 "spacelens.treemap.accessibility" = "Storage treemap. Use the list below for keyboard navigation.";
 "spacelens.fragment.help" = "%@ — %@";
 "spacelens.access_denied_suffix" = "permission denied, size is a lower bound";

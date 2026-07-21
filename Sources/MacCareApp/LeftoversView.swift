@@ -167,6 +167,7 @@ struct LeftoversView: View {
                         NSWorkspace.shared.activateFileViewerSelecting([item.url])
                     } label: { Image(systemName: "magnifyingglass") }
                     .buttonStyle(.borderless)
+                    .accessibilityLabel(L("common.reveal_in_finder"))
                 }
             }
             .listStyle(.inset)

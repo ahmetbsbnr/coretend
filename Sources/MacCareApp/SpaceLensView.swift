@@ -187,7 +187,13 @@ struct SpaceLensView: View {
             .matchedGeometryEffect(id: node.id, in: zoomSpace, isSource: false)
         }
         .frame(minHeight: 260, maxHeight: 380)
-        .accessibilityLabel(L("spacelens.treemap.accessibility"))
+        // The treemap is a purely visual duplicate of the accessible child
+        // list below; collapse its fragments into one element so VoiceOver
+        // reads a summary, not dozens of unlabeled rectangles.
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(L("spacelens.treemap.a11y_summary",
+                              node.children.count, mcFormatBytes(node.size))
+                            + " " + L("spacelens.treemap.accessibility"))
     }
 
     @ViewBuilder

@@ -103,6 +103,7 @@
 "spacelens.choose_folder" = "Choisir un dossier…";
 "spacelens.scanning_progress" = "%d éléments mesurés…";
 "spacelens.new_scan" = "Nouvelle analyse";
+"spacelens.treemap.a11y_summary" = "%d éléments, %@ au total.";
 "spacelens.treemap.accessibility" = "Carte de stockage. Utilisez la liste ci-dessous pour la navigation au clavier.";
 "spacelens.fragment.help" = "%@ — %@";
 "spacelens.access_denied_suffix" = "accès refusé, la taille est une estimation basse";
