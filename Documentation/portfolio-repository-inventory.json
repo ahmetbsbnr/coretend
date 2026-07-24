@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "inventoryDate_UTC": "2026-07-24",
+  "selectionStatus": "CONFIRMED",
+  "path": "~/Documents/MAC_ORGANISE/00_DOCUMENTS_EXISTANTS/01_PROJETS/01_PROJETS_ACTIFS/professionnel-portfolio-stage-2026",
+  "gitBranch": "main",
+  "gitHead": "e6db86dbebbce8b16088680d8894acd015b0e77c",
+  "gitStatusClean": true,
+  "remote": "https://github.com/ahmetbsbnr/ahmetbsbnrportfolio.git",
+  "crossConfirmation": "developerDomain in Configuration/PublicIdentity.example.json (ahmetbsbnr.com) matches this repo's live production domain exactly",
+  "packageName": "portfolio-ahmet-basbunar",
+  "packageVersion": "1.0.0",
+  "framework": "Next.js 15 (App Router)",
+  "uiLibrary": "React 18",
+  "language": "TypeScript",
+  "styling": "Tailwind CSS 3 + CSS custom-property color tokens",
+  "animation": "GSAP 3 + @gsap/react",
+  "icons": "@phosphor-icons/react",
+  "deployment": "Vercel",
+  "domain": {
+    "canonical": "ahmetbsbnr.com",
+    "wwwRedirect": "308 to canonical",
+    "vercelDefault": "ahmetbsbnrportfolio.vercel.app"
+  },
+  "buildOutput": "static export (out/)",
+  "testCommand": "node scripts/check-static.mjs",
+  "colorTokens": {
+    "--paper": "244 244 240",
+    "--card": "252 252 250",
+    "--ink": "23 25 29",
+    "--line": "222 222 215",
+    "--line-strong": "185 185 176",
+    "--cobalt": "34 64 226",
+    "--cobalt-deep": "24 47 178"
+  },
+  "fonts": { "display": "Archivo", "body": "Archivo", "mono": "IBM Plex Mono" },
+  "securityHeaders": ["CSP", "HSTS-preload", "X-Frame-Options", "X-Content-Type-Options", "Referrer-Policy", "Permissions-Policy"],
+  "rejectedCandidates": [
+    { "path": "personnel-portfolio-vercel-2025", "reason": "No .git, minimal files, untouched since 2025-05-02" },
+    { "path": "personnel-portfolio-nextjs-2025", "reason": "Untouched since 2025-05-02, contains a broken literal folder named '{app,public,components}' (incomplete scaffold artifact)" }
+  ],
+  "privateDataFoundNotOpened": [
+    ".env.local", ".vercel/.env.development.local",
+    "docs/DNS_BACKUP_ahmetbsbnr_com_20260716.md", "docs/DNS_ZONE_BACKUP_ahmetbsbnr_com_20260716b.md",
+    "assets-src/photo_cv.png", "public/photo_cv.webp", "public/cv.pdf", "public/attestation-pix-20240214.pdf"
+  ],
+  "repositoryModifiedThisPass": false,
+  "narrativeFile": "Documentation/PORTFOLIO_REPOSITORY_INVENTORY.md"
+}
