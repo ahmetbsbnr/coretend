@@ -8,8 +8,25 @@ in step 19 of the plan is genuinely met. See
 table (the authoritative tracker), plus `CURRENT_PROJECT_STATE.json`.
 
 ## HEAD this phase
-Latest: `2070566` — Step 16 (local site copy). See "Task just finished" below
-for Steps 14 + 16. Product version stays 0.7.1. Earlier milestone summarized
+Latest: `7da3dde` — Step 17 (documentation sync), recovered after an API
+disconnect mid-session. Previous agent's uncommitted doc work (7 new module
+docs + regenerated test-inventory/AUDIT_COMMANDS.log) was inspected, verified
+against source, and committed (`932a961`), then Steps 7/8 in the plan table
+(Space Lens/Cloud Cleanup — stuck at TODO despite real tested work at
+`a7ac701`) and ROADMAP/FEATURE_MATRIX (still called the Step 3 FSEvents
+watcher DEFERRED) were corrected, and the missing
+`FUNCTIONAL_COMPLETION_REPORT.md` was added (`7da3dde`). 215/215 tests,
+Debug+Release build, all dev gates (doctor/repository-doctor/private-data/
+licenses/placeholders/feature-inventory/settings-matrix/markdown-links) green
+throughout. Publish gate stays red as expected (BLOCKED_HUMAN identity/
+signing). **Version stays 0.7.1** — Step 15 (visual validation) is still
+BLOCKED_ENVIRONMENT, Steps 1/6 still carry deliberately-deferred safety items
+plus Step 6's non-safety enhancements (Large&Old name search, per-volume
+awareness, UI-exposed exclusions), and Steps 19-21 are correctly BLOCKED
+until those close — do not bump version, do not build final artifacts yet.
+
+Earlier: `2070566` — Step 16 (local site copy). See "Task just finished" below
+for Steps 14 + 16. Earlier milestone summarized
 here: `f336475` — Step 10 (macOS compatibility audit). Re-ran the full
 API grep across `Sources/`; every API (MenuBarExtra=13, Vision
 feature-print/QLThumbnailGenerator=10.15, FSEvents/ubiquitous/SQLite3
