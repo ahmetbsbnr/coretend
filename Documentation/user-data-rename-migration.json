@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "documentDate_UTC": "2026-07-24",
+  "status": "PLANNED_NOT_IMPLEMENTED",
+  "dataInventory": [
+    {
+      "item": "store.sqlite",
+      "location": "~/Library/Application Support/MacCareLocal/store.sqlite",
+      "keyedBy": "hardcoded directory name in Sources/Persistence/Store.swift, NOT CFBundleIdentifier",
+      "contains": ["settings (dryRunDefault, securityProfile)", "exclusions", "activity history"],
+      "migrationMethod": "copy-to-temp-then-rename into new directory, source untouched"
+    },
+    {
+      "item": "Quarantine/",
+      "location": "~/Library/Application Support/MacCareLocal/Quarantine/",
+      "keyedBy": "same directory convention as store.sqlite",
+      "contains": ["quarantined files", "quarantine metadata"],
+      "migrationMethod": "copy directory tree, source untouched"
+    },
+    {
+      "item": "watch-fingerprints.json",
+      "location": "~/Library/Application Support/MacCareLocal/watch-fingerprints.json",
+      "keyedBy": "same directory convention",
+      "contains": ["per-path FSEvents dedup fingerprints (size+mtime)"],
+      "migrationMethod": "copy file, source untouched; safe to lose (regenerates) but migrated for continuity"
+    },
+    {
+      "item": "UserDefaults (menuBarEnabled, onboardingDone, onboardingStep)",
+      "location": "~/Library/Preferences/<CFBundleIdentifier>.plist",
+      "keyedBy": "CFBundleIdentifier -- the one OS-enforced bundle-ID coupling in this data set",
+      "contains": ["menu bar toggle state", "onboarding completion/step"],
+      "migrationMethod": "CFPreferencesCopyValue against the old identifier explicitly, write into new UserDefaults.standard domain, old domain untouched"
+    }
+  ],
+  "nonNegotiableProperties": [
+    "idempotent",
+    "non-destructive (copy only, never move/delete source)",
+    "transactional-per-item (each of the 4 items migrates independently)",
+    "backed-up-implicitly (untouched source IS the backup for this migration)",
+    "cannot overwrite an existing installation under the new identity",
+    "resumable after interruption (per-item copy-to-temp-then-rename)",
+    "compatible with old data format (no schema transform, pure copy)",
+    "silent only for the copy itself; never silent on a real I/O error",
+    "explanatory on conflict (surfaced to the user, not hidden)"
+  ],
+  "explicitlyOutOfScope": [
+    "Configuration/PublicIdentity.local.json (build-time config, not runtime user data)",
+    "manually relocated Application Support folders outside documented behavior",
+    "fresh installs with no prior old-directory data (no-op by design)"
+  ],
+  "testPlanFile": "Documentation/REBRAND_MIGRATION_TEST_PLAN.md",
+  "narrativeFile": "Documentation/USER_DATA_RENAME_MIGRATION.md"
+}
