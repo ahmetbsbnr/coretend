@@ -35,4 +35,32 @@ struct MyClutterSortTests {
                       finding("old", size: 1, modified: old)]
         #expect(m.sortedFindings.map { $0.url.lastPathComponent } == ["old", "recent", "nodate"])
     }
+
+    @Test func searchNarrowsSortedFindingsWithoutRescanning() {
+        let m = MyClutterViewModel()
+        m.findings = [finding("vacation.mov", size: 100, modified: .now),
+                      finding("invoice.pdf", size: 50, modified: .now)]
+        m.searchText = "vacation"
+        #expect(m.sortedFindings.map { $0.url.lastPathComponent } == ["vacation.mov"])
+        m.searchText = ""
+        #expect(m.sortedFindings.count == 2) // original scan preserved, not re-run
+    }
+
+    private struct FixedVolumeResolver: VolumeResolving {
+        let table: [String: VolumeInfo]
+        func volumeInfo(for url: URL) -> VolumeInfo? { table[url.path] }
+    }
+
+    @Test func volumeFilterNarrowsToSelectedVolumeOnly() {
+        let resolver = FixedVolumeResolver(table: [
+            "/tmp/internal.dat": VolumeInfo(id: "internal-uuid", name: "Macintosh HD"),
+            "/tmp/external.dat": VolumeInfo(id: "external-uuid", name: "Backup"),
+        ])
+        let m = MyClutterViewModel(volumeResolver: resolver)
+        m.findings = [finding("internal.dat", size: 10, modified: .now),
+                      finding("external.dat", size: 10, modified: .now)]
+        #expect(m.availableVolumes.map(\.id).sorted() == ["external-uuid", "internal-uuid"])
+        m.selectedVolumeID = "external-uuid"
+        #expect(m.sortedFindings.map { $0.url.lastPathComponent } == ["external.dat"])
+    }
 }
