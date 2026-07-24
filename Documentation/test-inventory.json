@@ -1,19 +1,19 @@
 {
   "schemaVersion": 2,
   "auditDate_UTC": "2026-07-21",
-  "commit": "719f3e283feb1b6a6e9a6bf1aa8a1b8ae10c4087",
+  "commit": "f93869873c7acf3ff39752edc6e6b26269504b27",
   "command": "Scripts/test.sh",
-  "totalTests": 114,
-  "totalSuites": 30,
-  "passed": 114,
+  "totalTests": 215,
+  "totalSuites": 49,
+  "passed": 215,
   "failed": 0,
-  "testRunDurationSeconds": 0.943,
-  "wallTimeSeconds": 2,
+  "testRunDurationSeconds": 5.701,
+  "wallTimeSeconds": 18,
   "result": "PASS",
   "domains": [
     {
       "module": "AppDiscovery",
-      "testFunctionsDeclared": 3
+      "testFunctionsDeclared": 20
     },
     {
       "module": "DesignSystem",
@@ -21,19 +21,19 @@
     },
     {
       "module": "FileRules",
-      "testFunctionsDeclared": 3
+      "testFunctionsDeclared": 7
     },
     {
       "module": "MacCareApp",
-      "testFunctionsDeclared": 23
+      "testFunctionsDeclared": 65
     },
     {
       "module": "MalwareEngine",
-      "testFunctionsDeclared": 23
+      "testFunctionsDeclared": 38
     },
     {
       "module": "Persistence",
-      "testFunctionsDeclared": 9
+      "testFunctionsDeclared": 10
     },
     {
       "module": "SafetyCore",
@@ -41,7 +41,7 @@
     },
     {
       "module": "ScanCore",
-      "testFunctionsDeclared": 19
+      "testFunctionsDeclared": 41
     },
     {
       "module": "SystemMetrics",
