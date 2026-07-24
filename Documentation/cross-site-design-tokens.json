@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "documentDate_UTC": "2026-07-24",
+  "note": "Read-only inventory of real, current token values from each site's own source. Neither site was modified to produce this file.",
+  "portfolio": {
+    "source": "professionnel-portfolio-stage-2026/tailwind.config.js + app/globals.css",
+    "colorTokens": {
+      "paper": "244 244 240",
+      "card": "252 252 250",
+      "ink": "23 25 29",
+      "sub": null,
+      "dim": null,
+      "line": "222 222 215",
+      "line-strong": "185 185 176",
+      "cobalt": "34 64 226",
+      "cobalt-deep": "24 47 178",
+      "ok": null,
+      "err": null
+    },
+    "fonts": { "display": "Archivo", "body": "Archivo", "mono": "IBM Plex Mono" },
+    "spacingScale": "Tailwind default (no custom override found in theme.extend)",
+    "easing": { "out-expo": "cubic-bezier(0.16, 1, 0.3, 1)" },
+    "motion": "GSAP 3 + @gsap/react",
+    "framework": "Next.js 15 / React 18 / TypeScript",
+    "darkMode": "not confirmed this pass"
+  },
+  "productSite": {
+    "source": "Website/assets/style.css",
+    "colorTokensLight": {
+      "core-mint": "#0b8275",
+      "ion-violet": "#5c54cc",
+      "solar-amber": "#b87512",
+      "pulse-coral": "#bf403b",
+      "success": "#1a8c4d",
+      "bg": "#fbfbfa",
+      "bg-elevated": "#ffffff",
+      "text": "#1c1e1f",
+      "text-secondary": "#55595c",
+      "separator": "#e2e4e4"
+    },
+    "colorTokensDark": {
+      "core-mint": "#4dd4bf",
+      "ion-violet": "#9991f5",
+      "solar-amber": "#f2ad42",
+      "pulse-coral": "#f2786e",
+      "success": "#59cc85",
+      "bg": "#17181a",
+      "bg-elevated": "#1f2123",
+      "text": "#f0f1f1",
+      "text-secondary": "#a7abae",
+      "separator": "#303335"
+    },
+    "darkModeMechanism": "@media (prefers-color-scheme: dark) token override",
+    "radius": { "card": "12px", "hero": "20px" },
+    "spacingScale": { "xs": "8px", "sm": "12px", "md": "16px", "lg": "24px", "xl": "32px", "xxl": "48px" },
+    "maxWidth": "960px",
+    "fonts": { "body": "-apple-system, BlinkMacSystemFont, \"SF Pro Text\", \"Segoe UI\", Helvetica, Arial, sans-serif" },
+    "motion": "none (static site)",
+    "framework": "stdlib Python generator (Website/generate.py), no JS framework"
+  },
+  "proposedShared": [
+    "spacing-scale naming convention (adopt product site's --space-xs..xxl pattern as the semantic naming, each site maps its own numeric scale underneath)",
+    "max content width (pick one canonical value once portfolio's is audited)",
+    "focus-visible / keyboard interaction rules (written rule, independently implemented)",
+    "navigation simplicity pattern (written rule)",
+    "editorial honesty bar (no hyperbole/dark patterns/fake urgency)"
+  ],
+  "explicitlyNotShared": [
+    "Core Bloom / Orbital Ecology visual identity (product-specific)",
+    "typography choice (Archivo/Plex Mono for portfolio vs system font for product site, both deliberate)",
+    "motion (GSAP for portfolio, none for product site, both deliberate)",
+    "framework/build pipeline"
+  ],
+  "narrativeFiles": [
+    "Documentation/CROSS_SITE_DESIGN_AUDIT.md",
+    "Documentation/CROSS_SITE_DESIGN_LANGUAGE.md",
+    "Documentation/PORTFOLIO_PRODUCT_SITE_ALIGNMENT.md"
+  ]
+}
