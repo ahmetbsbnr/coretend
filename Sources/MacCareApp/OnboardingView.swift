@@ -313,7 +313,9 @@ struct OnboardingView: View {
             .frame(maxWidth: 460)
             VStack(alignment: .leading, spacing: MCSpacing.xs) {
                 configLine(L("onboarding.security.dry_run"), on: model.config.dryRun,
-                           editable: model.profile == .custom) { model.config.dryRun = $0 }
+                           binding: model.profile == .custom
+                               ? Binding(get: { model.config.dryRun }, set: { model.config.dryRun = $0 })
+                               : nil)
                 configFixed(L("onboarding.security.trash"), on: model.config.useTrash)
                 configFixed(L("onboarding.security.medium_risk"), on: model.config.mediumRiskRules)
                 configFixed(L("onboarding.security.empty_trash"), on: model.config.emptyTrash)
@@ -347,10 +349,10 @@ struct OnboardingView: View {
         .accessibilityAddTraits(model.profile == p ? [.isSelected] : [])
     }
 
-    private func configLine(_ label: String, on: Bool, editable: Bool, set: @escaping (Bool) -> Void) -> some View {
+    private func configLine(_ label: String, on: Bool, binding: Binding<Bool>?) -> some View {
         Group {
-            if editable {
-                Toggle(label, isOn: Binding(get: { on }, set: set)).font(MCFont.caption)
+            if let binding {
+                Toggle(label, isOn: binding).font(MCFont.caption)
             } else {
                 configFixed(label, on: on)
             }
