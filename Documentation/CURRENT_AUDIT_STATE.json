@@ -1,10 +1,10 @@
 {
   "_comment": "Single current-audit source of truth, distinct from CURRENT_PROJECT_STATE.json. AUDIT_PACKAGE_COMMIT is recorded post-hoc after each external ZIP build, never conflated with the other two commit fields (see Scripts/compute-audit-commits.sh).",
   "schemaVersion": 1,
-  "CURRENT_HEAD": "7e60e06617b476b61b139109565d800ae7198332",
-  "REQUIREMENTS_AUDIT_COMMIT": "c6a01c22dcb6762f0599e9e72077d5c38c6547dd",
-  "AUDIT_PACKAGE_COMMIT": "PENDING_SEE_MANIFEST",
-  "note_AUDIT_PACKAGE_COMMIT": "This field is only knowable after the packaging commit (docs regenerated this session) lands. It is set to the placeholder above in this committed copy; the actual value — the real HEAD SHA at packaging time, on a verified-clean tree — is recorded in AUDIT_PACKAGE_MANIFEST.json inside the built ZIP and in the closeout report, not invented here in advance.",
+  "CURRENT_HEAD": "8acd2a59ef416b901f7946c3f77e81b7c6d74424",
+  "REQUIREMENTS_AUDIT_COMMIT": "77f55726ac465adc28d28a676b16989915a78d94",
+  "AUDIT_PACKAGE_COMMIT": "8acd2a59ef416b901f7946c3f77e81b7c6d74424",
+  "note_AUDIT_PACKAGE_COMMIT": "Filled in post-hoc, matching AUDIT_PACKAGE_MANIFEST.json inside MacCare-Local-Full-Audit-v0.8.0-2026-07-24-8acd2a5.zip — built from a verified-clean tree at this exact commit (git status --short empty immediately before zipping, per that script's own gate).",
   "previousAuditPackages": [
     {
       "archiveName": "MacCare-Local-Full-Audit-2026-07-21-4fb406f.zip",
@@ -14,7 +14,12 @@
     {
       "archiveName": "MacCare-Local-Full-Audit-v0.7.1-2026-07-21-b47dfab.zip",
       "auditedSourceCommitField": "b47dfab (four-commit manifest, but no AUDIT_PACKAGE_README.md, no SHA256SUMS, no FILELIST, AUDIT_PACKAGE_COMMIT still absent from its manifest)",
-      "status": "HISTORICAL — superseded by this session's closeout package"
+      "status": "HISTORICAL — superseded"
+    },
+    {
+      "archiveName": "MacCare-Local-Full-Audit-v0.8.0-2026-07-24-8acd2a5.zip",
+      "auditedSourceCommitField": "8acd2a5 (0.8.0 Functional Completion closeout — 371 files included, 2 self-referential username-narrative docs excluded with documented reason, 373 tracked files fully accounted for, unzip -t + internal SHA256SUMS verified)",
+      "status": "CURRENT"
     }
   ],
   "knownNonConformitiesAtThisCommit": [
