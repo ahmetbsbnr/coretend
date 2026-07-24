@@ -9,7 +9,9 @@ cd "$ROOT_DIR"
 
 DATE=$(date -u +%Y-%m-%d)
 SHORT_SHA=$(git rev-parse --short HEAD)
-NAME="MacCare-Local-Full-Audit-v0.7.1-${DATE}-${SHORT_SHA}"
+PKG_VERSION=$(/usr/bin/python3 -c "import json; print(json.load(open('Configuration/PublicIdentity.example.json'))['marketingVersion'])")
+PKG_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+NAME="MacCare-Local-Full-Audit-v${PKG_VERSION}-${DATE}-${SHORT_SHA}"
 STAGE="AuditPackages/${NAME}"
 
 rm -rf "$STAGE"
@@ -90,14 +92,14 @@ TESTS_FAILED=$(/usr/bin/python3 -c "import json;print(json.load(open('$TESTS_JSO
 TESTS_TOTAL=$(/usr/bin/python3 -c "import json;print(json.load(open('$TESTS_JSON'))['totalTests'])")
 REQ_TOTAL=$(/usr/bin/python3 -c "import json;print(json.load(open('Documentation/requirements-traceability.json'))['requirementCount'])")
 
-/usr/bin/python3 - "$STAGE" "$CURRENT_HEAD" "$PRODUCT_SOURCE_COMMIT" "$REQUIREMENTS_AUDIT_COMMIT" "$tracked_count" "$included_count" "$excluded_count" "$TESTS_TOTAL" "$TESTS_PASSED" "$TESTS_FAILED" "$REQ_TOTAL" <<'PYEOF'
+/usr/bin/python3 - "$STAGE" "$CURRENT_HEAD" "$PRODUCT_SOURCE_COMMIT" "$REQUIREMENTS_AUDIT_COMMIT" "$tracked_count" "$included_count" "$excluded_count" "$TESTS_TOTAL" "$TESTS_PASSED" "$TESTS_FAILED" "$REQ_TOTAL" "$PKG_VERSION" "$PKG_BRANCH" <<'PYEOF'
 import json, sys
-stage, current_head, product_commit, req_commit, tracked, included, excluded, tests_total, tests_passed, tests_failed, req_total = sys.argv[1:12]
+stage, current_head, product_commit, req_commit, tracked, included, excluded, tests_total, tests_passed, tests_failed, req_total, pkg_version, pkg_branch = sys.argv[1:14]
 manifest = {
     "schemaVersion": 3,
     "product": "MacCare Local",
-    "productVersion": "0.7.1",
-    "branch": "feat/public-distribution",
+    "productVersion": pkg_version,
+    "branch": pkg_branch,
     "auditDate_UTC": __import__("datetime").datetime.utcnow().strftime("%Y-%m-%d"),
     "CURRENT_HEAD": current_head,
     "PRODUCT_SOURCE_COMMIT": product_commit,
@@ -118,7 +120,7 @@ manifest = {
                      "source": "Documentation/test-inventory.json"},
     "requirementsTotal": int(req_total),
     "featureStatusSource": "Documentation/feature-inventory.json",
-    "visualCaptureStatus": "BLOCKED_ENVIRONMENT — no display/window-capture access when this package was built",
+    "visualCaptureStatus": "READY_FOR_MANUAL_QA — see Documentation/VISUAL_QA.md and KNOWN_LIMITATIONS.md for the current display-availability finding and what capture work remains",
     "completenessCheck": "every tracked file is either included or listed in AUDIT_PACKAGE_EXCLUSIONS.md with a reason",
     "generatedBy": "Scripts/build-audit-package.sh",
 }
@@ -144,7 +146,7 @@ cat > "$STAGE/AUDIT_PACKAGE_README.md" <<EOF
 
 ## What is in this package
 A sanitized mirror of every git-tracked file in the repository at commit \`${CURRENT_HEAD}\`
-(branch \`feat/public-distribution\`, version 0.7.1), plus generated evidence:
+(branch \`${PKG_BRANCH}\`, version ${PKG_VERSION}), plus generated evidence:
 - \`AuditEvidence/Git/\` — real \`git log\`, \`git status\`, \`git branch -vv\` output captured at build time.
 - \`AUDIT_PACKAGE_MANIFEST.json\` — machine-readable commit identities, test results, requirement count,
   feature-status source, and capture status.
