@@ -72,6 +72,10 @@ TestResults/
 # See Configuration/PublicIdentity.example.json for the template this overrides.
 Configuration/PublicIdentity.local.json
 
+# Human brand-rename approval — a local decision record, never versioned.
+# See Configuration/BrandRenameApproval.example.json for the template.
+Configuration/BrandRenameApproval.local.json
+
 # Staged external-audit packages (built locally, never committed)
 AuditPackages/
 
