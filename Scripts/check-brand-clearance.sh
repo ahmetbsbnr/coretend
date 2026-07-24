@@ -1,27 +1,51 @@
 #!/bin/sh
-# Gate: blocks any future rename until every brand-clearance precondition
-# is real, not assumed. Exits non-zero (blocking) unless ALL of:
-#   - Documentation/brand-name-clearance.json status == CLEAR_FOR_ENGINEERING
-#   - Configuration/BrandRenameApproval.local.json exists, approvedByHuman
-#     is true, legalReviewStatus is "accepted", and approvedName matches
-#     the name this gate is checking
-#   - the research docs (BRAND_SEARCH_EVIDENCE.md, BRAND_CONFLICT_REGISTER.md,
-#     BRAND_NAME_CLEARANCE.md) exist
-#   - no OPEN entry in BRAND_CONFLICT_REGISTER.md for that exact name
-#   - git tree is clean
-#   - the full test suite passes (Scripts/test.sh — real run, not cached)
-#   - a workspace/data-migration backup exists (Scripts/preflight-workspace-migration.sh
-#     has been run with --create-backups at least once, evidenced by a
-#     manifest under Documentation/WorkspacePreflight/)
-#   - a rollback plan exists (PRODUCT_RENAME_ROLLBACK.md)
+# Gate: brand-rename and brand-publication preconditions.
 #
-# Usage: Scripts/check-brand-clearance.sh [<candidate-name>]
-#   If <candidate-name> is omitted, reads it from
-#   Configuration/BrandRenameApproval.local.json's approvedName field.
+# Two independent gates read the same approval record, because a local
+# technical rename and a public release carry completely different risk:
+#
+#   --engineering (default)
+#     Allows the local rename: code, docs, assets, bundle identifier,
+#     user-data migration. Requires ALL of:
+#       - Configuration/BrandRenameApproval.local.json exists, with
+#         approvedByHuman == true and engineeringRenameApproved == true,
+#         and approvedName matching the candidate being checked
+#       - Documentation/brand-name-clearance.json records this exact name
+#         with status CLEAR_FOR_ENGINEERING
+#       - the research docs exist (BRAND_SEARCH_EVIDENCE.md,
+#         BRAND_CONFLICT_REGISTER.md, BRAND_NAME_CLEARANCE.md)
+#       - no OPEN conflict-register entry names this candidate
+#       - git tree is clean
+#       - the full test suite passes (real run, never a cached result)
+#       - a workspace/data backup exists under Documentation/WorkspacePreflight/
+#       - a rollback plan exists (PRODUCT_RENAME_ROLLBACK.md)
+#
+#   --publication
+#     Allows anything outward-facing: push, deploy, public release, tags,
+#     store listings. Requires everything --engineering requires, PLUS:
+#       - legalReviewStatus == "accepted"
+#       - publicReleaseAllowed == true
+#
+# Engineering clearance NEVER implies publication clearance. A name may be
+# safe enough to build under locally and still be unsafe to ship under.
+#
+# Usage: Scripts/check-brand-clearance.sh [--engineering|--publication] [<candidate-name>]
+#   If <candidate-name> is omitted, reads it from the approval file's
+#   approvedName field.
 set -eu
 cd "${CHECK_BRAND_CLEARANCE_ROOT:-$(dirname "$0")/..}"
 
-CANDIDATE="${1:-}"
+MODE="engineering"
+CANDIDATE=""
+for arg in "$@"; do
+  case "$arg" in
+    --engineering) MODE="engineering" ;;
+    --publication) MODE="publication" ;;
+    --*) echo "unknown option: $arg" >&2; exit 2 ;;
+    *) CANDIDATE="$arg" ;;
+  esac
+done
+
 APPROVAL_FILE="Configuration/BrandRenameApproval.local.json"
 CLEARANCE_FILE="Documentation/brand-name-clearance.json"
 
@@ -33,16 +57,29 @@ block() {
   blockers="$blockers\n  - $1"
 }
 
-# 1. Approval file must exist.
+json_get() {
+  /usr/bin/python3 -c "import json,sys; print(json.load(open(sys.argv[1])).get(sys.argv[2],''))" "$1" "$2" 2>/dev/null || echo ""
+}
+
+# 1. Approval file must exist and approve the right thing.
 if [ ! -f "$APPROVAL_FILE" ]; then
   block "$APPROVAL_FILE does not exist — no rename may proceed without explicit human approval"
 else
-  APPROVED_NAME=$(/usr/bin/python3 -c "import json; print(json.load(open('$APPROVAL_FILE')).get('approvedName',''))" 2>/dev/null || echo "")
-  APPROVED_BY_HUMAN=$(/usr/bin/python3 -c "import json; print(json.load(open('$APPROVAL_FILE')).get('approvedByHuman', False))" 2>/dev/null || echo "False")
-  LEGAL_STATUS=$(/usr/bin/python3 -c "import json; print(json.load(open('$APPROVAL_FILE')).get('legalReviewStatus',''))" 2>/dev/null || echo "")
+  APPROVED_NAME=$(json_get "$APPROVAL_FILE" approvedName)
+  APPROVED_BY_HUMAN=$(json_get "$APPROVAL_FILE" approvedByHuman)
+  ENGINEERING_OK=$(json_get "$APPROVAL_FILE" engineeringRenameApproved)
+  LEGAL_STATUS=$(json_get "$APPROVAL_FILE" legalReviewStatus)
+  PUBLIC_OK=$(json_get "$APPROVAL_FILE" publicReleaseAllowed)
 
   [ "$APPROVED_BY_HUMAN" = "True" ] || block "$APPROVAL_FILE.approvedByHuman is not true"
-  [ "$LEGAL_STATUS" = "accepted" ] || block "$APPROVAL_FILE.legalReviewStatus is '$LEGAL_STATUS', expected 'accepted'"
+  [ "$ENGINEERING_OK" = "True" ] || block "$APPROVAL_FILE.engineeringRenameApproved is not true"
+
+  if [ "$MODE" = "publication" ]; then
+    [ "$LEGAL_STATUS" = "accepted" ] \
+      || block "$APPROVAL_FILE.legalReviewStatus is '$LEGAL_STATUS', expected 'accepted' — publication is blocked until final legal review lands"
+    [ "$PUBLIC_OK" = "True" ] \
+      || block "$APPROVAL_FILE.publicReleaseAllowed is not true — publication is blocked"
+  fi
 
   if [ -z "$CANDIDATE" ]; then
     CANDIDATE="$APPROVED_NAME"
@@ -63,8 +100,8 @@ done
 
 # 3. Clearance status must be CLEAR_FOR_ENGINEERING for this exact candidate.
 if [ -f "$CLEARANCE_FILE" ]; then
-  CLEARANCE_STATUS=$(/usr/bin/python3 -c "import json; print(json.load(open('$CLEARANCE_FILE')).get('status',''))" 2>/dev/null || echo "")
-  CLEARANCE_NAME=$(/usr/bin/python3 -c "import json; print(json.load(open('$CLEARANCE_FILE')).get('candidateName',''))" 2>/dev/null || echo "")
+  CLEARANCE_STATUS=$(json_get "$CLEARANCE_FILE" status)
+  CLEARANCE_NAME=$(json_get "$CLEARANCE_FILE" candidateName)
   if [ -n "$CANDIDATE" ] && [ "$CLEARANCE_NAME" = "$CANDIDATE" ]; then
     [ "$CLEARANCE_STATUS" = "CLEAR_FOR_ENGINEERING" ] \
       || block "$CLEARANCE_FILE status for '$CANDIDATE' is '$CLEARANCE_STATUS', not CLEAR_FOR_ENGINEERING"
@@ -77,10 +114,8 @@ fi
 
 # 4. No OPEN conflict register entry may name this candidate.
 if [ -f Documentation/BRAND_CONFLICT_REGISTER.md ] && [ -n "$CANDIDATE" ]; then
-  if grep -qi "OPEN" Documentation/BRAND_CONFLICT_REGISTER.md && grep -qi "$CANDIDATE" Documentation/BRAND_CONFLICT_REGISTER.md; then
-    if grep -i "$CANDIDATE" Documentation/BRAND_CONFLICT_REGISTER.md | grep -qi "OPEN"; then
-      block "Documentation/BRAND_CONFLICT_REGISTER.md still has an OPEN entry naming '$CANDIDATE'"
-    fi
+  if grep -i "$CANDIDATE" Documentation/BRAND_CONFLICT_REGISTER.md | grep -qi "OPEN"; then
+    block "Documentation/BRAND_CONFLICT_REGISTER.md still has an OPEN entry naming '$CANDIDATE'"
   fi
 fi
 
@@ -102,9 +137,9 @@ fi
 # 8. A rollback plan must exist.
 [ -f Documentation/PRODUCT_RENAME_ROLLBACK.md ] || block "Documentation/PRODUCT_RENAME_ROLLBACK.md is missing"
 
-echo "== check-brand-clearance.sh: candidate = '${CANDIDATE:-<none>}' =="
+echo "== check-brand-clearance.sh: mode = $MODE, candidate = '${CANDIDATE:-<none>}' =="
 if [ "$fail" -ne 0 ]; then
-  printf 'BLOCKED — rename may not proceed:%b\n' "$blockers"
+  printf 'BLOCKED — %s may not proceed:%b\n' "$MODE" "$blockers"
   exit 1
 fi
-echo "CLEAR — all rename preconditions hold for '$CANDIDATE'."
+echo "CLEAR — all $MODE preconditions hold for '$CANDIDATE'."

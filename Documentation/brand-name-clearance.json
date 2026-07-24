@@ -1,62 +1,42 @@
 {
-  "schemaVersion": 1,
-  "candidateName": "MacClear",
-  "searchDate_UTC": "2026-07-24",
-  "status": "CONFLICT_HIGH",
-  "clearedForEngineering": false,
-  "blocksRename": true,
-  "humanApprovalFilePresent": false,
+  "schemaVersion": 2,
+  "candidateName": "CoreTend",
+  "candidateSlug": "coretend",
+  "decisionDate_UTC": "2026-07-24",
+  "status": "CLEAR_FOR_ENGINEERING",
+  "clearedForEngineering": true,
+  "clearedForPublication": false,
+  "blocksRename": false,
+  "blocksPublication": true,
+  "decisionBasis": "HUMAN_DECISION",
+  "decisionBasisNotes": "The name CoreTend was selected and approved directly by the project owner. This session did NOT perform an independent trademark or prior-usage search for CoreTend, and no such search is claimed here. The CLEAR_FOR_ENGINEERING status therefore reflects an explicit human decision to proceed with a local technical rename, not a completed clearance investigation.",
+  "humanApprovalFilePresent": true,
   "humanApprovalFilePath": "Configuration/BrandRenameApproval.local.json",
-  "softwareUsageConflicts": [
+  "softwareUsageConflicts": [],
+  "domainFindings": [
     {
-      "id": "BC-001",
-      "source": "github.com/Matcha00/MacClear",
-      "severity": "HIGH",
-      "sameCategory": true,
-      "notes": "SwiftUI native macOS cleaner: caches/logs/dev-caches/downloads/temp/trash/large-old/duplicates/app-leftovers/system-caches. Trash-default, risk-tiered auto-select, FDA-gated. Near-exact functional and technical twin."
-    },
-    {
-      "id": "BC-002",
-      "source": "github.com/zhangyandong/MacClear",
-      "severity": "MEDIUM",
-      "sameCategory": true,
-      "notes": "Mac disk-cache-clearing tool."
-    },
-    {
-      "id": "BC-003",
-      "source": "github.com/bistaalish/macclear",
-      "severity": "MEDIUM",
-      "sameCategory": true,
-      "notes": "Mac cleaning script."
-    },
-    {
-      "id": "BC-005",
-      "source": "user-supplied claim (unverified this session)",
-      "severity": "UNVERIFIED",
-      "sameCategory": true,
-      "notes": "Claimed MacClear app since 2018, App Store, uninstaller + residual-file cleanup. Not independently reproduced by this session's search tool; treated as still-credible, not disproven."
+      "domain": "coretend.ahmetbsbnr.com",
+      "status": "PLANNED_SUBDOMAIN_OF_OWNED_ROOT",
+      "notes": "Product site is planned as a subdomain of the owner's existing root domain ahmetbsbnr.com. No new domain is being acquired, which removes the domain-acquisition and domain-reputation risk class entirely. Not deployed by this session; no DNS record was created or modified."
     }
   ],
-  "domainFindings": [
-    { "domain": "macclear.com", "status": "REGISTERED_LIVE_NEGATIVE_SIGNAL", "notes": "Listed in AdGuard HostlistsRegistry blocklist; TLS handshake fails (TLSV1_ALERT_INTERNAL_ERROR) on direct connection this session." },
-    { "domain": "macclear.dev", "status": "LIKELY_AVAILABLE", "notes": "DNS did not resolve this session; not confirmed via WHOIS/registrar." },
-    { "domain": "macclear.app", "status": "UNKNOWN", "notes": "Not checked this session." },
-    { "domain": "macclear.io", "status": "UNKNOWN", "notes": "Not checked this session." },
-    { "domain": "macclear.fr", "status": "UNKNOWN", "notes": "Not checked this session." },
-    { "domain": "macclear.eu", "status": "UNKNOWN", "notes": "Not checked this session." },
-    { "domain": "macclear.ahmetbsbnr.com", "status": "UNKNOWN", "notes": "Subdomain of an unregistered parent domain (ahmetbsbnr.com); not independently meaningful until the parent domain itself is resolved." },
-    { "identifier": "github.com/macclear", "status": "APPEARS_AVAILABLE", "notes": "HTTP 404 on direct fetch — org/user-level handle appears free. Does not affect existing repos named MacClear under other accounts (BC-001/002/003)." }
-  ],
   "officialRegistries": [
-    { "registry": "EUIPO eSearch Plus", "result": "INCONCLUSIVE_TOOL_LIMITATION" },
-    { "registry": "TMview", "result": "NOT_ATTEMPTED_TOOL_LIMITATION" },
-    { "registry": "INPI DATA", "result": "NOT_ATTEMPTED_TOOL_LIMITATION" },
-    { "registry": "WIPO Global Brand Database", "result": "INCONCLUSIVE_TOOL_LIMITATION" },
-    { "registry": "UKIPO", "result": "NOT_ATTEMPTED" },
-    { "registry": "USPTO TESS/TMsearch", "result": "INCONCLUSIVE_TOOL_LIMITATION" }
+    { "registry": "EUIPO eSearch Plus", "result": "NOT_ATTEMPTED_THIS_SESSION" },
+    { "registry": "TMview", "result": "NOT_ATTEMPTED_THIS_SESSION" },
+    { "registry": "INPI DATA", "result": "NOT_ATTEMPTED_THIS_SESSION" },
+    { "registry": "WIPO Global Brand Database", "result": "NOT_ATTEMPTED_THIS_SESSION" },
+    { "registry": "UKIPO", "result": "NOT_ATTEMPTED_THIS_SESSION" },
+    { "registry": "USPTO TESS/TMsearch", "result": "NOT_ATTEMPTED_THIS_SESSION" }
   ],
-  "decisionRuleApplied": "Confirmed prior software usage in the same category is sufficient for CONFLICT_HIGH on its own, even absent a registered-trademark hit -- per this project's non-negotiable brand-clearance rule. Official registries being unqueryable by this session's tooling is treated as neutral (not exculpatory), not as evidence of clearance.",
+  "decisionRuleApplied": "Engineering clearance and publication clearance are separated. A locally-built, unpublished, unsigned artifact carries no trademark-use-in-commerce exposure, so the owner's decision is sufficient to authorise the technical rename. Publication remains blocked until legalReviewStatus == 'accepted' in the approval file, which requires a real registry search that this session did not perform.",
+  "outstandingForPublication": [
+    "Trademark search in the relevant classes (Nice class 9 / 42) across EUIPO, INPI, USPTO, UKIPO, WIPO.",
+    "Prior-software-usage search for 'CoreTend' and 'coretend' across GitHub, app stores, and package registries.",
+    "Domain and handle confirmation for any public identity beyond coretend.ahmetbsbnr.com.",
+    "Legal identity and security contact for public-facing legal pages."
+  ],
   "evidenceFile": "Documentation/BRAND_SEARCH_EVIDENCE.md",
   "registerFile": "Documentation/BRAND_CONFLICT_REGISTER.md",
-  "narrativeFile": "Documentation/BRAND_NAME_CLEARANCE.md"
+  "narrativeFile": "Documentation/BRAND_NAME_CLEARANCE.md",
+  "supersedes": "Documentation/RebrandHistory/brand-name-clearance-macclear.json"
 }

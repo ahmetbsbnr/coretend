@@ -1,107 +1,83 @@
-# Brand Name Clearance — "MacClear"
+# Brand Name Clearance — "CoreTend"
 
-**Verdict: `CONFLICT_HIGH`**
-**Date: 2026-07-24**
+**Engineering verdict: `CLEAR_FOR_ENGINEERING`**
+**Publication verdict: `BLOCKED`**
+**Decision date: 2026-07-24**
 **Machine-readable version: `Documentation/brand-name-clearance.json`**
 
 ## Decision
 
-`MacClear` is **not cleared for engineering**. This session's own research
-(`Documentation/BRAND_SEARCH_EVIDENCE.md`, `Documentation/BRAND_CONFLICT_REGISTER.md`)
-found three independent, real, exact-name "MacClear"/"macclear" software
-projects on GitHub, all in the identical category (macOS cleanup utility),
-one of which (`Matcha00/MacClear`) is a near-exact functional and technical
-twin of MacCare Local: SwiftUI, native macOS, cleans caches/logs/dev-junk/
-downloads/temp-files/large-old-files/duplicates/app-leftovers/system-level
-caches, Trash-default deletion, risk-tiered auto-selection, Full Disk
-Access instructions.
+`CoreTend` was selected and approved directly by the project owner. The
+approval is recorded locally and un-versioned in
+`Configuration/BrandRenameApproval.local.json`
+(template: `Configuration/BrandRenameApproval.example.json`).
 
-This independently confirms — via a different, real finding rather than
-just restating it — the user brief's underlying concern that "MacClear" is
-already occupied in this exact space. The specific "since 2018, App
-Store, uninstaller" product named in the brief was not independently
-reproduced by this session's tooling, but that is a tooling limitation,
-not evidence the claim is false, and it is moot regardless: the three
-confirmed conflicts already meet the bar.
+That approval authorises the **local technical rename** — source, targets,
+bundle identifier, resources, documentation, site, assets, and user-data
+migration. It does **not** authorise publication.
 
-## Why this is CONFLICT_HIGH, not lower
+## What was and was not established
 
-Per the project's own non-negotiable rule: **confirmed prior software
-usage in the same category is sufficient for `CONFLICT_HIGH`, even with no
-exact registered trademark found.** No registered-trademark search was
-even completable this session (see the tool-limitation section below), so
-that factor is neutral, not exculpatory — the software-usage evidence
-alone already crosses the threshold.
+**Established:** the owner has chosen this name, and the product site will
+live at `coretend.ahmetbsbnr.com`, a subdomain of a root domain the owner
+already controls. No domain is being acquired, so the domain-acquisition
+and domain-reputation risk class that sank the previous candidate does not
+apply here.
 
-Aggravating factors on top of the baseline:
-- **Three** independent instances, not one — this is a genuinely occupied
-  name in the category, not a single obscure edge case.
-- One instance (`Matcha00/MacClear`) matches not just the name and
-  category but the *implementation* (SwiftUI, Swift Package Manager,
-  identical safety posture of Trash-default + risk-tiered auto-select +
-  FDA-gated). A side-by-side comparison would look deliberate even though
-  it plainly is not.
-- The `.com` domain is already registered and carries a negative
-  reputation signal (ad/tracker blocklist entry, broken TLS) — even a
-  clean legal path would still need a different domain strategy.
+**Not established:** no trademark-registry search and no prior-software-usage
+search has been run for `CoreTend`. None is claimed. The absence of a
+recorded conflict in `Documentation/BRAND_CONFLICT_REGISTER.md` §2 means
+*nobody looked*, not *nothing is there*. Treating those two as the same
+thing is the exact failure mode this document exists to prevent.
 
-## What this verdict blocks (per the phase's non-negotiable rule)
+## Why engineering may proceed anyway
 
-Per this phase's instructions, `CONFLICT_HIGH` means, until further
-notice:
-- no file, folder, repo, or product renamed to MacClear;
-- no logo, icon, or asset produced under the MacClear name;
-- no bundle identifier changed;
-- no legal/license text changed to reference MacClear;
-- no repository moved under a `macclear` path;
-- no domain or GitHub org registered under this name;
-- no artifact (ZIP/DMG/site) produced under the MacClear name;
-- no attempt to route around the conflict via casing or spacing tricks
-  (`Mac Clear`, `MAC-CLEAR`, `macClear`, etc. — same category of conflict).
+The risk a trademark search protects against is **use in commerce**. A
+local rename produces no use in commerce:
 
-None of the above happened this session, and none will until a name
-reaches `CLEAR_FOR_ENGINEERING` **and** a human approval file exists (see
-below).
+- nothing is pushed;
+- nothing is deployed;
+- nothing is published or listed;
+- no release is cut;
+- the artifacts are unsigned and stay on the build machine.
 
-## What would be required to proceed with MacClear anyway
+Under those conditions the cost of proceeding is bounded and fully
+reversible — the rollback plan is `Documentation/PRODUCT_RENAME_ROLLBACK.md`,
+and the rename is mechanical enough to redo under a different name if the
+eventual search demands it. The cost of *not* proceeding is that every
+downstream deliverable stays blocked behind a search that has not been
+scheduled.
 
-Per the same rule, full rename is only permitted if **all four** hold:
-1. Status is `CLEAR_FOR_ENGINEERING` (not the case — see above).
-2. No serious prior software usage is identified (not the case — three
-   found).
-3. Official registries show no relevant conflict (not established either
-   way — see tool-limitation note).
-4. `Configuration/BrandRenameApproval.local.json` exists locally
-   (gitignored) with `approvedByHuman: true` and
-   `legalReviewStatus: "accepted"`.
+## Why publication may not
 
-None of the four hold today. **MacClear stays blocked.** See
-`Documentation/BRAND_NAME_ALTERNATIVES.md` for a screened shortlist of
-alternatives, and `Documentation/BRAND_NAME_SHORTLIST.md` for the top 5 —
-selection among them is explicitly left to the user, not made here.
+`Scripts/check-brand-clearance.sh --publication` fails, by design, and will
+keep failing until **all** of these land:
 
-## Tool-limitation note (official registries)
+1. `legalReviewStatus` becomes `accepted` in the local approval record,
+   which requires a real registry search in the relevant classes
+   (Nice 9 / 42) across EUIPO, INPI, USPTO, UKIPO, and WIPO.
+2. A prior-software-usage search for `CoreTend` / `coretend` across GitHub,
+   the App Store, and package registries comes back without a
+   same-category conflict.
+3. `publicReleaseAllowed` becomes `true`.
+4. The independent publication blockers unrelated to the name are resolved:
+   legal identity, security contact, and a signing decision.
 
-EUIPO eSearch Plus, TMview, INPI DATA, WIPO Global Brand Database, UKIPO,
-and USPTO TESS/TMsearch all require interactive, JavaScript-driven search
-forms this session's `mcp__web__web_search` tool cannot drive — every
-attempt returned only each registry's static homepage/about content, never
-actual search results. This is logged honestly in
-`BRAND_SEARCH_EVIDENCE.md` as `INCONCLUSIVE_TOOL_LIMITATION`, not
-misrepresented as "checked and clear." A real trademark clearance still
-requires either manually running those registries' own search forms or
-engaging a clearance-search professional/service before any legal
-reliance — this is `CLEAR_WITH_COUNSEL_REVIEW` territory even in the
-hypothetical case where the software-usage conflicts above turn out to be
-resolvable (e.g. the existing repos are inactive hobby projects with no
-trademark filed, which is plausible but not verified).
+The project's non-negotiable rule is unchanged and still binding:
+**confirmed prior software usage in the same category is sufficient for
+`CONFLICT_HIGH` on its own**, with or without a registered trademark. That
+rule is what closed out the previous candidate; it applies to this one the
+moment a search is actually run.
 
-## Status field
+## Previous candidate
 
-```
-status: CONFLICT_HIGH
-name: MacClear
-clearedForEngineering: false
-humanApprovalFilePresent: false
-blocksRename: true
-```
+`MacClear` was researched, found `CONFLICT_HIGH`, and abandoned. That
+research is preserved verbatim:
+
+- `Documentation/RebrandHistory/BRAND_NAME_CLEARANCE_MACCLEAR.md`
+- `Documentation/RebrandHistory/BRAND_SEARCH_EVIDENCE_MACCLEAR.md`
+- `Documentation/RebrandHistory/brand-name-clearance-macclear.json`
+
+Its findings also produced a useful negative constraint that the new name
+satisfies: stay out of the `Mac*` cleaner-name cluster
+(`MacClean`, `MacCleanse`, `MacCleaner Pro`, `MacClean360`) entirely.
