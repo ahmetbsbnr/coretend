@@ -1,14 +1,35 @@
 # CONTINUATION
 
-## Where we are (product version 0.7.1, phase: 0.8.0 — Functional Completion)
-Branch `feat/functional-completion`. The 0.8.0 effort is IN PROGRESS and NOT
-complete — the product version stays **0.7.1** until every automatable criterion
-in step 19 of the plan is genuinely met. See
-`Documentation/FUNCTIONAL_COMPLETION_EXECUTION_PLAN.md` for the 21-step status
-table (the authoritative tracker), plus `CURRENT_PROJECT_STATE.json`.
+## Where we are (product version 0.8.0, phase: 0.8.0 — Functional Completion, CLOSED)
+Branch `feat/functional-completion`. The 0.8.0 effort completed all 21 steps
+this session: steps 1-18 (every automatable item) are DONE/DONE_VERIFIED/
+CODE_DONE/READY_FOR_MANUAL_QA, step 19's version decision was made (bumped
+0.7.1 → 0.8.0, locally — no push/deploy/publish), step 20 built and verified
+the ZIP/DMG artifacts, step 21 built the external audit package. See
+`Documentation/FUNCTIONAL_COMPLETION_EXECUTION_PLAN.md` for the full 21-step
+table (the authoritative tracker) and `Documentation/FUNCTIONAL_COMPLETION_REPORT.md`
+for the narrative summary. Remaining gaps are exclusively BLOCKED_ENVIRONMENT
+(interactive VoiceOver, full visual-QA capture campaign) or BLOCKED_HUMAN
+(legal identity, signing) — both documented, neither hidden. Next phase is
+NOT started: no MacClear rename, no project relocation, no 0.9.0 work.
 
 ## HEAD this phase
-Latest: `7da3dde` — Step 17 (documentation sync), recovered after an API
+Latest: (final commit of this session, packaging + audit zip) — closed the
+plan. Resumed from `317e32c` (previous session's HEAD after a documentation
+recovery pass). This session: fixed the last Sendable warning (0 project
+warnings in Debug/Release, `95cac30`); closed Step 3's FSEvents test matrix
+(rate-limit + rename-independence tests, `b140527`, DONE_VERIFIED); shipped
+My Clutter search/volume-awareness/UI-exposed-exclusions across Large & Old,
+Duplicates, and Similar Images (`6b688dd`, `ef04a11`, `35588ff`, `04bf457`,
+215→250 tests, Step 6 DONE_VERIFIED); documented Step 1's Cleanup scope
+decision (`c6a01c2`, DONE_VERIFIED_WITH_DEFERRED_SCOPE); re-confirmed real
+display availability and closed Step 15 as READY_FOR_MANUAL_QA (one real
+verification capture succeeded); bumped version 0.7.1→0.8.0 centrally
+(`5ff689f`); built and verified 0.8.0 release artifacts (`7e60e06`); built
+the external audit package. Full detail in `FUNCTIONAL_COMPLETION_REPORT.md`.
+
+## Earlier this phase
+Latest before this session: `7da3dde` — Step 17 (documentation sync), recovered after an API
 disconnect mid-session. Previous agent's uncommitted doc work (7 new module
 docs + regenerated test-inventory/AUDIT_COMMANDS.log) was inspected, verified
 against source, and committed (`932a961`), then Steps 7/8 in the plan table
