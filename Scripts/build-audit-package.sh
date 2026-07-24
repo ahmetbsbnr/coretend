@@ -18,7 +18,7 @@ rm -rf "$STAGE"
 mkdir -p "$STAGE"
 
 # Explicit exclusion patterns (never staged) with reasons.
-EXCLUDE_PATTERNS='^\.git($|/)|^\.build/|^build/|^DerivedData/|^\.swiftpm/|^\.claude/|^\.openclaude/|^AuditPackages/|^Configuration/PublicIdentity\.local\.json$|\.zip$|\.dmg$'
+EXCLUDE_PATTERNS='^\.git($|/)|^\.build/|^build/|^DerivedData/|^\.swiftpm/|^\.claude/|^\.openclaude/|^AuditPackages/|^Configuration/PublicIdentity\.local\.json$|\.zip$|\.dmg$|^Documentation/PROJECT_COMPLETE_AUDIT\.md$|^Documentation/PUBLICATION_AUDIT\.md$'
 
 git ls-files > /tmp/audit-pkg-tracked.txt
 included_count=0
@@ -63,6 +63,7 @@ git branch -vv | sed "s|$HOME|~|g" > "$STAGE/AuditEvidence/Git/branches.txt"
       .claude/*|.openclaude/*) reason="local tooling directory" ;;
       AuditPackages/*) reason="previous package staging output" ;;
       Configuration/PublicIdentity.local.json) reason="local override, not tracked/does not exist in this repo" ;;
+      Documentation/PROJECT_COMPLETE_AUDIT.md|Documentation/PUBLICATION_AUDIT.md) reason="contains the developer's real local macOS account name in self-referential audit narrative text (an accepted, documented exception for check-private-data.sh's in-repo gate — see that script's own comment) — excluded specifically from this external-facing package, which leaves the machine" ;;
       *) reason="matched exclusion pattern" ;;
     esac
     echo "| $f | $reason |"
