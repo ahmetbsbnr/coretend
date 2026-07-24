@@ -1,5 +1,6 @@
 {
   "_comment": "Single current-audit source of truth, distinct from CURRENT_PROJECT_STATE.json. AUDIT_PACKAGE_COMMIT is recorded post-hoc after each external ZIP build, never conflated with the other two commit fields (see Scripts/compute-audit-commits.sh).",
+  "preCloseoutSnapshotNotice": "CURRENT_HEAD/AUDIT_PACKAGE_COMMIT below (8acd2a5) is the real, immutable commit the built MacCare-Local-Full-Audit-v0.8.0-2026-07-24-8acd2a5.zip on ~/Desktop was actually generated from -- it is correct and must not be advanced to chase later doc-only commits. The true final HEAD of the 0.8.0 phase (3 doc-only commits later) is a3fe7f716f80e71e43d7b7ce2f25db6256c3451c -- see Documentation/PRE_REBRAND_BASELINE.md. No new audit ZIP was built at that later HEAD during 0.8.1A preflight (no functional/audit-relevant change occurred between them), so this file intentionally still reflects the 8acd2a5 snapshot rather than being falsely advanced.",
   "schemaVersion": 1,
   "CURRENT_HEAD": "8acd2a59ef416b901f7946c3f77e81b7c6d74424",
   "REQUIREMENTS_AUDIT_COMMIT": "77f55726ac465adc28d28a676b16989915a78d94",
