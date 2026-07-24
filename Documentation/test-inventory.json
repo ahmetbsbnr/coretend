@@ -1,14 +1,14 @@
 {
   "schemaVersion": 2,
-  "auditDate_UTC": "2026-07-21",
-  "commit": "f93869873c7acf3ff39752edc6e6b26269504b27",
+  "auditDate_UTC": "2026-07-24",
+  "commit": "5ff689fdc0871f5dade413b2de798196c4655a93",
   "command": "Scripts/test.sh",
-  "totalTests": 215,
-  "totalSuites": 49,
-  "passed": 215,
+  "totalTests": 250,
+  "totalSuites": 55,
+  "passed": 250,
   "failed": 0,
-  "testRunDurationSeconds": 5.701,
-  "wallTimeSeconds": 18,
+  "testRunDurationSeconds": 6.33,
+  "wallTimeSeconds": 8,
   "result": "PASS",
   "domains": [
     {
@@ -25,11 +25,11 @@
     },
     {
       "module": "MacCareApp",
-      "testFunctionsDeclared": 65
+      "testFunctionsDeclared": 98
     },
     {
       "module": "MalwareEngine",
-      "testFunctionsDeclared": 38
+      "testFunctionsDeclared": 40
     },
     {
       "module": "Persistence",
