@@ -1,6 +1,6 @@
 # Protection module — honest limitations
 
-MacCare Local's Protection tab is **not** a full antivirus product and is
+CoreTend's Protection tab is **not** a full antivirus product and is
 **not** a security guarantee. This page states plainly what it does and does
 not do, so users can make an informed decision.
 
@@ -21,16 +21,16 @@ not do, so users can make an informed decision.
   signature database found no known match in the scanned paths" — nothing
   more. It does not mean a Mac is free of malware, especially zero-day or
   targeted threats that predate signature coverage.
-- **Not maintained by MacCare Local.** ClamAV, its signature database, and
+- **Not maintained by CoreTend.** ClamAV, its signature database, and
   its update cadence (`freshclam`) are entirely outside this project's
-  control. MacCare Local does not vet, curate, or guarantee the accuracy or
+  control. CoreTend does not vet, curate, or guarantee the accuracy or
   freshness of ClamAV's signatures.
 - **Not always installed.** ClamAV is optional third-party software the
-  user installs separately (e.g. `brew install clamav`). MacCare Local
+  user installs separately (e.g. `brew install clamav`). CoreTend
   never installs it automatically and never bundles it.
 - **Not a replacement for Apple's built-in protections** (Gatekeeper, XProtect,
   notarization, SIP). Those remain active and should never be disabled to
-  work around MacCare Local.
+  work around CoreTend.
 
 ## Scan scope
 
@@ -48,6 +48,6 @@ undo any damage the file may have already caused before detection.
 
 For anything beyond casual, opt-in signature scanning, use a maintained,
 purpose-built security product and keep macOS itself (Gatekeeper, XProtect,
-software updates) enabled. MacCare Local's Protection tab is a convenience
+software updates) enabled. CoreTend's Protection tab is a convenience
 layer on top of a tool you already trust and install yourself — not a
 substitute for one.

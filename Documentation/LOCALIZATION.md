@@ -3,10 +3,10 @@
 Standard `.strings`-based localization, no third-party i18n library.
 
 - `defaultLocalization: "en"` in `Package.swift`.
-- Two locales today: `Sources/MacCareApp/Resources/Base.lproj/Localizable.strings`
-  (English, the fallback) and `Sources/MacCareApp/Resources/fr.lproj/Localizable.strings`
+- Two locales today: `Sources/CoreTendApp/Resources/Base.lproj/Localizable.strings`
+  (English, the fallback) and `Sources/CoreTendApp/Resources/fr.lproj/Localizable.strings`
   (French) — 367 keys each, kept in sync (same key count).
-- Lookup goes through one helper, `L(_:_:)` in `Sources/MacCareApp/L10n.swift`:
+- Lookup goes through one helper, `L(_:_:)` in `Sources/CoreTendApp/L10n.swift`:
 
   ```swift
   func L(_ key: String, _ args: CVarArg...) -> String {

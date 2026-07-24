@@ -175,7 +175,7 @@ domain changed. Every doc below is current, public-safe unless noted.
 | `BRAND_NAME_SHORTLIST.md` | Top 5 of the 32, no selection made | current | internal |
 | `PORTFOLIO_REPOSITORY_INVENTORY.md` + `portfolio-repository-inventory.json` | Portfolio repo identification (read-only) | current | internal (contains paths only, no private content) |
 | `WORKSPACE_TARGET_STRUCTURE.md`, `WORKSPACE_MIGRATION_PLAN.md`, `WORKSPACE_ROLLBACK_PLAN.md`, `workspace-migration-manifest.json` | Future `WEBSITE/` workspace design — nothing executed | current | internal |
-| `PRODUCT_RENAME_INVENTORY.md` + `product-rename-inventory.json` | Every "MacCare Local"/"MacCareLocal" reference, categorized by risk | current | internal |
+| `PRODUCT_RENAME_INVENTORY.md` + `product-rename-inventory.json` | Every "CoreTend"/"CoreTend" reference, categorized by risk | current | internal |
 | `PRODUCT_RENAME_PLAN.md`, `PRODUCT_RENAME_ROLLBACK.md` | Rename sequencing + rollback, nothing executed | current | internal |
 | `USER_DATA_RENAME_MIGRATION.md` + `user-data-rename-migration.json` | Local-data migration design (SQLite/Quarantine/UserDefaults) | current | internal |
 | `REBRAND_MIGRATION_TEST_PLAN.md` | 15-scenario test matrix for the above, written ahead of implementation | current | internal |

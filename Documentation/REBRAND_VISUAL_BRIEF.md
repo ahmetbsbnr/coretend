@@ -47,4 +47,4 @@ must carry forward regardless of which name is eventually approved.
 
 See `LOGO_MIGRATION_PLAN.md` for sequencing and `BRAND_ASSET_MATRIX.md`
 for the exhaustive list of every asset slot that currently holds a
-MacCare-Local-branded file and will need a replacement.
+CoreTend-branded file and will need a replacement.

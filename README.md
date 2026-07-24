@@ -1,6 +1,6 @@
-# MacCare Local
+# CoreTend
 
-MacCare Local est un utilitaire macOS open source conçu pour analyser,
+CoreTend est un utilitaire macOS open source conçu pour analyser,
 nettoyer, organiser et optimiser les Mac Apple Silicon. Il fonctionne
 entièrement en local, sans compte, sans abonnement et sans télémétrie.
 Chaque élément détecté est expliqué avant toute action, et les
@@ -12,14 +12,14 @@ réversibles.
 > under active development. Build from source if you want to try it —
 > see [Build from source](#build-from-source) below.
 
-MacCare Local is not affiliated with, endorsed by, or a product of Apple
+CoreTend is not affiliated with, endorsed by, or a product of Apple
 Inc. or MacPaw Inc. It is an independent project. See
 [TRADEMARKS.md](TRADEMARKS.md).
 
 ## Why
 
 Mac cleanup utilities are common, but most are closed-source, subscription
-gated, or vague about what they actually touch on disk. MacCare Local
+gated, or vague about what they actually touch on disk. CoreTend
 aims to be transparent instead: every module explains what it looked at
 and why an item was flagged, dry-run is the default, and deletions go to
 the Trash unless you explicitly choose otherwise.
@@ -63,7 +63,7 @@ Command Line Tools).
 
 ```sh
 git clone <this-repo>
-cd MacCare-Local
+cd CoreTend
 Scripts/doctor.sh      # checks your toolchain
 Scripts/test.sh        # runs the test suite
 Scripts/build.sh        # debug build
@@ -77,7 +77,7 @@ for how the build is structured.
 
 ## ClamAV is optional
 
-MacCare Local never bundles, embeds, or links ClamAV. If you install it
+CoreTend never bundles, embeds, or links ClamAV. If you install it
 yourself (e.g. `brew install clamav`), the Protection module can use it.
 Without it, Protection is honestly shown as unavailable rather than
 faked. See [Documentation/CLAMAV.md](Documentation/CLAMAV.md) and
@@ -85,7 +85,7 @@ faked. See [Documentation/CLAMAV.md](Documentation/CLAMAV.md) and
 
 ## Permissions
 
-MacCare Local requests Full Disk Access to scan more of your Mac
+CoreTend requests Full Disk Access to scan more of your Mac
 accurately. It works with reduced coverage without it, and always
 explains what each permission unlocks. See
 [Documentation/FULL_DISK_ACCESS.md](Documentation/FULL_DISK_ACCESS.md).
@@ -116,7 +116,7 @@ Do not open a public issue for security-sensitive reports.
 
 Code is licensed under [Apache-2.0](LICENSES/Apache-2.0.txt). Original
 documentation and illustrations are licensed under
-[CC-BY-4.0](LICENSES/CC-BY-4.0.txt). The "MacCare Local" name/logo are
+[CC-BY-4.0](LICENSES/CC-BY-4.0.txt). The "CoreTend" name/logo are
 covered separately — see [TRADEMARKS.md](TRADEMARKS.md). Third-party
 components keep their own licenses — see
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Full breakdown:

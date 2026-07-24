@@ -1,5 +1,5 @@
 #!/bin/sh
-# Public-facing uninstaller for MacCare Local.
+# Public-facing uninstaller for CoreTend.
 #
 # Relationship to Scripts/uninstall-local.sh: that script is the original
 # two-path remover (app bundle + Application Support) written during the
@@ -9,8 +9,8 @@
 # allowlist, and quarantine handled as an opt-in rather than bundled in
 # blindly. Prefer this one; Documentation/UNINSTALL.md points here.
 #
-# MacCare Local owns exactly one directory tree
-# (~/Library/Application Support/MacCareLocal — the SQLite DB, which holds
+# CoreTend owns exactly one directory tree
+# (~/Library/Application Support/CoreTend — the SQLite DB, which holds
 # quarantine records, exclusions, and scan history) plus one prefs plist and
 # the app bundle itself. No LaunchAgent, daemon, helper, or hidden file is
 # installed anywhere else (see Documentation/UNINSTALL.md). This script
@@ -51,10 +51,10 @@ for arg in "$@"; do
 done
 
 HOME_DIR="$HOME"
-APP_PATH="/Applications/MacCare Local.app"
-SUPPORT_DIR="$HOME_DIR/Library/Application Support/MacCareLocal"
+APP_PATH="/Applications/CoreTend.app"
+SUPPORT_DIR="$HOME_DIR/Library/Application Support/CoreTend"
 DB_FILE="$SUPPORT_DIR/store.sqlite"
-PREFS_FILE="$HOME_DIR/Library/Preferences/local.maccare.app.plist"
+PREFS_FILE="$HOME_DIR/Library/Preferences/com.ahmetbsbnr.coretend.plist"
 
 # --- Safety: canonicalize and refuse anything unexpected -------------------
 # Never follow symlinks when resolving "the real path" of a target — if a
@@ -118,7 +118,7 @@ check_target() {
 
 # Newline-separated (not space-separated) because paths like APP_PATH
 # contain spaces — word-splitting on a space-joined list would silently
-# mangle "/Applications/MacCare Local.app" into two bogus, always-absent
+# mangle "/Applications/CoreTend.app" into two bogus, always-absent
 # paths and skip it entirely.
 case "$MODE" in
   dry-run) TARGETS="$APP_PATH
@@ -131,7 +131,7 @@ $SUPPORT_DIR
 $PREFS_FILE" ;;
 esac
 
-echo "MacCare Local — uninstall (mode: $MODE)"
+echo "CoreTend — uninstall (mode: $MODE)"
 echo "Paths that will be checked:"
 printf '%s\n' "$TARGETS" | while IFS= read -r t; do
   echo "  $t"
@@ -173,4 +173,4 @@ printf '%s\n' "$TARGETS" | while IFS= read -r t; do
 done
 
 echo
-echo "Done. No agent, daemon, helper, or hidden file is installed elsewhere by MacCare Local."
+echo "Done. No agent, daemon, helper, or hidden file is installed elsewhere by CoreTend."

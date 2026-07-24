@@ -39,8 +39,8 @@ place (`USER_DATA_RENAME_MIGRATION.md`,
    `package-dmg.sh`, new `Release/Notes/<version>.{en,fr}.md`. Gate:
    `test-release-manifest.sh`, `test-distribution.sh`.
 7. **SwiftPM package/executable/test-target rename**: `Package.swift`
-   (package name + executable target `MacCareApp` → new name + test
-   target folder `Tests/MacCareAppTests/` → matching new name, done
+   (package name + executable target `CoreTendApp` → new name + test
+   target folder `Tests/CoreTendAppTests/` → matching new name, done
    together, atomically, since a mismatch breaks the test target). Gate:
    `swift build`, `Scripts/test.sh`.
 8. **`Resources/Info.plist`**: `CFBundleName`, `CFBundleDisplayName`,
@@ -49,10 +49,10 @@ place (`USER_DATA_RENAME_MIGRATION.md`,
 9. **Bundle identifier + local user data migration** (highest risk, done
    last, only with a tested migration in place — see
    `USER_DATA_RENAME_MIGRATION.md` and
-   `REBRAND_MIGRATION_TEST_PLAN.md`): `local.maccare.app` →
+   `REBRAND_MIGRATION_TEST_PLAN.md`): `com.ahmetbsbnr.coretend` →
    `<new-reverse-dns>.app` in `Info.plist` and
    `Configuration/PublicIdentity.example.json`. This step is the one that
-   can orphan real user data (`~/Library/Application Support/MacCareLocal/`
+   can orphan real user data (`~/Library/Application Support/CoreTend/`
    is keyed by the old bundle ID's app-container convention, and
    `NSUserDefaults` domains are keyed by `CFBundleIdentifier`) if not
    paired with a working migration. **Do not do this step without

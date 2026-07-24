@@ -17,7 +17,7 @@ first. See [DEVELOPMENT.md](../DEVELOPMENT.md) to get building.
   slash, symlink chain) — see [SAFETYCORE.md](SAFETYCORE.md).
 
 ## Small UI
-- Accessibility labels/localization coverage gaps in any `MacCareApp`
+- Accessibility labels/localization coverage gaps in any `CoreTendApp`
   view — check for hardcoded `Text("...")` instead of `L("...")`.
 - Empty-state or failed-state polish in a module view (each module follows
   the idle/scanning/review/executing/done/failed pattern — see

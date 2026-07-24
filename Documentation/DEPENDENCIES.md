@@ -8,7 +8,7 @@ dependencies) and a repo-wide grep for build/dev tooling. Last checked:
 
 **None.** `Package.swift` declares zero `.package(url:...)` entries. Every
 target (`ScanCore`, `SafetyCore`, `FileRules`, `DesignSystem`, `Persistence`,
-`SystemMetrics`, `AppDiscovery`, `MalwareEngine`, `MacCareApp`) is first-party
+`SystemMetrics`, `AppDiscovery`, `MalwareEngine`, `CoreTendApp`) is first-party
 Swift code depending only on Apple's system frameworks (Foundation,
 SwiftUI, AppKit, etc.) and, at runtime, an optional user-installed
 `clamscan` binary shelled out to as a subprocess — never linked, never

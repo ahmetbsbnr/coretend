@@ -1,6 +1,6 @@
 # First Launch
 
-MacCare Local's onboarding (`Sources/MacCareApp/OnboardingView.swift`) is
+CoreTend's onboarding (`Sources/CoreTendApp/OnboardingView.swift`) is
 short, skippable, and resumable — four steps, no permission is forced.
 
 1. **Welcome** — what the app is and isn't (see the positioning statement
@@ -20,7 +20,7 @@ rather than restarting.
 ## What to do first
 
 1. Run a **Smart Care** or **Cleanup** scan in dry-run mode (the default)
-   to see what MacCare Local would find on your Mac, with nothing removed.
+   to see what CoreTend would find on your Mac, with nothing removed.
 2. Review the findings, add any [exclusions](EXCLUSIONS.md) you want.
 3. Turn off dry-run when you're ready to actually free space (removals go
    to the Trash — see [RESTORE.md](RESTORE.md)).

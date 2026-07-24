@@ -6,7 +6,7 @@ set -euo pipefail
 ROOT_DIR=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT_DIR"
 
-echo "MacCare Local — bootstrap"
+echo "CoreTend — bootstrap"
 echo "Repo: $ROOT_DIR"
 
 if ! command -v swift >/dev/null 2>&1; then

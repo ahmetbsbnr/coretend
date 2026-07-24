@@ -1,5 +1,5 @@
 {
-  "project": "MacCare Local",
+  "project": "CoreTend",
   "version": "0.8.0",
   "phase": "0.8.0 \u2014 Functional Completion: all automatable steps of the 21-step plan closed (FUNCTIONAL_COMPLETION_EXECUTION_PLAN.md) \u2014 bounded ScanCore concurrency, safe Cleanup rule set (10 rules, deferred candidates documented with rationale), Smart Care safety audit, optional FSEvents Protection watch (full scenario matrix), honest cache-only Privacy Cleaner, update-mechanism detection, My Clutter search/volume/exclusions, Space Lens + Cloud Cleanup testability, settings matrix no-orphan gate, macOS compatibility audit, stress tests, code-level accessibility audit, first-run wizard, animation verification, local site copy sync, documentation sync. Remaining limits are BLOCKED_ENVIRONMENT (interactive VoiceOver, full visual-QA capture campaign) or BLOCKED_HUMAN (legal identity, signing) \u2014 tracked, not hidden. Local version only: no push, no deploy, no public publication.",
   "toolchain": "Swift 6.3.2 via CommandLineTools (no Xcode installed)",

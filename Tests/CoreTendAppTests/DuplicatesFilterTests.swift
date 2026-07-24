@@ -1,7 +1,7 @@
 import Testing
 import Foundation
 @testable import ScanCore
-@testable import MacCareApp
+@testable import CoreTendApp
 
 private struct FixedVolumeResolver: VolumeResolving {
     let table: [String: VolumeInfo]

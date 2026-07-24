@@ -30,7 +30,7 @@ exists. **No asset is produced this phase.**
    (asset copy steps), matching step 7-8 of `PRODUCT_RENAME_PLAN.md`.
 6. **Wire into the website**: `Website/generate.py` template updates for
    favicon/OG/Twitter tags, matching step 3 of `PRODUCT_RENAME_PLAN.md`.
-7. **Retire old MacCare-Local-branded assets**: move (not delete outright
+7. **Retire old CoreTend-branded assets**: move (not delete outright
    in the same commit — a follow-up cleanup commit once the new assets
    are confirmed working end-to-end) the old `AppIcon.iconset`/
    `MenuBarTemplate*` files, so a git history diff clearly shows old→new

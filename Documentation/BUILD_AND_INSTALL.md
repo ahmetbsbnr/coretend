@@ -5,7 +5,7 @@ Requirements: macOS 14+, Apple Silicon, Swift CommandLineTools (Xcode not requir
 - Debug build: `Scripts/build.sh`
 - Release build: `Scripts/build.sh release`
 - Tests: `Scripts/test.sh` (do NOT use plain `swift test`; see DECISIONS D2)
-- App bundle: `Scripts/package-local.sh` → `build/MacCare Local.app` (ad-hoc signed)
+- App bundle: `Scripts/package-local.sh` → `build/CoreTend.app` (ad-hoc signed)
 - Install: copy the bundle to /Applications.
 - Full Disk Access: System Settings → Privacy & Security → Full Disk Access → add app.
 

@@ -1,6 +1,6 @@
 # User Guide
 
-MacCare Local est un utilitaire macOS open source conçu pour analyser,
+CoreTend est un utilitaire macOS open source conçu pour analyser,
 nettoyer, organiser et optimiser les Mac Apple Silicon. Il fonctionne
 entièrement en local, sans compte, sans abonnement et sans télémétrie.
 Chaque élément détecté est expliqué avant toute action, et les suppressions
@@ -31,7 +31,7 @@ then follow the links for the area you need.
 - [SAFETY_MODEL.md](SAFETY_MODEL.md) — the engineering rules behind "never
   touch system paths."
 - [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) and
-  [PROTECTION_LIMITATIONS.md](PROTECTION_LIMITATIONS.md) — what MacCare
+  [PROTECTION_LIMITATIONS.md](PROTECTION_LIMITATIONS.md) — what CoreTend
   Local does not claim to do.
 
 ## Your data
@@ -45,7 +45,7 @@ then follow the links for the area you need.
 - [SECURITY.md](../SECURITY.md) — reporting a vulnerability.
 - Bug reports: `.github/ISSUE_TEMPLATE/`.
 
-## What MacCare Local is not
+## What CoreTend is not
 
 Not affiliated with CleanMyMac, MacPaw, or Apple. Not a full antivirus or a
 security guarantee. Not a "miracle" speed booster. Not AI-generated or a

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Removes MacCare Local's own app data from this Mac: the app bundle (if in
+# Removes CoreTend's own app data from this Mac: the app bundle (if in
 # /Applications), its Application Support folder (SQLite DB + quarantine),
 # and its preferences plist. Mirrors Documentation/UNINSTALL.md exactly.
 #
@@ -16,17 +16,17 @@ for arg in "$@"; do
     --yes|-y) ASSUME_YES=1 ;;
     --help|-h)
       echo "Usage: $0 [--dry-run] [--yes]"
-      echo "Removes MacCare Local's app bundle, Application Support data, and prefs."
+      echo "Removes CoreTend's app bundle, Application Support data, and prefs."
       exit 0
       ;;
   esac
 done
 
-APP_PATH="/Applications/MacCare Local.app"
-SUPPORT_DIR="$HOME/Library/Application Support/MacCareLocal"
-PREFS_FILE="$HOME/Library/Preferences/local.maccare.app.plist"
+APP_PATH="/Applications/CoreTend.app"
+SUPPORT_DIR="$HOME/Library/Application Support/CoreTend"
+PREFS_FILE="$HOME/Library/Preferences/com.ahmetbsbnr.coretend.plist"
 
-echo "MacCare Local — uninstall-local"
+echo "CoreTend — uninstall-local"
 echo "The following will be removed if present:"
 echo "  $APP_PATH"
 echo "  $SUPPORT_DIR  (SQLite database + quarantine — check Documentation/QUARANTINE.md first if you have items to restore)"
@@ -65,4 +65,4 @@ remove "$SUPPORT_DIR"
 remove "$PREFS_FILE"
 
 echo
-echo "Done. No agent, daemon, helper, or hidden file is installed elsewhere by MacCare Local."
+echo "Done. No agent, daemon, helper, or hidden file is installed elsewhere by CoreTend."

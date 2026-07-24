@@ -1,6 +1,6 @@
 # Master Requirements Baseline
 
-Reconstructed requirements register for MacCare Local, built by reading the historical documentation
+Reconstructed requirements register for CoreTend, built by reading the historical documentation
 and commit history and extracting requirement-shaped statements (must/never/shall/should/interdit).
 Each requirement gets a stable ID for later traceability-matrix work (session 2+ of this audit phase).
 
@@ -82,7 +82,7 @@ exception allowed), **MAY** (optional, discretionary).
   states this honestly rather than pretending to scan." (`KNOWN_LIMITATIONS.md:7-8`)
 - **Priority**: MUST
 - **Justification**: false security signal is worse than an honest "unavailable" state.
-- **Evidence**: `Sources/MacCareApp/ProtectionView.swift` "unavailable" card path;
+- **Evidence**: `Sources/CoreTendApp/ProtectionView.swift` "unavailable" card path;
   `Documentation/CLAMAV.md`, `PROTECTION_LIMITATIONS.md`.
 - **Current scope**: held (re-verified via `Documentation/CLAMAV.md` session-2 note: "the Protection tab
   renders an honest 'unavailable' card when [ClamAV is] absent").
@@ -199,7 +199,7 @@ exception allowed), **MAY** (optional, discretionary).
 - **Current scope**: held.
 
 ### LEGAL-003 — Trademark handled separately from code/content licenses
-- **Wording**: `LICENSE`: "'MacCare Local' name and logo: see TRADEMARKS.md (not covered by the above
+- **Wording**: `LICENSE`: "'CoreTend' name and logo: see TRADEMARKS.md (not covered by the above
   code/content licenses)"
 - **Priority**: MUST
 - **Evidence**: `TRADEMARKS.md` exists.
@@ -288,8 +288,8 @@ exception allowed), **MAY** (optional, discretionary).
 - **Wording**: `Documentation/CONTINUATION.md` session "public-distribution punch list, continued":
   "anonymized diagnostic export, wired into Settings > Data with a mandatory preview sheet before save."
 - **Priority**: MUST
-- **Evidence**: `Sources/MacCareApp/DiagnosticReport.swift`,
-  `Tests/MacCareAppTests/DiagnosticReportTests.swift` (redaction test, passing per this session's test
+- **Evidence**: `Sources/CoreTendApp/DiagnosticReport.swift`,
+  `Tests/CoreTendAppTests/DiagnosticReportTests.swift` (redaction test, passing per this session's test
   run).
 - **Current scope**: held, test-backed.
 
@@ -298,7 +298,7 @@ exception allowed), **MAY** (optional, discretionary).
 ## PROD — Product positioning
 
 ### PROD-001 — Independent open-source utility, not affiliated with Apple/MacPaw
-- **Wording**: `README.md`: "MacCare Local is not affiliated with, endorsed by, or a product of Apple
+- **Wording**: `README.md`: "CoreTend is not affiliated with, endorsed by, or a product of Apple
   Inc. or MacPaw Inc. It is an independent project. See TRADEMARKS.md."
 - **Priority**: MUST
 - **Justification**: false affiliation claims are a legal/trust risk for a tool with filesystem-deletion
@@ -318,7 +318,7 @@ exception allowed), **MAY** (optional, discretionary).
 ### PROD-003 — Not positioned as a school/portfolio/AI-demo project
 - **Wording**: derived from `REQUIREMENTS_DECISION_HISTORY.md`'s "Architecture stance" and the
   product's own framing throughout README.md/CONTINUATION.md as a real utility ("Mac cleanup utilities
-  are common... MacCare Local aims to be transparent instead").
+  are common... CoreTend aims to be transparent instead").
 - **Priority**: SHOULD
 - **Justification**: framing affects trust; a tool asking for Full Disk Access should read as a serious
   utility, not a class project.
@@ -346,7 +346,7 @@ exception allowed), **MAY** (optional, discretionary).
 - **Priority**: MUST
 - **Acceptance criteria**: `SmartCareView` runs `UserCleanupRules.all` through the same `ScanEngine`/
   `SafetyCenter` gate as `CleanupView`, not a separate/looser path.
-- **Evidence**: `Sources/MacCareApp/SmartCareView.swift:71-113` (re-confirmed this session: same
+- **Evidence**: `Sources/CoreTendApp/SmartCareView.swift:71-113` (re-confirmed this session: same
   `UserCleanupRules.all` + `ScanEngine` + `SafetyCenter` call pattern as `CleanupView.swift:43,83-84`).
 - **Current scope**: COMPLIANT_VERIFIED.
 
@@ -390,7 +390,7 @@ exception allowed), **MAY** (optional, discretionary).
   unresolved): only 1 test in this domain.
 
 ### FUNC-005 — Applications "check updates" detects the real update *mechanism* per app, but not actual available-version availability
-- **Wording**: derived from a full re-read of `Sources/MacCareApp/AppUpdatesView.swift` and
+- **Wording**: derived from a full re-read of `Sources/CoreTendApp/AppUpdatesView.swift` and
   `AppUpdateSource.detect` in `ApplicationsView.swift` this session — this **corrects** a wrong
   assumption made earlier in this same session (initially assumed, per `FEATURE_INVENTORY.md`'s older
   framing, that this was a bare App-Store deep-link with no real detection; a full code read shows more
@@ -451,7 +451,7 @@ exception allowed), **MAY** (optional, discretionary).
 - **Evidence**: `SettingsView.swift` cross-referenced against `SafetyCenter`/`ScanEngine`/`Store` call
   sites in the prior session's wiring grep; not independently re-run this session (would require
   re-reading every call site — deferred, low risk of drift since `SettingsView.swift` is unchanged per
-  `git log -- Sources/MacCareApp/SettingsView.swift` since session 2).
+  `git log -- Sources/CoreTendApp/SettingsView.swift` since session 2).
 - **Current scope**: COMPLIANT_VERIFIED per session 2, not independently re-verified this session
   (flagged honestly rather than re-stamped without doing the work).
 
@@ -474,7 +474,7 @@ exception allowed), **MAY** (optional, discretionary).
 - **Priority**: MUST
 - **Acceptance criteria**: no SF Symbol or asset named/resembling broom/rocket/stethoscope/generic
   shield used as a primary brand mark; no `LinearGradient` spanning the full hue wheel.
-- **Evidence**: this session grepped `Sources/MacCareApp Sources/DesignSystem` for
+- **Evidence**: this session grepped `Sources/CoreTendApp Sources/DesignSystem` for
   `"broom\|rocket\|stethoscope\|shield"` in symbol-name contexts — matches are `SF Symbols` used for
   Protection status icons (e.g. `checkmark.shield`), which the charter's own color-role section
   (`ionViolet` for Protection) implies is acceptable as a *system* symbol, not a generic-shield-as-logo;
@@ -489,9 +489,9 @@ exception allowed), **MAY** (optional, discretionary).
 - **Wording**: `DESIGN_TOKENS.md` catalogs the token system; implicit requirement that views consume it
   rather than hardcode values.
 - **Priority**: SHOULD
-- **Evidence**: this session grepped `Sources/MacCareApp Sources/DesignSystem` for raw hex colors
+- **Evidence**: this session grepped `Sources/CoreTendApp Sources/DesignSystem` for raw hex colors
   (`Color(hex`/`Color(red:`/bare `#RRGGBB`) outside `Colors.swift` — **3 matches found** (not zero);
-  and 25 uses of `.font(.system(size:` (bypassing `MCFont` token) in `Sources/MacCareApp`.
+  and 25 uses of `.font(.system(size:` (bypassing `MCFont` token) in `Sources/CoreTendApp`.
 - **Current scope**: NON_COMPLIANT (partial) — real, small drift from the token system. Logged as a new
   finding in `NON_COMPLIANCE_REGISTER.md` (not present in prior sessions' registers, which never ran
   this grep). Not a functional defect, a design-system-discipline gap.
@@ -530,9 +530,9 @@ exception allowed), **MAY** (optional, discretionary).
 - **Wording**: implicit from platform accessibility norms; no single doc states this as a MUST, but
   `WEBSITE_AUDIT.md`'s own "Accessibility basics" section models the same bar for the website.
 - **Priority**: SHOULD
-- **Evidence**: this session grepped `Sources/MacCareApp Sources/DesignSystem` for
+- **Evidence**: this session grepped `Sources/CoreTendApp Sources/DesignSystem` for
   `accessibilityLabel|accessibilityValue|accessibilityHint` — **14 files** contain at least one such
-  call, out of 20 `MacCareApp` view files + `DesignSystem` components.
+  call, out of 20 `CoreTendApp` view files + `DesignSystem` components.
 - **Current scope**: COMPLIANT_PARTIAL — presence confirmed in code for a majority of files but not
   all 20; "found in code" is not "verified working" (no VoiceOver interactive session possible this
   session — BLOCKED_ENVIRONMENT for the interaction-level check).
@@ -572,7 +572,7 @@ exception allowed), **MAY** (optional, discretionary).
 - **Acceptance criteria**: every key in `Base.lproj/Localizable.strings` has a corresponding key in
   `fr.lproj/Localizable.strings` and vice versa.
 - **Evidence**: this session ran a real diff: extracted key sets from both
-  `Sources/MacCareApp/Resources/Base.lproj/Localizable.strings` and `.../fr.lproj/Localizable.strings`
+  `Sources/CoreTendApp/Resources/Base.lproj/Localizable.strings` and `.../fr.lproj/Localizable.strings`
   (372 lines each) — **0 keys only in EN, 0 keys only in FR**. Full parity confirmed, not just a
   line-count match like session 1's shallower check.
 - **Current scope**: COMPLIANT_VERIFIED — freshly, rigorously re-verified this session (upgrade from
@@ -580,7 +580,7 @@ exception allowed), **MAY** (optional, discretionary).
 
 ### I18N-002 — No hardcoded visible strings bypassing L10n
 - **Priority**: SHOULD
-- **Evidence**: `grep -rn 'Text("' Sources/MacCareApp/*.swift | grep -v 'L('` this session → **1 match**
+- **Evidence**: `grep -rn 'Text("' Sources/CoreTendApp/*.swift | grep -v 'L('` this session → **1 match**
   (not zero) — a bare `Text("...")` literal not routed through `L(...)`.
 - **Current scope**: COMPLIANT_PARTIAL — near-total compliance (1 stray literal found), logged as a
   minor finding in `NON_COMPLIANCE_REGISTER.md` with file/line to be pinpointed in the matrix.
@@ -624,7 +624,7 @@ exception allowed), **MAY** (optional, discretionary).
 - **Wording**: `MOTION_SYSTEM.md`: "Fenêtre cachée/menu fermé: tasks annulées (onDisappear / task
   lifecycle)."
 - **Priority**: MUST
-- **Evidence**: documented pattern; `grep -rn "onDisappear" Sources/MacCareApp` this session found
+- **Evidence**: documented pattern; `grep -rn "onDisappear" Sources/CoreTendApp` this session found
   multiple call sites consistent with the claim, not individually traced to every `TimelineView`.
 - **Current scope**: IMPLEMENTED_UNVERIFIED.
 
@@ -697,7 +697,7 @@ exception allowed), **MAY** (optional, discretionary).
 ## OPS — Operations / governance / support
 
 ### OPS-001 — Governance model documented, honestly scoped (single-maintainer, no fake foundation)
-- **Wording**: `GOVERNANCE.md`: "MacCare Local uses a simple, single-maintainer-led model — no
+- **Wording**: `GOVERNANCE.md`: "CoreTend uses a simple, single-maintainer-led model — no
   foundation, no formal committee, no complex CLA."
 - **Priority**: MUST
 - **Justification**: overstating governance maturity (implying a foundation/committee that doesn't
@@ -732,7 +732,7 @@ exception allowed), **MAY** (optional, discretionary).
 ## Known open gaps carried into this baseline (not fabricated as resolved)
 
 - **PROD debt**: full per-view public-API line-by-line audit (§9 of `PROJECT_COMPLETE_AUDIT.md`) is
-  still genuinely incomplete — 15 `MacCareApp` view files are `IMPLEMENTED_UNVERIFIED`, not
+  still genuinely incomplete — 15 `CoreTendApp` view files are `IMPLEMENTED_UNVERIFIED`, not
   `VERIFIED_COMPLETE`. FUNC-006/FUNC-007 above inherit this same gap for view-internal logic.
 - **New this session**: VIS-003 (3 hardcoded hex colors, 25 raw `.font(.system(size:` uses),
   A11Y-003 (no explicit Increase Contrast/Reduce Transparency handling found), I18N-002 (1 bare `Text()`

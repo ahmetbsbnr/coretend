@@ -34,9 +34,9 @@ is imported.
 
 | Symbol | Introduced | Used here | Status at target (14.0) |
 |---|---|---|---|
-| `@Observable` macro (Observation framework) | macOS 14.0 | 16 files (e.g. `Sources/MacCareApp/MacCareApp.swift:41`, `SettingsView.swift:8`, `SmartCareView.swift:11`) | OK — exactly at floor, no headroom |
-| `MenuBarExtra` | macOS 13.0 | `Sources/MacCareApp/MacCareApp.swift:27` | OK |
-| `NavigationSplitView` | macOS 13.0 | `Sources/MacCareApp/MacCareApp.swift:241` | OK |
+| `@Observable` macro (Observation framework) | macOS 14.0 | 16 files (e.g. `Sources/CoreTendApp/CoreTendApp.swift:41`, `SettingsView.swift:8`, `SmartCareView.swift:11`) | OK — exactly at floor, no headroom |
+| `MenuBarExtra` | macOS 13.0 | `Sources/CoreTendApp/CoreTendApp.swift:27` | OK |
+| `NavigationSplitView` | macOS 13.0 | `Sources/CoreTendApp/CoreTendApp.swift:241` | OK |
 
 No hits for `@Bindable`, `@Entry`, `ContentUnavailableView`,
 `symbolEffect`, `ImageRenderer`, `scrollTargetBehavior`,
@@ -60,7 +60,7 @@ see the honest gap noted in `Documentation/COMPATIBILITY.md`.
 
 Grep re-run at HEAD on this branch confirmed the table above unchanged:
 still 0 `@available` in `Sources/`, `@Observable` now in 18 files (was
-16), no new post-14 API. `MenuBarExtra` (`MacCareApp.swift:27`),
+16), no new post-14 API. `MenuBarExtra` (`CoreTendApp.swift:27`),
 `NavigationSplitView` (`:241`), `VNGenerateImageFeaturePrintRequest` /
 `VNImageRequestHandler` (`SimilarImagesEngine.swift:70-71`, feature-print
 = macOS 10.15), `QLThumbnailGenerator` (`SimilarImagesView.swift:76`,

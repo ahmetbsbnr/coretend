@@ -1,6 +1,6 @@
 # Governance
 
-MacCare Local uses a simple, single-maintainer-led model — no foundation,
+CoreTend uses a simple, single-maintainer-led model — no foundation,
 no formal committee, no complex CLA.
 
 ## Roles

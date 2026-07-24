@@ -1,7 +1,7 @@
 import Testing
 import Foundation
 import Persistence
-@testable import MacCareApp
+@testable import CoreTendApp
 
 private func record(kind: ActivityRecord.Kind, daysAgo: Int, bytes: Int64 = 0, items: Int = 1, dryRun: Bool = false) -> ActivityRecord {
     ActivityRecord(id: 0, kind: kind, date: Calendar.current.date(byAdding: .day, value: -daysAgo, to: Date())!,

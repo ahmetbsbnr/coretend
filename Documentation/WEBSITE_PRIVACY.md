@@ -32,6 +32,6 @@ including retention and any opt-out.
 
 ## Relationship to the app's privacy stance
 
-Consistent with the app itself: MacCare Local the application has no
+Consistent with the app itself: CoreTend the application has no
 telemetry (see repo-root `PRIVACY.md`). The website extends the same
 no-tracking commitment to the web presence.

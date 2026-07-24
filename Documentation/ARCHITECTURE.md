@@ -10,7 +10,7 @@ SwiftPM package, one executable + library modules:
 - **FileRules** (deps: ScanCore, SafetyCore): built-in rules + matching deletion allowlists.
   Rules and allowlists are tested to stay in sync.
 - **DesignSystem** (no deps): MCTheme tokens, MCCard, formatting helpers.
-- **MacCareApp** (executable): SwiftUI App, NavigationSplitView shell, per-module views,
+- **CoreTendApp** (executable): SwiftUI App, NavigationSplitView shell, per-module views,
   @Observable view models on MainActor. Heavy work stays off MainActor via engines.
 
 Flow (Cleanup): ScanEngine stream → view model accumulates findings (capped) →

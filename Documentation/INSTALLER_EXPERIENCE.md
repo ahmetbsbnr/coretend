@@ -1,6 +1,6 @@
 # Installer Experience
 
-MacCare Local is distributed as an **unsigned, un-notarized** local build. There
+CoreTend is distributed as an **unsigned, un-notarized** local build. There
 is no App Store listing, no paid installer, no license key, and no account. See
 [INSTALL_UNSIGNED.md](INSTALL_UNSIGNED.md) and [INSTALLATION.md](INSTALLATION.md)
 for the exact commands.
@@ -19,7 +19,7 @@ for the exact commands.
   (a plain `FileManager` copy to `/Applications`, falling back to
   `~/Applications`, then reveal-for-drag). No `sudo`, no password, no privileged
   helper — nothing is installed outside the app bundle and its
-  `~/Library/Application Support/MacCareLocal` data directory.
+  `~/Library/Application Support/CoreTend` data directory.
 
 ## What is never done
 - No login item, launch agent, daemon, or background installer.

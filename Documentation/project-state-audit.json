@@ -3,7 +3,7 @@
   "auditDate": "2026-07-20",
   "auditSession": 1,
   "historicalSnapshotNote": "This file is session 1's point-in-time snapshot, kept as-is for history. The 'pending-session-2' fields below were resolved by later sessions (2-3) with real evidence \u2014 see Documentation/DOCUMENT_INDEX.md for current status per topic, not this file.",
-  "product": "MacCare Local",
+  "product": "CoreTend",
   "version": "0.7.0 (string only \u2014 not a published/tagged release)",
   "commit": "b33c06b8d68b9b03316821c3f6cfb17252f35011",
   "branch": "feat/public-distribution",

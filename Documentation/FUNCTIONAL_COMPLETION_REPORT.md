@@ -81,6 +81,6 @@ held at close:
 
 None of the above are automatable gaps hiding behind schedule pressure —
 each is either an environment fact of this sandbox or a maintainer decision
-outside engineering's authority. **MacCare Local 0.8.0** is the local
+outside engineering's authority. **CoreTend 0.8.0** is the local
 functional-completion version; public release readiness is a separate,
 still-open decision gated on the BLOCKED_HUMAN items above.

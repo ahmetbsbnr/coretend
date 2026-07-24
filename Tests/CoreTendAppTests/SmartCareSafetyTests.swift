@@ -3,7 +3,7 @@ import Foundation
 import ScanCore
 import SafetyCore
 import FileRules
-@testable import MacCareApp
+@testable import CoreTendApp
 
 /// Step 2 (Smart Care audit) — the safety-critical invariant: Smart Care may
 /// only ever auto-execute reversible, low-risk, preselected findings. The new

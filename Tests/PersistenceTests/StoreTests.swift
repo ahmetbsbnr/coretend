@@ -5,7 +5,7 @@ import SafetyCore
 
 private func tempDBPath() -> String {
     URL(fileURLWithPath: NSTemporaryDirectory())
-        .appendingPathComponent("maccare-db-\(UUID().uuidString).sqlite").path
+        .appendingPathComponent("coretend-db-\(UUID().uuidString).sqlite").path
 }
 
 @Suite("Store")

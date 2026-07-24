@@ -85,7 +85,7 @@ warnings.
   one physical Mac (macOS 26.5.1, arm64) is available in this
   environment, so this is a static audit, not multi-OS verification.
 - Unsigned ZIP artifact: `Scripts/package-zip.sh` (extends
-  `package-local.sh`), produces `MacCare-Local-0.7.0-arm64-unsigned.zip`
+  `package-local.sh`), produces `CoreTend-0.7.0-arm64-unsigned.zip`
   with LICENSE/NOTICE/THIRD_PARTY_NOTICES.md alongside the app. Verified
   arm64-only, ad-hoc signed, launches and quits cleanly from an
   unrelated extraction path, no user data/logs/quarantine data included.

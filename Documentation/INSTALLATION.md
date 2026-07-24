@@ -1,6 +1,6 @@
 # Installation
 
-MacCare Local is a native macOS app for Apple Silicon (macOS 14+). No
+CoreTend is a native macOS app for Apple Silicon (macOS 14+). No
 account, no installer package with a background daemon, no subscription.
 
 ## From source (current state — no signed releases yet)
@@ -14,10 +14,10 @@ cd MACCLEAN
 Scripts/doctor.sh            # checks prerequisites
 Scripts/bootstrap.sh         # one-time setup
 Scripts/build.sh release     # release build
-Scripts/package-local.sh     # produces build/MacCare Local.app (ad-hoc signed)
+Scripts/package-local.sh     # produces build/CoreTend.app (ad-hoc signed)
 ```
 
-Copy `build/MacCare Local.app` to `/Applications` (or run it in place).
+Copy `build/CoreTend.app` to `/Applications` (or run it in place).
 
 See [DEVELOPMENT.md](../DEVELOPMENT.md) for the full developer workflow.
 

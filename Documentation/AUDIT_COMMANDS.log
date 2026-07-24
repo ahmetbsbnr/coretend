@@ -54,7 +54,7 @@ exit 0 => Documentation/ 12M, build/ 5.8M, Release/ 5.2M, Resources/ 3.1M, Sourc
    (build/ and Release/ are gitignored local artifacts, not tracked)
 
 $ cat Package.swift
-exit 0 => swift-tools-version 6.0, 1 executable target (MacCareApp) + 8 library targets
+exit 0 => swift-tools-version 6.0, 1 executable target (CoreTendApp) + 8 library targets
    (ScanCore, SafetyCore, FileRules, DesignSystem, Persistence, SystemMetrics, AppDiscovery, MalwareEngine),
    9 test targets total.
 
@@ -67,7 +67,7 @@ $ find . -iname "*.html" (excluding .build/.git)
 exit 0 => 27 website HTML files
 
 $ find . -iname "*.xcstrings" -o -iname "*.strings" (excluding nothing, so build/ and .claude echoed too)
-exit 0 => real tracked source-of-truth files: Sources/MacCareApp/Resources/Localizable.xcstrings,
+exit 0 => real tracked source-of-truth files: Sources/CoreTendApp/Resources/Localizable.xcstrings,
    Base.lproj/Localizable.strings, fr.lproj/Localizable.strings (build/ and .claude/worktrees copies
    are generated/duplicate, ignored for counting purposes)
 
@@ -98,7 +98,7 @@ exit 1 => 2 FAILs: (1) SHA256SUMS does not verify against the just-rebuilt zip/d
    HEAD, not fixed this session (out of scope) — documented as findings.
 
 $ find Sources -type d ; per-target wc -l ; grep -rn "Process()" Sources ; grep -rl "@MainActor" Sources | wc -l ;
-  grep -rln "AsyncStream" Sources | wc -l ; wc -l Sources/MacCareApp/Resources/{fr,Base}.lproj/Localizable.strings
+  grep -rln "AsyncStream" Sources | wc -l ; wc -l Sources/CoreTendApp/Resources/{fr,Base}.lproj/Localizable.strings
 exit 0 => see Documentation/ARCHITECTURE_INVENTORY.md and repository-statistics.json for full figures.
    Single Process() shell-out: Sources/MalwareEngine/MalwareEngine.swift:56 (invokes ClamAV `clamscan`).
    18 files use @MainActor, 4 files use AsyncStream. fr.lproj and Base.lproj Localizable.strings both
@@ -117,22 +117,22 @@ comm -23 /tmp/en_keys.txt /tmp/fr_keys.txt | wc -l   # keys only in EN
 comm -13 /tmp/en_keys.txt /tmp/fr_keys.txt | wc -l   # keys only in FR
 => both 0. Real key-by-key parity confirmed (372/372 lines, 0 drift) — I18N-001.
 
-$ (session 3) grep -rn "Color(hex\|Color(red:\|#[0-9A-Fa-f]\{6\}" Sources/MacCareApp Sources/DesignSystem | grep -v "MCColor\|Colors.swift"
-=> 3 matches, all in Sources/MacCareApp/SpaceLensView.swift:72-75 (hardcoded category colors, bypass MCColor) — VIS-003 finding.
+$ (session 3) grep -rn "Color(hex\|Color(red:\|#[0-9A-Fa-f]\{6\}" Sources/CoreTendApp Sources/DesignSystem | grep -v "MCColor\|Colors.swift"
+=> 3 matches, all in Sources/CoreTendApp/SpaceLensView.swift:72-75 (hardcoded category colors, bypass MCColor) — VIS-003 finding.
 
-$ (session 3) grep -rn "\.font(\.system(size:" Sources/MacCareApp
+$ (session 3) grep -rn "\.font(\.system(size:" Sources/CoreTendApp
 => 25 matches (bypass MCFont token) — VIS-003 finding.
 
 $ (session 3) grep -rn "ncreaseContrast\|educeTransparency" Sources/
 => 0 matches anywhere in Sources/ — A11Y-003 finding (no explicit code-level handling).
 
-$ (session 3) grep -rl "accessibilityLabel\|accessibilityValue\|accessibilityHint" Sources/MacCareApp Sources/DesignSystem
-=> 14 files (out of 20 MacCareApp views + DesignSystem) — A11Y-001 finding.
+$ (session 3) grep -rl "accessibilityLabel\|accessibilityValue\|accessibilityHint" Sources/CoreTendApp Sources/DesignSystem
+=> 14 files (out of 20 CoreTendApp views + DesignSystem) — A11Y-001 finding.
 
-$ (session 3) grep -rn 'Text("' Sources/MacCareApp/*.swift | grep -v 'L('
-=> 1 match: OnboardingView.swift:57 Text("MacCare Local") — brand name literal, I18N-002.
+$ (session 3) grep -rn 'Text("' Sources/CoreTendApp/*.swift | grep -v 'L('
+=> 1 match: OnboardingView.swift:57 Text("CoreTend") — brand name literal, I18N-002.
 
-$ (session 3) full read of Sources/MacCareApp/AppUpdatesView.swift + AppUpdateSource.detect (ApplicationsView.swift)
+$ (session 3) full read of Sources/CoreTendApp/AppUpdatesView.swift + AppUpdateSource.detect (ApplicationsView.swift)
 => corrects an initial wrong assumption: App Updates does real per-app update-*mechanism* detection
    (App Store / Sparkle / none), not a bare deep-link as an earlier framing suggested. Does not check
    update *availability* though — FUNC-005 finding, README wording is accurate but could be misread.
@@ -779,27 +779,27 @@ Building for debugging...
 [31/37] Emitting module FileRules
 [32/37] Compiling DesignSystem DesignSystem.swift
 [33/37] Compiling DesignSystem FragmentView.swift
-[34/59] Compiling MacCareApp DiagnosticReport.swift
-[35/59] Compiling MacCareApp DuplicatesView.swift
-[36/59] Compiling MacCareApp L10n.swift
-[37/62] Compiling MacCareApp BrowserDetection.swift
-[38/62] Compiling MacCareApp CleanupView.swift
-[39/62] Compiling MacCareApp CloudCleanupView.swift
-[40/62] Compiling MacCareApp PerformanceView.swift
-[41/62] Compiling MacCareApp PrivacyCleanerView.swift
-[42/62] Compiling MacCareApp ProtectionView.swift
-[43/62] Compiling MacCareApp AppEnvironment.swift
-[44/62] Compiling MacCareApp AppUpdatesView.swift
-[45/62] Compiling MacCareApp ApplicationsView.swift
-[46/62] Emitting module MacCareApp
-[47/62] Compiling MacCareApp LeftoversView.swift
-[48/62] Compiling MacCareApp MacCareApp.swift
-[49/62] Compiling MacCareApp MyActivityView.swift
-[50/62] Compiling MacCareApp SafetyLogView.swift
-[51/62] Compiling MacCareApp SettingsView.swift
-[52/62] Compiling MacCareApp SimilarImagesView.swift
-[53/62] Compiling MacCareApp MyClutterView.swift
-/Users/ahmetbasbunar/Documents/MACCLEAN/Sources/MacCareApp/OnboardingView.swift:353:63: warning: passing non-Sendable parameter 'set' to function expecting a '@Sendable' closure
+[34/59] Compiling CoreTendApp DiagnosticReport.swift
+[35/59] Compiling CoreTendApp DuplicatesView.swift
+[36/59] Compiling CoreTendApp L10n.swift
+[37/62] Compiling CoreTendApp BrowserDetection.swift
+[38/62] Compiling CoreTendApp CleanupView.swift
+[39/62] Compiling CoreTendApp CloudCleanupView.swift
+[40/62] Compiling CoreTendApp PerformanceView.swift
+[41/62] Compiling CoreTendApp PrivacyCleanerView.swift
+[42/62] Compiling CoreTendApp ProtectionView.swift
+[43/62] Compiling CoreTendApp AppEnvironment.swift
+[44/62] Compiling CoreTendApp AppUpdatesView.swift
+[45/62] Compiling CoreTendApp ApplicationsView.swift
+[46/62] Emitting module CoreTendApp
+[47/62] Compiling CoreTendApp LeftoversView.swift
+[48/62] Compiling CoreTendApp CoreTendApp.swift
+[49/62] Compiling CoreTendApp MyActivityView.swift
+[50/62] Compiling CoreTendApp SafetyLogView.swift
+[51/62] Compiling CoreTendApp SettingsView.swift
+[52/62] Compiling CoreTendApp SimilarImagesView.swift
+[53/62] Compiling CoreTendApp MyClutterView.swift
+/Users/ahmetbasbunar/Documents/MACCLEAN/Sources/CoreTendApp/OnboardingView.swift:353:63: warning: passing non-Sendable parameter 'set' to function expecting a '@Sendable' closure
 348 |     }
 349 | 
 350 |     private func configLine(_ label: String, on: Bool, editable: Bool, set: @escaping (Bool) -> Void) -> some View {
@@ -810,8 +810,8 @@ Building for debugging...
     |                                                               `- warning: passing non-Sendable parameter 'set' to function expecting a '@Sendable' closure
 354 |             } else {
 355 |                 configFixed(label, on: on)
-[54/62] Compiling MacCareApp OnboardingLogic.swift
-/Users/ahmetbasbunar/Documents/MACCLEAN/Sources/MacCareApp/OnboardingView.swift:353:63: warning: passing non-Sendable parameter 'set' to function expecting a '@Sendable' closure
+[54/62] Compiling CoreTendApp OnboardingLogic.swift
+/Users/ahmetbasbunar/Documents/MACCLEAN/Sources/CoreTendApp/OnboardingView.swift:353:63: warning: passing non-Sendable parameter 'set' to function expecting a '@Sendable' closure
 348 |     }
 349 | 
 350 |     private func configLine(_ label: String, on: Bool, editable: Bool, set: @escaping (Bool) -> Void) -> some View {
@@ -822,8 +822,8 @@ Building for debugging...
     |                                                               `- warning: passing non-Sendable parameter 'set' to function expecting a '@Sendable' closure
 354 |             } else {
 355 |                 configFixed(label, on: on)
-[55/62] Compiling MacCareApp OnboardingView.swift
-/Users/ahmetbasbunar/Documents/MACCLEAN/Sources/MacCareApp/OnboardingView.swift:353:63: warning: passing non-Sendable parameter 'set' to function expecting a '@Sendable' closure
+[55/62] Compiling CoreTendApp OnboardingView.swift
+/Users/ahmetbasbunar/Documents/MACCLEAN/Sources/CoreTendApp/OnboardingView.swift:353:63: warning: passing non-Sendable parameter 'set' to function expecting a '@Sendable' closure
 348 |     }
 349 | 
 350 |     private func configLine(_ label: String, on: Bool, editable: Bool, set: @escaping (Bool) -> Void) -> some View {
@@ -834,12 +834,12 @@ Building for debugging...
     |                                                               `- warning: passing non-Sendable parameter 'set' to function expecting a '@Sendable' closure
 354 |             } else {
 355 |                 configFixed(label, on: on)
-[56/62] Compiling MacCareApp SmartCareView.swift
-[57/62] Compiling MacCareApp SpaceLensView.swift
-[58/62] Compiling MacCareApp resource_bundle_accessor.swift
-[58/61] Linking MacCareLocal
-[59/61] Applying MacCareLocal
-[61/62] Emitting module MacCareAppTests
+[56/62] Compiling CoreTendApp SmartCareView.swift
+[57/62] Compiling CoreTendApp SpaceLensView.swift
+[58/62] Compiling CoreTendApp resource_bundle_accessor.swift
+[58/61] Linking CoreTend
+[59/61] Applying CoreTend
+[61/62] Emitting module CoreTendAppTests
 Build complete! (6.62s)
 ◇ Test run started.
 ↳ Testing Library Version: 1902

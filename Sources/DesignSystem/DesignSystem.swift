@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MacCare Local design system — Orbital Ecology.
+// CoreTend design system — Orbital Ecology.
 // Tokens: Tokens.swift / Colors.swift / Typography.swift
 // Brand:  CoreBloom.swift   Components: Components.swift
 

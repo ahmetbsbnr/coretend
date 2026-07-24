@@ -1,7 +1,7 @@
 import Testing
 import Foundation
 import ScanCore
-@testable import MacCareApp
+@testable import CoreTendApp
 
 @Suite("Space Lens navigation")
 @MainActor

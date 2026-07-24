@@ -1,6 +1,6 @@
 # FAQ
 
-**Is MacCare Local affiliated with CleanMyMac or MacPaw?**
+**Is CoreTend affiliated with CleanMyMac or MacPaw?**
 No. Not affiliated with CleanMyMac, MacPaw, or Apple in any way.
 
 **Does it require an account or subscription?**
@@ -25,7 +25,7 @@ data) can only be scanned with it. See
 
 **Does it send any data anywhere?**
 No network calls for app data. Everything stays in
-`~/Library/Application Support/MacCareLocal/`. See
+`~/Library/Application Support/CoreTend/`. See
 [DATA_LOCATIONS.md](DATA_LOCATIONS.md).
 
 **Is it AI-generated or a school project?**
@@ -40,5 +40,5 @@ Bugs: `.github/ISSUE_TEMPLATE/`. Vulnerabilities: [SECURITY.md](../SECURITY.md)
 [UNINSTALL.md](UNINSTALL.md), `Scripts/uninstall-local.sh`.
 
 **Will disabling SIP/Gatekeeper/FileVault help it work better?**
-No — never do this. MacCare Local never asks for that, and doing so
+No — never do this. CoreTend never asks for that, and doing so
 weakens your Mac's security for no benefit to the app.

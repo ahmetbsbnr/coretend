@@ -63,13 +63,13 @@ jobs:
 
       - name: Bundle sanity check
         run: |
-          test -d "build/MacCare Local.app" || { echo "app bundle not found"; exit 1; }
-          test -f "build/MacCare Local.app/Contents/Info.plist" || { echo "Info.plist missing"; exit 1; }
+          test -d "build/CoreTend.app" || { echo "app bundle not found"; exit 1; }
+          test -f "build/CoreTend.app/Contents/Info.plist" || { echo "Info.plist missing"; exit 1; }
 
       - name: Localization key-parity check
         run: |
-          base="Sources/MacCareApp/Resources/Base.lproj/Localizable.strings"
-          fr="Sources/MacCareApp/Resources/fr.lproj/Localizable.strings"
+          base="Sources/CoreTendApp/Resources/Base.lproj/Localizable.strings"
+          fr="Sources/CoreTendApp/Resources/fr.lproj/Localizable.strings"
           base_count=$(grep -c '^"' "$base")
           fr_count=$(grep -c '^"' "$fr")
           echo "Base: $base_count keys, fr: $fr_count keys"

@@ -14,7 +14,7 @@ struct AppDiscoveryTests {
 
     @Test func inspectReadsFakeBundle() throws {
         let root = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-app-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-app-\(UUID().uuidString)")
         let bundle = root.appendingPathComponent("Fake.app")
         try FileManager.default.createDirectory(
             at: bundle.appendingPathComponent("Contents/MacOS"), withIntermediateDirectories: true)
@@ -36,7 +36,7 @@ struct AppDiscoveryTests {
 
     @Test func leftoversExcludeAppleAndInstalled() throws {
         let home = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-home-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-home-\(UUID().uuidString)")
         let appSupport = home.appendingPathComponent("Library/Application Support")
         try FileManager.default.createDirectory(
             at: appSupport.appendingPathComponent("com.gone.app"), withIntermediateDirectories: true)
@@ -119,7 +119,7 @@ struct AppDiscoveryTests {
 
     @Test func updateSourceReadsRealReceiptBundle() throws {
         let root = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-mas-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-mas-\(UUID().uuidString)")
         let bundle = root.appendingPathComponent("Fake.app")
         try FileManager.default.createDirectory(
             at: bundle.appendingPathComponent("Contents/_MASReceipt"), withIntermediateDirectories: true)

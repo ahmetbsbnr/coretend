@@ -9,7 +9,7 @@ cd "$ROOT_DIR"
 
 fail=0
 
-echo "MacCare Local — repository doctor"
+echo "CoreTend — repository doctor"
 echo "=================================="
 
 echo "-- Required top-level policy files --"

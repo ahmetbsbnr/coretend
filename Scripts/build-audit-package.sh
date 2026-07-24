@@ -11,7 +11,7 @@ DATE=$(date -u +%Y-%m-%d)
 SHORT_SHA=$(git rev-parse --short HEAD)
 PKG_VERSION=$(/usr/bin/python3 -c "import json; print(json.load(open('Configuration/PublicIdentity.example.json'))['marketingVersion'])")
 PKG_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-NAME="MacCare-Local-Full-Audit-v${PKG_VERSION}-${DATE}-${SHORT_SHA}"
+NAME="CoreTend-Full-Audit-v${PKG_VERSION}-${DATE}-${SHORT_SHA}"
 STAGE="AuditPackages/${NAME}"
 
 rm -rf "$STAGE"
@@ -98,7 +98,7 @@ import json, sys
 stage, current_head, product_commit, req_commit, tracked, included, excluded, tests_total, tests_passed, tests_failed, req_total, pkg_version, pkg_branch = sys.argv[1:14]
 manifest = {
     "schemaVersion": 3,
-    "product": "MacCare Local",
+    "product": "CoreTend",
     "productVersion": pkg_version,
     "branch": pkg_branch,
     "auditDate_UTC": __import__("datetime").datetime.utcnow().strftime("%Y-%m-%d"),
@@ -143,7 +143,7 @@ echo "Staged: $STAGE ($included_count included, $excluded_count excluded of $tra
 
 # AUDIT_PACKAGE_README.md — human explanation of the package.
 cat > "$STAGE/AUDIT_PACKAGE_README.md" <<EOF
-# MacCare Local — Audit Package (${NAME})
+# CoreTend — Audit Package (${NAME})
 
 ## What is in this package
 A sanitized mirror of every git-tracked file in the repository at commit \`${CURRENT_HEAD}\`

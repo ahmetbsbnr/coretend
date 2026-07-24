@@ -13,8 +13,8 @@ set -e
 cd "$(dirname "$0")/.."
 
 ARTIFACT_VERSION="${1:-0.7.0}"
-ZIP_NAME="MacCare-Local-${ARTIFACT_VERSION}-arm64-unsigned.zip"
-DMG_NAME="MacCare-Local-${ARTIFACT_VERSION}-arm64-unsigned.dmg"
+ZIP_NAME="CoreTend-${ARTIFACT_VERSION}-arm64-unsigned.zip"
+DMG_NAME="CoreTend-${ARTIFACT_VERSION}-arm64-unsigned.dmg"
 
 bash Scripts/package-zip.sh "$ARTIFACT_VERSION"
 bash Scripts/package-dmg.sh "$ARTIFACT_VERSION"

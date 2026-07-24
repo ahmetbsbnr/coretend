@@ -19,7 +19,7 @@ iconutil -c icns Resources/Brand/Generated/AppIcon.iconset -o Resources/Brand/Ge
 
 ## Intégration bundle
 `Scripts/package-local.sh` copie icns + templates dans
-`MacCare Local.app/Contents/Resources/`. L'app ne lit jamais le dépôt:
+`CoreTend.app/Contents/Resources/`. L'app ne lit jamais le dépôt:
 `Bundle.main.path(forResource:)` uniquement. Tests BrandResourceTests vérifient
 la présence des fichiers générés et la déclaration plist.
 

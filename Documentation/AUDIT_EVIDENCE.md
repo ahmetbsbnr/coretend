@@ -8,15 +8,15 @@ session. Not exhaustive — see the individual audit docs for full detail.
 **EVIDENCE-DIST-001**
 Claim: The zip and dmg release artifacts' checksums/sizes in
 `Release/latest.json` match the actual files exactly (session-2 fix holds).
-Files: `Release/latest.json`, `Release/MacCare-Local-0.7.0-arm64-unsigned.{zip,dmg}`
-Command: `shasum -a 256 Release/MacCare-Local-0.7.0-arm64-unsigned.{zip,dmg}`
+Files: `Release/latest.json`, `Release/CoreTend-0.7.0-arm64-unsigned.{zip,dmg}`
+Command: `shasum -a 256 Release/CoreTend-0.7.0-arm64-unsigned.{zip,dmg}`
 Result: `0515ea18...` (zip) / `36aae052...` (dmg) — both equal `latest.json`'s
 `zipSHA256`/`dmgSHA256`; `ls -la` sizes (2430463 / 2950713) equal
 `zipSize`/`dmgSize`.
 
 **EVIDENCE-DIST-002**
 Claim: The shipped binary is arm64-only, not a fat/universal binary.
-Files: extracted `MacCare Local.app/Contents/MacOS/MacCareLocal`
+Files: extracted `CoreTend.app/Contents/MacOS/CoreTend`
 Command: `file` + `lipo -info` on the extracted binary
 Result: `Mach-O 64-bit executable arm64`; `lipo -info` → `Non-fat file ...
 architecture: arm64`.
@@ -31,7 +31,7 @@ no hang.
 
 **EVIDENCE-DIST-004**
 Claim: License files ship inside the distributable zip.
-Command: `unzip -l Release/MacCare-Local-0.7.0-arm64-unsigned.zip | grep -v "\.app/"`
+Command: `unzip -l Release/CoreTend-0.7.0-arm64-unsigned.zip | grep -v "\.app/"`
 Result: `LICENSE`, `NOTICE`, `THIRD_PARTY_NOTICES.md` present at zip root.
 Symbols: `Scripts/package-zip.sh:19,23`, `Scripts/package-dmg.sh:20`.
 
@@ -54,20 +54,20 @@ changelog, licenses, legal, 404).
 
 **EVIDENCE-L10N-001**
 Claim: 327 localization keys, 100% EN/FR parity, zero unused keys.
-Files: `Sources/MacCareApp/Resources/Base.lproj/Localizable.strings`,
+Files: `Sources/CoreTendApp/Resources/Base.lproj/Localizable.strings`,
 `.../fr.lproj/Localizable.strings`
 Command: extracted `^"key"` lines from both files, sorted+diffed; then for
-each of the 327 base keys, `grep -rlF '"key"' Sources/MacCareApp` excluding
+each of the 327 base keys, `grep -rlF '"key"' Sources/CoreTendApp` excluding
 the Resources dir.
 Result: `diff` of key sets → 0 lines different; unused-key count → 0/327.
 
 **EVIDENCE-L10N-002**
 Claim: Only one hardcoded, non-localized `Text("...")` literal exists in
 the app, and it's the correct exception (the product name).
-Command: `grep -rn 'Text("' Sources/MacCareApp --include="*.swift" | grep
+Command: `grep -rn 'Text("' Sources/CoreTendApp --include="*.swift" | grep
 -v 'Text(L(' | grep -v '""'`
-Result: 1 match — `Sources/MacCareApp/OnboardingView.swift:57:
-Text("MacCare Local")`.
+Result: 1 match — `Sources/CoreTendApp/OnboardingView.swift:57:
+Text("CoreTend")`.
 
 **EVIDENCE-CI-001**
 Claim: All 3 GitHub workflows declare `permissions: contents: read`, use

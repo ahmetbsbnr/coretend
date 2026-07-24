@@ -7,7 +7,7 @@ set -euo pipefail
 ROOT_DIR=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT_DIR"
 
-echo "MacCare Local — clean"
+echo "CoreTend — clean"
 echo "Removing build artifacts under: $ROOT_DIR"
 
 for path in .build .swiftpm/xcode/DerivedData; do

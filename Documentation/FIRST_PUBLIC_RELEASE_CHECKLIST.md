@@ -34,7 +34,7 @@ before it.
    launch.
 8. **Verify SHA-256** independently on that second machine using only
    published values, not values copied from this checkout.
-9. **Create the GitHub repository** (`ahmetbsbnr/mac-care-local` per
+9. **Create the GitHub repository** (`ahmetbsbnr/coretend` per
    `PublicIdentity.example.json`) — not done by this agent, per the
    session's safety rules.
 10. **Push** `main` (and this branch, once merged) to the new remote.

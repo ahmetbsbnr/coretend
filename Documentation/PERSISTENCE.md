@@ -1,6 +1,6 @@
 # Persistence
 
-`Sources/Persistence/` — no dependencies, used by `MacCareApp`.
+`Sources/Persistence/` — no dependencies, used by `CoreTendApp`.
 
 ## `Database` (internal, `final class`)
 
@@ -14,7 +14,7 @@ journal_mode=WAL` and `PRAGMA foreign_keys=ON` on open. Typed errors
 ## `Store` (public `actor`)
 
 The only persistence entry point the app uses. Default path:
-`~/Library/Application Support/MacCareLocal/store.sqlite` (see
+`~/Library/Application Support/CoreTend/store.sqlite` (see
 `Store.defaultPath()`, and [DATA_LOCATIONS.md](DATA_LOCATIONS.md)).
 
 Three concerns, each a small table:

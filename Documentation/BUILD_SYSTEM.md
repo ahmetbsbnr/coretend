@@ -5,7 +5,7 @@ checked in, no CocoaPods/Carthage.
 
 ## Package layout (`Package.swift`)
 
-Executable: `MacCareApp` (product name `MacCareLocal`), depending on every
+Executable: `CoreTendApp` (product name `CoreTend`), depending on every
 library target.
 
 Libraries: `ScanCore` (deps: SafetyCore), `SafetyCore` (no deps),
@@ -14,7 +14,7 @@ Libraries: `ScanCore` (deps: SafetyCore), `SafetyCore` (no deps),
 deps), `MalwareEngine` (no deps).
 
 Test targets: one per library target that has tests, plus
-`MacCareAppTests` for the app layer. See
+`CoreTendAppTests` for the app layer. See
 [TESTING.md](TESTING.md).
 
 Platform floor: `.macOS(.v14)`. Default localization: `en`
@@ -32,7 +32,7 @@ issue tracked in `Documentation/DECISIONS.md` (decision D2) — using plain
 - `Scripts/build.sh release` — release build; the target must build with
   zero warnings before any commit lands (see `DEVELOPMENT.md`).
 - `Scripts/test.sh` — full test suite.
-- `Scripts/package-local.sh` — produces `build/MacCare Local.app`, ad-hoc
+- `Scripts/package-local.sh` — produces `build/CoreTend.app`, ad-hoc
   signed (no notarization; that's out of scope until a real signed release
   — see `Documentation/PUBLIC_RELEASE_READINESS.md`).
 

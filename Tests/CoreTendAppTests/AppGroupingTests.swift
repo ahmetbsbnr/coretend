@@ -1,7 +1,7 @@
 import Testing
 import Foundation
 import AppDiscovery
-@testable import MacCareApp
+@testable import CoreTendApp
 
 private func app(name: String, bundleID: String?, sizeMB: Int64, lastUsedDaysAgo: Int?) -> InstalledApp {
     InstalledApp(

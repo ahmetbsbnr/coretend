@@ -10,7 +10,7 @@ Evidence: `ls`/`cat`/`grep` on `LICENSE`, `LICENSES/`, `TRADEMARKS.md`, `Documen
 | `LICENSE` (repo root) | Yes | States source code (`*.swift`, `*.sh`, build config) = Apache-2.0, full Apache-2.0 text follows in the same file |
 | `LICENSES/Apache-2.0.txt` | Yes | Full Apache-2.0 text |
 | `LICENSES/CC-BY-4.0.txt` | Yes | Full CC-BY-4.0 text |
-| `TRADEMARKS.md` (repo root) | Yes | "MacCare Local" name/logo not covered by code/doc licenses; nominative-use terms; explicit statement of non-affiliation with Apple/MacPaw ("not a CleanMyMac clone") |
+| `TRADEMARKS.md` (repo root) | Yes | "CoreTend" name/logo not covered by code/doc licenses; nominative-use terms; explicit statement of non-affiliation with Apple/MacPaw ("not a CleanMyMac clone") |
 | `Documentation/THIRD_PARTY.md` | Yes | Declares zero SwiftPM deps; ClamAV (GPLv2, external subprocess, never linked) and system SQLite as the only runtime integrations |
 | `Documentation/ASSET_PROVENANCE.md` | Yes | App icon, menu-bar icon, design tokens all declared original/in-repo-generated; no bundled fonts (system SF Pro only); no third-party stock imagery found |
 | `Documentation/DEPENDENCIES.md` | Yes | Corroborates zero external SwiftPM packages; ClamAV entry matches THIRD_PARTY.md |

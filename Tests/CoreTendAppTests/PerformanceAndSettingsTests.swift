@@ -1,6 +1,6 @@
 import Testing
 import UserNotifications
-@testable import MacCareApp
+@testable import CoreTendApp
 
 @Suite("Menu bar attention detection")
 struct MenuBarAttentionTests {

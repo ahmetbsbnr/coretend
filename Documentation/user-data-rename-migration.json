@@ -5,21 +5,21 @@
   "dataInventory": [
     {
       "item": "store.sqlite",
-      "location": "~/Library/Application Support/MacCareLocal/store.sqlite",
+      "location": "~/Library/Application Support/CoreTend/store.sqlite",
       "keyedBy": "hardcoded directory name in Sources/Persistence/Store.swift, NOT CFBundleIdentifier",
       "contains": ["settings (dryRunDefault, securityProfile)", "exclusions", "activity history"],
       "migrationMethod": "copy-to-temp-then-rename into new directory, source untouched"
     },
     {
       "item": "Quarantine/",
-      "location": "~/Library/Application Support/MacCareLocal/Quarantine/",
+      "location": "~/Library/Application Support/CoreTend/Quarantine/",
       "keyedBy": "same directory convention as store.sqlite",
       "contains": ["quarantined files", "quarantine metadata"],
       "migrationMethod": "copy directory tree, source untouched"
     },
     {
       "item": "watch-fingerprints.json",
-      "location": "~/Library/Application Support/MacCareLocal/watch-fingerprints.json",
+      "location": "~/Library/Application Support/CoreTend/watch-fingerprints.json",
       "keyedBy": "same directory convention",
       "contains": ["per-path FSEvents dedup fingerprints (size+mtime)"],
       "migrationMethod": "copy file, source untouched; safe to lose (regenerates) but migrated for continuity"

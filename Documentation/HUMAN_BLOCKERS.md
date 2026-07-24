@@ -14,8 +14,8 @@ below.
 | Item | Known value |
 |---|---|
 | GitHub maintainer handle | `ahmetbsbnr` |
-| Planned public repository | `ahmetbsbnr/mac-care-local` (`https://github.com/ahmetbsbnr/mac-care-local`) |
-| Planned production domain / subdomain | `ahmetbsbnr.com` / `maccare.ahmetbsbnr.com` |
+| Planned public repository | `ahmetbsbnr/coretend` (`https://github.com/ahmetbsbnr/coretend`) |
+| Planned production domain / subdomain | `ahmetbsbnr.com` / `coretend.ahmetbsbnr.com` |
 
 ## OPEN
 

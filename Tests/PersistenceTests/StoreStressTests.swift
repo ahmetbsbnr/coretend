@@ -9,7 +9,7 @@ import SafetyCore
 struct StoreStressTests {
     private func tempDBPath() -> String {
         URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-db-stress-\(UUID().uuidString).sqlite").path
+            .appendingPathComponent("coretend-db-stress-\(UUID().uuidString).sqlite").path
     }
 
     /// 20k activity rows + 20k append-only safety-log rows. The read paths are

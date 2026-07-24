@@ -171,7 +171,7 @@ interactive on-display verification = BLOCKED_ENVIRONMENT. 215/215 tests green,
 Debug+Release build green, repository-doctor all checks passed.
 
 ## Task before that (Step 12 — Accessibility, code-level)
-Code-level accessibility audit of every SwiftUI view (MacCareApp + shared
+Code-level accessibility audit of every SwiftUI view (CoreTendApp + shared
 DesignSystem views). Codebase was already strong; found and fixed a small set
 of real gaps in 4 atomic commits (all modifier-only, no new tests — SwiftUI
 modifier presence isn't unit-testable):

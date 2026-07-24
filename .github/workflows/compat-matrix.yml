@@ -1,4 +1,4 @@
-# Compatibility matrix — test-builds MacCare Local against multiple macOS
+# Compatibility matrix — test-builds CoreTend against multiple macOS
 # runner / Xcode-toolchain combinations to catch availability regressions the
 # single-runner CI (ci.yml, macos-14 only) cannot see.
 #

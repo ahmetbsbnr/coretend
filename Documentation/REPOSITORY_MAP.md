@@ -5,12 +5,12 @@ branch `feat/public-distribution`, 2026-07-20.
 
 | Directory | Role | Tracked? | Notes |
 |---|---|---|---|
-| `Sources/` | Swift Package sources: 1 executable target (`MacCareApp`) + 8 library targets | Yes | 59 Swift files, 8296 lines. See ARCHITECTURE_INVENTORY.md. |
+| `Sources/` | Swift Package sources: 1 executable target (`CoreTendApp`) + 8 library targets | Yes | 59 Swift files, 8296 lines. See ARCHITECTURE_INVENTORY.md. |
 | `Tests/` | Swift Testing test targets, one per library/app target | Yes | 16 test files, 86 tests, 27 suites, all passing (see TEST_INVENTORY.md). |
 | `Scripts/` | Build, test, release, uninstall, and privacy-check shell scripts | Yes | 22 `.sh` files; `test.sh`, `test-distribution.sh`, `test-release-manifest.sh`, `test-uninstall.sh`, `check-private-data.sh` all exercised this session. |
 | `Documentation/` | Project docs, state files, audit deliverables (this session's output) | Yes | 82 markdown files pre-session; largest tracked top-level dir on disk (12M) mostly due to historical docs, not code. |
 | `Website/` | Public-facing marketing/docs site source | Yes | 27 HTML files. Not deployed-status-verified this session (deferred to session 2). |
-| `Resources/` | Non-Swift bundled resources (icons, assets) at repo root, distinct from `Sources/MacCareApp/Resources/` | Yes | 3.1M on disk. |
+| `Resources/` | Non-Swift bundled resources (icons, assets) at repo root, distinct from `Sources/CoreTendApp/Resources/` | Yes | 3.1M on disk. |
 | `LICENSES/` | License texts for the project and third-party notices | Yes | 32K. |
 | `Configuration/` | Public-identity template (`PublicIdentity.example.json`); the real `.local.json` override is gitignored | Yes (template only) | Real legal/security contact data intentionally excluded from git. |
 | `.github/workflows/` | CI: `ci.yml`, `release-draft.yml`, `security.yml` | Yes | 3 workflows; contents not audited in depth this session (queued for session 2 CI/GitHub audit). |

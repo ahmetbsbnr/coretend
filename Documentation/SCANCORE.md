@@ -33,9 +33,9 @@ deletion allowlist to keep them in sync (see [TESTING.md](TESTING.md)).
 Walks directories synchronously inside a detached utility-priority task and
 emits `ScanEvent`s. Large result sets are not capped at the engine level —
 everything found is streamed and totaled; only the on-screen list in
-MacCareApp truncates rendering (see `Documentation/CHANGELOG.md`, the
+CoreTendApp truncates rendering (see `Documentation/CHANGELOG.md`, the
 totals-fix entry, and `engineStreamsAllFindingsUncappedAt5001` in
-`MacCareAppTests`).
+`CoreTendAppTests`).
 
 ## Other ScanCore-adjacent engines
 

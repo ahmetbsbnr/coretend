@@ -30,12 +30,12 @@ Scripts/test.sh   # do NOT use plain `swift test` — see Documentation/DECISION
 83+ tests across the SwiftPM package (`DesignSystemTests`,
 `MalwareEngineTests`, `AppDiscoveryTests`, `PersistenceTests`,
 `SystemMetricsTests`, `ScanCoreTests`, `SafetyCoreTests`, `FileRulesTests`,
-`MacCareAppTests`). See [Documentation/TESTING.md](Documentation/TESTING.md).
+`CoreTendAppTests`). See [Documentation/TESTING.md](Documentation/TESTING.md).
 
 ## Package and run locally
 
 ```sh
-Scripts/package-local.sh   # → build/MacCare Local.app (ad-hoc signed)
+Scripts/package-local.sh   # → build/CoreTend.app (ad-hoc signed)
 ```
 
 ## Repository hygiene before committing
@@ -51,7 +51,7 @@ Scripts/check-placeholders.sh
 
 See [Documentation/ARCHITECTURE.md](Documentation/ARCHITECTURE.md) for the
 module graph (SafetyCore, ScanCore, FileRules, DesignSystem, Persistence,
-SystemMetrics, AppDiscovery, MalwareEngine, MacCareApp) and
+SystemMetrics, AppDiscovery, MalwareEngine, CoreTendApp) and
 [Documentation/ARCHITECTURE_OVERVIEW.md](Documentation/ARCHITECTURE_OVERVIEW.md)
 for a narrative walkthrough of one end-to-end flow.
 

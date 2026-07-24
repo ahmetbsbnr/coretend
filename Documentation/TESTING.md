@@ -18,7 +18,7 @@ Run with `Scripts/test.sh` (never plain `swift test` — see
 - `AppDiscoveryTests` — app discovery/quarantine-attribute reads.
 - `MalwareEngineTests` — `ClamAVScanner` output parsing, `Quarantine`
   move/restore/delete round-trip.
-- `MacCareAppTests` — view-model level tests (e.g. duplicate-engine
+- `CoreTendAppTests` — view-model level tests (e.g. duplicate-engine
   totals, large-result-set behavior — see `engineStreamsAllFindingsUncappedAt5001`).
 
 As of this session: 83 tests, 0 failing, 0 warnings on release build. This

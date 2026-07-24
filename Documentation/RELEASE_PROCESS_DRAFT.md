@@ -13,7 +13,7 @@ the Open Source Foundation phase).
 4. `Scripts/repository-doctor.sh`, `Scripts/check-licenses.sh`,
    `Scripts/check-private-data.sh`, `Scripts/check-placeholders.sh` —
    clean.
-5. `Scripts/package-local.sh` — produces `build/MacCare Local.app`,
+5. `Scripts/package-local.sh` — produces `build/CoreTend.app`,
    ad-hoc signed only.
 6. Update `CHANGELOG.md` and bump version per
    `Documentation/PROJECT_STATE.json` conventions.

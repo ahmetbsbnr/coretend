@@ -29,7 +29,7 @@ Apple/MacPaw/CleanMyMac-affiliated.
   not a portfolio placeholder.
 - `README.md`/`Documentation/FAQ.md` do not claim Apple/MacPaw/CleanMyMac affiliation; `FAQ.md:42`
   explicitly separates itself from disabling SIP/Gatekeeper — a defensive, not affiliated, stance.
-- `Documentation/TRADEMARKS.md` exists specifically to keep "MacCare Local" branding independent of
+- `Documentation/TRADEMARKS.md` exists specifically to keep "CoreTend" branding independent of
   any code/content license, consistent with an independent-product stance rather than a demo project.
 - No files reference "school," "assignment," "portfolio piece," or similar in `Documentation/`.
 - **Verdict: holds**, with the caveat (already tracked in `HUMAN_BLOCKERS.md`) that real maintainer
@@ -55,7 +55,7 @@ on explicit voluntary export, anonymized.
 - `Documentation/PRIVACY_AUDIT_CURRENT.md` (session 2): "zero `URLSession`/network-framework/socket
   usage found anywhere in `Sources/`; zero analytics/telemetry/crash-reporter/account-system code found."
 - `Release/latest.json`: `"telemetry": false, "accountRequired": false`.
-- `Sources/MacCareApp/DiagnosticReport.swift` + `Tests/MacCareAppTests/DiagnosticReportTests.swift`:
+- `Sources/CoreTendApp/DiagnosticReport.swift` + `Tests/CoreTendAppTests/DiagnosticReportTests.swift`:
   diagnostic export is a manual Settings action with a mandatory preview sheet before save, and a test
   asserting a fixture with fake sensitive strings never leaks into the built report.
 - **Verdict: holds**, and is the most heavily evidence-backed claim in this list — this session did not

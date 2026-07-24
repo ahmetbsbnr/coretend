@@ -1,6 +1,6 @@
 # Website (dev notes)
 
-Static, bilingual (en/fr) site for MacCare Local. Plain HTML/CSS, one
+Static, bilingual (en/fr) site for CoreTend. Plain HTML/CSS, one
 generator script, no framework, no backend, no database, no analytics.
 
 ## Build

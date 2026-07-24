@@ -1,6 +1,6 @@
 # ClamAV integration
 
-MacCare Local's Protection module can optionally scan files with **ClamAV**,
+CoreTend's Protection module can optionally scan files with **ClamAV**,
 a third-party open-source antivirus engine. This document describes exactly
 how that integration works, verified against `Sources/MalwareEngine/MalwareEngine.swift`.
 
@@ -37,21 +37,21 @@ how that integration works, verified against `Sources/MalwareEngine/MalwareEngin
 ## What ClamAV's signature database can and can't catch
 
 ClamAV is a signature-based scanner. It updates its own database with
-`freshclam`, entirely outside MacCare Local's control. MacCare Local does
+`freshclam`, entirely outside CoreTend's control. CoreTend does
 not manage, verify, or guarantee freshness of that database — see
 `Documentation/PROTECTION_LIMITATIONS.md`.
 
 ## Quarantine, not deletion
 
 `Quarantine` (same file) moves a flagged item into
-`~/Library/Application Support/MacCareLocal/Quarantine`, strips its execute
+`~/Library/Application Support/CoreTend/Quarantine`, strips its execute
 permission, and records the original path in a local JSON manifest so it can
 be restored. Files are never executed, modified in place, or permanently
 deleted except by explicit user action (`delete(_:)`).
 
 ## Behavior without ClamAV installed
 
-Verified in `Sources/MacCareApp/ProtectionView.swift`: when
+Verified in `Sources/CoreTendApp/ProtectionView.swift`: when
 `scanner.isAvailable` is `false`, the Protection tab renders an honest
 "unavailable" state (`unavailableCard`) — a warning icon, an explanation,
 and install instructions — instead of a scan UI. `scan(paths:)` itself

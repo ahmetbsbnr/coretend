@@ -1,8 +1,8 @@
 # First-Run Wizard — State Machine
 
 This documents the actual first-run wizard as implemented in
-`Sources/MacCareApp/OnboardingView.swift` (UI) and
-`Sources/MacCareApp/OnboardingLogic.swift` (pure, unit-tested logic).
+`Sources/CoreTendApp/OnboardingView.swift` (UI) and
+`Sources/CoreTendApp/OnboardingLogic.swift` (pure, unit-tested logic).
 
 ## Trigger and persistence
 - Shown on launch when the `onboardingDone` setting is `false`.

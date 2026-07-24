@@ -30,4 +30,4 @@ by `PathValidator` against an allowlist before any move.
 
 ## What it does not do
 No forced updates, no background installs, no telemetry. Update source is
-informational; MacCare Local does not download or apply app updates for you.
+informational; CoreTend does not download or apply app updates for you.

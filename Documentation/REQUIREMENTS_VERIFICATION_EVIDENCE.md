@@ -71,10 +71,10 @@ feature audit's `AUDIT_EVIDENCE.md`, but keyed to requirement IDs, not feature I
 ### EVIDENCE-PROTECTION-001
 - **Claim**: Protection never fabricates scan capability when ClamAV is absent — it shows an
   honest "unavailable" state.
-- **Files**: `Sources/MacCareApp/ProtectionView.swift`, `Sources/MalwareEngine/MalwareEngine.swift`
+- **Files**: `Sources/CoreTendApp/ProtectionView.swift`, `Sources/MalwareEngine/MalwareEngine.swift`
 - **Symbols**: `ClamAVScanner.isAvailable`, `ProtectionView` (guards at lines 27, 97)
 - **Tests**: none (no headless GUI test harness)
-- **Command**: `grep -n isAvailable Sources/MacCareApp/ProtectionView.swift`; `bash
+- **Command**: `grep -n isAvailable Sources/CoreTendApp/ProtectionView.swift`; `bash
   Scripts/doctor.sh` (confirms `clamscan not found` in this environment)
 - **Result**: `ClamAVScanner.isAvailable` is computed purely from whether a real binary exists at
   one of three known paths (`ClamAVScanner.knownPaths`) — there is no simulated/fake-success

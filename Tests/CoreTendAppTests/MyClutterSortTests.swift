@@ -1,7 +1,7 @@
 import Testing
 import Foundation
 import ScanCore
-@testable import MacCareApp
+@testable import CoreTendApp
 
 /// Large & Old is read-only (reveal / Quick Look only, no deletion path).
 /// The one seam the UI depends on is `sortedFindings` — the exact projection

@@ -7,7 +7,7 @@ on each target's top-level files, commit `b33c06b8d68b9b03316821c3f6cfb17252f350
 
 | Target | Kind | Dependencies | Lines | Tests |
 |---|---|---|---|---|
-| MacCareApp | executable | ScanCore, SafetyCore, FileRules, DesignSystem, Persistence, SystemMetrics, AppDiscovery, MalwareEngine | 4260 | MacCareAppTests (27 tests) |
+| CoreTendApp | executable | ScanCore, SafetyCore, FileRules, DesignSystem, Persistence, SystemMetrics, AppDiscovery, MalwareEngine | 4260 | CoreTendAppTests (27 tests) |
 | DesignSystem | library | none | 887 | DesignSystemTests (9) |
 | ScanCore | library | SafetyCore | 659 | ScanCoreTests (21) |
 | Persistence | library | none | 278 | PersistenceTests (5) |
@@ -44,7 +44,7 @@ Zero external SwiftPM dependencies declared (`Package.swift` has no `.package(ur
 
 ## Concurrency posture (evidence: grep)
 
-- `@MainActor` used in 18 files (mostly `MacCareApp` views/view-models, per naming convention).
+- `@MainActor` used in 18 files (mostly `CoreTendApp` views/view-models, per naming convention).
 - `AsyncStream` used in 4 files — the four ScanCore engines' streaming-event APIs.
 - Persistence and MalwareEngine's mutable state is actor-isolated (`Store`, `SafetyCenter`, `Quarantine`
   are all `actor`), consistent with avoiding shared mutable state across the async scan/cleanup flows.
@@ -57,7 +57,7 @@ Zero external SwiftPM dependencies declared (`Package.swift` has no `.package(ur
 
 ```mermaid
 graph TD
-    App[MacCareApp executable] --> DS[DesignSystem]
+    App[CoreTendApp executable] --> DS[DesignSystem]
     App --> SC[ScanCore]
     App --> SF[SafetyCore]
     App --> FR[FileRules]
@@ -76,7 +76,7 @@ graph TD
 
 ```mermaid
 sequenceDiagram
-    participant UI as MacCareApp view
+    participant UI as CoreTendApp view
     participant SR as ScanRule (FileRules)
     participant SE as ScanEngine (ScanCore)
     participant PV as PathValidator (SafetyCore)
@@ -97,7 +97,7 @@ sequenceDiagram
 
 ```mermaid
 sequenceDiagram
-    participant UI as MacCareApp (Protection view)
+    participant UI as CoreTendApp (Protection view)
     participant ME as ClamAVScanner (MalwareEngine)
     participant PV as PathValidator (SafetyCore)
     participant Q as Quarantine actor (MalwareEngine)
@@ -136,7 +136,7 @@ graph TD
 
 ## Not yet audited this session
 
-- Full call-graph / view-model wiring inside `MacCareApp` (4260 lines, largest target) beyond the
+- Full call-graph / view-model wiring inside `CoreTendApp` (4260 lines, largest target) beyond the
   flows above — deferred to session 2 module-by-module inventory.
 - Whether every `Process()`-adjacent path is covered by the security audit's threat model — flagged,
   not analyzed in depth (session 2).

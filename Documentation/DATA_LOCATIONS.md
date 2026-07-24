@@ -1,17 +1,17 @@
 # Data Locations
 
-MacCare Local stores all of its own data locally, on the Mac it runs on. No
+CoreTend stores all of its own data locally, on the Mac it runs on. No
 account, no cloud sync, no telemetry.
 
 | Data | Path |
 |---|---|
-| Activity history, exclusions, settings (SQLite) | `~/Library/Application Support/MacCareLocal/store.sqlite` |
-| Quarantined files (Protection) | `~/Library/Application Support/MacCareLocal/Quarantine/` |
-| Quarantine manifest (JSON) | `~/Library/Application Support/MacCareLocal/Quarantine/manifest.json` |
-| App preferences | `~/Library/Preferences/local.maccare.app.plist` |
+| Activity history, exclusions, settings (SQLite) | `~/Library/Application Support/CoreTend/store.sqlite` |
+| Quarantined files (Protection) | `~/Library/Application Support/CoreTend/Quarantine/` |
+| Quarantine manifest (JSON) | `~/Library/Application Support/CoreTend/Quarantine/manifest.json` |
+| App preferences | `~/Library/Preferences/com.ahmetbsbnr.coretend.plist` |
 
 Files removed via Cleanup/Smart Care go to the macOS Trash (`~/.Trash`) by
-default, not to any MacCare Local–owned folder — see
+default, not to any CoreTend–owned folder — see
 [RESTORE.md](RESTORE.md). Only Protection's malware quarantine uses the
 app-owned `Quarantine/` folder above, because a detected file must not
 remain executable in place.
@@ -26,6 +26,6 @@ want to restore, do that first — see [QUARANTINE.md](QUARANTINE.md).
 
 ## What is never written
 
-MacCare Local does not send data anywhere. There is no server component, no
+CoreTend does not send data anywhere. There is no server component, no
 analytics SDK, no crash reporter that phones home. Everything above stays on
 disk until you delete it yourself.

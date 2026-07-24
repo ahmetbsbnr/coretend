@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generates the static, bilingual MacCare Local website.
+"""Generates the static, bilingual CoreTend website.
 
 No framework: plain HTML/CSS, this one script as the only "build step".
 Run `python3 generate.py` from the Website/ directory (or anywhere — path
@@ -32,7 +32,7 @@ FOOTER_LINKS = [
     ("legal", {"en": "Legal notice", "fr": "Mentions légales"}),
 ]
 
-SITE_TITLE = "MacCare Local"
+SITE_TITLE = "CoreTend"
 
 TAGLINE = {
     "en": "A local-only, open source utility to scan, clean, organize and "
@@ -83,7 +83,7 @@ def page_shell(locale, slug, title, body_html, other_locale_slug=None):
 </main>
 <footer class="site">
   <div class="wrap">
-    <span>&copy; MacCare Local contributors. Open source — see LICENSE.</span>
+    <span>&copy; CoreTend contributors. Open source — see LICENSE.</span>
     <nav>{footer_items}</nav>
   </div>
 </footer>
@@ -117,7 +117,7 @@ def home_body(l):
     <span class="badge">Apple Silicon</span>
   </div>
   <div class="warning-banner">
-    <strong>Pre-1.0 status.</strong> MacCare Local is under active development
+    <strong>Pre-1.0 status.</strong> CoreTend is under active development
     and has not reached a stable 1.0 release. Expect rough edges. See the
     <a href="roadmap.html">roadmap</a> and <a href="download.html">download page</a>
     for current status.
@@ -160,7 +160,7 @@ def home_body(l):
     <span class="badge">Apple Silicon</span>
   </div>
   <div class="warning-banner">
-    <strong>Statut pré-1.0.</strong> MacCare Local est en développement actif
+    <strong>Statut pré-1.0.</strong> CoreTend est en développement actif
     et n'a pas encore atteint une version stable 1.0. Attendez-vous à des
     aspérités. Voir la <a href="roadmap.html">feuille de route</a> et la
     page <a href="download.html">Télécharger</a> pour le statut actuel.
@@ -287,7 +287,7 @@ if (MANIFEST_URL) {
 </script>
 
 <h2>Source code</h2>
-<p>MacCare Local's source will be published on GitHub once the public
+<p>CoreTend's source will be published on GitHub once the public
 repository is created (see the project's
 <a href="open-source.html">Open Source</a> page). There is no live
 source-code link yet — the repository is not public. This page will link
@@ -295,7 +295,7 @@ directly to it as soon as that happens.</p>
 
 <h2>What the release will look like</h2>
 <p>The first public artifact will be named exactly:</p>
-<pre>MacCare-Local-&lt;version&gt;-arm64-unsigned.zip</pre>
+<pre>CoreTend-&lt;version&gt;-arm64-unsigned.zip</pre>
 
 <table>
   <tr><th>Field</th><th>Status</th></tr>
@@ -308,7 +308,7 @@ directly to it as soon as that happens.</p>
 <h2>Planned install steps (once a release exists)</h2>
 <ol>
   <li>Download and verify the SHA-256 checksum against the published value.</li>
-  <li>Unzip and move MacCare Local.app to /Applications.</li>
+  <li>Unzip and move CoreTend.app to /Applications.</li>
   <li>Because the app is unsigned, macOS Gatekeeper will require an explicit
   right-click &rarr; Open the first time.</li>
   <li>Grant Full Disk Access if you want full-coverage scanning (see the
@@ -366,7 +366,7 @@ if (MANIFEST_URL) {
 </script>
 
 <h2>Code source</h2>
-<p>Le code source de MacCare Local sera publié sur GitHub une fois le dépôt
+<p>Le code source de CoreTend sera publié sur GitHub une fois le dépôt
 public créé (voir la page <a href="open-source.html">Open Source</a> du
 projet). Il n'y a pas encore de lien vers le code source en direct — le
 dépôt n'est pas encore public. Cette page y renverra directement dès que
@@ -374,7 +374,7 @@ ce sera le cas.</p>
 
 <h2>À quoi ressemblera la publication</h2>
 <p>Le premier artefact public portera exactement ce nom :</p>
-<pre>MacCare-Local-&lt;version&gt;-arm64-unsigned.zip</pre>
+<pre>CoreTend-&lt;version&gt;-arm64-unsigned.zip</pre>
 
 <table>
   <tr><th>Champ</th><th>Statut</th></tr>
@@ -387,7 +387,7 @@ ce sera le cas.</p>
 <h2>Étapes d'installation prévues (une fois une version publiée)</h2>
 <ol>
   <li>Téléchargez et vérifiez l'empreinte SHA-256 par rapport à la valeur publiée.</li>
-  <li>Décompressez et déplacez MacCare Local.app dans /Applications.</li>
+  <li>Décompressez et déplacez CoreTend.app dans /Applications.</li>
   <li>L'application étant non signée, Gatekeeper demandera un clic droit &rarr;
   Ouvrir la première fois.</li>
   <li>Accordez l'accès complet au disque pour une analyse à couverture complète
@@ -452,7 +452,7 @@ def open_source_body(l):
     if l == "en":
         return """
 <h1>Open Source</h1>
-<p>MacCare Local is open source. The full source code, build scripts and
+<p>CoreTend is open source. The full source code, build scripts and
 documentation are public — nothing runs behind a closed service.</p>
 <h2>License</h2>
 <p>See <code>LICENSE</code>, <code>LICENSES/</code> and
@@ -469,7 +469,7 @@ repository to get a dev environment verified locally.</p>
 """
     return """
 <h1>Open Source</h1>
-<p>MacCare Local est open source. Le code source complet, les scripts de
+<p>CoreTend est open source. Le code source complet, les scripts de
 build et la documentation sont publics — rien ne s'exécute derrière un
 service fermé.</p>
 <h2>Licence</h2>
@@ -551,18 +551,18 @@ add("changelog", {"en": "Changelog", "fr": "Journal des modifications"}, changel
 # ------------------------------------------------------------------ faq ---
 def faq_body(l):
     qa_en = [
-        ("Does MacCare Local send any data anywhere?", "No. It has no telemetry, no analytics, no network calls related to its core operation. Everything runs locally."),
+        ("Does CoreTend send any data anywhere?", "No. It has no telemetry, no analytics, no network calls related to its core operation. Everything runs locally."),
         ("Do I need an account?", "No account, no subscription, ever."),
         ("Are deletions permanent?", "By default, no — items go to the Trash so you can recover them."),
         ("Is this a full antivirus?", "No. The optional Protection module is a heuristic local scan aid (via ClamAV), never a guaranteed security product."),
-        ("Is MacCare Local affiliated with Apple or CleanMyMac/MacPaw?", "No. It is an independent open source project."),
+        ("Is CoreTend affiliated with Apple or CleanMyMac/MacPaw?", "No. It is an independent open source project."),
     ]
     qa_fr = [
-        ("MacCare Local envoie-t-il des données quelque part ?", "Non. Aucune télémétrie, aucune analytique, aucun appel réseau lié à son fonctionnement principal. Tout s'exécute localement."),
+        ("CoreTend envoie-t-il des données quelque part ?", "Non. Aucune télémétrie, aucune analytique, aucun appel réseau lié à son fonctionnement principal. Tout s'exécute localement."),
         ("Faut-il un compte ?", "Aucun compte, aucun abonnement, jamais."),
         ("Les suppressions sont-elles définitives ?", "Par défaut, non — les éléments vont à la Corbeille pour rester récupérables."),
         ("Est-ce un antivirus complet ?", "Non. Le module Protection optionnel est une aide d'analyse locale heuristique (via ClamAV), jamais un produit de sécurité garanti."),
-        ("MacCare Local est-il affilié à Apple ou à CleanMyMac/MacPaw ?", "Non. C'est un projet open source indépendant."),
+        ("CoreTend est-il affilié à Apple ou à CleanMyMac/MacPaw ?", "Non. C'est un projet open source indépendant."),
     ]
     qa = qa_en if l == "en" else qa_fr
     items = "\n".join(f"<h3>{q}</h3><p>{a}</p>" for q, a in qa)
@@ -580,7 +580,7 @@ def privacy_body(l):
         return """
 <h1>Privacy</h1>
 <h2>The app</h2>
-<p>MacCare Local runs entirely locally. It collects no telemetry, no
+<p>CoreTend runs entirely locally. It collects no telemetry, no
 analytics, no usage data, and makes no network calls as part of its core
 scanning/cleaning operation. See <code>PRIVACY.md</code> and
 <code>Documentation/PROTECTION_LIMITATIONS.md</code> in the repository for
@@ -603,7 +603,7 @@ Contact: <span class="placeholder-token">[SECURITY_CONTACT_TO_DEFINE]</span></p>
     return """
 <h1>Confidentialité</h1>
 <h2>L'application</h2>
-<p>MacCare Local s'exécute entièrement en local. Elle ne collecte aucune
+<p>CoreTend s'exécute entièrement en local. Elle ne collecte aucune
 télémétrie, aucune analytique, aucune donnée d'usage, et n'effectue aucun
 appel réseau dans le cadre de son fonctionnement principal d'analyse/nettoyage.
 Voir <code>PRIVACY.md</code> et <code>Documentation/PROTECTION_LIMITATIONS.md</code>
@@ -701,7 +701,7 @@ these remain unresolved.
 <tr><td>Domain</td><td><span class="placeholder-token">[DOMAIN_TO_DEFINE]</span></td></tr>
 <tr><td>Hosting</td><td><span class="placeholder-token">[DOMAIN_TO_DEFINE]</span></td></tr>
 </table>
-<p>MacCare Local is not affiliated with Apple Inc. or MacPaw Inc.
+<p>CoreTend is not affiliated with Apple Inc. or MacPaw Inc.
 (CleanMyMac). It makes no antivirus/security-guarantee claim.</p>
 """
     return """
@@ -723,7 +723,7 @@ avoir lieu tant qu'ils ne sont pas résolus.
 <tr><td>Domaine</td><td><span class="placeholder-token">[DOMAIN_TO_DEFINE]</span></td></tr>
 <tr><td>Hébergement</td><td><span class="placeholder-token">[DOMAIN_TO_DEFINE]</span></td></tr>
 </table>
-<p>MacCare Local n'est affilié ni à Apple Inc. ni à MacPaw Inc.
+<p>CoreTend n'est affilié ni à Apple Inc. ni à MacPaw Inc.
 (CleanMyMac). Aucune revendication d'antivirus ou de garantie de sécurité
 n'est faite.</p>
 """

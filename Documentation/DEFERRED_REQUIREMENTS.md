@@ -32,7 +32,7 @@ item, tracked there with a P3/XS fix, not deferred as a requirement).
 `Documentation/MASTER_REQUIREMENTS_BASELINE.md`'s own "Known open gaps" section lists two explicit
 scope deferrals that are NOT requirement statuses (they're baseline-construction scope notes, not
 DEFERRED_APPROVED requirements):
-- Full per-view public-API line-by-line audit (§9 `PROJECT_COMPLETE_AUDIT.md`) — 15 `MacCareApp`
+- Full per-view public-API line-by-line audit (§9 `PROJECT_COMPLETE_AUDIT.md`) — 15 `CoreTendApp`
   views remain `IMPLEMENTED_UNVERIFIED` in the prior feature audit's own vocabulary; carried to
   session 3 (module-by-module functional re-verification pass, per `CONTINUATION.md`).
 - VIS-/MOTION-/A11Y-/I18N-/PERF- requirement mining from `VISUAL_DIRECTION.md`, `BRAND_SYSTEM.md`,

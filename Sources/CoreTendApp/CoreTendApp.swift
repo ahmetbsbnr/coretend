@@ -5,7 +5,7 @@ import Persistence
 import MalwareEngine
 
 @main
-struct MacCareApp: App {
+struct CoreTendApp: App {
     @AppStorage("menuBarEnabled") private var menuBarEnabled = true
 
     /// Core Bloom menu-bar template (adapts to menu bar appearance).
@@ -18,7 +18,7 @@ struct MacCareApp: App {
     }()
 
     var body: some Scene {
-        WindowGroup("MacCare Local") {
+        WindowGroup("CoreTend") {
             MainWindow()
                 .frame(minWidth: MCSize.windowMinWidth, minHeight: MCSize.windowMinHeight)
         }
@@ -28,7 +28,7 @@ struct MacCareApp: App {
             MenuBarView()
         } label: {
             MenuBarLabel()
-            Text(verbatim: "MacCare")
+            Text(verbatim: "CoreTend")
         }
         .menuBarExtraStyle(.window)
     }
@@ -71,7 +71,7 @@ struct MenuBarLabel: View {
 
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            if let image = MacCareApp.menuBarImage {
+            if let image = CoreTendApp.menuBarImage {
                 Image(nsImage: image)
             } else {
                 Image(systemName: "circle.hexagonpath")
@@ -96,7 +96,7 @@ struct MenuBarView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(verbatim: "MacCare Local").font(.headline)
+            Text(verbatim: "CoreTend").font(.headline)
             if let snap = snapshot {
                 metricRow(icon: "cpu", label: L("menubar.cpu"), value: "\(Int(snap.cpuUsedFraction * 100))%",
                           warn: snap.cpuUsedFraction > 0.85)
@@ -152,7 +152,7 @@ struct MenuBarView: View {
 
     private func openWindow() {
         NSApp.activate(ignoringOtherApps: true)
-        NSApp.windows.first { $0.title == "MacCare Local" }?.makeKeyAndOrderFront(nil)
+        NSApp.windows.first { $0.title == "CoreTend" }?.makeKeyAndOrderFront(nil)
     }
 
     private func metricRow(icon: String, label: String, value: String, warn: Bool) -> some View {

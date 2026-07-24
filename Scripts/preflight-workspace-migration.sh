@@ -78,7 +78,7 @@ check_repo() {
   )
 }
 
-check_repo "Product (MacCare Local)" "$PRODUCT_PATH"
+check_repo "Product (CoreTend)" "$PRODUCT_PATH"
 check_repo "Portfolio" "$PORTFOLIO_PATH"
 
 echo

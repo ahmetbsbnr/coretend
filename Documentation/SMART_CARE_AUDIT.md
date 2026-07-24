@@ -1,6 +1,6 @@
 # Smart Care Audit (Step 2)
 
-Audit of the Smart Care orchestrator (`Sources/MacCareApp/SmartCareView.swift`,
+Audit of the Smart Care orchestrator (`Sources/CoreTendApp/SmartCareView.swift`,
 `SmartCareViewModel`) against the functional-completion safety matrix. Each row
 states the verified behavior, where it lives, and the test backing it. "Honest
 unavailable" means the module is shown as such in the UI, never faked.

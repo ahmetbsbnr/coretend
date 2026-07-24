@@ -1,4 +1,4 @@
-# MacCare Local — Complete Project Audit
+# CoreTend — Complete Project Audit
 
 **Status: session 3 of 3, closing this audit pass.** Sections 1-14 were completed in sessions 1-2 (kept
 as originally written below — commit references there predate session 3, not re-verified line-by-line
@@ -47,7 +47,7 @@ for the current authoritative fields.
 
 ## 0. Cover page
 
-- Product: MacCare Local (SwiftUI macOS app)
+- Product: CoreTend (SwiftUI macOS app)
 - Audited commit: `b33c06b8d68b9b03316821c3f6cfb17252f35011`
 - Branch: `feat/public-distribution`
 - Audit date: 2026-07-20
@@ -69,7 +69,7 @@ for the current authoritative fields.
 
 ## 3. Executive summary
 
-MacCare Local is a single-author, single-day-committed (2026-07-19 → 2026-07-20, 115 commits), local-only
+CoreTend is a single-author, single-day-committed (2026-07-19 → 2026-07-20, 115 commits), local-only
 macOS cleanup/protection utility built as a 9-target SwiftPM package with zero external dependencies.
 This session verified: the git repository is clean and un-pushed; all 86 automated tests pass in under
 1 second of test-run time; the architecture is a straightforward layered SwiftPM package with actor-isolated
@@ -95,7 +95,7 @@ is **MOSTLY_CONFORMING** — zero MUST requirement is NON_COMPLIANT or BLOCKED_*
 IMPLEMENTED_UNVERIFIED), which rules out FULLY_CONFORMING_VERIFIED per the brief's own capping rule.
 Full breakdown: `Documentation/FINAL_COMPLIANCE_SCORECARD.md`.
 
-## 5. What MacCare Local is / is not (from evidence gathered this session)
+## 5. What CoreTend is / is not (from evidence gathered this session)
 
 - **Is**: a local, offline, SwiftUI macOS app for disk cleanup, duplicate/similar-image detection, app
   uninstall with leftover detection, ClamAV-based malware scanning with reversible quarantine, cloud
@@ -127,7 +127,7 @@ architecture, scan flow, delete/restore/quarantine flow, Smart Care orchestratio
 
 See `Documentation/ARCHITECTURE_INVENTORY.md` "Key public types" section for the target-level inventory
 gathered in session 1. **Still genuinely not done** as of this reconciliation pass: a full per-view,
-per-service public-API inventory. Session 2 grep-verified (not line-by-line read) the 15 `MacCareApp`
+per-service public-API inventory. Session 2 grep-verified (not line-by-line read) the 15 `CoreTendApp`
 view files and marked them `IMPLEMENTED_UNVERIFIED` in `FEATURE_INVENTORY.md` rather than claiming full
 verification — that gap is real and still open, not resolved by a later session. See
 `Documentation/CONTINUATION.md` session-2 entry for the exact file list.
@@ -215,7 +215,7 @@ EVIDENCE-PROTECTION-001, EVIDENCE-A11Y-001, EVIDENCE-ENV-001.
 
 **Done this session.** 327 keys in `Base.lproj`/`fr.lproj` `Localizable.strings`, **100% EN/FR key
 parity** (`diff` of sorted key sets → 0 lines different), **zero unused keys** (every one of the 327
-base keys found referenced somewhere in `Sources/MacCareApp` outside the Resources dir), **exactly one**
+base keys found referenced somewhere in `Sources/CoreTendApp` outside the Resources dir), **exactly one**
 non-localized `Text("...")` literal in the whole app and it's the correct exception — the product name
 (`OnboardingView.swift:57`). `Localizable.xcstrings` (the newer Xcode string-catalog format) exists but
 contains only 1 key — the real localization surface is the older `.strings` pair, not the catalog.
@@ -304,7 +304,7 @@ more depth than its evidence actually supports.
 
 ## Conclusion
 
-Across three audit sessions, MacCare Local's core engineering (86/86 tests, clean security posture,
+Across three audit sessions, CoreTend's core engineering (86/86 tests, clean security posture,
 zero telemetry, real localization parity, working packaging pipeline, honest CI that's never actually
 run) is in genuinely good shape for a project of this age. What separates it from a public release is
 almost entirely human-gated (legal identity, code signing) or requires resources this audit

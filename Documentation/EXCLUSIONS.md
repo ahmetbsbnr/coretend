@@ -11,7 +11,7 @@ Settings → Exclusions:
 - **Remove**: swipe/delete an entry from the list.
 
 Exclusions are stored in the `exclusions` table of the local SQLite
-database (`~/Library/Application Support/MacCareLocal/store.sqlite`,
+database (`~/Library/Application Support/CoreTend/store.sqlite`,
 managed by the `Store` actor in `Sources/Persistence/Store.swift`) — plain
 paths, nothing else. See [DATA_LOCATIONS.md](DATA_LOCATIONS.md).
 
@@ -23,7 +23,7 @@ only excludes that file.
 
 ## What exclusions do not do
 
-Exclusions only affect what MacCare Local's own scan engines flag. They are
+Exclusions only affect what CoreTend's own scan engines flag. They are
 not a macOS-level permission, they don't affect Spotlight, Time Machine, or
 any other system feature, and they never override the hard-coded protected
 system roots enforced by `PathValidator` in

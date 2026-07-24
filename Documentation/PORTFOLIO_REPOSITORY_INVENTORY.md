@@ -36,7 +36,7 @@ is the same person's live, current portfolio.
 | Git branch | `main` |
 | Git HEAD | `e6db86dbebbce8b16088680d8894acd015b0e77c` |
 | Git status | clean (0 changed files) |
-| Remote | `origin` → `https://github.com/ahmetbsbnr/ahmetbsbnrportfolio.git` (matches MacCare Local's own `maintainerGitHub: "ahmetbsbnr"`) |
+| Remote | `origin` → `https://github.com/ahmetbsbnr/ahmetbsbnrportfolio.git` (matches CoreTend's own `maintainerGitHub: "ahmetbsbnr"`) |
 | Recent history | Active — top commits are 2026-07-16 fixes (404/hydration, OpenGraph metadataBase, production audit) |
 | Package name | `portfolio-ahmet-basbunar`, version 1.0.0 |
 | Framework | Next.js 15 (App Router, `app/(en)` + `app/(fr)` locale groups), React 18, TypeScript |
@@ -73,6 +73,6 @@ and `AuditPackages/`.
 ## What this inventory is NOT
 
 This is a read-only survey. No file in the portfolio repository was
-created, edited, or moved. Design-language comparison against MacCare
+created, edited, or moved. Design-language comparison against CoreTend
 Local's site lives in `CROSS_SITE_DESIGN_AUDIT.md` (separate document,
 also non-destructive this phase).

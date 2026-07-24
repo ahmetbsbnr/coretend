@@ -66,8 +66,8 @@ jobs:
         run: |
           cd Release
           shasum -a 256 \
-            "MacCare-Local-${{ inputs.version }}-arm64-unsigned.zip" \
-            "MacCare-Local-${{ inputs.version }}-arm64-unsigned.dmg" \
+            "CoreTend-${{ inputs.version }}-arm64-unsigned.zip" \
+            "CoreTend-${{ inputs.version }}-arm64-unsigned.dmg" \
             > SHA256SUMS
           cat SHA256SUMS
 
@@ -95,21 +95,21 @@ jobs:
       - name: Upload ZIP
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: MacCare-Local-${{ inputs.version }}-arm64-unsigned-zip
-          path: Release/MacCare-Local-${{ inputs.version }}-arm64-unsigned.zip
+          name: CoreTend-${{ inputs.version }}-arm64-unsigned-zip
+          path: Release/CoreTend-${{ inputs.version }}-arm64-unsigned.zip
           retention-days: 14
 
       - name: Upload DMG
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: MacCare-Local-${{ inputs.version }}-arm64-unsigned-dmg
-          path: Release/MacCare-Local-${{ inputs.version }}-arm64-unsigned.dmg
+          name: CoreTend-${{ inputs.version }}-arm64-unsigned-dmg
+          path: Release/CoreTend-${{ inputs.version }}-arm64-unsigned.dmg
           retention-days: 14
 
       - name: Upload checksums and manifest
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: MacCare-Local-${{ inputs.version }}-checksums-and-manifest
+          name: CoreTend-${{ inputs.version }}-checksums-and-manifest
           path: |
             Release/SHA256SUMS
             Release/latest.json

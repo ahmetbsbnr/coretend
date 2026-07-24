@@ -126,11 +126,11 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 - **Priority**: MUST
 - **Source**: KNOWN_LIMITATIONS.md:7-8
 - **Status**: **COMPLIANT_VERIFIED**
-- **Files**: Sources/MacCareApp/ProtectionView.swift, Sources/MalwareEngine/MalwareEngine.swift
+- **Files**: Sources/CoreTendApp/ProtectionView.swift, Sources/MalwareEngine/MalwareEngine.swift
 - **Symbols**: ClamAVScanner.isAvailable, ProtectionView body (guard scanner.isAvailable)
 - **Views**: ProtectionView.swift
 - **Test**: no dedicated UI test (no display/XCUITest in this headless env); verified by code read: ProtectionView.swift:27,97 both gate real-scan UI behind scanner.isAvailable, ClamAVScanner.isAvailable is false unless a real clamscan binary is found at a known path (no fake/simulated result path exists in the engine).
-- **Command**: `grep -n isAvailable Sources/MacCareApp/ProtectionView.swift; read Sources/MalwareEngine/MalwareEngine.swift:28-48`
+- **Command**: `grep -n isAvailable Sources/CoreTendApp/ProtectionView.swift; read Sources/MalwareEngine/MalwareEngine.swift:28-48`
 - **Runtime evidence**: clamscan not installed in this environment (Scripts/doctor.sh confirms 'clamscan not found'), so isAvailable=false path is the one actually exercised by any run in this environment — but the 'unavailable' card itself has not been visually screenshotted this session (headless).
 - **Bundle evidence**: n/a
 - **Visual evidence**: NOT CAPTURED this session — needs a human/GUI pass; see MANUAL_ACCEPTANCE_TEST_PLAN.md
@@ -536,7 +536,7 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 - **Priority**: MUST
 - **Source**: CONTINUATION.md public-distribution punch list
 - **Status**: **COMPLIANT_VERIFIED**
-- **Files**: Sources/MacCareApp/DiagnosticReport.swift, Tests/MacCareAppTests/DiagnosticReportTests.swift
+- **Files**: Sources/CoreTendApp/DiagnosticReport.swift, Tests/CoreTendAppTests/DiagnosticReportTests.swift
 - **Symbols**: DiagnosticReport
 - **Views**: SettingsView.swift (Data section)
 - **Test**: DiagnosticReportTests — redaction test read this session (confirms username/paths are stripped from the exported report body, not just asserted by name); PASSED in this session's Scripts/test.sh run.
@@ -633,11 +633,11 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 - **Priority**: MUST
 - **Source**: README.md; FEATURE_INVENTORY.md smartcare.orchestration
 - **Status**: **COMPLIANT_VERIFIED**
-- **Files**: Sources/MacCareApp/SmartCareView.swift; Sources/MacCareApp/CleanupView.swift
+- **Files**: Sources/CoreTendApp/SmartCareView.swift; Sources/CoreTendApp/CleanupView.swift
 - **Symbols**: SmartCareView; UserCleanupRules.all; ScanEngine; SafetyCenter
 - **Views**: SmartCareView
 - **Test**: none dedicated; verified by direct code read this session
-- **Command**: `grep -n 'UserCleanupRules.all\|ScanEngine\|SafetyCenter' Sources/MacCareApp/SmartCareView.swift`
+- **Command**: `grep -n 'UserCleanupRules.all\|ScanEngine\|SafetyCenter' Sources/CoreTendApp/SmartCareView.swift`
 - **Runtime evidence**: n/a
 - **Bundle evidence**: n/a
 - **Visual evidence**: n/a
@@ -705,11 +705,11 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 - **Priority**: MUST
 - **Source**: README.md; AppUpdatesView.swift; ApplicationsView.swift
 - **Status**: **COMPLIANT_PARTIAL**
-- **Files**: Sources/MacCareApp/AppUpdatesView.swift; Sources/MacCareApp/ApplicationsView.swift
+- **Files**: Sources/CoreTendApp/AppUpdatesView.swift; Sources/CoreTendApp/ApplicationsView.swift
 - **Symbols**: AppUpdateSource.detect(for:); AppUpdatesViewModel.open(_:)
 - **Views**: AppUpdatesView
 - **Test**: none dedicated
-- **Command**: `grep -n Sparkle Sources/MacCareApp/*.swift`
+- **Command**: `grep -n Sparkle Sources/CoreTendApp/*.swift`
 - **Runtime evidence**: n/a
 - **Bundle evidence**: n/a
 - **Visual evidence**: n/a
@@ -723,11 +723,11 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 - **Priority**: MUST
 - **Source**: README.md; FEATURE_INVENTORY.md clutter.*
 - **Status**: **IMPLEMENTED_UNVERIFIED**
-- **Files**: Sources/MacCareApp/DuplicatesView.swift; SimilarImagesView.swift; MyClutterView.swift
+- **Files**: Sources/CoreTendApp/DuplicatesView.swift; SimilarImagesView.swift; MyClutterView.swift
 - **Symbols**: DuplicateEngine; SimilarImagesEngine; ScanEngine
 - **Views**: DuplicatesView; SimilarImagesView; MyClutterView
 - **Test**: engine-level tests pass; view-internal logic untested
-- **Command**: `grep -n 'DuplicateEngine()\|SimilarImagesEngine()\|ScanEngine()' Sources/MacCareApp/*.swift`
+- **Command**: `grep -n 'DuplicateEngine()\|SimilarImagesEngine()\|ScanEngine()' Sources/CoreTendApp/*.swift`
 - **Runtime evidence**: n/a
 - **Bundle evidence**: n/a
 - **Visual evidence**: n/a
@@ -741,11 +741,11 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 - **Priority**: MUST
 - **Source**: README.md; FEATURE_INVENTORY.md spacelens.view
 - **Status**: **IMPLEMENTED_UNVERIFIED**
-- **Files**: Sources/ScanCore/SpaceLensEngine.swift; Sources/MacCareApp/SpaceLensView.swift
+- **Files**: Sources/ScanCore/SpaceLensEngine.swift; Sources/CoreTendApp/SpaceLensView.swift
 - **Symbols**: SpaceLensEngine; TreemapLayout
 - **Views**: SpaceLensView
 - **Test**: engine tests pass; rendering code unread
-- **Command**: `grep -n SpaceLensEngine Sources/MacCareApp/SpaceLensView.swift`
+- **Command**: `grep -n SpaceLensEngine Sources/CoreTendApp/SpaceLensView.swift`
 - **Runtime evidence**: n/a
 - **Bundle evidence**: n/a
 - **Visual evidence**: BLOCKED_ENVIRONMENT
@@ -759,11 +759,11 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 - **Priority**: MUST
 - **Source**: FEATURE_INVENTORY.md cloud.detect
 - **Status**: **COMPLIANT_PARTIAL**
-- **Files**: Sources/MacCareApp/CloudCleanupView.swift
+- **Files**: Sources/CoreTendApp/CloudCleanupView.swift
 - **Symbols**: CloudCleanupViewModel.detect/scan
 - **Views**: CloudCleanupView
 - **Test**: none dedicated
-- **Command**: `grep -n ubiquitousItemDownloadingStatusKey Sources/MacCareApp/CloudCleanupView.swift`
+- **Command**: `grep -n ubiquitousItemDownloadingStatusKey Sources/CoreTendApp/CloudCleanupView.swift`
 - **Runtime evidence**: n/a
 - **Bundle evidence**: n/a
 - **Visual evidence**: n/a
@@ -795,11 +795,11 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 - **Priority**: MUST
 - **Source**: FEATURE_INVENTORY.md settings wiring table
 - **Status**: **COMPLIANT_VERIFIED**
-- **Files**: Sources/MacCareApp/SettingsView.swift
+- **Files**: Sources/CoreTendApp/SettingsView.swift
 - **Symbols**: SettingsView
 - **Views**: SettingsView
 - **Test**: none dedicated; verified session 2, unchanged file since (git log check)
-- **Command**: `git log --oneline -- Sources/MacCareApp/SettingsView.swift`
+- **Command**: `git log --oneline -- Sources/CoreTendApp/SettingsView.swift`
 - **Runtime evidence**: n/a
 - **Bundle evidence**: n/a
 - **Visual evidence**: n/a
@@ -835,11 +835,11 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 - **Priority**: MUST
 - **Source**: VISUAL_DIRECTION.md Anti-references
 - **Status**: **COMPLIANT_PARTIAL**
-- **Files**: Sources/MacCareApp; Sources/DesignSystem
+- **Files**: Sources/CoreTendApp; Sources/DesignSystem
 - **Symbols**: —
 - **Views**: —
 - **Test**: none
-- **Command**: `grep -rn "broom\|rocket\|stethoscope\|shield" Sources/MacCareApp Sources/DesignSystem`
+- **Command**: `grep -rn "broom\|rocket\|stethoscope\|shield" Sources/CoreTendApp Sources/DesignSystem`
 - **Runtime evidence**: n/a
 - **Bundle evidence**: n/a
 - **Visual evidence**: BLOCKED_ENVIRONMENT
@@ -853,11 +853,11 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 - **Priority**: SHOULD
 - **Source**: DESIGN_TOKENS.md
 - **Status**: **NON_COMPLIANT**
-- **Files**: Sources/MacCareApp/SpaceLensView.swift; Sources/MacCareApp/OnboardingView.swift (+22 other .font(.system(size: sites)
+- **Files**: Sources/CoreTendApp/SpaceLensView.swift; Sources/CoreTendApp/OnboardingView.swift (+22 other .font(.system(size: sites)
 - **Symbols**: —
 - **Views**: SpaceLensView; OnboardingView
 - **Test**: none
-- **Command**: `grep -rn "Color(red:\|\.font(\.system(size:" Sources/MacCareApp Sources/DesignSystem`
+- **Command**: `grep -rn "Color(red:\|\.font(\.system(size:" Sources/CoreTendApp Sources/DesignSystem`
 - **Runtime evidence**: n/a
 - **Bundle evidence**: n/a
 - **Visual evidence**: n/a
@@ -915,15 +915,15 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 - **Priority**: SHOULD
 - **Source**: platform norm; WEBSITE_AUDIT.md analog
 - **Status**: **COMPLIANT_PARTIAL**
-- **Files**: Sources/MacCareApp; Sources/DesignSystem
+- **Files**: Sources/CoreTendApp; Sources/DesignSystem
 - **Symbols**: —
 - **Views**: —
 - **Test**: none
-- **Command**: `grep -rl "accessibilityLabel\|accessibilityValue\|accessibilityHint" Sources/MacCareApp Sources/DesignSystem`
+- **Command**: `grep -rl "accessibilityLabel\|accessibilityValue\|accessibilityHint" Sources/CoreTendApp Sources/DesignSystem`
 - **Runtime evidence**: BLOCKED_ENVIRONMENT — no VoiceOver session possible
 - **Bundle evidence**: n/a
 - **Visual evidence**: n/a
-- **Limitation**: 14 of 20 MacCareApp view files contain at least one accessibility call; 6 have none found. Presence in code != verified working.
+- **Limitation**: 14 of 20 CoreTendApp view files contain at least one accessibility call; 6 have none found. Presence in code != verified working.
 - **User impact**: unknown, potentially real for the 6 files with no accessibility calls found
 - **Risk**: medium
 - **Needed fix**: identify the 6 files and add labels; then a real VoiceOver pass
@@ -969,7 +969,7 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 - **Priority**: SHOULD
 - **Source**: derived — chart/treemap accessibility norm
 - **Status**: **UNKNOWN**
-- **Files**: Sources/MacCareApp/SpaceLensView.swift; PerformanceView.swift
+- **Files**: Sources/CoreTendApp/SpaceLensView.swift; PerformanceView.swift
 - **Symbols**: —
 - **Views**: —
 - **Test**: none
@@ -991,7 +991,7 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 - **Priority**: MUST
 - **Source**: implicit — bilingual product
 - **Status**: **COMPLIANT_VERIFIED**
-- **Files**: Sources/MacCareApp/Resources/Base.lproj/Localizable.strings; Sources/MacCareApp/Resources/fr.lproj/Localizable.strings
+- **Files**: Sources/CoreTendApp/Resources/Base.lproj/Localizable.strings; Sources/CoreTendApp/Resources/fr.lproj/Localizable.strings
 - **Symbols**: L10n
 - **Views**: —
 - **Test**: fresh key-set diff this session: 0 EN-only, 0 FR-only (372/372 lines each)
@@ -1009,15 +1009,15 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 - **Priority**: SHOULD
 - **Source**: implicit
 - **Status**: **COMPLIANT_PARTIAL**
-- **Files**: Sources/MacCareApp/OnboardingView.swift
+- **Files**: Sources/CoreTendApp/OnboardingView.swift
 - **Symbols**: —
 - **Views**: OnboardingView
 - **Test**: none
-- **Command**: `grep -rn Text\(" Sources/MacCareApp/*.swift | grep -v L\(`
+- **Command**: `grep -rn Text\(" Sources/CoreTendApp/*.swift | grep -v L\(`
 - **Runtime evidence**: n/a
 - **Bundle evidence**: n/a
 - **Visual evidence**: n/a
-- **Limitation**: OnboardingView.swift:57 has a bare Text("MacCare Local") literal — the app/brand name, arguably intentionally not localized (proper noun), but not routed through L(...) like everything else.
+- **Limitation**: OnboardingView.swift:57 has a bare Text("CoreTend") literal — the app/brand name, arguably intentionally not localized (proper noun), but not routed through L(...) like everything else.
 - **User impact**: none (brand name is language-invariant)
 - **Risk**: low
 - **Needed fix**: none needed if intentional; otherwise route through L(...) for consistency
@@ -1027,7 +1027,7 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 - **Priority**: SHOULD
 - **Source**: implicit
 - **Status**: **UNKNOWN**
-- **Files**: Sources/MacCareApp/L10n.swift
+- **Files**: Sources/CoreTendApp/L10n.swift
 - **Symbols**: —
 - **Views**: —
 - **Test**: none
@@ -1103,11 +1103,11 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 - **Priority**: MUST
 - **Source**: MOTION_SYSTEM.md
 - **Status**: **IMPLEMENTED_UNVERIFIED**
-- **Files**: Sources/MacCareApp
+- **Files**: Sources/CoreTendApp
 - **Symbols**: onDisappear
 - **Views**: —
 - **Test**: none
-- **Command**: `grep -rn onDisappear Sources/MacCareApp`
+- **Command**: `grep -rn onDisappear Sources/CoreTendApp`
 - **Runtime evidence**: n/a
 - **Bundle evidence**: n/a
 - **Visual evidence**: n/a

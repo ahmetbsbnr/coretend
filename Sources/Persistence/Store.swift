@@ -73,12 +73,12 @@ public actor Store {
         """,
     ]
 
-    /// Default on-disk location: ~/Library/Application Support/MacCareLocal/store.sqlite
+    /// Default on-disk location: ~/Library/Application Support/CoreTend/store.sqlite
     public static func defaultPath() throws -> String {
         let dir = try FileManager.default.url(
             for: .applicationSupportDirectory, in: .userDomainMask,
             appropriateFor: nil, create: true
-        ).appendingPathComponent("MacCareLocal", isDirectory: true)
+        ).appendingPathComponent("CoreTend", isDirectory: true)
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         return dir.appendingPathComponent("store.sqlite").path
     }
@@ -227,7 +227,7 @@ public struct SafetyLogRecord: Sendable, Identifiable {
 extension Store: SafetyAuditSink {
     /// Redacts a filesystem path to a shape that carries no personal
     /// information ("<home>/…/name" or "/Users/<redacted>/…") before it
-    /// ever reaches disk. Mirrors MacCareApp's DiagnosticReport.redactPath —
+    /// ever reaches disk. Mirrors CoreTendApp's DiagnosticReport.redactPath —
     /// this is the canonical copy; safety_log never stores a raw path.
     public static func redactPath(_ path: String) -> String {
         let home = NSHomeDirectory()

@@ -4,7 +4,7 @@ Procédure par tranche: build Release → package → lancer le bundle →
 `Scripts/capture.sh <out.png> "<Module>"` en clair + sombre → comparer avec la
 capture précédente (VisualAudit/After) → corriger → commit.
 
-Forcer clair: `defaults write local.maccare.app NSRequiresAquaSystemAppearance -bool yes`
+Forcer clair: `defaults write com.ahmetbsbnr.coretend NSRequiresAquaSystemAppearance -bool yes`
 (supprimer la clé ensuite).
 
 ## Checklist commune (chaque écran)

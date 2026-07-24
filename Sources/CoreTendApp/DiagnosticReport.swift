@@ -47,7 +47,7 @@ enum DiagnosticReport {
 
     static func build(_ inputs: Inputs) -> String {
         var lines: [String] = []
-        lines.append("MacCare Local — Diagnostic Report")
+        lines.append("CoreTend — Diagnostic Report")
         lines.append("App version: \(inputs.appVersion) (build \(inputs.appBuild))")
         lines.append("macOS: \(inputs.macOSVersion)")
         lines.append("Architecture: \(inputs.architecture)")
@@ -138,7 +138,7 @@ struct DiagnosticReportView: View {
 
     private func save() {
         let panel = NSSavePanel()
-        panel.nameFieldStringValue = "maccarelocal-diagnostic.txt"
+        panel.nameFieldStringValue = "coretendlocal-diagnostic.txt"
         panel.allowedContentTypes = [.plainText]
         if panel.runModal() == .OK, let url = panel.url {
             try? report.write(to: url, atomically: true, encoding: .utf8)

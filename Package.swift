@@ -2,11 +2,11 @@
 import PackageDescription
 
 let package = Package(
-    name: "MacCareLocal",
+    name: "CoreTend",
     defaultLocalization: "en",
     platforms: [.macOS(.v14)],
     products: [
-        .executable(name: "MacCareLocal", targets: ["MacCareApp"]),
+        .executable(name: "CoreTend", targets: ["CoreTendApp"]),
         .library(name: "ScanCore", targets: ["ScanCore"]),
         .library(name: "SafetyCore", targets: ["SafetyCore"]),
         .library(name: "FileRules", targets: ["FileRules"]),
@@ -18,7 +18,7 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "MacCareApp",
+            name: "CoreTendApp",
             dependencies: ["ScanCore", "SafetyCore", "FileRules", "DesignSystem", "Persistence", "SystemMetrics", "AppDiscovery", "MalwareEngine"],
             resources: [.process("Resources")]
         ),
@@ -38,6 +38,6 @@ let package = Package(
         .testTarget(name: "ScanCoreTests", dependencies: ["ScanCore"]),
         .testTarget(name: "SafetyCoreTests", dependencies: ["SafetyCore"]),
         .testTarget(name: "FileRulesTests", dependencies: ["FileRules"]),
-        .testTarget(name: "MacCareAppTests", dependencies: ["MacCareApp"]),
+        .testTarget(name: "CoreTendAppTests", dependencies: ["CoreTendApp"]),
     ]
 )

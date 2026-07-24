@@ -15,7 +15,7 @@ struct PathValidatorTests {
     let validator: PathValidator
 
     init() throws {
-        tempRoot = try makeTempRoot("maccare-tests")
+        tempRoot = try makeTempRoot("coretend-tests")
         validator = PathValidator(allowedRoots: [tempRoot])
     }
 
@@ -88,7 +88,7 @@ struct PathValidatorTests {
     @Test func symlinkEscapingAllowlistRejected() throws {
         defer { cleanup() }
         let outside = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-outside-\(UUID().uuidString).txt")
+            .appendingPathComponent("coretend-outside-\(UUID().uuidString).txt")
         try Data("secret".utf8).write(to: outside)
         defer { try? FileManager.default.removeItem(at: outside) }
         let link = tempRoot.appendingPathComponent("link")
@@ -128,7 +128,7 @@ struct SafetyCenterTests {
     let tempRoot: URL
 
     init() throws {
-        tempRoot = try makeTempRoot("maccare-center")
+        tempRoot = try makeTempRoot("coretend-center")
     }
 
     private func cleanup() {
@@ -167,7 +167,7 @@ struct SafetyCenterTests {
         let op = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
         // Replace the file with a symlink pointing outside the allowlist.
         let outside = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-swap-target-\(UUID().uuidString).txt")
+            .appendingPathComponent("coretend-swap-target-\(UUID().uuidString).txt")
         try Data("outside".utf8).write(to: outside)
         defer { try? FileManager.default.removeItem(at: outside) }
         try FileManager.default.removeItem(at: file)
@@ -188,7 +188,7 @@ struct SafetyCenterAuditSinkTests {
     let tempRoot: URL
 
     init() throws {
-        tempRoot = try makeTempRoot("maccare-audit-sink")
+        tempRoot = try makeTempRoot("coretend-audit-sink")
     }
 
     private func cleanup() {

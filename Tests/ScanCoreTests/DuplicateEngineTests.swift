@@ -8,7 +8,7 @@ struct DuplicateEngineTests {
 
     init() throws {
         root = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-dup-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-dup-\(UUID().uuidString)")
         try FileManager.default.createDirectory(
             at: root.appendingPathComponent("sub"), withIntermediateDirectories: true)
     }
@@ -122,7 +122,7 @@ struct DuplicateEngineTests {
 struct ScanExclusionTests {
     @Test func excludedSubtreeSkipped() async throws {
         let root = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-excl-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-excl-\(UUID().uuidString)")
         let cachesDir = root.appendingPathComponent("Library/Caches")
         try FileManager.default.createDirectory(
             at: cachesDir.appendingPathComponent("Excluded"), withIntermediateDirectories: true)

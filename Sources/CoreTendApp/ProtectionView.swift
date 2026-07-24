@@ -16,7 +16,7 @@ final class ProtectionViewModel {
     var quarantineItems: [Quarantine.Item] = []
     var statusMessage: String?
 
-    private var quarantine: Quarantine? = try? Quarantine(directory: (try? Quarantine.defaultDirectory()) ?? FileManager.default.temporaryDirectory.appendingPathComponent("MacCareQuarantine"))
+    private var quarantine: Quarantine? = try? Quarantine(directory: (try? Quarantine.defaultDirectory()) ?? FileManager.default.temporaryDirectory.appendingPathComponent("CoreTendQuarantine"))
 
     // MARK: Optional background watch (Step 3). Off by default each launch —
     // a background scanner should never silently turn itself on. Never

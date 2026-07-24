@@ -24,8 +24,8 @@ note "Packaging ZIP and DMG"
 bash Scripts/package-zip.sh "$VERSION"
 bash Scripts/package-dmg.sh "$VERSION"
 
-ZIP="Release/MacCare-Local-${VERSION}-arm64-unsigned.zip"
-DMG="Release/MacCare-Local-${VERSION}-arm64-unsigned.dmg"
+ZIP="Release/CoreTend-${VERSION}-arm64-unsigned.zip"
+DMG="Release/CoreTend-${VERSION}-arm64-unsigned.dmg"
 [ -f "$ZIP" ] || { bad "zip not found at $ZIP"; exit 1; }
 [ -f "$DMG" ] || { bad "dmg not found at $DMG"; exit 1; }
 
@@ -35,19 +35,19 @@ trap 'rm -rf "$WORK"' EXIT
 note "Extracting ZIP outside the repo ($WORK)"
 mkdir -p "$WORK/zip"
 unzip -q "$ZIP" -d "$WORK/zip"
-APP="$WORK/zip/MacCare Local.app"
+APP="$WORK/zip/CoreTend.app"
 [ -d "$APP" ] && ok "app bundle extracted" || bad "app bundle missing after extraction"
 
 note "Mounting DMG"
 MOUNT_POINT=$(mktemp -d)
 hdiutil attach "$DMG" -mountpoint "$MOUNT_POINT" -nobrowse -quiet
-[ -d "$MOUNT_POINT/MacCare Local.app" ] && ok "DMG mounts and contains app bundle" || bad "DMG missing app bundle"
+[ -d "$MOUNT_POINT/CoreTend.app" ] && ok "DMG mounts and contains app bundle" || bad "DMG missing app bundle"
 [ -L "$MOUNT_POINT/Applications" ] && ok "DMG has /Applications shortcut" || bad "DMG missing Applications symlink"
 hdiutil detach "$MOUNT_POINT" -quiet || true
 rmdir "$MOUNT_POINT" 2>/dev/null || true
 
 note "Checking bundle structure"
-BIN="$APP/Contents/MacOS/MacCareLocal"
+BIN="$APP/Contents/MacOS/CoreTend"
 [ -x "$BIN" ] && ok "executable present" || bad "executable missing"
 [ -f "$APP/Contents/Info.plist" ] && ok "Info.plist present" || bad "Info.plist missing"
 [ -f "$APP/Contents/Resources/AppIcon.icns" ] && ok "app icon present" || bad "app icon missing"
@@ -95,9 +95,9 @@ mkdir -p "$MACCARELOCAL_STORE_DIR"
 open -W -n -a "$APP" --args --smoke-test-quit-immediately &
 LAUNCH_PID=$!
 sleep 3
-if pgrep -f "$WORK/zip/MacCare Local.app/Contents/MacOS/MacCareLocal" >/dev/null; then
+if pgrep -f "$WORK/zip/CoreTend.app/Contents/MacOS/CoreTend" >/dev/null; then
   ok "app launched without an immediate crash"
-  pkill -f "$WORK/zip/MacCare Local.app/Contents/MacOS/MacCareLocal" || true
+  pkill -f "$WORK/zip/CoreTend.app/Contents/MacOS/CoreTend" || true
 else
   bad "app did not appear to launch (or crashed immediately) — check Console.app for a crash report"
 fi
@@ -108,7 +108,7 @@ note "Fresh-location DB init check"
 # first run; we only verify the on-disk store this run produced (if any)
 # is a fresh, valid SQLite file with no seeded personal data — we never
 # touch the real per-user Application Support location.
-DB_CANDIDATE=$(find "$HOME/Library/Application Support/MacCareLocal" -name "store.sqlite" -newer "$WORK" 2>/dev/null | head -1)
+DB_CANDIDATE=$(find "$HOME/Library/Application Support/CoreTend" -name "store.sqlite" -newer "$WORK" 2>/dev/null | head -1)
 if [ -n "$DB_CANDIDATE" ]; then
   if file "$DB_CANDIDATE" | grep -qi "SQLite"; then
     ok "fresh DB initialized as valid SQLite at a real run"

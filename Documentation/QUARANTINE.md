@@ -1,12 +1,12 @@
 # Quarantine (Protection)
 
 Protection's malware scanner never deletes a detected file automatically.
-When you choose to act on a finding, MacCare Local moves the file into its
+When you choose to act on a finding, CoreTend moves the file into its
 own quarantine folder instead — this is reversible.
 
 ## How it works
 
-- Location: `~/Library/Application Support/MacCareLocal/Quarantine/`
+- Location: `~/Library/Application Support/CoreTend/Quarantine/`
 - Each quarantined file is moved (not copied) out of its original location
   and renamed to a random, unique name so it cannot be double-clicked or
   run by accident.
@@ -19,7 +19,7 @@ own quarantine folder instead — this is reversible.
 This is implemented by the `Quarantine` actor in
 `Sources/MalwareEngine/MalwareEngine.swift` — see
 [SAFETYCORE.md](SAFETYCORE.md) / source for details. The file is never
-executed, opened, or modified by MacCare Local at any point.
+executed, opened, or modified by CoreTend at any point.
 
 ## Restoring a quarantined file
 

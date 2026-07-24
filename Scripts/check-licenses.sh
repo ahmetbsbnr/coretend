@@ -12,7 +12,7 @@ cd "$ROOT_DIR"
 
 fail=0
 
-echo "MacCare Local — check-licenses"
+echo "CoreTend — check-licenses"
 
 for f in LICENSE NOTICE COPYRIGHT THIRD_PARTY_NOTICES.md; do
   if [ -f "$f" ]; then

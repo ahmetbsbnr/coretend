@@ -9,7 +9,7 @@ struct ScanEngineTests {
 
     init() throws {
         tempRoot = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-scan-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-scan-\(UUID().uuidString)")
         try FileManager.default.createDirectory(
             at: tempRoot.appendingPathComponent("Library/Caches/AppX"),
             withIntermediateDirectories: true)
@@ -135,7 +135,7 @@ struct ScanRootIsolationTests {
 
     init() throws {
         tempRoot = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-isolation-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-isolation-\(UUID().uuidString)")
         let fm = FileManager.default
         for dir in ["Downloads", "Music", "Documents", "Library/Caches", "Library/Logs"] {
             try fm.createDirectory(at: tempRoot.appendingPathComponent(dir), withIntermediateDirectories: true)
@@ -193,7 +193,7 @@ struct ScanTotalsBeyondCapTests {
     /// and Cleanup when a scan yields more than the 5000-row UI cap.
     @Test func engineStreamsAllFindingsUncappedAt5001() async throws {
         let root = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-cap-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-cap-\(UUID().uuidString)")
         let dir = root.appendingPathComponent("Library/Caches")
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
@@ -226,7 +226,7 @@ struct ScanTotalsBeyondCapTests {
 struct ScanRuleMatchesTests {
     @Test func matchesPredicateFiltersFindings() async throws {
         let root = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-match-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-match-\(UUID().uuidString)")
         try FileManager.default.createDirectory(
             at: root.appendingPathComponent("Downloads"), withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }

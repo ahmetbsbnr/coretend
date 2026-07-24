@@ -13,7 +13,7 @@ struct SimilarImagesEngineTests {
 
     init() throws {
         root = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-sim-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-sim-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
     }
     private func cleanup() { try? FileManager.default.removeItem(at: root) }

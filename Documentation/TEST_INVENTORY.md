@@ -15,7 +15,7 @@ parameterized tests expand to multiple cases).
 | AppDiscovery | 20 |
 | DesignSystem | 13 |
 | FileRules | 7 |
-| MacCareApp | 98 |
+| CoreTendApp | 98 |
 | MalwareEngine | 40 |
 | Persistence | 10 |
 | SafetyCore | 20 |

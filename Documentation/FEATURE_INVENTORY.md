@@ -10,11 +10,11 @@ Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, 
 
 | id | Feature | Status | Evidence |
 |---|---|---|---|
-| shell.launch | App launch, `AppEnvironment.shared` singleton creates `Store` at `~/Library/Application Support/MacCareLocal/store.sqlite`, falls back to `:memory:` if init fails | VERIFIED_COMPLETE | Sources/MacCareApp/AppEnvironment.swift:1-17 |
-| shell.nav | `NavigationSplitView` + `List(selection:)` sidebar over a `ModuleID` enum, default selection `.smartCare` | VERIFIED_COMPLETE | Sources/MacCareApp/MacCareApp.swift:235-242 |
-| shell.menubar | Menu-bar extra: `MenuBarLabel`/`MenuBarView`, live `MetricsSnapshot` + last Smart Care activity, `@AppStorage("menuBarEnabled")` toggle in Settings | VERIFIED_COMPLETE | Sources/MacCareApp/MacCareApp.swift:69-94 |
-| shell.onboarding | `OnboardingView`, opens Full Disk Access system pane via a static hardcoded `x-apple.systempreferences:` URL | VERIFIED_COMPLETE | Sources/MacCareApp/OnboardingView.swift:22-23 |
-| shell.diagnostics | `DiagnosticReport` — anonymized export, redaction test exists | VERIFIED_COMPLETE | Sources/MacCareApp/DiagnosticReport.swift:83-91 |
+| shell.launch | App launch, `AppEnvironment.shared` singleton creates `Store` at `~/Library/Application Support/CoreTend/store.sqlite`, falls back to `:memory:` if init fails | VERIFIED_COMPLETE | Sources/CoreTendApp/AppEnvironment.swift:1-17 |
+| shell.nav | `NavigationSplitView` + `List(selection:)` sidebar over a `ModuleID` enum, default selection `.smartCare` | VERIFIED_COMPLETE | Sources/CoreTendApp/CoreTendApp.swift:235-242 |
+| shell.menubar | Menu-bar extra: `MenuBarLabel`/`MenuBarView`, live `MetricsSnapshot` + last Smart Care activity, `@AppStorage("menuBarEnabled")` toggle in Settings | VERIFIED_COMPLETE | Sources/CoreTendApp/CoreTendApp.swift:69-94 |
+| shell.onboarding | `OnboardingView`, opens Full Disk Access system pane via a static hardcoded `x-apple.systempreferences:` URL | VERIFIED_COMPLETE | Sources/CoreTendApp/OnboardingView.swift:22-23 |
+| shell.diagnostics | `DiagnosticReport` — anonymized export, redaction test exists | VERIFIED_COMPLETE | Sources/CoreTendApp/DiagnosticReport.swift:83-91 |
 
 ## SafetyCore (4: VERIFIED_COMPLETE=3, VERIFIED_PARTIAL=1)
 
@@ -50,7 +50,7 @@ Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, 
 
 | id | Feature | Status | Evidence |
 |---|---|---|---|
-| smartcare.orchestration | Runs `UserCleanupRules.all` through `ScanEngine`, same `SafetyCenter`/dry-run gate as manual Cleanup | VERIFIED_COMPLETE | Sources/MacCareApp/SmartCareView.swift:71-113 |
+| smartcare.orchestration | Runs `UserCleanupRules.all` through `ScanEngine`, same `SafetyCenter`/dry-run gate as manual Cleanup | VERIFIED_COMPLETE | Sources/CoreTendApp/SmartCareView.swift:71-113 |
 
 ## MalwareEngine (3: VERIFIED_COMPLETE=2, VERIFIED_PARTIAL=1)
 
@@ -72,44 +72,44 @@ Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, 
 |---|---|---|---|
 | apps.discovery | `discoverApps()` enumerates `/Applications` + `~/Applications` (one nesting level for suites), reads `Info.plist`, real Spotlight `kMDItemLastUsedDate` (honestly `nil` if unindexed, never guessed), real `com.apple.quarantine` xattr check, Mach-O magic-number architecture detection (arm64/x86_64/universal/unknown) | VERIFIED_COMPLETE | Sources/AppDiscovery/AppDiscovery.swift:63-217 |
 | apps.leftovers | `leftovers()` — reverse-DNS bundle-ID pattern match (`looksLikeBundleID`, ≥3 dot-separated parts) in Application Support/Caches/Saved Application State, excludes `com.apple.*`/`group.com.apple.*`, cross-references installed bundle IDs | VERIFIED_COMPLETE | Sources/AppDiscovery/AppDiscovery.swift:150-183 |
-| apps.updates | `AppUpdatesView` calls `AppDiscovery().discoverApps()` and opens `macappstore://showUpdatesPage` via NSWorkspace — **this only opens the macOS App Store's Updates pane, it does not itself check for or list available updates from any source** | VERIFIED_PARTIAL | Sources/MacCareApp/AppUpdatesView.swift:26,38-40 (deep-links to App Store, does not itself check updates) |
+| apps.updates | `AppUpdatesView` calls `AppDiscovery().discoverApps()` and opens `macappstore://showUpdatesPage` via NSWorkspace — **this only opens the macOS App Store's Updates pane, it does not itself check for or list available updates from any source** | VERIFIED_PARTIAL | Sources/CoreTendApp/AppUpdatesView.swift:26,38-40 (deep-links to App Store, does not itself check updates) |
 
 ## MyClutter (3: IMPLEMENTED_UNVERIFIED=3)
 
 | id | Feature | Status | Evidence |
 |---|---|---|---|
-| clutter.largeold | `MyClutterView` instantiates a plain `ScanEngine()` (default config, all rules) for its Large & Old view | IMPLEMENTED_UNVERIFIED | Sources/MacCareApp/MyClutterView.swift:66 |
-| clutter.duplicates | `DuplicatesView` wires `DuplicateEngine` + `SafetyCenter`/dry-run for deletion | IMPLEMENTED_UNVERIFIED | Sources/MacCareApp/DuplicatesView.swift:40,82 |
-| clutter.similarimages | `SimilarImagesView` wires `SimilarImagesEngine` | IMPLEMENTED_UNVERIFIED | Sources/MacCareApp/SimilarImagesView.swift:21 |
+| clutter.largeold | `MyClutterView` instantiates a plain `ScanEngine()` (default config, all rules) for its Large & Old view | IMPLEMENTED_UNVERIFIED | Sources/CoreTendApp/MyClutterView.swift:66 |
+| clutter.duplicates | `DuplicatesView` wires `DuplicateEngine` + `SafetyCenter`/dry-run for deletion | IMPLEMENTED_UNVERIFIED | Sources/CoreTendApp/DuplicatesView.swift:40,82 |
+| clutter.similarimages | `SimilarImagesView` wires `SimilarImagesEngine` | IMPLEMENTED_UNVERIFIED | Sources/CoreTendApp/SimilarImagesView.swift:21 |
 
 ## SpaceLens (1: IMPLEMENTED_UNVERIFIED=1)
 
 | id | Feature | Status | Evidence |
 |---|---|---|---|
-| spacelens.view | `SpaceLensView` wires `SpaceLensEngine(root:)`, presumably renders via `TreemapLayout` | IMPLEMENTED_UNVERIFIED | Sources/MacCareApp/SpaceLensView.swift:23 |
+| spacelens.view | `SpaceLensView` wires `SpaceLensEngine(root:)`, presumably renders via `TreemapLayout` | IMPLEMENTED_UNVERIFIED | Sources/CoreTendApp/SpaceLensView.swift:23 |
 
 ## CloudCleanup (1: VERIFIED_PARTIAL=1)
 
 | id | Feature | Status | Evidence |
 |---|---|---|---|
-| cloud.detect | `CloudCleanupViewModel.detect()`/`scan()` — bespoke scanner (not one of the shared 4 engines), enumerates iCloud Drive (`~/Library/Mobile Documents/com~apple~CloudDocs`) and other declared providers, classifies sync state from the real `ubiquitousItemDownloadingStatusKey` signal (placeholder/partial/local), never triggers a download itself | VERIFIED_PARTIAL | Sources/MacCareApp/CloudCleanupView.swift:10-137 |
+| cloud.detect | `CloudCleanupViewModel.detect()`/`scan()` — bespoke scanner (not one of the shared 4 engines), enumerates iCloud Drive (`~/Library/Mobile Documents/com~apple~CloudDocs`) and other declared providers, classifies sync state from the real `ubiquitousItemDownloadingStatusKey` signal (placeholder/partial/local), never triggers a download itself | VERIFIED_PARTIAL | Sources/CoreTendApp/CloudCleanupView.swift:10-137 |
 
 ## Persistence (2: VERIFIED_COMPLETE=2)
 
 | id | Feature | Status | Evidence |
 |---|---|---|---|
 | activity.log | `Store.recordActivity`/`activity(limit:kind:)`/`clearActivity()` — SQLite (`sqlite3` C API), WAL mode, actor-isolated, append-only migration list, migrations verified idempotent | VERIFIED_COMPLETE | Sources/Persistence/Store.swift:1-165 |
-| activity.grouping | Day-grouping / date-filter (`last7`/`last30`/`all`) logic in `MyActivityView` | VERIFIED_COMPLETE | Sources/MacCareApp/MyActivityView.swift:36-39 |
+| activity.grouping | Day-grouping / date-filter (`last7`/`last30`/`all`) logic in `MyActivityView` | VERIFIED_COMPLETE | Sources/CoreTendApp/MyActivityView.swift:36-39 |
 
 ## Settings (7: VERIFIED_COMPLETE=7)
 
 | id | Feature | Status | Evidence |
 |---|---|---|---|
-| settings.menubar | Settings: "Show MacCare in the menu bar" toggle, backed by @AppStorage("menuBarEnabled") | VERIFIED_COMPLETE | Sources/MacCareApp/SettingsView.swift:82,93 |
-| settings.dryrundefault | Settings: "Dry run by default" toggle, persisted to Store via setSetting("dryRunDefault") | VERIFIED_COMPLETE | Sources/MacCareApp/SettingsView.swift:102-103 |
-| settings.clamavstatus | Settings: ClamAV engine install status (read-only), install hint shown when not installed | VERIFIED_COMPLETE | Sources/MacCareApp/SettingsView.swift:110-114 |
-| settings.fulldiskaccess | Settings: Full Disk Access status with "Open System Settings" / "Recheck" actions | VERIFIED_COMPLETE | Sources/MacCareApp/SettingsView.swift:127-134 |
-| settings.exclusions | Settings: exclusions list — add folder (NSOpenPanel) / remove, persisted to Store | VERIFIED_COMPLETE | Sources/MacCareApp/SettingsView.swift:152-174 |
-| settings.clearactivity | Settings: "Clear Activity History" destructive action with confirmation dialog | VERIFIED_COMPLETE | Sources/MacCareApp/SettingsView.swift:181-184 |
-| settings.exportdiagnostic | Settings: "Export Diagnostic Report" — opens DiagnosticReportView sheet (preview before save) | VERIFIED_COMPLETE | Sources/MacCareApp/SettingsView.swift:188 |
+| settings.menubar | Settings: "Show CoreTend in the menu bar" toggle, backed by @AppStorage("menuBarEnabled") | VERIFIED_COMPLETE | Sources/CoreTendApp/SettingsView.swift:82,93 |
+| settings.dryrundefault | Settings: "Dry run by default" toggle, persisted to Store via setSetting("dryRunDefault") | VERIFIED_COMPLETE | Sources/CoreTendApp/SettingsView.swift:102-103 |
+| settings.clamavstatus | Settings: ClamAV engine install status (read-only), install hint shown when not installed | VERIFIED_COMPLETE | Sources/CoreTendApp/SettingsView.swift:110-114 |
+| settings.fulldiskaccess | Settings: Full Disk Access status with "Open System Settings" / "Recheck" actions | VERIFIED_COMPLETE | Sources/CoreTendApp/SettingsView.swift:127-134 |
+| settings.exclusions | Settings: exclusions list — add folder (NSOpenPanel) / remove, persisted to Store | VERIFIED_COMPLETE | Sources/CoreTendApp/SettingsView.swift:152-174 |
+| settings.clearactivity | Settings: "Clear Activity History" destructive action with confirmation dialog | VERIFIED_COMPLETE | Sources/CoreTendApp/SettingsView.swift:181-184 |
+| settings.exportdiagnostic | Settings: "Export Diagnostic Report" — opens DiagnosticReportView sheet (preview before save) | VERIFIED_COMPLETE | Sources/CoreTendApp/SettingsView.swift:188 |
 

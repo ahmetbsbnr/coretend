@@ -13,7 +13,7 @@ SafetyCore  (no deps)
 ScanCore   FileRules ---> (also depends on ScanCore)
    ^
    |
-MacCareApp (executable) ---> also depends on: DesignSystem, Persistence,
+CoreTendApp (executable) ---> also depends on: DesignSystem, Persistence,
                               SystemMetrics, AppDiscovery, MalwareEngine
 ```
 
@@ -23,7 +23,7 @@ other way around.
 
 ## Walkthrough: a Cleanup scan-to-delete run
 
-1. **MacCareApp/CleanupView.swift** builds a `ScanConfiguration` from
+1. **CoreTendApp/CleanupView.swift** builds a `ScanConfiguration` from
    `FileRules`' built-in rules and the user's saved
    [exclusions](../Documentation/EXCLUSIONS.md) (loaded from `Persistence.Store`).
 2. **ScanCore.ScanEngine** walks the filesystem in a detached task, emits

@@ -25,7 +25,7 @@ Steps run from the clean copy, in order:
 2. `Scripts/test.sh` — all 83 tests passed, 0 failures, 26 suites.
 3. `swift build` (debug) — clean build, no errors.
 4. `swift build -c release` — clean build, no errors.
-5. `Scripts/package-local.sh` — assembled `MacCare Local.app`.
+5. `Scripts/package-local.sh` — assembled `CoreTend.app`.
 6. Launched the packaged app's binary directly from the clean-clone build
    output and confirmed it stayed running with no stderr/stdout errors and
    no crash report.
@@ -34,7 +34,7 @@ Steps run from the clean copy, in order:
 
 `Scripts/package-local.sh` copied the icon/menu-bar assets into
 `Contents/Resources/` but never copied the SwiftPM-generated
-`MacCareLocal_MacCareApp.bundle` (which contains `Localizable.xcstrings` /
+`CoreTend_CoreTendApp.bundle` (which contains `Localizable.xcstrings` /
 `Localizable.strings` for `fr.lproj` and `Base.lproj`).
 
 Impact: at runtime, `Bundle.module`'s generated accessor
@@ -52,7 +52,7 @@ into `Contents/Resources/` alongside the existing assets, so `Bundle.main`
 resolution succeeds and the baked-in absolute fallback path is never
 needed. Re-ran packaging and the launch check after the fix; the app
 bundle's `Contents/Resources/` now contains
-`MacCareLocal_MacCareApp.bundle/` with the localization files, and the
+`CoreTend_CoreTendApp.bundle/` with the localization files, and the
 absolute build-tree fallback path is no longer reached.
 
 ### Path-independence checks
@@ -63,7 +63,7 @@ absolute build-tree fallback path is no longer reached.
   greps for it across tracked files). The only absolute path found was the
   harmless SwiftPM fallback described above (unreached once the bundle fix
   is in place).
-- `~/Library/Application Support/MacCareLocal/store.sqlite` (WAL mode)
+- `~/Library/Application Support/CoreTend/store.sqlite` (WAL mode)
   initialized correctly and was actively written to during the clean-clone
   app's run — persistence path is keyed off the app's bundle identifier,
   not the source checkout location.

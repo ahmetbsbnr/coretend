@@ -2,7 +2,7 @@
 
 Smart Care is the one-click orchestrator: it runs a curated set of care
 modules (defined in `SmartCareViewModel.initialModules()`,
-`Sources/MacCareApp/SmartCareView.swift`) back-to-back and reports one
+`Sources/CoreTendApp/SmartCareView.swift`) back-to-back and reports one
 combined result, instead of you running each scan separately.
 
 ## Phases

@@ -1,6 +1,6 @@
 import Testing
 import Foundation
-@testable import MacCareApp
+@testable import CoreTendApp
 
 @Suite("Diagnostic report redaction")
 struct DiagnosticReportTests {
@@ -40,7 +40,7 @@ struct DiagnosticReportTests {
     @Test("redactPath strips the real home directory and username")
     func redactPathStripsHome() {
         let home = NSHomeDirectory()
-        let path = home + "/Library/Application Support/MacCareLocal/store.sqlite"
+        let path = home + "/Library/Application Support/CoreTend/store.sqlite"
         let redacted = DiagnosticReport.redactPath(path)
         #expect(!redacted.contains(home))
         #expect(redacted.hasPrefix("<home>"))

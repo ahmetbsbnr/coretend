@@ -7,7 +7,7 @@
   "swiftFiles": 59,
   "swiftLinesTotal": 8296,
   "swiftLinesByTarget": {
-    "MacCareApp": 4260,
+    "CoreTendApp": 4260,
     "DesignSystem": 887,
     "ScanCore": 659,
     "Persistence": 278,

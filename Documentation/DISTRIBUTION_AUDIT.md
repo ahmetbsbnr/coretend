@@ -12,7 +12,7 @@ performed **outside the repo**, in the session scratchpad
 ## 1. Checksum/size manifest sync (regression check for the session-2 fix, commit `88bbb9a`)
 
 ```
-$ shasum -a 256 Release/MacCare-Local-0.7.0-arm64-unsigned.zip Release/MacCare-Local-0.7.0-arm64-unsigned.dmg
+$ shasum -a 256 Release/CoreTend-0.7.0-arm64-unsigned.zip Release/CoreTend-0.7.0-arm64-unsigned.dmg
 0515ea184425ab1829f0da2fd31c4661b97128da54c710e425c2b7b5f2fd9999  .zip
 36aae052183df9e5933fa50264e3fc014cea5359b37636e656acdc7447a4ead8  .dmg
 ```
@@ -24,9 +24,9 @@ sit in the tree today.
 ## 2. Architecture
 
 ```
-$ file MacCareLocal
+$ file CoreTend
 Mach-O 64-bit executable arm64
-$ lipo -info MacCareLocal
+$ lipo -info CoreTend
 Non-fat file: ... is architecture: arm64
 ```
 Single-arch arm64 only, not a universal/fat binary. `latest.json` correctly
@@ -36,7 +36,7 @@ claimed).
 
 ## 3. ZIP extract / launch / quit (outside repo)
 
-Extracted `MacCare-Local-0.7.0-arm64-unsigned.zip` in a scratch temp dir,
+Extracted `CoreTend-0.7.0-arm64-unsigned.zip` in a scratch temp dir,
 `open`'d the `.app`, confirmed process running via `pgrep`, sent AppleScript
 `quit`, confirmed process gone. All steps succeeded first try, no crash,
 no hang. **VERIFIED_COMPLETE**.
@@ -44,7 +44,7 @@ no hang. **VERIFIED_COMPLETE**.
 ## 4. DMG mount / detach (outside repo)
 
 `hdiutil attach -nobrowse -readonly` on the dmg mounted cleanly to
-`/Volumes/MacCare Local`, CRC32 verification passed during mount,
+`/Volumes/CoreTend`, CRC32 verification passed during mount,
 `hdiutil detach` cleaned up without error. Did not additionally launch the
 `.app` from the mounted volume (already covered via the zip path, which is
 the same binary/bundle) — **VERIFIED_COMPLETE** for mount/detach mechanics,
@@ -80,7 +80,7 @@ app once copied to `/Applications`. Not a blocker, but worth a mention in
   isn't the developer; `latest.json.signed=false`, `notarized=false` are
   honest about this.
 - No GitHub release/repo exists yet — `latest.json` has no `downloadURL`;
-  `repositoryURL` in the manifest (`github.com/ahmetbsbnr/mac-care-local`)
+  `repositoryURL` in the manifest (`github.com/ahmetbsbnr/coretend`)
   is aspirational, not live (`git remote -v` is empty per session-1/2 audit).
 - Only ever built/tested on one physical Mac, one macOS version (26.5.1
   arm64) — no multi-OS, no Intel, no clean-machine test.

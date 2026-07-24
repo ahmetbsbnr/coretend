@@ -4,7 +4,7 @@ Cleanup finds files that are very likely safe to remove — caches, logs,
 leftovers, duplicates, similar/near-duplicate images, large unused files —
 and lets you review before anything happens.
 
-## Flow (`Sources/MacCareApp/CleanupView.swift`)
+## Flow (`Sources/CoreTendApp/CleanupView.swift`)
 
 1. **Idle** — press "Start Scan."
 2. **Scanning** — progress (files scanned, bytes found so far) streams live.

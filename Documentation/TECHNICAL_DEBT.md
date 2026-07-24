@@ -93,8 +93,8 @@ argument-array-only `Process()` call, and 86/86 passing tests hold up
 ## Not technical debt (explicitly checked, found clean this session)
 
 - Localization: 327/327 EN keys have an FR counterpart and vice versa,
-  zero unused keys (checked via `grep -rlF` against `Sources/MacCareApp`),
-  exactly one non-localized `Text(...)` literal (`"MacCare Local"`, the
+  zero unused keys (checked via `grep -rlF` against `Sources/CoreTendApp`),
+  exactly one non-localized `Text(...)` literal (`"CoreTend"`, the
   product name itself — correct to leave un-translated).
 - Distribution checksum/size sync (the session-2 `fix(release)` commit
   `88bbb9a`): re-verified this session, zip/dmg SHA256 and byte sizes in

@@ -106,7 +106,7 @@ BLOCKED_ENVIRONMENT — column above reflects COMPLIANT_PARTIAL=2 i.e. A11Y-001 
 - Cleanup rules were enumerated directly from `ruleID:` literals in `Sources/`, not from
   `ROADMAP.md`: `apps.leftovers`, `apps.uninstall`, `apps.uninstall.associated`,
   `clutter.duplicates`, `privacy.browsercache` — five rules exist in code today.
-- "Check for Updates" (`Sources/MacCareApp/AppUpdatesView.swift:40`) confirmed to call
+- "Check for Updates" (`Sources/CoreTendApp/AppUpdatesView.swift:40`) confirmed to call
   `NSWorkspace.shared.open(URL(string: "macappstore://showUpdatesPage")!)` — it opens the Mac App
   Store's Updates page, it is not a real in-app update check. (No baseline requirement ID covers
   this claim directly; flagged here for session 3's functional pass to turn into a FUNC-*
@@ -119,7 +119,7 @@ BLOCKED_ENVIRONMENT — column above reflects COMPLIANT_PARTIAL=2 i.e. A11Y-001 
 ## Known gaps carried forward
 
 - Full module-by-module functional re-verification (per-view API line-by-line, 15
-  `IMPLEMENTED_UNVERIFIED` `MacCareApp` views per `PROJECT_COMPLETE_AUDIT.md` §9) is still not
+  `IMPLEMENTED_UNVERIFIED` `CoreTendApp` views per `PROJECT_COMPLETE_AUDIT.md` §9) is still not
   complete — FUNC-006/FUNC-007 inherit this gap directly.
 - No live display was available this session (same as every prior session) — VIS-001, VIS-002,
   MOTION-001/002, A11Y-002/004, PERF-001 remain BLOCKED_ENVIRONMENT or IMPLEMENTED_UNVERIFIED for

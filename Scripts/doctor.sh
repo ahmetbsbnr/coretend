@@ -9,7 +9,7 @@ cd "$ROOT_DIR"
 
 fail=0
 
-echo "MacCare Local — doctor"
+echo "CoreTend — doctor"
 echo "======================"
 
 echo "-- Platform --"

@@ -1,4 +1,4 @@
-# BRAND SYSTEM — MacCare Local
+# BRAND SYSTEM — CoreTend
 
 ## Mission visuelle
 Un soin système crédible, calme et local. L'identité doit dire: précision

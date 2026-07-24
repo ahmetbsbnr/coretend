@@ -1,6 +1,6 @@
 import Testing
 import Foundation
-@testable import MacCareApp
+@testable import CoreTendApp
 
 @Suite("Cloud Cleanup sync-state classification")
 struct CloudCleanupTests {
@@ -27,7 +27,7 @@ struct CloudCleanupTests {
 
     @Test func detectsKnownProviderRootsUnderFixtureHome() throws {
         let home = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-cloud-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-cloud-\(UUID().uuidString)")
         let fm = FileManager.default
         defer { try? fm.removeItem(at: home) }
         try fm.createDirectory(at: home.appendingPathComponent("Dropbox"), withIntermediateDirectories: true)
@@ -46,7 +46,7 @@ struct CloudCleanupTests {
 
     @Test func emptyHomeYieldsNoProviders() throws {
         let home = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-cloud-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-cloud-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: home) }
         #expect(CloudCleanupViewModel.detectProviders(home: home).isEmpty)
@@ -54,7 +54,7 @@ struct CloudCleanupTests {
 
     @Test func measureWalksTreeSkipsSymlinksAndSortsByLocalBytes() throws {
         let root = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-cloud-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-cloud-\(UUID().uuidString)")
         let fm = FileManager.default
         let sub = root.appendingPathComponent("folder")
         try fm.createDirectory(at: sub, withIntermediateDirectories: true)

@@ -12,7 +12,7 @@ inventory's finding of exactly one `Process()` call (a local subprocess, not net
 - **required-network**: NONE FOUND.
 - **optional-network**: NONE FOUND. (Note: `AppUpdatesView.swift:38-40` opens `macappstore://showUpdatesPage`
   via `NSWorkspace.shared.open` — this hands off to the macOS App Store app via a URL scheme; it is the *system*
-  App Store app that would make network calls, not MacCare Local itself. MacCare Local performs no network
+  App Store app that would make network calls, not CoreTend itself. CoreTend performs no network
   request of its own here.)
 - **no-network**: every scan/cleanup/malware/metrics/persistence feature audited in `FEATURE_INVENTORY.md` this
   session operates on local `FileManager`, Mach/sysctl (`SystemMetrics.swift`), Vision (on-device,
@@ -39,6 +39,6 @@ still queued for session 3 per the orchestrator's explicit scope.
 
 ## Conclusion
 
-MacCare Local's local-only-data claim holds up under this session's evidence: no network stack anywhere in
+CoreTend's local-only-data claim holds up under this session's evidence: no network stack anywhere in
 `Sources/`, no telemetry, no accounts, no remote crash reporting, no automatic uploads. The one external-facing
 action found (`macappstore://` deep link) is a user-initiated system handoff, not the app's own network call.

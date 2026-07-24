@@ -19,7 +19,7 @@
       "source": "~/Documents/MACCLEAN",
       "destination": "<WORKSPACE_PARENT>/WEBSITE/products/<approved-product-slug>/",
       "method": "directory move preserving .git (never re-clone, never squash history)",
-      "preconditions": ["clean git tree", "no running MacCareLocal process", "backup created (see preflight script)", "approved-product-slug resolved (BLOCKED_HUMAN today)"],
+      "preconditions": ["clean git tree", "no running CoreTend process", "backup created (see preflight script)", "approved-product-slug resolved (BLOCKED_HUMAN today)"],
       "postconditions": ["git log HEAD matches pre-move HEAD exactly", "`swift build` and `Scripts/test.sh` succeed from new path", "no absolute-path assumption broken (grep for the old absolute path in Sources/Scripts/Documentation after the move)"],
       "rollback": "move directory back to ~/Documents/MACCLEAN; no re-clone needed"
     },
@@ -34,7 +34,7 @@
     },
     {
       "item": "archives",
-      "source": "~/Documents/MACCLEAN/AuditPackages/ (historical zips), ~/Desktop/MacCare-Local-Full-Audit-*.zip",
+      "source": "~/Documents/MACCLEAN/AuditPackages/ (historical zips), ~/Desktop/CoreTend-Full-Audit-*.zip",
       "destination": "<WORKSPACE_PARENT>/WEBSITE/archives/",
       "method": "copy (not move) — originals stay until confirmed",
       "preconditions": ["disk space check"],

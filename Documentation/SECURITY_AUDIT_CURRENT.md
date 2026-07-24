@@ -37,15 +37,15 @@ sudo is never used. **No actual `sudo` invocation found anywhere in the tracked 
 ### 4. Force-unwraps (`!`) — 4 real occurrences, all provably safe
 Excluding `!=`, the repo-wide grep found exactly 4 force-unwrap sites (`) !` after a call), all on
 compile-time-constant, hardcoded string literals passed to `URL(string:)!`/`Calendar.date(byAdding:...)!`:
-- `Sources/MacCareApp/AppUpdatesView.swift:40` — `URL(string: "macappstore://showUpdatesPage")!`
-- `Sources/MacCareApp/OnboardingView.swift:23` — `URL(string: "x-apple.systempreferences:...")!`
-- `Sources/MacCareApp/MyActivityView.swift:38-39` — `calendar.date(byAdding: .day, value: -7/-30, to: now)!`
+- `Sources/CoreTendApp/AppUpdatesView.swift:40` — `URL(string: "macappstore://showUpdatesPage")!`
+- `Sources/CoreTendApp/OnboardingView.swift:23` — `URL(string: "x-apple.systempreferences:...")!`
+- `Sources/CoreTendApp/MyActivityView.swift:38-39` — `calendar.date(byAdding: .day, value: -7/-30, to: now)!`
   (adding a fixed small day offset to `Date()` cannot realistically fail on Gregorian calendar)
 All four are on literal/constant inputs, not user- or filesystem-derived data — **no crash risk found**.
 `SimilarImagesEngine.swift:104` hit is a substring match artifact of the grep pattern (`"...t!"` inside a
 comment), not a force-unwrap. **No `as!` found anywhere in `Sources/`.**
 
-### 5. `try?` usage — 46 occurrences in `MacCareApp/*.swift` alone, not individually re-audited
+### 5. `try?` usage — 46 occurrences in `CoreTendApp/*.swift` alone, not individually re-audited
 Not exhaustively triaged this session (would require per-callsite review of whether a silently-swallowed error
 could hide a security-relevant failure, e.g. a failed path validation being treated as "no findings"). Spot
 check: `Store` initialization (`AppEnvironment.swift:11`) falls back to `:memory:` on failure — an honest

@@ -18,7 +18,7 @@ A scan runs `clamscan` over the paths you choose and parses its output into
 findings (`MalwareFinding`: path + signature name). Exit code 0 = clean, 1
 = finding(s), 2 = an error running the scan.
 
-## Phases (`Sources/MacCareApp/ProtectionView.swift`)
+## Phases (`Sources/CoreTendApp/ProtectionView.swift`)
 
 `idle → scanning → results` (or `failed` if clamscan errored/was missing).
 

@@ -19,7 +19,7 @@ struct CleanupScaleTests {
     /// cap), totals are exact, and it completes in reasonable wall-clock time.
     @Test func twelveThousandFindingsStreamUncappedWithExactTotals() async throws {
         let root = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-stress-cleanup-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-stress-cleanup-\(UUID().uuidString)")
         let caches = root.appendingPathComponent("Library/Caches")
         let logs = root.appendingPathComponent("Library/Logs")
         try FileManager.default.createDirectory(at: caches, withIntermediateDirectories: true)
@@ -74,7 +74,7 @@ struct DuplicatesScaleTests {
     /// behaviour as a runaway duration; the generous ceiling catches it.
     @Test func tenThousandSameSizeCandidatesStayCorrectAndSubQuadratic() async throws {
         let root = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-stress-dup-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-stress-dup-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
 
@@ -166,7 +166,7 @@ struct SimilarImagesScaleTests {
     /// not a downsampled decode, is what's measured.
     @Test func hundredsOfImagesWithLargeOnesStayMetadataBounded() async throws {
         let root = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-stress-img-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-stress-img-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
 
@@ -214,7 +214,7 @@ struct SpaceLensScaleTests {
     /// sort + "Other" bucketing must complete quickly and roll bytes up exactly.
     @Test func wideTreeThousandsOfSiblingsCompletesAndCountsBytes() async throws {
         let root = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-stress-lens-wide-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-stress-lens-wide-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
 
@@ -244,7 +244,7 @@ struct SpaceLensScaleTests {
     /// shallowSize. Thousands of nodes total across the chain.
     @Test func deepTreeManyLevelsDoesNotCrashAndSumsBelowCap() async throws {
         let root = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-stress-lens-deep-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-stress-lens-deep-\(UUID().uuidString)")
         // 60 nested levels, a payload file at each level.
         var cursor = root
         let depth = 60
@@ -282,7 +282,7 @@ struct RapidCancellationTests {
     /// Teardown must be clean and fast — no hang waiting for the full walk.
     @Test func spaceLensCancelledImmediatelyTearsDownFast() async throws {
         let root = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-stress-cancel-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-stress-cancel-\(UUID().uuidString)")
         let dir = root.appendingPathComponent("big")
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
@@ -306,7 +306,7 @@ struct RapidCancellationTests {
     /// Same for the ScanEngine cleanup path.
     @Test func scanEngineCancelledImmediatelyTearsDownFast() async throws {
         let root = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-stress-cancel2-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-stress-cancel2-\(UUID().uuidString)")
         let caches = root.appendingPathComponent("Library/Caches")
         try FileManager.default.createDirectory(at: caches, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }

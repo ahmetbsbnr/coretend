@@ -1,7 +1,7 @@
 # Cross-Site Design Audit
 
 Read-only comparison of the portfolio's live design language against the
-MacCare Local product site's. **Neither site was modified during this
+CoreTend product site's. **Neither site was modified during this
 audit.** Real values pulled from each repo's actual CSS, not
 approximated.
 

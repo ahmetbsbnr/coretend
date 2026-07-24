@@ -48,9 +48,9 @@ expected, honest result of covering the harder domains session 2 skipped — see
 
 ### VIS-003 — Hardcoded colors and font sizes bypass the design-token system
 - **Status**: NON_COMPLIANT (SHOULD priority)
-- **Evidence**: `grep -rn "Color(red:" Sources/MacCareApp` → `SpaceLensView.swift:72-75` (3 category
+- **Evidence**: `grep -rn "Color(red:" Sources/CoreTendApp` → `SpaceLensView.swift:72-75` (3 category
   colors hardcoded as `Color(red:green:blue:)` instead of `MCColor.chartSeries[n]`); `grep -rn
-  "\.font(\.system(size:" Sources/MacCareApp` → 25 matches bypassing `MCFont`.
+  "\.font(\.system(size:" Sources/CoreTendApp` → 25 matches bypassing `MCFont`.
 - **Priority**: P3 (design-system discipline, not a functional or safety defect).
 - **User impact**: none functional; inconsistent dark-mode/contrast adaptation risk for the 3
   hardcoded colors specifically (they don't get the `NSColor` dynamic-provider light/dark handling
@@ -90,10 +90,10 @@ expected, honest result of covering the harder domains session 2 skipped — see
   file to close this gap.
 - **Recommended version**: n/a (test-infrastructure gap, not a code defect).
 
-### A11Y-001 — 6 of 20 MacCareApp view files have zero accessibility-annotation calls
+### A11Y-001 — 6 of 20 CoreTendApp view files have zero accessibility-annotation calls
 - **Status**: COMPLIANT_PARTIAL (SHOULD priority)
-- **Evidence**: `grep -rl "accessibilityLabel\|accessibilityValue\|accessibilityHint" Sources/MacCareApp
-  Sources/DesignSystem` → 14 files matched, out of 20 `MacCareApp` view files (+ DesignSystem
+- **Evidence**: `grep -rl "accessibilityLabel\|accessibilityValue\|accessibilityHint" Sources/CoreTendApp
+  Sources/DesignSystem` → 14 files matched, out of 20 `CoreTendApp` view files (+ DesignSystem
   components). The specific 6 files were not individually enumerated this session (grep gave file
   count, not the diff-list) — flagged as a to-do for session 4.
 - **Priority**: P3.

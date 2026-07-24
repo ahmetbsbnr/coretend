@@ -13,7 +13,7 @@ read a folder — it skips it rather than guessing.
 
 ## Protection says ClamAV is not installed
 `clamscan` isn't found at any of the expected Homebrew/MacPorts paths. See
-[CLAMAV.md](CLAMAV.md) for install instructions. MacCare Local does not
+[CLAMAV.md](CLAMAV.md) for install instructions. CoreTend does not
 bundle ClamAV.
 
 ## I deleted something I need back
@@ -37,7 +37,7 @@ Apple Silicon, Swift toolchain). See [DEVELOPMENT.md](../DEVELOPMENT.md).
 
 ## Still stuck
 Open an issue using the templates in `.github/ISSUE_TEMPLATE/` (include
-MacCare Local version, macOS version, Apple Silicon model, steps to
+CoreTend version, macOS version, Apple Silicon model, steps to
 reproduce — no private data/logs beyond what's needed). For a suspected
 security issue, use [SECURITY.md](../SECURITY.md) instead of a public
 issue.

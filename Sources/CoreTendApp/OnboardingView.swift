@@ -267,7 +267,7 @@ struct OnboardingView: View {
         page {
             CoreBloomMark(tint: [MCColor.storage, MCColor.protection, MCColor.performance])
                 .frame(width: 88, height: 88)
-            Text("MacCare Local").font(MCFont.heroTitle)
+            Text("CoreTend").font(MCFont.heroTitle)
             Text(L("onboarding.step0.subtitle"))
                 .font(MCFont.body).foregroundStyle(.secondary)
                 .multilineTextAlignment(.center).frame(maxWidth: 440)

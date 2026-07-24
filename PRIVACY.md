@@ -1,6 +1,6 @@
 # Privacy
 
-MacCare Local runs entirely locally. This document states plainly what
+CoreTend runs entirely locally. This document states plainly what
 that means.
 
 ## No telemetry, no accounts
@@ -18,7 +18,7 @@ that means.
 The Protection module's malware scanning is powered by a
 separately-installed, optional ClamAV. If you choose to update ClamAV's
 virus definitions, that update process contacts ClamAV's own definition
-mirrors — not a MacCare Local server, and only when you trigger it. See
+mirrors — not a CoreTend server, and only when you trigger it. See
 [Documentation/CLAMAV.md](Documentation/CLAMAV.md) and
 [Documentation/PROTECTION_LIMITATIONS.md](Documentation/PROTECTION_LIMITATIONS.md).
 The app itself ships no analytics alongside this.
@@ -27,7 +27,7 @@ The app itself ships no analytics alongside this.
 
 All app data (scan history, quarantine records, "My Activity" history,
 preferences) is stored locally in this Mac's standard per-app storage
-locations. Nothing is synced to any MacCare Local–operated server,
+locations. Nothing is synced to any CoreTend–operated server,
 because none exists. See
 [Documentation/DATA_LOCATIONS.md](Documentation/DATA_LOCATIONS.md) and
 [Documentation/PERSISTENCE.md](Documentation/PERSISTENCE.md) for exact
