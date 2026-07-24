@@ -1,0 +1,164 @@
+{
+  "schemaVersion": 1,
+  "generatedAt_UTC": "2026-07-24",
+  "generatedAtHead": "b9cb61d",
+  "method": "git grep -ciE over tracked files, binaries excluded",
+  "patternCounts": [
+    { "pattern": "MacCare Local", "files": 126, "lines": 328, "category": "display name" },
+    { "pattern": "MacCareLocal", "files": 33, "lines": 71, "category": "identifier (no space)" },
+    { "pattern": "MACCLEAN", "files": 10, "lines": 21, "category": "repo dir name / package name in prose" },
+    { "pattern": "mac-care-local", "files": 6, "lines": 7, "category": "planned repo-URL slug" },
+    { "pattern": "local.maccare.app", "files": 10, "lines": 14, "category": "bundle identifier" },
+    { "pattern": "maccare.ahmetbsbnr...", "files": 4, "lines": 4, "category": "planned website URL" }
+  ],
+  "categories": [
+    {
+      "name": "bundleIdentifier",
+      "oldValue": "local.maccare.app",
+      "newValue": "PARAMETERIZABLE_PENDING_APPROVED_NAME",
+      "files": ["Resources/Info.plist", "Configuration/PublicIdentity.example.json", "Scripts/check-version-consistency.sh"],
+      "migrationRequired": true,
+      "compatibility": "NSUserDefaults and most system prefs are keyed by CFBundleIdentifier — changing this orphans existing user data unless migrated (see user-data-rename-migration.json)",
+      "risk": "HIGH",
+      "test": "check-version-consistency.sh; new UserDataMigration tests (planned, not yet written)",
+      "rollback": "revert Info.plist/PublicIdentity fields; old bundle ID's data untouched if migration only copies, never deletes source"
+    },
+    {
+      "name": "executableAndPackageName",
+      "oldValue": "MacCareLocal",
+      "newValue": "PARAMETERIZABLE_PENDING_APPROVED_NAME",
+      "files": ["Package.swift", "Resources/Info.plist"],
+      "migrationRequired": false,
+      "compatibility": "process name only, no persisted state keyed on this string directly",
+      "risk": "LOW",
+      "test": "swift build success, test-distribution.sh arm64/launch checks",
+      "rollback": "revert Package.swift/Info.plist"
+    },
+    {
+      "name": "swiftTestTargetFolder",
+      "oldValue": "Tests/MacCareAppTests/",
+      "newValue": "PARAMETERIZABLE (tied to executable target rename)",
+      "files": ["Tests/MacCareAppTests/*.swift"],
+      "migrationRequired": false,
+      "compatibility": "SwiftPM convention <Target>Tests — folder rename must stay in sync with the target rename or the test target breaks",
+      "risk": "LOW",
+      "test": "swift test / Scripts/test.sh",
+      "rollback": "revert folder rename + Package.swift target reference together, atomically"
+    },
+    {
+      "name": "localUserData",
+      "oldValue": "~/Library/Application Support/MacCareLocal/",
+      "newValue": "PARAMETERIZABLE_PENDING_APPROVED_NAME",
+      "files": ["Sources/Persistence/Store.swift", "Sources/MalwareEngine/MalwareEngine.swift", "Sources/MacCareApp/ProtectionView.swift"],
+      "migrationRequired": true,
+      "compatibility": "real user data on disk (SQLite store, Quarantine files, FSEvents fingerprint cache) -- see user-data-rename-migration.json for the full plan",
+      "risk": "HIGH",
+      "test": "REBRAND_MIGRATION_TEST_PLAN.md scenarios",
+      "rollback": "old directory never deleted by the migration -- copy-based, not move-based"
+    },
+    {
+      "name": "menuBarAndUI",
+      "oldValue": "MacCare Local (display string, data-driven from CFBundleName)",
+      "newValue": "PARAMETERIZABLE_PENDING_APPROVED_NAME",
+      "files": ["Resources/Info.plist (CFBundleName/CFBundleDisplayName)"],
+      "migrationRequired": false,
+      "compatibility": "UI text derives from Info.plist, not hardcoded in Sources/ menu bar view",
+      "risk": "LOW",
+      "test": "manual UI verification",
+      "rollback": "revert Info.plist"
+    },
+    {
+      "name": "urlSchemesLoginItemNotifications",
+      "oldValue": "N/A",
+      "newValue": "N/A",
+      "files": [],
+      "migrationRequired": false,
+      "compatibility": "none found -- no CFBundleURLSchemes, no SMAppService/login-item code, no UNNotificationCategory identifiers exist in Sources/ today",
+      "risk": "NONE",
+      "test": "N/A",
+      "rollback": "N/A"
+    },
+    {
+      "name": "scripts",
+      "oldValue": "MacCare Local / MacCareLocal (comments, output strings, DMG volume name/window title)",
+      "newValue": "PARAMETERIZABLE_PENDING_APPROVED_NAME",
+      "files": ["Scripts/doctor.sh", "Scripts/repository-doctor.sh", "Scripts/package-zip.sh", "Scripts/package-dmg.sh", "Scripts/build-release.sh", "+7 more"],
+      "migrationRequired": false,
+      "compatibility": "text-only, no functional coupling",
+      "risk": "LOW",
+      "test": "each script's own gate re-run",
+      "rollback": "revert script text"
+    },
+    {
+      "name": "releaseArtifacts",
+      "oldValue": "MacCare-Local-<version>-arm64-unsigned.{zip,dmg}, Release/latest.json product/zipName/dmgName",
+      "newValue": "PARAMETERIZABLE_PENDING_APPROVED_NAME",
+      "files": ["Release/latest.json", "Release/Notes/*.md", "Scripts/build-release.sh", "Scripts/package-zip.sh", "Scripts/package-dmg.sh"],
+      "migrationRequired": false,
+      "compatibility": "generated artifacts, not persisted user data",
+      "risk": "LOW",
+      "test": "test-release-manifest.sh, test-distribution.sh",
+      "rollback": "rebuild artifacts under the old name"
+    },
+    {
+      "name": "website",
+      "oldValue": "MacCare Local (30 generated files + generator source)",
+      "newValue": "PARAMETERIZABLE_PENDING_APPROVED_NAME",
+      "files": ["Website/generate.py"],
+      "migrationRequired": false,
+      "compatibility": "single source of truth (generate.py) regenerates all 30 output files -- not 30 manual edits",
+      "risk": "LOW",
+      "test": "regenerate + check-markdown-links.py-equivalent for HTML, manual review",
+      "rollback": "regenerate from the old generate.py content (git revert)"
+    },
+    {
+      "name": "documentation",
+      "oldValue": "MacCare Local (77+ files, prose)",
+      "newValue": "PARAMETERIZABLE_PENDING_APPROVED_NAME",
+      "files": ["Documentation/*.md (majority)"],
+      "migrationRequired": false,
+      "compatibility": "prose only, highest file-count category, needs manual review pass not blind find-replace (context-sensitive: some historical/HISTORICAL-marked sections should NOT be rewritten, they are point-in-time records)",
+      "risk": "LOW functional / MEDIUM editorial",
+      "test": "check-markdown-links.py, check-placeholders.sh",
+      "rollback": "git revert the rename commit(s)"
+    },
+    {
+      "name": "legalAndTrademark",
+      "oldValue": "MacCare Local",
+      "newValue": "PARAMETERIZABLE_PENDING_APPROVED_NAME_AND_LEGAL_REVIEW",
+      "files": ["TRADEMARKS.md", "NOTICE", "COPYRIGHT", "LICENSE", "THIRD_PARTY_NOTICES.md"],
+      "migrationRequired": false,
+      "compatibility": "governance documents -- deliberate manual review required, not a blind find-replace",
+      "risk": "LOW functional / HIGH editorial-legal",
+      "test": "check-licenses.sh",
+      "rollback": "git revert"
+    },
+    {
+      "name": "ciWorkflows",
+      "oldValue": "MacCare Local (titles/labels in workflow + issue-template YAML)",
+      "newValue": "PARAMETERIZABLE_PENDING_APPROVED_NAME",
+      "files": [".github/workflows/ci.yml", ".github/workflows/compat-matrix.yml", ".github/workflows/release-draft.yml", ".github/dependabot.yml", ".github/ISSUE_TEMPLATE/*.yml (6 files)"],
+      "migrationRequired": false,
+      "compatibility": "text-only, never pushed/run remotely yet (no remote configured)",
+      "risk": "LOW",
+      "test": "yaml lint (none configured currently)",
+      "rollback": "revert YAML text"
+    },
+    {
+      "name": "fixturesAndComments",
+      "oldValue": "maccare-*-UUID() temp-dir naming patterns in test fixtures",
+      "newValue": "cosmetic only",
+      "files": ["various Tests/*.swift"],
+      "migrationRequired": false,
+      "compatibility": "arbitrary collision-avoidant temp names, zero functional coupling to the brand",
+      "risk": "NONE",
+      "test": "existing test suite unaffected either way",
+      "rollback": "N/A"
+    }
+  ],
+  "explicitlyExcluded": {
+    "designSystemVocabulary": "MCColor/MCSpacing/MCMotion/MCFont/CoreBloomMark etc. are Core Bloom/Orbital Ecology design-language terms, not brand-name references -- preserved regardless of product rename per REBRAND_VISUAL_BRIEF.md"
+  },
+  "planFile": "Documentation/PRODUCT_RENAME_PLAN.md",
+  "rollbackFile": "Documentation/PRODUCT_RENAME_ROLLBACK.md"
+}
