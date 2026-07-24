@@ -29,6 +29,23 @@ adaptatifs, Reduce Motion/Transparency câblés) même sans capture visuelle.
 Voir KNOWN_LIMITATIONS.md et DECISIONS.md D6. À refaire sur une machine
 avec un vrai écran.
 
+## Mise à jour — phase 0.8.0 Functional Completion (2026-07-24)
+Le fait "aucun écran attaché" ci-dessus ne tient plus dans cette session:
+`screencapture -x` et l'automation `System Events` fonctionnent tous les
+deux sans prompt TCC. Reconstruit l'app (`Scripts/package-local.sh`),
+lancée, une capture réelle fenêtre-seule prise (`Scripts/capture.sh` sans
+argument de module → écran Smart Care idle) confirme un rendu correct et
+conforme à `FEATURE_MATRIX.md`. Le chemin avec argument de module (navigue
+la sidebar via AppleScript avant de capturer) a échoué au second appel
+(`-1719`, index de fenêtre invalide malgré `count windows` = 1) — non
+diagnostiqué plus avant cette tranche (campagne complète FR/EN × clair/
+sombre × tous modules = tranche séparée, plus large que cette
+synchronisation documentaire). Toute la table "État au 2026-07-20" ci-
+dessous reste donc `⏳ capture pending`, mais ce n'est plus un blocage
+d'environnement — c'est du travail de capture restant. Voir
+`KNOWN_LIMITATIONS.md` pour le détail. Statut Step 15 (plan 0.8.0):
+`READY_FOR_MANUAL_QA`, pas `FULLY_VISUALLY_VERIFIED`.
+
 ## État au 2026-07-20 (v0.4.0)
 | Écran | Sombre | Clair | Redim. | RM/RT | Notes |
 |---|---|---|---|---|---|

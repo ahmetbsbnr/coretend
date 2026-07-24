@@ -30,6 +30,26 @@
   availability rather than assuming this limitation still applies; see
   `Documentation/PROJECT_COMPLETE_AUDIT.md` §15 and `AUDIT_EVIDENCE.md`
   EVIDENCE-ENV-001.
+  **Update, 0.8.0 Functional Completion phase (2026-07-24):** confirmed
+  again — a real display is available in this sandbox (`screencapture -x`
+  and `System Events` process automation both work with no TCC prompt).
+  Rebuilt the app (`Scripts/package-local.sh`), launched it, and captured
+  one real window-only screenshot of the Smart Care idle screen via
+  `Scripts/capture.sh` with no module argument — confirms the app renders
+  correctly (Core Bloom idle state, honest "not yet available" labels on
+  Protection/Performance/Applications matching `FEATURE_MATRIX.md`) and
+  that this session's My Clutter changes didn't break the build visually.
+  The module-argument path (`capture.sh <out> "<Sidebar Row Name>"`, which
+  drives the sidebar via AppleScript `System Events` before capturing) hit
+  a flaky `-1719` "window 1 of process ... Index non valable" error on a
+  second invocation immediately after the first successful one — window
+  count reported 1 but indexed access failed. Not root-caused this pass
+  (AppleScript AXWindow timing quirk, most likely) — logged here rather
+  than worked around, since a full FR/EN × light/dark × every-module
+  capture campaign is a separate, larger pass than this documentation
+  slice. Step 15 status: `READY_FOR_MANUAL_QA`, not
+  `FULLY_VISUALLY_VERIFIED` — the mechanism works for a plain launch
+  capture, module-targeted capture needs a follow-up debugging session.
 - **Built binary embeds the repo checkout's absolute build path as a dead fallback
   string** (SwiftPM limitation, discovered by `Scripts/test-distribution.sh`):
   the compiler-generated `Bundle.module` accessor (`resource_bundle_accessor.swift`)
