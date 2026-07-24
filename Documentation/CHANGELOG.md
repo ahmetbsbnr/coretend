@@ -1,5 +1,36 @@
 # CHANGELOG
 
+## 0.8.0 — 2026-07-24 « Functional Completion »
+
+Feature-completion phase closing every automatable item in the 21-step
+functional-completion plan (`Documentation/FUNCTIONAL_COMPLETION_EXECUTION_PLAN.md`).
+Cleanup finalized at 10 built-in rules (caches/logs/crash-reports/DerivedData/
+incomplete-downloads/DeviceSupport/iOS-backups/old-installers/old-archives/
+Xcode-Archives), with iOS Simulator data, Trash-emptying, Mail attachments, and
+broken-LaunchAgent removal deliberately kept out of scope and documented with a
+safety rationale rather than shipped as blind extension/age rules
+(`REQUIREMENTS_DECISION_HISTORY.md`). The optional Protection FSEvents watch
+(debounce/coalesce/dedup/rate-limit, off by default, never auto-quarantines) had
+its full 14-scenario test matrix closed. My Clutter gained name search, real
+volume awareness (stable `.volumeIdentifierKey`-based identity, never the
+display name two drives can share), and UI-exposed exclusions across Large &
+Old, Duplicates, and Similar Images — all routed through the existing Store
+exclusions table, not a second system. Space Lens and Cloud Cleanup testability
+work (navigation logic, provider detection, sync-state classification) and
+macOS-14-floor compatibility audit, 9 synthetic stress fixtures, a code-level
+accessibility audit, the 8-step first-run wizard, and an animation-safety
+verification pass all landed and are documented per-module (new
+`APPLICATIONS.md`/`CLOUD_CLEANUP.md`/`MY_CLUTTER.md`/`SETTINGS.md`/
+`SPACE_LENS.md`/`FIRST_RUN_STATE_MACHINE.md`/`INSTALLER_EXPERIENCE.md`). Fixed
+the last Sendable concurrency warning (0 project warnings in Debug or Release).
+215→250 tests. Remaining gaps are honestly tracked, not hidden: interactive
+VoiceOver verification and a full FR/EN × light/dark × every-module visual-QA
+capture campaign are BLOCKED_ENVIRONMENT (a real display is available and one
+verification capture succeeded this phase, but the sidebar-navigation capture
+path needs a follow-up fix); public legal identity, security contact, domain,
+and code signing/notarization stay BLOCKED_HUMAN. Local version bump only — no
+push, no deploy, no public release.
+
 ## 0.7.1 — 2026-07-21 « Compliance Hardening »
 
 Audit-and-package repair phase, no feature scope beyond hardening. Real HEAD/commit
