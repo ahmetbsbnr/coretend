@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "documentDate_UTC": "2026-07-24",
+  "status": "PLANNED_NOT_EXECUTED",
+  "workspaceParent": "UNRESOLVED_BLOCKED_HUMAN",
+  "approvedProductSlug": "UNRESOLVED_BLOCKED_HUMAN — pending brand-name-clearance.json status change to CLEAR_FOR_ENGINEERING",
+  "moves": [
+    {
+      "item": "portfolio",
+      "source": "~/Documents/MAC_ORGANISE/00_DOCUMENTS_EXISTANTS/01_PROJETS/01_PROJETS_ACTIFS/professionnel-portfolio-stage-2026",
+      "destination": "<WORKSPACE_PARENT>/WEBSITE/portfolio/",
+      "method": "directory move preserving .git (never re-clone, never squash history)",
+      "preconditions": ["clean git tree", "no active `vercel dev`/`next dev` process", "backup created (see preflight script)"],
+      "postconditions": ["git log HEAD matches pre-move HEAD exactly", "git remote -v unchanged", "`npm run build` succeeds from new path", "Vercel project linkage verified (`.vercel/project.json` projectId unchanged or re-linked deliberately)"],
+      "rollback": "move directory back to source path; no re-clone needed since .git travels with the move"
+    },
+    {
+      "item": "product",
+      "source": "~/Documents/MACCLEAN",
+      "destination": "<WORKSPACE_PARENT>/WEBSITE/products/<approved-product-slug>/",
+      "method": "directory move preserving .git (never re-clone, never squash history)",
+      "preconditions": ["clean git tree", "no running MacCareLocal process", "backup created (see preflight script)", "approved-product-slug resolved (BLOCKED_HUMAN today)"],
+      "postconditions": ["git log HEAD matches pre-move HEAD exactly", "`swift build` and `Scripts/test.sh` succeed from new path", "no absolute-path assumption broken (grep for the old absolute path in Sources/Scripts/Documentation after the move)"],
+      "rollback": "move directory back to ~/Documents/MACCLEAN; no re-clone needed"
+    },
+    {
+      "item": "shared/design-language",
+      "source": "new — populated from CROSS_SITE_DESIGN_LANGUAGE.md + cross-site-design-tokens.json content",
+      "destination": "<WORKSPACE_PARENT>/WEBSITE/shared/design-language/",
+      "method": "create new, copy (not move) from this session's docs",
+      "preconditions": ["Section 11 docs finalized"],
+      "postconditions": ["both repos' site-generation code can read the shared tokens without a live cross-repo filesystem path"],
+      "rollback": "delete the new shared/ folder; source docs in each repo are unaffected"
+    },
+    {
+      "item": "archives",
+      "source": "~/Documents/MACCLEAN/AuditPackages/ (historical zips), ~/Desktop/MacCare-Local-Full-Audit-*.zip",
+      "destination": "<WORKSPACE_PARENT>/WEBSITE/archives/",
+      "method": "copy (not move) — originals stay until confirmed",
+      "preconditions": ["disk space check"],
+      "postconditions": ["checksums of copies match originals"],
+      "rollback": "delete the copies; originals untouched"
+    }
+  ],
+  "explicitlyNotMigratedThisPhase": [
+    "No .git history merge",
+    "No submodule creation",
+    "No Vercel re-link performed",
+    "No deletion of any existing folder",
+    "No repository renamed"
+  ],
+  "readinessGate": "Scripts/check-workspace-migration-readiness.sh"
+}
