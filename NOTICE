@@ -1,8 +1,8 @@
-MacCare Local
-Copyright (c) 2026 The MacCare Local contributors
+CoreTend
+Copyright (c) 2026 The CoreTend contributors
 
-This product includes software developed as part of the MacCare Local
-project (https://github.com/[MAINTAINER_HANDLE_TO_DEFINE]/MacCare-Local).
+This product includes software developed as part of the CoreTend
+project (https://github.com/[MAINTAINER_HANDLE_TO_DEFINE]/CoreTend).
 
 This product is licensed under the Apache License, Version 2.0.
 See LICENSE and LICENSES/Apache-2.0.txt for the full license text.
@@ -14,12 +14,12 @@ Third-party dependencies retain their own licenses. See
 THIRD_PARTY_NOTICES.md and Documentation/DEPENDENCIES.md for the full
 inventory.
 
-MacCare Local can optionally invoke an external, separately-installed
+CoreTend can optionally invoke an external, separately-installed
 ClamAV binary (clamscan/freshclam) if present on the system. ClamAV is
-not bundled, embedded, or distributed with MacCare Local, and its
+not bundled, embedded, or distributed with CoreTend, and its
 signature database is never shipped in this repository. See
 Documentation/CLAMAV.md.
 
-"MacCare Local" is an independent open-source project. It is not
+"CoreTend" is an independent open-source project. It is not
 affiliated with, sponsored by, or endorsed by Apple Inc. or MacPaw Inc.
 See TRADEMARKS.md.

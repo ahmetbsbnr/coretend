@@ -1,6 +1,6 @@
 # Security Policy
 
-MacCare Local is pre-1.0 software. There is no signed/notarized release
+CoreTend is pre-1.0 software. There is no signed/notarized release
 yet, and no formal security-response infrastructure beyond what's
 described here.
 
@@ -24,7 +24,7 @@ placeholder that must be filled in with a real contact before any public
 release.)
 
 When reporting, please include:
-- MacCare Local version / commit hash
+- CoreTend version / commit hash
 - macOS version and Apple Silicon model
 - Steps to reproduce
 - Impact assessment (what data/access is at risk)
@@ -32,7 +32,7 @@ When reporting, please include:
 
 ## Scope
 
-In scope: MacCare Local's Swift source, its build/packaging scripts, and
+In scope: CoreTend's Swift source, its build/packaging scripts, and
 (once it exists) its public website's own code.
 
 Out of scope: vulnerabilities in macOS itself, in Apple frameworks, or in
@@ -50,9 +50,9 @@ the ClamAV project respectively).
 
 ## A note on the deletion feature
 
-MacCare Local's cleanup/uninstall features delete files. By default,
+CoreTend's cleanup/uninstall features delete files. By default,
 deletions go through the system Trash and are reversible until emptied.
-If you find a way to make MacCare Local delete files outside its stated
+If you find a way to make CoreTend delete files outside its stated
 scope, bypass the Trash-by-default behavior unexpectedly, or delete files
 without the explanation step, treat that as a security-relevant bug and
 report it via the channel above rather than a public issue.

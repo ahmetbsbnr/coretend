@@ -1,6 +1,6 @@
 import Testing
 import Foundation
-@testable import MacCareApp
+@testable import CoreTendApp
 
 @Suite("First-run wizard logic")
 struct OnboardingLogicTests {
@@ -22,26 +22,26 @@ struct OnboardingLogicTests {
     // MARK: Launch-location detection
 
     @Test func detectsApplications() {
-        #expect(LaunchLocation.detect(bundlePath: "/Applications/MacCare.app", home: "/Users/me") == .applications)
-        #expect(LaunchLocation.detect(bundlePath: "/Users/me/Applications/MacCare.app", home: "/Users/me") == .applications)
+        #expect(LaunchLocation.detect(bundlePath: "/Applications/CoreTend.app", home: "/Users/me") == .applications)
+        #expect(LaunchLocation.detect(bundlePath: "/Users/me/Applications/CoreTend.app", home: "/Users/me") == .applications)
     }
 
     @Test func detectsDownloads() {
-        #expect(LaunchLocation.detect(bundlePath: "/Users/me/Downloads/MacCare.app", home: "/Users/me") == .downloads)
+        #expect(LaunchLocation.detect(bundlePath: "/Users/me/Downloads/CoreTend.app", home: "/Users/me") == .downloads)
     }
 
     @Test func detectsDiskImage() {
-        #expect(LaunchLocation.detect(bundlePath: "/Volumes/MacCare/MacCare.app", home: "/Users/me") == .diskImage)
+        #expect(LaunchLocation.detect(bundlePath: "/Volumes/CoreTend/CoreTend.app", home: "/Users/me") == .diskImage)
     }
 
     @Test func detectsTemporaryAndTranslocation() {
-        #expect(LaunchLocation.detect(bundlePath: "/private/var/folders/xy/T/AppTranslocation/ABC/d/MacCare.app", home: "/Users/me") == .temporary)
-        #expect(LaunchLocation.detect(bundlePath: "/private/var/folders/xy/T/MacCare.app", home: "/Users/me") == .temporary)
-        #expect(LaunchLocation.detect(bundlePath: "/tmp/MacCare.app", home: "/Users/me") == .temporary)
+        #expect(LaunchLocation.detect(bundlePath: "/private/var/folders/xy/T/AppTranslocation/ABC/d/CoreTend.app", home: "/Users/me") == .temporary)
+        #expect(LaunchLocation.detect(bundlePath: "/private/var/folders/xy/T/CoreTend.app", home: "/Users/me") == .temporary)
+        #expect(LaunchLocation.detect(bundlePath: "/tmp/CoreTend.app", home: "/Users/me") == .temporary)
     }
 
     @Test func detectsOther() {
-        #expect(LaunchLocation.detect(bundlePath: "/Users/me/Desktop/MacCare.app", home: "/Users/me") == .other)
+        #expect(LaunchLocation.detect(bundlePath: "/Users/me/Desktop/CoreTend.app", home: "/Users/me") == .other)
     }
 
     @Test func moveOfferedOnlyOutsideApplications() {

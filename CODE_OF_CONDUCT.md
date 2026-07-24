@@ -2,7 +2,7 @@
 
 ## Our pledge
 
-We want participation in MacCare Local to be a harassment-free experience
+We want participation in CoreTend to be a harassment-free experience
 for everyone, regardless of age, body size, disability, ethnicity, sex
 characteristics, gender identity and expression, level of experience,
 education, socio-economic status, nationality, personal appearance,

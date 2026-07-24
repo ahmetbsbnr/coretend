@@ -243,7 +243,7 @@ struct MyActivityView: View {
         let csv = model.exportCSV()
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.commaSeparatedText]
-        panel.nameFieldStringValue = "MacCare-Activity.csv"
+        panel.nameFieldStringValue = "CoreTend-Activity.csv"
         if panel.runModal() == .OK, let url = panel.url {
             try? csv.write(to: url, atomically: true, encoding: .utf8)
         }

@@ -1,4 +1,4 @@
-# Contributing to MacCare Local
+# Contributing to CoreTend
 
 Thanks for considering a contribution. This is a pre-1.0 open-source
 project — expect some rough edges in the process itself.
@@ -68,7 +68,7 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for the full local setup.
 
 ## Opening an issue
 
-Use the templates under `.github/ISSUE_TEMPLATE/`. Include your MacCare
+Use the templates under `.github/ISSUE_TEMPLATE/`. Include your CoreTend
 Local version, macOS version, and Apple Silicon model. Never attach real
 personal data, scan logs, or screenshots containing private information —
 the templates ask you to confirm this.

@@ -1,7 +1,7 @@
 import Testing
 import Foundation
 import AppDiscovery
-@testable import MacCareApp
+@testable import CoreTendApp
 
 @Suite("Leftover shared/ambiguous detection")
 @MainActor

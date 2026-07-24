@@ -12,7 +12,7 @@ struct ScanConcurrencyTests {
 
     init() throws {
         tempRoot = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-conc-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-conc-\(UUID().uuidString)")
         // Ten independent roots, each with a couple of files, one rule per root.
         for r in 0..<10 {
             let dir = tempRoot.appendingPathComponent("root\(r)")

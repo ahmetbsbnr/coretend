@@ -1,16 +1,16 @@
 # Third-Party Notices
 
-MacCare Local's SwiftPM manifest (`Package.swift`) declares **zero external
+CoreTend's SwiftPM manifest (`Package.swift`) declares **zero external
 package dependencies** — every target (`ScanCore`, `SafetyCore`,
 `FileRules`, `DesignSystem`, `Persistence`, `SystemMetrics`,
-`AppDiscovery`, `MalwareEngine`, `MacCareApp`) is first-party code in this
+`AppDiscovery`, `MalwareEngine`, `CoreTendApp`) is first-party code in this
 repository, built only against Apple system frameworks (SwiftUI,
 Foundation, SQLite3 via the system libsqlite3, Vision, IOKit, etc.), which
 ship with macOS/Swift and are not redistributed by this project.
 
 ## ClamAV (optional, external, not bundled)
-MacCare Local's Protection module can shell out to a `clamscan` binary if
-the user has separately installed ClamAV (e.g. via Homebrew). MacCare
+CoreTend's Protection module can shell out to a `clamscan` binary if
+the user has separately installed ClamAV (e.g. via Homebrew). CoreTend
 Local:
 - does not link `libclamav`,
 - does not embed the ClamAV binary or its virus-signature database in

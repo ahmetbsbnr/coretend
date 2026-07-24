@@ -6,7 +6,7 @@ import Foundation
 struct SpaceLensTests {
     @Test func sizesTreeAndBucketsSmallItems() async throws {
         let root = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-lens-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-lens-\(UUID().uuidString)")
         try FileManager.default.createDirectory(
             at: root.appendingPathComponent("big"), withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
@@ -26,7 +26,7 @@ struct SpaceLensTests {
 
     @Test func symbolicLinksAreNeverFollowedOrCounted() async throws {
         let root = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-lens-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-lens-\(UUID().uuidString)")
         let real = root.appendingPathComponent("real")
         let view = root.appendingPathComponent("view")
         try FileManager.default.createDirectory(at: real, withIntermediateDirectories: true)
@@ -50,7 +50,7 @@ struct SpaceLensTests {
 
     @Test func nestedDirectorySizesRollUpToParent() async throws {
         let root = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-lens-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-lens-\(UUID().uuidString)")
         let a = root.appendingPathComponent("a")
         let b = a.appendingPathComponent("b")
         try FileManager.default.createDirectory(at: b, withIntermediateDirectories: true)
@@ -71,7 +71,7 @@ struct SpaceLensTests {
 
     @Test func depthCapUsesShallowSizeAndStillCountsBytes() async throws {
         let root = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-lens-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-lens-\(UUID().uuidString)")
         let deep = root.appendingPathComponent("dir/sub")
         try FileManager.default.createDirectory(at: deep, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
@@ -93,7 +93,7 @@ struct SpaceLensTests {
 
     @Test func emptyAndZeroSizeContentsDoNotCrashAndBucketToOther() async throws {
         let root = URL(fileURLWithPath: NSTemporaryDirectory())
-            .appendingPathComponent("maccare-lens-\(UUID().uuidString)")
+            .appendingPathComponent("coretend-lens-\(UUID().uuidString)")
         try FileManager.default.createDirectory(
             at: root.appendingPathComponent("empty"), withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }

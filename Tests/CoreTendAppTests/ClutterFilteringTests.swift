@@ -1,6 +1,6 @@
 import Testing
 import Foundation
-@testable import MacCareApp
+@testable import CoreTendApp
 
 @Suite("ClutterSearch")
 struct ClutterSearchTests {

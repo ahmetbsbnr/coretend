@@ -1,6 +1,6 @@
 # Support
 
-## Using MacCare Local
+## Using CoreTend
 
 Start with [Documentation/USER_GUIDE.md](Documentation/USER_GUIDE.md), then
 [Documentation/TROUBLESHOOTING.md](Documentation/TROUBLESHOOTING.md) and
@@ -9,7 +9,7 @@ Start with [Documentation/USER_GUIDE.md](Documentation/USER_GUIDE.md), then
 ## Reporting a bug
 
 Open an issue using the templates in `.github/ISSUE_TEMPLATE/`. Include
-your MacCare Local version, macOS version, Apple Silicon model, steps to
+your CoreTend version, macOS version, Apple Silicon model, steps to
 reproduce, and expected vs. actual result. Attach only anonymized logs —
 never attach files containing personal data; the templates ask you to
 confirm this explicitly.

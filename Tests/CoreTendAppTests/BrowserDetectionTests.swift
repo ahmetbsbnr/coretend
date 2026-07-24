@@ -1,7 +1,7 @@
 import Testing
 import Foundation
 import SafetyCore
-@testable import MacCareApp
+@testable import CoreTendApp
 
 @Suite("Browser profile detection")
 struct BrowserDetectionTests {
