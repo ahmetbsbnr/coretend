@@ -3,6 +3,63 @@
 Per-step rollback for `PRODUCT_RENAME_PLAN.md`. Written before any rename
 step executes.
 
+## Executive rollback — restore the whole pre-rebrand state
+
+Three independent restore paths exist, in increasing order of severity.
+Each is sufficient on its own; none depends on the others surviving.
+
+**Path A — the repository is intact, the rename was wrong.**
+
+```sh
+git checkout feat/functional-completion
+git reset --hard pre-coretend-rebrand-0.8.0
+```
+
+`pre-coretend-rebrand-0.8.0` is an annotated local tag on the last commit
+before the rebrand: product 0.8.0, 250/250 tests green. It was never
+pushed, so nothing external needs unwinding.
+
+**Path B — the repository is damaged or lost.**
+
+```sh
+git clone /Users/<user>/Documents/CoreTend-Migration-Backups/<timestamp>/product.bundle restored-product
+cd restored-product && git checkout feat/functional-completion
+```
+
+The bundle is a full `--all` clone of every branch and tag at the moment
+of the checkpoint. The portfolio has its own bundle beside it
+(`portfolio.bundle`), restorable the same way. A tracked-file tarball
+(`product-tracked-files-HEAD.tar.gz`) sits next to them for the case where
+git itself is the problem. `SHA256SUMS` in that directory verifies all
+three.
+
+A second copy of the bundles lives at
+`Documentation/WorkspacePreflight/<timestamp>/` inside the repo — those
+are gitignored on purpose, since a backup committed into the repo it backs
+up is not a backup.
+
+**Path C — the workspace move is what went wrong.**
+
+The move of both repositories into `WEBSITE/` is a `mv` of self-contained
+directories: a git repository carries its entire history inside its own
+`.git`, so moving it changes nothing but its path. To undo, move the
+directory back:
+
+```sh
+mv <WEBSITE>/products/coretend/app ~/Documents/MACCLEAN
+mv <WEBSITE>/ahmetbsbnr-portfolio <old-portfolio-path>
+```
+
+The old locations are not deleted until the new ones are verified
+(git history readable, remotes intact, tests and builds green), so during
+the migration window both paths are recoverable. `Documentation/WorkspacePreflight/<timestamp>/preflight-manifest.json`
+records each repository's branch, HEAD, cleanliness, and origin URL at
+checkpoint time, which is what a post-move verification is checked against.
+
+**What none of these paths restore:** user data written by a *renamed*
+build under the new bundle identifier. See step 9 below — that case is
+deliberately left for a human.
+
 ## General rule
 
 Every rename step is proposed as its own atomic commit (matching this

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "mode": "backup",
+  "product": {
+    "path": "/Users/ahmetbasbunar/Documents/MACCLEAN",
+    "exists": true,
+    "isGitRepo": true,
+    "branch": "feat/functional-completion",
+    "head": "2fe11f6d14f01924178dd28edfff1be9890bf8a9",
+    "clean": false,
+    "remote": "none"
+  },
+  "portfolio": {
+    "path": "/Users/ahmetbasbunar/Documents/MAC_ORGANISE/00_DOCUMENTS_EXISTANTS/01_PROJETS/01_PROJETS_ACTIFS/professionnel-portfolio-stage-2026",
+    "exists": true,
+    "isGitRepo": true,
+    "branch": "main",
+    "head": "e6db86dbebbce8b16088680d8894acd015b0e77c",
+    "clean": true,
+    "remote": "https://github.com/ahmetbsbnr/ahmetbsbnrportfolio.git"
+  }
+}
