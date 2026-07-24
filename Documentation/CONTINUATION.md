@@ -1,6 +1,28 @@
 # CONTINUATION
 
-## Where we are (product version 0.8.0, phase: 0.8.0 — Functional Completion, CLOSED)
+## Where we are (product version 0.8.0, phase: 0.8.1A — Brand Clearance & Workspace Migration Preflight, CLOSED)
+Branch `feat/functional-completion` (unchanged, no push). Product version
+stays **0.8.0** — this phase was preflight/planning only, no rename
+applied. Key outcome: **MacClear = `CONFLICT_HIGH`**, blocked — three
+independent real "MacClear"/"macclear" GitHub repos found in the exact
+same category, one a near-exact technical/functional twin
+(`BRAND_NAME_CLEARANCE.md`). A 32-name screened shortlist exists
+(`BRAND_NAME_SHORTLIST.md`) with no selection made — that choice is
+`BLOCKED_HUMAN`. Portfolio repo identified and inventoried, read-only
+(`PORTFOLIO_REPOSITORY_INVENTORY.md`). Workspace target structure,
+product-rename inventory/plan/rollback, user-data migration design +
+test plan, cross-site design audit, and logo/asset planning are all
+documented, nothing executed. Two new gates
+(`Scripts/check-brand-clearance.sh`, `Scripts/check-workspace-migration-readiness.sh`)
+and a non-destructive preflight/backup script
+(`Scripts/preflight-workspace-migration.sh`) exist and are tested (18
+shell tests total across the three). No folder moved, no repo renamed, no
+bundle identifier changed, no domain changed, no MacClear asset produced.
+Next command after the user approves a name: fill in
+`Configuration/BrandRenameApproval.local.json`, then re-run
+`Scripts/check-brand-clearance.sh <approved-name>`.
+
+## Previous phase (0.8.0 — Functional Completion, CLOSED)
 Branch `feat/functional-completion`. The 0.8.0 effort completed all 21 steps
 this session: steps 1-18 (every automatable item) are DONE/DONE_VERIFIED/
 CODE_DONE/READY_FOR_MANUAL_QA, step 19's version decision was made (bumped

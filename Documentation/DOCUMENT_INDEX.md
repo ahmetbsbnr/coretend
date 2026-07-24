@@ -160,6 +160,31 @@ notes, fine to include but not user-facing).
 | `FINAL_COMPLIANCE_SCORECARD.md` | **New session 4.** Full MUST/SHOULD scoring per brief §23 formula, verdict MOSTLY_CONFORMING | current, source of truth | public |
 | `public-readiness.json` | **New session 4.** Machine-readable twin of the scorecard above | current | internal |
 
+## 0.8.1A — Brand Clearance & Workspace Migration Preflight (added this phase)
+
+Non-destructive preflight only: no rename applied, no folder moved, no
+domain changed. Every doc below is current, public-safe unless noted.
+
+| File | Role | Source of truth | Audience |
+|---|---|---|---|
+| `PRE_REBRAND_BASELINE.md` | Canonical pre-rebrand snapshot (Git/build/identity/data-path facts) | current | internal |
+| `BRAND_SEARCH_EVIDENCE.md` | Raw, dated MacClear conflict research | current | internal |
+| `BRAND_NAME_CLEARANCE.md` + `brand-name-clearance.json` | MacClear verdict: CONFLICT_HIGH | current, source of truth | internal |
+| `BRAND_CONFLICT_REGISTER.md` | Every conflict found, prioritized | current | internal |
+| `BRAND_NAME_ALTERNATIVES.md` + `brand-name-alternatives.json` | 32 screened candidate names | current | internal |
+| `BRAND_NAME_SHORTLIST.md` | Top 5 of the 32, no selection made | current | internal |
+| `PORTFOLIO_REPOSITORY_INVENTORY.md` + `portfolio-repository-inventory.json` | Portfolio repo identification (read-only) | current | internal (contains paths only, no private content) |
+| `WORKSPACE_TARGET_STRUCTURE.md`, `WORKSPACE_MIGRATION_PLAN.md`, `WORKSPACE_ROLLBACK_PLAN.md`, `workspace-migration-manifest.json` | Future `WEBSITE/` workspace design — nothing executed | current | internal |
+| `PRODUCT_RENAME_INVENTORY.md` + `product-rename-inventory.json` | Every "MacCare Local"/"MacCareLocal" reference, categorized by risk | current | internal |
+| `PRODUCT_RENAME_PLAN.md`, `PRODUCT_RENAME_ROLLBACK.md` | Rename sequencing + rollback, nothing executed | current | internal |
+| `USER_DATA_RENAME_MIGRATION.md` + `user-data-rename-migration.json` | Local-data migration design (SQLite/Quarantine/UserDefaults) | current | internal |
+| `REBRAND_MIGRATION_TEST_PLAN.md` | 15-scenario test matrix for the above, written ahead of implementation | current | internal |
+| `CROSS_SITE_DESIGN_AUDIT.md`, `CROSS_SITE_DESIGN_LANGUAGE.md`, `cross-site-design-tokens.json`, `PORTFOLIO_PRODUCT_SITE_ALIGNMENT.md` | Read-only design comparison, portfolio vs product site | current | internal |
+| `REBRAND_VISUAL_BRIEF.md`, `BRAND_ASSET_MATRIX.md`, `LOGO_MIGRATION_PLAN.md` | Logo/asset planning, no assets produced under any candidate name | current | internal |
+| `Scripts/preflight-workspace-migration.sh` + `Scripts/test-preflight-workspace-migration.sh` | Non-destructive repo-state check + optional git-bundle backup | current, tested | internal (script) |
+| `Scripts/check-brand-clearance.sh` + `Scripts/test-check-brand-clearance.sh` | Gate: blocks rename until every precondition is real | current, tested | internal (script) |
+| `Scripts/check-workspace-migration-readiness.sh` + `Scripts/test-check-workspace-migration-readiness.sh` | Gate: blocks the actual workspace move until ready | current, tested | internal (script) |
+
 ## Notes on reconciliation performed this session
 
 - Every audit-report file listed above with an old-commit reference (`b8266a29e7ebdbae1791c1c7afb887a8529763eb`,
