@@ -26,20 +26,38 @@ final class MyClutterViewModel {
     var minAgeDays: Int = 30
     var sortOption: SortOption = .size
     var previewURL: URL?
+    var searchText = ""
+    var selectedVolumeID: String?
+    let volumeResolver: VolumeResolving
+    let exclusionsController = ClutterExclusionsController()
 
     private var scanTask: Task<Void, Never>?
 
+    init(volumeResolver: VolumeResolving = SystemVolumeResolver()) {
+        self.volumeResolver = volumeResolver
+    }
+
     var totalBytes: Int64 { findings.reduce(0) { $0 + $1.logicalSize } }
 
+    var availableVolumes: [VolumeInfo] {
+        ClutterVolumeGrouping.availableVolumes(for: findings.map(\.url), resolver: volumeResolver)
+    }
+
     /// Native sort over the same real findings — size (default, largest
-    /// first) or age (oldest modification date first).
+    /// first) or age (oldest modification date first) — then narrowed by
+    /// name search and the selected volume, if any.
     var sortedFindings: [ScanFinding] {
+        let base: [ScanFinding]
         switch sortOption {
-        case .size: return findings.sorted { $0.logicalSize > $1.logicalSize }
+        case .size: base = findings.sorted { $0.logicalSize > $1.logicalSize }
         case .age:
-            return findings.sorted {
+            base = findings.sorted {
                 ($0.modificationDate ?? .distantFuture) < ($1.modificationDate ?? .distantFuture)
             }
+        }
+        return base.filter {
+            ClutterSearch.matches(fileName: $0.url.lastPathComponent, path: $0.url.path, query: searchText)
+                && ClutterVolumeGrouping.matches($0.url, volumeID: selectedVolumeID, resolver: volumeResolver)
         }
     }
 
@@ -172,7 +190,7 @@ struct LargeOldFilesView: View {
     private var resultsView: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text(L("clutter.results.summary", model.findings.count, mcFormatBytes(model.totalBytes)))
+                Text(L("clutter.results.summary", model.sortedFindings.count, mcFormatBytes(model.totalBytes)))
                     .font(.headline)
                 Spacer()
                 Picker(L("clutter.sort_by"), selection: $model.sortOption) {
@@ -185,6 +203,29 @@ struct LargeOldFilesView: View {
                 Button(L("clutter.new_analysis")) { model.phase = .idle }
             }
             .padding()
+            HStack {
+                MCSearchField(text: $model.searchText, placeholder: L("clutter.search_placeholder"))
+                if model.availableVolumes.count > 1 {
+                    Picker(L("clutter.volume"), selection: $model.selectedVolumeID) {
+                        Text(L("clutter.all_volumes")).tag(String?.none)
+                        ForEach(model.availableVolumes) { volume in
+                            Text(volume.id == VolumeInfo.unavailable.id ? L("clutter.volume_unavailable") : volume.name)
+                                .tag(String?.some(volume.id))
+                        }
+                    }
+                    .frame(width: 180)
+                }
+                Spacer()
+                ExclusionsMenu(controller: model.exclusionsController)
+            }
+            .padding(.horizontal).padding(.bottom, MCSpacing.xs)
+            if model.sortedFindings.isEmpty {
+                Spacer()
+                Text(L("clutter.search_no_results"))
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                Spacer()
+            }
             List(model.sortedFindings) { finding in
                 HStack {
                     Image(systemName: "doc")
@@ -223,6 +264,7 @@ struct LargeOldFilesView: View {
                     .buttonStyle(.borderless)
                     .help(L("common.reveal_in_finder"))
                     .accessibilityLabel(L("common.reveal_in_finder"))
+                    ExcludeButton(url: finding.url, controller: model.exclusionsController)
                 }
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel("\(finding.url.lastPathComponent), \(mcFormatBytes(finding.logicalSize))")

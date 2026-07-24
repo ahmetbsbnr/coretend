@@ -5,6 +5,7 @@
 "common.dry_run" = "Simulation";
 "common.running" = "En cours…";
 "common.reveal_in_finder" = "Afficher dans le Finder";
+"common.clear" = "Effacer";
 
 /* Sidebar */
 "sidebar.free_up_space" = "Libérer de l'espace";
@@ -164,6 +165,18 @@
 "clutter.new_analysis" = "Nouvelle analyse";
 "clutter.modified" = "modifié le %@";
 "clutter.quick_look" = "Aperçu rapide";
+"clutter.search_placeholder" = "Rechercher par nom";
+"clutter.volume" = "Volume";
+"clutter.all_volumes" = "Tous les volumes";
+"clutter.volume_unavailable" = "Volume indisponible";
+"clutter.search_no_results" = "Aucun fichier ne correspond à votre recherche";
+"clutter.exclusions_count" = "Exclusions (%d)";
+"clutter.exclusions_empty" = "Aucune exclusion pour l’instant";
+"clutter.exclusions_rescan_note" = "Relancez une analyse pour appliquer les changements d’exclusion";
+"clutter.already_excluded" = "Exclu des analyses";
+"clutter.exclude_menu" = "Exclure…";
+"clutter.exclude_file" = "Exclure ce fichier";
+"clutter.exclude_folder" = "Exclure le dossier parent";
 
 /* App Updates */
 "updates.loading" = "Lecture des mécanismes de mise à jour…";
