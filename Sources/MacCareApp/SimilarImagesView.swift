@@ -11,7 +11,31 @@ final class SimilarImagesViewModel {
 
     var phase: Phase = .idle
     var groups: [SimilarImageGroup] = []
+    var searchText = ""
+    var selectedVolumeID: String?
+    let volumeResolver: VolumeResolving
+    let exclusionsController = ClutterExclusionsController()
     private var scanTask: Task<Void, Never>?
+
+    init(volumeResolver: VolumeResolving = SystemVolumeResolver()) {
+        self.volumeResolver = volumeResolver
+    }
+
+    var availableVolumes: [VolumeInfo] {
+        ClutterVolumeGrouping.availableVolumes(for: groups.flatMap(\.urls), resolver: volumeResolver)
+    }
+
+    /// Same any-member-matches semantics as Duplicates: a cluster of similar
+    /// photos commonly spans an internal volume and an external/backup one.
+    var filteredGroups: [SimilarImageGroup] {
+        groups.filter { group in
+            group.urls.contains {
+                ClutterSearch.matches(fileName: $0.lastPathComponent, path: $0.path, query: searchText)
+            } && group.urls.contains {
+                ClutterVolumeGrouping.matches($0, volumeID: selectedVolumeID, resolver: volumeResolver)
+            }
+        }
+    }
 
     func start() {
         if case .scanning = phase { return }
@@ -122,8 +146,24 @@ struct SimilarImagesView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .results:
+                HStack {
+                    MCSearchField(text: $model.searchText, placeholder: L("clutter.search_placeholder"))
+                    if model.availableVolumes.count > 1 {
+                        Picker(L("clutter.volume"), selection: $model.selectedVolumeID) {
+                            Text(L("clutter.all_volumes")).tag(String?.none)
+                            ForEach(model.availableVolumes) { volume in
+                                Text(volume.id == VolumeInfo.unavailable.id ? L("clutter.volume_unavailable") : volume.name)
+                                    .tag(String?.some(volume.id))
+                            }
+                        }
+                        .frame(width: 180)
+                    }
+                    Spacer()
+                    ExclusionsMenu(controller: model.exclusionsController)
+                }
+                .padding(.horizontal).padding(.top, MCSpacing.xs)
                 List {
-                    ForEach(model.groups) { group in
+                    ForEach(model.filteredGroups) { group in
                         let members = group.urls.map { ImageMember(id: $0.path, url: $0) }
                         let best = group.bestResolutionURL
                         Section(L("similar.group_header", group.urls.count, mcFormatBytes(group.totalBytes))) {
@@ -153,6 +193,7 @@ struct SimilarImagesView: View {
                                     } label: { Image(systemName: "magnifyingglass") }
                                     .buttonStyle(.borderless)
                                     .accessibilityLabel("\(L("similar.reveal_a11y", url.lastPathComponent))\(url == best ? ", \(L("similar.best_resolution_a11y"))" : "")")
+                                    ExcludeButton(url: url, controller: model.exclusionsController)
                                 }
                                 .font(.caption)
                             }

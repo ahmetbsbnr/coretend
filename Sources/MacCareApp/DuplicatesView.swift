@@ -19,11 +19,38 @@ final class DuplicatesViewModel {
     var groups: [DuplicateGroup] = []
     var selectedPaths: Set<String> = []   // paths selected for removal
     var dryRun = true
+    var searchText = ""
+    var selectedVolumeID: String?
+    let volumeResolver: VolumeResolving
+    let exclusionsController = ClutterExclusionsController()
 
     private var scanTask: Task<Void, Never>?
     private var scannedRoots: [URL] = []
 
+    init(volumeResolver: VolumeResolving = SystemVolumeResolver()) {
+        self.volumeResolver = volumeResolver
+    }
+
     var wastedBytes: Int64 { groups.reduce(0) { $0 + $1.wastedBytes } }
+
+    var availableVolumes: [VolumeInfo] {
+        ClutterVolumeGrouping.availableVolumes(for: groups.flatMap(\.urls), resolver: volumeResolver)
+    }
+
+    /// A group matches if any of its copies matches the name search and any
+    /// copy sits on the selected volume — duplicates commonly span volumes
+    /// (e.g. one copy on the internal disk, one on a backup drive), so
+    /// filtering per-copy rather than requiring the whole group to agree
+    /// keeps a relevant group visible instead of hiding it entirely.
+    var filteredGroups: [DuplicateGroup] {
+        groups.filter { group in
+            group.urls.contains {
+                ClutterSearch.matches(fileName: $0.lastPathComponent, path: $0.path, query: searchText)
+            } && group.urls.contains {
+                ClutterVolumeGrouping.matches($0, volumeID: selectedVolumeID, resolver: volumeResolver)
+            }
+        }
+    }
     var selectedBytes: Int64 {
         groups.reduce(0) { sum, group in
             sum + group.fileSize * Int64(group.urls.filter { selectedPaths.contains($0.path) }.count)
@@ -175,8 +202,24 @@ struct DuplicatesView: View {
                 .disabled(model.selectedPaths.isEmpty || model.phase == .executing)
             }
             .padding()
+            HStack {
+                MCSearchField(text: $model.searchText, placeholder: L("clutter.search_placeholder"))
+                if model.availableVolumes.count > 1 {
+                    Picker(L("clutter.volume"), selection: $model.selectedVolumeID) {
+                        Text(L("clutter.all_volumes")).tag(String?.none)
+                        ForEach(model.availableVolumes) { volume in
+                            Text(volume.id == VolumeInfo.unavailable.id ? L("clutter.volume_unavailable") : volume.name)
+                                .tag(String?.some(volume.id))
+                        }
+                    }
+                    .frame(width: 180)
+                }
+                Spacer()
+                ExclusionsMenu(controller: model.exclusionsController)
+            }
+            .padding(.horizontal).padding(.bottom, MCSpacing.xs)
             List {
-                ForEach(model.groups) { group in
+                ForEach(model.filteredGroups) { group in
                     Section {
                         // Overlap motif: near-duplicate copies shown slightly
                         // overlapping, separating on hover — the rows below
@@ -216,6 +259,7 @@ struct DuplicatesView: View {
                                 } label: { Image(systemName: "magnifyingglass") }
                                 .buttonStyle(.borderless)
                                 .accessibilityLabel(L("common.reveal_in_finder"))
+                                ExcludeButton(url: url, controller: model.exclusionsController)
                             }
                         }
                     } header: {
