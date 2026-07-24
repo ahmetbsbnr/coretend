@@ -101,3 +101,33 @@ text-level, in session 2 — a fresh independent verification would strengthen i
 publication readiness (maintainer identity, repo URL, legal entity, domain) remains genuinely blocked
 on human decisions per `Documentation/HUMAN_BLOCKERS.md`, unrelated to whether these six decisions
 themselves are honored in the code.
+
+---
+
+## Step 1 — Cleanup rule scope, 0.8.0 Functional Completion phase
+
+`Sources/FileRules/UserCleanupRules.swift` ships exactly 10 rules: user
+caches, user logs, crash reports, Xcode DerivedData, incomplete downloads,
+Xcode device support, iOS device backups, old installers, old archives,
+Xcode Archives. All are user-domain (`~/Library/...`, `~/Downloads`), all
+Trash-based via `SafetyCenter`, all covered by `Scripts/test.sh`
+(`FileRulesTests` + `CleanupViewModelTests`), and Smart Care only
+auto-executes the low-risk/preselected subset
+(`SmartCareViewModel.autoExecutableFindings`, see `SMART_CARE_AUDIT.md`).
+This is the complete, delivered scope for 0.8.0 — nothing beyond it is
+implied by the UI or docs.
+
+Four candidate rules were considered and explicitly **not** shipped as
+blind extension/age rules, because each needs a dedicated safety engine a
+generic size/age scan cannot provide:
+
+| Candidate | Decision | Why |
+|---|---|---|
+| iOS Simulator data (caches, unavailable device runtimes, `~/Library/Developer/CoreSimulator`) | **DEFERRED_APPROVED** | Distinguishing an *unavailable* simulator device/runtime from an *active* one requires calling `simctl` (or parsing its state) and reasoning about device/runtime lifecycle — not a generic path+age rule. A blind rule risks deleting a runtime or device the user is actively using. Approved to defer until a `simctl`-backed engine exists; not shipped, not claimed in docs/UI. |
+| Trash-emptying (irreversible by definition) | **NOT_PLANNED** as a Cleanup rule | Emptying the Trash is the one cleanup action with no reversibility path — SafetyCenter's entire safety model (dry-run, Trash-based moves, restore) exists specifically so removal is never final. Folding it into a generic rule would contradict that model. If ever added, it must be a separate, strongly-confirmed, standalone action — never bundled into a scan-and-select flow, never automatic, never in Smart Care's auto-executable set. |
+| Mail attachments | **REPORT_ONLY** (not shipped even as report-only yet) | Mail stores attachments inside its own SQLite-backed envelope-index structure, not as freestanding user files. Touching anything under `~/Library/Mail` risks corrupting Mail's database or losing a message's only copy of an attachment. If ever implemented, it must be report-only (reveal size, never touch the file) using an approach that doesn't open or write Mail's stores. Not shipped in 0.8.0. |
+| Broken LaunchAgents (invalid plist / missing target executable) | **ANALYSIS_ONLY** (not shipped as a Cleanup rule) | Detecting "broken" requires parsing each plist's `Program`/`ProgramArguments` and checking the target exists — real analysis, not an extension/age match — and a false positive could disable a legitimate background helper. If ever added: detect broken=(unparseable plist OR missing target), offer reveal/exclude, and only Trash the plist itself (never the target binary) after explicit per-item review. Not shipped in 0.8.0. |
+
+**Step 1 status: DONE_VERIFIED_WITH_DEFERRED_SCOPE.** The 10 shipped rules
+are complete, tested, and documented; the four deferred candidates are
+explicitly out of scope with a security rationale, not silently missing.
