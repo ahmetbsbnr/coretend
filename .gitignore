@@ -74,3 +74,7 @@ Configuration/PublicIdentity.local.json
 
 # Staged external-audit packages (built locally, never committed)
 AuditPackages/
+
+# Serena MCP tool workspace (local editor/LSP tooling config, not a project
+# artifact — machine-specific, no project code or docs depend on it)
+.serena/
