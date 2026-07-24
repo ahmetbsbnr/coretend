@@ -13,7 +13,7 @@ feature-inventory.json wins.
 |---|---|---|
 | Smart Care | COMPLETE | Orchestrated cleanup scan, dry-run execute of low-risk items |
 | Cleanup | COMPLETE | 7 rules, grouped review, exclusions honored, Trash/dry-run |
-| Protection | PARTIAL | ClamAV wrapper + quarantine (restore/delete) implemented and tested (`Sources/MalwareEngine`); no ClamAV binary installed on this machine → UI honestly reports engine unavailable, not a code gap. No real-time protection (deliberately out of scope) |
+| Protection | PARTIAL | ClamAV wrapper + quarantine (restore/delete) implemented and tested (`Sources/MalwareEngine`); no ClamAV binary installed on this machine → UI honestly reports engine unavailable, not a code gap. Optional `ProtectionWatcher` FSEvents actor (debounce/coalesce/dedup/rate-limit/clean-restart, off-by-default, never auto-quarantines) wired into the Protection UI as an in-session Downloads/Applications watch |
 | Performance | COMPLETE | Live CPU/memory/pressure/disk/thermal, CPU chart, LaunchAgent inspection (read-only) |
 | Applications | COMPLETE | Inventory, associated data, Trash-based uninstall, Leftovers (conservative bundle-id matching, shared/ambiguous detection tested) |
 | My Clutter — Large & Old | COMPLETE | Read-only scan, tested |

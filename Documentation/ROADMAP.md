@@ -5,10 +5,13 @@ BLOCKED_HUMAN, DEFERRED, NOT_STARTED.
 
 This file historically tracked v0.1-era planning order and had drifted years
 out of date (it still read "Persistence ← NEXT" and "Applications: not
-started" after both had long since shipped). Rewritten this pass against the
-actual v0.7.1 state confirmed via `Sources/`, `Documentation/feature-inventory.json`,
-and a real `Scripts/test.sh` run (114/114 passing). See `Documentation/FEATURE_MATRIX.md`
-for per-module detail and `Documentation/CHANGELOG.md` for the version history.
+started" after both had long since shipped). Rewritten against the actual
+v0.7.1 state (114/114 passing) and updated again during the 0.8.0 —
+Functional Completion phase (`feat/functional-completion`, see
+`Documentation/FUNCTIONAL_COMPLETION_EXECUTION_PLAN.md` for the authoritative
+21-step tracker; 215/215 passing at this update). See
+`Documentation/FEATURE_MATRIX.md` for per-module detail and
+`Documentation/CHANGELOG.md` for the version history.
 
 ## Shipped (v0.1 → v0.7.1)
 
@@ -23,7 +26,7 @@ for per-module detail and `Documentation/CHANGELOG.md` for the version history.
 9. COMPLETE — Applications + Leftovers
 10. COMPLETE — Performance
 11. COMPLETE — Menu Bar agent
-12. PARTIAL — Protection (ClamAV wrapper + quarantine tested; no ClamAV binary on this machine, so the live-scan path is unverified here, not unbuilt)
+12. PARTIAL — Protection (ClamAV wrapper + quarantine tested; optional `ProtectionWatcher` FSEvents actor now built and wired into the UI as off-by-default in-session watch — debounce/coalesce/dedup/rate-limit/clean-restart tested; no ClamAV binary on this machine, so the live-scan path stays unverified here, not unbuilt)
 13. COMPLETE — Privacy Cleaner
 14. COMPLETE — Cloud Cleanup
 15. COMPLETE — Accessibility pass (5 previously-unannotated views + 3 system settings, per commit b8fb716)
@@ -36,7 +39,6 @@ for per-module detail and `Documentation/CHANGELOG.md` for the version history.
 
 - NOT_STARTED — Privileged helper: no Developer ID signing identity available; every current feature works unprivileged, so this was deferred by choice rather than blocked mid-build.
 - DEFERRED — Browser history/cookie removal in Privacy Cleaner: deliberately deferred, DB-corruption risk on live browser profiles judged not worth it for marginal space gain.
-- DEFERRED — FSEvents live downloads watch: nice-to-have, not required for any v0.7.1 commitment.
 - DEFERRED — Extended cleanup rules needing dedicated safety engines rather than plain extension/age rules: iOS Simulators (distinguish caches/unavailable-devices/runtimes/active devices; use official `simctl` mechanisms, never blind delete), Trash-emptying (separate strong-confirmation action, never automatic), Mail attachments (never touch Mail DBs; report-only), broken LaunchAgents (detect invalid plist/missing target; reveal/exclude, Trash plist only after review). Not shipped as blind rules.
 - BLOCKED_ENVIRONMENT — Real-machine screenshot capture for `Documentation/VisualAudit/After` (no attached display / window capture in any automated session to date, including this one).
 - BLOCKED_HUMAN — Public identity fields (`Configuration/PublicIdentity.local.json`: legal name, address, domain, security contact) and code signing/notarization — both require the maintainer's real-world decisions/credentials, not more engineering.
