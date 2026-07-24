@@ -79,6 +79,12 @@ Configuration/BrandRenameApproval.local.json
 # Staged external-audit packages (built locally, never committed)
 AuditPackages/
 
+# Migration safety backups: git bundles are full repo copies. They must exist
+# on disk (the rename gate checks for them) and must never be committed into
+# the very repo they are the backup of.
+Documentation/WorkspacePreflight/**/*.bundle
+Documentation/WorkspacePreflight/**/*.bundle.sha256
+
 # Serena MCP tool workspace (local editor/LSP tooling config, not a project
 # artifact — machine-specific, no project code or docs depend on it)
 .serena/
