@@ -45,6 +45,18 @@ else
   echo "  WARN: Scripts/check-private-data.sh missing or not executable"
 fi
 
+echo "-- Test isolation: no automated test may reach the real user store --"
+if [ -x Scripts/check-test-isolation.sh ]; then
+  if Scripts/check-test-isolation.sh > /dev/null; then
+    echo "  OK: check-test-isolation.sh passed"
+  else
+    echo "  FAIL: check-test-isolation.sh reported issues (run it directly for detail)"
+    fail=1
+  fi
+else
+  echo "  WARN: Scripts/check-test-isolation.sh missing or not executable"
+fi
+
 echo "-- Placeholder scan --"
 if [ -x Scripts/check-placeholders.sh ]; then
   if Scripts/check-placeholders.sh; then

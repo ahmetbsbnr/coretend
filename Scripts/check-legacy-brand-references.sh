@@ -76,6 +76,10 @@ allowed_reason() {
       echo "historical release: inventory of artifacts built under the old name" ;;
     Sources/Persistence/LegacyDataMigration.swift)
       echo "user-data compatibility: the migration itself must name the old paths" ;;
+    Sources/Persistence/TestStoreOverride.swift)
+      echo "removal record: names the dead pre-rename env var the store override replaced, so the reason it exists stays legible" ;;
+    Documentation/CORETEND_TRADEMARK_SCREENING.md|Documentation/coretend-trademark-screening.json)
+      echo "brand screening: records the prior product name as part of the naming history being screened" ;;
     Tests/PersistenceTests/LegacyDataMigrationTests.swift)
       echo "user-data compatibility: tests for the migration" ;;
     Sources/CoreTendApp/AppEnvironment.swift|Sources/CoreTendApp/SettingsView.swift)

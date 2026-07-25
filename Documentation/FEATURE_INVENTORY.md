@@ -2,7 +2,7 @@
 
 Generated from `Documentation/feature-inventory.json` by `Scripts/generate-feature-inventory.py` — the JSON is the single canonical source; this file, `feature-inventory.csv`, and the totals below are all derived from it, never typed by hand. Run `python3 Scripts/generate-feature-inventory.py --check` to verify they still agree.
 
-**Total: 46 features.** Status counts: IMPLEMENTED_UNVERIFIED=4, VERIFIED_COMPLETE=38, VERIFIED_PARTIAL=4.
+**Total: 47 features.** Status counts: IMPLEMENTED_UNVERIFIED=4, VERIFIED_COMPLETE=39, VERIFIED_PARTIAL=4.
 
 Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, UI_ONLY, SIMULATED, DOCUMENTATION_ONLY, BLOCKED_HUMAN, BLOCKED_ENVIRONMENT, BROKEN, DEPRECATED, NOT_STARTED, NOT_APPLICABLE, UNKNOWN.
 
@@ -126,4 +126,10 @@ Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, 
 | id | Feature | Status | Evidence |
 |---|---|---|---|
 | uninstall.legacydata | Uninstaller `--include-legacy` opt-in additionally targets pre-rename data (`MacCareLocal`, `MacCare Local`, `local.maccare.app.plist`). Off by default — because the migration copies rather than moves, legacy data is a real backup and is not removed unless asked. Legacy paths are ordered last so an interrupted run never leaves the current install half-removed while the backup is already gone | VERIFIED_COMPLETE | Scripts/uninstall.sh:29-30, 68-71, 107-109, 151-158; Scripts/test-uninstall.sh |
+
+## Testing infrastructure (1: VERIFIED_COMPLETE=1)
+
+| id | Feature | Status | Evidence |
+|---|---|---|---|
+| testing.storeisolation | `TestStoreOverride` — lets a distribution smoke test launch the real Release binary against a throwaway store instead of the user's data. Requires TWO agreeing environment variables (`CORETEND_TEST_MODE=1` and an absolute `CORETEND_TEST_STORE_DIR`), so one stray variable cannot relocate a real database; the path must standardize to a location under a real temporary root and is refused if empty, relative, a protected root, the home directory, the filesystem root, or a bare temp root. The marker also suppresses the legacy-data migration, so a smoke test can never read real pre-rename data. `Scripts/test-distribution.sh` fingerprints the real store before and after and fails on any change; `Scripts/check-test-isolation.sh` statically enforces the whole shape | VERIFIED_COMPLETE | Sources/Persistence/TestStoreOverride.swift; Sources/Persistence/Store.swift (defaultPath/userPath/userDirectory); Sources/CoreTendApp/AppEnvironment.swift (migration suppression); Tests/PersistenceTests/TestStoreOverrideTests.swift (22 tests); Scripts/check-test-isolation.sh + Scripts/test-check-test-isolation.sh (9 self-tests) |
 

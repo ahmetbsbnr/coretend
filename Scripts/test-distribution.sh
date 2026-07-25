@@ -89,46 +89,89 @@ else
   ok "binary does not contain the repo checkout path"
 fi
 
-note "Non-destructive launch smoke test"
-# There is no store-directory override: Store.defaultPath() always resolves to
-# ~/Library/Application Support/CoreTend (Sources/Persistence/Store.swift:77-84)
-# and reads no environment variable. This smoke test therefore launches the real
-# app against the real per-user store. It only launches and quits — it never
-# writes findings, never executes a cleanup, and never deletes anything — but it
-# is not sandboxed from the user's data, and this script must not claim it is.
-# A previous version exported MACCARELOCAL_STORE_DIR here, which nothing has
-# ever read; it was removed in the 0.8.1 audit resync rather than renamed,
-# because renaming a dead variable would have preserved the illusion of
-# isolation. Real isolation needs an injectable store path in Sources/, which is
-# out of scope for a distribution check.
-open -W -n -a "$APP" --args --smoke-test-quit-immediately &
+note "Isolated launch smoke test"
+# The app is launched against a throwaway store via TestStoreOverride
+# (Sources/Persistence/TestStoreOverride.swift): CORETEND_TEST_MODE=1 plus an
+# absolute CORETEND_TEST_STORE_DIR under a temporary root. Both are required, and
+# the marker also suppresses the legacy-data migration — otherwise the migration
+# would read the user's real pre-rename data and copy it into the temp directory,
+# defeating the isolation this test exists to prove.
+#
+# Isolation is not merely configured, it is *measured*: the real store is
+# fingerprinted before and after, and the run fails if anything there changed.
+REAL_STORE_DIR="$HOME/Library/Application Support/CoreTend"
+TEST_STORE_DIR=$(mktemp -d /private/tmp/coretend-smoke-store.XXXXXX)
+
+# Fingerprint = path, size and modification time of every file, plus the set of
+# names. Content hashes would be stronger but this store can be large; size+mtime
+# is sufficient to catch a read-modify-write, and `find` alone catches creation
+# and deletion. Access times are deliberately NOT compared: merely listing the
+# directory to fingerprint it would change them.
+fingerprint_real_store() {
+  if [ -d "$REAL_STORE_DIR" ]; then
+    find "$REAL_STORE_DIR" -type f -exec stat -f '%N %z %m' {} \; 2>/dev/null | sort
+  else
+    echo "ABSENT"
+  fi
+}
+
+BEFORE_FP=$(fingerprint_real_store)
+BEFORE_COUNT=$(printf '%s\n' "$BEFORE_FP" | wc -l | tr -d ' ')
+echo "  real store fingerprint: $BEFORE_COUNT line(s) from $REAL_STORE_DIR"
+
+CORETEND_TEST_MODE=1 CORETEND_TEST_STORE_DIR="$TEST_STORE_DIR" \
+  open -W -n -a "$APP" --args --smoke-test-quit-immediately &
 LAUNCH_PID=$!
-sleep 3
+sleep 4
 if pgrep -f "$WORK/zip/CoreTend.app/Contents/MacOS/CoreTend" >/dev/null; then
   ok "app launched without an immediate crash"
   pkill -f "$WORK/zip/CoreTend.app/Contents/MacOS/CoreTend" || true
+  sleep 1
 else
   bad "app did not appear to launch (or crashed immediately) — check Console.app for a crash report"
 fi
 wait $LAUNCH_PID 2>/dev/null || true
 
-note "Fresh-location DB init check"
-# The app's Store initializes its SQLite DB under Application Support on
-# first run; we only verify the on-disk store this run produced (if any)
-# is a fresh, valid SQLite file with no seeded personal data. This DOES
-# inspect the real per-user Application Support location, because that is
-# the only place the app will ever write (see the smoke-test note above).
-# Read-only: `find` and `file`, nothing is created or removed here.
-DB_CANDIDATE=$(find "$HOME/Library/Application Support/CoreTend" -name "store.sqlite" -newer "$WORK" 2>/dev/null | head -1)
-if [ -n "$DB_CANDIDATE" ]; then
-  if file "$DB_CANDIDATE" | grep -qi "SQLite"; then
-    ok "fresh DB initialized as valid SQLite at a real run"
+note "Isolation gate: only the temporary store may have changed"
+AFTER_FP=$(fingerprint_real_store)
+if [ "$BEFORE_FP" = "$AFTER_FP" ]; then
+  ok "real store untouched — no file created, modified, resized or removed under $REAL_STORE_DIR"
+else
+  bad "REAL STORE CHANGED during the smoke test — isolation is broken, do not ship this build"
+  echo "--- fingerprint diff (before > after) ---"
+  diff <(printf '%s\n' "$BEFORE_FP") <(printf '%s\n' "$AFTER_FP") | sed 's|'"$HOME"'|~|g' | head -20
+fi
+
+# The migration journal is the specific thing a broken isolation would create,
+# so it gets its own named check rather than hiding inside the fingerprint diff.
+if [ -f "$TEST_STORE_DIR/migration-log.json" ]; then
+  bad "legacy migration ran inside the isolated store — the test marker must suppress it"
+else
+  ok "legacy migration did not run under the test marker"
+fi
+
+note "Fresh-location DB init check (temporary store only)"
+if [ -f "$TEST_STORE_DIR/store.sqlite" ]; then
+  if file "$TEST_STORE_DIR/store.sqlite" | grep -qi "SQLite"; then
+    ok "fresh DB initialized as valid SQLite inside the isolated store"
   else
-    bad "DB file exists but is not valid SQLite"
+    bad "DB file exists in the isolated store but is not valid SQLite"
+  fi
+  # A store carried over from the real location would be far larger than a
+  # freshly migrated-and-empty one, and would contain user rows.
+  ROWS=$(sqlite3 "$TEST_STORE_DIR/store.sqlite" "SELECT COUNT(*) FROM activity;" 2>/dev/null || echo "?")
+  if [ "$ROWS" = "0" ] || [ "$ROWS" = "?" ]; then
+    ok "isolated store carries no activity history (rows: $ROWS)"
+  else
+    bad "isolated store contains $ROWS activity rows — real user data appears to have been copied in"
   fi
 else
-  echo "NOTE: could not detect a freshly created DB (app may not have reached DB init before quit) — not a hard failure."
+  echo "NOTE: no DB in the isolated store (app may not have reached DB init before quit) — not a hard failure."
 fi
+
+# Clean up the throwaway store. The real store is never touched by this script.
+rm -rf "$TEST_STORE_DIR"
+ok "temporary store removed"
 
 note "Summary"
 if [ "$fail" -eq 0 ]; then

@@ -74,13 +74,34 @@ public actor Store {
     ]
 
     /// Default on-disk location: ~/Library/Application Support/CoreTend/store.sqlite
+    ///
+    /// Honours ``TestStoreOverride`` first, so a distribution smoke test can
+    /// launch the real Release binary against a throwaway directory instead of
+    /// the user's data. The override demands two agreeing environment variables
+    /// and a path under a real temporary root, so a normal launch — and any
+    /// launch with only one variable set — always lands on the real path below.
     public static func defaultPath() throws -> String {
-        let dir = try FileManager.default.url(
+        if let override = TestStoreOverride.current.directory {
+            try FileManager.default.createDirectory(at: override, withIntermediateDirectories: true)
+            return override.appendingPathComponent("store.sqlite").path
+        }
+        return try userPath()
+    }
+
+    /// The real per-user location, never overridable. Kept separate so a test can
+    /// assert what the override is being measured against.
+    public static func userPath() throws -> String {
+        let dir = try userDirectory()
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir.appendingPathComponent("store.sqlite").path
+    }
+
+    /// `~/Library/Application Support/CoreTend`, without creating it.
+    public static func userDirectory() throws -> URL {
+        try FileManager.default.url(
             for: .applicationSupportDirectory, in: .userDomainMask,
             appropriateFor: nil, create: true
         ).appendingPathComponent("CoreTend", isDirectory: true)
-        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-        return dir.appendingPathComponent("store.sqlite").path
     }
 
     public init(path: String) throws {

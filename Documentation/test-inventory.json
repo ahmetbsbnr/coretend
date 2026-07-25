@@ -1,14 +1,14 @@
 {
   "schemaVersion": 2,
   "auditDate_UTC": "2026-07-25",
-  "commit": "92cbd08bc3cd1d8ad0513391cbd7552b520f09fe",
+  "commit": "31359f871638bc9b68efab16f5e76c798ea5877d",
   "command": "Scripts/test.sh",
-  "totalTests": 274,
-  "totalSuites": 57,
-  "passed": 274,
+  "totalTests": 296,
+  "totalSuites": 58,
+  "passed": 296,
   "failed": 0,
-  "testRunDurationSeconds": 6.215,
-  "wallTimeSeconds": 22,
+  "testRunDurationSeconds": 10.125,
+  "wallTimeSeconds": 12,
   "result": "PASS",
   "domains": [
     {
@@ -33,7 +33,7 @@
     },
     {
       "module": "Persistence",
-      "testFunctionsDeclared": 30
+      "testFunctionsDeclared": 52
     },
     {
       "module": "SafetyCore",

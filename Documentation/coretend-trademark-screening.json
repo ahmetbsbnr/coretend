@@ -1,0 +1,417 @@
+{
+  "schemaVersion": "1.0.0",
+  "screeningDate_UTC": "2026-07-25",
+  "performedBy": "automated agent (Claude Code) — non-human, non-lawyer",
+  "humanReadableMirror": "Documentation/CORETEND_TRADEMARK_SCREENING.md",
+  "product": {
+    "name": "CoreTend",
+    "description": "Free, open-source macOS maintenance / cleanup / storage-management / malware-scanning utility (Swift, unsigned pre-release)",
+    "repository": "github.com/ahmetbsbnr/coretend",
+    "site": "coretend.ahmetbsbnr.com",
+    "distribution": "free, open-source, unsigned, pre-release"
+  },
+  "candidateName": "CoreTend",
+  "variantsSearched": [
+    "CoreTend",
+    "Coretend",
+    "CORETEND",
+    "CORE TEND",
+    "Core Tend",
+    "Core-Tend",
+    "CoreTendo",
+    "KoreTend",
+    "CoreTrend (deliberate near-miss control, not a candidate name)"
+  ],
+  "toolsUsed": [
+    "WebSearch (general web index)",
+    "WebFetch (unauthenticated HTTP GET only; no POST, no JavaScript execution, no form submission, no cross-host redirect following)",
+    "dig (local DNS A/NS lookups)"
+  ],
+  "niceClasses": {
+    "9": {
+      "relevance": "primary",
+      "note": "Downloadable computer software — the natural class for a downloadable macOS maintenance utility. Not searched: no register was reachable."
+    },
+    "42": {
+      "relevance": "secondary / future",
+      "note": "SaaS and software design/development services — relevant only if CoreTend gains a hosted component or paid service. Not searched: no register was reachable."
+    },
+    "classSearchPerformed": false,
+    "classSearchBlockedBy": "no official trademark register was queryable with the available tools"
+  },
+  "sources": [
+    {
+      "name": "TMview (TMDN)",
+      "category": "trademark-register",
+      "queryAttempted": "GET https://www.tmdn.org/tmview/api/search/results?query=coretend",
+      "reachable": false,
+      "method": "WebFetch",
+      "result": "Connection reset (ECONNRESET)",
+      "interpretation": "Search API is POST-only / not open to unauthenticated GET. No evidence obtained in either direction."
+    },
+    {
+      "name": "EUIPO eSearch plus",
+      "category": "trademark-register",
+      "queryAttempted": "GET https://euipo.europa.eu/eSearch/#basic/1+1+1+1/100+100+100+100/coretend",
+      "reachable": false,
+      "method": "WebFetch",
+      "result": "Site chrome only; no search interface, no results, no trademark data rendered",
+      "interpretation": "JavaScript SPA; fragment query never reaches a server the tool can observe. No evidence obtained."
+    },
+    {
+      "name": "INPI DATA (France)",
+      "category": "trademark-register",
+      "queryAttempted": "GET https://data.inpi.fr/search?q=coretend",
+      "reachable": false,
+      "method": "WebFetch",
+      "result": "HTTP 403 Forbidden",
+      "interpretation": "Bot-blocked. No evidence obtained."
+    },
+    {
+      "name": "WIPO Global Brand Database",
+      "category": "trademark-register",
+      "queryAttempted": "GET https://branddb.wipo.int/branddb/en/?q=coretend (also via www3.wipo.int, which 301-redirects here)",
+      "reachable": false,
+      "method": "WebFetch",
+      "result": "CAPTCHA gate (altcha-widget against api.branddb.wipo.int/captcha) before any data renders",
+      "interpretation": "Human-verification wall. No evidence obtained."
+    },
+    {
+      "name": "USPTO TMsearch",
+      "category": "trademark-register",
+      "queryAttempted": "GET https://tmsearch.uspto.gov/search/search-results?q=coretend",
+      "reachable": false,
+      "method": "WebFetch",
+      "result": "Page shell with a 'Trademark search' heading only; no records",
+      "interpretation": "JavaScript SPA. No evidence obtained."
+    },
+    {
+      "name": "UKIPO trademark search",
+      "category": "trademark-register",
+      "queryAttempted": "GET https://www.search-for-uk-trademark.service.gov.uk/search/results?searchTerm=coretend ; fallback GET https://trademarks.ipo.gov.uk/ipo-tmtext",
+      "reachable": false,
+      "method": "WebFetch",
+      "result": "Primary host DNS failure (ENOTFOUND); fallback host HTTP 403 Forbidden",
+      "interpretation": "Not reachable from this environment. No evidence obtained."
+    },
+    {
+      "name": "Justia Trademarks (secondary USPTO mirror)",
+      "category": "trademark-secondary",
+      "queryAttempted": "GET https://trademarks.justia.com/search?q=coretend",
+      "reachable": false,
+      "method": "WebFetch",
+      "result": "HTTP 403 Forbidden",
+      "interpretation": "Bot-blocked."
+    },
+    {
+      "name": "Trademarkia (secondary)",
+      "category": "trademark-secondary",
+      "queryAttempted": "GET https://www.trademarkia.com/search?searchTerm=coretend",
+      "reachable": false,
+      "method": "WebFetch",
+      "result": "HTTP 403 Forbidden",
+      "interpretation": "Bot-blocked."
+    },
+    {
+      "name": "uspto.report (secondary)",
+      "category": "trademark-secondary",
+      "queryAttempted": "GET https://uspto.report/Search/?q=coretend",
+      "reachable": false,
+      "method": "WebFetch",
+      "result": "HTTP 403 Forbidden",
+      "interpretation": "Bot-blocked."
+    },
+    {
+      "name": "Web index restricted to trademark databases",
+      "category": "trademark-secondary",
+      "queryAttempted": "WebSearch 'coretend trademark' with allowed_domains = trademarks.justia.com, trademarkia.com, uspto.report, tsdr.uspto.gov, trademarkelite.com, tmdn.org, euipo.europa.eu",
+      "reachable": true,
+      "method": "WebSearch",
+      "result": "No record page for any CoreTend mark surfaced; nearest returned marks were CORE, COREVANT, COMMON CORE",
+      "interpretation": "Weak negative signal only. A web index is not a register; pending, unindexed or recently filed marks would not appear. Does not substitute for a register query."
+    },
+    {
+      "name": "GitHub REST — repository search",
+      "category": "code-hosting",
+      "queryAttempted": "GET https://api.github.com/search/repositories?q=coretend",
+      "reachable": true,
+      "method": "WebFetch",
+      "result": "total_count 0",
+      "interpretation": "No public GitHub repository matches the name."
+    },
+    {
+      "name": "GitHub REST — user handle",
+      "category": "code-hosting",
+      "queryAttempted": "GET https://api.github.com/users/coretend",
+      "reachable": true,
+      "method": "WebFetch",
+      "result": "HTTP 404",
+      "interpretation": "github.com/coretend is unclaimed."
+    },
+    {
+      "name": "GitHub REST — organisation",
+      "category": "code-hosting",
+      "queryAttempted": "GET https://api.github.com/orgs/coretend",
+      "reachable": true,
+      "method": "WebFetch",
+      "result": "HTTP 404",
+      "interpretation": "No CoreTend GitHub organisation exists."
+    },
+    {
+      "name": "GitHub REST — user search",
+      "category": "code-hosting",
+      "queryAttempted": "GET https://api.github.com/search/users?q=coretend",
+      "reachable": true,
+      "method": "WebFetch",
+      "result": "total_count 1 — login 'coretendency'; its public repository list came back empty",
+      "interpretation": "Different word ('core tendency'), no repositories, not a product, not same-category. Noted, not a conflict."
+    },
+    {
+      "name": "GitHub REST — variant repository search",
+      "category": "code-hosting",
+      "queryAttempted": "GET https://api.github.com/search/repositories?q=coretendo+OR+koretend+OR+core-tend",
+      "reachable": true,
+      "method": "WebFetch",
+      "result": "52 hits, all produced by GitHub's tokenizer splitting on 'core'/'tender' (e.g. Tenderize/tender-core, tendril-framework/*, abdkrn/TenderCore)",
+      "interpretation": "No repository named CoreTend, Core-Tend, CoreTendo or KoreTend. Tokenizer noise, not conflicts."
+    },
+    {
+      "name": "GitLab REST",
+      "category": "code-hosting",
+      "queryAttempted": "GET https://gitlab.com/api/v4/projects?search=coretend",
+      "reachable": true,
+      "method": "WebFetch",
+      "result": "Empty array",
+      "interpretation": "No public GitLab project matches."
+    },
+    {
+      "name": "npm registry search",
+      "category": "package-registry",
+      "queryAttempted": "GET https://registry.npmjs.org/-/v1/search?text=coretend",
+      "reachable": true,
+      "method": "WebFetch",
+      "result": "objects [] , total 0",
+      "interpretation": "Package name unused."
+    },
+    {
+      "name": "PyPI JSON API",
+      "category": "package-registry",
+      "queryAttempted": "GET https://pypi.org/pypi/coretend/json",
+      "reachable": true,
+      "method": "WebFetch",
+      "result": "HTTP 404",
+      "interpretation": "Package name unused."
+    },
+    {
+      "name": "Homebrew formulae API",
+      "category": "package-registry",
+      "queryAttempted": "GET https://formulae.brew.sh/api/formula/coretend.json",
+      "reachable": true,
+      "method": "WebFetch",
+      "result": "HTTP 404",
+      "interpretation": "No Homebrew core formula under this name."
+    },
+    {
+      "name": "Homebrew casks API",
+      "category": "package-registry",
+      "queryAttempted": "GET https://formulae.brew.sh/api/cask/coretend.json",
+      "reachable": true,
+      "method": "WebFetch",
+      "result": "HTTP 404",
+      "interpretation": "No cask. Directly relevant — a macOS GUI utility distributed via Homebrew would live here."
+    },
+    {
+      "name": "Apple App Store Search API — Mac software",
+      "category": "app-store",
+      "queryAttempted": "GET https://itunes.apple.com/search?term=coretend&entity=macSoftware&limit=25",
+      "reachable": true,
+      "method": "WebFetch",
+      "result": "resultCount 0",
+      "interpretation": "No Mac App Store application under this name (US storefront)."
+    },
+    {
+      "name": "Apple App Store Search API — all software",
+      "category": "app-store",
+      "queryAttempted": "GET https://itunes.apple.com/search?term=coretend&entity=software&limit=25&country=us",
+      "reachable": true,
+      "method": "WebFetch",
+      "result": "resultCount 2 — a Korean-language learning app and 'ROIthink'",
+      "interpretation": "Fuzzy-match noise; neither is named CoreTend nor in this category."
+    },
+    {
+      "name": "Product Hunt / MacUpdate / Gitee / SourceForge",
+      "category": "software-directory",
+      "queryAttempted": "WebSearch '\"coretend\" site:producthunt.com OR site:macupdate.com OR site:gitee.com OR site:sourceforge.net'",
+      "reachable": "index-only",
+      "method": "WebSearch",
+      "result": "No CoreTend listing; nearest hit an unrelated 'CoreRender' on SourceForge",
+      "interpretation": "Site-restricted index search only — these platforms' own search backends were not queried directly. Weak negative signal."
+    },
+    {
+      "name": "General web index — exact name",
+      "category": "web",
+      "queryAttempted": "WebSearch '\"CoreTend\"' and '\"CoreTend\" software OR app OR trademark'",
+      "reachable": true,
+      "method": "WebSearch",
+      "result": "No entity named CoreTend; index fell back to Core Scientific, CoreMedia, Core International, Corent, and generic 'how to trademark an app' articles",
+      "interpretation": "No company, product or brand called CoreTend is visible in the public index."
+    },
+    {
+      "name": "General web index — spaced/hyphenated forms",
+      "category": "web",
+      "queryAttempted": "WebSearch '\"Core Tend\" OR \"Core-Tend\" company product'",
+      "reachable": true,
+      "method": "WebSearch",
+      "result": "No such company; hits were Core Products International, CoreFiling, Corega",
+      "interpretation": "Spaced and hyphenated forms show no user."
+    },
+    {
+      "name": "General web index — misspelling variants",
+      "category": "web",
+      "queryAttempted": "WebSearch '\"KoreTend\" OR \"CoreTendo\" OR \"Coretend\"'",
+      "reachable": true,
+      "method": "WebSearch",
+      "result": "No hits for any of the three",
+      "interpretation": "Variants unused."
+    },
+    {
+      "name": "General web index — same category",
+      "category": "web-same-category",
+      "queryAttempted": "WebSearch '\"CoreTend\" mac cleaner OR cleanup OR storage OR antivirus OR maintenance' and '\"CoreTend\" app store OR macOS OR swift OR beta 2026'",
+      "reachable": true,
+      "method": "WebSearch",
+      "result": "Zero CoreTend results; returned only known incumbents (CleanMyMac, MacKeeper, MacBooster, OnyX, CCleaner, Avast Cleanup)",
+      "interpretation": "Most important negative finding — no macOS-maintenance product named CoreTend surfaces in the exact product category."
+    },
+    {
+      "name": "General web index — near-miss control 'CoreTrend'",
+      "category": "web-near-miss",
+      "queryAttempted": "WebSearch '\"CoreTrend\" software company'",
+      "reachable": true,
+      "method": "WebSearch",
+      "result": "Distinct real users exist: CoreTrend (New Delhi enterprise/digital-marketing services, founded 2024, per inc42), CoreTrend Pro (TradingView trading indicator, coretrendpro.com), CoreTRM (oil-trading CTRM SaaS)",
+      "interpretation": "CoreTrend is taken by several parties. Different word (extra 'r'), different categories. Logged as a low-severity phonetic-confusion note, not a conflict."
+    },
+    {
+      "name": "Verisign RDAP — coretend.com",
+      "category": "domain",
+      "queryAttempted": "GET https://rdap.verisign.com/com/v1/domain/coretend.com",
+      "reachable": true,
+      "method": "WebFetch",
+      "result": "Registered. Created 2026-03-18, expires 2027-03-18, status 'client transfer prohibited', registrar Hosting Concepts B.V. d/b/a Registrar.eu, nameservers ns1.dyna-ns.net / ns2.dyna-ns.net",
+      "interpretation": "coretend.com is held by an unidentified third party, registered ~4 months before this screening on a one-year term."
+    },
+    {
+      "name": "Live HTTP — coretend.com",
+      "category": "domain",
+      "queryAttempted": "GET https://coretend.com",
+      "reachable": false,
+      "method": "WebFetch",
+      "result": "DNS failure — no address record",
+      "interpretation": "Domain does not resolve: no website, no landing page, no product visible."
+    },
+    {
+      "name": "DNS delegation check (dig)",
+      "category": "domain",
+      "queryAttempted": "dig A/NS for coretend.com, coretend.app, coretend.io, coretend.net, coretend.dev @1.1.1.1",
+      "reachable": true,
+      "method": "dig",
+      "result": "coretend.com — NS present (dyna-ns.net), no A record. coretend.app, coretend.io, coretend.net, coretend.dev — no NS at all",
+      "interpretation": "Only the .com appears registered; the others show no delegation, consistent with being unregistered. Absence of NS is strong but not conclusive proof of non-registration."
+    },
+    {
+      "name": "RDAP for .app and .io",
+      "category": "domain",
+      "queryAttempted": "GET registry.google/rdap/domain/coretend.app ; rdap.nic.google ; rdap.identitydigital.services/rdap/domain/coretend.io ; rdap.org/domain/coretend.{app,io}",
+      "reachable": false,
+      "method": "WebFetch",
+      "result": "HTTP 404 / HTTP 403 / DNS failure",
+      "interpretation": "Registration status of .app and .io could not be confirmed by RDAP; only the DNS evidence above stands."
+    }
+  ],
+  "sameCategoryConflicts": [],
+  "sameCategoryConflictSearchSummary": {
+    "category": "macOS cleanup, storage/disk-space management, malware/antivirus scanning, system maintenance utilities",
+    "exactNameConflictFound": false,
+    "nearExactNameConflictFound": false,
+    "strongestNegativeEvidence": [
+      "Apple App Store Search API (entity=macSoftware): resultCount 0",
+      "Homebrew casks API: HTTP 404",
+      "GitHub repository search: total_count 0",
+      "Category-scoped web search returned only established incumbents, no CoreTend"
+    ],
+    "caveat": "This records that no same-category conflict was FOUND by the sources listed. It does not establish that none exists."
+  },
+  "openItems": [
+    {
+      "id": "CT-005",
+      "item": "coretend.com registered by an unidentified third party on 2026-03-18 (Registrar.eu, one-year term, transfer-locked, no A record, no website, not indexed).",
+      "severity": "MEDIUM",
+      "type": "Domain held by third party; possible unlaunched product, possible speculation",
+      "sameCategory": "unknown — no product visible",
+      "status": "OPEN — needs human WHOIS/registrant investigation"
+    },
+    {
+      "id": "CT-006",
+      "item": "GitHub account 'coretendency' exists (empty public repository list). Different word, no software, no category overlap.",
+      "severity": "NONE",
+      "type": "Handle adjacency",
+      "sameCategory": false,
+      "status": "INFORMATIONAL"
+    },
+    {
+      "id": "CT-007",
+      "item": "'CoreTrend' (one-letter phonetic neighbour) is in use by at least three unrelated parties: a New Delhi digital-marketing services firm, a TradingView indicator (coretrendpro.com), and CoreTRM (commodity-trading SaaS).",
+      "severity": "LOW",
+      "type": "Phonetic/visual name confusion, different categories",
+      "sameCategory": false,
+      "status": "INFORMATIONAL"
+    },
+    {
+      "id": "CT-008",
+      "item": "GitHub code search (as opposed to repository-name search) requires authentication and was not run.",
+      "severity": "UNKNOWN",
+      "type": "Search-coverage gap",
+      "sameCategory": "unknown",
+      "status": "OPEN"
+    }
+  ],
+  "highConflictFound": false,
+  "status": "REVIEW_REQUIRED",
+  "statusReasoning": "PRELIMINARY_CLEARANCE_NO_HIGH_CONFLICT_FOUND requires real evidence from at least one official trademark registry AND thorough public-source searching with no same-category conflict. Only the second condition is met — zero of six target registers (TMview, EUIPO, INPI, WIPO, USPTO, UKIPO) was reachable, so that status is unavailable. CONFLICT_HIGH is also wrong: nothing found is a same-category conflict. Between INCONCLUSIVE_TOOL_LIMITATION and REVIEW_REQUIRED, REVIEW_REQUIRED was chosen because it is the strictly larger statement: it covers the registry blackout AND the substantive unresolved signal that no tool limitation explains away — a third party registered and parked coretend.com four months ago and this screening cannot determine who or why.",
+  "limitations": [
+    "TMview not queryable — POST-only API, ECONNRESET on GET.",
+    "EUIPO eSearch plus not queryable — JavaScript SPA, no server-rendered results.",
+    "INPI DATA (France) not queryable — HTTP 403.",
+    "WIPO Global Brand Database not queryable — CAPTCHA gate before any data.",
+    "USPTO TMsearch not queryable — JavaScript SPA, empty shell returned.",
+    "UKIPO not queryable — primary host unresolvable, alternate host HTTP 403.",
+    "Secondary trademark mirrors (Justia Trademarks, Trademarkia, uspto.report) all HTTP 403.",
+    "RDAP for .app and .io unreachable; their availability rests on DNS delegation evidence only.",
+    "No similarity or phonetic trademark search was possible — only exact and hand-listed variant strings were checked.",
+    "No unregistered / common-law rights search (business registers, trade directories, social handles, EU/FR company names).",
+    "Apple App Store queries covered the US storefront only.",
+    "GitHub code search, private repositories, and pending/unpublished trademark applications are structurally invisible to this method.",
+    "Web-index evidence reflects only what is crawled and indexed; a recently launched or recently filed name may not appear.",
+    "No non-Latin-script, transliteration, or Cyrillic/CJK variant screening was performed."
+  ],
+  "legalOpinion": false,
+  "filingMade": false,
+  "moneySpent": false,
+  "accountCreated": false,
+  "thirdPartyContacted": false,
+  "authorises": [
+    "Publishing the free, open-source, unsigned pre-release/beta as github.com/ahmetbsbnr/coretend with a site at coretend.ahmetbsbnr.com, using 'CoreTend' as a plain product name.",
+    "Using the name with NO registration symbol and NO claim, statement or implication of registration, clearance or legal validation anywhere (README, site, release notes, app UI, About panel).",
+    "Linking to Documentation/CORETEND_TRADEMARK_SCREENING.md as the honest record of what was and was not checked."
+  ],
+  "doesNotAuthorise": [
+    "Any commercial use of the name — paid version, paid tier, brand-tied donations, App Store distribution, sponsorship, or any monetisation.",
+    "Use of the ® symbol, any claim of registration, or any wording implying trademark clearance, legal validation or attorney review.",
+    "Filing a trademark application on the strength of this document.",
+    "Building brand equity that would be expensive to unwind — trademark licensing, printed material, paid marketing, a logo lockup treated as final, or acquiring further domains.",
+    "Flipping legalReviewStatus to 'accepted' or publicReleaseAllowed to true; REVIEW_REQUIRED is not the 'accepted' that Scripts/check-brand-clearance.sh --publication waits for.",
+    "Treating 'no conflict found' as 'no conflict exists' — a registered CoreTend mark in class 9 or 42 in the EU, France, the UK, the US or under Madrid may exist and would not have been visible to any tool used here."
+  ],
+  "recommendedHumanStep": "Commission a paid professional trademark search from a trademark attorney or professional search provider, covering Nice classes 9 and 42 across EUIPO, INPI (FR), UKIPO, USPTO and WIPO/Madrid, including similarity and phonetic searching — that is the step that can produce a real clearance opinion, which this document cannot. In parallel: (a) identify the registrant behind coretend.com via registrar WHOIS or a watch service, without contacting them before taking advice; (b) set a watch on CoreTend/Coretend in classes 9 and 42 and on the .com/.app/.io domain set; (c) optionally re-run this automated screening from an environment with browser automation, which could query the JavaScript register front-ends and convert several limitations into evidence."
+}
