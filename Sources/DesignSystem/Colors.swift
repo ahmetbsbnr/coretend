@@ -1,9 +1,33 @@
 import SwiftUI
 import AppKit
 
-/// Semantic palette — Orbital Ecology. Every color adapts to light/dark.
-/// Chart/status colors are paired with symbols in the UI so color is never
-/// the only channel (Differentiate Without Color).
+/// Semantic palette — **Living System**, built on the Orbital Ecology
+/// foundations (Core Bloom nucleus, three arcs, functional colour roles).
+///
+/// Colour carries meaning here, and always on a single axis:
+///
+/// | Hue    | Means |
+/// |--------|-------|
+/// | green  | storage and care |
+/// | violet | privacy and protection |
+/// | amber  | activity and performance |
+/// | coral  | error or a critical action |
+///
+/// Every colour adapts to light/dark, and every chart or status colour is
+/// paired with a symbol in the UI so colour is never the only channel
+/// (Differentiate Without Color).
+///
+/// ## Why the light variants are not the published hex values
+///
+/// `LivingSystem` below holds the brand's canonical hex values. Those are
+/// tuned for a dark surface (Core Ink) and several of them — Fresh Mint
+/// especially — fall well under 4.5:1 against a near-white surface. Shipping
+/// them unchanged in light mode would mean unreadable text on half the
+/// installs, so light mode uses darkened siblings of the same hue.
+///
+/// That is a deliberate divergence, not drift: the brand value is the
+/// reference, the light value is what keeps it legible, and both are named
+/// here rather than left for someone to rediscover in a contrast checker.
 public enum MCColor {
     /// Adaptive color helper (light, dark) in sRGB.
     private static func adaptive(_ name: String,
@@ -16,15 +40,52 @@ public enum MCColor {
         })
     }
 
-    // Brand
+    /// The canonical Living System palette, exactly as published in the brand
+    /// documentation. Referenced by the asset generator and the website's
+    /// tokens so there is one source of truth for the hex values.
+    public enum LivingSystem {
+        /// `#0B0F14` — the dark surface everything else is tuned against.
+        public static let coreInk = (0.043, 0.059, 0.078)
+        /// `#F4F6F3` — the light surface.
+        public static let softPorcelain = (0.957, 0.965, 0.953)
+        /// `#74A487` — mid green, usable as a fill on either surface.
+        public static let livingMoss = (0.455, 0.643, 0.529)
+        /// `#A8E6C1` — the accent green. Dark-surface only for text.
+        public static let freshMint = (0.659, 0.902, 0.757)
+        /// `#9B8AFB` — privacy and protection.
+        public static let orbitIris = (0.608, 0.541, 0.984)
+        /// `#F4C76B` — activity and performance.
+        public static let warmAmber = (0.957, 0.780, 0.420)
+        /// `#F47F78` — error, or an action that cannot be undone.
+        public static let signalCoral = (0.957, 0.498, 0.471)
+        /// `#77818E` — secondary text and inert UI.
+        public static let mutedSlate = (0.467, 0.506, 0.557)
+
+        /// Light-mode siblings, darkened to clear 4.5:1 against Soft
+        /// Porcelain. Same hue family, different luminance.
+        public static let mossDeep = (0.075, 0.404, 0.290)
+        public static let irisDeep = (0.360, 0.330, 0.800)
+        /// Amber is the hardest hue to darken without turning brown, so this
+        /// sits only just past the 4.5:1 line rather than comfortably beyond
+        /// it. The previous value looked right and measured 4.1:1.
+        public static let amberDeep = (0.580, 0.375, 0.040)
+        public static let coralDeep = (0.720, 0.220, 0.200)
+        public static let slateDeep = (0.310, 0.345, 0.392)
+    }
+
+    // Brand — light: accessible sibling, dark: canonical Living System value.
     public static let coreMint = adaptive("coreMint",
-        light: (0.043, 0.51, 0.46), dark: (0.30, 0.83, 0.75))
+        light: LivingSystem.mossDeep, dark: LivingSystem.freshMint)
     public static let ionViolet = adaptive("ionViolet",
-        light: (0.36, 0.33, 0.80), dark: (0.60, 0.57, 0.96))
+        light: LivingSystem.irisDeep, dark: LivingSystem.orbitIris)
     public static let solarAmber = adaptive("solarAmber",
-        light: (0.72, 0.46, 0.07), dark: (0.95, 0.68, 0.26))
+        light: LivingSystem.amberDeep, dark: LivingSystem.warmAmber)
     public static let pulseCoral = adaptive("pulseCoral",
-        light: (0.75, 0.25, 0.23), dark: (0.95, 0.47, 0.43))
+        light: LivingSystem.coralDeep, dark: LivingSystem.signalCoral)
+    /// Mid green — the one Living System hue that works as a fill on either
+    /// surface, so it is not split into light/dark siblings.
+    public static let livingMoss = adaptive("livingMoss",
+        light: (0.365, 0.553, 0.439), dark: LivingSystem.livingMoss)
 
     // Roles
     public static let storage = coreMint
@@ -50,7 +111,10 @@ public enum MCColor {
     public static let mossGreen = adaptive("mossGreen",
         light: (0.48, 0.62, 0.28), dark: (0.68, 0.82, 0.52))
 
-    // Surfaces — prefer system semantics for adaptivity.
+    // Surfaces — prefer system semantics for adaptivity. The Living System
+    // surface values exist for the website and generated assets, where there
+    // is no AppKit to ask; inside the app, matching the user's actual system
+    // appearance beats matching a brand swatch.
     public static let background = Color(nsColor: .windowBackgroundColor)
     public static let elevatedBackground = Color(nsColor: .controlBackgroundColor)
     public static let separator = Color(nsColor: .separatorColor)
