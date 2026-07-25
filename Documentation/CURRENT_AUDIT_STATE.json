@@ -6,17 +6,15 @@
   "phase": "0.8.1 Final Canonical Audit Resync",
   "branch": "feat/coretend-rebrand-workspace",
   "auditDate_UTC": "2026-07-25",
-
   "commitIdentities": {
     "FINAL_REPOSITORY_HEAD": "RECORDED_POST_HOC",
-    "note_FINAL_REPOSITORY_HEAD": "The final commit of this phase cannot contain its own SHA. The authoritative value is written into AUDIT_PACKAGE_MANIFEST.json at the root of the external audit package, built from a staging directory after that commit exists. Verify locally with `git rev-parse HEAD` on a clean tree.",
-    "PRODUCT_SOURCE_COMMIT": "92cbd08bc3cd1d8ad0513391cbd7552b520f09fe",
-    "note_PRODUCT_SOURCE_COMMIT": "The commit the audited ZIP/DMG were actually built from, as recorded by Scripts/build-release.sh into Release/latest.json and asserted by Scripts/test-release-manifest.sh against the real git HEAD at build time.",
+    "note_FINAL_REPOSITORY_HEAD": "The final commit cannot contain its own SHA, and it is the commit that records the checksums of the artifacts built at PRODUCT_SOURCE_COMMIT — so it is one commit later by construction. The delta is Release/latest.json plus Release/SHA256SUMS: records of the artifacts, not inputs to them. The authoritative value lives in AUDIT_PACKAGE_MANIFEST.json inside the external package. Verify with `git rev-parse HEAD` on a clean tree.",
+    "PRODUCT_SOURCE_COMMIT": "36dd421094ef84396776b6caf9ae3596416e431f",
+    "note_PRODUCT_SOURCE_COMMIT": "The commit the audited ZIP/DMG were built from, on a verifiably clean tree. Stamped by Scripts/build-release.sh from `git rev-parse HEAD` and asserted by Scripts/test-release-manifest.sh (`OK: sourceCommit (36dd421...) equals git rev-parse HEAD`).",
     "AUDIT_PACKAGE_COMMIT": "RECORDED_POST_HOC",
     "note_AUDIT_PACKAGE_COMMIT": "Equals FINAL_REPOSITORY_HEAD for this phase. Filled in by the packaging step, after a `git status --short` check proves the tree was clean immediately before zipping.",
     "REQUIREMENTS_AUDIT_COMMIT": "03839803274c620d204dcc8ab28f7bbbdb6cc5b4"
   },
-
   "commitClassificationAfterTheSourceOfTheArtifacts": {
     "_comment": "Answers the question 'did anything that enters the app, the bundle, its resources, or the distributed site change after the commit the binaries came from?' Verified with git diff-tree per commit, not assumed.",
     "referenceCommit": "3b5dc73 (last commit touching Sources/)",
@@ -47,14 +45,30 @@
         "bundleImpact": "NONE",
         "siteImpact": "NONE",
         "auditImpact": "YES — Scripts/check-private-data.sh, Documentation/AUDIT_COMMANDS.log, Documentation/PUBLICATION_AUDIT.md"
+      },
+      {
+        "commit": "36dd421",
+        "subject": "docs(audit): resync 0.8.1 records with the real final state",
+        "type": "documentary + gate scripts",
+        "binaryImpact": "NONE — no Sources/ change",
+        "bundleImpact": "NONE — no Resources/ or Package.swift change",
+        "siteImpact": "NONE — no Website/ change",
+        "auditImpact": "YES — the entire CURRENT/history/inventory/limitations doc set, plus Scripts/check-legacy-brand-references.sh (case-insensitive scan + allowlist reasons) and Scripts/test-distribution.sh (dead legacy env var removed, false isolation comment corrected)",
+        "note": "This is the commit the final audited artifacts were built from. Its own changes touch nothing that enters the app, the bundle, its resources, or the distributed site — so the binaries it produced are byte-equivalent in content to those from any commit back to dec47a1."
       }
     ],
-    "conclusion": "The compiled code is unchanged from 3b5dc73 through 92cbd08. Bundle metadata and the distributed site last changed at dec47a1, which is why the artifacts' Info.plist correctly reads 0.8.1 even though the build ran while git HEAD was still 3b5dc73 — the 0.8.1 changes were present in the working tree and were committed 8 minutes later. Release/latest.json's stale sourceCommit 3b5dc73 was the visible symptom of exactly that gap.",
-    "rebuildDecision": "Rebuilt. Not by choice: Scripts/test-release-manifest.sh is a mandatory gate and calls Scripts/build-release.sh as part of its own resync regression check. The rebuild is also what corrected the provenance defect, so sourceCommit now equals the real HEAD at build time."
+    "conclusion": "The compiled code is unchanged from 3b5dc73 onward: no commit after it touches Sources/. Bundle metadata and the distributed site last changed at dec47a1. Everything after dec47a1 — 073a210, 92cbd08 and 36dd421 — is documentary or gate-script only, verified per commit with git diff-tree, so none of it can alter a binary. The original stale sourceCommit 3b5dc73 was the visible symptom of a build taken before dec47a1 was committed, not of a content mismatch: the artifacts' embedded Info.plist read 0.8.1 while the commit they named still read 0.8.0. The final artifacts were rebuilt at 36dd421 on a provably clean tree, which removes the ambiguity entirely.",
+    "rebuildDecision": "Rebuilt, and finally rebuilt at the clean final tree. Not discretionary: Scripts/test-release-manifest.sh is a required gate and calls Scripts/build-release.sh inside its own resync regression check. The final build was taken at a tree with `git status --short` empty so the artifacts' provenance is unambiguous, which is also what closed the stale-sourceCommit defect."
   },
-
   "verification": {
-    "tests": { "total": 274, "suites": 57, "passed": 274, "failed": 0, "result": "PASS", "testCasesExecuted": 278 },
+    "tests": {
+      "total": 274,
+      "suites": 57,
+      "passed": 274,
+      "failed": 0,
+      "result": "PASS",
+      "testCasesExecuted": 278
+    },
     "coherenceChecks": {
       "atTestDeclarations": 274,
       "atSuiteDeclarations": 57,
@@ -73,7 +87,6 @@
     "notarized": false,
     "dnsChanged": false
   },
-
   "gateResults": {
     "_comment": "Every value below is the real exit status of a real run on 2026-07-25, not a carried-forward claim.",
     "doctor": "PASS",
@@ -94,15 +107,15 @@
     "swift build -c release": "PASS (0 warnings)",
     "test-uninstall": "PASS",
     "test-distribution": "PASS",
-    "test-release-manifest": "PASS (rebuilds artifacts as a side effect)",
+    "test-release-manifest": "PASS at the final clean-tree build — 'OK: sourceCommit (36dd421...) equals git rev-parse HEAD'. Note it rebuilds the artifacts as a side effect unless SKIP_REBUILD_CHECK=1, and that the assertion reads one commit stale as soon as Release/ is committed (see knownNonConformitiesAtThisCommit).",
     "test-check-legacy-brand-references": "PASS (5 self-tests)",
     "test-check-brand-clearance": "PASS",
     "test-check-workspace-layout": "PASS",
     "test-preflight-workspace-migration": "PASS",
     "check-publish-readiness": "FAIL — RED BY DESIGN",
-    "check-brand-clearance --publication": "FAIL — RED BY DESIGN"
+    "check-brand-clearance --publication": "FAIL — RED BY DESIGN",
+    "verify-download": "N/A — takes <file> <expected-sha256> arguments; superseded here by `shasum -a 256 -c Release/SHA256SUMS`, which reports OK for the ZIP, the DMG and latest.json"
   },
-
   "publicationGate": {
     "status": "RED",
     "intentional": true,
@@ -116,13 +129,21 @@
     ],
     "note": "These are human decisions, not automatable work. This gate must never be wired into normal CI as a blocking step."
   },
-
   "manualQA": {
     "status": "PARTIAL_BLOCKED_ENVIRONMENT",
-    "done": ["Plain launch capture via Scripts/capture.sh", "Non-destructive launch smoke test from a temp directory outside the repository", "DMG mounts, contains the app and an /Applications shortcut"],
-    "blocked": ["Module-targeted capture (intermittent AppleScript -1719)", "Full FR/EN x light/dark x every-module campaign", "Interactive VoiceOver", "DMG saved icon positions (Finder automation refused)", "Multi-Mac / multi-macOS verification"]
+    "done": [
+      "Plain launch capture via Scripts/capture.sh",
+      "Non-destructive launch smoke test from a temp directory outside the repository",
+      "DMG mounts, contains the app and an /Applications shortcut"
+    ],
+    "blocked": [
+      "Module-targeted capture (intermittent AppleScript -1719)",
+      "Full FR/EN x light/dark x every-module campaign",
+      "Interactive VoiceOver",
+      "DMG saved icon positions (Finder automation refused)",
+      "Multi-Mac / multi-macOS verification"
+    ]
   },
-
   "auditPackages": [
     {
       "archiveName": "CoreTend-Full-Audit-2026-07-21-4fb406f.zip",
@@ -145,7 +166,6 @@
       "note": "Built from a separate staging directory outside the repository so that creating it cannot dirty the tree. Its AUDIT_PACKAGE_MANIFEST.json carries the authoritative FINAL_REPOSITORY_HEAD and AUDIT_PACKAGE_COMMIT."
     }
   ],
-
   "knownNonConformitiesAtThisCommit": [
     "Public release placeholders not filled in (Scripts/check-publish-readiness.sh)",
     "No code signing, no notarization",
