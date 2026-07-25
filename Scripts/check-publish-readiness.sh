@@ -45,13 +45,41 @@ else
   bad "securityContact missing or still a placeholder in $IDENTITY"
 fi
 
-echo "== Release manifest reflects the real current HEAD =="
+echo "== Release manifest provenance is real and releasable =="
+# Deliberately NOT "sourceCommit == HEAD". That was circular: the manifest used
+# to be tracked, so the commit adding it could never be named inside it, and this
+# check could only pass on an uncommitted tree. The manifest is now generated
+# output; what matters is that it was built from a clean tree and, for a real
+# release, from the exact tag being published. See Documentation/RELEASE_PROVENANCE.md.
 if [ -f Release/latest.json ]; then
-  REAL_HEAD=$(git rev-parse HEAD)
-  MANIFEST_HEAD=$(/usr/bin/python3 -c "import json; print(json.load(open('Release/latest.json')).get('sourceCommit',''))")
-  [ "$MANIFEST_HEAD" = "$REAL_HEAD" ] \
-    && ok "Release/latest.json sourceCommit matches HEAD" \
-    || bad "Release/latest.json sourceCommit ($MANIFEST_HEAD) does not match HEAD ($REAL_HEAD) — rerun Scripts/build-release.sh"
+  MANIFEST_COMMIT=$(/usr/bin/python3 -c "import json; print(json.load(open('Release/latest.json')).get('sourceCommit') or '')")
+  MANIFEST_TREE=$(/usr/bin/python3 -c "import json; print(json.load(open('Release/latest.json')).get('treeState') or '')")
+  MANIFEST_TAG=$(/usr/bin/python3 -c "import json; print(json.load(open('Release/latest.json')).get('releaseTag') or '')")
+
+  if [ -z "$MANIFEST_COMMIT" ]; then
+    bad "Release/latest.json has no sourceCommit — regenerate with Scripts/build-release.sh"
+  elif git cat-file -e "${MANIFEST_COMMIT}^{commit}" 2>/dev/null; then
+    ok "manifest sourceCommit is a real commit ($MANIFEST_COMMIT)"
+  else
+    bad "manifest sourceCommit ($MANIFEST_COMMIT) is not a commit in this repository"
+  fi
+
+  [ "$MANIFEST_TREE" = "clean" ] \
+    && ok "manifest was built from a clean tree" \
+    || bad "manifest treeState is '$MANIFEST_TREE' — a publishable build must come from a clean tree"
+
+  # A public release must be cut from a tag, so the published artifacts are
+  # reachable from an immutable ref rather than a floating commit.
+  if [ -n "$MANIFEST_TAG" ]; then
+    if git rev-parse -q --verify "refs/tags/$MANIFEST_TAG" >/dev/null \
+       && [ "$(git rev-parse "refs/tags/$MANIFEST_TAG^{commit}")" = "$MANIFEST_COMMIT" ]; then
+      ok "manifest was built on tag $MANIFEST_TAG, which points at sourceCommit"
+    else
+      bad "manifest names releaseTag $MANIFEST_TAG but it does not point at sourceCommit"
+    fi
+  else
+    bad "manifest has no releaseTag — a public release must be built from a tagged commit"
+  fi
 else
   bad "Release/latest.json does not exist — run Scripts/build-release.sh first"
 fi

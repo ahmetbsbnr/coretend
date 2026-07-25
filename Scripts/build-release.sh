@@ -1,50 +1,164 @@
 #!/bin/zsh
-# Builds ZIP + DMG, patches Release/latest.json's zipSHA256/zipSize/
-# dmgSHA256/dmgSize/sourceCommit to match the artifacts just built (release
-# notes and known-limitations text stay hand-authored), then regenerates
-# Release/SHA256SUMS over both artifacts plus the now-patched latest.json.
-# sourceCommit is always `git rev-parse HEAD` at build time — never hand-edit
-# it (see Scripts/test-release-manifest.sh's sourceCommit-matches-HEAD check).
-# This order matters: neither the DMG nor ZIP build is byte-reproducible
-# run to run (embedded timestamps), so latest.json MUST be resynced from
-# the actual artifacts on every run — never hand-edited separately, or it
-# drifts (see Scripts/test-release-manifest.sh + AUDIT_COMMANDS.log).
+# SPDX-License-Identifier: Apache-2.0
+# SPDX-FileCopyrightText: The CoreTend Authors
+#
+# Builds the release artifacts and generates their provenance manifest.
+#
+# The provenance design, and why it is shaped this way:
+#
+#   Release/latest.template.json is TRACKED and hand-authored. It holds only
+#   human decisions — channel, minimum OS, known limitations, URLs.
+#
+#   dist/latest.json and dist/SHA256SUMS are GENERATED and never committed.
+#   They carry the computed facts: checksums, sizes, sourceCommit, releaseTag,
+#   build date and a per-invocation ID.
+#
+# The old design committed latest.json with a `sourceCommit` field, which is
+# impossible to keep true: the commit that adds the file cannot be named inside
+# it, so the manifest was permanently one commit stale and the release-manifest
+# gate could only ever be green on an uncommitted tree. Generating it instead
+# means `sourceCommit` names the exact commit the artifacts were built from,
+# with nothing to commit afterwards. See Documentation/RELEASE_PROVENANCE.md.
+#
+# A dirty tree is refused: `sourceCommit` would name a commit whose tree is not
+# what was packaged. ALLOW_DIRTY_BUILD=1 overrides this for local iteration and
+# stamps treeState:"dirty" into the manifest, so such a build can never be
+# mistaken for a releasable one.
+#
+# Usage: Scripts/build-release.sh [version]
+#        ALLOW_DIRTY_BUILD=1 Scripts/build-release.sh [version]   # local only
 set -e
 cd "$(dirname "$0")/.."
 
-ARTIFACT_VERSION="${1:-0.7.0}"
+ARTIFACT_VERSION="${1:-$(/usr/bin/python3 -c "import json;print(json.load(open('Configuration/PublicIdentity.example.json'))['marketingVersion'])")}"
 ZIP_NAME="CoreTend-${ARTIFACT_VERSION}-arm64-unsigned.zip"
 DMG_NAME="CoreTend-${ARTIFACT_VERSION}-arm64-unsigned.dmg"
+TEMPLATE="Release/latest.template.json"
+DIST="dist"
 
+[ -f "$TEMPLATE" ] || { echo "build-release.sh: FAIL — $TEMPLATE is missing"; exit 1; }
+
+# --- Clean-tree gate -------------------------------------------------------
+TREE_STATE="clean"
+if [ -n "$(git status --short --untracked-files=no)" ]; then
+  if [ "${ALLOW_DIRTY_BUILD:-}" = "1" ]; then
+    TREE_STATE="dirty"
+    echo "build-release.sh: WARNING — building from a DIRTY tree (ALLOW_DIRTY_BUILD=1)."
+    echo "  The manifest will record treeState:\"dirty\". This build is not releasable."
+    git status --short --untracked-files=no | sed 's/^/    /'
+  else
+    echo "build-release.sh: FAIL — working tree is not clean."
+    echo "  sourceCommit would name a commit whose tree is not what was packaged."
+    echo "  Commit or stash first, or set ALLOW_DIRTY_BUILD=1 for a local, non-releasable build."
+    git status --short --untracked-files=no | sed 's/^/    /'
+    exit 1
+  fi
+fi
+
+SOURCE_COMMIT=$(git rev-parse HEAD)
+# The exact tag at HEAD, if any. A release build is expected to be run on a tag;
+# a build without one is legitimate for local verification and says so.
+RELEASE_TAG=$(git describe --exact-match --tags HEAD 2>/dev/null || echo "")
+BUILD_DATE_UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+BUILD_INVOCATION_ID=$(/usr/bin/uuidgen)
+
+# --- Build ----------------------------------------------------------------
 bash Scripts/package-zip.sh "$ARTIFACT_VERSION"
 bash Scripts/package-dmg.sh "$ARTIFACT_VERSION"
+
+mkdir -p "$DIST"
 
 ZIP_SHA=$(shasum -a 256 "Release/$ZIP_NAME" | awk '{print $1}')
 DMG_SHA=$(shasum -a 256 "Release/$DMG_NAME" | awk '{print $1}')
 ZIP_SIZE=$(stat -f%z "Release/$ZIP_NAME")
 DMG_SIZE=$(stat -f%z "Release/$DMG_NAME")
-SOURCE_COMMIT=$(git rev-parse HEAD)
 
-/usr/bin/python3 - "$ZIP_SHA" "$ZIP_SIZE" "$DMG_SHA" "$DMG_SIZE" "$SOURCE_COMMIT" <<'PYEOF'
+# --- Generate the manifest from the template ------------------------------
+/usr/bin/python3 - "$TEMPLATE" "$DIST" "$ARTIFACT_VERSION" "$ZIP_NAME" "$ZIP_SHA" "$ZIP_SIZE" \
+  "$DMG_NAME" "$DMG_SHA" "$DMG_SIZE" "$SOURCE_COMMIT" "$RELEASE_TAG" \
+  "$BUILD_DATE_UTC" "$BUILD_INVOCATION_ID" "$TREE_STATE" <<'PYEOF'
 import json, sys
-zip_sha, zip_size, dmg_sha, dmg_size, source_commit = sys.argv[1:6]
-path = "Release/latest.json"
-with open(path) as f:
-    data = json.load(f)
-data["zipSHA256"] = zip_sha
-data["zipSize"] = int(zip_size)
-data["dmgSHA256"] = dmg_sha
-data["dmgSize"] = int(dmg_size)
-data["sourceCommit"] = source_commit
-with open(path, "w") as f:
-    json.dump(data, f, indent=2)
+(tpl_path, dist, version, zip_name, zip_sha, zip_size,
+ dmg_name, dmg_sha, dmg_size, source_commit, release_tag,
+ build_date, build_id, tree_state) = sys.argv[1:15]
+
+with open(tpl_path) as f:
+    tpl = json.load(f)
+
+# The template documents which fields it must never carry. Enforce it, so a
+# hand-edited checksum can never silently win over a computed one.
+forbidden = set(tpl.pop("_doNotAddHere", []))
+present = forbidden & set(tpl)
+if present:
+    raise SystemExit(
+        f"build-release.sh: FAIL — {tpl_path} contains computed field(s) it must not: "
+        f"{sorted(present)}. Remove them; they are generated."
+    )
+tpl.pop("_comment", None)
+
+patterns = {k: tpl.pop(k) for k in
+            ("zipNamePattern", "dmgNamePattern", "releaseNotesPattern") if k in tpl}
+
+manifest = {
+    "_comment": ("GENERATED by Scripts/build-release.sh — do not commit and do not hand-edit. "
+                 "Hand-authored fields live in Release/latest.template.json. Regenerate with "
+                 "Scripts/build-release.sh. See Documentation/RELEASE_PROVENANCE.md."),
+    "schemaVersion": 2,
+    **tpl,
+    "version": version,
+    "build": version,
+    "zipName": zip_name,
+    "zipSHA256": zip_sha,
+    "zipSize": int(zip_size),
+    "dmgName": dmg_name,
+    "dmgSHA256": dmg_sha,
+    "dmgSize": int(dmg_size),
+    "releaseNotes": patterns.get("releaseNotesPattern", "Release/Notes/{version}.en.md")
+                            .format(version=version),
+    # Provenance. sourceCommit is the commit the artifacts were built from, and
+    # because this file is not tracked, that statement stays true forever.
+    "sourceCommit": source_commit,
+    "releaseTag": release_tag or None,
+    "treeState": tree_state,
+    "buildDate_UTC": build_date,
+    "buildInvocationID": build_id,
+    "generatedBy": "Scripts/build-release.sh",
+    "releasable": tree_state == "clean",
+    "_releasableNote": ("releasable is false when the build came from a dirty tree, "
+                        "regardless of whether a tag was present."),
+}
+
+# Sanity: the declared artifact names must match the patterns, so a renamed
+# artifact cannot be published under a stale name.
+for pat_key, actual in (("zipNamePattern", zip_name), ("dmgNamePattern", dmg_name)):
+    if pat_key in patterns:
+        expected = patterns[pat_key].format(version=version)
+        if expected != actual:
+            raise SystemExit(f"build-release.sh: FAIL — {pat_key} yields {expected!r}, built {actual!r}")
+
+out = f"{dist}/latest.json"
+with open(out, "w") as f:
+    json.dump(manifest, f, indent=2)
     f.write("\n")
+print(f"Generated {out}")
 PYEOF
 
-(cd Release && shasum -a 256 \
-  "$ZIP_NAME" \
-  "$DMG_NAME" \
-  latest.json > SHA256SUMS)
+# --- Checksums ------------------------------------------------------------
+# Computed over the artifacts and the generated manifest. This file is an
+# OUTPUT of the build, never an input to it.
+cp "Release/$ZIP_NAME" "Release/$DMG_NAME" "$DIST/" 2>/dev/null || true
+(cd "$DIST" && shasum -a 256 "$ZIP_NAME" "$DMG_NAME" latest.json > SHA256SUMS)
 
-echo "Release/latest.json resynced. Release/SHA256SUMS:"
-cat Release/SHA256SUMS
+# Kept in Release/ too, so existing local tooling and the audit package keep
+# finding them at the historical path. Both copies are gitignored.
+cp "$DIST/latest.json" Release/latest.json
+(cd Release && shasum -a 256 "$ZIP_NAME" "$DMG_NAME" latest.json > SHA256SUMS)
+
+echo
+echo "Version:      $ARTIFACT_VERSION"
+echo "sourceCommit: $SOURCE_COMMIT"
+echo "releaseTag:   ${RELEASE_TAG:-(none — not a tagged build)}"
+echo "treeState:    $TREE_STATE"
+echo "buildID:      $BUILD_INVOCATION_ID"
+echo
+cat "$DIST/SHA256SUMS"

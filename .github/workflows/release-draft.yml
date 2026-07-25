@@ -57,34 +57,42 @@ jobs:
             exit 1
           fi
 
-      - name: Build ZIP and DMG artifacts
-        run: |
-          bash Scripts/package-zip.sh "${{ inputs.version }}"
-          bash Scripts/package-dmg.sh "${{ inputs.version }}"
+      - name: Test isolation gate (no test may reach a real user store)
+        run: Scripts/check-test-isolation.sh
 
-      - name: Generate SHA256SUMS
-        run: |
-          cd Release
-          shasum -a 256 \
-            "CoreTend-${{ inputs.version }}-arm64-unsigned.zip" \
-            "CoreTend-${{ inputs.version }}-arm64-unsigned.dmg" \
-            > SHA256SUMS
-          cat SHA256SUMS
+      - name: Build artifacts and generate provenance manifest
+        # build-release.sh packages ZIP + DMG and generates dist/latest.json and
+        # dist/SHA256SUMS from Release/latest.template.json. It refuses a dirty
+        # tree, so sourceCommit always names the commit that was actually
+        # packaged. See Documentation/RELEASE_PROVENANCE.md.
+        run: bash Scripts/build-release.sh "${{ inputs.version }}"
+
+      - name: Release manifest gate
+        run: Scripts/test-release-manifest.sh
 
       - name: Verify checksums (self-check, never executes artifacts)
         run: |
-          cd Release
-          while read -r sha file; do
-            bash ../Scripts/verify-download.sh "$file" "$sha"
-          done < SHA256SUMS
+          cd dist
+          shasum -a 256 -c SHA256SUMS
 
       - name: Verify artifacts do not claim signed/notarized status
+        # This workflow has no Apple secret and performs no signing, so a
+        # signed/notarized:true claim could only be false.
         run: |
-          if grep -riE '"signed"[[:space:]]*:[[:space:]]*true|"notarized"[[:space:]]*:[[:space:]]*true' Release/latest.json 2>/dev/null; then
+          if grep -riE '"signed"[[:space:]]*:[[:space:]]*true|"notarized"[[:space:]]*:[[:space:]]*true' dist/latest.json 2>/dev/null; then
             echo "Release manifest claims signed/notarized — this workflow must never publish that claim."
             exit 1
           fi
           echo "OK: no signed/notarized:true claim present."
+
+      - name: Show recorded provenance
+        run: |
+          /usr/bin/python3 -c "
+          import json
+          m = json.load(open('dist/latest.json'))
+          for k in ('version','sourceCommit','releaseTag','treeState','releasable','buildDate_UTC','buildInvocationID'):
+              print(f'{k}: {m.get(k)}')
+          "
 
       - name: Check for unresolved placeholder tokens (informational)
         # Not a hard gate: pre-release placeholder tokens (e.g. security
@@ -106,11 +114,11 @@ jobs:
           path: Release/CoreTend-${{ inputs.version }}-arm64-unsigned.dmg
           retention-days: 14
 
-      - name: Upload checksums and manifest
+      - name: Upload checksums and provenance manifest
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: CoreTend-${{ inputs.version }}-checksums-and-manifest
           path: |
-            Release/SHA256SUMS
-            Release/latest.json
+            dist/SHA256SUMS
+            dist/latest.json
           retention-days: 14

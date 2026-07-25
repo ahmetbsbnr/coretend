@@ -12,6 +12,15 @@ xcuserdata/
 # Packaged output (release binaries/archives never live in the source repo)
 *.dmg
 *.zip
+
+# Generated release provenance. Release/latest.template.json is the tracked,
+# hand-authored source; the manifest and checksum file below are produced by
+# Scripts/build-release.sh from the artifacts it just built. They are NOT
+# tracked, because a tracked manifest would have to contain the SHA of the
+# commit that adds it — which is impossible, and left the old committed
+# latest.json permanently one commit stale. See Documentation/RELEASE_PROVENANCE.md.
+Release/latest.json
+Release/SHA256SUMS
 *.pkg
 *.tar
 *.tar.gz
