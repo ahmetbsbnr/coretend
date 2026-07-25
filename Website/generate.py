@@ -1022,8 +1022,8 @@ def legal_body(l):
 <div class="warning-banner">
 Placeholders below (<span class="placeholder-token">[LEGAL_NAME_TO_DEFINE]</span>,
 <span class="placeholder-token">[LEGAL_ADDRESS_TO_DEFINE]</span>,
-<span class="placeholder-token">[DOMAIN_TO_DEFINE]</span>,
-<span class="placeholder-token">[DOMAIN_TO_DEFINE]</span>) are tracked in
+<span class="placeholder-token">coretend.ahmetbsbnr.com</span>,
+<span class="placeholder-token">coretend.ahmetbsbnr.com</span>) are tracked in
 <code>Documentation/HUMAN_BLOCKERS.md</code>. No real personal or legal
 information has been invented. A production deployment must not ship while
 these remain unresolved.
@@ -1032,8 +1032,8 @@ these remain unresolved.
 <tr><td>Publisher</td><td><span class="placeholder-token">[LEGAL_NAME_TO_DEFINE]</span></td></tr>
 <tr><td>Address</td><td><span class="placeholder-token">[LEGAL_ADDRESS_TO_DEFINE]</span></td></tr>
 <tr><td>Contact</td><td><span class="placeholder-token">[SECURITY_CONTACT_TO_DEFINE]</span></td></tr>
-<tr><td>Domain</td><td><span class="placeholder-token">[DOMAIN_TO_DEFINE]</span></td></tr>
-<tr><td>Hosting</td><td><span class="placeholder-token">[DOMAIN_TO_DEFINE]</span></td></tr>
+<tr><td>Domain</td><td><span class="placeholder-token">coretend.ahmetbsbnr.com</span></td></tr>
+<tr><td>Hosting</td><td><span class="placeholder-token">coretend.ahmetbsbnr.com</span></td></tr>
 </table>
 <p>CoreTend is not affiliated with Apple Inc. or MacPaw Inc.
 (CleanMyMac). It makes no antivirus/security-guarantee claim.</p>
@@ -1044,8 +1044,8 @@ these remain unresolved.
 Les espaces réservés ci-dessous
 (<span class="placeholder-token">[LEGAL_NAME_TO_DEFINE]</span>,
 <span class="placeholder-token">[LEGAL_ADDRESS_TO_DEFINE]</span>,
-<span class="placeholder-token">[DOMAIN_TO_DEFINE]</span>,
-<span class="placeholder-token">[DOMAIN_TO_DEFINE]</span>) sont suivis dans
+<span class="placeholder-token">coretend.ahmetbsbnr.com</span>,
+<span class="placeholder-token">coretend.ahmetbsbnr.com</span>) sont suivis dans
 <code>Documentation/HUMAN_BLOCKERS.md</code>. Aucune information personnelle
 ou légale réelle n'a été inventée. Un déploiement en production ne doit pas
 avoir lieu tant qu'ils ne sont pas résolus.
@@ -1054,8 +1054,8 @@ avoir lieu tant qu'ils ne sont pas résolus.
 <tr><td>Éditeur</td><td><span class="placeholder-token">[LEGAL_NAME_TO_DEFINE]</span></td></tr>
 <tr><td>Adresse</td><td><span class="placeholder-token">[LEGAL_ADDRESS_TO_DEFINE]</span></td></tr>
 <tr><td>Contact</td><td><span class="placeholder-token">[SECURITY_CONTACT_TO_DEFINE]</span></td></tr>
-<tr><td>Domaine</td><td><span class="placeholder-token">[DOMAIN_TO_DEFINE]</span></td></tr>
-<tr><td>Hébergement</td><td><span class="placeholder-token">[DOMAIN_TO_DEFINE]</span></td></tr>
+<tr><td>Domaine</td><td><span class="placeholder-token">coretend.ahmetbsbnr.com</span></td></tr>
+<tr><td>Hébergement</td><td><span class="placeholder-token">coretend.ahmetbsbnr.com</span></td></tr>
 </table>
 <p>CoreTend n'est affilié ni à Apple Inc. ni à MacPaw Inc.
 (CleanMyMac). Aucune revendication d'antivirus ou de garantie de sécurité

@@ -30,7 +30,7 @@ python3 -m http.server 8791
   deploy.
 - Legal/contact/domain values (`[LEGAL_NAME_TO_DEFINE]`,
   `[LEGAL_ADDRESS_TO_DEFINE]`, `[SECURITY_CONTACT_TO_DEFINE]`,
-  `[DOMAIN_TO_DEFINE]`, `[HOST_TO_DEFINE]`, `[REPO_URL_TO_DEFINE]`,
+  `coretend.ahmetbsbnr.com`, `[HOST_TO_DEFINE]`, `https://github.com/ahmetbsbnr/coretend`,
   `[LICENSE_SPDX_TO_CONFIRM]`) are bracket placeholders tracked in
   `Documentation/HUMAN_BLOCKERS.md`. `Scripts/check-placeholders.sh`
   should be extended to scan `Website/` too before any real publish.

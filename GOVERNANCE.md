@@ -6,7 +6,7 @@ no formal committee, no complex CLA.
 ## Roles
 
 - **Maintainer(s)** — merge access, release authority. Currently:
-  `[MAINTAINER_HANDLE_TO_DEFINE]` (see `.github/CODEOWNERS`).
+  `ahmetbsbnr` (see `.github/CODEOWNERS`).
 - **Contributors** — anyone submitting a PR or issue under
   [CONTRIBUTING.md](CONTRIBUTING.md).
 
