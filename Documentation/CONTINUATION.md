@@ -1,6 +1,87 @@
 # CONTINUATION
 
-## Where we are (product version 0.8.0, phase: 0.8.1A — Brand Clearance & Workspace Migration Preflight, CLOSED)
+## Where we are (product version 0.8.1, phase: 0.8.1 — CoreTend Rebrand & Workspace Migration, EXECUTED)
+
+Branch `feat/coretend-rebrand-workspace`, off `feat/functional-completion`.
+**Nothing pushed, nothing deployed, nothing published.** Repository path is now
+`WEBSITE/products/coretend/app`.
+
+The rename is done and the workspace is reorganised. What actually landed:
+
+- **Name.** MacCare Local → **CoreTend**, everywhere: sources, SwiftPM package
+  and targets, executable, bundle, resources, both localisations, scripts, CI,
+  docs, site, legal metadata. Bundle identifier `com.ahmetbsbnr.coretend`.
+  `Scripts/check-legacy-brand-references.sh` passes, and every allowlisted
+  survivor states why it must keep the old name.
+- **User data.** `Sources/Persistence/LegacyDataMigration.swift` migrates the
+  Application Support directory and the old `UserDefaults` domain on first
+  launch: copy-only, per-item, resumable, never overwriting existing
+  new-identity data, failures surfaced in Settings. 20 tests. Verified for real
+  on this machine — store + WAL + SHM + Quarantine copied, three preference
+  keys carried, legacy directory untouched.
+- **Identity.** Living System palette named at its definition in
+  `MCColor.LivingSystem` with contrast tests in both directions, and a complete
+  generated asset set (icon 16–1024 + icns, menu-bar templates, favicons,
+  lockups light/dark/mono, onboarding hero, Open Graph, DMG background, SVG +
+  PDF vector sources).
+- **Site.** Rebuilt bilingual on the new identity, zero external requests, zero
+  JavaScript, gated by `Scripts/check-website.sh` (freshness, locale parity,
+  link integrity, accessibility floor, editorial honesty read per sentence).
+- **Workspace.** Both repositories moved into `WEBSITE/` as independent git
+  repos; `Scripts/check-workspace-layout.sh` proves they stay independent.
+- **Release.** 0.8.1 ZIP + DMG built, SHA256SUMS verifies, ZIP passes
+  `unzip -t`, app launches from a temp directory outside the repository.
+
+Gates all green: legacy references, brand assets, website, workspace layout,
+version consistency, private data, licenses, repository doctor. 274/274 tests
+pass; Debug and Release build with zero warnings.
+
+## What is still blocked, and why
+
+**Publication.** `Scripts/check-brand-clearance.sh --publication` fails on
+purpose. `--engineering` passes, and that is what authorised this work locally.
+To unblock publication, all of these must become true:
+
+1. A real trademark search for "CoreTend" (Nice 9 / 42, across EUIPO, INPI,
+   USPTO, UKIPO, WIPO) plus a prior-software-usage search. **None has been
+   run**, and `Documentation/BRAND_SEARCH_EVIDENCE.md` says exactly that rather
+   than leaving an empty conflict table to be misread as a clean result.
+2. `legalReviewStatus` → `accepted` and `publicReleaseAllowed` → `true` in
+   `Configuration/BrandRenameApproval.local.json` (gitignored).
+3. A legal identity and a security contact. The legal and security pages render
+   bracketed placeholders where those belong — visible gaps, not invented
+   values.
+4. A signing/notarization decision. Builds are unsigned.
+
+**Environment.** The DMG's saved icon positions need the Finder, which refused
+automation here. Reported as `BLOCKED_ENVIRONMENT` by `package-dmg.sh`; the DMG
+is functional, with its background and volume icon embedded. Interactive
+VoiceOver and the full visual-QA capture campaign remain blocked the same way.
+
+## Rollback
+
+`Documentation/PRODUCT_RENAME_ROLLBACK.md` has three independent paths: reset to
+the local tag `pre-coretend-rebrand-0.8.0`, clone from the git bundles in
+`~/Documents/CoreTend-Migration-Backups/`, or `mv` the two repositories back to
+their old paths. Nothing was deleted at any point.
+
+## Files in flight
+None — tree is clean, every slice is committed.
+
+## Resume command
+
+```sh
+cd ~/Documents/MAC_ORGANISE/00_DOCUMENTS_EXISTANTS/01_PROJETS/01_PROJETS_ACTIFS/WEBSITE/products/coretend/app
+git status --short && git log --oneline -12 && bash Scripts/test.sh
+```
+
+Then verify claims against real source before trusting this file — earlier
+sessions ended in infrastructure interruptions and this document lagged the
+commits until reconciled by hand. Commit small and often.
+
+---
+
+## Previous phase (0.8.1A — Brand Clearance & Workspace Migration Preflight, CLOSED)
 Branch `feat/functional-completion` (unchanged, no push). Product version
 stays **0.8.0** — this phase was preflight/planning only, no rename
 applied. Key outcome: **MacClear = `CONFLICT_HIGH`**, blocked — three
