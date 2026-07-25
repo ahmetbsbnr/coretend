@@ -179,6 +179,12 @@ struct MCSettingsView: View {
             Section(L("settings.data")) {
                 Text(L("settings.data_detail"))
                     .font(.caption).foregroundStyle(.secondary)
+                // Shown only when the rename migration actually did something.
+                // A migration that moved a user's history has to say so, and a
+                // migration that failed must never look like one that worked.
+                if let report = AppEnvironment.shared.migrationReport {
+                    MigrationNoticeRow(report: report)
+                }
                 Button(L("settings.clear_activity"), role: .destructive) { showClearConfirm = true }
                     .confirmationDialog(L("settings.clear_activity_confirm"), isPresented: $showClearConfirm) {
                         Button(L("settings.clear_history"), role: .destructive) { model.clearActivityHistory() }
@@ -212,5 +218,48 @@ struct MCSettingsView: View {
         case .denied: MCTheme.warning
         default: .secondary
         }
+    }
+}
+
+/// Reports the outcome of the one-time MacCare Local -> CoreTend data
+/// migration. Deliberately plain: it states what moved, what was left alone,
+/// and — most importantly — that the old data is still on disk, because the
+/// first question a user has after an app renames itself is whether their
+/// history survived.
+struct MigrationNoticeRow: View {
+    let report: LegacyDataMigration.Report
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 6) {
+                Image(systemName: failed ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
+                    .foregroundStyle(failed ? MCTheme.warning : MCTheme.success)
+                    .accessibilityHidden(true)
+                Text(failed ? L("settings.migration_failed") : L("settings.migration_done"))
+                    .font(.callout.weight(.medium))
+            }
+            Text(detail)
+                .font(.caption).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private var failed: Bool { !report.failures.isEmpty }
+
+    private var detail: String {
+        if failed {
+            let items = report.failures.map { "\($0.item): \($0.reason)" }.joined(separator: "; ")
+            return L("settings.migration_failed_detail", items)
+        }
+        var parts: [String] = []
+        if !report.migrated.isEmpty {
+            parts.append(L("settings.migration_items", report.migrated.joined(separator: ", ")))
+        }
+        if !report.migratedPreferenceKeys.isEmpty {
+            parts.append(L("settings.migration_prefs"))
+        }
+        parts.append(L("settings.migration_source_kept"))
+        return parts.joined(separator: " ")
     }
 }

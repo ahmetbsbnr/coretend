@@ -27,7 +27,7 @@
 "menubar.clamav_missing" = "ClamAV not installed";
 "menubar.last_smart_care" = "Last Smart Care: %@";
 "menubar.no_smart_care_yet" = "No Smart Care run yet.";
-"menubar.open_app" = "Open MacCare Local";
+"menubar.open_app" = "Open CoreTend";
 "menubar.settings" = "Settings…";
 "menubar.quit" = "Quit";
 
@@ -81,7 +81,7 @@
 "protection.tab.malware" = "Malware";
 "protection.tab.privacy" = "Privacy";
 "protection.unavailable.title" = "Malware engine not installed";
-"protection.unavailable.body" = "MacCare Local uses the open-source ClamAV engine for local malware scanning. It is not installed on this Mac, so scanning is unavailable — this module will not pretend otherwise.";
+"protection.unavailable.body" = "CoreTend uses the open-source ClamAV engine for local malware scanning. It is not installed on this Mac, so scanning is unavailable — this module will not pretend otherwise.";
 "protection.unavailable.howto" = "To enable it: install ClamAV (for example `brew install clamav`), run `freshclam` once to download signatures, then reopen this screen.";
 "protection.unavailable.note" = "Note: this scanner is a local signature check, not a commercial antivirus or real-time protection.";
 "protection.scan.title" = "Local malware scan (ClamAV)";
@@ -183,7 +183,7 @@
 "updates.version_source" = "v%@ — %@";
 "updates.open_app_store" = "Open App Store Updates";
 "updates.open_app" = "Open App to Update";
-"updates.footer" = "MacCare detects each app's own update channel and sends you there. It never downloads or replaces app binaries itself.";
+"updates.footer" = "CoreTend detects each app's own update channel and sends you there. It never downloads or replaces app binaries itself.";
 
 /* Leftovers */
 "leftovers.idle.title" = "Find leftovers from removed apps";
@@ -309,10 +309,10 @@
 /* Settings */
 "settings.nav_title" = "Settings";
 "settings.general" = "General";
-"settings.show_menu_bar" = "Show MacCare in the menu bar";
+"settings.show_menu_bar" = "Show CoreTend in the menu bar";
 "settings.menu_bar_detail" = "The menu bar item samples system metrics only while its panel is open, or every 30s in the background just to show the attention indicator.";
 "settings.appearance" = "Appearance";
-"settings.appearance_detail" = "MacCare Local follows the system light/dark appearance. There is no separate in-app theme.";
+"settings.appearance_detail" = "CoreTend follows the system light/dark appearance. There is no separate in-app theme.";
 "settings.scans_cleanup" = "Scans & Cleanup";
 "settings.dry_run_default" = "Dry run by default";
 "settings.dry_run_detail" = "When enabled, cleanups simulate their result instead of moving files to the Trash.";
@@ -333,7 +333,7 @@
 "settings.open_system_settings" = "Open System Settings";
 "settings.recheck" = "Re-check";
 "settings.notifications" = "Notifications";
-"settings.notifications_detail" = "MacCare Local does not currently send notifications; this reflects the real system-level authorization state only.";
+"settings.notifications_detail" = "CoreTend does not currently send notifications; this reflects the real system-level authorization state only.";
 "settings.notif.authorized" = "Authorized";
 "settings.notif.denied" = "Denied";
 "settings.notif.not_requested" = "Not requested";
@@ -342,7 +342,7 @@
 "settings.exclusions_empty" = "No excluded folders. Excluded locations are never scanned or cleaned.";
 "settings.add_folder" = "Add Folder…";
 "settings.data" = "Data";
-"settings.data_detail" = "MacCare Local is fully offline. No telemetry, no accounts, no network calls. All data stays on this Mac.";
+"settings.data_detail" = "CoreTend is fully offline. No telemetry, no accounts, no network calls. All data stays on this Mac.";
 "settings.export_diagnostic" = "Export diagnostic report…";
 "settings.export_diagnostic_detail" = "Generates an anonymized report (versions, permission states, counts) for troubleshooting. No usernames, paths, filenames, or app lists are included. You review it before saving.";
 "diagnostic.title" = "Diagnostic Report";
@@ -360,7 +360,7 @@
 "onboarding.step1.title" = "Everything stays here";
 "onboarding.step1.bullet1" = "All analysis runs on this Mac. No accounts, no telemetry, no network calls.";
 "onboarding.step1.bullet2" = "Your history lives in a local database you can clear at any time.";
-"onboarding.step1.bullet3" = "MacCare is not an antivirus replacement and never claims otherwise.";
+"onboarding.step1.bullet3" = "CoreTend is not an antivirus replacement and never claims otherwise.";
 "onboarding.step2.title" = "Full Disk Access — optional";
 "onboarding.step2.subtitle" = "Without it, some folders (Mail, Safari data…) can't be scanned. The app works either way. You can grant or revoke it any time in System Settings.";
 "onboarding.step3.title" = "Reversible by design";
@@ -506,3 +506,11 @@
 "onboarding.summary.restore" = "Removals go to the Trash and can be restored.";
 "onboarding.summary.docs" = "Read the documentation";
 "settings.rerun_setup" = "Run setup assistant again";
+
+/* Rename migration (MacCare Local -> CoreTend) */
+"settings.migration_done" = "Data from the previous version was migrated";
+"settings.migration_failed" = "Some data could not be migrated";
+"settings.migration_items" = "Migrated: %@.";
+"settings.migration_prefs" = "Your setup and menu-bar preferences were carried over.";
+"settings.migration_source_kept" = "The original files were copied, not moved — the previous version's folder is still on this Mac, untouched.";
+"settings.migration_failed_detail" = "The following items were left where they were, and nothing was deleted: %@. The previous version's data is still intact on this Mac.";
