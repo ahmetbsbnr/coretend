@@ -123,3 +123,68 @@ struct BrandResourceTests {
         #expect(version.compare("0.4.0", options: .numeric) != .orderedAscending)
     }
 }
+
+@Suite("Living System palette contrast")
+struct PaletteContrastTests {
+    /// WCAG 2.1 relative luminance.
+    private static func luminance(_ c: (Double, Double, Double)) -> Double {
+        func channel(_ v: Double) -> Double {
+            v <= 0.03928 ? v / 12.92 : pow((v + 0.055) / 1.055, 2.4)
+        }
+        return 0.2126 * channel(c.0) + 0.7152 * channel(c.1) + 0.0722 * channel(c.2)
+    }
+
+    private static func ratio(_ a: (Double, Double, Double), _ b: (Double, Double, Double)) -> Double {
+        let la = luminance(a), lb = luminance(b)
+        let (hi, lo) = la > lb ? (la, lb) : (lb, la)
+        return (hi + 0.05) / (lo + 0.05)
+    }
+
+    /// The dark-surface accents are the brand's published values, and they are
+    /// only defensible if they are actually readable on Core Ink.
+    @Test func canonicalAccentsAreReadableOnCoreInk() {
+        let ink = MCColor.LivingSystem.coreInk
+        for (name, value) in [
+            ("freshMint", MCColor.LivingSystem.freshMint),
+            ("orbitIris", MCColor.LivingSystem.orbitIris),
+            ("warmAmber", MCColor.LivingSystem.warmAmber),
+            ("signalCoral", MCColor.LivingSystem.signalCoral),
+        ] {
+            let r = Self.ratio(value, ink)
+            #expect(r >= 4.5, "\(name) on Core Ink is \(r):1, below the 4.5:1 text minimum")
+        }
+    }
+
+    /// The reason the light siblings exist at all. If one of them ever drifts
+    /// back toward its canonical value, this fails instead of shipping
+    /// unreadable text to every light-mode install.
+    @Test func lightSiblingsAreReadableOnSoftPorcelain() {
+        let porcelain = MCColor.LivingSystem.softPorcelain
+        for (name, value) in [
+            ("mossDeep", MCColor.LivingSystem.mossDeep),
+            ("irisDeep", MCColor.LivingSystem.irisDeep),
+            ("amberDeep", MCColor.LivingSystem.amberDeep),
+            ("coralDeep", MCColor.LivingSystem.coralDeep),
+            ("slateDeep", MCColor.LivingSystem.slateDeep),
+        ] {
+            let r = Self.ratio(value, porcelain)
+            #expect(r >= 4.5, "\(name) on Soft Porcelain is \(r):1, below the 4.5:1 text minimum")
+        }
+    }
+
+    /// Documents the trap the light siblings exist to avoid: the canonical
+    /// accent green is nowhere near readable on a near-white surface. If this
+    /// ever stops being true the palette changed, and the divergence comment
+    /// in Colors.swift needs rewriting rather than quietly keeping two values.
+    @Test func canonicalMintWouldFailOnALightSurface() {
+        let r = Self.ratio(MCColor.LivingSystem.freshMint, MCColor.LivingSystem.softPorcelain)
+        #expect(r < 4.5, "Fresh Mint now passes on Soft Porcelain (\(r):1) — the light/dark split may no longer be needed")
+    }
+
+    /// Muted Slate is specified for secondary text; on the dark surface it has
+    /// to clear the 3:1 large-text floor at minimum.
+    @Test func mutedSlateClearsTheLargeTextFloorOnInk() {
+        let r = Self.ratio(MCColor.LivingSystem.mutedSlate, MCColor.LivingSystem.coreInk)
+        #expect(r >= 3.0, "Muted Slate on Core Ink is \(r):1, below the 3:1 large-text floor")
+    }
+}
