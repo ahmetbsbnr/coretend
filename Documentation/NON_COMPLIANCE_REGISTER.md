@@ -227,3 +227,39 @@ expected, honest result of covering the harder domains session 2 skipped — see
   with `rg -li`, both legitimate files are allowlisted with stated reasons, and
   its 5 self-tests pass.
 - **Priority**: was P2 (a green gate that was not actually green).
+
+---
+
+## Closed by the 0.9.0 Final Public Launch phase (2026-07-25)
+
+### DIST-003 / RESYNC-003 — CLOSED
+The circular provenance requirement is gone. `Release/latest.json` and
+`Release/SHA256SUMS` are no longer tracked; they are generated into `dist/` from
+the tracked `Release/latest.template.json`, so `sourceCommit` names the commit
+actually packaged and nothing needs committing afterwards. `build-release.sh`
+refuses a dirty tree, which was the specific route by which the 0.8.1 drift
+occurred. The template declares `_doNotAddHere` and the build fails if it carries
+a computed field, so a hand-edited checksum cannot beat a measured one.
+`test-release-manifest.sh` no longer rebuilds artifacts as a side effect.
+Evidence: `Scripts/test-release-provenance.sh` (15 tests),
+`Documentation/RELEASE_PROVENANCE.md`. The publication gate was demonstrated
+green on an exact tag with nothing committed after it.
+
+### RESYNC-002 — CLOSED
+The distribution smoke test no longer runs against the real user store.
+`TestStoreOverride` gates on two agreeing environment variables and a validated
+temporary path, and the marker suppresses the legacy-data migration so the test
+cannot read real pre-rename data. Isolation is measured, not asserted:
+`test-distribution.sh` fingerprints the real store before and after and fails on
+any change, and confirms the isolated store holds zero activity rows.
+`check-test-isolation.sh` statically enforces the shape (9 self-tests); 22 unit
+tests cover validation. Verified: real store untouched across a full run.
+
+### RESYNC-004 — remains CLOSED
+No regression. `check-legacy-brand-references.sh` still scans case-insensitively
+and every allowlisted path still states a reason.
+
+### RESYNC-001 — still OPEN
+No requirement yet traces to the migration features or to the new store-isolation
+mechanism. Feature-level and test-level verification exist; requirement-level
+traceability does not. Unchanged priority: P3, for a requirements phase.

@@ -94,28 +94,37 @@ were found stale and are marked RESOLVED with the evidence that resolved them.*
 
 ## Added by the 0.8.1 Final Canonical Audit Resync (2026-07-25)
 
-- **The distribution smoke test is not isolated from real user data.**
-  `Store.defaultPath()` (`Sources/Persistence/Store.swift:77-84`) always resolves
-  to `~/Library/Application Support/CoreTend` and reads no environment variable,
-  so `Scripts/test-distribution.sh`'s launch check runs the real app against the
-  real per-user store. It only launches and quits — no scan, no cleanup, no
-  deletion — but it is not sandboxed, and the script no longer claims to be.
-  A dead `MACCARELOCAL_STORE_DIR` export that implied isolation was removed
-  rather than renamed. Real isolation would need an injectable store path in
-  `Sources/`, deliberately out of scope for a documentation resync.
+- **RESOLVED (0.9.0 launch phase, 2026-07-25) — the distribution smoke test is
+  now isolated from real user data, and the isolation is measured.**
+  `TestStoreOverride` (`Sources/Persistence/TestStoreOverride.swift`) redirects
+  the store to a throwaway directory when two agreeing environment variables are
+  present, and the same marker suppresses the legacy-data migration so the test
+  cannot read real pre-rename data. `Scripts/test-distribution.sh` fingerprints
+  every file under the real store before and after the launch and fails on any
+  change; `Scripts/check-test-isolation.sh` statically enforces the whole shape,
+  with 9 self-tests. 22 unit tests cover the validation rules. The real store was
+  verified untouched across a full run.
 
-- **The release-manifest gate cannot be satisfied at the commit it describes.**
-  `Scripts/test-release-manifest.sh` rebuilds the artifacts and then asserts
-  `Release/latest.json`'s `sourceCommit` equals `git rev-parse HEAD`. Since
-  `latest.json` is itself a tracked file, committing it necessarily creates a new
-  HEAD that the just-written `sourceCommit` cannot name. The gate is therefore
-  green only on a tree where `Release/` is still uncommitted, and reads one
-  commit stale immediately after `Release/` is committed. This is why the audit
-  records three distinct commits (`PRODUCT_SOURCE_COMMIT`,
-  `FINAL_REPOSITORY_HEAD`, `AUDIT_PACKAGE_COMMIT`) rather than pretending one
-  value covers all three. It also means **running this gate rebuilds the release
-  artifacts as a side effect** — ZIP/DMG output is not byte-reproducible, so
-  their hashes change on every run.
+- **RESOLVED (0.9.0 launch phase, 2026-07-25) — the release-manifest gate no
+  longer has a circular requirement.** `Release/latest.json` and
+  `Release/SHA256SUMS` are no longer tracked: they are generated into `dist/`
+  from the tracked, hand-authored `Release/latest.template.json`. Because
+  nothing is committed, `sourceCommit` names the commit that was actually
+  packaged and stays true permanently, and the gate no longer rebuilds the
+  artifacts as a side effect of being run. `build-release.sh` now refuses a
+  dirty tree outright. Proven by 15 shell tests in
+  `Scripts/test-release-provenance.sh` and documented in
+  `Documentation/RELEASE_PROVENANCE.md`. The publication gate has been shown
+  green on an exact tag with nothing committed after it.
+
+  Historical description of the defect follows, kept because it explains why the
+  provenance design is shaped the way it is:
+
+  ~~**The release-manifest gate cannot be satisfied at the commit it describes.**~~
+  `Scripts/test-release-manifest.sh` rebuilt the artifacts and then asserted
+  `Release/latest.json`'s `sourceCommit` equalled `git rev-parse HEAD`. Since
+  `latest.json` was itself a tracked file, committing it necessarily created a new
+  HEAD that the just-written `sourceCommit` could not name.
 
 - **Migration executed on exactly one machine, once, on the happy path.** See
   `Documentation/CORETEND_DATA_MIGRATION_REPORT.md` §5. The failure, skip,
