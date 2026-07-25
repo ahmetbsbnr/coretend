@@ -27,7 +27,7 @@
 "menubar.clamav_missing" = "ClamAV non installé";
 "menubar.last_smart_care" = "Dernier Smart Care : %@";
 "menubar.no_smart_care_yet" = "Aucun Smart Care exécuté pour l'instant.";
-"menubar.open_app" = "Ouvrir MacCare Local";
+"menubar.open_app" = "Ouvrir CoreTend";
 "menubar.settings" = "Réglages…";
 "menubar.quit" = "Quitter";
 
@@ -81,7 +81,7 @@
 "protection.tab.malware" = "Malware";
 "protection.tab.privacy" = "Confidentialité";
 "protection.unavailable.title" = "Moteur antimalware non installé";
-"protection.unavailable.body" = "MacCare Local utilise le moteur open-source ClamAV pour l'analyse antimalware locale. Il n'est pas installé sur ce Mac, l'analyse est donc indisponible — ce module ne fera pas semblant du contraire.";
+"protection.unavailable.body" = "CoreTend utilise le moteur open-source ClamAV pour l'analyse antimalware locale. Il n'est pas installé sur ce Mac, l'analyse est donc indisponible — ce module ne fera pas semblant du contraire.";
 "protection.unavailable.howto" = "Pour l'activer : installez ClamAV (par exemple `brew install clamav`), lancez `freshclam` une fois pour télécharger les signatures, puis rouvrez cet écran.";
 "protection.unavailable.note" = "Remarque : ce scanner est une vérification de signatures locale, pas un antivirus commercial ni une protection en temps réel.";
 "protection.scan.title" = "Analyse antimalware locale (ClamAV)";
@@ -183,7 +183,7 @@
 "updates.version_source" = "v%@ — %@";
 "updates.open_app_store" = "Ouvrir les mises à jour App Store";
 "updates.open_app" = "Ouvrir l'application pour mettre à jour";
-"updates.footer" = "MacCare détecte le canal de mise à jour propre à chaque application et vous y redirige. Il ne télécharge ni ne remplace jamais les binaires d'applications lui-même.";
+"updates.footer" = "CoreTend détecte le canal de mise à jour propre à chaque application et vous y redirige. Il ne télécharge ni ne remplace jamais les binaires d'applications lui-même.";
 
 /* Leftovers */
 "leftovers.idle.title" = "Trouvez les résidus d'applications supprimées";
@@ -309,10 +309,10 @@
 /* Settings */
 "settings.nav_title" = "Réglages";
 "settings.general" = "Général";
-"settings.show_menu_bar" = "Afficher MacCare dans la barre de menus";
+"settings.show_menu_bar" = "Afficher CoreTend dans la barre de menus";
 "settings.menu_bar_detail" = "L'élément de la barre de menus n'échantillonne les métriques système que lorsque son panneau est ouvert, ou toutes les 30 s en arrière-plan pour afficher l'indicateur d'attention.";
 "settings.appearance" = "Apparence";
-"settings.appearance_detail" = "MacCare Local suit l'apparence claire/sombre du système. Il n'y a pas de thème propre à l'application.";
+"settings.appearance_detail" = "CoreTend suit l'apparence claire/sombre du système. Il n'y a pas de thème propre à l'application.";
 "settings.scans_cleanup" = "Analyses et nettoyage";
 "settings.dry_run_default" = "Simulation par défaut";
 "settings.dry_run_detail" = "Lorsque activé, les nettoyages simulent leur résultat au lieu de déplacer les fichiers vers la Corbeille.";
@@ -333,7 +333,7 @@
 "settings.open_system_settings" = "Ouvrir les Réglages Système";
 "settings.recheck" = "Revérifier";
 "settings.notifications" = "Notifications";
-"settings.notifications_detail" = "MacCare Local n'envoie actuellement aucune notification ; ceci reflète uniquement l'état d'autorisation système réel.";
+"settings.notifications_detail" = "CoreTend n'envoie actuellement aucune notification ; ceci reflète uniquement l'état d'autorisation système réel.";
 "settings.notif.authorized" = "Autorisé";
 "settings.notif.denied" = "Refusé";
 "settings.notif.not_requested" = "Non demandé";
@@ -342,7 +342,7 @@
 "settings.exclusions_empty" = "Aucun dossier exclu. Les emplacements exclus ne sont jamais analysés ni nettoyés.";
 "settings.add_folder" = "Ajouter un dossier…";
 "settings.data" = "Données";
-"settings.data_detail" = "MacCare Local est entièrement hors ligne. Aucune télémétrie, aucun compte, aucun appel réseau. Toutes les données restent sur ce Mac.";
+"settings.data_detail" = "CoreTend est entièrement hors ligne. Aucune télémétrie, aucun compte, aucun appel réseau. Toutes les données restent sur ce Mac.";
 "settings.export_diagnostic" = "Exporter un rapport de diagnostic…";
 "settings.export_diagnostic_detail" = "Génère un rapport anonymisé (versions, états de permission, compteurs) pour le dépannage. Aucun nom d'utilisateur, chemin, nom de fichier ou liste d'applications n'est inclus. Vous le relisez avant de l'enregistrer.";
 "diagnostic.title" = "Rapport de diagnostic";
@@ -360,7 +360,7 @@
 "onboarding.step1.title" = "Tout reste ici";
 "onboarding.step1.bullet1" = "Toute l'analyse s'exécute sur ce Mac. Aucun compte, aucune télémétrie, aucun appel réseau.";
 "onboarding.step1.bullet2" = "Votre historique vit dans une base de données locale que vous pouvez effacer à tout moment.";
-"onboarding.step1.bullet3" = "MacCare ne remplace pas un antivirus et ne prétend jamais l'être.";
+"onboarding.step1.bullet3" = "CoreTend ne remplace pas un antivirus et ne prétend jamais l'être.";
 "onboarding.step2.title" = "Accès complet au disque — facultatif";
 "onboarding.step2.subtitle" = "Sans lui, certains dossiers (Mail, données Safari…) ne peuvent pas être analysés. L'application fonctionne dans les deux cas. Vous pouvez l'accorder ou le révoquer à tout moment dans les Réglages Système.";
 "onboarding.step3.title" = "Réversible par conception";
@@ -506,3 +506,11 @@
 "onboarding.summary.restore" = "Les suppressions vont à la Corbeille et sont restaurables.";
 "onboarding.summary.docs" = "Lire la documentation";
 "settings.rerun_setup" = "Relancer l’assistant de configuration";
+
+/* Rename migration (MacCare Local -> CoreTend) */
+"settings.migration_done" = "Les données de la version précédente ont été migrées";
+"settings.migration_failed" = "Certaines données n'ont pas pu être migrées";
+"settings.migration_items" = "Migré : %@.";
+"settings.migration_prefs" = "Votre configuration et vos préférences de barre des menus ont été conservées.";
+"settings.migration_source_kept" = "Les fichiers d'origine ont été copiés, pas déplacés — le dossier de la version précédente est toujours sur ce Mac, intact.";
+"settings.migration_failed_detail" = "Les éléments suivants sont restés à leur place et rien n'a été supprimé : %@. Les données de la version précédente sont toujours intactes sur ce Mac.";
