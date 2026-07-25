@@ -1,34 +1,46 @@
 {
-  "schemaVersion": 1,
-  "documentDate_UTC": "2026-07-24",
-  "status": "PLANNED_NOT_IMPLEMENTED",
+  "schemaVersion": 2,
+  "documentDate_UTC": "2026-07-25",
+  "status": "DELIVERED_AND_EXECUTED",
   "dataInventory": [
     {
       "item": "store.sqlite",
       "location": "~/Library/Application Support/CoreTend/store.sqlite",
       "keyedBy": "hardcoded directory name in Sources/Persistence/Store.swift, NOT CFBundleIdentifier",
-      "contains": ["settings (dryRunDefault, securityProfile)", "exclusions", "activity history"],
+      "contains": [
+        "settings (dryRunDefault, securityProfile)",
+        "exclusions",
+        "activity history"
+      ],
       "migrationMethod": "copy-to-temp-then-rename into new directory, source untouched"
     },
     {
       "item": "Quarantine/",
       "location": "~/Library/Application Support/CoreTend/Quarantine/",
       "keyedBy": "same directory convention as store.sqlite",
-      "contains": ["quarantined files", "quarantine metadata"],
+      "contains": [
+        "quarantined files",
+        "quarantine metadata"
+      ],
       "migrationMethod": "copy directory tree, source untouched"
     },
     {
       "item": "watch-fingerprints.json",
       "location": "~/Library/Application Support/CoreTend/watch-fingerprints.json",
       "keyedBy": "same directory convention",
-      "contains": ["per-path FSEvents dedup fingerprints (size+mtime)"],
+      "contains": [
+        "per-path FSEvents dedup fingerprints (size+mtime)"
+      ],
       "migrationMethod": "copy file, source untouched; safe to lose (regenerates) but migrated for continuity"
     },
     {
       "item": "UserDefaults (menuBarEnabled, onboardingDone, onboardingStep)",
       "location": "~/Library/Preferences/<CFBundleIdentifier>.plist",
       "keyedBy": "CFBundleIdentifier -- the one OS-enforced bundle-ID coupling in this data set",
-      "contains": ["menu bar toggle state", "onboarding completion/step"],
+      "contains": [
+        "menu bar toggle state",
+        "onboarding completion/step"
+      ],
       "migrationMethod": "CFPreferencesCopyValue against the old identifier explicitly, write into new UserDefaults.standard domain, old domain untouched"
     }
   ],
@@ -48,6 +60,76 @@
     "manually relocated Application Support folders outside documented behavior",
     "fresh installs with no prior old-directory data (no-op by design)"
   ],
-  "testPlanFile": "Documentation/REBRAND_MIGRATION_TEST_PLAN.md",
-  "narrativeFile": "Documentation/USER_DATA_RENAME_MIGRATION.md"
+  "testPlanFile": "Documentation/RebrandHistory/PRE_IMPLEMENTATION_MIGRATION_TEST_PLAN.md",
+  "narrativeFile": "Documentation/RebrandHistory/PRE_IMPLEMENTATION_MIGRATION_DESIGN.md",
+  "statusNote": "Was PLANNED_NOT_IMPLEMENTED through 2026-07-24. The migration shipped in commit ca62b4a and its uninstall/gate half in e557e96; a real run completed on the development machine on 2026-07-25T09:08:32Z. dataInventory and nonNegotiableProperties below were the plan and are all satisfied by the delivered code -- they are retained unchanged rather than reworded.",
+  "implementation": {
+    "engine": "Sources/Persistence/LegacyDataMigration.swift",
+    "engineLines": 317,
+    "tests": "Tests/PersistenceTests/LegacyDataMigrationTests.swift",
+    "testCount": 20,
+    "testSuite": "Legacy data migration",
+    "launchWiring": "Sources/CoreTendApp/AppEnvironment.swift:14-31",
+    "userSurface": "Sources/CoreTendApp/SettingsView.swift:229-265 (MigrationNoticeRow)",
+    "uninstallHandling": "Scripts/uninstall.sh --include-legacy (opt-in, off by default)",
+    "legacyDirectoryNames": [
+      "MacCareLocal",
+      "MacCare Local"
+    ],
+    "legacyBundleIdentifier": "local.maccare.app",
+    "currentDirectoryName": "CoreTend",
+    "preferenceKeys": [
+      "menuBarEnabled",
+      "onboardingDone",
+      "onboardingStep"
+    ],
+    "itemOrder": [
+      "store.sqlite",
+      "store.sqlite-wal",
+      "store.sqlite-shm",
+      "Quarantine",
+      "watch-fingerprints.json"
+    ],
+    "journal": "migration-log.json, written beside the migrated data",
+    "rollback": "LegacyDataMigration.rollback(_:) removes only items the given report lists as migrated",
+    "deliveredCommit": "ca62b4a",
+    "uninstallGateCommit": "e557e96",
+    "productSourceCommit": "3b5dc73fbe522f92c88ea0b035ba8b8907b220e1",
+    "verifiedAtHead": "92cbd08bc3cd1d8ad0513391cbd7552b520f09fe"
+  },
+  "realExecution": {
+    "machines": 1,
+    "machineDescription": "single arm64 development Mac, developer account -- no other machine, macOS version, or user account has run this migration",
+    "runsRecorded": 1,
+    "date_UTC": "2026-07-25T09:08:32Z",
+    "status": "completed",
+    "legacySource": "~/Library/Application Support/MacCareLocal",
+    "destination": "~/Library/Application Support/CoreTend",
+    "migrated": [
+      "store.sqlite",
+      "store.sqlite-wal",
+      "store.sqlite-shm",
+      "Quarantine"
+    ],
+    "skipped": [],
+    "failures": [],
+    "migratedPreferenceKeys": [
+      "menuBarEnabled",
+      "onboardingDone",
+      "onboardingStep"
+    ],
+    "notMigratedBecauseAbsentAtSource": [
+      "watch-fingerprints.json"
+    ],
+    "sourceStillPresentAfterwards": true,
+    "storeSqliteSHA256BothLocations": "a209ba85773882b79b8147779c406fbb67a12dcb723ba7c4ea7ca3168e651cc8",
+    "evidence": "~/Library/Application Support/CoreTend/migration-log.json (personal data -- excluded from the audit package)"
+  },
+  "knownGaps": [
+    "Planned scenario 8 (disk full mid-copy) has no dedicated test; the temp-then-rename invariant it relies on is covered by scenario 7.",
+    "Planned scenario 13 (post-migration launch through a real AppEnvironment) is covered only by a path-contract assertion, because AppEnvironment.shared is a process-wide singleton over the real ~/Library that no test may touch.",
+    "Planned scenario 15 (Gatekeeper first-launch behaviour after the bundle-ID change) remains BLOCKED_ENVIRONMENT: the build is unsigned and not notarized.",
+    "The one real run took the happy path. Skip, failure, rollback and interrupted-resume paths are exercised only by unit tests against temporary directories."
+  ],
+  "currentReportFile": "Documentation/CORETEND_DATA_MIGRATION_REPORT.md"
 }

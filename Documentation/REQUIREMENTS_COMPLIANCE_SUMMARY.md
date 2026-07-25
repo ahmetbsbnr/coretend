@@ -1,5 +1,34 @@
 # Requirements Compliance Summary
 
+> **0.8.1 Final Canonical Audit Resync note (2026-07-25).** The 69 requirements
+> below were **not** re-audited in this phase, and the status counts are
+> therefore carried forward unchanged from session 4. Saying otherwise would be
+> the exact kind of false freshness this resync exists to remove.
+>
+> What *is* re-verified as of `92cbd08`:
+>
+> | Claim | Value |
+> |---|---|
+> | `REQUIREMENTS_AUDIT_COMMIT` (last commit touching the requirements doc set) | `03839803274c620d204dcc8ab28f7bbbdb6cc5b4` |
+> | Tests | 274 in 57 suites, PASS, 0 failures |
+> | Debug / Release build | PASS / PASS, 0 warnings |
+> | Feature inventory | 46 features (was 42; the four rebrand features were missing) |
+> | Publication gate | RED, for the human reasons in `HUMAN_BLOCKERS.md` |
+>
+> Two corrections to statements made in the body below:
+>
+> 1. "no display this session" is **stale**. A real display is available; what
+>    remains blocked is module-targeted capture and the full capture campaign.
+>    See `KNOWN_LIMITATIONS.md`.
+> 2. `AUDITED_SOURCE_COMMIT: b33c06b…` below is the commit of the *original*
+>    requirements audit and is correct as history. It is not the current HEAD and
+>    must not be read as one.
+>
+> The requirements set also does not yet contain entries for the four features
+> the rebrand delivered (data migration and its surfaces). Adding and auditing
+> them is a requirements-phase task, not a documentation resync, and is recorded
+> as open in `NON_COMPLIANCE_REGISTER.md`.
+
 AUDITED_SOURCE_COMMIT: `b33c06b8d68b9b03316821c3f6cfb17252f35011`. Rollup of
 `Documentation/REQUIREMENTS_TRACEABILITY_MATRIX.md` (**69 requirements**: the 28 from session 2 plus
 **41 new this session** under PROD/FUNC/VIS/MOTION/A11Y/I18N/PERF/WEB/DOC/OPS — prefixes the original

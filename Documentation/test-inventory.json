@@ -1,14 +1,14 @@
 {
   "schemaVersion": 2,
-  "auditDate_UTC": "2026-07-24",
-  "commit": "5ff689fdc0871f5dade413b2de798196c4655a93",
+  "auditDate_UTC": "2026-07-25",
+  "commit": "92cbd08bc3cd1d8ad0513391cbd7552b520f09fe",
   "command": "Scripts/test.sh",
-  "totalTests": 250,
-  "totalSuites": 55,
-  "passed": 250,
+  "totalTests": 274,
+  "totalSuites": 57,
+  "passed": 274,
   "failed": 0,
-  "testRunDurationSeconds": 6.33,
-  "wallTimeSeconds": 8,
+  "testRunDurationSeconds": 6.215,
+  "wallTimeSeconds": 22,
   "result": "PASS",
   "domains": [
     {
@@ -16,16 +16,16 @@
       "testFunctionsDeclared": 20
     },
     {
+      "module": "CoreTendApp",
+      "testFunctionsDeclared": 98
+    },
+    {
       "module": "DesignSystem",
-      "testFunctionsDeclared": 13
+      "testFunctionsDeclared": 17
     },
     {
       "module": "FileRules",
       "testFunctionsDeclared": 7
-    },
-    {
-      "module": "CoreTendApp",
-      "testFunctionsDeclared": 98
     },
     {
       "module": "MalwareEngine",
@@ -33,7 +33,7 @@
     },
     {
       "module": "Persistence",
-      "testFunctionsDeclared": 10
+      "testFunctionsDeclared": 30
     },
     {
       "module": "SafetyCore",

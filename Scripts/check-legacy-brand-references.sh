@@ -23,6 +23,11 @@
 set -eu
 cd "${CHECK_LEGACY_REFS_ROOT:-$(dirname "$0")/..}"
 
+# Matched case-insensitively (rg -i). Until the 0.8.1 audit resync this scan was
+# case-sensitive, which let a screaming-case leftover (a dead
+# MACCARELOCAL_STORE_DIR export in Scripts/test-distribution.sh) sit in the tree
+# with the gate reporting green. Keep the -i: the old identity was spelled in at
+# least three casings across sources, scripts and env vars.
 PATTERN='MacCare Local|MacCareLocal|MacCareApp|MacCare|MACCLEAN|mac-care-local|maccare|local\.maccare\.app'
 
 # Every entry needs a stated reason. A path added here without one is an
@@ -30,9 +35,21 @@ PATTERN='MacCare Local|MacCareLocal|MacCareApp|MacCare|MACCLEAN|mac-care-local|m
 allowed_reason() {
   case "$1" in
     Documentation/RebrandHistory/*)
-      echo "rename history: research for the abandoned candidate name" ;;
+      echo "rename history: research for the abandoned candidate name, and the pre-implementation migration design/test plan preserved verbatim" ;;
+    Documentation/AuditHistory/*)
+      echo "audit history: frozen state snapshots from earlier versions, never rewritten to match a later state" ;;
     Documentation/PRE_REBRAND_BASELINE.md)
       echo "rename history: the pre-rename baseline being compared against" ;;
+    Documentation/CONTINUATION.md)
+      echo "rename record: the phase handoff states the old->new name mapping" ;;
+    Documentation/CURRENT_PROJECT_STATE.json|Documentation/CURRENT_AUDIT_STATE.json|Documentation/KNOWN_LIMITATIONS.md|Documentation/NON_COMPLIANCE_REGISTER.md|Documentation/DOCUMENT_INDEX.md)
+      echo "audit record: names the pre-rename identity when describing the rename itself, the data migration that reads the old paths, and the dead pre-rename env var removed in the 0.8.1 resync" ;;
+    Documentation/AUDIT_COMMANDS.log)
+      echo "raw evidence log: append-only transcript of real commands, including runs made from the pre-rename checkout path — editing it would falsify the evidence" ;;
+    Documentation/CORETEND_DATA_MIGRATION_REPORT.md)
+      echo "user-data compatibility: the delivered-state report on the old->new data migration" ;;
+    Documentation/FEATURE_INVENTORY.md|Documentation/feature-inventory.json|Documentation/feature-inventory.csv)
+      echo "user-data compatibility: generated inventory whose migration entries name the old identity the migration reads from" ;;
     Documentation/WORKSPACE_TARGET_STRUCTURE.md|Documentation/workspace-migration-manifest.json)
       echo "workspace migration record: states the pre-move path a rollback moves back to" ;;
     Documentation/PORTFOLIO_REPOSITORY_INVENTORY.md|Documentation/PROJECT_COMPLETE_AUDIT.md|Documentation/PUBLICATION_AUDIT.md)
@@ -45,7 +62,7 @@ allowed_reason() {
       echo "user-data compatibility: the design of the old->new data migration" ;;
     Documentation/REBRAND_MIGRATION_TEST_PLAN.md)
       echo "user-data compatibility: the migration's own test matrix" ;;
-    Documentation/BRAND_NAME_CLEARANCE.md|Documentation/BRAND_CONFLICT_REGISTER.md|Documentation/BRAND_SEARCH_EVIDENCE.md)
+    Documentation/BRAND_NAME_CLEARANCE.md|Documentation/BRAND_CONFLICT_REGISTER.md|Documentation/BRAND_SEARCH_EVIDENCE.md|Documentation/BRAND_NAME_ALTERNATIVES.md)
       echo "rename history: brand clearance record naming the abandoned candidate" ;;
     Documentation/DATA_LOCATIONS.md)
       echo "user-data compatibility: documents where pre-rename data still lives" ;;
@@ -67,6 +84,8 @@ allowed_reason() {
       echo "user-data compatibility: comment marking the migration's strings" ;;
     Scripts/uninstall.sh|Scripts/uninstall-local.sh|Scripts/test-uninstall.sh)
       echo "user-data compatibility: uninstallers must name pre-rename paths" ;;
+    Scripts/test-distribution.sh)
+      echo "removal record: names the dead pre-rename env var deleted in the 0.8.1 resync, so the deletion stays auditable instead of silently vanishing" ;;
     Scripts/check-legacy-brand-references.sh|Scripts/test-check-legacy-brand-references.sh)
       echo "this gate and its tests: the patterns they search for are their own source" ;;
     Scripts/check-brand-assets.sh)
@@ -79,7 +98,7 @@ allowed_reason() {
   esac
 }
 
-MATCHES=$(rg -l --hidden \
+MATCHES=$(rg -li --hidden \
   --glob '!.git/**' \
   --glob '!.build/**' \
   --glob '!build/**' \
@@ -94,7 +113,7 @@ if [ "${1:-}" = "--list" ]; then
   echo "== files still naming the pre-rename identity =="
   echo "$MATCHES" | while IFS= read -r f; do
     [ -z "$f" ] && continue
-    count=$(rg -c "$PATTERN" "$f" 2>/dev/null || echo 0)
+    count=$(rg -ci "$PATTERN" "$f" 2>/dev/null || echo 0)
     if reason=$(allowed_reason "$f"); then
       printf '  ALLOWED  %-60s %4s  (%s)\n' "$f" "$count" "$reason"
     else

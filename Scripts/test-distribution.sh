@@ -90,8 +90,17 @@ else
 fi
 
 note "Non-destructive launch smoke test"
-export MACCARELOCAL_STORE_DIR="$WORK/appdata"
-mkdir -p "$MACCARELOCAL_STORE_DIR"
+# There is no store-directory override: Store.defaultPath() always resolves to
+# ~/Library/Application Support/CoreTend (Sources/Persistence/Store.swift:77-84)
+# and reads no environment variable. This smoke test therefore launches the real
+# app against the real per-user store. It only launches and quits — it never
+# writes findings, never executes a cleanup, and never deletes anything — but it
+# is not sandboxed from the user's data, and this script must not claim it is.
+# A previous version exported MACCARELOCAL_STORE_DIR here, which nothing has
+# ever read; it was removed in the 0.8.1 audit resync rather than renamed,
+# because renaming a dead variable would have preserved the illusion of
+# isolation. Real isolation needs an injectable store path in Sources/, which is
+# out of scope for a distribution check.
 open -W -n -a "$APP" --args --smoke-test-quit-immediately &
 LAUNCH_PID=$!
 sleep 3
@@ -106,8 +115,10 @@ wait $LAUNCH_PID 2>/dev/null || true
 note "Fresh-location DB init check"
 # The app's Store initializes its SQLite DB under Application Support on
 # first run; we only verify the on-disk store this run produced (if any)
-# is a fresh, valid SQLite file with no seeded personal data — we never
-# touch the real per-user Application Support location.
+# is a fresh, valid SQLite file with no seeded personal data. This DOES
+# inspect the real per-user Application Support location, because that is
+# the only place the app will ever write (see the smoke-test note above).
+# Read-only: `find` and `file`, nothing is created or removed here.
 DB_CANDIDATE=$(find "$HOME/Library/Application Support/CoreTend" -name "store.sqlite" -newer "$WORK" 2>/dev/null | head -1)
 if [ -n "$DB_CANDIDATE" ]; then
   if file "$DB_CANDIDATE" | grep -qi "SQLite"; then

@@ -1,6 +1,50 @@
 # CONTINUATION
 
-## Where we are (product version 0.8.1, phase: 0.8.1 — CoreTend Rebrand & Workspace Migration, EXECUTED)
+## Where we are (product version 0.8.1, phase: 0.8.1 Final Canonical Audit Resync, CLOSED)
+
+Branch `feat/coretend-rebrand-workspace`. **Nothing pushed, deployed, published,
+signed, notarized. No DNS touched. No product behaviour changed.**
+
+This phase changed only documents, evidence and archives, to make them agree with
+the real final state. What it actually found and did:
+
+- **Re-measured everything.** 274 tests in 57 suites, PASS. Debug and Release both
+  build with zero warnings. Cross-checked for coherence: 274 `@Test`
+  declarations equal 274 executed tests, 57 `@Suite` declarations equal 57
+  executed suites, and the one parameterized test (4 arguments) accounts for the
+  278 executed *cases*. The 0.8.0 figures of 250/55 were not carried forward.
+- **Froze the 0.8.0 state** at `Documentation/AuditHistory/0.8.0/` — verbatim, not
+  rewritten — and rewrote `CURRENT_PROJECT_STATE.json` and
+  `CURRENT_AUDIT_STATE.json` for 0.8.1.
+- **Separated the three commit identities.** `PRODUCT_SOURCE_COMMIT` is
+  `92cbd08…` (what the artifacts were built from). `FINAL_REPOSITORY_HEAD` and
+  `AUDIT_PACKAGE_COMMIT` are recorded post-hoc in the audit package manifest,
+  because a commit cannot contain its own SHA.
+- **Corrected the migration evidence.** The two pre-implementation documents both
+  opened by saying no migration code existed. They are archived verbatim under
+  `Documentation/RebrandHistory/PRE_IMPLEMENTATION_MIGRATION_*` and superseded by
+  `Documentation/CORETEND_DATA_MIGRATION_REPORT.md`, which records the shipped
+  code, the 20 tests, the one real run on this one machine, and what is *not*
+  covered.
+- **Fixed seven real defects**, listed in `CURRENT_PROJECT_STATE.json` under
+  `defectsFoundAndFixedThisPhase`. The two that matter most:
+  `Scripts/check-legacy-brand-references.sh` was **red at `92cbd08`** (the claim
+  below that it passed was wrong), and it scanned case-sensitively, so a dead
+  `MACCARELOCAL_STORE_DIR` export sat in the tree with the gate reporting green.
+- **Rebuilt the release artifacts** — not by choice.
+  `Scripts/test-release-manifest.sh` is a required gate and calls
+  `Scripts/build-release.sh` inside its own resync regression check. That rebuild
+  is also what corrected `latest.json`'s stale `sourceCommit`.
+
+### Correction to the section below
+
+The 0.8.1 rebrand section that follows states "Gates all green: legacy
+references, …". That was not true at `92cbd08`: the legacy-references gate
+failed on `Documentation/AUDIT_COMMANDS.log` and on this very file. It is green
+now, after this phase's fix. The section is otherwise accurate and is left as
+written.
+
+## Previous phase (0.8.1 — CoreTend Rebrand & Workspace Migration, EXECUTED)
 
 Branch `feat/coretend-rebrand-workspace`, off `feat/functional-completion`.
 **Nothing pushed, nothing deployed, nothing published.** Repository path is now

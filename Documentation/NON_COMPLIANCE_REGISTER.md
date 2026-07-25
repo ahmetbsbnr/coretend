@@ -17,6 +17,42 @@ expected, honest result of covering the harder domains session 2 skipped — see
 
 ## DIST-003 — sourceCommit in the release manifest should reflect the actual audited/built HEAD
 
+> **Updated by the 0.8.1 Final Canonical Audit Resync (2026-07-25). The predicted
+> defect actually happened.**
+>
+> The automation gap described below is **closed**: `Scripts/build-release.sh:26`
+> now sets `SOURCE_COMMIT=$(git rev-parse HEAD)` and stamps it into
+> `latest.json`, and `Scripts/test-release-manifest.sh` asserts the field equals
+> the real HEAD.
+>
+> The drift still recurred anyway, exactly as this entry warned it would, by a
+> route the automation does not cover: the 0.8.1 artifacts were built while the
+> release changes were still **uncommitted** in the working tree, so
+> `git rev-parse HEAD` correctly returned the *previous* commit
+> (`3b5dc73`). Those changes — including `Resources/Info.plist`'s 0.8.0 → 0.8.1
+> version strings, which are inside the bundle — were committed 8 minutes later
+> as `dec47a1`. The manifest was never resynced, so it advertised a
+> `sourceCommit` whose tree could not have produced the artifacts it described.
+> The artifacts were right; the record was wrong.
+>
+> Detected by comparing the ZIP's embedded `Info.plist` (`0.8.1`) against the
+> tree at the claimed `sourceCommit` (`0.8.0`). Resolved when the mandatory
+> `test-release-manifest` gate rebuilt the artifacts and resynced the manifest.
+>
+> - **Residual status**: COMPLIANT_PARTIAL (unchanged rating, different reason).
+>   Stamping is automated; *building from a clean tree* is not enforced.
+> - **Residual gap**: `build-release.sh` does not refuse to run on a dirty tree,
+>   so `sourceCommit` can still name a commit whose tree differs from what was
+>   packaged.
+> - **Fix**: have `build-release.sh` fail when `git status --short` is non-empty,
+>   or record the dirty state in the manifest.
+> - **Priority**: P3. A one-line guard, but it is a product-tooling change and
+>   therefore outside a documentation resync's scope.
+> - **See also**: `KNOWN_LIMITATIONS.md` on why this gate cannot be green at the
+>   commit that records its own output.
+
+
+
 - **Requirement**: `Release/latest.json`'s `sourceCommit` field should match the commit
   `Scripts/build-release.sh` was actually run against (SHOULD priority).
 - **Status**: COMPLIANT_PARTIAL
@@ -141,3 +177,53 @@ expected, honest result of covering the harder domains session 2 skipped — see
 - **Priority**: P1 for public launch, out of scope for a local/unsigned build.
 - **Fix**: maintainer enrolls in the Apple Developer Program and configures signing.
 - **Recommended version**: before any notarized public release.
+
+---
+
+## Opened by the 0.8.1 Final Canonical Audit Resync (2026-07-25)
+
+### RESYNC-001 — Requirements baseline does not cover the rebrand's features
+- **Status**: UNKNOWN (not yet audited)
+- **Evidence**: `Documentation/requirements-traceability.json` holds 69
+  requirements, none of which addresses the legacy-data migration, its launch
+  wiring, its Settings surface, or the uninstaller's opt-in legacy handling.
+  Those four features exist, are tested (20 tests), and are now listed in
+  `Documentation/feature-inventory.json` — but no requirement traces to them.
+- **Priority**: P3. The features are verified at the code and test level; what is
+  missing is requirement-level traceability.
+- **Fix**: add MIGRATION-* requirements and audit them in a requirements phase.
+- **Recommended version**: next requirements-reconciliation pass, not 0.8.1.
+
+### RESYNC-002 — Distribution smoke test is not isolated from real user data
+- **Status**: COMPLIANT_PARTIAL
+- **Evidence**: `Store.defaultPath()`
+  (`Sources/Persistence/Store.swift:77-84`) always resolves to
+  `~/Library/Application Support/CoreTend` and reads no environment variable, so
+  `Scripts/test-distribution.sh`'s launch check runs the real app against the
+  real per-user store. A dead `MACCARELOCAL_STORE_DIR` export implied isolation
+  that never existed; it was removed rather than renamed, and the script's false
+  "never touches the real location" comment was corrected.
+- **User impact**: none in practice — the test launches and quits, performing no
+  scan, no cleanup and no deletion.
+- **Priority**: P3.
+- **Fix**: make the store path injectable in `Sources/` so the test can point at
+  a temp directory. A product-tooling change, out of scope for a documentation
+  resync.
+
+### RESYNC-003 — build-release.sh does not refuse a dirty tree
+- **Status**: COMPLIANT_PARTIAL
+- **Evidence**: see the DIST-003 update above. `sourceCommit` is stamped from
+  `git rev-parse HEAD` but nothing enforces that HEAD's tree is what was actually
+  packaged, which is how the 0.8.1 manifest came to name `3b5dc73`.
+- **Priority**: P3.
+- **Fix**: fail the build when `git status --short` is non-empty, or record the
+  dirty state in the manifest.
+
+### RESYNC-004 — check-legacy-brand-references.sh scanned case-sensitively
+- **Status**: RESOLVED this phase
+- **Evidence**: the gate was **red at `92cbd08`** on two unexplained files
+  (`Documentation/AUDIT_COMMANDS.log`, `Documentation/CONTINUATION.md`), and its
+  case-sensitive scan additionally missed `MACCARELOCAL_STORE_DIR`. It now scans
+  with `rg -li`, both legitimate files are allowlisted with stated reasons, and
+  its 5 self-tests pass.
+- **Priority**: was P2 (a green gate that was not actually green).

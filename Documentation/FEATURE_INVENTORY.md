@@ -2,7 +2,7 @@
 
 Generated from `Documentation/feature-inventory.json` by `Scripts/generate-feature-inventory.py` — the JSON is the single canonical source; this file, `feature-inventory.csv`, and the totals below are all derived from it, never typed by hand. Run `python3 Scripts/generate-feature-inventory.py --check` to verify they still agree.
 
-**Total: 42 features.** Status counts: IMPLEMENTED_UNVERIFIED=4, VERIFIED_COMPLETE=34, VERIFIED_PARTIAL=4.
+**Total: 46 features.** Status counts: IMPLEMENTED_UNVERIFIED=4, VERIFIED_COMPLETE=38, VERIFIED_PARTIAL=4.
 
 Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, UI_ONLY, SIMULATED, DOCUMENTATION_ONLY, BLOCKED_HUMAN, BLOCKED_ENVIRONMENT, BROKEN, DEPRECATED, NOT_STARTED, NOT_APPLICABLE, UNKNOWN.
 
@@ -101,7 +101,7 @@ Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, 
 | activity.log | `Store.recordActivity`/`activity(limit:kind:)`/`clearActivity()` — SQLite (`sqlite3` C API), WAL mode, actor-isolated, append-only migration list, migrations verified idempotent | VERIFIED_COMPLETE | Sources/Persistence/Store.swift:1-165 |
 | activity.grouping | Day-grouping / date-filter (`last7`/`last30`/`all`) logic in `MyActivityView` | VERIFIED_COMPLETE | Sources/CoreTendApp/MyActivityView.swift:36-39 |
 
-## Settings (7: VERIFIED_COMPLETE=7)
+## Settings (8: VERIFIED_COMPLETE=8)
 
 | id | Feature | Status | Evidence |
 |---|---|---|---|
@@ -112,4 +112,18 @@ Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, 
 | settings.exclusions | Settings: exclusions list — add folder (NSOpenPanel) / remove, persisted to Store | VERIFIED_COMPLETE | Sources/CoreTendApp/SettingsView.swift:152-174 |
 | settings.clearactivity | Settings: "Clear Activity History" destructive action with confirmation dialog | VERIFIED_COMPLETE | Sources/CoreTendApp/SettingsView.swift:181-184 |
 | settings.exportdiagnostic | Settings: "Export Diagnostic Report" — opens DiagnosticReportView sheet (preview before save) | VERIFIED_COMPLETE | Sources/CoreTendApp/SettingsView.swift:188 |
+| settings.migrationnotice | Settings: `MigrationNoticeRow` — shown only when the rename migration did something; states what moved, distinguishes failure from success, and explicitly says the old data is still on disk | VERIFIED_COMPLETE | Sources/CoreTendApp/SettingsView.swift:185-186, 229-265 |
+
+## Data migration (2: VERIFIED_COMPLETE=2)
+
+| id | Feature | Status | Evidence |
+|---|---|---|---|
+| migration.legacydata | `LegacyDataMigration` — one-time copy of pre-rebrand (MacCare Local) user data to the CoreTend identity. Copy-never-move (legacy directory never modified, renamed, or deleted), per-item and idempotent (existing destination items are skipped, never overwritten), temp-then-rename so an interrupted run resumes instead of leaving a truncated file that looks complete, hardcoded legacy directory names (`MacCareLocal`, `MacCare Local`) rather than heuristic matching, allowlisted preference keys only (`menuBarEnabled`, `onboardingDone`, `onboardingStep`) read from the old domain via `CFPreferencesCopyAppValue`, per-run JSON journal at `migration-log.json`, and `rollback(_:)` that removes only what that one run created | VERIFIED_COMPLETE | Sources/Persistence/LegacyDataMigration.swift:50-317; Tests/PersistenceTests/LegacyDataMigrationTests.swift (20 tests, suite "Legacy data migration") |
+| migration.launchwiring | Migration runs unconditionally in `AppEnvironment.init` before the store is opened — no "have we done this yet" flag that could drift from the filesystem; the report is retained only when it did something or failed | VERIFIED_COMPLETE | Sources/CoreTendApp/AppEnvironment.swift:14-31 |
+
+## Uninstall (1: VERIFIED_COMPLETE=1)
+
+| id | Feature | Status | Evidence |
+|---|---|---|---|
+| uninstall.legacydata | Uninstaller `--include-legacy` opt-in additionally targets pre-rename data (`MacCareLocal`, `MacCare Local`, `local.maccare.app.plist`). Off by default — because the migration copies rather than moves, legacy data is a real backup and is not removed unless asked. Legacy paths are ordered last so an interrupted run never leaves the current install half-removed while the backup is already gone | VERIFIED_COMPLETE | Scripts/uninstall.sh:29-30, 68-71, 107-109, 151-158; Scripts/test-uninstall.sh |
 

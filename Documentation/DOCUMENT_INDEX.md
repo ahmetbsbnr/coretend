@@ -1,5 +1,27 @@
 # Document Index
 
+> **0.8.1 Final Canonical Audit Resync (2026-07-25).** Entries touched this
+> phase, all verified against the filesystem rather than carried forward:
+>
+> | Path | What changed |
+> |---|---|
+> | `CURRENT_PROJECT_STATE.json` | Rewritten for 0.8.1 (schemaVersion 2). Real branch, real commit identities, 274/57, 46 features, human + environment blockers, defects fixed |
+> | `CURRENT_AUDIT_STATE.json` | Rewritten for 0.8.1 (schemaVersion 2). Per-commit binary/bundle/site/audit impact table, real gate results, publication gate red with reasons |
+> | `AuditHistory/0.8.0/` | **New.** Frozen 0.8.0 snapshots of `CURRENT_PROJECT_STATE.json`, `CURRENT_AUDIT_STATE.json`, `PROJECT_STATE.json`. Never rewritten to match the present |
+> | `CORETEND_DATA_MIGRATION_REPORT.md` | **New.** The migration as delivered and executed |
+> | `RebrandHistory/PRE_IMPLEMENTATION_MIGRATION_*.md` | **Moved** from `USER_DATA_RENAME_MIGRATION.md` / `REBRAND_MIGRATION_TEST_PLAN.md`, with historical banners. Content untouched |
+> | `USER_DATA_RENAME_MIGRATION.md`, `REBRAND_MIGRATION_TEST_PLAN.md` | Now redirect stubs, so no inbound reference breaks |
+> | `TEST_INVENTORY.md`, `test-inventory.json` | Regenerated from a real run at `92cbd08` |
+> | `FEATURE_INVENTORY.md`, `feature-inventory.{json,csv}` | 42 → 46 features; the four rebrand features were missing |
+> | `KNOWN_LIMITATIONS.md` | Two stale entries corrected, four current ones added |
+> | `NON_COMPLIANCE_REGISTER.md` | DIST-003 updated (the predicted drift really happened); RESYNC-001..004 opened |
+> | `REQUIREMENTS_COMPLIANCE_SUMMARY.md` | Resync header; requirements explicitly **not** re-audited this phase |
+> | `PROJECT_STATE.json`, `CONTINUATION.md` | Test counts, build status and limitations corrected; resync phase recorded |
+>
+> `AUDITED_SOURCE_COMMIT` below refers to the original index audit and is
+> historical. The commit this resync verified against is
+> `92cbd08bc3cd1d8ad0513391cbd7552b520f09fe`.
+
 Map of every document in `Documentation/` (plus root-level legal/policy files), for later sessions and
 the eventual external-audit ZIP manifest. Built by reading each file's title/opening and, for the audit
 reports, their own stated session/date. AUDITED_SOURCE_COMMIT for this index: `b33c06b8d68b9b03316821c3f6cfb17252f35011`.
@@ -177,8 +199,11 @@ domain changed. Every doc below is current, public-safe unless noted.
 | `WORKSPACE_TARGET_STRUCTURE.md`, `WORKSPACE_MIGRATION_PLAN.md`, `WORKSPACE_ROLLBACK_PLAN.md`, `workspace-migration-manifest.json` | Future `WEBSITE/` workspace design — nothing executed | current | internal |
 | `PRODUCT_RENAME_INVENTORY.md` + `product-rename-inventory.json` | Every "CoreTend"/"CoreTend" reference, categorized by risk | current | internal |
 | `PRODUCT_RENAME_PLAN.md`, `PRODUCT_RENAME_ROLLBACK.md` | Rename sequencing + rollback, nothing executed | current | internal |
-| `USER_DATA_RENAME_MIGRATION.md` + `user-data-rename-migration.json` | Local-data migration design (SQLite/Quarantine/UserDefaults) | current | internal |
-| `REBRAND_MIGRATION_TEST_PLAN.md` | 15-scenario test matrix for the above, written ahead of implementation | current | internal |
+| `CORETEND_DATA_MIGRATION_REPORT.md` | **Delivered-state** report on the local-data migration: shipped code, 20 tests, planned-vs-delivered scenario table, the one real execution on this one machine, and stated limits | current | public |
+| `user-data-rename-migration.json` | Machine-readable migration record — `status: DELIVERED_AND_EXECUTED`, implementation map, real-execution journal, known gaps | current | internal |
+| `RebrandHistory/PRE_IMPLEMENTATION_MIGRATION_DESIGN.md` | The migration design as written **before** any code existed. Opens by stating no migration code exists — true then, false now. Preserved verbatim | historical | internal |
+| `RebrandHistory/PRE_IMPLEMENTATION_MIGRATION_TEST_PLAN.md` | The 15-scenario acceptance matrix written ahead of implementation. Preserved verbatim | historical | internal |
+| `USER_DATA_RENAME_MIGRATION.md`, `REBRAND_MIGRATION_TEST_PLAN.md` | Redirect stubs only. Kept because `Sources/Persistence/LegacyDataMigration.swift` and several rename-phase docs reference these paths by name; leaving them avoids editing `Sources/`, which would break the artifacts' provenance | current (pointer) | internal |
 | `CROSS_SITE_DESIGN_AUDIT.md`, `CROSS_SITE_DESIGN_LANGUAGE.md`, `cross-site-design-tokens.json`, `PORTFOLIO_PRODUCT_SITE_ALIGNMENT.md` | Read-only design comparison, portfolio vs product site | current | internal |
 | `REBRAND_VISUAL_BRIEF.md`, `BRAND_ASSET_MATRIX.md`, `LOGO_MIGRATION_PLAN.md` | Logo/asset planning, no assets produced under any candidate name | current | internal |
 | `Scripts/preflight-workspace-migration.sh` + `Scripts/test-preflight-workspace-migration.sh` | Non-destructive repo-state check + optional git-bundle backup | current, tested | internal (script) |
