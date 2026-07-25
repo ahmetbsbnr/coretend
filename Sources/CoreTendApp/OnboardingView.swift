@@ -267,7 +267,13 @@ struct OnboardingView: View {
         page {
             CoreBloomMark(tint: [MCColor.storage, MCColor.protection, MCColor.performance])
                 .frame(width: 88, height: 88)
-            Text("CoreTend").font(MCFont.heroTitle)
+            Text(L("onboarding.step0.title")).font(MCFont.heroTitle)
+            // The product signature, identical here, on the site, in the DMG
+            // and in the README. A product that introduces itself differently
+            // in each place reads as several products.
+            Text(L("onboarding.step0.signature"))
+                .font(MCFont.pageTitle).foregroundStyle(MCTheme.accent)
+                .multilineTextAlignment(.center).frame(maxWidth: 440)
             Text(L("onboarding.step0.subtitle"))
                 .font(MCFont.body).foregroundStyle(.secondary)
                 .multilineTextAlignment(.center).frame(maxWidth: 440)

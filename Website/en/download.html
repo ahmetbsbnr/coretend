@@ -4,25 +4,49 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Download — CoreTend</title>
-<meta name="description" content="A local-only, open source utility to scan, clean, organize and optimize Apple Silicon Macs.">
+<meta name="description" content="Local, transparent and reversible care for macOS.">
+<meta name="color-scheme" content="light dark">
+<!-- noindex until the site is actually published: an unreleased page in a
+     search index is a promise nobody can keep. -->
 <meta name="robots" content="noindex">
+<link rel="canonical" href="https://coretend.ahmetbsbnr.com/en/download.html">
+<link rel="alternate" hreflang="en" href="https://coretend.ahmetbsbnr.com/en/download.html">
+<link rel="alternate" hreflang="fr" href="https://coretend.ahmetbsbnr.com/fr/download.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CoreTend">
+<meta property="og:title" content="Download — CoreTend">
+<meta property="og:description" content="A lighter Mac. Always under control. Local, transparent and reversible care for macOS.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="../assets/brand/opengraph.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../assets/brand/favicon-32.png" sizes="32x32">
+<link rel="icon" href="../assets/brand/favicon-512.png" sizes="512x512">
+<link rel="apple-touch-icon" href="../assets/brand/favicon-180.png">
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
 <header class="site">
   <div class="wrap">
-    <a class="brand" href="index.html"><span class="mark"></span>CoreTend</a>
-    <nav class="primary"><a href="index.html" class="">Home</a>
-<a href="features.html" class="">Features</a>
-<a href="download.html" class="active">Download</a>
-<a href="documentation.html" class="">Documentation</a>
-<a href="open-source.html" class="">Open Source</a>
-<a href="roadmap.html" class="">Roadmap</a>
-<a href="faq.html" class="">FAQ</a></nav>
-    <div class="lang-switch"><a href="../en/download.html" class="active">EN</a><a href="../fr/download.html" class="">FR</a></div>
+    <a class="brand" href="index.html" aria-label="CoreTend — home"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
+<path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--care)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--privacy)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--activity)" stroke-width="38.4" stroke-linecap="round"/>
+<circle cx="256" cy="256" r="61.44" fill="var(--care)"/>
+</svg><span>CoreTend</span></a>
+    <nav class="primary" aria-label="Main">
+      <a href="index.html">Overview</a>
+      <a href="features.html">Features</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="download.html" class="active" aria-current="page">Download</a>
+      <a href="documentation.html">Documentation</a>
+      <a href="open-source.html">Open Source</a>
+      <a href="changelog.html">Changelog</a>
+    </nav>
+    <div class="lang-switch"><a href="../en/download.html" hreflang="en" lang="en" class="active" aria-current="true">EN</a><a href="../fr/download.html" hreflang="fr" lang="fr">FR</a></div>
   </div>
 </header>
-<main>
+<main id="main">
   <div class="wrap">
 
 <h1>Download</h1>
@@ -32,44 +56,12 @@
   not link to any local build or ad-hoc artifact.</p>
 </div>
 
-<div id="release-status" class="status-box" aria-live="polite"></div>
-<script>
-// Renders release state from a latest.json-shaped object. Today this is a
-// local stub (no public manifest exists yet); once a real release ships,
-// point MANIFEST_URL at the published Release/latest.json and this same
-// renderer handles every state below without further changes.
-const MANIFEST_URL = null; // e.g. "https://github.com/<org>/<repo>/releases/latest/download/latest.json"
-const STUB_MANIFEST = null; // in-preparation: no manifest at all yet
-
-function renderReleaseStatus(manifest) {
-  const el = document.getElementById("release-status");
-  if (!el) return;
-  if (!manifest) {
-    el.innerHTML = "<p><strong>No release manifest published yet.</strong> Nothing to download or verify until one exists.</p>";
-    return;
-  }
-  const rows = [];
-  rows.push(["Version", manifest.version || "unknown"]);
-  rows.push(["Channel", manifest.prerelease ? "prerelease" : (manifest.channel || "unknown")]);
-  rows.push(["Architecture", manifest.architecture || "unknown"]);
-  rows.push(["Minimum macOS", manifest.minimumMacOS || "unknown"]);
-  rows.push(["Code signing", manifest.signed ? "signed" : "unsigned"]);
-  rows.push(["Notarization", manifest.notarized ? "notarized" : "not notarized"]);
-  rows.push(["Checksum (SHA-256)", manifest.zipSHA256 || "unavailable"]);
-  const fileAvailable = !!manifest.zipName;
-  let html = "<table>" + rows.map(r => `<tr><th>${r[0]}</th><td>${r[1]}</td></tr>`).join("") + "</table>";
-  html += fileAvailable
-    ? "<p>Download link will appear here once a public release exists.</p>"
-    : "<p><strong>File unavailable.</strong> The manifest exists but no downloadable artifact is attached yet.</p>";
-  el.innerHTML = html;
-}
-
-if (MANIFEST_URL) {
-  fetch(MANIFEST_URL).then(r => r.ok ? r.json() : null).then(renderReleaseStatus).catch(() => renderReleaseStatus(null));
-} else {
-  renderReleaseStatus(STUB_MANIFEST);
-}
-</script>
+<div class="status-box">
+  <p><strong>No release manifest published yet.</strong> There is nothing to
+  download or verify until one exists. When a release ships, this page will
+  list its version, architecture, minimum macOS, signing status and SHA-256
+  checksum — read from the published manifest, not typed in by hand.</p>
+</div>
 
 <h2>Source code</h2>
 <p>CoreTend's source will be published on GitHub once the public
@@ -106,12 +98,18 @@ directly to it as soon as that happens.</p>
 </main>
 <footer class="site">
   <div class="wrap">
-    <span>&copy; CoreTend contributors. Open source — see LICENSE.</span>
-    <nav><a href="privacy.html">Privacy</a>
-<a href="security.html">Security</a>
-<a href="changelog.html">Changelog</a>
-<a href="licenses.html">Licenses</a>
-<a href="legal.html">Legal notice</a></nav>
+    <div>
+      <p style="margin:0 0 .5rem">&copy; CoreTend contributors. Open source — see the <a href="licenses.html">licenses</a>.</p>
+      <p class="disclaimer" style="margin:0">CoreTend is an independent project and is not affiliated with Apple Inc. Mac and macOS describe compatibility only.</p>
+    </div>
+    <nav aria-label="Footer">
+      <a href="faq.html">FAQ</a>
+      <a href="roadmap.html">Roadmap</a>
+      <a href="security.html">Security</a>
+      <a href="privacy.html">Privacy policy</a>
+      <a href="licenses.html">Licenses</a>
+      <a href="legal.html">Legal notice</a>
+    </nav>
   </div>
 </footer>
 </body>

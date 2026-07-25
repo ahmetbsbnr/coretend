@@ -356,7 +356,9 @@
 "settings.version" = "Version";
 
 /* Onboarding */
-"onboarding.step0.subtitle" = "Prendre soin du stockage, de la protection et des performances de ce Mac — rien de plus, rien de caché.";
+"onboarding.step0.subtitle" = "Entretien local, transparent et réversible pour macOS. Rien de plus, rien de caché.";
+"onboarding.step0.title" = "Bienvenue dans CoreTend";
+"onboarding.step0.signature" = "Un Mac plus léger. Toujours sous contrôle.";
 "onboarding.step1.title" = "Tout reste ici";
 "onboarding.step1.bullet1" = "Toute l'analyse s'exécute sur ce Mac. Aucun compte, aucune télémétrie, aucun appel réseau.";
 "onboarding.step1.bullet2" = "Votre historique vit dans une base de données locale que vous pouvez effacer à tout moment.";
