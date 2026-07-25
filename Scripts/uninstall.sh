@@ -26,21 +26,30 @@
 #   --remove-all    removes the app bundle, Application Support dir
 #                    (including quarantine), and prefs plist. Requires
 #                    confirmation.
+#   --include-legacy  additionally targets data left by the pre-rename
+#                    version (MacCare Local). The rename migration copies
+#                    that data rather than moving it, so on a migrated Mac it
+#                    is a second intact copy of the user's history — and it
+#                    may still belong to an old build the user has installed.
+#                    Removing it is therefore opt-in, never implied.
 set -euo pipefail
 
 MODE="dry-run"
 ASSUME_YES=0
+INCLUDE_LEGACY=0
 for arg in "$@"; do
   case "$arg" in
     --dry-run) MODE="dry-run" ;;
+    --include-legacy) INCLUDE_LEGACY=1 ;;
     --keep-quarantine) MODE="keep-quarantine" ;;
     --remove-all) MODE="remove-all" ;;
     --yes|-y) ASSUME_YES=1 ;;
     --help|-h)
-      echo "Usage: $0 [--dry-run|--keep-quarantine|--remove-all] [--yes]"
+      echo "Usage: $0 [--dry-run|--keep-quarantine|--remove-all] [--include-legacy] [--yes]"
       echo "  --dry-run          list what would be removed; removes nothing (default)"
       echo "  --keep-quarantine  remove app + prefs, keep the SQLite DB (quarantine/history/exclusions)"
       echo "  --remove-all       remove app, Application Support dir (incl. quarantine), and prefs"
+      echo "  --include-legacy   also target pre-rename (MacCare Local) data — opt-in"
       exit 0
       ;;
     *)
@@ -55,6 +64,11 @@ APP_PATH="/Applications/CoreTend.app"
 SUPPORT_DIR="$HOME_DIR/Library/Application Support/CoreTend"
 DB_FILE="$SUPPORT_DIR/store.sqlite"
 PREFS_FILE="$HOME_DIR/Library/Preferences/com.ahmetbsbnr.coretend.plist"
+
+# Pre-rename identity, targeted only with --include-legacy.
+LEGACY_SUPPORT_DIR="$HOME_DIR/Library/Application Support/MacCareLocal"
+LEGACY_SUPPORT_DIR_ALT="$HOME_DIR/Library/Application Support/MacCare Local"
+LEGACY_PREFS_FILE="$HOME_DIR/Library/Preferences/local.maccare.app.plist"
 
 # --- Safety: canonicalize and refuse anything unexpected -------------------
 # Never follow symlinks when resolving "the real path" of a target — if a
@@ -90,6 +104,9 @@ is_allowlisted() {
     "$SUPPORT_DIR") return 0 ;;
     "$DB_FILE") return 0 ;;
     "$PREFS_FILE") return 0 ;;
+    "$LEGACY_SUPPORT_DIR") [ "$INCLUDE_LEGACY" -eq 1 ] && return 0 || return 1 ;;
+    "$LEGACY_SUPPORT_DIR_ALT") [ "$INCLUDE_LEGACY" -eq 1 ] && return 0 || return 1 ;;
+    "$LEGACY_PREFS_FILE") [ "$INCLUDE_LEGACY" -eq 1 ] && return 0 || return 1 ;;
     *) return 1 ;;
   esac
 }
@@ -130,6 +147,16 @@ $PREFS_FILE" ;;
 $SUPPORT_DIR
 $PREFS_FILE" ;;
 esac
+
+# Appended after the mode switch so legacy paths are always last: the current
+# identity's data is dealt with first, and a failure part-way never leaves the
+# new install half-removed while the legacy copy is already gone.
+if [ "$INCLUDE_LEGACY" -eq 1 ]; then
+  TARGETS="$TARGETS
+$LEGACY_SUPPORT_DIR
+$LEGACY_SUPPORT_DIR_ALT
+$LEGACY_PREFS_FILE"
+fi
 
 echo "CoreTend — uninstall (mode: $MODE)"
 echo "Paths that will be checked:"

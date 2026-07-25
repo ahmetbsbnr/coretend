@@ -62,5 +62,53 @@ grep -qi "symlink" /tmp/uninstall-test-symlink.out || fail "no symlink-refusal m
 rm -rf "$OUTSIDE_DIR"
 echo "PASS: refuses to follow a symlinked target"
 
+# 5. Legacy (pre-rename) data is left alone unless --include-legacy is given.
+# The rename migration copies rather than moves, so this directory is a second
+# intact copy of the user's history — and may belong to an old build still
+# installed. Deleting it by implication would be a silent data loss.
+rm -rf "$FAKE_HOME/Library/Application Support/CoreTend"
+mkdir -p "$FAKE_HOME/Library/Application Support/CoreTend"
+echo "fake-db" > "$FAKE_HOME/Library/Application Support/CoreTend/store.sqlite"
+mkdir -p "$FAKE_HOME/Library/Application Support/MacCareLocal"
+echo "legacy-db" > "$FAKE_HOME/Library/Application Support/MacCareLocal/store.sqlite"
+echo "legacy-plist" > "$FAKE_HOME/Library/Preferences/local.maccare.app.plist"
+
+HOME="$FAKE_HOME" "$UNINSTALL" --remove-all --yes >/tmp/uninstall-test-legacy-off.out
+[ -f "$FAKE_HOME/Library/Application Support/MacCareLocal/store.sqlite" ] \
+  || fail "--remove-all deleted pre-rename data without --include-legacy"
+[ -f "$FAKE_HOME/Library/Preferences/local.maccare.app.plist" ] \
+  || fail "--remove-all deleted the pre-rename prefs plist without --include-legacy"
+[ ! -e "$FAKE_HOME/Library/Application Support/CoreTend" ] \
+  || fail "--remove-all failed to remove the current identity's data"
+echo "PASS: pre-rename data survives an uninstall that didn't ask for it"
+
+# 6. --include-legacy removes it, and only then.
+mkdir -p "$FAKE_HOME/Library/Application Support/CoreTend"
+echo "fake-db" > "$FAKE_HOME/Library/Application Support/CoreTend/store.sqlite"
+echo "fake-plist" > "$FAKE_HOME/Library/Preferences/com.ahmetbsbnr.coretend.plist"
+mkdir -p "$FAKE_HOME/Library/Application Support/MacCare Local"
+echo "legacy-alt" > "$FAKE_HOME/Library/Application Support/MacCare Local/store.sqlite"
+
+HOME="$FAKE_HOME" "$UNINSTALL" --remove-all --include-legacy --yes >/tmp/uninstall-test-legacy-on.out
+[ ! -e "$FAKE_HOME/Library/Application Support/MacCareLocal" ] \
+  || fail "--include-legacy left the legacy Application Support dir behind"
+[ ! -e "$FAKE_HOME/Library/Application Support/MacCare Local" ] \
+  || fail "--include-legacy left the space-separated legacy dir behind"
+[ ! -e "$FAKE_HOME/Library/Preferences/local.maccare.app.plist" ] \
+  || fail "--include-legacy left the legacy prefs plist behind"
+echo "PASS: --include-legacy removes pre-rename data"
+
+# 7. The allowlist still refuses a legacy path when the flag is absent, even if
+# something else on the command line names it. The flag gates the allowlist
+# itself, not merely the target list.
+mkdir -p "$FAKE_HOME/Library/Application Support/MacCareLocal"
+echo "legacy-db" > "$FAKE_HOME/Library/Application Support/MacCareLocal/store.sqlite"
+HOME="$FAKE_HOME" "$UNINSTALL" --dry-run >/tmp/uninstall-test-legacy-dry.out
+grep -q "MacCareLocal" /tmp/uninstall-test-legacy-dry.out \
+  && fail "dry-run listed a legacy path without --include-legacy"
+[ -f "$FAKE_HOME/Library/Application Support/MacCareLocal/store.sqlite" ] \
+  || fail "dry-run deleted legacy data"
+echo "PASS: legacy paths are outside the allowlist without --include-legacy"
+
 echo
 echo "All uninstall.sh tests passed."
