@@ -5,7 +5,10 @@ Nothing in this repository was modified during this inventory pass.
 
 ## How it was found
 
-`~/Documents` itself has no other `.git` repo besides `MACCLEAN`. A wider
+At the time of this inventory the product repository still lived at
+`~/Documents/MACCLEAN`, and `~/Documents` held no other `.git` repo. Both
+repositories have since moved into the `WEBSITE/` workspace — see
+`WORKSPACE_TARGET_STRUCTURE.md` for the realized layout. A wider
 read-only search found two stale Claude session-metadata folders
 referencing a since-removed path
 (`~/Desktop/Stage/ahmetbsbnrportfolio`, no longer present on disk), which

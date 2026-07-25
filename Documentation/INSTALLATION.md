@@ -9,8 +9,8 @@ Requirements: macOS 14+, Apple Silicon, Swift command-line tools (Xcode not
 required; see `Scripts/doctor.sh` to check your setup).
 
 ```sh
-git clone <repo>
-cd MACCLEAN
+git clone https://github.com/ahmetbsbnr/coretend.git
+cd coretend
 Scripts/doctor.sh            # checks prerequisites
 Scripts/bootstrap.sh         # one-time setup
 Scripts/build.sh release     # release build

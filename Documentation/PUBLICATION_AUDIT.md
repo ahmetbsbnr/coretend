@@ -28,7 +28,9 @@ Scope: full working tree at HEAD `b82558e` before any 0.6.0 work.
 | `.claude/` directory | Untracked (`git status` shows `?? .claude/`), contains local agent worktrees/settings; not part of git history, left untracked and now explicitly ignored |
 
 ## Absolute-path note
-The username `ahmetbasbunar` and the literal path `/Users/ahmetbasbunar/Documents/MACCLEAN`
+The username `ahmetbasbunar` and the literal path of the working copy
+(`~/Documents/MACCLEAN` at the time of this audit, since moved into the
+`WEBSITE/` workspace)
 appear only in this session's tool-invocation context and in the local
 filesystem location of the working copy — not inside any tracked file in
 the repository at audit time. `Scripts/check-private-data.sh` (added this

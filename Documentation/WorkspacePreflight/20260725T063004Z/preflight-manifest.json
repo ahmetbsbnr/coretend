@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "mode": "check",
+  "product": {
+    "path": "/Users/ahmetbasbunar/Documents/MAC_ORGANISE/00_DOCUMENTS_EXISTANTS/01_PROJETS/01_PROJETS_ACTIFS/WEBSITE/products/coretend/app",
+    "exists": true,
+    "isGitRepo": true,
+    "branch": "feat/coretend-rebrand-workspace",
+    "head": "e557e96427a2c9559b2126337ca7057cfbddd59c",
+    "clean": false,
+    "remote": "none"
+  },
+  "portfolio": {
+    "path": "/Users/ahmetbasbunar/Documents/MAC_ORGANISE/00_DOCUMENTS_EXISTANTS/01_PROJETS/01_PROJETS_ACTIFS/WEBSITE/ahmetbsbnr-portfolio",
+    "exists": true,
+    "isGitRepo": true,
+    "branch": "main",
+    "head": "e6db86dbebbce8b16088680d8894acd015b0e77c",
+    "clean": true,
+    "remote": "https://github.com/ahmetbsbnr/ahmetbsbnrportfolio.git"
+  }
+}

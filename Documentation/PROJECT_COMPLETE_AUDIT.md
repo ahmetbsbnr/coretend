@@ -59,7 +59,8 @@ for the current authoritative fields.
 - macOS host, Swift 6.3.2 toolchain (per prior-session note, used via `bash Scripts/test.sh` this
   session; not independently re-verified with `swift --version` this session — should be in session 2
   if precision matters).
-- Working directory: `/Users/ahmetbasbunar/Documents/MACCLEAN`.
+- Working directory at the time of this audit: `~/Documents/MACCLEAN`
+  (since moved to `WEBSITE/products/coretend/app`).
 
 ## 2. Version / commit
 

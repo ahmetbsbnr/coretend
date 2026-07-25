@@ -33,6 +33,10 @@ allowed_reason() {
       echo "rename history: research for the abandoned candidate name" ;;
     Documentation/PRE_REBRAND_BASELINE.md)
       echo "rename history: the pre-rename baseline being compared against" ;;
+    Documentation/WORKSPACE_TARGET_STRUCTURE.md|Documentation/workspace-migration-manifest.json)
+      echo "workspace migration record: states the pre-move path a rollback moves back to" ;;
+    Documentation/PORTFOLIO_REPOSITORY_INVENTORY.md|Documentation/PROJECT_COMPLETE_AUDIT.md|Documentation/PUBLICATION_AUDIT.md)
+      echo "historical audit: records the working-copy path as it was when the audit ran" ;;
     Documentation/PRODUCT_RENAME_INVENTORY.md|Documentation/product-rename-inventory.json)
       echo "rename mapping: the inventory of identifiers the rename had to change" ;;
     Documentation/PRODUCT_RENAME_PLAN.md|Documentation/PRODUCT_RENAME_ROLLBACK.md)

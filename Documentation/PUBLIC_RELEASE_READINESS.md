@@ -57,8 +57,8 @@ absolute build-tree fallback path is no longer reached.
 
 ### Path-independence checks
 
-- `strings -a` over the packaged binary: no occurrence of `MACCLEAN`
-  (original repo dirname) or the developer's real macOS account name
+- `strings -a` over the packaged binary: no occurrence of the repository
+  directory name or the developer's real macOS account name
   (redacted here deliberately — see `Scripts/check-private-data.sh`, which
   greps for it across tracked files). The only absolute path found was the
   harmless SwiftPM fallback described above (unreached once the bundle fix

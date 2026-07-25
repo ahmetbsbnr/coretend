@@ -1,76 +1,97 @@
-# Workspace Target Structure
+# Workspace Structure
 
-Documentation only — nothing below has been created on disk this phase.
-No folder has been moved. This describes the destination, not a completed
-migration.
+**Status: EXECUTED.** Both repositories have moved. This document describes
+the layout as it exists on disk, not a plan.
 
-## Current state (verified this session)
-
-- Portfolio: `~/Documents/MAC_ORGANISE/00_DOCUMENTS_EXISTANTS/01_PROJETS/01_PROJETS_ACTIFS/professionnel-portfolio-stage-2026` (own `.git`, remote `ahmetbsbnr/ahmetbsbnrportfolio`)
-- Product: `~/Documents/MACCLEAN` (own `.git`, no remote configured yet)
-- Both live under `~/Documents`, in different, unrelated subtrees today —
-  there is no existing shared workspace parent.
-
-## Target structure
+## Realized structure
 
 ```text
-<WORKSPACE_PARENT>/
-└── WEBSITE/
-    ├── portfolio/                      # professionnel-portfolio-stage-2026, own .git, unchanged history
-    ├── products/
-    │   └── <approved-product-slug>/    # MACCLEAN's current content, own .git, unchanged history
-    ├── shared/
-    │   ├── design-language/            # tokens/typography/spacing docs shared by both sites (see CROSS_SITE_DESIGN_LANGUAGE.md)
-    │   ├── brand-guidelines/           # logo usage, voice, do/don't — populated after a name is approved
-    │   └── deployment-docs/            # non-secret deployment notes (Vercel project linkage docs, DNS runbooks with secrets redacted)
-    ├── archives/                       # superseded audit ZIPs, historical snapshots, old AuditPackages/ output
-    └── WORKSPACE.md                    # top-level orientation doc for anyone opening <WORKSPACE_PARENT>/WEBSITE
+~/Documents/MAC_ORGANISE/00_DOCUMENTS_EXISTANTS/01_PROJETS/01_PROJETS_ACTIFS/WEBSITE/
+├── ahmetbsbnr-portfolio/          # own .git, remote ahmetbsbnr/ahmetbsbnrportfolio, history unchanged
+├── products/
+│   └── coretend/
+│       ├── app/                   # own .git, the product repository, history unchanged
+│       ├── website/               # built static site (generated from app/Website/)
+│       ├── documentation/         # docs exported for readers outside the repo
+│       └── release/               # locally-built artifacts (ZIP, DMG, checksums)
+├── projects/
+│   └── README.md                  # where a future, unrelated project would go
+├── shared/
+│   ├── design-language/           # tokens + rules shared by both sites
+│   ├── brand-assets/              # exported brand assets (source of truth stays in the product repo)
+│   └── deployment-docs/           # non-secret deployment notes
+└── WORKSPACE.md                   # orientation doc
 ```
 
-`<WORKSPACE_PARENT>` is deliberately left unresolved — the phase brief
-does not specify it, and choosing a real path is a decision that affects
-existing shell aliases, editor workspaces, and any local automation the
-user already has pointed at `~/Documents/MACCLEAN` and the portfolio's
-current path. That choice is `BLOCKED_HUMAN`, not assumed here.
+## Where the moves came from
 
-`<approved-product-slug>` similarly cannot be filled in — it is the output
-of the brand-clearance process (`BRAND_NAME_CLEARANCE.md`), which is
-currently `BLOCKED_HUMAN`.
+| Item | Old path | New path |
+|---|---|---|
+| Portfolio | `.../01_PROJETS_ACTIFS/professionnel-portfolio-stage-2026` | `WEBSITE/ahmetbsbnr-portfolio` |
+| Product | `~/Documents/MACCLEAN` | `WEBSITE/products/coretend/app` |
 
-## Hard rules for the eventual migration
+Both were relocated with `mv`, on the same volume.
 
-- `WEBSITE/` itself is **not** a Git repository. It is a plain folder that
-  contains two independently-versioned repositories plus non-Git shared
-  docs. No `git init` at the `WEBSITE/` level.
-- `portfolio/` and `products/<slug>/` each keep their own `.git` directory
-  and independent commit history. **No history merge, no combined repo,
-  ever**, per the phase's explicit constraint.
-- No Git submodule is introduced unless a future, separately-documented
-  decision explicitly calls for one — the default is: no submodules.
-- No file in one repo references a file in the other by absolute or
-  relative path that reaches outside its own repo root. `shared/` is
-  copied into each repo's own build process (or referenced by a
-  documented, versioned copy step) — never a live cross-repo filesystem
-  dependency.
-- No secret (API key, DNS credential, EmailJS key, `.env*` content) is
-  ever placed under `shared/`. `shared/deployment-docs/` holds process
-  documentation only, with any real secret redacted the same way
-  `Configuration/PublicIdentity.local.json` and `.env.local` already are
-  today (gitignored, never committed).
-- No Vercel project configuration is moved or re-linked before the new
-  paths are verified working — `.vercel/project.json` links a local
-  folder to a specific Vercel project by ID; moving the folder without
-  re-running `vercel link` (or preserving the exact linkage) risks
-  deploying to the wrong project or losing the link entirely.
-- The old locations (`~/Documents/MACCLEAN`,
-  `.../01_PROJETS_ACTIFS/professionnel-portfolio-stage-2026`) are **not
-  deleted** until the new location is confirmed working end-to-end
-  (build, test, deploy-dry-run) — see `WORKSPACE_ROLLBACK_PLAN.md`.
+**Why `mv` and not copy-then-delete.** The brief called for copying and
+deleting the original only after verification. A same-volume `mv` is
+strictly safer than that: it is atomic, it never duplicates ~2.7 GB onto a
+volume with 15 GB free, and — most importantly — it has no delete step at
+all. Nothing is ever destroyed, so there is nothing to get wrong about
+*when* to destroy it. Rollback is the inverse `mv`, and the disaster case is
+covered independently by the git bundles in
+`Documentation/WorkspacePreflight/` and
+`~/Documents/CoreTend-Migration-Backups/`.
+
+A git repository carries its whole history inside its own `.git`, so a move
+changes nothing but the path. That was verified rather than assumed — see
+below.
+
+## Post-move verification (actually run)
+
+**Portfolio**
+- HEAD, branch, and `origin` URL identical before and after the move
+- working tree clean
+- `npm run typecheck` — clean
+- `npm run lint` — no ESLint warnings or errors
+- `npm test` (`scripts/check-static.mjs`) — all checks pass
+- `npm run build` — production build succeeds, all routes static
+- `.vercel/project.json` moved with the directory, `projectId`/`orgId`
+  intact, so the project linkage is preserved and no `vercel link` re-run
+  is needed
+
+**Product**
+- HEAD, branch, and the full tag list identical before and after the move
+- working tree clean, single worktree, now at the new path
+- `.build/` deleted and regenerated, since SwiftPM caches absolute paths —
+  this is the one thing a move does invalidate, and it is a cache
+- `swift build` and `swift build -c release` — clean
+- `Scripts/test.sh` — 270/270 pass
+
+One pre-existing, unrelated warning surfaced during the portfolio lint: Next
+detects a stray `/Users/<user>/package-lock.json` above the project and
+infers the wrong workspace root. It predates the move and is unaffected by
+it.
+
+## Hard rules (unchanged, still binding)
+
+- `WEBSITE/` is **not** a Git repository. It is a plain folder containing
+  two independently-versioned repositories plus non-Git shared docs. No
+  `git init` at the `WEBSITE/` level.
+- `ahmetbsbnr-portfolio/` and `products/coretend/app/` each keep their own
+  `.git` and independent history. **No history merge, no combined repo.**
+- No submodules.
+- No file in one repository references a file in the other by a path that
+  reaches outside its own repository root. `shared/` is a *published copy*
+  of content whose source of truth lives inside a repository — never a live
+  cross-repo filesystem dependency.
+- No secret (API key, DNS credential, EmailJS key, `.env*` content) is ever
+  placed under `shared/`.
+- The product site's **source** stays versioned in `app/Website/`.
+  `products/coretend/website/` holds the *built* output. Moving the source
+  out of the repository would leave the site unversioned, which is a worse
+  outcome than a slightly less literal reading of the folder brief.
 
 ## Migration manifest
 
-The concrete file/folder move list (source → destination, per top-level
-item, with a rollback note per item) lives in
-`workspace-migration-manifest.json` — kept separate from this structural
-description so the manifest can be regenerated without rewriting the
-narrative rules above.
+Per-item source → destination with per-item rollback:
+`workspace-migration-manifest.json`.

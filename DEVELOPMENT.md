@@ -8,8 +8,8 @@ process (DCO, PR flow); this file is the technical how-to.
 macOS 14+, Apple Silicon, Swift command-line tools (Xcode not required).
 
 ```sh
-git clone <repo>
-cd MACCLEAN
+git clone https://github.com/ahmetbsbnr/coretend.git
+cd coretend
 Scripts/doctor.sh        # verifies prerequisites, fails loudly if something's missing
 Scripts/bootstrap.sh     # one-time setup
 ```
