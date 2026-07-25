@@ -36,5 +36,5 @@ Gatekeeper/SIP for the *builder* or the *end user*.
 ## Who can cut a release
 
 Until `GOVERNANCE.md`'s maintainer model is populated with a real handle
-(`[MAINTAINER_HANDLE_TO_DEFINE]`), no one should cut a public release from
+(`ahmetbsbnr`), no one should cut a public release from
 this repository.

@@ -1,5 +1,60 @@
 # CHANGELOG
 
+## 0.8.1 — 2026-07-25 « CoreTend Rebrand & Workspace Migration »
+
+The product is now **CoreTend**. This release is a rename and a reorganisation,
+not a feature release — nothing about what the app does changed.
+
+**Renamed everywhere.** Sources, SwiftPM package and targets, executable, app
+bundle, resources, both localisations, scripts, CI workflows, documentation,
+website, and legal metadata. The bundle identifier moved from
+`local.maccare.app` to `com.ahmetbsbnr.coretend`. Four categories deliberately
+keep the old name because rewriting them would falsify a record or break a
+migration: rename history, historical release artifacts, user-data
+compatibility, and the Apache-2.0 licence text.
+`Scripts/check-legacy-brand-references.sh` fails on any other occurrence, and an
+allowlist entry only counts if it states its reason.
+
+**Your data comes with you.** Renaming a macOS app orphans two independent
+classes of local data: the Application Support directory (named by the app) and
+the `UserDefaults` domain (named by the OS, keyed to the bundle identifier).
+Both migrate on first launch. The migration is copy-only — the previous
+version's folder is never modified, renamed, or deleted — which is what makes it
+reversible, resumable after an interruption, and safe to run twice. Existing
+data under the new identity always wins, so a reinstall over real usage cannot
+be clobbered. Failures are reported in Settings, never swallowed. Twenty tests
+cover the normal path, the interrupted path, corrupt and unreadable files,
+permission failures, rollback, and preference collisions.
+
+**The uninstallers know about both identities.** They leave pre-rename data
+alone unless you pass `--include-legacy`, because after a migration that folder
+may be your only intact copy.
+
+**Living System.** The palette is now named at its definition, with the
+canonical brand values used on dark surfaces and darkened siblings on light
+ones — several canonical values measure under 4.5:1 on a near-white surface, and
+contrast tests enforce the floor in both directions. A complete asset set is
+generated from one set of numbers shared with the app's own Core Bloom
+geometry: icon 16–1024, menu-bar templates, favicons, horizontal and compact
+lockups in light/dark/single-ink, onboarding hero, Open Graph card, DMG
+background, and SVG plus PDF vector sources.
+
+**The site is a real product site.** Bilingual, static, responsive,
+keyboard-navigable, light and dark, and it makes **zero external requests** — no
+webfont, no CDN, no analytics, no cookies, and after this release no JavaScript
+at all. `Scripts/check-website.sh` enforces that, plus locale parity, internal
+link integrity, an accessibility floor, and an editorial bar that reads
+sentences rather than files so the copy can honestly deny a claim it must not
+make.
+
+**Workspace.** Both repositories now live under a shared `WEBSITE/` folder as
+two fully independent git repositories, with a gate proving they stay that way.
+
+**Still blocked from publication**, by design and not by omission: no trademark
+search has been run for the new name, `legalReviewStatus` is `pending`, and the
+legal identity and security contact are undefined.
+`Scripts/check-brand-clearance.sh --publication` fails until all three change.
+
 ## 0.8.0 — 2026-07-24 « Functional Completion »
 
 Feature-completion phase closing every automatable item in the 21-step

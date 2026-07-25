@@ -51,8 +51,10 @@ allowed_reason() {
       echo "user-data compatibility: documents where pre-rename data still lives" ;;
     Documentation/UNINSTALL.md)
       echo "user-data compatibility: documents removal of pre-rename data" ;;
-    Release/Notes/0.7.0.*.md)
+    Release/Notes/0.7.0.*.md|Release/Notes/0.7.1.*.md|Release/Notes/0.8.0.*.md)
       echo "historical release: release notes for a version built under the old name" ;;
+    Release/Notes/0.8.1.*.md|Documentation/CHANGELOG.md)
+      echo "rename announcement: tells users where their pre-rename data is" ;;
     Release/BUNDLE_INVENTORY_0.8.0.md|Release/LAUNCH_VERIFICATION_0.8.0.md)
       echo "historical release: inventory of artifacts built under the old name" ;;
     Sources/Persistence/LegacyDataMigration.swift)
@@ -65,8 +67,12 @@ allowed_reason() {
       echo "user-data compatibility: comment marking the migration's strings" ;;
     Scripts/uninstall.sh|Scripts/uninstall-local.sh|Scripts/test-uninstall.sh)
       echo "user-data compatibility: uninstallers must name pre-rename paths" ;;
-    Scripts/check-legacy-brand-references.sh)
-      echo "this gate: the patterns it searches for are its own source" ;;
+    Scripts/check-legacy-brand-references.sh|Scripts/test-check-legacy-brand-references.sh)
+      echo "this gate and its tests: the patterns they search for are their own source" ;;
+    Scripts/check-brand-assets.sh)
+      echo "asset gate: refuses any generated file still named after the old brand" ;;
+    Documentation/PROJECT_STATE.json|Documentation/PROJECT_STATE.md)
+      echo "rename record: the phase description states what was renamed from what" ;;
     LICENSE|LICENSES/*)
       echo "licence text: never edited" ;;
     *) return 1 ;;

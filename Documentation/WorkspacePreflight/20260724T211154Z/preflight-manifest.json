@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "mode": "backup",
   "product": {
-    "path": "/Users/ahmetbasbunar/Documents/MACCLEAN",
+    "path": "~/Documents/MACCLEAN",
     "exists": true,
     "isGitRepo": true,
     "branch": "feat/functional-completion",
@@ -11,7 +11,7 @@
     "remote": "none"
   },
   "portfolio": {
-    "path": "/Users/ahmetbasbunar/Documents/MAC_ORGANISE/00_DOCUMENTS_EXISTANTS/01_PROJETS/01_PROJETS_ACTIFS/professionnel-portfolio-stage-2026",
+    "path": "~/Documents/MAC_ORGANISE/00_DOCUMENTS_EXISTANTS/01_PROJETS/01_PROJETS_ACTIFS/professionnel-portfolio-stage-2026",
     "exists": true,
     "isGitRepo": true,
     "branch": "main",

@@ -34,7 +34,7 @@ no deploy has been triggered — that is a human decision, not made here.
    the hosting layer.
 5. Confirm zero tracking is configured at the host level too (no
    host-provided analytics add-on enabled).
-6. Point `[DOMAIN_TO_DEFINE]` at the real domain once registered, and
+6. Point `coretend.ahmetbsbnr.com` at the real domain once registered, and
    update the legal/privacy pages accordingly.
 
 ## Build/deploy commands

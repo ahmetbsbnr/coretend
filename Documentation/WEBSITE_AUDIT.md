@@ -39,7 +39,7 @@ loads at all, consistent with the local-only, no-CDN design).
 Legitimate, deliberately-marked placeholders (not accidental gaps) found in:
 - `legal.html`, `privacy.html`, `security.html` (both locales): bracketed
   tokens `[LEGAL_NAME_TO_DEFINE]`, `[LEGAL_ADDRESS_TO_DEFINE]`,
-  `[SECURITY_CONTACT_TO_DEFINE]`, `[DOMAIN_TO_DEFINE]` — self-documented in
+  `[SECURITY_CONTACT_TO_DEFINE]`, `coretend.ahmetbsbnr.com` — self-documented in
   page text as pending real legal identity, tracked already in
   `Documentation/PUBLICATION_PLACEHOLDERS.md` and `LEGAL_AND_LICENSE_STATUS.md`
   from prior sessions. Not new findings, re-confirmed present and unchanged.

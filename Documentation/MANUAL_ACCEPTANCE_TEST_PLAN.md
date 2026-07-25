@@ -64,7 +64,7 @@ these cannot be automated here. Each item references the requirement ID(s) it wo
 ## 7. Website on real Vercel deployment (WEB — no baseline requirement ID exists yet)
 - **Setup**: deploy `Website/` to Vercel for real (not just `python3 -m http.server` locally),
   confirm the live URL renders correctly across Chrome/Safari/Firefox, mobile viewport, and that
-  the generated `[LEGAL_NAME_TO_DEFINE]`/`[DOMAIN_TO_DEFINE]` placeholders (132 occurrences per
+  the generated `[LEGAL_NAME_TO_DEFINE]`/`coretend.ahmetbsbnr.com` placeholders (132 occurrences per
   `Scripts/check-placeholders.sh`, confirmed present this session) have been replaced with real
   values before any public announcement.
 - **Expect**: page loads correctly on Vercel's actual edge network; zero placeholder tokens remain

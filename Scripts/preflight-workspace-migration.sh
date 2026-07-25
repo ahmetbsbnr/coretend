@@ -95,14 +95,26 @@ import json, subprocess, sys, os
 
 manifest_path, product_path, portfolio_path, mode = sys.argv[1:5]
 
+def redact(path):
+    """Home-relative, never absolute.
+
+    This manifest is committed, and an absolute path here publishes the
+    developer's real account name and folder layout to anyone who reads the
+    repository. The path's job is to identify *which repo*, which "~/..." does
+    just as well.
+    """
+    home = os.path.expanduser("~")
+    return "~" + path[len(home):] if path.startswith(home) else path
+
+
 def repo_info(path):
     if not os.path.isdir(path) or not os.path.isdir(os.path.join(path, ".git")):
-        return {"path": path, "exists": os.path.isdir(path), "isGitRepo": False}
+        return {"path": redact(path), "exists": os.path.isdir(path), "isGitRepo": False}
     def run(args):
         return subprocess.check_output(args, cwd=path, text=True).strip()
     dirty = run(["git", "status", "--short"])
     return {
-        "path": path,
+        "path": redact(path),
         "exists": True,
         "isGitRepo": True,
         "branch": run(["git", "rev-parse", "--abbrev-ref", "HEAD"]),
