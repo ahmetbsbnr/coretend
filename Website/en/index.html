@@ -3,80 +3,187 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Home — CoreTend</title>
-<meta name="description" content="A local-only, open source utility to scan, clean, organize and optimize Apple Silicon Macs.">
+<title>Overview — CoreTend</title>
+<meta name="description" content="Local, transparent and reversible care for macOS.">
+<meta name="color-scheme" content="light dark">
+<!-- noindex until the site is actually published: an unreleased page in a
+     search index is a promise nobody can keep. -->
 <meta name="robots" content="noindex">
+<link rel="canonical" href="https://coretend.ahmetbsbnr.com/en/index.html">
+<link rel="alternate" hreflang="en" href="https://coretend.ahmetbsbnr.com/en/index.html">
+<link rel="alternate" hreflang="fr" href="https://coretend.ahmetbsbnr.com/fr/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CoreTend">
+<meta property="og:title" content="Overview — CoreTend">
+<meta property="og:description" content="A lighter Mac. Always under control. Local, transparent and reversible care for macOS.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="../assets/brand/opengraph.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../assets/brand/favicon-32.png" sizes="32x32">
+<link rel="icon" href="../assets/brand/favicon-512.png" sizes="512x512">
+<link rel="apple-touch-icon" href="../assets/brand/favicon-180.png">
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
 <header class="site">
   <div class="wrap">
-    <a class="brand" href="index.html"><span class="mark"></span>CoreTend</a>
-    <nav class="primary"><a href="index.html" class="active">Home</a>
-<a href="features.html" class="">Features</a>
-<a href="download.html" class="">Download</a>
-<a href="documentation.html" class="">Documentation</a>
-<a href="open-source.html" class="">Open Source</a>
-<a href="roadmap.html" class="">Roadmap</a>
-<a href="faq.html" class="">FAQ</a></nav>
-    <div class="lang-switch"><a href="../en/index.html" class="active">EN</a><a href="../fr/index.html" class="">FR</a></div>
+    <a class="brand" href="index.html" aria-label="CoreTend — home"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
+<path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--care)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--privacy)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--activity)" stroke-width="38.4" stroke-linecap="round"/>
+<circle cx="256" cy="256" r="61.44" fill="var(--care)"/>
+</svg><span>CoreTend</span></a>
+    <nav class="primary" aria-label="Main">
+      <a href="index.html" class="active" aria-current="page">Overview</a>
+      <a href="features.html">Features</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="download.html">Download</a>
+      <a href="documentation.html">Documentation</a>
+      <a href="open-source.html">Open Source</a>
+      <a href="changelog.html">Changelog</a>
+    </nav>
+    <div class="lang-switch"><a href="../en/index.html" hreflang="en" lang="en" class="active" aria-current="true">EN</a><a href="../fr/index.html" hreflang="fr" lang="fr">FR</a></div>
   </div>
 </header>
-<main>
+<main id="main">
   <div class="wrap">
 
 <section class="hero">
-  <h1>CoreTend</h1>
-  <p class="lead">A local-only, open source utility to scan, clean, organize and optimize Apple Silicon Macs.</p>
+  <div>
+    <h1>CoreTend</h1>
+    <p class="signature">A lighter Mac. Always under control.</p>
+    <p class="lead">Local, transparent and reversible care for macOS.</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="download.html">Download the local build</a>
+      <a class="btn btn-secondary" href="#how">See how it works</a>
+    </div>
+  </div>
+  <div class="hero-art"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
+<path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--care)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--privacy)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--activity)" stroke-width="38.4" stroke-linecap="round"/>
+<circle cx="256" cy="256" r="61.44" fill="var(--care)"/>
+</svg></div>
+</section>
+
+<section>
   <div class="badge-row">
-    <span class="badge">Local-only, no account</span>
+    <span class="badge ">Local only, no account</span>
     <span class="badge violet">Open source</span>
     <span class="badge amber">No telemetry</span>
-    <span class="badge">Apple Silicon</span>
+    <span class="badge ">Apple Silicon</span>
   </div>
   <div class="warning-banner">
-    <strong>Pre-1.0 status.</strong> CoreTend is under active development
-    and has not reached a stable 1.0 release. Expect rough edges. See the
-    <a href="roadmap.html">roadmap</a> and <a href="download.html">download page</a>
-    for current status.
+    <p><strong>Pre-1.0, and unsigned.</strong> CoreTend is under active development and has not reached a stable 1.0. Builds are unsigned, so macOS will warn on first launch. The <a href="download.html">download page</a> explains what that looks like and how to verify what you got.</p>
   </div>
 </section>
 
-<div class="screenshot-placeholder">Screenshot placeholder — pending real capture. This box must never ship in a production build; see Website/README.md.</div>
+<section id="how" class="feature reveal">
+  <div>
+    <span class="section-label">The mark</span>
+    <h2>One nucleus, three arcs</h2>
+    <p>The mark is the product's structure, not decoration. The nucleus is your Mac; the three arcs are the three things CoreTend attends to — storage and care in green, privacy and protection in violet, activity and performance in amber. Those colours mean the same thing everywhere in the app, and each is always paired with a label or a symbol, never colour alone.</p>
+  </div>
+  <div class="feature-visual"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
+<path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--care)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--privacy)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--activity)" stroke-width="38.4" stroke-linecap="round"/>
+<circle cx="256" cy="256" r="61.44" fill="var(--care)"/>
+</svg></div>
+</section>
 
-<section class="cards">
-  <div class="card">
-    <h3>Entirely local</h3>
-    <p>Everything runs on your Mac. No account, no subscription, no cloud
-    processing, no telemetry sent anywhere.</p>
+<section class="reveal">
+  <span class="section-label">Reclaimable space</span>
+  <h2>A measured number, not a promise</h2>
+  <p>CoreTend never shows an estimate it has not measured. After a scan you get the real byte count of what it found, grouped by where it came from, with the reason each item was flagged. Anything it cannot safely judge is left out of the total and labelled instead.</p>
+</section>
+
+<section>
+  <span class="section-label">Modules</span>
+  <h2>What it actually does</h2>
+  <div class="cards">
+  <article class="card care reveal"><span class="role">Storage &amp; care</span><h3>Smart Care</h3><p>One pass that runs every scan in order and shows you a single reviewable list. Nothing is removed until you say so.</p></article>
+  <article class="card care reveal"><span class="role">Storage &amp; care</span><h3>Cleanup</h3><p>Caches, logs, build leftovers, and installer remnants — each item grouped, sized, and explained before anything happens.</p></article>
+  <article class="card care reveal"><span class="role">Storage &amp; care</span><h3>My Clutter</h3><p>Large, old, and forgotten files, sorted so you can see what is actually taking the space before deciding anything.</p></article>
+  <article class="card care reveal"><span class="role">Storage &amp; care</span><h3>Space Lens</h3><p>A navigable map of your disk. Drill into any folder and see where the weight really sits, not just the top ten.</p></article>
+  <article class="card privacy reveal"><span class="role">Privacy &amp; protection</span><h3>Privacy Cleaner</h3><p>Browser traces per browser and per profile, listed individually. You choose what goes; a login you want kept stays.</p></article>
+  <article class="card privacy reveal"><span class="role">Privacy &amp; protection</span><h3>Local protection with ClamAV</h3><p>If you have ClamAV installed, CoreTend can run it and quarantine what it finds. ClamAV is optional, never bundled, and its database is never shipped here.</p></article>
+  <article class="card activity reveal"><span class="role">Activity &amp; performance</span><h3>Applications</h3><p>What is installed, how large it is, and what each app leaves behind. Uninstall with its leftovers listed, not guessed at.</p></article>
+  <article class="card activity reveal"><span class="role">Activity &amp; performance</span><h3>Cloud Cleanup</h3><p>Locally cached copies of cloud files, which can be re-downloaded. Nothing is uploaded and nothing is removed from the cloud itself.</p></article>
+  <article class="card activity reveal"><span class="role">Activity &amp; performance</span><h3>History and restore</h3><p>Every action is recorded locally with what it touched. Items go to the Trash, so restoring is ordinary macOS.</p></article>
   </div>
-  <div class="card">
-    <h3>Explained before acting</h3>
-    <p>Every detected item is explained before any action is taken — you
-    decide what happens, module by module.</p>
+</section>
+
+<section>
+  <span class="section-label">How it behaves</span>
+  <h2>Reversible by default</h2>
+  <div class="cards">
+  <article class="card reveal"><h3>Dry run first, always</h3><p>Every module runs as a preview by default. You see the full list, with sizes and reasons, before a single file moves.</p></article>
+  <article class="card reveal"><h3>The Trash, not deletion</h3><p>Removals go to the macOS Trash. A mistake is a drag away from being undone, not a restore from backup.</p></article>
+  <article class="card reveal"><h3>No account, no telemetry</h3><p>There is nothing to sign up for and nothing sent anywhere. No analytics, no crash reporting, no network call the app makes on its own.</p></article>
+  <article class="card reveal"><h3>Explained, then optional</h3><p>Full Disk Access, notifications, ClamAV, and filesystem watching are each requested only when a feature needs them, and each can be declined.</p></article>
   </div>
-  <div class="card">
-    <h3>Reversible by default</h3>
-    <p>Deletions go to the Trash by default, not straight to disk removal,
-    so mistakes stay recoverable.</p>
+</section>
+
+<section class="feature reveal">
+  <div>
+    <span class="section-label">First run</span>
+    <h2>A setup assistant that explains, then asks</h2>
+    <p>The first launch walks through how CoreTend works locally, what permissions each feature needs and why, which parts are optional, and what dry run means — then runs a short diagnostic and shows you a summary. Nothing is scanned or changed during setup.</p>
   </div>
-  <div class="card">
-    <h3>Open source</h3>
-    <p>The full source is public. Read it, audit it, build it yourself —
-    see the <a href="open-source.html">Open Source</a> page.</p>
+  <div class="feature-visual">
+    <div class="screenshot-placeholder">Setup assistant screenshot — pending a real capture. This box must never ship in a published build; see Website/README.md.</div>
   </div>
+</section>
+
+<section class="reveal">
+  <span class="section-label">Open source</span>
+  <h2>Readable, buildable, auditable</h2>
+  <p>The full source is public under Apache-2.0. You can read what each rule matches, build the app yourself, and check the claims on this page against the code that makes them.</p>
+  <p><a href="open-source.html">Read the source and licenses</a></p>
+</section>
+
+<section class="reveal">
+  <h2>Get the current build</h2>
+  <p>Apple Silicon, macOS 14 or later. Unsigned, so read the first-launch notes before installing.</p>
+  <div class="cta-row">
+    <a class="btn btn-primary" href="download.html">Download the local build</a>
+    <a class="btn btn-secondary" href="documentation.html">Documentation</a>
+  </div>
+</section>
+
+<section>
+  <span class="section-label">Questions</span>
+  <h2>Straight answers</h2>
+  <details><summary>Does CoreTend send anything over the network?</summary><p>No. The app makes no network call of its own. If you enable the optional ClamAV integration, ClamAV's own updater is a separate tool you run yourself.</p></details>
+  <details><summary>Is this an antivirus?</summary><p>No. CoreTend can run ClamAV if you have installed it, and quarantine what ClamAV reports. It is not a real-time antivirus and does not claim to be one.</p></details>
+  <details><summary>How much space will it free?</summary><p>That depends entirely on your Mac, and no honest answer can be given in advance. The app reports a real measured figure after scanning, before you approve anything.</p></details>
+  <details><summary>Is the download signed and notarized?</summary><p>Not yet. The builds are unsigned, which is why the download page explains exactly what macOS will say and how to verify the checksum yourself.</p></details>
+  <p>More in the full <a href="faq.html">FAQ</a>.</p>
+</section>
+
+<section class="reveal">
+  <h2>Legal and licensing</h2>
+  <p>Apache-2.0 for the code, CC-BY-4.0 for original documentation, third-party components under their own terms. The <a href="legal.html">legal notice</a>, <a href="privacy.html">privacy policy</a> and <a href="security.html">security policy</a> say what is and is not yet in place.</p>
 </section>
 
   </div>
 </main>
 <footer class="site">
   <div class="wrap">
-    <span>&copy; CoreTend contributors. Open source — see LICENSE.</span>
-    <nav><a href="privacy.html">Privacy</a>
-<a href="security.html">Security</a>
-<a href="changelog.html">Changelog</a>
-<a href="licenses.html">Licenses</a>
-<a href="legal.html">Legal notice</a></nav>
+    <div>
+      <p style="margin:0 0 .5rem">&copy; CoreTend contributors. Open source — see the <a href="licenses.html">licenses</a>.</p>
+      <p class="disclaimer" style="margin:0">CoreTend is an independent project and is not affiliated with Apple Inc. Mac and macOS describe compatibility only.</p>
+    </div>
+    <nav aria-label="Footer">
+      <a href="faq.html">FAQ</a>
+      <a href="roadmap.html">Roadmap</a>
+      <a href="security.html">Security</a>
+      <a href="privacy.html">Privacy policy</a>
+      <a href="licenses.html">Licenses</a>
+      <a href="legal.html">Legal notice</a>
+    </nav>
   </div>
 </footer>
 </body>

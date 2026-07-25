@@ -4,57 +4,87 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Documentation — CoreTend</title>
-<meta name="description" content="A local-only, open source utility to scan, clean, organize and optimize Apple Silicon Macs.">
+<meta name="description" content="Local, transparent and reversible care for macOS.">
+<meta name="color-scheme" content="light dark">
+<!-- noindex until the site is actually published: an unreleased page in a
+     search index is a promise nobody can keep. -->
 <meta name="robots" content="noindex">
+<link rel="canonical" href="https://coretend.ahmetbsbnr.com/en/documentation.html">
+<link rel="alternate" hreflang="en" href="https://coretend.ahmetbsbnr.com/en/documentation.html">
+<link rel="alternate" hreflang="fr" href="https://coretend.ahmetbsbnr.com/fr/documentation.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CoreTend">
+<meta property="og:title" content="Documentation — CoreTend">
+<meta property="og:description" content="A lighter Mac. Always under control. Local, transparent and reversible care for macOS.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="../assets/brand/opengraph.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../assets/brand/favicon-32.png" sizes="32x32">
+<link rel="icon" href="../assets/brand/favicon-512.png" sizes="512x512">
+<link rel="apple-touch-icon" href="../assets/brand/favicon-180.png">
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
 <header class="site">
   <div class="wrap">
-    <a class="brand" href="index.html"><span class="mark"></span>CoreTend</a>
-    <nav class="primary"><a href="index.html" class="">Home</a>
-<a href="features.html" class="">Features</a>
-<a href="download.html" class="">Download</a>
-<a href="documentation.html" class="active">Documentation</a>
-<a href="open-source.html" class="">Open Source</a>
-<a href="roadmap.html" class="">Roadmap</a>
-<a href="faq.html" class="">FAQ</a></nav>
-    <div class="lang-switch"><a href="../en/documentation.html" class="active">EN</a><a href="../fr/documentation.html" class="">FR</a></div>
+    <a class="brand" href="index.html" aria-label="CoreTend — home"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
+<path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--care)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--privacy)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--activity)" stroke-width="38.4" stroke-linecap="round"/>
+<circle cx="256" cy="256" r="61.44" fill="var(--care)"/>
+</svg><span>CoreTend</span></a>
+    <nav class="primary" aria-label="Main">
+      <a href="index.html">Overview</a>
+      <a href="features.html">Features</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="download.html">Download</a>
+      <a href="documentation.html" class="active" aria-current="page">Documentation</a>
+      <a href="open-source.html">Open Source</a>
+      <a href="changelog.html">Changelog</a>
+    </nav>
+    <div class="lang-switch"><a href="../en/documentation.html" hreflang="en" lang="en" class="active" aria-current="true">EN</a><a href="../fr/documentation.html" hreflang="fr" lang="fr">FR</a></div>
   </div>
 </header>
-<main>
+<main id="main">
   <div class="wrap">
 
 <h1>Documentation</h1>
-<p class="lead">Full documentation lives in the repository's <code>Documentation/</code> folder. Links below point at the source files (readable directly on the source host once public).</p>
+<p class="lead">Full documentation ships inside the repository, in its <code>Documentation/</code> folder. The repository is not public yet, so these are filenames rather than links — they become links here the moment there is somewhere real to point them.</p>
 <ul>
-<li><a href="[REPO_URL_TO_DEFINE]/blob/main/Documentation/USER_GUIDE.md">User Guide</a></li>
-<li><a href="[REPO_URL_TO_DEFINE]/blob/main/Documentation/INSTALLATION.md">Installation</a></li>
-<li><a href="[REPO_URL_TO_DEFINE]/blob/main/Documentation/FIRST_LAUNCH.md">First Launch</a></li>
-<li><a href="[REPO_URL_TO_DEFINE]/blob/main/Documentation/FULL_DISK_ACCESS.md">Full Disk Access</a></li>
-<li><a href="[REPO_URL_TO_DEFINE]/blob/main/Documentation/CLEANUP_GUIDE.md">Cleanup Guide</a></li>
-<li><a href="[REPO_URL_TO_DEFINE]/blob/main/Documentation/SMART_CARE.md">Smart Care</a></li>
-<li><a href="[REPO_URL_TO_DEFINE]/blob/main/Documentation/PROTECTION.md">Protection</a></li>
-<li><a href="[REPO_URL_TO_DEFINE]/blob/main/Documentation/EXCLUSIONS.md">Exclusions</a></li>
-<li><a href="[REPO_URL_TO_DEFINE]/blob/main/Documentation/RESTORE.md">Restore</a></li>
-<li><a href="[REPO_URL_TO_DEFINE]/blob/main/Documentation/QUARANTINE.md">Quarantine</a></li>
-<li><a href="[REPO_URL_TO_DEFINE]/blob/main/Documentation/UNINSTALL.md">Uninstall</a></li>
-<li><a href="[REPO_URL_TO_DEFINE]/blob/main/Documentation/TROUBLESHOOTING.md">Troubleshooting</a></li>
-<li><a href="[REPO_URL_TO_DEFINE]/blob/main/Documentation/FAQ.md">FAQ (full)</a></li>
-<li><a href="[REPO_URL_TO_DEFINE]/blob/main/Documentation/DATA_LOCATIONS.md">Data Locations</a></li>
-<li><a href="[REPO_URL_TO_DEFINE]/blob/main/Documentation/DEVELOPMENT.md">Developer Guide</a></li>
+<li><strong>User Guide</strong> — <code>Documentation/USER_GUIDE.md</code></li>
+<li><strong>Installation</strong> — <code>Documentation/INSTALLATION.md</code></li>
+<li><strong>First Launch</strong> — <code>Documentation/FIRST_LAUNCH.md</code></li>
+<li><strong>Full Disk Access</strong> — <code>Documentation/FULL_DISK_ACCESS.md</code></li>
+<li><strong>Cleanup Guide</strong> — <code>Documentation/CLEANUP_GUIDE.md</code></li>
+<li><strong>Smart Care</strong> — <code>Documentation/SMART_CARE.md</code></li>
+<li><strong>Protection</strong> — <code>Documentation/PROTECTION.md</code></li>
+<li><strong>Exclusions</strong> — <code>Documentation/EXCLUSIONS.md</code></li>
+<li><strong>Restore</strong> — <code>Documentation/RESTORE.md</code></li>
+<li><strong>Quarantine</strong> — <code>Documentation/QUARANTINE.md</code></li>
+<li><strong>Uninstall</strong> — <code>Documentation/UNINSTALL.md</code></li>
+<li><strong>Troubleshooting</strong> — <code>Documentation/TROUBLESHOOTING.md</code></li>
+<li><strong>FAQ (full)</strong> — <code>Documentation/FAQ.md</code></li>
+<li><strong>Data Locations</strong> — <code>Documentation/DATA_LOCATIONS.md</code></li>
+<li><strong>Developer Guide</strong> — <code>Documentation/DEVELOPMENT.md</code></li>
 </ul>
 
   </div>
 </main>
 <footer class="site">
   <div class="wrap">
-    <span>&copy; CoreTend contributors. Open source — see LICENSE.</span>
-    <nav><a href="privacy.html">Privacy</a>
-<a href="security.html">Security</a>
-<a href="changelog.html">Changelog</a>
-<a href="licenses.html">Licenses</a>
-<a href="legal.html">Legal notice</a></nav>
+    <div>
+      <p style="margin:0 0 .5rem">&copy; CoreTend contributors. Open source — see the <a href="licenses.html">licenses</a>.</p>
+      <p class="disclaimer" style="margin:0">CoreTend is an independent project and is not affiliated with Apple Inc. Mac and macOS describe compatibility only.</p>
+    </div>
+    <nav aria-label="Footer">
+      <a href="faq.html">FAQ</a>
+      <a href="roadmap.html">Roadmap</a>
+      <a href="security.html">Security</a>
+      <a href="privacy.html">Privacy policy</a>
+      <a href="licenses.html">Licenses</a>
+      <a href="legal.html">Legal notice</a>
+    </nav>
   </div>
 </footer>
 </body>
