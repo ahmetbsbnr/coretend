@@ -4,7 +4,7 @@ Date: 2026-07-20 (session start of the Open Source Foundation phase).
 Scope: full working tree at HEAD `b82558e` before any 0.6.0 work.
 
 ## Method
-- `grep -rIl "/Users/ahmetbasbunar"` across `*.swift *.md *.json *.sh`
+- `grep -rIl "/Users/$(id -un)"` across `*.swift *.md *.json *.sh`
 - `grep -rIlE` for common secret patterns (api_key/secret/password/token
   assigned to a literal) across `*.swift *.sh *.json`
 - `find` for `*.env*` files
@@ -28,7 +28,7 @@ Scope: full working tree at HEAD `b82558e` before any 0.6.0 work.
 | `.claude/` directory | Untracked (`git status` shows `?? .claude/`), contains local agent worktrees/settings; not part of git history, left untracked and now explicitly ignored |
 
 ## Absolute-path note
-The username `ahmetbasbunar` and the literal path of the working copy
+The developer's macOS account name and the literal path of the working copy
 (`~/Documents/MACCLEAN` at the time of this audit, since moved into the
 `WEBSITE/` workspace)
 appear only in this session's tool-invocation context and in the local

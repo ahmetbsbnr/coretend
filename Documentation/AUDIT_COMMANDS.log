@@ -1,6 +1,6 @@
 AUDIT SESSION 1 — command log
 Date: 2026-07-20
-Directory: <PROJECT_ROOT> (/Users/ahmetbasbunar/Documents/MACCLEAN)
+Directory: <PROJECT_ROOT> (/Users/<user>/Documents/MACCLEAN)
 Branch: feat/public-distribution @ b33c06b8d68b9b03316821c3f6cfb17252f35011
 ---
 
@@ -799,7 +799,7 @@ Building for debugging...
 [51/62] Compiling CoreTendApp SettingsView.swift
 [52/62] Compiling CoreTendApp SimilarImagesView.swift
 [53/62] Compiling CoreTendApp MyClutterView.swift
-/Users/ahmetbasbunar/Documents/MACCLEAN/Sources/CoreTendApp/OnboardingView.swift:353:63: warning: passing non-Sendable parameter 'set' to function expecting a '@Sendable' closure
+/Users/<user>/Documents/MACCLEAN/Sources/CoreTendApp/OnboardingView.swift:353:63: warning: passing non-Sendable parameter 'set' to function expecting a '@Sendable' closure
 348 |     }
 349 | 
 350 |     private func configLine(_ label: String, on: Bool, editable: Bool, set: @escaping (Bool) -> Void) -> some View {
@@ -811,7 +811,7 @@ Building for debugging...
 354 |             } else {
 355 |                 configFixed(label, on: on)
 [54/62] Compiling CoreTendApp OnboardingLogic.swift
-/Users/ahmetbasbunar/Documents/MACCLEAN/Sources/CoreTendApp/OnboardingView.swift:353:63: warning: passing non-Sendable parameter 'set' to function expecting a '@Sendable' closure
+/Users/<user>/Documents/MACCLEAN/Sources/CoreTendApp/OnboardingView.swift:353:63: warning: passing non-Sendable parameter 'set' to function expecting a '@Sendable' closure
 348 |     }
 349 | 
 350 |     private func configLine(_ label: String, on: Bool, editable: Bool, set: @escaping (Bool) -> Void) -> some View {
@@ -823,7 +823,7 @@ Building for debugging...
 354 |             } else {
 355 |                 configFixed(label, on: on)
 [55/62] Compiling CoreTendApp OnboardingView.swift
-/Users/ahmetbasbunar/Documents/MACCLEAN/Sources/CoreTendApp/OnboardingView.swift:353:63: warning: passing non-Sendable parameter 'set' to function expecting a '@Sendable' closure
+/Users/<user>/Documents/MACCLEAN/Sources/CoreTendApp/OnboardingView.swift:353:63: warning: passing non-Sendable parameter 'set' to function expecting a '@Sendable' closure
 348 |     }
 349 | 
 350 |     private func configLine(_ label: String, on: Bool, editable: Bool, set: @escaping (Bool) -> Void) -> some View {
