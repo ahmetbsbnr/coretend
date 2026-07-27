@@ -114,10 +114,22 @@ Do not open a public issue for security-sensitive reports.
 
 ## License
 
-Code is licensed under [Apache-2.0](LICENSES/Apache-2.0.txt). Original
-documentation and illustrations are licensed under
-[CC-BY-4.0](LICENSES/CC-BY-4.0.txt). The "CoreTend" name/logo are
-covered separately — see [TRADEMARKS.md](TRADEMARKS.md). Third-party
-components keep their own licenses — see
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Full breakdown:
+[`LICENSE`](LICENSE) is the verbatim Apache-2.0 text. What each kind of
+content falls under:
+
+| Content | License |
+|---|---|
+| Code — `*.swift`, `*.sh`, `*.py`, build configuration | [Apache-2.0](LICENSES/Apache-2.0.txt) |
+| Documentation | [CC-BY-4.0](LICENSES/CC-BY-4.0.txt) |
+| Illustrations, brand assets, screenshots | [CC-BY-4.0](LICENSES/CC-BY-4.0.txt) |
+| Generated data files (`*.json`, `*.csv` under `Documentation/`) | [Apache-2.0](LICENSES/Apache-2.0.txt), as output of the scripts that build them |
+| The "CoreTend" name and logo | Not granted by either — see [TRADEMARKS.md](TRADEMARKS.md) |
+| Third-party components | Their own upstream licenses — see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) |
+
+There are **no bundled third-party dependencies**; `Package.swift` declares
+zero external packages. ClamAV is optional, user-installed, and invoked as a
+separate process — never linked or redistributed.
+
+Licence map: [Documentation/LICENSING.md](Documentation/LICENSING.md).
+Audit and open findings:
 [Documentation/LEGAL_AND_LICENSE_STATUS.md](Documentation/LEGAL_AND_LICENSE_STATUS.md).
