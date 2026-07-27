@@ -10,9 +10,50 @@ runs server-side, there is no bundler, no node_modules, no database.
 ponytail: hand-rolled string templating instead of a template engine —
 add Jinja2 only if page count or logic genuinely outgrows this.
 """
+import json
 import os
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(ROOT)
+
+
+def _load_identity():
+    """Public release identity, read from Configuration/.
+
+    Two files, deliberately: `PublicIdentity.example.json` is tracked and holds
+    the placeholder tokens, `PublicIdentity.local.json` is gitignored and holds
+    the real legal and security values. The local file wins key by key, so it
+    only has to carry what it actually overrides.
+
+    Until the local file exists the placeholders render literally, which is what
+    keeps `Scripts/check-placeholders.sh` honest: the site cannot silently ship
+    with an undefined publisher or an undefined security contact, because the
+    token is still sitting there in the HTML for the gate to find.
+    """
+    identity = {}
+    for name in ("PublicIdentity.example.json", "PublicIdentity.local.json"):
+        path = os.path.join(REPO_ROOT, "Configuration", name)
+        if not os.path.exists(path):
+            continue
+        with open(path) as handle:
+            identity.update(
+                {k: v for k, v in json.load(handle).items() if not k.startswith("_")}
+            )
+    return identity
+
+
+IDENTITY = _load_identity()
+
+
+def ident(key, fallback=""):
+    """One identity value, or its placeholder token if still undefined."""
+    return IDENTITY.get(key, fallback)
+
+
+def is_defined(key):
+    """True when a value is real rather than a `[SOMETHING_TO_DEFINE]` token."""
+    value = str(IDENTITY.get(key, "")).strip()
+    return bool(value) and not (value.startswith("[") and value.endswith("]"))
 
 NAV = [
     ("index", {"en": "Overview", "fr": "Aperçu"}),
@@ -924,16 +965,18 @@ definition updates, entirely opt-in).</p>
 <p>This site sets no analytics or advertising cookies, runs no trackers, no
 pixels, and no session replay. See <code>Documentation/WEBSITE_PRIVACY.md</code>
 in the repository for the full policy.</p>
-<div class="warning-banner">
-This page uses bracket placeholders (<span class="placeholder-token">[LEGAL_NAME_TO_DEFINE]</span>,
-<span class="placeholder-token">[LEGAL_ADDRESS_TO_DEFINE]</span>) until a
-real legal identity is defined. A production deployment must not ship while
-these remain — see <code>Documentation/HUMAN_BLOCKERS.md</code>.
-</div>
+%s
 <h2>Site operator</h2>
-<p>Publisher: <span class="placeholder-token">[LEGAL_NAME_TO_DEFINE]</span><br>
-Contact: <span class="placeholder-token">[SECURITY_CONTACT_TO_DEFINE]</span></p>
-"""
+<p>Publisher: %s<br>
+Contact: %s</p>
+<p>The publisher is an individual publishing non-professionally. Their personal
+address is not published; the host holds it. Full detail on the
+<a href="legal.html">Legal notice</a> page.</p>
+""" % (
+            _legal_pending_banner(l),
+            _identity_cell("publisherOfRecord"),
+            _identity_cell("securityContact"),
+        )
     return """
 <h1>Confidentialité</h1>
 <h2>L'application</h2>
@@ -948,18 +991,18 @@ optionnelle (mise à jour des définitions ClamAV, entièrement facultative).</p
 traqueur, aucun pixel, aucune relecture de session. Voir
 <code>Documentation/WEBSITE_PRIVACY.md</code> dans le dépôt pour la politique
 complète.</p>
-<div class="warning-banner">
-Cette page utilise des espaces réservés entre crochets
-(<span class="placeholder-token">[LEGAL_NAME_TO_DEFINE]</span>,
-<span class="placeholder-token">[LEGAL_ADDRESS_TO_DEFINE]</span>) tant qu'une
-identité légale réelle n'est pas définie. Un déploiement en production ne
-doit pas avoir lieu tant qu'ils subsistent — voir
-<code>Documentation/HUMAN_BLOCKERS.md</code>.
-</div>
+%s
 <h2>Éditeur du site</h2>
-<p>Éditeur : <span class="placeholder-token">[LEGAL_NAME_TO_DEFINE]</span><br>
-Contact : <span class="placeholder-token">[SECURITY_CONTACT_TO_DEFINE]</span></p>
-"""
+<p>Éditeur : %s<br>
+Contact : %s</p>
+<p>L'éditeur est une personne physique publiant à titre non professionnel. Son
+adresse personnelle n'est pas publiée ; l'hébergeur la détient. Détail complet
+sur la page <a href="legal.html">Mentions légales</a>.</p>
+""" % (
+        _legal_pending_banner(l),
+        _identity_cell("publisherOfRecord"),
+        _identity_cell("securityContact"),
+    )
 
 
 add("privacy", {"en": "Privacy", "fr": "Confidentialité"}, privacy_body)
@@ -971,9 +1014,9 @@ def security_body(l):
         return """
 <h1>Security</h1>
 <p>See <code>SECURITY.md</code> in the repository for the full
-vulnerability disclosure policy and current contact
-(<span class="placeholder-token">[SECURITY_CONTACT_TO_DEFINE]</span> until a
-monitored channel is set up).</p>
+vulnerability disclosure policy. Report privately through: %s</p>""" % (
+            _identity_cell("securityContact"),
+        ) + """
 <p>Planned HTTP security headers for this site once deployed (Content-Security-Policy,
 Referrer-Policy, Permissions-Policy, X-Content-Type-Options) are documented
 in <code>Documentation/WEBSITE_SECURITY.md</code>.</p>
@@ -981,9 +1024,9 @@ in <code>Documentation/WEBSITE_SECURITY.md</code>.</p>
     return """
 <h1>Sécurité</h1>
 <p>Voir <code>SECURITY.md</code> dans le dépôt pour la politique complète de
-divulgation des vulnérabilités et le contact actuel
-(<span class="placeholder-token">[SECURITY_CONTACT_TO_DEFINE]</span> tant
-qu'un canal surveillé n'est pas mis en place).</p>
+divulgation des vulnérabilités. Signalement privé via : %s</p>""" % (
+        _identity_cell("securityContact"),
+    ) + """
 <p>Les en-têtes de sécurité HTTP prévus pour ce site une fois déployé
 (Content-Security-Policy, Referrer-Policy, Permissions-Policy,
 X-Content-Type-Options) sont documentés dans
@@ -1015,52 +1058,110 @@ add("licenses", {"en": "Licenses", "fr": "Licences"}, licenses_body)
 
 
 # ---------------------------------------------------------------- legal ---
+def _legal_pending_banner(l):
+    """Rendered only while the publisher or security contact is still a token.
+
+    Once both are real the banner disappears on its own — there is no separate
+    flag to remember to flip, and no way for the site to ship a reassuring page
+    over undefined values.
+    """
+    if is_defined("publisherOfRecord") and is_defined("securityContact"):
+        return ""
+    if l == "en":
+        return """
+<div class="warning-banner">
+Values shown as <span class="placeholder-token">[SOMETHING_TO_DEFINE]</span>
+are not yet set. They are tracked in
+<code>Documentation/HUMAN_BLOCKERS.md</code> and no personal or legal
+information has been invented to fill them. A production deployment must not
+ship while any remain.
+</div>
+"""
+    return """
+<div class="warning-banner">
+Les valeurs affichées sous la forme
+<span class="placeholder-token">[SOMETHING_TO_DEFINE]</span> ne sont pas encore
+définies. Elles sont suivies dans
+<code>Documentation/HUMAN_BLOCKERS.md</code> et aucune information personnelle
+ou légale n'a été inventée pour les remplir. Un déploiement en production ne
+doit pas avoir lieu tant qu'il en reste.
+</div>
+"""
+
+
+def _identity_cell(key):
+    """An identity value, marked up as a placeholder token when undefined."""
+    value = ident(key, "[%s_TO_DEFINE]" % key.upper())
+    if is_defined(key):
+        return value
+    return '<span class="placeholder-token">%s</span>' % value
+
+
 def legal_body(l):
     if l == "en":
         return """
 <h1>Legal Notice</h1>
-<div class="warning-banner">
-Placeholders below (<span class="placeholder-token">[LEGAL_NAME_TO_DEFINE]</span>,
-<span class="placeholder-token">[LEGAL_ADDRESS_TO_DEFINE]</span>,
-<span class="placeholder-token">coretend.ahmetbsbnr.com</span>,
-<span class="placeholder-token">coretend.ahmetbsbnr.com</span>) are tracked in
-<code>Documentation/HUMAN_BLOCKERS.md</code>. No real personal or legal
-information has been invented. A production deployment must not ship while
-these remain unresolved.
-</div>
+%s
 <table>
-<tr><td>Publisher</td><td><span class="placeholder-token">[LEGAL_NAME_TO_DEFINE]</span></td></tr>
-<tr><td>Address</td><td><span class="placeholder-token">[LEGAL_ADDRESS_TO_DEFINE]</span></td></tr>
-<tr><td>Contact</td><td><span class="placeholder-token">[SECURITY_CONTACT_TO_DEFINE]</span></td></tr>
-<tr><td>Domain</td><td><span class="placeholder-token">coretend.ahmetbsbnr.com</span></td></tr>
-<tr><td>Hosting</td><td><span class="placeholder-token">coretend.ahmetbsbnr.com</span></td></tr>
+<tr><td>Publisher</td><td>%s</td></tr>
+<tr><td>Status</td><td>Individual, non-professional publisher. CoreTend is free
+and open source: no sale, no subscription, no advertising, no affiliate link,
+no donation, no account, and no commercial data collection.</td></tr>
+<tr><td>Address</td><td>Not published. Under Article 6 III-2 of the French LCEN,
+a non-professional publisher may withhold their personal address from the public
+provided the host holds their identity. The host below holds it.</td></tr>
+<tr><td>Contact</td><td>%s</td></tr>
+<tr><td>Domain</td><td>%s</td></tr>
+<tr><td>Host</td><td>%s<br>%s</td></tr>
+<tr><td>Publication director</td><td>%s</td></tr>
 </table>
 <p>CoreTend is not affiliated with Apple Inc. or MacPaw Inc.
 (CleanMyMac). It makes no antivirus/security-guarantee claim.</p>
-"""
+<p>“CoreTend” is used as an unregistered name. No trademark application has
+been filed and no registration is claimed. See
+<a href="licenses.html">Licenses</a>.</p>
+""" % (
+            _legal_pending_banner(l),
+            _identity_cell("publisherOfRecord"),
+            _identity_cell("securityContact"),
+            ident("websiteURL", SITE_URL),
+            ident("hostName", "[HOSTNAME_TO_DEFINE]"),
+            ident("hostAddress", "[HOSTADDRESS_TO_DEFINE]"),
+            _identity_cell("publisherOfRecord"),
+        )
     return """
 <h1>Mentions légales</h1>
-<div class="warning-banner">
-Les espaces réservés ci-dessous
-(<span class="placeholder-token">[LEGAL_NAME_TO_DEFINE]</span>,
-<span class="placeholder-token">[LEGAL_ADDRESS_TO_DEFINE]</span>,
-<span class="placeholder-token">coretend.ahmetbsbnr.com</span>,
-<span class="placeholder-token">coretend.ahmetbsbnr.com</span>) sont suivis dans
-<code>Documentation/HUMAN_BLOCKERS.md</code>. Aucune information personnelle
-ou légale réelle n'a été inventée. Un déploiement en production ne doit pas
-avoir lieu tant qu'ils ne sont pas résolus.
-</div>
+%s
 <table>
-<tr><td>Éditeur</td><td><span class="placeholder-token">[LEGAL_NAME_TO_DEFINE]</span></td></tr>
-<tr><td>Adresse</td><td><span class="placeholder-token">[LEGAL_ADDRESS_TO_DEFINE]</span></td></tr>
-<tr><td>Contact</td><td><span class="placeholder-token">[SECURITY_CONTACT_TO_DEFINE]</span></td></tr>
-<tr><td>Domaine</td><td><span class="placeholder-token">coretend.ahmetbsbnr.com</span></td></tr>
-<tr><td>Hébergement</td><td><span class="placeholder-token">coretend.ahmetbsbnr.com</span></td></tr>
+<tr><td>Éditeur</td><td>%s</td></tr>
+<tr><td>Statut</td><td>Éditeur personne physique, à titre non professionnel.
+CoreTend est gratuit et open source : aucune vente, aucun abonnement, aucune
+publicité, aucun lien d'affiliation, aucun don, aucun compte, aucune collecte
+commerciale de données.</td></tr>
+<tr><td>Adresse</td><td>Non publiée. Conformément à l'article 6 III-2 de la
+LCEN, l'éditeur non professionnel peut ne pas rendre publique son adresse
+personnelle dès lors que l'hébergeur détient son identité. L'hébergeur
+ci-dessous la détient.</td></tr>
+<tr><td>Contact</td><td>%s</td></tr>
+<tr><td>Domaine</td><td>%s</td></tr>
+<tr><td>Hébergeur</td><td>%s<br>%s</td></tr>
+<tr><td>Directeur de la publication</td><td>%s</td></tr>
 </table>
 <p>CoreTend n'est affilié ni à Apple Inc. ni à MacPaw Inc.
 (CleanMyMac). Aucune revendication d'antivirus ou de garantie de sécurité
 n'est faite.</p>
-"""
+<p>« CoreTend » est utilisé comme nom non déposé. Aucune demande de marque n'a
+été déposée et aucun enregistrement n'est revendiqué. Voir
+<a href="licenses.html">Licences</a>.</p>
+""" % (
+        _legal_pending_banner(l),
+        _identity_cell("publisherOfRecord"),
+        _identity_cell("securityContact"),
+        ident("websiteURL", SITE_URL),
+        ident("hostName", "[HOSTNAME_TO_DEFINE]"),
+        ident("hostAddress", "[HOSTADDRESS_TO_DEFINE]"),
+        _identity_cell("publisherOfRecord"),
+    )
 
 
 add("legal", {"en": "Legal notice", "fr": "Mentions légales"}, legal_body)
