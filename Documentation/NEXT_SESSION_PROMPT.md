@@ -1,6 +1,31 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 # Next Session Prompt
 
+## Current authoritative resume state — 2026-07-27
+
+- Production: `https://coretend.ahmetbsbnr.com`
+- Vercel project: `ahmets-projects-ed32c752/coretend`
+- Deployment:
+  `https://coretend-6gh4uz2bc-ahmets-projects-ed32c752.vercel.app`
+  (`dpl_GcQWq468fFGa6zcaLWLx1tinVhGg`)
+- GitHub prerelease:
+  `https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.0`
+- Tag target: `a6aa3bf20cc1f3b7623291660c4943db2e5d4a50`
+- Public verification: DNS, HTTPS/TLS, routes, release links, four downloads,
+  checksums, ZIP, DMG and manifest all pass.
+- Gate: **55 PASS / 0 FAIL / 2 NOT_APPLICABLE /
+  0 HUMAN_ACTION_REQUIRED**.
+- Production indexing: enabled; no public `X-Robots-Tag: noindex`;
+  `robots.txt` and `sitemap.xml` valid.
+- GitHub licence detection: still `NOASSERTION` / `Other`; do not change legal
+  terms as part of a deployment follow-up.
+- No branch commit was pushed and `main` was not changed.
+- An empty Vercel project `app` exists from an interrupted upload and has no
+  deployments. Remove it only with explicit authorization.
+
+The remainder of this file is the historical prepublication prompt and is
+superseded by the state above.
+
 Self-contained resume prompt. Written 2026-07-27 at the end of the 0.9.0
 launch phase's local work.
 

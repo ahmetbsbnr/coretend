@@ -1,6 +1,33 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 # Release State
 
+## Production state — verified 2026-07-27
+
+The annotated `v0.9.0` tag is public and still resolves to
+`a6aa3bf20cc1f3b7623291660c4943db2e5d4a50`. GitHub hosts a non-draft
+prerelease at
+`https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.0` with the ZIP,
+DMG, `latest.json`, and `SHA256SUMS` assets. GitHub licence detection remains
+`NOASSERTION` / `Other`; no licence change was made during deployment.
+
+Production is served by Vercel project `ahmets-projects-ed32c752/coretend`,
+deployment `dpl_GcQWq468fFGa6zcaLWLx1tinVhGg`, at
+`https://coretend.ahmetbsbnr.com`. DNS, HTTP-to-HTTPS redirection, TLS,
+security headers, public routes, asset downloads and checksums were verified.
+Production indexing is enabled; `robots.txt` allows crawling and references
+the public sitemap.
+
+Downloaded artifact verification reproduced the recorded sizes and hashes:
+ZIP 2833085 bytes / `1d224b7655cfbcb15b5f9a37302c454775fae34d17d7f010f8c9ab026999b7d8`;
+DMG 5192666 bytes /
+`f2fbc7840ac4a5509836a495c51e72e6cfd52ef24e6cbdd792fa8404bd3f6c8d`.
+`SHA256SUMS`, ZIP integrity, DMG integrity and `latest.json` validation pass.
+The isolated post-deployment gate reports **55 PASS, 0 FAIL,
+2 NOT_APPLICABLE, 0 HUMAN_ACTION_REQUIRED**.
+
+The prepublication snapshot below is historical and is superseded by this
+section. No branch commit was pushed as part of the deployment.
+
 Snapshot at commit `a6aa3bf`, tag `v0.9.0` (local only). Written 2026-07-27.
 
 ## Version

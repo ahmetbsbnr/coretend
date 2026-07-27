@@ -1,5 +1,46 @@
 # CONTINUATION
 
+## État autoritatif — production vérifiée le 2026-07-27
+
+Le site CoreTend est déployé sur le projet Vercel
+`ahmets-projects-ed32c752/coretend` (`prj_hwACffIdxpNjzM0QTa1IZy8cX4XH`).
+Le déploiement de production vérifié est
+`https://coretend-6gh4uz2bc-ahmets-projects-ed32c752.vercel.app`
+(`dpl_GcQWq468fFGa6zcaLWLx1tinVhGg`) et le domaine public est
+`https://coretend.ahmetbsbnr.com`.
+
+Vérifications publiques :
+
+- DNS : A `64.29.17.1` et `216.198.79.65`, TTL 1800 ; aucun AAAA ni CNAME,
+  résolution aplatie cohérente avec Vercel et sans boucle.
+- HTTP redirige vers HTTPS en 308 ; les pages d'accueil, téléchargement,
+  sécurité et licences ainsi que `robots.txt` et `sitemap.xml` répondent 200.
+- TLS valide : `CN=*.ahmetbsbnr.com`, Let's Encrypt `YR2`, SAN couvrant
+  `*.ahmetbsbnr.com` et `ahmetbsbnr.com`, valide du 2026-07-16 au 2026-10-14.
+- L'indexation de production est activée : aucun `X-Robots-Tag: noindex`,
+  `robots.txt` autorise l'exploration et référence le sitemap.
+- Les quatre assets ont été téléchargés depuis les liens du HTML public.
+  ZIP : 2 833 085 octets,
+  `1d224b7655cfbcb15b5f9a37302c454775fae34d17d7f010f8c9ab026999b7d8`.
+  DMG : 5 192 666 octets,
+  `f2fbc7840ac4a5509836a495c51e72e6cfd52ef24e6cbdd792fa8404bd3f6c8d`.
+  `SHA256SUMS`, `unzip -t`, `hdiutil verify` et la validation JSON de
+  `latest.json` passent.
+- Gate post-déploiement isolé au tag : **55 PASS / 0 FAIL /
+  2 NOT_APPLICABLE / 0 HUMAN_ACTION_REQUIRED**. Les deux N/A sont la
+  signature Developer ID et la notarisation, non revendiquées pour cette bêta.
+
+Le tag annoté `v0.9.0` cible toujours
+`a6aa3bf20cc1f3b7623291660c4943db2e5d4a50`. La prerelease publique reste
+`https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.0`. Aucun commit de
+branche n'a été poussé, `main` n'a pas été modifiée, la release n'a pas été
+éditée et aucun autre domaine n'a été touché. Un projet Vercel vide nommé
+`app`, créé lors d'une tentative interrompue avant tout déploiement, demeure
+sans deployment ; sa suppression n'a pas été autorisée.
+
+Les sections prépublication ci-dessous sont conservées comme historique et
+sont remplacées par cet état pour toute reprise.
+
 ## Verification reprise — 2026-07-27 (publication toujours interdite)
 
 Vérification non destructive effectuée sur

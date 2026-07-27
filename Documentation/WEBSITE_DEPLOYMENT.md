@@ -1,5 +1,43 @@
 # Website Deployment
 
+## Production deployment — verified 2026-07-27
+
+The static `Website/` directory is deployed to Vercel project
+`ahmets-projects-ed32c752/coretend` (`prj_hwACffIdxpNjzM0QTa1IZy8cX4XH`).
+The verified production deployment is
+`https://coretend-6gh4uz2bc-ahmets-projects-ed32c752.vercel.app`
+(`dpl_GcQWq468fFGa6zcaLWLx1tinVhGg`), served publicly as
+`https://coretend.ahmetbsbnr.com`.
+
+Build and deploy remain:
+
+```sh
+python3 Website/generate.py
+bash Scripts/check-website.sh
+bash Scripts/check-placeholders.sh
+bash Scripts/check-private-data.sh
+cd Website
+vercel deploy --prod --yes
+```
+
+DNS uses flattened A records `64.29.17.1` and `216.198.79.65` (TTL 1800);
+there is no AAAA or CNAME. HTTP redirects to HTTPS with 308. TLS uses a
+Let's Encrypt certificate covering `*.ahmetbsbnr.com`, valid from
+2026-07-16 through 2026-10-14. Production indexing is enabled and
+`robots.txt` references `https://coretend.ahmetbsbnr.com/sitemap.xml`.
+
+The public download page links the GitHub prerelease and all four assets.
+Downloaded ZIP and DMG hashes match `Release/SHA256SUMS`; ZIP, DMG and
+`latest.json` integrity checks pass. Post-deployment gate:
+**55 PASS / 0 FAIL / 2 NOT_APPLICABLE / 0 HUMAN_ACTION_REQUIRED**.
+
+An empty Vercel project named `app` was accidentally created during an
+interrupted root-directory upload. It has no deployments and was not deleted
+without explicit authorization.
+
+The predeployment instructions below are retained as historical context and
+are superseded by this verified state.
+
 Status: **not deployed.** No production URL exists and no deploy has been
 triggered. The configuration is now prepared and verified locally, so the
 remaining step is a single deliberate human decision.
