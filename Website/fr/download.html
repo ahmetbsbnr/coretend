@@ -6,10 +6,13 @@
 <title>Télécharger — CoreTend</title>
 <meta name="description" content="Entretien local, transparent et réversible pour macOS.">
 <meta name="color-scheme" content="light dark">
-<!-- noindex until the site is actually published: an unreleased page in a
-     search index is a promise nobody can keep. -->
+<!-- Indexing follows siteIndexable in the identity file. It stays noindex
+     until the site is really deployed: an unreachable page in a search index
+     is a promise nobody can keep. robots.txt is generated from the same flag,
+     so the two can never disagree. -->
 <meta name="robots" content="noindex">
 <link rel="canonical" href="https://coretend.ahmetbsbnr.com/fr/download.html">
+<meta property="og:url" content="https://coretend.ahmetbsbnr.com/fr/download.html">
 <link rel="alternate" hreflang="en" href="https://coretend.ahmetbsbnr.com/en/download.html">
 <link rel="alternate" hreflang="fr" href="https://coretend.ahmetbsbnr.com/fr/download.html">
 <meta property="og:type" content="website">
@@ -51,49 +54,46 @@
 
 <h1>Télécharger</h1>
 <div class="status-box">
-  <p><strong>Version publique en préparation.</strong> Aucune version stable
-  n'est disponible pour le moment. Cette page est un espace réservé pour la
-  future publication — elle ne pointe vers aucune build locale ni artefact
-  improvisé.</p>
+  <p><strong>La version 0.9.0 est prête mais pas encore publiée.</strong>
+  Il n'y a aucun lien de téléchargement, car il n'existe rien de public vers quoi
+  pointer. La version et l'empreinte n'apparaîtront ici qu'une fois une version
+  étiquetée publiée — elles sont lues depuis le manifeste généré, jamais saisies
+  à la main.</p>
 </div>
-
-<div class="status-box">
-  <p><strong>Aucun manifeste de version publié pour l'instant.</strong> Il n'y a
-  rien à télécharger ni à vérifier tant qu'il n'en existe pas. Lorsqu'une
-  version sera publiée, cette page affichera sa version, son architecture, la
-  version minimale de macOS, l'état de la signature et la somme de contrôle
-  SHA-256 — lues depuis le manifeste publié, jamais saisies à la main.</p>
-</div>
-
-<h2>Code source</h2>
-<p>Le code source de CoreTend sera publié sur GitHub une fois le dépôt
-public créé (voir la page <a href="open-source.html">Open Source</a> du
-projet). Il n'y a pas encore de lien vers le code source en direct — le
-dépôt n'est pas encore public. Cette page y renverra directement dès que
-ce sera le cas.</p>
 
 <h2>À quoi ressemblera la publication</h2>
-<p>Le premier artefact public portera exactement ce nom :</p>
-<pre>CoreTend-&lt;version&gt;-arm64-unsigned.zip</pre>
-
+<p>L'artefact portera exactement ce nom :</p>
+<pre>CoreTend-0.9.0-arm64-unsigned.zip</pre>
 <table>
   <tr><th>Champ</th><th>Statut</th></tr>
-  <tr><td>Version</td><td>non publiée</td></tr>
-  <tr><td>Empreinte (SHA-256)</td><td>sera publiée avec la version</td></tr>
+  <tr><td>Version</td><td>0.9.0 — prête, pas encore publiée</td></tr>
+  <tr><td>Empreinte (SHA-256)</td><td>publiée avec la version</td></tr>
   <tr><td>Signature de code</td><td><strong>non signé</strong> — toujours divulgué, jamais masqué</td></tr>
-  <tr><td>Notarisation</td><td>indisponible pour l'instant (nécessite un Apple Developer ID ; hors périmètre avant la 1.0)</td></tr>
+  <tr><td>Notarisation</td><td><strong>non notarisé</strong> — nécessite un Apple Developer ID, hors périmètre avant la 1.0</td></tr>
 </table>
 
-<h2>Étapes d'installation prévues (une fois une version publiée)</h2>
+<h2>Code source</h2>
+<p>CoreTend est open source. L'intégralité du code, des tests, des scripts de compilation et des gates se trouve sur <a href="https://github.com/ahmetbsbnr/coretend">https://github.com/ahmetbsbnr/coretend</a>.</p>
+
+<h2>Installer une application non signée</h2>
+<p>macOS refusera d'ouvrir CoreTend au premier lancement, en indiquant que le
+développeur ne peut pas être vérifié. Cet avertissement est exact : aucune
+identité de développeur n'est attachée, car la signature exige une adhésion
+payante au Apple Developer Program dont ce projet ne dispose pas.</p>
 <ol>
-  <li>Téléchargez et vérifiez l'empreinte SHA-256 par rapport à la valeur publiée.</li>
+  <li>Vérifiez l'empreinte SHA-256 par rapport à la valeur publiée
+  (<code>shasum -a 256 &lt;fichier&gt;</code>).</li>
   <li>Décompressez et déplacez CoreTend.app dans /Applications.</li>
-  <li>L'application étant non signée, Gatekeeper demandera un clic droit &rarr;
-  Ouvrir la première fois.</li>
+  <li>Faites un clic droit (ou Contrôle-clic) sur l'application et choisissez
+  <strong>Ouvrir</strong>, puis confirmez. Une seule fois suffit : macOS retient
+  la décision pour cette copie.</li>
   <li>Accordez l'accès complet au disque pour une analyse à couverture complète
   (voir la Documentation).</li>
 </ol>
-<p>En attendant, la compilation depuis les sources est documentée dans la
+<p><strong>Ne désactivez pas Gatekeeper.</strong> L'étape par application
+ci-dessus suffit, et désactiver une protection système entière pour une seule
+application n'est pas un échange raisonnable.</p>
+<p>La compilation depuis les sources est documentée dans la
 <a href="documentation.html">Documentation</a>.</p>
 
   </div>
