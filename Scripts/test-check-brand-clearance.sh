@@ -194,5 +194,62 @@ set -e
 grep -q "publicReleaseAllowed is not true" /tmp/cbc-test-10.out || fail "publicReleaseAllowed blocker not reported"
 echo "PASS: publication needs BOTH legal acceptance and an explicit release allowance"
 
+# 11. Conflict-register status vocabulary.
+#
+# The register distinguishes entries that bar the name from entries that merely
+# record a condition for a later step. All three arms are asserted here, because
+# the risk of a softer token is precisely that it stops blocking things it should
+# block.
+
+# 11a. A BLOCKING entry naming the candidate must block.
+setup_fixture
+write_approval TestName true true accepted true
+satisfy_everything_else
+cat > "$FIXTURE/Documentation/BRAND_CONFLICT_REGISTER.md" <<'EOF'
+# register
+| BC-900 | TestName clashes with a shipped product of the same name | HIGH | **BLOCKING** |
+EOF
+( cd "$FIXTURE" && git add -A && git commit -q -m "blocking entry" )
+set +e
+CHECK_BRAND_CLEARANCE_ROOT="$FIXTURE" "$GATE" TestName >/tmp/cbc-test-11a.out 2>&1
+rc=$?
+set -e
+[ "$rc" -ne 0 ] || fail "gate passed despite a BLOCKING register entry naming the candidate"
+grep -q "BLOCKING/OPEN entry naming" /tmp/cbc-test-11a.out || fail "BLOCKING entry not reported"
+echo "PASS: a BLOCKING register entry blocks the gate"
+
+# 11b. The legacy OPEN token must keep its force, so pre-existing rows still bar.
+setup_fixture
+write_approval TestName true true accepted true
+satisfy_everything_else
+cat > "$FIXTURE/Documentation/BRAND_CONFLICT_REGISTER.md" <<'EOF'
+# register
+| BC-901 | TestName unresolved prior use | HIGH | **OPEN** |
+EOF
+( cd "$FIXTURE" && git add -A && git commit -q -m "legacy open entry" )
+set +e
+CHECK_BRAND_CLEARANCE_ROOT="$FIXTURE" "$GATE" TestName >/tmp/cbc-test-11b.out 2>&1
+rc=$?
+set -e
+[ "$rc" -ne 0 ] || fail "gate passed despite a legacy OPEN register entry naming the candidate"
+echo "PASS: the legacy OPEN token still blocks the gate"
+
+# 11c. A WATCH entry must NOT block, but must be surfaced on stdout.
+setup_fixture
+write_approval TestName true true accepted true
+satisfy_everything_else
+cat > "$FIXTURE/Documentation/BRAND_CONFLICT_REGISTER.md" <<'EOF'
+# register
+| BC-902 | TestName adjacent mark, unrelated industry | WATCH | **WATCH.** Condition: attorney review before commercial use. |
+EOF
+( cd "$FIXTURE" && git add -A && git commit -q -m "watch entry" )
+set +e
+CHECK_BRAND_CLEARANCE_ROOT="$FIXTURE" "$GATE" TestName >/tmp/cbc-test-11c.out 2>&1
+rc=$?
+set -e
+[ "$rc" -eq 0 ] || fail "a WATCH entry blocked the gate; it must only be surfaced (see /tmp/cbc-test-11c.out)"
+grep -q "WATCH entry/entries name" /tmp/cbc-test-11c.out || fail "WATCH entry was silently ignored instead of surfaced"
+echo "PASS: a WATCH entry does not block but is surfaced"
+
 echo
 echo "All check-brand-clearance.sh tests passed."

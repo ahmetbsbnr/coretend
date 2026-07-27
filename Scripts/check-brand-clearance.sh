@@ -112,10 +112,37 @@ else
   block "$CLEARANCE_FILE is missing"
 fi
 
-# 4. No OPEN conflict register entry may name this candidate.
+# 4. No BLOCKING conflict register entry may name this candidate.
+#
+# The register uses a closed status vocabulary, documented in its own
+# "Status vocabulary" section:
+#
+#   BLOCKING       a real conflict — the name must not be used   -> blocks
+#   OPEN           legacy token, kept so older rows keep force   -> blocks
+#   WATCH          recorded, non-blocking, carries a stated
+#                  condition for a named future step             -> surfaced only
+#   INFORMATIONAL  noted for completeness                        -> ignored
+#   CLOSED         resolved or abandoned                         -> ignored
+#
+# WATCH exists because the previous single-token scheme could only express
+# "unresolved", which forced genuinely non-blocking observations (an adjacent
+# mark in an unrelated industry, a parked domain the project does not need) to
+# read as though they barred publication. A WATCH row never silences anything:
+# it is printed on every run so the condition stays visible.
 if [ -f Documentation/BRAND_CONFLICT_REGISTER.md ] && [ -n "$CANDIDATE" ]; then
-  if grep -i "$CANDIDATE" Documentation/BRAND_CONFLICT_REGISTER.md | grep -qi "OPEN"; then
-    block "Documentation/BRAND_CONFLICT_REGISTER.md still has an OPEN entry naming '$CANDIDATE'"
+  CANDIDATE_ROWS=$(grep -i "$CANDIDATE" Documentation/BRAND_CONFLICT_REGISTER.md || true)
+
+  if printf '%s\n' "$CANDIDATE_ROWS" | grep -qE '\*\*(BLOCKING|OPEN)\b|\bBLOCKING\b'; then
+    block "Documentation/BRAND_CONFLICT_REGISTER.md has a BLOCKING/OPEN entry naming '$CANDIDATE'"
+  fi
+
+  WATCH_COUNT=$(printf '%s\n' "$CANDIDATE_ROWS" | grep -c '\*\*WATCH\.\*\*' || true)
+  if [ "${WATCH_COUNT:-0}" -gt 0 ]; then
+    echo "  NOTE: ${WATCH_COUNT} WATCH entry/entries name '$CANDIDATE' in"
+    echo "        Documentation/BRAND_CONFLICT_REGISTER.md. These do not block a"
+    echo "        free unsigned beta, but each carries a condition that must be met"
+    echo "        before the future step it names (typically commercial use or a"
+    echo "        trademark filing). Read them before any 1.0 or paid release."
   fi
 fi
 

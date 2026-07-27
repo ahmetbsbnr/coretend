@@ -165,3 +165,108 @@ via authoritative APIs; one unresolved third-party signal (`coretend.com`)
 remains. Hence `REVIEW_REQUIRED`, and hence the recommended next step is a
 **paid professional search by a human attorney** — see
 `Documentation/CORETEND_TRADEMARK_SCREENING.md` §9.
+
+---
+
+## 2026-07-27 — Official register reached (TMview): raw evidence
+
+This section records the evidence that was **missing** from every prior section of
+this file: an actual query against an official trademark register. The earlier
+sections stand unaltered as the record of what was true on their dates.
+
+**Method:** interactive JavaScript-capable browser. Every official register is a
+JS single-page application that rejects scripted GET/POST, which is why prior
+sessions recorded them as unreachable. A real browser session was used instead.
+
+**Source:** TMview — the search portal of the EUIPO / European IP Network,
+aggregating roughly eighty national and regional registers in one query,
+including all six originally targeted: **TMview, EUIPO, INPI (FR), WIPO,
+USPTO, UKIPO**.
+
+**Corpus size reported by TMview at query time:** 141 856 516 marks.
+
+### Query A — `Nom de la marque: Contient "coretend"`
+
+```
+https://www.tmdn.org/tmview/#/tmview/results?page=1&pageSize=30&criteria=C&basicSearch=coretend
+```
+
+**Rows returned: 0.** TMview rendered the empty-state string verbatim:
+
+```
+Pas de rangées trouvées
+```
+
+No mark containing the string `coretend` exists in any class, any status, any
+participating office, as reflected in TMview.
+
+### Query B — `Nom de la marque: Contient "core tend"`
+
+```
+https://www.tmdn.org/tmview/#/tmview/results?page=1&pageSize=30&criteria=C&basicSearch=core%20tend
+```
+
+**Rows returned: 26 (1-26 des 26).** Complete transcription of the result table,
+in the order returned:
+
+| # | Mark | Filed | Cl. | Status | Office | Application no. | Applicant |
+|---|---|---|---|---|---|---|---|
+| 1 | COREXTEND | 30/04/2003 | 9 | Cloturée | Israël — ILPO | 164176 | MIPS Tech, LLC |
+| 2 | COREXTEND | 16/05/2003 | 9 | **Enregistrée** | Royaume-Uni — UKIPO | UK00903170149 | MIPS Tech, LLC |
+| 3 | COREXTEND | 27/11/2002 | 9 | Cloturée | États-Unis — USPTO | 78189735 | IMAGINATION TECHNOLOGIES, LLC |
+| 4 | ＣＯＲＥＸＴＥＮＤ | 30/04/2003 | 9 | Expirée | Japon — JPO | 2003035267 | ミップス テクノロジーズ インコーポレイテッド |
+| 5 | COREXTEND | 16/05/2003 | 9 | **Enregistrée** | EUIPO | 003170149 | MIPS Tech, LLC |
+| 6 | COREXTEND | 30/04/2003 | 9 | Cloturée | Rép. de Corée — MOIP | 4020030019740 | 밉스 테크 엘엘씨 |
+| 7 | COREXTENDER | 06/09/2019 | 7 | Cloturée | États-Unis — USPTO | 88606735 | Double E Company, LLC |
+| 8 | COREXTENDER | 15/02/2023 | 7 | Cloturée | États-Unis — USPTO | 97796314 | Double E Company, LLC |
+| 9 | XRCORE | 22/02/2021 | 35, 9 | Enregistrée | États-Unis — USPTO | 90538739 | Matrixed Reality Technology Co., Ltd. |
+| 10 | XRCORE | 22/02/2021 | 9 | Enregistrée | États-Unis — USPTO | 90977209 | Matrixed Reality Technology Co., Ltd. |
+| 11 | CHÁ DA LUA (figurative, long description) | 31/03/2020 | 30 | Cloturée | Brésil — INPI | 919493661 | ANA FLAVIA COELHO |
+| 12 | NutriCore atendimento e assessoria nutricional | 28/02/2011 | 44 | Cloturée | Brésil — INPI | 903418991 | TAVARES & PERNA ATENDIMENTO E ASSESSORIA NUTRICIONAL LTDA |
+| 13 | EBS Consulting (figurative, long description) | 24/04/2014 | 35 | Cloturée | Brésil — INPI | 907605893 | Elton Brasil de Souza |
+| 14 | MARCHIO FIGURATIVO … PECORELLE AL PASCOLO | 05/05/2008 | 29 | Enregistrée | Italie — UIBM | 2008901623386 | CASEIFICIO ARTIGIANALE DEI F.LLI DEROSA SRL |
+| 15 | Tendências Decor INSPIRE SE DECORE VIVA | 20/03/2025 | 35 | Déposée | Brésil — INPI | 938438875 | TRAÇOS ACABAMENTOS LTDA |
+| 16 | ATENDACOREN FRESCO, NATURAL Y GALLEGO. | 17/11/2011 | 35 | Enregistrée | Espagne — OEPM | M3006425 | CORENGRILL, S.A. |
+| 17 | 腾诺咨询 TENDCORE CONSULTING | 10/09/2014 | 41 | Enregistrée | Chine — CNIPA | 15317472 | 北京腾诺咨询服务有限公司 |
+| 18 | 腾诺咨询 TENDCORE CONSULTING | 10/09/2014 | 35 | Enregistrée | Chine — CNIPA | 15317311 | 北京腾诺咨询服务有限公司 |
+| 19 | NUTRICORE ATENDIMENTO E ASSESSORIA NUTRICIONAL | 25/02/2015 | 44 | Cloturée | Brésil — INPI | 909034109 | Tavares & Perna … Ltda |
+| 20 | CÓRDOBA ARGENTINA _NO LO ENTENDERÍAS CORE | 13/07/2023 | 22 | Enregistrée | Argentine — INPI | 4264388 | ORÍAS, CONSTANZA |
+| 21 | Nominativa … contendo as cores laranja e branco | 12/09/2022 | 40 | Cloturée | Brésil — INPI | 927972603 | ALCIONE SOUZA DE ALEXANDRIA |
+| 22 | PrimeWrap; … StratoShellXtendWrap-67; CoreLiteRWrap | 04/07/2025 | 16 | Déposée | Nouvelle-Zélande — IPONZ | 1296848 | ANZ FILM SPECIALIST LIMITED |
+| 23 | CORES & TENDÊNCIAS REVISTA ONLINE | 14/02/2000 | 16 | Expirée | Brésil — INPI | 822460220 | AKZO NOBEL LTDA. |
+| 24 | TANDEM EXTENDED ENTERPRISE SCORE | 18/03/1999 | 35 | Cloturée | Mexique — IMPI | 0367987 | DAIMLERCHRYSLER CORPORATION |
+| 25 | ENDURIX ENDUROCORE XTEND | 05/06/2026 | 1 | Déposée | Australie — IPA | 2660064 | ENDURIX |
+| 26 | CÓRDOBA ARGENTINA _NO LO ENTENDERÍAS CORE. | 13/07/2023 | 25 | Enregistrée | Argentine — INPI | 4264389 | ORÍAS, CONSTANZA |
+
+**None of the 26 is the name CoreTend.** Rows 11–26 are token coincidences —
+`tend` appearing inside ordinary Portuguese/Spanish/Italian words (*atendimento*,
+*tendências*, *entenderías*, *intende*, *contendo*) or inside *extend/xtend* in
+long multi-word marks. Rows 9–10 (`XRCORE`) share only `core`.
+
+Rows 1–8 (`COREXTEND` / `COREXTENDER`) are the only neighbours of interest and
+are carried into `BRAND_CONFLICT_REGISTER.md` as a watch item.
+
+### Software distribution channels — re-verified the same day
+
+| Channel | Query | Result |
+|---|---|---|
+| GitHub — repositories | `api.github.com/search/repositories?q=coretend` | `total_count: 0` |
+| GitHub — users/orgs | `api.github.com/search/users?q=coretend` | 1 → `coretendency` (different word, unrelated) |
+| npm | `registry.npmjs.org/-/v1/search?text=coretend` | `total: 0` |
+| PyPI | `pypi.org/pypi/coretend/json` | HTTP 404 |
+| Homebrew formula | `formulae.brew.sh/api/formula/coretend.json` | HTTP 404 |
+| Homebrew cask | `formulae.brew.sh/api/cask/coretend.json` | HTTP 404 |
+| Mac App Store | `itunes.apple.com/search?term=coretend&entity=macSoftware` | `resultCount: 0` |
+
+`github.com/ahmetbsbnr/coretend` is free.
+
+### What this evidence does and does not establish
+
+**Does:** the exact string `coretend` is absent from the aggregated official
+registers and from every major software distribution channel checked.
+
+**Does not:** establish freedom to operate. Only literal `contains` queries were
+run — no phonetic, fuzzy, transliteration, or figurative-similarity analysis.
+TMview's own footer states its results "do not constitute official registers and
+the information they contain has no legal effect." Unregistered/common-law rights
+are invisible to these databases. No attorney reviewed any of this.

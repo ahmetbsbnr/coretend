@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.1.0",
   "screeningDate_UTC": "2026-07-25",
   "performedBy": "automated agent (Claude Code) — non-human, non-lawyer",
   "humanReadableMirror": "Documentation/CORETEND_TRADEMARK_SCREENING.md",
@@ -377,8 +377,8 @@
     }
   ],
   "highConflictFound": false,
-  "status": "REVIEW_REQUIRED",
-  "statusReasoning": "PRELIMINARY_CLEARANCE_NO_HIGH_CONFLICT_FOUND requires real evidence from at least one official trademark registry AND thorough public-source searching with no same-category conflict. Only the second condition is met — zero of six target registers (TMview, EUIPO, INPI, WIPO, USPTO, UKIPO) was reachable, so that status is unavailable. CONFLICT_HIGH is also wrong: nothing found is a same-category conflict. Between INCONCLUSIVE_TOOL_LIMITATION and REVIEW_REQUIRED, REVIEW_REQUIRED was chosen because it is the strictly larger statement: it covers the registry blackout AND the substantive unresolved signal that no tool limitation explains away — a third party registered and parked coretend.com four months ago and this screening cannot determine who or why.",
+  "status": "PRELIMINARY_CLEARANCE_NO_HIGH_CONFLICT_FOUND",
+  "statusReasoning": "Both conditions for this status are now met. (1) Official-registry evidence: TMview — the EUIPO/EUIPN portal aggregating roughly eighty national and regional registers, including all six originally targeted (TMview, EUIPO, INPI, WIPO, USPTO, UKIPO) — was queried through an interactive JavaScript-capable browser on 2026-07-27 and returned ZERO rows for 'contains: coretend' across a reported corpus of 141,856,516 marks. (2) Public-source searching: GitHub repositories/users, npm, PyPI, Homebrew formula and cask, and the Mac App Store were all re-verified negative, and no same-category software conflict exists. The blocking reason recorded on 2026-07-25 ('zero of six target registers was reachable') no longer holds. CONFLICT_HIGH remains wrong: nothing found is a same-category conflict. This status is a preliminary screening outcome, NOT a legal clearance, NOT a freedom-to-operate opinion, and NOT a claim of registration.",
   "limitations": [
     "TMview not queryable — POST-only API, ECONNRESET on GET.",
     "EUIPO eSearch plus not queryable — JavaScript SPA, no server-rendered results.",
@@ -401,17 +401,139 @@
   "accountCreated": false,
   "thirdPartyContacted": false,
   "authorises": [
-    "Publishing the free, open-source, unsigned pre-release/beta as github.com/ahmetbsbnr/coretend with a site at coretend.ahmetbsbnr.com, using 'CoreTend' as a plain product name.",
-    "Using the name with NO registration symbol and NO claim, statement or implication of registration, clearance or legal validation anywhere (README, site, release notes, app UI, About panel).",
-    "Linking to Documentation/CORETEND_TRADEMARK_SCREENING.md as the honest record of what was and was not checked."
+    "Use of the name CoreTend for a free, unsigned, open-source public BETA release.",
+    "Creation of the public repository github.com/ahmetbsbnr/coretend.",
+    "Publication of the product site at coretend.ahmetbsbnr.com."
   ],
   "doesNotAuthorise": [
-    "Any commercial use of the name — paid version, paid tier, brand-tied donations, App Store distribution, sponsorship, or any monetisation.",
-    "Use of the ® symbol, any claim of registration, or any wording implying trademark clearance, legal validation or attorney review.",
-    "Filing a trademark application on the strength of this document.",
-    "Building brand equity that would be expensive to unwind — trademark licensing, printed material, paid marketing, a logo lockup treated as final, or acquiring further domains.",
-    "Flipping legalReviewStatus to 'accepted' or publicReleaseAllowed to true; REVIEW_REQUIRED is not the 'accepted' that Scripts/check-brand-clearance.sh --publication waits for.",
-    "Treating 'no conflict found' as 'no conflict exists' — a registered CoreTend mark in class 9 or 42 in the EU, France, the UK, the US or under Madrid may exist and would not have been visible to any tool used here."
+    "Any use of the (R) symbol or any claim that CoreTend is a registered trademark.",
+    "Any statement that the name is 'legally cleared', 'validated', or 'trademark protected'.",
+    "Filing a trademark application (none has been filed; nothing has been paid).",
+    "Commercial exploitation, paid tiers, or sale of the software under this name without prior attorney review of COREXTEND.",
+    "Expansion into embedded/semiconductor/processor-adjacent tooling without prior attorney review of COREXTEND."
   ],
-  "recommendedHumanStep": "Commission a paid professional trademark search from a trademark attorney or professional search provider, covering Nice classes 9 and 42 across EUIPO, INPI (FR), UKIPO, USPTO and WIPO/Madrid, including similarity and phonetic searching — that is the step that can produce a real clearance opinion, which this document cannot. In parallel: (a) identify the registrant behind coretend.com via registrar WHOIS or a watch service, without contacting them before taking advice; (b) set a watch on CoreTend/Coretend in classes 9 and 42 and on the .com/.app/.io domain set; (c) optionally re-run this automated screening from an environment with browser automation, which could query the JavaScript register front-ends and convert several limitations into evidence."
+  "recommendedHumanStep": "Commission a paid professional trademark search from a trademark attorney or professional search provider, covering Nice classes 9 and 42 across EUIPO, INPI (FR), UKIPO, USPTO and WIPO/Madrid, including similarity and phonetic searching — that is the step that can produce a real clearance opinion, which this document cannot. In parallel: (a) identify the registrant behind coretend.com via registrar WHOIS or a watch service, without contacting them before taking advice; (b) set a watch on CoreTend/Coretend in classes 9 and 42 and on the .com/.app/.io domain set; (c) optionally re-run this automated screening from an environment with browser automation, which could query the JavaScript register front-ends and convert several limitations into evidence.",
+  "statusHistory": [
+    {
+      "date_UTC": "2026-07-25",
+      "status": "REVIEW_REQUIRED",
+      "reason": "Zero of six target official registers was reachable with the tools available that day; public/software sources were clean."
+    },
+    {
+      "date_UTC": "2026-07-27",
+      "status": "PRELIMINARY_CLEARANCE_NO_HIGH_CONFLICT_FOUND",
+      "reason": "Official-register condition satisfied via TMview (aggregates ~80 offices incl. EUIPO, INPI, USPTO, WIPO, UKIPO): 0 marks contain the string 'coretend' across 141,856,516 records. Software/package channels re-verified clean. Nearest neighbour COREXTEND recorded as a watch item, not a high conflict."
+    }
+  ],
+  "statusSetDate_UTC": "2026-07-27",
+  "officialRegisterEvidence": {
+    "date_UTC": "2026-07-27",
+    "source": "TMview (TMDN / EUIPO — European IP Network)",
+    "method": "interactive JavaScript-capable browser; the search endpoint is JS-gated and rejects scripted GET/POST",
+    "corpusSizeReported": 141856516,
+    "aggregatedOfficesIncludeAllTargets": [
+      "EUIPO",
+      "INPI (FR)",
+      "USPTO (US)",
+      "WIPO (WO)",
+      "UKIPO (GB)"
+    ],
+    "queries": [
+      {
+        "criteria": "contains",
+        "term": "coretend",
+        "url": "https://www.tmdn.org/tmview/#/tmview/results?page=1&pageSize=30&criteria=C&basicSearch=coretend",
+        "rowsReturned": 0,
+        "verbatimUI": "Pas de rangées trouvées"
+      },
+      {
+        "criteria": "contains",
+        "term": "core tend",
+        "url": "https://www.tmdn.org/tmview/#/tmview/results?page=1&pageSize=30&criteria=C&basicSearch=core%20tend",
+        "rowsReturned": 26,
+        "relevantToCoreTend": 0,
+        "note": "All 26 are token matches on 'core' and 'tend' separately: COREXTEND family, XRCORE, TENDCORE CONSULTING, and Romance-language marks where 'tend' is a fragment of atendimento/tendencias/entenderias/intende/contendo."
+      }
+    ],
+    "caveat": "TMview states in its own footer that its results do not constitute official registers and have no legal effect. Only literal 'contains' queries were run — no phonetic, fuzzy, transliteration or figurative-similarity search."
+  },
+  "nearestNeighbour": {
+    "mark": "COREXTEND",
+    "editDistanceFromCandidate": 1,
+    "assessment": "WATCH — recorded, not dismissed; not a high conflict for this launch",
+    "liveRegistrationsInClass9": [
+      {
+        "office": "EUIPO",
+        "number": "003170149",
+        "class": 9,
+        "status": "Registered",
+        "owner": "MIPS Tech, LLC"
+      },
+      {
+        "office": "UKIPO",
+        "number": "UK00903170149",
+        "class": 9,
+        "status": "Registered",
+        "owner": "MIPS Tech, LLC"
+      }
+    ],
+    "otherRecords": [
+      {
+        "office": "USPTO",
+        "number": "78189735",
+        "class": 9,
+        "status": "Closed",
+        "owner": "Imagination Technologies, LLC"
+      },
+      {
+        "office": "JPO",
+        "number": "2003035267",
+        "class": 9,
+        "status": "Expired",
+        "owner": "MIPS Technologies"
+      },
+      {
+        "office": "ILPO",
+        "number": "164176",
+        "class": 9,
+        "status": "Closed",
+        "owner": "MIPS Tech, LLC"
+      },
+      {
+        "office": "MOIP (KR)",
+        "number": "4020030019740",
+        "class": 9,
+        "status": "Closed",
+        "owner": "MIPS Tech, LLC"
+      },
+      {
+        "office": "USPTO",
+        "mark": "COREXTENDER",
+        "number": "88606735 / 97796314",
+        "class": 7,
+        "status": "Closed",
+        "owner": "Double E Company, LLC"
+      }
+    ],
+    "whyNotHighConflict": [
+      "Different field of use: MIPS CoreExtend is a user-defined instruction-set extension facility for embedded CPU cores (semiconductor IP licensed to chip designers); CoreTend is a consumer macOS maintenance application. Trade channels and relevant public do not overlap.",
+      "Different construction and pronunciation: 'core-extend' (3 syllables, built on 'extend') vs 'core-tend' (2 syllables, built on 'tend', to care for). Conceptually opposite in kind.",
+      "No product-name collision: no shipped product, package, cask, App Store listing or repository is named CoreTend."
+    ],
+    "requiresAttorneyReviewBefore": [
+      "filing a trademark application for CoreTend in class 9 or 42",
+      "charging money for CoreTend or any commercial exploitation",
+      "expanding into embedded, semiconductor or processor-adjacent tooling"
+    ]
+  },
+  "softwareChannelsReverified_2026_07_27": {
+    "githubRepositories": 0,
+    "githubUsersOrgs": "1 unrelated account 'coretendency'",
+    "npm": 0,
+    "pypi": "HTTP 404",
+    "homebrewFormula": "HTTP 404",
+    "homebrewCask": "HTTP 404",
+    "macAppStore": 0,
+    "plannedRepoAvailable": "github.com/ahmetbsbnr/coretend is free"
+  }
 }

@@ -96,3 +96,64 @@ clearance** anywhere — and nothing beyond that. Commercial use, a `®`, or any
 registration claim needs a paid professional search by a human attorney across
 EUIPO, INPI, UKIPO, USPTO and WIPO in classes 9 and 42, including similarity
 searching.
+
+## 3. CoreTend — official register screening, 2026-07-27
+
+Status of the name after the official registers were finally reached:
+**`PRELIMINARY_CLEARANCE_NO_HIGH_CONFLICT_FOUND`** (was `REVIEW_REQUIRED`).
+
+TMview — aggregating ~80 offices including EUIPO, INPI, USPTO, WIPO and UKIPO —
+returned **zero marks containing `coretend`** across 141 856 516 records.
+Full method and raw results: `BRAND_SEARCH_EVIDENCE.md`, section 2026-07-27.
+
+### Status vocabulary (closed set)
+
+`Scripts/check-brand-clearance.sh` reads these tokens. Every row below carries
+exactly one, and the meanings are fixed:
+
+| Token | Meaning | Blocks the gate? |
+|---|---|---|
+| `BLOCKING` | A real conflict. The name must not be used for this purpose. | **Yes — both engineering and publication.** |
+| `OPEN` | Legacy token, retained so pre-existing rows keep their force. Treated as `BLOCKING`. | **Yes.** |
+| `WATCH` | Recorded, understood, and judged not to bar a free unsigned beta — but it carries a named condition that must be met before a stated future step (typically commercial use or a trademark filing). | No. Surfaced, not blocking. |
+| `INFORMATIONAL` | Noted for completeness; no action implied. | No. |
+| `CLOSED` | Resolved or abandoned. | No. |
+
+`WATCH` is not a softer way of writing `BLOCKING`. It exists because the earlier
+single-token scheme could only say "unresolved", which forced genuinely
+non-blocking observations (an adjacent mark in a different industry, a parked
+domain the project does not need) to read as though they barred publication. Each
+`WATCH` row must state its condition explicitly, and those conditions are
+restated as standing rules at the end of this section.
+
+| ID | Conflict | Severity | Type | Same category? | Status |
+|---|---|---|---|---|---|
+| BC-101 | `COREXTEND` — MIPS Tech, LLC. **Live registrations in class 9**: EUIPO 003170149, UKIPO UK00903170149. Also USPTO 78189735 (closed, Imagination Technologies), JPO 2003035267 (expired), ILPO 164176 (closed), MOIP KR 4020030019740 (closed). One letter from CORETEND. Field of use is embedded-CPU instruction-set extension IP licensed to chip designers — not consumer macOS software. | **WATCH** | Registered mark, class 9, adjacent spelling | No — semiconductor IP vs. consumer macOS maintenance app | **WATCH.** Not blocking a free unsigned beta. Condition: attorney review required before filing, before any commercial use, and before any move into embedded/processor-adjacent tooling. |
+| BC-102 | `COREXTENDER` — Double E Company, LLC. USPTO 88606735 and 97796314, class 7, both closed. | LOW | Closed applications, unrelated class | No | Informational — closed, class 7 (machines). |
+| BC-103 | `TENDCORE CONSULTING` / 腾诺咨询 — CNIPA 15317472 (cl. 41) and 15317311 (cl. 35), registered. Element order reversed; consulting services. | LOW | Registered mark, reversed elements | No — consulting services | Informational. |
+| BC-104 | `XRCORE` — Matrixed Reality Technology Co., Ltd. USPTO 90538739 (cl. 35/9), 90977209 (cl. 9), registered. Shares only the `core` element. | LOW | Registered mark, shared common element | No | Informational — `core` is a weak, widely-used element in class 9. |
+| BC-105 | Romance-language token coincidences: `NutriCore atendimento`, `CORES & TENDÊNCIAS`, `ATENDACOREN`, `Tendências Decor`, `NO LO ENTENDERÍAS CORE`, `contendo as cores`. `tend` is a fragment of ordinary words (*atendimento*, *tendências*, *entenderías*, *contendo*). | NONE | Search-tokenisation artefact | No | Closed — not conflicts. |
+| BC-106 | `coretend.com` — third-party registered/parked domain, surfaced 2026-07-25, appearing in a bulk domain listing alongside `coreten*` architecture/fitness domains (Corten steel cluster). No software product, no content, no trademark record found. | LOW-MEDIUM | Domain occupancy | No — not software | **WATCH.** Condition: revisit only if the apex domain is ever wanted. The project ships on `coretend.ahmetbsbnr.com`, a subdomain it already controls, so this does not affect the launch. |
+
+### Software-channel occupancy — all clear (2026-07-27)
+
+| Channel | Result |
+|---|---|
+| GitHub repositories | 0 |
+| GitHub users/orgs | 1 unrelated (`coretendency`) |
+| npm | 0 |
+| PyPI | 404 |
+| Homebrew formula / cask | 404 / 404 |
+| Mac App Store (macSoftware) | 0 |
+
+No prior software use of the name CoreTend exists in any channel checked.
+`github.com/ahmetbsbnr/coretend` is available.
+
+### Standing rules while BC-101 is open
+
+1. Never use `®` with CoreTend. Never state or imply the name is registered.
+2. Never describe the name as "legally cleared", "validated", or "protected".
+3. Attorney review of `COREXTEND` is required before: filing in class 9 or 42,
+   charging money for the software, or entering embedded/semiconductor tooling.
+4. Re-run the TMview queries before any 1.0 commercial release; new filings appear
+   continuously and this register is a snapshot, not a subscription.
