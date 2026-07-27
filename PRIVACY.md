@@ -56,6 +56,6 @@ detailed model.
 
 ## Contact
 
-Security-relevant privacy concerns: see [SECURITY.md](SECURITY.md)
-(`[SECURITY_CONTACT_TO_DEFINE]` until a monitored channel is set up — see
-[Documentation/HUMAN_BLOCKERS.md](Documentation/HUMAN_BLOCKERS.md)).
+Security-relevant privacy concerns: see [SECURITY.md](SECURITY.md), which
+routes them to [GitHub private vulnerability
+reporting](https://github.com/ahmetbsbnr/coretend/security/advisories/new).

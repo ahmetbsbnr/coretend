@@ -31,11 +31,13 @@ project.
 
 ## Enforcement
 
-Report unacceptable behavior to `[SECURITY_CONTACT_TO_DEFINE]` (same
-placeholder tracked in Documentation/PUBLICATION_PLACEHOLDERS.md — a real
-conduct-report contact must be defined before publication). Maintainers
-who violate this Code of Conduct may face the same consequences as any
-other contributor.
+Report unacceptable behavior through [GitHub private vulnerability
+reporting](https://github.com/ahmetbsbnr/coretend/security/advisories/new).
+That channel is shared with security reports because it is the only
+private channel this project has — it keeps the report visible to the
+maintainer alone, which matters as much for a conduct report as for a
+vulnerability. Maintainers who violate this Code of Conduct may face the
+same consequences as any other contributor.
 
 ## Attribution
 
