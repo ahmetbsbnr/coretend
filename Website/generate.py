@@ -408,7 +408,7 @@ HOME_FAQ = [
 HOME_TEXT = {
     "en": {
         "hero_eyebrow": "Native care for macOS",
-        "hero_title": "A lighter Mac. Always under control.",
+        "hero_title": "Your Mac, lighter. Always under control.",
         "hero_body": "See what weighs down your Mac, review every finding, and decide what leaves.",
         "cta_download": "Download CoreTend",
         "cta_how": "See how it works",
@@ -465,7 +465,7 @@ HOME_TEXT = {
     },
     "fr": {
         "hero_eyebrow": "Entretien natif pour macOS",
-        "hero_title": "Un Mac plus léger. Toujours sous contrôle.",
+        "hero_title": "Votre Mac, plus léger. Toujours sous contrôle.",
         "hero_body": "Voyez ce qui alourdit votre Mac, examinez chaque résultat et décidez de ce qui part.",
         "cta_download": "Télécharger CoreTend",
         "cta_how": "Découvrir le fonctionnement",
