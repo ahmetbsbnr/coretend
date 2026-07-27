@@ -17,7 +17,7 @@ not be verified, it says so rather than assuming.
 | Provider token patterns in tracked tree | `git grep -nIE` for `ghp_`/`gho_`/`ghu_`/`ghs_`/`github_pat_`, `AKIA[0-9A-Z]{16}`, `sk-…`, `xox[baprs]-…`, `-----BEGIN … PRIVATE KEY-----` | **No matches** |
 | Credential/certificate files tracked | `git ls-files` filtered for `.env`, `.p12`, `.pem`, `.key`, `.cer`, `.mobileprovision`, `.provisionprofile`, `.pfx`, `id_rsa`, `credentials` | **None tracked** |
 | Same patterns in the **published** tree | `git grep` against `public-main` | **No matches** |
-| Personal account name in the published tree | `git grep -nIE 'ahmetbasbunar\|/Users/[a-z]+\|/Volumes/'` against `public-main` | **No leak.** Every hit is a macOS system path (`/Volumes/Recovery`, `/Library/Apple`), a safety-allowlist constant, or a deliberately synthetic test home (`/Users/alice`, `/Users/testuser`) |
+| Personal account name in the published tree | `Scripts/check-private-data.sh`, which derives the name from `id -un` at runtime, plus a `git grep` for `/Users/[a-z]+` and `/Volumes/` against `public-main` | **No leak.** Every hit is a macOS system path (`/Volumes/Recovery`, `/Library/Apple`), a safety-allowlist constant, or a deliberately synthetic test home (`/Users/alice`, `/Users/testuser`) |
 
 **No secret was found, so none had to be redacted or revoked.**
 
