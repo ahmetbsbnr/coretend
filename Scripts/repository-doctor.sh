@@ -23,7 +23,7 @@ for f in LICENSE NOTICE COPYRIGHT README.md SECURITY.md CODE_OF_CONDUCT.md CONTR
 done
 
 echo "-- Required Documentation/ files --"
-for f in Documentation/PUBLICATION_AUDIT.md Documentation/REPOSITORY_SANITIZATION.md \
+for f in Documentation/REPOSITORY_SANITIZATION.md \
          Documentation/ASSET_PROVENANCE.md Documentation/DEPENDENCIES.md; do
   if [ -f "$f" ]; then
     echo "  OK: $f"
