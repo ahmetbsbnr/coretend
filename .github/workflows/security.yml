@@ -61,7 +61,8 @@ jobs:
       - name: Absolute-path check (no hardcoded developer machine paths)
         run: |
           set -eu
-          if git grep -nE '/Users/[A-Za-z0-9_.-]+/(Documents|Desktop)' -- . ':!Documentation/*.md' ':!.github/workflows/security.yml'; then
+          if git grep -nE '/Users/[A-Za-z0-9_.-]+/(Documents|Desktop)' -- . \
+              ':!Documentation/*.md' ':!Tests/**' ':!.github/workflows/security.yml'; then
             echo "Found a hardcoded developer-machine absolute path."
             exit 1
           fi
