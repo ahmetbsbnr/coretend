@@ -244,20 +244,22 @@ TREE=$(GIT_INDEX_FILE="$TMP_INDEX" GIT_WORK_TREE="$STAGING" git write-tree)
 # substitution: bash 3.2, which is what ships with macOS, mis-parses an
 # apostrophe inside a heredoc nested in $( ), and this message contains one.
 MSG_FILE="$STAGING.msg"
+if [ -n "$PARENT" ]; then
+  COMMIT_TITLE="CoreTend — publish media and website update"
+  COMMIT_CONTEXT="This commit updates the existing sanitised public source tree. The internal development history remains private for the same path and workspace-safety reasons documented in the first public commit."
+else
+  COMMIT_TITLE="CoreTend — first public source release"
+  COMMIT_CONTEXT="This is the first public commit. The project was developed privately before this point, and that history is intentionally not published: it contains session-continuity logs, workspace migration manifests, and absolute paths from the machine it was built on — internal working material that was never written for an audience. Documentation/PROJECT_HISTORY.md explains what came before, including the project's earlier name, MacCare Local."
+fi
 cat > "$MSG_FILE" <<COMMIT_MSG
-CoreTend — first public source release
+$COMMIT_TITLE
 
 CoreTend is a free, open-source macOS maintenance utility: cleanup, storage
 analysis, duplicate and similar-image detection, privacy cleaning, optional
 ClamAV-backed scanning, and an activity view. It runs locally, collects no
 telemetry, requires no account, and every destructive action is reversible.
 
-This is the first public commit. The project was developed privately before
-this point, and that history is intentionally not published: it contains
-session-continuity logs, workspace migration manifests, and absolute paths
-from the machine it was built on — internal working material that was never
-written for an audience. Documentation/PROJECT_HISTORY.md explains what came
-before, including the project's earlier name, MacCare Local.
+$COMMIT_CONTEXT
 
 Nothing about the software is hidden by that choice. The full source, tests,
 build scripts, and gates are here; only the private record of how the sausage
