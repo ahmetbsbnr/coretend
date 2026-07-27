@@ -297,14 +297,16 @@ exception allowed), **MAY** (optional, discretionary).
 
 ## PROD — Product positioning
 
-### PROD-001 — Independent open-source utility, not affiliated with Apple/MacPaw
-- **Wording**: `README.md`: "CoreTend is not affiliated with, endorsed by, or a product of Apple
-  Inc. or MacPaw Inc. It is an independent project. See TRADEMARKS.md."
+### PROD-001 — Independent open-source utility
+- **Wording**: describe CoreTend directly as an open-source macOS utility
+  without unnecessary third-party comparisons or implied approvals.
 - **Priority**: MUST
 - **Justification**: false affiliation claims are a legal/trust risk for a tool with filesystem-deletion
   capability.
-- **Acceptance criteria**: no README/website copy implies Apple/MacPaw endorsement or origin.
-- **Evidence**: `README.md:15-16`; `TRADEMARKS.md` exists.
+- **Acceptance criteria**: README and website make no unsupported claim of
+  third-party endorsement, origin, partnership, or approval.
+- **Evidence**: direct product description in `README.md`; `TRADEMARKS.md`
+  preserves the necessary mark policy.
 - **Current scope**: held.
 
 ### PROD-002 — Honest pre-1.0/unsigned status disclosed up front

@@ -6,10 +6,13 @@
 <title>Télécharger — CoreTend</title>
 <meta name="description" content="Entretien local, transparent et réversible pour macOS.">
 <meta name="color-scheme" content="light dark">
-<!-- noindex until the site is actually published: an unreleased page in a
-     search index is a promise nobody can keep. -->
-<meta name="robots" content="noindex">
+<!-- Indexing follows siteIndexable in the identity file. It stays noindex
+     until the site is really deployed: an unreachable page in a search index
+     is a promise nobody can keep. robots.txt is generated from the same flag,
+     so the two can never disagree. -->
+<meta name="robots" content="index, follow">
 <link rel="canonical" href="https://coretend.ahmetbsbnr.com/fr/download.html">
+<meta property="og:url" content="https://coretend.ahmetbsbnr.com/fr/download.html">
 <link rel="alternate" hreflang="en" href="https://coretend.ahmetbsbnr.com/en/download.html">
 <link rel="alternate" hreflang="fr" href="https://coretend.ahmetbsbnr.com/fr/download.html">
 <meta property="og:type" content="website">
@@ -17,14 +20,18 @@
 <meta property="og:title" content="Télécharger — CoreTend">
 <meta property="og:description" content="Un Mac plus léger. Toujours sous contrôle. Entretien local, transparent et réversible pour macOS.">
 <meta property="og:locale" content="fr_FR">
-<meta property="og:image" content="../assets/brand/opengraph.png">
+<meta property="og:image" content="https://coretend.ahmetbsbnr.com/assets/brand/opengraph.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../assets/brand/favicon-32.png" sizes="32x32">
 <link rel="icon" href="../assets/brand/favicon-512.png" sizes="512x512">
 <link rel="apple-touch-icon" href="../assets/brand/favicon-180.png">
+<style>html,body{background:#f4f6f3;color:#0b0f14}@media(prefers-color-scheme:dark){html,body{background:#0b0f14;color:#f4f6f3}}</style>
 <link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/site.js" defer></script>
 </head>
-<body>
+<body class="page-download">
 <a class="skip-link" href="#main">Aller au contenu</a>
 <header class="site">
   <div class="wrap">
@@ -34,15 +41,18 @@
 <path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--activity)" stroke-width="38.4" stroke-linecap="round"/>
 <circle cx="256" cy="256" r="61.44" fill="var(--care)"/>
 </svg><span>CoreTend</span></a>
-    <nav class="primary" aria-label="Principale">
+    <button class="nav-toggle" type="button" aria-expanded="false"
+      aria-controls="primary-nav">Menu</button>
+    <nav class="primary" id="primary-nav" aria-label="Principale">
       <a href="index.html">Aperçu</a>
       <a href="features.html">Fonctionnalités</a>
-      <a href="privacy.html">Confidentialité</a>
+      <a href="demos.html">Démos</a>
       <a href="download.html" class="active" aria-current="page">Télécharger</a>
-      <a href="documentation.html">Documentation</a>
-      <a href="open-source.html">Open Source</a>
-      <a href="changelog.html">Journal</a>
+      <a href="documentation.html">Docs</a>
     </nav>
+    <a class="github-link" href="https://github.com/ahmetbsbnr/coretend" aria-label="Ouvrir CoreTend sur GitHub"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+<path fill="currentColor" d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.02c-3.23.7-3.91-1.37-3.91-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.41-1.26.74-1.55-2.58-.29-5.29-1.29-5.29-5.73 0-1.27.45-2.3 1.2-3.11-.12-.29-.52-1.47.11-3.07 0 0 .98-.31 3.16 1.19a10.95 10.95 0 0 1 5.76 0c2.19-1.5 3.16-1.19 3.16-1.19.63 1.6.23 2.78.11 3.07.75.81 1.2 1.84 1.2 3.11 0 4.45-2.72 5.43-5.31 5.72.42.36.79 1.07.79 2.16v3.02c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .7Z"/>
+</svg><span>GitHub</span></a>
     <div class="lang-switch"><a href="../en/download.html" hreflang="en" lang="en">EN</a><a href="../fr/download.html" hreflang="fr" lang="fr" class="active" aria-current="true">FR</a></div>
   </div>
 </header>
@@ -51,49 +61,58 @@
 
 <h1>Télécharger</h1>
 <div class="status-box">
-  <p><strong>Version publique en préparation.</strong> Aucune version stable
-  n'est disponible pour le moment. Cette page est un espace réservé pour la
-  future publication — elle ne pointe vers aucune build locale ni artefact
-  improvisé.</p>
+  <p><strong>CoreTend 0.9.0 — bêta publique.</strong>
+  Non signée et non notarisée. Vérifiez l'empreinte ci-dessous avant d'ouvrir
+  l'application.</p>
 </div>
-
-<div class="status-box">
-  <p><strong>Aucun manifeste de version publié pour l'instant.</strong> Il n'y a
-  rien à télécharger ni à vérifier tant qu'il n'en existe pas. Lorsqu'une
-  version sera publiée, cette page affichera sa version, son architecture, la
-  version minimale de macOS, l'état de la signature et la somme de contrôle
-  SHA-256 — lues depuis le manifeste publié, jamais saisies à la main.</p>
-</div>
-
-<h2>Code source</h2>
-<p>Le code source de CoreTend sera publié sur GitHub une fois le dépôt
-public créé (voir la page <a href="open-source.html">Open Source</a> du
-projet). Il n'y a pas encore de lien vers le code source en direct — le
-dépôt n'est pas encore public. Cette page y renverra directement dès que
-ce sera le cas.</p>
-
-<h2>À quoi ressemblera la publication</h2>
-<p>Le premier artefact public portera exactement ce nom :</p>
-<pre>CoreTend-&lt;version&gt;-arm64-unsigned.zip</pre>
-
+<p><a href="https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.0">Voir la préversion GitHub et ses notes</a></p>
 <table>
-  <tr><th>Champ</th><th>Statut</th></tr>
-  <tr><td>Version</td><td>non publiée</td></tr>
-  <tr><td>Empreinte (SHA-256)</td><td>sera publiée avec la version</td></tr>
+  <tr><th>Champ</th><th>Valeur</th></tr>
+  <tr><td>Version</td><td>0.9.0</td></tr>
+  <tr><td>ZIP</td><td><a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.0/CoreTend-0.9.0-arm64-unsigned.zip"><code>CoreTend-0.9.0-arm64-unsigned.zip</code></a></td></tr>
+  <tr><td>Taille ZIP</td><td>2833085 octets</td></tr>
+  <tr><td>SHA-256 du ZIP</td><td><code>1d224b7655cfbcb15b5f9a37302c454775fae34d17d7f010f8c9ab026999b7d8</code></td></tr>
+  <tr><td>DMG</td><td><a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.0/CoreTend-0.9.0-arm64-unsigned.dmg"><code>CoreTend-0.9.0-arm64-unsigned.dmg</code></a></td></tr>
+  <tr><td>Taille DMG</td><td>5192666 octets</td></tr>
+  <tr><td>SHA-256 du DMG</td><td><code>f2fbc7840ac4a5509836a495c51e72e6cfd52ef24e6cbdd792fa8404bd3f6c8d</code></td></tr>
+  <tr><td>Fichiers de vérification</td><td><a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.0/latest.json"><code>latest.json</code></a> · <a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.0/SHA256SUMS"><code>SHA256SUMS</code></a></td></tr>
+  <tr><td>Architecture</td><td>arm64</td></tr>
+  <tr><td>macOS minimal</td><td>14.0</td></tr>
+  <tr><td>Commit source</td><td><code>a6aa3bf20cc1f3b7623291660c4943db2e5d4a50</code></td></tr>
+  <tr><td>Date de compilation</td><td>2026-07-27T14:14:55Z</td></tr>
   <tr><td>Signature de code</td><td><strong>non signé</strong> — toujours divulgué, jamais masqué</td></tr>
-  <tr><td>Notarisation</td><td>indisponible pour l'instant (nécessite un Apple Developer ID ; hors périmètre avant la 1.0)</td></tr>
+  <tr><td>Notarisation</td><td><strong>non notarisé</strong> — nécessite un Apple Developer ID</td></tr>
 </table>
 
-<h2>Étapes d'installation prévues (une fois une version publiée)</h2>
+<h2>Code source</h2>
+<p>CoreTend est open source. L'intégralité du code, des tests, des scripts de compilation et des gates se trouve sur <a href="https://github.com/ahmetbsbnr/coretend">https://github.com/ahmetbsbnr/coretend</a>.</p>
+
+<h2>Recommandé : DMG</h2>
+<p>Le DMG offre une installation claire par glisser-déposer vers Applications.
+Le ZIP contient la même application et reste une alternative pour les
+utilisateurs expérimentés. Aucun format ne change le statut non signé et non
+notarisé.</p>
+<p><a class="btn btn-primary" href="install.html">Installer CoreTend étape par étape</a></p>
+
+<h2>Installer une application non signée</h2>
+<p>macOS refusera d'ouvrir CoreTend au premier lancement, en indiquant que le
+développeur ne peut pas être vérifié. Cet avertissement est exact : aucune
+identité de développeur n'est attachée, car la signature exige une adhésion
+payante au Apple Developer Program dont ce projet ne dispose pas.</p>
 <ol>
-  <li>Téléchargez et vérifiez l'empreinte SHA-256 par rapport à la valeur publiée.</li>
+  <li>Vérifiez l'empreinte SHA-256 par rapport à la valeur publiée
+  (<code>shasum -a 256 &lt;fichier&gt;</code>).</li>
   <li>Décompressez et déplacez CoreTend.app dans /Applications.</li>
-  <li>L'application étant non signée, Gatekeeper demandera un clic droit &rarr;
-  Ouvrir la première fois.</li>
+  <li>Faites un clic droit (ou Contrôle-clic) sur l'application et choisissez
+  <strong>Ouvrir</strong>, puis confirmez. Une seule fois suffit : macOS retient
+  la décision pour cette copie.</li>
   <li>Accordez l'accès complet au disque pour une analyse à couverture complète
   (voir la Documentation).</li>
 </ol>
-<p>En attendant, la compilation depuis les sources est documentée dans la
+<p><strong>Ne désactivez pas Gatekeeper.</strong> L'étape par application
+ci-dessus suffit, et désactiver une protection système entière pour une seule
+application n'est pas un échange raisonnable.</p>
+<p>La compilation depuis les sources est documentée dans la
 <a href="documentation.html">Documentation</a>.</p>
 
   </div>
@@ -101,10 +120,11 @@ ce sera le cas.</p>
 <footer class="site">
   <div class="wrap">
     <div>
-      <p style="margin:0 0 .5rem">&copy; Les contributeurs de CoreTend. Open source — voir les <a href="licenses.html">licences</a>.</p>
-      <p class="disclaimer" style="margin:0">CoreTend est un projet indépendant et n'est pas affilié à Apple Inc. Mac et macOS décrivent uniquement la compatibilité.</p>
+      <p class="footer-note">&copy; Les contributeurs de CoreTend. Open source — voir les <a href="licenses.html">licences</a>.</p>
     </div>
     <nav aria-label="Pied de page">
+      <a href="install.html">Installer</a>
+      <a href="support.html">Assistance</a>
       <a href="faq.html">FAQ</a>
       <a href="roadmap.html">Feuille de route</a>
       <a href="security.html">Sécurité</a>

@@ -1,8 +1,5 @@
 # FAQ
 
-**Is CoreTend affiliated with CleanMyMac or MacPaw?**
-No. Not affiliated with CleanMyMac, MacPaw, or Apple in any way.
-
 **Does it require an account or subscription?**
 No. It runs entirely locally, no account, no subscription, no telemetry.
 
@@ -27,10 +24,6 @@ data) can only be scanned with it. See
 No network calls for app data. Everything stays in
 `~/Library/Application Support/CoreTend/`. See
 [DATA_LOCATIONS.md](DATA_LOCATIONS.md).
-
-**Is it AI-generated or a school project?**
-No — it's a maintained open source utility with a real test suite, an
-explicit safety model, and ongoing development.
 
 **How do I report a bug or a vulnerability?**
 Bugs: `.github/ISSUE_TEMPLATE/`. Vulnerabilities: [SECURITY.md](../SECURITY.md)

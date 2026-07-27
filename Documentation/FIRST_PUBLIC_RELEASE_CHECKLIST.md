@@ -7,15 +7,16 @@ is **human-only**, cannot be automated or pre-decided by an agent, and
 has **not** been executed. Do these in order; each depends on the ones
 before it.
 
-1. **Finalize identity** — replace `[LEGAL_NAME_TO_DEFINE]`,
-   `[LEGAL_ADDRESS_TO_DEFINE]`, `[PUBLISHER_OF_RECORD_TO_DEFINE]` and
-   confirm `maintainerGitHub`/`repository`/`developerDomain` in
-   `Configuration/PublicIdentity.example.json` (copy to
-   `PublicIdentity.local.json` first, never commit real personal data
-   to the example file).
-2. **Security contact** — replace `[SECURITY_CONTACT_TO_DEFINE]`
-   (`SECURITY.md`, website Legal/Privacy pages) with a real, monitored
-   address.
+1. **Finalize identity** — DONE. `publisherOfRecord` is set in the
+   gitignored `Configuration/PublicIdentity.local.json`, and
+   `maintainerGitHub`/`repository`/`developerDomain` are confirmed.
+   `legalAddress` stays `null` on purpose (LCEN Art. 6 III-2). Real
+   personal data was never written to the example file, and no surname
+   was invented.
+2. **Security contact** — DONE. `SECURITY.md`, `CODE_OF_CONDUCT.md`,
+   `PRIVACY.md` and the website Legal/Privacy pages route to GitHub
+   private vulnerability reporting, verified live 2026-07-27. No email
+   address was invented.
 3. **Verify legal mentions** — re-run `Scripts/check-placeholders.sh`
    after steps 1-2; it must report zero remaining tokens.
 4. **Inspect git history** — before making the repo public, review the

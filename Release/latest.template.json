@@ -13,7 +13,7 @@
     "generatedBy"
   ],
   "product": "CoreTend",
-  "channel": "prerelease",
+  "channel": "beta",
   "prerelease": true,
   "architecture": "arm64",
   "minimumMacOS": "14.0",
@@ -25,9 +25,10 @@
   "knownLimitations": [
     "Unsigned, not notarized: Gatekeeper will block first launch (see Documentation/INSTALL_UNSIGNED.md).",
     "Built and tested on a single physical Mac (arm64) — no multi-OS or multi-hardware verification performed.",
-    "No public release exists; this manifest has no downloadURL because there is nothing to download it from publicly.",
+    "This manifest carries no downloadURL until the GitHub prerelease is published; the repository is public but no release has been created yet.",
     "The DMG carries its Living System background and volume icon, but no saved icon positions: writing those needs the Finder, which refused automation in the build environment. Drag-and-drop works regardless.",
-    "Publication is blocked by design: no trademark search has been run for the name, legalReviewStatus is 'pending', and legal identity plus a security contact are undefined."
+    "0.9.0 is a public beta. The trademark screening found no mark containing 'coretend' across ~141.8M records on TMview, but COREXTEND (MIPS Tech, live class 9) is one letter away and is tracked as a WATCH item: attorney review is required before any trademark filing or commercial use.",
+    "Interactive VoiceOver verification and the full visual-QA capture campaign could not be run in this environment (no display session). See Documentation/VISUAL_QA.md for what was and was not verified."
   ],
   "repositoryURL": "https://github.com/ahmetbsbnr/coretend",
   "websiteURL": "https://coretend.ahmetbsbnr.com",

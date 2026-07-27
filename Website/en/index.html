@@ -6,10 +6,13 @@
 <title>Overview — CoreTend</title>
 <meta name="description" content="Local, transparent and reversible care for macOS.">
 <meta name="color-scheme" content="light dark">
-<!-- noindex until the site is actually published: an unreleased page in a
-     search index is a promise nobody can keep. -->
-<meta name="robots" content="noindex">
+<!-- Indexing follows siteIndexable in the identity file. It stays noindex
+     until the site is really deployed: an unreachable page in a search index
+     is a promise nobody can keep. robots.txt is generated from the same flag,
+     so the two can never disagree. -->
+<meta name="robots" content="index, follow">
 <link rel="canonical" href="https://coretend.ahmetbsbnr.com/en/index.html">
+<meta property="og:url" content="https://coretend.ahmetbsbnr.com/en/index.html">
 <link rel="alternate" hreflang="en" href="https://coretend.ahmetbsbnr.com/en/index.html">
 <link rel="alternate" hreflang="fr" href="https://coretend.ahmetbsbnr.com/fr/index.html">
 <meta property="og:type" content="website">
@@ -17,14 +20,18 @@
 <meta property="og:title" content="Overview — CoreTend">
 <meta property="og:description" content="A lighter Mac. Always under control. Local, transparent and reversible care for macOS.">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="../assets/brand/opengraph.png">
+<meta property="og:image" content="https://coretend.ahmetbsbnr.com/assets/brand/opengraph.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../assets/brand/favicon-32.png" sizes="32x32">
 <link rel="icon" href="../assets/brand/favicon-512.png" sizes="512x512">
 <link rel="apple-touch-icon" href="../assets/brand/favicon-180.png">
+<style>html,body{background:#f4f6f3;color:#0b0f14}@media(prefers-color-scheme:dark){html,body{background:#0b0f14;color:#f4f6f3}}</style>
 <link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/site.js" defer></script>
 </head>
-<body>
+<body class="page-index">
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site">
   <div class="wrap">
@@ -34,15 +41,18 @@
 <path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--activity)" stroke-width="38.4" stroke-linecap="round"/>
 <circle cx="256" cy="256" r="61.44" fill="var(--care)"/>
 </svg><span>CoreTend</span></a>
-    <nav class="primary" aria-label="Main">
+    <button class="nav-toggle" type="button" aria-expanded="false"
+      aria-controls="primary-nav">Menu</button>
+    <nav class="primary" id="primary-nav" aria-label="Main">
       <a href="index.html" class="active" aria-current="page">Overview</a>
       <a href="features.html">Features</a>
-      <a href="privacy.html">Privacy</a>
+      <a href="demos.html">Demos</a>
       <a href="download.html">Download</a>
-      <a href="documentation.html">Documentation</a>
-      <a href="open-source.html">Open Source</a>
-      <a href="changelog.html">Changelog</a>
+      <a href="documentation.html">Docs</a>
     </nav>
+    <a class="github-link" href="https://github.com/ahmetbsbnr/coretend" aria-label="Open CoreTend on GitHub"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+<path fill="currentColor" d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.02c-3.23.7-3.91-1.37-3.91-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.41-1.26.74-1.55-2.58-.29-5.29-1.29-5.29-5.73 0-1.27.45-2.3 1.2-3.11-.12-.29-.52-1.47.11-3.07 0 0 .98-.31 3.16 1.19a10.95 10.95 0 0 1 5.76 0c2.19-1.5 3.16-1.19 3.16-1.19.63 1.6.23 2.78.11 3.07.75.81 1.2 1.84 1.2 3.11 0 4.45-2.72 5.43-5.31 5.72.42.36.79 1.07.79 2.16v3.02c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .7Z"/>
+</svg><span>GitHub</span></a>
     <div class="lang-switch"><a href="../en/index.html" hreflang="en" lang="en" class="active" aria-current="true">EN</a><a href="../fr/index.html" hreflang="fr" lang="fr">FR</a></div>
   </div>
 </header>
@@ -50,21 +60,30 @@
   <div class="wrap">
 
 <section class="hero">
-  <div>
-    <h1>CoreTend</h1>
-    <p class="signature">A lighter Mac. Always under control.</p>
+  <div class="hero-copy">
+    <span class="eyebrow">Native care for macOS</span>
+    <h1>A lighter Mac. Always under control.</h1>
+    <p class="signature">See what weighs down your Mac, review every finding, and decide what leaves.</p>
     <p class="lead">Local, transparent and reversible care for macOS.</p>
     <div class="cta-row">
-      <a class="btn btn-primary" href="download.html">Download the local build</a>
+      <a class="btn btn-primary" href="download.html">Download CoreTend</a>
       <a class="btn btn-secondary" href="#how">See how it works</a>
     </div>
   </div>
-  <div class="hero-art"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
+  <div class="hero-stage" aria-label="CoreTend product preview">
+    <div class="hero-orbit" aria-hidden="true"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
 <path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--care)" stroke-width="38.4" stroke-linecap="round"/>
 <path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--privacy)" stroke-width="38.4" stroke-linecap="round"/>
 <path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--activity)" stroke-width="38.4" stroke-linecap="round"/>
 <circle cx="256" cy="256" r="61.44" fill="var(--care)"/>
 </svg></div>
+    <picture class="hero-product">
+    <source srcset="../assets/app/smart-care.webp" type="image/webp">
+    <img src="../assets/app/smart-care.png" width="2024" height="1488"
+      alt="CoreTend Smart Care window with its module sidebar and scan controls"
+      fetchpriority="high">
+  </picture>
+  </div>
 </section>
 
 <section>
@@ -79,21 +98,9 @@
   </div>
 </section>
 
-<section id="how" class="feature reveal">
-  <div>
-    <span class="section-label">The mark</span>
-    <h2>One nucleus, three arcs</h2>
-    <p>The mark is the product's structure, not decoration. The nucleus is your Mac; the three arcs are the three things CoreTend attends to — storage and care in green, privacy and protection in violet, activity and performance in amber. Those colours mean the same thing everywhere in the app, and each is always paired with a label or a symbol, never colour alone.</p>
-  </div>
-  <div class="feature-visual"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
-<path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--care)" stroke-width="38.4" stroke-linecap="round"/>
-<path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--privacy)" stroke-width="38.4" stroke-linecap="round"/>
-<path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--activity)" stroke-width="38.4" stroke-linecap="round"/>
-<circle cx="256" cy="256" r="61.44" fill="var(--care)"/>
-</svg></div>
-</section>
 
-<section class="reveal">
+
+<section id="how" class="reveal">
   <span class="section-label">Reclaimable space</span>
   <h2>A measured number, not a promise</h2>
   <p>CoreTend never shows an estimate it has not measured. After a scan you get the real byte count of what it found, grouped by where it came from, with the reason each item was flagged. Anything it cannot safely judge is left out of the total and labelled instead.</p>
@@ -133,9 +140,16 @@
     <p>The first launch walks through how CoreTend works locally, what permissions each feature needs and why, which parts are optional, and what dry run means — then runs a short diagnostic and shows you a summary. Nothing is scanned or changed during setup.</p>
   </div>
   <div class="feature-visual">
-    <div class="screenshot-placeholder">Setup assistant screenshot — pending a real capture. This box must never ship in a published build; see Website/README.md.</div>
+    <svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
+<path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--care)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--privacy)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--activity)" stroke-width="38.4" stroke-linecap="round"/>
+<circle cx="256" cy="256" r="61.44" fill="var(--care)"/>
+</svg>
   </div>
 </section>
+
+
 
 <section class="reveal">
   <span class="section-label">Open source</span>
@@ -148,7 +162,7 @@
   <h2>Get the current build</h2>
   <p>Apple Silicon, macOS 14 or later. Unsigned, so read the first-launch notes before installing.</p>
   <div class="cta-row">
-    <a class="btn btn-primary" href="download.html">Download the local build</a>
+    <a class="btn btn-primary" href="download.html">Download CoreTend</a>
     <a class="btn btn-secondary" href="documentation.html">Documentation</a>
   </div>
 </section>
@@ -173,10 +187,11 @@
 <footer class="site">
   <div class="wrap">
     <div>
-      <p style="margin:0 0 .5rem">&copy; CoreTend contributors. Open source — see the <a href="licenses.html">licenses</a>.</p>
-      <p class="disclaimer" style="margin:0">CoreTend is an independent project and is not affiliated with Apple Inc. Mac and macOS describe compatibility only.</p>
+      <p class="footer-note">&copy; CoreTend contributors. Open source — see the <a href="licenses.html">licenses</a>.</p>
     </div>
     <nav aria-label="Footer">
+      <a href="install.html">Install</a>
+      <a href="support.html">Support</a>
       <a href="faq.html">FAQ</a>
       <a href="roadmap.html">Roadmap</a>
       <a href="security.html">Security</a>

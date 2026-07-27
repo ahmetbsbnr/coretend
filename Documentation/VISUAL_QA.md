@@ -61,3 +61,60 @@ d'environnement — c'est du travail de capture restant. Voir
 | Cloud Cleanup | ⏳ code done, capture pending — no display in this environment | ⏳ code done, capture pending — no display in this environment | — | ✅ code (native VStack/List, no timers/continuous motion) | Motif plein/contour: `SyncState` (local/partial/placeholder) dérivé du vrai signal `ubiquitousItemDownloadingStatusKey` (fallback ratio d'octets seulement quand ce signal est absent), rendu par SF Symbol rempli (local) vs contour (online-only), jamais couleur seule — badge texte "partially local"/"online only" en renfort. Pas de badge "pinned": aucune API publique ne rapporte l'état "Keep Downloaded" de Finder pour un fichier iCloud Drive arbitraire, donc le module ne l'invente pas. Total "recoverable" renommé honnêtement (`recoverableLocalBytes`) et le libellé rappelle explicitement qu'aucun téléchargement ni suppression n'est déclenché — `measure()` reste lecture seule (`resourceValues`/`contentsOfDirectory`, jamais `startDownloadingUbiquitousItem`). Liste native accessible conservée comme vue primaire; build release 0 warning, 4 nouveaux tests `CloudSyncStateTests` verts. |
 | My Activity | ⏳ code done, capture pending — no display in this environment | ⏳ code done, capture pending — no display in this environment | — | ✅ code (native List/DisclosureGroup, no timers) | Motif chronologie léger: regroupement par jour réel (`ActivityGrouping.byDay`, pur/testé) avec en-tête de section + puce connecteur (token `MCColor`), pas une visualisation lourde — reste une table de données. Filtres par nature (existant) + plage de dates (7j/30j/tout). Résumé cumulatif en tête: octets réels libérés vs octets simulés (dry-run) toujours séparés (`ActivityImpactSummary`, jamais fusionnés), plus total d'items visibles. Détail par ligne extensible (`DisclosureGroup`) affiche statut réel/simulé en texte explicite, jamais présenté comme un nettoyage terminé. Restauration quarantaine: `ProtectionViewModel.restore` enregistre désormais un vrai `ActivityRecord(kind: .restore)` (auparavant non journalisé bien que le kind existe depuis v0.2); les lignes `.restore` affichent un lien "Open Protection" (NotificationCenter, aucun nouveau mécanisme de restauration créé). Export CSV des entrées visibles via `NSSavePanel`, aucune nouvelle persistance. État vide distingue "aucune activité" de "aucune activité pour ce filtre". Build release 0 warning, 3 nouveaux tests `MyActivityGroupingTests` verts. |
 | Settings | ⏳ code done, capture pending — no display in this environment | ⏳ code done, capture pending — no display in this environment | — | — | Refonte des sections (General/Appearance/Scans & Cleanup/Protection/Monitoring & Permissions/Exclusions/Data/About), formulaire natif `Form`/`Section`/`Toggle` uniquement — aucun contrôle custom. États de permission désormais tous réels: Full Disk Access via `PermissionProbe.hasFullDiskAccess()` (bouton Open System Settings + Re-check, jamais présumé accordé), ClamAV via `ClamAVScanner().isAvailable`, notifications via `UNUserNotificationCenter` (jamais simulé), helper privilégié affiché honnêtement indisponible (pas de signature, per FEATURE_MATRIX — aucune fausse progression). Version lue depuis le vrai bundle (`CFBundleShortVersionString`) au lieu du "0.1.0" codé en dur précédemment. Nouvelle section Data expose `Store.clearActivity()` (déjà existant côté moteur, jamais câblé côté UI) derrière une confirmation. |
+
+---
+
+## Mise à jour — 0.9.0 public beta (2026-07-27)
+
+Passe d'accessibilité et de QA visuelle avant la première version publique.
+Chaque ligne indique la preuve. **L'accessibilité n'est pas déclarée validée
+parce que le build passe.**
+
+### Vérifié automatiquement (dans les 296 tests)
+
+| Point | Preuve | Résultat |
+|---|---|---|
+| Contraste, surfaces sombres | `PaletteContrastTests.canonicalAccentsAreReadableOnCoreInk` — luminance relative WCAG 2.1, seuil 4.5:1 | **PASS** pour freshMint, orbitIris, warmAmber, signalCoral |
+| Contraste, surfaces claires | `lightSiblingsAreReadableOnSoftPorcelain` — même calcul | **PASS** pour mossDeep, irisDeep, amberDeep, coralDeep, slateDeep |
+| Piège documenté | Un test échoue volontairement si un accent canonique repassait le seuil en mode clair — c'est l'hypothèse sur laquelle repose toute la séparation clair/sombre | **PASS** |
+| Accessibilité du site | `Scripts/check-website.sh` : `lang`, `title`, un seul `h1`, lien d'évitement, `alt`/label, `viewport` | **PASS** |
+| Parité des locales | `check-website.sh` | **PASS** — EN/FR, 13 pages chacune |
+
+### Vérifié par revue de code
+
+| Point | Constat |
+|---|---|
+| Labels accessibles | 39 `accessibilityLabel`, 19 `accessibilityElement`, 6 `accessibilityDescription` dans `Sources/`. Les contrôles iconiques (Reveal in Finder, bascules, lignes de la barre de menus) sont libellés. |
+| Éléments décoratifs | 31 `accessibilityHidden`. Les vues d'animation (Fragment, Mesh, Overlap, CoreBloom, HeroCore) sont masquées à VoiceOver ; l'état réel est lu depuis le texte localisé adjacent. |
+| Hero Smart Care | `MCHeroCoreView` porte un label anglais en dur, **mais il n'est jamais annoncé** : l'unique site d'appel (`SmartCareView`) applique `.accessibilityHidden(true)`, et l'état est lu depuis `heroTitle`/`heroSubtitle`, qui sont localisés. Vérifié en lisant le site d'appel, pas en supposant. Risque latent uniquement : un futur appelant qui ne masquerait pas la vue entendrait de l'anglais. |
+| Reduce Motion | Câblé via `MCMotion.animation(_:reduce:)` et `@Environment(\.accessibilityReduceMotion)` dans 9 fichiers. Aucun `.repeatForever`, `scheduledTimer` ni `Timer.publish` dans `Sources/`. |
+| Sans couleur seule | Les avertissements de la barre de menus combinent un glyphe et un label « needs attention » ; les badges d'état sont symbole + texte. |
+| États vides / erreur | `MCEmptyState` / `MCErrorState` existent dans `Sources/DesignSystem/Components.swift` et masquent leurs icônes décoratives. |
+| Placeholders visibles | `Scripts/check-placeholders.sh` : **0**. |
+
+### NON vérifiable dans cet environnement — ne pas présenter comme validé
+
+L'environnement est en ligne de commande seule (Command Line Tools, sans Xcode,
+sans session graphique). Les points suivants restent **BLOCKED_ENVIRONMENT** :
+
+- **VoiceOver interactif** : ordre d'annonce réel, rotor, navigation par en-têtes.
+- **Navigation clavier réelle** : ordre de tabulation, visibilité du focus, Échap
+  qui ferme les feuilles. Le code ne contient que 1 `focusable` et 5
+  `keyboardShortcut`, et **aucun** `FocusState` — l'ordre de focus repose donc
+  entièrement sur l'ordre par défaut de SwiftUI, qui n'a pas été observé.
+- **Dynamic Type** : rendu aux tailles de texte élevées, troncatures.
+- **Rendu clair/sombre réel** et redimensionnement 860×580 → plein écran.
+- **Reduce Transparency** appliqué par le système.
+- **Campagne de captures** : le jeu « After » reste incomplet.
+
+Ces limites sont également listées dans les notes de version 0.9.0 et dans
+`Release/latest.template.json` sous `knownLimitations`, afin qu'aucun lecteur
+ne déduise d'un build vert que l'accessibilité a été validée à l'usage.
+
+### Constat ouvert
+
+Aucun `FocusState` dans le projet. Pour une application de bureau, un ordre de
+focus explicite sur les écrans à formulaires vaudrait mieux que l'ordre implicite.
+Non corrigé pour 0.9.0 : sans session graphique, une modification de l'ordre de
+focus ne pourrait pas être vérifiée, et la modifier à l'aveugle risquerait de
+dégrader ce qui fonctionne peut-être déjà.

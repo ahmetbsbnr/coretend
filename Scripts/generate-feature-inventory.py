@@ -25,6 +25,28 @@ STATUS_VOCAB = (
     "NOT_STARTED, NOT_APPLICABLE, UNKNOWN"
 )
 
+MEDIA_PLAN = {
+    "App shell": ("Main window, onboarding, menu bar", "Launch, navigate, reopen help", "smart-care", "yes", "isolated temporary store"),
+    "SmartCare": ("Smart Care", "Start scan, review, cancel or approve", "smart-care", "yes", "empty isolated store; no staged result"),
+    "FileRules": ("Cleanup", "Scan and review rule groups", "cleanup", "yes", "neutral temporary folders"),
+    "MyClutter": ("My Clutter", "Choose Large & Old, Duplicates or Similar Images", "my-clutter", "yes", "neutral temporary files"),
+    "SpaceLens": ("Space Lens", "Choose a folder and navigate the measured tree", "space-lens", "yes", "neutral temporary folder tree"),
+    "AppDiscovery": ("Applications", "Inventory, inspect associated data, review removal", "applications", "yes", "installed apps; paths excluded from public media"),
+    "SystemMetrics": ("Performance", "Observe live metrics and login-agent inspection", "performance", "yes", "live machine metrics without identity data"),
+    "MalwareEngine": ("Protection", "Select a file, scan, review explicit quarantine actions", "protection", "yes", "harmless test fixture only"),
+    "CloudCleanup": ("Cloud Cleanup", "Detect providers and measure local footprint", "cloud-cleanup", "no", "empty or neutral provider fixture"),
+    "Persistence": ("My Activity", "Filter, expand, export, clear with confirmation", "my-activity", "no", "isolated temporary activity store"),
+    "Settings": ("Settings", "Review permissions, exclusions, dry run and diagnostics", "settings", "no", "isolated temporary store"),
+}
+
+
+def media_fields(feature):
+    """Return conservative public-media coverage derived from the module."""
+    return MEDIA_PLAN.get(
+        feature["module"],
+        (feature["module"], "Follow the documented feature path", "none", "no", "neutral fixture where applicable"),
+    )
+
 
 def load():
     with open(JSON_PATH) as f:
@@ -62,11 +84,15 @@ def render_md(data):
         summary = ", ".join(f"{k}={v}" for k, v in sorted(module_counts.items()))
         lines.append(f"## {module} ({len(feats)}: {summary})")
         lines.append("")
-        lines.append("| id | Feature | Status | Evidence |")
-        lines.append("|---|---|---|---|")
+        lines.append("| id | Name / objective | State | Screen | Demonstration path | Capture | Animation | Demo data | Validation evidence |")
+        lines.append("|---|---|---|---|---|---|---|---|---|")
         for f in feats:
             feature = f.get("feature", "")
-            lines.append(f"| {f['id']} | {feature} | {f['status']} | {f['evidence']} |")
+            screen, path, capture, animation, demo_data = media_fields(f)
+            lines.append(
+                f"| {f['id']} | {feature} | {f['status']} | {screen} | {path} | "
+                f"{capture} | {animation} | {demo_data} | {f['evidence']} |"
+            )
         lines.append("")
 
     return "\n".join(lines) + "\n"

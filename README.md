@@ -1,123 +1,143 @@
 # CoreTend
 
-CoreTend est un utilitaire macOS open source conçu pour analyser,
-nettoyer, organiser et optimiser les Mac Apple Silicon. Il fonctionne
-entièrement en local, sans compte, sans abonnement et sans télémétrie.
-Chaque élément détecté est expliqué avant toute action, et les
-suppressions utilisent par défaut la Corbeille afin de rester
-réversibles.
+<p align="center">
+  <img src="Resources/Brand/Generated/Logo-Horizontal-light@2x.png" width="420" alt="CoreTend">
+</p>
 
-> **Status: pre-1.0, not yet publicly released.** No signed build, no
-> notarized binary, and no GitHub Release exists yet. This repository is
-> under active development. Build from source if you want to try it —
-> see [Build from source](#build-from-source) below.
+<p align="center">Local, transparent and reversible care for macOS.</p>
 
-CoreTend is not affiliated with, endorsed by, or a product of Apple
-Inc. or MacPaw Inc. It is an independent project. See
-[TRADEMARKS.md](TRADEMARKS.md).
+<p align="center">
+  <img alt="Version 0.9.0 public beta" src="https://img.shields.io/badge/version-0.9.0%20beta-135f4a">
+  <img alt="macOS 14 or later" src="https://img.shields.io/badge/macOS-14%2B-5c54cc">
+  <img alt="Apple Silicon arm64" src="https://img.shields.io/badge/architecture-arm64-94600a">
+  <img alt="Apache 2.0 code license" src="https://img.shields.io/badge/code-Apache--2.0-135f4a">
+</p>
 
-## Why
+CoreTend is an open-source macOS utility for reviewing storage, finding
+clutter, understanding disk usage, inspecting applications and monitoring
+system health. Scans explain what they found before an action runs. Dry run is
+the default, and supported removals go to the Trash.
 
-Mac cleanup utilities are common, but most are closed-source, subscription
-gated, or vague about what they actually touch on disk. CoreTend
-aims to be transparent instead: every module explains what it looked at
-and why an item was flagged, dry-run is the default, and deletions go to
-the Trash unless you explicitly choose otherwise.
+<p align="center">
+  <picture>
+    <source srcset="Website/assets/app/smart-care.webp" type="image/webp">
+    <img src="Website/assets/app/smart-care.png" width="720"
+      alt="CoreTend Smart Care window with module navigation and scan controls">
+  </picture>
+</p>
 
-## Key features
+[Download 0.9.0 public beta](https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.0)
+· [Product site](https://coretend.ahmetbsbnr.com)
+· [Visual tour](https://coretend.ahmetbsbnr.com/en/demos.html)
+· [Documentation](Documentation/DOCUMENT_INDEX.md)
 
-- **Cleanup** — cache/log/leftover rules, grouped by rule, exclusions honored
-- **Smart Care** — orchestrated low-risk cleanup with a dry-run-first flow
-- **Duplicate Finder** — size → partial hash → SHA-256, hard-link aware
-- **Space Lens** — visual treemap of disk usage
-- **Similar Images** — on-device Vision feature-print clustering
-- **Applications & Leftovers** — inventory, associated data, uninstall via Trash
-- **Performance** — CPU/memory/pressure/disk/thermal metrics, login items
-- **Privacy Cleaner** — browser cache profiling (Chrome/Firefox/Safari), cache-only
-- **App Updates** — App Store/Sparkle-feed update detection, no silent downloads
-- **Protection** — optional integration with a separately-installed ClamAV; honest "unavailable" state when ClamAV isn't present (see [Documentation/CLAMAV.md](Documentation/CLAMAV.md))
-- **My Activity** — local history of what ran and what changed
+## What CoreTend does
+
+- **Smart Care** — orchestrates the low-risk cleanup rules and presents one
+  review before execution.
+- **Cleanup** — reviews caches, logs, diagnostic reports, build artifacts,
+  incomplete downloads and opt-in higher-risk categories.
+- **My Clutter** — finds large and old files, content-identical duplicates and
+  visually similar images.
+- **Space Lens** — builds a navigable, read-only map of disk usage.
+- **Applications** — inventories installed apps, associated data and
+  conservative leftovers; removals use the Trash.
+- **Performance** — displays live CPU, memory, disk and thermal readings and
+  inspects login agents without changing them.
+- **Protection** — can invoke a separately installed ClamAV engine and keeps
+  quarantine actions explicit.
+- **Cloud Cleanup** — measures local versus logical cloud-file footprint
+  without downloading files or deleting cloud content.
+- **My Activity** — records actions locally, separates simulations from
+  executed work and supports CSV export.
+- **Settings and menu bar** — control dry run, exclusions, permissions and
+  quick system status.
 
 ## Compatibility
 
-- Apple Silicon Macs (arm64)
-- macOS 14 (Sonoma) or later
-- No Intel build is currently produced
+- Apple Silicon (`arm64`)
+- macOS 14 or later
+- Swift 6 toolchain to build from source
+- No Intel binary is published
 
-## Security & privacy
+## Download and verify
 
-- No accounts, no network calls for core features, no telemetry, no analytics, no ads.
-- Deletions default to the Trash — recoverable until you empty it.
-- Every action is explained before it runs; dry-run is the default mode.
-- Full detail: [PRIVACY.md](PRIVACY.md), [SECURITY.md](SECURITY.md), [Documentation/SAFETY_MODEL.md](Documentation/SAFETY_MODEL.md), [Documentation/THREAT_MODEL.md](Documentation/THREAT_MODEL.md).
+CoreTend 0.9.0 is a public beta. Its binaries are **unsigned** and
+**not notarized**.
 
-## Install
-
-No signed release build exists yet (see status banner above). For now,
-build from source.
-
-## Build from source
-
-Requirements: macOS 14+, Apple Silicon, Swift 6 toolchain (Xcode or
-Command Line Tools).
+| Asset | Size | SHA-256 |
+|---|---:|---|
+| `CoreTend-0.9.0-arm64-unsigned.zip` | 2,833,085 bytes | `1d224b7655cfbcb15b5f9a37302c454775fae34d17d7f010f8c9ab026999b7d8` |
+| `CoreTend-0.9.0-arm64-unsigned.dmg` | 5,192,666 bytes | `f2fbc7840ac4a5509836a495c51e72e6cfd52ef24e6cbdd792fa8404bd3f6c8d` |
 
 ```sh
-git clone <this-repo>
-cd CoreTend
-Scripts/doctor.sh      # checks your toolchain
-Scripts/test.sh        # runs the test suite
-Scripts/build.sh        # debug build
-Scripts/package-local.sh  # assembles a local, unsigned .app bundle
+shasum -a 256 CoreTend-0.9.0-arm64-unsigned.zip
+shasum -a 256 CoreTend-0.9.0-arm64-unsigned.dmg
+shasum -a 256 -c SHA256SUMS
 ```
 
-See [DEVELOPMENT.md](DEVELOPMENT.md) and
-[Documentation/BUILD_AND_INSTALL.md](Documentation/BUILD_AND_INSTALL.md)
-for details, and [Documentation/BUILD_SYSTEM.md](Documentation/BUILD_SYSTEM.md)
-for how the build is structured.
+### First launch
 
-## ClamAV is optional
+After copying CoreTend to `/Applications`, Control-click the app, choose
+**Open**, then confirm once. This is the per-app path for an unsigned build.
+Do not disable Gatekeeper globally.
 
-CoreTend never bundles, embeds, or links ClamAV. If you install it
-yourself (e.g. `brew install clamav`), the Protection module can use it.
-Without it, Protection is honestly shown as unavailable rather than
-faked. See [Documentation/CLAMAV.md](Documentation/CLAMAV.md) and
-[Documentation/PROTECTION_LIMITATIONS.md](Documentation/PROTECTION_LIMITATIONS.md).
+See [BUILD_AND_INSTALL.md](Documentation/BUILD_AND_INSTALL.md) for complete
+installation and source-build instructions.
 
-## Permissions
+## Build and test
 
-CoreTend requests Full Disk Access to scan more of your Mac
-accurately. It works with reduced coverage without it, and always
-explains what each permission unlocks. See
-[Documentation/FULL_DISK_ACCESS.md](Documentation/FULL_DISK_ACCESS.md).
+```sh
+git clone https://github.com/ahmetbsbnr/coretend.git
+cd coretend
+bash Scripts/doctor.sh
+bash Scripts/test.sh
+bash Scripts/build.sh
+bash Scripts/package-local.sh
+```
 
-## Known limitations
+The current full local validation is 296 tests in 58 suites, with Debug and
+Release builds passing. This records a local result; it is not a CI badge.
+The screenshot and website improvements on this branch are post-release work
+and are not represented as changes to the 0.9.0 binary.
 
-See [KNOWN_LIMITATIONS.md](Documentation/KNOWN_LIMITATIONS.md) for the current,
-honest list (e.g. no code signing/notarization yet, ClamAV is an
-optional external dependency, no privileged helper yet).
+- [Architecture](Documentation/ARCHITECTURE.md)
+- [Development setup](DEVELOPMENT.md)
+- [Build system](Documentation/BUILD_SYSTEM.md)
+- [Testing](Documentation/TESTING.md)
+- [Feature inventory](Documentation/FEATURE_INVENTORY.md)
 
-## Contributing
+## Privacy and safety
 
-Contributions are welcome. Start with
-[CONTRIBUTING.md](CONTRIBUTING.md) and
-[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md). Good first issues will be
-tracked in [Documentation/GOOD_FIRST_ISSUES.md](Documentation/GOOD_FIRST_ISSUES.md).
+Core features run locally. CoreTend has no account system, analytics,
+advertising or telemetry. Optional malware-signature updates belong to the
+separately installed scanning engine.
 
-## Roadmap
+Path validation blocks protected roots and symlink escapes. Files are checked
+again immediately before an approved action, and dry run remains enabled
+unless the user explicitly disables it.
 
-See [ROADMAP.md](Documentation/ROADMAP.md) and [CHANGELOG.md](Documentation/CHANGELOG.md).
+- [Privacy](PRIVACY.md)
+- [Security policy](SECURITY.md)
+- [Safety model](Documentation/SAFETY_MODEL.md)
+- [Threat model](Documentation/THREAT_MODEL.md)
 
-## Security
+## Contributing and support
 
-Please read [SECURITY.md](SECURITY.md) before reporting a vulnerability.
-Do not open a public issue for security-sensitive reports.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) and
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before opening a change. For usage
+questions, see [SUPPORT.md](SUPPORT.md). Report security issues through the
+private process in [SECURITY.md](SECURITY.md), not a public issue.
 
-## License
+The maintained direction is in [ROADMAP.md](Documentation/ROADMAP.md), and
+released changes are recorded in [CHANGELOG.md](Documentation/CHANGELOG.md).
 
-Code is licensed under [Apache-2.0](LICENSES/Apache-2.0.txt). Original
-documentation and illustrations are licensed under
-[CC-BY-4.0](LICENSES/CC-BY-4.0.txt). The "CoreTend" name/logo are
-covered separately — see [TRADEMARKS.md](TRADEMARKS.md). Third-party
-components keep their own licenses — see
-[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Full breakdown:
-[Documentation/LEGAL_AND_LICENSE_STATUS.md](Documentation/LEGAL_AND_LICENSE_STATUS.md).
+## Licenses and marks
+
+Code is Apache-2.0. Original documentation and media are CC-BY-4.0.
+Third-party material remains under its own terms. The name and visual identity
+are covered separately.
+
+- [License map](Documentation/LICENSING.md)
+- [Third-party notices](THIRD_PARTY_NOTICES.md)
+- [Trademark policy](TRADEMARKS.md)

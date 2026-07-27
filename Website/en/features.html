@@ -6,10 +6,13 @@
 <title>Features — CoreTend</title>
 <meta name="description" content="Local, transparent and reversible care for macOS.">
 <meta name="color-scheme" content="light dark">
-<!-- noindex until the site is actually published: an unreleased page in a
-     search index is a promise nobody can keep. -->
-<meta name="robots" content="noindex">
+<!-- Indexing follows siteIndexable in the identity file. It stays noindex
+     until the site is really deployed: an unreachable page in a search index
+     is a promise nobody can keep. robots.txt is generated from the same flag,
+     so the two can never disagree. -->
+<meta name="robots" content="index, follow">
 <link rel="canonical" href="https://coretend.ahmetbsbnr.com/en/features.html">
+<meta property="og:url" content="https://coretend.ahmetbsbnr.com/en/features.html">
 <link rel="alternate" hreflang="en" href="https://coretend.ahmetbsbnr.com/en/features.html">
 <link rel="alternate" hreflang="fr" href="https://coretend.ahmetbsbnr.com/fr/features.html">
 <meta property="og:type" content="website">
@@ -17,14 +20,18 @@
 <meta property="og:title" content="Features — CoreTend">
 <meta property="og:description" content="A lighter Mac. Always under control. Local, transparent and reversible care for macOS.">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="../assets/brand/opengraph.png">
+<meta property="og:image" content="https://coretend.ahmetbsbnr.com/assets/brand/opengraph.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../assets/brand/favicon-32.png" sizes="32x32">
 <link rel="icon" href="../assets/brand/favicon-512.png" sizes="512x512">
 <link rel="apple-touch-icon" href="../assets/brand/favicon-180.png">
+<style>html,body{background:#f4f6f3;color:#0b0f14}@media(prefers-color-scheme:dark){html,body{background:#0b0f14;color:#f4f6f3}}</style>
 <link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/site.js" defer></script>
 </head>
-<body>
+<body class="page-features">
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site">
   <div class="wrap">
@@ -34,15 +41,18 @@
 <path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--activity)" stroke-width="38.4" stroke-linecap="round"/>
 <circle cx="256" cy="256" r="61.44" fill="var(--care)"/>
 </svg><span>CoreTend</span></a>
-    <nav class="primary" aria-label="Main">
+    <button class="nav-toggle" type="button" aria-expanded="false"
+      aria-controls="primary-nav">Menu</button>
+    <nav class="primary" id="primary-nav" aria-label="Main">
       <a href="index.html">Overview</a>
       <a href="features.html" class="active" aria-current="page">Features</a>
-      <a href="privacy.html">Privacy</a>
+      <a href="demos.html">Demos</a>
       <a href="download.html">Download</a>
-      <a href="documentation.html">Documentation</a>
-      <a href="open-source.html">Open Source</a>
-      <a href="changelog.html">Changelog</a>
+      <a href="documentation.html">Docs</a>
     </nav>
+    <a class="github-link" href="https://github.com/ahmetbsbnr/coretend" aria-label="Open CoreTend on GitHub"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+<path fill="currentColor" d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.02c-3.23.7-3.91-1.37-3.91-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.41-1.26.74-1.55-2.58-.29-5.29-1.29-5.29-5.73 0-1.27.45-2.3 1.2-3.11-.12-.29-.52-1.47.11-3.07 0 0 .98-.31 3.16 1.19a10.95 10.95 0 0 1 5.76 0c2.19-1.5 3.16-1.19 3.16-1.19.63 1.6.23 2.78.11 3.07.75.81 1.2 1.84 1.2 3.11 0 4.45-2.72 5.43-5.31 5.72.42.36.79 1.07.79 2.16v3.02c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .7Z"/>
+</svg><span>GitHub</span></a>
     <div class="lang-switch"><a href="../en/features.html" hreflang="en" lang="en" class="active" aria-current="true">EN</a><a href="../fr/features.html" hreflang="fr" lang="fr">FR</a></div>
   </div>
 </header>
@@ -65,10 +75,11 @@
 <footer class="site">
   <div class="wrap">
     <div>
-      <p style="margin:0 0 .5rem">&copy; CoreTend contributors. Open source — see the <a href="licenses.html">licenses</a>.</p>
-      <p class="disclaimer" style="margin:0">CoreTend is an independent project and is not affiliated with Apple Inc. Mac and macOS describe compatibility only.</p>
+      <p class="footer-note">&copy; CoreTend contributors. Open source — see the <a href="licenses.html">licenses</a>.</p>
     </div>
     <nav aria-label="Footer">
+      <a href="install.html">Install</a>
+      <a href="support.html">Support</a>
       <a href="faq.html">FAQ</a>
       <a href="roadmap.html">Roadmap</a>
       <a href="security.html">Security</a>

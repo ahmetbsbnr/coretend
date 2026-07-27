@@ -16,12 +16,15 @@ Public issues are for non-sensitive bugs and feature requests only —
 critical vulnerabilities must not be disclosed publicly before a fix
 exists.
 
-Until a dedicated private reporting channel is set up, report
-vulnerabilities to: `[SECURITY_CONTACT_TO_DEFINE]`
+Report vulnerabilities through **GitHub private vulnerability reporting**:
 
-(See Documentation/PUBLICATION_PLACEHOLDERS.md — this is a tracked
-placeholder that must be filled in with a real contact before any public
-release.)
+<https://github.com/ahmetbsbnr/coretend/security/advisories/new>
+
+This is a private channel: the report is visible only to you and the
+maintainer until an advisory is published. It requires a GitHub account —
+that is a deliberate trade-off, chosen so that no personal email address
+has to be published. No other reporting channel exists; there is no
+security mailing address.
 
 When reporting, please include:
 - CoreTend version / commit hash
@@ -33,7 +36,7 @@ When reporting, please include:
 ## Scope
 
 In scope: CoreTend's Swift source, its build/packaging scripts, and
-(once it exists) its public website's own code.
+its public website's own code.
 
 Out of scope: vulnerabilities in macOS itself, in Apple frameworks, or in
 the externally-installed ClamAV binary (report those upstream to Apple or
@@ -59,6 +62,6 @@ report it via the channel above rather than a public issue.
 
 ## Pre-1.0 status
 
-Because this project has not had a public release, audit, or notarized
-build yet, treat any binary you build yourself as unsigned, unaudited,
-development software.
+The current public beta is unsigned and not notarized. Treat it and any binary
+you build yourself as pre-1.0 software, verify published checksums, and follow
+the per-app first-open guidance without disabling system protections globally.

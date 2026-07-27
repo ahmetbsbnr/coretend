@@ -38,9 +38,11 @@ session) — the remaining blockers are mostly human/procedural
 (signing cert, legal identity, hosting) rather than more engineering.
 
 Risks: shipping unsigned still means most users hit a Gatekeeper wall on
-first launch; shipping to a public repo with placeholder legal text
-(`[LEGAL_NAME_TO_DEFINE]` etc.) is a real professionalism/legal risk if
-rushed.
+first launch — that risk is accepted and disclosed for 0.9.0, see
+`INSTALL_UNSIGNED.md`. The second risk recorded here, shipping to a public
+repo with placeholder legal text (`LEGAL_NAME_TO_DEFINE` and its
+neighbours), was closed in the 0.9.0 launch phase: the publisher, security
+contact and domain are now real values, and the placeholder gate passes.
 
 Prerequisites (human-gated, out of this audit's scope): resolve legal
 identity placeholders, decide on and obtain a signing/notarization path

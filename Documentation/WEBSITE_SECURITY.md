@@ -1,22 +1,19 @@
 # Website Security
 
-Status: not deployed. This documents the intended posture for when a human
-decides to deploy — nothing here is live yet.
+Status: deployed; the generated configuration is also verified before every
+production update.
 
 ## Attack surface
 
-The site is static HTML/CSS with no JavaScript logic, no forms, no
-cookies, no backend, no database, no user input processed anywhere. This
-keeps the attack surface close to zero by construction — there is no
-server-side code to exploit and no user-submitted data to sanitize.
+The site is static HTML/CSS with one local progressive-enhancement script, no
+forms, cookies, backend, database, or processed user input. The script controls
+the mobile navigation and visible-once scroll reveals; it performs no network
+request and persists no data.
 
-## Planned HTTP response headers (once deployed)
+## HTTP response headers
 
-Not live yet — to be configured at the hosting layer when a deploy target
-is chosen:
-
-- `Content-Security-Policy`: default-src 'self'; no external script/style/
-  font/image origins, since none are used.
+- `Content-Security-Policy`: default/script/style/font/image/media sources are
+  limited to self (plus data images); no external runtime origin is allowed.
 - `Referrer-Policy: no-referrer` (or `strict-origin-when-cross-origin`).
 - `Permissions-Policy`: deny geolocation, camera, microphone, and all
   other features not in use (i.e. all of them).
@@ -29,5 +26,6 @@ dependencies to audit or patch.
 
 ## Reporting
 
-Same channel as the app: see `SECURITY.md` at the repository root
-(`[SECURITY_CONTACT_TO_DEFINE]` until a monitored channel exists).
+Same channel as the app: see `SECURITY.md` at the repository root, which
+routes reports to GitHub private vulnerability reporting at
+`https://github.com/ahmetbsbnr/coretend/security/advisories/new`.

@@ -22,13 +22,13 @@ distribution OK if honestly disclosed, no Gatekeeper bypass.
 
 ## Product positioning
 
-**Claim**: real public independent open-source utility, not school/portfolio/AI-demo, not
-Apple/MacPaw/CleanMyMac-affiliated.
+**Claim**: real public independent open-source utility, not a school,
+portfolio, or demonstration-only project.
 
 - `LICENSE` (Apache-2.0) + `LICENSES/` + `TRADEMARKS.md` present — a real open-source license grant,
   not a portfolio placeholder.
-- `README.md`/`Documentation/FAQ.md` do not claim Apple/MacPaw/CleanMyMac affiliation; `FAQ.md:42`
-  explicitly separates itself from disabling SIP/Gatekeeper — a defensive, not affiliated, stance.
+- `README.md` and `Documentation/FAQ.md` describe the product directly without
+  implying third-party origin, partnership, or approval.
 - `Documentation/TRADEMARKS.md` exists specifically to keep "CoreTend" branding independent of
   any code/content license, consistent with an independent-product stance rather than a demo project.
 - No files reference "school," "assignment," "portfolio piece," or similar in `Documentation/`.

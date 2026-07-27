@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Installer CoreTend — CoreTend</title>
+<meta name="description" content="Entretien local, transparent et réversible pour macOS.">
+<meta name="color-scheme" content="light dark">
+<!-- Indexing follows siteIndexable in the identity file. It stays noindex
+     until the site is really deployed: an unreachable page in a search index
+     is a promise nobody can keep. robots.txt is generated from the same flag,
+     so the two can never disagree. -->
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://coretend.ahmetbsbnr.com/fr/install.html">
+<meta property="og:url" content="https://coretend.ahmetbsbnr.com/fr/install.html">
+<link rel="alternate" hreflang="en" href="https://coretend.ahmetbsbnr.com/en/install.html">
+<link rel="alternate" hreflang="fr" href="https://coretend.ahmetbsbnr.com/fr/install.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CoreTend">
+<meta property="og:title" content="Installer CoreTend — CoreTend">
+<meta property="og:description" content="Un Mac plus léger. Toujours sous contrôle. Entretien local, transparent et réversible pour macOS.">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:image" content="https://coretend.ahmetbsbnr.com/assets/brand/opengraph.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../assets/brand/favicon-32.png" sizes="32x32">
+<link rel="icon" href="../assets/brand/favicon-512.png" sizes="512x512">
+<link rel="apple-touch-icon" href="../assets/brand/favicon-180.png">
+<style>html,body{background:#f4f6f3;color:#0b0f14}@media(prefers-color-scheme:dark){html,body{background:#0b0f14;color:#f4f6f3}}</style>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/site.js" defer></script>
+</head>
+<body class="page-install">
+<a class="skip-link" href="#main">Aller au contenu</a>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="CoreTend — accueil"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
+<path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--care)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--privacy)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--activity)" stroke-width="38.4" stroke-linecap="round"/>
+<circle cx="256" cy="256" r="61.44" fill="var(--care)"/>
+</svg><span>CoreTend</span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false"
+      aria-controls="primary-nav">Menu</button>
+    <nav class="primary" id="primary-nav" aria-label="Principale">
+      <a href="index.html">Aperçu</a>
+      <a href="features.html">Fonctionnalités</a>
+      <a href="demos.html">Démos</a>
+      <a href="download.html">Télécharger</a>
+      <a href="documentation.html">Docs</a>
+    </nav>
+    <a class="github-link" href="https://github.com/ahmetbsbnr/coretend" aria-label="Ouvrir CoreTend sur GitHub"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+<path fill="currentColor" d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.02c-3.23.7-3.91-1.37-3.91-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.41-1.26.74-1.55-2.58-.29-5.29-1.29-5.29-5.73 0-1.27.45-2.3 1.2-3.11-.12-.29-.52-1.47.11-3.07 0 0 .98-.31 3.16 1.19a10.95 10.95 0 0 1 5.76 0c2.19-1.5 3.16-1.19 3.16-1.19.63 1.6.23 2.78.11 3.07.75.81 1.2 1.84 1.2 3.11 0 4.45-2.72 5.43-5.31 5.72.42.36.79 1.07.79 2.16v3.02c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .7Z"/>
+</svg><span>GitHub</span></a>
+    <div class="lang-switch"><a href="../en/install.html" hreflang="en" lang="en">EN</a><a href="../fr/install.html" hreflang="fr" lang="fr" class="active" aria-current="true">FR</a></div>
+  </div>
+</header>
+<main id="main">
+  <div class="wrap">
+
+<h1>Installer CoreTend</h1>
+<p class="lead">Du téléchargement à la première analyse sans réduire
+globalement la sécurité du Mac.</p>
+<div class="warning-banner"><p><strong>CoreTend 0.9.0 n'est ni signé ni
+notarisé.</strong> macOS bloquera la première ouverture normale. Les étapes
+ci-dessous autorisent uniquement cette copie de CoreTend.</p></div>
+
+<figure class="demo-player">
+  <video controls muted playsinline preload="none"
+    poster="../assets/demos/gatekeeper-blocked-poster.webp"
+    aria-describedby="install-gatekeeper-description">
+    <source src="../assets/demos/gatekeeper-blocked.webm" type="video/webm">
+    <source src="../assets/demos/gatekeeper-blocked.mp4" type="video/mp4">
+    <track kind="captions" srclang="en" label="Visual description"
+      src="../assets/demos/gatekeeper-blocked.vtt" default>
+  </video>
+  <figcaption id="install-gatekeeper-description">Enregistrement silencieux du véritable avertissement macOS de première ouverture. Les libellés peuvent varier selon macOS.</figcaption>
+</figure>
+<ol class="install-steps">
+  <li><h2>Vérifier la compatibilité</h2><p>Menu Pomme → À propos de ce Mac. La
+  version disponible exige une puce Apple et macOS 14 ou ultérieur.</p></li>
+  <li><h2>Télécharger le DMG</h2><p>Choisissez le DMG sur la
+  <a href="download.html">page Télécharger</a>. Le ZIP est une alternative.</p></li>
+  <li><h2>Copier vers Applications</h2><p>Ouvrez le DMG, glissez CoreTend vers
+  Applications, puis éjectez l'image disque.</p></li>
+  <li><h2>Autoriser cette application une fois</h2><p>Dans Applications,
+  Contrôle-cliquez CoreTend et choisissez <strong>Ouvrir</strong>. Si votre
+  version de macOS propose plutôt une option nommant CoreTend dans Réglages
+  Système → Confidentialité et sécurité, utilisez-la. Les libellés varient
+  selon macOS.</p>
+  <details><summary>Pourquoi cette étape ?</summary><p>La bêta n'a pas de
+  signature Developer ID et n'est pas notarisée. Ce choix limité à l'app
+  n'est pas une certification. Ne désactivez jamais globalement Gatekeeper
+  ou SIP.</p></details></li>
+  <li><h2>Commencer en simulation</h2><p>Lisez l'introduction, conservez la
+  simulation activée et lancez Smart Care. L'analyse présente un aperçu avant
+  toute action approuvée.</p></li>
+</ol>
+<h2>Facultatif : vérifier le téléchargement</h2>
+<p>SHA-256 confirme que le fichier est identique à celui publié. Il ne
+remplace ni signature ni notarisation, et la source du checksum doit elle-même
+être fiable.</p>
+<pre><code>shasum -a 256 ~/Downloads/CoreTend-0.9.0-arm64-unsigned.dmg
+cd ~/Downloads
+shasum -a 256 -c SHA256SUMS</code></pre>
+<p>Le DMG doit produire
+<code>f2fbc7840ac4a5509836a495c51e72e6cfd52ef24e6cbdd792fa8404bd3f6c8d</code>.
+Si la valeur diffère, supprimez le fichier, retéléchargez-le et ne l'ouvrez
+pas.</p>
+<p>Besoin d'aide ? Consultez <a href="support.html">Assistance et dépannage</a>.</p>
+
+  </div>
+</main>
+<footer class="site">
+  <div class="wrap">
+    <div>
+      <p class="footer-note">&copy; Les contributeurs de CoreTend. Open source — voir les <a href="licenses.html">licences</a>.</p>
+    </div>
+    <nav aria-label="Pied de page">
+      <a href="install.html">Installer</a>
+      <a href="support.html">Assistance</a>
+      <a href="faq.html">FAQ</a>
+      <a href="roadmap.html">Feuille de route</a>
+      <a href="security.html">Sécurité</a>
+      <a href="privacy.html">Politique de confidentialité</a>
+      <a href="licenses.html">Licences</a>
+      <a href="legal.html">Mentions légales</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

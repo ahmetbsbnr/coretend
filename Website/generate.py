@@ -10,8 +10,16 @@ runs server-side, there is no bundler, no node_modules, no database.
 ponytail: hand-rolled string templating instead of a template engine —
 add Jinja2 only if page count or logic genuinely outgrows this.
 """
+import html as _html
+import base64
+import hashlib
 import json
 import os
+
+
+def html_escape(value):
+    """Escape a value destined for page text or an attribute."""
+    return _html.escape(str(value), quote=True)
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(ROOT)
@@ -58,14 +66,14 @@ def is_defined(key):
 NAV = [
     ("index", {"en": "Overview", "fr": "Aperçu"}),
     ("features", {"en": "Features", "fr": "Fonctionnalités"}),
-    ("privacy", {"en": "Privacy", "fr": "Confidentialité"}),
+    ("demos", {"en": "Demos", "fr": "Démos"}),
     ("download", {"en": "Download", "fr": "Télécharger"}),
-    ("documentation", {"en": "Documentation", "fr": "Documentation"}),
-    ("open-source", {"en": "Open Source", "fr": "Open Source"}),
-    ("changelog", {"en": "Changelog", "fr": "Journal"}),
+    ("documentation", {"en": "Docs", "fr": "Docs"}),
 ]
 
 FOOTER_LINKS = [
+    ("install", {"en": "Install", "fr": "Installer"}),
+    ("support", {"en": "Support", "fr": "Assistance"}),
     ("faq", {"en": "FAQ", "fr": "FAQ"}),
     ("roadmap", {"en": "Roadmap", "fr": "Feuille de route"}),
     ("security", {"en": "Security", "fr": "Sécurité"}),
@@ -75,12 +83,27 @@ FOOTER_LINKS = [
 ]
 
 SITE_TITLE = "CoreTend"
-SITE_URL = "https://coretend.ahmetbsbnr.com"
+SITE_URL = ident("websiteURL", "https://coretend.ahmetbsbnr.com")
+CRITICAL_STYLE = (
+    "html,body{background:#f4f6f3;color:#0b0f14}"
+    "@media(prefers-color-scheme:dark){html,body{background:#0b0f14;color:#f4f6f3}}"
+)
 
-# The public repository does not exist yet — nothing has been pushed. Set this
-# to "https://github.com/ahmetbsbnr/coretend" once it does, and every place
-# that wants to link source or docs starts linking instead of naming.
-REPOSITORY_URL = None
+
+def critical_style_hash():
+    digest = hashlib.sha256(CRITICAL_STYLE.encode("utf-8")).digest()
+    return "sha256-" + base64.b64encode(digest).decode("ascii")
+
+# The repository is public, so this now comes from configuration rather than
+# being pinned to None. Every place that links source or docs reads this one
+# value: it was always meant to be one constant, not thirty edits. If the
+# identity file ever stops defining it, those places name filenames again
+# instead of emitting links that 404.
+REPOSITORY_URL = ident("repositoryURL", "") or None
+
+# Search indexing. False until the site is actually deployed and reachable.
+# The page meta and robots.txt both read this, so they cannot drift apart.
+SITE_INDEXABLE = bool(ident("siteIndexable", False))
 
 # The product signature. Same two lines everywhere: onboarding, DMG, README,
 # site, metadata. A product that describes itself differently in each place
@@ -108,6 +131,10 @@ MARK_SVG = """<svg class="mark" viewBox="0 0 512 512" role="img" aria-label="Cor
 <circle cx="256" cy="256" r="61.44" fill="var(--care)"/>
 </svg>"""
 
+GITHUB_SVG = """<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+<path fill="currentColor" d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.02c-3.23.7-3.91-1.37-3.91-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.41-1.26.74-1.55-2.58-.29-5.29-1.29-5.29-5.73 0-1.27.45-2.3 1.2-3.11-.12-.29-.52-1.47.11-3.07 0 0 .98-.31 3.16 1.19a10.95 10.95 0 0 1 5.76 0c2.19-1.5 3.16-1.19 3.16-1.19.63 1.6.23 2.78.11 3.07.75.81 1.2 1.84 1.2 3.11 0 4.45-2.72 5.43-5.31 5.72.42.36.79 1.07.79 2.16v3.02c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .7Z"/>
+</svg>"""
+
 
 def page_shell(locale, slug, title, body_html, other_locale_slug=None):
     other_slug = other_locale_slug or slug
@@ -133,6 +160,12 @@ def page_shell(locale, slug, title, body_html, other_locale_slug=None):
                    + lang_link("en", en_href)
                    + lang_link("fr", fr_href)
                    + "</div>")
+    github_link = (
+        f'<a class="github-link" href="{REPOSITORY_URL}" '
+        f'aria-label="{"Open CoreTend on GitHub" if locale == "en" else "Ouvrir CoreTend sur GitHub"}">'
+        f'{GITHUB_SVG}<span>GitHub</span></a>'
+        if REPOSITORY_URL else ""
+    )
     skip = {"en": "Skip to content", "fr": "Aller au contenu"}[locale]
     home = {"en": "CoreTend — home", "fr": "CoreTend — accueil"}[locale]
     footer_note = {
@@ -140,12 +173,6 @@ def page_shell(locale, slug, title, body_html, other_locale_slug=None):
               '<a href="licenses.html">licenses</a>.',
         "fr": "&copy; Les contributeurs de CoreTend. Open source — voir les "
               '<a href="licenses.html">licences</a>.',
-    }[locale]
-    disclaimer = {
-        "en": "CoreTend is an independent project and is not affiliated with "
-              "Apple Inc. Mac and macOS describe compatibility only.",
-        "fr": "CoreTend est un projet indépendant et n'est pas affilié à "
-              "Apple Inc. Mac et macOS décrivent uniquement la compatibilité.",
     }[locale]
     return f"""<!doctype html>
 <html lang="{locale}">
@@ -155,10 +182,13 @@ def page_shell(locale, slug, title, body_html, other_locale_slug=None):
 <title>{title} — {SITE_TITLE}</title>
 <meta name="description" content="{SUBTITLE[locale]}">
 <meta name="color-scheme" content="light dark">
-<!-- noindex until the site is actually published: an unreleased page in a
-     search index is a promise nobody can keep. -->
-<meta name="robots" content="noindex">
+<!-- Indexing follows siteIndexable in the identity file. It stays noindex
+     until the site is really deployed: an unreachable page in a search index
+     is a promise nobody can keep. robots.txt is generated from the same flag,
+     so the two can never disagree. -->
+<meta name="robots" content="{"index, follow" if SITE_INDEXABLE else "noindex"}">
 <link rel="canonical" href="{SITE_URL}/{locale}/{slug}.html">
+<meta property="og:url" content="{SITE_URL}/{locale}/{slug}.html">
 <link rel="alternate" hreflang="en" href="{SITE_URL}/en/{slug if locale == "en" else other_slug}.html">
 <link rel="alternate" hreflang="fr" href="{SITE_URL}/fr/{slug if locale == "fr" else other_slug}.html">
 <meta property="og:type" content="website">
@@ -166,21 +196,28 @@ def page_shell(locale, slug, title, body_html, other_locale_slug=None):
 <meta property="og:title" content="{title} — {SITE_TITLE}">
 <meta property="og:description" content="{SIGNATURE[locale]} {SUBTITLE[locale]}">
 <meta property="og:locale" content="{"en_US" if locale == "en" else "fr_FR"}">
-<meta property="og:image" content="../assets/brand/opengraph.png">
+<meta property="og:image" content="{SITE_URL}/assets/brand/opengraph.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../assets/brand/favicon-32.png" sizes="32x32">
 <link rel="icon" href="../assets/brand/favicon-512.png" sizes="512x512">
 <link rel="apple-touch-icon" href="../assets/brand/favicon-180.png">
+<style>{CRITICAL_STYLE}</style>
 <link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/site.js" defer></script>
 </head>
-<body>
+<body class="page-{slug}">
 <a class="skip-link" href="#main">{skip}</a>
 <header class="site">
   <div class="wrap">
     <a class="brand" href="index.html" aria-label="{home}">{MARK_SVG}<span>{SITE_TITLE}</span></a>
-    <nav class="primary" aria-label="{"Main" if locale == "en" else "Principale"}">
+    <button class="nav-toggle" type="button" aria-expanded="false"
+      aria-controls="primary-nav">{"Menu" if locale == "en" else "Menu"}</button>
+    <nav class="primary" id="primary-nav" aria-label="{"Main" if locale == "en" else "Principale"}">
       {nav_items}
     </nav>
+    {github_link}
     {lang_switch}
   </div>
 </header>
@@ -192,8 +229,7 @@ def page_shell(locale, slug, title, body_html, other_locale_slug=None):
 <footer class="site">
   <div class="wrap">
     <div>
-      <p style="margin:0 0 .5rem">{footer_note}</p>
-      <p class="disclaimer" style="margin:0">{disclaimer}</p>
+      <p class="footer-note">{footer_note}</p>
     </div>
     <nav aria-label="{"Footer" if locale == "en" else "Pied de page"}">
       {footer_items}
@@ -203,10 +239,6 @@ def page_shell(locale, slug, title, body_html, other_locale_slug=None):
 </body>
 </html>
 """
-
-
-def screenshot_placeholder(text):
-    return f'<div class="screenshot-placeholder">{text}</div>'
 
 
 PAGES = {}
@@ -375,7 +407,10 @@ HOME_FAQ = [
 
 HOME_TEXT = {
     "en": {
-        "cta_download": "Download the local build",
+        "hero_eyebrow": "Native care for macOS",
+        "hero_title": "A lighter Mac. Always under control.",
+        "hero_body": "See what weighs down your Mac, review every finding, and decide what leaves.",
+        "cta_download": "Download CoreTend",
         "cta_how": "See how it works",
         "prerelease_title": "Pre-1.0, and unsigned",
         "prerelease": "CoreTend is under active development and has not reached a "
@@ -429,7 +464,10 @@ HOME_TEXT = {
                       "is not yet in place.",
     },
     "fr": {
-        "cta_download": "Télécharger la version locale",
+        "hero_eyebrow": "Entretien natif pour macOS",
+        "hero_title": "Un Mac plus léger. Toujours sous contrôle.",
+        "hero_body": "Voyez ce qui alourdit votre Mac, examinez chaque résultat et décidez de ce qui part.",
+        "cta_download": "Télécharger CoreTend",
         "cta_how": "Découvrir le fonctionnement",
         "prerelease_title": "Pré-1.0, et non signé",
         "prerelease": "CoreTend est en développement actif et n'a pas atteint une "
@@ -492,6 +530,9 @@ ROLE_LABEL = {
     "activity": {"en": "Activity &amp; performance", "fr": "Activité et performances"},
 }
 
+def media_exists(relative_path):
+    return os.path.isfile(os.path.join(ROOT, relative_path))
+
 
 def home_body(l):
     t = HOME_TEXT[l]
@@ -520,19 +561,83 @@ def home_body(l):
         f'<details><summary>{q[l][0]}</summary><p>{q[l][1]}</p></details>'
         for q in HOME_FAQ
     )
+    if media_exists("assets/app/smart-care.webp"):
+        hero_media = """<picture class="hero-product">
+    <source srcset="../assets/app/smart-care.webp" type="image/webp">
+    <img src="../assets/app/smart-care.png" width="2024" height="1488"
+      alt="CoreTend Smart Care window with its module sidebar and scan controls"
+      fetchpriority="high">
+  </picture>"""
+    elif media_exists("assets/app/menu-bar.webp"):
+        hero_media = """<picture class="hero-menu">
+    <source srcset="../assets/app/menu-bar.webp" type="image/webp">
+    <img src="../assets/app/menu-bar.png" width="660" height="806"
+      alt="CoreTend 0.9.0 menu bar panel showing CPU, memory, free space, thermal state and protection status"
+      fetchpriority="high">
+  </picture>"""
+    else:
+        hero_media = f'<div class="hero-art">{MARK_SVG}</div>'
+
+    if media_exists("assets/demos/product-tour.webm"):
+        tour_section = f"""
+<section id="product-tour" class="demo-feature reveal">
+  <div>
+    <span class="section-label">{"Product tour" if l == "en" else "Visite du produit"}</span>
+    <h2>{"See the real application" if l == "en" else "Voir l’application réelle"}</h2>
+    <p>{"A short, silent tour through shipped modules, recorded in the dedicated CoreTend Demo environment." if l == "en" else "Une visite courte et silencieuse des modules livrés, enregistrée dans l’environnement dédié CoreTend Demo."}</p>
+  </div>
+  <div class="demo-player">
+    <video autoplay muted loop playsinline preload="metadata"
+      poster="../assets/demos/product-tour-poster.webp"
+      data-autoplay aria-describedby="tour-description">
+      <source media="(prefers-reduced-motion: no-preference)" src="../assets/demos/product-tour.webm" type="video/webm">
+      <source media="(prefers-reduced-motion: no-preference)" src="../assets/demos/product-tour.mp4" type="video/mp4">
+    </video>
+    <img class="reduced-motion-poster" src="../assets/demos/product-tour-poster.webp"
+      width="1800" height="1264" alt="">
+    <p id="tour-description" class="small">{"The sidebar selection moves through the demonstrated modules and returns to Smart Care." if l == "en" else "La sélection de la barre latérale parcourt les modules démontrés puis revient à Smart Care."}</p>
+  </div>
+</section>"""
+    else:
+        tour_section = ""
+
+    if media_exists("assets/app/cleanup.webp"):
+        gallery_section = f"""
+<section>
+  <span class="section-label">{"Gallery" if l == "en" else "Galerie"}</span>
+  <h2>{"The tools, as they ship" if l == "en" else "Les outils, tels qu’ils sont livrés"}</h2>
+  <div class="media-grid">
+    <figure><img src="../assets/app/cleanup.webp" width="1800" height="1264" loading="lazy" alt="CoreTend Cleanup review screen"><figcaption>Cleanup</figcaption></figure>
+    <figure><img src="../assets/app/performance.webp" width="1800" height="1264" loading="lazy" alt="CoreTend Performance metrics screen"><figcaption>Performance</figcaption></figure>
+    <figure><img src="../assets/app/space-lens.webp" width="1800" height="1264" loading="lazy" alt="CoreTend Space Lens disk map"><figcaption>Space Lens</figcaption></figure>
+  </div>
+  <p><a href="demos.html">{"Open the complete visual tour" if l == "en" else "Ouvrir la visite visuelle complète"}</a></p>
+</section>"""
+    else:
+        gallery_section = ""
+
+    settings_media = (
+        '<img src="../assets/app/settings-light.webp" width="1800" height="1264" '
+        'loading="lazy" alt="CoreTend settings showing real permission and safety controls">'
+        if media_exists("assets/app/settings-light.webp") else MARK_SVG
+    )
 
     return f"""
 <section class="hero">
-  <div>
-    <h1>{SITE_TITLE}</h1>
-    <p class="signature">{SIGNATURE[l]}</p>
+  <div class="hero-copy">
+    <span class="eyebrow">{t['hero_eyebrow']}</span>
+    <h1>{t['hero_title']}</h1>
+    <p class="signature">{t['hero_body']}</p>
     <p class="lead">{SUBTITLE[l]}</p>
     <div class="cta-row">
       <a class="btn btn-primary" href="download.html">{t['cta_download']}</a>
       <a class="btn btn-secondary" href="#how">{t['cta_how']}</a>
     </div>
   </div>
-  <div class="hero-art">{MARK_SVG}</div>
+  <div class="hero-stage" aria-label="CoreTend product preview">
+    <div class="hero-orbit" aria-hidden="true">{MARK_SVG}</div>
+    {hero_media}
+  </div>
 </section>
 
 <section>
@@ -544,16 +649,9 @@ def home_body(l):
   </div>
 </section>
 
-<section id="how" class="feature reveal">
-  <div>
-    <span class="section-label">{t['bloom_label']}</span>
-    <h2>{t['bloom_title']}</h2>
-    <p>{t['bloom_body']}</p>
-  </div>
-  <div class="feature-visual">{MARK_SVG}</div>
-</section>
+{tour_section}
 
-<section class="reveal">
+<section id="how" class="reveal">
   <span class="section-label">{t['space_label']}</span>
   <h2>{t['space_title']}</h2>
   <p>{t['space_body']}</p>
@@ -582,9 +680,11 @@ def home_body(l):
     <p>{t['setup_body']}</p>
   </div>
   <div class="feature-visual">
-    {screenshot_placeholder(SETUP_SHOT[l])}
+    {settings_media}
   </div>
 </section>
+
+{gallery_section}
 
 <section class="reveal">
   <span class="section-label">{t['os_label']}</span>
@@ -614,14 +714,6 @@ def home_body(l):
   <p>{t['legal_body']}</p>
 </section>
 """
-
-
-SETUP_SHOT = {
-    "en": "Setup assistant screenshot — pending a real capture. This box must "
-          "never ship in a published build; see Website/README.md.",
-    "fr": "Capture de l'assistant de configuration — en attente d'une capture "
-          "réelle. Cette zone ne doit jamais être publiée ; voir Website/README.md.",
-}
 
 
 add("index", {"en": "Overview", "fr": "Aperçu"}, home_body)
@@ -666,106 +758,491 @@ def features_body(l):
 add("features", {"en": "Features", "fr": "Fonctionnalités"}, features_body)
 
 
+# ---------------------------------------------------------------- demos ---
+def demos_body(l):
+    has_product_tour = media_exists("assets/demos/product-tour.webm")
+    has_gatekeeper = media_exists("assets/demos/gatekeeper-blocked.webm")
+    has_menu_bar = media_exists("assets/app/menu-bar.webp")
+    if not (has_product_tour or has_gatekeeper or has_menu_bar):
+        return (
+            "<h1>Product demos</h1><p>Media will appear here only after capture "
+            "and privacy review in the dedicated CoreTend Demo environment.</p>"
+            if l == "en" else
+            "<h1>Démonstrations</h1><p>Les médias apparaîtront ici uniquement "
+            "après capture et validation de confidentialité dans l’environnement "
+            "dédié CoreTend Demo.</p>"
+        )
+    title = "Real CoreTend media" if l == "en" else "Médias réels de CoreTend"
+    intro = (
+        "Every image and clip below passed visual and metadata privacy review. "
+        "The media shows CoreTend 0.9.0 or its genuine first-open system warning; "
+        "no personal files, paths, accounts or authentication are shown."
+    ) if l == "en" else (
+        "Chaque image et séquence ci-dessous a passé une revue visuelle et une "
+        "revue des métadonnées. Les médias montrent CoreTend 0.9.0 ou son véritable "
+        "avertissement système de première ouverture, sans fichier, chemin, compte "
+        "ni authentification personnels."
+    )
+    captions = [
+        ("smart-care", "Smart Care"),
+        ("cleanup", "Cleanup" if l == "en" else "Nettoyage"),
+        ("performance", "Performance" if l == "en" else "Performances"),
+        ("applications", "Applications"),
+        ("my-clutter", "My Clutter"),
+        ("space-lens", "Space Lens"),
+        ("protection", "Protection"),
+        ("settings", "Settings" if l == "en" else "Réglages"),
+    ]
+    gallery_items = [
+        f'<figure><a href="../assets/app/{name}.webp">'
+        f'<img src="../assets/app/{name}.webp" '
+        f'width="2024" height="1488" '
+        f'loading="lazy" alt="CoreTend development interface — {caption}"></a>'
+        f'<figcaption>{caption}</figcaption></figure>'
+        for name, caption in captions
+        if media_exists(f"assets/app/{name}.webp")
+    ]
+    if has_menu_bar:
+        menu_caption = "Menu bar status" if l == "en" else "État dans la barre des menus"
+        gallery_items.append(
+            f'<figure><a href="../assets/app/menu-bar.png">'
+            f'<img src="../assets/app/menu-bar.webp" width="660" height="806" '
+            f'loading="lazy" alt="CoreTend 0.9.0 — {menu_caption}"></a>'
+            f'<figcaption>{menu_caption}</figcaption></figure>'
+        )
+    gallery = "\n".join(gallery_items)
+    description = (
+        "The recording navigates between shipped modules. It contains no staged "
+        "scan result and makes no claim about files that were not scanned."
+    ) if l == "en" else (
+        "L’enregistrement navigue entre les modules livrés. Il ne contient aucun "
+        "résultat d’analyse mis en scène et ne revendique rien sur des fichiers "
+        "qui n’ont pas été analysés."
+    )
+    product_tour = f"""
+<section class="demo-player">
+  <video controls muted loop playsinline preload="metadata"
+    poster="../assets/demos/product-tour-poster.webp" aria-describedby="demo-description">
+    <source src="../assets/demos/product-tour.webm" type="video/webm">
+    <source src="../assets/demos/product-tour.mp4" type="video/mp4">
+  </video>
+  <p id="demo-description">{description}</p>
+</section>""" if has_product_tour else ""
+    gatekeeper_description = (
+        "Silent, genuine macOS first-open warning for the unsigned and not "
+        "notarized CoreTend 0.9.0 beta. Wording can vary by macOS version. "
+        "The clip does not show a bypass or authentication."
+    ) if l == "en" else (
+        "Véritable avertissement macOS silencieux de première ouverture pour la "
+        "bêta CoreTend 0.9.0 non signée et non notarisée. Les libellés peuvent "
+        "varier selon macOS. La séquence ne montre ni contournement ni authentification."
+    )
+    gatekeeper_video = f"""
+<section>
+  <h2>{"First-open warning" if l == "en" else "Avertissement de première ouverture"}</h2>
+  <div class="demo-player">
+    <video controls muted playsinline preload="none"
+      poster="../assets/demos/gatekeeper-blocked-poster.webp"
+      aria-describedby="gatekeeper-description">
+      <source src="../assets/demos/gatekeeper-blocked.webm" type="video/webm">
+      <source src="../assets/demos/gatekeeper-blocked.mp4" type="video/mp4">
+      <track kind="captions" srclang="en" label="Visual description"
+        src="../assets/demos/gatekeeper-blocked.vtt" default>
+    </video>
+    <p id="gatekeeper-description">{gatekeeper_description}</p>
+  </div>
+</section>""" if has_gatekeeper else ""
+    return f"""
+<h1>{title}</h1>
+<p class="lead">{intro}</p>
+{product_tour}
+{gatekeeper_video}
+<section>
+  <h2>{"Application gallery" if l == "en" else "Galerie de l’application"}</h2>
+  <div class="media-grid">{gallery}</div>
+</section>
+"""
+
+
+add("demos", {"en": "Demos", "fr": "Démos"}, demos_body)
+
+
 # ------------------------------------------------------------- download ---
+def _release_manifest():
+    """The generated release manifest, when one exists.
+
+    Release/latest.json is build output and is gitignored, so a fresh clone
+    generates the site without it. That is the normal case, not an error: the
+    page degrades to "prepared, not yet published" rather than inventing a
+    checksum. Only a manifest carrying a releaseTag describes something a
+    visitor can actually download.
+    """
+    path = os.path.join(ROOT, "..", "Release", "latest.json")
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return None
+
+
 def download_body(l):
+    m = _release_manifest()
+    repo = ident("repositoryURL", "")
+    version = ident("marketingVersion", "")
+    published = bool(m and m.get("releaseTag"))
+    releases_url = f"{repo}/releases" if repo else ""
+
     if l == "en":
-        return """
-<h1>Download</h1>
+        if published:
+            zip_name = html_escape(str(m.get("zipName", "")))
+            dmg_name = html_escape(str(m.get("dmgName", "")))
+            tag = html_escape(str(m.get("releaseTag", "")))
+            release_url = f"{repo}/releases/tag/{tag}"
+            asset_base = f"{repo}/releases/download/{tag}"
+            head = f"""
 <div class="status-box">
-  <p><strong>Public release in preparation.</strong> There is no stable
-  release yet. This page is a placeholder for the future release — it does
-  not link to any local build or ad-hoc artifact.</p>
+  <p><strong>CoreTend {html_escape(str(m.get('version','')))} — public beta.</strong>
+  Unsigned and not notarized. Verify the checksum below before you open it.</p>
 </div>
-
+<p><a href="{release_url}">View the GitHub prerelease and release notes</a></p>
+<table>
+  <tr><th>Field</th><th>Value</th></tr>
+  <tr><td>Version</td><td>{html_escape(str(m.get('version','')))}</td></tr>
+  <tr><td>ZIP</td><td><a href="{asset_base}/{zip_name}"><code>{zip_name}</code></a></td></tr>
+  <tr><td>ZIP size</td><td>{html_escape(str(m.get('zipSize','')))} bytes</td></tr>
+  <tr><td>ZIP SHA-256</td><td><code>{html_escape(str(m.get('zipSHA256','')))}</code></td></tr>
+  <tr><td>DMG</td><td><a href="{asset_base}/{dmg_name}"><code>{dmg_name}</code></a></td></tr>
+  <tr><td>DMG size</td><td>{html_escape(str(m.get('dmgSize','')))} bytes</td></tr>
+  <tr><td>DMG SHA-256</td><td><code>{html_escape(str(m.get('dmgSHA256','')))}</code></td></tr>
+  <tr><td>Verification files</td><td><a href="{asset_base}/latest.json"><code>latest.json</code></a> · <a href="{asset_base}/SHA256SUMS"><code>SHA256SUMS</code></a></td></tr>
+  <tr><td>Architecture</td><td>{html_escape(str(m.get('architecture','')))}</td></tr>
+  <tr><td>Minimum macOS</td><td>{html_escape(str(m.get('minimumMacOS','')))}</td></tr>
+  <tr><td>Source commit</td><td><code>{html_escape(str(m.get('sourceCommit','')))}</code></td></tr>
+  <tr><td>Build date</td><td>{html_escape(str(m.get('buildDate_UTC','')))}</td></tr>
+  <tr><td>Code signing</td><td><strong>unsigned</strong> — always disclosed, never hidden</td></tr>
+  <tr><td>Notarization</td><td><strong>not notarized</strong> — requires an Apple Developer ID</td></tr>
+</table>"""
+        else:
+            head = f"""
 <div class="status-box">
-  <p><strong>No release manifest published yet.</strong> There is nothing to
-  download or verify until one exists. When a release ships, this page will
-  list its version, architecture, minimum macOS, signing status and SHA-256
-  checksum — read from the published manifest, not typed in by hand.</p>
+  <p><strong>Release {html_escape(version)} is prepared but not published yet.</strong>
+  There is no download link, because there is nothing public to link to. The
+  version and checksum below appear here only once a tagged release exists —
+  they are read from the generated manifest, never typed in by hand.</p>
 </div>
-
-<h2>Source code</h2>
-<p>CoreTend's source will be published on GitHub once the public
-repository is created (see the project's
-<a href="open-source.html">Open Source</a> page). There is no live
-source-code link yet — the repository is not public. This page will link
-directly to it as soon as that happens.</p>
 
 <h2>What the release will look like</h2>
-<p>The first public artifact will be named exactly:</p>
-<pre>CoreTend-&lt;version&gt;-arm64-unsigned.zip</pre>
-
+<p>The artifact will be named exactly:</p>
+<pre>CoreTend-{html_escape(version)}-arm64-unsigned.zip</pre>
 <table>
   <tr><th>Field</th><th>Status</th></tr>
-  <tr><td>Version</td><td>not yet released</td></tr>
-  <tr><td>Checksum (SHA-256)</td><td>will be published alongside the release</td></tr>
-  <tr><td>Code signing</td><td><strong>unsigned</strong> — this will always be disclosed, never hidden</td></tr>
-  <tr><td>Notarization</td><td>not yet available (requires an Apple Developer ID; out of scope pre-1.0)</td></tr>
-</table>
+  <tr><td>Version</td><td>{html_escape(version)} — prepared, not yet published</td></tr>
+  <tr><td>Checksum (SHA-256)</td><td>published with the release</td></tr>
+  <tr><td>Code signing</td><td><strong>unsigned</strong> — always disclosed, never hidden</td></tr>
+  <tr><td>Notarization</td><td><strong>not notarized</strong> — requires an Apple Developer ID, out of scope pre-1.0</td></tr>
+</table>"""
 
-<h2>Planned install steps (once a release exists)</h2>
+        source = (f'<h2>Source code</h2>\n<p>CoreTend is open source. The full '
+                  f'source, tests, build scripts and gates are at '
+                  f'<a href="{repo}">{html_escape(repo)}</a>.</p>') if repo else ""
+
+        return f"""
+<h1>Download</h1>{head}
+
+{source}
+
+<h2>Recommended: DMG</h2>
+<p>The DMG gives a clear drag-to-Applications installation. The ZIP contains
+the same application and is available as an alternative for experienced
+users. Neither format changes the unsigned and not notarized status.</p>
+<p><a class="btn btn-primary" href="install.html">Install CoreTend step by step</a></p>
+
+<h2>Installing an unsigned app</h2>
+<p>macOS will refuse to open CoreTend on first launch, saying the developer
+cannot be verified. That warning is correct: no developer identity is attached,
+because signing requires a paid Apple Developer Program membership this project
+does not have.</p>
 <ol>
-  <li>Download and verify the SHA-256 checksum against the published value.</li>
+  <li>Verify the SHA-256 checksum against the published value
+  (<code>shasum -a 256 &lt;file&gt;</code>).</li>
   <li>Unzip and move CoreTend.app to /Applications.</li>
-  <li>Because the app is unsigned, macOS Gatekeeper will require an explicit
-  right-click &rarr; Open the first time.</li>
+  <li>Right-click (or Control-click) the app and choose <strong>Open</strong>,
+  then confirm. Once is enough — macOS remembers that copy.</li>
   <li>Grant Full Disk Access if you want full-coverage scanning (see the
   Documentation).</li>
 </ol>
-<p>Until then, building from source is documented in
+<p><strong>Do not disable Gatekeeper.</strong> The per-app step above is enough,
+and turning off a system-wide protection for one app is not a trade worth
+making.</p>
+<p>Building from source is documented in
 <a href="documentation.html">Documentation</a>.</p>
 """
-    return """
-<h1>Télécharger</h1>
-<div class="status-box">
-  <p><strong>Version publique en préparation.</strong> Aucune version stable
-  n'est disponible pour le moment. Cette page est un espace réservé pour la
-  future publication — elle ne pointe vers aucune build locale ni artefact
-  improvisé.</p>
-</div>
 
+    if published:
+        zip_name = html_escape(str(m.get("zipName", "")))
+        dmg_name = html_escape(str(m.get("dmgName", "")))
+        tag = html_escape(str(m.get("releaseTag", "")))
+        release_url = f"{repo}/releases/tag/{tag}"
+        asset_base = f"{repo}/releases/download/{tag}"
+        head = f"""
 <div class="status-box">
-  <p><strong>Aucun manifeste de version publié pour l'instant.</strong> Il n'y a
-  rien à télécharger ni à vérifier tant qu'il n'en existe pas. Lorsqu'une
-  version sera publiée, cette page affichera sa version, son architecture, la
-  version minimale de macOS, l'état de la signature et la somme de contrôle
-  SHA-256 — lues depuis le manifeste publié, jamais saisies à la main.</p>
+  <p><strong>CoreTend {html_escape(str(m.get('version','')))} — bêta publique.</strong>
+  Non signée et non notarisée. Vérifiez l'empreinte ci-dessous avant d'ouvrir
+  l'application.</p>
 </div>
-
-<h2>Code source</h2>
-<p>Le code source de CoreTend sera publié sur GitHub une fois le dépôt
-public créé (voir la page <a href="open-source.html">Open Source</a> du
-projet). Il n'y a pas encore de lien vers le code source en direct — le
-dépôt n'est pas encore public. Cette page y renverra directement dès que
-ce sera le cas.</p>
+<p><a href="{release_url}">Voir la préversion GitHub et ses notes</a></p>
+<table>
+  <tr><th>Champ</th><th>Valeur</th></tr>
+  <tr><td>Version</td><td>{html_escape(str(m.get('version','')))}</td></tr>
+  <tr><td>ZIP</td><td><a href="{asset_base}/{zip_name}"><code>{zip_name}</code></a></td></tr>
+  <tr><td>Taille ZIP</td><td>{html_escape(str(m.get('zipSize','')))} octets</td></tr>
+  <tr><td>SHA-256 du ZIP</td><td><code>{html_escape(str(m.get('zipSHA256','')))}</code></td></tr>
+  <tr><td>DMG</td><td><a href="{asset_base}/{dmg_name}"><code>{dmg_name}</code></a></td></tr>
+  <tr><td>Taille DMG</td><td>{html_escape(str(m.get('dmgSize','')))} octets</td></tr>
+  <tr><td>SHA-256 du DMG</td><td><code>{html_escape(str(m.get('dmgSHA256','')))}</code></td></tr>
+  <tr><td>Fichiers de vérification</td><td><a href="{asset_base}/latest.json"><code>latest.json</code></a> · <a href="{asset_base}/SHA256SUMS"><code>SHA256SUMS</code></a></td></tr>
+  <tr><td>Architecture</td><td>{html_escape(str(m.get('architecture','')))}</td></tr>
+  <tr><td>macOS minimal</td><td>{html_escape(str(m.get('minimumMacOS','')))}</td></tr>
+  <tr><td>Commit source</td><td><code>{html_escape(str(m.get('sourceCommit','')))}</code></td></tr>
+  <tr><td>Date de compilation</td><td>{html_escape(str(m.get('buildDate_UTC','')))}</td></tr>
+  <tr><td>Signature de code</td><td><strong>non signé</strong> — toujours divulgué, jamais masqué</td></tr>
+  <tr><td>Notarisation</td><td><strong>non notarisé</strong> — nécessite un Apple Developer ID</td></tr>
+</table>"""
+    else:
+        head = f"""
+<div class="status-box">
+  <p><strong>La version {html_escape(version)} est prête mais pas encore publiée.</strong>
+  Il n'y a aucun lien de téléchargement, car il n'existe rien de public vers quoi
+  pointer. La version et l'empreinte n'apparaîtront ici qu'une fois une version
+  étiquetée publiée — elles sont lues depuis le manifeste généré, jamais saisies
+  à la main.</p>
+</div>
 
 <h2>À quoi ressemblera la publication</h2>
-<p>Le premier artefact public portera exactement ce nom :</p>
-<pre>CoreTend-&lt;version&gt;-arm64-unsigned.zip</pre>
-
+<p>L'artefact portera exactement ce nom :</p>
+<pre>CoreTend-{html_escape(version)}-arm64-unsigned.zip</pre>
 <table>
   <tr><th>Champ</th><th>Statut</th></tr>
-  <tr><td>Version</td><td>non publiée</td></tr>
-  <tr><td>Empreinte (SHA-256)</td><td>sera publiée avec la version</td></tr>
+  <tr><td>Version</td><td>{html_escape(version)} — prête, pas encore publiée</td></tr>
+  <tr><td>Empreinte (SHA-256)</td><td>publiée avec la version</td></tr>
   <tr><td>Signature de code</td><td><strong>non signé</strong> — toujours divulgué, jamais masqué</td></tr>
-  <tr><td>Notarisation</td><td>indisponible pour l'instant (nécessite un Apple Developer ID ; hors périmètre avant la 1.0)</td></tr>
-</table>
+  <tr><td>Notarisation</td><td><strong>non notarisé</strong> — nécessite un Apple Developer ID, hors périmètre avant la 1.0</td></tr>
+</table>"""
 
-<h2>Étapes d'installation prévues (une fois une version publiée)</h2>
+    source = (f'<h2>Code source</h2>\n<p>CoreTend est open source. L\'intégralité '
+              f'du code, des tests, des scripts de compilation et des gates se '
+              f'trouve sur <a href="{repo}">{html_escape(repo)}</a>.</p>') if repo else ""
+
+    return f"""
+<h1>Télécharger</h1>{head}
+
+{source}
+
+<h2>Recommandé : DMG</h2>
+<p>Le DMG offre une installation claire par glisser-déposer vers Applications.
+Le ZIP contient la même application et reste une alternative pour les
+utilisateurs expérimentés. Aucun format ne change le statut non signé et non
+notarisé.</p>
+<p><a class="btn btn-primary" href="install.html">Installer CoreTend étape par étape</a></p>
+
+<h2>Installer une application non signée</h2>
+<p>macOS refusera d'ouvrir CoreTend au premier lancement, en indiquant que le
+développeur ne peut pas être vérifié. Cet avertissement est exact : aucune
+identité de développeur n'est attachée, car la signature exige une adhésion
+payante au Apple Developer Program dont ce projet ne dispose pas.</p>
 <ol>
-  <li>Téléchargez et vérifiez l'empreinte SHA-256 par rapport à la valeur publiée.</li>
+  <li>Vérifiez l'empreinte SHA-256 par rapport à la valeur publiée
+  (<code>shasum -a 256 &lt;fichier&gt;</code>).</li>
   <li>Décompressez et déplacez CoreTend.app dans /Applications.</li>
-  <li>L'application étant non signée, Gatekeeper demandera un clic droit &rarr;
-  Ouvrir la première fois.</li>
+  <li>Faites un clic droit (ou Contrôle-clic) sur l'application et choisissez
+  <strong>Ouvrir</strong>, puis confirmez. Une seule fois suffit : macOS retient
+  la décision pour cette copie.</li>
   <li>Accordez l'accès complet au disque pour une analyse à couverture complète
   (voir la Documentation).</li>
 </ol>
-<p>En attendant, la compilation depuis les sources est documentée dans la
+<p><strong>Ne désactivez pas Gatekeeper.</strong> L'étape par application
+ci-dessus suffit, et désactiver une protection système entière pour une seule
+application n'est pas un échange raisonnable.</p>
+<p>La compilation depuis les sources est documentée dans la
 <a href="documentation.html">Documentation</a>.</p>
 """
 
 
 add("download", {"en": "Download", "fr": "Télécharger"}, download_body)
+
+
+# --------------------------------------------------------------- install ---
+def install_body(l):
+    gatekeeper_media = ""
+    if media_exists("assets/demos/gatekeeper-blocked.webm"):
+        visual_description = (
+            "Silent recording of the genuine macOS first-open warning. Labels "
+            "can vary by macOS version."
+            if l == "en" else
+            "Enregistrement silencieux du véritable avertissement macOS de "
+            "première ouverture. Les libellés peuvent varier selon macOS."
+        )
+        gatekeeper_media = f"""
+<figure class="demo-player">
+  <video controls muted playsinline preload="none"
+    poster="../assets/demos/gatekeeper-blocked-poster.webp"
+    aria-describedby="install-gatekeeper-description">
+    <source src="../assets/demos/gatekeeper-blocked.webm" type="video/webm">
+    <source src="../assets/demos/gatekeeper-blocked.mp4" type="video/mp4">
+    <track kind="captions" srclang="en" label="Visual description"
+      src="../assets/demos/gatekeeper-blocked.vtt" default>
+  </video>
+  <figcaption id="install-gatekeeper-description">{visual_description}</figcaption>
+</figure>"""
+    if l == "en":
+        return f"""
+<h1>Install CoreTend</h1>
+<p class="lead">From download to first scan without lowering your Mac's
+security settings globally.</p>
+<div class="warning-banner"><p><strong>CoreTend 0.9.0 is unsigned and not
+notarized.</strong> macOS will block the first normal open. The steps below
+authorize this copy of CoreTend only.</p></div>
+{gatekeeper_media}
+<ol class="install-steps">
+  <li><h2>Check compatibility</h2><p>Choose Apple menu → About This Mac. The
+  available build requires an Apple silicon chip and macOS 14 or later.</p></li>
+  <li><h2>Download the DMG</h2><p>Use the DMG on the official
+  <a href="download.html">Download page</a>. The ZIP is an alternative.</p></li>
+  <li><h2>Move CoreTend to Applications</h2><p>Open the DMG, drag CoreTend to
+  Applications, then eject the disk image.</p></li>
+  <li><h2>Open this app once</h2><p>In Applications, Control-click CoreTend and
+  choose <strong>Open</strong>. If your macOS version instead presents a
+  CoreTend-specific option in System Settings → Privacy &amp; Security, use
+  that option. Labels vary by macOS version.</p>
+  <details><summary>Why is this needed?</summary><p>The beta has no Developer
+  ID signature and is not notarized. This per-app choice is not a security
+  certification. Never disable Gatekeeper or SIP globally.</p></details></li>
+  <li><h2>Start with dry run</h2><p>Read the onboarding, keep dry run enabled,
+  and start Smart Care. A scan previews findings before any approved action.</p></li>
+</ol>
+<h2>Optional: verify your download</h2>
+<p>SHA-256 confirms that your file is byte-for-byte the published file. It
+does not replace signing or notarization, and the checksum source must itself
+be trusted.</p>
+<pre><code>shasum -a 256 ~/Downloads/CoreTend-0.9.0-arm64-unsigned.dmg
+cd ~/Downloads
+shasum -a 256 -c SHA256SUMS</code></pre>
+<p>The DMG result must be
+<code>f2fbc7840ac4a5509836a495c51e72e6cfd52ef24e6cbdd792fa8404bd3f6c8d</code>.
+If it differs, delete the file, download it again, and do not open it.</p>
+<p>Need help? Continue to <a href="support.html">Support and troubleshooting</a>.</p>
+"""
+    return f"""
+<h1>Installer CoreTend</h1>
+<p class="lead">Du téléchargement à la première analyse sans réduire
+globalement la sécurité du Mac.</p>
+<div class="warning-banner"><p><strong>CoreTend 0.9.0 n'est ni signé ni
+notarisé.</strong> macOS bloquera la première ouverture normale. Les étapes
+ci-dessous autorisent uniquement cette copie de CoreTend.</p></div>
+{gatekeeper_media}
+<ol class="install-steps">
+  <li><h2>Vérifier la compatibilité</h2><p>Menu Pomme → À propos de ce Mac. La
+  version disponible exige une puce Apple et macOS 14 ou ultérieur.</p></li>
+  <li><h2>Télécharger le DMG</h2><p>Choisissez le DMG sur la
+  <a href="download.html">page Télécharger</a>. Le ZIP est une alternative.</p></li>
+  <li><h2>Copier vers Applications</h2><p>Ouvrez le DMG, glissez CoreTend vers
+  Applications, puis éjectez l'image disque.</p></li>
+  <li><h2>Autoriser cette application une fois</h2><p>Dans Applications,
+  Contrôle-cliquez CoreTend et choisissez <strong>Ouvrir</strong>. Si votre
+  version de macOS propose plutôt une option nommant CoreTend dans Réglages
+  Système → Confidentialité et sécurité, utilisez-la. Les libellés varient
+  selon macOS.</p>
+  <details><summary>Pourquoi cette étape ?</summary><p>La bêta n'a pas de
+  signature Developer ID et n'est pas notarisée. Ce choix limité à l'app
+  n'est pas une certification. Ne désactivez jamais globalement Gatekeeper
+  ou SIP.</p></details></li>
+  <li><h2>Commencer en simulation</h2><p>Lisez l'introduction, conservez la
+  simulation activée et lancez Smart Care. L'analyse présente un aperçu avant
+  toute action approuvée.</p></li>
+</ol>
+<h2>Facultatif : vérifier le téléchargement</h2>
+<p>SHA-256 confirme que le fichier est identique à celui publié. Il ne
+remplace ni signature ni notarisation, et la source du checksum doit elle-même
+être fiable.</p>
+<pre><code>shasum -a 256 ~/Downloads/CoreTend-0.9.0-arm64-unsigned.dmg
+cd ~/Downloads
+shasum -a 256 -c SHA256SUMS</code></pre>
+<p>Le DMG doit produire
+<code>f2fbc7840ac4a5509836a495c51e72e6cfd52ef24e6cbdd792fa8404bd3f6c8d</code>.
+Si la valeur diffère, supprimez le fichier, retéléchargez-le et ne l'ouvrez
+pas.</p>
+<p>Besoin d'aide ? Consultez <a href="support.html">Assistance et dépannage</a>.</p>
+"""
+
+
+add("install", {"en": "Install CoreTend", "fr": "Installer CoreTend"}, install_body)
+
+
+# --------------------------------------------------------------- support ---
+def support_body(l):
+    if l == "en":
+        return """
+<h1>Support</h1>
+<p class="lead">Safe answers for installation, first launch and everyday use.</p>
+<div class="cards">
+  <article class="card"><h2>First launch</h2><p>Use the
+  <a href="install.html">graphical installation guide</a> and authorize only
+  CoreTend.</p></article>
+  <article class="card"><h2>Permissions</h2><p>CoreTend works with reduced
+  coverage after a refusal. Settings explains what each permission unlocks
+  and links back to System Settings.</p></article>
+  <article class="card"><h2>Keyboard</h2><p>Tab and Shift-Tab move focus;
+  Return activates the primary action; Escape closes cancellable sheets;
+  Command-Q quits.</p></article>
+  <article class="card"><h2>Update</h2><p>Quit the old copy, verify the new
+  release, then replace CoreTend in Applications. Preferences and activity
+  remain unless deliberately reset.</p></article>
+  <article class="card"><h2>Uninstall</h2><p>Quit CoreTend and move only
+  CoreTend.app from Applications to the Trash. Data reset is optional.</p></article>
+  <article class="card"><h2>Report a problem</h2><p>Use the public issue
+  tracker for bugs and the private security route for vulnerabilities.</p></article>
+</div>
+<h2>Common problems</h2>
+<p>If a checksum differs, do not open the file. If macOS blocks the first
+open, follow the CoreTend-specific route; never disable system protections.
+Intel Macs and macOS versions older than 14 cannot run the published binary.</p>
+<p>See the repository's <code>Documentation/TROUBLESHOOTING.md</code> for the
+complete symptom/cause/safe-resolution matrix.</p>
+"""
+    return """
+<h1>Assistance</h1>
+<p class="lead">Des réponses sûres pour l'installation, le premier lancement
+et l'utilisation quotidienne.</p>
+<div class="cards">
+  <article class="card"><h2>Premier lancement</h2><p>Suivez le
+  <a href="install.html">guide graphique</a> et autorisez uniquement
+  CoreTend.</p></article>
+  <article class="card"><h2>Permissions</h2><p>Après un refus, CoreTend reste
+  utilisable avec une couverture réduite. Réglages explique chaque permission
+  et renvoie vers Réglages Système.</p></article>
+  <article class="card"><h2>Clavier</h2><p>Tab et Maj-Tab déplacent le focus ;
+  Retour active l'action principale ; Échap ferme les feuilles annulables ;
+  Commande-Q quitte.</p></article>
+  <article class="card"><h2>Mise à jour</h2><p>Quittez l'ancienne copie,
+  vérifiez la nouvelle publication puis remplacez CoreTend dans Applications.
+  Les préférences restent sauf réinitialisation volontaire.</p></article>
+  <article class="card"><h2>Désinstallation</h2><p>Quittez CoreTend puis
+  placez uniquement CoreTend.app depuis Applications dans la Corbeille. La
+  suppression des données reste facultative.</p></article>
+  <article class="card"><h2>Signaler un problème</h2><p>Utilisez les issues
+  publiques pour les bugs et la voie privée pour une vulnérabilité.</p></article>
+</div>
+<h2>Problèmes fréquents</h2>
+<p>Si un checksum diffère, n'ouvrez pas le fichier. Si macOS bloque la première
+ouverture, utilisez la voie limitée à CoreTend ; ne désactivez jamais les
+protections système. Les Mac Intel et macOS antérieurs à 14 ne peuvent pas
+exécuter le binaire publié.</p>
+<p>La matrice complète se trouve dans
+<code>Documentation/TROUBLESHOOTING.md</code>.</p>
+"""
+
+
+add("support", {"en": "Support", "fr": "Assistance"}, support_body)
 
 
 # -------------------------------------------------------- documentation ---
@@ -788,22 +1265,29 @@ def documentation_body(l):
         ("DEVELOPMENT.md", "Developer Guide"),
     ]
     title = "Documentation"
-    # These were links to a repository that does not exist publicly yet. A
-    # link that 404s is worse than no link: it makes the whole page look
-    # abandoned. They are listed as filenames until there is somewhere real to
-    # point them, at which point REPOSITORY_URL becomes non-None and they
-    # become links again — one constant, not thirty edits.
-    intro = (
-        "Full documentation ships inside the repository, in its "
-        "<code>Documentation/</code> folder. The repository is not public yet, "
-        "so these are filenames rather than links — they become links here the "
-        "moment there is somewhere real to point them."
-    ) if l == "en" else (
-        "La documentation complète est fournie dans le dépôt, dans son dossier "
-        "<code>Documentation/</code>. Le dépôt n'est pas encore public : ce sont "
-        "donc des noms de fichiers et non des liens — ils deviendront des liens "
-        "ici dès qu'il y aura une destination réelle."
-    )
+    # A link that 404s is worse than no link: it makes the whole page look
+    # abandoned. So these render as links only while REPOSITORY_URL resolves,
+    # and fall back to filenames otherwise.
+    if REPOSITORY_URL:
+        intro = (
+            "Full documentation ships inside the repository, in its "
+            "<code>Documentation/</code> folder. Each entry below links "
+            "straight to it."
+        ) if l == "en" else (
+            "La documentation complète est fournie dans le dépôt, dans son "
+            "dossier <code>Documentation/</code>. Chaque entrée ci-dessous y "
+            "renvoie directement."
+        )
+    else:
+        intro = (
+            "Full documentation ships inside the repository, in its "
+            "<code>Documentation/</code> folder. No public repository is "
+            "configured, so these are filenames rather than links."
+        ) if l == "en" else (
+            "La documentation complète est fournie dans le dépôt, dans son "
+            "dossier <code>Documentation/</code>. Aucun dépôt public n'est "
+            "configuré : ce sont donc des noms de fichiers et non des liens."
+        )
     items = "\n".join(
         (f'<li><a href="{REPOSITORY_URL}/blob/main/Documentation/{f}">{label}</a></li>'
          if REPOSITORY_URL else
@@ -930,14 +1414,12 @@ def faq_body(l):
         ("Do I need an account?", "No account, no subscription, ever."),
         ("Are deletions permanent?", "By default, no — items go to the Trash so you can recover them."),
         ("Is this a full antivirus?", "No. The optional Protection module is a heuristic local scan aid (via ClamAV), never a guaranteed security product."),
-        ("Is CoreTend affiliated with Apple or CleanMyMac/MacPaw?", "No. It is an independent open source project."),
     ]
     qa_fr = [
         ("CoreTend envoie-t-il des données quelque part ?", "Non. Aucune télémétrie, aucune analytique, aucun appel réseau lié à son fonctionnement principal. Tout s'exécute localement."),
         ("Faut-il un compte ?", "Aucun compte, aucun abonnement, jamais."),
         ("Les suppressions sont-elles définitives ?", "Par défaut, non — les éléments vont à la Corbeille pour rester récupérables."),
         ("Est-ce un antivirus complet ?", "Non. Le module Protection optionnel est une aide d'analyse locale heuristique (via ClamAV), jamais un produit de sécurité garanti."),
-        ("CoreTend est-il affilié à Apple ou à CleanMyMac/MacPaw ?", "Non. C'est un projet open source indépendant."),
     ]
     qa = qa_en if l == "en" else qa_fr
     items = "\n".join(f"<h3>{q}</h3><p>{a}</p>" for q, a in qa)
@@ -1039,19 +1521,67 @@ add("security", {"en": "Security", "fr": "Sécurité"}, security_body)
 
 # ------------------------------------------------------------- licenses ---
 def licenses_body(l):
+    # This page used to list four filenames and name no licence at all, so a
+    # visitor could not learn the terms without cloning the repository. It now
+    # states them, and links to the files it names.
     title = "Licenses" if l == "en" else "Licences"
-    note = (
-        "See <code>LICENSE</code>, <code>LICENSES/</code>, "
-        "<code>NOTICE</code> and <code>THIRD_PARTY_NOTICES.md</code> at the "
-        "repository root for the project license and every third-party "
-        "attribution."
-    ) if l == "en" else (
-        "Voir <code>LICENSE</code>, <code>LICENSES/</code>, "
-        "<code>NOTICE</code> et <code>THIRD_PARTY_NOTICES.md</code> à la "
-        "racine du dépôt pour la licence du projet et chaque attribution "
-        "tierce."
-    )
-    return f"<h1>{title}</h1><p>{note}</p>"
+    repo = ident("repositoryURL", "")
+    blob = f"{repo}/blob/main" if repo else ""
+
+    def link(path, label):
+        return f'<a href="{blob}/{path}">{label}</a>' if blob else f"<code>{label}</code>"
+
+    if l == "en":
+        body = f"""<h1>{title}</h1>
+<p>CoreTend is open source. Different kinds of content carry different
+licenses.</p>
+<ul>
+  <li><strong>Source code</strong> — Apache License 2.0
+      ({link("LICENSES/Apache-2.0.txt", "full text")}).</li>
+  <li><strong>Original documentation and illustrations</strong> — CC-BY-4.0
+      ({link("LICENSES/CC-BY-4.0.txt", "full text")}).</li>
+  <li><strong>The CoreTend name and logo</strong> — not granted by either
+      license ({link("TRADEMARKS.md", "TRADEMARKS.md")}).</li>
+</ul>
+<h2>Third-party components</h2>
+<p>CoreTend bundles no third-party code. It declares
+<strong>zero external package dependencies</strong>, and builds only against
+the system frameworks that ship with macOS.</p>
+<p>ClamAV is the one optional exception, and it is not bundled: if you install
+it yourself, CoreTend can run the <code>clamscan</code> binary as a separate
+process. It is never linked into the app and its signature database is never
+redistributed here. ClamAV is licensed separately under GPL-2.0 by its own
+project.</p>
+<p>The full statements live in {link("LICENSE", "LICENSE")},
+{link("NOTICE", "NOTICE")} and
+{link("THIRD_PARTY_NOTICES.md", "THIRD_PARTY_NOTICES.md")} at the repository
+root.</p>"""
+    else:
+        body = f"""<h1>{title}</h1>
+<p>CoreTend est open source. Les différents types de contenu relèvent de
+licences différentes.</p>
+<ul>
+  <li><strong>Code source</strong> — Licence Apache 2.0
+      ({link("LICENSES/Apache-2.0.txt", "texte intégral")}).</li>
+  <li><strong>Documentation et illustrations originales</strong> — CC-BY-4.0
+      ({link("LICENSES/CC-BY-4.0.txt", "texte intégral")}).</li>
+  <li><strong>Le nom et le logo CoreTend</strong> — non couverts par ces
+      licences ({link("TRADEMARKS.md", "TRADEMARKS.md")}).</li>
+</ul>
+<h2>Composants tiers</h2>
+<p>CoreTend n'embarque aucun code tiers. Le projet déclare
+<strong>zéro dépendance externe</strong> et ne compile que contre les
+frameworks système livrés avec macOS.</p>
+<p>ClamAV est la seule exception optionnelle, et il n'est pas embarqué : si
+vous l'installez vous-même, CoreTend peut exécuter le binaire
+<code>clamscan</code> comme processus distinct. Il n'est jamais lié à
+l'application et sa base de signatures n'est jamais redistribuée ici. ClamAV
+est sous licence GPL-2.0, par son propre projet.</p>
+<p>Les déclarations complètes se trouvent dans {link("LICENSE", "LICENSE")},
+{link("NOTICE", "NOTICE")} et
+{link("THIRD_PARTY_NOTICES.md", "THIRD_PARTY_NOTICES.md")} à la racine du
+dépôt.</p>"""
+    return body
 
 
 add("licenses", {"en": "Licenses", "fr": "Licences"}, licenses_body)
@@ -1115,8 +1645,8 @@ provided the host holds their identity. The host below holds it.</td></tr>
 <tr><td>Host</td><td>%s<br>%s</td></tr>
 <tr><td>Publication director</td><td>%s</td></tr>
 </table>
-<p>CoreTend is not affiliated with Apple Inc. or MacPaw Inc.
-(CleanMyMac). It makes no antivirus/security-guarantee claim.</p>
+<p>The optional Protection module is a local scanning aid and does not make
+an antivirus or security-guarantee claim.</p>
 <p>“CoreTend” is used as an unregistered name. No trademark application has
 been filed and no registration is claimed. See
 <a href="licenses.html">Licenses</a>.</p>
@@ -1147,9 +1677,8 @@ ci-dessous la détient.</td></tr>
 <tr><td>Hébergeur</td><td>%s<br>%s</td></tr>
 <tr><td>Directeur de la publication</td><td>%s</td></tr>
 </table>
-<p>CoreTend n'est affilié ni à Apple Inc. ni à MacPaw Inc.
-(CleanMyMac). Aucune revendication d'antivirus ou de garantie de sécurité
-n'est faite.</p>
+<p>Le module Protection facultatif est une aide d’analyse locale et ne
+revendique aucune garantie antivirus ou de sécurité.</p>
 <p>« CoreTend » est utilisé comme nom non déposé. Aucune demande de marque n'a
 été déposée et aucun enregistrement n'est revendiqué. Voir
 <a href="licenses.html">Licences</a>.</p>
@@ -1177,6 +1706,111 @@ def notfound_body(l):
 add("404", {"en": "Page not found", "fr": "Page introuvable"}, notfound_body)
 
 
+def write_robots():
+    """robots.txt, driven by the same flag as the per-page robots meta.
+
+    While the site is not deployed it disallows everything, so a crawler that
+    finds the domain early cannot index pages that are not reachable yet.
+    """
+    if SITE_INDEXABLE:
+        body = (
+            "User-agent: *\n"
+            "Allow: /\n"
+            f"\nSitemap: {SITE_URL}/sitemap.xml\n"
+        )
+    else:
+        body = (
+            "# The site is not deployed yet. Nothing here should be indexed\n"
+            "# until it is reachable. Flip siteIndexable in the identity file\n"
+            "# and regenerate to open it up.\n"
+            "User-agent: *\n"
+            "Disallow: /\n"
+        )
+    with open(os.path.join(ROOT, "robots.txt"), "w") as f:
+        f.write(body)
+
+
+def write_sitemap():
+    """sitemap.xml listing every generated page in both locales."""
+    urls = []
+    for locale in ("en", "fr"):
+        for slug in PAGES:
+            if slug == "404":
+                continue  # a 404 page must never be advertised as content
+            loc = f"{SITE_URL}/{locale}/{slug}.html"
+            urls.append(
+                "  <url>\n"
+                f"    <loc>{loc}</loc>\n"
+                "  </url>"
+            )
+    doc = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + "\n".join(urls)
+        + "\n</urlset>\n"
+    )
+    with open(os.path.join(ROOT, "sitemap.xml"), "w") as f:
+        f.write(doc)
+
+
+def write_vercel_config():
+    """Hosting config, generated so it cannot contradict the site it serves.
+
+    The security headers are the ones WEBSITE_SECURITY.md specifies. The
+    Content-Security-Policy is strict because the site earns it: no JavaScript
+    at all, no external origin, and no inline style attributes, so nothing here
+    needs 'unsafe-inline'. X-Robots-Tag follows the same siteIndexable flag as
+    the per-page meta and robots.txt, so all three move together.
+    """
+    csp = (
+        f"default-src 'self'; script-src 'self'; "
+        f"style-src 'self' '{critical_style_hash()}'; "
+        "img-src 'self' data:; media-src 'self'; font-src 'self'; connect-src 'none'; "
+        "frame-ancestors 'none'; form-action 'none'; base-uri 'none'; "
+        "object-src 'none'"
+    )
+    common = [
+        {"key": "Content-Security-Policy", "value": csp},
+        {"key": "Referrer-Policy", "value": "no-referrer"},
+        {"key": "X-Content-Type-Options", "value": "nosniff"},
+        {"key": "X-Frame-Options", "value": "DENY"},
+        {"key": "Permissions-Policy", "value": ", ".join(
+            f"{feature}=()" for feature in (
+                "accelerometer", "ambient-light-sensor", "autoplay", "battery",
+                "camera", "display-capture", "encrypted-media", "fullscreen",
+                "gamepad", "geolocation", "gyroscope", "hid", "idle-detection",
+                "local-fonts", "magnetometer", "microphone", "midi", "payment",
+                "picture-in-picture", "publickey-credentials-get",
+                "screen-wake-lock", "serial", "usb", "xr-spatial-tracking",
+            ))},
+        {"key": "Strict-Transport-Security",
+         "value": "max-age=63072000; includeSubDomains; preload"},
+        {"key": "Cross-Origin-Opener-Policy", "value": "same-origin"},
+        {"key": "Cross-Origin-Resource-Policy", "value": "same-origin"},
+    ]
+    if not SITE_INDEXABLE:
+        common.append({"key": "X-Robots-Tag", "value": "noindex"})
+
+    config = {
+        "$schema": "https://openapi.vercel.sh/vercel.json",
+        "outputDirectory": ".",
+        "cleanUrls": False,
+        "trailingSlash": False,
+        "redirects": [
+            {"source": "/", "destination": "/en/index.html", "permanent": False},
+        ],
+        "headers": [
+            {"source": "/(.*)", "headers": common},
+            {"source": "/assets/(.*)", "headers": [
+                {"key": "Cache-Control",
+                 "value": "public, max-age=31536000, immutable"}]},
+        ],
+    }
+    with open(os.path.join(ROOT, "vercel.json"), "w") as f:
+        json.dump(config, f, indent=2)
+        f.write("\n")
+
+
 def main():
     for locale in ("en", "fr"):
         out_dir = os.path.join(ROOT, locale)
@@ -1185,7 +1819,11 @@ def main():
             html = page_shell(locale, slug, title[locale], body_fn(locale))
             with open(os.path.join(out_dir, f"{slug}.html"), "w") as f:
                 f.write(html)
+    write_robots()
+    write_sitemap()
+    write_vercel_config()
     print(f"Generated {len(PAGES)} pages x 2 locales into {ROOT}/en and {ROOT}/fr")
+    print(f"Generated robots.txt, sitemap.xml, vercel.json (indexable={SITE_INDEXABLE})")
 
 
 if __name__ == "__main__":

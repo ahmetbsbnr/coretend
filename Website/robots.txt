@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://coretend.ahmetbsbnr.com/sitemap.xml

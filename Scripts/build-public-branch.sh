@@ -22,7 +22,7 @@
 # somebody's shell history is not reviewable.
 #
 # Usage:
-#   Scripts/build-public-branch.sh [--branch <name>] [--dry-run]
+#   Scripts/build-public-branch.sh [--branch <name>] [--parent <ref>] [--dry-run]
 #
 # Exits non-zero and creates nothing if the verification step finds anything.
 
@@ -31,10 +31,12 @@ set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
 BRANCH="public-main"
+PARENT=""
 DRY_RUN=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --branch) BRANCH="$2"; shift 2 ;;
+    --parent) PARENT="$2"; shift 2 ;;
     --dry-run) DRY_RUN=1; shift ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
@@ -66,6 +68,7 @@ fi
 EXCLUDE_PREFIXES=(
   # Session continuity and internal planning — written agent-to-agent.
   "Documentation/CONTINUATION.md"
+  "Documentation/NEXT_SESSION_PROMPT.md"
   "Documentation/AUDIT_COMMANDS.log"
   "Documentation/PROJECT_COMPLETE_AUDIT.md"
   "Documentation/PUBLICATION_AUDIT.md"
@@ -242,20 +245,22 @@ TREE=$(GIT_INDEX_FILE="$TMP_INDEX" GIT_WORK_TREE="$STAGING" git write-tree)
 # substitution: bash 3.2, which is what ships with macOS, mis-parses an
 # apostrophe inside a heredoc nested in $( ), and this message contains one.
 MSG_FILE="$STAGING.msg"
+if [ -n "$PARENT" ]; then
+  COMMIT_TITLE="CoreTend — publish media and website update"
+  COMMIT_CONTEXT="This commit updates the existing sanitised public source tree. The internal development history remains private for the same path and workspace-safety reasons documented in the first public commit."
+else
+  COMMIT_TITLE="CoreTend — first public source release"
+  COMMIT_CONTEXT="This is the first public commit. The project was developed privately before this point, and that history is intentionally not published: it contains session-continuity logs, workspace migration manifests, and absolute paths from the machine it was built on — internal working material that was never written for an audience. Documentation/PROJECT_HISTORY.md explains what came before, including the project's earlier name, MacCare Local."
+fi
 cat > "$MSG_FILE" <<COMMIT_MSG
-CoreTend — first public source release
+$COMMIT_TITLE
 
 CoreTend is a free, open-source macOS maintenance utility: cleanup, storage
 analysis, duplicate and similar-image detection, privacy cleaning, optional
 ClamAV-backed scanning, and an activity view. It runs locally, collects no
 telemetry, requires no account, and every destructive action is reversible.
 
-This is the first public commit. The project was developed privately before
-this point, and that history is intentionally not published: it contains
-session-continuity logs, workspace migration manifests, and absolute paths
-from the machine it was built on — internal working material that was never
-written for an audience. Documentation/PROJECT_HISTORY.md explains what came
-before, including the project's earlier name, MacCare Local.
+$COMMIT_CONTEXT
 
 Nothing about the software is hidden by that choice. The full source, tests,
 build scripts, and gates are here; only the private record of how the sausage
@@ -263,14 +268,21 @@ was made is omitted.
 
 Built from internal $SOURCE_BRANCH at $SOURCE_REF.
 COMMIT_MSG
-
-COMMIT=$(git commit-tree "$TREE" -F "$MSG_FILE")
+if [ -n "$PARENT" ]; then
+  PARENT_COMMIT=$(git rev-parse "$PARENT^{commit}")
+  COMMIT=$(git commit-tree "$TREE" -p "$PARENT_COMMIT" -F "$MSG_FILE")
+else
+  COMMIT=$(git commit-tree "$TREE" -F "$MSG_FILE")
+fi
 rm -f "$MSG_FILE"
 
 git branch "$BRANCH" "$COMMIT"
 
 echo "build-public-branch.sh: created '$BRANCH' at $(git rev-parse --short "$COMMIT")"
 echo "  source:  $SOURCE_BRANCH @ ${SOURCE_REF:0:12}"
+if [ -n "$PARENT" ]; then
+  echo "  parent:  $PARENT @ ${PARENT_COMMIT:0:12}"
+fi
 echo "  files:   $INCLUDED included, $SKIPPED excluded"
 echo "  working tree untouched — you are still on $(git rev-parse --abbrev-ref HEAD)"
 echo "  inspect: git show --stat $BRANCH"

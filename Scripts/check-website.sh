@@ -38,6 +38,14 @@ cp -R "$SITE" "$TMP/Website"
 if [ -d "$(dirname "$SITE")/Configuration" ]; then
   cp -R "$(dirname "$SITE")/Configuration" "$TMP/Configuration"
 fi
+# Once a release exists, generate.py also reads the generated manifest to
+# render the exact public asset names and checksums. Preserve that input in the
+# hermetic copy; otherwise the freshness check compares a published-release
+# page against the intentional pre-release fallback and reports false drift.
+if [ -f "Release/latest.json" ]; then
+  mkdir -p "$TMP/Release"
+  cp "Release/latest.json" "$TMP/Release/latest.json"
+fi
 ( cd "$TMP/Website" && python3 generate.py >/dev/null 2>&1 ) || note "generate.py failed to run"
 for locale in en fr; do
   if ! diff -rq "$SITE/$locale" "$TMP/Website/$locale" >/dev/null 2>&1; then
@@ -61,6 +69,7 @@ for slug in index features privacy download documentation open-source changelog 
 done
 [ -f "$SITE/index.html" ] || note "missing root language-picker index.html"
 [ -f "$SITE/assets/style.css" ] || note "missing stylesheet"
+python3 Scripts/check-first-paint.py || note "first-paint regression gate failed"
 
 # ------------------------------------------------------- no external requests
 # Any absolute http(s) reference in a src/href/url() is a request to another
@@ -83,11 +92,24 @@ for pattern in 'googletagmanager' 'google-analytics' 'gtag(' 'fbq(' 'plausible' 
   [ -z "$hit" ] || note "tracker or CDN reference found ($pattern): $hit"
 done
 
-# No cookies, no storage, no scripts at all — the site is static by design.
-for pattern in 'document.cookie' 'localStorage' 'sessionStorage' '<script'; do
-  hit=$(grep -rl "$pattern" "$SITE"/en "$SITE"/fr 2>/dev/null || true)
-  [ -z "$hit" ] || note "the site should contain no scripts or client storage, found $pattern in: $hit"
+# One small local enhancement script is allowed. It must not persist data,
+# contact a service, or become necessary for essential content.
+for pattern in 'document.cookie' 'localStorage' 'sessionStorage' 'fetch(' 'XMLHttpRequest' 'WebSocket'; do
+  hit=$(grep -rl "$pattern" "$SITE"/en "$SITE"/fr "$SITE"/assets/site.js 2>/dev/null || true)
+  [ -z "$hit" ] || note "client storage or network code found ($pattern) in: $hit"
 done
+bad_scripts=$(grep -rh '<script' "$SITE"/en "$SITE"/fr 2>/dev/null \
+  | grep -vE '^<script src="../assets/site\.js" defer></script>$' || true)
+[ -z "$bad_scripts" ] || note "unexpected script element found: $bad_scripts"
+[ -f "$SITE/assets/site.js" ] || note "missing local progressive-enhancement script"
+grep -q 'IntersectionObserver' "$SITE/assets/site.js" \
+  || note "scroll reveal enhancement is missing"
+grep -qE 'prefers-reduced-motion:[[:space:]]*reduce' "$SITE/assets/style.css" \
+  || note "Reduced Motion stylesheet override is missing"
+grep -q '@keyframes orbit-a' "$SITE/assets/style.css" \
+  || note "Core Bloom orbit motion is missing"
+grep -q 'class=\"github-link\"' "$SITE/en/index.html" \
+  || note "persistent GitHub information link is missing"
 
 # -------------------------------------------------------------- no leakage
 USER_NAME=$(id -un)

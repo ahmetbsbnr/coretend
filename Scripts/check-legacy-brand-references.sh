@@ -96,6 +96,10 @@ allowed_reason() {
       echo "asset gate: refuses any generated file still named after the old brand" ;;
     Documentation/PROJECT_STATE.json|Documentation/PROJECT_STATE.md)
       echo "rename record: the phase description states what was renamed from what" ;;
+    Documentation/PROJECT_HISTORY.md)
+      echo "rename history: this document exists to explain what preceded the public repository's first commit, which is precisely the earlier name and why it was abandoned — removing it would defeat the file's purpose" ;;
+    Scripts/build-public-branch.sh)
+      echo "rename history: the export's first-commit message points readers at PROJECT_HISTORY.md and names the earlier identity, so the fresh start reads as a deliberate choice rather than a concealed gap" ;;
     LICENSE|LICENSES/*)
       echo "licence text: never edited" ;;
     *) return 1 ;;
