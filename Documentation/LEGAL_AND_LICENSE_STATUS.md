@@ -10,12 +10,16 @@ Evidence: `git ls-files`, `git grep`, `Scripts/check-licenses.sh`,
 
 ## 1. Project licence
 
-The repository is multi-licensed by content type. This is deliberate and is
-declared in `LICENSE`, which carries the full Apache-2.0 text inline.
+The repository is multi-licensed by content type. `LICENSE` at the root is the
+verbatim Apache-2.0 text and nothing else, so detectors identify the principal
+licence correctly; the content-type map lives in `Documentation/LICENSING.md`.
+See §8 for why that split exists.
+
+This document is the audit; `Documentation/LICENSING.md` is the map it audits.
 
 | Content | Licence | Full text |
 |---|---|---|
-| Source code (`*.swift`, `*.sh`, `*.py`, build configuration) | Apache-2.0 | `LICENSES/Apache-2.0.txt`, and inline in `LICENSE` |
+| Source code (`*.swift`, `*.sh`, `*.py`, build configuration) | Apache-2.0 | `LICENSE` (verbatim) and `LICENSES/Apache-2.0.txt` |
 | Original documentation and illustrations | CC-BY-4.0 | `LICENSES/CC-BY-4.0.txt` |
 | The name "CoreTend" and its logo | **Not granted** by either licence | `TRADEMARKS.md` |
 
@@ -86,6 +90,8 @@ found, not a guarantee that no unknown-origin file can exist.
 
 ## 6. Findings and risks
 
+§8 records the licence-presentation restructure carried out on 2026-07-27.
+
 | # | Finding | Severity | Status |
 |---|---|---|---|
 | 1 | `COPYRIGHT`, `NOTICE` and `THIRD_PARTY_NOTICES.md` pointed at `Documentation/LICENSING.md` and `Documentation/THIRD_PARTY_AUDIT.md`, neither of which has ever existed. A reader following the project's own licence pointers hit dead references. | Low legal risk — the operative terms were always present and internally consistent — but a real defect | **Fixed** in this audit; all three now point at files that exist. `LICENSE` itself was already correct. |
@@ -104,3 +110,31 @@ texts in full; `README.md` names both licences and links to their texts;
 no bundled fonts; no third-party imagery; no external network requests from the
 website; no placeholder text (`TODO`, `[FILL IN]`, `Lorem ipsum`,
 `Your Name Here`) in any licence or trademark file.
+
+## 8. Licence presentation restructure (2026-07-27)
+
+`LICENSE` opened with a multi-licence preamble before the Apache-2.0 text.
+GitHub's detector does not recognise that shape, so the public repository
+reported `"license": "NOASSERTION"` and displayed no licence badge — verified
+by `gh api repos/ahmetbsbnr/coretend --jq .license.spdx_id`.
+
+On the owner's explicit instruction, the presentation was changed and **nothing
+was relicensed**:
+
+- `LICENSE` is now byte-identical to `LICENSES/Apache-2.0.txt` — the verbatim,
+  unmodified standard text. Confirmed before the change that the copy embedded
+  in `LICENSE` was already identical to it, so no licence text was altered or
+  dropped, only the preamble moved.
+- The preamble and the content-type matrix moved to `Documentation/LICENSING.md`.
+- `LICENSES/` keeps the full texts under SPDX-named files.
+- `README.md` states which licence covers code, documentation, media, generated
+  data and third-party components, in a table.
+- `COPYRIGHT`, `NOTICE` and `THIRD_PARTY_NOTICES.md` point at the new map.
+
+Every licence and scope previously declared is preserved exactly. No SPDX
+identifier was added to a file whose scope was not already verified, and no
+licence was invented for any file of unknown status — there are none.
+
+**Still to verify after the first push:** that GitHub reports `Apache-2.0`
+rather than `NOASSERTION`. Until that is checked against the live API, the fix
+is applied but unconfirmed.
