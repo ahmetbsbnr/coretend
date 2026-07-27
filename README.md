@@ -18,6 +18,14 @@ clutter, understanding disk usage, inspecting applications and monitoring
 system health. Scans explain what they found before an action runs. Dry run is
 the default, and supported removals go to the Trash.
 
+<p align="center">
+  <picture>
+    <source srcset="Website/assets/app/smart-care.webp" type="image/webp">
+    <img src="Website/assets/app/smart-care.png" width="720"
+      alt="CoreTend Smart Care window with module navigation and scan controls">
+  </picture>
+</p>
+
 [Download 0.9.0 public beta](https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.0)
 · [Product site](https://coretend.ahmetbsbnr.com)
 · [Visual tour](https://coretend.ahmetbsbnr.com/en/demos.html)
@@ -90,6 +98,8 @@ bash Scripts/package-local.sh
 
 The current full local validation is 296 tests in 58 suites, with Debug and
 Release builds passing. This records a local result; it is not a CI badge.
+The screenshot and website improvements on this branch are post-release work
+and are not represented as changes to the 0.9.0 binary.
 
 - [Architecture](Documentation/ARCHITECTURE.md)
 - [Development setup](DEVELOPMENT.md)

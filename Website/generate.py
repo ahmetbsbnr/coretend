@@ -396,7 +396,7 @@ HOME_FAQ = [
 
 HOME_TEXT = {
     "en": {
-        "cta_download": "Download the local build",
+        "cta_download": "Download CoreTend",
         "cta_how": "See how it works",
         "prerelease_title": "Pre-1.0, and unsigned",
         "prerelease": "CoreTend is under active development and has not reached a "
@@ -450,7 +450,7 @@ HOME_TEXT = {
                       "is not yet in place.",
     },
     "fr": {
-        "cta_download": "Télécharger la version locale",
+        "cta_download": "Télécharger CoreTend",
         "cta_how": "Découvrir le fonctionnement",
         "prerelease_title": "Pré-1.0, et non signé",
         "prerelease": "CoreTend est en développement actif et n'a pas atteint une "
@@ -546,9 +546,9 @@ def home_body(l):
     )
     if media_exists("assets/app/smart-care.webp"):
         hero_media = """<picture class="hero-product">
-    <source media="(prefers-color-scheme: light)" srcset="../assets/app/smart-care-light.webp">
-    <img src="../assets/app/smart-care.webp" width="1800" height="1264"
-      alt="CoreTend 0.9.0 Smart Care window with its module sidebar and scan controls"
+    <source srcset="../assets/app/smart-care.webp" type="image/webp">
+    <img src="../assets/app/smart-care.png" width="2024" height="1488"
+      alt="CoreTend Smart Care window with its module sidebar and scan controls"
       fetchpriority="high">
   </picture>"""
     elif media_exists("assets/app/menu-bar.webp"):
@@ -774,8 +774,9 @@ def demos_body(l):
     ]
     gallery_items = [
         f'<figure><a href="../assets/app/{name}.webp">'
-        f'<img src="../assets/app/{name}.webp" width="1800" height="1264" '
-        f'loading="lazy" alt="CoreTend 0.9.0 — {caption}"></a>'
+        f'<img src="../assets/app/{name}.webp" '
+        f'width="2024" height="1488" '
+        f'loading="lazy" alt="CoreTend development interface — {caption}"></a>'
         f'<figcaption>{caption}</figcaption></figure>'
         for name, caption in captions
         if media_exists(f"assets/app/{name}.webp")

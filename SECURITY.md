@@ -36,7 +36,7 @@ When reporting, please include:
 ## Scope
 
 In scope: CoreTend's Swift source, its build/packaging scripts, and
-(once it exists) its public website's own code.
+its public website's own code.
 
 Out of scope: vulnerabilities in macOS itself, in Apple frameworks, or in
 the externally-installed ClamAV binary (report those upstream to Apple or
@@ -62,6 +62,6 @@ report it via the channel above rather than a public issue.
 
 ## Pre-1.0 status
 
-Because this project has not had a public release, audit, or notarized
-build yet, treat any binary you build yourself as unsigned, unaudited,
-development software.
+The current public beta is unsigned and not notarized. Treat it and any binary
+you build yourself as pre-1.0 software, verify published checksums, and follow
+the per-app first-open guidance without disabling system protections globally.
