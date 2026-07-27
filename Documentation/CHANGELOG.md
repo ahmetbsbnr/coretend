@@ -1,5 +1,53 @@
 # CHANGELOG
 
+## 0.9.0 — 2026-07-27 « First Public Release »
+
+The first release available to anyone. It is a **public beta**, and it is
+**unsigned and not notarized** — `security find-identity -v -p codesigning`
+reports zero valid identities, and a Developer ID requires a paid Apple
+Developer Program membership that is out of scope. macOS will block the first
+launch; the per-app right-click → Open step is documented in
+`Documentation/INSTALL_UNSIGNED.md`. Disabling Gatekeeper is never suggested.
+
+**The name cleared preliminary screening.** TMview, aggregating roughly 80
+offices including EUIPO, INPI, USPTO, WIPO and UKIPO, returns zero marks
+containing `coretend` across 141,856,516 records; GitHub, npm, PyPI, Homebrew
+and the Mac App Store are clear. Status is
+`PRELIMINARY_CLEARANCE_NO_HIGH_CONFLICT_FOUND`. `COREXTEND` (MIPS Tech, live
+class 9, one letter away, different industry) is recorded as a WATCH item —
+not a bar to a free beta, but attorney review is required before any filing or
+commercial use. No definitive legal validation is claimed.
+
+**Legal identity is real and generated, not hardcoded.** `Website/generate.py`
+previously hardcoded a legal-name token and read no configuration at all. It
+now reads `Configuration/PublicIdentity.example.json` overlaid with the
+gitignored `PublicIdentity.local.json`. Undefined keys still render as literal
+tokens so the placeholder gate keeps blocking — that failure mode is
+deliberate. The publisher is the given name the owner already publishes plus
+their handle and domain; **no surname was inferred** from a filesystem path.
+The personal address is withheld under LCEN Art. 6 III-2, stated openly on the
+page rather than hidden.
+
+**A real security contact.** GitHub private vulnerability reporting is enabled
+and was confirmed live before being written down; no email address was
+invented. Secret scanning, push protection and Dependabot security updates are
+enabled alongside it.
+
+**The repository is public**, built by a reproducible sanitised export that
+stages 389 files and excludes 79 (session logs, workspace manifests, audit
+packages, rebrand working files). The export builds its commit with
+`commit-tree` against a throwaway index, so the working tree is never touched —
+the previous orphan-checkout approach had temporarily destroyed it.
+
+**Fixed:** `check-version-consistency.sh` read the local identity file alone
+instead of overlaying it on the example, so it crashed with a `KeyError` on any
+key the partial override did not define. It could not run at all while a local
+override existed. It now overlays both, exactly as the site generator does, and
+that fix exposed real version drift between `Info.plist`, `PROJECT_STATE.json`
+and the configured version.
+
+296 tests in 58 suites pass. Debug and Release build clean.
+
 ## 0.8.1 — 2026-07-25 « CoreTend Rebrand & Workspace Migration »
 
 The product is now **CoreTend**. This release is a rename and a reorganisation,
