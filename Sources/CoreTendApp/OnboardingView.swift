@@ -559,7 +559,8 @@ struct OnboardingView: View {
                 bullet("arrow.uturn.backward", L("onboarding.summary.restore"))
             }
             .frame(maxWidth: 460)
-            Link(L("onboarding.summary.docs"), destination: URL(string: "https://github.com")!)
+            Link(L("onboarding.summary.docs"),
+                 destination: URL(string: "https://github.com/ahmetbsbnr/coretend")!)
                 .font(MCFont.caption)
         }
     }
