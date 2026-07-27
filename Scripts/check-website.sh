@@ -30,6 +30,14 @@ echo "== check-website.sh =="
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
 cp -R "$SITE" "$TMP/Website"
+# generate.py reads Configuration/PublicIdentity.{example,local}.json for the
+# publisher, security contact and host shown on the legal and privacy pages, so
+# the temp tree needs them too. Without this the regenerated copy renders
+# placeholders where the real site renders real values, and every run reports a
+# spurious drift. Copied rather than symlinked so the comparison stays hermetic.
+if [ -d "$(dirname "$SITE")/Configuration" ]; then
+  cp -R "$(dirname "$SITE")/Configuration" "$TMP/Configuration"
+fi
 ( cd "$TMP/Website" && python3 generate.py >/dev/null 2>&1 ) || note "generate.py failed to run"
 for locale in en fr; do
   if ! diff -rq "$SITE/$locale" "$TMP/Website/$locale" >/dev/null 2>&1; then

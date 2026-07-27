@@ -97,3 +97,7 @@ Documentation/WorkspacePreflight/**/*.bundle.sha256
 # Serena MCP tool workspace (local editor/LSP tooling config, not a project
 # artifact — machine-specific, no project code or docs depend on it)
 .serena/
+
+# Python bytecode from running generate.py
+__pycache__/
+*.pyc
