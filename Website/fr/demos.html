@@ -27,6 +27,7 @@
 <link rel="icon" href="../assets/brand/favicon-32.png" sizes="32x32">
 <link rel="icon" href="../assets/brand/favicon-512.png" sizes="512x512">
 <link rel="apple-touch-icon" href="../assets/brand/favicon-180.png">
+<style>html,body{background:#f4f6f3;color:#0b0f14}@media(prefers-color-scheme:dark){html,body{background:#0b0f14;color:#f4f6f3}}</style>
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
@@ -54,7 +55,30 @@
 </header>
 <main id="main">
   <div class="wrap">
-<h1>Démonstrations</h1><p>Les médias apparaîtront ici uniquement après capture et validation de confidentialité dans l’environnement dédié CoreTend Demo.</p>
+
+<h1>Médias réels de CoreTend</h1>
+<p class="lead">Chaque image et séquence ci-dessous a passé une revue visuelle et une revue des métadonnées. Les médias montrent CoreTend 0.9.0 ou son véritable avertissement système de première ouverture, sans fichier, chemin, compte ni authentification personnels.</p>
+
+
+<section>
+  <h2>Avertissement de première ouverture</h2>
+  <div class="demo-player">
+    <video controls muted playsinline preload="none"
+      poster="../assets/demos/gatekeeper-blocked-poster.webp"
+      aria-describedby="gatekeeper-description">
+      <source src="../assets/demos/gatekeeper-blocked.webm" type="video/webm">
+      <source src="../assets/demos/gatekeeper-blocked.mp4" type="video/mp4">
+      <track kind="captions" srclang="en" label="Visual description"
+        src="../assets/demos/gatekeeper-blocked.vtt" default>
+    </video>
+    <p id="gatekeeper-description">Véritable avertissement macOS silencieux de première ouverture pour la bêta CoreTend 0.9.0 non signée et non notarisée. Les libellés peuvent varier selon macOS. La séquence ne montre ni contournement ni authentification.</p>
+  </div>
+</section>
+<section>
+  <h2>Galerie de l’application</h2>
+  <div class="media-grid"><figure><a href="../assets/app/menu-bar.png"><img src="../assets/app/menu-bar.webp" width="660" height="806" loading="lazy" alt="CoreTend 0.9.0 — État dans la barre des menus"></a><figcaption>État dans la barre des menus</figcaption></figure></div>
+</section>
+
   </div>
 </main>
 <footer class="site">
