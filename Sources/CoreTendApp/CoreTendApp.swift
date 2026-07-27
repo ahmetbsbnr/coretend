@@ -23,6 +23,9 @@ struct CoreTendApp: App {
                 .frame(minWidth: MCSize.windowMinWidth, minHeight: MCSize.windowMinHeight)
         }
         .windowStyle(.automatic)
+        .commands {
+            CoreTendHelpCommands()
+        }
 
         MenuBarExtra(isInserted: $menuBarEnabled) {
             MenuBarView()
@@ -31,6 +34,38 @@ struct CoreTendApp: App {
             Text(verbatim: "CoreTend")
         }
         .menuBarExtraStyle(.window)
+    }
+}
+
+/// Official help destinations for builds after 0.9.0. These commands are a
+/// source-branch improvement and are not claimed to exist in the tagged
+/// 0.9.0 binary.
+struct CoreTendHelpCommands: Commands {
+    private let site = URL(string: "https://coretend.ahmetbsbnr.com")!
+    private let repository = URL(string: "https://github.com/ahmetbsbnr/coretend")!
+
+    var body: some Commands {
+        CommandGroup(replacing: .help) {
+            Button("CoreTend Help") {
+                NSWorkspace.shared.open(site.appending(path: "en/documentation.html"))
+            }
+            Button("Installation Help") {
+                NSWorkspace.shared.open(site.appending(path: "en/install.html"))
+            }
+            Button("Keyboard Shortcuts") {
+                NSWorkspace.shared.open(site.appending(path: "en/support.html"))
+            }
+            Divider()
+            Button("Report an Issue") {
+                NSWorkspace.shared.open(repository.appending(path: "issues"))
+            }
+            Button("Security") {
+                NSWorkspace.shared.open(site.appending(path: "en/security.html"))
+            }
+            Button("About CoreTend") {
+                NSWorkspace.shared.open(site.appending(path: "en/index.html"))
+            }
+        }
     }
 }
 
