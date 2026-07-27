@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Download — CoreTend</title>
+<meta name="description" content="Local, transparent and reversible care for macOS.">
+<meta name="color-scheme" content="light dark">
+<!-- noindex until the site is actually published: an unreleased page in a
+     search index is a promise nobody can keep. -->
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://coretend.ahmetbsbnr.com/en/download.html">
+<link rel="alternate" hreflang="en" href="https://coretend.ahmetbsbnr.com/en/download.html">
+<link rel="alternate" hreflang="fr" href="https://coretend.ahmetbsbnr.com/fr/download.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CoreTend">
+<meta property="og:title" content="Download — CoreTend">
+<meta property="og:description" content="A lighter Mac. Always under control. Local, transparent and reversible care for macOS.">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="../assets/brand/opengraph.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../assets/brand/favicon-32.png" sizes="32x32">
+<link rel="icon" href="../assets/brand/favicon-512.png" sizes="512x512">
+<link rel="apple-touch-icon" href="../assets/brand/favicon-180.png">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site">
+  <div class="wrap">
+    <a class="brand" href="index.html" aria-label="CoreTend — home"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
+<path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--care)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--privacy)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--activity)" stroke-width="38.4" stroke-linecap="round"/>
+<circle cx="256" cy="256" r="61.44" fill="var(--care)"/>
+</svg><span>CoreTend</span></a>
+    <nav class="primary" aria-label="Main">
+      <a href="index.html">Overview</a>
+      <a href="features.html">Features</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="download.html" class="active" aria-current="page">Download</a>
+      <a href="documentation.html">Documentation</a>
+      <a href="open-source.html">Open Source</a>
+      <a href="changelog.html">Changelog</a>
+    </nav>
+    <div class="lang-switch"><a href="../en/download.html" hreflang="en" lang="en" class="active" aria-current="true">EN</a><a href="../fr/download.html" hreflang="fr" lang="fr">FR</a></div>
+  </div>
+</header>
+<main id="main">
+  <div class="wrap">
+
+<h1>Download</h1>
+<div class="status-box">
+  <p><strong>Public release in preparation.</strong> There is no stable
+  release yet. This page is a placeholder for the future release — it does
+  not link to any local build or ad-hoc artifact.</p>
+</div>
+
+<div class="status-box">
+  <p><strong>No release manifest published yet.</strong> There is nothing to
+  download or verify until one exists. When a release ships, this page will
+  list its version, architecture, minimum macOS, signing status and SHA-256
+  checksum — read from the published manifest, not typed in by hand.</p>
+</div>
+
+<h2>Source code</h2>
+<p>CoreTend's source will be published on GitHub once the public
+repository is created (see the project's
+<a href="open-source.html">Open Source</a> page). There is no live
+source-code link yet — the repository is not public. This page will link
+directly to it as soon as that happens.</p>
+
+<h2>What the release will look like</h2>
+<p>The first public artifact will be named exactly:</p>
+<pre>CoreTend-&lt;version&gt;-arm64-unsigned.zip</pre>
+
+<table>
+  <tr><th>Field</th><th>Status</th></tr>
+  <tr><td>Version</td><td>not yet released</td></tr>
+  <tr><td>Checksum (SHA-256)</td><td>will be published alongside the release</td></tr>
+  <tr><td>Code signing</td><td><strong>unsigned</strong> — this will always be disclosed, never hidden</td></tr>
+  <tr><td>Notarization</td><td>not yet available (requires an Apple Developer ID; out of scope pre-1.0)</td></tr>
+</table>
+
+<h2>Planned install steps (once a release exists)</h2>
+<ol>
+  <li>Download and verify the SHA-256 checksum against the published value.</li>
+  <li>Unzip and move CoreTend.app to /Applications.</li>
+  <li>Because the app is unsigned, macOS Gatekeeper will require an explicit
+  right-click &rarr; Open the first time.</li>
+  <li>Grant Full Disk Access if you want full-coverage scanning (see the
+  Documentation).</li>
+</ol>
+<p>Until then, building from source is documented in
+<a href="documentation.html">Documentation</a>.</p>
+
+  </div>
+</main>
+<footer class="site">
+  <div class="wrap">
+    <div>
+      <p style="margin:0 0 .5rem">&copy; CoreTend contributors. Open source — see the <a href="licenses.html">licenses</a>.</p>
+      <p class="disclaimer" style="margin:0">CoreTend is an independent project and is not affiliated with Apple Inc. Mac and macOS describe compatibility only.</p>
+    </div>
+    <nav aria-label="Footer">
+      <a href="faq.html">FAQ</a>
+      <a href="roadmap.html">Roadmap</a>
+      <a href="security.html">Security</a>
+      <a href="privacy.html">Privacy policy</a>
+      <a href="licenses.html">Licenses</a>
+      <a href="legal.html">Legal notice</a>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>

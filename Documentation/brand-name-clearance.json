@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 2,
+  "candidateName": "CoreTend",
+  "candidateSlug": "coretend",
+  "decisionDate_UTC": "2026-07-24",
+  "status": "CLEAR_FOR_ENGINEERING",
+  "clearedForEngineering": true,
+  "clearedForPublication": false,
+  "blocksRename": false,
+  "blocksPublication": true,
+  "decisionBasis": "HUMAN_DECISION",
+  "decisionBasisNotes": "The name CoreTend was selected and approved directly by the project owner. This session did NOT perform an independent trademark or prior-usage search for CoreTend, and no such search is claimed here. The CLEAR_FOR_ENGINEERING status therefore reflects an explicit human decision to proceed with a local technical rename, not a completed clearance investigation.",
+  "humanApprovalFilePresent": true,
+  "humanApprovalFilePath": "Configuration/BrandRenameApproval.local.json",
+  "softwareUsageConflicts": [],
+  "domainFindings": [
+    {
+      "domain": "coretend.ahmetbsbnr.com",
+      "status": "PLANNED_SUBDOMAIN_OF_OWNED_ROOT",
+      "notes": "Product site is planned as a subdomain of the owner's existing root domain ahmetbsbnr.com. No new domain is being acquired, which removes the domain-acquisition and domain-reputation risk class entirely. Not deployed by this session; no DNS record was created or modified."
+    }
+  ],
+  "officialRegistries": [
+    { "registry": "EUIPO eSearch Plus", "result": "NOT_ATTEMPTED_THIS_SESSION" },
+    { "registry": "TMview", "result": "NOT_ATTEMPTED_THIS_SESSION" },
+    { "registry": "INPI DATA", "result": "NOT_ATTEMPTED_THIS_SESSION" },
+    { "registry": "WIPO Global Brand Database", "result": "NOT_ATTEMPTED_THIS_SESSION" },
+    { "registry": "UKIPO", "result": "NOT_ATTEMPTED_THIS_SESSION" },
+    { "registry": "USPTO TESS/TMsearch", "result": "NOT_ATTEMPTED_THIS_SESSION" }
+  ],
+  "decisionRuleApplied": "Engineering clearance and publication clearance are separated. A locally-built, unpublished, unsigned artifact carries no trademark-use-in-commerce exposure, so the owner's decision is sufficient to authorise the technical rename. Publication remains blocked until legalReviewStatus == 'accepted' in the approval file, which requires a real registry search that this session did not perform.",
+  "outstandingForPublication": [
+    "Trademark search in the relevant classes (Nice class 9 / 42) across EUIPO, INPI, USPTO, UKIPO, WIPO.",
+    "Prior-software-usage search for 'CoreTend' and 'coretend' across GitHub, app stores, and package registries.",
+    "Domain and handle confirmation for any public identity beyond coretend.ahmetbsbnr.com.",
+    "Legal identity and security contact for public-facing legal pages."
+  ],
+  "evidenceFile": "Documentation/BRAND_SEARCH_EVIDENCE.md",
+  "registerFile": "Documentation/BRAND_CONFLICT_REGISTER.md",
+  "narrativeFile": "Documentation/BRAND_NAME_CLEARANCE.md",
+  "supersedes": "Documentation/RebrandHistory/brand-name-clearance-macclear.json"
+}

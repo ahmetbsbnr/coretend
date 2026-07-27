@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 2,
+  "auditDate_UTC": "2026-07-25",
+  "commit": "31359f871638bc9b68efab16f5e76c798ea5877d",
+  "command": "Scripts/test.sh",
+  "totalTests": 296,
+  "totalSuites": 58,
+  "passed": 296,
+  "failed": 0,
+  "testRunDurationSeconds": 10.125,
+  "wallTimeSeconds": 12,
+  "result": "PASS",
+  "domains": [
+    {
+      "module": "AppDiscovery",
+      "testFunctionsDeclared": 20
+    },
+    {
+      "module": "CoreTendApp",
+      "testFunctionsDeclared": 98
+    },
+    {
+      "module": "DesignSystem",
+      "testFunctionsDeclared": 17
+    },
+    {
+      "module": "FileRules",
+      "testFunctionsDeclared": 7
+    },
+    {
+      "module": "MalwareEngine",
+      "testFunctionsDeclared": 40
+    },
+    {
+      "module": "Persistence",
+      "testFunctionsDeclared": 52
+    },
+    {
+      "module": "SafetyCore",
+      "testFunctionsDeclared": 20
+    },
+    {
+      "module": "ScanCore",
+      "testFunctionsDeclared": 41
+    },
+    {
+      "module": "SystemMetrics",
+      "testFunctionsDeclared": 1
+    }
+  ],
+  "generatedBy": "Scripts/generate-test-inventory.sh (derives counts from a real Scripts/test.sh run + @Test occurrence counts in Tests/, never hand-typed)",
+  "historicalNote": "Prior versions of this file (audit sessions before 2026-07-21) recorded 86 tests / 27 suites at commit b33c06b. That was correct for its own commit; it is superseded, not falsified \u2014 see git history of this file for the historical snapshot."
+}

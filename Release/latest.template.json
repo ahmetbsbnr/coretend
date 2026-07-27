@@ -1,0 +1,37 @@
+{
+  "_comment": "Hand-authored release manifest TEMPLATE. Tracked by git. Every field here is a human decision. Scripts/build-release.sh copies this file and adds the computed fields (checksums, sizes, sourceCommit, releaseTag, buildDate, buildInvocationID, treeState) to produce dist/latest.json, which is NEVER committed -- a tracked file cannot contain the SHA of the commit that adds it, and trying made the manifest permanently one commit stale. See Documentation/RELEASE_PROVENANCE.md.",
+  "_doNotAddHere": [
+    "zipSHA256",
+    "zipSize",
+    "dmgSHA256",
+    "dmgSize",
+    "sourceCommit",
+    "releaseTag",
+    "buildDate",
+    "buildInvocationID",
+    "treeState",
+    "generatedBy"
+  ],
+  "product": "CoreTend",
+  "channel": "prerelease",
+  "prerelease": true,
+  "architecture": "arm64",
+  "minimumMacOS": "14.0",
+  "signed": false,
+  "notarized": false,
+  "releaseNotesPattern": "Release/Notes/{version}.en.md",
+  "zipNamePattern": "CoreTend-{version}-arm64-unsigned.zip",
+  "dmgNamePattern": "CoreTend-{version}-arm64-unsigned.dmg",
+  "knownLimitations": [
+    "Unsigned, not notarized: Gatekeeper will block first launch (see Documentation/INSTALL_UNSIGNED.md).",
+    "Built and tested on a single physical Mac (arm64) — no multi-OS or multi-hardware verification performed.",
+    "No public release exists; this manifest has no downloadURL because there is nothing to download it from publicly.",
+    "The DMG carries its Living System background and volume icon, but no saved icon positions: writing those needs the Finder, which refused automation in the build environment. Drag-and-drop works regardless.",
+    "Publication is blocked by design: no trademark search has been run for the name, legalReviewStatus is 'pending', and legal identity plus a security contact are undefined."
+  ],
+  "repositoryURL": "https://github.com/ahmetbsbnr/coretend",
+  "websiteURL": "https://coretend.ahmetbsbnr.com",
+  "license": "Apache-2.0",
+  "telemetry": false,
+  "accountRequired": false
+}

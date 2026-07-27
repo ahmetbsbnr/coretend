@@ -1,0 +1,16 @@
+{
+  "_comment": "Template for Configuration/BrandRenameApproval.local.json. The .local.json file is gitignored: it records a human decision, not a project artifact. Two independent gates read it — see Scripts/check-brand-clearance.sh.",
+  "_gates": {
+    "engineering": "engineeringRenameApproved must be true AND approvedByHuman must be true. Allows the local technical rename (code, docs, assets, bundle id, data migration).",
+    "publication": "legalReviewStatus must be 'accepted' AND publicReleaseAllowed must be true. Allows public release, push, deployment, tags, and any outward-facing artifact."
+  },
+  "approvedName": "",
+  "approvedSlug": "",
+  "approvedBundleIdentifier": "",
+  "approvedByHuman": false,
+  "engineeringRenameApproved": false,
+  "approvalDate": "",
+  "legalReviewStatus": "pending",
+  "publicReleaseAllowed": false,
+  "notes": ""
+}

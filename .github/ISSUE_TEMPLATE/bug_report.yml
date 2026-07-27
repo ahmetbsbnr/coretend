@@ -1,0 +1,77 @@
+name: Bug report
+description: Something isn't working as expected.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please do not attach any
+        personal files or full logs — anonymized excerpts only.
+  - type: input
+    id: version
+    attributes:
+      label: CoreTend version
+      placeholder: e.g. 0.5.0 (Settings → About)
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: e.g. macOS 14.5 Sonoma
+    validations:
+      required: true
+  - type: input
+    id: chip
+    attributes:
+      label: Apple Silicon model
+      placeholder: e.g. M1, M2 Pro, M3 Max
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open Cleanup
+        2. Start scan
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Anonymized logs (optional)
+      description: Remove any personal file paths, names, or content before pasting.
+  - type: markdown
+    attributes:
+      value: |
+        **Diagnostic report:** Settings → Data → "Export diagnostic
+        report…" generates an anonymized report (versions, permission
+        states, counts — no usernames, paths, filenames, or app lists).
+        It shows a full preview before you save anything.
+
+        ⚠️ **Always check the contents before posting to GitHub.** Only
+        attach it after you've reviewed every line yourself. Never
+        attach a raw SQLite database or an unredacted full log.
+  - type: checkboxes
+    id: no-private-data
+    attributes:
+      label: Confirmation
+      options:
+        - label: I have not attached any private data, personal files, or unredacted logs.
+          required: true
+        - label: If I attached the diagnostic report, I reviewed its full contents first.
+          required: false

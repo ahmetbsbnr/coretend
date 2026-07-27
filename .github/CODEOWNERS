@@ -1,0 +1,14 @@
+# CODEOWNERS
+# Requires review from the listed owner(s) before merge.
+# Real GitHub handle to be filled in by the project owner before making
+# the repository public — see Documentation/HUMAN_BLOCKERS.md.
+
+* ahmetbsbnr
+
+# Safety-critical paths require the same owner's explicit review — listed
+# separately so the requirement is visible even if the wildcard above ever
+# changes.
+/Sources/SafetyCore/          ahmetbsbnr
+/Sources/FileRules/           ahmetbsbnr
+/Sources/MalwareEngine/       ahmetbsbnr
+/Sources/Persistence/         ahmetbsbnr

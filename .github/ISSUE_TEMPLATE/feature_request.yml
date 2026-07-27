@@ -1,0 +1,42 @@
+name: Feature request
+description: Suggest an idea or improvement.
+labels: ["enhancement"]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: CoreTend version (if relevant)
+      placeholder: e.g. 0.5.0
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered (optional)
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety
+      options:
+        - label: >-
+            This request does not ask for disabling SIP/Gatekeeper/FileVault,
+            bypassing TCC, unnecessary sudo, or removing quarantine
+            attributes as a routine step.
+          required: true
+  - type: checkboxes
+    id: no-private-data
+    attributes:
+      label: Confirmation
+      options:
+        - label: I have not attached any private data or personal files.
+          required: true
