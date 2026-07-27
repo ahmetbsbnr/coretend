@@ -9,7 +9,8 @@ hashes match `SHA256SUMS`, `unzip -t` and `hdiutil verify` pass, and
 `latest.json` is valid. New website/media work must not be described as part of
 the downloadable 0.9.0 binary.
 
-The branch now contains approved media exports and local site changes. Nothing
+The branch now contains three approved media sources (Smart Care screenshot,
+menu-bar screenshot, and genuine Gatekeeper clip) plus local site changes. Nothing
 in this checkpoint has been pushed, merged, deployed, or attached to the
 release yet. `v0.9.0` remains annotated and points to `a6aa3bf`.
 

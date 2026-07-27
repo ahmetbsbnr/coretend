@@ -1,8 +1,32 @@
 # CONTINUATION
 
+## Checkpoint nouvelle capture — 2026-07-27
+
+Branche `feat/coretend-media-integration`, HEAD stable avant ce lot :
+`8e49381`. La nouvelle capture Smart Care fournie par l'utilisateur a passé la
+revue intégrale pixels/métadonnées et a été exportée sans métadonnées en PNG et
+WebP dans `Website/assets/app/`. Elle est utilisée dans le hero, la galerie et
+le README, avec un libellé post-v0.9.0 qui ne l'attribue pas au binaire 0.9.0.
+
+Le générateur produit toujours 32 pages. Les gates site, first paint,
+confidentialité, licences et médias passent. Le validateur média a été rendu
+portable pour Bash 3.2 et exige désormais une approbation documentée de la
+capture Smart Care. Prochaine tâche exacte : committer ce lot, effectuer
+l'audit pré-push des données privées et de l'historique non publié, puis
+fetch/push/PR/checks/fusion et déploiement Vercel.
+
+Commande de reprise :
+
+```sh
+cd $REPO
+git status --short --branch
+bash Scripts/check-media-privacy.sh
+bash Scripts/check-website.sh
+```
+
 ## Checkpoint médias et site — 2026-07-27
 
-Branche `feat/coretend-media-integration`. HEAD stable :
+Branche `feat/coretend-media-integration`. HEAD historique :
 `3da7798` après `992f422`. Le tag annoté `v0.9.0` reste inchangé et déréférence
 toujours `a6aa3bf20cc1f3b7623291660c4943db2e5d4a50`.
 

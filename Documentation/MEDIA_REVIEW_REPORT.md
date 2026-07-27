@@ -144,6 +144,31 @@ inspection. Metadata still must be stripped at export time per Phase 4 regardles
   the fact that the image is cropped.
 - **Classification: ACCEPTED**
 
+### 2. New Smart Care application screenshot
+- The user identified the newest screenshot in Downloads for review. Only that
+  exact recent PNG was inspected; no other Downloads content was searched.
+- Source SHA-256:
+  `08421c6247fd472e7fbabebf639d37d2e124b6569d4d917a6a9d9ce829a7ad73`.
+- 2024×1488, PNG, 562 kB source, 8-bit RGBA, non-interlaced.
+- Exact visible content: CoreTend's dark Smart Care idle screen, navigation,
+  “Ready to look after this Mac”, the scan button, and waiting/not-available
+  category states.
+- Privacy inspection: the capture contains only the CoreTend window on a
+  transparent/black surround. No desktop, other application, account, machine
+  name, path, URL, notification, file, authentication UI, or personal data is
+  visible.
+- Metadata inspection found only generic screenshot markers, dimensions,
+  resolution, and a display ICC profile. No author, username, path, GPS, URL,
+  account, or device name was present.
+- Approved exports:
+  `Website/assets/app/smart-care.png` and
+  `Website/assets/app/smart-care.webp`. Both have metadata and extended
+  attributes removed. Exact hashes and sizes are recorded in
+  `Documentation/SCREENSHOT_MANIFEST.md`.
+- Version labeling: treated as a post-v0.9.0 development-interface capture.
+  It must not be represented as included in the immutable 0.9.0 binary.
+- **Classification: ACCEPTED**
+
 The prohibited Chrome capture from 21.23.01 (tabs, favorites, and extensions
 visible) was not used and must never be integrated.
 
@@ -159,8 +184,9 @@ visible) was not used and must never be integrated.
 | coretend-step-01-download-dmg-raw.mov | NEEDS_RECAPTURE (other domains visible at ~3.0s–~3.4s) |
 | coretend-step-03-gatekeeper-blocked-raw.mov | ACCEPTED |
 | coretend-additional-screen-review.png | ACCEPTED |
+| newest Smart Care application screenshot | ACCEPTED |
 
-No file has been deleted or transformed, and no raw original has been added to Git.
-Phase 4 production may use only ACCEPTED media or explicitly human-approved ranges
-that contain no private data. It must exclude all REJECTED and NEEDS_RECAPTURE media
-and wait for explicit human confirmation on every NEEDS_HUMAN_REVIEW range above.
+No raw original has been deleted, modified, or added to Git. Production may use
+only ACCEPTED media or explicitly human-approved ranges that contain no private
+data. It must exclude all REJECTED and NEEDS_RECAPTURE media and wait for
+explicit human confirmation on every NEEDS_HUMAN_REVIEW range above.

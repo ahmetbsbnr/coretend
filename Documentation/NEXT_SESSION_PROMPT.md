@@ -13,9 +13,10 @@ python3 Website/generate.py
 bash Scripts/check-website.sh
 ```
 
-Expected stable HEAD before the pending site commit: `3da7798` on
-`feat/coretend-media-integration`. Continue with the responsive, accessibility,
-performance and public-documentation gates, then commit the stable site lot.
+Expected stable HEAD before the pending screenshot/docs commit: `8e49381` on
+`feat/coretend-media-integration`. The new Smart Care screenshot is already
+privacy-reviewed and exported. Commit the stable media/docs lot, then continue
+with the pre-push history audit, GitHub PR/checks/fusion, and Vercel deployment.
 Do not recapture or integrate any REJECTED or NEEDS_RECAPTURE raw media.
 Never launch Chrome against the default browser profile; use a fresh isolated
 directory under `/tmp` and remove it after every run.

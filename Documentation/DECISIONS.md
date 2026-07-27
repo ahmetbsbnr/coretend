@@ -1,5 +1,12 @@
 # DECISIONS
 
+## D-M2 — New Smart Care screenshot is post-v0.9.0 evidence (2026-07-27)
+
+The newest user-supplied screenshot contains only the CoreTend Smart Care
+window and passed complete pixel and metadata review. It is published as a
+post-v0.9.0 development-interface image, not evidence of a change included in
+the immutable 0.9.0 binary. Metadata-cleaned PNG and WebP exports are used.
+
 ## D-M1 — Only supplied ACCEPTED media is integrated (2026-07-27)
 
 The menu-bar PNG and genuine Gatekeeper clip passed full pixel and metadata

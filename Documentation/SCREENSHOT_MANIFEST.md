@@ -1,12 +1,12 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 # Screenshot Manifest
 
-One cropped application-only screenshot is approved. Earlier captures remain
+Two application-only screenshots are approved. Earlier captures remain
 excluded unless their individual status below changes after a complete review.
 
 | ID | Feature | Planned file | Appearance | Site | README | Required alt text | Status |
 |---|---|---|---|---|---|---|---|
-| main-dark | Smart Care and navigation | `coretend-main-window-dark.png` | dark | hero/demos | hero | CoreTend 0.9.0 Smart Care window with module navigation and scan controls | HUMAN_REVIEW_REQUIRED |
+| main-dark | Smart Care and navigation | `Website/assets/app/smart-care.png` and `.webp` | dark | hero/demos | hero | CoreTend Smart Care window with module navigation and scan controls | APPROVED |
 | main-light | Smart Care and navigation | `coretend-main-window-light.png` | light | hero | hero light source | CoreTend Smart Care in light appearance | HUMAN_REVIEW_REQUIRED |
 | cleanup | Cleanup review | `coretend-cleanup-review.png` | dark | gallery | gallery | CoreTend Cleanup review screen using synthetic demo files | HUMAN_REVIEW_REQUIRED |
 | performance | Live metrics | `coretend-performance.png` | dark | gallery | gallery | CoreTend live performance metrics | HUMAN_REVIEW_REQUIRED |
@@ -18,7 +18,28 @@ excluded unless their individual status below changes after a complete review.
 | gatekeeper | Real first-open block | `coretend-first-launch-gatekeeper.png` | system | install guide | — | macOS first-open warning for CoreTend on the stated OS version | HUMAN_REVIEW_REQUIRED |
 | menu-bar | Menu bar status panel | `Website/assets/app/menu-bar.png` and `.webp` | dark | home/demos | planned | CoreTend 0.9.0 menu bar panel showing CPU, memory, free space, thermal state and protection status | APPROVED |
 
-Approved export details:
+Approved Smart Care export details:
+
+- Dimensions: 2024×1488.
+- PNG: 558,454 bytes, SHA-256
+  `c6c3c829b3df130f127cfcb32f5cd656f5a9cf2119280da05e53ac6c5f9f0494`.
+- WebP: 105,346 bytes, SHA-256
+  `c1f5a39e894eccf57348e23381de4b1325a5a063eab56874f8effd54ddf9a91c`.
+- CoreTend: post-v0.9.0 development interface; it is not presented as part of
+  the immutable 0.9.0 binary.
+- Capture/review date: 2026-07-27. The exact macOS version and source commit
+  were not embedded and are therefore not guessed.
+- Source: user-provided screenshot copied directly into the authorized media
+  workflow. The original remains untouched outside Git.
+- Privacy review: passed. The full image and metadata were inspected; the
+  window contains only CoreTend's idle Smart Care interface and synthetic empty
+  state. No desktop, account, path, notification, personal file, or
+  authentication UI is visible.
+- The PNG and WebP are metadata-cleaned exports. Screenshot XMP/EXIF, the
+  display ICC profile, filesystem extended attributes, and source filename were
+  removed.
+
+Approved menu-bar export details:
 
 - Dimensions: 660×806.
 - PNG: 232,364 bytes, SHA-256

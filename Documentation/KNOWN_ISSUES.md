@@ -1,6 +1,13 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 # Known Issues
 
+## Media coverage after the new Smart Care capture
+
+The home page and README now have a full real CoreTend application screenshot,
+and the menu-bar and Gatekeeper media remain approved. Other module captures
+still require individual privacy review; their absence does not block the
+honest site because no placeholder or simulated result is published.
+
 ## Current website QA limitation
 
 Chrome headless on this host enforces a minimum internal viewport and can hang
