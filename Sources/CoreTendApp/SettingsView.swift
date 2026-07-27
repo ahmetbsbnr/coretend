@@ -1,5 +1,5 @@
 import SwiftUI
-import UserNotifications
+@preconcurrency import UserNotifications
 import Persistence
 import DesignSystem
 import MalwareEngine
