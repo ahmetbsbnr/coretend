@@ -1,6 +1,6 @@
 # Compatibility matrix — test-builds CoreTend against multiple macOS
 # runner / Xcode-toolchain combinations to catch availability regressions the
-# single-runner CI (ci.yml, macos-14 only) cannot see.
+# single-runner CI (ci.yml, macos-15) cannot see.
 #
 # Status: IMPLEMENTED_UNVERIFIED. This file has never been executed — it was
 # authored offline (no Xcode / no second Mac in the dev environment; see
@@ -34,7 +34,7 @@ jobs:
         # runner = macOS version; xcode pins the toolchain on that image.
         include:
           - runner: macos-14
-            xcode: "15.4"
+            xcode: "16.2"
           - runner: macos-15
             xcode: "16.2"
     steps:
