@@ -1,0 +1,59 @@
+name: Compatibility issue
+description: Something behaves differently on your macOS version/Apple Silicon model.
+labels: ["compatibility"]
+body:
+
+  - type: input
+    id: version
+    attributes:
+      label: CoreTend version
+      placeholder: e.g. 0.5.0 (Settings → About)
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version
+      placeholder: e.g. macOS 14.5 Sonoma
+    validations:
+      required: true
+  - type: input
+    id: chip
+    attributes:
+      label: Apple Silicon model
+      placeholder: e.g. M1, M2 Pro, M3 Max
+    validations:
+      required: true
+
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Anonymized logs (optional)
+      description: Remove any personal file paths, names, or content before pasting.
+  - type: checkboxes
+    id: no-private-data
+    attributes:
+      label: Confirmation
+      options:
+        - label: I have not attached any private data, personal files, or unredacted logs.
+          required: true
+

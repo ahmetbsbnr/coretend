@@ -1,0 +1,518 @@
+/* Base (English) strings */
+
+/* Common */
+"common.cancel" = "Cancel";
+"common.dry_run" = "Dry run";
+"common.running" = "Running…";
+"common.reveal_in_finder" = "Reveal in Finder";
+"common.clear" = "Clear";
+
+/* Sidebar */
+"sidebar.free_up_space" = "Free Up Space";
+"sidebar.optimize" = "Optimize";
+"sidebar.protect" = "Protect";
+"sidebar.activity" = "Activity";
+
+/* Placeholder */
+"placeholder.under_construction" = "This module is under construction. Coming in a later slice.";
+
+/* Menu bar */
+"menubar.cpu" = "CPU";
+"menubar.memory" = "Memory";
+"menubar.free_space" = "Free space";
+"menubar.thermal" = "Thermal";
+"menubar.protection" = "Protection";
+"menubar.warning_a11y" = "needs attention";
+"menubar.clamav_ready" = "ClamAV ready";
+"menubar.clamav_missing" = "ClamAV not installed";
+"menubar.last_smart_care" = "Last Smart Care: %@";
+"menubar.no_smart_care_yet" = "No Smart Care run yet.";
+"menubar.open_app" = "Open CoreTend";
+"menubar.settings" = "Settings…";
+"menubar.quit" = "Quit";
+
+/* Smart Care */
+"smartcare.protection_unavailable" = "Malware scanning not yet available";
+"smartcare.performance_unavailable" = "Maintenance tasks not yet available";
+"smartcare.applications_unavailable" = "App analysis not yet available";
+"smartcare.care_categories" = "Care categories";
+"smartcare.hero.idle_title" = "Ready to look after this Mac";
+"smartcare.hero.scanning_title" = "Scanning…";
+"smartcare.hero.review_title" = "%@ safe to clean";
+"smartcare.hero.cleaning_title" = "Cleaning…";
+"smartcare.hero.finished_dryrun_title" = "Dry run: %@ would be freed";
+"smartcare.hero.finished_title" = "%@ moved to Trash";
+"smartcare.hero.idle_subtitle" = "A scan looks at storage first. Nothing is deleted during a scan.";
+"smartcare.hero.scanning_subtitle" = "Reading caches, logs and build data. You can cancel at any time.";
+"smartcare.hero.review_subtitle_truncated" = "%@ found in total (%d of %d shown). Only low-risk, reversible items are preselected.";
+"smartcare.hero.review_subtitle" = "%@ found in total. Only low-risk, reversible items are preselected.";
+"smartcare.hero.executing_subtitle" = "Items go to the Trash — you can put them back.";
+"smartcare.hero.finished_subtitle" = "Details are in My Activity.";
+"smartcare.module.waiting" = "Waiting to scan";
+"smartcare.module.scanning" = "Scanning… %d items, %@";
+"smartcare.module.done" = "%d items — %@";
+"smartcare.start_scan" = "Start Smart Care Scan";
+"smartcare.simulate_care" = "Simulate Care";
+"smartcare.run_care" = "Run Care";
+"smartcare.review_details_hint" = "Review details in the Cleanup module.";
+"smartcare.scan_again" = "Scan Again";
+
+/* Cleanup */
+"cleanup.title" = "Cleanup";
+"cleanup.failed" = "Cleanup failed: %@";
+"cleanup.idle.title" = "Scan for safe-to-remove files";
+"cleanup.idle.subtitle" = "Scans user caches, logs, crash reports and Xcode build data.\nNothing is deleted during a scan.";
+"cleanup.start_scan" = "Start Scan";
+"cleanup.scanning_progress" = "Scanned %d items — %@ found";
+"cleanup.review.selected" = "%d items — %@ selected";
+"cleanup.review.truncated" = "%d of %d shown — %@ found in total";
+"cleanup.simulate" = "Simulate Cleanup";
+"cleanup.move_to_trash" = "Move to Trash";
+"cleanup.group.item_count" = "%d items";
+"cleanup.select_item" = "Select %@";
+"cleanup.done.dryrun" = "Dry run: %@ would be moved to Trash";
+"cleanup.done.moved" = "%@ moved to Trash";
+
+/* Protection */
+"protection.scan_info" = "Scanned %@ in %@s — %d threats";
+"protection.moved_to_quarantine" = "Moved to quarantine: %@";
+"protection.quarantine_failed" = "Quarantine failed: %@";
+"protection.restore_failed" = "Restore failed: %@";
+"protection.tab.malware" = "Malware";
+"protection.tab.privacy" = "Privacy";
+"protection.unavailable.title" = "Malware engine not installed";
+"protection.unavailable.body" = "CoreTend uses the open-source ClamAV engine for local malware scanning. It is not installed on this Mac, so scanning is unavailable — this module will not pretend otherwise.";
+"protection.unavailable.howto" = "To enable it: install ClamAV (for example `brew install clamav`), run `freshclam` once to download signatures, then reopen this screen.";
+"protection.unavailable.note" = "Note: this scanner is a local signature check, not a commercial antivirus or real-time protection.";
+"protection.scan.title" = "Local malware scan (ClamAV)";
+"protection.scan.subtitle" = "Signature-based scan. Not a commercial antivirus; no real-time protection.";
+"protection.scan_downloads" = "Scan Downloads";
+"protection.scan_folder" = "Scan Folder…";
+"protection.no_threats" = "No threats found";
+"protection.findings" = "Findings";
+"protection.quarantine" = "Quarantine";
+"protection.quarantine_section" = "Quarantine";
+"protection.quarantine_empty" = "Empty. Quarantined files are stored locally, stripped of execute permission, and can be restored or permanently deleted.";
+"protection.quarantine_was" = "was: %@";
+"protection.restore" = "Restore";
+"protection.delete_permanently" = "Delete Permanently";
+
+/* Space Lens */
+"spacelens.title" = "Space Lens";
+"spacelens.idle.title" = "Visualize your storage";
+"spacelens.idle.subtitle" = "Builds an interactive size map. Analysis only — nothing is modified.";
+"spacelens.scan_home" = "Scan Home Folder";
+"spacelens.choose_folder" = "Choose Folder…";
+"spacelens.scanning_progress" = "Measured %d items…";
+"spacelens.new_scan" = "New Scan";
+"spacelens.treemap.a11y_summary" = "%d items, %@ total.";
+"spacelens.treemap.accessibility" = "Storage treemap. Use the list below for keyboard navigation.";
+"spacelens.fragment.help" = "%@ — %@";
+"spacelens.access_denied_suffix" = "permission denied, size is a lower bound";
+"spacelens.cloud_placeholder_suffix" = "iCloud placeholder, not fully downloaded";
+"spacelens.access_denied_short" = "permission denied";
+"spacelens.cloud_placeholder_short" = "iCloud placeholder";
+
+/* Applications */
+"apps.uninstall.dryrun_result" = "Dry run: %d items (%@) would move to Trash";
+"apps.uninstall.result" = "Moved %d items (%@) to Trash";
+"apps.tab.installed" = "Installed";
+"apps.tab.leftovers" = "Leftovers";
+"apps.tab.updates" = "Updates";
+"apps.title" = "Applications";
+"apps.search" = "Search apps";
+"apps.group_by" = "Group by";
+"apps.empty" = "No applications found";
+"apps.downloaded" = "Downloaded";
+"apps.downloaded.help" = "Downloaded from the web or mail and passed Gatekeeper";
+"apps.a11y.version" = "version %@";
+"apps.unknown" = "unknown";
+"apps.unknown_bundle_id" = "unknown bundle id";
+"apps.version_prefix" = "v%@";
+"apps.last_used" = "last used %@";
+"apps.last_used_unknown" = "last used: unknown";
+"apps.associated_data" = "Associated data";
+"apps.associated_data.empty" = "No associated files found for this bundle identifier.";
+"apps.simulate_uninstall" = "Simulate Uninstall";
+"apps.uninstall" = "Uninstall (move to Trash)";
+"apps.select_prompt" = "Select an application";
+
+/* My Clutter */
+"clutter.tab.large_old" = "Large & Old";
+"clutter.tab.duplicates" = "Duplicates";
+"clutter.tab.similar_images" = "Similar Images";
+"clutter.title" = "My Clutter";
+"clutter.idle.title" = "Find large, forgotten files";
+"clutter.idle.subtitle" = "Analyzes Downloads, Documents, Desktop and media folders.\nNothing is ever deleted automatically — you review and act in Finder.";
+"clutter.larger_than" = "Larger than";
+"clutter.size.50mb" = "50 MB";
+"clutter.size.100mb" = "100 MB";
+"clutter.size.500mb" = "500 MB";
+"clutter.size.1gb" = "1 GB";
+"clutter.older_than" = "Older than";
+"clutter.age.30d" = "30 days";
+"clutter.age.90d" = "90 days";
+"clutter.age.180d" = "180 days";
+"clutter.age.1y" = "1 year";
+"clutter.analyze" = "Analyze";
+"clutter.scanning_progress" = "Scanned %d items — %d matches";
+"clutter.no_matches" = "No matching files";
+"clutter.change_criteria" = "Change Criteria";
+"clutter.results.summary" = "%d files — %@";
+"clutter.sort_by" = "Sort by";
+"clutter.sort.size" = "Size";
+"clutter.sort.age" = "Age";
+"clutter.new_analysis" = "New Analysis";
+"clutter.modified" = "modified %@";
+"clutter.quick_look" = "Quick Look";
+"clutter.search_placeholder" = "Search by name";
+"clutter.volume" = "Volume";
+"clutter.all_volumes" = "All Volumes";
+"clutter.volume_unavailable" = "Unavailable Volume";
+"clutter.search_no_results" = "No files match your search";
+"clutter.exclusions_count" = "Exclusions (%d)";
+"clutter.exclusions_empty" = "No exclusions yet";
+"clutter.exclusions_rescan_note" = "Run a new analysis for exclusion changes to take effect";
+"clutter.already_excluded" = "Excluded from scans";
+"clutter.exclude_menu" = "Exclude…";
+"clutter.exclude_file" = "Exclude This File";
+"clutter.exclude_folder" = "Exclude Containing Folder";
+
+/* App Updates */
+"updates.loading" = "Reading update mechanisms…";
+"updates.version_source" = "v%@ — %@";
+"updates.open_app_store" = "Open App Store Updates";
+"updates.open_app" = "Open App to Update";
+"updates.footer" = "CoreTend detects each app's own update channel and sends you there. It never downloads or replaces app binaries itself.";
+
+/* Leftovers */
+"leftovers.idle.title" = "Find leftovers from removed apps";
+"leftovers.idle.subtitle" = "Looks for support data whose application is no longer installed.\nMatching is conservative; nothing is preselected.";
+"leftovers.scan" = "Scan for Leftovers";
+"leftovers.scanning" = "Scanning…";
+"leftovers.none_found" = "No leftovers found";
+"leftovers.finished.dryrun" = "Dry run: %@ would be reclaimed";
+"leftovers.finished.moved" = "%@ moved to Trash";
+"leftovers.results.summary" = "%d candidates — %@ selected of %@";
+"leftovers.simulate" = "Simulate Removal";
+"leftovers.select_item" = "Select %@";
+"leftovers.shared_ambiguous_a11y" = "shared or ambiguous";
+"leftovers.shared_review" = "Shared / review";
+"leftovers.not_installed" = "%@ — app with this identifier is not installed";
+
+/* Privacy Cleaner */
+"privacy.detecting" = "Detecting browser profiles…";
+"privacy.empty.title" = "No browser data found";
+"privacy.empty.subtitle" = "Safari data requires Full Disk Access; Chrome and Firefox profiles are detected automatically when present.";
+"privacy.finished.dryrun" = "Dry run: %@ of caches would move to Trash";
+"privacy.finished.moved" = "%@ of caches moved to Trash";
+"privacy.running_warning" = "%@ is running — cache files may be locked. Quit the browser first for a complete clean.";
+"privacy.caches_selected" = "Browser caches — %@ selected";
+"privacy.simulate_clean" = "Simulate Clean";
+"privacy.clean_caches" = "Clean Caches";
+"privacy.browser_profile" = "%@ — %@";
+"privacy.cache_size" = "Cache %@";
+"privacy.history_size" = "History %@";
+"privacy.cookies_size" = "Cookies %@";
+"privacy.footer" = "Only caches are cleaned (rebuilt automatically, moved to Trash). History, cookies and sessions are shown for information; removing them is not yet supported to avoid corrupting browser databases or logging you out.";
+
+/* Duplicates */
+"dupes.idle.title" = "Find duplicate files";
+"dupes.idle.subtitle" = "Compares content with staged hashing in Downloads, Documents and Desktop.\nOne copy of each group is always kept — the suggestion is reviewable.\nHard links to the same file are already the same data and are never counted as duplicates.";
+"dupes.find" = "Find Duplicates";
+"dupes.comparing" = "Comparing %d of %d candidates";
+"dupes.building_inventory" = "Building file inventory…";
+"dupes.none_found" = "No duplicates found";
+"dupes.results.summary" = "%d groups — %@ selected of %@ reclaimable";
+"dupes.move_to_trash" = "Move Copies to Trash";
+"dupes.select_copy" = "Select copy %@";
+"dupes.suggested_keeper" = "Suggested keeper";
+"dupes.group_header" = "%d copies × %@";
+
+/* Similar Images */
+"similar.idle.title" = "Find visually similar images";
+"similar.idle.subtitle" = "Uses on-device Vision analysis of Pictures, Downloads and Desktop.\nPhotos libraries are never touched. Review in Finder; nothing is deleted here.";
+"similar.analyze" = "Analyze Images";
+"similar.analyzing" = "Analyzing %d of %d images";
+"similar.collecting" = "Collecting images…";
+"similar.none_found" = "No similar image groups found";
+"similar.analyze_again" = "Analyze Again";
+"similar.group_header" = "%d similar — %@";
+"similar.best_resolution" = "Best resolution";
+"similar.reveal_a11y" = "Reveal %@ in Finder";
+"similar.best_resolution_a11y" = "best resolution";
+
+/* My Activity */
+"activity.title" = "My Activity";
+"activity.range" = "Range";
+"activity.filter" = "Filter";
+"activity.all_kinds" = "All kinds";
+"activity.export_csv" = "Export CSV";
+"activity.clear_history" = "Clear History";
+"activity.range.all" = "All time";
+"activity.range.last7" = "Last 7 days";
+"activity.range.last30" = "Last 30 days";
+"activity.empty" = "No activity yet";
+"activity.empty_kind" = "No activity of this kind yet";
+"activity.empty.subtitle" = "Scans and cleanups will appear here. Everything stays on this Mac.";
+"activity.empty_range" = "No activity in this range.";
+"activity.freed_real" = "Freed (real)";
+"activity.simulated_dryrun" = "Simulated (dry run)";
+"activity.items" = "Items";
+"activity.row.detail" = "%d items · %@ %@";
+"activity.row.simulated_suffix" = "(simulated, no files were changed)";
+"activity.row.real_suffix" = "(real, applied to disk)";
+"activity.open_protection" = "Open Protection";
+"activity.completed" = "Completed";
+"activity.row.simulated_a11y" = "simulated";
+"activity.row.real_a11y" = "real";
+
+/* Cloud Cleanup */
+"cloud.nav_title" = "Cloud Cleanup";
+"cloud.empty.title" = "No cloud folders found";
+"cloud.empty.subtitle" = "iCloud Drive, Dropbox, Google Drive and OneDrive local folders are detected automatically when present.";
+"cloud.measuring" = "Measuring local footprint…";
+"cloud.picker.title" = "Analyze cloud storage footprint";
+"cloud.picker.subtitle" = "Shows which synced files actually occupy disk space on this Mac.\nAnalysis only — deleting synced files would remove them on every device.";
+"cloud.results.summary" = "%@ on this Mac of %@ total — analysis only, nothing downloaded or deleted";
+"cloud.back" = "Back";
+"cloud.local_bytes" = "%@ local";
+"cloud.total_bytes" = "%@ total";
+"cloud.reveal_a11y" = "Reveal %@ in Finder";
+"cloud.entry_a11y" = "%@, %@, %@ local of %@ total";
+"cloud.state.partial" = "partially local";
+"cloud.state.placeholder" = "online only";
+"cloud.state.local_a11y" = "fully local";
+"cloud.state.partial_a11y" = "partially local";
+"cloud.state.placeholder_a11y" = "online only, not downloaded";
+
+/* Performance */
+"performance.nav_title" = "Performance";
+"performance.cpu" = "CPU";
+"performance.memory" = "Memory";
+"performance.storage" = "Storage";
+"performance.of_all_cores" = "of all cores";
+"performance.memory_detail" = "%@ of %@";
+"performance.free_detail" = "%@ free";
+"performance.cpu_chart_title" = "CPU — last 2 minutes";
+"performance.system" = "System";
+"performance.memory_pressure" = "Memory pressure";
+"performance.thermal_state" = "Thermal state";
+"performance.uptime" = "Uptime";
+"performance.chart_a11y" = "CPU usage chart, currently %d percent";
+"performance.collecting_samples" = "Collecting samples…";
+"performance.launchagents.title" = "Login LaunchAgents";
+"performance.launchagents.subtitle" = "Third-party agents started at login (~/Library/LaunchAgents). Broken entries point to programs that no longer exist. Inspection only — disable them in System Settings › Login Items.";
+"performance.launchagents.empty" = "No user LaunchAgents.";
+"performance.launchagents.missing" = "missing: %@";
+
+/* Settings */
+"settings.nav_title" = "Settings";
+"settings.general" = "General";
+"settings.show_menu_bar" = "Show CoreTend in the menu bar";
+"settings.menu_bar_detail" = "The menu bar item samples system metrics only while its panel is open, or every 30s in the background just to show the attention indicator.";
+"settings.appearance" = "Appearance";
+"settings.appearance_detail" = "CoreTend follows the system light/dark appearance. There is no separate in-app theme.";
+"settings.scans_cleanup" = "Scans & Cleanup";
+"settings.dry_run_default" = "Dry run by default";
+"settings.dry_run_detail" = "When enabled, cleanups simulate their result instead of moving files to the Trash.";
+"settings.deletion_method" = "Deletion method";
+"settings.deletion_method_value" = "System Trash (reversible)";
+"settings.protection" = "Protection";
+"settings.clamav_engine" = "ClamAV engine";
+"settings.installed" = "Installed";
+"settings.not_installed" = "Not installed";
+"settings.clamav_install_hint" = "Install with `brew install clamav`, run `freshclam` once, then reopen Protection.";
+"settings.privileged_helper" = "Privileged helper";
+"settings.unavailable" = "Unavailable";
+"settings.privileged_helper_detail" = "Not implemented — this build has no signing identity to install a privileged helper. Every feature works unprivileged; this is a known, honest limitation, not a bug.";
+"settings.monitoring_permissions" = "Monitoring & Permissions";
+"settings.full_disk_access" = "Full Disk Access";
+"settings.granted" = "Granted";
+"settings.not_granted" = "Not granted";
+"settings.open_system_settings" = "Open System Settings";
+"settings.recheck" = "Re-check";
+"settings.notifications" = "Notifications";
+"settings.notifications_detail" = "CoreTend does not currently send notifications; this reflects the real system-level authorization state only.";
+"settings.notif.authorized" = "Authorized";
+"settings.notif.denied" = "Denied";
+"settings.notif.not_requested" = "Not requested";
+"settings.notif.unknown" = "Unknown";
+"settings.exclusions" = "Exclusions";
+"settings.exclusions_empty" = "No excluded folders. Excluded locations are never scanned or cleaned.";
+"settings.add_folder" = "Add Folder…";
+"settings.data" = "Data";
+"settings.data_detail" = "CoreTend is fully offline. No telemetry, no accounts, no network calls. All data stays on this Mac.";
+"settings.export_diagnostic" = "Export diagnostic report…";
+"settings.export_diagnostic_detail" = "Generates an anonymized report (versions, permission states, counts) for troubleshooting. No usernames, paths, filenames, or app lists are included. You review it before saving.";
+"diagnostic.title" = "Diagnostic Report";
+"diagnostic.review_notice" = "Always check the contents before posting this to GitHub or sending it to anyone.";
+"diagnostic.save" = "Save…";
+"settings.clear_activity" = "Clear Activity History…";
+"settings.clear_activity_confirm" = "Clear all Activity history?";
+"settings.clear_history" = "Clear History";
+"settings.clear_activity_message" = "This removes the local record of past scans and cleanups. It does not restore or delete any files.";
+"settings.about" = "About";
+"settings.version" = "Version";
+
+/* Onboarding */
+"onboarding.step0.subtitle" = "Local, transparent and reversible care for macOS. Nothing more, nothing hidden.";
+"onboarding.step0.title" = "Welcome to CoreTend";
+"onboarding.step0.signature" = "A lighter Mac. Always under control.";
+"onboarding.step1.title" = "Everything stays here";
+"onboarding.step1.bullet1" = "All analysis runs on this Mac. No accounts, no telemetry, no network calls.";
+"onboarding.step1.bullet2" = "Your history lives in a local database you can clear at any time.";
+"onboarding.step1.bullet3" = "CoreTend is not an antivirus replacement and never claims otherwise.";
+"onboarding.step2.title" = "Full Disk Access — optional";
+"onboarding.step2.subtitle" = "Without it, some folders (Mail, Safari data…) can't be scanned. The app works either way. You can grant or revoke it any time in System Settings.";
+"onboarding.step3.title" = "Reversible by design";
+"onboarding.step3.bullet1" = "Scans never delete anything. Cleaning is a separate, reviewed step.";
+"onboarding.step3.bullet2" = "Removal uses the system Trash — you can always restore.";
+"onboarding.step3.bullet3" = "Dry-run is on by default: actions are simulated until you turn it off.";
+"onboarding.skip" = "Skip";
+"onboarding.step_of" = "%d of %d";
+"onboarding.step_a11y" = "Step %d of %d";
+"onboarding.back" = "Back";
+"onboarding.get_started" = "Get Started";
+"onboarding.continue" = "Continue";
+"smartcare.nav_title" = "Smart Care";
+
+/* Applications — grouping picker (display only; AppGroupingLogic bucket keys stay English internally) */
+"apps.grouping.none" = "None";
+"apps.grouping.publisher" = "Publisher";
+"apps.grouping.size" = "Size";
+"apps.grouping.update_state" = "Update State";
+"apps.grouping.last_used" = "Last Used";
+
+/* Module display names (sidebar / placeholder) */
+"module.protection" = "Protection";
+"module.my_activity" = "My Activity";
+
+/* Safety log (SafetyCore audit trail persistence) */
+"common.done" = "Done";
+"safetylog.title" = "Safety Log";
+"safetylog.subtitle" = "%d executed · %d simulated (dry run)";
+"safetylog.empty" = "No safety log entries yet.";
+"safetylog.unavailable" = "Local database unavailable";
+"safetylog.purge" = "Purge Log";
+"safetylog.stage.approved" = "Approved";
+"safetylog.stage.dryrun" = "Dry Run";
+"safetylog.stage.executed" = "Executed";
+"safetylog.stage.skipped" = "Skipped";
+"safetylog.stage.error" = "Error";
+"safetylog.a11y.rule" = "rule %@";
+"safetylog.a11y.risk" = "risk %@";
+"activity.open_safety_log" = "View Safety Log";
+
+/* Privacy Cleaner — per-profile running-browser handling */
+"privacy.profile_running_reason" = "%@ is running — cleaning is disabled for this profile until it's closed.";
+"privacy.close_and_rescan" = "Close Browser & Rescan";
+
+/* Accessibility labels — AppUpdatesView, SettingsView */
+"updates.action_hint" = "Opens the update mechanism for %@";
+"settings.remove_exclusion" = "Remove exclusion %@";
+
+/* Accessibility — Differentiate Without Color for elevated metrics */
+"performance.elevated" = "elevated";
+"protection.watch.title" = "Background watch";
+"protection.watch.subtitle" = "Optional. Watches Downloads and your Applications folders for new files and scans each one with ClamAV once it stops changing. It never removes anything automatically — anything found is listed here for you to review and quarantine yourself.";
+"protection.watch.toggle" = "Enable background watch";
+"protection.watch.alerts_none" = "Watching. No threats detected in watched folders.";
+
+// MARK: First-run wizard (Step 13)
+"common.yes" = "Yes";
+"common.no" = "No";
+"onboarding.start" = "Start";
+"onboarding.welcome.local" = "Everything runs locally on this Mac.";
+"onboarding.welcome.no_account" = "No account, ever — nothing to sign up for.";
+"onboarding.welcome.no_telemetry" = "No telemetry, analytics, ads or subscriptions.";
+"onboarding.welcome.open_source" = "Open source — you can read every line.";
+"onboarding.welcome.version" = "Version %@";
+"onboarding.welcome.unsigned" = "Unsigned local build";
+"onboarding.move.prompt" = "This app isn't in your Applications folder yet. Moving it there is recommended.";
+"onboarding.move.button" = "Move to Applications";
+"onboarding.move.done" = "Copied to %@. Relaunch from there.";
+"onboarding.move.already" = "A copy already exists in %@.";
+"onboarding.move.manual" = "Couldn't copy automatically. Drag the app into Applications in the Finder window that just opened.";
+"onboarding.security.title" = "Security profile";
+"onboarding.security.subtitle" = "Pick how cautious the defaults should be. You can change everything later in Settings.";
+"onboarding.security.recommended" = "Recommended";
+"onboarding.security.recommended_detail" = "Balanced, safe defaults for most people.";
+"onboarding.security.cautious" = "Cautious";
+"onboarding.security.cautious_detail" = "Review everything before it happens. Same safe defaults, maximum caution.";
+"onboarding.security.custom" = "Custom";
+"onboarding.security.custom_detail" = "Start from safe defaults and adjust the dry-run option yourself.";
+"onboarding.security.dry_run" = "Dry-run by default (simulate actions)";
+"onboarding.security.trash" = "Removal always uses the Trash";
+"onboarding.security.medium_risk" = "Medium-risk rules preselected";
+"onboarding.security.empty_trash" = "Empty the Trash automatically";
+"onboarding.security.auto_quarantine" = "Auto-quarantine detected threats";
+"onboarding.fileaccess.title" = "File access";
+"onboarding.fileaccess.subtitle" = "Full Disk Access is optional. The app works without it; some folders just can't be scanned.";
+"onboarding.fileaccess.can_scan" = "Your files in standard folders can be scanned.";
+"onboarding.fileaccess.limited" = "Without Full Disk Access, Mail and Safari data stay out of reach.";
+"onboarding.fileaccess.no_autogrant" = "The app can't grant this itself — it only opens System Settings so you can decide.";
+"onboarding.protection.title" = "Optional protection";
+"onboarding.protection.subtitle" = "Malware scanning is optional and uses ClamAV if you've installed it. Nothing is installed for you.";
+"onboarding.protection.clamav" = "ClamAV engine";
+"onboarding.protection.path" = "Path";
+"onboarding.protection.version" = "Engine version";
+"onboarding.protection.signatures" = "Signatures";
+"onboarding.protection.unknown" = "unknown";
+"onboarding.protection.no_install" = "Not detected. Install ClamAV yourself (e.g. via Homebrew) to enable scanning.";
+"onboarding.protection.fsevents" = "Folder watching (FSEvents)";
+"onboarding.protection.available" = "Available";
+"onboarding.menubar.title" = "Menu bar & notifications";
+"onboarding.menubar.subtitle" = "Both are opt-in and can be turned off at any time.";
+"onboarding.menubar.show" = "Show the menu bar item";
+"onboarding.menubar.notifications" = "Allow notifications";
+"onboarding.menubar.denied" = "Notifications are turned off in System Settings.";
+"onboarding.menubar.optin_detail" = "Turning notifications on asks macOS for permission — we never grant it ourselves.";
+"onboarding.folders.title" = "Folders & exclusions";
+"onboarding.folders.subtitle" = "Choose which folders to scan and which to always leave alone.";
+"onboarding.folders.scannable" = "Folders to scan";
+"onboarding.folders.protected" = "System and protected locations are never scanned or modified.";
+"onboarding.folders.exclusions" = "Excluded folders";
+"onboarding.folders.add" = "Add…";
+"onboarding.check.title" = "System check";
+"onboarding.check.subtitle" = "A quick, non-destructive self-diagnostic. Nothing is changed.";
+"onboarding.check.running" = "Running checks…";
+"onboarding.check.arch" = "Architecture (Apple silicon)";
+"onboarding.check.macos" = "macOS version";
+"onboarding.check.bundle" = "App bundle";
+"onboarding.check.resources" = "Bundled resources";
+"onboarding.check.sqlite" = "Local database (SQLite)";
+"onboarding.check.permissions" = "Full Disk Access";
+"onboarding.check.clamav" = "ClamAV engine";
+"onboarding.check.freespace" = "Free disk space";
+"onboarding.check.location" = "Configured folder access";
+"onboarding.check.safetycore" = "Safety core";
+"onboarding.check.status.ok" = "OK";
+"onboarding.check.status.limited" = "Limited";
+"onboarding.check.status.action" = "Action needed";
+"onboarding.check.status.unavailable" = "Unavailable";
+"onboarding.check.overall.ready" = "Ready";
+"onboarding.check.overall.limits" = "Ready with limits";
+"onboarding.check.overall.action" = "Action required";
+"onboarding.check.overall.unavailable" = "Unavailable";
+"onboarding.summary.title" = "You're set";
+"onboarding.summary.subtitle" = "Here's exactly what's enabled. Change any of it in Settings.";
+"onboarding.summary.profile" = "Security profile";
+"onboarding.summary.dry_run" = "Dry-run by default";
+"onboarding.summary.fda" = "Full Disk Access";
+"onboarding.summary.clamav" = "ClamAV engine";
+"onboarding.summary.menu_bar" = "Menu bar item";
+"onboarding.summary.notifications" = "Notifications";
+"onboarding.summary.exclusions" = "Excluded folders";
+"onboarding.summary.privacy" = "Nothing leaves this Mac. No account, no telemetry.";
+"onboarding.summary.restore" = "Removals go to the Trash and can be restored.";
+"onboarding.summary.docs" = "Read the documentation";
+"settings.rerun_setup" = "Run setup assistant again";
+
+/* Rename migration (MacCare Local -> CoreTend) */
+"settings.migration_done" = "Data from the previous version was migrated";
+"settings.migration_failed" = "Some data could not be migrated";
+"settings.migration_items" = "Migrated: %@.";
+"settings.migration_prefs" = "Your setup and menu-bar preferences were carried over.";
+"settings.migration_source_kept" = "The original files were copied, not moved — the previous version's folder is still on this Mac, untouched.";
+"settings.migration_failed_detail" = "The following items were left where they were, and nothing was deleted: %@. The previous version's data is still intact on this Mac.";

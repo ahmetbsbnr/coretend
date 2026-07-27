@@ -1,0 +1,29 @@
+name: Publish Gate (manual, pre-release check only)
+
+# Manual-only. Does NOT publish anything itself — it only checks whether the
+# repository is actually ready to (zero legal/contact/domain placeholders,
+# a filled-in Configuration/PublicIdentity.local.json, a release manifest
+# whose sourceCommit matches the commit being checked). Normal CI (ci.yml)
+# must stay green with placeholders still in place, pre-release; this
+# workflow is the one allowed to fail on them.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-gate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  readiness:
+    runs-on: macos-14
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Publish readiness (zero placeholders, real identity, real manifest)
+        run: Scripts/check-publish-readiness.sh

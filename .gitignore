@@ -1,0 +1,103 @@
+# Build artifacts
+.build/
+build/
+DerivedData/
+*.xcarchive
+*.dSYM
+.swiftpm/
+xcuserdata/
+*.xcuserstate
+*.xcscmblueprint
+
+# Packaged output (release binaries/archives never live in the source repo)
+*.dmg
+*.zip
+
+# Generated release provenance. Release/latest.template.json is the tracked,
+# hand-authored source; the manifest and checksum file below are produced by
+# Scripts/build-release.sh from the artifacts it just built. They are NOT
+# tracked, because a tracked manifest would have to contain the SHA of the
+# commit that adds it — which is impossible, and left the old committed
+# latest.json permanently one commit stale. See Documentation/RELEASE_PROVENANCE.md.
+Release/latest.json
+Release/SHA256SUMS
+*.pkg
+*.tar
+*.tar.gz
+*.tgz
+dist/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Local runtime/user data (never real user data in the repo)
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.db
+*.log
+*.diag
+*.diagsession
+Quarantine/
+LocalScans/
+*.scan-output
+*.scanresult
+
+# Secrets / signing material — never commit
+.env
+.env.*
+*.p12
+*.mobileprovision
+*.cer
+*.pem
+*.key
+*Certificate*.p12
+
+# Node / website tooling
+node_modules/
+.vercel/
+
+# Local agent/editor tooling state
+.claude/
+.vscode/
+.idea/
+
+# Temp captures / scratch
+*.tmp
+*.temp
+Documentation/VisualAudit/_tmp/
+/tmp/
+Documentation/VisualAudit/_capture_*/
+
+# Generated/local-only test artifacts
+*.generated.swift
+TestResults/
+*.xcresult
+
+# Real public-identity values (legal/security contact) — never commit real data here.
+# See Configuration/PublicIdentity.example.json for the template this overrides.
+Configuration/PublicIdentity.local.json
+
+# Human brand-rename approval — a local decision record, never versioned.
+# See Configuration/BrandRenameApproval.example.json for the template.
+Configuration/BrandRenameApproval.local.json
+
+# Staged external-audit packages (built locally, never committed)
+AuditPackages/
+
+# Migration safety backups: git bundles are full repo copies. They must exist
+# on disk (the rename gate checks for them) and must never be committed into
+# the very repo they are the backup of.
+Documentation/WorkspacePreflight/**/*.bundle
+Documentation/WorkspacePreflight/**/*.bundle.sha256
+
+# Serena MCP tool workspace (local editor/LSP tooling config, not a project
+# artifact — machine-specific, no project code or docs depend on it)
+.serena/
+
+# Python bytecode from running generate.py
+__pycache__/
+*.pyc

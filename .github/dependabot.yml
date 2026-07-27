@@ -1,0 +1,16 @@
+version: 2
+updates:
+  # Keep GitHub Actions used in .github/workflows/ up to date.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+
+  # NOTE: CoreTend has no external Swift Package Manager dependencies
+  # today (see Documentation/DEPENDENCIES.md) — SPM/"swift" ecosystem
+  # support in Dependabot was unverified at the time this file was written
+  # and is not enabled here to avoid an unsupported/no-op config entry.
+  # Re-check GitHub's supported-ecosystems list before enabling it, and add
+  # a swift-package-manager or equivalent entry once a real dependency
+  # exists to track.
