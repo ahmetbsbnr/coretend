@@ -24,5 +24,5 @@ Documentation/CLAMAV.md.
 
 ## See also
 - Documentation/DEPENDENCIES.md — full dependency audit matrix
-- Documentation/THIRD_PARTY_AUDIT.md — audit methodology and findings
+- Documentation/LEGAL_AND_LICENSE_STATUS.md — audit methodology and findings
 - Documentation/ASSET_PROVENANCE.md — provenance of icons/images/fonts

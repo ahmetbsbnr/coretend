@@ -1039,19 +1039,67 @@ add("security", {"en": "Security", "fr": "Sécurité"}, security_body)
 
 # ------------------------------------------------------------- licenses ---
 def licenses_body(l):
+    # This page used to list four filenames and name no licence at all, so a
+    # visitor could not learn the terms without cloning the repository. It now
+    # states them, and links to the files it names.
     title = "Licenses" if l == "en" else "Licences"
-    note = (
-        "See <code>LICENSE</code>, <code>LICENSES/</code>, "
-        "<code>NOTICE</code> and <code>THIRD_PARTY_NOTICES.md</code> at the "
-        "repository root for the project license and every third-party "
-        "attribution."
-    ) if l == "en" else (
-        "Voir <code>LICENSE</code>, <code>LICENSES/</code>, "
-        "<code>NOTICE</code> et <code>THIRD_PARTY_NOTICES.md</code> à la "
-        "racine du dépôt pour la licence du projet et chaque attribution "
-        "tierce."
-    )
-    return f"<h1>{title}</h1><p>{note}</p>"
+    repo = ident("repositoryURL", "")
+    blob = f"{repo}/blob/main" if repo else ""
+
+    def link(path, label):
+        return f'<a href="{blob}/{path}">{label}</a>' if blob else f"<code>{label}</code>"
+
+    if l == "en":
+        body = f"""<h1>{title}</h1>
+<p>CoreTend is open source. Different kinds of content carry different
+licenses.</p>
+<ul>
+  <li><strong>Source code</strong> — Apache License 2.0
+      ({link("LICENSES/Apache-2.0.txt", "full text")}).</li>
+  <li><strong>Original documentation and illustrations</strong> — CC-BY-4.0
+      ({link("LICENSES/CC-BY-4.0.txt", "full text")}).</li>
+  <li><strong>The CoreTend name and logo</strong> — not granted by either
+      license ({link("TRADEMARKS.md", "TRADEMARKS.md")}).</li>
+</ul>
+<h2>Third-party components</h2>
+<p>CoreTend bundles no third-party code. It declares
+<strong>zero external package dependencies</strong>, and builds only against
+the system frameworks that ship with macOS.</p>
+<p>ClamAV is the one optional exception, and it is not bundled: if you install
+it yourself, CoreTend can run the <code>clamscan</code> binary as a separate
+process. It is never linked into the app and its signature database is never
+redistributed here. ClamAV is licensed separately under GPL-2.0 by its own
+project.</p>
+<p>The full statements live in {link("LICENSE", "LICENSE")},
+{link("NOTICE", "NOTICE")} and
+{link("THIRD_PARTY_NOTICES.md", "THIRD_PARTY_NOTICES.md")} at the repository
+root.</p>"""
+    else:
+        body = f"""<h1>{title}</h1>
+<p>CoreTend est open source. Les différents types de contenu relèvent de
+licences différentes.</p>
+<ul>
+  <li><strong>Code source</strong> — Licence Apache 2.0
+      ({link("LICENSES/Apache-2.0.txt", "texte intégral")}).</li>
+  <li><strong>Documentation et illustrations originales</strong> — CC-BY-4.0
+      ({link("LICENSES/CC-BY-4.0.txt", "texte intégral")}).</li>
+  <li><strong>Le nom et le logo CoreTend</strong> — non couverts par ces
+      licences ({link("TRADEMARKS.md", "TRADEMARKS.md")}).</li>
+</ul>
+<h2>Composants tiers</h2>
+<p>CoreTend n'embarque aucun code tiers. Le projet déclare
+<strong>zéro dépendance externe</strong> et ne compile que contre les
+frameworks système livrés avec macOS.</p>
+<p>ClamAV est la seule exception optionnelle, et il n'est pas embarqué : si
+vous l'installez vous-même, CoreTend peut exécuter le binaire
+<code>clamscan</code> comme processus distinct. Il n'est jamais lié à
+l'application et sa base de signatures n'est jamais redistribuée ici. ClamAV
+est sous licence GPL-2.0, par son propre projet.</p>
+<p>Les déclarations complètes se trouvent dans {link("LICENSE", "LICENSE")},
+{link("NOTICE", "NOTICE")} et
+{link("THIRD_PARTY_NOTICES.md", "THIRD_PARTY_NOTICES.md")} à la racine du
+dépôt.</p>"""
+    return body
 
 
 add("licenses", {"en": "Licenses", "fr": "Licences"}, licenses_body)
