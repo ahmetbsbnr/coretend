@@ -68,6 +68,7 @@ fi
 EXCLUDE_PREFIXES=(
   # Session continuity and internal planning — written agent-to-agent.
   "Documentation/CONTINUATION.md"
+  "Documentation/NEXT_SESSION_PROMPT.md"
   "Documentation/AUDIT_COMMANDS.log"
   "Documentation/PROJECT_COMPLETE_AUDIT.md"
   "Documentation/PUBLICATION_AUDIT.md"
