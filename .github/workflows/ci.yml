@@ -70,11 +70,16 @@ jobs:
         run: |
           base="Sources/CoreTendApp/Resources/Base.lproj/Localizable.strings"
           fr="Sources/CoreTendApp/Resources/fr.lproj/Localizable.strings"
-          base_count=$(grep -c '^"' "$base")
-          fr_count=$(grep -c '^"' "$fr")
-          echo "Base: $base_count keys, fr: $fr_count keys"
-          if [ "$base_count" != "$fr_count" ]; then
-            echo "Localization key count mismatch between Base and fr."
+          base_keys="$(mktemp)"
+          fr_keys="$(mktemp)"
+          trap 'rm -f "$base_keys" "$fr_keys"' EXIT
+          iconv -f UTF-16 -t UTF-8 "$base" |
+            sed -n 's/^"\([^"]*\)".*/\1/p' | sort -u > "$base_keys"
+          iconv -f UTF-16 -t UTF-8 "$fr" |
+            sed -n 's/^"\([^"]*\)".*/\1/p' | sort -u > "$fr_keys"
+          echo "Base: $(wc -l < "$base_keys") keys, fr: $(wc -l < "$fr_keys") keys"
+          if ! diff -u "$base_keys" "$fr_keys"; then
+            echo "Localization keys differ between Base and fr."
             exit 1
           fi
 
