@@ -4,7 +4,11 @@ set -e
 cd "$(dirname "$0")/.."
 FWK=/Library/Developer/CommandLineTools/Library/Developer/Frameworks
 LIB=/Library/Developer/CommandLineTools/Library/Developer/usr/lib
-swift test --disable-xctest \
+# Several suites deliberately saturate the filesystem. Running those suites
+# against each other makes wall-clock cancellation assertions measure runner
+# contention instead of cancellation latency. Individual engine tests still
+# create concurrent tasks; one test worker only isolates independent fixtures.
+swift test --disable-xctest --no-parallel \
   -Xswiftc -F -Xswiftc "$FWK" \
   -Xlinker -F -Xlinker "$FWK" \
   -Xlinker -rpath -Xlinker "$FWK" \
