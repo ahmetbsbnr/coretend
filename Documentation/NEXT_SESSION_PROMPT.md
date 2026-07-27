@@ -1,6 +1,33 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 # Next Session Prompt
 
+## Immediate next session: isolated media capture
+
+Do not push, open a PR, edit `main`, redeploy, edit the release, move the tag
+or change DNS. First create or enter an isolated macOS account whose full name
+is exactly `CoreTend Demo` (or an authorised isolated macOS VM), with no Apple
+account, personal browser profile, personal files, notifications or private
+credentials.
+
+Then run:
+
+```sh
+cd ~/Documents/MAC_ORGANISE/00_DOCUMENTS_EXISTANTS/01_PROJETS/01_PROJETS_ACTIFS/WEBSITE/products/coretend/app
+Scripts/start-demo-session.sh
+```
+
+Follow the single ordered session in `Documentation/MEDIA_CAPTURE_GUIDE.md`.
+It covers the real public DMG and ZIP, the actual Gatekeeper paths available
+on that macOS version, permissions, synthetic workflows, light/dark/focus
+states, quit/relaunch/reinstall/uninstall, screenshots, installation videos
+and feature demos. Do not simulate macOS security UI. Reject and recapture any
+frame that may contain identifying information.
+
+After capture, run `Scripts/check-media-privacy.sh`, inspect every image and
+sample every video transition, fill both manifests and
+`MEDIA_PRIVACY_AUDIT.md`, then regenerate and test the site. Only after those
+steps pass may the session ask for push, redeploy and PR authorisation.
+
 ## Current authoritative resume state — 2026-07-27
 
 - Production: `https://coretend.ahmetbsbnr.com`

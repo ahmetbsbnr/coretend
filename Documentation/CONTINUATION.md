@@ -1,5 +1,54 @@
 # CONTINUATION
 
+## Présentation publique locale — reprise du 2026-07-27
+
+Branche `feat/coretend-rebrand-workspace`, HEAD avant cette mise à jour
+`671521ea14cbdc4434d89315db4fffc0a7bfddb3`. Le tag annoté `v0.9.0` est
+inchangé et cible toujours
+`a6aa3bf20cc1f3b7623291660c4943db2e5d4a50`. Sept commits locaux suivent le
+tag ; les trois plus récents préparent les liens d'aide d'une future version,
+l'expérience publique d'installation/support et un pipeline de médias
+respectueux de la vie privée.
+
+Le site généré comporte désormais 16 routes dans chacune des langues anglaise
+et française, notamment démonstrations, installation et support. La page de
+téléchargement recommande le DMG, présente le ZIP comme alternative, distingue
+la vérification SHA-256 facultative du parcours graphique, et décrit
+honnêtement la bêta arm64 non signée et non notariée. Les tests applicatifs
+restent à 296 tests / 58 suites / 0 échec ; les builds Debug et Release ainsi
+que les contrôles du site, des liens, de la licence et des données privées
+passent.
+
+Les quatre fichiers publics v0.9.0 ont été retéléchargés et contrôlés depuis
+GitHub. ZIP : 2 833 085 octets,
+`1d224b7655cfbcb15b5f9a37302c454775fae34d17d7f010f8c9ab026999b7d8`.
+DMG : 5 192 666 octets,
+`f2fbc7840ac4a5509836a495c51e72e6cfd52ef24e6cbdd792fa8404bd3f6c8d`.
+`SHA256SUMS`, `unzip -t`, `hdiutil verify` et `latest.json` passent. Le bundle
+est bien 0.9.0, macOS 14 minimum, arm64, ad hoc, sans Developer ID ni
+notarisation.
+
+### Blocage volontaire des médias
+
+Aucun média final n'est présent ni approuvé. Les captures préparatoires prises
+depuis le compte courant ont été rejetées et supprimées ; une capture réelle
+du dialogue Gatekeeper a également été rejetée parce que l'arrière-plan
+contenait des éléments privés. Aucun de ces fichiers n'a été ajouté à Git.
+
+La production définitive doit être réalisée dans une VM isolée ou un compte
+macOS local dont le nom complet est exactement `CoreTend Demo`, sans compte
+Apple ni donnée personnelle. `Scripts/start-demo-session.sh` refuse de
+démarrer ailleurs. La procédure groupée, le jeu de données synthétique, les
+storyboards, les manifestes et les contrôles sont décrits dans
+`MEDIA_CAPTURE_GUIDE.md`, `DEMO_DATASET.md`, `SCREENSHOT_MANIFEST.md`,
+`VIDEO_MANIFEST.md` et `MEDIA_PRIVACY_AUDIT.md`.
+
+Aucun push, aucune PR, aucune modification de `main`, aucun redéploiement,
+aucune édition de release, aucun déplacement de tag et aucune modification DNS
+n'ont été effectués pendant cette phase. Ne demander ces autorisations qu'après
+la session de capture isolée, la revue humaine image par image et le passage de
+`Scripts/check-media-privacy.sh`.
+
 ## État autoritatif — production vérifiée le 2026-07-27
 
 Le site CoreTend est déployé sur le projet Vercel

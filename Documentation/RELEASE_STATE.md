@@ -1,6 +1,26 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 # Release State
 
+## Local presentation work after v0.9.0 — 2026-07-27
+
+The binary release remains exactly the annotated `v0.9.0` tag at
+`a6aa3bf20cc1f3b7623291660c4943db2e5d4a50`. The current branch contains
+post-release website, help, documentation and media-validation work; none of
+it is represented as part of the downloadable 0.9.0 binary.
+
+The public ZIP, DMG, `latest.json` and `SHA256SUMS` were downloaded again and
+validated. Their sizes, hashes, archive integrity and manifest values match
+the production state below. The available binary is arm64, requires macOS 14
+or later, is unsigned by Developer ID and is not notarized.
+
+No final screenshots or videos are approved. Draft captures made outside an
+isolated `CoreTend Demo` account were rejected and removed before commit. The
+site intentionally renders useful textual presentation without those media.
+Final media, Gatekeeper UI evidence, first-run permission testing,
+reinstallation and uninstall validation remain a grouped human action in the
+dedicated account. No branch push, release edit, tag change, redeploy or DNS
+change occurred in this work.
+
 ## Production state — verified 2026-07-27
 
 The annotated `v0.9.0` tag is public and still resolves to
