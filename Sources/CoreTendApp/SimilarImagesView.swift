@@ -2,7 +2,7 @@ import SwiftUI
 import ScanCore
 import DesignSystem
 import Persistence
-import QuickLookThumbnailing
+@preconcurrency import QuickLookThumbnailing
 
 @MainActor
 @Observable
