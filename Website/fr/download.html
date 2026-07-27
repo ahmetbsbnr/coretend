@@ -20,7 +20,9 @@
 <meta property="og:title" content="Télécharger — CoreTend">
 <meta property="og:description" content="Un Mac plus léger. Toujours sous contrôle. Entretien local, transparent et réversible pour macOS.">
 <meta property="og:locale" content="fr_FR">
-<meta property="og:image" content="../assets/brand/opengraph.png">
+<meta property="og:image" content="https://coretend.ahmetbsbnr.com/assets/brand/opengraph.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../assets/brand/favicon-32.png" sizes="32x32">
 <link rel="icon" href="../assets/brand/favicon-512.png" sizes="512x512">
@@ -40,6 +42,7 @@
     <nav class="primary" aria-label="Principale">
       <a href="index.html">Aperçu</a>
       <a href="features.html">Fonctionnalités</a>
+      <a href="demos.html">Démos</a>
       <a href="privacy.html">Confidentialité</a>
       <a href="download.html" class="active" aria-current="page">Télécharger</a>
       <a href="documentation.html">Documentation</a>
@@ -63,18 +66,29 @@
   <tr><th>Champ</th><th>Valeur</th></tr>
   <tr><td>Version</td><td>0.9.0</td></tr>
   <tr><td>ZIP</td><td><a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.0/CoreTend-0.9.0-arm64-unsigned.zip"><code>CoreTend-0.9.0-arm64-unsigned.zip</code></a></td></tr>
+  <tr><td>Taille ZIP</td><td>2833085 octets</td></tr>
   <tr><td>SHA-256 du ZIP</td><td><code>1d224b7655cfbcb15b5f9a37302c454775fae34d17d7f010f8c9ab026999b7d8</code></td></tr>
   <tr><td>DMG</td><td><a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.0/CoreTend-0.9.0-arm64-unsigned.dmg"><code>CoreTend-0.9.0-arm64-unsigned.dmg</code></a></td></tr>
+  <tr><td>Taille DMG</td><td>5192666 octets</td></tr>
   <tr><td>SHA-256 du DMG</td><td><code>f2fbc7840ac4a5509836a495c51e72e6cfd52ef24e6cbdd792fa8404bd3f6c8d</code></td></tr>
   <tr><td>Fichiers de vérification</td><td><a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.0/latest.json"><code>latest.json</code></a> · <a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.0/SHA256SUMS"><code>SHA256SUMS</code></a></td></tr>
   <tr><td>Architecture</td><td>arm64</td></tr>
   <tr><td>macOS minimal</td><td>14.0</td></tr>
+  <tr><td>Commit source</td><td><code>a6aa3bf20cc1f3b7623291660c4943db2e5d4a50</code></td></tr>
+  <tr><td>Date de compilation</td><td>2026-07-27T14:14:55Z</td></tr>
   <tr><td>Signature de code</td><td><strong>non signé</strong> — toujours divulgué, jamais masqué</td></tr>
   <tr><td>Notarisation</td><td><strong>non notarisé</strong> — nécessite un Apple Developer ID</td></tr>
 </table>
 
 <h2>Code source</h2>
 <p>CoreTend est open source. L'intégralité du code, des tests, des scripts de compilation et des gates se trouve sur <a href="https://github.com/ahmetbsbnr/coretend">https://github.com/ahmetbsbnr/coretend</a>.</p>
+
+<h2>Recommandé : DMG</h2>
+<p>Le DMG offre une installation claire par glisser-déposer vers Applications.
+Le ZIP contient la même application et reste une alternative pour les
+utilisateurs expérimentés. Aucun format ne change le statut non signé et non
+notarisé.</p>
+<p><a class="btn btn-primary" href="install.html">Installer CoreTend étape par étape</a></p>
 
 <h2>Installer une application non signée</h2>
 <p>macOS refusera d'ouvrir CoreTend au premier lancement, en indiquant que le
@@ -103,9 +117,10 @@ application n'est pas un échange raisonnable.</p>
   <div class="wrap">
     <div>
       <p class="footer-note">&copy; Les contributeurs de CoreTend. Open source — voir les <a href="licenses.html">licences</a>.</p>
-      <p class="disclaimer">CoreTend est un projet indépendant et n'est pas affilié à Apple Inc. Mac et macOS décrivent uniquement la compatibilité.</p>
     </div>
     <nav aria-label="Pied de page">
+      <a href="install.html">Installer</a>
+      <a href="support.html">Assistance</a>
       <a href="faq.html">FAQ</a>
       <a href="roadmap.html">Feuille de route</a>
       <a href="security.html">Sécurité</a>
