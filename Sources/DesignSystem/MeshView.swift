@@ -29,54 +29,138 @@ public struct MCMeshView: View {
 
     public var body: some View {
         Canvas { context, size in
-            let center = CGPoint(x: size.width / 2, y: size.height / 2)
-            let radius = min(size.width, size.height) / 2 * 0.82
-            let points = (0..<nodeCount).map { i -> CGPoint in
-                let angle = (Double(i) / Double(nodeCount)) * 2 * .pi - .pi / 2
-                return CGPoint(x: center.x + radius * cos(angle), y: center.y + radius * sin(angle))
-            }
-            let presentCount = Int(Double(nodeCount) * completeness)
-
-            // Nucleus
-            let nucleusRadius = size.width * 0.05
-            context.fill(Path(ellipseIn: CGRect(x: center.x - nucleusRadius, y: center.y - nucleusRadius,
-                                                 width: nucleusRadius * 2, height: nucleusRadius * 2)),
-                         with: .color(tint))
-
-            // Edges between neighboring present nodes (mesh containment lines).
-            for i in 0..<nodeCount {
-                let j = (i + 1) % nodeCount
-                let bothPresent = i < presentCount && j < presentCount
-                var path = Path()
-                path.move(to: points[i])
-                path.addLine(to: points[j])
-                if bothPresent {
-                    context.stroke(path, with: .color(tint.opacity(0.6)), lineWidth: 1.5)
-                } else {
-                    context.stroke(path, with: .color(Color.secondary.opacity(0.25)),
-                                    style: StrokeStyle(lineWidth: 1, dash: [3, 4]))
-                }
-                // Spoke from nucleus to node.
-                var spoke = Path()
-                spoke.move(to: center)
-                spoke.addLine(to: points[i])
-                context.stroke(spoke, with: .color((i < presentCount ? tint : Color.secondary).opacity(i < presentCount ? 0.35 : 0.15)),
-                                lineWidth: 1)
-            }
-
-            // Nodes.
-            for (i, p) in points.enumerated() {
-                let present = i < presentCount
-                let r: CGFloat = present ? 4 : 3
-                let rect = CGRect(x: p.x - r, y: p.y - r, width: r * 2, height: r * 2)
-                if present {
-                    context.fill(Path(ellipseIn: rect), with: .color(tint))
-                } else {
-                    context.stroke(Path(ellipseIn: rect), with: .color(Color.secondary.opacity(0.35)), lineWidth: 1)
-                }
-            }
+            draw(in: &context, size: size)
         }
         .accessibilityHidden(true)
+    }
+
+    private func draw(in context: inout GraphicsContext, size: CGSize) {
+        let center = CGPoint(x: size.width / 2, y: size.height / 2)
+        let points = meshPoints(center: center, size: size)
+        let presentCount = Int(Double(nodeCount) * completeness)
+
+        drawNucleus(center: center, size: size, context: &context)
+        drawEdges(
+            points: points,
+            center: center,
+            presentCount: presentCount,
+            context: &context
+        )
+        drawNodes(points: points, presentCount: presentCount, context: &context)
+    }
+
+    private func meshPoints(center: CGPoint, size: CGSize) -> [CGPoint] {
+        let radius = min(size.width, size.height) / 2 * 0.82
+        return (0..<nodeCount).map { index in
+            let fraction = Double(index) / Double(nodeCount)
+            let angle = fraction * 2 * Double.pi - Double.pi / 2
+            return CGPoint(
+                x: center.x + radius * CGFloat(cos(angle)),
+                y: center.y + radius * CGFloat(sin(angle))
+            )
+        }
+    }
+
+    private func drawNucleus(
+        center: CGPoint,
+        size: CGSize,
+        context: inout GraphicsContext
+    ) {
+        let radius = size.width * 0.05
+        let diameter = radius * 2
+        let rect = CGRect(
+            x: center.x - radius,
+            y: center.y - radius,
+            width: diameter,
+            height: diameter
+        )
+        context.fill(Path(ellipseIn: rect), with: .color(tint))
+    }
+
+    private func drawEdges(
+        points: [CGPoint],
+        center: CGPoint,
+        presentCount: Int,
+        context: inout GraphicsContext
+    ) {
+        for index in 0..<nodeCount {
+            let nextIndex = (index + 1) % nodeCount
+            let bothPresent = index < presentCount && nextIndex < presentCount
+            drawEdge(
+                from: points[index],
+                to: points[nextIndex],
+                present: bothPresent,
+                context: &context
+            )
+            drawSpoke(
+                from: center,
+                to: points[index],
+                present: index < presentCount,
+                context: &context
+            )
+        }
+    }
+
+    private func drawEdge(
+        from start: CGPoint,
+        to end: CGPoint,
+        present: Bool,
+        context: inout GraphicsContext
+    ) {
+        var path = Path()
+        path.move(to: start)
+        path.addLine(to: end)
+        if present {
+            context.stroke(path, with: .color(tint.opacity(0.6)), lineWidth: 1.5)
+        } else {
+            let style = StrokeStyle(lineWidth: 1, dash: [3, 4])
+            context.stroke(
+                path,
+                with: .color(Color.secondary.opacity(0.25)),
+                style: style
+            )
+        }
+    }
+
+    private func drawSpoke(
+        from center: CGPoint,
+        to point: CGPoint,
+        present: Bool,
+        context: inout GraphicsContext
+    ) {
+        var path = Path()
+        path.move(to: center)
+        path.addLine(to: point)
+        let color = present ? tint.opacity(0.35) : Color.secondary.opacity(0.15)
+        context.stroke(path, with: .color(color), lineWidth: 1)
+    }
+
+    private func drawNodes(
+        points: [CGPoint],
+        presentCount: Int,
+        context: inout GraphicsContext
+    ) {
+        for (index, point) in points.enumerated() {
+            let present = index < presentCount
+            let radius: CGFloat = present ? 4 : 3
+            let diameter = radius * 2
+            let rect = CGRect(
+                x: point.x - radius,
+                y: point.y - radius,
+                width: diameter,
+                height: diameter
+            )
+            let path = Path(ellipseIn: rect)
+            if present {
+                context.fill(path, with: .color(tint))
+            } else {
+                context.stroke(
+                    path,
+                    with: .color(Color.secondary.opacity(0.35)),
+                    lineWidth: 1
+                )
+            }
+        }
     }
 
     /// VoiceOver-facing summary of the same real state the mesh renders.
