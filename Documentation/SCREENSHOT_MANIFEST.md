@@ -1,10 +1,8 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 # Screenshot Manifest
 
-No final screenshot is currently approved. A first capture run used the normal
-macOS account with an isolated CoreTend store. Although the app-only frames
-were visually clean, the later privacy requirement mandates a dedicated demo
-account or VM. Those files were rejected before commit and removed.
+One cropped application-only screenshot is approved. Earlier captures remain
+excluded unless their individual status below changes after a complete review.
 
 | ID | Feature | Planned file | Appearance | Site | README | Required alt text | Status |
 |---|---|---|---|---|---|---|---|
@@ -18,6 +16,25 @@ account or VM. Those files were rejected before commit and removed.
 | protection | Optional scan | `coretend-protection.png` | dark | demos | — | CoreTend Protection showing its real engine state | HUMAN_REVIEW_REQUIRED |
 | settings | Permissions and safety | `coretend-settings-light.png` | light | getting started | gallery | CoreTend settings and permission status | HUMAN_REVIEW_REQUIRED |
 | gatekeeper | Real first-open block | `coretend-first-launch-gatekeeper.png` | system | install guide | — | macOS first-open warning for CoreTend on the stated OS version | HUMAN_REVIEW_REQUIRED |
+| menu-bar | Menu bar status panel | `Website/assets/app/menu-bar.png` and `.webp` | dark | home/demos | planned | CoreTend 0.9.0 menu bar panel showing CPU, memory, free space, thermal state and protection status | APPROVED |
+
+Approved export details:
+
+- Dimensions: 660×806.
+- PNG: 232,364 bytes, SHA-256
+  `1da767c9b50f43b61539b70e73e8ba3df19ebf2c05a3ff73e22e77b6d256b756`.
+- WebP: 125,174 bytes, SHA-256
+  `058796dc7cf65448f432180747ea4e042f833eab2ee603caa4ef9d71bbf32d86`.
+- CoreTend: 0.9.0 arm64 capture session; source commit `a6aa3bf`.
+- Capture/review date: 2026-07-27. macOS exact version was not embedded and is
+  therefore not guessed.
+- Source:
+  `$MEDIA_WORKSPACE/processing/incoming/coretend-additional-screen-review.png`.
+- Privacy review: passed. Full pixels, metadata, PNG chunks, and extended
+  attributes were inspected; exports contain no author, username, path, GPS,
+  URL, account, or screenshot comment.
+- The approved exports are recompressed copies. The source remains untouched
+  outside Git.
 
 Every accepted row must add: exact dimensions, file size, CoreTend version,
 source commit, macOS version, capture date, synthetic dataset version,
