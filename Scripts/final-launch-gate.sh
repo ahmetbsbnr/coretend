@@ -79,10 +79,15 @@ esac
 
 HEAD_SHA=$(git rev-parse HEAD)
 if [ -n "$EXPECT_HEAD" ]; then
-  if [ "$HEAD_SHA" = "$(git rev-parse "$EXPECT_HEAD" 2>/dev/null)" ]; then
+  # "$EXPECT_HEAD^{commit}" dereferences an annotated tag to the commit it
+  # points at. Plain `git rev-parse <tag>` returns the tag OBJECT's own sha for
+  # an annotated tag, not the commit sha, so comparing that directly against
+  # HEAD_SHA fails even when the tag correctly points at HEAD.
+  EXPECT_COMMIT=$(git rev-parse "${EXPECT_HEAD}^{commit}" 2>/dev/null)
+  if [ -n "$EXPECT_COMMIT" ] && [ "$HEAD_SHA" = "$EXPECT_COMMIT" ]; then
     PASS "HEAD matches the expected commit"
   else
-    FAIL "HEAD is $HEAD_SHA, expected $EXPECT_HEAD"
+    FAIL "HEAD is $HEAD_SHA, expected $EXPECT_HEAD (resolves to ${EXPECT_COMMIT:-unresolvable})"
   fi
 else
   NA "expected HEAD not supplied (pass --expect-head <sha> to pin it)"
