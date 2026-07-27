@@ -678,3 +678,9 @@ footer.site a:hover { color: var(--text); }
   body { background: #fff; color: #000; }
   .card, .feature-visual { border: 1px solid #999; box-shadow: none; }
 }
+
+/* Footer paragraphs. These were inline style attributes; they moved here so
+   the Content-Security-Policy can keep style-src at 'self' without needing
+   'unsafe-inline'. Two rules are cheaper than weakening the policy. */
+.footer-note { margin: 0 0 .5rem; }
+.disclaimer { margin: 0; }

@@ -1,9 +1,12 @@
 # Website Deployment
 
-Status: **not deployed.** No production URL exists, no hosting account has
-been provisioned by this session, no deploy has been triggered. This
-documents the process for later, once a human makes that deliberate
-decision.
+Status: **not deployed.** No production URL exists and no deploy has been
+triggered. The configuration is now prepared and verified locally, so the
+remaining step is a single deliberate human decision.
+
+The Vercel CLI is authenticated in this environment (`vercel whoami` →
+`ahmetbsbnr`). No Vercel project has been created, no domain has been added,
+and no DNS record has been touched.
 
 ## Why nothing was deployed this session
 
@@ -39,5 +42,65 @@ no deploy has been triggered — that is a human decision, not made here.
 
 ## Build/deploy commands
 
-Build: `python3 Website/generate.py` (see `WEBSITE_ARCHITECTURE.md`).
-Deploy command depends on the host chosen at that time — not decided here.
+Build: `python3 Website/generate.py` (see `WEBSITE_ARCHITECTURE.md`). This also
+generates `Website/vercel.json`, `Website/robots.txt` and
+`Website/sitemap.xml`. None of them is hand-edited.
+
+`Website/vercel.json` carries the headers from `WEBSITE_SECURITY.md`:
+Content-Security-Policy, Referrer-Policy, X-Content-Type-Options,
+X-Frame-Options, Permissions-Policy, Strict-Transport-Security, and the two
+Cross-Origin-* headers. The CSP is strict — `script-src 'none'`,
+`style-src 'self'` with no `'unsafe-inline'` — which the site earns by having
+no JavaScript, no external origin and no inline style attributes.
+
+### The exact deploy sequence
+
+Run from the repository root. Everything before the last two commands is
+non-destructive and reversible.
+
+```sh
+# 1. Regenerate and verify locally.
+python3 Website/generate.py
+bash Scripts/check-website.sh
+bash Scripts/check-placeholders.sh          # must report 0
+
+# 2. Preview deploy (creates the project on first run; not production).
+cd Website && vercel deploy
+
+# 3. Verify the preview URL before promoting it.
+curl -sI <preview-url>/en/index.html | grep -i 'content-security-policy\|strict-transport'
+
+# 4. Promote to production.
+vercel deploy --prod
+
+# 5. Attach the domain.
+vercel domains add coretend.ahmetbsbnr.com
+```
+
+### The single human action that cannot be automated here
+
+**The DNS record.** `coretend.ahmetbsbnr.com` is a subdomain of a domain whose
+registrar credentials are not present in this environment. After step 5 Vercel
+prints the record it wants; it must be created at the registrar for
+`ahmetbsbnr.com`, typically:
+
+```
+CNAME   coretend   cname.vercel-dns.com.
+```
+
+### After DNS propagates
+
+Do not mark DNS or TLS done before these return the expected values:
+
+```sh
+dig +short coretend.ahmetbsbnr.com
+curl -sI https://coretend.ahmetbsbnr.com/en/index.html
+curl -sI http://coretend.ahmetbsbnr.com/         # expect a redirect to HTTPS
+openssl s_client -connect coretend.ahmetbsbnr.com:443 -servername coretend.ahmetbsbnr.com </dev/null 2>/dev/null | openssl x509 -noout -dates -subject
+```
+
+Then, and only then, set `siteIndexable` to `true` in
+`Configuration/PublicIdentity.example.json` and regenerate. That one flag moves
+the per-page robots meta, `robots.txt` and the `X-Robots-Tag` header together —
+until the site is reachable they all say noindex, because indexing a page
+nobody can load is a promise nobody can keep.
