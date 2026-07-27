@@ -133,9 +133,14 @@ echo "verifying staged tree..."
 for pattern in 'MAC_ORGANISE' '00_DOCUMENTS_EXISTANTS' '01_PROJETS_ACTIFS'; do
   if hits=$(grep -rIl "$pattern" "$STAGING" 2>/dev/null); then
     if [ -n "$hits" ]; then
-      # check-website.sh legitimately contains these as *detection* patterns —
-      # it is the script whose job is to find them in generated output.
-      real=$(printf '%s\n' "$hits" | grep -v 'Scripts/check-website.sh' || true)
+      # The scanners themselves contain these strings as *detection* patterns:
+      # check-website.sh looks for them in generated output, and this script
+      # looks for them here. A scanner matching its own pattern list is not a
+      # leak, and excluding the scanners from publication instead would ship a
+      # repository whose gates cannot be re-run by anyone else.
+      real=$(printf '%s\n' "$hits" \
+             | grep -v 'Scripts/check-website.sh' \
+             | grep -v 'Scripts/build-public-branch.sh' || true)
       [ -n "$real" ] && fail "pattern '$pattern' present in: $(printf '%s' "$real" | head -3 | tr '\n' ' ')"
     fi
   fi
