@@ -1,11 +1,77 @@
 # CONTINUATION
 
+## Verification reprise — 2026-07-27 (publication toujours interdite)
+
+Vérification non destructive effectuée sur
+`feat/coretend-rebrand-workspace`, HEAD
+`629fb365a8a85e547979c330ac77c2e136ed1e7b`. L'arbre est propre. Le tag
+annoté local `v0.9.0` cible toujours exactement
+`a6aa3bf20cc1f3b7623291660c4943db2e5d4a50`; les deux requêtes
+`git ls-remote` (tag et tag déréférencé) ne retournent rien, donc le tag
+n'existe pas sur `origin`. Il n'y a pas deux commits après le tag mais un
+seul, `629fb36`, exclusivement documentaire
+(`CONTINUATION.md`, `NEXT_SESSION_PROMPT.md`, `RELEASE_STATE.md`).
+
+Artefacts vérifiés sans reconstruction :
+
+- `CoreTend-0.9.0-arm64-unsigned.zip` — 2 833 085 octets —
+  `1d224b7655cfbcb15b5f9a37302c454775fae34d17d7f010f8c9ab026999b7d8`;
+  `unzip -t` sans erreur.
+- `CoreTend-0.9.0-arm64-unsigned.dmg` — 5 192 666 octets —
+  `f2fbc7840ac4a5509836a495c51e72e6cfd52ef24e6cbdd792fa8404bd3f6c8d`;
+  `hdiutil verify` valide.
+- `latest.json` est valide et cohérent : version `0.9.0`, tag `v0.9.0`,
+  commit source `a6aa3bf…`, arbre propre, `signed=false`,
+  `notarized=false`.
+
+`check-private-data.sh` passe, `check-publish-readiness.sh` passe, et la
+revalidation directe donne 296 tests / 58 suites / 0 échec, Debug et Release
+verts. Le gate final lancé depuis le HEAD documentaire n'est plus comparable
+au résultat figé sur le tag : il échoue correctement sur la différence
+HEAD/provenance et tag/HEAD. Les deux `NOT_APPLICABLE` du run de release sont
+la signature Developer ID et la notarisation, indisponibles et non revendiquées.
+Les deux `HUMAN_ACTION_REQUIRED` du run figé sont la création de la prerelease
+GitHub et le déploiement/DNS public. GitHub retourne actuellement la licence
+`Other` et aucune release `v0.9.0`.
+
+Commandes publiques corrigées, préparées mais **non exécutées** :
+
+```sh
+# Refaire impérativement les deux contrôles juste avant le push ; toute sortie
+# impose l'arrêt, sans déplacement ni recréation du tag.
+git ls-remote --tags origin refs/tags/v0.9.0
+git ls-remote --tags origin 'refs/tags/v0.9.0^{}'
+git push origin refs/tags/v0.9.0:refs/tags/v0.9.0
+
+gh release create v0.9.0 \
+  --repo ahmetbsbnr/coretend \
+  --title "CoreTend 0.9.0 — Public Beta (arm64, unsigned)" \
+  --prerelease \
+  --notes-file Release/Notes/0.9.0.en.md \
+  Release/CoreTend-0.9.0-arm64-unsigned.zip \
+  Release/CoreTend-0.9.0-arm64-unsigned.dmg \
+  Release/latest.json \
+  Release/SHA256SUMS
+
+# Le site est statique : aucun package.json et aucune étape npm.
+cd Website
+vercel deploy --prod
+vercel domains add coretend.ahmetbsbnr.com
+```
+
+Restent interdits sans accord explicite : push, création/édition de release,
+upload d'artefacts, déploiement Vercel, rattachement ou modification de
+domaine/DNS, déplacement/suppression de tag et réécriture d'historique.
+
 ## Where we are (0.9.0 launch phase — local work DONE, publication PENDING)
 
-Branch `feat/coretend-rebrand-workspace`, HEAD `a6aa3bf`. **The repository is
-public** (one published commit, `b2bca85`). Tag `v0.9.0` exists **locally
-only**, points at `a6aa3bf`, never pushed. See `NEXT_SESSION_PROMPT.md` for the
-exact resume state and `RELEASE_STATE.md` for full artifact detail.
+Branch `feat/coretend-rebrand-workspace`, HEAD `629fb36`. **The repository is
+public** (one published commit, `b2bca85`). One documentation-only commit
+follows the release tag. Tag `v0.9.0` exists **locally only**, points at
+`a6aa3bf20cc1f3b7623291660c4943db2e5d4a50`, and was never pushed. The
+release artifacts were built from that tagged commit, not from the later
+documentation commit. See `NEXT_SESSION_PROMPT.md` for the exact resume state
+and `RELEASE_STATE.md` for full artifact detail.
 
 Not yet done, in order: push the tag, create the GitHub prerelease, deploy the
 site to Vercel, attach DNS, flip `siteIndexable` once the site is verified
