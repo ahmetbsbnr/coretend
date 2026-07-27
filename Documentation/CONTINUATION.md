@@ -1,9 +1,33 @@
 # CONTINUATION
 
-## Where we are (0.9.0 launch phase, IN PROGRESS)
+## Where we are (0.9.0 launch phase — local work DONE, publication PENDING)
 
-Branch `feat/coretend-rebrand-workspace`. **The repository is now public.**
-Not yet done: site deploy, DNS, release build, tag, GitHub Release.
+Branch `feat/coretend-rebrand-workspace`, HEAD `a6aa3bf`. **The repository is
+public** (one published commit, `b2bca85`). Tag `v0.9.0` exists **locally
+only**, points at `a6aa3bf`, never pushed. See `NEXT_SESSION_PROMPT.md` for the
+exact resume state and `RELEASE_STATE.md` for full artifact detail.
+
+Not yet done, in order: push the tag, create the GitHub prerelease, deploy the
+site to Vercel, attach DNS, flip `siteIndexable` once the site is verified
+reachable. None of these were performed — all require a deliberate human
+decision per the session brief, and `KNOWN_ISSUES.md` §12 records what still
+needs confirming once something is pushed (GitHub's licence detection).
+
+Local work this phase, in commit order: 34→41 stale placeholder tokens fixed
+(`08d30f8`), version bumped to 0.9.0 with the version-consistency gate fixed
+(`fd2e5d0`), licence cross-references repaired (`06629dc`), final security audit
+(`6b060cd`, self-correction `f9fc560`), accessibility QA record (`6f81925`), the
+site made config-driven with real download/documentation content
+(`090cfcd`), Vercel hosting config generated (`ca045b5`), the final launch gate
+written and its determinism bug fixed (`e000c73`, `295ab8f`), the
+session-handover doc set added (`f63cb14`), the licence presentation
+restructured to fix GitHub's `NOASSERTION` (`45ed83b`), and the launch gate's
+annotated-tag dereference bug fixed (`a6aa3bf`, current HEAD).
+
+Verified at `a6aa3bf`: 296 tests / 58 suites, 0 failures; Debug + Release build
+clean; `final-launch-gate.sh` run three times, **52 PASS, 0 FAIL** every time,
+byte-identical output. Artifacts rebuilt on this exact commit and verified:
+`unzip -t` clean, `hdiutil verify` VALID, `SHA256SUMS` all OK.
 
 Nothing is signed or notarised, and it cannot be: `security find-identity -v -p
 codesigning` reports **0 valid identities**, and a Developer ID requires a paid
