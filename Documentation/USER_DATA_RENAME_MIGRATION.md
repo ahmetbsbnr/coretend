@@ -13,7 +13,7 @@ than rewritten.
 | The migration **as delivered and executed** — code, tests, data really migrated, limits | [`CORETEND_DATA_MIGRATION_REPORT.md`](CORETEND_DATA_MIGRATION_REPORT.md) |
 | The original **pre-implementation design** (historical, verbatim) | [`RebrandHistory/PRE_IMPLEMENTATION_MIGRATION_DESIGN.md`](RebrandHistory/PRE_IMPLEMENTATION_MIGRATION_DESIGN.md) |
 | The original **pre-implementation test plan** (historical, verbatim) | [`RebrandHistory/PRE_IMPLEMENTATION_MIGRATION_TEST_PLAN.md`](RebrandHistory/PRE_IMPLEMENTATION_MIGRATION_TEST_PLAN.md) |
-| Rollback of the rename as a whole | [`PRODUCT_RENAME_ROLLBACK.md`](PRODUCT_RENAME_ROLLBACK.md) |
+| Why internal migration/rollback records are absent from the public export | [`REPOSITORY_SANITIZATION.md`](REPOSITORY_SANITIZATION.md) |
 
 Created during the 0.8.1 Final Canonical Audit Resync at
 `92cbd08bc3cd1d8ad0513391cbd7552b520f09fe`. Left in place instead of editing
