@@ -10,7 +10,7 @@ struct SimilarImagesGroupTests {
         let high = URL(fileURLWithPath: "/tmp/high.jpg")
         let group = SimilarImageGroup(
             id: "g", urls: [low, high], totalBytes: 200,
-            pixelCounts: [low: 640 * 480, high: 4000 * 3000])
+            pixelCounts: [low: Int64(640 * 480), high: Int64(4000 * 3000)])
         #expect(group.bestResolutionURL == high)
     }
 
