@@ -89,8 +89,9 @@ background, and SVG plus PDF vector sources.
 
 **The site is a real product site.** Bilingual, static, responsive,
 keyboard-navigable, light and dark, and it makes **zero external requests** — no
-webfont, no CDN, no analytics, no cookies, and after this release no JavaScript
-at all. `Scripts/check-website.sh` enforces that, plus locale parity, internal
+webfont, no CDN, no analytics, no cookies. A small local progressive-enhancement
+script handles navigation and scroll reveals without storage or network access.
+`Scripts/check-website.sh` enforces that, plus locale parity, internal
 link integrity, an accessibility floor, and an editorial bar that reads
 sentences rather than files so the copy can honestly deny a claim it must not
 make.

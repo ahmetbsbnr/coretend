@@ -67,11 +67,8 @@ NAV = [
     ("index", {"en": "Overview", "fr": "Aperçu"}),
     ("features", {"en": "Features", "fr": "Fonctionnalités"}),
     ("demos", {"en": "Demos", "fr": "Démos"}),
-    ("privacy", {"en": "Privacy", "fr": "Confidentialité"}),
     ("download", {"en": "Download", "fr": "Télécharger"}),
-    ("documentation", {"en": "Documentation", "fr": "Documentation"}),
-    ("open-source", {"en": "Open Source", "fr": "Open Source"}),
-    ("changelog", {"en": "Changelog", "fr": "Journal"}),
+    ("documentation", {"en": "Docs", "fr": "Docs"}),
 ]
 
 FOOTER_LINKS = [
@@ -134,6 +131,10 @@ MARK_SVG = """<svg class="mark" viewBox="0 0 512 512" role="img" aria-label="Cor
 <circle cx="256" cy="256" r="61.44" fill="var(--care)"/>
 </svg>"""
 
+GITHUB_SVG = """<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+<path fill="currentColor" d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.02c-3.23.7-3.91-1.37-3.91-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.41-1.26.74-1.55-2.58-.29-5.29-1.29-5.29-5.73 0-1.27.45-2.3 1.2-3.11-.12-.29-.52-1.47.11-3.07 0 0 .98-.31 3.16 1.19a10.95 10.95 0 0 1 5.76 0c2.19-1.5 3.16-1.19 3.16-1.19.63 1.6.23 2.78.11 3.07.75.81 1.2 1.84 1.2 3.11 0 4.45-2.72 5.43-5.31 5.72.42.36.79 1.07.79 2.16v3.02c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .7Z"/>
+</svg>"""
+
 
 def page_shell(locale, slug, title, body_html, other_locale_slug=None):
     other_slug = other_locale_slug or slug
@@ -159,6 +160,12 @@ def page_shell(locale, slug, title, body_html, other_locale_slug=None):
                    + lang_link("en", en_href)
                    + lang_link("fr", fr_href)
                    + "</div>")
+    github_link = (
+        f'<a class="github-link" href="{REPOSITORY_URL}" '
+        f'aria-label="{"Open CoreTend on GitHub" if locale == "en" else "Ouvrir CoreTend sur GitHub"}">'
+        f'{GITHUB_SVG}<span>GitHub</span></a>'
+        if REPOSITORY_URL else ""
+    )
     skip = {"en": "Skip to content", "fr": "Aller au contenu"}[locale]
     home = {"en": "CoreTend — home", "fr": "CoreTend — accueil"}[locale]
     footer_note = {
@@ -198,15 +205,19 @@ def page_shell(locale, slug, title, body_html, other_locale_slug=None):
 <link rel="apple-touch-icon" href="../assets/brand/favicon-180.png">
 <style>{CRITICAL_STYLE}</style>
 <link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/site.js" defer></script>
 </head>
-<body>
+<body class="page-{slug}">
 <a class="skip-link" href="#main">{skip}</a>
 <header class="site">
   <div class="wrap">
     <a class="brand" href="index.html" aria-label="{home}">{MARK_SVG}<span>{SITE_TITLE}</span></a>
-    <nav class="primary" aria-label="{"Main" if locale == "en" else "Principale"}">
+    <button class="nav-toggle" type="button" aria-expanded="false"
+      aria-controls="primary-nav">{"Menu" if locale == "en" else "Menu"}</button>
+    <nav class="primary" id="primary-nav" aria-label="{"Main" if locale == "en" else "Principale"}">
       {nav_items}
     </nav>
+    {github_link}
     {lang_switch}
   </div>
 </header>
@@ -396,6 +407,9 @@ HOME_FAQ = [
 
 HOME_TEXT = {
     "en": {
+        "hero_eyebrow": "Native care for macOS",
+        "hero_title": "A lighter Mac. Always under control.",
+        "hero_body": "See what weighs down your Mac, review every finding, and decide what leaves.",
         "cta_download": "Download CoreTend",
         "cta_how": "See how it works",
         "prerelease_title": "Pre-1.0, and unsigned",
@@ -450,6 +464,9 @@ HOME_TEXT = {
                       "is not yet in place.",
     },
     "fr": {
+        "hero_eyebrow": "Entretien natif pour macOS",
+        "hero_title": "Un Mac plus léger. Toujours sous contrôle.",
+        "hero_body": "Voyez ce qui alourdit votre Mac, examinez chaque résultat et décidez de ce qui part.",
         "cta_download": "Télécharger CoreTend",
         "cta_how": "Découvrir le fonctionnement",
         "prerelease_title": "Pré-1.0, et non signé",
@@ -607,16 +624,20 @@ def home_body(l):
 
     return f"""
 <section class="hero">
-  <div>
-    <h1>{SITE_TITLE}</h1>
-    <p class="signature">{SIGNATURE[l]}</p>
+  <div class="hero-copy">
+    <span class="eyebrow">{t['hero_eyebrow']}</span>
+    <h1>{t['hero_title']}</h1>
+    <p class="signature">{t['hero_body']}</p>
     <p class="lead">{SUBTITLE[l]}</p>
     <div class="cta-row">
       <a class="btn btn-primary" href="download.html">{t['cta_download']}</a>
       <a class="btn btn-secondary" href="#how">{t['cta_how']}</a>
     </div>
   </div>
-  {hero_media}
+  <div class="hero-stage" aria-label="CoreTend product preview">
+    <div class="hero-orbit" aria-hidden="true">{MARK_SVG}</div>
+    {hero_media}
+  </div>
 </section>
 
 <section>
@@ -1742,7 +1763,7 @@ def write_vercel_config():
     the per-page meta and robots.txt, so all three move together.
     """
     csp = (
-        f"default-src 'self'; script-src 'none'; "
+        f"default-src 'self'; script-src 'self'; "
         f"style-src 'self' '{critical_style_hash()}'; "
         "img-src 'self' data:; media-src 'self'; font-src 'self'; connect-src 'none'; "
         "frame-ancestors 'none'; form-action 'none'; base-uri 'none'; "

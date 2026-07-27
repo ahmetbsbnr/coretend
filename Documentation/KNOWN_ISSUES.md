@@ -17,6 +17,11 @@ the correct non-white canvas, but those screenshots are not claimed as full
 320px device emulation. Remaining responsive evidence must use unique isolated
 profiles per run or another browser automation environment.
 
+The commercial redesign was visually checked at desktop width with an isolated
+temporary profile. Exact 320–430 px screenshots remain subject to the same
+Chrome-host limitation; CSS breakpoints and automated overflow checks are the
+local evidence until another browser runtime is available.
+
 Open items at 0.9.0. **None blocks the beta.** Each says why it is open rather
 than being quietly closed.
 

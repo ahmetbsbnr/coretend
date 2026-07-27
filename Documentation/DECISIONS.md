@@ -1,5 +1,14 @@
 # DECISIONS
 
+## D-W2 — Website adopts the app's Living System directly (2026-07-27)
+
+The prior site was structurally correct but visually too documentary. The
+replacement uses the real CoreTend interface as primary proof, Core Bloom as
+its motion signature, and the app's semantic palette, spacing, radii, and
+150/300/550 ms motion tokens. A small local enhancement script is accepted for
+mobile navigation and scroll reveals because it adds no tracking, storage, or
+essential-content dependency and respects Reduced Motion.
+
 ## D-G1 — Publish through the sanitised-tree boundary (2026-07-27)
 
 GitHub `main` is intentionally a single sanitised public export and has no

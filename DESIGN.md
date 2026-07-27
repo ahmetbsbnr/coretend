@@ -54,14 +54,19 @@ system-native typography, and functional color rather than decorative effects.
 
 ## Motion
 
-- Tokens: 140ms fast, 260ms standard, 550ms gentle; use the existing
-  `cubic-bezier(0.16, 1, 0.3, 1)` easing.
+- Mirror the app tokens: 150ms quick, 300ms standard, 550ms gentle.
 - Reveal already-visible content through progressive enhancement; never make
   page access depend on an observer firing.
-- Animate transforms and opacity for direct feedback. Avoid perpetual
-  decoration, layout animation, and scroll hijacking.
+- Use the Core Bloom arcs as the single ambient brand animation. Animate
+  transforms and opacity for direct feedback; avoid unrelated decoration,
+  layout animation, and scroll hijacking.
 - Under `prefers-reduced-motion: reduce`, reveal content immediately, stop
   autoplay, and keep manual video controls.
+
+The commercial hero is intentionally asymmetrical: direct value proposition
+and CTA on the left, the real Smart Care window on the right, and Core Bloom
+geometry behind it. A small local script handles mobile navigation and
+one-shot intersection reveals; essential content remains visible without it.
 
 ## Imagery
 

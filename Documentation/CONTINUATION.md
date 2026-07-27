@@ -1,5 +1,26 @@
 # CONTINUATION
 
+## Refonte commerciale complète du site — 2026-07-27
+
+Après retour visuel explicite, la direction précédente a été remplacée avant
+tout push ou déploiement. Le site reprend désormais directement le Living
+System de l'app : Core Ink/Soft Porcelain, mint/iris/amber fonctionnels, Core
+Bloom orbital, vrais tokens 150/300/550 ms, capture Smart Care dominante,
+navigation resserrée, hero commercial, cartes et pages intérieures cohérentes.
+
+Un script local d'environ 1,3 kB assure uniquement le menu mobile et les
+révélations progressives. Sans JavaScript, tout le contenu reste visible.
+Reduced Motion neutralise les orbites, transitions, transformations et vidéos
+automatiques. Une capture headless isolée a validé le nouveau hero ; Chrome a
+de nouveau tardé à quitter après l'écriture du fichier, puis tous les processus
+et le profil temporaire exact ont été supprimés.
+
+Les 32 pages se régénèrent et les gates first paint, liens, accessibilité de
+base, placeholders, confidentialité, médias, CSP et syntaxe JavaScript passent.
+Prochaine tâche exacte : compléter les vérifications responsive/performance,
+committer la refonte, reconstruire l'export public assaini depuis `origin/main`,
+puis reprendre PR, fusion et déploiement.
+
 ## Checkpoint nouvelle capture — 2026-07-27
 
 Branche `feat/coretend-media-integration`, HEAD stable avant ce lot :

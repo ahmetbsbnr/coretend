@@ -87,9 +87,10 @@ generates `Website/vercel.json`, `Website/robots.txt` and
 `Website/vercel.json` carries the headers from `WEBSITE_SECURITY.md`:
 Content-Security-Policy, Referrer-Policy, X-Content-Type-Options,
 X-Frame-Options, Permissions-Policy, Strict-Transport-Security, and the two
-Cross-Origin-* headers. The CSP is strict — `script-src 'none'`,
-`style-src 'self'` with no `'unsafe-inline'` — which the site earns by having
-no JavaScript, no external origin and no inline style attributes.
+Cross-Origin-* headers. The CSP is strict — `script-src 'self'` only and
+`style-src 'self'` plus the exact generated critical-style hash, with no
+`'unsafe-inline'`. The sole local script performs progressive enhancement and
+has no network or storage behavior.
 
 ### The exact deploy sequence
 

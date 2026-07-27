@@ -46,3 +46,15 @@ hash, visible no-JavaScript content, explicit media dimensions, no unexpected
 autoplay, no missing asset, and consistent light/dark initial background.
 Browser first-frame captures are retained under temporary audit output rather
 than committed when they contain no durable project evidence.
+
+## Commercial redesign runtime
+
+The redesign adds one local progressive-enhancement file, `assets/site.js`
+(about 1.3 kB uncompressed). It performs only mobile-navigation state and
+one-shot `IntersectionObserver` reveals. It makes no network request, uses no
+cookie or client storage, and is not required for content visibility.
+`script-src` remains limited to `'self'`.
+
+The initial real product image uses a roughly 105 kB WebP with PNG fallback
+and explicit dimensions. No video, webfont, framework, CDN, analytics, or
+third-party script is loaded at first paint.

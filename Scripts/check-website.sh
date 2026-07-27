@@ -92,11 +92,24 @@ for pattern in 'googletagmanager' 'google-analytics' 'gtag(' 'fbq(' 'plausible' 
   [ -z "$hit" ] || note "tracker or CDN reference found ($pattern): $hit"
 done
 
-# No cookies, no storage, no scripts at all — the site is static by design.
-for pattern in 'document.cookie' 'localStorage' 'sessionStorage' '<script'; do
-  hit=$(grep -rl "$pattern" "$SITE"/en "$SITE"/fr 2>/dev/null || true)
-  [ -z "$hit" ] || note "the site should contain no scripts or client storage, found $pattern in: $hit"
+# One small local enhancement script is allowed. It must not persist data,
+# contact a service, or become necessary for essential content.
+for pattern in 'document.cookie' 'localStorage' 'sessionStorage' 'fetch(' 'XMLHttpRequest' 'WebSocket'; do
+  hit=$(grep -rl "$pattern" "$SITE"/en "$SITE"/fr "$SITE"/assets/site.js 2>/dev/null || true)
+  [ -z "$hit" ] || note "client storage or network code found ($pattern) in: $hit"
 done
+bad_scripts=$(grep -rh '<script' "$SITE"/en "$SITE"/fr 2>/dev/null \
+  | grep -vE '^<script src="../assets/site\.js" defer></script>$' || true)
+[ -z "$bad_scripts" ] || note "unexpected script element found: $bad_scripts"
+[ -f "$SITE/assets/site.js" ] || note "missing local progressive-enhancement script"
+grep -q 'IntersectionObserver' "$SITE/assets/site.js" \
+  || note "scroll reveal enhancement is missing"
+grep -qE 'prefers-reduced-motion:[[:space:]]*reduce' "$SITE/assets/style.css" \
+  || note "Reduced Motion stylesheet override is missing"
+grep -q '@keyframes orbit-a' "$SITE/assets/style.css" \
+  || note "Core Bloom orbit motion is missing"
+grep -q 'class=\"github-link\"' "$SITE/en/index.html" \
+  || note "persistent GitHub information link is missing"
 
 # -------------------------------------------------------------- no leakage
 USER_NAME=$(id -un)
