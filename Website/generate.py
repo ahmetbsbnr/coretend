@@ -10,8 +10,14 @@ runs server-side, there is no bundler, no node_modules, no database.
 ponytail: hand-rolled string templating instead of a template engine —
 add Jinja2 only if page count or logic genuinely outgrows this.
 """
+import html as _html
 import json
 import os
+
+
+def html_escape(value):
+    """Escape a value destined for page text or an attribute."""
+    return _html.escape(str(value), quote=True)
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 REPO_ROOT = os.path.dirname(ROOT)
@@ -75,12 +81,18 @@ FOOTER_LINKS = [
 ]
 
 SITE_TITLE = "CoreTend"
-SITE_URL = "https://coretend.ahmetbsbnr.com"
+SITE_URL = ident("websiteURL", "https://coretend.ahmetbsbnr.com")
 
-# The public repository does not exist yet — nothing has been pushed. Set this
-# to "https://github.com/ahmetbsbnr/coretend" once it does, and every place
-# that wants to link source or docs starts linking instead of naming.
-REPOSITORY_URL = None
+# The repository is public, so this now comes from configuration rather than
+# being pinned to None. Every place that links source or docs reads this one
+# value: it was always meant to be one constant, not thirty edits. If the
+# identity file ever stops defining it, those places name filenames again
+# instead of emitting links that 404.
+REPOSITORY_URL = ident("repositoryURL", "") or None
+
+# Search indexing. False until the site is actually deployed and reachable.
+# The page meta and robots.txt both read this, so they cannot drift apart.
+SITE_INDEXABLE = bool(ident("siteIndexable", False))
 
 # The product signature. Same two lines everywhere: onboarding, DMG, README,
 # site, metadata. A product that describes itself differently in each place
@@ -155,10 +167,13 @@ def page_shell(locale, slug, title, body_html, other_locale_slug=None):
 <title>{title} — {SITE_TITLE}</title>
 <meta name="description" content="{SUBTITLE[locale]}">
 <meta name="color-scheme" content="light dark">
-<!-- noindex until the site is actually published: an unreleased page in a
-     search index is a promise nobody can keep. -->
-<meta name="robots" content="noindex">
+<!-- Indexing follows siteIndexable in the identity file. It stays noindex
+     until the site is really deployed: an unreachable page in a search index
+     is a promise nobody can keep. robots.txt is generated from the same flag,
+     so the two can never disagree. -->
+<meta name="robots" content="{"index, follow" if SITE_INDEXABLE else "noindex"}">
 <link rel="canonical" href="{SITE_URL}/{locale}/{slug}.html">
+<meta property="og:url" content="{SITE_URL}/{locale}/{slug}.html">
 <link rel="alternate" hreflang="en" href="{SITE_URL}/en/{slug if locale == "en" else other_slug}.html">
 <link rel="alternate" hreflang="fr" href="{SITE_URL}/fr/{slug if locale == "fr" else other_slug}.html">
 <meta property="og:type" content="website">
@@ -667,100 +682,167 @@ add("features", {"en": "Features", "fr": "Fonctionnalités"}, features_body)
 
 
 # ------------------------------------------------------------- download ---
+def _release_manifest():
+    """The generated release manifest, when one exists.
+
+    Release/latest.json is build output and is gitignored, so a fresh clone
+    generates the site without it. That is the normal case, not an error: the
+    page degrades to "prepared, not yet published" rather than inventing a
+    checksum. Only a manifest carrying a releaseTag describes something a
+    visitor can actually download.
+    """
+    path = os.path.join(ROOT, "..", "Release", "latest.json")
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return None
+
+
 def download_body(l):
+    m = _release_manifest()
+    repo = ident("repositoryURL", "")
+    version = ident("marketingVersion", "")
+    published = bool(m and m.get("releaseTag"))
+    releases_url = f"{repo}/releases" if repo else ""
+
     if l == "en":
-        return """
-<h1>Download</h1>
+        if published:
+            zip_name = html_escape(str(m.get("zipName", "")))
+            head = f"""
 <div class="status-box">
-  <p><strong>Public release in preparation.</strong> There is no stable
-  release yet. This page is a placeholder for the future release — it does
-  not link to any local build or ad-hoc artifact.</p>
+  <p><strong>CoreTend {html_escape(str(m.get('version','')))} — public beta.</strong>
+  Unsigned and not notarized. Verify the checksum below before you open it.</p>
 </div>
-
+<p><a href="{releases_url}">Download from GitHub Releases</a></p>
+<table>
+  <tr><th>Field</th><th>Value</th></tr>
+  <tr><td>Version</td><td>{html_escape(str(m.get('version','')))}</td></tr>
+  <tr><td>File</td><td><code>{zip_name}</code></td></tr>
+  <tr><td>Checksum (SHA-256)</td><td><code>{html_escape(str(m.get('zipSHA256','')))}</code></td></tr>
+  <tr><td>Architecture</td><td>{html_escape(str(m.get('architecture','')))}</td></tr>
+  <tr><td>Minimum macOS</td><td>{html_escape(str(m.get('minimumMacOS','')))}</td></tr>
+  <tr><td>Code signing</td><td><strong>unsigned</strong> — always disclosed, never hidden</td></tr>
+  <tr><td>Notarization</td><td><strong>not notarized</strong> — requires an Apple Developer ID</td></tr>
+</table>"""
+        else:
+            head = f"""
 <div class="status-box">
-  <p><strong>No release manifest published yet.</strong> There is nothing to
-  download or verify until one exists. When a release ships, this page will
-  list its version, architecture, minimum macOS, signing status and SHA-256
-  checksum — read from the published manifest, not typed in by hand.</p>
+  <p><strong>Release {html_escape(version)} is prepared but not published yet.</strong>
+  There is no download link, because there is nothing public to link to. The
+  version and checksum below appear here only once a tagged release exists —
+  they are read from the generated manifest, never typed in by hand.</p>
 </div>
-
-<h2>Source code</h2>
-<p>CoreTend's source will be published on GitHub once the public
-repository is created (see the project's
-<a href="open-source.html">Open Source</a> page). There is no live
-source-code link yet — the repository is not public. This page will link
-directly to it as soon as that happens.</p>
 
 <h2>What the release will look like</h2>
-<p>The first public artifact will be named exactly:</p>
-<pre>CoreTend-&lt;version&gt;-arm64-unsigned.zip</pre>
-
+<p>The artifact will be named exactly:</p>
+<pre>CoreTend-{html_escape(version)}-arm64-unsigned.zip</pre>
 <table>
   <tr><th>Field</th><th>Status</th></tr>
-  <tr><td>Version</td><td>not yet released</td></tr>
-  <tr><td>Checksum (SHA-256)</td><td>will be published alongside the release</td></tr>
-  <tr><td>Code signing</td><td><strong>unsigned</strong> — this will always be disclosed, never hidden</td></tr>
-  <tr><td>Notarization</td><td>not yet available (requires an Apple Developer ID; out of scope pre-1.0)</td></tr>
-</table>
+  <tr><td>Version</td><td>{html_escape(version)} — prepared, not yet published</td></tr>
+  <tr><td>Checksum (SHA-256)</td><td>published with the release</td></tr>
+  <tr><td>Code signing</td><td><strong>unsigned</strong> — always disclosed, never hidden</td></tr>
+  <tr><td>Notarization</td><td><strong>not notarized</strong> — requires an Apple Developer ID, out of scope pre-1.0</td></tr>
+</table>"""
 
-<h2>Planned install steps (once a release exists)</h2>
+        source = (f'<h2>Source code</h2>\n<p>CoreTend is open source. The full '
+                  f'source, tests, build scripts and gates are at '
+                  f'<a href="{repo}">{html_escape(repo)}</a>.</p>') if repo else ""
+
+        return f"""
+<h1>Download</h1>{head}
+
+{source}
+
+<h2>Installing an unsigned app</h2>
+<p>macOS will refuse to open CoreTend on first launch, saying the developer
+cannot be verified. That warning is correct: no developer identity is attached,
+because signing requires a paid Apple Developer Program membership this project
+does not have.</p>
 <ol>
-  <li>Download and verify the SHA-256 checksum against the published value.</li>
+  <li>Verify the SHA-256 checksum against the published value
+  (<code>shasum -a 256 &lt;file&gt;</code>).</li>
   <li>Unzip and move CoreTend.app to /Applications.</li>
-  <li>Because the app is unsigned, macOS Gatekeeper will require an explicit
-  right-click &rarr; Open the first time.</li>
+  <li>Right-click (or Control-click) the app and choose <strong>Open</strong>,
+  then confirm. Once is enough — macOS remembers that copy.</li>
   <li>Grant Full Disk Access if you want full-coverage scanning (see the
   Documentation).</li>
 </ol>
-<p>Until then, building from source is documented in
+<p><strong>Do not disable Gatekeeper.</strong> The per-app step above is enough,
+and turning off a system-wide protection for one app is not a trade worth
+making.</p>
+<p>Building from source is documented in
 <a href="documentation.html">Documentation</a>.</p>
 """
-    return """
-<h1>Télécharger</h1>
-<div class="status-box">
-  <p><strong>Version publique en préparation.</strong> Aucune version stable
-  n'est disponible pour le moment. Cette page est un espace réservé pour la
-  future publication — elle ne pointe vers aucune build locale ni artefact
-  improvisé.</p>
-</div>
 
+    if published:
+        zip_name = html_escape(str(m.get("zipName", "")))
+        head = f"""
 <div class="status-box">
-  <p><strong>Aucun manifeste de version publié pour l'instant.</strong> Il n'y a
-  rien à télécharger ni à vérifier tant qu'il n'en existe pas. Lorsqu'une
-  version sera publiée, cette page affichera sa version, son architecture, la
-  version minimale de macOS, l'état de la signature et la somme de contrôle
-  SHA-256 — lues depuis le manifeste publié, jamais saisies à la main.</p>
+  <p><strong>CoreTend {html_escape(str(m.get('version','')))} — bêta publique.</strong>
+  Non signée et non notarisée. Vérifiez l'empreinte ci-dessous avant d'ouvrir
+  l'application.</p>
 </div>
-
-<h2>Code source</h2>
-<p>Le code source de CoreTend sera publié sur GitHub une fois le dépôt
-public créé (voir la page <a href="open-source.html">Open Source</a> du
-projet). Il n'y a pas encore de lien vers le code source en direct — le
-dépôt n'est pas encore public. Cette page y renverra directement dès que
-ce sera le cas.</p>
+<p><a href="{releases_url}">Télécharger depuis GitHub Releases</a></p>
+<table>
+  <tr><th>Champ</th><th>Valeur</th></tr>
+  <tr><td>Version</td><td>{html_escape(str(m.get('version','')))}</td></tr>
+  <tr><td>Fichier</td><td><code>{zip_name}</code></td></tr>
+  <tr><td>Empreinte (SHA-256)</td><td><code>{html_escape(str(m.get('zipSHA256','')))}</code></td></tr>
+  <tr><td>Architecture</td><td>{html_escape(str(m.get('architecture','')))}</td></tr>
+  <tr><td>macOS minimal</td><td>{html_escape(str(m.get('minimumMacOS','')))}</td></tr>
+  <tr><td>Signature de code</td><td><strong>non signé</strong> — toujours divulgué, jamais masqué</td></tr>
+  <tr><td>Notarisation</td><td><strong>non notarisé</strong> — nécessite un Apple Developer ID</td></tr>
+</table>"""
+    else:
+        head = f"""
+<div class="status-box">
+  <p><strong>La version {html_escape(version)} est prête mais pas encore publiée.</strong>
+  Il n'y a aucun lien de téléchargement, car il n'existe rien de public vers quoi
+  pointer. La version et l'empreinte n'apparaîtront ici qu'une fois une version
+  étiquetée publiée — elles sont lues depuis le manifeste généré, jamais saisies
+  à la main.</p>
+</div>
 
 <h2>À quoi ressemblera la publication</h2>
-<p>Le premier artefact public portera exactement ce nom :</p>
-<pre>CoreTend-&lt;version&gt;-arm64-unsigned.zip</pre>
-
+<p>L'artefact portera exactement ce nom :</p>
+<pre>CoreTend-{html_escape(version)}-arm64-unsigned.zip</pre>
 <table>
   <tr><th>Champ</th><th>Statut</th></tr>
-  <tr><td>Version</td><td>non publiée</td></tr>
-  <tr><td>Empreinte (SHA-256)</td><td>sera publiée avec la version</td></tr>
+  <tr><td>Version</td><td>{html_escape(version)} — prête, pas encore publiée</td></tr>
+  <tr><td>Empreinte (SHA-256)</td><td>publiée avec la version</td></tr>
   <tr><td>Signature de code</td><td><strong>non signé</strong> — toujours divulgué, jamais masqué</td></tr>
-  <tr><td>Notarisation</td><td>indisponible pour l'instant (nécessite un Apple Developer ID ; hors périmètre avant la 1.0)</td></tr>
-</table>
+  <tr><td>Notarisation</td><td><strong>non notarisé</strong> — nécessite un Apple Developer ID, hors périmètre avant la 1.0</td></tr>
+</table>"""
 
-<h2>Étapes d'installation prévues (une fois une version publiée)</h2>
+    source = (f'<h2>Code source</h2>\n<p>CoreTend est open source. L\'intégralité '
+              f'du code, des tests, des scripts de compilation et des gates se '
+              f'trouve sur <a href="{repo}">{html_escape(repo)}</a>.</p>') if repo else ""
+
+    return f"""
+<h1>Télécharger</h1>{head}
+
+{source}
+
+<h2>Installer une application non signée</h2>
+<p>macOS refusera d'ouvrir CoreTend au premier lancement, en indiquant que le
+développeur ne peut pas être vérifié. Cet avertissement est exact : aucune
+identité de développeur n'est attachée, car la signature exige une adhésion
+payante au Apple Developer Program dont ce projet ne dispose pas.</p>
 <ol>
-  <li>Téléchargez et vérifiez l'empreinte SHA-256 par rapport à la valeur publiée.</li>
+  <li>Vérifiez l'empreinte SHA-256 par rapport à la valeur publiée
+  (<code>shasum -a 256 &lt;fichier&gt;</code>).</li>
   <li>Décompressez et déplacez CoreTend.app dans /Applications.</li>
-  <li>L'application étant non signée, Gatekeeper demandera un clic droit &rarr;
-  Ouvrir la première fois.</li>
+  <li>Faites un clic droit (ou Contrôle-clic) sur l'application et choisissez
+  <strong>Ouvrir</strong>, puis confirmez. Une seule fois suffit : macOS retient
+  la décision pour cette copie.</li>
   <li>Accordez l'accès complet au disque pour une analyse à couverture complète
   (voir la Documentation).</li>
 </ol>
-<p>En attendant, la compilation depuis les sources est documentée dans la
+<p><strong>Ne désactivez pas Gatekeeper.</strong> L'étape par application
+ci-dessus suffit, et désactiver une protection système entière pour une seule
+application n'est pas un échange raisonnable.</p>
+<p>La compilation depuis les sources est documentée dans la
 <a href="documentation.html">Documentation</a>.</p>
 """
 
@@ -788,22 +870,29 @@ def documentation_body(l):
         ("DEVELOPMENT.md", "Developer Guide"),
     ]
     title = "Documentation"
-    # These were links to a repository that does not exist publicly yet. A
-    # link that 404s is worse than no link: it makes the whole page look
-    # abandoned. They are listed as filenames until there is somewhere real to
-    # point them, at which point REPOSITORY_URL becomes non-None and they
-    # become links again — one constant, not thirty edits.
-    intro = (
-        "Full documentation ships inside the repository, in its "
-        "<code>Documentation/</code> folder. The repository is not public yet, "
-        "so these are filenames rather than links — they become links here the "
-        "moment there is somewhere real to point them."
-    ) if l == "en" else (
-        "La documentation complète est fournie dans le dépôt, dans son dossier "
-        "<code>Documentation/</code>. Le dépôt n'est pas encore public : ce sont "
-        "donc des noms de fichiers et non des liens — ils deviendront des liens "
-        "ici dès qu'il y aura une destination réelle."
-    )
+    # A link that 404s is worse than no link: it makes the whole page look
+    # abandoned. So these render as links only while REPOSITORY_URL resolves,
+    # and fall back to filenames otherwise.
+    if REPOSITORY_URL:
+        intro = (
+            "Full documentation ships inside the repository, in its "
+            "<code>Documentation/</code> folder. Each entry below links "
+            "straight to it."
+        ) if l == "en" else (
+            "La documentation complète est fournie dans le dépôt, dans son "
+            "dossier <code>Documentation/</code>. Chaque entrée ci-dessous y "
+            "renvoie directement."
+        )
+    else:
+        intro = (
+            "Full documentation ships inside the repository, in its "
+            "<code>Documentation/</code> folder. No public repository is "
+            "configured, so these are filenames rather than links."
+        ) if l == "en" else (
+            "La documentation complète est fournie dans le dépôt, dans son "
+            "dossier <code>Documentation/</code>. Aucun dépôt public n'est "
+            "configuré : ce sont donc des noms de fichiers et non des liens."
+        )
     items = "\n".join(
         (f'<li><a href="{REPOSITORY_URL}/blob/main/Documentation/{f}">{label}</a></li>'
          if REPOSITORY_URL else
@@ -1225,6 +1314,53 @@ def notfound_body(l):
 add("404", {"en": "Page not found", "fr": "Page introuvable"}, notfound_body)
 
 
+def write_robots():
+    """robots.txt, driven by the same flag as the per-page robots meta.
+
+    While the site is not deployed it disallows everything, so a crawler that
+    finds the domain early cannot index pages that are not reachable yet.
+    """
+    if SITE_INDEXABLE:
+        body = (
+            "User-agent: *\n"
+            "Allow: /\n"
+            f"\nSitemap: {SITE_URL}/sitemap.xml\n"
+        )
+    else:
+        body = (
+            "# The site is not deployed yet. Nothing here should be indexed\n"
+            "# until it is reachable. Flip siteIndexable in the identity file\n"
+            "# and regenerate to open it up.\n"
+            "User-agent: *\n"
+            "Disallow: /\n"
+        )
+    with open(os.path.join(ROOT, "robots.txt"), "w") as f:
+        f.write(body)
+
+
+def write_sitemap():
+    """sitemap.xml listing every generated page in both locales."""
+    urls = []
+    for locale in ("en", "fr"):
+        for slug in PAGES:
+            if slug == "404":
+                continue  # a 404 page must never be advertised as content
+            loc = f"{SITE_URL}/{locale}/{slug}.html"
+            urls.append(
+                "  <url>\n"
+                f"    <loc>{loc}</loc>\n"
+                "  </url>"
+            )
+    doc = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        + "\n".join(urls)
+        + "\n</urlset>\n"
+    )
+    with open(os.path.join(ROOT, "sitemap.xml"), "w") as f:
+        f.write(doc)
+
+
 def main():
     for locale in ("en", "fr"):
         out_dir = os.path.join(ROOT, locale)
@@ -1233,7 +1369,10 @@ def main():
             html = page_shell(locale, slug, title[locale], body_fn(locale))
             with open(os.path.join(out_dir, f"{slug}.html"), "w") as f:
                 f.write(html)
+    write_robots()
+    write_sitemap()
     print(f"Generated {len(PAGES)} pages x 2 locales into {ROOT}/en and {ROOT}/fr")
+    print(f"Generated robots.txt and sitemap.xml (indexable={SITE_INDEXABLE})")
 
 
 if __name__ == "__main__":
