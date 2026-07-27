@@ -27,6 +27,7 @@
 <link rel="icon" href="../assets/brand/favicon-32.png" sizes="32x32">
 <link rel="icon" href="../assets/brand/favicon-512.png" sizes="512x512">
 <link rel="apple-touch-icon" href="../assets/brand/favicon-180.png">
+<style>html,body{background:#f4f6f3;color:#0b0f14}@media(prefers-color-scheme:dark){html,body{background:#0b0f14;color:#f4f6f3}}</style>
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
@@ -61,6 +62,18 @@ security settings globally.</p>
 <div class="warning-banner"><p><strong>CoreTend 0.9.0 is unsigned and not
 notarized.</strong> macOS will block the first normal open. The steps below
 authorize this copy of CoreTend only.</p></div>
+
+<figure class="demo-player">
+  <video controls muted playsinline preload="none"
+    poster="../assets/demos/gatekeeper-blocked-poster.webp"
+    aria-describedby="install-gatekeeper-description">
+    <source src="../assets/demos/gatekeeper-blocked.webm" type="video/webm">
+    <source src="../assets/demos/gatekeeper-blocked.mp4" type="video/mp4">
+    <track kind="captions" srclang="en" label="Visual description"
+      src="../assets/demos/gatekeeper-blocked.vtt" default>
+  </video>
+  <figcaption id="install-gatekeeper-description">Silent recording of the genuine macOS first-open warning. Labels can vary by macOS version.</figcaption>
+</figure>
 <ol class="install-steps">
   <li><h2>Check compatibility</h2><p>Choose Apple menu → About This Mac. The
   available build requires an Apple silicon chip and macOS 14 or later.</p></li>

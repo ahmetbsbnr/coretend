@@ -1,6 +1,18 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 # Release State
 
+## Current post-release checkpoint — 2026-07-27
+
+No application source changed, so no 0.9.1 binary is being prepared. The
+public 0.9.0 assets remain immutable and were downloaded again: ZIP and DMG
+hashes match `SHA256SUMS`, `unzip -t` and `hdiutil verify` pass, and
+`latest.json` is valid. New website/media work must not be described as part of
+the downloadable 0.9.0 binary.
+
+The branch now contains approved media exports and local site changes. Nothing
+in this checkpoint has been pushed, merged, deployed, or attached to the
+release yet. `v0.9.0` remains annotated and points to `a6aa3bf`.
+
 ## Local presentation work after v0.9.0 — 2026-07-27
 
 The binary release remains exactly the annotated `v0.9.0` tag at
@@ -13,13 +25,8 @@ validated. Their sizes, hashes, archive integrity and manifest values match
 the production state below. The available binary is arm64, requires macOS 14
 or later, is unsigned by Developer ID and is not notarized.
 
-No final screenshots or videos are approved. Draft captures made outside an
-isolated `CoreTend Demo` account were rejected and removed before commit. The
-site intentionally renders useful textual presentation without those media.
-Final media, Gatekeeper UI evidence, first-run permission testing,
-reinstallation and uninstall validation remain a grouped human action in the
-dedicated account. No branch push, release edit, tag change, redeploy or DNS
-change occurred in this work.
+This historical paragraph is superseded by the checkpoint above: two supplied
+media items subsequently passed full privacy review and were integrated.
 
 ## Production state — verified 2026-07-27
 

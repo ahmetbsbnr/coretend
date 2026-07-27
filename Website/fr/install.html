@@ -27,6 +27,7 @@
 <link rel="icon" href="../assets/brand/favicon-32.png" sizes="32x32">
 <link rel="icon" href="../assets/brand/favicon-512.png" sizes="512x512">
 <link rel="apple-touch-icon" href="../assets/brand/favicon-180.png">
+<style>html,body{background:#f4f6f3;color:#0b0f14}@media(prefers-color-scheme:dark){html,body{background:#0b0f14;color:#f4f6f3}}</style>
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
@@ -61,6 +62,18 @@ globalement la sécurité du Mac.</p>
 <div class="warning-banner"><p><strong>CoreTend 0.9.0 n'est ni signé ni
 notarisé.</strong> macOS bloquera la première ouverture normale. Les étapes
 ci-dessous autorisent uniquement cette copie de CoreTend.</p></div>
+
+<figure class="demo-player">
+  <video controls muted playsinline preload="none"
+    poster="../assets/demos/gatekeeper-blocked-poster.webp"
+    aria-describedby="install-gatekeeper-description">
+    <source src="../assets/demos/gatekeeper-blocked.webm" type="video/webm">
+    <source src="../assets/demos/gatekeeper-blocked.mp4" type="video/mp4">
+    <track kind="captions" srclang="en" label="Visual description"
+      src="../assets/demos/gatekeeper-blocked.vtt" default>
+  </video>
+  <figcaption id="install-gatekeeper-description">Enregistrement silencieux du véritable avertissement macOS de première ouverture. Les libellés peuvent varier selon macOS.</figcaption>
+</figure>
 <ol class="install-steps">
   <li><h2>Vérifier la compatibilité</h2><p>Menu Pomme → À propos de ce Mac. La
   version disponible exige une puce Apple et macOS 14 ou ultérieur.</p></li>

@@ -11,6 +11,8 @@ ponytail: hand-rolled string templating instead of a template engine —
 add Jinja2 only if page count or logic genuinely outgrows this.
 """
 import html as _html
+import base64
+import hashlib
 import json
 import os
 
@@ -85,6 +87,15 @@ FOOTER_LINKS = [
 
 SITE_TITLE = "CoreTend"
 SITE_URL = ident("websiteURL", "https://coretend.ahmetbsbnr.com")
+CRITICAL_STYLE = (
+    "html,body{background:#f4f6f3;color:#0b0f14}"
+    "@media(prefers-color-scheme:dark){html,body{background:#0b0f14;color:#f4f6f3}}"
+)
+
+
+def critical_style_hash():
+    digest = hashlib.sha256(CRITICAL_STYLE.encode("utf-8")).digest()
+    return "sha256-" + base64.b64encode(digest).decode("ascii")
 
 # The repository is public, so this now comes from configuration rather than
 # being pinned to None. Every place that links source or docs reads this one
@@ -185,6 +196,7 @@ def page_shell(locale, slug, title, body_html, other_locale_slug=None):
 <link rel="icon" href="../assets/brand/favicon-32.png" sizes="32x32">
 <link rel="icon" href="../assets/brand/favicon-512.png" sizes="512x512">
 <link rel="apple-touch-icon" href="../assets/brand/favicon-180.png">
+<style>{CRITICAL_STYLE}</style>
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
@@ -539,6 +551,13 @@ def home_body(l):
       alt="CoreTend 0.9.0 Smart Care window with its module sidebar and scan controls"
       fetchpriority="high">
   </picture>"""
+    elif media_exists("assets/app/menu-bar.webp"):
+        hero_media = """<picture class="hero-menu">
+    <source srcset="../assets/app/menu-bar.webp" type="image/webp">
+    <img src="../assets/app/menu-bar.png" width="660" height="806"
+      alt="CoreTend 0.9.0 menu bar panel showing CPU, memory, free space, thermal state and protection status"
+      fetchpriority="high">
+  </picture>"""
     else:
         hero_media = f'<div class="hero-art">{MARK_SVG}</div>'
 
@@ -720,7 +739,10 @@ add("features", {"en": "Features", "fr": "Fonctionnalités"}, features_body)
 
 # ---------------------------------------------------------------- demos ---
 def demos_body(l):
-    if not media_exists("assets/demos/product-tour.webm"):
+    has_product_tour = media_exists("assets/demos/product-tour.webm")
+    has_gatekeeper = media_exists("assets/demos/gatekeeper-blocked.webm")
+    has_menu_bar = media_exists("assets/app/menu-bar.webp")
+    if not (has_product_tour or has_gatekeeper or has_menu_bar):
         return (
             "<h1>Product demos</h1><p>Media will appear here only after capture "
             "and privacy review in the dedicated CoreTend Demo environment.</p>"
@@ -729,15 +751,16 @@ def demos_body(l):
             "après capture et validation de confidentialité dans l’environnement "
             "dédié CoreTend Demo.</p>"
         )
-    title = "Real product tour" if l == "en" else "Visite réelle du produit"
+    title = "Real CoreTend media" if l == "en" else "Médias réels de CoreTend"
     intro = (
-        "Every image and clip below was captured from the CoreTend 0.9.0 arm64 "
-        "application with an isolated temporary store. No personal files or paths "
-        "are shown."
+        "Every image and clip below passed visual and metadata privacy review. "
+        "The media shows CoreTend 0.9.0 or its genuine first-open system warning; "
+        "no personal files, paths, accounts or authentication are shown."
     ) if l == "en" else (
-        "Chaque image et séquence ci-dessous provient de l’application CoreTend "
-        "0.9.0 arm64 avec un stockage temporaire isolé. Aucun fichier ni chemin "
-        "personnel n’est affiché."
+        "Chaque image et séquence ci-dessous a passé une revue visuelle et une "
+        "revue des métadonnées. Les médias montrent CoreTend 0.9.0 ou son véritable "
+        "avertissement système de première ouverture, sans fichier, chemin, compte "
+        "ni authentification personnels."
     )
     captions = [
         ("smart-care", "Smart Care"),
@@ -749,13 +772,23 @@ def demos_body(l):
         ("protection", "Protection"),
         ("settings", "Settings" if l == "en" else "Réglages"),
     ]
-    gallery = "\n".join(
+    gallery_items = [
         f'<figure><a href="../assets/app/{name}.webp">'
         f'<img src="../assets/app/{name}.webp" width="1800" height="1264" '
         f'loading="lazy" alt="CoreTend 0.9.0 — {caption}"></a>'
         f'<figcaption>{caption}</figcaption></figure>'
         for name, caption in captions
-    )
+        if media_exists(f"assets/app/{name}.webp")
+    ]
+    if has_menu_bar:
+        menu_caption = "Menu bar status" if l == "en" else "État dans la barre des menus"
+        gallery_items.append(
+            f'<figure><a href="../assets/app/menu-bar.png">'
+            f'<img src="../assets/app/menu-bar.webp" width="660" height="806" '
+            f'loading="lazy" alt="CoreTend 0.9.0 — {menu_caption}"></a>'
+            f'<figcaption>{menu_caption}</figcaption></figure>'
+        )
+    gallery = "\n".join(gallery_items)
     description = (
         "The recording navigates between shipped modules. It contains no staged "
         "scan result and makes no claim about files that were not scanned."
@@ -764,9 +797,7 @@ def demos_body(l):
         "résultat d’analyse mis en scène et ne revendique rien sur des fichiers "
         "qui n’ont pas été analysés."
     )
-    return f"""
-<h1>{title}</h1>
-<p class="lead">{intro}</p>
+    product_tour = f"""
 <section class="demo-player">
   <video controls muted loop playsinline preload="metadata"
     poster="../assets/demos/product-tour-poster.webp" aria-describedby="demo-description">
@@ -774,7 +805,36 @@ def demos_body(l):
     <source src="../assets/demos/product-tour.mp4" type="video/mp4">
   </video>
   <p id="demo-description">{description}</p>
-</section>
+</section>""" if has_product_tour else ""
+    gatekeeper_description = (
+        "Silent, genuine macOS first-open warning for the unsigned and not "
+        "notarized CoreTend 0.9.0 beta. Wording can vary by macOS version. "
+        "The clip does not show a bypass or authentication."
+    ) if l == "en" else (
+        "Véritable avertissement macOS silencieux de première ouverture pour la "
+        "bêta CoreTend 0.9.0 non signée et non notarisée. Les libellés peuvent "
+        "varier selon macOS. La séquence ne montre ni contournement ni authentification."
+    )
+    gatekeeper_video = f"""
+<section>
+  <h2>{"First-open warning" if l == "en" else "Avertissement de première ouverture"}</h2>
+  <div class="demo-player">
+    <video controls muted playsinline preload="none"
+      poster="../assets/demos/gatekeeper-blocked-poster.webp"
+      aria-describedby="gatekeeper-description">
+      <source src="../assets/demos/gatekeeper-blocked.webm" type="video/webm">
+      <source src="../assets/demos/gatekeeper-blocked.mp4" type="video/mp4">
+      <track kind="captions" srclang="en" label="Visual description"
+        src="../assets/demos/gatekeeper-blocked.vtt" default>
+    </video>
+    <p id="gatekeeper-description">{gatekeeper_description}</p>
+  </div>
+</section>""" if has_gatekeeper else ""
+    return f"""
+<h1>{title}</h1>
+<p class="lead">{intro}</p>
+{product_tour}
+{gatekeeper_video}
 <section>
   <h2>{"Application gallery" if l == "en" else "Galerie de l’application"}</h2>
   <div class="media-grid">{gallery}</div>
@@ -991,14 +1051,36 @@ add("download", {"en": "Download", "fr": "Télécharger"}, download_body)
 
 # --------------------------------------------------------------- install ---
 def install_body(l):
+    gatekeeper_media = ""
+    if media_exists("assets/demos/gatekeeper-blocked.webm"):
+        visual_description = (
+            "Silent recording of the genuine macOS first-open warning. Labels "
+            "can vary by macOS version."
+            if l == "en" else
+            "Enregistrement silencieux du véritable avertissement macOS de "
+            "première ouverture. Les libellés peuvent varier selon macOS."
+        )
+        gatekeeper_media = f"""
+<figure class="demo-player">
+  <video controls muted playsinline preload="none"
+    poster="../assets/demos/gatekeeper-blocked-poster.webp"
+    aria-describedby="install-gatekeeper-description">
+    <source src="../assets/demos/gatekeeper-blocked.webm" type="video/webm">
+    <source src="../assets/demos/gatekeeper-blocked.mp4" type="video/mp4">
+    <track kind="captions" srclang="en" label="Visual description"
+      src="../assets/demos/gatekeeper-blocked.vtt" default>
+  </video>
+  <figcaption id="install-gatekeeper-description">{visual_description}</figcaption>
+</figure>"""
     if l == "en":
-        return """
+        return f"""
 <h1>Install CoreTend</h1>
 <p class="lead">From download to first scan without lowering your Mac's
 security settings globally.</p>
 <div class="warning-banner"><p><strong>CoreTend 0.9.0 is unsigned and not
 notarized.</strong> macOS will block the first normal open. The steps below
 authorize this copy of CoreTend only.</p></div>
+{gatekeeper_media}
 <ol class="install-steps">
   <li><h2>Check compatibility</h2><p>Choose Apple menu → About This Mac. The
   available build requires an Apple silicon chip and macOS 14 or later.</p></li>
@@ -1028,13 +1110,14 @@ shasum -a 256 -c SHA256SUMS</code></pre>
 If it differs, delete the file, download it again, and do not open it.</p>
 <p>Need help? Continue to <a href="support.html">Support and troubleshooting</a>.</p>
 """
-    return """
+    return f"""
 <h1>Installer CoreTend</h1>
 <p class="lead">Du téléchargement à la première analyse sans réduire
 globalement la sécurité du Mac.</p>
 <div class="warning-banner"><p><strong>CoreTend 0.9.0 n'est ni signé ni
 notarisé.</strong> macOS bloquera la première ouverture normale. Les étapes
 ci-dessous autorisent uniquement cette copie de CoreTend.</p></div>
+{gatekeeper_media}
 <ol class="install-steps">
   <li><h2>Vérifier la compatibilité</h2><p>Menu Pomme → À propos de ce Mac. La
   version disponible exige une puce Apple et macOS 14 ou ultérieur.</p></li>
@@ -1658,7 +1741,8 @@ def write_vercel_config():
     the per-page meta and robots.txt, so all three move together.
     """
     csp = (
-        "default-src 'self'; script-src 'none'; style-src 'self'; "
+        f"default-src 'self'; script-src 'none'; "
+        f"style-src 'self' '{critical_style_hash()}'; "
         "img-src 'self' data:; media-src 'self'; font-src 'self'; connect-src 'none'; "
         "frame-ancestors 'none'; form-action 'none'; base-uri 'none'; "
         "object-src 'none'"
@@ -1690,6 +1774,9 @@ def write_vercel_config():
         "outputDirectory": ".",
         "cleanUrls": False,
         "trailingSlash": False,
+        "redirects": [
+            {"source": "/", "destination": "/en/index.html", "permanent": False},
+        ],
         "headers": [
             {"source": "/(.*)", "headers": common},
             {"source": "/assets/(.*)", "headers": [

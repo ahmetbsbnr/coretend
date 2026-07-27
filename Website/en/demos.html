@@ -27,6 +27,7 @@
 <link rel="icon" href="../assets/brand/favicon-32.png" sizes="32x32">
 <link rel="icon" href="../assets/brand/favicon-512.png" sizes="512x512">
 <link rel="apple-touch-icon" href="../assets/brand/favicon-180.png">
+<style>html,body{background:#f4f6f3;color:#0b0f14}@media(prefers-color-scheme:dark){html,body{background:#0b0f14;color:#f4f6f3}}</style>
 <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
@@ -54,7 +55,30 @@
 </header>
 <main id="main">
   <div class="wrap">
-<h1>Product demos</h1><p>Media will appear here only after capture and privacy review in the dedicated CoreTend Demo environment.</p>
+
+<h1>Real CoreTend media</h1>
+<p class="lead">Every image and clip below passed visual and metadata privacy review. The media shows CoreTend 0.9.0 or its genuine first-open system warning; no personal files, paths, accounts or authentication are shown.</p>
+
+
+<section>
+  <h2>First-open warning</h2>
+  <div class="demo-player">
+    <video controls muted playsinline preload="none"
+      poster="../assets/demos/gatekeeper-blocked-poster.webp"
+      aria-describedby="gatekeeper-description">
+      <source src="../assets/demos/gatekeeper-blocked.webm" type="video/webm">
+      <source src="../assets/demos/gatekeeper-blocked.mp4" type="video/mp4">
+      <track kind="captions" srclang="en" label="Visual description"
+        src="../assets/demos/gatekeeper-blocked.vtt" default>
+    </video>
+    <p id="gatekeeper-description">Silent, genuine macOS first-open warning for the unsigned and not notarized CoreTend 0.9.0 beta. Wording can vary by macOS version. The clip does not show a bypass or authentication.</p>
+  </div>
+</section>
+<section>
+  <h2>Application gallery</h2>
+  <div class="media-grid"><figure><a href="../assets/app/menu-bar.png"><img src="../assets/app/menu-bar.webp" width="660" height="806" loading="lazy" alt="CoreTend 0.9.0 — Menu bar status"></a><figcaption>Menu bar status</figcaption></figure></div>
+</section>
+
   </div>
 </main>
 <footer class="site">

@@ -1,6 +1,15 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 # Known Issues
 
+## Current website QA limitation
+
+Chrome headless on this host enforces a minimum internal viewport and can hang
+when sequential invocations reuse one temporary profile. The deterministic
+first-paint gate passes on all 32 pages, and partial isolated screenshots show
+the correct non-white canvas, but those screenshots are not claimed as full
+320px device emulation. Remaining responsive evidence must use unique isolated
+profiles per run or another browser automation environment.
+
 Open items at 0.9.0. **None blocks the beta.** Each says why it is open rather
 than being quietly closed.
 

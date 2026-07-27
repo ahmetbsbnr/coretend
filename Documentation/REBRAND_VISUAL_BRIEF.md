@@ -34,12 +34,9 @@ must carry forward regardless of which name is eventually approved.
   observed, but the principle holds regardless — distinct name requires a
   distinct mark, not just a distinct wordmark next to a copied icon
   style).
-- Must not imply Apple affiliation (no bitten-apple silhouettes, no
-  San-Francisco-font-only wordmarks styled to look like system UI chrome,
-  no macOS System Settings icon pastiche).
-- Must not imply CleanMyMac/MacPaw affiliation or visual lineage (their
-  icon system is a distinct, recognizable style — avoid convergent
-  similarity even coincidentally).
+- Must not imitate platform-vendor marks, system-setting iconography, or the
+  distinctive identity of another utility.
+- Must not imply an approval, partnership, or origin that does not exist.
 - Must not use `®` (no name has reached trademark registration; using the
   symbol would be false).
 

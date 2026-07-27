@@ -1,6 +1,25 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 # Next Session Prompt
 
+## Immediate resume command
+
+```sh
+cd $REPO
+test -f .git
+git rev-parse --show-toplevel
+git status --short --branch
+git rev-parse HEAD
+python3 Website/generate.py
+bash Scripts/check-website.sh
+```
+
+Expected stable HEAD before the pending site commit: `3da7798` on
+`feat/coretend-media-integration`. Continue with the responsive, accessibility,
+performance and public-documentation gates, then commit the stable site lot.
+Do not recapture or integrate any REJECTED or NEEDS_RECAPTURE raw media.
+Never launch Chrome against the default browser profile; use a fresh isolated
+directory under `/tmp` and remove it after every run.
+
 ## Immediate next session: isolated media capture
 
 Do not push, open a PR, edit `main`, redeploy, edit the release, move the tag

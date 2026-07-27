@@ -65,10 +65,10 @@ linked nor distributed.
   All such material is original to this project, so the obligation runs to
   downstream reusers, not to this repository.
 - **ClamAV:** no attribution obligation arises, because nothing of ClamAV's is
-  redistributed. `NOTICE` and `THIRD_PARTY_NOTICES.md` nonetheless state the
-  optional relationship and disclaim affiliation.
-- **Apple / MacPaw:** `NOTICE`, `COPYRIGHT` and `TRADEMARKS.md` each state that
-  the project is not affiliated with, sponsored by, or endorsed by either.
+  redistributed. `NOTICE` and `THIRD_PARTY_NOTICES.md` state the optional
+  relationship and preserve the relevant third-party notices.
+- Platform and third-party marks remain governed by their owners; the project
+  does not claim partnerships or approvals that do not exist.
 
 ## 4. Assets
 

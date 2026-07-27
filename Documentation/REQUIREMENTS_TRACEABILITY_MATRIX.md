@@ -561,11 +561,13 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 - **Symbols**: —
 - **Views**: —
 - **Test**: none (doc-level requirement)
-- **Command**: `grep -n "affiliated\|endorsed" README.md`
+- **Command**: review README and website for unsupported third-party approval,
+  origin, or partnership claims
 - **Runtime evidence**: n/a
 - **Bundle evidence**: n/a
 - **Visual evidence**: n/a
-- **Limitation**: No CI check prevents someone re-adding an affiliation claim later.
+- **Limitation**: this remains an editorial review rather than a complete
+  machine-verifiable rule.
 - **User impact**: none — held
 - **Risk**: low
 - **Needed fix**: none

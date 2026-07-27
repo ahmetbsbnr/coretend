@@ -1,5 +1,25 @@
 # DECISIONS
 
+## D-M1 — Only supplied ACCEPTED media is integrated (2026-07-27)
+
+The menu-bar PNG and genuine Gatekeeper clip passed full pixel and metadata
+review. Rejected footage, the download clip requiring recapture, and all
+uncertified ranges remain excluded. Small video is never enlarged.
+
+## D-W1 — First paint is response-level, not a splash screen (2026-07-27)
+
+Production `/` must redirect directly to `/en/index.html`. Each localized page
+also carries a tiny light/dark background rule whose exact hash is generated
+into CSP. This fixes the white intermediate document and cold CSS gap without
+hiding them behind a splash screen.
+
+## D-Q1 — Browser QA always uses an isolated profile (2026-07-27)
+
+Any automated browser run must pass a new `--user-data-dir` under
+`/tmp/coretend-agent`, disable background networking, record its PID, stop it,
+and remove the profile. A run that omitted isolation was aborted; none of its
+browser-profile state or output is used as project evidence.
+
 ## D1 — SwiftPM instead of Xcode project (2026-07-19)
 Machine has only CommandLineTools; `xcodebuild` unavailable. Project is a SwiftPM package;
 the .app bundle is assembled by `Scripts/package-local.sh` (release binary + Info.plist +

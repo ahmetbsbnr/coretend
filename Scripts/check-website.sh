@@ -69,6 +69,7 @@ for slug in index features privacy download documentation open-source changelog 
 done
 [ -f "$SITE/index.html" ] || note "missing root language-picker index.html"
 [ -f "$SITE/assets/style.css" ] || note "missing stylesheet"
+python3 Scripts/check-first-paint.py || note "first-paint regression gate failed"
 
 # ------------------------------------------------------- no external requests
 # Any absolute http(s) reference in a src/href/url() is a request to another

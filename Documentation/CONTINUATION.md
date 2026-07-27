@@ -1,5 +1,39 @@
 # CONTINUATION
 
+## Checkpoint médias et site — 2026-07-27
+
+Branche `feat/coretend-media-integration`. HEAD stable :
+`3da7798` après `992f422`. Le tag annoté `v0.9.0` reste inchangé et déréférence
+toujours `a6aa3bf20cc1f3b7623291660c4943db2e5d4a50`.
+
+Terminé : rapport de revue média, export nettoyé de la capture barre des menus,
+export WebM/MP4/poster/VTT/transcription du véritable dialogue Gatekeeper,
+manifestes, analyse de TalkInk, contexte produit/design, intégration bilingue
+des médias, redirection HTTP de `/`, CSS critique clair/sombre avec hash CSP,
+et test de non-régression du premier paint sur 32 pages.
+
+Validé : 296 tests / 58 suites, inventaire 47 fonctionnalités synchronisé,
+builds Debug et Release, contrôles site/liens/placeholders/médias/confidentialité/
+licences, ZIP et DMG publics retéléchargés, checksums, `unzip -t`,
+`hdiutil verify`, `latest.json`. Aucun code binaire n'a changé ; la version
+reste 0.9.0 et les améliorations sont explicitement postérieures au binaire.
+
+Limite en cours : Chrome headless impose un viewport interne minimal et s'est
+bloqué pendant une série responsive. Tous les PID temporaires ont été arrêtés
+et le profil de test supprimé. Ne jamais relancer Chrome sans un
+`--user-data-dir` neuf sous `/tmp`. Prochaine tâche exacte : terminer l'audit
+responsive/accessibilité/performance statique, mettre à jour la documentation
+publique, committer le lot site, puis effectuer les gates Git/GitHub/Vercel.
+
+Commande de reprise :
+
+```sh
+cd $REPO
+git status --short --branch
+python3 Website/generate.py
+bash Scripts/check-website.sh
+```
+
 ## Présentation publique locale — reprise du 2026-07-27
 
 Branche `feat/coretend-rebrand-workspace`, HEAD avant cette mise à jour

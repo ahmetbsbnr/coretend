@@ -1,6 +1,19 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 # Project State
 
+## Current checkpoint (2026-07-27)
+
+- Branch: `feat/coretend-media-integration`
+- Stable HEAD: `3da7798`
+- Release tag: annotated `v0.9.0`, unchanged at `a6aa3bf`
+- Application: 296 tests in 58 suites; Debug and Release builds pass
+- Feature inventory: 47 entries synchronized, 39 complete, 4 partial, 4
+  implemented but awaiting the documented interactive verification
+- Public media: one menu-bar screenshot and one genuine Gatekeeper clip,
+  privacy-reviewed, metadata-cleaned, silent, checksummed, and integrated
+- Site work in progress: bilingual media integration and first-paint fix are
+  validated locally but not yet pushed or deployed
+
 Snapshot for session handover. Written 2026-07-27.
 For the release specifically, see `RELEASE_STATE.md`.
 
