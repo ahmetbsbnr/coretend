@@ -4,60 +4,57 @@ Things that cannot be automated and require a real decision by the
 project owner before public release. Nothing below should block the
 automatable work in this phase — it's tracked here so it isn't lost.
 
-## RESOLVED / KNOWN
+## RESOLVED
 
-These are no longer open — the values are known and centralized in
-`Configuration/PublicIdentity.example.json`, even though the actions
-that use them (creating the repo, pushing, deploying) are still open
-below.
+Values and acts that are no longer open. Token names are written without
+brackets throughout this file — the bracketed form is what the placeholder
+gates grep for, and this document must not block the release it tracks.
 
-| Item | Known value |
+| Item | Resolution |
 |---|---|
 | GitHub maintainer handle | `ahmetbsbnr` |
-| Planned public repository | `ahmetbsbnr/coretend` (`https://github.com/ahmetbsbnr/coretend`) |
-| Planned production domain / subdomain | `ahmetbsbnr.com` / `coretend.ahmetbsbnr.com` |
+| Public repository | `ahmetbsbnr/coretend` (`https://github.com/ahmetbsbnr/coretend`) — **created and public**, default branch `main` at `b2bca85` |
+| Production domain / subdomain | `ahmetbsbnr.com` / `coretend.ahmetbsbnr.com` (configured; not yet deployed) |
+| Security contact (`SECURITY_CONTACT_TO_DEFINE`) | **GitHub private vulnerability reporting**, `github.com/ahmetbsbnr/coretend/security/advisories/new`. Verified live 2026-07-27. No email address was invented. |
+| Legal identity / publisher of record (`LEGAL_NAME_TO_DEFINE`, `PUBLISHER_OF_RECORD_TO_DEFINE`) | `publisherOfRecord` in the gitignored `Configuration/PublicIdentity.local.json` — the given name the owner already publishes on their own GitHub, plus their handle and domain. **No surname was inferred** from the filesystem path or any local metadata. |
+| Legal address (`LEGAL_ADDRESS_TO_DEFINE`) | **Deliberately withheld**, `legalAddress` is `null`. LCEN Art. 6 III-2 permits a non-professional publisher to withhold a personal address provided the host holds their identity; Vercel Inc. does. Stated openly on the page. See `LEGAL_IDENTITY_DETERMINATION.md`. |
+| Approval to create the public GitHub repository | Done — repository is public |
+| Approval to push to the public repository | Done — `origin/main` at `b2bca85`, built by the sanitised export |
 
 ## OPEN
 
-| Blocker | Why it needs a human | Tracked placeholder |
+| Blocker | Why it needs a human | Where it is tracked |
 |---|---|---|
-| Security contact address/channel | Needs a real, monitored inbox or private reporting tool | `[SECURITY_CONTACT_TO_DEFINE]` (SECURITY.md, CODE_OF_CONDUCT.md) |
-| Legal identity (publisher name/address) for legal notice pages | Real personal/legal info must not be invented | Website legal pages, `[LEGAL_NAME_TO_DEFINE]`, `[LEGAL_ADDRESS_TO_DEFINE]` |
-| Legal address | Real personal/legal info must not be invented | `[LEGAL_ADDRESS_TO_DEFINE]` |
-| Publisher of record | Real legal/business info must not be invented | `[PUBLISHER_OF_RECORD_TO_DEFINE]` (`Configuration/PublicIdentity.example.json`) |
-| Approval to actually create the public GitHub repository | Irreversible, deliberate act | N/A — explicitly not done this phase |
-| Approval to push to the public repository | Irreversible, deliberate act | N/A — explicitly not done this phase |
-| Approval to deploy the website | Irreversible, deliberate act | N/A — explicitly not done this phase |
-| Final screenshots for the website/App listing | Requires a real display/session, not available in this sandbox | `Website/README.md` dev placeholder box |
-| Multi-Mac / multi-macOS-version testing | Only one physical Mac (macOS 26.5.1, arm64) is available in this environment | `Documentation/API_AVAILABILITY_AUDIT.md` |
-| First public GitHub Release (signing/notarization) | Requires Apple Developer ID (out of scope this phase) | Documentation/PUBLIC_RELEASE_READINESS.md |
-| Publication of the first public release | Deliberate act, requires the repo to exist first | `Release/latest.json` (no downloadURL yet) |
+| Approval to deploy the website | Irreversible, outward-facing act | `Documentation/WEBSITE_DEPLOYMENT.md`, `RELEASE_STATE.md` |
+| DNS record for `coretend.ahmetbsbnr.com` | Requires registrar access | `RELEASE_STATE.md` |
+| Final screenshots for the website | Requires a real display/session, unavailable in this environment | `Website/README.md` dev placeholder box |
+| Multi-Mac / multi-macOS-version testing | Only one physical Mac (macOS 26.5.1, arm64) is available | `Documentation/API_AVAILABILITY_AUDIT.md` |
+| Code signing and notarization | Requires a paid Apple Developer Program membership. `security find-identity -v -p codesigning` reports **0 valid identities**. Explicitly out of scope — this is why the release is **0.9.0 unsigned public beta**, not 1.0.0 signed. | `Documentation/PUBLIC_RELEASE_READINESS.md`, `INSTALL_UNSIGNED.md` |
+| Publishing the first GitHub prerelease | Irreversible, outward-facing act | `RELEASE_STATE.md` |
+| Trademark attorney review | `COREXTEND` (MIPS Tech, live class 9) is one letter away. Not a bar to a free beta; required before any filing or commercial use. | `Documentation/CORETEND_TRADEMARK_SCREENING.md`, `BRAND_CONFLICT_REGISTER.md` |
 
-All placeholders above are also tracked centrally in
-Documentation/PUBLICATION_PLACEHOLDERS.md so a pre-publication check can
-grep for them.
+Token resolutions are recorded centrally in
+`Documentation/PUBLICATION_PLACEHOLDERS.md`.
 
-## New placeholder usages added this session (same tokens, new files)
+## The placeholder mechanism is still armed
 
-`[MAINTAINER_HANDLE_TO_DEFINE]` now also appears in `.github/CODEOWNERS`
-(four owner lines) and `.github/ISSUE_TEMPLATE/config.yml`/
-`GOVERNANCE.md`. `[REPO_URL_TO_DEFINE]` appears in
-`.github/ISSUE_TEMPLATE/config.yml`'s contact links. No new placeholder
-tokens were invented — reused exactly what's already tracked above.
+Resolving those values did not disarm the gate.
+`Configuration/PublicIdentity.example.json` still carries bracketed tokens
+as its defaults and is the only file excluded from the placeholder scan,
+because those defaults *are* the intended visible-failure mode:
+`Website/generate.py` reads the example file and overlays the gitignored
+`PublicIdentity.local.json` key by key, so if the local file goes missing
+the site regenerates with literal tokens rather than a reassuring legal
+page over an undefined publisher.
 
-## Website: same tokens, new files (this session)
+`check-publish-readiness.sh` guards this more strictly than a text scan —
+it requires the local file to exist, to contain no `_TO_DEFINE` value, and
+to carry a `securityContact`. Generated site HTML is tracked and still
+scanned.
 
-`Website/generate.py` (source of truth rendering `Website/en|fr/*.html`)
-uses `[LEGAL_NAME_TO_DEFINE]`, `[LEGAL_ADDRESS_TO_DEFINE]`,
-`[SECURITY_CONTACT_TO_DEFINE]`, `[DOMAIN_TO_DEFINE]` (also standing in for
-hosting, since no separate token existed for that) and
-`[REPO_URL_TO_DEFINE]` on the Legal, Privacy, and Documentation pages. No
-new placeholder tokens were invented. `Scripts/check-placeholders.sh`
-already catches all of them (116 occurrences currently, expected
-pre-release). The homepage screenshot uses a clearly labeled dev
-placeholder box instead of a real screenshot — tracked in
-`Website/README.md`, not a bracket token so `check-placeholders.sh` won't
-catch it; must be manually replaced before any production deploy.
+The homepage screenshot remains a clearly labeled dev placeholder box. It
+is not a bracket token, so the placeholder gate does not catch it; it must
+be replaced manually before a production deploy.
 
 ## This session: distribution-gate progress (compat audit, ZIP, DMG, checksums, manifest, release notes, CI draft workflow, install guide)
 

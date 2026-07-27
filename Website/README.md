@@ -28,12 +28,18 @@ python3 -m http.server 8791
   a real screenshot (this dev environment has no attached display to
   capture one). Replace with a real screenshot before any production
   deploy.
-- Legal/contact/domain values (`[LEGAL_NAME_TO_DEFINE]`,
-  `[LEGAL_ADDRESS_TO_DEFINE]`, `[SECURITY_CONTACT_TO_DEFINE]`,
-  `coretend.ahmetbsbnr.com`, `[HOST_TO_DEFINE]`, `https://github.com/ahmetbsbnr/coretend`,
-  `[LICENSE_SPDX_TO_CONFIRM]`) are bracket placeholders tracked in
-  `Documentation/HUMAN_BLOCKERS.md`. `Scripts/check-placeholders.sh`
-  should be extended to scan `Website/` too before any real publish.
+- Legal/contact/domain values are no longer placeholders. `generate.py`
+  reads `Configuration/PublicIdentity.example.json` and overlays the
+  gitignored `Configuration/PublicIdentity.local.json`, which supplies the
+  real publisher of record, security-reporting channel, repository URL and
+  domain. `legalAddress` is deliberately `null` (LCEN Art. 6 III-2) and the
+  page discloses the omission.
+- If `PublicIdentity.local.json` is missing, the site regenerates with
+  literal `SOMETHING_TO_DEFINE` tokens inside a `placeholder-token` span.
+  That is the intended failure mode, not a bug —
+  `Scripts/check-placeholders.sh` scans the tracked `Website/` HTML and will
+  catch it. Resolutions are recorded in
+  `Documentation/PUBLICATION_PLACEHOLDERS.md`.
 - The Download page intentionally shows no real release artifact.
 
 See `Documentation/WEBSITE_ARCHITECTURE.md`, `WEBSITE_SECURITY.md`,

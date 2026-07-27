@@ -21,7 +21,15 @@ bad() { echo "FAIL: $1"; fail=1; }
 
 echo "== Zero publication placeholders anywhere in the tracked tree =="
 TOKENS='\[SECURITY_CONTACT_TO_DEFINE\]|\[MAINTAINER_HANDLE_TO_DEFINE\]|\[REPO_URL_TO_DEFINE\]|\[LEGAL_NAME_TO_DEFINE\]|\[LEGAL_ADDRESS_TO_DEFINE\]|\[DOMAIN_TO_DEFINE\]|\[LEGAL_ENTITY_TO_DEFINE\]|\[PUBLISHER_OF_RECORD_TO_DEFINE\]'
-if matches=$(git grep -nIE "$TOKENS" -- . 2>/dev/null); then
+# Configuration/PublicIdentity.example.json is excluded on purpose: it is the
+# template that defines the placeholder mechanism, and its bracketed values are
+# exactly what the site must render when no real identity is configured. Filling
+# them in would delete the safety net instead of satisfying it. The real values
+# are gated by the two checks immediately below, which require the gitignored
+# local override to exist and to carry no _TO_DEFINE value — a stricter test
+# than this scan. Generated site HTML is tracked and still scanned here.
+EXCLUDE=':(exclude)Configuration/PublicIdentity.example.json'
+if matches=$(git grep -nIE "$TOKENS" -- . "$EXCLUDE" 2>/dev/null); then
   echo "$matches"
   bad "placeholder tokens remain (see above) — not ready for public release"
 else

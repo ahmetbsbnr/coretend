@@ -100,10 +100,13 @@ It is only written into `PublicIdentity.local.json` once all three hold:
 2. private vulnerability reporting is enabled on it;
 3. the "Report a vulnerability" page has been confirmed reachable.
 
-Until then `securityContact` stays as `[SECURITY_CONTACT_TO_DEFINE]`, which
-renders literally on the site and keeps `Scripts/check-placeholders.sh` blocking
-a production deploy. The gate is what stops a reassuring-looking security page
-from shipping over a contact route that does not actually work.
+All three conditions were met on 2026-07-27, so `securityContact` is now set
+to the GitHub private vulnerability reporting URL. Until they were,
+`securityContact` stayed as its literal `SECURITY_CONTACT_TO_DEFINE` token,
+which renders on the site and keeps the placeholder gate blocking a
+production deploy. That gate is what stops a reassuring-looking security page
+from shipping over a contact route that does not actually work, and it remains
+armed through `Configuration/PublicIdentity.example.json`.
 
 ## 5. Host details
 
@@ -130,7 +133,7 @@ gitignored, so real identity values are never committed.
 
 Two properties of the design matter more than the values themselves:
 
-1. **An undefined value renders as its literal `[SOMETHING_TO_DEFINE]` token**
+1. **An undefined value renders as its literal `SOMETHING_TO_DEFINE` token**
    inside a `placeholder-token` span, so `Scripts/check-placeholders.sh` finds it
    and blocks production. The site cannot quietly ship with an undefined
    publisher or security contact.

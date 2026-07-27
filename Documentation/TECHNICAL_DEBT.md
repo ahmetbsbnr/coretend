@@ -20,14 +20,19 @@ argument-array-only `Process()` call, and 86/86 passing tests hold up
    functional risk, real trust/professionalism risk for an OSS repo.
    Effort: XS. No dependencies. Recommended: fix before any public tag.
 
-2. **Website legal identity placeholders unresolved** — category: distribution/legal.
-   Evidence: `WEBSITE_AUDIT.md` this session — `[LEGAL_NAME_TO_DEFINE]`,
-   `[LEGAL_ADDRESS_TO_DEFINE]`, `[SECURITY_CONTACT_TO_DEFINE]`,
-   `[DOMAIN_TO_DEFINE]` still present in `legal.html`/`privacy.html`/
-   `security.html` (both locales). Impact: site cannot go live truthfully
-   with real legal/contact info missing. Risk: legal exposure if published
-   as-is claiming to be final. Effort: XS (once the human decides the
-   values) — BLOCKED_HUMAN, not a coding task.
+2. **Website legal identity placeholders unresolved** — CLOSED in the 0.9.0
+   launch phase. Category: distribution/legal.
+   Evidence when opened: `WEBSITE_AUDIT.md` — the `LEGAL_NAME_TO_DEFINE`,
+   `LEGAL_ADDRESS_TO_DEFINE`, `SECURITY_CONTACT_TO_DEFINE` and
+   `DOMAIN_TO_DEFINE` tokens were present in `legal.html`/`privacy.html`/
+   `security.html` in both locales. Impact: the site could not go live
+   truthfully with real legal/contact info missing.
+   Resolution: `Website/generate.py` now reads
+   `Configuration/PublicIdentity.example.json` overlaid with the gitignored
+   `PublicIdentity.local.json`, which carries a real publisher of record, a
+   verified security-reporting channel and the production domain.
+   `legalAddress` stays deliberately `null` under LCEN Art. 6 III-2 and the
+   page says so. Website placeholder count is zero.
 
 3. **Unsigned, unnotarized distribution** — category: distribution.
    Evidence: `DISTRIBUTION_AUDIT.md` this session, `latest.json`

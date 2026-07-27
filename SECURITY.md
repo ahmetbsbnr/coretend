@@ -16,12 +16,15 @@ Public issues are for non-sensitive bugs and feature requests only —
 critical vulnerabilities must not be disclosed publicly before a fix
 exists.
 
-Until a dedicated private reporting channel is set up, report
-vulnerabilities to: `[SECURITY_CONTACT_TO_DEFINE]`
+Report vulnerabilities through **GitHub private vulnerability reporting**:
 
-(See Documentation/PUBLICATION_PLACEHOLDERS.md — this is a tracked
-placeholder that must be filled in with a real contact before any public
-release.)
+<https://github.com/ahmetbsbnr/coretend/security/advisories/new>
+
+This is a private channel: the report is visible only to you and the
+maintainer until an advisory is published. It requires a GitHub account —
+that is a deliberate trade-off, chosen so that no personal email address
+has to be published. No other reporting channel exists; there is no
+security mailing address.
 
 When reporting, please include:
 - CoreTend version / commit hash

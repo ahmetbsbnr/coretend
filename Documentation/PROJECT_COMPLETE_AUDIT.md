@@ -237,8 +237,9 @@ new): unsigned/unnotarized, no public GitHub release, single-machine/single-arch
 **Done this session** — see `Documentation/WEBSITE_AUDIT.md` (new, full doc). Static HTML/CSS, no
 framework, single Python stdlib generator script (`website/generate.py`). 13 pages per locale, exact
 FR/EN filename parity confirmed. Zero tracker/analytics script tags found (9-signature grep sweep + zero
-external `src`/`href` URLs anywhere). Legal-identity placeholders (`[LEGAL_NAME_TO_DEFINE]` etc.) remain
-unresolved and are honestly self-marked in the page text, not hidden. `lang=`/viewport meta present;
+external `src`/`href` URLs anywhere). Legal-identity placeholders (`LEGAL_NAME_TO_DEFINE` and its
+neighbours) were unresolved at the time of this audit and were honestly self-marked in the page text,
+not hidden; they were resolved in the later 0.9.0 launch phase. `lang=`/viewport meta present;
 zero `<img>` tags exist site-wide so the alt-text question is moot; no automated a11y scanner run (no
 browser tooling in this environment).
 

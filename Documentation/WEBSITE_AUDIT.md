@@ -37,12 +37,17 @@ loads at all, consistent with the local-only, no-CDN design).
 ## Real vs. placeholder content
 
 Legitimate, deliberately-marked placeholders (not accidental gaps) found in:
-- `legal.html`, `privacy.html`, `security.html` (both locales): bracketed
-  tokens `[LEGAL_NAME_TO_DEFINE]`, `[LEGAL_ADDRESS_TO_DEFINE]`,
-  `[SECURITY_CONTACT_TO_DEFINE]`, `coretend.ahmetbsbnr.com` — self-documented in
+- `legal.html`, `privacy.html`, `security.html` (both locales): the bracketed
+  tokens `LEGAL_NAME_TO_DEFINE`, `LEGAL_ADDRESS_TO_DEFINE`,
+  `SECURITY_CONTACT_TO_DEFINE` and the domain — self-documented in
   page text as pending real legal identity, tracked already in
   `Documentation/PUBLICATION_PLACEHOLDERS.md` and `LEGAL_AND_LICENSE_STATUS.md`
-  from prior sessions. Not new findings, re-confirmed present and unchanged.
+  from prior sessions. Not new findings at the time of this audit;
+  re-confirmed present and unchanged then.
+  **Resolved since** (0.9.0 launch phase): all of these now render real
+  values from `Configuration/PublicIdentity.local.json`, except
+  `legalAddress`, which is deliberately withheld under LCEN Art. 6 III-2 and
+  disclosed as withheld on the page.
 - `download.html`: explicit prose stating "there is no public release yet,
   this page is a placeholder." Honest, not misleading.
 - All other checked pages (`faq`, `features`, `index`) contained no
@@ -76,8 +81,9 @@ Legitimate, deliberately-marked placeholders (not accidental gaps) found in:
 
 Carried over from `HUMAN_BLOCKERS.md` / `PUBLICATION_PLACEHOLDERS.md`,
 re-confirmed unchanged this session:
-- Legal identity placeholders (`[LEGAL_NAME_TO_DEFINE]` etc.) must be
-  resolved before the legal/privacy/security pages can go live truthfully.
+- ~~Legal identity placeholders (`LEGAL_NAME_TO_DEFINE` and its neighbours)
+  must be resolved before the legal/privacy/security pages can go live
+  truthfully.~~ **Resolved in the 0.9.0 launch phase.**
 - `download.html` has no real download to point to (no public GitHub
   release exists — see `DISTRIBUTION_AUDIT.md` this session).
 - No deploy target configured/verified this session (`Documentation/

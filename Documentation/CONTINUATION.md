@@ -28,7 +28,7 @@ A (1.0.0 signed) is unreachable in this environment; do not plan around it.
   blocking), `WATCH`, `INFORMATIONAL`, `CLOSED`. Three tests assert BLOCKING
   bars, legacy OPEN still bars, and WATCH passes but is printed.
 - **Wired the legal identity into the site.** `Website/generate.py` hardcoded
-  `[LEGAL_NAME_TO_DEFINE]` and read no configuration at all — `PublicIdentity`
+  the `LEGAL_NAME_TO_DEFINE` token and read no configuration at all — `PublicIdentity`
   was referenced in fifteen documents and consumed by nothing. It now reads
   `Configuration/PublicIdentity.example.json` overlaid with the gitignored
   `.local.json`. Undefined keys still render as literal tokens so

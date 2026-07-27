@@ -29,5 +29,6 @@ dependencies to audit or patch.
 
 ## Reporting
 
-Same channel as the app: see `SECURITY.md` at the repository root
-(`[SECURITY_CONTACT_TO_DEFINE]` until a monitored channel exists).
+Same channel as the app: see `SECURITY.md` at the repository root, which
+routes reports to GitHub private vulnerability reporting at
+`https://github.com/ahmetbsbnr/coretend/security/advisories/new`.
