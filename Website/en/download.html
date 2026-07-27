@@ -10,7 +10,7 @@
      until the site is really deployed: an unreachable page in a search index
      is a promise nobody can keep. robots.txt is generated from the same flag,
      so the two can never disagree. -->
-<meta name="robots" content="noindex">
+<meta name="robots" content="index, follow">
 <link rel="canonical" href="https://coretend.ahmetbsbnr.com/en/download.html">
 <meta property="og:url" content="https://coretend.ahmetbsbnr.com/en/download.html">
 <link rel="alternate" hreflang="en" href="https://coretend.ahmetbsbnr.com/en/download.html">
@@ -54,21 +54,22 @@
 
 <h1>Download</h1>
 <div class="status-box">
-  <p><strong>Release 0.9.0 is prepared but not published yet.</strong>
-  There is no download link, because there is nothing public to link to. The
-  version and checksum below appear here only once a tagged release exists —
-  they are read from the generated manifest, never typed in by hand.</p>
+  <p><strong>CoreTend 0.9.0 — public beta.</strong>
+  Unsigned and not notarized. Verify the checksum below before you open it.</p>
 </div>
-
-<h2>What the release will look like</h2>
-<p>The artifact will be named exactly:</p>
-<pre>CoreTend-0.9.0-arm64-unsigned.zip</pre>
+<p><a href="https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.0">View the GitHub prerelease and release notes</a></p>
 <table>
-  <tr><th>Field</th><th>Status</th></tr>
-  <tr><td>Version</td><td>0.9.0 — prepared, not yet published</td></tr>
-  <tr><td>Checksum (SHA-256)</td><td>published with the release</td></tr>
+  <tr><th>Field</th><th>Value</th></tr>
+  <tr><td>Version</td><td>0.9.0</td></tr>
+  <tr><td>ZIP</td><td><a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.0/CoreTend-0.9.0-arm64-unsigned.zip"><code>CoreTend-0.9.0-arm64-unsigned.zip</code></a></td></tr>
+  <tr><td>ZIP SHA-256</td><td><code>1d224b7655cfbcb15b5f9a37302c454775fae34d17d7f010f8c9ab026999b7d8</code></td></tr>
+  <tr><td>DMG</td><td><a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.0/CoreTend-0.9.0-arm64-unsigned.dmg"><code>CoreTend-0.9.0-arm64-unsigned.dmg</code></a></td></tr>
+  <tr><td>DMG SHA-256</td><td><code>f2fbc7840ac4a5509836a495c51e72e6cfd52ef24e6cbdd792fa8404bd3f6c8d</code></td></tr>
+  <tr><td>Verification files</td><td><a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.0/latest.json"><code>latest.json</code></a> · <a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.0/SHA256SUMS"><code>SHA256SUMS</code></a></td></tr>
+  <tr><td>Architecture</td><td>arm64</td></tr>
+  <tr><td>Minimum macOS</td><td>14.0</td></tr>
   <tr><td>Code signing</td><td><strong>unsigned</strong> — always disclosed, never hidden</td></tr>
-  <tr><td>Notarization</td><td><strong>not notarized</strong> — requires an Apple Developer ID, out of scope pre-1.0</td></tr>
+  <tr><td>Notarization</td><td><strong>not notarized</strong> — requires an Apple Developer ID</td></tr>
 </table>
 
 <h2>Source code</h2>

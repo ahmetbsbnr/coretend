@@ -1,5 +1,4 @@
-# The site is not deployed yet. Nothing here should be indexed
-# until it is reachable. Flip siteIndexable in the identity file
-# and regenerate to open it up.
 User-agent: *
-Disallow: /
+Allow: /
+
+Sitemap: https://coretend.ahmetbsbnr.com/sitemap.xml
