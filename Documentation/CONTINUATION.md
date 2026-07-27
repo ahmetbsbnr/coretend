@@ -1,5 +1,114 @@
 # CONTINUATION
 
+## Where we are (0.9.0 launch phase, IN PROGRESS)
+
+Branch `feat/coretend-rebrand-workspace`. **The repository is now public.**
+Not yet done: site deploy, DNS, release build, tag, GitHub Release.
+
+Nothing is signed or notarised, and it cannot be: `security find-identity -v -p
+codesigning` reports **0 valid identities**, and a Developer ID requires a paid
+Apple Developer Program membership that is explicitly out of scope. That fact
+alone fixes the outcome at **Scenario B — 0.9.0 unsigned Public Beta**. Scenario
+A (1.0.0 signed) is unreachable in this environment; do not plan around it.
+
+### What this phase did
+
+- **Reached the official trademark registers** — the one gap that had kept the
+  name at `REVIEW_REQUIRED`. TMview (aggregating ~80 offices incl. EUIPO, INPI,
+  USPTO, WIPO, UKIPO) returns **0 marks containing `coretend`** across
+  141,856,516 records. Software channels re-verified clear: GitHub, npm, PyPI,
+  Homebrew formula and cask, Mac App Store. Status is now
+  `PRELIMINARY_CLEARANCE_NO_HIGH_CONFLICT_FOUND`. Nearest neighbour `COREXTEND`
+  (MIPS Tech, live class 9 at EUIPO/UKIPO, one letter away) is recorded as a
+  **WATCH** item — different industry, not a bar to a free beta, but attorney
+  review is required before any filing or commercial use.
+- **Gave the conflict register a status vocabulary.** It previously had only
+  `OPEN`, which blocks the gate, so a non-blocking observation had to be written
+  as though it barred publication. Now: `BLOCKING`, `OPEN` (legacy, still
+  blocking), `WATCH`, `INFORMATIONAL`, `CLOSED`. Three tests assert BLOCKING
+  bars, legacy OPEN still bars, and WATCH passes but is printed.
+- **Wired the legal identity into the site.** `Website/generate.py` hardcoded
+  `[LEGAL_NAME_TO_DEFINE]` and read no configuration at all — `PublicIdentity`
+  was referenced in fifteen documents and consumed by nothing. It now reads
+  `Configuration/PublicIdentity.example.json` overlaid with the gitignored
+  `.local.json`. Undefined keys still render as literal tokens so
+  `check-placeholders.sh` keeps blocking; the pending-values banner is derived
+  from whether publisher and security contact are real, so it cannot go stale.
+- **Determined the launch non-professional** against every criterion (no price,
+  sale, subscription, donation, advertising, affiliate, account, or commercial
+  data collection) and recorded it in `LEGAL_IDENTITY_DETERMINATION.md`, along
+  with what would overturn it. Publisher is the given name the owner already
+  publishes on their own GitHub plus their handle and domain — **no surname was
+  invented from the filesystem path**. Personal address withheld under LCEN Art.
+  6 III-2, stated openly on the page. Host is Vercel Inc., verified from their
+  own Terms of Service.
+- **Built a reproducible sanitised export.** `Scripts/build-public-branch.sh`
+  stages 389 files, excludes 79 (session logs, workspace manifests, audit
+  packages, rebrand working files), verifies the staged tree, and builds the
+  commit with `commit-tree` against a throwaway index so the working tree is
+  never touched. Full internal history preserved privately as a verified bundle.
+- **Published the repository** and enabled private vulnerability reporting,
+  secret scanning, push protection and Dependabot security updates. The security
+  contact is that reporting channel, confirmed live before being written down —
+  no email address was invented.
+
+### Verified state at this commit
+
+- 296 tests in 58 suites, 0 failures.
+- `swift build` and `swift build -c release` both clean.
+- `doctor.sh`, `repository-doctor.sh`, `check-website.sh` all pass.
+- Website placeholders: **0**. Repo-wide placeholders: **34** (see below).
+- Working tree clean.
+
+### The exact next task
+
+Two things block `check-publish-readiness.sh`, in this order:
+
+1. **34 stale placeholder occurrences in documentation.** These are no longer
+   undefined values — they are prose *describing* the placeholder system, in
+   `Website/README.md`, `SECURITY.md`, `Documentation/HUMAN_BLOCKERS.md`,
+   `Documentation/PUBLICATION_PLACEHOLDERS.md` and neighbours. They must be
+   rewritten to state what is now true (publisher set, security contact set,
+   repo public) rather than deleted wholesale — several are legitimately
+   documenting the mechanism.
+2. **`Release/latest.json` does not exist.** Run `Scripts/build-release.sh` from
+   a clean tree on the release tag. Provenance was already reworked in an
+   earlier phase to generate rather than commit it, so this should be mechanical.
+
+Then, still open from the brief: site deploy to Vercel + `coretend.ahmetbsbnr.com`
+CNAME (§17), the 0.9.0 tag and GitHub prerelease with honest Gatekeeper
+instructions (§19), `Scripts/final-launch-gate.sh` (§24), the delivery folder and
+audit archive (§25), the LICENSE cross-reference repair (§6), the final security
+audit documents (§7), and the visual/accessibility QA passes (§11, §12).
+
+### Resume with exactly this
+
+```
+cd ~/Documents/MAC_ORGANISE/00_DOCUMENTS_EXISTANTS/01_PROJETS/01_PROJETS_ACTIFS/WEBSITE/products/coretend/app && \
+  git status --short && \
+  bash Scripts/check-publish-readiness.sh
+```
+
+### Facts worth not rediscovering
+
+- **Public repo:** `github.com/ahmetbsbnr/coretend`, default branch `main` at
+  `b2bca85`, remote `origin` configured, local branch `public-main` tracks it.
+- **Backup bundle** (full private history, 244 commits, verified complete):
+  `products/coretend/.private-backups/coretend-app-full-history-*.bundle`,
+  SHA-256 alongside it.
+- **No Xcode**, only Command Line Tools — `xcodebuild` is unavailable, SwiftPM
+  works. Do not write build steps that need `xcodebuild`.
+- **`gh` and `vercel` are both authenticated** (`ahmetbsbnr`).
+- The repository has **no `main` branch locally** matching the public one beyond
+  `public-main`; the working branch remains `feat/coretend-rebrand-workspace`.
+- `Configuration/PublicIdentity.local.json` is gitignored and holds the real
+  identity. If it is missing, the site regenerates with placeholders — that is
+  the intended failure mode, not a bug.
+
+---
+
+# Previous phase (archived)
+
 ## Where we are (product version 0.8.1, phase: 0.8.1 Final Canonical Audit Resync, CLOSED)
 
 Branch `feat/coretend-rebrand-workspace`. **Nothing pushed, deployed, published,
