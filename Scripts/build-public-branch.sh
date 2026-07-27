@@ -22,7 +22,7 @@
 # somebody's shell history is not reviewable.
 #
 # Usage:
-#   Scripts/build-public-branch.sh [--branch <name>] [--dry-run]
+#   Scripts/build-public-branch.sh [--branch <name>] [--parent <ref>] [--dry-run]
 #
 # Exits non-zero and creates nothing if the verification step finds anything.
 
@@ -31,10 +31,12 @@ set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
 BRANCH="public-main"
+PARENT=""
 DRY_RUN=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --branch) BRANCH="$2"; shift 2 ;;
+    --parent) PARENT="$2"; shift 2 ;;
     --dry-run) DRY_RUN=1; shift ;;
     *) echo "unknown argument: $1" >&2; exit 2 ;;
   esac
@@ -263,14 +265,21 @@ was made is omitted.
 
 Built from internal $SOURCE_BRANCH at $SOURCE_REF.
 COMMIT_MSG
-
-COMMIT=$(git commit-tree "$TREE" -F "$MSG_FILE")
+if [ -n "$PARENT" ]; then
+  PARENT_COMMIT=$(git rev-parse "$PARENT^{commit}")
+  COMMIT=$(git commit-tree "$TREE" -p "$PARENT_COMMIT" -F "$MSG_FILE")
+else
+  COMMIT=$(git commit-tree "$TREE" -F "$MSG_FILE")
+fi
 rm -f "$MSG_FILE"
 
 git branch "$BRANCH" "$COMMIT"
 
 echo "build-public-branch.sh: created '$BRANCH' at $(git rev-parse --short "$COMMIT")"
 echo "  source:  $SOURCE_BRANCH @ ${SOURCE_REF:0:12}"
+if [ -n "$PARENT" ]; then
+  echo "  parent:  $PARENT @ ${PARENT_COMMIT:0:12}"
+fi
 echo "  files:   $INCLUDED included, $SKIPPED excluded"
 echo "  working tree untouched — you are still on $(git rev-parse --abbrev-ref HEAD)"
 echo "  inspect: git show --stat $BRANCH"

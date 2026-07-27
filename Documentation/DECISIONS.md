@@ -1,5 +1,13 @@
 # DECISIONS
 
+## D-G1 — Publish through the sanitised-tree boundary (2026-07-27)
+
+GitHub `main` is intentionally a single sanitised public export and has no
+merge base with the internal development branch. Publication therefore
+creates a new verified export tree with `origin/main` as its parent. This keeps
+the PR mergeable while excluding internal continuity/workspace records and
+without rewriting `main`, the development branch, or `v0.9.0`.
+
 ## D-M2 — New Smart Care screenshot is post-v0.9.0 evidence (2026-07-27)
 
 The newest user-supplied screenshot contains only the CoreTend Smart Care
