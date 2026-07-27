@@ -38,6 +38,14 @@ cp -R "$SITE" "$TMP/Website"
 if [ -d "$(dirname "$SITE")/Configuration" ]; then
   cp -R "$(dirname "$SITE")/Configuration" "$TMP/Configuration"
 fi
+# Once a release exists, generate.py also reads the generated manifest to
+# render the exact public asset names and checksums. Preserve that input in the
+# hermetic copy; otherwise the freshness check compares a published-release
+# page against the intentional pre-release fallback and reports false drift.
+if [ -f "Release/latest.json" ]; then
+  mkdir -p "$TMP/Release"
+  cp "Release/latest.json" "$TMP/Release/latest.json"
+fi
 ( cd "$TMP/Website" && python3 generate.py >/dev/null 2>&1 ) || note "generate.py failed to run"
 for locale in en fr; do
   if ! diff -rq "$SITE/$locale" "$TMP/Website/$locale" >/dev/null 2>&1; then
