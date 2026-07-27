@@ -20,7 +20,9 @@
 <meta property="og:title" content="Overview — CoreTend">
 <meta property="og:description" content="A lighter Mac. Always under control. Local, transparent and reversible care for macOS.">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="../assets/brand/opengraph.png">
+<meta property="og:image" content="https://coretend.ahmetbsbnr.com/assets/brand/opengraph.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../assets/brand/favicon-32.png" sizes="32x32">
 <link rel="icon" href="../assets/brand/favicon-512.png" sizes="512x512">
@@ -40,6 +42,7 @@
     <nav class="primary" aria-label="Main">
       <a href="index.html" class="active" aria-current="page">Overview</a>
       <a href="features.html">Features</a>
+      <a href="demos.html">Demos</a>
       <a href="privacy.html">Privacy</a>
       <a href="download.html">Download</a>
       <a href="documentation.html">Documentation</a>
@@ -82,21 +85,9 @@
   </div>
 </section>
 
-<section id="how" class="feature reveal">
-  <div>
-    <span class="section-label">The mark</span>
-    <h2>One nucleus, three arcs</h2>
-    <p>The mark is the product's structure, not decoration. The nucleus is your Mac; the three arcs are the three things CoreTend attends to — storage and care in green, privacy and protection in violet, activity and performance in amber. Those colours mean the same thing everywhere in the app, and each is always paired with a label or a symbol, never colour alone.</p>
-  </div>
-  <div class="feature-visual"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
-<path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--care)" stroke-width="38.4" stroke-linecap="round"/>
-<path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--privacy)" stroke-width="38.4" stroke-linecap="round"/>
-<path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--activity)" stroke-width="38.4" stroke-linecap="round"/>
-<circle cx="256" cy="256" r="61.44" fill="var(--care)"/>
-</svg></div>
-</section>
 
-<section class="reveal">
+
+<section id="how" class="reveal">
   <span class="section-label">Reclaimable space</span>
   <h2>A measured number, not a promise</h2>
   <p>CoreTend never shows an estimate it has not measured. After a scan you get the real byte count of what it found, grouped by where it came from, with the reason each item was flagged. Anything it cannot safely judge is left out of the total and labelled instead.</p>
@@ -136,9 +127,16 @@
     <p>The first launch walks through how CoreTend works locally, what permissions each feature needs and why, which parts are optional, and what dry run means — then runs a short diagnostic and shows you a summary. Nothing is scanned or changed during setup.</p>
   </div>
   <div class="feature-visual">
-    <div class="screenshot-placeholder">Setup assistant screenshot — pending a real capture. This box must never ship in a published build; see Website/README.md.</div>
+    <svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
+<path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--care)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--privacy)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--activity)" stroke-width="38.4" stroke-linecap="round"/>
+<circle cx="256" cy="256" r="61.44" fill="var(--care)"/>
+</svg>
   </div>
 </section>
+
+
 
 <section class="reveal">
   <span class="section-label">Open source</span>
@@ -177,9 +175,10 @@
   <div class="wrap">
     <div>
       <p class="footer-note">&copy; CoreTend contributors. Open source — see the <a href="licenses.html">licenses</a>.</p>
-      <p class="disclaimer">CoreTend is an independent project and is not affiliated with Apple Inc. Mac and macOS describe compatibility only.</p>
     </div>
     <nav aria-label="Footer">
+      <a href="install.html">Install</a>
+      <a href="support.html">Support</a>
       <a href="faq.html">FAQ</a>
       <a href="roadmap.html">Roadmap</a>
       <a href="security.html">Security</a>

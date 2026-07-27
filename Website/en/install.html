@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Privacy — CoreTend</title>
+<title>Install CoreTend — CoreTend</title>
 <meta name="description" content="Local, transparent and reversible care for macOS.">
 <meta name="color-scheme" content="light dark">
 <!-- Indexing follows siteIndexable in the identity file. It stays noindex
@@ -11,13 +11,13 @@
      is a promise nobody can keep. robots.txt is generated from the same flag,
      so the two can never disagree. -->
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="https://coretend.ahmetbsbnr.com/en/privacy.html">
-<meta property="og:url" content="https://coretend.ahmetbsbnr.com/en/privacy.html">
-<link rel="alternate" hreflang="en" href="https://coretend.ahmetbsbnr.com/en/privacy.html">
-<link rel="alternate" hreflang="fr" href="https://coretend.ahmetbsbnr.com/fr/privacy.html">
+<link rel="canonical" href="https://coretend.ahmetbsbnr.com/en/install.html">
+<meta property="og:url" content="https://coretend.ahmetbsbnr.com/en/install.html">
+<link rel="alternate" hreflang="en" href="https://coretend.ahmetbsbnr.com/en/install.html">
+<link rel="alternate" hreflang="fr" href="https://coretend.ahmetbsbnr.com/fr/install.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="CoreTend">
-<meta property="og:title" content="Privacy — CoreTend">
+<meta property="og:title" content="Install CoreTend — CoreTend">
 <meta property="og:description" content="A lighter Mac. Always under control. Local, transparent and reversible care for macOS.">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://coretend.ahmetbsbnr.com/assets/brand/opengraph.png">
@@ -43,37 +43,52 @@
       <a href="index.html">Overview</a>
       <a href="features.html">Features</a>
       <a href="demos.html">Demos</a>
-      <a href="privacy.html" class="active" aria-current="page">Privacy</a>
+      <a href="privacy.html">Privacy</a>
       <a href="download.html">Download</a>
       <a href="documentation.html">Documentation</a>
       <a href="open-source.html">Open Source</a>
       <a href="changelog.html">Changelog</a>
     </nav>
-    <div class="lang-switch"><a href="../en/privacy.html" hreflang="en" lang="en" class="active" aria-current="true">EN</a><a href="../fr/privacy.html" hreflang="fr" lang="fr">FR</a></div>
+    <div class="lang-switch"><a href="../en/install.html" hreflang="en" lang="en" class="active" aria-current="true">EN</a><a href="../fr/install.html" hreflang="fr" lang="fr">FR</a></div>
   </div>
 </header>
 <main id="main">
   <div class="wrap">
 
-<h1>Privacy</h1>
-<h2>The app</h2>
-<p>CoreTend runs entirely locally. It collects no telemetry, no
-analytics, no usage data, and makes no network calls as part of its core
-scanning/cleaning operation. See <code>PRIVACY.md</code> and
-<code>Documentation/PROTECTION_LIMITATIONS.md</code> in the repository for
-full detail, including the one optional network dependency (ClamAV virus
-definition updates, entirely opt-in).</p>
-<h2>This website</h2>
-<p>This site sets no analytics or advertising cookies, runs no trackers, no
-pixels, and no session replay. See <code>Documentation/WEBSITE_PRIVACY.md</code>
-in the repository for the full policy.</p>
-
-<h2>Site operator</h2>
-<p>Publisher: Ahmet (@ahmetbsbnr) — ahmetbsbnr.com<br>
-Contact: <a href="https://github.com/ahmetbsbnr/coretend/security/advisories/new">GitHub private vulnerability reporting</a></p>
-<p>The publisher is an individual publishing non-professionally. Their personal
-address is not published; the host holds it. Full detail on the
-<a href="legal.html">Legal notice</a> page.</p>
+<h1>Install CoreTend</h1>
+<p class="lead">From download to first scan without lowering your Mac's
+security settings globally.</p>
+<div class="warning-banner"><p><strong>CoreTend 0.9.0 is unsigned and not
+notarized.</strong> macOS will block the first normal open. The steps below
+authorize this copy of CoreTend only.</p></div>
+<ol class="install-steps">
+  <li><h2>Check compatibility</h2><p>Choose Apple menu → About This Mac. The
+  available build requires an Apple silicon chip and macOS 14 or later.</p></li>
+  <li><h2>Download the DMG</h2><p>Use the DMG on the official
+  <a href="download.html">Download page</a>. The ZIP is an alternative.</p></li>
+  <li><h2>Move CoreTend to Applications</h2><p>Open the DMG, drag CoreTend to
+  Applications, then eject the disk image.</p></li>
+  <li><h2>Open this app once</h2><p>In Applications, Control-click CoreTend and
+  choose <strong>Open</strong>. If your macOS version instead presents a
+  CoreTend-specific option in System Settings → Privacy &amp; Security, use
+  that option. Labels vary by macOS version.</p>
+  <details><summary>Why is this needed?</summary><p>The beta has no Developer
+  ID signature and is not notarized. This per-app choice is not a security
+  certification. Never disable Gatekeeper or SIP globally.</p></details></li>
+  <li><h2>Start with dry run</h2><p>Read the onboarding, keep dry run enabled,
+  and start Smart Care. A scan previews findings before any approved action.</p></li>
+</ol>
+<h2>Optional: verify your download</h2>
+<p>SHA-256 confirms that your file is byte-for-byte the published file. It
+does not replace signing or notarization, and the checksum source must itself
+be trusted.</p>
+<pre><code>shasum -a 256 ~/Downloads/CoreTend-0.9.0-arm64-unsigned.dmg
+cd ~/Downloads
+shasum -a 256 -c SHA256SUMS</code></pre>
+<p>The DMG result must be
+<code>f2fbc7840ac4a5509836a495c51e72e6cfd52ef24e6cbdd792fa8404bd3f6c8d</code>.
+If it differs, delete the file, download it again, and do not open it.</p>
+<p>Need help? Continue to <a href="support.html">Support and troubleshooting</a>.</p>
 
   </div>
 </main>

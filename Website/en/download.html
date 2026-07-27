@@ -20,7 +20,9 @@
 <meta property="og:title" content="Download — CoreTend">
 <meta property="og:description" content="A lighter Mac. Always under control. Local, transparent and reversible care for macOS.">
 <meta property="og:locale" content="en_US">
-<meta property="og:image" content="../assets/brand/opengraph.png">
+<meta property="og:image" content="https://coretend.ahmetbsbnr.com/assets/brand/opengraph.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="../assets/brand/favicon-32.png" sizes="32x32">
 <link rel="icon" href="../assets/brand/favicon-512.png" sizes="512x512">
@@ -40,6 +42,7 @@
     <nav class="primary" aria-label="Main">
       <a href="index.html">Overview</a>
       <a href="features.html">Features</a>
+      <a href="demos.html">Demos</a>
       <a href="privacy.html">Privacy</a>
       <a href="download.html" class="active" aria-current="page">Download</a>
       <a href="documentation.html">Documentation</a>
@@ -62,18 +65,28 @@
   <tr><th>Field</th><th>Value</th></tr>
   <tr><td>Version</td><td>0.9.0</td></tr>
   <tr><td>ZIP</td><td><a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.0/CoreTend-0.9.0-arm64-unsigned.zip"><code>CoreTend-0.9.0-arm64-unsigned.zip</code></a></td></tr>
+  <tr><td>ZIP size</td><td>2833085 bytes</td></tr>
   <tr><td>ZIP SHA-256</td><td><code>1d224b7655cfbcb15b5f9a37302c454775fae34d17d7f010f8c9ab026999b7d8</code></td></tr>
   <tr><td>DMG</td><td><a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.0/CoreTend-0.9.0-arm64-unsigned.dmg"><code>CoreTend-0.9.0-arm64-unsigned.dmg</code></a></td></tr>
+  <tr><td>DMG size</td><td>5192666 bytes</td></tr>
   <tr><td>DMG SHA-256</td><td><code>f2fbc7840ac4a5509836a495c51e72e6cfd52ef24e6cbdd792fa8404bd3f6c8d</code></td></tr>
   <tr><td>Verification files</td><td><a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.0/latest.json"><code>latest.json</code></a> · <a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.0/SHA256SUMS"><code>SHA256SUMS</code></a></td></tr>
   <tr><td>Architecture</td><td>arm64</td></tr>
   <tr><td>Minimum macOS</td><td>14.0</td></tr>
+  <tr><td>Source commit</td><td><code>a6aa3bf20cc1f3b7623291660c4943db2e5d4a50</code></td></tr>
+  <tr><td>Build date</td><td>2026-07-27T14:14:55Z</td></tr>
   <tr><td>Code signing</td><td><strong>unsigned</strong> — always disclosed, never hidden</td></tr>
   <tr><td>Notarization</td><td><strong>not notarized</strong> — requires an Apple Developer ID</td></tr>
 </table>
 
 <h2>Source code</h2>
 <p>CoreTend is open source. The full source, tests, build scripts and gates are at <a href="https://github.com/ahmetbsbnr/coretend">https://github.com/ahmetbsbnr/coretend</a>.</p>
+
+<h2>Recommended: DMG</h2>
+<p>The DMG gives a clear drag-to-Applications installation. The ZIP contains
+the same application and is available as an alternative for experienced
+users. Neither format changes the unsigned and not notarized status.</p>
+<p><a class="btn btn-primary" href="install.html">Install CoreTend step by step</a></p>
 
 <h2>Installing an unsigned app</h2>
 <p>macOS will refuse to open CoreTend on first launch, saying the developer
@@ -101,9 +114,10 @@ making.</p>
   <div class="wrap">
     <div>
       <p class="footer-note">&copy; CoreTend contributors. Open source — see the <a href="licenses.html">licenses</a>.</p>
-      <p class="disclaimer">CoreTend is an independent project and is not affiliated with Apple Inc. Mac and macOS describe compatibility only.</p>
     </div>
     <nav aria-label="Footer">
+      <a href="install.html">Install</a>
+      <a href="support.html">Support</a>
       <a href="faq.html">FAQ</a>
       <a href="roadmap.html">Roadmap</a>
       <a href="security.html">Security</a>

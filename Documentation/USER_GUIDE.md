@@ -45,8 +45,8 @@ then follow the links for the area you need.
 - [SECURITY.md](../SECURITY.md) — reporting a vulnerability.
 - Bug reports: `.github/ISSUE_TEMPLATE/`.
 
-## What CoreTend is not
+## Scope
 
-Not affiliated with CleanMyMac, MacPaw, or Apple. Not a full antivirus or a
-security guarantee. Not a "miracle" speed booster. Not AI-generated or a
-school/portfolio project — it's a maintained open source utility.
+The optional Protection module is a local scanning aid, not a full antivirus
+or a security guarantee. CoreTend does not claim to produce a universal speed
+increase.
