@@ -184,11 +184,10 @@ if [ -f "$ZIP" ]; then
   # it. Matching against a string cannot misfire that way.
   ZIP_LIST=$(unzip -l "$ZIP" 2>/dev/null)
   for required in LICENSE NOTICE THIRD_PARTY_NOTICES.md; do
-    if printf '%s\n' "$ZIP_LIST" | grep -Eq "[[:space:]]${required}\$"; then
-      PASS "ZIP contains $required"
-    else
-      FAIL "ZIP is missing $required (Apache-2.0 §4 requires NOTICE to travel with the work)"
-    fi
+    case "$ZIP_LIST" in
+      *" ${required}"$'\n'*|*" ${required}") PASS "ZIP contains $required" ;;
+      *) FAIL "ZIP is missing $required (Apache-2.0 §4 requires NOTICE to travel with the work)" ;;
+    esac
   done
 else
   FAIL "$ZIP not found"
@@ -213,21 +212,30 @@ fi
 # ------------------------------------------------- signing and notarization
 section "Signing and notarization"
 
-IDENTITIES=$(security find-identity -v -p codesigning 2>/dev/null | grep -c 'valid identities found\|[0-9]) ' || true)
-if security find-identity -v -p codesigning 2>/dev/null | grep -q '0 valid identities found'; then
-  NA "code signing — no Developer ID available on this machine, and 0.9.0 ships unsigned by decision. This is NOT a signing pass."
-  NA "notarization — impossible without a Developer ID. This is NOT a notarization pass."
-else
-  HUMAN "a signing identity exists on this machine — decide deliberately whether 0.9.0 should still ship unsigned"
-fi
+# Captured, not piped. Under `pipefail`, `producer | grep -q` lets grep exit at
+# the first match and SIGPIPE the producer, so the pipeline reports failure even
+# on a match — nondeterministically, depending on who finishes first. That bug
+# made this gate flip its ad-hoc signature verdict between identical runs.
+IDENTITY_OUT=$(security find-identity -v -p codesigning 2>/dev/null || true)
+case "$IDENTITY_OUT" in
+  *"0 valid identities found"*)
+    NA "code signing — no Developer ID available on this machine, and 0.9.0 ships unsigned by decision. This is NOT a signing pass."
+    NA "notarization — impossible without a Developer ID. This is NOT a notarization pass."
+    ;;
+  *)
+    HUMAN "a signing identity exists on this machine — decide deliberately whether 0.9.0 should still ship unsigned"
+    ;;
+esac
 
 APP="build/CoreTend.app"
 if [ -d "$APP" ]; then
-  if codesign -dv "$APP" 2>&1 | grep -q 'Signature=adhoc'; then
-    PASS "built app carries an ad-hoc signature only (asserts no identity, as expected)"
-  else
-    HUMAN "built app is not ad-hoc signed — verify what identity it carries before publishing"
-  fi
+  CODESIGN_OUT=$(codesign -dv "$APP" 2>&1 || true)
+  case "$CODESIGN_OUT" in
+    *"Signature=adhoc"*)
+      PASS "built app carries an ad-hoc signature only (asserts no identity, as expected)" ;;
+    *)
+      HUMAN "built app is not ad-hoc signed — verify what identity it carries before publishing" ;;
+  esac
   # Gatekeeper MUST reject an unsigned build. If it ever accepts one, something
   # is signing it that we did not intend, and that is worth stopping for.
   if spctl --assess --type execute "$APP" >/dev/null 2>&1; then
