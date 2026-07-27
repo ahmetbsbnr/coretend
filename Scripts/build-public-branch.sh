@@ -43,6 +43,19 @@ done
 SOURCE_REF=$(git rev-parse HEAD)
 SOURCE_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
+# Files are staged by copying from the working tree, not by `git show`, because
+# .gitattributes gives some files a working-tree-encoding (the .strings
+# catalogues are UTF-16) and `git show` emits the UTF-8 blob without its BOM,
+# which git then refuses to re-add. Copying preserves the on-disk encoding.
+#
+# That only holds if the working tree matches HEAD, so require it. Publishing
+# from a dirty tree would ship whatever happened to be lying around anyway.
+if [ -n "$(git status --porcelain)" ]; then
+  echo "working tree is not clean — commit or stash first." >&2
+  echo "The export copies from the working tree, so it must match HEAD." >&2
+  exit 1
+fi
+
 # ---------------------------------------------------------------- excluded ---
 # Everything here is internal working material, not product. Each entry is a
 # path prefix matched against `git ls-files` output.
@@ -104,6 +117,7 @@ is_excluded() {
 }
 
 STAGING=$(mktemp -d)
+# (trap is reinstalled below once TMP_INDEX exists)
 trap 'rm -rf "$STAGING"' EXIT
 
 INCLUDED=0
@@ -114,7 +128,7 @@ while IFS= read -r f; do
     continue
   fi
   mkdir -p "$STAGING/$(dirname "$f")"
-  git show "HEAD:$f" > "$STAGING/$f" 2>/dev/null || continue
+  cp -p "$f" "$STAGING/$f" 2>/dev/null || continue
   INCLUDED=$((INCLUDED + 1))
 done < <(git ls-files)
 
@@ -205,14 +219,31 @@ if git show-ref --verify --quiet "refs/heads/$BRANCH"; then
   exit 1
 fi
 
-git checkout -q --orphan "$BRANCH"
-git rm -rq --cached . 2>/dev/null || true
-find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} + 2>/dev/null || true
-cp -R "$STAGING"/. .
-git add -A
+# The branch is built with a throwaway index and commit-tree, so the working
+# tree and HEAD are never touched.
+#
+# The obvious implementation — checkout --orphan, delete everything, copy the
+# staging tree in, commit — destroys the working tree as its second step. If any
+# later step fails (and one did: a UTF-16 catalogue that `git add` rejected),
+# it strands the repository on an unborn branch with the real tree already
+# gone, and recovering means knowing to reach for `git checkout -f`. A script
+# whose failure mode is "your checkout is now the export" is not one to hand
+# someone at release time.
+#
+# Building the commit object directly has no such state to lose: on failure
+# nothing has changed at all, and the branch only appears once the commit exists.
+TMP_INDEX=$(mktemp -u)
+trap 'rm -rf "$STAGING" "$TMP_INDEX"' EXIT
 
-git commit -q -F - <<COMMIT_MSG
-CoreTend $(git show "$SOURCE_REF:Documentation/../Package.swift" >/dev/null 2>&1 && echo "" || echo "")— first public source release
+GIT_INDEX_FILE="$TMP_INDEX" GIT_WORK_TREE="$STAGING" git add -A
+TREE=$(GIT_INDEX_FILE="$TMP_INDEX" GIT_WORK_TREE="$STAGING" git write-tree)
+
+# The message goes via a file rather than a heredoc piped into the command
+# substitution: bash 3.2, which is what ships with macOS, mis-parses an
+# apostrophe inside a heredoc nested in $( ), and this message contains one.
+MSG_FILE="$STAGING.msg"
+cat > "$MSG_FILE" <<COMMIT_MSG
+CoreTend — first public source release
 
 CoreTend is a free, open-source macOS maintenance utility: cleanup, storage
 analysis, duplicate and similar-image detection, privacy cleaning, optional
@@ -233,6 +264,13 @@ was made is omitted.
 Built from internal $SOURCE_BRANCH at $SOURCE_REF.
 COMMIT_MSG
 
-echo "build-public-branch.sh: created '$BRANCH' at $(git rev-parse --short HEAD)"
-echo "  source: $SOURCE_BRANCH @ ${SOURCE_REF:0:12}"
-echo "  return with: git checkout $SOURCE_BRANCH"
+COMMIT=$(git commit-tree "$TREE" -F "$MSG_FILE")
+rm -f "$MSG_FILE"
+
+git branch "$BRANCH" "$COMMIT"
+
+echo "build-public-branch.sh: created '$BRANCH' at $(git rev-parse --short "$COMMIT")"
+echo "  source:  $SOURCE_BRANCH @ ${SOURCE_REF:0:12}"
+echo "  files:   $INCLUDED included, $SKIPPED excluded"
+echo "  working tree untouched — you are still on $(git rev-parse --abbrev-ref HEAD)"
+echo "  inspect: git show --stat $BRANCH"
