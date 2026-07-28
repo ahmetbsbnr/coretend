@@ -2,23 +2,28 @@
 
 Verified against `Package.swift` (single source of truth for build
 dependencies) and a repo-wide grep for build/dev tooling. Last checked:
-2026-07-20, commit `b248bf3`.
+2026-07-28, commit `4d9e658`.
 
 ## SwiftPM dependencies (external packages)
 
-**None.** `Package.swift` declares zero `.package(url:...)` entries. Every
-target (`ScanCore`, `SafetyCore`, `FileRules`, `DesignSystem`, `Persistence`,
-`SystemMetrics`, `AppDiscovery`, `MalwareEngine`, `CoreTendApp`) is first-party
-Swift code depending only on Apple's system frameworks (Foundation,
-SwiftUI, AppKit, etc.) and, at runtime, an optional user-installed
-`clamscan` binary shelled out to as a subprocess — never linked, never
-vendored (see `Documentation/CLAMAV.md`).
+**One, test-only.** `Package.swift` declares `swift-testing` as an explicit
+dependency, pinned via `Package.resolved`. It exists solely so `swift test`
+works on machines with Command Line Tools only (no Xcode.app, which
+otherwise ships the `Testing` module built in). It is linked only into
+`testTarget`s — never into the `CoreTendApp` executable or any of the
+shipped libraries — so it has zero footprint in the release binary.
+
+Every shipping target (`ScanCore`, `SafetyCore`, `FileRules`, `DesignSystem`,
+`Persistence`, `SystemMetrics`, `AppDiscovery`, `MalwareEngine`,
+`CoreTendApp`) remains first-party Swift code depending only on Apple's
+system frameworks (Foundation, SwiftUI, AppKit, etc.) and, at runtime, an
+optional user-installed `clamscan` binary shelled out to as a subprocess —
+never linked, never vendored (see `Documentation/CLAMAV.md`).
 
 | Name | Version | Source | License | Usage | Necessity | Risk | Native alternative | Maintenance | Bundled in app |
 |---|---|---|---|---|---|---|---|---|---|
-| — | — | — | — | — | — | — | — | — | — |
-
-There is nothing to remove: the dependency count is already zero.
+| swift-testing | 0.99.0 (pinned) | github.com/apple/swift-testing | Apache-2.0 | Test target dependency only (`#expect`/`@Test`) | Needed for `swift test` to run outside Xcode.app | Low — Apple first-party, test-only, not in release binary | Xcode's bundled Testing module (requires full Xcode install, not just CLT) | Actively maintained by Apple | No |
+| swift-syntax | 600.0.1 (pinned, transitive via swift-testing) | github.com/swiftlang/swift-syntax | Apache-2.0 | Macro expansion backing swift-testing's `@Test`/`#expect` | Transitive requirement of swift-testing | Low — Apple first-party, test-only, not in release binary | n/a | Actively maintained by Apple | No |
 
 ## Runtime, non-linked external tool
 

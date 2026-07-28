@@ -2,8 +2,8 @@
 # Verifies license declarations are present and internally consistent:
 # root LICENSE/NOTICE/COPYRIGHT exist, LICENSES/ has the referenced texts,
 # and Documentation/DEPENDENCIES.md's dependency list matches Package.swift
-# (this repo currently declares zero external SwiftPM dependencies — if
-# that ever changes, this check will start failing on purpose).
+# (currently: swift-testing + its transitive swift-syntax, both test-only —
+# if the count changes again, keep DEPENDENCIES.md in sync or this warns).
 # Read-only. Safe to run from any working directory.
 set -euo pipefail
 
