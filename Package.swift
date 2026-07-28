@@ -17,7 +17,7 @@ let package = Package(
         .library(name: "MalwareEngine", targets: ["MalwareEngine"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/apple/swift-testing.git", from: "0.12.0"),
+        .package(url: "https://github.com/apple/swift-testing.git", from: "6.3.2"),
     ],
     targets: [
         .executableTarget(
