@@ -116,6 +116,9 @@ jobs:
       - name: Version consistency across Info.plist, state and changelog
         run: Scripts/check-version-consistency.sh
 
+      - name: Release/sync consistency gate (fails on version divergence)
+        run: bash Scripts/test-release-sync.sh
+
       - name: Test suite
         run: Scripts/test.sh
 

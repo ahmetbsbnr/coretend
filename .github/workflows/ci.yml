@@ -66,6 +66,9 @@ jobs:
           test -d "build/CoreTend.app" || { echo "app bundle not found"; exit 1; }
           test -f "build/CoreTend.app/Contents/Info.plist" || { echo "Info.plist missing"; exit 1; }
 
+      - name: Release/sync consistency gate (fails on version divergence)
+        run: bash Scripts/test-release-sync.sh
+
       - name: Localization key-parity check
         run: |
           base="Sources/CoreTendApp/Resources/Base.lproj/Localizable.strings"
