@@ -198,6 +198,60 @@
       </div>
     </div>
   </section>
+  <section class="section" id="trust">
+    <div class="wrap">
+      <div class="section-head" data-reveal>
+        <p class="kicker">Verifiable</p>
+        <h2>Every claim on this page has a link</h2>
+        <p class="lead">Nothing here asks to be taken on trust. Each row states what is true, and links to the thing that proves it.</p>
+      </div>
+      <div class="table-scroll" data-reveal>
+        <table class="facts">
+          <tr>
+            <th>Open source</th>
+            <td>Apache-2.0 — <a href="https://github.com/ahmetbsbnr/coretend">read the source</a></td>
+          </tr>
+          <tr>
+            <th>Builds and tests</th>
+            <td><a href="https://github.com/ahmetbsbnr/coretend/actions">every run is public</a></td>
+          </tr>
+          <tr>
+            <th>Build provenance</th>
+            <td><a href="https://github.com/ahmetbsbnr/coretend/attestations">signed attestations</a> — <a href="verify.html">how to verify</a></td>
+          </tr>
+          <tr>
+            <th>Checksums</th>
+            <td><a href="verify.html">SHA-256 for every artifact</a></td>
+          </tr>
+          <tr>
+            <th>Publisher signature</th>
+            <td>Minisign prepared, not yet active — no key exists</td>
+          </tr>
+          <tr>
+            <th>Apple signature</th>
+            <td class="warn-text">Unsigned and not notarized — <a href="verify.html">what that means</a></td>
+          </tr>
+          <tr>
+            <th>Build it yourself</th>
+            <td><a href="https://github.com/ahmetbsbnr/coretend/blob/main/Documentation/BUILDING.md">Documentation/BUILDING.md</a></td>
+          </tr>
+          <tr>
+            <th>Runs locally</th>
+            <td>No network client is linked into the app — verifiable by grep</td>
+          </tr>
+          <tr>
+            <th>Malware scanning</th>
+            <td>Optional, via the ClamAV binary you install yourself</td>
+          </tr>
+          <tr>
+            <th>Reporting a vulnerability</th>
+            <td><a href="security.html">security policy</a></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
   <section class="section" id="modules">
     <div class="wrap">
       <div class="section-head" data-reveal>
@@ -359,6 +413,7 @@
         <p class="kicker">Site map</p>
         <ul class="links-2col">
         <li><a href="install.html">Install</a></li>
+        <li><a href="verify.html">Verify a download</a></li>
         <li><a href="support.html">Support</a></li>
         <li><a href="faq.html">FAQ</a></li>
         <li><a href="roadmap.html">Roadmap</a></li>

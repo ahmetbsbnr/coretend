@@ -1,0 +1,278 @@
+name: Release (tag-triggered, publishes)
+
+# The one workflow that publishes. It builds from a clean checkout of an
+# annotated version tag, proves the tag matches the version recorded inside
+# the repository, runs the full test and policy suite, produces the artifacts
+# and their manifest, attests build provenance, generates an SBOM, optionally
+# signs with Minisign when a real key exists, and only then creates the
+# GitHub Release.
+#
+# What this workflow will never do, by construction:
+#   - publish a backup/* tag (guarded explicitly below)
+#   - claim signed or notarized status it did not produce
+#   - print a secret, or write one into an artifact
+#   - publish when the tag and the in-repo version disagree
+#   - publish when a declared artifact or its checksum is missing
+#
+# Apple code signing and notarization are NOT performed here: this project has
+# no Developer ID. Minisign and the provenance attestation are separate,
+# weaker guarantees and are described as such — see
+# Documentation/VERIFYING_DOWNLOADS.md.
+
+on:
+  push:
+    tags:
+      # Version tags only. backup/* and every other ref shape is unmatched,
+      # so a safety tag can never trigger a publication.
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-rc.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-beta.[0-9]+"
+
+# Least privilege by default; each job widens only what it needs.
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 45
+    permissions:
+      # contents: write is required only by the final publish step, which
+      # creates the GitHub Release and uploads its assets. Everything else in
+      # this job reads. There is no repo-wide write grant.
+      contents: write
+      id-token: write # provenance attestation signing (OIDC)
+      attestations: write # store the attestation
+    outputs:
+      version: ${{ steps.resolve.outputs.version }}
+      channel: ${{ steps.resolve.outputs.channel }}
+      prerelease: ${{ steps.resolve.outputs.prerelease }}
+    steps:
+      - name: Checkout the tag (full history, clean tree)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Refuse to publish a non-version tag
+        # Defence in depth: the `on:` filter already excludes backup/*, but a
+        # workflow_dispatch or a filter edit must not be able to slip one
+        # through. Publishing a safety tag would expose an internal snapshot.
+        run: |
+          ref="${GITHUB_REF#refs/tags/}"
+          case "$ref" in
+            backup/*|*backup*)
+              echo "::error::Refusing to publish backup tag '$ref'."
+              exit 1 ;;
+          esac
+          if ! printf '%s' "$ref" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+(-(rc|beta)\.[0-9]+)?$'; then
+            echo "::error::Tag '$ref' is not a release version tag."
+            exit 1
+          fi
+          echo "Tag accepted: $ref"
+
+      - name: Resolve version and channel from the single source of truth
+        id: resolve
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF#refs/tags/}"
+          tag_version="${tag#v}"
+          repo_version="$(/usr/bin/python3 -c "import json;print(json.load(open('Configuration/PublicIdentity.example.json'))['marketingVersion'])")"
+          if [ "$tag_version" != "$repo_version" ]; then
+            echo "::error::Tag says $tag_version but Configuration/PublicIdentity.example.json says $repo_version."
+            exit 1
+          fi
+          case "$tag_version" in
+            *-rc.*)    channel=release-candidate; prerelease=true ;;
+            *-beta.*)  channel=beta;              prerelease=true ;;
+            *)         channel=stable;            prerelease=false ;;
+          esac
+          repo_channel="$(/usr/bin/python3 -c "import json;print(json.load(open('Configuration/PublicIdentity.example.json'))['channel'])")"
+          if [ "$channel" != "$repo_channel" ]; then
+            echo "::error::Tag implies channel '$channel' but the repository declares '$repo_channel'."
+            exit 1
+          fi
+          {
+            echo "version=$tag_version"
+            echo "channel=$channel"
+            echo "prerelease=$prerelease"
+          } >> "$GITHUB_OUTPUT"
+          echo "version=$tag_version channel=$channel prerelease=$prerelease"
+
+      - name: Doctor (toolchain/prereqs)
+        run: Scripts/doctor.sh
+
+      - name: Repository, licence, private-data and placeholder gates
+        run: |
+          Scripts/repository-doctor.sh
+          Scripts/check-licenses.sh
+          Scripts/check-private-data.sh
+          Scripts/check-placeholders.sh
+
+      - name: Version consistency across Info.plist, state and changelog
+        run: Scripts/check-version-consistency.sh
+
+      - name: Test suite
+        run: Scripts/test.sh
+
+      - name: Test isolation gate
+        run: Scripts/check-test-isolation.sh
+
+      - name: Release build (zero warnings required)
+        run: |
+          set -o pipefail
+          swift build -c release 2>&1 | tee /tmp/release-build.log
+          if grep -q "warning:" /tmp/release-build.log; then
+            echo "::error::Release build produced warnings."
+            exit 1
+          fi
+
+      - name: Build artifacts and generate the release manifest
+        run: bash Scripts/build-release.sh "${{ steps.resolve.outputs.version }}"
+
+      - name: Release manifest gate
+        run: Scripts/test-release-manifest.sh
+
+      - name: Verify every declared artifact exists and matches its checksum
+        run: |
+          set -euo pipefail
+          cd dist
+          shasum -a 256 -c SHA256SUMS
+          /usr/bin/python3 - <<'PY'
+          import json, os, sys
+          m = json.load(open("latest.json"))
+          missing = [n for n in (m["zipName"], m["dmgName"]) if not os.path.exists(n)]
+          if missing:
+              sys.exit(f"Declared artifact(s) missing from dist/: {missing}")
+          for name, key in ((m["zipName"], "zipSize"), (m["dmgName"], "dmgSize")):
+              actual = os.path.getsize(name)
+              if actual != m[key]:
+                  sys.exit(f"{name}: manifest says {m[key]} bytes, file is {actual}")
+          print("All declared artifacts present, sized and checksummed.")
+          PY
+
+      - name: Refuse any signed/notarized claim this workflow cannot back
+        run: |
+          if grep -riE '"(signed|notarized)"[[:space:]]*:[[:space:]]*true' dist/latest.json; then
+            echo "::error::Manifest claims Apple signing/notarization that was not performed."
+            exit 1
+          fi
+          echo "OK: manifest declares unsigned and not notarized."
+
+      - name: Generate SBOM (SPDX) for the built source tree
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+        with:
+          path: .
+          format: spdx-json
+          artifact-name: coretend-${{ steps.resolve.outputs.version }}-sbom.spdx.json
+          output-file: dist/coretend-${{ steps.resolve.outputs.version }}-sbom.spdx.json
+
+      - name: Attest build provenance for the published artifacts
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        with:
+          subject-path: |
+            dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64-unsigned.zip
+            dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64-unsigned.dmg
+
+      - name: Sign with Minisign when a real key is configured
+        # No key, no signature: the workflow continues and the release simply
+        # ships without .minisig files, which the verification page states
+        # explicitly. A fabricated or self-invented signature would be worse
+        # than none, so there is no fallback path here.
+        env:
+          MINISIGN_SECRET_KEY: ${{ secrets.MINISIGN_SECRET_KEY }}
+          MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MINISIGN_SECRET_KEY:-}" ]; then
+            echo "MINISIGN_SECRET_KEY is not configured — publishing without Minisign signatures."
+            echo "minisign_signed=false" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          brew install minisign
+          umask 077
+          keyfile="$(mktemp)"
+          # Secret reaches the file through the environment, never through a
+          # command line (which would be visible in the process table).
+          printf '%s' "$MINISIGN_SECRET_KEY" > "$keyfile"
+          cd dist
+          for f in *.zip *.dmg latest.json SHA256SUMS; do
+            [ -e "$f" ] || continue
+            printf '%s' "$MINISIGN_PASSWORD" | minisign -S -s "$keyfile" -m "$f" >/dev/null 2>&1
+          done
+          rm -f "$keyfile"
+          if [ -f "$HOME/.minisign/minisign.pub" ]; then :; fi
+          echo "minisign_signed=true" >> "$GITHUB_ENV"
+          ls -1 *.minisig
+
+      - name: Verify Minisign signatures before publishing them
+        if: env.minisign_signed == 'true'
+        run: |
+          set -euo pipefail
+          cd dist
+          if [ ! -f ../Configuration/minisign.pub ]; then
+            echo "::error::Signatures were produced but Configuration/minisign.pub is absent."
+            echo "A signature nobody can verify is worse than no signature."
+            exit 1
+          fi
+          for sig in *.minisig; do
+            minisign -Vm "${sig%.minisig}" -P "$(cat ../Configuration/minisign.pub)"
+          done
+          echo "All Minisign signatures verify against the published public key."
+
+      - name: Record the resolved release facts
+        run: |
+          /usr/bin/python3 -c "
+          import json
+          m = json.load(open('dist/latest.json'))
+          for k in ('version','channel','sourceCommit','releaseTag','treeState','signed','notarized'):
+              print(f'{k}: {m.get(k)}')
+          "
+
+      - name: Publish the GitHub Release
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+        with:
+          prerelease: ${{ steps.resolve.outputs.prerelease }}
+          name: CoreTend ${{ steps.resolve.outputs.version }}
+          body_path: Release/Notes/${{ steps.resolve.outputs.version }}.en.md
+          fail_on_unmatched_files: true
+          files: |
+            dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64-unsigned.zip
+            dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64-unsigned.dmg
+            dist/latest.json
+            dist/SHA256SUMS
+            dist/coretend-${{ steps.resolve.outputs.version }}-sbom.spdx.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  sync:
+    # Tells the site and the portfolio that a new release exists. Both consume
+    # the manifest that was just published; neither hardcodes a version.
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Notify the portfolio repository
+        # Uses a fine-grained token limited to repository_dispatch on the
+        # portfolio repo. Absent token = skipped, never failed: a site sync is
+        # not a reason to fail a release that already published correctly.
+        env:
+          SYNC_TOKEN: ${{ secrets.PORTFOLIO_SYNC_TOKEN }}
+          VERSION: ${{ needs.build.outputs.version }}
+          CHANNEL: ${{ needs.build.outputs.channel }}
+        run: |
+          if [ -z "${SYNC_TOKEN:-}" ]; then
+            echo "PORTFOLIO_SYNC_TOKEN not configured — skipping portfolio sync."
+            exit 0
+          fi
+          curl -sS -X POST \
+            -H "Authorization: Bearer $SYNC_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/ahmetbsbnr/ahmetbsbnrportfolio/dispatches \
+            -d "{\"event_type\":\"coretend-release\",\"client_payload\":{\"version\":\"$VERSION\",\"channel\":\"$CHANNEL\"}}"
+          echo "Portfolio notified for $VERSION."

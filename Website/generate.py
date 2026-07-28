@@ -73,6 +73,7 @@ NAV = [
 
 FOOTER_LINKS = [
     ("install", {"en": "Install", "fr": "Installer"}),
+    ("verify", {"en": "Verify a download", "fr": "Vérifier un téléchargement"}),
     ("support", {"en": "Support", "fr": "Assistance"}),
     ("faq", {"en": "FAQ", "fr": "FAQ"}),
     ("roadmap", {"en": "Roadmap", "fr": "Feuille de route"}),
@@ -839,6 +840,60 @@ def home_body(l):
   </section>
 
 {product_section}
+  <section class="section" id="trust">
+    <div class="wrap">
+      <div class="section-head" data-reveal>
+        <p class="kicker">{"Verifiable" if en else "Vérifiable"}</p>
+        <h2>{"Every claim on this page has a link" if en else "Chaque affirmation renvoie à une preuve"}</h2>
+        <p class="lead">{"Nothing here asks to be taken on trust. Each row states what is true, and links to the thing that proves it." if en else "Rien ici ne demande d\u2019être cru sur parole. Chaque ligne indique ce qui est vrai et renvoie à ce qui le prouve."}</p>
+      </div>
+      <div class="table-scroll" data-reveal>
+        <table class="facts">
+          <tr>
+            <th>{"Open source" if en else "Open source"}</th>
+            <td>Apache-2.0 — <a href="{REPOSITORY_URL}">{"read the source" if en else "lire le code"}</a></td>
+          </tr>
+          <tr>
+            <th>{"Builds and tests" if en else "Builds et tests"}</th>
+            <td><a href="{REPOSITORY_URL}/actions">{"every run is public" if en else "chaque exécution est publique"}</a></td>
+          </tr>
+          <tr>
+            <th>{"Build provenance" if en else "Provenance du build"}</th>
+            <td><a href="{REPOSITORY_URL}/attestations">{"signed attestations" if en else "attestations signées"}</a> — <a href="verify.html">{"how to verify" if en else "comment vérifier"}</a></td>
+          </tr>
+          <tr>
+            <th>{"Checksums" if en else "Empreintes"}</th>
+            <td><a href="verify.html">SHA-256 {"for every artifact" if en else "pour chaque artefact"}</a></td>
+          </tr>
+          <tr>
+            <th>{"Publisher signature" if en else "Signature de l\u2019éditeur"}</th>
+            <td>{"Minisign prepared, not yet active — no key exists" if en else "Minisign préparé, pas encore actif — aucune clé n\u2019existe"}</td>
+          </tr>
+          <tr>
+            <th>{"Apple signature" if en else "Signature Apple"}</th>
+            <td class="warn-text">{"Unsigned and not notarized" if en else "Non signé et non notarisé"} — <a href="verify.html">{"what that means" if en else "ce que cela implique"}</a></td>
+          </tr>
+          <tr>
+            <th>{"Build it yourself" if en else "Compiler vous-même"}</th>
+            <td><a href="{REPOSITORY_URL}/blob/main/Documentation/BUILDING.md">Documentation/BUILDING.md</a></td>
+          </tr>
+          <tr>
+            <th>{"Runs locally" if en else "Fonctionne localement"}</th>
+            <td>{"No network client is linked into the app — verifiable by grep" if en else "Aucun client réseau n\u2019est lié à l\u2019app — vérifiable au grep"}</td>
+          </tr>
+          <tr>
+            <th>{"Malware scanning" if en else "Analyse antivirus"}</th>
+            <td>{"Optional, via the ClamAV binary you install yourself" if en else "Optionnelle, via le binaire ClamAV que vous installez vous-même"}</td>
+          </tr>
+          <tr>
+            <th>{"Reporting a vulnerability" if en else "Signaler une vulnérabilité"}</th>
+            <td><a href="security.html">{"security policy" if en else "politique de sécurité"}</a></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </section>
+
   <section class="section" id="modules">
     <div class="wrap">
       <div class="section-head" data-reveal>
@@ -1280,6 +1335,158 @@ application n'est pas un échange raisonnable.</p>
 
 
 add("download", {"en": "Download", "fr": "Télécharger"}, download_body)
+
+
+
+# ---------------------------------------------------------------- verify ---
+def verify_body(l):
+    """Everything on this page is read from the generated release manifest.
+
+    No version, filename or checksum is typed here. When no release has been
+    published the page says so instead of printing a number it cannot stand
+    behind — the failure mode of a verification page that invents a checksum
+    is that people verify against the wrong value and trust a bad file."""
+    en = l == "en"
+    m = _release_manifest()
+    repo = ident("repositoryURL", "")
+    published = bool(m and m.get("releaseTag"))
+
+    if published:
+        tag = html_escape(str(m.get("releaseTag", "")))
+        base = f"{repo}/releases/download/{tag}"
+        zip_name = html_escape(str(m.get("zipName", "")))
+        dmg_name = html_escape(str(m.get("dmgName", "")))
+        facts = f"""
+<div class="table-scroll">
+<table class="facts">
+  <tr><th>{"Version" if en else "Version"}</th><td>{html_escape(str(m.get("version","")))} ({html_escape(str(m.get("channel","")))})</td></tr>
+  <tr><th>{"Source commit" if en else "Commit source"}</th><td><code>{html_escape(str(m.get("sourceCommit","")))}</code></td></tr>
+  <tr><th>{"Built" if en else "Compilé le"}</th><td>{html_escape(str(m.get("buildDate_UTC","")))}</td></tr>
+  <tr><th>{zip_name}</th><td><code>{html_escape(str(m.get("zipSHA256","")))}</code></td></tr>
+  <tr><th>{dmg_name}</th><td><code>{html_escape(str(m.get("dmgSHA256","")))}</code></td></tr>
+</table>
+</div>
+<p><a href="{base}/{zip_name}">{zip_name}</a> · <a href="{base}/{dmg_name}">{dmg_name}</a> ·
+<a href="{base}/SHA256SUMS">SHA256SUMS</a> · <a href="{base}/latest.json">latest.json</a></p>"""
+        checksum_cmd = f"shasum -a 256 {zip_name}"
+    else:
+        facts = f"""<div class="note info"><p>{"No release is published yet, so there is no checksum to show. The values below appear automatically once a release exists — they are read from the generated manifest, never typed in by hand." if en else "Aucune version n\u2019est encore publiée : il n\u2019y a donc aucune empreinte à afficher. Les valeurs apparaissent automatiquement dès qu\u2019une version existe — elles sont lues depuis le manifeste généré, jamais saisies à la main."}</p></div>"""
+        checksum_cmd = "shasum -a 256 CoreTend-<version>-arm64-unsigned.zip"
+
+    if en:
+        return f"""<h1>Verify your download</h1>
+<p class="lead">Four independent checks, from the weakest to the strongest.
+Each one answers a different question, and none of them replaces the others.</p>
+
+<h2>1. Checksum — did the file arrive intact?</h2>
+<p>A SHA-256 checksum proves the bytes you have are the bytes that were
+published. It proves nothing about <em>who</em> published them: anyone who can
+replace the file can also replace the checksum next to it. Use it to rule out
+a truncated or corrupted download.</p>
+{facts}
+<pre><code>{checksum_cmd}</code></pre>
+<p>Compare the output with the value above, or verify the whole set at once:</p>
+<pre><code>shasum -a 256 -c SHA256SUMS</code></pre>
+
+<h2>2. Build provenance — where did this file come from?</h2>
+<p>Every published artifact carries a GitHub build attestation: a signed
+statement that this exact file was produced by this repository's release
+workflow, from a named commit. Verify it with the GitHub CLI:</p>
+<pre><code>gh attestation verify CoreTend-&lt;version&gt;-arm64-unsigned.dmg --repo ahmetbsbnr/coretend</code></pre>
+<p>This is stronger than a checksum: it ties the file to a build, a commit and
+a workflow you can read.</p>
+
+<h2>3. Minisign — is this the publisher's signature?</h2>
+<p><strong>Not currently available.</strong> Minisign signing is implemented in
+the release workflow but stays inactive until a real signing key exists.
+No <code>.minisig</code> files are published, and none should be trusted if
+they appear from anywhere else. When signing is enabled, the public key will
+be published in this repository and the command will be:</p>
+<pre><code>minisign -Vm CoreTend-&lt;version&gt;-arm64-unsigned.dmg -P &lt;public key&gt;</code></pre>
+
+<h2>4. Build it yourself</h2>
+<p>The strongest check available here: compile the source and compare.
+See <a href="{repo}/blob/main/Documentation/BUILDING.md">Documentation/BUILDING.md</a>
+for the tested procedure.</p>
+
+<h2>Why macOS warns you</h2>
+<p>CoreTend is <strong>not signed with an Apple Developer ID and not
+notarized</strong>, because that requires a paid Apple Developer Program
+membership this project does not have. macOS will therefore refuse to open it
+on first launch. That warning is accurate: macOS genuinely cannot verify the
+developer.</p>
+<p>The two official ways to open it anyway, both of which keep every system
+protection in place:</p>
+<ul>
+  <li>Control-click (or right-click) CoreTend in Finder, choose <strong>Open</strong>, then confirm.</li>
+  <li>Or open <strong>System Settings → Privacy &amp; Security</strong>, find the blocked-app message, and choose <strong>Open Anyway</strong>.</li>
+</ul>
+<p>Do this once per copy. <strong>Never disable Gatekeeper</strong> to install
+this or anything else — no application is worth turning off a system-wide
+protection, and nothing on this site will ever ask you to.</p>
+<p>Notarization would remove the warning entirely by having Apple scan and
+countersign the build. It is a different guarantee from every check above.</p>
+"""
+    return f"""<h1>Vérifier votre téléchargement</h1>
+<p class="lead">Quatre contrôles indépendants, du plus faible au plus fort.
+Chacun répond à une question différente, et aucun ne remplace les autres.</p>
+
+<h2>1. Empreinte — le fichier est-il arrivé intact ?</h2>
+<p>Une empreinte SHA-256 prouve que les octets que vous avez sont ceux qui ont
+été publiés. Elle ne prouve rien sur <em>qui</em> les a publiés : quiconque peut
+remplacer le fichier peut aussi remplacer l’empreinte affichée à côté. Elle sert
+à écarter un téléchargement tronqué ou corrompu.</p>
+{facts}
+<pre><code>{checksum_cmd}</code></pre>
+<p>Comparez la sortie à la valeur ci-dessus, ou vérifiez tout d’un coup :</p>
+<pre><code>shasum -a 256 -c SHA256SUMS</code></pre>
+
+<h2>2. Provenance du build — d’où vient ce fichier ?</h2>
+<p>Chaque artefact publié porte une attestation de build GitHub : une
+déclaration signée indiquant que ce fichier exact a été produit par le workflow
+de publication de ce dépôt, à partir d’un commit nommé. Vérifiez-la avec la
+CLI GitHub :</p>
+<pre><code>gh attestation verify CoreTend-&lt;version&gt;-arm64-unsigned.dmg --repo ahmetbsbnr/coretend</code></pre>
+<p>C’est plus fort qu’une empreinte : cela relie le fichier à un build, un
+commit et un workflow que vous pouvez lire.</p>
+
+<h2>3. Minisign — est-ce la signature de l’éditeur ?</h2>
+<p><strong>Actuellement indisponible.</strong> La signature Minisign est
+implémentée dans le workflow de publication mais reste inactive tant qu’aucune
+clé de signature réelle n’existe. Aucun fichier <code>.minisig</code> n’est
+publié, et aucun ne doit être considéré comme fiable s’il apparaît par une
+autre voie. Lorsque la signature sera activée, la clé publique sera publiée
+dans ce dépôt et la commande sera :</p>
+<pre><code>minisign -Vm CoreTend-&lt;version&gt;-arm64-unsigned.dmg -P &lt;clé publique&gt;</code></pre>
+
+<h2>4. Compilez vous-même</h2>
+<p>Le contrôle le plus fort disponible ici : compilez les sources et comparez.
+Voir <a href="{repo}/blob/main/Documentation/BUILDING.md">Documentation/BUILDING.md</a>
+pour la procédure testée.</p>
+
+<h2>Pourquoi macOS vous avertit</h2>
+<p>CoreTend n’est <strong>ni signé avec un Developer ID Apple, ni
+notarisé</strong>, car cela exige une adhésion payante au Apple Developer
+Program dont ce projet ne dispose pas. macOS refusera donc de l’ouvrir au
+premier lancement. Cet avertissement est exact : macOS ne peut réellement pas
+vérifier le développeur.</p>
+<p>Les deux méthodes officielles pour l’ouvrir malgré tout, qui conservent
+toutes les protections du système :</p>
+<ul>
+  <li>Ctrl-clic (ou clic droit) sur CoreTend dans le Finder, choisir <strong>Ouvrir</strong>, puis confirmer.</li>
+  <li>Ou ouvrir <strong>Réglages Système → Confidentialité et sécurité</strong>, repérer le message d’application bloquée, et choisir <strong>Ouvrir quand même</strong>.</li>
+</ul>
+<p>Une seule fois par copie. <strong>Ne désactivez jamais Gatekeeper</strong>
+pour installer ceci ou autre chose — aucune application ne vaut la
+désactivation d’une protection système, et rien sur ce site ne vous le
+demandera jamais.</p>
+<p>La notarisation supprimerait entièrement l’avertissement, Apple analysant et
+contresignant le build. Elle repose sur un mécanisme distinct de tous les contrôles
+ci-dessus.</p>
+"""
+
+
+add("verify", {"en": "Verify a download", "fr": "Vérifier un téléchargement"}, verify_body)
 
 
 # --------------------------------------------------------------- install ---
