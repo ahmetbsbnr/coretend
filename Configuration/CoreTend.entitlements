@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	CoreTend is NOT App Sandboxed. Its core function — finding and cleaning
+	duplicate/large/leftover files anywhere the user points it, inspecting
+	other applications' support data for uninstall leftovers, and probing
+	TCC-protected locations to detect Full Disk Access — is fundamentally
+	incompatible with the App Sandbox's per-app container model. This is
+	the same distribution model used by comparable Mac cleanup utilities
+	outside the Mac App Store. See Documentation/SIGNING_NOTARIZATION.md.
+
+	Hardened Runtime is still enabled (required for notarization) with the
+	narrowest possible entitlement set: only what the app actually does.
+	Nothing here is added speculatively.
+	-->
+
+	<!-- Runs signed binaries the app itself does not control the format of:
+	     Process spawns clamscan (Homebrew/MacPorts binary, code-signed by
+	     its own installer or unsigned entirely). Hardened Runtime's default
+	     library-validation would refuse to load code from these paths only
+	     if CoreTend loaded them as a library; it doesn't — clamscan runs as
+	     a separate process via Process/NSTask, which Hardened Runtime does
+	     not restrict. No entitlement is required for this and none is
+	     requested. This entitlement set intentionally stays empty of
+	     com.apple.security.cs.* exceptions: no disabled library validation,
+	     no unsigned executable memory, no debugging, no DYLD environment
+	     variables. -->
+</dict>
+</plist>
