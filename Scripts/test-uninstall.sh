@@ -7,7 +7,11 @@ cd "$(dirname "$0")/.."
 UNINSTALL="$PWD/Scripts/uninstall.sh"
 
 FAKE_HOME="$(mktemp -d)"
+FAKE_APP="$FAKE_HOME/CoreTend.app"
+mkdir -p "$FAKE_APP/Contents/MacOS"
+echo "fake-binary" > "$FAKE_APP/Contents/MacOS/CoreTend"
 trap 'rm -rf "$FAKE_HOME"' EXIT
+export CORETEND_UNINSTALL_APP_PATH_OVERRIDE="$FAKE_APP"
 
 mkdir -p "$FAKE_HOME/Library/Application Support/CoreTend"
 echo "fake-db" > "$FAKE_HOME/Library/Application Support/CoreTend/store.sqlite"

@@ -60,7 +60,10 @@ for arg in "$@"; do
 done
 
 HOME_DIR="$HOME"
-APP_PATH="/Applications/CoreTend.app"
+# CORETEND_UNINSTALL_APP_PATH_OVERRIDE exists solely so
+# Scripts/test-uninstall.sh can point this at a throwaway path instead of
+# the real /Applications/CoreTend.app — never set it for a real uninstall.
+APP_PATH="${CORETEND_UNINSTALL_APP_PATH_OVERRIDE:-/Applications/CoreTend.app}"
 SUPPORT_DIR="$HOME_DIR/Library/Application Support/CoreTend"
 DB_FILE="$SUPPORT_DIR/store.sqlite"
 PREFS_FILE="$HOME_DIR/Library/Preferences/com.ahmetbsbnr.coretend.plist"
