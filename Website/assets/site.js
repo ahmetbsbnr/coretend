@@ -38,6 +38,20 @@
     Array.prototype.forEach.call(revealables, function (el) {
       observer.observe(el);
     });
+
+    // Safety net. Hiding content and waiting for an observer means any single
+    // failure — a throw before this point, an observer that never fires in a
+    // background tab that is later restored, a browser quirk — leaves the page
+    // blank. Nothing about a fade is worth that, so anything still hidden a
+    // moment after load is simply shown.
+    var revealAll = function () {
+      Array.prototype.forEach.call(revealables, function (el) {
+        el.classList.add("in");
+      });
+    };
+    window.addEventListener("load", function () {
+      setTimeout(revealAll, 3000);
+    });
   }
 
   /* ----------------------------------------------------------- magnetic */
