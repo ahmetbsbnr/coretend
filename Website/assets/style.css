@@ -383,6 +383,17 @@ hr {
 .btn-secondary:active {
   transform: scale(0.985);
 }
+.btn-lg {
+  height: 3.5rem;
+  padding-inline: 2rem;
+  font-size: 1.0625rem;
+}
+.btn-sm {
+  height: 2.375rem;
+  padding-inline: 1rem;
+  font-size: 0.85rem;
+}
+.btn-lg svg { width: 1.25rem; height: 1.25rem; }
 .btn-row {
   display: flex;
   flex-wrap: wrap;
@@ -411,330 +422,88 @@ hr {
   list-style: none;
 }
 
-/* ------------------------------------------------------------------- nav */
-.rail {
-  position: fixed;
-  inset-block: 0;
-  left: 0;
+/* --------------------------------------------------------------------- bar */
+/* One slim bar. The site is a single page, so there is nothing to navigate —
+   only the product, a way to GitHub, and the action. */
+.bar {
+  position: sticky;
+  top: 0;
   z-index: 40;
-  width: var(--rail);
-  display: none;
-  flex-direction: column;
-  border-right: 1px solid var(--line);
-  background: var(--paper);
-  padding: 2rem 1.75rem;
-  overflow-y: auto;
+  background: rgb(244 244 240 / 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--line);
 }
-@media (min-width: 1024px) {
-  .rail {
-    display: flex;
-  }
+.bar .wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: 4rem;
 }
-.rail-brand {
-  display: block;
-  text-decoration: none;
-  color: var(--ink);
-}
-.rail-brand .wordmark {
+.bar .wordmark {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 1.25rem;
+  font-size: 1.0625rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: -0.02em;
   font-stretch: 118%;
-  line-height: 1;
-}
-.rail-brand .tag {
-  display: block;
-  margin-top: 0.375rem;
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 0.7rem;
-  line-height: 1.55;
-  color: var(--dim);
-}
-.rail nav {
-  margin-top: 2.5rem;
-  flex: 1;
-}
-.rail ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 0.125rem;
-}
-.rail a.nav-link {
-  position: relative;
-  display: block;
-  padding: 0.5rem 0 0.5rem 1.25rem;
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
+  color: var(--ink);
   text-decoration: none;
-  color: var(--dim);
-  transition: color var(--quick) ease;
+  white-space: nowrap;
 }
-.rail a.nav-link::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 50%;
-  height: 1px;
-  width: 0;
-  transform: translateY(-50%);
-  background: var(--line-strong);
-  transition: width 300ms var(--expo), background-color 300ms var(--expo);
-}
-.rail a.nav-link:hover {
-  color: var(--ink);
-}
-.rail a.nav-link:hover::before {
-  width: 0.5rem;
-}
-.rail a.nav-link.active {
-  color: var(--cobalt);
-}
-.rail a.nav-link.active::before {
-  width: 0.75rem;
-  background: var(--cobalt);
-}
-.rail-foot {
-  border-top: 1px solid var(--line);
-  padding-top: 1.25rem;
-}
-.rail-foot .status {
+.bar-actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--ink);
-  margin: 0;
+  gap: 0.75rem;
 }
-.rail-foot .status::before {
-  content: "";
-  width: 0.375rem;
-  height: 0.375rem;
-  border-radius: 50%;
-  background: var(--ok);
-  flex: none;
-}
-.rail-foot .meta {
-  margin: 0.25rem 0 0;
+.bar-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 0.7rem;
-  color: var(--dim);
-}
-.rail-foot .btn {
-  width: 100%;
-  margin-top: 1.25rem;
-}
-.icon-row {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 1rem;
-}
-.icon-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border: 1px solid var(--line);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
   color: var(--sub);
   text-decoration: none;
-  transition: border-color var(--quick) ease, color var(--quick) ease;
+  transition: color var(--quick) ease;
 }
-.icon-btn:hover {
-  border-color: var(--ink);
-  color: var(--ink);
+.bar-link:hover { color: var(--ink); }
+.bar-link svg { width: 1rem; height: 1rem; }
+/* Below ~560px the bar runs out of room and starts pushing content past the
+   viewport. The GitHub label goes first, then the bar's Download button —
+   which is redundant there anyway, because the hero CTA is on screen without
+   scrolling at every tested size. */
+@media (max-width: 560px) {
+  .bar-link span { display: none; }
 }
-.icon-btn svg {
-  width: 1.25rem;
-  height: 1.25rem;
+@media (max-width: 420px) {
+  .bar .btn-sm { display: none; }
 }
 
 .lang-switch {
   display: inline-flex;
   align-items: center;
   font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
 }
 .lang-switch a,
-.lang-switch span[aria-current] {
-  padding: 0.25rem 0.375rem;
-  text-decoration: none;
-}
-.lang-switch a {
-  color: var(--dim);
-  transition: color var(--quick) ease;
-}
-.lang-switch a:hover {
-  color: var(--ink);
-}
-.lang-switch [aria-current] {
-  font-weight: 600;
-  color: var(--cobalt);
-}
-.lang-switch .sep {
-  color: var(--line-strong);
-}
-.rail .lang-switch {
-  margin-top: 1.5rem;
-  margin-left: 1.25rem;
-}
+.lang-switch span[aria-current] { padding: 0.25rem 0.3rem; text-decoration: none; }
+.lang-switch a { color: var(--dim); transition: color var(--quick) ease; }
+.lang-switch a:hover { color: var(--ink); }
+.lang-switch [aria-current] { font-weight: 600; color: var(--cobalt); }
+.lang-switch .sep { color: var(--line-strong); }
 
-/* Mobile bar */
-.topbar {
-  position: fixed;
-  inset-inline: 0;
-  top: 0;
-  z-index: 40;
-  display: flex;
-  height: var(--bar);
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--line);
-  background: rgb(244 244 240 / 0.95);
-  backdrop-filter: blur(6px);
-  padding-inline: 1.25rem;
-}
-@media (min-width: 1024px) {
-  .topbar {
-    display: none;
-  }
-}
-.topbar .wordmark {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.125rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
-  font-stretch: 118%;
-  text-decoration: none;
-  color: var(--ink);
-}
-.topbar-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-.nav-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border: 1px solid var(--line);
-  background: transparent;
-  color: var(--ink);
-  cursor: pointer;
-  transition: border-color var(--quick) ease;
-}
-.nav-toggle:hover {
-  border-color: var(--ink);
-}
-.nav-toggle svg {
-  width: 1.375rem;
-  height: 1.375rem;
-}
-
-.mobile-menu {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: none;
-  flex-direction: column;
-  background: var(--paper);
-}
-.mobile-menu[data-open="true"] {
-  display: flex;
-}
-@media (min-width: 1024px) {
-  .mobile-menu {
-    display: none !important;
-  }
-}
-.mobile-menu-head {
-  display: flex;
-  height: var(--bar);
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--line);
-  padding-inline: 1.25rem;
-}
-.mobile-menu nav {
-  flex: 1;
-  overflow-y: auto;
-  padding: 2rem 1.25rem;
-}
-.mobile-menu ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 0.25rem;
-}
-.mobile-menu a.nav-link {
-  display: block;
-  padding: 0.75rem 0;
-  font-size: clamp(1.6rem, 7vw, 1.875rem);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: -0.02em;
-  font-stretch: 118%;
-  line-height: 1.05;
-  text-decoration: none;
-  color: var(--ink);
-  transition: color var(--quick) ease;
-}
-.mobile-menu a.nav-link:hover,
-.mobile-menu a.nav-link.active {
-  color: var(--cobalt);
-}
-.mobile-menu-foot {
-  border-top: 1px solid var(--line);
-  padding: 1.5rem 1.25rem;
-}
-
-/* The mark. Square by token, never stretched: width and height are always
-   set together from the same value, so no context can distort it. */
-.mark {
-  width: var(--mark-nav);
-  height: var(--mark-nav);
-  flex: none;
-  display: block;
-}
-.rail-brand .mark {
-  width: var(--mark-rail);
-  height: var(--mark-rail);
-}
-.site-footer .mark {
-  width: var(--mark-footer);
-  height: var(--mark-footer);
-}
-.hero-mark .mark {
-  width: var(--mark-hero);
-  height: var(--mark-hero);
-}
+.mark { width: var(--mark-nav); height: var(--mark-nav); flex: none; display: block; }
+.site-footer .mark { width: var(--mark-footer); height: var(--mark-footer); }
+.hero-mark .mark { width: var(--mark-hero); height: var(--mark-hero); }
 
 /* -------------------------------------------------------------- page body */
-.shell {
-  padding-top: var(--bar);
-}
-@media (min-width: 1024px) {
-  .shell {
-    padding-top: 0;
-    padding-left: var(--rail);
-  }
-}
+
 
 /* Inner pages: one measured column, same rhythm as the portfolio's
    sub-pages. The h1 sits under a hairline rule like a section head. */
@@ -777,102 +546,141 @@ hr {
 }
 
 /* ------------------------------------------------------------------- hero */
+/* One centred column. The whole first screen is: mark, name, claim, one
+   sentence, the action. Nothing competes with the button. */
 .hero {
-  padding-block: 3.5rem 4.5rem;
+  position: relative;
+  overflow: hidden;
+  padding-block: clamp(3.5rem, 9vw, 7rem) clamp(3rem, 7vw, 5.5rem);
+  text-align: center;
 }
-@media (min-width: 1024px) {
-  .hero {
-    min-height: 100dvh;
-    display: flex;
-    align-items: center;
-    padding-block: 4rem;
-  }
-}
-/* Brand lockup: mark, wordmark, claim, facts, actions, status. Deliberately
-   one column at every width — the first screen is the identity, so nothing
-   competes with it for horizontal space, and it reads the same at 320px as
-   at 1728px. The application window starts in #product, below this. */
 .hero-lockup {
-  max-width: 62ch;
+  max-width: 46rem;
+  margin-inline: auto;
 }
 .hero-mark {
   display: block;
-  margin-bottom: 2rem;
+  margin: 0 auto 1.75rem;
+  width: var(--mark-hero);
 }
-/* The wordmark IS the h1: the product name is the page's first heading. */
-/* The floor has to let "CoreTend" fit inside 320px minus the wrap padding —
-   at a 3.2rem floor the wordmark overflowed and forced a horizontal scroll
-   on the narrowest supported screen. 12vw takes over above ~375px. */
 .hero-wordmark {
   margin: 0;
-  font-size: clamp(2.25rem, 12vw, 6.5rem);
+  font-size: clamp(2.5rem, 11vw, 5.5rem);
   letter-spacing: -0.035em;
+  line-height: 0.92;
 }
 .hero-statement {
-  margin: 2rem 0 0;
-  max-width: 24ch;
-  font-size: clamp(1.5rem, 3.4vw, 2.1rem);
-  line-height: 1.2;
+  margin: 1.5rem auto 0;
+  max-width: 20ch;
+  font-size: clamp(1.5rem, 4.6vw, 2.5rem);
+  line-height: 1.15;
   font-weight: 600;
   letter-spacing: -0.02em;
   color: var(--ink);
   text-wrap: balance;
 }
 .hero-facts {
-  margin: 1.5rem 0 0;
-  max-width: 56ch;
+  margin: 1.25rem auto 0;
+  max-width: 46ch;
   font-size: 1.0625rem;
-  line-height: 1.7;
+  line-height: 1.65;
   color: var(--sub);
 }
-.hero .btn-row {
-  margin-top: 2.5rem;
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 2.25rem;
 }
-
-/* Honest status, stated up front rather than buried on the download page. */
-.hero-status {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1.25rem 2rem;
-  margin: 3rem 0 0;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--line);
-}
-@media (min-width: 768px) {
-  .hero-status {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-.hero-status dt {
+.hero-meta {
+  margin: 1.5rem auto 0;
+  max-width: 52ch;
   font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
+  font-size: 0.72rem;
+  line-height: 1.7;
+  letter-spacing: 0.04em;
   color: var(--dim);
 }
-.hero-status dd {
-  margin: 0.5rem 0 0;
-  font-size: 0.9rem;
-  line-height: 1.45;
-  font-weight: 500;
-  color: var(--ink);
-}
-.hero-status .warn-text {
-  color: var(--err);
-}
+.hero-meta a { color: var(--sub); }
 
-/* Two real screenshots, side by side, below the fold. */
-.shot-pair {
-  display: grid;
-  gap: 1.5rem;
-  align-items: start;
+/* A very diffuse cobalt halo behind the mark. Two fixed radial gradients on a
+   pseudo-element: no canvas, no particles, nothing that repaints on scroll.
+   The drift is slow and small enough to read as light rather than motion. */
+.halo {
+  position: absolute;
+  inset: -20% 0 auto;
+  height: 130%;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(46rem 26rem at 50% 18%,
+      color-mix(in srgb, var(--cobalt) 12%, transparent), transparent 70%),
+    radial-gradient(28rem 20rem at 72% 8%,
+      color-mix(in srgb, var(--cobalt) 7%, transparent), transparent 72%);
+  animation: halo-drift 26s ease-in-out infinite alternate;
+  will-change: transform, opacity;
 }
-@media (min-width: 900px) {
-  .shot-pair {
-    grid-template-columns: 2fr 1fr;
-    gap: 2rem;
+@keyframes halo-drift {
+  from { transform: translate3d(-1.5%, -1%, 0) scale(1); opacity: 0.85; }
+  to   { transform: translate3d(1.5%, 1.5%, 0) scale(1.06); opacity: 1; }
+}
+/* Pointer parallax, set by site.js. Capped small: the background should
+   answer the cursor, not follow it. */
+@media (hover: hover) {
+  .halo {
+    transform: translate3d(calc(var(--px, 0) * 10px), calc(var(--py, 0) * 8px), 0);
+    transition: transform 900ms var(--expo);
   }
 }
+.hero-mark {
+  animation: mark-breathe 7s ease-in-out infinite;
+}
+@keyframes mark-breathe {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.035); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .halo, .hero-mark { animation: none; transition: none; }
+}
+
+/* A quiet band so the demo separates from the hero without a hard rule. */
+.band {
+  background: linear-gradient(180deg, transparent, var(--card) 18%, var(--card) 82%, transparent);
+}
+.wrap.narrow { max-width: 46rem; }
+.quiet-title {
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  text-align: center;
+  color: var(--dim);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-bottom: 1.75rem;
+}
+
+.benefits {
+  display: grid;
+  gap: 2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+@media (min-width: 720px) {
+  .benefits { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2.5rem; }
+}
+.benefits h3 {
+  margin: 0 0 0.6rem;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+.benefits p { margin: 0; font-size: 0.95rem; line-height: 1.65; }
+
+.closing { text-align: center; }
+.closing h2 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  margin-bottom: 0;
+}
+.closing .cta { margin-top: 2rem; }
 
 /* ------------------------------------------------------------------ cards */
 .cards {

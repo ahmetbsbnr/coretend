@@ -56,14 +56,12 @@ const VIEWPORTS = [
   { name: '1728x1117', width: 1728, height: 1117 },
 ]
 
+// The site is one landing page plus the legal pages it is obliged to keep.
 const PAGES = [
   { name: 'home-en', path: '/en/index.html' },
   { name: 'home-fr', path: '/fr/index.html' },
-  { name: 'verify-en', path: '/en/verify.html' },
-  { name: 'verify-fr', path: '/fr/verify.html' },
-  { name: 'download-en', path: '/en/download.html' },
-  { name: 'demos-en', path: '/en/demos.html' },
-  { name: 'install-en', path: '/en/install.html' },
+  { name: 'legal-en', path: '/en/legal.html' },
+  { name: 'privacy-fr', path: '/fr/privacy.html' },
   { name: 'notfound-en', path: '/en/404.html' },
 ]
 

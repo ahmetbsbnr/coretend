@@ -6,10 +6,6 @@
 <title>Aperçu — CoreTend</title>
 <meta name="description" content="Entretien local, transparent et réversible pour macOS.">
 <meta name="color-scheme" content="light">
-<!-- Indexing follows siteIndexable in the identity file. It stays noindex
-     until the site is really deployed: an unreachable page in a search index
-     is a promise nobody can keep. robots.txt is generated from the same flag,
-     so the two can never disagree. -->
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://coretend.ahmetbsbnr.com/fr/index.html">
 <meta property="og:url" content="https://coretend.ahmetbsbnr.com/fr/index.html">
@@ -30,265 +26,65 @@
 <link rel="preload" href="../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../assets/fonts/plexmono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>html,body{background:#f4f4f0;color:#17191d}</style>
-<link rel="stylesheet" href="../assets/style.min.css?v=c967aab20f">
-<script src="../assets/site.js?v=31d5b80c43" defer></script>
+<link rel="stylesheet" href="../assets/style.min.css?v=98dcb667b0">
+<script src="../assets/site.js?v=77c84f9144" defer></script>
 </head>
 <body class="page-index">
 <a class="skip-link" href="#main">Aller au contenu</a>
 
-<aside class="rail">
-  <a class="rail-brand" href="index.html" aria-label="CoreTend — accueil">
-    <span class="wordmark"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
-<path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--cobalt)" stroke-width="38.4" stroke-linecap="round"/>
-<path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--ink)" stroke-width="38.4" stroke-linecap="round"/>
-<path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--line-strong)" stroke-width="38.4" stroke-linecap="round"/>
-<circle cx="256" cy="256" r="61.44" fill="var(--cobalt)"/>
-</svg><span>CoreTend</span></span>
-    <span class="tag">Entretien macOS<br>Local et open source</span>
-  </a>
-  <nav aria-label="Principale">
-    <ul>
-            <li><a class="nav-link active" href="index.html" aria-current="page">Aperçu</a></li>
-            <li><a class="nav-link" href="features.html">Fonctionnalités</a></li>
-            <li><a class="nav-link" href="demos.html">Démos</a></li>
-            <li><a class="nav-link" href="download.html">Télécharger</a></li>
-            <li><a class="nav-link" href="documentation.html">Docs</a></li>
-    </ul>
-    <span class="lang-switch" role="group" aria-label="Langue"><span aria-current="true">FR</span><span class="sep" aria-hidden="true">|</span><a href="../en/index.html" hreflang="en" lang="en">EN</a></span>
-  </nav>
-  <div class="rail-foot">
-    <p class="status">0.9.1-rc.2</p>
-    <p class="meta">macOS 14+ · Apple silicon</p>
-    <a class="btn btn-primary" href="download.html">Télécharger</a>
-    <div class="icon-row"><a class="icon-btn" href="https://github.com/ahmetbsbnr/coretend" target="_blank" rel="noopener noreferrer" aria-label="Code source de CoreTend sur GitHub"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-<path fill="currentColor" d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.02c-3.23.7-3.91-1.37-3.91-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.41-1.26.74-1.55-2.58-.29-5.29-1.29-5.29-5.73 0-1.27.45-2.3 1.2-3.11-.12-.29-.52-1.47.11-3.07 0 0 .98-.31 3.16 1.19a10.95 10.95 0 0 1 5.76 0c2.19-1.5 3.16-1.19 3.16-1.19.63 1.6.23 2.78.11 3.07.75.81 1.2 1.84 1.2 3.11 0 4.45-2.72 5.43-5.31 5.72.42.36.79 1.07.79 2.16v3.02c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .7Z"/>
-</svg></a></div>
-  </div>
-</aside>
-
-<header class="topbar">
-  <a class="wordmark" href="index.html" aria-label="CoreTend — accueil"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
+<header class="bar">
+  <div class="wrap">
+    <a class="wordmark" href="index.html" aria-label="CoreTend — accueil"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
 <path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--cobalt)" stroke-width="38.4" stroke-linecap="round"/>
 <path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--ink)" stroke-width="38.4" stroke-linecap="round"/>
 <path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--line-strong)" stroke-width="38.4" stroke-linecap="round"/>
 <circle cx="256" cy="256" r="61.44" fill="var(--cobalt)"/>
 </svg><span>CoreTend</span></a>
-  <div class="topbar-actions">
-    <span class="lang-switch" role="group" aria-label="Langue"><span aria-current="true">FR</span><span class="sep" aria-hidden="true">|</span><a href="../en/index.html" hreflang="en" lang="en">EN</a></span>
-    <button class="nav-toggle" type="button" aria-expanded="false"
-      aria-controls="mobile-menu" aria-label="Ouvrir le menu"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-<path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+    <nav class="bar-actions" aria-label="Principale">
+      <span class="lang-switch" role="group" aria-label="Langue"><span aria-current="true">FR</span><span class="sep" aria-hidden="true">|</span><a href="../en/index.html" hreflang="en" lang="en">EN</a></span>
+      <a class="bar-link" href="https://github.com/ahmetbsbnr/coretend" target="_blank" rel="noopener noreferrer"
+         aria-label="Code source de CoreTend sur GitHub"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+<path fill="currentColor" d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.02c-3.23.7-3.91-1.37-3.91-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.41-1.26.74-1.55-2.58-.29-5.29-1.29-5.29-5.73 0-1.27.45-2.3 1.2-3.11-.12-.29-.52-1.47.11-3.07 0 0 .98-.31 3.16 1.19a10.95 10.95 0 0 1 5.76 0c2.19-1.5 3.16-1.19 3.16-1.19.63 1.6.23 2.78.11 3.07.75.81 1.2 1.84 1.2 3.11 0 4.45-2.72 5.43-5.31 5.72.42.36.79 1.07.79 2.16v3.02c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .7Z"/>
+</svg><span>GitHub</span></a>
+      <a class="btn btn-primary btn-sm" href="/download">Télécharger</a>
+    </nav>
   </div>
 </header>
 
-<div class="mobile-menu" id="mobile-menu" data-open="false">
-  <div class="mobile-menu-head">
-    <span class="wordmark"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
-<path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--cobalt)" stroke-width="38.4" stroke-linecap="round"/>
-<path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--ink)" stroke-width="38.4" stroke-linecap="round"/>
-<path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--line-strong)" stroke-width="38.4" stroke-linecap="round"/>
-<circle cx="256" cy="256" r="61.44" fill="var(--cobalt)"/>
-</svg><span>CoreTend</span></span>
-    <button class="nav-toggle mobile-menu-close" type="button"
-      aria-label="Fermer le menu"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-<path d="M5 5l14 14M19 5L5 19"/></svg></button>
-  </div>
-  <nav aria-label="Principale">
-    <ul>
-            <li><a class="nav-link active" href="index.html" aria-current="page">Aperçu</a></li>
-            <li><a class="nav-link" href="features.html">Fonctionnalités</a></li>
-            <li><a class="nav-link" href="demos.html">Démos</a></li>
-            <li><a class="nav-link" href="download.html">Télécharger</a></li>
-            <li><a class="nav-link" href="documentation.html">Docs</a></li>
-    </ul>
-    <span class="lang-switch" role="group" aria-label="Langue"><span aria-current="true">FR</span><span class="sep" aria-hidden="true">|</span><a href="../en/index.html" hreflang="en" lang="en">EN</a></span>
-  </nav>
-  <div class="mobile-menu-foot">
-    <p class="status">0.9.1-rc.2</p>
-    <p class="meta">macOS 14+ · Apple silicon</p>
-    <a class="btn btn-primary" href="download.html" style="width:100%;margin-top:1rem">Télécharger</a>
-  </div>
-</div>
-
-<div class="shell">
 <main id="main">
 <!--full-bleed-->
-  <section class="hero">
+  <section class="hero" id="get">
+    <div class="halo" aria-hidden="true"></div>
     <div class="wrap">
       <div class="hero-lockup">
-        <span class="hero-mark" data-reveal aria-hidden="true"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
+        <span class="hero-mark" aria-hidden="true"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
 <path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--cobalt)" stroke-width="38.4" stroke-linecap="round"/>
 <path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--ink)" stroke-width="38.4" stroke-linecap="round"/>
 <path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--line-strong)" stroke-width="38.4" stroke-linecap="round"/>
 <circle cx="256" cy="256" r="61.44" fill="var(--cobalt)"/>
 </svg></span>
-        <h1 class="hero-wordmark">
-          <span class="line"><span>CoreTend</span></span>
-        </h1>
-        <p class="hero-statement" data-reveal data-reveal-delay="60">
-          Trouve ce qui remplit votre Mac, et ne supprime que ce que vous validez.
+        <h1 class="hero-wordmark">CoreTend</h1>
+        <p class="hero-statement">
+          Comprenez votre Mac.<br>Gardez le contrôle.
         </p>
-        <p class="hero-facts" data-reveal data-reveal-delay="110">
-          S’exécute entièrement sur votre Mac. Aucun compte, aucune télémétrie, aucun appel réseau. L’analyse antivirus optionnelle utilise ClamAV, installé et contrôlé par vous.
+        <p class="hero-facts">
+          Analyse locale, entretien du stockage et protection optionnelle avec ClamAV.
         </p>
-        <div class="btn-row" data-reveal data-reveal-delay="160">
-          <span data-magnetic><a class="btn btn-primary" href="download.html">Télécharger CoreTend<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-<path d="M5 12h13M12 5l7 7-7 7"/></svg></a></span>
-          <a class="btn btn-secondary" href="https://github.com/ahmetbsbnr/coretend" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <div class="cta">
+          <span data-magnetic><a class="btn btn-primary btn-lg" href="/download"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+<path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></svg>Télécharger pour macOS</a></span>
+          <a class="btn btn-secondary btn-lg" href="https://github.com/ahmetbsbnr/coretend" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
 <path fill="currentColor" d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.02c-3.23.7-3.91-1.37-3.91-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.41-1.26.74-1.55-2.58-.29-5.29-1.29-5.29-5.73 0-1.27.45-2.3 1.2-3.11-.12-.29-.52-1.47.11-3.07 0 0 .98-.31 3.16 1.19a10.95 10.95 0 0 1 5.76 0c2.19-1.5 3.16-1.19 3.16-1.19.63 1.6.23 2.78.11 3.07.75.81 1.2 1.84 1.2 3.11 0 4.45-2.72 5.43-5.31 5.72.42.36.79 1.07.79 2.16v3.02c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .7Z"/>
-</svg>Code source</a>
+</svg>GitHub</a>
         </div>
-        <dl class="hero-status" data-reveal data-reveal-delay="210">
-          <div>
-            <dt>Version</dt>
-            <dd>0.9.1-rc.2 · release candidate</dd>
-          </div>
-          <div>
-            <dt>Requiert</dt>
-            <dd>macOS 14+ · Apple silicon</dd>
-          </div>
-          <div>
-            <dt>Signature Apple</dt>
-            <dd class="warn-text">Non signé, non notarisé</dd>
-          </div>
-          <div>
-            <dt>Licence</dt>
-            <dd>Apache-2.0 · gratuit</dd>
-          </div>
-        </dl>
+        <p class="hero-meta">0.9.1-rc.2 · macOS 14.0+ · Apple silicon · Gratuit et open source · Non signé et non notarisé</p>
       </div>
     </div>
   </section>
 
-  <section class="section" style="padding-top:0">
-    <div class="wrap">
-      <div class="note warn" data-reveal>
-        <p class="kicker">Pré-1.0, et non signé</p>
-        <p>CoreTend est en développement actif et n'a pas atteint une version 1.0 stable. Les versions ne sont pas signées : macOS affichera donc un avertissement au premier lancement. La page <a href="download.html">Télécharger</a> explique à quoi cela ressemble et comment vérifier ce que vous avez reçu.</p>
-      </div>
-    </div>
-  </section>
-
-
-  <section class="section" id="product">
-    <div class="wrap">
-      <div class="section-head" data-reveal>
-        <p class="kicker">L’application</p>
-        <h2>Ce que vous obtenez</h2>
-      </div>
-      <div class="shot-pair">
-        <figure class="media" data-reveal>
-          <picture>
-            <source srcset="../assets/app/smart-care.webp" type="image/webp">
-            <img src="../assets/app/smart-care.png" width="2024" height="1488" loading="lazy"
-              sizes="(min-width: 1024px) 660px, 92vw"
-              alt="Fenêtre Smart Care de CoreTend : barre latérale des modules à gauche, résumé d’analyse et liste des résultats à examiner à droite">
-          </picture>
-          <figcaption>Smart Care — toutes les analyses en une passe, chaque résultat listé avant toute suppression.</figcaption>
-        </figure>
-        <figure class="media" data-reveal data-reveal-delay="80">
-          <picture>
-            <source srcset="../assets/app/menu-bar.webp" type="image/webp">
-            <img src="../assets/app/menu-bar.png" width="660" height="806" loading="lazy"
-              sizes="(min-width: 1024px) 300px, 70vw"
-              alt="Panneau de la barre des menus CoreTend : processeur, mémoire, espace libre, état thermique et état de la protection">
-          </picture>
-          <figcaption>Le panneau de la barre des menus — état en lecture seule, aucune action déclenchée d’ici.</figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
-  <section class="section" id="trust">
-    <div class="wrap">
-      <div class="section-head" data-reveal>
-        <p class="kicker">Vérifiable</p>
-        <h2>Chaque affirmation renvoie à une preuve</h2>
-        <p class="lead">Rien ici ne demande d’être cru sur parole. Chaque ligne indique ce qui est vrai et renvoie à ce qui le prouve.</p>
-      </div>
-      <div class="table-scroll" data-reveal>
-        <table class="facts">
-          <tr>
-            <th>Open source</th>
-            <td>Apache-2.0 — <a href="https://github.com/ahmetbsbnr/coretend">lire le code</a></td>
-          </tr>
-          <tr>
-            <th>Builds et tests</th>
-            <td><a href="https://github.com/ahmetbsbnr/coretend/actions">chaque exécution est publique</a></td>
-          </tr>
-          <tr>
-            <th>Provenance du build</th>
-            <td><a href="https://github.com/ahmetbsbnr/coretend/attestations">attestations signées</a> — <a href="verify.html">comment vérifier</a></td>
-          </tr>
-          <tr>
-            <th>Empreintes</th>
-            <td><a href="verify.html">SHA-256 pour chaque artefact</a></td>
-          </tr>
-          <tr>
-            <th>Signature de l’éditeur</th>
-            <td>Signé avec la clé F8473FB09E1DB730 — <a href="verify.html">vérifier</a></td>
-          </tr>
-          <tr>
-            <th>Signature Apple</th>
-            <td class="warn-text">Non signé et non notarisé — <a href="verify.html">ce que cela implique</a></td>
-          </tr>
-          <tr>
-            <th>Compiler vous-même</th>
-            <td><a href="https://github.com/ahmetbsbnr/coretend/blob/main/Documentation/BUILDING.md">Documentation/BUILDING.md</a></td>
-          </tr>
-          <tr>
-            <th>Fonctionne localement</th>
-            <td>Aucun client réseau n’est lié à l’app — vérifiable au grep</td>
-          </tr>
-          <tr>
-            <th>Analyse antivirus</th>
-            <td>Optionnelle, via le binaire ClamAV que vous installez vous-même</td>
-          </tr>
-          <tr>
-            <th>Signaler une vulnérabilité</th>
-            <td><a href="security.html">politique de sécurité</a></td>
-          </tr>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="modules">
-    <div class="wrap">
-      <div class="section-head" data-reveal>
-        <p class="kicker">Modules</p>
-        <h2>Ce qu'il fait réellement</h2>
-      </div>
-      <ul class="cards cols-3">
-      <li class="card" data-reveal data-reveal-delay="0"><p class="kicker">Stockage et entretien</p><h3>Smart Care</h3><p>Une passe qui enchaîne toutes les analyses et présente une seule liste à examiner. Rien n'est supprimé avant votre accord.</p></li>
-      <li class="card" data-reveal data-reveal-delay="60"><p class="kicker">Stockage et entretien</p><h3>Nettoyage</h3><p>Caches, journaux, restes de compilation et résidus d'installation — chaque élément regroupé, mesuré et expliqué avant toute action.</p></li>
-      <li class="card" data-reveal data-reveal-delay="120"><p class="kicker">Stockage et entretien</p><h3>Mon désordre</h3><p>Fichiers volumineux, anciens et oubliés, triés pour voir ce qui occupe réellement l'espace avant de décider.</p></li>
-      <li class="card" data-reveal data-reveal-delay="180"><p class="kicker">Stockage et entretien</p><h3>Space Lens</h3><p>Une carte navigable de votre disque. Explorez n'importe quel dossier et voyez où se trouve vraiment le poids, pas seulement le top dix.</p></li>
-      <li class="card" data-reveal data-reveal-delay="240"><p class="kicker">Confidentialité et protection</p><h3>Nettoyage de confidentialité</h3><p>Traces de navigation par navigateur et par profil, listées une par une. Vous choisissez ce qui part ; une session que vous gardez reste.</p></li>
-      <li class="card" data-reveal data-reveal-delay="300"><p class="kicker">Confidentialité et protection</p><h3>Protection locale avec ClamAV</h3><p>Si ClamAV est installé, CoreTend peut l'exécuter et mettre en quarantaine ce qu'il détecte. ClamAV est facultatif, jamais intégré, et sa base n'est jamais distribuée ici.</p></li>
-      <li class="card" data-reveal data-reveal-delay="360"><p class="kicker">Activité et performances</p><h3>Applications</h3><p>Ce qui est installé, sa taille, et ce que chaque app laisse derrière elle. Désinstallation avec les résidus listés, pas devinés.</p></li>
-      <li class="card" data-reveal data-reveal-delay="420"><p class="kicker">Activité et performances</p><h3>Nettoyage du cloud</h3><p>Copies locales de fichiers cloud, qui peuvent être retéléchargées. Rien n'est envoyé et rien n'est supprimé du cloud lui-même.</p></li>
-      <li class="card" data-reveal data-reveal-delay="480"><p class="kicker">Activité et performances</p><h3>Historique et restauration</h3><p>Chaque action est enregistrée localement avec ce qu'elle a touché. Les éléments vont à la Corbeille : restaurer reste une opération macOS normale.</p></li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head" data-reveal>
-        <p class="kicker">Espace récupérable</p>
-        <h2>Un chiffre mesuré, pas une promesse</h2>
-        <p class="lead">CoreTend n'affiche jamais une estimation qu'il n'a pas mesurée. Après une analyse, vous obtenez le nombre d'octets réellement trouvés, regroupé par origine, avec la raison de chaque signalement. Ce qu'il ne peut pas juger sans risque est exclu du total et signalé à part.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="demo">
-    <div class="wrap">
-      <div class="section-head" data-reveal>
-        <p class="kicker">Démonstration</p>
-        <h2>À quoi ressemble le premier lancement</h2>
-        <p class="lead">CoreTend n’est pas signé : macOS bloque donc le premier lancement. Voici la vraie boîte de dialogue et les deux étapes pour la passer — enregistrées, pas décrites.</p>
-      </div>
+  <section class="section band" id="demo">
+    <div class="wrap narrow">
+      <h2 class="quiet-title" data-reveal>Le premier lancement, sans montage</h2>
       <figure class="media" data-reveal>
         <span class="loop" style="--ratio:926/880">
           <video data-loop autoplay muted loop playsinline preload="metadata"
@@ -300,147 +96,60 @@
           <img class="reduced-only" src="../assets/demos/gatekeeper-blocked-poster.webp"
             width="926" height="880" alt="">
         </span>
-        <figcaption id="demo-desc">macOS refuse l’app non signée, puis l’ouvre après Ctrl-clic → Ouvrir. Silencieux, en boucle, sans bande-son.</figcaption>
+        <figcaption id="demo-desc">CoreTend n’est pas signé : macOS le bloque la première fois. Ctrl-clic, Ouvrir, confirmer — une seule fois.</figcaption>
       </figure>
-      <p data-reveal><a href="install.html">Lire les notes d’installation complètes</a> · <a href="demos.html">Toutes les démos</a></p>
     </div>
   </section>
   <section class="section">
-    <div class="wrap">
-      <div class="section-head" data-reveal>
-        <p class="kicker">Son comportement</p>
-        <h2>Réversible par défaut</h2>
-      </div>
-      <ul class="cards cols-3">
-      <li class="card" data-reveal data-reveal-delay="0"><h3>Simulation d'abord, toujours</h3><p>Chaque module démarre en aperçu par défaut. Vous voyez la liste complète, avec tailles et raisons, avant qu'un seul fichier ne bouge.</p></li>
-      <li class="card" data-reveal data-reveal-delay="60"><h3>La Corbeille, pas la suppression</h3><p>Les retraits vont à la Corbeille macOS. Une erreur se corrige d'un glisser-déposer, pas d'une restauration de sauvegarde.</p></li>
-      <li class="card" data-reveal data-reveal-delay="120"><h3>Sans compte, sans télémétrie</h3><p>Il n'y a rien à créer et rien envoyé où que ce soit. Aucune analyse d'usage, aucun rapport de plantage, aucun appel réseau que l'app ferait d'elle-même.</p></li>
-      <li class="card" data-reveal data-reveal-delay="180"><h3>Expliqué, puis facultatif</h3><p>Accès complet au disque, notifications, ClamAV et surveillance du système de fichiers sont demandés seulement quand une fonction en a besoin, et chacun peut être refusé.</p></li>
+    <div class="wrap narrow">
+      <ul class="benefits">
+        <li data-reveal data-reveal-delay="0"><h3>Local</h3><p>Chaque analyse s’exécute sur votre Mac. Aucun compte, aucune télémétrie, aucun appel réseau.</p></li>
+        <li data-reveal data-reveal-delay="70"><h3>Clair</h3><p>Les résultats sont listés, mesurés et expliqués. Rien n’est supprimé sans votre accord.</p></li>
+        <li data-reveal data-reveal-delay="140"><h3>Open source</h3><p>Apache-2.0. Lisez le code, compilez-le, vérifiez chaque affirmation faite ici.</p></li>
       </ul>
     </div>
   </section>
 
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head" data-reveal>
-        <p class="kicker">Premier lancement</p>
-        <h2>Un assistant qui explique, puis demande</h2>
+  <section class="section closing">
+    <div class="wrap narrow">
+      <h2 data-reveal>Essayez-le sur votre Mac</h2>
+      <div class="cta" data-reveal>
+        <span data-magnetic><a class="btn btn-primary btn-lg" href="/download"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+<path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></svg>Télécharger pour macOS</a></span>
+        <a class="btn btn-secondary btn-lg" href="https://github.com/ahmetbsbnr/coretend" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+<path fill="currentColor" d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.02c-3.23.7-3.91-1.37-3.91-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.41-1.26.74-1.55-2.58-.29-5.29-1.29-5.29-5.73 0-1.27.45-2.3 1.2-3.11-.12-.29-.52-1.47.11-3.07 0 0 .98-.31 3.16 1.19a10.95 10.95 0 0 1 5.76 0c2.19-1.5 3.16-1.19 3.16-1.19.63 1.6.23 2.78.11 3.07.75.81 1.2 1.84 1.2 3.11 0 4.45-2.72 5.43-5.31 5.72.42.36.79 1.07.79 2.16v3.02c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .7Z"/>
+</svg>GitHub</a>
       </div>
-      <ul class="rows">
-        <li class="row-item" data-reveal>
-          <div>
-            <p>Le premier lancement présente le fonctionnement local de CoreTend, les autorisations dont chaque fonction a besoin et pourquoi, ce qui est facultatif, et ce que signifie la simulation — puis exécute un court diagnostic et affiche un résumé. Rien n'est analysé ni modifié pendant la configuration.</p>
-            <ul class="bullets">
-              <li>Explique à quoi sert chaque autorisation avant de la demander.</li>
-              <li>La simulation est le réglage par défaut : les résultats sont listés, rien n’est supprimé.</li>
-              <li>Rien n’est analysé ni modifié pendant l’assistant.</li>
-            </ul>
-          </div>
-          <div class="row-aside">
-            <ul class="chip-row">
-              <li class="chip">Simulation par défaut</li>
-              <li class="chip">Corbeille, pas effacement</li>
-              <li class="chip">Autorisations explicites</li>
-              <li class="chip">Aucun agent en arrière-plan</li>
-            </ul>
-          </div>
-        </li>
-      </ul>
+      <p class="hero-meta" data-reveal>0.9.1-rc.2 · macOS 14.0+ · Apple silicon · Gratuit et open source · Non signé et non notarisé · <a href="https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.2">empreintes, signatures et notes de version</a></p>
     </div>
   </section>
 
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head" data-reveal>
-        <p class="kicker">Open source</p>
-        <h2>Lisible, compilable, auditable</h2>
-        <p class="lead">Le code source complet est public sous Apache-2.0. Vous pouvez lire ce que chaque règle cible, compiler l'app vous-même, et confronter les affirmations de cette page au code qui les produit.</p>
-      </div>
-      <div class="btn-row" data-reveal style="margin-top:0">
-        <span data-magnetic><a class="btn btn-primary" href="open-source.html">Lire le code et les licences<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-<path d="M5 12h13M12 5l7 7-7 7"/></svg></a></span>
-        <a class="btn btn-secondary" href="https://github.com/ahmetbsbnr/coretend" target="_blank" rel="noopener noreferrer">GitHub</a>
-      </div>
-    </div>
-  </section>
 
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head" data-reveal>
-        <p class="kicker">Questions</p>
-        <h2>Réponses directes</h2>
-      </div>
-      <div class="stack">
-      <div data-reveal><h3>CoreTend envoie-t-il quelque chose sur le réseau ?</h3><p>Non. L'app ne fait aucun appel réseau de sa propre initiative. Si vous activez l'intégration ClamAV facultative, le programme de mise à jour de ClamAV est un outil distinct que vous lancez vous-même.</p></div>
-      <div data-reveal><h3>Est-ce un antivirus ?</h3><p>Non. CoreTend peut exécuter ClamAV si vous l'avez installé et mettre en quarantaine ce que ClamAV signale. Ce n'est pas un antivirus en temps réel et il ne prétend pas l'être.</p></div>
-      <div data-reveal><h3>Combien d'espace vais-je récupérer ?</h3><p>Cela dépend entièrement de votre Mac, et aucune réponse honnête ne peut être donnée à l'avance. L'app affiche un chiffre réellement mesuré après analyse, avant toute validation.</p></div>
-      <div data-reveal><h3>Le téléchargement est-il signé et notarié ?</h3><p>Pas encore. Les versions ne sont pas signées, c'est pourquoi la page de téléchargement explique précisément ce que macOS affichera et comment vérifier vous-même la somme de contrôle.</p></div>
-      </div>
-      <p data-reveal style="margin-top:2rem">Davantage dans la <a href="faq.html">FAQ</a> complète.</p>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head" data-reveal>
-        <h2>Obtenir la version actuelle</h2>
-        <p class="lead">Apple Silicon, macOS 14 ou ultérieur. Non signé : lisez les notes de premier lancement avant d'installer.</p>
-      </div>
-      <div class="btn-row" data-reveal style="margin-top:0">
-        <span data-magnetic><a class="btn btn-primary" href="download.html"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-<path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></svg>Télécharger CoreTend</a></span>
-        <a class="btn btn-secondary" href="documentation.html">Documentation</a>
-      </div>
-      <p class="muted mono" data-reveal style="margin-top:2rem;font-size:.8rem">Apache-2.0 pour le code, CC-BY-4.0 pour la documentation originale, composants tiers sous leurs propres conditions. Les <a href="legal.html">mentions légales</a>, la <a href="privacy.html">politique de confidentialité</a> et la <a href="security.html">politique de sécurité</a> indiquent ce qui est en place et ce qui ne l'est pas encore.</p>
-    </div>
-  </section>
 
 </main>
 
 <footer class="site-footer">
   <div class="wrap">
-    <div class="footer-grid">
-      <div>
-        <p class="wordmark"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
+    <div class="footer-row">
+      <p class="wordmark"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
 <path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--cobalt)" stroke-width="38.4" stroke-linecap="round"/>
 <path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--ink)" stroke-width="38.4" stroke-linecap="round"/>
 <path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--line-strong)" stroke-width="38.4" stroke-linecap="round"/>
 <circle cx="256" cy="256" r="61.44" fill="var(--cobalt)"/>
 </svg><span>CoreTend</span></p>
-        <p class="footer-blurb">CoreTend est une application d'entretien macOS libre et open source. Tout s'exécute sur votre Mac : aucun compte, aucune télémétrie, aucun appel réseau.</p>
-      </div>
-      <nav aria-label="Plan du site">
-        <p class="kicker">Plan du site</p>
-        <ul class="links-2col">
-        <li><a href="install.html">Installer</a></li>
-        <li><a href="verify.html">Vérifier un téléchargement</a></li>
-        <li><a href="support.html">Assistance</a></li>
-        <li><a href="faq.html">FAQ</a></li>
-        <li><a href="roadmap.html">Feuille de route</a></li>
-        <li><a href="security.html">Sécurité</a></li>
-        <li><a href="privacy.html">Politique de confidentialité</a></li>
-        <li><a href="licenses.html">Licences</a></li>
-        <li><a href="legal.html">Mentions légales</a></li>
-        </ul>
-      </nav>
-      <div>
-        <p class="kicker">Projet</p>
-        <ul>
-          <li><a href="https://github.com/ahmetbsbnr/coretend" target="_blank" rel="noopener noreferrer">GitHub</a></li>
-          <li><a href="open-source.html">Open source</a></li>
-          <li><a href="changelog.html">Journal</a></li>
-        </ul>
-        <div class="icon-row"><a class="icon-btn" href="https://github.com/ahmetbsbnr/coretend" target="_blank" rel="noopener noreferrer" aria-label="Code source de CoreTend sur GitHub"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-<path fill="currentColor" d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.02c-3.23.7-3.91-1.37-3.91-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.41-1.26.74-1.55-2.58-.29-5.29-1.29-5.29-5.73 0-1.27.45-2.3 1.2-3.11-.12-.29-.52-1.47.11-3.07 0 0 .98-.31 3.16 1.19a10.95 10.95 0 0 1 5.76 0c2.19-1.5 3.16-1.19 3.16-1.19.63 1.6.23 2.78.11 3.07.75.81 1.2 1.84 1.2 3.11 0 4.45-2.72 5.43-5.31 5.72.42.36.79 1.07.79 2.16v3.02c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .7Z"/>
-</svg></a></div>
-      </div>
+      <ul class="footer-links">
+        <li><a href="https://github.com/ahmetbsbnr/coretend" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+        <li><a href="https://ahmetbsbnr.com" target="_blank" rel="noopener noreferrer">Portfolio</a></li>
+          <li><a href="privacy.html">Confidentialité</a></li>
+          <li><a href="legal.html">Mentions légales</a></li>
+          <li><a href="licenses.html">Licences</a></li>
+      </ul>
     </div>
     <div class="footer-base">
       <p>&copy; Les contributeurs de CoreTend · Apache-2.0</p>
-      <p>0.9.1-rc.2</p>
+      <p>0.9.1-rc.2 · non signé, non notarisé</p>
     </div>
   </div>
 </footer>
-</div>
 </body>
 </html>

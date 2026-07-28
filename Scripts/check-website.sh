@@ -60,13 +60,23 @@ if [ "$EN_PAGES" != "$FR_PAGES" ]; then
   note "the two locales do not contain the same pages"
 fi
 
-# Pages the brief requires, in both locales.
-for slug in index features privacy download documentation open-source changelog \
-            faq security licenses legal roadmap 404; do
+# Pages the site publishes, in both locales. The site is a single landing
+# page now: features, demos, download, install, verify, documentation,
+# support, faq, roadmap, changelog, open-source and security were retired into
+# the landing page and the repository. What remains is the landing page, the
+# 404, and the three legal pages, which are a publication obligation rather
+# than an editorial choice.
+for slug in index privacy licenses legal 404; do
   for locale in en fr; do
     [ -f "$SITE/$locale/$slug.html" ] || note "missing page: $locale/$slug.html"
   done
 done
+
+# Retired pages must redirect, not disappear: a dead link is worse than a page
+# nobody reads, and these URLs are already in the wild. The stable /download
+# route must exist and point at a real artifact.
+RETIREMENT=$(/usr/bin/python3 Scripts/check-retired-pages.py "$SITE")
+[ -z "$RETIREMENT" ] || note "$RETIREMENT"
 [ -f "$SITE/index.html" ] || note "missing root language-picker index.html"
 [ -f "$SITE/assets/style.css" ] || note "missing stylesheet"
 python3 Scripts/check-first-paint.py || note "first-paint regression gate failed"
@@ -133,10 +143,16 @@ done
 
 # ---------------------------------------------------------- internal links
 /usr/bin/python3 - "$SITE" <<'PYEOF' || fail=1
-import os, re, sys
+import json, os, re, sys
 
 site = sys.argv[1]
 bad = []
+
+# Routes the host serves without a file on disk.
+with open(os.path.join(site, "vercel.json"), encoding="utf-8") as handle:
+    config = json.load(handle)
+routes = {r.get("source") for r in config.get("redirects", [])}
+routes |= {r.get("source") for r in config.get("rewrites", [])}
 for locale in ("en", "fr"):
     d = os.path.join(site, locale)
     for name in sorted(os.listdir(d)):
@@ -146,6 +162,13 @@ for locale in ("en", "fr"):
         html = open(path, encoding="utf-8").read()
         for href in re.findall(r'href="([^"]+)"', html):
             if href.startswith(("http://", "https://", "mailto:", "#")):
+                continue
+            # Root-absolute paths are served by the host, not from disk. They
+            # are valid exactly when vercel.json declares a redirect or rewrite
+            # for them — /download is a real route with no file behind it.
+            if href.startswith("/"):
+                if href.split("#")[0].split("?")[0] not in routes:
+                    bad.append(f"{locale}/{name} -> {href} (no route declared)")
                 continue
             # Strip both the fragment and the cache-busting ?v= query
             # before resolving: the file on disk carries neither.

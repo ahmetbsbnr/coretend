@@ -64,24 +64,16 @@ def is_defined(key):
     value = str(IDENTITY.get(key, "")).strip()
     return bool(value) and not (value.startswith("[") and value.endswith("]"))
 
-NAV = [
-    ("index", {"en": "Overview", "fr": "Aperçu"}),
-    ("features", {"en": "Features", "fr": "Fonctionnalités"}),
-    ("demos", {"en": "Demos", "fr": "Démos"}),
-    ("download", {"en": "Download", "fr": "Télécharger"}),
-    ("documentation", {"en": "Docs", "fr": "Docs"}),
-]
+# The site is one page. GitHub is where technical detail lives, so the header
+# carries the product and a way out to the repository, nothing else. The legal
+# pages still exist and are still reachable from the footer, because they have
+# to be — they are simply not part of the main route.
+NAV = []
 
 FOOTER_LINKS = [
-    ("install", {"en": "Install", "fr": "Installer"}),
-    ("verify", {"en": "Verify a download", "fr": "Vérifier un téléchargement"}),
-    ("support", {"en": "Support", "fr": "Assistance"}),
-    ("faq", {"en": "FAQ", "fr": "FAQ"}),
-    ("roadmap", {"en": "Roadmap", "fr": "Feuille de route"}),
-    ("security", {"en": "Security", "fr": "Sécurité"}),
-    ("privacy", {"en": "Privacy policy", "fr": "Politique de confidentialité"}),
-    ("licenses", {"en": "Licenses", "fr": "Licences"}),
+    ("privacy", {"en": "Privacy", "fr": "Confidentialité"}),
     ("legal", {"en": "Legal notice", "fr": "Mentions légales"}),
+    ("licenses", {"en": "Licenses", "fr": "Licences"}),
 ]
 
 SITE_TITLE = "CoreTend"
@@ -192,6 +184,27 @@ UI = {
 
 
 
+
+def _published_release():
+    """The release GitHub is currently serving.
+
+    Committed (Configuration/published-release.json) and refreshed by
+    Scripts/sync-published-release.sh, so building the site needs no network
+    and no prior local build. Every download affordance on the page is built
+    from this one object: if it is absent the page degrades to linking the
+    releases index rather than offering a button that 404s."""
+    path = os.path.join(ROOT, "..", "Configuration", "published-release.json")
+    try:
+        with open(path, encoding="utf-8") as handle:
+            data = json.load(handle)
+    except (OSError, ValueError):
+        return None
+    return data if data.get("dmgURL") else None
+
+
+RELEASE = _published_release()
+
+
 def _minify_css(text):
     """Strip comments and collapse whitespace.
 
@@ -247,42 +260,27 @@ def asset_url(relative_path):
 def page_shell(locale, slug, title, body_html, other_locale_slug=None):
     other_slug = other_locale_slug or slug
     version = ident("marketingVersion", "")
+    is_landing = slug == "index"
 
-    def nav_link(n, label, cls="nav-link"):
-        # aria-current is what a screen reader announces as "current page";
-        # the class only makes it visible. Both, or neither is enough.
-        current = ' aria-current="page"' if n == slug else ""
-        active = " active" if n == slug else ""
-        return (f'<li><a class="{cls}{active}" href="{n}.html"{current}>'
-                f'{label[locale]}</a></li>')
-
-    nav_items = "\n            ".join(nav_link(n, label) for n, label in NAV)
-    menu_items = "\n            ".join(nav_link(n, label) for n, label in NAV)
-    footer_items = "\n        ".join(
-        f'<li><a href="{n}.html">{label[locale]}</a></li>'
-        for n, label in FOOTER_LINKS
-    )
-
-    def lang_switch(extra_class=""):
+    def lang_switch():
         def item(code):
             href = f'../{code}/{slug if locale == code else other_slug}.html'
             if locale == code:
                 return f'<span aria-current="true">{code.upper()}</span>'
             return (f'<a href="{href}" hreflang="{code}" lang="{code}">'
                     f'{code.upper()}</a>')
-        return (f'<span class="lang-switch{extra_class}" role="group" '
+        return (f'<span class="lang-switch" role="group" '
                 f'aria-label="{UI["lang_aria"][locale]}">'
                 f'{item("fr")}<span class="sep" aria-hidden="true">|</span>'
                 f'{item("en")}</span>')
 
-    github_btn = (
-        f'<a class="icon-btn" href="{REPOSITORY_URL}" target="_blank" '
-        f'rel="noopener noreferrer" aria-label="{UI["github_aria"][locale]}">'
-        f'{GITHUB_SVG}</a>'
-        if REPOSITORY_URL else ""
+    footer_items = "\n          ".join(
+        f'<li><a href="{n}.html">{label[locale]}</a></li>'
+        for n, label in FOOTER_LINKS
     )
-    tag_a, tag_b = RAIL_TAGLINE[locale]
     wordmark = f'{MARK_SVG}<span>{SITE_TITLE}</span>'
+    dl = "/download"
+    dl_label = {"en": "Download", "fr": "Télécharger"}[locale]
 
     return f"""<!doctype html>
 <html lang="{locale}" class="no-js">
@@ -292,11 +290,7 @@ def page_shell(locale, slug, title, body_html, other_locale_slug=None):
 <title>{title} — {SITE_TITLE}</title>
 <meta name="description" content="{SUBTITLE[locale]}">
 <meta name="color-scheme" content="light">
-<!-- Indexing follows siteIndexable in the identity file. It stays noindex
-     until the site is really deployed: an unreachable page in a search index
-     is a promise nobody can keep. robots.txt is generated from the same flag,
-     so the two can never disagree. -->
-<meta name="robots" content="{"index, follow" if SITE_INDEXABLE else "noindex"}">
+<meta name="robots" content="{"index, follow" if SITE_INDEXABLE and is_landing else "noindex, follow"}">
 <link rel="canonical" href="{SITE_URL}/{locale}/{slug}.html">
 <meta property="og:url" content="{SITE_URL}/{locale}/{slug}.html">
 <link rel="alternate" hreflang="en" href="{SITE_URL}/en/{slug if locale == "en" else other_slug}.html">
@@ -322,88 +316,38 @@ def page_shell(locale, slug, title, body_html, other_locale_slug=None):
 <body class="page-{slug}">
 <a class="skip-link" href="#main">{UI["skip"][locale]}</a>
 
-<aside class="rail">
-  <a class="rail-brand" href="index.html" aria-label="{UI["home"][locale]}">
-    <span class="wordmark">{wordmark}</span>
-    <span class="tag">{tag_a}<br>{tag_b}</span>
-  </a>
-  <nav aria-label="{UI["main_nav"][locale]}">
-    <ul>
-            {nav_items}
-    </ul>
-    {lang_switch()}
-  </nav>
-  <div class="rail-foot">
-    <p class="status">{version}</p>
-    <p class="meta">macOS 14+ · Apple silicon</p>
-    <a class="btn btn-primary" href="download.html">{UI["get_cta"][locale]}</a>
-    <div class="icon-row">{github_btn}</div>
-  </div>
-</aside>
-
-<header class="topbar">
-  <a class="wordmark" href="index.html" aria-label="{UI["home"][locale]}">{wordmark}</a>
-  <div class="topbar-actions">
-    {lang_switch()}
-    <button class="nav-toggle" type="button" aria-expanded="false"
-      aria-controls="mobile-menu" aria-label="{UI["open_menu"][locale]}">{MENU_SVG}</button>
+<header class="bar">
+  <div class="wrap">
+    <a class="wordmark" href="index.html" aria-label="{UI["home"][locale]}">{wordmark}</a>
+    <nav class="bar-actions" aria-label="{UI["main_nav"][locale]}">
+      {lang_switch()}
+      <a class="bar-link" href="{REPOSITORY_URL}" target="_blank" rel="noopener noreferrer"
+         aria-label="{UI["github_aria"][locale]}">{GITHUB_SVG}<span>GitHub</span></a>
+      <a class="btn btn-primary btn-sm" href="{dl}">{dl_label}</a>
+    </nav>
   </div>
 </header>
 
-<div class="mobile-menu" id="mobile-menu" data-open="false">
-  <div class="mobile-menu-head">
-    <span class="wordmark">{wordmark}</span>
-    <button class="nav-toggle mobile-menu-close" type="button"
-      aria-label="{UI["close_menu"][locale]}">{CLOSE_SVG}</button>
-  </div>
-  <nav aria-label="{UI["main_nav"][locale]}">
-    <ul>
-            {menu_items}
-    </ul>
-    {lang_switch()}
-  </nav>
-  <div class="mobile-menu-foot">
-    <p class="status">{version}</p>
-    <p class="meta">macOS 14+ · Apple silicon</p>
-    <a class="btn btn-primary" href="download.html" style="width:100%;margin-top:1rem">{UI["get_cta"][locale]}</a>
-  </div>
-</div>
-
-<div class="shell">
 <main id="main">
 {body_html if body_html.startswith(FULL_BLEED) else f'<div class="wrap"><div class="page-body">{body_html}</div></div>'}
 </main>
 
 <footer class="site-footer">
   <div class="wrap">
-    <div class="footer-grid">
-      <div>
-        <p class="wordmark">{wordmark}</p>
-        <p class="footer-blurb">{UI["footer_blurb"][locale]}</p>
-      </div>
-      <nav aria-label="{UI["footer_nav"][locale]}">
-        <p class="kicker">{UI["footer_nav"][locale]}</p>
-        <ul class="links-2col">
-        {footer_items}
-        </ul>
-      </nav>
-      <div>
-        <p class="kicker">{UI["project"][locale]}</p>
-        <ul>
-          <li><a href="{REPOSITORY_URL}" target="_blank" rel="noopener noreferrer">GitHub</a></li>
-          <li><a href="open-source.html">Open source</a></li>
-          <li><a href="changelog.html">{"Changelog" if locale == "en" else "Journal"}</a></li>
-        </ul>
-        <div class="icon-row">{github_btn}</div>
-      </div>
+    <div class="footer-row">
+      <p class="wordmark">{wordmark}</p>
+      <ul class="footer-links">
+        <li><a href="{REPOSITORY_URL}" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+        <li><a href="https://ahmetbsbnr.com" target="_blank" rel="noopener noreferrer">{"Portfolio" if locale == "en" else "Portfolio"}</a></li>
+          {footer_items}
+      </ul>
     </div>
     <div class="footer-base">
       <p>&copy; {"CoreTend contributors" if locale == "en" else "Les contributeurs de CoreTend"} · Apache-2.0</p>
-      <p>{version}</p>
+      <p>{version} · {"unsigned, not notarized" if locale == "en" else "non signé, non notarisé"}</p>
     </div>
   </div>
 </footer>
-</div>
 </body>
 </html>
 """
@@ -412,8 +356,22 @@ def page_shell(locale, slug, title, body_html, other_locale_slug=None):
 PAGES = {}
 
 
+# Pages the single-page site still publishes. Everything else that used to be
+# a page — features, demos, download, install, verify, docs, support, faq,
+# roadmap, changelog, open-source, security — is retired: the landing page
+# covers the product and the repository covers the detail. Their URLs redirect
+# (see write_vercel_config) so existing links keep working, and their bodies
+# are simply no longer generated rather than left to rot unreviewed.
+#
+# The survivors are the landing page, the 404, and the three legal pages,
+# which are a publication obligation rather than an editorial choice.
+PUBLISHED = {"index", "404", "privacy", "legal", "licenses"}
+
+
 def add(slug, title, body_fn):
-    PAGES[slug] = (title, body_fn)
+    if slug in PUBLISHED:
+        PAGES[slug] = (title, body_fn)
+
 
 
 # ---------------------------------------------------------------- index ---
@@ -730,303 +688,100 @@ def media_exists(relative_path):
 
 
 def home_body(l):
-    t = HOME_TEXT[l]
+    """The landing page. One screen to understand, one button to act.
+
+    Everything technical — checksums, provenance, SBOM, build instructions,
+    Gatekeeper steps — lives on GitHub and in the repository documentation.
+    A landing page that also tries to be a manual ends up being neither."""
     en = l == "en"
+    rel = RELEASE
+    version = ident("marketingVersion", "")
 
-    module_cards = "\n      ".join(
-        f'<li class="card" data-reveal data-reveal-delay="{i * 60}">'
-        f'<p class="kicker">{ROLE_LABEL[m["role"]][l]}</p>'
-        f'<h3>{m[l][0]}</h3><p>{m[l][1]}</p></li>'
-        for i, m in enumerate(HOME_MODULES)
+    # A real href, so the button works with JavaScript disabled. The /download
+    # route redirects to the DMG named by the published manifest, so this never
+    # points at a stale artifact and never needs editing at release time.
+    dl_href = "/download" if rel else f"{REPOSITORY_URL}/releases"
+    dl_label = ("Download for macOS" if en else "Télécharger pour macOS")
+
+    meta_line = (
+        f'{version} · macOS {rel["minimumMacOS"] if rel else "14"}+ · Apple silicon · '
+        + ("Free and open source · Unsigned and not notarized"
+           if en else
+           "Gratuit et open source · Non signé et non notarisé")
     )
 
-    principle_cards = "\n      ".join(
-        f'<li class="card" data-reveal data-reveal-delay="{i * 60}">'
-        f'<h3>{p[l][0]}</h3><p>{p[l][1]}</p></li>'
-        for i, p in enumerate(HOME_PRINCIPLES)
-    )
-
-    faq_items = "\n      ".join(
-        f'<div data-reveal><h3>{q[l][0]}</h3><p>{q[l][1]}</p></div>'
-        for q in HOME_FAQ
-    )
-
-    # The one real recording that exists: Gatekeeper refusing an unsigned
-    # first launch. It plays as a silent loop, no controls, poster reserved.
+    demo = ""
     if media_exists("assets/demos/gatekeeper-blocked.mp4"):
-        demo_section = f"""
-  <section class="section" id="demo">
-    <div class="wrap">
-      <div class="section-head" data-reveal>
-        <p class="kicker">{"Demo" if en else "Démonstration"}</p>
-        <h2>{"What the first launch looks like" if en else "À quoi ressemble le premier lancement"}</h2>
-        <p class="lead">{"CoreTend is unsigned, so macOS blocks the first launch. This is the real dialog, and the two-step way past it — recorded, not described." if en else "CoreTend n’est pas signé : macOS bloque donc le premier lancement. Voici la vraie boîte de dialogue et les deux étapes pour la passer — enregistrées, pas décrites."}</p>
-      </div>
+        demo = f"""
+  <section class="section band" id="demo">
+    <div class="wrap narrow">
+      <h2 class="quiet-title" data-reveal>{"The first launch, unedited" if en else "Le premier lancement, sans montage"}</h2>
       <figure class="media" data-reveal>
-        <span class="loop" style="--ratio:926/880">
-          <video data-loop autoplay muted loop playsinline preload="metadata"
-            poster="../assets/demos/gatekeeper-blocked-poster.webp"
-            width="926" height="880" aria-describedby="demo-desc">
-            <source src="../assets/demos/gatekeeper-blocked.webm" type="video/webm">
-            <source src="../assets/demos/gatekeeper-blocked.mp4" type="video/mp4">
-          </video>
-          <img class="reduced-only" src="../assets/demos/gatekeeper-blocked-poster.webp"
-            width="926" height="880" alt="">
-        </span>
-        <figcaption id="demo-desc">{"macOS refuses the unsigned app, then opens it after Control-click → Open. Silent, looping, no sound track." if en else "macOS refuse l’app non signée, puis l’ouvre après Ctrl-clic → Ouvrir. Silencieux, en boucle, sans bande-son."}</figcaption>
+        {loop_video("gatekeeper-blocked", "926/880", "demo-desc", 926, 880)}
+        <figcaption id="demo-desc">{"CoreTend is unsigned, so macOS blocks it the first time. Control-click, Open, confirm — once." if en else "CoreTend n’est pas signé : macOS le bloque la première fois. Ctrl-clic, Ouvrir, confirmer — une seule fois."}</figcaption>
       </figure>
-      <p data-reveal><a href="install.html">{"Read the full install notes" if en else "Lire les notes d’installation complètes"}</a> · <a href="demos.html">{"All demos" if en else "Toutes les démos"}</a></p>
     </div>
   </section>"""
-    else:
-        demo_section = ""
 
-    setup_media = f"""<ul class="chip-row">
-              <li class="chip">{"Dry run by default" if en else "Simulation par défaut"}</li>
-              <li class="chip">{"Trash, not erase" if en else "Corbeille, pas effacement"}</li>
-              <li class="chip">{"Explicit permissions" if en else "Autorisations explicites"}</li>
-              <li class="chip">{"No background agent" if en else "Aucun agent en arrière-plan"}</li>
-            </ul>"""
-
-    # The application itself — deliberately below the fold, after the brand,
-    # the claim and the status have been established. Smart Care at full
-    # measure where its interface is legible; the menu-bar panel beside it.
-    product_section = f"""
-  <section class="section" id="product">
-    <div class="wrap">
-      <div class="section-head" data-reveal>
-        <p class="kicker">{"The application" if en else "L’application"}</p>
-        <h2>{"What you actually get" if en else "Ce que vous obtenez"}</h2>
-      </div>
-      <div class="shot-pair">
-        <figure class="media" data-reveal>
-          <picture>
-            <source srcset="../assets/app/smart-care.webp" type="image/webp">
-            <img src="../assets/app/smart-care.png" width="2024" height="1488" loading="lazy"
-              sizes="(min-width: 1024px) 660px, 92vw"
-              alt="{"CoreTend Smart Care window: module sidebar on the left, scan summary and the list of findings to review on the right" if en else "Fenêtre Smart Care de CoreTend : barre latérale des modules à gauche, résumé d’analyse et liste des résultats à examiner à droite"}">
-          </picture>
-          <figcaption>{"Smart Care — every scan in one pass, every finding listed before anything is removed." if en else "Smart Care — toutes les analyses en une passe, chaque résultat listé avant toute suppression."}</figcaption>
-        </figure>
-        <figure class="media" data-reveal data-reveal-delay="80">
-          <picture>
-            <source srcset="../assets/app/menu-bar.webp" type="image/webp">
-            <img src="../assets/app/menu-bar.png" width="660" height="806" loading="lazy"
-              sizes="(min-width: 1024px) 300px, 70vw"
-              alt="{"CoreTend menu bar panel showing CPU, memory, free space, thermal state and protection status" if en else "Panneau de la barre des menus CoreTend : processeur, mémoire, espace libre, état thermique et état de la protection"}">
-          </picture>
-          <figcaption>{"The menu bar panel — read-only status, no actions taken from here." if en else "Le panneau de la barre des menus — état en lecture seule, aucune action déclenchée d’ici."}</figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>""" if media_exists("assets/app/smart-care.webp") else ""
+    benefits = [
+        (("Local", "Local"),
+         ("Every scan runs on your Mac. No account, no telemetry, no network calls.",
+          "Chaque analyse s’exécute sur votre Mac. Aucun compte, aucune télémétrie, aucun appel réseau.")),
+        (("Clear", "Clair"),
+         ("Findings are listed, measured and explained. Nothing is removed until you say so.",
+          "Les résultats sont listés, mesurés et expliqués. Rien n’est supprimé sans votre accord.")),
+        (("Open source", "Open source"),
+         ("Apache-2.0. Read the code, build it yourself, check every claim made here.",
+          "Apache-2.0. Lisez le code, compilez-le, vérifiez chaque affirmation faite ici.")),
+    ]
+    benefit_html = "\n        ".join(
+        f'<li data-reveal data-reveal-delay="{i * 70}"><h3>{t[0] if en else t[1]}</h3>'
+        f'<p>{b[0] if en else b[1]}</p></li>'
+        for i, (t, b) in enumerate(benefits)
+    )
 
     return f"""{FULL_BLEED}
-  <section class="hero">
+  <section class="hero" id="get">
+    <div class="halo" aria-hidden="true"></div>
     <div class="wrap">
       <div class="hero-lockup">
-        <span class="hero-mark" data-reveal aria-hidden="true">{MARK_SVG}</span>
-        <h1 class="hero-wordmark">
-          <span class="line"><span>CoreTend</span></span>
-        </h1>
-        <p class="hero-statement" data-reveal data-reveal-delay="60">
-          {"Finds what is filling up your Mac, and removes only what you approve."
-           if en else
-           "Trouve ce qui remplit votre Mac, et ne supprime que ce que vous validez."}
+        <span class="hero-mark" aria-hidden="true">{MARK_SVG}</span>
+        <h1 class="hero-wordmark">CoreTend</h1>
+        <p class="hero-statement">
+          {"Understand your Mac.<br>Keep control." if en else "Comprenez votre Mac.<br>Gardez le contrôle."}
         </p>
-        <p class="hero-facts" data-reveal data-reveal-delay="110">
-          {"Runs entirely on your Mac. No account, no telemetry, no network calls. Optional malware scanning uses ClamAV, installed and owned by you."
-           if en else
-           "S’exécute entièrement sur votre Mac. Aucun compte, aucune télémétrie, aucun appel réseau. L’analyse antivirus optionnelle utilise ClamAV, installé et contrôlé par vous."}
+        <p class="hero-facts">
+          {"Local analysis, storage cleanup, and optional malware scanning with ClamAV." if en else "Analyse locale, entretien du stockage et protection optionnelle avec ClamAV."}
         </p>
-        <div class="btn-row" data-reveal data-reveal-delay="160">
-          <span data-magnetic><a class="btn btn-primary" href="download.html">{t['cta_download']}{ARROW_SVG}</a></span>
-          <a class="btn btn-secondary" href="{REPOSITORY_URL}" target="_blank" rel="noopener noreferrer">{GITHUB_SVG}{"Source code" if en else "Code source"}</a>
+        <div class="cta">
+          <span data-magnetic><a class="btn btn-primary btn-lg" href="{dl_href}">{DOWNLOAD_SVG}{dl_label}</a></span>
+          <a class="btn btn-secondary btn-lg" href="{REPOSITORY_URL}" target="_blank" rel="noopener noreferrer">{GITHUB_SVG}GitHub</a>
         </div>
-        <dl class="hero-status" data-reveal data-reveal-delay="210">
-          <div>
-            <dt>{"Version" if en else "Version"}</dt>
-            <dd>{ident("marketingVersion", "")} · {"release candidate" if en else "release candidate"}</dd>
-          </div>
-          <div>
-            <dt>{"Requires" if en else "Requiert"}</dt>
-            <dd>macOS 14+ · Apple silicon</dd>
-          </div>
-          <div>
-            <dt>{"Apple signature" if en else "Signature Apple"}</dt>
-            <dd class="warn-text">{"Unsigned, not notarized" if en else "Non signé, non notarisé"}</dd>
-          </div>
-          <div>
-            <dt>{"Licence" if en else "Licence"}</dt>
-            <dd>Apache-2.0 · {"free" if en else "gratuit"}</dd>
-          </div>
-        </dl>
+        <p class="hero-meta">{meta_line}</p>
       </div>
     </div>
   </section>
-
-  <section class="section" style="padding-top:0">
-    <div class="wrap">
-      <div class="note warn" data-reveal>
-        <p class="kicker">{t['prerelease_title']}</p>
-        <p>{t['prerelease']}</p>
-      </div>
-    </div>
-  </section>
-
-{product_section}
-  <section class="section" id="trust">
-    <div class="wrap">
-      <div class="section-head" data-reveal>
-        <p class="kicker">{"Verifiable" if en else "Vérifiable"}</p>
-        <h2>{"Every claim on this page has a link" if en else "Chaque affirmation renvoie à une preuve"}</h2>
-        <p class="lead">{"Nothing here asks to be taken on trust. Each row states what is true, and links to the thing that proves it." if en else "Rien ici ne demande d’être cru sur parole. Chaque ligne indique ce qui est vrai et renvoie à ce qui le prouve."}</p>
-      </div>
-      <div class="table-scroll" data-reveal>
-        <table class="facts">
-          <tr>
-            <th>{"Open source" if en else "Open source"}</th>
-            <td>Apache-2.0 — <a href="{REPOSITORY_URL}">{"read the source" if en else "lire le code"}</a></td>
-          </tr>
-          <tr>
-            <th>{"Builds and tests" if en else "Builds et tests"}</th>
-            <td><a href="{REPOSITORY_URL}/actions">{"every run is public" if en else "chaque exécution est publique"}</a></td>
-          </tr>
-          <tr>
-            <th>{"Build provenance" if en else "Provenance du build"}</th>
-            <td><a href="{REPOSITORY_URL}/attestations">{"signed attestations" if en else "attestations signées"}</a> — <a href="verify.html">{"how to verify" if en else "comment vérifier"}</a></td>
-          </tr>
-          <tr>
-            <th>{"Checksums" if en else "Empreintes"}</th>
-            <td><a href="verify.html">SHA-256 {"for every artifact" if en else "pour chaque artefact"}</a></td>
-          </tr>
-          <tr>
-            <th>{"Publisher signature" if en else "Signature de l’éditeur"}</th>
-            <td>{"Signed with key F8473FB09E1DB730" if en else "Signé avec la clé F8473FB09E1DB730"} — <a href="verify.html">{"verify" if en else "vérifier"}</a></td>
-          </tr>
-          <tr>
-            <th>{"Apple signature" if en else "Signature Apple"}</th>
-            <td class="warn-text">{"Unsigned and not notarized" if en else "Non signé et non notarisé"} — <a href="verify.html">{"what that means" if en else "ce que cela implique"}</a></td>
-          </tr>
-          <tr>
-            <th>{"Build it yourself" if en else "Compiler vous-même"}</th>
-            <td><a href="{REPOSITORY_URL}/blob/main/Documentation/BUILDING.md">Documentation/BUILDING.md</a></td>
-          </tr>
-          <tr>
-            <th>{"Runs locally" if en else "Fonctionne localement"}</th>
-            <td>{"No network client is linked into the app — verifiable by grep" if en else "Aucun client réseau n’est lié à l’app — vérifiable au grep"}</td>
-          </tr>
-          <tr>
-            <th>{"Malware scanning" if en else "Analyse antivirus"}</th>
-            <td>{"Optional, via the ClamAV binary you install yourself" if en else "Optionnelle, via le binaire ClamAV que vous installez vous-même"}</td>
-          </tr>
-          <tr>
-            <th>{"Reporting a vulnerability" if en else "Signaler une vulnérabilité"}</th>
-            <td><a href="security.html">{"security policy" if en else "politique de sécurité"}</a></td>
-          </tr>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="modules">
-    <div class="wrap">
-      <div class="section-head" data-reveal>
-        <p class="kicker">{t['modules_label']}</p>
-        <h2>{t['modules_title']}</h2>
-      </div>
-      <ul class="cards cols-3">
-      {module_cards}
+{demo}
+  <section class="section">
+    <div class="wrap narrow">
+      <ul class="benefits">
+        {benefit_html}
       </ul>
     </div>
   </section>
 
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head" data-reveal>
-        <p class="kicker">{t['space_label']}</p>
-        <h2>{t['space_title']}</h2>
-        <p class="lead">{t['space_body']}</p>
+  <section class="section closing">
+    <div class="wrap narrow">
+      <h2 data-reveal>{"Try it on your Mac" if en else "Essayez-le sur votre Mac"}</h2>
+      <div class="cta" data-reveal>
+        <span data-magnetic><a class="btn btn-primary btn-lg" href="{dl_href}">{DOWNLOAD_SVG}{dl_label}</a></span>
+        <a class="btn btn-secondary btn-lg" href="{REPOSITORY_URL}" target="_blank" rel="noopener noreferrer">{GITHUB_SVG}GitHub</a>
       </div>
-    </div>
-  </section>
-{demo_section}
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head" data-reveal>
-        <p class="kicker">{t['principles_label']}</p>
-        <h2>{t['principles_title']}</h2>
-      </div>
-      <ul class="cards cols-3">
-      {principle_cards}
-      </ul>
+      <p class="hero-meta" data-reveal>{meta_line} · <a href="{REPOSITORY_URL}/releases/tag/{rel["tag"] if rel else ""}">{"checksums, signatures and release notes" if en else "empreintes, signatures et notes de version"}</a></p>
     </div>
   </section>
 
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head" data-reveal>
-        <p class="kicker">{t['setup_label']}</p>
-        <h2>{t['setup_title']}</h2>
-      </div>
-      <ul class="rows">
-        <li class="row-item" data-reveal>
-          <div>
-            <p>{t['setup_body']}</p>
-            <ul class="bullets">
-              <li>{"Explains what each permission is for before requesting it." if en else "Explique à quoi sert chaque autorisation avant de la demander."}</li>
-              <li>{"Dry run is the default: findings are listed, nothing is removed." if en else "La simulation est le réglage par défaut : les résultats sont listés, rien n’est supprimé."}</li>
-              <li>{"Nothing is scanned or changed while the assistant runs." if en else "Rien n’est analysé ni modifié pendant l’assistant."}</li>
-            </ul>
-          </div>
-          <div class="row-aside">
-            {setup_media}
-          </div>
-        </li>
-      </ul>
-    </div>
-  </section>
 
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head" data-reveal>
-        <p class="kicker">{t['os_label']}</p>
-        <h2>{t['os_title']}</h2>
-        <p class="lead">{t['os_body']}</p>
-      </div>
-      <div class="btn-row" data-reveal style="margin-top:0">
-        <span data-magnetic><a class="btn btn-primary" href="open-source.html">{t['os_cta']}{ARROW_SVG}</a></span>
-        <a class="btn btn-secondary" href="{REPOSITORY_URL}" target="_blank" rel="noopener noreferrer">GitHub</a>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head" data-reveal>
-        <p class="kicker">{t['faq_label']}</p>
-        <h2>{t['faq_title']}</h2>
-      </div>
-      <div class="stack">
-      {faq_items}
-      </div>
-      <p data-reveal style="margin-top:2rem">{t['faq_more']}</p>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head" data-reveal>
-        <h2>{t['download_title']}</h2>
-        <p class="lead">{t['download_body']}</p>
-      </div>
-      <div class="btn-row" data-reveal style="margin-top:0">
-        <span data-magnetic><a class="btn btn-primary" href="download.html">{DOWNLOAD_SVG}{t['cta_download']}</a></span>
-        <a class="btn btn-secondary" href="documentation.html">Documentation</a>
-      </div>
-      <p class="muted mono" data-reveal style="margin-top:2rem;font-size:.8rem">{t['legal_body']}</p>
-    </div>
-  </section>
 """
 
 
@@ -2248,14 +2003,47 @@ def write_vercel_config():
     if not SITE_INDEXABLE:
         common.append({"key": "X-Robots-Tag", "value": "noindex"})
 
+    # /download is the stable public download URL. It redirects to the exact
+    # DMG named by the manifest of the release GitHub is currently serving, so
+    # the button on the page never points at a stale artifact and never has to
+    # be edited when a release is cut. 302, not 301: the target changes every
+    # release, and a permanent redirect would be cached against us.
+    #
+    # GitHub's own /releases/latest is deliberately not used: it skips
+    # prereleases, and the current release is a release candidate.
+    redirects = [
+        {"source": "/", "destination": "/en/index.html", "permanent": False},
+    ]
+    if RELEASE and RELEASE.get("dmgURL"):
+        redirects.append(
+            {"source": "/download", "destination": RELEASE["dmgURL"], "permanent": False})
+        redirects.append(
+            {"source": "/download/", "destination": RELEASE["dmgURL"], "permanent": False})
+    else:
+        # Never publish a button that 404s: without a known artifact, send
+        # people to the releases index instead.
+        redirects.append({"source": "/download", "permanent": False,
+                          "destination": f"{REPOSITORY_URL}/releases"})
+
+    # Pages retired from the main route. They were part of a multi-page
+    # documentation site; the landing page replaces them and GitHub holds the
+    # detail. Redirect rather than delete, so existing links keep working.
+    for locale in ("en", "fr"):
+        for slug in ("download", "install", "features", "demos", "documentation",
+                     "verify", "support", "faq", "roadmap", "changelog",
+                     "open-source", "security"):
+            redirects.append({
+                "source": f"/{locale}/{slug}.html",
+                "destination": f"/{locale}/index.html",
+                "permanent": False,
+            })
+
     config = {
         "$schema": "https://openapi.vercel.sh/vercel.json",
         "outputDirectory": ".",
         "cleanUrls": False,
         "trailingSlash": False,
-        "redirects": [
-            {"source": "/", "destination": "/en/index.html", "permanent": False},
-        ],
+        "redirects": redirects,
         "headers": [
             {"source": "/(.*)", "headers": common},
             {"source": "/assets/(.*)", "headers": [
