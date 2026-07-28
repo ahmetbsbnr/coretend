@@ -3,27 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="0; url=en/index.html">
 <title>CoreTend</title>
-<script>
-(function () {
-  var lang = (navigator.language || "en").slice(0, 2) === "fr" ? "fr" : "en";
-  location.replace(lang + "/index.html");
-})();
-</script>
-<noscript><meta http-equiv="refresh" content="0; url=en/index.html"></noscript>
-<style>
-  :root{color-scheme:light dark;--bg:#f4f6f3;--text:#0b0f14;--muted:#53606a;--care:#136348}
-  @media(prefers-color-scheme:dark){:root{--bg:#0b0f14;--text:#f4f6f3;--muted:#9ca7b2;--care:#a8e6c1}}
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0}
-  body{display:flex;align-items:center;justify-content:center;background:var(--bg);color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif}
-  p{margin:0;color:var(--muted);font-size:.95rem}
-  a{color:var(--care);text-decoration:none;font-weight:600}
-  a:hover{text-decoration:underline}
-</style>
+<link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
+<main class="wrap">
 <p><a href="en/index.html">English</a> &nbsp;/&nbsp; <a href="fr/index.html">Français</a></p>
+</main>
 </body>
 </html>
