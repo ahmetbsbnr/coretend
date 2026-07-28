@@ -189,6 +189,25 @@ UI = {
 }
 
 
+def asset_url(relative_path):
+    """Content-addressed URL for a site asset.
+
+    Everything under /assets is served `immutable, max-age=31536000`, which
+    is correct only if a given URL never changes meaning. The filenames are
+    stable (style.css, site.js), so without this a redesign ships new HTML
+    that browsers and the CDN happily pair with a year-old stylesheet — which
+    is exactly what happened on the first deploy of this rebuild. Appending a
+    hash of the file's own bytes makes the URL change whenever the content
+    does, so `immutable` stops being a lie."""
+    path = os.path.join(ROOT, relative_path.replace("/", os.sep))
+    try:
+        with open(path, "rb") as handle:
+            digest = hashlib.sha256(handle.read()).hexdigest()[:10]
+    except OSError:
+        return f"../{relative_path}"
+    return f"../{relative_path}?v={digest}"
+
+
 def page_shell(locale, slug, title, body_html, other_locale_slug=None):
     other_slug = other_locale_slug or slug
     version = ident("marketingVersion", "")
@@ -261,8 +280,8 @@ def page_shell(locale, slug, title, body_html, other_locale_slug=None):
 <link rel="preload" href="../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../assets/fonts/plexmono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>{CRITICAL_STYLE}</style>
-<link rel="stylesheet" href="../assets/style.css">
-<script src="../assets/site.js" defer></script>
+<link rel="stylesheet" href="{asset_url("assets/style.css")}">
+<script src="{asset_url("assets/site.js")}" defer></script>
 </head>
 <body class="page-{slug}">
 <a class="skip-link" href="#main">{UI["skip"][locale]}</a>

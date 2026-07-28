@@ -99,7 +99,7 @@ for pattern in 'document.cookie' 'localStorage' 'sessionStorage' 'fetch(' 'XMLHt
   [ -z "$hit" ] || note "client storage or network code found ($pattern) in: $hit"
 done
 bad_scripts=$(grep -rh '<script' "$SITE"/en "$SITE"/fr 2>/dev/null \
-  | grep -vE '^<script src="../assets/site\.js" defer></script>$' || true)
+  | grep -vE "^<script src=\"\.\./assets/site\.js(\?v=[a-f0-9]+)?\" defer></script>$" || true)
 [ -z "$bad_scripts" ] || note "unexpected script element found: $bad_scripts"
 [ -f "$SITE/assets/site.js" ] || note "missing local progressive-enhancement script"
 grep -q 'IntersectionObserver' "$SITE/assets/site.js" \
@@ -147,7 +147,9 @@ for locale in ("en", "fr"):
         for href in re.findall(r'href="([^"]+)"', html):
             if href.startswith(("http://", "https://", "mailto:", "#")):
                 continue
-            target = os.path.normpath(os.path.join(d, href.split("#")[0]))
+            # Strip both the fragment and the cache-busting ?v= query
+            # before resolving: the file on disk carries neither.
+            target = os.path.normpath(os.path.join(d, href.split("#")[0].split("?")[0]))
             if not os.path.exists(target):
                 bad.append(f"{locale}/{name} -> {href}")
         # Fragment links must resolve to a real id on the same page.
