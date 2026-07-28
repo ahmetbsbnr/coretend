@@ -70,9 +70,16 @@ jobs:
         run: |
           npm install --no-save playwright pngjs
           npx playwright install --with-deps chromium
-          ( cd Website && python3 -m http.server 8788 & )
-          sleep 3
           node Scripts/visual/capture.mjs
+
+      - name: Upload visual diffs when the gate fails
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: visual-regression-output
+          path: Scripts/visual/output/
+          retention-days: 7
+          if-no-files-found: ignore
 
       - name: Release/sync consistency gate (fails on version divergence)
         run: bash Scripts/test-release-sync.sh

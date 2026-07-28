@@ -31,17 +31,18 @@
  * geometry assertions in the other gates.
  */
 import { chromium } from 'playwright'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { existsSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { mkdir, readFile, writeFile, stat } from 'node:fs/promises'
+import { existsSync, createReadStream } from 'node:fs'
+import { dirname, join, extname, normalize } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { createServer } from 'node:http'
 import { PNG } from 'pngjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const refFile = join(here, 'reference.json')
 const outDir = join(here, 'output')
 const update = process.argv.includes('--update')
-const base = process.env.VISUAL_BASE_URL ?? 'http://localhost:8788'
+const siteDir = join(here, '..', '..', 'Website')
 
 const VIEWPORTS = [
   { name: '320x568', width: 320, height: 568 },
@@ -110,6 +111,61 @@ function fingerprint(png) {
   return cells
 }
 
+/**
+ * The suite serves the site itself rather than depending on a server someone
+ * started beside it. A `sleep 3` before capturing is a guess about how long a
+ * process takes to bind, and that guess failed in CI: every capture timed out
+ * against a server that was never up. Owning the fixture removes both the
+ * guess and the difference between running this locally and in CI.
+ */
+const TYPES = {
+  '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8', '.json': 'application/json',
+  '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xml',
+  '.woff2': 'font/woff2', '.mp4': 'video/mp4', '.webm': 'video/webm',
+  '.xml': 'application/xml', '.txt': 'text/plain; charset=utf-8',
+  '.vtt': 'text/vtt',
+}
+
+async function startSite() {
+  const server = createServer(async (req, res) => {
+    // Strip the query (the cache-busting ?v=) and refuse traversal.
+    const rel = decodeURIComponent((req.url ?? '/').split('?')[0])
+    const path = join(siteDir, normalize(rel).replace(/^(\.\.[/\\])+/, ''))
+    if (!path.startsWith(siteDir)) { res.writeHead(403).end(); return }
+    try {
+      const info = await stat(path)
+      const file = info.isDirectory() ? join(path, 'index.html') : path
+      const size = info.isDirectory() ? (await stat(file)).size : info.size
+      res.writeHead(200, {
+        'content-type': TYPES[extname(file)] ?? 'application/octet-stream',
+        'content-length': size,
+      })
+      createReadStream(file).pipe(res)
+    } catch {
+      res.writeHead(404).end('not found')
+    }
+  })
+  await new Promise((resolve, reject) => {
+    server.once('error', reject)
+    server.listen(0, '127.0.0.1', resolve)
+  })
+  const { port } = server.address()
+  const origin = `http://127.0.0.1:${port}`
+  // Wait for a real 200 rather than assuming the listen callback is enough.
+  for (let attempt = 0; attempt < 50; attempt++) {
+    try {
+      const probe = await fetch(`${origin}/en/index.html`)
+      if (probe.ok) return { server, origin }
+    } catch {}
+    await new Promise((r) => setTimeout(r, 100))
+  }
+  throw new Error(`the site server never answered on ${origin}`)
+}
+
+const { server, origin } = await startSite()
+const base = process.env.VISUAL_BASE_URL ?? origin
+
 await mkdir(outDir, { recursive: true })
 const references = existsSync(refFile) ? JSON.parse(await readFile(refFile, 'utf8')) : {}
 const next = {}
@@ -165,6 +221,7 @@ for (const vp of VIEWPORTS) {
   await context.close()
 }
 await browser.close()
+await new Promise((r) => server.close(r))
 
 if (update) {
   await writeFile(refFile, `${JSON.stringify(next, null, 1)}\n`)
