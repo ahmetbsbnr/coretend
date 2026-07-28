@@ -197,6 +197,7 @@ struct MCSettingsView: View {
                 Text(L("settings.export_diagnostic_detail"))
                     .font(.caption).foregroundStyle(.secondary)
             }
+            UpdatesView()
             Section(L("settings.about")) {
                 LabeledContent(L("settings.version"), value: appVersion)
                 Button(L("settings.rerun_setup")) {

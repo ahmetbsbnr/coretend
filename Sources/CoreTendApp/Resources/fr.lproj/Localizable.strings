@@ -517,3 +517,26 @@
 "settings.migration_prefs" = "Votre configuration et vos préférences de barre des menus ont été conservées.";
 "settings.migration_source_kept" = "Les fichiers d'origine ont été copiés, pas déplacés — le dossier de la version précédente est toujours sur ce Mac, intact.";
 "settings.migration_failed_detail" = "Les éléments suivants sont restés à leur place et rien n'a été supprimé : %@. Les données de la version précédente sont toujours intactes sur ce Mac.";
+
+/* Updates */
+"updates.title" = "Mises à jour";
+"updates.installed" = "Version installée";
+"updates.automatic" = "Rechercher les mises à jour automatiquement";
+"updates.automatic_detail" = "Désactivé par défaut. Si activé, CoreTend récupère un seul petit fichier public sur coretend.ahmetbsbnr.com pour comparer les numéros de version. Rien vous concernant, ni concernant votre Mac, n'est transmis.";
+"updates.channel" = "Canal";
+"updates.channel_stable" = "Versions stables uniquement";
+"updates.channel_prerelease" = "Inclure les préversions";
+"updates.channel_detail" = "Les utilisateurs en canal stable ne se voient jamais proposer de release candidate ni de bêta.";
+"updates.check_now" = "Rechercher les mises à jour…";
+"updates.up_to_date" = "CoreTend %@ est à jour.";
+"updates.available" = "La version %@ est disponible.";
+"updates.is_prerelease" = "Il s'agit d'une préversion.";
+"updates.unsigned_warning" = "Cette version n'est ni signée ni notarisée par Apple. Vérifiez son empreinte avant de l'ouvrir.";
+"updates.open_release" = "Ouvrir la page de la version";
+"updates.how_to_verify" = "Comment vérifier un téléchargement";
+"updates.no_autoinstall" = "CoreTend ne télécharge ni n'installe jamais une mise à jour de lui-même. Ses versions ne portant aucune signature d'éditeur, il ne peut pas prouver qui a produit un fichier — c'est donc vous qui téléchargez et vérifiez.";
+"updates.error_offline" = "Aucune connexion réseau. CoreTend fonctionne entièrement hors ligne ; cette vérification est facultative.";
+"updates.error_not_configured" = "La recherche de mises à jour n'est pas configurée.";
+"updates.error_cancelled" = "Vérification annulée.";
+"updates.error_malformed" = "Le manifeste de version n'a pas pu être lu.";
+"updates.error_response" = "Le serveur a répondu avec le statut %@.";

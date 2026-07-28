@@ -517,3 +517,26 @@
 "settings.migration_prefs" = "Your setup and menu-bar preferences were carried over.";
 "settings.migration_source_kept" = "The original files were copied, not moved — the previous version's folder is still on this Mac, untouched.";
 "settings.migration_failed_detail" = "The following items were left where they were, and nothing was deleted: %@. The previous version's data is still intact on this Mac.";
+
+/* Updates */
+"updates.title" = "Updates";
+"updates.installed" = "Installed version";
+"updates.automatic" = "Check for updates automatically";
+"updates.automatic_detail" = "Off by default. When on, CoreTend fetches one small public file from coretend.ahmetbsbnr.com to compare version numbers. Nothing about you or your Mac is sent.";
+"updates.channel" = "Channel";
+"updates.channel_stable" = "Stable only";
+"updates.channel_prerelease" = "Include prereleases";
+"updates.channel_detail" = "Stable users are never offered a release candidate or beta.";
+"updates.check_now" = "Check for Updates…";
+"updates.up_to_date" = "CoreTend %@ is up to date.";
+"updates.available" = "Version %@ is available.";
+"updates.is_prerelease" = "This is a prerelease.";
+"updates.unsigned_warning" = "This build is not signed or notarized by Apple. Verify its checksum before opening it.";
+"updates.open_release" = "Open the release page";
+"updates.how_to_verify" = "How to verify a download";
+"updates.no_autoinstall" = "CoreTend never downloads or installs an update by itself. Because its builds carry no publisher signature, it cannot prove who produced a file — so you download and verify it yourself.";
+"updates.error_offline" = "No network connection. CoreTend works fully offline; this check is optional.";
+"updates.error_not_configured" = "Update checking is not configured.";
+"updates.error_cancelled" = "Check cancelled.";
+"updates.error_malformed" = "The release manifest could not be read.";
+"updates.error_response" = "The server replied with status %@.";
