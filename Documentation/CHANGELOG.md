@@ -1,5 +1,35 @@
 # CHANGELOG
 
+## 0.9.1-rc.1 — 2026-07-28 « Release Candidate »
+
+A technically complete release candidate following 0.9.0, built on the
+`feat/coretend-media-integration` branch. **Not a stable 1.0**: the trademark
+watch item on `COREXTEND` (see `Documentation/CORETEND_TRADEMARK_SCREENING.md`)
+is unresolved and `legalReviewStatus` remains `pending` — no legal or
+trademark clearance is claimed. Still unsigned and not notarized (no Apple
+Developer identity available in this environment); see
+`Documentation/SIGNING_NOTARIZATION.md` for the fully prepared, unexecuted
+procedure.
+
+- fix: website language-splash page (`Website/index.html`) flashed unstyled
+  default blue links before redirecting — now inlines all CSS/JS so first
+  paint is always fully styled, immune to cache state, connection speed, and
+  works correctly with JavaScript disabled via `<noscript>`.
+- fix: `swift test` failed on machines without Xcode.app (`no such module
+  'Testing'`) — added `swift-testing` as an explicit, pinned SwiftPM
+  dependency (test targets only, zero footprint in the shipped binary).
+  Verified reproducible on a clean clone; 296/296 tests pass.
+- fix: the ClamAV onboarding step's "Recheck" could never detect a binary
+  installed mid-onboarding, since the scanner was captured once at view-model
+  init. Added `recheckClamAV()` plus a "Copy Install Command" button.
+- docs: `Documentation/DEPENDENCIES.md` and `Scripts/check-licenses.sh`
+  updated to reflect the new swift-testing dependency (was previously
+  documented as zero external dependencies).
+- chore: repository branch cleanup — 14 stale/redundant local branches
+  removed after verifying (via `git diff`/`git log`) each was fully contained
+  in the reference branch; all preserved via `backup/*` tags and a full
+  `git bundle`.
+
 ## 0.9.0 — 2026-07-27 « First Public Release »
 
 The first release available to anyone. It is a **public beta**, and it is

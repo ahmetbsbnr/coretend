@@ -1,14 +1,14 @@
 {
   "project": "CoreTend",
-  "version": "0.9.0",
-  "phase": "0.8.1 \u2014 CoreTend Rebrand & Workspace Migration: the product is renamed from MacCare Local to CoreTend throughout (sources, targets, bundle identifier com.ahmetbsbnr.coretend, resources, localisations, scripts, workflows, docs, site, legal metadata); pre-rename user data and preferences migrate on first launch, copy-only and reversible; the Living System palette and a complete brand asset set replace the placeholder identity; the product site is rebuilt bilingual on that identity with zero external requests; both repositories now live in the WEBSITE/ workspace as independent git repos. Publication remains blocked: legalReviewStatus is 'pending', no trademark search has been run, and legal identity plus a security contact are still undefined. Local only: no push, no deploy, no public release.",
+  "version": "0.9.1-rc.1",
+  "phase": "0.9.1-rc.1 — Release candidate: technically complete build following the 0.9.0 first public release. Preliminary trademark screening was run and recorded in Documentation/CORETEND_TRADEMARK_SCREENING.md (status PRELIMINARY_CLEARANCE_NO_HIGH_CONFLICT_FOUND, with COREXTEND on WATCH); this is NOT a completed legal review. legalReviewStatus remains 'pending' and no trademark clearance is claimed as final. Code signing and notarization are prepared (scripts, entitlements, documented commands) but not executed — no Apple Developer identity is available in this environment. A stable 1.0 tag is intentionally withheld until legal review concludes.",
   "toolchain": "Swift 6.3.2 via CommandLineTools (no Xcode installed)",
   "build_system": "SwiftPM; app bundle assembled by Scripts/package-local.sh",
   "test_framework": "Swift Testing (XCTest unavailable without Xcode); run via Scripts/test.sh",
   "done": [
     "SafetyCore (validator, center, dry-run default, re-validation, audit)",
     "ScanCore (streaming rules, exclusions, min-size/age, matches filter)",
-    "DuplicateEngine (size\u2192partial\u2192SHA-256, hard-link aware, keeper suggestion)",
+    "DuplicateEngine (size→partial→SHA-256, hard-link aware, keeper suggestion)",
     "SpaceLensEngine + treemap UI (breadcrumbs, list fallback, Other bucket)",
     "SimilarImagesEngine (Vision feature prints, greedy clustering, lazy QuickLook thumbnails, photoslibrary excluded)",
     "Persistence (SQLite actor, migrations, activity/exclusions/settings)",
@@ -28,9 +28,9 @@
     "Accessibility labels on selection toggles",
     "create-test-volume.sh",
     "Orbital Ecology design system (MCColor/MCSpacing/MCMotion/MCFont, composants, Reduce Motion/Transparency)",
-    "Core Bloom: ic\u00f4ne app native (CG->icns 16-1024), menu bar template, hero Smart Care",
-    "Sidebar group\u00e9e, Smart Care hero \u00e9tats r\u00e9els, Performance metric cards, onboarding 4 \u00e9tapes",
-    "Scripts/capture.sh (QA visuelle bundle r\u00e9el), captures Before/After",
+    "Core Bloom: icône app native (CG->icns 16-1024), menu bar template, hero Smart Care",
+    "Sidebar groupée, Smart Care hero états réels, Performance metric cards, onboarding 4 étapes",
+    "Scripts/capture.sh (QA visuelle bundle réel), captures Before/After",
     "Open source foundation: LICENSE/LICENSES/NOTICE/COPYRIGHT/TRADEMARKS/THIRD_PARTY_NOTICES, public README, SECURITY/CODE_OF_CONDUCT/CONTRIBUTING/GOVERNANCE/SUPPORT/DEPENDENCIES, full user+developer docs, .github community files + CI/security workflows, public Scripts/ (bootstrap/doctor/repository-doctor/clean/uninstall-local/check-licenses/check-private-data/check-placeholders)",
     "Reproducible clean-clone build verification (git archive into a fresh temp dir): doctor/test/debug build/release build/package/launch all pass; found and fixed package-local.sh not copying the SwiftPM resource bundle (localization strings) into the .app, which had silently fallen back to a machine-specific absolute .build path",
     "PRIVACY.md added at repo root (was linked from README, previously missing)",
@@ -39,14 +39,14 @@
     "0.8.1 Final Canonical Audit Resync: CURRENT state files rewritten from real runs, 0.8.0 snapshots frozen under Documentation/AuditHistory/0.8.0/, test + feature inventories regenerated (274/57, 46 features), pre-implementation migration docs archived and superseded by Documentation/CORETEND_DATA_MIGRATION_REPORT.md, and seven documentation/gate defects found and fixed (listed in Documentation/CURRENT_PROJECT_STATE.json)"
   ],
   "partial": [
-    "Protection: engine unavailable on this machine (ClamAV not installed) \u2014 UI states it honestly; the FSEvents watch layer around it is fully built and tested (off by default, never auto-quarantines)",
+    "Protection: engine unavailable on this machine (ClamAV not installed) — UI states it honestly; the FSEvents watch layer around it is fully built and tested (off by default, never auto-quarantines)",
     "Cleanup/Smart Care findings list still capped at 5000 rows for display (by design); totals are computed from uncapped stream",
-    "Full FR/EN \u00d7 light/dark \u00d7 every-module visual-QA capture campaign not run this phase \u2014 a real display IS available in this environment (re-confirmed this phase) and one verification capture succeeded, but the sidebar-navigation capture path needs a follow-up fix; see VISUAL_QA.md / KNOWN_LIMITATIONS.md. Code-level checks (tokens, Reduce Motion/Transparency, structural clear/dark) are done."
+    "Full FR/EN × light/dark × every-module visual-QA capture campaign not run this phase — a real display IS available in this environment (re-confirmed this phase) and one verification capture succeeded, but the sidebar-navigation capture path needs a follow-up fix; see VISUAL_QA.md / KNOWN_LIMITATIONS.md. Code-level checks (tokens, Reduce Motion/Transparency, structural clear/dark) are done."
   ],
   "not_started": [
     "Privileged helper (blocked: no Developer ID signing)",
     "Additional locales beyond en/fr",
-    "iOS Simulator / Trash-empty / Mail-attachment / broken-LaunchAgent cleanup rules (deliberately deferred with documented safety rationale \u2014 REQUIREMENTS_DECISION_HISTORY.md)",
+    "iOS Simulator / Trash-empty / Mail-attachment / broken-LaunchAgent cleanup rules (deliberately deferred with documented safety rationale — REQUIREMENTS_DECISION_HISTORY.md)",
     "browser history/cookie removal in Privacy Cleaner (deliberately deferred: db corruption risk)"
   ],
   "tests": {
@@ -56,21 +56,21 @@
     "testCasesExecuted": 278,
     "note": "Re-run and regenerated 2026-07-25 via Scripts/generate-test-inventory.sh during the 0.8.1 Final Canonical Audit Resync, at commit 92cbd08. Supersedes the 0.8.0 figure of 250/55, which is preserved in Documentation/AuditHistory/0.8.0/. 274 counts @Test functions (what the Swift Testing summary reports); one is parameterized over 4 arguments, so 278 test cases execute."
   },
-  "last_build": "Debug + Release both green, 0 project warnings (verified from real output this phase: zero \"warning:\" lines in either build). All dev gates green: doctor, repository-doctor (private-data/licenses/placeholders/feature-inventory/settings-matrix-no-orphan/markdown-links), legacy brand references (fixed this phase \u2014 it was red at 92cbd08 and now scans case-insensitively), brand assets, brand clearance --engineering, website, workspace layout, workspace migration readiness, version consistency, test-uninstall, test-distribution, test-release-manifest, verify-download. Publication gates (check-publish-readiness, check-brand-clearance --publication) are RED by design \u2014 see Documentation/HUMAN_BLOCKERS.md.",
+  "last_build": "Debug + Release both green, 0 project warnings (verified from real output this phase: zero \"warning:\" lines in either build). All dev gates green: doctor, repository-doctor (private-data/licenses/placeholders/feature-inventory/settings-matrix-no-orphan/markdown-links), legacy brand references (fixed this phase — it was red at 92cbd08 and now scans case-insensitively), brand assets, brand clearance --engineering, website, workspace layout, workspace migration readiness, version consistency, test-uninstall, test-distribution, test-release-manifest, verify-download. Publication gates (check-publish-readiness, check-brand-clearance --publication) are RED by design — see Documentation/HUMAN_BLOCKERS.md.",
   "next_goals": [
     "Capture real Documentation/VisualAudit/After screenshots for all modules on a machine with an attached display, then finish VISUAL_QA.md checkboxes (pure environment follow-up, not a code task)",
     "Resolve Documentation/HUMAN_BLOCKERS.md items (maintainer handle, repo URL, security contact, legal identity, domain) before any real public push or website deploy",
     "Replace website's homepage screenshot placeholder with a real capture before any production deploy",
-    "Migrer les vues restantes vers tokens MC* si de nouveaux \u00e9crans arrivent"
+    "Migrer les vues restantes vers tokens MC* si de nouveaux écrans arrivent"
   ],
   "limitations": [
     "No Xcode: ad-hoc signing only, no UI tests, no notarization",
     "ClamAV optional runtime dependency",
-    "helper privil\u00e9gi\u00e9 bloqu\u00e9 (signature)",
-    "Visual QA is PARTIAL_BLOCKED_ENVIRONMENT, not display-blocked: a real display is available and a plain launch capture works, but module-targeted capture hits an intermittent AppleScript -1719 and the full FR/EN x light/dark x every-module campaign is unrun. The older \"no attached display\" claim is stale \u2014 see KNOWN_LIMITATIONS.md.",
+    "helper privilégié bloqué (signature)",
+    "Visual QA is PARTIAL_BLOCKED_ENVIRONMENT, not display-blocked: a real display is available and a plain launch capture works, but module-targeted capture hits an intermittent AppleScript -1719 and the full FR/EN x light/dark x every-module campaign is unrun. The older \"no attached display\" claim is stale — see KNOWN_LIMITATIONS.md.",
     "Scripts/test-distribution.sh launch smoke test is not isolated from the real per-user store; there is no store-path override in Sources/. Launch-and-quit only, no destructive operation.",
     "Scripts/test-release-manifest.sh rebuilds the release artifacts as a side effect and cannot be green at the commit that records its own output."
   ],
   "open_decisions": [],
-  "git_commit": "92cbd08bc3cd1d8ad0513391cbd7552b520f09fe is the commit the audited 0.8.1 artifacts were built from. The final repository HEAD of the resync phase is recorded post-hoc in the audit package manifest \u2014 a commit cannot contain its own SHA. See Documentation/CURRENT_AUDIT_STATE.json."
+  "git_commit": "92cbd08bc3cd1d8ad0513391cbd7552b520f09fe is the commit the audited 0.8.1 artifacts were built from. The final repository HEAD of the resync phase is recorded post-hoc in the audit package manifest — a commit cannot contain its own SHA. See Documentation/CURRENT_AUDIT_STATE.json."
 }
