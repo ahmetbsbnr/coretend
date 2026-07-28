@@ -30,7 +30,7 @@
 <link rel="preload" href="../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../assets/fonts/plexmono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>html,body{background:#f4f4f0;color:#17191d}</style>
-<link rel="stylesheet" href="../assets/style.css?v=827defbc2f">
+<link rel="stylesheet" href="../assets/style.css?v=742f71bc81">
 <script src="../assets/site.js?v=31d5b80c43" defer></script>
 </head>
 <body class="page-index">
@@ -115,39 +115,47 @@
 <!--full-bleed-->
   <section class="hero">
     <div class="wrap">
-      <div class="hero-grid">
-        <div>
-          <p class="kicker" data-reveal>Native care for macOS</p>
-          <h1>
-            <span class="line"><span>Your Mac,</span></span>
-            <span class="line"><span class="accent">lighter.</span></span>
-          </h1>
-          <div data-reveal data-reveal-delay="80">
-            <p class="tagline">A lighter Mac. Always under control.</p>
-            <p class="subline">Local only · No account · No telemetry · Open source</p>
-            <p class="intro">See what weighs down your Mac, review every finding, and decide what leaves.</p>
-          </div>
-          <div class="btn-row" data-reveal data-reveal-delay="160">
-            <span data-magnetic><a class="btn btn-primary" href="download.html">Download CoreTend<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <div class="hero-lockup">
+        <span class="hero-mark" data-reveal aria-hidden="true"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
+<path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--cobalt)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--ink)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--line-strong)" stroke-width="38.4" stroke-linecap="round"/>
+<circle cx="256" cy="256" r="61.44" fill="var(--cobalt)"/>
+</svg></span>
+        <h1 class="hero-wordmark">
+          <span class="line"><span>CoreTend</span></span>
+        </h1>
+        <p class="hero-statement" data-reveal data-reveal-delay="60">
+          Finds what is filling up your Mac, and removes only what you approve.
+        </p>
+        <p class="hero-facts" data-reveal data-reveal-delay="110">
+          Runs entirely on your Mac. No account, no telemetry, no network calls. Optional malware scanning uses ClamAV, installed and owned by you.
+        </p>
+        <div class="btn-row" data-reveal data-reveal-delay="160">
+          <span data-magnetic><a class="btn btn-primary" href="download.html">Download CoreTend<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
 <path d="M5 12h13M12 5l7 7-7 7"/></svg></a></span>
-            <a class="btn btn-secondary" href="#modules">See how it works</a>
-          </div>
+          <a class="btn btn-secondary" href="https://github.com/ahmetbsbnr/coretend" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+<path fill="currentColor" d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.02c-3.23.7-3.91-1.37-3.91-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.41-1.26.74-1.55-2.58-.29-5.29-1.29-5.29-5.73 0-1.27.45-2.3 1.2-3.11-.12-.29-.52-1.47.11-3.07 0 0 .98-.31 3.16 1.19a10.95 10.95 0 0 1 5.76 0c2.19-1.5 3.16-1.19 3.16-1.19.63 1.6.23 2.78.11 3.07.75.81 1.2 1.84 1.2 3.11 0 4.45-2.72 5.43-5.31 5.72.42.36.79 1.07.79 2.16v3.02c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .7Z"/>
+</svg>Source code</a>
         </div>
-        <figure class="hero-figure" data-reveal data-reveal-delay="120">
-          <div class="hero-frame">
-            <picture>
-          <source srcset="../assets/app/menu-bar.webp" type="image/webp">
-          <img src="../assets/app/menu-bar.png" width="660" height="806"
-            sizes="(min-width: 1024px) 360px, 78vw"
-            alt="CoreTend menu bar panel showing CPU, memory, free space, thermal state and protection status"
-            fetchpriority="high">
-        </picture>
+        <dl class="hero-status" data-reveal data-reveal-delay="210">
+          <div>
+            <dt>Version</dt>
+            <dd>0.9.1-rc.1 · release candidate</dd>
           </div>
-          <figcaption class="hero-caption">
-            <span class="live">0.9.1-rc.1</span>
-            <span>macOS 14+ · Apple silicon</span>
-          </figcaption>
-        </figure>
+          <div>
+            <dt>Requires</dt>
+            <dd>macOS 14+ · Apple silicon</dd>
+          </div>
+          <div>
+            <dt>Apple signature</dt>
+            <dd class="warn-text">Unsigned, not notarized</dd>
+          </div>
+          <div>
+            <dt>Licence</dt>
+            <dd>Apache-2.0 · free</dd>
+          </div>
+        </dl>
       </div>
     </div>
   </section>
@@ -162,17 +170,32 @@
   </section>
 
 
-  <section class="section" style="padding-top:0">
+  <section class="section" id="product">
     <div class="wrap">
-      <figure class="media" data-reveal>
-        <picture>
-          <source srcset="../assets/app/smart-care.webp" type="image/webp">
-          <img src="../assets/app/smart-care.png" width="2024" height="1488" loading="lazy"
-            sizes="(min-width: 1024px) 1004px, 92vw"
-            alt="CoreTend Smart Care window: module sidebar on the left, scan summary and the list of findings to review on the right">
-        </picture>
-        <figcaption>Smart Care — every scan in one pass, every finding listed before anything is removed.</figcaption>
-      </figure>
+      <div class="section-head" data-reveal>
+        <p class="kicker">The application</p>
+        <h2>What you actually get</h2>
+      </div>
+      <div class="shot-pair">
+        <figure class="media" data-reveal>
+          <picture>
+            <source srcset="../assets/app/smart-care.webp" type="image/webp">
+            <img src="../assets/app/smart-care.png" width="2024" height="1488" loading="lazy"
+              sizes="(min-width: 1024px) 660px, 92vw"
+              alt="CoreTend Smart Care window: module sidebar on the left, scan summary and the list of findings to review on the right">
+          </picture>
+          <figcaption>Smart Care — every scan in one pass, every finding listed before anything is removed.</figcaption>
+        </figure>
+        <figure class="media" data-reveal data-reveal-delay="80">
+          <picture>
+            <source srcset="../assets/app/menu-bar.webp" type="image/webp">
+            <img src="../assets/app/menu-bar.png" width="660" height="806" loading="lazy"
+              sizes="(min-width: 1024px) 300px, 70vw"
+              alt="CoreTend menu bar panel showing CPU, memory, free space, thermal state and protection status">
+          </picture>
+          <figcaption>The menu bar panel — read-only status, no actions taken from here.</figcaption>
+        </figure>
+      </div>
     </div>
   </section>
   <section class="section" id="modules">
