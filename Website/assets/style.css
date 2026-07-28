@@ -113,6 +113,13 @@
   --measure: 1100px;
   --bar: 4rem;
 
+  /* Logo sizes are tokens, not per-site-guesses. The mark's viewBox is tight
+     to the artwork, so these numbers are the rendered artwork size. */
+  --mark-nav: 1.5rem; /* mobile top bar */
+  --mark-rail: 1.625rem; /* desktop rail */
+  --mark-footer: 1.5rem;
+  --mark-hero: 3.5rem; /* first visual reference on the page */
+
   --quick: 200ms;
   --expo: cubic-bezier(0.16, 1, 0.3, 1);
 
@@ -697,16 +704,25 @@ hr {
   padding: 1.5rem 1.25rem;
 }
 
-/* The mark. Sized by font context, never stretched. */
+/* The mark. Square by token, never stretched: width and height are always
+   set together from the same value, so no context can distort it. */
 .mark {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: var(--mark-nav);
+  height: var(--mark-nav);
   flex: none;
   display: block;
 }
 .rail-brand .mark {
-  width: 1.625rem;
-  height: 1.625rem;
+  width: var(--mark-rail);
+  height: var(--mark-rail);
+}
+.site-footer .mark {
+  width: var(--mark-footer);
+  height: var(--mark-footer);
+}
+.hero-mark .mark {
+  width: var(--mark-hero);
+  height: var(--mark-hero);
 }
 
 /* -------------------------------------------------------------- page body */
@@ -772,106 +788,90 @@ hr {
     padding-block: 4rem;
   }
 }
-.hero-grid {
-  display: grid;
-  gap: 3rem;
-  width: 100%;
+/* Brand lockup: mark, wordmark, claim, facts, actions, status. Deliberately
+   one column at every width — the first screen is the identity, so nothing
+   competes with it for horizontal space, and it reads the same at 320px as
+   at 1728px. The application window starts in #product, below this. */
+.hero-lockup {
+  max-width: 62ch;
 }
-@media (min-width: 1024px) {
-  .hero-grid {
-    grid-template-columns: 7fr 5fr;
-    gap: 3.5rem;
-    align-items: center;
-  }
-}
-.hero h1 {
-  margin-top: 1.5rem;
-  font-size: clamp(2.9rem, 10.5vw, 6rem);
-}
-@media (min-width: 1024px) {
-  .hero h1 {
-    font-size: clamp(3.4rem, 5.5vw, 5rem);
-  }
-}
-.hero h1 .line {
+.hero-mark {
   display: block;
-  overflow: hidden;
-  padding-bottom: 0.04em;
+  margin-bottom: 2rem;
 }
-.hero h1 .line > span {
-  display: block;
+/* The wordmark IS the h1: the product name is the page's first heading. */
+/* The floor has to let "CoreTend" fit inside 320px minus the wrap padding —
+   at a 3.2rem floor the wordmark overflowed and forced a horizontal scroll
+   on the narrowest supported screen. 12vw takes over above ~375px. */
+.hero-wordmark {
+  margin: 0;
+  font-size: clamp(2.25rem, 12vw, 6.5rem);
+  letter-spacing: -0.035em;
 }
-.hero h1 .accent {
-  color: var(--cobalt);
-}
-.hero .tagline {
-  margin-top: 1.75rem;
-  font-size: 1.25rem;
+.hero-statement {
+  margin: 2rem 0 0;
+  max-width: 24ch;
+  font-size: clamp(1.5rem, 3.4vw, 2.1rem);
+  line-height: 1.2;
   font-weight: 600;
+  letter-spacing: -0.02em;
   color: var(--ink);
-  max-width: none;
+  text-wrap: balance;
 }
-.hero .subline {
-  margin-top: 0.5rem;
-  max-width: 52ch;
-  font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 0.78rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--dim);
-}
-.hero .intro {
-  margin-top: 1.25rem;
-  max-width: 50ch;
-  font-size: 1.125rem;
+.hero-facts {
+  margin: 1.5rem 0 0;
+  max-width: 56ch;
+  font-size: 1.0625rem;
   line-height: 1.7;
   color: var(--sub);
 }
-.hero-figure {
-  margin: 0;
-  width: 100%;
-  max-width: 380px;
+.hero .btn-row {
+  margin-top: 2.5rem;
 }
-@media (min-width: 1024px) {
-  .hero-figure {
-    margin-left: auto;
-    margin-right: 0;
+
+/* Honest status, stated up front rather than buried on the download page. */
+.hero-status {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem 2rem;
+  margin: 3rem 0 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+@media (min-width: 768px) {
+  .hero-status {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
-.hero-frame {
-  border: 1px solid var(--line-strong);
-  background: var(--card);
-  padding: 0.75rem;
-}
-.hero-frame img,
-.hero-frame video {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-.hero-caption {
-  margin-top: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
+.hero-status dt {
   font-family: "IBM Plex Mono", ui-monospace, monospace;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
   color: var(--dim);
 }
-.hero-caption .live {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.hero-status dd {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
   font-weight: 500;
   color: var(--ink);
 }
-.hero-caption .live::before {
-  content: "";
-  width: 0.375rem;
-  height: 0.375rem;
-  border-radius: 50%;
-  background: var(--ok);
+.hero-status .warn-text {
+  color: var(--err);
+}
+
+/* Two real screenshots, side by side, below the fold. */
+.shot-pair {
+  display: grid;
+  gap: 1.5rem;
+  align-items: start;
+}
+@media (min-width: 900px) {
+  .shot-pair {
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+  }
 }
 
 /* ------------------------------------------------------------------ cards */

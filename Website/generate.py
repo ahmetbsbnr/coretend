@@ -715,19 +715,6 @@ def home_body(l):
         for q in HOME_FAQ
     )
 
-    # Hero visual: the menu-bar panel. It is portrait (660x806), which is the
-    # same figure proportion the portfolio hero uses, and it is a small,
-    # self-contained piece of UI that stays legible at column width. The wide
-    # Smart Care window gets its own full-measure section below instead of
-    # being shrunk into a side column where its text would be unreadable.
-    hero_media = f"""<picture>
-          <source srcset="../assets/app/menu-bar.webp" type="image/webp">
-          <img src="../assets/app/menu-bar.png" width="660" height="806"
-            sizes="(min-width: 1024px) 360px, 78vw"
-            alt="{"CoreTend menu bar panel showing CPU, memory, free space, thermal state and protection status" if en else "Panneau de la barre des menus CoreTend : processeur, mémoire, espace libre, état thermique et état de la protection"}"
-            fetchpriority="high">
-        </picture>""" if media_exists("assets/app/menu-bar.webp") else f'<div>{MARK_SVG}</div>'
-
     # The one real recording that exists: Gatekeeper refusing an unsigned
     # first launch. It plays as a silent loop, no controls, poster reserved.
     if media_exists("assets/demos/gatekeeper-blocked.mp4"):
@@ -765,52 +752,79 @@ def home_body(l):
               <li class="chip">{"No background agent" if en else "Aucun agent en arrière-plan"}</li>
             </ul>"""
 
-    # The wide Smart Care window, at full measure where its interface is
-    # actually legible, in the same hairline frame as every other figure.
+    # The application itself — deliberately below the fold, after the brand,
+    # the claim and the status have been established. Smart Care at full
+    # measure where its interface is legible; the menu-bar panel beside it.
     product_section = f"""
-  <section class="section" style="padding-top:0">
+  <section class="section" id="product">
     <div class="wrap">
-      <figure class="media" data-reveal>
-        <picture>
-          <source srcset="../assets/app/smart-care.webp" type="image/webp">
-          <img src="../assets/app/smart-care.png" width="2024" height="1488" loading="lazy"
-            sizes="(min-width: 1024px) 1004px, 92vw"
-            alt="{"CoreTend Smart Care window: module sidebar on the left, scan summary and the list of findings to review on the right" if en else "Fenêtre Smart Care de CoreTend : barre latérale des modules à gauche, résumé d’analyse et liste des résultats à examiner à droite"}">
-        </picture>
-        <figcaption>{"Smart Care — every scan in one pass, every finding listed before anything is removed." if en else "Smart Care — toutes les analyses en une passe, chaque résultat listé avant toute suppression."}</figcaption>
-      </figure>
+      <div class="section-head" data-reveal>
+        <p class="kicker">{"The application" if en else "L’application"}</p>
+        <h2>{"What you actually get" if en else "Ce que vous obtenez"}</h2>
+      </div>
+      <div class="shot-pair">
+        <figure class="media" data-reveal>
+          <picture>
+            <source srcset="../assets/app/smart-care.webp" type="image/webp">
+            <img src="../assets/app/smart-care.png" width="2024" height="1488" loading="lazy"
+              sizes="(min-width: 1024px) 660px, 92vw"
+              alt="{"CoreTend Smart Care window: module sidebar on the left, scan summary and the list of findings to review on the right" if en else "Fenêtre Smart Care de CoreTend : barre latérale des modules à gauche, résumé d’analyse et liste des résultats à examiner à droite"}">
+          </picture>
+          <figcaption>{"Smart Care — every scan in one pass, every finding listed before anything is removed." if en else "Smart Care — toutes les analyses en une passe, chaque résultat listé avant toute suppression."}</figcaption>
+        </figure>
+        <figure class="media" data-reveal data-reveal-delay="80">
+          <picture>
+            <source srcset="../assets/app/menu-bar.webp" type="image/webp">
+            <img src="../assets/app/menu-bar.png" width="660" height="806" loading="lazy"
+              sizes="(min-width: 1024px) 300px, 70vw"
+              alt="{"CoreTend menu bar panel showing CPU, memory, free space, thermal state and protection status" if en else "Panneau de la barre des menus CoreTend : processeur, mémoire, espace libre, état thermique et état de la protection"}">
+          </picture>
+          <figcaption>{"The menu bar panel — read-only status, no actions taken from here." if en else "Le panneau de la barre des menus — état en lecture seule, aucune action déclenchée d’ici."}</figcaption>
+        </figure>
+      </div>
     </div>
   </section>""" if media_exists("assets/app/smart-care.webp") else ""
 
     return f"""{FULL_BLEED}
   <section class="hero">
     <div class="wrap">
-      <div class="hero-grid">
-        <div>
-          <p class="kicker" data-reveal>{t['hero_eyebrow']}</p>
-          <h1>
-            <span class="line"><span>{"Your Mac," if en else "Votre Mac,"}</span></span>
-            <span class="line"><span class="accent">{"lighter." if en else "plus léger."}</span></span>
-          </h1>
-          <div data-reveal data-reveal-delay="80">
-            <p class="tagline">{SIGNATURE[l]}</p>
-            <p class="subline">{"Local only · No account · No telemetry · Open source" if en else "100 % local · Sans compte · Sans télémétrie · Open source"}</p>
-            <p class="intro">{t['hero_body']}</p>
-          </div>
-          <div class="btn-row" data-reveal data-reveal-delay="160">
-            <span data-magnetic><a class="btn btn-primary" href="download.html">{t['cta_download']}{ARROW_SVG}</a></span>
-            <a class="btn btn-secondary" href="#modules">{t['cta_how']}</a>
-          </div>
+      <div class="hero-lockup">
+        <span class="hero-mark" data-reveal aria-hidden="true">{MARK_SVG}</span>
+        <h1 class="hero-wordmark">
+          <span class="line"><span>CoreTend</span></span>
+        </h1>
+        <p class="hero-statement" data-reveal data-reveal-delay="60">
+          {"Finds what is filling up your Mac, and removes only what you approve."
+           if en else
+           "Trouve ce qui remplit votre Mac, et ne supprime que ce que vous validez."}
+        </p>
+        <p class="hero-facts" data-reveal data-reveal-delay="110">
+          {"Runs entirely on your Mac. No account, no telemetry, no network calls. Optional malware scanning uses ClamAV, installed and owned by you."
+           if en else
+           "S’exécute entièrement sur votre Mac. Aucun compte, aucune télémétrie, aucun appel réseau. L’analyse antivirus optionnelle utilise ClamAV, installé et contrôlé par vous."}
+        </p>
+        <div class="btn-row" data-reveal data-reveal-delay="160">
+          <span data-magnetic><a class="btn btn-primary" href="download.html">{t['cta_download']}{ARROW_SVG}</a></span>
+          <a class="btn btn-secondary" href="{REPOSITORY_URL}" target="_blank" rel="noopener noreferrer">{GITHUB_SVG}{"Source code" if en else "Code source"}</a>
         </div>
-        <figure class="hero-figure" data-reveal data-reveal-delay="120">
-          <div class="hero-frame">
-            {hero_media}
+        <dl class="hero-status" data-reveal data-reveal-delay="210">
+          <div>
+            <dt>{"Version" if en else "Version"}</dt>
+            <dd>{ident("marketingVersion", "")} · {"release candidate" if en else "release candidate"}</dd>
           </div>
-          <figcaption class="hero-caption">
-            <span class="live">{ident("marketingVersion", "")}</span>
-            <span>macOS 14+ · Apple silicon</span>
-          </figcaption>
-        </figure>
+          <div>
+            <dt>{"Requires" if en else "Requiert"}</dt>
+            <dd>macOS 14+ · Apple silicon</dd>
+          </div>
+          <div>
+            <dt>{"Apple signature" if en else "Signature Apple"}</dt>
+            <dd class="warn-text">{"Unsigned, not notarized" if en else "Non signé, non notarisé"}</dd>
+          </div>
+          <div>
+            <dt>{"Licence" if en else "Licence"}</dt>
+            <dd>Apache-2.0 · {"free" if en else "gratuit"}</dd>
+          </div>
+        </dl>
       </div>
     </div>
   </section>
