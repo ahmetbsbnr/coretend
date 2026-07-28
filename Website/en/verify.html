@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FAQ — CoreTend</title>
+<title>Verify a download — CoreTend</title>
 <meta name="description" content="Local, transparent and reversible care for macOS.">
 <meta name="color-scheme" content="light">
 <!-- Indexing follows siteIndexable in the identity file. It stays noindex
@@ -11,13 +11,13 @@
      is a promise nobody can keep. robots.txt is generated from the same flag,
      so the two can never disagree. -->
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="https://coretend.ahmetbsbnr.com/en/faq.html">
-<meta property="og:url" content="https://coretend.ahmetbsbnr.com/en/faq.html">
-<link rel="alternate" hreflang="en" href="https://coretend.ahmetbsbnr.com/en/faq.html">
-<link rel="alternate" hreflang="fr" href="https://coretend.ahmetbsbnr.com/fr/faq.html">
+<link rel="canonical" href="https://coretend.ahmetbsbnr.com/en/verify.html">
+<meta property="og:url" content="https://coretend.ahmetbsbnr.com/en/verify.html">
+<link rel="alternate" hreflang="en" href="https://coretend.ahmetbsbnr.com/en/verify.html">
+<link rel="alternate" hreflang="fr" href="https://coretend.ahmetbsbnr.com/fr/verify.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="CoreTend">
-<meta property="og:title" content="FAQ — CoreTend">
+<meta property="og:title" content="Verify a download — CoreTend">
 <meta property="og:description" content="A lighter Mac. Always under control. Local, transparent and reversible care for macOS.">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="https://coretend.ahmetbsbnr.com/assets/brand/opengraph.png">
@@ -33,7 +33,7 @@
 <link rel="stylesheet" href="../assets/style.css?v=742f71bc81">
 <script src="../assets/site.js?v=31d5b80c43" defer></script>
 </head>
-<body class="page-faq">
+<body class="page-verify">
 <a class="skip-link" href="#main">Skip to content</a>
 
 <aside class="rail">
@@ -54,7 +54,7 @@
             <li><a class="nav-link" href="download.html">Download</a></li>
             <li><a class="nav-link" href="documentation.html">Docs</a></li>
     </ul>
-    <span class="lang-switch" role="group" aria-label="Language"><a href="../fr/faq.html" hreflang="fr" lang="fr">FR</a><span class="sep" aria-hidden="true">|</span><span aria-current="true">EN</span></span>
+    <span class="lang-switch" role="group" aria-label="Language"><a href="../fr/verify.html" hreflang="fr" lang="fr">FR</a><span class="sep" aria-hidden="true">|</span><span aria-current="true">EN</span></span>
   </nav>
   <div class="rail-foot">
     <p class="status">0.9.1-rc.1</p>
@@ -74,7 +74,7 @@
 <circle cx="256" cy="256" r="61.44" fill="var(--cobalt)"/>
 </svg><span>CoreTend</span></a>
   <div class="topbar-actions">
-    <span class="lang-switch" role="group" aria-label="Language"><a href="../fr/faq.html" hreflang="fr" lang="fr">FR</a><span class="sep" aria-hidden="true">|</span><span aria-current="true">EN</span></span>
+    <span class="lang-switch" role="group" aria-label="Language"><a href="../fr/verify.html" hreflang="fr" lang="fr">FR</a><span class="sep" aria-hidden="true">|</span><span aria-current="true">EN</span></span>
     <button class="nav-toggle" type="button" aria-expanded="false"
       aria-controls="mobile-menu" aria-label="Open menu"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
 <path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
@@ -101,7 +101,7 @@
             <li><a class="nav-link" href="download.html">Download</a></li>
             <li><a class="nav-link" href="documentation.html">Docs</a></li>
     </ul>
-    <span class="lang-switch" role="group" aria-label="Language"><a href="../fr/faq.html" hreflang="fr" lang="fr">FR</a><span class="sep" aria-hidden="true">|</span><span aria-current="true">EN</span></span>
+    <span class="lang-switch" role="group" aria-label="Language"><a href="../fr/verify.html" hreflang="fr" lang="fr">FR</a><span class="sep" aria-hidden="true">|</span><span aria-current="true">EN</span></span>
   </nav>
   <div class="mobile-menu-foot">
     <p class="status">0.9.1-rc.1</p>
@@ -112,12 +112,70 @@
 
 <div class="shell">
 <main id="main">
-<div class="wrap"><div class="page-body"><h1>FAQ</h1>
-<h3>Does CoreTend send any data anywhere?</h3><p>No. It has no telemetry, no analytics, no network calls related to its core operation. Everything runs locally.</p>
-<h3>Do I need an account?</h3><p>No account, no subscription, ever.</p>
-<h3>Are deletions permanent?</h3><p>By default, no — items go to the Trash so you can recover them.</p>
-<h3>Is this a full antivirus?</h3><p>No. The optional Protection module is a heuristic local scan aid (via ClamAV), never a guaranteed security product.</p>
-<p>See <code>Documentation/FAQ.md</code> for the full list.</p></div></div>
+<div class="wrap"><div class="page-body"><h1>Verify your download</h1>
+<p class="lead">Four independent checks, from the weakest to the strongest.
+Each one answers a different question, and none of them replaces the others.</p>
+
+<h2>1. Checksum — did the file arrive intact?</h2>
+<p>A SHA-256 checksum proves the bytes you have are the bytes that were
+published. It proves nothing about <em>who</em> published them: anyone who can
+replace the file can also replace the checksum next to it. Use it to rule out
+a truncated or corrupted download.</p>
+
+<div class="table-scroll">
+<table class="facts">
+  <tr><th>Version</th><td>0.9.1-rc.1 (beta)</td></tr>
+  <tr><th>Source commit</th><td><code>014fc8d4f0e415c3919a2dfa201edd75735b5df8</code></td></tr>
+  <tr><th>Built</th><td>2026-07-28T12:55:23Z</td></tr>
+  <tr><th>CoreTend-0.9.1-rc.1-arm64-unsigned.zip</th><td><code>51366f478b3500efedb31e07ac542a0877c7accf7e06ac3e875d0184098d5912</code></td></tr>
+  <tr><th>CoreTend-0.9.1-rc.1-arm64-unsigned.dmg</th><td><code>ce91f31785ac176281a2d5dbc20c3d8621b8286d1f3462b09a48166d29e19416</code></td></tr>
+</table>
+</div>
+<p><a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.1/CoreTend-0.9.1-rc.1-arm64-unsigned.zip">CoreTend-0.9.1-rc.1-arm64-unsigned.zip</a> · <a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.1/CoreTend-0.9.1-rc.1-arm64-unsigned.dmg">CoreTend-0.9.1-rc.1-arm64-unsigned.dmg</a> ·
+<a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.1/SHA256SUMS">SHA256SUMS</a> · <a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.1/latest.json">latest.json</a></p>
+<pre><code>shasum -a 256 CoreTend-0.9.1-rc.1-arm64-unsigned.zip</code></pre>
+<p>Compare the output with the value above, or verify the whole set at once:</p>
+<pre><code>shasum -a 256 -c SHA256SUMS</code></pre>
+
+<h2>2. Build provenance — where did this file come from?</h2>
+<p>Every published artifact carries a GitHub build attestation: a signed
+statement that this exact file was produced by this repository's release
+workflow, from a named commit. Verify it with the GitHub CLI:</p>
+<pre><code>gh attestation verify CoreTend-&lt;version&gt;-arm64-unsigned.dmg --repo ahmetbsbnr/coretend</code></pre>
+<p>This is stronger than a checksum: it ties the file to a build, a commit and
+a workflow you can read.</p>
+
+<h2>3. Minisign — is this the publisher's signature?</h2>
+<p><strong>Not currently available.</strong> Minisign signing is implemented in
+the release workflow but stays inactive until a real signing key exists.
+No <code>.minisig</code> files are published, and none should be trusted if
+they appear from anywhere else. When signing is enabled, the public key will
+be published in this repository and the command will be:</p>
+<pre><code>minisign -Vm CoreTend-&lt;version&gt;-arm64-unsigned.dmg -P &lt;public key&gt;</code></pre>
+
+<h2>4. Build it yourself</h2>
+<p>The strongest check available here: compile the source and compare.
+See <a href="https://github.com/ahmetbsbnr/coretend/blob/main/Documentation/BUILDING.md">Documentation/BUILDING.md</a>
+for the tested procedure.</p>
+
+<h2>Why macOS warns you</h2>
+<p>CoreTend is <strong>not signed with an Apple Developer ID and not
+notarized</strong>, because that requires a paid Apple Developer Program
+membership this project does not have. macOS will therefore refuse to open it
+on first launch. That warning is accurate: macOS genuinely cannot verify the
+developer.</p>
+<p>The two official ways to open it anyway, both of which keep every system
+protection in place:</p>
+<ul>
+  <li>Control-click (or right-click) CoreTend in Finder, choose <strong>Open</strong>, then confirm.</li>
+  <li>Or open <strong>System Settings → Privacy &amp; Security</strong>, find the blocked-app message, and choose <strong>Open Anyway</strong>.</li>
+</ul>
+<p>Do this once per copy. <strong>Never disable Gatekeeper</strong> to install
+this or anything else — no application is worth turning off a system-wide
+protection, and nothing on this site will ever ask you to.</p>
+<p>Notarization would remove the warning entirely by having Apple scan and
+countersign the build. It is a different guarantee from every check above.</p>
+</div></div>
 </main>
 
 <footer class="site-footer">

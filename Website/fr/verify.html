@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Installer CoreTend — CoreTend</title>
+<title>Vérifier un téléchargement — CoreTend</title>
 <meta name="description" content="Entretien local, transparent et réversible pour macOS.">
 <meta name="color-scheme" content="light">
 <!-- Indexing follows siteIndexable in the identity file. It stays noindex
@@ -11,13 +11,13 @@
      is a promise nobody can keep. robots.txt is generated from the same flag,
      so the two can never disagree. -->
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="https://coretend.ahmetbsbnr.com/fr/install.html">
-<meta property="og:url" content="https://coretend.ahmetbsbnr.com/fr/install.html">
-<link rel="alternate" hreflang="en" href="https://coretend.ahmetbsbnr.com/en/install.html">
-<link rel="alternate" hreflang="fr" href="https://coretend.ahmetbsbnr.com/fr/install.html">
+<link rel="canonical" href="https://coretend.ahmetbsbnr.com/fr/verify.html">
+<meta property="og:url" content="https://coretend.ahmetbsbnr.com/fr/verify.html">
+<link rel="alternate" hreflang="en" href="https://coretend.ahmetbsbnr.com/en/verify.html">
+<link rel="alternate" hreflang="fr" href="https://coretend.ahmetbsbnr.com/fr/verify.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="CoreTend">
-<meta property="og:title" content="Installer CoreTend — CoreTend">
+<meta property="og:title" content="Vérifier un téléchargement — CoreTend">
 <meta property="og:description" content="Un Mac plus léger. Toujours sous contrôle. Entretien local, transparent et réversible pour macOS.">
 <meta property="og:locale" content="fr_FR">
 <meta property="og:image" content="https://coretend.ahmetbsbnr.com/assets/brand/opengraph.png">
@@ -33,7 +33,7 @@
 <link rel="stylesheet" href="../assets/style.css?v=742f71bc81">
 <script src="../assets/site.js?v=31d5b80c43" defer></script>
 </head>
-<body class="page-install">
+<body class="page-verify">
 <a class="skip-link" href="#main">Aller au contenu</a>
 
 <aside class="rail">
@@ -54,7 +54,7 @@
             <li><a class="nav-link" href="download.html">Télécharger</a></li>
             <li><a class="nav-link" href="documentation.html">Docs</a></li>
     </ul>
-    <span class="lang-switch" role="group" aria-label="Langue"><span aria-current="true">FR</span><span class="sep" aria-hidden="true">|</span><a href="../en/install.html" hreflang="en" lang="en">EN</a></span>
+    <span class="lang-switch" role="group" aria-label="Langue"><span aria-current="true">FR</span><span class="sep" aria-hidden="true">|</span><a href="../en/verify.html" hreflang="en" lang="en">EN</a></span>
   </nav>
   <div class="rail-foot">
     <p class="status">0.9.1-rc.1</p>
@@ -74,7 +74,7 @@
 <circle cx="256" cy="256" r="61.44" fill="var(--cobalt)"/>
 </svg><span>CoreTend</span></a>
   <div class="topbar-actions">
-    <span class="lang-switch" role="group" aria-label="Langue"><span aria-current="true">FR</span><span class="sep" aria-hidden="true">|</span><a href="../en/install.html" hreflang="en" lang="en">EN</a></span>
+    <span class="lang-switch" role="group" aria-label="Langue"><span aria-current="true">FR</span><span class="sep" aria-hidden="true">|</span><a href="../en/verify.html" hreflang="en" lang="en">EN</a></span>
     <button class="nav-toggle" type="button" aria-expanded="false"
       aria-controls="mobile-menu" aria-label="Ouvrir le menu"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
 <path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
@@ -101,7 +101,7 @@
             <li><a class="nav-link" href="download.html">Télécharger</a></li>
             <li><a class="nav-link" href="documentation.html">Docs</a></li>
     </ul>
-    <span class="lang-switch" role="group" aria-label="Langue"><span aria-current="true">FR</span><span class="sep" aria-hidden="true">|</span><a href="../en/install.html" hreflang="en" lang="en">EN</a></span>
+    <span class="lang-switch" role="group" aria-label="Langue"><span aria-current="true">FR</span><span class="sep" aria-hidden="true">|</span><a href="../en/verify.html" hreflang="en" lang="en">EN</a></span>
   </nav>
   <div class="mobile-menu-foot">
     <p class="status">0.9.1-rc.1</p>
@@ -112,60 +112,73 @@
 
 <div class="shell">
 <main id="main">
-<div class="wrap"><div class="page-body">
-<h1>Installer CoreTend</h1>
-<p class="lead">Du téléchargement à la première analyse sans réduire
-globalement la sécurité du Mac.</p>
-<div class="warning-banner"><p><strong>CoreTend 0.9.0 n'est ni signé ni
-notarisé.</strong> macOS bloquera la première ouverture normale. Les étapes
-ci-dessous autorisent uniquement cette copie de CoreTend.</p></div>
+<div class="wrap"><div class="page-body"><h1>Vérifier votre téléchargement</h1>
+<p class="lead">Quatre contrôles indépendants, du plus faible au plus fort.
+Chacun répond à une question différente, et aucun ne remplace les autres.</p>
 
-<figure class="media">
-  <span class="loop" style="--ratio:926/880">
-          <video data-loop autoplay muted loop playsinline preload="metadata"
-            poster="../assets/demos/gatekeeper-blocked-poster.webp"
-            width="926" height="880" aria-describedby="install-gatekeeper-description">
-            <source src="../assets/demos/gatekeeper-blocked.webm" type="video/webm">
-            <source src="../assets/demos/gatekeeper-blocked.mp4" type="video/mp4">
-            <track kind="captions" srclang="en" label="Visual description" src="../assets/demos/gatekeeper-blocked.vtt" default>
-          </video>
-          <img class="reduced-only" src="../assets/demos/gatekeeper-blocked-poster.webp"
-            width="926" height="880" alt="">
-        </span>
-  <figcaption id="install-gatekeeper-description">Enregistrement silencieux du véritable avertissement macOS de première ouverture. Les libellés peuvent varier selon macOS.</figcaption>
-</figure>
-<ol class="install-steps">
-  <li><h2>Vérifier la compatibilité</h2><p>Menu Pomme → À propos de ce Mac. La
-  version disponible exige une puce Apple et macOS 14 ou ultérieur.</p></li>
-  <li><h2>Télécharger le DMG</h2><p>Choisissez le DMG sur la
-  <a href="download.html">page Télécharger</a>. Le ZIP est une alternative.</p></li>
-  <li><h2>Copier vers Applications</h2><p>Ouvrez le DMG, glissez CoreTend vers
-  Applications, puis éjectez l'image disque.</p></li>
-  <li><h2>Autoriser cette application une fois</h2><p>Dans Applications,
-  Contrôle-cliquez CoreTend et choisissez <strong>Ouvrir</strong>. Si votre
-  version de macOS propose plutôt une option nommant CoreTend dans Réglages
-  Système → Confidentialité et sécurité, utilisez-la. Les libellés varient
-  selon macOS.</p>
-  <details><summary>Pourquoi cette étape ?</summary><p>La bêta n'a pas de
-  signature Developer ID et n'est pas notarisée. Ce choix limité à l'app
-  n'est pas une certification. Ne désactivez jamais globalement Gatekeeper
-  ou SIP.</p></details></li>
-  <li><h2>Commencer en simulation</h2><p>Lisez l'introduction, conservez la
-  simulation activée et lancez Smart Care. L'analyse présente un aperçu avant
-  toute action approuvée.</p></li>
-</ol>
-<h2>Facultatif : vérifier le téléchargement</h2>
-<p>SHA-256 confirme que le fichier est identique à celui publié. Il ne
-remplace ni signature ni notarisation, et la source du checksum doit elle-même
-être fiable.</p>
-<pre><code>shasum -a 256 ~/Downloads/CoreTend-0.9.0-arm64-unsigned.dmg
-cd ~/Downloads
-shasum -a 256 -c SHA256SUMS</code></pre>
-<p>Le DMG doit produire
-<code>f2fbc7840ac4a5509836a495c51e72e6cfd52ef24e6cbdd792fa8404bd3f6c8d</code>.
-Si la valeur diffère, supprimez le fichier, retéléchargez-le et ne l'ouvrez
-pas.</p>
-<p>Besoin d'aide ? Consultez <a href="support.html">Assistance et dépannage</a>.</p>
+<h2>1. Empreinte — le fichier est-il arrivé intact ?</h2>
+<p>Une empreinte SHA-256 prouve que les octets que vous avez sont ceux qui ont
+été publiés. Elle ne prouve rien sur <em>qui</em> les a publiés : quiconque peut
+remplacer le fichier peut aussi remplacer l’empreinte affichée à côté. Elle sert
+à écarter un téléchargement tronqué ou corrompu.</p>
+
+<div class="table-scroll">
+<table class="facts">
+  <tr><th>Version</th><td>0.9.1-rc.1 (beta)</td></tr>
+  <tr><th>Commit source</th><td><code>014fc8d4f0e415c3919a2dfa201edd75735b5df8</code></td></tr>
+  <tr><th>Compilé le</th><td>2026-07-28T12:55:23Z</td></tr>
+  <tr><th>CoreTend-0.9.1-rc.1-arm64-unsigned.zip</th><td><code>51366f478b3500efedb31e07ac542a0877c7accf7e06ac3e875d0184098d5912</code></td></tr>
+  <tr><th>CoreTend-0.9.1-rc.1-arm64-unsigned.dmg</th><td><code>ce91f31785ac176281a2d5dbc20c3d8621b8286d1f3462b09a48166d29e19416</code></td></tr>
+</table>
+</div>
+<p><a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.1/CoreTend-0.9.1-rc.1-arm64-unsigned.zip">CoreTend-0.9.1-rc.1-arm64-unsigned.zip</a> · <a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.1/CoreTend-0.9.1-rc.1-arm64-unsigned.dmg">CoreTend-0.9.1-rc.1-arm64-unsigned.dmg</a> ·
+<a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.1/SHA256SUMS">SHA256SUMS</a> · <a href="https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.1/latest.json">latest.json</a></p>
+<pre><code>shasum -a 256 CoreTend-0.9.1-rc.1-arm64-unsigned.zip</code></pre>
+<p>Comparez la sortie à la valeur ci-dessus, ou vérifiez tout d’un coup :</p>
+<pre><code>shasum -a 256 -c SHA256SUMS</code></pre>
+
+<h2>2. Provenance du build — d’où vient ce fichier ?</h2>
+<p>Chaque artefact publié porte une attestation de build GitHub : une
+déclaration signée indiquant que ce fichier exact a été produit par le workflow
+de publication de ce dépôt, à partir d’un commit nommé. Vérifiez-la avec la
+CLI GitHub :</p>
+<pre><code>gh attestation verify CoreTend-&lt;version&gt;-arm64-unsigned.dmg --repo ahmetbsbnr/coretend</code></pre>
+<p>C’est plus fort qu’une empreinte : cela relie le fichier à un build, un
+commit et un workflow que vous pouvez lire.</p>
+
+<h2>3. Minisign — est-ce la signature de l’éditeur ?</h2>
+<p><strong>Actuellement indisponible.</strong> La signature Minisign est
+implémentée dans le workflow de publication mais reste inactive tant qu’aucune
+clé de signature réelle n’existe. Aucun fichier <code>.minisig</code> n’est
+publié, et aucun ne doit être considéré comme fiable s’il apparaît par une
+autre voie. Lorsque la signature sera activée, la clé publique sera publiée
+dans ce dépôt et la commande sera :</p>
+<pre><code>minisign -Vm CoreTend-&lt;version&gt;-arm64-unsigned.dmg -P &lt;clé publique&gt;</code></pre>
+
+<h2>4. Compilez vous-même</h2>
+<p>Le contrôle le plus fort disponible ici : compilez les sources et comparez.
+Voir <a href="https://github.com/ahmetbsbnr/coretend/blob/main/Documentation/BUILDING.md">Documentation/BUILDING.md</a>
+pour la procédure testée.</p>
+
+<h2>Pourquoi macOS vous avertit</h2>
+<p>CoreTend n’est <strong>ni signé avec un Developer ID Apple, ni
+notarisé</strong>, car cela exige une adhésion payante au Apple Developer
+Program dont ce projet ne dispose pas. macOS refusera donc de l’ouvrir au
+premier lancement. Cet avertissement est exact : macOS ne peut réellement pas
+vérifier le développeur.</p>
+<p>Les deux méthodes officielles pour l’ouvrir malgré tout, qui conservent
+toutes les protections du système :</p>
+<ul>
+  <li>Ctrl-clic (ou clic droit) sur CoreTend dans le Finder, choisir <strong>Ouvrir</strong>, puis confirmer.</li>
+  <li>Ou ouvrir <strong>Réglages Système → Confidentialité et sécurité</strong>, repérer le message d’application bloquée, et choisir <strong>Ouvrir quand même</strong>.</li>
+</ul>
+<p>Une seule fois par copie. <strong>Ne désactivez jamais Gatekeeper</strong>
+pour installer ceci ou autre chose — aucune application ne vaut la
+désactivation d’une protection système, et rien sur ce site ne vous le
+demandera jamais.</p>
+<p>La notarisation supprimerait entièrement l’avertissement, Apple analysant et
+contresignant le build. Elle repose sur un mécanisme distinct de tous les contrôles
+ci-dessus.</p>
 </div></div>
 </main>
 
