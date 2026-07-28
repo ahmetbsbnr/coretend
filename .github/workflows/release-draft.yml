@@ -101,21 +101,21 @@ jobs:
         run: Scripts/check-placeholders.sh || true
 
       - name: Upload ZIP
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: CoreTend-${{ inputs.version }}-arm64-unsigned-zip
           path: Release/CoreTend-${{ inputs.version }}-arm64-unsigned.zip
           retention-days: 14
 
       - name: Upload DMG
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: CoreTend-${{ inputs.version }}-arm64-unsigned-dmg
           path: Release/CoreTend-${{ inputs.version }}-arm64-unsigned.dmg
           retention-days: 14
 
       - name: Upload checksums and provenance manifest
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: CoreTend-${{ inputs.version }}-checksums-and-manifest
           path: |
