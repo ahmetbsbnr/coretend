@@ -15,6 +15,7 @@ import base64
 import hashlib
 import json
 import os
+import re
 
 
 def html_escape(value):
@@ -190,6 +191,40 @@ UI = {
 }
 
 
+
+def _minify_css(text):
+    """Strip comments and collapse whitespace.
+
+    The authored stylesheet is heavily commented on purpose — it documents the
+    design system — but visitors should not pay for the prose. The source file
+    stays the one humans edit; this produces the bytes the browser gets.
+    Deliberately conservative: it never reorders, merges or renames anything.
+    """
+    text = re.sub(r"/\*.*?\*/", "", text, flags=re.S)
+    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r"\s*([{}:;,>~+])\s*", r"\1", text)
+    text = re.sub(r";}", "}", text)
+    return text.strip()
+
+
+def write_minified_assets():
+    """Emit the minified copies the pages actually reference."""
+    # CSS only. A regex-based JavaScript minifier eventually eats a string
+    # or a regex literal — this one did, shipping a SyntaxError to production
+    # for a 2 KB saving. site.js is served as authored.
+    pairs = [("assets/style.css", "assets/style.min.css", _minify_css)]
+    for src, dst, fn in pairs:
+        src_path = os.path.join(ROOT, src)
+        dst_path = os.path.join(ROOT, dst)
+        with open(src_path, encoding="utf-8") as handle:
+            original = handle.read()
+        minified = fn(original)
+        with open(dst_path, "w", encoding="utf-8") as handle:
+            handle.write(minified)
+        saved = len(original.encode()) - len(minified.encode())
+        print(f"  {dst}: {len(minified.encode())} bytes ({saved} saved)")
+
+
 def asset_url(relative_path):
     """Content-addressed URL for a site asset.
 
@@ -281,7 +316,7 @@ def page_shell(locale, slug, title, body_html, other_locale_slug=None):
 <link rel="preload" href="../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../assets/fonts/plexmono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>{CRITICAL_STYLE}</style>
-<link rel="stylesheet" href="{asset_url("assets/style.css")}">
+<link rel="stylesheet" href="{asset_url("assets/style.min.css")}">
 <script src="{asset_url("assets/site.js")}" defer></script>
 </head>
 <body class="page-{slug}">
@@ -725,7 +760,7 @@ def home_body(l):
       <div class="section-head" data-reveal>
         <p class="kicker">{"Demo" if en else "Démonstration"}</p>
         <h2>{"What the first launch looks like" if en else "À quoi ressemble le premier lancement"}</h2>
-        <p class="lead">{"CoreTend is unsigned, so macOS blocks the first launch. This is the real dialog, and the two-step way past it — recorded, not described." if en else "CoreTend n\u2019est pas signé : macOS bloque donc le premier lancement. Voici la vraie boîte de dialogue et les deux étapes pour la passer — enregistrées, pas décrites."}</p>
+        <p class="lead">{"CoreTend is unsigned, so macOS blocks the first launch. This is the real dialog, and the two-step way past it — recorded, not described." if en else "CoreTend n’est pas signé : macOS bloque donc le premier lancement. Voici la vraie boîte de dialogue et les deux étapes pour la passer — enregistrées, pas décrites."}</p>
       </div>
       <figure class="media" data-reveal>
         <span class="loop" style="--ratio:926/880">
@@ -738,9 +773,9 @@ def home_body(l):
           <img class="reduced-only" src="../assets/demos/gatekeeper-blocked-poster.webp"
             width="926" height="880" alt="">
         </span>
-        <figcaption id="demo-desc">{"macOS refuses the unsigned app, then opens it after Control-click → Open. Silent, looping, no sound track." if en else "macOS refuse l\u2019app non signée, puis l\u2019ouvre après Ctrl-clic → Ouvrir. Silencieux, en boucle, sans bande-son."}</figcaption>
+        <figcaption id="demo-desc">{"macOS refuses the unsigned app, then opens it after Control-click → Open. Silent, looping, no sound track." if en else "macOS refuse l’app non signée, puis l’ouvre après Ctrl-clic → Ouvrir. Silencieux, en boucle, sans bande-son."}</figcaption>
       </figure>
-      <p data-reveal><a href="install.html">{"Read the full install notes" if en else "Lire les notes d\u2019installation complètes"}</a> · <a href="demos.html">{"All demos" if en else "Toutes les démos"}</a></p>
+      <p data-reveal><a href="install.html">{"Read the full install notes" if en else "Lire les notes d’installation complètes"}</a> · <a href="demos.html">{"All demos" if en else "Toutes les démos"}</a></p>
     </div>
   </section>"""
     else:
@@ -845,7 +880,7 @@ def home_body(l):
       <div class="section-head" data-reveal>
         <p class="kicker">{"Verifiable" if en else "Vérifiable"}</p>
         <h2>{"Every claim on this page has a link" if en else "Chaque affirmation renvoie à une preuve"}</h2>
-        <p class="lead">{"Nothing here asks to be taken on trust. Each row states what is true, and links to the thing that proves it." if en else "Rien ici ne demande d\u2019être cru sur parole. Chaque ligne indique ce qui est vrai et renvoie à ce qui le prouve."}</p>
+        <p class="lead">{"Nothing here asks to be taken on trust. Each row states what is true, and links to the thing that proves it." if en else "Rien ici ne demande d’être cru sur parole. Chaque ligne indique ce qui est vrai et renvoie à ce qui le prouve."}</p>
       </div>
       <div class="table-scroll" data-reveal>
         <table class="facts">
@@ -866,8 +901,8 @@ def home_body(l):
             <td><a href="verify.html">SHA-256 {"for every artifact" if en else "pour chaque artefact"}</a></td>
           </tr>
           <tr>
-            <th>{"Publisher signature" if en else "Signature de l\u2019éditeur"}</th>
-            <td>{"Minisign prepared, not yet active — no key exists" if en else "Minisign préparé, pas encore actif — aucune clé n\u2019existe"}</td>
+            <th>{"Publisher signature" if en else "Signature de l’éditeur"}</th>
+            <td>{"Minisign prepared, not yet active — no key exists" if en else "Minisign préparé, pas encore actif — aucune clé n’existe"}</td>
           </tr>
           <tr>
             <th>{"Apple signature" if en else "Signature Apple"}</th>
@@ -879,7 +914,7 @@ def home_body(l):
           </tr>
           <tr>
             <th>{"Runs locally" if en else "Fonctionne localement"}</th>
-            <td>{"No network client is linked into the app — verifiable by grep" if en else "Aucun client réseau n\u2019est lié à l\u2019app — vérifiable au grep"}</td>
+            <td>{"No network client is linked into the app — verifiable by grep" if en else "Aucun client réseau n’est lié à l’app — vérifiable au grep"}</td>
           </tr>
           <tr>
             <th>{"Malware scanning" if en else "Analyse antivirus"}</th>
@@ -940,8 +975,8 @@ def home_body(l):
             <p>{t['setup_body']}</p>
             <ul class="bullets">
               <li>{"Explains what each permission is for before requesting it." if en else "Explique à quoi sert chaque autorisation avant de la demander."}</li>
-              <li>{"Dry run is the default: findings are listed, nothing is removed." if en else "La simulation est le réglage par défaut : les résultats sont listés, rien n\u2019est supprimé."}</li>
-              <li>{"Nothing is scanned or changed while the assistant runs." if en else "Rien n\u2019est analysé ni modifié pendant l\u2019assistant."}</li>
+              <li>{"Dry run is the default: findings are listed, nothing is removed." if en else "La simulation est le réglage par défaut : les résultats sont listés, rien n’est supprimé."}</li>
+              <li>{"Nothing is scanned or changed while the assistant runs." if en else "Rien n’est analysé ni modifié pendant l’assistant."}</li>
             </ul>
           </div>
           <div class="row-aside">
@@ -1370,7 +1405,7 @@ def verify_body(l):
 <a href="{base}/SHA256SUMS">SHA256SUMS</a> · <a href="{base}/latest.json">latest.json</a></p>"""
         checksum_cmd = f"shasum -a 256 {zip_name}"
     else:
-        facts = f"""<div class="note info"><p>{"No release is published yet, so there is no checksum to show. The values below appear automatically once a release exists — they are read from the generated manifest, never typed in by hand." if en else "Aucune version n\u2019est encore publiée : il n\u2019y a donc aucune empreinte à afficher. Les valeurs apparaissent automatiquement dès qu\u2019une version existe — elles sont lues depuis le manifeste généré, jamais saisies à la main."}</p></div>"""
+        facts = f"""<div class="note info"><p>{"No release is published yet, so there is no checksum to show. The values below appear automatically once a release exists — they are read from the generated manifest, never typed in by hand." if en else "Aucune version n’est encore publiée : il n’y a donc aucune empreinte à afficher. Les valeurs apparaissent automatiquement dès qu’une version existe — elles sont lues depuis le manifeste généré, jamais saisies à la main."}</p></div>"""
         checksum_cmd = "shasum -a 256 CoreTend-<version>-arm64-unsigned.zip"
 
     if en:
@@ -2223,6 +2258,7 @@ def write_vercel_config():
 
 
 def main():
+    write_minified_assets()
     for locale in ("en", "fr"):
         out_dir = os.path.join(ROOT, locale)
         os.makedirs(out_dir, exist_ok=True)

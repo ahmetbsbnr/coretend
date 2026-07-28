@@ -66,6 +66,14 @@ jobs:
           test -d "build/CoreTend.app" || { echo "app bundle not found"; exit 1; }
           test -f "build/CoreTend.app/Contents/Info.plist" || { echo "Info.plist missing"; exit 1; }
 
+      - name: Visual regression (72 captures, 9 viewports, FR+EN)
+        run: |
+          npm install --no-save playwright pngjs
+          npx playwright install --with-deps chromium
+          ( cd Website && python3 -m http.server 8788 & )
+          sleep 3
+          node Scripts/visual/capture.mjs
+
       - name: Release/sync consistency gate (fails on version divergence)
         run: bash Scripts/test-release-sync.sh
 
