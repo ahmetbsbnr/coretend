@@ -16,6 +16,9 @@ let package = Package(
         .library(name: "AppDiscovery", targets: ["AppDiscovery"]),
         .library(name: "MalwareEngine", targets: ["MalwareEngine"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-testing.git", from: "0.12.0"),
+    ],
     targets: [
         .executableTarget(
             name: "CoreTendApp",
@@ -26,18 +29,18 @@ let package = Package(
         .target(name: "SystemMetrics"),
         .target(name: "AppDiscovery"),
         .target(name: "MalwareEngine"),
-        .testTarget(name: "DesignSystemTests", dependencies: ["DesignSystem"]),
-        .testTarget(name: "MalwareEngineTests", dependencies: ["MalwareEngine"]),
-        .testTarget(name: "AppDiscoveryTests", dependencies: ["AppDiscovery"]),
-        .testTarget(name: "PersistenceTests", dependencies: ["Persistence", "SafetyCore"]),
-        .testTarget(name: "SystemMetricsTests", dependencies: ["SystemMetrics"]),
+        .testTarget(name: "DesignSystemTests", dependencies: ["DesignSystem", .product(name: "Testing", package: "swift-testing")]),
+        .testTarget(name: "MalwareEngineTests", dependencies: ["MalwareEngine", .product(name: "Testing", package: "swift-testing")]),
+        .testTarget(name: "AppDiscoveryTests", dependencies: ["AppDiscovery", .product(name: "Testing", package: "swift-testing")]),
+        .testTarget(name: "PersistenceTests", dependencies: ["Persistence", "SafetyCore", .product(name: "Testing", package: "swift-testing")]),
+        .testTarget(name: "SystemMetricsTests", dependencies: ["SystemMetrics", .product(name: "Testing", package: "swift-testing")]),
         .target(name: "ScanCore", dependencies: ["SafetyCore"]),
         .target(name: "SafetyCore"),
         .target(name: "FileRules", dependencies: ["ScanCore", "SafetyCore"]),
         .target(name: "DesignSystem"),
-        .testTarget(name: "ScanCoreTests", dependencies: ["ScanCore"]),
-        .testTarget(name: "SafetyCoreTests", dependencies: ["SafetyCore"]),
-        .testTarget(name: "FileRulesTests", dependencies: ["FileRules"]),
-        .testTarget(name: "CoreTendAppTests", dependencies: ["CoreTendApp"]),
+        .testTarget(name: "ScanCoreTests", dependencies: ["ScanCore", .product(name: "Testing", package: "swift-testing")]),
+        .testTarget(name: "SafetyCoreTests", dependencies: ["SafetyCore", .product(name: "Testing", package: "swift-testing")]),
+        .testTarget(name: "FileRulesTests", dependencies: ["FileRules", .product(name: "Testing", package: "swift-testing")]),
+        .testTarget(name: "CoreTendAppTests", dependencies: ["CoreTendApp", .product(name: "Testing", package: "swift-testing")]),
     ]
 )
