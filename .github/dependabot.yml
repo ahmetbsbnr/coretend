@@ -7,10 +7,10 @@ updates:
       interval: "weekly"
     open-pull-requests-limit: 5
 
-  # NOTE: CoreTend has no external Swift Package Manager dependencies
-  # today (see Documentation/DEPENDENCIES.md) — SPM/"swift" ecosystem
-  # support in Dependabot was unverified at the time this file was written
-  # and is not enabled here to avoid an unsupported/no-op config entry.
-  # Re-check GitHub's supported-ecosystems list before enabling it, and add
-  # a swift-package-manager or equivalent entry once a real dependency
-  # exists to track.
+  # swift-testing (test-only, see Documentation/DEPENDENCIES.md) is
+  # CoreTend's first external SwiftPM dependency.
+  - package-ecosystem: "swift"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
