@@ -8,6 +8,136 @@
       "source": "/",
       "destination": "/en/index.html",
       "permanent": false
+    },
+    {
+      "source": "/download",
+      "destination": "https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.2/CoreTend-0.9.1-rc.2-arm64-unsigned.dmg",
+      "permanent": false
+    },
+    {
+      "source": "/download/",
+      "destination": "https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.2/CoreTend-0.9.1-rc.2-arm64-unsigned.dmg",
+      "permanent": false
+    },
+    {
+      "source": "/en/download.html",
+      "destination": "/en/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/en/install.html",
+      "destination": "/en/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/en/features.html",
+      "destination": "/en/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/en/demos.html",
+      "destination": "/en/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/en/documentation.html",
+      "destination": "/en/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/en/verify.html",
+      "destination": "/en/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/en/support.html",
+      "destination": "/en/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/en/faq.html",
+      "destination": "/en/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/en/roadmap.html",
+      "destination": "/en/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/en/changelog.html",
+      "destination": "/en/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/en/open-source.html",
+      "destination": "/en/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/en/security.html",
+      "destination": "/en/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/fr/download.html",
+      "destination": "/fr/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/fr/install.html",
+      "destination": "/fr/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/fr/features.html",
+      "destination": "/fr/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/fr/demos.html",
+      "destination": "/fr/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/fr/documentation.html",
+      "destination": "/fr/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/fr/verify.html",
+      "destination": "/fr/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/fr/support.html",
+      "destination": "/fr/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/fr/faq.html",
+      "destination": "/fr/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/fr/roadmap.html",
+      "destination": "/fr/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/fr/changelog.html",
+      "destination": "/fr/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/fr/open-source.html",
+      "destination": "/fr/index.html",
+      "permanent": false
+    },
+    {
+      "source": "/fr/security.html",
+      "destination": "/fr/index.html",
+      "permanent": false
     }
   ],
   "headers": [
