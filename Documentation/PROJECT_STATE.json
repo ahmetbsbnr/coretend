@@ -1,7 +1,7 @@
 {
   "project": "CoreTend",
-  "version": "0.9.1-rc.1",
-  "phase": "0.9.1-rc.1 — Release candidate: technically complete build following the 0.9.0 first public release. Preliminary trademark screening was run and recorded in Documentation/CORETEND_TRADEMARK_SCREENING.md (status PRELIMINARY_CLEARANCE_NO_HIGH_CONFLICT_FOUND, with COREXTEND on WATCH); this is NOT a completed legal review. legalReviewStatus remains 'pending' and no trademark clearance is claimed as final. Code signing and notarization are prepared (scripts, entitlements, documented commands) but not executed — no Apple Developer identity is available in this environment. A stable 1.0 tag is intentionally withheld until legal review concludes.",
+  "version": "0.9.1-rc.2",
+  "phase": "0.9.1-rc.2 — Release candidate rebuilt from the current tree. Supersedes 0.9.1-rc.1, whose artifacts predate the in-app update checker, the tag-triggered release workflow (provenance attestation, SPDX SBOM, Minisign signing), the trust centre and verification page, the single-source-of-truth version gate, and the visual regression suite. legalReviewStatus remains 'pending' and the COREXTEND trademark watch item is unresolved, so no trademark clearance is claimed and a stable 1.0 is deliberately withheld. Still unsigned and not notarized: no Apple Developer identity exists. Minisign signing is real and active for this release, and is not a substitute for Developer ID signing or Apple notarization.",
   "toolchain": "Swift 6.3.2 via CommandLineTools (no Xcode installed)",
   "build_system": "SwiftPM; app bundle assembled by Scripts/package-local.sh",
   "test_framework": "Swift Testing (XCTest unavailable without Xcode); run via Scripts/test.sh",
@@ -50,11 +50,9 @@
     "browser history/cookie removal in Privacy Cleaner (deliberately deferred: db corruption risk)"
   ],
   "tests": {
-    "passing": 274,
+    "passing": 310,
     "failing": 0,
-    "suites": 57,
-    "testCasesExecuted": 278,
-    "note": "Re-run and regenerated 2026-07-25 via Scripts/generate-test-inventory.sh during the 0.8.1 Final Canonical Audit Resync, at commit 92cbd08. Supersedes the 0.8.0 figure of 250/55, which is preserved in Documentation/AuditHistory/0.8.0/. 274 counts @Test functions (what the Swift Testing summary reports); one is parameterized over 4 arguments, so 278 test cases execute."
+    "note": "310 @Test functions as of 0.9.1-rc.2; 296 before the update-checker suite added 14."
   },
   "last_build": "Debug + Release both green, 0 project warnings (verified from real output this phase: zero \"warning:\" lines in either build). All dev gates green: doctor, repository-doctor (private-data/licenses/placeholders/feature-inventory/settings-matrix-no-orphan/markdown-links), legacy brand references (fixed this phase — it was red at 92cbd08 and now scans case-insensitively), brand assets, brand clearance --engineering, website, workspace layout, workspace migration readiness, version consistency, test-uninstall, test-distribution, test-release-manifest, verify-download. Publication gates (check-publish-readiness, check-brand-clearance --publication) are RED by design — see Documentation/HUMAN_BLOCKERS.md.",
   "next_goals": [

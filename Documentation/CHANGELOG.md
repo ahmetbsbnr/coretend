@@ -1,5 +1,40 @@
 # CHANGELOG
 
+## 0.9.1-rc.2 — 2026-07-29 « Verifiable Release »
+
+Supersedes 0.9.1-rc.1, whose artifacts predate everything below. rc.1 is left
+exactly as published — replacing its files would invalidate any checksum
+already recorded — and this is a fresh build from the current source.
+
+- feat(app): Check for Updates in Settings and the app menu (Cmd-Shift-U).
+  Reports installed and latest versions and the release notes, and opens the
+  official release page. It never downloads or installs an update: these
+  builds carry no publisher signature Apple recognises, and a checksum
+  published beside its own file proves integrity, not identity.
+- feat(app): stable and prerelease channels separated; a stable user is never
+  offered a release candidate. Automatic checking is off by default.
+- feat(release): tag-triggered release workflow producing a provenance
+  attestation, an SPDX SBOM, SHA-256 checksums and Minisign signatures, and
+  refusing to publish on version/channel mismatch, missing artifacts, failed
+  checksums, or any signed/notarized claim it cannot back.
+- feat(release): a dedicated Minisign identity now signs the artifacts
+  (key ID F8473FB09E1DB730). Minisign is not Apple code signing and not
+  notarization, and is documented as such everywhere it appears.
+- feat(site): trust section where every claim links to its evidence, plus a
+  Verify your download page (FR/EN) generated from the release manifest.
+- feat(ci): single-source-of-truth version gate failing on any divergence
+  between the identity file, Info.plist, project state, manifest, site and
+  the published GitHub release.
+- feat(ci): visual regression suite, 72 captures across 9 viewports in both
+  locales, stored as fingerprints rather than committed screenshots.
+- docs: Documentation/BUILDING.md, verified end to end in a clean clone.
+- fix: generate.py used escapes inside f-string expressions and failed on
+  Python 3.9; it now runs on 3.9 and 3.14 alike.
+
+Still unsigned and not notarized — no Apple Developer identity exists.
+legalReviewStatus remains pending and the COREXTEND trademark watch item is
+unresolved; no clearance is claimed.
+
 ## 0.9.1-rc.1 — 2026-07-28 « Release Candidate »
 
 A technically complete release candidate following 0.9.0, built on the

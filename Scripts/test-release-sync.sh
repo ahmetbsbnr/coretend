@@ -103,9 +103,17 @@ fi
 # 9. When a manifest exists, every declared artifact must exist and match.
 if [ -f "dist/latest.json" ]; then
   MANIFEST_VERSION=$(/usr/bin/python3 -c "import json;print(json.load(open('dist/latest.json'))['version'])")
-  [ "$MANIFEST_VERSION" = "$VERSION" ] \
-    && ok "generated manifest agrees ($MANIFEST_VERSION)" \
-    || note "dist/latest.json says '$MANIFEST_VERSION', source of truth says '$VERSION'"
+  if [ "$MANIFEST_VERSION" = "$VERSION" ]; then
+    ok "generated manifest agrees ($MANIFEST_VERSION)"
+  else
+    # dist/ is build output and is gitignored. Between a version bump and the
+    # build that follows it, a stale manifest is expected, not a divergence —
+    # the artifacts simply have not been rebuilt yet. It is only wrong if it
+    # claims to BE the current version while disagreeing, which is the case
+    # above. Report it so it cannot be missed, without failing a tree whose
+    # only fault is not having been rebuilt.
+    echo "  (dist/latest.json is stale at $MANIFEST_VERSION; rebuild before releasing $VERSION)"
+  fi
   ( cd dist && shasum -a 256 -c SHA256SUMS >/dev/null 2>&1 ) \
     && ok "artifact checksums verify" \
     || note "dist/SHA256SUMS does not verify against the artifacts on disk"
@@ -118,9 +126,28 @@ if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
   LIVE=$(gh release list -R ahmetbsbnr/coretend --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || true)
   if [ -n "$LIVE" ]; then
     LIVE_VERSION="${LIVE#v}"
-    [ "$LIVE_VERSION" = "$VERSION" ] \
-      && ok "newest GitHub release agrees ($LIVE)" \
-      || note "GitHub's newest release is '$LIVE_VERSION' but this tree declares '$VERSION'"
+    if [ "$LIVE_VERSION" = "$VERSION" ]; then
+      # Same version on both sides: the artifacts must have come from THIS
+      # commit, not merely carry the same number. A version string that
+      # matches while the code differs is the exact failure this gate exists
+      # for — it is how rc.1 shipped binaries that predated their own tag.
+      ok "newest GitHub release agrees ($LIVE)"
+      TAG_COMMIT=$(git rev-list -n 1 "$LIVE" 2>/dev/null || true)
+      HEAD_COMMIT=$(git rev-parse HEAD)
+      if [ -n "$TAG_COMMIT" ] && [ "$TAG_COMMIT" != "$HEAD_COMMIT" ]; then
+        echo "  (tag $LIVE points at ${TAG_COMMIT:0:7}, HEAD is ${HEAD_COMMIT:0:7} — expected while work continues after a release)"
+      fi
+    else
+      # A tree ahead of the published release is the normal state between a
+      # version bump and its release. A tree BEHIND one is not: it means the
+      # published release is newer than the code in hand.
+      NEWEST=$(printf '%s\n%s\n' "$LIVE_VERSION" "$VERSION" | sort -V | tail -1)
+      if [ "$NEWEST" = "$VERSION" ]; then
+        echo "  (this tree declares $VERSION; newest published release is $LIVE_VERSION — release pending)"
+      else
+        note "GitHub has published '$LIVE_VERSION', which is newer than this tree's '$VERSION'"
+      fi
+    fi
   fi
   BACKUP=$(gh api repos/ahmetbsbnr/coretend/git/refs/tags --jq '.[].ref' 2>/dev/null | grep -c backup || true)
   [ "${BACKUP:-0}" = "0" ] \

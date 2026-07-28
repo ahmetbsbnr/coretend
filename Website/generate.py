@@ -902,7 +902,7 @@ def home_body(l):
           </tr>
           <tr>
             <th>{"Publisher signature" if en else "Signature de l’éditeur"}</th>
-            <td>{"Minisign prepared, not yet active — no key exists" if en else "Minisign préparé, pas encore actif — aucune clé n’existe"}</td>
+            <td>{"Signed with key F8473FB09E1DB730" if en else "Signé avec la clé F8473FB09E1DB730"} — <a href="verify.html">{"verify" if en else "vérifier"}</a></td>
           </tr>
           <tr>
             <th>{"Apple signature" if en else "Signature Apple"}</th>
@@ -1432,12 +1432,17 @@ workflow, from a named commit. Verify it with the GitHub CLI:</p>
 a workflow you can read.</p>
 
 <h2>3. Minisign — is this the publisher's signature?</h2>
-<p><strong>Not currently available.</strong> Minisign signing is implemented in
-the release workflow but stays inactive until a real signing key exists.
-No <code>.minisig</code> files are published, and none should be trusted if
-they appear from anywhere else. When signing is enabled, the public key will
-be published in this repository and the command will be:</p>
-<pre><code>minisign -Vm CoreTend-&lt;version&gt;-arm64-unsigned.dmg -P &lt;public key&gt;</code></pre>
+<p>Each artifact is published with a <code>.minisig</code> signature made by
+CoreTend's dedicated release key. Unlike a checksum, this cannot be forged by
+whoever controls the download page: verifying it proves the file was signed by
+the holder of the private key.</p>
+<p>Key ID <code>F8473FB09E1DB730</code>, also published as
+<code>minisign.pub</code> with every release:</p>
+<pre><code>RWQwtx2esD9H+O7kDWTJcdyTfcWYkmnRMqlDrk0L8xHZkSk4lA6rZqSg</code></pre>
+<pre><code>minisign -Vm CoreTend-&lt;version&gt;-arm64-unsigned.dmg -P RWQwtx2esD9H+O7kDWTJcdyTfcWYkmnRMqlDrk0L8xHZkSk4lA6rZqSg</code></pre>
+<p><strong>Minisign is not Apple code signing and it is not notarization.</strong>
+It proves the release key signed this file. It does not make macOS trust the
+application, and it does not remove the first-launch warning below.</p>
 
 <h2>4. Build it yourself</h2>
 <p>The strongest check available here: compile the source and compare.
@@ -1486,13 +1491,19 @@ CLI GitHub :</p>
 commit et un workflow que vous pouvez lire.</p>
 
 <h2>3. Minisign — est-ce la signature de l’éditeur ?</h2>
-<p><strong>Actuellement indisponible.</strong> La signature Minisign est
-implémentée dans le workflow de publication mais reste inactive tant qu’aucune
-clé de signature réelle n’existe. Aucun fichier <code>.minisig</code> n’est
-publié, et aucun ne doit être considéré comme fiable s’il apparaît par une
-autre voie. Lorsque la signature sera activée, la clé publique sera publiée
-dans ce dépôt et la commande sera :</p>
-<pre><code>minisign -Vm CoreTend-&lt;version&gt;-arm64-unsigned.dmg -P &lt;clé publique&gt;</code></pre>
+<p>Chaque artefact est publié avec une signature <code>.minisig</code> produite
+par la clé de publication dédiée de CoreTend. Contrairement à une empreinte,
+elle ne peut pas être falsifiée par qui contrôle la page de téléchargement :
+la vérifier prouve que le fichier a été signé par le détenteur de la clé
+privée.</p>
+<p>Identifiant de clé <code>F8473FB09E1DB730</code>, également publiée comme
+<code>minisign.pub</code> avec chaque version :</p>
+<pre><code>RWQwtx2esD9H+O7kDWTJcdyTfcWYkmnRMqlDrk0L8xHZkSk4lA6rZqSg</code></pre>
+<pre><code>minisign -Vm CoreTend-&lt;version&gt;-arm64-unsigned.dmg -P RWQwtx2esD9H+O7kDWTJcdyTfcWYkmnRMqlDrk0L8xHZkSk4lA6rZqSg</code></pre>
+<p><strong>Minisign n’est ni la signature de code Apple, ni la
+notarisation.</strong> Elle prouve que la clé de publication a signé ce
+fichier. Elle ne fait pas confiance à l’application aux yeux de macOS et ne
+supprime pas l’avertissement de premier lancement ci-dessous.</p>
 
 <h2>4. Compilez vous-même</h2>
 <p>Le contrôle le plus fort disponible ici : compilez les sources et comparez.
