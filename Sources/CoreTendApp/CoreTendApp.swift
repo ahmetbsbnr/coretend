@@ -45,6 +45,12 @@ struct CoreTendHelpCommands: Commands {
     private let repository = URL(string: "https://github.com/ahmetbsbnr/coretend")!
 
     var body: some Commands {
+        CommandGroup(after: .appInfo) {
+            Button(L("updates.check_now")) {
+                NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.settings)
+            }
+            .keyboardShortcut("u", modifiers: [.command, .shift])
+        }
         CommandGroup(replacing: .help) {
             Button("CoreTend Help") {
                 NSWorkspace.shared.open(site.appending(path: "en/documentation.html"))
