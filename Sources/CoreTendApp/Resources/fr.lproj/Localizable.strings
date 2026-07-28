@@ -460,6 +460,7 @@
 "onboarding.protection.signatures" = "Signatures";
 "onboarding.protection.unknown" = "inconnu";
 "onboarding.protection.no_install" = "Non détecté. Installez ClamAV vous-même (par ex. via Homebrew) pour activer l'analyse.";
+"onboarding.protection.copy_command" = "Copier la commande d'installation";
 "onboarding.protection.fsevents" = "Surveillance des dossiers (FSEvents)";
 "onboarding.protection.available" = "Disponible";
 "onboarding.menubar.title" = "Barre des menus et notifications";

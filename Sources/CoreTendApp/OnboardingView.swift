@@ -42,7 +42,7 @@ final class OnboardingViewModel {
     var notificationsOptIn = false
 
     // Protection
-    private let scanner = ClamAVScanner()
+    private var scanner = ClamAVScanner()
     var clamAVAvailable = false
     var clamAVPathRedacted: String?
     var clamAVVersion: ClamAVVersionInfo?
@@ -80,6 +80,16 @@ final class OnboardingViewModel {
     func refreshPermissions() async {
         fdaGranted = PermissionProbe.hasFullDiskAccess()
         notificationStatus = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+    }
+
+    /// Re-probes disk for a ClamAV binary. Needed because a user may install
+    /// it mid-onboarding (e.g. via the copied `brew install` command) after
+    /// the initial `scanner` was constructed — a fresh scan of `knownPaths`
+    /// is the only way to pick that up.
+    func recheckClamAV() {
+        scanner = ClamAVScanner()
+        clamAVAvailable = scanner.isAvailable
+        clamAVPathRedacted = scanner.binaryURL.map { DiagnosticReport.redactPath($0.path) }
     }
 
     /// Best-effort ClamAV version via `clamscan --version`. Never fabricated:
@@ -424,6 +434,17 @@ struct OnboardingView: View {
                 } else {
                     Text(L("onboarding.protection.no_install"))
                         .font(MCFont.caption).foregroundStyle(.secondary)
+                    HStack {
+                        Button(L("onboarding.protection.copy_command")) {
+                            let pasteboard = NSPasteboard.general
+                            pasteboard.clearContents()
+                            pasteboard.setString("brew install clamav && freshclam", forType: .string)
+                        }
+                        Button(L("settings.recheck")) {
+                            model.recheckClamAV()
+                            Task { await model.probeClamAVVersion() }
+                        }
+                    }
                 }
                 Divider()
                 HStack {
