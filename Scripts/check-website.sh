@@ -106,10 +106,23 @@ grep -q 'IntersectionObserver' "$SITE/assets/site.js" \
   || note "scroll reveal enhancement is missing"
 grep -qE 'prefers-reduced-motion:[[:space:]]*reduce' "$SITE/assets/style.css" \
   || note "Reduced Motion stylesheet override is missing"
-grep -q '@keyframes orbit-a' "$SITE/assets/style.css" \
-  || note "Core Bloom orbit motion is missing"
-grep -q 'class=\"github-link\"' "$SITE/en/index.html" \
+grep -q 'data-magnetic' "$SITE/assets/site.js" \
+  || note "magnetic pointer affordance on primary actions is missing"
+grep -q 'repository\|github\.com' "$SITE/en/index.html" \
   || note "persistent GitHub information link is missing"
+
+# Every product clip is the same component: silent, looping, inline, no
+# controls. A stray `controls` attribute means an old player survived a
+# redesign, which is exactly how demos.html drifted once already.
+stray_controls=$(grep -rho '<video[^>]*controls[^>]*>' "$SITE"/en "$SITE"/fr 2>/dev/null || true)
+[ -z "$stray_controls" ] || note "a video still exposes controls: $stray_controls"
+for attr in autoplay muted loop playsinline; do
+  missing=$(grep -rl '<video' "$SITE"/en "$SITE"/fr 2>/dev/null \
+    | while read -r f; do
+        grep -o '<video[^>]*>' "$f" | grep -qv "$attr" && echo "$f"
+      done || true)
+  [ -z "$missing" ] || note "a video is missing $attr: $missing"
+done
 
 # -------------------------------------------------------------- no leakage
 USER_NAME=$(id -un)

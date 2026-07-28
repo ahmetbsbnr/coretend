@@ -84,10 +84,11 @@ FOOTER_LINKS = [
 
 SITE_TITLE = "CoreTend"
 SITE_URL = ident("websiteURL", "https://coretend.ahmetbsbnr.com")
-CRITICAL_STYLE = (
-    "html,body{background:#f4f6f3;color:#0b0f14}"
-    "@media(prefers-color-scheme:dark){html,body{background:#0b0f14;color:#f4f6f3}}"
-)
+# First-paint guard. The stylesheet is a separate request; until it lands the
+# page must already be paper-on-ink rather than a white flash with default
+# blue links. Kept to exactly the two properties that prevent that, because
+# every byte here is hashed into the CSP.
+CRITICAL_STYLE = "html,body{background:#f4f4f0;color:#17191d}"
 
 
 def critical_style_hash():
@@ -124,64 +125,118 @@ TAGLINE = SUBTITLE
 # same geometry as the app (MCBloomGeometry) — see
 # Resources/Brand/Generated/Mark-*.svg. Inlined rather than linked so the site
 # makes zero extra requests and the arcs can inherit theme colours.
+# The mark, inlined. Same three-arc geometry as the app icon
+# (Resources/Brand/Generated/Mark-*.svg, derived from MCBloomGeometry), drawn
+# in the site's own two-colour system rather than the app's semantic palette:
+# this site is ink, paper and cobalt, and a three-colour logo inside it would
+# read as a second identity. The arcs keep their weights, so the mark is still
+# the same shape at any size. viewBox is tight to the artwork, so the rendered
+# box is the artwork — no invisible padding inflating it.
 MARK_SVG = """<svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
-<path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--care)" stroke-width="38.4" stroke-linecap="round"/>
-<path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--privacy)" stroke-width="38.4" stroke-linecap="round"/>
-<path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--activity)" stroke-width="38.4" stroke-linecap="round"/>
-<circle cx="256" cy="256" r="61.44" fill="var(--care)"/>
+<path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--cobalt)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--ink)" stroke-width="38.4" stroke-linecap="round"/>
+<path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--line-strong)" stroke-width="38.4" stroke-linecap="round"/>
+<circle cx="256" cy="256" r="61.44" fill="var(--cobalt)"/>
 </svg>"""
 
 GITHUB_SVG = """<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
 <path fill="currentColor" d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.02c-3.23.7-3.91-1.37-3.91-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.41-1.26.74-1.55-2.58-.29-5.29-1.29-5.29-5.73 0-1.27.45-2.3 1.2-3.11-.12-.29-.52-1.47.11-3.07 0 0 .98-.31 3.16 1.19a10.95 10.95 0 0 1 5.76 0c2.19-1.5 3.16-1.19 3.16-1.19.63 1.6.23 2.78.11 3.07.75.81 1.2 1.84 1.2 3.11 0 4.45-2.72 5.43-5.31 5.72.42.36.79 1.07.79 2.16v3.02c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .7Z"/>
 </svg>"""
 
+MENU_SVG = """<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+<path d="M3 6h18M3 12h18M3 18h18"/></svg>"""
+
+CLOSE_SVG = """<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+<path d="M5 5l14 14M19 5L5 19"/></svg>"""
+
+ARROW_SVG = """<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+<path d="M5 12h13M12 5l7 7-7 7"/></svg>"""
+
+DOWNLOAD_SVG = """<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+<path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></svg>"""
+
+
+# A body starting with this marker lays out its own sections (hero pages);
+# anything else is dropped into the standard measured column.
+FULL_BLEED = "<!--full-bleed-->"
+
+RAIL_TAGLINE = {
+    "en": ("macOS maintenance", "Local &amp; open source"),
+    "fr": ("Entretien macOS", "Local et open source"),
+}
+
+UI = {
+    "skip": {"en": "Skip to content", "fr": "Aller au contenu"},
+    "home": {"en": "CoreTend — home", "fr": "CoreTend — accueil"},
+    "main_nav": {"en": "Main", "fr": "Principale"},
+    "footer_nav": {"en": "Site map", "fr": "Plan du site"},
+    "open_menu": {"en": "Open menu", "fr": "Ouvrir le menu"},
+    "close_menu": {"en": "Close menu", "fr": "Fermer le menu"},
+    "lang_aria": {"en": "Language", "fr": "Langue"},
+    "github_aria": {
+        "en": "CoreTend source on GitHub",
+        "fr": "Code source de CoreTend sur GitHub",
+    },
+    "get_cta": {"en": "Download", "fr": "Télécharger"},
+    "project": {"en": "Project", "fr": "Projet"},
+    "footer_blurb": {
+        "en": "CoreTend is a free, open-source macOS maintenance app. It runs "
+              "entirely on your Mac: no account, no telemetry, no network calls.",
+        "fr": "CoreTend est une application d'entretien macOS libre et open "
+              "source. Tout s'exécute sur votre Mac : aucun compte, aucune "
+              "télémétrie, aucun appel réseau.",
+    },
+}
+
 
 def page_shell(locale, slug, title, body_html, other_locale_slug=None):
     other_slug = other_locale_slug or slug
-    def nav_link(n, label):
+    version = ident("marketingVersion", "")
+
+    def nav_link(n, label, cls="nav-link"):
         # aria-current is what a screen reader announces as "current page";
         # the class only makes it visible. Both, or neither is enough.
-        current = ' class="active" aria-current="page"' if n == slug else ""
-        return f'<a href="{n}.html"{current}>{label[locale]}</a>'
+        current = ' aria-current="page"' if n == slug else ""
+        active = " active" if n == slug else ""
+        return (f'<li><a class="{cls}{active}" href="{n}.html"{current}>'
+                f'{label[locale]}</a></li>')
 
-    nav_items = "\n      ".join(nav_link(n, label) for n, label in NAV)
-    footer_items = "\n      ".join(
-        f'<a href="{n}.html">{label[locale]}</a>' for n, label in FOOTER_LINKS
+    nav_items = "\n            ".join(nav_link(n, label) for n, label in NAV)
+    menu_items = "\n            ".join(nav_link(n, label) for n, label in NAV)
+    footer_items = "\n        ".join(
+        f'<li><a href="{n}.html">{label[locale]}</a></li>'
+        for n, label in FOOTER_LINKS
     )
 
-    def lang_link(code, href):
-        current = ' class="active" aria-current="true"' if locale == code else ""
-        return (f'<a href="{href}" hreflang="{code}" lang="{code}"{current}>'
-                f'{code.upper()}</a>')
+    def lang_switch(extra_class=""):
+        def item(code):
+            href = f'../{code}/{slug if locale == code else other_slug}.html'
+            if locale == code:
+                return f'<span aria-current="true">{code.upper()}</span>'
+            return (f'<a href="{href}" hreflang="{code}" lang="{code}">'
+                    f'{code.upper()}</a>')
+        return (f'<span class="lang-switch{extra_class}" role="group" '
+                f'aria-label="{UI["lang_aria"][locale]}">'
+                f'{item("fr")}<span class="sep" aria-hidden="true">|</span>'
+                f'{item("en")}</span>')
 
-    en_href = f'../en/{slug if locale == "en" else other_slug}.html'
-    fr_href = f'../fr/{slug if locale == "fr" else other_slug}.html'
-    lang_switch = ('<div class="lang-switch">'
-                   + lang_link("en", en_href)
-                   + lang_link("fr", fr_href)
-                   + "</div>")
-    github_link = (
-        f'<a class="github-link" href="{REPOSITORY_URL}" '
-        f'aria-label="{"Open CoreTend on GitHub" if locale == "en" else "Ouvrir CoreTend sur GitHub"}">'
-        f'{GITHUB_SVG}<span>GitHub</span></a>'
+    github_btn = (
+        f'<a class="icon-btn" href="{REPOSITORY_URL}" target="_blank" '
+        f'rel="noopener noreferrer" aria-label="{UI["github_aria"][locale]}">'
+        f'{GITHUB_SVG}</a>'
         if REPOSITORY_URL else ""
     )
-    skip = {"en": "Skip to content", "fr": "Aller au contenu"}[locale]
-    home = {"en": "CoreTend — home", "fr": "CoreTend — accueil"}[locale]
-    footer_note = {
-        "en": "&copy; CoreTend contributors. Open source — see the "
-              '<a href="licenses.html">licenses</a>.',
-        "fr": "&copy; Les contributeurs de CoreTend. Open source — voir les "
-              '<a href="licenses.html">licences</a>.',
-    }[locale]
+    tag_a, tag_b = RAIL_TAGLINE[locale]
+    wordmark = f'{MARK_SVG}<span>{SITE_TITLE}</span>'
+
     return f"""<!doctype html>
-<html lang="{locale}">
+<html lang="{locale}" class="no-js">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title} — {SITE_TITLE}</title>
 <meta name="description" content="{SUBTITLE[locale]}">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="light">
 <!-- Indexing follows siteIndexable in the identity file. It stays noindex
      until the site is really deployed: an unreachable page in a search index
      is a promise nobody can keep. robots.txt is generated from the same flag,
@@ -203,39 +258,97 @@ def page_shell(locale, slug, title, body_html, other_locale_slug=None):
 <link rel="icon" href="../assets/brand/favicon-32.png" sizes="32x32">
 <link rel="icon" href="../assets/brand/favicon-512.png" sizes="512x512">
 <link rel="apple-touch-icon" href="../assets/brand/favicon-180.png">
+<link rel="preload" href="../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="../assets/fonts/plexmono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>{CRITICAL_STYLE}</style>
 <link rel="stylesheet" href="../assets/style.css">
 <script src="../assets/site.js" defer></script>
 </head>
 <body class="page-{slug}">
-<a class="skip-link" href="#main">{skip}</a>
-<header class="site">
-  <div class="wrap">
-    <a class="brand" href="index.html" aria-label="{home}">{MARK_SVG}<span>{SITE_TITLE}</span></a>
+<a class="skip-link" href="#main">{UI["skip"][locale]}</a>
+
+<aside class="rail">
+  <a class="rail-brand" href="index.html" aria-label="{UI["home"][locale]}">
+    <span class="wordmark">{wordmark}</span>
+    <span class="tag">{tag_a}<br>{tag_b}</span>
+  </a>
+  <nav aria-label="{UI["main_nav"][locale]}">
+    <ul>
+            {nav_items}
+    </ul>
+    {lang_switch()}
+  </nav>
+  <div class="rail-foot">
+    <p class="status">{version}</p>
+    <p class="meta">macOS 14+ · Apple silicon</p>
+    <a class="btn btn-primary" href="download.html">{UI["get_cta"][locale]}</a>
+    <div class="icon-row">{github_btn}</div>
+  </div>
+</aside>
+
+<header class="topbar">
+  <a class="wordmark" href="index.html" aria-label="{UI["home"][locale]}">{wordmark}</a>
+  <div class="topbar-actions">
+    {lang_switch()}
     <button class="nav-toggle" type="button" aria-expanded="false"
-      aria-controls="primary-nav">{"Menu" if locale == "en" else "Menu"}</button>
-    <nav class="primary" id="primary-nav" aria-label="{"Main" if locale == "en" else "Principale"}">
-      {nav_items}
-    </nav>
-    {github_link}
-    {lang_switch}
+      aria-controls="mobile-menu" aria-label="{UI["open_menu"][locale]}">{MENU_SVG}</button>
   </div>
 </header>
-<main id="main">
-  <div class="wrap">
-{body_html}
+
+<div class="mobile-menu" id="mobile-menu" data-open="false">
+  <div class="mobile-menu-head">
+    <span class="wordmark">{wordmark}</span>
+    <button class="nav-toggle mobile-menu-close" type="button"
+      aria-label="{UI["close_menu"][locale]}">{CLOSE_SVG}</button>
   </div>
+  <nav aria-label="{UI["main_nav"][locale]}">
+    <ul>
+            {menu_items}
+    </ul>
+    {lang_switch()}
+  </nav>
+  <div class="mobile-menu-foot">
+    <p class="status">{version}</p>
+    <p class="meta">macOS 14+ · Apple silicon</p>
+    <a class="btn btn-primary" href="download.html" style="width:100%;margin-top:1rem">{UI["get_cta"][locale]}</a>
+  </div>
+</div>
+
+<div class="shell">
+<main id="main">
+{body_html if body_html.startswith(FULL_BLEED) else f'<div class="wrap"><div class="page-body">{body_html}</div></div>'}
 </main>
-<footer class="site">
+
+<footer class="site-footer">
   <div class="wrap">
-    <div>
-      <p class="footer-note">{footer_note}</p>
+    <div class="footer-grid">
+      <div>
+        <p class="wordmark">{wordmark}</p>
+        <p class="footer-blurb">{UI["footer_blurb"][locale]}</p>
+      </div>
+      <nav aria-label="{UI["footer_nav"][locale]}">
+        <p class="kicker">{UI["footer_nav"][locale]}</p>
+        <ul class="links-2col">
+        {footer_items}
+        </ul>
+      </nav>
+      <div>
+        <p class="kicker">{UI["project"][locale]}</p>
+        <ul>
+          <li><a href="{REPOSITORY_URL}" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+          <li><a href="open-source.html">Open source</a></li>
+          <li><a href="changelog.html">{"Changelog" if locale == "en" else "Journal"}</a></li>
+        </ul>
+        <div class="icon-row">{github_btn}</div>
+      </div>
     </div>
-    <nav aria-label="{"Footer" if locale == "en" else "Pied de page"}">
-      {footer_items}
-    </nav>
+    <div class="footer-base">
+      <p>&copy; {"CoreTend contributors" if locale == "en" else "Les contributeurs de CoreTend"} · Apache-2.0</p>
+      <p>{version}</p>
+    </div>
   </div>
 </footer>
+</div>
 </body>
 </html>
 """
@@ -530,189 +643,267 @@ ROLE_LABEL = {
     "activity": {"en": "Activity &amp; performance", "fr": "Activité et performances"},
 }
 
+
+def loop_video(name, ratio, describedby, width, height, track=False):
+    """The one product-video treatment used everywhere on this site.
+
+    Silent, looping, inline, no visible controls, and boxed at the clip's
+    real intrinsic ratio so nothing reflows when it decodes. A poster is
+    always given: if autoplay is refused (Low Power Mode, data saver) the
+    poster is simply what stays on screen — never a play button drawn over
+    a dead frame. Under prefers-reduced-motion the poster replaces the
+    video entirely (see .loop img.reduced-only)."""
+    track_el = (
+        f'\n            <track kind="captions" srclang="en" '
+        f'label="Visual description" src="../assets/demos/{name}.vtt" default>'
+        if track else ""
+    )
+    return f"""<span class="loop" style="--ratio:{ratio}">
+          <video data-loop autoplay muted loop playsinline preload="metadata"
+            poster="../assets/demos/{name}-poster.webp"
+            width="{width}" height="{height}" aria-describedby="{describedby}">
+            <source src="../assets/demos/{name}.webm" type="video/webm">
+            <source src="../assets/demos/{name}.mp4" type="video/mp4">{track_el}
+          </video>
+          <img class="reduced-only" src="../assets/demos/{name}-poster.webp"
+            width="{width}" height="{height}" alt="">
+        </span>"""
+
+
 def media_exists(relative_path):
     return os.path.isfile(os.path.join(ROOT, relative_path))
 
 
 def home_body(l):
     t = HOME_TEXT[l]
-    badges = {
-        "en": ["Local only, no account", "Open source", "No telemetry", "Apple Silicon"],
-        "fr": ["100 % local, sans compte", "Open source", "Sans télémétrie", "Apple Silicon"],
-    }[l]
-    badge_classes = ["", "violet", "amber", ""]
-    badge_html = "\n    ".join(
-        f'<span class="badge {c}">{b}</span>' for b, c in zip(badges, badge_classes)
+    en = l == "en"
+
+    module_cards = "\n      ".join(
+        f'<li class="card" data-reveal data-reveal-delay="{i * 60}">'
+        f'<p class="kicker">{ROLE_LABEL[m["role"]][l]}</p>'
+        f'<h3>{m[l][0]}</h3><p>{m[l][1]}</p></li>'
+        for i, m in enumerate(HOME_MODULES)
     )
 
-    module_cards = "\n  ".join(
-        f'<article class="card {m["role"]} reveal">'
-        f'<span class="role">{ROLE_LABEL[m["role"]][l]}</span>'
-        f'<h3>{m[l][0]}</h3><p>{m[l][1]}</p></article>'
-        for m in HOME_MODULES
+    principle_cards = "\n      ".join(
+        f'<li class="card" data-reveal data-reveal-delay="{i * 60}">'
+        f'<h3>{p[l][0]}</h3><p>{p[l][1]}</p></li>'
+        for i, p in enumerate(HOME_PRINCIPLES)
     )
 
-    principle_cards = "\n  ".join(
-        f'<article class="card reveal"><h3>{p[l][0]}</h3><p>{p[l][1]}</p></article>'
-        for p in HOME_PRINCIPLES
-    )
-
-    faq_items = "\n  ".join(
-        f'<details><summary>{q[l][0]}</summary><p>{q[l][1]}</p></details>'
+    faq_items = "\n      ".join(
+        f'<div data-reveal><h3>{q[l][0]}</h3><p>{q[l][1]}</p></div>'
         for q in HOME_FAQ
     )
-    if media_exists("assets/app/smart-care.webp"):
-        hero_media = """<picture class="hero-product">
-    <source srcset="../assets/app/smart-care.webp" type="image/webp">
-    <img src="../assets/app/smart-care.png" width="2024" height="1488"
-      alt="CoreTend Smart Care window with its module sidebar and scan controls"
-      fetchpriority="high">
-  </picture>"""
-    elif media_exists("assets/app/menu-bar.webp"):
-        hero_media = """<picture class="hero-menu">
-    <source srcset="../assets/app/menu-bar.webp" type="image/webp">
-    <img src="../assets/app/menu-bar.png" width="660" height="806"
-      alt="CoreTend 0.9.0 menu bar panel showing CPU, memory, free space, thermal state and protection status"
-      fetchpriority="high">
-  </picture>"""
-    else:
-        hero_media = f'<div class="hero-art">{MARK_SVG}</div>'
 
-    if media_exists("assets/demos/product-tour.webm"):
-        tour_section = f"""
-<section id="product-tour" class="demo-feature reveal">
-  <div>
-    <span class="section-label">{"Product tour" if l == "en" else "Visite du produit"}</span>
-    <h2>{"See the real application" if l == "en" else "Voir l’application réelle"}</h2>
-    <p>{"A short, silent tour through shipped modules, recorded in the dedicated CoreTend Demo environment." if l == "en" else "Une visite courte et silencieuse des modules livrés, enregistrée dans l’environnement dédié CoreTend Demo."}</p>
-  </div>
-  <div class="demo-player">
-    <video autoplay muted loop playsinline preload="metadata"
-      poster="../assets/demos/product-tour-poster.webp"
-      data-autoplay aria-describedby="tour-description">
-      <source media="(prefers-reduced-motion: no-preference)" src="../assets/demos/product-tour.webm" type="video/webm">
-      <source media="(prefers-reduced-motion: no-preference)" src="../assets/demos/product-tour.mp4" type="video/mp4">
-    </video>
-    <img class="reduced-motion-poster" src="../assets/demos/product-tour-poster.webp"
-      width="1800" height="1264" alt="">
-    <p id="tour-description" class="small">{"The sidebar selection moves through the demonstrated modules and returns to Smart Care." if l == "en" else "La sélection de la barre latérale parcourt les modules démontrés puis revient à Smart Care."}</p>
-  </div>
-</section>"""
-    else:
-        tour_section = ""
+    # Hero visual: the menu-bar panel. It is portrait (660x806), which is the
+    # same figure proportion the portfolio hero uses, and it is a small,
+    # self-contained piece of UI that stays legible at column width. The wide
+    # Smart Care window gets its own full-measure section below instead of
+    # being shrunk into a side column where its text would be unreadable.
+    hero_media = f"""<picture>
+          <source srcset="../assets/app/menu-bar.webp" type="image/webp">
+          <img src="../assets/app/menu-bar.png" width="660" height="806"
+            sizes="(min-width: 1024px) 360px, 78vw"
+            alt="{"CoreTend menu bar panel showing CPU, memory, free space, thermal state and protection status" if en else "Panneau de la barre des menus CoreTend : processeur, mémoire, espace libre, état thermique et état de la protection"}"
+            fetchpriority="high">
+        </picture>""" if media_exists("assets/app/menu-bar.webp") else f'<div>{MARK_SVG}</div>'
 
-    if media_exists("assets/app/cleanup.webp"):
-        gallery_section = f"""
-<section>
-  <span class="section-label">{"Gallery" if l == "en" else "Galerie"}</span>
-  <h2>{"The tools, as they ship" if l == "en" else "Les outils, tels qu’ils sont livrés"}</h2>
-  <div class="media-grid">
-    <figure><img src="../assets/app/cleanup.webp" width="1800" height="1264" loading="lazy" alt="CoreTend Cleanup review screen"><figcaption>Cleanup</figcaption></figure>
-    <figure><img src="../assets/app/performance.webp" width="1800" height="1264" loading="lazy" alt="CoreTend Performance metrics screen"><figcaption>Performance</figcaption></figure>
-    <figure><img src="../assets/app/space-lens.webp" width="1800" height="1264" loading="lazy" alt="CoreTend Space Lens disk map"><figcaption>Space Lens</figcaption></figure>
-  </div>
-  <p><a href="demos.html">{"Open the complete visual tour" if l == "en" else "Ouvrir la visite visuelle complète"}</a></p>
-</section>"""
-    else:
-        gallery_section = ""
-
-    settings_media = (
-        '<img src="../assets/app/settings-light.webp" width="1800" height="1264" '
-        'loading="lazy" alt="CoreTend settings showing real permission and safety controls">'
-        if media_exists("assets/app/settings-light.webp") else MARK_SVG
-    )
-
-    return f"""
-<section class="hero">
-  <div class="hero-copy">
-    <span class="eyebrow">{t['hero_eyebrow']}</span>
-    <h1>{t['hero_title']}</h1>
-    <p class="signature">{t['hero_body']}</p>
-    <p class="lead">{SUBTITLE[l]}</p>
-    <div class="cta-row">
-      <a class="btn btn-primary" href="download.html">{t['cta_download']}</a>
-      <a class="btn btn-secondary" href="#how">{t['cta_how']}</a>
+    # The one real recording that exists: Gatekeeper refusing an unsigned
+    # first launch. It plays as a silent loop, no controls, poster reserved.
+    if media_exists("assets/demos/gatekeeper-blocked.mp4"):
+        demo_section = f"""
+  <section class="section" id="demo">
+    <div class="wrap">
+      <div class="section-head" data-reveal>
+        <p class="kicker">{"Demo" if en else "Démonstration"}</p>
+        <h2>{"What the first launch looks like" if en else "À quoi ressemble le premier lancement"}</h2>
+        <p class="lead">{"CoreTend is unsigned, so macOS blocks the first launch. This is the real dialog, and the two-step way past it — recorded, not described." if en else "CoreTend n\u2019est pas signé : macOS bloque donc le premier lancement. Voici la vraie boîte de dialogue et les deux étapes pour la passer — enregistrées, pas décrites."}</p>
+      </div>
+      <figure class="media" data-reveal>
+        <span class="loop" style="--ratio:926/880">
+          <video data-loop autoplay muted loop playsinline preload="metadata"
+            poster="../assets/demos/gatekeeper-blocked-poster.webp"
+            width="926" height="880" aria-describedby="demo-desc">
+            <source src="../assets/demos/gatekeeper-blocked.webm" type="video/webm">
+            <source src="../assets/demos/gatekeeper-blocked.mp4" type="video/mp4">
+          </video>
+          <img class="reduced-only" src="../assets/demos/gatekeeper-blocked-poster.webp"
+            width="926" height="880" alt="">
+        </span>
+        <figcaption id="demo-desc">{"macOS refuses the unsigned app, then opens it after Control-click → Open. Silent, looping, no sound track." if en else "macOS refuse l\u2019app non signée, puis l\u2019ouvre après Ctrl-clic → Ouvrir. Silencieux, en boucle, sans bande-son."}</figcaption>
+      </figure>
+      <p data-reveal><a href="install.html">{"Read the full install notes" if en else "Lire les notes d\u2019installation complètes"}</a> · <a href="demos.html">{"All demos" if en else "Toutes les démos"}</a></p>
     </div>
-  </div>
-  <div class="hero-stage" aria-label="CoreTend product preview">
-    <div class="hero-orbit" aria-hidden="true">{MARK_SVG}</div>
-    {hero_media}
-  </div>
-</section>
+  </section>"""
+    else:
+        demo_section = ""
 
-<section>
-  <div class="badge-row">
-    {badge_html}
-  </div>
-  <div class="warning-banner">
-    <p><strong>{t['prerelease_title']}.</strong> {t['prerelease']}</p>
-  </div>
-</section>
+    setup_media = f"""<ul class="chip-row">
+              <li class="chip">{"Dry run by default" if en else "Simulation par défaut"}</li>
+              <li class="chip">{"Trash, not erase" if en else "Corbeille, pas effacement"}</li>
+              <li class="chip">{"Explicit permissions" if en else "Autorisations explicites"}</li>
+              <li class="chip">{"No background agent" if en else "Aucun agent en arrière-plan"}</li>
+            </ul>"""
 
-{tour_section}
+    # The wide Smart Care window, at full measure where its interface is
+    # actually legible, in the same hairline frame as every other figure.
+    product_section = f"""
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
+      <figure class="media" data-reveal>
+        <picture>
+          <source srcset="../assets/app/smart-care.webp" type="image/webp">
+          <img src="../assets/app/smart-care.png" width="2024" height="1488" loading="lazy"
+            sizes="(min-width: 1024px) 1004px, 92vw"
+            alt="{"CoreTend Smart Care window: module sidebar on the left, scan summary and the list of findings to review on the right" if en else "Fenêtre Smart Care de CoreTend : barre latérale des modules à gauche, résumé d’analyse et liste des résultats à examiner à droite"}">
+        </picture>
+        <figcaption>{"Smart Care — every scan in one pass, every finding listed before anything is removed." if en else "Smart Care — toutes les analyses en une passe, chaque résultat listé avant toute suppression."}</figcaption>
+      </figure>
+    </div>
+  </section>""" if media_exists("assets/app/smart-care.webp") else ""
 
-<section id="how" class="reveal">
-  <span class="section-label">{t['space_label']}</span>
-  <h2>{t['space_title']}</h2>
-  <p>{t['space_body']}</p>
-</section>
+    return f"""{FULL_BLEED}
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <p class="kicker" data-reveal>{t['hero_eyebrow']}</p>
+          <h1>
+            <span class="line"><span>{"Your Mac," if en else "Votre Mac,"}</span></span>
+            <span class="line"><span class="accent">{"lighter." if en else "plus léger."}</span></span>
+          </h1>
+          <div data-reveal data-reveal-delay="80">
+            <p class="tagline">{SIGNATURE[l]}</p>
+            <p class="subline">{"Local only · No account · No telemetry · Open source" if en else "100 % local · Sans compte · Sans télémétrie · Open source"}</p>
+            <p class="intro">{t['hero_body']}</p>
+          </div>
+          <div class="btn-row" data-reveal data-reveal-delay="160">
+            <span data-magnetic><a class="btn btn-primary" href="download.html">{t['cta_download']}{ARROW_SVG}</a></span>
+            <a class="btn btn-secondary" href="#modules">{t['cta_how']}</a>
+          </div>
+        </div>
+        <figure class="hero-figure" data-reveal data-reveal-delay="120">
+          <div class="hero-frame">
+            {hero_media}
+          </div>
+          <figcaption class="hero-caption">
+            <span class="live">{ident("marketingVersion", "")}</span>
+            <span>macOS 14+ · Apple silicon</span>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
 
-<section>
-  <span class="section-label">{t['modules_label']}</span>
-  <h2>{t['modules_title']}</h2>
-  <div class="cards">
-  {module_cards}
-  </div>
-</section>
+  <section class="section" style="padding-top:0">
+    <div class="wrap">
+      <div class="note warn" data-reveal>
+        <p class="kicker">{t['prerelease_title']}</p>
+        <p>{t['prerelease']}</p>
+      </div>
+    </div>
+  </section>
 
-<section>
-  <span class="section-label">{t['principles_label']}</span>
-  <h2>{t['principles_title']}</h2>
-  <div class="cards">
-  {principle_cards}
-  </div>
-</section>
+{product_section}
+  <section class="section" id="modules">
+    <div class="wrap">
+      <div class="section-head" data-reveal>
+        <p class="kicker">{t['modules_label']}</p>
+        <h2>{t['modules_title']}</h2>
+      </div>
+      <ul class="cards cols-3">
+      {module_cards}
+      </ul>
+    </div>
+  </section>
 
-<section class="feature reveal">
-  <div>
-    <span class="section-label">{t['setup_label']}</span>
-    <h2>{t['setup_title']}</h2>
-    <p>{t['setup_body']}</p>
-  </div>
-  <div class="feature-visual">
-    {settings_media}
-  </div>
-</section>
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head" data-reveal>
+        <p class="kicker">{t['space_label']}</p>
+        <h2>{t['space_title']}</h2>
+        <p class="lead">{t['space_body']}</p>
+      </div>
+    </div>
+  </section>
+{demo_section}
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head" data-reveal>
+        <p class="kicker">{t['principles_label']}</p>
+        <h2>{t['principles_title']}</h2>
+      </div>
+      <ul class="cards cols-3">
+      {principle_cards}
+      </ul>
+    </div>
+  </section>
 
-{gallery_section}
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head" data-reveal>
+        <p class="kicker">{t['setup_label']}</p>
+        <h2>{t['setup_title']}</h2>
+      </div>
+      <ul class="rows">
+        <li class="row-item" data-reveal>
+          <div>
+            <p>{t['setup_body']}</p>
+            <ul class="bullets">
+              <li>{"Explains what each permission is for before requesting it." if en else "Explique à quoi sert chaque autorisation avant de la demander."}</li>
+              <li>{"Dry run is the default: findings are listed, nothing is removed." if en else "La simulation est le réglage par défaut : les résultats sont listés, rien n\u2019est supprimé."}</li>
+              <li>{"Nothing is scanned or changed while the assistant runs." if en else "Rien n\u2019est analysé ni modifié pendant l\u2019assistant."}</li>
+            </ul>
+          </div>
+          <div class="row-aside">
+            {setup_media}
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
 
-<section class="reveal">
-  <span class="section-label">{t['os_label']}</span>
-  <h2>{t['os_title']}</h2>
-  <p>{t['os_body']}</p>
-  <p><a href="open-source.html">{t['os_cta']}</a></p>
-</section>
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head" data-reveal>
+        <p class="kicker">{t['os_label']}</p>
+        <h2>{t['os_title']}</h2>
+        <p class="lead">{t['os_body']}</p>
+      </div>
+      <div class="btn-row" data-reveal style="margin-top:0">
+        <span data-magnetic><a class="btn btn-primary" href="open-source.html">{t['os_cta']}{ARROW_SVG}</a></span>
+        <a class="btn btn-secondary" href="{REPOSITORY_URL}" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </div>
+    </div>
+  </section>
 
-<section class="reveal">
-  <h2>{t['download_title']}</h2>
-  <p>{t['download_body']}</p>
-  <div class="cta-row">
-    <a class="btn btn-primary" href="download.html">{t['cta_download']}</a>
-    <a class="btn btn-secondary" href="documentation.html">Documentation</a>
-  </div>
-</section>
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head" data-reveal>
+        <p class="kicker">{t['faq_label']}</p>
+        <h2>{t['faq_title']}</h2>
+      </div>
+      <div class="stack">
+      {faq_items}
+      </div>
+      <p data-reveal style="margin-top:2rem">{t['faq_more']}</p>
+    </div>
+  </section>
 
-<section>
-  <span class="section-label">{t['faq_label']}</span>
-  <h2>{t['faq_title']}</h2>
-  {faq_items}
-  <p>{t['faq_more']}</p>
-</section>
-
-<section class="reveal">
-  <h2>{t['legal_title']}</h2>
-  <p>{t['legal_body']}</p>
-</section>
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head" data-reveal>
+        <h2>{t['download_title']}</h2>
+        <p class="lead">{t['download_body']}</p>
+      </div>
+      <div class="btn-row" data-reveal style="margin-top:0">
+        <span data-magnetic><a class="btn btn-primary" href="download.html">{DOWNLOAD_SVG}{t['cta_download']}</a></span>
+        <a class="btn btn-secondary" href="documentation.html">Documentation</a>
+      </div>
+      <p class="muted mono" data-reveal style="margin-top:2rem;font-size:.8rem">{t['legal_body']}</p>
+    </div>
+  </section>
 """
 
 
@@ -820,14 +1011,10 @@ def demos_body(l):
         "qui n’ont pas été analysés."
     )
     product_tour = f"""
-<section class="demo-player">
-  <video controls muted loop playsinline preload="metadata"
-    poster="../assets/demos/product-tour-poster.webp" aria-describedby="demo-description">
-    <source src="../assets/demos/product-tour.webm" type="video/webm">
-    <source src="../assets/demos/product-tour.mp4" type="video/mp4">
-  </video>
-  <p id="demo-description">{description}</p>
-</section>""" if has_product_tour else ""
+<figure class="media">
+  {loop_video("product-tour", "1800/1264", "demo-description", 1800, 1264)}
+  <figcaption id="demo-description">{description}</figcaption>
+</figure>""" if has_product_tour else ""
     gatekeeper_description = (
         "Silent, genuine macOS first-open warning for the unsigned and not "
         "notarized CoreTend 0.9.0 beta. Wording can vary by macOS version. "
@@ -838,20 +1025,11 @@ def demos_body(l):
         "varier selon macOS. La séquence ne montre ni contournement ni authentification."
     )
     gatekeeper_video = f"""
-<section>
-  <h2>{"First-open warning" if l == "en" else "Avertissement de première ouverture"}</h2>
-  <div class="demo-player">
-    <video controls muted playsinline preload="none"
-      poster="../assets/demos/gatekeeper-blocked-poster.webp"
-      aria-describedby="gatekeeper-description">
-      <source src="../assets/demos/gatekeeper-blocked.webm" type="video/webm">
-      <source src="../assets/demos/gatekeeper-blocked.mp4" type="video/mp4">
-      <track kind="captions" srclang="en" label="Visual description"
-        src="../assets/demos/gatekeeper-blocked.vtt" default>
-    </video>
-    <p id="gatekeeper-description">{gatekeeper_description}</p>
-  </div>
-</section>""" if has_gatekeeper else ""
+<h2>{"First-open warning" if l == "en" else "Avertissement de première ouverture"}</h2>
+<figure class="media">
+  {loop_video("gatekeeper-blocked", "926/880", "gatekeeper-description", 926, 880, track=True)}
+  <figcaption id="gatekeeper-description">{gatekeeper_description}</figcaption>
+</figure>""" if has_gatekeeper else ""
     return f"""
 <h1>{title}</h1>
 <p class="lead">{intro}</p>
@@ -1083,15 +1261,8 @@ def install_body(l):
             "première ouverture. Les libellés peuvent varier selon macOS."
         )
         gatekeeper_media = f"""
-<figure class="demo-player">
-  <video controls muted playsinline preload="none"
-    poster="../assets/demos/gatekeeper-blocked-poster.webp"
-    aria-describedby="install-gatekeeper-description">
-    <source src="../assets/demos/gatekeeper-blocked.webm" type="video/webm">
-    <source src="../assets/demos/gatekeeper-blocked.mp4" type="video/mp4">
-    <track kind="captions" srclang="en" label="Visual description"
-      src="../assets/demos/gatekeeper-blocked.vtt" default>
-  </video>
+<figure class="media">
+  {loop_video("gatekeeper-blocked", "926/880", "install-gatekeeper-description", 926, 880, track=True)}
   <figcaption id="install-gatekeeper-description">{visual_description}</figcaption>
 </figure>"""
     if l == "en":

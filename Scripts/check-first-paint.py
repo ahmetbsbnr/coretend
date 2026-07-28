@@ -2,8 +2,19 @@
 """Regression gate for the CoreTend site's initial canvas.
 
 The site is static, so the strongest deterministic checks are at the response
-source: no renderable redirect document in production, an immediate light/dark
-background in every page, and a CSP hash that authorizes exactly that rule.
+source: no renderable redirect document in production, an immediate paper
+background and ink foreground in every page, and a CSP hash that authorizes
+exactly that rule.
+
+The bug this exists to catch is a flash of unstyled content — white canvas,
+default blue links — before the external stylesheet lands. The colours below
+are the site's own tokens (see Website/assets/style.css); the site renders a
+single paper theme, matching the portfolio it shares an identity with, so one
+background/foreground pair is the whole contract.
+
+The CSP half is not decoration: an inline critical style that the policy does
+not authorize is dropped by the browser, which reproduces exactly the white
+flash this gate is meant to prevent. That has actually happened here before.
 """
 
 import base64
@@ -12,6 +23,11 @@ import json
 from pathlib import Path
 import re
 import sys
+
+# The site's first-paint tokens, kept in one place so a palette change is a
+# one-line edit here rather than a scatter of hex literals.
+PAPER = "#f4f4f0"
+INK = "#17191d"
 
 repo = Path(__file__).resolve().parent.parent
 site = repo / "Website"
@@ -34,8 +50,11 @@ for page in pages:
         problems.append(f"{page.relative_to(repo)} has no critical style")
         continue
     rule = style.group(1)
-    if "#f4f6f3" not in rule or "#0b0f14" not in rule:
-        problems.append(f"{page.relative_to(repo)} lacks both initial theme backgrounds")
+    if PAPER not in rule or INK not in rule:
+        problems.append(
+            f"{page.relative_to(repo)} critical style does not set both the "
+            f"paper background ({PAPER}) and the ink foreground ({INK})"
+        )
     digest = base64.b64encode(hashlib.sha256(rule.encode()).digest()).decode()
     expected = f"sha256-{digest}"
     csp_values = [
@@ -53,4 +72,4 @@ if problems:
         print(f"  - {problem}")
     sys.exit(1)
 
-print(f"PASS: direct root redirect and CSP-authorized light/dark first paint on {len(pages)} pages")
+print(f"PASS: direct root redirect and CSP-authorized paper first paint on {len(pages)} pages")
