@@ -101,3 +101,7 @@ Documentation/WorkspacePreflight/**/*.bundle.sha256
 # Python bytecode from running generate.py
 __pycache__/
 *.pyc
+
+# Visual regression working output (references ARE tracked; diffs are not)
+Scripts/visual/output/
+node_modules/
