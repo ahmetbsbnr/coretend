@@ -460,6 +460,7 @@
 "onboarding.protection.signatures" = "Signatures";
 "onboarding.protection.unknown" = "unknown";
 "onboarding.protection.no_install" = "Not detected. Install ClamAV yourself (e.g. via Homebrew) to enable scanning.";
+"onboarding.protection.copy_command" = "Copy Install Command";
 "onboarding.protection.fsevents" = "Folder watching (FSEvents)";
 "onboarding.protection.available" = "Available";
 "onboarding.menubar.title" = "Menu bar & notifications";
