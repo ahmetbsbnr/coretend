@@ -57,7 +57,7 @@
     <span class="lang-switch" role="group" aria-label="Langue"><span aria-current="true">FR</span><span class="sep" aria-hidden="true">|</span><a href="../en/verify.html" hreflang="en" lang="en">EN</a></span>
   </nav>
   <div class="rail-foot">
-    <p class="status">0.9.1-rc.1</p>
+    <p class="status">0.9.1-rc.2</p>
     <p class="meta">macOS 14+ · Apple silicon</p>
     <a class="btn btn-primary" href="download.html">Télécharger</a>
     <div class="icon-row"><a class="icon-btn" href="https://github.com/ahmetbsbnr/coretend" target="_blank" rel="noopener noreferrer" aria-label="Code source de CoreTend sur GitHub"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
@@ -104,7 +104,7 @@
     <span class="lang-switch" role="group" aria-label="Langue"><span aria-current="true">FR</span><span class="sep" aria-hidden="true">|</span><a href="../en/verify.html" hreflang="en" lang="en">EN</a></span>
   </nav>
   <div class="mobile-menu-foot">
-    <p class="status">0.9.1-rc.1</p>
+    <p class="status">0.9.1-rc.2</p>
     <p class="meta">macOS 14+ · Apple silicon</p>
     <a class="btn btn-primary" href="download.html" style="width:100%;margin-top:1rem">Télécharger</a>
   </div>
@@ -147,13 +147,19 @@ CLI GitHub :</p>
 commit et un workflow que vous pouvez lire.</p>
 
 <h2>3. Minisign — est-ce la signature de l’éditeur ?</h2>
-<p><strong>Actuellement indisponible.</strong> La signature Minisign est
-implémentée dans le workflow de publication mais reste inactive tant qu’aucune
-clé de signature réelle n’existe. Aucun fichier <code>.minisig</code> n’est
-publié, et aucun ne doit être considéré comme fiable s’il apparaît par une
-autre voie. Lorsque la signature sera activée, la clé publique sera publiée
-dans ce dépôt et la commande sera :</p>
-<pre><code>minisign -Vm CoreTend-&lt;version&gt;-arm64-unsigned.dmg -P &lt;clé publique&gt;</code></pre>
+<p>Chaque artefact est publié avec une signature <code>.minisig</code> produite
+par la clé de publication dédiée de CoreTend. Contrairement à une empreinte,
+elle ne peut pas être falsifiée par qui contrôle la page de téléchargement :
+la vérifier prouve que le fichier a été signé par le détenteur de la clé
+privée.</p>
+<p>Identifiant de clé <code>F8473FB09E1DB730</code>, également publiée comme
+<code>minisign.pub</code> avec chaque version :</p>
+<pre><code>RWQwtx2esD9H+O7kDWTJcdyTfcWYkmnRMqlDrk0L8xHZkSk4lA6rZqSg</code></pre>
+<pre><code>minisign -Vm CoreTend-&lt;version&gt;-arm64-unsigned.dmg -P RWQwtx2esD9H+O7kDWTJcdyTfcWYkmnRMqlDrk0L8xHZkSk4lA6rZqSg</code></pre>
+<p><strong>Minisign n’est ni la signature de code Apple, ni la
+notarisation.</strong> Elle prouve que la clé de publication a signé ce
+fichier. Elle ne fait pas confiance à l’application aux yeux de macOS et ne
+supprime pas l’avertissement de premier lancement ci-dessous.</p>
 
 <h2>4. Compilez vous-même</h2>
 <p>Le contrôle le plus fort disponible ici : compilez les sources et comparez.
@@ -222,7 +228,7 @@ ci-dessus.</p>
     </div>
     <div class="footer-base">
       <p>&copy; Les contributeurs de CoreTend · Apache-2.0</p>
-      <p>0.9.1-rc.1</p>
+      <p>0.9.1-rc.2</p>
     </div>
   </div>
 </footer>
