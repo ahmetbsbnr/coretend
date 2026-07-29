@@ -35,7 +35,10 @@ mkdir -p Release
 STAGE=$(mktemp -d)
 cp -R "$APP" "$STAGE/"
 ln -s /Applications "$STAGE/Applications"
-cp LICENSE NOTICE THIRD_PARTY_NOTICES.md "$STAGE/"
+
+# The licence files are sealed inside the bundle by package-local.sh, before it
+# signs. They must not also sit on the volume root: a drag-and-drop window with
+# three loose text files in it is not an install instruction, it is clutter.
 
 # Background: a hidden folder, so it never shows up as a file to drag.
 if [ -f "$BG_SRC" ]; then
@@ -119,6 +122,25 @@ if [ -f "$MOUNT_DIR/.background/background.png" ]; then
 fi
 
 sync
+
+# The layout only exists if the Finder actually wrote a .DS_Store. Without it the
+# volume opens as a default Finder window: no background, no icon positions, the
+# app and the Applications alias wherever the Finder feels like putting them.
+# That shipped once (0.9.1-rc.2) because a failed layout pass was only a warning.
+# It is now a build failure unless the caller opts out on purpose.
+if [ ! -f "$MOUNT_DIR/.DS_Store" ]; then
+  layout_applied="no"
+  if [ "${ALLOW_UNSTYLED_DMG:-0}" != "1" ]; then
+    hdiutil detach "$MOUNT_DIR" >/dev/null 2>&1 || hdiutil detach "$MOUNT_DIR" -force >/dev/null 2>&1
+    rm -rf "$(dirname "$RW_DMG")" "$STAGE"
+    echo "package-dmg.sh: FAILED — no .DS_Store on the volume, so the window layout"
+    echo "  and background would not appear for the user. Grant Finder automation"
+    echo "  permission and rebuild, or set ALLOW_UNSTYLED_DMG=1 to ship anyway."
+    exit 1
+  fi
+  echo "package-dmg.sh: WARNING — shipping an unstyled DMG (ALLOW_UNSTYLED_DMG=1)"
+fi
+
 hdiutil detach "$MOUNT_DIR" >/dev/null || hdiutil detach "$MOUNT_DIR" -force >/dev/null
 rmdir "$MOUNT_DIR" 2>/dev/null || true
 
