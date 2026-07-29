@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import IntegrityCore
 @testable import CoreTendApp
 
 @Suite("Diagnostic report redaction")
@@ -18,7 +19,7 @@ struct DiagnosticReportTests {
         let inputs = DiagnosticReport.Inputs(
             appVersion: "0.7.0", appBuild: "42", macOSVersion: "Version 15.1 (Build 24B83)",
             architecture: "arm64", machineModel: "Mac15,6", deploymentTarget: "macOS 14+",
-            fullDiskAccess: true, clamAVAvailable: true, clamAVPath: "/opt/homebrew/bin/clamscan",
+            fullDiskAccess: true, codeSignTier: .teamSigned, codeSignValid: true,
             schemaVersion: 3, exclusionCount: 2,
             activityCountsByKind: ["scan": 10, "cleanup": 4, "restore": 1, "error": 0])
 

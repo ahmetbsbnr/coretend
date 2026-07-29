@@ -21,10 +21,7 @@
 "menubar.memory" = "Memory";
 "menubar.free_space" = "Free space";
 "menubar.thermal" = "Thermal";
-"menubar.protection" = "Protection";
 "menubar.warning_a11y" = "needs attention";
-"menubar.clamav_ready" = "ClamAV ready";
-"menubar.clamav_missing" = "ClamAV not installed";
 "menubar.last_smart_care" = "Last Smart Care: %@";
 "menubar.no_smart_care_yet" = "No Smart Care run yet.";
 "menubar.open_app" = "Open CoreTend";
@@ -32,7 +29,6 @@
 "menubar.quit" = "Quit";
 
 /* Smart Care */
-"smartcare.protection_unavailable" = "Malware scanning not yet available";
 "smartcare.performance_unavailable" = "Maintenance tasks not yet available";
 "smartcare.applications_unavailable" = "App analysis not yet available";
 "smartcare.care_categories" = "Care categories";
@@ -74,28 +70,7 @@
 "cleanup.done.moved" = "%@ moved to Trash";
 
 /* Protection */
-"protection.scan_info" = "Scanned %@ in %@s — %d threats";
-"protection.moved_to_quarantine" = "Moved to quarantine: %@";
-"protection.quarantine_failed" = "Quarantine failed: %@";
-"protection.restore_failed" = "Restore failed: %@";
-"protection.tab.malware" = "Malware";
 "protection.tab.privacy" = "Privacy";
-"protection.unavailable.title" = "Malware engine not installed";
-"protection.unavailable.body" = "CoreTend uses the open-source ClamAV engine for local malware scanning. It is not installed on this Mac, so scanning is unavailable — this module will not pretend otherwise.";
-"protection.unavailable.howto" = "To enable it: install ClamAV (for example `brew install clamav`), run `freshclam` once to download signatures, then reopen this screen.";
-"protection.unavailable.note" = "Note: this scanner is a local signature check, not a commercial antivirus or real-time protection.";
-"protection.scan.title" = "Local malware scan (ClamAV)";
-"protection.scan.subtitle" = "Signature-based scan. Not a commercial antivirus; no real-time protection.";
-"protection.scan_downloads" = "Scan Downloads";
-"protection.scan_folder" = "Scan Folder…";
-"protection.no_threats" = "No threats found";
-"protection.findings" = "Findings";
-"protection.quarantine" = "Quarantine";
-"protection.quarantine_section" = "Quarantine";
-"protection.quarantine_empty" = "Empty. Quarantined files are stored locally, stripped of execute permission, and can be restored or permanently deleted.";
-"protection.quarantine_was" = "was: %@";
-"protection.restore" = "Restore";
-"protection.delete_permanently" = "Delete Permanently";
 
 /* Space Lens */
 "spacelens.title" = "Space Lens";
@@ -319,10 +294,8 @@
 "settings.deletion_method" = "Deletion method";
 "settings.deletion_method_value" = "System Trash (reversible)";
 "settings.protection" = "Protection";
-"settings.clamav_engine" = "ClamAV engine";
 "settings.installed" = "Installed";
 "settings.not_installed" = "Not installed";
-"settings.clamav_install_hint" = "Install with `brew install clamav`, run `freshclam` once, then reopen Protection.";
 "settings.privileged_helper" = "Privileged helper";
 "settings.unavailable" = "Unavailable";
 "settings.privileged_helper_detail" = "Not implemented — this build has no signing identity to install a privileged helper. Every feature works unprivileged; this is a known, honest limitation, not a bug.";
@@ -386,6 +359,27 @@
 
 /* Module display names (sidebar / placeholder) */
 "module.protection" = "Protection";
+"menubar.this_copy" = "This copy";
+"menubar.signature_apple" = "Apple-signed";
+"menubar.signature_team" = "Signed (team %@)";
+"menubar.signature_unsigned" = "Unsigned";
+"protection.tab.integrity" = "Integrity";
+"settings.this_copy_signature" = "This copy's signature";
+"integrity.explainer.title" = "Native signals, not a scanner";
+"integrity.explainer.body" = "CoreTend reads information macOS already records — no scanning engine, no signature database, nothing downloaded. It shows you what is already true about your downloads, your apps, and what runs at login.";
+"integrity.downloads.title" = "Recent downloads";
+"integrity.downloads.empty" = "No files in Downloads.";
+"integrity.downloads.no_provenance" = "No origin recorded";
+"integrity.inspector.title" = "Check an app’s signature";
+"integrity.inspector.subtitle" = "Pick any app to see who signed it and whether the signature is valid.";
+"integrity.inspector.choose" = "Choose an App…";
+"integrity.tier.apple" = "Signed by Apple";
+"integrity.tier.team" = "Signed by team %@";
+"integrity.tier.unsigned" = "Ad-hoc or unsigned";
+"integrity.tier.invalid" = "Signature does not validate";
+"integrity.login_items.title" = "Runs at login";
+"integrity.login_items.subtitle" = "Launch agents and daemons found in LaunchAgents/LaunchDaemons.";
+"integrity.login_items.empty" = "None found.";
 "module.my_activity" = "My Activity";
 
 /* Safety log (SafetyCore audit trail persistence) */
@@ -414,10 +408,6 @@
 
 /* Accessibility — Differentiate Without Color for elevated metrics */
 "performance.elevated" = "elevated";
-"protection.watch.title" = "Background watch";
-"protection.watch.subtitle" = "Optional. Watches Downloads and your Applications folders for new files and scans each one with ClamAV once it stops changing. It never removes anything automatically — anything found is listed here for you to review and quarantine yourself.";
-"protection.watch.toggle" = "Enable background watch";
-"protection.watch.alerts_none" = "Watching. No threats detected in watched folders.";
 
 // MARK: First-run wizard (Step 13)
 "common.yes" = "Yes";
@@ -452,17 +442,6 @@
 "onboarding.fileaccess.can_scan" = "Your files in standard folders can be scanned.";
 "onboarding.fileaccess.limited" = "Without Full Disk Access, Mail and Safari data stay out of reach.";
 "onboarding.fileaccess.no_autogrant" = "The app can't grant this itself — it only opens System Settings so you can decide.";
-"onboarding.protection.title" = "Optional protection";
-"onboarding.protection.subtitle" = "Malware scanning is optional and uses ClamAV if you've installed it. Nothing is installed for you.";
-"onboarding.protection.clamav" = "ClamAV engine";
-"onboarding.protection.path" = "Path";
-"onboarding.protection.version" = "Engine version";
-"onboarding.protection.signatures" = "Signatures";
-"onboarding.protection.unknown" = "unknown";
-"onboarding.protection.no_install" = "Not detected. Install ClamAV yourself (e.g. via Homebrew) to enable scanning.";
-"onboarding.protection.copy_command" = "Copy Install Command";
-"onboarding.protection.fsevents" = "Folder watching (FSEvents)";
-"onboarding.protection.available" = "Available";
 "onboarding.menubar.title" = "Menu bar & notifications";
 "onboarding.menubar.subtitle" = "Both are opt-in and can be turned off at any time.";
 "onboarding.menubar.show" = "Show the menu bar item";
@@ -484,7 +463,6 @@
 "onboarding.check.resources" = "Bundled resources";
 "onboarding.check.sqlite" = "Local database (SQLite)";
 "onboarding.check.permissions" = "Full Disk Access";
-"onboarding.check.clamav" = "ClamAV engine";
 "onboarding.check.freespace" = "Free disk space";
 "onboarding.check.location" = "Configured folder access";
 "onboarding.check.safetycore" = "Safety core";
@@ -501,7 +479,6 @@
 "onboarding.summary.profile" = "Security profile";
 "onboarding.summary.dry_run" = "Dry-run by default";
 "onboarding.summary.fda" = "Full Disk Access";
-"onboarding.summary.clamav" = "ClamAV engine";
 "onboarding.summary.menu_bar" = "Menu bar item";
 "onboarding.summary.notifications" = "Notifications";
 "onboarding.summary.exclusions" = "Excluded folders";

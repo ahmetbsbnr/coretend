@@ -1,15 +1,15 @@
 import SwiftUI
 import Foundation
 import Persistence
-import MalwareEngine
+import IntegrityCore
 
 /// Anonymized support diagnostic: generic hardware/software state only.
 ///
 /// INCLUDED: app version/build, macOS version, architecture, generic Mac
 /// model identifier (e.g. "Mac15,6" — not serial, not a marketing name tied
-/// to a purchase record), deployment target, Full Disk Access state, ClamAV
-/// availability (boolean + redacted path shape, never the real path), DB
-/// schema version, exclusion count (not the paths), activity counts by kind.
+/// to a purchase record), deployment target, Full Disk Access state, this
+/// copy's own code-signature tier, DB schema version, exclusion count (not
+/// the paths), activity counts by kind.
 ///
 /// EXCLUDED (never gathered, never emitted): username, hostname, home path,
 /// any full file path, filenames, installed-app list, browsing history,
@@ -24,8 +24,8 @@ enum DiagnosticReport {
         var machineModel: String
         var deploymentTarget: String
         var fullDiskAccess: Bool
-        var clamAVAvailable: Bool
-        var clamAVPath: String?
+        var codeSignTier: CodeSignTier
+        var codeSignValid: Bool
         var schemaVersion: Int?
         var exclusionCount: Int
         var activityCountsByKind: [String: Int]
@@ -54,10 +54,7 @@ enum DiagnosticReport {
         lines.append("Mac model: \(inputs.machineModel)")
         lines.append("Deployment target: \(inputs.deploymentTarget)")
         lines.append("Full Disk Access: \(inputs.fullDiskAccess ? "granted" : "not granted")")
-        lines.append("ClamAV engine: \(inputs.clamAVAvailable ? "installed" : "not installed")")
-        if inputs.clamAVAvailable, let path = inputs.clamAVPath {
-            lines.append("ClamAV path (redacted): \(redactPath(path))")
-        }
+        lines.append("This copy's signature: \(inputs.codeSignTier.rawValue) (valid: \(inputs.codeSignValid))")
         lines.append("DB schema version: \(inputs.schemaVersion.map(String.init) ?? "unknown")")
         lines.append("Exclusion count: \(inputs.exclusionCount)")
         for kind in ["scan", "cleanup", "restore", "error"] {
@@ -67,7 +64,7 @@ enum DiagnosticReport {
     }
 
     /// Live gathering, using only already-audited real-state sources
-    /// (PermissionProbe, ClamAVScanner, Store) — never simulated.
+    /// (PermissionProbe, CodeSignInspector, Store) — never simulated.
     @MainActor
     static func gatherLive() async -> String {
         let info = ProcessInfo.processInfo
@@ -80,7 +77,7 @@ enum DiagnosticReport {
                 model = String(decoding: buf.prefix(while: { $0 != 0 }), as: UTF8.self)
             }
         }
-        let scanner = ClamAVScanner()
+        let signature = CodeSignInspector.inspect(at: Bundle.main.bundleURL)
         var schemaVersion: Int?
         var exclusionCount = 0
         var counts: [String: Int] = [:]
@@ -99,8 +96,8 @@ enum DiagnosticReport {
             machineModel: model,
             deploymentTarget: "macOS 14+",
             fullDiskAccess: PermissionProbe.hasFullDiskAccess(),
-            clamAVAvailable: scanner.isAvailable,
-            clamAVPath: nil, // never gathered: we don't have the real path here, avoids any leak risk
+            codeSignTier: signature.tier,
+            codeSignValid: signature.signatureValid,
             schemaVersion: schemaVersion,
             exclusionCount: exclusionCount,
             activityCountsByKind: counts)

@@ -1,7 +1,6 @@
 import SwiftUI
 @preconcurrency import UserNotifications
 import DesignSystem
-import MalwareEngine
 
 /// Detects real permission state. Full Disk Access is probed by attempting to
 /// read a TCC-protected location — never assumed from user actions.
@@ -41,12 +40,6 @@ final class OnboardingViewModel {
     var notificationStatus: UNAuthorizationStatus = .notDetermined
     var notificationsOptIn = false
 
-    // Protection
-    private var scanner = ClamAVScanner()
-    var clamAVAvailable = false
-    var clamAVPathRedacted: String?
-    var clamAVVersion: ClamAVVersionInfo?
-
     // Folders & exclusions
     var scannableFolders: [URL] = []
     var exclusions: [URL] = []
@@ -64,8 +57,6 @@ final class OnboardingViewModel {
     var moveResult: String?
 
     func onAppear() {
-        clamAVAvailable = scanner.isAvailable
-        clamAVPathRedacted = scanner.binaryURL.map { DiagnosticReport.redactPath($0.path) }
         config = SecurityConfig.forProfile(profile)
         // Default scannable folders: the user's Downloads (safe, common target).
         let downloads = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads")
@@ -80,45 +71,6 @@ final class OnboardingViewModel {
     func refreshPermissions() async {
         fdaGranted = PermissionProbe.hasFullDiskAccess()
         notificationStatus = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
-    }
-
-    /// Re-probes disk for a ClamAV binary. Needed because a user may install
-    /// it mid-onboarding (e.g. via the copied `brew install` command) after
-    /// the initial `scanner` was constructed — a fresh scan of `knownPaths`
-    /// is the only way to pick that up.
-    func recheckClamAV() {
-        scanner = ClamAVScanner()
-        clamAVAvailable = scanner.isAvailable
-        clamAVPathRedacted = scanner.binaryURL.map { DiagnosticReport.redactPath($0.path) }
-    }
-
-    /// Best-effort ClamAV version via `clamscan --version`. Never fabricated:
-    /// on any failure the fields stay nil and the UI shows "unknown".
-    func probeClamAVVersion() async {
-        guard let bin = scanner.binaryURL else { return }
-        let out = await Self.runVersion(bin)
-        if let out { clamAVVersion = ClamAVVersionInfo.parse(out) }
-    }
-
-    private static func runVersion(_ binary: URL) async -> String? {
-        await withCheckedContinuation { cont in
-            DispatchQueue.global().async {
-                let process = Process()
-                process.executableURL = binary
-                process.arguments = ["--version"]
-                let pipe = Pipe()
-                process.standardOutput = pipe
-                process.standardError = Pipe()
-                do {
-                    try process.run()
-                    let data = pipe.fileHandleForReading.readDataToEndOfFile()
-                    process.waitUntilExit()
-                    cont.resume(returning: String(data: data, encoding: .utf8))
-                } catch {
-                    cont.resume(returning: nil)
-                }
-            }
-        }
     }
 
     /// Toggles notification opt-in. Enabling requests real authorization; we
@@ -142,14 +94,13 @@ final class OnboardingViewModel {
 
     func runSystemCheck() async {
         await refreshPermissions()
-        let inputs = await Self.gatherCheckInputs(
-            fda: fdaGranted, clamAV: clamAVAvailable)
+        let inputs = await Self.gatherCheckInputs(fda: fdaGranted)
         checkItems = SystemCheck.items(inputs)
         checkOverall = SystemCheck.overall(checkItems)
         checkRun = true
     }
 
-    private static func gatherCheckInputs(fda: Bool, clamAV: Bool) async -> SystemCheck.Inputs {
+    private static func gatherCheckInputs(fda: Bool) async -> SystemCheck.Inputs {
         var isARM = false
         #if arch(arm64)
         isARM = true
@@ -171,7 +122,6 @@ final class OnboardingViewModel {
             resourcesPresent: resourcesPresent,
             sqliteAvailable: schemaOK,
             fullDiskAccess: fda,
-            clamAVAvailable: clamAV,
             freeSpaceBytes: Int64(freeSpace),
             configuredLocationAccessible: homeReadable,
             safetyCoreReady: AppEnvironment.shared.store != nil)
@@ -232,7 +182,7 @@ struct OnboardingView: View {
     @AppStorage("menuBarEnabled") private var menuBarEnabled = true
     @State private var model = OnboardingViewModel()
 
-    private let stepCount = 8
+    private let stepCount = 7
 
     private var appVersion: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
@@ -253,7 +203,7 @@ struct OnboardingView: View {
         .frame(width: 600, height: 540)
         .onAppear {
             model.onAppear()
-            Task { await model.refreshPermissions(); await model.probeClamAVVersion() }
+            Task { await model.refreshPermissions() }
         }
     }
 
@@ -263,10 +213,9 @@ struct OnboardingView: View {
         case 0: welcomeStep
         case 1: securityStep
         case 2: fileAccessStep
-        case 3: protectionStep
-        case 4: menuBarStep
-        case 5: foldersStep
-        case 6: systemCheckStep
+        case 3: menuBarStep
+        case 4: foldersStep
+        case 5: systemCheckStep
         default: summaryStep
         }
     }
@@ -410,52 +359,6 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: Step 3 — Optional protection
-
-    private var protectionStep: some View {
-        page {
-            stepHeader("shield.lefthalf.filled", L("onboarding.protection.title"),
-                       L("onboarding.protection.subtitle"))
-            VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                HStack {
-                    Label(L("onboarding.protection.clamav"), systemImage: "checkmark.shield")
-                    Spacer()
-                    MCStatusBadge(model.clamAVAvailable ? L("settings.installed") : L("settings.not_installed"),
-                                  status: model.clamAVAvailable ? .success : .neutral)
-                }
-                if model.clamAVAvailable {
-                    if let path = model.clamAVPathRedacted {
-                        detailRow(L("onboarding.protection.path"), path)
-                    }
-                    detailRow(L("onboarding.protection.version"),
-                              model.clamAVVersion?.engine ?? L("onboarding.protection.unknown"))
-                    detailRow(L("onboarding.protection.signatures"),
-                              model.clamAVVersion?.signatures ?? L("onboarding.protection.unknown"))
-                } else {
-                    Text(L("onboarding.protection.no_install"))
-                        .font(MCFont.caption).foregroundStyle(.secondary)
-                    HStack {
-                        Button(L("onboarding.protection.copy_command")) {
-                            let pasteboard = NSPasteboard.general
-                            pasteboard.clearContents()
-                            pasteboard.setString("brew install clamav && freshclam", forType: .string)
-                        }
-                        Button(L("settings.recheck")) {
-                            model.recheckClamAV()
-                            Task { await model.probeClamAVVersion() }
-                        }
-                    }
-                }
-                Divider()
-                HStack {
-                    Label(L("onboarding.protection.fsevents"), systemImage: "eye")
-                    Spacer()
-                    MCStatusBadge(L("onboarding.protection.available"), status: .success)
-                }
-            }
-            .frame(maxWidth: 460)
-        }
-    }
 
     // MARK: Step 4 — Menu bar & notifications
 
@@ -555,7 +458,7 @@ struct OnboardingView: View {
                 Text(L("onboarding.check.running")).font(MCFont.caption).foregroundStyle(.secondary)
             }
         }
-        .task(id: step) { if step == 6 { await model.runSystemCheck() } }
+        .task(id: step) { if step == 5 { await model.runSystemCheck() } }
     }
 
     // MARK: Step 7 — Summary
@@ -568,8 +471,6 @@ struct OnboardingView: View {
                 summaryRow(L("onboarding.summary.dry_run"), yesNo(model.config.dryRun))
                 summaryRow(L("onboarding.summary.fda"),
                            model.fdaGranted ? L("settings.granted") : L("settings.not_granted"))
-                summaryRow(L("onboarding.summary.clamav"),
-                           model.clamAVAvailable ? L("settings.installed") : L("settings.not_installed"))
                 summaryRow(L("onboarding.summary.menu_bar"), yesNo(menuBarEnabled))
                 summaryRow(L("onboarding.summary.notifications"), yesNo(model.notificationsOptIn))
                 summaryRow(L("onboarding.summary.exclusions"), "\(model.exclusions.count)")

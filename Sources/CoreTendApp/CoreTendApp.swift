@@ -2,7 +2,7 @@ import SwiftUI
 import DesignSystem
 import SystemMetrics
 import Persistence
-import MalwareEngine
+import IntegrityCore
 
 @main
 struct CoreTendApp: App {
@@ -133,7 +133,7 @@ struct MenuBarView: View {
     @State private var snapshot: MetricsSnapshot?
     @State private var collector = MetricsCollector()
     @State private var lastSmartCare: ActivityRecord?
-    private let scanner = ClamAVScanner()
+    @State private var appSignature: CodeSignInfo?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -153,9 +153,11 @@ struct MenuBarView: View {
             } else {
                 ProgressView().controlSize(.small)
             }
-            metricRow(icon: "shield", label: L("menubar.protection"),
-                      value: scanner.isAvailable ? L("menubar.clamav_ready") : L("menubar.clamav_missing"),
-                      warn: !scanner.isAvailable)
+            if let appSignature {
+                metricRow(icon: "checkmark.seal", label: L("menubar.this_copy"),
+                          value: signatureLabel(appSignature),
+                          warn: appSignature.tier == .adHocOrUnsigned)
+            }
             Divider()
             if let last = lastSmartCare {
                 Text(L("menubar.last_smart_care", last.summary))
@@ -188,6 +190,19 @@ struct MenuBarView: View {
             guard let store = AppEnvironment.shared.store else { return }
             let recent = (try? await store.activity(limit: 20)) ?? []
             lastSmartCare = recent.first { $0.summary.hasPrefix("Smart Care") }
+        }
+        .task {
+            if let bundleURL = Bundle.main.bundleURL as URL? {
+                appSignature = CodeSignInspector.inspect(at: bundleURL)
+            }
+        }
+    }
+
+    private func signatureLabel(_ info: CodeSignInfo) -> String {
+        switch info.tier {
+        case .appleSigned: L("menubar.signature_apple")
+        case .teamSigned: L("menubar.signature_team", info.teamIdentifier ?? "?")
+        case .adHocOrUnsigned: L("menubar.signature_unsigned")
         }
     }
 

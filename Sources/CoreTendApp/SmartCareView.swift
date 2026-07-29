@@ -51,8 +51,6 @@ final class SmartCareViewModel {
     static func initialModules() -> [CareModule] {
         [
             CareModule(id: "cleanup", name: "Cleanup", icon: "sparkles", enabled: true, state: .pending),
-            CareModule(id: "protection", name: "Protection", icon: "shield", enabled: false,
-                       state: .unavailable(L("smartcare.protection_unavailable"))),
             CareModule(id: "performance", name: "Performance", icon: "gauge.with.needle", enabled: false,
                        state: .unavailable(L("smartcare.performance_unavailable"))),
             CareModule(id: "applications", name: "Applications", icon: "square.grid.2x2", enabled: false,
