@@ -106,3 +106,6 @@ __pycache__/
 Scripts/visual/output/
 node_modules/
 .build/packaging-venv/
+# Test and measurement output, regenerated per run and machine-specific.
+Release/stability-metrics.txt
+Release/robustness-results.tsv
