@@ -140,6 +140,16 @@ jobs:
       - name: Release manifest gate
         run: Scripts/test-release-manifest.sh
 
+      - name: DMG window layout gate
+        # 0.9.1-rc.2 shipped with no .DS_Store, so the installer opened as a
+        # bare Finder window. The layout is generated deterministically now
+        # (dmgbuild, no Finder), and this asserts it survived into the artifact
+        # that is about to be published. There is deliberately no opt-out here.
+        run: |
+          zsh Scripts/test-dmg-layout.sh \
+            "dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64-unsigned.dmg" \
+            "CoreTend ${{ steps.resolve.outputs.version }}"
+
       - name: Verify every declared artifact exists and matches its checksum
         run: |
           set -euo pipefail

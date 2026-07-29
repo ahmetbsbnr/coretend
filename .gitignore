@@ -105,3 +105,4 @@ __pycache__/
 # Visual regression working output (references ARE tracked; diffs are not)
 Scripts/visual/output/
 node_modules/
+.build/packaging-venv/

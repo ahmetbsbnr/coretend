@@ -1,5 +1,58 @@
 # CHANGELOG
 
+## 0.9.1-rc.3 — 2026-07-29 « Openable and Legible »
+
+Fixes the two defects that made the rc.2 public download unusable for a new
+user. rc.2's artifacts are left exactly as published.
+
+- fix(docs/site): every published instruction told the user to Control-click
+  the app and choose **Open** to get past Gatekeeper. Apple removed that
+  override in macOS 15 Sequoia, so on macOS 15 and later it silently does
+  nothing — the app never opened and no working recovery path was documented.
+  The site, the install steps, the README and the first-run guide now lead
+  with **System Settings → Privacy & Security → Open Anyway**, and mention
+  Control-click only as the macOS 14-and-earlier route. This was the reported
+  "the app did not work on another Mac".
+- fix(release): the DMG shipped without a `.DS_Store`, so the volume opened as
+  a default Finder window: no background, no icon placement, and three loose
+  licence files to read past. The window layout was produced by driving the
+  Finder over AppleScript, which needs an Automation/TCC grant; when the grant
+  was missing the build only warned and published anyway.
+- build(release): the DMG layout is now generated deterministically by
+  dmgbuild (ds_store/mac_alias). No Finder, no osascript, no TCC grant, no GUI
+  session, no human. Dependencies are pinned in
+  `Scripts/requirements-packaging.txt`. There is no opt-out: a DMG without its
+  layout fails the build.
+- feat(design): the DMG background is redrawn on the site's paper/ink/cobalt
+  palette instead of the dark Living System surface, so the installer and the
+  landing page read as one system. Both the 600×400 and 1200×800
+  representations ship in a single HiDPI TIFF.
+- test(release): `Scripts/test-dmg-layout.sh` mounts the built image and
+  asserts the background, its two resolutions, the recorded window bounds, the
+  view style, the icon size and both icon coordinates, that only CoreTend.app
+  and the Applications alias are visible, that the licence texts are sealed
+  inside the bundle with the signature intact, and that no packaging script
+  has regressed to calling osascript.
+- test(release): `Scripts/test-dmg-headless.sh` builds from a clean clone with
+  the Finder quit, a temporary HOME and the session variables stripped. Runs
+  on every push.
+- test(app): `Scripts/test-robustness.sh`, 37 cases under an isolated HOME —
+  missing and unwritable support directories, empty/truncated/garbage
+  preferences, a database that is empty, corrupt, truncated, read-only or a
+  directory, ClamAV absent/faked/unreadable/garbage, corrupt signature
+  database, no network, invalid update manifests, Unicode, emoji, long paths,
+  symlink cycles, unreadable trees, 3000 files, relaunch after a hard kill at
+  three points during startup, plus 50 cold launches and 50 launch/quit
+  cycles.
+- test(release): `Scripts/test-client-journey.sh` walks the public download to
+  a launched app and distinguishes the expected Gatekeeper block from a
+  packaging defect and from an application defect.
+
+Still unsigned and not notarized: no Apple Developer identity exists for this
+project. macOS will still block the first launch, and that is expected rather
+than a defect — the difference in rc.3 is that the documented way past it is
+the one that actually works.
+
 ## 0.9.1-rc.2 — 2026-07-29 « Verifiable Release »
 
 Supersedes 0.9.1-rc.1, whose artifacts predate everything below. rc.1 is left

@@ -35,5 +35,9 @@ cp Resources/Brand/Generated/MenuBarTemplate@2x.png "$APP/Contents/Resources/Men
 for bundle in "$BIN_DIR"/*.bundle; do
   [ -e "$bundle" ] && cp -R "$bundle" "$APP/Contents/Resources/"
 done
+# Licence texts ship inside the bundle, not loose on the DMG volume root. They
+# have to be added before signing, or the copy breaks the sealed CodeResources
+# and macOS reports the app as damaged.
+cp LICENSE NOTICE THIRD_PARTY_NOTICES.md "$APP/Contents/Resources/"
 codesign --force --sign - "$APP"
 echo "Built: $APP (scratch: $SCRATCH)"

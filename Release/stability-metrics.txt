@@ -1,0 +1,29 @@
+CoreTend stability measurements
+date:    2026-07-29T09:20:04Z
+binary:  /Users/ahmetbasbunar/Documents/CoreTendMediaClaudeRepo/build/CoreTend.app/Contents/MacOS/CoreTend
+host:    macOS 26.5.1 arm64
+
+-- cold launch (10 runs, fresh HOME each)
+  mean process-live time: 32 ms over 10 runs
+
+-- idle footprint (settled 8 s after launch)
+  resident memory: 68 MiB
+  cpu at idle:     0.0%
+  open fds:        52
+  threads:         4
+
+-- drift over a 60 s idle session
+  resident memory: 20 MiB (delta -47 MiB)
+  open fds:        51 (delta -1)
+
+-- 100 launch/quit cycles against one reused HOME
+  rss at cycle 1:   56 MiB
+  rss at cycle 100: 90 MiB
+  drift:            34 MiB
+  support dir size after 100 cycles: 
+
+-- residue
+  stray CoreTend processes after the suite: 0
+  temporary files left in the sandbox:      0
+
+measurements written to Release/stability-metrics.txt
