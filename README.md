@@ -78,9 +78,21 @@ shasum -a 256 -c SHA256SUMS
 
 ### First launch
 
-After copying CoreTend to `/Applications`, Control-click the app, choose
-**Open**, then confirm once. This is the per-app path for an unsigned build.
-Do not disable Gatekeeper globally.
+CoreTend is unsigned and not notarized, so macOS blocks the first launch. That
+warning is accurate — no Apple Developer identity is attached to this build.
+
+After copying CoreTend to `/Applications`:
+
+- **macOS 15 Sequoia and later (including macOS 26):** double-click CoreTend
+  once so macOS registers the block, then open **System Settings → Privacy &
+  Security**, scroll to **Security**, and choose **Open Anyway**. Confirm with
+  Touch ID or your admin password. Once per copy is enough.
+- **macOS 14 and earlier:** Control-click the app and choose **Open**, then
+  confirm. Apple removed this shortcut in macOS 15, so it has no effect on
+  newer systems.
+
+Do not disable Gatekeeper globally, and do not run a blanket quarantine-removal
+command — the per-app step above is enough.
 
 See [BUILD_AND_INSTALL.md](Documentation/BUILD_AND_INSTALL.md) for complete
 installation and source-build instructions.
