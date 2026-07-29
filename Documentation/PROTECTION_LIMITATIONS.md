@@ -7,7 +7,7 @@ not do, so users can make an informed decision.
 ## What Protection actually is
 
 - An optional, opt-in wrapper around a user-installed `clamscan` binary
-  (ClamAV). See `Documentation/CLAMAV.md` for the technical details.
+  (ClamAV). See `Documentation/CLAMAV_DECISION.md` for the technical details.
 - A local quarantine mechanism (move + restore), not a removal or repair
   tool.
 - A privacy-cleaner sub-tab unrelated to malware scanning.

@@ -6,7 +6,7 @@ Each requirement gets a stable ID for later traceability-matrix work (session 2+
 
 **Scope note (honest, not exhaustive):** this pass covers the highest-signal sources — DECISIONS.md,
 SAFETY_MODEL.md/SAFETYCORE.md, KNOWN_LIMITATIONS.md, COMPATIBILITY.md/MACOS_VERSION_POLICY.md,
-CLAMAV.md/PROTECTION_LIMITATIONS.md, LEGAL_AND_LICENSE_STATUS.md, and the prior audit reports — plus
+CLAMAV_DECISION.md/PROTECTION_LIMITATIONS.md, LEGAL_AND_LICENSE_STATUS.md, and the prior audit reports — plus
 `git log --oneline --all` for phase-defining commits. ROADMAP.md, VISUAL_DIRECTION.md/BRAND_SYSTEM.md/
 DESIGN_TOKENS.md/MOTION_SYSTEM.md were read for the VIS-/MOTION- entries below but not mined line by
 line for every token value; a deeper visual-requirements pass is explicitly deferred to session 2 (see
@@ -83,8 +83,8 @@ exception allowed), **MAY** (optional, discretionary).
 - **Priority**: MUST
 - **Justification**: false security signal is worse than an honest "unavailable" state.
 - **Evidence**: `Sources/CoreTendApp/ProtectionView.swift` "unavailable" card path;
-  `Documentation/CLAMAV.md`, `PROTECTION_LIMITATIONS.md`.
-- **Current scope**: held (re-verified via `Documentation/CLAMAV.md` session-2 note: "the Protection tab
+  `Documentation/CLAMAV_DECISION.md`, `PROTECTION_LIMITATIONS.md`.
+- **Current scope**: held (re-verified via `Documentation/CLAMAV_DECISION.md` session-2 note: "the Protection tab
   renders an honest 'unavailable' card when [ClamAV is] absent").
 
 ### SEC-001 — No shell-injectable subprocess invocation
@@ -223,7 +223,7 @@ exception allowed), **MAY** (optional, discretionary).
 - **Current scope**: held.
 
 ### OSS-002 — ClamAV is a runtime-only, never-linked, never-bundled dependency
-- **Wording**: `CLAMAV.md`/`PROTECTION_LIMITATIONS.md`: "libclamav is never linked, no ClamAV binaries/
+- **Wording**: `CLAMAV_DECISION.md`/`PROTECTION_LIMITATIONS.md`: "libclamav is never linked, no ClamAV binaries/
   signatures are bundled, `ClamAVScanner` only probes known Homebrew/MacPorts paths for a
   user-installed `clamscan`."
 - **Priority**: MUST

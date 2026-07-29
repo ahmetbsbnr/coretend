@@ -56,11 +56,27 @@ swift test                  # full suite
 swift build -c release      # release, expected to emit zero warnings
 ```
 
+**If your clone lives inside an iCloud Drive-synced folder** (anywhere under
+`~/Documents` or `~/Desktop` with iCloud Drive's "Desktop & Documents" sync on),
+point `.build` outside it. SwiftPM's build cache is thousands of small files;
+iCloud actively syncing that same folder while the compiler writes to it
+causes severe I/O contention — builds stall, `git status` stalls, even plain
+file reads can time out, all with no error that points at the real cause:
+
+```sh
+swift build --scratch-path /tmp/coretend-dev-build
+swift test  --scratch-path /tmp/coretend-dev-build
+```
+
+`Scripts/package-local.sh` already does this (`SCRATCH=/tmp/coretend-release-build`)
+for exactly this reason. A plain `swift build`/`swift test` with no
+`--scratch-path` does not, and will hit the same wall on an iCloud-synced clone.
+
 Observed in a clean clone on the configuration above:
 
 ```
 Build complete! (52.77s)
-✔ Test run with 296 tests passed after 5.919 seconds.
+✔ Test run with 276 tests passed after 5.919 seconds.
 Build complete! (60.93s)
 ```
 
@@ -103,32 +119,11 @@ bash Scripts/package-dmg.sh 0.0.0-local
 # Built: Release/CoreTend-0.0.0-local-arm64-unsigned.dmg
 ```
 
-The script may report:
-
-```
-package-dmg.sh: BLOCKED_ENVIRONMENT — the Finder refused the layout pass
-  (most likely automation permission). The DMG is still functional.
-```
-
-That is expected when the Finder cannot be automated (no GUI session, or
-automation permission not granted). Only the saved icon *positions* are
-skipped; the DMG mounts and drag-and-drop works either way.
-
-## ClamAV (optional)
-
-Malware scanning is optional and is **not** built into CoreTend. The app shells
-out to a `clamscan` binary that you install and own:
-
-```sh
-brew install clamav
-freshclam                   # download the signature database, once
-```
-
-CoreTend looks for `clamscan` at `/opt/homebrew/bin`, `/usr/local/bin` and
-`/opt/local/bin` — fixed absolute paths, so `PATH` cannot be used to redirect
-it at a different binary. It is invoked as a subprocess with an argument array,
-never through a shell. If ClamAV is absent, the Protection module says so
-plainly instead of pretending to scan. See `Documentation/CLAMAV.md`.
+The window layout (background, icon positions) is generated deterministically
+by `dmgbuild` — no Finder, no AppleScript, no automation permission, so this
+works the same in a plain terminal and in CI. `Scripts/test-dmg-layout.sh`
+verifies the result; a DMG whose layout didn't come through fails the build
+rather than shipping unstyled.
 
 ## What a local build does not give you
 

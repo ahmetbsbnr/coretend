@@ -32,7 +32,7 @@ The one external component is **ClamAV**, and it is not bundled: if a user
 installs it themselves, CoreTend can execute the `clamscan` binary as a separate
 process. It is never linked, its signature database is never shipped, and
 GPL-2.0's copyleft therefore does not reach anything this project distributes.
-See `Documentation/CLAMAV.md`.
+See `Documentation/CLAMAV_DECISION.md`.
 
 Apple system frameworks and the system SQLite are linked from the OS and are
 not redistributed here.

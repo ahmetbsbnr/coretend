@@ -37,7 +37,7 @@ for items you are confident you don't need.
 ## What Protection is not
 
 ClamAV-backed scanning (see [PROTECTION.md](PROTECTION.md) and
-[CLAMAV.md](CLAMAV.md)) is a local, on-demand signature scan. It is not a
+[CLAMAV_DECISION.md](CLAMAV_DECISION.md)) is a local, on-demand signature scan. It is not a
 real-time antivirus, not a full endpoint-security product, and not a
 guarantee against malware. See
 [PROTECTION_LIMITATIONS.md](PROTECTION_LIMITATIONS.md).

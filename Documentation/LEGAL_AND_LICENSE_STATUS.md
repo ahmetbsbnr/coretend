@@ -49,7 +49,7 @@ significance, and it is the reason the distinction matters: CoreTend does
 **not** link `libclamav`. It executes a user-supplied binary through `Process`
 with an argument array and parses its output. GPL-2.0 copyleft attaches to
 linking and distribution; neither occurs here, and nothing GPL-licensed is
-distributed by this project. See `Documentation/CLAMAV.md` and
+distributed by this project. See `Documentation/CLAMAV_DECISION.md` and
 `Documentation/DEPENDENCIES.md`.
 
 Compatibility conclusion: Apache-2.0 for the distributed work is consistent

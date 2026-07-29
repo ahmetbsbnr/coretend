@@ -18,7 +18,7 @@ Every shipping target (`ScanCore`, `SafetyCore`, `FileRules`, `DesignSystem`,
 `CoreTendApp`) remains first-party Swift code depending only on Apple's
 system frameworks (Foundation, SwiftUI, AppKit, etc.) and, at runtime, an
 optional user-installed `clamscan` binary shelled out to as a subprocess —
-never linked, never vendored (see `Documentation/CLAMAV.md`).
+never linked, never vendored (see `Documentation/CLAMAV_DECISION.md`).
 
 | Name | Version | Source | License | Usage | Necessity | Risk | Native alternative | Maintenance | Bundled in app |
 |---|---|---|---|---|---|---|---|---|---|

@@ -62,7 +62,7 @@ notes, fine to include but not user-facing).
 | `SCANCORE.md` | `ScanCore` engines | current | internal |
 | `PROTECTION.md` | Protection/malware feature | current | public |
 | `PROTECTION_LIMITATIONS.md` | Honest ClamAV/Protection gaps | current | public |
-| `CLAMAV.md` | ClamAV integration specifics | current | internal |
+| `CLAMAV_DECISION.md` | ClamAV integration specifics | current | internal |
 | `PRIVILEGED_HELPER.md` | Privileged-helper design (unshipped) | current | internal |
 | `SMART_CARE.md` | Smart Care feature | current | public |
 | `QUARANTINE.md` | Quarantine mechanics | current | public |

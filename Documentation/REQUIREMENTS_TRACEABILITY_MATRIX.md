@@ -414,7 +414,7 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 
 ### OSS-002
 - **Priority**: MUST
-- **Source**: CLAMAV.md / PROTECTION_LIMITATIONS.md
+- **Source**: CLAMAV_DECISION.md / PROTECTION_LIMITATIONS.md
 - **Status**: **COMPLIANT_VERIFIED**
 - **Files**: Sources/MalwareEngine/MalwareEngine.swift
 - **Symbols**: ClamAVScanner
@@ -669,7 +669,7 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 
 ### FUNC-003
 - **Priority**: MUST
-- **Source**: README.md; CLAMAV.md
+- **Source**: README.md; CLAMAV_DECISION.md
 - **Status**: **COMPLIANT_PARTIAL**
 - **Files**: Sources/MalwareEngine/MalwareEngine.swift
 - **Symbols**: ClamAVScanner.isAvailable; Quarantine.restore/delete

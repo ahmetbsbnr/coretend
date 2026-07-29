@@ -3,7 +3,7 @@
 Protection is an on-demand local malware scan backed by ClamAV, plus a
 reversible quarantine — not a real-time antivirus and not a security
 guarantee. See [PROTECTION_LIMITATIONS.md](PROTECTION_LIMITATIONS.md) and
-[CLAMAV.md](CLAMAV.md) for exactly what it can and cannot catch.
+[CLAMAV_DECISION.md](CLAMAV_DECISION.md) for exactly what it can and cannot catch.
 
 ## How scanning works
 
@@ -12,7 +12,7 @@ local `clamscan` binary at common Homebrew/MacPorts install paths
 (`/opt/homebrew/bin/clamscan`, `/usr/local/bin/clamscan`,
 `/opt/local/bin/clamscan`). If none is found, Protection reports that
 clearly instead of silently doing nothing — ClamAV is a user-installed
-dependency, not bundled (see [CLAMAV.md](CLAMAV.md) for install steps).
+dependency, not bundled (see [CLAMAV_DECISION.md](CLAMAV_DECISION.md) for install steps).
 
 A scan runs `clamscan` over the paths you choose and parses its output into
 findings (`MalwareFinding`: path + signature name). Exit code 0 = clean, 1
@@ -34,6 +34,6 @@ Nothing is deleted automatically. For each finding you choose:
 
 It does not scan in the background or in real time, does not phone home
 signatures automatically (updating ClamAV's database is a manual step —
-see [CLAMAV.md](CLAMAV.md)), does not replace macOS's built-in
+see [CLAMAV_DECISION.md](CLAMAV_DECISION.md)), does not replace macOS's built-in
 XProtect/Gatekeeper, and is not a substitute for a dedicated
 endpoint-security product.
