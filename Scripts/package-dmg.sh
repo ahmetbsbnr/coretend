@@ -1,18 +1,16 @@
 #!/bin/zsh
 # Builds CoreTend-<version>-arm64-unsigned.dmg: the .app, an /Applications
-# shortcut, the licence files, a Living System background, and a volume icon.
+# shortcut, the Living System background, and a volume icon.
 #
-# What is and is not automated here, and why:
+# The window layout — icon view, window bounds, background picture, icon
+# coordinates — lives in a .DS_Store. This used to be written by driving the
+# Finder over AppleScript, which meant the build depended on a graphical
+# session and an Automation/TCC grant. When that grant was missing the layout
+# pass failed and the DMG shipped unstyled; 0.9.1-rc.2 went out that way.
 #
-#   Background image and volume icon are written directly into the staged
-#   volume — no GUI involved, so they are reliable in any environment.
-#
-#   Icon *positions* and window geometry live in a .DS_Store, which only the
-#   Finder writes. Driving the Finder needs a session with automation
-#   permission granted, which a build script cannot assume. So the layout pass
-#   is attempted, bounded by a timeout, and its failure is reported rather than
-#   silently producing a DMG that looks finished. The DMG is fully functional
-#   either way: drag-and-drop works with or without a saved window layout.
+# It is now written directly by dmgbuild (ds_store + mac_alias). No Finder, no
+# osascript, no TCC, no GUI. The build is reproducible in a non-interactive
+# shell and in CI, and Scripts/test-dmg-layout.sh verifies the result.
 #
 # No privileged helper, no install script, no user data — a DMG is a folder.
 set -e
@@ -31,121 +29,50 @@ BG_SRC="Resources/Brand/Generated/DMG-Background.png"
 BG_SRC_2X="Resources/Brand/Generated/DMG-Background@2x.png"
 ICON_SRC="Resources/Brand/Generated/AppIcon.icns"
 
-mkdir -p Release
-STAGE=$(mktemp -d)
-cp -R "$APP" "$STAGE/"
-ln -s /Applications "$STAGE/Applications"
-
-# The licence files are sealed inside the bundle by package-local.sh, before it
-# signs. They must not also sit on the volume root: a drag-and-drop window with
-# three loose text files in it is not an install instruction, it is clutter.
-
-# Background: a hidden folder, so it never shows up as a file to drag.
-if [ -f "$BG_SRC" ]; then
-  mkdir -p "$STAGE/.background"
-  cp "$BG_SRC" "$STAGE/.background/background.png"
-  [ -f "$BG_SRC_2X" ] && cp "$BG_SRC_2X" "$STAGE/.background/background@2x.png"
-else
-  echo "package-dmg.sh: WARNING — $BG_SRC missing; run the brand asset generator"
-fi
-
-# Volume icon. Needs the custom-icon bit set on the volume root, which
-# SetFile provides when the developer tools are present.
-if [ -f "$ICON_SRC" ]; then
-  cp "$ICON_SRC" "$STAGE/.VolumeIcon.icns"
-  if command -v SetFile >/dev/null 2>&1; then
-    SetFile -a C "$STAGE" || echo "package-dmg.sh: WARNING — could not set the custom-icon bit"
-  else
-    echo "package-dmg.sh: note — SetFile unavailable, volume icon may not display"
-  fi
-fi
-
-RW_DMG=$(mktemp -u)/rw.dmg
-mkdir -p "$(dirname "$RW_DMG")"
-rm -f "Release/$DMG_NAME"
-
-# Read-write image first, so the layout pass has something to write into.
-hdiutil create -volname "$VOLNAME" -srcfolder "$STAGE" -ov \
-  -fs HFS+ -format UDRW "$RW_DMG" >/dev/null
-
-MOUNT_DIR=$(mktemp -d)
-hdiutil attach "$RW_DMG" -mountpoint "$MOUNT_DIR" -nobrowse -noverify >/dev/null
-
-layout_applied="no"
-if [ -f "$MOUNT_DIR/.background/background.png" ]; then
-  # Bounded: if the Finder is unavailable or unapproved, this must not hang a
-  # build. 25 s is far longer than the Finder needs when it does work.
-  set +e
-  osascript -e "
-    tell application \"Finder\"
-      tell disk \"$VOLNAME\"
-        open
-        set current view of container window to icon view
-        set toolbar visible of container window to false
-        set statusbar visible of container window to false
-        set the bounds of container window to {200, 140, 800, 540}
-        set opts to the icon view options of container window
-        set arrangement of opts to not arranged
-        set icon size of opts to 96
-        set background picture of opts to file \".background:background.png\"
-        set position of item \"CoreTend.app\" of container window to {150, 200}
-        set position of item \"Applications\" of container window to {450, 200}
-        close
-        open
-        update without registering applications
-        delay 1
-        close
-      end tell
-    end tell
-  " >/dev/null 2>&1 &
-  osa_pid=$!
-  waited=0
-  while kill -0 "$osa_pid" 2>/dev/null && [ "$waited" -lt 25 ]; do
-    sleep 1
-    waited=$((waited + 1))
-  done
-  if kill -0 "$osa_pid" 2>/dev/null; then
-    kill -9 "$osa_pid" 2>/dev/null || true
-    echo "package-dmg.sh: BLOCKED_ENVIRONMENT — the Finder layout pass timed out."
-    echo "  The DMG is functional (background and icon are embedded); only the"
-    echo "  saved icon positions are missing. See Documentation/VISUAL_QA.md."
-  else
-    wait "$osa_pid" 2>/dev/null
-    if [ $? -eq 0 ]; then
-      layout_applied="yes"
-    else
-      echo "package-dmg.sh: BLOCKED_ENVIRONMENT — the Finder refused the layout pass"
-      echo "  (most likely automation permission). The DMG is still functional."
-    fi
-  fi
-  set -e
-fi
-
-sync
-
-# The layout only exists if the Finder actually wrote a .DS_Store. Without it the
-# volume opens as a default Finder window: no background, no icon positions, the
-# app and the Applications alias wherever the Finder feels like putting them.
-# That shipped once (0.9.1-rc.2) because a failed layout pass was only a warning.
-# It is now a build failure unless the caller opts out on purpose.
-if [ ! -f "$MOUNT_DIR/.DS_Store" ]; then
-  layout_applied="no"
-  if [ "${ALLOW_UNSTYLED_DMG:-0}" != "1" ]; then
-    hdiutil detach "$MOUNT_DIR" >/dev/null 2>&1 || hdiutil detach "$MOUNT_DIR" -force >/dev/null 2>&1
-    rm -rf "$(dirname "$RW_DMG")" "$STAGE"
-    echo "package-dmg.sh: FAILED — no .DS_Store on the volume, so the window layout"
-    echo "  and background would not appear for the user. Grant Finder automation"
-    echo "  permission and rebuild, or set ALLOW_UNSTYLED_DMG=1 to ship anyway."
+for asset in "$BG_SRC" "$BG_SRC_2X"; do
+  if [ ! -f "$asset" ]; then
+    echo "package-dmg.sh: FAILED — $asset missing."
+    echo "  Run: swift Resources/Brand/Sources/generate-brand-assets.swift"
     exit 1
   fi
-  echo "package-dmg.sh: WARNING — shipping an unstyled DMG (ALLOW_UNSTYLED_DMG=1)"
+done
+
+# One TIFF carrying both the 600x400 and the 1200x800 representation, so the
+# window looks right on Retina and non-Retina without Finder picking a file.
+# tiffutil ships with macOS; this needs no session and no permission.
+BG_TIFF="$(mktemp -d)/dmg-background.tiff"
+tiffutil -cathidpicheck "$BG_SRC" "$BG_SRC_2X" -out "$BG_TIFF" >/dev/null
+
+# dmgbuild and its two libraries are pure Python. A private venv keeps the
+# build off whatever happens to be in the ambient site-packages, so a clean
+# clone and a developer machine produce the same image.
+VENV="${CORETEND_PACKAGING_VENV:-.build/packaging-venv}"
+if [ ! -x "$VENV/bin/dmgbuild" ]; then
+  echo "package-dmg.sh: provisioning packaging venv at $VENV"
+  mkdir -p "$(dirname "$VENV")"
+  python3 -m venv "$VENV"
+  "$VENV/bin/pip" install -q --disable-pip-version-check \
+    -r Scripts/requirements-packaging.txt
 fi
 
-hdiutil detach "$MOUNT_DIR" >/dev/null || hdiutil detach "$MOUNT_DIR" -force >/dev/null
-rmdir "$MOUNT_DIR" 2>/dev/null || true
+mkdir -p Release
+rm -f "Release/$DMG_NAME"
 
-# Compress to the shippable read-only image.
-hdiutil convert "$RW_DMG" -format UDZO -imagekey zlib-level=9 -o "Release/$DMG_NAME" >/dev/null
-rm -rf "$(dirname "$RW_DMG")" "$STAGE"
+# dmgbuild reads these through the settings file. Passing them in the
+# environment keeps the settings file free of repository-relative paths, so it
+# also works when the build runs from somewhere else.
+export CORETEND_APP="$PWD/$APP"
+export CORETEND_DMG_BACKGROUND="$BG_TIFF"
+[ -f "$ICON_SRC" ] && export CORETEND_VOLUME_ICON="$PWD/$ICON_SRC"
 
-echo "Built: Release/$DMG_NAME (window layout applied: $layout_applied)"
+# --no-hidpi: the TIFF already carries both representations, so dmgbuild must
+# pass it through rather than rebuild it from a single resolution.
+"$VENV/bin/dmgbuild" --no-hidpi -s Scripts/dmg-settings.py "$VOLNAME" "Release/$DMG_NAME"
+rm -rf "$(dirname "$BG_TIFF")"
+
+# The layout is the point of this script, so its absence is a build failure,
+# never a warning. ALLOW_UNSTYLED_DMG exists for local diagnosis only and is
+# refused for any release build (see Scripts/build-release.sh).
+zsh Scripts/test-dmg-layout.sh "Release/$DMG_NAME" "$VOLNAME"
+
+echo "Built: Release/$DMG_NAME"

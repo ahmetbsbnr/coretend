@@ -298,48 +298,140 @@ func openGraph() -> CGImage {
     return ctx.makeImage()!
 }
 
-/// DMG window background, 600x400. The arrow is drawn as real chevrons rather
-/// than typed as a character, so it renders identically everywhere.
+/// DMG window background, 600x400 points (1200x800 at @2x).
+///
+/// Carries the same paper/ink/cobalt palette as the website and the portfolio,
+/// not the dark Living System surface — the installer is the first thing a
+/// visitor sees after the landing page, so the two have to read as one system.
+///
+/// Everything is positioned against the icon centres the .DS_Store records:
+/// CoreTend at (170, 215) and Applications at (430, 215) in Finder's
+/// top-left-origin space, which is y = 185 here because CoreGraphics counts
+/// from the bottom. Change one and you must change the other, or the artwork
+/// stops lining up with the icons it is drawn around.
+let dmgIconY: CGFloat = 215          // Finder space, from the top
+let dmgAppX: CGFloat = 170
+let dmgApplicationsX: CGFloat = 430
+let dmgCanvas = CGSize(width: 600, height: 400)
+
 func dmgBackground(scale: Int = 1) -> CGImage {
-    let w = 600 * scale, h = 400 * scale
+    let w = Int(dmgCanvas.width) * scale, h = Int(dmgCanvas.height) * scale
     let f = CGFloat(scale)
     let ctx = makeContext(w, h)
+
+    // Paper, very slightly warmer at the top so the surface is not dead flat.
+    let paper = RGB(r: 0.957, g: 0.957, b: 0.941)   // #F4F4F0, --paper
+    let card  = RGB(r: 0.988, g: 0.988, b: 0.980)   // #FCFCFA, --card
+    let ink   = RGB(r: 0.090, g: 0.098, b: 0.114)   // #17191D, --ink
+    let sub   = RGB(r: 0.286, g: 0.306, b: 0.341)   // #494E57, --sub
+    let dim   = RGB(r: 0.420, g: 0.440, b: 0.475)   // #6B7079, --dim
+    let cobalt = RGB(r: 0.133, g: 0.251, b: 0.886)  // #2240E2, --cobalt
+
     let bg = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
-                        colors: [CGColor(srgbRed: 0.086, green: 0.118, blue: 0.145, alpha: 1),
-                                 cgColor(coreInk)] as CFArray,
+                        colors: [cgColor(card), cgColor(paper)] as CFArray,
                         locations: [0, 1])!
     ctx.drawLinearGradient(bg, start: CGPoint(x: 0, y: CGFloat(h)), end: CGPoint(x: 0, y: 0), options: [])
 
-    let halo = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
-                          colors: [cgColor(freshMint, 0.10), cgColor(freshMint, 0)] as CFArray,
-                          locations: [0, 1])!
-    ctx.drawRadialGradient(halo, startCenter: CGPoint(x: 300 * f, y: 340 * f), startRadius: 0,
-                           endCenter: CGPoint(x: 300 * f, y: 340 * f), endRadius: 320 * f, options: [])
+    // Cobalt halo behind the app icon — the eye should land there first, since
+    // that is the thing the user has to pick up.
+    // Two wells, one under each icon, joined by the guide line. A diffuse radial
+    // halo was tried first and rejected: at the low alpha paper needs, cobalt
+    // desaturates into a grey bruise. A bounded disc with a hairline ring keeps
+    // the hue and reads as a deliberate slot for the icon to sit in.
+    let iconCGY = (dmgCanvas.height - dmgIconY) * f
+    // Wide enough to contain a 104pt icon *and* its label. At r=74 the ring cut
+    // straight through the "CoreTend" and "Applications" text — verified by
+    // mounting the image and looking at it, which is the only way to catch this.
+    let wellR: CGFloat = 86 * f
 
-    drawBloom(ctx, rect: CGRect(x: 258 * f, y: 296 * f, width: 84 * f, height: 84 * f),
-              lineWidthFraction: 0.09)
-    let ws = wordmarkAttributed(pointSize: 26 * f, color: softPorcelain).size()
-    drawWordmark(ctx, at: CGPoint(x: (CGFloat(w) - ws.width) / 2, y: 258 * f),
-                 pointSize: 26 * f, color: softPorcelain)
+    func drawWell(centerX: CGFloat, tint: RGB, fillAlpha: CGFloat, ringAlpha: CGFloat) {
+        let c = CGPoint(x: centerX * f, y: iconCGY)
+        let soft = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
+                              colors: [cgColor(tint, fillAlpha), cgColor(tint, 0)] as CFArray,
+                              locations: [0, 1])!
+        ctx.saveGState()
+        ctx.addEllipse(in: CGRect(x: c.x - wellR, y: c.y - wellR, width: wellR * 2, height: wellR * 2))
+        ctx.clip()
+        ctx.drawRadialGradient(soft, startCenter: c, startRadius: 0,
+                               endCenter: c, endRadius: wellR, options: [])
+        ctx.restoreGState()
+        ctx.setStrokeColor(cgColor(tint, ringAlpha))
+        ctx.setLineWidth(1 * f)
+        ctx.strokeEllipse(in: CGRect(x: c.x - wellR, y: c.y - wellR,
+                                     width: wellR * 2, height: wellR * 2))
+    }
 
+    // The source well carries the cobalt; the destination stays neutral, so the
+    // colour itself points at the thing the user has to pick up.
+    drawWell(centerX: dmgAppX, tint: cobalt, fillAlpha: 0.10, ringAlpha: 0.28)
+    drawWell(centerX: dmgApplicationsX, tint: dim, fillAlpha: 0.05, ringAlpha: 0.20)
+
+    // Mark and wordmark, top centre, small. The installer is not a poster.
+    drawBloom(ctx, rect: CGRect(x: 276 * f, y: 322 * f, width: 48 * f, height: 48 * f),
+              lineWidthFraction: 0.09, palette: arcColorsLight)
+    let ws = wordmarkAttributed(pointSize: 19 * f, color: ink).size()
+    drawWordmark(ctx, at: CGPoint(x: (CGFloat(w) - ws.width) / 2, y: 296 * f),
+                 pointSize: 19 * f, color: ink)
+
+    // The guide line runs between the two icon centres, stopping clear of both
+    // so it never collides with an icon or its label. Dashed, hairline, cobalt:
+    // it should read as direction, not as decoration.
+    let lineStart = dmgAppX * f + wellR + 12 * f
+    let lineEnd = dmgApplicationsX * f - wellR - 12 * f
+    ctx.saveGState()
+    ctx.setStrokeColor(cgColor(cobalt, 0.42))
+    ctx.setLineWidth(1.5 * f)
+    ctx.setLineCap(.round)
+    ctx.setLineDash(phase: 0, lengths: [1.5 * f, 6 * f])
+    ctx.move(to: CGPoint(x: lineStart, y: iconCGY))
+    ctx.addLine(to: CGPoint(x: lineEnd - 10 * f, y: iconCGY))
+    ctx.strokePath()
+    ctx.restoreGState()
+
+    // One chevron at the end of the line. Drawn as strokes rather than typed as
+    // a character, so it cannot depend on a font being installed.
+    ctx.setStrokeColor(cgColor(cobalt, 0.85))
+    ctx.setLineWidth(2 * f)
+    ctx.setLineCap(.round)
+    ctx.setLineJoin(.round)
+    ctx.move(to: CGPoint(x: lineEnd - 9 * f, y: iconCGY + 6 * f))
+    ctx.addLine(to: CGPoint(x: lineEnd, y: iconCGY))
+    ctx.addLine(to: CGPoint(x: lineEnd - 9 * f, y: iconCGY - 6 * f))
+    ctx.strokePath()
+
+    // Minimal instruction, well below the icon labels.
     let hint = "Drag CoreTend to Applications"
     let hs = NSAttributedString(string: hint, attributes: [
-        .font: NSFont.systemFont(ofSize: 15 * f, weight: .regular)]).size()
-    _ = drawText(ctx, hint, at: CGPoint(x: (CGFloat(w) - hs.width) / 2, y: 36 * f),
-                 size: 15 * f, weight: .regular, color: mutedSlate)
+        .font: NSFont.systemFont(ofSize: 13 * f, weight: .medium)]).size()
+    _ = drawText(ctx, hint, at: CGPoint(x: (CGFloat(w) - hs.width) / 2, y: 56 * f),
+                 size: 13 * f, weight: .medium, color: sub)
 
-    // Chevrons pointing from the app toward the Applications alias.
-    ctx.setStrokeColor(cgColor(livingMoss, 0.85))
-    ctx.setLineWidth(4 * f)
-    ctx.setLineCap(.round)
-    for i in 0..<2 {
-        let x = (284 + CGFloat(i) * 18) * f
-        ctx.move(to: CGPoint(x: x, y: 168 * f))
-        ctx.addLine(to: CGPoint(x: x + 14 * f, y: 152 * f))
-        ctx.addLine(to: CGPoint(x: x, y: 136 * f))
-    }
-    ctx.strokePath()
+    let note = "Unsigned build — first launch needs System Settings › Privacy & Security"
+    let ns = NSAttributedString(string: note, attributes: [
+        .font: NSFont.systemFont(ofSize: 10 * f, weight: .regular)]).size()
+    _ = drawText(ctx, note, at: CGPoint(x: (CGFloat(w) - ns.width) / 2, y: 34 * f),
+                 size: 10 * f, weight: .regular, color: dim)
+
+    drawPaperGrain(ctx, width: w, height: h)
     return ctx.makeImage()!
+}
+
+/// Fixed-seed value noise. Deterministic on purpose: the DMG is checksummed and
+/// signed, so two builds of the same commit have to produce identical bytes.
+func drawPaperGrain(_ ctx: CGContext, width: Int, height: Int) {
+    var seed: UInt64 = 0x00C0_FFEE_CAFE_D00D
+    func next() -> Double {
+        seed ^= seed << 13; seed ^= seed >> 7; seed ^= seed << 17
+        return Double(seed % 10_000) / 10_000
+    }
+    ctx.saveGState()
+    for _ in 0..<(width * height / 90) {
+        let x = next() * Double(width), y = next() * Double(height)
+        let dark = next() < 0.5
+        ctx.setFillColor(CGColor(gray: dark ? 0 : 1, alpha: dark ? 0.030 : 0.045))
+        ctx.fill(CGRect(x: x, y: y, width: 1, height: 1))
+    }
+    ctx.restoreGState()
 }
 
 // MARK: - Vector output (SVG + PDF)
