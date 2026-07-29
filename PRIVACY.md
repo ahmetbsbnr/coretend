@@ -15,13 +15,11 @@ that means.
 
 ## The one optional network dependency
 
-The Protection module's malware scanning is powered by a
-separately-installed, optional ClamAV. If you choose to update ClamAV's
-virus definitions, that update process contacts ClamAV's own definition
-mirrors — not a CoreTend server, and only when you trigger it. See
-[Documentation/CLAMAV.md](Documentation/CLAMAV.md) and
-[Documentation/PROTECTION_LIMITATIONS.md](Documentation/PROTECTION_LIMITATIONS.md).
-The app itself ships no analytics alongside this.
+The Protection module no longer includes malware scanning — see
+[Documentation/CLAMAV_DECISION.md](Documentation/CLAMAV_DECISION.md) for why.
+Its Integrity tab reads only local, already-existing macOS metadata (download
+quarantine attributes, code-signature status, login items); none of it is
+sent anywhere. The app itself ships no analytics alongside this.
 
 ## Data storage
 
