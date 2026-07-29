@@ -27,7 +27,7 @@ say() { echo "$1"; echo "$1" >> "$OUT"; }
 
 say "CoreTend stability measurements"
 say "date:    $(date -u '+%Y-%m-%dT%H:%M:%SZ')"
-say "binary:  $BIN"
+say "binary:  ${BIN#$REPO/}"
 say "host:    macOS $(sw_vers -productVersion) $(uname -m)"
 say ""
 

@@ -50,9 +50,16 @@ FAILED_CASES=()
 
 # Launch the app under a given HOME. The subshell resets the inherited signal
 # dispositions so the child stays interruptible.
+#
+# Isolation is belt and braces: HOME is redirected *and* the app's own store
+# override is set, so even a code path that resolves the real Application
+# Support directory rather than $HOME lands in the sandbox. See
+# Scripts/check-test-isolation.sh for the contract.
 launch_app() {
   local home="$1" log="$2"
-  ( trap - INT TERM; HOME="$home" TMPDIR="$home/tmp" exec "$BIN" ) >"$log" 2>&1 &
+  ( trap - INT TERM
+    CORETEND_TEST_MODE=1 CORETEND_TEST_STORE_DIR="$home/store" \
+    HOME="$home" TMPDIR="$home/tmp" exec "$BIN" ) >"$log" 2>&1 &
 }
 
 # TERM, then KILL if it does not go. A case must never be able to hang the run.
@@ -113,7 +120,7 @@ run_case() {
 with_state() {
   local name="$1" setup="$2" hold="${3:-4}"
   local home="$SANDBOX/homes/$name"
-  local support="$home/Library/Application Support/CoreTend"
+  local support="$home/store"
   mkdir -p "$support" "$home/tmp"
   "$setup" "$home" "$support"
   run_case "$name" "$home" "$hold"
@@ -124,7 +131,7 @@ with_state() {
 noop() { :; }
 rmdir_support() { rm -rf "$2"; }
 make_readonly() { chmod 500 "$2"; }
-make_home_readonly() { chmod 500 "$1/Library/Application Support"; }
+make_home_readonly() { chmod 500 "$1/store"; }
 
 prefs_empty() { mkdir -p "$1/Library/Preferences"; : > "$1/Library/Preferences/com.ahmetbsbnr.coretend.plist"; }
 prefs_truncated() { mkdir -p "$1/Library/Preferences"; printf 'bplist00\xd1' > "$1/Library/Preferences/com.ahmetbsbnr.coretend.plist"; }
@@ -187,7 +194,7 @@ setup_unreadable() { mkdir -p "$1/Documents/locked"; chmod 000 "$1/Documents/loc
 kill_during_launch() {
   local name="$1" signal="$2" delay="$3"
   local home="$SANDBOX/homes/$name"
-  mkdir -p "$home/Library/Application Support/CoreTend" "$home/tmp"
+  mkdir -p "$home/store" "$home/tmp"
   launch_app "$home" "$SANDBOX/$name.log"
   local pid=$!
   sleep "$delay"

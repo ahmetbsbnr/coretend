@@ -27,7 +27,7 @@ REPO_SLUG="ahmetbsbnr/coretend"
 WORK=$(mktemp -d)
 HOME_ISO="$WORK/home"
 APPS_ISO="$WORK/Applications"
-mkdir -p "$HOME_ISO/tmp" "$APPS_ISO"
+mkdir -p "$HOME_ISO/tmp" "$HOME_ISO/store" "$APPS_ISO"
 MOUNT=""
 cleanup() {
   [ -n "$MOUNT" ] && { hdiutil detach "$MOUNT" >/dev/null 2>&1 || hdiutil detach "$MOUNT" -force >/dev/null 2>&1; }
@@ -157,6 +157,7 @@ ok "simulated the user's one-time 'Open Anyway' approval"
 
 launch_and_hold() {
   local label="$1" hold="$2"
+  CORETEND_TEST_MODE=1 CORETEND_TEST_STORE_DIR="$HOME_ISO/store" \
   HOME="$HOME_ISO" TMPDIR="$HOME_ISO/tmp" "$APPS_ISO/CoreTend.app/Contents/MacOS/CoreTend" \
     >"$WORK/$label.log" 2>&1 &
   local pid=$! waited=0
@@ -179,9 +180,9 @@ command -v clamscan >/dev/null 2>&1 && note "ClamAV is installed on this host" \
 launch_and_hold first-launch 6 || die APP-DEFECT "first launch did not stay up: $(cat "$WORK/first-launch.log" | head -c 300)"
 ok "first launch survives with a virgin HOME, no ClamAV, no prior state"
 
-[ -d "$HOME_ISO/Library/Application Support/CoreTend" ] \
-  && ok "app created its support directory" \
-  || note "no support directory created on first launch"
+[ -d "$HOME_ISO/store" ] \
+  && ok "app created its store directory (inside the sandbox)" \
+  || note "no store directory created on first launch"
 
 # 18. Close and relaunch — the second run reads what the first one wrote.
 launch_and_hold relaunch 6 || die APP-DEFECT "relaunch over first-run state failed: $(cat "$WORK/relaunch.log" | head -c 300)"
@@ -192,7 +193,7 @@ launch_and_hold offline 6 || die APP-DEFECT "launch failed with no reachable net
 ok "launch with no cached update manifest (update check fails soft)"
 
 # 21. Uninstall, isolated.
-rm -rf "$APPS_ISO/CoreTend.app" "$HOME_ISO/Library/Application Support/CoreTend"
+rm -rf "$APPS_ISO/CoreTend.app" "$HOME_ISO/store"
 [ -d "$APPS_ISO/CoreTend.app" ] && die PACKAGING "uninstall left the bundle behind"
 ok "uninstall removes the bundle and its support directory"
 
