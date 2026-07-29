@@ -718,7 +718,7 @@ def home_body(l):
       <h2 class="quiet-title" data-reveal>{"The first launch, unedited" if en else "Le premier lancement, sans montage"}</h2>
       <figure class="media" data-reveal>
         {loop_video("gatekeeper-blocked", "926/880", "demo-desc", 926, 880)}
-        <figcaption id="demo-desc">{"CoreTend is unsigned, so macOS blocks it the first time. Control-click, Open, confirm — once." if en else "CoreTend n’est pas signé : macOS le bloque la première fois. Ctrl-clic, Ouvrir, confirmer — une seule fois."}</figcaption>
+        <figcaption id="demo-desc">{"CoreTend is unsigned, so macOS blocks it the first time. Open System Settings → Privacy &amp; Security and choose Open Anyway — once." if en else "CoreTend n’est pas signé : macOS le bloque la première fois. Réglages Système → Confidentialité et sécurité, puis Ouvrir quand même — une seule fois."}</figcaption>
       </figure>
     </div>
   </section>"""
@@ -1022,8 +1022,15 @@ does not have.</p>
   <li>Verify the SHA-256 checksum against the published value
   (<code>shasum -a 256 &lt;file&gt;</code>).</li>
   <li>Unzip and move CoreTend.app to /Applications.</li>
-  <li>Right-click (or Control-click) the app and choose <strong>Open</strong>,
-  then confirm. Once is enough — macOS remembers that copy.</li>
+  <li>Double-click CoreTend once. macOS blocks it and says the developer cannot
+  be verified. This is expected.</li>
+  <li>Open <strong>System Settings &rarr; Privacy &amp; Security</strong>, scroll to
+  <strong>Security</strong>, and choose <strong>Open Anyway</strong> next to the
+  CoreTend message. Confirm with Touch ID or your admin password. Once is enough
+  — macOS remembers that copy.</li>
+  <li>On macOS 14 and earlier you can instead Control-click the app and choose
+  <strong>Open</strong>. That shortcut was removed in macOS 15 Sequoia, so use
+  System Settings on macOS 15 and later.</li>
   <li>Grant Full Disk Access if you want full-coverage scanning (see the
   Documentation).</li>
 </ol>
@@ -1110,9 +1117,16 @@ payante au Apple Developer Program dont ce projet ne dispose pas.</p>
   <li>Vérifiez l'empreinte SHA-256 par rapport à la valeur publiée
   (<code>shasum -a 256 &lt;fichier&gt;</code>).</li>
   <li>Décompressez et déplacez CoreTend.app dans /Applications.</li>
-  <li>Faites un clic droit (ou Contrôle-clic) sur l'application et choisissez
-  <strong>Ouvrir</strong>, puis confirmez. Une seule fois suffit : macOS retient
-  la décision pour cette copie.</li>
+  <li>Double-cliquez une fois sur CoreTend. macOS le bloque et indique que le
+  développeur ne peut pas être vérifié. C'est normal.</li>
+  <li>Ouvrez <strong>Réglages Système &rarr; Confidentialité et sécurité</strong>,
+  descendez jusqu'à <strong>Sécurité</strong> et choisissez <strong>Ouvrir quand
+  même</strong> en face du message CoreTend. Confirmez avec Touch ID ou votre mot
+  de passe administrateur. Une seule fois suffit : macOS retient la décision pour
+  cette copie.</li>
+  <li>Sur macOS 14 et antérieur, vous pouvez à la place faire Contrôle-clic sur
+  l'application et choisir <strong>Ouvrir</strong>. Ce raccourci a été supprimé
+  dans macOS 15 Sequoia : utilisez les Réglages Système à partir de macOS 15.</li>
   <li>Accordez l'accès complet au disque pour une analyse à couverture complète
   (voir la Documentation).</li>
 </ol>
@@ -1210,11 +1224,16 @@ notarized</strong>, because that requires a paid Apple Developer Program
 membership this project does not have. macOS will therefore refuse to open it
 on first launch. That warning is accurate: macOS genuinely cannot verify the
 developer.</p>
-<p>The two official ways to open it anyway, both of which keep every system
-protection in place:</p>
+<p>The official way to open it anyway, which keeps every system protection in
+place:</p>
 <ul>
-  <li>Control-click (or right-click) CoreTend in Finder, choose <strong>Open</strong>, then confirm.</li>
-  <li>Or open <strong>System Settings → Privacy &amp; Security</strong>, find the blocked-app message, and choose <strong>Open Anyway</strong>.</li>
+  <li><strong>macOS 15 Sequoia and later (including macOS 26):</strong> double-click
+  CoreTend once so macOS registers the block, then open <strong>System Settings →
+  Privacy &amp; Security</strong>, scroll to <strong>Security</strong>, and choose
+  <strong>Open Anyway</strong>. Confirm with Touch ID or your admin password.</li>
+  <li><strong>macOS 14 and earlier:</strong> Control-click (or right-click) CoreTend
+  in Finder, choose <strong>Open</strong>, then confirm. Apple removed this shortcut
+  in macOS 15, so it does nothing on newer systems.</li>
 </ul>
 <p>Do this once per copy. <strong>Never disable Gatekeeper</strong> to install
 this or anything else — no application is worth turning off a system-wide
@@ -1271,11 +1290,17 @@ notarisé</strong>, car cela exige une adhésion payante au Apple Developer
 Program dont ce projet ne dispose pas. macOS refusera donc de l’ouvrir au
 premier lancement. Cet avertissement est exact : macOS ne peut réellement pas
 vérifier le développeur.</p>
-<p>Les deux méthodes officielles pour l’ouvrir malgré tout, qui conservent
-toutes les protections du système :</p>
+<p>La méthode officielle pour l’ouvrir malgré tout, qui conserve toutes les
+protections du système :</p>
 <ul>
-  <li>Ctrl-clic (ou clic droit) sur CoreTend dans le Finder, choisir <strong>Ouvrir</strong>, puis confirmer.</li>
-  <li>Ou ouvrir <strong>Réglages Système → Confidentialité et sécurité</strong>, repérer le message d’application bloquée, et choisir <strong>Ouvrir quand même</strong>.</li>
+  <li><strong>macOS 15 Sequoia et ultérieur (macOS 26 inclus) :</strong>
+  double-cliquez une fois sur CoreTend pour que macOS enregistre le blocage, puis
+  ouvrez <strong>Réglages Système → Confidentialité et sécurité</strong>, descendez
+  jusqu’à <strong>Sécurité</strong> et choisissez <strong>Ouvrir quand même</strong>.
+  Confirmez avec Touch ID ou votre mot de passe administrateur.</li>
+  <li><strong>macOS 14 et antérieur :</strong> Ctrl-clic (ou clic droit) sur CoreTend
+  dans le Finder, choisir <strong>Ouvrir</strong>, puis confirmer. Apple a supprimé
+  ce raccourci dans macOS 15 : il est sans effet sur les systèmes plus récents.</li>
 </ul>
 <p>Une seule fois par copie. <strong>Ne désactivez jamais Gatekeeper</strong>
 pour installer ceci ou autre chose — aucune application ne vaut la
@@ -1322,10 +1347,12 @@ authorize this copy of CoreTend only.</p></div>
   <a href="download.html">Download page</a>. The ZIP is an alternative.</p></li>
   <li><h2>Move CoreTend to Applications</h2><p>Open the DMG, drag CoreTend to
   Applications, then eject the disk image.</p></li>
-  <li><h2>Open this app once</h2><p>In Applications, Control-click CoreTend and
-  choose <strong>Open</strong>. If your macOS version instead presents a
-  CoreTend-specific option in System Settings → Privacy &amp; Security, use
-  that option. Labels vary by macOS version.</p>
+  <li><h2>Open this app once</h2><p>Double-click CoreTend in Applications. macOS
+  blocks it, which is expected. Then open <strong>System Settings → Privacy &amp;
+  Security</strong>, scroll to <strong>Security</strong>, and choose
+  <strong>Open Anyway</strong>. On macOS 14 and earlier you can instead
+  Control-click CoreTend and choose <strong>Open</strong>; Apple removed that
+  shortcut in macOS 15.</p>
   <details><summary>Why is this needed?</summary><p>The beta has no Developer
   ID signature and is not notarized. This per-app choice is not a security
   certification. Never disable Gatekeeper or SIP globally.</p></details></li>
