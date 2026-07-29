@@ -56,7 +56,7 @@ struct OnboardingLogicTests {
     private var healthy: SystemCheck.Inputs {
         SystemCheck.Inputs(
             isARM64: true, macOSMajor: 15, bundleValid: true, resourcesPresent: true,
-            sqliteAvailable: true, fullDiskAccess: true, clamAVAvailable: true,
+            sqliteAvailable: true, fullDiskAccess: true,
             freeSpaceBytes: 50_000_000_000, configuredLocationAccessible: true,
             safetyCoreReady: true)
     }
@@ -68,13 +68,11 @@ struct OnboardingLogicTests {
     @Test func missingOptionalsDegradeToLimited() {
         var i = healthy
         i.fullDiskAccess = false
-        i.clamAVAvailable = false
         i.freeSpaceBytes = 100
         i.configuredLocationAccessible = false
         let items = SystemCheck.items(i)
         #expect(SystemCheck.overall(items) == .limited)
         #expect(items.first { $0.id == "permissions" }?.status == .limited)
-        #expect(items.first { $0.id == "clamav" }?.status == .limited)
         #expect(items.first { $0.id == "freespace" }?.status == .limited)
     }
 
@@ -98,25 +96,5 @@ struct OnboardingLogicTests {
         i.sqliteAvailable = false // unavailable
         i.bundleValid = false     // actionRequired
         #expect(SystemCheck.overall(SystemCheck.items(i)) == .unavailable)
-    }
-
-    // MARK: ClamAV version parsing
-
-    @Test func parsesFullClamAVVersion() {
-        let v = ClamAVVersionInfo.parse("ClamAV 1.0.0/27000/Fri Jan 01 2024")
-        #expect(v.engine == "1.0.0")
-        #expect(v.signatures == "27000")
-    }
-
-    @Test func parsesEngineOnlyVersion() {
-        let v = ClamAVVersionInfo.parse("ClamAV 1.0.0")
-        #expect(v.engine == "1.0.0")
-        #expect(v.signatures == nil)
-    }
-
-    @Test func parsesGarbageSafely() {
-        let v = ClamAVVersionInfo.parse("command not found")
-        #expect(v.engine == nil)
-        #expect(v.signatures == nil)
     }
 }

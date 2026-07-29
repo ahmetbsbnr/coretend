@@ -21,10 +21,7 @@
 "menubar.memory" = "Mémoire";
 "menubar.free_space" = "Espace libre";
 "menubar.thermal" = "Thermique";
-"menubar.protection" = "Protection";
 "menubar.warning_a11y" = "nécessite une attention";
-"menubar.clamav_ready" = "ClamAV prêt";
-"menubar.clamav_missing" = "ClamAV non installé";
 "menubar.last_smart_care" = "Dernier Smart Care : %@";
 "menubar.no_smart_care_yet" = "Aucun Smart Care exécuté pour l'instant.";
 "menubar.open_app" = "Ouvrir CoreTend";
@@ -32,7 +29,6 @@
 "menubar.quit" = "Quitter";
 
 /* Smart Care */
-"smartcare.protection_unavailable" = "Analyse antimalware pas encore disponible";
 "smartcare.performance_unavailable" = "Tâches de maintenance pas encore disponibles";
 "smartcare.applications_unavailable" = "Analyse des applications pas encore disponible";
 "smartcare.care_categories" = "Catégories de soin";
@@ -74,28 +70,7 @@
 "cleanup.done.moved" = "%@ déplacés vers la Corbeille";
 
 /* Protection */
-"protection.scan_info" = "%@ analysé en %@s — %d menaces";
-"protection.moved_to_quarantine" = "Mis en quarantaine : %@";
-"protection.quarantine_failed" = "Échec de la mise en quarantaine : %@";
-"protection.restore_failed" = "Échec de la restauration : %@";
-"protection.tab.malware" = "Malware";
 "protection.tab.privacy" = "Confidentialité";
-"protection.unavailable.title" = "Moteur antimalware non installé";
-"protection.unavailable.body" = "CoreTend utilise le moteur open-source ClamAV pour l'analyse antimalware locale. Il n'est pas installé sur ce Mac, l'analyse est donc indisponible — ce module ne fera pas semblant du contraire.";
-"protection.unavailable.howto" = "Pour l'activer : installez ClamAV (par exemple `brew install clamav`), lancez `freshclam` une fois pour télécharger les signatures, puis rouvrez cet écran.";
-"protection.unavailable.note" = "Remarque : ce scanner est une vérification de signatures locale, pas un antivirus commercial ni une protection en temps réel.";
-"protection.scan.title" = "Analyse antimalware locale (ClamAV)";
-"protection.scan.subtitle" = "Analyse par signatures. Pas un antivirus commercial ; pas de protection en temps réel.";
-"protection.scan_downloads" = "Analyser Téléchargements";
-"protection.scan_folder" = "Analyser un dossier…";
-"protection.no_threats" = "Aucune menace trouvée";
-"protection.findings" = "Résultats";
-"protection.quarantine" = "Mettre en quarantaine";
-"protection.quarantine_section" = "Quarantaine";
-"protection.quarantine_empty" = "Vide. Les fichiers en quarantaine sont stockés localement, privés des droits d'exécution, et peuvent être restaurés ou supprimés définitivement.";
-"protection.quarantine_was" = "était : %@";
-"protection.restore" = "Restaurer";
-"protection.delete_permanently" = "Supprimer définitivement";
 
 /* Space Lens */
 "spacelens.title" = "Space Lens";
@@ -319,10 +294,8 @@
 "settings.deletion_method" = "Méthode de suppression";
 "settings.deletion_method_value" = "Corbeille système (réversible)";
 "settings.protection" = "Protection";
-"settings.clamav_engine" = "Moteur ClamAV";
 "settings.installed" = "Installé";
 "settings.not_installed" = "Non installé";
-"settings.clamav_install_hint" = "Installez avec `brew install clamav`, exécutez `freshclam` une fois, puis rouvrez Protection.";
 "settings.privileged_helper" = "Assistant privilégié";
 "settings.unavailable" = "Indisponible";
 "settings.privileged_helper_detail" = "Non implémenté — cette version n'a pas d'identité de signature pour installer un assistant privilégié. Toutes les fonctionnalités marchent sans privilèges ; c'est une limitation connue et assumée, pas un bug.";
@@ -386,6 +359,27 @@
 
 /* Module display names (sidebar / placeholder) */
 "module.protection" = "Protection";
+"menubar.this_copy" = "Cette copie";
+"menubar.signature_apple" = "Signé par Apple";
+"menubar.signature_team" = "Signé (équipe %@)";
+"menubar.signature_unsigned" = "Non signé";
+"protection.tab.integrity" = "Intégrité";
+"settings.this_copy_signature" = "Signature de cette copie";
+"integrity.explainer.title" = "Des signaux natifs, pas un scanner";
+"integrity.explainer.body" = "CoreTend lit des informations que macOS enregistre déjà — aucun moteur d'analyse, aucune base de signatures, rien à télécharger. Vous voyez ce qui est déjà vrai sur vos téléchargements, vos applications et ce qui démarre à la connexion.";
+"integrity.downloads.title" = "Téléchargements récents";
+"integrity.downloads.empty" = "Aucun fichier dans Téléchargements.";
+"integrity.downloads.no_provenance" = "Aucune origine enregistrée";
+"integrity.inspector.title" = "Vérifier la signature d'une app";
+"integrity.inspector.subtitle" = "Choisissez une application pour voir qui l'a signée et si la signature est valide.";
+"integrity.inspector.choose" = "Choisir une application…";
+"integrity.tier.apple" = "Signé par Apple";
+"integrity.tier.team" = "Signé par l’équipe %@";
+"integrity.tier.unsigned" = "Ad-hoc ou non signé";
+"integrity.tier.invalid" = "La signature ne se valide pas";
+"integrity.login_items.title" = "Démarre à la connexion";
+"integrity.login_items.subtitle" = "Agents et daemons de lancement trouvés dans LaunchAgents/LaunchDaemons.";
+"integrity.login_items.empty" = "Aucun trouvé.";
 "module.my_activity" = "Mon activité";
 
 /* Safety log (SafetyCore audit trail persistence) */
@@ -414,10 +408,6 @@
 
 /* Accessibility — Differentiate Without Color for elevated metrics */
 "performance.elevated" = "élevé";
-"protection.watch.title" = "Surveillance en arrière-plan";
-"protection.watch.subtitle" = "Optionnel. Surveille les Téléchargements et vos dossiers Applications pour détecter les nouveaux fichiers et analyse chacun avec ClamAV une fois qu'il ne change plus. Rien n'est jamais supprimé automatiquement — les détections sont listées ici pour que vous les examiniez et les mettiez en quarantaine vous-même.";
-"protection.watch.toggle" = "Activer la surveillance en arrière-plan";
-"protection.watch.alerts_none" = "Surveillance active. Aucune menace détectée dans les dossiers surveillés.";
 
 // MARK: First-run wizard (Step 13)
 "common.yes" = "Oui";
@@ -452,17 +442,6 @@
 "onboarding.fileaccess.can_scan" = "Vos fichiers dans les dossiers standards peuvent être analysés.";
 "onboarding.fileaccess.limited" = "Sans accès complet au disque, les données Mail et Safari restent inaccessibles.";
 "onboarding.fileaccess.no_autogrant" = "L'application ne peut pas l'accorder elle-même — elle ouvre seulement les Réglages Système pour que vous décidiez.";
-"onboarding.protection.title" = "Protection facultative";
-"onboarding.protection.subtitle" = "L'analyse antimalware est facultative et utilise ClamAV s'il est installé. Rien n'est installé à votre place.";
-"onboarding.protection.clamav" = "Moteur ClamAV";
-"onboarding.protection.path" = "Chemin";
-"onboarding.protection.version" = "Version du moteur";
-"onboarding.protection.signatures" = "Signatures";
-"onboarding.protection.unknown" = "inconnu";
-"onboarding.protection.no_install" = "Non détecté. Installez ClamAV vous-même (par ex. via Homebrew) pour activer l'analyse.";
-"onboarding.protection.copy_command" = "Copier la commande d'installation";
-"onboarding.protection.fsevents" = "Surveillance des dossiers (FSEvents)";
-"onboarding.protection.available" = "Disponible";
 "onboarding.menubar.title" = "Barre des menus et notifications";
 "onboarding.menubar.subtitle" = "Les deux sont facultatifs et désactivables à tout moment.";
 "onboarding.menubar.show" = "Afficher l'élément dans la barre des menus";
@@ -484,7 +463,6 @@
 "onboarding.check.resources" = "Ressources intégrées";
 "onboarding.check.sqlite" = "Base de données locale (SQLite)";
 "onboarding.check.permissions" = "Accès complet au disque";
-"onboarding.check.clamav" = "Moteur ClamAV";
 "onboarding.check.freespace" = "Espace disque libre";
 "onboarding.check.location" = "Accès aux dossiers configurés";
 "onboarding.check.safetycore" = "Noyau de sécurité";
@@ -501,7 +479,6 @@
 "onboarding.summary.profile" = "Profil de sécurité";
 "onboarding.summary.dry_run" = "Simulation par défaut";
 "onboarding.summary.fda" = "Accès complet au disque";
-"onboarding.summary.clamav" = "Moteur ClamAV";
 "onboarding.summary.menu_bar" = "Élément barre des menus";
 "onboarding.summary.notifications" = "Notifications";
 "onboarding.summary.exclusions" = "Dossiers exclus";

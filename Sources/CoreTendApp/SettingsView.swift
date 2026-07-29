@@ -2,7 +2,7 @@ import SwiftUI
 @preconcurrency import UserNotifications
 import Persistence
 import DesignSystem
-import MalwareEngine
+import IntegrityCore
 
 @MainActor
 @Observable
@@ -13,7 +13,7 @@ final class SettingsViewModel {
 
     // Real, queried permission/availability states — never simulated.
     var fullDiskAccess = PermissionProbe.hasFullDiskAccess()
-    let scanner = ClamAVScanner()
+    var appSignature = CodeSignInspector.inspect(at: Bundle.main.bundleURL)
     var notificationStatus: UNAuthorizationStatus = .notDetermined
 
     func load() async {
@@ -106,14 +106,10 @@ struct MCSettingsView: View {
                 LabeledContent(L("settings.deletion_method"), value: L("settings.deletion_method_value"))
             }
             Section(L("settings.protection")) {
-                LabeledContent(L("settings.clamav_engine")) {
-                    Label(model.scanner.isAvailable ? L("settings.installed") : L("settings.not_installed"),
-                          systemImage: model.scanner.isAvailable ? "checkmark.circle.fill" : "xmark.circle")
-                        .foregroundStyle(model.scanner.isAvailable ? MCTheme.success : .secondary)
-                }
-                if !model.scanner.isAvailable {
-                    Text(L("settings.clamav_install_hint"))
-                        .font(.caption).foregroundStyle(.secondary)
+                LabeledContent(L("settings.this_copy_signature")) {
+                    Label(model.appSignature.tier == .adHocOrUnsigned ? L("settings.not_installed") : L("settings.installed"),
+                          systemImage: model.appSignature.tier == .adHocOrUnsigned ? "xmark.circle" : "checkmark.circle.fill")
+                        .foregroundStyle(model.appSignature.tier == .adHocOrUnsigned ? .secondary : MCTheme.success)
                 }
                 LabeledContent(L("settings.privileged_helper")) {
                     Label(L("settings.unavailable"), systemImage: "xmark.circle")

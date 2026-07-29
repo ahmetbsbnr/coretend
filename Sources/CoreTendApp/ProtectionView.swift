@@ -1,144 +1,33 @@
 import SwiftUI
-import MalwareEngine
+import IntegrityCore
 import DesignSystem
-import Persistence
-import UniformTypeIdentifiers
 
 @MainActor
 @Observable
-final class ProtectionViewModel {
-    enum Phase: Equatable { case idle, scanning, results, failed(String) }
+final class IntegrityViewModel {
+    var downloads: [DownloadProvenance] = []
+    var loginItems: [LoginItem] = []
+    var isLoading = false
+    var inspectedApp: (url: URL, info: CodeSignInfo)?
 
-    var phase: Phase = .idle
-    var scanner = ClamAVScanner()
-    var findings: [MalwareFinding] = []
-    var lastScanInfo: String?
-    var quarantineItems: [Quarantine.Item] = []
-    var statusMessage: String?
-
-    private var quarantine: Quarantine? = try? Quarantine(directory: (try? Quarantine.defaultDirectory()) ?? FileManager.default.temporaryDirectory.appendingPathComponent("CoreTendQuarantine"))
-
-    // MARK: Optional background watch (Step 3). Off by default each launch —
-    // a background scanner should never silently turn itself on. Never
-    // auto-quarantines: it only raises alerts for the user to review.
-    var watchEnabled = false
-    var watchAlerts: [ProtectionWatcher.Alert] = []
-    private var watcher: ProtectionWatcher?
-    private var producer: FSEventsProducer?
-    private var watchTask: Task<Void, Never>?
-    private var pollTask: Task<Void, Never>?
-
-    /// Folders watched when protection watch is on: Downloads, /Applications,
-    /// ~/Applications. Only those that exist are passed to FSEvents.
-    private var watchPaths: [URL] {
+    func refresh() async {
+        isLoading = true
         let home = FileManager.default.homeDirectoryForCurrentUser
-        return [home.appendingPathComponent("Downloads"),
-                URL(fileURLWithPath: "/Applications"),
-                home.appendingPathComponent("Applications")]
-            .filter { FileManager.default.fileExists(atPath: $0.path) }
+        downloads = ProvenanceScanner.scan(folder: home.appendingPathComponent("Downloads"))
+        loginItems = LoginItemScanner.scan()
+        isLoading = false
     }
 
-    func toggleWatch() {
-        watchEnabled ? stopWatch() : startWatch()
-    }
-
-    private func startWatch() {
-        guard scanner.isAvailable, watcher == nil else { return }
-        let fpURL = (try? Quarantine.defaultDirectory())?
-            .deletingLastPathComponent().appendingPathComponent("watch-fingerprints.json")
-        let watcher = ProtectionWatcher(scanner: scanner, fingerprintURL: fpURL)
-        let producer = FSEventsProducer()
-        let stream = producer.start(paths: watchPaths)
-        self.watcher = watcher
-        self.producer = producer
-        self.watchEnabled = true
-        watchTask = Task { await watcher.consume(stream) }
-        pollTask = Task { [weak self] in
-            while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 2_000_000_000)
-                guard let self else { break }
-                let current = await watcher.alerts
-                await MainActor.run { self.watchAlerts = current }
-            }
-        }
-    }
-
-    private func stopWatch() {
-        producer?.stop()
-        Task { [watcher] in await watcher?.stop() }
-        watchTask?.cancel(); pollTask?.cancel()
-        watcher = nil; producer = nil
-        watchTask = nil; pollTask = nil
-        watchEnabled = false
-    }
-
-    func quarantineWatchAlert(_ alert: ProtectionWatcher.Alert) async {
-        await quarantineFinding(MalwareFinding(path: alert.path, signature: alert.signature))
-        watchAlerts.removeAll { $0.id == alert.id }
-    }
-
-    func refreshQuarantine() async {
-        guard let quarantine else { return }
-        quarantineItems = await quarantine.items()
-    }
-
-    func scan(paths: [URL]) async {
-        guard scanner.isAvailable else { return }
-        phase = .scanning
-        findings = []
-        statusMessage = nil
-        do {
-            let result = try await scanner.scan(paths: paths)
-            findings = result.findings
-            lastScanInfo = L("protection.scan_info", paths.map(\.lastPathComponent).joined(separator: ", "), String(format: "%.1f", result.duration), result.findings.count)
-            phase = .results
-            AppEnvironment.shared.record(ActivityRecord(
-                kind: result.findings.isEmpty ? .scan : .error,
-                summary: "Malware scan: \(result.findings.count) findings",
-                itemCount: result.findings.count, bytes: 0, dryRun: false))
-        } catch {
-            phase = .failed("Scan failed: \(error)")
-        }
-    }
-
-    func quarantineFinding(_ finding: MalwareFinding) async {
-        guard let quarantine else { return }
-        do {
-            _ = try await quarantine.quarantine(fileAt: URL(fileURLWithPath: finding.path),
-                                                signature: finding.signature)
-            findings.removeAll { $0.id == finding.id }
-            statusMessage = L("protection.moved_to_quarantine", finding.path)
-            await refreshQuarantine()
-        } catch {
-            statusMessage = L("protection.quarantine_failed", error.localizedDescription)
-        }
-    }
-
-    func restore(_ item: Quarantine.Item) async {
-        guard let quarantine else { return }
-        do {
-            try await quarantine.restore(item)
-            AppEnvironment.shared.record(ActivityRecord(
-                kind: .restore, summary: "Restored from quarantine: \(URL(fileURLWithPath: item.originalPath).lastPathComponent)",
-                itemCount: 1, bytes: 0, dryRun: false))
-        } catch {
-            statusMessage = L("protection.restore_failed", error.localizedDescription)
-        }
-        await refreshQuarantine()
-    }
-
-    func delete(_ item: Quarantine.Item) async {
-        guard let quarantine else { return }
-        try? await quarantine.delete(item)
-        await refreshQuarantine()
+    func inspect(_ url: URL) {
+        inspectedApp = (url, CodeSignInspector.inspect(at: url))
     }
 }
 
 struct ProtectionView: View {
     var body: some View {
         TabView {
-            MalwareScanView()
-                .tabItem { Label(L("protection.tab.malware"), systemImage: "shield") }
+            IntegrityView()
+                .tabItem { Label(L("protection.tab.integrity"), systemImage: "checkmark.seal") }
             PrivacyCleanerView()
                 .tabItem { Label(L("protection.tab.privacy"), systemImage: "hand.raised") }
         }
@@ -147,197 +36,144 @@ struct ProtectionView: View {
     }
 }
 
-struct MalwareScanView: View {
-    @State private var model = ProtectionViewModel()
+/// Native macOS integrity signals: where downloads came from, whether an app
+/// is signed and by whom, and what launches automatically. No scanning
+/// engine, no signature database, no third-party binary — everything here
+/// reads metadata macOS itself already recorded. See
+/// `Documentation/CLAMAV_DECISION.md` for why this replaced the prior
+/// ClamAV-based malware tab.
+struct IntegrityView: View {
+    @State private var model = IntegrityViewModel()
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                if model.scanner.isAvailable {
-                    availableContent
-                    watchCard
-                } else {
-                    unavailableCard
-                }
-                quarantineCard
+                explainerCard
+                downloadsCard
+                inspectorCard
+                loginItemsCard
             }
             .padding(24)
         }
-        .task { await model.refreshQuarantine() }
+        .task { await model.refresh() }
     }
 
-    private var unavailableCard: some View {
-        let mesh = MCMeshView(completeness: 0.25, style: .incomplete)
-        return MCCard {
-            HStack(alignment: .top, spacing: 16) {
-                mesh.frame(width: 64, height: 64)
-                    .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Image(systemName: "shield.slash").font(.title2).foregroundStyle(MCTheme.warning)
-                        Text(L("protection.unavailable.title")).font(.headline)
-                    }
-                    Text(L("protection.unavailable.body"))
-                        .foregroundStyle(.secondary)
-                    Text(L("protection.unavailable.howto"))
-                        .font(.caption).foregroundStyle(.secondary)
-                    Text(L("protection.unavailable.note"))
-                        .font(.caption).foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel(mesh.accessibilityDescription)
-        }
-    }
-
-    @ViewBuilder
-    private var availableContent: some View {
-        let meshStyle: MCMeshView.Style = model.phase == .scanning ? .scanning : (model.findings.isEmpty ? .ready : .alert)
-        let mesh = MCMeshView(completeness: model.phase == .scanning ? 0.7 : 1.0, style: meshStyle)
+    private var explainerCard: some View {
         MCCard {
             HStack(alignment: .top, spacing: 16) {
-                mesh.frame(width: 64, height: 64).accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack {
-                        Image(systemName: "shield").font(.title2).foregroundStyle(MCTheme.accent)
-                        Text(L("protection.scan.title")).font(.headline)
-                        Spacer()
-                        if model.phase == .scanning { ProgressView().controlSize(.small) }
-                    }
-                    Text(L("protection.scan.subtitle"))
-                        .font(.caption).foregroundStyle(.secondary)
-                HStack {
-                    Button(L("protection.scan_downloads")) {
-                        Task { await model.scan(paths: [FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads")]) }
-                    }
-                    Button(L("protection.scan_folder")) {
-                        let panel = NSOpenPanel()
-                        panel.canChooseDirectories = true
-                        panel.canChooseFiles = true
-                        if panel.runModal() == .OK, let url = panel.url {
-                            Task { await model.scan(paths: [url]) }
-                        }
-                    }
-                }
-                .disabled(model.phase == .scanning)
-                if let info = model.lastScanInfo {
-                    Text(info).font(.caption).foregroundStyle(.secondary)
-                }
-                if case let .failed(message) = model.phase {
-                    Text(message).font(.caption).foregroundStyle(MCTheme.danger)
-                }
+                Image(systemName: "info.circle").font(.title2).foregroundStyle(MCTheme.accent)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(L("integrity.explainer.title")).font(.headline)
+                    Text(L("integrity.explainer.body")).foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
-        if model.phase == .results {
-            if model.findings.isEmpty {
-                MCCard {
-                    HStack {
-                        Image(systemName: "checkmark.shield.fill").foregroundStyle(MCTheme.success)
-                        Text(L("protection.no_threats")).font(.headline)
-                        Spacer()
-                    }
-                }
-            } else {
-                MCCard {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(L("protection.findings")).font(.headline)
-                        ForEach(model.findings) { finding in
-                            HStack {
-                                Image(systemName: "exclamationmark.shield.fill")
-                                    .foregroundStyle(MCTheme.danger)
-                                VStack(alignment: .leading) {
-                                    Text(finding.signature).font(.callout.weight(.medium))
-                                    Text(finding.path).font(.caption).foregroundStyle(.secondary)
-                                        .lineLimit(1).truncationMode(.middle)
-                                }
-                                Spacer()
-                                Button(L("protection.quarantine")) {
-                                    Task { await model.quarantineFinding(finding) }
-                                }
-                                Button {
-                                    NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: finding.path)])
-                                } label: { Image(systemName: "magnifyingglass") }
-                                .buttonStyle(.borderless)
-                                .accessibilityLabel(L("common.reveal_in_finder"))
-                            }
-                        }
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                }
-            }
-        }
-        if let message = model.statusMessage {
-            Text(message).font(.caption).foregroundStyle(.secondary)
-        }
     }
 
-    private var watchCard: some View {
+    private var downloadsCard: some View {
         MCCard {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    Image(systemName: model.watchEnabled ? "eye" : "eye.slash")
-                        .foregroundStyle(model.watchEnabled ? MCTheme.accent : .secondary)
-                    Text(L("protection.watch.title")).font(.headline)
+                    Text(L("integrity.downloads.title")).font(.headline)
                     Spacer()
-                    Toggle("", isOn: Binding(get: { model.watchEnabled },
-                                             set: { _ in model.toggleWatch() }))
-                        .labelsHidden()
-                        .accessibilityLabel(L("protection.watch.toggle"))
+                    if model.isLoading { ProgressView().controlSize(.small) }
                 }
-                Text(L("protection.watch.subtitle"))
-                    .font(.caption).foregroundStyle(.secondary)
-                if model.watchEnabled {
-                    if model.watchAlerts.isEmpty {
-                        Text(L("protection.watch.alerts_none"))
-                            .font(.caption).foregroundStyle(.secondary)
-                    } else {
-                        ForEach(model.watchAlerts) { alert in
-                            HStack {
-                                Image(systemName: "exclamationmark.shield.fill")
-                                    .foregroundStyle(MCTheme.danger)
-                                VStack(alignment: .leading) {
-                                    Text(alert.signature).font(.callout.weight(.medium))
-                                    Text(alert.path).font(.caption).foregroundStyle(.secondary)
-                                        .lineLimit(1).truncationMode(.middle)
-                                }
-                                Spacer()
-                                Button(L("protection.quarantine")) {
-                                    Task { await model.quarantineWatchAlert(alert) }
-                                }
+                if model.downloads.isEmpty && !model.isLoading {
+                    Text(L("integrity.downloads.empty")).font(.caption).foregroundStyle(.secondary)
+                }
+                ForEach(model.downloads.prefix(25)) { item in
+                    HStack(alignment: .top) {
+                        Image(systemName: item.isQuarantined ? "shield.checkerboard" : "doc")
+                            .foregroundStyle(item.isQuarantined ? MCTheme.accent : .secondary)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(item.name).font(.callout.weight(.medium)).lineLimit(1)
+                            if let source = item.sourceURL {
+                                Text(source).font(.caption).foregroundStyle(.secondary)
+                                    .lineLimit(1).truncationMode(.middle)
+                            } else {
+                                Text(L("integrity.downloads.no_provenance"))
+                                    .font(.caption).foregroundStyle(.tertiary)
                             }
                         }
+                        Spacer()
+                        Button {
+                            NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: item.path)])
+                        } label: { Image(systemName: "magnifyingglass") }
+                        .buttonStyle(.borderless)
+                        .accessibilityLabel(L("common.reveal_in_finder"))
                     }
+                    .accessibilityElement(children: .combine)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
-    private var quarantineCard: some View {
+    private var inspectorCard: some View {
+        MCCard {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(L("integrity.inspector.title")).font(.headline)
+                Text(L("integrity.inspector.subtitle")).font(.caption).foregroundStyle(.secondary)
+                Button(L("integrity.inspector.choose")) {
+                    let panel = NSOpenPanel()
+                    panel.canChooseDirectories = false
+                    panel.canChooseFiles = true
+                    panel.allowedContentTypes = [.application]
+                    panel.directoryURL = URL(fileURLWithPath: "/Applications")
+                    if panel.runModal() == .OK, let url = panel.url {
+                        model.inspect(url)
+                    }
+                }
+                if let inspected = model.inspectedApp {
+                    signatureRow(name: inspected.url.lastPathComponent, info: inspected.info)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    @ViewBuilder
+    private func signatureRow(name: String, info: CodeSignInfo) -> some View {
+        let (icon, color, label): (String, Color, String) = switch info.tier {
+        case .appleSigned: ("checkmark.seal.fill", MCTheme.success, L("integrity.tier.apple"))
+        case .teamSigned: ("checkmark.seal.fill", MCTheme.success, L("integrity.tier.team", info.teamIdentifier ?? "?"))
+        case .adHocOrUnsigned: ("exclamationmark.triangle.fill", MCTheme.warning, L("integrity.tier.unsigned"))
+        }
+        HStack(alignment: .top) {
+            Image(systemName: icon).foregroundStyle(color)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(name).font(.callout.weight(.medium))
+                Text(label).font(.caption).foregroundStyle(.secondary)
+                if !info.signatureValid {
+                    Text(L("integrity.tier.invalid")).font(.caption).foregroundStyle(MCTheme.danger)
+                }
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private var loginItemsCard: some View {
         MCCard {
             VStack(alignment: .leading, spacing: 8) {
-                Text(L("protection.quarantine_section")).font(.headline)
-                if model.quarantineItems.isEmpty {
-                    Text(L("protection.quarantine_empty"))
-                        .font(.caption).foregroundStyle(.secondary)
+                Text(L("integrity.login_items.title")).font(.headline)
+                Text(L("integrity.login_items.subtitle")).font(.caption).foregroundStyle(.secondary)
+                if model.loginItems.isEmpty && !model.isLoading {
+                    Text(L("integrity.login_items.empty")).font(.caption).foregroundStyle(.secondary)
                 }
-                ForEach(model.quarantineItems) { item in
+                ForEach(model.loginItems) { item in
                     HStack {
-                        Image(systemName: "archivebox").foregroundStyle(MCTheme.warning)
+                        Image(systemName: "power").foregroundStyle(.secondary)
                         VStack(alignment: .leading) {
-                            Text(item.signature).font(.callout.weight(.medium))
-                            Text(L("protection.quarantine_was", item.originalPath)).font(.caption).foregroundStyle(.secondary)
-                                .lineLimit(1).truncationMode(.middle)
+                            Text(item.label).font(.callout.weight(.medium)).lineLimit(1)
+                            if let program = item.programPath {
+                                Text(program).font(.caption).foregroundStyle(.secondary)
+                                    .lineLimit(1).truncationMode(.middle)
+                            }
                         }
                         Spacer()
-                        Button(L("protection.restore")) { Task { await model.restore(item) } }
-                        Button(L("protection.delete_permanently"), role: .destructive) {
-                            Task { await model.delete(item) }
-                        }
                     }
+                    .accessibilityElement(children: .combine)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)

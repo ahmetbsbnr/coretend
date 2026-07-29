@@ -14,7 +14,7 @@ let package = Package(
         .library(name: "Persistence", targets: ["Persistence"]),
         .library(name: "SystemMetrics", targets: ["SystemMetrics"]),
         .library(name: "AppDiscovery", targets: ["AppDiscovery"]),
-        .library(name: "MalwareEngine", targets: ["MalwareEngine"]),
+        .library(name: "IntegrityCore", targets: ["IntegrityCore"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-testing.git", from: "0.12.0"),
@@ -22,15 +22,15 @@ let package = Package(
     targets: [
         .executableTarget(
             name: "CoreTendApp",
-            dependencies: ["ScanCore", "SafetyCore", "FileRules", "DesignSystem", "Persistence", "SystemMetrics", "AppDiscovery", "MalwareEngine"],
+            dependencies: ["ScanCore", "SafetyCore", "FileRules", "DesignSystem", "Persistence", "SystemMetrics", "AppDiscovery", "IntegrityCore"],
             resources: [.process("Resources")]
         ),
         .target(name: "Persistence", dependencies: ["SafetyCore"]),
         .target(name: "SystemMetrics"),
         .target(name: "AppDiscovery"),
-        .target(name: "MalwareEngine"),
+        .target(name: "IntegrityCore"),
         .testTarget(name: "DesignSystemTests", dependencies: ["DesignSystem", .product(name: "Testing", package: "swift-testing")]),
-        .testTarget(name: "MalwareEngineTests", dependencies: ["MalwareEngine", .product(name: "Testing", package: "swift-testing")]),
+        .testTarget(name: "IntegrityCoreTests", dependencies: ["IntegrityCore", .product(name: "Testing", package: "swift-testing")]),
         .testTarget(name: "AppDiscoveryTests", dependencies: ["AppDiscovery", .product(name: "Testing", package: "swift-testing")]),
         .testTarget(name: "PersistenceTests", dependencies: ["Persistence", "SafetyCore", .product(name: "Testing", package: "swift-testing")]),
         .testTarget(name: "SystemMetricsTests", dependencies: ["SystemMetrics", .product(name: "Testing", package: "swift-testing")]),
