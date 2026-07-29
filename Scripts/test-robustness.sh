@@ -24,10 +24,14 @@ APP="${CORETEND_APP_UNDER_TEST:-$REPO/build/CoreTend.app}"
 BIN="$APP/Contents/MacOS/CoreTend"
 [ -x "$BIN" ] || { echo "test-robustness: no executable at $BIN (run Scripts/package-local.sh)"; exit 1; }
 
-# The interruption cases send INT/TERM to the app under test. Without this the
-# signal reaches the runner too and the suite quietly stops partway through,
-# which looks exactly like a clean finish in the results file.
-trap '' INT TERM
+# The interruption cases send INT to the app under test, and that signal
+# reaches the runner too — without this the suite quietly stops partway
+# through, which looks exactly like a clean finish in the results file.
+#
+# INT only. Ignoring TERM here would be inherited by every child, and a child
+# that ignores TERM cannot be stopped by `kill -TERM`, which hangs the suite.
+# Children reset the disposition anyway (see launch_app).
+trap '' INT
 
 SANDBOX=$(mktemp -d)
 RESULTS="$SANDBOX/results.tsv"
@@ -44,6 +48,23 @@ trap cleanup EXIT
 PASS=0; FAIL=0
 FAILED_CASES=()
 
+# Launch the app under a given HOME. The subshell resets the inherited signal
+# dispositions so the child stays interruptible.
+launch_app() {
+  local home="$1" log="$2"
+  ( trap - INT TERM; HOME="$home" TMPDIR="$home/tmp" exec "$BIN" ) >"$log" 2>&1 &
+}
+
+# TERM, then KILL if it does not go. A case must never be able to hang the run.
+stop_app() {
+  local pid="$1"
+  kill -TERM "$pid" 2>/dev/null || true
+  local waited=0
+  while kill -0 "$pid" 2>/dev/null && [ "$waited" -lt 5 ]; do sleep 1; waited=$((waited + 1)); done
+  kill -0 "$pid" 2>/dev/null && kill -KILL "$pid" 2>/dev/null || true
+  wait "$pid" 2>/dev/null || true
+}
+
 # Runs the app with a throwaway HOME and reports whether it was still alive
 # after `hold` seconds. Alive means the launch survived; a dead process means
 # the app quit or crashed, which is the defect this suite hunts.
@@ -58,7 +79,7 @@ run_case() {
   mkdir -p "$home"
 
   local log="$SANDBOX/$name.log"
-  HOME="$home" TMPDIR="$home/tmp" "$BIN" >"$log" 2>&1 &
+  launch_app "$home" "$log"
   local pid=$!
   local waited=0
   while [ "$waited" -lt "$hold" ]; do
@@ -68,8 +89,7 @@ run_case() {
   done
 
   if kill -0 "$pid" 2>/dev/null; then
-    kill -TERM "$pid" 2>/dev/null || true
-    wait "$pid" 2>/dev/null || true
+    stop_app "$pid"
     printf '%s\tPASS\t\n' "$name" >> "$RESULTS"
     PASS=$((PASS + 1))
     echo "  PASS  $name"
@@ -168,7 +188,7 @@ kill_during_launch() {
   local name="$1" signal="$2" delay="$3"
   local home="$SANDBOX/homes/$name"
   mkdir -p "$home/Library/Application Support/CoreTend" "$home/tmp"
-  HOME="$home" TMPDIR="$home/tmp" "$BIN" >"$SANDBOX/$name.log" 2>&1 &
+  launch_app "$home" "$SANDBOX/$name.log"
   local pid=$!
   sleep "$delay"
   kill -"$signal" "$pid" 2>/dev/null || true
@@ -249,10 +269,10 @@ if [ "$QUICK" -eq 0 ]; then
   for i in $(seq 1 50); do
     home="$SANDBOX/homes/cold-$i"
     mkdir -p "$home/tmp"
-    HOME="$home" TMPDIR="$home/tmp" "$BIN" >"$SANDBOX/cold-$i.log" 2>&1 &
+    launch_app "$home" "$SANDBOX/cold-$i.log"
     p=$!
     sleep 2
-    if kill -0 "$p" 2>/dev/null; then kill -TERM "$p" 2>/dev/null || true; wait "$p" 2>/dev/null || true
+    if kill -0 "$p" 2>/dev/null; then stop_app "$p"
     else wait "$p" 2>/dev/null || true; cold_fail=$((cold_fail + 1)); fi
   done
   if [ "$cold_fail" -eq 0 ]; then
@@ -267,10 +287,10 @@ if [ "$QUICK" -eq 0 ]; then
   mkdir -p "$reuse/tmp"
   reuse_fail=0
   for i in $(seq 1 50); do
-    HOME="$reuse" TMPDIR="$reuse/tmp" "$BIN" >"$SANDBOX/reuse-$i.log" 2>&1 &
+    launch_app "$reuse" "$SANDBOX/reuse-$i.log"
     p=$!
     sleep 1.5
-    if kill -0 "$p" 2>/dev/null; then kill -TERM "$p" 2>/dev/null || true; wait "$p" 2>/dev/null || true
+    if kill -0 "$p" 2>/dev/null; then stop_app "$p"
     else wait "$p" 2>/dev/null || true; reuse_fail=$((reuse_fail + 1)); fi
   done
   if [ "$reuse_fail" -eq 0 ]; then
