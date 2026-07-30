@@ -95,6 +95,15 @@
 "spacelens.cloud_placeholder_suffix" = "espace réservé iCloud, non entièrement téléchargé";
 "spacelens.access_denied_short" = "accès refusé";
 "spacelens.cloud_placeholder_short" = "espace réservé iCloud";
+"spacelens.search_placeholder" = "Rechercher…";
+"spacelens.filter_category" = "Catégorie";
+"spacelens.filter_all" = "Toutes";
+"spacelens.category.folder" = "Dossiers";
+"spacelens.category.media" = "Médias";
+"spacelens.category.document" = "Documents";
+"spacelens.category.archive" = "Archives";
+"spacelens.category.code" = "Code";
+"spacelens.category.other" = "Autres";
 
 /* Applications */
 "apps.uninstall.dryrun_result" = "Simulation : %d éléments (%@) seraient déplacés vers la Corbeille";
