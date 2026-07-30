@@ -117,7 +117,7 @@ struct SimilarImagesView: View {
                 VStack(spacing: 16) {
                     Image(systemName: "photo.on.rectangle.angled")
                         .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
-                    Text(L("similar.idle.title")).font(.title2.weight(.semibold))
+                    Text(L("similar.idle.title")).font(MCFont.pageTitle)
                     Text(L("similar.idle.subtitle"))
                         .multilineTextAlignment(.center).foregroundStyle(.secondary)
                     Button(L("similar.analyze")) { model.start() }

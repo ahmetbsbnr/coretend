@@ -178,7 +178,7 @@ public struct MCEmptyState: View {
     public var body: some View {
         VStack(spacing: MCSpacing.sm) {
             Image(systemName: icon)
-                .font(.system(size: 40, weight: .light))
+                .font(.system(size: MCIconSize.compactState, weight: .light))
                 .foregroundStyle(.secondary)
                 .accessibilityHidden(true)
             Text(title).font(MCFont.cardTitle)
@@ -209,7 +209,7 @@ public struct MCErrorState: View {
     public var body: some View {
         VStack(spacing: MCSpacing.sm) {
             Image(systemName: "exclamationmark.triangle")
-                .font(.system(size: 36, weight: .light))
+                .font(.system(size: MCIconSize.errorState, weight: .light))
                 .foregroundStyle(MCColor.attention)
                 .accessibilityHidden(true)
             Text(title).font(MCFont.cardTitle)

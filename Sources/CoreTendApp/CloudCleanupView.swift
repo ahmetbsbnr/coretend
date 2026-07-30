@@ -183,8 +183,8 @@ struct CloudCleanupView: View {
 
     private var providerPicker: some View {
         VStack(spacing: 16) {
-            Image(systemName: "icloud").font(.system(size: 56)).foregroundStyle(MCTheme.accent)
-            Text(L("cloud.picker.title")).font(.title2.weight(.semibold))
+            Image(systemName: "icloud").font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
+            Text(L("cloud.picker.title")).font(MCFont.pageTitle)
             Text(L("cloud.picker.subtitle"))
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
             ForEach(model.providers) { provider in
@@ -204,7 +204,7 @@ struct CloudCleanupView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 VStack(alignment: .leading) {
-                    Text(model.selectedProvider?.name ?? "").font(.headline)
+                    Text(model.selectedProvider?.name ?? "").font(MCFont.cardTitle)
                     Text(L("cloud.results.summary", mcFormatBytes(model.recoverableLocalBytes), mcFormatBytes(model.totalLogical)))
                         .font(.caption).foregroundStyle(.secondary)
                 }

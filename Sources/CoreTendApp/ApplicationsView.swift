@@ -309,7 +309,7 @@ struct InstalledAppsView: View {
                         Image(nsImage: NSWorkspace.shared.icon(forFile: app.path.path))
                             .resizable().frame(width: 56, height: 56)
                         VStack(alignment: .leading) {
-                            Text(app.name).font(.title2.weight(.semibold))
+                            Text(app.name).font(MCFont.pageTitle)
                             Text(app.bundleIdentifier ?? L("apps.unknown_bundle_id"))
                                 .font(.caption).foregroundStyle(.secondary)
                             HStack(spacing: 8) {
@@ -329,7 +329,7 @@ struct InstalledAppsView: View {
                     }
                     MCCard {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(L("apps.associated_data")).font(.headline)
+                            Text(L("apps.associated_data")).font(MCFont.cardTitle)
                             if model.associated.isEmpty {
                                 Text(L("apps.associated_data.empty"))
                                     .font(.caption).foregroundStyle(.secondary)
@@ -368,7 +368,7 @@ struct InstalledAppsView: View {
                         }
                     }
                     if let result = model.uninstallResult {
-                        Text(result).font(.callout).foregroundStyle(MCTheme.accent)
+                        Text(result).font(MCFont.secondaryBody).foregroundStyle(MCTheme.accent)
                     }
                 }
                 .padding(20)

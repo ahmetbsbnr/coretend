@@ -183,7 +183,7 @@ struct CleanupView: View {
             MCFragmentView(groupWeights: [], phase: .rest)
                 .frame(width: 120, height: 120)
                 .accessibilityLabel(MCFragmentView(groupWeights: [], phase: .rest).accessibilityDescription)
-            Text(L("cleanup.idle.title")).font(.title2.weight(.semibold))
+            Text(L("cleanup.idle.title")).font(MCFont.pageTitle)
             Text(L("cleanup.idle.subtitle"))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
@@ -215,7 +215,7 @@ struct CleanupView: View {
                     .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(L("cleanup.review.selected", model.findings.count, mcFormatBytes(model.selectedBytes)))
-                        .font(.headline)
+                        .font(MCFont.cardTitle)
                     if model.isDisplayTruncated {
                         Text(L("cleanup.review.truncated", model.findings.count, model.totalFindingCount, mcFormatBytes(model.totalBytes)))
                             .font(.caption).foregroundStyle(.secondary)
@@ -243,7 +243,7 @@ struct CleanupView: View {
                             ))
                             .labelsHidden()
                             VStack(alignment: .leading) {
-                                Text(group.name).font(.headline)
+                                Text(group.name).font(MCFont.cardTitle)
                                 Text(group.explanation)
                                     .font(.caption).foregroundStyle(.secondary)
                             }

@@ -26,4 +26,12 @@ public enum MCIconSize {
     public static let emptyState: CGFloat = 48
     /// Primary/prominent empty-state glyph (module landing states).
     public static let emptyStateProminent: CGFloat = 56
+    /// Glyph inside the shared MCEmptyState component (deliberately more
+    /// compact than emptyState/emptyStateProminent — this one nests inside
+    /// other content rather than filling a whole module landing screen).
+    public static let compactState: CGFloat = 40
+    /// Glyph inside the shared MCErrorState component.
+    public static let errorState: CGFloat = 36
+    /// Small inline status glyph (lock/cloud indicators on list rows).
+    public static let inline: CGFloat = 8
 }

@@ -88,7 +88,7 @@ struct LeftoversView: View {
                 VStack(spacing: 16) {
                     Image(systemName: "trash.slash")
                         .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
-                    Text(L("leftovers.idle.title")).font(.title2.weight(.semibold))
+                    Text(L("leftovers.idle.title")).font(MCFont.pageTitle)
                     Text(L("leftovers.idle.subtitle"))
                         .multilineTextAlignment(.center).foregroundStyle(.secondary)
                     Button(L("leftovers.scan")) { Task { await model.scan() } }
@@ -125,7 +125,7 @@ struct LeftoversView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text(L("leftovers.results.summary", model.leftovers.count, mcFormatBytes(model.selectedBytes), mcFormatBytes(model.totalBytes)))
-                    .font(.headline)
+                    .font(MCFont.cardTitle)
                 Spacer()
                 Toggle(L("common.dry_run"), isOn: $model.dryRun).toggleStyle(.switch)
                 Button(model.dryRun ? L("leftovers.simulate") : L("cleanup.move_to_trash")) {
