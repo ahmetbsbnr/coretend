@@ -3,6 +3,8 @@ import ScanCore
 import SafetyCore
 import DesignSystem
 import Persistence
+import QuickLookUI
+import QuickLook
 
 /// Identifiable wrapper so raw `URL`s can drive `MCOverlapStack`.
 private struct DupMember: Identifiable {
@@ -18,6 +20,7 @@ final class DuplicatesViewModel {
     var phase: Phase = .idle
     var groups: [DuplicateGroup] = []
     var selectedPaths: Set<String> = []   // paths selected for removal
+    var previewURL: URL?
     var dryRun = true
     var searchText = ""
     var selectedVolumeID: String?
@@ -246,6 +249,12 @@ struct DuplicatesView: View {
                                     .font(.caption).foregroundStyle(.secondary)
                                     .lineLimit(1).truncationMode(.middle)
                                 Button {
+                                    model.previewURL = url
+                                } label: { Image(systemName: "eye") }
+                                .buttonStyle(.borderless)
+                                .help(L("clutter.quick_look"))
+                                .accessibilityLabel(L("clutter.quick_look"))
+                                Button {
                                     NSWorkspace.shared.activateFileViewerSelecting([url])
                                 } label: { Image(systemName: "magnifyingglass") }
                                 .buttonStyle(.borderless)
@@ -259,6 +268,7 @@ struct DuplicatesView: View {
                 }
             }
             .listStyle(.inset)
+            .quickLookPreview($model.previewURL)
         }
     }
 

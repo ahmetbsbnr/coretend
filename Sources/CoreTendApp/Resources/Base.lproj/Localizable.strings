@@ -232,6 +232,7 @@
 "activity.filter" = "Filter";
 "activity.all_kinds" = "All kinds";
 "activity.export_csv" = "Export CSV";
+"activity.export_json" = "Export JSON";
 "activity.clear_history" = "Clear History";
 "activity.range.all" = "All time";
 "activity.range.last7" = "Last 7 days";
