@@ -102,15 +102,8 @@ struct PrivacyCleanerView: View {
                 ProgressView(L("privacy.detecting"))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
-                VStack(spacing: 12) {
-                    Image(systemName: "hand.raised")
-                        .font(.system(size: MCIconSize.emptyState)).foregroundStyle(.secondary)
-                        .accessibilityHidden(true)
-                    Text(L("privacy.empty.title")).font(.title3.weight(.semibold))
-                    Text(L("privacy.empty.subtitle"))
-                        .foregroundStyle(.secondary).multilineTextAlignment(.center)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                MCEmptyState(icon: "hand.raised", title: L("privacy.empty.title"), message: L("privacy.empty.subtitle"),
+                             iconSize: MCIconSize.emptyState)
             case .results:
                 resultsView
             case let .finished(freed, dryRun):
