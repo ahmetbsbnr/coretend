@@ -18,7 +18,10 @@ public struct DuplicateGroup: Sendable, Identifiable {
         self.modificationDates = modificationDates
     }
 
-    /// Suggested file to keep: oldest path, shortest depth wins.
+    /// Suggested file to keep: shallowest path wins, lexicographic path as the
+    /// tiebreak. Deliberately not modification-date-based — a duplicate's
+    /// mtime often reflects when a *copy* operation happened, not which one
+    /// is the "original," so path shape is the more honest signal here.
     public var keeper: URL { urls.min { ($0.pathComponents.count, $0.path) < ($1.pathComponents.count, $1.path) }! }
     /// Bytes reclaimable if all but the keeper are removed.
     public var wastedBytes: Int64 { fileSize * Int64(urls.count - 1) }

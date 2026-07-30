@@ -202,6 +202,7 @@
 "dupes.move_to_trash" = "Move Copies to Trash";
 "dupes.select_copy" = "Select copy %@";
 "dupes.suggested_keeper" = "Suggested keeper";
+"dupes.suggested_keeper.why" = "Shallowest path wins; alphabetical order breaks ties. Not based on file age.";
 "dupes.group_header" = "%d copies × %@";
 
 /* Similar Images */

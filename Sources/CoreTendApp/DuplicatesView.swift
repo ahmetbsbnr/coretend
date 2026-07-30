@@ -249,6 +249,7 @@ struct DuplicatesView: View {
                                         .font(.caption2.weight(.medium))
                                         .padding(.horizontal, 6).padding(.vertical, 2)
                                         .background(MCTheme.accent.opacity(0.2), in: Capsule())
+                                        .help(L("dupes.suggested_keeper.why"))
                                 }
                                 Spacer()
                                 Text(url.deletingLastPathComponent().path)

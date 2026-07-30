@@ -174,7 +174,7 @@ final class OnboardingViewModel {
 
 // MARK: - View
 
-/// Short, skippable, resumable first-run wizard. Eight steps, no forced
+/// Short, skippable, resumable first-run wizard. Seven steps, no forced
 /// permission, keyboard-operable, FR/EN, light/dark, Reduce-Motion aware.
 struct OnboardingView: View {
     @Binding var isPresented: Bool
@@ -360,7 +360,7 @@ struct OnboardingView: View {
     }
 
 
-    // MARK: Step 4 — Menu bar & notifications
+    // MARK: Step 3 — Menu bar & notifications
 
     private var menuBarStep: some View {
         page {
@@ -387,7 +387,7 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: Step 5 — Folders & exclusions
+    // MARK: Step 4 — Folders & exclusions
 
     private var foldersStep: some View {
         page {
@@ -434,7 +434,7 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: Step 6 — System check
+    // MARK: Step 5 — System check
 
     private var systemCheckStep: some View {
         page {
@@ -461,7 +461,7 @@ struct OnboardingView: View {
         .task(id: step) { if step == 5 { await model.runSystemCheck() } }
     }
 
-    // MARK: Step 7 — Summary
+    // MARK: Step 6 — Summary
 
     private var summaryStep: some View {
         page {
@@ -491,7 +491,7 @@ struct OnboardingView: View {
 
     private var footer: some View {
         HStack {
-            Button(L("onboarding.skip")) { finish() }
+            Button(L("onboarding.skip")) { model.persist(); finish() }
                 .buttonStyle(.plain).foregroundStyle(.secondary)
             Spacer()
             Text(L("onboarding.step_of", step + 1, stepCount))
