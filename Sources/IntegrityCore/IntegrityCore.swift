@@ -133,10 +133,13 @@ public enum CodeSignInspector {
         let teamID = info[kSecCodeInfoTeamIdentifier as String] as? String
         let identifier = info[kSecCodeInfoIdentifier as String] as? String
         let flags = (info[kSecCodeInfoFlags as String] as? NSNumber)?.uint32Value ?? 0
-        // kSecCodeSignatureAdhoc from Security/CSCommon.h (0x00000004). Not
-        // bridged into Swift under that name, so the raw value is used
-        // directly rather than guessing at an import that exposes it.
-        let isAdHoc = flags & 0x0000_0004 != 0
+        // CS_ADHOC from cs_blobs.h is 0x00000002 — verified against a real
+        // `codesign -s -` output (`flags=0x2(adhoc)`), not assumed: 0x00000004
+        // is CS_FORCED_LV (hardened-runtime library validation), an unrelated
+        // bit that happens to be adjacent. Not bridged into Swift under either
+        // name, so the raw value is used directly rather than guessing at an
+        // import that exposes it.
+        let isAdHoc = flags & 0x0000_0002 != 0
 
         if isAdHoc || !signatureValid {
             return CodeSignInfo(tier: .adHocOrUnsigned, teamIdentifier: teamID, signingIdentifier: identifier, signatureValid: signatureValid)
@@ -180,15 +183,21 @@ public struct LoginItem: Sendable, Identifiable, Equatable {
 }
 
 public enum LoginItemScanner {
-    public static func scan() -> [LoginItem] {
-        let fm = FileManager.default
-        let home = fm.homeDirectoryForCurrentUser
-        let locations: [(URL, LoginItem.Scope)] = [
+    /// Real system locations, in the order they're reported.
+    public static func defaultLocations() -> [(URL, LoginItem.Scope)] {
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        return [
             (home.appendingPathComponent("Library/LaunchAgents"), .userAgent),
             (URL(fileURLWithPath: "/Library/LaunchAgents"), .globalAgent),
             (URL(fileURLWithPath: "/Library/LaunchDaemons"), .globalDaemon),
         ]
+    }
 
+    /// `locations` defaults to the three real system directories; tests inject
+    /// isolated temp directories here instead of writing into the real
+    /// per-user LaunchAgents folder.
+    public static func scan(locations: [(URL, LoginItem.Scope)] = defaultLocations()) -> [LoginItem] {
+        let fm = FileManager.default
         var items: [LoginItem] = []
         for (folder, scope) in locations {
             guard let entries = try? fm.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil) else { continue }
