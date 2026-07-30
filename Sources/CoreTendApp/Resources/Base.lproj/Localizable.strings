@@ -10,7 +10,7 @@
 /* Sidebar */
 "sidebar.free_up_space" = "Free Up Space";
 "sidebar.optimize" = "Optimize";
-"sidebar.protect" = "Protect";
+"sidebar.protect" = "Integrity";
 "sidebar.activity" = "Activity";
 
 /* Placeholder */
@@ -303,7 +303,7 @@
 "settings.dry_run_detail" = "When enabled, cleanups simulate their result instead of moving files to the Trash.";
 "settings.deletion_method" = "Deletion method";
 "settings.deletion_method_value" = "System Trash (reversible)";
-"settings.protection" = "Protection";
+"settings.protection" = "Integrity";
 "settings.installed" = "Installed";
 "settings.not_installed" = "Not installed";
 "settings.privileged_helper" = "Privileged helper";
@@ -368,7 +368,7 @@
 "apps.grouping.last_used" = "Last Used";
 
 /* Module display names (sidebar / placeholder) */
-"module.protection" = "Protection";
+"module.protection" = "Integrity";
 "menubar.this_copy" = "This copy";
 "menubar.signature_apple" = "Apple-signed";
 "menubar.signature_team" = "Signed (team %@)";
