@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - Orbital Ecology design tokens
+// MARK: - Paper / Ink / Cobalt design tokens
 
 /// Spacing scale (pt). Views compose from these; no arbitrary values.
 public enum MCSpacing {

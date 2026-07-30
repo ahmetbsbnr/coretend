@@ -4,13 +4,15 @@
 // Run from the repository root:
 //   swift Resources/Brand/Sources/generate-brand-assets.swift
 //
-// Design: Living System, built on Orbital Ecology. A circular nucleus orbited
-// by three asymmetric arcs, with a deliberate opening in the outer arc —
-// the mark reads as something breathing, and as space that has been given
-// back. No broom, no bin, no shield, no eraser, no rocket.
+// Design: Paper / Ink / Cobalt, the same identity as the portfolio. A
+// circular nucleus orbited by three asymmetric arcs, with a deliberate
+// opening in the outer arc — the mark reads as something breathing, and as
+// space that has been given back. No broom, no bin, no shield, no eraser, no
+// rocket. The arcs are tonal steps of the one brand accent (cobalt) rather
+// than three different hues — an editorial one-colour mark, not a rainbow.
 //
 // Geometry mirrors Sources/DesignSystem/CoreBloom.swift (MCBloomGeometry) and
-// colours mirror MCColor.LivingSystem, so the app, the icon, and the site
+// colours mirror MCColor.Canonical, so the app, the icon, and the site
 // cannot drift apart. Pure CoreGraphics + hand-written SVG — no Xcode, no
 // raster sources, no external tooling.
 
@@ -29,7 +31,7 @@ let arcs: [(start: Double, span: Double, radius: CGFloat)] = [
 ]
 let nucleusFraction: CGFloat = 0.24
 
-// MARK: - Living System palette
+// MARK: - Paper / Ink / Cobalt palette
 
 struct RGB: Equatable {
     let r, g, b: CGFloat
@@ -38,23 +40,26 @@ struct RGB: Equatable {
     }
 }
 
-let coreInk       = RGB(r: 0.043, g: 0.059, b: 0.078)   // #0B0F14
-let softPorcelain = RGB(r: 0.957, g: 0.965, b: 0.953)   // #F4F6F3
-let livingMoss    = RGB(r: 0.455, g: 0.643, b: 0.529)   // #74A487
-let freshMint     = RGB(r: 0.659, g: 0.902, b: 0.757)   // #A8E6C1
-let orbitIris     = RGB(r: 0.608, g: 0.541, b: 0.984)   // #9B8AFB
-let warmAmber     = RGB(r: 0.957, g: 0.780, b: 0.420)   // #F4C76B
-let mutedSlate    = RGB(r: 0.467, g: 0.506, b: 0.557)   // #77818E
+let coreInk       = RGB(r: 0.0902, g: 0.0980, b: 0.1137) // #17191D — matches portfolio --ink
+let softPorcelain = RGB(r: 0.9569, g: 0.9569, b: 0.9412) // #F4F4F0 — matches portfolio --paper
+let mutedSlate    = RGB(r: 0.467, g: 0.506, b: 0.557)    // #77818E — unchanged, neutral
 
-// Light-surface siblings, so the mark stays legible on Soft Porcelain. Same
-// hues, lower luminance — see the divergence note in Colors.swift.
-let mossDeep  = RGB(r: 0.075, g: 0.404, b: 0.290)
-let irisDeep  = RGB(r: 0.360, g: 0.330, b: 0.800)
-let amberDeep = RGB(r: 0.580, g: 0.375, b: 0.040)
+// The one brand accent, in three tonal steps. Cobalt matches portfolio
+// --cobalt exactly; the other two are computed same-hue/same-saturation
+// lightness steps (see Documentation for the derivation), not eyeballed.
+let cobalt        = RGB(r: 0.1333, g: 0.2510, b: 0.8863) // #2240E2 — matches portfolio --cobalt
+let cobaltBright  = RGB(r: 0.5569, g: 0.6196, b: 0.9412) // #8E9EF0 — dark-surface tonal step
+let cobaltDeep    = RGB(r: 0.0941, g: 0.1843, b: 0.6980) // #182FB2 — matches portfolio --cobalt-deep
+let cobaltDeepest = RGB(r: 0.0863, g: 0.1765, b: 0.6549) // #162DA7 — light-surface third tonal step
+
+// Light-surface sibling for the subtitle/mutedSlate role only. Same hue,
+// lower luminance — see the divergence note in Colors.swift.
 let slateDeep = RGB(r: 0.310, g: 0.345, b: 0.392)
 
-let arcColorsDark  = [freshMint, orbitIris, warmAmber]
-let arcColorsLight = [mossDeep, irisDeep, amberDeep]
+// Three tonal steps of cobalt, lightest-to-boldest for dark, boldest-to-
+// darkest for light — an editorial one-colour mark, not three brand hues.
+let arcColorsDark  = [cobaltBright, cobalt, cobaltDeep]
+let arcColorsLight = [cobalt, cobaltDeep, cobaltDeepest]
 
 func cgColor(_ c: RGB, _ a: CGFloat = 1) -> CGColor {
     CGColor(srgbRed: c.r, green: c.g, blue: c.b, alpha: a)
@@ -92,8 +97,8 @@ func drawBloom(_ ctx: CGContext, rect: CGRect, lineWidthFraction: CGFloat,
         ctx.fillEllipse(in: nucleusRect)
     } else {
         let onLight = palette == arcColorsLight
-        let bright = onLight ? RGB(r: 0.180, g: 0.520, b: 0.380) : RGB(r: 0.780, g: 0.960, b: 0.870)
-        let deep = onLight ? RGB(r: 0.040, g: 0.300, b: 0.220) : RGB(r: 0.180, g: 0.620, b: 0.520)
+        let bright = onLight ? cobalt : cobaltBright
+        let deep = onLight ? cobaltDeepest : cobaltDeep
         let grad = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
                               colors: [cgColor(bright), cgColor(deep)] as CFArray,
                               locations: [0, 1])!
@@ -183,7 +188,7 @@ func appIcon(px: Int) -> CGImage {
     ctx.drawLinearGradient(bg, start: CGPoint(x: 0, y: s), end: CGPoint(x: 0, y: 0), options: [])
 
     let haloGrad = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
-                              colors: [cgColor(freshMint, 0.20), cgColor(freshMint, 0)] as CFArray,
+                              colors: [cgColor(cobaltBright, 0.20), cgColor(cobaltBright, 0)] as CFArray,
                               locations: [0, 1])!
     ctx.drawRadialGradient(haloGrad,
         startCenter: CGPoint(x: s / 2, y: s / 2), startRadius: 0,
@@ -282,7 +287,7 @@ func openGraph() -> CGImage {
 
     // Off-centre halo, echoing the mark's own asymmetry.
     let halo = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
-                          colors: [cgColor(freshMint, 0.16), cgColor(freshMint, 0)] as CFArray,
+                          colors: [cgColor(cobaltBright, 0.16), cgColor(cobaltBright, 0)] as CFArray,
                           locations: [0, 1])!
     ctx.drawRadialGradient(halo, startCenter: CGPoint(x: 900, y: 430), startRadius: 0,
                            endCenter: CGPoint(x: 900, y: 430), endRadius: 520, options: [])
@@ -292,7 +297,7 @@ func openGraph() -> CGImage {
 
     drawWordmark(ctx, at: CGPoint(x: 96, y: 386), pointSize: 96, color: softPorcelain)
     _ = drawText(ctx, "A lighter Mac. Always under control.", at: CGPoint(x: 96, y: 300),
-                 size: 40, weight: .medium, color: freshMint)
+                 size: 40, weight: .medium, color: cobaltBright)
     _ = drawText(ctx, "Local, transparent and reversible care for macOS.", at: CGPoint(x: 96, y: 240),
                  size: 28, weight: .regular, color: mutedSlate)
     return ctx.makeImage()!
@@ -470,7 +475,7 @@ func markSVG(surface: Surface, monochrome: String? = nil, side: Double = 512) ->
         body += "stroke-width=\"\(String(format: "%.2f", lw))\" stroke-linecap=\"round\"/>\n"
     }
     let nucleusR = side * Double(nucleusFraction) / 2
-    let nucleusFill = monochrome ?? (surface == .dark ? freshMint.hex : mossDeep.hex)
+    let nucleusFill = monochrome ?? (surface == .dark ? cobaltBright.hex : cobaltDeep.hex)
     body += "  <circle cx=\"\(String(format: "%.2f", c))\" cy=\"\(String(format: "%.2f", c))\" "
     body += "r=\"\(String(format: "%.2f", nucleusR))\" fill=\"\(nucleusFill)\"/>\n"
 

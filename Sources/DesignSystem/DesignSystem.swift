@@ -1,6 +1,6 @@
 import SwiftUI
 
-// CoreTend design system — Orbital Ecology.
+// CoreTend design system — Paper / Ink / Cobalt, shared with the portfolio.
 // Tokens: Tokens.swift / Colors.swift / Typography.swift
 // Brand:  CoreBloom.swift   Components: Components.swift
 
