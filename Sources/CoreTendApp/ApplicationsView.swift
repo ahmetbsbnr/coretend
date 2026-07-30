@@ -230,11 +230,15 @@ struct InstalledAppsView: View {
             TextField(L("apps.search"), text: $model.searchText)
                 .textFieldStyle(.roundedBorder)
                 .padding(.horizontal, MCSpacing.sm).padding(.top, MCSpacing.sm)
-            Picker(L("apps.group_by"), selection: $model.grouping) {
-                ForEach(AppGrouping.allCases) { Text($0.displayName).tag($0) }
+            HStack(spacing: MCSpacing.xs) {
+                Text(L("apps.group_by")).foregroundStyle(.secondary)
+                Picker("", selection: $model.grouping) {
+                    ForEach(AppGrouping.allCases) { Text($0.displayName).tag($0) }
+                }
+                .pickerStyle(.menu)
+                .labelsHidden()
+                Spacer()
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
             .padding(MCSpacing.sm)
             switch model.phase {
             case .loading:
