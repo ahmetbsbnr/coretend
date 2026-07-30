@@ -124,7 +124,7 @@ struct BrandResourceTests {
     }
 }
 
-@Suite("Living System palette contrast")
+@Suite("Paper/Ink/Cobalt palette contrast")
 struct PaletteContrastTests {
     /// WCAG 2.1 relative luminance.
     private static func luminance(_ c: (Double, Double, Double)) -> Double {
@@ -140,51 +140,58 @@ struct PaletteContrastTests {
         return (hi + 0.05) / (lo + 0.05)
     }
 
-    /// The dark-surface accents are the brand's published values, and they are
-    /// only defensible if they are actually readable on Core Ink.
-    @Test func canonicalAccentsAreReadableOnCoreInk() {
-        let ink = MCColor.LivingSystem.coreInk
+    /// The dark-surface accents are only defensible if they're actually
+    /// readable on Ink. Amber/coral are unchanged from the pre-re-skin
+    /// palette; cobaltBright is the brightened Ink sibling of the brand blue.
+    @Test func darkSurfaceAccentsAreReadableOnInk() {
+        let ink = MCColor.Canonical.ink
         for (name, value) in [
-            ("freshMint", MCColor.LivingSystem.freshMint),
-            ("orbitIris", MCColor.LivingSystem.orbitIris),
-            ("warmAmber", MCColor.LivingSystem.warmAmber),
-            ("signalCoral", MCColor.LivingSystem.signalCoral),
+            ("cobaltBright", MCColor.Canonical.cobaltBright),
+            ("warmAmber", MCColor.Canonical.warmAmber),
+            ("signalCoral", MCColor.Canonical.signalCoral),
         ] {
             let r = Self.ratio(value, ink)
-            #expect(r >= 4.5, "\(name) on Core Ink is \(r):1, below the 4.5:1 text minimum")
+            #expect(r >= 4.5, "\(name) on Ink is \(r):1, below the 4.5:1 text minimum")
         }
     }
 
-    /// The reason the light siblings exist at all. If one of them ever drifts
-    /// back toward its canonical value, this fails instead of shipping
-    /// unreadable text to every light-mode install.
-    @Test func lightSiblingsAreReadableOnSoftPorcelain() {
-        let porcelain = MCColor.LivingSystem.softPorcelain
+    /// The reason amberDeep/coralDeep/slateDeep exist at all. If one of them
+    /// ever drifts back toward its canonical value, this fails instead of
+    /// shipping unreadable text to every light-mode install. Cobalt itself is
+    /// not in this list — see `canonicalCobaltPassesOnPaperDirectly` below,
+    /// it needs no deepened sibling because it was tuned for Paper already.
+    @Test func lightSiblingsAreReadableOnPaper() {
+        let paper = MCColor.Canonical.paper
         for (name, value) in [
-            ("mossDeep", MCColor.LivingSystem.mossDeep),
-            ("irisDeep", MCColor.LivingSystem.irisDeep),
-            ("amberDeep", MCColor.LivingSystem.amberDeep),
-            ("coralDeep", MCColor.LivingSystem.coralDeep),
-            ("slateDeep", MCColor.LivingSystem.slateDeep),
+            ("amberDeep", MCColor.Canonical.amberDeep),
+            ("coralDeep", MCColor.Canonical.coralDeep),
+            ("slateDeep", MCColor.Canonical.slateDeep),
         ] {
-            let r = Self.ratio(value, porcelain)
-            #expect(r >= 4.5, "\(name) on Soft Porcelain is \(r):1, below the 4.5:1 text minimum")
+            let r = Self.ratio(value, paper)
+            #expect(r >= 4.5, "\(name) on Paper is \(r):1, below the 4.5:1 text minimum")
         }
     }
 
-    /// Documents the trap the light siblings exist to avoid: the canonical
-    /// accent green is nowhere near readable on a near-white surface. If this
-    /// ever stops being true the palette changed, and the divergence comment
-    /// in Colors.swift needs rewriting rather than quietly keeping two values.
-    @Test func canonicalMintWouldFailOnALightSurface() {
-        let r = Self.ratio(MCColor.LivingSystem.freshMint, MCColor.LivingSystem.softPorcelain)
-        #expect(r < 4.5, "Fresh Mint now passes on Soft Porcelain (\(r):1) — the light/dark split may no longer be needed")
+    /// Cobalt is published for Paper, and needs no darkened sibling because
+    /// it already clears the text minimum there directly.
+    @Test func canonicalCobaltPassesOnPaperDirectly() {
+        let r = Self.ratio(MCColor.Canonical.cobalt, MCColor.Canonical.paper)
+        #expect(r >= 4.5, "Cobalt on Paper is \(r):1, below the 4.5:1 text minimum")
     }
 
-    /// Muted Slate is specified for secondary text; on the dark surface it has
-    /// to clear the 3:1 large-text floor at minimum.
+    /// Documents the trap `cobaltBright` exists to avoid: the canonical brand
+    /// blue is nowhere near readable on Ink. If this ever stops being true
+    /// the palette changed, and the divergence comment in Colors.swift needs
+    /// rewriting rather than quietly keeping two values.
+    @Test func canonicalCobaltWouldFailOnInk() {
+        let r = Self.ratio(MCColor.Canonical.cobalt, MCColor.Canonical.ink)
+        #expect(r < 4.5, "Cobalt now passes on Ink (\(r):1) — the light/dark split may no longer be needed")
+    }
+
+    /// Muted Slate is specified for secondary text and the secondary accent;
+    /// on the dark surface it has to clear the 3:1 large-text floor at minimum.
     @Test func mutedSlateClearsTheLargeTextFloorOnInk() {
-        let r = Self.ratio(MCColor.LivingSystem.mutedSlate, MCColor.LivingSystem.coreInk)
-        #expect(r >= 3.0, "Muted Slate on Core Ink is \(r):1, below the 3:1 large-text floor")
+        let r = Self.ratio(MCColor.Canonical.mutedSlate, MCColor.Canonical.ink)
+        #expect(r >= 3.0, "Muted Slate on Ink is \(r):1, below the 3:1 large-text floor")
     }
 }
