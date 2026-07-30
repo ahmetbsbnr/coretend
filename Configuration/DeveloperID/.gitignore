@@ -1,0 +1,6 @@
+
+# Real Apple Developer private key material — never committed, ever.
+# This .gitignore file itself is the one exception (no secret content,
+# and it must be tracked so a fresh clone is protected from day one).
+*
+!.gitignore

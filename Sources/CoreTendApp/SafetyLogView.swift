@@ -71,7 +71,7 @@ struct SafetyLogView: View {
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text(L("safetylog.title")).font(.headline)
+                Text(L("safetylog.title")).font(MCFont.cardTitle)
                 Text(L("safetylog.subtitle", model.executedCount, model.dryRunCount))
                     .font(.caption).foregroundStyle(.secondary)
             }

@@ -240,7 +240,7 @@ struct SmartCareView: View {
                             .frame(width: 36)
                             .accessibilityHidden(true)
                         VStack(alignment: .leading) {
-                            Text(module.name).font(.headline)
+                            Text(module.name).font(MCFont.cardTitle)
                             stateText(module.state)
                                 .font(.caption).foregroundStyle(.secondary)
                         }
@@ -308,10 +308,10 @@ struct SmartCareView: View {
         case let .finished(freed, dryRun):
             VStack(spacing: 8) {
                 Image(systemName: "checkmark.seal")
-                    .font(.system(size: 40)).foregroundStyle(MCTheme.success)
+                    .font(.system(size: MCIconSize.compactState)).foregroundStyle(MCTheme.success)
                 Text(dryRun ? L("smartcare.hero.finished_dryrun_title", mcFormatBytes(freed))
                             : L("smartcare.hero.finished_title", mcFormatBytes(freed)))
-                    .font(.headline)
+                    .font(MCFont.cardTitle)
                 Button(L("smartcare.scan_again")) { model.start() }
             }
         }

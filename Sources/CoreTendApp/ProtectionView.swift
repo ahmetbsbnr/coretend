@@ -63,7 +63,7 @@ struct IntegrityView: View {
             HStack(alignment: .top, spacing: 16) {
                 Image(systemName: "info.circle").font(.title2).foregroundStyle(MCTheme.accent)
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(L("integrity.explainer.title")).font(.headline)
+                    Text(L("integrity.explainer.title")).font(MCFont.cardTitle)
                     Text(L("integrity.explainer.body")).foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -75,7 +75,7 @@ struct IntegrityView: View {
         MCCard {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    Text(L("integrity.downloads.title")).font(.headline)
+                    Text(L("integrity.downloads.title")).font(MCFont.cardTitle)
                     Spacer()
                     if model.isLoading { ProgressView().controlSize(.small) }
                 }
@@ -113,7 +113,7 @@ struct IntegrityView: View {
     private var inspectorCard: some View {
         MCCard {
             VStack(alignment: .leading, spacing: 10) {
-                Text(L("integrity.inspector.title")).font(.headline)
+                Text(L("integrity.inspector.title")).font(MCFont.cardTitle)
                 Text(L("integrity.inspector.subtitle")).font(.caption).foregroundStyle(.secondary)
                 Button(L("integrity.inspector.choose")) {
                     let panel = NSOpenPanel()
@@ -156,7 +156,7 @@ struct IntegrityView: View {
     private var loginItemsCard: some View {
         MCCard {
             VStack(alignment: .leading, spacing: 8) {
-                Text(L("integrity.login_items.title")).font(.headline)
+                Text(L("integrity.login_items.title")).font(MCFont.cardTitle)
                 Text(L("integrity.login_items.subtitle")).font(.caption).foregroundStyle(.secondary)
                 if model.loginItems.isEmpty && !model.isLoading {
                     Text(L("integrity.login_items.empty")).font(.caption).foregroundStyle(.secondary)

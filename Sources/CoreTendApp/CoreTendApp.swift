@@ -120,7 +120,7 @@ struct MenuBarLabel: View {
             if iconModel.needsAttention {
                 // Shape + position carries the meaning, not color alone.
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 8))
+                    .font(.system(size: MCIconSize.inline))
                     .offset(x: 5, y: -5)
             }
         }
@@ -137,7 +137,7 @@ struct MenuBarView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(verbatim: "CoreTend").font(.headline)
+            Text(verbatim: "CoreTend").font(MCFont.cardTitle)
             if let snap = snapshot {
                 metricRow(icon: "cpu", label: L("menubar.cpu"), value: "\(Int(snap.cpuUsedFraction * 100))%",
                           warn: snap.cpuUsedFraction > 0.85)
@@ -225,7 +225,7 @@ struct MenuBarView: View {
             }
             Text(value).foregroundStyle(.secondary).monospacedDigit()
         }
-        .font(.callout)
+        .font(MCFont.secondaryBody)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(label), \(value)" + (warn ? ", \(L("menubar.warning_a11y"))" : ""))
     }
@@ -371,7 +371,7 @@ struct PlaceholderView: View {
             Image(systemName: module.systemImage)
                 .font(.system(size: MCIconSize.emptyState))
                 .foregroundStyle(MCTheme.accent)
-            Text(module.label).font(.title2.weight(.semibold))
+            Text(module.label).font(MCFont.pageTitle)
             Text(L("placeholder.under_construction"))
                 .foregroundStyle(.secondary)
         }

@@ -95,7 +95,7 @@ struct PerformanceView: View {
                     }
                     MCCard {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(L("performance.cpu_chart_title")).font(.headline)
+                            Text(L("performance.cpu_chart_title")).font(MCFont.cardTitle)
                             cpuChart
                                 .frame(height: MCSize.chartHeight)
                         }
@@ -103,7 +103,7 @@ struct PerformanceView: View {
                     }
                     MCCard {
                         VStack(alignment: .leading, spacing: 10) {
-                            Text(L("performance.system")).font(.headline)
+                            Text(L("performance.system")).font(MCFont.cardTitle)
                             LabeledContent(L("performance.memory_pressure"), value: snap.memoryPressureLevel.capitalized)
                             LabeledContent(L("performance.thermal_state"), value: snap.thermalState.capitalized)
                             LabeledContent(L("performance.uptime"), value: formatUptime(snap.uptimeSeconds))
@@ -172,7 +172,7 @@ struct PerformanceView: View {
     private var launchAgentsCard: some View {
         MCCard {
             VStack(alignment: .leading, spacing: 8) {
-                Text(L("performance.launchagents.title")).font(.headline)
+                Text(L("performance.launchagents.title")).font(MCFont.cardTitle)
                 Text(L("performance.launchagents.subtitle"))
                     .font(.caption).foregroundStyle(.secondary)
                 if agents.isEmpty {
@@ -183,7 +183,7 @@ struct PerformanceView: View {
                         Image(systemName: agent.broken ? "exclamationmark.triangle.fill" : "checkmark.circle")
                             .foregroundStyle(agent.broken ? MCTheme.warning : MCTheme.success)
                         VStack(alignment: .leading) {
-                            Text(agent.label).font(.callout)
+                            Text(agent.label).font(MCFont.secondaryBody)
                             if let program = agent.programPath {
                                 Text(agent.broken ? L("performance.launchagents.missing", program) : program)
                                     .font(.caption).foregroundStyle(.secondary)

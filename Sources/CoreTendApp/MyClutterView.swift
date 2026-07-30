@@ -139,7 +139,7 @@ struct LargeOldFilesView: View {
             Image(systemName: "doc.on.doc")
                 .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
                 .accessibilityHidden(true)
-            Text(L("clutter.idle.title")).font(.title2.weight(.semibold))
+            Text(L("clutter.idle.title")).font(MCFont.pageTitle)
             Text(L("clutter.idle.subtitle"))
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
             HStack(spacing: 16) {
@@ -191,7 +191,7 @@ struct LargeOldFilesView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text(L("clutter.results.summary", model.sortedFindings.count, mcFormatBytes(model.totalBytes)))
-                    .font(.headline)
+                    .font(MCFont.cardTitle)
                 Spacer()
                 Picker(L("clutter.sort_by"), selection: $model.sortOption) {
                     ForEach(MyClutterViewModel.SortOption.allCases) { option in

@@ -100,7 +100,7 @@ struct SpaceLensView: View {
         VStack(spacing: 16) {
             Image(systemName: "circle.hexagongrid")
                 .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
-            Text(L("spacelens.idle.title")).font(.title2.weight(.semibold))
+            Text(L("spacelens.idle.title")).font(MCFont.pageTitle)
             Text(L("spacelens.idle.subtitle"))
                 .foregroundStyle(.secondary)
             HStack {
@@ -156,7 +156,7 @@ struct SpaceLensView: View {
                 }
                 Spacer()
                 Text(mcFormatBytes(model.current?.size ?? 0))
-                    .font(.headline).monospacedDigit()
+                    .font(MCFont.cardTitle).monospacedDigit()
                 Button(L("spacelens.new_scan")) { model.phase = .idle }
                     .keyboardShortcut(.cancelAction)
             }
@@ -227,9 +227,9 @@ struct SpaceLensView: View {
                     VStack(alignment: .leading, spacing: 0) {
                         HStack(spacing: 2) {
                             if rect.node.isAccessDenied {
-                                Image(systemName: "lock.fill").font(.system(size: 8))
+                                Image(systemName: "lock.fill").font(.system(size: MCIconSize.inline))
                             } else if rect.node.isCloudPlaceholder {
-                                Image(systemName: "icloud.fill").font(.system(size: 8))
+                                Image(systemName: "icloud.fill").font(.system(size: MCIconSize.inline))
                             }
                             Text(rect.node.name).font(.caption2.weight(.medium)).lineLimit(1)
                         }

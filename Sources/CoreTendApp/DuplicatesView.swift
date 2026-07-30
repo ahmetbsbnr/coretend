@@ -154,7 +154,7 @@ struct DuplicatesView: View {
         VStack(spacing: 16) {
             Image(systemName: "doc.on.doc.fill")
                 .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accentSecondary)
-            Text(L("dupes.idle.title")).font(.title2.weight(.semibold))
+            Text(L("dupes.idle.title")).font(MCFont.pageTitle)
             Text(L("dupes.idle.subtitle"))
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
             Button(L("dupes.find")) { model.start() }
@@ -192,7 +192,7 @@ struct DuplicatesView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text(L("dupes.results.summary", model.groups.count, mcFormatBytes(model.selectedBytes), mcFormatBytes(model.wastedBytes)))
-                    .font(.headline)
+                    .font(MCFont.cardTitle)
                 Spacer()
                 Toggle(L("common.dry_run"), isOn: $model.dryRun).toggleStyle(.switch)
                 Button(model.dryRun ? L("leftovers.simulate") : L("dupes.move_to_trash")) {

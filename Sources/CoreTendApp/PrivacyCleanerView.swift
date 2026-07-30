@@ -135,13 +135,13 @@ struct PrivacyCleanerView: View {
             if !running.isEmpty {
                 Label(L("privacy.running_warning", running.joined(separator: ", ")),
                       systemImage: "exclamationmark.triangle")
-                    .font(.callout).foregroundStyle(MCTheme.warning)
+                    .font(MCFont.secondaryBody).foregroundStyle(MCTheme.warning)
                     .padding(.horizontal).padding(.top, 12)
                     .accessibilityElement(children: .combine)
             }
             HStack {
                 Text(L("privacy.caches_selected", mcFormatBytes(model.selectedCacheBytes)))
-                    .font(.headline)
+                    .font(MCFont.cardTitle)
                 Spacer()
                 Toggle(L("common.dry_run"), isOn: $model.dryRun).toggleStyle(.switch)
                 Button(model.dryRun ? L("privacy.simulate_clean") : L("privacy.clean_caches")) {

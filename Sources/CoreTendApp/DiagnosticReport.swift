@@ -2,6 +2,7 @@ import SwiftUI
 import Foundation
 import Persistence
 import IntegrityCore
+import DesignSystem
 
 /// Anonymized support diagnostic: generic hardware/software state only.
 ///
@@ -113,7 +114,7 @@ struct DiagnosticReportView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(L("diagnostic.title")).font(.headline)
+            Text(L("diagnostic.title")).font(MCFont.cardTitle)
             Text(L("diagnostic.review_notice"))
                 .font(.caption).foregroundStyle(.secondary)
             ScrollView {
