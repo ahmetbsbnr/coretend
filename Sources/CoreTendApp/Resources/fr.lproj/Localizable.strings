@@ -10,7 +10,7 @@
 /* Sidebar */
 "sidebar.free_up_space" = "Libérer de l'espace";
 "sidebar.optimize" = "Optimiser";
-"sidebar.protect" = "Protéger";
+"sidebar.protect" = "Intégrité";
 "sidebar.activity" = "Activité";
 
 /* Placeholder */
@@ -303,7 +303,7 @@
 "settings.dry_run_detail" = "Lorsque activé, les nettoyages simulent leur résultat au lieu de déplacer les fichiers vers la Corbeille.";
 "settings.deletion_method" = "Méthode de suppression";
 "settings.deletion_method_value" = "Corbeille système (réversible)";
-"settings.protection" = "Protection";
+"settings.protection" = "Intégrité";
 "settings.installed" = "Installé";
 "settings.not_installed" = "Non installé";
 "settings.privileged_helper" = "Assistant privilégié";
@@ -368,7 +368,7 @@
 "apps.grouping.last_used" = "Dernière utilisation";
 
 /* Module display names (sidebar / placeholder) */
-"module.protection" = "Protection";
+"module.protection" = "Intégrité";
 "menubar.this_copy" = "Cette copie";
 "menubar.signature_apple" = "Signé par Apple";
 "menubar.signature_team" = "Signé (équipe %@)";
