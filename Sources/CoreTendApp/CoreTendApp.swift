@@ -7,6 +7,11 @@ import IntegrityCore
 @main
 struct CoreTendApp: App {
     @AppStorage("menuBarEnabled") private var menuBarEnabled = true
+    // Same UserDefaults key LocalizationManager reads/writes. Observing it
+    // here — not just inside LocalizationManager, which isn't itself
+    // Observable — is what makes a language change re-render the whole
+    // window immediately rather than only on next launch.
+    @AppStorage("appLanguage") private var appLanguageRaw = AppLanguage.system.rawValue
 
     /// Core Bloom menu-bar template (adapts to menu bar appearance).
     static let menuBarImage: NSImage? = {
@@ -21,6 +26,7 @@ struct CoreTendApp: App {
         WindowGroup("CoreTend") {
             MainWindow()
                 .frame(minWidth: MCSize.windowMinWidth, minHeight: MCSize.windowMinHeight)
+                .id(appLanguageRaw)
         }
         .windowStyle(.automatic)
         .commands {
@@ -29,6 +35,7 @@ struct CoreTendApp: App {
 
         MenuBarExtra(isInserted: $menuBarEnabled) {
             MenuBarView()
+                .id(appLanguageRaw)
         } label: {
             MenuBarLabel()
             Text(verbatim: "CoreTend")

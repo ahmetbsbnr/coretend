@@ -180,6 +180,7 @@ struct OnboardingView: View {
     @Binding var isPresented: Bool
     @AppStorage("onboardingStep") private var step = 0
     @AppStorage("menuBarEnabled") private var menuBarEnabled = true
+    @AppStorage("appLanguage") private var appLanguageRaw = AppLanguage.system.rawValue
     @State private var model = OnboardingViewModel()
 
     private let stepCount = 7
@@ -243,6 +244,20 @@ struct OnboardingView: View {
                 bullet("chevron.left.forwardslash.chevron.right", L("onboarding.welcome.open_source"))
             }
             .frame(maxWidth: 440)
+            VStack(spacing: MCSpacing.xxs) {
+                Text(L("onboarding.language.title")).font(MCFont.sectionTitle).foregroundStyle(.secondary)
+                Picker(L("onboarding.language.title"), selection: $appLanguageRaw) {
+                    Text(L("settings.language.system")).tag(AppLanguage.system.rawValue)
+                    Text("Français").tag(AppLanguage.fr.rawValue)
+                    Text("English").tag(AppLanguage.en.rawValue)
+                }
+                .labelsHidden()
+                .pickerStyle(.segmented)
+                .frame(maxWidth: 280)
+                Text(L("onboarding.language.subtitle"))
+                    .font(MCFont.caption).foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center).frame(maxWidth: 400)
+            }
             HStack(spacing: MCSpacing.sm) {
                 MCStatusBadge(L("onboarding.welcome.version", appVersion), status: .neutral)
                 MCStatusBadge(L("onboarding.welcome.unsigned"), status: .attention)
