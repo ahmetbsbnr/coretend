@@ -2,6 +2,8 @@ import SwiftUI
 import ScanCore
 import DesignSystem
 import Persistence
+import QuickLookUI
+import QuickLook
 @preconcurrency import QuickLookThumbnailing
 
 @MainActor
@@ -10,6 +12,7 @@ final class SimilarImagesViewModel {
     enum Phase: Equatable { case idle, scanning(processed: Int, total: Int), results, empty }
 
     var phase: Phase = .idle
+    var previewURL: URL?
     var groups: [SimilarImageGroup] = []
     var searchText = ""
     var selectedVolumeID: String?
@@ -183,6 +186,12 @@ struct SimilarImagesView: View {
                                     }
                                     Spacer()
                                     Button {
+                                        model.previewURL = url
+                                    } label: { Image(systemName: "eye") }
+                                    .buttonStyle(.borderless)
+                                    .help(L("clutter.quick_look"))
+                                    .accessibilityLabel(L("clutter.quick_look"))
+                                    Button {
                                         NSWorkspace.shared.activateFileViewerSelecting([url])
                                     } label: { Image(systemName: "magnifyingglass") }
                                     .buttonStyle(.borderless)
@@ -195,6 +204,7 @@ struct SimilarImagesView: View {
                     }
                 }
                 .listStyle(.inset)
+                .quickLookPreview($model.previewURL)
             }
         }
     }

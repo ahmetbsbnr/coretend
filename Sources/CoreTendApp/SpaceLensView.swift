@@ -3,6 +3,8 @@ import ScanCore
 import SafetyCore
 import DesignSystem
 import Persistence
+import QuickLookUI
+import QuickLook
 
 @MainActor
 @Observable
@@ -165,6 +167,7 @@ struct SpaceLensView: View {
     @Namespace private var zoomSpace
     @State private var selectedID: String?
     @State private var hoveredID: String?
+    @State private var previewURL: URL?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -385,6 +388,14 @@ struct SpaceLensView: View {
                     .keyboardShortcut(.rightArrow, modifiers: [])
                 }
                 if !child.path.hasSuffix("\u{2026}other") {
+                    if !child.isDirectory {
+                        Button {
+                            previewURL = URL(fileURLWithPath: child.path)
+                        } label: { Image(systemName: "eye") }
+                        .buttonStyle(.borderless)
+                        .help(L("clutter.quick_look"))
+                        .accessibilityLabel(L("clutter.quick_look"))
+                    }
                     Button {
                         NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: child.path)])
                     } label: { Image(systemName: "magnifyingglass") }
@@ -403,6 +414,7 @@ struct SpaceLensView: View {
                                 + (child.isCloudPlaceholder ? ", \(L("spacelens.cloud_placeholder_short"))" : ""))
         }
         .listStyle(.inset)
+        .quickLookPreview($previewURL)
         .focusable()
         .onKeyPress(.return) {
             if let id = selectedID, let child = node.children.first(where: { $0.id == id }) {

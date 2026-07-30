@@ -113,6 +113,27 @@ final class MyActivityViewModel {
         }
         return lines.joined(separator: "\n")
     }
+
+    /// JSON of the currently visible (filtered) records, same scope as
+    /// exportCSV — one array of plain objects, no envelope metadata to keep
+    /// this trivially diffable/greppable.
+    func exportJSON() -> String {
+        struct ExportRecord: Encodable {
+            let date: String, kind: String, summary: String
+            let itemCount: Int, bytes: Int64, dryRun: Bool
+        }
+        let formatter = ISO8601DateFormatter()
+        let exportRecords = records.map {
+            ExportRecord(date: formatter.string(from: $0.date), kind: $0.kind.rawValue, summary: $0.summary,
+                         itemCount: $0.itemCount, bytes: $0.bytes, dryRun: $0.dryRun)
+        }
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        guard let data = try? encoder.encode(exportRecords), let json = String(data: data, encoding: .utf8) else {
+            return "[]"
+        }
+        return json
+    }
 }
 
 struct MyActivityView: View {
@@ -149,8 +170,9 @@ struct MyActivityView: View {
                 }
             }
             .pickerStyle(.menu)
-            Button {
-                exportToDownloads()
+            Menu {
+                Button(L("activity.export_csv")) { exportToDownloads(format: .csv) }
+                Button(L("activity.export_json")) { exportToDownloads(format: .json) }
             } label: {
                 Label(L("activity.export_csv"), systemImage: "square.and.arrow.up")
             }
@@ -239,13 +261,23 @@ struct MyActivityView: View {
         }
     }
 
-    private func exportToDownloads() {
-        let csv = model.exportCSV()
+    enum ExportFormat { case csv, json }
+
+    private func exportToDownloads(format: ExportFormat) {
         let panel = NSSavePanel()
-        panel.allowedContentTypes = [.commaSeparatedText]
-        panel.nameFieldStringValue = "CoreTend-Activity.csv"
+        let text: String
+        switch format {
+        case .csv:
+            panel.allowedContentTypes = [.commaSeparatedText]
+            panel.nameFieldStringValue = "CoreTend-Activity.csv"
+            text = model.exportCSV()
+        case .json:
+            panel.allowedContentTypes = [.json]
+            panel.nameFieldStringValue = "CoreTend-Activity.json"
+            text = model.exportJSON()
+        }
         if panel.runModal() == .OK, let url = panel.url {
-            try? csv.write(to: url, atomically: true, encoding: .utf8)
+            try? text.write(to: url, atomically: true, encoding: .utf8)
         }
     }
 }

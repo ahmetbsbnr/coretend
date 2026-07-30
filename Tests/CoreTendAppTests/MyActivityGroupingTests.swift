@@ -47,6 +47,31 @@ struct MyActivityGroupingTests {
     }
 }
 
+@Suite("My Activity export")
+@MainActor
+struct MyActivityExportTests {
+    @Test("JSON export round-trips the visible records as valid JSON")
+    func exportJSONIsValid() throws {
+        let m = MyActivityViewModel()
+        m.allRecords = [record(kind: .cleanup, daysAgo: 0, bytes: 1024, items: 3, dryRun: false)]
+        let json = m.exportJSON()
+        let data = try #require(json.data(using: .utf8))
+        let decoded = try JSONSerialization.jsonObject(with: data) as? [[String: Any]]
+        #expect(decoded?.count == 1)
+        #expect(decoded?[0]["bytes"] as? Int64 == 1024)
+        #expect(decoded?[0]["dryRun"] as? Bool == false)
+    }
+
+    @Test("JSON export respects the same date-range filter as the CSV export")
+    func exportJSONRespectsDateRange() {
+        let m = MyActivityViewModel()
+        m.allRecords = [record(kind: .scan, daysAgo: 0), record(kind: .scan, daysAgo: 40)]
+        m.dateRange = .last7
+        #expect(m.exportJSON().contains("[") )
+        #expect(m.records.count == 1) // the 40-day-old record is filtered out of both exports
+    }
+}
+
 @Suite("Cloud Cleanup sync state")
 struct CloudSyncStateTests {
     @Test("fully local file with no placeholder signal classifies local")
