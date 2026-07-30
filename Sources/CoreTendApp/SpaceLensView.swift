@@ -136,8 +136,19 @@ final class SpaceLensViewModel {
 }
 
 /// Semantic color-by-type for treemap fragments — never arbitrary index cycling.
-enum SpaceNodeCategory: String {
+enum SpaceNodeCategory: String, Hashable {
     case folder, media, document, archive, code, other
+
+    var label: String {
+        switch self {
+        case .folder: L("spacelens.category.folder")
+        case .media: L("spacelens.category.media")
+        case .document: L("spacelens.category.document")
+        case .archive: L("spacelens.category.archive")
+        case .code: L("spacelens.category.code")
+        case .other: L("spacelens.category.other")
+        }
+    }
 
     static func of(_ node: SpaceNode) -> SpaceNodeCategory {
         if node.isDirectory { return .folder }
@@ -168,6 +179,9 @@ struct SpaceLensView: View {
     @State private var selectedID: String?
     @State private var hoveredID: String?
     @State private var previewURL: URL?
+    @State private var searchText = ""
+    @State private var categoryFilter: SpaceNodeCategory?
+    @State private var exclusionsController = ClutterExclusionsController()
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -180,6 +194,7 @@ struct SpaceLensView: View {
         }
         .navigationTitle(L("spacelens.title"))
         .task { await model.loadDryRunDefault() }
+        .task { await exclusionsController.load() }
         .confirmationDialog(
             model.pendingDelete.map { L("spacelens.delete.confirm_title", $0.name) } ?? "",
             isPresented: Binding(get: { model.pendingDelete != nil }, set: { if !$0 { model.pendingDelete = nil } }),
@@ -241,11 +256,39 @@ struct SpaceLensView: View {
             VStack(alignment: .leading, spacing: 0) {
                 breadcrumb
                     .padding(.horizontal).padding(.vertical, 8)
+                searchAndFilterRow
+                    .padding(.horizontal).padding(.bottom, 8)
                 treemap(for: current)
                     .padding(.horizontal)
                 Divider().padding(.top, 8)
                 childList(for: current)
             }
+        }
+    }
+
+    /// Filters by name (locale-aware substring, same comparison My Clutter
+    /// uses) and/or category — applied identically to the treemap and the
+    /// accessible list below it, so the two never disagree about what's shown.
+    private func filteredChildren(of node: SpaceNode) -> [SpaceNode] {
+        node.children.filter { child in
+            let matchesSearch = searchText.isEmpty || child.name.localizedStandardContains(searchText)
+            let matchesCategory = categoryFilter == nil || SpaceNodeCategory.of(child) == categoryFilter
+            return matchesSearch && matchesCategory
+        }
+    }
+
+    private var searchAndFilterRow: some View {
+        HStack {
+            MCSearchField(text: $searchText, placeholder: L("spacelens.search_placeholder"))
+            Picker(L("spacelens.filter_category"), selection: $categoryFilter) {
+                Text(L("spacelens.filter_all")).tag(SpaceNodeCategory?.none)
+                ForEach([SpaceNodeCategory.folder, .media, .document, .archive, .code, .other], id: \.self) { category in
+                    Text(category.label).tag(SpaceNodeCategory?.some(category))
+                }
+            }
+            .pickerStyle(.menu)
+            .frame(width: 160)
+            Spacer()
         }
     }
 
@@ -283,7 +326,7 @@ struct SpaceLensView: View {
     private func treemap(for node: SpaceNode) -> some View {
         GeometryReader { proxy in
             let rects = TreemapLayout.layout(
-                nodes: node.children,
+                nodes: filteredChildren(of: node),
                 in: CGRect(origin: .zero, size: proxy.size))
             ZStack(alignment: .topLeading) {
                 ForEach(rects) { rect in
@@ -365,7 +408,7 @@ struct SpaceLensView: View {
     }
 
     private func childList(for node: SpaceNode) -> some View {
-        List(node.children, selection: $selectedID) { child in
+        List(filteredChildren(of: node), selection: $selectedID) { child in
             HStack {
                 Image(systemName: child.isDirectory ? "folder" : "doc")
                     .foregroundStyle(SpaceNodeCategory.of(child).color)
@@ -406,6 +449,7 @@ struct SpaceLensView: View {
                     } label: { Image(systemName: "trash") }
                     .buttonStyle(.borderless)
                     .help(L("spacelens.delete.help"))
+                    ExcludeButton(url: URL(fileURLWithPath: child.path), controller: exclusionsController)
                 }
             }
             .accessibilityElement(children: .combine)
@@ -417,7 +461,7 @@ struct SpaceLensView: View {
         .quickLookPreview($previewURL)
         .focusable()
         .onKeyPress(.return) {
-            if let id = selectedID, let child = node.children.first(where: { $0.id == id }) {
+            if let id = selectedID, let child = filteredChildren(of: node).first(where: { $0.id == id }) {
                 navigate { model.descend(into: child) }
                 return .handled
             }
