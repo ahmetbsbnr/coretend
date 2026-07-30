@@ -202,6 +202,7 @@
 "dupes.move_to_trash" = "Déplacer les copies vers la Corbeille";
 "dupes.select_copy" = "Sélectionner la copie %@";
 "dupes.suggested_keeper" = "Copie à conserver";
+"dupes.suggested_keeper.why" = "Le chemin le plus court l’emporte ; l’ordre alphabétique départage. Ne se base pas sur l’âge du fichier.";
 "dupes.group_header" = "%d copies × %@";
 
 /* Similar Images */
