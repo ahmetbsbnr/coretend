@@ -373,6 +373,10 @@
 
 /* Module display names (sidebar / placeholder) */
 "module.protection" = "Integrity";
+"palette.open" = "Command Palette…";
+"palette.placeholder" = "Jump to…";
+"palette.no_results" = "No matches";
+"palette.scan_home" = "Scan Home with Space Lens";
 "menubar.this_copy" = "This copy";
 "menubar.signature_apple" = "Apple-signed";
 "menubar.signature_team" = "Signed (team %@)";
