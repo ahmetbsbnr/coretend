@@ -80,6 +80,7 @@ enum PermissionFormatting {
 struct MCSettingsView: View {
     @State private var model = SettingsViewModel()
     @AppStorage("menuBarEnabled") private var menuBarEnabled = true
+    @AppStorage("appLanguage") private var appLanguageRaw = AppLanguage.system.rawValue
     @State private var showClearConfirm = false
     @State private var showDiagnostic = false
 
@@ -90,6 +91,11 @@ struct MCSettingsView: View {
     var body: some View {
         Form {
             Section(L("settings.general")) {
+                Picker(L("settings.language"), selection: $appLanguageRaw) {
+                    Text(L("settings.language.system")).tag(AppLanguage.system.rawValue)
+                    Text("Français").tag(AppLanguage.fr.rawValue)
+                    Text("English").tag(AppLanguage.en.rawValue)
+                }
                 Toggle(L("settings.show_menu_bar"), isOn: $menuBarEnabled)
                 Text(L("settings.menu_bar_detail"))
                     .font(.caption).foregroundStyle(.secondary)

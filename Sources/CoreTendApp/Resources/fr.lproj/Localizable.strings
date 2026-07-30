@@ -293,6 +293,10 @@
 
 /* Settings */
 "settings.nav_title" = "Réglages";
+"settings.language" = "Langue";
+"settings.language.system" = "Suivre le système";
+"onboarding.language.title" = "Langue";
+"onboarding.language.subtitle" = "Choisis ta langue, ou suis celle de macOS. Modifiable à tout moment dans Réglages.";
 "settings.general" = "Général";
 "settings.show_menu_bar" = "Afficher CoreTend dans la barre de menus";
 "settings.menu_bar_detail" = "L'élément de la barre de menus n'échantillonne les métriques système que lorsque son panneau est ouvert, ou toutes les 30 s en arrière-plan pour afficher l'indicateur d'attention.";

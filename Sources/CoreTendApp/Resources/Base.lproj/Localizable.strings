@@ -293,6 +293,10 @@
 
 /* Settings */
 "settings.nav_title" = "Settings";
+"settings.language" = "Language";
+"settings.language.system" = "Match System";
+"onboarding.language.title" = "Language";
+"onboarding.language.subtitle" = "Choose your language, or match macOS. You can change this anytime in Settings.";
 "settings.general" = "General";
 "settings.show_menu_bar" = "Show CoreTend in the menu bar";
 "settings.menu_bar_detail" = "The menu bar item samples system metrics only while its panel is open, or every 30s in the background just to show the attention indicator.";
