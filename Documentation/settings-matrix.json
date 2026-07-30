@@ -16,6 +16,19 @@
       "status": "VERIFIED_COMPLETE"
     },
     {
+      "id": "appLanguage",
+      "label": "App language override",
+      "default": "system",
+      "storage": "@AppStorage (UserDefaults)",
+      "type": "String (AppLanguage.rawValue: system/en/fr)",
+      "consumer": "L10n.swift (LocalizationManager), CoreTendApp.swift (.id() on the window + menu-bar content), SettingsView.swift picker, OnboardingView.swift Welcome-step picker",
+      "effect": "Overrides which .lproj bundle L() looks strings up in, independent of the system locale; \"system\" preserves the original Bundle.module resolution exactly.",
+      "restartRequired": "no",
+      "availability": "always",
+      "test": "LocalizationManagerTests.swift",
+      "status": "VERIFIED_COMPLETE"
+    },
+    {
       "id": "onboardingDone",
       "label": "Onboarding completed",
       "default": "false",
