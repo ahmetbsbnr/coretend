@@ -373,6 +373,10 @@
 
 /* Module display names (sidebar / placeholder) */
 "module.protection" = "Intégrité";
+"palette.open" = "Palette de commandes…";
+"palette.placeholder" = "Aller à…";
+"palette.no_results" = "Aucun résultat";
+"palette.scan_home" = "Analyser le dossier personnel avec Space Lens";
 "menubar.this_copy" = "Cette copie";
 "menubar.signature_apple" = "Signé par Apple";
 "menubar.signature_team" = "Signé (équipe %@)";

@@ -64,6 +64,7 @@ struct ActivityImpactSummary {
 extension Notification.Name {
     static let mcNavigate = Notification.Name("mc.navigate")
     static let mcShowOnboarding = Notification.Name("mc.showOnboarding")
+    static let mcShowCommandPalette = Notification.Name("mc.showCommandPalette")
 }
 
 @MainActor

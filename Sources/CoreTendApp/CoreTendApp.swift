@@ -58,6 +58,12 @@ struct CoreTendHelpCommands: Commands {
             }
             .keyboardShortcut("u", modifiers: [.command, .shift])
         }
+        CommandGroup(after: .toolbar) {
+            Button(L("palette.open")) {
+                NotificationCenter.default.post(name: .mcShowCommandPalette, object: nil)
+            }
+            .keyboardShortcut("k", modifiers: [.command])
+        }
         CommandGroup(replacing: .help) {
             Button("CoreTend Help") {
                 NSWorkspace.shared.open(site.appending(path: "en/documentation.html"))
@@ -307,6 +313,7 @@ struct MainWindow: View {
     @State private var selection: ModuleID? = .smartCare
     @AppStorage("onboardingDone") private var onboardingDone = false
     @State private var showOnboarding = false
+    @State private var showCommandPalette = false
 
     var body: some View {
         NavigationSplitView {
@@ -366,7 +373,119 @@ struct MainWindow: View {
         .onReceive(NotificationCenter.default.publisher(for: .mcShowOnboarding)) { _ in
             showOnboarding = true
         }
+        .onReceive(NotificationCenter.default.publisher(for: .mcShowCommandPalette)) { _ in
+            showCommandPalette = true
+        }
+        .sheet(isPresented: $showCommandPalette) {
+            CommandPaletteView(isPresented: $showCommandPalette)
+        }
         .tint(MCColor.coreMint)
+    }
+}
+
+/// Same locale-aware, diacritic-insensitive comparison ClutterSearch uses
+/// for file names — this just isn't matching a fileName/path pair, so it
+/// doesn't call through that file-shaped API directly. An empty query
+/// matches everything, matching every other search field in the app.
+func paletteMatches(label: String, query: String) -> Bool {
+    let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty else { return true }
+    return label.localizedStandardContains(trimmed)
+}
+
+/// Fuzzy-filtered jump list over every sidebar destination, plus a handful
+/// of actions — dispatched through the same NotificationCenter routing the
+/// sidebar and Help-menu commands already use, not a second navigation
+/// system. Deliberately not a general "search everything" index (see
+/// GRAPHIFY_MAPS.md / the workspace audit for why that's a separate,
+/// larger undertaking, not folded into this).
+private struct CommandPaletteView: View {
+    @Binding var isPresented: Bool
+    @State private var query = ""
+    @FocusState private var searchFocused: Bool
+
+    private enum Entry: Identifiable {
+        case module(ModuleID)
+        case action(id: String, label: String, icon: String, perform: () -> Void)
+
+        var id: String {
+            switch self {
+            case let .module(m): "module.\(m.rawValue)"
+            case let .action(id, _, _, _): "action.\(id)"
+            }
+        }
+
+        var label: String {
+            switch self {
+            case let .module(m): m.label
+            case let .action(_, label, _, _): label
+            }
+        }
+
+        var icon: String {
+            switch self {
+            case let .module(m): m.systemImage
+            case let .action(_, _, icon, _): icon
+            }
+        }
+    }
+
+    private var actions: [Entry] {
+        [
+            .action(id: "checkUpdates", label: L("updates.check_now"), icon: "arrow.triangle.2.circlepath") {
+                NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.settings)
+            },
+            .action(id: "scanHome", label: L("palette.scan_home"), icon: "circle.hexagongrid") {
+                NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.spaceLens)
+            },
+        ]
+    }
+
+    private var entries: [Entry] {
+        ModuleID.allCases.map(Entry.module) + actions
+    }
+
+    private var filtered: [Entry] {
+        entries.filter { paletteMatches(label: $0.label, query: query) }
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                TextField(L("palette.placeholder"), text: $query)
+                    .textFieldStyle(.plain)
+                    .focused($searchFocused)
+                    .onSubmit { activate(filtered.first) }
+            }
+            .padding(MCSpacing.sm)
+            Divider()
+            if filtered.isEmpty {
+                MCEmptyState(icon: "magnifyingglass", title: L("palette.no_results"), message: "")
+            } else {
+                List(filtered) { entry in
+                    Button {
+                        activate(entry)
+                    } label: {
+                        Label(entry.label, systemImage: entry.icon)
+                    }
+                    .buttonStyle(.plain)
+                }
+                .listStyle(.plain)
+            }
+        }
+        .frame(width: 420, height: 360)
+        .onAppear { searchFocused = true }
+        .onKeyPress(.escape) { isPresented = false; return .handled }
+    }
+
+    private func activate(_ entry: Entry?) {
+        guard let entry else { return }
+        switch entry {
+        case let .module(m): NotificationCenter.default.post(name: .mcNavigate, object: m)
+        case let .action(_, _, _, perform): perform()
+        }
+        isPresented = false
     }
 }
 
