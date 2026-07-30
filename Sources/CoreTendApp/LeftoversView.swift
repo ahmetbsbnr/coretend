@@ -85,38 +85,27 @@ struct LeftoversView: View {
         VStack(spacing: 0) {
             switch model.phase {
             case .idle:
-                VStack(spacing: 16) {
-                    Image(systemName: "trash.slash")
-                        .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
-                    Text(L("leftovers.idle.title")).font(MCFont.pageTitle)
-                    Text(L("leftovers.idle.subtitle"))
-                        .multilineTextAlignment(.center).foregroundStyle(.secondary)
-                    Button(L("leftovers.scan")) { Task { await model.scan() } }
-                        .buttonStyle(.borderedProminent)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                MCEmptyState(
+                    icon: "trash.slash", title: L("leftovers.idle.title"), message: L("leftovers.idle.subtitle"),
+                    iconColor: MCTheme.accent, iconSize: MCIconSize.emptyStateProminent,
+                    actionTitle: L("leftovers.scan")) { Task { await model.scan() } }
             case .scanning:
                 ProgressView(L("leftovers.scanning")).frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
-                VStack(spacing: 12) {
-                    Image(systemName: "checkmark.circle")
-                        .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
-                    Text(L("leftovers.none_found")).font(.title3.weight(.semibold))
-                    Button(L("smartcare.scan_again")) { Task { await model.scan() } }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                MCEmptyState(
+                    icon: "checkmark.circle", title: L("leftovers.none_found"), message: "",
+                    iconColor: MCTheme.success,
+                    actionTitle: L("smartcare.scan_again")) { Task { await model.scan() } }
             case .results:
                 resultsView
             case let .finished(freed, dryRun):
-                VStack(spacing: 12) {
-                    Image(systemName: "checkmark.seal")
-                        .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
-                    Text(dryRun ? L("leftovers.finished.dryrun", mcFormatBytes(freed))
-                                : L("leftovers.finished.moved", mcFormatBytes(freed)))
-                        .font(.title3.weight(.semibold))
-                    Button(L("smartcare.scan_again")) { Task { await model.scan() } }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                MCEmptyState(
+                    icon: "checkmark.seal",
+                    title: dryRun ? L("leftovers.finished.dryrun", mcFormatBytes(freed))
+                                  : L("leftovers.finished.moved", mcFormatBytes(freed)),
+                    message: "",
+                    iconColor: MCTheme.success,
+                    actionTitle: L("smartcare.scan_again")) { Task { await model.scan() } }
             }
         }
     }

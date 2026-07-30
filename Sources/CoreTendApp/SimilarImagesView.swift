@@ -114,16 +114,10 @@ struct SimilarImagesView: View {
         VStack(spacing: 0) {
             switch model.phase {
             case .idle:
-                VStack(spacing: 16) {
-                    Image(systemName: "photo.on.rectangle.angled")
-                        .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
-                    Text(L("similar.idle.title")).font(MCFont.pageTitle)
-                    Text(L("similar.idle.subtitle"))
-                        .multilineTextAlignment(.center).foregroundStyle(.secondary)
-                    Button(L("similar.analyze")) { model.start() }
-                        .buttonStyle(.borderedProminent)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                MCEmptyState(
+                    icon: "photo.on.rectangle.angled", title: L("similar.idle.title"), message: L("similar.idle.subtitle"),
+                    iconColor: MCTheme.accent, iconSize: MCIconSize.emptyStateProminent,
+                    actionTitle: L("similar.analyze")) { model.start() }
             case let .scanning(processed, total):
                 VStack(spacing: 16) {
                     if total > 0 {

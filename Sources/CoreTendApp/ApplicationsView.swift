@@ -374,12 +374,7 @@ struct InstalledAppsView: View {
                 .padding(20)
             }
         } else {
-            VStack(spacing: 12) {
-                Image(systemName: "square.grid.2x2")
-                    .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.accent)
-                Text(L("apps.select_prompt")).foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            MCEmptyState(icon: "square.grid.2x2", title: L("apps.select_prompt"), message: "", iconColor: MCTheme.accent)
         }
     }
 }

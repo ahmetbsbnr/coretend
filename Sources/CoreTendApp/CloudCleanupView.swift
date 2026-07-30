@@ -157,14 +157,7 @@ struct CloudCleanupView: View {
             case .detecting:
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             case .noProviders:
-                VStack(spacing: 12) {
-                    Image(systemName: "icloud.slash")
-                        .font(.system(size: MCIconSize.emptyState)).foregroundStyle(.secondary)
-                    Text(L("cloud.empty.title")).font(.title3.weight(.semibold))
-                    Text(L("cloud.empty.subtitle"))
-                        .foregroundStyle(.secondary).multilineTextAlignment(.center)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                MCEmptyState(icon: "icloud.slash", title: L("cloud.empty.title"), message: L("cloud.empty.subtitle"))
             case .ready:
                 providerPicker
             case .scanning:

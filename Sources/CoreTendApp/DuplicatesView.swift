@@ -151,16 +151,10 @@ struct DuplicatesView: View {
     }
 
     private var idleView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "doc.on.doc.fill")
-                .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accentSecondary)
-            Text(L("dupes.idle.title")).font(MCFont.pageTitle)
-            Text(L("dupes.idle.subtitle"))
-                .multilineTextAlignment(.center).foregroundStyle(.secondary)
-            Button(L("dupes.find")) { model.start() }
-                .buttonStyle(.borderedProminent)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        MCEmptyState(
+            icon: "doc.on.doc.fill", title: L("dupes.idle.title"), message: L("dupes.idle.subtitle"),
+            iconColor: MCTheme.accentSecondary, iconSize: MCIconSize.emptyStateProminent,
+            actionTitle: L("dupes.find")) { model.start() }
     }
 
     private func scanningView(_ processed: Int, _ total: Int) -> some View {
@@ -179,13 +173,9 @@ struct DuplicatesView: View {
     }
 
     private var emptyView: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "checkmark.circle")
-                .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
-            Text(L("dupes.none_found")).font(.title3.weight(.semibold))
-            Button(L("smartcare.scan_again")) { model.start() }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        MCEmptyState(icon: "checkmark.circle", title: L("dupes.none_found"), message: "",
+                     iconColor: MCTheme.success,
+                     actionTitle: L("smartcare.scan_again")) { model.start() }
     }
 
     private var resultsView: some View {
@@ -273,14 +263,11 @@ struct DuplicatesView: View {
     }
 
     private func finishedView(_ freed: Int64, _ dryRun: Bool) -> some View {
-        VStack(spacing: 12) {
-            Image(systemName: "checkmark.seal")
-                .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
-            Text(dryRun ? L("leftovers.finished.dryrun", mcFormatBytes(freed))
-                        : L("leftovers.finished.moved", mcFormatBytes(freed)))
-                .font(.title3.weight(.semibold))
-            Button(L("smartcare.scan_again")) { model.start() }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        MCEmptyState(
+            icon: "checkmark.seal",
+            title: dryRun ? L("leftovers.finished.dryrun", mcFormatBytes(freed))
+                          : L("leftovers.finished.moved", mcFormatBytes(freed)),
+            message: "", iconColor: MCTheme.success,
+            actionTitle: L("smartcare.scan_again")) { model.start() }
     }
 }

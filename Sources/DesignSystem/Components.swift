@@ -168,18 +168,30 @@ public struct MCEmptyState: View {
     private let icon: String
     private let title: String
     private let message: String
+    private let iconColor: Color
+    private let iconSize: CGFloat
+    private let actionTitle: String?
+    private let action: (() -> Void)?
 
-    public init(icon: String, title: String, message: String) {
+    public init(
+        icon: String, title: String, message: String,
+        iconColor: Color = .secondary, iconSize: CGFloat = MCIconSize.compactState,
+        actionTitle: String? = nil, action: (() -> Void)? = nil
+    ) {
         self.icon = icon
         self.title = title
         self.message = message
+        self.iconColor = iconColor
+        self.iconSize = iconSize
+        self.actionTitle = actionTitle
+        self.action = action
     }
 
     public var body: some View {
         VStack(spacing: MCSpacing.sm) {
             Image(systemName: icon)
-                .font(.system(size: MCIconSize.compactState, weight: .light))
-                .foregroundStyle(.secondary)
+                .font(.system(size: iconSize, weight: .light))
+                .foregroundStyle(iconColor)
                 .accessibilityHidden(true)
             Text(title).font(MCFont.cardTitle)
             Text(message)
@@ -187,6 +199,10 @@ public struct MCEmptyState: View {
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 420)
+            if let actionTitle, let action {
+                Button(actionTitle, action: action)
+                    .buttonStyle(.borderedProminent)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(MCSpacing.xl)
