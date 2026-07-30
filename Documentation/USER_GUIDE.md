@@ -19,8 +19,8 @@ then follow the links for the area you need.
 - [SMART_CARE.md](SMART_CARE.md) — one-click combined scan/clean.
 - [CLEANUP_GUIDE.md](CLEANUP_GUIDE.md) — caches, duplicates, similar
   images, large files.
-- [PROTECTION.md](PROTECTION.md) — local malware scan (ClamAV) and
-  quarantine.
+- [PROTECTION.md](PROTECTION.md) — Integrity: download provenance,
+  code-signature tier, login items.
 - [EXCLUSIONS.md](EXCLUSIONS.md) — tell scans to leave a path alone.
 
 ## Safety

@@ -39,17 +39,20 @@ the default, and supported removals go to the Trash.
   incomplete downloads and opt-in higher-risk categories.
 - **My Clutter** — finds large and old files, content-identical duplicates and
   visually similar images.
-- **Space Lens** — builds a navigable, read-only map of disk usage.
+- **Space Lens** — builds a navigable map of disk usage, with search-free
+  breadcrumb navigation and a Trash action per item (dry-run by default).
 - **Applications** — inventories installed apps, associated data and
   conservative leftovers; removals use the Trash.
 - **Performance** — displays live CPU, memory, disk and thermal readings and
   inspects login agents without changing them.
-- **Protection** — can invoke a separately installed ClamAV engine and keeps
-  quarantine actions explicit.
+- **Integrity** — reads native macOS signals (download provenance, code
+  signature tier, login items) with no scanning engine and no third-party
+  binary; see `Documentation/CLAMAV_DECISION.md` for why this replaced an
+  earlier ClamAV-based design.
 - **Cloud Cleanup** — measures local versus logical cloud-file footprint
   without downloading files or deleting cloud content.
 - **My Activity** — records actions locally, separates simulations from
-  executed work and supports CSV export.
+  executed work and supports CSV and JSON export.
 - **Settings and menu bar** — control dry run, exclusions, permissions and
   quick system status.
 

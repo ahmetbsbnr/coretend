@@ -1,4 +1,13 @@
-# Quarantine (Protection)
+# Quarantine (Protection) — REMOVED, historical
+
+**This mechanism no longer exists in CoreTend.** It was part of the
+ClamAV-based Protection design retired in favor of Integrity — see
+[CLAMAV_DECISION.md](CLAMAV_DECISION.md) and
+[PROTECTION.md](PROTECTION.md) for the current design. Kept here, verbatim,
+as a record of what the removed feature did; not maintained to match
+anything current.
+
+---
 
 Protection's malware scanner never deletes a detected file automatically.
 When you choose to act on a finding, CoreTend moves the file into its

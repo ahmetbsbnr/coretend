@@ -24,5 +24,5 @@ rather than restarting.
 2. Review the findings, add any [exclusions](EXCLUSIONS.md) you want.
 3. Turn off dry-run when you're ready to actually free space (removals go
    to the Trash — see [RESTORE.md](RESTORE.md)).
-4. Optionally set up [Protection](PROTECTION.md) if you have ClamAV
-   installed.
+4. Check [Integrity](PROTECTION.md) — download provenance, code-signature
+   tier and login items, read directly from macOS, no setup required.
