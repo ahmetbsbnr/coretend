@@ -60,9 +60,12 @@ notes, fine to include but not user-facing).
 | `SAFETYCORE.md` | `SafetyCore` module contract | current | internal |
 | `SAFETY_MODEL.md` | High-level deletion-safety rules | current | public |
 | `SCANCORE.md` | `ScanCore` engines | current | internal |
-| `PROTECTION.md` | Protection/malware feature | current | public |
-| `PROTECTION_LIMITATIONS.md` | Honest ClamAV/Protection gaps | current | public |
-| `CLAMAV_DECISION.md` | ClamAV integration specifics | current | internal |
+| `PROTECTION.md` | Integrity feature (rewritten this session — was ClamAV-based) | current | public |
+| `PROTECTION_LIMITATIONS.md` | Honest Integrity gaps (rewritten this session — was ClamAV-based) | current | public |
+| `CLAMAV_DECISION.md` | Why ClamAV was retired for Integrity | current | internal |
+| `CLAMAV_TEST_AUDIT.md` | 310→276 test-count audit for the ClamAV removal, plus this session's added IntegrityCore test matrix | current | internal |
+| `QUARANTINE.md` | Removed mechanism, kept as historical record | historical | internal |
+| `COMPETITIVE_BENCHMARK.md` | CoreTend's own measured numbers vs. non-vérifié public claims about CleanMyMac/Disk Space Analyzer | current | public |
 | `PRIVILEGED_HELPER.md` | Privileged-helper design (unshipped) | current | internal |
 | `SMART_CARE.md` | Smart Care feature | current | public |
 | `QUARANTINE.md` | Quarantine mechanics | current | public |
