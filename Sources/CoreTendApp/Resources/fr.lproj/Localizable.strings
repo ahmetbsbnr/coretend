@@ -74,6 +74,14 @@
 
 /* Space Lens */
 "spacelens.title" = "Space Lens";
+"spacelens.delete.help" = "Mettre à la Corbeille";
+"spacelens.dryrun.help" = "Activé, rien n’est réellement supprimé — Space Lens indique seulement l’espace qui serait libéré.";
+"spacelens.delete.confirm_title" = "Mettre « %@ » à la Corbeille ?";
+"spacelens.delete.confirm_dryrun" = "Simuler (sans suppression)";
+"spacelens.delete.confirm_action" = "Mettre à la Corbeille";
+"spacelens.delete.confirm_message" = "%@ seront libérés. Utilise la Corbeille macOS normale — récupérable tant qu’elle n’est pas vidée.";
+"spacelens.delete.error_title" = "Échec du déplacement vers la Corbeille";
+"spacelens.delete.error_message" = "« %@ » n’a pas été déplacé — il a peut-être déjà disparu, ou se trouve hors du dossier analysé.";
 "spacelens.idle.title" = "Visualisez votre stockage";
 "spacelens.idle.subtitle" = "Construit une carte de taille interactive. Analyse uniquement — rien n'est modifié.";
 "spacelens.scan_home" = "Analyser le dossier personnel";

@@ -1,5 +1,6 @@
 import SwiftUI
 import ScanCore
+import SafetyCore
 import DesignSystem
 import Persistence
 
@@ -11,15 +12,32 @@ final class SpaceLensViewModel {
     var phase: Phase = .idle
     var root: SpaceNode?
     var pathStack: [SpaceNode] = []     // navigation into subdirectories
+    var dryRun = true
+    /// Set only while a delete confirmation sheet is up; nil the rest of the time.
+    var pendingDelete: SpaceNode?
+    var lastDeleteError: String?
     private var scanTask: Task<Void, Never>?
+    private var rootURL: URL?
+    private var dryRunDefaultLoaded = false
 
     var current: SpaceNode? { pathStack.last ?? root }
+
+    /// Mirrors every other destructive module's own "dry-run by default"
+    /// setting — without this, Space Lens's delete would silently ignore the
+    /// user's app-wide safety preference.
+    func loadDryRunDefault() async {
+        guard !dryRunDefaultLoaded else { return }
+        dryRunDefaultLoaded = true
+        dryRun = AppEnvironment.dryRunEnabled(
+            fromSetting: (try? await AppEnvironment.shared.store?.setting("dryRunDefault")) ?? nil)
+    }
 
     func start(url: URL) {
         scanTask?.cancel()
         phase = .scanning(items: 0)
         root = nil
         pathStack = []
+        rootURL = url
         let engine = SpaceLensEngine(root: url)
         scanTask = Task {
             for await event in engine.run() {
@@ -39,6 +57,35 @@ final class SpaceLensViewModel {
         }
     }
 
+    /// Re-runs the scan from the same root, preserving the current navigation
+    /// depth where possible, so a delete's effect on sizes/listing is real
+    /// rather than a locally-patched guess. Only called after a real (non
+    /// dry-run) delete, since a dry run changes nothing on disk to reflect.
+    private func rescanPreservingDepth() {
+        guard let rootURL else { return }
+        let depth = pathStack.count
+        let pathsToRestore = pathStack.map(\.path)
+        scanTask?.cancel()
+        phase = .scanning(items: 0)
+        let engine = SpaceLensEngine(root: rootURL)
+        scanTask = Task {
+            for await event in engine.run() {
+                if case let .finished(node) = event {
+                    root = node
+                    var stack: [SpaceNode] = []
+                    var cursor = node
+                    for path in pathsToRestore.prefix(depth) {
+                        guard let match = cursor.children.first(where: { $0.path == path }) else { break }
+                        stack.append(match)
+                        cursor = match
+                    }
+                    pathStack = stack
+                    phase = .ready
+                }
+            }
+        }
+    }
+
     func cancel() { scanTask?.cancel() }
 
     func descend(into node: SpaceNode) {
@@ -48,6 +95,41 @@ final class SpaceLensViewModel {
 
     func pop(to index: Int?) {
         if let index { pathStack = Array(pathStack.prefix(index + 1)) } else { pathStack = [] }
+    }
+
+    func requestDelete(_ node: SpaceNode) {
+        guard !node.path.hasSuffix("\u{2026}other") else { return }
+        pendingDelete = node
+    }
+
+    /// Trashes the node approved via `pendingDelete`, scoped to the original
+    /// scan root so this can never reach outside the tree being browsed.
+    func confirmDelete() {
+        guard let node = pendingDelete, let rootURL else { return }
+        pendingDelete = nil
+        let isDryRun = dryRun
+        Task {
+            let validator = PathValidator(allowedRoots: [rootURL])
+            let center = SafetyCenter(validator: validator, dryRun: isDryRun, sink: AppEnvironment.shared.store)
+            guard let op = try? await center.approve(
+                url: URL(fileURLWithPath: node.path), logicalSize: node.size,
+                ruleID: "spacelens.delete", risk: .medium
+            ) else {
+                lastDeleteError = node.name
+                return
+            }
+            let result = await center.execute([op])
+            let freed = result.executed.reduce(0) { $0 + $1.logicalSize }
+            AppEnvironment.shared.record(ActivityRecord(
+                kind: .cleanup,
+                summary: isDryRun
+                    ? "Space Lens dry run: would free \(mcFormatBytes(freed)) (\(node.name))"
+                    : "Space Lens: moved \(node.name) to Trash (\(mcFormatBytes(freed)))",
+                itemCount: result.executed.count, bytes: freed, dryRun: result.wasDryRun))
+            if !result.executed.isEmpty && !isDryRun {
+                rescanPreservingDepth()
+            }
+        }
     }
 }
 
@@ -94,6 +176,26 @@ struct SpaceLensView: View {
             }
         }
         .navigationTitle(L("spacelens.title"))
+        .task { await model.loadDryRunDefault() }
+        .confirmationDialog(
+            model.pendingDelete.map { L("spacelens.delete.confirm_title", $0.name) } ?? "",
+            isPresented: Binding(get: { model.pendingDelete != nil }, set: { if !$0 { model.pendingDelete = nil } }),
+            presenting: model.pendingDelete
+        ) { node in
+            Button(model.dryRun ? L("spacelens.delete.confirm_dryrun") : L("spacelens.delete.confirm_action"), role: .destructive) {
+                model.confirmDelete()
+            }
+            Button(L("common.cancel"), role: .cancel) { model.pendingDelete = nil }
+        } message: { node in
+            Text(L("spacelens.delete.confirm_message", mcFormatBytes(node.size)))
+        }
+        .alert(L("spacelens.delete.error_title"), isPresented: Binding(
+            get: { model.lastDeleteError != nil }, set: { if !$0 { model.lastDeleteError = nil } }
+        )) {
+            Button(L("common.done"), role: .cancel) {}
+        } message: {
+            Text(L("spacelens.delete.error_message", model.lastDeleteError ?? ""))
+        }
     }
 
     private var idleView: some View {
@@ -155,6 +257,9 @@ struct SpaceLensView: View {
                         .buttonStyle(.link)
                 }
                 Spacer()
+                Toggle(L("common.dry_run"), isOn: Binding(get: { model.dryRun }, set: { model.dryRun = $0 }))
+                    .toggleStyle(.checkbox)
+                    .help(L("spacelens.dryrun.help"))
                 Text(mcFormatBytes(model.current?.size ?? 0))
                     .font(MCFont.cardTitle).monospacedDigit()
                 Button(L("spacelens.new_scan")) { model.phase = .idle }
@@ -285,6 +390,11 @@ struct SpaceLensView: View {
                     } label: { Image(systemName: "magnifyingglass") }
                     .buttonStyle(.borderless)
                     .help(L("common.reveal_in_finder"))
+                    Button(role: .destructive) {
+                        model.requestDelete(child)
+                    } label: { Image(systemName: "trash") }
+                    .buttonStyle(.borderless)
+                    .help(L("spacelens.delete.help"))
                 }
             }
             .accessibilityElement(children: .combine)

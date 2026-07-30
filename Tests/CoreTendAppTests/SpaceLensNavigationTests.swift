@@ -43,4 +43,25 @@ struct SpaceLensNavigationTests {
         #expect(m.pathStack.isEmpty)
         #expect(m.current?.name == "root")
     }
+
+    @Test func requestDeleteSetsPendingForARealNode() {
+        let m = SpaceLensViewModel()
+        let a = tree().children[0]
+        m.requestDelete(a)
+        #expect(m.pendingDelete?.path == "/root/a")
+    }
+
+    @Test func requestDeleteRefusesTheSyntheticOtherBucket() {
+        let m = SpaceLensViewModel()
+        let other = SpaceNode(name: "Other (small items)", path: "/root/\u{2026}other", isDirectory: false, size: 42)
+        m.requestDelete(other)
+        #expect(m.pendingDelete == nil)
+    }
+
+    @Test func dryRunDefaultsToTrueBeforeSettingLoads() {
+        // Matches every other destructive module: safe by construction until
+        // the real persisted preference is read.
+        let m = SpaceLensViewModel()
+        #expect(m.dryRun == true)
+    }
 }

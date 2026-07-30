@@ -74,6 +74,14 @@
 
 /* Space Lens */
 "spacelens.title" = "Space Lens";
+"spacelens.delete.help" = "Move to Trash";
+"spacelens.dryrun.help" = "When on, nothing is actually deleted — Space Lens only reports what it would free.";
+"spacelens.delete.confirm_title" = "Move \"%@\" to Trash?";
+"spacelens.delete.confirm_dryrun" = "Simulate (dry run)";
+"spacelens.delete.confirm_action" = "Move to Trash";
+"spacelens.delete.confirm_message" = "%@ will be reclaimed. This uses the ordinary macOS Trash — recoverable until it's emptied.";
+"spacelens.delete.error_title" = "Couldn't Move to Trash";
+"spacelens.delete.error_message" = "\"%@\" wasn't moved — it may already be gone, or outside the scanned folder.";
 "spacelens.idle.title" = "Visualize your storage";
 "spacelens.idle.subtitle" = "Builds an interactive size map. Analysis only — nothing is modified.";
 "spacelens.scan_home" = "Scan Home Folder";
