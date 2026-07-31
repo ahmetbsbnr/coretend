@@ -374,7 +374,7 @@ Known limits:
 
 ## Updater Manifest Contract
 
-Status: implemented locally, pending commit.
+Status: committed and pushed as `5686dcffecf83366be83db632e2cacc9b5f36e22`.
 
 Implemented:
 
