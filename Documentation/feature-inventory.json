@@ -68,9 +68,9 @@
     {
       "id": "safety.auditlog",
       "module": "SafetyCore",
-      "status": "VERIFIED_PARTIAL",
-      "evidence": "Sources/SafetyCore/SafetyCore.swift:124,162 (in-memory only, not persisted)",
-      "feature": "In-memory `auditLog: [String]` appended per operation (`\"DRY-RUN\"`/`\"TRASH\" path rule=...`)"
+      "status": "VERIFIED_COMPLETE",
+      "evidence": "Sources/SafetyCore/SafetyCore.swift:192-198 (emit -> SafetyAuditSink); Sources/Persistence/Store.swift:248-264 (Store: SafetyAuditSink, persists to SQLite). Removed the redundant in-memory auditLog: [String] shadow log (zero consumers app-wide) that this status previously described.",
+      "feature": "Every approve/execute call emits a structured SafetyAuditEvent through SafetyAuditSink; Store persists it to SQLite, which is what backs My Activity."
     },
     {
       "id": "scan.engine",

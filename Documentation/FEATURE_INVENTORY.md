@@ -2,7 +2,7 @@
 
 Generated from `Documentation/feature-inventory.json` by `Scripts/generate-feature-inventory.py` — the JSON is the single canonical source; this file, `feature-inventory.csv`, and the totals below are all derived from it, never typed by hand. Run `python3 Scripts/generate-feature-inventory.py --check` to verify they still agree.
 
-**Total: 52 features.** Status counts: IMPLEMENTED_UNVERIFIED=4, VERIFIED_COMPLETE=45, VERIFIED_PARTIAL=3.
+**Total: 52 features.** Status counts: IMPLEMENTED_UNVERIFIED=4, VERIFIED_COMPLETE=46, VERIFIED_PARTIAL=2.
 
 Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, UI_ONLY, SIMULATED, DOCUMENTATION_ONLY, BLOCKED_HUMAN, BLOCKED_ENVIRONMENT, BROKEN, DEPRECATED, NOT_STARTED, NOT_APPLICABLE, UNKNOWN.
 
@@ -17,14 +17,14 @@ Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, 
 | shell.diagnostics | `DiagnosticReport` — anonymized export, redaction test exists | VERIFIED_COMPLETE | Main window, onboarding, menu bar | Launch, navigate, reopen help | smart-care | yes | isolated temporary store | Sources/CoreTendApp/DiagnosticReport.swift:83-91 |
 | ui.commandpalette | Cmd+K command palette: fuzzy-filtered jump list over all 10 sidebar destinations plus 2 actions (check for updates, scan Home with Space Lens), dispatched through the existing NotificationCenter (.mcNavigate) routing rather than a second navigation system. | VERIFIED_COMPLETE | Main window, onboarding, menu bar | Launch, navigate, reopen help | smart-care | yes | isolated temporary store | Sources/CoreTendApp/CoreTendApp.swift (CommandPaletteView, paletteMatches); Tests/CoreTendAppTests/CommandPaletteTests.swift |
 
-## SafetyCore (4: VERIFIED_COMPLETE=3, VERIFIED_PARTIAL=1)
+## SafetyCore (4: VERIFIED_COMPLETE=4)
 
 | id | Name / objective | State | Screen | Demonstration path | Capture | Animation | Demo data | Validation evidence |
 |---|---|---|---|---|---|---|---|---|
 | safety.pathvalidator | `PathValidator` — protected-root blocklist (`/System`,`/bin`,…), home-dir block, allowlist containment, symlink-escape resolution via `resolvingSymlinksInPath()` | VERIFIED_COMPLETE | SafetyCore | Follow the documented feature path | none | no | neutral fixture where applicable | Sources/SafetyCore/SafetyCore.swift:33-90 |
 | safety.dryrun | `SafetyCenter` actor: `dryRun` flag (default true), re-validates every path at execution time, skips anything that changed since approval | VERIFIED_COMPLETE | SafetyCore | Follow the documented feature path | none | no | neutral fixture where applicable | Sources/SafetyCore/SafetyCore.swift:120-169 |
 | safety.execute | `execute()` moves approved ops to Trash (`FileManager.trashItem`) — never `rm`, always recoverable via macOS Trash | VERIFIED_COMPLETE | SafetyCore | Follow the documented feature path | none | no | neutral fixture where applicable | Sources/SafetyCore/SafetyCore.swift:154-163 |
-| safety.auditlog | In-memory `auditLog: [String]` appended per operation (`"DRY-RUN"`/`"TRASH" path rule=...`) | VERIFIED_PARTIAL | SafetyCore | Follow the documented feature path | none | no | neutral fixture where applicable | Sources/SafetyCore/SafetyCore.swift:124,162 (in-memory only, not persisted) |
+| safety.auditlog | Every approve/execute call emits a structured SafetyAuditEvent through SafetyAuditSink; Store persists it to SQLite, which is what backs My Activity. | VERIFIED_COMPLETE | SafetyCore | Follow the documented feature path | none | no | neutral fixture where applicable | Sources/SafetyCore/SafetyCore.swift:192-198 (emit -> SafetyAuditSink); Sources/Persistence/Store.swift:248-264 (Store: SafetyAuditSink, persists to SQLite). Removed the redundant in-memory auditLog: [String] shadow log (zero consumers app-wide) that this status previously described. |
 
 ## ScanCore (4: VERIFIED_COMPLETE=4)
 
