@@ -13,6 +13,7 @@ Latest Space Lens pause commit: `a78006939624a13de35b77bd0b5ef8f1e11eefde` (`a78
 Latest Duplicates pause commit: `1142f34a14fbe202fb1a6b8dbff669edd6514fcc` (`1142f34`)
 Latest Duplicates export commit: `ceb09823b96cfeda3d234009f8efbb1c2c25dfa0` (`ceb0982`)
 Latest Applications review commit: `988c2a0d65cf3913b6b4f49cc65cbebd71824767` (`988c2a0`)
+Latest UI automation commit: `10fae9db4a7a91581efcbdce99bdebeb567e0dd6` (`10fae9d`)
 
 ## Git Validation
 
@@ -28,6 +29,7 @@ Latest Applications review commit: `988c2a0d65cf3913b6b4f49cc65cbebd71824767` (`
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `1142f34a14fbe202fb1a6b8dbff669edd6514fcc`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `ceb09823b96cfeda3d234009f8efbb1c2c25dfa0`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `988c2a0d65cf3913b6b4f49cc65cbebd71824767`.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `10fae9db4a7a91581efcbdce99bdebeb567e0dd6`.
 
 ## Local Backup
 
@@ -300,7 +302,7 @@ Validation completed locally:
 
 ## UI Automation Expansion
 
-Status: implemented locally, not yet committed at this checkpoint.
+Status: committed and pushed as `10fae9db4a7a91581efcbdce99bdebeb567e0dd6`.
 
 Implemented:
 
@@ -314,6 +316,37 @@ Validation completed locally:
 - `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter CoreTendUITests` passed with 3 skipped XCUIAutomation tests because `CORETEND_UI_APP_PATH` was not provided in this sandbox.
 - `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c debug` passed.
 - `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c release` passed.
+
+CI:
+
+- GitHub Actions CI run `30669772199` passed on `10fae9db4a7a91581efcbdce99bdebeb567e0dd6`: distribution-check and build-and-test were green, including debug/release build, tests, package bundle, DMG layout, launch robustness, visual regression captures, release/sync checks, and localization key parity.
+
+## Website Reconstruction
+
+Status: implemented locally, pending commit.
+
+Implemented:
+
+- Homepage structure rebuilt against the target product architecture instead of the previous sparse landing layout.
+- Navigation remains compact and sticky, with direct language, GitHub, and download actions.
+- Hero now shows CoreTend as the first-viewport signal, with a dense product demo panel showing Dashboard, Storage, Space Lens, Duplicates, and Integrity.
+- Added a three-step scan/review/act workflow, module grid, privacy proof section, honest Gatekeeper installation section, FAQ, and compact closing CTA.
+- Removed the homepage antivirus framing; the site now describes Integrity as macOS provenance, signatures, quarantine, and launch-item signals.
+- Site CSS now references the authored stylesheet directly with content hashing, preventing the visible site from drifting behind a stale minified copy.
+- Reduce Motion disables the scan progress animation.
+- Talkink was checked only as a design-density/reference target; no Talkink brand, text, code, screenshots, or assets were copied. The upstream Talkink repository and raw license identify the project as MIT-licensed.
+
+Validation completed locally:
+
+- `python3 Website/generate.py` regenerated 5 pages x 2 locales plus `robots.txt`, `sitemap.xml`, and `vercel.json`.
+- `Scripts/check-website.sh` passed: generated output fresh, bilingual, self-contained, no trackers, internal links resolve, accessibility floor met, and no unverifiable marketing claim asserted.
+- `bash Scripts/test-release-sync.sh` passed for `0.9.1-rc.3`.
+- Owner Terminal outside the Xcode sandbox regenerated visual fingerprints with `PLAYWRIGHT_BROWSERS_PATH=/tmp/coretend-ms-playwright node Scripts/visual/capture.mjs --update`; 45 reference fingerprints were written.
+
+Known limits:
+
+- The Xcode sandbox cannot launch Chromium/Playwright locally because Chromium fails `bootstrap_check_in` with `Permission denied`; the visual reference update therefore required the owner's unsandboxed Terminal.
+- `bash Scripts/check-media.sh` still fails in this sandbox at the `python3 Website/generate.py` write step with `PermissionError` for generated HTML, even though the generator and website check pass when run directly.
 
 P0 public launch:
 
@@ -348,6 +381,6 @@ Site/portfolio/release:
 
 Developer ID:
 
-- Check for Developer ID Application identity before final release packaging.
+- Developer ID Application identity was checked with `security find-identity -v -p codesigning | rg "Developer ID Application"` and no matching identity was present.
 - Do not regenerate CSR or touch the private key.
-- If absent, finish all non-signing work and leave signing/notarization blocked.
+- Signing/notarization remains blocked until the Developer ID Application certificate is installed; all non-signing work continues.
