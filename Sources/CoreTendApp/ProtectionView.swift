@@ -32,7 +32,7 @@ struct ProtectionView: View {
                 .tabItem { Label(L("protection.tab.privacy"), systemImage: "hand.raised") }
         }
         .padding(8)
-        .navigationTitle(L("sidebar.protect"))
+        .navigationTitle(L("module.protection"))
     }
 }
 

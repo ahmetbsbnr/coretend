@@ -20,6 +20,8 @@
 "sidebar.optimize" = "Optimize";
 "sidebar.protect" = "Integrity";
 "sidebar.activity" = "Activity";
+"sidebar.storage" = "Storage";
+"sidebar.system" = "System";
 
 /* Placeholder */
 "placeholder.under_construction" = "This module is under construction. Coming in a later slice.";
@@ -389,7 +391,11 @@
 "apps.grouping.last_used" = "Last Used";
 
 /* Module display names (sidebar / placeholder) */
+"module.dashboard" = "Dashboard";
+"module.storage" = "Storage";
+"module.duplicates" = "Duplicates";
 "module.protection" = "Integrity";
+"module.activity" = "Activity";
 "palette.open" = "Command Palette…";
 "palette.placeholder" = "Jump to…";
 "palette.no_results" = "No matches";
@@ -416,6 +422,35 @@
 "integrity.login_items.subtitle" = "Launch agents and daemons found in LaunchAgents/LaunchDaemons.";
 "integrity.login_items.empty" = "None found.";
 "module.my_activity" = "My Activity";
+
+/* Dashboard */
+"dashboard.title" = "Dashboard";
+"dashboard.subtitle" = "Local scans, reversible cleanup, and integrity checks in one workspace.";
+"dashboard.primary_action" = "Scan Storage";
+"dashboard.secondary_action" = "Open Space Lens";
+"dashboard.status.signature" = "Signature";
+"dashboard.status.safety" = "Safety";
+"dashboard.status.dry_run" = "Dry run on";
+"dashboard.status.trash_enabled" = "Trash enabled";
+"dashboard.status.exclusions" = "Exclusions";
+"dashboard.status.exclusion_count" = "%d paths";
+"dashboard.status.free_space" = "Free space";
+"dashboard.status.loading" = "Loading";
+"dashboard.storage.title" = "Storage";
+"dashboard.storage.detail" = "Scan caches, logs, crash reports, and build data before reviewing anything that can move to Trash.";
+"dashboard.spacelens.title" = "Space Lens";
+"dashboard.spacelens.detail" = "Map disk usage from a chosen folder, then zoom, search, and open items in Finder.";
+"dashboard.duplicates.title" = "Duplicates";
+"dashboard.duplicates.detail" = "Find exact matches by content and explain the safer copy to keep before any action.";
+"dashboard.applications.title" = "Applications";
+"dashboard.applications.detail" = "Separate app bundles from caches, helpers, agents, and personal documents.";
+"dashboard.integrity.title" = "Integrity";
+"dashboard.activity.title" = "Activity";
+"dashboard.activity.empty" = "No activity recorded yet.";
+"dashboard.signature.apple" = "Apple-signed";
+"dashboard.signature.team" = "Team %@";
+"dashboard.signature.unsigned" = "Unsigned copy";
+"dashboard.open_module" = "Open %@";
 
 /* Safety log (SafetyCore audit trail persistence) */
 "common.done" = "Done";

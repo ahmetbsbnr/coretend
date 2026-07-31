@@ -250,6 +250,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
     case protection = "Protection"
     case performance = "Performance"
     case applications = "Applications"
+    case duplicates = "Duplicates"
     case myClutter = "My Clutter"
     case spaceLens = "Space Lens"
     case cloudCleanup = "Cloud Cleanup"
@@ -266,6 +267,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .protection: .protection
         case .performance: .performance
         case .applications: .applications
+        case .duplicates: .duplicates
         case .myClutter: .myClutter
         case .spaceLens: .spaceLens
         case .cloudCleanup: .cloudCleanup
@@ -281,15 +283,16 @@ enum ModuleID: String, CaseIterable, Identifiable {
     /// (matched against `ActivityRecord.summary` prefixes elsewhere).
     var label: String {
         switch self {
-        case .smartCare: L("smartcare.nav_title")
-        case .cleanup: L("cleanup.title")
+        case .smartCare: L("module.dashboard")
+        case .cleanup: L("module.storage")
         case .protection: L("module.protection")
         case .performance: L("performance.nav_title")
         case .applications: L("apps.title")
+        case .duplicates: L("module.duplicates")
         case .myClutter: L("clutter.title")
         case .spaceLens: L("spacelens.title")
         case .cloudCleanup: L("cloud.nav_title")
-        case .myActivity: L("module.my_activity")
+        case .myActivity: L("module.activity")
         case .favoritesRecents: L("module.favorites_recents")
         case .settings: L("settings.nav_title")
         }
@@ -303,13 +306,16 @@ struct SidebarGroup: Identifiable {
     let modules: [ModuleID]
 
     static let all: [SidebarGroup] = [
-        SidebarGroup(id: "care", title: nil, modules: [.smartCare]),
-        SidebarGroup(id: "space", title: L("sidebar.free_up_space"),
-                     modules: [.favoritesRecents, .cleanup, .myClutter, .spaceLens, .cloudCleanup]),
-        SidebarGroup(id: "optimize", title: L("sidebar.optimize"), modules: [.performance, .applications]),
-        SidebarGroup(id: "protect", title: L("sidebar.protect"), modules: [.protection]),
-        SidebarGroup(id: "track", title: L("sidebar.activity"), modules: [.myActivity, .settings]),
+        SidebarGroup(id: "main", title: nil, modules: [.smartCare]),
+        SidebarGroup(id: "storage", title: L("sidebar.storage"),
+                     modules: [.cleanup, .spaceLens, .duplicates, .applications]),
+        SidebarGroup(id: "system", title: L("sidebar.system"),
+                     modules: [.protection, .myActivity, .settings]),
     ]
+
+    static var visibleModules: [ModuleID] {
+        all.flatMap(\.modules)
+    }
 }
 
 struct MainWindow: View {
@@ -343,13 +349,15 @@ struct MainWindow: View {
         } detail: {
             switch selection {
             case .smartCare:
-                SmartCareView()
+                DashboardView()
             case .cleanup:
                 CleanupView()
             case .protection:
                 ProtectionView()
             case .applications:
                 ApplicationsView()
+            case .duplicates:
+                DuplicatesView()
             case .performance:
                 PerformanceView()
             case .spaceLens:
@@ -450,7 +458,7 @@ private struct CommandPaletteView: View {
     }
 
     private var entries: [Entry] {
-        ModuleID.allCases.map(Entry.module) + actions
+        SidebarGroup.visibleModules.map(Entry.module) + actions
     }
 
     private var filtered: [Entry] {
