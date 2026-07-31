@@ -26,7 +26,7 @@
 <link rel="preload" href="../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../assets/fonts/plexmono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>html,body{background:#f4f4f0;color:#17191d}</style>
-<link rel="stylesheet" href="../assets/style.min.css?v=98dcb667b0">
+<link rel="stylesheet" href="../assets/style.css?v=9e329a5040">
 <script src="../assets/site.js?v=77c84f9144" defer></script>
 </head>
 <body class="page-index">
@@ -55,7 +55,7 @@
 <!--full-bleed-->
   <section class="hero" id="get">
     <div class="halo" aria-hidden="true"></div>
-    <div class="wrap">
+    <div class="wrap hero-grid">
       <div class="hero-lockup">
         <span class="hero-mark" aria-hidden="true"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
 <path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--cobalt)" stroke-width="38.4" stroke-linecap="round"/>
@@ -65,10 +65,10 @@
 </svg></span>
         <h1 class="hero-wordmark">CoreTend</h1>
         <p class="hero-statement">
-          Understand your Mac.<br>Keep control.
+          Understand your Mac. Reclaim space carefully.
         </p>
         <p class="hero-facts">
-          Local analysis, storage cleanup, and optional malware scanning with ClamAV.
+          Local storage analysis, exact duplicate detection, app residue review, and macOS integrity signals. No account, no telemetry.
         </p>
         <div class="cta">
           <span data-magnetic><a class="btn btn-primary btn-lg" href="/download"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -79,12 +79,80 @@
         </div>
         <p class="hero-meta">0.9.1-rc.3 · macOS 14.0+ · Apple silicon · Free and open source · Unsigned and not notarized</p>
       </div>
+      <div class="product-demo" aria-label="CoreTend scan demo" data-reveal>
+        <div class="demo-window">
+          <div class="demo-sidebar">
+            <span class="on">Dashboard</span><span>Storage</span><span>Space Lens</span><span>Duplicates</span><span>Integrity</span>
+          </div>
+          <div class="demo-main">
+            <div class="demo-toolbar"><strong>Storage scan</strong><em>Paused safely</em></div>
+            <div class="scan-track"><span></span></div>
+            <div class="lens-grid">
+              <i style="--w:46%;--h:58%;--x:0%;--y:0%"></i><i style="--w:28%;--h:35%;--x:48%;--y:0%"></i>
+              <i style="--w:22%;--h:35%;--x:78%;--y:0%"></i><i style="--w:28%;--h:21%;--x:48%;--y:37%"></i>
+              <i style="--w:52%;--h:38%;--x:0%;--y:62%"></i><i style="--w:46%;--h:38%;--x:54%;--y:62%"></i>
+            </div>
+            <ul class="demo-results">
+              <li><b>Duplicates</b><span>2.4 GB</span></li>
+              <li><b>Build data</b><span>1.1 GB</span></li>
+              <li><b>App caches</b><span>690 MB</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section class="section band" id="demo">
-    <div class="wrap narrow">
-      <h2 class="quiet-title" data-reveal>The first launch, unedited</h2>
+  <section class="site-section flow" id="how">
+    <div class="wrap">
+      <div class="section-label">Workflow</div>
+      <h2 data-reveal>One continuous path from scan to decision.</h2>
+      <ul class="step-list">
+        <li data-reveal data-reveal-delay="0"><span>01</span><h3>Scan</h3><p>Storage, Space Lens, Duplicates, Applications and Integrity read local metadata and stream results progressively.</p></li>
+        <li data-reveal data-reveal-delay="70"><span>02</span><h3>Review</h3><p>Search, filter, inspect in Quick Look or Finder, and keep the suggested copy or override it.</p></li>
+        <li data-reveal data-reveal-delay="140"><span>03</span><h3>Act</h3><p>Dry run is on by default. Real removals go to the macOS Trash with a local activity record.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="site-section feature-strip" id="features">
+    <div class="wrap">
+      <div class="section-label">Available modules</div>
+      <h2 data-reveal>Only the release architecture is presented.</h2>
+      <ul class="module-grid">
+        <li data-reveal><h3>Dashboard</h3><p>status, routes, privacy posture</p></li>
+        <li data-reveal><h3>Storage</h3><p>caches, logs, installers, build data</p></li>
+        <li data-reveal><h3>Space Lens</h3><p>treemap, breadcrumbs, search, Finder</p></li>
+        <li data-reveal><h3>Duplicates</h3><p>hashes, keeper, preview, CSV export</p></li>
+        <li data-reveal><h3>Applications</h3><p>caches, preferences, launch items</p></li>
+        <li data-reveal><h3>Integrity</h3><p>quarantine, signature, Gatekeeper signals</p></li>
+        <li data-reveal><h3>Activity</h3><p>scans, cleanups, exports, audit trail</p></li>
+        <li data-reveal><h3>Settings</h3><p>dry run, exclusions, updates, diagnostics</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="site-section privacy-proof" id="privacy">
+    <div class="wrap proof-grid">
+      <div>
+        <div class="section-label">Privacy proof</div>
+        <h2 data-reveal>Designed to be inspectable, not reassuring by copy.</h2>
+      </div>
+      <ul>
+        <li data-reveal><b>Local store</b><span>~/Library/Application Support/CoreTend</span></li>
+        <li data-reveal><b>No telemetry endpoint</b><span>No account or analytics in app or site.</span></li>
+        <li data-reveal><b>Reversible removals</b><span>Trash first; dry run first.</span></li>
+        <li data-reveal><b>Open source</b><span>Apache-2.0</span></li>
+      </ul>
+    </div>
+  </section>
+
+
+  <section class="site-section install-proof" id="install">
+    <div class="wrap">
+      <div class="section-label">Install</div>
+      <h2 data-reveal>The public build is honest about Gatekeeper.</h2>
+      <p class="lead" data-reveal>The current download is unsigned and not notarized. macOS blocks the first launch until Developer ID signing is available; the checksum still verifies the file you received.</p>
       <figure class="media" data-reveal>
         <span class="loop" style="--ratio:926/880">
           <video data-loop autoplay muted loop playsinline preload="metadata"
@@ -100,13 +168,17 @@
       </figure>
     </div>
   </section>
-  <section class="section">
-    <div class="wrap narrow">
-      <ul class="benefits">
-        <li data-reveal data-reveal-delay="0"><h3>Local</h3><p>Every scan runs on your Mac. No account, no telemetry, no network calls.</p></li>
-        <li data-reveal data-reveal-delay="70"><h3>Clear</h3><p>Findings are listed, measured and explained. Nothing is removed until you say so.</p></li>
-        <li data-reveal data-reveal-delay="140"><h3>Open source</h3><p>Apache-2.0. Read the code, build it yourself, check every claim made here.</p></li>
-      </ul>
+
+  <section class="site-section faq-band" id="faq">
+    <div class="wrap">
+      <div class="section-label">FAQ</div>
+      <h2 data-reveal>Short answers before download.</h2>
+      <div class="faq-list">
+        <details data-reveal><summary>Does it upload file names?</summary><p>No. The app works locally and the site has no analytics.</p></details>
+        <details data-reveal><summary>Is it an antivirus?</summary><p>No. Integrity reports macOS provenance, signatures and launch items; it does not claim malware detection.</p></details>
+        <details data-reveal><summary>Can I undo removals?</summary><p>Removals use the system Trash, so recovery is the normal macOS restore flow until the Trash is emptied.</p></details>
+        <details data-reveal><summary>Why the warning on launch?</summary><p>The public build is ad-hoc signed and not notarized. Developer ID signing is pending.</p></details>
+      </div>
     </div>
   </section>
 

@@ -221,21 +221,11 @@ def _minify_css(text):
 
 
 def write_minified_assets():
-    """Emit the minified copies the pages actually reference."""
-    # CSS only. A regex-based JavaScript minifier eventually eats a string
-    # or a regex literal — this one did, shipping a SyntaxError to production
-    # for a 2 KB saving. site.js is served as authored.
-    pairs = [("assets/style.css", "assets/style.min.css", _minify_css)]
-    for src, dst, fn in pairs:
-        src_path = os.path.join(ROOT, src)
-        dst_path = os.path.join(ROOT, dst)
-        with open(src_path, encoding="utf-8") as handle:
-            original = handle.read()
-        minified = fn(original)
-        with open(dst_path, "w", encoding="utf-8") as handle:
-            handle.write(minified)
-        saved = len(original.encode()) - len(minified.encode())
-        print(f"  {dst}: {len(minified.encode())} bytes ({saved} saved)")
+    """Keep the historical build step without changing referenced assets."""
+    # The site now references the authored stylesheet directly so visual work
+    # cannot drift behind a generated minified copy. The function remains as a
+    # no-op to preserve the generator's public entry point.
+    return
 
 
 def asset_url(relative_path):
@@ -310,7 +300,7 @@ def page_shell(locale, slug, title, body_html, other_locale_slug=None):
 <link rel="preload" href="../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../assets/fonts/plexmono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>{CRITICAL_STYLE}</style>
-<link rel="stylesheet" href="{asset_url("assets/style.min.css")}">
+<link rel="stylesheet" href="{asset_url("assets/style.css")}">
 <script src="{asset_url("assets/site.js")}" defer></script>
 </head>
 <body class="page-{slug}">
@@ -713,9 +703,11 @@ def home_body(l):
     demo = ""
     if media_exists("assets/demos/gatekeeper-blocked.mp4"):
         demo = f"""
-  <section class="section band" id="demo">
-    <div class="wrap narrow">
-      <h2 class="quiet-title" data-reveal>{"The first launch, unedited" if en else "Le premier lancement, sans montage"}</h2>
+  <section class="site-section install-proof" id="install">
+    <div class="wrap">
+      <div class="section-label">{"Install" if en else "Installation"}</div>
+      <h2 data-reveal>{"The public build is honest about Gatekeeper." if en else "La version publique est honnête sur Gatekeeper."}</h2>
+      <p class="lead" data-reveal>{"The current download is unsigned and not notarized. macOS blocks the first launch until Developer ID signing is available; the checksum still verifies the file you received." if en else "Le téléchargement actuel n’est pas signé ni notarié. macOS bloque le premier lancement tant que la signature Developer ID n’est pas disponible ; la somme de contrôle vérifie tout de même le fichier reçu."}</p>
       <figure class="media" data-reveal>
         {loop_video("gatekeeper-blocked", "926/880", "demo-desc", 926, 880)}
         <figcaption id="demo-desc">{"CoreTend is unsigned, so macOS blocks it the first time. Open System Settings → Privacy &amp; Security and choose Open Anyway — once." if en else "CoreTend n’est pas signé : macOS le bloque la première fois. Réglages Système → Confidentialité et sécurité, puis Ouvrir quand même — une seule fois."}</figcaption>
@@ -723,35 +715,67 @@ def home_body(l):
     </div>
   </section>"""
 
-    benefits = [
-        (("Local", "Local"),
-         ("Every scan runs on your Mac. No account, no telemetry, no network calls.",
-          "Chaque analyse s’exécute sur votre Mac. Aucun compte, aucune télémétrie, aucun appel réseau.")),
-        (("Clear", "Clair"),
-         ("Findings are listed, measured and explained. Nothing is removed until you say so.",
-          "Les résultats sont listés, mesurés et expliqués. Rien n’est supprimé sans votre accord.")),
-        (("Open source", "Open source"),
-         ("Apache-2.0. Read the code, build it yourself, check every claim made here.",
-          "Apache-2.0. Lisez le code, compilez-le, vérifiez chaque affirmation faite ici.")),
+    steps = [
+        (("Scan", "Analyser"),
+         ("Storage, Space Lens, Duplicates, Applications and Integrity read local metadata and stream results progressively.",
+          "Storage, Space Lens, Doublons, Applications et Integrity lisent les metadonnees locales et affichent les resultats progressivement.")),
+        (("Review", "Verifier"),
+         ("Search, filter, inspect in Quick Look or Finder, and keep the suggested copy or override it.",
+          "Recherchez, filtrez, inspectez avec Quick Look ou Finder, puis gardez la copie suggeree ou changez le choix.")),
+        (("Act", "Agir"),
+         ("Dry run is on by default. Real removals go to the macOS Trash with a local activity record.",
+          "La simulation est active par defaut. Les retraits reels vont dans la Corbeille macOS avec un historique local.")),
     ]
-    benefit_html = "\n        ".join(
-        f'<li data-reveal data-reveal-delay="{i * 70}"><h3>{t[0] if en else t[1]}</h3>'
+    step_html = "\n        ".join(
+        f'<li data-reveal data-reveal-delay="{i * 70}"><span>{i + 1:02d}</span><h3>{t[0] if en else t[1]}</h3>'
         f'<p>{b[0] if en else b[1]}</p></li>'
-        for i, (t, b) in enumerate(benefits)
+        for i, (t, b) in enumerate(steps)
+    )
+    modules = [
+        ("Dashboard", "status, routes, privacy posture", "statut, routes, confidentialite"),
+        ("Storage", "caches, logs, installers, build data", "caches, journaux, installeurs, builds"),
+        ("Space Lens", "treemap, breadcrumbs, search, Finder", "treemap, fil d'Ariane, recherche, Finder"),
+        ("Duplicates", "hashes, keeper, preview, CSV export", "hachage, copie conservee, apercu, CSV"),
+        ("Applications", "caches, preferences, launch items", "caches, preferences, elements de lancement"),
+        ("Integrity", "quarantine, signature, Gatekeeper signals", "quarantaine, signature, signaux Gatekeeper"),
+        ("Activity", "scans, cleanups, exports, audit trail", "analyses, nettoyages, exports, journal"),
+        ("Settings", "dry run, exclusions, updates, diagnostics", "simulation, exclusions, mises a jour, diagnostic"),
+    ]
+    module_html = "\n        ".join(
+        f'<li data-reveal><h3>{name}</h3><p>{en_text if en else fr_text}</p></li>'
+        for name, en_text, fr_text in modules
+    )
+    faq = [
+        (("Does it upload file names?", "Envoie-t-il les noms de fichiers ?"),
+         ("No. The app works locally and the site has no analytics.",
+          "Non. L'app fonctionne localement et le site n'a aucune analytique.")),
+        (("Is it an antivirus?", "Est-ce un antivirus ?"),
+         ("No. Integrity reports macOS provenance, signatures and launch items; it does not claim malware detection.",
+          "Non. Integrity affiche provenance macOS, signatures et elements de lancement ; il ne revendique pas de detection malware.")),
+        (("Can I undo removals?", "Puis-je annuler les retraits ?"),
+         ("Removals use the system Trash, so recovery is the normal macOS restore flow until the Trash is emptied.",
+          "Les retraits utilisent la Corbeille systeme : la recuperation suit le flux macOS normal tant qu'elle n'est pas videe.")),
+        (("Why the warning on launch?", "Pourquoi l'alerte au lancement ?"),
+         ("The public build is ad-hoc signed and not notarized. Developer ID signing is pending.",
+          "La version publique est signee ad hoc et non notarisee. La signature Developer ID reste en attente.")),
+    ]
+    faq_html = "\n        ".join(
+        f'<details data-reveal><summary>{q[0] if en else q[1]}</summary><p>{a[0] if en else a[1]}</p></details>'
+        for q, a in faq
     )
 
     return f"""{FULL_BLEED}
   <section class="hero" id="get">
     <div class="halo" aria-hidden="true"></div>
-    <div class="wrap">
+    <div class="wrap hero-grid">
       <div class="hero-lockup">
         <span class="hero-mark" aria-hidden="true">{MARK_SVG}</span>
         <h1 class="hero-wordmark">CoreTend</h1>
         <p class="hero-statement">
-          {"Understand your Mac.<br>Keep control." if en else "Comprenez votre Mac.<br>Gardez le contrôle."}
+          {"Understand your Mac. Reclaim space carefully." if en else "Comprenez votre Mac. Liberez l'espace prudemment."}
         </p>
         <p class="hero-facts">
-          {"Local analysis, storage cleanup, and optional malware scanning with ClamAV." if en else "Analyse locale, entretien du stockage et protection optionnelle avec ClamAV."}
+          {"Local storage analysis, exact duplicate detection, app residue review, and macOS integrity signals. No account, no telemetry." if en else "Analyse locale du stockage, detection exacte des doublons, revue des residus d'apps et signaux d'integrite macOS. Aucun compte, aucune telemetrie."}
         </p>
         <div class="cta">
           <span data-magnetic><a class="btn btn-primary btn-lg" href="{dl_href}">{DOWNLOAD_SVG}{dl_label}</a></span>
@@ -759,14 +783,74 @@ def home_body(l):
         </div>
         <p class="hero-meta">{meta_line}</p>
       </div>
+      <div class="product-demo" aria-label="CoreTend scan demo" data-reveal>
+        <div class="demo-window">
+          <div class="demo-sidebar">
+            <span class="on">Dashboard</span><span>Storage</span><span>Space Lens</span><span>Duplicates</span><span>Integrity</span>
+          </div>
+          <div class="demo-main">
+            <div class="demo-toolbar"><strong>Storage scan</strong><em>Paused safely</em></div>
+            <div class="scan-track"><span></span></div>
+            <div class="lens-grid">
+              <i style="--w:46%;--h:58%;--x:0%;--y:0%"></i><i style="--w:28%;--h:35%;--x:48%;--y:0%"></i>
+              <i style="--w:22%;--h:35%;--x:78%;--y:0%"></i><i style="--w:28%;--h:21%;--x:48%;--y:37%"></i>
+              <i style="--w:52%;--h:38%;--x:0%;--y:62%"></i><i style="--w:46%;--h:38%;--x:54%;--y:62%"></i>
+            </div>
+            <ul class="demo-results">
+              <li><b>Duplicates</b><span>2.4 GB</span></li>
+              <li><b>Build data</b><span>1.1 GB</span></li>
+              <li><b>App caches</b><span>690 MB</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
-{demo}
-  <section class="section">
-    <div class="wrap narrow">
-      <ul class="benefits">
-        {benefit_html}
+
+  <section class="site-section flow" id="how">
+    <div class="wrap">
+      <div class="section-label">{"Workflow" if en else "Flux"}</div>
+      <h2 data-reveal>{"One continuous path from scan to decision." if en else "Un parcours continu de l'analyse a la decision."}</h2>
+      <ul class="step-list">
+        {step_html}
       </ul>
+    </div>
+  </section>
+
+  <section class="site-section feature-strip" id="features">
+    <div class="wrap">
+      <div class="section-label">{"Available modules" if en else "Modules disponibles"}</div>
+      <h2 data-reveal>{"Only the release architecture is presented." if en else "Seule l'architecture de release est presentee."}</h2>
+      <ul class="module-grid">
+        {module_html}
+      </ul>
+    </div>
+  </section>
+
+  <section class="site-section privacy-proof" id="privacy">
+    <div class="wrap proof-grid">
+      <div>
+        <div class="section-label">{"Privacy proof" if en else "Preuve de confidentialite"}</div>
+        <h2 data-reveal>{"Designed to be inspectable, not reassuring by copy." if en else "Concu pour etre inspectable, pas rassurant par le texte."}</h2>
+      </div>
+      <ul>
+        <li data-reveal><b>{"Local store" if en else "Base locale"}</b><span>~/Library/Application Support/CoreTend</span></li>
+        <li data-reveal><b>{"No telemetry endpoint" if en else "Aucun endpoint de telemetrie"}</b><span>{"No account or analytics in app or site." if en else "Aucun compte ni analytique dans l'app ou le site."}</span></li>
+        <li data-reveal><b>{"Reversible removals" if en else "Retraits reversibles"}</b><span>{"Trash first; dry run first." if en else "Corbeille d'abord ; simulation d'abord."}</span></li>
+        <li data-reveal><b>{"Open source" if en else "Open source"}</b><span>Apache-2.0</span></li>
+      </ul>
+    </div>
+  </section>
+
+{demo}
+
+  <section class="site-section faq-band" id="faq">
+    <div class="wrap">
+      <div class="section-label">FAQ</div>
+      <h2 data-reveal>{"Short answers before download." if en else "Reponses courtes avant telechargement."}</h2>
+      <div class="faq-list">
+        {faq_html}
+      </div>
     </div>
   </section>
 
