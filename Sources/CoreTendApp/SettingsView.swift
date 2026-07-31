@@ -85,7 +85,7 @@ struct MCSettingsView: View {
     @State private var showDiagnostic = false
 
     private var appVersion: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
+        AppMetadata.marketingVersion
     }
 
     var body: some View {

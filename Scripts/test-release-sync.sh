@@ -27,11 +27,26 @@ VERSION=$(/usr/bin/python3 -c "import json;print(json.load(open('$SOT'))['market
 CHANNEL=$(/usr/bin/python3 -c "import json;print(json.load(open('$SOT'))['channel'])")
 echo "-- source of truth: $VERSION ($CHANNEL) --"
 
-# 1. The application binary's own version must match.
-PLIST_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" Resources/Info.plist 2>/dev/null)
+# 1. The application binary's own product version must match, while Apple's
+#    bundle-version keys remain in their stricter numeric format.
+PLIST_VERSION=$(/usr/libexec/PlistBuddy -c "Print :CoreTendMarketingVersion" Resources/Info.plist 2>/dev/null)
 [ "$PLIST_VERSION" = "$VERSION" ] \
-  && ok "app Info.plist agrees ($PLIST_VERSION)" \
-  || note "app Info.plist says '$PLIST_VERSION', source of truth says '$VERSION'"
+  && ok "app marketing version agrees ($PLIST_VERSION)" \
+  || note "app CoreTendMarketingVersion says '$PLIST_VERSION', source of truth says '$VERSION'"
+
+PLIST_SHORT=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" Resources/Info.plist 2>/dev/null)
+PLIST_BUILD=$(/usr/libexec/PlistBuddy -c "Print :CFBundleVersion" Resources/Info.plist 2>/dev/null)
+case "$PLIST_SHORT" in
+  [0-9]*.[0-9]*.[0-9]*) ok "CFBundleShortVersionString is Apple-compatible ($PLIST_SHORT)" ;;
+  *) note "CFBundleShortVersionString must be three dot-separated integers; found '$PLIST_SHORT'" ;;
+esac
+case "$PLIST_SHORT" in
+  *[!0-9.]*|*.*.*.*) note "CFBundleShortVersionString can contain only digits and periods; found '$PLIST_SHORT'" ;;
+esac
+case "$PLIST_BUILD" in
+  *[!0-9.]*|*.*.*.*) note "CFBundleVersion can contain only digits and periods; found '$PLIST_BUILD'" ;;
+  *) ok "CFBundleVersion is Apple-compatible ($PLIST_BUILD)" ;;
+esac
 
 # 2. The recorded project state must match.
 STATE_VERSION=$(/usr/bin/python3 -c "import json;print(json.load(open('Documentation/PROJECT_STATE.json'))['version'])" 2>/dev/null)

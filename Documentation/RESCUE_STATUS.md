@@ -4,12 +4,14 @@ Date: 2026-07-31
 Branch: `rescue/coretend-final-product`
 Active repo path: `/Users/ahmetbasbunar/Developer/Website/products/coretend/app`
 HEAD before rescue edits: `38b8ddac091f0965bde1ce380d984b59619da6a8`
+Latest committed rescue subsystem: `6f80ef1b265f9c1c1e20df88504d311f22eea3e9` (`6f80ef1`)
 
 ## Git Validation
 
 - Index write test passed: `.codex-git-index-test` was created, staged, verified in the index, unstaged, removed, and `git status --short` returned to the exact initial state.
 - Reference write test passed: temporary branch `codex-git-ref-test` was created from HEAD, verified, deleted without checkout, and the active branch remained `rescue/coretend-final-product`.
 - Git is functional in this session.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `6f80ef1b265f9c1c1e20df88504d311f22eea3e9`.
 
 ## Local Backup
 
@@ -22,57 +24,146 @@ Current worktree diff was exported before additional fixes:
 Earlier verified backup directory:
 `/Users/ahmetbasbunar/Developer/Website/_backups/20260731T174147Z-coretend-rescue`
 
-## Public Launch Reproduction
+## Pause / Resume Subsystem
 
-Public download URL identified from `Website/vercel.json`:
-`https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.3/CoreTend-0.9.1-rc.3-arm64-unsigned.dmg`
-
-Previous reproduction state remains factual:
-
-- DMG SHA-256: `2960293a278f81be602aebb84ad6582d41f118635bbbca4517853bb68831ee71`
-- `hdiutil verify`: checksum valid.
-- `hdiutil attach`: failed with `Périphérique non configuré`; local DMGs failed the same way, so this session cannot prove the normal DMG mount path.
-- ZIP SHA-256: `28114f0a352abe340bb83cd61c84dedcb3cb0b8e031a12ae7a1a4e306e4db173`
-- Bundle ID: `com.ahmetbsbnr.coretend`
-- Version: `0.9.1-rc.3`
-- Minimum macOS: `14.0`
-- Architecture: `arm64`
-- Signature: ad hoc, no TeamIdentifier.
-- `spctl --assess --type execute`: `internal error in Code Signing subsystem`.
-- `open -n -W CoreTend.app`: failed with `kLSNoExecutableErr`.
-- Direct executable launch in this headless session returned exit `134` without a CoreTend crash report.
-
-Conclusion: the public artifact is not Developer ID signed and not notarized; Gatekeeper normal-launch acceptance is not valid. DMG mounting still needs validation in a normal GUI environment.
-
-## Pause / Resume Fix
+Commit: `6f80ef1b265f9c1c1e20df88504d311f22eea3e9`
 
 Diagnosis:
 
 - The old exit-137 class was consistent with blocking pause waits under Swift Concurrency pressure.
-- A polling `Task.sleep` pause avoided OS-thread blocking but still left stress coverage fragile and made cancellation/release behavior indirect.
-- The repaired controller stores suspended continuations and resumes them explicitly, so paused scans do not occupy cooperative-executor threads.
+- A polling `Task.sleep` pause avoided OS-thread blocking but left stress coverage fragile and made release behavior indirect.
+- The repaired controller stores suspended continuations and resumes them explicitly, so paused waits do not occupy cooperative-executor threads.
 
 Implemented:
 
 - `ScanPauseController` actor with pause/resume state and waiter release on resume/cancellation.
 - `ScanEngine.run(rules:pauseController:)` plumbs pause control into the filesystem walk.
-- Smart Care, Cleanup, and My Clutter expose Pause / Resume / Cancel controls in the running state.
 - EN/FR localization keys exist for Pause, Resume, Cancel, and VoiceOver hints.
 - Keyboard shortcuts: `p` pauses, `r` resumes, Escape cancels.
 - Reduce Motion remains respected by existing animated views; the pause controls do not add motion.
 
-## Verification
+Controls currently integrated:
 
-Passed:
+- Smart Care: Pause / Resume / Cancel while scanning.
+- Cleanup: Pause / Resume / Cancel while scanning.
+- My Clutter, Large & Old analysis: Pause / Resume / Cancel while scanning.
 
-- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch --filter ScanPauseControllerTests`
-- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch -c debug`
-- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-release -c release`
-- EN/FR localization key check with `iconv -f UTF-16 -t UTF-8 ... | rg 'common\.(pause|resume|cancel)|pause_hint|resume_hint'`
+Controls not yet integrated:
 
-Partial / blocked:
+- Space Lens scan.
+- Duplicates scan.
+- Similar Images scan.
+- Privacy Cleaner browser detection/cleanup.
+- Cloud Cleanup provider analysis.
+- Applications scan/uninstall workflows.
+- Integrity scanners.
 
-- Full test suite was started after targeted deterministic tests passed, but was stopped after no further output for roughly 90 seconds; no failure was reported before interruption.
-- Xcode MCP build remains unavailable because no scheme is selected in Xcode.
-- CI status requires pushing and observing GitHub Actions.
-- Signing and notarization require a valid Developer ID identity; none was available in the prior identity check.
+Known limits:
+
+- Pause checks occur between enumerated filesystem entries, not during a single blocking filesystem call.
+- Pause currently affects `ScanEngine`-based walks only; engines with separate implementation paths still need equivalent cancellation/pause semantics.
+- UI coverage exists through CI visual regression, but no dedicated XCUIAutomation suite has been added yet.
+
+Verification completed for `6f80ef1`:
+
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch --filter ScanPauseControllerTests` passed.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch -c debug` passed.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-release -c release` passed.
+- EN/FR localization key check with `iconv -f UTF-16 -t UTF-8 ... | rg 'common\.(pause|resume|cancel)|pause_hint|resume_hint'` passed.
+- GitHub Actions CI run `30659795847` passed: distribution-check and build-and-test were green, including tests, release build, launch robustness, 72 visual captures across FR/EN and viewports, and localization key parity.
+
+## Public Launch Reproduction
+
+Production route checked:
+`https://coretend.ahmetbsbnr.com/download`
+
+Observed redirect chain:
+`/download` -> `https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.3/CoreTend-0.9.1-rc.3-arm64-unsigned.dmg` -> GitHub release-asset CDN.
+
+Expected DMG SHA-256:
+`2960293a278f81be602aebb84ad6582d41f118635bbbca4517853bb68831ee71`
+
+Reproduction workspace:
+`/private/tmp/coretend-public-dmg-repro-20260731T225553`
+
+Verified:
+
+- Production HTTP route returns the expected public DMG asset.
+- DMG SHA-256 matched expected.
+- `hdiutil verify`: checksum valid.
+- CLI download carries no quarantine by default; browser-equivalent quarantine was applied manually for diagnosis:
+  `0081;6a6cfe1e;Safari;https://coretend.ahmetbsbnr.com/download`.
+- `hdiutil attach`: failed locally with `Périphérique non configuré`; verbose log says `Cannot start hdiejectd because app is sandboxed`, so this session cannot mount DMGs and cannot complete Finder copy/open from the mounted volume.
+- ZIP SHA-256: `28114f0a352abe340bb83cd61c84dedcb3cb0b8e031a12ae7a1a4e306e4db173`
+- Bundle ID: `com.ahmetbsbnr.coretend`
+- Published app version fields: `CFBundleShortVersionString=0.9.1-rc.3`, `CFBundleVersion=0.9.1-rc.3`
+- Minimum macOS: `14.0`
+- Architecture: `arm64`
+- Dependencies from `otool -L`: system frameworks and `/usr/lib/swift` only; no obvious missing bundled dylib.
+- Resources present: app icon, menu-bar templates, license/notice files, SwiftPM resource bundle, Base and FR localizations.
+- Signature: ad hoc, no TeamIdentifier; `codesign --verify --deep --strict` passes for the extracted ZIP app.
+- Gatekeeper assessment via `spctl` fails in this sandbox with `internal error in Code Signing subsystem`, so the real Gatekeeper verdict must be collected outside the sandbox.
+- `open -n -W` fails with `kLSNoExecutableErr` even for the current locally built app, so this LaunchServices path is also sandbox-tainted.
+- Direct executable launch in the sandbox returned `137` with quarantine and `134` after quarantine removal; no usable Console/crash report access is available because `/usr/bin/log show` is sandbox-blocked.
+
+Apple documentation check:
+
+- `CFBundleShortVersionString` must be three period-separated integers and can only contain digits and periods.
+- `CFBundleVersion` can contain one to three period-separated integers and can only contain digits and periods.
+- Therefore the public v0.9.1-rc.3 app contains invalid Apple bundle-version metadata. This is a real packaging defect, independent from the expected unsigned/not-notarized Gatekeeper block.
+
+Mitigation implemented in source, not published:
+
+- `Resources/Info.plist` now uses Apple-compatible bundle fields: `CFBundleShortVersionString=0.9.1`, `CFBundleVersion=913`.
+- Product/update UI now reads `CoreTendMarketingVersion=0.9.1-rc.3`, preserving the public semantic prerelease label without putting it in Apple bundle-version keys.
+- Version gates now verify the custom marketing version against `Configuration/PublicIdentity.example.json` and validate Apple's numeric bundle-version grammar.
+- `Scripts/package-local.sh` can now place the assembled app bundle outside `build/` with `CORETEND_APP_BUNDLE_PATH`, so sandboxed verification can package to `/tmp` without touching an existing local app bundle.
+- Verification for the source mitigation: `Scripts/check-version-consistency.sh`, `Scripts/test-release-sync.sh`, `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-version --filter infoPlistDeclaresIconAndVersion`, `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-version -c release`, and `/tmp` package/signature inspection all passed.
+
+Current conclusion:
+
+- Normal Gatekeeper launch is expected to be blocked because the app is ad-hoc signed and not notarized.
+- A separate real packaging defect exists: both Apple bundle-version fields in the public v0.9.1-rc.3 artifact contain `-rc.3`, which violates Apple's documented format.
+- This sandbox cannot complete the mounted-DMG/Finder/Console crash-report portion, because DMG attach, `spctl`, `open`, and unified logs are sandbox-tainted here.
+- Do not replace the public download until an unsandboxed clean-machine run confirms whether the owner's symptom is only Gatekeeper + invalid metadata or also an app crash.
+
+## Remaining Rescue Work
+
+P0:
+
+- Reproduce and explain the public DMG launch failure from the real website/download path.
+- Distinguish Gatekeeper block, crash, packaging fault, macOS/hardware incompatibility, and combinations.
+- Do not replace the public download until the failure is explained.
+
+Xcode integration:
+
+- Add minimal robust Xcode integration while keeping SwiftPM the source of truth.
+- Provide schemes/test plans for CoreTend, unit/integration/UI/accessibility/performance/release workflows.
+- Keep isolated test environments and do not duplicate sources or change bundle ID.
+
+Product/application:
+
+- Perform a real screen-by-screen audit.
+- Consolidate target architecture around Dashboard, Storage, Space Lens, Duplicates, Applications, Integrity, Activity, Settings.
+- Finish or remove incomplete visible modules.
+- Complete visual redesign beyond token replacement.
+- Generate fresh Retina captures with fake data and no personal paths.
+
+Testing/accessibility/performance:
+
+- Add real XCUIAutomation coverage for first launch, onboarding, FR/EN, navigation, scan, pause/resume, cancel, modules, errors, light/dark, close/relaunch.
+- Run keyboard-only, VoiceOver, Increase Contrast, Reduce Transparency, Reduce Motion, large text.
+- Run Instruments: Time Profiler, Allocations, Leaks, File Activity, Energy, SwiftUI when available.
+
+Site/portfolio/release:
+
+- Rebuild CoreTend site to the requested quality bar with honest installation state.
+- Verify Talkink license before any reuse and do not copy brand/text/assets/claims.
+- Update portfolio after the real product state and captures are complete.
+- Finalize README, changelog, licenses/notices, updater, release draft, internal DMG/ZIP/SHA-256/Minisign/SBOM/attestation/feed.
+
+Developer ID:
+
+- Check for Developer ID Application identity before final release packaging.
+- Do not regenerate CSR or touch the private key.
+- If absent, finish all non-signing work and leave signing/notarization blocked.

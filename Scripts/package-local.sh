@@ -17,10 +17,10 @@ set -e
 cd "$(dirname "$0")/.."
 
 SCRATCH="${CORETEND_SCRATCH_PATH:-/tmp/coretend-release-build}"
-swift build -c release --scratch-path "$SCRATCH"
+swift build ${CORETEND_SWIFT_BUILD_FLAGS:-} -c release --scratch-path "$SCRATCH"
 BIN_DIR="$SCRATCH/release"
 
-APP="build/CoreTend.app"
+APP="${CORETEND_APP_BUNDLE_PATH:-build/CoreTend.app}"
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN_DIR/CoreTend" "$APP/Contents/MacOS/CoreTend"

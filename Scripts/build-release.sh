@@ -31,6 +31,7 @@ set -e
 cd "$(dirname "$0")/.."
 
 ARTIFACT_VERSION="${1:-$(/usr/bin/python3 -c "import json;print(json.load(open('Configuration/PublicIdentity.example.json'))['marketingVersion'])")}"
+BUILD_NUMBER="$(/usr/bin/python3 -c "import json;print(json.load(open('Configuration/PublicIdentity.example.json')).get('buildNumber', ''))")"
 ZIP_NAME="CoreTend-${ARTIFACT_VERSION}-arm64-unsigned.zip"
 DMG_NAME="CoreTend-${ARTIFACT_VERSION}-arm64-unsigned.dmg"
 TEMPLATE="Release/latest.template.json"
@@ -76,11 +77,11 @@ DMG_SIZE=$(stat -f%z "Release/$DMG_NAME")
 # --- Generate the manifest from the template ------------------------------
 /usr/bin/python3 - "$TEMPLATE" "$DIST" "$ARTIFACT_VERSION" "$ZIP_NAME" "$ZIP_SHA" "$ZIP_SIZE" \
   "$DMG_NAME" "$DMG_SHA" "$DMG_SIZE" "$SOURCE_COMMIT" "$RELEASE_TAG" \
-  "$BUILD_DATE_UTC" "$BUILD_INVOCATION_ID" "$TREE_STATE" <<'PYEOF'
+  "$BUILD_DATE_UTC" "$BUILD_INVOCATION_ID" "$TREE_STATE" "$BUILD_NUMBER" <<'PYEOF'
 import json, sys
 (tpl_path, dist, version, zip_name, zip_sha, zip_size,
  dmg_name, dmg_sha, dmg_size, source_commit, release_tag,
- build_date, build_id, tree_state) = sys.argv[1:15]
+ build_date, build_id, tree_state, build_number) = sys.argv[1:16]
 
 with open(tpl_path) as f:
     tpl = json.load(f)
@@ -106,7 +107,7 @@ manifest = {
     "schemaVersion": 2,
     **tpl,
     "version": version,
-    "build": version,
+    "build": build_number,
     "zipName": zip_name,
     "zipSHA256": zip_sha,
     "zipSize": int(zip_size),
