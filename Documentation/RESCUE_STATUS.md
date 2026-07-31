@@ -11,6 +11,7 @@ Latest Xcode integration commit: `e7067533b33daa390a93d64873ff087a36f77102` (`e7
 Latest product shell commit: `39471c644fd532da6951c5e81b72d03b8587fcdd` (`39471c6`)
 Latest Space Lens pause commit: `a78006939624a13de35b77bd0b5ef8f1e11eefde` (`a780069`)
 Latest Duplicates pause commit: `1142f34a14fbe202fb1a6b8dbff669edd6514fcc` (`1142f34`)
+Latest Duplicates export commit: `ceb09823b96cfeda3d234009f8efbb1c2c25dfa0` (`ceb0982`)
 
 ## Git Validation
 
@@ -24,6 +25,7 @@ Latest Duplicates pause commit: `1142f34a14fbe202fb1a6b8dbff669edd6514fcc` (`114
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `39471c644fd532da6951c5e81b72d03b8587fcdd`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `a78006939624a13de35b77bd0b5ef8f1e11eefde`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `1142f34a14fbe202fb1a6b8dbff669edd6514fcc`.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `ceb09823b96cfeda3d234009f8efbb1c2c25dfa0`.
 
 ## Local Backup
 
@@ -258,7 +260,7 @@ Validation in this pass:
 
 ## Duplicates Export / Review
 
-Status: implemented locally, not yet committed at this checkpoint.
+Status: committed and pushed as `ceb09823b96cfeda3d234009f8efbb1c2c25dfa0`.
 
 Implemented:
 
@@ -274,6 +276,25 @@ Validation completed locally:
 - `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c release` passed.
 - `plutil -lint Sources/CoreTendApp/Resources/Base.lproj/Localizable.strings Sources/CoreTendApp/Resources/fr.lproj/Localizable.strings` passed.
 - EN/FR localization key parity passed with 550 keys.
+
+## Applications Review Safety
+
+Status: implemented locally, not yet committed at this checkpoint.
+
+Implemented:
+
+- Applications associated-data discovery now surfaces exact bundle-id LaunchAgent and LaunchDaemon plist paths in addition to caches, preferences, logs, saved state, containers, and Application Support.
+- User-library launch agents are included in the legacy bundle-id lookup path; system `/Library/LaunchAgents` and `/Library/LaunchDaemons` are included only when reviewing a concrete installed app.
+- Uninstall preselection remains conservative: only caches and saved application state are preselected. Preferences, containers, Application Support, LaunchAgents, and LaunchDaemons require explicit selection.
+- Safety validation allowlists the app bundle parent plus the relevant Library roots before moving any reviewed application item to Trash.
+- Applications search, grouping, list, uninstall, and Finder reveal controls now expose stable accessibility identifiers for future XCUIAutomation.
+
+Validation completed locally:
+
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter AppDiscoveryTests` passed with 22 tests.
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter AppGroupingTests` passed with 5 tests.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c debug` passed.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c release` passed.
 
 P0 public launch:
 
