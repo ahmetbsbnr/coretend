@@ -5,6 +5,7 @@ Branch: `rescue/coretend-final-product`
 Active repo path: `/Users/ahmetbasbunar/Developer/Website/products/coretend/app`
 HEAD before rescue edits: `38b8ddac091f0965bde1ce380d984b59619da6a8`
 Latest committed rescue subsystem: `6f80ef1b265f9c1c1e20df88504d311f22eea3e9` (`6f80ef1`)
+Latest packaging diagnosis commit: `5509efdb9981c6d68a8a3f38511e9cdf3b0b7961` (`5509efd`)
 
 ## Git Validation
 
@@ -12,6 +13,7 @@ Latest committed rescue subsystem: `6f80ef1b265f9c1c1e20df88504d311f22eea3e9` (`
 - Reference write test passed: temporary branch `codex-git-ref-test` was created from HEAD, verified, deleted without checkout, and the active branch remained `rescue/coretend-final-product`.
 - Git is functional in this session.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `6f80ef1b265f9c1c1e20df88504d311f22eea3e9`.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `5509efdb9981c6d68a8a3f38511e9cdf3b0b7961`.
 
 ## Local Backup
 
@@ -119,6 +121,7 @@ Mitigation implemented in source, not published:
 - Version gates now verify the custom marketing version against `Configuration/PublicIdentity.example.json` and validate Apple's numeric bundle-version grammar.
 - `Scripts/package-local.sh` can now place the assembled app bundle outside `build/` with `CORETEND_APP_BUNDLE_PATH`, so sandboxed verification can package to `/tmp` without touching an existing local app bundle.
 - Verification for the source mitigation: `Scripts/check-version-consistency.sh`, `Scripts/test-release-sync.sh`, `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-version --filter infoPlistDeclaresIconAndVersion`, `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-version -c release`, and `/tmp` package/signature inspection all passed.
+- GitHub Actions CI run `30662454150` passed on `5509efdb9981c6d68a8a3f38511e9cdf3b0b7961`: distribution-check and build-and-test were green, including package ZIP/DMG, distribution tests, launch robustness, and 72 visual regression captures.
 
 Current conclusion:
 
