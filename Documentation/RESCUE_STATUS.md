@@ -9,6 +9,8 @@ Latest packaging diagnosis commit: `5509efdb9981c6d68a8a3f38511e9cdf3b0b7961` (`
 Latest public launch evidence commit: `4aa2eeccde84194792765f19e41347b928f7d815` (`4aa2eec`)
 Latest Xcode integration commit: `e7067533b33daa390a93d64873ff087a36f77102` (`e706753`)
 Latest product shell commit: `39471c644fd532da6951c5e81b72d03b8587fcdd` (`39471c6`)
+Latest Space Lens pause commit: `a78006939624a13de35b77bd0b5ef8f1e11eefde` (`a780069`)
+Latest Duplicates pause commit: `1142f34a14fbe202fb1a6b8dbff669edd6514fcc` (`1142f34`)
 
 ## Git Validation
 
@@ -20,6 +22,8 @@ Latest product shell commit: `39471c644fd532da6951c5e81b72d03b8587fcdd` (`39471c
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `4aa2eeccde84194792765f19e41347b928f7d815`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `e7067533b33daa390a93d64873ff087a36f77102`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `39471c644fd532da6951c5e81b72d03b8587fcdd`.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `a78006939624a13de35b77bd0b5ef8f1e11eefde`.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `1142f34a14fbe202fb1a6b8dbff669edd6514fcc`.
 
 ## Local Backup
 
@@ -91,7 +95,11 @@ Additional pause/resume validation after the product-shell pass:
 - `DuplicatesView` now exposes Pause / Resume / Cancel while scanning, with `p`, `r`, and Escape keyboard shortcuts plus EN/FR VoiceOver hints.
 - `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter ScanPauseControllerTests` passed with 6 tests, including Duplicates pause/resume coverage.
 - `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter DuplicateEngineTests` passed.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c debug` passed.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c release` passed.
 - EN/FR localization key parity passed with 550 keys.
+- GitHub Actions CI run `30667815454` passed on `a78006939624a13de35b77bd0b5ef8f1e11eefde`: distribution-check and build-and-test were green.
+- GitHub Actions CI run `30668474495` passed on `1142f34a14fbe202fb1a6b8dbff669edd6514fcc`: distribution-check and build-and-test were green, including debug/release build, tests, package bundle, bundle sanity, DMG layout, launch robustness, visual regression captures, release/sync checks, and localization key parity.
 
 ## Public Launch Reproduction
 
@@ -247,6 +255,25 @@ Validation in this pass:
 - GitHub Actions CI run `30667051493` passed on `39471c644fd532da6951c5e81b72d03b8587fcdd`: distribution-check and build-and-test completed successfully, including debug/release build, full test job, package bundle, DMG layout, isolated launch robustness, 72 visual regression captures, release/sync checks, and localization key parity.
 
 ## Remaining Rescue Work
+
+## Duplicates Export / Review
+
+Status: implemented locally, not yet committed at this checkpoint.
+
+Implemented:
+
+- Duplicates results now include a CSV export action.
+- Exported rows include group hash, full path, file name, directory, byte size, readable size, selected-for-removal state, suggested-keeper state, and the keeper recommendation.
+- CSV values are quoted and internal quotes are escaped.
+- The Duplicates result action buttons now expose stable accessibility identifiers for future XCUIAutomation: `duplicates.results.export`, `duplicates.results.remove`, `duplicates.scan.pause`, `duplicates.scan.resume`, and `duplicates.scan.cancel`.
+
+Validation completed locally:
+
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter DuplicatesFilterTests` passed with 6 tests.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c debug` passed.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c release` passed.
+- `plutil -lint Sources/CoreTendApp/Resources/Base.lproj/Localizable.strings Sources/CoreTendApp/Resources/fr.lproj/Localizable.strings` passed.
+- EN/FR localization key parity passed with 550 keys.
 
 P0 public launch:
 

@@ -46,6 +46,22 @@ struct DuplicatesFilterTests {
         m.groups = [DuplicateGroup(id: "a", fileSize: 10, urls: [URL(fileURLWithPath: "/tmp/x.dat"), URL(fileURLWithPath: "/tmp/y.dat")])]
         #expect(m.filteredGroups.count == 1)
     }
+
+    @Test func exportCSVIncludesSelectionAndKeeperRecommendation() {
+        let m = DuplicatesViewModel()
+        let keep = URL(fileURLWithPath: "/tmp/Documents/report.csv")
+        let remove = URL(fileURLWithPath: "/tmp/Documents/Copy \"A\"/report.csv")
+        m.groups = [DuplicateGroup(id: "hash-a", fileSize: 42, urls: [keep, remove])]
+        m.selectedPaths = [remove.path]
+
+        let csv = m.exportCSV()
+
+        #expect(csv.contains("\"group_id\",\"path\",\"file_name\",\"directory\",\"size_bytes\""))
+        #expect(csv.contains("\"hash-a\",\"/tmp/Documents/report.csv\",\"report.csv\",\"/tmp/Documents\",\"42\""))
+        #expect(csv.contains("\"false\",\"true\",\"Shallowest path wins; alphabetical order breaks ties. Not based on file age.\""))
+        #expect(csv.contains("\"/tmp/Documents/Copy \"\"A\"\"/report.csv\""))
+        #expect(csv.contains("\"true\",\"false\",\"\""))
+    }
 }
 
 @Suite("SimilarImagesViewModel filtering")
