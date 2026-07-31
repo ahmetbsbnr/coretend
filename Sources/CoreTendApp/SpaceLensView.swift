@@ -52,6 +52,7 @@ final class SpaceLensViewModel {
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .scan, summary: "Space Lens: \(node.name) — \(mcFormatBytes(node.size))",
                         itemCount: node.children.count, bytes: node.size, dryRun: true))
+                    AppEnvironment.shared.recordLocationVisit(path: url.path, bytes: node.size)
                 case .cancelled:
                     phase = root == nil ? .idle : .ready
                 }
@@ -213,6 +214,9 @@ struct SpaceLensView: View {
             Button(L("common.done"), role: .cancel) {}
         } message: {
             Text(L("spacelens.delete.error_message", model.lastDeleteError ?? ""))
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .mcOpenSpaceLensAt)) { note in
+            if let url = note.object as? URL { model.start(url: url) }
         }
     }
 

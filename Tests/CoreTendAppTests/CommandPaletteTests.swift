@@ -22,6 +22,6 @@ struct CommandPaletteTests {
             #expect(!module.label.isEmpty)
             #expect(!module.systemImage.isEmpty)
         }
-        #expect(ModuleID.allCases.count == 10)
+        #expect(ModuleID.allCases.count == 11)
     }
 }

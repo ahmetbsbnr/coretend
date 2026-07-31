@@ -544,3 +544,23 @@
 "updates.error_cancelled" = "Check cancelled.";
 "updates.error_malformed" = "The release manifest could not be read.";
 "updates.error_response" = "The server replied with status %@.";
+
+/* Favorites & Recents */
+"module.favorites_recents" = "Favorites & Recents";
+"favrec.title" = "Favorites & Recents";
+"favrec.add_favorite" = "Add Favorite";
+"favrec.analyze" = "Analyze";
+"favrec.section_quicklinks" = "Quick Links";
+"favrec.section_favorites" = "Favorites";
+"favrec.section_recents" = "Recently Analyzed";
+"favrec.empty_favorites" = "No favorites yet. Use Add Favorite to pin a folder.";
+"favrec.empty_recents" = "Nothing analyzed yet. Recently scanned folders will appear here.";
+"favrec.status_missing" = "Folder not found — it may have moved or been deleted.";
+"favrec.status_no_access" = "Permission needed to read this folder.";
+"favrec.status_never_scanned" = "Not analyzed yet";
+"favrec.status_last_scanned" = "Last analyzed %@ — %@";
+"favrec.remove" = "Remove %@";
+"favrec.favorite" = "Add %@ to Favorites";
+"favrec.unfavorite" = "Remove %@ from Favorites";
+"favrec.error_title" = "Favorites & Recents unavailable";
+"favrec.error_no_store" = "Local database unavailable";

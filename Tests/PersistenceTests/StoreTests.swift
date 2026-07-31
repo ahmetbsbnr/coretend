@@ -14,10 +14,10 @@ struct StoreTests {
         let path = tempDBPath()
         defer { try? FileManager.default.removeItem(atPath: path) }
         let store = try Store(path: path)
-        #expect(try await store.schemaVersion() == 2)
+        #expect(try await store.schemaVersion() == 3)
         // Re-opening must not re-run migrations or fail.
         let store2 = try Store(path: path)
-        #expect(try await store2.schemaVersion() == 2)
+        #expect(try await store2.schemaVersion() == 3)
     }
 
     @Test func activityRoundTrip() async throws {
@@ -49,6 +49,67 @@ struct StoreTests {
         #expect(try await store.exclusions() == ["/tmp/a", "/tmp/b"])
         try await store.removeExclusion(path: "/tmp/a")
         #expect(try await store.exclusions() == ["/tmp/b"])
+    }
+
+    @Test func favoritesAddRemoveAndOrder() async throws {
+        let path = tempDBPath()
+        defer { try? FileManager.default.removeItem(atPath: path) }
+        let store = try Store(path: path)
+        try await store.addFavorite(path: "/Users/x/Downloads")
+        try await store.addFavorite(path: "/Users/x/Desktop")
+        try await store.addFavorite(path: "/Users/x/Downloads") // idempotent
+        let favs = try await store.favorites()
+        #expect(favs.map(\.path) == ["/Users/x/Desktop", "/Users/x/Downloads"])
+        #expect(favs.allSatisfy { $0.isFavorite })
+        try await store.removeFavorite(path: "/Users/x/Desktop")
+        #expect(try await store.favorites().map(\.path) == ["/Users/x/Downloads"])
+    }
+
+    @Test func recentsOrderedByMostRecentAndRespectsLimit() async throws {
+        let path = tempDBPath()
+        defer { try? FileManager.default.removeItem(atPath: path) }
+        let store = try Store(path: path)
+        try await store.recordLocationVisit(path: "/tmp/one", bytes: 100)
+        try await store.recordLocationVisit(path: "/tmp/two", bytes: 200)
+        try await store.recordLocationVisit(path: "/tmp/one", bytes: 150) // re-visit bumps it to newest
+        let recents = try await store.recents(limit: 10)
+        #expect(recents.map(\.path) == ["/tmp/one", "/tmp/two"])
+        #expect(recents.first?.lastBytes == 150)
+        let limited = try await store.recents(limit: 1)
+        #expect(limited.map(\.path) == ["/tmp/one"])
+    }
+
+    @Test func removingRecentPrunesRowUnlessFavorited() async throws {
+        let path = tempDBPath()
+        defer { try? FileManager.default.removeItem(atPath: path) }
+        let store = try Store(path: path)
+        try await store.recordLocationVisit(path: "/tmp/a", bytes: 10)
+        try await store.removeRecent(path: "/tmp/a")
+        #expect(try await store.recents().isEmpty)
+
+        // A favorite that was also scanned keeps its favorite row after the
+        // recent side is cleared — only a fully-empty row gets pruned.
+        try await store.addFavorite(path: "/tmp/b")
+        try await store.recordLocationVisit(path: "/tmp/b", bytes: 20)
+        try await store.removeRecent(path: "/tmp/b")
+        #expect(try await store.recents().isEmpty)
+        #expect(try await store.favorites().map(\.path) == ["/tmp/b"])
+    }
+
+    @Test func favoriteAndRecentAreIndependentSignals() async throws {
+        let path = tempDBPath()
+        defer { try? FileManager.default.removeItem(atPath: path) }
+        let store = try Store(path: path)
+        try await store.addFavorite(path: "/tmp/c")
+        try await store.recordLocationVisit(path: "/tmp/c", bytes: 30)
+        let favs = try await store.favorites()
+        let recents = try await store.recents()
+        #expect(favs.first?.path == "/tmp/c" && favs.first?.lastBytes == 30)
+        #expect(recents.first?.path == "/tmp/c" && recents.first?.isFavorite == true)
+        // Un-favoriting keeps the recent row alive since scan history remains.
+        try await store.removeFavorite(path: "/tmp/c")
+        #expect(try await store.favorites().isEmpty)
+        #expect(try await store.recents().map(\.path) == ["/tmp/c"])
     }
 
     @Test func settingsUpsert() async throws {

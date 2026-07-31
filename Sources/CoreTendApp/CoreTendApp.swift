@@ -254,6 +254,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
     case spaceLens = "Space Lens"
     case cloudCleanup = "Cloud Cleanup"
     case myActivity = "My Activity"
+    case favoritesRecents = "Favorites & Recents"
     case settings = "Settings"
 
     var id: String { rawValue }
@@ -269,6 +270,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .spaceLens: .spaceLens
         case .cloudCleanup: .cloudCleanup
         case .myActivity: .myActivity
+        case .favoritesRecents: .favoritesRecents
         case .settings: .settings
         }
     }
@@ -288,6 +290,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .spaceLens: L("spacelens.title")
         case .cloudCleanup: L("cloud.nav_title")
         case .myActivity: L("module.my_activity")
+        case .favoritesRecents: L("module.favorites_recents")
         case .settings: L("settings.nav_title")
         }
     }
@@ -302,7 +305,7 @@ struct SidebarGroup: Identifiable {
     static let all: [SidebarGroup] = [
         SidebarGroup(id: "care", title: nil, modules: [.smartCare]),
         SidebarGroup(id: "space", title: L("sidebar.free_up_space"),
-                     modules: [.cleanup, .myClutter, .spaceLens, .cloudCleanup]),
+                     modules: [.favoritesRecents, .cleanup, .myClutter, .spaceLens, .cloudCleanup]),
         SidebarGroup(id: "optimize", title: L("sidebar.optimize"), modules: [.performance, .applications]),
         SidebarGroup(id: "protect", title: L("sidebar.protect"), modules: [.protection]),
         SidebarGroup(id: "track", title: L("sidebar.activity"), modules: [.myActivity, .settings]),
@@ -351,6 +354,8 @@ struct MainWindow: View {
                 PerformanceView()
             case .spaceLens:
                 SpaceLensView()
+            case .favoritesRecents:
+                FavoritesRecentsView()
             case .myClutter:
                 MyClutterView()
             case .cloudCleanup:
@@ -369,6 +374,9 @@ struct MainWindow: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .mcNavigate)) { note in
             if let module = note.object as? ModuleID { selection = module }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .mcOpenSpaceLensAt)) { _ in
+            selection = .spaceLens
         }
         .onReceive(NotificationCenter.default.publisher(for: .mcShowOnboarding)) { _ in
             showOnboarding = true
