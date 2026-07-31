@@ -6,6 +6,7 @@ Active repo path: `/Users/ahmetbasbunar/Developer/Website/products/coretend/app`
 HEAD before rescue edits: `38b8ddac091f0965bde1ce380d984b59619da6a8`
 Latest committed rescue subsystem: `6f80ef1b265f9c1c1e20df88504d311f22eea3e9` (`6f80ef1`)
 Latest packaging diagnosis commit: `5509efdb9981c6d68a8a3f38511e9cdf3b0b7961` (`5509efd`)
+Latest public launch evidence commit: `4aa2eeccde84194792765f19e41347b928f7d815` (`4aa2eec`)
 
 ## Git Validation
 
@@ -14,6 +15,7 @@ Latest packaging diagnosis commit: `5509efdb9981c6d68a8a3f38511e9cdf3b0b7961` (`
 - Git is functional in this session.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `6f80ef1b265f9c1c1e20df88504d311f22eea3e9`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `5509efdb9981c6d68a8a3f38511e9cdf3b0b7961`.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `4aa2eeccde84194792765f19e41347b928f7d815`.
 
 ## Local Backup
 
@@ -140,19 +142,58 @@ Current conclusion:
 - This sandbox cannot independently run the Finder/Console portion, because `spctl`, `open`, and unified logs are sandbox-tainted here.
 - Do not replace the public download until a rebuilt artifact with valid Apple bundle metadata has been validated through the same quarantined path.
 
+CI:
+
+- GitHub Actions CI run `30663795382` passed on `4aa2eeccde84194792765f19e41347b928f7d815`: distribution-check and build-and-test completed successfully.
+
+## Xcode Integration
+
+Status: in progress locally; not yet committed.
+
+Implemented:
+
+- `Package.swift` declares dedicated SwiftPM test targets for integration, UI automation, accessibility contract, and performance smoke coverage.
+- Shared Xcode schemes were added under `.swiftpm/xcode/xcshareddata/xcschemes`:
+  - `CoreTend`
+  - `CoreTendTests`
+  - `CoreTendUITests`
+  - `CoreTendAccessibility`
+  - `CoreTendPerformance`
+  - `CoreTendRelease`
+- Shared Xcode test plans were added under `.swiftpm/xcode/xcshareddata/xctestplans` for isolated unit/integration, UI, accessibility, and performance runs.
+- `Documentation/XCODE_INTEGRATION.md` records the intended workflows for build, debug, unit tests, integration tests, XCUIAutomation, accessibility, Instruments, diagnostics, archive, and future Developer ID signing.
+- `CoreTendIntegrationTests` verifies that `CORETEND_TEST_MODE=1` plus `CORETEND_TEST_STORE_DIR` resolves to a throwaway temporary store and never falls back to the user's real data.
+- `CoreTendAccessibilityTests` verifies EN/FR localization coverage for the pause/resume/cancel controls and their VoiceOver hints.
+- `CoreTendPerformanceTests` runs a deterministic 300-file `ScanEngine` smoke performance check.
+- `CoreTendUITests` provides the first isolated XCUIAutomation entry point and skips unless `CORETEND_UI_APP_PATH` points at a built `CoreTend.app`.
+
+Validation completed locally:
+
+- Xcode scheme XML validates with `xmllint`.
+- Xcode test-plan JSON validates with `jq`.
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter CoreTendIntegrationTests` passed.
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter CoreTendAccessibilityTests` passed.
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter CoreTendPerformanceTests` passed.
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter CoreTendUITests` passed with the single XCUIAutomation test skipped because no `CORETEND_UI_APP_PATH` was provided in this sandboxed run.
+
+Known limits:
+
+- The first XCUIAutomation test is only a launch/window smoke test; full UI coverage for onboarding, FR/EN, navigation, scan actions, Space Lens, Duplicates, Applications, Integrity, Activity, Settings, errors, light/dark, close/relaunch still remains.
+- Accessibility Inspector, VoiceOver, Increase Contrast, Reduce Transparency, Reduce Motion, enlarged text, and Instruments still require manual/GUI-capable runs.
+- The Xcode scheme files are minimal wrappers around SwiftPM and do not duplicate sources or create a second app.
+
 ## Remaining Rescue Work
 
-P0:
+P0 public launch:
 
-- Reproduce and explain the public DMG launch failure from the real website/download path.
-- Distinguish Gatekeeper block, crash, packaging fault, macOS/hardware incompatibility, and combinations.
-- Do not replace the public download until the failure is explained.
+- Explanation is complete for the current public artifact: expected Gatekeeper block for ad-hoc unsigned/not-notarized app, plus an independent invalid bundle-version metadata defect.
+- Do not replace the public download until a rebuilt artifact with valid Apple bundle metadata has passed quarantined download/install/open validation.
 
 Xcode integration:
 
-- Add minimal robust Xcode integration while keeping SwiftPM the source of truth.
-- Provide schemes/test plans for CoreTend, unit/integration/UI/accessibility/performance/release workflows.
-- Keep isolated test environments and do not duplicate sources or change bundle ID.
+- Commit and push the minimal Xcode integration after final local validation.
+- Expand XCUIAutomation beyond the launch smoke entry point.
+- Run manual Accessibility Inspector and Instruments passes in a GUI-capable environment.
 
 Product/application:
 

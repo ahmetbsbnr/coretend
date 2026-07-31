@@ -1,0 +1,33 @@
+{
+  "configurations" : [
+    {
+      "id" : "A4DF10A9-9E7C-4EE0-9D12-68BB71EB0002",
+      "name" : "Isolated UI",
+      "options" : {
+        "environmentVariableEntries" : [
+          {
+            "key" : "CORETEND_TEST_MODE",
+            "value" : "1"
+          },
+          {
+            "key" : "CORETEND_TEST_STORE_DIR",
+            "value" : "/tmp/coretend-xcode-ui/store"
+          }
+        ]
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testExecutionOrdering" : "lexical"
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "CoreTendUITests",
+        "name" : "CoreTendUITests"
+      }
+    }
+  ],
+  "version" : 1
+}
