@@ -330,12 +330,7 @@ struct MainWindow: View {
                 ForEach(SidebarGroup.all) { group in
                     Section {
                         ForEach(group.modules) { module in
-                            Label {
-                                Text(module.label)
-                            } icon: {
-                                Image(systemName: module.systemImage)
-                                    .foregroundStyle(selection == module ? module.identity.color : Color.secondary)
-                            }
+                            sidebarRow(module)
                             .tag(module)
                             .accessibilityIdentifier("sidebar.\(module.rawValue)")
                         }
@@ -346,6 +341,9 @@ struct MainWindow: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(MCColor.secondaryBackground)
+            .listStyle(.sidebar)
             .navigationSplitViewColumnWidth(min: MCSize.sidebarMin, ideal: MCSize.sidebarIdeal)
             .accessibilityIdentifier("sidebar.list")
         } detail: {
@@ -397,7 +395,39 @@ struct MainWindow: View {
         .sheet(isPresented: $showCommandPalette) {
             CommandPaletteView(isPresented: $showCommandPalette)
         }
+        .toolbar {
+            ToolbarItemGroup {
+                Button {
+                    showCommandPalette = true
+                } label: {
+                    Label(L("palette.open"), systemImage: "command")
+                }
+                .help(L("palette.open"))
+            }
+        }
+        .background(MCColor.background)
         .tint(MCColor.coreMint)
+    }
+
+    private func sidebarRow(_ module: ModuleID) -> some View {
+        let isSelected = selection == module
+        return Label {
+            Text(module.label)
+                .font(.callout.weight(isSelected ? .semibold : .regular))
+        } icon: {
+            Image(systemName: module.systemImage)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(isSelected ? MCColor.coreMint : Color.secondary)
+                .frame(width: 20)
+        }
+        .padding(.vertical, 3)
+        .padding(.horizontal, 2)
+        .background {
+            if isSelected {
+                RoundedRectangle(cornerRadius: MCRadius.small)
+                    .fill(MCColor.coreMint.opacity(0.12))
+            }
+        }
     }
 }
 

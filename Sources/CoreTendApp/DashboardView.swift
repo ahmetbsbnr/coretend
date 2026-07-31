@@ -15,6 +15,9 @@ struct DashboardView: View {
     private let columns = [
         GridItem(.adaptive(minimum: 240, maximum: 360), spacing: MCSpacing.md, alignment: .top),
     ]
+    private let statusColumns = [
+        GridItem(.adaptive(minimum: 180, maximum: 280), spacing: MCSpacing.sm, alignment: .top),
+    ]
 
     var body: some View {
         ScrollView {
@@ -101,7 +104,7 @@ struct DashboardView: View {
     }
 
     private var statusStrip: some View {
-        HStack(spacing: MCSpacing.sm) {
+        LazyVGrid(columns: statusColumns, alignment: .leading, spacing: MCSpacing.sm) {
             statusPill(
                 L("dashboard.status.signature"),
                 value: signatureStatusText,
@@ -175,6 +178,7 @@ struct DashboardView: View {
         }
         .padding(.horizontal, MCSpacing.sm)
         .padding(.vertical, MCSpacing.xs)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(MCColor.elevatedBackground, in: RoundedRectangle(cornerRadius: MCRadius.small))
         .overlay(
             RoundedRectangle(cornerRadius: MCRadius.small)
