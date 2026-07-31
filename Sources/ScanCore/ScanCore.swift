@@ -122,7 +122,7 @@ public struct ScanEngine: Sendable {
     /// independent of concurrency (only interleaving order differs); the AsyncStream
     /// continuation is safe to yield to from concurrent tasks. Cancellation propagates
     /// from stream termination → parent task → the child task group.
-    public func run(rules: [ScanRule]) -> AsyncStream<ScanEvent> {
+    public func run(rules: [ScanRule], pauseController: ScanPauseController? = nil) -> AsyncStream<ScanEvent> {
         let config = configuration
         return AsyncStream { continuation in
             let task = Task.detached(priority: .utility) {
@@ -146,10 +146,10 @@ public struct ScanEngine: Sendable {
                             for root in rule.roots(config.home) {
                                 if Task.isCancelled { break }
                                 guard fm.fileExists(atPath: root.path) else { continue }
-                                Self.scanRoot(root, rule: rule, cutoff: cutoff,
-                                              excludedPaths: config.excludedPaths,
-                                              scanned: &localScanned, totalBytes: &localBytes,
-                                              continuation: continuation)
+                                await Self.scanRoot(root, rule: rule, cutoff: cutoff,
+                                                    excludedPaths: config.excludedPaths,
+                                                    scanned: &localScanned, totalBytes: &localBytes,
+                                                    continuation: continuation, pauseController: pauseController)
                             }
                             return (localScanned, localBytes)
                         }
@@ -177,21 +177,30 @@ public struct ScanEngine: Sendable {
         }
     }
 
-    /// Synchronous directory walk; called from a rule's scan task.
-    /// Kept out of the async context because FileManager.DirectoryEnumerator
-    /// iteration is unavailable in async functions. Writes only to the caller's
-    /// local counters, so concurrent rules never share mutable state.
+    /// Directory walk; called from a rule's scan task. `async` solely so a
+    /// pause can `await` a suspension (`ScanPauseController`) instead of
+    /// blocking the thread — the enumerator loop itself is still
+    /// synchronous `FileManager.DirectoryEnumerator` iteration. Writes only to
+    /// the caller's local counters, so concurrent rules never share mutable state.
     private static func scanRoot(_ root: URL, rule: ScanRule, cutoff: Date,
                                  excludedPaths: [String],
                                  scanned: inout Int, totalBytes: inout Int64,
-                                 continuation: AsyncStream<ScanEvent>.Continuation) {
+                                 continuation: AsyncStream<ScanEvent>.Continuation,
+                                 pauseController: ScanPauseController? = nil) async {
         guard let enumerator = FileManager.default.enumerator(
             at: root,
             includingPropertiesForKeys: resourceKeys,
             options: [.skipsPackageDescendants]
         ) else { return }
 
-        for case let url as URL in enumerator {
+        // Manual nextObject() rather than `for case ... in enumerator`: the
+        // Sequence/IteratorProtocol conformance's makeIterator() is marked
+        // unavailable from async contexts, but the plain Objective-C-style
+        // nextObject() method isn't — this is the shape that lets the loop
+        // `await` a pause between files without giving up the enumerator's
+        // own traversal state (skipDescendants() below still needs it live).
+        while let url = enumerator.nextObject() as? URL {
+            await pauseController?.waitWhilePaused()
             if Task.isCancelled { break }
             guard let values = try? url.resourceValues(forKeys: Set(resourceKeys)) else {
                 continuation.yield(.error(path: url.path, message: "unreadable"))

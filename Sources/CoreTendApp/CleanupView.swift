@@ -19,9 +19,11 @@ final class CleanupViewModel {
     var totalBytes: Int64 = 0
     var totalFindingCount = 0
     var dryRun = true
+    var isScanPaused = false
     private var dryRunDefaultLoaded = false
 
     private var scanTask: Task<Void, Never>?
+    private var pauseController: ScanPauseController?
 
     /// Applies the persisted "dry-run by default" setting once, before the user
     /// has a chance to toggle it manually. Without this the Settings toggle is
@@ -89,10 +91,13 @@ final class CleanupViewModel {
         scannedCount = 0
         totalBytes = 0
         totalFindingCount = 0
+        isScanPaused = false
+        let pauseController = ScanPauseController()
+        self.pauseController = pauseController
         scanTask = Task {
             let excluded = (try? await AppEnvironment.shared.store?.exclusions()) ?? []
             let engine = ScanEngine(configuration: ScanConfiguration(excludedPaths: excluded))
-            for await event in engine.run(rules: UserCleanupRules.all) {
+            for await event in engine.run(rules: UserCleanupRules.all, pauseController: pauseController) {
                 switch event {
                 case .started: break
                 case let .progress(scanned, _):
@@ -114,14 +119,30 @@ final class CleanupViewModel {
                         kind: .scan, summary: "Cleanup scan: \(findings.count) items found",
                         itemCount: findings.count, bytes: bytes, dryRun: true))
                 case .cancelled:
+                    isScanPaused = false
                     phase = .idle
                 }
             }
+            self.pauseController = nil
         }
     }
 
+    func pauseScan() {
+        guard phase == .scanning, !isScanPaused else { return }
+        isScanPaused = true
+        Task { await pauseController?.pause() }
+    }
+
+    func resumeScan() {
+        guard phase == .scanning, isScanPaused else { return }
+        isScanPaused = false
+        Task { await pauseController?.resume() }
+    }
+
     func cancelScan() {
+        isScanPaused = false
         scanTask?.cancel()
+        Task { await pauseController?.resume() }
     }
 
     func runCleanup() {
@@ -201,7 +222,19 @@ struct CleanupView: View {
                 .accessibilityLabel(MCFragmentView(groupWeights: [], phase: .scanning).accessibilityDescription)
             Text(L("cleanup.scanning_progress", model.scannedCount, mcFormatBytes(model.totalBytes)))
                 .monospacedDigit()
-            Button(L("common.cancel")) { model.cancelScan() }
+            HStack {
+                if model.isScanPaused {
+                    Button(L("common.resume")) { model.resumeScan() }
+                        .keyboardShortcut("r", modifiers: [])
+                        .accessibilityHint(L("cleanup.resume_hint"))
+                } else {
+                    Button(L("common.pause")) { model.pauseScan() }
+                        .keyboardShortcut("p", modifiers: [])
+                        .accessibilityHint(L("cleanup.pause_hint"))
+                }
+                Button(L("common.cancel")) { model.cancelScan() }
+                    .keyboardShortcut(.cancelAction)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
