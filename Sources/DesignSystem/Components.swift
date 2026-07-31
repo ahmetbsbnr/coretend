@@ -21,6 +21,7 @@ public struct MCModuleIdentity: Sendable {
     public static let spaceLens = MCModuleIdentity(icon: "map", color: MCColor.storage)
     public static let cloudCleanup = MCModuleIdentity(icon: "cloud", color: MCColor.storage)
     public static let myActivity = MCModuleIdentity(icon: "clock.arrow.circlepath", color: MCColor.performance)
+    public static let favoritesRecents = MCModuleIdentity(icon: "star", color: MCColor.performance)
     public static let settings = MCModuleIdentity(icon: "gearshape", color: Color.secondary)
 }
 

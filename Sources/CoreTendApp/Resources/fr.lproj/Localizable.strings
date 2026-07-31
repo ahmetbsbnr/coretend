@@ -544,3 +544,23 @@
 "updates.error_cancelled" = "Vérification annulée.";
 "updates.error_malformed" = "Le manifeste de version n'a pas pu être lu.";
 "updates.error_response" = "Le serveur a répondu avec le statut %@.";
+
+/* Favoris et récents */
+"module.favorites_recents" = "Favoris et récents";
+"favrec.title" = "Favoris et récents";
+"favrec.add_favorite" = "Ajouter un favori";
+"favrec.analyze" = "Analyser";
+"favrec.section_quicklinks" = "Accès rapides";
+"favrec.section_favorites" = "Favoris";
+"favrec.section_recents" = "Analysés récemment";
+"favrec.empty_favorites" = "Aucun favori pour l’instant. Utilisez Ajouter un favori pour épingler un dossier.";
+"favrec.empty_recents" = "Rien d’analysé pour l’instant. Les dossiers récemment analysés apparaîtront ici.";
+"favrec.status_missing" = "Dossier introuvable — il a peut-être été déplacé ou supprimé.";
+"favrec.status_no_access" = "Permission nécessaire pour lire ce dossier.";
+"favrec.status_never_scanned" = "Pas encore analysé";
+"favrec.status_last_scanned" = "Dernière analyse %@ — %@";
+"favrec.remove" = "Retirer %@";
+"favrec.favorite" = "Ajouter %@ aux favoris";
+"favrec.unfavorite" = "Retirer %@ des favoris";
+"favrec.error_title" = "Favoris et récents indisponibles";
+"favrec.error_no_store" = "Base de données locale indisponible";

@@ -1,6 +1,22 @@
 import Foundation
 import SafetyCore
 
+/// A favorite folder, a recently-scanned one, or both — path is the identity.
+public struct LocationRecord: Sendable, Identifiable, Equatable {
+    public var id: String { path }
+    public let path: String
+    public let isFavorite: Bool
+    public let lastScanned: Date?
+    public let lastBytes: Int64?
+
+    public init(path: String, isFavorite: Bool, lastScanned: Date?, lastBytes: Int64?) {
+        self.path = path
+        self.isFavorite = isFavorite
+        self.lastScanned = lastScanned
+        self.lastBytes = lastBytes
+    }
+}
+
 /// One recorded activity entry (scan, cleanup, restore, error…).
 public struct ActivityRecord: Sendable, Identifiable {
     public enum Kind: String, Sendable, CaseIterable {
@@ -70,6 +86,20 @@ public actor Store {
             result TEXT NOT NULL
         );
         CREATE INDEX idx_safety_log_date ON safety_log(date);
+        """,
+        // v3 — favorites and recently-scanned locations (Favorites & Recents).
+        // One table for both: a favorite with no scan history and a recent with
+        // no favorite flag are both real, distinct rows; a row with neither is
+        // pruned rather than kept as a zeroed-out ghost.
+        """
+        CREATE TABLE locations (
+            path TEXT PRIMARY KEY,
+            is_favorite INTEGER NOT NULL DEFAULT 0,
+            last_scanned REAL,
+            last_bytes INTEGER,
+            created REAL NOT NULL
+        );
+        CREATE INDEX idx_locations_last_scanned ON locations(last_scanned);
         """,
     ]
 
@@ -200,6 +230,62 @@ public actor Store {
 
     public func setting(_ key: String) throws -> String? {
         try db.query("SELECT value FROM settings WHERE key = ?", [key]).first?["value"] as? String
+    }
+
+    // MARK: - Locations (favorites & recents)
+
+    public func addFavorite(path: String) throws {
+        try db.run("""
+            INSERT INTO locations (path, is_favorite, created) VALUES (?, 1, ?)
+            ON CONFLICT(path) DO UPDATE SET is_favorite = 1
+            """, [path, Date().timeIntervalSince1970])
+    }
+
+    public func removeFavorite(path: String) throws {
+        try db.run("UPDATE locations SET is_favorite = 0 WHERE path = ?", [path])
+        try pruneLocationIfEmpty(path: path)
+    }
+
+    /// Called after a location finishes scanning (Space Lens, a custom-folder
+    /// analysis, …) so Recents reflects real scan history rather than intent.
+    public func recordLocationVisit(path: String, bytes: Int64) throws {
+        let now = Date().timeIntervalSince1970
+        try db.run("""
+            INSERT INTO locations (path, is_favorite, last_scanned, last_bytes, created)
+            VALUES (?, 0, ?, ?, ?)
+            ON CONFLICT(path) DO UPDATE SET last_scanned = excluded.last_scanned, last_bytes = excluded.last_bytes
+            """, [path, now, bytes, now])
+    }
+
+    public func removeRecent(path: String) throws {
+        try db.run("UPDATE locations SET last_scanned = NULL, last_bytes = NULL WHERE path = ?", [path])
+        try pruneLocationIfEmpty(path: path)
+    }
+
+    /// A location that is neither a favorite nor has scan history carries no
+    /// information; keeping it around would just be a leaked row.
+    private func pruneLocationIfEmpty(path: String) throws {
+        try db.run("DELETE FROM locations WHERE path = ? AND is_favorite = 0 AND last_scanned IS NULL", [path])
+    }
+
+    public func favorites() throws -> [LocationRecord] {
+        try db.query("SELECT * FROM locations WHERE is_favorite = 1 ORDER BY path").compactMap(Self.locationRecord)
+    }
+
+    public func recents(limit: Int = 10) throws -> [LocationRecord] {
+        try db.query(
+            "SELECT * FROM locations WHERE last_scanned IS NOT NULL ORDER BY last_scanned DESC LIMIT ?",
+            [limit]
+        ).compactMap(Self.locationRecord)
+    }
+
+    private static func locationRecord(_ row: [String: Any]) -> LocationRecord? {
+        guard let path = row["path"] as? String else { return nil }
+        return LocationRecord(
+            path: path,
+            isFavorite: (row["is_favorite"] as? Int64 ?? 0) != 0,
+            lastScanned: (row["last_scanned"] as? Double).map(Date.init(timeIntervalSince1970:)),
+            lastBytes: row["last_bytes"] as? Int64)
     }
 
     // MARK: - Safety log (append-only)

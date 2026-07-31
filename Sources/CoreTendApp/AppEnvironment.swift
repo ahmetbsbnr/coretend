@@ -51,4 +51,12 @@ final class AppEnvironment {
         guard let store else { return }
         Task { try? await store.recordActivity(record) }
     }
+
+    /// Marks a folder as recently scanned for Favorites & Recents. Fire-and-forget
+    /// like `record(_:)` above — a missed write here would only cost Recents
+    /// freshness, never data correctness.
+    func recordLocationVisit(path: String, bytes: Int64) {
+        guard let store else { return }
+        Task { try? await store.recordLocationVisit(path: path, bytes: bytes) }
+    }
 }
