@@ -350,7 +350,7 @@ Known limits:
 
 ## App Visual Reconstruction
 
-Status: implemented locally, pending commit.
+Status: committed and pushed as `52612174cb337fe5b1980c31de19043bf952169c`.
 
 Implemented:
 
@@ -371,6 +371,27 @@ Validation completed locally:
 Known limits:
 
 - This pass changes the global visual foundation and Dashboard/sidebar composition only. Full screen-by-screen redesign, fresh app captures, manual accessibility inspection, and Instruments are still required.
+
+## Updater Manifest Contract
+
+Status: implemented locally, pending commit.
+
+Implemented:
+
+- `UpdateChecker` now parses release artifact metadata for DMG and ZIP artifacts: name, HTTPS URL, SHA-256, and size.
+- Artifact metadata is accepted only when the download URL is HTTPS, the SHA-256 is exactly 64 hexadecimal characters, and the size is positive.
+- Invalid or downgraded artifact metadata is dropped instead of being offered to the UI.
+- Existing update behavior remains non-installing: the app checks and reports availability, but does not download, replace, or execute artifacts while Developer ID/notarization is absent.
+
+Validation completed locally:
+
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter UpdateCheckerTests` passed with 16 tests.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c debug` passed.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c release` passed.
+
+Known limits:
+
+- Atomic download/resume/rollback installation is intentionally still not enabled, because the current distribution has no Developer ID signature or notarization. The updater remains a verified manifest/reporting surface until publisher identity exists.
 
 P0 public launch:
 
