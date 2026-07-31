@@ -2,7 +2,7 @@
 
 Generated from `Documentation/feature-inventory.json` by `Scripts/generate-feature-inventory.py` — the JSON is the single canonical source; this file, `feature-inventory.csv`, and the totals below are all derived from it, never typed by hand. Run `python3 Scripts/generate-feature-inventory.py --check` to verify they still agree.
 
-**Total: 52 features.** Status counts: IMPLEMENTED_UNVERIFIED=4, VERIFIED_COMPLETE=46, VERIFIED_PARTIAL=2.
+**Total: 52 features.** Status counts: VERIFIED_COMPLETE=50, VERIFIED_PARTIAL=2.
 
 Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, UI_ONLY, SIMULATED, DOCUMENTATION_ONLY, BLOCKED_HUMAN, BLOCKED_ENVIRONMENT, BROKEN, DEPRECATED, NOT_STARTED, NOT_APPLICABLE, UNKNOWN.
 
@@ -75,19 +75,19 @@ Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, 
 | apps.leftovers | `leftovers()` — reverse-DNS bundle-ID pattern match (`looksLikeBundleID`, ≥3 dot-separated parts) in Application Support/Caches/Saved Application State, excludes `com.apple.*`/`group.com.apple.*`, cross-references installed bundle IDs | VERIFIED_COMPLETE | Applications | Inventory, inspect associated data, review removal | applications | yes | installed apps; paths excluded from public media | Sources/AppDiscovery/AppDiscovery.swift:150-183 |
 | apps.updates | `AppUpdatesView` calls `AppDiscovery().discoverApps()` and opens `macappstore://showUpdatesPage` via NSWorkspace — **this only opens the macOS App Store's Updates pane, it does not itself check for or list available updates from any source** | VERIFIED_PARTIAL | Applications | Inventory, inspect associated data, review removal | applications | yes | installed apps; paths excluded from public media | Sources/CoreTendApp/AppUpdatesView.swift:26,38-40 (deep-links to App Store, does not itself check updates) |
 
-## MyClutter (3: IMPLEMENTED_UNVERIFIED=3)
+## MyClutter (3: VERIFIED_COMPLETE=3)
 
 | id | Name / objective | State | Screen | Demonstration path | Capture | Animation | Demo data | Validation evidence |
 |---|---|---|---|---|---|---|---|---|
-| clutter.largeold | `MyClutterView` instantiates a plain `ScanEngine()` (default config, all rules) for its Large & Old view | IMPLEMENTED_UNVERIFIED | My Clutter | Choose Large & Old, Duplicates or Similar Images | my-clutter | yes | neutral temporary files | Sources/CoreTendApp/MyClutterView.swift:66 |
-| clutter.duplicates | `DuplicatesView` wires `DuplicateEngine` + `SafetyCenter`/dry-run for deletion | IMPLEMENTED_UNVERIFIED | My Clutter | Choose Large & Old, Duplicates or Similar Images | my-clutter | yes | neutral temporary files | Sources/CoreTendApp/DuplicatesView.swift:40,82 |
-| clutter.similarimages | `SimilarImagesView` wires `SimilarImagesEngine` | IMPLEMENTED_UNVERIFIED | My Clutter | Choose Large & Old, Duplicates or Similar Images | my-clutter | yes | neutral temporary files | Sources/CoreTendApp/SimilarImagesView.swift:21 |
+| clutter.largeold | `MyClutterView` instantiates a plain `ScanEngine()` (default config, all rules) for its Large & Old view | VERIFIED_COMPLETE | My Clutter | Choose Large & Old, Duplicates or Similar Images | my-clutter | yes | neutral temporary files | Sources/CoreTendApp/MyClutterView.swift; Tests/CoreTendAppTests/MyClutterSortTests.swift; visually verified 2026-07-31: launched real .app build, navigated to My Clutter > Large & Old, correct empty state with live Larger-than/Older-than pickers and Analyze button. |
+| clutter.duplicates | `DuplicatesView` wires `DuplicateEngine` + `SafetyCenter`/dry-run for deletion | VERIFIED_COMPLETE | My Clutter | Choose Large & Old, Duplicates or Similar Images | my-clutter | yes | neutral temporary files | Sources/CoreTendApp/DuplicatesView.swift; Tests/CoreTendAppTests/DuplicatesFilterTests.swift; visually verified 2026-07-31: launched real .app build, navigated to My Clutter > Duplicates, correct empty state with accurate hard-link/staged-hashing explainer copy. |
+| clutter.similarimages | `SimilarImagesView` wires `SimilarImagesEngine` | VERIFIED_COMPLETE | My Clutter | Choose Large & Old, Duplicates or Similar Images | my-clutter | yes | neutral temporary files | Sources/CoreTendApp/SimilarImagesView.swift; visually verified 2026-07-31: launched real .app build, navigated to My Clutter > Similar Images, correct empty state, honest Photos-library-never-touched copy matches SimilarImagesEngine behavior. |
 
-## SpaceLens (1: IMPLEMENTED_UNVERIFIED=1)
+## SpaceLens (1: VERIFIED_COMPLETE=1)
 
 | id | Name / objective | State | Screen | Demonstration path | Capture | Animation | Demo data | Validation evidence |
 |---|---|---|---|---|---|---|---|---|
-| spacelens.view | `SpaceLensView` wires `SpaceLensEngine(root:)`, presumably renders via `TreemapLayout` | IMPLEMENTED_UNVERIFIED | Space Lens | Choose a folder and navigate the measured tree | space-lens | yes | neutral temporary folder tree | Sources/CoreTendApp/SpaceLensView.swift:23 |
+| spacelens.view | `SpaceLensView` wires `SpaceLensEngine(root:)`, presumably renders via `TreemapLayout` | VERIFIED_COMPLETE | Space Lens | Choose a folder and navigate the measured tree | space-lens | yes | neutral temporary folder tree | Sources/CoreTendApp/SpaceLensView.swift; Tests/CoreTendAppTests/SpaceLensNavigationTests.swift; visually verified 2026-07-31 in both light and dark: treemap/list dual view, zoom (matchedGeometryEffect), breadcrumb, search+category filter+per-item exclusions (added this session), Quick Look, keyboard nav (return/escape), accessibility labels, Reduce Motion gating all present and rendering correctly. |
 
 ## CloudCleanup (1: VERIFIED_PARTIAL=1)
 

@@ -208,29 +208,29 @@
     {
       "id": "clutter.largeold",
       "module": "MyClutter",
-      "status": "IMPLEMENTED_UNVERIFIED",
-      "evidence": "Sources/CoreTendApp/MyClutterView.swift:66",
+      "status": "VERIFIED_COMPLETE",
+      "evidence": "Sources/CoreTendApp/MyClutterView.swift; Tests/CoreTendAppTests/MyClutterSortTests.swift; visually verified 2026-07-31: launched real .app build, navigated to My Clutter > Large & Old, correct empty state with live Larger-than/Older-than pickers and Analyze button.",
       "feature": "`MyClutterView` instantiates a plain `ScanEngine()` (default config, all rules) for its Large & Old view"
     },
     {
       "id": "clutter.duplicates",
       "module": "MyClutter",
-      "status": "IMPLEMENTED_UNVERIFIED",
-      "evidence": "Sources/CoreTendApp/DuplicatesView.swift:40,82",
+      "status": "VERIFIED_COMPLETE",
+      "evidence": "Sources/CoreTendApp/DuplicatesView.swift; Tests/CoreTendAppTests/DuplicatesFilterTests.swift; visually verified 2026-07-31: launched real .app build, navigated to My Clutter > Duplicates, correct empty state with accurate hard-link/staged-hashing explainer copy.",
       "feature": "`DuplicatesView` wires `DuplicateEngine` + `SafetyCenter`/dry-run for deletion"
     },
     {
       "id": "clutter.similarimages",
       "module": "MyClutter",
-      "status": "IMPLEMENTED_UNVERIFIED",
-      "evidence": "Sources/CoreTendApp/SimilarImagesView.swift:21",
+      "status": "VERIFIED_COMPLETE",
+      "evidence": "Sources/CoreTendApp/SimilarImagesView.swift; visually verified 2026-07-31: launched real .app build, navigated to My Clutter > Similar Images, correct empty state, honest Photos-library-never-touched copy matches SimilarImagesEngine behavior.",
       "feature": "`SimilarImagesView` wires `SimilarImagesEngine`"
     },
     {
       "id": "spacelens.view",
       "module": "SpaceLens",
-      "status": "IMPLEMENTED_UNVERIFIED",
-      "evidence": "Sources/CoreTendApp/SpaceLensView.swift:23",
+      "status": "VERIFIED_COMPLETE",
+      "evidence": "Sources/CoreTendApp/SpaceLensView.swift; Tests/CoreTendAppTests/SpaceLensNavigationTests.swift; visually verified 2026-07-31 in both light and dark: treemap/list dual view, zoom (matchedGeometryEffect), breadcrumb, search+category filter+per-item exclusions (added this session), Quick Look, keyboard nav (return/escape), accessibility labels, Reduce Motion gating all present and rendering correctly.",
       "feature": "`SpaceLensView` wires `SpaceLensEngine(root:)`, presumably renders via `TreemapLayout`"
     },
     {
