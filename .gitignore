@@ -109,3 +109,6 @@ node_modules/
 # Test and measurement output, regenerated per run and machine-specific.
 Release/stability-metrics.txt
 Release/robustness-results.tsv
+graphify-out/cache/
+graphify-out/.graphify_python
+graphify-out/.graphify_root

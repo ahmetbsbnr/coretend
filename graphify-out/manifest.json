@@ -1,0 +1,257 @@
+{
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/AppDiscovery/AppDiscovery.swift": {
+    "mtime": 1785150751.214836,
+    "ast_hash": "b255f55dee87e5ceb22ecae5875c4177",
+    "semantic_hash": "b255f55dee87e5ceb22ecae5875c4177"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/AppEnvironment.swift": {
+    "mtime": 1785409325.7066324,
+    "ast_hash": "b4d88740ba4d0437e4edefc2b002efa7",
+    "semantic_hash": "b4d88740ba4d0437e4edefc2b002efa7"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/AppUpdatesView.swift": {
+    "mtime": 1785409325.70962,
+    "ast_hash": "17692957290d222180a0cb43dcc1060e",
+    "semantic_hash": "17692957290d222180a0cb43dcc1060e"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/ApplicationsView.swift": {
+    "mtime": 1785443867.0586796,
+    "ast_hash": "7e409e2a5d4285a767d2be49fb725ad1",
+    "semantic_hash": "7e409e2a5d4285a767d2be49fb725ad1"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/BrowserDetection.swift": {
+    "mtime": 1785409325.715679,
+    "ast_hash": "516547e72a9af894557538bb98fe00ae",
+    "semantic_hash": "516547e72a9af894557538bb98fe00ae"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/CleanupView.swift": {
+    "mtime": 1785409325.7218616,
+    "ast_hash": "e5a2f3c67d2ec79f7ff05e5d9167d5c6",
+    "semantic_hash": "e5a2f3c67d2ec79f7ff05e5d9167d5c6"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/CloudCleanupView.swift": {
+    "mtime": 1785419091.3760362,
+    "ast_hash": "ce613f962a2c87beebc2741eb8748350",
+    "semantic_hash": "ce613f962a2c87beebc2741eb8748350"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/ClutterControls.swift": {
+    "mtime": 1785409325.7279634,
+    "ast_hash": "152ffdfb3b9f7fcfd33f214d2121e9aa",
+    "semantic_hash": "152ffdfb3b9f7fcfd33f214d2121e9aa"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/ClutterFiltering.swift": {
+    "mtime": 1785409325.7303631,
+    "ast_hash": "908fdd69aee494eb2efc8770318e9072",
+    "semantic_hash": "908fdd69aee494eb2efc8770318e9072"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/CoreTendApp.swift": {
+    "mtime": 1785428429.7712114,
+    "ast_hash": "1d5d41b91e97a134fc59cd9e7a04af4b",
+    "semantic_hash": "1d5d41b91e97a134fc59cd9e7a04af4b"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/DiagnosticReport.swift": {
+    "mtime": 1785409441.4639144,
+    "ast_hash": "c53fe387d0f060d0821358b88112f7ff",
+    "semantic_hash": "c53fe387d0f060d0821358b88112f7ff"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/DuplicatesView.swift": {
+    "mtime": 1785421787.3344514,
+    "ast_hash": "3ff3a8b319dae296ca3e28fa2032147c",
+    "semantic_hash": "3ff3a8b319dae296ca3e28fa2032147c"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/L10n.swift": {
+    "mtime": 1785425146.0981226,
+    "ast_hash": "72b4afdda88fa018cbbe821cc4e5c58a",
+    "semantic_hash": "72b4afdda88fa018cbbe821cc4e5c58a"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/LeftoversView.swift": {
+    "mtime": 1785419264.7593503,
+    "ast_hash": "255a91c01b298ea1b6b98725cea5c9d9",
+    "semantic_hash": "255a91c01b298ea1b6b98725cea5c9d9"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/MyActivityView.swift": {
+    "mtime": 1785427697.5199869,
+    "ast_hash": "d053dad8356d17f0c4981122eed9d4f9",
+    "semantic_hash": "d053dad8356d17f0c4981122eed9d4f9"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/MyClutterView.swift": {
+    "mtime": 1785409325.7666323,
+    "ast_hash": "8a5460d994af133f67c4d0b844e94967",
+    "semantic_hash": "8a5460d994af133f67c4d0b844e94967"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/OnboardingLogic.swift": {
+    "mtime": 1785409325.7693868,
+    "ast_hash": "14092915bbea4236576c51dbf6d4fd21",
+    "semantic_hash": "14092915bbea4236576c51dbf6d4fd21"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/OnboardingView.swift": {
+    "mtime": 1785424721.3535652,
+    "ast_hash": "4c390949f31807c19365b4765ad9016e",
+    "semantic_hash": "4c390949f31807c19365b4765ad9016e"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/PerformanceView.swift": {
+    "mtime": 1785409325.7753284,
+    "ast_hash": "3e7b66f68bc56b863d8da96a67a331f8",
+    "semantic_hash": "3e7b66f68bc56b863d8da96a67a331f8"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/PrivacyCleanerView.swift": {
+    "mtime": 1785419307.6897979,
+    "ast_hash": "701bee134c7768fb3691da921b32bd7a",
+    "semantic_hash": "701bee134c7768fb3691da921b32bd7a"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/ProtectionView.swift": {
+    "mtime": 1785409325.7802076,
+    "ast_hash": "d59bf5895d73429388edbbd22ca75b41",
+    "semantic_hash": "d59bf5895d73429388edbbd22ca75b41"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/SafetyLogView.swift": {
+    "mtime": 1785409325.7825115,
+    "ast_hash": "ae665a58e97c203ea9116dfdb73d5ba5",
+    "semantic_hash": "ae665a58e97c203ea9116dfdb73d5ba5"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/SettingsView.swift": {
+    "mtime": 1785424438.4373512,
+    "ast_hash": "0d2c077de97bbe3ef17fa141c9d2cffc",
+    "semantic_hash": "0d2c077de97bbe3ef17fa141c9d2cffc"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/SimilarImagesView.swift": {
+    "mtime": 1785422145.6087403,
+    "ast_hash": "ee9591599040e9fd4f91e257bcf3920b",
+    "semantic_hash": "ee9591599040e9fd4f91e257bcf3920b"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/SmartCareView.swift": {
+    "mtime": 1785409325.789261,
+    "ast_hash": "c29e24eed031d138e058a9b678408310",
+    "semantic_hash": "c29e24eed031d138e058a9b678408310"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/SpaceLensView.swift": {
+    "mtime": 1785433082.7615762,
+    "ast_hash": "350717f2107f875782e71676f0e145d8",
+    "semantic_hash": "350717f2107f875782e71676f0e145d8"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/UpdateChecker.swift": {
+    "mtime": 1785409325.7940898,
+    "ast_hash": "49af3e83607e6074c427fa16c71fdf24",
+    "semantic_hash": "49af3e83607e6074c427fa16c71fdf24"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/CoreTendApp/UpdatesView.swift": {
+    "mtime": 1785409325.796559,
+    "ast_hash": "8fbefc67ee8655199f6de8aaa968762d",
+    "semantic_hash": "8fbefc67ee8655199f6de8aaa968762d"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/DesignSystem/AccessibilityState.swift": {
+    "mtime": 1785150751.2229204,
+    "ast_hash": "011e09a34b2f4378ce061d5e2806c0c7",
+    "semantic_hash": "011e09a34b2f4378ce061d5e2806c0c7"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/DesignSystem/Colors.swift": {
+    "mtime": 1785440855.5914843,
+    "ast_hash": "1cac90ad7b95ac295ab8d39d3fc51e08",
+    "semantic_hash": "1cac90ad7b95ac295ab8d39d3fc51e08"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/DesignSystem/Components.swift": {
+    "mtime": 1785419174.8320749,
+    "ast_hash": "345d970feb8a83a847d7b22d023d7275",
+    "semantic_hash": "345d970feb8a83a847d7b22d023d7275"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/DesignSystem/CoreBloom.swift": {
+    "mtime": 1785150751.223431,
+    "ast_hash": "1a05c74a2b805280b4dc2ef1e714f382",
+    "semantic_hash": "1a05c74a2b805280b4dc2ef1e714f382"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/DesignSystem/DesignSystem.swift": {
+    "mtime": 1785440429.4997458,
+    "ast_hash": "85c3d73c5fa4cb615ab5fd0a19a7b66f",
+    "semantic_hash": "85c3d73c5fa4cb615ab5fd0a19a7b66f"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/DesignSystem/FragmentView.swift": {
+    "mtime": 1785360415.5398383,
+    "ast_hash": "118659ec971d66ff04c3e2dde5970d40",
+    "semantic_hash": "118659ec971d66ff04c3e2dde5970d40"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/DesignSystem/HeroCore.swift": {
+    "mtime": 1785158022.725111,
+    "ast_hash": "e286672ab2f4e0454a796c520326c1f5",
+    "semantic_hash": "e286672ab2f4e0454a796c520326c1f5"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/DesignSystem/MeshView.swift": {
+    "mtime": 1785360415.540051,
+    "ast_hash": "871467b1ab14b8d30912398a2c1b899c",
+    "semantic_hash": "871467b1ab14b8d30912398a2c1b899c"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/DesignSystem/OverlapView.swift": {
+    "mtime": 1785150751.2241077,
+    "ast_hash": "e02d3e1b1063799aae61d3d645498ead",
+    "semantic_hash": "e02d3e1b1063799aae61d3d645498ead"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/DesignSystem/Typography.swift": {
+    "mtime": 1785408507.3519964,
+    "ast_hash": "4209a74e5a3a74de5f25b5c91439aca5",
+    "semantic_hash": "4209a74e5a3a74de5f25b5c91439aca5"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/FileRules/UserCleanupRules.swift": {
+    "mtime": 1785150751.2245147,
+    "ast_hash": "cba2e081ae151bede5df29ca95546010",
+    "semantic_hash": "cba2e081ae151bede5df29ca95546010"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/IntegrityCore/IntegrityCore.swift": {
+    "mtime": 1785397218.4562006,
+    "ast_hash": "12d55f1c8aa1f80d1de8edf32f29e91a",
+    "semantic_hash": "12d55f1c8aa1f80d1de8edf32f29e91a"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/Persistence/Database.swift": {
+    "mtime": 1785150751.2251394,
+    "ast_hash": "0c1c64aa8d7d9482c775c2f56dbfbd63",
+    "semantic_hash": "0c1c64aa8d7d9482c775c2f56dbfbd63"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/Persistence/LegacyDataMigration.swift": {
+    "mtime": 1785150751.225338,
+    "ast_hash": "2d4ff72bd9439c78aa56ffe21fff9e39",
+    "semantic_hash": "2d4ff72bd9439c78aa56ffe21fff9e39"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/Persistence/Store.swift": {
+    "mtime": 1785150751.225731,
+    "ast_hash": "98165d5d10cfa0916de6ab2199a8eb9e",
+    "semantic_hash": "98165d5d10cfa0916de6ab2199a8eb9e"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/Persistence/TestStoreOverride.swift": {
+    "mtime": 1785150751.226131,
+    "ast_hash": "9d07a0421d0b6cd641965be7a0376313",
+    "semantic_hash": "9d07a0421d0b6cd641965be7a0376313"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/SafetyCore/SafetyCore.swift": {
+    "mtime": 1785456272.7183106,
+    "ast_hash": "5f4914954f05d6be0a3107d3e251f3bb",
+    "semantic_hash": "5f4914954f05d6be0a3107d3e251f3bb"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/ScanCore/CloudFile.swift": {
+    "mtime": 1785150751.2264931,
+    "ast_hash": "1c07dab756a6f2b635d2ae7f4df7173f",
+    "semantic_hash": "1c07dab756a6f2b635d2ae7f4df7173f"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/ScanCore/DuplicateEngine.swift": {
+    "mtime": 1785410374.3487952,
+    "ast_hash": "01a7bf1cc7a17d514070583b2cdca45d",
+    "semantic_hash": "01a7bf1cc7a17d514070583b2cdca45d"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/ScanCore/ScanCore.swift": {
+    "mtime": 1785150751.2268836,
+    "ast_hash": "7707eda6d03dd1a0c9a20f2058e19432",
+    "semantic_hash": "7707eda6d03dd1a0c9a20f2058e19432"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/ScanCore/SimilarImagesEngine.swift": {
+    "mtime": 1785150751.2270553,
+    "ast_hash": "fa8743e2017cf489163f1ca8713e496f",
+    "semantic_hash": "fa8743e2017cf489163f1ca8713e496f"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/ScanCore/SpaceLensEngine.swift": {
+    "mtime": 1785150751.2272413,
+    "ast_hash": "b7d6dae57527858f06561d2f7b937f2a",
+    "semantic_hash": "b7d6dae57527858f06561d2f7b937f2a"
+  },
+  "/Users/ahmetbasbunar/Developer/Website/products/coretend/app/Sources/SystemMetrics/SystemMetrics.swift": {
+    "mtime": 1785150751.2274184,
+    "ast_hash": "cf26ccddcd35b73291cac2ddefc7acab",
+    "semantic_hash": "cf26ccddcd35b73291cac2ddefc7acab"
+  }
+}
