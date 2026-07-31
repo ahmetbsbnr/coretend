@@ -10,6 +10,8 @@
 "smartcare.resume_hint" = "Continue the paused Smart Care scan.";
 "clutter.pause_hint" = "Temporarily suspend the current analysis.";
 "clutter.resume_hint" = "Continue the paused analysis.";
+"spacelens.pause_hint" = "Temporarily suspend the Space Lens scan.";
+"spacelens.resume_hint" = "Continue the paused Space Lens scan.";
 "common.dry_run" = "Dry run";
 "common.running" = "Running…";
 "common.reveal_in_finder" = "Reveal in Finder";

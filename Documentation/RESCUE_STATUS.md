@@ -55,10 +55,10 @@ Controls currently integrated:
 - Smart Care: Pause / Resume / Cancel while scanning.
 - Cleanup: Pause / Resume / Cancel while scanning.
 - My Clutter, Large & Old analysis: Pause / Resume / Cancel while scanning.
+- Space Lens: Pause / Resume / Cancel while scanning.
 
 Controls not yet integrated:
 
-- Space Lens scan.
 - Duplicates scan.
 - Similar Images scan.
 - Privacy Cleaner browser detection/cleanup.
@@ -79,6 +79,14 @@ Verification completed for `6f80ef1`:
 - `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-release -c release` passed.
 - EN/FR localization key check with `iconv -f UTF-16 -t UTF-8 ... | rg 'common\.(pause|resume|cancel)|pause_hint|resume_hint'` passed.
 - GitHub Actions CI run `30659795847` passed: distribution-check and build-and-test were green, including tests, release build, launch robustness, 72 visual captures across FR/EN and viewports, and localization key parity.
+
+Additional pause/resume validation after the product-shell pass:
+
+- `SpaceLensEngine.run(pauseController:)` now suspends between directory entries and during shallow-size walks using the same non-blocking `ScanPauseController`.
+- `SpaceLensView` now exposes Pause / Resume / Cancel while scanning, with `p`, `r`, and Escape keyboard shortcuts plus EN/FR VoiceOver hints.
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter ScanPauseControllerTests` passed with 5 tests, including Space Lens pause/resume coverage.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c debug` passed.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c release` passed.
 
 ## Public Launch Reproduction
 

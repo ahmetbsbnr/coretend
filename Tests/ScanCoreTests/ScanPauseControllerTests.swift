@@ -109,4 +109,30 @@ struct ScanPauseControllerTests {
         }
         #expect(start.duration(to: clock.now) < .seconds(5))
     }
+
+    @Test func pausedSpaceLensScanResumesAndFinishes() async throws {
+        let root = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("coretend-spacelens-pause-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let payload = Data(repeating: 2, count: 64)
+        for i in 0..<50 {
+            try payload.write(to: root.appendingPathComponent("space-\(i).dat"))
+        }
+
+        let controller = ScanPauseController()
+        await controller.pause()
+        Task {
+            try? await Task.sleep(for: .milliseconds(150))
+            await controller.resume()
+        }
+
+        var finished: SpaceNode?
+        for await event in SpaceLensEngine(root: root, minChildSize: 1)
+            .run(pauseController: controller) {
+            if case let .finished(node) = event { finished = node }
+        }
+
+        #expect(finished?.children.count == 50)
+    }
 }
