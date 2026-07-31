@@ -42,5 +42,9 @@ let package = Package(
         .testTarget(name: "SafetyCoreTests", dependencies: ["SafetyCore", .product(name: "Testing", package: "swift-testing")]),
         .testTarget(name: "FileRulesTests", dependencies: ["FileRules", .product(name: "Testing", package: "swift-testing")]),
         .testTarget(name: "CoreTendAppTests", dependencies: ["CoreTendApp", .product(name: "Testing", package: "swift-testing")]),
+        .testTarget(name: "CoreTendIntegrationTests", dependencies: ["CoreTendApp", "ScanCore", "SafetyCore", "Persistence", .product(name: "Testing", package: "swift-testing")]),
+        .testTarget(name: "CoreTendUITests", dependencies: []),
+        .testTarget(name: "CoreTendAccessibilityTests", dependencies: ["CoreTendApp", .product(name: "Testing", package: "swift-testing")]),
+        .testTarget(name: "CoreTendPerformanceTests", dependencies: ["ScanCore", .product(name: "Testing", package: "swift-testing")]),
     ]
 )
