@@ -18,7 +18,9 @@ final class SpaceLensViewModel {
     /// Set only while a delete confirmation sheet is up; nil the rest of the time.
     var pendingDelete: SpaceNode?
     var lastDeleteError: String?
+    var isScanPaused = false
     private var scanTask: Task<Void, Never>?
+    private var pauseController: ScanPauseController?
     private var rootURL: URL?
     private var dryRunDefaultLoaded = false
 
@@ -40,9 +42,12 @@ final class SpaceLensViewModel {
         root = nil
         pathStack = []
         rootURL = url
+        isScanPaused = false
+        let pauseController = ScanPauseController()
+        self.pauseController = pauseController
         let engine = SpaceLensEngine(root: url)
         scanTask = Task {
-            for await event in engine.run() {
+            for await event in engine.run(pauseController: pauseController) {
                 switch event {
                 case let .progress(items, _):
                     phase = .scanning(items: items)
@@ -54,6 +59,7 @@ final class SpaceLensViewModel {
                         itemCount: node.children.count, bytes: node.size, dryRun: true))
                     AppEnvironment.shared.recordLocationVisit(path: url.path, bytes: node.size)
                 case .cancelled:
+                    isScanPaused = false
                     phase = root == nil ? .idle : .ready
                 }
             }
@@ -70,9 +76,12 @@ final class SpaceLensViewModel {
         let pathsToRestore = pathStack.map(\.path)
         scanTask?.cancel()
         phase = .scanning(items: 0)
+        isScanPaused = false
+        let pauseController = ScanPauseController()
+        self.pauseController = pauseController
         let engine = SpaceLensEngine(root: rootURL)
         scanTask = Task {
-            for await event in engine.run() {
+            for await event in engine.run(pauseController: pauseController) {
                 if case let .finished(node) = event {
                     root = node
                     var stack: [SpaceNode] = []
@@ -89,7 +98,23 @@ final class SpaceLensViewModel {
         }
     }
 
-    func cancel() { scanTask?.cancel() }
+    func pauseScan() {
+        guard case .scanning = phase, !isScanPaused else { return }
+        isScanPaused = true
+        Task { await pauseController?.pause() }
+    }
+
+    func resumeScan() {
+        guard case .scanning = phase, isScanPaused else { return }
+        isScanPaused = false
+        Task { await pauseController?.resume() }
+    }
+
+    func cancel() {
+        isScanPaused = false
+        scanTask?.cancel()
+        Task { await pauseController?.resume() }
+    }
 
     func descend(into node: SpaceNode) {
         guard node.isDirectory, !node.children.isEmpty || node.size > 0 else { return }
@@ -249,7 +274,21 @@ struct SpaceLensView: View {
         VStack(spacing: 16) {
             ProgressView()
             Text(L("spacelens.scanning_progress", items)).monospacedDigit()
-            Button(L("common.cancel")) { model.cancel() }
+            HStack(spacing: MCSpacing.sm) {
+                if model.isScanPaused {
+                    Button(L("common.resume")) { model.resumeScan() }
+                        .keyboardShortcut("r", modifiers: [])
+                        .help(L("spacelens.resume_hint"))
+                        .accessibilityHint(L("spacelens.resume_hint"))
+                } else {
+                    Button(L("common.pause")) { model.pauseScan() }
+                        .keyboardShortcut("p", modifiers: [])
+                        .help(L("spacelens.pause_hint"))
+                        .accessibilityHint(L("spacelens.pause_hint"))
+                }
+                Button(L("common.cancel")) { model.cancel() }
+                    .keyboardShortcut(.cancelAction)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
