@@ -58,4 +58,15 @@ struct AppGroupingTests {
         #expect(groups.count == 1)
         #expect(groups[0].apps.count == 1)
     }
+
+    @Test("only reversible support data is preselected for uninstall")
+    func uninstallPreselection() {
+        #expect(ApplicationsViewModel.isPreselectedAssociatedKind(.caches))
+        #expect(ApplicationsViewModel.isPreselectedAssociatedKind(.savedState))
+        #expect(!ApplicationsViewModel.isPreselectedAssociatedKind(.preferences))
+        #expect(!ApplicationsViewModel.isPreselectedAssociatedKind(.containers))
+        #expect(!ApplicationsViewModel.isPreselectedAssociatedKind(.applicationSupport))
+        #expect(!ApplicationsViewModel.isPreselectedAssociatedKind(.launchAgents))
+        #expect(!ApplicationsViewModel.isPreselectedAssociatedKind(.launchDaemons))
+    }
 }
