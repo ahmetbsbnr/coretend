@@ -17,6 +17,7 @@ public struct MCModuleIdentity: Sendable {
     public static let protection = MCModuleIdentity(icon: "checkerboard.shield", color: MCColor.protection)
     public static let performance = MCModuleIdentity(icon: "waveform.path.ecg", color: MCColor.performance)
     public static let applications = MCModuleIdentity(icon: "square.grid.2x2", color: MCColor.protection)
+    public static let duplicates = MCModuleIdentity(icon: "doc.on.doc", color: MCColor.storage)
     public static let myClutter = MCModuleIdentity(icon: "square.3.layers.3d", color: MCColor.storage)
     public static let spaceLens = MCModuleIdentity(icon: "map", color: MCColor.storage)
     public static let cloudCleanup = MCModuleIdentity(icon: "cloud", color: MCColor.storage)

@@ -7,6 +7,7 @@ HEAD before rescue edits: `38b8ddac091f0965bde1ce380d984b59619da6a8`
 Latest committed rescue subsystem: `6f80ef1b265f9c1c1e20df88504d311f22eea3e9` (`6f80ef1`)
 Latest packaging diagnosis commit: `5509efdb9981c6d68a8a3f38511e9cdf3b0b7961` (`5509efd`)
 Latest public launch evidence commit: `4aa2eeccde84194792765f19e41347b928f7d815` (`4aa2eec`)
+Latest Xcode integration commit: `e7067533b33daa390a93d64873ff087a36f77102` (`e706753`)
 
 ## Git Validation
 
@@ -16,6 +17,7 @@ Latest public launch evidence commit: `4aa2eeccde84194792765f19e41347b928f7d815`
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `6f80ef1b265f9c1c1e20df88504d311f22eea3e9`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `5509efdb9981c6d68a8a3f38511e9cdf3b0b7961`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `4aa2eeccde84194792765f19e41347b928f7d815`.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `e7067533b33daa390a93d64873ff087a36f77102`.
 
 ## Local Backup
 
@@ -148,7 +150,7 @@ CI:
 
 ## Xcode Integration
 
-Status: in progress locally; not yet committed.
+Status: committed and pushed as `e7067533b33daa390a93d64873ff087a36f77102`.
 
 Implemented:
 
@@ -175,12 +177,58 @@ Validation completed locally:
 - `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter CoreTendAccessibilityTests` passed.
 - `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter CoreTendPerformanceTests` passed.
 - `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter CoreTendUITests` passed with the single XCUIAutomation test skipped because no `CORETEND_UI_APP_PATH` was provided in this sandboxed run.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c debug` passed.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c release` passed.
+
+CI:
+
+- GitHub Actions CI run `30665197462` passed on `e7067533b33daa390a93d64873ff087a36f77102`: distribution-check and build-and-test completed successfully, including tests, debug/release build, package bundle, launch robustness, visual regression captures, release/sync checks, and localization parity.
 
 Known limits:
 
 - The first XCUIAutomation test is only a launch/window smoke test; full UI coverage for onboarding, FR/EN, navigation, scan actions, Space Lens, Duplicates, Applications, Integrity, Activity, Settings, errors, light/dark, close/relaunch still remains.
 - Accessibility Inspector, VoiceOver, Increase Contrast, Reduce Transparency, Reduce Motion, enlarged text, and Instruments still require manual/GUI-capable runs.
 - The Xcode scheme files are minimal wrappers around SwiftPM and do not duplicate sources or create a second app.
+
+## Product Shell / Navigation Audit
+
+Status: first reconstruction pass in progress locally after `e706753`.
+
+Current target architecture:
+
+- Dashboard
+- Storage
+- Space Lens
+- Duplicates
+- Applications
+- Integrity
+- Activity
+- Settings
+
+Changes in progress:
+
+- Sidebar reduced to the target product architecture instead of exposing legacy modules as first-class destinations.
+- Smart Care is being replaced at the top level by a denser Dashboard that routes into real workflows and surfaces local status.
+- Cleanup is relabeled as Storage at the navigation level.
+- Duplicates is promoted to a visible primary storage module.
+- Performance, My Clutter, Similar Images, Cloud Cleanup, and Favorites & Recents are no longer visible primary destinations in the sidebar or command palette while their product role is reassessed.
+- Integrity and Activity remain visible primary destinations.
+
+Modules still present in source but not currently first-class release navigation:
+
+- Smart Care implementation remains in source while Dashboard absorbs the landing role.
+- Performance remains in source but is not yet a complete user-facing system module.
+- My Clutter and Similar Images remain in source while their overlap with Storage, Space Lens, and Duplicates is reviewed.
+- Cloud Cleanup remains in source but is not release-ready as a primary module.
+- Favorites & Recents remains in source as support/history infrastructure, not a primary module.
+
+Validation in this pass:
+
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter CommandPaletteTests` passed.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c debug` passed.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c release` passed.
+- `plutil -lint Sources/CoreTendApp/Resources/Base.lproj/Localizable.strings Sources/CoreTendApp/Resources/fr.lproj/Localizable.strings` passed.
+- EN/FR localization key parity passed with 546 keys.
 
 ## Remaining Rescue Work
 
@@ -191,7 +239,6 @@ P0 public launch:
 
 Xcode integration:
 
-- Commit and push the minimal Xcode integration after final local validation.
 - Expand XCUIAutomation beyond the launch smoke entry point.
 - Run manual Accessibility Inspector and Instruments passes in a GUI-capable environment.
 

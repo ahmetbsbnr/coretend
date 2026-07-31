@@ -18,10 +18,12 @@ struct CommandPaletteTests {
 
     @Test("every sidebar destination has a non-empty label and icon")
     func everyModuleHasLabelAndIcon() {
-        for module in ModuleID.allCases {
+        let modules = SidebarGroup.visibleModules
+        for module in modules {
             #expect(!module.label.isEmpty)
             #expect(!module.systemImage.isEmpty)
         }
-        #expect(ModuleID.allCases.count == 11)
+        #expect(modules == [.smartCare, .cleanup, .spaceLens, .duplicates, .applications, .protection, .myActivity, .settings])
+        #expect(Set(modules.map(\.rawValue)).count == modules.count)
     }
 }

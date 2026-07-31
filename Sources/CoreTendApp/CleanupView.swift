@@ -195,7 +195,7 @@ struct CleanupView: View {
             }
         }
         .padding(24)
-        .navigationTitle(L("cleanup.title"))
+        .navigationTitle(L("module.storage"))
         .task { await model.loadDryRunDefault() }
     }
 
