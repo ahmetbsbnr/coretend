@@ -91,8 +91,11 @@ Reproduction workspace:
 Verified:
 
 - Production HTTP route returns the expected public DMG asset.
-- DMG SHA-256 matched expected.
+- Owner unsandboxed Terminal reproduction on 2026-07-31 downloaded the production route successfully.
+- DMG SHA-256 matched expected: `2960293a278f81be602aebb84ad6582d41f118635bbbca4517853bb68831ee71`.
 - `hdiutil verify`: checksum valid.
+- Unsandboxed `hdiutil attach -readonly CoreTend-public.dmg` succeeded and mounted `/Volumes/CoreTend 0.9.1-rc.3`.
+- Mounted DMG contents: `.DS_Store`, `.VolumeIcon.icns`, `.background.tiff`, `Applications -> /Applications`, `CoreTend.app`.
 - CLI download carries no quarantine by default; browser-equivalent quarantine was applied manually for diagnosis:
   `0081;6a6cfe1e;Safari;https://coretend.ahmetbsbnr.com/download`.
 - `hdiutil attach`: failed locally with `Périphérique non configuré`; verbose log says `Cannot start hdiejectd because app is sandboxed`, so this session cannot mount DMGs and cannot complete Finder copy/open from the mounted volume.
@@ -104,6 +107,8 @@ Verified:
 - Dependencies from `otool -L`: system frameworks and `/usr/lib/swift` only; no obvious missing bundled dylib.
 - Resources present: app icon, menu-bar templates, license/notice files, SwiftPM resource bundle, Base and FR localizations.
 - Signature: ad hoc, no TeamIdentifier; `codesign --verify --deep --strict` passes for the extracted ZIP app.
+- Owner unsandboxed reproduction confirms `codesign --verify --deep --strict --verbose=4` passes for the app copied out of the mounted DMG.
+- Owner unsandboxed reproduction confirms `spctl --assess --type execute --verbose=4` rejects the app.
 - Gatekeeper assessment via `spctl` fails in this sandbox with `internal error in Code Signing subsystem`, so the real Gatekeeper verdict must be collected outside the sandbox.
 - `open -n -W` fails with `kLSNoExecutableErr` even for the current locally built app, so this LaunchServices path is also sandbox-tainted.
 - Direct executable launch in the sandbox returned `137` with quarantine and `134` after quarantine removal; no usable Console/crash report access is available because `/usr/bin/log show` is sandbox-blocked.
@@ -127,7 +132,9 @@ Current conclusion:
 
 - Normal Gatekeeper launch is expected to be blocked because the app is ad-hoc signed and not notarized.
 - A separate real packaging defect exists: both Apple bundle-version fields in the public v0.9.1-rc.3 artifact contain `-rc.3`, which violates Apple's documented format.
-- This sandbox cannot complete the mounted-DMG/Finder/Console crash-report portion, because DMG attach, `spctl`, `open`, and unified logs are sandbox-tainted here.
+- The unsandboxed owner run proved the DMG itself downloads, verifies, mounts, and contains the expected drag-install layout; `spctl` rejection is expected for unsigned/unnotarized distribution.
+- The unsandboxed owner run stopped at `spctl` because `set -euo pipefail` made the expected rejection abort the script before `open`, unified logs, and crash-report collection.
+- This sandbox cannot complete the Finder/Console crash-report portion, because `spctl`, `open`, and unified logs are sandbox-tainted here.
 - Do not replace the public download until an unsandboxed clean-machine run confirms whether the owner's symptom is only Gatekeeper + invalid metadata or also an app crash.
 
 ## Remaining Rescue Work
