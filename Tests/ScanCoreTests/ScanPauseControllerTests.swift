@@ -135,4 +135,29 @@ struct ScanPauseControllerTests {
 
         #expect(finished?.children.count == 50)
     }
+
+    @Test func pausedDuplicateScanResumesAndFindsGroup() async throws {
+        let root = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("coretend-dupes-pause-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let payload = Data(repeating: 3, count: 128)
+        try payload.write(to: root.appendingPathComponent("a.bin"))
+        try payload.write(to: root.appendingPathComponent("b.bin"))
+
+        let controller = ScanPauseController()
+        await controller.pause()
+        Task {
+            try? await Task.sleep(for: .milliseconds(150))
+            await controller.resume()
+        }
+
+        var groups = 0
+        for await event in DuplicateEngine(roots: [root], minimumSize: 1)
+            .run(pauseController: controller) {
+            if case .group = event { groups += 1 }
+        }
+
+        #expect(groups == 1)
+    }
 }

@@ -12,6 +12,8 @@
 "clutter.resume_hint" = "Continue l’analyse suspendue.";
 "spacelens.pause_hint" = "Suspend temporairement l’analyse Space Lens.";
 "spacelens.resume_hint" = "Continue l’analyse Space Lens suspendue.";
+"dupes.pause_hint" = "Suspend temporairement l’analyse des doublons.";
+"dupes.resume_hint" = "Continue l’analyse des doublons suspendue.";
 "common.dry_run" = "Simulation";
 "common.running" = "En cours…";
 "common.reveal_in_finder" = "Afficher dans le Finder";
