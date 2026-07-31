@@ -109,6 +109,9 @@ Verified:
 - Signature: ad hoc, no TeamIdentifier; `codesign --verify --deep --strict` passes for the extracted ZIP app.
 - Owner unsandboxed reproduction confirms `codesign --verify --deep --strict --verbose=4` passes for the app copied out of the mounted DMG.
 - Owner unsandboxed reproduction confirms `spctl --assess --type execute --verbose=4` rejects the app.
+- Owner unsandboxed `open -n -W` produced the macOS Gatekeeper malware-warning dialog in French and returned `open exit=0` because the dialog was handled, not because the app launched.
+- Exact user-visible alert from the screenshot: `Élément « CoreTend » non ouvert. Apple n’a pas pu confirmer que « CoreTend » ne contenait pas de logiciel malveillant susceptible d’endommager votre Mac ou de porter atteinte à votre vie privée.` Buttons shown: `Placer dans la corbeille`, `Terminé`.
+- No CoreTend crash reports were listed by the unsandboxed `DiagnosticReports/*CoreTend*` check.
 - Gatekeeper assessment via `spctl` fails in this sandbox with `internal error in Code Signing subsystem`, so the real Gatekeeper verdict must be collected outside the sandbox.
 - `open -n -W` fails with `kLSNoExecutableErr` even for the current locally built app, so this LaunchServices path is also sandbox-tainted.
 - Direct executable launch in the sandbox returned `137` with quarantine and `134` after quarantine removal; no usable Console/crash report access is available because `/usr/bin/log show` is sandbox-blocked.
@@ -133,9 +136,9 @@ Current conclusion:
 - Normal Gatekeeper launch is expected to be blocked because the app is ad-hoc signed and not notarized.
 - A separate real packaging defect exists: both Apple bundle-version fields in the public v0.9.1-rc.3 artifact contain `-rc.3`, which violates Apple's documented format.
 - The unsandboxed owner run proved the DMG itself downloads, verifies, mounts, and contains the expected drag-install layout; `spctl` rejection is expected for unsigned/unnotarized distribution.
-- The unsandboxed owner run stopped at `spctl` because `set -euo pipefail` made the expected rejection abort the script before `open`, unified logs, and crash-report collection.
-- This sandbox cannot complete the Finder/Console crash-report portion, because `spctl`, `open`, and unified logs are sandbox-tainted here.
-- Do not replace the public download until an unsandboxed clean-machine run confirms whether the owner's symptom is only Gatekeeper + invalid metadata or also an app crash.
+- The reproduced user-facing failure is the normal macOS Gatekeeper block for an app whose developer cannot be verified. There is no evidence of a CoreTend app crash in this reproduction.
+- This sandbox cannot independently run the Finder/Console portion, because `spctl`, `open`, and unified logs are sandbox-tainted here.
+- Do not replace the public download until a rebuilt artifact with valid Apple bundle metadata has been validated through the same quarantined path.
 
 ## Remaining Rescue Work
 
