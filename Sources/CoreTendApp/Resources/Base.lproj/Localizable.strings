@@ -12,6 +12,8 @@
 "clutter.resume_hint" = "Continue the paused analysis.";
 "spacelens.pause_hint" = "Temporarily suspend the Space Lens scan.";
 "spacelens.resume_hint" = "Continue the paused Space Lens scan.";
+"dupes.pause_hint" = "Temporarily suspend the duplicate scan.";
+"dupes.resume_hint" = "Continue the paused duplicate scan.";
 "common.dry_run" = "Dry run";
 "common.running" = "Running…";
 "common.reveal_in_finder" = "Reveal in Finder";

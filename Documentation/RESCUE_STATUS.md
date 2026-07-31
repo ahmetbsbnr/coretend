@@ -56,10 +56,10 @@ Controls currently integrated:
 - Cleanup: Pause / Resume / Cancel while scanning.
 - My Clutter, Large & Old analysis: Pause / Resume / Cancel while scanning.
 - Space Lens: Pause / Resume / Cancel while scanning.
+- Duplicates: Pause / Resume / Cancel while scanning.
 
 Controls not yet integrated:
 
-- Duplicates scan.
 - Similar Images scan.
 - Privacy Cleaner browser detection/cleanup.
 - Cloud Cleanup provider analysis.
@@ -87,6 +87,11 @@ Additional pause/resume validation after the product-shell pass:
 - `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter ScanPauseControllerTests` passed with 5 tests, including Space Lens pause/resume coverage.
 - `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c debug` passed.
 - `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c release` passed.
+- `DuplicateEngine.run(pauseController:)` now suspends during inventory and between hash candidates using the same controller.
+- `DuplicatesView` now exposes Pause / Resume / Cancel while scanning, with `p`, `r`, and Escape keyboard shortcuts plus EN/FR VoiceOver hints.
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter ScanPauseControllerTests` passed with 6 tests, including Duplicates pause/resume coverage.
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter DuplicateEngineTests` passed.
+- EN/FR localization key parity passed with 550 keys.
 
 ## Public Launch Reproduction
 

@@ -24,10 +24,12 @@ final class DuplicatesViewModel {
     var dryRun = true
     var searchText = ""
     var selectedVolumeID: String?
+    var isScanPaused = false
     let volumeResolver: VolumeResolving
     let exclusionsController = ClutterExclusionsController()
 
     private var scanTask: Task<Void, Never>?
+    private var pauseController: ScanPauseController?
     private var scannedRoots: [URL] = []
 
     init(volumeResolver: VolumeResolving = SystemVolumeResolver()) {
@@ -65,11 +67,14 @@ final class DuplicatesViewModel {
         phase = .scanning(processed: 0, total: 0)
         groups = []
         selectedPaths = []
+        isScanPaused = false
+        let pauseController = ScanPauseController()
+        self.pauseController = pauseController
         let home = FileManager.default.homeDirectoryForCurrentUser
         scannedRoots = ["Downloads", "Documents", "Desktop"].map { home.appendingPathComponent($0) }
         let engine = DuplicateEngine(roots: scannedRoots)
         scanTask = Task {
-            for await event in engine.run() {
+            for await event in engine.run(pauseController: pauseController) {
                 switch event {
                 case let .progress(_, processed, total):
                     phase = .scanning(processed: processed, total: total)
@@ -88,13 +93,30 @@ final class DuplicatesViewModel {
                         kind: .scan, summary: "Duplicate scan: \(count) groups",
                         itemCount: count, bytes: wasted, dryRun: true))
                 case .cancelled:
+                    isScanPaused = false
                     phase = groups.isEmpty ? .idle : .results
                 }
             }
         }
     }
 
-    func cancel() { scanTask?.cancel() }
+    func pauseScan() {
+        guard case .scanning = phase, !isScanPaused else { return }
+        isScanPaused = true
+        Task { await pauseController?.pause() }
+    }
+
+    func resumeScan() {
+        guard case .scanning = phase, isScanPaused else { return }
+        isScanPaused = false
+        Task { await pauseController?.resume() }
+    }
+
+    func cancel() {
+        isScanPaused = false
+        scanTask?.cancel()
+        Task { await pauseController?.resume() }
+    }
 
     func removeSelected() {
         guard phase == .results, !selectedPaths.isEmpty else { return }
@@ -170,7 +192,21 @@ struct DuplicatesView: View {
                 ProgressView()
                 Text(L("dupes.building_inventory"))
             }
-            Button(L("common.cancel")) { model.cancel() }
+            HStack(spacing: MCSpacing.sm) {
+                if model.isScanPaused {
+                    Button(L("common.resume")) { model.resumeScan() }
+                        .keyboardShortcut("r", modifiers: [])
+                        .help(L("dupes.resume_hint"))
+                        .accessibilityHint(L("dupes.resume_hint"))
+                } else {
+                    Button(L("common.pause")) { model.pauseScan() }
+                        .keyboardShortcut("p", modifiers: [])
+                        .help(L("dupes.pause_hint"))
+                        .accessibilityHint(L("dupes.pause_hint"))
+                }
+                Button(L("common.cancel")) { model.cancel() }
+                    .keyboardShortcut(.cancelAction)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
