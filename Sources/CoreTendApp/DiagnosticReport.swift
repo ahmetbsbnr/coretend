@@ -90,8 +90,8 @@ enum DiagnosticReport {
             }
         }
         let inputs = Inputs(
-            appVersion: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown",
-            appBuild: Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "unknown",
+            appVersion: AppMetadata.marketingVersion,
+            appBuild: AppMetadata.bundleVersion,
             macOSVersion: info.operatingSystemVersionString,
             architecture: "arm64",
             machineModel: model,

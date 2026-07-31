@@ -186,7 +186,7 @@ struct OnboardingView: View {
     private let stepCount = 7
 
     private var appVersion: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
+        AppMetadata.marketingVersion
     }
 
     var body: some View {

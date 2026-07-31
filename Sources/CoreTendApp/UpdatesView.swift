@@ -37,7 +37,7 @@ final class UpdatesViewModel {
     }
 
     var installedVersion: String {
-        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "—"
+        AppMetadata.marketingVersion
     }
 
     func check() async {

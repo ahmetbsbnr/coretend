@@ -121,6 +121,10 @@ struct BrandResourceTests {
         #expect(plist?["CFBundleIconFile"] as? String == "AppIcon")
         let version = plist?["CFBundleShortVersionString"] as? String ?? ""
         #expect(version.compare("0.4.0", options: .numeric) != .orderedAscending)
+        #expect(version.range(of: #"^\d+\.\d+\.\d+$"#, options: .regularExpression) != nil)
+        let build = plist?["CFBundleVersion"] as? String ?? ""
+        #expect(build.range(of: #"^\d+(\.\d+){0,2}$"#, options: .regularExpression) != nil)
+        #expect(plist?["CoreTendMarketingVersion"] as? String == "0.9.1-rc.3")
     }
 }
 
