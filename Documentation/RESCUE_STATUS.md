@@ -8,6 +8,7 @@ Latest committed rescue subsystem: `6f80ef1b265f9c1c1e20df88504d311f22eea3e9` (`
 Latest packaging diagnosis commit: `5509efdb9981c6d68a8a3f38511e9cdf3b0b7961` (`5509efd`)
 Latest public launch evidence commit: `4aa2eeccde84194792765f19e41347b928f7d815` (`4aa2eec`)
 Latest Xcode integration commit: `e7067533b33daa390a93d64873ff087a36f77102` (`e706753`)
+Latest product shell commit: `39471c644fd532da6951c5e81b72d03b8587fcdd` (`39471c6`)
 
 ## Git Validation
 
@@ -18,6 +19,7 @@ Latest Xcode integration commit: `e7067533b33daa390a93d64873ff087a36f77102` (`e7
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `5509efdb9981c6d68a8a3f38511e9cdf3b0b7961`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `4aa2eeccde84194792765f19e41347b928f7d815`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `e7067533b33daa390a93d64873ff087a36f77102`.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `39471c644fd532da6951c5e81b72d03b8587fcdd`.
 
 ## Local Backup
 
@@ -192,7 +194,7 @@ Known limits:
 
 ## Product Shell / Navigation Audit
 
-Status: first reconstruction pass in progress locally after `e706753`.
+Status: first reconstruction pass committed and pushed as `39471c644fd532da6951c5e81b72d03b8587fcdd`.
 
 Current target architecture:
 
@@ -229,6 +231,7 @@ Validation in this pass:
 - `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c release` passed.
 - `plutil -lint Sources/CoreTendApp/Resources/Base.lproj/Localizable.strings Sources/CoreTendApp/Resources/fr.lproj/Localizable.strings` passed.
 - EN/FR localization key parity passed with 546 keys.
+- GitHub Actions CI run `30667051493` passed on `39471c644fd532da6951c5e81b72d03b8587fcdd`: distribution-check and build-and-test completed successfully, including debug/release build, full test job, package bundle, DMG layout, isolated launch robustness, 72 visual regression captures, release/sync checks, and localization key parity.
 
 ## Remaining Rescue Work
 
