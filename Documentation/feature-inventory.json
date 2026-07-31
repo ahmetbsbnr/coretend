@@ -42,14 +42,14 @@
       "module": "App shell",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/CoreTendApp/DiagnosticReport.swift:83-91",
-      "feature": "`DiagnosticReport` — anonymized export, redaction test exists"
+      "feature": "`DiagnosticReport` \u2014 anonymized export, redaction test exists"
     },
     {
       "id": "safety.pathvalidator",
       "module": "SafetyCore",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/SafetyCore/SafetyCore.swift:33-90",
-      "feature": "`PathValidator` — protected-root blocklist (`/System`,`/bin`,…), home-dir block, allowlist containment, symlink-escape resolution via `resolvingSymlinksInPath()`"
+      "feature": "`PathValidator` \u2014 protected-root blocklist (`/System`,`/bin`,\u2026), home-dir block, allowlist containment, symlink-escape resolution via `resolvingSymlinksInPath()`"
     },
     {
       "id": "safety.dryrun",
@@ -63,7 +63,7 @@
       "module": "SafetyCore",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/SafetyCore/SafetyCore.swift:154-163",
-      "feature": "`execute()` moves approved ops to Trash (`FileManager.trashItem`) — never `rm`, always recoverable via macOS Trash"
+      "feature": "`execute()` moves approved ops to Trash (`FileManager.trashItem`) \u2014 never `rm`, always recoverable via macOS Trash"
     },
     {
       "id": "safety.auditlog",
@@ -77,77 +77,77 @@
       "module": "ScanCore",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/ScanCore/ScanCore.swift:117-198",
-      "feature": "`ScanEngine.run(rules:)` — `AsyncStream<ScanEvent>`, cancellable, symlinks skipped entirely (documented `ponytail:` comment, not followed), excluded-path containment respects path-component boundaries, uncapped totals separate from display cap"
+      "feature": "`ScanEngine.run(rules:)` \u2014 `AsyncStream<ScanEvent>`, cancellable, symlinks skipped entirely (documented `ponytail:` comment, not followed), excluded-path containment respects path-component boundaries, uncapped totals separate from display cap"
     },
     {
       "id": "scan.duplicates",
       "module": "ScanCore",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/ScanCore/DuplicateEngine.swift:38-131",
-      "feature": "`DuplicateEngine` — 3-stage: size bucket → 64 KB partial SHA-256 → full SHA-256, hard-link (same device+inode) collapse"
+      "feature": "`DuplicateEngine` \u2014 3-stage: size bucket \u2192 64 KB partial SHA-256 \u2192 full SHA-256, hard-link (same device+inode) collapse"
     },
     {
       "id": "scan.similarimages",
       "module": "ScanCore",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/ScanCore/SimilarImagesEngine.swift:1-142",
-      "feature": "`SimilarImagesEngine` — Vision `VNGenerateImageFeaturePrintRequest` feature-print distance clustering, greedy O(n·k) (documented ceiling), Photos-library directories explicitly skipped, real pixel-count via `CGImageSource` metadata (no full decode) for \"best resolution\" suggestion only, never auto-deletes"
+      "feature": "`SimilarImagesEngine` \u2014 Vision `VNGenerateImageFeaturePrintRequest` feature-print distance clustering, greedy O(n\u00b7k) (documented ceiling), Photos-library directories explicitly skipped, real pixel-count via `CGImageSource` metadata (no full decode) for \"best resolution\" suggestion only, never auto-deletes"
     },
     {
       "id": "scan.spacelens",
       "module": "ScanCore",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/ScanCore/SpaceLensEngine.swift:1-187",
-      "feature": "`SpaceLensEngine` — bottom-up directory sizing, \"Other (small items)\" bucket below `minChildSize`, real iCloud-placeholder detection via `ubiquitousItemDownloadingStatusKey`, access-denied flagged as lower-bound not silently wrong; `TreemapLayout` for the visualization"
+      "feature": "`SpaceLensEngine` \u2014 bottom-up directory sizing, \"Other (small items)\" bucket below `minChildSize`, real iCloud-placeholder detection via `ubiquitousItemDownloadingStatusKey`, access-denied flagged as lower-bound not silently wrong; `TreemapLayout` for the visualization"
     },
     {
       "id": "cleanup.usercaches",
       "module": "FileRules",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/FileRules/UserCleanupRules.swift:7-17",
-      "feature": "Cleanup rule: user caches — application cache files in ~/Library/Caches, apps rebuild these automatically (low risk, preselected)"
+      "feature": "Cleanup rule: user caches \u2014 application cache files in ~/Library/Caches, apps rebuild these automatically (low risk, preselected)"
     },
     {
       "id": "cleanup.userlogs",
       "module": "FileRules",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/FileRules/UserCleanupRules.swift:19-29",
-      "feature": "Cleanup rule: user logs — log files in ~/Library/Logs older than 7 days (low risk, preselected)"
+      "feature": "Cleanup rule: user logs \u2014 log files in ~/Library/Logs older than 7 days (low risk, preselected)"
     },
     {
       "id": "cleanup.crashreports",
       "module": "FileRules",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/FileRules/UserCleanupRules.swift:31-41",
-      "feature": "Cleanup rule: crash reports — diagnostic reports older than 30 days in ~/Library/Logs/DiagnosticReports (low risk, preselected)"
+      "feature": "Cleanup rule: crash reports \u2014 diagnostic reports older than 30 days in ~/Library/Logs/DiagnosticReports (low risk, preselected)"
     },
     {
       "id": "cleanup.xcodederiveddata",
       "module": "FileRules",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/FileRules/UserCleanupRules.swift:43-53",
-      "feature": "Cleanup rule: Xcode DerivedData — build intermediates, rebuilt on next build (low risk, preselected)"
+      "feature": "Cleanup rule: Xcode DerivedData \u2014 build intermediates, rebuilt on next build (low risk, preselected)"
     },
     {
       "id": "cleanup.incompletedownloads",
       "module": "FileRules",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/FileRules/UserCleanupRules.swift:55-68",
-      "feature": "Cleanup rule: incomplete downloads — .download/.crdownload/.part/.partial files in ~/Downloads older than 7 days (low risk, preselected)"
+      "feature": "Cleanup rule: incomplete downloads \u2014 .download/.crdownload/.part/.partial files in ~/Downloads older than 7 days (low risk, preselected)"
     },
     {
       "id": "cleanup.xcodedevicesupport",
       "module": "FileRules",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/FileRules/UserCleanupRules.swift:70-80",
-      "feature": "Cleanup rule: Xcode device support — debug symbols for old iOS devices, regenerated on reconnect (medium risk, not preselected)"
+      "feature": "Cleanup rule: Xcode device support \u2014 debug symbols for old iOS devices, regenerated on reconnect (medium risk, not preselected)"
     },
     {
       "id": "cleanup.iosbackups",
       "module": "FileRules",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/FileRules/UserCleanupRules.swift:82-92",
-      "feature": "Cleanup rule: iOS device backups — local iPhone/iPad backups older than 180 days (high risk, not preselected — user must verify no longer needed)"
+      "feature": "Cleanup rule: iOS device backups \u2014 local iPhone/iPad backups older than 180 days (high risk, not preselected \u2014 user must verify no longer needed)"
     },
     {
       "id": "smartcare.orchestration",
@@ -161,28 +161,28 @@
       "module": "IntegrityCore",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/IntegrityCore/IntegrityCore.swift:43-86; Tests/IntegrityCoreTests/IntegrityCoreTests.swift (ProvenanceScannerTests)",
-      "feature": "`ProvenanceScanner` — reads NSURLQuarantinePropertiesKey (the same metadata Finder/Safari use), never throws, handles malformed/raw quarantine xattr data as not-quarantined rather than crashing"
+      "feature": "`ProvenanceScanner` \u2014 reads NSURLQuarantinePropertiesKey (the same metadata Finder/Safari use), never throws, handles malformed/raw quarantine xattr data as not-quarantined rather than crashing"
     },
     {
       "id": "integrity.codesign",
       "module": "IntegrityCore",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/IntegrityCore/IntegrityCore.swift:117-157; Tests/IntegrityCoreTests/IntegrityCoreTests.swift (CodeSignInspectorTests)",
-      "feature": "`CodeSignInspector` — Apple-signed/team-signed/ad-hoc-or-unsigned via SecStaticCode APIs directly, no codesign/spctl subprocess. Ad-hoc detection bug (wrong flag bit, would have misclassified ad-hoc as team-signed) found and fixed while adding this phase's test matrix."
+      "feature": "`CodeSignInspector` \u2014 Apple-signed/team-signed/ad-hoc-or-unsigned via SecStaticCode APIs directly, no codesign/spctl subprocess. Ad-hoc detection bug (wrong flag bit, would have misclassified ad-hoc as team-signed) found and fixed while adding this phase's test matrix."
     },
     {
       "id": "integrity.loginitems",
       "module": "IntegrityCore",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/IntegrityCore/IntegrityCore.swift:182-207; Tests/IntegrityCoreTests/IntegrityCoreTests.swift (LoginItemScannerTests)",
-      "feature": "`LoginItemScanner` — LaunchAgents/LaunchDaemons from the standard locations, injectable `locations:` parameter added this phase so tests use isolated temp directories instead of the real ~/Library/LaunchAgents"
+      "feature": "`LoginItemScanner` \u2014 LaunchAgents/LaunchDaemons from the standard locations, injectable `locations:` parameter added this phase so tests use isolated temp directories instead of the real ~/Library/LaunchAgents"
     },
     {
       "id": "perf.metrics",
       "module": "SystemMetrics",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/SystemMetrics/SystemMetrics.swift:1-142",
-      "feature": "`MetricsCollector` — CPU via `host_statistics` tick deltas, memory via `host_statistics64` (active+wired+compressed, matches Activity Monitor's model), disk via volume resource keys, network throughput via `getifaddrs` cumulative-counter delta, thermal via `ProcessInfo.thermalState`. All real Mach/sysctl/BSD calls, nothing simulated."
+      "feature": "`MetricsCollector` \u2014 CPU via `host_statistics` tick deltas, memory via `host_statistics64` (active+wired+compressed, matches Activity Monitor's model), disk via volume resource keys, network throughput via `getifaddrs` cumulative-counter delta, thermal via `ProcessInfo.thermalState`. All real Mach/sysctl/BSD calls, nothing simulated."
     },
     {
       "id": "apps.discovery",
@@ -196,14 +196,14 @@
       "module": "AppDiscovery",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/AppDiscovery/AppDiscovery.swift:150-183",
-      "feature": "`leftovers()` — reverse-DNS bundle-ID pattern match (`looksLikeBundleID`, ≥3 dot-separated parts) in Application Support/Caches/Saved Application State, excludes `com.apple.*`/`group.com.apple.*`, cross-references installed bundle IDs"
+      "feature": "`leftovers()` \u2014 reverse-DNS bundle-ID pattern match (`looksLikeBundleID`, \u22653 dot-separated parts) in Application Support/Caches/Saved Application State, excludes `com.apple.*`/`group.com.apple.*`, cross-references installed bundle IDs"
     },
     {
       "id": "apps.updates",
       "module": "AppDiscovery",
       "status": "VERIFIED_PARTIAL",
       "evidence": "Sources/CoreTendApp/AppUpdatesView.swift:26,38-40 (deep-links to App Store, does not itself check updates)",
-      "feature": "`AppUpdatesView` calls `AppDiscovery().discoverApps()` and opens `macappstore://showUpdatesPage` via NSWorkspace — **this only opens the macOS App Store's Updates pane, it does not itself check for or list available updates from any source**"
+      "feature": "`AppUpdatesView` calls `AppDiscovery().discoverApps()` and opens `macappstore://showUpdatesPage` via NSWorkspace \u2014 **this only opens the macOS App Store's Updates pane, it does not itself check for or list available updates from any source**"
     },
     {
       "id": "clutter.largeold",
@@ -238,14 +238,14 @@
       "module": "CloudCleanup",
       "status": "VERIFIED_PARTIAL",
       "evidence": "Sources/CoreTendApp/CloudCleanupView.swift:10-137",
-      "feature": "`CloudCleanupViewModel.detect()`/`scan()` — bespoke scanner (not one of the shared 4 engines), enumerates iCloud Drive (`~/Library/Mobile Documents/com~apple~CloudDocs`) and other declared providers, classifies sync state from the real `ubiquitousItemDownloadingStatusKey` signal (placeholder/partial/local), never triggers a download itself"
+      "feature": "`CloudCleanupViewModel.detect()`/`scan()` \u2014 bespoke scanner (not one of the shared 4 engines), enumerates iCloud Drive (`~/Library/Mobile Documents/com~apple~CloudDocs`) and other declared providers, classifies sync state from the real `ubiquitousItemDownloadingStatusKey` signal (placeholder/partial/local), never triggers a download itself"
     },
     {
       "id": "activity.log",
       "module": "Persistence",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/Persistence/Store.swift:1-165",
-      "feature": "`Store.recordActivity`/`activity(limit:kind:)`/`clearActivity()` — SQLite (`sqlite3` C API), WAL mode, actor-isolated, append-only migration list, migrations verified idempotent"
+      "feature": "`Store.recordActivity`/`activity(limit:kind:)`/`clearActivity()` \u2014 SQLite (`sqlite3` C API), WAL mode, actor-isolated, append-only migration list, migrations verified idempotent"
     },
     {
       "id": "activity.grouping",
@@ -273,7 +273,7 @@
       "module": "Settings",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/CoreTendApp/SettingsView.swift:16, 114-118",
-      "feature": "Settings: this copy's own code-signature status via CodeSignInspector (read-only) — shows whether the running binary itself is signed"
+      "feature": "Settings: this copy's own code-signature status via CodeSignInspector (read-only) \u2014 shows whether the running binary itself is signed"
     },
     {
       "id": "settings.fulldiskaccess",
@@ -287,7 +287,7 @@
       "module": "Settings",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/CoreTendApp/SettingsView.swift:152-174",
-      "feature": "Settings: exclusions list — add folder (NSOpenPanel) / remove, persisted to Store"
+      "feature": "Settings: exclusions list \u2014 add folder (NSOpenPanel) / remove, persisted to Store"
     },
     {
       "id": "settings.clearactivity",
@@ -301,42 +301,42 @@
       "module": "Settings",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/CoreTendApp/SettingsView.swift:188",
-      "feature": "Settings: \"Export Diagnostic Report\" — opens DiagnosticReportView sheet (preview before save)"
+      "feature": "Settings: \"Export Diagnostic Report\" \u2014 opens DiagnosticReportView sheet (preview before save)"
     },
     {
       "id": "migration.legacydata",
       "module": "Data migration",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/Persistence/LegacyDataMigration.swift:50-317; Tests/PersistenceTests/LegacyDataMigrationTests.swift (20 tests, suite \"Legacy data migration\")",
-      "feature": "`LegacyDataMigration` — one-time copy of pre-rebrand (MacCare Local) user data to the CoreTend identity. Copy-never-move (legacy directory never modified, renamed, or deleted), per-item and idempotent (existing destination items are skipped, never overwritten), temp-then-rename so an interrupted run resumes instead of leaving a truncated file that looks complete, hardcoded legacy directory names (`MacCareLocal`, `MacCare Local`) rather than heuristic matching, allowlisted preference keys only (`menuBarEnabled`, `onboardingDone`, `onboardingStep`) read from the old domain via `CFPreferencesCopyAppValue`, per-run JSON journal at `migration-log.json`, and `rollback(_:)` that removes only what that one run created"
+      "feature": "`LegacyDataMigration` \u2014 one-time copy of pre-rebrand (MacCare Local) user data to the CoreTend identity. Copy-never-move (legacy directory never modified, renamed, or deleted), per-item and idempotent (existing destination items are skipped, never overwritten), temp-then-rename so an interrupted run resumes instead of leaving a truncated file that looks complete, hardcoded legacy directory names (`MacCareLocal`, `MacCare Local`) rather than heuristic matching, allowlisted preference keys only (`menuBarEnabled`, `onboardingDone`, `onboardingStep`) read from the old domain via `CFPreferencesCopyAppValue`, per-run JSON journal at `migration-log.json`, and `rollback(_:)` that removes only what that one run created"
     },
     {
       "id": "migration.launchwiring",
       "module": "Data migration",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/CoreTendApp/AppEnvironment.swift:14-31",
-      "feature": "Migration runs unconditionally in `AppEnvironment.init` before the store is opened — no \"have we done this yet\" flag that could drift from the filesystem; the report is retained only when it did something or failed"
+      "feature": "Migration runs unconditionally in `AppEnvironment.init` before the store is opened \u2014 no \"have we done this yet\" flag that could drift from the filesystem; the report is retained only when it did something or failed"
     },
     {
       "id": "settings.migrationnotice",
       "module": "Settings",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/CoreTendApp/SettingsView.swift:185-186, 229-265",
-      "feature": "Settings: `MigrationNoticeRow` — shown only when the rename migration did something; states what moved, distinguishes failure from success, and explicitly says the old data is still on disk"
+      "feature": "Settings: `MigrationNoticeRow` \u2014 shown only when the rename migration did something; states what moved, distinguishes failure from success, and explicitly says the old data is still on disk"
     },
     {
       "id": "uninstall.legacydata",
       "module": "Uninstall",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Scripts/uninstall.sh:29-30, 68-71, 107-109, 151-158; Scripts/test-uninstall.sh",
-      "feature": "Uninstaller `--include-legacy` opt-in additionally targets pre-rename data (`MacCareLocal`, `MacCare Local`, `local.maccare.app.plist`). Off by default — because the migration copies rather than moves, legacy data is a real backup and is not removed unless asked. Legacy paths are ordered last so an interrupted run never leaves the current install half-removed while the backup is already gone"
+      "feature": "Uninstaller `--include-legacy` opt-in additionally targets pre-rename data (`MacCareLocal`, `MacCare Local`, `local.maccare.app.plist`). Off by default \u2014 because the migration copies rather than moves, legacy data is a real backup and is not removed unless asked. Legacy paths are ordered last so an interrupted run never leaves the current install half-removed while the backup is already gone"
     },
     {
       "id": "testing.storeisolation",
       "module": "Testing infrastructure",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/Persistence/TestStoreOverride.swift; Sources/Persistence/Store.swift (defaultPath/userPath/userDirectory); Sources/CoreTendApp/AppEnvironment.swift (migration suppression); Tests/PersistenceTests/TestStoreOverrideTests.swift (22 tests); Scripts/check-test-isolation.sh + Scripts/test-check-test-isolation.sh (9 self-tests)",
-      "feature": "`TestStoreOverride` — lets a distribution smoke test launch the real Release binary against a throwaway store instead of the user's data. Requires TWO agreeing environment variables (`CORETEND_TEST_MODE=1` and an absolute `CORETEND_TEST_STORE_DIR`), so one stray variable cannot relocate a real database; the path must standardize to a location under a real temporary root and is refused if empty, relative, a protected root, the home directory, the filesystem root, or a bare temp root. The marker also suppresses the legacy-data migration, so a smoke test can never read real pre-rename data. `Scripts/test-distribution.sh` fingerprints the real store before and after and fails on any change; `Scripts/check-test-isolation.sh` statically enforces the whole shape"
+      "feature": "`TestStoreOverride` \u2014 lets a distribution smoke test launch the real Release binary against a throwaway store instead of the user's data. Requires TWO agreeing environment variables (`CORETEND_TEST_MODE=1` and an absolute `CORETEND_TEST_STORE_DIR`), so one stray variable cannot relocate a real database; the path must standardize to a location under a real temporary root and is refused if empty, relative, a protected root, the home directory, the filesystem root, or a bare temp root. The marker also suppresses the legacy-data migration, so a smoke test can never read real pre-rename data. `Scripts/test-distribution.sh` fingerprints the real store before and after and fails on any change; `Scripts/check-test-isolation.sh` statically enforces the whole shape"
     },
     {
       "id": "spacelens.delete",
@@ -364,14 +364,21 @@
       "module": "Localization",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/CoreTendApp/L10n.swift (LocalizationManager); SettingsView.swift, OnboardingView.swift pickers; Tests/CoreTendAppTests/LocalizationManagerTests.swift",
-      "feature": "Runtime language override (System/English/Français), independent of the OS locale, applied immediately (via .id() on the window and menu-bar content keyed to the same @AppStorage value) and persisted. English resolves to the Base.lproj bundle (there is no en.lproj folder — this was caught by a test, not assumed)."
+      "feature": "Runtime language override (System/English/Fran\u00e7ais), independent of the OS locale, applied immediately (via .id() on the window and menu-bar content keyed to the same @AppStorage value) and persisted. English resolves to the Base.lproj bundle (there is no en.lproj folder \u2014 this was caught by a test, not assumed)."
     },
     {
       "id": "ui.commandpalette",
       "module": "App shell",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/CoreTendApp/CoreTendApp.swift (CommandPaletteView, paletteMatches); Tests/CoreTendAppTests/CommandPaletteTests.swift",
-      "feature": "Cmd+K command palette: fuzzy-filtered jump list over all 10 sidebar destinations plus 2 actions (check for updates, scan Home with Space Lens), dispatched through the existing NotificationCenter (.mcNavigate) routing rather than a second navigation system."
+      "feature": "Cmd+K command palette: fuzzy-filtered jump list over all 11 sidebar destinations plus 2 actions (check for updates, scan Home with Space Lens), dispatched through the existing NotificationCenter (.mcNavigate) routing rather than a second navigation system."
+    },
+    {
+      "id": "favrec.module",
+      "module": "FavoritesRecents",
+      "status": "VERIFIED_COMPLETE",
+      "evidence": "Sources/CoreTendApp/FavoritesRecentsView.swift; Sources/Persistence/Store.swift:194-247 (locations table, schema v3); Tests/PersistenceTests/StoreTests.swift (favorites/recents CRUD); Tests/CoreTendAppTests/FavoritesRecentsTests.swift; visually verified 2026-07-31 in both light and dark: launched real .app build (Scripts/package-local.sh) under an isolated CORETEND_TEST_STORE_DIR, navigated via Cmd+K, confirmed Quick Links (Downloads/Desktop/Documents) render with real paths and correct empty states for Favorites/Recents.",
+      "feature": "Favorites & Recents sidebar module: pin/unpin folders, auto-recorded recent scan locations (path + last measured size), Downloads/Desktop/Documents always shown as Quick Links independent of favorite status, missing/unreadable folders flagged inline, Analyze jumps into Space Lens via a new .mcOpenSpaceLensAt notification which also records the visit on scan completion."
     }
   ],
   "total": 52,

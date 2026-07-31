@@ -37,6 +37,7 @@ MEDIA_PLAN = {
     "CloudCleanup": ("Cloud Cleanup", "Detect providers and measure local footprint", "cloud-cleanup", "no", "empty or neutral provider fixture"),
     "Persistence": ("My Activity", "Filter, expand, export, clear with confirmation", "my-activity", "no", "isolated temporary activity store"),
     "Settings": ("Settings", "Review permissions, exclusions, dry run and diagnostics", "settings", "no", "isolated temporary store"),
+    "FavoritesRecents": ("Favorites & Recents", "Pin a folder, revisit a recent scan, jump into Space Lens", "favorites-recents", "no", "isolated temporary store"),
 }
 
 

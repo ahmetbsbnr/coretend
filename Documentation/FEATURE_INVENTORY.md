@@ -2,7 +2,7 @@
 
 Generated from `Documentation/feature-inventory.json` by `Scripts/generate-feature-inventory.py` — the JSON is the single canonical source; this file, `feature-inventory.csv`, and the totals below are all derived from it, never typed by hand. Run `python3 Scripts/generate-feature-inventory.py --check` to verify they still agree.
 
-**Total: 52 features.** Status counts: VERIFIED_COMPLETE=50, VERIFIED_PARTIAL=2.
+**Total: 53 features.** Status counts: VERIFIED_COMPLETE=51, VERIFIED_PARTIAL=2.
 
 Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, UI_ONLY, SIMULATED, DOCUMENTATION_ONLY, BLOCKED_HUMAN, BLOCKED_ENVIRONMENT, BROKEN, DEPRECATED, NOT_STARTED, NOT_APPLICABLE, UNKNOWN.
 
@@ -15,7 +15,7 @@ Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, 
 | shell.menubar | Menu-bar extra: `MenuBarLabel`/`MenuBarView`, live `MetricsSnapshot` + last Smart Care activity, `@AppStorage("menuBarEnabled")` toggle in Settings | VERIFIED_COMPLETE | Main window, onboarding, menu bar | Launch, navigate, reopen help | smart-care | yes | isolated temporary store | Sources/CoreTendApp/CoreTendApp.swift:69-94 |
 | shell.onboarding | `OnboardingView`, opens Full Disk Access system pane via a static hardcoded `x-apple.systempreferences:` URL | VERIFIED_COMPLETE | Main window, onboarding, menu bar | Launch, navigate, reopen help | smart-care | yes | isolated temporary store | Sources/CoreTendApp/OnboardingView.swift:22-23 |
 | shell.diagnostics | `DiagnosticReport` — anonymized export, redaction test exists | VERIFIED_COMPLETE | Main window, onboarding, menu bar | Launch, navigate, reopen help | smart-care | yes | isolated temporary store | Sources/CoreTendApp/DiagnosticReport.swift:83-91 |
-| ui.commandpalette | Cmd+K command palette: fuzzy-filtered jump list over all 10 sidebar destinations plus 2 actions (check for updates, scan Home with Space Lens), dispatched through the existing NotificationCenter (.mcNavigate) routing rather than a second navigation system. | VERIFIED_COMPLETE | Main window, onboarding, menu bar | Launch, navigate, reopen help | smart-care | yes | isolated temporary store | Sources/CoreTendApp/CoreTendApp.swift (CommandPaletteView, paletteMatches); Tests/CoreTendAppTests/CommandPaletteTests.swift |
+| ui.commandpalette | Cmd+K command palette: fuzzy-filtered jump list over all 11 sidebar destinations plus 2 actions (check for updates, scan Home with Space Lens), dispatched through the existing NotificationCenter (.mcNavigate) routing rather than a second navigation system. | VERIFIED_COMPLETE | Main window, onboarding, menu bar | Launch, navigate, reopen help | smart-care | yes | isolated temporary store | Sources/CoreTendApp/CoreTendApp.swift (CommandPaletteView, paletteMatches); Tests/CoreTendAppTests/CommandPaletteTests.swift |
 
 ## SafetyCore (4: VERIFIED_COMPLETE=4)
 
@@ -157,4 +157,10 @@ Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, 
 | id | Name / objective | State | Screen | Demonstration path | Capture | Animation | Demo data | Validation evidence |
 |---|---|---|---|---|---|---|---|---|
 | l10n.languagepicker | Runtime language override (System/English/Français), independent of the OS locale, applied immediately (via .id() on the window and menu-bar content keyed to the same @AppStorage value) and persisted. English resolves to the Base.lproj bundle (there is no en.lproj folder — this was caught by a test, not assumed). | VERIFIED_COMPLETE | Localization | Follow the documented feature path | none | no | neutral fixture where applicable | Sources/CoreTendApp/L10n.swift (LocalizationManager); SettingsView.swift, OnboardingView.swift pickers; Tests/CoreTendAppTests/LocalizationManagerTests.swift |
+
+## FavoritesRecents (1: VERIFIED_COMPLETE=1)
+
+| id | Name / objective | State | Screen | Demonstration path | Capture | Animation | Demo data | Validation evidence |
+|---|---|---|---|---|---|---|---|---|
+| favrec.module | Favorites & Recents sidebar module: pin/unpin folders, auto-recorded recent scan locations (path + last measured size), Downloads/Desktop/Documents always shown as Quick Links independent of favorite status, missing/unreadable folders flagged inline, Analyze jumps into Space Lens via a new .mcOpenSpaceLensAt notification which also records the visit on scan completion. | VERIFIED_COMPLETE | Favorites & Recents | Pin a folder, revisit a recent scan, jump into Space Lens | favorites-recents | no | isolated temporary store | Sources/CoreTendApp/FavoritesRecentsView.swift; Sources/Persistence/Store.swift:194-247 (locations table, schema v3); Tests/PersistenceTests/StoreTests.swift (favorites/recents CRUD); Tests/CoreTendAppTests/FavoritesRecentsTests.swift; visually verified 2026-07-31 in both light and dark: launched real .app build (Scripts/package-local.sh) under an isolated CORETEND_TEST_STORE_DIR, navigated via Cmd+K, confirmed Quick Links (Downloads/Desktop/Documents) render with real paths and correct empty states for Favorites/Recents. |
 
