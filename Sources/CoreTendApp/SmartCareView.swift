@@ -29,6 +29,7 @@ final class SmartCareViewModel {
     var modules: [CareModule] = SmartCareViewModel.initialModules()
     var findings: [ScanFinding] = []
     var dryRun = true
+    var isScanPaused = false
     private var dryRunDefaultLoaded = false
 
     /// Applies the persisted "dry-run by default" setting once, before the user
@@ -47,6 +48,7 @@ final class SmartCareViewModel {
     var isDisplayTruncated: Bool { totalFindingCount > findings.count }
 
     private var scanTask: Task<Void, Never>?
+    private var pauseController: ScanPauseController?
 
     static func initialModules() -> [CareModule] {
         [
@@ -74,9 +76,12 @@ final class SmartCareViewModel {
         guard phase != .running else { return }
         phase = .running
         findings = []
+        isScanPaused = false
         totalFindingCount = 0
         totalFoundBytes = 0
         modules = Self.initialModules()
+        let pauseController = ScanPauseController()
+        self.pauseController = pauseController
         scanTask = Task {
             guard let index = modules.firstIndex(where: { $0.id == "cleanup" }), modules[index].enabled else {
                 phase = .review
@@ -87,7 +92,7 @@ final class SmartCareViewModel {
             var bytes: Int64 = 0
             let excluded = (try? await AppEnvironment.shared.store?.exclusions()) ?? []
             let engine = ScanEngine(configuration: ScanConfiguration(excludedPaths: excluded))
-            for await event in engine.run(rules: UserCleanupRules.all) {
+            for await event in engine.run(rules: UserCleanupRules.all, pauseController: pauseController) {
                 switch event {
                 case let .finding(finding):
                     // ponytail: findings capped at 5000 for UI display only;
@@ -103,10 +108,14 @@ final class SmartCareViewModel {
                 case .finished:
                     modules[index].state = .done(found: found, bytes: bytes)
                 case .cancelled:
+                    isScanPaused = false
                     modules[index].state = .done(found: found, bytes: bytes)
+                    self.pauseController = nil
+                    return
                 default: break
                 }
             }
+            self.pauseController = nil
             phase = .review
             AppEnvironment.shared.record(ActivityRecord(
                 kind: .scan, summary: "Smart Care scan: \(found) items",
@@ -114,8 +123,22 @@ final class SmartCareViewModel {
         }
     }
 
+    func pause() {
+        guard phase == .running, !isScanPaused else { return }
+        isScanPaused = true
+        Task { await pauseController?.pause() }
+    }
+
+    func resume() {
+        guard phase == .running, isScanPaused else { return }
+        isScanPaused = false
+        Task { await pauseController?.resume() }
+    }
+
     func cancel() {
+        isScanPaused = false
         scanTask?.cancel()
+        Task { await pauseController?.resume() }
         phase = .idle
     }
 
@@ -291,7 +314,19 @@ struct SmartCareView: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
         case .running:
-            Button(L("common.cancel")) { model.cancel() }
+            HStack {
+                if model.isScanPaused {
+                    Button(L("common.resume")) { model.resume() }
+                        .keyboardShortcut("r", modifiers: [])
+                        .accessibilityHint(L("smartcare.resume_hint"))
+                } else {
+                    Button(L("common.pause")) { model.pause() }
+                        .keyboardShortcut("p", modifiers: [])
+                        .accessibilityHint(L("smartcare.pause_hint"))
+                }
+                Button(L("common.cancel")) { model.cancel() }
+                    .keyboardShortcut(.cancelAction)
+            }
         case .review:
             VStack(spacing: MCSpacing.xs) {
                 HStack {

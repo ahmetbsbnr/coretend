@@ -2,6 +2,14 @@
 
 /* Common */
 "common.cancel" = "Cancel";
+"common.pause" = "Pause";
+"common.resume" = "Resume";
+"cleanup.pause_hint" = "Temporarily suspend the current scan.";
+"cleanup.resume_hint" = "Continue the paused scan.";
+"smartcare.pause_hint" = "Temporarily suspend the Smart Care scan.";
+"smartcare.resume_hint" = "Continue the paused Smart Care scan.";
+"clutter.pause_hint" = "Temporarily suspend the current analysis.";
+"clutter.resume_hint" = "Continue the paused analysis.";
 "common.dry_run" = "Dry run";
 "common.running" = "Running…";
 "common.reveal_in_finder" = "Reveal in Finder";
