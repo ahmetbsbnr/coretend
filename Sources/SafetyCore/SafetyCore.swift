@@ -166,7 +166,6 @@ public actor SafetyCenter {
     private let fileManager = FileManager.default
     private let sink: SafetyAuditSink?
     public private(set) var dryRun: Bool
-    public private(set) var auditLog: [String] = []
 
     public init(validator: PathValidator, dryRun: Bool = true, sink: SafetyAuditSink? = nil) {
         self.validator = validator
@@ -222,7 +221,6 @@ public actor SafetyCenter {
                         continue
                     }
                 }
-                auditLog.append("\(dryRun ? "DRY-RUN" : "TRASH") \(url.path) rule=\(op.ruleID)")
                 await emit(dryRun ? .dryRun : .executed, operationID: op.id, path: url.path, ruleID: op.ruleID,
                            risk: op.risk, size: op.logicalSize, result: dryRun ? "simulated" : "moved to trash")
                 executed.append(op)
