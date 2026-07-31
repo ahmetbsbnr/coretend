@@ -337,6 +337,7 @@ struct MainWindow: View {
                                     .foregroundStyle(selection == module ? module.identity.color : Color.secondary)
                             }
                             .tag(module)
+                            .accessibilityIdentifier("sidebar.\(module.rawValue)")
                         }
                     } header: {
                         if let title = group.title {
@@ -346,6 +347,7 @@ struct MainWindow: View {
                 }
             }
             .navigationSplitViewColumnWidth(min: MCSize.sidebarMin, ideal: MCSize.sidebarIdeal)
+            .accessibilityIdentifier("sidebar.list")
         } detail: {
             switch selection {
             case .smartCare:
@@ -473,6 +475,7 @@ private struct CommandPaletteView: View {
                     .textFieldStyle(.plain)
                     .focused($searchFocused)
                     .onSubmit { activate(filtered.first) }
+                    .accessibilityIdentifier("commandPalette.search")
             }
             .padding(MCSpacing.sm)
             Divider()
@@ -486,6 +489,7 @@ private struct CommandPaletteView: View {
                         Label(entry.label, systemImage: entry.icon)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityIdentifier(entry.id)
                 }
                 .listStyle(.plain)
             }
