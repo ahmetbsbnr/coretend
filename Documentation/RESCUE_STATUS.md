@@ -260,6 +260,23 @@ Validation in this pass:
 - EN/FR localization key parity passed with 546 keys.
 - GitHub Actions CI run `30667051493` passed on `39471c644fd532da6951c5e81b72d03b8587fcdd`: distribution-check and build-and-test completed successfully, including debug/release build, full test job, package bundle, DMG layout, isolated launch robustness, 72 visual regression captures, release/sync checks, and localization key parity.
 
+Current product audit from source re-read:
+
+- Dashboard: functional as the release entry point, but still needs real visual QA and fresh captures.
+- Storage: functional through Cleanup rules, pause/resume/cancel, dry-run, exclusions, and Trash-based execution; still needs final screen-by-screen visual QA.
+- Space Lens: functional and primary; has progressive scan, pause/resume/cancel, breadcrumbs, search, Finder, exclusions, and cloud-placeholder awareness; still needs manual keyboard/VoiceOver verification and treemap stability capture.
+- Duplicates: functional and primary; staged size/partial/full hash, hard-link collapse, keeper recommendation, selection safety, Trash action, preview/reveal/exclusions, pause/resume/cancel, and CSV export are present.
+- Applications: partial-to-functional primary; installed-app review, associated caches/preferences/support/logs/containers/LaunchAgents/LaunchDaemons, conservative selection, grouping/search, and Trash execution are present; personal documents remain separated by omission, not a separate visible review class.
+- Integrity: functional as provenance/signature/quarantine/launch-item inspection; it must not be marketed as antivirus.
+- Activity: functional for scans, errors, cleanups, restores, exports, local history, and safety-log access; direct undo is limited to macOS Trash restore rather than an in-app restore button.
+- Settings: functional for permissions, exclusions, activity clearing, diagnostics, setup rerun, and update preferences.
+- Smart Care: useful as an internal/orchestration workflow, but no longer a primary release destination; it currently orchestrates Cleanup only and marks Performance/Applications unavailable.
+- Performance: useful read-only diagnostics, but not a primary release module; live metrics and LaunchAgent inspection exist.
+- My Clutter: partially superseded by Storage, Space Lens, and Duplicates; Large & Old remains useful but is no longer a primary release destination.
+- Similar Images: functional read-only analysis with cancel, Quick Look/Finder/exclusions, but no pause/resume and no deletion path; not a release primary module.
+- Cloud Cleanup: analysis-only and read-only; provider detection and local/logical byte classification exist, but no pause/resume and no reclaim action; not a release primary module.
+- Favorites & Recents: support/history infrastructure, not a primary module.
+
 ## Remaining Rescue Work
 
 ## Duplicates Export / Review
