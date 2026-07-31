@@ -12,6 +12,7 @@ Latest product shell commit: `39471c644fd532da6951c5e81b72d03b8587fcdd` (`39471c
 Latest Space Lens pause commit: `a78006939624a13de35b77bd0b5ef8f1e11eefde` (`a780069`)
 Latest Duplicates pause commit: `1142f34a14fbe202fb1a6b8dbff669edd6514fcc` (`1142f34`)
 Latest Duplicates export commit: `ceb09823b96cfeda3d234009f8efbb1c2c25dfa0` (`ceb0982`)
+Latest Applications review commit: `988c2a0d65cf3913b6b4f49cc65cbebd71824767` (`988c2a0`)
 
 ## Git Validation
 
@@ -26,6 +27,7 @@ Latest Duplicates export commit: `ceb09823b96cfeda3d234009f8efbb1c2c25dfa0` (`ce
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `a78006939624a13de35b77bd0b5ef8f1e11eefde`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `1142f34a14fbe202fb1a6b8dbff669edd6514fcc`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `ceb09823b96cfeda3d234009f8efbb1c2c25dfa0`.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `988c2a0d65cf3913b6b4f49cc65cbebd71824767`.
 
 ## Local Backup
 
@@ -279,7 +281,7 @@ Validation completed locally:
 
 ## Applications Review Safety
 
-Status: implemented locally, not yet committed at this checkpoint.
+Status: committed and pushed as `988c2a0d65cf3913b6b4f49cc65cbebd71824767`.
 
 Implemented:
 
@@ -293,6 +295,23 @@ Validation completed locally:
 
 - `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter AppDiscoveryTests` passed with 22 tests.
 - `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter AppGroupingTests` passed with 5 tests.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c debug` passed.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c release` passed.
+
+## UI Automation Expansion
+
+Status: implemented locally, not yet committed at this checkpoint.
+
+Implemented:
+
+- Sidebar rows now expose stable accessibility identifiers for all primary destinations.
+- Command palette search and result entries now expose stable accessibility identifiers.
+- `CoreTendUITests` now includes conditional launch, primary sidebar navigation, and Applications control-identifier checks.
+- UI launch arguments set `-onboardingDone YES`, `CORETEND_TEST_MODE=1`, and an isolated `CORETEND_TEST_STORE_DIR`.
+
+Validation completed locally:
+
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter CoreTendUITests` passed with 3 skipped XCUIAutomation tests because `CORETEND_UI_APP_PATH` was not provided in this sandbox.
 - `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c debug` passed.
 - `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c release` passed.
 
