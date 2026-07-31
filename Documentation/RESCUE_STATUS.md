@@ -323,7 +323,7 @@ CI:
 
 ## Website Reconstruction
 
-Status: implemented locally, pending commit.
+Status: committed and pushed as `d50279fbf370524661c2fb41a804c2b6c05ce65d`.
 
 Implemented:
 
@@ -347,6 +347,30 @@ Known limits:
 
 - The Xcode sandbox cannot launch Chromium/Playwright locally because Chromium fails `bootstrap_check_in` with `Permission denied`; the visual reference update therefore required the owner's unsandboxed Terminal.
 - `bash Scripts/check-media.sh` still fails in this sandbox at the `python3 Website/generate.py` write step with `PermissionError` for generated HTML, even though the generator and website check pass when run directly.
+
+## App Visual Reconstruction
+
+Status: implemented locally, pending commit.
+
+Implemented:
+
+- Core surfaces now use adaptive Paper / Ink backgrounds instead of AppKit's default window/control surfaces.
+- Shared card radius was reduced to 8 pt and hero radius to 12 pt.
+- Shared `MCCard` no longer uses translucent material; module cards now use a solid editorial surface with the existing contrast-aware border.
+- Sidebar rows now have compact symbol sizing, selected-state weight, cobalt selection wash, hidden scroll background, and the secondary Paper/Ink sidebar surface.
+- Main window now exposes the command palette as a toolbar control.
+- Dashboard status pills now flow through an adaptive grid instead of a single horizontal row, preventing narrow-window overflow.
+
+Validation completed locally:
+
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c debug` passed.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode -c release` passed.
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter CoreTendAccessibilityTests` passed with 1 test.
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-xcode --filter DesignSystemTests` passed with 18 tests.
+
+Known limits:
+
+- This pass changes the global visual foundation and Dashboard/sidebar composition only. Full screen-by-screen redesign, fresh app captures, manual accessibility inspection, and Instruments are still required.
 
 P0 public launch:
 
