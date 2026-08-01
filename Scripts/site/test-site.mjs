@@ -548,6 +548,47 @@ await gate('published raster brand assets contain no historical palette', async 
   await context.close()
 })
 
+await gate('favicons preserve the complete centered CoreTend mark at every size', async () => {
+  const context = await browser.newContext({ reducedMotion: 'reduce' })
+  const page = await context.newPage()
+  await page.goto(`${origin}/privacy`)
+  const records = await page.evaluate(async sizes => {
+    const result = []
+    for (const size of sizes) {
+      const image = new Image()
+      image.src = `/assets/brand/favicon-${size}.png`
+      await image.decode()
+      const canvas = document.createElement('canvas')
+      canvas.width = image.naturalWidth
+      canvas.height = image.naturalHeight
+      const drawing = canvas.getContext('2d', { willReadFrequently: true })
+      drawing.drawImage(image, 0, 0)
+      const pixels = drawing.getImageData(0, 0, canvas.width, canvas.height).data
+      const centerIndex = (Math.floor(canvas.height / 2) * canvas.width + Math.floor(canvas.width / 2)) * 4
+      let nonBackground = 0
+      for (let index = 0; index < pixels.length; index += 4) {
+        if (pixels[index + 3] > 32 && (pixels[index] < 245 || pixels[index + 1] < 245 || pixels[index + 2] < 245)) nonBackground++
+      }
+      result.push({
+        requested: size,
+        width: canvas.width,
+        height: canvas.height,
+        center: [...pixels.slice(centerIndex, centerIndex + 4)],
+        coverage: nonBackground / (canvas.width * canvas.height),
+      })
+    }
+    return result
+  }, [32, 180, 512])
+  for (const record of records) {
+    assert.equal(record.width, record.requested)
+    assert.equal(record.height, record.requested)
+    const [red, green, blue, alpha] = record.center
+    assert(alpha > 240 && Math.abs(red - 34) < 10 && Math.abs(green - 64) < 10 && Math.abs(blue - 226) < 10, `${record.requested}px favicon lost the fixed cobalt core (${record.center})`)
+    assert(record.coverage > 0.12, `${record.requested}px favicon mark coverage is only ${(record.coverage * 100).toFixed(1)}%`)
+  }
+  await context.close()
+})
+
 await gate('landing consumes the generated Swift design tokens', async () => {
   const context = await browser.newContext({ reducedMotion: 'reduce' })
   const page = await context.newPage()
