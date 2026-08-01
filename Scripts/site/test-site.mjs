@@ -510,7 +510,10 @@ await gate('published raster brand assets contain no historical palette', async 
   const page = await context.newPage()
   await page.goto(`${origin}/privacy`)
   const matches = await page.evaluate(async sources => {
-    const historical = [[19, 103, 74], [92, 84, 204], [148, 96, 10]]
+    const historical = [
+      [19, 103, 74], [92, 84, 204], [148, 96, 10],
+      [168, 230, 193], [155, 138, 251], [244, 199, 107],
+    ]
     const findings = []
     for (const source of sources) {
       const image = new Image()

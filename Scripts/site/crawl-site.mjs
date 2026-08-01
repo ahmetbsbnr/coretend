@@ -2,7 +2,7 @@
 /** Crawl canonical CoreTend pages and reject broken or technical public URLs. */
 import assert from 'node:assert/strict'
 import { readdir, readFile } from 'node:fs/promises'
-import { extname, join, resolve, sep } from 'node:path'
+import { extname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildSite, launchChromium, loadPlaywright, startSite } from './site-fixture.mjs'
 
