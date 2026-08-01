@@ -28,6 +28,8 @@
     }
   ],
   "rewrites": [
+    { "source": "/en", "destination": "/en-route.html" },
+    { "source": "/fr", "destination": "/fr-route.html" },
     { "source": "/en/", "destination": "/en-route.html" },
     { "source": "/fr/", "destination": "/fr-route.html" },
     { "source": "/privacy", "destination": "/privacy.html" },
