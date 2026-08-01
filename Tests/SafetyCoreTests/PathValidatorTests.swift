@@ -52,10 +52,24 @@ struct PathValidatorTests {
         }
     }
 
-    @Test(arguments: ["/bin/ls", "/sbin/mount", "/usr/bin/env", "/usr/lib/dyld"])
-    func binSbinUsrRejected(path: String) {
+    @Test func binRejected() {
         defer { cleanup() }
-        #expect(throws: SafetyError.self) { try validator.validate(URL(fileURLWithPath: path)) }
+        #expect(throws: SafetyError.self) { try validator.validate(URL(fileURLWithPath: "/bin/ls")) }
+    }
+
+    @Test func sbinRejected() {
+        defer { cleanup() }
+        #expect(throws: SafetyError.self) { try validator.validate(URL(fileURLWithPath: "/sbin/mount")) }
+    }
+
+    @Test func usrBinRejected() {
+        defer { cleanup() }
+        #expect(throws: SafetyError.self) { try validator.validate(URL(fileURLWithPath: "/usr/bin/env")) }
+    }
+
+    @Test func usrLibRejected() {
+        defer { cleanup() }
+        #expect(throws: SafetyError.self) { try validator.validate(URL(fileURLWithPath: "/usr/lib/dyld")) }
     }
 
     @Test func homeDirectoryItselfRejected() {
