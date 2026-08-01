@@ -200,11 +200,9 @@ struct CodeSignInspectorTests {
     }
 }
 
-/// True if `security find-identity -v -p codesigning` reports at least one
-/// identity that isn't just "0 valid identities found". Shells out rather than
-/// using the Security framework directly because enumerating *installed*
-/// identities (as opposed to validating a given one) is what the `security`
-/// CLI is for; this only gates whether teamSignedBinary can mean anything.
+/// True when a real Developer ID Application identity is installed. An ad-hoc
+/// identity is intentionally not sufficient: it cannot exercise the team
+/// signed path and would make the test record a false failure.
 private func hasNonAppleCodesigningIdentity() -> Bool {
     let task = Process()
     task.executableURL = URL(fileURLWithPath: "/usr/bin/security")
@@ -216,7 +214,7 @@ private func hasNonAppleCodesigningIdentity() -> Bool {
     let data = pipe.fileHandleForReading.readDataToEndOfFile()
     task.waitUntilExit()
     let output = String(data: data, encoding: .utf8) ?? ""
-    return !output.contains("0 valid identities found")
+    return output.contains("Developer ID Application")
 }
 
 @Suite("LoginItemScanner")

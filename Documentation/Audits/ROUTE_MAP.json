@@ -1,0 +1,229 @@
+{
+  "origin": "https://coretend.ahmetbsbnr.com",
+  "routes": [
+    {
+      "route": "/",
+      "status": 200,
+      "canonical": "https://coretend.ahmetbsbnr.com/",
+      "language": "en",
+      "source": "index.html",
+      "destination": ""
+    },
+    {
+      "route": "/en/",
+      "status": 200,
+      "canonical": "https://coretend.ahmetbsbnr.com/en/",
+      "language": "en",
+      "source": "en/index.html",
+      "destination": ""
+    },
+    {
+      "route": "/fr/",
+      "status": 200,
+      "canonical": "https://coretend.ahmetbsbnr.com/fr/",
+      "language": "fr",
+      "source": "fr/index.html",
+      "destination": ""
+    },
+    {
+      "route": "/privacy",
+      "status": 200,
+      "canonical": "https://coretend.ahmetbsbnr.com/privacy",
+      "language": "en",
+      "source": "privacy.html",
+      "destination": ""
+    },
+    {
+      "route": "/support",
+      "status": 200,
+      "canonical": "https://coretend.ahmetbsbnr.com/support",
+      "language": "en",
+      "source": "support.html",
+      "destination": ""
+    },
+    {
+      "route": "/legal",
+      "status": 200,
+      "canonical": "https://coretend.ahmetbsbnr.com/legal",
+      "language": "en",
+      "source": "legal.html",
+      "destination": ""
+    },
+    {
+      "route": "/licenses",
+      "status": 200,
+      "canonical": "https://coretend.ahmetbsbnr.com/licenses",
+      "language": "en",
+      "source": "licenses.html",
+      "destination": ""
+    },
+    {
+      "route": "/download",
+      "status": 307,
+      "canonical": "",
+      "language": "",
+      "source": "redirect rule",
+      "destination": "https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.3/CoreTend-0.9.1-rc.3-arm64-unsigned.dmg"
+    },
+    {
+      "route": "/index.html",
+      "status": 308,
+      "canonical": "",
+      "language": "",
+      "source": "redirect rule",
+      "destination": "https://coretend.ahmetbsbnr.com/"
+    },
+    {
+      "route": "/en",
+      "status": 308,
+      "canonical": "",
+      "language": "",
+      "source": "redirect rule",
+      "destination": "https://coretend.ahmetbsbnr.com/en/"
+    },
+    {
+      "route": "/fr",
+      "status": 308,
+      "canonical": "",
+      "language": "",
+      "source": "redirect rule",
+      "destination": "https://coretend.ahmetbsbnr.com/fr/"
+    },
+    {
+      "route": "/en/index.html",
+      "status": 308,
+      "canonical": "",
+      "language": "",
+      "source": "redirect rule",
+      "destination": "https://coretend.ahmetbsbnr.com/en/"
+    },
+    {
+      "route": "/fr/index.html",
+      "status": 308,
+      "canonical": "",
+      "language": "",
+      "source": "redirect rule",
+      "destination": "https://coretend.ahmetbsbnr.com/fr/"
+    },
+    {
+      "route": "/privacy.html",
+      "status": 308,
+      "canonical": "",
+      "language": "",
+      "source": "redirect rule",
+      "destination": "https://coretend.ahmetbsbnr.com/privacy"
+    },
+    {
+      "route": "/support.html",
+      "status": 308,
+      "canonical": "",
+      "language": "",
+      "source": "redirect rule",
+      "destination": "https://coretend.ahmetbsbnr.com/support"
+    },
+    {
+      "route": "/legal.html",
+      "status": 308,
+      "canonical": "",
+      "language": "",
+      "source": "redirect rule",
+      "destination": "https://coretend.ahmetbsbnr.com/legal"
+    },
+    {
+      "route": "/licenses.html",
+      "status": 308,
+      "canonical": "",
+      "language": "",
+      "source": "redirect rule",
+      "destination": "https://coretend.ahmetbsbnr.com/licenses"
+    },
+    {
+      "route": "/site",
+      "status": 308,
+      "canonical": "",
+      "language": "",
+      "source": "redirect rule",
+      "destination": "https://coretend.ahmetbsbnr.com/"
+    },
+    {
+      "route": "/site/",
+      "status": 308,
+      "canonical": "",
+      "language": "",
+      "source": "redirect rule",
+      "destination": "https://coretend.ahmetbsbnr.com/"
+    },
+    {
+      "route": "/site/index.html",
+      "status": 308,
+      "canonical": "",
+      "language": "",
+      "source": "redirect rule",
+      "destination": "https://coretend.ahmetbsbnr.com/"
+    },
+    {
+      "route": "/Website",
+      "status": 308,
+      "canonical": "",
+      "language": "",
+      "source": "redirect rule",
+      "destination": "https://coretend.ahmetbsbnr.com/"
+    },
+    {
+      "route": "/Website/",
+      "status": 308,
+      "canonical": "",
+      "language": "",
+      "source": "redirect rule",
+      "destination": "https://coretend.ahmetbsbnr.com/"
+    },
+    {
+      "route": "/Website/index.html",
+      "status": 308,
+      "canonical": "",
+      "language": "",
+      "source": "redirect rule",
+      "destination": "https://coretend.ahmetbsbnr.com/"
+    },
+    {
+      "route": "/en.html",
+      "status": 308,
+      "canonical": "",
+      "language": "",
+      "source": "redirect rule",
+      "destination": "https://coretend.ahmetbsbnr.com/en/"
+    },
+    {
+      "route": "/fr.html",
+      "status": 308,
+      "canonical": "",
+      "language": "",
+      "source": "redirect rule",
+      "destination": "https://coretend.ahmetbsbnr.com/fr/"
+    },
+    {
+      "route": "/en/obsolete.html",
+      "status": 404,
+      "canonical": "",
+      "language": "en",
+      "source": "404.html",
+      "destination": ""
+    },
+    {
+      "route": "/fr/obsolete.html",
+      "status": 404,
+      "canonical": "",
+      "language": "en",
+      "source": "404.html",
+      "destination": ""
+    },
+    {
+      "route": "/route-map-not-found",
+      "status": 404,
+      "canonical": "",
+      "language": "en",
+      "source": "404.html",
+      "destination": ""
+    }
+  ]
+}

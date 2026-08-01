@@ -66,23 +66,23 @@ struct CoreTendHelpCommands: Commands {
         }
         CommandGroup(replacing: .help) {
             Button("CoreTend Help") {
-                NSWorkspace.shared.open(site.appending(path: "en/documentation.html"))
+                NSWorkspace.shared.open(site.appending(path: "support#documentation"))
             }
             Button("Installation Help") {
-                NSWorkspace.shared.open(site.appending(path: "en/install.html"))
+                NSWorkspace.shared.open(site.appending(path: "support"))
             }
             Button("Keyboard Shortcuts") {
-                NSWorkspace.shared.open(site.appending(path: "en/support.html"))
+                NSWorkspace.shared.open(site.appending(path: "support"))
             }
             Divider()
             Button("Report an Issue") {
                 NSWorkspace.shared.open(repository.appending(path: "issues"))
             }
             Button("Security") {
-                NSWorkspace.shared.open(site.appending(path: "en/security.html"))
+                NSWorkspace.shared.open(site.appending(path: "support#security"))
             }
             Button("About CoreTend") {
-                NSWorkspace.shared.open(site.appending(path: "en/index.html"))
+                NSWorkspace.shared.open(site.appending(path: "en/"))
             }
         }
     }

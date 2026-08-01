@@ -41,8 +41,8 @@ struct ProtectionView: View {
 /// is signed and by whom, and what launches automatically. No scanning
 /// engine, no signature database, no third-party binary — everything here
 /// reads metadata macOS itself already recorded. See
-/// `Documentation/CLAMAV_DECISION.md` for why this replaced the prior
-/// ClamAV-based malware tab.
+/// The compatibility shell does not claim malware detection; current
+/// integrity checks are local and informational.
 struct IntegrityView: View {
     @State private var model = IntegrityViewModel()
 

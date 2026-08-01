@@ -1,201 +1,63 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "outputDirectory": "Website",
+  "framework": null,
+  "buildCommand": "python3 Website/build.py --output Website/dist",
+  "outputDirectory": "Website/dist",
   "cleanUrls": false,
   "trailingSlash": false,
   "redirects": [
-    {
-      "source": "/",
-      "destination": "/en/index.html",
-      "permanent": false
-    },
+    { "source": "/index.html", "destination": "/", "permanent": true },
+    { "source": "/en", "destination": "/en/", "permanent": true },
+    { "source": "/fr", "destination": "/fr/", "permanent": true },
+    { "source": "/en/index.html", "destination": "/en/", "permanent": true },
+    { "source": "/fr/index.html", "destination": "/fr/", "permanent": true },
+    { "source": "/privacy.html", "destination": "/privacy", "permanent": true },
+    { "source": "/support.html", "destination": "/support", "permanent": true },
+    { "source": "/legal.html", "destination": "/legal", "permanent": true },
+    { "source": "/licenses.html", "destination": "/licenses", "permanent": true },
+    { "source": "/site", "destination": "/", "permanent": true },
+    { "source": "/site/", "destination": "/", "permanent": true },
+    { "source": "/site/index.html", "destination": "/", "permanent": true },
+    { "source": "/Website", "destination": "/", "permanent": true },
+    { "source": "/Website/", "destination": "/", "permanent": true },
+    { "source": "/Website/index.html", "destination": "/", "permanent": true },
+    { "source": "/en.html", "destination": "/en/", "permanent": true },
+    { "source": "/fr.html", "destination": "/fr/", "permanent": true },
     {
       "source": "/download",
       "destination": "https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.3/CoreTend-0.9.1-rc.3-arm64-unsigned.dmg",
       "permanent": false
-    },
-    {
-      "source": "/download/",
-      "destination": "https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.3/CoreTend-0.9.1-rc.3-arm64-unsigned.dmg",
-      "permanent": false
-    },
-    {
-      "source": "/latest.json",
-      "destination": "https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.3/latest.json",
-      "permanent": false
-    },
-    {
-      "source": "/SHA256SUMS",
-      "destination": "https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.3/SHA256SUMS",
-      "permanent": false
-    },
-    {
-      "source": "/en/download.html",
-      "destination": "/en/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/en/install.html",
-      "destination": "/en/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/en/features.html",
-      "destination": "/en/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/en/demos.html",
-      "destination": "/en/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/en/documentation.html",
-      "destination": "/en/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/en/verify.html",
-      "destination": "/en/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/en/support.html",
-      "destination": "/en/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/en/faq.html",
-      "destination": "/en/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/en/roadmap.html",
-      "destination": "/en/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/en/changelog.html",
-      "destination": "/en/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/en/open-source.html",
-      "destination": "/en/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/en/security.html",
-      "destination": "/en/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/fr/download.html",
-      "destination": "/fr/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/fr/install.html",
-      "destination": "/fr/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/fr/features.html",
-      "destination": "/fr/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/fr/demos.html",
-      "destination": "/fr/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/fr/documentation.html",
-      "destination": "/fr/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/fr/verify.html",
-      "destination": "/fr/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/fr/support.html",
-      "destination": "/fr/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/fr/faq.html",
-      "destination": "/fr/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/fr/roadmap.html",
-      "destination": "/fr/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/fr/changelog.html",
-      "destination": "/fr/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/fr/open-source.html",
-      "destination": "/fr/index.html",
-      "permanent": false
-    },
-    {
-      "source": "/fr/security.html",
-      "destination": "/fr/index.html",
-      "permanent": false
     }
+  ],
+  "rewrites": [
+    { "source": "/en/", "destination": "/en/index.html" },
+    { "source": "/fr/", "destination": "/fr/index.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/support", "destination": "/support.html" },
+    { "source": "/legal", "destination": "/legal.html" },
+    { "source": "/licenses", "destination": "/licenses.html" }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self'; style-src 'self' 'sha256-4/XV/d1fXgSUhKX80PRH7pDYdSI+tf83xv6euvVA9pQ='; img-src 'self' data:; media-src 'self'; font-src 'self'; connect-src 'none'; frame-ancestors 'none'; form-action 'none'; base-uri 'none'; object-src 'none'"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "no-referrer"
-        },
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "Permissions-Policy",
-          "value": "accelerometer=(), ambient-light-sensor=(), autoplay=(), battery=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(), gamepad=(), geolocation=(), gyroscope=(), hid=(), idle-detection=(), local-fonts=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), serial=(), usb=(), xr-spatial-tracking=()"
-        },
-        {
-          "key": "Strict-Transport-Security",
-          "value": "max-age=63072000; includeSubDomains; preload"
-        },
-        {
-          "key": "Cross-Origin-Opener-Policy",
-          "value": "same-origin"
-        },
-        {
-          "key": "Cross-Origin-Resource-Policy",
-          "value": "same-origin"
-        }
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self'; script-src-attr 'none'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; media-src 'self'; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; form-action 'none'; base-uri 'none'; object-src 'none'" },
+        { "key": "Referrer-Policy", "value": "no-referrer" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Permissions-Policy", "value": "accelerometer=(), camera=(), geolocation=(), gyroscope=(), microphone=(), payment=(), usb=()" },
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        { "key": "Cross-Origin-Resource-Policy", "value": "same-origin" }
       ]
     },
     {
       "source": "/assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/(latest.json|SHA256SUMS)",
+      "headers": [{ "key": "Cache-Control", "value": "no-store, max-age=0" }]
     }
   ]
 }

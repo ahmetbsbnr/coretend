@@ -13,17 +13,10 @@ final class UpdatesViewModel {
     }
 
     var phase: Phase = .idle
-    /// Off by default. An app that phones home on every launch without being
-    /// asked is not one that can honestly claim "no network calls", so the
-    /// user opts in, and the preference is theirs to revoke.
-    var automaticChecks: Bool {
-        didSet { UserDefaults.standard.set(automaticChecks, forKey: Self.autoKey) }
-    }
     var channel: UpdateChannel {
         didSet { UserDefaults.standard.set(channel.rawValue, forKey: Self.channelKey) }
     }
 
-    static let autoKey = "automaticUpdateChecks"
     static let channelKey = "updateChannel"
 
     /// The published manifest for the current release. Static and HTTPS: the
@@ -31,7 +24,6 @@ final class UpdatesViewModel {
     static let manifestURL = URL(string: "https://coretend.ahmetbsbnr.com/latest.json")!
 
     init() {
-        automaticChecks = UserDefaults.standard.bool(forKey: Self.autoKey)
         let raw = UserDefaults.standard.string(forKey: Self.channelKey) ?? UpdateChannel.stable.rawValue
         channel = UpdateChannel(rawValue: raw) ?? .stable
     }
@@ -60,12 +52,6 @@ struct UpdatesView: View {
     var body: some View {
         Section(L("updates.title")) {
             LabeledContent(L("updates.installed"), value: model.installedVersion)
-
-            Toggle(L("updates.automatic"), isOn: Binding(
-                get: { model.automaticChecks },
-                set: { model.automaticChecks = $0 }))
-            Text(L("updates.automatic_detail"))
-                .font(.caption).foregroundStyle(.secondary)
 
             Picker(L("updates.channel"), selection: Binding(
                 get: { model.channel },
@@ -121,7 +107,7 @@ struct UpdatesView: View {
                         Button(L("updates.open_release")) { NSWorkspace.shared.open(url) }
                         Button(L("updates.how_to_verify")) {
                             NSWorkspace.shared.open(
-                                URL(string: "https://coretend.ahmetbsbnr.com/en/verify.html")!)
+                                URL(string: "https://coretend.ahmetbsbnr.com/support#releases")!)
                         }
                     }
                 }
