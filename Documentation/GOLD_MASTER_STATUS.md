@@ -70,6 +70,12 @@ portfolio remained clean.
 - `2856f4b` `feat: rebuild public site gold master pipeline` (pushed)
 - `9ae60f6` `fix: align app help routes and motion accessibility` (pushed)
 - `74f5ffa` `test: add route and accessibility delivery gates` (pushed)
+- `7caadf1` `docs: record site delivery gate evidence` (pushed)
+- `813a933` `fix: align legacy website gates and brand assets` (pushed)
+- `953af15` `build: export shared Swift design tokens` (pushed)
+- `2501fba` `test: reject historical brand palette` (pushed)
+- `01365d9` `chore: remove retired scanner claims from active paths` (pushed)
+- `b6cba86` `test: stabilize signing and favicon delivery gates` (pushed)
 
 ## Test evidence
 
@@ -88,6 +94,9 @@ portfolio remained clean.
 | Worktree whitespace | `git diff --check` | passed |
 | Site route and interaction gate | `CORETEND_NODE_MODULES=... node Scripts/site/test-site.mjs` | passed; 20 checks on isolated build, routes, redirects, FR/EN, themes, motion, logo arcs, keyboard, responsive matrix, crawler |
 | Site capture suite | `node Scripts/visual/capture.mjs --capture-only` | passed; 51 current captures across required viewports, languages, themes and targeted logo/simulation states |
+| Swift package suite | `swift test` | passed; 329 tests (8 XCUI tests skipped because no CORETEND_UI_APP_PATH was provided) |
+| App release build | `Scripts/build-release.sh 0.9.1-rc.4` / `Scripts/package-dmg.sh 0.9.1-rc.4` | Swift `.app` build passed; DMG packaging blocked by local `hdiutil` conversion failure, so no candidate DMG was published |
+| Design token gate | `python3 Scripts/check-design-tokens.py` | passed; generated CSS/JSON match Swift sources |
 | Swift application correction lot | `swift test --filter CoreTendAppTests --filter DesignSystemTests --filter CoreTendAccessibilityTests` | passed; 151 tests |
 | Gold desktop baseline | 1440x900 light, SHA-256 `1e8d0058f97b15707927a92fbb6c62ec072fcc3fdb2e9207dfa261532ab88ce7` | captured |
 | Gold mobile baseline | 430x932 light, SHA-256 `d30f4abfb857d1e2188abd226367947bbe62671b0f2b2502b83720cb006bfe1b` | captured; horizontal overflow visible |
@@ -115,9 +124,10 @@ No product, site, application, accessibility, or deployment test is marked passe
 - The public `v0.9.1-rc.3` DMG is an older artifact (`sourceCommit` `119d940...`) and still contains the retired ClamAV/Smart Care UI; it cannot honestly be presented as the current gold-master app. A validated new app release is required before changing the public download.
 - Browser route, interaction, accessibility and responsive gates pass locally on an isolated build; production deployment and visual comparison remain open.
 - The public release mismatch is recorded in the macOS audit evidence; no replacement binary has been published.
+- A local `rc.4` packaging attempt produced a fresh ad-hoc app build but no DMG because the host `hdiutil` conversion step returned an invalid-file error. The public `rc.3` download remains unchanged.
 
 ## Next gate
 
-Build and validate a new app artifact (rc.4 candidate), export and gate shared
-design tokens, then complete portfolio/workspace/CI checks. Never overwrite rc.3
-silently; the current public artifact requires owner validation before replacement.
+Resolve or reproduce DMG packaging on an authorized macOS packaging host, then
+complete portfolio/workspace/CI checks. Never overwrite rc.3 silently; the
+current public artifact requires owner validation before replacement.
