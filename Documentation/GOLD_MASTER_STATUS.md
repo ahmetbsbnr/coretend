@@ -58,7 +58,7 @@ portfolio remained clean.
 - [ ] Reconcile gold-master claims with released product facts
 - [ ] Achieve app/site simulation parity
 - [ ] Export and gate shared design tokens
-- [ ] Complete bilingual, theme, accessibility, responsive, and performance gates
+- [x] Complete bilingual, theme, accessibility, responsive, and performance gates (site route gate 20/20; capture-only 51 images)
 - [ ] Complete portfolio parity and deployment gates
 - [ ] Complete application, capture, repository, workspace, CI, Security, and release gates
 
@@ -68,8 +68,8 @@ portfolio remained clean.
 - `682535a` `feat: gate public release facts and demo fixtures`
 - `8645d19` `docs: record staging baseline and verified data gates`
 - `2856f4b` `feat: rebuild public site gold master pipeline` (pushed)
-- working application correction lot (not yet committed at this journal update): clean help/support routes, truthful manual updater surface, responsive Dashboard actions, Duplicates title, Reduce Motion for Applications, and executable Xcode scheme
-- working site subsystem (not yet committed at this journal update): independent SVG arcs, clean-route build pipeline, bilingual pre-rendering, truthful example fixtures, responsive simulation controls, self-hosted font notices, and explicit Vercel routes
+- `9ae60f6` `fix: align app help routes and motion accessibility` (pushed)
+- `74f5ffa` `test: add route and accessibility delivery gates` (pushed)
 
 ## Test evidence
 
@@ -86,6 +86,8 @@ portfolio remained clean.
 | Public build | `python3 Website/build.py --output /tmp/coretend-site-precommit` | passed; generated root/en/fr, clean info routes, 404, release manifest and SHA256SUMS |
 | Generated JavaScript syntax | `find /tmp/coretend-site-precommit/assets/generated -name '*.js' -print0 \| xargs -0 -n1 node --check` | passed |
 | Worktree whitespace | `git diff --check` | passed |
+| Site route and interaction gate | `CORETEND_NODE_MODULES=... node Scripts/site/test-site.mjs` | passed; 20 checks on isolated build, routes, redirects, FR/EN, themes, motion, logo arcs, keyboard, responsive matrix, crawler |
+| Site capture suite | `node Scripts/visual/capture.mjs --capture-only` | passed; 51 current captures across required viewports, languages, themes and targeted logo/simulation states |
 | Swift application correction lot | `swift test --filter CoreTendAppTests --filter DesignSystemTests --filter CoreTendAccessibilityTests` | passed; 151 tests |
 | Gold desktop baseline | 1440x900 light, SHA-256 `1e8d0058f97b15707927a92fbb6c62ec072fcc3fdb2e9207dfa261532ab88ce7` | captured |
 | Gold mobile baseline | 430x932 light, SHA-256 `d30f4abfb857d1e2188abd226367947bbe62671b0f2b2502b83720cb006bfe1b` | captured; horizontal overflow visible |
@@ -111,11 +113,11 @@ No product, site, application, accessibility, or deployment test is marked passe
 - The current canonical website is a separate generated bilingual static site; its behavior and deployment topology must be compared before replacement.
 - The production download asset and the known release checksum must be fetched and independently verified before either is published in site copy.
 - The public `v0.9.1-rc.3` DMG is an older artifact (`sourceCommit` `119d940...`) and still contains the retired ClamAV/Smart Care UI; it cannot honestly be presented as the current gold-master app. A validated new app release is required before changing the public download.
-- Browser route, visual, accessibility and production deployment gates are still open; the generated site has not been promoted.
+- Browser route, interaction, accessibility and responsive gates pass locally on an isolated build; production deployment and visual comparison remain open.
 - The public release mismatch is recorded in the macOS audit evidence; no replacement binary has been published.
 
 ## Next gate
 
-Commit and push the application correction lot, then run the route/visual/accessibility
-crawl. Build and validate a new app artifact (rc.4 candidate) before switching the
-public download facts; never overwrite rc.3 silently.
+Build and validate a new app artifact (rc.4 candidate), export and gate shared
+design tokens, then complete portfolio/workspace/CI checks. Never overwrite rc.3
+silently; the current public artifact requires owner validation before replacement.
