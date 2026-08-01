@@ -6,6 +6,7 @@ ROOT="${CHECK_WEBSITE_ROOT:-$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)}"
 cd "$ROOT"
 
 python3 Website/build.py --output "${TMPDIR:-/tmp}/coretend-site-check-$$" >/dev/null
+python3 Scripts/check-design-tokens.py
 if command -v node >/dev/null 2>&1 && [ -f Scripts/site/test-site.mjs ]; then
   if [ -n "${CORETEND_NODE_MODULES:-}" ] && [ -d "$CORETEND_NODE_MODULES" ]; then
     CORETEND_NODE_MODULES="$CORETEND_NODE_MODULES" node Scripts/site/test-site.mjs

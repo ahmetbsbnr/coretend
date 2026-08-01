@@ -44,6 +44,8 @@ PUBLIC_ASSET_PATTERNS = (
     "demos/*.webm",
     "demos/*.webp",
     "fonts/*.woff2",
+    "tokens/*.css",
+    "tokens/*.json",
 )
 
 META = {
