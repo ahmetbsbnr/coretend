@@ -81,6 +81,7 @@ portfolio remained clean.
 - `e1114cd` `fix: anchor informational pages and 404 footer` (pushed)
 - `a34f61c` `docs: record preview and final site gates` (pushed)
 - `863ef12` `docs: describe visual evidence capture` (pushed)
+- `69f1733` `docs: archive retired feature decisions` (pushed)
 
 ## Test evidence
 
@@ -104,6 +105,7 @@ portfolio remained clean.
 | Design token gate | `python3 Scripts/check-design-tokens.py` | passed; generated CSS/JSON match Swift sources |
 | Local final site gate | `node Scripts/site/test-site.mjs` | passed targeted route, 404, bilingual, theme, motion, logo, palette, favicon, token and no-JS checks; earlier full pass also covered viewport matrix and crawler |
 | Visual evidence | `node Scripts/visual/capture.mjs --capture-only` | 51 PNG evidence captures generated; baseline remains unchanged until visual review |
+| Route map | `node Scripts/site/route-map.mjs --json` | canonical route map recorded in `Documentation/Audits/ROUTE_MAP.json` |
 | Swift application correction lot | `swift test --filter CoreTendAppTests --filter DesignSystemTests --filter CoreTendAccessibilityTests` | passed; 151 tests |
 | Gold desktop baseline | 1440x900 light, SHA-256 `1e8d0058f97b15707927a92fbb6c62ec072fcc3fdb2e9207dfa261532ab88ce7` | captured |
 | Gold mobile baseline | 430x932 light, SHA-256 `d30f4abfb857d1e2188abd226367947bbe62671b0f2b2502b83720cb006bfe1b` | captured; horizontal overflow visible |
