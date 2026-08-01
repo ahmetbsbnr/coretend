@@ -82,6 +82,9 @@ portfolio remained clean.
 - `a34f61c` `docs: record preview and final site gates` (pushed)
 - `863ef12` `docs: describe visual evidence capture` (pushed)
 - `69f1733` `docs: archive retired feature decisions` (pushed)
+- `d844b35` `merge: deliver CoreTend gold master` (pushed to `main`)
+- `4b4847a` `fix: serve locale slash routes without redirect` (pushed to `main`)
+- `039da72` `fix: keep locale canonical routes at HTTP 200` (pushed to `main`)
 
 ## Test evidence
 
@@ -121,6 +124,8 @@ No product, site, application, accessibility, or deployment test is marked passe
 - Product-site branch preview: pending
 - Product-site branch preview: `https://coretend-n69ymhyem-ahmets-projects-ed32c752.vercel.app` (READY; unauthenticated requests receive Vercel Deployment Protection 302, so public browser verification requires an authenticated session)
 - Product-site production: not changed
+- Product-site production: `https://coretend.ahmetbsbnr.com` responds with the rebuilt landing, info routes, manifests and branded 404. Vercel production alias is READY on a static deployment; `/en/` and `/fr/` currently undergo Vercel's documented trailing-slash normalization under the project's `trailingSlash:false` setting, while `/privacy`, `/support`, `/legal`, `/licenses`, `/download` and manifests remain clean.
+- Portfolio preview: `https://ahmetbsbnrportfolio-4x5v0ma85-ahmets-projects-ed32c752.vercel.app` (READY; SSO protected)
 - Portfolio branch preview: pending
 - Portfolio production: not changed
 
@@ -135,6 +140,7 @@ No product, site, application, accessibility, or deployment test is marked passe
 - Browser route, interaction, accessibility and responsive gates pass locally on an isolated build; production deployment and visual comparison remain open.
 - The public release mismatch is recorded in the macOS audit evidence; no replacement binary has been published.
 - A local `rc.4` packaging attempt produced a fresh ad-hoc app build but no DMG because the host `hdiutil` conversion step returned an invalid-file error. The public `rc.3` download remains unchanged.
+- Vercel production build settings previously attempted the wrong root; a static canonical deployment was completed after preserving the verified generated output. Anonymous preview URLs remain SSO protected, so browser inspection of those aliases needs an authenticated session.
 
 ## Next gate
 
