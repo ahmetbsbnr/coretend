@@ -350,18 +350,18 @@ p{margin:0}
 .flowgrid{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:clamp(28px,5vw,72px);align-items:start}
 @media(max-width:900px){.flowgrid{grid-template-columns:1fr}}
 .flow-sticky{position:sticky;top:120px}
-.steps{list-style:none;margin:0;padding:0;position:relative}
+.steps{list-style:none;margin:0;padding:0;position:relative;min-width:0}
 .steps::before{content:"";position:absolute;left:19px;top:26px;bottom:34px;width:1px;background:var(--line)}
 .steps .drawn{position:absolute;left:19px;top:26px;width:1px;background:var(--cobalt);
   height:var(--h,0%);transition:height .18s linear;box-shadow:0 0 12px var(--cobalt)}
-.steps li{position:relative;padding:0 0 42px 62px}
+.steps li{position:relative;padding:0 0 42px 62px;min-width:0}
 .steps li:last-child{padding-bottom:0}
 .steps .num{position:absolute;left:0;top:0;width:39px;height:39px;border-radius:50%;display:grid;place-items:center;
   border:1px solid var(--line);background:var(--paper);font-family:var(--mono);font-size:12px;
   color:var(--ink-3);transition:.5s var(--ease);z-index:2}
 .steps li.hot .num{border-color:var(--cobalt);color:#fff;background:var(--cobalt);
   box-shadow:0 0 0 6px var(--cobalt-wash)}
-.steps h3{margin-bottom:8px;font-size:22px}
+.steps h3{margin-bottom:8px;font-size:22px;overflow-wrap:anywhere}
 .steps p{color:var(--ink-2);font-size:15.5px;max-width:52ch}
 .steps .note{margin-top:12px;display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);
   font-size:11.5px;color:var(--ink-3);border:1px dashed var(--line-strong);border-radius:8px;padding:6px 10px}
@@ -467,6 +467,7 @@ p{margin:0}
 
 /* ---------- install ---------- */
 .install-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:clamp(28px,4vw,60px);align-items:center}
+.install-grid>div{min-width:0}
 @media(max-width:900px){.install-grid{grid-template-columns:1fr}}
 .stage{position:relative;aspect-ratio:16/12;border-radius:var(--r);border:1px solid var(--line);
   background:linear-gradient(160deg,var(--paper-2),var(--paper-3));overflow:hidden;box-shadow:var(--shadow)}
@@ -505,7 +506,7 @@ p{margin:0}
 .stepdots i.on{opacity:1;background:var(--cobalt);width:34px}
 .hash{display:flex;align-items:center;gap:10px;margin-top:22px;padding:12px 14px;border:1px solid var(--line);
   border-radius:10px;background:var(--panel);font-family:var(--mono);font-size:11.5px;color:var(--ink-2);
-  overflow:hidden}
+  overflow:hidden;min-width:0;max-width:100%}
 .hash code{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
 .hash button{flex:none;font-family:var(--sans);font-size:12px;font-weight:600;color:var(--cobalt);
   padding:5px 10px;border-radius:7px;border:1px solid var(--line);transition:.3s}
@@ -632,7 +633,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
 </style>
 </head>
 <body>
-<a class="skip" href="#main">Skip to content</a>
+<a class="skip" href="#main" data-fr="Aller au contenu">Skip to content</a>
 <canvas id="field" aria-hidden="true"></canvas>
 <div id="grain" aria-hidden="true"></div>
 <div id="spot" aria-hidden="true"></div>
@@ -640,7 +641,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
 
 <header class="bar" id="bar">
   <div class="wrap">
-    <a class="wordmark" href="/" aria-label="CoreTend — home">
+    <a class="wordmark" href="/" aria-label="CoreTend — home" data-aria-en="CoreTend — home" data-aria-fr="CoreTend — accueil">
       <svg class="mark ct-logo ct-logo--header is-initializing" viewBox="0 0 512 512" aria-hidden="true" focusable="false">
         <g class="ct-arc ct-arc-outer"><path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--cobalt)" stroke-width="38.4" stroke-linecap="round"/></g>
         <g class="ct-arc ct-arc-middle"><path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--ink)" stroke-width="38.4" stroke-linecap="round"/></g>
@@ -650,11 +651,11 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
       </svg><span>CoreTend</span>
     </a>
     <nav class="bar-actions" aria-label="Main">
-      <div class="switch" role="group" aria-label="Language">
+      <div class="switch" role="group" aria-label="Language" data-aria-en="Language" data-aria-fr="Langue">
         <a href="/en/" data-lang-link="en" hreflang="en" lang="en" aria-current="page">EN</a>
         <a href="/fr/" data-lang-link="fr" hreflang="fr" lang="fr">FR</a>
       </div>
-      <button class="icon-btn" id="theme" type="button" aria-label="Switch appearance">
+      <button class="icon-btn" id="theme" type="button" aria-label="Switch appearance" data-aria-en="Switch appearance" data-aria-fr="Changer d’apparence">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
           <circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M4.2 12H2M22 12h-2.2M6.3 6.3 4.8 4.8M19.2 19.2l-1.5-1.5M17.7 6.3l1.5-1.5M4.8 19.2l1.5-1.5"/>
         </svg>
@@ -703,7 +704,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
           <span data-fr="Télécharger pour macOS">Download for macOS</span></a></span>
         <a class="btn btn-secondary btn-lg" href="https://github.com/ahmetbsbnr/coretend" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.02c-3.23.7-3.91-1.37-3.91-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.41-1.26.74-1.55-2.58-.29-5.29-1.29-5.29-5.73 0-1.27.45-2.3 1.2-3.11-.12-.29-.52-1.47.11-3.07 0 0 .98-.31 3.16 1.19a10.95 10.95 0 0 1 5.76 0c2.19-1.5 3.16-1.19 3.16-1.19.63 1.6.23 2.78.11 3.07.75.81 1.2 1.84 1.2 3.11 0 4.45-2.72 5.43-5.31 5.72.42.36.79 1.07.79 2.16v3.02c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .7Z"/></svg>
-          <span>Read the source</span></a>
+          <span data-fr="Lire le code">Read the source</span></a>
       </div>
       <p class="hero-meta" data-reveal style="--d:2290ms">
         0.9.1-rc.3 · macOS 14.0+ · Apple silicon<br>
@@ -711,7 +712,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
       </p>
     </div>
 
-    <div class="app" id="app" data-tilt data-reveal style="--d:400ms" aria-label="Interactive CoreTend interface preview with example data">
+    <div class="app" id="app" data-tilt data-reveal style="--d:400ms" aria-label="Interactive CoreTend interface preview with example data" data-aria-en="Interactive CoreTend interface preview with example data" data-aria-fr="Aperçu interactif de l’interface CoreTend avec données d’exemple">
       <div class="app-top">
         <span class="dots"><i></i><i></i><i></i></span>
         <svg class="app-state-mark ct-logo ct-logo--app" viewBox="0 0 512 512" aria-hidden="true" focusable="false">
@@ -726,7 +727,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
         <span class="pill dry" data-fr="Simulation">Dry run</span>
       </div>
       <div class="app-body">
-        <nav class="app-side" id="side" aria-label="Modules">
+        <nav class="app-side" id="side" aria-label="Modules" data-aria-en="Modules" data-aria-fr="Modules">
           <small>Scan</small>
           <button type="button" class="on" data-view="storage"><span class="ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="13" height="4" rx="1"/><rect x="1.5" y="9.5" width="13" height="4" rx="1"/><path d="M4 4.5h.01M4 11.5h.01"/></svg></span><span data-fr="Stockage">Storage</span></button>
           <button type="button" data-view="lens"><span class="ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="7" height="7" rx="1"/><rect x="10" y="1.5" width="4.5" height="4.5" rx="1"/><rect x="1.5" y="10" width="4.5" height="4.5" rx="1"/><rect x="8" y="8" width="6.5" height="6.5" rx="1"/></svg></span><span>Space Lens</span></button>
@@ -818,7 +819,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
       <p class="eyebrow" data-scramble><b>04</b> <span data-fr="Trouvailles">Findings</span></p>
       <h2 data-reveal data-fr="Ce qu'une analyse remonte, et pourquoi.">What a scan surfaces, and why.</h2>
       <p class="lead" data-reveal style="--d:100ms" data-fr="Une taille ne suffit pas à décider. Chaque ligne porte sa raison d'être là, pour que vous puissiez dire non en connaissance de cause.">A size on its own is not a decision. Every row carries the reason it was flagged, so saying no is as informed as saying yes.</p>
-      <div class="tabs" role="tablist" aria-label="Finding categories" id="tabs"></div>
+      <div class="tabs" role="tablist" aria-label="Finding categories" data-aria-en="Finding categories" data-aria-fr="Catégories de résultats" id="tabs"></div>
       <p class="hero-meta" style="--d:200ms" data-reveal data-fr="Données d'exemple. Votre analyse ne ressemblera à celle de personne d'autre.">Sample data. Your scan will look like no one else's.</p>
     </div>
     <div class="slab" data-reveal style="--d:120ms">
@@ -1497,7 +1498,11 @@ function demo(view = "storage", auto = true) {
   $("#scanToggle").textContent = demoLabel("Pause","Pause");
   $("#scanCancel").textContent = demoLabel("Cancel","Annuler");
   $("#scanCancel").disabled = false;
-  $$("#side button").forEach(b => b.classList.toggle("on", b.dataset.view === view));
+  $$("#side button").forEach(b => {
+    const active = b.dataset.view === view;
+    b.classList.toggle("on", active);
+    b.setAttribute("aria-pressed", String(active));
+  });
 
   const lens = $("#lens");
   lens.querySelectorAll("b").forEach(n => n.remove());
@@ -1557,7 +1562,7 @@ function demo(view = "storage", auto = true) {
 function findings(active = "storage") {
   const tabs = $("#tabs"), rows = $("#findRows");
   tabs.innerHTML = FIND.cats.map(c =>
-    `<button role="tab" data-cat="${c.id}" aria-selected="${c.id === active}">${pick(c.label)}</button>`).join("");
+    `<button role="tab" type="button" data-cat="${c.id}" aria-selected="${c.id === active}" tabindex="${c.id === active ? "0" : "-1"}">${pick(c.label)}</button>`).join("");
   const cat = FIND.cats.find(c => c.id === active);
   $("#slabPath").textContent = cat.path;
   $("#findMeasure").textContent = pick(cat.measure);
@@ -1664,19 +1669,29 @@ function theme() {
       const dark = root.dataset.theme === "dark";
       root.dataset.theme = dark ? "light" : "dark";
       try { localStorage.setItem("coretend-theme", root.dataset.theme); } catch (_) {}
-      button.setAttribute("aria-label", dark ? "Switch to dark appearance" : "Switch to light appearance");
+      button.setAttribute("aria-label", lang() === "fr"
+        ? (dark ? "Activer l’apparence sombre" : "Activer l’apparence claire")
+        : (dark ? "Switch to dark appearance" : "Switch to light appearance"));
     };
     if (!RM.matches && document.startViewTransition) document.startViewTransition(apply);
     else apply();
   });
 }
 function i18n() {
+  $$("[data-aria-en][data-aria-fr]").forEach(element => {
+    const value = lang() === "fr" ? element.dataset.ariaFr : element.dataset.ariaEn;
+    if (value) element.setAttribute("aria-label", value);
+  });
   $$("[data-lang-link]").forEach(link => {
     const to = link.dataset.langLink;
     link.setAttribute("aria-current", to === lang() ? "page" : "false");
     link.addEventListener("click", event => {
       event.preventDefault();
       try { localStorage.setItem("coretend-language", to); } catch (_) {}
+      try {
+        sessionStorage.setItem("coretend-scroll", String(Math.round(scrollY)));
+        sessionStorage.setItem("coretend-view", demoState.view);
+      } catch (_) {}
       const hash = location.hash || "";
       document.body.classList.add("is-changing-language");
       setTimeout(() => location.assign(`/${to}/${hash}`), RM.matches ? 0 : 110);
@@ -1687,11 +1702,32 @@ function i18n() {
 /* ─── boot ───────────────────────────────────────────────── */
 splitHeadline();
 logos(); field(); scrollSystems(); observers(); pointer(); ticker();
-demo("storage"); findings("storage"); terminal(); gatekeeper(); faq(); theme(); i18n();
+let restoredView = "storage";
+try { restoredView = Object.keys(VIEWS).includes(sessionStorage.getItem("coretend-view")) ? sessionStorage.getItem("coretend-view") : "storage"; } catch (_) {}
+demo(restoredView); findings("storage"); terminal(); gatekeeper(); faq(); theme(); i18n();
+try {
+  const savedScroll = Number(sessionStorage.getItem("coretend-scroll"));
+  if (Number.isFinite(savedScroll) && savedScroll > 0) {
+    requestAnimationFrame(() => { scrollTo({top:savedScroll,behavior:"auto"}); sessionStorage.removeItem("coretend-scroll"); sessionStorage.removeItem("coretend-view"); });
+  }
+} catch (_) {}
 
 $$("#side button").forEach(b => b.addEventListener("click", () => {
   demo(b.dataset.view,true);
 }));
+
+$("#tabs").addEventListener("keydown", event => {
+  const tabs = $$('#tabs [role="tab"]');
+  if (!tabs.length || !["ArrowRight","ArrowDown","ArrowLeft","ArrowUp","Home","End"].includes(event.key)) return;
+  event.preventDefault();
+  const current = tabs.indexOf(document.activeElement);
+  const next = event.key === "Home" ? 0
+    : event.key === "End" ? tabs.length - 1
+    : (current + (event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : -1) + tabs.length) % tabs.length;
+  const nextCategory = tabs[next].dataset.cat;
+  findings(nextCategory);
+  $(`#tabs [data-cat="${nextCategory}"]`)?.focus();
+});
 
 $("#scanToggle").addEventListener("click",() => {
   if (demoState.status === "complete" || demoState.status === "cancelled") {
