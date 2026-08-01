@@ -19,6 +19,8 @@ final class SimilarImagesViewModel {
     let volumeResolver: VolumeResolving
     let exclusionsController = ClutterExclusionsController()
     private var scanTask: Task<Void, Never>?
+    private var pauseController: ScanPauseController?
+    private(set) var isPaused = false
 
     init(volumeResolver: VolumeResolving = SystemVolumeResolver()) {
         self.volumeResolver = volumeResolver
@@ -44,6 +46,9 @@ final class SimilarImagesViewModel {
         if case .scanning = phase { return }
         phase = .scanning(processed: 0, total: 0)
         groups = []
+        isPaused = false
+        let pauseController = ScanPauseController()
+        self.pauseController = pauseController
         let home = FileManager.default.homeDirectoryForCurrentUser
         let engine = SimilarImagesEngine(roots: [
             home.appendingPathComponent("Pictures"),
@@ -51,30 +56,53 @@ final class SimilarImagesViewModel {
             home.appendingPathComponent("Desktop"),
         ])
         scanTask = Task {
-            for await event in engine.run() {
+            for await event in engine.run(pauseController: pauseController) {
                 switch event {
                 case let .progress(processed, total):
                     phase = .scanning(processed: processed, total: total)
                 case let .finished(found):
                     groups = found
                     phase = found.isEmpty ? .empty : .results
+                    isPaused = false
+                    self.pauseController = nil
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .scan, summary: "Similar images: \(found.count) groups",
                         itemCount: found.count,
                         bytes: found.reduce(0) { $0 + $1.totalBytes }, dryRun: true))
                 case .cancelled:
                     phase = groups.isEmpty ? .idle : .results
+                    isPaused = false
+                    self.pauseController = nil
                 case let .unavailable(reason):
                     phase = .empty
+                    isPaused = false
+                    self.pauseController = nil
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .error, summary: "Similar images unavailable: \(reason)",
                         itemCount: 0, bytes: 0, dryRun: true))
                 }
             }
+            isPaused = false
+            self.pauseController = nil
         }
     }
 
-    func cancel() { scanTask?.cancel() }
+    func pauseScan() {
+        guard case .scanning = phase, !isPaused else { return }
+        isPaused = true
+        Task { await pauseController?.pause() }
+    }
+
+    func resumeScan() {
+        guard isPaused else { return }
+        isPaused = false
+        Task { await pauseController?.resume() }
+    }
+
+    func cancel() {
+        scanTask?.cancel()
+        Task { await pauseController?.resume() }
+    }
 }
 
 /// Identifiable wrapper so raw `URL`s can drive `MCOverlapStack`.
@@ -131,7 +159,19 @@ struct SimilarImagesView: View {
                         ProgressView()
                         Text(L("similar.collecting"))
                     }
+                    if model.isPaused {
+                        Button(L("common.resume")) { model.resumeScan() }
+                            .keyboardShortcut("r", modifiers: [])
+                            .help(L("dupes.resume_hint"))
+                            .accessibilityHint(L("dupes.resume_hint"))
+                    } else {
+                        Button(L("common.pause")) { model.pauseScan() }
+                            .keyboardShortcut("p", modifiers: [])
+                            .help(L("dupes.pause_hint"))
+                            .accessibilityHint(L("dupes.pause_hint"))
+                    }
                     Button(L("common.cancel")) { model.cancel() }
+                        .keyboardShortcut(.cancelAction)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:

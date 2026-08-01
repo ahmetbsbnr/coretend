@@ -14,6 +14,11 @@ Latest Duplicates pause commit: `1142f34a14fbe202fb1a6b8dbff669edd6514fcc` (`114
 Latest Duplicates export commit: `ceb09823b96cfeda3d234009f8efbb1c2c25dfa0` (`ceb0982`)
 Latest Applications review commit: `988c2a0d65cf3913b6b4f49cc65cbebd71824767` (`988c2a0`)
 Latest UI automation commit: `10fae9db4a7a91581efcbdce99bdebeb567e0dd6` (`10fae9d`)
+Latest website reconstruction commit: `d50279fbf370524661c2fb41a804c2b6c05ce65d` (`d50279f`)
+Latest app visual foundation commit: `52612174cb337fe5b1980c31de19043bf952169c` (`5261217`)
+Latest updater manifest commit: `5686dcffecf83366be83db632e2cacc9b5f36e22` (`5686dcf`)
+Latest product audit commit: `b41dd08ab9eb0351525f07a356350f7f3b8a62a7` (`b41dd08`)
+Latest Similar Images pause commit: this status commit (`Add Similar Images pause controls`)
 
 ## Git Validation
 
@@ -30,6 +35,12 @@ Latest UI automation commit: `10fae9db4a7a91581efcbdce99bdebeb567e0dd6` (`10fae9
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `ceb09823b96cfeda3d234009f8efbb1c2c25dfa0`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `988c2a0d65cf3913b6b4f49cc65cbebd71824767`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `10fae9db4a7a91581efcbdce99bdebeb567e0dd6`.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `d50279fbf370524661c2fb41a804c2b6c05ce65d`.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `52612174cb337fe5b1980c31de19043bf952169c`.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `5686dcffecf83366be83db632e2cacc9b5f36e22`.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `b41dd08ab9eb0351525f07a356350f7f3b8a62a7`.
+- Branch `rescue/coretend-final-product` was pushed to GitHub for the Similar Images pause-control status commit.
+- Latest full CI run `30671237842` passed on `b41dd08ab9eb0351525f07a356350f7f3b8a62a7`, including distribution-check and build-and-test.
 
 ## Local Backup
 
@@ -67,10 +78,10 @@ Controls currently integrated:
 - My Clutter, Large & Old analysis: Pause / Resume / Cancel while scanning.
 - Space Lens: Pause / Resume / Cancel while scanning.
 - Duplicates: Pause / Resume / Cancel while scanning.
+- Similar Images: Pause / Resume / Cancel while scanning.
 
 Controls not yet integrated:
 
-- Similar Images scan.
 - Privacy Cleaner browser detection/cleanup.
 - Cloud Cleanup provider analysis.
 - Applications scan/uninstall workflows.
@@ -273,7 +284,7 @@ Current product audit from source re-read:
 - Smart Care: useful as an internal/orchestration workflow, but no longer a primary release destination; it currently orchestrates Cleanup only and marks Performance/Applications unavailable.
 - Performance: useful read-only diagnostics, but not a primary release module; live metrics and LaunchAgent inspection exist.
 - My Clutter: partially superseded by Storage, Space Lens, and Duplicates; Large & Old remains useful but is no longer a primary release destination.
-- Similar Images: functional read-only analysis with cancel, Quick Look/Finder/exclusions, but no pause/resume and no deletion path; not a release primary module.
+- Similar Images: functional read-only analysis with pause/resume/cancel, Quick Look/Finder/exclusions, but no deletion path; not a release primary module.
 - Cloud Cleanup: analysis-only and read-only; provider detection and local/logical byte classification exist, but no pause/resume and no reclaim action; not a release primary module.
 - Favorites & Recents: support/history infrastructure, not a primary module.
 
@@ -409,6 +420,28 @@ Validation completed locally:
 Known limits:
 
 - Atomic download/resume/rollback installation is intentionally still not enabled, because the current distribution has no Developer ID signature or notarization. The updater remains a verified manifest/reporting surface until publisher identity exists.
+
+## Similar Images Pause Controls
+
+Status: committed and pushed in this status commit.
+
+Implemented:
+
+- `SimilarImagesEngine.run(pauseController:)` now accepts the shared non-blocking `ScanPauseController`.
+- Pause checks run during image inventory, Vision feature-print processing, and clustering.
+- `SimilarImagesViewModel` now owns scan pause state, resumes before cancellation teardown, and resets pause state at every terminal event.
+- `SimilarImagesView` now exposes Pause / Resume / Cancel while scanning, with `p`, `r`, and Escape keyboard shortcuts.
+
+Validation completed locally:
+
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-similar-pause --filter ScanPauseControllerTests` passed with 7 tests, including Similar Images pause/resume coverage.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-similar-pause -c debug` passed.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-similar-pause-release -c release` passed.
+
+Known limits:
+
+- Similar Images remains a read-only support module rather than a primary release module; it still has no deletion action.
+- `SimilarImagesEngineTests` failed in this sandbox because Vision returned no groups for the existing synthetic-image fixture (`sysctlbyname for kern.hv_vmm_present failed` also appeared). The same suite was previously green in CI; this is recorded as a local sandbox/Vision limitation unless it reproduces in CI.
 
 P0 public launch:
 

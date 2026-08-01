@@ -1,5 +1,8 @@
 import Testing
 import Foundation
+import CoreGraphics
+import ImageIO
+import UniformTypeIdentifiers
 import SafetyCore
 @testable import ScanCore
 
@@ -30,6 +33,23 @@ struct ScanPauseControllerTests {
         ScanRule(id: "t", name: "t", category: "t", explanation: "t", risk: .low, preselect: true) {
             [$0.appendingPathComponent("Library/Caches")]
         }
+    }
+
+    @discardableResult
+    private func writePNG(_ url: URL, gray: CGFloat) throws -> URL {
+        let cs = CGColorSpaceCreateDeviceRGB()
+        guard let ctx = CGContext(data: nil, width: 64, height: 64, bitsPerComponent: 8,
+                                  bytesPerRow: 0, space: cs,
+                                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+            throw CocoaError(.featureUnsupported)
+        }
+        ctx.setFillColor(red: gray, green: gray, blue: gray, alpha: 1)
+        ctx.fill(CGRect(x: 0, y: 0, width: 64, height: 64))
+        let image = ctx.makeImage()!
+        let dest = CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil)!
+        CGImageDestinationAddImage(dest, image, nil)
+        #expect(CGImageDestinationFinalize(dest))
+        return url
     }
 
     /// A scan paused from the start only produces its findings once resumed —
@@ -159,5 +179,29 @@ struct ScanPauseControllerTests {
         }
 
         #expect(groups == 1)
+    }
+
+    @Test func pausedSimilarImagesScanResumesAndFinishes() async throws {
+        let root = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("coretend-similar-pause-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        let original = try writePNG(root.appendingPathComponent("a.png"), gray: 0.45)
+        try FileManager.default.copyItem(at: original, to: root.appendingPathComponent("b.png"))
+
+        let controller = ScanPauseController()
+        await controller.pause()
+        Task {
+            try? await Task.sleep(for: .milliseconds(150))
+            await controller.resume()
+        }
+
+        var didFinish = false
+        for await event in SimilarImagesEngine(roots: [root]).run(pauseController: controller) {
+            if case .finished = event { didFinish = true }
+        }
+
+        #expect(didFinish)
     }
 }
