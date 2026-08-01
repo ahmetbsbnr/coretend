@@ -35,8 +35,6 @@ const EXPECTED_CANONICAL = {
 
 const REDIRECTS = {
   '/index.html': '/',
-  '/en': '/en/',
-  '/fr': '/fr/',
   '/en/index.html': '/en/',
   '/fr/index.html': '/fr/',
   '/privacy.html': '/privacy',
