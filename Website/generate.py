@@ -2130,6 +2130,11 @@ def write_vercel_config():
             {"source": "/download", "destination": RELEASE["dmgURL"], "permanent": False})
         redirects.append(
             {"source": "/download/", "destination": RELEASE["dmgURL"], "permanent": False})
+        asset_base = f"{REPOSITORY_URL}/releases/download/{RELEASE.get('tag', '')}"
+        redirects.append(
+            {"source": "/latest.json", "destination": f"{asset_base}/latest.json", "permanent": False})
+        redirects.append(
+            {"source": "/SHA256SUMS", "destination": f"{asset_base}/SHA256SUMS", "permanent": False})
     else:
         # Never publish a button that 404s: without a known artifact, send
         # people to the releases index instead.

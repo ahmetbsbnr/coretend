@@ -20,6 +20,16 @@
       "permanent": false
     },
     {
+      "source": "/latest.json",
+      "destination": "https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.3/latest.json",
+      "permanent": false
+    },
+    {
+      "source": "/SHA256SUMS",
+      "destination": "https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.3/SHA256SUMS",
+      "permanent": false
+    },
+    {
       "source": "/en/download.html",
       "destination": "/en/index.html",
       "permanent": false
