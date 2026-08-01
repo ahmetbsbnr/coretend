@@ -207,7 +207,7 @@ struct MyActivityView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: MCSpacing.sm) {
             Image(systemName: "clock.arrow.circlepath")
                 .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.accent)
                 .accessibilityHidden(true)
@@ -262,7 +262,7 @@ struct MyActivityView: View {
     }
 
     private func summaryMetric(label: String, value: String, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: MCSpacing.xxs) {
             Text(value).font(.title3.weight(.semibold)).monospacedDigit().foregroundStyle(color)
             Text(label).font(.caption).foregroundStyle(.secondary)
         }
@@ -322,7 +322,7 @@ private struct ActivityRow: View {
                 if record.kind == .cleanup {
                     Text(record.dryRun ? L("common.dry_run") : L("activity.completed"))
                         .font(.caption2.weight(.medium))
-                        .padding(.horizontal, 6).padding(.vertical, 2)
+                        .padding(.horizontal, MCSpacing.xs).padding(.vertical, MCSpacing.xxs)
                         .background(record.dryRun ? Color(nsColor: .quaternaryLabelColor) : MCTheme.success.opacity(0.18), in: Capsule())
                         .foregroundStyle(record.dryRun ? .secondary : MCTheme.success)
                 }

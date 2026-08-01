@@ -31,7 +31,7 @@ struct ProtectionView: View {
             PrivacyCleanerView()
                 .tabItem { Label(L("protection.tab.privacy"), systemImage: "hand.raised") }
         }
-        .padding(8)
+        .padding(MCSpacing.xs)
         .navigationTitle(L("module.protection"))
         .accessibilityIdentifier("integrity.root")
     }
@@ -48,22 +48,22 @@ struct IntegrityView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: MCSpacing.md) {
                 explainerCard
                 downloadsCard
                 inspectorCard
                 loginItemsCard
             }
-            .padding(24)
+            .padding(MCSpacing.page)
         }
         .task { await model.refresh() }
     }
 
     private var explainerCard: some View {
         MCCard {
-            HStack(alignment: .top, spacing: 16) {
+            HStack(alignment: .top, spacing: MCSpacing.md) {
                 Image(systemName: "info.circle").font(.title2).foregroundStyle(MCTheme.accent)
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: MCSpacing.xxs) {
                     Text(L("integrity.explainer.title")).font(MCFont.cardTitle)
                     Text(L("integrity.explainer.body")).foregroundStyle(.secondary)
                 }
@@ -74,7 +74,7 @@ struct IntegrityView: View {
 
     private var downloadsCard: some View {
         MCCard {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: MCSpacing.sm) {
                 HStack {
                     Text(L("integrity.downloads.title")).font(MCFont.cardTitle)
                     Spacer()
@@ -87,7 +87,7 @@ struct IntegrityView: View {
                     HStack(alignment: .top) {
                         Image(systemName: item.isQuarantined ? "shield.checkerboard" : "doc")
                             .foregroundStyle(item.isQuarantined ? MCTheme.accent : .secondary)
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: MCSpacing.xxs) {
                             Text(item.name).font(.callout.weight(.medium)).lineLimit(1)
                             if let source = item.sourceURL {
                                 Text(source).font(.caption).foregroundStyle(.secondary)
@@ -114,7 +114,7 @@ struct IntegrityView: View {
 
     private var inspectorCard: some View {
         MCCard {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: MCSpacing.sm) {
                 Text(L("integrity.inspector.title")).font(MCFont.cardTitle)
                 Text(L("integrity.inspector.subtitle")).font(.caption).foregroundStyle(.secondary)
                 Button(L("integrity.inspector.choose")) {
@@ -146,7 +146,7 @@ struct IntegrityView: View {
         }
         HStack(alignment: .top) {
             Image(systemName: icon).foregroundStyle(color)
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: MCSpacing.xxs) {
                 Text(name).font(.callout.weight(.medium))
                 Text(label).font(.caption).foregroundStyle(.secondary)
                 if !info.signatureValid {
@@ -159,7 +159,7 @@ struct IntegrityView: View {
 
     private var loginItemsCard: some View {
         MCCard {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: MCSpacing.xs) {
                 Text(L("integrity.login_items.title")).font(MCFont.cardTitle)
                 Text(L("integrity.login_items.subtitle")).font(.caption).foregroundStyle(.secondary)
                 if model.loginItems.isEmpty && !model.isLoading {

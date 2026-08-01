@@ -238,7 +238,7 @@ struct DuplicatesView: View {
     }
 
     private func scanningView(_ processed: Int, _ total: Int) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: MCSpacing.md) {
             if total > 0 {
                 ProgressView(value: Double(processed), total: Double(total))
                     .frame(width: 260)
@@ -323,7 +323,7 @@ struct DuplicatesView: View {
                                        markedID: group.keeper.path) { member in
                             Image(nsImage: NSWorkspace.shared.icon(forFile: member.url.path))
                                 .resizable().frame(width: 32, height: 32)
-                                .padding(4)
+                                .padding(MCSpacing.xxs)
                                 .background(MCColor.elevatedBackground, in: RoundedRectangle(cornerRadius: MCRadius.small))
                         }
                         .padding(.vertical, MCSpacing.xxs)
@@ -342,7 +342,7 @@ struct DuplicatesView: View {
                                 if url.path == group.keeper.path {
                                     Text(L("dupes.suggested_keeper"))
                                         .font(.caption2.weight(.medium))
-                                        .padding(.horizontal, 6).padding(.vertical, 2)
+                                        .padding(.horizontal, MCSpacing.xs).padding(.vertical, MCSpacing.xxs)
                                         .background(MCTheme.accent.opacity(0.2), in: Capsule())
                                         .help(L("dupes.suggested_keeper.why"))
                                 }

@@ -243,8 +243,8 @@ struct MigrationNoticeRow: View {
     let report: LegacyDataMigration.Report
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: MCSpacing.xxs) {
+            HStack(spacing: MCSpacing.xxs) {
                 Image(systemName: failed ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
                     .foregroundStyle(failed ? MCTheme.warning : MCTheme.success)
                     .accessibilityHidden(true)

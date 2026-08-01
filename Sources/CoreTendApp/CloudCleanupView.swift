@@ -239,7 +239,7 @@ struct CloudCleanupView: View {
             case .ready:
                 providerPicker
             case .scanning:
-                VStack(spacing: 12) {
+                VStack(spacing: MCSpacing.sm) {
                     ProgressView()
                     Text(L("cloud.measuring"))
                     if model.isPaused {
@@ -270,7 +270,7 @@ struct CloudCleanupView: View {
     }
 
     private var providerPicker: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: MCSpacing.md) {
             Image(systemName: "icloud").font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
             Text(L("cloud.picker.title")).font(MCFont.pageTitle)
             Text(L("cloud.picker.subtitle"))
