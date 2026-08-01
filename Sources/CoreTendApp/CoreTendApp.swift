@@ -4,8 +4,8 @@ import SystemMetrics
 import Persistence
 import IntegrityCore
 
-@main
-struct CoreTendApp: App {
+public struct CoreTendApp: App {
+    public init() {}
     @AppStorage("menuBarEnabled") private var menuBarEnabled = true
     // Same UserDefaults key LocalizationManager reads/writes. Observing it
     // here — not just inside LocalizationManager, which isn't itself
@@ -22,7 +22,7 @@ struct CoreTendApp: App {
         return image
     }()
 
-    var body: some Scene {
+    public var body: some Scene {
         WindowGroup("CoreTend") {
             MainWindow()
                 .frame(minWidth: MCSize.windowMinWidth, minHeight: MCSize.windowMinHeight)

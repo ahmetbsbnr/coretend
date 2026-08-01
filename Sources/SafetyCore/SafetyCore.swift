@@ -215,10 +215,21 @@ public actor SafetyCenter {
                     do {
                         try fileManager.trashItem(at: url, resultingItemURL: nil)
                     } catch {
-                        skipped.append((op, .fileVanished))
-                        await emit(.error, operationID: op.id, path: url.path, ruleID: op.ruleID, risk: op.risk,
-                                   size: op.logicalSize, result: "trashItem failed: \(error)")
-                        continue
+                        if Self.isTemporaryPath(url) {
+                            do {
+                                try fileManager.removeItem(at: url)
+                            } catch {
+                                skipped.append((op, .fileVanished))
+                                await emit(.error, operationID: op.id, path: url.path, ruleID: op.ruleID, risk: op.risk,
+                                           size: op.logicalSize, result: "temporary remove failed")
+                                continue
+                            }
+                        } else {
+                            skipped.append((op, .fileVanished))
+                            await emit(.error, operationID: op.id, path: url.path, ruleID: op.ruleID, risk: op.risk,
+                                       size: op.logicalSize, result: "trashItem failed")
+                            continue
+                        }
                     }
                 }
                 await emit(dryRun ? .dryRun : .executed, operationID: op.id, path: url.path, ruleID: op.ruleID,
@@ -231,5 +242,15 @@ public actor SafetyCenter {
             }
         }
         return ExecutionResult(executed: executed, skipped: skipped, wasDryRun: dryRun)
+    }
+
+    private static func isTemporaryPath(_ url: URL) -> Bool {
+        let path = url.standardizedFileURL.path
+        let temporaryRoots = [
+            URL(fileURLWithPath: NSTemporaryDirectory()).standardizedFileURL.path,
+            "/private/tmp",
+            "/tmp",
+        ]
+        return temporaryRoots.contains { PathValidator.isPath(path, under: $0) }
     }
 }
