@@ -505,6 +505,44 @@ await gate('semantic controls have unique IDs, names and one accessible logo ide
   await context.close()
 })
 
+await gate('published raster brand assets contain no historical palette', async () => {
+  const context = await browser.newContext({ reducedMotion: 'reduce' })
+  const page = await context.newPage()
+  await page.goto(`${origin}/privacy`)
+  const matches = await page.evaluate(async sources => {
+    const historical = [[19, 103, 74], [92, 84, 204], [148, 96, 10]]
+    const findings = []
+    for (const source of sources) {
+      const image = new Image()
+      image.src = source
+      await image.decode()
+      const scale = Math.min(1, 640 / Math.max(image.naturalWidth, image.naturalHeight))
+      const width = Math.max(1, Math.round(image.naturalWidth * scale))
+      const height = Math.max(1, Math.round(image.naturalHeight * scale))
+      const canvas = document.createElement('canvas')
+      canvas.width = width
+      canvas.height = height
+      const drawing = canvas.getContext('2d', { willReadFrequently: true })
+      drawing.drawImage(image, 0, 0, width, height)
+      const pixels = drawing.getImageData(0, 0, width, height).data
+      let count = 0
+      for (let index = 0; index < pixels.length; index += 4) {
+        if (pixels[index + 3] < 180) continue
+        if (historical.some(([r, g, b]) => Math.abs(pixels[index] - r) <= 3 && Math.abs(pixels[index + 1] - g) <= 3 && Math.abs(pixels[index + 2] - b) <= 3)) count++
+      }
+      if (count) findings.push(`${source}:${count}`)
+    }
+    return findings
+  }, [
+    '/assets/brand/favicon-32.png',
+    '/assets/brand/favicon-180.png',
+    '/assets/brand/favicon-512.png',
+    '/assets/brand/opengraph.png',
+  ])
+  assert.deepEqual(matches, [], `historical green/purple/amber pixels remain: ${matches.join(', ')}`)
+  await context.close()
+})
+
 await gate('no-JavaScript fallback remains styled, bilingual and usable', async () => {
   const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } })
   const page = await context.newPage()

@@ -9,6 +9,7 @@ import { buildSite, launchChromium, loadPlaywright, startSite } from './site-fix
 export const CANONICAL_ROUTES = ['/', '/en/', '/fr/', '/privacy', '/support', '/legal', '/licenses']
 const TEXT_EXTENSIONS = new Set(['.css', '.html', '.js', '.json', '.svg', '.txt', '.vtt', '.webmanifest', '.xml'])
 const TECHNICAL_URL = /(?:\.html(?:[?#/"'\s<)]|$)|\/(?:site|Website|public|dist|out)(?:\/|$)|localhost|127\.0\.0\.1|\/Users\/(?!demo(?:\/|\b)))/i
+const HISTORICAL_BRAND_COLOR = /#(?:13674a|5c54cc|94600a)\b/i
 
 async function filesBelow(directory) {
   const result = []
@@ -29,6 +30,10 @@ export async function scanPublicOutput(buildDirectory) {
     const match = content.match(TECHNICAL_URL)
     if (match) {
       failures.push(`${file.slice(buildDirectory.length + 1)} exposes forbidden text ${JSON.stringify(match[0])}`)
+    }
+    const legacyColor = content.match(HISTORICAL_BRAND_COLOR)
+    if (legacyColor) {
+      failures.push(`${file.slice(buildDirectory.length + 1)} exposes historical brand color ${legacyColor[0]}`)
     }
   }
 
