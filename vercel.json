@@ -23,8 +23,6 @@
     { "source": "/Website/index.html", "destination": "/", "permanent": true },
     { "source": "/en.html", "destination": "/en/", "permanent": true },
     { "source": "/fr.html", "destination": "/fr/", "permanent": true },
-    { "source": "/en/:page.html", "destination": "/en/", "permanent": true },
-    { "source": "/fr/:page.html", "destination": "/fr/", "permanent": true },
     {
       "source": "/download",
       "destination": "https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.3/CoreTend-0.9.1-rc.3-arm64-unsigned.dmg",

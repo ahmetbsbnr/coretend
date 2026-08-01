@@ -1,90 +1,85 @@
 #!/usr/bin/env node
 /**
- * Visual regression for the CoreTend site.
+ * Deterministic visual regression for CoreTend's generated clean routes.
  *
- * Two modes:
- *   --update    rewrite the reference fingerprints (a deliberate human act)
- *   (default)   capture again and compare
- *
- * Why fingerprints rather than committed PNGs:
- *
- * The obvious design — commit a reference screenshot per page per viewport —
- * was built first and produced 30 MB of PNGs for 72 captures (63 MB when they
- * were full-page). That stalls pushes, bloats history forever, and nobody can
- * actually review 72 screenshots in a diff. So the repository stores a compact
- * fingerprint of each capture instead: exact pixel dimensions plus a 32x32
- * grid of average luminance. That is enough to catch the changes this suite
- * exists to catch — a moved logo, a reflowed hero, a changed grid — while
- * staying a few kilobytes of reviewable JSON.
- *
- * When a comparison fails, the actual PNG is written to Scripts/visual/output/
- * so a human can look at the real thing. The pixels are not thrown away, they
- * are just not kept in git.
- *
- * References are never refreshed automatically on failure: a visual test that
- * rewrites its own baseline whenever it fails only proves the code ran.
- *
- * Animation is frozen during capture (reduced-motion, zeroed durations, hidden
- * video), so a difference means a layout or paint change, never a frame caught
- * mid-transition. Captures are viewport-sized: composition and hierarchy live
- * above the fold, and below-the-fold layout is covered by the overflow and
- * geometry assertions in the other gates.
+ * `--update` is the only mode which writes reference.json. The default mode
+ * compares fingerprints and writes reviewable PNGs only for differences.
+ * `--capture-only` writes the current PNG set without accepting it as truth.
  */
-import { chromium } from 'playwright'
-import { mkdir, readFile, writeFile, stat } from 'node:fs/promises'
-import { existsSync, createReadStream } from 'node:fs'
-import { dirname, join, extname, normalize } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { createServer } from 'node:http'
-import { PNG } from 'pngjs'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import {
+  buildSite,
+  launchChromium,
+  loadPlaywright,
+  repoRoot,
+  startSite,
+} from '../site/site-fixture.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const refFile = join(here, 'reference.json')
 const outDir = join(here, 'output')
 const update = process.argv.includes('--update')
-const siteDir = join(here, '..', '..', 'Website')
+const captureOnly = process.argv.includes('--capture-only')
+if (update && captureOnly) throw new Error('choose either --update or --capture-only')
 
 const VIEWPORTS = [
-  { name: '320x568', width: 320, height: 568 },
-  { name: '375x812', width: 375, height: 812 },
-  { name: '390x844', width: 390, height: 844 },
-  { name: '430x932', width: 430, height: 932 },
-  { name: '768x1024', width: 768, height: 1024 },
-  { name: '1024x768', width: 1024, height: 768 },
-  { name: '1280x800', width: 1280, height: 800 },
   { name: '1440x900', width: 1440, height: 900 },
-  { name: '1728x1117', width: 1728, height: 1117 },
+  { name: '1280x800', width: 1280, height: 800 },
+  { name: '1024x768', width: 1024, height: 768 },
+  { name: '820x1180', width: 820, height: 1180 },
+  { name: '430x932', width: 430, height: 932 },
+  { name: '390x844', width: 390, height: 844 },
+  { name: '360x800', width: 360, height: 800 },
 ]
 
-// The site is one landing page plus the legal pages it is obliged to keep.
-const PAGES = [
-  { name: 'home-en', path: '/en/index.html' },
-  { name: 'home-fr', path: '/fr/index.html' },
-  { name: 'legal-en', path: '/en/legal.html' },
-  { name: 'privacy-fr', path: '/fr/privacy.html' },
-  { name: 'notfound-en', path: '/en/404.html' },
-]
+const DESKTOP = VIEWPORTS[0]
+const MOBILE = VIEWPORTS[4]
+const ROUTE_MATRIX = VIEWPORTS.flatMap(viewport => [
+  { name: `home-en-light--${viewport.name}`, path: '/en/', viewport, language: 'en', theme: 'light' },
+  { name: `home-fr-light--${viewport.name}`, path: '/fr/', viewport, language: 'fr', theme: 'light' },
+  { name: `home-en-dark--${viewport.name}`, path: '/en/', viewport, language: 'en', theme: 'dark' },
+  { name: `home-fr-dark--${viewport.name}`, path: '/fr/', viewport, language: 'fr', theme: 'dark' },
+])
+
+const SUPPORTING_PAGES = [DESKTOP, MOBILE].flatMap(viewport => [
+  { name: `root-no-js--${viewport.name}`, path: '/', viewport, theme: 'light', javaScriptEnabled: false },
+  { name: `privacy--${viewport.name}`, path: '/privacy', viewport, theme: 'light', javaScriptEnabled: false },
+  { name: `support--${viewport.name}`, path: '/support', viewport, theme: 'light', javaScriptEnabled: false },
+  { name: `legal--${viewport.name}`, path: '/legal', viewport, theme: 'light', javaScriptEnabled: false },
+  { name: `licenses--${viewport.name}`, path: '/licenses', viewport, theme: 'light', javaScriptEnabled: false },
+  { name: `not-found--${viewport.name}`, path: '/visual-not-found', viewport, theme: 'light', javaScriptEnabled: false },
+])
 
 const GRID = 32
-/** Luminance units (0-255) a cell may drift before it counts as changed. */
 const CELL_TOLERANCE = 6
-/** Cells that may differ before the capture is called a regression. */
 const MAX_CHANGED_CELLS = 4
-
 const FREEZE = `
   *, *::before, *::after {
-    animation-duration: 0s !important;
-    animation-delay: 0s !important;
+    animation-play-state: paused !important;
     transition-duration: 0s !important;
     transition-delay: 0s !important;
     caret-color: transparent !important;
   }
-  [data-reveal] { opacity: 1 !important; transform: none !important; }
-  video { visibility: hidden !important; }
+  [data-reveal] { opacity: 1 !important; transform: none !important; clip-path: none !important; }
+  video, #field, #grain, #spot { visibility: hidden !important; }
 `
 
-/** Average luminance over a GRID x GRID grid. Tolerant of antialiasing,
- *  sensitive to anything that actually moves. */
+async function loadPNG() {
+  try { return (await import('pngjs')).PNG } catch (primaryError) {
+    const configured = process.env.CORETEND_NODE_MODULES
+    if (configured) {
+      try {
+        const module = await import(pathToFileURL(join(configured, 'pngjs', 'lib', 'png.js')).href)
+        return module.PNG ?? module.default?.PNG ?? module.default
+      } catch {}
+    }
+    throw new Error(`pngjs is required. Run "npm install --no-save pngjs". (${primaryError.message})`)
+  }
+}
+
 function fingerprint(png) {
   const { width, height, data } = png
   const cells = []
@@ -95,146 +90,195 @@ function fingerprint(png) {
       const y0 = Math.floor((gy * height) / GRID)
       const y1 = Math.max(y0 + 1, Math.floor(((gy + 1) * height) / GRID))
       let sum = 0
-      let n = 0
+      let count = 0
       for (let y = y0; y < y1; y++) {
         for (let x = x0; x < x1; x++) {
-          const i = (width * y + x) << 2
-          sum += 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]
-          n++
+          const index = (width * y + x) << 2
+          sum += 0.2126 * data[index] + 0.7152 * data[index + 1] + 0.0722 * data[index + 2]
+          count++
         }
       }
-      cells.push(Math.round(sum / n))
+      cells.push(Math.round(sum / count))
     }
   }
   return cells
 }
 
-/**
- * The suite serves the site itself rather than depending on a server someone
- * started beside it. A `sleep 3` before capturing is a guess about how long a
- * process takes to bind, and that guess failed in CI: every capture timed out
- * against a server that was never up. Owning the fixture removes both the
- * guess and the difference between running this locally and in CI.
- */
-const TYPES = {
-  '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8', '.json': 'application/json',
-  '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xml',
-  '.woff2': 'font/woff2', '.mp4': 'video/mp4', '.webm': 'video/webm',
-  '.xml': 'application/xml', '.txt': 'text/plain; charset=utf-8',
-  '.vtt': 'text/vtt',
-}
-
-async function startSite() {
-  const server = createServer(async (req, res) => {
-    // Strip the query (the cache-busting ?v=) and refuse traversal.
-    const rel = decodeURIComponent((req.url ?? '/').split('?')[0])
-    const path = join(siteDir, normalize(rel).replace(/^(\.\.[/\\])+/, ''))
-    if (!path.startsWith(siteDir)) { res.writeHead(403).end(); return }
-    try {
-      const info = await stat(path)
-      const file = info.isDirectory() ? join(path, 'index.html') : path
-      const size = info.isDirectory() ? (await stat(file)).size : info.size
-      res.writeHead(200, {
-        'content-type': TYPES[extname(file)] ?? 'application/octet-stream',
-        'content-length': size,
-      })
-      createReadStream(file).pipe(res)
-    } catch {
-      res.writeHead(404).end('not found')
-    }
-  })
-  await new Promise((resolve, reject) => {
-    server.once('error', reject)
-    server.listen(0, '127.0.0.1', resolve)
-  })
-  const { port } = server.address()
-  const origin = `http://127.0.0.1:${port}`
-  // Wait for a real 200 rather than assuming the listen callback is enough.
-  for (let attempt = 0; attempt < 50; attempt++) {
-    try {
-      const probe = await fetch(`${origin}/en/index.html`)
-      if (probe.ok) return { server, origin }
-    } catch {}
-    await new Promise((r) => setTimeout(r, 100))
+function compare(label, record, references, failures) {
+  const reference = references[label]
+  if (!reference) {
+    failures.push(`${label}: no reference (review captures, then run --update deliberately)`)
+    return false
   }
-  throw new Error(`the site server never answered on ${origin}`)
+  if (reference.width !== record.width || reference.height !== record.height) {
+    failures.push(`${label}: size changed ${reference.width}x${reference.height} -> ${record.width}x${record.height}`)
+    return false
+  }
+  let changed = 0
+  let worst = 0
+  for (let index = 0; index < record.cells.length; index++) {
+    const delta = Math.abs(record.cells[index] - reference.cells[index])
+    if (delta > CELL_TOLERANCE) changed++
+    worst = Math.max(worst, delta)
+  }
+  if (changed > MAX_CHANGED_CELLS) {
+    failures.push(`${label}: ${changed}/${GRID * GRID} cells changed (max delta ${worst})`)
+    return false
+  }
+  return true
 }
 
-const { server, origin } = await startSite()
-const base = process.env.VISUAL_BASE_URL ?? origin
+async function freeze(page) {
+  await page.addStyleTag({ content: FREEZE })
+  await page.evaluate(async () => {
+    await document.fonts.ready
+    for (const animation of document.getAnimations({ subtree: true })) animation.pause()
+  })
+}
 
+async function prepareOrbit(page, selector, times = [4250, 6600, 8750]) {
+  await page.locator(selector).evaluate((logo, requestedTimes) => {
+    logo.classList.remove('is-initializing')
+    const animations = logo._ctOrbit?.animations ?? []
+    animations.forEach(({ animation }, index) => {
+      animation.currentTime = requestedTimes[index]
+      animation.pause()
+    })
+  }, times)
+}
+
+async function capturePage(browser, base, target) {
+  const context = await browser.newContext({
+    bypassCSP: true,
+    viewport: { width: target.viewport.width, height: target.viewport.height },
+    deviceScaleFactor: 1,
+    reducedMotion: 'reduce',
+    colorScheme: target.theme,
+    locale: target.language === 'fr' ? 'fr-FR' : 'en-US',
+    javaScriptEnabled: target.javaScriptEnabled ?? true,
+  })
+  const page = await context.newPage()
+  const response = await page.goto(base + target.path, { waitUntil: 'networkidle' })
+  if (!response || (![200, 404].includes(response.status()))) {
+    throw new Error(`${target.path} returned ${response?.status() ?? 'no response'}`)
+  }
+  if (target.javaScriptEnabled !== false) await freeze(page)
+  else await page.evaluate(() => document.fonts.ready)
+  await page.waitForTimeout(80)
+  const shot = await page.screenshot()
+  await context.close()
+  return shot
+}
+
+async function stateCaptures(browser, base) {
+  const captures = []
+  async function state(name, options, prepare, selector) {
+    const context = await browser.newContext({
+      bypassCSP: true,
+      viewport: { width: options.viewport.width, height: options.viewport.height },
+      deviceScaleFactor: 1,
+      reducedMotion: options.reducedMotion ?? 'no-preference',
+      colorScheme: options.theme ?? 'light',
+      locale: 'en-US',
+    })
+    const page = await context.newPage()
+    await page.goto(`${base}/en/`, { waitUntil: 'domcontentloaded' })
+    await page.evaluate(() => document.fonts.ready)
+    if (prepare) await prepare(page)
+    await page.addStyleTag({ content: 'video, #field, #grain, #spot { visibility:hidden !important }' })
+    const shot = selector ? await page.locator(selector).screenshot() : await page.screenshot()
+    captures.push({ name, shot })
+    await context.close()
+  }
+
+  await state('logo-official-static', { viewport: DESKTOP, reducedMotion: 'reduce' }, null, '.ct-logo--hero')
+  await state('logo-initialization', { viewport: DESKTOP }, async page => {
+    await page.locator('.ct-logo--hero').evaluate(logo => {
+      for (const animation of logo.getAnimations({ subtree: true })) {
+        animation.currentTime = 520
+        animation.pause()
+      }
+    })
+  }, '.ct-logo--hero')
+  await state('logo-orbits-active', { viewport: DESKTOP }, page => prepareOrbit(page, '.ct-logo--hero'), '.ct-logo--hero')
+  await state('logo-hover', { viewport: DESKTOP }, async page => {
+    await page.locator('.hero-mark').hover()
+    await page.waitForTimeout(340)
+    await prepareOrbit(page, '.ct-logo--hero', [5600, 8100, 10200])
+  }, '.ct-logo--hero')
+  await state('logo-focus', { viewport: DESKTOP }, async page => {
+    await page.locator('.bar .wordmark').focus()
+    await page.waitForTimeout(340)
+    await prepareOrbit(page, '.ct-logo--header', [5600, 8100, 10200])
+  }, '.bar .wordmark')
+  await state('header-compact', { viewport: DESKTOP }, async page => {
+    await page.evaluate(() => scrollTo(0, 220))
+    await page.waitForTimeout(120)
+    await prepareOrbit(page, '.ct-logo--header')
+    await freeze(page)
+  }, '#bar')
+  await state('footer-stabilized', { viewport: DESKTOP }, async page => {
+    await page.evaluate(() => scrollTo(0, document.body.scrollHeight))
+    await page.waitForTimeout(1350)
+    await freeze(page)
+  }, 'footer')
+  await state('simulation-scanning', { viewport: DESKTOP }, async page => {
+    await page.locator('[data-view="storage"]').click()
+    await page.waitForFunction(() => parseFloat(document.querySelector('#vTrack')?.style.width) >= 15)
+    await freeze(page)
+  }, '#app')
+  await state('simulation-paused', { viewport: DESKTOP }, async page => {
+    await page.locator('[data-view="storage"]').click()
+    await page.waitForFunction(() => parseFloat(document.querySelector('#vTrack')?.style.width) >= 15)
+    await page.locator('#scanToggle').click()
+    await freeze(page)
+  }, '#app')
+  await state('simulation-complete', { viewport: DESKTOP, reducedMotion: 'reduce' }, page => freeze(page), '#app')
+  await state('mobile-reduced', { viewport: MOBILE, reducedMotion: 'reduce', theme: 'dark' }, page => freeze(page), null)
+  return captures
+}
+
+const build = process.env.VISUAL_BASE_URL ? null : await buildSite()
+const fixture = build ? await startSite(build.output) : null
+const base = process.env.VISUAL_BASE_URL?.replace(/\/$/, '') ?? fixture.origin
+const { chromium } = await loadPlaywright()
+const PNG = await loadPNG()
+const browser = await launchChromium(chromium)
 await mkdir(outDir, { recursive: true })
 const references = existsSync(refFile) ? JSON.parse(await readFile(refFile, 'utf8')) : {}
 const next = {}
 const failures = []
 
-const browser = await chromium.launch()
-for (const vp of VIEWPORTS) {
-  const context = await browser.newContext({
-    viewport: { width: vp.width, height: vp.height },
-    deviceScaleFactor: 1,
-    reducedMotion: 'reduce',
-    colorScheme: 'light',
-  })
-  const page = await context.newPage()
-  for (const target of PAGES) {
-    const label = `${target.name}--${vp.name}`
-    await page.goto(base + target.path, { waitUntil: 'networkidle' })
-    await page.addStyleTag({ content: FREEZE })
-    await page.evaluate(() => document.fonts.ready)
-    await page.waitForTimeout(150)
-
-    const shot = await page.screenshot()
-    const png = PNG.sync.read(shot)
-    const record = { width: png.width, height: png.height, cells: fingerprint(png) }
-    next[label] = record
-
-    if (update) continue
-
-    const ref = references[label]
-    if (!ref) {
-      failures.push(`${label}: no reference (run with --update)`)
-      continue
-    }
-    if (ref.width !== record.width || ref.height !== record.height) {
-      await writeFile(join(outDir, `${label}.actual.png`), shot)
-      failures.push(
-        `${label}: size changed ${ref.width}x${ref.height} -> ${record.width}x${record.height}`
-      )
-      continue
-    }
-    let changed = 0
-    let worst = 0
-    for (let i = 0; i < record.cells.length; i++) {
-      const delta = Math.abs(record.cells[i] - ref.cells[i])
-      if (delta > CELL_TOLERANCE) changed++
-      worst = Math.max(worst, delta)
-    }
-    if (changed > MAX_CHANGED_CELLS) {
-      await writeFile(join(outDir, `${label}.actual.png`), shot)
-      failures.push(`${label}: ${changed}/${GRID * GRID} cells changed (max delta ${worst})`)
-    }
-  }
-  await context.close()
+async function record(label, shot, alwaysWrite = false) {
+  const png = PNG.sync.read(shot)
+  const value = { width: png.width, height: png.height, cells: fingerprint(png) }
+  next[label] = value
+  const matches = update || captureOnly ? true : compare(label, value, references, failures)
+  if (alwaysWrite || captureOnly || !matches) await writeFile(join(outDir, `${label}.png`), shot)
 }
-await browser.close()
-await new Promise((r) => server.close(r))
+
+try {
+  for (const target of [...ROUTE_MATRIX, ...SUPPORTING_PAGES]) {
+    await record(target.name, await capturePage(browser, base, target))
+  }
+  for (const target of await stateCaptures(browser, base)) await record(target.name, target.shot, true)
+} finally {
+  await browser.close()
+  await fixture?.close()
+  await build?.cleanup()
+}
 
 if (update) {
   await writeFile(refFile, `${JSON.stringify(next, null, 1)}\n`)
-  const count = Object.keys(next).length
-  console.log(`Wrote ${count} reference fingerprints to Scripts/visual/reference.json.`)
-  console.log('Review the diff before committing: it becomes the definition of "correct".')
-  process.exit(0)
-}
-
-if (failures.length) {
+  console.log(`Wrote ${Object.keys(next).length} deliberate reference fingerprints.`)
+  console.log('Review both the JSON diff and state PNGs before committing.')
+} else if (captureOnly) {
+  console.log(`Captured ${Object.keys(next).length} review PNGs without changing reference.json.`)
+} else if (failures.length) {
   console.error(`FAIL — ${failures.length} visual difference(s):`)
-  for (const f of failures) console.error(`  - ${f}`)
-  console.error('\nActual captures written to Scripts/visual/output/ — look at them.')
-  console.error('If the change is intended, re-run with --update and commit the new references.')
-  process.exit(1)
+  failures.forEach(failure => console.error(`  - ${failure}`))
+  console.error('Actual differences and signature-state captures are in Scripts/visual/output/.')
+  process.exitCode = 1
+} else {
+  console.log(`PASS — ${Object.keys(next).length} captures match their reviewed fingerprints.`)
 }
-
-console.log(`PASS — ${Object.keys(next).length} captures match their references.`)
