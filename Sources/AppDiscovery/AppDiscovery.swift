@@ -75,6 +75,8 @@ public struct AssociatedItem: Sendable, Identifiable {
         case logs = "Logs"
         case savedState = "Saved Application State"
         case containers = "Containers"
+        case launchAgents = "Launch Agents"
+        case launchDaemons = "Launch Daemons"
     }
 
     public let id: String
@@ -161,18 +163,37 @@ public struct AppDiscovery: Sendable {
     /// Finds files associated with a bundle identifier using exact-id matching only.
     /// Exact matching keeps confidence high; fuzzy name matching is deliberately omitted.
     public func associatedItems(bundleID: String) -> [AssociatedItem] {
+        associatedItems(bundleID: bundleID, includeSystemLaunchItems: false)
+    }
+
+    /// Finds files associated with a bundle identifier using exact-id matching.
+    /// LaunchAgent/LaunchDaemon plists are shown as review-only candidates; they
+    /// are never preselected by the app UI.
+    public func associatedItems(for app: InstalledApp) -> [AssociatedItem] {
+        guard let bundleID = app.bundleIdentifier else { return [] }
+        return associatedItems(bundleID: bundleID, includeSystemLaunchItems: true)
+    }
+
+    private func associatedItems(bundleID: String, includeSystemLaunchItems: Bool) -> [AssociatedItem] {
         var items: [AssociatedItem] = []
         let library = home.appendingPathComponent("Library")
         let fm = FileManager.default
 
-        let candidates: [(AssociatedItem.Kind, URL)] = [
+        var candidates: [(AssociatedItem.Kind, URL)] = [
             (.applicationSupport, library.appendingPathComponent("Application Support/\(bundleID)")),
             (.caches, library.appendingPathComponent("Caches/\(bundleID)")),
             (.preferences, library.appendingPathComponent("Preferences/\(bundleID).plist")),
             (.logs, library.appendingPathComponent("Logs/\(bundleID)")),
             (.savedState, library.appendingPathComponent("Saved Application State/\(bundleID).savedState")),
             (.containers, library.appendingPathComponent("Containers/\(bundleID)")),
+            (.launchAgents, library.appendingPathComponent("LaunchAgents/\(bundleID).plist")),
         ]
+        if includeSystemLaunchItems {
+            candidates.append(contentsOf: [
+                (.launchAgents, URL(fileURLWithPath: "/Library/LaunchAgents/\(bundleID).plist")),
+                (.launchDaemons, URL(fileURLWithPath: "/Library/LaunchDaemons/\(bundleID).plist")),
+            ])
+        }
         for (kind, url) in candidates where fm.fileExists(atPath: url.path) {
             items.append(AssociatedItem(kind: kind, url: url, sizeBytes: Self.directorySize(url)))
         }

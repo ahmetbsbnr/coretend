@@ -68,7 +68,7 @@ struct PerformanceView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            VStack(spacing: MCSpacing.md) {
                 if let snap = model.snapshot {
                     HStack(spacing: MCSpacing.md) {
                         MCMetricCard(title: L("performance.cpu"),
@@ -94,7 +94,7 @@ struct PerformanceView: View {
                                      elevatedLabel: L("performance.elevated"))
                     }
                     MCCard {
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: MCSpacing.xs) {
                             Text(L("performance.cpu_chart_title")).font(MCFont.cardTitle)
                             cpuChart
                                 .frame(height: MCSize.chartHeight)
@@ -102,7 +102,7 @@ struct PerformanceView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     MCCard {
-                        VStack(alignment: .leading, spacing: 10) {
+                        VStack(alignment: .leading, spacing: MCSpacing.sm) {
                             Text(L("performance.system")).font(MCFont.cardTitle)
                             LabeledContent(L("performance.memory_pressure"), value: snap.memoryPressureLevel.capitalized)
                             LabeledContent(L("performance.thermal_state"), value: snap.thermalState.capitalized)
@@ -112,10 +112,10 @@ struct PerformanceView: View {
                     }
                     launchAgentsCard
                 } else {
-                    ProgressView().padding(48)
+                    ProgressView().padding(MCSpacing.xxl)
                 }
             }
-            .padding(24)
+            .padding(MCSpacing.page)
         }
         .navigationTitle(L("performance.nav_title"))
         .onAppear { if scenePhase == .active { model.start() } }
@@ -171,7 +171,7 @@ struct PerformanceView: View {
 
     private var launchAgentsCard: some View {
         MCCard {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: MCSpacing.xs) {
                 Text(L("performance.launchagents.title")).font(MCFont.cardTitle)
                 Text(L("performance.launchagents.subtitle"))
                     .font(.caption).foregroundStyle(.secondary)

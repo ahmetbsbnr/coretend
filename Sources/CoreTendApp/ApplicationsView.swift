@@ -143,6 +143,10 @@ final class ApplicationsViewModel {
         AppGroupingLogic.groups(for: filteredApps, by: grouping)
     }
 
+    nonisolated static func isPreselectedAssociatedKind(_ kind: AssociatedItem.Kind) -> Bool {
+        kind == .caches || kind == .savedState
+    }
+
     func load() async {
         phase = .loading
         let discovery = discovery
@@ -156,12 +160,12 @@ final class ApplicationsViewModel {
         uninstallResult = nil
         associated = []
         selectedAssociatedPaths = []
-        guard let bundleID = app.bundleIdentifier else { return }
         let discovery = discovery
-        let items = await Task.detached(priority: .utility) { discovery.associatedItems(bundleID: bundleID) }.value
+        let items = await Task.detached(priority: .utility) { discovery.associatedItems(for: app) }.value
         associated = items
-        // Preselect only reversible support data; the app bundle itself is always included.
-        selectedAssociatedPaths = Set(items.filter { $0.kind == .caches || $0.kind == .savedState }.map(\.url.path))
+        // Preselect only reversible support data; preferences, containers, and
+        // launch items stay visible but require an explicit user choice.
+        selectedAssociatedPaths = Set(items.filter { Self.isPreselectedAssociatedKind($0.kind) }.map(\.url.path))
     }
 
     /// Moves the app bundle and approved associated items to the Trash.
@@ -171,6 +175,8 @@ final class ApplicationsViewModel {
         let home = FileManager.default.homeDirectoryForCurrentUser
         var allowedRoots: [URL] = [app.path.deletingLastPathComponent()]
         allowedRoots.append(home.appendingPathComponent("Library"))
+        allowedRoots.append(URL(fileURLWithPath: "/Library/LaunchAgents"))
+        allowedRoots.append(URL(fileURLWithPath: "/Library/LaunchDaemons"))
         let center = SafetyCenter(validator: PathValidator(allowedRoots: allowedRoots), dryRun: dryRun, sink: AppEnvironment.shared.store)
         var approved: [ApprovedFileOperation] = []
         if let op = try? await center.approve(url: app.path, logicalSize: app.sizeBytes,
@@ -206,8 +212,9 @@ struct ApplicationsView: View {
             AppUpdatesView()
                 .tabItem { Label(L("apps.tab.updates"), systemImage: "arrow.triangle.2.circlepath") }
         }
-        .padding(8)
+        .padding(MCSpacing.xs)
         .navigationTitle(L("apps.title"))
+        .accessibilityIdentifier("applications.root")
     }
 }
 
@@ -230,6 +237,7 @@ struct InstalledAppsView: View {
             TextField(L("apps.search"), text: $model.searchText)
                 .textFieldStyle(.roundedBorder)
                 .padding(.horizontal, MCSpacing.sm).padding(.top, MCSpacing.sm)
+                .accessibilityIdentifier("applications.search")
             HStack(spacing: MCSpacing.xs) {
                 Text(L("apps.group_by")).foregroundStyle(.secondary)
                 Picker("", selection: $model.grouping) {
@@ -237,6 +245,7 @@ struct InstalledAppsView: View {
                 }
                 .pickerStyle(.menu)
                 .labelsHidden()
+                .accessibilityIdentifier("applications.grouping")
                 Spacer()
             }
             .padding(MCSpacing.sm)
@@ -269,6 +278,7 @@ struct InstalledAppsView: View {
                 }
                 .listStyle(.inset)
                 .animation(MCMotion.snappy, value: model.grouping)
+                .accessibilityIdentifier("applications.list")
             }
         }
     }
@@ -278,7 +288,7 @@ struct InstalledAppsView: View {
         return HStack(spacing: MCSpacing.sm) {
             Image(nsImage: NSWorkspace.shared.icon(forFile: app.path.path))
                 .resizable().frame(width: 28, height: 28)
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: MCSpacing.xxs) {
                 Text(app.name)
                 HStack(spacing: MCSpacing.xxs) {
                     Text(app.version ?? "—")
@@ -308,15 +318,15 @@ struct InstalledAppsView: View {
     private var detail: some View {
         if let app = model.selectedApp {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: MCSpacing.md) {
+                    HStack(spacing: MCSpacing.sm) {
                         Image(nsImage: NSWorkspace.shared.icon(forFile: app.path.path))
                             .resizable().frame(width: 56, height: 56)
                         VStack(alignment: .leading) {
                             Text(app.name).font(MCFont.pageTitle)
                             Text(app.bundleIdentifier ?? L("apps.unknown_bundle_id"))
                                 .font(.caption).foregroundStyle(.secondary)
-                            HStack(spacing: 8) {
+                            HStack(spacing: MCSpacing.xs) {
                                 if let version = app.version { Text(L("apps.version_prefix", version)) }
                                 if !app.architectures.isEmpty {
                                     Text(app.architectures.joined(separator: ", "))
@@ -332,7 +342,7 @@ struct InstalledAppsView: View {
                         }
                     }
                     MCCard {
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: MCSpacing.xs) {
                             Text(L("apps.associated_data")).font(MCFont.cardTitle)
                             if model.associated.isEmpty {
                                 Text(L("apps.associated_data.empty"))
@@ -367,15 +377,17 @@ struct InstalledAppsView: View {
                             Task { await model.uninstall() }
                         }
                         .buttonStyle(.borderedProminent)
+                        .accessibilityIdentifier("applications.uninstall")
                         Button(L("common.reveal_in_finder")) {
                             NSWorkspace.shared.activateFileViewerSelecting([app.path])
                         }
+                        .accessibilityIdentifier("applications.reveal")
                     }
                     if let result = model.uninstallResult {
                         Text(result).font(MCFont.secondaryBody).foregroundStyle(MCTheme.accent)
                     }
                 }
-                .padding(20)
+                .padding(MCSpacing.page)
             }
         } else {
             MCEmptyState(icon: "square.grid.2x2", title: L("apps.select_prompt"), message: "", iconColor: MCTheme.accent)

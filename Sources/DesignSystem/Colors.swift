@@ -130,13 +130,16 @@ public enum MCColor {
     public static let mossGreen = adaptive("mossGreen",
         light: Canonical.cobaltDeepest, dark: Canonical.cobaltBrightest)
 
-    // Surfaces — prefer system semantics for adaptivity. The Paper/Ink
-    // surface values exist for the website and generated assets, where there
-    // is no AppKit to ask; inside the app, matching the user's actual system
-    // appearance beats matching a brand swatch.
-    public static let background = Color(nsColor: .windowBackgroundColor)
-    public static let elevatedBackground = Color(nsColor: .controlBackgroundColor)
-    public static let separator = Color(nsColor: .separatorColor)
+    // Surfaces. These stay on the same Paper/Ink axis as the website and
+    // portfolio while still adapting to the user's light/dark appearance.
+    public static let background = adaptive("background",
+        light: Canonical.paper, dark: Canonical.ink)
+    public static let elevatedBackground = adaptive("elevatedBackground",
+        light: (0.988, 0.988, 0.976), dark: (0.125, 0.133, 0.153))
+    public static let secondaryBackground = adaptive("secondaryBackground",
+        light: (0.925, 0.925, 0.902), dark: (0.078, 0.086, 0.102))
+    public static let separator = adaptive("separator",
+        light: (0.82, 0.82, 0.78), dark: (0.28, 0.30, 0.34))
     public static let primaryText = Color.primary
     public static let secondaryText = Color.secondary
 }

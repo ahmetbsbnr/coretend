@@ -26,7 +26,7 @@
 <link rel="preload" href="../assets/fonts/archivo-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="../assets/fonts/plexmono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>html,body{background:#f4f4f0;color:#17191d}</style>
-<link rel="stylesheet" href="../assets/style.min.css?v=98dcb667b0">
+<link rel="stylesheet" href="../assets/style.css?v=9e329a5040">
 <script src="../assets/site.js?v=77c84f9144" defer></script>
 </head>
 <body class="page-index">
@@ -55,7 +55,7 @@
 <!--full-bleed-->
   <section class="hero" id="get">
     <div class="halo" aria-hidden="true"></div>
-    <div class="wrap">
+    <div class="wrap hero-grid">
       <div class="hero-lockup">
         <span class="hero-mark" aria-hidden="true"><svg class="mark" viewBox="0 0 512 512" role="img" aria-label="CoreTend" focusable="false">
 <path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--cobalt)" stroke-width="38.4" stroke-linecap="round"/>
@@ -65,10 +65,10 @@
 </svg></span>
         <h1 class="hero-wordmark">CoreTend</h1>
         <p class="hero-statement">
-          Comprenez votre Mac.<br>Gardez le contrôle.
+          Comprenez votre Mac. Liberez l'espace prudemment.
         </p>
         <p class="hero-facts">
-          Analyse locale, entretien du stockage et protection optionnelle avec ClamAV.
+          Analyse locale du stockage, detection exacte des doublons, revue des residus d'apps et signaux d'integrite macOS. Aucun compte, aucune telemetrie.
         </p>
         <div class="cta">
           <span data-magnetic><a class="btn btn-primary btn-lg" href="/download"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -79,12 +79,80 @@
         </div>
         <p class="hero-meta">0.9.1-rc.3 · macOS 14.0+ · Apple silicon · Gratuit et open source · Non signé et non notarisé</p>
       </div>
+      <div class="product-demo" aria-label="CoreTend scan demo" data-reveal>
+        <div class="demo-window">
+          <div class="demo-sidebar">
+            <span class="on">Dashboard</span><span>Storage</span><span>Space Lens</span><span>Duplicates</span><span>Integrity</span>
+          </div>
+          <div class="demo-main">
+            <div class="demo-toolbar"><strong>Storage scan</strong><em>Paused safely</em></div>
+            <div class="scan-track"><span></span></div>
+            <div class="lens-grid">
+              <i style="--w:46%;--h:58%;--x:0%;--y:0%"></i><i style="--w:28%;--h:35%;--x:48%;--y:0%"></i>
+              <i style="--w:22%;--h:35%;--x:78%;--y:0%"></i><i style="--w:28%;--h:21%;--x:48%;--y:37%"></i>
+              <i style="--w:52%;--h:38%;--x:0%;--y:62%"></i><i style="--w:46%;--h:38%;--x:54%;--y:62%"></i>
+            </div>
+            <ul class="demo-results">
+              <li><b>Duplicates</b><span>2.4 GB</span></li>
+              <li><b>Build data</b><span>1.1 GB</span></li>
+              <li><b>App caches</b><span>690 MB</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section class="section band" id="demo">
-    <div class="wrap narrow">
-      <h2 class="quiet-title" data-reveal>Le premier lancement, sans montage</h2>
+  <section class="site-section flow" id="how">
+    <div class="wrap">
+      <div class="section-label">Flux</div>
+      <h2 data-reveal>Un parcours continu de l'analyse a la decision.</h2>
+      <ul class="step-list">
+        <li data-reveal data-reveal-delay="0"><span>01</span><h3>Analyser</h3><p>Storage, Space Lens, Doublons, Applications et Integrity lisent les metadonnees locales et affichent les resultats progressivement.</p></li>
+        <li data-reveal data-reveal-delay="70"><span>02</span><h3>Verifier</h3><p>Recherchez, filtrez, inspectez avec Quick Look ou Finder, puis gardez la copie suggeree ou changez le choix.</p></li>
+        <li data-reveal data-reveal-delay="140"><span>03</span><h3>Agir</h3><p>La simulation est active par defaut. Les retraits reels vont dans la Corbeille macOS avec un historique local.</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="site-section feature-strip" id="features">
+    <div class="wrap">
+      <div class="section-label">Modules disponibles</div>
+      <h2 data-reveal>Seule l'architecture de release est presentee.</h2>
+      <ul class="module-grid">
+        <li data-reveal><h3>Dashboard</h3><p>statut, routes, confidentialite</p></li>
+        <li data-reveal><h3>Storage</h3><p>caches, journaux, installeurs, builds</p></li>
+        <li data-reveal><h3>Space Lens</h3><p>treemap, fil d'Ariane, recherche, Finder</p></li>
+        <li data-reveal><h3>Duplicates</h3><p>hachage, copie conservee, apercu, CSV</p></li>
+        <li data-reveal><h3>Applications</h3><p>caches, preferences, elements de lancement</p></li>
+        <li data-reveal><h3>Integrity</h3><p>quarantaine, signature, signaux Gatekeeper</p></li>
+        <li data-reveal><h3>Activity</h3><p>analyses, nettoyages, exports, journal</p></li>
+        <li data-reveal><h3>Settings</h3><p>simulation, exclusions, mises a jour, diagnostic</p></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="site-section privacy-proof" id="privacy">
+    <div class="wrap proof-grid">
+      <div>
+        <div class="section-label">Preuve de confidentialite</div>
+        <h2 data-reveal>Concu pour etre inspectable, pas rassurant par le texte.</h2>
+      </div>
+      <ul>
+        <li data-reveal><b>Base locale</b><span>~/Library/Application Support/CoreTend</span></li>
+        <li data-reveal><b>Aucun endpoint de telemetrie</b><span>Aucun compte ni analytique dans l'app ou le site.</span></li>
+        <li data-reveal><b>Retraits reversibles</b><span>Corbeille d'abord ; simulation d'abord.</span></li>
+        <li data-reveal><b>Open source</b><span>Apache-2.0</span></li>
+      </ul>
+    </div>
+  </section>
+
+
+  <section class="site-section install-proof" id="install">
+    <div class="wrap">
+      <div class="section-label">Installation</div>
+      <h2 data-reveal>La version publique est honnête sur Gatekeeper.</h2>
+      <p class="lead" data-reveal>Le téléchargement actuel n’est pas signé ni notarié. macOS bloque le premier lancement tant que la signature Developer ID n’est pas disponible ; la somme de contrôle vérifie tout de même le fichier reçu.</p>
       <figure class="media" data-reveal>
         <span class="loop" style="--ratio:926/880">
           <video data-loop autoplay muted loop playsinline preload="metadata"
@@ -100,13 +168,17 @@
       </figure>
     </div>
   </section>
-  <section class="section">
-    <div class="wrap narrow">
-      <ul class="benefits">
-        <li data-reveal data-reveal-delay="0"><h3>Local</h3><p>Chaque analyse s’exécute sur votre Mac. Aucun compte, aucune télémétrie, aucun appel réseau.</p></li>
-        <li data-reveal data-reveal-delay="70"><h3>Clair</h3><p>Les résultats sont listés, mesurés et expliqués. Rien n’est supprimé sans votre accord.</p></li>
-        <li data-reveal data-reveal-delay="140"><h3>Open source</h3><p>Apache-2.0. Lisez le code, compilez-le, vérifiez chaque affirmation faite ici.</p></li>
-      </ul>
+
+  <section class="site-section faq-band" id="faq">
+    <div class="wrap">
+      <div class="section-label">FAQ</div>
+      <h2 data-reveal>Reponses courtes avant telechargement.</h2>
+      <div class="faq-list">
+        <details data-reveal><summary>Envoie-t-il les noms de fichiers ?</summary><p>Non. L'app fonctionne localement et le site n'a aucune analytique.</p></details>
+        <details data-reveal><summary>Est-ce un antivirus ?</summary><p>Non. Integrity affiche provenance macOS, signatures et elements de lancement ; il ne revendique pas de detection malware.</p></details>
+        <details data-reveal><summary>Puis-je annuler les retraits ?</summary><p>Les retraits utilisent la Corbeille systeme : la recuperation suit le flux macOS normal tant qu'elle n'est pas videe.</p></details>
+        <details data-reveal><summary>Pourquoi l'alerte au lancement ?</summary><p>La version publique est signee ad hoc et non notarisee. La signature Developer ID reste en attente.</p></details>
+      </div>
     </div>
   </section>
 

@@ -18,7 +18,9 @@ final class SpaceLensViewModel {
     /// Set only while a delete confirmation sheet is up; nil the rest of the time.
     var pendingDelete: SpaceNode?
     var lastDeleteError: String?
+    var isScanPaused = false
     private var scanTask: Task<Void, Never>?
+    private var pauseController: ScanPauseController?
     private var rootURL: URL?
     private var dryRunDefaultLoaded = false
 
@@ -40,9 +42,12 @@ final class SpaceLensViewModel {
         root = nil
         pathStack = []
         rootURL = url
+        isScanPaused = false
+        let pauseController = ScanPauseController()
+        self.pauseController = pauseController
         let engine = SpaceLensEngine(root: url)
         scanTask = Task {
-            for await event in engine.run() {
+            for await event in engine.run(pauseController: pauseController) {
                 switch event {
                 case let .progress(items, _):
                     phase = .scanning(items: items)
@@ -54,6 +59,7 @@ final class SpaceLensViewModel {
                         itemCount: node.children.count, bytes: node.size, dryRun: true))
                     AppEnvironment.shared.recordLocationVisit(path: url.path, bytes: node.size)
                 case .cancelled:
+                    isScanPaused = false
                     phase = root == nil ? .idle : .ready
                 }
             }
@@ -70,9 +76,12 @@ final class SpaceLensViewModel {
         let pathsToRestore = pathStack.map(\.path)
         scanTask?.cancel()
         phase = .scanning(items: 0)
+        isScanPaused = false
+        let pauseController = ScanPauseController()
+        self.pauseController = pauseController
         let engine = SpaceLensEngine(root: rootURL)
         scanTask = Task {
-            for await event in engine.run() {
+            for await event in engine.run(pauseController: pauseController) {
                 if case let .finished(node) = event {
                     root = node
                     var stack: [SpaceNode] = []
@@ -89,7 +98,23 @@ final class SpaceLensViewModel {
         }
     }
 
-    func cancel() { scanTask?.cancel() }
+    func pauseScan() {
+        guard case .scanning = phase, !isScanPaused else { return }
+        isScanPaused = true
+        Task { await pauseController?.pause() }
+    }
+
+    func resumeScan() {
+        guard case .scanning = phase, isScanPaused else { return }
+        isScanPaused = false
+        Task { await pauseController?.resume() }
+    }
+
+    func cancel() {
+        isScanPaused = false
+        scanTask?.cancel()
+        Task { await pauseController?.resume() }
+    }
 
     func descend(into node: SpaceNode) {
         guard node.isDirectory, !node.children.isEmpty || node.size > 0 else { return }
@@ -218,38 +243,89 @@ struct SpaceLensView: View {
         .onReceive(NotificationCenter.default.publisher(for: .mcOpenSpaceLensAt)) { note in
             if let url = note.object as? URL { model.start(url: url) }
         }
+        .accessibilityIdentifier("spacelens.root")
     }
 
     private var idleView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "circle.hexagongrid")
-                .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
-            Text(L("spacelens.idle.title")).font(MCFont.pageTitle)
-            Text(L("spacelens.idle.subtitle"))
-                .foregroundStyle(.secondary)
-            HStack {
-                Button(L("spacelens.scan_home")) {
-                    model.start(url: FileManager.default.homeDirectoryForCurrentUser)
-                }
-                .buttonStyle(.borderedProminent)
-                Button(L("spacelens.choose_folder")) {
-                    let panel = NSOpenPanel()
-                    panel.canChooseDirectories = true
-                    panel.canChooseFiles = false
-                    if panel.runModal() == .OK, let url = panel.url {
-                        model.start(url: url)
+        ScrollView {
+            VStack(alignment: .leading, spacing: MCSpacing.xl) {
+                HStack(alignment: .top, spacing: MCSpacing.lg) {
+                    Image(systemName: "circle.hexagongrid")
+                        .font(.system(size: 48, weight: .light))
+                        .foregroundStyle(MCTheme.accent)
+                        .frame(width: 72, height: 72)
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: MCSpacing.xs) {
+                        Text(L("spacelens.idle.title"))
+                            .font(MCFont.pageTitle)
+                        Text(L("spacelens.idle.subtitle"))
+                            .font(MCFont.secondaryBody)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
+
+                VStack(alignment: .leading, spacing: MCSpacing.sm) {
+                    MCSectionHeader(L("spacelens.filter_category"))
+                    MCFeatureRow(L("spacelens.category.folder"),
+                                 icon: "folder.fill", iconColor: MCTheme.accent)
+                    MCFeatureRow(L("spacelens.category.media"),
+                                 icon: "photo", iconColor: MCColor.novaMagenta)
+                    MCFeatureRow(L("spacelens.category.document"),
+                                 icon: "doc.text", iconColor: MCColor.glacierBlue)
+                    MCFeatureRow(L("spacelens.category.archive"),
+                                 icon: "archivebox", iconColor: MCTheme.warning)
+                    MCFeatureRow(L("spacelens.category.code"),
+                                 icon: "curlybraces", iconColor: MCColor.mossGreen)
+                }
+
+                HStack(spacing: MCSpacing.sm) {
+                    Button(L("spacelens.scan_home")) {
+                        model.start(url: FileManager.default.homeDirectoryForCurrentUser)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .accessibilityIdentifier("spacelens.scan.home")
+                    Button(L("spacelens.choose_folder")) {
+                        let panel = NSOpenPanel()
+                        panel.canChooseDirectories = true
+                        panel.canChooseFiles = false
+                        if panel.runModal() == .OK, let url = panel.url {
+                            model.start(url: url)
+                        }
+                    }
+                    .controlSize(.large)
+                }
             }
+            .padding(MCSpacing.page)
+            .frame(maxWidth: 520, alignment: .leading)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity)
+        .background(MCColor.background)
     }
 
     private func scanningView(_ items: Int) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: MCSpacing.md) {
             ProgressView()
             Text(L("spacelens.scanning_progress", items)).monospacedDigit()
-            Button(L("common.cancel")) { model.cancel() }
+            HStack(spacing: MCSpacing.sm) {
+                if model.isScanPaused {
+                    Button(L("common.resume")) { model.resumeScan() }
+                        .keyboardShortcut("r", modifiers: [])
+                        .help(L("spacelens.resume_hint"))
+                        .accessibilityHint(L("spacelens.resume_hint"))
+                        .accessibilityIdentifier("spacelens.scan.resume")
+                } else {
+                    Button(L("common.pause")) { model.pauseScan() }
+                        .keyboardShortcut("p", modifiers: [])
+                        .help(L("spacelens.pause_hint"))
+                        .accessibilityHint(L("spacelens.pause_hint"))
+                        .accessibilityIdentifier("spacelens.scan.pause")
+                }
+                Button(L("common.cancel")) { model.cancel() }
+                    .keyboardShortcut(.cancelAction)
+                    .accessibilityIdentifier("spacelens.scan.cancel")
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

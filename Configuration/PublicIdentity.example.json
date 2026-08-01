@@ -4,7 +4,7 @@
   "product": "CoreTend",
   "bundleId": "com.ahmetbsbnr.coretend",
   "marketingVersion": "0.9.1-rc.3",
-  "buildNumber": "0.9.1-rc.2",
+  "buildNumber": "913",
   "channel": "release-candidate",
   "architecture": "arm64",
   "deploymentTarget": "14.0",

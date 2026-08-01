@@ -2,6 +2,18 @@
 
 /* Common */
 "common.cancel" = "Annuler";
+"common.pause" = "Pause";
+"common.resume" = "Reprendre";
+"cleanup.pause_hint" = "Suspend temporairement l’analyse en cours.";
+"cleanup.resume_hint" = "Continue l’analyse suspendue.";
+"smartcare.pause_hint" = "Suspend temporairement l’analyse Smart Care.";
+"smartcare.resume_hint" = "Continue l’analyse Smart Care suspendue.";
+"clutter.pause_hint" = "Suspend temporairement l’analyse en cours.";
+"clutter.resume_hint" = "Continue l’analyse suspendue.";
+"spacelens.pause_hint" = "Suspend temporairement l’analyse Space Lens.";
+"spacelens.resume_hint" = "Continue l’analyse Space Lens suspendue.";
+"dupes.pause_hint" = "Suspend temporairement l’analyse des doublons.";
+"dupes.resume_hint" = "Continue l’analyse des doublons suspendue.";
 "common.dry_run" = "Simulation";
 "common.running" = "En cours…";
 "common.reveal_in_finder" = "Afficher dans le Finder";
@@ -12,6 +24,8 @@
 "sidebar.optimize" = "Optimiser";
 "sidebar.protect" = "Intégrité";
 "sidebar.activity" = "Activité";
+"sidebar.storage" = "Stockage";
+"sidebar.system" = "Système";
 
 /* Placeholder */
 "placeholder.under_construction" = "Ce module est en construction. Il arrivera dans une prochaine version.";
@@ -381,7 +395,11 @@
 "apps.grouping.last_used" = "Dernière utilisation";
 
 /* Module display names (sidebar / placeholder) */
+"module.dashboard" = "Tableau de bord";
+"module.storage" = "Stockage";
+"module.duplicates" = "Doublons";
 "module.protection" = "Intégrité";
+"module.activity" = "Activité";
 "palette.open" = "Palette de commandes…";
 "palette.placeholder" = "Aller à…";
 "palette.no_results" = "Aucun résultat";
@@ -408,6 +426,35 @@
 "integrity.login_items.subtitle" = "Agents et daemons de lancement trouvés dans LaunchAgents/LaunchDaemons.";
 "integrity.login_items.empty" = "Aucun trouvé.";
 "module.my_activity" = "Mon activité";
+
+/* Dashboard */
+"dashboard.title" = "Tableau de bord";
+"dashboard.subtitle" = "Analyses locales, nettoyage réversible et contrôles d’intégrité dans un même espace.";
+"dashboard.primary_action" = "Analyser le stockage";
+"dashboard.secondary_action" = "Ouvrir Space Lens";
+"dashboard.status.signature" = "Signature";
+"dashboard.status.safety" = "Sécurité";
+"dashboard.status.dry_run" = "Simulation active";
+"dashboard.status.trash_enabled" = "Corbeille activée";
+"dashboard.status.exclusions" = "Exclusions";
+"dashboard.status.exclusion_count" = "%d chemins";
+"dashboard.status.free_space" = "Espace libre";
+"dashboard.status.loading" = "Chargement";
+"dashboard.storage.title" = "Stockage";
+"dashboard.storage.detail" = "Analyse les caches, journaux, rapports de crash et données de compilation avant toute vérification de suppression.";
+"dashboard.spacelens.title" = "Space Lens";
+"dashboard.spacelens.detail" = "Cartographie l’usage disque d’un dossier, puis permet de zoomer, chercher et ouvrir les éléments dans le Finder.";
+"dashboard.duplicates.title" = "Doublons";
+"dashboard.duplicates.detail" = "Trouve les copies exactes par contenu et explique quelle version conserver avant toute action.";
+"dashboard.applications.title" = "Applications";
+"dashboard.applications.detail" = "Sépare les apps des caches, assistants, agents et documents personnels.";
+"dashboard.integrity.title" = "Intégrité";
+"dashboard.activity.title" = "Activité";
+"dashboard.activity.empty" = "Aucune activité enregistrée.";
+"dashboard.signature.apple" = "Signé par Apple";
+"dashboard.signature.team" = "Équipe %@";
+"dashboard.signature.unsigned" = "Copie non signée";
+"dashboard.open_module" = "Ouvrir %@";
 
 /* Safety log (SafetyCore audit trail persistence) */
 "common.done" = "Terminé";
@@ -564,3 +611,18 @@
 "favrec.unfavorite" = "Retirer %@ des favoris";
 "favrec.error_title" = "Favoris et récents indisponibles";
 "favrec.error_no_store" = "Base de données locale indisponible";
+
+/* Cleanup category rows (idle state) */
+"cleanup.idle.what_is_scanned" = "Ce qui est analysé";
+"cleanup.category.caches" = "Caches d'applications";
+"cleanup.category.caches.detail" = "~/Library/Caches — reconstruits automatiquement";
+"cleanup.category.logs" = "Journaux et diagnostics";
+"cleanup.category.logs.detail" = "~/Library/Logs — fichiers de plus de 7 jours";
+"cleanup.category.xcode" = "Données de construction Xcode";
+"cleanup.category.xcode.detail" = "DerivedData — reconstruits à la prochaine compilation";
+"cleanup.category.downloads" = "Téléchargements incomplets";
+"cleanup.category.downloads.detail" = "~/Downloads — fichiers partiels de plus de 7 jours";
+"cleanup.idle.safety_note" = "Rien n'est supprimé pendant l'analyse. Chaque élément est examiné avant toute action.";
+
+/* Space Lens idle */
+"spacelens.idle.tip" = "Code couleur par type : dossiers, médias, documents, archives et code.";

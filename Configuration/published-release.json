@@ -13,6 +13,8 @@
   "dmgSize": 4686642,
   "zipName": "CoreTend-0.9.1-rc.3-arm64-unsigned.zip",
   "zipURL": "https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.3/CoreTend-0.9.1-rc.3-arm64-unsigned.zip",
+  "zipSHA256": "28114f0a352abe340bb83cd61c84dedcb3cb0b8e031a12ae7a1a4e306e4db173",
+  "zipSize": 2828017,
   "signed": false,
   "notarized": false,
   "minimumMacOS": "14.0",

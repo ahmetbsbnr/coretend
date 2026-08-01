@@ -61,7 +61,7 @@ public struct DuplicateEngine: Sendable {
         self.minimumSize = minimumSize
     }
 
-    public func run() -> AsyncStream<DuplicateEvent> {
+    public func run(pauseController: ScanPauseController? = nil) -> AsyncStream<DuplicateEvent> {
         let roots = roots
         let minimumSize = minimumSize
         return AsyncStream { continuation in
@@ -78,8 +78,9 @@ public struct DuplicateEngine: Sendable {
                     guard let enumerator = FileManager.default.enumerator(
                         at: root, includingPropertiesForKeys: Array(keys),
                         options: [.skipsPackageDescendants]) else { continue }
-                    Self.inventory(enumerator, keys: keys, minimumSize: minimumSize,
-                                   bySize: &bySize, seenInodes: &seenInodes, modDates: &modDates)
+                    await Self.inventory(enumerator, keys: keys, minimumSize: minimumSize,
+                                         bySize: &bySize, seenInodes: &seenInodes, modDates: &modDates,
+                                         pauseController: pauseController)
                     if Task.isCancelled { break }
                 }
 
@@ -94,6 +95,8 @@ public struct DuplicateEngine: Sendable {
                     if Task.isCancelled { break }
                     var byPartial: [Data: [URL]] = [:]
                     for url in urls {
+                        await pauseController?.waitWhilePaused()
+                        if Task.isCancelled { break }
                         processed += 1
                         if processed % 32 == 0 {
                             continuation.yield(.progress(stage: "hashing", processed: processed, total: totalFiles))
@@ -104,6 +107,7 @@ public struct DuplicateEngine: Sendable {
                     for sameStart in byPartial.values where sameStart.count > 1 {
                         var byFull: [Data: [URL]] = [:]
                         for url in sameStart {
+                            await pauseController?.waitWhilePaused()
                             if Task.isCancelled { break }
                             guard let full = Self.hash(url: url, limit: nil) else { continue }
                             byFull[full, default: []].append(url)
@@ -132,8 +136,10 @@ public struct DuplicateEngine: Sendable {
     private static func inventory(_ enumerator: FileManager.DirectoryEnumerator,
                                   keys: Set<URLResourceKey>, minimumSize: Int64,
                                   bySize: inout [Int64: [URL]], seenInodes: inout Set<String>,
-                                  modDates: inout [URL: Date]) {
-        for case let url as URL in enumerator {
+                                  modDates: inout [URL: Date],
+                                  pauseController: ScanPauseController? = nil) async {
+        while let url = enumerator.nextObject() as? URL {
+            await pauseController?.waitWhilePaused()
             if Task.isCancelled { break }
             guard let values = try? url.resourceValues(forKeys: keys) else { continue }
             if values.isSymbolicLink == true {
