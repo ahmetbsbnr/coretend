@@ -66,6 +66,8 @@ const REQUIRED_ASSETS = [
   '/assets/brand/opengraph.png',
   '/assets/fonts/archivo-latin.woff2',
   '/assets/fonts/plexmono-400-latin.woff2',
+  '/assets/tokens/design-tokens.css',
+  '/assets/tokens/design-tokens.json',
   '/assets/licenses/Archivo-OFL.txt',
   '/assets/licenses/IBM-Plex-OFL.txt',
 ]
@@ -543,6 +545,34 @@ await gate('published raster brand assets contain no historical palette', async 
     '/assets/brand/opengraph.png',
   ])
   assert.deepEqual(matches, [], `historical green/purple/amber pixels remain: ${matches.join(', ')}`)
+  await context.close()
+})
+
+await gate('landing consumes the generated Swift design tokens', async () => {
+  const context = await browser.newContext({ reducedMotion: 'reduce' })
+  const page = await context.newPage()
+  await page.goto(`${origin}/en/`)
+  const state = await page.evaluate(async () => {
+    const stylesheets = [...document.querySelectorAll('link[rel="stylesheet"]')].map(link => new URL(link.href).pathname)
+    const style = getComputedStyle(document.documentElement)
+    const value = name => style.getPropertyValue(name).trim().toLowerCase()
+    const tokens = await fetch('/assets/tokens/design-tokens.json').then(response => response.json())
+    return {
+      stylesheets,
+      source: tokens.source,
+      colors: {
+        cobalt: [value('--cobalt'), value('--ct-cobalt')],
+        ink: [value('--ink'), value('--ct-ink')],
+        paper: [value('--paper'), value('--ct-paper')],
+      },
+    }
+  })
+  assert(state.stylesheets.includes('/assets/tokens/design-tokens.css'), 'generated token stylesheet is published but not consumed')
+  assert.equal(state.source, 'Sources/DesignSystem/Colors.swift + Tokens.swift')
+  for (const [name, [siteValue, tokenValue]] of Object.entries(state.colors)) {
+    assert(tokenValue, `generated --ct-${name} is missing`)
+    assert.equal(siteValue, tokenValue, `site ${name} diverges from Swift token (${siteValue} vs ${tokenValue})`)
+  }
   await context.close()
 })
 

@@ -174,11 +174,10 @@ launch_and_hold() {
   return 1
 }
 
-command -v clamscan >/dev/null 2>&1 && note "ClamAV is installed on this host" \
-  || ok "ClamAV absent — the launch below runs without it, as a new user's would"
+ok "Integrity has no third-party scanner dependency"
 
 launch_and_hold first-launch 6 || die APP-DEFECT "first launch did not stay up: $(cat "$WORK/first-launch.log" | head -c 300)"
-ok "first launch survives with a virgin HOME, no ClamAV, no prior state"
+ok "first launch survives with a virgin HOME and no prior state"
 
 [ -d "$HOME_ISO/store" ] \
   && ok "app created its store directory (inside the sandbox)" \

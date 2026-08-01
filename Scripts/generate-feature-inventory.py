@@ -33,7 +33,6 @@ MEDIA_PLAN = {
     "SpaceLens": ("Space Lens", "Choose a folder and navigate the measured tree", "space-lens", "yes", "neutral temporary folder tree"),
     "AppDiscovery": ("Applications", "Inventory, inspect associated data, review removal", "applications", "yes", "installed apps; paths excluded from public media"),
     "SystemMetrics": ("Performance", "Observe live metrics and login-agent inspection", "performance", "yes", "live machine metrics without identity data"),
-    "MalwareEngine": ("Protection", "Select a file, scan, review explicit quarantine actions", "protection", "yes", "harmless test fixture only"),
     "CloudCleanup": ("Cloud Cleanup", "Detect providers and measure local footprint", "cloud-cleanup", "no", "empty or neutral provider fixture"),
     "Persistence": ("My Activity", "Filter, expand, export, clear with confirmation", "my-activity", "no", "isolated temporary activity store"),
     "Settings": ("Settings", "Review permissions, exclusions, dry run and diagnostics", "settings", "no", "isolated temporary store"),

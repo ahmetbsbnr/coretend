@@ -257,7 +257,7 @@ $COMMIT_TITLE
 
 CoreTend is a free, open-source macOS maintenance utility: cleanup, storage
 analysis, duplicate and similar-image detection, privacy cleaning, optional
-ClamAV-backed scanning, and an activity view. It runs locally, collects no
+local integrity checks, and an activity view. It runs locally, collects no
 telemetry, requires no account, and every destructive action is reversible.
 
 $COMMIT_CONTEXT
