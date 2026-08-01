@@ -76,6 +76,9 @@ portfolio remained clean.
 - `2501fba` `test: reject historical brand palette` (pushed)
 - `01365d9` `chore: remove retired scanner claims from active paths` (pushed)
 - `b6cba86` `test: stabilize signing and favicon delivery gates` (pushed)
+- `54a53a3` `docs: record app build and token gates` (pushed)
+- `5587929` `docs: archive generated workspace materials` (pushed)
+- `e1114cd` `fix: anchor informational pages and 404 footer` (pushed)
 
 ## Test evidence
 
@@ -97,6 +100,7 @@ portfolio remained clean.
 | Swift package suite | `swift test` | passed; 329 tests (8 XCUI tests skipped because no CORETEND_UI_APP_PATH was provided) |
 | App release build | `Scripts/build-release.sh 0.9.1-rc.4` / `Scripts/package-dmg.sh 0.9.1-rc.4` | Swift `.app` build passed; DMG packaging blocked by local `hdiutil` conversion failure, so no candidate DMG was published |
 | Design token gate | `python3 Scripts/check-design-tokens.py` | passed; generated CSS/JSON match Swift sources |
+| Local final site gate | `node Scripts/site/test-site.mjs` | passed targeted route, 404, bilingual, theme, motion, logo, palette, favicon, token and no-JS checks; earlier full pass also covered viewport matrix and crawler |
 | Swift application correction lot | `swift test --filter CoreTendAppTests --filter DesignSystemTests --filter CoreTendAccessibilityTests` | passed; 151 tests |
 | Gold desktop baseline | 1440x900 light, SHA-256 `1e8d0058f97b15707927a92fbb6c62ec072fcc3fdb2e9207dfa261532ab88ce7` | captured |
 | Gold mobile baseline | 430x932 light, SHA-256 `d30f4abfb857d1e2188abd226367947bbe62671b0f2b2502b83720cb006bfe1b` | captured; horizontal overflow visible |
@@ -110,6 +114,7 @@ No product, site, application, accessibility, or deployment test is marked passe
   currently returns an SSO 302 to unauthenticated requests, so public preview
   inspection is still an open gate.
 - Product-site branch preview: pending
+- Product-site branch preview: `https://coretend-n69ymhyem-ahmets-projects-ed32c752.vercel.app` (READY; unauthenticated requests receive Vercel Deployment Protection 302, so public browser verification requires an authenticated session)
 - Product-site production: not changed
 - Portfolio branch preview: pending
 - Portfolio production: not changed
