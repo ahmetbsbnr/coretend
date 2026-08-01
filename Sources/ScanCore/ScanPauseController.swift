@@ -35,6 +35,10 @@ public actor ScanPauseController {
     /// Suspends while paused without polling or blocking an executor thread.
     /// If the scan task is cancelled while paused, its waiter is released so
     /// teardown does not need a matching `resume()`.
+    public func waitIfPaused() async {
+        await waitWhilePaused()
+    }
+
     func waitWhilePaused() async {
         guard paused else { return }
         let id = UUID()
