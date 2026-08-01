@@ -30,8 +30,8 @@
     }
   ],
   "rewrites": [
-    { "source": "/en/", "destination": "/en/index.html" },
-    { "source": "/fr/", "destination": "/fr/index.html" },
+    { "source": "/en/", "destination": "/en-route.html" },
+    { "source": "/fr/", "destination": "/fr-route.html" },
     { "source": "/privacy", "destination": "/privacy.html" },
     { "source": "/support", "destination": "/support.html" },
     { "source": "/legal", "destination": "/legal.html" },
