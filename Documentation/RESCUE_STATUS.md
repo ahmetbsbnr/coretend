@@ -19,7 +19,8 @@ Latest app visual foundation commit: `52612174cb337fe5b1980c31de19043bf952169c` 
 Latest updater manifest commit: `322c55d9984cb160eb5065c669b7b4b48c3c9fe0` (`322c55d`)
 Latest product audit commit: `b41dd08ab9eb0351525f07a356350f7f3b8a62a7` (`b41dd08`)
 Latest Similar Images pause commit: `0b5883571392ad9740140bb95220faa822d34663` (`0b58835`)
-Latest Cloud Cleanup pause commit: this status commit (`Add Cloud Cleanup pause controls`)
+Latest Cloud Cleanup pause commit: `76b033c311f93503e0f9bfb7d8967ce4b830af5d` (`76b033c`)
+Latest Privacy Cleaner pause commit: this status commit (`Add Privacy Cleaner pause controls`)
 
 ## Git Validation
 
@@ -43,11 +44,13 @@ Latest Cloud Cleanup pause commit: this status commit (`Add Cloud Cleanup pause 
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `0b5883571392ad9740140bb95220faa822d34663`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `65db41c0cc0f9281417ca4fdfa16548cbba10fc4`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `322c55d9984cb160eb5065c669b7b4b48c3c9fe0`.
-- Branch `rescue/coretend-final-product` will be pushed to GitHub for the Cloud Cleanup pause-control status commit.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `76b033c311f93503e0f9bfb7d8967ce4b830af5d`.
+- Branch `rescue/coretend-final-product` will be pushed to GitHub for the Privacy Cleaner pause-control status commit.
 - Latest full CI run `30671237842` passed on `b41dd08ab9eb0351525f07a356350f7f3b8a62a7`, including distribution-check and build-and-test.
 - Manually dispatched GitHub Actions CI run `30676143806` passed on `0b5883571392ad9740140bb95220faa822d34663`, including distribution-check and build-and-test.
 - GitHub Actions CI run `30677748494` passed on `65db41c0cc0f9281417ca4fdfa16548cbba10fc4`, including distribution-check and build-and-test.
 - GitHub Actions CI run `30691511902` passed on `322c55d9984cb160eb5065c669b7b4b48c3c9fe0`, including distribution-check and build-and-test.
+- Manually dispatched GitHub Actions CI run `30692821683` passed on `76b033c311f93503e0f9bfb7d8967ce4b830af5d`, including distribution-check and build-and-test.
 
 ## Local Backup
 
@@ -87,17 +90,17 @@ Controls currently integrated:
 - Duplicates: Pause / Resume / Cancel while scanning.
 - Similar Images: Pause / Resume / Cancel while scanning.
 - Cloud Cleanup provider analysis: Pause / Resume / Cancel while measuring local cloud footprints.
+- Privacy Cleaner browser detection: Pause / Resume / Cancel while detecting browser profiles and measuring browser cache footprints.
 
 Controls not yet integrated:
 
-- Privacy Cleaner browser detection/cleanup.
 - Applications scan/uninstall workflows.
 - Integrity scanners.
 
 Known limits:
 
 - Pause checks occur between enumerated filesystem entries, not during a single blocking filesystem call.
-- Pause now covers `ScanEngine`, Space Lens, Duplicates, Similar Images, and Cloud Cleanup walks; remaining separate implementation paths still need equivalent cancellation/pause semantics.
+- Pause now covers `ScanEngine`, Space Lens, Duplicates, Similar Images, Cloud Cleanup, and Privacy Cleaner walks; remaining separate implementation paths still need equivalent cancellation/pause semantics.
 - UI coverage exists through CI visual regression, but no dedicated XCUIAutomation suite has been added yet.
 
 Verification completed for `6f80ef1`:
@@ -456,7 +459,7 @@ Known limits:
 
 ## Cloud Cleanup Pause Controls
 
-Status: committed in this status commit and ready to push.
+Status: committed and pushed as `76b033c311f93503e0f9bfb7d8967ce4b830af5d`.
 
 Implemented:
 
@@ -477,6 +480,33 @@ Known limits:
 
 - Pause checks do not interrupt a single blocking filesystem metadata call.
 - Cloud Cleanup is still not a primary navigation module; it remains a read-only support surface until the product audit decides whether to keep or remove it from release.
+
+CI:
+
+- GitHub Actions CI run `30692821683` passed on `76b033c311f93503e0f9bfb7d8967ce4b830af5d`: distribution-check and build-and-test were green, including tests, debug/release build, package bundle, DMG layout, launch robustness, visual regression captures, release/sync checks, and localization key parity.
+
+## Privacy Cleaner Pause Controls
+
+Status: in progress locally after `76b033c311f93503e0f9bfb7d8967ce4b830af5d`.
+
+Implemented:
+
+- `BrowserCatalog.detect(home:pauseController:)` now provides an async detection path with the shared non-blocking `ScanPauseController`.
+- Browser cache measurement now checks pause and cancellation between browser definitions, profile entries, and directory items.
+- `PrivacyCleanerViewModel` now owns scan pause state and a cancellable browser-detection task.
+- `PrivacyCleanerView` now exposes Pause / Resume / Cancel while detecting profiles, with `p`, `r`, and Escape keyboard shortcuts plus stable accessibility identifiers.
+- Privacy Cleaner remains cache-only: history, cookies, sessions, and live browser databases remain read-only/reporting data and are never selected for Trash.
+
+Validation completed locally:
+
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-privacy-pause --filter BrowserDetectionTests` passed with 7 tests, including async pause/resume coverage.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-privacy-build -c debug` passed.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-privacy-release -c release` passed.
+
+Known limits:
+
+- Pause checks do not interrupt a single blocking filesystem metadata call.
+- Cache cleaning itself remains short and guarded by SafetyCenter; the long-running browser-profile detection path is the part now pauseable.
 
 ## UI Automation Anchors
 
