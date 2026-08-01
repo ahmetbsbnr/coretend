@@ -611,3 +611,18 @@
 "favrec.unfavorite" = "Retirer %@ des favoris";
 "favrec.error_title" = "Favoris et récents indisponibles";
 "favrec.error_no_store" = "Base de données locale indisponible";
+
+/* Cleanup category rows (idle state) */
+"cleanup.idle.what_is_scanned" = "Ce qui est analysé";
+"cleanup.category.caches" = "Caches d'applications";
+"cleanup.category.caches.detail" = "~/Library/Caches — reconstruits automatiquement";
+"cleanup.category.logs" = "Journaux et diagnostics";
+"cleanup.category.logs.detail" = "~/Library/Logs — fichiers de plus de 7 jours";
+"cleanup.category.xcode" = "Données de construction Xcode";
+"cleanup.category.xcode.detail" = "DerivedData — reconstruits à la prochaine compilation";
+"cleanup.category.downloads" = "Téléchargements incomplets";
+"cleanup.category.downloads.detail" = "~/Downloads — fichiers partiels de plus de 7 jours";
+"cleanup.idle.safety_note" = "Rien n'est supprimé pendant l'analyse. Chaque élément est examiné avant toute action.";
+
+/* Space Lens idle */
+"spacelens.idle.tip" = "Code couleur par type : dossiers, médias, documents, archives et code.";

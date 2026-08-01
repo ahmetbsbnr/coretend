@@ -247,33 +247,65 @@ struct SpaceLensView: View {
     }
 
     private var idleView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "circle.hexagongrid")
-                .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
-            Text(L("spacelens.idle.title")).font(MCFont.pageTitle)
-            Text(L("spacelens.idle.subtitle"))
-                .foregroundStyle(.secondary)
-            HStack {
-                Button(L("spacelens.scan_home")) {
-                    model.start(url: FileManager.default.homeDirectoryForCurrentUser)
-                }
-                .buttonStyle(.borderedProminent)
-                .accessibilityIdentifier("spacelens.scan.home")
-                Button(L("spacelens.choose_folder")) {
-                    let panel = NSOpenPanel()
-                    panel.canChooseDirectories = true
-                    panel.canChooseFiles = false
-                    if panel.runModal() == .OK, let url = panel.url {
-                        model.start(url: url)
+        ScrollView {
+            VStack(alignment: .leading, spacing: MCSpacing.xl) {
+                HStack(alignment: .top, spacing: MCSpacing.lg) {
+                    Image(systemName: "circle.hexagongrid")
+                        .font(.system(size: 48, weight: .light))
+                        .foregroundStyle(MCTheme.accent)
+                        .frame(width: 72, height: 72)
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: MCSpacing.xs) {
+                        Text(L("spacelens.idle.title"))
+                            .font(MCFont.pageTitle)
+                        Text(L("spacelens.idle.subtitle"))
+                            .font(MCFont.secondaryBody)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
+
+                VStack(alignment: .leading, spacing: MCSpacing.sm) {
+                    MCSectionHeader(L("spacelens.filter_category"))
+                    MCFeatureRow(L("spacelens.category.folder"),
+                                 icon: "folder.fill", iconColor: MCTheme.accent)
+                    MCFeatureRow(L("spacelens.category.media"),
+                                 icon: "photo", iconColor: MCColor.novaMagenta)
+                    MCFeatureRow(L("spacelens.category.document"),
+                                 icon: "doc.text", iconColor: MCColor.glacierBlue)
+                    MCFeatureRow(L("spacelens.category.archive"),
+                                 icon: "archivebox", iconColor: MCTheme.warning)
+                    MCFeatureRow(L("spacelens.category.code"),
+                                 icon: "curlybraces", iconColor: MCColor.mossGreen)
+                }
+
+                HStack(spacing: MCSpacing.sm) {
+                    Button(L("spacelens.scan_home")) {
+                        model.start(url: FileManager.default.homeDirectoryForCurrentUser)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .accessibilityIdentifier("spacelens.scan.home")
+                    Button(L("spacelens.choose_folder")) {
+                        let panel = NSOpenPanel()
+                        panel.canChooseDirectories = true
+                        panel.canChooseFiles = false
+                        if panel.runModal() == .OK, let url = panel.url {
+                            model.start(url: url)
+                        }
+                    }
+                    .controlSize(.large)
+                }
             }
+            .padding(MCSpacing.page)
+            .frame(maxWidth: 520, alignment: .leading)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity)
+        .background(MCColor.background)
     }
 
     private func scanningView(_ items: Int) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: MCSpacing.md) {
             ProgressView()
             Text(L("spacelens.scanning_progress", items)).monospacedDigit()
             HStack(spacing: MCSpacing.sm) {
