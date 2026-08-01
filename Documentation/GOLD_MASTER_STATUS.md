@@ -79,6 +79,8 @@ portfolio remained clean.
 - `54a53a3` `docs: record app build and token gates` (pushed)
 - `5587929` `docs: archive generated workspace materials` (pushed)
 - `e1114cd` `fix: anchor informational pages and 404 footer` (pushed)
+- `a34f61c` `docs: record preview and final site gates` (pushed)
+- `863ef12` `docs: describe visual evidence capture` (pushed)
 
 ## Test evidence
 
@@ -101,6 +103,7 @@ portfolio remained clean.
 | App release build | `Scripts/build-release.sh 0.9.1-rc.4` / `Scripts/package-dmg.sh 0.9.1-rc.4` | Swift `.app` build passed; DMG packaging blocked by local `hdiutil` conversion failure, so no candidate DMG was published |
 | Design token gate | `python3 Scripts/check-design-tokens.py` | passed; generated CSS/JSON match Swift sources |
 | Local final site gate | `node Scripts/site/test-site.mjs` | passed targeted route, 404, bilingual, theme, motion, logo, palette, favicon, token and no-JS checks; earlier full pass also covered viewport matrix and crawler |
+| Visual evidence | `node Scripts/visual/capture.mjs --capture-only` | 51 PNG evidence captures generated; baseline remains unchanged until visual review |
 | Swift application correction lot | `swift test --filter CoreTendAppTests --filter DesignSystemTests --filter CoreTendAccessibilityTests` | passed; 151 tests |
 | Gold desktop baseline | 1440x900 light, SHA-256 `1e8d0058f97b15707927a92fbb6c62ec072fcc3fdb2e9207dfa261532ab88ce7` | captured |
 | Gold mobile baseline | 430x932 light, SHA-256 `d30f4abfb857d1e2188abd226367947bbe62671b0f2b2502b83720cb006bfe1b` | captured; horizontal overflow visible |
