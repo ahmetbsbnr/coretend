@@ -13,6 +13,9 @@
 - Remaining gates: production HTTP checks, portfolio ClamAV cleanup, isolated UI tests, skip/no-result explanation, visual inspection prep, CI/Security/Vercel/Git verification, public download unchanged until Developer ID is available
 - Targeted validation: `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-rescue --filter PathValidatorTests` passed with 23 Swift Testing tests; XCTest wrapper reported 0 selected XCTest tests.
 - Website generation: `python3 Website/generate.py` completed and left no Website diff.
+- Production HTTP: `/`, `/en/`, `/fr/`, `/en/index.html`, `/fr/index.html` returned 200.
+- Production referenced assets: favicon PNGs, Gatekeeper demo media, fonts, `site.js`, and `style.css` returned 200.
+- Public release routes: `/download`, `/latest.json`, and `/SHA256SUMS` still redirect to the existing GitHub `v0.9.1-rc.3` public artifacts and returned 200; download target unchanged.
 
 ---
 
