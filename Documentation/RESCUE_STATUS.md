@@ -20,6 +20,10 @@
 - UI tests, first Xcode run: 8 `CoreTendUITests` were launched and all skipped because `CORETEND_UI_APP_PATH` was absent. The skip text is `Set CORETEND_UI_APP_PATH to a built CoreTend.app for XCUIAutomation.`
 - UI tests, isolated app attempt: `CORETEND_UI_APP_PATH=/Users/ahmetbasbunar/Developer/Website/products/coretend/app/build/CoreTend.app swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-ui --filter CoreTendUITests` built successfully, then the first XCTest process failed with `com.apple.testmanagerd ... Sandbox restriction` / unexpected signal 5 before completing UI assertions.
 - Test with no result explained: the Swift Testing runner line `Test run with 0 tests passed` belongs to the non-XCTest Swift Testing harness inside the same aggregate package; the selected UI tests are XCTest cases, and their run was interrupted by `testmanagerd` sandbox denial.
+- Xcode build: `BuildProject` succeeded in 0.935s.
+- Human visual inspection prep: use `Documentation/VISUAL_QA.md`, `Documentation/FIRST_RUN_QA.md`, `Documentation/USER_JOURNEY_QA.md`, and `Documentation/MANUAL_ACCEPTANCE_TEST_PLAN.md`; current status remains ready for human GUI capture, not visually certified by this sandbox.
+- Remote checks at `40fd88b6532010ea4d585b0b82a5b581b9742119`: Security `success`; Vercel statuses `success`; CI `distribution-check` `success`; CI `build-and-test` still `in_progress` at last poll.
+- Git final check: local `main` and `origin/main` both point to `40fd88b6532010ea4d585b0b82a5b581b9742119`; worktree clean at the time of the remote check before this journal update.
 
 ---
 
