@@ -84,7 +84,50 @@ final class CoreTendUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["applications.list"].firstMatch.waitForExistence(timeout: 8))
     }
 
-    private func launchApp(onboardingDone: Bool = true, locale: String? = nil) throws -> XCUIApplication {
+    func testIntegrityActivityAndSettingsExposeAutomationIdentifiers() throws {
+        let app = try launchApp()
+        defer { app.terminate() }
+
+        let integrity = app.descendants(matching: .any)["sidebar.Protection"].firstMatch
+        XCTAssertTrue(integrity.waitForExistence(timeout: 8))
+        integrity.click()
+        XCTAssertTrue(app.descendants(matching: .any)["integrity.root"].firstMatch.waitForExistence(timeout: 8))
+        XCTAssertTrue(app.descendants(matching: .any)["integrity.downloads"].firstMatch.waitForExistence(timeout: 8))
+        XCTAssertTrue(app.descendants(matching: .any)["integrity.inspector"].firstMatch.waitForExistence(timeout: 8))
+        XCTAssertTrue(app.descendants(matching: .any)["integrity.login_items"].firstMatch.waitForExistence(timeout: 8))
+
+        let activity = app.descendants(matching: .any)["sidebar.My Activity"].firstMatch
+        XCTAssertTrue(activity.waitForExistence(timeout: 8))
+        activity.click()
+        XCTAssertTrue(app.descendants(matching: .any)["activity.root"].firstMatch.waitForExistence(timeout: 8))
+        XCTAssertTrue(app.descendants(matching: .any)["activity.range"].firstMatch.waitForExistence(timeout: 8))
+        XCTAssertTrue(app.descendants(matching: .any)["activity.filter"].firstMatch.waitForExistence(timeout: 8))
+        XCTAssertTrue(app.descendants(matching: .any)["activity.safety_log"].firstMatch.waitForExistence(timeout: 8))
+
+        let settings = app.descendants(matching: .any)["sidebar.Settings"].firstMatch
+        XCTAssertTrue(settings.waitForExistence(timeout: 8))
+        settings.click()
+        XCTAssertTrue(app.descendants(matching: .any)["settings.root"].firstMatch.waitForExistence(timeout: 8))
+        XCTAssertTrue(app.descendants(matching: .any)["settings.language"].firstMatch.waitForExistence(timeout: 8))
+        XCTAssertTrue(app.descendants(matching: .any)["settings.menu_bar"].firstMatch.waitForExistence(timeout: 8))
+        XCTAssertTrue(app.descendants(matching: .any)["settings.dry_run"].firstMatch.waitForExistence(timeout: 8))
+        XCTAssertTrue(app.descendants(matching: .any)["settings.exclusions.add"].firstMatch.waitForExistence(timeout: 8))
+        XCTAssertTrue(app.descendants(matching: .any)["settings.diagnostic.export"].firstMatch.waitForExistence(timeout: 8))
+    }
+
+    func testCloseAndRelaunchPreservesIsolatedDashboardAccess() throws {
+        let storePath = NSTemporaryDirectory() + "/coretend-ui-relaunch-\(UUID().uuidString)"
+        let app = try launchApp(storePath: storePath)
+        XCTAssertTrue(app.descendants(matching: .any)["dashboard.root"].firstMatch.waitForExistence(timeout: 8))
+        app.terminate()
+
+        let relaunched = try launchApp(storePath: storePath)
+        defer { relaunched.terminate() }
+        XCTAssertTrue(relaunched.windows.firstMatch.waitForExistence(timeout: 8))
+        XCTAssertTrue(relaunched.descendants(matching: .any)["dashboard.root"].firstMatch.waitForExistence(timeout: 8))
+    }
+
+    private func launchApp(onboardingDone: Bool = true, locale: String? = nil, storePath: String? = nil) throws -> XCUIApplication {
         guard let rawPath = ProcessInfo.processInfo.environment["CORETEND_UI_APP_PATH"],
               !rawPath.isEmpty else {
             throw XCTSkip("Set CORETEND_UI_APP_PATH to a built CoreTend.app for XCUIAutomation.")
@@ -97,7 +140,7 @@ final class CoreTendUITests: XCTestCase {
             app.launchArguments += ["-AppleLanguages", "(\(locale))", "-AppleLocale", locale]
         }
         app.launchEnvironment["CORETEND_TEST_MODE"] = "1"
-        app.launchEnvironment["CORETEND_TEST_STORE_DIR"] = NSTemporaryDirectory() + "/coretend-ui-\(UUID().uuidString)"
+        app.launchEnvironment["CORETEND_TEST_STORE_DIR"] = storePath ?? NSTemporaryDirectory() + "/coretend-ui-\(UUID().uuidString)"
         app.launch()
         return app
     }

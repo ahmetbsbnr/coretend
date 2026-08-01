@@ -165,6 +165,7 @@ struct MyActivityView: View {
                 }
             }
             .pickerStyle(.menu)
+            .accessibilityIdentifier("activity.range")
             Picker(L("activity.filter"), selection: $model.filter) {
                 Text(L("activity.all_kinds")).tag(ActivityRecord.Kind?.none)
                 ForEach(ActivityRecord.Kind.allCases, id: \.self) { kind in
@@ -172,22 +173,26 @@ struct MyActivityView: View {
                 }
             }
             .pickerStyle(.menu)
+            .accessibilityIdentifier("activity.filter")
             Menu {
                 Button(L("activity.export_csv")) { exportToDownloads(format: .csv) }
                 Button(L("activity.export_json")) { exportToDownloads(format: .json) }
             } label: {
                 Label(L("activity.export_csv"), systemImage: "square.and.arrow.up")
             }
+            .accessibilityIdentifier("activity.export")
             .disabled(model.records.isEmpty)
             Button(L("activity.clear_history"), role: .destructive) {
                 Task { await model.clear() }
             }
+            .accessibilityIdentifier("activity.clear")
             .disabled(model.allRecords.isEmpty)
             Button {
                 showingSafetyLog = true
             } label: {
                 Label(L("activity.open_safety_log"), systemImage: "checklist")
             }
+            .accessibilityIdentifier("activity.safety_log")
         }
         .sheet(isPresented: $showingSafetyLog) { SafetyLogView() }
         .task(id: model.filter) { await model.load() }

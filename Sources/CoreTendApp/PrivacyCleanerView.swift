@@ -175,6 +175,7 @@ struct PrivacyCleanerView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
+        .accessibilityIdentifier("privacy.root")
         .task { await model.scan() }
     }
 
@@ -197,6 +198,7 @@ struct PrivacyCleanerView: View {
                     Task { await model.cleanCaches() }
                 }
                 .buttonStyle(.borderedProminent)
+                .accessibilityIdentifier("privacy.clean")
                 .disabled(model.selectedProfileIDs.isEmpty)
             }
             .padding()

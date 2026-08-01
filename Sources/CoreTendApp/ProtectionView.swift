@@ -109,6 +109,7 @@ struct IntegrityView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .accessibilityIdentifier("integrity.downloads")
     }
 
     private var inspectorCard: some View {
@@ -126,12 +127,14 @@ struct IntegrityView: View {
                         model.inspect(url)
                     }
                 }
+                .accessibilityIdentifier("integrity.inspect.choose")
                 if let inspected = model.inspectedApp {
                     signatureRow(name: inspected.url.lastPathComponent, info: inspected.info)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .accessibilityIdentifier("integrity.inspector")
     }
 
     @ViewBuilder
@@ -179,5 +182,6 @@ struct IntegrityView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .accessibilityIdentifier("integrity.login_items")
     }
 }
