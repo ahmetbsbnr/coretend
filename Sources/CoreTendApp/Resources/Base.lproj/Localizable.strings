@@ -611,3 +611,18 @@
 "favrec.unfavorite" = "Remove %@ from Favorites";
 "favrec.error_title" = "Favorites & Recents unavailable";
 "favrec.error_no_store" = "Local database unavailable";
+
+/* Cleanup category rows (idle state) */
+"cleanup.idle.what_is_scanned" = "What gets scanned";
+"cleanup.category.caches" = "App Caches";
+"cleanup.category.caches.detail" = "~/Library/Caches — rebuilt automatically";
+"cleanup.category.logs" = "Logs & Diagnostics";
+"cleanup.category.logs.detail" = "~/Library/Logs — files older than 7 days";
+"cleanup.category.xcode" = "Xcode Build Data";
+"cleanup.category.xcode.detail" = "DerivedData — rebuilt on next build";
+"cleanup.category.downloads" = "Incomplete Downloads";
+"cleanup.category.downloads.detail" = "~/Downloads — partial files, older than 7 days";
+"cleanup.idle.safety_note" = "Nothing is deleted during a scan. All items are reviewed before any action.";
+
+/* Space Lens idle */
+"spacelens.idle.tip" = "Color-coded by type: folders, media, documents, archives and code.";
