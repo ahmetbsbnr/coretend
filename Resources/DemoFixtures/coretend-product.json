@@ -1,0 +1,436 @@
+{
+  "schemaVersion": 1,
+  "fixtureId": "coretend-product-example-v1",
+  "fixtureKind": "example",
+  "labels": {
+    "en": "Example product data",
+    "fr": "Données produit d’exemple"
+  },
+  "identity": {
+    "homePath": "/Users/demo",
+    "computerName": "Demo Mac",
+    "volumeName": "Macintosh HD"
+  },
+  "modules": [
+    {
+      "id": "dashboard",
+      "public": true,
+      "example": true,
+      "title": {
+        "en": "Dashboard",
+        "fr": "Tableau de bord"
+      },
+      "sampleLabel": {
+        "en": "Example data",
+        "fr": "Données d’exemple"
+      },
+      "data": {
+        "freeBytes": 137438953472,
+        "dryRunEnabled": true,
+        "latestActivityRef": "activity-003",
+        "workflowDestinations": [
+          "storage",
+          "space-lens",
+          "duplicates",
+          "applications",
+          "integrity",
+          "activity"
+        ]
+      }
+    },
+    {
+      "id": "storage",
+      "public": true,
+      "example": true,
+      "title": {
+        "en": "Storage",
+        "fr": "Stockage"
+      },
+      "sampleLabel": {
+        "en": "Example data",
+        "fr": "Données d’exemple"
+      },
+      "data": {
+        "totalBytes": 4160749568,
+        "selectedBytes": 3623878656,
+        "items": [
+          {
+            "ruleId": "user.caches",
+            "name": "Demo browser caches",
+            "path": "/Users/demo/Library/Caches/com.example.demobrowser",
+            "sizeBytes": 1073741824,
+            "risk": "low",
+            "preselected": true
+          },
+          {
+            "ruleId": "dev.xcode.deriveddata",
+            "name": "DemoApp DerivedData",
+            "path": "/Users/demo/Library/Developer/Xcode/DerivedData/DemoApp-ABC123",
+            "sizeBytes": 2147483648,
+            "risk": "low",
+            "preselected": true
+          },
+          {
+            "ruleId": "user.logs",
+            "name": "Demo utility logs",
+            "path": "/Users/demo/Library/Logs/DemoUtility",
+            "sizeBytes": 268435456,
+            "risk": "low",
+            "preselected": true
+          },
+          {
+            "ruleId": "user.crashreports",
+            "name": "Demo diagnostic reports",
+            "path": "/Users/demo/Library/Logs/DiagnosticReports/DemoUtility_2026-07-30.crash",
+            "sizeBytes": 134217728,
+            "risk": "low",
+            "preselected": true
+          },
+          {
+            "ruleId": "user.oldinstallers",
+            "name": "Demo Editor installer",
+            "path": "/Users/demo/Downloads/DemoEditor-1.2.0.dmg",
+            "sizeBytes": 536870912,
+            "risk": "medium",
+            "preselected": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "space-lens",
+      "public": true,
+      "example": true,
+      "title": {
+        "en": "Space Lens",
+        "fr": "Space Lens"
+      },
+      "sampleLabel": {
+        "en": "Example data",
+        "fr": "Données d’exemple"
+      },
+      "data": {
+        "rootPath": "/Users/demo",
+        "totalBytes": 103079215104,
+        "children": [
+          {
+            "name": "Movies",
+            "path": "/Users/demo/Movies",
+            "sizeBytes": 34359738368
+          },
+          {
+            "name": "Library",
+            "path": "/Users/demo/Library",
+            "sizeBytes": 25769803776
+          },
+          {
+            "name": "Pictures",
+            "path": "/Users/demo/Pictures",
+            "sizeBytes": 17179869184
+          },
+          {
+            "name": "Developer",
+            "path": "/Users/demo/Developer",
+            "sizeBytes": 12884901888
+          },
+          {
+            "name": "Documents",
+            "path": "/Users/demo/Documents",
+            "sizeBytes": 8589934592
+          },
+          {
+            "name": "Other",
+            "path": "/Users/demo/Other",
+            "sizeBytes": 4294967296
+          }
+        ]
+      }
+    },
+    {
+      "id": "duplicates",
+      "public": true,
+      "example": true,
+      "title": {
+        "en": "Duplicates",
+        "fr": "Doublons"
+      },
+      "sampleLabel": {
+        "en": "Example data",
+        "fr": "Données d’exemple"
+      },
+      "data": {
+        "totalBytes": 1233125376,
+        "reclaimableBytes": 654311424,
+        "groups": [
+          {
+            "id": "duplicate-group-001",
+            "contentMatch": "sha256",
+            "copySizeBytes": 8388608,
+            "copies": 3,
+            "totalBytes": 25165824,
+            "reclaimableBytes": 16777216,
+            "files": [
+              {
+                "path": "/Users/demo/Documents/Portfolio/IMG_1001.HEIC",
+                "keeper": true
+              },
+              {
+                "path": "/Users/demo/Desktop/Review/IMG_1001.HEIC",
+                "keeper": false
+              },
+              {
+                "path": "/Users/demo/Downloads/Photos/IMG_1001.HEIC",
+                "keeper": false
+              }
+            ]
+          },
+          {
+            "id": "duplicate-group-002",
+            "contentMatch": "sha256",
+            "copySizeBytes": 33554432,
+            "copies": 4,
+            "totalBytes": 134217728,
+            "reclaimableBytes": 100663296,
+            "files": [
+              {
+                "path": "/Users/demo/Documents/Reports/annual-report.pdf",
+                "keeper": true
+              },
+              {
+                "path": "/Users/demo/Desktop/annual-report.pdf",
+                "keeper": false
+              },
+              {
+                "path": "/Users/demo/Downloads/annual-report.pdf",
+                "keeper": false
+              },
+              {
+                "path": "/Users/demo/Documents/Archive/annual-report.pdf",
+                "keeper": false
+              }
+            ]
+          },
+          {
+            "id": "duplicate-group-003",
+            "contentMatch": "sha256",
+            "copySizeBytes": 536870912,
+            "copies": 2,
+            "totalBytes": 1073741824,
+            "reclaimableBytes": 536870912,
+            "files": [
+              {
+                "path": "/Users/demo/Documents/Video/demo-sequence.mov",
+                "keeper": true
+              },
+              {
+                "path": "/Users/demo/Downloads/demo-sequence.mov",
+                "keeper": false
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "applications",
+      "public": true,
+      "example": true,
+      "title": {
+        "en": "Applications",
+        "fr": "Applications"
+      },
+      "sampleLabel": {
+        "en": "Example data",
+        "fr": "Données d’exemple"
+      },
+      "data": {
+        "totalBytes": 1241526272,
+        "installedApps": [
+          {
+            "name": "Demo Editor",
+            "bundleId": "com.example.demoeditor",
+            "path": "/Applications/Demo Editor.app",
+            "appSizeBytes": 536870912,
+            "totalBytes": 939528192,
+            "associatedItems": [
+              {
+                "kind": "cache",
+                "path": "/Users/demo/Library/Caches/com.example.demoeditor",
+                "sizeBytes": 268435456,
+                "preselected": true
+              },
+              {
+                "kind": "application-support",
+                "path": "/Users/demo/Library/Application Support/com.example.demoeditor",
+                "sizeBytes": 134217728,
+                "preselected": false
+              },
+              {
+                "kind": "preference",
+                "path": "/Users/demo/Library/Preferences/com.example.demoeditor.plist",
+                "sizeBytes": 4096,
+                "preselected": false
+              }
+            ]
+          },
+          {
+            "name": "Archive Tool",
+            "bundleId": "com.example.archivetool",
+            "path": "/Applications/Archive Tool.app",
+            "appSizeBytes": 134217728,
+            "totalBytes": 201334784,
+            "associatedItems": [
+              {
+                "kind": "cache",
+                "path": "/Users/demo/Library/Caches/com.example.archivetool",
+                "sizeBytes": 67108864,
+                "preselected": true
+              },
+              {
+                "kind": "launch-agent",
+                "path": "/Users/demo/Library/LaunchAgents/com.example.archivetool.plist",
+                "sizeBytes": 8192,
+                "preselected": false
+              }
+            ]
+          }
+        ],
+        "leftovers": [
+          {
+            "bundleId": "com.example.retiredtool",
+            "path": "/Users/demo/Library/Application Support/com.example.retiredtool",
+            "matchBasis": "reverse-dns-bundle-id",
+            "sizeBytes": 100663296,
+            "preselected": false
+          }
+        ],
+        "updatesBehavior": "opens-mac-app-store-updates"
+      }
+    },
+    {
+      "id": "integrity",
+      "public": true,
+      "example": true,
+      "title": {
+        "en": "Integrity",
+        "fr": "Intégrité"
+      },
+      "sampleLabel": {
+        "en": "Example data",
+        "fr": "Données d’exemple"
+      },
+      "data": {
+        "totalBytes": 603979776,
+        "downloads": [
+          {
+            "name": "DemoEditor-1.2.0.dmg",
+            "path": "/Users/demo/Downloads/DemoEditor-1.2.0.dmg",
+            "sizeBytes": 536870912,
+            "quarantinePresent": true,
+            "downloadAgent": "Demo Browser"
+          },
+          {
+            "name": "example-assets.zip",
+            "path": "/Users/demo/Downloads/example-assets.zip",
+            "sizeBytes": 67108864,
+            "quarantinePresent": false,
+            "downloadAgent": null
+          }
+        ],
+        "inspectedApplication": {
+          "name": "Demo Editor",
+          "path": "/Applications/Demo Editor.app",
+          "signatureTier": "teamSigned",
+          "signatureValid": true,
+          "teamIdentifier": "DEMO123456",
+          "signingIdentifier": "com.example.demoeditor",
+          "notarization": "not-inspected"
+        },
+        "loginItems": [
+          {
+            "label": "com.example.demoutility",
+            "scope": "userAgent",
+            "plistPath": "/Users/demo/Library/LaunchAgents/com.example.demoutility.plist",
+            "programPath": "/Applications/Demo Utility.app/Contents/MacOS/Demo Utility"
+          }
+        ]
+      }
+    },
+    {
+      "id": "activity",
+      "public": true,
+      "example": true,
+      "title": {
+        "en": "Activity",
+        "fr": "Activité"
+      },
+      "sampleLabel": {
+        "en": "Example data",
+        "fr": "Données d’exemple"
+      },
+      "data": {
+        "totalBytes": 8438939648,
+        "realFreedBytes": 654311424,
+        "simulatedFreedBytes": 3623878656,
+        "itemCount": 12,
+        "records": [
+          {
+            "id": "activity-001",
+            "date": "2026-07-30T09:12:00Z",
+            "kind": "scan",
+            "summary": "Storage scan example",
+            "itemCount": 5,
+            "bytes": 4160749568,
+            "dryRun": true
+          },
+          {
+            "id": "activity-002",
+            "date": "2026-07-30T09:14:00Z",
+            "kind": "cleanup",
+            "summary": "Storage dry-run example",
+            "itemCount": 4,
+            "bytes": 3623878656,
+            "dryRun": true
+          },
+          {
+            "id": "activity-003",
+            "date": "2026-07-29T16:40:00Z",
+            "kind": "cleanup",
+            "summary": "Duplicates moved to Trash example",
+            "itemCount": 3,
+            "bytes": 654311424,
+            "dryRun": false
+          }
+        ]
+      }
+    },
+    {
+      "id": "settings",
+      "public": true,
+      "example": true,
+      "title": {
+        "en": "Settings",
+        "fr": "Réglages"
+      },
+      "sampleLabel": {
+        "en": "Example data",
+        "fr": "Données d’exemple"
+      },
+      "data": {
+        "dryRunDefault": true,
+        "menuBarEnabled": true,
+        "telemetryEnabled": false,
+        "accountRequired": false,
+        "updater": {
+          "manifestURL": "https://coretend.ahmetbsbnr.com/latest.json",
+          "checkMode": "manual",
+          "downloadsAutomatically": false,
+          "installsAutomatically": false
+        },
+        "exclusions": [
+          "/Users/demo/Documents/Keep"
+        ]
+      }
+    }
+  ]
+}

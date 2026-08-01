@@ -95,6 +95,9 @@ jobs:
       - name: Release/sync consistency gate (fails on version divergence)
         run: bash Scripts/test-release-sync.sh
 
+      - name: Public release metadata gate (offline and path-free)
+        run: python3 Scripts/test-public-release-gate.py
+
       - name: Localization key-parity check
         run: |
           base="Sources/CoreTendApp/Resources/Base.lproj/Localizable.strings"
