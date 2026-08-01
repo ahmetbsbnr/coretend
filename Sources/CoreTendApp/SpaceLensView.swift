@@ -243,6 +243,7 @@ struct SpaceLensView: View {
         .onReceive(NotificationCenter.default.publisher(for: .mcOpenSpaceLensAt)) { note in
             if let url = note.object as? URL { model.start(url: url) }
         }
+        .accessibilityIdentifier("spacelens.root")
     }
 
     private var idleView: some View {
@@ -257,6 +258,7 @@ struct SpaceLensView: View {
                     model.start(url: FileManager.default.homeDirectoryForCurrentUser)
                 }
                 .buttonStyle(.borderedProminent)
+                .accessibilityIdentifier("spacelens.scan.home")
                 Button(L("spacelens.choose_folder")) {
                     let panel = NSOpenPanel()
                     panel.canChooseDirectories = true
@@ -280,14 +282,17 @@ struct SpaceLensView: View {
                         .keyboardShortcut("r", modifiers: [])
                         .help(L("spacelens.resume_hint"))
                         .accessibilityHint(L("spacelens.resume_hint"))
+                        .accessibilityIdentifier("spacelens.scan.resume")
                 } else {
                     Button(L("common.pause")) { model.pauseScan() }
                         .keyboardShortcut("p", modifiers: [])
                         .help(L("spacelens.pause_hint"))
                         .accessibilityHint(L("spacelens.pause_hint"))
+                        .accessibilityIdentifier("spacelens.scan.pause")
                 }
                 Button(L("common.cancel")) { model.cancel() }
                     .keyboardShortcut(.cancelAction)
+                    .accessibilityIdentifier("spacelens.scan.cancel")
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

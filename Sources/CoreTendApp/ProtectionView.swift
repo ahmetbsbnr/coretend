@@ -33,6 +33,7 @@ struct ProtectionView: View {
         }
         .padding(8)
         .navigationTitle(L("module.protection"))
+        .accessibilityIdentifier("integrity.root")
     }
 }
 

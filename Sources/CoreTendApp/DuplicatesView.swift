@@ -226,6 +226,7 @@ struct DuplicatesView: View {
             case let .finished(freed, dryRun): finishedView(freed, dryRun)
             }
         }
+        .accessibilityIdentifier("duplicates.root")
     }
 
     private var idleView: some View {
@@ -233,6 +234,7 @@ struct DuplicatesView: View {
             icon: "doc.on.doc.fill", title: L("dupes.idle.title"), message: L("dupes.idle.subtitle"),
             iconColor: MCTheme.accentSecondary, iconSize: MCIconSize.emptyStateProminent,
             actionTitle: L("dupes.find")) { model.start() }
+            .accessibilityIdentifier("duplicates.scan.start")
     }
 
     private func scanningView(_ processed: Int, _ total: Int) -> some View {

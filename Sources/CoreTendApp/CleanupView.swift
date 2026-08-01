@@ -196,6 +196,7 @@ struct CleanupView: View {
         }
         .padding(24)
         .navigationTitle(L("module.storage"))
+        .accessibilityIdentifier("storage.root")
         .task { await model.loadDryRunDefault() }
     }
 
@@ -211,6 +212,7 @@ struct CleanupView: View {
             Button(L("cleanup.start_scan")) { model.startScan() }
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
+                .accessibilityIdentifier("storage.scan.start")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -227,13 +229,16 @@ struct CleanupView: View {
                     Button(L("common.resume")) { model.resumeScan() }
                         .keyboardShortcut("r", modifiers: [])
                         .accessibilityHint(L("cleanup.resume_hint"))
+                        .accessibilityIdentifier("storage.scan.resume")
                 } else {
                     Button(L("common.pause")) { model.pauseScan() }
                         .keyboardShortcut("p", modifiers: [])
                         .accessibilityHint(L("cleanup.pause_hint"))
+                        .accessibilityIdentifier("storage.scan.pause")
                 }
                 Button(L("common.cancel")) { model.cancelScan() }
                     .keyboardShortcut(.cancelAction)
+                    .accessibilityIdentifier("storage.scan.cancel")
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

@@ -157,6 +157,7 @@ struct MyActivityView: View {
             }
         }
         .navigationTitle(L("activity.title"))
+        .accessibilityIdentifier("activity.root")
         .toolbar {
             Picker(L("activity.range"), selection: $model.dateRange) {
                 ForEach(ActivityDateRange.allCases) { range in
