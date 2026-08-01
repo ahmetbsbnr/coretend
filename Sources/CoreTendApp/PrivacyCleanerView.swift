@@ -137,7 +137,7 @@ struct PrivacyCleanerView: View {
         VStack(spacing: 0) {
             switch model.phase {
             case .scanning:
-                VStack(spacing: 12) {
+                VStack(spacing: MCSpacing.sm) {
                     ProgressView(L("privacy.detecting"))
                     if model.isPaused {
                         Button(L("common.resume")) { model.resumeScan() }
@@ -163,7 +163,7 @@ struct PrivacyCleanerView: View {
             case .results:
                 resultsView
             case let .finished(freed, dryRun):
-                VStack(spacing: 12) {
+                VStack(spacing: MCSpacing.sm) {
                     Image(systemName: "checkmark.seal")
                         .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
                         .accessibilityHidden(true)
@@ -186,7 +186,7 @@ struct PrivacyCleanerView: View {
                 Label(L("privacy.running_warning", running.joined(separator: ", ")),
                       systemImage: "exclamationmark.triangle")
                     .font(MCFont.secondaryBody).foregroundStyle(MCTheme.warning)
-                    .padding(.horizontal).padding(.top, 12)
+                    .padding(.horizontal).padding(.top, MCSpacing.sm)
                     .accessibilityElement(children: .combine)
             }
             HStack {
@@ -204,7 +204,7 @@ struct PrivacyCleanerView: View {
             .padding()
             List(model.profiles) { profile in
                 let profileIsRunning = model.isRunning(profile)
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: MCSpacing.xxs) {
                     HStack {
                         Toggle("", isOn: Binding(
                             get: { model.selectedProfileIDs.contains(profile.id) },
@@ -218,7 +218,7 @@ struct PrivacyCleanerView: View {
                         .disabled(profile.cacheURLs.isEmpty || profileIsRunning)
                         VStack(alignment: .leading) {
                             Text(L("privacy.browser_profile", profile.browser, profile.profileName))
-                            HStack(spacing: 12) {
+                            HStack(spacing: MCSpacing.sm) {
                                 Text(L("privacy.cache_size", mcFormatBytes(profile.cacheBytes)))
                                 Text(L("privacy.history_size", mcFormatBytes(profile.historyBytes)))
                                 Text(L("privacy.cookies_size", mcFormatBytes(profile.cookieBytes)))
@@ -228,7 +228,7 @@ struct PrivacyCleanerView: View {
                         Spacer()
                     }
                     if profileIsRunning {
-                        HStack(spacing: 8) {
+                        HStack(spacing: MCSpacing.xs) {
                             Image(systemName: "lock.circle").foregroundStyle(MCTheme.warning)
                                 .accessibilityHidden(true)
                             Text(L("privacy.profile_running_reason", profile.browser))

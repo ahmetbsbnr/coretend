@@ -138,7 +138,7 @@ struct MyClutterView: View {
             SimilarImagesView()
                 .tabItem { Label(L("clutter.tab.similar_images"), systemImage: "photo.on.rectangle.angled") }
         }
-        .padding(8)
+        .padding(MCSpacing.xs)
         .navigationTitle(L("clutter.title"))
     }
 }
@@ -158,14 +158,14 @@ struct LargeOldFilesView: View {
     }
 
     private var idleView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: MCSpacing.md) {
             Image(systemName: "doc.on.doc")
                 .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
                 .accessibilityHidden(true)
             Text(L("clutter.idle.title")).font(MCFont.pageTitle)
             Text(L("clutter.idle.subtitle"))
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
-            HStack(spacing: 16) {
+            HStack(spacing: MCSpacing.md) {
                 Picker(L("clutter.larger_than"), selection: $model.minSizeMB) {
                     Text(L("clutter.size.50mb")).tag(50)
                     Text(L("clutter.size.100mb")).tag(100)
@@ -186,11 +186,11 @@ struct LargeOldFilesView: View {
                 .keyboardShortcut(.defaultAction)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(24)
+        .padding(MCSpacing.page)
     }
 
     private var scanningView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: MCSpacing.md) {
             ProgressView()
             Text(L("clutter.scanning_progress", model.scannedCount, model.findings.count))
                 .monospacedDigit()
@@ -212,7 +212,7 @@ struct LargeOldFilesView: View {
     }
 
     private var emptyView: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: MCSpacing.sm) {
             Image(systemName: "checkmark.circle")
                 .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
                 .accessibilityHidden(true)
@@ -268,7 +268,7 @@ struct LargeOldFilesView: View {
                         .accessibilityHidden(true)
                     VStack(alignment: .leading) {
                         Text(finding.url.lastPathComponent)
-                        HStack(spacing: 8) {
+                        HStack(spacing: MCSpacing.xs) {
                             Text(finding.url.deletingLastPathComponent().path)
                                 .lineLimit(1).truncationMode(.middle)
                             if let date = finding.modificationDate {

@@ -151,7 +151,7 @@ struct SimilarImagesView: View {
                     actionTitle: L("similar.analyze")) { model.start() }
                     .accessibilityIdentifier("similar.scan.start")
             case let .scanning(processed, total):
-                VStack(spacing: 16) {
+                VStack(spacing: MCSpacing.md) {
                     if total > 0 {
                         ProgressView(value: Double(processed), total: Double(total))
                             .frame(width: 260)
@@ -179,7 +179,7 @@ struct SimilarImagesView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
-                VStack(spacing: 12) {
+                VStack(spacing: MCSpacing.sm) {
                     Image(systemName: "checkmark.circle")
                         .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
                     Text(L("similar.none_found")).font(.title3.weight(.semibold))

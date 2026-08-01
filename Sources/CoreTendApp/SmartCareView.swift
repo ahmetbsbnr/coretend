@@ -253,7 +253,7 @@ struct SmartCareView: View {
     }
 
     private var moduleList: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: MCSpacing.sm) {
             ForEach(model.modules) { module in
                 MCCard {
                     HStack {
@@ -341,7 +341,7 @@ struct SmartCareView: View {
         case .executing:
             ProgressView(L("common.running"))
         case let .finished(freed, dryRun):
-            VStack(spacing: 8) {
+            VStack(spacing: MCSpacing.xs) {
                 Image(systemName: "checkmark.seal")
                     .font(.system(size: MCIconSize.compactState)).foregroundStyle(MCTheme.success)
                 Text(dryRun ? L("smartcare.hero.finished_dryrun_title", mcFormatBytes(freed))
