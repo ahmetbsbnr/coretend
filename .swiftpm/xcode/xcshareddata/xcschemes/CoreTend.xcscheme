@@ -15,10 +15,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "CoreTend"
+               BlueprintIdentifier = "CoreTendApp"
                BuildableName = "CoreTend"
-               BlueprintName = "CoreTend"
-               ReferencedContainer = "container:">
+               BlueprintName = "CoreTendApp"
+               ReferencedContainer = "container:Package.swift">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -50,10 +50,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "CoreTend"
+            BlueprintIdentifier = "CoreTendApp"
             BuildableName = "CoreTend"
-            BlueprintName = "CoreTend"
-            ReferencedContainer = "container:">
+            BlueprintName = "CoreTendApp"
+            ReferencedContainer = "container:Package.swift">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -67,10 +67,10 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "CoreTend"
+            BlueprintIdentifier = "CoreTendApp"
             BuildableName = "CoreTend"
-            BlueprintName = "CoreTend"
-            ReferencedContainer = "container:">
+            BlueprintName = "CoreTendApp"
+            ReferencedContainer = "container:Package.swift">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
