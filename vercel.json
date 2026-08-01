@@ -7,8 +7,6 @@
   "trailingSlash": false,
   "redirects": [
     { "source": "/index.html", "destination": "/", "permanent": true },
-    { "source": "/en", "destination": "/en/", "permanent": true },
-    { "source": "/fr", "destination": "/fr/", "permanent": true },
     { "source": "/en/index.html", "destination": "/en/", "permanent": true },
     { "source": "/fr/index.html", "destination": "/fr/", "permanent": true },
     { "source": "/privacy.html", "destination": "/privacy", "permanent": true },
