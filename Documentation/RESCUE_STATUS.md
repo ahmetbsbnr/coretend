@@ -20,7 +20,8 @@ Latest updater manifest commit: `322c55d9984cb160eb5065c669b7b4b48c3c9fe0` (`322
 Latest product audit commit: `b41dd08ab9eb0351525f07a356350f7f3b8a62a7` (`b41dd08`)
 Latest Similar Images pause commit: `0b5883571392ad9740140bb95220faa822d34663` (`0b58835`)
 Latest Cloud Cleanup pause commit: `76b033c311f93503e0f9bfb7d8967ce4b830af5d` (`76b033c`)
-Latest Privacy Cleaner pause commit: this status commit (`Add Privacy Cleaner pause controls`)
+Latest Privacy Cleaner pause commit: `7320e8852e06d7c30d799d7f2a679a3d87a7635b` (`7320e88`)
+Latest onboarding UI automation work: in progress locally after `7320e8852e06d7c30d799d7f2a679a3d87a7635b`
 
 ## Git Validation
 
@@ -45,12 +46,13 @@ Latest Privacy Cleaner pause commit: this status commit (`Add Privacy Cleaner pa
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `65db41c0cc0f9281417ca4fdfa16548cbba10fc4`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `322c55d9984cb160eb5065c669b7b4b48c3c9fe0`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `76b033c311f93503e0f9bfb7d8967ce4b830af5d`.
-- Branch `rescue/coretend-final-product` will be pushed to GitHub for the Privacy Cleaner pause-control status commit.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `7320e8852e06d7c30d799d7f2a679a3d87a7635b`.
 - Latest full CI run `30671237842` passed on `b41dd08ab9eb0351525f07a356350f7f3b8a62a7`, including distribution-check and build-and-test.
 - Manually dispatched GitHub Actions CI run `30676143806` passed on `0b5883571392ad9740140bb95220faa822d34663`, including distribution-check and build-and-test.
 - GitHub Actions CI run `30677748494` passed on `65db41c0cc0f9281417ca4fdfa16548cbba10fc4`, including distribution-check and build-and-test.
 - GitHub Actions CI run `30691511902` passed on `322c55d9984cb160eb5065c669b7b4b48c3c9fe0`, including distribution-check and build-and-test.
 - Manually dispatched GitHub Actions CI run `30692821683` passed on `76b033c311f93503e0f9bfb7d8967ce4b830af5d`, including distribution-check and build-and-test.
+- GitHub Actions CI run `30693763565` passed on `7320e8852e06d7c30d799d7f2a679a3d87a7635b`, including distribution-check and build-and-test.
 
 ## Local Backup
 
@@ -487,7 +489,7 @@ CI:
 
 ## Privacy Cleaner Pause Controls
 
-Status: in progress locally after `76b033c311f93503e0f9bfb7d8967ce4b830af5d`.
+Status: committed and pushed as `7320e8852e06d7c30d799d7f2a679a3d87a7635b`.
 
 Implemented:
 
@@ -507,6 +509,32 @@ Known limits:
 
 - Pause checks do not interrupt a single blocking filesystem metadata call.
 - Cache cleaning itself remains short and guarded by SafetyCenter; the long-running browser-profile detection path is the part now pauseable.
+
+CI:
+
+- GitHub Actions CI run `30693763565` passed on `7320e8852e06d7c30d799d7f2a679a3d87a7635b`: distribution-check and build-and-test were green, including tests, debug/release build, package bundle, DMG layout, launch robustness, visual regression captures, release/sync checks, and localization key parity.
+
+## Onboarding UI Automation
+
+Status: in progress locally after `7320e8852e06d7c30d799d7f2a679a3d87a7635b`.
+
+Implemented:
+
+- Onboarding now exposes stable XCUI identifiers for the root view, language selector, step counter, skip, back, continue, and start controls.
+- `CoreTendUITests` now includes isolated first-launch onboarding coverage that starts with `-onboardingDone NO` and verifies the app reaches Dashboard after Skip.
+- `CoreTendUITests` now launches EN and FR runs with isolated preferences and verifies Dashboard availability in both locales.
+- UI launch arguments now reset onboarding step state and preserve `CORETEND_TEST_MODE` plus an isolated `CORETEND_TEST_STORE_DIR`.
+
+Validation completed locally:
+
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-ui-onboarding --filter CoreTendUITests` passed with 6 skipped tests because `CORETEND_UI_APP_PATH` is unavailable in this sandboxed run.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-ui-onboarding-build -c debug` passed.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-ui-onboarding-release -c release` passed.
+
+Known limits:
+
+- The new onboarding tests are still conditional until a GUI-capable Xcode or Terminal run supplies `CORETEND_UI_APP_PATH`.
+- Manual VoiceOver, keyboard-only, contrast, transparency, motion, large-text, and Instruments checks are still pending.
 
 ## UI Automation Anchors
 

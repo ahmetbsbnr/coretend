@@ -202,6 +202,7 @@ struct OnboardingView: View {
                 .padding(.vertical, MCSpacing.md)
         }
         .frame(width: 600, height: 540)
+        .accessibilityIdentifier("onboarding.root")
         .onAppear {
             model.onAppear()
             Task { await model.refreshPermissions() }
@@ -254,6 +255,7 @@ struct OnboardingView: View {
                 .labelsHidden()
                 .pickerStyle(.segmented)
                 .frame(maxWidth: 280)
+                .accessibilityIdentifier("onboarding.language")
                 Text(L("onboarding.language.subtitle"))
                     .font(MCFont.caption).foregroundStyle(.secondary)
                     .multilineTextAlignment(.center).frame(maxWidth: 400)
@@ -508,17 +510,23 @@ struct OnboardingView: View {
         HStack {
             Button(L("onboarding.skip")) { model.persist(); finish() }
                 .buttonStyle(.plain).foregroundStyle(.secondary)
+                .accessibilityIdentifier("onboarding.skip")
             Spacer()
             Text(L("onboarding.step_of", step + 1, stepCount))
                 .font(MCFont.caption).foregroundStyle(.secondary)
                 .accessibilityLabel(L("onboarding.step_a11y", step + 1, stepCount))
+                .accessibilityIdentifier("onboarding.step")
             Spacer()
-            if step > 0 { Button(L("onboarding.back")) { step -= 1 } }
+            if step > 0 {
+                Button(L("onboarding.back")) { step -= 1 }
+                    .accessibilityIdentifier("onboarding.back")
+            }
             Button(step == stepCount - 1 ? L("onboarding.start") : L("onboarding.continue")) {
                 if step == stepCount - 1 { model.persist(); finish() } else { step += 1 }
             }
             .buttonStyle(.borderedProminent)
             .keyboardShortcut(.defaultAction)
+            .accessibilityIdentifier(step == stepCount - 1 ? "onboarding.start" : "onboarding.continue")
         }
     }
 
