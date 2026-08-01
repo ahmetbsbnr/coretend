@@ -3,6 +3,7 @@ import AppKit
 import SafetyCore
 import DesignSystem
 import Persistence
+import ScanCore
 
 /// Privacy Cleaner — browser data analysis and cache-only cleaning.
 /// History/cookies/sessions removal is intentionally not implemented yet:
@@ -17,6 +18,9 @@ final class PrivacyCleanerViewModel {
     var profiles: [BrowserProfile] = []
     var selectedProfileIDs: Set<String> = []
     var dryRun = true
+    private var scanTask: Task<[BrowserProfile], Never>?
+    private var pauseController: ScanPauseController?
+    private(set) var isPaused = false
 
     func runningBrowsers() -> [String] {
         let ids = Set(profiles.map(\.bundleID))
@@ -48,14 +52,48 @@ final class PrivacyCleanerViewModel {
     }
 
     func scan() async {
+        cancelScan(resetPhase: false)
         phase = .scanning
+        isPaused = false
         let home = FileManager.default.homeDirectoryForCurrentUser
-        let found = await Task.detached(priority: .utility) {
-            BrowserCatalog.detect(home: home)
-        }.value
+        let pauseController = ScanPauseController()
+        self.pauseController = pauseController
+        let scanTask = Task.detached(priority: .utility) {
+            await BrowserCatalog.detect(home: home, pauseController: pauseController)
+        }
+        self.scanTask = scanTask
+        let found = await scanTask.value
+        guard !Task.isCancelled else { return }
         profiles = found
         selectedProfileIDs = []
+        self.scanTask = nil
+        self.pauseController = nil
+        isPaused = false
         phase = found.isEmpty ? .empty : .results
+    }
+
+    func pauseScan() {
+        guard phase == .scanning, !isPaused else { return }
+        isPaused = true
+        Task { await pauseController?.pause() }
+    }
+
+    func resumeScan() {
+        guard isPaused else { return }
+        isPaused = false
+        Task { await pauseController?.resume() }
+    }
+
+    func cancelScan(resetPhase: Bool = true) {
+        scanTask?.cancel()
+        scanTask = nil
+        isPaused = false
+        let pauseController = pauseController
+        self.pauseController = nil
+        Task { await pauseController?.resume() }
+        if resetPhase, phase == .scanning {
+            phase = profiles.isEmpty ? .empty : .results
+        }
     }
 
     var selectedCacheBytes: Int64 {
@@ -99,7 +137,25 @@ struct PrivacyCleanerView: View {
         VStack(spacing: 0) {
             switch model.phase {
             case .scanning:
-                ProgressView(L("privacy.detecting"))
+                VStack(spacing: 12) {
+                    ProgressView(L("privacy.detecting"))
+                    if model.isPaused {
+                        Button(L("common.resume")) { model.resumeScan() }
+                            .keyboardShortcut("r", modifiers: [])
+                            .help(L("clutter.resume_hint"))
+                            .accessibilityHint(L("clutter.resume_hint"))
+                            .accessibilityIdentifier("privacy.scan.resume")
+                    } else {
+                        Button(L("common.pause")) { model.pauseScan() }
+                            .keyboardShortcut("p", modifiers: [])
+                            .help(L("clutter.pause_hint"))
+                            .accessibilityHint(L("clutter.pause_hint"))
+                            .accessibilityIdentifier("privacy.scan.pause")
+                    }
+                    Button(L("common.cancel")) { model.cancelScan() }
+                        .keyboardShortcut(.cancelAction)
+                        .accessibilityIdentifier("privacy.scan.cancel")
+                }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
                 MCEmptyState(icon: "hand.raised", title: L("privacy.empty.title"), message: L("privacy.empty.subtitle"),
