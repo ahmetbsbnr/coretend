@@ -21,7 +21,7 @@ Latest product audit commit: `b41dd08ab9eb0351525f07a356350f7f3b8a62a7` (`b41dd0
 Latest Similar Images pause commit: `0b5883571392ad9740140bb95220faa822d34663` (`0b58835`)
 Latest Cloud Cleanup pause commit: `76b033c311f93503e0f9bfb7d8967ce4b830af5d` (`76b033c`)
 Latest Privacy Cleaner pause commit: `7320e8852e06d7c30d799d7f2a679a3d87a7635b` (`7320e88`)
-Latest onboarding UI automation work: in progress locally after `7320e8852e06d7c30d799d7f2a679a3d87a7635b`
+Latest onboarding UI automation commit: `2b0ae734db684bc3e878f7384f4375809a116aaf` (`2b0ae73`)
 
 ## Git Validation
 
@@ -47,12 +47,14 @@ Latest onboarding UI automation work: in progress locally after `7320e8852e06d7c
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `322c55d9984cb160eb5065c669b7b4b48c3c9fe0`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `76b033c311f93503e0f9bfb7d8967ce4b830af5d`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `7320e8852e06d7c30d799d7f2a679a3d87a7635b`.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `2b0ae734db684bc3e878f7384f4375809a116aaf`.
 - Latest full CI run `30671237842` passed on `b41dd08ab9eb0351525f07a356350f7f3b8a62a7`, including distribution-check and build-and-test.
 - Manually dispatched GitHub Actions CI run `30676143806` passed on `0b5883571392ad9740140bb95220faa822d34663`, including distribution-check and build-and-test.
 - GitHub Actions CI run `30677748494` passed on `65db41c0cc0f9281417ca4fdfa16548cbba10fc4`, including distribution-check and build-and-test.
 - GitHub Actions CI run `30691511902` passed on `322c55d9984cb160eb5065c669b7b4b48c3c9fe0`, including distribution-check and build-and-test.
 - Manually dispatched GitHub Actions CI run `30692821683` passed on `76b033c311f93503e0f9bfb7d8967ce4b830af5d`, including distribution-check and build-and-test.
 - GitHub Actions CI run `30693763565` passed on `7320e8852e06d7c30d799d7f2a679a3d87a7635b`, including distribution-check and build-and-test.
+- Manually dispatched GitHub Actions CI run `30694691738` passed on `2b0ae734db684bc3e878f7384f4375809a116aaf`, including distribution-check and build-and-test.
 
 ## Local Backup
 
@@ -516,7 +518,7 @@ CI:
 
 ## Onboarding UI Automation
 
-Status: in progress locally after `7320e8852e06d7c30d799d7f2a679a3d87a7635b`.
+Status: committed and pushed as `2b0ae734db684bc3e878f7384f4375809a116aaf`.
 
 Implemented:
 
@@ -535,6 +537,10 @@ Known limits:
 
 - The new onboarding tests are still conditional until a GUI-capable Xcode or Terminal run supplies `CORETEND_UI_APP_PATH`.
 - Manual VoiceOver, keyboard-only, contrast, transparency, motion, large-text, and Instruments checks are still pending.
+
+CI:
+
+- GitHub Actions CI run `30694691738` passed on `2b0ae734db684bc3e878f7384f4375809a116aaf`: distribution-check and build-and-test were green, including tests, debug/release build, package bundle, DMG layout, launch robustness, visual regression captures, release/sync checks, and localization key parity.
 
 ## UI Automation Anchors
 
