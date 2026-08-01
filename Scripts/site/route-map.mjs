@@ -14,7 +14,7 @@ const HISTORICAL = [
 ]
 const NOT_FOUND = ['/en/obsolete.html', '/fr/obsolete.html', '/route-map-not-found']
 const SOURCE = {
-  '/': 'index.html', '/en/': 'en/index.html', '/fr/': 'fr/index.html',
+  '/': 'index.html', '/en/': 'en-route.html', '/fr/': 'fr-route.html',
   '/privacy': 'privacy.html', '/support': 'support.html', '/legal': 'legal.html',
   '/licenses': 'licenses.html',
 }

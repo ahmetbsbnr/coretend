@@ -14,7 +14,7 @@
       "status": 200,
       "canonical": "https://coretend.ahmetbsbnr.com/en/",
       "language": "en",
-      "source": "en/index.html",
+      "source": "en-route.html",
       "destination": ""
     },
     {
@@ -22,7 +22,7 @@
       "status": 200,
       "canonical": "https://coretend.ahmetbsbnr.com/fr/",
       "language": "fr",
-      "source": "fr/index.html",
+      "source": "fr-route.html",
       "destination": ""
     },
     {

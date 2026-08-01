@@ -497,6 +497,11 @@ def build(output: Path) -> None:
         # that redirect without exposing their `.html` names publicly.
         (stage / "en-route.html").write_text(en_page, encoding="utf-8")
         (stage / "fr-route.html").write_text(fr_page, encoding="utf-8")
+        # Do not leave physical locale directories in the deploy tree: Vercel
+        # canonicalizes `/en/` to `/en` before a rewrite can run when such a
+        # directory exists. The route files above are the sole public targets.
+        shutil.rmtree(stage / "en")
+        shutil.rmtree(stage / "fr")
 
         for name, page in information_pages(release).items():
             (stage / name).write_text(page, encoding="utf-8")
