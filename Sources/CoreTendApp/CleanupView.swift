@@ -19,9 +19,11 @@ final class CleanupViewModel {
     var totalBytes: Int64 = 0
     var totalFindingCount = 0
     var dryRun = true
+    var isScanPaused = false
     private var dryRunDefaultLoaded = false
 
     private var scanTask: Task<Void, Never>?
+    private var pauseController: ScanPauseController?
 
     /// Applies the persisted "dry-run by default" setting once, before the user
     /// has a chance to toggle it manually. Without this the Settings toggle is
@@ -89,10 +91,13 @@ final class CleanupViewModel {
         scannedCount = 0
         totalBytes = 0
         totalFindingCount = 0
+        isScanPaused = false
+        let pauseController = ScanPauseController()
+        self.pauseController = pauseController
         scanTask = Task {
             let excluded = (try? await AppEnvironment.shared.store?.exclusions()) ?? []
             let engine = ScanEngine(configuration: ScanConfiguration(excludedPaths: excluded))
-            for await event in engine.run(rules: UserCleanupRules.all) {
+            for await event in engine.run(rules: UserCleanupRules.all, pauseController: pauseController) {
                 switch event {
                 case .started: break
                 case let .progress(scanned, _):
@@ -114,14 +119,30 @@ final class CleanupViewModel {
                         kind: .scan, summary: "Cleanup scan: \(findings.count) items found",
                         itemCount: findings.count, bytes: bytes, dryRun: true))
                 case .cancelled:
+                    isScanPaused = false
                     phase = .idle
                 }
             }
+            self.pauseController = nil
         }
     }
 
+    func pauseScan() {
+        guard phase == .scanning, !isScanPaused else { return }
+        isScanPaused = true
+        Task { await pauseController?.pause() }
+    }
+
+    func resumeScan() {
+        guard phase == .scanning, isScanPaused else { return }
+        isScanPaused = false
+        Task { await pauseController?.resume() }
+    }
+
     func cancelScan() {
+        isScanPaused = false
         scanTask?.cancel()
+        Task { await pauseController?.resume() }
     }
 
     func runCleanup() {
@@ -159,61 +180,114 @@ struct CleanupView: View {
     @State private var model = CleanupViewModel()
 
     var body: some View {
-        VStack(spacing: 16) {
+        Group {
             switch model.phase {
             case .idle:
                 idleView
             case .scanning:
                 scanningView
             case .review, .running:
-                reviewView
+                reviewView.padding(MCSpacing.page)
             case let .done(freed, dryRun):
                 doneView(freed: freed, dryRun: dryRun)
             case let .failed(message):
                 Text(L("cleanup.failed", message)).foregroundStyle(MCTheme.danger)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .padding(MCSpacing.page)
             }
         }
-        .padding(24)
-        .navigationTitle(L("cleanup.title"))
+        .navigationTitle(L("module.storage"))
+        .accessibilityIdentifier("storage.root")
         .task { await model.loadDryRunDefault() }
     }
 
+    // MARK: - Idle (editorial left-aligned layout with category overview)
+
     private var idleView: some View {
-        VStack(spacing: 16) {
-            MCFragmentView(groupWeights: [], phase: .rest)
-                .frame(width: 120, height: 120)
-                .accessibilityLabel(MCFragmentView(groupWeights: [], phase: .rest).accessibilityDescription)
-            Text(L("cleanup.idle.title")).font(MCFont.pageTitle)
-            Text(L("cleanup.idle.subtitle"))
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
-            Button(L("cleanup.start_scan")) { model.startScan() }
-                .buttonStyle(.borderedProminent)
-                .keyboardShortcut(.defaultAction)
+        ScrollView {
+            VStack(alignment: .leading, spacing: MCSpacing.xl) {
+                HStack(alignment: .top, spacing: MCSpacing.lg) {
+                    MCFragmentView(groupWeights: [], phase: .rest)
+                        .frame(width: 72, height: 72)
+                        .accessibilityLabel(MCFragmentView(groupWeights: [], phase: .rest).accessibilityDescription)
+                    VStack(alignment: .leading, spacing: MCSpacing.xs) {
+                        Text(L("cleanup.idle.title"))
+                            .font(MCFont.pageTitle)
+                        Text(L("cleanup.idle.safety_note"))
+                            .font(MCFont.secondaryBody)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: MCSpacing.sm) {
+                    MCSectionHeader(L("cleanup.idle.what_is_scanned"))
+                    MCFeatureRow(L("cleanup.category.caches"),
+                                 subtitle: L("cleanup.category.caches.detail"),
+                                 icon: "folder.badge.gearshape")
+                    MCFeatureRow(L("cleanup.category.logs"),
+                                 subtitle: L("cleanup.category.logs.detail"),
+                                 icon: "doc.text")
+                    MCFeatureRow(L("cleanup.category.xcode"),
+                                 subtitle: L("cleanup.category.xcode.detail"),
+                                 icon: "hammer")
+                    MCFeatureRow(L("cleanup.category.downloads"),
+                                 subtitle: L("cleanup.category.downloads.detail"),
+                                 icon: "arrow.down.circle")
+                }
+
+                Button(L("cleanup.start_scan")) { model.startScan() }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .keyboardShortcut(.defaultAction)
+                    .accessibilityIdentifier("storage.scan.start")
+            }
+            .padding(MCSpacing.page)
+            .frame(maxWidth: 520, alignment: .leading)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity)
+        .background(MCColor.background)
     }
 
+    // MARK: - Scanning
+
     private var scanningView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: MCSpacing.md) {
             MCFragmentView(groupWeights: model.normalizedGroupWeights, phase: .scanning)
                 .frame(width: 120, height: 120)
                 .accessibilityLabel(MCFragmentView(groupWeights: [], phase: .scanning).accessibilityDescription)
             Text(L("cleanup.scanning_progress", model.scannedCount, mcFormatBytes(model.totalBytes)))
                 .monospacedDigit()
-            Button(L("common.cancel")) { model.cancelScan() }
+            HStack(spacing: MCSpacing.sm) {
+                if model.isScanPaused {
+                    Button(L("common.resume")) { model.resumeScan() }
+                        .keyboardShortcut("r", modifiers: [])
+                        .accessibilityHint(L("cleanup.resume_hint"))
+                        .accessibilityIdentifier("storage.scan.resume")
+                } else {
+                    Button(L("common.pause")) { model.pauseScan() }
+                        .keyboardShortcut("p", modifiers: [])
+                        .accessibilityHint(L("cleanup.pause_hint"))
+                        .accessibilityIdentifier("storage.scan.pause")
+                }
+                Button(L("common.cancel")) { model.cancelScan() }
+                    .keyboardShortcut(.cancelAction)
+                    .accessibilityIdentifier("storage.scan.cancel")
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    // MARK: - Review
+
     private var reviewView: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: MCSpacing.sm) {
             HStack {
                 MCFragmentView(groupWeights: model.normalizedGroupWeights,
                                phase: model.phase == .running ? .executing : .review)
                     .frame(width: 48, height: 48)
                     .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: MCSpacing.xxs) {
                     Text(L("cleanup.review.selected", model.findings.count, mcFormatBytes(model.selectedBytes)))
                         .font(MCFont.cardTitle)
                     if model.isDisplayTruncated {
@@ -292,7 +366,7 @@ struct CleanupView: View {
     }
 
     private func doneView(freed: Int64, dryRun: Bool) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: MCSpacing.md) {
             MCFragmentView(groupWeights: model.normalizedGroupWeights, phase: .success)
                 .frame(width: 120, height: 120)
                 .accessibilityLabel(MCFragmentView(groupWeights: [], phase: .success).accessibilityDescription)

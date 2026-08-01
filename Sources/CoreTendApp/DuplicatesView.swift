@@ -24,10 +24,14 @@ final class DuplicatesViewModel {
     var dryRun = true
     var searchText = ""
     var selectedVolumeID: String?
+    var isScanPaused = false
+    var exportError: String?
+    var lastExportURL: URL?
     let volumeResolver: VolumeResolving
     let exclusionsController = ClutterExclusionsController()
 
     private var scanTask: Task<Void, Never>?
+    private var pauseController: ScanPauseController?
     private var scannedRoots: [URL] = []
 
     init(volumeResolver: VolumeResolving = SystemVolumeResolver()) {
@@ -60,16 +64,23 @@ final class DuplicatesViewModel {
         }
     }
 
+    var exportFileName: String {
+        "CoreTend-Duplicates-\(Self.exportDateFormatter.string(from: Date())).csv"
+    }
+
     func start() {
         if case .scanning = phase { return }
         phase = .scanning(processed: 0, total: 0)
         groups = []
         selectedPaths = []
+        isScanPaused = false
+        let pauseController = ScanPauseController()
+        self.pauseController = pauseController
         let home = FileManager.default.homeDirectoryForCurrentUser
         scannedRoots = ["Downloads", "Documents", "Desktop"].map { home.appendingPathComponent($0) }
         let engine = DuplicateEngine(roots: scannedRoots)
         scanTask = Task {
-            for await event in engine.run() {
+            for await event in engine.run(pauseController: pauseController) {
                 switch event {
                 case let .progress(_, processed, total):
                     phase = .scanning(processed: processed, total: total)
@@ -88,13 +99,30 @@ final class DuplicatesViewModel {
                         kind: .scan, summary: "Duplicate scan: \(count) groups",
                         itemCount: count, bytes: wasted, dryRun: true))
                 case .cancelled:
+                    isScanPaused = false
                     phase = groups.isEmpty ? .idle : .results
                 }
             }
         }
     }
 
-    func cancel() { scanTask?.cancel() }
+    func pauseScan() {
+        guard case .scanning = phase, !isScanPaused else { return }
+        isScanPaused = true
+        Task { await pauseController?.pause() }
+    }
+
+    func resumeScan() {
+        guard case .scanning = phase, isScanPaused else { return }
+        isScanPaused = false
+        Task { await pauseController?.resume() }
+    }
+
+    func cancel() {
+        isScanPaused = false
+        scanTask?.cancel()
+        Task { await pauseController?.resume() }
+    }
 
     func removeSelected() {
         guard phase == .results, !selectedPaths.isEmpty else { return }
@@ -136,6 +164,53 @@ final class DuplicatesViewModel {
                 itemCount: result.executed.count, bytes: freed, dryRun: result.wasDryRun))
         }
     }
+
+    func exportCSV() -> String {
+        var rows: [[String]] = [[
+            "group_id", "path", "file_name", "directory", "size_bytes", "size_readable",
+            "selected_for_removal", "suggested_keeper", "recommendation"
+        ]]
+        for group in filteredGroups {
+            for url in group.urls {
+                rows.append([
+                    group.id,
+                    url.path,
+                    url.lastPathComponent,
+                    url.deletingLastPathComponent().path,
+                    "\(group.fileSize)",
+                    mcFormatBytes(group.fileSize),
+                    selectedPaths.contains(url.path) ? "true" : "false",
+                    url.path == group.keeper.path ? "true" : "false",
+                    recommendationText(for: url, in: group)
+                ])
+            }
+        }
+        return rows.map { $0.map(Self.csvField).joined(separator: ",") }.joined(separator: "\n") + "\n"
+    }
+
+    func exportSelection(to url: URL) throws {
+        try exportCSV().write(to: url, atomically: true, encoding: .utf8)
+        lastExportURL = url
+        exportError = nil
+        AppEnvironment.shared.record(ActivityRecord(
+            kind: .scan, summary: "Duplicate report exported",
+            itemCount: filteredGroups.count, bytes: selectedBytes, dryRun: true))
+    }
+
+    func recommendationText(for url: URL, in group: DuplicateGroup) -> String {
+        url.path == group.keeper.path ? L("dupes.suggested_keeper.why") : ""
+    }
+
+    private static let exportDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMdd-HHmmss"
+        return formatter
+    }()
+
+    private static func csvField(_ value: String) -> String {
+        let escaped = value.replacingOccurrences(of: "\"", with: "\"\"")
+        return "\"\(escaped)\""
+    }
 }
 
 struct DuplicatesView: View {
@@ -151,6 +226,7 @@ struct DuplicatesView: View {
             case let .finished(freed, dryRun): finishedView(freed, dryRun)
             }
         }
+        .accessibilityIdentifier("duplicates.root")
     }
 
     private var idleView: some View {
@@ -158,10 +234,11 @@ struct DuplicatesView: View {
             icon: "doc.on.doc.fill", title: L("dupes.idle.title"), message: L("dupes.idle.subtitle"),
             iconColor: MCTheme.accentSecondary, iconSize: MCIconSize.emptyStateProminent,
             actionTitle: L("dupes.find")) { model.start() }
+            .accessibilityIdentifier("duplicates.scan.start")
     }
 
     private func scanningView(_ processed: Int, _ total: Int) -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: MCSpacing.md) {
             if total > 0 {
                 ProgressView(value: Double(processed), total: Double(total))
                     .frame(width: 260)
@@ -170,7 +247,24 @@ struct DuplicatesView: View {
                 ProgressView()
                 Text(L("dupes.building_inventory"))
             }
-            Button(L("common.cancel")) { model.cancel() }
+            HStack(spacing: MCSpacing.sm) {
+                if model.isScanPaused {
+                    Button(L("common.resume")) { model.resumeScan() }
+                        .keyboardShortcut("r", modifiers: [])
+                        .help(L("dupes.resume_hint"))
+                        .accessibilityHint(L("dupes.resume_hint"))
+                        .accessibilityIdentifier("duplicates.scan.resume")
+                } else {
+                    Button(L("common.pause")) { model.pauseScan() }
+                        .keyboardShortcut("p", modifiers: [])
+                        .help(L("dupes.pause_hint"))
+                        .accessibilityHint(L("dupes.pause_hint"))
+                        .accessibilityIdentifier("duplicates.scan.pause")
+                }
+                Button(L("common.cancel")) { model.cancel() }
+                    .keyboardShortcut(.cancelAction)
+                    .accessibilityIdentifier("duplicates.scan.cancel")
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -188,11 +282,19 @@ struct DuplicatesView: View {
                     .font(MCFont.cardTitle)
                 Spacer()
                 Toggle(L("common.dry_run"), isOn: $model.dryRun).toggleStyle(.switch)
+                Button {
+                    exportResults()
+                } label: {
+                    Label(L("activity.export_csv"), systemImage: "square.and.arrow.down")
+                }
+                .disabled(model.filteredGroups.isEmpty)
+                .accessibilityIdentifier("duplicates.results.export")
                 Button(model.dryRun ? L("leftovers.simulate") : L("dupes.move_to_trash")) {
                     model.removeSelected()
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(model.selectedPaths.isEmpty || model.phase == .executing)
+                .accessibilityIdentifier("duplicates.results.remove")
             }
             .padding()
             HStack {
@@ -221,7 +323,7 @@ struct DuplicatesView: View {
                                        markedID: group.keeper.path) { member in
                             Image(nsImage: NSWorkspace.shared.icon(forFile: member.url.path))
                                 .resizable().frame(width: 32, height: 32)
-                                .padding(4)
+                                .padding(MCSpacing.xxs)
                                 .background(MCColor.elevatedBackground, in: RoundedRectangle(cornerRadius: MCRadius.small))
                         }
                         .padding(.vertical, MCSpacing.xxs)
@@ -240,9 +342,15 @@ struct DuplicatesView: View {
                                 if url.path == group.keeper.path {
                                     Text(L("dupes.suggested_keeper"))
                                         .font(.caption2.weight(.medium))
-                                        .padding(.horizontal, 6).padding(.vertical, 2)
+                                        .padding(.horizontal, MCSpacing.xs).padding(.vertical, MCSpacing.xxs)
                                         .background(MCTheme.accent.opacity(0.2), in: Capsule())
                                         .help(L("dupes.suggested_keeper.why"))
+                                }
+                                if url.path == group.keeper.path {
+                                    Text(model.recommendationText(for: url, in: group))
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        .lineLimit(1)
                                 }
                                 Spacer()
                                 Text(url.deletingLastPathComponent().path)
@@ -270,6 +378,14 @@ struct DuplicatesView: View {
             .listStyle(.inset)
             .quickLookPreview($model.previewURL)
         }
+        .alert(L("settings.migration_failed"), isPresented: Binding(
+            get: { model.exportError != nil },
+            set: { if !$0 { model.exportError = nil } }
+        )) {
+            Button(L("onboarding.check.status.ok"), role: .cancel) { model.exportError = nil }
+        } message: {
+            Text(model.exportError ?? "")
+        }
     }
 
     private func finishedView(_ freed: Int64, _ dryRun: Bool) -> some View {
@@ -279,5 +395,18 @@ struct DuplicatesView: View {
                           : L("leftovers.finished.moved", mcFormatBytes(freed)),
             message: "", iconColor: MCTheme.success,
             actionTitle: L("smartcare.scan_again")) { model.start() }
+    }
+
+    private func exportResults() {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.commaSeparatedText]
+        panel.nameFieldStringValue = model.exportFileName
+        if panel.runModal() == .OK, let url = panel.url {
+            do {
+                try model.exportSelection(to: url)
+            } catch {
+                model.exportError = error.localizedDescription
+            }
+        }
     }
 }

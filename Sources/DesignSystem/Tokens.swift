@@ -17,8 +17,8 @@ public enum MCSpacing {
 
 public enum MCRadius {
     public static let small: CGFloat = 6
-    public static let card: CGFloat = 12
-    public static let hero: CGFloat = 20
+    public static let card: CGFloat = 8
+    public static let hero: CGFloat = 12
     public static let capsule: CGFloat = 999
 }
 

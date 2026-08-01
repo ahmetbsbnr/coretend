@@ -17,6 +17,7 @@ public struct MCModuleIdentity: Sendable {
     public static let protection = MCModuleIdentity(icon: "checkerboard.shield", color: MCColor.protection)
     public static let performance = MCModuleIdentity(icon: "waveform.path.ecg", color: MCColor.performance)
     public static let applications = MCModuleIdentity(icon: "square.grid.2x2", color: MCColor.protection)
+    public static let duplicates = MCModuleIdentity(icon: "doc.on.doc", color: MCColor.storage)
     public static let myClutter = MCModuleIdentity(icon: "square.3.layers.3d", color: MCColor.storage)
     public static let spaceLens = MCModuleIdentity(icon: "map", color: MCColor.storage)
     public static let cloudCleanup = MCModuleIdentity(icon: "cloud", color: MCColor.storage)
@@ -241,5 +242,44 @@ public struct MCErrorState: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(MCSpacing.xl)
+    }
+}
+
+// MARK: - Feature row (module landing states)
+
+/// A feature/capability row for module idle states — icon + title + optional subtitle.
+/// Used to list what a module scans or surfaces, giving users context before they act.
+public struct MCFeatureRow: View {
+    private let title: String
+    private let subtitle: String?
+    private let icon: String
+    private let iconColor: Color
+
+    public init(_ title: String, subtitle: String? = nil, icon: String,
+                iconColor: Color = MCColor.coreMint) {
+        self.title = title
+        self.subtitle = subtitle
+        self.icon = icon
+        self.iconColor = iconColor
+    }
+
+    public var body: some View {
+        HStack(alignment: subtitle != nil ? .top : .center, spacing: MCSpacing.sm) {
+            Image(systemName: icon)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(iconColor)
+                .frame(width: 20)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: MCSpacing.xxs) {
+                Text(title).font(MCFont.secondaryBody)
+                if let subtitle {
+                    Text(subtitle)
+                        .font(MCFont.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .accessibilityElement(children: .combine)
     }
 }

@@ -57,6 +57,8 @@ json.dump({
     "dmgSize": manifest.get("dmgSize", 0),
     "zipName": manifest.get("zipName", ""),
     "zipURL": assets.get(manifest.get("zipName", ""), ""),
+    "zipSHA256": manifest.get("zipSHA256", ""),
+    "zipSize": manifest.get("zipSize", 0),
     "signed": manifest.get("signed", False),
     "notarized": manifest.get("notarized", False),
     "minimumMacOS": manifest.get("minimumMacOS", "14.0"),

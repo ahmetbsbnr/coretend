@@ -157,6 +157,7 @@ struct MyActivityView: View {
             }
         }
         .navigationTitle(L("activity.title"))
+        .accessibilityIdentifier("activity.root")
         .toolbar {
             Picker(L("activity.range"), selection: $model.dateRange) {
                 ForEach(ActivityDateRange.allCases) { range in
@@ -164,6 +165,7 @@ struct MyActivityView: View {
                 }
             }
             .pickerStyle(.menu)
+            .accessibilityIdentifier("activity.range")
             Picker(L("activity.filter"), selection: $model.filter) {
                 Text(L("activity.all_kinds")).tag(ActivityRecord.Kind?.none)
                 ForEach(ActivityRecord.Kind.allCases, id: \.self) { kind in
@@ -171,22 +173,26 @@ struct MyActivityView: View {
                 }
             }
             .pickerStyle(.menu)
+            .accessibilityIdentifier("activity.filter")
             Menu {
                 Button(L("activity.export_csv")) { exportToDownloads(format: .csv) }
                 Button(L("activity.export_json")) { exportToDownloads(format: .json) }
             } label: {
                 Label(L("activity.export_csv"), systemImage: "square.and.arrow.up")
             }
+            .accessibilityIdentifier("activity.export")
             .disabled(model.records.isEmpty)
             Button(L("activity.clear_history"), role: .destructive) {
                 Task { await model.clear() }
             }
+            .accessibilityIdentifier("activity.clear")
             .disabled(model.allRecords.isEmpty)
             Button {
                 showingSafetyLog = true
             } label: {
                 Label(L("activity.open_safety_log"), systemImage: "checklist")
             }
+            .accessibilityIdentifier("activity.safety_log")
         }
         .sheet(isPresented: $showingSafetyLog) { SafetyLogView() }
         .task(id: model.filter) { await model.load() }
@@ -201,7 +207,7 @@ struct MyActivityView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: MCSpacing.sm) {
             Image(systemName: "clock.arrow.circlepath")
                 .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.accent)
                 .accessibilityHidden(true)
@@ -256,7 +262,7 @@ struct MyActivityView: View {
     }
 
     private func summaryMetric(label: String, value: String, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: MCSpacing.xxs) {
             Text(value).font(.title3.weight(.semibold)).monospacedDigit().foregroundStyle(color)
             Text(label).font(.caption).foregroundStyle(.secondary)
         }
@@ -316,7 +322,7 @@ private struct ActivityRow: View {
                 if record.kind == .cleanup {
                     Text(record.dryRun ? L("common.dry_run") : L("activity.completed"))
                         .font(.caption2.weight(.medium))
-                        .padding(.horizontal, 6).padding(.vertical, 2)
+                        .padding(.horizontal, MCSpacing.xs).padding(.vertical, MCSpacing.xxs)
                         .background(record.dryRun ? Color(nsColor: .quaternaryLabelColor) : MCTheme.success.opacity(0.18), in: Capsule())
                         .foregroundStyle(record.dryRun ? .secondary : MCTheme.success)
                 }

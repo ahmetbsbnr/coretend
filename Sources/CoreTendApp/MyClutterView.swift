@@ -28,10 +28,12 @@ final class MyClutterViewModel {
     var previewURL: URL?
     var searchText = ""
     var selectedVolumeID: String?
+    var isScanPaused = false
     let volumeResolver: VolumeResolving
     let exclusionsController = ClutterExclusionsController()
 
     private var scanTask: Task<Void, Never>?
+    private var pauseController: ScanPauseController?
 
     init(volumeResolver: VolumeResolving = SystemVolumeResolver()) {
         self.volumeResolver = volumeResolver
@@ -66,6 +68,7 @@ final class MyClutterViewModel {
         phase = .scanning
         findings = []
         scannedCount = 0
+        isScanPaused = false
         let rule = ScanRule(
             id: "clutter.largeold",
             name: "Large & Old Files",
@@ -80,9 +83,11 @@ final class MyClutterViewModel {
                 home.appendingPathComponent($0)
             }
         }
+        let pauseController = ScanPauseController()
+        self.pauseController = pauseController
         scanTask = Task {
             let engine = ScanEngine()
-            for await event in engine.run(rules: [rule]) {
+            for await event in engine.run(rules: [rule], pauseController: pauseController) {
                 switch event {
                 case let .progress(scanned, _): scannedCount = scanned
                 case let .finding(finding):
@@ -92,6 +97,7 @@ final class MyClutterViewModel {
                         findings.insert(finding, at: index)
                     }
                 case .finished, .cancelled:
+                    isScanPaused = false
                     phase = findings.isEmpty ? .empty : .results
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .scan, summary: "Large & Old scan: \(findings.count) files",
@@ -99,10 +105,27 @@ final class MyClutterViewModel {
                 default: break
                 }
             }
+            self.pauseController = nil
         }
     }
 
-    func cancel() { scanTask?.cancel() }
+    func pause() {
+        guard phase == .scanning, !isScanPaused else { return }
+        isScanPaused = true
+        Task { await pauseController?.pause() }
+    }
+
+    func resume() {
+        guard phase == .scanning, isScanPaused else { return }
+        isScanPaused = false
+        Task { await pauseController?.resume() }
+    }
+
+    func cancel() {
+        isScanPaused = false
+        scanTask?.cancel()
+        Task { await pauseController?.resume() }
+    }
 }
 
 struct MyClutterView: View {
@@ -115,7 +138,7 @@ struct MyClutterView: View {
             SimilarImagesView()
                 .tabItem { Label(L("clutter.tab.similar_images"), systemImage: "photo.on.rectangle.angled") }
         }
-        .padding(8)
+        .padding(MCSpacing.xs)
         .navigationTitle(L("clutter.title"))
     }
 }
@@ -135,14 +158,14 @@ struct LargeOldFilesView: View {
     }
 
     private var idleView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: MCSpacing.md) {
             Image(systemName: "doc.on.doc")
                 .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
                 .accessibilityHidden(true)
             Text(L("clutter.idle.title")).font(MCFont.pageTitle)
             Text(L("clutter.idle.subtitle"))
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
-            HStack(spacing: 16) {
+            HStack(spacing: MCSpacing.md) {
                 Picker(L("clutter.larger_than"), selection: $model.minSizeMB) {
                     Text(L("clutter.size.50mb")).tag(50)
                     Text(L("clutter.size.100mb")).tag(100)
@@ -163,21 +186,33 @@ struct LargeOldFilesView: View {
                 .keyboardShortcut(.defaultAction)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(24)
+        .padding(MCSpacing.page)
     }
 
     private var scanningView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: MCSpacing.md) {
             ProgressView()
             Text(L("clutter.scanning_progress", model.scannedCount, model.findings.count))
                 .monospacedDigit()
-            Button(L("common.cancel")) { model.cancel() }
+            HStack {
+                if model.isScanPaused {
+                    Button(L("common.resume")) { model.resume() }
+                        .keyboardShortcut("r", modifiers: [])
+                        .accessibilityHint(L("clutter.resume_hint"))
+                } else {
+                    Button(L("common.pause")) { model.pause() }
+                        .keyboardShortcut("p", modifiers: [])
+                        .accessibilityHint(L("clutter.pause_hint"))
+                }
+                Button(L("common.cancel")) { model.cancel() }
+                    .keyboardShortcut(.cancelAction)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var emptyView: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: MCSpacing.sm) {
             Image(systemName: "checkmark.circle")
                 .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
                 .accessibilityHidden(true)
@@ -233,7 +268,7 @@ struct LargeOldFilesView: View {
                         .accessibilityHidden(true)
                     VStack(alignment: .leading) {
                         Text(finding.url.lastPathComponent)
-                        HStack(spacing: 8) {
+                        HStack(spacing: MCSpacing.xs) {
                             Text(finding.url.deletingLastPathComponent().path)
                                 .lineLimit(1).truncationMode(.middle)
                             if let date = finding.modificationDate {
