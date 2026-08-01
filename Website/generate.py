@@ -410,12 +410,10 @@ HOME_MODULES = [
     },
     {
         "role": "privacy",
-        "en": ("Local protection with ClamAV", "If you have ClamAV installed, CoreTend "
-               "can run it and quarantine what it finds. ClamAV is optional, never "
-               "bundled, and its database is never shipped here."),
-        "fr": ("Protection locale avec ClamAV", "Si ClamAV est installé, CoreTend peut "
-               "l'exécuter et mettre en quarantaine ce qu'il détecte. ClamAV est "
-               "facultatif, jamais intégré, et sa base n'est jamais distribuée ici."),
+        "en": ("Integrity", "CoreTend reports quarantine, provenance, code-signature, "
+               "Gatekeeper, LaunchAgent and LaunchDaemon signals. It is not an antivirus."),
+        "fr": ("Integrity", "CoreTend affiche quarantaine, provenance, signature de code, "
+               "Gatekeeper, LaunchAgents et LaunchDaemons. Ce n'est pas un antivirus."),
     },
     {
         "role": "activity",
@@ -469,11 +467,11 @@ HOME_PRINCIPLES = [
                "aucun appel réseau que l'app ferait d'elle-même."),
     },
     {
-        "en": ("Explained, then optional", "Full Disk Access, notifications, ClamAV, "
+        "en": ("Explained, then optional", "Full Disk Access, notifications, "
                "and filesystem watching are each requested only when a feature needs "
                "them, and each can be declined."),
-        "fr": ("Expliqué, puis facultatif", "Accès complet au disque, notifications, "
-               "ClamAV et surveillance du système de fichiers sont demandés seulement "
+        "fr": ("Expliqué, puis facultatif", "Accès complet au disque, notifications "
+               "et surveillance du système de fichiers sont demandés seulement "
                "quand une fonction en a besoin, et chacun peut être refusé."),
     },
 ]
@@ -481,23 +479,22 @@ HOME_PRINCIPLES = [
 HOME_FAQ = [
     {
         "en": ("Does CoreTend send anything over the network?",
-               "No. The app makes no network call of its own. If you enable the "
-               "optional ClamAV integration, ClamAV's own updater is a separate tool "
-               "you run yourself."),
+               "No. The app makes no network call of its own. Integrity uses local "
+               "macOS metadata and does not update any malware-signature database."),
         "fr": ("CoreTend envoie-t-il quelque chose sur le réseau ?",
-               "Non. L'app ne fait aucun appel réseau de sa propre initiative. Si "
-               "vous activez l'intégration ClamAV facultative, le programme de mise "
-               "à jour de ClamAV est un outil distinct que vous lancez vous-même."),
+               "Non. L'app ne fait aucun appel réseau de sa propre initiative. "
+               "Integrity utilise les métadonnées locales de macOS et ne met à jour "
+               "aucune base de signatures antimalware."),
     },
     {
         "en": ("Is this an antivirus?",
-               "No. CoreTend can run ClamAV if you have installed it, and quarantine "
-               "what ClamAV reports. It is not a real-time antivirus and does not "
-               "claim to be one."),
+               "No. Integrity reports quarantine, provenance, code signatures and "
+               "launch items. It does not detect malware and does not claim to be "
+               "an antivirus."),
         "fr": ("Est-ce un antivirus ?",
-               "Non. CoreTend peut exécuter ClamAV si vous l'avez installé et mettre "
-               "en quarantaine ce que ClamAV signale. Ce n'est pas un antivirus en "
-               "temps réel et il ne prétend pas l'être."),
+               "Non. Integrity affiche quarantaine, provenance, signatures de code "
+               "et éléments de lancement. Il ne détecte pas les malwares et ne "
+               "prétend pas être un antivirus."),
     },
     {
         "en": ("How much space will it free?",
@@ -880,7 +877,7 @@ def features_body(l):
         ("Similar Images", "Groups visually similar photos and marks a best-resolution keeper — nothing is removed automatically."),
         ("Space Lens", "A visual map of what is using disk space, down to individual folders."),
         ("Applications", "Finds full app leftovers (caches, preferences, support files) left behind after uninstalling."),
-        ("Protection", "Optional local malware scan that requires the separately-installed ClamAV engine. It flags suspect files for your review — no automatic quarantine, no security guarantee."),
+        ("Integrity", "Reports macOS quarantine, provenance, code-signature, Gatekeeper, LaunchAgent and LaunchDaemon signals. It is not an antivirus and makes no malware-detection claim."),
         ("Privacy Cleaner", "Clears browser caches only (Chrome-family, Firefox, Safari), and only while the browser is closed. History and cookies are shown for transparency but never deleted."),
         ("Cloud Cleanup", "Reviews cloud-synced local copies (e.g. iCloud Drive placeholders) for reclaimable local space."),
     ]
@@ -890,7 +887,7 @@ def features_body(l):
         ("Images similaires", "Regroupe les photos visuellement similaires et repère la meilleure résolution — rien n'est supprimé automatiquement."),
         ("Space Lens", "Une carte visuelle de l'utilisation de l'espace disque, jusqu'au niveau des dossiers individuels."),
         ("Applications", "Trouve les résidus complets d'applications (caches, préférences, fichiers de support) laissés après désinstallation."),
-        ("Protection", "Analyse antimalware locale optionnelle qui nécessite le moteur ClamAV installé séparément. Elle signale les fichiers suspects pour votre examen — aucune mise en quarantaine automatique, aucune garantie de sécurité."),
+        ("Integrity", "Affiche les signaux macOS de quarantaine, provenance, signature de code, Gatekeeper, LaunchAgents et LaunchDaemons. Ce n'est pas un antivirus et aucune détection malware n'est revendiquée."),
         ("Nettoyeur de confidentialité", "Nettoie uniquement les caches des navigateurs (famille Chrome, Firefox, Safari), et seulement lorsque le navigateur est fermé. L'historique et les cookies sont affichés à titre indicatif mais jamais supprimés."),
         ("Cloud Cleanup", "Examine les copies locales synchronisées avec le cloud (ex. placeholders iCloud Drive) pour libérer de l'espace local."),
     ]
@@ -1736,13 +1733,13 @@ def faq_body(l):
         ("Does CoreTend send any data anywhere?", "No. It has no telemetry, no analytics, no network calls related to its core operation. Everything runs locally."),
         ("Do I need an account?", "No account, no subscription, ever."),
         ("Are deletions permanent?", "By default, no — items go to the Trash so you can recover them."),
-        ("Is this a full antivirus?", "No. The optional Protection module is a heuristic local scan aid (via ClamAV), never a guaranteed security product."),
+        ("Is this a full antivirus?", "No. Integrity reports local macOS trust signals; it is not a malware scanner or a guaranteed security product."),
     ]
     qa_fr = [
         ("CoreTend envoie-t-il des données quelque part ?", "Non. Aucune télémétrie, aucune analytique, aucun appel réseau lié à son fonctionnement principal. Tout s'exécute localement."),
         ("Faut-il un compte ?", "Aucun compte, aucun abonnement, jamais."),
         ("Les suppressions sont-elles définitives ?", "Par défaut, non — les éléments vont à la Corbeille pour rester récupérables."),
-        ("Est-ce un antivirus complet ?", "Non. Le module Protection optionnel est une aide d'analyse locale heuristique (via ClamAV), jamais un produit de sécurité garanti."),
+        ("Est-ce un antivirus complet ?", "Non. Integrity affiche des signaux de confiance macOS locaux ; ce n'est pas un scanner de malware ni un produit de sécurité garanti."),
     ]
     qa = qa_en if l == "en" else qa_fr
     items = "\n".join(f"<h3>{q}</h3><p>{a}</p>" for q, a in qa)
@@ -1764,8 +1761,8 @@ def privacy_body(l):
 analytics, no usage data, and makes no network calls as part of its core
 scanning/cleaning operation. See <code>PRIVACY.md</code> and
 <code>Documentation/PROTECTION_LIMITATIONS.md</code> in the repository for
-full detail, including the one optional network dependency (ClamAV virus
-definition updates, entirely opt-in).</p>
+full detail, including the Integrity checks for quarantine, provenance, code
+signatures and launch items. There is no antivirus function.</p>
 <h2>This website</h2>
 <p>This site sets no analytics or advertising cookies, runs no trackers, no
 pixels, and no session replay. See <code>Documentation/WEBSITE_PRIVACY.md</code>
@@ -1789,8 +1786,9 @@ address is not published; the host holds it. Full detail on the
 télémétrie, aucune analytique, aucune donnée d'usage, et n'effectue aucun
 appel réseau dans le cadre de son fonctionnement principal d'analyse/nettoyage.
 Voir <code>PRIVACY.md</code> et <code>Documentation/PROTECTION_LIMITATIONS.md</code>
-dans le dépôt pour le détail complet, y compris l'unique dépendance réseau
-optionnelle (mise à jour des définitions ClamAV, entièrement facultative).</p>
+dans le dépôt pour le détail complet, y compris les contrôles Integrity de
+quarantaine, provenance, signatures de code et éléments de lancement. Il n'y a
+aucune fonction antivirus.</p>
 <h2>Ce site</h2>
 <p>Ce site ne dépose aucun cookie analytique ou publicitaire, n'exécute aucun
 traqueur, aucun pixel, aucune relecture de session. Voir
@@ -1870,11 +1868,10 @@ licenses.</p>
 <p>CoreTend bundles no third-party code. It declares
 <strong>zero external package dependencies</strong>, and builds only against
 the system frameworks that ship with macOS.</p>
-<p>ClamAV is the one optional exception, and it is not bundled: if you install
-it yourself, CoreTend can run the <code>clamscan</code> binary as a separate
-process. It is never linked into the app and its signature database is never
-redistributed here. ClamAV is licensed separately under GPL-2.0 by its own
-project.</p>
+<p>IntegrityCore is first-party code. It reads local macOS quarantine,
+provenance, code-signature, Gatekeeper, LaunchAgent and LaunchDaemon signals.
+It does not bundle antivirus data, does not detect malware and does not claim
+to be an antivirus product.</p>
 <p>The full statements live in {link("LICENSE", "LICENSE")},
 {link("NOTICE", "NOTICE")} and
 {link("THIRD_PARTY_NOTICES.md", "THIRD_PARTY_NOTICES.md")} at the repository
@@ -1895,11 +1892,10 @@ licences différentes.</p>
 <p>CoreTend n'embarque aucun code tiers. Le projet déclare
 <strong>zéro dépendance externe</strong> et ne compile que contre les
 frameworks système livrés avec macOS.</p>
-<p>ClamAV est la seule exception optionnelle, et il n'est pas embarqué : si
-vous l'installez vous-même, CoreTend peut exécuter le binaire
-<code>clamscan</code> comme processus distinct. Il n'est jamais lié à
-l'application et sa base de signatures n'est jamais redistribuée ici. ClamAV
-est sous licence GPL-2.0, par son propre projet.</p>
+<p>IntegrityCore est du code interne. Il lit les signaux macOS locaux de
+quarantaine, provenance, signature de code, Gatekeeper, LaunchAgents et
+LaunchDaemons. Il n'embarque aucune donnée antivirus, ne détecte pas les
+malwares et ne prétend pas être un produit antivirus.</p>
 <p>Les déclarations complètes se trouvent dans {link("LICENSE", "LICENSE")},
 {link("NOTICE", "NOTICE")} et
 {link("THIRD_PARTY_NOTICES.md", "THIRD_PARTY_NOTICES.md")} à la racine du

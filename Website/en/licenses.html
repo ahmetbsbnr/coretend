@@ -67,11 +67,10 @@ licenses.</p>
 <p>CoreTend bundles no third-party code. It declares
 <strong>zero external package dependencies</strong>, and builds only against
 the system frameworks that ship with macOS.</p>
-<p>ClamAV is the one optional exception, and it is not bundled: if you install
-it yourself, CoreTend can run the <code>clamscan</code> binary as a separate
-process. It is never linked into the app and its signature database is never
-redistributed here. ClamAV is licensed separately under GPL-2.0 by its own
-project.</p>
+<p>IntegrityCore is first-party code. It reads local macOS quarantine,
+provenance, code-signature, Gatekeeper, LaunchAgent and LaunchDaemon signals.
+It does not bundle antivirus data, does not detect malware and does not claim
+to be an antivirus product.</p>
 <p>The full statements live in <a href="https://github.com/ahmetbsbnr/coretend/blob/main/LICENSE">LICENSE</a>,
 <a href="https://github.com/ahmetbsbnr/coretend/blob/main/NOTICE">NOTICE</a> and
 <a href="https://github.com/ahmetbsbnr/coretend/blob/main/THIRD_PARTY_NOTICES.md">THIRD_PARTY_NOTICES.md</a> at the repository
