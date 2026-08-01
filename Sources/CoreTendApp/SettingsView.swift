@@ -96,7 +96,9 @@ struct MCSettingsView: View {
                     Text("Français").tag(AppLanguage.fr.rawValue)
                     Text("English").tag(AppLanguage.en.rawValue)
                 }
+                .accessibilityIdentifier("settings.language")
                 Toggle(L("settings.show_menu_bar"), isOn: $menuBarEnabled)
+                    .accessibilityIdentifier("settings.menu_bar")
                 Text(L("settings.menu_bar_detail"))
                     .font(.caption).foregroundStyle(.secondary)
             }
@@ -107,6 +109,7 @@ struct MCSettingsView: View {
             Section(L("settings.scans_cleanup")) {
                 Toggle(L("settings.dry_run_default"), isOn: $model.dryRunDefault)
                     .onChange(of: model.dryRunDefault) { model.saveDryRun() }
+                    .accessibilityIdentifier("settings.dry_run")
                 Text(L("settings.dry_run_detail"))
                     .font(.caption).foregroundStyle(.secondary)
                 LabeledContent(L("settings.deletion_method"), value: L("settings.deletion_method_value"))
@@ -133,7 +136,9 @@ struct MCSettingsView: View {
                 if !model.fullDiskAccess {
                     HStack {
                         Button(L("settings.open_system_settings")) { PermissionProbe.openFullDiskAccessSettings() }
+                            .accessibilityIdentifier("settings.full_disk.open")
                         Button(L("settings.recheck")) { Task { await model.refreshPermissions() } }
+                            .accessibilityIdentifier("settings.full_disk.recheck")
                     }
                 }
                 LabeledContent(L("settings.notifications")) {
@@ -177,6 +182,7 @@ struct MCSettingsView: View {
                         model.addExclusion(url)
                     }
                 }
+                .accessibilityIdentifier("settings.exclusions.add")
             }
             Section(L("settings.data")) {
                 Text(L("settings.data_detail"))
@@ -188,6 +194,7 @@ struct MCSettingsView: View {
                     MigrationNoticeRow(report: report)
                 }
                 Button(L("settings.clear_activity"), role: .destructive) { showClearConfirm = true }
+                    .accessibilityIdentifier("settings.activity.clear")
                     .confirmationDialog(L("settings.clear_activity_confirm"), isPresented: $showClearConfirm) {
                         Button(L("settings.clear_history"), role: .destructive) { model.clearActivityHistory() }
                         Button(L("common.cancel"), role: .cancel) {}
@@ -195,6 +202,7 @@ struct MCSettingsView: View {
                         Text(L("settings.clear_activity_message"))
                     }
                 Button(L("settings.export_diagnostic")) { showDiagnostic = true }
+                    .accessibilityIdentifier("settings.diagnostic.export")
                     .sheet(isPresented: $showDiagnostic) { DiagnosticReportView() }
                 Text(L("settings.export_diagnostic_detail"))
                     .font(.caption).foregroundStyle(.secondary)
@@ -205,6 +213,7 @@ struct MCSettingsView: View {
                 Button(L("settings.rerun_setup")) {
                     NotificationCenter.default.post(name: .mcShowOnboarding, object: nil)
                 }
+                .accessibilityIdentifier("settings.onboarding.rerun")
             }
         }
         .formStyle(.grouped)

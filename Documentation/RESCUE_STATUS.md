@@ -22,6 +22,8 @@ Latest Similar Images pause commit: `0b5883571392ad9740140bb95220faa822d34663` (
 Latest Cloud Cleanup pause commit: `76b033c311f93503e0f9bfb7d8967ce4b830af5d` (`76b033c`)
 Latest Privacy Cleaner pause commit: `7320e8852e06d7c30d799d7f2a679a3d87a7635b` (`7320e88`)
 Latest onboarding UI automation commit: `2b0ae734db684bc3e878f7384f4375809a116aaf` (`2b0ae73`)
+Latest UI automation status commit: `5d5a5c1c51b75ea056f936711e4d3451d8146136` (`5d5a5c1`)
+Latest settings/activity/integrity UI automation work: in progress locally after `5d5a5c1c51b75ea056f936711e4d3451d8146136`
 
 ## Git Validation
 
@@ -48,6 +50,7 @@ Latest onboarding UI automation commit: `2b0ae734db684bc3e878f7384f4375809a116aa
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `76b033c311f93503e0f9bfb7d8967ce4b830af5d`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `7320e8852e06d7c30d799d7f2a679a3d87a7635b`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `2b0ae734db684bc3e878f7384f4375809a116aaf`.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `5d5a5c1c51b75ea056f936711e4d3451d8146136`.
 - Latest full CI run `30671237842` passed on `b41dd08ab9eb0351525f07a356350f7f3b8a62a7`, including distribution-check and build-and-test.
 - Manually dispatched GitHub Actions CI run `30676143806` passed on `0b5883571392ad9740140bb95220faa822d34663`, including distribution-check and build-and-test.
 - GitHub Actions CI run `30677748494` passed on `65db41c0cc0f9281417ca4fdfa16548cbba10fc4`, including distribution-check and build-and-test.
@@ -55,6 +58,7 @@ Latest onboarding UI automation commit: `2b0ae734db684bc3e878f7384f4375809a116aa
 - Manually dispatched GitHub Actions CI run `30692821683` passed on `76b033c311f93503e0f9bfb7d8967ce4b830af5d`, including distribution-check and build-and-test.
 - GitHub Actions CI run `30693763565` passed on `7320e8852e06d7c30d799d7f2a679a3d87a7635b`, including distribution-check and build-and-test.
 - Manually dispatched GitHub Actions CI run `30694691738` passed on `2b0ae734db684bc3e878f7384f4375809a116aaf`, including distribution-check and build-and-test.
+- Manually dispatched GitHub Actions CI run `30695133301` passed on `5d5a5c1c51b75ea056f936711e4d3451d8146136`, including distribution-check and build-and-test.
 
 ## Local Backup
 
@@ -541,6 +545,30 @@ Known limits:
 CI:
 
 - GitHub Actions CI run `30694691738` passed on `2b0ae734db684bc3e878f7384f4375809a116aaf`: distribution-check and build-and-test were green, including tests, debug/release build, package bundle, DMG layout, launch robustness, visual regression captures, release/sync checks, and localization key parity.
+- GitHub Actions CI run `30695133301` passed on `5d5a5c1c51b75ea056f936711e4d3451d8146136`: distribution-check and build-and-test were green, including tests, debug/release build, package bundle, DMG layout, launch robustness, visual regression captures, release/sync checks, and localization key parity.
+
+## Settings / Activity / Integrity UI Automation
+
+Status: in progress locally after `5d5a5c1c51b75ea056f936711e4d3451d8146136`.
+
+Implemented:
+
+- Settings now exposes stable identifiers for language, menu-bar toggle, dry-run default, Full Disk Access open/recheck controls, exclusion add, activity clear, diagnostic export, and setup rerun.
+- Activity now exposes stable identifiers for range, kind filter, export menu, clear action, and safety-log action.
+- Integrity now exposes stable identifiers for downloads, app inspector, app-inspector choose action, and login items.
+- Privacy Cleaner now exposes a stable root identifier and cache-clean action identifier.
+- `CoreTendUITests` now covers Integrity, Activity, and Settings automation anchors, plus isolated terminate/relaunch access to Dashboard.
+
+Validation completed locally:
+
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-ui-surface --filter CoreTendUITests` passed with 8 skipped tests because `CORETEND_UI_APP_PATH` is unavailable in this sandboxed run.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-ui-surface-build -c debug` passed.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-ui-surface-release -c release` passed.
+
+Known limits:
+
+- These tests remain conditional until a GUI-capable run supplies `CORETEND_UI_APP_PATH`.
+- Real keyboard-only, VoiceOver, Increase Contrast, Reduce Transparency, Reduce Motion, enlarged text, and Instruments verification remain pending.
 
 ## UI Automation Anchors
 
