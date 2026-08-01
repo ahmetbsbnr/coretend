@@ -465,6 +465,33 @@ Validation completed locally:
 - `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-ui-ids -c debug` passed.
 - `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-ui-ids-release -c release` passed.
 
+CI:
+
+- GitHub Actions CI run `30677748494` passed on `65db41c0cc0f9281417ca4fdfa16548cbba10fc4`: distribution-check and build-and-test were green, including tests, debug/release build, package bundle, DMG layout, launch robustness, visual regression captures, release/sync checks, and localization key parity.
+
+## Updater Public Manifest Route
+
+Status: in progress locally after `65db41c0cc0f9281417ca4fdfa16548cbba10fc4`.
+
+Implemented:
+
+- `Scripts/sync-published-release.sh` now records ZIP SHA-256 and size in `Configuration/published-release.json`, matching the already-recorded DMG metadata.
+- The committed production release pointer now contains verified ZIP metadata for `v0.9.1-rc.3`.
+- The website generator now publishes `/latest.json` and `/SHA256SUMS` redirects to the exact GitHub release assets named by the current published release.
+- `Website/vercel.json` was updated to include those redirects for the current public release, so the app updater URL has a concrete production target instead of depending on an absent local static file.
+- `Scripts/test-release-sync.sh` now fails if `Configuration/published-release.json` names a DMG or ZIP without HTTPS URL, 64-character SHA-256, and positive size.
+
+Validation completed locally:
+
+- `PYTHONDONTWRITEBYTECODE=1 python3 -m py_compile Website/generate.py` passed.
+- JSON validation confirmed `Configuration/published-release.json` includes `zipSHA256=28114f0a352abe340bb83cd61c84dedcb3cb0b8e031a12ae7a1a4e306e4db173`, `zipSize=2828017`, and `/latest.json` plus `/SHA256SUMS` Vercel redirects point at `v0.9.1-rc.3`.
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-updater-route --filter UpdateCheckerTests` passed with 16 tests.
+- `bash Scripts/test-release-sync.sh` passed; it now checks published-release DMG/ZIP URL, SHA-256, and size metadata.
+
+Known limits:
+
+- `python3 Website/generate.py` still cannot rewrite generated HTML from this Xcode sandbox (`PermissionError` on `Website/en/index.html`). `Website/vercel.json` was therefore updated directly; the generator change must be regenerated from an unsandboxed shell before a website deploy.
+
 P0 public launch:
 
 - Explanation is complete for the current public artifact: expected Gatekeeper block for ad-hoc unsigned/not-notarized app, plus an independent invalid bundle-version metadata defect.

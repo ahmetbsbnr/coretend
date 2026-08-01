@@ -136,7 +136,34 @@ else
   echo "  (no dist/latest.json — artifact checks skipped, nothing has been built)"
 fi
 
-# 10. What GitHub actually publishes, when we can ask.
+# 10. The committed production pointer feeds the website download redirect and
+#     the app updater's public manifest URL. It must carry verified metadata
+#     for every artifact it names, not just the DMG.
+if [ -f "Configuration/published-release.json" ]; then
+  /usr/bin/python3 - <<'PY'
+import json, re, sys
+p = json.load(open("Configuration/published-release.json"))
+sha = re.compile(r"^[0-9a-fA-F]{64}$")
+for prefix in ("dmg", "zip"):
+    name = p.get(prefix + "Name", "")
+    url = p.get(prefix + "URL", "")
+    digest = p.get(prefix + "SHA256", "")
+    size = int(p.get(prefix + "Size", 0) or 0)
+    if not name:
+        continue
+    if not url.startswith("https://"):
+        sys.exit(f"{prefix}URL is missing or not HTTPS")
+    if not sha.fullmatch(digest):
+        sys.exit(f"{prefix}SHA256 is missing or malformed")
+    if size <= 0:
+        sys.exit(f"{prefix}Size is missing or non-positive")
+PY
+  [ "$?" -eq 0 ] \
+    && ok "published release carries verified DMG and ZIP metadata" \
+    || note "Configuration/published-release.json has incomplete artifact metadata"
+fi
+
+# 11. What GitHub actually publishes, when we can ask.
 if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
   LIVE=$(gh release list -R ahmetbsbnr/coretend --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || true)
   if [ -n "$LIVE" ]; then
