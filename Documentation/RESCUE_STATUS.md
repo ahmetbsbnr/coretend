@@ -13,12 +13,13 @@ Latest Space Lens pause commit: `a78006939624a13de35b77bd0b5ef8f1e11eefde` (`a78
 Latest Duplicates pause commit: `1142f34a14fbe202fb1a6b8dbff669edd6514fcc` (`1142f34`)
 Latest Duplicates export commit: `ceb09823b96cfeda3d234009f8efbb1c2c25dfa0` (`ceb0982`)
 Latest Applications review commit: `988c2a0d65cf3913b6b4f49cc65cbebd71824767` (`988c2a0`)
-Latest UI automation commit: `10fae9db4a7a91581efcbdce99bdebeb567e0dd6` (`10fae9d`)
+Latest UI automation commit: `65db41c0cc0f9281417ca4fdfa16548cbba10fc4` (`65db41c`)
 Latest website reconstruction commit: `d50279fbf370524661c2fb41a804c2b6c05ce65d` (`d50279f`)
 Latest app visual foundation commit: `52612174cb337fe5b1980c31de19043bf952169c` (`5261217`)
-Latest updater manifest commit: `5686dcffecf83366be83db632e2cacc9b5f36e22` (`5686dcf`)
+Latest updater manifest commit: `322c55d9984cb160eb5065c669b7b4b48c3c9fe0` (`322c55d`)
 Latest product audit commit: `b41dd08ab9eb0351525f07a356350f7f3b8a62a7` (`b41dd08`)
-Latest Similar Images pause commit: this status commit (`Add Similar Images pause controls`)
+Latest Similar Images pause commit: `0b5883571392ad9740140bb95220faa822d34663` (`0b58835`)
+Latest Cloud Cleanup pause commit: this status commit (`Add Cloud Cleanup pause controls`)
 
 ## Git Validation
 
@@ -39,9 +40,14 @@ Latest Similar Images pause commit: this status commit (`Add Similar Images paus
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `52612174cb337fe5b1980c31de19043bf952169c`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `5686dcffecf83366be83db632e2cacc9b5f36e22`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `b41dd08ab9eb0351525f07a356350f7f3b8a62a7`.
-- Branch `rescue/coretend-final-product` was pushed to GitHub for the Similar Images pause-control status commit.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `0b5883571392ad9740140bb95220faa822d34663`.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `65db41c0cc0f9281417ca4fdfa16548cbba10fc4`.
+- Branch `rescue/coretend-final-product` was pushed to GitHub at `322c55d9984cb160eb5065c669b7b4b48c3c9fe0`.
+- Branch `rescue/coretend-final-product` will be pushed to GitHub for the Cloud Cleanup pause-control status commit.
 - Latest full CI run `30671237842` passed on `b41dd08ab9eb0351525f07a356350f7f3b8a62a7`, including distribution-check and build-and-test.
 - Manually dispatched GitHub Actions CI run `30676143806` passed on `0b5883571392ad9740140bb95220faa822d34663`, including distribution-check and build-and-test.
+- GitHub Actions CI run `30677748494` passed on `65db41c0cc0f9281417ca4fdfa16548cbba10fc4`, including distribution-check and build-and-test.
+- GitHub Actions CI run `30691511902` passed on `322c55d9984cb160eb5065c669b7b4b48c3c9fe0`, including distribution-check and build-and-test.
 
 ## Local Backup
 
@@ -80,18 +86,18 @@ Controls currently integrated:
 - Space Lens: Pause / Resume / Cancel while scanning.
 - Duplicates: Pause / Resume / Cancel while scanning.
 - Similar Images: Pause / Resume / Cancel while scanning.
+- Cloud Cleanup provider analysis: Pause / Resume / Cancel while measuring local cloud footprints.
 
 Controls not yet integrated:
 
 - Privacy Cleaner browser detection/cleanup.
-- Cloud Cleanup provider analysis.
 - Applications scan/uninstall workflows.
 - Integrity scanners.
 
 Known limits:
 
 - Pause checks occur between enumerated filesystem entries, not during a single blocking filesystem call.
-- Pause currently affects `ScanEngine`-based walks only; engines with separate implementation paths still need equivalent cancellation/pause semantics.
+- Pause now covers `ScanEngine`, Space Lens, Duplicates, Similar Images, and Cloud Cleanup walks; remaining separate implementation paths still need equivalent cancellation/pause semantics.
 - UI coverage exists through CI visual regression, but no dedicated XCUIAutomation suite has been added yet.
 
 Verification completed for `6f80ef1`:
@@ -448,9 +454,33 @@ Known limits:
 - Similar Images remains a read-only support module rather than a primary release module; it still has no deletion action.
 - `SimilarImagesEngineTests` failed in this sandbox because Vision returned no groups for the existing synthetic-image fixture (`sysctlbyname for kern.hv_vmm_present failed` also appeared). The same suite was previously green in CI; this is recorded as a local sandbox/Vision limitation unless it reproduces in CI.
 
+## Cloud Cleanup Pause Controls
+
+Status: committed in this status commit and ready to push.
+
+Implemented:
+
+- `ScanPauseController` now exposes a public non-blocking `waitIfPaused()` API for non-ScanCore engines that need the same continuation-based pause behavior.
+- `CloudCleanupViewModel` now runs provider measurement in a cancellable utility task and owns pause/resume state.
+- Cloud Cleanup measurement now checks pause and cancellation between top-level cloud entries and nested directory entries.
+- `CloudCleanupView` now exposes Pause / Resume / Cancel while measuring, with `p`, `r`, and Escape keyboard shortcuts plus stable accessibility identifiers.
+- Cloud Cleanup remains analysis-only: it still does not download cloud placeholders and still does not delete synced files.
+
+Validation completed locally:
+
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-cloud-pause --filter CloudCleanupTests` passed with 9 tests, including async pause/resume coverage.
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-cloud-pause --filter ScanPauseControllerTests` passed with 7 tests.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-cloud-build -c debug` passed.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-cloud-release -c release` passed.
+
+Known limits:
+
+- Pause checks do not interrupt a single blocking filesystem metadata call.
+- Cloud Cleanup is still not a primary navigation module; it remains a read-only support surface until the product audit decides whether to keep or remove it from release.
+
 ## UI Automation Anchors
 
-Status: in progress locally after `0b5883571392ad9740140bb95220faa822d34663`.
+Status: committed and pushed as `65db41c0cc0f9281417ca4fdfa16548cbba10fc4`.
 
 Implemented:
 
@@ -471,7 +501,7 @@ CI:
 
 ## Updater Public Manifest Route
 
-Status: in progress locally after `65db41c0cc0f9281417ca4fdfa16548cbba10fc4`.
+Status: committed and pushed as `322c55d9984cb160eb5065c669b7b4b48c3c9fe0`.
 
 Implemented:
 
