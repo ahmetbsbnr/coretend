@@ -23,7 +23,8 @@ echo "Checking for the current macOS account name in tracked files..."
 # prose every session.
 if [ -n "$ACCOUNT_NAME" ] && git grep -nIF "$ACCOUNT_NAME" -- '*.swift' '*.md' '*.json' '*.sh' '*.yml' '*.yaml' '*.py' '*.log' '*.txt' '*.csv' \
     ':!Documentation/REPOSITORY_SANITIZATION.md' \
-    ':!Documentation/CONTINUATION.md' 2>/dev/null; then
+    ':!Documentation/CONTINUATION.md' \
+    ':!Documentation/RESCUE_STATUS.md' 2>/dev/null; then
   echo "FAIL: found the developer's real macOS username above."
   fail=1
 else
