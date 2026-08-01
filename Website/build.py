@@ -492,6 +492,11 @@ def build(output: Path) -> None:
         (stage / "fr").mkdir()
         (stage / "en" / "index.html").write_text(en_page, encoding="utf-8")
         (stage / "fr" / "index.html").write_text(fr_page, encoding="utf-8")
+        # Keep the public trailing-slash locale routes at HTTP 200. Vercel
+        # normalizes directory rewrites to `/en`; these internal files avoid
+        # that redirect without exposing their `.html` names publicly.
+        (stage / "en-route.html").write_text(en_page, encoding="utf-8")
+        (stage / "fr-route.html").write_text(fr_page, encoding="utf-8")
 
         for name, page in information_pages(release).items():
             (stage / name).write_text(page, encoding="utf-8")
