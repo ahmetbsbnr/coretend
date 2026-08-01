@@ -221,6 +221,7 @@ struct ApplicationsView: View {
 struct InstalledAppsView: View {
     @State private var model = ApplicationsViewModel()
     @Namespace private var rowTransition
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         HSplitView {
@@ -277,7 +278,7 @@ struct InstalledAppsView: View {
                     }
                 }
                 .listStyle(.inset)
-                .animation(MCMotion.snappy, value: model.grouping)
+                .animation(MCMotion.animation(MCMotion.snappy, reduce: reduceMotion), value: model.grouping)
                 .accessibilityIdentifier("applications.list")
             }
         }

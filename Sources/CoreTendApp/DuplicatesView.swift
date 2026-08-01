@@ -226,6 +226,7 @@ struct DuplicatesView: View {
             case let .finished(freed, dryRun): finishedView(freed, dryRun)
             }
         }
+        .navigationTitle(L("module.duplicates"))
         .accessibilityIdentifier("duplicates.root")
     }
 
