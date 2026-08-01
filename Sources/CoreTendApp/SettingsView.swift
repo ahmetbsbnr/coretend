@@ -209,6 +209,7 @@ struct MCSettingsView: View {
         }
         .formStyle(.grouped)
         .navigationTitle(L("settings.nav_title"))
+        .accessibilityIdentifier("settings.root")
         .task { await model.load() }
     }
 

@@ -214,6 +214,7 @@ struct ApplicationsView: View {
         }
         .padding(8)
         .navigationTitle(L("apps.title"))
+        .accessibilityIdentifier("applications.root")
     }
 }
 

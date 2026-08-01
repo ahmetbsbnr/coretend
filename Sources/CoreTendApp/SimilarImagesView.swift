@@ -149,6 +149,7 @@ struct SimilarImagesView: View {
                     icon: "photo.on.rectangle.angled", title: L("similar.idle.title"), message: L("similar.idle.subtitle"),
                     iconColor: MCTheme.accent, iconSize: MCIconSize.emptyStateProminent,
                     actionTitle: L("similar.analyze")) { model.start() }
+                    .accessibilityIdentifier("similar.scan.start")
             case let .scanning(processed, total):
                 VStack(spacing: 16) {
                     if total > 0 {
@@ -164,14 +165,17 @@ struct SimilarImagesView: View {
                             .keyboardShortcut("r", modifiers: [])
                             .help(L("dupes.resume_hint"))
                             .accessibilityHint(L("dupes.resume_hint"))
+                            .accessibilityIdentifier("similar.scan.resume")
                     } else {
                         Button(L("common.pause")) { model.pauseScan() }
                             .keyboardShortcut("p", modifiers: [])
                             .help(L("dupes.pause_hint"))
                             .accessibilityHint(L("dupes.pause_hint"))
+                            .accessibilityIdentifier("similar.scan.pause")
                     }
                     Button(L("common.cancel")) { model.cancel() }
                         .keyboardShortcut(.cancelAction)
+                        .accessibilityIdentifier("similar.scan.cancel")
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
@@ -247,5 +251,6 @@ struct SimilarImagesView: View {
                 .quickLookPreview($model.previewURL)
             }
         }
+        .accessibilityIdentifier("similar.root")
     }
 }

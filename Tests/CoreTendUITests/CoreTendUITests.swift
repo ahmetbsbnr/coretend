@@ -14,20 +14,39 @@ final class CoreTendUITests: XCTestCase {
         defer { app.terminate() }
 
         XCTAssertTrue(app.windows.firstMatch.waitForExistence(timeout: 8))
-        let sidebarIDs = [
-            "sidebar.Smart Care",
-            "sidebar.Cleanup",
-            "sidebar.Space Lens",
-            "sidebar.Duplicates",
-            "sidebar.Applications",
-            "sidebar.Protection",
-            "sidebar.My Activity",
-            "sidebar.Settings",
+        let destinations = [
+            ("sidebar.Smart Care", "dashboard.root"),
+            ("sidebar.Cleanup", "storage.root"),
+            ("sidebar.Space Lens", "spacelens.root"),
+            ("sidebar.Duplicates", "duplicates.root"),
+            ("sidebar.Applications", "applications.root"),
+            ("sidebar.Protection", "integrity.root"),
+            ("sidebar.My Activity", "activity.root"),
+            ("sidebar.Settings", "settings.root"),
         ]
-        for id in sidebarIDs {
-            let item = app.descendants(matching: .any)[id].firstMatch
-            XCTAssertTrue(item.waitForExistence(timeout: 4), "Missing \(id)")
+        for (sidebarID, rootID) in destinations {
+            let item = app.descendants(matching: .any)[sidebarID].firstMatch
+            XCTAssertTrue(item.waitForExistence(timeout: 4), "Missing \(sidebarID)")
             item.click()
+            XCTAssertTrue(app.descendants(matching: .any)[rootID].firstMatch.waitForExistence(timeout: 4), "Missing \(rootID)")
+        }
+    }
+
+    func testPrimaryScanControlsExposeAutomationIdentifiers() throws {
+        let app = try launchApp()
+        defer { app.terminate() }
+
+        let expectedControls = [
+            ("sidebar.Cleanup", "storage.scan.start"),
+            ("sidebar.Space Lens", "spacelens.scan.home"),
+            ("sidebar.Duplicates", "duplicates.scan.start"),
+        ]
+
+        for (sidebarID, controlID) in expectedControls {
+            let item = app.descendants(matching: .any)[sidebarID].firstMatch
+            XCTAssertTrue(item.waitForExistence(timeout: 4), "Missing \(sidebarID)")
+            item.click()
+            XCTAssertTrue(app.descendants(matching: .any)[controlID].firstMatch.waitForExistence(timeout: 4), "Missing \(controlID)")
         }
     }
 

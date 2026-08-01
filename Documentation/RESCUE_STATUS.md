@@ -41,6 +41,7 @@ Latest Similar Images pause commit: this status commit (`Add Similar Images paus
 - Branch `rescue/coretend-final-product` was pushed to GitHub at `b41dd08ab9eb0351525f07a356350f7f3b8a62a7`.
 - Branch `rescue/coretend-final-product` was pushed to GitHub for the Similar Images pause-control status commit.
 - Latest full CI run `30671237842` passed on `b41dd08ab9eb0351525f07a356350f7f3b8a62a7`, including distribution-check and build-and-test.
+- Manually dispatched GitHub Actions CI run `30676143806` passed on `0b5883571392ad9740140bb95220faa822d34663`, including distribution-check and build-and-test.
 
 ## Local Backup
 
@@ -438,10 +439,31 @@ Validation completed locally:
 - `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-similar-pause -c debug` passed.
 - `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-similar-pause-release -c release` passed.
 
+CI:
+
+- GitHub Actions CI run `30676143806` passed on `0b5883571392ad9740140bb95220faa822d34663`: distribution-check and build-and-test were green, including tests, debug/release build, package bundle, DMG layout, launch robustness, visual regression captures, release/sync checks, and localization key parity.
+
 Known limits:
 
 - Similar Images remains a read-only support module rather than a primary release module; it still has no deletion action.
 - `SimilarImagesEngineTests` failed in this sandbox because Vision returned no groups for the existing synthetic-image fixture (`sysctlbyname for kern.hv_vmm_present failed` also appeared). The same suite was previously green in CI; this is recorded as a local sandbox/Vision limitation unless it reproduces in CI.
+
+## UI Automation Anchors
+
+Status: in progress locally after `0b5883571392ad9740140bb95220faa822d34663`.
+
+Implemented:
+
+- Primary module roots now expose stable XCUI identifiers: Dashboard, Storage, Space Lens, Duplicates, Applications, Integrity, Activity, and Settings.
+- Primary scan entry controls now expose stable identifiers for Storage, Space Lens, and Duplicates.
+- Similar Images scan controls now expose stable identifiers even though the module remains non-primary.
+- `CoreTendUITests` now verifies destination root identifiers after sidebar navigation and verifies primary scan-control anchors when a built app path is supplied.
+
+Validation completed locally:
+
+- `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-ui-ids --filter CoreTendUITests` passed with 4 skipped tests because `CORETEND_UI_APP_PATH` is unavailable in this sandboxed run.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-ui-ids -c debug` passed.
+- `swift build --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-ui-ids-release -c release` passed.
 
 P0 public launch:
 
