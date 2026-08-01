@@ -187,6 +187,21 @@ await gate('unknown routes return the branded 404 with no redirect', async () =>
   }
 })
 
+await gate('branded 404 uses the available viewport without trailing blank space', async () => {
+  const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 430, height: 932 } })
+  const page = await context.newPage()
+  const response = await page.goto(`${origin}/missing-layout-proof`, { waitUntil: 'networkidle' })
+  assert.equal(response.status(), 404)
+  const geometry = await page.evaluate(() => ({
+    viewport: innerHeight,
+    footerBottom: document.querySelector('footer')?.getBoundingClientRect().bottom ?? 0,
+    horizontalOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  }))
+  assert(geometry.footerBottom >= geometry.viewport - 1, `404 leaves ${(geometry.viewport - geometry.footerBottom).toFixed(0)}px blank below its footer`)
+  assert(geometry.horizontalOverflow <= 1)
+  await context.close()
+})
+
 await gate('canonical, hreflang, Open Graph and document languages are exact', async () => {
   const context = await browser.newContext({ javaScriptEnabled: false })
   const page = await context.newPage()
