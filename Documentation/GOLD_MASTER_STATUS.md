@@ -1,6 +1,6 @@
 # CoreTend Gold Master Status
 
-Last updated: 2026-08-01T22:05:00+03:00
+Last updated: 2026-08-01T22:20:00+03:00
 
 This is the durable delivery journal for the CoreTend gold-master work. It records verified state only. A blank preview or production field means that gate has not passed yet.
 
@@ -67,6 +67,8 @@ portfolio remained clean.
 - `c4f4854` `docs: establish gold master checkpoint`
 - `682535a` `feat: gate public release facts and demo fixtures`
 - `8645d19` `docs: record staging baseline and verified data gates`
+- `2856f4b` `feat: rebuild public site gold master pipeline` (pushed)
+- working application correction lot (not yet committed at this journal update): clean help/support routes, truthful manual updater surface, responsive Dashboard actions, Duplicates title, Reduce Motion for Applications, and executable Xcode scheme
 - working site subsystem (not yet committed at this journal update): independent SVG arcs, clean-route build pipeline, bilingual pre-rendering, truthful example fixtures, responsive simulation controls, self-hosted font notices, and explicit Vercel routes
 
 ## Test evidence
@@ -84,6 +86,7 @@ portfolio remained clean.
 | Public build | `python3 Website/build.py --output /tmp/coretend-site-precommit` | passed; generated root/en/fr, clean info routes, 404, release manifest and SHA256SUMS |
 | Generated JavaScript syntax | `find /tmp/coretend-site-precommit/assets/generated -name '*.js' -print0 \| xargs -0 -n1 node --check` | passed |
 | Worktree whitespace | `git diff --check` | passed |
+| Swift application correction lot | `swift test --filter CoreTendAppTests --filter DesignSystemTests --filter CoreTendAccessibilityTests` | passed; 151 tests |
 | Gold desktop baseline | 1440x900 light, SHA-256 `1e8d0058f97b15707927a92fbb6c62ec072fcc3fdb2e9207dfa261532ab88ce7` | captured |
 | Gold mobile baseline | 430x932 light, SHA-256 `d30f4abfb857d1e2188abd226367947bbe62671b0f2b2502b83720cb006bfe1b` | captured; horizontal overflow visible |
 
@@ -109,9 +112,10 @@ No product, site, application, accessibility, or deployment test is marked passe
 - The production download asset and the known release checksum must be fetched and independently verified before either is published in site copy.
 - The public `v0.9.1-rc.3` DMG is an older artifact (`sourceCommit` `119d940...`) and still contains the retired ClamAV/Smart Care UI; it cannot honestly be presented as the current gold-master app. A validated new app release is required before changing the public download.
 - Browser route, visual, accessibility and production deployment gates are still open; the generated site has not been promoted.
+- The public release mismatch is recorded in the macOS audit evidence; no replacement binary has been published.
 
 ## Next gate
 
-Commit and push the verified site subsystem, then run the route/visual/accessibility
-crawl. In parallel, build and validate a new app artifact (rc.4 candidate) before
-switching the public download facts; never overwrite rc.3 silently.
+Commit and push the application correction lot, then run the route/visual/accessibility
+crawl. Build and validate a new app artifact (rc.4 candidate) before switching the
+public download facts; never overwrite rc.3 silently.

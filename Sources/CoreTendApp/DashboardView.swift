@@ -88,17 +88,25 @@ struct DashboardView: View {
                 Button {
                     navigate(.cleanup)
                 } label: {
-                    Label(L("dashboard.primary_action"), systemImage: "internaldrive")
+                    ViewThatFits(in: .horizontal) {
+                        Label(L("dashboard.primary_action"), systemImage: "internaldrive")
+                        Image(systemName: "internaldrive")
+                    }
                 }
                 .buttonStyle(.borderedProminent)
-                .controlSize(.regular)
+                .controlSize(.small)
+                .accessibilityLabel(L("dashboard.primary_action"))
                 Button {
                     navigate(.spaceLens)
                 } label: {
-                    Label(L("dashboard.secondary_action"), systemImage: "map")
+                    ViewThatFits(in: .horizontal) {
+                        Label(L("dashboard.secondary_action"), systemImage: "map")
+                        Image(systemName: "map")
+                    }
                 }
                 .buttonStyle(.bordered)
-                .controlSize(.regular)
+                .controlSize(.small)
+                .accessibilityLabel(L("dashboard.secondary_action"))
             }
         }
     }
