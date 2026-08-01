@@ -11,6 +11,8 @@
 - Process scan: blocked by macOS sandbox for `/bin/ps`
 - Recovered groups: CoreTend site, tests, Vercel configuration, visual baseline
 - Remaining gates: production HTTP checks, portfolio ClamAV cleanup, isolated UI tests, skip/no-result explanation, visual inspection prep, CI/Security/Vercel/Git verification, public download unchanged until Developer ID is available
+- Targeted validation: `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-rescue --filter PathValidatorTests` passed with 23 Swift Testing tests; XCTest wrapper reported 0 selected XCTest tests.
+- Website generation: `python3 Website/generate.py` completed and left no Website diff.
 
 ---
 
