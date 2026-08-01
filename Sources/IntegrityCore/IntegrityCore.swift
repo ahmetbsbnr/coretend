@@ -1,5 +1,5 @@
-// Replaces the ClamAV-based "Protection" module. See
-// Documentation/CLAMAV_DECISION.md for why: the prior design required the
+// Provides the local Integrity signals used by the Integrity module. The
+// current product does not perform malware scanning or quarantine.
 // user to install a third-party engine themselves via Terminal/Homebrew,
 // which the product's own bar for this feature ("never open Terminal, never
 // install Homebrew") ruled out, and which could never be bundled/signed by

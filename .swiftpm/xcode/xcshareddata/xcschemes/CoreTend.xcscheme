@@ -15,9 +15,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "CoreTendApp"
+               BlueprintIdentifier = "CoreTend"
                BuildableName = "CoreTend"
-               BlueprintName = "CoreTendApp"
+               BlueprintName = "CoreTend"
                ReferencedContainer = "container:Package.swift">
             </BuildableReference>
          </BuildActionEntry>
@@ -111,9 +111,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "CoreTendApp"
+            BlueprintIdentifier = "CoreTend"
             BuildableName = "CoreTend"
-            BlueprintName = "CoreTendApp"
+            BlueprintName = "CoreTend"
             ReferencedContainer = "container:Package.swift">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -128,18 +128,18 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "CoreTendApp"
+            BlueprintIdentifier = "CoreTend"
             BuildableName = "CoreTend"
-            BlueprintName = "CoreTendApp"
+            BlueprintName = "CoreTend"
             ReferencedContainer = "container:Package.swift">
          </BuildableReference>
       </BuildableProductRunnable>
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "CoreTendApp"
+            BlueprintIdentifier = "CoreTend"
             BuildableName = "CoreTend"
-            BlueprintName = "CoreTendApp"
+            BlueprintName = "CoreTend"
             ReferencedContainer = "container:Package.swift">
          </BuildableReference>
       </MacroExpansion>
