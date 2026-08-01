@@ -8,6 +8,7 @@
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="/assets/brand/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/assets/brand/favicon-180.png">
+<link rel="stylesheet" href="/assets/tokens/design-tokens.css">
 <script>
 try {
   document.documentElement.classList.add("js");
@@ -39,15 +40,15 @@ try {
 @font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:500;font-display:swap;src:url("/assets/fonts/plexmono-500-latin.woff2") format("woff2")}
 @font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:600;font-display:swap;src:url("/assets/fonts/plexmono-600-latin.woff2") format("woff2")}
 :root{
-  --paper:#f4f4f0;
+  --paper:var(--ct-paper,#f4f4f0);
   --paper-2:#eceadf;
   --paper-3:#e3e1d4;
-  --ink:#17191d;
+  --ink:var(--ct-ink,#17191d);
   --ink-2:#4b5058;
   --ink-3:#7d828d;
   --line:#dedcd0;
   --line-strong:#b3b2a4;
-  --cobalt:#2240e2;
+  --cobalt:var(--ct-cobalt,#2240e2);
   --cobalt-lift:#6177ea;
   --cobalt-wash:rgba(34,64,226,.09);
   --safe:#0f7a4d;
