@@ -6,7 +6,7 @@ claims.
 
 ## Product
 
-- [Product brief](PRODUCT.md)
+- [Product brief](../PRODUCT.md)
 - [Feature matrix](FEATURE_MATRIX.md)
 - [Safety model](SAFETY_MODEL.md)
 - [Support](../SUPPORT.md)
@@ -43,7 +43,7 @@ claims.
 ## Release
 
 - [Build and install](BUILD_AND_INSTALL.md)
-- [Release installation](RELEASE_INSTALLATION.md)
+- [Release installation](INSTALL_UNSIGNED.md)
 - [App Store feasibility](Release/APP_STORE_FEASIBILITY.md)
 - [Third-party notices](../THIRD_PARTY_NOTICES.md)
 

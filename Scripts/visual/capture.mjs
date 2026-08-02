@@ -44,14 +44,29 @@ const ROUTE_MATRIX = VIEWPORTS.flatMap(viewport => [
   { name: `home-fr-dark--${viewport.name}`, path: '/fr/', viewport, language: 'fr', theme: 'dark' },
 ])
 
-const SUPPORTING_PAGES = [DESKTOP, MOBILE].flatMap(viewport => [
-  { name: `root-no-js--${viewport.name}`, path: '/', viewport, theme: 'light', javaScriptEnabled: false },
-  { name: `privacy--${viewport.name}`, path: '/privacy', viewport, theme: 'light', javaScriptEnabled: false },
-  { name: `support--${viewport.name}`, path: '/support', viewport, theme: 'light', javaScriptEnabled: false },
-  { name: `legal--${viewport.name}`, path: '/legal', viewport, theme: 'light', javaScriptEnabled: false },
-  { name: `licenses--${viewport.name}`, path: '/licenses', viewport, theme: 'light', javaScriptEnabled: false },
-  { name: `not-found--${viewport.name}`, path: '/visual-not-found', viewport, theme: 'light', javaScriptEnabled: false },
-])
+const INFORMATION_ROUTES = [
+  ['privacy', '/privacy', '/fr/privacy'],
+  ['support', '/support', '/fr/support'],
+  ['legal', '/legal', '/fr/legal'],
+  ['licenses', '/licenses', '/fr/licenses'],
+]
+
+const SUPPORTING_PAGES = [
+  ...[DESKTOP, MOBILE].flatMap(viewport => [
+    { name: `root-no-js--${viewport.name}`, path: '/', viewport, theme: 'light', javaScriptEnabled: false },
+    ...INFORMATION_ROUTES.flatMap(([name, english, french]) => ['light', 'dark'].flatMap(theme => [
+      { name: `${name}-en-${theme}--${viewport.name}`, path: english, viewport, language: 'en', theme },
+      { name: `${name}-fr-${theme}--${viewport.name}`, path: french, viewport, language: 'fr', theme },
+    ])),
+    ...['light', 'dark'].map(theme => ({
+      name: `not-found-${theme}--${viewport.name}`,
+      path: '/visual-not-found',
+      viewport,
+      language: 'en',
+      theme,
+    })),
+  ]),
+]
 
 const GRID = 32
 const CELL_TOLERANCE = 6
@@ -136,15 +151,67 @@ async function freeze(page) {
   })
 }
 
+async function normalizeReleaseIdentity(page) {
+  // Release identity has its own exact consistency gate. Keeping volatile
+  // versions and checksums out of image fingerprints makes the visual gate
+  // protect layout without canonising whichever release happened to be live.
+  await page.evaluate(() => {
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+    const nodes = []
+    while (walker.nextNode()) nodes.push(walker.currentNode)
+    for (const node of nodes) {
+      node.nodeValue = node.nodeValue
+        .replace(/\bv?\d+\.\d+\.\d+-rc\.\d+\b/gi, '0.0.0-rc.X')
+        .replace(/\b[a-f0-9]{64}\b/gi, '0'.repeat(64))
+    }
+  })
+}
+
 async function prepareOrbit(page, selector, times = [4250, 6600, 8750]) {
   await page.locator(selector).evaluate((logo, requestedTimes) => {
-    logo.classList.remove('is-initializing')
-    const animations = logo._ctOrbit?.animations ?? []
+    logo.classList.remove('is-initializing', 'is-settled')
+    const record = logo._ctOrbit
+    if (record) {
+      // IntersectionObserver may deliver its initial visibility callback after
+      // this preparation and call play() again. Marking the capture record as
+      // settled prevents that asynchronous callback from advancing a phase
+      // between currentTime assignment and the screenshot on slower runners.
+      record.settled = true
+      record.visible = false
+    }
+    const animations = record?.animations ?? []
     animations.forEach(({ animation }, index) => {
-      animation.currentTime = requestedTimes[index]
       animation.pause()
+      // Pause before seeking. Seeking a running animation lets its timeline
+      // advance again between the assignment and pause() on slower runners.
+      animation.currentTime = requestedTimes[index]
     })
   }, times)
+}
+
+async function stabilizeSimulation(page, status) {
+  await page.locator('[data-view="storage"]').click()
+  await page.waitForFunction(() => parseFloat(document.querySelector('#vTrack')?.style.width) >= 15)
+  await page.locator('#scanToggle').click()
+  await freeze(page)
+  await page.evaluate(requestedStatus => {
+    const progress = 28
+    const app = document.querySelector('#app')
+    const track = document.querySelector('#vTrack')
+    const toggle = document.querySelector('#scanToggle')
+    const foot = document.querySelector('#vFoot')
+    app.dataset.scan = requestedStatus
+    track.style.width = `${progress}%`
+    document.querySelectorAll('#lens b').forEach((block, index) => block.classList.toggle('is-visible', index < 2))
+    document.querySelectorAll('#vRows > div').forEach(row => row.classList.remove('is-visible'))
+    toggle.textContent = requestedStatus === 'paused' ? 'Resume' : 'Pause'
+    foot.textContent = requestedStatus === 'paused' ? 'Paused at 28%' : 'Scanning example data · 28%'
+    for (const animation of app.getAnimations({ subtree: true })) {
+      animation.currentTime = 0
+      animation.pause()
+    }
+  }, status)
+  await prepareOrbit(page, '.ct-logo--app')
 }
 
 async function capturePage(browser, base, target) {
@@ -162,6 +229,7 @@ async function capturePage(browser, base, target) {
   if (!response || (![200, 404].includes(response.status()))) {
     throw new Error(`${target.path} returned ${response?.status() ?? 'no response'}`)
   }
+  await normalizeReleaseIdentity(page)
   if (target.javaScriptEnabled !== false) await freeze(page)
   else await page.evaluate(() => document.fonts.ready)
   await page.waitForTimeout(80)
@@ -182,8 +250,9 @@ async function stateCaptures(browser, base) {
       locale: 'en-US',
     })
     const page = await context.newPage()
-    await page.goto(`${base}/en/`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`${base}${options.path ?? '/en/'}`, { waitUntil: 'domcontentloaded' })
     await page.evaluate(() => document.fonts.ready)
+    await normalizeReleaseIdentity(page)
     if (prepare) await prepare(page)
     await page.addStyleTag({ content: 'video, #field, #grain, #spot { visibility:hidden !important }' })
     const shot = selector ? await page.locator(selector).screenshot() : await page.screenshot()
@@ -223,18 +292,19 @@ async function stateCaptures(browser, base) {
     await freeze(page)
   }, 'footer')
   await state('simulation-scanning', { viewport: DESKTOP }, async page => {
-    await page.locator('[data-view="storage"]').click()
-    await page.waitForFunction(() => parseFloat(document.querySelector('#vTrack')?.style.width) >= 15)
-    await freeze(page)
+    await stabilizeSimulation(page, 'scanning')
   }, '#app')
   await state('simulation-paused', { viewport: DESKTOP }, async page => {
-    await page.locator('[data-view="storage"]').click()
-    await page.waitForFunction(() => parseFloat(document.querySelector('#vTrack')?.style.width) >= 15)
-    await page.locator('#scanToggle').click()
-    await freeze(page)
+    await stabilizeSimulation(page, 'paused')
   }, '#app')
   await state('simulation-complete', { viewport: DESKTOP, reducedMotion: 'reduce' }, page => freeze(page), '#app')
   await state('mobile-reduced', { viewport: MOBILE, reducedMotion: 'reduce', theme: 'dark' }, page => freeze(page), null)
+  const workflow = async page => {
+    await freeze(page)
+    await page.addStyleTag({ content: '#bar { display:none !important }' })
+  }
+  await state('workflow-mobile-en', { viewport: MOBILE, reducedMotion: 'reduce', path: '/en/' }, workflow, '#how')
+  await state('workflow-mobile-fr', { viewport: MOBILE, reducedMotion: 'reduce', path: '/fr/' }, workflow, '#how')
   return captures
 }
 

@@ -18,7 +18,8 @@ materials were classified rather than silently deleted.
 ## Backup and recovery
 
 Before the moves, a byte-preserving backup was written to
-`/Users/ahmetbasbunar/Developer/Website/_backups/coretend-workspace-20260801/`.
+`_backups/coretend-workspace-20260801/` (workspace-relative, sibling to this
+repository).
 The backup contains the original directories, the rescue report, generated
 cache material, and `SHA256SUMS`. Recovery is a copy-back operation; the active
 repository does not depend on these files.

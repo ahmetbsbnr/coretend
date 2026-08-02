@@ -13,6 +13,10 @@
     { "source": "/support.html", "destination": "/support", "permanent": true },
     { "source": "/legal.html", "destination": "/legal", "permanent": true },
     { "source": "/licenses.html", "destination": "/licenses", "permanent": true },
+    { "source": "/fr/privacy.html", "destination": "/fr/privacy", "permanent": true },
+    { "source": "/fr/support.html", "destination": "/fr/support", "permanent": true },
+    { "source": "/fr/legal.html", "destination": "/fr/legal", "permanent": true },
+    { "source": "/fr/licenses.html", "destination": "/fr/licenses", "permanent": true },
     { "source": "/site", "destination": "/", "permanent": true },
     { "source": "/site/", "destination": "/", "permanent": true },
     { "source": "/site/index.html", "destination": "/", "permanent": true },
@@ -35,7 +39,11 @@
     { "source": "/privacy", "destination": "/privacy.html" },
     { "source": "/support", "destination": "/support.html" },
     { "source": "/legal", "destination": "/legal.html" },
-    { "source": "/licenses", "destination": "/licenses.html" }
+    { "source": "/licenses", "destination": "/licenses.html" },
+    { "source": "/fr/privacy", "destination": "/fr-privacy.html" },
+    { "source": "/fr/support", "destination": "/fr-support.html" },
+    { "source": "/fr/legal", "destination": "/fr-legal.html" },
+    { "source": "/fr/licenses", "destination": "/fr-licenses.html" }
   ],
   "headers": [
     {

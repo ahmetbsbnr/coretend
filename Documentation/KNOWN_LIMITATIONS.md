@@ -1,26 +1,40 @@
 # KNOWN LIMITATIONS
 
-*Last re-verified against a real run: 0.8.1 Final Canonical Audit Resync,
-2026-07-25. Every entry below was re-checked, not carried forward on trust; two
-were found stale and are marked RESOLVED with the evidence that resolved them.*
+*Last re-verified against the v0.9.1-rc.4 release candidate, 2026-08-02.
+Historical descriptions remain below only where they explain a regression gate;
+the bullets at the top describe the current product.*
 
-- Built with CommandLineTools only: ad-hoc signature, no notarization, no UI tests.
+- The public candidate is ad-hoc signed, unsigned by a Developer ID and not
+  notarized. Gatekeeper's rejection is expected and the documented recovery is
+  System Settings → Privacy & Security → Open Anyway.
+- SwiftPM emits `CoreTendUITests` as a unit-test bundle, so its eight
+  `XCUIApplication` contracts skip with an explicit reason. Artifact UI is
+  exercised with the isolated live capture harness; a native Xcode UI-test
+  target remains future work.
 - Cleanup/Smart Care review list caps *display* at 5000 findings (memory bound); totals
   (bytes/count) are computed from the uncapped `ScanEngine` stream, not the capped list —
   regression-tested (`independentConsumersSeeIdenticalTotals`, `ScanEngineTests.swift`).
 - Symlinks are skipped by scans, not followed.
-- Protection (malware scanning) requires ClamAV installed locally; when absent the UI
-  states this honestly rather than pretending to scan.
+- Integrity is a first-party local provenance and login-item inventory. It is
+  not an antivirus scanner and makes no malware-detection claim. The former
+  ClamAV/MalwareEngine integration was removed before rc.4.
 - Privileged helper not shipped (blocked: no Developer ID signing available in this
   environment).
-- **Visual QA capture: PARTIAL_BLOCKED_ENVIRONMENT** (headline corrected in the
-  0.8.1 resync). A real display **is** available and a plain
-  `Scripts/capture.sh` launch capture works; what remains blocked is the
-  module-targeted capture path (intermittent AppleScript `-1719`) and therefore
-  the full FR/EN x light/dark x every-module campaign. The original
-  "no attached display" claim below is **stale as written** and preserved only
-  as the historical record it is, with its own dated updates that already walk
-  it back. Read the 2026-07-24 and 2026-07-25 updates, not the headline.
+- **Visual QA capture: completed for the rc.4 release gate.** The application
+  extracted from the exact candidate DMG was launched against an isolated
+  temporary store and captured across Dashboard, Storage, Space Lens,
+  Duplicates, Applications, Integrity, Activity and Settings in English/dark
+  and French/light. The capture harness also forces appearance only when the
+  two-key test-mode marker validates; normal launches cannot activate it.
+  Applications and Integrity use temporary fixtures in test mode, so the
+  evidence contains no inventory or file data from the build machine. The
+  eight `XCUIApplication` contracts remain explicitly skipped for the
+  SwiftPM-target reason recorded above; the live artifact capture is evidence,
+  not a claim that those contracts ran as native Xcode UI tests.
+
+  The original "no attached display" account below is **historical only**. It
+  explains why the capture harness and its isolation gates exist, but does not
+  describe the rc.4 environment or the completed release evidence.
 
   ~~**No attached display in this sandbox, standing across every session to date
   (v0.3.0 through v0.5.0)**~~: `Scripts/capture.sh` fails headlessly
@@ -64,17 +78,18 @@ were found stale and are marked RESOLVED with the evidence that resolved them.*
   slice. Step 15 status: `READY_FOR_MANUAL_QA`, not
   `FULLY_VISUALLY_VERIFIED` — the mechanism works for a plain launch
   capture, module-targeted capture needs a follow-up debugging session.
-- **RESOLVED (0.8.1 resync, 2026-07-25) — built binary no longer embeds the repo
-  checkout path.** `Scripts/test-distribution.sh` now reports
-  `OK: binary does not contain the repo checkout path`, and an independent check
-  (`strings` on the packaged binary, grepped for the repository root) finds zero
-  occurrences, with no `.build/` absolute path either. The description below is
+- **RESOLVED and hardened (rc.4, 2026-08-02) — built binary discloses neither the
+  repo checkout nor the build account.** `Scripts/package-local.sh` strips
+  Swift's N_OSO/debug records before sealing the bundle, and
+  `Scripts/test-distribution.sh` searches the raw Mach-O for both the checkout
+  and `/Users/<build-account>/`. The exact packaged executable reports zero
+  occurrences. The description below is
   kept because it explains *why* the check exists and must not be deleted as
   "noise" — but the condition it describes is no longer present in the 0.8.1
-  artifacts. It was last observed under the pre-rename checkout path; whether the
-  workspace move, the Swift 6.3.2 toolchain, or `package-local.sh`'s resource
-  copy removed it was not root-caused, so the check stays in place to catch a
-  regression. Historical description follows:
+  artifacts. The 2026-08-02 gate found that release symbol records had
+  reintroduced the source checkout; stripping them before code signing is the
+  root-cause fix and the raw-binary gate catches regression. Historical
+  description follows:
 
   **Built binary embeds the repo checkout's absolute build path as a dead fallback
   string** (SwiftPM limitation, discovered by `Scripts/test-distribution.sh`):
@@ -89,8 +104,8 @@ were found stale and are marked RESOLVED with the evidence that resolved them.*
   checkout location, not `$HOME`. No fix available without moving off SwiftPM
   resource bundles (e.g. an Xcode-project build) or a post-build binary string
   patch, both out of scope for this distribution slice. `test-distribution.sh`
-  reports this as a FAIL rather than hiding it — treat it as a known, low-severity
-  gap, not a green light to claim "no repo-path leakage" in release docs.
+  reported this as a gap at that time; it is not a description of the rc.4
+  artifact.
 
 ## Added by the 0.8.1 Final Canonical Audit Resync (2026-07-25)
 
@@ -132,10 +147,10 @@ were found stale and are marked RESOLVED with the evidence that resolved them.*
   temporary directories; no real failing migration on real user data has ever
   been observed.
 
-- **Manual QA is partially blocked by the environment, not complete.** A real
-  display is available and a plain launch capture works, but the
-  module-targeted capture path (`Scripts/capture.sh <out> "<Sidebar Row>"`)
-  still hits an intermittent AppleScript `-1719` error, and the DMG's saved icon
-  positions need Finder automation this environment refuses. The full
-  FR/EN x light/dark x every-module campaign and interactive VoiceOver passes
-  remain unrun. Status: `PARTIAL_BLOCKED_ENVIRONMENT`.
+- **Historical visual-QA limitation, resolved for rc.4.** Earlier sessions saw
+  intermittent AppleScript `-1719` failures and could not automate Finder.
+  rc.4 no longer relies on Finder/AppleScript for its DMG layout, and its exact
+  extracted application completed the isolated bilingual/light-dark capture
+  matrix described above. A hands-on VoiceOver session remains a manual QA
+  activity; automated Axe, keyboard, landmarks, heading, focus, contrast,
+  reduced-motion and 200%-zoom gates cover the public site.

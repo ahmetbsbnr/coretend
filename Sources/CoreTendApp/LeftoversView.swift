@@ -39,7 +39,9 @@ final class LeftoversViewModel {
         phase = .scanning
         leftovers = []
         selectedPaths = []
-        let discovery = AppDiscovery()
+        let discovery = ApplicationInventoryLocations.resolve(
+            environment: ProcessInfo.processInfo.environment
+        ).discovery
         let found = await Task.detached(priority: .utility) {
             let installed = Set(discovery.discoverApps().compactMap(\.bundleIdentifier))
             return discovery.leftovers(installedBundleIDs: installed)
