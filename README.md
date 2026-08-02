@@ -30,8 +30,8 @@ not the recommended download.
 
 The `v0.9.1-rc.4` direct-distribution build is ad-hoc signed, not Developer ID
 signed, and not notarized. Gatekeeper may block the first launch. Verify the
-published SHA-256, then use **System Settings → Privacy & Security → Open
-Anyway**. Never disable Gatekeeper globally or remove quarantine recursively.
+published SHA-256, then use **System Settings → Privacy & Security → Open Anyway**.
+Never disable Gatekeeper globally or remove quarantine recursively.
 
 Developer ID and notarization are planned for a later release update. CoreTend
 is not advertised as a Mac App Store product; see
