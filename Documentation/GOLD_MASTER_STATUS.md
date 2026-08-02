@@ -191,3 +191,44 @@ truthfully embedded into the commit whose deployment they verify.
 The only intended future distribution work is Developer ID signing, Apple
 notarization and a separately evaluated Mac App Store edition. rc.5 is not
 currently available from the Mac App Store and makes no claim otherwise.
+
+## Final delivery — favicon fix and portfolio sync (2026-08-02)
+
+`/favicon.svg` returning 404 at the root while the canonical asset lived under
+`/assets/brand/` was fixed on `fix/coretend-rc5-favicon` (commit `0a98d46`) and
+merged via PR #10 into `main` at merge commit `3519f8b8c1a67dc4c7c5a4256d47778c9b24459f`.
+CI (build-and-test, distribution-check) and Security were both green on that
+commit. Production now serves `/favicon.svg` and `/favicon.ico` at 200, and the
+root SVG is byte-for-byte (SHA-256) identical to `/assets/brand/favicon.svg`;
+manifest and Apple Touch Icon references are consistent, with no stale links.
+
+A full production route sweep (`/`, `/en`, `/fr`, locale trailing-slash
+normalization, `/privacy`, `/support`, `/legal`, `/licenses`, `/download`,
+`/latest.json`, `/SHA256SUMS`, `/manifest.webmanifest`, `robots.txt`,
+`sitemap.xml`, 404) passed with no redirect loops, no raw `.html` or `/site/`
+exposure, and only rc.5 referenced (no rc.3/rc.4 recommendation, no retired
+Dry Run/ClamAV copy). Real-browser checks confirmed FR/EN, light/dark and
+mobile responsive rendering with a clean console.
+
+The rc.5 client journey was re-run as a control only, against a fresh
+download, without modifying the public artifact: size (4,703,523 bytes) and
+SHA-256 (`b654975770cc1bfeb7e6a4f3cf180653a3182a55f8dc135db2083a72528998eb`)
+matched the published record exactly; `hdiutil imageinfo` and full CRC
+verification passed; the DMG mounted, the app copied out ad-hoc signed
+(`TeamIdentifier=not set`), `spctl` rejected it as expected for an unsigned
+build, and an isolated-HOME launch started and terminated cleanly.
+
+Portfolio PR #10 (`release/coretend-v0.9.1-rc.5`, head `40a6ee08d42bf2d280ac680c112d7de9fabca572`)
+was moved out of draft and merged at `40152d1a97096acb4fe590bd88c9003d4888464a`
+after lint, typecheck, the 50-check static test suite, production build, `npm
+audit` (0 vulnerabilities) and the visual/Axe suite (6 viewports, dark/light,
+Reduced Motion) all passed locally; Vercel preview and production were green.
+Production confirms the EN case study renders the exact rc.5 DMG name and
+checksum. A pre-existing `vercel.json` catch-all redirect (`/projets/:path*` →
+`/#projets`) was found to shadow the French `/projets/coretend` case-study
+route; this predates today's changes, is out of scope for this delivery, and
+has been filed separately rather than fixed here.
+
+Both repositories ended this pass with local `main` fast-forwarded to
+`origin/main`, clean worktrees, and final verified git bundles recorded under
+`_backups/`. No new release, retag, or artifact replacement was performed.
