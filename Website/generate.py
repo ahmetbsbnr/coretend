@@ -444,12 +444,12 @@ HOME_MODULES = [
 
 HOME_PRINCIPLES = [
     {
-        "en": ("Dry run first, always", "Every module runs as a preview by default. "
-               "You see the full list, with sizes and reasons, before a single file "
-               "moves."),
-        "fr": ("Simulation d'abord, toujours", "Chaque module démarre en aperçu par "
-               "défaut. Vous voyez la liste complète, avec tailles et raisons, avant "
-               "qu'un seul fichier ne bouge."),
+        "en": ("Review, then confirm", "Every module shows its findings before an "
+               "action. You review the full selection, with sizes and reasons, then "
+               "confirm before a single file moves."),
+        "fr": ("Vérifier, puis confirmer", "Chaque module présente ses résultats avant "
+               "l’action. Vous relisez toute la sélection, avec tailles et raisons, puis "
+               "confirmez avant qu'un seul fichier ne bouge."),
     },
     {
         "en": ("The Trash, not deletion", "Removals go to the macOS Trash. A mistake "
@@ -553,7 +553,7 @@ HOME_TEXT = {
         "setup_title": "A setup assistant that explains, then asks",
         "setup_body": "The first launch walks through how CoreTend works locally, what "
                       "permissions each feature needs and why, which parts are "
-                      "optional, and what dry run means — then runs a short diagnostic "
+                      "optional, and how explicit confirmation works — then runs a short diagnostic "
                       "and shows you a summary. Nothing is scanned or changed during "
                       "setup.",
         "os_label": "Open source",
@@ -612,8 +612,8 @@ HOME_TEXT = {
         "setup_title": "Un assistant qui explique, puis demande",
         "setup_body": "Le premier lancement présente le fonctionnement local de "
                       "CoreTend, les autorisations dont chaque fonction a besoin et "
-                      "pourquoi, ce qui est facultatif, et ce que signifie la "
-                      "simulation — puis exécute un court diagnostic et affiche un "
+                      "pourquoi, ce qui est facultatif, et comment fonctionne la "
+                      "confirmation explicite — puis exécute un court diagnostic et affiche un "
                       "résumé. Rien n'est analysé ni modifié pendant la configuration.",
         "os_label": "Open source",
         "os_title": "Lisible, compilable, auditable",
@@ -720,8 +720,8 @@ def home_body(l):
          ("Search, filter, inspect in Quick Look or Finder, and keep the suggested copy or override it.",
           "Recherchez, filtrez, inspectez avec Quick Look ou Finder, puis gardez la copie suggeree ou changez le choix.")),
         (("Act", "Agir"),
-         ("Dry run is on by default. Real removals go to the macOS Trash with a local activity record.",
-          "La simulation est active par defaut. Les retraits reels vont dans la Corbeille macOS avec un historique local.")),
+         ("After explicit confirmation, eligible items go to the macOS Trash with a local activity record.",
+          "Après confirmation explicite, les éléments éligibles vont dans la Corbeille macOS avec un historique local.")),
     ]
     step_html = "\n        ".join(
         f'<li data-reveal data-reveal-delay="{i * 70}"><span>{i + 1:02d}</span><h3>{t[0] if en else t[1]}</h3>'
@@ -736,7 +736,7 @@ def home_body(l):
         ("Applications", "caches, preferences, launch items", "caches, preferences, elements de lancement"),
         ("Integrity", "quarantine, signature, Gatekeeper signals", "quarantaine, signature, signaux Gatekeeper"),
         ("Activity", "scans, cleanups, exports, audit trail", "analyses, nettoyages, exports, journal"),
-        ("Settings", "dry run, exclusions, updates, diagnostics", "simulation, exclusions, mises a jour, diagnostic"),
+        ("Settings", "language, exclusions, updates, diagnostics", "langue, exclusions, mises a jour, diagnostic"),
     ]
     module_html = "\n        ".join(
         f'<li data-reveal><h3>{name}</h3><p>{en_text if en else fr_text}</p></li>'
@@ -833,7 +833,7 @@ def home_body(l):
       <ul>
         <li data-reveal><b>{"Local store" if en else "Base locale"}</b><span>~/Library/Application Support/CoreTend</span></li>
         <li data-reveal><b>{"No telemetry endpoint" if en else "Aucun endpoint de telemetrie"}</b><span>{"No account or analytics in app or site." if en else "Aucun compte ni analytique dans l'app ou le site."}</span></li>
-        <li data-reveal><b>{"Reversible removals" if en else "Retraits reversibles"}</b><span>{"Trash first; dry run first." if en else "Corbeille d'abord ; simulation d'abord."}</span></li>
+        <li data-reveal><b>{"Reversible removals" if en else "Retraits reversibles"}</b><span>{"Explicit confirmation; eligible items use Trash." if en else "Confirmation explicite ; Corbeille pour les éléments éligibles."}</span></li>
         <li data-reveal><b>{"Open source" if en else "Open source"}</b><span>Apache-2.0</span></li>
       </ul>
     </div>
@@ -1437,8 +1437,8 @@ authorize this copy of CoreTend only.</p></div>
   <details><summary>Why is this needed?</summary><p>The beta has no Developer
   ID signature and is not notarized. This per-app choice is not a security
   certification. Never disable Gatekeeper or SIP globally.</p></details></li>
-  <li><h2>Start with dry run</h2><p>Read the onboarding, keep dry run enabled,
-  and start Smart Care. A scan previews findings before any approved action.</p></li>
+  <li><h2>Review before acting</h2><p>Read the onboarding and start Smart Care.
+  Review the scan findings and selection before confirming an approved action.</p></li>
 </ol>
 <h2>Optional: verify your download</h2>
 <p>SHA-256 confirms that your file is byte-for-byte the published file. It
@@ -1476,9 +1476,8 @@ ci-dessous autorisent uniquement cette copie de CoreTend.</p></div>
   signature Developer ID et n'est pas notarisée. Ce choix limité à l'app
   n'est pas une certification. Ne désactivez jamais globalement Gatekeeper
   ou SIP.</p></details></li>
-  <li><h2>Commencer en simulation</h2><p>Lisez l'introduction, conservez la
-  simulation activée et lancez Smart Care. L'analyse présente un aperçu avant
-  toute action approuvée.</p></li>
+  <li><h2>Vérifier avant d’agir</h2><p>Lisez l'introduction et lancez Smart Care.
+  Relisez les résultats et la sélection avant de confirmer toute action approuvée.</p></li>
 </ol>
 <h2>Facultatif : vérifier le téléchargement</h2>
 <p>SHA-256 confirme que le fichier est identique à celui publié. Il ne
@@ -2072,9 +2071,12 @@ def write_sitemap():
         f.write(doc)
 
 
-def write_vercel_config():
-    """Hosting config, generated so it cannot contradict the site it serves.
+def write_legacy_vercel_config():
+    """Return the retired site's hosting configuration for archive tooling.
 
+    This function is intentionally not called by ``main``. Production uses
+    ``Website/build.py`` and the reviewed ``Website/vercel.json``; the legacy
+    page generator must never overwrite that canonical deployment contract.
     The security headers are the ones WEBSITE_SECURITY.md specifies. The
     Content-Security-Policy is strict because the site earns it: no JavaScript
     at all, no external origin, and no inline style attributes, so nothing here
@@ -2163,9 +2165,7 @@ def write_vercel_config():
                  "value": "public, max-age=31536000, immutable"}]},
         ],
     }
-    with open(os.path.join(ROOT, "vercel.json"), "w") as f:
-        json.dump(config, f, indent=2)
-        f.write("\n")
+    return config
 
 
 def main():
@@ -2179,9 +2179,8 @@ def main():
                 f.write(html)
     write_robots()
     write_sitemap()
-    write_vercel_config()
     print(f"Generated {len(PAGES)} pages x 2 locales into {ROOT}/en and {ROOT}/fr")
-    print(f"Generated robots.txt, sitemap.xml, vercel.json (indexable={SITE_INDEXABLE})")
+    print(f"Generated legacy robots.txt and sitemap.xml (indexable={SITE_INDEXABLE}); canonical vercel.json left untouched")
 
 
 if __name__ == "__main__":

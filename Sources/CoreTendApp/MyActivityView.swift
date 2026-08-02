@@ -41,22 +41,13 @@ enum ActivityDateRange: String, CaseIterable, Identifiable {
     }
 }
 
-/// Real vs. simulated bytes freed across a set of records — cleanup-kind,
-/// non-dry-run records are the only ones counted as "real" freed space;
-/// dry-run cleanup records are reported separately and never merged in.
+/// Bytes moved to the Trash across cleanup records.
 struct ActivityImpactSummary {
-    let realFreedBytes: Int64
-    let simulatedFreedBytes: Int64
+    let freedBytes: Int64
     let itemCount: Int
 
     init(_ records: [ActivityRecord]) {
-        var real: Int64 = 0
-        var simulated: Int64 = 0
-        for record in records where record.kind == .cleanup {
-            if record.dryRun { simulated += record.bytes } else { real += record.bytes }
-        }
-        realFreedBytes = real
-        simulatedFreedBytes = simulated
+        freedBytes = records.filter { $0.kind == .cleanup }.reduce(0) { $0 + $1.bytes }
         itemCount = records.reduce(0) { $0 + $1.itemCount }
     }
 }
@@ -106,11 +97,11 @@ final class MyActivityViewModel {
     /// CSV of the currently visible (filtered) records — straightforward
     /// text export, no new persistence.
     func exportCSV() -> String {
-        var lines = ["Date,Kind,Summary,Items,Bytes,Simulated"]
+        var lines = ["Date,Kind,Summary,Items,Bytes"]
         let formatter = ISO8601DateFormatter()
         for record in records {
             let summary = record.summary.replacingOccurrences(of: "\"", with: "'")
-            lines.append("\(formatter.string(from: record.date)),\(record.kind.rawValue),\"\(summary)\",\(record.itemCount),\(record.bytes),\(record.dryRun)")
+            lines.append("\(formatter.string(from: record.date)),\(record.kind.rawValue),\"\(summary)\",\(record.itemCount),\(record.bytes)")
         }
         return lines.joined(separator: "\n")
     }
@@ -121,12 +112,12 @@ final class MyActivityViewModel {
     func exportJSON() -> String {
         struct ExportRecord: Encodable {
             let date: String, kind: String, summary: String
-            let itemCount: Int, bytes: Int64, dryRun: Bool
+            let itemCount: Int, bytes: Int64
         }
         let formatter = ISO8601DateFormatter()
         let exportRecords = records.map {
             ExportRecord(date: formatter.string(from: $0.date), kind: $0.kind.rawValue, summary: $0.summary,
-                         itemCount: $0.itemCount, bytes: $0.bytes, dryRun: $0.dryRun)
+                         itemCount: $0.itemCount, bytes: $0.bytes)
         }
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
@@ -251,8 +242,7 @@ struct MyActivityView: View {
 
     private var summaryBar: some View {
         HStack(spacing: MCSpacing.lg) {
-            summaryMetric(label: L("activity.freed_real"), value: mcFormatBytes(model.summary.realFreedBytes), color: MCTheme.success)
-            summaryMetric(label: L("activity.simulated_dryrun"), value: mcFormatBytes(model.summary.simulatedFreedBytes), color: .secondary)
+            summaryMetric(label: L("activity.freed_real"), value: mcFormatBytes(model.summary.freedBytes), color: MCTheme.success)
             summaryMetric(label: L("activity.items"), value: "\(model.summary.itemCount)", color: .primary)
             Spacer()
         }
@@ -299,7 +289,7 @@ private struct ActivityRow: View {
                 Text(record.date.formatted(date: .abbreviated, time: .shortened))
                     .font(.caption).foregroundStyle(.secondary)
                 Text(L("activity.row.detail", record.itemCount, mcFormatBytes(record.bytes),
-                       record.dryRun ? L("activity.row.simulated_suffix") : L("activity.row.real_suffix")))
+                       L("activity.row.real_suffix")))
                     .font(.caption)
                 if record.kind == .restore {
                     Button {
@@ -320,17 +310,17 @@ private struct ActivityRow: View {
                 Text(record.summary)
                 Spacer()
                 if record.kind == .cleanup {
-                    Text(record.dryRun ? L("common.dry_run") : L("activity.completed"))
+                    Text(L("activity.completed"))
                         .font(.caption2.weight(.medium))
                         .padding(.horizontal, MCSpacing.xs).padding(.vertical, MCSpacing.xxs)
-                        .background(record.dryRun ? Color(nsColor: .quaternaryLabelColor) : MCTheme.success.opacity(0.18), in: Capsule())
-                        .foregroundStyle(record.dryRun ? .secondary : MCTheme.success)
+                        .background(MCTheme.success.opacity(0.18), in: Capsule())
+                        .foregroundStyle(MCTheme.success)
                 }
                 Text(mcFormatBytes(record.bytes))
                     .monospacedDigit().foregroundStyle(.secondary)
             }
         }
-        .accessibilityLabel("\(record.summary), \(record.date.formatted(date: .abbreviated, time: .shortened)), \(record.dryRun ? L("activity.row.simulated_a11y") : L("activity.row.real_a11y")), \(mcFormatBytes(record.bytes))")
+        .accessibilityLabel("\(record.summary), \(record.date.formatted(date: .abbreviated, time: .shortened)), \(L("activity.row.real_a11y")), \(mcFormatBytes(record.bytes))")
     }
 
     private func icon(for kind: ActivityRecord.Kind) -> String {

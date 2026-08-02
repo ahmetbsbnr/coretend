@@ -14,7 +14,6 @@ final class SpaceLensViewModel {
     var phase: Phase = .idle
     var root: SpaceNode?
     var pathStack: [SpaceNode] = []     // navigation into subdirectories
-    var dryRun = true
     /// Set only while a delete confirmation sheet is up; nil the rest of the time.
     var pendingDelete: SpaceNode?
     var lastDeleteError: String?
@@ -22,19 +21,8 @@ final class SpaceLensViewModel {
     private var scanTask: Task<Void, Never>?
     private var pauseController: ScanPauseController?
     private var rootURL: URL?
-    private var dryRunDefaultLoaded = false
 
     var current: SpaceNode? { pathStack.last ?? root }
-
-    /// Mirrors every other destructive module's own "dry-run by default"
-    /// setting — without this, Space Lens's delete would silently ignore the
-    /// user's app-wide safety preference.
-    func loadDryRunDefault() async {
-        guard !dryRunDefaultLoaded else { return }
-        dryRunDefaultLoaded = true
-        dryRun = AppEnvironment.dryRunEnabled(
-            fromSetting: (try? await AppEnvironment.shared.store?.setting("dryRunDefault")) ?? nil)
-    }
 
     func start(url: URL) {
         scanTask?.cancel()
@@ -56,7 +44,7 @@ final class SpaceLensViewModel {
                     phase = .ready
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .scan, summary: "Space Lens: \(node.name) — \(mcFormatBytes(node.size))",
-                        itemCount: node.children.count, bytes: node.size, dryRun: true))
+                        itemCount: node.children.count, bytes: node.size))
                     AppEnvironment.shared.recordLocationVisit(path: url.path, bytes: node.size)
                 case .cancelled:
                     isScanPaused = false
@@ -68,8 +56,7 @@ final class SpaceLensViewModel {
 
     /// Re-runs the scan from the same root, preserving the current navigation
     /// depth where possible, so a delete's effect on sizes/listing is real
-    /// rather than a locally-patched guess. Only called after a real (non
-    /// dry-run) delete, since a dry run changes nothing on disk to reflect.
+    /// rather than a locally-patched guess.
     private func rescanPreservingDepth() {
         guard let rootURL else { return }
         let depth = pathStack.count
@@ -135,10 +122,9 @@ final class SpaceLensViewModel {
     func confirmDelete() {
         guard let node = pendingDelete, let rootURL else { return }
         pendingDelete = nil
-        let isDryRun = dryRun
         Task {
             let validator = PathValidator(allowedRoots: [rootURL])
-            let center = SafetyCenter(validator: validator, dryRun: isDryRun, sink: AppEnvironment.shared.store)
+            let center = SafetyCenter(validator: validator, sink: AppEnvironment.shared.store)
             guard let op = try? await center.approve(
                 url: URL(fileURLWithPath: node.path), logicalSize: node.size,
                 ruleID: "spacelens.delete", risk: .medium
@@ -150,11 +136,9 @@ final class SpaceLensViewModel {
             let freed = result.executed.reduce(0) { $0 + $1.logicalSize }
             AppEnvironment.shared.record(ActivityRecord(
                 kind: .cleanup,
-                summary: isDryRun
-                    ? "Space Lens dry run: would free \(mcFormatBytes(freed)) (\(node.name))"
-                    : "Space Lens: moved \(node.name) to Trash (\(mcFormatBytes(freed)))",
-                itemCount: result.executed.count, bytes: freed, dryRun: result.wasDryRun))
-            if !result.executed.isEmpty && !isDryRun {
+                summary: "Space Lens: moved \(node.name) to Trash (\(mcFormatBytes(freed)))",
+                itemCount: result.executed.count, bytes: freed))
+            if !result.executed.isEmpty {
                 rescanPreservingDepth()
             }
         }
@@ -219,14 +203,13 @@ struct SpaceLensView: View {
             }
         }
         .navigationTitle(L("spacelens.title"))
-        .task { await model.loadDryRunDefault() }
         .task { await exclusionsController.load() }
         .confirmationDialog(
             model.pendingDelete.map { L("spacelens.delete.confirm_title", $0.name) } ?? "",
             isPresented: Binding(get: { model.pendingDelete != nil }, set: { if !$0 { model.pendingDelete = nil } }),
             presenting: model.pendingDelete
         ) { node in
-            Button(model.dryRun ? L("spacelens.delete.confirm_dryrun") : L("spacelens.delete.confirm_action"), role: .destructive) {
+            Button(L("spacelens.delete.confirm_action"), role: .destructive) {
                 model.confirmDelete()
             }
             Button(L("common.cancel"), role: .cancel) { model.pendingDelete = nil }
@@ -383,9 +366,6 @@ struct SpaceLensView: View {
                         .buttonStyle(.link)
                 }
                 Spacer()
-                Toggle(L("common.dry_run"), isOn: Binding(get: { model.dryRun }, set: { model.dryRun = $0 }))
-                    .toggleStyle(.checkbox)
-                    .help(L("spacelens.dryrun.help"))
                 Text(mcFormatBytes(model.current?.size ?? 0))
                     .font(MCFont.cardTitle).monospacedDigit()
                 Button(L("spacelens.new_scan")) { model.phase = .idle }

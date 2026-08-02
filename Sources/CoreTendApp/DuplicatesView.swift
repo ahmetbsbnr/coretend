@@ -15,13 +15,12 @@ private struct DupMember: Identifiable {
 @MainActor
 @Observable
 final class DuplicatesViewModel {
-    enum Phase: Equatable { case idle, scanning(processed: Int, total: Int), results, empty, executing, finished(freed: Int64, dryRun: Bool) }
+    enum Phase: Equatable { case idle, scanning(processed: Int, total: Int), results, empty, executing, finished(freed: Int64) }
 
     var phase: Phase = .idle
     var groups: [DuplicateGroup] = []
     var selectedPaths: Set<String> = []   // paths selected for removal
     var previewURL: URL?
-    var dryRun = true
     var searchText = ""
     var selectedVolumeID: String?
     var isScanPaused = false
@@ -97,7 +96,7 @@ final class DuplicatesViewModel {
                     phase = groups.isEmpty ? .empty : .results
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .scan, summary: "Duplicate scan: \(count) groups",
-                        itemCount: count, bytes: wasted, dryRun: true))
+                        itemCount: count, bytes: wasted))
                 case .cancelled:
                     isScanPaused = false
                     phase = groups.isEmpty ? .idle : .results
@@ -142,10 +141,9 @@ final class DuplicatesViewModel {
         let toRemove = groups.flatMap { group in
             group.urls.filter { selectedPaths.contains($0.path) }.map { ($0, group.fileSize) }
         }
-        let isDryRun = dryRun
         let roots = scannedRoots
         Task {
-            let center = SafetyCenter(validator: PathValidator(allowedRoots: roots), dryRun: isDryRun, sink: AppEnvironment.shared.store)
+            let center = SafetyCenter(validator: PathValidator(allowedRoots: roots), sink: AppEnvironment.shared.store)
             var approved: [ApprovedFileOperation] = []
             for (url, size) in toRemove {
                 if let op = try? await center.approve(url: url, logicalSize: size,
@@ -155,13 +153,11 @@ final class DuplicatesViewModel {
             }
             let result = await center.execute(approved)
             let freed = result.executed.reduce(0) { $0 + $1.logicalSize }
-            phase = .finished(freed: freed, dryRun: result.wasDryRun)
+            phase = .finished(freed: freed)
             AppEnvironment.shared.record(ActivityRecord(
                 kind: .cleanup,
-                summary: result.wasDryRun
-                    ? "Duplicates dry run: \(result.executed.count) copies"
-                    : "Moved \(result.executed.count) duplicate copies to Trash",
-                itemCount: result.executed.count, bytes: freed, dryRun: result.wasDryRun))
+                summary: "Moved \(result.executed.count) duplicate copies to Trash",
+                itemCount: result.executed.count, bytes: freed))
         }
     }
 
@@ -194,7 +190,7 @@ final class DuplicatesViewModel {
         exportError = nil
         AppEnvironment.shared.record(ActivityRecord(
             kind: .scan, summary: "Duplicate report exported",
-            itemCount: filteredGroups.count, bytes: selectedBytes, dryRun: true))
+            itemCount: filteredGroups.count, bytes: selectedBytes))
     }
 
     func recommendationText(for url: URL, in group: DuplicateGroup, language: AppLanguage? = nil) -> String {
@@ -218,6 +214,7 @@ final class DuplicatesViewModel {
 
 struct DuplicatesView: View {
     @State private var model = DuplicatesViewModel()
+    @State private var showMoveConfirmation = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -226,11 +223,23 @@ struct DuplicatesView: View {
             case let .scanning(processed, total): scanningView(processed, total)
             case .empty: emptyView
             case .results, .executing: resultsView
-            case let .finished(freed, dryRun): finishedView(freed, dryRun)
+            case let .finished(freed): finishedView(freed)
             }
         }
         .navigationTitle(L("module.duplicates"))
         .accessibilityIdentifier("duplicates.root")
+        .confirmationDialog(
+            L("common.trash_confirm.title"),
+            isPresented: $showMoveConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(L("common.trash_confirm.action"), role: .destructive) {
+                model.removeSelected()
+            }
+            Button(L("common.cancel"), role: .cancel) {}
+        } message: {
+            Text(L("common.trash_confirm.message"))
+        }
     }
 
     private var idleView: some View {
@@ -285,7 +294,6 @@ struct DuplicatesView: View {
                 Text(L("dupes.results.summary", model.groups.count, mcFormatBytes(model.selectedBytes), mcFormatBytes(model.wastedBytes)))
                     .font(MCFont.cardTitle)
                 Spacer()
-                Toggle(L("common.dry_run"), isOn: $model.dryRun).toggleStyle(.switch)
                 Button {
                     exportResults()
                 } label: {
@@ -293,8 +301,8 @@ struct DuplicatesView: View {
                 }
                 .disabled(model.filteredGroups.isEmpty)
                 .accessibilityIdentifier("duplicates.results.export")
-                Button(model.dryRun ? L("leftovers.simulate") : L("dupes.move_to_trash")) {
-                    model.removeSelected()
+                Button(L("dupes.move_to_trash")) {
+                    showMoveConfirmation = true
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(model.selectedPaths.isEmpty || model.phase == .executing)
@@ -392,11 +400,10 @@ struct DuplicatesView: View {
         }
     }
 
-    private func finishedView(_ freed: Int64, _ dryRun: Bool) -> some View {
+    private func finishedView(_ freed: Int64) -> some View {
         MCEmptyState(
             icon: "checkmark.seal",
-            title: dryRun ? L("leftovers.finished.dryrun", mcFormatBytes(freed))
-                          : L("leftovers.finished.moved", mcFormatBytes(freed)),
+            title: L("leftovers.finished.moved", mcFormatBytes(freed)),
             message: "", iconColor: MCTheme.success,
             actionTitle: L("smartcare.scan_again")) { model.start() }
     }

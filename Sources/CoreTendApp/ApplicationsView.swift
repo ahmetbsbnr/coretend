@@ -183,7 +183,6 @@ final class ApplicationsViewModel {
     var associated: [AssociatedItem] = []
     var selectedAssociatedPaths: Set<String> = []
     var uninstallResult: String?
-    var dryRun = true
     var grouping: AppGrouping = .none
 
     private let discovery: AppDiscovery
@@ -237,7 +236,7 @@ final class ApplicationsViewModel {
         allowedRoots.append(home.appendingPathComponent("Library"))
         allowedRoots.append(URL(fileURLWithPath: "/Library/LaunchAgents"))
         allowedRoots.append(URL(fileURLWithPath: "/Library/LaunchDaemons"))
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: allowedRoots), dryRun: dryRun, sink: AppEnvironment.shared.store)
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: allowedRoots), sink: AppEnvironment.shared.store)
         var approved: [ApprovedFileOperation] = []
         if let op = try? await center.approve(url: app.path, logicalSize: app.sizeBytes,
                                               ruleID: "apps.uninstall", risk: .medium) {
@@ -251,14 +250,12 @@ final class ApplicationsViewModel {
         }
         let result = await center.execute(approved)
         let freed = result.executed.reduce(0) { $0 + $1.logicalSize }
-        uninstallResult = result.wasDryRun
-            ? L("apps.uninstall.dryrun_result", result.executed.count, mcFormatBytes(freed))
-            : L("apps.uninstall.result", result.executed.count, mcFormatBytes(freed))
+        uninstallResult = L("apps.uninstall.result", result.executed.count, mcFormatBytes(freed))
         AppEnvironment.shared.record(ActivityRecord(
             kind: .cleanup,
-            summary: "\(result.wasDryRun ? "Dry run uninstall" : "Uninstalled") \(app.name)",
-            itemCount: result.executed.count, bytes: freed, dryRun: result.wasDryRun))
-        if !result.wasDryRun { await load() }
+            summary: "Uninstalled \(app.name)",
+            itemCount: result.executed.count, bytes: freed))
+        await load()
     }
 }
 
@@ -280,6 +277,7 @@ struct ApplicationsView: View {
 
 struct InstalledAppsView: View {
     @State private var model = ApplicationsViewModel()
+    @State private var showUninstallConfirmation = false
     @Namespace private var rowTransition
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -291,6 +289,18 @@ struct InstalledAppsView: View {
                 .frame(minWidth: 360, maxWidth: .infinity, maxHeight: .infinity)
         }
         .task { await model.load() }
+        .confirmationDialog(
+            L("apps.uninstall_confirm.title"),
+            isPresented: $showUninstallConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(L("apps.uninstall"), role: .destructive) {
+                Task { await model.uninstall() }
+            }
+            Button(L("common.cancel"), role: .cancel) {}
+        } message: {
+            Text(L("apps.uninstall_confirm.message"))
+        }
     }
 
     private var appList: some View {
@@ -433,9 +443,8 @@ struct InstalledAppsView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack {
-                        Toggle(L("common.dry_run"), isOn: $model.dryRun).toggleStyle(.switch)
-                        Button(model.dryRun ? L("apps.simulate_uninstall") : L("apps.uninstall"), role: .destructive) {
-                            Task { await model.uninstall() }
+                        Button(L("apps.uninstall"), role: .destructive) {
+                            showUninstallConfirmation = true
                         }
                         .buttonStyle(.borderedProminent)
                         .accessibilityIdentifier("applications.uninstall")

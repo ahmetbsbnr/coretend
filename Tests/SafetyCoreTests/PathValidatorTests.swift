@@ -149,23 +149,22 @@ struct SafetyCenterTests {
         try? FileManager.default.removeItem(at: tempRoot)
     }
 
-    @Test func dryRunDoesNotDelete() async throws {
+    @Test func confirmedExecutionRemovesOriginalPath() async throws {
         defer { cleanup() }
         let file = tempRoot.appendingPathComponent("victim.txt")
         try Data("data".utf8).write(to: file)
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), dryRun: true)
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]))
         let op = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
         let result = await center.execute([op])
-        #expect(result.wasDryRun)
         #expect(result.executed.count == 1)
-        #expect(FileManager.default.fileExists(atPath: file.path))
+        #expect(!FileManager.default.fileExists(atPath: file.path))
     }
 
     @Test func vanishedFileSkippedAtExecution() async throws {
         defer { cleanup() }
         let file = tempRoot.appendingPathComponent("gone.txt")
         try Data("data".utf8).write(to: file)
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), dryRun: true)
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]))
         let op = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
         try FileManager.default.removeItem(at: file)
         let result = await center.execute([op])
@@ -177,7 +176,7 @@ struct SafetyCenterTests {
         defer { cleanup() }
         let file = tempRoot.appendingPathComponent("swap.txt")
         try Data("data".utf8).write(to: file)
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), dryRun: false)
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]))
         let op = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
         // Replace the file with a symlink pointing outside the allowlist.
         let outside = URL(fileURLWithPath: NSTemporaryDirectory())
@@ -189,6 +188,52 @@ struct SafetyCenterTests {
         let result = await center.execute([op])
         #expect(result.executed.isEmpty, "swapped symlink must be skipped")
         #expect(FileManager.default.fileExists(atPath: outside.path))
+    }
+
+    @Test func emptyApprovedBatchDoesNothing() async {
+        defer { cleanup() }
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]))
+        let result = await center.execute([])
+        #expect(result.executed.isEmpty)
+        #expect(result.skipped.isEmpty)
+    }
+
+    @Test func confirmedBatchMovesEveryValidOriginal() async throws {
+        defer { cleanup() }
+        let first = tempRoot.appendingPathComponent("first.txt")
+        let second = tempRoot.appendingPathComponent("second.txt")
+        try Data("one".utf8).write(to: first)
+        try Data("two".utf8).write(to: second)
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]))
+        let operations = try await [first, second].asyncMap { file in
+            try await center.approve(url: file, logicalSize: 3, ruleID: "test", risk: .low)
+        }
+        let result = await center.execute(operations)
+        #expect(result.executed.count == 2)
+        #expect(result.skipped.isEmpty)
+        #expect(!FileManager.default.fileExists(atPath: first.path))
+        #expect(!FileManager.default.fileExists(atPath: second.path))
+    }
+
+    @Test func repeatedApprovedPathExecutesOnceThenSkips() async throws {
+        defer { cleanup() }
+        let file = tempRoot.appendingPathComponent("single.txt")
+        try Data("data".utf8).write(to: file)
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]))
+        let first = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
+        let second = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
+        let result = await center.execute([first, second])
+        #expect(result.executed.count == 1)
+        #expect(result.skipped.count == 1)
+    }
+}
+
+private extension Array {
+    func asyncMap<T>(_ transform: (Element) async throws -> T) async rethrows -> [T] {
+        var values: [T] = []
+        values.reserveCapacity(count)
+        for element in self { values.append(try await transform(element)) }
+        return values
     }
 }
 
@@ -209,36 +254,36 @@ struct SafetyCenterAuditSinkTests {
         try? FileManager.default.removeItem(at: tempRoot)
     }
 
-    @Test func dryRunEmitsApprovedThenDryRunNeverExecuted() async throws {
+    @Test func executionEmitsApprovedThenExecuted() async throws {
         defer { cleanup() }
         let file = tempRoot.appendingPathComponent("victim.txt")
         try Data("data".utf8).write(to: file)
         let sink = MockAuditSink()
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), dryRun: true, sink: sink)
-        let op = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
-        _ = await center.execute([op])
-        let stages = await sink.events.map(\.stage)
-        #expect(stages == [.approved, .dryRun])
-        #expect(!stages.contains(.executed), "a dry run must never be recorded as executed")
-    }
-
-    @Test func realExecutionEmitsExecutedNotDryRun() async throws {
-        defer { cleanup() }
-        let file = tempRoot.appendingPathComponent("victim.txt")
-        try Data("data".utf8).write(to: file)
-        let sink = MockAuditSink()
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), dryRun: false, sink: sink)
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), sink: sink)
         let op = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
         _ = await center.execute([op])
         let stages = await sink.events.map(\.stage)
         #expect(stages == [.approved, .executed])
-        #expect(!stages.contains(.dryRun))
+        #expect(!FileManager.default.fileExists(atPath: file.path))
+    }
+
+    @Test func everyApprovedOperationHasOneTerminalEvent() async throws {
+        defer { cleanup() }
+        let file = tempRoot.appendingPathComponent("victim.txt")
+        try Data("data".utf8).write(to: file)
+        let sink = MockAuditSink()
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), sink: sink)
+        let op = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
+        _ = await center.execute([op])
+        let stages = await sink.events.map(\.stage)
+        #expect(stages == [.approved, .executed])
+        #expect(stages.filter { $0 == .executed }.count == 1)
     }
 
     @Test func invalidPathEmitsErrorEvent() async throws {
         defer { cleanup() }
         let sink = MockAuditSink()
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), dryRun: true, sink: sink)
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), sink: sink)
         _ = try? await center.approve(url: URL(fileURLWithPath: "/System/Library"), logicalSize: 0, ruleID: "test", risk: .low)
         let events = await sink.events
         #expect(events.count == 1)
@@ -250,7 +295,7 @@ struct SafetyCenterAuditSinkTests {
         let file = tempRoot.appendingPathComponent("gone.txt")
         try Data("data".utf8).write(to: file)
         let sink = MockAuditSink()
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), dryRun: true, sink: sink)
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), sink: sink)
         let op = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
         try FileManager.default.removeItem(at: file)
         _ = await center.execute([op])

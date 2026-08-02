@@ -1,7 +1,7 @@
 # CoreTend product demo fixture
 
 `coretend-product.json` is the canonical, versioned example-data fixture for
-product simulations, controlled screenshots, portfolio media and UI tests that
+interactive previews, controlled screenshots, portfolio media and UI tests that
 need deterministic content.
 
 The fixture is deliberately not a release manifest and none of its sizes,
@@ -25,8 +25,8 @@ All byte values are integers. Aggregate values are exact sums:
   leftover entries.
 - Integrity totals only the example Download-provenance rows; notarization is
   explicitly `not-inspected` because the real app does not determine it.
-- Activity totals all records and separates real cleanup bytes from simulated
-  cleanup bytes.
+- Activity totals all records and reports only bytes moved by completed cleanup
+  actions.
 
 Validate the canonical fixture:
 
