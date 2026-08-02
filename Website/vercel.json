@@ -25,7 +25,7 @@
     { "source": "/fr.html", "destination": "/fr", "permanent": true },
     {
       "source": "/download",
-      "destination": "https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.4/CoreTend-0.9.1-rc.4-arm64-unsigned.dmg",
+      "destination": "https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.5/CoreTend-0.9.1-rc.5-arm64-unsigned.dmg",
       "permanent": false
     }
   ],
