@@ -128,8 +128,12 @@ final class CoreTendUITests: XCTestCase {
     }
 
     private func launchApp(onboardingDone: Bool = true, locale: String? = nil, storePath: String? = nil) throws -> XCUIApplication {
-        guard let rawPath = ProcessInfo.processInfo.environment["CORETEND_UI_APP_PATH"],
-              !rawPath.isEmpty else {
+        let environment = ProcessInfo.processInfo.environment
+        guard environment["CORETEND_XCUI_UI_TEST_BUNDLE"] == "1" else {
+            throw XCTSkip("SwiftPM emits CoreTendUITests as a unit-test bundle; XCUIApplication requires a native Xcode UI-test target. Artifact UI is verified with the isolated capture harness.")
+        }
+        guard let rawPath = environment["CORETEND_UI_APP_PATH"],
+              !rawPath.isEmpty, FileManager.default.fileExists(atPath: rawPath) else {
             throw XCTSkip("Set CORETEND_UI_APP_PATH to a built CoreTend.app for XCUIAutomation.")
         }
 
