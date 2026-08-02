@@ -69,6 +69,7 @@ const INFO_ROUTES = [
   '/fr/privacy', '/fr/support', '/fr/legal', '/fr/licenses',
 ]
 const REQUIRED_ASSETS = [
+  '/favicon.svg',
   '/favicon.ico',
   '/manifest.webmanifest',
   '/robots.txt',
@@ -743,6 +744,11 @@ await gate('favicons preserve the complete centered CoreTend mark at every size'
   const context = await browser.newContext({ reducedMotion: 'reduce' })
   const page = await context.newPage()
   await page.goto(`${origin}/privacy`)
+  const [rootSvg, canonicalSvg] = await Promise.all([
+    page.evaluate(() => fetch('/favicon.svg').then(response => response.text())),
+    page.evaluate(() => fetch('/assets/brand/favicon.svg').then(response => response.text())),
+  ])
+  assert.equal(rootSvg, canonicalSvg, 'root favicon.svg diverges from the canonical brand asset')
   const records = await page.evaluate(async sizes => {
     const result = []
     for (const size of sizes) {
