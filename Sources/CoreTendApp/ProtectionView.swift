@@ -1,6 +1,45 @@
 import SwiftUI
 import IntegrityCore
 import DesignSystem
+import Persistence
+
+/// Resolves every filesystem location read by Integrity. A normal launch uses
+/// the real macOS locations. A test launch may only use a validated temporary
+/// store root; if that validation fails, Integrity reads nothing rather than
+/// silently falling back to personal Downloads or login items.
+struct IntegrityScanLocations {
+    let downloads: URL?
+    let loginItems: [(URL, LoginItem.Scope)]
+
+    static func resolve(
+        environment: [String: String],
+        home: URL = FileManager.default.homeDirectoryForCurrentUser
+    ) -> IntegrityScanLocations {
+        if TestStoreOverride.isTestMarkerSet(environment: environment) {
+            guard let temporaryRoot = TestStoreOverride.resolve(environment: environment).directory else {
+                return IntegrityScanLocations(downloads: nil, loginItems: [])
+            }
+            let fixtures = temporaryRoot.appendingPathComponent("IntegrityFixtures", isDirectory: true)
+            return IntegrityScanLocations(
+                downloads: fixtures.appendingPathComponent("Downloads", isDirectory: true),
+                loginItems: [
+                    (fixtures.appendingPathComponent("UserLaunchAgents", isDirectory: true), .userAgent),
+                    (fixtures.appendingPathComponent("GlobalLaunchAgents", isDirectory: true), .globalAgent),
+                    (fixtures.appendingPathComponent("GlobalLaunchDaemons", isDirectory: true), .globalDaemon),
+                ]
+            )
+        }
+
+        return IntegrityScanLocations(
+            downloads: home.appendingPathComponent("Downloads", isDirectory: true),
+            loginItems: [
+                (home.appendingPathComponent("Library/LaunchAgents", isDirectory: true), .userAgent),
+                (URL(fileURLWithPath: "/Library/LaunchAgents", isDirectory: true), .globalAgent),
+                (URL(fileURLWithPath: "/Library/LaunchDaemons", isDirectory: true), .globalDaemon),
+            ]
+        )
+    }
+}
 
 @MainActor
 @Observable
@@ -12,9 +51,9 @@ final class IntegrityViewModel {
 
     func refresh() async {
         isLoading = true
-        let home = FileManager.default.homeDirectoryForCurrentUser
-        downloads = ProvenanceScanner.scan(folder: home.appendingPathComponent("Downloads"))
-        loginItems = LoginItemScanner.scan()
+        let locations = IntegrityScanLocations.resolve(environment: ProcessInfo.processInfo.environment)
+        downloads = locations.downloads.map { ProvenanceScanner.scan(folder: $0) } ?? []
+        loginItems = LoginItemScanner.scan(locations: locations.loginItems)
         isLoading = false
     }
 
