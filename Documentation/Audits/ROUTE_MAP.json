@@ -10,17 +10,17 @@
       "destination": ""
     },
     {
-      "route": "/en/",
+      "route": "/en",
       "status": 200,
-      "canonical": "https://coretend.ahmetbsbnr.com/en/",
+      "canonical": "https://coretend.ahmetbsbnr.com/en",
       "language": "en",
       "source": "en-route.html",
       "destination": ""
     },
     {
-      "route": "/fr/",
+      "route": "/fr",
       "status": 200,
-      "canonical": "https://coretend.ahmetbsbnr.com/fr/",
+      "canonical": "https://coretend.ahmetbsbnr.com/fr",
       "language": "fr",
       "source": "fr-route.html",
       "destination": ""
@@ -74,20 +74,20 @@
       "destination": "https://coretend.ahmetbsbnr.com/"
     },
     {
-      "route": "/en",
+      "route": "/en/",
       "status": 308,
       "canonical": "",
       "language": "",
       "source": "redirect rule",
-      "destination": "https://coretend.ahmetbsbnr.com/en/"
+      "destination": "https://coretend.ahmetbsbnr.com/en"
     },
     {
-      "route": "/fr",
+      "route": "/fr/",
       "status": 308,
       "canonical": "",
       "language": "",
       "source": "redirect rule",
-      "destination": "https://coretend.ahmetbsbnr.com/fr/"
+      "destination": "https://coretend.ahmetbsbnr.com/fr"
     },
     {
       "route": "/en/index.html",
@@ -95,7 +95,7 @@
       "canonical": "",
       "language": "",
       "source": "redirect rule",
-      "destination": "https://coretend.ahmetbsbnr.com/en/"
+      "destination": "https://coretend.ahmetbsbnr.com/en"
     },
     {
       "route": "/fr/index.html",
@@ -103,7 +103,7 @@
       "canonical": "",
       "language": "",
       "source": "redirect rule",
-      "destination": "https://coretend.ahmetbsbnr.com/fr/"
+      "destination": "https://coretend.ahmetbsbnr.com/fr"
     },
     {
       "route": "/privacy.html",
@@ -191,7 +191,7 @@
       "canonical": "",
       "language": "",
       "source": "redirect rule",
-      "destination": "https://coretend.ahmetbsbnr.com/en/"
+      "destination": "https://coretend.ahmetbsbnr.com/en"
     },
     {
       "route": "/fr.html",
@@ -199,7 +199,7 @@
       "canonical": "",
       "language": "",
       "source": "redirect rule",
-      "destination": "https://coretend.ahmetbsbnr.com/fr/"
+      "destination": "https://coretend.ahmetbsbnr.com/fr"
     },
     {
       "route": "/en/obsolete.html",

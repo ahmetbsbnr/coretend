@@ -744,6 +744,13 @@ def copy_assets(stage: Path) -> None:
 
 
 def write_favicon(stage: Path) -> None:
+    # Keep the conventional root URL available for browsers, bookmarks and
+    # crawlers that request it directly instead of following the document's
+    # versioned asset link. The bytes remain owned by the canonical brand
+    # asset, so the two URLs cannot drift.
+    (stage / "favicon.svg").write_bytes(
+        (SITE_ROOT / "assets" / "brand" / "favicon.svg").read_bytes()
+    )
     entries = []
     for size in (16, 32):
         png = (SITE_ROOT / "assets" / "brand" / f"favicon-v2-{size}.png").read_bytes()
