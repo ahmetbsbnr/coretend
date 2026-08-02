@@ -3,8 +3,8 @@
 
 This is deliberately an offline gate.  The tracked configuration records what
 GitHub serves; this script turns that reviewed record into the two small files
-the website and updater may publish.  The currently published rc.3 evidence is
-pinned below.  A future, unpinned release must be accompanied by both local
+the website and updater may publish.  Independently verified public-release
+evidence is pinned below.  A future, unpinned release must be accompanied by both local
 artifacts so their bytes, sizes, and SHA-256 values can be checked before any
 output is written.
 """
@@ -31,10 +31,10 @@ REPOSITORY_URL = "https://github.com/ahmetbsbnr/coretend"
 SUPPORTED_ARCHITECTURE = "arm64"
 SUPPORTED_MINIMUM_MACOS = "14.0"
 
-# Independent audit evidence for the release that was publicly inspected on
-# 2026-08-01.  These values are validation pins, not a second source used to
-# generate output.  Changing the tracked manifest alone therefore cannot make
-# a different rc.3 checksum public.
+# Independent audit evidence for public assets downloaded and inspected after
+# publication. These values are validation pins, not a second source used to
+# generate output. Changing the tracked manifest alone therefore cannot make
+# an unaudited checksum public.
 PINNED_RELEASE_EVIDENCE: Mapping[str, Mapping[str, Mapping[str, Any]]] = {
     "0.9.1-rc.3": {
         "dmg": {
@@ -45,7 +45,17 @@ PINNED_RELEASE_EVIDENCE: Mapping[str, Mapping[str, Mapping[str, Any]]] = {
             "sha256": "28114f0a352abe340bb83cd61c84dedcb3cb0b8e031a12ae7a1a4e306e4db173",
             "size": 2_828_017,
         },
-    }
+    },
+    "0.9.1-rc.4": {
+        "dmg": {
+            "sha256": "f321b2ca801d5815163ce89eeb68a4957a451c054693c0a12e064f35b639b4fe",
+            "size": 4_726_227,
+        },
+        "zip": {
+            "sha256": "308164d0f8d743fabaf757098e42a2345d00a78c71e13ae35ecaacdc8ec28ddc",
+            "size": 2_874_871,
+        },
+    },
 }
 
 ALLOWED_SOURCE_KEYS = {

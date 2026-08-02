@@ -137,6 +137,23 @@ PY
   && ok "template holds only hand-authored fields" \
   || bad "$TEMPLATE_VIOLATIONS"
 
+echo "== resolved release limitations cannot return to the template =="
+STALE_LIMITATIONS=$(/usr/bin/python3 - <<'PY'
+import json
+limitations = "\n".join(json.load(open("Release/latest.template.json")).get("knownLimitations", []))
+for stale in (
+    "no saved icon positions",
+    "full visual-QA capture campaign could not be run",
+    "Living System background",
+):
+    if stale.casefold() in limitations.casefold():
+        print(stale)
+PY
+)
+[ -z "$STALE_LIMITATIONS" ] \
+  && ok "template does not re-open resolved rc.4 packaging or visual gaps" \
+  || bad "template still claims resolved limitation(s): $STALE_LIMITATIONS"
+
 echo "== generated manifest records real provenance =="
 MANIFEST_SOURCE_COMMIT=$(json_get Release/latest.json sourceCommit)
 MANIFEST_TREE_STATE=$(json_get Release/latest.json treeState)
