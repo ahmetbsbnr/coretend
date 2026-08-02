@@ -55,19 +55,6 @@
       "status": "VERIFIED_COMPLETE"
     },
     {
-      "id": "dryRunDefault",
-      "label": "Dry run by default",
-      "default": "true",
-      "storage": "Persistence Store settings table (key/value)",
-      "type": "Bool (stored as \"true\"/\"false\")",
-      "consumer": "CleanupView.swift, SmartCareView.swift (via AppEnvironment.dryRunEnabled), SettingsView.swift toggle",
-      "effect": "Controls whether Cleanup and Smart Care start in dry-run (preview) mode instead of acting.",
-      "restartRequired": "no (loaded on view appear)",
-      "availability": "always",
-      "test": "AppEnvironmentDryRunTests, generate-settings-matrix.py --check (repository-doctor gate)",
-      "status": "VERIFIED_COMPLETE"
-    },
-    {
       "id": "exclusions",
       "label": "Excluded paths",
       "default": "[] (empty)",
@@ -87,7 +74,7 @@
       "storage": "Persistence Store settings table (key/value)",
       "type": "String (recommended/cautious/custom)",
       "consumer": "OnboardingView.swift (persists the first-run wizard profile choice)",
-      "effect": "Records which security profile the user picked at first run. Informational; the only live knob a profile sets is dryRunDefault.",
+      "effect": "Records which security profile the user picked at first run. Informational; every profile keeps the fixed Trash, protected-root and explicit-confirmation safety posture.",
       "restartRequired": "no",
       "availability": "always",
       "test": "OnboardingLogicTests (profile→config mapping), generate-settings-matrix.py --check (repository-doctor gate)",

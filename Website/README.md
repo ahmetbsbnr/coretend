@@ -1,46 +1,39 @@
 # Website (dev notes)
 
-Static, bilingual (en/fr) site for CoreTend. Plain HTML/CSS, one
-generator script, no framework, no backend, no database, no analytics.
+Static, bilingual (en/fr) site for CoreTend. Plain HTML/CSS, no framework,
+no backend, no database, no analytics.
 
 ## Build
 
 ```
-cd Website
-python3 generate.py
+python3 Website/build.py --output Website/dist
 ```
 
-Regenerates `en/*.html` and `fr/*.html` from the content tables in
-`generate.py`. Output is committed static HTML — there is no separate
-"production build" step; the generated files are what gets served.
+`index.html` is the visual source of truth and `build.py` creates the isolated,
+gitignored `dist/` directory deployed by Vercel. `generate.py` and the tracked
+`en/` and `fr/` trees are retained only for legacy media/client-journey gates;
+that generator never owns or rewrites the production Vercel configuration.
 
 ## Local preview
 
 ```
-cd Website
-python3 -m http.server 8791
-# open http://localhost:8791/en/index.html
+python3 Website/build.py --output Website/dist
+python3 -m http.server 8791 --directory Website/dist
+# open http://localhost:8791/en
 ```
 
-## Known placeholders — must not ship to production
+## Public release data
 
-- The homepage screenshot uses a labeled `.screenshot-placeholder` box, not
-  a real screenshot (this dev environment has no attached display to
-  capture one). Replace with a real screenshot before any production
-  deploy.
-- Legal/contact/domain values are no longer placeholders. `generate.py`
-  reads `Configuration/PublicIdentity.example.json` and overlays the
-  gitignored `Configuration/PublicIdentity.local.json`, which supplies the
-  real publisher of record, security-reporting channel, repository URL and
-  domain. `legalAddress` is deliberately `null` (LCEN Art. 6 III-2) and the
-  page discloses the omission.
-- If `PublicIdentity.local.json` is missing, the site regenerates with
-  literal `SOMETHING_TO_DEFINE` tokens inside a `placeholder-token` span.
-  That is the intended failure mode, not a bug —
-  `Scripts/check-placeholders.sh` scans the tracked `Website/` HTML and will
-  catch it. Resolutions are recorded in
-  `Documentation/PUBLICATION_PLACEHOLDERS.md`.
-- The Download page intentionally shows no real release artifact.
+`Configuration/published-release.json` is the only reviewed public-release
+record. `build.py` derives the Download UI, `/download`, `latest.json`,
+`SHA256SUMS`, Support version and bilingual page copy from it. Keep that record
+on the currently verified public release until a successor asset has been
+published, downloaded and hash-checked.
+
+`Scripts/check-placeholders.sh` and the isolated site gate reject unresolved
+identity tokens. The visual regression gate records 79 reviewed fingerprints;
+use `node Scripts/visual/capture.mjs --capture-only` for inspection before any
+intentional baseline update.
 
 See `Documentation/WEBSITE_ARCHITECTURE.md`, `WEBSITE_SECURITY.md`,
 `WEBSITE_PRIVACY.md`, and `WEBSITE_DEPLOYMENT.md` for the rest.

@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## 0.9.1-rc.5 — 2026-08-02 « Review and Confirm »
+
+Supersedes rc.4 without changing its tag or published artifacts.
+
+- feat(safety): removes the former Dry Run product mode from SafetyCore,
+  destructive views, Settings, onboarding, activity exports, localization and
+  product fixtures. Scanning remains read-only; eligible actions require a
+  reviewed selection and explicit confirmation, then use the macOS Trash.
+- feat(persistence): appends migration v4 to remove the retired setting. Old
+  storage fields remain only for downgrade/data compatibility and are hidden
+  from current reads.
+- fix(site): removes the obsolete mode from current public copy and demo data,
+  keeps release facts generated from the canonical public-release record, and
+  normalizes `/en` and `/fr` without multi-hop redirects.
+- test(safety): adds a repository/Security gate that rejects a returning
+  product-mode switch and requires confirmations on every destructive surface.
+- docs(release): records build 915, the rc.5 Gatekeeper route and the continued
+  IntegrityCore/no-ClamAV product boundary.
+
 ## 0.9.1-rc.4 — 2026-08-02 « Integrity and Cohesion »
 
 Supersedes rc.3 without changing or removing its historical artifacts. The

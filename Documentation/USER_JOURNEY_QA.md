@@ -19,7 +19,7 @@ use timing still require the clean-profile recording.
 Use a new standard account or arm64 macOS VM. Start screen recording with an
 empty browser profile on `https://coretend.ahmetbsbnr.com`. Perform DMG install,
 double-click block, Control-click Open, Privacy & Security alternative,
-onboarding skip/back, permission accept/refuse/retry, first Smart Care dry run,
+onboarding skip/back, permission accept/refuse/retry, first Smart Care scan and confirmed Trash action,
 quit, relaunch, same-version replacement and graphical uninstall. Repeat ZIP
 extraction. Record elapsed times and clicks. Then run VoiceOver, keyboard-only,
 200% zoom and Reduce Motion checks. Reject the recording if any personal data

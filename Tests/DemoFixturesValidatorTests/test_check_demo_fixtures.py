@@ -85,6 +85,13 @@ class DemoFixtureValidatorTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("non-finite JSON number", result.stderr)
 
+    def test_retired_preview_mode_field_fails(self):
+        result = self.run_mutation(
+            lambda document: document["modules"][0]["data"].update(dryRunEnabled=True)
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("retired preview-mode data is forbidden", result.stderr)
+
 
 if __name__ == "__main__":
     unittest.main()

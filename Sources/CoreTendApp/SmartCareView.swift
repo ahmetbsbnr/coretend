@@ -23,23 +23,12 @@ final class SmartCareViewModel {
         var state: ModuleState
     }
 
-    enum Phase: Equatable { case idle, running, review, executing, finished(freed: Int64, dryRun: Bool) }
+    enum Phase: Equatable { case idle, running, review, executing, finished(freed: Int64) }
 
     var phase: Phase = .idle
     var modules: [CareModule] = SmartCareViewModel.initialModules()
     var findings: [ScanFinding] = []
-    var dryRun = true
     var isScanPaused = false
-    private var dryRunDefaultLoaded = false
-
-    /// Applies the persisted "dry-run by default" setting once, before the user
-    /// toggles it. Without this the Settings toggle is orphaned for Smart Care.
-    func loadDryRunDefault() async {
-        guard !dryRunDefaultLoaded else { return }
-        dryRunDefaultLoaded = true
-        dryRun = AppEnvironment.dryRunEnabled(
-            fromSetting: (try? await AppEnvironment.shared.store?.setting("dryRunDefault")) ?? nil)
-    }
 
     /// Real aggregates from the full stream — never derived from `findings`,
     /// which is capped for UI display. Keeps Smart Care and Cleanup in agreement.
@@ -119,7 +108,7 @@ final class SmartCareViewModel {
             phase = .review
             AppEnvironment.shared.record(ActivityRecord(
                 kind: .scan, summary: "Smart Care scan: \(found) items",
-                itemCount: found, bytes: bytes, dryRun: true))
+                itemCount: found, bytes: bytes))
         }
     }
 
@@ -147,11 +136,10 @@ final class SmartCareViewModel {
         guard phase == .review else { return }
         phase = .executing
         let selected = Self.autoExecutableFindings(findings)
-        let isDryRun = dryRun
         Task {
             let home = FileManager.default.homeDirectoryForCurrentUser
             let validator = PathValidator(allowedRoots: UserCleanupRules.allowedRoots(home: home))
-            let center = SafetyCenter(validator: validator, dryRun: isDryRun, sink: AppEnvironment.shared.store)
+            let center = SafetyCenter(validator: validator, sink: AppEnvironment.shared.store)
             var approved: [ApprovedFileOperation] = []
             for finding in selected {
                 if let op = try? await center.approve(
@@ -163,19 +151,18 @@ final class SmartCareViewModel {
             }
             let result = await center.execute(approved)
             let freed = result.executed.reduce(0) { $0 + $1.logicalSize }
-            phase = .finished(freed: freed, dryRun: result.wasDryRun)
+            phase = .finished(freed: freed)
             AppEnvironment.shared.record(ActivityRecord(
                 kind: .cleanup,
-                summary: result.wasDryRun
-                    ? "Smart Care dry run: \(result.executed.count) items"
-                    : "Smart Care: moved \(result.executed.count) items to Trash",
-                itemCount: result.executed.count, bytes: freed, dryRun: result.wasDryRun))
+                summary: "Smart Care: moved \(result.executed.count) items to Trash",
+                itemCount: result.executed.count, bytes: freed))
         }
     }
 }
 
 struct SmartCareView: View {
     @State private var model = SmartCareViewModel()
+    @State private var showMoveConfirmation = false
 
     var body: some View {
         ScrollView {
@@ -190,7 +177,18 @@ struct SmartCareView: View {
             .frame(maxWidth: .infinity)
         }
         .navigationTitle(L("smartcare.nav_title"))
-        .task { await model.loadDryRunDefault() }
+        .confirmationDialog(
+            L("common.trash_confirm.title"),
+            isPresented: $showMoveConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(L("common.trash_confirm.action"), role: .destructive) {
+                model.runCare()
+            }
+            Button(L("common.cancel"), role: .cancel) {}
+        } message: {
+            Text(L("common.trash_confirm.message"))
+        }
     }
 
     private var heroState: MCHeroState {
@@ -234,9 +232,8 @@ struct SmartCareView: View {
         case .running: L("smartcare.hero.scanning_title")
         case .review: L("smartcare.hero.review_title", mcFormatBytes(model.preselectedBytes))
         case .executing: L("smartcare.hero.cleaning_title")
-        case let .finished(freed, dryRun):
-            dryRun ? L("smartcare.hero.finished_dryrun_title", mcFormatBytes(freed))
-                   : L("smartcare.hero.finished_title", mcFormatBytes(freed))
+        case let .finished(freed):
+            L("smartcare.hero.finished_title", mcFormatBytes(freed))
         }
     }
 
@@ -330,8 +327,7 @@ struct SmartCareView: View {
         case .review:
             VStack(spacing: MCSpacing.xs) {
                 HStack {
-                    Toggle(L("common.dry_run"), isOn: $model.dryRun).toggleStyle(.switch)
-                    Button(model.dryRun ? L("smartcare.simulate_care") : L("smartcare.run_care")) { model.runCare() }
+                    Button(L("smartcare.run_care")) { showMoveConfirmation = true }
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
                 }
@@ -340,12 +336,11 @@ struct SmartCareView: View {
             }
         case .executing:
             ProgressView(L("common.running"))
-        case let .finished(freed, dryRun):
+        case let .finished(freed):
             VStack(spacing: MCSpacing.xs) {
                 Image(systemName: "checkmark.seal")
                     .font(.system(size: MCIconSize.compactState)).foregroundStyle(MCTheme.success)
-                Text(dryRun ? L("smartcare.hero.finished_dryrun_title", mcFormatBytes(freed))
-                            : L("smartcare.hero.finished_title", mcFormatBytes(freed)))
+                Text(L("smartcare.hero.finished_title", mcFormatBytes(freed)))
                     .font(MCFont.cardTitle)
                 Button(L("smartcare.scan_again")) { model.start() }
             }

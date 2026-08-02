@@ -29,17 +29,15 @@ public struct ActivityRecord: Sendable, Identifiable {
     public let summary: String
     public let itemCount: Int
     public let bytes: Int64
-    public let dryRun: Bool
 
     public init(id: Int64 = 0, kind: Kind, date: Date = Date(), summary: String,
-                itemCount: Int, bytes: Int64, dryRun: Bool) {
+                itemCount: Int, bytes: Int64) {
         self.id = id
         self.kind = kind
         self.date = date
         self.summary = summary
         self.itemCount = itemCount
         self.bytes = bytes
-        self.dryRun = dryRun
     }
 }
 
@@ -100,6 +98,12 @@ public actor Store {
             created REAL NOT NULL
         );
         CREATE INDEX idx_locations_last_scanned ON locations(last_scanned);
+        """,
+        // v4 — remove the retired product preview setting. The original
+        // activity column and audit rows remain on disk for downgrade/data
+        // compatibility, but current APIs neither expose nor create them.
+        """
+        DELETE FROM settings WHERE key = 'dryRunDefault';
         """,
     ]
 
@@ -175,7 +179,7 @@ public actor Store {
             INSERT INTO activity (kind, date, summary, item_count, bytes, dry_run)
             VALUES (?, ?, ?, ?, ?, ?)
             """, [record.kind.rawValue, record.date.timeIntervalSince1970, record.summary,
-                  record.itemCount, record.bytes, record.dryRun ? 1 : 0])
+                  record.itemCount, record.bytes, 0])
         return db.lastInsertRowID
     }
 
@@ -183,10 +187,12 @@ public actor Store {
         let rows: [[String: Any]]
         if let kind {
             rows = try db.query(
-                "SELECT * FROM activity WHERE kind = ? ORDER BY date DESC LIMIT ?",
+                "SELECT * FROM activity WHERE kind = ? AND (kind <> 'cleanup' OR dry_run = 0) ORDER BY date DESC LIMIT ?",
                 [kind.rawValue, limit])
         } else {
-            rows = try db.query("SELECT * FROM activity ORDER BY date DESC LIMIT ?", [limit])
+            rows = try db.query(
+                "SELECT * FROM activity WHERE kind <> 'cleanup' OR dry_run = 0 ORDER BY date DESC LIMIT ?",
+                [limit])
         }
         return rows.compactMap { row in
             guard let id = row["id"] as? Int64,
@@ -197,8 +203,7 @@ public actor Store {
             return ActivityRecord(
                 id: id, kind: kind, date: Date(timeIntervalSince1970: date), summary: summary,
                 itemCount: (row["item_count"] as? Int64).map(Int.init) ?? 0,
-                bytes: row["bytes"] as? Int64 ?? 0,
-                dryRun: (row["dry_run"] as? Int64 ?? 1) != 0)
+                bytes: row["bytes"] as? Int64 ?? 0)
         }
     }
 
@@ -291,7 +296,10 @@ public actor Store {
     // MARK: - Safety log (append-only)
 
     public func safetyLog(limit: Int = 500) throws -> [SafetyLogRecord] {
-        try db.query("SELECT * FROM safety_log ORDER BY date DESC LIMIT ?", [limit])
+        // Rows written by the retired preview mode remain in the database for
+        // downgrade compatibility, but are intentionally absent from the
+        // current product surface.
+        try db.query("SELECT * FROM safety_log WHERE stage <> 'dryRun' ORDER BY date DESC LIMIT ?", [limit])
             .compactMap { row in
                 guard let id = row["id"] as? Int64,
                       let operationID = row["operation_id"] as? String,
@@ -316,9 +324,7 @@ public actor Store {
     }
 }
 
-/// One durable, redacted-path row of the SafetyCore audit trail. `stage`
-/// distinguishes a dry-run simulation from a real executed action — callers
-/// (e.g. My Activity) must never merge the two into a single count.
+/// One durable, redacted-path row of the SafetyCore audit trail.
 public struct SafetyLogRecord: Sendable, Identifiable {
     public let id: Int64
     public let operationID: String

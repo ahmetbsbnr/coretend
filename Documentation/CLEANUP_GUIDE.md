@@ -13,17 +13,10 @@ and lets you review before anything happens.
    very large the UI truncates the on-screen count but still totals and
    acts on everything found — see `Documentation/KNOWN_LIMITATIONS.md` and
    the 5000-row display-cap fix noted in `CHANGELOG.md`.
-4. **Run** — the button reads "Simulate" in dry-run mode or "Move to
-   Trash" otherwise. Nothing is permanently deleted by Cleanup: items go to
-   the macOS Trash, recoverable per [RESTORE.md](RESTORE.md).
-5. **Done** — shows bytes freed (or, in dry-run, bytes that would be
-   freed).
-
-## Dry-run
-
-Toggle dry-run in Settings or in the Cleanup view before running. Dry-run
-performs the full scan and shows exactly what would be removed, but skips
-the actual move-to-Trash step. Recommended for your first run.
+4. **Confirm** — “Move to Trash” opens a confirmation describing the
+   recoverable action. Nothing is permanently deleted by Cleanup: selected
+   items go to the macOS Trash, recoverable per [RESTORE.md](RESTORE.md).
+5. **Done** — shows the bytes actually moved by the completed action.
 
 ## What gets scanned
 
@@ -49,7 +42,8 @@ Medium/high-risk, **never preselected** — manual review required:
 | Xcode archives | `~/Library/Developer/Xcode/Archives` | 30d+ | may hold the only copy of a shipped build |
 | iOS device backups | `~/Library/Application Support/MobileSync/Backup` | 180d+ | high risk |
 
-All removals go to the Trash (reversible). Simulators, Trash-emptying, Mail
+All removals go to the Trash (reversible). iOS development-device caches,
+Trash-emptying, Mail
 attachments and broken LaunchAgents are tracked as deferred in
 [ROADMAP.md](ROADMAP.md) — they need dedicated safety handling and are not
 shipped as blind extension rules.

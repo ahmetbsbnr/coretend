@@ -18,20 +18,20 @@ version bump only, no push/deploy/publish). See
 
 1. COMPLETE — App shell + design system (Orbital Ecology tokens: MCColor/MCSpacing/MCMotion/MCFont)
 2. COMPLETE — ScanCore (streaming, cancellation, exclusions, min-size/age filters)
-3. COMPLETE — SafetyCore (validator, center, dry-run default, re-validation, SQLite-persisted audit log)
+3. COMPLETE — SafetyCore (validator, typed approval, execution re-validation, Trash action, SQLite-persisted audit log)
 4. COMPLETE — Persistence (SQLite actor, migrations apply-once/idempotent)
-5. COMPLETE — Smart Care dry-run orchestrator
+5. COMPLETE — Smart Care review-and-confirm orchestrator
 6. COMPLETE — Cleanup user rules (7 rules, grouped review)
 7. COMPLETE — My Clutter (large/old, duplicates, similar images)
 8. COMPLETE — Space Lens treemap
 9. COMPLETE — Applications + Leftovers
 10. COMPLETE — Performance
 11. COMPLETE — Menu Bar agent
-12. PARTIAL — Protection (ClamAV wrapper + quarantine tested; optional `ProtectionWatcher` FSEvents actor now built and wired into the UI as off-by-default in-session watch — debounce/coalesce/dedup/rate-limit/clean-restart tested; no ClamAV binary on this machine, so the live-scan path stays unverified here, not unbuilt)
+12. COMPLETE — IntegrityCore (native download provenance, code-signature tiers and login-item inventory; read-only, with no malware-detection or quarantine claim)
 13. COMPLETE — Privacy Cleaner
 14. COMPLETE — Cloud Cleanup
 15. COMPLETE — Accessibility pass (5 previously-unannotated views + 3 system settings, per commit b8fb716)
-16. COMPLETE — Hardening / compliance pass (v0.7.1: SafetyCore audit persistence, ClamAV wrapper timeout/cancellation, Privacy Cleaner running-browser guard, CI split into normal vs publish gate)
+16. COMPLETE — Hardening / compliance pass (SafetyCore audit persistence, Privacy Cleaner running-browser guard, CI split into normal vs publish gate; the former external-scanner experiment was subsequently retired)
 17. COMPLETE — Local packaging (`Scripts/package-local.sh`, `Scripts/package-zip.sh`, `Scripts/package-dmg.sh`)
 18. COMPLETE — Open-source foundation (LICENSE/NOTICE/COPYRIGHT/TRADEMARKS/THIRD_PARTY_NOTICES, community docs, CI)
 19. COMPLETE — Bilingual static website skeleton (`Website/generate.py`, en/fr, no tracking)

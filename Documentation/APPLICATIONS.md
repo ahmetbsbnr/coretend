@@ -23,10 +23,10 @@ grouping key is derived from real `InstalledApp` data.
 ## Uninstall
 Uninstall moves the app bundle and approved associated support files to the
 **Trash** via `SafetyCenter` (medium-risk rule `apps.uninstall`), so it is
-reversible from the Trash. It honors the global dry-run default: in dry-run it
-reports what *would* be removed and the space that *would* be freed without
-touching anything. Associated items are gathered conservatively and validated
-by `PathValidator` against an allowlist before any move.
+reversible from the Trash. The app and associated items are shown for review,
+and an explicit confirmation is required before anything moves. Associated
+items are gathered conservatively and validated by `PathValidator` against an
+allowlist before each move.
 
 ## What it does not do
 No forced updates, no background installs, no telemetry. Update source is

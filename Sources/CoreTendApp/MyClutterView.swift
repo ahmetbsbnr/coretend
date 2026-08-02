@@ -101,7 +101,7 @@ final class MyClutterViewModel {
                     phase = findings.isEmpty ? .empty : .results
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .scan, summary: "Large & Old scan: \(findings.count) files",
-                        itemCount: findings.count, bytes: totalBytes, dryRun: true))
+                        itemCount: findings.count, bytes: totalBytes))
                 default: break
                 }
             }

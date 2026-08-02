@@ -5,16 +5,17 @@ checked in, no CocoaPods/Carthage.
 
 ## Package layout (`Package.swift`)
 
-Executable: `CoreTendApp` (product name `CoreTend`), depending on every
-library target.
+Executable: `CoreTend` (product name `CoreTend`), which launches the
+`CoreTendApp` library target.
 
 Libraries: `ScanCore` (deps: SafetyCore), `SafetyCore` (no deps),
 `FileRules` (deps: ScanCore, SafetyCore), `DesignSystem` (no deps),
-`Persistence` (no deps), `SystemMetrics` (no deps), `AppDiscovery` (no
-deps), `MalwareEngine` (no deps).
+`Persistence` (dep: SafetyCore), `SystemMetrics` (no deps), `AppDiscovery`
+(no deps), `IntegrityCore` (no deps). IntegrityCore reads native macOS
+provenance, signature and login-item metadata; it has no scanner subprocess.
 
-Test targets: one per library target that has tests, plus
-`CoreTendAppTests` for the app layer. See
+Test targets: one per library target that has tests, plus app, integration,
+accessibility, UI and performance test targets. See
 [TESTING.md](TESTING.md).
 
 Platform floor: `.macOS(.v14)`. Default localization: `en`
@@ -32,12 +33,12 @@ issue tracked in `Documentation/DECISIONS.md` (decision D2) — using plain
 - `Scripts/build.sh release` — release build; the target must build with
   zero warnings before any commit lands (see `DEVELOPMENT.md`).
 - `Scripts/test.sh` — full test suite.
-- `Scripts/package-local.sh` — produces `build/CoreTend.app`, ad-hoc
-  signed (no notarization; that's out of scope until a real signed release
-  — see `Documentation/PUBLIC_RELEASE_READINESS.md`).
+- `Scripts/package-local.sh` — produces an arm64 `.app` and DMG, ad-hoc
+  signed when no Developer ID is configured. The release remains explicitly
+  unsigned/not notarized until Developer ID work is completed.
 
-## No CI yet
+## CI
 
-There is no `.github/workflows/` pipeline as of this writing (tracked as
-remaining Open Source Foundation work); everything above must currently be
-run locally before a PR.
+GitHub Actions runs build/test, distribution and security gates for pull
+requests and `main`. Release packaging is also reproducible on a clean macOS
+runner; local and CI flows share the scripts above.

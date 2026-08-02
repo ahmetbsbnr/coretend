@@ -58,10 +58,8 @@ struct SpaceLensNavigationTests {
         #expect(m.pendingDelete == nil)
     }
 
-    @Test func dryRunDefaultsToTrueBeforeSettingLoads() {
-        // Matches every other destructive module: safe by construction until
-        // the real persisted preference is read.
+    @Test func pendingDeletionStartsEmpty() {
         let m = SpaceLensViewModel()
-        #expect(m.dryRun == true)
+        #expect(m.pendingDelete == nil)
     }
 }

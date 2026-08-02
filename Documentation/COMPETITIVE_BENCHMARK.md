@@ -93,11 +93,11 @@ source:
   that never downloads or installs anything itself.
 - **No scanning engine for "Integrity"** — reads signals macOS already
   records (`Sources/IntegrityCore/`), not a signature database.
-- **Dry-run defaults to on** across every destructive module (Cleanup,
-  Duplicates, Space Lens, Smart Care) — verified by the test suite's own
-  `dryRun == true` default-state assertions, not a marketing claim.
-- **Deletions go to Trash**, never a permanent delete, across every module
-  that deletes anything.
+- **Review and explicit confirmation** guard every destructive module
+  (Cleanup, Duplicates, Space Lens, Smart Care, Applications, Leftovers and
+  Privacy Cleaner), enforced by the repository safety gate.
+- **Eligible removals go to Trash**, never a permanent delete, across every
+  module that moves anything.
 - **Open source** — every claim in this document, and every number in the
   table above, can be checked against `Sources/` and `Scripts/` directly.
 

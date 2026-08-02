@@ -24,8 +24,8 @@ then follow the links for the area you need.
 - [EXCLUSIONS.md](EXCLUSIONS.md) — tell scans to leave a path alone.
 
 ## Safety
-- Dry-run is the default everywhere destructive: see each feature doc
-  above for its dry-run behavior.
+- Scans are read-only. Destructive surfaces require a reviewed selection and
+  explicit confirmation; eligible removals go to the Trash.
 - [RESTORE.md](RESTORE.md) — undo a cleanup (Trash).
 - [QUARANTINE.md](QUARANTINE.md) — undo a Protection action.
 - [SAFETY_MODEL.md](SAFETY_MODEL.md) — the engineering rules behind "never

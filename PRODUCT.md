@@ -15,8 +15,8 @@ Silicon-only, and intended for macOS 14 or later.
 ## Product Purpose
 
 CoreTend is an open-source macOS utility that keeps analysis local, explains
-findings before acting, defaults to dry run, and uses recoverable removal where
-supported. The public site must make the real application understandable,
+findings before acting, requires explicit confirmation, and uses recoverable
+removal where supported. The public site must make the real application understandable,
 provide a safe graphical installation path, and distinguish released 0.9.0
 capabilities from later work.
 

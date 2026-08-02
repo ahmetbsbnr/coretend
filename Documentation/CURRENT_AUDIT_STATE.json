@@ -1,178 +1,31 @@
 {
-  "_comment": "Single current-audit source of truth for CoreTend 0.8.1, distinct from CURRENT_PROJECT_STATE.json. AUDIT_PACKAGE_COMMIT is recorded post-hoc after each external ZIP build and is never conflated with the other commit fields (see Scripts/compute-audit-commits.sh). The 0.8.0 version of this file is frozen at Documentation/AuditHistory/0.8.0/CURRENT_AUDIT_STATE.json and must not be edited to match this one.",
-  "schemaVersion": 2,
-  "product": "CoreTend",
-  "version": "0.8.1",
-  "phase": "0.8.1 Final Canonical Audit Resync",
-  "branch": "feat/coretend-rebrand-workspace",
-  "auditDate_UTC": "2026-07-25",
-  "commitIdentities": {
-    "FINAL_REPOSITORY_HEAD": "RECORDED_POST_HOC",
-    "note_FINAL_REPOSITORY_HEAD": "The final commit cannot contain its own SHA, and it is the commit that records the checksums of the artifacts built at PRODUCT_SOURCE_COMMIT — so it is one commit later by construction. The delta is Release/latest.json plus Release/SHA256SUMS: records of the artifacts, not inputs to them. The authoritative value lives in AUDIT_PACKAGE_MANIFEST.json inside the external package. Verify with `git rev-parse HEAD` on a clean tree.",
-    "PRODUCT_SOURCE_COMMIT": "36dd421094ef84396776b6caf9ae3596416e431f",
-    "note_PRODUCT_SOURCE_COMMIT": "The commit the audited ZIP/DMG were built from, on a verifiably clean tree. Stamped by Scripts/build-release.sh from `git rev-parse HEAD` and asserted by Scripts/test-release-manifest.sh (`OK: sourceCommit (36dd421...) equals git rev-parse HEAD`).",
-    "AUDIT_PACKAGE_COMMIT": "RECORDED_POST_HOC",
-    "note_AUDIT_PACKAGE_COMMIT": "Equals FINAL_REPOSITORY_HEAD for this phase. Filled in by the packaging step, after a `git status --short` check proves the tree was clean immediately before zipping.",
-    "REQUIREMENTS_AUDIT_COMMIT": "03839803274c620d204dcc8ab28f7bbbdb6cc5b4"
-  },
-  "commitClassificationAfterTheSourceOfTheArtifacts": {
-    "_comment": "Answers the question 'did anything that enters the app, the bundle, its resources, or the distributed site change after the commit the binaries came from?' Verified with git diff-tree per commit, not assumed.",
-    "referenceCommit": "3b5dc73 (last commit touching Sources/)",
-    "commits": [
-      {
-        "commit": "dec47a1",
-        "subject": "release: 0.8.1 — CoreTend Rebrand & Workspace Migration",
-        "type": "release + bundle metadata + site",
-        "binaryImpact": "NONE (no Sources/ change)",
-        "bundleImpact": "YES — Resources/Info.plist version strings 0.8.0 -> 0.8.1",
-        "siteImpact": "YES — Website/generate.py and the generated legal pages",
-        "auditImpact": "YES — Release/SHA256SUMS, Release/latest.json, release notes, PROJECT_STATE.json"
-      },
-      {
-        "commit": "073a210",
-        "subject": "docs: record the executed phase and publish the workspace-facing copies",
-        "type": "documentary",
-        "binaryImpact": "NONE",
-        "bundleImpact": "NONE",
-        "siteImpact": "NONE",
-        "auditImpact": "YES — Documentation/CONTINUATION.md"
-      },
-      {
-        "commit": "92cbd08",
-        "subject": "fix(privacy): stop the private-data gate from being the leak it looks for",
-        "type": "gate script + documentary",
-        "binaryImpact": "NONE",
-        "bundleImpact": "NONE",
-        "siteImpact": "NONE",
-        "auditImpact": "YES — Scripts/check-private-data.sh, Documentation/AUDIT_COMMANDS.log, Documentation/PUBLICATION_AUDIT.md"
-      },
-      {
-        "commit": "36dd421",
-        "subject": "docs(audit): resync 0.8.1 records with the real final state",
-        "type": "documentary + gate scripts",
-        "binaryImpact": "NONE — no Sources/ change",
-        "bundleImpact": "NONE — no Resources/ or Package.swift change",
-        "siteImpact": "NONE — no Website/ change",
-        "auditImpact": "YES — the entire CURRENT/history/inventory/limitations doc set, plus Scripts/check-legacy-brand-references.sh (case-insensitive scan + allowlist reasons) and Scripts/test-distribution.sh (dead legacy env var removed, false isolation comment corrected)",
-        "note": "This is the commit the final audited artifacts were built from. Its own changes touch nothing that enters the app, the bundle, its resources, or the distributed site — so the binaries it produced are byte-equivalent in content to those from any commit back to dec47a1."
-      }
-    ],
-    "conclusion": "The compiled code is unchanged from 3b5dc73 onward: no commit after it touches Sources/. Bundle metadata and the distributed site last changed at dec47a1. Everything after dec47a1 — 073a210, 92cbd08 and 36dd421 — is documentary or gate-script only, verified per commit with git diff-tree, so none of it can alter a binary. The original stale sourceCommit 3b5dc73 was the visible symptom of a build taken before dec47a1 was committed, not of a content mismatch: the artifacts' embedded Info.plist read 0.8.1 while the commit they named still read 0.8.0. The final artifacts were rebuilt at 36dd421 on a provably clean tree, which removes the ambiguity entirely.",
-    "rebuildDecision": "Rebuilt, and finally rebuilt at the clean final tree. Not discretionary: Scripts/test-release-manifest.sh is a required gate and calls Scripts/build-release.sh inside its own resync regression check. The final build was taken at a tree with `git status --short` empty so the artifacts' provenance is unambiguous, which is also what closed the stale-sourceCommit defect."
-  },
-  "verification": {
-    "tests": {
-      "total": 274,
-      "suites": 57,
-      "passed": 274,
-      "failed": 0,
-      "result": "PASS",
-      "testCasesExecuted": 278
-    },
-    "coherenceChecks": {
-      "atTestDeclarations": 274,
-      "atSuiteDeclarations": 57,
-      "executedTests": 274,
-      "executedSuites": 57,
-      "note": "Declarations and executed counts match exactly. The single parameterized @Test (4 arguments) is counted as one test by Swift Testing and runs as 4 cases, giving 278 executed cases."
-    },
-    "debugBuild": "PASS",
-    "releaseBuild": "PASS",
-    "projectWarnings": 0,
-    "repositoryClean": true,
-    "pushed": false,
-    "deployed": false,
-    "published": false,
-    "signed": false,
-    "notarized": false,
-    "dnsChanged": false
-  },
-  "gateResults": {
-    "_comment": "Every value below is the real exit status of a real run on 2026-07-25, not a carried-forward claim.",
-    "doctor": "PASS",
-    "repository-doctor": "PASS",
-    "check-private-data": "PASS",
-    "check-licenses": "PASS",
-    "check-legacy-brand-references": "PASS (after this phase's fix — it was FAIL at 92cbd08)",
-    "check-brand-assets": "PASS",
-    "check-website": "PASS",
-    "check-workspace-layout": "PASS",
-    "check-workspace-migration-readiness": "PASS",
-    "check-version-consistency": "PASS",
-    "check-placeholders": "PASS",
-    "check-feature-inventory": "PASS",
-    "check-brand-clearance --engineering": "PASS (requires a clean tree)",
-    "test.sh": "PASS (274/57)",
-    "swift build": "PASS (0 warnings)",
-    "swift build -c release": "PASS (0 warnings)",
-    "test-uninstall": "PASS",
-    "test-distribution": "PASS",
-    "test-release-manifest": "PASS at the final clean-tree build — 'OK: sourceCommit (36dd421...) equals git rev-parse HEAD'. Note it rebuilds the artifacts as a side effect unless SKIP_REBUILD_CHECK=1, and that the assertion reads one commit stale as soon as Release/ is committed (see knownNonConformitiesAtThisCommit).",
-    "test-check-legacy-brand-references": "PASS (5 self-tests)",
-    "test-check-brand-clearance": "PASS",
-    "test-check-workspace-layout": "PASS",
-    "test-preflight-workspace-migration": "PASS",
-    "check-publish-readiness": "FAIL — RED BY DESIGN",
-    "check-brand-clearance --publication": "FAIL — RED BY DESIGN",
-    "verify-download": "N/A — takes <file> <expected-sha256> arguments; superseded here by `shasum -a 256 -c Release/SHA256SUMS`, which reports OK for the ZIP, the DMG and latest.json"
-  },
-  "publicationGate": {
-    "status": "RED",
-    "intentional": true,
-    "reasons": [
-      "Placeholder tokens still present across docs, legal pages and the site generator — no legal identity or security contact has been decided",
-      "Configuration/PublicIdentity.local.json does not exist",
-      "securityContact undefined",
-      "No trademark search has been run for 'CoreTend'; Documentation/BRAND_SEARCH_EVIDENCE.md states this explicitly rather than leaving an empty conflict table to be misread as a clean result",
-      "legalReviewStatus 'pending', publicReleaseAllowed not true",
-      "Build is unsigned and un-notarized"
-    ],
-    "note": "These are human decisions, not automatable work. This gate must never be wired into normal CI as a blocking step."
-  },
-  "manualQA": {
-    "status": "PARTIAL_BLOCKED_ENVIRONMENT",
-    "done": [
-      "Plain launch capture via Scripts/capture.sh",
-      "Non-destructive launch smoke test from a temp directory outside the repository",
-      "DMG mounts, contains the app and an /Applications shortcut"
-    ],
-    "blocked": [
-      "Module-targeted capture (intermittent AppleScript -1719)",
-      "Full FR/EN x light/dark x every-module campaign",
-      "Interactive VoiceOver",
-      "DMG saved icon positions (Finder automation refused)",
-      "Multi-Mac / multi-macOS verification"
-    ]
-  },
-  "auditPackages": [
-    {
-      "archiveName": "CoreTend-Full-Audit-2026-07-21-4fb406f.zip",
-      "status": "HISTORICAL — superseded",
-      "note": "Stale single auditedSourceCommit field"
-    },
-    {
-      "archiveName": "CoreTend-Full-Audit-v0.7.1-2026-07-21-b47dfab.zip",
-      "status": "HISTORICAL — superseded",
-      "note": "Four-commit manifest, but no AUDIT_PACKAGE_README.md, no SHA256SUMS, no FILELIST, and AUDIT_PACKAGE_COMMIT still absent from its manifest"
-    },
-    {
-      "archiveName": "CoreTend-Full-Audit-v0.8.0-2026-07-24-8acd2a5.zip",
-      "status": "HISTORICAL — superseded by the 0.8.1 FINAL package",
-      "note": "Correct and immutable for its own commit 8acd2a5. Its snapshot is preserved verbatim in Documentation/AuditHistory/0.8.0/CURRENT_AUDIT_STATE.json, including the reasoning for why it was deliberately not advanced to the later doc-only HEAD a3fe7f7."
-    },
-    {
-      "archiveName": "CoreTend-Full-Audit-v0.8.1-FINAL-<date>-<short-final-head>.zip",
-      "status": "CURRENT",
-      "note": "Built from a separate staging directory outside the repository so that creating it cannot dirty the tree. Its AUDIT_PACKAGE_MANIFEST.json carries the authoritative FINAL_REPOSITORY_HEAD and AUDIT_PACKAGE_COMMIT."
-    }
+  "schemaVersion": 3,
+  "project": "CoreTend",
+  "updatedUTC": "2026-08-02",
+  "candidateVersion": "0.9.1-rc.5",
+  "branch": "release/v0.9.1-rc.5",
+  "status": "in-progress",
+  "completed": [
+    "interrupted-worktree recovery and external backup",
+    "rc.4 publication and public checksum verification",
+    "canonical locale-route fix merged",
+    "retired preview-mode API/UI removal",
+    "explicit confirmation added to destructive surfaces",
+    "legacy persistence migration compatibility retained",
+    "candidate version/build synchronized"
   ],
-  "knownNonConformitiesAtThisCommit": [
-    "Public release placeholders not filled in (Scripts/check-publish-readiness.sh)",
-    "No code signing, no notarization",
-    "No trademark search for the product name",
-    "Requirements baseline not claimed exhaustive (Documentation/MASTER_REQUIREMENTS_BASELINE.md)",
-    "Migration executed for real once, on one machine, on the happy path (Documentation/CORETEND_DATA_MIGRATION_REPORT.md §5)",
-    "Scripts/test-distribution.sh launch check is not isolated from the real per-user store (Documentation/KNOWN_LIMITATIONS.md)",
-    "Scripts/test-release-manifest.sh cannot be green at the commit that records its own output (Documentation/KNOWN_LIMITATIONS.md)"
-  ]
+  "pending": [
+    "full Swift, Xcode, security, repository and visual gates on final source",
+    "final rc.5 DMG build, mount, copy and isolated launch validation",
+    "rc.5 GitHub publication and remote checksum verification",
+    "atomic public-site and portfolio promotion",
+    "production, CI, Security and Vercel verification",
+    "final verified Git bundles"
+  ],
+  "acceptedFutureLimits": [
+    "Developer ID Application signing",
+    "notarization",
+    "future Mac App Store feasibility study"
+  ],
+  "authoritativeEvidence": "Documentation/GOLD_MASTER_STATUS.md"
 }

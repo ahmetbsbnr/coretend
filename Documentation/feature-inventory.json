@@ -52,11 +52,11 @@
       "feature": "`PathValidator` \u2014 protected-root blocklist (`/System`,`/bin`,\u2026), home-dir block, allowlist containment, symlink-escape resolution via `resolvingSymlinksInPath()`"
     },
     {
-      "id": "safety.dryrun",
+      "id": "safety.executiongate",
       "module": "SafetyCore",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/SafetyCore/SafetyCore.swift:120-169",
-      "feature": "`SafetyCenter` actor: `dryRun` flag (default true), re-validates every path at execution time, skips anything that changed since approval"
+      "feature": "`SafetyCenter` accepts only typed, approved operations, re-validates every path immediately before execution, and skips anything that changed since approval"
     },
     {
       "id": "safety.execute",
@@ -154,7 +154,7 @@
       "module": "SmartCare",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/CoreTendApp/SmartCareView.swift:71-113",
-      "feature": "Runs `UserCleanupRules.all` through `ScanEngine`, same `SafetyCenter`/dry-run gate as manual Cleanup"
+      "feature": "Runs `UserCleanupRules.all` through `ScanEngine`, presents the low-risk selection for review, then uses the same confirmed `SafetyCenter` Trash path as manual Cleanup"
     },
     {
       "id": "integrity.provenance",
@@ -217,7 +217,7 @@
       "module": "MyClutter",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/CoreTendApp/DuplicatesView.swift; Tests/CoreTendAppTests/DuplicatesFilterTests.swift; visually verified 2026-07-31: launched real .app build, navigated to My Clutter > Duplicates, correct empty state with accurate hard-link/staged-hashing explainer copy.",
-      "feature": "`DuplicatesView` wires `DuplicateEngine` + `SafetyCenter`/dry-run for deletion"
+      "feature": "`DuplicatesView` wires `DuplicateEngine` to a reviewed selection, explicit confirmation and `SafetyCenter` Trash execution"
     },
     {
       "id": "clutter.similarimages",
@@ -260,13 +260,6 @@
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/CoreTendApp/SettingsView.swift:82,93",
       "feature": "Settings: \"Show CoreTend in the menu bar\" toggle, backed by @AppStorage(\"menuBarEnabled\")"
-    },
-    {
-      "id": "settings.dryrundefault",
-      "module": "Settings",
-      "status": "VERIFIED_COMPLETE",
-      "evidence": "Sources/CoreTendApp/SettingsView.swift:102-103",
-      "feature": "Settings: \"Dry run by default\" toggle, persisted to Store via setSetting(\"dryRunDefault\")"
     },
     {
       "id": "settings.appsignature",
@@ -343,7 +336,7 @@
       "module": "Space Lens",
       "status": "VERIFIED_COMPLETE",
       "evidence": "Sources/CoreTendApp/SpaceLensView.swift (SpaceLensViewModel.requestDelete/confirmDelete); Tests/CoreTendAppTests/SpaceLensNavigationTests.swift",
-      "feature": "Trash action per row, routed through SafetyCenter/PathValidator scoped to the originally-scanned root so a delete can never reach outside the browsed tree. Dry-run defaults true and reads the same app-wide dryRunDefault setting every other destructive module respects. Re-scans (rather than hand-patching the tree) after a real delete, restoring navigation depth by path."
+      "feature": "Trash action per row, protected by an explicit confirmation and routed through SafetyCenter/PathValidator scoped to the originally-scanned root so an action can never reach outside the browsed tree. Re-scans (rather than hand-patching the tree) after a completed move, restoring navigation depth by path."
     },
     {
       "id": "quicklook.extended",

@@ -247,10 +247,10 @@ p{margin:0}
 .app-state-mark{width:18px;height:18px;flex:none;margin-left:3px}
 .pill{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
   padding:4px 9px;border-radius:999px;border:1px solid var(--line-strong);color:var(--ink-2)}
-.pill.dry{border-color:color-mix(in srgb,var(--safe) 50%,transparent);color:var(--safe);
-  background:color-mix(in srgb,var(--safe) 10%,transparent);animation:dry 3.4s var(--ease) infinite}
+.pill.reviewed{border-color:color-mix(in srgb,var(--safe) 50%,transparent);color:var(--safe);
+  background:color-mix(in srgb,var(--safe) 10%,transparent);animation:confirmation-pulse 3.4s var(--ease) infinite}
 .sample-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;color:var(--ink-3);white-space:nowrap}
-@keyframes dry{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--safe) 35%,transparent)}
+@keyframes confirmation-pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--safe) 35%,transparent)}
   55%{box-shadow:0 0 0 6px transparent}}
 .app-body{display:grid;grid-template-columns:158px minmax(0,1fr);min-height:394px}
 @media(max-width:560px){
@@ -678,7 +678,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
         <circle class="ct-core" cx="256" cy="256" r="61.44" fill="var(--cobalt)"/>
       </svg></span>
       <h1 id="headline" data-fr="Sachez ce que votre Mac garde. &lt;em&gt;Reprenez la place.&lt;/em&gt;">Know what your Mac is holding. <em>Take the space back.</em></h1>
-      <p class="hero-sub" data-reveal style="--d:1950ms" data-fr="CoreTend analyse en local les emplacements pris en charge, explique chaque résultat et démarre les opérations sensibles en mode simulation. Après validation, les éléments éligibles sont normalement confiés à la Corbeille de macOS.">CoreTend reads supported locations on-device, explains each finding, and starts sensitive actions in dry run. After review, eligible items are normally handed to the macOS Trash.</p>
+      <p class="hero-sub" data-reveal style="--d:1950ms" data-fr="CoreTend analyse en local les emplacements pris en charge et explique chaque résultat. Les opérations sensibles exigent une sélection relue et une confirmation explicite avant de confier les éléments éligibles à la Corbeille de macOS.">CoreTend reads supported locations on-device and explains each finding. Sensitive actions require a reviewed selection and explicit confirmation before eligible items are handed to the macOS Trash.</p>
       <div class="hero-facts" data-reveal style="--d:2080ms">
         <span class="chip dot" data-fr="Analyses locales">Local scans</span>
         <span class="chip" data-fr="Aucun compte">No account</span>
@@ -711,7 +711,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
         </svg>
         <span class="app-title">CoreTend — Macintosh HD</span>
         <span class="sample-label" data-fr="Données d’exemple">Example data</span>
-        <span class="pill dry" data-fr="Simulation">Dry run</span>
+        <span class="pill reviewed" data-fr="Confirmation requise">Confirmation required</span>
       </div>
       <div class="app-body">
         <nav class="app-side" id="side" aria-label="Modules" data-aria-en="Modules" data-aria-fr="Modules">
@@ -774,8 +774,8 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
       <li data-reveal>
         <span class="num">03</span>
         <h3 data-fr="Agir">Act</h3>
-        <p data-fr="La simulation est active par défaut : elle calcule ce qui serait libéré sans rien déplacer. Une action confirmée demande ensuite à macOS de placer les éléments éligibles dans la Corbeille et ajoute une activité agrégée au journal local, exportable en CSV ou JSON.">Dry run is on by default: it counts what would be freed without moving anything. A confirmed action then asks macOS to place eligible items in the Trash and adds an aggregate entry to the local record, which can be exported as CSV or JSON.</p>
-        <span class="note" data-fr="CoreTend n'a pas de bouton Annuler. Vérifiez la Corbeille et utilisez Remettre si macOS y a bien placé l'élément.">CoreTend has no Undo button. Check the Trash and use Put Back when macOS successfully placed the item there.</span>
+        <p data-fr="Chaque résultat reste vérifiable avant l’action. Après une confirmation explicite, CoreTend demande à macOS de placer les éléments éligibles dans la Corbeille et ajoute une activité agrégée au journal local, exportable en CSV ou JSON.">Every result remains inspectable before action. After explicit confirmation, CoreTend asks macOS to place eligible items in the Trash and adds an aggregate entry to the local record, which can be exported as CSV or JSON.</p>
+        <span class="note" data-fr="CoreTend n'intègre pas de fonction de restauration après l'action. Vérifiez la Corbeille et utilisez Remettre si macOS y a bien placé l'élément.">CoreTend has no built-in restore action after removal. Check the Trash and use Put Back when macOS successfully placed the item there.</span>
       </li>
     </ol>
   </div>
@@ -787,14 +787,14 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
     <h2 data-reveal data-fr="Huit modules. Aucune promesse au-delà.">Eight modules. Nothing promised beyond them.</h2>
     <p class="lead" data-reveal style="--d:100ms;margin-bottom:38px" data-fr="Voici l'architecture réelle de la version 0.9.1. Si une fonction n'est pas dans cette liste, elle n'est pas dans l'application.">This is the actual architecture of 0.9.1. If a capability is not on this list, it is not in the app.</p>
     <ul class="modules">
-      <li class="mod" data-tilt data-reveal><span class="k">Home</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3>Dashboard</h3><p data-fr="Signature de l'app, simulation, exclusions, espace libre, activité récente et raccourcis vers les six workflows principaux.">App signature, dry-run state, exclusions, free space, recent activity and shortcuts into the six primary workflows.</p></li>
+      <li class="mod" data-tilt data-reveal><span class="k">Home</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3>Dashboard</h3><p data-fr="Signature de l'app, état de la Corbeille, exclusions, espace libre, activité récente et raccourcis vers les six workflows principaux.">App signature, Trash status, exclusions, free space, recent activity and shortcuts into the six primary workflows.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Scan</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Stockage">Storage</h3><p data-fr="Caches, journaux, rapports de plantage, installeurs, données de build, téléchargements oubliés.">Caches, logs, crash reports, leftover installers, build data and forgotten downloads.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Map</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3>Space Lens</h3><p data-fr="Treemap navigable, fil d'Ariane, recherche, ouverture directe dans le Finder.">A treemap you can walk into, with breadcrumbs, search and Reveal in Finder.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Match</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Doublons">Duplicates</h3><p data-fr="Correspondance SHA-256 exacte, choix de l'exemplaire à garder, Quick Look, Finder et export CSV.">Exact SHA-256 matching, keeper selection, Quick Look, Finder and CSV export.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Apps</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Applications">Applications</h3><p data-fr="Inventaire de /Applications et ~/Applications, données associées par bundle ID et source de mise à jour détectée.">Inventory of /Applications and ~/Applications, bundle-ID-associated data and detected update source.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Signals</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Intégrité">Integrity</h3><p data-fr="Provenance des téléchargements, inspection d'une app choisie et inventaire des agents de lancement. Ce n'est pas un antivirus.">Download provenance, inspection of one selected app and launch-agent inventory. It is not an antivirus.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Record</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Activité">Activity</h3><p data-fr="Jusqu'à 500 activités locales agrégées, avec filtres, journal de sécurité et exports CSV ou JSON.">Up to 500 aggregate local activities, with filters, safety log and CSV or JSON exports.</p></li>
-      <li class="mod" data-tilt data-reveal><span class="k">Control</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Réglages">Settings</h3><p data-fr="Langue, menu bar, simulation, exclusions, diagnostic, onboarding et vérification manuelle des mises à jour.">Language, menu bar, dry run, exclusions, diagnostics, onboarding and manual update checking.</p></li>
+      <li class="mod" data-tilt data-reveal><span class="k">Control</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Réglages">Settings</h3><p data-fr="Langue, menu bar, exclusions, diagnostic, onboarding et vérification manuelle des mises à jour.">Language, menu bar, exclusions, diagnostics, onboarding and manual update checking.</p></li>
     </ul>
   </div>
 </section>
@@ -811,7 +811,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
     <div class="slab" data-reveal style="--d:120ms">
       <div class="slab-top">
         <span id="slabPath">~/Library · 4 groups</span>
-        <span class="pill dry" data-fr="Simulation active">Dry run on</span>
+        <span class="pill reviewed" data-fr="Sélection relue">Selection reviewed</span>
       </div>
       <div class="slab-body" id="findRows"></div>
       <div class="slab-foot">
@@ -865,7 +865,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
       <ul class="facts">
         <li data-reveal><b data-fr="Base locale">Local store</b><span>~/Library/Application Support/CoreTend/store.sqlite</span></li>
         <li data-reveal><b data-fr="Réseau">Network</b><span data-fr="Aucune télémétrie, publicité, compte ou identifiant. Vérification manuelle via /latest.json.">No telemetry, ads, account or device identifier. Manual update check via /latest.json.</span></li>
-        <li data-reveal><b data-fr="Suppressions">Removals</b><span data-fr="Simulation par défaut, validation explicite, activité locale agrégée.">Dry run by default, explicit review, aggregate local activity.</span></li>
+        <li data-reveal><b data-fr="Suppressions">Removals</b><span data-fr="Sélection explicite, confirmation, Corbeille macOS et activité locale agrégée.">Explicit selection, confirmation, macOS Trash and aggregate local activity.</span></li>
         <li data-reveal><b data-fr="Licence">Licence</b><span>Apache-2.0 · github.com/ahmetbsbnr/coretend</span></li>
       </ul>
     </div>
@@ -948,7 +948,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
       </details>
       <details data-reveal>
         <summary data-fr="Puis-je annuler une suppression ?">Can I undo a removal?</summary>
-        <div class="ans"><div><p data-fr="CoreTend n'intègre pas de bouton Annuler. Lorsqu'un élément a bien été placé dans la Corbeille par macOS, utilisez Finder → Corbeille → Remettre avant de la vider.">CoreTend has no built-in Undo button. When macOS successfully placed an item in the Trash, use Finder → Trash → Put Back before emptying it.</p></div></div>
+        <div class="ans"><div><p data-fr="CoreTend n'intègre pas de fonction de restauration après l'action. Lorsqu'un élément a bien été placé dans la Corbeille par macOS, utilisez Finder → Corbeille → Remettre avant de la vider.">CoreTend has no built-in restore action after removal. When macOS successfully placed an item in the Trash, use Finder → Trash → Put Back before emptying it.</p></div></div>
       </details>
       <details data-reveal>
         <summary data-fr="Pourquoi cet avertissement au lancement ?">Why the warning on first launch?</summary>
@@ -956,7 +956,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
       </details>
       <details data-reveal>
         <summary data-fr="Que se passe-t-il si je supprime quelque chose d'important ?">What if I remove something I needed?</summary>
-        <div class="ans"><div><p data-fr="La simulation est active par défaut, les emplacements système sont protégés et chaque résultat reste vérifiable avant validation. Duplicates parcourt aussi Documents, et certaines catégories commencent sélectionnées : relisez toujours la sélection et contrôlez la Corbeille après l'action.">Dry run is on by default, system locations are protected and each result remains inspectable before confirmation. Duplicates also searches Documents, and some categories start selected, so always review the selection and check the Trash after acting.</p></div></div>
+        <div class="ans"><div><p data-fr="Les emplacements système sont protégés et chaque résultat reste vérifiable avant confirmation. Duplicates parcourt aussi Documents, et certaines catégories commencent sélectionnées : relisez toujours la sélection et contrôlez la Corbeille après l'action.">System locations are protected and each result remains inspectable before confirmation. Duplicates also searches Documents, and some categories start selected, so always review the selection and check the Trash after acting.</p></div></div>
       </details>
       <details data-reveal>
         <summary data-fr="Faut-il payer, s'abonner, créer un compte ?">Is there a price, a subscription, an account?</summary>
@@ -1020,10 +1020,10 @@ const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
 
 /* ─── copy decks ─────────────────────────────────────────── */
 const TICKER = {
-  en:["Local scans","No account","No telemetry","Dry run by default","Eligible items use Trash",
+  en:["Local scans","No account","No telemetry","Explicit confirmation","Eligible items use Trash",
       "Every path shown before it moves","SHA-256 on every release","Apache-2.0","Apple silicon native",
       "System locations protected","Interruptible supported scans","Local activity record"],
-  fr:["Analyses locales","Aucun compte","Aucune télémétrie","Simulation par défaut","Corbeille pour les éléments éligibles",
+  fr:["Analyses locales","Aucun compte","Aucune télémétrie","Confirmation explicite","Corbeille pour les éléments éligibles",
       "Chaque chemin visible avant tout déplacement","SHA-256 à chaque version","Apache-2.0","Natif Apple silicon",
       "Emplacements système protégés","Analyses prises en charge interruptibles","Journal local"]
 };
@@ -1086,10 +1086,10 @@ const VIEWS = {
     title:{en:"Activity",fr:"Activité"},
     meta:{en:"3 example records · local aggregate history",fr:"3 entrées d’exemple · historique local agrégé"},
     foot:{en:"Stored on this Mac only.",fr:"Conservé sur ce Mac uniquement."},
-    map:[["Storage scan",49],["Storage dry run",43],["Duplicates to Trash",8]],
+    map:[["Storage scan",49],["Storage review",43],["Duplicates to Trash",8]],
     rows:[
       {p:"Example · Storage scan",s:"3.9 GB",o:1,t:{en:"scanned",fr:"analysé"}},
-      {p:"Example · Storage dry run",s:"3.4 GB",o:.7,t:{en:"simulated",fr:"simulé"}},
+      {p:"Example · Storage cleanup",s:"3.4 GB",o:.7,t:{en:"moved",fr:"déplacé"}},
       {p:"Example · Duplicates moved to Trash",s:"624 MB",o:.5,t:{en:"trashed",fr:"corbeille"}}
     ]}
 };

@@ -56,12 +56,13 @@ exception allowed), **MAY** (optional, discretionary).
   (`downloadsOnlyScanNeverTouchesSiblingDirectories`, confirmed passing in this session's test run).
 - **Current scope**: held, test-backed.
 
-### SAFE-005 — Dry-run is the default state
-- **Wording**: D3, "SafetyCenter defaults to dryRun=true; the user must explicitly flip the toggle to
-  move anything to the Trash." (`DECISIONS.md:13-15`)
+### SAFE-005 — Destructive actions require review and explicit confirmation
+- **Wording**: D-R5, “Every destructive surface presents the selection and
+  requires an explicit confirmation before execution.”
 - **Priority**: MUST
 - **Justification**: safest default for a destructive-capable tool.
-- **Evidence**: `SafetyCenter` default value.
+- **Evidence**: confirmation dialogs in every destructive SwiftUI surface;
+  `SafetyCenter` typed approval and execution-time re-validation.
 - **Current scope**: held.
 
 ### SAFE-006 — Symlinks are never followed during scans
@@ -75,26 +76,26 @@ exception allowed), **MAY** (optional, discretionary).
 
 ---
 
-## PROTECTION / SEC — Malware scanning and security posture
+## PROTECTION / SEC — Integrity and security posture
 
-### PROTECTION-001 — Protection must not fabricate scan capability when ClamAV is absent
-- **Wording**: "Protection (malware scanning) requires ClamAV installed locally; when absent the UI
-  states this honestly rather than pretending to scan." (`KNOWN_LIMITATIONS.md:7-8`)
+### PROTECTION-001 — Integrity must report only verifiable native signals
+- **Wording**: Integrity reports download provenance, code-signature tiers and login items from
+  native macOS metadata. It never claims malware detection, threat counts or quarantine.
 - **Priority**: MUST
-- **Justification**: false security signal is worse than an honest "unavailable" state.
-- **Evidence**: `Sources/CoreTendApp/ProtectionView.swift` "unavailable" card path;
-  `Documentation/CLAMAV_DECISION.md`, `PROTECTION_LIMITATIONS.md`.
-- **Current scope**: held (re-verified via `Documentation/CLAMAV_DECISION.md` session-2 note: "the Protection tab
-  renders an honest 'unavailable' card when [ClamAV is] absent").
+- **Justification**: a false security claim is worse than a deliberately narrow, factual integrity
+  surface.
+- **Evidence**: `Sources/CoreTendApp/ProtectionView.swift`,
+  `Sources/IntegrityCore/IntegrityCore.swift`, `Tests/IntegrityCoreTests`.
+- **Current scope**: held; the former external scanner module is absent from `Package.swift` and
+  `Sources/`.
 
-### SEC-001 — No shell-injectable subprocess invocation
-- **Wording**: derived from `SECURITY_AUDIT_CURRENT.md`: "the one `Process()` call uses an argument
-  array (no shell injection surface)."
+### SEC-001 — No application subprocess execution
+- **Wording**: production Swift sources must not launch external commands or depend on shell lookup.
 - **Priority**: MUST
-- **Justification**: the app shells out to `clamscan`; argument-array invocation (not string-interpolated
-  shell) is the baseline injection defense.
-- **Evidence**: `Sources/MalwareEngine/MalwareEngine.swift:56`.
-- **Current scope**: held, per session 2's audit; not re-verified independently this session.
+- **Justification**: removes shell-injection, PATH-substitution and missing-tool failure classes from
+  the application boundary.
+- **Evidence**: zero `Process(` calls in `Sources/`; Integrity uses Security/Foundation APIs.
+- **Current scope**: held.
 
 ### SEC-002 — No sudo invocations from the app
 - **Wording**: SECURITY_AUDIT_CURRENT.md: "zero actual `sudo` invocations (only string-detector
@@ -215,21 +216,20 @@ exception allowed), **MAY** (optional, discretionary).
   `Documentation/LEGAL_AND_LICENSE_STATUS.md` and `Documentation/THIRD_PARTY.md` (the files that
   actually exist).
 
-### OSS-001 — Zero external SwiftPM dependencies
-- **Wording**: `DEPENDENCIES.md`: "this repo has zero external SwiftPM dependencies (every target is
-  first-party)."
+### OSS-001 — No external runtime SwiftPM dependency
+- **Wording**: every production target is first-party; `swift-testing` is test-only and never
+  linked into the shipped application.
 - **Priority**: SHOULD (a deliberate minimalism choice, not an absolute technical constraint)
-- **Evidence**: `Package.swift`.
+- **Evidence**: `Package.swift`, `Documentation/DEPENDENCIES.md`.
 - **Current scope**: held.
 
-### OSS-002 — ClamAV is a runtime-only, never-linked, never-bundled dependency
-- **Wording**: `CLAMAV_DECISION.md`/`PROTECTION_LIMITATIONS.md`: "libclamav is never linked, no ClamAV binaries/
-  signatures are bundled, `ClamAVScanner` only probes known Homebrew/MacPorts paths for a
-  user-installed `clamscan`."
+### OSS-002 — No third-party scanner is linked, bundled or executed
+- **Wording**: the shipped application contains only first-party code and macOS system frameworks;
+  IntegrityCore uses native metadata APIs.
 - **Priority**: MUST
-- **Justification**: keeps the GPL-2.0-licensed ClamAV outside the Apache-2.0 codebase's linkage
-  boundary — a licensing-compatibility requirement, not just an architecture note.
-- **Evidence**: `Sources/MalwareEngine/MalwareEngine.swift`.
+- **Justification**: maintains a clear licensing and trust boundary and prevents an unavailable
+  external tool from becoming a product dependency.
+- **Evidence**: `Package.swift`, `Sources/IntegrityCore/`, distribution-content gate.
 - **Current scope**: held.
 
 ---
@@ -342,8 +342,8 @@ exception allowed), **MAY** (optional, discretionary).
 
 ## FUNC — Functional requirements per module
 
-### FUNC-001 — Smart Care orchestrates the same low-risk rules as manual Cleanup, dry-run first
-- **Wording**: derived from `README.md` ("orchestrated low-risk cleanup with a dry-run-first flow") and
+### FUNC-001 — Smart Care orchestrates the same low-risk rules as manual Cleanup, review first
+- **Wording**: derived from `README.md` and
   `FEATURE_INVENTORY.md` `smartcare.orchestration`.
 - **Priority**: MUST
 - **Acceptance criteria**: `SmartCareView` runs `UserCleanupRules.all` through the same `ScanEngine`/
@@ -365,19 +365,15 @@ exception allowed), **MAY** (optional, discretionary).
 - **Current scope**: COMPLIANT_VERIFIED. Note: rule set is small (7 rules) — no requirement claims
   broader coverage than this.
 
-### FUNC-003 — Protection scans honestly reflect ClamAV availability; quarantine is reversible
-- **Wording**: `README.md`: "optional integration with a separately-installed ClamAV; honest
-  'unavailable' state when ClamAV isn't present."
+### FUNC-003 — Integrity reports native, read-only security metadata honestly
+- **Wording**: Integrity exposes download provenance, code-signature status and login items without
+  claiming malware scanning or modifying files.
 - **Priority**: MUST
-- **Acceptance criteria**: no fabricated scan results when `clamscan` is absent; quarantine actions
-  (`restore`/`delete`) are explicit, not automatic.
-- **Evidence**: `MalwareEngine.swift:30-96` (`isAvailable` honest probe), `:100-160` (`Quarantine`
-  actor, UUID-prefixed, perms stripped, JSON manifest). **Real gap re-confirmed this session**: no test
-  exercises the actual `Process()` clamscan invocation, only output parsing — this machine has no
-  `clamscan` installed (BLOCKED_ENVIRONMENT for the live-scan path specifically).
-- **Current scope**: COMPLIANT_PARTIAL — wrapper/quarantine code is real and tested; the live-binary
-  invocation path is BLOCKED_ENVIRONMENT (no ClamAV installed on the audit machine, same as prior
-  sessions).
+- **Acceptance criteria**: every displayed value comes from Foundation/Security metadata; no scanner,
+  signature database, quarantine action or threat-count claim exists.
+- **Evidence**: `Sources/IntegrityCore/IntegrityCore.swift`,
+  `Sources/CoreTendApp/ProtectionView.swift`, `Tests/IntegrityCoreTests`.
+- **Current scope**: COMPLIANT_VERIFIED.
 
 ### FUNC-004 — Performance metrics are real system calls, never simulated
 - **Wording**: derived from `README.md` ("CPU/memory/pressure/disk/thermal metrics") and

@@ -5,8 +5,8 @@
 <p align="center">Local, transparent and reversible care for macOS.</p>
 
 CoreTend is an open-source macOS utility that explains storage findings before
-an approved action. Scans run locally, dry run is the default, and supported
-removals go to the Trash.
+an approved action. Scans run locally; supported removals require a reviewed
+selection and explicit confirmation, then go to the Trash.
 
 ## Current product
 

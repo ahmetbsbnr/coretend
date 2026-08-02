@@ -1,6 +1,6 @@
 # Persistence
 
-`Sources/Persistence/` — no dependencies, used by `CoreTendApp`.
+`Sources/Persistence/` — depends on SafetyCore and is used by `CoreTendApp`.
 
 ## `Database` (internal, `final class`)
 
@@ -19,8 +19,9 @@ The only persistence entry point the app uses. Default path:
 
 Three concerns, each a small table:
 - **Activity** (`recordActivity`, `activity(limit:kind:)`, `clearActivity`)
-  — history of scan/cleanup/restore/error events, with `dryRun` recorded
-  per entry.
+  — history of scan/cleanup/restore/error events. Cleanup bytes represent
+  completed moves only; retired preview rows remain in old databases solely
+  for downgrade compatibility and are hidden from current APIs.
 - **Exclusions** (`addExclusion`, `removeExclusion`, `exclusions`) — see
   [EXCLUSIONS.md](EXCLUSIONS.md).
 - **Settings** (`setSetting`, `setting`) — simple key/value store,
@@ -29,9 +30,9 @@ Three concerns, each a small table:
 All access is actor-isolated — call these from anywhere, awaits handle the
 serialization; there is no separate locking to reason about.
 
-## What's not here
+## Retired preview records
 
-Quarantine (Protection's malware findings) is a separate JSON-manifest
-store owned by `MalwareEngine.Quarantine`, not this SQLite database — see
-[QUARANTINE.md](QUARANTINE.md). Keeping it separate means a
-Persistence-layer bug can't corrupt quarantine state and vice versa.
+The v4 migration removes the former preview-default setting. Legacy columns
+remain for downgrade compatibility, while current activity and safety-log
+queries hide old preview-only rows. No current product API writes or exposes
+that mode. Integrity is read-only and has no quarantine store.
