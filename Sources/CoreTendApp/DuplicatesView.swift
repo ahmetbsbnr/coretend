@@ -165,7 +165,7 @@ final class DuplicatesViewModel {
         }
     }
 
-    func exportCSV() -> String {
+    func exportCSV(language: AppLanguage? = nil) -> String {
         var rows: [[String]] = [[
             "group_id", "path", "file_name", "directory", "size_bytes", "size_readable",
             "selected_for_removal", "suggested_keeper", "recommendation"
@@ -181,7 +181,7 @@ final class DuplicatesViewModel {
                     mcFormatBytes(group.fileSize),
                     selectedPaths.contains(url.path) ? "true" : "false",
                     url.path == group.keeper.path ? "true" : "false",
-                    recommendationText(for: url, in: group)
+                    recommendationText(for: url, in: group, language: language)
                 ])
             }
         }
@@ -197,8 +197,11 @@ final class DuplicatesViewModel {
             itemCount: filteredGroups.count, bytes: selectedBytes, dryRun: true))
     }
 
-    func recommendationText(for url: URL, in group: DuplicateGroup) -> String {
-        url.path == group.keeper.path ? L("dupes.suggested_keeper.why") : ""
+    func recommendationText(for url: URL, in group: DuplicateGroup, language: AppLanguage? = nil) -> String {
+        guard url.path == group.keeper.path else { return "" }
+        return language.map {
+            LocalizationManager.string(forKey: "dupes.suggested_keeper.why", language: $0)
+        } ?? L("dupes.suggested_keeper.why")
     }
 
     private static let exportDateFormatter: DateFormatter = {

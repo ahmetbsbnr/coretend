@@ -29,8 +29,7 @@ struct LocalizationManagerTests {
 
     @Test("an unknown persisted value falls back to .system rather than crashing")
     func unknownStoredValueFallsBackSafely() {
-        UserDefaults.standard.set("de", forKey: "appLanguage")
-        defer { UserDefaults.standard.removeObject(forKey: "appLanguage") }
-        #expect(LocalizationManager.language == .system)
+        #expect(LocalizationManager.language(fromStoredValue: "de") == .system)
+        #expect(LocalizationManager.language(fromStoredValue: nil) == .system)
     }
 }

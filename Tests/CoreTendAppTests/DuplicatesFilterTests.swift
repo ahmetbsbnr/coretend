@@ -54,7 +54,7 @@ struct DuplicatesFilterTests {
         m.groups = [DuplicateGroup(id: "hash-a", fileSize: 42, urls: [keep, remove])]
         m.selectedPaths = [remove.path]
 
-        let csv = m.exportCSV()
+        let csv = m.exportCSV(language: .en)
 
         #expect(csv.contains("\"group_id\",\"path\",\"file_name\",\"directory\",\"size_bytes\""))
         #expect(csv.contains("\"hash-a\",\"/tmp/Documents/report.csv\",\"report.csv\",\"/tmp/Documents\",\"42\""))
