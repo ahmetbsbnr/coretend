@@ -29,18 +29,18 @@ struct MenuBarAttentionTests {
 struct PermissionFormattingTests {
     @Test("authorized statuses read as Authorized")
     func authorized() {
-        #expect(PermissionFormatting.notificationLabel(.authorized) == "Authorized")
-        #expect(PermissionFormatting.notificationLabel(.provisional) == "Authorized")
+        #expect(PermissionFormatting.notificationLabel(.authorized, language: .en) == "Authorized")
+        #expect(PermissionFormatting.notificationLabel(.provisional, language: .en) == "Authorized")
     }
 
     @Test("denied reads as Denied")
     func denied() {
-        #expect(PermissionFormatting.notificationLabel(.denied) == "Denied")
+        #expect(PermissionFormatting.notificationLabel(.denied, language: .en) == "Denied")
     }
 
     @Test("not determined reads as Not requested, never claims granted")
     func notDetermined() {
-        #expect(PermissionFormatting.notificationLabel(.notDetermined) == "Not requested")
+        #expect(PermissionFormatting.notificationLabel(.notDetermined, language: .en) == "Not requested")
     }
 }
 
