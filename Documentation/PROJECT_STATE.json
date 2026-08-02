@@ -1,12 +1,12 @@
 {
   "project": "CoreTend",
-  "version": "0.9.1-rc.4",
-  "phase": "0.9.1-rc.4 — Replaces the retired ClamAV-based Protection tab with IntegrityCore (three read-only checks: download provenance, code-signature tier, login items — no scanning engine, no signature database, no third-party binary; see Documentation/CLAMAV_DECISION.md and Documentation/PROTECTION.md). Fixes repository-doctor and Security CI, which had been failing on every push to main: six documentation files linked to a Documentation/CLAMAV_DECISION.md that was referenced but never created, Documentation/README.md had two wrong relative links, DEPENDENCIES.md/LICENSING.md/LEGAL_AND_LICENSE_STATUS.md still described ClamAV as an optional runtime dependency after it had already been removed from Sources/, and the Security workflow's hardcoded-path check had no exclusion for the demo fixture's placeholder /Users/demo path.",
+  "version": "0.9.1-rc.5",
+  "phase": "0.9.1-rc.5 — Removes the former Dry Run product mode while preserving read-only scans, reviewed selections, explicit confirmations, protected-root validation and recoverable Trash actions. IntegrityCore remains the current read-only integrity implementation; the retired ClamAV interface and scanner remain absent. The public locale routes are normalized to /en and /fr.",
   "toolchain": "Swift 6.3.3 with Xcode 26.6 and Command Line Tools on macOS 26.5.1",
   "build_system": "SwiftPM; app bundle assembled by Scripts/package-local.sh; DMG assembled reproducibly with dmgbuild",
   "test_framework": "Swift Testing via Scripts/test.sh, plus Xcode and distribution/package gates",
   "done": [
-    "SafetyCore (validator, center, dry-run default, re-validation, audit)",
+    "SafetyCore (validator, typed approval, execution-time re-validation, Trash action, structured audit)",
     "ScanCore (streaming rules, exclusions, min-size/age, matches filter)",
     "DuplicateEngine (size→partial→SHA-256, hard-link aware, keeper suggestion)",
     "SpaceLensEngine + treemap UI (breadcrumbs, list fallback, Other bucket)",
@@ -16,12 +16,12 @@
     "AppDiscovery (inventory, associated data, leftovers) + uninstall via Trash",
     "IntegrityCore (download-provenance quarantine metadata, code-signature tier via SecStaticCode, login-item enumeration; replaces the retired ClamAV-based MalwareEngine — see Documentation/CLAMAV_DECISION.md)",
     "Cloud Cleanup (local vs logical footprint, no downloads, analysis only)",
-    "Smart Care orchestrator (dry-run, low-risk-only execution)",
+    "Smart Care orchestrator (reviewed low-risk selection, explicit confirmation, Trash execution)",
     "Cleanup (7 rules grouped by rule, exclusions honored)",
     "My Activity (history, filters, clear)",
     "Menu bar extra (samples only while open)",
     "Onboarding (real FDA probe)",
-    "Settings (dry-run default, exclusions, menu bar toggle)",
+    "Settings (exclusions, language, diagnostics, menu bar toggle)",
     "Docs complete; 0 build warnings",
     "Privacy Cleaner (profiles Chrome/Firefox/Safari, cache-only clean, browser-running warning)",
     "App Updater (App Store receipt / Sparkle feed detection, no downloads)",
@@ -54,9 +54,9 @@
     "failing": 0,
     "note": "338 @Test functions via Scripts/test.sh, including fail-closed Integrity/application-inventory isolation and a guarded artifact-appearance override."
   },
-  "last_build": "Debug and Release builds are green with zero project warnings on the rc.4 release branch. Scripts/test.sh exercises 338 tests; the single Developer-ID-specific test is honestly skipped because no Developer ID Application identity exists. Xcode's package suite is green; eight XCUIApplication contracts skip because SwiftPM emits their target as a unit-test bundle, while artifact UI is exercised through the isolated live capture harness. Website QA covers 32 behavioral/accessibility gates and 79 visual fingerprints. Final DMG, publication and production evidence are recorded in GOLD_MASTER_STATUS.md.",
+  "last_build": "The rc.5 source candidate compiles and its targeted SafetyCenter and migration tests pass. The complete 338-test, Debug/Release, Xcode, website and distribution gates must be rerun on the final clean source commit before publication; final evidence is recorded in GOLD_MASTER_STATUS.md.",
   "next_goals": [
-    "Publish and independently verify v0.9.1-rc.4, then atomically promote published-release.json and all public download metadata",
+    "Publish and independently verify v0.9.1-rc.5, then atomically promote published-release.json and all public download metadata",
     "Obtain a Developer ID Application certificate and notarize a later distribution build",
     "Evaluate a possible Mac App Store edition separately; no current App Store availability is claimed"
   ],
@@ -67,5 +67,5 @@
     "A Mac App Store edition is only a future study"
   ],
   "open_decisions": [],
-  "git_commit": "The exact rc.4 source commit and published artifact hash are recorded post-build in Documentation/GOLD_MASTER_STATUS.md and the release provenance files; a source file cannot truthfully embed the hash of the commit that contains itself."
+  "git_commit": "The exact rc.5 source commit and published artifact hash are recorded post-build in Documentation/GOLD_MASTER_STATUS.md and the release provenance files; a source file cannot truthfully embed the hash of the commit that contains itself."
 }

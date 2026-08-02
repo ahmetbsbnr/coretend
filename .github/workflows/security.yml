@@ -32,6 +32,9 @@ jobs:
       - name: License check
         run: Scripts/check-licenses.sh
 
+      - name: Retired preview mode and destructive-confirmation gate
+        run: Scripts/check-retired-preview-mode.sh
+
       - name: Secret scan (grep-based)
         run: |
           set -eu

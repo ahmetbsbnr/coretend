@@ -12,12 +12,11 @@ import ScanCore
 @MainActor
 @Observable
 final class PrivacyCleanerViewModel {
-    enum Phase: Equatable { case scanning, results, empty, finished(freed: Int64, dryRun: Bool) }
+    enum Phase: Equatable { case scanning, results, empty, finished(freed: Int64) }
 
     var phase: Phase = .scanning
     var profiles: [BrowserProfile] = []
     var selectedProfileIDs: Set<String> = []
-    var dryRun = true
     private var scanTask: Task<[BrowserProfile], Never>?
     private var pauseController: ScanPauseController?
     private(set) var isPaused = false
@@ -110,7 +109,7 @@ final class PrivacyCleanerViewModel {
         let home = FileManager.default.homeDirectoryForCurrentUser
         let center = SafetyCenter(
             validator: PathValidator(allowedRoots: [home.appendingPathComponent("Library/Caches")]),
-            dryRun: dryRun, sink: AppEnvironment.shared.store)
+            sink: AppEnvironment.shared.store)
         var approved: [ApprovedFileOperation] = []
         for profile in selected {
             for url in profile.cacheURLs {
@@ -122,16 +121,17 @@ final class PrivacyCleanerViewModel {
         }
         let result = await center.execute(approved)
         let freed = result.executed.reduce(0) { $0 + $1.logicalSize }
-        phase = .finished(freed: freed, dryRun: result.wasDryRun)
+        phase = .finished(freed: freed)
         AppEnvironment.shared.record(ActivityRecord(
             kind: .cleanup,
-            summary: result.wasDryRun ? "Browser cache dry run" : "Browser caches moved to Trash",
-            itemCount: result.executed.count, bytes: freed, dryRun: result.wasDryRun))
+            summary: "Browser caches moved to Trash",
+            itemCount: result.executed.count, bytes: freed))
     }
 }
 
 struct PrivacyCleanerView: View {
     @State private var model = PrivacyCleanerViewModel()
+    @State private var showMoveConfirmation = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -162,13 +162,12 @@ struct PrivacyCleanerView: View {
                              iconSize: MCIconSize.emptyState)
             case .results:
                 resultsView
-            case let .finished(freed, dryRun):
+            case let .finished(freed):
                 VStack(spacing: MCSpacing.sm) {
                     Image(systemName: "checkmark.seal")
                         .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
                         .accessibilityHidden(true)
-                    Text(dryRun ? L("privacy.finished.dryrun", mcFormatBytes(freed))
-                                : L("privacy.finished.moved", mcFormatBytes(freed)))
+                    Text(L("privacy.finished.moved", mcFormatBytes(freed)))
                         .font(.title3.weight(.semibold))
                     Button(L("smartcare.scan_again")) { Task { await model.scan() } }
                 }
@@ -177,6 +176,18 @@ struct PrivacyCleanerView: View {
         }
         .accessibilityIdentifier("privacy.root")
         .task { await model.scan() }
+        .confirmationDialog(
+            L("common.trash_confirm.title"),
+            isPresented: $showMoveConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(L("common.trash_confirm.action"), role: .destructive) {
+                Task { await model.cleanCaches() }
+            }
+            Button(L("common.cancel"), role: .cancel) {}
+        } message: {
+            Text(L("common.trash_confirm.message"))
+        }
     }
 
     private var resultsView: some View {
@@ -193,9 +204,8 @@ struct PrivacyCleanerView: View {
                 Text(L("privacy.caches_selected", mcFormatBytes(model.selectedCacheBytes)))
                     .font(MCFont.cardTitle)
                 Spacer()
-                Toggle(L("common.dry_run"), isOn: $model.dryRun).toggleStyle(.switch)
-                Button(model.dryRun ? L("privacy.simulate_clean") : L("privacy.clean_caches")) {
-                    Task { await model.cleanCaches() }
+                Button(L("privacy.clean_caches")) {
+                    showMoveConfirmation = true
                 }
                 .buttonStyle(.borderedProminent)
                 .accessibilityIdentifier("privacy.clean")

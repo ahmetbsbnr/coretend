@@ -84,20 +84,20 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 
 ### SAFE-005
 - **Priority**: MUST
-- **Source**: DECISIONS.md:13-15 (D3)
+- **Source**: DECISIONS.md (D-R5)
 - **Status**: **COMPLIANT_VERIFIED**
-- **Files**: Sources/SafetyCore/SafetyCore.swift
-- **Symbols**: SafetyCenter.init(validator:dryRun: Bool = true)
-- **Views**: CleanupView.swift, DuplicatesView.swift, ApplicationsView.swift, LeftoversView.swift, PrivacyCleanerView.swift
-- **Test**: none dedicated; verified by direct code read (default parameter value).
-- **Command**: `read Sources/SafetyCore/SafetyCore.swift:126`
+- **Files**: Sources/SafetyCore/SafetyCore.swift; Sources/CoreTendApp/CleanupView.swift; Sources/CoreTendApp/DuplicatesView.swift; Sources/CoreTendApp/ApplicationsView.swift; Sources/CoreTendApp/LeftoversView.swift; Sources/CoreTendApp/PrivacyCleanerView.swift; Sources/CoreTendApp/SmartCareView.swift; Sources/CoreTendApp/SpaceLensView.swift
+- **Symbols**: SafetyCenter.approve; SafetyCenter.execute; confirmationDialog
+- **Views**: CleanupView.swift, DuplicatesView.swift, ApplicationsView.swift, LeftoversView.swift, PrivacyCleanerView.swift, SmartCareView.swift, SpaceLensView.swift
+- **Test**: SafetyCenter execution/audit tests plus the retired-mode repository gate.
+- **Command**: `bash Scripts/check-retired-preview-mode.sh && swift test`
 - **Runtime evidence**: n/a
 - **Bundle evidence**: n/a
 - **Visual evidence**: n/a
-- **Limitation**: each view constructs its own SafetyCenter and passes its own dryRun state variable — the MUST-default protection depends on every call site's own @State default also being true; not exhaustively checked for all 5 call sites this session.
-- **User impact**: low if a call site regressed its own default (would only matter for that one feature)
-- **Risk**: medium (not fully re-verified across all 5 UI call sites)
-- **Needed fix**: grep + confirm each view's dryRun @State initial value is true (session 3)
+- **Limitation**: none found
+- **User impact**: none
+- **Risk**: low
+- **Needed fix**: none
 - **Recommended version**: n/a
 
 ### SAFE-006
@@ -124,20 +124,20 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 
 ### PROTECTION-001
 - **Priority**: MUST
-- **Source**: KNOWN_LIMITATIONS.md:7-8
+- **Source**: PROTECTION.md; CLAMAV_DECISION.md
 - **Status**: **COMPLIANT_VERIFIED**
-- **Files**: Sources/CoreTendApp/ProtectionView.swift, Sources/MalwareEngine/MalwareEngine.swift
-- **Symbols**: ClamAVScanner.isAvailable, ProtectionView body (guard scanner.isAvailable)
+- **Files**: Sources/CoreTendApp/ProtectionView.swift, Sources/IntegrityCore/IntegrityCore.swift
+- **Symbols**: ProvenanceScanner; CodeSignInspector; LoginItemScanner; IntegrityView
 - **Views**: ProtectionView.swift
-- **Test**: no dedicated UI test (no display/XCUITest in this headless env); verified by code read: ProtectionView.swift:27,97 both gate real-scan UI behind scanner.isAvailable, ClamAVScanner.isAvailable is false unless a real clamscan binary is found at a known path (no fake/simulated result path exists in the engine).
-- **Command**: `grep -n isAvailable Sources/CoreTendApp/ProtectionView.swift; read Sources/MalwareEngine/MalwareEngine.swift:28-48`
-- **Runtime evidence**: clamscan not installed in this environment (Scripts/doctor.sh confirms 'clamscan not found'), so isAvailable=false path is the one actually exercised by any run in this environment — but the 'unavailable' card itself has not been visually screenshotted this session (headless).
+- **Test**: IntegrityCoreTests cover provenance metadata, Apple/ad-hoc/unsigned signature tiers, malformed inputs and login-item parsing.
+- **Command**: `swift test --filter IntegrityCoreTests`
+- **Runtime evidence**: native Security/Foundation APIs only; no external process or scanner path in `Sources/`.
 - **Bundle evidence**: n/a
-- **Visual evidence**: NOT CAPTURED this session — needs a human/GUI pass; see MANUAL_ACCEPTANCE_TEST_PLAN.md
-- **Limitation**: honest-unavailable code path verified structurally, not visually rendered
-- **User impact**: none — code path is correct
+- **Visual evidence**: isolated application smoke/capture campaign
+- **Limitation**: informational integrity signals are deliberately not malware detection
+- **User impact**: users receive narrow, verifiable facts rather than a security overclaim
 - **Risk**: low
-- **Needed fix**: visual screenshot/manual QA of the unavailable card
+- **Needed fix**: none
 - **Recommended version**: n/a
 
 ---
@@ -148,11 +148,11 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 - **Priority**: MUST
 - **Source**: SECURITY_AUDIT_CURRENT.md
 - **Status**: **COMPLIANT_VERIFIED**
-- **Files**: Sources/MalwareEngine/MalwareEngine.swift
-- **Symbols**: ClamAVScanner.scan(paths:)
+- **Files**: Sources/
+- **Symbols**: —
 - **Views**: —
-- **Test**: none dedicated; re-verified by direct code read this session (baseline had flagged this as 'not re-verified independently').
-- **Command**: `read Sources/MalwareEngine/MalwareEngine.swift:50-58 — process.arguments = [...] + paths.map(\.path), no shell string interpolation anywhere in Sources/`
+- **Test**: source security gate rejects unexpected subprocess execution.
+- **Command**: `rg 'Process\\s*\\(' Sources/`
 - **Runtime evidence**: n/a
 - **Bundle evidence**: n/a
 - **Visual evidence**: n/a
@@ -170,7 +170,7 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 - **Symbols**: —
 - **Views**: —
 - **Test**: none dedicated; re-verified by a fresh grep this session (baseline had flagged 'not re-verified independently').
-- **Command**: `grep -rn '"sudo\|sudo ' Sources/ — only match is Process() itself in MalwareEngine.swift, no literal 'sudo' string anywhere in Sources/`
+- **Command**: `rg -n 'sudo' Sources/` — zero matches
 - **Runtime evidence**: n/a
 - **Bundle evidence**: n/a
 - **Visual evidence**: n/a
@@ -414,15 +414,15 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 
 ### OSS-002
 - **Priority**: MUST
-- **Source**: CLAMAV_DECISION.md / PROTECTION_LIMITATIONS.md
+- **Source**: DEPENDENCIES.md / CLAMAV_DECISION.md
 - **Status**: **COMPLIANT_VERIFIED**
-- **Files**: Sources/MalwareEngine/MalwareEngine.swift
-- **Symbols**: ClamAVScanner
+- **Files**: Package.swift; Sources/IntegrityCore/IntegrityCore.swift
+- **Symbols**: IntegrityCore
 - **Views**: —
-- **Test**: none dedicated; verified by code read — ClamAVScanner shells out to a probed clamscan binary path, no libclamav linkage, no bundled binaries/signatures anywhere in Sources/ or Resources/.
-- **Command**: `grep -rn 'libclamav\|clamav' Package.swift Sources/`
+- **Test**: retired-component source and distribution gates.
+- **Command**: `rg -i 'clamscan|MalwareEngine' Package.swift Sources Resources`
 - **Runtime evidence**: n/a
-- **Bundle evidence**: no ClamAV binaries in Release/ artifacts (Scripts/test-distribution.sh confirms only app bundle contents, no third-party binaries)
+- **Bundle evidence**: distribution gate confirms no third-party scanner binary or metadata
 - **Visual evidence**: n/a
 - **Limitation**: none found
 - **User impact**: none
@@ -669,20 +669,20 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 
 ### FUNC-003
 - **Priority**: MUST
-- **Source**: README.md; CLAMAV_DECISION.md
-- **Status**: **COMPLIANT_PARTIAL**
-- **Files**: Sources/MalwareEngine/MalwareEngine.swift
-- **Symbols**: ClamAVScanner.isAvailable; Quarantine.restore/delete
+- **Source**: README.md; PROTECTION.md; CLAMAV_DECISION.md
+- **Status**: **COMPLIANT_VERIFIED**
+- **Files**: Sources/IntegrityCore/IntegrityCore.swift; Sources/CoreTendApp/ProtectionView.swift
+- **Symbols**: ProvenanceScanner; CodeSignInspector; LoginItemScanner
 - **Views**: ProtectionView
-- **Test**: Quarantine tests (4/4 passing); no test exercises real Process() clamscan invocation
-- **Command**: `grep -n 'isAvailable\|Process(' Sources/MalwareEngine/MalwareEngine.swift`
-- **Runtime evidence**: BLOCKED_ENVIRONMENT — no clamscan installed on this machine
+- **Test**: IntegrityCoreTests cover real metadata parsing and signature classification
+- **Command**: `swift test --filter IntegrityCoreTests`
+- **Runtime evidence**: native local metadata only; no external engine dependency
 - **Bundle evidence**: n/a
-- **Visual evidence**: n/a
-- **Limitation**: Live-binary invocation path unverifiable without ClamAV installed.
-- **User impact**: scan quality unverifiable end-to-end
-- **Risk**: medium
-- **Needed fix**: install ClamAV in a future session and run a live scan test
+- **Visual evidence**: isolated application smoke/capture campaign
+- **Limitation**: Integrity is informational and does not claim malware detection
+- **User impact**: narrow and honest security context
+- **Risk**: low
+- **Needed fix**: none
 - **Recommended version**: n/a
 
 ### FUNC-004

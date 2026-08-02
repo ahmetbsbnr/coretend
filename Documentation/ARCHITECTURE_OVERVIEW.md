@@ -14,7 +14,7 @@ ScanCore   FileRules ---> (also depends on ScanCore)
    ^
    |
 CoreTendApp (executable) ---> also depends on: DesignSystem, Persistence,
-                              SystemMetrics, AppDiscovery, MalwareEngine
+                              SystemMetrics, AppDiscovery, IntegrityCore
 ```
 
 `SafetyCore` sits at the bottom deliberately — nothing above it can bypass
@@ -32,25 +32,23 @@ other way around.
    on-screen rendering only, not for totals — see `CHANGELOG.md`).
 4. User reviews/selects findings in the UI. Nothing has been validated for
    deletion yet — findings are just evidence.
-5. On "Move to Trash" (or "Simulate" in dry-run), each selected finding
-   goes through **SafetyCore.SafetyCenter**, which re-validates the path
+5. “Move to Trash” opens an explicit confirmation. After confirmation, each
+   selected finding goes through **SafetyCore.SafetyCenter**, which re-validates the path
    (protected roots, symlink escape, allowlist) immediately before acting
    — see [SAFETYCORE.md](SAFETYCORE.md) — and produces an
    `ApprovedFileOperation`, the only type the actual trash-move call
    accepts.
-6. The result (files moved, bytes freed, dry-run flag) is recorded via
+6. The result (files actually moved and bytes reclaimed) is recorded via
    **Persistence.Store.recordActivity** — see [PERSISTENCE.md](PERSISTENCE.md).
 7. UI shows the done screen; user can restore from Trash — see
    [RESTORE.md](RESTORE.md).
 
 ## Where Protection differs
 
-Protection (`ProtectionView.swift` + `MalwareEngine`) does not go through
-`ScanCore`/`SafetyCore` at all — it shells out to a local `clamscan`
-binary and manages its own quarantine folder + JSON manifest
-(`MalwareEngine.Quarantine`), independent of the SQLite `Store`. See
-[PROTECTION.md](PROTECTION.md) and [SCANCORE.md](SCANCORE.md) (for why
-these stay separate systems).
+Integrity (`ProtectionView.swift` + `IntegrityCore`) is read-only. It reports
+macOS download provenance, code-signature tiers and launch items from local
+metadata; it does not claim malware detection and ships no third-party scanner.
+Privacy Cleaner uses the normal reviewed, confirmed SafetyCore Trash path.
 
 ## UI layer conventions
 

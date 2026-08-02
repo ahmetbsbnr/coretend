@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "fixtureId": "coretend-product-example-v1",
+  "schemaVersion": 2,
+  "fixtureId": "coretend-product-example-v2",
   "fixtureKind": "example",
   "labels": {
     "en": "Example product data",
@@ -26,7 +26,7 @@
       },
       "data": {
         "freeBytes": 137438953472,
-        "dryRunEnabled": true,
+        "trashEnabled": true,
         "latestActivityRef": "activity-003",
         "workflowDestinations": [
           "storage",
@@ -369,10 +369,9 @@
         "fr": "Données d’exemple"
       },
       "data": {
-        "totalBytes": 8438939648,
-        "realFreedBytes": 654311424,
-        "simulatedFreedBytes": 3623878656,
-        "itemCount": 12,
+        "totalBytes": 4815060992,
+        "freedBytes": 654311424,
+        "itemCount": 8,
         "records": [
           {
             "id": "activity-001",
@@ -380,17 +379,7 @@
             "kind": "scan",
             "summary": "Storage scan example",
             "itemCount": 5,
-            "bytes": 4160749568,
-            "dryRun": true
-          },
-          {
-            "id": "activity-002",
-            "date": "2026-07-30T09:14:00Z",
-            "kind": "cleanup",
-            "summary": "Storage dry-run example",
-            "itemCount": 4,
-            "bytes": 3623878656,
-            "dryRun": true
+            "bytes": 4160749568
           },
           {
             "id": "activity-003",
@@ -398,8 +387,7 @@
             "kind": "cleanup",
             "summary": "Duplicates moved to Trash example",
             "itemCount": 3,
-            "bytes": 654311424,
-            "dryRun": false
+            "bytes": 654311424
           }
         ]
       }
@@ -417,7 +405,6 @@
         "fr": "Données d’exemple"
       },
       "data": {
-        "dryRunDefault": true,
         "menuBarEnabled": true,
         "telemetryEnabled": false,
         "accountRequired": false,

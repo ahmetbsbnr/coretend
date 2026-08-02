@@ -5,8 +5,8 @@ Current coverage (24 tests):
 - PathValidator: valid path, empty, "/", /System, /bin,/sbin,/usr/*, home itself,
   outside allowlist, "..", prefix boundary, symlink escape, symlink inside, unicode,
   very long path.
-- SafetyCenter: dry-run non-destructive, vanished file skipped, symlink swapped
-  between approve and execute rejected.
+- SafetyCenter: confirmed execution removes the original path, vanished files
+  are skipped, and a symlink swapped between approval and execution is rejected.
 - ScanEngine: finds files + sizes, min-age filter, missing root, symlinked dir not
   descended, cancellation mid-stream.
 - FileRules: unique stable ids, no rule targets user content roots, deletion

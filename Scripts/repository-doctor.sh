@@ -87,6 +87,14 @@ else
   fail=1
 fi
 
+echo "-- Retired product preview mode: absent; destructive surfaces require confirmation --"
+if Scripts/check-retired-preview-mode.sh; then
+  :
+else
+  echo "  FAIL: retired preview mode or an unconfirmed destructive surface was found"
+  fail=1
+fi
+
 echo "-- Markdown links: zero broken internal links/anchors --"
 if python3 Scripts/check-markdown-links.py; then
   :

@@ -140,7 +140,14 @@ esac
 # macOS. Apple removed the Control-click override in macOS 15.
 MAJOR=$(sw_vers -productVersion | cut -d. -f1)
 if [ "$MAJOR" -ge 15 ]; then
-  grep -q "Open Anyway" README.md || die PACKAGING "README does not document the System Settings route"
+  # Markdown may wrap a phrase across source lines while rendering it as one
+  # sentence. Normalize line breaks so harmless prose reflow cannot turn this
+  # release gate into a false negative.
+  README_COPY=$(tr '\n' ' ' < README.md)
+  case "$README_COPY" in
+    *"Open Anyway"*) ;;
+    *) die PACKAGING "README does not document the System Settings route" ;;
+  esac
   grep -rq "Ouvrir quand même" Website/fr/index.html || die PACKAGING "the FR site does not document the System Settings route"
   grep -rq "Open Anyway" Website/en/index.html || die PACKAGING "the EN site does not document the System Settings route"
   ok "documented recovery route matches macOS $MAJOR (System Settings, not Control-click)"

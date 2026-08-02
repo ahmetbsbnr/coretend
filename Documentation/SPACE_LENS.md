@@ -17,10 +17,12 @@ fragment to descend; a breadcrumb lets you pop back to any ancestor. Empty
 directories and zero-size nodes are handled without errors.
 
 ## Actions
-Space Lens is an **analysis view** — it does not delete anything. Use it to
-understand where space goes, then act through Finder or the relevant cleanup
-feature. Each completed scan is recorded as a dry-run activity entry
-(name + total size + top-level item count).
+Space Lens is analysis-first. A real row can be revealed in Finder, previewed,
+excluded, or selected for a Trash action. A destructive action requires an
+explicit confirmation and is routed through `SafetyCenter` with an allowlist
+scoped to the scanned root. After a completed move, Space Lens re-scans the
+tree rather than guessing at updated totals. Each scan is recorded as a scan
+activity entry (name + measured total + top-level item count).
 
 ## Accessibility
 The treemap exposes an item-count and size summary to VoiceOver; the

@@ -64,6 +64,12 @@ SENSITIVE_KEYS = {
     "secret",
     "token",
 }
+RETIRED_PREVIEW_KEYS = {
+    "dryrun",
+    "dryrunenabled",
+    "dryrundefault",
+    "simulatedfreedbytes",
+}
 
 
 class DuplicateKeyError(ValueError):
@@ -148,10 +154,10 @@ class FixtureValidator:
         if root is None:
             return self.errors
 
-        if root.get("schemaVersion") != 1:
-            self.error("$.schemaVersion", "expected schema version 1")
-        if root.get("fixtureId") != "coretend-product-example-v1":
-            self.error("$.fixtureId", "must identify the version-1 CoreTend product example")
+        if root.get("schemaVersion") != 2:
+            self.error("$.schemaVersion", "expected schema version 2")
+        if root.get("fixtureId") != "coretend-product-example-v2":
+            self.error("$.fixtureId", "must identify the version-2 CoreTend product example")
         if root.get("fixtureKind") != "example":
             self.error("$.fixtureKind", "must be 'example'")
 
@@ -223,6 +229,8 @@ class FixtureValidator:
         if isinstance(value, dict):
             for key, child in value.items():
                 normalized_key = re.sub(r"[^a-z0-9]", "", key.lower())
+                if normalized_key in RETIRED_PREVIEW_KEYS:
+                    self.error(f"{path}.{key}", "retired preview-mode data is forbidden")
                 if normalized_key in SENSITIVE_KEYS and child not in (None, "", False):
                     self.error(f"{path}.{key}", "secret-bearing keys are forbidden in demo fixtures")
                 self.scan_private_data(child, f"{path}.{key}")
@@ -260,8 +268,8 @@ class FixtureValidator:
         if data is None:
             return
         self.integer(data, "freeBytes", "$.modules.dashboard.data")
-        if self.boolean(data, "dryRunEnabled", "$.modules.dashboard.data") is not True:
-            self.error("$.modules.dashboard.data.dryRunEnabled", "the example must show dry run enabled")
+        if self.boolean(data, "trashEnabled", "$.modules.dashboard.data") is not True:
+            self.error("$.modules.dashboard.data.trashEnabled", "the example must show recoverable Trash actions")
         workflows = self.array(data.get("workflowDestinations"), "$.modules.dashboard.data.workflowDestinations")
         if workflows is not None:
             if not all(isinstance(workflow, str) for workflow in workflows):
@@ -443,8 +451,7 @@ class FixtureValidator:
         if not records:
             self.error("$.modules.activity.data.records", "Activity requires example records")
         total = 0
-        real = 0
-        simulated = 0
+        freed = 0
         item_count = 0
         ids: set[str] = set()
         for index, raw_record in enumerate(records):
@@ -468,18 +475,14 @@ class FixtureValidator:
                     self.error(f"{path}.date", "expected an ISO-8601 timestamp")
             record_bytes = self.integer(record, "bytes", path)
             count = self.integer(record, "itemCount", path)
-            dry_run = self.boolean(record, "dryRun", path)
             if record_bytes is not None:
                 total += record_bytes
-                if kind == "cleanup" and dry_run is True:
-                    simulated += record_bytes
-                elif kind == "cleanup" and dry_run is False:
-                    real += record_bytes
+                if kind == "cleanup":
+                    freed += record_bytes
             if count is not None:
                 item_count += count
         self.check_total(data, "totalBytes", total, "$.modules.activity.data")
-        self.check_total(data, "realFreedBytes", real, "$.modules.activity.data")
-        self.check_total(data, "simulatedFreedBytes", simulated, "$.modules.activity.data")
+        self.check_total(data, "freedBytes", freed, "$.modules.activity.data")
         self.check_total(data, "itemCount", item_count, "$.modules.activity.data")
 
         dashboard = self.data_for("dashboard")
@@ -492,8 +495,6 @@ class FixtureValidator:
         data = self.data_for("settings")
         if data is None:
             return
-        if self.boolean(data, "dryRunDefault", "$.modules.settings.data") is not True:
-            self.error("$.modules.settings.data.dryRunDefault", "CoreTend's default must remain dry run")
         if self.boolean(data, "telemetryEnabled", "$.modules.settings.data") is not False:
             self.error("$.modules.settings.data.telemetryEnabled", "CoreTend has no telemetry")
         if self.boolean(data, "accountRequired", "$.modules.settings.data") is not False:

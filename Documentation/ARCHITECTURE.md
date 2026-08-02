@@ -14,9 +14,10 @@ SwiftPM package, one executable + library modules:
   @Observable view models on MainActor. Heavy work stays off MainActor via engines.
 
 Flow (Cleanup): ScanEngine stream → view model accumulates findings (capped) →
-user reviews/toggles → SafetyCenter.approve each → execute (re-validate, trash/dry-run)
+user reviews/toggles → explicit confirmation → SafetyCenter.approve each → execute
+(re-validate, move to Trash)
 → result screen.
 
-Planned modules: Persistence (SQLite actor), SystemMetrics, AppDiscovery,
-DuplicateEngine, ImageSimilarity, MalwareEngine, Diagnostics, menu bar agent,
-privileged helper (XPC, typed methods only).
+Additional shipped modules: Persistence (SQLite actor), SystemMetrics,
+AppDiscovery, IntegrityCore, duplicate/image-similarity engines, diagnostics and
+menu-bar status. There is no privileged helper or third-party malware engine.

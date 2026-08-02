@@ -11,9 +11,9 @@ feature-inventory.json wins.
 
 | Module | Status | Notes |
 |---|---|---|
-| Smart Care | COMPLETE | Orchestrated cleanup scan, dry-run execute of low-risk items |
-| Cleanup | COMPLETE | 7 rules, grouped review, exclusions honored, Trash/dry-run |
-| Protection | PARTIAL | ClamAV wrapper + quarantine (restore/delete) implemented and tested (`Sources/MalwareEngine`); no ClamAV binary installed on this machine → UI honestly reports engine unavailable, not a code gap. Optional `ProtectionWatcher` FSEvents actor (debounce/coalesce/dedup/rate-limit/clean-restart, off-by-default, never auto-quarantines) wired into the Protection UI as an in-session Downloads/Applications watch |
+| Smart Care | COMPLETE | Orchestrated cleanup scan, reviewed low-risk selection, explicit confirmation, Trash execution |
+| Cleanup | COMPLETE | 7 rules, grouped review, exclusions honored, explicit confirmation and Trash |
+| Integrity | COMPLETE | Native download provenance, code-signature tier and login-item inspection through `IntegrityCore`; read-only, no malware-detection claim or third-party scanner |
 | Performance | COMPLETE | Live CPU/memory/pressure/disk/thermal, CPU chart, LaunchAgent inspection (read-only) |
 | Applications | COMPLETE | Inventory, associated data, Trash-based uninstall, Leftovers (conservative bundle-id matching, shared/ambiguous detection tested) |
 | My Clutter — Large & Old | COMPLETE | Read-only scan, tested |
@@ -25,7 +25,7 @@ feature-inventory.json wins.
 | App Updater | COMPLETE | `Sources/CoreTendApp/AppUpdatesView.swift` — App Store receipt / Sparkle feed detection, no downloads performed. Prior matrix wrongly listed this as not started — corrected this pass |
 | My Activity | COMPLETE | SQLite-backed history (`Sources/Persistence`), filter, clear |
 | Menu Bar | COMPLETE | MenuBarExtra, samples only while open |
-| Settings | COMPLETE | Dry-run default, exclusions, menu bar toggle |
+| Settings | COMPLETE | Exclusions, language, diagnostics and menu bar toggle |
 | Onboarding | COMPLETE | Real FDA probe, honest claims, uninstall info |
 | Persistence | COMPLETE | SQLite actor, migrations apply-once/idempotent (tested), activity/exclusions/settings storage |
 | Privileged helper | NOT_STARTED | Blocked: no Developer ID signing identity available; all current features work unprivileged, so this is a scope decision, not a stall |
@@ -42,7 +42,6 @@ feature-inventory.json wins.
   Transparency code paths, `swift build` + `swift test` success) was verified.
   Actual VoiceOver/on-screen rendering was not and cannot be re-verified here —
   marked BLOCKED_ENVIRONMENT above, not COMPLETE.
-- **Protection engine execution**: ClamAV is not installed on this machine, so
-  the real-signature-scan path itself (as opposed to the wrapper code, which
-  is tested with a fake `clamscan`) is IMPLEMENTED_UNVERIFIED in the sense
-  that no live scan against the real binary ran this session.
+- **Integrity team-signature tier**: the non-Apple team-signed test remains
+  skipped until a real signing identity is available. Apple-signed, unsigned
+  and ad-hoc tiers are covered without fabricating an identity.

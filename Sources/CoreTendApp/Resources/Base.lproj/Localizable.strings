@@ -2,6 +2,9 @@
 
 /* Common */
 "common.cancel" = "Cancel";
+"common.trash_confirm.title" = "Move the reviewed selection to Trash?";
+"common.trash_confirm.message" = "Only the selected items will move to Trash. You can restore them from Trash until it is emptied.";
+"common.trash_confirm.action" = "Move to Trash";
 "common.pause" = "Pause";
 "common.resume" = "Resume";
 "cleanup.pause_hint" = "Temporarily suspend the current scan.";
@@ -14,7 +17,6 @@
 "spacelens.resume_hint" = "Continue the paused Space Lens scan.";
 "dupes.pause_hint" = "Temporarily suspend the duplicate scan.";
 "dupes.resume_hint" = "Continue the paused duplicate scan.";
-"common.dry_run" = "Dry run";
 "common.running" = "Running…";
 "common.reveal_in_finder" = "Reveal in Finder";
 "common.clear" = "Clear";
@@ -50,7 +52,6 @@
 "smartcare.hero.scanning_title" = "Scanning…";
 "smartcare.hero.review_title" = "%@ safe to clean";
 "smartcare.hero.cleaning_title" = "Cleaning…";
-"smartcare.hero.finished_dryrun_title" = "Dry run: %@ would be freed";
 "smartcare.hero.finished_title" = "%@ moved to Trash";
 "smartcare.hero.idle_subtitle" = "A scan looks at storage first. Nothing is deleted during a scan.";
 "smartcare.hero.scanning_subtitle" = "Reading caches, logs and build data. You can cancel at any time.";
@@ -62,7 +63,6 @@
 "smartcare.module.scanning" = "Scanning… %d items, %@";
 "smartcare.module.done" = "%d items — %@";
 "smartcare.start_scan" = "Start Smart Care Scan";
-"smartcare.simulate_care" = "Simulate Care";
 "smartcare.run_care" = "Run Care";
 "smartcare.review_details_hint" = "Review details in the Cleanup module.";
 "smartcare.scan_again" = "Scan Again";
@@ -76,11 +76,9 @@
 "cleanup.scanning_progress" = "Scanned %d items — %@ found";
 "cleanup.review.selected" = "%d items — %@ selected";
 "cleanup.review.truncated" = "%d of %d shown — %@ found in total";
-"cleanup.simulate" = "Simulate Cleanup";
 "cleanup.move_to_trash" = "Move to Trash";
 "cleanup.group.item_count" = "%d items";
 "cleanup.select_item" = "Select %@";
-"cleanup.done.dryrun" = "Dry run: %@ would be moved to Trash";
 "cleanup.done.moved" = "%@ moved to Trash";
 
 /* Protection */
@@ -89,9 +87,7 @@
 /* Space Lens */
 "spacelens.title" = "Space Lens";
 "spacelens.delete.help" = "Move to Trash";
-"spacelens.dryrun.help" = "When on, nothing is actually deleted — Space Lens only reports what it would free.";
 "spacelens.delete.confirm_title" = "Move \"%@\" to Trash?";
-"spacelens.delete.confirm_dryrun" = "Simulate (dry run)";
 "spacelens.delete.confirm_action" = "Move to Trash";
 "spacelens.delete.confirm_message" = "%@ will be reclaimed. This uses the ordinary macOS Trash — recoverable until it's emptied.";
 "spacelens.delete.error_title" = "Couldn't Move to Trash";
@@ -120,7 +116,6 @@
 "spacelens.category.other" = "Other";
 
 /* Applications */
-"apps.uninstall.dryrun_result" = "Dry run: %d items (%@) would move to Trash";
 "apps.uninstall.result" = "Moved %d items (%@) to Trash";
 "apps.tab.installed" = "Installed";
 "apps.tab.leftovers" = "Leftovers";
@@ -139,8 +134,9 @@
 "apps.last_used_unknown" = "last used: unknown";
 "apps.associated_data" = "Associated data";
 "apps.associated_data.empty" = "No associated files found for this bundle identifier.";
-"apps.simulate_uninstall" = "Simulate Uninstall";
 "apps.uninstall" = "Uninstall (move to Trash)";
+"apps.uninstall_confirm.title" = "Uninstall the selected application?";
+"apps.uninstall_confirm.message" = "The application and the support items you selected will move to Trash. Review the selection before continuing.";
 "apps.select_prompt" = "Select an application";
 
 /* My Clutter */
@@ -197,10 +193,8 @@
 "leftovers.scan" = "Scan for Leftovers";
 "leftovers.scanning" = "Scanning…";
 "leftovers.none_found" = "No leftovers found";
-"leftovers.finished.dryrun" = "Dry run: %@ would be reclaimed";
 "leftovers.finished.moved" = "%@ moved to Trash";
 "leftovers.results.summary" = "%d candidates — %@ selected of %@";
-"leftovers.simulate" = "Simulate Removal";
 "leftovers.select_item" = "Select %@";
 "leftovers.shared_ambiguous_a11y" = "shared or ambiguous";
 "leftovers.shared_review" = "Shared / review";
@@ -210,11 +204,9 @@
 "privacy.detecting" = "Detecting browser profiles…";
 "privacy.empty.title" = "No browser data found";
 "privacy.empty.subtitle" = "Safari data requires Full Disk Access; Chrome and Firefox profiles are detected automatically when present.";
-"privacy.finished.dryrun" = "Dry run: %@ of caches would move to Trash";
 "privacy.finished.moved" = "%@ of caches moved to Trash";
 "privacy.running_warning" = "%@ is running — cache files may be locked. Quit the browser first for a complete clean.";
 "privacy.caches_selected" = "Browser caches — %@ selected";
-"privacy.simulate_clean" = "Simulate Clean";
 "privacy.clean_caches" = "Clean Caches";
 "privacy.browser_profile" = "%@ — %@";
 "privacy.cache_size" = "Cache %@";
@@ -265,14 +257,11 @@
 "activity.empty.subtitle" = "Scans and cleanups will appear here. Everything stays on this Mac.";
 "activity.empty_range" = "No activity in this range.";
 "activity.freed_real" = "Freed (real)";
-"activity.simulated_dryrun" = "Simulated (dry run)";
 "activity.items" = "Items";
 "activity.row.detail" = "%d items · %@ %@";
-"activity.row.simulated_suffix" = "(simulated, no files were changed)";
 "activity.row.real_suffix" = "(real, applied to disk)";
 "activity.open_protection" = "Open Protection";
 "activity.completed" = "Completed";
-"activity.row.simulated_a11y" = "simulated";
 "activity.row.real_a11y" = "real";
 
 /* Cloud Cleanup */
@@ -326,8 +315,6 @@
 "settings.appearance" = "Appearance";
 "settings.appearance_detail" = "CoreTend follows the system light/dark appearance. There is no separate in-app theme.";
 "settings.scans_cleanup" = "Scans & Cleanup";
-"settings.dry_run_default" = "Dry run by default";
-"settings.dry_run_detail" = "When enabled, cleanups simulate their result instead of moving files to the Trash.";
 "settings.deletion_method" = "Deletion method";
 "settings.deletion_method_value" = "System Trash (reversible)";
 "settings.protection" = "Integrity";
@@ -378,7 +365,7 @@
 "onboarding.step3.title" = "Reversible by design";
 "onboarding.step3.bullet1" = "Scans never delete anything. Cleaning is a separate, reviewed step.";
 "onboarding.step3.bullet2" = "Removal uses the system Trash — you can always restore.";
-"onboarding.step3.bullet3" = "Dry-run is on by default: actions are simulated until you turn it off.";
+"onboarding.step3.bullet3" = "Every move to Trash follows a reviewed selection and an explicit action.";
 "onboarding.skip" = "Skip";
 "onboarding.step_of" = "%d of %d";
 "onboarding.step_a11y" = "Step %d of %d";
@@ -434,7 +421,6 @@
 "dashboard.secondary_action" = "Open Space Lens";
 "dashboard.status.signature" = "Signature";
 "dashboard.status.safety" = "Safety";
-"dashboard.status.dry_run" = "Dry run on";
 "dashboard.status.trash_enabled" = "Trash enabled";
 "dashboard.status.exclusions" = "Exclusions";
 "dashboard.status.exclusion_count" = "%d paths";
@@ -459,12 +445,11 @@
 /* Safety log (SafetyCore audit trail persistence) */
 "common.done" = "Done";
 "safetylog.title" = "Safety Log";
-"safetylog.subtitle" = "%d executed · %d simulated (dry run)";
+"safetylog.subtitle" = "%d executed";
 "safetylog.empty" = "No safety log entries yet.";
 "safetylog.unavailable" = "Local database unavailable";
 "safetylog.purge" = "Purge Log";
 "safetylog.stage.approved" = "Approved";
-"safetylog.stage.dryrun" = "Dry Run";
 "safetylog.stage.executed" = "Executed";
 "safetylog.stage.skipped" = "Skipped";
 "safetylog.stage.error" = "Error";
@@ -505,8 +490,7 @@
 "onboarding.security.cautious" = "Cautious";
 "onboarding.security.cautious_detail" = "Review everything before it happens. Same safe defaults, maximum caution.";
 "onboarding.security.custom" = "Custom";
-"onboarding.security.custom_detail" = "Start from safe defaults and adjust the dry-run option yourself.";
-"onboarding.security.dry_run" = "Dry-run by default (simulate actions)";
+"onboarding.security.custom_detail" = "Safe defaults, manual selection, and explicit confirmation before removal.";
 "onboarding.security.trash" = "Removal always uses the Trash";
 "onboarding.security.medium_risk" = "Medium-risk rules preselected";
 "onboarding.security.empty_trash" = "Empty the Trash automatically";
@@ -551,7 +535,6 @@
 "onboarding.summary.title" = "You're set";
 "onboarding.summary.subtitle" = "Here's exactly what's enabled. Change any of it in Settings.";
 "onboarding.summary.profile" = "Security profile";
-"onboarding.summary.dry_run" = "Dry-run by default";
 "onboarding.summary.fda" = "Full Disk Access";
 "onboarding.summary.menu_bar" = "Menu bar item";
 "onboarding.summary.notifications" = "Notifications";

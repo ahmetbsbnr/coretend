@@ -12,7 +12,7 @@ d'un noyau stable. L'état visuel dérive toujours de données réelles.
 4. **Mouvement utile** — une animation reflète un état réel ou n'existe pas.
 5. **Technologie organique** — arcs asymétriques, easing doux, jamais mécanique.
 6. **Transparence maîtrisée** — materials natifs, fallback opaque (Reduce Transparency).
-7. **Honnêteté** — états indisponibles affichés tels quels (ClamAV, FDA).
+7. **Honnêteté** — limites affichées telles quelles (Integrity informatif, FDA, signature ad hoc).
 
 ## Signature
 **Core Bloom**: noyau + 3 arcs asymétriques (spans 150/115/80°, rayons .94/.72/.50).

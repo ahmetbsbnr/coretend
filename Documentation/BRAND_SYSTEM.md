@@ -50,7 +50,7 @@ Aucune illustration raster. Formes SwiftUI/Canvas/CG uniquement.
 Voir MOTION_SYSTEM.md. Le symbole s'anime uniquement pendant une activité réelle.
 
 ## Ton rédactionnel
-Factuel, rassurant, honnête sur les limites (ClamAV, FDA, cloud). Interdits:
+Factuel, rassurant, honnête sur les limites (Integrity informatif, FDA, cloud). Interdits:
 « parfait », « magie », « turbo », « 100 % protégé », « votre Mac est malade ».
 
 ## Usages interdits

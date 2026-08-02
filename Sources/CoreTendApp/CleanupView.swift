@@ -9,7 +9,7 @@ import Persistence
 @Observable
 final class CleanupViewModel {
     enum Phase: Equatable {
-        case idle, scanning, review, running, done(freed: Int64, dryRun: Bool), failed(String)
+        case idle, scanning, review, running, done(freed: Int64), failed(String)
     }
 
     var phase: Phase = .idle
@@ -18,22 +18,10 @@ final class CleanupViewModel {
     var scannedCount = 0
     var totalBytes: Int64 = 0
     var totalFindingCount = 0
-    var dryRun = true
     var isScanPaused = false
-    private var dryRunDefaultLoaded = false
 
     private var scanTask: Task<Void, Never>?
     private var pauseController: ScanPauseController?
-
-    /// Applies the persisted "dry-run by default" setting once, before the user
-    /// has a chance to toggle it manually. Without this the Settings toggle is
-    /// orphaned — the view would always start in dry-run regardless of the setting.
-    func loadDryRunDefault() async {
-        guard !dryRunDefaultLoaded else { return }
-        dryRunDefaultLoaded = true
-        dryRun = AppEnvironment.dryRunEnabled(
-            fromSetting: (try? await AppEnvironment.shared.store?.setting("dryRunDefault")) ?? nil)
-    }
 
     var isDisplayTruncated: Bool { totalFindingCount > findings.count }
 
@@ -117,7 +105,7 @@ final class CleanupViewModel {
                     phase = .review
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .scan, summary: "Cleanup scan: \(findings.count) items found",
-                        itemCount: findings.count, bytes: bytes, dryRun: true))
+                        itemCount: findings.count, bytes: bytes))
                 case .cancelled:
                     isScanPaused = false
                     phase = .idle
@@ -149,11 +137,10 @@ final class CleanupViewModel {
         guard phase == .review else { return }
         phase = .running
         let selected = findings.filter { selectedIDs.contains($0.id) }
-        let isDryRun = dryRun
         Task {
             let home = FileManager.default.homeDirectoryForCurrentUser
             let validator = PathValidator(allowedRoots: UserCleanupRules.allowedRoots(home: home))
-            let center = SafetyCenter(validator: validator, dryRun: isDryRun, sink: AppEnvironment.shared.store)
+            let center = SafetyCenter(validator: validator, sink: AppEnvironment.shared.store)
             var approved: [ApprovedFileOperation] = []
             for finding in selected {
                 if let op = try? await center.approve(
@@ -165,19 +152,18 @@ final class CleanupViewModel {
             }
             let result = await center.execute(approved)
             let freed = result.executed.reduce(0) { $0 + $1.logicalSize }
-            phase = .done(freed: freed, dryRun: result.wasDryRun)
+            phase = .done(freed: freed)
             AppEnvironment.shared.record(ActivityRecord(
                 kind: .cleanup,
-                summary: result.wasDryRun
-                    ? "Dry run: \(result.executed.count) items simulated"
-                    : "Moved \(result.executed.count) items to Trash",
-                itemCount: result.executed.count, bytes: freed, dryRun: result.wasDryRun))
+                summary: "Moved \(result.executed.count) items to Trash",
+                itemCount: result.executed.count, bytes: freed))
         }
     }
 }
 
 struct CleanupView: View {
     @State private var model = CleanupViewModel()
+    @State private var showMoveConfirmation = false
 
     var body: some View {
         Group {
@@ -188,8 +174,8 @@ struct CleanupView: View {
                 scanningView
             case .review, .running:
                 reviewView.padding(MCSpacing.page)
-            case let .done(freed, dryRun):
-                doneView(freed: freed, dryRun: dryRun)
+            case let .done(freed):
+                doneView(freed: freed)
             case let .failed(message):
                 Text(L("cleanup.failed", message)).foregroundStyle(MCTheme.danger)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -198,7 +184,18 @@ struct CleanupView: View {
         }
         .navigationTitle(L("module.storage"))
         .accessibilityIdentifier("storage.root")
-        .task { await model.loadDryRunDefault() }
+        .confirmationDialog(
+            L("common.trash_confirm.title"),
+            isPresented: $showMoveConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(L("common.trash_confirm.action"), role: .destructive) {
+                model.runCleanup()
+            }
+            Button(L("common.cancel"), role: .cancel) {}
+        } message: {
+            Text(L("common.trash_confirm.message"))
+        }
     }
 
     // MARK: - Idle (editorial left-aligned layout with category overview)
@@ -296,9 +293,8 @@ struct CleanupView: View {
                     }
                 }
                 Spacer()
-                Toggle(L("common.dry_run"), isOn: $model.dryRun).toggleStyle(.switch)
-                Button(model.dryRun ? L("cleanup.simulate") : L("cleanup.move_to_trash")) {
-                    model.runCleanup()
+                Button(L("cleanup.move_to_trash")) {
+                    showMoveConfirmation = true
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(model.phase == .running || model.selectedIDs.isEmpty)
@@ -365,14 +361,12 @@ struct CleanupView: View {
         }
     }
 
-    private func doneView(freed: Int64, dryRun: Bool) -> some View {
+    private func doneView(freed: Int64) -> some View {
         VStack(spacing: MCSpacing.md) {
             MCFragmentView(groupWeights: model.normalizedGroupWeights, phase: .success)
                 .frame(width: 120, height: 120)
                 .accessibilityLabel(MCFragmentView(groupWeights: [], phase: .success).accessibilityDescription)
-            Text(dryRun
-                 ? L("cleanup.done.dryrun", mcFormatBytes(freed))
-                 : L("cleanup.done.moved", mcFormatBytes(freed)))
+            Text(L("cleanup.done.moved", mcFormatBytes(freed)))
                 .font(.title3.weight(.semibold))
             Button(L("smartcare.scan_again")) { model.startScan() }
         }

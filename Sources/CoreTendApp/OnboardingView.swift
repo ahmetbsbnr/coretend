@@ -127,15 +127,12 @@ final class OnboardingViewModel {
             safetyCoreReady: AppEnvironment.shared.store != nil)
     }
 
-    /// Persist the chosen configuration. Only `dryRunDefault` is a live knob;
-    /// the profile choice and exclusions are recorded too.
+    /// Persist the profile choice and exclusions.
     func persist() {
         guard let store = AppEnvironment.shared.store else { return }
-        let dryRun = config.dryRun ? "true" : "false"
         let paths = exclusions.map(\.path)
         let profileRaw = profile.rawValue
         Task {
-            try? await store.setSetting("dryRunDefault", value: dryRun)
             try? await store.setSetting("securityProfile", value: profileRaw)
             for p in paths { try? await store.addExclusion(path: p) }
         }
@@ -294,10 +291,6 @@ struct OnboardingView: View {
             }
             .frame(maxWidth: 460)
             VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                configLine(L("onboarding.security.dry_run"), on: model.config.dryRun,
-                           binding: model.profile == .custom
-                               ? Binding(get: { model.config.dryRun }, set: { model.config.dryRun = $0 })
-                               : nil)
                 configFixed(L("onboarding.security.trash"), on: model.config.useTrash)
                 configFixed(L("onboarding.security.medium_risk"), on: model.config.mediumRiskRules)
                 configFixed(L("onboarding.security.empty_trash"), on: model.config.emptyTrash)
@@ -485,7 +478,6 @@ struct OnboardingView: View {
             stepHeader("checkmark.seal", L("onboarding.summary.title"), L("onboarding.summary.subtitle"))
             VStack(alignment: .leading, spacing: MCSpacing.xs) {
                 summaryRow(L("onboarding.summary.profile"), L("onboarding.security.\(model.profile.rawValue)"))
-                summaryRow(L("onboarding.summary.dry_run"), yesNo(model.config.dryRun))
                 summaryRow(L("onboarding.summary.fda"),
                            model.fdaGranted ? L("settings.granted") : L("settings.not_granted"))
                 summaryRow(L("onboarding.summary.menu_bar"), yesNo(menuBarEnabled))

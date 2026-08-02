@@ -7,7 +7,6 @@ import IntegrityCore
 @MainActor
 @Observable
 final class SettingsViewModel {
-    var dryRunDefault = true
     var exclusions: [String] = []
     var loaded = false
 
@@ -18,7 +17,6 @@ final class SettingsViewModel {
 
     func load() async {
         guard let store = AppEnvironment.shared.store else { return }
-        dryRunDefault = AppEnvironment.dryRunEnabled(fromSetting: try? await store.setting("dryRunDefault"))
         exclusions = (try? await store.exclusions()) ?? []
         loaded = true
         await refreshPermissions()
@@ -27,12 +25,6 @@ final class SettingsViewModel {
     func refreshPermissions() async {
         fullDiskAccess = PermissionProbe.hasFullDiskAccess()
         notificationStatus = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
-    }
-
-    func saveDryRun() {
-        guard let store = AppEnvironment.shared.store else { return }
-        let value = dryRunDefault ? "true" : "false"
-        Task { try? await store.setSetting("dryRunDefault", value: value) }
     }
 
     func addExclusion(_ url: URL) {
@@ -108,11 +100,6 @@ struct MCSettingsView: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section(L("settings.scans_cleanup")) {
-                Toggle(L("settings.dry_run_default"), isOn: $model.dryRunDefault)
-                    .onChange(of: model.dryRunDefault) { model.saveDryRun() }
-                    .accessibilityIdentifier("settings.dry_run")
-                Text(L("settings.dry_run_detail"))
-                    .font(.caption).foregroundStyle(.secondary)
                 LabeledContent(L("settings.deletion_method"), value: L("settings.deletion_method_value"))
             }
             Section(L("settings.protection")) {

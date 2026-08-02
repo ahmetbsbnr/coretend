@@ -2,7 +2,7 @@
 
 Generated from `Documentation/feature-inventory.json` by `Scripts/generate-feature-inventory.py` — the JSON is the single canonical source; this file, `feature-inventory.csv`, and the totals below are all derived from it, never typed by hand. Run `python3 Scripts/generate-feature-inventory.py --check` to verify they still agree.
 
-**Total: 53 features.** Status counts: VERIFIED_COMPLETE=51, VERIFIED_PARTIAL=2.
+**Total: 52 features.** Status counts: VERIFIED_COMPLETE=50, VERIFIED_PARTIAL=2.
 
 Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, UI_ONLY, SIMULATED, DOCUMENTATION_ONLY, BLOCKED_HUMAN, BLOCKED_ENVIRONMENT, BROKEN, DEPRECATED, NOT_STARTED, NOT_APPLICABLE, UNKNOWN.
 
@@ -22,7 +22,7 @@ Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, 
 | id | Name / objective | State | Screen | Demonstration path | Capture | Animation | Demo data | Validation evidence |
 |---|---|---|---|---|---|---|---|---|
 | safety.pathvalidator | `PathValidator` — protected-root blocklist (`/System`,`/bin`,…), home-dir block, allowlist containment, symlink-escape resolution via `resolvingSymlinksInPath()` | VERIFIED_COMPLETE | SafetyCore | Follow the documented feature path | none | no | neutral fixture where applicable | Sources/SafetyCore/SafetyCore.swift:33-90 |
-| safety.dryrun | `SafetyCenter` actor: `dryRun` flag (default true), re-validates every path at execution time, skips anything that changed since approval | VERIFIED_COMPLETE | SafetyCore | Follow the documented feature path | none | no | neutral fixture where applicable | Sources/SafetyCore/SafetyCore.swift:120-169 |
+| safety.executiongate | `SafetyCenter` accepts only typed, approved operations, re-validates every path immediately before execution, and skips anything that changed since approval | VERIFIED_COMPLETE | SafetyCore | Follow the documented feature path | none | no | neutral fixture where applicable | Sources/SafetyCore/SafetyCore.swift:120-169 |
 | safety.execute | `execute()` moves approved ops to Trash (`FileManager.trashItem`) — never `rm`, always recoverable via macOS Trash | VERIFIED_COMPLETE | SafetyCore | Follow the documented feature path | none | no | neutral fixture where applicable | Sources/SafetyCore/SafetyCore.swift:154-163 |
 | safety.auditlog | Every approve/execute call emits a structured SafetyAuditEvent through SafetyAuditSink; Store persists it to SQLite, which is what backs My Activity. | VERIFIED_COMPLETE | SafetyCore | Follow the documented feature path | none | no | neutral fixture where applicable | Sources/SafetyCore/SafetyCore.swift:192-198 (emit -> SafetyAuditSink); Sources/Persistence/Store.swift:248-264 (Store: SafetyAuditSink, persists to SQLite). Removed the redundant in-memory auditLog: [String] shadow log (zero consumers app-wide) that this status previously described. |
 
@@ -51,7 +51,7 @@ Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, 
 
 | id | Name / objective | State | Screen | Demonstration path | Capture | Animation | Demo data | Validation evidence |
 |---|---|---|---|---|---|---|---|---|
-| smartcare.orchestration | Runs `UserCleanupRules.all` through `ScanEngine`, same `SafetyCenter`/dry-run gate as manual Cleanup | VERIFIED_COMPLETE | Smart Care | Start scan, review, cancel or approve | smart-care | yes | empty isolated store; no staged result | Sources/CoreTendApp/SmartCareView.swift:71-113 |
+| smartcare.orchestration | Runs `UserCleanupRules.all` through `ScanEngine`, presents the low-risk selection for review, then uses the same confirmed `SafetyCenter` Trash path as manual Cleanup | VERIFIED_COMPLETE | Smart Care | Start scan, review, cancel or approve | smart-care | yes | empty isolated store; no staged result | Sources/CoreTendApp/SmartCareView.swift:71-113 |
 
 ## IntegrityCore (3: VERIFIED_COMPLETE=3)
 
@@ -80,7 +80,7 @@ Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, 
 | id | Name / objective | State | Screen | Demonstration path | Capture | Animation | Demo data | Validation evidence |
 |---|---|---|---|---|---|---|---|---|
 | clutter.largeold | `MyClutterView` instantiates a plain `ScanEngine()` (default config, all rules) for its Large & Old view | VERIFIED_COMPLETE | My Clutter | Choose Large & Old, Duplicates or Similar Images | my-clutter | yes | neutral temporary files | Sources/CoreTendApp/MyClutterView.swift; Tests/CoreTendAppTests/MyClutterSortTests.swift; visually verified 2026-07-31: launched real .app build, navigated to My Clutter > Large & Old, correct empty state with live Larger-than/Older-than pickers and Analyze button. |
-| clutter.duplicates | `DuplicatesView` wires `DuplicateEngine` + `SafetyCenter`/dry-run for deletion | VERIFIED_COMPLETE | My Clutter | Choose Large & Old, Duplicates or Similar Images | my-clutter | yes | neutral temporary files | Sources/CoreTendApp/DuplicatesView.swift; Tests/CoreTendAppTests/DuplicatesFilterTests.swift; visually verified 2026-07-31: launched real .app build, navigated to My Clutter > Duplicates, correct empty state with accurate hard-link/staged-hashing explainer copy. |
+| clutter.duplicates | `DuplicatesView` wires `DuplicateEngine` to a reviewed selection, explicit confirmation and `SafetyCenter` Trash execution | VERIFIED_COMPLETE | My Clutter | Choose Large & Old, Duplicates or Similar Images | my-clutter | yes | neutral temporary files | Sources/CoreTendApp/DuplicatesView.swift; Tests/CoreTendAppTests/DuplicatesFilterTests.swift; visually verified 2026-07-31: launched real .app build, navigated to My Clutter > Duplicates, correct empty state with accurate hard-link/staged-hashing explainer copy. |
 | clutter.similarimages | `SimilarImagesView` wires `SimilarImagesEngine` | VERIFIED_COMPLETE | My Clutter | Choose Large & Old, Duplicates or Similar Images | my-clutter | yes | neutral temporary files | Sources/CoreTendApp/SimilarImagesView.swift; visually verified 2026-07-31: launched real .app build, navigated to My Clutter > Similar Images, correct empty state, honest Photos-library-never-touched copy matches SimilarImagesEngine behavior. |
 
 ## SpaceLens (1: VERIFIED_COMPLETE=1)
@@ -102,18 +102,17 @@ Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, 
 | activity.log | `Store.recordActivity`/`activity(limit:kind:)`/`clearActivity()` — SQLite (`sqlite3` C API), WAL mode, actor-isolated, append-only migration list, migrations verified idempotent | VERIFIED_COMPLETE | My Activity | Filter, expand, export, clear with confirmation | my-activity | no | isolated temporary activity store | Sources/Persistence/Store.swift:1-165 |
 | activity.grouping | Day-grouping / date-filter (`last7`/`last30`/`all`) logic in `MyActivityView` | VERIFIED_COMPLETE | My Activity | Filter, expand, export, clear with confirmation | my-activity | no | isolated temporary activity store | Sources/CoreTendApp/MyActivityView.swift:36-39 |
 
-## Settings (8: VERIFIED_COMPLETE=8)
+## Settings (7: VERIFIED_COMPLETE=7)
 
 | id | Name / objective | State | Screen | Demonstration path | Capture | Animation | Demo data | Validation evidence |
 |---|---|---|---|---|---|---|---|---|
-| settings.menubar | Settings: "Show CoreTend in the menu bar" toggle, backed by @AppStorage("menuBarEnabled") | VERIFIED_COMPLETE | Settings | Review permissions, exclusions, dry run and diagnostics | settings | no | isolated temporary store | Sources/CoreTendApp/SettingsView.swift:82,93 |
-| settings.dryrundefault | Settings: "Dry run by default" toggle, persisted to Store via setSetting("dryRunDefault") | VERIFIED_COMPLETE | Settings | Review permissions, exclusions, dry run and diagnostics | settings | no | isolated temporary store | Sources/CoreTendApp/SettingsView.swift:102-103 |
-| settings.appsignature | Settings: this copy's own code-signature status via CodeSignInspector (read-only) — shows whether the running binary itself is signed | VERIFIED_COMPLETE | Settings | Review permissions, exclusions, dry run and diagnostics | settings | no | isolated temporary store | Sources/CoreTendApp/SettingsView.swift:16, 114-118 |
-| settings.fulldiskaccess | Settings: Full Disk Access status with "Open System Settings" / "Recheck" actions | VERIFIED_COMPLETE | Settings | Review permissions, exclusions, dry run and diagnostics | settings | no | isolated temporary store | Sources/CoreTendApp/SettingsView.swift:127-134 |
-| settings.exclusions | Settings: exclusions list — add folder (NSOpenPanel) / remove, persisted to Store | VERIFIED_COMPLETE | Settings | Review permissions, exclusions, dry run and diagnostics | settings | no | isolated temporary store | Sources/CoreTendApp/SettingsView.swift:152-174 |
-| settings.clearactivity | Settings: "Clear Activity History" destructive action with confirmation dialog | VERIFIED_COMPLETE | Settings | Review permissions, exclusions, dry run and diagnostics | settings | no | isolated temporary store | Sources/CoreTendApp/SettingsView.swift:181-184 |
-| settings.exportdiagnostic | Settings: "Export Diagnostic Report" — opens DiagnosticReportView sheet (preview before save) | VERIFIED_COMPLETE | Settings | Review permissions, exclusions, dry run and diagnostics | settings | no | isolated temporary store | Sources/CoreTendApp/SettingsView.swift:188 |
-| settings.migrationnotice | Settings: `MigrationNoticeRow` — shown only when the rename migration did something; states what moved, distinguishes failure from success, and explicitly says the old data is still on disk | VERIFIED_COMPLETE | Settings | Review permissions, exclusions, dry run and diagnostics | settings | no | isolated temporary store | Sources/CoreTendApp/SettingsView.swift:185-186, 229-265 |
+| settings.menubar | Settings: "Show CoreTend in the menu bar" toggle, backed by @AppStorage("menuBarEnabled") | VERIFIED_COMPLETE | Settings | Review permissions, exclusions and diagnostics | settings | no | isolated temporary store | Sources/CoreTendApp/SettingsView.swift:82,93 |
+| settings.appsignature | Settings: this copy's own code-signature status via CodeSignInspector (read-only) — shows whether the running binary itself is signed | VERIFIED_COMPLETE | Settings | Review permissions, exclusions and diagnostics | settings | no | isolated temporary store | Sources/CoreTendApp/SettingsView.swift:16, 114-118 |
+| settings.fulldiskaccess | Settings: Full Disk Access status with "Open System Settings" / "Recheck" actions | VERIFIED_COMPLETE | Settings | Review permissions, exclusions and diagnostics | settings | no | isolated temporary store | Sources/CoreTendApp/SettingsView.swift:127-134 |
+| settings.exclusions | Settings: exclusions list — add folder (NSOpenPanel) / remove, persisted to Store | VERIFIED_COMPLETE | Settings | Review permissions, exclusions and diagnostics | settings | no | isolated temporary store | Sources/CoreTendApp/SettingsView.swift:152-174 |
+| settings.clearactivity | Settings: "Clear Activity History" destructive action with confirmation dialog | VERIFIED_COMPLETE | Settings | Review permissions, exclusions and diagnostics | settings | no | isolated temporary store | Sources/CoreTendApp/SettingsView.swift:181-184 |
+| settings.exportdiagnostic | Settings: "Export Diagnostic Report" — opens DiagnosticReportView sheet (preview before save) | VERIFIED_COMPLETE | Settings | Review permissions, exclusions and diagnostics | settings | no | isolated temporary store | Sources/CoreTendApp/SettingsView.swift:188 |
+| settings.migrationnotice | Settings: `MigrationNoticeRow` — shown only when the rename migration did something; states what moved, distinguishes failure from success, and explicitly says the old data is still on disk | VERIFIED_COMPLETE | Settings | Review permissions, exclusions and diagnostics | settings | no | isolated temporary store | Sources/CoreTendApp/SettingsView.swift:185-186, 229-265 |
 
 ## Data migration (2: VERIFIED_COMPLETE=2)
 
@@ -138,7 +137,7 @@ Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, 
 
 | id | Name / objective | State | Screen | Demonstration path | Capture | Animation | Demo data | Validation evidence |
 |---|---|---|---|---|---|---|---|---|
-| spacelens.delete | Trash action per row, routed through SafetyCenter/PathValidator scoped to the originally-scanned root so a delete can never reach outside the browsed tree. Dry-run defaults true and reads the same app-wide dryRunDefault setting every other destructive module respects. Re-scans (rather than hand-patching the tree) after a real delete, restoring navigation depth by path. | VERIFIED_COMPLETE | Space Lens | Follow the documented feature path | none | no | neutral fixture where applicable | Sources/CoreTendApp/SpaceLensView.swift (SpaceLensViewModel.requestDelete/confirmDelete); Tests/CoreTendAppTests/SpaceLensNavigationTests.swift |
+| spacelens.delete | Trash action per row, protected by an explicit confirmation and routed through SafetyCenter/PathValidator scoped to the originally-scanned root so an action can never reach outside the browsed tree. Re-scans (rather than hand-patching the tree) after a completed move, restoring navigation depth by path. | VERIFIED_COMPLETE | Space Lens | Follow the documented feature path | none | no | neutral fixture where applicable | Sources/CoreTendApp/SpaceLensView.swift (SpaceLensViewModel.requestDelete/confirmDelete); Tests/CoreTendAppTests/SpaceLensNavigationTests.swift |
 
 ## My Clutter / Space Lens (1: VERIFIED_COMPLETE=1)
 

@@ -189,7 +189,7 @@ async function prepareOrbit(page, selector, times = [4250, 6600, 8750]) {
   }, times)
 }
 
-async function stabilizeSimulation(page, status) {
+async function stabilizeWorkflowPreview(page, status) {
   await page.locator('[data-view="storage"]').click()
   await page.waitForFunction(() => parseFloat(document.querySelector('#vTrack')?.style.width) >= 15)
   await page.locator('#scanToggle').click()
@@ -291,13 +291,13 @@ async function stateCaptures(browser, base) {
     await page.waitForTimeout(1350)
     await freeze(page)
   }, 'footer')
-  await state('simulation-scanning', { viewport: DESKTOP }, async page => {
-    await stabilizeSimulation(page, 'scanning')
+  await state('workflow-scanning', { viewport: DESKTOP }, async page => {
+    await stabilizeWorkflowPreview(page, 'scanning')
   }, '#app')
-  await state('simulation-paused', { viewport: DESKTOP }, async page => {
-    await stabilizeSimulation(page, 'paused')
+  await state('workflow-paused', { viewport: DESKTOP }, async page => {
+    await stabilizeWorkflowPreview(page, 'paused')
   }, '#app')
-  await state('simulation-complete', { viewport: DESKTOP, reducedMotion: 'reduce' }, page => freeze(page), '#app')
+  await state('workflow-complete', { viewport: DESKTOP, reducedMotion: 'reduce' }, page => freeze(page), '#app')
   await state('mobile-reduced', { viewport: MOBILE, reducedMotion: 'reduce', theme: 'dark' }, page => freeze(page), null)
   const workflow = async page => {
     await freeze(page)

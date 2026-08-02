@@ -54,9 +54,16 @@ restructuring.
 XCTest is not shipped with CommandLineTools. Swift Testing framework is (under
 Library/Developer/Frameworks) but needs explicit -F/-rpath flags → `Scripts/test.sh`.
 
-## D3 — Dry-run ON by default (2026-07-19)
-SafetyCenter defaults to dryRun=true; the user must explicitly flip the toggle to move
-anything to the Trash. Safest default per SAFETY_MODEL.
+## D3 — Preview mode ON by default (2026-07-19; superseded 2026-08-02)
+This historical product decision was superseded by D-R5. The preview-mode
+setting and behavior no longer exist in the current app, site or product
+fixture; migration v4 removes its retired persisted preference.
+
+## D-R5 — Review, confirm, then move to Trash (2026-08-02)
+Scanning is read-only. Every destructive surface presents the selection and
+requires an explicit confirmation before execution. `SafetyCenter` accepts
+only approved operations, re-validates every path at execution time and uses
+the macOS Trash. No user-selectable preview mode remains.
 
 ## D4 — Symlinks skipped during scans (2026-07-19)
 ScanEngine skips symlinks entirely (no descend, no finding). Prevents loops and

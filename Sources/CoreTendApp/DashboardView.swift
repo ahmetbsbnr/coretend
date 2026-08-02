@@ -8,7 +8,6 @@ struct DashboardView: View {
     @State private var snapshot: MetricsSnapshot?
     @State private var activity: [ActivityRecord] = []
     @State private var exclusions: [String] = []
-    @State private var dryRunDefault = true
     @State private var signature = CodeSignInspector.inspect(at: Bundle.main.bundleURL)
     @State private var collector = MetricsCollector()
 
@@ -120,9 +119,9 @@ struct DashboardView: View {
                 attention: signature.tier == .adHocOrUnsigned || !signature.signatureValid)
             statusPill(
                 L("dashboard.status.safety"),
-                value: dryRunDefault ? L("dashboard.status.dry_run") : L("dashboard.status.trash_enabled"),
-                icon: dryRunDefault ? "eye" : "trash",
-                attention: !dryRunDefault)
+                value: L("dashboard.status.trash_enabled"),
+                icon: "trash",
+                attention: false)
             statusPill(
                 L("dashboard.status.exclusions"),
                 value: L("dashboard.status.exclusion_count", exclusions.count),
@@ -215,7 +214,6 @@ struct DashboardView: View {
         if let store = AppEnvironment.shared.store {
             activity = (try? await store.activity(limit: 5)) ?? []
             exclusions = (try? await store.exclusions()) ?? []
-            dryRunDefault = AppEnvironment.dryRunEnabled(fromSetting: try? await store.setting("dryRunDefault"))
         }
         snapshot = await latestSnapshot
         signature = CodeSignInspector.inspect(at: Bundle.main.bundleURL)

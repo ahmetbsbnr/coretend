@@ -13,13 +13,10 @@ enum SecurityProfile: String, CaseIterable, Identifiable, Sendable {
     var id: String { rawValue }
 }
 
-/// The safety posture chosen at first run. Only `dryRun` is a *live* knob the
-/// rest of the app reads (persisted as the `dryRunDefault` setting). The other
-/// fields are honest, fixed properties of the app's built-in safety design
-/// (Trash always, medium-risk rules never preselected, no empty-Trash, no
-/// auto-quarantine) — surfaced so the user sees them, not secretly toggled.
+/// The fixed safety posture shown at first run: confirmed removals use the
+/// Trash, medium-risk rules are never preselected, and CoreTend never empties
+/// the Trash or quarantines files automatically.
 struct SecurityConfig: Equatable, Sendable {
-    var dryRun: Bool
     var useTrash: Bool
     var mediumRiskRules: Bool
     var emptyTrash: Bool
@@ -28,7 +25,7 @@ struct SecurityConfig: Equatable, Sendable {
     /// Plan-specified safe defaults, identical across every profile: the app
     /// never ships an unsafe default regardless of which profile is picked.
     static let safeDefaults = SecurityConfig(
-        dryRun: true, useTrash: true, mediumRiskRules: false,
+        useTrash: true, mediumRiskRules: false,
         emptyTrash: false, autoQuarantine: false)
 
     static func forProfile(_ profile: SecurityProfile) -> SecurityConfig {

@@ -10,7 +10,6 @@ struct OnboardingLogicTests {
     @Test func everyProfileMapsToSafeDefaults() {
         for profile in SecurityProfile.allCases {
             let c = SecurityConfig.forProfile(profile)
-            #expect(c.dryRun == true)
             #expect(c.useTrash == true)
             // Safety invariant: no profile ever enables an aggressive default.
             #expect(c.mediumRiskRules == false)

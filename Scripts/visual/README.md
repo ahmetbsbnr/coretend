@@ -23,7 +23,7 @@ PNG evidence without changing truth:
 node Scripts/visual/capture.mjs --capture-only
 ```
 
-Review `Scripts/visual/output/`, including the targeted logo and simulation
+Review `Scripts/visual/output/`, including the targeted logo and workflow
 states. Only after that review may the baseline be replaced explicitly:
 
 ```sh

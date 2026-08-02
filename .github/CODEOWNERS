@@ -10,5 +10,5 @@
 # changes.
 /Sources/SafetyCore/          ahmetbsbnr
 /Sources/FileRules/           ahmetbsbnr
-/Sources/MalwareEngine/       ahmetbsbnr
+/Sources/IntegrityCore/       ahmetbsbnr
 /Sources/Persistence/         ahmetbsbnr

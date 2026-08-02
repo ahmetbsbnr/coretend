@@ -50,16 +50,16 @@ feature audit's `AUDIT_EVIDENCE.md`, but keyed to requirement IDs, not feature I
 - **Result**: 86/86 tests passed, including this suite. HOLDS.
 
 ### EVIDENCE-SAFE-005
-- **Claim**: Dry-run is the default state; the user must explicitly opt into real deletion.
-- **Files**: `Sources/SafetyCore/SafetyCore.swift`
-- **Symbols**: `SafetyCenter.init(validator:dryRun: Bool = true)`
-- **Tests**: none dedicated
-- **Command**: `read Sources/SafetyCore/SafetyCore.swift:126`
-- **Result**: default parameter `dryRun: Bool = true`. HOLDS at the SafetyCore layer. Not
-  exhaustively re-checked this session that every one of the 5 UI call sites
-  (`CleanupView.swift`, `DuplicatesView.swift`, `ApplicationsView.swift`, `LeftoversView.swift`,
-  `PrivacyCleanerView.swift`) also initializes its own `@State` dryRun flag to `true` — flagged
-  for session 3.
+- **Claim**: Every destructive surface requires review and explicit confirmation
+  before a recoverable Trash action.
+- **Files**: `Sources/SafetyCore/SafetyCore.swift`, destructive views under
+  `Sources/CoreTendApp/`, `Scripts/check-retired-preview-mode.sh`.
+- **Symbols**: `SafetyCenter.approve`, `SafetyCenter.execute`, SwiftUI
+  `confirmationDialog` modifiers.
+- **Tests**: SafetyCenter execution/audit tests plus the retired-mode repository gate.
+- **Command**: `bash Scripts/check-retired-preview-mode.sh && swift test`
+- **Result**: the current API has no preview-mode switch; selected operations
+  are re-validated and moved only after the UI confirmation. HOLDS.
 
 ### EVIDENCE-SAFE-006
 - **Claim**: Symlinks are never followed during scans.
@@ -69,28 +69,20 @@ feature audit's `AUDIT_EVIDENCE.md`, but keyed to requirement IDs, not feature I
 - **Result**: test passed this session. HOLDS.
 
 ### EVIDENCE-PROTECTION-001
-- **Claim**: Protection never fabricates scan capability when ClamAV is absent — it shows an
-  honest "unavailable" state.
-- **Files**: `Sources/CoreTendApp/ProtectionView.swift`, `Sources/MalwareEngine/MalwareEngine.swift`
-- **Symbols**: `ClamAVScanner.isAvailable`, `ProtectionView` (guards at lines 27, 97)
-- **Tests**: none (no headless GUI test harness)
-- **Command**: `grep -n isAvailable Sources/CoreTendApp/ProtectionView.swift`; `bash
-  Scripts/doctor.sh` (confirms `clamscan not found` in this environment)
-- **Result**: `ClamAVScanner.isAvailable` is computed purely from whether a real binary exists at
-  one of three known paths (`ClamAVScanner.knownPaths`) — there is no simulated/fake-success
-  branch in `MalwareEngine.swift`. `ProtectionView.swift` gates its real-scan UI behind this flag
-  at two call sites. HOLDS structurally. Not visually screenshotted this session (headless) — see
-  `MANUAL_ACCEPTANCE_TEST_PLAN.md`.
+- **Claim**: Integrity reports only verifiable, native, read-only signals and never presents
+  malware-detection or quarantine capability.
+- **Files**: `Sources/CoreTendApp/ProtectionView.swift`, `Sources/IntegrityCore/IntegrityCore.swift`
+- **Symbols**: `ProvenanceScanner`, `CodeSignInspector`, `LoginItemScanner`, `IntegrityView`
+- **Tests**: `Tests/IntegrityCoreTests/IntegrityCoreTests.swift`
+- **Command**: `swift test --filter IntegrityCoreTests`; `rg 'Process\\s*\\(' Sources/`
+- **Result**: provenance, signature tiers and login-item parsing are test-backed; production
+  sources contain no external-process path. HOLDS.
 
 ### EVIDENCE-SEC-001
-- **Claim**: No shell-injectable subprocess invocation.
-- **Files**: `Sources/MalwareEngine/MalwareEngine.swift`
-- **Symbols**: `ClamAVScanner.scan(paths:)`
-- **Command**: `read Sources/MalwareEngine/MalwareEngine.swift:50-58`
-- **Result**: `process.arguments = ["--no-summary", "--infected", "--recursive"] +
-  paths.map(\.path)` — an argument array, no shell string interpolation. This is the only
-  `Process()` call in `Sources/` (confirmed by `grep -rn "Process()" Sources/`). HOLDS
-  (re-verified independently this session; baseline had it as trusted-not-rechecked).
+- **Claim**: Production Swift sources launch no external process.
+- **Files**: `Sources/`
+- **Command**: `rg 'Process\\s*\\(' Sources/`
+- **Result**: zero matches. Integrity uses native Foundation/Security APIs. HOLDS.
 
 ### EVIDENCE-SEC-002
 - **Claim**: No sudo invocations from the app.
@@ -154,12 +146,12 @@ feature audit's `AUDIT_EVIDENCE.md`, but keyed to requirement IDs, not feature I
 - **Result**: both files exist on disk. HOLDS (fixed in prior commit `964f110`, not re-broken).
 
 ### EVIDENCE-OSS-002
-- **Claim**: ClamAV is a runtime-only, never-linked, never-bundled dependency.
-- **Files**: `Sources/MalwareEngine/MalwareEngine.swift`, `Package.swift`
-- **Command**: `grep -rn "libclamav\|clamav" Package.swift Sources/`
-- **Result**: `ClamAVScanner` only probes known filesystem paths for a pre-installed `clamscan`
-  binary at runtime; no linkage in `Package.swift`; `Scripts/test-distribution.sh` confirms no
-  third-party binaries are embedded in the shipped app bundle. HOLDS.
+- **Claim**: No third-party scanner is linked, bundled or executed by the product.
+- **Files**: `Package.swift`, `Sources/IntegrityCore/`, distribution artifacts
+- **Command**: `rg -i 'clamscan|MalwareEngine' Package.swift Sources Resources`;
+  `bash Scripts/test-distribution.sh`
+- **Result**: no retired scanner component exists in the product tree; IntegrityCore uses only
+  macOS frameworks and the distribution contains no third-party scanner binary. HOLDS.
 
 ### EVIDENCE-TEST-001
 - **Claim**: `bash Scripts/test.sh` is the only sanctioned test entry point (bare `swift test`

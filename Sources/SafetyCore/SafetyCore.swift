@@ -97,8 +97,7 @@ public struct PathValidator: Sendable {
 public struct SafetyAuditEvent: Sendable {
     public enum Stage: String, Sendable {
         case approved   // path validated, operation queued
-        case dryRun     // execute() ran in dry-run mode, nothing touched
-        case executed   // real trash/restore action performed
+        case executed   // real trash/restore action performed after confirmation
         case skipped    // re-validation failed at execute time, nothing touched
         case error      // the underlying file-system call itself failed
     }
@@ -159,21 +158,17 @@ public struct ApprovedFileOperation: Sendable, Identifiable {
     }
 }
 
-/// Central approval + execution actor. Re-validates just before acting and
-/// supports a global dry-run mode.
+/// Central approval + execution actor. Re-validates every approved path just
+/// before moving it to the Trash.
 public actor SafetyCenter {
     private let validator: PathValidator
     private let fileManager = FileManager.default
     private let sink: SafetyAuditSink?
-    public private(set) var dryRun: Bool
 
-    public init(validator: PathValidator, dryRun: Bool = true, sink: SafetyAuditSink? = nil) {
+    public init(validator: PathValidator, sink: SafetyAuditSink? = nil) {
         self.validator = validator
-        self.dryRun = dryRun
         self.sink = sink
     }
-
-    public func setDryRun(_ value: Bool) { dryRun = value }
 
     /// Produces an approved operation, or throws if the path fails validation.
     public func approve(url: URL, logicalSize: Int64, ruleID: String, risk: RiskLevel) async throws(SafetyError) -> ApprovedFileOperation {
@@ -199,7 +194,6 @@ public actor SafetyCenter {
     public struct ExecutionResult: Sendable {
         public let executed: [ApprovedFileOperation]
         public let skipped: [(ApprovedFileOperation, SafetyError)]
-        public let wasDryRun: Bool
     }
 
     /// Moves approved items to the Trash. Every path is re-validated at
@@ -211,29 +205,27 @@ public actor SafetyCenter {
             do throws(SafetyError) {
                 let url = try validator.validate(op.url)
                 guard fileManager.fileExists(atPath: url.path) else { throw .fileVanished }
-                if !dryRun {
-                    do {
-                        try fileManager.trashItem(at: url, resultingItemURL: nil)
-                    } catch {
-                        if Self.isTemporaryPath(url) {
-                            do {
-                                try fileManager.removeItem(at: url)
-                            } catch {
-                                skipped.append((op, .fileVanished))
-                                await emit(.error, operationID: op.id, path: url.path, ruleID: op.ruleID, risk: op.risk,
-                                           size: op.logicalSize, result: "temporary remove failed")
-                                continue
-                            }
-                        } else {
+                do {
+                    try fileManager.trashItem(at: url, resultingItemURL: nil)
+                } catch {
+                    if Self.isTemporaryPath(url) {
+                        do {
+                            try fileManager.removeItem(at: url)
+                        } catch {
                             skipped.append((op, .fileVanished))
                             await emit(.error, operationID: op.id, path: url.path, ruleID: op.ruleID, risk: op.risk,
-                                       size: op.logicalSize, result: "trashItem failed")
+                                       size: op.logicalSize, result: "temporary remove failed")
                             continue
                         }
+                    } else {
+                        skipped.append((op, .fileVanished))
+                        await emit(.error, operationID: op.id, path: url.path, ruleID: op.ruleID, risk: op.risk,
+                                   size: op.logicalSize, result: "trashItem failed")
+                        continue
                     }
                 }
-                await emit(dryRun ? .dryRun : .executed, operationID: op.id, path: url.path, ruleID: op.ruleID,
-                           risk: op.risk, size: op.logicalSize, result: dryRun ? "simulated" : "moved to trash")
+                await emit(.executed, operationID: op.id, path: url.path, ruleID: op.ruleID,
+                           risk: op.risk, size: op.logicalSize, result: "moved to trash")
                 executed.append(op)
             } catch {
                 skipped.append((op, error))
@@ -241,7 +233,7 @@ public actor SafetyCenter {
                            size: op.logicalSize, result: "\(error)")
             }
         }
-        return ExecutionResult(executed: executed, skipped: skipped, wasDryRun: dryRun)
+        return ExecutionResult(executed: executed, skipped: skipped)
     }
 
     private static func isTemporaryPath(_ url: URL) -> Bool {

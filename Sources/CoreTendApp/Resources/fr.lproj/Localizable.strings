@@ -2,6 +2,9 @@
 
 /* Common */
 "common.cancel" = "Annuler";
+"common.trash_confirm.title" = "Déplacer la sélection vérifiée vers la Corbeille ?";
+"common.trash_confirm.message" = "Seuls les éléments sélectionnés seront déplacés vers la Corbeille. Vous pourrez les restaurer tant que la Corbeille n’est pas vidée.";
+"common.trash_confirm.action" = "Déplacer vers la Corbeille";
 "common.pause" = "Pause";
 "common.resume" = "Reprendre";
 "cleanup.pause_hint" = "Suspend temporairement l’analyse en cours.";
@@ -14,7 +17,6 @@
 "spacelens.resume_hint" = "Continue l’analyse Space Lens suspendue.";
 "dupes.pause_hint" = "Suspend temporairement l’analyse des doublons.";
 "dupes.resume_hint" = "Continue l’analyse des doublons suspendue.";
-"common.dry_run" = "Simulation";
 "common.running" = "En cours…";
 "common.reveal_in_finder" = "Afficher dans le Finder";
 "common.clear" = "Effacer";
@@ -50,7 +52,6 @@
 "smartcare.hero.scanning_title" = "Analyse en cours…";
 "smartcare.hero.review_title" = "%@ à nettoyer en toute sécurité";
 "smartcare.hero.cleaning_title" = "Nettoyage en cours…";
-"smartcare.hero.finished_dryrun_title" = "Simulation : %@ seraient libérés";
 "smartcare.hero.finished_title" = "%@ déplacés dans la Corbeille";
 "smartcare.hero.idle_subtitle" = "Une analyse commence par le stockage. Rien n'est supprimé pendant l'analyse.";
 "smartcare.hero.scanning_subtitle" = "Lecture des caches, journaux et fichiers de compilation. Vous pouvez annuler à tout moment.";
@@ -62,7 +63,6 @@
 "smartcare.module.scanning" = "Analyse en cours… %d éléments, %@";
 "smartcare.module.done" = "%d éléments — %@";
 "smartcare.start_scan" = "Démarrer le Smart Care";
-"smartcare.simulate_care" = "Simuler le soin";
 "smartcare.run_care" = "Lancer le soin";
 "smartcare.review_details_hint" = "Consultez les détails dans le module Nettoyage.";
 "smartcare.scan_again" = "Analyser à nouveau";
@@ -76,11 +76,9 @@
 "cleanup.scanning_progress" = "%d éléments analysés — %@ trouvés";
 "cleanup.review.selected" = "%d éléments — %@ sélectionnés";
 "cleanup.review.truncated" = "%d sur %d affichés — %@ trouvés au total";
-"cleanup.simulate" = "Simuler le nettoyage";
 "cleanup.move_to_trash" = "Déplacer vers la Corbeille";
 "cleanup.group.item_count" = "%d éléments";
 "cleanup.select_item" = "Sélectionner %@";
-"cleanup.done.dryrun" = "Simulation : %@ seraient déplacés vers la Corbeille";
 "cleanup.done.moved" = "%@ déplacés vers la Corbeille";
 
 /* Protection */
@@ -89,9 +87,7 @@
 /* Space Lens */
 "spacelens.title" = "Space Lens";
 "spacelens.delete.help" = "Mettre à la Corbeille";
-"spacelens.dryrun.help" = "Activé, rien n’est réellement supprimé — Space Lens indique seulement l’espace qui serait libéré.";
 "spacelens.delete.confirm_title" = "Mettre « %@ » à la Corbeille ?";
-"spacelens.delete.confirm_dryrun" = "Simuler (sans suppression)";
 "spacelens.delete.confirm_action" = "Mettre à la Corbeille";
 "spacelens.delete.confirm_message" = "%@ seront libérés. Utilise la Corbeille macOS normale — récupérable tant qu’elle n’est pas vidée.";
 "spacelens.delete.error_title" = "Échec du déplacement vers la Corbeille";
@@ -120,7 +116,6 @@
 "spacelens.category.other" = "Autres";
 
 /* Applications */
-"apps.uninstall.dryrun_result" = "Simulation : %d éléments (%@) seraient déplacés vers la Corbeille";
 "apps.uninstall.result" = "%d éléments (%@) déplacés vers la Corbeille";
 "apps.tab.installed" = "Installées";
 "apps.tab.leftovers" = "Résidus";
@@ -139,8 +134,9 @@
 "apps.last_used_unknown" = "dernière utilisation : inconnue";
 "apps.associated_data" = "Données associées";
 "apps.associated_data.empty" = "Aucun fichier associé trouvé pour cet identifiant de bundle.";
-"apps.simulate_uninstall" = "Simuler la désinstallation";
 "apps.uninstall" = "Désinstaller (déplacer vers la Corbeille)";
+"apps.uninstall_confirm.title" = "Désinstaller l’application sélectionnée ?";
+"apps.uninstall_confirm.message" = "L’application et les éléments associés sélectionnés seront déplacés vers la Corbeille. Vérifiez la sélection avant de continuer.";
 "apps.select_prompt" = "Sélectionnez une application";
 
 /* My Clutter */
@@ -197,10 +193,8 @@
 "leftovers.scan" = "Rechercher les résidus";
 "leftovers.scanning" = "Analyse en cours…";
 "leftovers.none_found" = "Aucun résidu trouvé";
-"leftovers.finished.dryrun" = "Simulation : %@ seraient récupérés";
 "leftovers.finished.moved" = "%@ déplacés vers la Corbeille";
 "leftovers.results.summary" = "%d candidats — %@ sélectionnés sur %@";
-"leftovers.simulate" = "Simuler la suppression";
 "leftovers.select_item" = "Sélectionner %@";
 "leftovers.shared_ambiguous_a11y" = "partagé ou ambigu";
 "leftovers.shared_review" = "Partagé / à vérifier";
@@ -210,11 +204,9 @@
 "privacy.detecting" = "Détection des profils de navigateur…";
 "privacy.empty.title" = "Aucune donnée de navigateur trouvée";
 "privacy.empty.subtitle" = "Les données Safari nécessitent l'accès complet au disque ; les profils Chrome et Firefox sont détectés automatiquement s'ils sont présents.";
-"privacy.finished.dryrun" = "Simulation : %@ de caches seraient déplacés vers la Corbeille";
 "privacy.finished.moved" = "%@ de caches déplacés vers la Corbeille";
 "privacy.running_warning" = "%@ est en cours d'exécution — les fichiers de cache peuvent être verrouillés. Quittez d'abord le navigateur pour un nettoyage complet.";
 "privacy.caches_selected" = "Caches de navigateur — %@ sélectionnés";
-"privacy.simulate_clean" = "Simuler le nettoyage";
 "privacy.clean_caches" = "Nettoyer les caches";
 "privacy.browser_profile" = "%@ — %@";
 "privacy.cache_size" = "Cache %@";
@@ -265,14 +257,11 @@
 "activity.empty.subtitle" = "Les analyses et nettoyages apparaîtront ici. Tout reste sur ce Mac.";
 "activity.empty_range" = "Aucune activité sur cette période.";
 "activity.freed_real" = "Libéré (réel)";
-"activity.simulated_dryrun" = "Simulé (essai)";
 "activity.items" = "Éléments";
 "activity.row.detail" = "%d éléments · %@ %@";
-"activity.row.simulated_suffix" = "(simulé, aucun fichier n'a été modifié)";
 "activity.row.real_suffix" = "(réel, appliqué sur le disque)";
 "activity.open_protection" = "Ouvrir Protection";
 "activity.completed" = "Terminé";
-"activity.row.simulated_a11y" = "simulé";
 "activity.row.real_a11y" = "réel";
 
 /* Cloud Cleanup */
@@ -326,8 +315,6 @@
 "settings.appearance" = "Apparence";
 "settings.appearance_detail" = "CoreTend suit l'apparence claire/sombre du système. Il n'y a pas de thème propre à l'application.";
 "settings.scans_cleanup" = "Analyses et nettoyage";
-"settings.dry_run_default" = "Simulation par défaut";
-"settings.dry_run_detail" = "Lorsque activé, les nettoyages simulent leur résultat au lieu de déplacer les fichiers vers la Corbeille.";
 "settings.deletion_method" = "Méthode de suppression";
 "settings.deletion_method_value" = "Corbeille système (réversible)";
 "settings.protection" = "Intégrité";
@@ -378,7 +365,7 @@
 "onboarding.step3.title" = "Réversible par conception";
 "onboarding.step3.bullet1" = "Les analyses ne suppriment jamais rien. Le nettoyage est une étape séparée et vérifiée.";
 "onboarding.step3.bullet2" = "La suppression utilise la Corbeille système — vous pouvez toujours restaurer.";
-"onboarding.step3.bullet3" = "La simulation est activée par défaut : les actions sont simulées tant que vous ne la désactivez pas.";
+"onboarding.step3.bullet3" = "Chaque déplacement vers la Corbeille suit une sélection relue et une action explicite.";
 "onboarding.skip" = "Passer";
 "onboarding.step_of" = "%d sur %d";
 "onboarding.step_a11y" = "Étape %d sur %d";
@@ -434,7 +421,6 @@
 "dashboard.secondary_action" = "Ouvrir Space Lens";
 "dashboard.status.signature" = "Signature";
 "dashboard.status.safety" = "Sécurité";
-"dashboard.status.dry_run" = "Simulation active";
 "dashboard.status.trash_enabled" = "Corbeille activée";
 "dashboard.status.exclusions" = "Exclusions";
 "dashboard.status.exclusion_count" = "%d chemins";
@@ -459,12 +445,11 @@
 /* Safety log (SafetyCore audit trail persistence) */
 "common.done" = "Terminé";
 "safetylog.title" = "Journal de sécurité";
-"safetylog.subtitle" = "%d exécutées · %d simulées (simulation)";
+"safetylog.subtitle" = "%d exécutées";
 "safetylog.empty" = "Aucune entrée dans le journal de sécurité pour le moment.";
 "safetylog.unavailable" = "Base de données locale indisponible";
 "safetylog.purge" = "Purger le journal";
 "safetylog.stage.approved" = "Approuvée";
-"safetylog.stage.dryrun" = "Simulation";
 "safetylog.stage.executed" = "Exécutée";
 "safetylog.stage.skipped" = "Ignorée";
 "safetylog.stage.error" = "Erreur";
@@ -505,8 +490,7 @@
 "onboarding.security.cautious" = "Prudent";
 "onboarding.security.cautious_detail" = "Tout vérifier avant action. Mêmes réglages sûrs, prudence maximale.";
 "onboarding.security.custom" = "Personnalisé";
-"onboarding.security.custom_detail" = "Partez des réglages sûrs et ajustez vous-même l'option simulation.";
-"onboarding.security.dry_run" = "Simulation par défaut (actions simulées)";
+"onboarding.security.custom_detail" = "Réglages sûrs, sélection manuelle et confirmation explicite avant retrait.";
 "onboarding.security.trash" = "La suppression utilise toujours la Corbeille";
 "onboarding.security.medium_risk" = "Règles à risque moyen présélectionnées";
 "onboarding.security.empty_trash" = "Vider la Corbeille automatiquement";
@@ -551,7 +535,6 @@
 "onboarding.summary.title" = "Tout est prêt";
 "onboarding.summary.subtitle" = "Voici exactement ce qui est activé. Modifiez-le dans les Réglages.";
 "onboarding.summary.profile" = "Profil de sécurité";
-"onboarding.summary.dry_run" = "Simulation par défaut";
 "onboarding.summary.fda" = "Accès complet au disque";
 "onboarding.summary.menu_bar" = "Élément barre des menus";
 "onboarding.summary.notifications" = "Notifications";

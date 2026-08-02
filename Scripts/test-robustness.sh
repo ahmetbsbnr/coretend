@@ -2,9 +2,9 @@
 # Launch-robustness suite for the built app bundle.
 #
 # Every case here answers one question: does CoreTend still open its window when
-# the environment is hostile? A scanner that exits silently on a corrupt cache
-# or a missing ClamAV looks identical to a scanner that Gatekeeper blocked, and
-# the user cannot tell the two apart — so none of these may kill the launch.
+# the environment is hostile? An app that exits silently on corrupt local state
+# looks identical to one that Gatekeeper blocked, and the user cannot tell the
+# two apart — so none of these cases may kill the launch.
 #
 # Isolation, non-negotiable: every case runs under its own temporary HOME and
 # its own temporary work tree. Nothing here reads or writes the real
@@ -147,12 +147,6 @@ db_wal() { : > "$2/store.sqlite"; : > "$2/store.sqlite-wal"; : > "$2/store.sqlit
 cache_corrupt() { mkdir -p "$1/Library/Caches/com.ahmetbsbnr.coretend"; head -c 32768 /dev/urandom > "$1/Library/Caches/com.ahmetbsbnr.coretend/scan.cache"; }
 partial_db() { printf 'SQLite format 3\x00' > "$2/store.sqlite"; head -c 200 /dev/urandom >> "$2/store.sqlite"; }
 
-clamav_fake() { mkdir -p "$1/bin"; printf '#!/bin/sh\nexit 127\n' > "$1/bin/clamscan"; chmod +x "$1/bin/clamscan"; }
-clamav_noexec() { mkdir -p "$1/bin"; echo "not a binary" > "$1/bin/clamscan"; chmod 644 "$1/bin/clamscan"; }
-clamav_garbage() { mkdir -p "$1/bin"; head -c 2048 /dev/urandom > "$1/bin/clamscan"; chmod +x "$1/bin/clamscan"; }
-clamav_db_missing() { mkdir -p "$1/clamav-db"; }
-clamav_db_corrupt() { mkdir -p "$1/clamav-db"; head -c 8192 /dev/urandom > "$1/clamav-db/main.cvd"; }
-
 offline() { :; }
 manifest_garbage() { head -c 4096 /dev/urandom > "$2/latest.json"; }
 manifest_empty() { : > "$2/latest.json"; }
@@ -231,15 +225,6 @@ with_state db-is-a-directory 'db_is_dir'
 with_state db-readonly 'db_readonly'
 with_state db-zero-length-wal 'db_wal'
 with_state cache-corrupt 'cache_corrupt'
-
-# ------------------------------------------------------------------ ClamAV
-echo "-- ClamAV absent, incomplete and broken"
-with_state clamav-absent noop
-with_state clamav-fake-binary 'clamav_fake'
-with_state clamav-not-executable 'clamav_noexec'
-with_state clamav-binary-is-garbage 'clamav_garbage'
-with_state clamav-db-missing 'clamav_db_missing'
-with_state clamav-db-corrupt 'clamav_db_corrupt'
 
 # ----------------------------------------------------------------- network
 echo "-- network and update manifest"
