@@ -118,13 +118,19 @@ struct BrandResourceTests {
         let plistURL = root.appendingPathComponent("Resources/Info.plist")
         let data = try Data(contentsOf: plistURL)
         let plist = try PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any]
+        let identityURL = root.appendingPathComponent("Configuration/PublicIdentity.example.json")
+        let identityData = try Data(contentsOf: identityURL)
+        let identity = try JSONSerialization.jsonObject(with: identityData) as? [String: Any]
         #expect(plist?["CFBundleIconFile"] as? String == "AppIcon")
         let version = plist?["CFBundleShortVersionString"] as? String ?? ""
         #expect(version.compare("0.4.0", options: .numeric) != .orderedAscending)
         #expect(version.range(of: #"^\d+\.\d+\.\d+$"#, options: .regularExpression) != nil)
         let build = plist?["CFBundleVersion"] as? String ?? ""
         #expect(build.range(of: #"^\d+(\.\d+){0,2}$"#, options: .regularExpression) != nil)
-        #expect(plist?["CoreTendMarketingVersion"] as? String == "0.9.1-rc.3")
+        #expect(plist?["CFBundleIdentifier"] as? String == identity?["bundleId"] as? String)
+        #expect(plist?["CoreTendMarketingVersion"] as? String == identity?["marketingVersion"] as? String)
+        #expect(plist?["CFBundleVersion"] as? String == identity?["buildNumber"] as? String)
+        #expect(plist?["LSMinimumSystemVersion"] as? String == identity?["deploymentTarget"] as? String)
     }
 }
 
