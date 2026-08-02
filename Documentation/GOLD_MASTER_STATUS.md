@@ -2,10 +2,11 @@
 
 Last verified: 2026-08-02 (Europe/Istanbul)
 
-This is the durable delivery journal for `v0.9.1-rc.4`. It distinguishes a
-locally validated candidate from a published release. Until the tagged GitHub
-asset has been downloaded and independently verified, the public release record
-and `/download` intentionally remain on `v0.9.1-rc.3`.
+This is the durable delivery journal for `v0.9.1-rc.4`. It distinguishes the
+historical local candidate from the immutable artifact later built by the
+tagged workflow. The GitHub release and its downloaded DMG are verified; the
+post-publication branch promotes that audited identity to the site and
+portfolio without changing the published bytes.
 
 ## Recovery checkpoint
 
@@ -48,6 +49,52 @@ created only after both public repositories and production are verified.
 - `01ecf29` — isolate application inventory during test-mode capture
 - `fe1f599` — add a two-key-guarded test-only appearance override for honest
   light/dark artifact capture
+- `d3fede6` — record accurate pre-publication release evidence
+- `e0c8f87`, `21a6add` — make visual animation fingerprints deterministic
+
+PR #5 was merged without history rewriting as
+`67bb2e55ca6ddf336df7d0753e878c2293b129b4`; the annotated
+`v0.9.1-rc.4` tag resolves to that exact merge commit.
+
+## Published artifact gate
+
+The tag-triggered release workflow built from a clean checkout of
+`67bb2e55ca6ddf336df7d0753e878c2293b129b4` and published the release at
+`https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.4`.
+
+| Field | Downloaded public value |
+| --- | --- |
+| DMG | `CoreTend-0.9.1-rc.4-arm64-unsigned.dmg` |
+| Size | `4,726,227` bytes |
+| SHA-256 | `f321b2ca801d5815163ce89eeb68a4957a451c054693c0a12e064f35b639b4fe` |
+| Source commit | `67bb2e55ca6ddf336df7d0753e878c2293b129b4` |
+| Version/build | marketing `0.9.1-rc.4`; bundle `0.9.1` (914) |
+| Platform | Apple silicon `arm64`; macOS 14.0+ |
+| Signature | ad hoc; strict deep verification passed |
+| Notarization | none; `spctl` rejection with exit 3 is expected |
+
+The public DMG digest matches the GitHub asset API, the downloaded file and
+the signed `SHA256SUMS`. `hdiutil imageinfo` and `hdiutil verify` pass; it was
+mounted read-only, detached and remounted, and its application was copied into
+an isolated Applications directory. The exact extracted app launched with
+`CORETEND_TEST_MODE=1` and a temporary store, stayed alive through the smoke
+interval and exited without a crash. English/dark and French/light captures
+cover onboarding and Dashboard, Storage, Space Lens, Duplicates, Applications,
+Integrity, Activity and Settings.
+
+Bundle/Mach-O scans find no current `ClamAV`, `clamscan` or `MalwareEngine`
+string or resource. `IntegrityCore` and the rendered Integrity destination are
+present. No real `/Users/...` path, secret, local dependency or checkout path
+is embedded; the sole generic `/Users/<redacted>/` literal belongs to the
+diagnostic redaction routine and contains no personal identity.
+
+The immutable release `latest.json` inherited two conservative sentences from
+an older template about missing DMG icon positions and an unrun visual
+campaign. They are corrected transparently in the bilingual GitHub release
+body; the asset was not replaced because that would invalidate its checksum,
+Minisign signature and provenance. The tracked template now records only the
+remaining interactive VoiceOver boundary and is regression-gated against those
+resolved claims.
 
 ## Public website gate
 
@@ -82,7 +129,7 @@ The generator still emits rc.3 release facts for public output at this
 checkpoint. This is intentional: public metadata is not promoted from a local
 candidate.
 
-## Application and local candidate gate
+## Historical pre-tag local candidate gate
 
 The exact locally validated candidate was built from clean release-branch HEAD
 `fe1f599f24b6fa68e1abc5d7f7e010d29c6641f9` with
@@ -176,21 +223,15 @@ Security → Open Anyway. The project never disables Gatekeeper or removes
 quarantine automatically. Developer ID signing and notarization remain future
 distribution work.
 
-## Gates still open at this checkpoint
+## Post-publication gates
 
-- Commit and push this corrected journal, then obtain all PR #5 checks on its
-  newest SHA.
-- Merge PR #5 into `main` without rewriting history; verify CI, Security and
-  Vercel on the merge commit.
-- Tag that exact commit `v0.9.1-rc.4`; let the macOS release workflow build and
-  publish its fresh artifacts.
-- Download the public DMG and re-run checksum, size, image, mount, bundle,
-  private-data, ClamAV/Integrity and launch gates against that exact asset.
-- Only after that verification, atomically promote the canonical public release
-  record, generated site, `/download`, README/CHANGELOG/install documentation
-  and portfolio; deploy and verify production.
-- Create and verify final Git bundles after both repositories are clean and
-  equal to their remotes.
+The canonical release record, both Vercel route contracts, generated site,
+README, changelog and install/release documentation are promoted together by
+the post-publication release branch. Its CI, Security and Vercel deployment
+must be green on the newest SHA before merge. The portfolio receives the same
+published version from its generated release metadata. Final production route,
+download/hash and repository equality checks, followed by verified Git bundles,
+close the delivery; they are never inferred from the existence of this file.
 
 The only intended distribution limitations after those gates are Developer ID
 signing, Apple notarization and a possible future Mac App Store study.

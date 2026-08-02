@@ -62,25 +62,19 @@ class PublicReleaseGateTests(unittest.TestCase):
         self.assertFalse((output / "latest.json").exists(), "validation failure wrote a partial manifest")
         self.assertFalse((output / "SHA256SUMS").exists(), "validation failure wrote partial checksums")
 
-    def test_current_rc3_generates_exact_public_facts_without_internal_fields(self) -> None:
+    def test_current_release_generates_exact_public_facts_without_internal_fields(self) -> None:
         result, output = self.run_gate(self.current)
         self.assertEqual(result.returncode, 0, result.stderr)
         latest_bytes = (output / "latest.json").read_bytes()
         latest = json.loads(latest_bytes)
-        self.assertEqual(latest["version"], "0.9.1-rc.3")
-        self.assertEqual(latest["releaseTag"], "v0.9.1-rc.3")
+        self.assertEqual(latest["version"], self.current["version"])
+        self.assertEqual(latest["releaseTag"], self.current["tag"])
         self.assertEqual(latest["architecture"], "arm64")
         self.assertEqual(latest["minimumMacOS"], "14.0")
         self.assertIs(latest["signed"], False)
         self.assertIs(latest["notarized"], False)
-        self.assertEqual(
-            latest["dmgURL"],
-            "https://github.com/ahmetbsbnr/coretend/releases/download/v0.9.1-rc.3/CoreTend-0.9.1-rc.3-arm64-unsigned.dmg",
-        )
-        self.assertEqual(
-            latest["dmgSHA256"],
-            "2960293a278f81be602aebb84ad6582d41f118635bbbca4517853bb68831ee71",
-        )
+        self.assertEqual(latest["dmgURL"], self.current["dmgURL"])
+        self.assertEqual(latest["dmgSHA256"], self.current["dmgSHA256"])
         self.assertNotIn("_comment", latest)
         self.assertNotIn("releaseNotes", latest)
         self.assertNotIn("generatedBy", latest)
@@ -90,14 +84,8 @@ class PublicReleaseGateTests(unittest.TestCase):
             self.assertNotIn(forbidden, combined)
 
         sums = (output / "SHA256SUMS").read_text(encoding="ascii").splitlines()
-        self.assertEqual(
-            sums[0],
-            "28114f0a352abe340bb83cd61c84dedcb3cb0b8e031a12ae7a1a4e306e4db173  CoreTend-0.9.1-rc.3-arm64-unsigned.zip",
-        )
-        self.assertEqual(
-            sums[1],
-            "2960293a278f81be602aebb84ad6582d41f118635bbbca4517853bb68831ee71  CoreTend-0.9.1-rc.3-arm64-unsigned.dmg",
-        )
+        self.assertEqual(sums[0], f"{self.current['zipSHA256']}  {self.current['zipName']}")
+        self.assertEqual(sums[1], f"{self.current['dmgSHA256']}  {self.current['dmgName']}")
         self.assertEqual(sums[2], f"{hashlib.sha256(latest_bytes).hexdigest()}  latest.json")
 
     def test_generation_is_byte_reproducible(self) -> None:

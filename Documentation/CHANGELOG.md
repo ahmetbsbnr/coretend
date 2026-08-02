@@ -1,5 +1,37 @@
 # CHANGELOG
 
+## 0.9.1-rc.4 — 2026-08-02 « Integrity and Cohesion »
+
+Supersedes rc.3 without changing or removing its historical artifacts. The
+current DMG is `CoreTend-0.9.1-rc.4-arm64-unsigned.dmg` (4,726,227 bytes,
+SHA-256 `f321b2ca801d5815163ce89eeb68a4957a451c054693c0a12e064f35b639b4fe`),
+built from tagged merge commit `67bb2e55ca6ddf336df7d0753e878c2293b129b4`.
+
+- feat(integrity): removes the former user-installed ClamAV process wrapper,
+  quarantine folder and background scan watcher. The first-party
+  `IntegrityCore` now reports read-only macOS provenance, code-signature and
+  login-item signals; it is explicitly not antivirus software.
+- feat(app): ships the current Dashboard, Storage, Space Lens, Duplicates,
+  Applications, Integrity, Activity, Settings and onboarding surfaces in
+  English and French, with light and dark appearances and isolated test mode.
+- feat(site): applies the shared Paper / Ink / Cobalt shell, independent logo
+  arcs, route-specific measurement backgrounds, themes, languages, reduced
+  motion, focus treatment and premium footer to every public route and the
+  real 404. The mobile Workflow overlap and hard-coded Support rc.3 version
+  are fixed in the canonical template.
+- test(site): 32 behavior/accessibility gates and 79 reviewed visual
+  fingerprints cover the route, viewport, locale, theme and reduced-motion
+  matrix without committing redundant screenshots.
+- build(release): packages the tag on a clean macOS runner with deterministic
+  `dmgbuild` Finder metadata, validates and mounts the DMG, publishes checksums,
+  Minisign signatures, SBOM and provenance, and records build 914 with an
+  Apple-compatible bundle version.
+- test(release): 338 Swift tests pass, plus Debug/Release builds, Xcode tests,
+  localization, resource, repository, private-data, secret, packaging and
+  distribution gates. The downloaded public app launches in isolated test
+  mode and the ad-hoc signature verifies; Gatekeeper rejection remains
+  expected without Developer ID/notarization.
+
 ## 0.9.1-rc.3 — 2026-07-29 « Openable and Legible »
 
 Fixes the two defects that made the rc.2 public download unusable for a new

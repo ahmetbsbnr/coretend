@@ -26,9 +26,8 @@
     "Unsigned, not notarized: Gatekeeper will block first launch (see Documentation/INSTALL_UNSIGNED.md).",
     "Built and tested on a single physical Mac (arm64) — no multi-OS or multi-hardware verification performed.",
     "This manifest carries no downloadURL field; download links are the GitHub release page's own asset URLs.",
-    "The DMG carries its Living System background and volume icon, but no saved icon positions: writing those needs the Finder, which refused automation in the build environment. Drag-and-drop works regardless.",
     "This is a release candidate, not a stable 1.0. The trademark screening found no mark containing 'coretend' across ~141.8M records on TMview, but COREXTEND (MIPS Tech, live class 9) is one letter away and is tracked as a WATCH item: attorney review is required before any trademark filing or commercial use. legalReviewStatus remains pending.",
-    "Interactive VoiceOver verification and the full visual-QA capture campaign could not be run in this environment (no display session). See Documentation/VISUAL_QA.md for what was and was not verified."
+    "Interactive VoiceOver verification remains unperformed. Automated accessibility gates and exact-artifact bilingual light/dark captures passed for rc.4; see Documentation/VISUAL_QA.md for the boundary."
   ],
   "repositoryURL": "https://github.com/ahmetbsbnr/coretend",
   "websiteURL": "https://coretend.ahmetbsbnr.com",
