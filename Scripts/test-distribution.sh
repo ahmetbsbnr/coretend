@@ -15,10 +15,6 @@ fail=0
 note() { echo "== $* =="; }
 ok()   { echo "OK: $*"; }
 bad()  { echo "FAIL: $*"; fail=1; }
-# For a documented, permanent, environment-based limitation that isn't
-# fixable without moving off SwiftPM (see KNOWN_LIMITATIONS.md) — printed
-# clearly but never fails the run, unlike bad().
-known() { echo "KNOWN LIMITATION: $*"; }
 
 note "Packaging ZIP and DMG"
 bash Scripts/package-zip.sh "$VERSION"
@@ -77,16 +73,21 @@ note "Checking arm64 architecture"
 if file "$BIN" | grep -q "arm64"; then ok "binary is arm64"; else bad "binary is not arm64"; fi
 if file "$BIN" | grep -qi "x86_64"; then bad "binary unexpectedly contains x86_64 slice"; fi
 
-note "Checking artifact does not embed the literal repo checkout path"
-# Known SwiftPM limitation: Bundle.module's generated accessor bakes in an
-# absolute .build fallback path as a string constant, even though it is
-# never used at runtime when resources are correctly bundled (see
-# package-local.sh comment). This check surfaces that honestly rather than
-# hiding it — see Documentation/KNOWN_LIMITATIONS.md.
-if strings "$BIN" 2>/dev/null | grep -qF "$REPO_ROOT"; then
-  known "binary contains the literal repo checkout path (SwiftPM Bundle.module fallback-string limitation, see Documentation/KNOWN_LIMITATIONS.md — does not affect runtime behavior since the real bundle resolves first, but the string is present; not fixable without moving off SwiftPM)"
+note "Checking artifact does not disclose the checkout or build account"
+# Search the raw Mach-O, not just printable data sections: Swift's N_OSO debug
+# records live in LINKEDIT and `strings` can omit them. package-local.sh strips
+# those records before signing; this gate prevents a future packaging path from
+# accidentally shipping an unstripped executable.
+if LC_ALL=C grep -aFq "$REPO_ROOT" "$BIN"; then
+  bad "binary contains the literal repo checkout path"
 else
   ok "binary does not contain the repo checkout path"
+fi
+BUILD_HOME_PREFIX="/Users/$(id -un)/"
+if LC_ALL=C grep -aFq "$BUILD_HOME_PREFIX" "$BIN"; then
+  bad "binary contains the build account path $BUILD_HOME_PREFIX"
+else
+  ok "binary does not contain the build account path"
 fi
 
 note "Isolated launch smoke test"

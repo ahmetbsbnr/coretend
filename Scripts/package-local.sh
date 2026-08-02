@@ -39,5 +39,11 @@ done
 # have to be added before signing, or the copy breaks the sealed CodeResources
 # and macOS reports the app as damaged.
 cp LICENSE NOTICE THIRD_PARTY_NOTICES.md "$APP/Contents/Resources/"
+# Swift's release linker keeps N_OSO/debug records that name every source file
+# with its absolute checkout path. They are not needed to run the distributed
+# executable and would disclose the build account inside the shipped binary.
+# Strip only debug symbols before sealing the bundle; a future symbolicated
+# Developer ID build can archive a separate dSYM outside the application.
+xcrun strip -S "$APP/Contents/MacOS/CoreTend"
 codesign --force --sign - "$APP"
 echo "Built: $APP (scratch: $SCRATCH)"
