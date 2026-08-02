@@ -639,8 +639,8 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
     </a>
     <nav class="bar-actions" aria-label="Main">
       <div class="switch" role="group" aria-label="Language" data-aria-en="Language" data-aria-fr="Langue">
-        <a href="/en/" data-lang-link="en" hreflang="en" lang="en" aria-current="page">EN</a>
-        <a href="/fr/" data-lang-link="fr" hreflang="fr" lang="fr">FR</a>
+        <a href="/en" data-lang-link="en" hreflang="en" lang="en" aria-current="page">EN</a>
+        <a href="/fr" data-lang-link="fr" hreflang="fr" lang="fr">FR</a>
       </div>
       <button class="icon-btn" id="theme" type="button" aria-label="Switch appearance" data-aria-en="Switch appearance" data-aria-fr="Changer d’apparence">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
@@ -1691,7 +1691,7 @@ function i18n() {
       } catch (_) {}
       const hash = location.hash || "";
       document.body.classList.add("is-changing-language");
-      setTimeout(() => location.assign(`/${to}/${hash}`), RM.matches ? 0 : 110);
+      setTimeout(() => location.assign(`/${to}${hash}`), RM.matches ? 0 : 110);
     });
   });
 }

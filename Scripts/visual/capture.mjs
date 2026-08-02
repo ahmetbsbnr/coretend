@@ -38,10 +38,10 @@ const VIEWPORTS = [
 const DESKTOP = VIEWPORTS[0]
 const MOBILE = VIEWPORTS[4]
 const ROUTE_MATRIX = VIEWPORTS.flatMap(viewport => [
-  { name: `home-en-light--${viewport.name}`, path: '/en/', viewport, language: 'en', theme: 'light' },
-  { name: `home-fr-light--${viewport.name}`, path: '/fr/', viewport, language: 'fr', theme: 'light' },
-  { name: `home-en-dark--${viewport.name}`, path: '/en/', viewport, language: 'en', theme: 'dark' },
-  { name: `home-fr-dark--${viewport.name}`, path: '/fr/', viewport, language: 'fr', theme: 'dark' },
+  { name: `home-en-light--${viewport.name}`, path: '/en', viewport, language: 'en', theme: 'light' },
+  { name: `home-fr-light--${viewport.name}`, path: '/fr', viewport, language: 'fr', theme: 'light' },
+  { name: `home-en-dark--${viewport.name}`, path: '/en', viewport, language: 'en', theme: 'dark' },
+  { name: `home-fr-dark--${viewport.name}`, path: '/fr', viewport, language: 'fr', theme: 'dark' },
 ])
 
 const INFORMATION_ROUTES = [
@@ -250,7 +250,7 @@ async function stateCaptures(browser, base) {
       locale: 'en-US',
     })
     const page = await context.newPage()
-    await page.goto(`${base}${options.path ?? '/en/'}`, { waitUntil: 'domcontentloaded' })
+    await page.goto(`${base}${options.path ?? '/en'}`, { waitUntil: 'domcontentloaded' })
     await page.evaluate(() => document.fonts.ready)
     await normalizeReleaseIdentity(page)
     if (prepare) await prepare(page)
@@ -303,8 +303,8 @@ async function stateCaptures(browser, base) {
     await freeze(page)
     await page.addStyleTag({ content: '#bar { display:none !important }' })
   }
-  await state('workflow-mobile-en', { viewport: MOBILE, reducedMotion: 'reduce', path: '/en/' }, workflow, '#how')
-  await state('workflow-mobile-fr', { viewport: MOBILE, reducedMotion: 'reduce', path: '/fr/' }, workflow, '#how')
+  await state('workflow-mobile-en', { viewport: MOBILE, reducedMotion: 'reduce', path: '/en' }, workflow, '#how')
+  await state('workflow-mobile-fr', { viewport: MOBILE, reducedMotion: 'reduce', path: '/fr' }, workflow, '#how')
   return captures
 }
 

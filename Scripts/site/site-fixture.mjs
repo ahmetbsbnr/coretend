@@ -135,6 +135,17 @@ export async function startSite(buildDirectory, options = {}) {
     }
     const pathname = url.pathname
 
+    // Vercel applies its trailing-slash normalization before custom redirects
+    // and rewrites. Model that ordering so local gates cannot accept a URL
+    // contract that adds redirects after deployment.
+    if (config.trailingSlash === false && pathname.length > 1 && pathname.endsWith('/')) {
+      response.writeHead(308, {
+        location: `${pathname.replace(/\/+$/, '')}${url.search}`,
+        'cache-control': 'no-store',
+      }).end()
+      return
+    }
+
     for (const rule of redirects) {
       const destination = matchRule(pathname, rule)
       if (!destination) continue

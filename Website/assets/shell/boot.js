@@ -41,6 +41,6 @@
       ? savedLanguage
       : (navigator.languages || [navigator.language || "en"])
           .some(language => String(language).toLowerCase().startsWith("fr")) ? "fr" : "en";
-    location.replace(`/${preferredLanguage}/${location.hash || ""}`);
+    location.replace(`/${preferredLanguage}${location.hash || ""}`);
   }
 })();
