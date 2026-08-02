@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 import Testing
 import AppDiscovery
 @testable import CoreTendApp
@@ -52,5 +53,37 @@ struct ApplicationInventoryIsolationTests {
         ])
         #expect(try #require(locations.systemLibrary).path == "/Library")
         #expect(locations.caskroomRoots == HomebrewCaskIndex.caskroomRoots)
+    }
+}
+
+@Suite("Artifact appearance override isolation")
+struct TestAppearanceOverrideTests {
+    @Test("validated test mode maps light and dark without changing normal settings")
+    func validTestModeMapsAppearances() {
+        let root = "/tmp/coretend-appearance-\(UUID().uuidString)"
+        for (value, expected) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
+            let result = TestAppearanceOverride.resolve(environment: [
+                "CORETEND_TEST_MODE": "1",
+                "CORETEND_TEST_STORE_DIR": root,
+                "CORETEND_TEST_APPEARANCE": value,
+            ])
+            #expect(result == expected)
+        }
+    }
+
+    @Test("an invalid test store cannot force application appearance")
+    func invalidTestStoreCannotOverrideAppearance() {
+        #expect(TestAppearanceOverride.resolve(environment: [
+            "CORETEND_TEST_MODE": "1",
+            "CORETEND_TEST_STORE_DIR": "/Applications/not-a-test-store",
+            "CORETEND_TEST_APPEARANCE": "light",
+        ]) == nil)
+    }
+
+    @Test("normal launches always leave appearance under system control")
+    func normalLaunchDoesNotOverrideAppearance() {
+        #expect(TestAppearanceOverride.resolve(environment: [
+            "CORETEND_TEST_APPEARANCE": "dark",
+        ]) == nil)
     }
 }
