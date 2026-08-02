@@ -20,14 +20,21 @@ the bullets at the top describe the current product.*
   ClamAV/MalwareEngine integration was removed before rc.4.
 - Privileged helper not shipped (blocked: no Developer ID signing available in this
   environment).
-- **Visual QA capture: PARTIAL_BLOCKED_ENVIRONMENT** (headline corrected in the
-  0.8.1 resync). A real display **is** available and a plain
-  `Scripts/capture.sh` launch capture works; what remains blocked is the
-  module-targeted capture path (intermittent AppleScript `-1719`) and therefore
-  the full FR/EN x light/dark x every-module campaign. The original
-  "no attached display" claim below is **stale as written** and preserved only
-  as the historical record it is, with its own dated updates that already walk
-  it back. Read the 2026-07-24 and 2026-07-25 updates, not the headline.
+- **Visual QA capture: completed for the rc.4 release gate.** The application
+  extracted from the exact candidate DMG was launched against an isolated
+  temporary store and captured across Dashboard, Storage, Space Lens,
+  Duplicates, Applications, Integrity, Activity and Settings in English/dark
+  and French/light. The capture harness also forces appearance only when the
+  two-key test-mode marker validates; normal launches cannot activate it.
+  Applications and Integrity use temporary fixtures in test mode, so the
+  evidence contains no inventory or file data from the build machine. The
+  eight `XCUIApplication` contracts remain explicitly skipped for the
+  SwiftPM-target reason recorded above; the live artifact capture is evidence,
+  not a claim that those contracts ran as native Xcode UI tests.
+
+  The original "no attached display" account below is **historical only**. It
+  explains why the capture harness and its isolation gates exist, but does not
+  describe the rc.4 environment or the completed release evidence.
 
   ~~**No attached display in this sandbox, standing across every session to date
   (v0.3.0 through v0.5.0)**~~: `Scripts/capture.sh` fails headlessly
@@ -140,10 +147,10 @@ the bullets at the top describe the current product.*
   temporary directories; no real failing migration on real user data has ever
   been observed.
 
-- **Manual QA is partially blocked by the environment, not complete.** A real
-  display is available and a plain launch capture works, but the
-  module-targeted capture path (`Scripts/capture.sh <out> "<Sidebar Row>"`)
-  still hits an intermittent AppleScript `-1719` error, and the DMG's saved icon
-  positions need Finder automation this environment refuses. The full
-  FR/EN x light/dark x every-module campaign and interactive VoiceOver passes
-  remain unrun. Status: `PARTIAL_BLOCKED_ENVIRONMENT`.
+- **Historical visual-QA limitation, resolved for rc.4.** Earlier sessions saw
+  intermittent AppleScript `-1719` failures and could not automate Finder.
+  rc.4 no longer relies on Finder/AppleScript for its DMG layout, and its exact
+  extracted application completed the isolated bilingual/light-dark capture
+  matrix described above. A hands-on VoiceOver session remains a manual QA
+  activity; automated Axe, keyboard, landmarks, heading, focus, contrast,
+  reduced-motion and 200%-zoom gates cover the public site.

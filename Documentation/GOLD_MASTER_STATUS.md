@@ -1,151 +1,196 @@
-# CoreTend Gold Master Status
+# CoreTend rc.4 delivery status
 
-Last updated: 2026-08-01T22:20:00+03:00
+Last verified: 2026-08-02 (Europe/Istanbul)
 
-This is the durable delivery journal for the CoreTend gold-master work. It records verified state only. A blank preview or production field means that gate has not passed yet.
+This is the durable delivery journal for `v0.9.1-rc.4`. It distinguishes a
+locally validated candidate from a published release. Until the tagged GitHub
+asset has been downloaded and independently verified, the public release record
+and `/download` intentionally remain on `v0.9.1-rc.3`.
 
-## Git checkpoint
+## Recovery checkpoint
 
-- Starting CoreTend HEAD: `3eb23e7c474a8dce9dc269e5f188d08d901a94c8`
-- Starting portfolio HEAD: `e813aefa7738d2d855ea003c560907b7d2d722a5`
-- Working branch in both repositories: `feat/coretend-gold-master`
-- CoreTend local and remote `main`: verified equal before the branch was created
-- Portfolio local and remote `main`: verified equal before the branch was created
-- Both starting worktrees: clean
-- Starting stashes: none
-- Starting secondary worktrees: none
+- Repository: workspace-relative `products/coretend/app`
+- Release branch: `release/v0.9.1-rc.4`
+- Branch base and recovered `origin/main`: `fb76c47d47ca6f544063a5de713a9c30245beb25`
+- Recovered local/remote release HEAD: `87e035e`
+- Existing release commits: `b5f84e2` and `87e035e`
+- Pull request: GitHub PR #5
+- Recovered worktree change: the canonical `Website/index.html` contained the
+  under-900px `.flow-sticky { position: static; top: auto; }` correction that
+  prevents the bilingual Workflow steps from scrolling behind their heading.
+  It was backed up before any further edit and retained in the canonical
+  template, not copied into a generated output.
+- No `v0.9.1-rc.4` branch collision, public tag, GitHub Release or public rc.4
+  asset existed at recovery time.
 
-## Verified backups
+## Verified recovery backups
 
-Workspace-relative backup directory: `_backups/coretend-gold-master-20260801T173042Z/`
-
-| Repository | Bundle | SHA-256 | Verification |
+| Scope | Archive | SHA-256 | Contents and verification |
 | --- | --- | --- | --- |
-| CoreTend | `coretend-all.bundle` | `40e18c5bd302d1b7c100bb4ea40f8527177c8b8f6a532e929e691f3f3ed02349` | complete history, 31 refs |
-| Portfolio | `portfolio-all.bundle` | `f725ebc70770a512e9c2ac470d1484bbf00496508ff5c0d841670f2c6ac7fa5e` | complete history, 13 refs |
+| Interrupted CoreTend state | `_backups/coretend-interrupted-20260802T070612Z.tar.gz` | `447159ba457588785b696d12a00c765a533c7adfb4725fcbab2fa4595ce99ca4` | Full Git bundle, `git bundle verify` output, state, tracked patch, useful working-tree files and restore instructions |
+| Portfolio pre-rc.4 state | `_backups/portfolio-pre-rc4-20260802T071550Z.tar.gz` | `3a9076d6ec1dff127db0f8dde62d2b346c87282e8a24be63f410bcce526e82fe` | Full Git bundle, `git bundle verify` output, state, patch and restore instructions |
 
-The backup directory contains a restoration README. No separate worktree patches were needed because both repositories had no staged, unstaged, or untracked changes.
+The archives are independent of any stash. Final post-delivery bundles will be
+created only after both public repositories and production are verified.
 
-A second verified safety checkpoint was created before continuing the recovered
-local work: `_backups/coretend-gold-master-20260801-2148/`. It contains complete
-CoreTend and portfolio bundles, bundle-verification reports, binary worktree and
-index patches, untracked-file archives, SHA-256 sums, and `RESTORE.md`. The
-CoreTend worktree patch is non-empty and its untracked archive contains the
-release, fixture, site-build, and test work recovered on this branch. The
-portfolio remained clean.
+## Release-branch commits
 
-## Gold-master reference
+- `b5f84e2` — correct documentation and Markdown links
+- `87e035e` — exclude explicit `/Users/demo/...` fixtures from private-data
+  findings without weakening the Security gate
+- `d06e689` — complete the shared public-site shell and reviewed visual matrix;
+  preserve the mobile Workflow fix; remove the hard-coded Support rc.3 value
+- `54a9e65` — prepare rc.4 identity, build 914 and bilingual release notes
+- `23bb09c` — harden locale selection and isolate Xcode test storage
+- `076056b` — isolate Integrity data sources in test mode
+- `1c707fb` — strip release debug/source-path records before signing and scan
+  the packaged Mach-O for private checkout/build-account paths
+- `01ecf29` — isolate application inventory during test-mode capture
+- `fe1f599` — add a two-key-guarded test-only appearance override for honest
+  light/dark artifact capture
 
-- Source supplied for this delivery: `coretend-site.html`
-- Immutable comparison copy: `_references/coretend-site-gold.html` relative to the workspace root
-- Size: `94,546` bytes
-- SHA-256: `c317df39e9253884da8786eea6d28547c2d08561f71a95a5305d75bd6f680bf1`
-- Copy verification: byte-for-byte comparison passed
+## Public website gate
 
-## Completed gates
+`Website/index.html` and `Website/build.py` are the canonical source and
+generator. Generated `dist/` output is not edited by hand.
 
-- [x] Locate both canonical repositories
-- [x] Verify local branches and starting HEADs
-- [x] Verify remote default branches without changing local refs
-- [x] Confirm clean tracked and untracked state
-- [x] Inspect stashes and secondary worktrees
-- [x] Create and verify full Git bundles
-- [x] Record bundle checksums and restoration commands
-- [x] Preserve the supplied gold master without modification
-- [x] Create and push `feat/coretend-gold-master` in both repositories
-- [x] Deploy an untouched staging copy of the gold master
-- [x] Establish initial desktop and mobile gold-master baselines
-- [ ] Reconcile gold-master claims with released product facts
-- [ ] Achieve app/site simulation parity
-- [ ] Export and gate shared design tokens
-- [x] Complete bilingual, theme, accessibility, responsive, and performance gates (site route gate 20/20; capture-only 51 images)
-- [ ] Complete portfolio parity and deployment gates
-- [ ] Complete application, capture, repository, workspace, CI, Security, and release gates
+- The Workflow overlap on `/en`, `/fr` and narrow/mobile viewports is fixed in
+  the canonical template and covered by a regression assertion.
+- Support no longer contains `Version 0.9.1-rc.3`; the home, Support,
+  installation/download UI, `latest.json` and `SHA256SUMS` all receive release
+  facts from the canonical release record at build time.
+- The shared shell covers `/`, `/en`, `/fr`, `/privacy`, `/support`, `/legal`,
+  `/licenses`, the installation surface and the real 404: shared header and
+  footer, independent logo arcs around a fixed core, Paper/Ink/Cobalt living
+  backgrounds, theme/language controls, focus states, reading progress,
+  offscreen/page-hidden animation suspension and reduced-motion fallback.
+- Privacy, Support, Legal, Licenses and 404 use route-specific measurement and
+  radar variants; none is a raw generic document page.
+- Canonical/hreflang/x-default, Open Graph, sitemap, robots, manifests, clean
+  locale URLs, direct refresh, no-JavaScript content and real 404 status are
+  gated.
+- Transparent, versioned favicon assets are present at SVG, ICO, 16, 32, Apple
+  touch 180, manifest 192 and manifest 512 sizes.
+- Thirty-two behavioral/accessibility/release assertions pass.
+- Seventy-nine deliberately selected baseline captures were reviewed and
+  committed across required routes, desktop/mobile, English/French,
+  light/dark and reduced motion. The suite checks the required viewport matrix,
+  200% zoom, horizontal overflow, console errors, Axe, keyboard focus, print
+  styles, no-JavaScript output and the logo's independent-arc contract.
 
-## Commits
+The generator still emits rc.3 release facts for public output at this
+checkpoint. This is intentional: public metadata is not promoted from a local
+candidate.
 
-- `c4f4854` `docs: establish gold master checkpoint`
-- `682535a` `feat: gate public release facts and demo fixtures`
-- `8645d19` `docs: record staging baseline and verified data gates`
-- `2856f4b` `feat: rebuild public site gold master pipeline` (pushed)
-- `9ae60f6` `fix: align app help routes and motion accessibility` (pushed)
-- `74f5ffa` `test: add route and accessibility delivery gates` (pushed)
-- `7caadf1` `docs: record site delivery gate evidence` (pushed)
-- `813a933` `fix: align legacy website gates and brand assets` (pushed)
-- `953af15` `build: export shared Swift design tokens` (pushed)
-- `2501fba` `test: reject historical brand palette` (pushed)
-- `01365d9` `chore: remove retired scanner claims from active paths` (pushed)
-- `b6cba86` `test: stabilize signing and favicon delivery gates` (pushed)
-- `54a53a3` `docs: record app build and token gates` (pushed)
-- `5587929` `docs: archive generated workspace materials` (pushed)
-- `e1114cd` `fix: anchor informational pages and 404 footer` (pushed)
-- `a34f61c` `docs: record preview and final site gates` (pushed)
-- `863ef12` `docs: describe visual evidence capture` (pushed)
-- `69f1733` `docs: archive retired feature decisions` (pushed)
-- `d844b35` `merge: deliver CoreTend gold master` (pushed to `main`)
-- `4b4847a` `fix: serve locale slash routes without redirect` (pushed to `main`)
-- `039da72` `fix: keep locale canonical routes at HTTP 200` (pushed to `main`)
-- `31b706b` `fix: prevent locale redirect loops` (pushed to `main`)
-- `245798b` `fix: serve both locale slash forms without loops` (pushed to `main`)
+## Application and local candidate gate
 
-## Test evidence
+The exact locally validated candidate was built from clean release-branch HEAD
+`fe1f599f24b6fa68e1abc5d7f7e010d29c6641f9` with
+`Scripts/build-release.sh 0.9.1-rc.4`.
 
-| Scope | Command or check | Result |
-| --- | --- | --- |
-| CoreTend remote state | `git ls-remote --symref origin` | passed |
-| Portfolio remote state | `git ls-remote --symref origin` | passed |
-| CoreTend bundle | `git bundle verify` | passed |
-| Portfolio bundle | `git bundle verify` | passed |
-| Gold-master copy | `cmp` and `shasum -a 256` | passed |
-| Public release gate | `python3 Scripts/test-public-release-gate.py` | 14 passed |
-| Demo fixture validation | `python3 Scripts/check-demo-fixtures.py` | passed |
-| Demo fixture tests | `python3 -m unittest discover -s Tests/DemoFixturesValidatorTests -p 'test_*.py'` | 6 passed |
-| Public build | `python3 Website/build.py --output /tmp/coretend-site-precommit` | passed; generated root/en/fr, clean info routes, 404, release manifest and SHA256SUMS |
-| Generated JavaScript syntax | `find /tmp/coretend-site-precommit/assets/generated -name '*.js' -print0 \| xargs -0 -n1 node --check` | passed |
-| Worktree whitespace | `git diff --check` | passed |
-| Site route and interaction gate | `CORETEND_NODE_MODULES=... node Scripts/site/test-site.mjs` | passed; 20 checks on isolated build, routes, redirects, FR/EN, themes, motion, logo arcs, keyboard, responsive matrix, crawler |
-| Site capture suite | `node Scripts/visual/capture.mjs --capture-only` | passed; 51 current captures across required viewports, languages, themes and targeted logo/simulation states |
-| Swift package suite | `swift test` | passed; 329 tests (8 XCUI tests skipped because no CORETEND_UI_APP_PATH was provided) |
-| App release build | `Scripts/build-release.sh 0.9.1-rc.4` / `Scripts/package-dmg.sh 0.9.1-rc.4` | Swift `.app` build passed; DMG packaging blocked by local `hdiutil` conversion failure, so no candidate DMG was published |
-| Design token gate | `python3 Scripts/check-design-tokens.py` | passed; generated CSS/JSON match Swift sources |
-| Local final site gate | `node Scripts/site/test-site.mjs` | passed targeted route, 404, bilingual, theme, motion, logo, palette, favicon, token and no-JS checks; earlier full pass also covered viewport matrix and crawler |
-| Visual evidence | `node Scripts/visual/capture.mjs --capture-only` | 51 PNG evidence captures generated; baseline remains unchanged until visual review |
-| Route map | `node Scripts/site/route-map.mjs --json` | canonical route map recorded in `Documentation/Audits/ROUTE_MAP.json` |
-| Swift application correction lot | `swift test --filter CoreTendAppTests --filter DesignSystemTests --filter CoreTendAccessibilityTests` | passed; 151 tests |
-| Gold desktop baseline | 1440x900 light, SHA-256 `1e8d0058f97b15707927a92fbb6c62ec072fcc3fdb2e9207dfa261532ab88ce7` | captured |
-| Gold mobile baseline | 430x932 light, SHA-256 `d30f4abfb857d1e2188abd226367947bbe62671b0f2b2502b83720cb006bfe1b` | captured; horizontal overflow visible |
+| Field | Verified value |
+| --- | --- |
+| DMG | `Release/CoreTend-0.9.1-rc.4-arm64-unsigned.dmg` |
+| Local size | `4,795,244` bytes |
+| Local SHA-256 | `2aafe32bdb052f1133a39438fd9a677008b083eef78f749bf0311cf73a848863` |
+| Source commit | `fe1f599f24b6fa68e1abc5d7f7e010d29c6641f9` |
+| Tree state recorded by manifest | `clean` |
+| Marketing version | `0.9.1-rc.4` |
+| Bundle version | `0.9.1` (`CFBundleShortVersionString`), build `914` |
+| Bundle identifier | `com.ahmetbsbnr.coretend` |
+| Architecture | `arm64` |
+| Localizations | `Base.lproj`, `fr.lproj` |
+| Signature | ad hoc; `codesign --verify --deep --strict` passed |
+| Gatekeeper | `spctl` rejected with exit 3, expected without Developer ID/notarization |
 
-No product, site, application, accessibility, or deployment test is marked passed at this checkpoint.
+Evidence is preserved under
+`_backups/coretend-rc4-candidate-fe1f599/`. `hdiutil imageinfo` and
+`hdiutil verify` pass. The image mounted read-only twice and detached cleanly
+twice; the volume contains `CoreTend.app` and an `/Applications` symlink. The
+app was copied into an isolated Applications directory and launched with
+`CORETEND_TEST_MODE=1` and a temporary store; it remained alive beyond the
+smoke-test interval and exited normally when the harness ended.
 
-## Deployment URLs
+The exact extracted app was captured on Dashboard, Storage, Space Lens,
+Duplicates, Applications, Integrity, Activity and Settings in English/dark
+and French/light. Test-mode resolvers restricted Applications and Integrity to
+validated temporary fixture roots, so the captures contain no real machine
+inventory, download or login-item data. Pause, resume and cancel controls are
+also exercised by the Swift behavior suite.
 
-- Gold-master staging preview: `https://coretend-d1v2pne45-ahmets-projects-ed32c752.vercel.app`
-  (`dpl_HGAGeFg9bzSazzCaqvuK3SwhwquW`, READY). Vercel Deployment Protection
-  currently returns an SSO 302 to unauthenticated requests, so public preview
-  inspection is still an open gate.
-- Product-site branch preview: pending
-- Product-site branch preview: `https://coretend-n69ymhyem-ahmets-projects-ed32c752.vercel.app` (READY; unauthenticated requests receive Vercel Deployment Protection 302, so public browser verification requires an authenticated session)
-- Product-site production: not changed
-- Product-site production: `https://coretend.ahmetbsbnr.com` responds with the rebuilt landing, locale routes, info routes, manifests and branded 404. Vercel production alias is READY on a static deployment. `/en/` and `/fr/` normalize once to `/en` and `/fr` (both 200, no loop) under `trailingSlash:false`; `/privacy`, `/support`, `/legal`, `/licenses`, `/download` and manifests remain clean.
-- Portfolio preview: `https://ahmetbsbnrportfolio-4x5v0ma85-ahmets-projects-ed32c752.vercel.app` (READY; SSO protected)
-- Portfolio branch preview: pending
-- Portfolio production: not changed
+Raw bundle and Mach-O scans report no `ClamAV`, `clamscan` or `MalwareEngine`,
+no checkout or `/Users/<build-account>/` path, no common private-key or token
+signature and no debug object/module archive. `IntegrityCore`/Integrity strings
+and the rendered Integrity destination are present.
 
-## Known defects and unresolved facts
+This local DMG is a validation candidate, not yet the public asset. The tagged
+workflow will build again from the final merge/tag commit; only that downloaded
+asset's size and checksum may be promoted to the public release record.
 
-- The supplied HTML still contains the demonstrative checksum `9f2c41a8...`; the public build now replaces it with the verified release record and generated `latest.json`/`SHA256SUMS`.
-- The supplied HTML uses Google Fonts at runtime; the canonical repository already has self-hosted Archivo and IBM Plex Mono assets.
-- The supplied HTML contains product statements, metrics, example paths, Gatekeeper copy, download targets, and networking claims that remain unverified against the released application.
-- The current canonical website is a separate generated bilingual static site; its behavior and deployment topology must be compared before replacement.
-- The production download asset and the known release checksum must be fetched and independently verified before either is published in site copy.
-- The public `v0.9.1-rc.3` DMG is an older artifact (`sourceCommit` `119d940...`) and still contains the retired ClamAV/Smart Care UI; it cannot honestly be presented as the current gold-master app. A validated new app release is required before changing the public download.
-- Browser route, interaction, accessibility and responsive gates pass locally on an isolated build; production deployment and visual comparison remain open.
-- The public release mismatch is recorded in the macOS audit evidence; no replacement binary has been published.
-- A local `rc.4` packaging attempt produced a fresh ad-hoc app build but no DMG because the host `hdiutil` conversion step returned an invalid-file error. The public `rc.3` download remains unchanged.
-- Vercel production build settings previously attempted the wrong root; a static canonical deployment was completed after preserving the verified generated output. Anonymous preview URLs remain SSO protected, so browser inspection of those aliases needs an authenticated session.
+## `hdiutil` diagnosis and correction
 
-## Next gate
+The earlier mount/conversion failure was real rather than hidden: the affected
+sandboxed process returned `Périphérique non configuré`, and verbose output
+reported `Cannot start hdiejectd because app is sandboxed`. In an earlier
+conversion attempt that broken device lifecycle also left an invalid image.
 
-Resolve or reproduce DMG packaging on an authorized macOS packaging host, then
-complete portfolio/workspace/CI checks. Never overwrite rc.3 silently; the
-current public artifact requires owner validation before replacement.
+The release path now runs on an unsandboxed macOS host or clean macOS Actions
+runner and generates the Finder metadata deterministically through pinned
+`dmgbuild`/`ds_store` tooling. It does not launch Finder, AppleScript or require
+an Automation/TCC grant. The 600×400 and 1200×800 background representations,
+window bounds, icon locations and Applications link are inspected by the
+headless layout test. Repeated local imageinfo/verify/mount/detach cycles and the
+CI packaging job pass with this method.
+
+## Test evidence at the pre-publication checkpoint
+
+| Gate | Result |
+| --- | --- |
+| Swift Debug build | passed |
+| Swift Release build | passed |
+| Swift package suite | 338 passed; no regression from the recovered 329 |
+| Xcode build/test | passed on the candidate lineage |
+| Distribution check | passed against a newly packaged app and isolated user store |
+| DMG layout/headless/provenance/manifest/checksum gates | passed |
+| Localizations | 561/561 entries and resources passed |
+| Repository doctor, feature inventory, secret/private-data/path scans | passed |
+| Markdown links | passed |
+| Website route/accessibility/visual gate | 32 behavioral checks and 79 reviewed baselines passed |
+| PR Security and distribution checks | passed on `fe1f599`; final checks must rerun after this journal commit |
+
+Nine test skips are explicit rather than silent: eight `XCUIApplication`
+contracts cannot launch an app because SwiftPM emits that target as a unit-test
+bundle, and the Developer ID assertion skips because this unsigned delivery has
+no Apple signing identity. The exact extracted DMG app is nevertheless launched
+and visually exercised by the isolated artifact harness. No skipped test is
+reported as executed.
+
+## Release notes and installation truth
+
+`Release/Notes/0.9.1-rc.4.en.md` and `.fr.md` state that rc.4 supersedes rc.3
+without replacing its files, removes the former ClamAV wrapper and replaces its
+surface with first-party read-only Integrity checks, remains ad-hoc signed and
+not notarized, and is not currently in the Mac App Store. The supported route
+is copy to Applications, attempt launch, then System Settings → Privacy &
+Security → Open Anyway. The project never disables Gatekeeper or removes
+quarantine automatically. Developer ID signing and notarization remain future
+distribution work.
+
+## Gates still open at this checkpoint
+
+- Commit and push this corrected journal, then obtain all PR #5 checks on its
+  newest SHA.
+- Merge PR #5 into `main` without rewriting history; verify CI, Security and
+  Vercel on the merge commit.
+- Tag that exact commit `v0.9.1-rc.4`; let the macOS release workflow build and
+  publish its fresh artifacts.
+- Download the public DMG and re-run checksum, size, image, mount, bundle,
+  private-data, ClamAV/Integrity and launch gates against that exact asset.
+- Only after that verification, atomically promote the canonical public release
+  record, generated site, `/download`, README/CHANGELOG/install documentation
+  and portfolio; deploy and verify production.
+- Create and verify final Git bundles after both repositories are clean and
+  equal to their remotes.
+
+The only intended distribution limitations after those gates are Developer ID
+signing, Apple notarization and a possible future Mac App Store study.
