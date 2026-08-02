@@ -1,237 +1,193 @@
-# CoreTend rc.4 delivery status
+# CoreTend rc.5 delivery status
 
 Last verified: 2026-08-02 (Europe/Istanbul)
 
-This is the durable delivery journal for `v0.9.1-rc.4`. It distinguishes the
-historical local candidate from the immutable artifact later built by the
-tagged workflow. The GitHub release and its downloaded DMG are verified; the
-post-publication branch promotes that audited identity to the site and
-portfolio without changing the published bytes.
+This journal records the recovery, immutable binary release and public-product
+promotion for `v0.9.1-rc.5`. Earlier rc.3 and rc.4 releases remain unchanged in
+GitHub history. The rc.5 asset was built by the tag workflow from the exact
+merge commit below; it is not the earlier local candidate.
 
 ## Recovery checkpoint
 
 - Repository: workspace-relative `products/coretend/app`
-- Release branch: `release/v0.9.1-rc.4`
-- Branch base and recovered `origin/main`: `fb76c47d47ca6f544063a5de713a9c30245beb25`
-- Recovered local/remote release HEAD: `87e035e`
-- Existing release commits: `b5f84e2` and `87e035e`
-- Pull request: GitHub PR #5
-- Recovered worktree change: the canonical `Website/index.html` contained the
-  under-900px `.flow-sticky { position: static; top: auto; }` correction that
-  prevents the bilingual Workflow steps from scrolling behind their heading.
-  It was backed up before any further edit and retained in the canonical
-  template, not copied into a generated output.
-- No `v0.9.1-rc.4` branch collision, public tag, GitHub Release or public rc.4
-  asset existed at recovery time.
+- Recovered release branch: `release/v0.9.1-rc.4`
+- Recovered base: `fb76c47d47ca6f544063a5de713a9c30245beb25`
+- Existing recovered commits: `b5f84e2` and `87e035e`
+- Existing recovery PR: GitHub PR #5
+- Recovered uncommitted change: the canonical `Website/index.html` contained
+  the under-900px `.flow-sticky { position: static; top: auto; }` correction.
+  It was backed up before any edit and retained in the canonical template.
+- Support's obsolete literal rc.3 was replaced by the canonical published
+  release record, and a regression test prevents a hard-coded release version.
 
-## Verified recovery backups
+The recovery did not rely on a stash. Fresh independent archives were made
+before work continued:
 
-| Scope | Archive | SHA-256 | Contents and verification |
-| --- | --- | --- | --- |
-| Interrupted CoreTend state | `_backups/coretend-interrupted-20260802T070612Z.tar.gz` | `447159ba457588785b696d12a00c765a533c7adfb4725fcbab2fa4595ce99ca4` | Full Git bundle, `git bundle verify` output, state, tracked patch, useful working-tree files and restore instructions |
-| Portfolio pre-rc.4 state | `_backups/portfolio-pre-rc4-20260802T071550Z.tar.gz` | `3a9076d6ec1dff127db0f8dde62d2b346c87282e8a24be63f410bcce526e82fe` | Full Git bundle, `git bundle verify` output, state, patch and restore instructions |
+| Scope | Archive | SHA-256 |
+| --- | --- | --- |
+| Interrupted CoreTend | `_backups/coretend-interrupted-20260802T070612Z.tar.gz` | `447159ba457588785b696d12a00c765a533c7adfb4725fcbab2fa4595ce99ca4` |
+| Portfolio pre-release | `_backups/portfolio-pre-rc4-20260802T071550Z.tar.gz` | `3a9076d6ec1dff127db0f8dde62d2b346c87282e8a24be63f410bcce526e82fe` |
 
-The archives are independent of any stash. Final post-delivery bundles will be
-created only after both public repositories and production are verified.
+Each archive contains repository state, a full Git bundle, bundle verification,
+patch/untracked evidence and restore instructions. Final post-delivery bundles
+are created separately after production verification.
 
-## Release-branch commits
+## Why rc.5 exists
 
-- `b5f84e2` — correct documentation and Markdown links
-- `87e035e` — exclude explicit `/Users/demo/...` fixtures from private-data
-  findings without weakening the Security gate
-- `d06e689` — complete the shared public-site shell and reviewed visual matrix;
-  preserve the mobile Workflow fix; remove the hard-coded Support rc.3 value
-- `54a9e65` — prepare rc.4 identity, build 914 and bilingual release notes
-- `23bb09c` — harden locale selection and isolate Xcode test storage
-- `076056b` — isolate Integrity data sources in test mode
-- `1c707fb` — strip release debug/source-path records before signing and scan
-  the packaged Mach-O for private checkout/build-account paths
-- `01ecf29` — isolate application inventory during test-mode capture
-- `fe1f599` — add a two-key-guarded test-only appearance override for honest
-  light/dark artifact capture
-- `d3fede6` — record accurate pre-publication release evidence
-- `e0c8f87`, `21a6add` — make visual animation fingerprints deterministic
+`v0.9.1-rc.4` had already become an immutable public tag and release when the
+additional requirement arrived to remove Dry Run from the application, site
+and current project surface. The public rc.4 tag and assets were therefore not
+rewritten. The successor is `v0.9.1-rc.5`, build 915.
 
-PR #5 was merged without history rewriting as
-`67bb2e55ca6ddf336df7d0753e878c2293b129b4`; the annotated
-`v0.9.1-rc.4` tag resolves to that exact merge commit.
+## Source lineage
 
-## Published artifact gate
+- Release branch: `release/v0.9.1-rc.5`
+- Release PR: GitHub PR #8
+- Release commits:
+  - `0a58a89` — remove the Dry Run product mode and prepare rc.5
+  - `e6f7465` — accept manually reviewed rc.5 visual baselines
+  - `72305ed` — merge the current `origin/main` route fixes
+  - `7198c11` — harden the Gatekeeper client-journey check
+  - `05121ab` — remove the stale Settings UI Dry Run contract
+- Merge commit and tagged source:
+  `efccece091ca793d8e176edf9249ec104332856a`
+- Annotated tag: `v0.9.1-rc.5`; the dereferenced remote tag resolves exactly to
+  the merge commit above.
+- Post-publication branch: `release/v0.9.1-rc.5-publish`
 
-The tag-triggered release workflow built from a clean checkout of
-`67bb2e55ca6ddf336df7d0753e878c2293b129b4` and published the release at
-`https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.4`.
+GitHub automatically removed the remote release branch at merge time despite
+the merge command not requesting deletion. The intact local branch was pushed
+back immediately and is retained through final delivery verification.
+
+## Retired Dry Run product mode
+
+Dry Run is no longer a selectable or default product behavior:
+
+- SafetyCore no longer exposes a Dry Run execution stage/property/setter and
+  approved execution always targets the macOS Trash after revalidation.
+- Settings, onboarding, activity/export copy, current view models,
+  localizations, site copy and deterministic showcase fixtures no longer expose
+  the mode.
+- Cleanup, Duplicates, Applications, Leftovers, Privacy Cleaner, Smart Care and
+  Space Lens show a reviewed selection and require explicit confirmation.
+- Persistence migration v4 removes the retired preference. Reviewed legacy
+  storage columns/keys remain only for downgrade/data compatibility and are
+  not exposed by current APIs.
+- `Scripts/check-retired-preview-mode.sh` is wired into repository doctor and
+  Security. It scans app/site/docs/fixtures/UI tests, requires confirmation on
+  every destructive surface and permits only the reviewed compatibility
+  references in Store migration code.
+
+Generic `--dry-run` options in unrelated uninstall/branch-maintenance tooling
+remain because they are safety controls for those developer scripts, not an app
+or website product feature. Historical changelogs may describe the removed
+mode as history.
+
+## Quality gates
+
+| Gate | Verified result |
+| --- | --- |
+| Swift Debug build | passed |
+| Swift Release build | passed with zero warnings |
+| Swift package suite | 338/338 passed; recovered report was 329 |
+| Xcode workspace suite | 346 total; 337 passed, 0 failed, 9 explicitly skipped |
+| Xcode skips | 8 SwiftPM `XCUIApplication` contracts lack a native UI runner; 1 Developer-ID-only assertion has no signing identity |
+| Demo fixture validation | passed, including 7 Python regression tests |
+| Repository/Security/private-data/secrets/paths | passed |
+| Localization/resources | passed |
+| Site behavior/accessibility | 32/32 passed |
+| Site visual matrix | 79 reviewed fingerprints, 7 required viewports, EN/FR, light/dark and Reduce Motion |
+| PR #8 | CI, distribution, Security and both Vercel checks green on `05121ab` |
+| Merge commit | CI, distribution, Security and both Vercel deployments green on `efccece` |
+| Tag workflow | clean checkout, tests, zero-warning build, DMG/ZIP, layout, checksums, SBOM, provenance and Minisign all passed |
+
+Xcode 26.6 reports deprecation warnings for the pinned `swift-testing` 0.99
+dependency under Swift 6.3; the application Release build itself has zero
+warnings. The skip boundary is explicit and is not reported as executed UI
+coverage. Exact-artifact launch testing provides the final application smoke
+gate.
+
+## Public release
+
+Release URL:
+`https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.5`
 
 | Field | Downloaded public value |
 | --- | --- |
-| DMG | `CoreTend-0.9.1-rc.4-arm64-unsigned.dmg` |
-| Size | `4,726,227` bytes |
-| SHA-256 | `f321b2ca801d5815163ce89eeb68a4957a451c054693c0a12e064f35b639b4fe` |
-| Source commit | `67bb2e55ca6ddf336df7d0753e878c2293b129b4` |
-| Version/build | marketing `0.9.1-rc.4`; bundle `0.9.1` (914) |
-| Platform | Apple silicon `arm64`; macOS 14.0+ |
+| DMG | `CoreTend-0.9.1-rc.5-arm64-unsigned.dmg` |
+| DMG size | `4,703,523` bytes |
+| DMG SHA-256 | `b654975770cc1bfeb7e6a4f3cf180653a3182a55f8dc135db2083a72528998eb` |
+| ZIP | `CoreTend-0.9.1-rc.5-arm64-unsigned.zip` |
+| ZIP size | `2,857,653` bytes |
+| ZIP SHA-256 | `c3e2c58a1034a8654c931dabedd279b5b320abd03e84caa300bb9e53e83675ae` |
+| Source commit | `efccece091ca793d8e176edf9249ec104332856a` |
+| Version/build | marketing `0.9.1-rc.5`; bundle `0.9.1` (915) |
+| Platform | Apple silicon arm64; macOS 14.0+ |
 | Signature | ad hoc; strict deep verification passed |
-| Notarization | none; `spctl` rejection with exit 3 is expected |
+| Notarization | none; `spctl` exit 3/rejection is expected |
 
-The public DMG digest matches the GitHub asset API, the downloaded file and
-the signed `SHA256SUMS`. `hdiutil imageinfo` and `hdiutil verify` pass; it was
-mounted read-only, detached and remounted, and its application was copied into
-an isolated Applications directory. The exact extracted app launched with
-`CORETEND_TEST_MODE=1` and a temporary store, stayed alive through the smoke
-interval and exited without a crash. English/dark and French/light captures
-cover onboarding and Dashboard, Storage, Space Lens, Duplicates, Applications,
-Integrity, Activity and Settings.
+The GitHub asset API digest, freshly downloaded files, release `latest.json`,
+`SHA256SUMS` and every Minisign signature agree. English and French release
+notes are attached without replacing any binary asset. Evidence is preserved
+under `_backups/coretend-rc5-public-20260802T134401Z/`.
 
-Bundle/Mach-O scans find no current `ClamAV`, `clamscan` or `MalwareEngine`
-string or resource. `IntegrityCore` and the rendered Integrity destination are
-present. No real `/Users/...` path, secret, local dependency or checkout path
-is embedded; the sole generic `/Users/<redacted>/` literal belongs to the
-diagnostic redaction routine and contains no personal identity.
+## Exact public DMG validation
 
-The immutable release `latest.json` inherited two conservative sentences from
-an older template about missing DMG icon positions and an unrun visual
-campaign. They are corrected transparently in the bilingual GitHub release
-body; the asset was not replaced because that would invalidate its checksum,
-Minisign signature and provenance. The tracked template now records only the
-remaining interactive VoiceOver boundary and is regression-gated against those
-resolved claims.
+The downloaded DMG passes `hdiutil imageinfo` and full CRC verification. It
+mounted read-only, detached, remounted and detached again. Its visible volume
+contains only `CoreTend.app` and the Applications link; sealed layout resources
+include `.DS_Store`, the volume icon and the HiDPI background.
 
-## Public website gate
+The app was copied to an isolated Applications directory. The copied bundle is
+arm64, self-contained, ad-hoc signed and reports the expected identifier,
+version, build and minimum macOS. Bundle/Mach-O scans find:
 
-`Website/index.html` and `Website/build.py` are the canonical source and
-generator. Generated `dist/` output is not edited by hand.
+- no current `ClamAV`, `clamscan` or `MalwareEngine` file/string;
+- no retired Dry Run UI/localization copy;
+- no real build-account or checkout path;
+- `IntegrityCore`, `ProvenanceScanner` and `CodeSignInspector` present.
 
-- The Workflow overlap on `/en`, `/fr` and narrow/mobile viewports is fixed in
-  the canonical template and covered by a regression assertion.
-- Support no longer contains `Version 0.9.1-rc.3`; the home, Support,
-  installation/download UI, `latest.json` and `SHA256SUMS` all receive release
-  facts from the canonical release record at build time.
-- The shared shell covers `/`, `/en`, `/fr`, `/privacy`, `/support`, `/legal`,
-  `/licenses`, the installation surface and the real 404: shared header and
-  footer, independent logo arcs around a fixed core, Paper/Ink/Cobalt living
-  backgrounds, theme/language controls, focus states, reading progress,
-  offscreen/page-hidden animation suspension and reduced-motion fallback.
-- Privacy, Support, Legal, Licenses and 404 use route-specific measurement and
-  radar variants; none is a raw generic document page.
-- Canonical/hreflang/x-default, Open Graph, sitemap, robots, manifests, clean
-  locale URLs, direct refresh, no-JavaScript content and real 404 status are
-  gated.
-- Transparent, versioned favicon assets are present at SVG, ICO, 16, 32, Apple
-  touch 180, manifest 192 and manifest 512 sizes.
-- Thirty-two behavioral/accessibility/release assertions pass.
-- Seventy-nine deliberately selected baseline captures were reviewed and
-  committed across required routes, desktop/mobile, English/French,
-  light/dark and reduced motion. The suite checks the required viewport matrix,
-  200% zoom, horizontal overflow, console errors, Axe, keyboard focus, print
-  styles, no-JavaScript output and the logo's independent-arc contract.
+With `CORETEND_TEST_MODE=1`, an isolated store and no personal fixtures, the
+exact public app stayed alive in English/dark and French/light sessions and
+terminated normally under the harness. Gatekeeper rejection is documented as
+the expected unsigned-build block, not an application crash. The supported
+user route is copy to Applications, try once, then System Settings → Privacy &
+Security → Open Anyway. The product never disables Gatekeeper or strips
+quarantine automatically.
 
-The generator still emits rc.3 release facts for public output at this
-checkpoint. This is intentional: public metadata is not promoted from a local
-candidate.
+## `hdiutil` diagnosis
 
-## Historical pre-tag local candidate gate
+The earlier local failure was caused by the sandboxed disk-image device
+lifecycle, not by a hidden packaging fallback. The failing environment emitted
+`Cannot start hdiejectd because app is sandboxed` and `Périphérique non
+configuré`. Packaging now runs on an unsandboxed macOS host or clean macOS
+Actions runner and creates Finder metadata deterministically with pinned
+`dmgbuild`/`ds_store` tooling. It never launches Finder or AppleScript. The
+headless layout gate and repeated imageinfo/verify/mount/detach cycles pass.
 
-The exact locally validated candidate was built from clean release-branch HEAD
-`fe1f599f24b6fa68e1abc5d7f7e010d29c6641f9` with
-`Scripts/build-release.sh 0.9.1-rc.4`.
+## Public website and portfolio promotion
 
-| Field | Verified value |
-| --- | --- |
-| DMG | `Release/CoreTend-0.9.1-rc.4-arm64-unsigned.dmg` |
-| Local size | `4,795,244` bytes |
-| Local SHA-256 | `2aafe32bdb052f1133a39438fd9a677008b083eef78f749bf0311cf73a848863` |
-| Source commit | `fe1f599f24b6fa68e1abc5d7f7e010d29c6641f9` |
-| Tree state recorded by manifest | `clean` |
-| Marketing version | `0.9.1-rc.4` |
-| Bundle version | `0.9.1` (`CFBundleShortVersionString`), build `914` |
-| Bundle identifier | `com.ahmetbsbnr.coretend` |
-| Architecture | `arm64` |
-| Localizations | `Base.lproj`, `fr.lproj` |
-| Signature | ad hoc; `codesign --verify --deep --strict` passed |
-| Gatekeeper | `spctl` rejected with exit 3, expected without Developer ID/notarization |
+`Configuration/published-release.json` is generated from the newest real
+GitHub Release and is the reviewed source for Support, Download, EN/FR copy,
+`latest.json`, `SHA256SUMS` and both Vercel `/download` rules. The rc.5 hash and
+size are pinned only after the independent public download above.
 
-Evidence is preserved under
-`_backups/coretend-rc4-candidate-fe1f599/`. `hdiutil imageinfo` and
-`hdiutil verify` pass. The image mounted read-only twice and detached cleanly
-twice; the volume contains `CoreTend.app` and an `/Applications` symlink. The
-app was copied into an isolated Applications directory and launched with
-`CORETEND_TEST_MODE=1` and a temporary store; it remained alive beyond the
-smoke-test interval and exited normally when the harness ended.
+The production site is generated from `Website/index.html` by
+`Website/build.py`. Its shared shell covers home, Privacy, Support, Legal,
+Licenses, installation/download and the real 404, with independent logo arcs
+around a fixed center, route-specific Paper/Ink/Cobalt backgrounds, themes,
+FR/EN, keyboard focus, responsive layouts and Reduce Motion. The narrow
+Workflow overlap and obsolete Support rc.3 literal are regression-gated.
 
-The exact extracted app was captured on Dashboard, Storage, Space Lens,
-Duplicates, Applications, Integrity, Activity and Settings in English/dark
-and French/light. Test-mode resolvers restricted Applications and Integrity to
-validated temporary fixture roots, so the captures contain no real machine
-inventory, download or login-item data. Pause, resume and cancel controls are
-also exercised by the Swift behavior suite.
+The portfolio branch `release/coretend-v0.9.1-rc.5` removes the former mode
+from current showcase data/copy and replaces its obsolete Settings capture.
+Its release metadata is synchronized only from GitHub's published manifest.
+Final production HTTP, visual and repository equality checks are recorded in
+the delivery report and final verified bundle metadata; they cannot be
+truthfully embedded into the commit whose deployment they verify.
 
-Raw bundle and Mach-O scans report no `ClamAV`, `clamscan` or `MalwareEngine`,
-no checkout or `/Users/<build-account>/` path, no common private-key or token
-signature and no debug object/module archive. `IntegrityCore`/Integrity strings
-and the rendered Integrity destination are present.
+## Remaining distribution limits
 
-This local DMG is a validation candidate, not yet the public asset. The tagged
-workflow will build again from the final merge/tag commit; only that downloaded
-asset's size and checksum may be promoted to the public release record.
-
-## `hdiutil` diagnosis and correction
-
-The earlier mount/conversion failure was real rather than hidden: the affected
-sandboxed process returned `Périphérique non configuré`, and verbose output
-reported `Cannot start hdiejectd because app is sandboxed`. In an earlier
-conversion attempt that broken device lifecycle also left an invalid image.
-
-The release path now runs on an unsandboxed macOS host or clean macOS Actions
-runner and generates the Finder metadata deterministically through pinned
-`dmgbuild`/`ds_store` tooling. It does not launch Finder, AppleScript or require
-an Automation/TCC grant. The 600×400 and 1200×800 background representations,
-window bounds, icon locations and Applications link are inspected by the
-headless layout test. Repeated local imageinfo/verify/mount/detach cycles and the
-CI packaging job pass with this method.
-
-## Test evidence at the pre-publication checkpoint
-
-| Gate | Result |
-| --- | --- |
-| Swift Debug build | passed |
-| Swift Release build | passed |
-| Swift package suite | 338 passed; no regression from the recovered 329 |
-| Xcode build/test | passed on the candidate lineage |
-| Distribution check | passed against a newly packaged app and isolated user store |
-| DMG layout/headless/provenance/manifest/checksum gates | passed |
-| Localizations | 561/561 entries and resources passed |
-| Repository doctor, feature inventory, secret/private-data/path scans | passed |
-| Markdown links | passed |
-| Website route/accessibility/visual gate | 32 behavioral checks and 79 reviewed baselines passed |
-| PR Security and distribution checks | passed on `fe1f599`; final checks must rerun after this journal commit |
-
-Nine test skips are explicit rather than silent: eight `XCUIApplication`
-contracts cannot launch an app because SwiftPM emits that target as a unit-test
-bundle, and the Developer ID assertion skips because this unsigned delivery has
-no Apple signing identity. The exact extracted DMG app is nevertheless launched
-and visually exercised by the isolated artifact harness. No skipped test is
-reported as executed.
-
-## Release notes and installation truth
-
-`Release/Notes/0.9.1-rc.4.en.md` and `.fr.md` state that rc.4 supersedes rc.3
-without replacing its files, removes the former ClamAV wrapper and replaces its
-surface with first-party read-only Integrity checks, remains ad-hoc signed and
-not notarized, and is not currently in the Mac App Store. The supported route
-is copy to Applications, attempt launch, then System Settings → Privacy &
-Security → Open Anyway. The project never disables Gatekeeper or removes
-quarantine automatically. Developer ID signing and notarization remain future
-distribution work.
-
-## Post-publication gates
-
-The canonical release record, both Vercel route contracts, generated site,
-README, changelog and install/release documentation are promoted together by
-the post-publication release branch. Its CI, Security and Vercel deployment
-must be green on the newest SHA before merge. The portfolio receives the same
-published version from its generated release metadata. Final production route,
-download/hash and repository equality checks, followed by verified Git bundles,
-close the delivery; they are never inferred from the existence of this file.
-
-The only intended distribution limitations after those gates are Developer ID
-signing, Apple notarization and a possible future Mac App Store study.
+The only intended future distribution work is Developer ID signing, Apple
+notarization and a separately evaluated Mac App Store edition. rc.5 is not
+currently available from the Mac App Store and makes no claim otherwise.

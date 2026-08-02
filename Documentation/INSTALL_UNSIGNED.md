@@ -11,7 +11,7 @@ expected, not a bug.
 Download the current DMG through
 [`https://coretend.ahmetbsbnr.com/download`](https://coretend.ahmetbsbnr.com/download)
 or from the official
-[`v0.9.1-rc.4` GitHub Release](https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.4).
+[`v0.9.1-rc.5` GitHub Release](https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.5).
 Do not download CoreTend from any third-party mirror, forum link, or unofficial
 source.
 

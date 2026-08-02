@@ -5,11 +5,11 @@ account, no installer package with a background daemon, no subscription.
 
 ## Public release candidate
 
-CoreTend `v0.9.1-rc.4` is published as an unsigned, non-notarized DMG and ZIP:
+CoreTend `v0.9.1-rc.5` is published as an unsigned, non-notarized DMG and ZIP:
 
 - stable download route: `https://coretend.ahmetbsbnr.com/download`;
 - release and checksums:
-  `https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.4`;
+  `https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.5`;
 - required system: macOS 14 or later, Apple silicon (`arm64`).
 
 Verify the downloaded file against `SHA256SUMS`, then follow
@@ -36,7 +36,7 @@ See [DEVELOPMENT.md](../DEVELOPMENT.md) for the full developer workflow.
 
 ## Signing status
 
-There is no Developer ID-signed or notarized release yet. The public rc.4 and
+There is no Developer ID-signed or notarized release yet. The public rc.5 and
 local packages are ad-hoc signed, so Gatekeeper may show its unidentified
 developer warning. After verifying the checksum, approve only this copy via
 **System Settings → Privacy & Security → Open Anyway**. Do not disable

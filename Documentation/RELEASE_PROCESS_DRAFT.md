@@ -1,7 +1,7 @@
 # Direct-distribution release process
 
 CoreTend publishes release candidates through the tag-triggered GitHub Actions
-workflow. `v0.9.1-rc.4` is the current public example. Direct-distribution
+workflow. `v0.9.1-rc.5` is the current public example. Direct-distribution
 builds are ad-hoc signed and not notarized; Developer ID signing and Apple
 notarization remain a later distribution phase.
 

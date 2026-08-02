@@ -1,6 +1,36 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 # Release State
 
+## Current release — v0.9.1-rc.5, verified 2026-08-02
+
+The annotated `v0.9.1-rc.5` tag resolves to
+`efccece091ca793d8e176edf9249ec104332856a`. The tag-triggered clean macOS
+workflow passed the complete release gates and published the non-draft
+prerelease at
+`https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.5`.
+
+The downloaded public DMG is
+`CoreTend-0.9.1-rc.5-arm64-unsigned.dmg`, 4,703,523 bytes, SHA-256
+`b654975770cc1bfeb7e6a4f3cf180653a3182a55f8dc135db2083a72528998eb`.
+The public ZIP is 2,857,653 bytes, SHA-256
+`c3e2c58a1034a8654c931dabedd279b5b320abd03e84caa300bb9e53e83675ae`.
+GitHub asset digests, `latest.json`, `SHA256SUMS` and Minisign all agree.
+
+The exact public DMG passes `hdiutil imageinfo` and verification, mounts and
+detaches twice, contains the designed Finder layout and Applications link,
+and copies a self-contained arm64 app off-volume. The bundle reports marketing
+version 0.9.1-rc.5, build 915 and macOS 14.0+. Its ad-hoc signature verifies;
+Gatekeeper rejects it with exit 3 as expected without Developer ID or
+notarization. Isolated English/dark and French/light launches stay alive and
+exit normally under the harness. Bundle and Mach-O scans find IntegrityCore
+and no current ClamAV scanner/interface, retired Dry Run UI copy, personal
+checkout path or local dependency.
+
+rc.5 removes the former Dry Run product mode. Scans remain read-only; cleanup
+surfaces present reviewed selections and require explicit confirmation before
+eligible paths move to the macOS Trash. The sections below are retained as
+historical release-state evidence and do not describe the current download.
+
 ## Current post-release checkpoint — 2026-07-27
 
 No application source changed, so no 0.9.1 binary is being prepared. The

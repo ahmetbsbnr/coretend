@@ -54,9 +54,9 @@
     "failing": 0,
     "note": "338 @Test functions via Scripts/test.sh, including fail-closed Integrity/application-inventory isolation and a guarded artifact-appearance override."
   },
-  "last_build": "The rc.5 source candidate compiles and its targeted SafetyCenter and migration tests pass. The complete 338-test, Debug/Release, Xcode, website and distribution gates must be rerun on the final clean source commit before publication; final evidence is recorded in GOLD_MASTER_STATUS.md.",
+  "last_build": "The v0.9.1-rc.5 tagged workflow built from efccece091ca793d8e176edf9249ec104332856a after the complete 338-test, Debug/Release, website and distribution gates passed. The downloaded public DMG is 4703523 bytes with SHA-256 b654975770cc1bfeb7e6a4f3cf180653a3182a55f8dc135db2083a72528998eb; it verifies, mounts twice, copies off-volume and launches in isolated English/dark and French/light test sessions.",
   "next_goals": [
-    "Publish and independently verify v0.9.1-rc.5, then atomically promote published-release.json and all public download metadata",
+    "Keep the verified v0.9.1-rc.5 release record, download route, site and portfolio synchronized",
     "Obtain a Developer ID Application certificate and notarize a later distribution build",
     "Evaluate a possible Mac App Store edition separately; no current App Store availability is claimed"
   ],

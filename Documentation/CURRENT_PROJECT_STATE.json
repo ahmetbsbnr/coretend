@@ -2,7 +2,7 @@
   "schemaVersion": 3,
   "project": "CoreTend",
   "updatedUTC": "2026-08-02",
-  "branch": "release/v0.9.1-rc.5",
+  "branch": "release/v0.9.1-rc.5-publish",
   "candidate": {
     "version": "0.9.1-rc.5",
     "build": 915,
@@ -10,11 +10,14 @@
     "minimumMacOS": "14.0",
     "signed": false,
     "notarized": false,
-    "status": "validation-in-progress"
+    "status": "published-and-independently-verified"
   },
   "currentPublicRelease": {
-    "version": "0.9.1-rc.4",
-    "note": "Remains authoritative until the rc.5 asset is published, downloaded and hash-verified."
+    "version": "0.9.1-rc.5",
+    "sourceCommit": "efccece091ca793d8e176edf9249ec104332856a",
+    "dmgSize": 4703523,
+    "dmgSHA256": "b654975770cc1bfeb7e6a4f3cf180653a3182a55f8dc135db2083a72528998eb",
+    "note": "Published by the clean tag workflow, downloaded independently, checksum/signature verified, mounted twice and launched from an isolated copy."
   },
   "productBoundary": {
     "cleanup": "read-only scan, reviewed selection, explicit confirmation, execution-time path revalidation, macOS Trash",
@@ -25,7 +28,7 @@
   },
   "tests": {
     "expectedSwiftMinimum": 338,
-    "status": "full final run pending",
+    "status": "338 of 338 Swift tests pass; Debug/Release, Xcode, distribution, localization, site and Security gates pass",
     "targetedStatus": "SafetyCenter and legacy-v3-to-v4 migration tests pass"
   },
   "releaseEvidence": "Documentation/GOLD_MASTER_STATUS.md",

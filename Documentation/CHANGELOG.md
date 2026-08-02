@@ -4,6 +4,12 @@
 
 Supersedes rc.4 without changing its tag or published artifacts.
 
+Published as `CoreTend-0.9.1-rc.5-arm64-unsigned.dmg` (4,703,523
+bytes, SHA-256
+`b654975770cc1bfeb7e6a4f3cf180653a3182a55f8dc135db2083a72528998eb`),
+built by the clean tagged workflow from merge commit
+`efccece091ca793d8e176edf9249ec104332856a`.
+
 - feat(safety): removes the former Dry Run product mode from SafetyCore,
   destructive views, Settings, onboarding, activity exports, localization and
   product fixtures. Scanning remains read-only; eligible actions require a
@@ -21,8 +27,8 @@ Supersedes rc.4 without changing its tag or published artifacts.
 
 ## 0.9.1-rc.4 — 2026-08-02 « Integrity and Cohesion »
 
-Supersedes rc.3 without changing or removing its historical artifacts. The
-current DMG is `CoreTend-0.9.1-rc.4-arm64-unsigned.dmg` (4,726,227 bytes,
+Supersedes rc.3 without changing or removing its historical artifacts. That
+release's DMG is `CoreTend-0.9.1-rc.4-arm64-unsigned.dmg` (4,726,227 bytes,
 SHA-256 `f321b2ca801d5815163ce89eeb68a4957a451c054693c0a12e064f35b639b4fe`),
 built from tagged merge commit `67bb2e55ca6ddf336df7d0753e878c2293b129b4`.
 
