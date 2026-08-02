@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { buildSite, launchChromium, loadPlaywright, startSite } from './site-fixture.mjs'
 
 export const CANONICAL_ROUTES = [
-  '/', '/en/', '/fr/',
+  '/', '/en', '/fr',
   '/privacy', '/support', '/legal', '/licenses',
   '/fr/privacy', '/fr/support', '/fr/legal', '/fr/licenses',
 ]

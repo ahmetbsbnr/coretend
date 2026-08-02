@@ -25,8 +25,8 @@ const VIEWPORTS = [
 
 const EXPECTED_CANONICAL = {
   '/': 'https://coretend.ahmetbsbnr.com/',
-  '/en/': 'https://coretend.ahmetbsbnr.com/en/',
-  '/fr/': 'https://coretend.ahmetbsbnr.com/fr/',
+  '/en': 'https://coretend.ahmetbsbnr.com/en',
+  '/fr': 'https://coretend.ahmetbsbnr.com/fr',
   '/privacy': 'https://coretend.ahmetbsbnr.com/privacy',
   '/support': 'https://coretend.ahmetbsbnr.com/support',
   '/legal': 'https://coretend.ahmetbsbnr.com/legal',
@@ -39,8 +39,8 @@ const EXPECTED_CANONICAL = {
 
 const REDIRECTS = {
   '/index.html': '/',
-  '/en/index.html': '/en/',
-  '/fr/index.html': '/fr/',
+  '/en/index.html': '/en',
+  '/fr/index.html': '/fr',
   '/privacy.html': '/privacy',
   '/support.html': '/support',
   '/legal.html': '/legal',
@@ -50,13 +50,18 @@ const REDIRECTS = {
   '/fr/legal.html': '/fr/legal',
   '/fr/licenses.html': '/fr/licenses',
   '/site': '/',
-  '/site/': '/',
   '/site/index.html': '/',
   '/Website': '/',
-  '/Website/': '/',
   '/Website/index.html': '/',
-  '/en.html': '/en/',
-  '/fr.html': '/fr/',
+  '/en.html': '/en',
+  '/fr.html': '/fr',
+}
+
+const TRAILING_SLASH_NORMALIZATIONS = {
+  '/en/': '/en',
+  '/fr/': '/fr',
+  '/site/': '/site',
+  '/Website/': '/Website',
 }
 
 const INFO_ROUTES = [
@@ -124,7 +129,7 @@ function normalizedLocation(response) {
 function watchPage(page) {
   const problems = []
   page.on('console', message => {
-    if (message.type() === 'error' && !/^Failed to load resource: the server responded with a status of 404 \(Not Found\)$/.test(message.text())) {
+    if (message.type() === 'error' && !/^Failed to load resource: the server responded with a status of 404\b/.test(message.text())) {
       problems.push(`console: ${message.text()}`)
     }
   })
@@ -223,13 +228,26 @@ await gate('canonical routes and required assets return successful HTTP codes', 
   }
 })
 
-await gate('historic routes redirect once to their clean canonical destination', async () => {
+await gate('historic routes and slash normalization reach clean canonical destinations', async () => {
   for (const [source, destination] of Object.entries(REDIRECTS)) {
     const response = await responseAt(source)
     assert([301, 308].includes(response.status), `${source} is not permanent (${response.status})`)
     assert.equal(normalizedLocation(response), destination, `${source} has the wrong destination`)
     const target = await responseAt(destination)
     assert.equal(target.status, 200, `${source} creates a redirect chain or broken target`)
+  }
+  for (const [source, destination] of Object.entries(TRAILING_SLASH_NORMALIZATIONS)) {
+    const response = await responseAt(source)
+    assert.equal(response.status, 308, `${source} is not normalized permanently`)
+    assert.equal(normalizedLocation(response), destination, `${source} has the wrong normalized destination`)
+    const target = await responseAt(destination)
+    if (destination === '/en' || destination === '/fr') {
+      assert.equal(target.status, 200, `${source} does not normalize to a canonical locale route`)
+    } else {
+      assert.equal(target.status, 308, `${source} does not continue through its known historic redirect`)
+      assert.equal(normalizedLocation(target), '/')
+      assert.equal((await responseAt('/')).status, 200)
+    }
   }
   const download = await responseAt('/download')
   assert.equal(download.status, 307, '/download must remain a temporary redirect to the reviewed binary')
@@ -266,7 +284,7 @@ await gate('canonical, hreflang, Open Graph and document languages are exact', a
   const context = await browser.newContext({ javaScriptEnabled: false })
   const page = await context.newPage()
   const expectations = [
-    ['/', 'en'], ['/en/', 'en'], ['/fr/', 'fr'],
+    ['/', 'en'], ['/en', 'en'], ['/fr', 'fr'],
     ['/privacy', 'en'], ['/support', 'en'], ['/legal', 'en'], ['/licenses', 'en'],
     ['/fr/privacy', 'fr'], ['/fr/support', 'fr'], ['/fr/legal', 'fr'], ['/fr/licenses', 'fr'],
   ]
@@ -288,10 +306,10 @@ await gate('canonical, hreflang, Open Graph and document languages are exact', a
     assert.equal(meta.ogUrl, EXPECTED_CANONICAL[route])
     assert(meta.title && meta.description && meta.ogTitle)
     assert(!/\.html(?:$|[?#/])/.test(meta.canonical))
-    if (['/', '/en/', '/fr/'].includes(route)) {
+    if (['/', '/en', '/fr'].includes(route)) {
       assert.deepEqual(meta.alternates, {
-        en: 'https://coretend.ahmetbsbnr.com/en/',
-        fr: 'https://coretend.ahmetbsbnr.com/fr/',
+        en: 'https://coretend.ahmetbsbnr.com/en',
+        fr: 'https://coretend.ahmetbsbnr.com/fr',
         'x-default': 'https://coretend.ahmetbsbnr.com/',
       })
     } else {
@@ -304,19 +322,19 @@ await gate('canonical, hreflang, Open Graph and document languages are exact', a
     }
     titles.set(route, meta.title)
   }
-  assert.notEqual(titles.get('/en/'), titles.get('/fr/'), 'localized titles must differ')
+  assert.notEqual(titles.get('/en'), titles.get('/fr'), 'localized titles must differ')
   await context.close()
 })
 
 await gate('French is pre-rendered and every authored translation remains valid HTML', async () => {
   const context = await browser.newContext({ javaScriptEnabled: false })
   const page = await context.newPage()
-  await page.goto(`${origin}/en/`)
+  await page.goto(`${origin}/en`)
   const english = await page.locator('[data-fr]').evaluateAll(elements => elements.map(element => ({
     translation: element.getAttribute('data-fr')?.trim() ?? '',
     content: element.innerHTML.trim(),
   })))
-  await page.goto(`${origin}/fr/`)
+  await page.goto(`${origin}/fr`)
   const french = await page.locator('[data-fr]').evaluateAll(elements => elements.map(element => ({
     translation: element.getAttribute('data-fr')?.trim() ?? '',
     content: element.innerHTML.trim(),
@@ -340,7 +358,7 @@ await gate('French is pre-rendered and every authored translation remains valid 
 await gate('French localizes visible calls to action and accessible control names', async () => {
   const context = await browser.newContext({ reducedMotion: 'reduce', locale: 'fr-FR' })
   const page = await context.newPage()
-  await page.goto(`${origin}/fr/`)
+  await page.goto(`${origin}/fr`)
   const sourceCallToAction = await page.locator('.hero .btn-secondary span').innerText()
   assert(!/Read the source/i.test(sourceCallToAction) && /(?:code|source)/i.test(sourceCallToAction))
   assert.match(await page.locator('.skip').innerText(), /Aller/i)
@@ -366,35 +384,35 @@ await gate('browser language routing and manual language persistence have no loo
   const frenchContext = await browser.newContext({ locale: 'fr-FR', reducedMotion: 'reduce' })
   const frenchPage = await frenchContext.newPage()
   await frenchPage.goto(`${origin}/`)
-  await frenchPage.waitForURL(`${origin}/fr/`)
+  await frenchPage.waitForURL(`${origin}/fr`)
   assert.equal(await frenchPage.getAttribute('html', 'lang'), 'fr')
   await frenchContext.close()
 
   const context = await browser.newContext({ locale: 'fr-FR', reducedMotion: 'reduce' })
   const page = await context.newPage()
-  await page.goto(`${origin}/en/#top`)
+  await page.goto(`${origin}/en#top`)
   await page.locator('[data-view="apps"]').click()
   await page.locator('[data-lang-link="fr"]').click()
-  await page.waitForURL(`${origin}/fr/#top`)
+  await page.waitForURL(`${origin}/fr#top`)
   assert.equal(await page.evaluate(() => localStorage.getItem('coretend-language')), 'fr')
   assert.equal(await page.evaluate(() => location.hash), '#top')
   assert(await page.locator('[data-view="apps"]').evaluate(button => button.classList.contains('on')), 'active app view was lost across language switch')
   await page.goto(`${origin}/`)
-  await page.waitForURL(`${origin}/fr/`)
+  await page.waitForURL(`${origin}/fr`)
   await context.close()
 })
 
 await gate('system theme, manual theme and persistence work across routes', async () => {
   const context = await browser.newContext({ colorScheme: 'dark', reducedMotion: 'reduce' })
   const page = await context.newPage()
-  await page.goto(`${origin}/en/`)
+  await page.goto(`${origin}/en`)
   assert.equal(await page.getAttribute('html', 'data-theme'), 'dark')
   await page.locator('#theme').click()
   assert.equal(await page.getAttribute('html', 'data-theme'), 'light')
   assert.equal(await page.evaluate(() => localStorage.getItem('coretend-theme')), 'light')
   await page.reload()
   assert.equal(await page.getAttribute('html', 'data-theme'), 'light')
-  await page.goto(`${origin}/fr/`)
+  await page.goto(`${origin}/fr`)
   assert.equal(await page.getAttribute('html', 'data-theme'), 'light')
   await page.locator('#theme').click()
   assert.equal(await page.getAttribute('html', 'data-theme-mode'), 'dark')
@@ -445,7 +463,7 @@ await gate('every information route uses the shared living shell', async () => {
 
 await gate('Axe finds no WCAG A or AA violations on any public page', async () => {
   const AxeBuilder = await loadAxeBuilder()
-  const routes = ['/en/', '/fr/', ...INFO_ROUTES, '/axe-not-found']
+  const routes = ['/en', '/fr', ...INFO_ROUTES, '/axe-not-found']
   for (const colorScheme of ['light', 'dark']) {
     const context = await browser.newContext({ colorScheme, reducedMotion: 'reduce', viewport: { width: 1280, height: 800 } })
     const page = await context.newPage()
@@ -491,7 +509,7 @@ await gate('six application views switch without an empty state', async () => {
   const context = await browser.newContext({ reducedMotion: 'reduce' })
   const page = await context.newPage()
   const problems = watchPage(page)
-  await page.goto(`${origin}/en/`, { waitUntil: 'networkidle' })
+  await page.goto(`${origin}/en`, { waitUntil: 'networkidle' })
   const views = {
     storage: 'Storage', lens: 'Space Lens', dupes: 'Duplicates',
     apps: 'Applications', integrity: 'Integrity', activity: 'Activity',
@@ -512,7 +530,7 @@ await gate('six application views switch without an empty state', async () => {
 await gate('scan pause, resume and cancel preserve causal progress', async () => {
   const context = await browser.newContext({ reducedMotion: 'no-preference' })
   const page = await context.newPage()
-  await page.goto(`${origin}/en/`, { waitUntil: 'domcontentloaded' })
+  await page.goto(`${origin}/en`, { waitUntil: 'domcontentloaded' })
   await page.locator('[data-view="storage"]').click()
   await page.waitForFunction(() => parseFloat(document.querySelector('#vTrack')?.style.width) > 2, null, { timeout: 2000 })
   const beforePause = parseFloat(await page.locator('#vTrack').evaluate(element => element.style.width))
@@ -540,7 +558,7 @@ await gate('scan pause, resume and cancel preserve causal progress', async () =>
 await gate('application preview auto-cycles after a completed scan', async () => {
   const context = await browser.newContext({ reducedMotion: 'no-preference' })
   const page = await context.newPage()
-  await page.goto(`${origin}/en/`, { waitUntil: 'domcontentloaded' })
+  await page.goto(`${origin}/en`, { waitUntil: 'domcontentloaded' })
   await page.waitForFunction(() => document.querySelector('[data-view="lens"]')?.classList.contains('on'), null, { timeout: 7500 })
   assert.equal(await page.locator('#vTitle').innerText(), 'Space Lens')
   await context.close()
@@ -549,7 +567,7 @@ await gate('application preview auto-cycles after a completed scan', async () =>
 await gate('Findings tabs, totals and keyboard navigation are functional', async () => {
   const context = await browser.newContext({ reducedMotion: 'reduce' })
   const page = await context.newPage()
-  await page.goto(`${origin}/en/`)
+  await page.goto(`${origin}/en`)
   const totals = new Set()
   for (const category of ['storage', 'dupes', 'apps']) {
     const tab = page.locator(`#tabs [data-cat="${category}"]`)
@@ -570,7 +588,7 @@ await gate('Findings tabs, totals and keyboard navigation are functional', async
 await gate('FAQ opens and closes, checksum copies, and keyboard focus is visible', async () => {
   const context = await browser.newContext({ reducedMotion: 'reduce', permissions: ['clipboard-read', 'clipboard-write'] })
   const page = await context.newPage()
-  await page.goto(`${origin}/en/`)
+  await page.goto(`${origin}/en`)
   await page.keyboard.press('Tab')
   assert(await page.locator('.skip').evaluate(element => element === document.activeElement))
   const outline = await page.locator('.skip').evaluate(element => getComputedStyle(element).outlineStyle)
@@ -592,7 +610,7 @@ await gate('FAQ opens and closes, checksum copies, and keyboard focus is visible
 await gate('reduced motion is static, complete and keeps the logo core fixed', async () => {
   const context = await browser.newContext({ reducedMotion: 'reduce' })
   const page = await context.newPage()
-  await page.goto(`${origin}/en/`, { waitUntil: 'networkidle' })
+  await page.goto(`${origin}/en`, { waitUntil: 'networkidle' })
   await page.waitForTimeout(100)
   const state = await page.evaluate(() => ({
     scan: document.querySelector('#app')?.getAttribute('data-scan'),
@@ -618,7 +636,7 @@ await gate('reduced motion is static, complete and keeps the logo core fixed', a
 await gate('logo arcs orbit independently while the symbol and core stay fixed', async () => {
   const context = await browser.newContext({ reducedMotion: 'no-preference', viewport: { width: 1440, height: 900 } })
   const page = await context.newPage()
-  await page.goto(`${origin}/en/`, { waitUntil: 'domcontentloaded' })
+  await page.goto(`${origin}/en`, { waitUntil: 'domcontentloaded' })
   await page.evaluate(() => document.fonts.ready)
   await page.waitForTimeout(2600)
   const before = await page.locator('.ct-logo--hero').evaluate(logo => {
@@ -656,7 +674,7 @@ await gate('logo arcs orbit independently while the symbol and core stay fixed',
 await gate('semantic controls have unique IDs, names and one accessible logo identity', async () => {
   const context = await browser.newContext({ reducedMotion: 'reduce' })
   const page = await context.newPage()
-  await page.goto(`${origin}/en/`)
+  await page.goto(`${origin}/en`)
   const audit = await page.evaluate(() => {
     const ids = [...document.querySelectorAll('[id]')].map(element => element.id)
     const duplicates = [...new Set(ids.filter((id, index) => ids.indexOf(id) !== index))]
@@ -769,7 +787,7 @@ await gate('favicons preserve the complete centered CoreTend mark at every size'
 await gate('landing consumes the generated Swift design tokens', async () => {
   const context = await browser.newContext({ reducedMotion: 'reduce' })
   const page = await context.newPage()
-  await page.goto(`${origin}/en/`)
+  await page.goto(`${origin}/en`)
   const state = await page.evaluate(async () => {
     const stylesheets = [...document.querySelectorAll('link[rel="stylesheet"]')].map(link => new URL(link.href).pathname)
     const style = getComputedStyle(document.documentElement)
@@ -806,7 +824,7 @@ await gate('no-JavaScript fallback remains styled, bilingual and usable', async 
   assert(await page.locator('#sha').isVisible())
   assert((await page.evaluate(() => [...document.styleSheets].filter(sheet => !sheet.disabled).length)) > 0)
 
-  response = await page.goto(`${origin}/fr/`, { waitUntil: 'networkidle' })
+  response = await page.goto(`${origin}/fr`, { waitUntil: 'networkidle' })
   assert.equal(response.status(), 200)
   assert.match(await page.locator('#headline').innerText(), /^Sachez ce que votre Mac garde/)
   const faq = page.locator('.faq details').first()
@@ -905,7 +923,7 @@ await gate('200 percent zoom preserves navigation and legal reading order', asyn
   // A 1280px display at 200% browser zoom exposes a 640px CSS viewport.
   const context = await browser.newContext({ viewport: { width: 640, height: 400 }, deviceScaleFactor: 2, reducedMotion: 'reduce' })
   const page = await context.newPage()
-  for (const route of ['/en/', '/privacy', '/support', '/legal', '/licenses', '/fr/legal']) {
+  for (const route of ['/en', '/privacy', '/support', '/legal', '/licenses', '/fr/legal']) {
     await page.goto(`${origin}${route}`, { waitUntil: 'networkidle' })
     const state = await page.evaluate(() => ({
       width: document.documentElement.scrollWidth,

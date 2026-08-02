@@ -6,7 +6,7 @@ import { buildSite, startSite } from './site-fixture.mjs'
 import { CANONICAL_ROUTES } from './crawl-site.mjs'
 
 const HISTORICAL = [
-  '/index.html', '/en', '/fr', '/en/index.html', '/fr/index.html',
+  '/index.html', '/en/', '/fr/', '/en/index.html', '/fr/index.html',
   '/privacy.html', '/support.html', '/legal.html', '/licenses.html',
   '/site', '/site/', '/site/index.html',
   '/Website', '/Website/', '/Website/index.html',
@@ -14,7 +14,7 @@ const HISTORICAL = [
 ]
 const NOT_FOUND = ['/en/obsolete.html', '/fr/obsolete.html', '/route-map-not-found']
 const SOURCE = {
-  '/': 'index.html', '/en/': 'en-route.html', '/fr/': 'fr-route.html',
+  '/': 'index.html', '/en': 'en-route.html', '/fr': 'fr-route.html',
   '/privacy': 'privacy.html', '/support': 'support.html', '/legal': 'legal.html',
   '/licenses': 'licenses.html',
 }

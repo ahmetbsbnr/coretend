@@ -121,8 +121,8 @@ def landing_metadata(language: str, canonical_path: str) -> str:
         (
             '<meta name="robots" content="index, follow">',
             f'<link rel="canonical" href="{ORIGIN}{canonical_path}">',
-            f'<link rel="alternate" hreflang="en" href="{ORIGIN}/en/">',
-            f'<link rel="alternate" hreflang="fr" href="{ORIGIN}/fr/">',
+            f'<link rel="alternate" hreflang="en" href="{ORIGIN}/en">',
+            f'<link rel="alternate" hreflang="fr" href="{ORIGIN}/fr">',
             f'<link rel="alternate" hreflang="x-default" href="{ORIGIN}/">',
             '<meta property="og:type" content="website">',
             '<meta property="og:site_name" content="CoreTend">',
@@ -158,7 +158,7 @@ def render_translated_content(document: str, language: str) -> str:
     """Render the authored bilingual data attributes before first paint.
 
     The source keeps English content in the DOM and the matching French HTML in
-    `data-fr`.  Public `/fr/` output must never rely on a late client-side swap,
+    `data-fr`.  Public `/fr` output must never rely on a late client-side swap,
     so this small deterministic renderer replaces the relevant inner HTML at
     build time.  It deliberately handles balanced same-name tags and applies
     only outermost translated intervals, avoiding overlapping replacements.
@@ -342,7 +342,7 @@ def shell(title: str, description: str, canonical: str, content: str) -> str:
 <header class="bar"><div class="wrap">
   <a class="brand" href="/"><img src="/assets/brand/favicon-32.png" alt="">CoreTend</a>
   <nav class="nav" aria-label="Public navigation · Navigation publique">
-    <a href="/en/" hreflang="en">EN</a><a href="/fr/" hreflang="fr">FR</a>
+    <a href="/en" hreflang="en">EN</a><a href="/fr" hreflang="fr">FR</a>
     <a href="/privacy">Privacy</a><a href="/support">Support</a>
     <a class="download" href="/download">Download</a>
   </nav>
@@ -406,7 +406,7 @@ def not_found_page() -> str:
 
 def route_for(page: str, language: str) -> str:
     if page == "home":
-        return "/fr/" if language == "fr" else "/en/"
+        return "/fr" if language == "fr" else "/en"
     if page == "404":
         return route_for("home", language)
     return f"/fr/{page}" if language == "fr" else f"/{page}"
@@ -702,7 +702,7 @@ def not_found_page(release: dict) -> str:
     )
     # info_hero carries its own two-column wrapper; use a purpose-built compact
     # body for the error route so the footer still meets short viewports.
-    content = f"""<section class="not-found"><div class="wrap"><div class="radar-search" aria-hidden="true"></div><p class="eyebrow"><b>404</b> Route scan</p><h1>This route is outside the map.<br>Cette route est hors carte.</h1><p class="lead">The requested address does not exist. L’adresse demandée n’existe pas.</p><div class="action-row"><a class="primary-action" href="/en/">Return home · Retour à l’accueil</a><a class="secondary-action" href="/support">Support</a></div></div></section>"""
+    content = f"""<section class="not-found"><div class="wrap"><div class="radar-search" aria-hidden="true"></div><p class="eyebrow"><b>404</b> Route scan</p><h1>This route is outside the map.<br>Cette route est hors carte.</h1><p class="lead">The requested address does not exist. L’adresse demandée n’existe pas.</p><div class="action-row"><a class="primary-action" href="/en">Return home · Retour à l’accueil</a><a class="secondary-action" href="/support">Support</a></div></div></section>"""
     page = shell(
         release,
         "404",
@@ -763,8 +763,8 @@ def write_favicon(stage: Path) -> None:
 def write_documents(stage: Path, release: dict) -> None:
     sitemap_paths = (
         "/",
-        "/en/",
-        "/fr/",
+        "/en",
+        "/fr",
         "/privacy",
         "/support",
         "/legal",
@@ -843,21 +843,20 @@ def build(output: Path) -> None:
         copy_assets(stage)
 
         root_page = build_landing(template, "en", "/", stage, release)
-        en_page = build_landing(template, "en", "/en/", stage, release)
-        fr_page = build_landing(template, "fr", "/fr/", stage, release)
+        en_page = build_landing(template, "en", "/en", stage, release)
+        fr_page = build_landing(template, "fr", "/fr", stage, release)
         (stage / "index.html").write_text(root_page, encoding="utf-8")
         (stage / "en").mkdir()
         (stage / "fr").mkdir()
         (stage / "en" / "index.html").write_text(en_page, encoding="utf-8")
         (stage / "fr" / "index.html").write_text(fr_page, encoding="utf-8")
-        # Keep the public trailing-slash locale routes at HTTP 200. Vercel
-        # normalizes directory rewrites to `/en`; these internal files avoid
-        # that redirect without exposing their `.html` names publicly.
+        # Keep the public clean locale routes at HTTP 200 without exposing the
+        # internal `.html` route files.
         (stage / "en-route.html").write_text(en_page, encoding="utf-8")
         (stage / "fr-route.html").write_text(fr_page, encoding="utf-8")
         # Do not leave physical locale directories in the deploy tree: Vercel
-        # canonicalizes `/en/` to `/en` before a rewrite can run when such a
-        # directory exists. The route files above are the sole public targets.
+        # canonicalizes locale directories before a rewrite can run when such
+        # a directory exists. The route files above are the sole public targets.
         shutil.rmtree(stage / "en")
         shutil.rmtree(stage / "fr")
 
