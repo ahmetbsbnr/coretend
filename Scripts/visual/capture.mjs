@@ -169,8 +169,17 @@ async function normalizeReleaseIdentity(page) {
 
 async function prepareOrbit(page, selector, times = [4250, 6600, 8750]) {
   await page.locator(selector).evaluate((logo, requestedTimes) => {
-    logo.classList.remove('is-initializing')
-    const animations = logo._ctOrbit?.animations ?? []
+    logo.classList.remove('is-initializing', 'is-settled')
+    const record = logo._ctOrbit
+    if (record) {
+      // IntersectionObserver may deliver its initial visibility callback after
+      // this preparation and call play() again. Marking the capture record as
+      // settled prevents that asynchronous callback from advancing a phase
+      // between currentTime assignment and the screenshot on slower runners.
+      record.settled = true
+      record.visible = false
+    }
+    const animations = record?.animations ?? []
     animations.forEach(({ animation }, index) => {
       animation.currentTime = requestedTimes[index]
       animation.pause()
