@@ -181,8 +181,10 @@ async function prepareOrbit(page, selector, times = [4250, 6600, 8750]) {
     }
     const animations = record?.animations ?? []
     animations.forEach(({ animation }, index) => {
-      animation.currentTime = requestedTimes[index]
       animation.pause()
+      // Pause before seeking. Seeking a running animation lets its timeline
+      // advance again between the assignment and pause() on slower runners.
+      animation.currentTime = requestedTimes[index]
     })
   }, times)
 }
