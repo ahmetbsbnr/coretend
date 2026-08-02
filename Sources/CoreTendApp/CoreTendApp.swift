@@ -4,8 +4,33 @@ import SystemMetrics
 import Persistence
 import IntegrityCore
 
+/// A per-process appearance override used only by the isolated artifact
+/// harness. It requires the same validated two-key test marker as the store and
+/// filesystem fixtures, so normal launches always continue to follow macOS.
+enum TestAppearanceOverride {
+    static func resolve(environment: [String: String]) -> NSAppearance.Name? {
+        guard TestStoreOverride.isTestMarkerSet(environment: environment),
+              TestStoreOverride.resolve(environment: environment).directory != nil
+        else { return nil }
+
+        switch environment["CORETEND_TEST_APPEARANCE"]?.lowercased() {
+        case "light": return .aqua
+        case "dark": return .darkAqua
+        default: return nil
+        }
+    }
+
+    @MainActor
+    static func apply(environment: [String: String]) {
+        guard let name = resolve(environment: environment) else { return }
+        NSApplication.shared.appearance = NSAppearance(named: name)
+    }
+}
+
 public struct CoreTendApp: App {
-    public init() {}
+    public init() {
+        TestAppearanceOverride.apply(environment: ProcessInfo.processInfo.environment)
+    }
     @AppStorage("menuBarEnabled") private var menuBarEnabled = true
     // Same UserDefaults key LocalizationManager reads/writes. Observing it
     // here — not just inside LocalizationManager, which isn't itself
