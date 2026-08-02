@@ -16,9 +16,11 @@ onboarding, command palette and menu-bar status. Integrity reports native macOS
 signals; it is not malware detection. Example media uses the versioned,
 privacy-safe fixtures in `Resources/DemoFixtures/`.
 
-The public `v0.9.1-rc.3` download is retained as a historical release while a
-new artifact is validated. It predates the current Paper / Ink / Cobalt app
-shell and must not be presented as the current interface.
+The current public release candidate is
+[`v0.9.1-rc.4`](https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.4),
+built from the tagged `main` commit that introduced the current Paper / Ink /
+Cobalt app and site. rc.3 remains available only as historical evidence and is
+not the recommended download.
 
 [Product site](https://coretend.ahmetbsbnr.com) ·
 [Portfolio case study](https://ahmetbsbnr.com/en/projets/coretend/) ·
@@ -26,7 +28,7 @@ shell and must not be presented as the current interface.
 
 ## Distribution status
 
-The current direct-distribution build is ad-hoc signed, not Developer ID
+The `v0.9.1-rc.4` direct-distribution build is ad-hoc signed, not Developer ID
 signed, and not notarized. Gatekeeper may block the first launch. Verify the
 published SHA-256, then use **System Settings → Privacy & Security → Open
 Anyway**. Never disable Gatekeeper globally or remove quarantine recursively.
