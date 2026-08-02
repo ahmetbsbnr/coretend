@@ -8,7 +8,7 @@ project — expect some rough edges in the process itself.
 - Read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
 - Read [Documentation/SAFETY_MODEL.md](Documentation/SAFETY_MODEL.md) —
   any change touching deletion, scanning, or permissions must respect
-  the dry-run-first / Trash-by-default rules.
+  the review, explicit-confirmation and Trash-only rules.
 - For anything security-sensitive, see [SECURITY.md](SECURITY.md)
   instead of opening a public issue.
 
@@ -51,8 +51,9 @@ See [DEVELOPMENT.md](DEVELOPMENT.md) for the full local setup.
 
 ## Areas needing extra care
 
-- **SafetyCore / deletion rules**: any change must keep dry-run as the
-  default and route real deletions through the existing validated path.
+- **SafetyCore / deletion rules**: every destructive UI must review the
+  selection, request explicit confirmation, and route the action through the
+  existing validated Trash path.
 - **Migrations**: schema changes need a new migration, not an edit to an
   existing one (see Documentation/MIGRATIONS.md).
 - **Localization**: add both `en` and `fr` strings together.

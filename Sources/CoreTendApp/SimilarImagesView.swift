@@ -68,7 +68,7 @@ final class SimilarImagesViewModel {
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .scan, summary: "Similar images: \(found.count) groups",
                         itemCount: found.count,
-                        bytes: found.reduce(0) { $0 + $1.totalBytes }, dryRun: true))
+                        bytes: found.reduce(0) { $0 + $1.totalBytes }))
                 case .cancelled:
                     phase = groups.isEmpty ? .idle : .results
                     isPaused = false
@@ -79,7 +79,7 @@ final class SimilarImagesViewModel {
                     self.pauseController = nil
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .error, summary: "Similar images unavailable: \(reason)",
-                        itemCount: 0, bytes: 0, dryRun: true))
+                        itemCount: 0, bytes: 0))
                 }
             }
             isPaused = false

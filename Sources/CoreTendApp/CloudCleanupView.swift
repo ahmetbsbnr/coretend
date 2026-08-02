@@ -120,7 +120,7 @@ final class CloudCleanupViewModel {
             self.workerTask = nil
             AppEnvironment.shared.record(ActivityRecord(
                 kind: .scan, summary: "Cloud analysis: \(provider.name)",
-                itemCount: result.count, bytes: result.reduce(0) { $0 + $1.localBytes }, dryRun: true))
+                itemCount: result.count, bytes: result.reduce(0) { $0 + $1.localBytes }))
         }
     }
 

@@ -179,7 +179,7 @@ struct TestStoreOverrideTests {
 
         let path = dir.appendingPathComponent("store.sqlite").path
         let store = try Store(path: path)
-        try await store.setSetting("dryRunDefault", value: "false")
+        try await store.setSetting("testMarker", value: "isolated")
 
         #expect(FileManager.default.fileExists(atPath: path))
         // The real user location must be untouched by this test.
