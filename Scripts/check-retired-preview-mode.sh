@@ -27,6 +27,8 @@ check_absent "current Swift product" \
   Sources/CoreTendApp Sources/SafetyCore \
   Sources/Persistence/TestStoreOverride.swift Sources/Persistence/LegacyDataMigration.swift
 
+check_absent "current Xcode UI-test contract" Tests/CoreTendUITests
+
 check_absent "public website" \
   Website/index.html Website/build.py Website/generate.py Website/en Website/fr
 

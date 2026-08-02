@@ -110,7 +110,6 @@ final class CoreTendUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["settings.root"].firstMatch.waitForExistence(timeout: 8))
         XCTAssertTrue(app.descendants(matching: .any)["settings.language"].firstMatch.waitForExistence(timeout: 8))
         XCTAssertTrue(app.descendants(matching: .any)["settings.menu_bar"].firstMatch.waitForExistence(timeout: 8))
-        XCTAssertTrue(app.descendants(matching: .any)["settings.dry_run"].firstMatch.waitForExistence(timeout: 8))
         XCTAssertTrue(app.descendants(matching: .any)["settings.exclusions.add"].firstMatch.waitForExistence(timeout: 8))
         XCTAssertTrue(app.descendants(matching: .any)["settings.diagnostic.export"].firstMatch.waitForExistence(timeout: 8))
     }
