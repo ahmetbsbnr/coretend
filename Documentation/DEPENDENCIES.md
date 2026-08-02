@@ -1,8 +1,7 @@
 # Dependency audit
 
 Verified against `Package.swift` (single source of truth for build
-dependencies) and a repo-wide grep for build/dev tooling. Last checked:
-2026-07-28, commit `4d9e658`.
+dependencies) and a repo-wide grep for build/dev tooling.
 
 ## SwiftPM dependencies (external packages)
 
@@ -14,11 +13,12 @@ otherwise ships the `Testing` module built in). It is linked only into
 shipped libraries — so it has zero footprint in the release binary.
 
 Every shipping target (`ScanCore`, `SafetyCore`, `FileRules`, `DesignSystem`,
-`Persistence`, `SystemMetrics`, `AppDiscovery`, `MalwareEngine`,
+`Persistence`, `SystemMetrics`, `AppDiscovery`, `IntegrityCore`,
 `CoreTendApp`) remains first-party Swift code depending only on Apple's
-system frameworks (Foundation, SwiftUI, AppKit, etc.) and, at runtime, an
-optional user-installed `clamscan` binary shelled out to as a subprocess —
-never linked, never vendored (see `Documentation/CLAMAV_DECISION.md`).
+system frameworks (Foundation, SwiftUI, AppKit, etc.). There is no runtime
+dependency on ClamAV or any other third-party tool — the prior optional
+`clamscan` subprocess integration (`MalwareEngine`) was fully removed; see
+`Documentation/CLAMAV_DECISION.md`.
 
 | Name | Version | Source | License | Usage | Necessity | Risk | Native alternative | Maintenance | Bundled in app |
 |---|---|---|---|---|---|---|---|---|---|
@@ -27,9 +27,11 @@ never linked, never vendored (see `Documentation/CLAMAV_DECISION.md`).
 
 ## Runtime, non-linked external tool
 
-| Name | Version | Source | License | Usage | Necessity | Risk | Native alternative | Maintenance | Bundled in app |
-|---|---|---|---|---|---|---|---|---|---|
-| ClamAV (`clamscan`) | user's installed version (not pinned) | Homebrew/MacPorts/manual, user-installed | GPL-2.0 (ClamAV project; not linked or redistributed by us) | Optional malware signature scan in Protection tab | Optional feature, not required for core app function | Low — invoked as a subprocess via `Process` with argument-array (no shell), read-only scan, output parsed defensively | None built into macOS with comparable signature-DB scanning; XProtect exists but is not user-invokable | Maintained upstream by the ClamAV project, outside this repo's control | No — never bundled, downloaded, or embedded |
+None. The prior optional runtime dependency on a user-installed `clamscan`
+(ClamAV) binary was removed with the `MalwareEngine` module; see
+`Documentation/CLAMAV_DECISION.md`. Integrity
+(`Sources/IntegrityCore`) reads only signals macOS already records and
+invokes no external process.
 
 ## Build / developer tooling
 

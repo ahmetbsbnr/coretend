@@ -42,19 +42,14 @@ dependency is ever added without `Documentation/DEPENDENCIES.md` being updated.
 |---|---|---|---|
 | Apple system frameworks (SwiftUI, Foundation, AppKit, Vision, IOKit, …) | Linked at build time, ship with macOS | Apple platform terms | No |
 | System SQLite (`libsqlite3`) | Linked system library provided by macOS | Public domain upstream; Apple-provided build | No |
-| ClamAV (`clamscan`) | **Optional.** Invoked as a separate subprocess if the user installed it themselves | GPL-2.0, by the ClamAV project | **No** — not linked, not vendored, not bundled, signature database never shipped |
 
-The ClamAV relationship is the only one with licence-compatibility
-significance, and it is the reason the distinction matters: CoreTend does
-**not** link `libclamav`. It executes a user-supplied binary through `Process`
-with an argument array and parses its output. GPL-2.0 copyleft attaches to
-linking and distribution; neither occurs here, and nothing GPL-licensed is
-distributed by this project. See `Documentation/CLAMAV_DECISION.md` and
-`Documentation/DEPENDENCIES.md`.
+An earlier version invoked a user-supplied `clamscan` (ClamAV, GPL-2.0)
+binary as a subprocess. That integration was fully retired — see
+`Documentation/CLAMAV_DECISION.md` and `Documentation/DEPENDENCIES.md` — and
+the current source tree links no GPL-licensed code.
 
 Compatibility conclusion: Apache-2.0 for the distributed work is consistent
-with every component above, because the only copyleft component is neither
-linked nor distributed.
+with every component above; there is no copyleft component to reconcile.
 
 ## 3. Attribution obligations
 
@@ -64,9 +59,9 @@ linked nor distributed.
 - **CC-BY-4.0:** requires attribution for the documentation and illustrations.
   All such material is original to this project, so the obligation runs to
   downstream reusers, not to this repository.
-- **ClamAV:** no attribution obligation arises, because nothing of ClamAV's is
-  redistributed. `NOTICE` and `THIRD_PARTY_NOTICES.md` state the optional
-  relationship and preserve the relevant third-party notices.
+- **ClamAV:** no attribution obligation — the ClamAV integration was fully
+  retired (`Documentation/CLAMAV_DECISION.md`) and neither `NOTICE` nor
+  `THIRD_PARTY_NOTICES.md` reference it.
 - Platform and third-party marks remain governed by their owners; the project
   does not claim partnerships or approvals that do not exist.
 
