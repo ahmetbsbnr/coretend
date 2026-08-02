@@ -6,7 +6,11 @@ import { extname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildSite, launchChromium, loadPlaywright, startSite } from './site-fixture.mjs'
 
-export const CANONICAL_ROUTES = ['/', '/en/', '/fr/', '/privacy', '/support', '/legal', '/licenses']
+export const CANONICAL_ROUTES = [
+  '/', '/en/', '/fr/',
+  '/privacy', '/support', '/legal', '/licenses',
+  '/fr/privacy', '/fr/support', '/fr/legal', '/fr/licenses',
+]
 const TEXT_EXTENSIONS = new Set(['.css', '.html', '.js', '.json', '.svg', '.txt', '.vtt', '.webmanifest', '.xml'])
 const TECHNICAL_URL = /(?:\.html(?:[?#/"'\s<)]|$)|\/(?:site|Website|public|dist|out)(?:\/|$)|localhost|127\.0\.0\.1|\/Users\/(?!demo(?:\/|\b)))/i
 const HISTORICAL_BRAND_COLOR = /#(?:13674a|5c54cc|a8e6c1|9b8afb)\b/i

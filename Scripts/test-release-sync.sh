@@ -74,22 +74,39 @@ esac
   && ok "channel '$CHANNEL' matches the version shape" \
   || note "version '$VERSION' implies channel '$EXPECTED' but '$CHANNEL' is declared"
 
-# 5. The website must render the source-of-truth version, not a copy.
-if [ -f "Website/en/index.html" ]; then
-  grep -q "$VERSION" Website/en/index.html \
-    && ok "website (en) renders $VERSION" \
-    || note "Website/en/index.html does not mention $VERSION — regenerate the site"
-  grep -q "$VERSION" Website/fr/index.html \
-    && ok "website (fr) renders $VERSION" \
-    || note "Website/fr/index.html does not mention $VERSION — regenerate the site"
+# 5. The canonical generated website must render the reviewed public release.
+#    The application tree can legitimately be one candidate ahead while a tag
+#    is pending; publishing that unreviewed candidate on the site would be the
+#    actual synchronization defect. Website/en and Website/fr are retired
+#    tracked output and are deliberately not consulted.
+PUBLIC_VERSION=$(/usr/bin/python3 -c "import json;print(json.load(open('Configuration/published-release.json'))['version'])")
+SITE_TMP_BASE="${TMPDIR:-/tmp}"
+SITE_TMP_BASE="${SITE_TMP_BASE%/}"
+SITE_TEMP_ROOT=$(mktemp -d "$SITE_TMP_BASE/coretend-release-sync.XXXXXX")
+SITE_OUTPUT="$SITE_TEMP_ROOT/dist"
+cleanup_site_output() {
+  case "$SITE_TEMP_ROOT" in
+    "$SITE_TMP_BASE"/coretend-release-sync.*) rm -rf -- "$SITE_TEMP_ROOT" ;;
+    *) echo "refusing unsafe release-sync cleanup: $SITE_TEMP_ROOT" >&2 ;;
+  esac
+}
+trap cleanup_site_output EXIT
+if python3 Website/build.py --output "$SITE_OUTPUT" >/dev/null; then
+  for page in index.html en-route.html fr-route.html support.html fr-support.html; do
+    grep -q "$PUBLIC_VERSION" "$SITE_OUTPUT/$page" \
+      && ok "generated $page renders public release $PUBLIC_VERSION" \
+      || note "generated $page diverges from published-release.json ($PUBLIC_VERSION)"
+  done
+else
+  note "canonical Website/build.py failed"
 fi
 
 # 6. No stale version may be hardcoded anywhere in the generator. Versions
 #    must be read from the identity file, never typed into a page.
-STALE=$(grep -rEn '"0\.[0-9]+\.[0-9]+' Website/generate.py 2>/dev/null | grep -v "$VERSION" || true)
+STALE=$(grep -En '0\.[0-9]+\.[0-9]+-rc\.[0-9]+' Website/index.html Website/build.py 2>/dev/null || true)
 [ -z "$STALE" ] \
-  && ok "no hardcoded version literal in the site generator" \
-  || note "hardcoded version literal(s) in Website/generate.py:
+  && ok "no hardcoded release version in the canonical site sources" \
+  || note "hardcoded release version literal(s) in canonical site sources:
 $STALE"
 
 # 7. A backup tag must never be publishable. Assert the release workflow

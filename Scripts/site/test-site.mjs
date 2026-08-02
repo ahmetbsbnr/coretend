@@ -9,7 +9,7 @@
 import assert from 'node:assert/strict'
 import { readFile, readdir } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { buildSite, launchChromium, loadPlaywright, repoRoot, startSite } from './site-fixture.mjs'
 import { CANONICAL_ROUTES, crawlSite, scanPublicOutput } from './crawl-site.mjs'
 
@@ -31,6 +31,10 @@ const EXPECTED_CANONICAL = {
   '/support': 'https://coretend.ahmetbsbnr.com/support',
   '/legal': 'https://coretend.ahmetbsbnr.com/legal',
   '/licenses': 'https://coretend.ahmetbsbnr.com/licenses',
+  '/fr/privacy': 'https://coretend.ahmetbsbnr.com/fr/privacy',
+  '/fr/support': 'https://coretend.ahmetbsbnr.com/fr/support',
+  '/fr/legal': 'https://coretend.ahmetbsbnr.com/fr/legal',
+  '/fr/licenses': 'https://coretend.ahmetbsbnr.com/fr/licenses',
 }
 
 const REDIRECTS = {
@@ -41,6 +45,10 @@ const REDIRECTS = {
   '/support.html': '/support',
   '/legal.html': '/legal',
   '/licenses.html': '/licenses',
+  '/fr/privacy.html': '/fr/privacy',
+  '/fr/support.html': '/fr/support',
+  '/fr/legal.html': '/fr/legal',
+  '/fr/licenses.html': '/fr/licenses',
   '/site': '/',
   '/site/': '/',
   '/site/index.html': '/',
@@ -51,7 +59,10 @@ const REDIRECTS = {
   '/fr.html': '/fr/',
 }
 
-const INFO_ROUTES = ['/privacy', '/support', '/legal', '/licenses']
+const INFO_ROUTES = [
+  '/privacy', '/support', '/legal', '/licenses',
+  '/fr/privacy', '/fr/support', '/fr/legal', '/fr/licenses',
+]
 const REQUIRED_ASSETS = [
   '/favicon.ico',
   '/manifest.webmanifest',
@@ -59,8 +70,15 @@ const REQUIRED_ASSETS = [
   '/sitemap.xml',
   '/latest.json',
   '/SHA256SUMS',
-  '/assets/public.css',
-  '/assets/brand/favicon-32.png',
+  '/assets/shell/boot.js',
+  '/assets/shell/public.css',
+  '/assets/shell/public.js',
+  '/assets/brand/favicon.svg',
+  '/assets/brand/favicon-v2-16.png',
+  '/assets/brand/favicon-v2-32.png',
+  '/assets/brand/favicon-v2-180.png',
+  '/assets/brand/favicon-v2-192.png',
+  '/assets/brand/favicon-v2-512.png',
   '/assets/brand/opengraph.png',
   '/assets/fonts/archivo-latin.woff2',
   '/assets/fonts/plexmono-400-latin.woff2',
@@ -71,6 +89,7 @@ const REQUIRED_ASSETS = [
 ]
 
 const build = await buildSite()
+const publishedRelease = JSON.parse(await readFile(join(repoRoot, 'Configuration', 'published-release.json'), 'utf8'))
 const externalOrigin = process.env.SITE_BASE_URL?.replace(/\/$/, '')
 const fixture = externalOrigin ? null : await startSite(build.output)
 const origin = externalOrigin ?? fixture.origin
@@ -105,9 +124,17 @@ function normalizedLocation(response) {
 function watchPage(page) {
   const problems = []
   page.on('console', message => {
-    if (message.type() === 'error') problems.push(`console: ${message.text()}`)
+    if (message.type() === 'error' && !/^Failed to load resource: the server responded with a status of 404 \(Not Found\)$/.test(message.text())) {
+      problems.push(`console: ${message.text()}`)
+    }
   })
   page.on('pageerror', error => problems.push(`pageerror: ${error.message}`))
+  page.on('response', response => {
+    const target = new URL(response.url())
+    if (target.origin === origin && response.status() >= 400 && response.request().resourceType() !== 'document') {
+      problems.push(`http: ${target.pathname} (${response.status()})`)
+    }
+  })
   page.on('requestfailed', request => {
     const target = new URL(request.url())
     const kind = request.resourceType()
@@ -118,10 +145,45 @@ function watchPage(page) {
   return problems
 }
 
+async function loadAxeBuilder() {
+  try {
+    return (await import('@axe-core/playwright')).default
+  } catch (primaryError) {
+    const candidates = [
+      process.env.CORETEND_NODE_MODULES,
+      resolve(repoRoot, '..', '..', '..', 'ahmetbsbnr-portfolio', 'node_modules'),
+    ].filter(Boolean)
+    for (const modules of candidates) {
+      try {
+        return (await import(pathToFileURL(join(modules, '@axe-core', 'playwright', 'dist', 'index.mjs')).href)).default
+      } catch {}
+    }
+    throw new Error(`@axe-core/playwright is required (${primaryError.message})`)
+  }
+}
+
 await gate('isolated production build and public-output allow-list', async () => {
   assert.match(build.log, /Built public CoreTend site:/)
   const output = await scanPublicOutput(build.output)
   assert(output.files > 20)
+})
+
+await gate('release identity is generated from one canonical record', async () => {
+  const template = await readFile(join(repoRoot, 'Website', 'index.html'), 'utf8')
+  assert(!/0\.9\.1-rc\.\d+/i.test(template), 'landing template contains a hard-coded release version')
+  for (const token of [
+    '@@CORETEND_RELEASE_VERSION@@',
+    '@@CORETEND_DMG_SHA256@@',
+    '@@CORETEND_MINIMUM_MACOS@@',
+    '@@CORETEND_ARCHITECTURE@@',
+  ]) assert(template.includes(token), `landing template is missing ${token}`)
+
+  for (const file of ['index.html', 'en-route.html', 'fr-route.html', 'support.html', 'fr-support.html']) {
+    const document = await readFile(join(build.output, file), 'utf8')
+    assert(document.includes(publishedRelease.version), `${file} does not render ${publishedRelease.version}`)
+    assert(document.includes(publishedRelease.dmgSHA256), `${file} does not render the canonical checksum`)
+    assert(!document.includes('@@CORETEND_'), `${file} exposes an unresolved release token`)
+  }
 })
 
 await gate('root and Website Vercel route contracts cannot drift', async () => {
@@ -171,7 +233,7 @@ await gate('historic routes redirect once to their clean canonical destination',
   }
   const download = await responseAt('/download')
   assert.equal(download.status, 307, '/download must remain a temporary redirect to the reviewed binary')
-  assert.match(normalizedLocation(download), /^https:\/\/github\.com\/ahmetbsbnr\/coretend\/releases\/download\/v0\.9\.1-rc\.3\//)
+  assert.equal(normalizedLocation(download), publishedRelease.dmgURL)
 })
 
 await gate('unknown routes return the branded 404 with no redirect', async () => {
@@ -179,9 +241,9 @@ await gate('unknown routes return the branded 404 with no redirect', async () =>
     const response = await responseAt(route)
     assert.equal(response.status, 404, `${route} returned ${response.status}`)
     const body = await response.text()
-    assert.match(body, /Route not found/)
-    assert.match(body, /Route introuvable/)
-    assert.match(body, /assets\/public\.css/)
+    assert.match(body, /outside the map/)
+    assert.match(body, /hors carte/)
+    assert.match(body, /assets\/shell\/public\.css/)
   }
 })
 
@@ -206,6 +268,7 @@ await gate('canonical, hreflang, Open Graph and document languages are exact', a
   const expectations = [
     ['/', 'en'], ['/en/', 'en'], ['/fr/', 'fr'],
     ['/privacy', 'en'], ['/support', 'en'], ['/legal', 'en'], ['/licenses', 'en'],
+    ['/fr/privacy', 'fr'], ['/fr/support', 'fr'], ['/fr/legal', 'fr'], ['/fr/licenses', 'fr'],
   ]
   const titles = new Map()
   for (const [route, language] of expectations) {
@@ -230,6 +293,13 @@ await gate('canonical, hreflang, Open Graph and document languages are exact', a
         en: 'https://coretend.ahmetbsbnr.com/en/',
         fr: 'https://coretend.ahmetbsbnr.com/fr/',
         'x-default': 'https://coretend.ahmetbsbnr.com/',
+      })
+    } else {
+      const englishRoute = route.replace(/^\/fr/, '')
+      assert.deepEqual(meta.alternates, {
+        en: `https://coretend.ahmetbsbnr.com${englishRoute}`,
+        fr: `https://coretend.ahmetbsbnr.com/fr${englishRoute}`,
+        'x-default': `https://coretend.ahmetbsbnr.com${englishRoute}`,
       })
     }
     titles.set(route, meta.title)
@@ -326,7 +396,95 @@ await gate('system theme, manual theme and persistence work across routes', asyn
   assert.equal(await page.getAttribute('html', 'data-theme'), 'light')
   await page.goto(`${origin}/fr/`)
   assert.equal(await page.getAttribute('html', 'data-theme'), 'light')
+  await page.locator('#theme').click()
+  assert.equal(await page.getAttribute('html', 'data-theme-mode'), 'dark')
+  assert.equal(await page.getAttribute('html', 'data-theme'), 'dark')
+  await page.locator('#theme').click()
+  assert.equal(await page.getAttribute('html', 'data-theme-mode'), 'system')
+  assert.equal(await page.getAttribute('html', 'data-theme'), 'dark')
+  await page.goto(`${origin}/fr/privacy`)
+  assert.equal(await page.getAttribute('html', 'data-theme-mode'), 'system')
+  assert.equal(await page.getAttribute('html', 'data-theme'), 'dark')
   await context.close()
+})
+
+await gate('every information route uses the shared living shell', async () => {
+  const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1280, height: 800 } })
+  const page = await context.newPage()
+  for (const route of INFO_ROUTES) {
+    const problems = watchPage(page)
+    const response = await page.goto(`${origin}${route}`, { waitUntil: 'networkidle' })
+    assert.equal(response.status(), 200, `${route} returned ${response.status()}`)
+    const state = await page.evaluate(() => ({
+      language: document.documentElement.lang,
+      page: document.body.dataset.page,
+      canvas: document.querySelector('#field')?.getAttribute('aria-hidden'),
+      headerLogo: document.querySelectorAll('header .ct-logo').length,
+      footerLogo: document.querySelectorAll('footer .ct-logo').length,
+      arcs: [...document.querySelectorAll('.ct-logo')].map(logo => logo.querySelectorAll(':scope > .ct-arc').length),
+      cores: document.querySelectorAll('.ct-logo > .ct-core').length,
+      wholeTransforms: [...document.querySelectorAll('.ct-logo')].map(logo => getComputedStyle(logo).transform),
+      coreTransforms: [...document.querySelectorAll('.ct-core')].map(core => getComputedStyle(core).transform),
+      footerLinks: document.querySelectorAll('footer a').length,
+      stylesheets: [...document.querySelectorAll('link[rel="stylesheet"]')].map(link => new URL(link.href).pathname),
+    }))
+    assert.equal(state.language, route.startsWith('/fr/') ? 'fr' : 'en')
+    assert.equal(state.canvas, 'true')
+    assert.equal(state.headerLogo, 1)
+    assert.equal(state.footerLogo, 1)
+    assert(state.arcs.every(count => count === 3), `${route} logo is not composed of three independent arcs`)
+    assert.equal(state.cores, state.arcs.length, `${route} must keep one fixed core per logo`)
+    assert(state.wholeTransforms.every(value => ['none', 'matrix(1, 0, 0, 1, 0, 0)'].includes(value)), `${route} transforms the complete logo`)
+    assert(state.coreTransforms.every(value => ['none', 'matrix(1, 0, 0, 1, 0, 0)'].includes(value)), `${route} transforms the fixed core`)
+    assert(state.footerLinks >= 6)
+    assert(state.stylesheets.includes('/assets/shell/public.css'))
+    assert.deepEqual(problems, [], `${route} emitted browser errors`)
+  }
+  await context.close()
+})
+
+await gate('Axe finds no WCAG A or AA violations on any public page', async () => {
+  const AxeBuilder = await loadAxeBuilder()
+  const routes = ['/en/', '/fr/', ...INFO_ROUTES, '/axe-not-found']
+  for (const colorScheme of ['light', 'dark']) {
+    const context = await browser.newContext({ colorScheme, reducedMotion: 'reduce', viewport: { width: 1280, height: 800 } })
+    const page = await context.newPage()
+    for (const route of routes) {
+      const response = await page.goto(`${origin}${route}`, { waitUntil: 'networkidle' })
+      assert([200, 404].includes(response.status()), `${route} returned ${response.status()}`)
+      const result = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze()
+      if (result.violations.length) {
+        throw new Error(`${route}/${colorScheme}: ${result.violations.map(violation => `${violation.id} (${violation.nodes.length})`).join(', ')}`)
+      }
+    }
+    await context.close()
+  }
+})
+
+await gate('workflow title never overlays its steps below the two-column breakpoint', async () => {
+  for (const viewport of [{ width: 820, height: 1180 }, { width: 430, height: 932 }, { width: 360, height: 800 }]) {
+    for (const language of ['en', 'fr']) {
+      const context = await browser.newContext({ viewport, reducedMotion: 'reduce' })
+      const page = await context.newPage()
+      await page.goto(`${origin}/${language}/`, { waitUntil: 'networkidle' })
+      const geometry = await page.locator('#how').evaluate(section => {
+        const heading = section.querySelector('.flow-sticky')
+        const firstStep = section.querySelector('.steps li')
+        const headingRect = heading.getBoundingClientRect()
+        const stepRect = firstStep.getBoundingClientRect()
+        return {
+          position: getComputedStyle(heading).position,
+          headingBottom: headingRect.bottom,
+          stepTop: stepRect.top,
+        }
+      })
+      assert.equal(geometry.position, 'static', `${language}/${viewport.width}px workflow heading remains sticky`)
+      assert(geometry.stepTop >= geometry.headingBottom - 1, `${language}/${viewport.width}px workflow content overlaps by ${(geometry.headingBottom - geometry.stepTop).toFixed(1)}px`)
+      await context.close()
+    }
+  }
 })
 
 await gate('six application views switch without an empty state', async () => {
@@ -552,9 +710,11 @@ await gate('published raster brand assets contain no historical palette', async 
     }
     return findings
   }, [
-    '/assets/brand/favicon-32.png',
-    '/assets/brand/favicon-180.png',
-    '/assets/brand/favicon-512.png',
+    '/assets/brand/favicon-v2-16.png',
+    '/assets/brand/favicon-v2-32.png',
+    '/assets/brand/favicon-v2-180.png',
+    '/assets/brand/favicon-v2-192.png',
+    '/assets/brand/favicon-v2-512.png',
     '/assets/brand/opengraph.png',
   ])
   assert.deepEqual(matches, [], `historical green/purple/amber pixels remain: ${matches.join(', ')}`)
@@ -569,7 +729,7 @@ await gate('favicons preserve the complete centered CoreTend mark at every size'
     const result = []
     for (const size of sizes) {
       const image = new Image()
-      image.src = `/assets/brand/favicon-${size}.png`
+      image.src = `/assets/brand/favicon-v2-${size}.png`
       await image.decode()
       const canvas = document.createElement('canvas')
       canvas.width = image.naturalWidth
@@ -579,8 +739,10 @@ await gate('favicons preserve the complete centered CoreTend mark at every size'
       const pixels = drawing.getImageData(0, 0, canvas.width, canvas.height).data
       const centerIndex = (Math.floor(canvas.height / 2) * canvas.width + Math.floor(canvas.width / 2)) * 4
       let nonBackground = 0
+      let transparent = 0
       for (let index = 0; index < pixels.length; index += 4) {
-        if (pixels[index + 3] > 32 && (pixels[index] < 245 || pixels[index + 1] < 245 || pixels[index + 2] < 245)) nonBackground++
+        if (pixels[index + 3] <= 8) transparent++
+        if (pixels[index + 3] > 32) nonBackground++
       }
       result.push({
         requested: size,
@@ -588,16 +750,18 @@ await gate('favicons preserve the complete centered CoreTend mark at every size'
         height: canvas.height,
         center: [...pixels.slice(centerIndex, centerIndex + 4)],
         coverage: nonBackground / (canvas.width * canvas.height),
+        transparency: transparent / (canvas.width * canvas.height),
       })
     }
     return result
-  }, [32, 180, 512])
+  }, [16, 32, 180, 192, 512])
   for (const record of records) {
     assert.equal(record.width, record.requested)
     assert.equal(record.height, record.requested)
     const [red, green, blue, alpha] = record.center
     assert(alpha > 240 && Math.abs(red - 34) < 10 && Math.abs(green - 64) < 10 && Math.abs(blue - 226) < 10, `${record.requested}px favicon lost the fixed cobalt core (${record.center})`)
     assert(record.coverage > 0.12, `${record.requested}px favicon mark coverage is only ${(record.coverage * 100).toFixed(1)}%`)
+    assert(record.transparency > 0.35, `${record.requested}px favicon has an opaque background (${(record.transparency * 100).toFixed(1)}% transparent)`)
   }
   await context.close()
 })
@@ -648,6 +812,14 @@ await gate('no-JavaScript fallback remains styled, bilingual and usable', async 
   const faq = page.locator('.faq details').first()
   await faq.locator('summary').click()
   assert(await faq.evaluate(element => element.open), 'native FAQ does not work without JavaScript')
+  for (const route of INFO_ROUTES) {
+    response = await page.goto(`${origin}${route}`, { waitUntil: 'networkidle' })
+    assert.equal(response.status(), 200, `${route} is unavailable without JavaScript`)
+    assert(await page.locator('header .wordmark').isVisible(), `${route} has no visible shared header`)
+    assert(await page.locator('main h1').isVisible(), `${route} has no visible primary content`)
+    assert(await page.locator('footer').isVisible(), `${route} has no visible footer`)
+    assert((await page.evaluate(() => [...document.styleSheets].filter(sheet => !sheet.disabled).length)) >= 2, `${route} is unstyled without JavaScript`)
+  }
   assert.deepEqual(problems, [])
   await context.close()
 })
@@ -697,6 +869,79 @@ await gate('all required viewports, languages and themes avoid horizontal overfl
       }
     }
   }
+})
+
+await gate('information pages and 404 remain intact at every required viewport', async () => {
+  for (const viewport of VIEWPORTS) {
+    for (const colorScheme of ['light', 'dark']) {
+      const context = await browser.newContext({ viewport, colorScheme, reducedMotion: 'reduce' })
+      const page = await context.newPage()
+      const problems = watchPage(page)
+      for (const route of [...INFO_ROUTES, '/responsive-not-found']) {
+        const response = await page.goto(`${origin}${route}`, { waitUntil: 'networkidle' })
+        assert([200, 404].includes(response.status()))
+        const geometry = await page.evaluate(() => ({
+          viewportWidth: document.documentElement.clientWidth,
+          htmlWidth: document.documentElement.scrollWidth,
+          bodyWidth: document.body.scrollWidth,
+          headerRight: document.querySelector('header')?.getBoundingClientRect().right ?? 0,
+          footerRight: document.querySelector('footer')?.getBoundingClientRect().right ?? 0,
+          hiddenHeading: !document.querySelector('main h1') || getComputedStyle(document.querySelector('main h1')).visibility === 'hidden',
+        }))
+        const label = `${route}/${colorScheme}/${viewport.width}x${viewport.height}`
+        assert(geometry.htmlWidth <= geometry.viewportWidth + 1, `${label} html overflows by ${geometry.htmlWidth - geometry.viewportWidth}px`)
+        assert(geometry.bodyWidth <= geometry.viewportWidth + 1, `${label} body overflows by ${geometry.bodyWidth - geometry.viewportWidth}px`)
+        assert(geometry.headerRight <= geometry.viewportWidth + 1, `${label} header is clipped`)
+        assert(geometry.footerRight <= geometry.viewportWidth + 1, `${label} footer is clipped`)
+        assert.equal(geometry.hiddenHeading, false, `${label} primary heading is hidden`)
+      }
+      assert.deepEqual(problems, [], `${colorScheme}/${viewport.width} emitted browser errors`)
+      await context.close()
+    }
+  }
+})
+
+await gate('200 percent zoom preserves navigation and legal reading order', async () => {
+  // A 1280px display at 200% browser zoom exposes a 640px CSS viewport.
+  const context = await browser.newContext({ viewport: { width: 640, height: 400 }, deviceScaleFactor: 2, reducedMotion: 'reduce' })
+  const page = await context.newPage()
+  for (const route of ['/en/', '/privacy', '/support', '/legal', '/licenses', '/fr/legal']) {
+    await page.goto(`${origin}${route}`, { waitUntil: 'networkidle' })
+    const state = await page.evaluate(() => ({
+      width: document.documentElement.scrollWidth,
+      viewport: document.documentElement.clientWidth,
+      skip: Boolean(document.querySelector('.skip')),
+      main: Boolean(document.querySelector('main h1')),
+      footer: Boolean(document.querySelector('footer')),
+    }))
+    assert(state.skip && state.main && state.footer, `${route} loses a landmark at 200% zoom`)
+    assert(state.width <= state.viewport + 1, `${route} overflows horizontally at 200% zoom`)
+  }
+  await context.close()
+})
+
+await gate('legal pages expose a clean print document', async () => {
+  const context = await browser.newContext({ reducedMotion: 'reduce' })
+  const page = await context.newPage()
+  await page.emulateMedia({ media: 'print' })
+  for (const route of ['/legal', '/fr/legal']) {
+    await page.goto(`${origin}${route}`, { waitUntil: 'networkidle' })
+    const state = await page.evaluate(() => ({
+      background: getComputedStyle(document.body).backgroundColor,
+      color: getComputedStyle(document.body).color,
+      header: getComputedStyle(document.querySelector('header')).display,
+      footer: getComputedStyle(document.querySelector('footer')).display,
+      sections: document.querySelectorAll('.legal-doc section').length,
+      anchors: document.querySelectorAll('.doc-nav a[href^="#"]').length,
+    }))
+    assert(['rgb(255, 255, 255)', 'rgba(0, 0, 0, 0)'].includes(state.background))
+    assert.equal(state.color, 'rgb(0, 0, 0)')
+    assert.equal(state.header, 'none')
+    assert.equal(state.footer, 'none')
+    assert.equal(state.sections, 4)
+    assert.equal(state.anchors, 4)
+  }
+  await context.close()
 })
 
 await gate('crawler finds no broken internal link or forbidden rendered URL', async () => {
