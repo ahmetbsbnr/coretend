@@ -96,13 +96,20 @@ public struct AssociatedItem: Sendable, Identifiable {
 /// Discovery is read-only; deletion goes through SafetyCore elsewhere.
 public struct AppDiscovery: Sendable {
     public let home: URL
+    public let applicationRoots: [URL]
+    public let systemLibrary: URL?
 
-    public init(home: URL = FileManager.default.homeDirectoryForCurrentUser) {
+    public init(
+        home: URL = FileManager.default.homeDirectoryForCurrentUser,
+        applicationRoots: [URL]? = nil,
+        systemLibrary: URL? = URL(fileURLWithPath: "/Library", isDirectory: true)
+    ) {
         self.home = home
-    }
-
-    public var applicationRoots: [URL] {
-        [URL(fileURLWithPath: "/Applications"), home.appendingPathComponent("Applications")]
+        self.applicationRoots = applicationRoots ?? [
+            URL(fileURLWithPath: "/Applications", isDirectory: true),
+            home.appendingPathComponent("Applications", isDirectory: true),
+        ]
+        self.systemLibrary = systemLibrary
     }
 
     /// Enumerates .app bundles (top level + one subdirectory level for suites).
@@ -188,10 +195,10 @@ public struct AppDiscovery: Sendable {
             (.containers, library.appendingPathComponent("Containers/\(bundleID)")),
             (.launchAgents, library.appendingPathComponent("LaunchAgents/\(bundleID).plist")),
         ]
-        if includeSystemLaunchItems {
+        if includeSystemLaunchItems, let systemLibrary {
             candidates.append(contentsOf: [
-                (.launchAgents, URL(fileURLWithPath: "/Library/LaunchAgents/\(bundleID).plist")),
-                (.launchDaemons, URL(fileURLWithPath: "/Library/LaunchDaemons/\(bundleID).plist")),
+                (.launchAgents, systemLibrary.appendingPathComponent("LaunchAgents/\(bundleID).plist")),
+                (.launchDaemons, systemLibrary.appendingPathComponent("LaunchDaemons/\(bundleID).plist")),
             ])
         }
         for (kind, url) in candidates where fm.fileExists(atPath: url.path) {
