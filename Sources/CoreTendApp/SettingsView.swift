@@ -59,13 +59,14 @@ final class SettingsViewModel {
 
 /// Pure formatting so permission-state text is directly testable.
 enum PermissionFormatting {
-    static func notificationLabel(_ status: UNAuthorizationStatus) -> String {
-        switch status {
-        case .authorized, .provisional, .ephemeral: L("settings.notif.authorized")
-        case .denied: L("settings.notif.denied")
-        case .notDetermined: L("settings.notif.not_requested")
-        @unknown default: L("settings.notif.unknown")
+    static func notificationLabel(_ status: UNAuthorizationStatus, language: AppLanguage? = nil) -> String {
+        let key = switch status {
+        case .authorized, .provisional, .ephemeral: "settings.notif.authorized"
+        case .denied: "settings.notif.denied"
+        case .notDetermined: "settings.notif.not_requested"
+        @unknown default: "settings.notif.unknown"
         }
+        return language.map { LocalizationManager.string(forKey: key, language: $0) } ?? L(key)
     }
 
     static func notificationIcon(_ status: UNAuthorizationStatus) -> String {

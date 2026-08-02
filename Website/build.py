@@ -22,6 +22,7 @@ import struct
 import subprocess
 import sys
 import tempfile
+from typing import Optional, Sequence
 
 
 SITE_ROOT = Path(__file__).resolve().parent
@@ -37,13 +38,16 @@ RELEASE = REPO_ROOT / "Configuration" / "published-release.json"
 PUBLIC_ASSET_PATTERNS = (
     "app/*.png",
     "app/*.webp",
-    "brand/*.png",
+    "brand/favicon-v2-*.png",
+    "brand/opengraph.png",
     "brand/*.svg",
     "demos/*.mp4",
     "demos/*.vtt",
     "demos/*.webm",
     "demos/*.webp",
     "fonts/*.woff2",
+    "shell/*.css",
+    "shell/*.js",
     "tokens/*.css",
     "tokens/*.json",
 )
@@ -68,15 +72,6 @@ META = {
         "locale": "fr_FR",
     },
 }
-
-
-PUBLIC_CSS = r"""
-@font-face{font-family:Archivo;font-display:swap;font-style:normal;font-weight:100 900;src:url('/assets/fonts/archivo-latin.woff2') format('woff2')}
-@font-face{font-family:'IBM Plex Mono';font-display:swap;font-style:normal;font-weight:400;src:url('/assets/fonts/plexmono-400-latin.woff2') format('woff2')}
-:root{color-scheme:light dark;--paper:#f4f4f0;--paper2:#e9e8df;--ink:#17191d;--muted:#59606b;--line:#d7d5ca;--cobalt:#1b45e0;--panel:#fbfbf8;--safe:#0f7a4d;--r:14px;--sans:Archivo,system-ui,-apple-system,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace}
-@media(prefers-color-scheme:dark){:root{--paper:#0d0f13;--paper2:#171a20;--ink:#edece5;--muted:#a7abb5;--line:#303540;--cobalt:#6c8cff;--panel:#12151b;--safe:#43c98c}}
-*{box-sizing:border-box}html{background:var(--paper);color:var(--ink);font-family:var(--sans);scroll-behavior:smooth}body{margin:0;min-height:100vh;background:radial-gradient(circle at 80% 5%,color-mix(in srgb,var(--cobalt) 11%,transparent),transparent 32rem),var(--paper);line-height:1.6}a{color:inherit;text-decoration-thickness:.08em;text-underline-offset:.2em}a:hover{color:var(--cobalt)}:focus-visible{outline:2px solid var(--cobalt);outline-offset:3px}.skip{position:absolute;left:1rem;top:-5rem;background:var(--ink);color:var(--paper);padding:.7rem 1rem;border-radius:.6rem;z-index:5}.skip:focus{top:1rem}.wrap{width:min(860px,calc(100% - 2rem));margin:auto}.bar{border-bottom:1px solid var(--line);backdrop-filter:blur(14px);background:color-mix(in srgb,var(--paper) 86%,transparent)}.bar .wrap,.footer .wrap{min-height:68px;display:flex;align-items:center;justify-content:space-between;gap:1rem}.brand{display:flex;align-items:center;gap:.7rem;font-weight:750;text-decoration:none}.brand img{width:30px;height:30px}.nav{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}.nav a{text-decoration:none;font-size:.92rem}.download{background:var(--cobalt);color:white!important;padding:.55rem 1rem;border-radius:999px}.hero{padding:clamp(4rem,10vw,7rem) 0 2rem}.eyebrow{font:500 .75rem/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--cobalt)}h1{font-size:clamp(2.25rem,7vw,4.75rem);line-height:1.02;letter-spacing:-.045em;max-width:15ch;margin:.8rem 0 1.2rem}.lead{font-size:clamp(1.02rem,2vw,1.22rem);color:var(--muted);max-width:62ch}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;padding:2rem 0 5rem}.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:clamp(1.25rem,4vw,2rem);box-shadow:0 22px 55px -42px color-mix(in srgb,var(--ink) 45%,transparent)}.card h2{font-size:1.25rem;margin:0 0 .75rem}.card h3{font-size:1rem;margin:1.5rem 0 .4rem}.card p,.card li{color:var(--muted)}.card code{font-family:var(--mono);font-size:.86em;overflow-wrap:anywhere}.card ul{padding-left:1.2rem}.footer{border-top:1px solid var(--line);font-size:.88rem;color:var(--muted)}.radar{width:72px;height:72px;border:1px solid var(--line);border-radius:50%;position:relative;margin-bottom:1.5rem;background:repeating-radial-gradient(circle,transparent 0 11px,var(--line) 12px 13px)}.radar:after{content:'';position:absolute;inset:5px 50% 50% 5px;border-top:2px solid var(--cobalt);transform-origin:100% 100%;animation:sweep 3.5s linear infinite}@keyframes sweep{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.radar:after{animation:none;transform:rotate(35deg)}}@media(max-width:680px){.grid{grid-template-columns:1fr}.bar .wrap{align-items:flex-start;padding:.9rem 0}.nav{justify-content:flex-end}.footer .wrap{align-items:flex-start;flex-direction:column;padding:1rem 0}}
-""".strip() + "\nbody{display:flex;flex-direction:column}\nmain{flex:1}"
 
 
 def load_release() -> dict:
@@ -266,9 +261,27 @@ def externalise_styles(document: str, output: Path, route_key: str) -> str:
     )
 
 
-def build_landing(template: str, language: str, canonical_path: str, output: Path) -> str:
+def render_release_facts(document: str, release: dict) -> str:
+    replacements = {
+        "@@CORETEND_RELEASE_VERSION@@": str(release["version"]),
+        "@@CORETEND_DMG_SHA256@@": str(release["dmgSHA256"]),
+        "@@CORETEND_MINIMUM_MACOS@@": str(release["minimumMacOS"]),
+        "@@CORETEND_ARCHITECTURE@@": str(release["architecture"]),
+    }
+    for token, value in replacements.items():
+        if token not in document:
+            raise SystemExit(f"gold master is missing release token: {token}")
+        document = document.replace(token, html.escape(value))
+    unresolved = sorted(set(re.findall(r"@@CORETEND_[A-Z0-9_]+@@", document)))
+    if unresolved:
+        raise SystemExit(f"unresolved release token(s): {', '.join(unresolved)}")
+    return document
+
+
+def build_landing(template: str, language: str, canonical_path: str, output: Path, release: dict) -> str:
     document = strip_route_metadata(template)
     document = set_document_language(document, language)
+    document = render_release_facts(document, release)
     document = render_translated_content(document, language)
     for code in ("en", "fr"):
         current = "page" if code == language else "false"
@@ -391,6 +404,321 @@ def not_found_page() -> str:
     return page
 
 
+def route_for(page: str, language: str) -> str:
+    if page == "home":
+        return "/fr/" if language == "fr" else "/en/"
+    if page == "404":
+        return route_for("home", language)
+    return f"/fr/{page}" if language == "fr" else f"/{page}"
+
+
+def logo_svg(modifier: str, *, label: Optional[str] = None, initializing: bool = False) -> str:
+    classes = f"mark ct-logo ct-logo--{modifier}"
+    if initializing:
+        classes += " is-initializing"
+    identity = (
+        f'role="img" aria-label="{html.escape(label, quote=True)}"'
+        if label
+        else 'aria-hidden="true" focusable="false"'
+    )
+    return f"""<svg class="{classes}" viewBox="0 0 512 512" {identity}>
+  <g class="ct-arc ct-arc-outer"><path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--cobalt)" stroke-width="38.4" stroke-linecap="round"/></g>
+  <g class="ct-arc ct-arc-middle"><path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--ink)" stroke-width="38.4" stroke-linecap="round"/></g>
+  <g class="ct-arc ct-arc-inner"><path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--line-strong)" stroke-width="38.4" stroke-linecap="round"/></g>
+  <circle class="ct-wave" cx="256" cy="256" r="61.44"/>
+  <circle class="ct-core" cx="256" cy="256" r="61.44" fill="var(--cobalt)"/>
+</svg>"""
+
+
+def public_head(
+    title: str,
+    description: str,
+    canonical: str,
+    *,
+    language: str,
+    page: str,
+    robots: str = "index, follow",
+) -> str:
+    alternate_en = route_for(page, "en")
+    alternate_fr = route_for(page, "fr")
+    locale = "fr_FR" if language == "fr" else "en_US"
+    alternate_locale = "en_US" if language == "fr" else "fr_FR"
+    return f"""<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{html.escape(title)}</title>
+<meta name="description" content="{html.escape(description, quote=True)}">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f4f4f0">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0d0f13">
+<meta name="robots" content="{robots}">
+<link rel="canonical" href="{ORIGIN}{canonical}">
+<link rel="alternate" hreflang="en" href="{ORIGIN}{alternate_en}">
+<link rel="alternate" hreflang="fr" href="{ORIGIN}{alternate_fr}">
+<link rel="alternate" hreflang="x-default" href="{ORIGIN}{alternate_en}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="CoreTend">
+<meta property="og:title" content="{html.escape(title, quote=True)}">
+<meta property="og:description" content="{html.escape(description, quote=True)}">
+<meta property="og:url" content="{ORIGIN}{canonical}">
+<meta property="og:locale" content="{locale}">
+<meta property="og:locale:alternate" content="{alternate_locale}">
+<meta property="og:image" content="{ORIGIN}/assets/brand/opengraph.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/assets/brand/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/assets/brand/favicon-v2-16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="/assets/brand/favicon-v2-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32">
+<link rel="apple-touch-icon" href="/assets/brand/favicon-v2-180.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<script src="/assets/shell/boot.js"></script>
+<link rel="stylesheet" href="/assets/tokens/design-tokens.css">
+<link rel="stylesheet" href="/assets/shell/public.css">
+<script src="/assets/shell/public.js" defer></script>"""
+
+
+def shell(
+    release: dict,
+    page: str,
+    language: str,
+    title: str,
+    description: str,
+    canonical: str,
+    content: str,
+    *,
+    robots: str = "index, follow",
+) -> str:
+    is_fr = language == "fr"
+    skip = "Aller au contenu" if is_fr else "Skip to content"
+    navigation = "Navigation principale" if is_fr else "Main navigation"
+    home_label = "CoreTend, accueil" if is_fr else "CoreTend, home"
+    download = "Télécharger" if is_fr else "Download"
+    privacy = "Confidentialité" if is_fr else "Privacy"
+    support = "Assistance" if is_fr else "Support"
+    legal = "Mentions légales" if is_fr else "Legal"
+    licenses = "Licences" if is_fr else "Licenses"
+    source = "Code source" if is_fr else "Source"
+    version_status = (
+        f"{release['version']} · sans Developer ID · non notarisé"
+        if is_fr
+        else f"{release['version']} · no Developer ID · not notarized"
+    )
+    en_path = route_for(page, "en")
+    fr_path = route_for(page, "fr")
+    privacy_current = ' aria-current="page"' if page == "privacy" else ""
+    support_current = ' aria-current="page"' if page == "support" else ""
+    return f"""<!doctype html>
+<html lang="{language}" data-theme="light" data-theme-mode="system" data-build="public">
+<head>
+{public_head(title, description, canonical, language=language, page=page, robots=robots)}
+</head>
+<body data-page="{page}">
+<a class="skip" href="#main">{skip}</a>
+<canvas id="field" aria-hidden="true"></canvas>
+<div id="grain" aria-hidden="true"></div>
+<div id="spot" aria-hidden="true"></div>
+<div id="progress" aria-hidden="true"></div>
+<header class="bar" id="bar"><div class="wrap">
+  <a class="wordmark" href="{route_for('home', language)}" aria-label="{home_label}">{logo_svg('header', initializing=True)}<span>CoreTend</span></a>
+  <nav class="bar-actions" aria-label="{navigation}">
+    <a class="bar-link" href="{route_for('privacy', language)}"{privacy_current}>{privacy}</a>
+    <a class="bar-link" href="{route_for('support', language)}"{support_current}>{support}</a>
+    <div class="switch" role="group" aria-label="{'Langue' if is_fr else 'Language'}">
+      <a href="{en_path}" hreflang="en" lang="en" aria-current="{'page' if not is_fr else 'false'}">EN</a>
+      <a href="{fr_path}" hreflang="fr" lang="fr" aria-current="{'page' if is_fr else 'false'}">FR</a>
+    </div>
+    <button class="icon-btn" id="theme" type="button" aria-label="{'Changer d’apparence' if is_fr else 'Change appearance'}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.5 12h-2M21.5 12h-2M6.7 6.7 5.3 5.3M18.7 18.7l-1.4-1.4M17.3 6.7l1.4-1.4M5.3 18.7l1.4-1.4"/><circle class="system-dot" cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
+    </button>
+    <a class="download-pill" href="/download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></svg><span>{download}</span></a>
+  </nav>
+</div></header>
+<main id="main">{content}</main>
+<footer class="foot"><div class="wrap">
+  <div class="foot-row">
+    <a class="wordmark" href="{route_for('home', language)}">{logo_svg('footer')}<span>CoreTend</span></a>
+    <ul class="foot-links">
+      <li><a href="{route_for('privacy', language)}">{privacy}</a></li>
+      <li><a href="{route_for('support', language)}">{support}</a></li>
+      <li><a href="{route_for('legal', language)}">{legal}</a></li>
+      <li><a href="{route_for('licenses', language)}">{licenses}</a></li>
+      <li><a href="{REPOSITORY}">{source}</a></li>
+    </ul>
+  </div>
+  <div class="foot-base"><span>© CoreTend contributors · Apache-2.0</span><span>{version_status}</span></div>
+</div></footer>
+<div id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
+"""
+
+
+def info_hero(page: str, language: str, eyebrow: str, heading: str, lead: str, chips: Sequence[str]) -> str:
+    chip_markup = "".join(
+        f'<span class="chip{" safe" if index == 0 else ""}">{html.escape(chip)}</span>'
+        for index, chip in enumerate(chips)
+    )
+    return f"""<section class="info-hero"><div class="wrap">
+  <span class="info-mark">{logo_svg('intro', label='CoreTend', initializing=True)}</span>
+  <div class="info-copy"><p class="eyebrow"><b>{page.upper()}</b> {html.escape(eyebrow)}</p><h1>{heading}</h1><p class="lead">{lead}</p><div class="status-line">{chip_markup}</div></div>
+</div></section>"""
+
+
+def privacy_content(release: dict, language: str) -> str:
+    if language == "fr":
+        hero = info_hero("privacy", language, "Limites vérifiables", "Vos résultats restent sur le Mac.", "CoreTend analyse les emplacements pris en charge sur l’appareil. Une vérification de mise à jour lancée manuellement contacte uniquement le manifeste public de version.", ["Traitement local", "Aucun compte", "Aucune télémétrie publicitaire"])
+        return hero + """<section class="info-section"><div class="wrap"><div class="section-head"><p class="section-index">01 / Flux local</p><div><h2>Ce qui reste local, ce qui utilise le réseau.</h2><p class="section-intro">La frontière est documentée au point où elle se présente, sans promettre une absence absolue de connexion.</p></div></div>
+<ul class="measure-list"><li><strong>Résultats d’analyse</strong><p>Les chemins, tailles, correspondances de doublons et activités agrégées restent dans le stockage local de CoreTend.</p></li><li><strong>Mise à jour manuelle</strong><p>Une action de l’utilisateur peut demander <code>/latest.json</code>. Aucun index de fichiers n’est envoyé avec cette requête.</p></li><li><strong>Site public</strong><p>Le code du site ne configure ni cookie publicitaire, ni pixel analytique, ni relecture de session. Vercel héberge le site et GitHub sert les artefacts.</p></li></ul>
+<div class="local-flow" aria-label="Schéma de flux local"><span class="local-node" style="--x:9%;--y:20%;--tx:18px;--ty:10px;--delay:-1s">Storage</span><span class="local-node" style="--x:72%;--y:18%;--tx:-16px;--ty:14px;--delay:-2s">Duplicates</span><span class="local-node" style="--x:12%;--y:72%;--tx:20px;--ty:-13px;--delay:-3s">Integrity</span><span class="local-node" style="--x:73%;--y:70%;--tx:-18px;--ty:-10px;--delay:-4s">Activity</span><span class="local-core">stockage<br>local</span></div>
+<pre class="local-log" aria-label="Journal local illustratif">scan.store = ~/Library/Application Support/CoreTend/store.sqlite
+telemetry = false
+account_required = false
+update_check = user_initiated → /latest.json</pre></div></section>"""
+    hero = info_hero("privacy", language, "Inspectable boundaries", "Your findings stay on the Mac.", "CoreTend processes supported locations on-device. A user-initiated update check contacts only the public release manifest.", ["Local processing", "No account", "No advertising telemetry"])
+    return hero + """<section class="info-section"><div class="wrap"><div class="section-head"><p class="section-index">01 / Local flow</p><div><h2>What stays local, what reaches the network.</h2><p class="section-intro">The boundary is documented where it occurs, without claiming the app never makes a network request.</p></div></div>
+<ul class="measure-list"><li><strong>Scan findings</strong><p>Paths, sizes, duplicate matches and aggregate activity remain in CoreTend’s local store.</p></li><li><strong>Manual update check</strong><p>A user action may request <code>/latest.json</code>. No file index is sent with that request.</p></li><li><strong>Public website</strong><p>The site code configures no advertising cookies, analytics pixels or session replay. Vercel hosts the site and GitHub serves release artifacts.</p></li></ul>
+<div class="local-flow" aria-label="Local data flow diagram"><span class="local-node" style="--x:9%;--y:20%;--tx:18px;--ty:10px;--delay:-1s">Storage</span><span class="local-node" style="--x:72%;--y:18%;--tx:-16px;--ty:14px;--delay:-2s">Duplicates</span><span class="local-node" style="--x:12%;--y:72%;--tx:20px;--ty:-13px;--delay:-3s">Integrity</span><span class="local-node" style="--x:73%;--y:70%;--tx:-18px;--ty:-10px;--delay:-4s">Activity</span><span class="local-core">local<br>store</span></div>
+<pre class="local-log" aria-label="Illustrative local log">scan.store = ~/Library/Application Support/CoreTend/store.sqlite
+telemetry = false
+account_required = false
+update_check = user_initiated → /latest.json</pre></div></section>"""
+
+
+def support_content(release: dict, language: str) -> str:
+    version = html.escape(str(release["version"]))
+    checksum = html.escape(str(release["dmgSHA256"]))
+    dmg_name = html.escape(str(release["dmgName"]))
+    minimum = html.escape(str(release["minimumMacOS"]))
+    architecture = html.escape(str(release["architecture"]))
+    if language == "fr":
+        hero = info_hero("support", language, "Diagnostic", "Résoudre sans affaiblir macOS.", f"CoreTend {version} est sans signature Developer ID et non notarisé. Le premier blocage Gatekeeper est donc attendu, pas un crash.", [f"Version {version}", f"macOS {minimum}+", architecture])
+        return hero + f"""<section class="info-section"><div class="wrap"><div class="section-head"><p class="section-index">01 / Parcours</p><div><h2>Trois vérifications avant de signaler un problème.</h2><p class="section-intro">Chaque étape conserve les protections de macOS.</p></div></div><ol class="scan-list"><li><div><h3>Vérifier le téléchargement</h3><p>Comparez l’empreinte SHA-256 avec le fichier publié à côté du DMG.</p></div><span class="scan-state">Provenance</span></li><li><div><h3>Ouvrir une première fois</h3><p>Copiez CoreTend dans Applications et double-cliquez. Le blocage initial fait apparaître l’option système suivante.</p></div><span class="scan-state">Attendu</span></li><li><div><h3>Autoriser cette copie</h3><p>Réglages Système → Confidentialité et sécurité → Ouvrir quand même. Ne désactivez jamais Gatekeeper globalement.</p></div><span class="scan-state">Une fois</span></li></ol></div></section>
+<section class="info-section"><div class="wrap"><div class="section-head"><p class="section-index">02 / Informations</p><div><h2>Un bloc technique prêt à joindre.</h2><p class="section-intro">Il ne contient aucun chemin personnel ni donnée d’analyse.</p></div></div><div class="support-tools"><div><pre class="tech-block" id="support-details">CoreTend {version}
+{dmg_name}
+macOS minimum: {minimum}
+architecture: {architecture}
+Developer ID: non
+notarisation: non
+SHA-256: {checksum}</pre><button class="copy-button" type="button" data-copy-target="support-details">Copier les informations techniques</button></div><ul class="link-stack"><li><a href="{REPOSITORY}/issues">Suivi public des problèmes</a></li><li><a href="{REPOSITORY}/security/advisories/new">Signalement privé de vulnérabilité</a></li><li><a href="{REPOSITORY}/blob/main/Documentation/README.md">Documentation</a></li></ul></div>
+<div class="faq"><details><summary>L’application ne s’ouvre pas après le téléchargement</summary><p>Vérifiez l’empreinte, lancez une première fois, puis utilisez Ouvrir quand même dans Confidentialité et sécurité. Le rejet attendu d’une version non notarisée ne doit pas être confondu avec un crash.</p></details><details><summary>Une analyse ne voit pas certains dossiers</summary><p>Vérifiez les exclusions et l’Accès complet au disque. N’accordez que l’autorisation requise pour le workflow utilisé.</p></details><details><summary>Que joindre à un rapport ?</summary><p>La version, macOS, l’architecture, le module concerné et des étapes reproductibles. Supprimez les noms de fichiers personnels de toute capture.</p></details></div></div></section>"""
+    hero = info_hero("support", language, "Diagnostics", "Resolve issues without weakening macOS.", f"CoreTend {version} has no Developer ID signature and is not notarized. The first Gatekeeper block is expected, not an application crash.", [f"Version {version}", f"macOS {minimum}+", architecture])
+    return hero + f"""<section class="info-section"><div class="wrap"><div class="section-head"><p class="section-index">01 / Path</p><div><h2>Three checks before reporting a problem.</h2><p class="section-intro">Every step keeps macOS protections enabled.</p></div></div><ol class="scan-list"><li><div><h3>Verify the download</h3><p>Compare its SHA-256 with the checksum file published beside the DMG.</p></div><span class="scan-state">Provenance</span></li><li><div><h3>Open it once</h3><p>Copy CoreTend to Applications and double-click it. The initial block makes the next system option available.</p></div><span class="scan-state">Expected</span></li><li><div><h3>Allow this copy</h3><p>System Settings → Privacy &amp; Security → Open Anyway. Never disable Gatekeeper globally.</p></div><span class="scan-state">Once</span></li></ol></div></section>
+<section class="info-section"><div class="wrap"><div class="section-head"><p class="section-index">02 / Details</p><div><h2>A technical block ready to attach.</h2><p class="section-intro">It contains no personal path or scan data.</p></div></div><div class="support-tools"><div><pre class="tech-block" id="support-details">CoreTend {version}
+{dmg_name}
+minimum macOS: {minimum}
+architecture: {architecture}
+Developer ID: no
+notarized: no
+SHA-256: {checksum}</pre><button class="copy-button" type="button" data-copy-target="support-details">Copy technical information</button></div><ul class="link-stack"><li><a href="{REPOSITORY}/issues">Public issue tracker</a></li><li><a href="{REPOSITORY}/security/advisories/new">Private vulnerability report</a></li><li><a href="{REPOSITORY}/blob/main/Documentation/README.md">Documentation index</a></li></ul></div>
+<div class="faq"><details><summary>The app does not open after download</summary><p>Verify the checksum, try opening once, then use Open Anyway in Privacy &amp; Security. The expected rejection of an unnotarized build is not the same as a crash.</p></details><details><summary>A scan cannot see some folders</summary><p>Review exclusions and Full Disk Access. Grant only the permission required by the workflow you are using.</p></details><details><summary>What should a report include?</summary><p>The version, macOS release, architecture, affected module and reproducible steps. Remove personal file names from every screenshot.</p></details></div></div></section>"""
+
+
+def legal_content(release: dict, language: str) -> str:
+    if language == "fr":
+        hero = info_hero("legal", language, "Document public", "Des limites lisibles, même sur papier.", "CoreTend est un logiciel libre distribué sans compte ni abonnement. Cette page décrit le projet public et son mode de distribution actuel.", ["Apache-2.0", "Hébergement Vercel", "Hors Mac App Store"])
+        nav = [("project", "Projet"), ("distribution", "Distribution"), ("hosting", "Hébergement"), ("warranty", "Garanties")]
+        sections = f"""<section id="project"><h2>Projet et source</h2><p>Projet : CoreTend. Le code public, l’historique et le suivi des problèmes sont disponibles sur <a href="{REPOSITORY}">{REPOSITORY}</a>. Le code est distribué sous licence Apache-2.0.</p></section><section id="distribution"><h2>Distribution actuelle</h2><p>La version {html.escape(str(release['version']))} est distribuée hors du Mac App Store. Elle n’a pas de signature Developer ID et n’est pas notarisée. Cette mention ne revendique aucune certification ou approbation d’Apple.</p></section><section id="hosting"><h2>Site et hébergement</h2><p>Le site public est hébergé par Vercel Inc. Les fichiers de publication sont servis par GitHub. Consultez la page Confidentialité pour la frontière réseau vérifiée.</p></section><section id="warranty"><h2>Garanties et responsabilité</h2><p>Les conditions complètes figurent dans la licence Apache-2.0 versionnée avec le dépôt. L’interface explique les résultats avant une action, mais l’utilisateur reste responsable de la sélection validée.</p></section>"""
+    else:
+        hero = info_hero("legal", language, "Public document", "Readable limits, including on paper.", "CoreTend is free software distributed without an account or subscription. This page records the public project and its current distribution model.", ["Apache-2.0", "Hosted by Vercel", "Outside the Mac App Store"])
+        nav = [("project", "Project"), ("distribution", "Distribution"), ("hosting", "Hosting"), ("warranty", "Warranty")]
+        sections = f"""<section id="project"><h2>Project and source</h2><p>Project: CoreTend. Public source, history and issue tracking are available at <a href="{REPOSITORY}">{REPOSITORY}</a>. The code is distributed under Apache-2.0.</p></section><section id="distribution"><h2>Current distribution</h2><p>Version {html.escape(str(release['version']))} is distributed outside the Mac App Store. It has no Developer ID signature and is not notarized. This notice makes no claim of Apple certification or approval.</p></section><section id="hosting"><h2>Website and hosting</h2><p>Vercel Inc. hosts the public website. GitHub serves release files. See Privacy for the verified network boundary.</p></section><section id="warranty"><h2>Warranty and responsibility</h2><p>The complete terms remain in the Apache-2.0 license versioned with the repository. The interface explains findings before an action, but the user remains responsible for an approved selection.</p></section>"""
+    links = "".join(f'<li><a href="#{anchor}">{label}</a></li>' for anchor, label in nav)
+    return hero + f"""<section class="info-section"><div class="wrap doc-layout"><nav class="doc-nav" aria-label="{'Navigation du document' if language == 'fr' else 'Document navigation'}"><p>{'Dans ce document' if language == 'fr' else 'In this document'}</p><ol>{links}</ol></nav><article class="legal-doc">{sections}</article></div></section>"""
+
+
+def licenses_content(release: dict, language: str) -> str:
+    if language == "fr":
+        hero = info_hero("licenses", language, "Inventaire", "Chaque attribution reliée à sa source.", "L’application exécutable ne livre aucune bibliothèque tierce. Le site auto-héberge deux familles de caractères sous OFL-1.1.", ["Code Apache-2.0", "2 polices OFL-1.1", "Aucun moteur antivirus"])
+        label, placeholder, result = "Filtrer l’inventaire", "Nom, licence ou usage", "3 licences"
+        entries = [
+            ("CoreTend", "Apache-2.0 · code produit", f"Le code source CoreTend est distribué sous Apache-2.0. Consultez <a href=\"{REPOSITORY}/blob/main/LICENSE\">LICENSE</a>, <a href=\"{REPOSITORY}/blob/main/NOTICE\">NOTICE</a> et <a href=\"{REPOSITORY}/blob/main/THIRD_PARTY_NOTICES.md\">THIRD_PARTY_NOTICES.md</a>."),
+            ("Archivo", "SIL Open Font License 1.1 · site", "Archivo est auto-hébergée par le site. <a href=\"/assets/licenses/Archivo-OFL.txt\">Lire la licence incluse</a>. Source : <a href=\"https://github.com/Omnibus-Type/Archivo\">Omnibus-Type/Archivo</a>."),
+            ("IBM Plex Mono", "SIL Open Font License 1.1 · site", "IBM Plex Mono est auto-hébergée par le site. <a href=\"/assets/licenses/IBM-Plex-OFL.txt\">Lire la licence incluse</a>. Source : <a href=\"https://github.com/IBM/plex\">IBM/plex</a>."),
+        ]
+        build_note = "Swift Testing est une dépendance de test et dmgbuild un outil de packaging. Aucun des deux n’est embarqué dans CoreTend.app."
+    else:
+        hero = info_hero("licenses", language, "Inventory", "Every attribution linked to its source.", "The executable application ships no third-party runtime library. The website self-hosts two font families under OFL-1.1.", ["Apache-2.0 code", "2 OFL-1.1 fonts", "No antivirus engine"])
+        label, placeholder, result = "Filter inventory", "Name, license or use", "3 license entries"
+        entries = [
+            ("CoreTend", "Apache-2.0 · product code", f"CoreTend source is distributed under Apache-2.0. Read <a href=\"{REPOSITORY}/blob/main/LICENSE\">LICENSE</a>, <a href=\"{REPOSITORY}/blob/main/NOTICE\">NOTICE</a> and <a href=\"{REPOSITORY}/blob/main/THIRD_PARTY_NOTICES.md\">THIRD_PARTY_NOTICES.md</a>."),
+            ("Archivo", "SIL Open Font License 1.1 · website", "Archivo is self-hosted by the website. <a href=\"/assets/licenses/Archivo-OFL.txt\">Read the bundled license</a>. Source: <a href=\"https://github.com/Omnibus-Type/Archivo\">Omnibus-Type/Archivo</a>."),
+            ("IBM Plex Mono", "SIL Open Font License 1.1 · website", "IBM Plex Mono is self-hosted by the website. <a href=\"/assets/licenses/IBM-Plex-OFL.txt\">Read the bundled license</a>. Source: <a href=\"https://github.com/IBM/plex\">IBM/plex</a>."),
+        ]
+        build_note = "Swift Testing is a test dependency and dmgbuild is packaging tooling. Neither is embedded in CoreTend.app."
+    items = "".join(f"""<details class="license-item" data-license><summary><span class="license-name"><strong>{name}</strong><span>{meta}</span></span></summary><div class="license-body"><p>{body}</p></div></details>""" for name, meta, body in entries)
+    return hero + f"""<section class="info-section"><div class="wrap"><div class="section-head"><p class="section-index">01 / {'Registre' if language == 'fr' else 'Register'}</p><div><h2>{'Inventaire public vérifiable.' if language == 'fr' else 'A verifiable public inventory.'}</h2><p class="section-intro">{build_note}</p></div></div><div class="license-toolbar"><label class="field-label" for="license-filter">{label}<input id="license-filter" type="search" placeholder="{placeholder}" autocomplete="off"></label><p id="license-result" role="status">{result}</p></div><div class="license-list">{items}</div></div></section>"""
+
+
+def information_pages(release: dict) -> dict[str, str]:
+    pages: dict[str, str] = {}
+    definitions = {
+        "privacy": {
+            "en": ("Privacy — CoreTend", "Verified local processing and network boundaries for CoreTend.", privacy_content),
+            "fr": ("Confidentialité — CoreTend", "Limites vérifiées du traitement local et du réseau de CoreTend.", privacy_content),
+        },
+        "support": {
+            "en": ("Support — CoreTend", "Installation, diagnostics, verification and security support for CoreTend.", support_content),
+            "fr": ("Assistance — CoreTend", "Installation, diagnostic, vérification et assistance de sécurité pour CoreTend.", support_content),
+        },
+        "legal": {
+            "en": ("Legal notice — CoreTend", "Public project, distribution and hosting notice for CoreTend.", legal_content),
+            "fr": ("Mentions légales — CoreTend", "Informations publiques sur le projet, la distribution et l’hébergement de CoreTend.", legal_content),
+        },
+        "licenses": {
+            "en": ("Licenses — CoreTend", "Exact CoreTend code and website attribution inventory.", licenses_content),
+            "fr": ("Licences — CoreTend", "Inventaire exact des licences du code et du site CoreTend.", licenses_content),
+        },
+    }
+    for page, locales in definitions.items():
+        for language, (title, description, renderer) in locales.items():
+            canonical = route_for(page, language)
+            filename = f"fr-{page}.html" if language == "fr" else f"{page}.html"
+            pages[filename] = shell(
+                release,
+                page,
+                language,
+                title,
+                description,
+                canonical,
+                renderer(release, language),
+            )
+    return pages
+
+
+def not_found_page(release: dict) -> str:
+    content = info_hero(
+        "404",
+        "en",
+        "Route scan",
+        "This route is outside the map.<br>Cette route est hors carte.",
+        "The radar found no public destination at this address. Le radar ne trouve aucune destination publique à cette adresse.",
+        ["HTTP 404", "EN + FR", "No redirect"],
+    )
+    content = content.replace(
+        '<section class="info-hero">',
+        '<section class="not-found"><div class="wrap"><div class="info-copy"><div class="radar-search" aria-hidden="true"></div>',
+        1,
+    )
+    # info_hero carries its own two-column wrapper; use a purpose-built compact
+    # body for the error route so the footer still meets short viewports.
+    content = f"""<section class="not-found"><div class="wrap"><div class="radar-search" aria-hidden="true"></div><p class="eyebrow"><b>404</b> Route scan</p><h1>This route is outside the map.<br>Cette route est hors carte.</h1><p class="lead">The requested address does not exist. L’adresse demandée n’existe pas.</p><div class="action-row"><a class="primary-action" href="/en/">Return home · Retour à l’accueil</a><a class="secondary-action" href="/support">Support</a></div></div></section>"""
+    page = shell(
+        release,
+        "404",
+        "en",
+        "404 — CoreTend",
+        "The requested CoreTend route does not exist.",
+        "/404",
+        content,
+        robots="noindex, follow",
+    )
+    page = re.sub(r'\s*<link rel="canonical"[^>]*>', "", page)
+    page = re.sub(r'\s*<link rel="alternate"[^>]*>', "", page)
+    page = re.sub(r'\s*<meta property="og:url"[^>]*>', "", page)
+    return page
+
+
 def copy_assets(stage: Path) -> None:
     source = SITE_ROOT / "assets"
     destination = stage / "assets"
@@ -413,19 +741,39 @@ def copy_assets(stage: Path) -> None:
         if not source_license.is_file():
             raise SystemExit(f"missing required font license: {source_license}")
         shutil.copy2(source_license, license_destination / name)
-    (destination / "public.css").write_text(PUBLIC_CSS + "\n", encoding="utf-8")
 
 
 def write_favicon(stage: Path) -> None:
-    png = (SITE_ROOT / "assets" / "brand" / "favicon-32.png").read_bytes()
-    # ICO supports a PNG image payload.  The 22-byte header below describes a
-    # single 32x32, 32-bit entry followed by the original PNG bytes.
-    header = struct.pack("<HHHBBBBHHII", 0, 1, 1, 32, 32, 0, 0, 1, 32, len(png), 22)
-    (stage / "favicon.ico").write_bytes(header + png)
+    entries = []
+    for size in (16, 32):
+        png = (SITE_ROOT / "assets" / "brand" / f"favicon-v2-{size}.png").read_bytes()
+        entries.append((size, png))
+    offset = 6 + 16 * len(entries)
+    directory = [struct.pack("<HHH", 0, 1, len(entries))]
+    payload = []
+    for size, png in entries:
+        directory.append(
+            struct.pack("<BBBBHHII", size, size, 0, 0, 1, 32, len(png), offset)
+        )
+        payload.append(png)
+        offset += len(png)
+    (stage / "favicon.ico").write_bytes(b"".join(directory + payload))
 
 
 def write_documents(stage: Path, release: dict) -> None:
-    sitemap_paths = ("/", "/en/", "/fr/", "/privacy", "/support", "/legal", "/licenses")
+    sitemap_paths = (
+        "/",
+        "/en/",
+        "/fr/",
+        "/privacy",
+        "/support",
+        "/legal",
+        "/licenses",
+        "/fr/privacy",
+        "/fr/support",
+        "/fr/legal",
+        "/fr/licenses",
+    )
     sitemap = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -446,8 +794,18 @@ def write_documents(stage: Path, release: dict) -> None:
         "background_color": "#f4f4f0",
         "theme_color": "#1b45e0",
         "icons": [
-            {"src": "/assets/brand/favicon-180.png", "sizes": "180x180", "type": "image/png"},
-            {"src": "/assets/brand/favicon-512.png", "sizes": "512x512", "type": "image/png"},
+            {
+                "src": "/assets/brand/favicon-v2-192.png",
+                "sizes": "192x192",
+                "type": "image/png",
+                "purpose": "any",
+            },
+            {
+                "src": "/assets/brand/favicon-v2-512.png",
+                "sizes": "512x512",
+                "type": "image/png",
+                "purpose": "any",
+            },
         ],
     }
     (stage / "manifest.webmanifest").write_text(
@@ -484,9 +842,9 @@ def build(output: Path) -> None:
         release = load_release()
         copy_assets(stage)
 
-        root_page = build_landing(template, "en", "/", stage)
-        en_page = build_landing(template, "en", "/en/", stage)
-        fr_page = build_landing(template, "fr", "/fr/", stage)
+        root_page = build_landing(template, "en", "/", stage, release)
+        en_page = build_landing(template, "en", "/en/", stage, release)
+        fr_page = build_landing(template, "fr", "/fr/", stage, release)
         (stage / "index.html").write_text(root_page, encoding="utf-8")
         (stage / "en").mkdir()
         (stage / "fr").mkdir()
@@ -505,7 +863,7 @@ def build(output: Path) -> None:
 
         for name, page in information_pages(release).items():
             (stage / name).write_text(page, encoding="utf-8")
-        (stage / "404.html").write_text(not_found_page(), encoding="utf-8")
+        (stage / "404.html").write_text(not_found_page(release), encoding="utf-8")
         write_documents(stage, release)
         write_release_documents(stage)
         write_favicon(stage)

@@ -24,7 +24,13 @@ enum LocalizationManager {
     private static let storageKey = "appLanguage"
 
     static var language: AppLanguage {
-        AppLanguage(rawValue: UserDefaults.standard.string(forKey: storageKey) ?? "system") ?? .system
+        language(fromStoredValue: UserDefaults.standard.string(forKey: storageKey))
+    }
+
+    /// Pure parsing keeps fallback behavior testable without mutating the
+    /// process-wide UserDefaults domain while other Xcode tests run.
+    static func language(fromStoredValue value: String?) -> AppLanguage {
+        AppLanguage(rawValue: value ?? "system") ?? .system
     }
 
     /// The specific-language bundle to look strings up in, or nil to fall
@@ -42,6 +48,12 @@ enum LocalizationManager {
     }
 
     static func string(forKey key: String) -> String {
+        string(forKey: key, language: language)
+    }
+
+    /// Explicit-language lookup is used by tests and exports that must be
+    /// deterministic regardless of the test host's AppleLanguages setting.
+    static func string(forKey key: String, language: AppLanguage) -> String {
         (bundle(for: language) ?? Bundle.module).localizedString(forKey: key, value: key, table: "Localizable")
     }
 }
