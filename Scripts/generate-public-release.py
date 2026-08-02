@@ -56,6 +56,16 @@ PINNED_RELEASE_EVIDENCE: Mapping[str, Mapping[str, Mapping[str, Any]]] = {
             "size": 2_874_871,
         },
     },
+    "0.9.1-rc.5": {
+        "dmg": {
+            "sha256": "b654975770cc1bfeb7e6a4f3cf180653a3182a55f8dc135db2083a72528998eb",
+            "size": 4_703_523,
+        },
+        "zip": {
+            "sha256": "c3e2c58a1034a8654c931dabedd279b5b320abd03e84caa300bb9e53e83675ae",
+            "size": 2_857_653,
+        },
+    },
 }
 
 ALLOWED_SOURCE_KEYS = {
