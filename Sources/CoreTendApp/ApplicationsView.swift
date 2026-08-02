@@ -4,13 +4,67 @@ import SafetyCore
 import DesignSystem
 import Persistence
 
+/// Resolves every application-inventory root. Normal launches inspect the
+/// standard macOS locations. Test launches are confined to fixtures beneath a
+/// validated temporary store; an invalid override fails closed with no roots.
+struct ApplicationInventoryLocations {
+    let home: URL
+    let applicationRoots: [URL]
+    let systemLibrary: URL?
+    let caskroomRoots: [String]
+
+    static func resolve(
+        environment: [String: String],
+        realHome: URL = FileManager.default.homeDirectoryForCurrentUser
+    ) -> ApplicationInventoryLocations {
+        if TestStoreOverride.isTestMarkerSet(environment: environment) {
+            guard let temporaryRoot = TestStoreOverride.resolve(environment: environment).directory else {
+                return ApplicationInventoryLocations(
+                    home: URL(fileURLWithPath: "/dev/null"),
+                    applicationRoots: [],
+                    systemLibrary: nil,
+                    caskroomRoots: []
+                )
+            }
+            let fixtures = temporaryRoot.appendingPathComponent("ApplicationFixtures", isDirectory: true)
+            let fixtureHome = fixtures.appendingPathComponent("Home", isDirectory: true)
+            return ApplicationInventoryLocations(
+                home: fixtureHome,
+                applicationRoots: [
+                    fixtures.appendingPathComponent("Applications", isDirectory: true),
+                    fixtureHome.appendingPathComponent("Applications", isDirectory: true),
+                ],
+                systemLibrary: fixtures.appendingPathComponent("SystemLibrary", isDirectory: true),
+                caskroomRoots: [fixtures.appendingPathComponent("Caskroom", isDirectory: true).path]
+            )
+        }
+
+        return ApplicationInventoryLocations(
+            home: realHome,
+            applicationRoots: [
+                URL(fileURLWithPath: "/Applications", isDirectory: true),
+                realHome.appendingPathComponent("Applications", isDirectory: true),
+            ],
+            systemLibrary: URL(fileURLWithPath: "/Library", isDirectory: true),
+            caskroomRoots: HomebrewCaskIndex.caskroomRoots
+        )
+    }
+
+    var discovery: AppDiscovery {
+        AppDiscovery(home: home, applicationRoots: applicationRoots, systemLibrary: systemLibrary)
+    }
+}
+
 /// Real, non-invented update-mechanism detection shared by the Updates tab
 /// and the "by update state" grouping — one place reads Sparkle/App Store
 /// signals so both stay in sync.
 /// Built once per process — the Caskroom doesn't change mid-session, so we scan
 /// it lazily on first use rather than per app. A global `let` is initialized
 /// atomically and is Sendable.
-public let sharedCaskIndex = HomebrewCaskIndex.build()
+public let sharedCaskIndex: HomebrewCaskIndex = {
+    let locations = ApplicationInventoryLocations.resolve(environment: ProcessInfo.processInfo.environment)
+    return HomebrewCaskIndex.build(roots: locations.caskroomRoots)
+}()
 
 public enum AppUpdateSource: String, Sendable {
     case appStore = "App Store"
@@ -132,7 +186,13 @@ final class ApplicationsViewModel {
     var dryRun = true
     var grouping: AppGrouping = .none
 
-    private let discovery = AppDiscovery()
+    private let discovery: AppDiscovery
+
+    init(discovery: AppDiscovery = ApplicationInventoryLocations.resolve(
+        environment: ProcessInfo.processInfo.environment
+    ).discovery) {
+        self.discovery = discovery
+    }
 
     var filteredApps: [InstalledApp] {
         guard !searchText.isEmpty else { return apps }

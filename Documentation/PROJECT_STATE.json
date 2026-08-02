@@ -50,11 +50,11 @@
     "browser history/cookie removal in Privacy Cleaner (deliberately deferred: db corruption risk)"
   ],
   "tests": {
-    "passing": 332,
+    "passing": 335,
     "failing": 0,
-    "note": "332 @Test functions via Scripts/test.sh, including three fail-closed Integrity test-data isolation checks."
+    "note": "335 @Test functions via Scripts/test.sh, including fail-closed Integrity and application-inventory test-data isolation checks."
   },
-  "last_build": "Debug and Release builds are green with zero project warnings on the rc.4 release branch. Scripts/test.sh exercises 332 tests; the single Developer-ID-specific test is honestly skipped because no Developer ID Application identity exists. Xcode's package suite is green; eight XCUIApplication contracts skip because SwiftPM emits their target as a unit-test bundle, while artifact UI is exercised through the isolated live capture harness. Website QA covers 32 behavioral/accessibility gates and 79 visual fingerprints. Final DMG, publication and production evidence are recorded in GOLD_MASTER_STATUS.md.",
+  "last_build": "Debug and Release builds are green with zero project warnings on the rc.4 release branch. Scripts/test.sh exercises 335 tests; the single Developer-ID-specific test is honestly skipped because no Developer ID Application identity exists. Xcode's package suite is green; eight XCUIApplication contracts skip because SwiftPM emits their target as a unit-test bundle, while artifact UI is exercised through the isolated live capture harness. Website QA covers 32 behavioral/accessibility gates and 79 visual fingerprints. Final DMG, publication and production evidence are recorded in GOLD_MASTER_STATUS.md.",
   "next_goals": [
     "Publish and independently verify v0.9.1-rc.4, then atomically promote published-release.json and all public download metadata",
     "Obtain a Developer ID Application certificate and notarize a later distribution build",
