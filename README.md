@@ -17,10 +17,12 @@ signals; it is not malware detection. Example media uses the versioned,
 privacy-safe fixtures in `Resources/DemoFixtures/`.
 
 The current public release candidate is
-[`v0.9.1-rc.4`](https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.4),
-built from the tagged `main` commit that introduced the current Paper / Ink /
-Cobalt app and site. rc.3 remains available only as historical evidence and is
-not the recommended download.
+[`v0.9.1-rc.5`](https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.5),
+built from tagged `main` commit
+`efccece091ca793d8e176edf9249ec104332856a`. It removes the former selectable
+preview behavior: scans stay read-only, while eligible actions require review
+and explicit confirmation before they use the macOS Trash. rc.4 and earlier
+candidates remain available only as immutable historical evidence.
 
 [Product site](https://coretend.ahmetbsbnr.com) ·
 [Portfolio case study](https://ahmetbsbnr.com/en/projets/coretend/) ·
@@ -28,7 +30,7 @@ not the recommended download.
 
 ## Distribution status
 
-The `v0.9.1-rc.4` direct-distribution build is ad-hoc signed, not Developer ID
+The `v0.9.1-rc.5` direct-distribution build is ad-hoc signed, not Developer ID
 signed, and not notarized. Gatekeeper may block the first launch. Verify the
 published SHA-256, then use **System Settings → Privacy & Security → Open Anyway**.
 Never disable Gatekeeper globally or remove quarantine recursively.

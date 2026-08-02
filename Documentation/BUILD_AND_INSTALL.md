@@ -1,7 +1,7 @@
 # Build and install
 
 The current public release candidate is
-[`v0.9.1-rc.4`](https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.4).
+[`v0.9.1-rc.5`](https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.5).
 For an end-user install, download the DMG through
 [`https://coretend.ahmetbsbnr.com/download`](https://coretend.ahmetbsbnr.com/download),
 verify its SHA-256 against the release's `SHA256SUMS`, mount it and drag

@@ -1,6 +1,6 @@
 # KNOWN LIMITATIONS
 
-*Last re-verified against the v0.9.1-rc.4 release candidate, 2026-08-02.
+*Last re-verified against the v0.9.1-rc.5 release candidate, 2026-08-02.
 Historical descriptions remain below only where they explain a regression gate;
 the bullets at the top describe the current product.*
 
@@ -20,11 +20,12 @@ the bullets at the top describe the current product.*
   ClamAV/MalwareEngine integration was removed before rc.4.
 - Privileged helper not shipped (blocked: no Developer ID signing available in this
   environment).
-- **Visual QA capture: completed for the rc.4 release gate.** The application
-  extracted from the exact candidate DMG was launched against an isolated
-  temporary store and captured across Dashboard, Storage, Space Lens,
-  Duplicates, Applications, Integrity, Activity and Settings in English/dark
-  and French/light. The capture harness also forces appearance only when the
+- **Artifact UI QA: completed for the rc.5 release gate.** The application
+  extracted from the exact public DMG was launched against an isolated
+  temporary store in English/dark and French/light without an immediate crash;
+  the candidate-lineage UI campaign and behavior suite cover Dashboard,
+  Storage, Space Lens, Duplicates, Applications, Integrity, Activity and
+  Settings. The capture harness also forces appearance only when the
   two-key test-mode marker validates; normal launches cannot activate it.
   Applications and Integrity use temporary fixtures in test mode, so the
   evidence contains no inventory or file data from the build machine. The
