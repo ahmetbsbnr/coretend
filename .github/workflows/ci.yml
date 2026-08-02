@@ -77,10 +77,11 @@ jobs:
         # Skips the 50x soak; the full suite runs before a release.
         run: zsh Scripts/test-robustness.sh --quick
 
-      - name: Visual regression (72 captures, 9 viewports, FR+EN)
+      - name: Visual regression and Axe (79 captures, 7 viewports, FR+EN)
         run: |
-          npm install --no-save playwright pngjs
+          npm install --no-save playwright pngjs @axe-core/playwright
           npx playwright install --with-deps chromium
+          node Scripts/site/test-site.mjs
           node Scripts/visual/capture.mjs
 
       - name: Upload visual diffs when the gate fails
