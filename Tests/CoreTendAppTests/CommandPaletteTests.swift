@@ -23,7 +23,17 @@ struct CommandPaletteTests {
             #expect(!module.label.isEmpty)
             #expect(!module.systemImage.isEmpty)
         }
-        #expect(modules == [.smartCare, .cleanup, .spaceLens, .duplicates, .applications, .protection, .myActivity, .settings])
+        // .myClutter/.cloudCleanup/.performance were reconnected to the "more"
+        // sidebar group in the 2026-08-09 dead-module audit — each does
+        // something unique (large/old-files finder, cloud sync-state
+        // analysis, broken-LaunchAgent detection) so they were kept and
+        // re-wired rather than deleted. See Documentation/Audits/
+        // SESSION_2026-08-09_AUDIT.md.
+        #expect(modules == [
+            .smartCare, .cleanup, .spaceLens, .duplicates, .applications,
+            .myClutter, .cloudCleanup, .performance,
+            .protection, .myActivity, .settings,
+        ])
         #expect(Set(modules.map(\.rawValue)).count == modules.count)
     }
 }

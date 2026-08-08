@@ -28,6 +28,7 @@
 "sidebar.activity" = "Activité";
 "sidebar.storage" = "Stockage";
 "sidebar.system" = "Système";
+"sidebar.more" = "Plus";
 
 /* Placeholder */
 "placeholder.under_construction" = "Ce module est en construction. Il arrivera dans une prochaine version.";
@@ -609,3 +610,4 @@
 
 /* Space Lens idle */
 "spacelens.idle.tip" = "Code couleur par type : dossiers, médias, documents, archives et code.";
+"spacelens.favorites_recents" = "Favoris et récents";

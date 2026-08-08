@@ -144,3 +144,73 @@ judgment this environment does not have:
 
 These stay open. Nothing here should be read as "1.0 gates are green" —
 they are not.
+
+## 9. Follow-up: the three "dead" modules were not actually redundant
+
+Owner asked for a redundancy check on `PerformanceView`/`MyClutterView`/
+`CloudCleanupView` before any deletion. The check found each one owns real,
+non-duplicated capability:
+
+- **PerformanceView**: `LaunchAgentInspector` flags LaunchAgents whose
+  `Program`/`ProgramArguments` target no longer exists on disk — a broken
+  dead LaunchAgent. `IntegrityCore.LoginItemScanner` (used by the reachable
+  Integrity module) enumerates the same three directories but its
+  `LoginItem` struct carries no validity/broken field — it does not
+  duplicate this check. The rolling 60-sample CPU history chart also has no
+  equivalent (Dashboard shows only an instantaneous snapshot).
+- **MyClutterView**: wraps `DuplicatesView`/`SimilarImagesView` (already
+  reachable elsewhere — that part *is* redundant navigation, not redundant
+  code) around one genuinely unique tab, `LargeOldFilesView` — a
+  size/age-filtered file finder (QuickLook preview, exclusions, per-volume
+  filter) that `CleanupView` (Storage) does not have.
+- **CloudCleanupView**: local-vs-remote sync-state analysis for
+  iCloud Drive/Dropbox/Google Drive/OneDrive local caches. Nothing else in
+  the app inspects cloud-placeholder byte ratios.
+
+None were deleted. Per the owner's "no functionality is deleted only to
+tidy up" instruction, all three were **reconnected**: `SidebarGroup.all`
+gained a third, lower-priority "More" group (`sidebar.more`) holding
+`.myClutter`, `.cloudCleanup`, `.performance`, alongside the unchanged
+seven-module primary group. `CommandPaletteTests.everyModuleHasLabelAndIcon`
+asserted the exact prior 8-item visible list; its expectation was updated
+to the new 11-item list rather than left to rot.
+
+`FavoritesRecentsView` — real, tested, backed by `Persistence` — was
+similarly reconnected, but per the owner's explicit instruction, *not* as a
+14th sidebar item: it already only ever had one consumer
+(`SpaceLensView`, via the pre-existing `.mcOpenSpaceLensAt` notification),
+so it's now presented as a sheet from a new toolbar button in Space Lens
+(`spacelens.favoritesRecents.open`). Its `ModuleID` case, and the
+now-orphaned switch arms that referenced it, were removed — it was a
+standalone-module-shaped wrapper around something that was never meant to
+be a standalone module. `MCModuleIdentity.favoritesRecents` in the
+`DesignSystem` token catalog was left alone (harmless unused public
+constant in a library that's meant to enumerate identities, not itself
+evidence of a broken route).
+
+New regression test: `SidebarReachabilityTests` (`Tests/CoreTendAppTests/`)
+asserts `Set(ModuleID.allCases) == Set(SidebarGroup.visibleModules)` and
+that no module appears in two groups — the exact class of bug this session
+found (a case that compiles, has a live switch arm, and is invisible to the
+user) can no longer land silently.
+
+Two new localization keys, `sidebar.more` and
+`spacelens.favorites_recents`, were added to both `Base.lproj` and
+`fr.lproj` `Localizable.strings` (which are UTF-16BE — edited via a Python
+script that round-trips the encoding exactly, not a raw text edit, to avoid
+corrupting the file). All other strings used by the four views already
+existed with full en/fr parity before this session.
+
+`swift build` and `swift test` both green after these changes: 340/340
+tests pass (338 prior + 2 new `SidebarReachabilityTests`).
+
+## 10. TODO.md rewritten
+
+`TODO.md` no longer frames any item around ClamAV. The prior version is
+preserved verbatim at `Documentation/Archive/
+TODO_2026-08-08_pre-integritycore-cleanup.md`. The rewritten file keeps only
+genuinely open items (clean-Mac launch repro, DMG redesign, full client
+journey, crash-test matrix, GitHub attestation verification, portfolio-sync
+dry-run, interactive accessibility QA, RC republish-if-changed) and states
+plainly, again, that Developer ID Application is not installed and signing
+stays out of scope until 1.0.

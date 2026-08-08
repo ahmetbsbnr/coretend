@@ -192,6 +192,7 @@ struct SpaceLensView: View {
     @State private var searchText = ""
     @State private var categoryFilter: SpaceNodeCategory?
     @State private var exclusionsController = ClutterExclusionsController()
+    @State private var showFavoritesRecents = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -203,6 +204,30 @@ struct SpaceLensView: View {
             }
         }
         .navigationTitle(L("spacelens.title"))
+        .toolbar {
+            ToolbarItem {
+                Button {
+                    showFavoritesRecents = true
+                } label: {
+                    Label(L("spacelens.favorites_recents"), systemImage: "star")
+                }
+                .accessibilityIdentifier("spacelens.favoritesRecents.open")
+            }
+        }
+        // Favorites/Recents jumps back into Space Lens via .mcOpenSpaceLensAt
+        // (handled below), so it's presented from here rather than living as
+        // its own sidebar module.
+        .sheet(isPresented: $showFavoritesRecents) {
+            NavigationStack {
+                FavoritesRecentsView()
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button(L("common.done")) { showFavoritesRecents = false }
+                        }
+                    }
+            }
+            .frame(minWidth: 480, minHeight: 420)
+        }
         .task { await exclusionsController.load() }
         .confirmationDialog(
             model.pendingDelete.map { L("spacelens.delete.confirm_title", $0.name) } ?? "",
@@ -224,7 +249,10 @@ struct SpaceLensView: View {
             Text(L("spacelens.delete.error_message", model.lastDeleteError ?? ""))
         }
         .onReceive(NotificationCenter.default.publisher(for: .mcOpenSpaceLensAt)) { note in
-            if let url = note.object as? URL { model.start(url: url) }
+            if let url = note.object as? URL {
+                model.start(url: url)
+                showFavoritesRecents = false
+            }
         }
         .accessibilityIdentifier("spacelens.root")
     }
