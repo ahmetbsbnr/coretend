@@ -280,7 +280,6 @@ enum ModuleID: String, CaseIterable, Identifiable {
     case spaceLens = "Space Lens"
     case cloudCleanup = "Cloud Cleanup"
     case myActivity = "My Activity"
-    case favoritesRecents = "Favorites & Recents"
     case settings = "Settings"
 
     var id: String { rawValue }
@@ -297,7 +296,6 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .spaceLens: .spaceLens
         case .cloudCleanup: .cloudCleanup
         case .myActivity: .myActivity
-        case .favoritesRecents: .favoritesRecents
         case .settings: .settings
         }
     }
@@ -318,7 +316,6 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .spaceLens: L("spacelens.title")
         case .cloudCleanup: L("cloud.nav_title")
         case .myActivity: L("module.activity")
-        case .favoritesRecents: L("module.favorites_recents")
         case .settings: L("settings.nav_title")
         }
     }
@@ -334,6 +331,14 @@ struct SidebarGroup: Identifiable {
         SidebarGroup(id: "main", title: nil, modules: [.smartCare]),
         SidebarGroup(id: "storage", title: L("sidebar.storage"),
                      modules: [.cleanup, .spaceLens, .duplicates, .applications]),
+        // Secondary, lower-priority tools: each does something the seven
+        // primary modules above don't (broken-LaunchAgent detection, a
+        // large/old-files finder, local-vs-cloud storage analysis) so they
+        // stay reachable rather than deleted, but they aren't part of the
+        // compact primary architecture — see Documentation/Audits/
+        // SESSION_2026-08-09_AUDIT.md for the redundancy check that led here.
+        SidebarGroup(id: "more", title: L("sidebar.more"),
+                     modules: [.myClutter, .cloudCleanup, .performance]),
         SidebarGroup(id: "system", title: L("sidebar.system"),
                      modules: [.protection, .myActivity, .settings]),
     ]
@@ -387,8 +392,6 @@ struct MainWindow: View {
                 PerformanceView()
             case .spaceLens:
                 SpaceLensView()
-            case .favoritesRecents:
-                FavoritesRecentsView()
             case .myClutter:
                 MyClutterView()
             case .cloudCleanup:
