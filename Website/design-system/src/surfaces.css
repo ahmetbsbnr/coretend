@@ -569,3 +569,60 @@
   animation: ads-blink 1.1s steps(1) infinite;
 }
 
+
+/* ---------- late additions (parité CoreTend) ---------- */
+.rows div {
+  opacity: 0;
+  transform: translateY(7px);
+  transition: opacity 0.42s var(--ease-out), transform 0.42s var(--ease-out);
+}
+
+.rows div.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes ads-rowin {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+}
+
+.fr {
+  animation: ads-rowin 0.45s var(--ease-out) backwards;
+  animation-delay: var(--d, 0ms);
+}
+
+.term-body .l {
+  opacity: 0;
+  animation: ads-fade 0.3s forwards;
+}
+
+@keyframes ads-fade {
+  to {
+    opacity: 1;
+  }
+}
+
+html[data-theme="dark"] .dots i {
+  filter: saturate(0.85);
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) .dots i {
+    filter: saturate(0.85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rows div,
+  .term-body .l {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  .fr {
+    animation: none !important;
+  }
+}
