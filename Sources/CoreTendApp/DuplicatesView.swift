@@ -206,7 +206,14 @@ final class DuplicatesViewModel {
         return formatter
     }()
 
-    private static func csvField(_ value: String) -> String {
+    // Pure string escaping — touches no actor-isolated state, so it doesn't
+    // need MainActor isolation. Without `nonisolated`, Swift 6.0.3 (Xcode
+    // 16.2, the Compatibility Matrix floor) rejects passing this as a bare
+    // function reference to `.map` as a "main actor-isolated ... in a
+    // synchronous nonisolated context" error that Swift 6.1+ (Xcode 16.4,
+    // used by the green main CI) does not raise for the same code — a
+    // compiler-version isolation-inference gap, not a real data race.
+    private nonisolated static func csvField(_ value: String) -> String {
         let escaped = value.replacingOccurrences(of: "\"", with: "\"\"")
         return "\"\(escaped)\""
     }
