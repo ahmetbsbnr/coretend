@@ -22,34 +22,45 @@ carried forward.
    Console/crash logs, `codesign -dvvv`, `spctl --assess --verbose=4`,
    `otool -L`, `xattr -lr` before concluding cause (Gatekeeper vs. crash vs.
    missing resource vs. architecture — don't assume).
-2. **DMG visual redesign + capture.** Current DMG background/layout is
-   rejected. Rebuild with the CoreTend paper/ink/cobalt direction, verify
-   icon/window geometry at Retina and non-Retina, capture real screenshots.
+2. **DMG visual validation.** Narrowed by `Documentation/Audits/
+   DMG_PACKAGING_AUDIT.md` (2026-08-09): the packaging pipeline, geometry
+   and on-brand background artwork are all proven correct headlessly. What
+   remains is purely how it renders/feels in a real Finder window — icon
+   alignment, drag-and-drop feel — not a rebuild.
 3. **Full client journey.** Download → quarantine → mount → copy → first
    launch → Gatekeeper prompt → onboarding → scan → uninstall/reinstall, in
    both languages, with real screenshots — not simulated.
-4. **Crash-test matrix.** The ~40-scenario matrix (cold launches, killed
-   mid-scan, corrupted prefs/cache, permission denials, huge/Unicode/
-   symlinked/cyclic paths, unmounted volumes during scan, network-down
-   update checks, sleep/wake mid-operation, rapid relaunch) — none of it
-   deletes or touches real user data; use isolated temp dirs and a scratch
-   `HOME`.
-5. **GitHub attestation verification.** Download the public artifact, run
-   the official `gh attestation verify` command against the expected repo,
-   confirm it matches the tagged workflow/commit, keep the output.
-6. **Portfolio-sync workflow, run for real.** Trigger via
-   `workflow_dispatch` at least once; verify manifest fetch, no-op-when-
-   synced, controlled version bump, typecheck, build, conditional commit
-   (no commit loop), Vercel deploy, correct production version. A
-   workflow that has only ever been scheduled, never run, is not validated.
+4. **Crash-test matrix — mostly done.** Classified and executed in
+   `Documentation/Audits/CRASH_MATRIX_CLASSIFICATION.md` (2026-08-09):
+   31/40 items executed for real (`Scripts/test-robustness.sh` 31/31 PASS +
+   existing `swift test` coverage), 6 N/A (ClamAV), 3 honest gaps (disk-
+   nearly-full, CPU-under-load, timeout — feasible, not yet run), 2 need
+   real memory pressure/sleep-wake control, 2 need a display session.
+5. **GitHub attestation — dry run proven, real publish path still
+   unverified.** `release-draft.yml` now attests a real build (see
+   `SESSION_2026-08-09_AUDIT.md` §14) without publishing. What's still
+   open: running `gh attestation verify` against an actual tagged, published
+   release once one ships next.
+6. ~~Portfolio-sync workflow, run for real.~~ **Done 2026-08-09.** Already
+   supported `workflow_dispatch`; dispatched it for real, confirmed
+   already-in-sync (no-op, the correct outcome) — see
+   `SESSION_2026-08-09_AUDIT.md` §14.
 7. **Interactive accessibility QA.** VoiceOver, keyboard traversal, focus
    visibility, Dynamic Type — code-level accessibility is real (tests
    assert labels/contrast/Reduce Motion), but none of it has been observed
    interactively; this environment has no display session.
+8. **Smart Care: needs an explicit decision, not a default.** New finding,
+   `SESSION_2026-08-09_AUDIT.md` §14: `SmartCareView` is fully built,
+   tested and documented but wired to no `ModuleID` case at all — deeper
+   than the Performance/My Clutter/Cloud Cleanup case, and its own audit
+   was already archived, suggesting a past decision to supersede it with
+   Dashboard. The portfolio case study and `Documentation/SMART_CARE.md`
+   both still describe it as live. Decide: reconnect, formally retire the
+   docs/portfolio references, or rename — don't leave it ambiguous.
 
 ## Open — automatable, no second Mac needed
 
-8. **Publish a new RC if artifacts changed.** If app/bundle/DMG content
+9. **Publish a new RC if artifacts changed.** If app/bundle/DMG content
    changes, cut the next RC (don't silently replace a published one's
    assets); update SHA-256/Minisign/SBOM/attestation/release notes, and
    make sure site, portfolio and the in-app updater all point at it.

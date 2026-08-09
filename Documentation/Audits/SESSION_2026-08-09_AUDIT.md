@@ -305,3 +305,107 @@ directly in both workflow files). At head `43ad030`:
 | Vercel preview deploys (app, coretend) | ✅ pass — preview only, not production |
 
 Not merged. Not signed. Not notarized.
+
+## 14. Second pass — attestation, portfolio-sync, crash matrix, DMG, site/portfolio crawl
+
+Same day, follow-up instruction. Full detail in the dedicated files this
+section points to; summary here.
+
+**GitHub attestation.** `release.yml`'s `attest-build-provenance` step is
+welded to the tag-push publish path — no dry-run existed. Added the same
+step to `release-draft.yml` (artifacts-only, `id-token`/`attestations`
+scoped to that job alone, no `contents: write`, no tag, no GitHub Release).
+Dispatched it for real on `release/coretend-final` with a clearly-fake
+version label (`0.0.0-attestation-test`, chosen so it can never be mistaken
+for a real build) — commit `ed22e35`.
+
+**Portfolio-sync.** `sync-coretend.yml` already supports `workflow_dispatch`
+and already only commits on real drift from the live GitHub release —
+nothing to fix. `data/coretend-release.json` already matched the live
+`v0.9.1-rc.5` release before this session. Dispatched it for real: **no
+commit** (confirmed already in sync) — the safe, correct outcome, and the
+first real proof the workflow's wiring works (`TODO.md`'s old claim that it
+"never ran automatically" was itself stale — `gh run list` shows a
+successful scheduled run from 2026-08-03 predating this session).
+
+**Crash matrix.** Full classification of all 40 items in
+`Documentation/Audits/CRASH_MATRIX_CLASSIFICATION.md`: 31 executed for real
+this session (`Scripts/test-robustness.sh` full run — 31/31 PASS — plus
+`swift test`'s existing coverage), 6 N/A (ClamAV, retired), 3 honest gaps
+(disk-nearly-full, CPU-under-load, `URLSession` timeout — feasible,
+not run, not claimed done), 2 correctly needing a second Mac/host-level
+control (memory pressure, sleep/wake), 2 correctly needing a display
+session (extreme resize, multiple windows). No item defaulted to "needs a
+second Mac" without being checked.
+
+**DMG packaging.** Full detail in `Documentation/Audits/
+DMG_PACKAGING_AUDIT.md`. Real `hdiutil attach`/copy/`codesign`/detach cycle
+this session, plus the existing `test-dmg-layout.sh`/`test-dmg-headless.sh`
+gates, all pass. The `dmgbuild`-based (no Finder/AppleScript) mechanism is
+solid and already fixed the historical `0.9.1-rc.2` unstyled-DMG cause. The
+background artwork is real, on-brand, and already embeds an honest
+"Unsigned build" disclosure — visually inspected this session, not just
+existence-checked. What's still open is purely perceptual/visual judgment
+(icon-well alignment as Finder actually renders it, drag-and-drop feel) —
+narrower than "redesign the DMG," which the packaging evidence does not
+support as still being true.
+
+**Site gold-master parity.** Every element from the gold-master list
+(radar/arcs/grain/halo/hero-motion/magnetic buttons/app simulation/
+treemap/workflow/findings/gauges/sparklines/terminal/Gatekeeper
+scene/ticker/tilt/scramble/animated FAQ/light-dark/FR-EN/Reduce Motion) is
+present in `Website/index.html`/`Website/design-system/`. Per instruction,
+did **not** add Performance/My Clutter/Cloud Cleanup to the hero
+simulation — confirmed the hero shows exactly the 7 primary modules it
+already showed, and confirmed no "here are all of CoreTend's modules"
+completeness claim exists anywhere on the site to contradict that.
+
+**Production crawl.** All required routes 200 (`/`, `/en/`, `/fr/`,
+`/download`, `/privacy`, `/support`, plus `/legal`/`/licenses` and their
+`/fr/*` counterparts), unknown routes real 404 (not raw), correct
+self-referencing canonical + reciprocal hreflang + `x-default` on every
+page, zero dirty-path leaks (checked for `.html`/`/site/`/`/Website/`/
+`/public/`/`/dist/`/`localhost`/`/Users/`, the 3 `.html` hits were
+`<!doctype html>`/`<html>`/`</html>` boilerplate, not leaked paths),
+`/download` verified live-serving the real 4,703,523-byte DMG matching the
+known `v0.9.1-rc.5` `SHA256SUMS`.
+
+**Portfolio verification.** Case study text matches the real 7-module
+architecture, correctly states "neither a Developer ID signature nor Apple
+notarization" and frames Developer ID/notarization as future work, no
+ClamAV, `scripts/check-static.mjs` (51 checks) all pass. **New finding,
+not previously tracked**: `SmartCareView.swift` is a fully-built, tested,
+documented (`Documentation/SMART_CARE.md`) one-click orchestrator — but is
+not referenced by any `ModuleID` case at all (deeper than the
+Performance/My Clutter/Cloud Cleanup case: those still had a live switch
+arm, this has none). Its own audit was already archived to
+`Documentation/Archive/WorkspaceLegacy/SMART_CARE_AUDIT.md`, suggesting a
+past decision to supersede it with Dashboard — but the portfolio case
+study and the still-active `Documentation/SMART_CARE.md` both describe it
+in the present tense as if live. **Not touched** — this is a real product
+decision (reconnect vs. formally retire vs. rename), same category as the
+Performance/My Clutter/Cloud Cleanup question, not something to resolve
+unilaterally under time pressure. Flagged for an explicit owner decision.
+
+**Portfolio bug found and fixed** (separate from the above, on the
+portfolio repo, not CoreTend): `/fr/` and `/fr/projets/coretend/` (trailing
+slash) both returned a broken Next.js `__next_error__` shell instead of
+redirecting. Root cause: the portfolio site is `output: 'export'` (fully
+static, no server runtime); `next/navigation`'s `redirect()` cannot run
+under static export, so the two `app/fr/**/page.tsx` alias pages baked a
+broken shell into their generated HTML instead of redirecting — and that
+generated file then shadowed the already-correct `vercel.json` redirect
+rules that would otherwise have handled both paths correctly. Fix: deleted
+`app/fr/` (dead alias tree) so the working `vercel.json` rules take over.
+Verified locally: `next build` (static export) clean, `tsc --noEmit`
+clean, `npm test` (`scripts/check-static.mjs`, 51 checks) all pass.
+Committed `7408b65` on `fix/broken-fr-alias-routes`, opened as **draft PR
+https://github.com/ahmetbsbnr/ahmetbsbnrportfolio/pull/15**, not merged —
+same gate discipline as CoreTend's PR #13.
+
+**Documentation hierarchy.** Already matches the requested Product/
+Engineering/Design/Security/Testing/Release/Audits/Archive structure —
+`Documentation/README.md` is a pre-existing curated index, not built this
+session. `Scripts/check-markdown-links.py`: 0 broken internal links across
+222 tracked Markdown files. No restructure performed — none was needed;
+redoing sound existing work would have been the actual mistake here.
