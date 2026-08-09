@@ -214,3 +214,94 @@ journey, crash-test matrix, GitHub attestation verification, portfolio-sync
 dry-run, interactive accessibility QA, RC republish-if-changed) and states
 plainly, again, that Developer ID Application is not installed and signing
 stays out of scope until 1.0.
+
+## 11. Compatibility Matrix — root cause, fix, and confirmed green (resolved)
+
+Follow-up session, same day. The scheduled "Compatibility Matrix" workflow
+(`.github/workflows/compat-matrix.yml`, macos-14 + macos-15, both pinned to
+Xcode 16.2) had gone red 5 days earlier. Audited before touching anything:
+
+- **It was not a regression.** `gh run list --workflow "Compatibility
+  Matrix"` shows exactly **one run, ever** (2026-08-03, run `30803092967`),
+  and it failed. The workflow file's own header already said
+  `IMPLEMENTED_UNVERIFIED — never executed`. There was nothing green to
+  regress from.
+- **Root cause, both runners, identical**: `DuplicatesView.swift:184:34:
+  error: call to main actor-isolated static method 'csvField' in a
+  synchronous nonisolated context` — 40 identical diagnostics (one per
+  generic-specialization instantiation), same line, same message, macos-14
+  and macos-15 alike. `csvField` is a pure string-escaping `private static
+  func` inside `@MainActor final class DuplicatesViewModel`, called as
+  `.map(Self.csvField)`.
+- **Toolchain comparison** (all three checked directly, not assumed):
+  - Compat matrix: **Xcode 16.2, Swift 6.0.3** (confirmed from the failing
+    run's own "Toolchain versions" step output) — the one that fails.
+  - Main CI (`ci.yml`, green, no explicit Xcode pin): **Xcode 16.4, Swift
+    6.1.2** (confirmed from the last green run's `doctor.sh` output) — the
+    one that passes.
+  - Local dev machine: **Xcode 26.6, Swift 6.3.3** — also passes.
+  - Swift 6.0.3 treats extracting `Self.csvField` as a bare function value
+    (passed to `Array.map`) as crossing an actor-isolation boundary; 6.1.2
+    and 6.3.3 do not flag the same code. `exportCSV()` only ever runs
+    synchronously already on `MainActor` — this was never a real data race,
+    it's an isolation-inference gap between Swift point releases.
+  - Checked project-wide for the same pattern (`.map(Self.*)` etc.): one
+    other hit, `Persistence/Store.swift`'s `Self.locationRecord` — inside a
+    plain (non-`@MainActor`) `actor`, where static members are non-isolated
+    by default already. Different case, not affected, not touched.
+- **Is Xcode 16.2 still a deliberate floor?** Yes — kept, not raised.
+  `Package.swift` targets `swift-tools-version: 6.0` / macOS 14, and the
+  narrow inference gap is fully addressed by making the truly-unisolated
+  function's isolation explicit rather than compiler-inferred, which is
+  correct on every Swift 6.x compiler, not a version-specific workaround.
+  Raising the floor was considered and rejected: there was no evidence it
+  was needed once the source-level fix was verified.
+- **Fix**: marked `csvField` `nonisolated` (`Sources/CoreTendApp/
+  DuplicatesView.swift`, commit `43ad030`). No `continue-on-error`, no
+  matrix trimming, no workflow-level suppression — a one-line source fix at
+  the actual isolation boundary.
+- **Verified for real, not assumed**: local `swift build` / `swift build -c
+  release` / `swift test` (340/340) all green on Xcode 26.6 first (this
+  environment cannot reach Xcode 16.2 — no second Mac). Real proof came
+  from triggering the workflow itself via `workflow_dispatch` on
+  `release/coretend-final` (run `31283226551`): **both macos-14 and
+  macos-15 passed — Debug build, Tests, and Release build all green, on
+  the actual Xcode 16.2 / Swift 6.0.3 toolchain** — the workflow's first
+  ever green run.
+
+**Status: RESOLVED, not merely worked around.** Evidence:
+https://github.com/ahmetbsbnr/coretend/actions/runs/31283226551
+
+## 12. Branch state — no divergent history
+
+Checked directly (`git rev-parse`, `git log A..B`), not assumed:
+
+| Branch | HEAD (final) | Relative to `main` |
+|---|---|---|
+| `main` | `63cd103` | — |
+| `feat/design-system-foundation` | `43ad030` | 4 commits ahead, 0 commits main has that it lacks (linear, not diverged) |
+| `release/coretend-final` | `43ad030` | **identical** to `feat/design-system-foundation` — same commit |
+
+The two working branches were never divergent histories; `release/coretend
+-final` was cut from `feat/design-system-foundation` and every subsequent
+commit was made once and pushed to both, by design, not by accident. Once
+PR #13 merges, `feat/design-system-foundation` will be fully contained in
+`main` and can be deleted then — not now, per instruction. No commit exists
+on either branch that isn't on the other.
+
+## 13. Validation gate: PR #13 (draft, not merged)
+
+https://github.com/ahmetbsbnr/coretend/pull/13 — `release/coretend-final`
+→ `main`, **draft**, opened only because CI/Security don't run on a plain
+branch push (they trigger on `push:main` or `pull_request` only — checked
+directly in both workflow files). At head `43ad030`:
+
+| Check | Result |
+|---|---|
+| CI / build-and-test | ✅ pass (11m3s) |
+| CI / distribution-check | ✅ pass (1m26s) |
+| Security / checks | ✅ pass (12s) |
+| Compatibility Matrix (manual `workflow_dispatch`) | ✅ pass (both runners) |
+| Vercel preview deploys (app, coretend) | ✅ pass — preview only, not production |
+
+Not merged. Not signed. Not notarized.
