@@ -21,7 +21,8 @@ enum PermissionProbe {
     }
 
     static func openFullDiskAccessSettings() {
-        let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")!
+        guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")
+        else { return }
         NSWorkspace.shared.open(url)
     }
 }
@@ -306,7 +307,7 @@ struct OnboardingView: View {
         } label: {
             HStack(alignment: .top, spacing: MCSpacing.sm) {
                 Image(systemName: model.profile == p ? "largecircle.fill.circle" : "circle")
-                    .foregroundStyle(model.profile == p ? MCColor.coreMint : .secondary)
+                    .foregroundStyle(model.profile == p ? MCColor.teal : .secondary)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(L("onboarding.security.\(p.rawValue)")).font(MCFont.secondaryBody).bold()
                     Text(L("onboarding.security.\(p.rawValue)_detail"))
@@ -317,7 +318,7 @@ struct OnboardingView: View {
             }
             .padding(MCSpacing.sm)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(model.profile == p ? MCColor.coreMint.opacity(0.1) : Color.clear,
+            .background(model.profile == p ? MCColor.teal.opacity(0.1) : Color.clear,
                         in: RoundedRectangle(cornerRadius: MCRadius.small))
         }
         .buttonStyle(.plain)
@@ -538,7 +539,7 @@ struct OnboardingView: View {
         VStack(spacing: MCSpacing.sm) {
             Image(systemName: icon)
                 .font(.system(size: MCIconSize.emptyStateProminent, weight: .light))
-                .foregroundStyle(MCColor.coreMint)
+                .foregroundStyle(MCColor.teal)
                 .accessibilityHidden(true)
             Text(title).font(MCFont.heroTitle)
             Text(subtitle).font(MCFont.body).foregroundStyle(.secondary)
@@ -548,7 +549,7 @@ struct OnboardingView: View {
 
     private func bullet(_ icon: String, _ text: String) -> some View {
         HStack(alignment: .top, spacing: MCSpacing.xs) {
-            Image(systemName: icon).frame(width: 20).foregroundStyle(MCColor.coreMint)
+            Image(systemName: icon).frame(width: 20).foregroundStyle(MCColor.teal)
                 .accessibilityHidden(true)
             Text(text).font(MCFont.secondaryBody)
         }
