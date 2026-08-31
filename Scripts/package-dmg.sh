@@ -20,7 +20,16 @@ ARTIFACT_VERSION="${1:-0.8.1}"
 DMG_NAME="CoreTend-${ARTIFACT_VERSION}-arm64-unsigned.dmg"
 VOLNAME="CoreTend ${ARTIFACT_VERSION}"
 
-bash Scripts/package-local.sh
+# By default the app is (re)built so `package-dmg.sh` is self-contained. The
+# notarization flow needs the opposite: it has already built, Developer ID
+# signed and stapled build/CoreTend.app, and rebuilding here would replace that
+# signature with an ad-hoc one — leaving a DMG whose app has no notarization
+# ticket. `CORETEND_SKIP_APP_BUILD=1` reuses the bundle already on disk.
+if [ "${CORETEND_SKIP_APP_BUILD:-}" = "1" ] && [ -d "build/CoreTend.app" ]; then
+  echo "package-dmg.sh: reusing existing build/CoreTend.app (CORETEND_SKIP_APP_BUILD=1)"
+else
+  bash Scripts/package-local.sh
+fi
 
 APP="build/CoreTend.app"
 [ -d "$APP" ] || { echo "package-dmg.sh: app bundle not found at $APP"; exit 1; }
