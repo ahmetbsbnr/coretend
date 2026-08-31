@@ -32,8 +32,21 @@ cd "$(dirname "$0")/.."
 
 ARTIFACT_VERSION="${1:-$(/usr/bin/python3 -c "import json;print(json.load(open('Configuration/PublicIdentity.example.json'))['marketingVersion'])")}"
 BUILD_NUMBER="$(/usr/bin/python3 -c "import json;print(json.load(open('Configuration/PublicIdentity.example.json')).get('buildNumber', ''))")"
-ZIP_NAME="CoreTend-${ARTIFACT_VERSION}-arm64-unsigned.zip"
-DMG_NAME="CoreTend-${ARTIFACT_VERSION}-arm64-unsigned.dmg"
+
+# CORETEND_RELEASE_SIGNED=1 packages a real Developer ID signed + notarized +
+# stapled release: the `-unsigned` suffix is dropped, `signed`/`notarized` are
+# true in the manifest, and the ZIP/DMG are NOT rebuilt — they must already
+# exist in Release/, produced by Scripts/sign-and-notarize.sh, so the bytes
+# that carry the notarization ticket are the bytes that get checksummed and
+# published. Default (unset) is the historical unsigned flow, unchanged.
+SIGNED="${CORETEND_RELEASE_SIGNED:-0}"
+if [ "$SIGNED" = "1" ]; then
+  ZIP_NAME="CoreTend-${ARTIFACT_VERSION}-arm64.zip"
+  DMG_NAME="CoreTend-${ARTIFACT_VERSION}-arm64.dmg"
+else
+  ZIP_NAME="CoreTend-${ARTIFACT_VERSION}-arm64-unsigned.zip"
+  DMG_NAME="CoreTend-${ARTIFACT_VERSION}-arm64-unsigned.dmg"
+fi
 TEMPLATE="Release/latest.template.json"
 DIST="dist"
 
@@ -64,8 +77,22 @@ BUILD_DATE_UTC=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 BUILD_INVOCATION_ID=$(/usr/bin/uuidgen)
 
 # --- Build ----------------------------------------------------------------
-bash Scripts/package-zip.sh "$ARTIFACT_VERSION"
-bash Scripts/package-dmg.sh "$ARTIFACT_VERSION"
+if [ "$SIGNED" = "1" ]; then
+  # The signed artifacts are produced (and Apple-notarized) by
+  # Scripts/sign-and-notarize.sh. Rebuilding here would strip the signature
+  # and the stapled ticket, so this mode only verifies they are present.
+  for f in "Release/$ZIP_NAME" "Release/$DMG_NAME"; do
+    [ -f "$f" ] || { echo "build-release.sh: FAIL — $f not found. Run Scripts/sign-and-notarize.sh $ARTIFACT_VERSION <profile> first."; exit 1; }
+  done
+  if ! xcrun stapler validate "Release/$DMG_NAME" >/dev/null 2>&1; then
+    echo "build-release.sh: FAIL — Release/$DMG_NAME is not stapled. Re-run sign-and-notarize.sh."
+    exit 1
+  fi
+  echo "build-release.sh: signed mode — using notarized artifacts from Release/ (no rebuild)."
+else
+  bash Scripts/package-zip.sh "$ARTIFACT_VERSION"
+  bash Scripts/package-dmg.sh "$ARTIFACT_VERSION"
+fi
 
 mkdir -p "$DIST"
 
@@ -77,14 +104,30 @@ DMG_SIZE=$(stat -f%z "Release/$DMG_NAME")
 # --- Generate the manifest from the template ------------------------------
 /usr/bin/python3 - "$TEMPLATE" "$DIST" "$ARTIFACT_VERSION" "$ZIP_NAME" "$ZIP_SHA" "$ZIP_SIZE" \
   "$DMG_NAME" "$DMG_SHA" "$DMG_SIZE" "$SOURCE_COMMIT" "$RELEASE_TAG" \
-  "$BUILD_DATE_UTC" "$BUILD_INVOCATION_ID" "$TREE_STATE" "$BUILD_NUMBER" <<'PYEOF'
+  "$BUILD_DATE_UTC" "$BUILD_INVOCATION_ID" "$TREE_STATE" "$BUILD_NUMBER" "$SIGNED" <<'PYEOF'
 import json, sys
 (tpl_path, dist, version, zip_name, zip_sha, zip_size,
  dmg_name, dmg_sha, dmg_size, source_commit, release_tag,
- build_date, build_id, tree_state, build_number) = sys.argv[1:16]
+ build_date, build_id, tree_state, build_number, signed_flag) = sys.argv[1:17]
+signed = signed_flag == "1"
 
 with open(tpl_path) as f:
     tpl = json.load(f)
+
+if signed:
+    # A signed + notarized release: the manifest states it, and the "Gatekeeper
+    # will block" limitation is replaced with the notarized reality. The
+    # artifacts themselves were verified (stapler validate) before this point.
+    tpl["signed"] = True
+    tpl["notarized"] = True
+    lims = tpl.get("knownLimitations", [])
+    if lims and lims[0].startswith("Unsigned, not notarized"):
+        lims[0] = ("Developer ID signed (Team NSCUV5G738) and Apple-notarized; the app "
+                   "and DMG are stapled, so Gatekeeper opens them without an override step.")
+    tpl["knownLimitations"] = lims
+    for k in ("zipNamePattern", "dmgNamePattern"):
+        if k in tpl:
+            tpl[k] = tpl[k].replace("-arm64-unsigned.", "-arm64.")
 
 # The template documents which fields it must never carry. Enforce it, so a
 # hand-edited checksum can never silently win over a computed one.
