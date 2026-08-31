@@ -434,7 +434,7 @@ struct MainWindow: View {
             }
         }
         .background(MCColor.background)
-        .tint(MCColor.coreMint)
+        .tint(MCColor.teal)
     }
 
     private func sidebarRow(_ module: ModuleID) -> some View {
@@ -445,7 +445,7 @@ struct MainWindow: View {
         } icon: {
             Image(systemName: module.systemImage)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(isSelected ? MCColor.coreMint : Color.secondary)
+                .foregroundStyle(isSelected ? MCColor.teal : Color.secondary)
                 .frame(width: 20)
         }
         .padding(.vertical, 3)
@@ -453,7 +453,7 @@ struct MainWindow: View {
         .background {
             if isSelected {
                 RoundedRectangle(cornerRadius: MCRadius.small)
-                    .fill(MCColor.coreMint.opacity(0.12))
+                    .fill(MCColor.teal.opacity(0.12))
             }
         }
     }

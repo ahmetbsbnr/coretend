@@ -19,7 +19,7 @@ const SRC = join(ROOT, "src");
 const DIST = join(ROOT, "dist");
 
 const HEADER = `/* ============================================================
-   Ahmet Design System 1.0.0
+   Ahmet Design System 1.1.0
    Canonical visual language for ahmetbsbnr products.
    Source of truth: CoreTend product site (ahmetbsbnr/coretend,
    Website/index.html) at commit 63cd103.
