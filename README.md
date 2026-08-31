@@ -12,7 +12,13 @@ selection and explicit confirmation, then go to the Trash.
 
 The maintained branch contains the real Dashboard, Storage, Space Lens,
 Duplicates, Applications, Integrity and Activity workflows, plus Settings,
-onboarding, command palette and menu-bar status. Integrity reports native macOS
+onboarding, command palette and menu-bar status. A secondary "More" sidebar
+group holds My Clutter (large & old files), Cloud Cleanup and Performance —
+each does something the primary seven don't (a size/age file finder, local-
+vs-cloud storage analysis, and live CPU/memory history with broken-
+LaunchAgent detection), kept reachable rather than folded away. Favorites &
+Recent Locations is reachable from Space Lens's toolbar rather than as its
+own sidebar entry. Integrity reports native macOS
 signals; it is not malware detection. Example media uses the versioned,
 privacy-safe fixtures in `Resources/DemoFixtures/`.
 

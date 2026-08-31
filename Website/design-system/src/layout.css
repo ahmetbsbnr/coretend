@@ -1,0 +1,121 @@
+/* Ahmet Design System 1.0.0 — layout + couches ambiantes
+   Extrait du site CoreTend (ahmetbsbnr/coretend @ 63cd103). Apache-2.0.
+   Assemblage : node build.mjs → dist/ahmet-design.css. Ne pas éditer dist. */
+
+/* ---------- 04 layout ---------- */
+.wrap {
+  width: min(var(--wrap), calc(100% - 2 * var(--gut)));
+  margin-inline: auto;
+  position: relative;
+  z-index: 2;
+}
+
+.wrap.narrow {
+  width: min(var(--wrap-narrow), calc(100% - 2 * var(--gut)));
+}
+
+main {
+  position: relative;
+  z-index: 2;
+}
+
+section {
+  padding-block: clamp(72px, 10vw, 132px);
+  position: relative;
+}
+
+.rule {
+  height: 1px;
+  background: var(--line);
+  border: 0;
+  margin: 0;
+}
+
+
+/* ---------- 05 ambient layers ---------- */
+#field {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+#grain {
+  position: fixed;
+  inset: -12%;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.026;
+  background-image:
+    radial-gradient(circle at 17% 23%, var(--ink) 0 0.45px, transparent 0.7px),
+    radial-gradient(circle at 71% 61%, var(--ink) 0 0.4px, transparent 0.7px),
+    radial-gradient(circle at 43% 87%, var(--ink) 0 0.35px, transparent 0.65px);
+  background-size:
+    13px 17px,
+    19px 23px,
+    29px 31px;
+  animation: ads-grain 7s steps(6) infinite;
+}
+
+html[data-theme="dark"] #grain {
+  opacity: 0.05;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme]) #grain {
+    opacity: 0.05;
+  }
+}
+
+@keyframes ads-grain {
+  0% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-6%, 4%);
+  }
+  40% {
+    transform: translate(4%, -6%);
+  }
+  60% {
+    transform: translate(-3%, -3%);
+  }
+  80% {
+    transform: translate(6%, 3%);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+#spot {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s var(--ease);
+  background: radial-gradient(
+    340px circle at var(--mx, 50%) var(--my, 50%),
+    var(--cobalt-wash),
+    transparent 70%
+  );
+}
+
+body.pointer-fine #spot {
+  opacity: 1;
+}
+
+#progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  background: linear-gradient(90deg, var(--cobalt), var(--cobalt-lift));
+  z-index: 60;
+}
+
