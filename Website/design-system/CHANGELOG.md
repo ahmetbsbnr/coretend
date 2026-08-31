@@ -3,6 +3,28 @@
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le
 versionnement sémantique.
 
+## [1.1.0] - 2026-08-31
+
+### Modifié
+
+- **Nouvelle identité visuelle « Porcelaine ».** Le système passe de
+  Paper/Ink/Cobalt (`#F4F4F0` / `#17191D` / `#2240E2`) à
+  Porcelaine/Ardoise/Teal (`#F6F4EF` / `#1B1E22` / `#0B6E6C`, teal clair
+  `#5FD3C6` sur fond sombre). Seules les **valeurs** des tokens changent ;
+  les noms (`--paper`, `--ink`, `--cobalt`, `--cobalt-deep`, `--cobalt-lift`,
+  `--cobalt-wash`, `--sweep`) sont conservés pour une adoption sans
+  renommage côté consommateurs.
+- Contraste re-vérifié : teal ~5,5:1 sur porcelaine, teal clair ~9,3:1 sur
+  ardoise, `--critical` / `--caution` clairs ≥ 4,5:1.
+- `.term` et `.local-log` (chrome terminal, toujours sombre) réalignés sur la
+  nouvelle ardoise ; pastilles de fenêtre macOS inchangées.
+- `dist/ahmet-design.css` régénéré via `node build.mjs`.
+
+### Inchangé
+
+- Structure des tokens, rayons, `--wrap`, polices (Archivo + IBM Plex Mono),
+  easings, tokens de motion, breakpoints, API JS.
+
 ## [1.0.0] - 2026-08-05
 
 ### Ajouté

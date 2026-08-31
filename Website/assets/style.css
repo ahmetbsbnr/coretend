@@ -97,17 +97,17 @@
 
 /* ----------------------------------------------------------------- tokens */
 :root {
-  --paper: #f4f4f0;
-  --card: #fcfcfa;
-  --ink: #17191d;
-  --sub: #494e57;
-  --dim: #6b7079;
-  --line: #deded7;
-  --line-strong: #b9b9b0;
-  --cobalt: #2240e2;
-  --cobalt-deep: #182fb2;
+  --paper: #f6f4ef;
+  --card: #fffdf8;
+  --ink: #1b1e22;
+  --sub: #4a535f;
+  --dim: #5b6470;
+  --line: #e0dccf;
+  --line-strong: #b6b1a0;
+  --cobalt: #0b6e6c;
+  --cobalt-deep: #08514f;
   --ok: #1e7a44;
-  --err: #b3261e;
+  --err: #b83c33;
 
   --rail: 264px;
   --measure: 1100px;

@@ -448,8 +448,8 @@ def public_head(
 <title>{html.escape(title)}</title>
 <meta name="description" content="{html.escape(description, quote=True)}">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f4f4f0">
-<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0d0f13">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f6f4ef">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#16191e">
 <meta name="robots" content="{robots}">
 <link rel="canonical" href="{ORIGIN}{canonical}">
 <link rel="alternate" hreflang="en" href="{ORIGIN}{alternate_en}">
@@ -798,7 +798,7 @@ def write_documents(stage: Path, release: dict) -> None:
         "id": "/",
         "start_url": "/",
         "display": "browser",
-        "background_color": "#f4f4f0",
+        "background_color": "#f6f4ef",
         "theme_color": "#1b45e0",
         "icons": [
             {

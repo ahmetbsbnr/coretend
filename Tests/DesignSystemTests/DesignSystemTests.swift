@@ -50,7 +50,7 @@ struct BloomGeometryTests {
 struct ColorTests {
     /// Light and dark variants must actually differ (adaptive check).
     @Test func brandColorsAdapt() {
-        for color in [MCColor.coreMint, MCColor.ionViolet, MCColor.solarAmber, MCColor.pulseCoral] {
+        for color in [MCColor.teal, MCColor.graphite, MCColor.amber, MCColor.coral] {
             let ns = NSColor(color)
             var light = NSColor.black, dark = NSColor.black
             NSAppearance(named: .aqua)!.performAsCurrentDrawingAppearance {
@@ -71,7 +71,7 @@ struct ColorTests {
     /// literals that never changed between light/dark. Now real adaptive
     /// tokens; must pass the same check as the brand palette.
     @Test func categoryColorsAdapt() {
-        for color in [MCColor.novaMagenta, MCColor.glacierBlue, MCColor.mossGreen] {
+        for color in [MCColor.cellTealDeep, MCColor.cellGraphite, MCColor.cellTealPale] {
             let ns = NSColor(color)
             var light = NSColor.black, dark = NSColor.black
             NSAppearance(named: .aqua)!.performAsCurrentDrawingAppearance {
@@ -85,7 +85,7 @@ struct ColorTests {
     }
 
     @Test func categoryColorsAreMutuallyDistinct() {
-        let colors = [MCColor.novaMagenta, MCColor.glacierBlue, MCColor.mossGreen]
+        let colors = [MCColor.cellTealDeep, MCColor.cellGraphite, MCColor.cellTealPale]
         let hexes = Set(colors.map { NSColor($0).usingColorSpace(.sRGB) ?? NSColor($0) })
         #expect(hexes.count == colors.count, "category colors must be visually distinguishable from each other")
     }
@@ -134,7 +134,7 @@ struct BrandResourceTests {
     }
 }
 
-@Suite("Paper/Ink/Cobalt palette contrast")
+@Suite("Porcelain/Slate/Teal palette contrast")
 struct PaletteContrastTests {
     /// WCAG 2.1 relative luminance.
     private static func luminance(_ c: (Double, Double, Double)) -> Double {
@@ -151,8 +151,8 @@ struct PaletteContrastTests {
     }
 
     /// The dark-surface accents are only defensible if they're actually
-    /// readable on Ink. Amber/coral are unchanged from the pre-re-skin
-    /// palette; cobaltBright is the brightened Ink sibling of the brand blue.
+    /// readable on Slate. `cobaltBright` is the brightened Slate sibling of
+    /// the brand teal; amber/coral are functional (non-brand) hues.
     @Test func darkSurfaceAccentsAreReadableOnInk() {
         let ink = MCColor.Canonical.ink
         for (name, value) in [
