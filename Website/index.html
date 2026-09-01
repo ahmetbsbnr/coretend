@@ -362,6 +362,14 @@ p{margin:0}
 /* ---------- modules ---------- */
 .modules{list-style:none;margin:0;padding:0;display:grid;gap:14px;
   grid-template-columns:repeat(auto-fill,minmax(232px,1fr))}
+.shots{display:grid;gap:16px;margin-top:44px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.shot{margin:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel);
+  box-shadow:var(--shadow-lift);transition:transform .4s var(--ease),box-shadow .4s var(--ease)}
+.shot:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.shot img{display:block;width:100%;height:auto;aspect-ratio:2024/1488;object-fit:cover;
+  border-bottom:1px solid var(--line)}
+.shot figcaption{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ink-3);
+  padding:10px 14px}
 .mod{position:relative;border:1px solid var(--line);border-radius:var(--r);padding:20px 18px 18px;
   background:var(--panel);overflow:hidden;transform-style:preserve-3d;
   transition:transform .4s var(--ease),border-color .4s,box-shadow .4s}
@@ -805,6 +813,20 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
       <li class="mod" data-tilt data-reveal><span class="k">Record</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Activité">Activity</h3><p data-fr="Jusqu'à 500 activités locales agrégées, avec filtres, journal de sécurité et exports CSV ou JSON.">Up to 500 aggregate local activities, with filters, safety log and CSV or JSON exports.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Control</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Réglages">Settings</h3><p data-fr="Langue, menu bar, exclusions, diagnostic, onboarding et vérification manuelle des mises à jour.">Language, menu bar, exclusions, diagnostics, onboarding and manual update checking.</p></li>
     </ul>
+    <div class="shots" data-reveal>
+      <figure class="shot">
+        <img src="/assets/app/smart-care.webp" width="2024" height="1488" loading="lazy" alt="CoreTend dashboard — disk-usage ring, a large scan action and shortcuts into every workflow">
+        <figcaption data-fr="Tableau de bord — l'analyse du stockage au centre">Dashboard — the storage scan at the centre</figcaption>
+      </figure>
+      <figure class="shot">
+        <img src="/assets/app/space-lens.webp" width="2024" height="1488" loading="lazy" alt="CoreTend Space Lens — a radial size map with the largest folder in the middle">
+        <figcaption data-fr="Space Lens — carte de tailles radiale">Space Lens — the radial size map</figcaption>
+      </figure>
+      <figure class="shot">
+        <img src="/assets/app/cleanup.webp" width="2024" height="1488" loading="lazy" alt="CoreTend Storage scan review — every candidate listed with its path and size before anything moves">
+        <figcaption data-fr="Stockage — chaque élément relu avant tout déplacement">Storage — every item reviewed before it moves</figcaption>
+      </figure>
+    </div>
   </div>
 </section>
 
