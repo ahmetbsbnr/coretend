@@ -143,7 +143,7 @@ struct DashboardView: View {
                 HStack(alignment: .firstTextBaseline) {
                     Image(systemName: icon)
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(primary ? MCColor.coreMint : .secondary)
+                        .foregroundStyle(primary ? MCColor.teal : .secondary)
                         .frame(width: 24)
                     Text(title)
                         .font(MCFont.cardTitle)
@@ -170,7 +170,7 @@ struct DashboardView: View {
     private func statusPill(_ title: String, value: String, icon: String, attention: Bool) -> some View {
         HStack(spacing: MCSpacing.xs) {
             Image(systemName: attention ? "exclamationmark.triangle.fill" : icon)
-                .foregroundStyle(attention ? MCTheme.warning : MCColor.coreMint)
+                .foregroundStyle(attention ? MCTheme.warning : MCColor.teal)
                 .frame(width: 18)
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)

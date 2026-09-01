@@ -225,8 +225,8 @@ struct SimilarImagesView: View {
                                         Text(L("similar.best_resolution"))
                                             .font(.caption2.weight(.semibold))
                                             .padding(.horizontal, MCSpacing.xxs).padding(.vertical, 1)
-                                            .background(MCColor.coreMint.opacity(0.18), in: Capsule())
-                                            .foregroundStyle(MCColor.coreMint)
+                                            .background(MCColor.teal.opacity(0.18), in: Capsule())
+                                            .foregroundStyle(MCColor.teal)
                                     }
                                     Spacer()
                                     Button {

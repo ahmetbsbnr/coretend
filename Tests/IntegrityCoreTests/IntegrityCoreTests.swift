@@ -187,34 +187,74 @@ struct CodeSignInspectorTests {
 
     @Test(
         "a Developer ID / other team-signed binary is reported teamSigned",
-        .enabled(if: hasNonAppleCodesigningIdentity(), "requires a non-Apple codesigning identity in the keychain — none installed in this environment (see Documentation/HUMAN_BLOCKERS.md, Configuration/DeveloperID/)")
+        .enabled(if: hasNonAppleCodesigningIdentity(), "requires a real non-Apple (Developer ID Application) identity in the login keychain — see Documentation/SIGNING_NOTARIZATION.md")
     )
     func teamSignedBinary() throws {
-        // Intentionally has no fixture-construction code: the whole point of
-        // this test is that it can only run against a real, keychain-resident,
-        // non-Apple signing identity, which this environment does not have.
-        // Faking one would test nothing real; skipping honestly is the correct
-        // outcome until Configuration/DeveloperID's CSR becomes an installed
-        // Developer ID Application certificate.
-        Issue.record("This test should have been skipped by .enabled(if:) — it cannot construct its own signing identity.")
+        // Runs only against a real, keychain-resident Developer ID Application
+        // identity (installed 2026-08-31, Team NSCUV5G738). It signs a
+        // throwaway copy of a system binary with that identity and checks the
+        // inspector classifies it as team-signed — the one path that cannot be
+        // exercised with a self-constructed (ad-hoc) signature.
+        let identity = try #require(
+            developerIDIdentityHash(),
+            "hasNonAppleCodesigningIdentity() was true but no identity hash could be parsed from `security find-identity`")
+
+        let file = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.copyItem(at: URL(fileURLWithPath: "/bin/echo"), to: file)
+        defer { try? FileManager.default.removeItem(at: file) }
+
+        let sign = Process()
+        sign.executableURL = URL(fileURLWithPath: "/usr/bin/codesign")
+        // --timestamp=none keeps the test offline; the signature still
+        // validates locally, which is all the inspector checks.
+        sign.arguments = ["--force", "--timestamp=none", "--sign", identity, file.path]
+        sign.standardOutput = FileHandle.nullDevice
+        sign.standardError = FileHandle.nullDevice
+        try sign.run()
+        sign.waitUntilExit()
+        try #require(sign.terminationStatus == 0, "codesign with the Developer ID identity failed")
+
+        let info = CodeSignInspector.inspect(at: file)
+        #expect(info.tier == .teamSigned)
+        #expect(info.signatureValid == true)
+        #expect(info.teamIdentifier?.isEmpty == false)
     }
 }
 
-/// True when a real Developer ID Application identity is installed. An ad-hoc
-/// identity is intentionally not sufficient: it cannot exercise the team
-/// signed path and would make the test record a false failure.
-private func hasNonAppleCodesigningIdentity() -> Bool {
+/// `security find-identity -v -p codesigning` output, or "" if it can't run.
+private func codesigningIdentityListing() -> String {
     let task = Process()
     task.executableURL = URL(fileURLWithPath: "/usr/bin/security")
     task.arguments = ["find-identity", "-v", "-p", "codesigning"]
     let pipe = Pipe()
     task.standardOutput = pipe
     task.standardError = FileHandle.nullDevice
-    guard (try? task.run()) != nil else { return false }
+    guard (try? task.run()) != nil else { return "" }
     let data = pipe.fileHandleForReading.readDataToEndOfFile()
     task.waitUntilExit()
-    let output = String(data: data, encoding: .utf8) ?? ""
-    return output.contains("Developer ID Application")
+    return String(data: data, encoding: .utf8) ?? ""
+}
+
+/// True when a real Developer ID Application identity is installed. An ad-hoc
+/// identity is intentionally not sufficient: it cannot exercise the team
+/// signed path and would make the test record a false failure.
+private func hasNonAppleCodesigningIdentity() -> Bool {
+    codesigningIdentityListing().contains("Developer ID Application")
+}
+
+/// SHA-1 hash of the first installed "Developer ID Application" identity —
+/// `codesign --sign <hash>` is unambiguous where a name substring might not be.
+private func developerIDIdentityHash() -> String? {
+    for line in codesigningIdentityListing().split(separator: "\n")
+    where line.contains("Developer ID Application") {
+        // e.g. `  1) 7C0509C6... "Developer ID Application: … (TEAMID)"`
+        let fields = line.split(separator: " ", omittingEmptySubsequences: true)
+        if fields.count >= 2, fields[1].count == 40,
+           fields[1].allSatisfy(\.isHexDigit) {
+            return String(fields[1])
+        }
+    }
+    return nil
 }
 
 @Suite("LoginItemScanner")

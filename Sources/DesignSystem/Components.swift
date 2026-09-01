@@ -12,7 +12,7 @@ public struct MCModuleIdentity: Sendable {
         self.color = color
     }
 
-    public static let smartCare = MCModuleIdentity(icon: "circle.hexagonpath", color: MCColor.coreMint)
+    public static let smartCare = MCModuleIdentity(icon: "circle.hexagonpath", color: MCColor.teal)
     public static let cleanup = MCModuleIdentity(icon: "sparkles", color: MCColor.storage)
     public static let protection = MCModuleIdentity(icon: "checkerboard.shield", color: MCColor.protection)
     public static let performance = MCModuleIdentity(icon: "waveform.path.ecg", color: MCColor.performance)
@@ -59,7 +59,7 @@ public enum MCStatus {
     var color: Color {
         switch self {
         case .neutral: .secondary
-        case .active: MCColor.coreMint
+        case .active: MCColor.teal
         case .success: MCColor.success
         case .attention: MCColor.attention
         case .error: MCColor.destructive
@@ -256,7 +256,7 @@ public struct MCFeatureRow: View {
     private let iconColor: Color
 
     public init(_ title: String, subtitle: String? = nil, icon: String,
-                iconColor: Color = MCColor.coreMint) {
+                iconColor: Color = MCColor.teal) {
         self.title = title
         self.subtitle = subtitle
         self.icon = icon
