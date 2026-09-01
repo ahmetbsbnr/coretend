@@ -151,15 +151,14 @@ struct SimilarImagesView: View {
                     actionTitle: L("similar.analyze")) { model.start() }
                     .accessibilityIdentifier("similar.scan.start")
             case let .scanning(processed, total):
-                VStack(spacing: MCSpacing.md) {
-                    if total > 0 {
-                        ProgressView(value: Double(processed), total: Double(total))
-                            .frame(width: 260)
-                        Text(L("similar.analyzing", processed, total)).monospacedDigit()
-                    } else {
-                        ProgressView()
-                        Text(L("similar.collecting"))
+                VStack(spacing: MCSpacing.lg) {
+                    MCScanStage(isScanning: !model.isPaused,
+                                fraction: total > 0 ? Double(processed) / Double(total) : nil) {
+                        Text(total > 0 ? L("similar.analyzing", processed, total) : L("similar.collecting"))
+                            .monospacedDigit()
                     }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(total > 0 ? L("similar.analyzing", processed, total) : L("similar.collecting"))
                     if model.isPaused {
                         Button(L("common.resume")) { model.resumeScan() }
                             .keyboardShortcut("r", modifiers: [])

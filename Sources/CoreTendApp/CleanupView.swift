@@ -249,12 +249,12 @@ struct CleanupView: View {
     // MARK: - Scanning
 
     private var scanningView: some View {
-        VStack(spacing: MCSpacing.md) {
-            MCFragmentView(groupWeights: model.normalizedGroupWeights, phase: .scanning)
-                .frame(width: 120, height: 120)
-                .accessibilityLabel(MCFragmentView(groupWeights: [], phase: .scanning).accessibilityDescription)
-            Text(L("cleanup.scanning_progress", model.scannedCount, mcFormatBytes(model.totalBytes)))
-                .monospacedDigit()
+        VStack(spacing: MCSpacing.lg) {
+            MCScanStage(isScanning: !model.isScanPaused) {
+                Text(L("cleanup.scanning_progress", model.scannedCount, mcFormatBytes(model.totalBytes)))
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(L("cleanup.scanning_progress", model.scannedCount, mcFormatBytes(model.totalBytes)))
             HStack(spacing: MCSpacing.sm) {
                 if model.isScanPaused {
                     Button(L("common.resume")) { model.resumeScan() }

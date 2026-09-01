@@ -137,8 +137,12 @@ struct PrivacyCleanerView: View {
         VStack(spacing: 0) {
             switch model.phase {
             case .scanning:
-                VStack(spacing: MCSpacing.sm) {
-                    ProgressView(L("privacy.detecting"))
+                VStack(spacing: MCSpacing.lg) {
+                    MCScanStage(isScanning: !model.isPaused) {
+                        Text(L("privacy.detecting"))
+                    }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(L("privacy.detecting"))
                     if model.isPaused {
                         Button(L("common.resume")) { model.resumeScan() }
                             .keyboardShortcut("r", modifiers: [])
