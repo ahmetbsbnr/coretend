@@ -250,11 +250,23 @@ struct DuplicatesView: View {
     }
 
     private var idleView: some View {
-        MCEmptyState(
-            icon: "doc.on.doc.fill", title: L("dupes.idle.title"), message: L("dupes.idle.subtitle"),
-            iconColor: MCTheme.accentSecondary, iconSize: MCIconSize.emptyStateProminent,
-            actionTitle: L("dupes.find")) { model.start() }
-            .accessibilityIdentifier("duplicates.scan.start")
+        VStack(spacing: MCSpacing.xl) {
+            VStack(spacing: MCSpacing.xs) {
+                Text(L("dupes.idle.title"))
+                    .font(MCFont.pageTitle)
+                    .multilineTextAlignment(.center)
+                Text(L("dupes.idle.subtitle"))
+                    .font(MCFont.secondaryBody)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: 460)
+            }
+            MCScanButton(L("dupes.find"), systemImage: "doc.on.doc.fill") { model.start() }
+                .accessibilityIdentifier("duplicates.scan.start")
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(MCSpacing.xl)
     }
 
     private func scanningView(_ processed: Int, _ total: Int) -> some View {

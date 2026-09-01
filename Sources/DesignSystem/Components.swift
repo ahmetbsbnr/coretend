@@ -343,6 +343,62 @@ public extension View {
     func mcCanvasBackground() -> some View { modifier(MCCanvasBackground()) }
 }
 
+// MARK: - Scan button
+
+/// The large circular "start" control for a module's landing state — the one
+/// unmistakable focal action on the screen. A filled teal disc with an icon
+/// over a short label, a soft teal glow, and a small hover lift (transform +
+/// shadow only; still under Reduce Motion). Not decoration: it is the primary
+/// button, sized to match its importance.
+public struct MCScanButton: View {
+    private let title: String
+    private let systemImage: String
+    private let action: () -> Void
+
+    @State private var hovering = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isEnabled) private var isEnabled
+
+    public init(_ title: String, systemImage: String = "sparkles", action: @escaping () -> Void) {
+        self.title = title
+        self.systemImage = systemImage
+        self.action = action
+    }
+
+    public var body: some View {
+        Button(action: action) {
+            VStack(spacing: MCSpacing.xs) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 28, weight: .semibold))
+                Text(title)
+                    .font(.headline)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
+            }
+            .foregroundStyle(.white)
+            .padding(MCSpacing.md)
+            .frame(width: 136, height: 136)
+            .background(
+                Circle().fill(
+                    RadialGradient(
+                        colors: [MCColor.teal, MCColor.teal.opacity(0.82)],
+                        center: UnitPoint(x: 0.4, y: 0.32), startRadius: 2, endRadius: 118)))
+            .overlay(Circle().strokeBorder(.white.opacity(0.16), lineWidth: 1))
+            .shadow(color: MCColor.teal.opacity(hovering ? 0.5 : 0.34),
+                    radius: hovering ? 26 : 18, x: 0, y: 6)
+            .scaleEffect(hovering && !reduceMotion ? 1.03 : 1)
+            .opacity(isEnabled ? 1 : 0.5)
+        }
+        .buttonStyle(.plain)
+        .onHover { h in
+            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) { hovering = h }
+        }
+        .accessibilityLabel(title)
+        .accessibilityAddTraits(.isButton)
+    }
+}
+
 // MARK: - Feature row (module landing states)
 
 /// A feature/capability row for module idle states — icon + title + optional subtitle.

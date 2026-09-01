@@ -319,60 +319,56 @@ struct SpaceLensView: View {
     }
 
     private var idleView: some View {
+        GeometryReader { proxy in
         ScrollView {
-            VStack(alignment: .leading, spacing: MCSpacing.xl) {
-                HStack(alignment: .top, spacing: MCSpacing.lg) {
-                    Image(systemName: "circle.hexagongrid")
-                        .font(.system(size: 48, weight: .light))
-                        .foregroundStyle(MCTheme.accent)
-                        .frame(width: 72, height: 72)
-                        .accessibilityHidden(true)
-                    VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                        Text(L("spacelens.idle.title"))
-                            .font(MCFont.pageTitle)
-                        Text(L("spacelens.idle.subtitle"))
-                            .font(MCFont.secondaryBody)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+            VStack(spacing: MCSpacing.xl) {
+                VStack(spacing: MCSpacing.xs) {
+                    Text(L("spacelens.idle.title"))
+                        .font(MCFont.pageTitle)
+                        .multilineTextAlignment(.center)
+                    Text(L("spacelens.idle.subtitle"))
+                        .font(MCFont.secondaryBody)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
-                VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                    MCSectionHeader(L("spacelens.filter_category"))
-                    MCFeatureRow(L("spacelens.category.folder"),
-                                 icon: "folder.fill", iconColor: MCTheme.accent)
-                    MCFeatureRow(L("spacelens.category.media"),
-                                 icon: "photo", iconColor: MCColor.cellTealDeep)
-                    MCFeatureRow(L("spacelens.category.document"),
-                                 icon: "doc.text", iconColor: MCColor.cellGraphite)
-                    MCFeatureRow(L("spacelens.category.archive"),
-                                 icon: "archivebox", iconColor: MCTheme.warning)
-                    MCFeatureRow(L("spacelens.category.code"),
-                                 icon: "curlybraces", iconColor: MCColor.cellTealPale)
+                MCScanButton(L("spacelens.scan_home"), systemImage: "circle.hexagongrid") {
+                    model.start(url: FileManager.default.homeDirectoryForCurrentUser)
                 }
+                .accessibilityIdentifier("spacelens.scan.home")
 
-                HStack(spacing: MCSpacing.sm) {
-                    Button(L("spacelens.scan_home")) {
-                        model.start(url: FileManager.default.homeDirectoryForCurrentUser)
+                Button(L("spacelens.choose_folder")) {
+                    let panel = NSOpenPanel()
+                    panel.canChooseDirectories = true
+                    panel.canChooseFiles = false
+                    if panel.runModal() == .OK, let url = panel.url {
+                        model.start(url: url)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .accessibilityIdentifier("spacelens.scan.home")
-                    Button(L("spacelens.choose_folder")) {
-                        let panel = NSOpenPanel()
-                        panel.canChooseDirectories = true
-                        panel.canChooseFiles = false
-                        if panel.runModal() == .OK, let url = panel.url {
-                            model.start(url: url)
-                        }
-                    }
-                    .controlSize(.large)
                 }
+                .buttonStyle(.link)
+
+                MCCard {
+                    VStack(alignment: .leading, spacing: MCSpacing.sm) {
+                        MCSectionHeader(L("spacelens.filter_category"))
+                        MCFeatureRow(L("spacelens.category.folder"),
+                                     icon: "folder.fill", iconColor: MCTheme.accent)
+                        MCFeatureRow(L("spacelens.category.media"),
+                                     icon: "photo", iconColor: MCColor.cellTealDeep)
+                        MCFeatureRow(L("spacelens.category.document"),
+                                     icon: "doc.text", iconColor: MCColor.cellGraphite)
+                        MCFeatureRow(L("spacelens.category.archive"),
+                                     icon: "archivebox", iconColor: MCTheme.warning)
+                        MCFeatureRow(L("spacelens.category.code"),
+                                     icon: "curlybraces", iconColor: MCColor.cellTealPale)
+                    }
+                }
+                .frame(maxWidth: 480)
             }
             .padding(MCSpacing.page)
-            .frame(maxWidth: 520, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .center)
         }
-        .frame(maxWidth: .infinity)
+        }
     }
 
     private func scanningView(_ items: Int) -> some View {
