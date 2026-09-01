@@ -333,7 +333,6 @@ public struct MCCanvasBackground: ViewModifier {
                 RadialGradient(colors: [MCColor.teal.opacity(0.06), .clear],
                                center: .topLeading, startRadius: 0, endRadius: 680)
             }
-            .ignoresSafeArea()
         )
     }
 }
@@ -346,8 +345,9 @@ public extension View {
 // MARK: - Entrance
 
 /// A quiet fade-and-rise on first appearance — transform + opacity only, a
-/// no-op under Reduce Motion. Re-runs when the view re-appears (e.g. the
-/// module is navigated back to), which is the intent.
+/// no-op under Reduce Motion. Fires once; it deliberately does not reset on
+/// disappear (resetting caused animation churn that could stall sibling
+/// AppKit-hosted controls like `Picker` in a split-view detail).
 public struct MCAppear: ViewModifier {
     private let delay: Double
     @State private var shown = false
@@ -360,10 +360,9 @@ public struct MCAppear: ViewModifier {
             .opacity(shown || reduceMotion ? 1 : 0)
             .offset(y: shown || reduceMotion ? 0 : 8)
             .onAppear {
-                guard !reduceMotion else { return }
+                guard !reduceMotion, !shown else { return }
                 withAnimation(.smooth(duration: 0.4).delay(delay)) { shown = true }
             }
-            .onDisappear { shown = false }
     }
 }
 
