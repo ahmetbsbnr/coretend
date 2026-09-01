@@ -143,22 +143,24 @@ struct PrivacyCleanerView: View {
                     }
                     .accessibilityElement(children: .combine)
                     .accessibilityLabel(L("privacy.detecting"))
-                    if model.isPaused {
-                        Button(L("common.resume")) { model.resumeScan() }
-                            .keyboardShortcut("r", modifiers: [])
-                            .help(L("clutter.resume_hint"))
-                            .accessibilityHint(L("clutter.resume_hint"))
-                            .accessibilityIdentifier("privacy.scan.resume")
-                    } else {
-                        Button(L("common.pause")) { model.pauseScan() }
-                            .keyboardShortcut("p", modifiers: [])
-                            .help(L("clutter.pause_hint"))
-                            .accessibilityHint(L("clutter.pause_hint"))
-                            .accessibilityIdentifier("privacy.scan.pause")
+                    HStack(spacing: MCSpacing.sm) {
+                        if model.isPaused {
+                            Button(L("common.resume")) { model.resumeScan() }
+                                .keyboardShortcut("r", modifiers: [])
+                                .help(L("clutter.resume_hint"))
+                                .accessibilityHint(L("clutter.resume_hint"))
+                                .accessibilityIdentifier("privacy.scan.resume")
+                        } else {
+                            Button(L("common.pause")) { model.pauseScan() }
+                                .keyboardShortcut("p", modifiers: [])
+                                .help(L("clutter.pause_hint"))
+                                .accessibilityHint(L("clutter.pause_hint"))
+                                .accessibilityIdentifier("privacy.scan.pause")
+                        }
+                        Button(L("common.cancel")) { model.cancelScan() }
+                            .keyboardShortcut(.cancelAction)
+                            .accessibilityIdentifier("privacy.scan.cancel")
                     }
-                    Button(L("common.cancel")) { model.cancelScan() }
-                        .keyboardShortcut(.cancelAction)
-                        .accessibilityIdentifier("privacy.scan.cancel")
                 }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:

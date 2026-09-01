@@ -201,6 +201,7 @@ struct CleanupView: View {
     // MARK: - Idle (editorial left-aligned layout with category overview)
 
     private var idleView: some View {
+        GeometryReader { proxy in
         ScrollView {
             VStack(alignment: .leading, spacing: MCSpacing.xl) {
                 HStack(alignment: .top, spacing: MCSpacing.lg) {
@@ -240,9 +241,10 @@ struct CleanupView: View {
                     .accessibilityIdentifier("storage.scan.start")
             }
             .padding(MCSpacing.page)
-            .frame(maxWidth: 520, alignment: .leading)
+            .frame(maxWidth: 560, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .center)
         }
-        .frame(maxWidth: .infinity)
+        }
         .background(MCColor.background)
     }
 

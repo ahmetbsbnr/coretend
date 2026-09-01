@@ -159,22 +159,24 @@ struct SimilarImagesView: View {
                     }
                     .accessibilityElement(children: .combine)
                     .accessibilityLabel(total > 0 ? L("similar.analyzing", processed, total) : L("similar.collecting"))
-                    if model.isPaused {
-                        Button(L("common.resume")) { model.resumeScan() }
-                            .keyboardShortcut("r", modifiers: [])
-                            .help(L("dupes.resume_hint"))
-                            .accessibilityHint(L("dupes.resume_hint"))
-                            .accessibilityIdentifier("similar.scan.resume")
-                    } else {
-                        Button(L("common.pause")) { model.pauseScan() }
-                            .keyboardShortcut("p", modifiers: [])
-                            .help(L("dupes.pause_hint"))
-                            .accessibilityHint(L("dupes.pause_hint"))
-                            .accessibilityIdentifier("similar.scan.pause")
+                    HStack(spacing: MCSpacing.sm) {
+                        if model.isPaused {
+                            Button(L("common.resume")) { model.resumeScan() }
+                                .keyboardShortcut("r", modifiers: [])
+                                .help(L("dupes.resume_hint"))
+                                .accessibilityHint(L("dupes.resume_hint"))
+                                .accessibilityIdentifier("similar.scan.resume")
+                        } else {
+                            Button(L("common.pause")) { model.pauseScan() }
+                                .keyboardShortcut("p", modifiers: [])
+                                .help(L("dupes.pause_hint"))
+                                .accessibilityHint(L("dupes.pause_hint"))
+                                .accessibilityIdentifier("similar.scan.pause")
+                        }
+                        Button(L("common.cancel")) { model.cancel() }
+                            .keyboardShortcut(.cancelAction)
+                            .accessibilityIdentifier("similar.scan.cancel")
                     }
-                    Button(L("common.cancel")) { model.cancel() }
-                        .keyboardShortcut(.cancelAction)
-                        .accessibilityIdentifier("similar.scan.cancel")
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:

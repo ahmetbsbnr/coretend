@@ -130,11 +130,12 @@ final class MyClutterViewModel {
 
 struct MyClutterView: View {
     var body: some View {
+        // Duplicates is a first-class tool in the Storage group; it is not
+        // re-exposed here. This hub covers what nothing else does:
+        // large/old files and visually-similar images.
         TabView {
             LargeOldFilesView()
                 .tabItem { Label(L("clutter.tab.large_old"), systemImage: "doc") }
-            DuplicatesView()
-                .tabItem { Label(L("clutter.tab.duplicates"), systemImage: "doc.on.doc") }
             SimilarImagesView()
                 .tabItem { Label(L("clutter.tab.similar_images"), systemImage: "photo.on.rectangle.angled") }
         }
