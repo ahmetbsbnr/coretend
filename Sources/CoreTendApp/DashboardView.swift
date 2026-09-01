@@ -23,11 +23,11 @@ struct DashboardView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: MCSpacing.xl) {
-                hero
+                brandRow
                     .modifier(Reveal(revealed: revealed, index: 0, reduceMotion: reduceMotion))
-                statusStrip
+                scanHero
                     .modifier(Reveal(revealed: revealed, index: 1, reduceMotion: reduceMotion))
-                storageHeroTile
+                statusStrip
                     .modifier(Reveal(revealed: revealed, index: 2, reduceMotion: reduceMotion))
                 VStack(alignment: .leading, spacing: MCSpacing.sm) {
                     MCSectionHeader(L("sidebar.more"))
@@ -59,14 +59,14 @@ struct DashboardView: View {
         }
     }
 
-    // MARK: - Hero: brand geometry + identity + primary call to action
+    // MARK: - Brand row: quiet identity line above the scan panel
 
-    private var hero: some View {
-        HStack(alignment: .center, spacing: MCSpacing.lg) {
+    private var brandRow: some View {
+        HStack(alignment: .center, spacing: MCSpacing.md) {
             CoreBloomMark(tint: [MCColor.teal], lineWidthFraction: 0.08)
-                .frame(width: 64, height: 64)
+                .frame(width: 52, height: 52)
                 .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: MCSpacing.xxs) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(verbatim: "CoreTend")
                     .font(MCFont.heroTitle)
                 Text(L("dashboard.subtitle"))
@@ -75,20 +75,81 @@ struct DashboardView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             .accessibilityElement(children: .combine)
-            Spacer(minLength: MCSpacing.md)
-            Button {
-                navigate(.cleanup)
-            } label: {
-                ViewThatFits(in: .horizontal) {
-                    Label(L("dashboard.primary_action"), systemImage: "sparkles")
-                    Image(systemName: "sparkles")
-                }
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .keyboardShortcut(.defaultAction)
-            .accessibilityLabel(L("dashboard.primary_action"))
+            Spacer(minLength: 0)
         }
+    }
+
+    // MARK: - Scan panel: the imposing centrepiece the dashboard is built around
+
+    private var scanHero: some View {
+        let ringSize: CGFloat = 128
+        return HStack(alignment: .center, spacing: MCSpacing.xl) {
+            ZStack {
+                Circle()
+                    .stroke(MCColor.storage.opacity(MCOpacity.orbitTrack), lineWidth: 10)
+                Circle()
+                    .trim(from: 0, to: freeSpaceFraction)
+                    .stroke(MCColor.storage, style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                    .animation(reduceMotion ? nil : .easeOut(duration: 0.6), value: freeSpaceFraction)
+                Image(systemName: ModuleID.cleanup.systemImage)
+                    .font(.system(size: 30, weight: .semibold))
+                    .foregroundStyle(MCColor.storage)
+            }
+            .frame(width: ringSize, height: ringSize)
+            .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: MCSpacing.xs) {
+                Text(L("dashboard.storage.title")).font(MCFont.pageTitle)
+                Text(L("dashboard.storage.detail"))
+                    .font(MCFont.secondaryBody)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button {
+                    navigate(.cleanup)
+                } label: {
+                    Label(L("dashboard.primary_action"), systemImage: "sparkles")
+                        .font(.title3.weight(.semibold))
+                        .padding(.vertical, MCSpacing.sm)
+                        .padding(.horizontal, MCSpacing.lg)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .keyboardShortcut(.defaultAction)
+                .padding(.top, MCSpacing.sm)
+                .accessibilityIdentifier("dashboard.scan.start")
+                .accessibilityLabel(L("dashboard.primary_action"))
+            }
+            Spacer(minLength: MCSpacing.lg)
+            if let snap = snapshot {
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text(mcFormatBytes(snap.diskFreeBytes))
+                        .font(MCFont.displayMetric)
+                        .monospacedDigit()
+                        .contentTransition(.numericText())
+                    Text(L("dashboard.storage.free_of_total", mcFormatBytes(snap.diskTotalBytes)))
+                        .font(MCFont.badge)
+                        .foregroundStyle(.secondary)
+                }
+                .fixedSize()
+                .accessibilityElement(children: .combine)
+            }
+        }
+        .padding(MCSpacing.xl)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        // Teal wash sits in front of the solid card fill (it is semi-transparent),
+        // so the panel reads as tinted, not as a flat elevated surface.
+        .background(
+            LinearGradient(colors: [MCColor.teal.opacity(0.12), MCColor.teal.opacity(0.02)],
+                           startPoint: .topLeading, endPoint: .bottomTrailing),
+            in: RoundedRectangle(cornerRadius: MCRadius.card))
+        .background(MCColor.elevatedBackground, in: RoundedRectangle(cornerRadius: MCRadius.card))
+        .overlay(
+            RoundedRectangle(cornerRadius: MCRadius.card)
+                .strokeBorder(MCColor.teal.opacity(0.45), lineWidth: 1.5))
+        .shadow(color: .black.opacity(0.18), radius: 10, x: 0, y: 3)
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("dashboard.storage")
     }
 
     // MARK: - Status strip
@@ -111,65 +172,6 @@ struct DashboardView: View {
                        attention: false)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    // MARK: - Storage hero tile — the one action the dashboard is built around
-
-    private var storageHeroTile: some View {
-        Button {
-            navigate(.cleanup)
-        } label: {
-            MCCard {
-                HStack(alignment: .center, spacing: MCSpacing.lg) {
-                    ZStack {
-                        Circle()
-                            .stroke(MCColor.storage.opacity(MCOpacity.orbitTrack), lineWidth: 7)
-                        Circle()
-                            .trim(from: 0, to: freeSpaceFraction)
-                            .stroke(MCColor.storage, style: StrokeStyle(lineWidth: 7, lineCap: .round))
-                            .rotationEffect(.degrees(-90))
-                            .animation(reduceMotion ? nil : .easeOut(duration: 0.5), value: freeSpaceFraction)
-                        Image(systemName: ModuleID.cleanup.systemImage)
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundStyle(MCColor.storage)
-                    }
-                    .frame(width: MCSize.metricRing, height: MCSize.metricRing)
-
-                    VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-                        Text(L("dashboard.storage.title"))
-                            .font(MCFont.cardTitle)
-                        Text(L("dashboard.storage.detail"))
-                            .font(MCFont.secondaryBody)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    Spacer(minLength: MCSpacing.md)
-                    if let snap = snapshot {
-                        VStack(alignment: .trailing, spacing: 2) {
-                            Text(mcFormatBytes(snap.diskFreeBytes))
-                                .font(MCFont.metric)
-                                .monospacedDigit()
-                                .contentTransition(.numericText())
-                            Text(L("dashboard.storage.free_of_total", mcFormatBytes(snap.diskTotalBytes)))
-                                .font(MCFont.badge)
-                                .foregroundStyle(.secondary)
-                        }
-                        .fixedSize()
-                    }
-                    Image(systemName: "arrow.right")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(.tertiary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-        }
-        .buttonStyle(.plain)
-        .overlay(
-            RoundedRectangle(cornerRadius: MCRadius.card)
-                .strokeBorder(MCColor.storage.opacity(0.55), lineWidth: 1.5))
-        .accessibilityIdentifier("dashboard.storage")
-        .accessibilityLabel("\(L("dashboard.storage.title")). \(L("dashboard.storage.detail"))")
-        .accessibilityAddTraits(.isButton)
     }
 
     private var freeSpaceFraction: CGFloat {
