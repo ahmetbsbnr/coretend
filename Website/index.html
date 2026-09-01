@@ -885,12 +885,12 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
   <div class="wrap install-grid">
     <div>
       <p class="eyebrow" data-scramble><b>07</b> <span data-fr="Installation">Install</span></p>
-      <h2 data-reveal data-fr="La version publique est franche sur Gatekeeper.">The public build is honest about Gatekeeper.</h2>
-      <p class="lead" data-reveal style="--d:100ms" data-fr="L'app publique possède une signature ad hoc pour l'intégrité du bundle, mais aucune signature Developer ID et aucune notarisation. Gatekeeper bloque donc le premier lancement. Vérifiez d'abord le SHA-256, puis utilisez le parcours public de macOS si vous choisissez de continuer.">The public app is ad-hoc signed for bundle integrity, but it is not Developer ID signed or notarized. Gatekeeper therefore blocks the first launch. Verify the SHA-256 first, then use macOS's public override flow if you choose to continue.</p>
+      <h2 data-reveal data-fr="Signée, notarisée, et vérifiable.">Signed, notarized, and yours to verify.</h2>
+      <p class="lead" data-reveal style="--d:100ms" data-fr="CoreTend est signé avec un identifiant Apple Developer ID et notarisé par Apple : il s’ouvre sans invite Gatekeeper. Le SHA-256 et la signature Minisign ci-dessous permettent de vérifier la provenance de façon indépendante.">CoreTend is Developer ID signed and notarized by Apple, so it opens with no Gatekeeper prompt. The SHA-256 and Minisign signature below let you verify provenance independently.</p>
       <ol class="steps" style="margin-top:32px" data-reveal>
         <li style="padding-bottom:26px"><span class="num">1</span><h3 style="font-size:17px" data-fr="Ouvrir le .dmg, glisser dans Applications">Open the .dmg, drag to Applications</h3></li>
-        <li style="padding-bottom:26px"><span class="num">2</span><h3 style="font-size:17px" data-fr="Premier lancement bloqué : c'est normal">First launch is blocked: that is normal</h3></li>
-        <li><span class="num">3</span><h3 style="font-size:17px" data-fr="Réglages Système → Confidentialité et sécurité → Ouvrir quand même, puis confirmer Ouvrir">System Settings → Privacy &amp; Security → Open Anyway, then confirm Open</h3></li>
+        <li style="padding-bottom:26px"><span class="num">2</span><h3 style="font-size:17px" data-fr="Double-cliquer : l’app se lance, aucune exception requise">Double-click it — it launches, no override needed</h3></li>
+        <li><span class="num">3</span><h3 style="font-size:17px" data-fr="Optionnel : vérifier le SHA-256 et la signature Minisign avec la clé publiée">Optional: verify the SHA-256 and Minisign signature against the published key</h3></li>
       </ol>
       <div class="hash" data-reveal>
         <span class="mono" style="color:var(--ink-3);flex:none">SHA-256</span>
@@ -910,15 +910,15 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
         <svg class="cursor" id="cur" viewBox="0 0 16 16"><path d="M2 1.5 13 8.2l-4.6.9 2.5 4.4-1.9 1.1-2.5-4.4L2.9 13z" fill="var(--ink)" stroke="var(--paper)" stroke-width="1"/></svg>
         <div class="sheet warn" id="s1">
           <div class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 3 2.6 20h18.8z"/><path d="M12 9.5v5M12 17.4h.01"/></svg></div>
-          <h4 data-fr="« CoreTend » n'a pas pu être ouvert">"CoreTend" can't be opened</h4>
-          <p data-fr="Apple n'a pas pu vérifier l'absence de logiciels malveillants.">Apple could not verify it is free of malware.</p>
-          <div class="btns"><button type="button" data-fr="Corbeille" disabled>Move to Trash</button><button type="button" class="key" data-fr="Terminé" disabled>Done</button></div>
+          <h4 data-fr="Ouvrir « CoreTend » ?">Open "CoreTend"?</h4>
+          <p data-fr="Apple a vérifié l’absence de logiciel malveillant.">Apple checked it for malicious software and none was found.</p>
+          <div class="btns"><button type="button" data-fr="Annuler" disabled>Cancel</button><button type="button" class="key" data-fr="Ouvrir" disabled>Open</button></div>
         </div>
         <div class="sheet" id="s2">
           <div class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2.8 20 6v6.3c0 4.3-3.3 7.6-8 8.9-4.7-1.3-8-4.6-8-8.9V6z"/><path d="M8.8 12.2 11 14.5l4.4-4.7"/></svg></div>
-          <h4 data-fr="Confidentialité et sécurité">Privacy &amp; Security</h4>
-          <p data-fr="« CoreTend » a été bloqué pour protéger votre Mac.">"CoreTend" was blocked to protect your Mac.</p>
-          <div class="btns"><button type="button" data-fr="Annuler" disabled>Cancel</button><button type="button" class="key" data-fr="Ouvrir quand même" disabled>Open Anyway</button></div>
+          <h4 data-fr="Developer ID vérifié">Developer ID verified</h4>
+          <p data-fr="Signature et notarisation confirmées par macOS.">Signature and notarization confirmed by macOS.</p>
+          <div class="btns"><button type="button" class="key" data-fr="Ouvrir" disabled>Open</button></div>
         </div>
         <div class="launched" id="s3">
           <div style="text-align:center">
@@ -956,8 +956,8 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
         <div class="ans"><div><p data-fr="CoreTend n'intègre pas de fonction de restauration après l'action. Lorsqu'un élément a bien été placé dans la Corbeille par macOS, utilisez Finder → Corbeille → Remettre avant de la vider.">CoreTend has no built-in restore action after removal. When macOS successfully placed an item in the Trash, use Finder → Trash → Put Back before emptying it.</p></div></div>
       </details>
       <details data-reveal>
-        <summary data-fr="Pourquoi cet avertissement au lancement ?">Why the warning on first launch?</summary>
-        <div class="ans"><div><p data-fr="La version publique est signée ad hoc pour l'intégrité du bundle, sans signature Developer ID et sans notarisation. Après la première tentative, macOS permet une exception manuelle dans Réglages Système → Confidentialité et sécurité. Vérifiez le SHA-256 avant de continuer.">The public build is ad-hoc signed for bundle integrity, without Developer ID signing or notarization. After the first attempt, macOS offers a manual exception in System Settings → Privacy &amp; Security. Verify the SHA-256 before continuing.</p></div></div>
+        <summary data-fr="Comment vérifier le téléchargement ?">How do I verify the download?</summary>
+        <div class="ans"><div><p data-fr="Comparez le SHA-256 du DMG avec le fichier SHA256SUMS publié, puis vérifiez sa signature Minisign avec la clé publiée (minisign.pub). xcrun stapler validate confirme le ticket de notarisation embarqué.">Compare the DMG’s SHA-256 with the published SHA256SUMS file, then check its Minisign signature with the published key (minisign.pub). xcrun stapler validate confirms the embedded notarization ticket.</p></div></div>
       </details>
       <details data-reveal>
         <summary data-fr="Que se passe-t-il si je supprime quelque chose d'important ?">What if I remove something I needed?</summary>
@@ -1006,7 +1006,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
     </div>
     <div class="foot-base">
       <p data-fr="© Contributeurs CoreTend · Apache-2.0">© CoreTend contributors · Apache-2.0</p>
-      <p data-fr="@@CORETEND_RELEASE_VERSION@@ · sans Developer ID · non notarisé">@@CORETEND_RELEASE_VERSION@@ · no Developer ID · not notarized</p>
+      <p data-fr="@@CORETEND_RELEASE_VERSION@@ · @@CORETEND_SIGNING_FR@@">@@CORETEND_RELEASE_VERSION@@ · @@CORETEND_SIGNING_EN@@</p>
     </div>
   </div>
 </footer>
