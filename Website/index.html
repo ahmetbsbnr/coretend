@@ -208,7 +208,8 @@ p{margin:0}
 @media(max-width:860px){.bar-link span,.hide-sm{display:none}}
 
 /* ---------- hero ---------- */
-.hero{padding-top:clamp(40px,6vw,74px);padding-bottom:clamp(48px,7vw,90px);overflow:hidden}
+.hero{padding-top:clamp(40px,6vw,74px);padding-bottom:clamp(48px,7vw,90px);overflow:hidden;
+  background:radial-gradient(880px 460px at 14% 8%,var(--cobalt-wash),transparent 68%)}
 .hero-grid{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,1.18fr);gap:clamp(30px,5vw,68px);align-items:center}
 .hero-lockup,.hero-grid>*{min-width:0}
 @media(max-width:1000px){.hero-grid{grid-template-columns:1fr}}
@@ -467,6 +468,7 @@ p{margin:0}
 @keyframes blink{50%{opacity:0}}
 
 /* ---------- install ---------- */
+#install{background:radial-gradient(760px 320px at 84% 4%,var(--cobalt-wash),transparent 70%)}
 .install-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:clamp(28px,4vw,60px);align-items:center}
 .install-grid>div{min-width:0}
 @media(max-width:900px){.install-grid{grid-template-columns:1fr}}
@@ -580,7 +582,7 @@ p{margin:0}
 .hero-mark::after{content:"";position:absolute;inset:17%;border:1px solid var(--cobalt);border-radius:50%;opacity:0;pointer-events:none}
 .hero-mark:has(.is-initializing)::after{animation:hero-scan-wave 1s var(--ease-out) 1.05s 1}
 @keyframes hero-scan-wave{0%{opacity:.3;transform:scale(.35)}100%{opacity:0;transform:scale(1.8)}}
-.faq details.closing .ans{grid-template-rows:0fr}
+.faq details.is-closing .ans{grid-template-rows:0fr}
 .rows div{opacity:0;transform:translateY(7px);transition:opacity .42s var(--ease-out),transform .42s var(--ease-out)}
 .rows div.is-visible{opacity:1;transform:none}
 @keyframes rowin{from{opacity:0;transform:translateY(7px)}}
@@ -1693,8 +1695,8 @@ function faq() {
     $("summary", d).addEventListener("click", e => {
       e.preventDefault();
       if (!d.open) { d.open = true; return; }
-      d.classList.add("closing");
-      const done = () => { d.open = false; d.classList.remove("closing"); };
+      d.classList.add("is-closing");
+      const done = () => { d.open = false; d.classList.remove("is-closing"); };
       const ans = $(".ans", d);
       let fired = false;
       ans.addEventListener("transitionend", () => { fired = true; done(); }, {once:true});
