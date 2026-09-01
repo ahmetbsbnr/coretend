@@ -262,11 +262,14 @@ def externalise_styles(document: str, output: Path, route_key: str) -> str:
 
 
 def render_release_facts(document: str, release: dict) -> str:
+    signed = bool(release.get("signed")) and bool(release.get("notarized"))
     replacements = {
         "@@CORETEND_RELEASE_VERSION@@": str(release["version"]),
         "@@CORETEND_DMG_SHA256@@": str(release["dmgSHA256"]),
         "@@CORETEND_MINIMUM_MACOS@@": str(release["minimumMacOS"]),
         "@@CORETEND_ARCHITECTURE@@": str(release["architecture"]),
+        "@@CORETEND_SIGNING_EN@@": "Developer ID · Apple-notarized" if signed else "no Developer ID · not notarized",
+        "@@CORETEND_SIGNING_FR@@": "Developer ID · notarisé Apple" if signed else "sans Developer ID · non notarisé",
     }
     for token, value in replacements.items():
         if token not in document:
@@ -371,14 +374,14 @@ def information_pages(release: dict) -> dict[str, str]:
         "Support · Assistance — CoreTend",
         "CoreTend installation, verification and support routes.",
         "/support",
-        f"""<section class="hero"><p class="eyebrow">CORETEND / SUPPORT</p><h1>Help without lowering macOS security.</h1><p class="lead">Version {version} is unsigned and not notarized. macOS will show an accurate first-launch warning.</p></section>
-<section class="grid"><article class="card" lang="en"><h2>English</h2><h3>Install</h3><p>Requires macOS {minimum}+ on {architecture}. Open CoreTend once, then use System Settings → Privacy &amp; Security → Open Anyway. Never disable Gatekeeper globally.</p><h3 id="documentation">Documentation</h3><p><a href="{REPOSITORY}/blob/main/Documentation/README.md">Documentation index</a> · <a href="{REPOSITORY}/issues">Public issue tracker</a></p><h3 id="security">Security</h3><p>Report vulnerabilities through <a href="{REPOSITORY}/security/advisories/new">GitHub private vulnerability reporting</a>.</p><h3 id="releases">Verification and releases</h3><p><code>{dmg_name}</code><br><code>{checksum}</code></p><h3 id="roadmap">Roadmap</h3><p>Developer ID and notarization are planned as a later distribution update.</p><h3 id="source">Source</h3><p><a href="{REPOSITORY}">Read and build the public source.</a></p></article><article class="card" lang="fr"><h2>Français</h2><h3>Installation</h3><p>macOS {minimum}+ et architecture {architecture}. Ouvrez CoreTend une première fois, puis utilisez Réglages Système → Confidentialité et sécurité → Ouvrir quand même. Ne désactivez jamais Gatekeeper globalement.</p><h3>Documentation</h3><p><a href="{REPOSITORY}/blob/main/Documentation/README.md">Index de documentation</a> · <a href="{REPOSITORY}/issues">Suivi public des problèmes</a></p><h3>Sécurité</h3><p>Signalez une vulnérabilité par le <a href="{REPOSITORY}/security/advisories/new">canal privé GitHub</a>.</p><h3>Vérification</h3><p><code>{dmg_name}</code><br><code>{checksum}</code></p><h3>Feuille de route</h3><p>Developer ID et notarisation sont prévus dans une future mise à jour de distribution.</p><h3>Source</h3><p><a href="{REPOSITORY}">Consulter et compiler le code public.</a></p></article></section>""",
+        f"""<section class="hero"><p class="eyebrow">CORETEND / SUPPORT</p><h1>Help without lowering macOS security.</h1><p class="lead">Version {version} is Developer ID signed and notarized by Apple.</p></section>
+<section class="grid"><article class="card" lang="en"><h2>English</h2><h3>Install</h3><p>Requires macOS {minimum}+ on {architecture}. Open the .dmg, drag CoreTend to Applications, double-click it. It is notarized — no Gatekeeper exception is needed.</p><h3 id="documentation">Documentation</h3><p><a href="{REPOSITORY}/blob/main/Documentation/README.md">Documentation index</a> · <a href="{REPOSITORY}/issues">Public issue tracker</a></p><h3 id="security">Security</h3><p>Report vulnerabilities through <a href="{REPOSITORY}/security/advisories/new">GitHub private vulnerability reporting</a>.</p><h3 id="releases">Verification and releases</h3><p><code>{dmg_name}</code><br><code>{checksum}</code></p><h3 id="roadmap">Roadmap</h3><p>The build is Developer ID signed and notarized; verify its SHA-256 and Minisign signature.</p><h3 id="source">Source</h3><p><a href="{REPOSITORY}">Read and build the public source.</a></p></article><article class="card" lang="fr"><h2>Français</h2><h3>Installation</h3><p>macOS {minimum}+ et architecture {architecture}. Ouvrez le .dmg, glissez CoreTend dans Applications, double-cliquez. Elle est notarisée — aucune exception Gatekeeper nécessaire.</p><h3>Documentation</h3><p><a href="{REPOSITORY}/blob/main/Documentation/README.md">Index de documentation</a> · <a href="{REPOSITORY}/issues">Suivi public des problèmes</a></p><h3>Sécurité</h3><p>Signalez une vulnérabilité par le <a href="{REPOSITORY}/security/advisories/new">canal privé GitHub</a>.</p><h3>Vérification</h3><p><code>{dmg_name}</code><br><code>{checksum}</code></p><h3>Feuille de route</h3><p>La version est signée Developer ID et notarisée ; vérifiez son SHA-256 et sa signature Minisign.</p><h3>Source</h3><p><a href="{REPOSITORY}">Consulter et compiler le code public.</a></p></article></section>""",
     )
     legal = shell(
         "Legal notice · Mentions légales — CoreTend",
         "CoreTend public project and hosting notice.",
         "/legal",
-        f"""<section class="hero"><p class="eyebrow">CORETEND / LEGAL</p><h1>Public project notice.<br>Informations publiques.</h1><p class="lead">CoreTend is free, open-source software distributed without an account or subscription.</p></section><section class="grid"><article class="card" lang="en"><h2>English</h2><p>Project: CoreTend. Source repository: <a href="{REPOSITORY}">{REPOSITORY}</a>. Code license: Apache-2.0. Hosting provider: Vercel Inc. CoreTend is currently distributed outside the Mac App Store.</p><p>The current binary is unsigned and not notarized. This notice does not claim Apple certification or App Store availability.</p></article><article class="card" lang="fr"><h2>Français</h2><p>Projet : CoreTend. Dépôt source : <a href="{REPOSITORY}">{REPOSITORY}</a>. Licence du code : Apache-2.0. Hébergeur : Vercel Inc. CoreTend est actuellement distribué hors du Mac App Store.</p><p>Le binaire actuel n’est ni signé ni notarisé. Cette notice ne revendique aucune certification Apple ni disponibilité sur l’App Store.</p></article></section>""",
+        f"""<section class="hero"><p class="eyebrow">CORETEND / LEGAL</p><h1>Public project notice.<br>Informations publiques.</h1><p class="lead">CoreTend is free, open-source software distributed without an account or subscription.</p></section><section class="grid"><article class="card" lang="en"><h2>English</h2><p>Project: CoreTend. Source repository: <a href="{REPOSITORY}">{REPOSITORY}</a>. Code license: Apache-2.0. Hosting provider: Vercel Inc. CoreTend is currently distributed outside the Mac App Store.</p><p>The current binary is Developer ID signed and Apple-notarized. This notice claims no Mac App Store availability.</p></article><article class="card" lang="fr"><h2>Français</h2><p>Projet : CoreTend. Dépôt source : <a href="{REPOSITORY}">{REPOSITORY}</a>. Licence du code : Apache-2.0. Hébergeur : Vercel Inc. CoreTend est actuellement distribué hors du Mac App Store.</p><p>Le binaire actuel est signé Developer ID et notarisé par Apple. Cette notice ne revendique aucune disponibilité sur le Mac App Store.</p></article></section>""",
     )
     licenses = shell(
         "Licenses · Licences — CoreTend",
@@ -499,11 +502,19 @@ def shell(
     legal = "Mentions légales" if is_fr else "Legal"
     licenses = "Licences" if is_fr else "Licenses"
     source = "Code source" if is_fr else "Source"
-    version_status = (
-        f"{release['version']} · sans Developer ID · non notarisé"
-        if is_fr
-        else f"{release['version']} · no Developer ID · not notarized"
-    )
+    _signed = bool(release.get("signed")) and bool(release.get("notarized"))
+    if _signed:
+        version_status = (
+            f"{release['version']} · Developer ID · notarisé Apple"
+            if is_fr
+            else f"{release['version']} · Developer ID · Apple-notarized"
+        )
+    else:
+        version_status = (
+            f"{release['version']} · sans Developer ID · non notarisé"
+            if is_fr
+            else f"{release['version']} · no Developer ID · not notarized"
+        )
     en_path = route_for(page, "en")
     fr_path = route_for(page, "fr")
     privacy_current = ' aria-current="page"' if page == "privacy" else ""
@@ -591,38 +602,77 @@ def support_content(release: dict, language: str) -> str:
     dmg_name = html.escape(str(release["dmgName"]))
     minimum = html.escape(str(release["minimumMacOS"]))
     architecture = html.escape(str(release["architecture"]))
+    signed = bool(release.get("signed")) and bool(release.get("notarized"))
     if language == "fr":
-        hero = info_hero("support", language, "Diagnostic", "Résoudre sans affaiblir macOS.", f"CoreTend {version} est sans signature Developer ID et non notarisé. Le premier blocage Gatekeeper est donc attendu, pas un crash.", [f"Version {version}", f"macOS {minimum}+", architecture])
-        return hero + f"""<section class="info-section"><div class="wrap"><div class="section-head"><p class="section-index">01 / Parcours</p><div><h2>Trois vérifications avant de signaler un problème.</h2><p class="section-intro">Chaque étape conserve les protections de macOS.</p></div></div><ol class="scan-list"><li><div><h3>Vérifier le téléchargement</h3><p>Comparez l’empreinte SHA-256 avec le fichier publié à côté du DMG.</p></div><span class="scan-state">Provenance</span></li><li><div><h3>Ouvrir une première fois</h3><p>Copiez CoreTend dans Applications et double-cliquez. Le blocage initial fait apparaître l’option système suivante.</p></div><span class="scan-state">Attendu</span></li><li><div><h3>Autoriser cette copie</h3><p>Réglages Système → Confidentialité et sécurité → Ouvrir quand même. Ne désactivez jamais Gatekeeper globalement.</p></div><span class="scan-state">Une fois</span></li></ol></div></section>
+        lead = (
+            f"CoreTend {version} est signé avec un identifiant Developer ID et notarisé par Apple. Il s’ouvre normalement ; les vérifications ci-dessous confirment la provenance."
+            if signed else
+            f"CoreTend {version} est sans signature Developer ID et non notarisé. Le premier blocage Gatekeeper est donc attendu, pas un crash."
+        )
+        hero = info_hero("support", language, "Diagnostic", "Résoudre sans affaiblir macOS.", lead, [f"Version {version}", f"macOS {minimum}+", architecture])
+        if signed:
+            steps = """<li><div><h3>Vérifier l’empreinte</h3><p>Comparez le SHA-256 du DMG avec <code>SHA256SUMS</code> publié à côté.</p></div><span class="scan-state">Provenance</span></li><li><div><h3>Vérifier la signature</h3><p><code>minisign -Vm SHA256SUMS -P …</code> avec la clé publiée, et <code>xcrun stapler validate</code> sur le DMG.</p></div><span class="scan-state">Signature</span></li><li><div><h3>Installer</h3><p>Ouvrez le .dmg, glissez CoreTend dans Applications, double-cliquez. Aucune exception Gatekeeper n’est nécessaire.</p></div><span class="scan-state">Direct</span></li>"""
+            devid, notarised = "oui (NSCUV5G738)", "oui"
+            faq_open = "<p>Une version notarisée s’ouvre normalement. Si ce n’est pas le cas, re-téléchargez et re-vérifiez le SHA-256 : un téléchargement corrompu, pas Gatekeeper, est la cause la plus probable.</p>"
+        else:
+            steps = """<li><div><h3>Vérifier le téléchargement</h3><p>Comparez l’empreinte SHA-256 avec le fichier publié à côté du DMG.</p></div><span class="scan-state">Provenance</span></li><li><div><h3>Ouvrir une première fois</h3><p>Copiez CoreTend dans Applications et double-cliquez. Le blocage initial fait apparaître l’option système suivante.</p></div><span class="scan-state">Attendu</span></li><li><div><h3>Autoriser cette copie</h3><p>Réglages Système → Confidentialité et sécurité → Ouvrir quand même. Ne désactivez jamais Gatekeeper globalement.</p></div><span class="scan-state">Une fois</span></li>"""
+            devid, notarised = "non", "non"
+            faq_open = "<p>Vérifiez l’empreinte, lancez une première fois, puis utilisez Ouvrir quand même dans Confidentialité et sécurité. Le rejet attendu d’une version non notarisée ne doit pas être confondu avec un crash.</p>"
+        return hero + f"""<section class="info-section"><div class="wrap"><div class="section-head"><p class="section-index">01 / Parcours</p><div><h2>Trois vérifications avant de signaler un problème.</h2><p class="section-intro">Chaque étape conserve les protections de macOS.</p></div></div><ol class="scan-list">{steps}</ol></div></section>
 <section class="info-section"><div class="wrap"><div class="section-head"><p class="section-index">02 / Informations</p><div><h2>Un bloc technique prêt à joindre.</h2><p class="section-intro">Il ne contient aucun chemin personnel ni donnée d’analyse.</p></div></div><div class="support-tools"><div><pre class="tech-block" id="support-details">CoreTend {version}
 {dmg_name}
 macOS minimum: {minimum}
 architecture: {architecture}
-Developer ID: non
-notarisation: non
+Developer ID: {devid}
+notarisation: {notarised}
 SHA-256: {checksum}</pre><button class="copy-button" type="button" data-copy-target="support-details">Copier les informations techniques</button></div><ul class="link-stack"><li><a href="{REPOSITORY}/issues">Suivi public des problèmes</a></li><li><a href="{REPOSITORY}/security/advisories/new">Signalement privé de vulnérabilité</a></li><li><a href="{REPOSITORY}/blob/main/Documentation/README.md">Documentation</a></li></ul></div>
-<div class="faq"><details><summary>L’application ne s’ouvre pas après le téléchargement</summary><p>Vérifiez l’empreinte, lancez une première fois, puis utilisez Ouvrir quand même dans Confidentialité et sécurité. Le rejet attendu d’une version non notarisée ne doit pas être confondu avec un crash.</p></details><details><summary>Une analyse ne voit pas certains dossiers</summary><p>Vérifiez les exclusions et l’Accès complet au disque. N’accordez que l’autorisation requise pour le workflow utilisé.</p></details><details><summary>Que joindre à un rapport ?</summary><p>La version, macOS, l’architecture, le module concerné et des étapes reproductibles. Supprimez les noms de fichiers personnels de toute capture.</p></details></div></div></section>"""
-    hero = info_hero("support", language, "Diagnostics", "Resolve issues without weakening macOS.", f"CoreTend {version} has no Developer ID signature and is not notarized. The first Gatekeeper block is expected, not an application crash.", [f"Version {version}", f"macOS {minimum}+", architecture])
-    return hero + f"""<section class="info-section"><div class="wrap"><div class="section-head"><p class="section-index">01 / Path</p><div><h2>Three checks before reporting a problem.</h2><p class="section-intro">Every step keeps macOS protections enabled.</p></div></div><ol class="scan-list"><li><div><h3>Verify the download</h3><p>Compare its SHA-256 with the checksum file published beside the DMG.</p></div><span class="scan-state">Provenance</span></li><li><div><h3>Open it once</h3><p>Copy CoreTend to Applications and double-click it. The initial block makes the next system option available.</p></div><span class="scan-state">Expected</span></li><li><div><h3>Allow this copy</h3><p>System Settings → Privacy &amp; Security → Open Anyway. Never disable Gatekeeper globally.</p></div><span class="scan-state">Once</span></li></ol></div></section>
+<div class="faq"><details><summary>L’application ne s’ouvre pas après le téléchargement</summary>{faq_open}</details><details><summary>Une analyse ne voit pas certains dossiers</summary><p>Vérifiez les exclusions et l’Accès complet au disque. N’accordez que l’autorisation requise pour le workflow utilisé.</p></details><details><summary>Que joindre à un rapport ?</summary><p>La version, macOS, l’architecture, le module concerné et des étapes reproductibles. Supprimez les noms de fichiers personnels de toute capture.</p></details></div></div></section>"""
+    lead = (
+        f"CoreTend {version} is Developer ID signed and notarized by Apple. It opens normally; the checks below confirm provenance."
+        if signed else
+        f"CoreTend {version} has no Developer ID signature and is not notarized. The first Gatekeeper block is expected, not an application crash."
+    )
+    hero = info_hero("support", language, "Diagnostics", "Resolve issues without weakening macOS.", lead, [f"Version {version}", f"macOS {minimum}+", architecture])
+    if signed:
+        steps = """<li><div><h3>Check the digest</h3><p>Compare the DMG's SHA-256 with the published <code>SHA256SUMS</code> beside it.</p></div><span class="scan-state">Provenance</span></li><li><div><h3>Check the signature</h3><p><code>minisign -Vm SHA256SUMS -P …</code> with the published key, and <code>xcrun stapler validate</code> on the DMG.</p></div><span class="scan-state">Signature</span></li><li><div><h3>Install</h3><p>Open the .dmg, drag CoreTend to Applications, double-click it. No Gatekeeper exception is needed.</p></div><span class="scan-state">Direct</span></li>"""
+        devid, notarised = "yes (NSCUV5G738)", "yes"
+        faq_open = "<p>A notarized build opens normally. If it does not, re-download and re-check the SHA-256; a corrupted download, not Gatekeeper, is the likely cause.</p>"
+    else:
+        steps = """<li><div><h3>Verify the download</h3><p>Compare its SHA-256 with the checksum file published beside the DMG.</p></div><span class="scan-state">Provenance</span></li><li><div><h3>Open it once</h3><p>Copy CoreTend to Applications and double-click it. The initial block makes the next system option available.</p></div><span class="scan-state">Expected</span></li><li><div><h3>Allow this copy</h3><p>System Settings → Privacy &amp; Security → Open Anyway. Never disable Gatekeeper globally.</p></div><span class="scan-state">Once</span></li>"""
+        devid, notarised = "no", "no"
+        faq_open = "<p>Verify the checksum, try opening once, then use Open Anyway in Privacy &amp; Security. The expected rejection of an unnotarized build is not the same as a crash.</p>"
+    return hero + f"""<section class="info-section"><div class="wrap"><div class="section-head"><p class="section-index">01 / Path</p><div><h2>Three checks before reporting a problem.</h2><p class="section-intro">Every step keeps macOS protections enabled.</p></div></div><ol class="scan-list">{steps}</ol></div></section>
 <section class="info-section"><div class="wrap"><div class="section-head"><p class="section-index">02 / Details</p><div><h2>A technical block ready to attach.</h2><p class="section-intro">It contains no personal path or scan data.</p></div></div><div class="support-tools"><div><pre class="tech-block" id="support-details">CoreTend {version}
 {dmg_name}
 minimum macOS: {minimum}
 architecture: {architecture}
-Developer ID: no
-notarized: no
+Developer ID: {devid}
+notarized: {notarised}
 SHA-256: {checksum}</pre><button class="copy-button" type="button" data-copy-target="support-details">Copy technical information</button></div><ul class="link-stack"><li><a href="{REPOSITORY}/issues">Public issue tracker</a></li><li><a href="{REPOSITORY}/security/advisories/new">Private vulnerability report</a></li><li><a href="{REPOSITORY}/blob/main/Documentation/README.md">Documentation index</a></li></ul></div>
-<div class="faq"><details><summary>The app does not open after download</summary><p>Verify the checksum, try opening once, then use Open Anyway in Privacy &amp; Security. The expected rejection of an unnotarized build is not the same as a crash.</p></details><details><summary>A scan cannot see some folders</summary><p>Review exclusions and Full Disk Access. Grant only the permission required by the workflow you are using.</p></details><details><summary>What should a report include?</summary><p>The version, macOS release, architecture, affected module and reproducible steps. Remove personal file names from every screenshot.</p></details></div></div></section>"""
+<div class="faq"><details><summary>The app does not open after download</summary>{faq_open}</details><details><summary>A scan cannot see some folders</summary><p>Review exclusions and Full Disk Access. Grant only the permission required by the workflow you are using.</p></details><details><summary>What should a report include?</summary><p>The version, macOS release, architecture, affected module and reproducible steps. Remove personal file names from every screenshot.</p></details></div></div></section>"""
 
 
 def legal_content(release: dict, language: str) -> str:
+    signed = bool(release.get("signed")) and bool(release.get("notarized"))
+    _v = html.escape(str(release["version"]))
+    distribution_fr = (
+        f"La version {_v} est distribuée hors du Mac App Store. Elle est signée avec un identifiant Apple Developer ID et notarisée par Apple. Cette mention ne revendique aucune disponibilité sur le Mac App Store ni approbation éditoriale d’Apple."
+        if signed else
+        f"La version {_v} est distribuée hors du Mac App Store. Elle n’a pas de signature Developer ID et n’est pas notarisée. Cette mention ne revendique aucune certification ou approbation d’Apple."
+    )
+    distribution_en = (
+        f"Version {_v} is distributed outside the Mac App Store. It is signed with an Apple Developer ID and notarized by Apple. This notice claims no Mac App Store availability and no editorial approval by Apple."
+        if signed else
+        f"Version {_v} is distributed outside the Mac App Store. It has no Developer ID signature and is not notarized. This notice makes no claim of Apple certification or approval."
+    )
     if language == "fr":
         hero = info_hero("legal", language, "Document public", "Des limites lisibles, même sur papier.", "CoreTend est un logiciel libre distribué sans compte ni abonnement. Cette page décrit le projet public et son mode de distribution actuel.", ["Apache-2.0", "Hébergement Vercel", "Hors Mac App Store"])
         nav = [("project", "Projet"), ("distribution", "Distribution"), ("hosting", "Hébergement"), ("warranty", "Garanties")]
-        sections = f"""<section id="project"><h2>Projet et source</h2><p>Projet : CoreTend. Le code public, l’historique et le suivi des problèmes sont disponibles sur <a href="{REPOSITORY}">{REPOSITORY}</a>. Le code est distribué sous licence Apache-2.0.</p></section><section id="distribution"><h2>Distribution actuelle</h2><p>La version {html.escape(str(release['version']))} est distribuée hors du Mac App Store. Elle n’a pas de signature Developer ID et n’est pas notarisée. Cette mention ne revendique aucune certification ou approbation d’Apple.</p></section><section id="hosting"><h2>Site et hébergement</h2><p>Le site public est hébergé par Vercel Inc. Les fichiers de publication sont servis par GitHub. Consultez la page Confidentialité pour la frontière réseau vérifiée.</p></section><section id="warranty"><h2>Garanties et responsabilité</h2><p>Les conditions complètes figurent dans la licence Apache-2.0 versionnée avec le dépôt. L’interface explique les résultats avant une action, mais l’utilisateur reste responsable de la sélection validée.</p></section>"""
+        sections = f"""<section id="project"><h2>Projet et source</h2><p>Projet : CoreTend. Le code public, l’historique et le suivi des problèmes sont disponibles sur <a href="{REPOSITORY}">{REPOSITORY}</a>. Le code est distribué sous licence Apache-2.0.</p></section><section id="distribution"><h2>Distribution actuelle</h2><p>{distribution_fr}</p></section><section id="hosting"><h2>Site et hébergement</h2><p>Le site public est hébergé par Vercel Inc. Les fichiers de publication sont servis par GitHub. Consultez la page Confidentialité pour la frontière réseau vérifiée.</p></section><section id="warranty"><h2>Garanties et responsabilité</h2><p>Les conditions complètes figurent dans la licence Apache-2.0 versionnée avec le dépôt. L’interface explique les résultats avant une action, mais l’utilisateur reste responsable de la sélection validée.</p></section>"""
     else:
         hero = info_hero("legal", language, "Public document", "Readable limits, including on paper.", "CoreTend is free software distributed without an account or subscription. This page records the public project and its current distribution model.", ["Apache-2.0", "Hosted by Vercel", "Outside the Mac App Store"])
         nav = [("project", "Project"), ("distribution", "Distribution"), ("hosting", "Hosting"), ("warranty", "Warranty")]
-        sections = f"""<section id="project"><h2>Project and source</h2><p>Project: CoreTend. Public source, history and issue tracking are available at <a href="{REPOSITORY}">{REPOSITORY}</a>. The code is distributed under Apache-2.0.</p></section><section id="distribution"><h2>Current distribution</h2><p>Version {html.escape(str(release['version']))} is distributed outside the Mac App Store. It has no Developer ID signature and is not notarized. This notice makes no claim of Apple certification or approval.</p></section><section id="hosting"><h2>Website and hosting</h2><p>Vercel Inc. hosts the public website. GitHub serves release files. See Privacy for the verified network boundary.</p></section><section id="warranty"><h2>Warranty and responsibility</h2><p>The complete terms remain in the Apache-2.0 license versioned with the repository. The interface explains findings before an action, but the user remains responsible for an approved selection.</p></section>"""
+        sections = f"""<section id="project"><h2>Project and source</h2><p>Project: CoreTend. Public source, history and issue tracking are available at <a href="{REPOSITORY}">{REPOSITORY}</a>. The code is distributed under Apache-2.0.</p></section><section id="distribution"><h2>Current distribution</h2><p>{distribution_en}</p></section><section id="hosting"><h2>Website and hosting</h2><p>Vercel Inc. hosts the public website. GitHub serves release files. See Privacy for the verified network boundary.</p></section><section id="warranty"><h2>Warranty and responsibility</h2><p>The complete terms remain in the Apache-2.0 license versioned with the repository. The interface explains findings before an action, but the user remains responsible for an approved selection.</p></section>"""
     links = "".join(f'<li><a href="#{anchor}">{label}</a></li>' for anchor, label in nav)
     return hero + f"""<section class="info-section"><div class="wrap doc-layout"><nav class="doc-nav" aria-label="{'Navigation du document' if language == 'fr' else 'Document navigation'}"><p>{'Dans ce document' if language == 'fr' else 'In this document'}</p><ol>{links}</ol></nav><article class="legal-doc">{sections}</article></div></section>"""
 
