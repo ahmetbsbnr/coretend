@@ -332,11 +332,13 @@ struct SpaceLensView: View {
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .mcAppear()
 
                 MCScanButton(L("spacelens.scan_home"), systemImage: "circle.hexagongrid") {
                     model.start(url: FileManager.default.homeDirectoryForCurrentUser)
                 }
                 .accessibilityIdentifier("spacelens.scan.home")
+                .mcAppear(delay: 0.06)
 
                 Button(L("spacelens.choose_folder")) {
                     let panel = NSOpenPanel()
@@ -364,6 +366,7 @@ struct SpaceLensView: View {
                     }
                 }
                 .frame(maxWidth: 480)
+                .mcAppear(delay: 0.12)
             }
             .padding(MCSpacing.page)
             .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .center)

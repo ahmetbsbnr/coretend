@@ -214,10 +214,12 @@ struct CleanupView: View {
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+                .mcAppear()
 
                 MCScanButton(L("cleanup.start_scan")) { model.startScan() }
                     .keyboardShortcut(.defaultAction)
                     .accessibilityIdentifier("storage.scan.start")
+                    .mcAppear(delay: 0.06)
 
                 MCCard {
                     VStack(alignment: .leading, spacing: MCSpacing.sm) {
@@ -237,6 +239,7 @@ struct CleanupView: View {
                     }
                 }
                 .frame(maxWidth: 480)
+                .mcAppear(delay: 0.12)
             }
             .padding(MCSpacing.page)
             .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .center)

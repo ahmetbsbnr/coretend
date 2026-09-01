@@ -262,8 +262,10 @@ struct DuplicatesView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: 460)
             }
+            .mcAppear()
             MCScanButton(L("dupes.find"), systemImage: "doc.on.doc.fill") { model.start() }
                 .accessibilityIdentifier("duplicates.scan.start")
+                .mcAppear(delay: 0.06)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(MCSpacing.xl)
