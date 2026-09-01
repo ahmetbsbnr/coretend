@@ -14,6 +14,14 @@ checklist item that assumed ClamAV presence/absence, ClamAV installation
 guidance, or an antivirus database is obsolete and has been dropped, not
 carried forward.
 
+**Signing is done.** `v0.9.1-rc.6` (2026-08-31) is the first Developer ID
+signed + Apple-notarized release, published and verified. The remaining
+gates for **v1.0.0** — automatable (attestation, 3 crash-test items,
+`SmartCareView` decision) and human-only (clean-Mac QA, DMG Finder QA, full
+client journey, VoiceOver, **trademark attorney review**) — plus the exact
+ship sequence, are in `Documentation/RELEASE_STATE.md` → "Path to v1.0.0".
+Items 1–5 and 7 below are the human-only gates, unchanged.
+
 ## Open — needs a second Mac or a display session (cannot run here)
 
 1. **Clean-Mac launch repro.** The report that CoreTend didn't launch on
