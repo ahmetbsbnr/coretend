@@ -129,17 +129,33 @@ final class MyClutterViewModel {
 }
 
 struct MyClutterView: View {
+    @State private var tab = 0
+
+    // Plain segmented sub-nav pinned via .safeAreaInset, not a TabView: a
+    // TabView as a NavigationSplitView detail can blank the split view's
+    // sidebar on macOS. Duplicates is a first-class tool in the Storage group
+    // and is not re-exposed here — this hub covers what nothing else does:
+    // large/old files and visually-similar images.
     var body: some View {
-        // Duplicates is a first-class tool in the Storage group; it is not
-        // re-exposed here. This hub covers what nothing else does:
-        // large/old files and visually-similar images.
-        TabView {
-            LargeOldFilesView()
-                .tabItem { Label(L("clutter.tab.large_old"), systemImage: "doc") }
-            SimilarImagesView()
-                .tabItem { Label(L("clutter.tab.similar_images"), systemImage: "photo.on.rectangle.angled") }
+        Group {
+            if tab == 0 { LargeOldFilesView() } else { SimilarImagesView() }
         }
-        .padding(MCSpacing.xs)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            VStack(spacing: 0) {
+                Picker("", selection: $tab) {
+                    Text(L("clutter.tab.large_old")).tag(0)
+                    Text(L("clutter.tab.similar_images")).tag(1)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(maxWidth: 360)
+                .padding(.vertical, MCSpacing.sm)
+                Divider()
+            }
+            .frame(maxWidth: .infinity)
+            .background(.bar)
+        }
         .navigationTitle(L("clutter.title"))
     }
 }
@@ -159,38 +175,52 @@ struct LargeOldFilesView: View {
     }
 
     private var idleView: some View {
-        VStack(spacing: MCSpacing.xl) {
-            VStack(spacing: MCSpacing.xs) {
-                Text(L("clutter.idle.title")).font(MCFont.pageTitle)
-                    .multilineTextAlignment(.center)
-                Text(L("clutter.idle.subtitle"))
-                    .font(MCFont.secondaryBody)
-                    .multilineTextAlignment(.center).foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .mcAppear()
-            MCScanButton(L("clutter.analyze"), systemImage: "doc.on.doc") { model.start() }
-                .keyboardShortcut(.defaultAction)
-                .mcAppear(delay: 0.06)
-            HStack(spacing: MCSpacing.md) {
-                Picker(L("clutter.larger_than"), selection: $model.minSizeMB) {
-                    Text(L("clutter.size.50mb")).tag(50)
-                    Text(L("clutter.size.100mb")).tag(100)
-                    Text(L("clutter.size.500mb")).tag(500)
-                    Text(L("clutter.size.1gb")).tag(1000)
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(spacing: MCSpacing.xl) {
+                    VStack(spacing: MCSpacing.xs) {
+                        Text(L("clutter.idle.title")).font(MCFont.pageTitle)
+                            .multilineTextAlignment(.center)
+                        Text(L("clutter.idle.subtitle"))
+                            .font(MCFont.secondaryBody)
+                            .multilineTextAlignment(.center).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .mcAppear()
+
+                    MCScanButton(L("clutter.analyze"), systemImage: "doc.on.doc") { model.start() }
+                        .keyboardShortcut(.defaultAction)
+                        .mcAppear(delay: 0.06)
+
+                    MCCard {
+                        HStack(spacing: MCSpacing.lg) {
+                            LabeledContent(L("clutter.larger_than")) {
+                                Picker("", selection: $model.minSizeMB) {
+                                    Text(L("clutter.size.50mb")).tag(50)
+                                    Text(L("clutter.size.100mb")).tag(100)
+                                    Text(L("clutter.size.500mb")).tag(500)
+                                    Text(L("clutter.size.1gb")).tag(1000)
+                                }
+                                .pickerStyle(.menu).labelsHidden().fixedSize()
+                            }
+                            LabeledContent(L("clutter.older_than")) {
+                                Picker("", selection: $model.minAgeDays) {
+                                    Text(L("clutter.age.30d")).tag(30)
+                                    Text(L("clutter.age.90d")).tag(90)
+                                    Text(L("clutter.age.180d")).tag(180)
+                                    Text(L("clutter.age.1y")).tag(365)
+                                }
+                                .pickerStyle(.menu).labelsHidden().fixedSize()
+                            }
+                        }
+                    }
+                    .frame(maxWidth: 480)
+                    .mcAppear(delay: 0.12)
                 }
-                .frame(width: 180)
-                Picker(L("clutter.older_than"), selection: $model.minAgeDays) {
-                    Text(L("clutter.age.30d")).tag(30)
-                    Text(L("clutter.age.90d")).tag(90)
-                    Text(L("clutter.age.180d")).tag(180)
-                    Text(L("clutter.age.1y")).tag(365)
-                }
-                .frame(width: 180)
+                .padding(MCSpacing.page)
+                .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .center)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(MCSpacing.page)
     }
 
     private var scanningView: some View {
