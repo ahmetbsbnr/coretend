@@ -546,6 +546,10 @@
 "onboarding.summary.restore" = "Removals go to the Trash and can be restored.";
 "onboarding.summary.docs" = "Read the documentation";
 "settings.rerun_setup" = "Run setup assistant again";
+"settings.about.privacy" = "Privacy policy";
+"settings.about.license" = "License (Apache-2.0)";
+"settings.about.source" = "Source code on GitHub";
+"settings.about.support" = "Support";
 
 /* Rename migration (MacCare Local -> CoreTend) */
 "settings.migration_done" = "Data from the previous version was migrated";
@@ -571,7 +575,7 @@
 "updates.unsigned_warning" = "This build is not signed or notarized by Apple. Verify its checksum before opening it.";
 "updates.open_release" = "Open the release page";
 "updates.how_to_verify" = "How to verify a download";
-"updates.no_autoinstall" = "CoreTend never downloads or installs an update by itself. Because its builds carry no publisher signature, it cannot prove who produced a file — so you download and verify it yourself.";
+"updates.no_autoinstall" = "CoreTend never downloads or installs an update by itself. Releases are Developer ID signed and Apple-notarized — you download the new build from the release page, and macOS verifies it on open.";
 "updates.error_offline" = "No network connection. CoreTend works fully offline; this check is optional.";
 "updates.error_not_configured" = "Update checking is not configured.";
 "updates.error_cancelled" = "Check cancelled.";
