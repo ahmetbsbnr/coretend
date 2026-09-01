@@ -429,6 +429,7 @@
 "dashboard.status.loading" = "Chargement";
 "dashboard.storage.title" = "Stockage";
 "dashboard.storage.detail" = "Analyse les caches, journaux, rapports de crash et données de compilation avant toute vérification de suppression.";
+"dashboard.storage.free_of_total" = "libres sur %@";
 "dashboard.spacelens.title" = "Space Lens";
 "dashboard.spacelens.detail" = "Cartographie l’usage disque d’un dossier, puis permet de zoomer, chercher et ouvrir les éléments dans le Finder.";
 "dashboard.duplicates.title" = "Doublons";
@@ -436,6 +437,7 @@
 "dashboard.applications.title" = "Applications";
 "dashboard.applications.detail" = "Sépare les apps des caches, assistants, agents et documents personnels.";
 "dashboard.integrity.title" = "Intégrité";
+"dashboard.integrity.detail" = "Vérifiez la provenance des téléchargements, les niveaux de signature et ce qui démarre à la connexion.";
 "dashboard.activity.title" = "Activité";
 "dashboard.activity.empty" = "Aucune activité enregistrée.";
 "dashboard.signature.apple" = "Signé par Apple";

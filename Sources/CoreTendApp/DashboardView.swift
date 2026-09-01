@@ -1,6 +1,5 @@
 import SwiftUI
 import DesignSystem
-import IntegrityCore
 import Persistence
 import SystemMetrics
 
@@ -8,7 +7,6 @@ struct DashboardView: View {
     @State private var snapshot: MetricsSnapshot?
     @State private var activity: [ActivityRecord] = []
     @State private var exclusions: [String] = []
-    @State private var signature = CodeSignInspector.inspect(at: Bundle.main.bundleURL)
     @State private var collector = MetricsCollector()
     @State private var revealed = false
 
@@ -41,8 +39,7 @@ struct DashboardView: View {
                         toolTile("dashboard.applications", L("dashboard.applications.title"),
                                  L("dashboard.applications.detail"), ModuleID.applications.systemImage, .applications)
                         toolTile("dashboard.integrity", L("dashboard.integrity.title"),
-                                 signatureStatusText, ModuleID.protection.systemImage, .protection,
-                                 attention: signature.tier == .adHocOrUnsigned || !signature.signatureValid)
+                                 L("dashboard.integrity.detail"), ModuleID.protection.systemImage, .protection)
                         toolTile("dashboard.activity", L("dashboard.activity.title"),
                                  latestActivityText, ModuleID.myActivity.systemImage, .myActivity)
                     }
@@ -66,18 +63,18 @@ struct DashboardView: View {
 
     private var hero: some View {
         HStack(alignment: .center, spacing: MCSpacing.lg) {
-            CoreBloomMark(tint: [MCColor.storage, MCColor.protection, MCColor.performance],
-                          lineWidthFraction: 0.08)
-                .frame(width: 68, height: 68)
+            CoreBloomMark(tint: [MCColor.teal], lineWidthFraction: 0.08)
+                .frame(width: 64, height: 64)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-                Text(L("dashboard.title"))
+                Text(verbatim: "CoreTend")
                     .font(MCFont.heroTitle)
                 Text(L("dashboard.subtitle"))
                     .font(MCFont.secondaryBody)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            .accessibilityElement(children: .combine)
             Spacer(minLength: MCSpacing.md)
             Button {
                 navigate(.cleanup)
@@ -96,16 +93,14 @@ struct DashboardView: View {
 
     // MARK: - Status strip
 
+    // A short live read of the machine — what the user is here to act on.
+    // Build/signature status is meta and lives in Settings, not here.
     private var statusStrip: some View {
         LazyVGrid(columns: statusColumns, alignment: .leading, spacing: MCSpacing.sm) {
             statusPill(L("dashboard.status.free_space"),
                        value: snapshot.map { mcFormatBytes($0.diskFreeBytes) } ?? L("dashboard.status.loading"),
                        icon: "internaldrive",
                        attention: (snapshot?.diskFreeBytes ?? 20_000_000_000) < 20_000_000_000)
-            statusPill(L("dashboard.status.signature"),
-                       value: signatureStatusText,
-                       icon: "checkmark.seal",
-                       attention: signature.tier == .adHocOrUnsigned || !signature.signatureValid)
             statusPill(L("dashboard.status.safety"),
                        value: L("dashboard.status.trash_enabled"),
                        icon: "trash",
@@ -148,10 +143,22 @@ struct DashboardView: View {
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
-                    Spacer(minLength: MCSpacing.sm)
+                    Spacer(minLength: MCSpacing.md)
+                    if let snap = snapshot {
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text(mcFormatBytes(snap.diskFreeBytes))
+                                .font(MCFont.metric)
+                                .monospacedDigit()
+                                .contentTransition(.numericText())
+                            Text(L("dashboard.storage.free_of_total", mcFormatBytes(snap.diskTotalBytes)))
+                                .font(MCFont.badge)
+                                .foregroundStyle(.secondary)
+                        }
+                        .fixedSize()
+                    }
                     Image(systemName: "arrow.right")
                         .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.tertiary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -235,14 +242,6 @@ struct DashboardView: View {
 
     // MARK: - Derived text
 
-    private var signatureStatusText: String {
-        switch signature.tier {
-        case .appleSigned: return L("dashboard.signature.apple")
-        case .teamSigned: return L("dashboard.signature.team", signature.teamIdentifier ?? "?")
-        case .adHocOrUnsigned: return L("dashboard.signature.unsigned")
-        }
-    }
-
     private var latestActivityText: String {
         guard let record = activity.first else { return L("dashboard.activity.empty") }
         return "\(record.summary) · \(record.date.formatted(date: .abbreviated, time: .shortened))"
@@ -255,7 +254,6 @@ struct DashboardView: View {
             exclusions = (try? await store.exclusions()) ?? []
         }
         snapshot = await latestSnapshot
-        signature = CodeSignInspector.inspect(at: Bundle.main.bundleURL)
     }
 
     private func navigate(_ module: ModuleID) {
