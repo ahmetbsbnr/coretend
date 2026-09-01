@@ -169,15 +169,9 @@ struct PrivacyCleanerView: View {
             case .results:
                 resultsView
             case let .finished(freed):
-                VStack(spacing: MCSpacing.sm) {
-                    Image(systemName: "checkmark.seal")
-                        .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
-                        .accessibilityHidden(true)
-                    Text(L("privacy.finished.moved", mcFormatBytes(freed)))
-                        .font(.title3.weight(.semibold))
-                    Button(L("smartcare.scan_again")) { Task { await model.scan() } }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                MCSuccessState(
+                    title: L("privacy.finished.moved", mcFormatBytes(freed)),
+                    actionTitle: L("smartcare.scan_again")) { Task { await model.scan() } }
             }
         }
         .accessibilityIdentifier("privacy.root")

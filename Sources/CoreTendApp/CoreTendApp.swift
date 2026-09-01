@@ -2,7 +2,6 @@ import SwiftUI
 import DesignSystem
 import SystemMetrics
 import Persistence
-import IntegrityCore
 
 /// A per-process appearance override used only by the isolated artifact
 /// harness. It requires the same validated two-key test marker as the store and
@@ -171,11 +170,14 @@ struct MenuBarView: View {
     @State private var snapshot: MetricsSnapshot?
     @State private var collector = MetricsCollector()
     @State private var lastSmartCare: ActivityRecord?
-    @State private var appSignature: CodeSignInfo?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(verbatim: "CoreTend").font(MCFont.cardTitle)
+            HStack(spacing: MCSpacing.xs) {
+                CoreBloomMark(tint: [MCColor.teal], lineWidthFraction: 0.1)
+                    .frame(width: 16, height: 16)
+                Text(verbatim: "CoreTend").font(MCFont.cardTitle)
+            }
             if let snap = snapshot {
                 metricRow(icon: "cpu", label: L("menubar.cpu"), value: "\(Int(snap.cpuUsedFraction * 100))%",
                           warn: snap.cpuUsedFraction > 0.85)
@@ -190,11 +192,6 @@ struct MenuBarView: View {
                           warn: snap.thermalState == "serious" || snap.thermalState == "critical")
             } else {
                 ProgressView().controlSize(.small)
-            }
-            if let appSignature {
-                metricRow(icon: "checkmark.seal", label: L("menubar.this_copy"),
-                          value: signatureLabel(appSignature),
-                          warn: appSignature.tier == .adHocOrUnsigned)
             }
             Divider()
             if let last = lastSmartCare {
@@ -228,19 +225,6 @@ struct MenuBarView: View {
             guard let store = AppEnvironment.shared.store else { return }
             let recent = (try? await store.activity(limit: 20)) ?? []
             lastSmartCare = recent.first { $0.summary.hasPrefix("Smart Care") }
-        }
-        .task {
-            if let bundleURL = Bundle.main.bundleURL as URL? {
-                appSignature = CodeSignInspector.inspect(at: bundleURL)
-            }
-        }
-    }
-
-    private func signatureLabel(_ info: CodeSignInfo) -> String {
-        switch info.tier {
-        case .appleSigned: L("menubar.signature_apple")
-        case .teamSigned: L("menubar.signature_team", info.teamIdentifier ?? "?")
-        case .adHocOrUnsigned: L("menubar.signature_unsigned")
         }
     }
 

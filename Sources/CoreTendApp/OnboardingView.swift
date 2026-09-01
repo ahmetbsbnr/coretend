@@ -224,7 +224,7 @@ struct OnboardingView: View {
 
     private var welcomeStep: some View {
         page {
-            CoreBloomMark(tint: [MCColor.storage, MCColor.protection, MCColor.performance])
+            CoreBloomMark(tint: [MCColor.teal])
                 .frame(width: 88, height: 88)
             Text(L("onboarding.step0.title")).font(MCFont.heroTitle)
             // The product signature, identical here, on the site, in the DMG
@@ -258,10 +258,9 @@ struct OnboardingView: View {
                     .font(MCFont.caption).foregroundStyle(.secondary)
                     .multilineTextAlignment(.center).frame(maxWidth: 400)
             }
-            HStack(spacing: MCSpacing.sm) {
-                MCStatusBadge(L("onboarding.welcome.version", appVersion), status: .neutral)
-                MCStatusBadge(L("onboarding.welcome.unsigned"), status: .attention)
-            }
+            // Just the version. Signing state is a maintainer concern, not
+            // something the person setting up the app needs to weigh.
+            MCStatusBadge(L("onboarding.welcome.version", appVersion), status: .neutral)
             if model.launchLocation.canOfferMove { moveBanner }
         }
     }
@@ -323,16 +322,6 @@ struct OnboardingView: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(model.profile == p ? [.isSelected] : [])
-    }
-
-    private func configLine(_ label: String, on: Bool, binding: Binding<Bool>?) -> some View {
-        Group {
-            if let binding {
-                Toggle(label, isOn: binding).font(MCFont.caption)
-            } else {
-                configFixed(label, on: on)
-            }
-        }
     }
 
     private func configFixed(_ label: String, on: Bool) -> some View {
@@ -552,14 +541,6 @@ struct OnboardingView: View {
             Image(systemName: icon).frame(width: 20).foregroundStyle(MCColor.teal)
                 .accessibilityHidden(true)
             Text(text).font(MCFont.secondaryBody)
-        }
-    }
-
-    private func detailRow(_ label: String, _ value: String) -> some View {
-        HStack {
-            Text(label).font(MCFont.caption).foregroundStyle(.secondary)
-            Spacer()
-            Text(value).font(MCFont.caption).lineLimit(1).truncationMode(.middle)
         }
     }
 

@@ -408,10 +408,8 @@ struct DuplicatesView: View {
     }
 
     private func finishedView(_ freed: Int64) -> some View {
-        MCEmptyState(
-            icon: "checkmark.seal",
+        MCSuccessState(
             title: L("leftovers.finished.moved", mcFormatBytes(freed)),
-            message: "", iconColor: MCTheme.success,
             actionTitle: L("smartcare.scan_again")) { model.start() }
     }
 
