@@ -316,9 +316,12 @@ struct SpaceLensView: View {
     }
 
     private func scanningView(_ items: Int) -> some View {
-        VStack(spacing: MCSpacing.md) {
-            ProgressView()
-            Text(L("spacelens.scanning_progress", items)).monospacedDigit()
+        VStack(spacing: MCSpacing.lg) {
+            MCScanStage(isScanning: !model.isScanPaused) {
+                Text(L("spacelens.scanning_progress", items)).monospacedDigit()
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(L("spacelens.scanning_progress", items))
             HStack(spacing: MCSpacing.sm) {
                 if model.isScanPaused {
                     Button(L("common.resume")) { model.resumeScan() }

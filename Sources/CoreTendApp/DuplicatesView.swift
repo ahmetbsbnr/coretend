@@ -258,15 +258,14 @@ struct DuplicatesView: View {
     }
 
     private func scanningView(_ processed: Int, _ total: Int) -> some View {
-        VStack(spacing: MCSpacing.md) {
-            if total > 0 {
-                ProgressView(value: Double(processed), total: Double(total))
-                    .frame(width: 260)
-                Text(L("dupes.comparing", processed, total)).monospacedDigit()
-            } else {
-                ProgressView()
-                Text(L("dupes.building_inventory"))
+        VStack(spacing: MCSpacing.lg) {
+            MCScanStage(isScanning: !model.isScanPaused,
+                        fraction: total > 0 ? Double(processed) / Double(total) : nil) {
+                Text(total > 0 ? L("dupes.comparing", processed, total) : L("dupes.building_inventory"))
+                    .monospacedDigit()
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(total > 0 ? L("dupes.comparing", processed, total) : L("dupes.building_inventory"))
             HStack(spacing: MCSpacing.sm) {
                 if model.isScanPaused {
                     Button(L("common.resume")) { model.resumeScan() }
