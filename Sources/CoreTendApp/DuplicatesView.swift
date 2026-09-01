@@ -296,9 +296,16 @@ struct DuplicatesView: View {
 
     private var resultsView: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text(L("dupes.results.summary", model.groups.count, mcFormatBytes(model.selectedBytes), mcFormatBytes(model.wastedBytes)))
-                    .font(MCFont.cardTitle)
+            HStack(alignment: .firstTextBaseline) {
+                VStack(alignment: .leading, spacing: MCSpacing.xxs) {
+                    Text(L("dupes.results.summary", model.groups.count, mcFormatBytes(model.selectedBytes), mcFormatBytes(model.wastedBytes)))
+                        .font(MCFont.cardTitle)
+                    // The keeper-selection rule, stated once — not repeated on
+                    // every group's keeper row.
+                    Text(L("dupes.suggested_keeper.why"))
+                        .font(MCFont.caption)
+                        .foregroundStyle(.secondary)
+                }
                 Spacer()
                 Button {
                     exportResults()
@@ -363,12 +370,6 @@ struct DuplicatesView: View {
                                         .padding(.horizontal, MCSpacing.xs).padding(.vertical, MCSpacing.xxs)
                                         .background(MCTheme.accent.opacity(0.2), in: Capsule())
                                         .help(L("dupes.suggested_keeper.why"))
-                                }
-                                if url.path == group.keeper.path {
-                                    Text(model.recommendationText(for: url, in: group))
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(1)
                                 }
                                 Spacer()
                                 Text(url.deletingLastPathComponent().path)
