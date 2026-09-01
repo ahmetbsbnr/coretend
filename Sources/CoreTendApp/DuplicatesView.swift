@@ -351,6 +351,7 @@ struct DuplicatesView: View {
                                 .tag(String?.some(volume.id))
                         }
                     }
+                    .pickerStyle(.menu)
                     .frame(width: 180)
                 }
                 Spacer()
