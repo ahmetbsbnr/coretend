@@ -168,8 +168,10 @@ struct LargeOldFilesView: View {
                     .multilineTextAlignment(.center).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            .mcAppear()
             MCScanButton(L("clutter.analyze"), systemImage: "doc.on.doc") { model.start() }
                 .keyboardShortcut(.defaultAction)
+                .mcAppear(delay: 0.06)
             HStack(spacing: MCSpacing.md) {
                 Picker(L("clutter.larger_than"), selection: $model.minSizeMB) {
                     Text(L("clutter.size.50mb")).tag(50)

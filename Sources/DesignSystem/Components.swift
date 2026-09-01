@@ -343,6 +343,35 @@ public extension View {
     func mcCanvasBackground() -> some View { modifier(MCCanvasBackground()) }
 }
 
+// MARK: - Entrance
+
+/// A quiet fade-and-rise on first appearance — transform + opacity only, a
+/// no-op under Reduce Motion. Re-runs when the view re-appears (e.g. the
+/// module is navigated back to), which is the intent.
+public struct MCAppear: ViewModifier {
+    private let delay: Double
+    @State private var shown = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    public init(delay: Double = 0) { self.delay = delay }
+
+    public func body(content: Content) -> some View {
+        content
+            .opacity(shown || reduceMotion ? 1 : 0)
+            .offset(y: shown || reduceMotion ? 0 : 8)
+            .onAppear {
+                guard !reduceMotion else { return }
+                withAnimation(.smooth(duration: 0.4).delay(delay)) { shown = true }
+            }
+            .onDisappear { shown = false }
+    }
+}
+
+public extension View {
+    /// Fade-and-rise this view in when it appears. See `MCAppear`.
+    func mcAppear(delay: Double = 0) -> some View { modifier(MCAppear(delay: delay)) }
+}
+
 // MARK: - Scan button
 
 /// The large circular "start" control for a module's landing state — the one
