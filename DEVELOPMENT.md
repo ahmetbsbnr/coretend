@@ -105,21 +105,29 @@ CommandLineTools framework flags this project needs and behaves differently
 (`Documentation/DECISIONS.md` D2). `Scripts/test.sh`'s `--no-parallel` is
 deliberate, not a speed oversight.
 
-### Release, signing, notarization — do not "fix" the unsigned state
+### Release, signing, notarization
 
-- Every release so far ships **unsigned**, by explicit documented decision
-  (`Documentation/HUMAN_BLOCKERS.md`, `Documentation/PUBLIC_RELEASE_READINESS.md`).
-  It is blocked on a Developer ID Application identity being installed, which
-  is a human action, not a code change. Do not add ad-hoc signing, self-signed
-  certs, or workarounds to make it "signed".
+- Signing/notarization is **live as of 2026-08-31**: Developer ID identity
+  `Developer ID Application: Ahmet BASBUNAR (NSCUV5G738)` is installed and
+  `Scripts/sign-and-notarize.sh` has produced a real signed+notarized+stapled
+  `0.9.1-rc.5` locally. **But every *published* release still ships unsigned**
+  — the signed build has not been shipped. Do not flip `signed`/`notarized`
+  to `true` in `published-release.json`, `latest.json`, `PublicIdentity`, or
+  the site until a signed release is actually published
+  (`Documentation/SIGNING_NOTARIZATION.md` → "Publishing a signed release").
+  Still no ad-hoc signing or self-signed certs dressed up as a real signature.
 - **Never regenerate** the CSR or private key in `Configuration/DeveloperID/`.
-  They were created this project's way; regenerating breaks the pairing with
-  the certificate that will eventually be issued against that exact CSR.
-- `Scripts/sign-and-notarize.sh` is already written and correct — it needs an
-  identity, not edits.
-- Notarization credentials, when configured, are a `notarytool
-  store-credentials` keychain profile referenced by name — never an API key or
-  app-specific password in a script, env file, or commit.
+  The `Developer ID Application` cert was issued against that exact CSR;
+  regenerating breaks the pairing. Never read or echo the private key or the
+  notarization `.p8` (both gitignored in that directory).
+- `Scripts/sign-and-notarize.sh` was corrected on 2026-08-31 (its first real
+  run): the DMG build no longer rebuilds/re-signs the app between notarization
+  and stapling (`CORETEND_SKIP_APP_BUILD=1` guard in `package-dmg.sh`). It
+  needs an identity + a notarytool profile, not further edits.
+- Notarization credentials are a `notarytool store-credentials` keychain
+  profile referenced by name (`CoreTend-Notary`) — the App Store Connect API
+  key `.p8` lives only in the gitignored `Configuration/DeveloperID/`, never
+  in a script, env file, or commit.
 
 ### Public repository
 

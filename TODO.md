@@ -65,13 +65,22 @@ carried forward.
    assets); update SHA-256/Minisign/SBOM/attestation/release notes, and
    make sure site, portfolio and the in-app updater all point at it.
 
-## Explicitly out of scope until 1.0
+## Signing / notarization — now available, not yet shipped
 
-Developer ID signing, notarization, stapling, and replacing any currently
-public artifact with a signed one. **Developer ID Application is not
-actually installed on this Mac** (verified directly against the keychain,
-2026-08-09 — see `Documentation/Audits/SESSION_2026-08-09_AUDIT.md`); a
-Developer ID certificate being ready is not a reason to start this early.
+**Done 2026-08-31:** an Apple Developer Program account (Team `NSCUV5G738`)
+is enrolled, a **Developer ID Application** certificate was issued from the
+existing CSR and installed, and `Scripts/sign-and-notarize.sh` produced a
+real signed + notarized (both `Accepted`) + stapled `0.9.1-rc.5` **locally**
+(`spctl --assess` → `accepted / Notarized Developer ID`). The script's
+first-run ordering bug was fixed.
+
+**Open:** ship it. This is a **new RC** (artifact content + name change), see
+`Documentation/SIGNING_NOTARIZATION.md` → "Publishing a signed release":
+bump version, notes, sign+notarize, regenerate `latest.json` / `SHA256SUMS`
+/ **Minisign** (needs the human-held private key) / SBOM, drop the
+`-unsigned` token across scripts + site + CI, tag + push, then re-point the
+download page and in-app updater at the published tag.
+
 The site's one-page redesign is validated — don't restructure it, only fix
 real defects.
 

@@ -1,6 +1,6 @@
 # Ahmet Design System
 
-Version **1.0.0** — langage visuel canonique des produits d'Ahmet Basbunar
+Version **1.1.0** — langage visuel canonique des produits d'Ahmet Basbunar
 (CoreTend, StagePilot, portfolio).
 
 Ce dossier formalise le système graphique déjà utilisé par le site produit

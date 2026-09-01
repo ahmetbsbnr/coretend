@@ -1,4 +1,4 @@
-/* Ahmet Design System 1.0.0 — surfaces instrumentales
+/* Ahmet Design System 1.1.0 — surfaces instrumentales
    Extrait du site CoreTend (ahmetbsbnr/coretend @ 63cd103). Apache-2.0.
    Assemblage : node build.mjs → dist/ahmet-design.css. Ne pas éditer dist. */
 
@@ -516,7 +516,7 @@
 .term {
   border: 1px solid var(--line);
   border-radius: var(--r);
-  background: #0d0f13;
+  background: #16191e;
   color: #dfe3ea;
   font-family: var(--mono);
   font-size: 12.5px;
@@ -530,9 +530,9 @@
   align-items: center;
   gap: 8px;
   padding: 10px 13px;
-  border-bottom: 1px solid #21252e;
-  background: #12151b;
-  color: #7d838f;
+  border-bottom: 1px solid #262b33;
+  background: #1c2026;
+  color: #8b919d;
   font-size: 11px;
   letter-spacing: 0.05em;
 }
@@ -548,7 +548,7 @@
 }
 
 .term .c {
-  color: #6c8cff;
+  color: #5fd3c6;
 }
 .term .g {
   color: #43c98c;
@@ -557,14 +557,14 @@
   color: #e0aa4a;
 }
 .term .d {
-  color: #767c88;
+  color: #8b919d;
 }
 
 .caret {
   display: inline-block;
   width: 8px;
   height: 15px;
-  background: #6c8cff;
+  background: #5fd3c6;
   vertical-align: -3px;
   animation: ads-blink 1.1s steps(1) infinite;
 }

@@ -1,4 +1,4 @@
-/* Ahmet Design System 1.0.0 — motion module (ESM).
+/* Ahmet Design System 1.1.0 — motion module (ESM).
    Extracted from the CoreTend product site (ahmetbsbnr/coretend,
    Website/index.html, commit 63cd103). Apache-2.0. See PROVENANCE.md.
 

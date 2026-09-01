@@ -174,10 +174,10 @@ enum SpaceNodeCategory: String, Hashable {
     var color: Color {
         switch self {
         case .folder: return MCTheme.accent
-        case .media: return MCColor.novaMagenta
-        case .document: return MCColor.glacierBlue
+        case .media: return MCColor.cellTealDeep
+        case .document: return MCColor.cellGraphite
         case .archive: return MCTheme.warning
-        case .code: return MCColor.mossGreen
+        case .code: return MCColor.cellTealPale
         case .other: return .secondary
         }
     }
@@ -281,13 +281,13 @@ struct SpaceLensView: View {
                     MCFeatureRow(L("spacelens.category.folder"),
                                  icon: "folder.fill", iconColor: MCTheme.accent)
                     MCFeatureRow(L("spacelens.category.media"),
-                                 icon: "photo", iconColor: MCColor.novaMagenta)
+                                 icon: "photo", iconColor: MCColor.cellTealDeep)
                     MCFeatureRow(L("spacelens.category.document"),
-                                 icon: "doc.text", iconColor: MCColor.glacierBlue)
+                                 icon: "doc.text", iconColor: MCColor.cellGraphite)
                     MCFeatureRow(L("spacelens.category.archive"),
                                  icon: "archivebox", iconColor: MCTheme.warning)
                     MCFeatureRow(L("spacelens.category.code"),
-                                 icon: "curlybraces", iconColor: MCColor.mossGreen)
+                                 icon: "curlybraces", iconColor: MCColor.cellTealPale)
                 }
 
                 HStack(spacing: MCSpacing.sm) {

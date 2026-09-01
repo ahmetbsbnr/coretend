@@ -66,6 +66,17 @@ PINNED_RELEASE_EVIDENCE: Mapping[str, Mapping[str, Mapping[str, Any]]] = {
             "size": 2_857_653,
         },
     },
+    # First signed + notarized release; artifact names drop the -unsigned tag.
+    "0.9.1-rc.6": {
+        "dmg": {
+            "sha256": "770bd0340cf887d90bb2a0a6b6510a420a8e268de550a7ff73c88dcb7138df32",
+            "size": 4_790_985,
+        },
+        "zip": {
+            "sha256": "c0ea57e375ef5ef00d38d04687a647a1e9e11cf21302ad836c1aadd415a0112e",
+            "size": 2_933_940,
+        },
+    },
 }
 
 ALLOWED_SOURCE_KEYS = {
@@ -244,8 +255,11 @@ def validate_source(
 
     signed = _require_bool(source, "signed")
     notarized = _require_bool(source, "notarized")
-    _require(not signed, "this direct-distribution gate currently requires signed=false")
-    _require(not notarized, "this direct-distribution gate currently requires notarized=false")
+    # Either a fully unsigned build (both false) or a Developer ID signed +
+    # Apple-notarized one (both true). The half-states are always a mistake:
+    # a signed-but-not-notarized build still trips Gatekeeper, and a
+    # notarized-but-unsigned build cannot exist.
+    _require(signed == notarized, "signed and notarized must agree — no half-signed release")
 
     _require(source.get("repositoryURL") == REPOSITORY_URL, "repositoryURL must be the canonical CoreTend repository")
     _validate_https_url(_require_string(source, "repositoryURL"), "repositoryURL")
@@ -264,9 +278,12 @@ def validate_source(
         raise ReleaseValidationError("publishedAt must be an ISO-8601 timestamp") from error
     _require(published_at.endswith("Z") and parsed_published_at.tzinfo is not None, "publishedAt must be UTC and end in Z")
 
+    # A signed + notarized release publishes plain artifact names; an unsigned
+    # one keeps the -unsigned tag so a downloader can tell at a glance.
+    tag_suffix = "" if signed else "-unsigned"
     expected_names = {
-        "dmg": f"CoreTend-{version}-{architecture}-unsigned.dmg",
-        "zip": f"CoreTend-{version}-{architecture}-unsigned.zip",
+        "dmg": f"CoreTend-{version}-{architecture}{tag_suffix}.dmg",
+        "zip": f"CoreTend-{version}-{architecture}{tag_suffix}.zip",
     }
     for prefix in ("dmg", "zip"):
         name = _require_string(source, f"{prefix}Name")

@@ -3,26 +3,27 @@
 # SPDX-FileCopyrightText: The CoreTend Authors
 #
 # Signs, notarizes and staples a release build with a real Apple Developer
-# ID. Fully prepared, never executed in this repository's history — no
-# Developer ID has ever been available in any environment this was written
-# in. Every command below is real and correct, not illustrative.
+# ID. First run for real on 2026-08-31 (0.9.1-rc.5) — the Developer ID
+# Application identity "Ahmet BASBUNAR (NSCUV5G738)" was issued that day.
 #
 # Prerequisites this script assumes and checks:
 #   - A "Developer ID Application" identity in the login keychain
 #     (`security find-identity -v -p codesigning`).
-#   - An app-specific password or API key registered for notarytool
-#     (`xcrun notarytool store-credentials`), referenced here by profile
-#     name so no secret is ever written into this file or the repo.
+#   - An app-specific password or App Store Connect API key registered for
+#     notarytool (`xcrun notarytool store-credentials`), referenced here by
+#     profile name so no secret is ever written into this file or the repo.
 #   - Configuration/CoreTend.entitlements (hardened runtime, no sandbox —
 #     see that file's own comments for why).
 #
 # Usage:
 #   Scripts/sign-and-notarize.sh <version> <notarytool-keychain-profile>
 #
-# Example (never run in this repo — illustrative of the real invocation):
+# Real invocation used for 0.9.1-rc.5:
 #   xcrun notarytool store-credentials "CoreTend-Notary" \
-#     --apple-id "you@example.com" --team-id "TEAMID1234" --password "app-specific-password"
-#   Scripts/sign-and-notarize.sh 1.0.0 CoreTend-Notary
+#     --key Configuration/DeveloperID/AuthKey_XXXXXXXXXX.p8 \
+#     --key-id XXXXXXXXXX --issuer <issuer-uuid>
+#   export CORETEND_DEVELOPER_ID_APPLICATION="Developer ID Application: Ahmet BASBUNAR (NSCUV5G738)"
+#   Scripts/sign-and-notarize.sh 0.9.1-rc.5 CoreTend-Notary
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -80,23 +81,37 @@ spctl --assess --type execute --verbose "$APP" || {
   echo "NOTE: spctl will still reject until notarization+stapling complete below — expected at this point."
 }
 
-echo "== Packaging for notarization =="
+# Order matters: the notarization ticket is bound to the exact CDHash of the
+# bundle that was submitted. Anything that re-signs build/CoreTend.app between
+# "submit" and "staple" (e.g. a DMG build that rebuilds the app) invalidates
+# the pairing. So: ZIP -> submit -> staple the *same* bundle -> only then build
+# the DMG from it, and never rebuild the app inside package-dmg.sh.
+echo "== Packaging the signed app for notarization =="
 mkdir -p Release
 ditto -c -k --keepParent "$APP" "$ZIP_NAME"
-bash Scripts/package-dmg.sh "$VERSION"
 
-echo "== Submitting ZIP for notarization (app) =="
+echo "== Submitting the app for notarization =="
 xcrun notarytool submit "$ZIP_NAME" --keychain-profile "$NOTARY_PROFILE" --wait
 
-echo "== Stapling the app, then re-packaging the DMG with the stapled app =="
+echo "== Stapling the notarized app =="
 xcrun stapler staple "$APP"
-bash Scripts/package-dmg.sh "$VERSION"
+xcrun stapler validate "$APP"
+
+echo "== Building the DMG from the signed, stapled app (no rebuild) =="
+CORETEND_SKIP_APP_BUILD=1 bash Scripts/package-dmg.sh "$VERSION"
+UNSIGNED_DMG="Release/CoreTend-${VERSION}-arm64-unsigned.dmg"
+[ -f "$UNSIGNED_DMG" ] || { echo "FAIL: $UNSIGNED_DMG not produced by package-dmg.sh"; exit 1; }
+cp "$UNSIGNED_DMG" "$DMG_NAME"
+
+echo "== Signing the DMG =="
+codesign --force --timestamp --sign "$DEVELOPER_ID" "$DMG_NAME"
 
 echo "== Submitting the DMG for notarization =="
 xcrun notarytool submit "$DMG_NAME" --keychain-profile "$NOTARY_PROFILE" --wait
 
 echo "== Stapling the DMG =="
 xcrun stapler staple "$DMG_NAME"
+xcrun stapler validate "$DMG_NAME"
 
 echo "== Final Gatekeeper verification =="
 spctl --assess --type execute --verbose "$APP"
@@ -104,5 +119,7 @@ spctl --assess --type open --context context:primary-signature --verbose "$DMG_N
 
 echo "== Done =="
 echo "Signed, notarized, stapled: $APP, $DMG_NAME"
+echo "SHA-256:"
+shasum -a 256 "$ZIP_NAME" "$DMG_NAME"
 echo "Validate on a clean machine (no dev tools) before publishing:"
 echo "  xcrun stapler validate \"$DMG_NAME\""
