@@ -448,6 +448,19 @@ struct SpaceLensView: View {
     private var breadcrumb: some View {
         HStack(spacing: 4) {
             if let root = model.root {
+                if !model.pathStack.isEmpty {
+                    Button {
+                        navigate { model.pop(to: model.pathStack.count >= 2 ? model.pathStack.count - 2 : nil) }
+                    } label: {
+                        Image(systemName: "chevron.left")
+                    }
+                    .buttonStyle(.borderless)
+                    .keyboardShortcut("[", modifiers: .command)
+                    .help(L("spacelens.up"))
+                    .accessibilityLabel(L("spacelens.up"))
+                    .accessibilityIdentifier("spacelens.up")
+                    .padding(.trailing, 2)
+                }
                 Button(root.name) { navigate { model.pop(to: nil) } }
                     .buttonStyle(.link)
                 ForEach(Array(model.pathStack.enumerated()), id: \.element.id) { index, node in
