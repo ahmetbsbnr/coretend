@@ -394,32 +394,35 @@ struct MainWindow: View {
             .navigationSplitViewColumnWidth(min: MCSize.sidebarMin, ideal: MCSize.sidebarIdeal)
             .accessibilityIdentifier("sidebar.list")
         } detail: {
-            switch selection {
-            case .smartCare:
-                DashboardView()
-            case .cleanup:
-                CleanupView()
-            case .protection:
-                ProtectionView()
-            case .applications:
-                ApplicationsView()
-            case .duplicates:
-                DuplicatesView()
-            case .performance:
-                PerformanceView()
-            case .spaceLens:
-                SpaceLensView()
-            case .myClutter:
-                MyClutterView()
-            case .cloudCleanup:
-                CloudCleanupView()
-            case .myActivity:
-                MyActivityView()
-            case .settings:
-                MCSettingsView()
-            default:
-                PlaceholderView(module: selection ?? .smartCare)
+            Group {
+                switch selection {
+                case .smartCare:
+                    DashboardView()
+                case .cleanup:
+                    CleanupView()
+                case .protection:
+                    ProtectionView()
+                case .applications:
+                    ApplicationsView()
+                case .duplicates:
+                    DuplicatesView()
+                case .performance:
+                    PerformanceView()
+                case .spaceLens:
+                    SpaceLensView()
+                case .myClutter:
+                    MyClutterView()
+                case .cloudCleanup:
+                    CloudCleanupView()
+                case .myActivity:
+                    MyActivityView()
+                case .settings:
+                    MCSettingsView()
+                default:
+                    PlaceholderView(module: selection ?? .smartCare)
+                }
             }
+            .mcCanvasBackground()
         }
         .onAppear { if !onboardingDone { showOnboarding = true } }
         .sheet(isPresented: $showOnboarding, onDismiss: { onboardingDone = true }) {

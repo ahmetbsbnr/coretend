@@ -49,17 +49,6 @@ struct DashboardView: View {
             .padding(MCSpacing.page)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .background(
-            ZStack {
-                MCColor.background
-                // A single, faint teal light source in the top-leading corner —
-                // the canvas reads as lit, not as a flat field, without any
-                // imagery. Respects "no dead flat surface".
-                RadialGradient(colors: [MCColor.teal.opacity(0.07), .clear],
-                               center: .topLeading, startRadius: 0, endRadius: 640)
-            }
-            .ignoresSafeArea()
-        )
         .navigationTitle(L("module.dashboard"))
         .accessibilityIdentifier("dashboard.root")
         .task {

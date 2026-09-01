@@ -318,6 +318,31 @@ public struct MCSuccessState: View {
     }
 }
 
+// MARK: - Lit canvas
+
+/// The app's shared canvas: the Slate/Porcelain base with a single faint
+/// teal light source in the top-leading corner. No imagery, no second hue —
+/// just enough gradient that the window never reads as a dead flat field.
+/// Applied once to the module container so every screen sits on it.
+public struct MCCanvasBackground: ViewModifier {
+    public init() {}
+    public func body(content: Content) -> some View {
+        content.background(
+            ZStack {
+                MCColor.background
+                RadialGradient(colors: [MCColor.teal.opacity(0.06), .clear],
+                               center: .topLeading, startRadius: 0, endRadius: 680)
+            }
+            .ignoresSafeArea()
+        )
+    }
+}
+
+public extension View {
+    /// Sits the view on the app's lit canvas (see `MCCanvasBackground`).
+    func mcCanvasBackground() -> some View { modifier(MCCanvasBackground()) }
+}
+
 // MARK: - Feature row (module landing states)
 
 /// A feature/capability row for module idle states — icon + title + optional subtitle.

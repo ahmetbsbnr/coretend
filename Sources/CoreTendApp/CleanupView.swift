@@ -245,7 +245,6 @@ struct CleanupView: View {
             .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .center)
         }
         }
-        .background(MCColor.background)
     }
 
     // MARK: - Scanning

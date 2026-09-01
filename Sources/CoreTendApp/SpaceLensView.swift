@@ -373,7 +373,6 @@ struct SpaceLensView: View {
             .frame(maxWidth: 520, alignment: .leading)
         }
         .frame(maxWidth: .infinity)
-        .background(MCColor.background)
     }
 
     private func scanningView(_ items: Int) -> some View {
