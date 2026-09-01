@@ -281,21 +281,25 @@ p{margin:0}
 .track i{display:block;height:100%;width:0;border-radius:99px;
   background:linear-gradient(90deg,var(--cobalt),var(--cobalt-lift));transition:width .4s linear}
 
-/* treemap */
+/* radial size map — mirrors Space Lens in the app */
 .lens{position:relative;height:174px;border-radius:10px;overflow:hidden;background:var(--paper-3);
   border:1px solid var(--line)}
-.lens b{position:absolute;left:var(--x);top:var(--y);width:var(--w);height:var(--h);
-  border:1px solid color-mix(in srgb,var(--paper) 55%,transparent);border-radius:4px;
-  background:color-mix(in srgb,var(--cobalt-deep) calc(var(--t)*1%),var(--paper-2));
-  transform:scale(.4);opacity:0;transform-origin:0 0;
+.lens b{position:absolute;left:var(--cx);top:var(--cy);width:var(--r);height:var(--r);
+  margin-left:calc(var(--r) / -2);margin-top:calc(var(--r) / -2);
+  display:grid;place-items:center;border-radius:50%;
+  border:1px solid color-mix(in srgb,var(--paper) 45%,transparent);
+  background:
+    radial-gradient(circle at 34% 30%,color-mix(in srgb,var(--cobalt-bright) 32%,transparent),transparent 62%),
+    color-mix(in srgb,var(--cobalt-deep) calc(var(--t)*1%),var(--paper-2));
+  transform:scale(.35);opacity:0;transform-origin:center;
   transition:transform .7s var(--ease-out) var(--d),opacity .7s var(--ease-out) var(--d),outline-color .2s;
-  outline:1.5px solid transparent;outline-offset:-1.5px}
+  outline:1.5px solid transparent;outline-offset:2px}
 .lens b.is-visible{transform:scale(1);opacity:1}
-.lens b.is-leaving{transform:scale(.72);opacity:0;transform-origin:center}
+.lens b.is-leaving{transform:scale(.6);opacity:0}
 .lens b:hover{outline-color:var(--cobalt);z-index:3}
-.lens b i{position:absolute;left:6px;top:5px;font-family:var(--mono);font-size:9.5px;font-style:normal;
-  color:var(--ink);letter-spacing:-.02em;pointer-events:none;
-  white-space:nowrap;overflow:hidden;max-width:calc(100% - 10px)}
+.lens b i{font-family:var(--mono);font-size:9px;font-style:normal;
+  color:var(--ink);letter-spacing:-.02em;pointer-events:none;text-align:center;
+  white-space:nowrap;overflow:hidden;max-width:calc(100% - 8px)}
 .lens .sweepline{position:absolute;top:0;bottom:0;width:64px;pointer-events:none;
   background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--cobalt) 22%,transparent),transparent);
   animation:sweepx 2.6s linear infinite}
@@ -792,9 +796,9 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
     <h2 data-reveal data-fr="Huit modules. Aucune promesse au-delà.">Eight modules. Nothing promised beyond them.</h2>
     <p class="lead" data-reveal style="--d:100ms;margin-bottom:38px" data-fr="Voici l'architecture réelle de la version 0.9.1. Si une fonction n'est pas dans cette liste, elle n'est pas dans l'application.">This is the actual architecture of 0.9.1. If a capability is not on this list, it is not in the app.</p>
     <ul class="modules">
-      <li class="mod" data-tilt data-reveal><span class="k">Home</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3>Dashboard</h3><p data-fr="Signature de l'app, état de la Corbeille, exclusions, espace libre, activité récente et raccourcis vers les six workflows principaux.">App signature, Trash status, exclusions, free space, recent activity and shortcuts into the six primary workflows.</p></li>
+      <li class="mod" data-tilt data-reveal><span class="k">Home</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3>Dashboard</h3><p data-fr="Espace libre, état de la Corbeille, exclusions, activité récente, et un grand bouton d'analyse au centre avec des raccourcis vers les autres workflows.">Free space, Trash status, exclusions, recent activity, and a large scan action at the centre with shortcuts into the other workflows.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Scan</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Stockage">Storage</h3><p data-fr="Caches, journaux, rapports de plantage, installeurs, données de build, téléchargements oubliés.">Caches, logs, crash reports, leftover installers, build data and forgotten downloads.</p></li>
-      <li class="mod" data-tilt data-reveal><span class="k">Map</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3>Space Lens</h3><p data-fr="Treemap navigable, fil d'Ariane, recherche, ouverture directe dans le Finder.">A treemap you can walk into, with breadcrumbs, search and Reveal in Finder.</p></li>
+      <li class="mod" data-tilt data-reveal><span class="k">Map</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3>Space Lens</h3><p data-fr="Carte de tailles radiale — le plus gros dossier au centre, les autres en orbite — navigable, avec fil d'Ariane, recherche et ouverture dans le Finder.">A radial size map — the largest folder at the centre, siblings orbiting it — that you can walk into, with breadcrumbs, search and Reveal in Finder.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Match</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Doublons">Duplicates</h3><p data-fr="Correspondance SHA-256 exacte, choix de l'exemplaire à garder, Quick Look, Finder et export CSV.">Exact SHA-256 matching, keeper selection, Quick Look, Finder and CSV export.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Apps</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Applications">Applications</h3><p data-fr="Inventaire de /Applications et ~/Applications, données associées par bundle ID et source de mise à jour détectée.">Inventory of /Applications and ~/Applications, bundle-ID-associated data and detected update source.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Signals</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Intégrité">Integrity</h3><p data-fr="Provenance des téléchargements, inspection d'une app choisie et inventaire des agents de lancement. Ce n'est pas un antivirus.">Download provenance, inspection of one selected app and launch-agent inventory. It is not an antivirus.</p></li>
@@ -1048,7 +1052,7 @@ const VIEWS = {
   lens:{
     title:{en:"Space Lens",fr:"Space Lens"},
     meta:{en:"Macintosh HD › Users › demo · 96 GB",fr:"Macintosh HD › Utilisateurs › demo · 96 Go"},
-    foot:{en:"Double-click a block to walk into it.",fr:"Double-cliquez un bloc pour y entrer."},
+    foot:{en:"Double-click a bubble to walk into it.",fr:"Double-cliquez une bulle pour y entrer."},
     map:[["Movies",32],["Library",24],["Pictures",16],["Developer",12],["Documents",8],["Other",4]],
     rows:[
       {p:"/Users/demo/Movies",s:"32 GB",o:1,t:{en:"inspect",fr:"inspecter"}},
@@ -1243,15 +1247,41 @@ function logos() {
   };
 }
 
-/* alternating-slice treemap */
-function treemap(items, x, y, w, h, horiz, out=[]) {
-  if (!items.length) return out;
-  const total = items.reduce((s,i)=>s+i[1], 0);
-  const [first, ...rest] = items;
-  const f = first[1] / total;
-  if (horiz) { const iw = w*f; out.push({l:first[0], x, y, w:iw, h}); treemap(rest, x+iw, y, w-iw, h, false, out); }
-  else       { const ih = h*f; out.push({l:first[0], x, y, w, h:ih}); treemap(rest, x, y+ih, w, h-ih, true, out); }
-  return out;
+/* radial "point of focus" packing — the largest item dead centre, the rest
+   orbiting it on a golden-angle spiral, area proportional to weight. Mirrors
+   RadialPack in the app. Coordinates are pixels within the given box. */
+function bubblePack(items, W, H) {
+  if (!items.length || W < 8 || H < 8) return [];
+  const maxW = Math.max(items[0][1], 1);
+  const shortSide = Math.min(W, H);
+  // r is the DIAMETER. Kept modest so several fit a wide, short box.
+  const maxR = shortSide * 0.52, minR = shortSide * 0.15, gap = shortSide * 0.035;
+  const cx = W / 2, cy = H / 2;
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const placed = [];
+  items.forEach((it, idx) => {
+    const r = Math.max(minR, Math.min(maxR, Math.sqrt(it[1] / maxW) * maxR));
+    if (idx === 0) { placed.push({l: it[0], cx, cy, r}); return; }
+    let ang = idx * 2.399963, dist = (placed[0].r + r) / 2 + gap, best = null;
+    for (let step = 0; step < 240; step++) {
+      const px = cx + Math.cos(ang) * dist, py = cy + Math.sin(ang) * dist;
+      const clears = placed.every(p => Math.hypot(p.cx - px, p.cy - py) >= (p.r + r) / 2 + gap);
+      if (clears) {
+        // keep the closest-to-centre spot that clears, even if it overflows a little
+        const d = Math.hypot(px - cx, py - cy);
+        if (!best || d < best.d) best = {px, py, d};
+        if (px - r / 2 >= -r * 0.15 && px + r / 2 <= W + r * 0.15 &&
+            py - r / 2 >= -r * 0.15 && py + r / 2 <= H + r * 0.15) {
+          placed.push({l: it[0], cx: px, cy: py, r}); return;
+        }
+      }
+      ang += 0.33; dist += shortSide * 0.02;
+    }
+    const px = best ? best.px : cx + Math.cos(ang) * ((placed[0].r + r) / 2 + gap);
+    const py = best ? best.py : cy + Math.sin(ang) * ((placed[0].r + r) / 2 + gap);
+    placed.push({l: it[0], cx: clamp(px, r / 2, W - r / 2), cy: clamp(py, r / 2, H - r / 2), r});
+  });
+  return placed;
 }
 
 /* ─── ambient canvas ─────────────────────────────────────── */
@@ -1497,10 +1527,11 @@ function demo(view = "storage", auto = true) {
 
   const lens = $("#lens");
   lens.querySelectorAll("b").forEach(n => n.remove());
-  treemap(v.map, 0, 0, 100, 100, true).forEach((c, i) => {
+  const LW = lens.clientWidth || 320, LH = lens.clientHeight || 174;
+  bubblePack(v.map, LW, LH).forEach((c, i) => {
     const b = document.createElement("b");
-    b.style.cssText = `--x:${c.x}%;--y:${c.y}%;--w:${c.w}%;--h:${c.h}%;--t:${18 + (v.map.length-i)*7}`;
-    if (c.w > 17 && c.h > 13) b.innerHTML = `<i>${c.l}</i>`;
+    b.style.cssText = `--cx:${c.cx.toFixed(1)}px;--cy:${c.cy.toFixed(1)}px;--r:${c.r.toFixed(1)}px;--t:${18 + (v.map.length-i)*7}`;
+    if (c.r > 42) b.innerHTML = `<i>${c.l}</i>`;
     b.title = c.l;
     lens.appendChild(b);
   });
