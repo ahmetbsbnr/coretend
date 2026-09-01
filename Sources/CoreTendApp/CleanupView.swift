@@ -364,14 +364,8 @@ struct CleanupView: View {
     }
 
     private func doneView(freed: Int64) -> some View {
-        VStack(spacing: MCSpacing.md) {
-            MCFragmentView(groupWeights: model.normalizedGroupWeights, phase: .success)
-                .frame(width: 120, height: 120)
-                .accessibilityLabel(MCFragmentView(groupWeights: [], phase: .success).accessibilityDescription)
-            Text(L("cleanup.done.moved", mcFormatBytes(freed)))
-                .font(.title3.weight(.semibold))
-            Button(L("smartcare.scan_again")) { model.startScan() }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        MCSuccessState(
+            title: L("cleanup.done.moved", mcFormatBytes(freed)),
+            actionTitle: L("smartcare.scan_again")) { model.startScan() }
     }
 }

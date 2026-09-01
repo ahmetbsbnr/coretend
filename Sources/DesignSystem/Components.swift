@@ -245,6 +245,79 @@ public struct MCErrorState: View {
     }
 }
 
+/// Shared "the cleanup finished" state. One consistent, quietly celebratory
+/// moment across every module that moves things to the Trash — a sealed
+/// checkmark that pops in with a single expanding ring flourish (transform +
+/// opacity only, one-shot, no loop). Under Reduce Motion it simply appears.
+///
+/// Before this, each module hand-rolled its finish screen — some reused
+/// `MCEmptyState` with a green tint, some an ad-hoc `VStack` — so "done"
+/// looked different depending on where you were.
+public struct MCSuccessState: View {
+    private let title: String
+    private let message: String?
+    private let actionTitle: String?
+    private let action: (() -> Void)?
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var popped = false
+    @State private var flourish: CGFloat = 0
+
+    public init(title: String, message: String? = nil,
+                actionTitle: String? = nil, action: (() -> Void)? = nil) {
+        self.title = title
+        self.message = message
+        self.actionTitle = actionTitle
+        self.action = action
+    }
+
+    public var body: some View {
+        VStack(spacing: MCSpacing.md) {
+            ZStack {
+                if !reduceMotion {
+                    ForEach(0..<2, id: \.self) { i in
+                        Circle()
+                            .stroke(MCColor.success.opacity(0.35 * Double(1 - flourish)), lineWidth: 2)
+                            .frame(width: 76, height: 76)
+                            .scaleEffect(0.55 + flourish * (1.3 + CGFloat(i) * 0.55))
+                    }
+                }
+                Circle().fill(MCColor.success.opacity(0.14)).frame(width: 76, height: 76)
+                Image(systemName: "checkmark.seal.fill")
+                    .font(.system(size: 34, weight: .semibold))
+                    .foregroundStyle(MCColor.success)
+            }
+            .scaleEffect(popped || reduceMotion ? 1 : 0.7)
+            .opacity(popped || reduceMotion ? 1 : 0)
+            .accessibilityHidden(true)
+
+            Text(title)
+                .font(MCFont.pageTitle)
+                .multilineTextAlignment(.center)
+            if let message, !message.isEmpty {
+                Text(message)
+                    .font(MCFont.secondaryBody)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 420)
+            }
+            if let actionTitle, let action {
+                Button(actionTitle, action: action)
+                    .buttonStyle(.borderedProminent)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(MCSpacing.xl)
+        .onAppear {
+            guard !reduceMotion else { return }
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.62)) { popped = true }
+            withAnimation(.easeOut(duration: 0.9)) { flourish = 1 }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(message.map { $0.isEmpty ? title : "\(title). \($0)" } ?? title)
+    }
+}
+
 // MARK: - Feature row (module landing states)
 
 /// A feature/capability row for module idle states — icon + title + optional subtitle.
