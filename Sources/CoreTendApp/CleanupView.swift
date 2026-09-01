@@ -276,15 +276,17 @@ struct CleanupView: View {
     // MARK: - Review
 
     private var reviewView: some View {
-        VStack(alignment: .leading, spacing: MCSpacing.sm) {
-            HStack {
-                MCFragmentView(groupWeights: model.normalizedGroupWeights,
-                               phase: model.phase == .running ? .executing : .review)
-                    .frame(width: 48, height: 48)
-                    .accessibilityHidden(true)
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .center, spacing: MCSpacing.lg) {
                 VStack(alignment: .leading, spacing: MCSpacing.xxs) {
+                    // The recoverable total is the whole point of this screen.
+                    Text(mcFormatBytes(model.totalBytes))
+                        .font(MCFont.displayMetric)
+                        .monospacedDigit()
+                        .contentTransition(.numericText())
                     Text(L("cleanup.review.selected", model.findings.count, mcFormatBytes(model.selectedBytes)))
-                        .font(MCFont.cardTitle)
+                        .font(MCFont.secondaryBody)
+                        .foregroundStyle(.secondary)
                     if model.isDisplayTruncated {
                         Text(L("cleanup.review.truncated", model.findings.count, model.totalFindingCount, mcFormatBytes(model.totalBytes)))
                             .font(.caption).foregroundStyle(.secondary)
@@ -295,8 +297,13 @@ struct CleanupView: View {
                     showMoveConfirmation = true
                 }
                 .buttonStyle(.borderedProminent)
+                .controlSize(.large)
                 .disabled(model.phase == .running || model.selectedIDs.isEmpty)
             }
+            .padding(.horizontal, MCSpacing.page)
+            .padding(.top, MCSpacing.lg)
+            .padding(.bottom, MCSpacing.md)
+
             List {
                 ForEach(model.groups) { group in
                     DisclosureGroup {

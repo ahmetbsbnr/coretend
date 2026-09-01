@@ -308,10 +308,15 @@ struct DuplicatesView: View {
 
     private var resultsView: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .firstTextBaseline) {
+            HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: MCSpacing.xxs) {
+                    Text(mcFormatBytes(model.wastedBytes))
+                        .font(MCFont.displayMetric)
+                        .monospacedDigit()
+                        .contentTransition(.numericText())
                     Text(L("dupes.results.summary", model.groups.count, mcFormatBytes(model.selectedBytes), mcFormatBytes(model.wastedBytes)))
-                        .font(MCFont.cardTitle)
+                        .font(MCFont.secondaryBody)
+                        .foregroundStyle(.secondary)
                     // The keeper-selection rule, stated once — not repeated on
                     // every group's keeper row.
                     Text(L("dupes.suggested_keeper.why"))
