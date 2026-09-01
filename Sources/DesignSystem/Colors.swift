@@ -131,8 +131,10 @@ public enum MCColor {
     // appearance.
     public static let background = adaptive("background",
         light: Canonical.paper, dark: Canonical.ink)
+    // Dark elevated surface sits a clear ~3 L* steps above Slate so cards
+    // read as raised, not as the same flat field. Light stays near-white.
     public static let elevatedBackground = adaptive("elevatedBackground",
-        light: (1.0, 0.996, 0.988), dark: (0.1412, 0.1569, 0.1765))
+        light: (1.0, 0.996, 0.988), dark: (0.1725, 0.1922, 0.2157))
     public static let secondaryBackground = adaptive("secondaryBackground",
         light: (0.9255, 0.9098, 0.8784), dark: (0.0784, 0.0863, 0.0980))
     public static let separator = adaptive("separator",
