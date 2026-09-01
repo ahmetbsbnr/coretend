@@ -203,45 +203,42 @@ struct CleanupView: View {
     private var idleView: some View {
         GeometryReader { proxy in
         ScrollView {
-            VStack(alignment: .leading, spacing: MCSpacing.xl) {
-                HStack(alignment: .top, spacing: MCSpacing.lg) {
-                    MCFragmentView(groupWeights: [], phase: .rest)
-                        .frame(width: 72, height: 72)
-                        .accessibilityLabel(MCFragmentView(groupWeights: [], phase: .rest).accessibilityDescription)
-                    VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                        Text(L("cleanup.idle.title"))
-                            .font(MCFont.pageTitle)
-                        Text(L("cleanup.idle.safety_note"))
-                            .font(MCFont.secondaryBody)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+            VStack(spacing: MCSpacing.xl) {
+                VStack(spacing: MCSpacing.xs) {
+                    Text(L("cleanup.idle.title"))
+                        .font(MCFont.pageTitle)
+                        .multilineTextAlignment(.center)
+                    Text(L("cleanup.idle.safety_note"))
+                        .font(MCFont.secondaryBody)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
-                VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                    MCSectionHeader(L("cleanup.idle.what_is_scanned"))
-                    MCFeatureRow(L("cleanup.category.caches"),
-                                 subtitle: L("cleanup.category.caches.detail"),
-                                 icon: "folder.badge.gearshape")
-                    MCFeatureRow(L("cleanup.category.logs"),
-                                 subtitle: L("cleanup.category.logs.detail"),
-                                 icon: "doc.text")
-                    MCFeatureRow(L("cleanup.category.xcode"),
-                                 subtitle: L("cleanup.category.xcode.detail"),
-                                 icon: "hammer")
-                    MCFeatureRow(L("cleanup.category.downloads"),
-                                 subtitle: L("cleanup.category.downloads.detail"),
-                                 icon: "arrow.down.circle")
-                }
-
-                Button(L("cleanup.start_scan")) { model.startScan() }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
+                MCScanButton(L("cleanup.start_scan")) { model.startScan() }
                     .keyboardShortcut(.defaultAction)
                     .accessibilityIdentifier("storage.scan.start")
+
+                MCCard {
+                    VStack(alignment: .leading, spacing: MCSpacing.sm) {
+                        MCSectionHeader(L("cleanup.idle.what_is_scanned"))
+                        MCFeatureRow(L("cleanup.category.caches"),
+                                     subtitle: L("cleanup.category.caches.detail"),
+                                     icon: "folder.badge.gearshape")
+                        MCFeatureRow(L("cleanup.category.logs"),
+                                     subtitle: L("cleanup.category.logs.detail"),
+                                     icon: "doc.text")
+                        MCFeatureRow(L("cleanup.category.xcode"),
+                                     subtitle: L("cleanup.category.xcode.detail"),
+                                     icon: "hammer")
+                        MCFeatureRow(L("cleanup.category.downloads"),
+                                     subtitle: L("cleanup.category.downloads.detail"),
+                                     icon: "arrow.down.circle")
+                    }
+                }
+                .frame(maxWidth: 480)
             }
             .padding(MCSpacing.page)
-            .frame(maxWidth: 560, alignment: .leading)
             .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .center)
         }
         }

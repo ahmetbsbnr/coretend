@@ -159,13 +159,17 @@ struct LargeOldFilesView: View {
     }
 
     private var idleView: some View {
-        VStack(spacing: MCSpacing.md) {
-            Image(systemName: "doc.on.doc")
-                .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
-                .accessibilityHidden(true)
-            Text(L("clutter.idle.title")).font(MCFont.pageTitle)
-            Text(L("clutter.idle.subtitle"))
-                .multilineTextAlignment(.center).foregroundStyle(.secondary)
+        VStack(spacing: MCSpacing.xl) {
+            VStack(spacing: MCSpacing.xs) {
+                Text(L("clutter.idle.title")).font(MCFont.pageTitle)
+                    .multilineTextAlignment(.center)
+                Text(L("clutter.idle.subtitle"))
+                    .font(MCFont.secondaryBody)
+                    .multilineTextAlignment(.center).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            MCScanButton(L("clutter.analyze"), systemImage: "doc.on.doc") { model.start() }
+                .keyboardShortcut(.defaultAction)
             HStack(spacing: MCSpacing.md) {
                 Picker(L("clutter.larger_than"), selection: $model.minSizeMB) {
                     Text(L("clutter.size.50mb")).tag(50)
@@ -182,9 +186,6 @@ struct LargeOldFilesView: View {
                 }
                 .frame(width: 180)
             }
-            Button(L("clutter.analyze")) { model.start() }
-                .buttonStyle(.borderedProminent)
-                .keyboardShortcut(.defaultAction)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(MCSpacing.page)
