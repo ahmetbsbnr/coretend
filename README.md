@@ -1,77 +1,114 @@
 # CoreTend
 
-<p align="center"><img src="Resources/Brand/Generated/Logo-Horizontal-light@2x.png" width="420" alt="CoreTend"></p>
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="Resources/Brand/Generated/Logo-Horizontal-dark@2x.png">
+    <img src="Resources/Brand/Generated/Logo-Horizontal-light@2x.png" width="420" alt="CoreTend">
+  </picture>
+</p>
 
-<p align="center">Local, transparent and reversible care for macOS.</p>
+<p align="center"><strong>Know what your Mac is holding. Take the space back.</strong></p>
 
-CoreTend is an open-source macOS utility that explains storage findings before
-an approved action. Scans run locally; supported removals require a reviewed
-selection and explicit confirmation, then go to the Trash.
+<p align="center">
+  Local, transparent and reversible care for macOS. CoreTend reads supported
+  locations on-device and explains every finding. Nothing leaves your Mac;
+  sensitive actions need a reviewed selection and explicit confirmation before
+  eligible items go to the Trash.
+</p>
 
-## Current product
+<p align="center">
+  <a href="https://github.com/ahmetbsbnr/coretend/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/ahmetbsbnr/coretend?include_prereleases&sort=semver&color=0B6E6C&label=release"></a>
+  <img alt="Platform" src="https://img.shields.io/badge/macOS-14%2B%20%C2%B7%20Apple%20silicon-1B1E22">
+  <img alt="Signed &amp; notarized" src="https://img.shields.io/badge/Developer%20ID-signed%20%2B%20notarized-0B6E6C">
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-1B1E22"></a>
+</p>
 
-The maintained branch contains the real Dashboard, Storage, Space Lens,
-Duplicates, Applications, Integrity and Activity workflows, plus Settings,
-onboarding, command palette and menu-bar status. A secondary "More" sidebar
-group holds My Clutter (large & old files), Cloud Cleanup and Performance —
-each does something the primary seven don't (a size/age file finder, local-
-vs-cloud storage analysis, and live CPU/memory history with broken-
-LaunchAgent detection), kept reachable rather than folded away. Favorites &
-Recent Locations is reachable from Space Lens's toolbar rather than as its
-own sidebar entry. Integrity reports native macOS
-signals; it is not malware detection. Example media uses the versioned,
-privacy-safe fixtures in `Resources/DemoFixtures/`.
+<p align="center">
+  <img src="Website/assets/app/smart-care.png" width="820" alt="CoreTend dashboard">
+</p>
 
-The current public release candidate is
-[`v0.9.1-rc.5`](https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.5),
-built from tagged `main` commit
-`efccece091ca793d8e176edf9249ec104332856a`. It removes the former selectable
-preview behavior: scans stay read-only, while eligible actions require review
-and explicit confirmation before they use the macOS Trash. rc.4 and earlier
-candidates remain available only as immutable historical evidence.
+<p align="center">
+  <a href="https://coretend.ahmetbsbnr.com">Product site</a> ·
+  <a href="https://ahmetbsbnr.com/en/projets/coretend/">Portfolio case study</a> ·
+  <a href="Documentation/README.md">Documentation</a>
+</p>
 
-[Product site](https://coretend.ahmetbsbnr.com) ·
-[Portfolio case study](https://ahmetbsbnr.com/en/projets/coretend/) ·
-[Documentation index](Documentation/README.md)
+---
 
-## Distribution status
+## What it does
 
-The `v0.9.1-rc.5` direct-distribution build is ad-hoc signed, not Developer ID
-signed, and not notarized. Gatekeeper may block the first launch. Verify the
-published SHA-256, then use **System Settings → Privacy & Security → Open Anyway**.
-Never disable Gatekeeper globally or remove quarantine recursively.
+| | |
+|---|---|
+| **Storage** | Scans caches, logs, crash reports and build data, then shows every candidate before anything can move to the Trash. |
+| **Space Lens** | A radial size map — the largest folder at the centre, siblings orbiting it, bubble area proportional to bytes. Descend, search, reveal in Finder. |
+| **Duplicates** | Exact-content matches by staged hashing. One copy per group is always kept; the suggestion is editable. |
+| **Applications** | Separates apps from their caches, agents and personal documents so an uninstall is complete. |
+| **Integrity** | Native macOS signals only — download provenance, code-signature tiers, and what launches at login. Not malware detection. |
+| **Activity** | A local log of every scan and every reversible action. |
 
-Developer ID and notarization are planned for a later release update. CoreTend
-is not advertised as a Mac App Store product; see
-[`Documentation/Release/APP_STORE_FEASIBILITY.md`](Documentation/Release/APP_STORE_FEASIBILITY.md).
+A secondary **More** group holds **Large & Old files**, **Cloud Cleanup**
+(local-vs-cloud storage analysis, never triggers a download) and
+**Performance** (live CPU / memory history, broken-LaunchAgent detection).
+
+<p align="center">
+  <img src="Website/assets/app/space-lens.png" width="400" alt="Space Lens radial size map">
+  <img src="Website/assets/app/cleanup.png" width="400" alt="Storage scan review">
+</p>
+
+## Install
+
+The current release is
+[`v0.9.1-rc.6`](https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.6)
+— the first **Developer ID signed and Apple-notarized** CoreTend build
+(`sourceCommit 568bdbf`).
+
+1. Download `CoreTend-0.9.1-rc.6-arm64.dmg` from the
+   [release page](https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.6),
+   or use the site's [`/download`](https://coretend.ahmetbsbnr.com/download) link.
+2. Optionally verify it:
+   ```sh
+   shasum -a 256 ~/Downloads/CoreTend-0.9.1-rc.6-arm64.dmg
+   # 770bd0340cf887d90bb2a0a6b6510a420a8e268de550a7ff73c88dcb7138df32
+   ```
+3. Open the DMG and drag **CoreTend** to Applications.
+
+The notarization ticket is stapled, so the app opens without a Gatekeeper
+prompt. macOS 14+ and Apple silicon (`arm64`) are required. Provenance is
+covered by Minisign + SHA-256 + notarization; there is no
+`actions/attest-build-provenance` attestation for this manually published
+release.
 
 ## Build and test
 
+Pure SwiftPM — no Xcode project.
+
 ```sh
 swift build -c release
-swift test
+bash Scripts/test.sh                    # 340 tests, never raw `swift test`
 python3 Scripts/check-demo-fixtures.py
 python3 Scripts/test-public-release-gate.py
 python3 Website/build.py --output /tmp/coretend-site-dist
 ```
 
-The app requires macOS 14 or later and Apple silicon (`arm64`). The website
-build is self-contained: fonts, release facts, `latest.json` and `SHA256SUMS`
-are generated from reviewed repository inputs.
+`bash Scripts/package-local.sh` assembles a runnable `build/CoreTend.app` from
+the release binary. The website build is self-contained: fonts, release facts,
+`latest.json` and `SHA256SUMS` are generated from reviewed repository inputs.
 
 ## Privacy and safety
 
-There is no account, advertising telemetry or analytics SDK. Scan data and
-activity stay in the local app store. The only product network request is a
-user-initiated update check for the public `latest.json` manifest. Read
-[`PRIVACY.md`](PRIVACY.md) and [`SECURITY.md`](SECURITY.md) for the boundaries.
+No account, no advertising telemetry, no analytics SDK. Scan data and activity
+stay in the local app store. The only product network request is a
+user-initiated update check for the public `latest.json` manifest. Destructive
+engines route through `SafetyCore.PathValidator`; every removal is a validated
+move to the macOS Trash and stays reversible until the Trash is emptied. See
+[`PRIVACY.md`](PRIVACY.md) and [`SECURITY.md`](SECURITY.md).
 
 ## Repository guide
 
 - [`Documentation/README.md`](Documentation/README.md) — maintained index
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — development and review expectations
-- [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE) — licensing
-- [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) — bundled font notices
+- [`DESIGN.md`](DESIGN.md) · [`DEVELOPMENT.md`](DEVELOPMENT.md) — design system and working rules
+- [`LICENSE`](LICENSE) · [`NOTICE`](NOTICE) · [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
 - [`SUPPORT.md`](SUPPORT.md) — support route
 
 ## License
