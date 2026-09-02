@@ -25,7 +25,6 @@ public enum SafetyError: Error, Equatable, Sendable {
     case outsideAllowedRoots
     case symlinkTraversal(String)
     case fileVanished
-    case notRegularFileOrDirectory
 }
 
 /// Validates paths against protected roots and per-operation allowlists.

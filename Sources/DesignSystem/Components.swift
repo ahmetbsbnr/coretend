@@ -211,40 +211,6 @@ public struct MCEmptyState: View {
     }
 }
 
-public struct MCErrorState: View {
-    private let title: String
-    private let message: String
-    private let retryTitle: String?
-    private let retry: (() -> Void)?
-
-    public init(title: String, message: String, retryTitle: String? = nil, retry: (() -> Void)? = nil) {
-        self.title = title
-        self.message = message
-        self.retryTitle = retryTitle
-        self.retry = retry
-    }
-
-    public var body: some View {
-        VStack(spacing: MCSpacing.sm) {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.system(size: MCIconSize.errorState, weight: .light))
-                .foregroundStyle(MCColor.attention)
-                .accessibilityHidden(true)
-            Text(title).font(MCFont.cardTitle)
-            Text(message)
-                .font(MCFont.secondaryBody)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 420)
-            if let retry, let retryTitle {
-                Button(retryTitle, action: retry)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(MCSpacing.xl)
-    }
-}
-
 /// Shared "the cleanup finished" state. One consistent, quietly celebratory
 /// moment across every module that moves things to the Trash — a sealed
 /// checkmark that pops in with a single expanding ring flourish (transform +
