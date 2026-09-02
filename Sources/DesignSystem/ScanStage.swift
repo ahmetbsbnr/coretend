@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: The CoreTend Authors
+
 import SwiftUI
 
 /// A live scanning visualization — the piece the modules were missing.

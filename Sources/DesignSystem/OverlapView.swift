@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: The CoreTend Authors
+
 import SwiftUI
 
 /// My Clutter's shared motif: near-duplicate/similar items shown slightly
