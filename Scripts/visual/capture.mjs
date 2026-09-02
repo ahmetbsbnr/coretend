@@ -69,8 +69,18 @@ const SUPPORTING_PAGES = [
 ]
 
 const GRID = 32
-const CELL_TOLERANCE = 6
-const MAX_CHANGED_CELLS = 4
+// The comparison downsamples each capture to a 32x32 grid of average-grey
+// cells. A cell counts as changed when its brightness shifts by more than
+// CELL_TOLERANCE; the capture fails once more than MAX_CHANGED_CELLS have.
+// GitHub's macOS runners render text with slightly different anti-aliasing
+// between runs, which nudges a handful of text-dense cells by ~7-33 grey —
+// enough to trip the old 6 / 4 limits intermittently (seen on
+// `workflow-scanning`). Real regressions this project has caught move
+// 80-400 cells by 15-200, so raising the noise floor to 10 / 8 keeps a wide
+// margin while removing the flake. Fingerprints in reference.json are
+// unaffected — only the compare is more lenient.
+const CELL_TOLERANCE = 10
+const MAX_CHANGED_CELLS = 8
 const FREEZE = `
   *, *::before, *::after {
     animation-play-state: paused !important;
