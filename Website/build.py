@@ -890,6 +890,38 @@ def write_documents(stage: Path, release: dict) -> None:
         f"User-agent: *\nAllow: /\n\nSitemap: {ORIGIN}/sitemap.xml\n",
         encoding="utf-8",
     )
+    (stage / "llms.txt").write_text(
+        "\n".join(
+            (
+                "# CoreTend",
+                "",
+                "> Local, transparent and reversible macOS care. CoreTend reviews "
+                "supported on-device locations and explains every finding before an "
+                "approved action moves anything to the Trash. No account, no telemetry; "
+                "the only network request is a user-initiated update check.",
+                "",
+                f"- Version: {release['version']} ("
+                + ("Developer ID signed and Apple-notarized" if release.get("signed") and release.get("notarized") else "unsigned, not notarized")
+                + f"), macOS {release['minimumMacOS']}+, {release['architecture']}",
+                "- License: Apache-2.0 (source code)",
+                "",
+                "## Pages",
+                "",
+                f"- [Home]({ORIGIN}/): what CoreTend does, module overview, install",
+                f"- [Privacy]({ORIGIN}/privacy): verified local-processing and network boundary",
+                f"- [Support]({ORIGIN}/support): install, diagnostics, verification",
+                f"- [Legal]({ORIGIN}/legal): public-project, distribution and hosting notice",
+                f"- [Licenses]({ORIGIN}/licenses): code and website attribution inventory",
+                "",
+                "## Source",
+                "",
+                f"- [Repository]({REPOSITORY}) (public, Apache-2.0)",
+                f"- [Releases]({REPOSITORY}/releases): signed DMG, SHA256SUMS, Minisign signatures",
+                "",
+            )
+        ),
+        encoding="utf-8",
+    )
     manifest = {
         "name": "CoreTend",
         "short_name": "CoreTend",
