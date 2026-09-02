@@ -9,8 +9,6 @@
 "common.resume" = "Reprendre";
 "cleanup.pause_hint" = "Suspend temporairement l’analyse en cours.";
 "cleanup.resume_hint" = "Continue l’analyse suspendue.";
-"smartcare.pause_hint" = "Suspend temporairement l’analyse Smart Care.";
-"smartcare.resume_hint" = "Continue l’analyse Smart Care suspendue.";
 "clutter.pause_hint" = "Suspend temporairement l’analyse en cours.";
 "clutter.resume_hint" = "Continue l’analyse suspendue.";
 "spacelens.pause_hint" = "Suspend temporairement l’analyse Space Lens.";
@@ -39,33 +37,13 @@
 "menubar.free_space" = "Espace libre";
 "menubar.thermal" = "Thermique";
 "menubar.warning_a11y" = "nécessite une attention";
-"menubar.last_smart_care" = "Dernier Smart Care : %@";
-"menubar.no_smart_care_yet" = "Aucun Smart Care exécuté pour l'instant.";
+"menubar.last_activity" = "Dernier Smart Care : %@";
+"menubar.no_activity_yet" = "Aucun Smart Care exécuté pour l'instant.";
 "menubar.open_app" = "Ouvrir CoreTend";
 "menubar.settings" = "Réglages…";
 "menubar.quit" = "Quitter";
 
 /* Smart Care */
-"smartcare.performance_unavailable" = "Tâches de maintenance pas encore disponibles";
-"smartcare.applications_unavailable" = "Analyse des applications pas encore disponible";
-"smartcare.care_categories" = "Catégories de soin";
-"smartcare.hero.idle_title" = "Prêt à prendre soin de ce Mac";
-"smartcare.hero.scanning_title" = "Analyse en cours…";
-"smartcare.hero.review_title" = "%@ à nettoyer en toute sécurité";
-"smartcare.hero.cleaning_title" = "Nettoyage en cours…";
-"smartcare.hero.finished_title" = "%@ déplacés dans la Corbeille";
-"smartcare.hero.idle_subtitle" = "Une analyse commence par le stockage. Rien n'est supprimé pendant l'analyse.";
-"smartcare.hero.scanning_subtitle" = "Lecture des caches, journaux et fichiers de compilation. Vous pouvez annuler à tout moment.";
-"smartcare.hero.review_subtitle_truncated" = "%@ trouvés au total (%d sur %d affichés). Seuls les éléments à faible risque et réversibles sont présélectionnés.";
-"smartcare.hero.review_subtitle" = "%@ trouvés au total. Seuls les éléments à faible risque et réversibles sont présélectionnés.";
-"smartcare.hero.executing_subtitle" = "Les éléments vont dans la Corbeille — vous pouvez les récupérer.";
-"smartcare.hero.finished_subtitle" = "Les détails se trouvent dans My Activity.";
-"smartcare.module.waiting" = "En attente d'analyse";
-"smartcare.module.scanning" = "Analyse en cours… %d éléments, %@";
-"smartcare.module.done" = "%d éléments — %@";
-"smartcare.start_scan" = "Démarrer le Smart Care";
-"smartcare.run_care" = "Lancer le soin";
-"smartcare.review_details_hint" = "Consultez les détails dans le module Nettoyage.";
 "smartcare.scan_again" = "Analyser à nouveau";
 
 /* Cleanup */
@@ -374,7 +352,6 @@
 "onboarding.back" = "Retour";
 "onboarding.get_started" = "Commencer";
 "onboarding.continue" = "Continuer";
-"smartcare.nav_title" = "Smart Care";
 
 /* Applications — grouping picker (display only; AppGroupingLogic bucket keys stay English internally) */
 "apps.grouping.none" = "Aucun";

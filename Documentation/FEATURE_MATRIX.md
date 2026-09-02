@@ -11,7 +11,7 @@ feature-inventory.json wins.
 
 | Module | Status | Notes |
 |---|---|---|
-| Smart Care | COMPLETE | Orchestrated cleanup scan, reviewed low-risk selection, explicit confirmation, Trash execution |
+| Dashboard | COMPLETE | First sidebar entry (`ModuleID.smartCare` renders `DashboardView`): free space, Trash state, exclusions, recent activity, a large scan action, shortcuts into the other modules. Supersedes the retired standalone Smart Care orchestrator |
 | Cleanup | COMPLETE | 7 rules, grouped review, exclusions honored, explicit confirmation and Trash |
 | Integrity | COMPLETE | Native download provenance, code-signature tier and login-item inspection through `IntegrityCore`; read-only, no malware-detection claim or third-party scanner |
 | Performance | COMPLETE | Live CPU/memory/pressure/disk/thermal, CPU chart, LaunchAgent inspection (read-only) |

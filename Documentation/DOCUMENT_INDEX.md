@@ -67,7 +67,7 @@ notes, fine to include but not user-facing).
 | `QUARANTINE.md` | Removed mechanism, kept as historical record | historical | internal |
 | `COMPETITIVE_BENCHMARK.md` | CoreTend's own measured numbers vs. non-vérifié public claims about CleanMyMac/Disk Space Analyzer | current | public |
 | `PRIVILEGED_HELPER.md` | Privileged-helper design (unshipped) | current | internal |
-| `SMART_CARE.md` | Smart Care feature | current | public |
+| `SMART_CARE.md` | Smart Care — retired, superseded by Dashboard | current | public |
 | `QUARANTINE.md` | Quarantine mechanics | current | public |
 | `RESTORE.md` | Restore/undo behavior (code-verified) | current | public |
 | `EXCLUSIONS.md` | Scan-exclusion rules | current | public |

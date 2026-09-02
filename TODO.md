@@ -57,14 +57,14 @@ Items 1–5 and 7 below are the human-only gates, unchanged.
    visibility, Dynamic Type — code-level accessibility is real (tests
    assert labels/contrast/Reduce Motion), but none of it has been observed
    interactively; this environment has no display session.
-8. **Smart Care: needs an explicit decision, not a default.** New finding,
-   `SESSION_2026-08-09_AUDIT.md` §14: `SmartCareView` is fully built,
-   tested and documented but wired to no `ModuleID` case at all — deeper
-   than the Performance/My Clutter/Cloud Cleanup case, and its own audit
-   was already archived, suggesting a past decision to supersede it with
-   Dashboard. The portfolio case study and `Documentation/SMART_CARE.md`
-   both still describe it as live. Decide: reconnect, formally retire the
-   docs/portfolio references, or rename — don't leave it ambiguous.
+8. ~~Smart Care: needs an explicit decision.~~ **Done — retired.**
+   `.smartCare` renders `DashboardView` and always did; the standalone
+   `SmartCareView` + view model were deleted, the auto-execute safety
+   filter moved to `UserCleanupRules.autoExecutable(_:)` (guarded by
+   `CleanupAutoExecuteTests`), `SMART_CARE.md` / `FEATURE_MATRIX.md` /
+   `feature-inventory.json` / `check-retired-preview-mode.sh` updated, and
+   the portfolio case study was corrected in PR #25. The menu-bar "last
+   Smart Care" line is now "last activity" (newest record of any kind).
 
 ## Open — automatable, no second Mac needed
 

@@ -1,32 +1,18 @@
-# Smart Care
+# Smart Care — retired
 
-Smart Care is the one-click orchestrator: it runs a curated set of care
-modules (defined in `SmartCareViewModel.initialModules()`,
-`Sources/CoreTendApp/SmartCareView.swift`) back-to-back and reports one
-combined result, instead of you running each scan separately.
+Smart Care was a one-click orchestrator that ran the care modules back to back
+and reported one combined result. It has been **superseded by the Dashboard**.
 
-## Phases
+The `ModuleID.smartCare` case is kept (its `"Smart Care"` raw value is a stable
+identity matched by `sidebar.<rawValue>` accessibility ids and activity-summary
+prefixes), but it renders `DashboardView` and its label is `module.dashboard`.
+The standalone `SmartCareView` and its view model were removed.
 
-`idle → running → review → executing → finished(freed:)`
+The one piece worth keeping — the safety filter that decided which findings an
+automated flow may act on without a per-item review (reversible, low-risk,
+preselected only) — now lives as `UserCleanupRules.autoExecutable(_:)` in
+`Sources/FileRules/UserCleanupRules.swift`, guarded by
+`Tests/CoreTendAppTests/CleanupAutoExecuteTests.swift`.
 
-1. **Running** — each module scans in turn; the view shows per-module state
-   (`ModuleState`) so you can see progress module by module.
-2. **Review** — combined findings across modules, same review/select model
-   as [CLEANUP_GUIDE.md](CLEANUP_GUIDE.md).
-3. **Executing** — after explicit confirmation, moves the selected eligible
-   items to the Trash.
-4. **Finished** — total bytes actually moved by the completed action.
-
-You can cancel a Smart Care run in progress (`cancel()`); already-scanned
-modules keep their results.
-
-Smart Care uses the same safety path as Cleanup: review first, explicit
-confirmation, and Trash-based removal (recoverable; see
-[RESTORE.md](RESTORE.md)).
-
-## Relationship to Cleanup / Protection
-
-Smart Care composes the same underlying engines as the standalone Cleanup
-view; it does not duplicate logic. Protection (malware scanning) is a
-separate, explicit flow — Smart Care does not run malware scans
-automatically. See [PROTECTION.md](PROTECTION.md).
+Cleanup remains the reviewed, explicit-confirmation cleanup flow — see
+[CLEANUP_GUIDE.md](CLEANUP_GUIDE.md).

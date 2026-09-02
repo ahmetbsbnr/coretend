@@ -77,7 +77,7 @@ else
   echo "OK: Store.swift contains only the six reviewed legacy-compatibility references"
 fi
 
-for view in CleanupView DuplicatesView ApplicationsView LeftoversView PrivacyCleanerView SmartCareView SpaceLensView; do
+for view in CleanupView DuplicatesView ApplicationsView LeftoversView PrivacyCleanerView SpaceLensView; do
   file="Sources/CoreTendApp/$view.swift"
   if grep -q '\.confirmationDialog' "$file"; then
     echo "OK: $view has an explicit confirmation"

@@ -112,6 +112,25 @@ struct UpdateCheckerTests {
         #expect(await c.check() == .failed(.offline))
     }
 
+    /// A request that reaches its 15s timeout is treated exactly like offline —
+    /// a normal, rendered state, never a thrown error the UI has to catch.
+    @Test func requestTimeoutIsReportedAsOffline() async {
+        let c = UpdateChecker(
+            manifestURL: URL(string: "https://coretend.ahmetbsbnr.com/latest.json")!,
+            currentVersion: "1.0.0", channel: .stable,
+            fetch: { _ in
+                throw NSError(domain: NSURLErrorDomain, code: NSURLErrorTimedOut)
+            })!
+        #expect(await c.check() == .failed(.offline))
+    }
+
+    /// The default fetch carries a bounded timeout, so a hung endpoint cannot
+    /// leave the check pending forever.
+    @Test func defaultFetchHasABoundedTimeout() {
+        #expect(UpdateChecker.defaultRequestTimeout == 15)
+        #expect(UpdateChecker.defaultRequestTimeout > 0)
+    }
+
     @Test func garbageManifestIsRejected() async {
         let c = checker(current: "1.0.0", channel: .stable) { Data("not json".utf8) }
         #expect(await c.check() == .failed(.malformedManifest))

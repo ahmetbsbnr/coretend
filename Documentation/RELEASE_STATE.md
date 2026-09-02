@@ -34,12 +34,12 @@ notarization are the provenance guarantees for this release.
 
 Signing/notarization (the historic 1.0 blocker) is **done**. What is left:
 
-### Agent-automatable — not yet done
+### Agent-automatable
 | Gate | Note |
 |---|---|
-| Build-provenance attestation | Needs either a CI run or a CI path that can codesign+notarize (`release.yml` currently cannot — no Developer ID in Actions). See `SIGNING_NOTARIZATION.md` → "Publishing a signed release". |
-| Crash-test matrix, 3 open items | disk-nearly-full, CPU-under-load, `URLSession` timeout — `Documentation/Audits/CRASH_MATRIX_CLASSIFICATION.md` items 25/27/38, "feasible, not run". |
-| `SmartCareView` decision (`TODO.md` #8) | Built + tested but wired to no `ModuleID` (`.smartCare` renders `DashboardView`). Reconnect, retire the standalone view + its docs, or rename — a product call. |
+| Build-provenance attestation | **Still open.** Needs either a CI run or a CI path that can codesign+notarize (`release.yml` currently cannot — no Developer ID in Actions). See `SIGNING_NOTARIZATION.md` → "Publishing a signed release". |
+| Crash-test matrix, 3 open items | **Done.** disk-nearly-full + CPU-under-load are new `Scripts/test-robustness.sh` cases (`case_disk_nearly_full`, `case_cpu_under_load`); `URLSession` timeout is now `UpdateCheckerTests.requestTimeoutIsReportedAsOffline` + `defaultFetchHasABoundedTimeout`. `Documentation/Audits/CRASH_MATRIX_CLASSIFICATION.md` items 25/27/38. |
+| `SmartCareView` decision (`TODO.md` #8) | **Decided: retired.** `.smartCare` renders `DashboardView` and always did; the standalone `SmartCareView` + view model were deleted, the safety filter moved to `UserCleanupRules.autoExecutable(_:)`, `SMART_CARE.md` rewritten as a pointer to the Dashboard, `check-retired-preview-mode.sh` and `feature-inventory.json` updated. |
 
 ### Human-only — cannot be done in this environment
 | Gate | Why |
