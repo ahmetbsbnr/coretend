@@ -99,6 +99,7 @@
 "spacelens.choose_folder" = "Choisir un dossier…";
 "spacelens.scanning_progress" = "%d éléments mesurés…";
 "spacelens.new_scan" = "Nouvelle analyse";
+"spacelens.up" = "Remonter d'un niveau";
 "spacelens.treemap.a11y_summary" = "%d éléments, %@ au total.";
 "spacelens.treemap.accessibility" = "Carte de stockage. Utilisez la liste ci-dessous pour la navigation au clavier.";
 "spacelens.fragment.help" = "%@ — %@";
@@ -392,10 +393,6 @@
 "palette.placeholder" = "Aller à…";
 "palette.no_results" = "Aucun résultat";
 "palette.scan_home" = "Analyser le dossier personnel avec Space Lens";
-"menubar.this_copy" = "Cette copie";
-"menubar.signature_apple" = "Signé par Apple";
-"menubar.signature_team" = "Signé (équipe %@)";
-"menubar.signature_unsigned" = "Non signé";
 "protection.tab.integrity" = "Intégrité";
 "settings.this_copy_signature" = "Signature de cette copie";
 "integrity.explainer.title" = "Des signaux natifs, pas un scanner";
@@ -429,6 +426,7 @@
 "dashboard.status.loading" = "Chargement";
 "dashboard.storage.title" = "Stockage";
 "dashboard.storage.detail" = "Analyse les caches, journaux, rapports de crash et données de compilation avant toute vérification de suppression.";
+"dashboard.storage.free_of_total" = "libres sur %@";
 "dashboard.spacelens.title" = "Space Lens";
 "dashboard.spacelens.detail" = "Cartographie l’usage disque d’un dossier, puis permet de zoomer, chercher et ouvrir les éléments dans le Finder.";
 "dashboard.duplicates.title" = "Doublons";
@@ -436,11 +434,9 @@
 "dashboard.applications.title" = "Applications";
 "dashboard.applications.detail" = "Sépare les apps des caches, assistants, agents et documents personnels.";
 "dashboard.integrity.title" = "Intégrité";
+"dashboard.integrity.detail" = "Vérifiez la provenance des téléchargements, les niveaux de signature et ce qui démarre à la connexion.";
 "dashboard.activity.title" = "Activité";
 "dashboard.activity.empty" = "Aucune activité enregistrée.";
-"dashboard.signature.apple" = "Signé par Apple";
-"dashboard.signature.team" = "Équipe %@";
-"dashboard.signature.unsigned" = "Copie non signée";
 "dashboard.open_module" = "Ouvrir %@";
 
 /* Safety log (SafetyCore audit trail persistence) */
@@ -478,7 +474,6 @@
 "onboarding.welcome.no_telemetry" = "Aucune télémétrie, statistique, publicité ni abonnement.";
 "onboarding.welcome.open_source" = "Open source — vous pouvez lire chaque ligne.";
 "onboarding.welcome.version" = "Version %@";
-"onboarding.welcome.unsigned" = "Version locale non signée";
 "onboarding.move.prompt" = "L'application n'est pas encore dans votre dossier Applications. Il est recommandé de l'y déplacer.";
 "onboarding.move.button" = "Déplacer vers Applications";
 "onboarding.move.done" = "Copiée dans %@. Relancez-la depuis là.";
@@ -544,6 +539,10 @@
 "onboarding.summary.restore" = "Les suppressions vont à la Corbeille et sont restaurables.";
 "onboarding.summary.docs" = "Lire la documentation";
 "settings.rerun_setup" = "Relancer l’assistant de configuration";
+"settings.about.privacy" = "Politique de confidentialité";
+"settings.about.license" = "Licence (Apache-2.0)";
+"settings.about.source" = "Code source sur GitHub";
+"settings.about.support" = "Assistance";
 
 /* Rename migration (MacCare Local -> CoreTend) */
 "settings.migration_done" = "Les données de la version précédente ont été migrées";
@@ -569,7 +568,7 @@
 "updates.unsigned_warning" = "Cette version n'est ni signée ni notarisée par Apple. Vérifiez son empreinte avant de l'ouvrir.";
 "updates.open_release" = "Ouvrir la page de la version";
 "updates.how_to_verify" = "Comment vérifier un téléchargement";
-"updates.no_autoinstall" = "CoreTend ne télécharge ni n'installe jamais une mise à jour de lui-même. Ses versions ne portant aucune signature d'éditeur, il ne peut pas prouver qui a produit un fichier — c'est donc vous qui téléchargez et vérifiez.";
+"updates.no_autoinstall" = "CoreTend ne télécharge ni n'installe jamais une mise à jour de lui-même. Les versions sont signées Developer ID et notarisées par Apple — vous téléchargez la nouvelle version depuis la page des releases, et macOS la vérifie à l'ouverture.";
 "updates.error_offline" = "Aucune connexion réseau. CoreTend fonctionne entièrement hors ligne ; cette vérification est facultative.";
 "updates.error_not_configured" = "La recherche de mises à jour n'est pas configurée.";
 "updates.error_cancelled" = "Vérification annulée.";

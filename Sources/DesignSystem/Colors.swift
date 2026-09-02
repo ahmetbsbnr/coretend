@@ -1,33 +1,30 @@
 import SwiftUI
 import AppKit
 
-/// Semantic palette — **Paper / Ink / Cobalt**, the same editorial identity
-/// as the portfolio (`ahmetbsbnr-portfolio/app/globals.css`): a paper-and-ink
-/// neutral base with a single cobalt-blue accent, not a multi-hue system.
+/// Semantic palette — **Porcelain / Slate / Teal**, CoreTend's own identity:
+/// a warm porcelain-and-slate neutral base with a single oceanic-teal accent,
+/// not a multi-hue system.
 ///
 /// Colour carries meaning on one axis only:
 ///
 /// | Colour | Means |
 /// |--------|-------|
-/// | cobalt | the brand accent — storage, protection, every primary action |
+/// | teal   | the brand accent — storage, protection, every primary action |
 /// | amber  | caution — a functional warning colour, not brand |
 /// | coral  | error, or an action that cannot be undone |
 ///
-/// Storage/protection/performance no longer get their own hue: an editorial
-/// one-accent system can't spend cobalt three different ways and still read
-/// as "one colour", so those roles are told apart by icon and label instead
-/// (Differentiate Without Color) — the same principle the old palette
-/// already followed, just with fewer hues available to lean on.
+/// Storage/protection/performance do not each get their own hue: a calm
+/// one-accent system can't spend teal three different ways and still read as
+/// "one colour", so those roles are told apart by icon and label instead
+/// (Differentiate Without Color).
 ///
-/// ## Why cobalt needs two tuned values, not one
+/// ## Why teal needs two tuned values, not one
 ///
-/// The published brand blue (`#2240E2`) is tuned for **Paper**: 6.6:1 there,
-/// comfortably over the 4.5:1 text minimum. On **Ink** it drops to 2.4:1 —
-/// this is the inverse of the old mint/violet palette, where the canonical
-/// value was dark-tuned and needed a *deepened* light sibling. Cobalt is
-/// light-tuned and needs a *brightened* dark sibling instead. Both directions
-/// get the same treatment: name the sibling, don't leave it for someone to
-/// rediscover in a contrast checker.
+/// The brand teal (`#0B6E6C`) is tuned for **Porcelain**: ~5.0:1 there, over
+/// the 4.5:1 text minimum. On the dark **Slate** canvas it drops well below
+/// 3:1. Teal is light-tuned and needs a *brightened* dark sibling
+/// (`#5FD3C6`, ~9:1 on Slate) rather than a darkened one. Name the sibling;
+/// don't leave it for someone to rediscover in a contrast checker.
 public enum MCColor {
     /// Adaptive color helper (light, dark) in sRGB.
     private static func adaptive(_ name: String,
@@ -40,106 +37,108 @@ public enum MCColor {
         })
     }
 
-    /// The canonical Paper/Ink/Cobalt palette. Referenced by the asset
-    /// generator and the website's tokens so there is one source of truth
-    /// for the hex values, and matched byte-for-byte to the portfolio's
-    /// `--paper`/`--ink`/`--cobalt` tokens so the two never drift apart.
+    /// The canonical Porcelain/Slate/Teal palette. Referenced by the asset
+    /// generator (`Scripts/export-design-tokens.py`) and the website's tokens
+    /// so there is one source of truth for the hex values.
+    ///
+    /// The public symbol names below (`cobalt`, `cobaltBright`, …) are kept
+    /// deliberately stable across the identity change so the generated
+    /// `--ct-*` CSS custom properties the website consumes don't have to be
+    /// renamed in lockstep. The *values* are the identity; the names are just
+    /// slots. Renaming the slots to `teal*` is a tracked follow-up.
     public enum Canonical {
-        /// `#17191D` — the dark surface. Matches portfolio `--ink`.
-        public static let ink = (0.0902, 0.0980, 0.1137)
-        /// `#F4F4F0` — the light surface. Matches portfolio `--paper`.
-        public static let paper = (0.9569, 0.9569, 0.9412)
-        /// `#2240E2` — the one brand accent. Matches portfolio `--cobalt`.
-        /// Light-tuned: 6.6:1 on Paper, 2.4:1 on Ink (see `cobaltBright`).
-        public static let cobalt = (0.1333, 0.2510, 0.8863)
-        /// `#182FB2` — hover/pressed on Paper, and a deep tonal step where
-        /// the treemap needs a second, darker cobalt swatch. Matches
-        /// portfolio `--cobalt-deep`.
-        public static let cobaltDeep = (0.0941, 0.1843, 0.6980)
-        /// `#8E9EF0` — the Ink-surface sibling of `cobalt`. 7.0:1 on Ink,
-        /// where canonical cobalt itself falls to 2.4:1.
-        public static let cobaltBright = (0.5569, 0.6196, 0.9412)
-        /// `#6177EA` / `#B2BDF5` — two more tonal steps of the same hue, for
+        /// `#1B1E22` — the dark surface. Warm slate, not pure grey.
+        public static let ink = (0.1059, 0.1176, 0.1333)
+        /// `#F6F4EF` — the light surface. Warm porcelain.
+        public static let paper = (0.9647, 0.9569, 0.9373)
+        /// `#0B6E6C` — the one brand accent. Light-tuned: ~5.0:1 on
+        /// Porcelain, below 3:1 on Slate (see `cobaltBright`).
+        public static let cobalt = (0.0431, 0.4314, 0.4235)
+        /// `#08514F` — hover/pressed on Porcelain, and a deeper tonal step
+        /// where the treemap needs a second, darker teal swatch.
+        public static let cobaltDeep = (0.0314, 0.3176, 0.3098)
+        /// `#5FD3C6` — the Slate-surface sibling of `cobalt`. ~9:1 on Slate,
+        /// where canonical teal itself falls below 3:1.
+        public static let cobaltBright = (0.3725, 0.8275, 0.7765)
+        /// `#2E9E93` / `#A7E6DE` — two more tonal steps of the same hue, for
         /// the Space Lens treemap only: it needs several distinguishable
-        /// swatches at once, which the three UI tones above don't provide
-        /// on their own.
-        public static let cobaltMid = (0.3804, 0.4667, 0.9176)
-        public static let cobaltBrightest = (0.6991, 0.7399, 0.9605)
-        /// `#162DA7` — deepest tonal step, Paper-surface only (2.4:1 on
-        /// Ink, same problem as canonical cobalt, only worse).
-        public static let cobaltDeepest = (0.0863, 0.1765, 0.6549)
-        /// `#F4C76B` — caution, functional not brand. Unchanged by the
-        /// re-skin: native macOS uses orange for warnings everywhere
-        /// (Finder, Disk Utility), and it doesn't compete with a single-hue
-        /// brand accent the way a second saturated brand colour would.
-        public static let warmAmber = (0.957, 0.780, 0.420)
-        /// `#F47F78` — error, or an action that cannot be undone. Unchanged
-        /// for the same reason as `warmAmber`.
-        public static let signalCoral = (0.957, 0.498, 0.471)
-        /// `#77818E` — secondary text, inert UI, and (below) the app's
+        /// swatches at once, which the three UI tones above don't provide.
+        public static let cobaltMid = (0.1804, 0.6196, 0.5765)
+        public static let cobaltBrightest = (0.6549, 0.9020, 0.8706)
+        /// `#063F3D` — deepest tonal step, Porcelain-surface only.
+        public static let cobaltDeepest = (0.0235, 0.2471, 0.2392)
+        /// `#F4C76B` — caution, functional not brand. Native macOS uses
+        /// orange for warnings everywhere (Finder, Disk Utility), and it
+        /// doesn't compete with a single-hue brand accent the way a second
+        /// saturated brand colour would.
+        public static let warmAmber = (0.9569, 0.7804, 0.4196)
+        /// `#F08A7E` — error, or an action that cannot be undone. Slate-tuned
+        /// sibling of `coralDeep`.
+        public static let signalCoral = (0.9412, 0.5412, 0.4941)
+        /// `#7E8894` — secondary text and inert UI on Slate; also the app's
         /// secondary accent — a graphite tone rather than a second hue.
-        public static let mutedSlate = (0.467, 0.506, 0.557)
+        public static let mutedSlate = (0.4941, 0.5333, 0.5804)
 
-        /// Light-mode siblings, darkened to clear 4.5:1 against Paper.
-        /// Amber and coral are unchanged from the pre-re-skin palette.
+        /// Light-mode siblings, darkened to clear 4.5:1 against Porcelain.
         /// Amber is the hardest hue to darken without turning brown, so this
-        /// sits only just past the 4.5:1 line rather than comfortably beyond
-        /// it. The previous value looked right and measured 4.1:1.
-        public static let amberDeep = (0.580, 0.375, 0.040)
-        public static let coralDeep = (0.720, 0.220, 0.200)
-        public static let slateDeep = (0.310, 0.345, 0.392)
+        /// sits just past the 4.5:1 line rather than comfortably beyond it.
+        public static let amberDeep = (0.5412, 0.3529, 0.0706)
+        public static let coralDeep = (0.72, 0.235, 0.20)
+        public static let slateDeep = (0.2902, 0.3255, 0.3725)
     }
 
-    // Brand — the one accent. Light surfaces use the published brand value
-    // directly (it already clears contrast there); Ink uses the brightened
-    // sibling instead of a darkened one, per the header note above.
-    public static let coreMint = adaptive("coreMint",
+    // Brand — the one accent. Light surfaces use the light-tuned teal
+    // directly; Slate uses the brightened sibling instead of a darkened one,
+    // per the header note above.
+    public static let teal = adaptive("teal",
         light: Canonical.cobalt, dark: Canonical.cobaltBright)
     /// Secondary accent — a graphite tone, not a second brand hue. Used
     /// where a UI moment needs to read as "not the primary action" (e.g. an
     /// "approved" log entry, a "scan" activity icon) without introducing a
-    /// colour that would compete with cobalt for "the brand colour" status.
-    public static let ionViolet = adaptive("ionViolet",
+    /// colour that would compete with teal for "the brand colour" status.
+    public static let graphite = adaptive("graphite",
         light: Canonical.slateDeep, dark: Canonical.mutedSlate)
-    public static let solarAmber = adaptive("solarAmber",
+    public static let amber = adaptive("amber",
         light: Canonical.amberDeep, dark: Canonical.warmAmber)
-    public static let pulseCoral = adaptive("pulseCoral",
+    public static let coral = adaptive("coral",
         light: Canonical.coralDeep, dark: Canonical.signalCoral)
 
     // Roles
-    public static let storage = coreMint
-    public static let protection = ionViolet
-    public static let performance = solarAmber
-    public static let destructive = pulseCoral
-    public static let attention = solarAmber
+    public static let storage = teal
+    public static let protection = graphite
+    public static let performance = amber
+    public static let destructive = coral
+    public static let attention = amber
     public static let success = adaptive("success",
-        light: (0.10, 0.55, 0.30), dark: (0.35, 0.80, 0.50))
+        light: (0.04, 0.45, 0.34), dark: (0.36, 0.82, 0.66))
 
     /// Chart series order: storage, protection, performance, then neutrals.
     public static let chartSeries: [Color] = [storage, protection, performance, .secondary]
     public static let graphGrid = Color.secondary.opacity(0.15)
 
-    // File-type category colors (Space Lens treemap). Tonal steps of cobalt
+    // File-type category colors (Space Lens treemap). Tonal steps of teal
     // plus the existing graphite/amber neutrals, rather than a second and
     // third brand hue — six categories still read as distinct swatches, but
-    // the family stays "cobalt + neutrals", not a rainbow.
-    public static let novaMagenta = adaptive("novaMagenta",
+    // the family stays "teal + neutrals", not a rainbow.
+    public static let cellTealDeep = adaptive("cellTealDeep",
         light: Canonical.cobaltDeep, dark: Canonical.cobaltMid)
-    public static let glacierBlue = adaptive("glacierBlue",
+    public static let cellGraphite = adaptive("cellGraphite",
         light: Canonical.slateDeep, dark: Canonical.mutedSlate)
-    public static let mossGreen = adaptive("mossGreen",
+    public static let cellTealPale = adaptive("cellTealPale",
         light: Canonical.cobaltDeepest, dark: Canonical.cobaltBrightest)
 
-    // Surfaces. These stay on the same Paper/Ink axis as the website and
-    // portfolio while still adapting to the user's light/dark appearance.
+    // Surfaces. Porcelain/Slate axis, adapting to the user's light/dark
+    // appearance.
     public static let background = adaptive("background",
         light: Canonical.paper, dark: Canonical.ink)
+    // Dark elevated surface sits a clear ~3 L* steps above Slate so cards
+    // read as raised, not as the same flat field. Light stays near-white.
     public static let elevatedBackground = adaptive("elevatedBackground",
-        light: (0.988, 0.988, 0.976), dark: (0.125, 0.133, 0.153))
+        light: (1.0, 0.996, 0.988), dark: (0.1725, 0.1922, 0.2157))
     public static let secondaryBackground = adaptive("secondaryBackground",
-        light: (0.925, 0.925, 0.902), dark: (0.078, 0.086, 0.102))
+        light: (0.9255, 0.9098, 0.8784), dark: (0.0784, 0.0863, 0.0980))
     public static let separator = adaptive("separator",
-        light: (0.82, 0.82, 0.78), dark: (0.28, 0.30, 0.34))
+        light: (0.84, 0.82, 0.78), dark: (0.27, 0.29, 0.32))
     public static let primaryText = Color.primary
     public static let secondaryText = Color.secondary
 }

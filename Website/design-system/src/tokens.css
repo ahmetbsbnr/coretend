@@ -1,31 +1,32 @@
-/* Ahmet Design System 1.0.0 — tokens
+/* Ahmet Design System 1.1.0 — tokens
    Extrait du site CoreTend (ahmetbsbnr/coretend @ 63cd103). Apache-2.0.
+   Identité 1.1.0 : Porcelaine / Ardoise / Teal (remplace Paper/Ink/Cobalt).
    Assemblage : node build.mjs → dist/ahmet-design.css. Ne pas éditer dist. */
 
 /* ---------- 01 tokens ---------- */
 :root {
-  --paper: #f4f4f0;
-  --paper-2: #eceadf;
-  --paper-3: #e3e1d4;
-  --ink: #17191d;
-  --ink-2: #4b5058;
-  --ink-3: #626771;
-  --line: #dedcd0;
-  --line-strong: #b3b2a4;
-  --cobalt: #2240e2;
-  --cobalt-deep: #182fb2;
-  --cobalt-lift: #6177ea;
-  --cobalt-wash: rgba(34, 64, 226, 0.09);
+  --paper: #f6f4ef;
+  --paper-2: #eee9e0;
+  --paper-3: #e4ded1;
+  --ink: #1b1e22;
+  --ink-2: #4a535f;
+  --ink-3: #5b6470;
+  --line: #e0dccf;
+  --line-strong: #b6b1a0;
+  --cobalt: #0b6e6c;
+  --cobalt-deep: #08514f;
+  --cobalt-lift: #0e7c7b;
+  --cobalt-wash: rgba(11, 110, 108, 0.1);
   --on-cobalt: #fff;
   --safe: #0d7046;
-  --caution: #9a6207;
-  --critical: #b83833;
-  --panel: #fbfbf8;
-  --panel-2: #f0efe7;
+  --caution: #8a5a12;
+  --critical: #b83c33;
+  --panel: #fffdf8;
+  --panel-2: #f1ede4;
   --shadow:
-    0 1px 2px rgba(23, 25, 29, 0.05), 0 18px 44px -24px rgba(23, 25, 29, 0.35);
+    0 1px 2px rgba(27, 30, 34, 0.05), 0 18px 44px -24px rgba(27, 30, 34, 0.35);
   --shadow-lift:
-    0 2px 6px rgba(23, 25, 29, 0.06), 0 40px 80px -36px rgba(23, 25, 29, 0.45);
+    0 2px 6px rgba(27, 30, 34, 0.06), 0 40px 80px -36px rgba(27, 30, 34, 0.45);
   --r: 14px;
   --r-sm: 9px;
   --wrap: 1200px;
@@ -36,7 +37,7 @@
   --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --sweep: rgba(27, 69, 224, 0.5);
+  --sweep: rgba(11, 110, 108, 0.5);
   --motion-quick: 0.15s;
   --motion-standard: 0.3s;
   --motion-gentle: 0.55s;
@@ -44,57 +45,56 @@
 }
 
 html[data-theme="dark"] {
-  --paper: #0d0f13;
-  --paper-2: #14171d;
-  --paper-3: #1b1f27;
-  --ink: #edece5;
+  --paper: #16191e;
+  --paper-2: #1c2026;
+  --paper-3: #232830;
+  --ink: #ecebe4;
   --ink-2: #a7abb5;
   --ink-3: #858c99;
-  --line: #242832;
-  --line-strong: #3a404d;
-  --cobalt: #8e9ef0;
-  --cobalt-deep: #b2bdf5;
-  --cobalt-lift: #b2bdf5;
-  --cobalt-wash: rgba(142, 158, 240, 0.12);
-  --on-cobalt: #0d0f13;
+  --line: #262b33;
+  --line-strong: #3b414d;
+  --cobalt: #5fd3c6;
+  --cobalt-deep: #1f6f68;
+  --cobalt-lift: #a7e6de;
+  --cobalt-wash: rgba(95, 211, 198, 0.13);
+  --on-cobalt: #10221f;
   --safe: #43c98c;
   --caution: #e0aa4a;
-  --critical: #f47f78;
-  --panel: #12151b;
-  --panel-2: #181c23;
+  --critical: #f08a7e;
+  --panel: #161a20;
+  --panel-2: #1c212a;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 20px 50px -26px rgba(0, 0, 0, 0.9);
   --shadow-lift:
     0 2px 8px rgba(0, 0, 0, 0.5), 0 44px 90px -40px rgba(0, 0, 0, 1);
-  --sweep: rgba(108, 140, 255, 0.55);
+  --sweep: rgba(95, 211, 198, 0.55);
   color-scheme: dark;
 }
 
 @media (prefers-color-scheme: dark) {
   html:not([data-theme]) {
-    --paper: #0d0f13;
-    --paper-2: #14171d;
-    --paper-3: #1b1f27;
-    --ink: #edece5;
+    --paper: #16191e;
+    --paper-2: #1c2026;
+    --paper-3: #232830;
+    --ink: #ecebe4;
     --ink-2: #a7abb5;
     --ink-3: #858c99;
-    --line: #242832;
-    --line-strong: #3a404d;
-    --cobalt: #8e9ef0;
-    --cobalt-deep: #b2bdf5;
-    --cobalt-lift: #b2bdf5;
-    --cobalt-wash: rgba(142, 158, 240, 0.12);
-    --on-cobalt: #0d0f13;
+    --line: #262b33;
+    --line-strong: #3b414d;
+    --cobalt: #5fd3c6;
+    --cobalt-deep: #1f6f68;
+    --cobalt-lift: #a7e6de;
+    --cobalt-wash: rgba(95, 211, 198, 0.13);
+    --on-cobalt: #10221f;
     --safe: #43c98c;
     --caution: #e0aa4a;
-    --critical: #f47f78;
-    --panel: #12151b;
-    --panel-2: #181c23;
+    --critical: #f08a7e;
+    --panel: #161a20;
+    --panel-2: #1c212a;
     --shadow:
       0 1px 2px rgba(0, 0, 0, 0.5), 0 20px 50px -26px rgba(0, 0, 0, 0.9);
     --shadow-lift:
       0 2px 8px rgba(0, 0, 0, 0.5), 0 44px 90px -40px rgba(0, 0, 0, 1);
-    --sweep: rgba(108, 140, 255, 0.55);
+    --sweep: rgba(95, 211, 198, 0.55);
     color-scheme: dark;
   }
 }
-

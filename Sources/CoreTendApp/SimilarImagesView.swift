@@ -151,31 +151,32 @@ struct SimilarImagesView: View {
                     actionTitle: L("similar.analyze")) { model.start() }
                     .accessibilityIdentifier("similar.scan.start")
             case let .scanning(processed, total):
-                VStack(spacing: MCSpacing.md) {
-                    if total > 0 {
-                        ProgressView(value: Double(processed), total: Double(total))
-                            .frame(width: 260)
-                        Text(L("similar.analyzing", processed, total)).monospacedDigit()
-                    } else {
-                        ProgressView()
-                        Text(L("similar.collecting"))
+                VStack(spacing: MCSpacing.lg) {
+                    MCScanStage(isScanning: !model.isPaused,
+                                fraction: total > 0 ? Double(processed) / Double(total) : nil) {
+                        Text(total > 0 ? L("similar.analyzing", processed, total) : L("similar.collecting"))
+                            .monospacedDigit()
                     }
-                    if model.isPaused {
-                        Button(L("common.resume")) { model.resumeScan() }
-                            .keyboardShortcut("r", modifiers: [])
-                            .help(L("dupes.resume_hint"))
-                            .accessibilityHint(L("dupes.resume_hint"))
-                            .accessibilityIdentifier("similar.scan.resume")
-                    } else {
-                        Button(L("common.pause")) { model.pauseScan() }
-                            .keyboardShortcut("p", modifiers: [])
-                            .help(L("dupes.pause_hint"))
-                            .accessibilityHint(L("dupes.pause_hint"))
-                            .accessibilityIdentifier("similar.scan.pause")
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(total > 0 ? L("similar.analyzing", processed, total) : L("similar.collecting"))
+                    HStack(spacing: MCSpacing.sm) {
+                        if model.isPaused {
+                            Button(L("common.resume")) { model.resumeScan() }
+                                .keyboardShortcut("r", modifiers: [])
+                                .help(L("dupes.resume_hint"))
+                                .accessibilityHint(L("dupes.resume_hint"))
+                                .accessibilityIdentifier("similar.scan.resume")
+                        } else {
+                            Button(L("common.pause")) { model.pauseScan() }
+                                .keyboardShortcut("p", modifiers: [])
+                                .help(L("dupes.pause_hint"))
+                                .accessibilityHint(L("dupes.pause_hint"))
+                                .accessibilityIdentifier("similar.scan.pause")
+                        }
+                        Button(L("common.cancel")) { model.cancel() }
+                            .keyboardShortcut(.cancelAction)
+                            .accessibilityIdentifier("similar.scan.cancel")
                     }
-                    Button(L("common.cancel")) { model.cancel() }
-                        .keyboardShortcut(.cancelAction)
-                        .accessibilityIdentifier("similar.scan.cancel")
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
@@ -197,6 +198,7 @@ struct SimilarImagesView: View {
                                     .tag(String?.some(volume.id))
                             }
                         }
+                        .pickerStyle(.menu)
                         .frame(width: 180)
                     }
                     Spacer()
@@ -225,8 +227,8 @@ struct SimilarImagesView: View {
                                         Text(L("similar.best_resolution"))
                                             .font(.caption2.weight(.semibold))
                                             .padding(.horizontal, MCSpacing.xxs).padding(.vertical, 1)
-                                            .background(MCColor.coreMint.opacity(0.18), in: Capsule())
-                                            .foregroundStyle(MCColor.coreMint)
+                                            .background(MCColor.teal.opacity(0.18), in: Capsule())
+                                            .foregroundStyle(MCColor.teal)
                                     }
                                     Spacer()
                                     Button {

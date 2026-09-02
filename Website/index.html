@@ -24,24 +24,25 @@
 @font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:500;font-display:swap;src:url("/assets/fonts/plexmono-500-latin.woff2") format("woff2")}
 @font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:600;font-display:swap;src:url("/assets/fonts/plexmono-600-latin.woff2") format("woff2")}
 :root{
-  --paper:var(--ct-paper,#f4f4f0);
-  --paper-2:#eceadf;
-  --paper-3:#e3e1d4;
-  --ink:var(--ct-ink,#17191d);
-  --ink-2:#4b5058;
-  --ink-3:#626771;
-  --line:#dedcd0;
-  --line-strong:#b3b2a4;
-  --cobalt:var(--ct-cobalt,#2240e2);
-  --cobalt-lift:#6177ea;
-  --cobalt-wash:rgba(34,64,226,.09);
+  --paper:var(--ct-paper,#f6f4ef);
+  --paper-2:#eee9e0;
+  --paper-3:#e4ded1;
+  --ink:var(--ct-ink,#1b1e22);
+  --ink-2:#4a535f;
+  --ink-3:#5b6470;
+  --line:#e0dccf;
+  --line-strong:#b6b1a0;
+  --cobalt:var(--ct-cobalt,#0b6e6c);
+  --cobalt-deep:var(--ct-cobaltDeep,#08514f);
+  --cobalt-lift:#0e7c7b;
+  --cobalt-wash:rgba(11,110,108,.10);
   --on-cobalt:#fff;
   --safe:#0d7046;
-  --caution:#9a6207;
-  --panel:#fbfbf8;
-  --panel-2:#f0efe7;
-  --shadow:0 1px 2px rgba(23,25,29,.05), 0 18px 44px -24px rgba(23,25,29,.35);
-  --shadow-lift:0 2px 6px rgba(23,25,29,.06), 0 40px 80px -36px rgba(23,25,29,.45);
+  --caution:#8a5a12;
+  --panel:#fffdf8;
+  --panel-2:#f1ede4;
+  --shadow:0 1px 2px rgba(27,30,34,.05), 0 18px 44px -24px rgba(27,30,34,.35);
+  --shadow-lift:0 2px 6px rgba(27,30,34,.06), 0 40px 80px -36px rgba(27,30,34,.45);
   --r:14px;
   --r-sm:9px;
   --wrap:1200px;
@@ -50,28 +51,29 @@
   --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
   --ease:cubic-bezier(.22,.61,.36,1);
   --ease-out:cubic-bezier(.16,1,.3,1);
-  --sweep:rgba(27,69,224,.5);
+  --sweep:rgba(11,110,108,.5);
 }
 html[data-theme="dark"]{
-  --paper:#0d0f13;
-  --paper-2:#14171d;
-  --paper-3:#1b1f27;
-  --ink:#edece5;
+  --paper:#16191e;
+  --paper-2:#1c2026;
+  --paper-3:#232830;
+  --ink:#ecebe4;
   --ink-2:#a7abb5;
   --ink-3:#858c99;
-  --line:#242832;
-  --line-strong:#3a404d;
-  --cobalt:#8e9ef0;
-  --cobalt-lift:#b2bdf5;
-  --cobalt-wash:rgba(142,158,240,.12);
-  --on-cobalt:#0d0f13;
+  --line:#262b33;
+  --line-strong:#3b414d;
+  --cobalt:#5fd3c6;
+  --cobalt-deep:#1f6f68;
+  --cobalt-lift:#a7e6de;
+  --cobalt-wash:rgba(95,211,198,.13);
+  --on-cobalt:#10221f;
   --safe:#43c98c;
   --caution:#e0aa4a;
-  --panel:#12151b;
-  --panel-2:#181c23;
+  --panel:#161a20;
+  --panel-2:#1c212a;
   --shadow:0 1px 2px rgba(0,0,0,.5), 0 20px 50px -26px rgba(0,0,0,.9);
   --shadow-lift:0 2px 8px rgba(0,0,0,.5), 0 44px 90px -40px rgba(0,0,0,1);
-  --sweep:rgba(108,140,255,.55);
+  --sweep:rgba(95,211,198,.55);
 }
 
 *,*::before,*::after{box-sizing:border-box}
@@ -206,7 +208,8 @@ p{margin:0}
 @media(max-width:860px){.bar-link span,.hide-sm{display:none}}
 
 /* ---------- hero ---------- */
-.hero{padding-top:clamp(40px,6vw,74px);padding-bottom:clamp(48px,7vw,90px);overflow:hidden}
+.hero{padding-top:clamp(40px,6vw,74px);padding-bottom:clamp(48px,7vw,90px);overflow:hidden;
+  background:radial-gradient(880px 460px at 14% 8%,var(--cobalt-wash),transparent 68%)}
 .hero-grid{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,1.18fr);gap:clamp(30px,5vw,68px);align-items:center}
 .hero-lockup,.hero-grid>*{min-width:0}
 @media(max-width:1000px){.hero-grid{grid-template-columns:1fr}}
@@ -279,21 +282,25 @@ p{margin:0}
 .track i{display:block;height:100%;width:0;border-radius:99px;
   background:linear-gradient(90deg,var(--cobalt),var(--cobalt-lift));transition:width .4s linear}
 
-/* treemap */
+/* radial size map — mirrors Space Lens in the app */
 .lens{position:relative;height:174px;border-radius:10px;overflow:hidden;background:var(--paper-3);
   border:1px solid var(--line)}
-.lens b{position:absolute;left:var(--x);top:var(--y);width:var(--w);height:var(--h);
-  border:1px solid color-mix(in srgb,var(--paper) 55%,transparent);border-radius:4px;
-  background:color-mix(in srgb,var(--cobalt) calc(var(--t)*1%),var(--paper-2));
-  transform:scale(.4);opacity:0;transform-origin:0 0;
+.lens b{position:absolute;left:var(--cx);top:var(--cy);width:var(--r);height:var(--r);
+  margin-left:calc(var(--r) / -2);margin-top:calc(var(--r) / -2);
+  display:grid;place-items:center;border-radius:50%;
+  border:1px solid color-mix(in srgb,var(--paper) 45%,transparent);
+  background:
+    radial-gradient(circle at 34% 30%,color-mix(in srgb,var(--cobalt-bright) 32%,transparent),transparent 62%),
+    color-mix(in srgb,var(--cobalt-deep) calc(var(--t)*1%),var(--paper-2));
+  transform:scale(.35);opacity:0;transform-origin:center;
   transition:transform .7s var(--ease-out) var(--d),opacity .7s var(--ease-out) var(--d),outline-color .2s;
-  outline:1.5px solid transparent;outline-offset:-1.5px}
+  outline:1.5px solid transparent;outline-offset:2px}
 .lens b.is-visible{transform:scale(1);opacity:1}
-.lens b.is-leaving{transform:scale(.72);opacity:0;transform-origin:center}
+.lens b.is-leaving{transform:scale(.6);opacity:0}
 .lens b:hover{outline-color:var(--cobalt);z-index:3}
-.lens b i{position:absolute;left:6px;top:5px;font-family:var(--mono);font-size:9.5px;font-style:normal;
-  color:var(--ink);letter-spacing:-.02em;pointer-events:none;
-  white-space:nowrap;overflow:hidden;max-width:calc(100% - 10px)}
+.lens b i{font-family:var(--mono);font-size:9px;font-style:normal;
+  color:var(--ink);letter-spacing:-.02em;pointer-events:none;text-align:center;
+  white-space:nowrap;overflow:hidden;max-width:calc(100% - 8px)}
 .lens .sweepline{position:absolute;top:0;bottom:0;width:64px;pointer-events:none;
   background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--cobalt) 22%,transparent),transparent);
   animation:sweepx 2.6s linear infinite}
@@ -356,6 +363,14 @@ p{margin:0}
 /* ---------- modules ---------- */
 .modules{list-style:none;margin:0;padding:0;display:grid;gap:14px;
   grid-template-columns:repeat(auto-fill,minmax(232px,1fr))}
+.shots{display:grid;gap:16px;margin-top:44px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.shot{margin:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel);
+  box-shadow:var(--shadow-lift);transition:transform .4s var(--ease),box-shadow .4s var(--ease)}
+.shot:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
+.shot img{display:block;width:100%;height:auto;aspect-ratio:2024/1488;object-fit:cover;
+  border-bottom:1px solid var(--line)}
+.shot figcaption{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ink-3);
+  padding:10px 14px}
 .mod{position:relative;border:1px solid var(--line);border-radius:var(--r);padding:20px 18px 18px;
   background:var(--panel);overflow:hidden;transform-style:preserve-3d;
   transition:transform .4s var(--ease),border-color .4s,box-shadow .4s}
@@ -441,18 +456,19 @@ p{margin:0}
   padding:16px 0;border-bottom:1px solid var(--line)}
 .facts b{font-size:14.5px;font-weight:600;letter-spacing:-.01em;min-width:132px}
 .facts span{font-family:var(--mono);font-size:12.5px;color:var(--ink-2);word-break:break-word}
-.term{border:1px solid var(--line);border-radius:var(--r);background:#0d0f13;color:#dfe3ea;
+.term{border:1px solid var(--line);border-radius:var(--r);background:#16191e;color:#dfe3ea;
   font-family:var(--mono);font-size:12.5px;line-height:1.85;overflow:hidden;box-shadow:var(--shadow-lift)}
-.term-top{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #21252e;
-  background:#12151b;color:#7d838f;font-size:11px;letter-spacing:.05em}
+.term-top{display:flex;align-items:center;gap:8px;padding:10px 13px;border-bottom:1px solid #262b33;
+  background:#1c2026;color:#8b919d;font-size:11px;letter-spacing:.05em}
 .term-body{padding:16px 17px;min-height:250px}
 .term-body .l{white-space:pre-wrap;word-break:break-word}
-.term .c{color:#6c8cff}.term .g{color:#43c98c}.term .y{color:#e0aa4a}.term .d{color:#767c88}
-.caret{display:inline-block;width:8px;height:15px;background:#6c8cff;vertical-align:-3px;
+.term .c{color:#5fd3c6}.term .g{color:#43c98c}.term .y{color:#e0aa4a}.term .d{color:#8b919d}
+.caret{display:inline-block;width:8px;height:15px;background:#5fd3c6;vertical-align:-3px;
   animation:blink 1.1s steps(1) infinite}
 @keyframes blink{50%{opacity:0}}
 
 /* ---------- install ---------- */
+#install{background:radial-gradient(760px 320px at 84% 4%,var(--cobalt-wash),transparent 70%)}
 .install-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:clamp(28px,4vw,60px);align-items:center}
 .install-grid>div{min-width:0}
 @media(max-width:900px){.install-grid{grid-template-columns:1fr}}
@@ -566,7 +582,7 @@ p{margin:0}
 .hero-mark::after{content:"";position:absolute;inset:17%;border:1px solid var(--cobalt);border-radius:50%;opacity:0;pointer-events:none}
 .hero-mark:has(.is-initializing)::after{animation:hero-scan-wave 1s var(--ease-out) 1.05s 1}
 @keyframes hero-scan-wave{0%{opacity:.3;transform:scale(.35)}100%{opacity:0;transform:scale(1.8)}}
-.faq details.closing .ans{grid-template-rows:0fr}
+.faq details.is-closing .ans{grid-template-rows:0fr}
 .rows div{opacity:0;transform:translateY(7px);transition:opacity .42s var(--ease-out),transform .42s var(--ease-out)}
 .rows div.is-visible{opacity:1;transform:none}
 @keyframes rowin{from{opacity:0;transform:translateY(7px)}}
@@ -698,7 +714,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
       </div>
       <p class="hero-meta" data-reveal style="--d:2290ms">
         @@CORETEND_RELEASE_VERSION@@ · macOS @@CORETEND_MINIMUM_MACOS@@+ · @@CORETEND_ARCHITECTURE@@<br>
-        <span data-fr="Libre et open source · Sans signature Developer ID · Non notarisé · ">Free and open source · Not Developer ID signed · Not notarized · </span><a href="/SHA256SUMS" data-fr="voir les sommes de contrôle">see the checksums</a>
+        <span data-fr="Libre et open source · @@CORETEND_SIGNING_FR@@ · ">Free and open source · @@CORETEND_SIGNING_EN@@ · </span><a href="/SHA256SUMS" data-fr="voir les sommes de contrôle">see the checksums</a>
       </p>
     </div>
 
@@ -790,15 +806,29 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
     <h2 data-reveal data-fr="Huit modules. Aucune promesse au-delà.">Eight modules. Nothing promised beyond them.</h2>
     <p class="lead" data-reveal style="--d:100ms;margin-bottom:38px" data-fr="Voici l'architecture réelle de la version 0.9.1. Si une fonction n'est pas dans cette liste, elle n'est pas dans l'application.">This is the actual architecture of 0.9.1. If a capability is not on this list, it is not in the app.</p>
     <ul class="modules">
-      <li class="mod" data-tilt data-reveal><span class="k">Home</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3>Dashboard</h3><p data-fr="Signature de l'app, état de la Corbeille, exclusions, espace libre, activité récente et raccourcis vers les six workflows principaux.">App signature, Trash status, exclusions, free space, recent activity and shortcuts into the six primary workflows.</p></li>
+      <li class="mod" data-tilt data-reveal><span class="k">Home</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3>Dashboard</h3><p data-fr="Espace libre, état de la Corbeille, exclusions, activité récente, et un grand bouton d'analyse au centre avec des raccourcis vers les autres workflows.">Free space, Trash status, exclusions, recent activity, and a large scan action at the centre with shortcuts into the other workflows.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Scan</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Stockage">Storage</h3><p data-fr="Caches, journaux, rapports de plantage, installeurs, données de build, téléchargements oubliés.">Caches, logs, crash reports, leftover installers, build data and forgotten downloads.</p></li>
-      <li class="mod" data-tilt data-reveal><span class="k">Map</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3>Space Lens</h3><p data-fr="Treemap navigable, fil d'Ariane, recherche, ouverture directe dans le Finder.">A treemap you can walk into, with breadcrumbs, search and Reveal in Finder.</p></li>
+      <li class="mod" data-tilt data-reveal><span class="k">Map</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3>Space Lens</h3><p data-fr="Carte de tailles radiale — le plus gros dossier au centre, les autres en orbite — navigable, avec fil d'Ariane, recherche et ouverture dans le Finder.">A radial size map — the largest folder at the centre, siblings orbiting it — that you can walk into, with breadcrumbs, search and Reveal in Finder.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Match</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Doublons">Duplicates</h3><p data-fr="Correspondance SHA-256 exacte, choix de l'exemplaire à garder, Quick Look, Finder et export CSV.">Exact SHA-256 matching, keeper selection, Quick Look, Finder and CSV export.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Apps</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Applications">Applications</h3><p data-fr="Inventaire de /Applications et ~/Applications, données associées par bundle ID et source de mise à jour détectée.">Inventory of /Applications and ~/Applications, bundle-ID-associated data and detected update source.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Signals</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Intégrité">Integrity</h3><p data-fr="Provenance des téléchargements, inspection d'une app choisie et inventaire des agents de lancement. Ce n'est pas un antivirus.">Download provenance, inspection of one selected app and launch-agent inventory. It is not an antivirus.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Record</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Activité">Activity</h3><p data-fr="Jusqu'à 500 activités locales agrégées, avec filtres, journal de sécurité et exports CSV ou JSON.">Up to 500 aggregate local activities, with filters, safety log and CSV or JSON exports.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Control</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Réglages">Settings</h3><p data-fr="Langue, menu bar, exclusions, diagnostic, onboarding et vérification manuelle des mises à jour.">Language, menu bar, exclusions, diagnostics, onboarding and manual update checking.</p></li>
     </ul>
+    <div class="shots" data-reveal>
+      <figure class="shot">
+        <img src="/assets/app/smart-care.webp" width="2024" height="1488" loading="lazy" alt="CoreTend dashboard — disk-usage ring, a large scan action and shortcuts into every workflow">
+        <figcaption data-fr="Tableau de bord — l'analyse du stockage au centre">Dashboard — the storage scan at the centre</figcaption>
+      </figure>
+      <figure class="shot">
+        <img src="/assets/app/space-lens.webp" width="2024" height="1488" loading="lazy" alt="CoreTend Space Lens — a radial size map with the largest folder in the middle">
+        <figcaption data-fr="Space Lens — carte de tailles radiale">Space Lens — the radial size map</figcaption>
+      </figure>
+      <figure class="shot">
+        <img src="/assets/app/cleanup.webp" width="2024" height="1488" loading="lazy" alt="CoreTend Storage scan review — every candidate listed with its path and size before anything moves">
+        <figcaption data-fr="Stockage — chaque élément relu avant tout déplacement">Storage — every item reviewed before it moves</figcaption>
+      </figure>
+    </div>
   </div>
 </section>
 
@@ -883,12 +913,12 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
   <div class="wrap install-grid">
     <div>
       <p class="eyebrow" data-scramble><b>07</b> <span data-fr="Installation">Install</span></p>
-      <h2 data-reveal data-fr="La version publique est franche sur Gatekeeper.">The public build is honest about Gatekeeper.</h2>
-      <p class="lead" data-reveal style="--d:100ms" data-fr="L'app publique possède une signature ad hoc pour l'intégrité du bundle, mais aucune signature Developer ID et aucune notarisation. Gatekeeper bloque donc le premier lancement. Vérifiez d'abord le SHA-256, puis utilisez le parcours public de macOS si vous choisissez de continuer.">The public app is ad-hoc signed for bundle integrity, but it is not Developer ID signed or notarized. Gatekeeper therefore blocks the first launch. Verify the SHA-256 first, then use macOS's public override flow if you choose to continue.</p>
+      <h2 data-reveal data-fr="Signée, notarisée, et vérifiable.">Signed, notarized, and yours to verify.</h2>
+      <p class="lead" data-reveal style="--d:100ms" data-fr="CoreTend est signé avec un identifiant Apple Developer ID et notarisé par Apple : il s’ouvre sans invite Gatekeeper. Le SHA-256 et la signature Minisign ci-dessous permettent de vérifier la provenance de façon indépendante.">CoreTend is Developer ID signed and notarized by Apple, so it opens with no Gatekeeper prompt. The SHA-256 and Minisign signature below let you verify provenance independently.</p>
       <ol class="steps" style="margin-top:32px" data-reveal>
         <li style="padding-bottom:26px"><span class="num">1</span><h3 style="font-size:17px" data-fr="Ouvrir le .dmg, glisser dans Applications">Open the .dmg, drag to Applications</h3></li>
-        <li style="padding-bottom:26px"><span class="num">2</span><h3 style="font-size:17px" data-fr="Premier lancement bloqué : c'est normal">First launch is blocked: that is normal</h3></li>
-        <li><span class="num">3</span><h3 style="font-size:17px" data-fr="Réglages Système → Confidentialité et sécurité → Ouvrir quand même, puis confirmer Ouvrir">System Settings → Privacy &amp; Security → Open Anyway, then confirm Open</h3></li>
+        <li style="padding-bottom:26px"><span class="num">2</span><h3 style="font-size:17px" data-fr="Double-cliquer : l’app se lance, aucune exception requise">Double-click it — it launches, no override needed</h3></li>
+        <li><span class="num">3</span><h3 style="font-size:17px" data-fr="Optionnel : vérifier le SHA-256 et la signature Minisign avec la clé publiée">Optional: verify the SHA-256 and Minisign signature against the published key</h3></li>
       </ol>
       <div class="hash" data-reveal>
         <span class="mono" style="color:var(--ink-3);flex:none">SHA-256</span>
@@ -908,15 +938,15 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
         <svg class="cursor" id="cur" viewBox="0 0 16 16"><path d="M2 1.5 13 8.2l-4.6.9 2.5 4.4-1.9 1.1-2.5-4.4L2.9 13z" fill="var(--ink)" stroke="var(--paper)" stroke-width="1"/></svg>
         <div class="sheet warn" id="s1">
           <div class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 3 2.6 20h18.8z"/><path d="M12 9.5v5M12 17.4h.01"/></svg></div>
-          <h4 data-fr="« CoreTend » n'a pas pu être ouvert">"CoreTend" can't be opened</h4>
-          <p data-fr="Apple n'a pas pu vérifier l'absence de logiciels malveillants.">Apple could not verify it is free of malware.</p>
-          <div class="btns"><button type="button" data-fr="Corbeille" disabled>Move to Trash</button><button type="button" class="key" data-fr="Terminé" disabled>Done</button></div>
+          <h4 data-fr="Ouvrir « CoreTend » ?">Open "CoreTend"?</h4>
+          <p data-fr="Apple a vérifié l’absence de logiciel malveillant.">Apple checked it for malicious software and none was found.</p>
+          <div class="btns"><button type="button" data-fr="Annuler" disabled>Cancel</button><button type="button" class="key" data-fr="Ouvrir" disabled>Open</button></div>
         </div>
         <div class="sheet" id="s2">
           <div class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2.8 20 6v6.3c0 4.3-3.3 7.6-8 8.9-4.7-1.3-8-4.6-8-8.9V6z"/><path d="M8.8 12.2 11 14.5l4.4-4.7"/></svg></div>
-          <h4 data-fr="Confidentialité et sécurité">Privacy &amp; Security</h4>
-          <p data-fr="« CoreTend » a été bloqué pour protéger votre Mac.">"CoreTend" was blocked to protect your Mac.</p>
-          <div class="btns"><button type="button" data-fr="Annuler" disabled>Cancel</button><button type="button" class="key" data-fr="Ouvrir quand même" disabled>Open Anyway</button></div>
+          <h4 data-fr="Developer ID vérifié">Developer ID verified</h4>
+          <p data-fr="Signature et notarisation confirmées par macOS.">Signature and notarization confirmed by macOS.</p>
+          <div class="btns"><button type="button" class="key" data-fr="Ouvrir" disabled>Open</button></div>
         </div>
         <div class="launched" id="s3">
           <div style="text-align:center">
@@ -954,8 +984,8 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
         <div class="ans"><div><p data-fr="CoreTend n'intègre pas de fonction de restauration après l'action. Lorsqu'un élément a bien été placé dans la Corbeille par macOS, utilisez Finder → Corbeille → Remettre avant de la vider.">CoreTend has no built-in restore action after removal. When macOS successfully placed an item in the Trash, use Finder → Trash → Put Back before emptying it.</p></div></div>
       </details>
       <details data-reveal>
-        <summary data-fr="Pourquoi cet avertissement au lancement ?">Why the warning on first launch?</summary>
-        <div class="ans"><div><p data-fr="La version publique est signée ad hoc pour l'intégrité du bundle, sans signature Developer ID et sans notarisation. Après la première tentative, macOS permet une exception manuelle dans Réglages Système → Confidentialité et sécurité. Vérifiez le SHA-256 avant de continuer.">The public build is ad-hoc signed for bundle integrity, without Developer ID signing or notarization. After the first attempt, macOS offers a manual exception in System Settings → Privacy &amp; Security. Verify the SHA-256 before continuing.</p></div></div>
+        <summary data-fr="Comment vérifier le téléchargement ?">How do I verify the download?</summary>
+        <div class="ans"><div><p data-fr="Comparez le SHA-256 du DMG avec le fichier SHA256SUMS publié, puis vérifiez sa signature Minisign avec la clé publiée (minisign.pub). xcrun stapler validate confirme le ticket de notarisation embarqué.">Compare the DMG’s SHA-256 with the published SHA256SUMS file, then check its Minisign signature with the published key (minisign.pub). xcrun stapler validate confirms the embedded notarization ticket.</p></div></div>
       </details>
       <details data-reveal>
         <summary data-fr="Que se passe-t-il si je supprime quelque chose d'important ?">What if I remove something I needed?</summary>
@@ -1004,7 +1034,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
     </div>
     <div class="foot-base">
       <p data-fr="© Contributeurs CoreTend · Apache-2.0">© CoreTend contributors · Apache-2.0</p>
-      <p data-fr="@@CORETEND_RELEASE_VERSION@@ · sans Developer ID · non notarisé">@@CORETEND_RELEASE_VERSION@@ · no Developer ID · not notarized</p>
+      <p data-fr="@@CORETEND_RELEASE_VERSION@@ · @@CORETEND_SIGNING_FR@@">@@CORETEND_RELEASE_VERSION@@ · @@CORETEND_SIGNING_EN@@</p>
     </div>
   </div>
 </footer>
@@ -1046,7 +1076,7 @@ const VIEWS = {
   lens:{
     title:{en:"Space Lens",fr:"Space Lens"},
     meta:{en:"Macintosh HD › Users › demo · 96 GB",fr:"Macintosh HD › Utilisateurs › demo · 96 Go"},
-    foot:{en:"Double-click a block to walk into it.",fr:"Double-cliquez un bloc pour y entrer."},
+    foot:{en:"Double-click a bubble to walk into it.",fr:"Double-cliquez une bulle pour y entrer."},
     map:[["Movies",32],["Library",24],["Pictures",16],["Developer",12],["Documents",8],["Other",4]],
     rows:[
       {p:"/Users/demo/Movies",s:"32 GB",o:1,t:{en:"inspect",fr:"inspecter"}},
@@ -1241,15 +1271,41 @@ function logos() {
   };
 }
 
-/* alternating-slice treemap */
-function treemap(items, x, y, w, h, horiz, out=[]) {
-  if (!items.length) return out;
-  const total = items.reduce((s,i)=>s+i[1], 0);
-  const [first, ...rest] = items;
-  const f = first[1] / total;
-  if (horiz) { const iw = w*f; out.push({l:first[0], x, y, w:iw, h}); treemap(rest, x+iw, y, w-iw, h, false, out); }
-  else       { const ih = h*f; out.push({l:first[0], x, y, w, h:ih}); treemap(rest, x, y+ih, w, h-ih, true, out); }
-  return out;
+/* radial "point of focus" packing — the largest item dead centre, the rest
+   orbiting it on a golden-angle spiral, area proportional to weight. Mirrors
+   RadialPack in the app. Coordinates are pixels within the given box. */
+function bubblePack(items, W, H) {
+  if (!items.length || W < 8 || H < 8) return [];
+  const maxW = Math.max(items[0][1], 1);
+  const shortSide = Math.min(W, H);
+  // r is the DIAMETER. Kept modest so several fit a wide, short box.
+  const maxR = shortSide * 0.52, minR = shortSide * 0.15, gap = shortSide * 0.035;
+  const cx = W / 2, cy = H / 2;
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const placed = [];
+  items.forEach((it, idx) => {
+    const r = Math.max(minR, Math.min(maxR, Math.sqrt(it[1] / maxW) * maxR));
+    if (idx === 0) { placed.push({l: it[0], cx, cy, r}); return; }
+    let ang = idx * 2.399963, dist = (placed[0].r + r) / 2 + gap, best = null;
+    for (let step = 0; step < 240; step++) {
+      const px = cx + Math.cos(ang) * dist, py = cy + Math.sin(ang) * dist;
+      const clears = placed.every(p => Math.hypot(p.cx - px, p.cy - py) >= (p.r + r) / 2 + gap);
+      if (clears) {
+        // keep the closest-to-centre spot that clears, even if it overflows a little
+        const d = Math.hypot(px - cx, py - cy);
+        if (!best || d < best.d) best = {px, py, d};
+        if (px - r / 2 >= -r * 0.15 && px + r / 2 <= W + r * 0.15 &&
+            py - r / 2 >= -r * 0.15 && py + r / 2 <= H + r * 0.15) {
+          placed.push({l: it[0], cx: px, cy: py, r}); return;
+        }
+      }
+      ang += 0.33; dist += shortSide * 0.02;
+    }
+    const px = best ? best.px : cx + Math.cos(ang) * ((placed[0].r + r) / 2 + gap);
+    const py = best ? best.py : cy + Math.sin(ang) * ((placed[0].r + r) / 2 + gap);
+    placed.push({l: it[0], cx: clamp(px, r / 2, W - r / 2), cy: clamp(py, r / 2, H - r / 2), r});
+  });
+  return placed;
 }
 
 /* ─── ambient canvas ─────────────────────────────────────── */
@@ -1495,10 +1551,11 @@ function demo(view = "storage", auto = true) {
 
   const lens = $("#lens");
   lens.querySelectorAll("b").forEach(n => n.remove());
-  treemap(v.map, 0, 0, 100, 100, true).forEach((c, i) => {
+  const LW = lens.clientWidth || 320, LH = lens.clientHeight || 174;
+  bubblePack(v.map, LW, LH).forEach((c, i) => {
     const b = document.createElement("b");
-    b.style.cssText = `--x:${c.x}%;--y:${c.y}%;--w:${c.w}%;--h:${c.h}%;--t:${18 + (v.map.length-i)*7}`;
-    if (c.w > 17 && c.h > 13) b.innerHTML = `<i>${c.l}</i>`;
+    b.style.cssText = `--cx:${c.cx.toFixed(1)}px;--cy:${c.cy.toFixed(1)}px;--r:${c.r.toFixed(1)}px;--t:${18 + (v.map.length-i)*7}`;
+    if (c.r > 42) b.innerHTML = `<i>${c.l}</i>`;
     b.title = c.l;
     lens.appendChild(b);
   });
@@ -1638,8 +1695,8 @@ function faq() {
     $("summary", d).addEventListener("click", e => {
       e.preventDefault();
       if (!d.open) { d.open = true; return; }
-      d.classList.add("closing");
-      const done = () => { d.open = false; d.classList.remove("closing"); };
+      d.classList.add("is-closing");
+      const done = () => { d.open = false; d.classList.remove("is-closing"); };
       const ans = $(".ans", d);
       let fired = false;
       ans.addEventListener("transitionend", () => { fired = true; done(); }, {once:true});
