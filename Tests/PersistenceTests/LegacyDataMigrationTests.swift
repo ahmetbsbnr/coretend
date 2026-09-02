@@ -1,7 +1,6 @@
 import Testing
 import Foundation
 @testable import Persistence
-import SafetyCore
 
 /// Every test here runs entirely inside a temp directory tree. Nothing in this
 /// file can reach `~/Library` — the migration takes its legacy roots and

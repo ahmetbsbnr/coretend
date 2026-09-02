@@ -34,7 +34,7 @@ secondaryBody, caption, metric, monospacedMetric, badge, button(=body), tableHea
 ## Compat
 `MCTheme` = alias vers les nouveaux tokens (vues legacy). À résorber.
 
-## Composants (Components.swift, CoreBloom.swift, HeroCore.swift)
+## Composants (Components.swift, CoreBloom.swift, ScanStage.swift)
 MCCard, MCSectionHeader, MCStatusBadge, MCMetricCard, MCEmptyState, MCErrorState,
-MCModuleIdentity, CoreBloomMark, MCArc, OrbitalProgressView, MCHeroCoreView.
-Tests: Tests/DesignSystemTests.
+MCModuleIdentity, CoreBloomMark, MCArc, MCScanStage (le motif d'analyse unique,
+6 modules). Tests: Tests/DesignSystemTests.

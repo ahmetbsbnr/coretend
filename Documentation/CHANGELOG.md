@@ -1,5 +1,24 @@
 # CHANGELOG
 
+## 1.0.0-prep — 2026-09-02 « Clean before release »
+
+- chore(design-system): remove the superseded per-module scan motifs. `MCScanStage`
+  (`Sources/DesignSystem/ScanStage.swift`) is the single scan visualization,
+  wired into all 6 scan modules (Cleanup, Duplicates, Space Lens, Privacy
+  Cleaner, Similar Images, Cloud Cleanup). The earlier `MCFragmentView`
+  (Cleanup), `MCMeshView` (Protection) and `MCHeroCoreView` + `MCHeroState` +
+  `OrbitalProgressView` (Smart Care) were never wired into a view — deleted
+  along with the now-orphaned `MCSize.heroCore` / `MCOpacity.halo` tokens,
+  `CleanupViewModel.normalizedGroupWeights`, an unused `MCScanStage`
+  convenience initializer, `AppUpdatesViewModel.UpdateInfo.feedURL`, a
+  duplicate `reduceMotion` read, and an unused test import. `swift build -c
+  release` 0 warnings, 342 tests green, site + visual gates unchanged.
+- chore(site): remove ~94 lines of shadowed dead code from `Website/build.py`
+  (duplicate `public_head` / `shell` / `information_pages` definitions); the
+  generated site is byte-for-byte identical.
+- docs(github): the repo description and topics no longer claim "optional
+  ClamAV scanning" — retired in favour of the read-only IntegrityCore.
+
 ## 0.9.1-rc.5 — 2026-08-02 « Review and Confirm »
 
 Supersedes rc.4 without changing its tag or published artifacts.

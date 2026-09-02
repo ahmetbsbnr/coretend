@@ -27,7 +27,6 @@ public enum MCSize {
     public static let sidebarIdeal: CGFloat = 220
     public static let windowMinWidth: CGFloat = 860
     public static let windowMinHeight: CGFloat = 580
-    public static let heroCore: CGFloat = 200
     public static let metricRing: CGFloat = 76
     public static let chartHeight: CGFloat = 140
     public static let moduleIcon: CGFloat = 30
@@ -55,7 +54,6 @@ public enum MCOpacity {
     public static let pressed: Double = 0.14
     public static let disabled: Double = 0.4
     public static let orbitTrack: Double = 0.14
-    public static let halo: Double = 0.22
 }
 
 /// Backwards-compatible theme namespace (older views reference MCTheme).

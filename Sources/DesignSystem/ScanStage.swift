@@ -164,9 +164,3 @@ public struct MCScanStage<Caption: View>: View {
         }
     }
 }
-
-public extension MCScanStage where Caption == EmptyView {
-    init(isScanning: Bool, fraction: Double? = nil, tint: Color = MCColor.teal) {
-        self.init(isScanning: isScanning, fraction: fraction, tint: tint) { EmptyView() }
-    }
-}

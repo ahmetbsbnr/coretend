@@ -98,7 +98,10 @@ Command: `for f in Scripts/*.sh; do grep -m1 "^set " "$f"; done | sort |
 uniq -c`
 Result: `10 set -e`, `11 set -eu`, `1 set -euo pipefail`.
 
-**EVIDENCE-PROTECTION-001**
+**EVIDENCE-PROTECTION-001** — SUPERSEDED (2026-09-02): `MCMeshView` was
+never wired into `ProtectionView` and was removed before 1.0 (superseded by
+the shared `MCScanStage`). The evidence below is retained as a record of
+what the file contained when audited.
 Claim: Protection's `MCMeshView` containment-mesh motif is a real,
 state-driven visualization (not decorative), and correctly has no
 Reduce-Motion handling because it has no animation.
