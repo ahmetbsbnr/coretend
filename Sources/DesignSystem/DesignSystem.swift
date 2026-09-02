@@ -1,12 +1,12 @@
 import SwiftUI
 
-// CoreTend design system — Paper / Ink / Cobalt, shared with the portfolio.
+// CoreTend design system — Porcelain / Slate / Teal, shared with the portfolio.
 // Tokens: Tokens.swift / Colors.swift / Typography.swift
 // Brand:  CoreBloom.swift   Components: Components.swift
 
 /// Card container used across module screens.
-/// The surface is deliberately solid rather than glassy: Paper / Ink / Cobalt
-/// should read as a product interface, not a translucent marketing panel.
+/// The surface is deliberately solid rather than glassy: Porcelain / Slate /
+/// Teal should read as a product interface, not a translucent marketing panel.
 public struct MCCard<Content: View>: View {
     private let content: Content
 
