@@ -71,8 +71,8 @@ class PublicReleaseGateTests(unittest.TestCase):
         self.assertEqual(latest["releaseTag"], self.current["tag"])
         self.assertEqual(latest["architecture"], "arm64")
         self.assertEqual(latest["minimumMacOS"], "14.0")
-        self.assertIs(latest["signed"], False)
-        self.assertIs(latest["notarized"], False)
+        self.assertIs(latest["signed"], self.current["signed"])
+        self.assertIs(latest["notarized"], self.current["notarized"])
         self.assertEqual(latest["dmgURL"], self.current["dmgURL"])
         self.assertEqual(latest["dmgSHA256"], self.current["dmgSHA256"])
         self.assertNotIn("_comment", latest)
@@ -104,6 +104,10 @@ class PublicReleaseGateTests(unittest.TestCase):
             sourceCommit="1234567890abcdef1234567890abcdef12345678",
             releaseURL="https://github.com/ahmetbsbnr/coretend/releases/tag/v1.0.0-rc.1",
             publishedAt="2026-08-01T12:00:00Z",
+            # This fixture exercises the un-pinned-checksum path, which is
+            # independent of signing; keep it a consistent unsigned release.
+            signed=False,
+            notarized=False,
             dmgName="CoreTend-1.0.0-rc.1-arm64-unsigned.dmg",
             dmgURL="https://github.com/ahmetbsbnr/coretend/releases/download/v1.0.0-rc.1/CoreTend-1.0.0-rc.1-arm64-unsigned.dmg",
             zipName="CoreTend-1.0.0-rc.1-arm64-unsigned.zip",
@@ -154,15 +158,17 @@ class PublicReleaseGateTests(unittest.TestCase):
         invalid["minimumMacOS"] = "13.0"
         self.assert_rejected(invalid, "minimumMacOS must be")
 
-    def test_false_signature_claim_is_rejected(self) -> None:
+    def test_signed_but_not_notarized_is_rejected(self) -> None:
         invalid = copy.deepcopy(self.current)
         invalid["signed"] = True
-        self.assert_rejected(invalid, "requires signed=false")
+        invalid["notarized"] = False
+        self.assert_rejected(invalid, "signed and notarized must agree")
 
-    def test_false_notarization_claim_is_rejected(self) -> None:
+    def test_notarized_but_not_signed_is_rejected(self) -> None:
         invalid = copy.deepcopy(self.current)
+        invalid["signed"] = False
         invalid["notarized"] = True
-        self.assert_rejected(invalid, "requires notarized=false")
+        self.assert_rejected(invalid, "signed and notarized must agree")
 
     def test_noncanonical_asset_url_is_rejected(self) -> None:
         invalid = copy.deepcopy(self.current)

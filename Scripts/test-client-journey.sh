@@ -136,23 +136,38 @@ case "$SIGN_INFO" in
   *) note "signature is not ad-hoc: $(printf '%s' "$SIGN_INFO" | grep -i '^Authority' | head -1)" ;;
 esac
 
-# 12. The documented recovery route must be the one that actually works on this
-# macOS. Apple removed the Control-click override in macOS 15.
+# 12. What "the download won't open" recovery looks like depends on whether the
+# published build is signed. rc.6 onward is Developer ID signed and
+# Apple-notarized: it opens with no Gatekeeper prompt, so the docs carry the
+# independent provenance check (SHA-256 + Minisign + a stapled ticket) instead
+# of an "Open Anyway" workaround. An unsigned build must still document the
+# System Settings route, because Apple removed the Control-click override in
+# macOS 15. Website/index.html is the bilingual source of truth (the retired
+# Website/en|fr trees were removed).
+PUB_SIGNED=$(/usr/bin/python3 -c "import json; r=json.load(open('Configuration/published-release.json')); print('yes' if r.get('signed') and r.get('notarized') else 'no')")
 MAJOR=$(sw_vers -productVersion | cut -d. -f1)
-if [ "$MAJOR" -ge 15 ]; then
-  # Markdown may wrap a phrase across source lines while rendering it as one
-  # sentence. Normalize line breaks so harmless prose reflow cannot turn this
-  # release gate into a false negative.
-  README_COPY=$(tr '\n' ' ' < README.md)
+# Markdown may wrap a phrase across source lines while rendering it as one
+# sentence. Normalize line breaks so harmless prose reflow cannot turn this
+# release gate into a false negative.
+README_COPY=$(tr '\n' ' ' < README.md)
+if [ "$PUB_SIGNED" = "yes" ]; then
+  case "$README_COPY" in
+    *notariz*|*stapled*) ;;
+    *) die PACKAGING "README does not document notarization / provenance verification" ;;
+  esac
+  grep -q "stapler validate" Website/index.html \
+    || die PACKAGING "the site does not document the notarization provenance check"
+  ok "signed build: README and site document the provenance check, no Gatekeeper prompt to recover from"
+elif [ "$MAJOR" -ge 15 ]; then
   case "$README_COPY" in
     *"Open Anyway"*) ;;
     *) die PACKAGING "README does not document the System Settings route" ;;
   esac
-  grep -rq "Ouvrir quand même" Website/fr/index.html || die PACKAGING "the FR site does not document the System Settings route"
-  grep -rq "Open Anyway" Website/en/index.html || die PACKAGING "the EN site does not document the System Settings route"
-  ok "documented recovery route matches macOS $MAJOR (System Settings, not Control-click)"
+  grep -q "Ouvrir quand même" Website/index.html || die PACKAGING "the FR site does not document the System Settings route"
+  grep -q "Open Anyway" Website/index.html || die PACKAGING "the EN site does not document the System Settings route"
+  ok "unsigned build: documented recovery route matches macOS $MAJOR (System Settings, not Control-click)"
 else
-  ok "macOS $MAJOR still supports the Control-click route"
+  ok "unsigned build: macOS $MAJOR still supports the Control-click route"
 fi
 
 # 13-17. Simulate the user having chosen "Open Anyway". Approving through the

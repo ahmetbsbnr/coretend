@@ -1,7 +1,7 @@
 {
   "project": "CoreTend",
-  "version": "0.9.1-rc.5",
-  "phase": "0.9.1-rc.5 — Removes the former Dry Run product mode while preserving read-only scans, reviewed selections, explicit confirmations, protected-root validation and recoverable Trash actions. IntegrityCore remains the current read-only integrity implementation; the retired ClamAV interface and scanner remain absent. The public locale routes are normalized to /en and /fr.",
+  "version": "0.9.1-rc.6",
+  "phase": "0.9.1-rc.6 — First signed and notarized build. A Developer ID Application identity (Team NSCUV5G738) is installed; the app and DMG are code-signed with hardened runtime, notarized by Apple and stapled, so Gatekeeper opens them with no override step. Functionally identical to rc.5 (read-only scans, reviewed selections, explicit confirmations, protected-root validation, recoverable Trash actions; IntegrityCore is the current read-only integrity implementation; the retired ClamAV interface and scanner remain absent; public locale routes normalized to /en and /fr).",
   "toolchain": "Swift 6.3.3 with Xcode 26.6 and Command Line Tools on macOS 26.5.1",
   "build_system": "SwiftPM; app bundle assembled by Scripts/package-local.sh; DMG assembled reproducibly with dmgbuild",
   "test_framework": "Swift Testing via Scripts/test.sh, plus Xcode and distribution/package gates",

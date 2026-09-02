@@ -10,7 +10,7 @@ cd "$(dirname "$0")/.."
 # actually overrides. Reading it alone used to crash with a KeyError on any key
 # it does not define (bundleId, for one), so this gate could not run at all
 # whenever a partial local override existed. Overlay example + local, exactly
-# as Website/generate.py does, so both read the same effective configuration.
+# as Website/build.py does, so both read the same effective configuration.
 EXAMPLE="Configuration/PublicIdentity.example.json"
 LOCAL="Configuration/PublicIdentity.local.json"
 IDENTITY="$EXAMPLE"

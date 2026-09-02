@@ -87,6 +87,7 @@ require_png "Favicon-48.png" "48x48"
 require_png "Favicon-180.png" "180x180"
 require_png "Favicon-512.png" "512x512"
 require_png "OpenGraph-1200x630.png" "1200x630"
+require_png "SocialPreview-1280x640.png" "1280x640"
 
 # Lockups, light and dark, plus single-ink for print.
 require_png_height "Logo-Horizontal-dark.png" 128 380 540

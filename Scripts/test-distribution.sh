@@ -20,9 +20,18 @@ note "Packaging ZIP and DMG"
 bash Scripts/package-zip.sh "$VERSION"
 bash Scripts/package-dmg.sh "$VERSION"
 
-ZIP="Release/CoreTend-${VERSION}-arm64-unsigned.zip"
-DMG="Release/CoreTend-${VERSION}-arm64-unsigned.dmg"
-[ -f "$ZIP" ] || { bad "zip not found at $ZIP"; exit 1; }
+# package-*.sh above always builds the -unsigned local artifacts; a signed
+# release (CoreTend-<v>-arm64.{zip,dmg}, produced by sign-and-notarize.sh) may
+# also be present. Prefer the signed one when it exists — the structural checks
+# below apply to either.
+for suffix in "" "-unsigned"; do
+  if [ -f "Release/CoreTend-${VERSION}-arm64${suffix}.dmg" ]; then
+    ZIP="Release/CoreTend-${VERSION}-arm64${suffix}.zip"
+    DMG="Release/CoreTend-${VERSION}-arm64${suffix}.dmg"
+    break
+  fi
+done
+[ -n "${ZIP:-}" ] && [ -f "$ZIP" ] || { bad "zip not found (tried Release/CoreTend-${VERSION}-arm64[-unsigned].zip)"; exit 1; }
 [ -f "$DMG" ] || { bad "dmg not found at $DMG"; exit 1; }
 
 WORK=$(mktemp -d)
