@@ -115,6 +115,26 @@ argument-array-only `Process()` call, and 86/86 passing tests hold up
     meant to expose pieces the app has not adopted yet. Left as-is on
     purpose; listed here so a future periphery run has a known baseline.
 
+13. **`dmgbuild` version pin outran the machine's Python** — RESOLVED
+    (`6ae2343`, 2026-09-02). `requirements-packaging.txt` pins
+    `dmgbuild==1.6.7`, which needs Python ≥ 3.10; a stock macOS `python3` is
+    the 3.9 system interpreter, so once the cached `.build/packaging-venv`
+    was gone `package-dmg.sh` failed to provision and **the 1.0.0 DMG could
+    not be built on this machine**. `package-dmg.sh` now probes
+    `python3.13/3.12/3.11/3.10` (`CORETEND_PACKAGING_PYTHON` overrides) and
+    fails loudly if none is ≥ 3.10. The exact pin is kept for a reproducible
+    `.DS_Store`.
+
+14. **rc.6's DMG background says "Unsigned build"** — RESOLVED for 1.0.0.
+    The published `v0.9.1-rc.6` disk image's background artwork reads
+    *"Unsigned build — first launch needs System Settings › Privacy &
+    Security"*, which is false — rc.6 is Developer ID signed and notarized.
+    The current `Resources/Brand/Sources/generate-brand-assets.swift` draws
+    *"Local scans · reversible cleanup · nothing leaves your Mac"* instead,
+    and the committed `Resources/Brand/Generated/DMG-Background.png` already
+    carries the new text, so the 1.0.0 DMG is correct. rc.6 itself is not
+    being re-cut.
+
 ## Not technical debt (explicitly checked, found clean this session)
 
 - Localization: 327/327 EN keys have an FR counterpart and vice versa,

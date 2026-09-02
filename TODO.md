@@ -22,22 +22,33 @@ client journey, VoiceOver, **trademark attorney review**) — plus the exact
 ship sequence, are in `Documentation/RELEASE_STATE.md` → "Path to v1.0.0".
 Items 1–5 and 7 below are the human-only gates, unchanged.
 
-## Open — needs a second Mac or a display session (cannot run here)
+## Clean-install QA — walked 2026-09-02 (computer-use, this Mac wiped first)
 
-1. **Clean-Mac launch repro.** The report that CoreTend didn't launch on
-   another Mac was never root-caused. Reproduce with the exact public
-   artifact from the download page, on a clean user account, and collect
-   Console/crash logs, `codesign -dvvv`, `spctl --assess --verbose=4`,
-   `otool -L`, `xattr -lr` before concluding cause (Gatekeeper vs. crash vs.
-   missing resource vs. architecture — don't assume).
-2. **DMG visual validation.** Narrowed by `Documentation/Audits/
-   DMG_PACKAGING_AUDIT.md` (2026-08-09): the packaging pipeline, geometry
-   and on-brand background artwork are all proven correct headlessly. What
-   remains is purely how it renders/feels in a real Finder window — icon
-   alignment, drag-and-drop feel — not a rebuild.
-3. **Full client journey.** Download → quarantine → mount → copy → first
-   launch → Gatekeeper prompt → onboarding → scan → uninstall/reinstall, in
-   both languages, with real screenshots — not simulated.
+1. ~~**Clean-Mac launch repro.**~~ **Root-caused 2026-09-02.** rc.6 was
+   downloaded from the site (checksum = published hash, real quarantine),
+   drag-installed, and hung at `_dyld_start` on first launch — **but this
+   Mac's Gatekeeper trust-policy evaluation for non-Apple Developer ID cert
+   chains is wedged** (`spctl -a` on Google Chrome *also* hangs > 10 s;
+   fallout from the day's heavy `codesign`/`spctl`/notarize load). **A reboot
+   clears it.** The app is not at fault: `build/CoreTend.app`
+   (Apple-Development-signed, same source) launches in ~5 s and renders the
+   full UI. Re-verify the 1.0.0 DMG launch from `/Applications` after the
+   pre-publish reboot. `otool -L` shows no `@rpath` deps; signature valid;
+   `xattr` quarantine present; no crash log (a hang, not a crash).
+2. ~~**DMG visual validation.**~~ **Done 2026-09-02.** Renders correctly in a
+   real Finder window (custom background, app → arrow → Applications). One
+   defect found on **rc.6 only**: the background reads *"Unsigned build —
+   first launch needs System Settings › Privacy & Security"*, wrong for the
+   signed build — already fixed in `generate-brand-assets.swift`
+   ("Local scans · reversible cleanup · nothing leaves your Mac"), and the
+   committed `DMG-Background.png` carries the new text, so 1.0.0 is correct.
+3. ~~**Full client journey.**~~ **Walked 2026-09-02** on the working build
+   (EN): first launch → Dashboard (Porcelaine) → Storage → Start Scan
+   (`MCScanStage` motif live) → grouped review (Xcode DerivedData / caches /
+   logs, sized, explained, per-item paths, "Move to Trash" gate — stopped
+   before execute) → Space Lens → Integrity → quit → `uninstall.sh
+   --remove-all` leaves the Mac clean. FR pass and the real Gatekeeper prompt
+   still to be observed after the reboot.
 4. **Crash-test matrix — mostly done.** Classified and executed in
    `Documentation/Audits/CRASH_MATRIX_CLASSIFICATION.md` (2026-08-09):
    31/40 items executed for real (`Scripts/test-robustness.sh` 31/31 PASS +
