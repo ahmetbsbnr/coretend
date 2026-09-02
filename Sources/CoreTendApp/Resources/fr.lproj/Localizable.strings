@@ -393,10 +393,6 @@
 "palette.placeholder" = "Aller à…";
 "palette.no_results" = "Aucun résultat";
 "palette.scan_home" = "Analyser le dossier personnel avec Space Lens";
-"menubar.this_copy" = "Cette copie";
-"menubar.signature_apple" = "Signé par Apple";
-"menubar.signature_team" = "Signé (équipe %@)";
-"menubar.signature_unsigned" = "Non signé";
 "protection.tab.integrity" = "Intégrité";
 "settings.this_copy_signature" = "Signature de cette copie";
 "integrity.explainer.title" = "Des signaux natifs, pas un scanner";
@@ -441,9 +437,6 @@
 "dashboard.integrity.detail" = "Vérifiez la provenance des téléchargements, les niveaux de signature et ce qui démarre à la connexion.";
 "dashboard.activity.title" = "Activité";
 "dashboard.activity.empty" = "Aucune activité enregistrée.";
-"dashboard.signature.apple" = "Signé par Apple";
-"dashboard.signature.team" = "Équipe %@";
-"dashboard.signature.unsigned" = "Copie non signée";
 "dashboard.open_module" = "Ouvrir %@";
 
 /* Safety log (SafetyCore audit trail persistence) */
@@ -481,7 +474,6 @@
 "onboarding.welcome.no_telemetry" = "Aucune télémétrie, statistique, publicité ni abonnement.";
 "onboarding.welcome.open_source" = "Open source — vous pouvez lire chaque ligne.";
 "onboarding.welcome.version" = "Version %@";
-"onboarding.welcome.unsigned" = "Version locale non signée";
 "onboarding.move.prompt" = "L'application n'est pas encore dans votre dossier Applications. Il est recommandé de l'y déplacer.";
 "onboarding.move.button" = "Déplacer vers Applications";
 "onboarding.move.done" = "Copiée dans %@. Relancez-la depuis là.";

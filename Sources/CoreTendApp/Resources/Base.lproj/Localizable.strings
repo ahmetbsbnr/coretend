@@ -393,10 +393,6 @@
 "palette.placeholder" = "Jump to…";
 "palette.no_results" = "No matches";
 "palette.scan_home" = "Scan Home with Space Lens";
-"menubar.this_copy" = "This copy";
-"menubar.signature_apple" = "Apple-signed";
-"menubar.signature_team" = "Signed (team %@)";
-"menubar.signature_unsigned" = "Unsigned";
 "protection.tab.integrity" = "Integrity";
 "settings.this_copy_signature" = "This copy's signature";
 "integrity.explainer.title" = "Native signals, not a scanner";
@@ -441,9 +437,6 @@
 "dashboard.integrity.detail" = "Check download provenance, code-signature tiers, and what launches at login.";
 "dashboard.activity.title" = "Activity";
 "dashboard.activity.empty" = "No activity recorded yet.";
-"dashboard.signature.apple" = "Apple-signed";
-"dashboard.signature.team" = "Team %@";
-"dashboard.signature.unsigned" = "Unsigned copy";
 "dashboard.open_module" = "Open %@";
 
 /* Safety log (SafetyCore audit trail persistence) */
@@ -481,7 +474,6 @@
 "onboarding.welcome.no_telemetry" = "No telemetry, analytics, ads or subscriptions.";
 "onboarding.welcome.open_source" = "Open source — you can read every line.";
 "onboarding.welcome.version" = "Version %@";
-"onboarding.welcome.unsigned" = "Unsigned local build";
 "onboarding.move.prompt" = "This app isn't in your Applications folder yet. Moving it there is recommended.";
 "onboarding.move.button" = "Move to Applications";
 "onboarding.move.done" = "Copied to %@. Relaunch from there.";
