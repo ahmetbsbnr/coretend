@@ -1,0 +1,46 @@
+{
+  "colors": {
+    "amberDeep": "#8A5A12",
+    "cobalt": "#0B6E6C",
+    "cobaltBright": "#5FD3C6",
+    "cobaltBrightest": "#A7E6DE",
+    "cobaltDeep": "#08514F",
+    "cobaltDeepest": "#063F3D",
+    "cobaltMid": "#2E9E93",
+    "coralDeep": "#B83C33",
+    "ink": "#1B1E22",
+    "mutedSlate": "#7E8894",
+    "paper": "#F6F4EF",
+    "signalCoral": "#F08A7E",
+    "slateDeep": "#4A535F",
+    "warmAmber": "#F4C76B"
+  },
+  "motion": {
+    "gentle": 0.55,
+    "quick": 0.15,
+    "standard": 0.3
+  },
+  "source": "Sources/DesignSystem/Colors.swift + Tokens.swift",
+  "spacing": {
+    "capsule": 999.0,
+    "card": 8.0,
+    "chartHeight": 140.0,
+    "hero": 12.0,
+    "heroCore": 200.0,
+    "lg": 24.0,
+    "md": 16.0,
+    "metricRing": 76.0,
+    "moduleIcon": 30.0,
+    "page": 24.0,
+    "sidebarIdeal": 220.0,
+    "sidebarMin": 190.0,
+    "sm": 12.0,
+    "small": 6.0,
+    "windowMinHeight": 580.0,
+    "windowMinWidth": 860.0,
+    "xl": 32.0,
+    "xs": 8.0,
+    "xxl": 48.0,
+    "xxs": 4.0
+  }
+}

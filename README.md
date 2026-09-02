@@ -1,143 +1,117 @@
 # CoreTend
 
 <p align="center">
-  <img src="Resources/Brand/Generated/Logo-Horizontal-light@2x.png" width="420" alt="CoreTend">
-</p>
-
-<p align="center">Local, transparent and reversible care for macOS.</p>
-
-<p align="center">
-  <img alt="Version 0.9.0 public beta" src="https://img.shields.io/badge/version-0.9.0%20beta-135f4a">
-  <img alt="macOS 14 or later" src="https://img.shields.io/badge/macOS-14%2B-5c54cc">
-  <img alt="Apple Silicon arm64" src="https://img.shields.io/badge/architecture-arm64-94600a">
-  <img alt="Apache 2.0 code license" src="https://img.shields.io/badge/code-Apache--2.0-135f4a">
-</p>
-
-CoreTend is an open-source macOS utility for reviewing storage, finding
-clutter, understanding disk usage, inspecting applications and monitoring
-system health. Scans explain what they found before an action runs. Dry run is
-the default, and supported removals go to the Trash.
-
-<p align="center">
   <picture>
-    <source srcset="Website/assets/app/smart-care.webp" type="image/webp">
-    <img src="Website/assets/app/smart-care.png" width="720"
-      alt="CoreTend Smart Care window with module navigation and scan controls">
+    <source media="(prefers-color-scheme: dark)" srcset="Resources/Brand/Generated/Logo-Horizontal-dark@2x.png">
+    <img src="Resources/Brand/Generated/Logo-Horizontal-light@2x.png" width="420" alt="CoreTend">
   </picture>
 </p>
 
-[Download 0.9.0 public beta](https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.0)
-· [Product site](https://coretend.ahmetbsbnr.com)
-· [Visual tour](https://coretend.ahmetbsbnr.com/en/demos.html)
-· [Documentation](Documentation/DOCUMENT_INDEX.md)
+<p align="center"><strong>Know what your Mac is holding. Take the space back.</strong></p>
 
-## What CoreTend does
+<p align="center">
+  Local, transparent and reversible care for macOS. CoreTend reads supported
+  locations on-device and explains every finding. Nothing leaves your Mac;
+  sensitive actions need a reviewed selection and explicit confirmation before
+  eligible items go to the Trash.
+</p>
 
-- **Smart Care** — orchestrates the low-risk cleanup rules and presents one
-  review before execution.
-- **Cleanup** — reviews caches, logs, diagnostic reports, build artifacts,
-  incomplete downloads and opt-in higher-risk categories.
-- **My Clutter** — finds large and old files, content-identical duplicates and
-  visually similar images.
-- **Space Lens** — builds a navigable, read-only map of disk usage.
-- **Applications** — inventories installed apps, associated data and
-  conservative leftovers; removals use the Trash.
-- **Performance** — displays live CPU, memory, disk and thermal readings and
-  inspects login agents without changing them.
-- **Protection** — can invoke a separately installed ClamAV engine and keeps
-  quarantine actions explicit.
-- **Cloud Cleanup** — measures local versus logical cloud-file footprint
-  without downloading files or deleting cloud content.
-- **My Activity** — records actions locally, separates simulations from
-  executed work and supports CSV export.
-- **Settings and menu bar** — control dry run, exclusions, permissions and
-  quick system status.
+<p align="center">
+  <a href="https://github.com/ahmetbsbnr/coretend/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/ahmetbsbnr/coretend?include_prereleases&sort=semver&color=0B6E6C&label=release"></a>
+  <img alt="Platform" src="https://img.shields.io/badge/macOS-14%2B%20%C2%B7%20Apple%20silicon-1B1E22">
+  <img alt="Signed &amp; notarized" src="https://img.shields.io/badge/Developer%20ID-signed%20%2B%20notarized-0B6E6C">
+  <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-1B1E22"></a>
+</p>
 
-## Compatibility
+<p align="center">
+  <img src="Website/assets/app/smart-care.png" width="820" alt="CoreTend dashboard">
+</p>
 
-- Apple Silicon (`arm64`)
-- macOS 14 or later
-- Swift 6 toolchain to build from source
-- No Intel binary is published
+<p align="center">
+  <a href="https://coretend.ahmetbsbnr.com">Product site</a> ·
+  <a href="https://ahmetbsbnr.com/en/projets/coretend/">Portfolio case study</a> ·
+  <a href="Documentation/README.md">Documentation</a>
+</p>
 
-## Download and verify
+---
 
-CoreTend 0.9.0 is a public beta. Its binaries are **unsigned** and
-**not notarized**.
+## What it does
 
-| Asset | Size | SHA-256 |
-|---|---:|---|
-| `CoreTend-0.9.0-arm64-unsigned.zip` | 2,833,085 bytes | `1d224b7655cfbcb15b5f9a37302c454775fae34d17d7f010f8c9ab026999b7d8` |
-| `CoreTend-0.9.0-arm64-unsigned.dmg` | 5,192,666 bytes | `f2fbc7840ac4a5509836a495c51e72e6cfd52ef24e6cbdd792fa8404bd3f6c8d` |
+| | |
+|---|---|
+| **Storage** | Scans caches, logs, crash reports and build data, then shows every candidate before anything can move to the Trash. |
+| **Space Lens** | A radial size map — the largest folder at the centre, siblings orbiting it, bubble area proportional to bytes. Descend, search, reveal in Finder. |
+| **Duplicates** | Exact-content matches by staged hashing. One copy per group is always kept; the suggestion is editable. |
+| **Applications** | Separates apps from their caches, agents and personal documents so an uninstall is complete. |
+| **Integrity** | Native macOS signals only — download provenance, code-signature tiers, and what launches at login. Not malware detection. |
+| **Activity** | A local log of every scan and every reversible action. |
 
-```sh
-shasum -a 256 CoreTend-0.9.0-arm64-unsigned.zip
-shasum -a 256 CoreTend-0.9.0-arm64-unsigned.dmg
-shasum -a 256 -c SHA256SUMS
-```
+A secondary **More** group holds **Large & Old files**, **Cloud Cleanup**
+(local-vs-cloud storage analysis, never triggers a download) and
+**Performance** (live CPU / memory history, broken-LaunchAgent detection).
 
-### First launch
+<p align="center">
+  <img src="Website/assets/app/space-lens.png" width="400" alt="Space Lens radial size map">
+  <img src="Website/assets/app/cleanup.png" width="400" alt="Storage scan review">
+</p>
 
-After copying CoreTend to `/Applications`, Control-click the app, choose
-**Open**, then confirm once. This is the per-app path for an unsigned build.
-Do not disable Gatekeeper globally.
+## Install
 
-See [BUILD_AND_INSTALL.md](Documentation/BUILD_AND_INSTALL.md) for complete
-installation and source-build instructions.
+The current release is
+[`v0.9.1-rc.6`](https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.6)
+— the first **Developer ID signed and Apple-notarized** CoreTend build
+(`sourceCommit 568bdbf`).
+
+1. Download `CoreTend-0.9.1-rc.6-arm64.dmg` from the
+   [release page](https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.6),
+   or use the site's [`/download`](https://coretend.ahmetbsbnr.com/download) link.
+2. Optionally verify it:
+   ```sh
+   shasum -a 256 ~/Downloads/CoreTend-0.9.1-rc.6-arm64.dmg
+   # 770bd0340cf887d90bb2a0a6b6510a420a8e268de550a7ff73c88dcb7138df32
+   ```
+3. Open the DMG and drag **CoreTend** to Applications.
+
+The notarization ticket is stapled, so the app opens without a Gatekeeper
+prompt. macOS 14+ and Apple silicon (`arm64`) are required. Provenance is
+covered by Minisign + SHA-256 + notarization; there is no
+`actions/attest-build-provenance` attestation for this manually published
+release.
 
 ## Build and test
 
+Pure SwiftPM — no Xcode project.
+
 ```sh
-git clone https://github.com/ahmetbsbnr/coretend.git
-cd coretend
-bash Scripts/doctor.sh
-bash Scripts/test.sh
-bash Scripts/build.sh
-bash Scripts/package-local.sh
+swift build -c release
+bash Scripts/test.sh                    # 340 tests, never raw `swift test`
+python3 Scripts/check-demo-fixtures.py
+python3 Scripts/test-public-release-gate.py
+python3 Website/build.py --output /tmp/coretend-site-dist
 ```
 
-The current full local validation is 296 tests in 58 suites, with Debug and
-Release builds passing. This records a local result; it is not a CI badge.
-The screenshot and website improvements on this branch are post-release work
-and are not represented as changes to the 0.9.0 binary.
-
-- [Architecture](Documentation/ARCHITECTURE.md)
-- [Development setup](DEVELOPMENT.md)
-- [Build system](Documentation/BUILD_SYSTEM.md)
-- [Testing](Documentation/TESTING.md)
-- [Feature inventory](Documentation/FEATURE_INVENTORY.md)
+`bash Scripts/package-local.sh` assembles a runnable `build/CoreTend.app` from
+the release binary. The website build is self-contained: fonts, release facts,
+`latest.json` and `SHA256SUMS` are generated from reviewed repository inputs.
 
 ## Privacy and safety
 
-Core features run locally. CoreTend has no account system, analytics,
-advertising or telemetry. Optional malware-signature updates belong to the
-separately installed scanning engine.
+No account, no advertising telemetry, no analytics SDK. Scan data and activity
+stay in the local app store. The only product network request is a
+user-initiated update check for the public `latest.json` manifest. Destructive
+engines route through `SafetyCore.PathValidator`; every removal is a validated
+move to the macOS Trash and stays reversible until the Trash is emptied. See
+[`PRIVACY.md`](PRIVACY.md) and [`SECURITY.md`](SECURITY.md).
 
-Path validation blocks protected roots and symlink escapes. Files are checked
-again immediately before an approved action, and dry run remains enabled
-unless the user explicitly disables it.
+## Repository guide
 
-- [Privacy](PRIVACY.md)
-- [Security policy](SECURITY.md)
-- [Safety model](Documentation/SAFETY_MODEL.md)
-- [Threat model](Documentation/THREAT_MODEL.md)
+- [`Documentation/README.md`](Documentation/README.md) — maintained index
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — development and review expectations
+- [`DESIGN.md`](DESIGN.md) · [`DEVELOPMENT.md`](DEVELOPMENT.md) — design system and working rules
+- [`LICENSE`](LICENSE) · [`NOTICE`](NOTICE) · [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
+- [`SUPPORT.md`](SUPPORT.md) — support route
 
-## Contributing and support
+## License
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) and
-[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before opening a change. For usage
-questions, see [SUPPORT.md](SUPPORT.md). Report security issues through the
-private process in [SECURITY.md](SECURITY.md), not a public issue.
-
-The maintained direction is in [ROADMAP.md](Documentation/ROADMAP.md), and
-released changes are recorded in [CHANGELOG.md](Documentation/CHANGELOG.md).
-
-## Licenses and marks
-
-Code is Apache-2.0. Original documentation and media are CC-BY-4.0.
-Third-party material remains under its own terms. The name and visual identity
-are covered separately.
-
-- [License map](Documentation/LICENSING.md)
-- [Third-party notices](THIRD_PARTY_NOTICES.md)
-- [Trademark policy](TRADEMARKS.md)
+Source code is Apache-2.0. Documentation and original media retain the terms
+listed in the repository notices.

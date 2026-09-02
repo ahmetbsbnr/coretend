@@ -9,6 +9,7 @@ cd "$ROOT_DIR"
 COMMIT=$(git rev-parse HEAD)
 DATE=$(date -u +%Y-%m-%d)
 RAW=$(mktemp)
+trap 'rm -f "$RAW"' EXIT
 
 START=$(date +%s)
 if Scripts/test.sh > "$RAW" 2>&1; then
@@ -19,15 +20,25 @@ fi
 END=$(date +%s)
 WALL=$((END - START))
 
-{
-  echo
-  echo "\$ (audit $DATE, commit ${COMMIT:0:7}) Scripts/test.sh"
-  cat "$RAW"
-} >> Documentation/AUDIT_COMMANDS.log
+SUMMARY_LINE=$(grep -E "Test run with [0-9]+ tests? (in [0-9]+ suites? )?(passed|failed) after " "$RAW" | tail -1 || true)
+if [ -z "$SUMMARY_LINE" ]; then
+  echo "ERROR: Swift Testing summary was not found in Scripts/test.sh output." >&2
+  exit 1
+fi
 
-SUMMARY_LINE=$(grep -E "Test run with [0-9]+ tests? in [0-9]+ suites? " "$RAW" | tail -1)
 TOTAL=$(printf '%s' "$SUMMARY_LINE" | sed -E 's/.*Test run with ([0-9]+) tests?.*/\1/')
-SUITES=$(printf '%s' "$SUMMARY_LINE" | sed -E 's/.*in ([0-9]+) suites?.*/\1/')
+if printf '%s' "$SUMMARY_LINE" | grep -Eq 'in [0-9]+ suites? '; then
+  SUITES=$(printf '%s' "$SUMMARY_LINE" | sed -E 's/.*in ([0-9]+) suites?.*/\1/')
+else
+  # Swift 6.3 no longer prints the suite total in its final summary. Every
+  # suite still emits exactly one terminal result line, so derive the count
+  # from those lines instead of pinning a number in this script.
+  SUITES=$(grep -Ec '^[✔✘] Suite ".*" (passed|failed) after ' "$RAW" || true)
+fi
+if [ "$SUITES" -eq 0 ]; then
+  echo "ERROR: Swift Testing suite count could not be derived." >&2
+  exit 1
+fi
 # Parameterized tests expand to multiple cases on one printed line, so counting
 # lines undercounts; trust the run's own summary line instead: it says "passed"
 # only when every one of TOTAL tests passed, otherwise the harness prints a
@@ -39,7 +50,18 @@ else
   PASSED=0
   FAILED="$TOTAL"
 fi
-DURATION=$(printf '%s' "$SUMMARY_LINE" | sed -E 's/.*passed after ([0-9.]+) seconds.*/\1/')
+DURATION=$(printf '%s' "$SUMMARY_LINE" | sed -E 's/.*(passed|failed) after ([0-9.]+) seconds.*/\2/')
+
+AUDIT_MARKER="\$ (audit $DATE, commit $(printf '%s' "$COMMIT" | cut -c1-7)) Scripts/test.sh"
+if ! grep -Fqx "$AUDIT_MARKER" Documentation/AUDIT_COMMANDS.log; then
+  {
+    echo
+    echo "$AUDIT_MARKER"
+    cat "$RAW"
+  } >> Documentation/AUDIT_COMMANDS.log
+else
+  echo "Audit output already recorded for $DATE at ${COMMIT}" >&2
+fi
 
 /usr/bin/python3 - "$COMMIT" "$DATE" "$TOTAL" "$SUITES" "$PASSED" "$FAILED" "$DURATION" "$WALL" "$RESULT" <<'PYEOF'
 import json, os, re, subprocess, sys
@@ -102,7 +124,7 @@ lines.append("")
 lines.append("## HISTORICAL (superseded)")
 lines.append("")
 lines.append("A prior audit session recorded 86 tests / 27 suites at commit `b33c06b8d68b9b03316821c3f6cfb17252f35011`")
-lines.append("(2026-07-20). The repository has since grown to the count above (114/30 as of this pass) as new")
+lines.append("(2026-07-20). The repository has since grown to the current count above as new")
 lines.append("modules and tests landed. That historical figure was correct for its own commit and is not restated")
 lines.append("as current — see `git log -p Documentation/TEST_INVENTORY.md` for the full historical record.")
 lines.append("")
@@ -112,5 +134,3 @@ with open("Documentation/TEST_INVENTORY.md", "w") as f:
 
 print(f"OK: {total} tests / {suites} suites / result={result} written to test-inventory.json + TEST_INVENTORY.md")
 PYEOF
-
-rm -f "$RAW"

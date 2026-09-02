@@ -1,53 +1,51 @@
-# Protection module — honest limitations
+# Integrity — honest limitations
 
-CoreTend's Protection tab is **not** a full antivirus product and is
-**not** a security guarantee. This page states plainly what it does and does
-not do, so users can make an informed decision.
+CoreTend's Integrity tab is **not** an antivirus and is **not** a security
+guarantee. This page states plainly what it does and does not do, so users
+can make an informed decision.
 
-## What Protection actually is
+## What Integrity actually is
 
-- An optional, opt-in wrapper around a user-installed `clamscan` binary
-  (ClamAV). See `Documentation/CLAMAV.md` for the technical details.
-- A local quarantine mechanism (move + restore), not a removal or repair
-  tool.
-- A privacy-cleaner sub-tab unrelated to malware scanning.
+- Three read-only inspections of signals macOS already records: download
+  provenance, code-signature tier, and login items. See
+  [PROTECTION.md](PROTECTION.md) and
+  [`Sources/IntegrityCore/IntegrityCore.swift`](../Sources/IntegrityCore/IntegrityCore.swift)
+  for exactly what each one reads.
+- A privacy-cleaner sub-tab (Privacy Cleaner) unrelated to any of the above.
 
 ## What it is not
 
-- **Not a full antivirus / EDR.** No real-time/on-access protection, no
-  behavioral or heuristic detection beyond what ClamAV's signature engine
-  provides, no network protection, no exploit mitigation.
-- **Not a security guarantee.** A clean scan result means "ClamAV's current
-  signature database found no known match in the scanned paths" — nothing
-  more. It does not mean a Mac is free of malware, especially zero-day or
-  targeted threats that predate signature coverage.
-- **Not maintained by CoreTend.** ClamAV, its signature database, and
-  its update cadence (`freshclam`) are entirely outside this project's
-  control. CoreTend does not vet, curate, or guarantee the accuracy or
-  freshness of ClamAV's signatures.
-- **Not always installed.** ClamAV is optional third-party software the
-  user installs separately (e.g. `brew install clamav`). CoreTend
-  never installs it automatically and never bundles it.
-- **Not a replacement for Apple's built-in protections** (Gatekeeper, XProtect,
-  notarization, SIP). Those remain active and should never be disabled to
-  work around CoreTend.
+- **Not an antivirus / EDR.** No scanning engine, no signature database, no
+  file-content inspection, no real-time/on-access protection, no behavioral
+  or heuristic malware detection, no network protection, no exploit
+  mitigation.
+- **Not a security guarantee.** A code signature reading "Apple-signed" or
+  "team-signed" means the binary's signature validates against that
+  identity — nothing more. An unsigned or ad-hoc binary is not necessarily
+  malicious, and a validly-signed one is not necessarily safe; signature
+  tier is provenance information, not a verdict.
+- **Not a replacement for Apple's built-in protections** (Gatekeeper,
+  XProtect, notarization, SIP). Those remain active and should never be
+  disabled to work around CoreTend.
+- **Not real-time.** Each check runs on demand when you open its tab; there
+  is no background watcher and nothing runs on a schedule.
 
-## Scan scope
+## Why this replaced a ClamAV-based design
 
-`clamscan --recursive` scans only the paths the user explicitly selects for
-a scan. It does not scan the entire disk automatically and does not run in
-the background or on a schedule unless the user initiates it.
+An earlier version of this tab wrapped a user-installed `clamscan` binary
+(ClamAV) plus a local quarantine mechanism. Both required the user to open
+Terminal and run `brew install clamav` — a hard violation of this
+project's own bar for this feature ("never Terminal, never Homebrew").
+Building a fully in-app installer/updater for a third-party GPL-licensed
+scanning engine was a real distribution and licensing undertaking this
+project had not had legal review for, so the feature was retired rather
+than shipped as a Terminal-dependent version of itself. Full rationale,
+including what the removed code covered, in
+[CLAMAV_DECISION.md](CLAMAV_DECISION.md).
 
-## Quarantine, not remediation
+## If you need real malware protection
 
-Quarantining a file moves it locally and strips execute permission; it does
-not "clean," "repair," or "disinfect" an infected file, and it does not
-undo any damage the file may have already caused before detection.
-
-## If you need real protection
-
-For anything beyond casual, opt-in signature scanning, use a maintained,
-purpose-built security product and keep macOS itself (Gatekeeper, XProtect,
-software updates) enabled. CoreTend's Protection tab is a convenience
-layer on top of a tool you already trust and install yourself — not a
-substitute for one.
+Use a maintained, purpose-built security product, and keep macOS itself
+(Gatekeeper, XProtect, software updates) enabled. Integrity is provenance
+information you already had access to somewhere in macOS, surfaced in one
+place — not a substitute for dedicated security software.

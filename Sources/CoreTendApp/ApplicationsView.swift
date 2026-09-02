@@ -4,13 +4,67 @@ import SafetyCore
 import DesignSystem
 import Persistence
 
+/// Resolves every application-inventory root. Normal launches inspect the
+/// standard macOS locations. Test launches are confined to fixtures beneath a
+/// validated temporary store; an invalid override fails closed with no roots.
+struct ApplicationInventoryLocations {
+    let home: URL
+    let applicationRoots: [URL]
+    let systemLibrary: URL?
+    let caskroomRoots: [String]
+
+    static func resolve(
+        environment: [String: String],
+        realHome: URL = FileManager.default.homeDirectoryForCurrentUser
+    ) -> ApplicationInventoryLocations {
+        if TestStoreOverride.isTestMarkerSet(environment: environment) {
+            guard let temporaryRoot = TestStoreOverride.resolve(environment: environment).directory else {
+                return ApplicationInventoryLocations(
+                    home: URL(fileURLWithPath: "/dev/null"),
+                    applicationRoots: [],
+                    systemLibrary: nil,
+                    caskroomRoots: []
+                )
+            }
+            let fixtures = temporaryRoot.appendingPathComponent("ApplicationFixtures", isDirectory: true)
+            let fixtureHome = fixtures.appendingPathComponent("Home", isDirectory: true)
+            return ApplicationInventoryLocations(
+                home: fixtureHome,
+                applicationRoots: [
+                    fixtures.appendingPathComponent("Applications", isDirectory: true),
+                    fixtureHome.appendingPathComponent("Applications", isDirectory: true),
+                ],
+                systemLibrary: fixtures.appendingPathComponent("SystemLibrary", isDirectory: true),
+                caskroomRoots: [fixtures.appendingPathComponent("Caskroom", isDirectory: true).path]
+            )
+        }
+
+        return ApplicationInventoryLocations(
+            home: realHome,
+            applicationRoots: [
+                URL(fileURLWithPath: "/Applications", isDirectory: true),
+                realHome.appendingPathComponent("Applications", isDirectory: true),
+            ],
+            systemLibrary: URL(fileURLWithPath: "/Library", isDirectory: true),
+            caskroomRoots: HomebrewCaskIndex.caskroomRoots
+        )
+    }
+
+    var discovery: AppDiscovery {
+        AppDiscovery(home: home, applicationRoots: applicationRoots, systemLibrary: systemLibrary)
+    }
+}
+
 /// Real, non-invented update-mechanism detection shared by the Updates tab
 /// and the "by update state" grouping — one place reads Sparkle/App Store
 /// signals so both stay in sync.
 /// Built once per process — the Caskroom doesn't change mid-session, so we scan
 /// it lazily on first use rather than per app. A global `let` is initialized
 /// atomically and is Sendable.
-public let sharedCaskIndex = HomebrewCaskIndex.build()
+public let sharedCaskIndex: HomebrewCaskIndex = {
+    let locations = ApplicationInventoryLocations.resolve(environment: ProcessInfo.processInfo.environment)
+    return HomebrewCaskIndex.build(roots: locations.caskroomRoots)
+}()
 
 public enum AppUpdateSource: String, Sendable {
     case appStore = "App Store"
@@ -129,10 +183,15 @@ final class ApplicationsViewModel {
     var associated: [AssociatedItem] = []
     var selectedAssociatedPaths: Set<String> = []
     var uninstallResult: String?
-    var dryRun = true
     var grouping: AppGrouping = .none
 
-    private let discovery = AppDiscovery()
+    private let discovery: AppDiscovery
+
+    init(discovery: AppDiscovery = ApplicationInventoryLocations.resolve(
+        environment: ProcessInfo.processInfo.environment
+    ).discovery) {
+        self.discovery = discovery
+    }
 
     var filteredApps: [InstalledApp] {
         guard !searchText.isEmpty else { return apps }
@@ -141,6 +200,10 @@ final class ApplicationsViewModel {
 
     var groupedApps: [AppGroup] {
         AppGroupingLogic.groups(for: filteredApps, by: grouping)
+    }
+
+    nonisolated static func isPreselectedAssociatedKind(_ kind: AssociatedItem.Kind) -> Bool {
+        kind == .caches || kind == .savedState
     }
 
     func load() async {
@@ -156,12 +219,12 @@ final class ApplicationsViewModel {
         uninstallResult = nil
         associated = []
         selectedAssociatedPaths = []
-        guard let bundleID = app.bundleIdentifier else { return }
         let discovery = discovery
-        let items = await Task.detached(priority: .utility) { discovery.associatedItems(bundleID: bundleID) }.value
+        let items = await Task.detached(priority: .utility) { discovery.associatedItems(for: app) }.value
         associated = items
-        // Preselect only reversible support data; the app bundle itself is always included.
-        selectedAssociatedPaths = Set(items.filter { $0.kind == .caches || $0.kind == .savedState }.map(\.url.path))
+        // Preselect only reversible support data; preferences, containers, and
+        // launch items stay visible but require an explicit user choice.
+        selectedAssociatedPaths = Set(items.filter { Self.isPreselectedAssociatedKind($0.kind) }.map(\.url.path))
     }
 
     /// Moves the app bundle and approved associated items to the Trash.
@@ -171,7 +234,9 @@ final class ApplicationsViewModel {
         let home = FileManager.default.homeDirectoryForCurrentUser
         var allowedRoots: [URL] = [app.path.deletingLastPathComponent()]
         allowedRoots.append(home.appendingPathComponent("Library"))
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: allowedRoots), dryRun: dryRun, sink: AppEnvironment.shared.store)
+        allowedRoots.append(URL(fileURLWithPath: "/Library/LaunchAgents"))
+        allowedRoots.append(URL(fileURLWithPath: "/Library/LaunchDaemons"))
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: allowedRoots), sink: AppEnvironment.shared.store)
         var approved: [ApprovedFileOperation] = []
         if let op = try? await center.approve(url: app.path, logicalSize: app.sizeBytes,
                                               ruleID: "apps.uninstall", risk: .medium) {
@@ -185,14 +250,12 @@ final class ApplicationsViewModel {
         }
         let result = await center.execute(approved)
         let freed = result.executed.reduce(0) { $0 + $1.logicalSize }
-        uninstallResult = result.wasDryRun
-            ? L("apps.uninstall.dryrun_result", result.executed.count, mcFormatBytes(freed))
-            : L("apps.uninstall.result", result.executed.count, mcFormatBytes(freed))
+        uninstallResult = L("apps.uninstall.result", result.executed.count, mcFormatBytes(freed))
         AppEnvironment.shared.record(ActivityRecord(
             kind: .cleanup,
-            summary: "\(result.wasDryRun ? "Dry run uninstall" : "Uninstalled") \(app.name)",
-            itemCount: result.executed.count, bytes: freed, dryRun: result.wasDryRun))
-        if !result.wasDryRun { await load() }
+            summary: "Uninstalled \(app.name)",
+            itemCount: result.executed.count, bytes: freed))
+        await load()
     }
 }
 
@@ -206,14 +269,17 @@ struct ApplicationsView: View {
             AppUpdatesView()
                 .tabItem { Label(L("apps.tab.updates"), systemImage: "arrow.triangle.2.circlepath") }
         }
-        .padding(8)
+        .padding(MCSpacing.xs)
         .navigationTitle(L("apps.title"))
+        .accessibilityIdentifier("applications.root")
     }
 }
 
 struct InstalledAppsView: View {
     @State private var model = ApplicationsViewModel()
+    @State private var showUninstallConfirmation = false
     @Namespace private var rowTransition
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         HSplitView {
@@ -223,6 +289,18 @@ struct InstalledAppsView: View {
                 .frame(minWidth: 360, maxWidth: .infinity, maxHeight: .infinity)
         }
         .task { await model.load() }
+        .confirmationDialog(
+            L("apps.uninstall_confirm.title"),
+            isPresented: $showUninstallConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(L("apps.uninstall"), role: .destructive) {
+                Task { await model.uninstall() }
+            }
+            Button(L("common.cancel"), role: .cancel) {}
+        } message: {
+            Text(L("apps.uninstall_confirm.message"))
+        }
     }
 
     private var appList: some View {
@@ -230,11 +308,17 @@ struct InstalledAppsView: View {
             TextField(L("apps.search"), text: $model.searchText)
                 .textFieldStyle(.roundedBorder)
                 .padding(.horizontal, MCSpacing.sm).padding(.top, MCSpacing.sm)
-            Picker(L("apps.group_by"), selection: $model.grouping) {
-                ForEach(AppGrouping.allCases) { Text($0.displayName).tag($0) }
+                .accessibilityIdentifier("applications.search")
+            HStack(spacing: MCSpacing.xs) {
+                Text(L("apps.group_by")).foregroundStyle(.secondary)
+                Picker("", selection: $model.grouping) {
+                    ForEach(AppGrouping.allCases) { Text($0.displayName).tag($0) }
+                }
+                .pickerStyle(.menu)
+                .labelsHidden()
+                .accessibilityIdentifier("applications.grouping")
+                Spacer()
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
             .padding(MCSpacing.sm)
             switch model.phase {
             case .loading:
@@ -264,7 +348,8 @@ struct InstalledAppsView: View {
                     }
                 }
                 .listStyle(.inset)
-                .animation(MCMotion.snappy, value: model.grouping)
+                .animation(MCMotion.animation(MCMotion.snappy, reduce: reduceMotion), value: model.grouping)
+                .accessibilityIdentifier("applications.list")
             }
         }
     }
@@ -274,7 +359,7 @@ struct InstalledAppsView: View {
         return HStack(spacing: MCSpacing.sm) {
             Image(nsImage: NSWorkspace.shared.icon(forFile: app.path.path))
                 .resizable().frame(width: 28, height: 28)
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: MCSpacing.xxs) {
                 Text(app.name)
                 HStack(spacing: MCSpacing.xxs) {
                     Text(app.version ?? "—")
@@ -304,15 +389,15 @@ struct InstalledAppsView: View {
     private var detail: some View {
         if let app = model.selectedApp {
             ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: MCSpacing.md) {
+                    HStack(spacing: MCSpacing.sm) {
                         Image(nsImage: NSWorkspace.shared.icon(forFile: app.path.path))
                             .resizable().frame(width: 56, height: 56)
                         VStack(alignment: .leading) {
-                            Text(app.name).font(.title2.weight(.semibold))
+                            Text(app.name).font(MCFont.pageTitle)
                             Text(app.bundleIdentifier ?? L("apps.unknown_bundle_id"))
                                 .font(.caption).foregroundStyle(.secondary)
-                            HStack(spacing: 8) {
+                            HStack(spacing: MCSpacing.xs) {
                                 if let version = app.version { Text(L("apps.version_prefix", version)) }
                                 if !app.architectures.isEmpty {
                                     Text(app.architectures.joined(separator: ", "))
@@ -328,8 +413,8 @@ struct InstalledAppsView: View {
                         }
                     }
                     MCCard {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(L("apps.associated_data")).font(.headline)
+                        VStack(alignment: .leading, spacing: MCSpacing.xs) {
+                            Text(L("apps.associated_data")).font(MCFont.cardTitle)
                             if model.associated.isEmpty {
                                 Text(L("apps.associated_data.empty"))
                                     .font(.caption).foregroundStyle(.secondary)
@@ -358,28 +443,24 @@ struct InstalledAppsView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     HStack {
-                        Toggle(L("common.dry_run"), isOn: $model.dryRun).toggleStyle(.switch)
-                        Button(model.dryRun ? L("apps.simulate_uninstall") : L("apps.uninstall"), role: .destructive) {
-                            Task { await model.uninstall() }
+                        Button(L("apps.uninstall"), role: .destructive) {
+                            showUninstallConfirmation = true
                         }
                         .buttonStyle(.borderedProminent)
+                        .accessibilityIdentifier("applications.uninstall")
                         Button(L("common.reveal_in_finder")) {
                             NSWorkspace.shared.activateFileViewerSelecting([app.path])
                         }
+                        .accessibilityIdentifier("applications.reveal")
                     }
                     if let result = model.uninstallResult {
-                        Text(result).font(.callout).foregroundStyle(MCTheme.accent)
+                        Text(result).font(MCFont.secondaryBody).foregroundStyle(MCTheme.accent)
                     }
                 }
-                .padding(20)
+                .padding(MCSpacing.page)
             }
         } else {
-            VStack(spacing: 12) {
-                Image(systemName: "square.grid.2x2")
-                    .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.accent)
-                Text(L("apps.select_prompt")).foregroundStyle(.secondary)
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            MCEmptyState(icon: "square.grid.2x2", title: L("apps.select_prompt"), message: "", iconColor: MCTheme.accent)
         }
     }
 }

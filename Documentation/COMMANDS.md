@@ -31,13 +31,15 @@ Expected: **296 tests in 58 suites, 0 failures.**
 ## Site
 
 ```sh
-python3 Website/generate.py     # pages, robots.txt, sitemap.xml, vercel.json
+python3 Website/build.py --output Website/dist   # pages, robots.txt, sitemap.xml, latest.json, SHA256SUMS
 bash Scripts/check-website.sh
 ```
 
-Generation is deterministic — regenerating produces byte-identical output.
-Never hand-edit anything under `Website/en/`, `Website/fr/`, `robots.txt`,
-`sitemap.xml` or `vercel.json`; they are all generated.
+`Website/index.html` is the visual source of truth; `build.py` produces the
+gitignored `Website/dist/` that Vercel deploys, deriving release facts from
+`Configuration/published-release.json`. `Website/vercel.json` (redirects,
+rewrites, headers) is hand-maintained, not generated. Never hand-edit anything
+under `Website/dist/`.
 
 ## Release artifacts
 

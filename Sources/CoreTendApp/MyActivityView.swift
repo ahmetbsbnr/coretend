@@ -41,22 +41,13 @@ enum ActivityDateRange: String, CaseIterable, Identifiable {
     }
 }
 
-/// Real vs. simulated bytes freed across a set of records — cleanup-kind,
-/// non-dry-run records are the only ones counted as "real" freed space;
-/// dry-run cleanup records are reported separately and never merged in.
+/// Bytes moved to the Trash across cleanup records.
 struct ActivityImpactSummary {
-    let realFreedBytes: Int64
-    let simulatedFreedBytes: Int64
+    let freedBytes: Int64
     let itemCount: Int
 
     init(_ records: [ActivityRecord]) {
-        var real: Int64 = 0
-        var simulated: Int64 = 0
-        for record in records where record.kind == .cleanup {
-            if record.dryRun { simulated += record.bytes } else { real += record.bytes }
-        }
-        realFreedBytes = real
-        simulatedFreedBytes = simulated
+        freedBytes = records.filter { $0.kind == .cleanup }.reduce(0) { $0 + $1.bytes }
         itemCount = records.reduce(0) { $0 + $1.itemCount }
     }
 }
@@ -64,6 +55,7 @@ struct ActivityImpactSummary {
 extension Notification.Name {
     static let mcNavigate = Notification.Name("mc.navigate")
     static let mcShowOnboarding = Notification.Name("mc.showOnboarding")
+    static let mcShowCommandPalette = Notification.Name("mc.showCommandPalette")
 }
 
 @MainActor
@@ -105,13 +97,34 @@ final class MyActivityViewModel {
     /// CSV of the currently visible (filtered) records — straightforward
     /// text export, no new persistence.
     func exportCSV() -> String {
-        var lines = ["Date,Kind,Summary,Items,Bytes,Simulated"]
+        var lines = ["Date,Kind,Summary,Items,Bytes"]
         let formatter = ISO8601DateFormatter()
         for record in records {
             let summary = record.summary.replacingOccurrences(of: "\"", with: "'")
-            lines.append("\(formatter.string(from: record.date)),\(record.kind.rawValue),\"\(summary)\",\(record.itemCount),\(record.bytes),\(record.dryRun)")
+            lines.append("\(formatter.string(from: record.date)),\(record.kind.rawValue),\"\(summary)\",\(record.itemCount),\(record.bytes)")
         }
         return lines.joined(separator: "\n")
+    }
+
+    /// JSON of the currently visible (filtered) records, same scope as
+    /// exportCSV — one array of plain objects, no envelope metadata to keep
+    /// this trivially diffable/greppable.
+    func exportJSON() -> String {
+        struct ExportRecord: Encodable {
+            let date: String, kind: String, summary: String
+            let itemCount: Int, bytes: Int64
+        }
+        let formatter = ISO8601DateFormatter()
+        let exportRecords = records.map {
+            ExportRecord(date: formatter.string(from: $0.date), kind: $0.kind.rawValue, summary: $0.summary,
+                         itemCount: $0.itemCount, bytes: $0.bytes)
+        }
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        guard let data = try? encoder.encode(exportRecords), let json = String(data: data, encoding: .utf8) else {
+            return "[]"
+        }
+        return json
     }
 }
 
@@ -135,6 +148,7 @@ struct MyActivityView: View {
             }
         }
         .navigationTitle(L("activity.title"))
+        .accessibilityIdentifier("activity.root")
         .toolbar {
             Picker(L("activity.range"), selection: $model.dateRange) {
                 ForEach(ActivityDateRange.allCases) { range in
@@ -142,6 +156,7 @@ struct MyActivityView: View {
                 }
             }
             .pickerStyle(.menu)
+            .accessibilityIdentifier("activity.range")
             Picker(L("activity.filter"), selection: $model.filter) {
                 Text(L("activity.all_kinds")).tag(ActivityRecord.Kind?.none)
                 ForEach(ActivityRecord.Kind.allCases, id: \.self) { kind in
@@ -149,21 +164,26 @@ struct MyActivityView: View {
                 }
             }
             .pickerStyle(.menu)
-            Button {
-                exportToDownloads()
+            .accessibilityIdentifier("activity.filter")
+            Menu {
+                Button(L("activity.export_csv")) { exportToDownloads(format: .csv) }
+                Button(L("activity.export_json")) { exportToDownloads(format: .json) }
             } label: {
                 Label(L("activity.export_csv"), systemImage: "square.and.arrow.up")
             }
+            .accessibilityIdentifier("activity.export")
             .disabled(model.records.isEmpty)
             Button(L("activity.clear_history"), role: .destructive) {
                 Task { await model.clear() }
             }
+            .accessibilityIdentifier("activity.clear")
             .disabled(model.allRecords.isEmpty)
             Button {
                 showingSafetyLog = true
             } label: {
                 Label(L("activity.open_safety_log"), systemImage: "checklist")
             }
+            .accessibilityIdentifier("activity.safety_log")
         }
         .sheet(isPresented: $showingSafetyLog) { SafetyLogView() }
         .task(id: model.filter) { await model.load() }
@@ -178,7 +198,7 @@ struct MyActivityView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: MCSpacing.sm) {
             Image(systemName: "clock.arrow.circlepath")
                 .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.accent)
                 .accessibilityHidden(true)
@@ -222,8 +242,7 @@ struct MyActivityView: View {
 
     private var summaryBar: some View {
         HStack(spacing: MCSpacing.lg) {
-            summaryMetric(label: L("activity.freed_real"), value: mcFormatBytes(model.summary.realFreedBytes), color: MCTheme.success)
-            summaryMetric(label: L("activity.simulated_dryrun"), value: mcFormatBytes(model.summary.simulatedFreedBytes), color: .secondary)
+            summaryMetric(label: L("activity.freed_real"), value: mcFormatBytes(model.summary.freedBytes), color: MCTheme.success)
             summaryMetric(label: L("activity.items"), value: "\(model.summary.itemCount)", color: .primary)
             Spacer()
         }
@@ -233,19 +252,29 @@ struct MyActivityView: View {
     }
 
     private func summaryMetric(label: String, value: String, color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: MCSpacing.xxs) {
             Text(value).font(.title3.weight(.semibold)).monospacedDigit().foregroundStyle(color)
             Text(label).font(.caption).foregroundStyle(.secondary)
         }
     }
 
-    private func exportToDownloads() {
-        let csv = model.exportCSV()
+    enum ExportFormat { case csv, json }
+
+    private func exportToDownloads(format: ExportFormat) {
         let panel = NSSavePanel()
-        panel.allowedContentTypes = [.commaSeparatedText]
-        panel.nameFieldStringValue = "CoreTend-Activity.csv"
+        let text: String
+        switch format {
+        case .csv:
+            panel.allowedContentTypes = [.commaSeparatedText]
+            panel.nameFieldStringValue = "CoreTend-Activity.csv"
+            text = model.exportCSV()
+        case .json:
+            panel.allowedContentTypes = [.json]
+            panel.nameFieldStringValue = "CoreTend-Activity.json"
+            text = model.exportJSON()
+        }
         if panel.runModal() == .OK, let url = panel.url {
-            try? csv.write(to: url, atomically: true, encoding: .utf8)
+            try? text.write(to: url, atomically: true, encoding: .utf8)
         }
     }
 }
@@ -260,7 +289,7 @@ private struct ActivityRow: View {
                 Text(record.date.formatted(date: .abbreviated, time: .shortened))
                     .font(.caption).foregroundStyle(.secondary)
                 Text(L("activity.row.detail", record.itemCount, mcFormatBytes(record.bytes),
-                       record.dryRun ? L("activity.row.simulated_suffix") : L("activity.row.real_suffix")))
+                       L("activity.row.real_suffix")))
                     .font(.caption)
                 if record.kind == .restore {
                     Button {
@@ -281,17 +310,17 @@ private struct ActivityRow: View {
                 Text(record.summary)
                 Spacer()
                 if record.kind == .cleanup {
-                    Text(record.dryRun ? L("common.dry_run") : L("activity.completed"))
+                    Text(L("activity.completed"))
                         .font(.caption2.weight(.medium))
-                        .padding(.horizontal, 6).padding(.vertical, 2)
-                        .background(record.dryRun ? Color(nsColor: .quaternaryLabelColor) : MCTheme.success.opacity(0.18), in: Capsule())
-                        .foregroundStyle(record.dryRun ? .secondary : MCTheme.success)
+                        .padding(.horizontal, MCSpacing.xs).padding(.vertical, MCSpacing.xxs)
+                        .background(MCTheme.success.opacity(0.18), in: Capsule())
+                        .foregroundStyle(MCTheme.success)
                 }
                 Text(mcFormatBytes(record.bytes))
                     .monospacedDigit().foregroundStyle(.secondary)
             }
         }
-        .accessibilityLabel("\(record.summary), \(record.date.formatted(date: .abbreviated, time: .shortened)), \(record.dryRun ? L("activity.row.simulated_a11y") : L("activity.row.real_a11y")), \(mcFormatBytes(record.bytes))")
+        .accessibilityLabel("\(record.summary), \(record.date.formatted(date: .abbreviated, time: .shortened)), \(L("activity.row.real_a11y")), \(mcFormatBytes(record.bytes))")
     }
 
     private func icon(for kind: ActivityRecord.Kind) -> String {

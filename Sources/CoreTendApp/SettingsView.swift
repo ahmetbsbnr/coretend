@@ -2,23 +2,21 @@ import SwiftUI
 @preconcurrency import UserNotifications
 import Persistence
 import DesignSystem
-import MalwareEngine
+import IntegrityCore
 
 @MainActor
 @Observable
 final class SettingsViewModel {
-    var dryRunDefault = true
     var exclusions: [String] = []
     var loaded = false
 
     // Real, queried permission/availability states — never simulated.
     var fullDiskAccess = PermissionProbe.hasFullDiskAccess()
-    let scanner = ClamAVScanner()
+    var appSignature = CodeSignInspector.inspect(at: Bundle.main.bundleURL)
     var notificationStatus: UNAuthorizationStatus = .notDetermined
 
     func load() async {
         guard let store = AppEnvironment.shared.store else { return }
-        dryRunDefault = AppEnvironment.dryRunEnabled(fromSetting: try? await store.setting("dryRunDefault"))
         exclusions = (try? await store.exclusions()) ?? []
         loaded = true
         await refreshPermissions()
@@ -27,12 +25,6 @@ final class SettingsViewModel {
     func refreshPermissions() async {
         fullDiskAccess = PermissionProbe.hasFullDiskAccess()
         notificationStatus = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
-    }
-
-    func saveDryRun() {
-        guard let store = AppEnvironment.shared.store else { return }
-        let value = dryRunDefault ? "true" : "false"
-        Task { try? await store.setSetting("dryRunDefault", value: value) }
     }
 
     func addExclusion(_ url: URL) {
@@ -59,13 +51,14 @@ final class SettingsViewModel {
 
 /// Pure formatting so permission-state text is directly testable.
 enum PermissionFormatting {
-    static func notificationLabel(_ status: UNAuthorizationStatus) -> String {
-        switch status {
-        case .authorized, .provisional, .ephemeral: L("settings.notif.authorized")
-        case .denied: L("settings.notif.denied")
-        case .notDetermined: L("settings.notif.not_requested")
-        @unknown default: L("settings.notif.unknown")
+    static func notificationLabel(_ status: UNAuthorizationStatus, language: AppLanguage? = nil) -> String {
+        let key = switch status {
+        case .authorized, .provisional, .ephemeral: "settings.notif.authorized"
+        case .denied: "settings.notif.denied"
+        case .notDetermined: "settings.notif.not_requested"
+        @unknown default: "settings.notif.unknown"
         }
+        return language.map { LocalizationManager.string(forKey: key, language: $0) } ?? L(key)
     }
 
     static func notificationIcon(_ status: UNAuthorizationStatus) -> String {
@@ -80,17 +73,25 @@ enum PermissionFormatting {
 struct MCSettingsView: View {
     @State private var model = SettingsViewModel()
     @AppStorage("menuBarEnabled") private var menuBarEnabled = true
+    @AppStorage("appLanguage") private var appLanguageRaw = AppLanguage.system.rawValue
     @State private var showClearConfirm = false
     @State private var showDiagnostic = false
 
     private var appVersion: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
+        AppMetadata.marketingVersion
     }
 
     var body: some View {
         Form {
             Section(L("settings.general")) {
+                Picker(L("settings.language"), selection: $appLanguageRaw) {
+                    Text(L("settings.language.system")).tag(AppLanguage.system.rawValue)
+                    Text("Français").tag(AppLanguage.fr.rawValue)
+                    Text("English").tag(AppLanguage.en.rawValue)
+                }
+                .accessibilityIdentifier("settings.language")
                 Toggle(L("settings.show_menu_bar"), isOn: $menuBarEnabled)
+                    .accessibilityIdentifier("settings.menu_bar")
                 Text(L("settings.menu_bar_detail"))
                     .font(.caption).foregroundStyle(.secondary)
             }
@@ -99,21 +100,13 @@ struct MCSettingsView: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section(L("settings.scans_cleanup")) {
-                Toggle(L("settings.dry_run_default"), isOn: $model.dryRunDefault)
-                    .onChange(of: model.dryRunDefault) { model.saveDryRun() }
-                Text(L("settings.dry_run_detail"))
-                    .font(.caption).foregroundStyle(.secondary)
                 LabeledContent(L("settings.deletion_method"), value: L("settings.deletion_method_value"))
             }
             Section(L("settings.protection")) {
-                LabeledContent(L("settings.clamav_engine")) {
-                    Label(model.scanner.isAvailable ? L("settings.installed") : L("settings.not_installed"),
-                          systemImage: model.scanner.isAvailable ? "checkmark.circle.fill" : "xmark.circle")
-                        .foregroundStyle(model.scanner.isAvailable ? MCTheme.success : .secondary)
-                }
-                if !model.scanner.isAvailable {
-                    Text(L("settings.clamav_install_hint"))
-                        .font(.caption).foregroundStyle(.secondary)
+                LabeledContent(L("settings.this_copy_signature")) {
+                    Label(model.appSignature.tier == .adHocOrUnsigned ? L("settings.not_installed") : L("settings.installed"),
+                          systemImage: model.appSignature.tier == .adHocOrUnsigned ? "xmark.circle" : "checkmark.circle.fill")
+                        .foregroundStyle(model.appSignature.tier == .adHocOrUnsigned ? .secondary : MCTheme.success)
                 }
                 LabeledContent(L("settings.privileged_helper")) {
                     Label(L("settings.unavailable"), systemImage: "xmark.circle")
@@ -131,7 +124,9 @@ struct MCSettingsView: View {
                 if !model.fullDiskAccess {
                     HStack {
                         Button(L("settings.open_system_settings")) { PermissionProbe.openFullDiskAccessSettings() }
+                            .accessibilityIdentifier("settings.full_disk.open")
                         Button(L("settings.recheck")) { Task { await model.refreshPermissions() } }
+                            .accessibilityIdentifier("settings.full_disk.recheck")
                     }
                 }
                 LabeledContent(L("settings.notifications")) {
@@ -175,6 +170,7 @@ struct MCSettingsView: View {
                         model.addExclusion(url)
                     }
                 }
+                .accessibilityIdentifier("settings.exclusions.add")
             }
             Section(L("settings.data")) {
                 Text(L("settings.data_detail"))
@@ -186,6 +182,7 @@ struct MCSettingsView: View {
                     MigrationNoticeRow(report: report)
                 }
                 Button(L("settings.clear_activity"), role: .destructive) { showClearConfirm = true }
+                    .accessibilityIdentifier("settings.activity.clear")
                     .confirmationDialog(L("settings.clear_activity_confirm"), isPresented: $showClearConfirm) {
                         Button(L("settings.clear_history"), role: .destructive) { model.clearActivityHistory() }
                         Button(L("common.cancel"), role: .cancel) {}
@@ -193,6 +190,7 @@ struct MCSettingsView: View {
                         Text(L("settings.clear_activity_message"))
                     }
                 Button(L("settings.export_diagnostic")) { showDiagnostic = true }
+                    .accessibilityIdentifier("settings.diagnostic.export")
                     .sheet(isPresented: $showDiagnostic) { DiagnosticReportView() }
                 Text(L("settings.export_diagnostic_detail"))
                     .font(.caption).foregroundStyle(.secondary)
@@ -200,13 +198,23 @@ struct MCSettingsView: View {
             UpdatesView()
             Section(L("settings.about")) {
                 LabeledContent(L("settings.version"), value: appVersion)
+                Link(L("settings.about.privacy"),
+                     destination: URL(string: "https://coretend.ahmetbsbnr.com/privacy")!)
+                Link(L("settings.about.license"),
+                     destination: URL(string: "https://coretend.ahmetbsbnr.com/licenses")!)
+                Link(L("settings.about.source"),
+                     destination: URL(string: "https://github.com/ahmetbsbnr/coretend")!)
+                Link(L("settings.about.support"),
+                     destination: URL(string: "https://coretend.ahmetbsbnr.com/support")!)
                 Button(L("settings.rerun_setup")) {
                     NotificationCenter.default.post(name: .mcShowOnboarding, object: nil)
                 }
+                .accessibilityIdentifier("settings.onboarding.rerun")
             }
         }
         .formStyle(.grouped)
         .navigationTitle(L("settings.nav_title"))
+        .accessibilityIdentifier("settings.root")
         .task { await model.load() }
     }
 
@@ -231,8 +239,8 @@ struct MigrationNoticeRow: View {
     let report: LegacyDataMigration.Report
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: MCSpacing.xxs) {
+            HStack(spacing: MCSpacing.xxs) {
                 Image(systemName: failed ? "exclamationmark.triangle.fill" : "checkmark.circle.fill")
                     .foregroundStyle(failed ? MCTheme.warning : MCTheme.success)
                     .accessibilityHidden(true)

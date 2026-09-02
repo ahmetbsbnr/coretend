@@ -7,23 +7,22 @@ combined result, instead of you running each scan separately.
 
 ## Phases
 
-`idle → running → review → executing → finished(freed:dryRun:)`
+`idle → running → review → executing → finished(freed:)`
 
 1. **Running** — each module scans in turn; the view shows per-module state
    (`ModuleState`) so you can see progress module by module.
 2. **Review** — combined findings across modules, same review/select model
    as [CLEANUP_GUIDE.md](CLEANUP_GUIDE.md).
-3. **Executing** — applies the selected actions.
-4. **Finished** — total bytes freed, and whether it was a dry run.
+3. **Executing** — after explicit confirmation, moves the selected eligible
+   items to the Trash.
+4. **Finished** — total bytes actually moved by the completed action.
 
 You can cancel a Smart Care run in progress (`cancel()`); already-scanned
 modules keep their results.
 
-## Dry-run
-
-Smart Care respects the same dry-run setting as Cleanup — reviewed first,
-nothing deleted until you confirm, and even then removal is Trash-based
-(recoverable, see [RESTORE.md](RESTORE.md)).
+Smart Care uses the same safety path as Cleanup: review first, explicit
+confirmation, and Trash-based removal (recoverable; see
+[RESTORE.md](RESTORE.md)).
 
 ## Relationship to Cleanup / Protection
 

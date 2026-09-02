@@ -140,10 +140,9 @@ BLOCKED_ENVIRONMENT — column above reflects COMPLIANT_PARTIAL=2 i.e. A11Y-001 
   Store's Updates page, it is not a real in-app update check. (No baseline requirement ID covers
   this claim directly; flagged here for session 3's functional pass to turn into a FUNC-*
   requirement if warranted.)
-- Protection/ClamAV: `ClamAVScanner.isAvailable` gates the real-scan UI in `ProtectionView.swift`;
-  `clamscan` is not installed in this environment (`Scripts/doctor.sh` confirms), so the
-  honest-unavailable code path is the one structurally verified — not visually screenshotted
-  (headless environment).
+- Integrity: `IntegrityCore` reads native download provenance, code-signature
+  tiers and login-item metadata. The current product contains no external
+  scanner or quarantine surface and makes no malware-detection claim.
 
 ## Known gaps carried forward
 

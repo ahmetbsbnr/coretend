@@ -95,7 +95,7 @@ public struct MCHeroCoreView: View {
         switch state {
         case .success: MCColor.success
         case .error: MCColor.attention
-        default: MCColor.coreMint
+        default: MCColor.teal
         }
     }
 

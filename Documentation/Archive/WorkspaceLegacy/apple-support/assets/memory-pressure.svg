@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="650" viewBox="0 0 1200 650" role="img" aria-labelledby="title desc">
+  <title id="title">Qualitative unified-memory pressure on an 8 GB MacBook Air M1</title>
+  <desc id="desc">macOS, the development toolchain, browser and documentation, local services, and local model weights and context all compete for one unified 8 GB pool. Simultaneous load increases compression and swap and reduces headroom.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#2240e2"/>
+    </marker>
+    <style>
+      .pool{fill:#2240e2}
+      .item{fill:#fcfcfa;stroke:#17191d;stroke-width:2}
+      .pressure{fill:#f4f4f0;stroke:#2240e2;stroke-width:2}
+      .h1{font:700 32px -apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;fill:#fff}
+      .h2{font:650 22px -apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;fill:#17191d}
+      .p{font:400 17px -apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;fill:#494e57}
+      .note{font:500 16px -apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;fill:#17191d}
+      .line{fill:none;stroke:#2240e2;stroke-width:3;marker-end:url(#arrow)}
+    </style>
+  </defs>
+
+  <rect class="pool" x="390" y="48" width="420" height="112" rx="14"/>
+  <text class="h1" x="600" y="96" text-anchor="middle">8 GB unified memory</text>
+  <text class="p" x="600" y="130" text-anchor="middle" fill="#fff" style="fill:#fff">One shared pool for CPU, GPU and applications</text>
+
+  <rect class="item" x="48" y="228" width="194" height="94" rx="10"/>
+  <text class="h2" x="145" y="264" text-anchor="middle">macOS</text>
+  <text class="p" x="145" y="292" text-anchor="middle">system processes</text>
+
+  <rect class="item" x="276" y="228" width="194" height="94" rx="10"/>
+  <text class="h2" x="373" y="264" text-anchor="middle">Development</text>
+  <text class="p" x="373" y="292" text-anchor="middle">Swift tools and IDE</text>
+
+  <rect class="item" x="504" y="228" width="194" height="94" rx="10"/>
+  <text class="h2" x="601" y="264" text-anchor="middle">Browser</text>
+  <text class="p" x="601" y="292" text-anchor="middle">docs and research</text>
+
+  <rect class="item" x="732" y="228" width="194" height="94" rx="10"/>
+  <text class="h2" x="829" y="264" text-anchor="middle">Local services</text>
+  <text class="p" x="829" y="292" text-anchor="middle">database and tooling</text>
+
+  <rect class="item" x="960" y="228" width="194" height="94" rx="10"/>
+  <text class="h2" x="1057" y="264" text-anchor="middle">Local model</text>
+  <text class="p" x="1057" y="292" text-anchor="middle">weights and context</text>
+
+  <path class="line" d="M145 228V194H445V160"/>
+  <path class="line" d="M373 228V194H520V160"/>
+  <path class="line" d="M601 228V160"/>
+  <path class="line" d="M829 228V194H680V160"/>
+  <path class="line" d="M1057 228V194H755V160"/>
+
+  <rect class="pressure" x="170" y="405" width="860" height="132" rx="12"/>
+  <text class="h2" x="600" y="447" text-anchor="middle">When these workloads overlap</text>
+  <text class="note" x="600" y="482" text-anchor="middle">less room for model size and context · stronger quantisation pressure</text>
+  <text class="note" x="600" y="514" text-anchor="middle">more compression and swap · harder simultaneous development and inference</text>
+
+  <text class="p" x="600" y="604" text-anchor="middle">Conceptual view only. No per-process allocation or benchmark is claimed.</text>
+</svg>

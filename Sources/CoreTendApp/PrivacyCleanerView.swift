@@ -3,6 +3,7 @@ import AppKit
 import SafetyCore
 import DesignSystem
 import Persistence
+import ScanCore
 
 /// Privacy Cleaner — browser data analysis and cache-only cleaning.
 /// History/cookies/sessions removal is intentionally not implemented yet:
@@ -11,12 +12,14 @@ import Persistence
 @MainActor
 @Observable
 final class PrivacyCleanerViewModel {
-    enum Phase: Equatable { case scanning, results, empty, finished(freed: Int64, dryRun: Bool) }
+    enum Phase: Equatable { case scanning, results, empty, finished(freed: Int64) }
 
     var phase: Phase = .scanning
     var profiles: [BrowserProfile] = []
     var selectedProfileIDs: Set<String> = []
-    var dryRun = true
+    private var scanTask: Task<[BrowserProfile], Never>?
+    private var pauseController: ScanPauseController?
+    private(set) var isPaused = false
 
     func runningBrowsers() -> [String] {
         let ids = Set(profiles.map(\.bundleID))
@@ -48,14 +51,48 @@ final class PrivacyCleanerViewModel {
     }
 
     func scan() async {
+        cancelScan(resetPhase: false)
         phase = .scanning
+        isPaused = false
         let home = FileManager.default.homeDirectoryForCurrentUser
-        let found = await Task.detached(priority: .utility) {
-            BrowserCatalog.detect(home: home)
-        }.value
+        let pauseController = ScanPauseController()
+        self.pauseController = pauseController
+        let scanTask = Task.detached(priority: .utility) {
+            await BrowserCatalog.detect(home: home, pauseController: pauseController)
+        }
+        self.scanTask = scanTask
+        let found = await scanTask.value
+        guard !Task.isCancelled else { return }
         profiles = found
         selectedProfileIDs = []
+        self.scanTask = nil
+        self.pauseController = nil
+        isPaused = false
         phase = found.isEmpty ? .empty : .results
+    }
+
+    func pauseScan() {
+        guard phase == .scanning, !isPaused else { return }
+        isPaused = true
+        Task { await pauseController?.pause() }
+    }
+
+    func resumeScan() {
+        guard isPaused else { return }
+        isPaused = false
+        Task { await pauseController?.resume() }
+    }
+
+    func cancelScan(resetPhase: Bool = true) {
+        scanTask?.cancel()
+        scanTask = nil
+        isPaused = false
+        let pauseController = pauseController
+        self.pauseController = nil
+        Task { await pauseController?.resume() }
+        if resetPhase, phase == .scanning {
+            phase = profiles.isEmpty ? .empty : .results
+        }
     }
 
     var selectedCacheBytes: Int64 {
@@ -72,7 +109,7 @@ final class PrivacyCleanerViewModel {
         let home = FileManager.default.homeDirectoryForCurrentUser
         let center = SafetyCenter(
             validator: PathValidator(allowedRoots: [home.appendingPathComponent("Library/Caches")]),
-            dryRun: dryRun, sink: AppEnvironment.shared.store)
+            sink: AppEnvironment.shared.store)
         var approved: [ApprovedFileOperation] = []
         for profile in selected {
             for url in profile.cacheURLs {
@@ -84,49 +121,73 @@ final class PrivacyCleanerViewModel {
         }
         let result = await center.execute(approved)
         let freed = result.executed.reduce(0) { $0 + $1.logicalSize }
-        phase = .finished(freed: freed, dryRun: result.wasDryRun)
+        phase = .finished(freed: freed)
         AppEnvironment.shared.record(ActivityRecord(
             kind: .cleanup,
-            summary: result.wasDryRun ? "Browser cache dry run" : "Browser caches moved to Trash",
-            itemCount: result.executed.count, bytes: freed, dryRun: result.wasDryRun))
+            summary: "Browser caches moved to Trash",
+            itemCount: result.executed.count, bytes: freed))
     }
 }
 
 struct PrivacyCleanerView: View {
     @State private var model = PrivacyCleanerViewModel()
+    @State private var showMoveConfirmation = false
 
     var body: some View {
         VStack(spacing: 0) {
             switch model.phase {
             case .scanning:
-                ProgressView(L("privacy.detecting"))
+                VStack(spacing: MCSpacing.lg) {
+                    MCScanStage(isScanning: !model.isPaused) {
+                        Text(L("privacy.detecting"))
+                    }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(L("privacy.detecting"))
+                    HStack(spacing: MCSpacing.sm) {
+                        if model.isPaused {
+                            Button(L("common.resume")) { model.resumeScan() }
+                                .keyboardShortcut("r", modifiers: [])
+                                .help(L("clutter.resume_hint"))
+                                .accessibilityHint(L("clutter.resume_hint"))
+                                .accessibilityIdentifier("privacy.scan.resume")
+                        } else {
+                            Button(L("common.pause")) { model.pauseScan() }
+                                .keyboardShortcut("p", modifiers: [])
+                                .help(L("clutter.pause_hint"))
+                                .accessibilityHint(L("clutter.pause_hint"))
+                                .accessibilityIdentifier("privacy.scan.pause")
+                        }
+                        Button(L("common.cancel")) { model.cancelScan() }
+                            .keyboardShortcut(.cancelAction)
+                            .accessibilityIdentifier("privacy.scan.cancel")
+                    }
+                }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
-                VStack(spacing: 12) {
-                    Image(systemName: "hand.raised")
-                        .font(.system(size: MCIconSize.emptyState)).foregroundStyle(.secondary)
-                        .accessibilityHidden(true)
-                    Text(L("privacy.empty.title")).font(.title3.weight(.semibold))
-                    Text(L("privacy.empty.subtitle"))
-                        .foregroundStyle(.secondary).multilineTextAlignment(.center)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                MCEmptyState(icon: "hand.raised", title: L("privacy.empty.title"), message: L("privacy.empty.subtitle"),
+                             iconSize: MCIconSize.emptyState)
             case .results:
                 resultsView
-            case let .finished(freed, dryRun):
-                VStack(spacing: 12) {
-                    Image(systemName: "checkmark.seal")
-                        .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
-                        .accessibilityHidden(true)
-                    Text(dryRun ? L("privacy.finished.dryrun", mcFormatBytes(freed))
-                                : L("privacy.finished.moved", mcFormatBytes(freed)))
-                        .font(.title3.weight(.semibold))
-                    Button(L("smartcare.scan_again")) { Task { await model.scan() } }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            case let .finished(freed):
+                MCSuccessState(
+                    title: L("privacy.finished.moved", mcFormatBytes(freed)),
+                    actionTitle: L("smartcare.scan_again")) { Task { await model.scan() } }
             }
         }
+        .accessibilityIdentifier("privacy.root")
         .task { await model.scan() }
+        .confirmationDialog(
+            L("common.trash_confirm.title"),
+            isPresented: $showMoveConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(L("common.trash_confirm.action"), role: .destructive) {
+                Task { await model.cleanCaches() }
+            }
+            Button(L("common.cancel"), role: .cancel) {}
+        } message: {
+            Text(L("common.trash_confirm.message"))
+        }
     }
 
     private var resultsView: some View {
@@ -135,25 +196,25 @@ struct PrivacyCleanerView: View {
             if !running.isEmpty {
                 Label(L("privacy.running_warning", running.joined(separator: ", ")),
                       systemImage: "exclamationmark.triangle")
-                    .font(.callout).foregroundStyle(MCTheme.warning)
-                    .padding(.horizontal).padding(.top, 12)
+                    .font(MCFont.secondaryBody).foregroundStyle(MCTheme.warning)
+                    .padding(.horizontal).padding(.top, MCSpacing.sm)
                     .accessibilityElement(children: .combine)
             }
             HStack {
                 Text(L("privacy.caches_selected", mcFormatBytes(model.selectedCacheBytes)))
-                    .font(.headline)
+                    .font(MCFont.cardTitle)
                 Spacer()
-                Toggle(L("common.dry_run"), isOn: $model.dryRun).toggleStyle(.switch)
-                Button(model.dryRun ? L("privacy.simulate_clean") : L("privacy.clean_caches")) {
-                    Task { await model.cleanCaches() }
+                Button(L("privacy.clean_caches")) {
+                    showMoveConfirmation = true
                 }
                 .buttonStyle(.borderedProminent)
+                .accessibilityIdentifier("privacy.clean")
                 .disabled(model.selectedProfileIDs.isEmpty)
             }
             .padding()
             List(model.profiles) { profile in
                 let profileIsRunning = model.isRunning(profile)
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: MCSpacing.xxs) {
                     HStack {
                         Toggle("", isOn: Binding(
                             get: { model.selectedProfileIDs.contains(profile.id) },
@@ -167,7 +228,7 @@ struct PrivacyCleanerView: View {
                         .disabled(profile.cacheURLs.isEmpty || profileIsRunning)
                         VStack(alignment: .leading) {
                             Text(L("privacy.browser_profile", profile.browser, profile.profileName))
-                            HStack(spacing: 12) {
+                            HStack(spacing: MCSpacing.sm) {
                                 Text(L("privacy.cache_size", mcFormatBytes(profile.cacheBytes)))
                                 Text(L("privacy.history_size", mcFormatBytes(profile.historyBytes)))
                                 Text(L("privacy.cookies_size", mcFormatBytes(profile.cookieBytes)))
@@ -177,7 +238,7 @@ struct PrivacyCleanerView: View {
                         Spacer()
                     }
                     if profileIsRunning {
-                        HStack(spacing: 8) {
+                        HStack(spacing: MCSpacing.xs) {
                             Image(systemName: "lock.circle").foregroundStyle(MCTheme.warning)
                                 .accessibilityHidden(true)
                             Text(L("privacy.profile_running_reason", profile.browser))

@@ -1,9 +1,21 @@
 # Signing and notarization
 
-Status as of `0.9.1-rc.1`: **not signed, not notarized.** No Apple Developer
-Program membership is available in any environment this project has been
-built in. Everything below is fully prepared and has never been executed —
-running it requires a real, paid Apple Developer ID.
+Status as of `2026-08-31`: **capability is live.** A paid Apple Developer
+Program account (Team `NSCUV5G738`) is now enrolled, a **Developer ID
+Application** certificate has been issued and installed, and
+`Scripts/sign-and-notarize.sh` has been run for real for the first time
+against `0.9.1-rc.5` — the app and DMG were signed, **notarized (both
+submissions `Accepted` by Apple's notary service)** and stapled, and
+`spctl --assess` reports `accepted / source=Notarized Developer ID` for the
+app inside the DMG.
+
+That run was **local**. No signed release has been published yet: the tagged
+GitHub release still serves the unsigned `0.9.1-rc.5` artifacts. Shipping a
+signed build is the next step — see "Publishing a signed release" below.
+
+Earlier status (kept for history): through `0.9.1-rc.5` every published
+artifact was **unsigned, not notarized**, by documented decision, because no
+Developer ID was available.
 
 ## Why CoreTend is not App Sandboxed
 
@@ -33,34 +45,61 @@ and is what notarization actually depends on.
   unnecessary by grepping `Sources/` for anything that would need them.
 - `Scripts/sign-and-notarize.sh`: the complete, real procedure below,
   gated on an actual Developer ID being present. Fails immediately and
-  loudly if it isn't, before touching anything.
+  loudly if it isn't, before touching anything. **Fixed 2026-08-31**: the
+  first real run surfaced an ordering bug — `Scripts/package-dmg.sh`
+  rebuilt and ad-hoc re-signed `build/CoreTend.app` *between* notarization
+  submission and stapling, so `stapler` found no ticket for the changed
+  CDHash (`Error 65`). The script now ZIPs → submits → staples the *same*
+  bundle → builds the DMG from it with `CORETEND_SKIP_APP_BUILD=1` (new
+  guard in `package-dmg.sh`, no rebuild) → signs the DMG → submits →
+  staples the DMG.
+- Developer ID identity installed: `Developer ID Application: Ahmet BASBUNAR
+  (NSCUV5G738)`, issued from the pre-existing
+  `Configuration/DeveloperID/developerID_CSR.csr` (**not regenerated** — see
+  the release-signing rule). Notarization uses an App Store Connect API key
+  (`.p8` in the gitignored `Configuration/DeveloperID/`, key material never
+  committed) registered as the `notarytool` keychain profile `CoreTend-Notary`.
 
 ## Prerequisites (one-time, human, requires a paid account)
 
+**Done 2026-08-31** for Team `NSCUV5G738`. Kept here as the reproducible
+procedure (e.g. after certificate expiry in 2031, or on a new machine).
+
 1. Enroll in the Apple Developer Program.
 2. Create a **Developer ID Application** certificate in
-   [developer.apple.com](https://developer.apple.com) → Certificates, and
-   let Xcode or `security` install it into the login keychain.
-3. Find its exact identity string:
+   [developer.apple.com](https://developer.apple.com) → Certificates →
+   *Developer ID Application*, **G2 Sub-CA**, uploading
+   `Configuration/DeveloperID/developerID_CSR.csr` (the CSR already in the
+   repo — do **not** generate a new one, it is paired with the private key
+   next to it). Download the `.cer`.
+3. Install it as a signing identity (combines the Apple cert with the
+   existing private key):
    ```
-   security find-identity -v -p codesigning
+   security import Configuration/DeveloperID/developerID_private.key \
+     -k ~/Library/Keychains/login.keychain-db -T /usr/bin/codesign
+   security import ~/Downloads/developerID_application.cer \
+     -k ~/Library/Keychains/login.keychain-db -T /usr/bin/codesign
+   security find-identity -v -p codesigning     # expect: Developer ID Application: Ahmet BASBUNAR (NSCUV5G738)
    ```
-4. Generate an app-specific password at
-   [appleid.apple.com](https://appleid.apple.com) (or use an API key), and
-   register it for `notarytool`:
+4. Register a notarytool credential. This project used an **App Store
+   Connect API key** (App Store Connect → Users and Access → Integrations →
+   *App Store Connect API* → generate, role *Developer*). Save the `.p8`
+   into the gitignored `Configuration/DeveloperID/`, then:
    ```
    xcrun notarytool store-credentials "CoreTend-Notary" \
-     --apple-id "you@example.com" --team-id "TEAMID1234" \
-     --password "app-specific-password"
+     --key Configuration/DeveloperID/AuthKey_XXXXXXXXXX.p8 \
+     --key-id XXXXXXXXXX --issuer <issuer-uuid>
    ```
-   This stores the credential in the keychain — it is never written to a
-   file in this repository.
+   An app-specific password works equally well
+   (`--apple-id … --team-id NSCUV5G738 --password …`). Either way the
+   credential lives in the keychain — never in a file in this repository.
 
 ## Running it
 
 ```
-export CORETEND_DEVELOPER_ID_APPLICATION="Developer ID Application: Your Name (TEAMID1234)"
-Scripts/sign-and-notarize.sh 1.0.0 CoreTend-Notary
+export CORETEND_DEVELOPER_ID_APPLICATION="Developer ID Application: Ahmet BASBUNAR (NSCUV5G738)"
+Scripts/package-local.sh
+Scripts/sign-and-notarize.sh <version> CoreTend-Notary
 ```
 
 The script, in order:
@@ -71,11 +110,49 @@ The script, in order:
    bundle itself, with `--options runtime --timestamp` and
    `Configuration/CoreTend.entitlements`.
 3. Verifies the signature (`codesign --verify --deep --strict`).
-4. Packages a ZIP and a DMG (`Scripts/package-dmg.sh`).
-5. Submits the ZIP to Apple's notary service and waits for a result.
-6. Staples the ticket to the app, re-packages the DMG with the now-stapled
-   app, submits the DMG for its own notarization, and staples that too.
-7. Runs a final Gatekeeper check (`spctl --assess`) on both.
+4. ZIPs the signed app and submits it to Apple's notary service; waits.
+5. Staples the ticket to that same app bundle and validates the staple.
+6. Builds the DMG from the signed, stapled app
+   (`CORETEND_SKIP_APP_BUILD=1 Scripts/package-dmg.sh` — no rebuild), copies
+   it to the release name, signs the DMG (`--timestamp`), submits it for its
+   own notarization, staples and validates.
+7. Runs a final Gatekeeper check (`spctl --assess`) on both and prints the
+   SHA-256 of the ZIP and DMG.
+
+## Publishing a signed release
+
+Producing signed artifacts is only half of it — the published GitHub release
+and everything downstream still describe the last *unsigned* build until a
+signed one is actually shipped. Because the artifact content changes (and the
+name loses its `-unsigned` suffix), this is a **new release candidate**, not
+a re-upload of an existing tag (`TODO.md` "Publish a new RC if artifacts
+changed").
+
+1. Bump `marketingVersion` + `buildNumber` in
+   `Configuration/PublicIdentity.example.json`; mirror into
+   `Resources/Info.plist` (`CoreTendMarketingVersion`, `CFBundleVersion`)
+   and `Documentation/PROJECT_STATE.json`
+   (`Scripts/check-version-consistency.sh` gates this).
+2. Write `Release/Notes/<version>.en.md` and `.fr.md`.
+3. `Scripts/package-local.sh` → `Scripts/sign-and-notarize.sh <version>
+   CoreTend-Notary`. Verify on a clean Mac (next section).
+4. Regenerate provenance: `Scripts/build-release.sh` (→ `Release/latest.json`,
+   `Release/SHA256SUMS`), then a **Minisign** signature of `SHA256SUMS` with
+   the human-held private key (public half: `Configuration/minisign.pub`),
+   and the SBOM. Flip `signed`/`notarized` to `true` in the generated
+   manifests and `PublicIdentity` — *after* the artifacts exist, never
+   before.
+5. Drop the `-unsigned` token from artifact names across `Scripts/`,
+   `Website/generate.py` / `build.py`, the release CI workflows
+   (`.github/workflows/release*.yml`) and the release gates
+   (`test-public-release-gate.py`, `test-release-manifest.sh`, …) in the
+   same change.
+6. Tag `v<version>` and push. The tag-triggered Release workflow builds and
+   publishes; the release-sync gate then updates
+   `Configuration/published-release.json`; the portfolio's
+   `sync-coretend.yml` picks up the published version.
+7. Re-point the download page and the in-app `UpdateChecker` at the new
+   tag/asset URLs (they follow the published release, never a local build).
 
 ## Verifying on a clean machine
 

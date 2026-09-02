@@ -50,15 +50,37 @@ DMG_SIZE_MANIFEST=$(json_get Release/latest.json dmgSize)
   && ok "dmgSize matches actual file size" \
   || bad "dmgSize mismatch: manifest=$DMG_SIZE_MANIFEST actual=$DMG_SIZE_ACTUAL"
 
-echo "== unsigned/non-notarized declared consistently =="
+echo "== signing/notarization status declared consistently with the artifact =="
 SIGNED=$(json_get Release/latest.json signed)
 NOTARIZED=$(json_get Release/latest.json notarized)
-[ "$SIGNED" = "False" ] && ok "latest.json signed:false" || bad "latest.json signed is not false ($SIGNED) — app is genuinely unsigned, manifest must say so"
-[ "$NOTARIZED" = "False" ] && ok "latest.json notarized:false" || bad "latest.json notarized is not false ($NOTARIZED)"
-if grep -qi "without.*apple notarization\|without.*signature\|unsigned\|not notarized\|non-notarized" Documentation/INSTALL_UNSIGNED.md 2>/dev/null; then
-  ok "INSTALL_UNSIGNED.md states unsigned/non-notarized status"
+if [ "$SIGNED" = "True" ] || [ "$NOTARIZED" = "True" ]; then
+  # A signed/notarized claim must be backed by the artifact itself: the DMG
+  # has to carry a stapled ticket and pass Gatekeeper with no bypass flag.
+  [ "$SIGNED" = "True" ] && [ "$NOTARIZED" = "True" ] \
+    && ok "latest.json signed:true notarized:true" \
+    || bad "latest.json declares one of signed/notarized true but not both ($SIGNED/$NOTARIZED)"
+  if xcrun stapler validate "Release/$DMG_NAME" >/dev/null 2>&1; then
+    ok "Release/$DMG_NAME carries a stapled notarization ticket"
+  else
+    bad "latest.json claims notarized:true but Release/$DMG_NAME is not stapled"
+  fi
+  if spctl --assess --type open --context context:primary-signature "Release/$DMG_NAME" >/dev/null 2>&1; then
+    ok "Release/$DMG_NAME is accepted by Gatekeeper"
+  else
+    bad "latest.json claims signed:true but Gatekeeper rejects Release/$DMG_NAME"
+  fi
+  case "$DMG_NAME" in
+    *-unsigned.*) bad "signed release must not use the -unsigned artifact name ($DMG_NAME)" ;;
+    *) ok "signed release uses a plain (non -unsigned) artifact name" ;;
+  esac
 else
-  bad "INSTALL_UNSIGNED.md does not clearly state unsigned/non-notarized status"
+  [ "$SIGNED" = "False" ] && ok "latest.json signed:false" || bad "latest.json signed is not false ($SIGNED) — app is genuinely unsigned, manifest must say so"
+  [ "$NOTARIZED" = "False" ] && ok "latest.json notarized:false" || bad "latest.json notarized is not false ($NOTARIZED)"
+  if grep -qi "without.*apple notarization\|without.*signature\|unsigned\|not notarized\|non-notarized" Documentation/INSTALL_UNSIGNED.md 2>/dev/null; then
+    ok "INSTALL_UNSIGNED.md states unsigned/non-notarized status"
+  else
+    bad "INSTALL_UNSIGNED.md does not clearly state unsigned/non-notarized status"
+  fi
 fi
 
 echo "== no dangerous Gatekeeper-bypass commands documented as steps to follow =="
@@ -136,6 +158,23 @@ PY
 [ -z "$TEMPLATE_VIOLATIONS" ] \
   && ok "template holds only hand-authored fields" \
   || bad "$TEMPLATE_VIOLATIONS"
+
+echo "== resolved release limitations cannot return to the template =="
+STALE_LIMITATIONS=$(/usr/bin/python3 - <<'PY'
+import json
+limitations = "\n".join(json.load(open("Release/latest.template.json")).get("knownLimitations", []))
+for stale in (
+    "no saved icon positions",
+    "full visual-QA capture campaign could not be run",
+    "Living System background",
+):
+    if stale.casefold() in limitations.casefold():
+        print(stale)
+PY
+)
+[ -z "$STALE_LIMITATIONS" ] \
+  && ok "template does not re-open resolved rc.4 packaging or visual gaps" \
+  || bad "template still claims resolved limitation(s): $STALE_LIMITATIONS"
 
 echo "== generated manifest records real provenance =="
 MANIFEST_SOURCE_COMMIT=$(json_get Release/latest.json sourceCommit)

@@ -4,9 +4,7 @@ import SafetyCore
 import DesignSystem
 
 /// Read-only view over the persistent SafetyCore audit trail (safety_log).
-/// Every row carries its own `stage`, so a dry-run simulation can never be
-/// displayed or counted as a real executed action — the two are rendered
-/// with visibly different badges and are never merged into one total.
+/// Every row carries its own execution stage and redacted path.
 @MainActor
 @Observable
 final class SafetyLogViewModel {
@@ -16,7 +14,6 @@ final class SafetyLogViewModel {
     var records: [SafetyLogRecord] = []
 
     var executedCount: Int { records.filter { $0.stage == .executed }.count }
-    var dryRunCount: Int { records.filter { $0.stage == .dryRun }.count }
     var skippedOrErrorCount: Int { records.filter { $0.stage == .skipped || $0.stage == .error }.count }
 
     func load() async {
@@ -71,8 +68,8 @@ struct SafetyLogView: View {
     private var header: some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
-                Text(L("safetylog.title")).font(.headline)
-                Text(L("safetylog.subtitle", model.executedCount, model.dryRunCount))
+                Text(L("safetylog.title")).font(MCFont.cardTitle)
+                Text(L("safetylog.subtitle", model.executedCount))
                     .font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
@@ -113,7 +110,6 @@ private struct SafetyLogRow: View {
     private var stageLabel: String {
         switch record.stage {
         case .approved: L("safetylog.stage.approved")
-        case .dryRun: L("safetylog.stage.dryrun")
         case .executed: L("safetylog.stage.executed")
         case .skipped: L("safetylog.stage.skipped")
         case .error: L("safetylog.stage.error")
@@ -123,7 +119,6 @@ private struct SafetyLogRow: View {
     private var stageColor: Color {
         switch record.stage {
         case .approved: MCTheme.accentSecondary
-        case .dryRun: .secondary
         case .executed: MCTheme.success
         case .skipped: MCTheme.warning
         case .error: MCTheme.danger

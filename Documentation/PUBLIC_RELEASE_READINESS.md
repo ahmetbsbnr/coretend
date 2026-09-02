@@ -1,5 +1,10 @@
 # Public Release Readiness
 
+> Historical verification log. Its early 0.7/0.8 commands and counts are
+> preserved as dated evidence, not as the current product state. The active
+> rc.5 source of truth is `PROJECT_STATE.json`; final artifact evidence belongs
+> in `GOLD_MASTER_STATUS.md`.
+
 Tracks concrete verification performed toward the repo being safely
 publishable, and what still blocks it. This is a running record, not a
 promise — see `Documentation/HUMAN_BLOCKERS.md` for decisions only a human
@@ -20,8 +25,7 @@ full local build/test/package/launch path from there.
 
 Steps run from the clean copy, in order:
 
-1. `Scripts/doctor.sh` — passed (macOS, Swift 6 toolchain, dev tools all OK;
-   ClamAV correctly reported as optional/absent).
+1. `Scripts/doctor.sh` — passed for that historical source snapshot.
 2. `Scripts/test.sh` — all 83 tests passed, 0 failures, 26 suites.
 3. `swift build` (debug) — clean build, no errors.
 4. `swift build -c release` — clean build, no errors.

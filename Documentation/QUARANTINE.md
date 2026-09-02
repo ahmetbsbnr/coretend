@@ -1,4 +1,13 @@
-# Quarantine (Protection)
+# Quarantine (Protection) — REMOVED, historical
+
+**This mechanism no longer exists in CoreTend.** It was part of the
+ClamAV-based Protection design retired in favor of Integrity — see
+[CLAMAV_DECISION.md](CLAMAV_DECISION.md) and
+[PROTECTION.md](PROTECTION.md) for the current design. Kept here, verbatim,
+as a record of what the removed feature did; not maintained to match
+anything current.
+
+---
 
 Protection's malware scanner never deletes a detected file automatically.
 When you choose to act on a finding, CoreTend moves the file into its
@@ -37,7 +46,7 @@ for items you are confident you don't need.
 ## What Protection is not
 
 ClamAV-backed scanning (see [PROTECTION.md](PROTECTION.md) and
-[CLAMAV.md](CLAMAV.md)) is a local, on-demand signature scan. It is not a
+[CLAMAV_DECISION.md](CLAMAV_DECISION.md)) is a local, on-demand signature scan. It is not a
 real-time antivirus, not a full endpoint-security product, and not a
 guarantee against malware. See
 [PROTECTION_LIMITATIONS.md](PROTECTION_LIMITATIONS.md).

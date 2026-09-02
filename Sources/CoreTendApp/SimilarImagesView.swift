@@ -2,6 +2,8 @@ import SwiftUI
 import ScanCore
 import DesignSystem
 import Persistence
+import QuickLookUI
+import QuickLook
 @preconcurrency import QuickLookThumbnailing
 
 @MainActor
@@ -10,12 +12,15 @@ final class SimilarImagesViewModel {
     enum Phase: Equatable { case idle, scanning(processed: Int, total: Int), results, empty }
 
     var phase: Phase = .idle
+    var previewURL: URL?
     var groups: [SimilarImageGroup] = []
     var searchText = ""
     var selectedVolumeID: String?
     let volumeResolver: VolumeResolving
     let exclusionsController = ClutterExclusionsController()
     private var scanTask: Task<Void, Never>?
+    private var pauseController: ScanPauseController?
+    private(set) var isPaused = false
 
     init(volumeResolver: VolumeResolving = SystemVolumeResolver()) {
         self.volumeResolver = volumeResolver
@@ -41,6 +46,9 @@ final class SimilarImagesViewModel {
         if case .scanning = phase { return }
         phase = .scanning(processed: 0, total: 0)
         groups = []
+        isPaused = false
+        let pauseController = ScanPauseController()
+        self.pauseController = pauseController
         let home = FileManager.default.homeDirectoryForCurrentUser
         let engine = SimilarImagesEngine(roots: [
             home.appendingPathComponent("Pictures"),
@@ -48,30 +56,53 @@ final class SimilarImagesViewModel {
             home.appendingPathComponent("Desktop"),
         ])
         scanTask = Task {
-            for await event in engine.run() {
+            for await event in engine.run(pauseController: pauseController) {
                 switch event {
                 case let .progress(processed, total):
                     phase = .scanning(processed: processed, total: total)
                 case let .finished(found):
                     groups = found
                     phase = found.isEmpty ? .empty : .results
+                    isPaused = false
+                    self.pauseController = nil
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .scan, summary: "Similar images: \(found.count) groups",
                         itemCount: found.count,
-                        bytes: found.reduce(0) { $0 + $1.totalBytes }, dryRun: true))
+                        bytes: found.reduce(0) { $0 + $1.totalBytes }))
                 case .cancelled:
                     phase = groups.isEmpty ? .idle : .results
+                    isPaused = false
+                    self.pauseController = nil
                 case let .unavailable(reason):
                     phase = .empty
+                    isPaused = false
+                    self.pauseController = nil
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .error, summary: "Similar images unavailable: \(reason)",
-                        itemCount: 0, bytes: 0, dryRun: true))
+                        itemCount: 0, bytes: 0))
                 }
             }
+            isPaused = false
+            self.pauseController = nil
         }
     }
 
-    func cancel() { scanTask?.cancel() }
+    func pauseScan() {
+        guard case .scanning = phase, !isPaused else { return }
+        isPaused = true
+        Task { await pauseController?.pause() }
+    }
+
+    func resumeScan() {
+        guard isPaused else { return }
+        isPaused = false
+        Task { await pauseController?.resume() }
+    }
+
+    func cancel() {
+        scanTask?.cancel()
+        Task { await pauseController?.resume() }
+    }
 }
 
 /// Identifiable wrapper so raw `URL`s can drive `MCOverlapStack`.
@@ -114,31 +145,42 @@ struct SimilarImagesView: View {
         VStack(spacing: 0) {
             switch model.phase {
             case .idle:
-                VStack(spacing: 16) {
-                    Image(systemName: "photo.on.rectangle.angled")
-                        .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
-                    Text(L("similar.idle.title")).font(.title2.weight(.semibold))
-                    Text(L("similar.idle.subtitle"))
-                        .multilineTextAlignment(.center).foregroundStyle(.secondary)
-                    Button(L("similar.analyze")) { model.start() }
-                        .buttonStyle(.borderedProminent)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                MCEmptyState(
+                    icon: "photo.on.rectangle.angled", title: L("similar.idle.title"), message: L("similar.idle.subtitle"),
+                    iconColor: MCTheme.accent, iconSize: MCIconSize.emptyStateProminent,
+                    actionTitle: L("similar.analyze")) { model.start() }
+                    .accessibilityIdentifier("similar.scan.start")
             case let .scanning(processed, total):
-                VStack(spacing: 16) {
-                    if total > 0 {
-                        ProgressView(value: Double(processed), total: Double(total))
-                            .frame(width: 260)
-                        Text(L("similar.analyzing", processed, total)).monospacedDigit()
-                    } else {
-                        ProgressView()
-                        Text(L("similar.collecting"))
+                VStack(spacing: MCSpacing.lg) {
+                    MCScanStage(isScanning: !model.isPaused,
+                                fraction: total > 0 ? Double(processed) / Double(total) : nil) {
+                        Text(total > 0 ? L("similar.analyzing", processed, total) : L("similar.collecting"))
+                            .monospacedDigit()
                     }
-                    Button(L("common.cancel")) { model.cancel() }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(total > 0 ? L("similar.analyzing", processed, total) : L("similar.collecting"))
+                    HStack(spacing: MCSpacing.sm) {
+                        if model.isPaused {
+                            Button(L("common.resume")) { model.resumeScan() }
+                                .keyboardShortcut("r", modifiers: [])
+                                .help(L("dupes.resume_hint"))
+                                .accessibilityHint(L("dupes.resume_hint"))
+                                .accessibilityIdentifier("similar.scan.resume")
+                        } else {
+                            Button(L("common.pause")) { model.pauseScan() }
+                                .keyboardShortcut("p", modifiers: [])
+                                .help(L("dupes.pause_hint"))
+                                .accessibilityHint(L("dupes.pause_hint"))
+                                .accessibilityIdentifier("similar.scan.pause")
+                        }
+                        Button(L("common.cancel")) { model.cancel() }
+                            .keyboardShortcut(.cancelAction)
+                            .accessibilityIdentifier("similar.scan.cancel")
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
-                VStack(spacing: 12) {
+                VStack(spacing: MCSpacing.sm) {
                     Image(systemName: "checkmark.circle")
                         .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
                     Text(L("similar.none_found")).font(.title3.weight(.semibold))
@@ -156,6 +198,7 @@ struct SimilarImagesView: View {
                                     .tag(String?.some(volume.id))
                             }
                         }
+                        .pickerStyle(.menu)
                         .frame(width: 180)
                     }
                     Spacer()
@@ -184,10 +227,16 @@ struct SimilarImagesView: View {
                                         Text(L("similar.best_resolution"))
                                             .font(.caption2.weight(.semibold))
                                             .padding(.horizontal, MCSpacing.xxs).padding(.vertical, 1)
-                                            .background(MCColor.coreMint.opacity(0.18), in: Capsule())
-                                            .foregroundStyle(MCColor.coreMint)
+                                            .background(MCColor.teal.opacity(0.18), in: Capsule())
+                                            .foregroundStyle(MCColor.teal)
                                     }
                                     Spacer()
+                                    Button {
+                                        model.previewURL = url
+                                    } label: { Image(systemName: "eye") }
+                                    .buttonStyle(.borderless)
+                                    .help(L("clutter.quick_look"))
+                                    .accessibilityLabel(L("clutter.quick_look"))
                                     Button {
                                         NSWorkspace.shared.activateFileViewerSelecting([url])
                                     } label: { Image(systemName: "magnifyingglass") }
@@ -201,7 +250,9 @@ struct SimilarImagesView: View {
                     }
                 }
                 .listStyle(.inset)
+                .quickLookPreview($model.previewURL)
             }
         }
+        .accessibilityIdentifier("similar.root")
     }
 }

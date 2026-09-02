@@ -1,47 +1,67 @@
 {
   "schemaVersion": 2,
-  "auditDate_UTC": "2026-07-25",
-  "commit": "31359f871638bc9b68efab16f5e76c798ea5877d",
+  "auditDate_UTC": "2026-08-02",
+  "commit": "c05f4a97de8b36d96d9ca351f76765768bd591eb",
   "command": "Scripts/test.sh",
-  "totalTests": 296,
-  "totalSuites": 58,
-  "passed": 296,
+  "totalTests": 338,
+  "totalSuites": 67,
+  "passed": 338,
   "failed": 0,
-  "testRunDurationSeconds": 10.125,
-  "wallTimeSeconds": 12,
+  "testRunDurationSeconds": 15.574,
+  "wallTimeSeconds": 17,
   "result": "PASS",
   "domains": [
     {
       "module": "AppDiscovery",
-      "testFunctionsDeclared": 20
+      "testFunctionsDeclared": 22
+    },
+    {
+      "module": "CoreTendAccessibility",
+      "testFunctionsDeclared": 1
     },
     {
       "module": "CoreTendApp",
-      "testFunctionsDeclared": 98
+      "testFunctionsDeclared": 138
+    },
+    {
+      "module": "CoreTendIntegration",
+      "testFunctionsDeclared": 1
+    },
+    {
+      "module": "CoreTendPerformance",
+      "testFunctionsDeclared": 1
+    },
+    {
+      "module": "CoreTendUI",
+      "testFunctionsDeclared": 0
+    },
+    {
+      "module": "DemoFixturesValidator",
+      "testFunctionsDeclared": 0
     },
     {
       "module": "DesignSystem",
-      "testFunctionsDeclared": 17
+      "testFunctionsDeclared": 18
     },
     {
       "module": "FileRules",
       "testFunctionsDeclared": 7
     },
     {
-      "module": "MalwareEngine",
-      "testFunctionsDeclared": 40
+      "module": "IntegrityCore",
+      "testFunctionsDeclared": 19
     },
     {
       "module": "Persistence",
-      "testFunctionsDeclared": 52
+      "testFunctionsDeclared": 56
     },
     {
       "module": "SafetyCore",
-      "testFunctionsDeclared": 20
+      "testFunctionsDeclared": 26
     },
     {
       "module": "ScanCore",
-      "testFunctionsDeclared": 41
+      "testFunctionsDeclared": 48
     },
     {
       "module": "SystemMetrics",

@@ -53,6 +53,37 @@ struct AppDiscoveryTests {
         #expect(names == ["com.gone.app"])
     }
 
+    @Test func associatedItemsIncludeReviewOnlyLaunchAgents() throws {
+        let home = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("coretend-home-\(UUID().uuidString)")
+        let agents = home.appendingPathComponent("Library/LaunchAgents")
+        let caches = home.appendingPathComponent("Library/Caches/com.example.Widget")
+        try FileManager.default.createDirectory(at: agents, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: caches, withIntermediateDirectories: true)
+        try Data("plist".utf8).write(to: agents.appendingPathComponent("com.example.Widget.plist"))
+        defer { try? FileManager.default.removeItem(at: home) }
+
+        let app = InstalledApp(name: "Widget", bundleIdentifier: "com.example.Widget", version: nil,
+                               path: URL(fileURLWithPath: "/Applications/Widget.app"),
+                               sizeBytes: 10, architectures: ["arm64"])
+        let items = AppDiscovery(home: home).associatedItems(for: app)
+
+        #expect(items.contains { $0.kind == .caches })
+        #expect(items.contains { $0.kind == .launchAgents && $0.url.lastPathComponent == "com.example.Widget.plist" })
+    }
+
+    @Test func legacyAssociatedItemsCallStaysUserLibraryOnly() throws {
+        let home = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("coretend-home-\(UUID().uuidString)")
+        let agents = home.appendingPathComponent("Library/LaunchAgents")
+        try FileManager.default.createDirectory(at: agents, withIntermediateDirectories: true)
+        try Data("plist".utf8).write(to: agents.appendingPathComponent("com.example.Widget.plist"))
+        defer { try? FileManager.default.removeItem(at: home) }
+
+        let items = AppDiscovery(home: home).associatedItems(bundleID: "com.example.Widget")
+        #expect(items.map(\.kind) == [.launchAgents])
+    }
+
     // MARK: - Update source detection (Step 5)
 
     @Test func appStoreReceiptWinsOverEverything() {
