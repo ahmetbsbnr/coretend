@@ -53,14 +53,6 @@ final class CleanupViewModel {
         return byRule.values.sorted { $0.bytes > $1.bytes }
     }
 
-    /// Each group's share of found bytes, largest first — feeds MCFragmentView's cluster sizes.
-    var normalizedGroupWeights: [Double] {
-        let all = groups
-        let total = all.reduce(0) { $0 + $1.bytes }
-        guard total > 0 else { return [] }
-        return all.map { max(0.1, Double($0.bytes) / Double(total)) }
-    }
-
     func selectionState(for group: RuleGroup) -> Bool {
         group.findings.allSatisfy { selectedIDs.contains($0.id) }
     }

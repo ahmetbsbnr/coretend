@@ -12,7 +12,6 @@ final class AppUpdatesViewModel {
         let id: String
         let app: InstalledApp
         let source: AppUpdateSource
-        let feedURL: URL?
     }
 
     enum Phase: Equatable { case loading, ready, empty }
@@ -28,8 +27,8 @@ final class AppUpdatesViewModel {
         let result = await Task.detached(priority: .utility) { () -> [UpdateInfo] in
             let apps = discovery.discoverApps()
             return apps.map { app in
-                let (source, feed) = AppUpdateSource.detect(for: app)
-                return UpdateInfo(id: app.id, app: app, source: source, feedURL: feed)
+                let (source, _) = AppUpdateSource.detect(for: app)
+                return UpdateInfo(id: app.id, app: app, source: source)
             }
             .sorted { ($0.source == .none ? 1 : 0, $0.app.name) < ($1.source == .none ? 1 : 0, $1.app.name) }
         }.value
