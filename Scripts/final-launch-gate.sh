@@ -114,9 +114,20 @@ if [ -n "$EXPECT_VERSION" ]; then
     || FAIL "version is $VERSION, expected $EXPECT_VERSION"
 fi
 
+# 1.x is only legitimate once the published build is Developer ID signed and
+# Apple-notarized. The release has been signed + notarized since v0.9.1-rc.6,
+# so a 1.x version is now allowed; an unsigned build claiming 1.x still fails.
+PUB_SIGNED=$(/usr/bin/python3 -c "
+import json
+r = json.load(open('Configuration/published-release.json'))
+print('yes' if r.get('signed') and r.get('notarized') else 'no')
+" 2>/dev/null)
 case "$VERSION" in
-  1.*) FAIL "version $VERSION claims 1.x — this release is an unsigned beta and must not be 1.0" ;;
-  *)   PASS "version does not claim a 1.x signed release" ;;
+  1.*)
+    [ "$PUB_SIGNED" = "yes" ] \
+      && PASS "version $VERSION claims 1.x and the published release is signed + notarized" \
+      || FAIL "version $VERSION claims 1.x but the published release is not signed + notarized" ;;
+  *)   PASS "version is pre-1.0" ;;
 esac
 
 run_gate "version is consistent across Info.plist and PROJECT_STATE.json" \
