@@ -98,10 +98,18 @@ Documentation/WorkspacePreflight/**/*.bundle.sha256
 # artifact — machine-specific, no project code or docs depend on it)
 .serena/
 
-# Python bytecode from running generate.py
+# Python bytecode (build.py, Scripts/*.py)
 __pycache__/
 *.pyc
 
 # Visual regression working output (references ARE tracked; diffs are not)
 Scripts/visual/output/
 node_modules/
+.build/packaging-venv/
+# Test and measurement output, regenerated per run and machine-specific.
+Release/stability-metrics.txt
+Release/robustness-results.tsv
+graphify-out/cache/
+graphify-out/.graphify_python
+graphify-out/.graphify_root
+graphify-out/manifest.json

@@ -29,6 +29,13 @@ public enum UpdateCheckError: Error, Equatable, Sendable {
 }
 
 /// One release, as described by the published manifest.
+public struct ReleaseArtifact: Sendable, Equatable {
+    public let name: String
+    public let url: URL
+    public let sha256: String
+    public let size: Int64
+}
+
 public struct ReleaseInfo: Sendable, Equatable {
     public let version: String
     public let channel: String
@@ -37,6 +44,10 @@ public struct ReleaseInfo: Sendable, Equatable {
     public let notes: String?
     public let signed: Bool
     public let notarized: Bool
+    public let minimumMacOS: String?
+    public let architecture: String?
+    public let dmg: ReleaseArtifact?
+    public let zip: ReleaseArtifact?
 }
 
 /// The result of a check, as the UI needs to render it.
@@ -211,7 +222,42 @@ public struct UpdateChecker: Sendable {
             releaseURL: url?.scheme == "https" ? url : nil,
             notes: json["releaseNotesText"] as? String,
             signed: json["signed"] as? Bool ?? false,
-            notarized: json["notarized"] as? Bool ?? false
+            notarized: json["notarized"] as? Bool ?? false,
+            minimumMacOS: json["minimumMacOS"] as? String,
+            architecture: json["architecture"] as? String,
+            dmg: artifact(in: json, prefix: "dmg"),
+            zip: artifact(in: json, prefix: "zip")
         )
+    }
+
+    private static func artifact(in json: [String: Any], prefix: String) -> ReleaseArtifact? {
+        guard let name = json["\(prefix)Name"] as? String, !name.isEmpty,
+              let urlText = json["\(prefix)URL"] as? String,
+              let url = URL(string: urlText), url.scheme == "https",
+              let sha = normalizedSHA256(json["\(prefix)SHA256"] as? String),
+              let size = int64(json["\(prefix)Size"]), size > 0
+        else { return nil }
+        return ReleaseArtifact(name: name, url: url, sha256: sha, size: size)
+    }
+
+    private static func normalizedSHA256(_ raw: String?) -> String? {
+        guard let value = raw?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
+              value.count == 64,
+              value.allSatisfy({ ("0"..."9").contains($0) || ("a"..."f").contains($0) })
+        else { return nil }
+        return value
+    }
+
+    private static func int64(_ value: Any?) -> Int64? {
+        switch value {
+        case let number as Int:
+            return Int64(number)
+        case let number as Int64:
+            return number
+        case let number as NSNumber:
+            return number.int64Value
+        default:
+            return nil
+        }
     }
 }

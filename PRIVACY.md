@@ -13,15 +13,13 @@ that means.
   space analysis, similar images, applications/leftovers, performance,
   privacy cleaner cache scan, my activity).
 
-## The one optional network dependency
+## The one product network request
 
-The Protection module's malware scanning is powered by a
-separately-installed, optional ClamAV. If you choose to update ClamAV's
-virus definitions, that update process contacts ClamAV's own definition
-mirrors — not a CoreTend server, and only when you trigger it. See
-[Documentation/CLAMAV.md](Documentation/CLAMAV.md) and
-[Documentation/PROTECTION_LIMITATIONS.md](Documentation/PROTECTION_LIMITATIONS.md).
-The app itself ships no analytics alongside this.
+The Integrity tab reads only local, already-existing macOS metadata (download
+quarantine attributes, code-signature status, login items); none of it is sent
+anywhere. A user-initiated update check may request the public
+`https://coretend.ahmetbsbnr.com/latest.json` manifest. It does not upload scan
+findings, paths or an index of files. The app ships no analytics alongside it.
 
 ## Data storage
 

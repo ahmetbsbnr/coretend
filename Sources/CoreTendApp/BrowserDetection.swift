@@ -1,4 +1,5 @@
 import Foundation
+import ScanCore
 
 /// One detected browser profile and the *sizes* of its data. Only `cacheURLs`
 /// is ever acted on (moved to Trash) — history/cookie bytes are reported for
@@ -110,6 +111,64 @@ enum BrowserCatalog {
         return profiles.sorted { $0.cacheBytes > $1.cacheBytes }
     }
 
+    static func detect(home: URL, fileManager fm: FileManager = .default,
+                       pauseController: ScanPauseController?) async -> [BrowserProfile] {
+        var profiles: [BrowserProfile] = []
+        for def in definitions {
+            if Task.isCancelled { break }
+            await pauseController?.waitIfPaused()
+            let support = home.appendingPathComponent(def.supportSubpath)
+            let cacheRoot = home.appendingPathComponent(def.cacheSubpath)
+            switch def.layout {
+            case .chromium:
+                guard fm.fileExists(atPath: support.path) else { continue }
+                let entries = (try? fm.contentsOfDirectory(at: support, includingPropertiesForKeys: nil)) ?? []
+                for entry in entries where entry.lastPathComponent == "Default"
+                    || entry.lastPathComponent.hasPrefix("Profile ") {
+                    if Task.isCancelled { break }
+                    await pauseController?.waitIfPaused()
+                    let name = entry.lastPathComponent
+                    let cacheDir = cacheRoot.appendingPathComponent(name)
+                    let cookies = await size(entry.appendingPathComponent("Cookies"), fm, pauseController: pauseController)
+                    profiles.append(BrowserProfile(
+                        id: "\(def.bundleID)-\(name)", browser: def.browser, bundleID: def.bundleID,
+                        profileName: name,
+                        cacheURLs: [cacheDir].filter { fm.fileExists(atPath: $0.path) },
+                        cacheBytes: await size(cacheDir, fm, pauseController: pauseController),
+                        historyBytes: await size(entry.appendingPathComponent("History"), fm, pauseController: pauseController),
+                        cookieBytes: cookies > 0 ? cookies
+                            : await size(entry.appendingPathComponent("Network/Cookies"), fm, pauseController: pauseController)))
+                }
+            case .firefox:
+                guard fm.fileExists(atPath: support.path) else { continue }
+                let entries = (try? fm.contentsOfDirectory(at: support, includingPropertiesForKeys: nil)) ?? []
+                for entry in entries {
+                    if Task.isCancelled { break }
+                    await pauseController?.waitIfPaused()
+                    let name = entry.lastPathComponent
+                    let cacheDir = cacheRoot.appendingPathComponent(name)
+                    profiles.append(BrowserProfile(
+                        id: "\(def.bundleID)-\(name)", browser: def.browser, bundleID: def.bundleID,
+                        profileName: name,
+                        cacheURLs: [cacheDir].filter { fm.fileExists(atPath: $0.path) },
+                        cacheBytes: await size(cacheDir, fm, pauseController: pauseController),
+                        historyBytes: await size(entry.appendingPathComponent("places.sqlite"), fm, pauseController: pauseController),
+                        cookieBytes: await size(entry.appendingPathComponent("cookies.sqlite"), fm, pauseController: pauseController)))
+                }
+            case .safari:
+                guard fm.fileExists(atPath: cacheRoot.path) else { continue }
+                profiles.append(BrowserProfile(
+                    id: def.bundleID, browser: def.browser, bundleID: def.bundleID,
+                    profileName: "Default",
+                    cacheURLs: [cacheRoot],
+                    cacheBytes: await size(cacheRoot, fm, pauseController: pauseController),
+                    historyBytes: await size(home.appendingPathComponent("Library/Safari/History.db"), fm, pauseController: pauseController),
+                    cookieBytes: 0))
+            }
+        }
+        return profiles.sorted { $0.cacheBytes > $1.cacheBytes }
+    }
+
     /// Logical byte size of a file or directory tree; 0 if missing.
     static func size(_ url: URL, _ fm: FileManager) -> Int64 {
         guard fm.fileExists(atPath: url.path) else { return 0 }
@@ -118,6 +177,21 @@ enum BrowserCatalog {
         guard let enumerator = fm.enumerator(at: url, includingPropertiesForKeys: [.fileSizeKey]) else { return 0 }
         var total: Int64 = 0
         for case let item as URL in enumerator {
+            total += Int64((try? item.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0)
+        }
+        return total
+    }
+
+    static func size(_ url: URL, _ fm: FileManager, pauseController: ScanPauseController?) async -> Int64 {
+        guard fm.fileExists(atPath: url.path) else { return 0 }
+        await pauseController?.waitIfPaused()
+        if let values = try? url.resourceValues(forKeys: [.isDirectoryKey, .fileSizeKey]),
+           values.isDirectory != true { return Int64(values.fileSize ?? 0) }
+        guard let enumerator = fm.enumerator(at: url, includingPropertiesForKeys: [.fileSizeKey]) else { return 0 }
+        var total: Int64 = 0
+        while let item = enumerator.nextObject() as? URL {
+            if Task.isCancelled { break }
+            await pauseController?.waitIfPaused()
             total += Int64((try? item.resourceValues(forKeys: [.fileSizeKey]))?.fileSize ?? 0)
         }
         return total

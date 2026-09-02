@@ -14,11 +14,9 @@ Third-party dependencies retain their own licenses. See
 THIRD_PARTY_NOTICES.md and Documentation/DEPENDENCIES.md for the full
 inventory.
 
-CoreTend can optionally invoke an external, separately-installed
-ClamAV binary (clamscan/freshclam) if present on the system. ClamAV is
-not bundled, embedded, or distributed with CoreTend, and its
-signature database is never shipped in this repository. See
-Documentation/CLAMAV.md.
+CoreTend's Integrity workflow reports local macOS provenance, code-signature
+and launch-item signals. It is not malware detection and does not bundle or
+invoke a third-party scanning engine.
 
 "CoreTend" is an independent open-source project. It is not
 affiliated with, sponsored by, or endorsed by Apple Inc. or MacPaw Inc.

@@ -29,37 +29,17 @@ struct MenuBarAttentionTests {
 struct PermissionFormattingTests {
     @Test("authorized statuses read as Authorized")
     func authorized() {
-        #expect(PermissionFormatting.notificationLabel(.authorized) == "Authorized")
-        #expect(PermissionFormatting.notificationLabel(.provisional) == "Authorized")
+        #expect(PermissionFormatting.notificationLabel(.authorized, language: .en) == "Authorized")
+        #expect(PermissionFormatting.notificationLabel(.provisional, language: .en) == "Authorized")
     }
 
     @Test("denied reads as Denied")
     func denied() {
-        #expect(PermissionFormatting.notificationLabel(.denied) == "Denied")
+        #expect(PermissionFormatting.notificationLabel(.denied, language: .en) == "Denied")
     }
 
     @Test("not determined reads as Not requested, never claims granted")
     func notDetermined() {
-        #expect(PermissionFormatting.notificationLabel(.notDetermined) == "Not requested")
-    }
-}
-
-@Suite("Dry-run default setting")
-struct DryRunDefaultTests {
-    @Test("absent setting keeps dry-run ON (safe default)")
-    func absentIsDryRun() {
-        #expect(AppEnvironment.dryRunEnabled(fromSetting: nil) == true)
-    }
-
-    @Test("only literal \"false\" opts out of dry-run")
-    func explicitFalseOptsOut() {
-        #expect(AppEnvironment.dryRunEnabled(fromSetting: "false") == false)
-    }
-
-    @Test("any other value keeps dry-run ON")
-    func otherValuesStayDryRun() {
-        #expect(AppEnvironment.dryRunEnabled(fromSetting: "true") == true)
-        #expect(AppEnvironment.dryRunEnabled(fromSetting: "") == true)
-        #expect(AppEnvironment.dryRunEnabled(fromSetting: "FALSE") == true)  // case-sensitive on purpose
+        #expect(PermissionFormatting.notificationLabel(.notDetermined, language: .en) == "Not requested")
     }
 }

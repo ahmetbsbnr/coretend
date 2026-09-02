@@ -48,16 +48,16 @@ public struct SpaceLensEngine: Sendable {
         self.minChildSize = minChildSize
     }
 
-    public func run() -> AsyncStream<SpaceLensEvent> {
+    public func run(pauseController: ScanPauseController? = nil) -> AsyncStream<SpaceLensEvent> {
         let root = root
         let maxDepth = maxDepth
         let minChildSize = minChildSize
         return AsyncStream { continuation in
             let task = Task.detached(priority: .utility) {
                 var scanned = 0
-                let node = Self.size(directory: root, depth: 0, maxDepth: maxDepth,
-                                     minChildSize: minChildSize, scanned: &scanned,
-                                     continuation: continuation)
+                let node = await Self.size(directory: root, depth: 0, maxDepth: maxDepth,
+                                           minChildSize: minChildSize, scanned: &scanned,
+                                           continuation: continuation, pauseController: pauseController)
                 if Task.isCancelled {
                     continuation.yield(.cancelled)
                 } else {
@@ -75,7 +75,8 @@ public struct SpaceLensEngine: Sendable {
     ]
 
     private static func size(directory: URL, depth: Int, maxDepth: Int, minChildSize: Int64,
-                             scanned: inout Int, continuation: AsyncStream<SpaceLensEvent>.Continuation) -> SpaceNode {
+                             scanned: inout Int, continuation: AsyncStream<SpaceLensEvent>.Continuation,
+                             pauseController: ScanPauseController? = nil) async -> SpaceNode {
         var children: [SpaceNode] = []
         var otherBytes: Int64 = 0
         var total: Int64 = 0
@@ -87,6 +88,7 @@ public struct SpaceLensEngine: Sendable {
         let contents = enumeration ?? []
 
         for url in contents {
+            await pauseController?.waitWhilePaused()
             if Task.isCancelled { break }
             guard let values = try? url.resourceValues(forKeys: keys) else { continue }
             if values.isSymbolicLink == true { continue }
@@ -97,13 +99,13 @@ public struct SpaceLensEngine: Sendable {
             let isDir = values.isDirectory == true && values.isPackage != true
             if isDir {
                 if depth + 1 < maxDepth {
-                    let child = size(directory: url, depth: depth + 1, maxDepth: maxDepth,
-                                     minChildSize: minChildSize, scanned: &scanned,
-                                     continuation: continuation)
+                    let child = await size(directory: url, depth: depth + 1, maxDepth: maxDepth,
+                                           minChildSize: minChildSize, scanned: &scanned,
+                                           continuation: continuation, pauseController: pauseController)
                     total += child.size
                     if child.size >= minChildSize { children.append(child) } else { otherBytes += child.size }
                 } else {
-                    let bytes = shallowSize(of: url, scanned: &scanned)
+                    let bytes = await shallowSize(of: url, scanned: &scanned, pauseController: pauseController)
                     total += bytes
                     if bytes >= minChildSize {
                         children.append(SpaceNode(name: url.lastPathComponent, path: url.path,
@@ -134,12 +136,14 @@ public struct SpaceLensEngine: Sendable {
     }
 
     /// Total allocated size of a subtree without materializing nodes.
-    private static func shallowSize(of directory: URL, scanned: inout Int) -> Int64 {
+    private static func shallowSize(of directory: URL, scanned: inout Int,
+                                    pauseController: ScanPauseController? = nil) async -> Int64 {
         guard let enumerator = FileManager.default.enumerator(
             at: directory, includingPropertiesForKeys: [.totalFileAllocatedSizeKey, .fileSizeKey, .isSymbolicLinkKey],
             options: []) else { return 0 }
         var total: Int64 = 0
-        for case let url as URL in enumerator {
+        while let url = enumerator.nextObject() as? URL {
+            await pauseController?.waitWhilePaused()
             if Task.isCancelled { break }
             guard let values = try? url.resourceValues(forKeys: [.totalFileAllocatedSizeKey, .fileSizeKey, .isSymbolicLinkKey]) else { continue }
             if values.isSymbolicLink == true { enumerator.skipDescendants(); continue }

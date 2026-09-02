@@ -4,13 +4,15 @@
 // Run from the repository root:
 //   swift Resources/Brand/Sources/generate-brand-assets.swift
 //
-// Design: Living System, built on Orbital Ecology. A circular nucleus orbited
-// by three asymmetric arcs, with a deliberate opening in the outer arc —
-// the mark reads as something breathing, and as space that has been given
-// back. No broom, no bin, no shield, no eraser, no rocket.
+// Design: Porcelain / Slate / Teal, CoreTend's own identity. A circular
+// nucleus orbited by three asymmetric arcs, with a deliberate opening in the
+// outer arc — the mark reads as something breathing, and as space that has
+// been given back. No broom, no bin, no shield, no eraser, no rocket. The
+// arcs are tonal steps of the one brand accent (oceanic teal) rather than
+// three different hues — an editorial one-colour mark, not a rainbow.
 //
 // Geometry mirrors Sources/DesignSystem/CoreBloom.swift (MCBloomGeometry) and
-// colours mirror MCColor.LivingSystem, so the app, the icon, and the site
+// colours mirror MCColor.Canonical, so the app, the icon, and the site
 // cannot drift apart. Pure CoreGraphics + hand-written SVG — no Xcode, no
 // raster sources, no external tooling.
 
@@ -29,7 +31,11 @@ let arcs: [(start: Double, span: Double, radius: CGFloat)] = [
 ]
 let nucleusFraction: CGFloat = 0.24
 
-// MARK: - Living System palette
+// MARK: - Porcelain / Slate / Teal palette
+//
+// These mirror MCColor.Canonical (Sources/DesignSystem/Colors.swift) exactly.
+// The symbol names are kept (`cobalt`, `cobaltBright`, …) so the generated
+// SVG/CSS custom-property names don't churn; the *values* are the identity.
 
 struct RGB: Equatable {
     let r, g, b: CGFloat
@@ -38,23 +44,25 @@ struct RGB: Equatable {
     }
 }
 
-let coreInk       = RGB(r: 0.043, g: 0.059, b: 0.078)   // #0B0F14
-let softPorcelain = RGB(r: 0.957, g: 0.965, b: 0.953)   // #F4F6F3
-let livingMoss    = RGB(r: 0.455, g: 0.643, b: 0.529)   // #74A487
-let freshMint     = RGB(r: 0.659, g: 0.902, b: 0.757)   // #A8E6C1
-let orbitIris     = RGB(r: 0.608, g: 0.541, b: 0.984)   // #9B8AFB
-let warmAmber     = RGB(r: 0.957, g: 0.780, b: 0.420)   // #F4C76B
-let mutedSlate    = RGB(r: 0.467, g: 0.506, b: 0.557)   // #77818E
+let coreInk       = RGB(r: 0.1059, g: 0.1176, b: 0.1333) // #1B1E22 — Slate (Canonical.ink)
+let softPorcelain = RGB(r: 0.9647, g: 0.9569, b: 0.9373) // #F6F4EF — Porcelain (Canonical.paper)
+let mutedSlate    = RGB(r: 0.4941, g: 0.5333, b: 0.5804) // #7E8894 — neutral (Canonical.mutedSlate)
 
-// Light-surface siblings, so the mark stays legible on Soft Porcelain. Same
-// hues, lower luminance — see the divergence note in Colors.swift.
-let mossDeep  = RGB(r: 0.075, g: 0.404, b: 0.290)
-let irisDeep  = RGB(r: 0.360, g: 0.330, b: 0.800)
-let amberDeep = RGB(r: 0.580, g: 0.375, b: 0.040)
-let slateDeep = RGB(r: 0.310, g: 0.345, b: 0.392)
+// The one brand accent — oceanic teal — in three tonal steps. `cobalt` is
+// the canonical light-tuned teal; the others are same-hue lightness steps.
+let cobalt        = RGB(r: 0.0431, g: 0.4314, b: 0.4235) // #0B6E6C — Canonical.cobalt
+let cobaltBright  = RGB(r: 0.3725, g: 0.8275, b: 0.7765) // #5FD3C6 — dark-surface step (Canonical.cobaltBright)
+let cobaltDeep    = RGB(r: 0.0314, g: 0.3176, b: 0.3098) // #08514F — Canonical.cobaltDeep
+let cobaltDeepest = RGB(r: 0.0235, g: 0.2471, b: 0.2392) // #063F3D — light-surface third step (Canonical.cobaltDeepest)
 
-let arcColorsDark  = [freshMint, orbitIris, warmAmber]
-let arcColorsLight = [mossDeep, irisDeep, amberDeep]
+// Light-surface sibling for the subtitle/mutedSlate role only. Same hue,
+// lower luminance — see the divergence note in Colors.swift.
+let slateDeep = RGB(r: 0.2902, g: 0.3255, b: 0.3725)     // #4A5360 — Canonical.slateDeep
+
+// Three tonal steps of cobalt, lightest-to-boldest for dark, boldest-to-
+// darkest for light — an editorial one-colour mark, not three brand hues.
+let arcColorsDark  = [cobaltBright, cobalt, cobaltDeep]
+let arcColorsLight = [cobalt, cobaltDeep, cobaltDeepest]
 
 func cgColor(_ c: RGB, _ a: CGFloat = 1) -> CGColor {
     CGColor(srgbRed: c.r, green: c.g, blue: c.b, alpha: a)
@@ -92,8 +100,8 @@ func drawBloom(_ ctx: CGContext, rect: CGRect, lineWidthFraction: CGFloat,
         ctx.fillEllipse(in: nucleusRect)
     } else {
         let onLight = palette == arcColorsLight
-        let bright = onLight ? RGB(r: 0.180, g: 0.520, b: 0.380) : RGB(r: 0.780, g: 0.960, b: 0.870)
-        let deep = onLight ? RGB(r: 0.040, g: 0.300, b: 0.220) : RGB(r: 0.180, g: 0.620, b: 0.520)
+        let bright = onLight ? cobalt : cobaltBright
+        let deep = onLight ? cobaltDeepest : cobaltDeep
         let grad = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
                               colors: [cgColor(bright), cgColor(deep)] as CFArray,
                               locations: [0, 1])!
@@ -177,13 +185,13 @@ func appIcon(px: Int) -> CGImage {
     ctx.addPath(path)
     ctx.clip()
     let bg = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
-                        colors: [CGColor(srgbRed: 0.086, green: 0.118, blue: 0.145, alpha: 1),
+                        colors: [CGColor(srgbRed: 0.129, green: 0.145, blue: 0.163, alpha: 1),
                                  cgColor(coreInk)] as CFArray,
                         locations: [0, 1])!
     ctx.drawLinearGradient(bg, start: CGPoint(x: 0, y: s), end: CGPoint(x: 0, y: 0), options: [])
 
     let haloGrad = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
-                              colors: [cgColor(freshMint, 0.20), cgColor(freshMint, 0)] as CFArray,
+                              colors: [cgColor(cobaltBright, 0.20), cgColor(cobaltBright, 0)] as CFArray,
                               locations: [0, 1])!
     ctx.drawRadialGradient(haloGrad,
         startCenter: CGPoint(x: s / 2, y: s / 2), startRadius: 0,
@@ -282,7 +290,7 @@ func openGraph() -> CGImage {
 
     // Off-centre halo, echoing the mark's own asymmetry.
     let halo = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
-                          colors: [cgColor(freshMint, 0.16), cgColor(freshMint, 0)] as CFArray,
+                          colors: [cgColor(cobaltBright, 0.16), cgColor(cobaltBright, 0)] as CFArray,
                           locations: [0, 1])!
     ctx.drawRadialGradient(halo, startCenter: CGPoint(x: 900, y: 430), startRadius: 0,
                            endCenter: CGPoint(x: 900, y: 430), endRadius: 520, options: [])
@@ -292,54 +300,179 @@ func openGraph() -> CGImage {
 
     drawWordmark(ctx, at: CGPoint(x: 96, y: 386), pointSize: 96, color: softPorcelain)
     _ = drawText(ctx, "A lighter Mac. Always under control.", at: CGPoint(x: 96, y: 300),
-                 size: 40, weight: .medium, color: freshMint)
+                 size: 40, weight: .medium, color: cobaltBright)
     _ = drawText(ctx, "Local, transparent and reversible care for macOS.", at: CGPoint(x: 96, y: 240),
                  size: 28, weight: .regular, color: mutedSlate)
     return ctx.makeImage()!
 }
 
-/// DMG window background, 600x400. The arrow is drawn as real chevrons rather
-/// than typed as a character, so it renders identically everywhere.
+/// GitHub repository social card, 1280x640. Same composition as the Open Graph
+/// card, retuned for GitHub's 2:1 frame: GitHub re-crops this image for Slack,
+/// Discord and X previews, so every element keeps well clear of the 40pt safe
+/// border they recommend. Not applied automatically — a human uploads it in
+/// Settings -> General -> Social preview.
+func socialPreview() -> CGImage {
+    let w = 1280, h = 640
+    let ctx = makeContext(w, h)
+    ctx.setFillColor(cgColor(coreInk))
+    ctx.fill(CGRect(x: 0, y: 0, width: CGFloat(w), height: CGFloat(h)))
+
+    let halo = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
+                          colors: [cgColor(cobaltBright, 0.16), cgColor(cobaltBright, 0)] as CFArray,
+                          locations: [0, 1])!
+    ctx.drawRadialGradient(halo, startCenter: CGPoint(x: 980, y: 400), startRadius: 0,
+                           endCenter: CGPoint(x: 980, y: 400), endRadius: 520, options: [])
+
+    // Mark centred vertically, its rightmost arc + glow landing ~66px from the
+    // edge — inside the 40pt safe zone with room to spare.
+    drawBloom(ctx, rect: CGRect(x: 905, y: 175, width: 290, height: 290),
+              lineWidthFraction: 0.075, glow: true)
+
+    drawWordmark(ctx, at: CGPoint(x: 88, y: 396), pointSize: 100, color: softPorcelain)
+    _ = drawText(ctx, "A lighter Mac. Always under control.", at: CGPoint(x: 88, y: 306),
+                 size: 42, weight: .medium, color: cobaltBright)
+    _ = drawText(ctx, "Local, transparent and reversible care for macOS.", at: CGPoint(x: 88, y: 244),
+                 size: 28, weight: .regular, color: mutedSlate)
+    return ctx.makeImage()!
+}
+
+/// DMG window background, 600x400 points (1200x800 at @2x).
+///
+/// Carries the same Porcelain / Slate / Teal palette as the website — the
+/// installer is the first thing a visitor sees after the landing page, so
+/// the two have to read as one system.
+///
+/// Everything is positioned against the icon centres the .DS_Store records:
+/// CoreTend at (170, 215) and Applications at (430, 215) in Finder's
+/// top-left-origin space, which is y = 185 here because CoreGraphics counts
+/// from the bottom. Change one and you must change the other, or the artwork
+/// stops lining up with the icons it is drawn around.
+let dmgIconY: CGFloat = 215          // Finder space, from the top
+let dmgAppX: CGFloat = 170
+let dmgApplicationsX: CGFloat = 430
+let dmgCanvas = CGSize(width: 600, height: 400)
+
 func dmgBackground(scale: Int = 1) -> CGImage {
-    let w = 600 * scale, h = 400 * scale
+    let w = Int(dmgCanvas.width) * scale, h = Int(dmgCanvas.height) * scale
     let f = CGFloat(scale)
     let ctx = makeContext(w, h)
+
+    // Paper, very slightly warmer at the top so the surface is not dead flat.
+    let paper = RGB(r: 0.9647, g: 0.9569, b: 0.9373) // #F6F4EF, Porcelain
+    let card  = RGB(r: 0.988, g: 0.984, b: 0.976)    // #FCFBF9, warm near-white
+    let ink   = RGB(r: 0.1059, g: 0.1176, b: 0.1333) // #1B1E22, Slate
+    let sub   = RGB(r: 0.2902, g: 0.3255, b: 0.3725) // #4A5360, slateDeep
+    let dim   = RGB(r: 0.4941, g: 0.5333, b: 0.5804) // #7E8894, mutedSlate
+    let cobalt = RGB(r: 0.0431, g: 0.4314, b: 0.4235) // #0B6E6C, teal accent
+
     let bg = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
-                        colors: [CGColor(srgbRed: 0.086, green: 0.118, blue: 0.145, alpha: 1),
-                                 cgColor(coreInk)] as CFArray,
+                        colors: [cgColor(card), cgColor(paper)] as CFArray,
                         locations: [0, 1])!
     ctx.drawLinearGradient(bg, start: CGPoint(x: 0, y: CGFloat(h)), end: CGPoint(x: 0, y: 0), options: [])
 
-    let halo = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
-                          colors: [cgColor(freshMint, 0.10), cgColor(freshMint, 0)] as CFArray,
-                          locations: [0, 1])!
-    ctx.drawRadialGradient(halo, startCenter: CGPoint(x: 300 * f, y: 340 * f), startRadius: 0,
-                           endCenter: CGPoint(x: 300 * f, y: 340 * f), endRadius: 320 * f, options: [])
+    // Cobalt halo behind the app icon — the eye should land there first, since
+    // that is the thing the user has to pick up.
+    // Two wells, one under each icon, joined by the guide line. A diffuse radial
+    // halo was tried first and rejected: at the low alpha paper needs, cobalt
+    // desaturates into a grey bruise. A bounded disc with a hairline ring keeps
+    // the hue and reads as a deliberate slot for the icon to sit in.
+    let iconCGY = (dmgCanvas.height - dmgIconY) * f
+    // Wide enough to contain a 104pt icon *and* its label. At r=74 the ring cut
+    // straight through the "CoreTend" and "Applications" text — verified by
+    // mounting the image and looking at it, which is the only way to catch this.
+    let wellR: CGFloat = 86 * f
 
-    drawBloom(ctx, rect: CGRect(x: 258 * f, y: 296 * f, width: 84 * f, height: 84 * f),
-              lineWidthFraction: 0.09)
-    let ws = wordmarkAttributed(pointSize: 26 * f, color: softPorcelain).size()
-    drawWordmark(ctx, at: CGPoint(x: (CGFloat(w) - ws.width) / 2, y: 258 * f),
-                 pointSize: 26 * f, color: softPorcelain)
+    func drawWell(centerX: CGFloat, tint: RGB, fillAlpha: CGFloat, ringAlpha: CGFloat) {
+        let c = CGPoint(x: centerX * f, y: iconCGY)
+        let soft = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
+                              colors: [cgColor(tint, fillAlpha), cgColor(tint, 0)] as CFArray,
+                              locations: [0, 1])!
+        ctx.saveGState()
+        ctx.addEllipse(in: CGRect(x: c.x - wellR, y: c.y - wellR, width: wellR * 2, height: wellR * 2))
+        ctx.clip()
+        ctx.drawRadialGradient(soft, startCenter: c, startRadius: 0,
+                               endCenter: c, endRadius: wellR, options: [])
+        ctx.restoreGState()
+        ctx.setStrokeColor(cgColor(tint, ringAlpha))
+        ctx.setLineWidth(1 * f)
+        ctx.strokeEllipse(in: CGRect(x: c.x - wellR, y: c.y - wellR,
+                                     width: wellR * 2, height: wellR * 2))
+    }
 
+    // The source well carries the cobalt; the destination stays neutral, so the
+    // colour itself points at the thing the user has to pick up.
+    drawWell(centerX: dmgAppX, tint: cobalt, fillAlpha: 0.10, ringAlpha: 0.28)
+    drawWell(centerX: dmgApplicationsX, tint: dim, fillAlpha: 0.05, ringAlpha: 0.20)
+
+    // Mark and wordmark, top centre, small. The installer is not a poster.
+    drawBloom(ctx, rect: CGRect(x: 276 * f, y: 322 * f, width: 48 * f, height: 48 * f),
+              lineWidthFraction: 0.09, palette: arcColorsLight)
+    let ws = wordmarkAttributed(pointSize: 19 * f, color: ink).size()
+    drawWordmark(ctx, at: CGPoint(x: (CGFloat(w) - ws.width) / 2, y: 296 * f),
+                 pointSize: 19 * f, color: ink)
+
+    // The guide line runs between the two icon centres, stopping clear of both
+    // so it never collides with an icon or its label. Dashed, hairline, cobalt:
+    // it should read as direction, not as decoration.
+    let lineStart = dmgAppX * f + wellR + 12 * f
+    let lineEnd = dmgApplicationsX * f - wellR - 12 * f
+    ctx.saveGState()
+    ctx.setStrokeColor(cgColor(cobalt, 0.42))
+    ctx.setLineWidth(1.5 * f)
+    ctx.setLineCap(.round)
+    ctx.setLineDash(phase: 0, lengths: [1.5 * f, 6 * f])
+    ctx.move(to: CGPoint(x: lineStart, y: iconCGY))
+    ctx.addLine(to: CGPoint(x: lineEnd - 10 * f, y: iconCGY))
+    ctx.strokePath()
+    ctx.restoreGState()
+
+    // One chevron at the end of the line. Drawn as strokes rather than typed as
+    // a character, so it cannot depend on a font being installed.
+    ctx.setStrokeColor(cgColor(cobalt, 0.85))
+    ctx.setLineWidth(2 * f)
+    ctx.setLineCap(.round)
+    ctx.setLineJoin(.round)
+    ctx.move(to: CGPoint(x: lineEnd - 9 * f, y: iconCGY + 6 * f))
+    ctx.addLine(to: CGPoint(x: lineEnd, y: iconCGY))
+    ctx.addLine(to: CGPoint(x: lineEnd - 9 * f, y: iconCGY - 6 * f))
+    ctx.strokePath()
+
+    // Minimal instruction, well below the icon labels.
     let hint = "Drag CoreTend to Applications"
     let hs = NSAttributedString(string: hint, attributes: [
-        .font: NSFont.systemFont(ofSize: 15 * f, weight: .regular)]).size()
-    _ = drawText(ctx, hint, at: CGPoint(x: (CGFloat(w) - hs.width) / 2, y: 36 * f),
-                 size: 15 * f, weight: .regular, color: mutedSlate)
+        .font: NSFont.systemFont(ofSize: 13 * f, weight: .medium)]).size()
+    _ = drawText(ctx, hint, at: CGPoint(x: (CGFloat(w) - hs.width) / 2, y: 56 * f),
+                 size: 13 * f, weight: .medium, color: sub)
 
-    // Chevrons pointing from the app toward the Applications alias.
-    ctx.setStrokeColor(cgColor(livingMoss, 0.85))
-    ctx.setLineWidth(4 * f)
-    ctx.setLineCap(.round)
-    for i in 0..<2 {
-        let x = (284 + CGFloat(i) * 18) * f
-        ctx.move(to: CGPoint(x: x, y: 168 * f))
-        ctx.addLine(to: CGPoint(x: x + 14 * f, y: 152 * f))
-        ctx.addLine(to: CGPoint(x: x, y: 136 * f))
-    }
-    ctx.strokePath()
+    // Reinforce the product promise here, not the build's signing state — the
+    // released DMG is Developer ID-signed and notarized, and signing status is
+    // a maintainer concern, not something the installer should foreground.
+    let note = "Local scans · reversible cleanup · nothing leaves your Mac"
+    let ns = NSAttributedString(string: note, attributes: [
+        .font: NSFont.systemFont(ofSize: 10 * f, weight: .regular)]).size()
+    _ = drawText(ctx, note, at: CGPoint(x: (CGFloat(w) - ns.width) / 2, y: 34 * f),
+                 size: 10 * f, weight: .regular, color: dim)
+
+    drawPaperGrain(ctx, width: w, height: h)
     return ctx.makeImage()!
+}
+
+/// Fixed-seed value noise. Deterministic on purpose: the DMG is checksummed and
+/// signed, so two builds of the same commit have to produce identical bytes.
+func drawPaperGrain(_ ctx: CGContext, width: Int, height: Int) {
+    var seed: UInt64 = 0x00C0_FFEE_CAFE_D00D
+    func next() -> Double {
+        seed ^= seed << 13; seed ^= seed >> 7; seed ^= seed << 17
+        return Double(seed % 10_000) / 10_000
+    }
+    ctx.saveGState()
+    for _ in 0..<(width * height / 90) {
+        let x = next() * Double(width), y = next() * Double(height)
+        let dark = next() < 0.5
+        ctx.setFillColor(CGColor(gray: dark ? 0 : 1, alpha: dark ? 0.030 : 0.045))
+        ctx.fill(CGRect(x: x, y: y, width: 1, height: 1))
+    }
+    ctx.restoreGState()
 }
 
 // MARK: - Vector output (SVG + PDF)
@@ -378,7 +511,7 @@ func markSVG(surface: Surface, monochrome: String? = nil, side: Double = 512) ->
         body += "stroke-width=\"\(String(format: "%.2f", lw))\" stroke-linecap=\"round\"/>\n"
     }
     let nucleusR = side * Double(nucleusFraction) / 2
-    let nucleusFill = monochrome ?? (surface == .dark ? freshMint.hex : mossDeep.hex)
+    let nucleusFill = monochrome ?? (surface == .dark ? cobaltBright.hex : cobaltDeep.hex)
     body += "  <circle cx=\"\(String(format: "%.2f", c))\" cy=\"\(String(format: "%.2f", c))\" "
     body += "r=\"\(String(format: "%.2f", nucleusR))\" fill=\"\(nucleusFill)\"/>\n"
 
@@ -438,6 +571,7 @@ savePNG(compactLogo(side: 768, surface: .dark),
         to: out.appendingPathComponent("Onboarding-Hero.png"))
 
 savePNG(openGraph(), to: out.appendingPathComponent("OpenGraph-1200x630.png"))
+savePNG(socialPreview(), to: out.appendingPathComponent("SocialPreview-1280x640.png"))
 savePNG(dmgBackground(), to: out.appendingPathComponent("DMG-Background.png"))
 savePNG(dmgBackground(scale: 2), to: out.appendingPathComponent("DMG-Background@2x.png"))
 

@@ -1,7 +1,6 @@
 import SwiftUI
 @preconcurrency import UserNotifications
 import DesignSystem
-import MalwareEngine
 
 /// Detects real permission state. Full Disk Access is probed by attempting to
 /// read a TCC-protected location — never assumed from user actions.
@@ -22,7 +21,8 @@ enum PermissionProbe {
     }
 
     static func openFullDiskAccessSettings() {
-        let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")!
+        guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")
+        else { return }
         NSWorkspace.shared.open(url)
     }
 }
@@ -41,12 +41,6 @@ final class OnboardingViewModel {
     var notificationStatus: UNAuthorizationStatus = .notDetermined
     var notificationsOptIn = false
 
-    // Protection
-    private var scanner = ClamAVScanner()
-    var clamAVAvailable = false
-    var clamAVPathRedacted: String?
-    var clamAVVersion: ClamAVVersionInfo?
-
     // Folders & exclusions
     var scannableFolders: [URL] = []
     var exclusions: [URL] = []
@@ -64,8 +58,6 @@ final class OnboardingViewModel {
     var moveResult: String?
 
     func onAppear() {
-        clamAVAvailable = scanner.isAvailable
-        clamAVPathRedacted = scanner.binaryURL.map { DiagnosticReport.redactPath($0.path) }
         config = SecurityConfig.forProfile(profile)
         // Default scannable folders: the user's Downloads (safe, common target).
         let downloads = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads")
@@ -80,45 +72,6 @@ final class OnboardingViewModel {
     func refreshPermissions() async {
         fdaGranted = PermissionProbe.hasFullDiskAccess()
         notificationStatus = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
-    }
-
-    /// Re-probes disk for a ClamAV binary. Needed because a user may install
-    /// it mid-onboarding (e.g. via the copied `brew install` command) after
-    /// the initial `scanner` was constructed — a fresh scan of `knownPaths`
-    /// is the only way to pick that up.
-    func recheckClamAV() {
-        scanner = ClamAVScanner()
-        clamAVAvailable = scanner.isAvailable
-        clamAVPathRedacted = scanner.binaryURL.map { DiagnosticReport.redactPath($0.path) }
-    }
-
-    /// Best-effort ClamAV version via `clamscan --version`. Never fabricated:
-    /// on any failure the fields stay nil and the UI shows "unknown".
-    func probeClamAVVersion() async {
-        guard let bin = scanner.binaryURL else { return }
-        let out = await Self.runVersion(bin)
-        if let out { clamAVVersion = ClamAVVersionInfo.parse(out) }
-    }
-
-    private static func runVersion(_ binary: URL) async -> String? {
-        await withCheckedContinuation { cont in
-            DispatchQueue.global().async {
-                let process = Process()
-                process.executableURL = binary
-                process.arguments = ["--version"]
-                let pipe = Pipe()
-                process.standardOutput = pipe
-                process.standardError = Pipe()
-                do {
-                    try process.run()
-                    let data = pipe.fileHandleForReading.readDataToEndOfFile()
-                    process.waitUntilExit()
-                    cont.resume(returning: String(data: data, encoding: .utf8))
-                } catch {
-                    cont.resume(returning: nil)
-                }
-            }
-        }
     }
 
     /// Toggles notification opt-in. Enabling requests real authorization; we
@@ -142,14 +95,13 @@ final class OnboardingViewModel {
 
     func runSystemCheck() async {
         await refreshPermissions()
-        let inputs = await Self.gatherCheckInputs(
-            fda: fdaGranted, clamAV: clamAVAvailable)
+        let inputs = await Self.gatherCheckInputs(fda: fdaGranted)
         checkItems = SystemCheck.items(inputs)
         checkOverall = SystemCheck.overall(checkItems)
         checkRun = true
     }
 
-    private static func gatherCheckInputs(fda: Bool, clamAV: Bool) async -> SystemCheck.Inputs {
+    private static func gatherCheckInputs(fda: Bool) async -> SystemCheck.Inputs {
         var isARM = false
         #if arch(arm64)
         isARM = true
@@ -171,21 +123,17 @@ final class OnboardingViewModel {
             resourcesPresent: resourcesPresent,
             sqliteAvailable: schemaOK,
             fullDiskAccess: fda,
-            clamAVAvailable: clamAV,
             freeSpaceBytes: Int64(freeSpace),
             configuredLocationAccessible: homeReadable,
             safetyCoreReady: AppEnvironment.shared.store != nil)
     }
 
-    /// Persist the chosen configuration. Only `dryRunDefault` is a live knob;
-    /// the profile choice and exclusions are recorded too.
+    /// Persist the profile choice and exclusions.
     func persist() {
         guard let store = AppEnvironment.shared.store else { return }
-        let dryRun = config.dryRun ? "true" : "false"
         let paths = exclusions.map(\.path)
         let profileRaw = profile.rawValue
         Task {
-            try? await store.setSetting("dryRunDefault", value: dryRun)
             try? await store.setSetting("securityProfile", value: profileRaw)
             for p in paths { try? await store.addExclusion(path: p) }
         }
@@ -224,36 +172,104 @@ final class OnboardingViewModel {
 
 // MARK: - View
 
-/// Short, skippable, resumable first-run wizard. Eight steps, no forced
+/// Short, skippable, resumable first-run wizard. Seven steps, no forced
 /// permission, keyboard-operable, FR/EN, light/dark, Reduce-Motion aware.
 struct OnboardingView: View {
     @Binding var isPresented: Bool
     @AppStorage("onboardingStep") private var step = 0
     @AppStorage("menuBarEnabled") private var menuBarEnabled = true
+    @AppStorage("appLanguage") private var appLanguageRaw = AppLanguage.system.rawValue
     @State private var model = OnboardingViewModel()
 
-    private let stepCount = 8
+    private let stepCount = 7
 
     private var appVersion: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
+        AppMetadata.marketingVersion
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                content
-                    .frame(maxWidth: .infinity, alignment: .top)
-                    .padding(MCSpacing.xl)
+        HStack(spacing: 0) {
+            railView
+            VStack(spacing: 0) {
+                ScrollView {
+                    content
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, MCSpacing.xl)
+                        .padding(.vertical, MCSpacing.lg)
+                }
+                Divider()
+                footer
+                    .padding(.horizontal, MCSpacing.xl)
+                    .padding(.vertical, MCSpacing.md)
             }
-            Divider()
-            footer
-                .padding(.horizontal, MCSpacing.xl)
-                .padding(.vertical, MCSpacing.md)
         }
-        .frame(width: 600, height: 540)
+        .frame(width: 780, height: 560)
+        .accessibilityIdentifier("onboarding.root")
         .onAppear {
             model.onAppear()
-            Task { await model.refreshPermissions(); await model.probeClamAVVersion() }
+            Task { await model.refreshPermissions() }
+        }
+    }
+
+    // MARK: Brand rail — identity + vertical progress, one frame for every step
+
+    private var railView: some View {
+        VStack(alignment: .leading, spacing: MCSpacing.lg) {
+            HStack(spacing: MCSpacing.xs) {
+                CoreBloomMark(tint: [MCColor.teal], lineWidthFraction: 0.1)
+                    .frame(width: 30, height: 30)
+                Text(verbatim: "CoreTend").font(MCFont.cardTitle)
+            }
+            VStack(alignment: .leading, spacing: MCSpacing.sm) {
+                ForEach(0..<stepCount, id: \.self) { railStepRow($0) }
+            }
+            Spacer(minLength: 0)
+            Text(L("onboarding.welcome.version", appVersion))
+                .font(MCFont.badge).foregroundStyle(.tertiary)
+        }
+        .padding(MCSpacing.lg)
+        .frame(width: 236)
+        .frame(maxHeight: .infinity, alignment: .top)
+        .background(
+            LinearGradient(colors: [MCColor.teal.opacity(0.10), MCColor.elevatedBackground],
+                           startPoint: .top, endPoint: .bottom))
+        .overlay(alignment: .trailing) {
+            Rectangle().fill(MCColor.separator.opacity(0.6)).frame(width: 1)
+        }
+        .animation(.smooth(duration: 0.3), value: step)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(L("onboarding.step_a11y", step + 1, stepCount))
+        .accessibilityIdentifier("onboarding.step")
+    }
+
+    private func railStepRow(_ i: Int) -> some View {
+        let done = i < step
+        let current = i == step
+        return HStack(alignment: .top, spacing: MCSpacing.xs) {
+            Image(systemName: done ? "checkmark.circle.fill" : (current ? "circle.inset.filled" : "circle"))
+                .font(.system(size: 13))
+                .foregroundStyle(done || current ? AnyShapeStyle(MCColor.teal) : AnyShapeStyle(.tertiary))
+                .accessibilityHidden(true)
+            Text(stepTitle(i))
+                .font(MCFont.caption)
+                .fontWeight(current ? .semibold : .regular)
+                .foregroundStyle(current ? AnyShapeStyle(.primary)
+                                 : (done ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tertiary)))
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+    }
+
+    private func stepTitle(_ i: Int) -> String {
+        switch i {
+        case 0: L("onboarding.step0.title")
+        case 1: L("onboarding.security.title")
+        case 2: L("onboarding.fileaccess.title")
+        case 3: L("onboarding.menubar.title")
+        case 4: L("onboarding.folders.title")
+        case 5: L("onboarding.check.title")
+        default: L("onboarding.summary.title")
         }
     }
 
@@ -263,10 +279,9 @@ struct OnboardingView: View {
         case 0: welcomeStep
         case 1: securityStep
         case 2: fileAccessStep
-        case 3: protectionStep
-        case 4: menuBarStep
-        case 5: foldersStep
-        case 6: systemCheckStep
+        case 3: menuBarStep
+        case 4: foldersStep
+        case 5: systemCheckStep
         default: summaryStep
         }
     }
@@ -275,28 +290,39 @@ struct OnboardingView: View {
 
     private var welcomeStep: some View {
         page {
-            CoreBloomMark(tint: [MCColor.storage, MCColor.protection, MCColor.performance])
-                .frame(width: 88, height: 88)
-            Text(L("onboarding.step0.title")).font(MCFont.heroTitle)
-            // The product signature, identical here, on the site, in the DMG
-            // and in the README. A product that introduces itself differently
-            // in each place reads as several products.
-            Text(L("onboarding.step0.signature"))
-                .font(MCFont.pageTitle).foregroundStyle(MCTheme.accent)
-                .multilineTextAlignment(.center).frame(maxWidth: 440)
+            VStack(alignment: .leading, spacing: MCSpacing.xxs) {
+                Text(L("onboarding.step0.title")).font(MCFont.heroTitle)
+                // The product signature — identical here, on the site, in the
+                // DMG and in the README. A product that introduces itself
+                // differently in each place reads as several products.
+                Text(L("onboarding.step0.signature"))
+                    .font(MCFont.pageTitle).foregroundStyle(MCColor.teal)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             Text(L("onboarding.step0.subtitle"))
                 .font(MCFont.body).foregroundStyle(.secondary)
-                .multilineTextAlignment(.center).frame(maxWidth: 440)
+                .fixedSize(horizontal: false, vertical: true)
             VStack(alignment: .leading, spacing: MCSpacing.sm) {
                 bullet("internaldrive", L("onboarding.welcome.local"))
                 bullet("person.crop.circle.badge.xmark", L("onboarding.welcome.no_account"))
                 bullet("antenna.radiowaves.left.and.right.slash", L("onboarding.welcome.no_telemetry"))
                 bullet("chevron.left.forwardslash.chevron.right", L("onboarding.welcome.open_source"))
             }
-            .frame(maxWidth: 440)
-            HStack(spacing: MCSpacing.sm) {
-                MCStatusBadge(L("onboarding.welcome.version", appVersion), status: .neutral)
-                MCStatusBadge(L("onboarding.welcome.unsigned"), status: .attention)
+            Divider().padding(.vertical, MCSpacing.xxs)
+            VStack(alignment: .leading, spacing: MCSpacing.xs) {
+                Text(L("onboarding.language.title")).font(MCFont.sectionTitle).foregroundStyle(.secondary)
+                Picker(L("onboarding.language.title"), selection: $appLanguageRaw) {
+                    Text(L("settings.language.system")).tag(AppLanguage.system.rawValue)
+                    Text("Français").tag(AppLanguage.fr.rawValue)
+                    Text("English").tag(AppLanguage.en.rawValue)
+                }
+                .labelsHidden()
+                .pickerStyle(.segmented)
+                .frame(maxWidth: 320)
+                .accessibilityIdentifier("onboarding.language")
+                Text(L("onboarding.language.subtitle"))
+                    .font(MCFont.caption).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             if model.launchLocation.canOfferMove { moveBanner }
         }
@@ -328,10 +354,6 @@ struct OnboardingView: View {
             }
             .frame(maxWidth: 460)
             VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                configLine(L("onboarding.security.dry_run"), on: model.config.dryRun,
-                           binding: model.profile == .custom
-                               ? Binding(get: { model.config.dryRun }, set: { model.config.dryRun = $0 })
-                               : nil)
                 configFixed(L("onboarding.security.trash"), on: model.config.useTrash)
                 configFixed(L("onboarding.security.medium_risk"), on: model.config.mediumRiskRules)
                 configFixed(L("onboarding.security.empty_trash"), on: model.config.emptyTrash)
@@ -347,7 +369,7 @@ struct OnboardingView: View {
         } label: {
             HStack(alignment: .top, spacing: MCSpacing.sm) {
                 Image(systemName: model.profile == p ? "largecircle.fill.circle" : "circle")
-                    .foregroundStyle(model.profile == p ? MCColor.coreMint : .secondary)
+                    .foregroundStyle(model.profile == p ? MCColor.teal : .secondary)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(L("onboarding.security.\(p.rawValue)")).font(MCFont.secondaryBody).bold()
                     Text(L("onboarding.security.\(p.rawValue)_detail"))
@@ -358,21 +380,11 @@ struct OnboardingView: View {
             }
             .padding(MCSpacing.sm)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(model.profile == p ? MCColor.coreMint.opacity(0.1) : Color.clear,
+            .background(model.profile == p ? MCColor.teal.opacity(0.1) : Color.clear,
                         in: RoundedRectangle(cornerRadius: MCRadius.small))
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(model.profile == p ? [.isSelected] : [])
-    }
-
-    private func configLine(_ label: String, on: Bool, binding: Binding<Bool>?) -> some View {
-        Group {
-            if let binding {
-                Toggle(label, isOn: binding).font(MCFont.caption)
-            } else {
-                configFixed(label, on: on)
-            }
-        }
     }
 
     private func configFixed(_ label: String, on: Bool) -> some View {
@@ -410,54 +422,8 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: Step 3 — Optional protection
 
-    private var protectionStep: some View {
-        page {
-            stepHeader("shield.lefthalf.filled", L("onboarding.protection.title"),
-                       L("onboarding.protection.subtitle"))
-            VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                HStack {
-                    Label(L("onboarding.protection.clamav"), systemImage: "checkmark.shield")
-                    Spacer()
-                    MCStatusBadge(model.clamAVAvailable ? L("settings.installed") : L("settings.not_installed"),
-                                  status: model.clamAVAvailable ? .success : .neutral)
-                }
-                if model.clamAVAvailable {
-                    if let path = model.clamAVPathRedacted {
-                        detailRow(L("onboarding.protection.path"), path)
-                    }
-                    detailRow(L("onboarding.protection.version"),
-                              model.clamAVVersion?.engine ?? L("onboarding.protection.unknown"))
-                    detailRow(L("onboarding.protection.signatures"),
-                              model.clamAVVersion?.signatures ?? L("onboarding.protection.unknown"))
-                } else {
-                    Text(L("onboarding.protection.no_install"))
-                        .font(MCFont.caption).foregroundStyle(.secondary)
-                    HStack {
-                        Button(L("onboarding.protection.copy_command")) {
-                            let pasteboard = NSPasteboard.general
-                            pasteboard.clearContents()
-                            pasteboard.setString("brew install clamav && freshclam", forType: .string)
-                        }
-                        Button(L("settings.recheck")) {
-                            model.recheckClamAV()
-                            Task { await model.probeClamAVVersion() }
-                        }
-                    }
-                }
-                Divider()
-                HStack {
-                    Label(L("onboarding.protection.fsevents"), systemImage: "eye")
-                    Spacer()
-                    MCStatusBadge(L("onboarding.protection.available"), status: .success)
-                }
-            }
-            .frame(maxWidth: 460)
-        }
-    }
-
-    // MARK: Step 4 — Menu bar & notifications
+    // MARK: Step 3 — Menu bar & notifications
 
     private var menuBarStep: some View {
         page {
@@ -484,7 +450,7 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: Step 5 — Folders & exclusions
+    // MARK: Step 4 — Folders & exclusions
 
     private var foldersStep: some View {
         page {
@@ -531,7 +497,7 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: Step 6 — System check
+    // MARK: Step 5 — System check
 
     private var systemCheckStep: some View {
         page {
@@ -555,21 +521,18 @@ struct OnboardingView: View {
                 Text(L("onboarding.check.running")).font(MCFont.caption).foregroundStyle(.secondary)
             }
         }
-        .task(id: step) { if step == 6 { await model.runSystemCheck() } }
+        .task(id: step) { if step == 5 { await model.runSystemCheck() } }
     }
 
-    // MARK: Step 7 — Summary
+    // MARK: Step 6 — Summary
 
     private var summaryStep: some View {
         page {
             stepHeader("checkmark.seal", L("onboarding.summary.title"), L("onboarding.summary.subtitle"))
             VStack(alignment: .leading, spacing: MCSpacing.xs) {
                 summaryRow(L("onboarding.summary.profile"), L("onboarding.security.\(model.profile.rawValue)"))
-                summaryRow(L("onboarding.summary.dry_run"), yesNo(model.config.dryRun))
                 summaryRow(L("onboarding.summary.fda"),
                            model.fdaGranted ? L("settings.granted") : L("settings.not_granted"))
-                summaryRow(L("onboarding.summary.clamav"),
-                           model.clamAVAvailable ? L("settings.installed") : L("settings.not_installed"))
                 summaryRow(L("onboarding.summary.menu_bar"), yesNo(menuBarEnabled))
                 summaryRow(L("onboarding.summary.notifications"), yesNo(model.notificationsOptIn))
                 summaryRow(L("onboarding.summary.exclusions"), "\(model.exclusions.count)")
@@ -590,19 +553,20 @@ struct OnboardingView: View {
 
     private var footer: some View {
         HStack {
-            Button(L("onboarding.skip")) { finish() }
+            Button(L("onboarding.skip")) { model.persist(); finish() }
                 .buttonStyle(.plain).foregroundStyle(.secondary)
+                .accessibilityIdentifier("onboarding.skip")
             Spacer()
-            Text(L("onboarding.step_of", step + 1, stepCount))
-                .font(MCFont.caption).foregroundStyle(.secondary)
-                .accessibilityLabel(L("onboarding.step_a11y", step + 1, stepCount))
-            Spacer()
-            if step > 0 { Button(L("onboarding.back")) { step -= 1 } }
+            if step > 0 {
+                Button(L("onboarding.back")) { step -= 1 }
+                    .accessibilityIdentifier("onboarding.back")
+            }
             Button(step == stepCount - 1 ? L("onboarding.start") : L("onboarding.continue")) {
                 if step == stepCount - 1 { model.persist(); finish() } else { step += 1 }
             }
             .buttonStyle(.borderedProminent)
             .keyboardShortcut(.defaultAction)
+            .accessibilityIdentifier(step == stepCount - 1 ? "onboarding.start" : "onboarding.continue")
         }
     }
 
@@ -614,35 +578,30 @@ struct OnboardingView: View {
     // MARK: Shared building blocks
 
     private func page(@ViewBuilder _ content: () -> some View) -> some View {
-        VStack(spacing: MCSpacing.md) { content() }
-            .frame(maxWidth: .infinity)
+        VStack(alignment: .leading, spacing: MCSpacing.lg) { content() }
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func stepHeader(_ icon: String, _ title: String, _ subtitle: String) -> some View {
-        VStack(spacing: MCSpacing.sm) {
+        HStack(alignment: .top, spacing: MCSpacing.md) {
             Image(systemName: icon)
-                .font(.system(size: MCIconSize.emptyStateProminent, weight: .light))
-                .foregroundStyle(MCColor.coreMint)
+                .font(.system(size: 30, weight: .light))
+                .foregroundStyle(MCColor.teal)
+                .frame(width: 34)
                 .accessibilityHidden(true)
-            Text(title).font(MCFont.heroTitle)
-            Text(subtitle).font(MCFont.body).foregroundStyle(.secondary)
-                .multilineTextAlignment(.center).frame(maxWidth: 460)
+            VStack(alignment: .leading, spacing: MCSpacing.xxs) {
+                Text(title).font(MCFont.pageTitle)
+                Text(subtitle).font(MCFont.secondaryBody).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 
     private func bullet(_ icon: String, _ text: String) -> some View {
         HStack(alignment: .top, spacing: MCSpacing.xs) {
-            Image(systemName: icon).frame(width: 20).foregroundStyle(MCColor.coreMint)
+            Image(systemName: icon).frame(width: 20).foregroundStyle(MCColor.teal)
                 .accessibilityHidden(true)
             Text(text).font(MCFont.secondaryBody)
-        }
-    }
-
-    private func detailRow(_ label: String, _ value: String) -> some View {
-        HStack {
-            Text(label).font(MCFont.caption).foregroundStyle(.secondary)
-            Spacer()
-            Text(value).font(MCFont.caption).lineLimit(1).truncationMode(.middle)
         }
     }
 

@@ -66,10 +66,22 @@ jobs:
           test -d "build/CoreTend.app" || { echo "app bundle not found"; exit 1; }
           test -f "build/CoreTend.app/Contents/Info.plist" || { echo "Info.plist missing"; exit 1; }
 
-      - name: Visual regression (72 captures, 9 viewports, FR+EN)
+      - name: DMG builds and lays itself out with no Finder and no GUI
+        # A CI runner has no Automation grant and no window session, which is
+        # exactly the environment that used to produce a silently unstyled DMG.
+        # If packaging ever regresses to driving the Finder, this job is where
+        # it fails — not a user's Downloads folder.
+        run: zsh Scripts/test-dmg-headless.sh
+
+      - name: Launch robustness (hostile state, isolated HOME)
+        # Skips the 50x soak; the full suite runs before a release.
+        run: zsh Scripts/test-robustness.sh --quick
+
+      - name: Visual regression and Axe (79 captures, 7 viewports, FR+EN)
         run: |
-          npm install --no-save playwright pngjs
+          npm install --no-save playwright pngjs @axe-core/playwright
           npx playwright install --with-deps chromium
+          node Scripts/site/test-site.mjs
           node Scripts/visual/capture.mjs
 
       - name: Upload visual diffs when the gate fails
@@ -83,6 +95,9 @@ jobs:
 
       - name: Release/sync consistency gate (fails on version divergence)
         run: bash Scripts/test-release-sync.sh
+
+      - name: Public release metadata gate (offline and path-free)
+        run: python3 Scripts/test-public-release-gate.py
 
       - name: Localization key-parity check
         run: |

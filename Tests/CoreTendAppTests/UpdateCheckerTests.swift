@@ -125,6 +125,42 @@ struct UpdateCheckerTests {
         #expect(UpdateChecker.parse(data)?.releaseURL == nil)
     }
 
+    @Test func parsesVerifiedArtifactMetadata() {
+        let data = try! JSONSerialization.data(withJSONObject: [
+            "version": "1.0.0",
+            "releaseURL": "https://github.com/ahmetbsbnr/coretend/releases/tag/v1.0.0",
+            "minimumMacOS": "14.0",
+            "architecture": "arm64",
+            "dmgName": "CoreTend-1.0.0-arm64.dmg",
+            "dmgURL": "https://github.com/ahmetbsbnr/coretend/releases/download/v1.0.0/CoreTend-1.0.0-arm64.dmg",
+            "dmgSHA256": String(repeating: "A", count: 64),
+            "dmgSize": 42,
+        ])
+        let info = UpdateChecker.parse(data)
+        #expect(info?.minimumMacOS == "14.0")
+        #expect(info?.architecture == "arm64")
+        #expect(info?.dmg?.name == "CoreTend-1.0.0-arm64.dmg")
+        #expect(info?.dmg?.sha256 == String(repeating: "a", count: 64))
+        #expect(info?.dmg?.size == 42)
+    }
+
+    @Test func dropsUnverifiedArtifactMetadata() {
+        let data = try! JSONSerialization.data(withJSONObject: [
+            "version": "1.0.0",
+            "dmgName": "CoreTend-1.0.0-arm64.dmg",
+            "dmgURL": "http://example.com/CoreTend.dmg",
+            "dmgSHA256": "not-a-sha",
+            "dmgSize": 42,
+            "zipName": "CoreTend-1.0.0-arm64.zip",
+            "zipURL": "https://github.com/ahmetbsbnr/coretend/releases/download/v1.0.0/CoreTend.zip",
+            "zipSHA256": String(repeating: "b", count: 64),
+            "zipSize": 0,
+        ])
+        let info = UpdateChecker.parse(data)
+        #expect(info?.dmg == nil)
+        #expect(info?.zip == nil)
+    }
+
     @Test func httpErrorIsSurfaced() async {
         let c = UpdateChecker(
             manifestURL: URL(string: "https://coretend.ahmetbsbnr.com/latest.json")!,

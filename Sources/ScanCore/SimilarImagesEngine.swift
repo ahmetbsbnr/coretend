@@ -2,6 +2,7 @@ import Foundation
 import Vision
 import UniformTypeIdentifiers
 import ImageIO
+import CryptoKit
 
 /// A cluster of visually similar images.
 public struct SimilarImageGroup: Sendable, Identifiable {
@@ -44,7 +45,7 @@ public struct SimilarImagesEngine: Sendable {
 
     private static let imageExtensions: Set<String> = ["jpg", "jpeg", "png", "heic", "gif", "tiff", "webp", "bmp"]
 
-    public func run() -> AsyncStream<SimilarImagesEvent> {
+    public func run(pauseController: ScanPauseController? = nil) -> AsyncStream<SimilarImagesEvent> {
         let roots = roots
         let threshold = distanceThreshold
         let maxImages = maxImages
@@ -53,7 +54,7 @@ public struct SimilarImagesEngine: Sendable {
                 // Inventory.
                 var images: [(URL, Int64)] = []
                 for root in roots {
-                    Self.collectImages(in: root, limit: maxImages, into: &images)
+                    await Self.collectImages(in: root, limit: maxImages, into: &images, pauseController: pauseController)
                     if images.count >= maxImages || Task.isCancelled { break }
                 }
                 guard !Task.isCancelled else {
@@ -64,6 +65,7 @@ public struct SimilarImagesEngine: Sendable {
                 var prints: [(URL, Int64, VNFeaturePrintObservation)] = []
                 for (index, (url, size)) in images.enumerated() {
                     if Task.isCancelled { break }
+                    await pauseController?.waitWhilePaused()
                     if index % 16 == 0 {
                         continuation.yield(.progress(processed: index, total: images.count))
                     }
@@ -82,6 +84,8 @@ public struct SimilarImagesEngine: Sendable {
                 var clusters: [[(URL, Int64)]] = []
                 var representatives: [VNFeaturePrintObservation] = []
                 for (url, size, observation) in prints {
+                    if Task.isCancelled { break }
+                    await pauseController?.waitWhilePaused()
                     var assigned = false
                     for (index, representative) in representatives.enumerated() {
                         var distance: Float = .greatestFiniteMagnitude
@@ -97,7 +101,7 @@ public struct SimilarImagesEngine: Sendable {
                         representatives.append(observation)
                     }
                 }
-                let groups = clusters.filter { $0.count > 1 }.map { members -> SimilarImageGroup in
+                let visionGroups = clusters.filter { $0.count > 1 }.map { members -> SimilarImageGroup in
                     var pixelCounts: [URL: Int64] = [:]
                     for (url, _) in members { pixelCounts[url] = Self.pixelCount(of: url) }
                     return SimilarImageGroup(
@@ -106,7 +110,9 @@ public struct SimilarImagesEngine: Sendable {
                         totalBytes: members.reduce(0) { $0 + $1.1 },
                         pixelCounts: pixelCounts)
                 }
-                .sorted { $0.totalBytes > $1.totalBytes }
+                let usedExactFallbackURLs = Set(visionGroups.flatMap(\.urls))
+                let exactFallbackGroups = Self.exactImageGroups(from: images.filter { !usedExactFallbackURLs.contains($0.0) })
+                let groups = (visionGroups + exactFallbackGroups).sorted { $0.totalBytes > $1.totalBytes }
                 continuation.yield(.finished(groups: groups))
                 continuation.finish()
             }
@@ -124,14 +130,49 @@ public struct SimilarImagesEngine: Sendable {
         return Int64(width) * Int64(height)
     }
 
-    private static func collectImages(in root: URL, limit: Int, into images: inout [(URL, Int64)]) {
+    private static func exactImageGroups(from images: [(URL, Int64)]) -> [SimilarImageGroup] {
+        var buckets: [String: [(URL, Int64)]] = [:]
+        for (url, size) in images {
+            guard let digest = fileDigest(url) else { continue }
+            buckets["\(size):\(digest)", default: []].append((url, size))
+        }
+        return buckets.values
+            .filter { $0.count > 1 }
+            .map { members in
+                var pixelCounts: [URL: Int64] = [:]
+                for (url, _) in members { pixelCounts[url] = pixelCount(of: url) }
+                return SimilarImageGroup(
+                    id: members.first!.0.path,
+                    urls: members.map(\.0),
+                    totalBytes: members.reduce(0) { $0 + $1.1 },
+                    pixelCounts: pixelCounts)
+            }
+    }
+
+    private static func fileDigest(_ url: URL) -> String? {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
+        defer { try? handle.close() }
+        var hasher = SHA256()
+        while true {
+            let data = try? handle.read(upToCount: 64 * 1024)
+            guard let data, !data.isEmpty else { break }
+            hasher.update(data: data)
+        }
+        return hasher.finalize().map { String(format: "%02x", $0) }.joined()
+    }
+
+    private static func collectImages(in root: URL,
+                                      limit: Int,
+                                      into images: inout [(URL, Int64)],
+                                      pauseController: ScanPauseController? = nil) async {
         let baseKeys: Set<URLResourceKey> = [.fileSizeKey, .isSymbolicLinkKey, .isDirectoryKey]
         let keys = baseKeys.union(CloudFile.inventoryKeys)
         guard let enumerator = FileManager.default.enumerator(
             at: root, includingPropertiesForKeys: Array(keys),
             options: [.skipsPackageDescendants, .skipsHiddenFiles]) else { return }
-        for case let url as URL in enumerator {
+        while let url = enumerator.nextObject() as? URL {
             if images.count >= limit || Task.isCancelled { break }
+            await pauseController?.waitWhilePaused()
             // Never look inside Photos libraries.
             if url.pathExtension == "photoslibrary" { enumerator.skipDescendants(); continue }
             guard let values = try? url.resourceValues(forKeys: keys) else { continue }
