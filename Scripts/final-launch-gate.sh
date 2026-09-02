@@ -238,10 +238,18 @@ if [ -f "$ZIP" ]; then
   # `pipefail` reports the whole pipeline as failed even though the file was
   # found. That produced a false "missing NOTICE" against a ZIP that contained
   # it. Matching against a string cannot misfire that way.
+  #
+  # The file may sit at the archive root (unsigned ZIP: Scripts/package-zip.sh
+  # stages the app plus loose LICENSE/NOTICE/THIRD_PARTY_NOTICES.md) or sealed
+  # inside the bundle at CoreTend.app/Contents/Resources/ (signed ZIP:
+  # sign-and-notarize.sh dittos the bundle only, and package-local.sh copies
+  # the texts into Resources/ before signing). Both satisfy Apache-2.0 §4 —
+  # the notice travels with the work — so accept either. The unzip -l name
+  # column is preceded by spaces at the root and by '/' when nested.
   ZIP_LIST=$(unzip -l "$ZIP" 2>/dev/null)
   for required in LICENSE NOTICE THIRD_PARTY_NOTICES.md; do
     case "$ZIP_LIST" in
-      *" ${required}"$'\n'*|*" ${required}") PASS "ZIP contains $required" ;;
+      *" ${required}"$'\n'*|*" ${required}"|*"/${required}"$'\n'*|*"/${required}") PASS "ZIP contains $required" ;;
       *) FAIL "ZIP is missing $required (Apache-2.0 §4 requires NOTICE to travel with the work)" ;;
     esac
   done
