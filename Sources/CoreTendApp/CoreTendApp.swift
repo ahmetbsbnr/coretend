@@ -169,7 +169,7 @@ struct MenuBarLabel: View {
 struct MenuBarView: View {
     @State private var snapshot: MetricsSnapshot?
     @State private var collector = MetricsCollector()
-    @State private var lastSmartCare: ActivityRecord?
+    @State private var lastActivity: ActivityRecord?
 
     var body: some View {
         VStack(alignment: .leading, spacing: MCSpacing.sm) {
@@ -197,14 +197,14 @@ struct MenuBarView: View {
                     .padding(.vertical, MCSpacing.sm)
             }
             Divider()
-            if let last = lastSmartCare {
-                Text(L("menubar.last_smart_care", last.summary))
+            if let last = lastActivity {
+                Text(L("menubar.last_activity", last.summary))
                     .font(.caption).foregroundStyle(.secondary)
                     .lineLimit(2)
                 Text(last.date, style: .relative)
                     .font(.caption2).foregroundStyle(.tertiary)
             } else {
-                Text(L("menubar.no_smart_care_yet"))
+                Text(L("menubar.no_activity_yet"))
                     .font(.caption).foregroundStyle(.secondary)
             }
             Divider()
@@ -228,7 +228,7 @@ struct MenuBarView: View {
         .task {
             guard let store = AppEnvironment.shared.store else { return }
             let recent = (try? await store.activity(limit: 20)) ?? []
-            lastSmartCare = recent.first { $0.summary.hasPrefix("Smart Care") }
+            lastActivity = recent.first
         }
     }
 
@@ -287,6 +287,11 @@ struct MenuBarView: View {
 }
 
 enum ModuleID: String, CaseIterable, Identifiable {
+    /// The first sidebar entry: it renders `DashboardView` and its label is
+    /// `module.dashboard`. The case name and `"Smart Care"` raw value are kept
+    /// only because the raw value is a stable identity matched elsewhere
+    /// (`sidebar.<rawValue>` a11y ids, activity-summary prefixes); the
+    /// standalone Smart Care view was retired in favour of the Dashboard.
     case smartCare = "Smart Care"
     case cleanup = "Cleanup"
     case protection = "Protection"
