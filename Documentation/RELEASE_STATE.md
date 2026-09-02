@@ -30,16 +30,42 @@ it). Consequence: **no `actions/attest-build-provenance` attestation** exists
 for rc.6 — `gh attestation verify` returns 404. Minisign + SHA-256 +
 notarization are the provenance guarantees for this release.
 
+## v1.0.0 preparation — branch `release/v1.0.0-prep` (not merged, not tagged)
+
+Three commits on top of `af0898e`:
+
+- `2b13ee4` — crash-matrix items 25/27/38 closed; `SmartCareView` retired.
+- `9be4043` — version surfaces bumped to `1.0.0` / build `1000` / channel
+  `stable` (`PublicIdentity.example.json`, `Info.plist`, `PROJECT_STATE.json`);
+  `Release/Notes/1.0.0.{en,fr}.md` added; `final-launch-gate.sh` no longer
+  hard-fails a 1.x version.
+- `84b96ae` — `final-launch-gate.sh` reworked around a release posture read
+  from `Release/latest.json` (signed vs local pre-signing build).
+
+Gates run green at HEAD (local, unsigned posture):
+`test.sh` 342/0 · `test-release-manifest.sh` · `test-release-provenance.sh`
+15/0 · `test-dmg-layout.sh` · `test-release-sync.sh` · `check-website.sh` 32/0 ·
+`test-public-release-gate.py` 14/0 · `check-version-consistency.sh` ·
+`final-launch-gate.sh` **49 PASS, 0 FAIL, 1 NA, 6 HUMAN_ACTION_REQUIRED**
+(sign+notarize, tag, GitHub release — all human).
+
+Local artifacts at `9be4043`/`84b96ae` are `-unsigned` and the manifest
+declares `signed:false` — the signed DMG/ZIP require
+`Scripts/sign-and-notarize.sh` in a session with the login keychain unlocked,
+which this environment does not have.
+
 ## Path to v1.0.0 — remaining gates
 
-Signing/notarization (the historic 1.0 blocker) is **done**. What is left:
+Signing/notarization (the historic 1.0 blocker) is **done for the published
+line** (rc.6). What is left for the 1.0 tag:
 
 ### Agent-automatable
 | Gate | Note |
 |---|---|
 | Build-provenance attestation | **Still open.** Needs either a CI run or a CI path that can codesign+notarize (`release.yml` currently cannot — no Developer ID in Actions). See `SIGNING_NOTARIZATION.md` → "Publishing a signed release". |
-| Crash-test matrix, 3 open items | **Done.** disk-nearly-full + CPU-under-load are new `Scripts/test-robustness.sh` cases (`case_disk_nearly_full`, `case_cpu_under_load`); `URLSession` timeout is now `UpdateCheckerTests.requestTimeoutIsReportedAsOffline` + `defaultFetchHasABoundedTimeout`. `Documentation/Audits/CRASH_MATRIX_CLASSIFICATION.md` items 25/27/38. |
-| `SmartCareView` decision (`TODO.md` #8) | **Decided: retired.** `.smartCare` renders `DashboardView` and always did; the standalone `SmartCareView` + view model were deleted, the safety filter moved to `UserCleanupRules.autoExecutable(_:)`, `SMART_CARE.md` rewritten as a pointer to the Dashboard, `check-retired-preview-mode.sh` and `feature-inventory.json` updated. |
+| Crash-test matrix, 3 open items | **Done** (`2b13ee4`). disk-nearly-full + CPU-under-load are new `Scripts/test-robustness.sh` cases (`case_disk_nearly_full`, `case_cpu_under_load`); `URLSession` timeout is now `UpdateCheckerTests.requestTimeoutIsReportedAsOffline` + `defaultFetchHasABoundedTimeout`. `Documentation/Audits/CRASH_MATRIX_CLASSIFICATION.md` items 25/27/38. |
+| `SmartCareView` decision (`TODO.md` #8) | **Decided: retired** (`2b13ee4`). `.smartCare` renders `DashboardView` and always did; the standalone `SmartCareView` + view model were deleted, the safety filter moved to `UserCleanupRules.autoExecutable(_:)`, `SMART_CARE.md` rewritten as a pointer to the Dashboard, `check-retired-preview-mode.sh` and `feature-inventory.json` updated. |
+| Version bump + 1.0.0 release notes + launch-gate rewire (ship steps 1–2, 5) | **Done** (`9be4043`, `84b96ae`). |
 
 ### Human-only — cannot be done in this environment
 | Gate | Why |
@@ -50,20 +76,26 @@ Signing/notarization (the historic 1.0 blocker) is **done**. What is left:
 | Interactive VoiceOver / keyboard / Dynamic Type QA (`TODO.md` #7) | Code-level a11y is tested; none observed interactively. |
 | **Trademark attorney review** | `COREXTEND` (MIPS Tech, live, class 9) is one letter away — `legalReviewStatus` stays `pending` until a lawyer signs off. Required before a 1.0 or any commercial use. |
 
-### Ship sequence once the gates above clear
-1. Bump `Configuration/PublicIdentity.example.json` → `1.0.0`, `channel: stable`;
-   mirror `Resources/Info.plist` + `Documentation/PROJECT_STATE.json`.
-2. `Release/Notes/1.0.0.{en,fr}.md`.
-3. `Scripts/package-local.sh` → `Scripts/sign-and-notarize.sh 1.0.0 CoreTend-Notary`.
-4. `git tag -a v1.0.0` → `CORETEND_RELEASE_SIGNED=1 Scripts/build-release.sh 1.0.0`.
-5. Run every release gate (`test.sh`, `test-release-manifest.sh`,
-   `test-dmg-layout.sh`, `test-release-sync.sh`, `check-website.sh`).
+### Ship sequence
+1. ~~Bump `PublicIdentity.example.json` → `1.0.0`, `channel: stable`; mirror
+   `Info.plist` + `PROJECT_STATE.json`.~~ **Done — `9be4043`.**
+2. ~~`Release/Notes/1.0.0.{en,fr}.md`.~~ **Done — `9be4043`.**
+3. `Scripts/package-local.sh` → `Scripts/sign-and-notarize.sh 1.0.0 CoreTend-Notary`
+   — **human**: needs the login keychain unlocked (Developer ID private key)
+   and the `CoreTend-Notary` notary profile.
+4. `git tag -a v1.0.0` → `CORETEND_RELEASE_SIGNED=1 Scripts/build-release.sh 1.0.0`
+   — after step 3; consumes the stapled artifacts, drops the `-unsigned` token.
+5. ~~Run every release gate.~~ **Done at HEAD in the unsigned posture** — re-run
+   after step 4 so the signed posture is verified (`final-launch-gate.sh` then
+   checks `stapler validate` + the distribution `spctl` assessment for real).
 6. Minisign-sign the artifacts (human — key password).
 7. `gh workflow disable` the Release workflow, `git push` branch + tag,
    `gh release create v1.0.0` with the signed assets, `gh workflow enable`.
 8. `Scripts/sync-published-release.sh`; commit `published-release.json`; merge.
-9. Update the site copy (already signed-aware) and redeploy; flip the launch
-   gate to allow 1.x.
+9. Update the site copy (already signed-aware) and redeploy.
+
+`final-launch-gate.sh` already allows 1.x once `published-release.json` shows
+`signed && notarized` (true since rc.6) — step 9's "flip the gate" is done.
 
 ---
 
