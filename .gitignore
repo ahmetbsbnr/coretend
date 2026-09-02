@@ -98,7 +98,7 @@ Documentation/WorkspacePreflight/**/*.bundle.sha256
 # artifact — machine-specific, no project code or docs depend on it)
 .serena/
 
-# Python bytecode from running generate.py
+# Python bytecode (build.py, Scripts/*.py)
 __pycache__/
 *.pyc
 

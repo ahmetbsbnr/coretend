@@ -10,9 +10,10 @@ python3 Website/build.py --output Website/dist
 ```
 
 `index.html` is the visual source of truth and `build.py` creates the isolated,
-gitignored `dist/` directory deployed by Vercel. `generate.py` and the tracked
-`en/` and `fr/` trees are retained only for legacy media/client-journey gates;
-that generator never owns or rewrites the production Vercel configuration.
+gitignored `dist/` directory deployed by Vercel. `build.py` reads
+`Configuration/published-release.json` for release facts and externalises the
+inline CSS/JS so the deployed pages satisfy a strict `script-src 'self'` CSP.
+`vercel.json` (redirects, rewrites, security headers) is hand-maintained.
 
 ## Local preview
 

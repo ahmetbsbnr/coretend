@@ -60,10 +60,10 @@ public enum MCOpacity {
 
 /// Backwards-compatible theme namespace (older views reference MCTheme).
 public enum MCTheme {
-    public static let accent = MCColor.coreMint
-    public static let accentSecondary = MCColor.ionViolet
-    public static let warning = MCColor.solarAmber
-    public static let danger = MCColor.pulseCoral
+    public static let accent = MCColor.teal
+    public static let accentSecondary = MCColor.graphite
+    public static let warning = MCColor.amber
+    public static let danger = MCColor.coral
     public static let success = MCColor.success
 
     public static let cornerRadius = MCRadius.card

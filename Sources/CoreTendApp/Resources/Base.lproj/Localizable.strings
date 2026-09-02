@@ -28,6 +28,7 @@
 "sidebar.activity" = "Activity";
 "sidebar.storage" = "Storage";
 "sidebar.system" = "System";
+"sidebar.more" = "More";
 
 /* Placeholder */
 "placeholder.under_construction" = "This module is under construction. Coming in a later slice.";
@@ -98,6 +99,7 @@
 "spacelens.choose_folder" = "Choose Folder…";
 "spacelens.scanning_progress" = "Measured %d items…";
 "spacelens.new_scan" = "New Scan";
+"spacelens.up" = "Up one level";
 "spacelens.treemap.a11y_summary" = "%d items, %@ total.";
 "spacelens.treemap.accessibility" = "Storage treemap. Use the list below for keyboard navigation.";
 "spacelens.fragment.help" = "%@ — %@";
@@ -391,10 +393,6 @@
 "palette.placeholder" = "Jump to…";
 "palette.no_results" = "No matches";
 "palette.scan_home" = "Scan Home with Space Lens";
-"menubar.this_copy" = "This copy";
-"menubar.signature_apple" = "Apple-signed";
-"menubar.signature_team" = "Signed (team %@)";
-"menubar.signature_unsigned" = "Unsigned";
 "protection.tab.integrity" = "Integrity";
 "settings.this_copy_signature" = "This copy's signature";
 "integrity.explainer.title" = "Native signals, not a scanner";
@@ -428,6 +426,7 @@
 "dashboard.status.loading" = "Loading";
 "dashboard.storage.title" = "Storage";
 "dashboard.storage.detail" = "Scan caches, logs, crash reports, and build data before reviewing anything that can move to Trash.";
+"dashboard.storage.free_of_total" = "free of %@";
 "dashboard.spacelens.title" = "Space Lens";
 "dashboard.spacelens.detail" = "Map disk usage from a chosen folder, then zoom, search, and open items in Finder.";
 "dashboard.duplicates.title" = "Duplicates";
@@ -435,11 +434,9 @@
 "dashboard.applications.title" = "Applications";
 "dashboard.applications.detail" = "Separate app bundles from caches, helpers, agents, and personal documents.";
 "dashboard.integrity.title" = "Integrity";
+"dashboard.integrity.detail" = "Check download provenance, code-signature tiers, and what launches at login.";
 "dashboard.activity.title" = "Activity";
 "dashboard.activity.empty" = "No activity recorded yet.";
-"dashboard.signature.apple" = "Apple-signed";
-"dashboard.signature.team" = "Team %@";
-"dashboard.signature.unsigned" = "Unsigned copy";
 "dashboard.open_module" = "Open %@";
 
 /* Safety log (SafetyCore audit trail persistence) */
@@ -477,7 +474,6 @@
 "onboarding.welcome.no_telemetry" = "No telemetry, analytics, ads or subscriptions.";
 "onboarding.welcome.open_source" = "Open source — you can read every line.";
 "onboarding.welcome.version" = "Version %@";
-"onboarding.welcome.unsigned" = "Unsigned local build";
 "onboarding.move.prompt" = "This app isn't in your Applications folder yet. Moving it there is recommended.";
 "onboarding.move.button" = "Move to Applications";
 "onboarding.move.done" = "Copied to %@. Relaunch from there.";
@@ -543,6 +539,10 @@
 "onboarding.summary.restore" = "Removals go to the Trash and can be restored.";
 "onboarding.summary.docs" = "Read the documentation";
 "settings.rerun_setup" = "Run setup assistant again";
+"settings.about.privacy" = "Privacy policy";
+"settings.about.license" = "License (Apache-2.0)";
+"settings.about.source" = "Source code on GitHub";
+"settings.about.support" = "Support";
 
 /* Rename migration (MacCare Local -> CoreTend) */
 "settings.migration_done" = "Data from the previous version was migrated";
@@ -568,7 +568,7 @@
 "updates.unsigned_warning" = "This build is not signed or notarized by Apple. Verify its checksum before opening it.";
 "updates.open_release" = "Open the release page";
 "updates.how_to_verify" = "How to verify a download";
-"updates.no_autoinstall" = "CoreTend never downloads or installs an update by itself. Because its builds carry no publisher signature, it cannot prove who produced a file — so you download and verify it yourself.";
+"updates.no_autoinstall" = "CoreTend never downloads or installs an update by itself. Releases are Developer ID signed and Apple-notarized — you download the new build from the release page, and macOS verifies it on open.";
 "updates.error_offline" = "No network connection. CoreTend works fully offline; this check is optional.";
 "updates.error_not_configured" = "Update checking is not configured.";
 "updates.error_cancelled" = "Check cancelled.";
@@ -609,3 +609,4 @@
 
 /* Space Lens idle */
 "spacelens.idle.tip" = "Color-coded by type: folders, media, documents, archives and code.";
+"spacelens.favorites_recents" = "Favorites & Recents";

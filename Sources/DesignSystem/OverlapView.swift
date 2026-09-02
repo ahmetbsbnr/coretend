@@ -31,7 +31,7 @@ public struct MCOverlapStack<Item: Identifiable, ItemContent: View>: View {
                         if item.id == markedID {
                             Image(systemName: "star.circle.fill")
                                 .font(.system(size: 14))
-                                .foregroundStyle(.white, MCColor.coreMint)
+                                .foregroundStyle(.white, MCColor.teal)
                                 .offset(x: 4, y: -4)
                         }
                     }

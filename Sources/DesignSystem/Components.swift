@@ -12,7 +12,7 @@ public struct MCModuleIdentity: Sendable {
         self.color = color
     }
 
-    public static let smartCare = MCModuleIdentity(icon: "circle.hexagonpath", color: MCColor.coreMint)
+    public static let smartCare = MCModuleIdentity(icon: "circle.hexagonpath", color: MCColor.teal)
     public static let cleanup = MCModuleIdentity(icon: "sparkles", color: MCColor.storage)
     public static let protection = MCModuleIdentity(icon: "checkerboard.shield", color: MCColor.protection)
     public static let performance = MCModuleIdentity(icon: "waveform.path.ecg", color: MCColor.performance)
@@ -59,7 +59,7 @@ public enum MCStatus {
     var color: Color {
         switch self {
         case .neutral: .secondary
-        case .active: MCColor.coreMint
+        case .active: MCColor.teal
         case .success: MCColor.success
         case .attention: MCColor.attention
         case .error: MCColor.destructive
@@ -245,6 +245,188 @@ public struct MCErrorState: View {
     }
 }
 
+/// Shared "the cleanup finished" state. One consistent, quietly celebratory
+/// moment across every module that moves things to the Trash — a sealed
+/// checkmark that pops in with a single expanding ring flourish (transform +
+/// opacity only, one-shot, no loop). Under Reduce Motion it simply appears.
+///
+/// Before this, each module hand-rolled its finish screen — some reused
+/// `MCEmptyState` with a green tint, some an ad-hoc `VStack` — so "done"
+/// looked different depending on where you were.
+public struct MCSuccessState: View {
+    private let title: String
+    private let message: String?
+    private let actionTitle: String?
+    private let action: (() -> Void)?
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var popped = false
+    @State private var flourish: CGFloat = 0
+
+    public init(title: String, message: String? = nil,
+                actionTitle: String? = nil, action: (() -> Void)? = nil) {
+        self.title = title
+        self.message = message
+        self.actionTitle = actionTitle
+        self.action = action
+    }
+
+    public var body: some View {
+        VStack(spacing: MCSpacing.md) {
+            ZStack {
+                if !reduceMotion {
+                    ForEach(0..<2, id: \.self) { i in
+                        Circle()
+                            .stroke(MCColor.success.opacity(0.35 * Double(1 - flourish)), lineWidth: 2)
+                            .frame(width: 76, height: 76)
+                            .scaleEffect(0.55 + flourish * (1.3 + CGFloat(i) * 0.55))
+                    }
+                }
+                Circle().fill(MCColor.success.opacity(0.14)).frame(width: 76, height: 76)
+                Image(systemName: "checkmark.seal.fill")
+                    .font(.system(size: 34, weight: .semibold))
+                    .foregroundStyle(MCColor.success)
+            }
+            .scaleEffect(popped || reduceMotion ? 1 : 0.7)
+            .opacity(popped || reduceMotion ? 1 : 0)
+            .accessibilityHidden(true)
+
+            Text(title)
+                .font(MCFont.pageTitle)
+                .multilineTextAlignment(.center)
+            if let message, !message.isEmpty {
+                Text(message)
+                    .font(MCFont.secondaryBody)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 420)
+            }
+            if let actionTitle, let action {
+                Button(actionTitle, action: action)
+                    .buttonStyle(.borderedProminent)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(MCSpacing.xl)
+        .onAppear {
+            guard !reduceMotion else { return }
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.62)) { popped = true }
+            withAnimation(.easeOut(duration: 0.9)) { flourish = 1 }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(message.map { $0.isEmpty ? title : "\(title). \($0)" } ?? title)
+    }
+}
+
+// MARK: - Lit canvas
+
+/// The app's shared canvas: the Slate/Porcelain base with a single faint
+/// teal light source in the top-leading corner. No imagery, no second hue —
+/// just enough gradient that the window never reads as a dead flat field.
+/// Applied once to the module container so every screen sits on it.
+public struct MCCanvasBackground: ViewModifier {
+    public init() {}
+    public func body(content: Content) -> some View {
+        content.background(
+            ZStack {
+                MCColor.background
+                RadialGradient(colors: [MCColor.teal.opacity(0.06), .clear],
+                               center: .topLeading, startRadius: 0, endRadius: 680)
+            }
+        )
+    }
+}
+
+public extension View {
+    /// Sits the view on the app's lit canvas (see `MCCanvasBackground`).
+    func mcCanvasBackground() -> some View { modifier(MCCanvasBackground()) }
+}
+
+// MARK: - Entrance
+
+/// A quiet fade-and-rise on first appearance — transform + opacity only, a
+/// no-op under Reduce Motion. Fires once; it deliberately does not reset on
+/// disappear (resetting caused animation churn that could stall sibling
+/// AppKit-hosted controls like `Picker` in a split-view detail).
+public struct MCAppear: ViewModifier {
+    private let delay: Double
+    @State private var shown = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    public init(delay: Double = 0) { self.delay = delay }
+
+    public func body(content: Content) -> some View {
+        content
+            .opacity(shown || reduceMotion ? 1 : 0)
+            .offset(y: shown || reduceMotion ? 0 : 8)
+            .onAppear {
+                guard !reduceMotion, !shown else { return }
+                withAnimation(.smooth(duration: 0.4).delay(delay)) { shown = true }
+            }
+    }
+}
+
+public extension View {
+    /// Fade-and-rise this view in when it appears. See `MCAppear`.
+    func mcAppear(delay: Double = 0) -> some View { modifier(MCAppear(delay: delay)) }
+}
+
+// MARK: - Scan button
+
+/// The large circular "start" control for a module's landing state — the one
+/// unmistakable focal action on the screen. A filled teal disc with an icon
+/// over a short label, a soft teal glow, and a small hover lift (transform +
+/// shadow only; still under Reduce Motion). Not decoration: it is the primary
+/// button, sized to match its importance.
+public struct MCScanButton: View {
+    private let title: String
+    private let systemImage: String
+    private let action: () -> Void
+
+    @State private var hovering = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.isEnabled) private var isEnabled
+
+    public init(_ title: String, systemImage: String = "sparkles", action: @escaping () -> Void) {
+        self.title = title
+        self.systemImage = systemImage
+        self.action = action
+    }
+
+    public var body: some View {
+        Button(action: action) {
+            VStack(spacing: MCSpacing.xs) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 28, weight: .semibold))
+                Text(title)
+                    .font(.headline)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
+            }
+            .foregroundStyle(.white)
+            .padding(MCSpacing.md)
+            .frame(width: 136, height: 136)
+            .background(
+                Circle().fill(
+                    RadialGradient(
+                        colors: [MCColor.teal, MCColor.teal.opacity(0.82)],
+                        center: UnitPoint(x: 0.4, y: 0.32), startRadius: 2, endRadius: 118)))
+            .overlay(Circle().strokeBorder(.white.opacity(0.16), lineWidth: 1))
+            .shadow(color: MCColor.teal.opacity(hovering ? 0.5 : 0.34),
+                    radius: hovering ? 26 : 18, x: 0, y: 6)
+            .scaleEffect(hovering && !reduceMotion ? 1.03 : 1)
+            .opacity(isEnabled ? 1 : 0.5)
+        }
+        .buttonStyle(.plain)
+        .onHover { h in
+            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) { hovering = h }
+        }
+        .accessibilityLabel(title)
+        .accessibilityAddTraits(.isButton)
+    }
+}
+
 // MARK: - Feature row (module landing states)
 
 /// A feature/capability row for module idle states — icon + title + optional subtitle.
@@ -256,7 +438,7 @@ public struct MCFeatureRow: View {
     private let iconColor: Color
 
     public init(_ title: String, subtitle: String? = nil, icon: String,
-                iconColor: Color = MCColor.coreMint) {
+                iconColor: Color = MCColor.teal) {
         self.title = title
         self.subtitle = subtitle
         self.icon = icon

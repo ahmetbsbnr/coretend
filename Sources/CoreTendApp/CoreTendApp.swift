@@ -2,7 +2,6 @@ import SwiftUI
 import DesignSystem
 import SystemMetrics
 import Persistence
-import IntegrityCore
 
 /// A per-process appearance override used only by the isolated artifact
 /// harness. It requires the same validated two-key test marker as the store and
@@ -171,35 +170,37 @@ struct MenuBarView: View {
     @State private var snapshot: MetricsSnapshot?
     @State private var collector = MetricsCollector()
     @State private var lastSmartCare: ActivityRecord?
-    @State private var appSignature: CodeSignInfo?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(verbatim: "CoreTend").font(MCFont.cardTitle)
+        VStack(alignment: .leading, spacing: MCSpacing.sm) {
+            HStack(spacing: MCSpacing.xs) {
+                CoreBloomMark(tint: [MCColor.teal], lineWidthFraction: 0.1)
+                    .frame(width: 18, height: 18)
+                Text(verbatim: "CoreTend").font(MCFont.cardTitle)
+                Spacer(minLength: 0)
+            }
             if let snap = snapshot {
-                metricRow(icon: "cpu", label: L("menubar.cpu"), value: "\(Int(snap.cpuUsedFraction * 100))%",
-                          warn: snap.cpuUsedFraction > 0.85)
-                metricRow(icon: "memorychip", label: L("menubar.memory"),
-                          value: "\(Int(snap.memoryUsedFraction * 100))% — \(snap.memoryPressureLevel)",
-                          warn: snap.memoryPressureLevel != "normal")
-                metricRow(icon: "internaldrive", label: L("menubar.free_space"),
-                          value: mcFormatBytes(snap.diskFreeBytes),
-                          warn: snap.diskFreeBytes < 20_000_000_000)
+                gaugeRow("cpu", L("menubar.cpu"), fraction: snap.cpuUsedFraction,
+                         value: "\(Int(snap.cpuUsedFraction * 100))%",
+                         warn: snap.cpuUsedFraction > 0.85)
+                gaugeRow("memorychip", L("menubar.memory"), fraction: snap.memoryUsedFraction,
+                         value: "\(Int(snap.memoryUsedFraction * 100))% · \(snap.memoryPressureLevel)",
+                         warn: snap.memoryPressureLevel != "normal")
+                gaugeRow("internaldrive", L("menubar.free_space"), fraction: snap.diskUsedFraction,
+                         value: mcFormatBytes(snap.diskFreeBytes),
+                         warn: snap.diskFreeBytes < 20_000_000_000)
                 metricRow(icon: "thermometer.medium", label: L("menubar.thermal"),
                           value: snap.thermalState.capitalized,
                           warn: snap.thermalState == "serious" || snap.thermalState == "critical")
             } else {
-                ProgressView().controlSize(.small)
-            }
-            if let appSignature {
-                metricRow(icon: "checkmark.seal", label: L("menubar.this_copy"),
-                          value: signatureLabel(appSignature),
-                          warn: appSignature.tier == .adHocOrUnsigned)
+                HStack { Spacer(); ProgressView().controlSize(.small); Spacer() }
+                    .padding(.vertical, MCSpacing.sm)
             }
             Divider()
             if let last = lastSmartCare {
                 Text(L("menubar.last_smart_care", last.summary))
                     .font(.caption).foregroundStyle(.secondary)
+                    .lineLimit(2)
                 Text(last.date, style: .relative)
                     .font(.caption2).foregroundStyle(.tertiary)
             } else {
@@ -215,7 +216,7 @@ struct MenuBarView: View {
             Button(L("menubar.quit")) { NSApp.terminate(nil) }
         }
         .padding(14)
-        .frame(width: 260)
+        .frame(width: 288)
         .task {
             // Adaptive: only samples while this view exists (menu open).
             _ = await collector.snapshot()
@@ -229,19 +230,6 @@ struct MenuBarView: View {
             let recent = (try? await store.activity(limit: 20)) ?? []
             lastSmartCare = recent.first { $0.summary.hasPrefix("Smart Care") }
         }
-        .task {
-            if let bundleURL = Bundle.main.bundleURL as URL? {
-                appSignature = CodeSignInspector.inspect(at: bundleURL)
-            }
-        }
-    }
-
-    private func signatureLabel(_ info: CodeSignInfo) -> String {
-        switch info.tier {
-        case .appleSigned: L("menubar.signature_apple")
-        case .teamSigned: L("menubar.signature_team", info.teamIdentifier ?? "?")
-        case .adHocOrUnsigned: L("menubar.signature_unsigned")
-        }
     }
 
     private func openWindow() {
@@ -249,13 +237,42 @@ struct MenuBarView: View {
         NSApp.windows.first { $0.title == "CoreTend" }?.makeKeyAndOrderFront(nil)
     }
 
+    /// Metric with an inline fill bar — for the 0…1 gauges (CPU, memory, disk).
+    private func gaugeRow(_ icon: String, _ label: String, fraction: Double, value: String, warn: Bool) -> some View {
+        let tint: Color = warn ? MCTheme.warning : MCTheme.accent
+        return VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: MCSpacing.xs) {
+                Image(systemName: icon).frame(width: 16).foregroundStyle(tint)
+                Text(label)
+                Spacer(minLength: MCSpacing.xs)
+                if warn {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.caption2).foregroundStyle(MCTheme.warning)
+                        .accessibilityHidden(true)
+                }
+                Text(value).foregroundStyle(.secondary).monospacedDigit()
+            }
+            .font(MCFont.secondaryBody)
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(MCColor.separator.opacity(0.55))
+                    Capsule().fill(tint)
+                        .frame(width: max(3, geo.size.width * min(max(fraction, 0), 1)))
+                }
+            }
+            .frame(height: 4)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(label), \(value)" + (warn ? ", \(L("menubar.warning_a11y"))" : ""))
+    }
+
+    /// Metric with no meaningful 0…1 fraction — a plain label/value row.
     private func metricRow(icon: String, label: String, value: String, warn: Bool) -> some View {
         HStack {
-            Image(systemName: icon).frame(width: 18)
+            Image(systemName: icon).frame(width: 16)
                 .foregroundStyle(warn ? MCTheme.warning : MCTheme.accent)
             Text(label)
             Spacer()
-            // Non-color warning signal: a glyph, not just the tinted icon above.
             if warn {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .font(.caption2).foregroundStyle(MCTheme.warning)
@@ -280,7 +297,6 @@ enum ModuleID: String, CaseIterable, Identifiable {
     case spaceLens = "Space Lens"
     case cloudCleanup = "Cloud Cleanup"
     case myActivity = "My Activity"
-    case favoritesRecents = "Favorites & Recents"
     case settings = "Settings"
 
     var id: String { rawValue }
@@ -297,7 +313,6 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .spaceLens: .spaceLens
         case .cloudCleanup: .cloudCleanup
         case .myActivity: .myActivity
-        case .favoritesRecents: .favoritesRecents
         case .settings: .settings
         }
     }
@@ -318,7 +333,6 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .spaceLens: L("spacelens.title")
         case .cloudCleanup: L("cloud.nav_title")
         case .myActivity: L("module.activity")
-        case .favoritesRecents: L("module.favorites_recents")
         case .settings: L("settings.nav_title")
         }
     }
@@ -334,6 +348,14 @@ struct SidebarGroup: Identifiable {
         SidebarGroup(id: "main", title: nil, modules: [.smartCare]),
         SidebarGroup(id: "storage", title: L("sidebar.storage"),
                      modules: [.cleanup, .spaceLens, .duplicates, .applications]),
+        // Secondary, lower-priority tools: each does something the seven
+        // primary modules above don't (broken-LaunchAgent detection, a
+        // large/old-files finder, local-vs-cloud storage analysis) so they
+        // stay reachable rather than deleted, but they aren't part of the
+        // compact primary architecture — see Documentation/Audits/
+        // SESSION_2026-08-09_AUDIT.md for the redundancy check that led here.
+        SidebarGroup(id: "more", title: L("sidebar.more"),
+                     modules: [.myClutter, .cloudCleanup, .performance]),
         SidebarGroup(id: "system", title: L("sidebar.system"),
                      modules: [.protection, .myActivity, .settings]),
     ]
@@ -372,34 +394,35 @@ struct MainWindow: View {
             .navigationSplitViewColumnWidth(min: MCSize.sidebarMin, ideal: MCSize.sidebarIdeal)
             .accessibilityIdentifier("sidebar.list")
         } detail: {
-            switch selection {
-            case .smartCare:
-                DashboardView()
-            case .cleanup:
-                CleanupView()
-            case .protection:
-                ProtectionView()
-            case .applications:
-                ApplicationsView()
-            case .duplicates:
-                DuplicatesView()
-            case .performance:
-                PerformanceView()
-            case .spaceLens:
-                SpaceLensView()
-            case .favoritesRecents:
-                FavoritesRecentsView()
-            case .myClutter:
-                MyClutterView()
-            case .cloudCleanup:
-                CloudCleanupView()
-            case .myActivity:
-                MyActivityView()
-            case .settings:
-                MCSettingsView()
-            default:
-                PlaceholderView(module: selection ?? .smartCare)
+            Group {
+                switch selection {
+                case .smartCare:
+                    DashboardView()
+                case .cleanup:
+                    CleanupView()
+                case .protection:
+                    ProtectionView()
+                case .applications:
+                    ApplicationsView()
+                case .duplicates:
+                    DuplicatesView()
+                case .performance:
+                    PerformanceView()
+                case .spaceLens:
+                    SpaceLensView()
+                case .myClutter:
+                    MyClutterView()
+                case .cloudCleanup:
+                    CloudCleanupView()
+                case .myActivity:
+                    MyActivityView()
+                case .settings:
+                    MCSettingsView()
+                default:
+                    PlaceholderView(module: selection ?? .smartCare)
+                }
             }
+            .mcCanvasBackground()
         }
         .onAppear { if !onboardingDone { showOnboarding = true } }
         .sheet(isPresented: $showOnboarding, onDismiss: { onboardingDone = true }) {
@@ -431,7 +454,7 @@ struct MainWindow: View {
             }
         }
         .background(MCColor.background)
-        .tint(MCColor.coreMint)
+        .tint(MCColor.teal)
     }
 
     private func sidebarRow(_ module: ModuleID) -> some View {
@@ -442,7 +465,7 @@ struct MainWindow: View {
         } icon: {
             Image(systemName: module.systemImage)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(isSelected ? MCColor.coreMint : Color.secondary)
+                .foregroundStyle(isSelected ? MCColor.teal : Color.secondary)
                 .frame(width: 20)
         }
         .padding(.vertical, 3)
@@ -450,7 +473,7 @@ struct MainWindow: View {
         .background {
             if isSelected {
                 RoundedRectangle(cornerRadius: MCRadius.small)
-                    .fill(MCColor.coreMint.opacity(0.12))
+                    .fill(MCColor.teal.opacity(0.12))
             }
         }
     }

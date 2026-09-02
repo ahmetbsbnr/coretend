@@ -1,0 +1,232 @@
+/* Ahmet Design System 1.1.0 — responsive
+   Extrait du site CoreTend (ahmetbsbnr/coretend @ 63cd103). Apache-2.0.
+   Assemblage : node build.mjs → dist/ahmet-design.css. Ne pas éditer dist. */
+
+/* ---------- 21 responsive ---------- */
+@media (max-width: 1180px) {
+  .rail {
+    display: none;
+  }
+}
+
+@media (max-width: 1000px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .flowgrid {
+    grid-template-columns: 1fr;
+  }
+
+  .flow-sticky {
+    position: static;
+    top: auto;
+  }
+
+  .find {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 860px) {
+  .bar-link span,
+  .hide-sm {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .bar .wrap {
+    gap: 10px;
+    padding-block: 11px;
+  }
+
+  .bar .btn-sm {
+    display: none;
+  }
+
+  .bar-actions {
+    gap: 6px;
+  }
+
+  .wordmark {
+    font-size: 16px;
+    gap: 8px;
+    flex: none;
+  }
+
+  .wordmark .mark {
+    width: 24px;
+    height: 24px;
+  }
+
+  .switch a,
+  .switch button {
+    padding: 5px 7px;
+  }
+
+  .hero {
+    padding-top: 34px;
+  }
+
+  .hero h1 {
+    font-size: clamp(34px, 10.5vw, 48px);
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+
+  .hero .cta {
+    align-items: stretch;
+  }
+
+  .hero .cta > a,
+  .hero .cta > .magnetic,
+  .hero .cta > .magnetic .btn {
+    width: 100%;
+  }
+
+  .hero .cta .btn {
+    justify-content: center;
+  }
+
+  .hero-facts {
+    max-width: 100%;
+    overflow: hidden;
+    margin: 20px 0 24px;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 100%;
+    transform: none !important;
+  }
+
+  .app-main {
+    padding: 14px 12px 16px;
+  }
+
+  .app-title {
+    display: none;
+  }
+
+  .app-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .rows div {
+    grid-template-columns: 12px minmax(0, 1fr) auto;
+    gap: 7px;
+    padding-inline: 5px;
+  }
+
+  .rows .act {
+    grid-column: 2 / -1;
+    justify-self: start;
+  }
+
+  .app-foot {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .steps li {
+    padding-left: 52px;
+  }
+
+  .steps .num {
+    width: 34px;
+    height: 34px;
+  }
+
+  .steps::before,
+  .steps::after {
+    left: 16.5px;
+  }
+
+  .facts li {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .facts b {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .app-body {
+    grid-template-columns: 1fr;
+  }
+
+  .app-side {
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--line);
+    padding: 8px !important;
+    flex-direction: row !important;
+    gap: 5px !important;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scroll-snap-type: x proximity;
+  }
+
+  .app-side small,
+  .app-side .sep {
+    display: none;
+  }
+
+  .app-side button,
+  .app-side a {
+    flex: 0 0 auto;
+    width: auto !important;
+    padding: 7px 9px !important;
+    scroll-snap-align: start;
+  }
+
+  .app-side button span:last-child,
+  .app-side a span:last-child {
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 390px) {
+  .wrap {
+    width: min(var(--wrap), calc(100% - 32px));
+  }
+
+  .bar .wrap {
+    width: calc(100% - 24px);
+  }
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .switch {
+    font-size: 10px;
+  }
+
+  .hero-mark {
+    margin-bottom: 20px;
+  }
+
+  .lens {
+    height: 150px;
+  }
+
+  .fr .nm {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .slab-top,
+  .slab-foot {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
