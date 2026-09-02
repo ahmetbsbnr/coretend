@@ -35,6 +35,10 @@ secondaryBody, caption, metric, monospacedMetric, badge, button(=body), tableHea
 `MCTheme` = alias vers les nouveaux tokens (vues legacy). À résorber.
 
 ## Composants (Components.swift, CoreBloom.swift, ScanStage.swift)
-MCCard, MCSectionHeader, MCStatusBadge, MCMetricCard, MCEmptyState, MCErrorState,
-MCModuleIdentity, CoreBloomMark, MCArc, MCScanStage (le motif d'analyse unique,
-6 modules). Tests: Tests/DesignSystemTests.
+MCCard, MCSectionHeader, MCStatusBadge, MCMetricCard, MCEmptyState,
+MCSuccessState, MCModuleIdentity, CoreBloomMark, MCArc, MCScanStage (le motif
+d'analyse unique, 6 modules). Tests: Tests/DesignSystemTests.
+
+Note : le rendu d'état d'erreur reste ad hoc par vue (`Text(message)
+.foregroundStyle(MCTheme.danger)`) — non unifié dans un composant partagé,
+contrairement à l'état de succès (`MCSuccessState`). Candidat post-1.0.
