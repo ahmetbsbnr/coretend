@@ -39,6 +39,9 @@ jobs:
       - name: Feature inventory totals (recomputed, never hand-typed)
         run: Scripts/check-feature-inventory.sh
 
+      - name: SPDX headers on every Swift source and test file
+        run: Scripts/check-spdx-headers.sh
+
       - name: Markdown link check (zero broken internal links/anchors)
         run: python3 Scripts/check-markdown-links.py
 

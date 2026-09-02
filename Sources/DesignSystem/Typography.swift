@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: The CoreTend Authors
+
 import SwiftUI
 
 /// Semantic text styles. San Francisco only; identity comes from rhythm,

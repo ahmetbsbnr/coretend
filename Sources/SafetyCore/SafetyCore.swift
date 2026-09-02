@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: The CoreTend Authors
+
 import Foundation
 
 /// Risk level attached to every candidate file operation.

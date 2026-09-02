@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: The CoreTend Authors
+
 import Foundation
 
 /// Checks whether a newer CoreTend release exists. It **only checks**.
