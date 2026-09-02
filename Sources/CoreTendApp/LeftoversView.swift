@@ -99,11 +99,8 @@ struct LeftoversView: View {
             case .results:
                 resultsView
             case let .finished(freed):
-                MCEmptyState(
-                    icon: "checkmark.seal",
+                MCSuccessState(
                     title: L("leftovers.finished.moved", mcFormatBytes(freed)),
-                    message: "",
-                    iconColor: MCTheme.success,
                     actionTitle: L("smartcare.scan_again")) { Task { await model.scan() } }
             }
         }

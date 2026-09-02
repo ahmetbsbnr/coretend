@@ -201,60 +201,61 @@ struct CleanupView: View {
     // MARK: - Idle (editorial left-aligned layout with category overview)
 
     private var idleView: some View {
+        GeometryReader { proxy in
         ScrollView {
-            VStack(alignment: .leading, spacing: MCSpacing.xl) {
-                HStack(alignment: .top, spacing: MCSpacing.lg) {
-                    MCFragmentView(groupWeights: [], phase: .rest)
-                        .frame(width: 72, height: 72)
-                        .accessibilityLabel(MCFragmentView(groupWeights: [], phase: .rest).accessibilityDescription)
-                    VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                        Text(L("cleanup.idle.title"))
-                            .font(MCFont.pageTitle)
-                        Text(L("cleanup.idle.safety_note"))
-                            .font(MCFont.secondaryBody)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+            VStack(spacing: MCSpacing.xl) {
+                VStack(spacing: MCSpacing.xs) {
+                    Text(L("cleanup.idle.title"))
+                        .font(MCFont.pageTitle)
+                        .multilineTextAlignment(.center)
+                    Text(L("cleanup.idle.safety_note"))
+                        .font(MCFont.secondaryBody)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
+                .mcAppear()
 
-                VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                    MCSectionHeader(L("cleanup.idle.what_is_scanned"))
-                    MCFeatureRow(L("cleanup.category.caches"),
-                                 subtitle: L("cleanup.category.caches.detail"),
-                                 icon: "folder.badge.gearshape")
-                    MCFeatureRow(L("cleanup.category.logs"),
-                                 subtitle: L("cleanup.category.logs.detail"),
-                                 icon: "doc.text")
-                    MCFeatureRow(L("cleanup.category.xcode"),
-                                 subtitle: L("cleanup.category.xcode.detail"),
-                                 icon: "hammer")
-                    MCFeatureRow(L("cleanup.category.downloads"),
-                                 subtitle: L("cleanup.category.downloads.detail"),
-                                 icon: "arrow.down.circle")
-                }
-
-                Button(L("cleanup.start_scan")) { model.startScan() }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
+                MCScanButton(L("cleanup.start_scan")) { model.startScan() }
                     .keyboardShortcut(.defaultAction)
                     .accessibilityIdentifier("storage.scan.start")
+                    .mcAppear(delay: 0.06)
+
+                MCCard {
+                    VStack(alignment: .leading, spacing: MCSpacing.sm) {
+                        MCSectionHeader(L("cleanup.idle.what_is_scanned"))
+                        MCFeatureRow(L("cleanup.category.caches"),
+                                     subtitle: L("cleanup.category.caches.detail"),
+                                     icon: "folder.badge.gearshape")
+                        MCFeatureRow(L("cleanup.category.logs"),
+                                     subtitle: L("cleanup.category.logs.detail"),
+                                     icon: "doc.text")
+                        MCFeatureRow(L("cleanup.category.xcode"),
+                                     subtitle: L("cleanup.category.xcode.detail"),
+                                     icon: "hammer")
+                        MCFeatureRow(L("cleanup.category.downloads"),
+                                     subtitle: L("cleanup.category.downloads.detail"),
+                                     icon: "arrow.down.circle")
+                    }
+                }
+                .frame(maxWidth: 480)
+                .mcAppear(delay: 0.12)
             }
             .padding(MCSpacing.page)
-            .frame(maxWidth: 520, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .center)
         }
-        .frame(maxWidth: .infinity)
-        .background(MCColor.background)
+        }
     }
 
     // MARK: - Scanning
 
     private var scanningView: some View {
-        VStack(spacing: MCSpacing.md) {
-            MCFragmentView(groupWeights: model.normalizedGroupWeights, phase: .scanning)
-                .frame(width: 120, height: 120)
-                .accessibilityLabel(MCFragmentView(groupWeights: [], phase: .scanning).accessibilityDescription)
-            Text(L("cleanup.scanning_progress", model.scannedCount, mcFormatBytes(model.totalBytes)))
-                .monospacedDigit()
+        VStack(spacing: MCSpacing.lg) {
+            MCScanStage(isScanning: !model.isScanPaused) {
+                Text(L("cleanup.scanning_progress", model.scannedCount, mcFormatBytes(model.totalBytes)))
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(L("cleanup.scanning_progress", model.scannedCount, mcFormatBytes(model.totalBytes)))
             HStack(spacing: MCSpacing.sm) {
                 if model.isScanPaused {
                     Button(L("common.resume")) { model.resumeScan() }
@@ -278,15 +279,17 @@ struct CleanupView: View {
     // MARK: - Review
 
     private var reviewView: some View {
-        VStack(alignment: .leading, spacing: MCSpacing.sm) {
-            HStack {
-                MCFragmentView(groupWeights: model.normalizedGroupWeights,
-                               phase: model.phase == .running ? .executing : .review)
-                    .frame(width: 48, height: 48)
-                    .accessibilityHidden(true)
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .center, spacing: MCSpacing.lg) {
                 VStack(alignment: .leading, spacing: MCSpacing.xxs) {
+                    // The recoverable total is the whole point of this screen.
+                    Text(mcFormatBytes(model.totalBytes))
+                        .font(MCFont.displayMetric)
+                        .monospacedDigit()
+                        .contentTransition(.numericText())
                     Text(L("cleanup.review.selected", model.findings.count, mcFormatBytes(model.selectedBytes)))
-                        .font(MCFont.cardTitle)
+                        .font(MCFont.secondaryBody)
+                        .foregroundStyle(.secondary)
                     if model.isDisplayTruncated {
                         Text(L("cleanup.review.truncated", model.findings.count, model.totalFindingCount, mcFormatBytes(model.totalBytes)))
                             .font(.caption).foregroundStyle(.secondary)
@@ -297,8 +300,13 @@ struct CleanupView: View {
                     showMoveConfirmation = true
                 }
                 .buttonStyle(.borderedProminent)
+                .controlSize(.large)
                 .disabled(model.phase == .running || model.selectedIDs.isEmpty)
             }
+            .padding(.horizontal, MCSpacing.page)
+            .padding(.top, MCSpacing.lg)
+            .padding(.bottom, MCSpacing.md)
+
             List {
                 ForEach(model.groups) { group in
                     DisclosureGroup {
@@ -362,14 +370,8 @@ struct CleanupView: View {
     }
 
     private func doneView(freed: Int64) -> some View {
-        VStack(spacing: MCSpacing.md) {
-            MCFragmentView(groupWeights: model.normalizedGroupWeights, phase: .success)
-                .frame(width: 120, height: 120)
-                .accessibilityLabel(MCFragmentView(groupWeights: [], phase: .success).accessibilityDescription)
-            Text(L("cleanup.done.moved", mcFormatBytes(freed)))
-                .font(.title3.weight(.semibold))
-            Button(L("smartcare.scan_again")) { model.startScan() }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        MCSuccessState(
+            title: L("cleanup.done.moved", mcFormatBytes(freed)),
+            actionTitle: L("smartcare.scan_again")) { model.startScan() }
     }
 }

@@ -137,24 +137,30 @@ struct PrivacyCleanerView: View {
         VStack(spacing: 0) {
             switch model.phase {
             case .scanning:
-                VStack(spacing: MCSpacing.sm) {
-                    ProgressView(L("privacy.detecting"))
-                    if model.isPaused {
-                        Button(L("common.resume")) { model.resumeScan() }
-                            .keyboardShortcut("r", modifiers: [])
-                            .help(L("clutter.resume_hint"))
-                            .accessibilityHint(L("clutter.resume_hint"))
-                            .accessibilityIdentifier("privacy.scan.resume")
-                    } else {
-                        Button(L("common.pause")) { model.pauseScan() }
-                            .keyboardShortcut("p", modifiers: [])
-                            .help(L("clutter.pause_hint"))
-                            .accessibilityHint(L("clutter.pause_hint"))
-                            .accessibilityIdentifier("privacy.scan.pause")
+                VStack(spacing: MCSpacing.lg) {
+                    MCScanStage(isScanning: !model.isPaused) {
+                        Text(L("privacy.detecting"))
                     }
-                    Button(L("common.cancel")) { model.cancelScan() }
-                        .keyboardShortcut(.cancelAction)
-                        .accessibilityIdentifier("privacy.scan.cancel")
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(L("privacy.detecting"))
+                    HStack(spacing: MCSpacing.sm) {
+                        if model.isPaused {
+                            Button(L("common.resume")) { model.resumeScan() }
+                                .keyboardShortcut("r", modifiers: [])
+                                .help(L("clutter.resume_hint"))
+                                .accessibilityHint(L("clutter.resume_hint"))
+                                .accessibilityIdentifier("privacy.scan.resume")
+                        } else {
+                            Button(L("common.pause")) { model.pauseScan() }
+                                .keyboardShortcut("p", modifiers: [])
+                                .help(L("clutter.pause_hint"))
+                                .accessibilityHint(L("clutter.pause_hint"))
+                                .accessibilityIdentifier("privacy.scan.pause")
+                        }
+                        Button(L("common.cancel")) { model.cancelScan() }
+                            .keyboardShortcut(.cancelAction)
+                            .accessibilityIdentifier("privacy.scan.cancel")
+                    }
                 }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
@@ -163,15 +169,9 @@ struct PrivacyCleanerView: View {
             case .results:
                 resultsView
             case let .finished(freed):
-                VStack(spacing: MCSpacing.sm) {
-                    Image(systemName: "checkmark.seal")
-                        .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
-                        .accessibilityHidden(true)
-                    Text(L("privacy.finished.moved", mcFormatBytes(freed)))
-                        .font(.title3.weight(.semibold))
-                    Button(L("smartcare.scan_again")) { Task { await model.scan() } }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                MCSuccessState(
+                    title: L("privacy.finished.moved", mcFormatBytes(freed)),
+                    actionTitle: L("smartcare.scan_again")) { Task { await model.scan() } }
             }
         }
         .accessibilityIdentifier("privacy.root")

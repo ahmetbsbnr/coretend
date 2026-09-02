@@ -250,23 +250,36 @@ struct DuplicatesView: View {
     }
 
     private var idleView: some View {
-        MCEmptyState(
-            icon: "doc.on.doc.fill", title: L("dupes.idle.title"), message: L("dupes.idle.subtitle"),
-            iconColor: MCTheme.accentSecondary, iconSize: MCIconSize.emptyStateProminent,
-            actionTitle: L("dupes.find")) { model.start() }
-            .accessibilityIdentifier("duplicates.scan.start")
+        VStack(spacing: MCSpacing.xl) {
+            VStack(spacing: MCSpacing.xs) {
+                Text(L("dupes.idle.title"))
+                    .font(MCFont.pageTitle)
+                    .multilineTextAlignment(.center)
+                Text(L("dupes.idle.subtitle"))
+                    .font(MCFont.secondaryBody)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: 460)
+            }
+            .mcAppear()
+            MCScanButton(L("dupes.find"), systemImage: "doc.on.doc.fill") { model.start() }
+                .accessibilityIdentifier("duplicates.scan.start")
+                .mcAppear(delay: 0.06)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(MCSpacing.xl)
     }
 
     private func scanningView(_ processed: Int, _ total: Int) -> some View {
-        VStack(spacing: MCSpacing.md) {
-            if total > 0 {
-                ProgressView(value: Double(processed), total: Double(total))
-                    .frame(width: 260)
-                Text(L("dupes.comparing", processed, total)).monospacedDigit()
-            } else {
-                ProgressView()
-                Text(L("dupes.building_inventory"))
+        VStack(spacing: MCSpacing.lg) {
+            MCScanStage(isScanning: !model.isScanPaused,
+                        fraction: total > 0 ? Double(processed) / Double(total) : nil) {
+                Text(total > 0 ? L("dupes.comparing", processed, total) : L("dupes.building_inventory"))
+                    .monospacedDigit()
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(total > 0 ? L("dupes.comparing", processed, total) : L("dupes.building_inventory"))
             HStack(spacing: MCSpacing.sm) {
                 if model.isScanPaused {
                     Button(L("common.resume")) { model.resumeScan() }
@@ -297,9 +310,21 @@ struct DuplicatesView: View {
 
     private var resultsView: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text(L("dupes.results.summary", model.groups.count, mcFormatBytes(model.selectedBytes), mcFormatBytes(model.wastedBytes)))
-                    .font(MCFont.cardTitle)
+            HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: MCSpacing.xxs) {
+                    Text(mcFormatBytes(model.wastedBytes))
+                        .font(MCFont.displayMetric)
+                        .monospacedDigit()
+                        .contentTransition(.numericText())
+                    Text(L("dupes.results.summary", model.groups.count, mcFormatBytes(model.selectedBytes), mcFormatBytes(model.wastedBytes)))
+                        .font(MCFont.secondaryBody)
+                        .foregroundStyle(.secondary)
+                    // The keeper-selection rule, stated once — not repeated on
+                    // every group's keeper row.
+                    Text(L("dupes.suggested_keeper.why"))
+                        .font(MCFont.caption)
+                        .foregroundStyle(.secondary)
+                }
                 Spacer()
                 Button {
                     exportResults()
@@ -326,6 +351,7 @@ struct DuplicatesView: View {
                                 .tag(String?.some(volume.id))
                         }
                     }
+                    .pickerStyle(.menu)
                     .frame(width: 180)
                 }
                 Spacer()
@@ -365,12 +391,6 @@ struct DuplicatesView: View {
                                         .background(MCTheme.accent.opacity(0.2), in: Capsule())
                                         .help(L("dupes.suggested_keeper.why"))
                                 }
-                                if url.path == group.keeper.path {
-                                    Text(model.recommendationText(for: url, in: group))
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                        .lineLimit(1)
-                                }
                                 Spacer()
                                 Text(url.deletingLastPathComponent().path)
                                     .font(.caption).foregroundStyle(.secondary)
@@ -408,10 +428,8 @@ struct DuplicatesView: View {
     }
 
     private func finishedView(_ freed: Int64) -> some View {
-        MCEmptyState(
-            icon: "checkmark.seal",
+        MCSuccessState(
             title: L("leftovers.finished.moved", mcFormatBytes(freed)),
-            message: "", iconColor: MCTheme.success,
             actionTitle: L("smartcare.scan_again")) { model.start() }
     }
 

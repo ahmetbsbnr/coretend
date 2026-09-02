@@ -4,12 +4,12 @@
 // Run from the repository root:
 //   swift Resources/Brand/Sources/generate-brand-assets.swift
 //
-// Design: Paper / Ink / Cobalt, the same identity as the portfolio. A
-// circular nucleus orbited by three asymmetric arcs, with a deliberate
-// opening in the outer arc — the mark reads as something breathing, and as
-// space that has been given back. No broom, no bin, no shield, no eraser, no
-// rocket. The arcs are tonal steps of the one brand accent (cobalt) rather
-// than three different hues — an editorial one-colour mark, not a rainbow.
+// Design: Porcelain / Slate / Teal, CoreTend's own identity. A circular
+// nucleus orbited by three asymmetric arcs, with a deliberate opening in the
+// outer arc — the mark reads as something breathing, and as space that has
+// been given back. No broom, no bin, no shield, no eraser, no rocket. The
+// arcs are tonal steps of the one brand accent (oceanic teal) rather than
+// three different hues — an editorial one-colour mark, not a rainbow.
 //
 // Geometry mirrors Sources/DesignSystem/CoreBloom.swift (MCBloomGeometry) and
 // colours mirror MCColor.Canonical, so the app, the icon, and the site
@@ -31,7 +31,11 @@ let arcs: [(start: Double, span: Double, radius: CGFloat)] = [
 ]
 let nucleusFraction: CGFloat = 0.24
 
-// MARK: - Paper / Ink / Cobalt palette
+// MARK: - Porcelain / Slate / Teal palette
+//
+// These mirror MCColor.Canonical (Sources/DesignSystem/Colors.swift) exactly.
+// The symbol names are kept (`cobalt`, `cobaltBright`, …) so the generated
+// SVG/CSS custom-property names don't churn; the *values* are the identity.
 
 struct RGB: Equatable {
     let r, g, b: CGFloat
@@ -40,21 +44,20 @@ struct RGB: Equatable {
     }
 }
 
-let coreInk       = RGB(r: 0.0902, g: 0.0980, b: 0.1137) // #17191D — matches portfolio --ink
-let softPorcelain = RGB(r: 0.9569, g: 0.9569, b: 0.9412) // #F4F4F0 — matches portfolio --paper
-let mutedSlate    = RGB(r: 0.467, g: 0.506, b: 0.557)    // #77818E — unchanged, neutral
+let coreInk       = RGB(r: 0.1059, g: 0.1176, b: 0.1333) // #1B1E22 — Slate (Canonical.ink)
+let softPorcelain = RGB(r: 0.9647, g: 0.9569, b: 0.9373) // #F6F4EF — Porcelain (Canonical.paper)
+let mutedSlate    = RGB(r: 0.4941, g: 0.5333, b: 0.5804) // #7E8894 — neutral (Canonical.mutedSlate)
 
-// The one brand accent, in three tonal steps. Cobalt matches portfolio
-// --cobalt exactly; the other two are computed same-hue/same-saturation
-// lightness steps (see Documentation for the derivation), not eyeballed.
-let cobalt        = RGB(r: 0.1333, g: 0.2510, b: 0.8863) // #2240E2 — matches portfolio --cobalt
-let cobaltBright  = RGB(r: 0.5569, g: 0.6196, b: 0.9412) // #8E9EF0 — dark-surface tonal step
-let cobaltDeep    = RGB(r: 0.0941, g: 0.1843, b: 0.6980) // #182FB2 — matches portfolio --cobalt-deep
-let cobaltDeepest = RGB(r: 0.0863, g: 0.1765, b: 0.6549) // #162DA7 — light-surface third tonal step
+// The one brand accent — oceanic teal — in three tonal steps. `cobalt` is
+// the canonical light-tuned teal; the others are same-hue lightness steps.
+let cobalt        = RGB(r: 0.0431, g: 0.4314, b: 0.4235) // #0B6E6C — Canonical.cobalt
+let cobaltBright  = RGB(r: 0.3725, g: 0.8275, b: 0.7765) // #5FD3C6 — dark-surface step (Canonical.cobaltBright)
+let cobaltDeep    = RGB(r: 0.0314, g: 0.3176, b: 0.3098) // #08514F — Canonical.cobaltDeep
+let cobaltDeepest = RGB(r: 0.0235, g: 0.2471, b: 0.2392) // #063F3D — light-surface third step (Canonical.cobaltDeepest)
 
 // Light-surface sibling for the subtitle/mutedSlate role only. Same hue,
 // lower luminance — see the divergence note in Colors.swift.
-let slateDeep = RGB(r: 0.310, g: 0.345, b: 0.392)
+let slateDeep = RGB(r: 0.2902, g: 0.3255, b: 0.3725)     // #4A5360 — Canonical.slateDeep
 
 // Three tonal steps of cobalt, lightest-to-boldest for dark, boldest-to-
 // darkest for light — an editorial one-colour mark, not three brand hues.
@@ -182,7 +185,7 @@ func appIcon(px: Int) -> CGImage {
     ctx.addPath(path)
     ctx.clip()
     let bg = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
-                        colors: [CGColor(srgbRed: 0.086, green: 0.118, blue: 0.145, alpha: 1),
+                        colors: [CGColor(srgbRed: 0.129, green: 0.145, blue: 0.163, alpha: 1),
                                  cgColor(coreInk)] as CFArray,
                         locations: [0, 1])!
     ctx.drawLinearGradient(bg, start: CGPoint(x: 0, y: s), end: CGPoint(x: 0, y: 0), options: [])
@@ -305,9 +308,9 @@ func openGraph() -> CGImage {
 
 /// DMG window background, 600x400 points (1200x800 at @2x).
 ///
-/// Carries the same paper/ink/cobalt palette as the website and the portfolio,
-/// not the dark Living System surface — the installer is the first thing a
-/// visitor sees after the landing page, so the two have to read as one system.
+/// Carries the same Porcelain / Slate / Teal palette as the website — the
+/// installer is the first thing a visitor sees after the landing page, so
+/// the two have to read as one system.
 ///
 /// Everything is positioned against the icon centres the .DS_Store records:
 /// CoreTend at (170, 215) and Applications at (430, 215) in Finder's
@@ -325,12 +328,12 @@ func dmgBackground(scale: Int = 1) -> CGImage {
     let ctx = makeContext(w, h)
 
     // Paper, very slightly warmer at the top so the surface is not dead flat.
-    let paper = RGB(r: 0.957, g: 0.957, b: 0.941)   // #F4F4F0, --paper
-    let card  = RGB(r: 0.988, g: 0.988, b: 0.980)   // #FCFCFA, --card
-    let ink   = RGB(r: 0.090, g: 0.098, b: 0.114)   // #17191D, --ink
-    let sub   = RGB(r: 0.286, g: 0.306, b: 0.341)   // #494E57, --sub
-    let dim   = RGB(r: 0.420, g: 0.440, b: 0.475)   // #6B7079, --dim
-    let cobalt = RGB(r: 0.133, g: 0.251, b: 0.886)  // #2240E2, --cobalt
+    let paper = RGB(r: 0.9647, g: 0.9569, b: 0.9373) // #F6F4EF, Porcelain
+    let card  = RGB(r: 0.988, g: 0.984, b: 0.976)    // #FCFBF9, warm near-white
+    let ink   = RGB(r: 0.1059, g: 0.1176, b: 0.1333) // #1B1E22, Slate
+    let sub   = RGB(r: 0.2902, g: 0.3255, b: 0.3725) // #4A5360, slateDeep
+    let dim   = RGB(r: 0.4941, g: 0.5333, b: 0.5804) // #7E8894, mutedSlate
+    let cobalt = RGB(r: 0.0431, g: 0.4314, b: 0.4235) // #0B6E6C, teal accent
 
     let bg = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
                         colors: [cgColor(card), cgColor(paper)] as CFArray,
@@ -411,7 +414,10 @@ func dmgBackground(scale: Int = 1) -> CGImage {
     _ = drawText(ctx, hint, at: CGPoint(x: (CGFloat(w) - hs.width) / 2, y: 56 * f),
                  size: 13 * f, weight: .medium, color: sub)
 
-    let note = "Unsigned build — first launch needs System Settings › Privacy & Security"
+    // Reinforce the product promise here, not the build's signing state — the
+    // released DMG is Developer ID-signed and notarized, and signing status is
+    // a maintainer concern, not something the installer should foreground.
+    let note = "Local scans · reversible cleanup · nothing leaves your Mac"
     let ns = NSAttributedString(string: note, attributes: [
         .font: NSFont.systemFont(ofSize: 10 * f, weight: .regular)]).size()
     _ = drawText(ctx, note, at: CGPoint(x: (CGFloat(w) - ns.width) / 2, y: 34 * f),
