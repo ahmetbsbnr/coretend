@@ -239,25 +239,30 @@ struct CloudCleanupView: View {
             case .ready:
                 providerPicker
             case .scanning:
-                VStack(spacing: MCSpacing.sm) {
-                    ProgressView()
-                    Text(L("cloud.measuring"))
-                    if model.isPaused {
-                        Button(L("common.resume")) { model.resumeScan() }
-                            .keyboardShortcut("r", modifiers: [])
-                            .help(L("clutter.resume_hint"))
-                            .accessibilityHint(L("clutter.resume_hint"))
-                            .accessibilityIdentifier("cloud.scan.resume")
-                    } else {
-                        Button(L("common.pause")) { model.pauseScan() }
-                            .keyboardShortcut("p", modifiers: [])
-                            .help(L("clutter.pause_hint"))
-                            .accessibilityHint(L("clutter.pause_hint"))
-                            .accessibilityIdentifier("cloud.scan.pause")
+                VStack(spacing: MCSpacing.lg) {
+                    MCScanStage(isScanning: !model.isPaused) {
+                        Text(L("cloud.measuring"))
                     }
-                    Button(L("common.cancel")) { model.cancel() }
-                        .keyboardShortcut(.cancelAction)
-                        .accessibilityIdentifier("cloud.scan.cancel")
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(L("cloud.measuring"))
+                    HStack(spacing: MCSpacing.sm) {
+                        if model.isPaused {
+                            Button(L("common.resume")) { model.resumeScan() }
+                                .keyboardShortcut("r", modifiers: [])
+                                .help(L("clutter.resume_hint"))
+                                .accessibilityHint(L("clutter.resume_hint"))
+                                .accessibilityIdentifier("cloud.scan.resume")
+                        } else {
+                            Button(L("common.pause")) { model.pauseScan() }
+                                .keyboardShortcut("p", modifiers: [])
+                                .help(L("clutter.pause_hint"))
+                                .accessibilityHint(L("clutter.pause_hint"))
+                                .accessibilityIdentifier("cloud.scan.pause")
+                        }
+                        Button(L("common.cancel")) { model.cancel() }
+                            .keyboardShortcut(.cancelAction)
+                            .accessibilityIdentifier("cloud.scan.cancel")
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .results:

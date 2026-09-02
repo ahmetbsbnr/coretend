@@ -145,7 +145,68 @@ final class SpaceLensViewModel {
     }
 }
 
-/// Semantic color-by-type for treemap fragments — never arbitrary index cycling.
+/// Radial "point of focus" packing for Space Lens — the biggest folder sits
+/// dead centre and its siblings cluster outward around it, each bubble's area
+/// proportional to its byte size. Pure geometry so it can be reasoned about
+/// (and unit-tested) without a view.
+enum RadialPack {
+    struct Bubble: Identifiable {
+        let id: String
+        let node: SpaceNode
+        let center: CGPoint
+        let radius: CGFloat
+    }
+
+    static func pack(_ nodes: [SpaceNode], in size: CGSize, limit: Int = 13) -> [Bubble] {
+        guard size.width > 8, size.height > 8, !nodes.isEmpty else { return [] }
+        let items = Array(nodes.prefix(limit))
+        let maxByte = Double(max(items.first?.size ?? 1, 1))
+        let shortSide = min(size.width, size.height)
+        let maxR = shortSide * 0.27
+        let minR: CGFloat = 12
+        let gap: CGFloat = 6
+        let mid = CGPoint(x: size.width / 2, y: size.height / 2)
+
+        func radius(for node: SpaceNode) -> CGFloat {
+            let frac = (Double(max(node.size, 1)) / maxByte).squareRoot()   // area ∝ bytes
+            return max(minR, min(maxR, CGFloat(frac) * maxR))
+        }
+
+        var placed: [Bubble] = []
+        for (i, node) in items.enumerated() {
+            let r = radius(for: node)
+            guard i > 0 else {
+                placed.append(Bubble(id: node.id, node: node, center: mid, radius: r))
+                continue
+            }
+            // Walk outward along a golden-angle spiral until the disc clears
+            // every placed disc and stays on-canvas.
+            var angle = Double(i) * 2.399963
+            var dist = (placed.first?.radius ?? r) + r + gap
+            var spot = mid
+            var settled = false
+            var steps = 0
+            while !settled && steps < 6000 {
+                let p = CGPoint(x: mid.x + CGFloat(cos(angle)) * dist,
+                                y: mid.y + CGFloat(sin(angle)) * dist)
+                let onCanvas = p.x - r >= 0 && p.x + r <= size.width
+                    && p.y - r >= 0 && p.y + r <= size.height
+                let clears = placed.allSatisfy { hypot($0.center.x - p.x, $0.center.y - p.y) >= $0.radius + r + gap }
+                if onCanvas && clears { spot = p; settled = true }
+                else { angle += 0.32; dist += 1.4 }
+                steps += 1
+            }
+            if !settled {
+                spot = CGPoint(x: mid.x + CGFloat(cos(angle)) * dist,
+                               y: mid.y + CGFloat(sin(angle)) * dist)
+            }
+            placed.append(Bubble(id: node.id, node: node, center: spot, radius: r))
+        }
+        return placed
+    }
+}
+
+/// Semantic color-by-type for Space Lens bubbles — never arbitrary index cycling.
 enum SpaceNodeCategory: String, Hashable {
     case folder, media, document, archive, code, other
 
@@ -174,10 +235,10 @@ enum SpaceNodeCategory: String, Hashable {
     var color: Color {
         switch self {
         case .folder: return MCTheme.accent
-        case .media: return MCColor.novaMagenta
-        case .document: return MCColor.glacierBlue
+        case .media: return MCColor.cellTealDeep
+        case .document: return MCColor.cellGraphite
         case .archive: return MCTheme.warning
-        case .code: return MCColor.mossGreen
+        case .code: return MCColor.cellTealPale
         case .other: return .secondary
         }
     }
@@ -192,6 +253,7 @@ struct SpaceLensView: View {
     @State private var searchText = ""
     @State private var categoryFilter: SpaceNodeCategory?
     @State private var exclusionsController = ClutterExclusionsController()
+    @State private var showFavoritesRecents = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
@@ -203,6 +265,30 @@ struct SpaceLensView: View {
             }
         }
         .navigationTitle(L("spacelens.title"))
+        .toolbar {
+            ToolbarItem {
+                Button {
+                    showFavoritesRecents = true
+                } label: {
+                    Label(L("spacelens.favorites_recents"), systemImage: "star")
+                }
+                .accessibilityIdentifier("spacelens.favoritesRecents.open")
+            }
+        }
+        // Favorites/Recents jumps back into Space Lens via .mcOpenSpaceLensAt
+        // (handled below), so it's presented from here rather than living as
+        // its own sidebar module.
+        .sheet(isPresented: $showFavoritesRecents) {
+            NavigationStack {
+                FavoritesRecentsView()
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button(L("common.done")) { showFavoritesRecents = false }
+                        }
+                    }
+            }
+            .frame(minWidth: 480, minHeight: 420)
+        }
         .task { await exclusionsController.load() }
         .confirmationDialog(
             model.pendingDelete.map { L("spacelens.delete.confirm_title", $0.name) } ?? "",
@@ -224,73 +310,77 @@ struct SpaceLensView: View {
             Text(L("spacelens.delete.error_message", model.lastDeleteError ?? ""))
         }
         .onReceive(NotificationCenter.default.publisher(for: .mcOpenSpaceLensAt)) { note in
-            if let url = note.object as? URL { model.start(url: url) }
+            if let url = note.object as? URL {
+                model.start(url: url)
+                showFavoritesRecents = false
+            }
         }
         .accessibilityIdentifier("spacelens.root")
     }
 
     private var idleView: some View {
+        GeometryReader { proxy in
         ScrollView {
-            VStack(alignment: .leading, spacing: MCSpacing.xl) {
-                HStack(alignment: .top, spacing: MCSpacing.lg) {
-                    Image(systemName: "circle.hexagongrid")
-                        .font(.system(size: 48, weight: .light))
-                        .foregroundStyle(MCTheme.accent)
-                        .frame(width: 72, height: 72)
-                        .accessibilityHidden(true)
-                    VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                        Text(L("spacelens.idle.title"))
-                            .font(MCFont.pageTitle)
-                        Text(L("spacelens.idle.subtitle"))
-                            .font(MCFont.secondaryBody)
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+            VStack(spacing: MCSpacing.xl) {
+                VStack(spacing: MCSpacing.xs) {
+                    Text(L("spacelens.idle.title"))
+                        .font(MCFont.pageTitle)
+                        .multilineTextAlignment(.center)
+                    Text(L("spacelens.idle.subtitle"))
+                        .font(MCFont.secondaryBody)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
+                .mcAppear()
 
-                VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                    MCSectionHeader(L("spacelens.filter_category"))
-                    MCFeatureRow(L("spacelens.category.folder"),
-                                 icon: "folder.fill", iconColor: MCTheme.accent)
-                    MCFeatureRow(L("spacelens.category.media"),
-                                 icon: "photo", iconColor: MCColor.novaMagenta)
-                    MCFeatureRow(L("spacelens.category.document"),
-                                 icon: "doc.text", iconColor: MCColor.glacierBlue)
-                    MCFeatureRow(L("spacelens.category.archive"),
-                                 icon: "archivebox", iconColor: MCTheme.warning)
-                    MCFeatureRow(L("spacelens.category.code"),
-                                 icon: "curlybraces", iconColor: MCColor.mossGreen)
+                MCScanButton(L("spacelens.scan_home"), systemImage: "circle.hexagongrid") {
+                    model.start(url: FileManager.default.homeDirectoryForCurrentUser)
                 }
+                .accessibilityIdentifier("spacelens.scan.home")
+                .mcAppear(delay: 0.06)
 
-                HStack(spacing: MCSpacing.sm) {
-                    Button(L("spacelens.scan_home")) {
-                        model.start(url: FileManager.default.homeDirectoryForCurrentUser)
+                Button(L("spacelens.choose_folder")) {
+                    let panel = NSOpenPanel()
+                    panel.canChooseDirectories = true
+                    panel.canChooseFiles = false
+                    if panel.runModal() == .OK, let url = panel.url {
+                        model.start(url: url)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .accessibilityIdentifier("spacelens.scan.home")
-                    Button(L("spacelens.choose_folder")) {
-                        let panel = NSOpenPanel()
-                        panel.canChooseDirectories = true
-                        panel.canChooseFiles = false
-                        if panel.runModal() == .OK, let url = panel.url {
-                            model.start(url: url)
-                        }
-                    }
-                    .controlSize(.large)
                 }
+                .buttonStyle(.link)
+
+                MCCard {
+                    VStack(alignment: .leading, spacing: MCSpacing.sm) {
+                        MCSectionHeader(L("spacelens.filter_category"))
+                        MCFeatureRow(L("spacelens.category.folder"),
+                                     icon: "folder.fill", iconColor: MCTheme.accent)
+                        MCFeatureRow(L("spacelens.category.media"),
+                                     icon: "photo", iconColor: MCColor.cellTealDeep)
+                        MCFeatureRow(L("spacelens.category.document"),
+                                     icon: "doc.text", iconColor: MCColor.cellGraphite)
+                        MCFeatureRow(L("spacelens.category.archive"),
+                                     icon: "archivebox", iconColor: MCTheme.warning)
+                        MCFeatureRow(L("spacelens.category.code"),
+                                     icon: "curlybraces", iconColor: MCColor.cellTealPale)
+                    }
+                }
+                .frame(maxWidth: 480)
+                .mcAppear(delay: 0.12)
             }
             .padding(MCSpacing.page)
-            .frame(maxWidth: 520, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .center)
         }
-        .frame(maxWidth: .infinity)
-        .background(MCColor.background)
+        }
     }
 
     private func scanningView(_ items: Int) -> some View {
-        VStack(spacing: MCSpacing.md) {
-            ProgressView()
-            Text(L("spacelens.scanning_progress", items)).monospacedDigit()
+        VStack(spacing: MCSpacing.lg) {
+            MCScanStage(isScanning: !model.isScanPaused) {
+                Text(L("spacelens.scanning_progress", items)).monospacedDigit()
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(L("spacelens.scanning_progress", items))
             HStack(spacing: MCSpacing.sm) {
                 if model.isScanPaused {
                     Button(L("common.resume")) { model.resumeScan() }
@@ -321,7 +411,7 @@ struct SpaceLensView: View {
                     .padding(.horizontal).padding(.vertical, 8)
                 searchAndFilterRow
                     .padding(.horizontal).padding(.bottom, 8)
-                treemap(for: current)
+                bubbleMap(for: current)
                     .padding(.horizontal)
                 Divider().padding(.top, 8)
                 childList(for: current)
@@ -358,6 +448,19 @@ struct SpaceLensView: View {
     private var breadcrumb: some View {
         HStack(spacing: 4) {
             if let root = model.root {
+                if !model.pathStack.isEmpty {
+                    Button {
+                        navigate { model.pop(to: model.pathStack.count >= 2 ? model.pathStack.count - 2 : nil) }
+                    } label: {
+                        Image(systemName: "chevron.left")
+                    }
+                    .buttonStyle(.borderless)
+                    .keyboardShortcut("[", modifiers: .command)
+                    .help(L("spacelens.up"))
+                    .accessibilityLabel(L("spacelens.up"))
+                    .accessibilityIdentifier("spacelens.up")
+                    .padding(.trailing, 2)
+                }
                 Button(root.name) { navigate { model.pop(to: nil) } }
                     .buttonStyle(.link)
                 ForEach(Array(model.pathStack.enumerated()), id: \.element.id) { index, node in
@@ -383,24 +486,30 @@ struct SpaceLensView: View {
         }
     }
 
-    private func treemap(for node: SpaceNode) -> some View {
+    /// Radial size map — the biggest child dead centre, siblings orbiting it,
+    /// bubble area proportional to bytes. Faint concentric rings give the eye
+    /// a fixed centre to read against.
+    private func bubbleMap(for node: SpaceNode) -> some View {
         GeometryReader { proxy in
-            let rects = TreemapLayout.layout(
-                nodes: filteredChildren(of: node),
-                in: CGRect(origin: .zero, size: proxy.size))
-            ZStack(alignment: .topLeading) {
-                ForEach(rects) { rect in
-                    fragment(for: rect)
+            let bubbles = RadialPack.pack(filteredChildren(of: node), in: proxy.size)
+            ZStack {
+                ForEach(1...3, id: \.self) { ring in
+                    Circle()
+                        .stroke(MCColor.separator.opacity(0.18), lineWidth: 1)
+                        .frame(width: min(proxy.size.width, proxy.size.height) * CGFloat(ring) * 0.32)
+                        .position(x: proxy.size.width / 2, y: proxy.size.height / 2)
                 }
+                ForEach(bubbles) { bubble(for: $0) }
             }
-            // Anchors the whole map to the node that was just zoomed into,
-            // so the transition reads as continuous rather than a hard cut.
+            .frame(width: proxy.size.width, height: proxy.size.height)
+            // Anchors the map to the node just zoomed into, so descend/pop
+            // reads as continuous rather than a hard cut.
             .matchedGeometryEffect(id: node.id, in: zoomSpace, isSource: false)
         }
-        .frame(minHeight: 260, maxHeight: 380)
-        // The treemap is a purely visual duplicate of the accessible child
-        // list below; collapse its fragments into one element so VoiceOver
-        // reads a summary, not dozens of unlabeled rectangles.
+        .frame(minHeight: 320, maxHeight: 440)
+        // The map is a purely visual duplicate of the accessible child list
+        // below; collapse it so VoiceOver reads a summary, not dozens of
+        // unlabeled shapes.
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(L("spacelens.treemap.a11y_summary",
                               node.children.count, mcFormatBytes(node.size))
@@ -408,63 +517,63 @@ struct SpaceLensView: View {
     }
 
     @ViewBuilder
-    private func fragment(for rect: TreemapLayout.Rect) -> some View {
-        let category = SpaceNodeCategory.of(rect.node)
-        let isSelected = selectedID == rect.node.id
-        let isHovered = hoveredID == rect.node.id
-        RoundedRectangle(cornerRadius: 3)
-            .fill(category.color.opacity(rect.node.isDirectory ? 0.75 : 0.45))
-            .overlay {
-                // Denied/cloud branches get a distinct pattern, never color-only.
-                if rect.node.isAccessDenied {
-                    Canvas { context, size in
-                        var path = Path()
-                        var x: CGFloat = -size.height
-                        while x < size.width {
-                            path.move(to: CGPoint(x: x, y: size.height))
-                            path.addLine(to: CGPoint(x: x + size.height, y: 0))
-                            x += 6
-                        }
-                        context.stroke(path, with: .color(.white.opacity(0.5)), lineWidth: 1)
+    private func bubble(for b: RadialPack.Bubble) -> some View {
+        let category = SpaceNodeCategory.of(b.node)
+        let isSelected = selectedID == b.node.id
+        let isHovered = hoveredID == b.node.id
+        let showLabel = b.radius >= 30
+
+        ZStack {
+            Circle().fill(category.color.opacity(b.node.isDirectory ? 0.85 : 0.55))
+            // Top-left sheen for a little depth — transform/opacity only.
+            Circle().fill(
+                RadialGradient(colors: [.white.opacity(0.20), .clear],
+                               center: UnitPoint(x: 0.34, y: 0.30),
+                               startRadius: 0, endRadius: b.radius))
+            if b.node.isAccessDenied {
+                Canvas { context, size in
+                    var path = Path()
+                    var x = -size.height
+                    while x < size.width {
+                        path.move(to: CGPoint(x: x, y: size.height))
+                        path.addLine(to: CGPoint(x: x + size.height, y: 0))
+                        x += 6
                     }
-                } else if rect.node.isCloudPlaceholder {
-                    RoundedRectangle(cornerRadius: 3)
-                        .strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [4, 3]))
-                        .foregroundStyle(.white.opacity(0.7))
+                    context.stroke(path, with: .color(.white.opacity(0.5)), lineWidth: 1)
                 }
+                .clipShape(Circle())
+            } else if b.node.isCloudPlaceholder {
+                Circle().strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [4, 3]))
+                    .foregroundStyle(.white.opacity(0.7))
             }
-            .overlay(alignment: .topLeading) {
-                if rect.frame.width > 60 && rect.frame.height > 24 {
-                    VStack(alignment: .leading, spacing: 0) {
-                        HStack(spacing: 2) {
-                            if rect.node.isAccessDenied {
-                                Image(systemName: "lock.fill").font(.system(size: MCIconSize.inline))
-                            } else if rect.node.isCloudPlaceholder {
-                                Image(systemName: "icloud.fill").font(.system(size: MCIconSize.inline))
-                            }
-                            Text(rect.node.name).font(.caption2.weight(.medium)).lineLimit(1)
-                        }
-                        Text(mcFormatBytes(rect.node.size)).font(.caption2).opacity(0.8)
-                    }
-                    .padding(4)
-                    .foregroundStyle(.white)
+            if showLabel {
+                VStack(spacing: 1) {
+                    Text(b.node.name).font(.caption2.weight(.semibold)).lineLimit(1)
+                    Text(mcFormatBytes(b.node.size)).font(.system(size: 9)).opacity(0.85)
                 }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 4)
+                .frame(maxWidth: b.radius * 1.7)
             }
-            .overlay(
-                RoundedRectangle(cornerRadius: 3)
-                    .strokeBorder(Color.white, lineWidth: isSelected ? 2 : (isHovered ? 1 : 0))
-            )
-            .frame(width: max(rect.frame.width - 2, 1), height: max(rect.frame.height - 2, 1))
-            .offset(x: rect.frame.minX + 1, y: rect.frame.minY + 1)
-            .matchedGeometryEffect(id: rect.node.id, in: zoomSpace, isSource: true)
-            .onTapGesture {
-                selectedID = rect.node.id
-                navigate { model.descend(into: rect.node) }
+        }
+        .overlay(Circle().strokeBorder(Color.white,
+                                       lineWidth: isSelected ? 2.5 : (isHovered ? 1.5 : 0)))
+        .frame(width: b.radius * 2, height: b.radius * 2)
+        .scaleEffect(isHovered && !reduceMotion ? 1.04 : 1)
+        .position(b.center)
+        .matchedGeometryEffect(id: b.node.id, in: zoomSpace, isSource: true)
+        .onTapGesture {
+            selectedID = b.node.id
+            navigate { model.descend(into: b.node) }
+        }
+        .onHover { hovering in
+            withAnimation(MCMotion.animation(MCMotion.settle, reduce: reduceMotion)) {
+                hoveredID = hovering ? b.node.id : nil
             }
-            .onHover { hovering in hoveredID = hovering ? rect.node.id : nil }
-            .help(L("spacelens.fragment.help", rect.node.path, mcFormatBytes(rect.node.size))
-                  + (rect.node.isAccessDenied ? " — \(L("spacelens.access_denied_suffix"))" : "")
-                  + (rect.node.isCloudPlaceholder ? " — \(L("spacelens.cloud_placeholder_suffix"))" : ""))
+        }
+        .help(L("spacelens.fragment.help", b.node.path, mcFormatBytes(b.node.size))
+              + (b.node.isAccessDenied ? " — \(L("spacelens.access_denied_suffix"))" : "")
+              + (b.node.isCloudPlaceholder ? " — \(L("spacelens.cloud_placeholder_suffix"))" : ""))
     }
 
     private func childList(for node: SpaceNode) -> some View {

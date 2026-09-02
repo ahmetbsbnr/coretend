@@ -30,7 +30,7 @@ check_absent "current Swift product" \
 check_absent "current Xcode UI-test contract" Tests/CoreTendUITests
 
 check_absent "public website" \
-  Website/index.html Website/build.py Website/generate.py Website/en Website/fr
+  Website/index.html Website/build.py
 
 check_absent "public product fixture" Resources/DemoFixtures
 

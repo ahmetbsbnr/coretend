@@ -45,5 +45,29 @@ cp LICENSE NOTICE THIRD_PARTY_NOTICES.md "$APP/Contents/Resources/"
 # Strip only debug symbols before sealing the bundle; a future symbolicated
 # Developer ID build can archive a separate dSYM outside the application.
 xcrun strip -S "$APP/Contents/MacOS/CoreTend"
-codesign --force --sign - "$APP"
+
+# Signing identity for LOCAL runs only (never the release path — that is
+# Scripts/sign-and-notarize.sh with the Developer ID identity).
+#
+# Ad-hoc ("-") has no stable designated requirement, so macOS TCC keys the
+# app's Full-Disk / Downloads / Desktop grants to the exact code hash. Every
+# rebuild changes that hash, so every rebuild re-prompts for folder access —
+# which is not how the shipped Developer ID build behaves (there, the grant
+# is remembered once, permanently).
+#
+# Set CORETEND_LOCAL_SIGN_ID to a stable identity to make local grants stick
+# across rebuilds. If unset, we auto-pick an installed "Apple Development"
+# identity (its whole purpose is local development); failing that, ad-hoc.
+SIGN_ID="${CORETEND_LOCAL_SIGN_ID:-}"
+if [ -z "$SIGN_ID" ]; then
+  SIGN_ID=$(security find-identity -v -p codesigning 2>/dev/null \
+            | grep -o '"Apple Development: [^"]*"' | head -1 | tr -d '"')
+fi
+if [ -n "$SIGN_ID" ]; then
+  echo "Signing locally with: $SIGN_ID (TCC grants persist across rebuilds)"
+  codesign --force --options runtime --sign "$SIGN_ID" "$APP"
+else
+  echo "Signing locally ad-hoc — macOS will re-prompt for folder access on each rebuild."
+  codesign --force --sign - "$APP"
+fi
 echo "Built: $APP (scratch: $SCRATCH)"

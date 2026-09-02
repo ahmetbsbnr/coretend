@@ -9,15 +9,15 @@ The verified production deployment is
 (`dpl_GcQWq468fFGa6zcaLWLx1tinVhGg`), served publicly as
 `https://coretend.ahmetbsbnr.com`.
 
-Build and deploy remain:
+Vercel builds from `Website/vercel.json` (`buildCommand:
+"python3 build.py --output dist"`, `outputDirectory: "dist"`) on push. To
+reproduce and verify locally first:
 
 ```sh
-python3 Website/generate.py
+python3 Website/build.py --output Website/dist
 bash Scripts/check-website.sh
 bash Scripts/check-placeholders.sh
 bash Scripts/check-private-data.sh
-cd Website
-vercel deploy --prod --yes
 ```
 
 DNS uses flattened A records `64.29.17.1` and `216.198.79.65` (TTL 1800);
@@ -69,8 +69,8 @@ no deploy has been triggered — that is a human decision, not made here.
    address, domain, security contact, repo URL, screenshot placeholder).
 2. Replace the homepage `.screenshot-placeholder` box with a real
    screenshot.
-3. Confirm `python3 Website/generate.py` output is current (no
-   uncommitted content-table changes not yet rendered).
+3. Confirm `python3 Website/build.py --output Website/dist` runs clean and the
+   `check-website.sh` gate is green.
 4. Configure the HTTP security headers listed in `WEBSITE_SECURITY.md` at
    the hosting layer.
 5. Confirm zero tracking is configured at the host level too (no
@@ -80,9 +80,10 @@ no deploy has been triggered — that is a human decision, not made here.
 
 ## Build/deploy commands
 
-Build: `python3 Website/generate.py` (see `WEBSITE_ARCHITECTURE.md`). This also
-generates `Website/vercel.json`, `Website/robots.txt` and
-`Website/sitemap.xml`. None of them is hand-edited.
+Build: `python3 Website/build.py --output Website/dist` (see
+`WEBSITE_ARCHITECTURE.md`). It writes `robots.txt`, `sitemap.xml`,
+`manifest.webmanifest`, `latest.json` and `SHA256SUMS` into `dist/`.
+`Website/vercel.json` is **hand-maintained**, not generated.
 
 `Website/vercel.json` carries the headers from `WEBSITE_SECURITY.md`:
 Content-Security-Policy, Referrer-Policy, X-Content-Type-Options,
@@ -98,16 +99,16 @@ Run from the repository root. Everything before the last two commands is
 non-destructive and reversible.
 
 ```sh
-# 1. Regenerate and verify locally.
-python3 Website/generate.py
+# 1. Build and verify locally.
+python3 Website/build.py --output Website/dist
 bash Scripts/check-website.sh
 bash Scripts/check-placeholders.sh          # must report 0
 
-# 2. Preview deploy (creates the project on first run; not production).
+# 2. Preview deploy (not production).
 cd Website && vercel deploy
 
 # 3. Verify the preview URL before promoting it.
-curl -sI <preview-url>/en/index.html | grep -i 'content-security-policy\|strict-transport'
+curl -sI <preview-url>/en | grep -i 'content-security-policy\|strict-transport'
 
 # 4. Promote to production.
 vercel deploy --prod

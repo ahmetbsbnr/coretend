@@ -63,14 +63,31 @@ final class IntegrityViewModel {
 }
 
 struct ProtectionView: View {
+    @State private var tab = 0
+
+    // Plain segmented sub-nav rather than a TabView: a TabView as a
+    // NavigationSplitView detail can intermittently blank the split view's
+    // sidebar on macOS.
     var body: some View {
-        TabView {
-            IntegrityView()
-                .tabItem { Label(L("protection.tab.integrity"), systemImage: "checkmark.seal") }
-            PrivacyCleanerView()
-                .tabItem { Label(L("protection.tab.privacy"), systemImage: "hand.raised") }
+        Group {
+            if tab == 0 { IntegrityView() } else { PrivacyCleanerView() }
         }
-        .padding(MCSpacing.xs)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            VStack(spacing: 0) {
+                Picker("", selection: $tab) {
+                    Text(L("protection.tab.integrity")).tag(0)
+                    Text(L("protection.tab.privacy")).tag(1)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(maxWidth: 360)
+                .padding(.vertical, MCSpacing.sm)
+                Divider()
+            }
+            .frame(maxWidth: .infinity)
+            .background(.bar)
+        }
         .navigationTitle(L("module.protection"))
         .accessibilityIdentifier("integrity.root")
     }
