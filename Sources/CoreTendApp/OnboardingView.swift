@@ -188,22 +188,88 @@ struct OnboardingView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ScrollView {
-                content
-                    .frame(maxWidth: .infinity, alignment: .top)
-                    .padding(MCSpacing.xl)
+        HStack(spacing: 0) {
+            railView
+            VStack(spacing: 0) {
+                ScrollView {
+                    content
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, MCSpacing.xl)
+                        .padding(.vertical, MCSpacing.lg)
+                }
+                Divider()
+                footer
+                    .padding(.horizontal, MCSpacing.xl)
+                    .padding(.vertical, MCSpacing.md)
             }
-            Divider()
-            footer
-                .padding(.horizontal, MCSpacing.xl)
-                .padding(.vertical, MCSpacing.md)
         }
-        .frame(width: 600, height: 540)
+        .frame(width: 780, height: 560)
         .accessibilityIdentifier("onboarding.root")
         .onAppear {
             model.onAppear()
             Task { await model.refreshPermissions() }
+        }
+    }
+
+    // MARK: Brand rail — identity + vertical progress, one frame for every step
+
+    private var railView: some View {
+        VStack(alignment: .leading, spacing: MCSpacing.lg) {
+            HStack(spacing: MCSpacing.xs) {
+                CoreBloomMark(tint: [MCColor.teal], lineWidthFraction: 0.1)
+                    .frame(width: 30, height: 30)
+                Text(verbatim: "CoreTend").font(MCFont.cardTitle)
+            }
+            VStack(alignment: .leading, spacing: MCSpacing.sm) {
+                ForEach(0..<stepCount, id: \.self) { railStepRow($0) }
+            }
+            Spacer(minLength: 0)
+            Text(L("onboarding.welcome.version", appVersion))
+                .font(MCFont.badge).foregroundStyle(.tertiary)
+        }
+        .padding(MCSpacing.lg)
+        .frame(width: 236)
+        .frame(maxHeight: .infinity, alignment: .top)
+        .background(
+            LinearGradient(colors: [MCColor.teal.opacity(0.10), MCColor.elevatedBackground],
+                           startPoint: .top, endPoint: .bottom))
+        .overlay(alignment: .trailing) {
+            Rectangle().fill(MCColor.separator.opacity(0.6)).frame(width: 1)
+        }
+        .animation(.smooth(duration: 0.3), value: step)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(L("onboarding.step_a11y", step + 1, stepCount))
+        .accessibilityIdentifier("onboarding.step")
+    }
+
+    private func railStepRow(_ i: Int) -> some View {
+        let done = i < step
+        let current = i == step
+        return HStack(alignment: .top, spacing: MCSpacing.xs) {
+            Image(systemName: done ? "checkmark.circle.fill" : (current ? "circle.inset.filled" : "circle"))
+                .font(.system(size: 13))
+                .foregroundStyle(done || current ? AnyShapeStyle(MCColor.teal) : AnyShapeStyle(.tertiary))
+                .accessibilityHidden(true)
+            Text(stepTitle(i))
+                .font(MCFont.caption)
+                .fontWeight(current ? .semibold : .regular)
+                .foregroundStyle(current ? AnyShapeStyle(.primary)
+                                 : (done ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tertiary)))
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+    }
+
+    private func stepTitle(_ i: Int) -> String {
+        switch i {
+        case 0: L("onboarding.step0.title")
+        case 1: L("onboarding.security.title")
+        case 2: L("onboarding.fileaccess.title")
+        case 3: L("onboarding.menubar.title")
+        case 4: L("onboarding.folders.title")
+        case 5: L("onboarding.check.title")
+        default: L("onboarding.summary.title")
         }
     }
 
@@ -224,26 +290,26 @@ struct OnboardingView: View {
 
     private var welcomeStep: some View {
         page {
-            CoreBloomMark(tint: [MCColor.storage, MCColor.protection, MCColor.performance])
-                .frame(width: 88, height: 88)
-            Text(L("onboarding.step0.title")).font(MCFont.heroTitle)
-            // The product signature, identical here, on the site, in the DMG
-            // and in the README. A product that introduces itself differently
-            // in each place reads as several products.
-            Text(L("onboarding.step0.signature"))
-                .font(MCFont.pageTitle).foregroundStyle(MCTheme.accent)
-                .multilineTextAlignment(.center).frame(maxWidth: 440)
+            VStack(alignment: .leading, spacing: MCSpacing.xxs) {
+                Text(L("onboarding.step0.title")).font(MCFont.heroTitle)
+                // The product signature — identical here, on the site, in the
+                // DMG and in the README. A product that introduces itself
+                // differently in each place reads as several products.
+                Text(L("onboarding.step0.signature"))
+                    .font(MCFont.pageTitle).foregroundStyle(MCColor.teal)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             Text(L("onboarding.step0.subtitle"))
                 .font(MCFont.body).foregroundStyle(.secondary)
-                .multilineTextAlignment(.center).frame(maxWidth: 440)
+                .fixedSize(horizontal: false, vertical: true)
             VStack(alignment: .leading, spacing: MCSpacing.sm) {
                 bullet("internaldrive", L("onboarding.welcome.local"))
                 bullet("person.crop.circle.badge.xmark", L("onboarding.welcome.no_account"))
                 bullet("antenna.radiowaves.left.and.right.slash", L("onboarding.welcome.no_telemetry"))
                 bullet("chevron.left.forwardslash.chevron.right", L("onboarding.welcome.open_source"))
             }
-            .frame(maxWidth: 440)
-            VStack(spacing: MCSpacing.xxs) {
+            Divider().padding(.vertical, MCSpacing.xxs)
+            VStack(alignment: .leading, spacing: MCSpacing.xs) {
                 Text(L("onboarding.language.title")).font(MCFont.sectionTitle).foregroundStyle(.secondary)
                 Picker(L("onboarding.language.title"), selection: $appLanguageRaw) {
                     Text(L("settings.language.system")).tag(AppLanguage.system.rawValue)
@@ -252,15 +318,11 @@ struct OnboardingView: View {
                 }
                 .labelsHidden()
                 .pickerStyle(.segmented)
-                .frame(maxWidth: 280)
+                .frame(maxWidth: 320)
                 .accessibilityIdentifier("onboarding.language")
                 Text(L("onboarding.language.subtitle"))
                     .font(MCFont.caption).foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center).frame(maxWidth: 400)
-            }
-            HStack(spacing: MCSpacing.sm) {
-                MCStatusBadge(L("onboarding.welcome.version", appVersion), status: .neutral)
-                MCStatusBadge(L("onboarding.welcome.unsigned"), status: .attention)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             if model.launchLocation.canOfferMove { moveBanner }
         }
@@ -323,16 +385,6 @@ struct OnboardingView: View {
         }
         .buttonStyle(.plain)
         .accessibilityAddTraits(model.profile == p ? [.isSelected] : [])
-    }
-
-    private func configLine(_ label: String, on: Bool, binding: Binding<Bool>?) -> some View {
-        Group {
-            if let binding {
-                Toggle(label, isOn: binding).font(MCFont.caption)
-            } else {
-                configFixed(label, on: on)
-            }
-        }
     }
 
     private func configFixed(_ label: String, on: Bool) -> some View {
@@ -505,11 +557,6 @@ struct OnboardingView: View {
                 .buttonStyle(.plain).foregroundStyle(.secondary)
                 .accessibilityIdentifier("onboarding.skip")
             Spacer()
-            Text(L("onboarding.step_of", step + 1, stepCount))
-                .font(MCFont.caption).foregroundStyle(.secondary)
-                .accessibilityLabel(L("onboarding.step_a11y", step + 1, stepCount))
-                .accessibilityIdentifier("onboarding.step")
-            Spacer()
             if step > 0 {
                 Button(L("onboarding.back")) { step -= 1 }
                     .accessibilityIdentifier("onboarding.back")
@@ -531,19 +578,22 @@ struct OnboardingView: View {
     // MARK: Shared building blocks
 
     private func page(@ViewBuilder _ content: () -> some View) -> some View {
-        VStack(spacing: MCSpacing.md) { content() }
-            .frame(maxWidth: .infinity)
+        VStack(alignment: .leading, spacing: MCSpacing.lg) { content() }
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func stepHeader(_ icon: String, _ title: String, _ subtitle: String) -> some View {
-        VStack(spacing: MCSpacing.sm) {
+        HStack(alignment: .top, spacing: MCSpacing.md) {
             Image(systemName: icon)
-                .font(.system(size: MCIconSize.emptyStateProminent, weight: .light))
+                .font(.system(size: 30, weight: .light))
                 .foregroundStyle(MCColor.teal)
+                .frame(width: 34)
                 .accessibilityHidden(true)
-            Text(title).font(MCFont.heroTitle)
-            Text(subtitle).font(MCFont.body).foregroundStyle(.secondary)
-                .multilineTextAlignment(.center).frame(maxWidth: 460)
+            VStack(alignment: .leading, spacing: MCSpacing.xxs) {
+                Text(title).font(MCFont.pageTitle)
+                Text(subtitle).font(MCFont.secondaryBody).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
     }
 
@@ -552,14 +602,6 @@ struct OnboardingView: View {
             Image(systemName: icon).frame(width: 20).foregroundStyle(MCColor.teal)
                 .accessibilityHidden(true)
             Text(text).font(MCFont.secondaryBody)
-        }
-    }
-
-    private func detailRow(_ label: String, _ value: String) -> some View {
-        HStack {
-            Text(label).font(MCFont.caption).foregroundStyle(.secondary)
-            Spacer()
-            Text(value).font(MCFont.caption).lineLimit(1).truncationMode(.middle)
         }
     }
 

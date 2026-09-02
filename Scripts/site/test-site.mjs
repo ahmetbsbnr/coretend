@@ -783,7 +783,12 @@ await gate('favicons preserve the complete centered CoreTend mark at every size'
     assert.equal(record.width, record.requested)
     assert.equal(record.height, record.requested)
     const [red, green, blue, alpha] = record.center
-    assert(alpha > 240 && Math.abs(red - 34) < 10 && Math.abs(green - 64) < 10 && Math.abs(blue - 226) < 10, `${record.requested}px favicon lost the fixed cobalt core (${record.center})`)
+    // The mark's nucleus is a teal radial gradient (Canonical.cobaltBright
+    // #5FD3C6 -> Canonical.cobaltDeep #08514F). The sampled centre lands
+    // partway along it, drifting a little darker as downscaling folds in the
+    // gradient edge at 16px. Anchor near the 32-512px cluster with enough
+    // tolerance to cover that drift.
+    assert(alpha > 240 && Math.abs(red - 66) < 20 && Math.abs(green - 168) < 20 && Math.abs(blue - 158) < 20, `${record.requested}px favicon lost the fixed teal core (${record.center})`)
     assert(record.coverage > 0.12, `${record.requested}px favicon mark coverage is only ${(record.coverage * 100).toFixed(1)}%`)
     assert(record.transparency > 0.35, `${record.requested}px favicon has an opaque background (${(record.transparency * 100).toFixed(1)}% transparent)`)
   }

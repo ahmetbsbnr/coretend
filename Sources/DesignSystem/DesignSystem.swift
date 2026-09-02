@@ -24,8 +24,9 @@ public struct MCCard<Content: View>: View {
         content
             .padding(MCSpacing.md)
             .background(shape.fill(MCColor.elevatedBackground))
-            .overlay(shape.strokeBorder(MCColor.separator.opacity(increaseContrast ? 1.0 : 0.6),
+            .overlay(shape.strokeBorder(MCColor.separator.opacity(increaseContrast ? 1.0 : 0.8),
                                          lineWidth: increaseContrast ? 1.5 : 1))
+            .shadow(color: .black.opacity(0.16), radius: 5, x: 0, y: 2)
     }
 }
 

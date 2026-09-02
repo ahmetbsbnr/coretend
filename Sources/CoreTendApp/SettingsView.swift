@@ -198,6 +198,14 @@ struct MCSettingsView: View {
             UpdatesView()
             Section(L("settings.about")) {
                 LabeledContent(L("settings.version"), value: appVersion)
+                Link(L("settings.about.privacy"),
+                     destination: URL(string: "https://coretend.ahmetbsbnr.com/privacy")!)
+                Link(L("settings.about.license"),
+                     destination: URL(string: "https://coretend.ahmetbsbnr.com/licenses")!)
+                Link(L("settings.about.source"),
+                     destination: URL(string: "https://github.com/ahmetbsbnr/coretend")!)
+                Link(L("settings.about.support"),
+                     destination: URL(string: "https://coretend.ahmetbsbnr.com/support")!)
                 Button(L("settings.rerun_setup")) {
                     NotificationCenter.default.post(name: .mcShowOnboarding, object: nil)
                 }
