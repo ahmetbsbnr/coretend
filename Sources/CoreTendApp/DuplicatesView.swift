@@ -3,6 +3,8 @@ import ScanCore
 import SafetyCore
 import DesignSystem
 import Persistence
+import QuickLookUI
+import QuickLook
 
 /// Identifiable wrapper so raw `URL`s can drive `MCOverlapStack`.
 private struct DupMember: Identifiable {
@@ -13,18 +15,22 @@ private struct DupMember: Identifiable {
 @MainActor
 @Observable
 final class DuplicatesViewModel {
-    enum Phase: Equatable { case idle, scanning(processed: Int, total: Int), results, empty, executing, finished(freed: Int64, dryRun: Bool) }
+    enum Phase: Equatable { case idle, scanning(processed: Int, total: Int), results, empty, executing, finished(freed: Int64) }
 
     var phase: Phase = .idle
     var groups: [DuplicateGroup] = []
     var selectedPaths: Set<String> = []   // paths selected for removal
-    var dryRun = true
+    var previewURL: URL?
     var searchText = ""
     var selectedVolumeID: String?
+    var isScanPaused = false
+    var exportError: String?
+    var lastExportURL: URL?
     let volumeResolver: VolumeResolving
     let exclusionsController = ClutterExclusionsController()
 
     private var scanTask: Task<Void, Never>?
+    private var pauseController: ScanPauseController?
     private var scannedRoots: [URL] = []
 
     init(volumeResolver: VolumeResolving = SystemVolumeResolver()) {
@@ -57,16 +63,23 @@ final class DuplicatesViewModel {
         }
     }
 
+    var exportFileName: String {
+        "CoreTend-Duplicates-\(Self.exportDateFormatter.string(from: Date())).csv"
+    }
+
     func start() {
         if case .scanning = phase { return }
         phase = .scanning(processed: 0, total: 0)
         groups = []
         selectedPaths = []
+        isScanPaused = false
+        let pauseController = ScanPauseController()
+        self.pauseController = pauseController
         let home = FileManager.default.homeDirectoryForCurrentUser
         scannedRoots = ["Downloads", "Documents", "Desktop"].map { home.appendingPathComponent($0) }
         let engine = DuplicateEngine(roots: scannedRoots)
         scanTask = Task {
-            for await event in engine.run() {
+            for await event in engine.run(pauseController: pauseController) {
                 switch event {
                 case let .progress(_, processed, total):
                     phase = .scanning(processed: processed, total: total)
@@ -83,15 +96,32 @@ final class DuplicatesViewModel {
                     phase = groups.isEmpty ? .empty : .results
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .scan, summary: "Duplicate scan: \(count) groups",
-                        itemCount: count, bytes: wasted, dryRun: true))
+                        itemCount: count, bytes: wasted))
                 case .cancelled:
+                    isScanPaused = false
                     phase = groups.isEmpty ? .idle : .results
                 }
             }
         }
     }
 
-    func cancel() { scanTask?.cancel() }
+    func pauseScan() {
+        guard case .scanning = phase, !isScanPaused else { return }
+        isScanPaused = true
+        Task { await pauseController?.pause() }
+    }
+
+    func resumeScan() {
+        guard case .scanning = phase, isScanPaused else { return }
+        isScanPaused = false
+        Task { await pauseController?.resume() }
+    }
+
+    func cancel() {
+        isScanPaused = false
+        scanTask?.cancel()
+        Task { await pauseController?.resume() }
+    }
 
     func removeSelected() {
         guard phase == .results, !selectedPaths.isEmpty else { return }
@@ -111,10 +141,9 @@ final class DuplicatesViewModel {
         let toRemove = groups.flatMap { group in
             group.urls.filter { selectedPaths.contains($0.path) }.map { ($0, group.fileSize) }
         }
-        let isDryRun = dryRun
         let roots = scannedRoots
         Task {
-            let center = SafetyCenter(validator: PathValidator(allowedRoots: roots), dryRun: isDryRun, sink: AppEnvironment.shared.store)
+            let center = SafetyCenter(validator: PathValidator(allowedRoots: roots), sink: AppEnvironment.shared.store)
             var approved: [ApprovedFileOperation] = []
             for (url, size) in toRemove {
                 if let op = try? await center.approve(url: url, logicalSize: size,
@@ -124,19 +153,75 @@ final class DuplicatesViewModel {
             }
             let result = await center.execute(approved)
             let freed = result.executed.reduce(0) { $0 + $1.logicalSize }
-            phase = .finished(freed: freed, dryRun: result.wasDryRun)
+            phase = .finished(freed: freed)
             AppEnvironment.shared.record(ActivityRecord(
                 kind: .cleanup,
-                summary: result.wasDryRun
-                    ? "Duplicates dry run: \(result.executed.count) copies"
-                    : "Moved \(result.executed.count) duplicate copies to Trash",
-                itemCount: result.executed.count, bytes: freed, dryRun: result.wasDryRun))
+                summary: "Moved \(result.executed.count) duplicate copies to Trash",
+                itemCount: result.executed.count, bytes: freed))
         }
+    }
+
+    func exportCSV(language: AppLanguage? = nil) -> String {
+        var rows: [[String]] = [[
+            "group_id", "path", "file_name", "directory", "size_bytes", "size_readable",
+            "selected_for_removal", "suggested_keeper", "recommendation"
+        ]]
+        for group in filteredGroups {
+            for url in group.urls {
+                rows.append([
+                    group.id,
+                    url.path,
+                    url.lastPathComponent,
+                    url.deletingLastPathComponent().path,
+                    "\(group.fileSize)",
+                    mcFormatBytes(group.fileSize),
+                    selectedPaths.contains(url.path) ? "true" : "false",
+                    url.path == group.keeper.path ? "true" : "false",
+                    recommendationText(for: url, in: group, language: language)
+                ])
+            }
+        }
+        return rows.map { $0.map(Self.csvField).joined(separator: ",") }.joined(separator: "\n") + "\n"
+    }
+
+    func exportSelection(to url: URL) throws {
+        try exportCSV().write(to: url, atomically: true, encoding: .utf8)
+        lastExportURL = url
+        exportError = nil
+        AppEnvironment.shared.record(ActivityRecord(
+            kind: .scan, summary: "Duplicate report exported",
+            itemCount: filteredGroups.count, bytes: selectedBytes))
+    }
+
+    func recommendationText(for url: URL, in group: DuplicateGroup, language: AppLanguage? = nil) -> String {
+        guard url.path == group.keeper.path else { return "" }
+        return language.map {
+            LocalizationManager.string(forKey: "dupes.suggested_keeper.why", language: $0)
+        } ?? L("dupes.suggested_keeper.why")
+    }
+
+    private static let exportDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyyMMdd-HHmmss"
+        return formatter
+    }()
+
+    // Pure string escaping — touches no actor-isolated state, so it doesn't
+    // need MainActor isolation. Without `nonisolated`, Swift 6.0.3 (Xcode
+    // 16.2, the Compatibility Matrix floor) rejects passing this as a bare
+    // function reference to `.map` as a "main actor-isolated ... in a
+    // synchronous nonisolated context" error that Swift 6.1+ (Xcode 16.4,
+    // used by the green main CI) does not raise for the same code — a
+    // compiler-version isolation-inference gap, not a real data race.
+    private nonisolated static func csvField(_ value: String) -> String {
+        let escaped = value.replacingOccurrences(of: "\"", with: "\"\"")
+        return "\"\(escaped)\""
     }
 }
 
 struct DuplicatesView: View {
     @State private var model = DuplicatesViewModel()
+    @State private var showMoveConfirmation = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -145,61 +230,115 @@ struct DuplicatesView: View {
             case let .scanning(processed, total): scanningView(processed, total)
             case .empty: emptyView
             case .results, .executing: resultsView
-            case let .finished(freed, dryRun): finishedView(freed, dryRun)
+            case let .finished(freed): finishedView(freed)
             }
+        }
+        .navigationTitle(L("module.duplicates"))
+        .accessibilityIdentifier("duplicates.root")
+        .confirmationDialog(
+            L("common.trash_confirm.title"),
+            isPresented: $showMoveConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button(L("common.trash_confirm.action"), role: .destructive) {
+                model.removeSelected()
+            }
+            Button(L("common.cancel"), role: .cancel) {}
+        } message: {
+            Text(L("common.trash_confirm.message"))
         }
     }
 
     private var idleView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "doc.on.doc.fill")
-                .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accentSecondary)
-            Text(L("dupes.idle.title")).font(.title2.weight(.semibold))
-            Text(L("dupes.idle.subtitle"))
-                .multilineTextAlignment(.center).foregroundStyle(.secondary)
-            Button(L("dupes.find")) { model.start() }
-                .buttonStyle(.borderedProminent)
+        VStack(spacing: MCSpacing.xl) {
+            VStack(spacing: MCSpacing.xs) {
+                Text(L("dupes.idle.title"))
+                    .font(MCFont.pageTitle)
+                    .multilineTextAlignment(.center)
+                Text(L("dupes.idle.subtitle"))
+                    .font(MCFont.secondaryBody)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: 460)
+            }
+            .mcAppear()
+            MCScanButton(L("dupes.find"), systemImage: "doc.on.doc.fill") { model.start() }
+                .accessibilityIdentifier("duplicates.scan.start")
+                .mcAppear(delay: 0.06)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(MCSpacing.xl)
     }
 
     private func scanningView(_ processed: Int, _ total: Int) -> some View {
-        VStack(spacing: 16) {
-            if total > 0 {
-                ProgressView(value: Double(processed), total: Double(total))
-                    .frame(width: 260)
-                Text(L("dupes.comparing", processed, total)).monospacedDigit()
-            } else {
-                ProgressView()
-                Text(L("dupes.building_inventory"))
+        VStack(spacing: MCSpacing.lg) {
+            MCScanStage(isScanning: !model.isScanPaused,
+                        fraction: total > 0 ? Double(processed) / Double(total) : nil) {
+                Text(total > 0 ? L("dupes.comparing", processed, total) : L("dupes.building_inventory"))
+                    .monospacedDigit()
             }
-            Button(L("common.cancel")) { model.cancel() }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel(total > 0 ? L("dupes.comparing", processed, total) : L("dupes.building_inventory"))
+            HStack(spacing: MCSpacing.sm) {
+                if model.isScanPaused {
+                    Button(L("common.resume")) { model.resumeScan() }
+                        .keyboardShortcut("r", modifiers: [])
+                        .help(L("dupes.resume_hint"))
+                        .accessibilityHint(L("dupes.resume_hint"))
+                        .accessibilityIdentifier("duplicates.scan.resume")
+                } else {
+                    Button(L("common.pause")) { model.pauseScan() }
+                        .keyboardShortcut("p", modifiers: [])
+                        .help(L("dupes.pause_hint"))
+                        .accessibilityHint(L("dupes.pause_hint"))
+                        .accessibilityIdentifier("duplicates.scan.pause")
+                }
+                Button(L("common.cancel")) { model.cancel() }
+                    .keyboardShortcut(.cancelAction)
+                    .accessibilityIdentifier("duplicates.scan.cancel")
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var emptyView: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "checkmark.circle")
-                .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
-            Text(L("dupes.none_found")).font(.title3.weight(.semibold))
-            Button(L("smartcare.scan_again")) { model.start() }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        MCEmptyState(icon: "checkmark.circle", title: L("dupes.none_found"), message: "",
+                     iconColor: MCTheme.success,
+                     actionTitle: L("smartcare.scan_again")) { model.start() }
     }
 
     private var resultsView: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text(L("dupes.results.summary", model.groups.count, mcFormatBytes(model.selectedBytes), mcFormatBytes(model.wastedBytes)))
-                    .font(.headline)
+            HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: MCSpacing.xxs) {
+                    Text(mcFormatBytes(model.wastedBytes))
+                        .font(MCFont.displayMetric)
+                        .monospacedDigit()
+                        .contentTransition(.numericText())
+                    Text(L("dupes.results.summary", model.groups.count, mcFormatBytes(model.selectedBytes), mcFormatBytes(model.wastedBytes)))
+                        .font(MCFont.secondaryBody)
+                        .foregroundStyle(.secondary)
+                    // The keeper-selection rule, stated once — not repeated on
+                    // every group's keeper row.
+                    Text(L("dupes.suggested_keeper.why"))
+                        .font(MCFont.caption)
+                        .foregroundStyle(.secondary)
+                }
                 Spacer()
-                Toggle(L("common.dry_run"), isOn: $model.dryRun).toggleStyle(.switch)
-                Button(model.dryRun ? L("leftovers.simulate") : L("dupes.move_to_trash")) {
-                    model.removeSelected()
+                Button {
+                    exportResults()
+                } label: {
+                    Label(L("activity.export_csv"), systemImage: "square.and.arrow.down")
+                }
+                .disabled(model.filteredGroups.isEmpty)
+                .accessibilityIdentifier("duplicates.results.export")
+                Button(L("dupes.move_to_trash")) {
+                    showMoveConfirmation = true
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(model.selectedPaths.isEmpty || model.phase == .executing)
+                .accessibilityIdentifier("duplicates.results.remove")
             }
             .padding()
             HStack {
@@ -212,6 +351,7 @@ struct DuplicatesView: View {
                                 .tag(String?.some(volume.id))
                         }
                     }
+                    .pickerStyle(.menu)
                     .frame(width: 180)
                 }
                 Spacer()
@@ -228,7 +368,7 @@ struct DuplicatesView: View {
                                        markedID: group.keeper.path) { member in
                             Image(nsImage: NSWorkspace.shared.icon(forFile: member.url.path))
                                 .resizable().frame(width: 32, height: 32)
-                                .padding(4)
+                                .padding(MCSpacing.xxs)
                                 .background(MCColor.elevatedBackground, in: RoundedRectangle(cornerRadius: MCRadius.small))
                         }
                         .padding(.vertical, MCSpacing.xxs)
@@ -247,13 +387,20 @@ struct DuplicatesView: View {
                                 if url.path == group.keeper.path {
                                     Text(L("dupes.suggested_keeper"))
                                         .font(.caption2.weight(.medium))
-                                        .padding(.horizontal, 6).padding(.vertical, 2)
+                                        .padding(.horizontal, MCSpacing.xs).padding(.vertical, MCSpacing.xxs)
                                         .background(MCTheme.accent.opacity(0.2), in: Capsule())
+                                        .help(L("dupes.suggested_keeper.why"))
                                 }
                                 Spacer()
                                 Text(url.deletingLastPathComponent().path)
                                     .font(.caption).foregroundStyle(.secondary)
                                     .lineLimit(1).truncationMode(.middle)
+                                Button {
+                                    model.previewURL = url
+                                } label: { Image(systemName: "eye") }
+                                .buttonStyle(.borderless)
+                                .help(L("clutter.quick_look"))
+                                .accessibilityLabel(L("clutter.quick_look"))
                                 Button {
                                     NSWorkspace.shared.activateFileViewerSelecting([url])
                                 } label: { Image(systemName: "magnifyingglass") }
@@ -268,18 +415,34 @@ struct DuplicatesView: View {
                 }
             }
             .listStyle(.inset)
+            .quickLookPreview($model.previewURL)
+        }
+        .alert(L("settings.migration_failed"), isPresented: Binding(
+            get: { model.exportError != nil },
+            set: { if !$0 { model.exportError = nil } }
+        )) {
+            Button(L("onboarding.check.status.ok"), role: .cancel) { model.exportError = nil }
+        } message: {
+            Text(model.exportError ?? "")
         }
     }
 
-    private func finishedView(_ freed: Int64, _ dryRun: Bool) -> some View {
-        VStack(spacing: 12) {
-            Image(systemName: "checkmark.seal")
-                .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
-            Text(dryRun ? L("leftovers.finished.dryrun", mcFormatBytes(freed))
-                        : L("leftovers.finished.moved", mcFormatBytes(freed)))
-                .font(.title3.weight(.semibold))
-            Button(L("smartcare.scan_again")) { model.start() }
+    private func finishedView(_ freed: Int64) -> some View {
+        MCSuccessState(
+            title: L("leftovers.finished.moved", mcFormatBytes(freed)),
+            actionTitle: L("smartcare.scan_again")) { model.start() }
+    }
+
+    private func exportResults() {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.commaSeparatedText]
+        panel.nameFieldStringValue = model.exportFileName
+        if panel.runModal() == .OK, let url = panel.url {
+            do {
+                try model.exportSelection(to: url)
+            } catch {
+                model.exportError = error.localizedDescription
+            }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }

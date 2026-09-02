@@ -1,5 +1,6 @@
 import Testing
 import Foundation
+import ScanCore
 @testable import CoreTendApp
 
 @Suite("Cloud Cleanup sync-state classification")
@@ -77,6 +78,33 @@ struct CloudCleanupTests {
         #expect(folder.localBytes >= 40_000)
     }
 
+    @Test func asyncMeasureHonorsPauseAndResume() async throws {
+        let root = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("coretend-cloud-\(UUID().uuidString)")
+        let fm = FileManager.default
+        try fm.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? fm.removeItem(at: root) }
+        for index in 0..<20 {
+            try Data(repeating: UInt8(index), count: 1024)
+                .write(to: root.appendingPathComponent("item-\(index).bin"))
+        }
+
+        let pauseController = ScanPauseController()
+        let probe = CompletionProbe()
+        await pauseController.pause()
+        let task = Task {
+            let entries = await CloudCleanupViewModel.measure(root: root, pauseController: pauseController)
+            await probe.markCompleted()
+            return entries
+        }
+        try await Task.sleep(nanoseconds: 40_000_000)
+        #expect(await !probe.completed)
+
+        await pauseController.resume()
+        let entries = await task.value
+        #expect(entries.count == 20)
+    }
+
     @Test func recoverableCountsOnlyBytesActuallyOnDiskNeverLogical() {
         // A remote-only placeholder contributes its (near-zero) LOCAL bytes to the
         // recoverable figure — never its logical size. This is the core honesty
@@ -92,5 +120,13 @@ struct CloudCleanupTests {
         #expect(localFile.isMostlyRemote == false)
         // Recoverable = sum of local bytes only (2000), not 5 GB of cloud data.
         #expect(placeholder.localBytes + localFile.localBytes == 2000)
+    }
+}
+
+private actor CompletionProbe {
+    private(set) var completed = false
+
+    func markCompleted() {
+        completed = true
     }
 }

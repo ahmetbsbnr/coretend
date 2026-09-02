@@ -16,14 +16,9 @@
 	Nothing here is added speculatively.
 	-->
 
-	<!-- Runs signed binaries the app itself does not control the format of:
-	     Process spawns clamscan (Homebrew/MacPorts binary, code-signed by
-	     its own installer or unsigned entirely). Hardened Runtime's default
-	     library-validation would refuse to load code from these paths only
-	     if CoreTend loaded them as a library; it doesn't — clamscan runs as
-	     a separate process via Process/NSTask, which Hardened Runtime does
-	     not restrict. No entitlement is required for this and none is
-	     requested. This entitlement set intentionally stays empty of
+	<!-- Integrity inspection is local and does not spawn third-party scanners.
+	     No external process entitlement is required or requested. This
+	     entitlement set intentionally stays empty of
 	     com.apple.security.cs.* exceptions: no disabled library validation,
 	     no unsigned executable memory, no debugging, no DYLD environment
 	     variables. -->

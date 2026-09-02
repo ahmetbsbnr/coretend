@@ -68,7 +68,7 @@ struct PerformanceView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            VStack(spacing: MCSpacing.md) {
                 if let snap = model.snapshot {
                     HStack(spacing: MCSpacing.md) {
                         MCMetricCard(title: L("performance.cpu"),
@@ -94,16 +94,16 @@ struct PerformanceView: View {
                                      elevatedLabel: L("performance.elevated"))
                     }
                     MCCard {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text(L("performance.cpu_chart_title")).font(.headline)
+                        VStack(alignment: .leading, spacing: MCSpacing.xs) {
+                            Text(L("performance.cpu_chart_title")).font(MCFont.cardTitle)
                             cpuChart
                                 .frame(height: MCSize.chartHeight)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     MCCard {
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text(L("performance.system")).font(.headline)
+                        VStack(alignment: .leading, spacing: MCSpacing.sm) {
+                            Text(L("performance.system")).font(MCFont.cardTitle)
                             LabeledContent(L("performance.memory_pressure"), value: snap.memoryPressureLevel.capitalized)
                             LabeledContent(L("performance.thermal_state"), value: snap.thermalState.capitalized)
                             LabeledContent(L("performance.uptime"), value: formatUptime(snap.uptimeSeconds))
@@ -112,10 +112,10 @@ struct PerformanceView: View {
                     }
                     launchAgentsCard
                 } else {
-                    ProgressView().padding(48)
+                    ProgressView().padding(MCSpacing.xxl)
                 }
             }
-            .padding(24)
+            .padding(MCSpacing.page)
         }
         .navigationTitle(L("performance.nav_title"))
         .onAppear { if scenePhase == .active { model.start() } }
@@ -171,8 +171,8 @@ struct PerformanceView: View {
 
     private var launchAgentsCard: some View {
         MCCard {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(L("performance.launchagents.title")).font(.headline)
+            VStack(alignment: .leading, spacing: MCSpacing.xs) {
+                Text(L("performance.launchagents.title")).font(MCFont.cardTitle)
                 Text(L("performance.launchagents.subtitle"))
                     .font(.caption).foregroundStyle(.secondary)
                 if agents.isEmpty {
@@ -183,7 +183,7 @@ struct PerformanceView: View {
                         Image(systemName: agent.broken ? "exclamationmark.triangle.fill" : "checkmark.circle")
                             .foregroundStyle(agent.broken ? MCTheme.warning : MCTheme.success)
                         VStack(alignment: .leading) {
-                            Text(agent.label).font(.callout)
+                            Text(agent.label).font(MCFont.secondaryBody)
                             if let program = agent.programPath {
                                 Text(agent.broken ? L("performance.launchagents.missing", program) : program)
                                     .font(.caption).foregroundStyle(.secondary)

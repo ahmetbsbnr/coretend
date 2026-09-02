@@ -22,8 +22,11 @@ final class AppUpdatesViewModel {
 
     func load() async {
         phase = .loading
+        let discovery = ApplicationInventoryLocations.resolve(
+            environment: ProcessInfo.processInfo.environment
+        ).discovery
         let result = await Task.detached(priority: .utility) { () -> [UpdateInfo] in
-            let apps = AppDiscovery().discoverApps()
+            let apps = discovery.discoverApps()
             return apps.map { app in
                 let (source, feed) = AppUpdateSource.detect(for: app)
                 return UpdateInfo(id: app.id, app: app, source: source, feedURL: feed)

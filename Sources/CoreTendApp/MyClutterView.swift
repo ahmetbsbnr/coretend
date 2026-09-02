@@ -28,10 +28,12 @@ final class MyClutterViewModel {
     var previewURL: URL?
     var searchText = ""
     var selectedVolumeID: String?
+    var isScanPaused = false
     let volumeResolver: VolumeResolving
     let exclusionsController = ClutterExclusionsController()
 
     private var scanTask: Task<Void, Never>?
+    private var pauseController: ScanPauseController?
 
     init(volumeResolver: VolumeResolving = SystemVolumeResolver()) {
         self.volumeResolver = volumeResolver
@@ -66,6 +68,7 @@ final class MyClutterViewModel {
         phase = .scanning
         findings = []
         scannedCount = 0
+        isScanPaused = false
         let rule = ScanRule(
             id: "clutter.largeold",
             name: "Large & Old Files",
@@ -80,9 +83,11 @@ final class MyClutterViewModel {
                 home.appendingPathComponent($0)
             }
         }
+        let pauseController = ScanPauseController()
+        self.pauseController = pauseController
         scanTask = Task {
             let engine = ScanEngine()
-            for await event in engine.run(rules: [rule]) {
+            for await event in engine.run(rules: [rule], pauseController: pauseController) {
                 switch event {
                 case let .progress(scanned, _): scannedCount = scanned
                 case let .finding(finding):
@@ -92,30 +97,65 @@ final class MyClutterViewModel {
                         findings.insert(finding, at: index)
                     }
                 case .finished, .cancelled:
+                    isScanPaused = false
                     phase = findings.isEmpty ? .empty : .results
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .scan, summary: "Large & Old scan: \(findings.count) files",
-                        itemCount: findings.count, bytes: totalBytes, dryRun: true))
+                        itemCount: findings.count, bytes: totalBytes))
                 default: break
                 }
             }
+            self.pauseController = nil
         }
     }
 
-    func cancel() { scanTask?.cancel() }
+    func pause() {
+        guard phase == .scanning, !isScanPaused else { return }
+        isScanPaused = true
+        Task { await pauseController?.pause() }
+    }
+
+    func resume() {
+        guard phase == .scanning, isScanPaused else { return }
+        isScanPaused = false
+        Task { await pauseController?.resume() }
+    }
+
+    func cancel() {
+        isScanPaused = false
+        scanTask?.cancel()
+        Task { await pauseController?.resume() }
+    }
 }
 
 struct MyClutterView: View {
+    @State private var tab = 0
+
+    // Plain segmented sub-nav pinned via .safeAreaInset, not a TabView: a
+    // TabView as a NavigationSplitView detail can blank the split view's
+    // sidebar on macOS. Duplicates is a first-class tool in the Storage group
+    // and is not re-exposed here — this hub covers what nothing else does:
+    // large/old files and visually-similar images.
     var body: some View {
-        TabView {
-            LargeOldFilesView()
-                .tabItem { Label(L("clutter.tab.large_old"), systemImage: "doc") }
-            DuplicatesView()
-                .tabItem { Label(L("clutter.tab.duplicates"), systemImage: "doc.on.doc") }
-            SimilarImagesView()
-                .tabItem { Label(L("clutter.tab.similar_images"), systemImage: "photo.on.rectangle.angled") }
+        Group {
+            if tab == 0 { LargeOldFilesView() } else { SimilarImagesView() }
         }
-        .padding(8)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            VStack(spacing: 0) {
+                Picker("", selection: $tab) {
+                    Text(L("clutter.tab.large_old")).tag(0)
+                    Text(L("clutter.tab.similar_images")).tag(1)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(maxWidth: 360)
+                .padding(.vertical, MCSpacing.sm)
+                Divider()
+            }
+            .frame(maxWidth: .infinity)
+            .background(.bar)
+        }
         .navigationTitle(L("clutter.title"))
     }
 }
@@ -135,49 +175,78 @@ struct LargeOldFilesView: View {
     }
 
     private var idleView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "doc.on.doc")
-                .font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
-                .accessibilityHidden(true)
-            Text(L("clutter.idle.title")).font(.title2.weight(.semibold))
-            Text(L("clutter.idle.subtitle"))
-                .multilineTextAlignment(.center).foregroundStyle(.secondary)
-            HStack(spacing: 16) {
-                Picker(L("clutter.larger_than"), selection: $model.minSizeMB) {
-                    Text(L("clutter.size.50mb")).tag(50)
-                    Text(L("clutter.size.100mb")).tag(100)
-                    Text(L("clutter.size.500mb")).tag(500)
-                    Text(L("clutter.size.1gb")).tag(1000)
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(spacing: MCSpacing.xl) {
+                    VStack(spacing: MCSpacing.xs) {
+                        Text(L("clutter.idle.title")).font(MCFont.pageTitle)
+                            .multilineTextAlignment(.center)
+                        Text(L("clutter.idle.subtitle"))
+                            .font(MCFont.secondaryBody)
+                            .multilineTextAlignment(.center).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .mcAppear()
+
+                    MCScanButton(L("clutter.analyze"), systemImage: "doc.on.doc") { model.start() }
+                        .keyboardShortcut(.defaultAction)
+                        .mcAppear(delay: 0.06)
+
+                    MCCard {
+                        HStack(spacing: MCSpacing.lg) {
+                            LabeledContent(L("clutter.larger_than")) {
+                                Picker("", selection: $model.minSizeMB) {
+                                    Text(L("clutter.size.50mb")).tag(50)
+                                    Text(L("clutter.size.100mb")).tag(100)
+                                    Text(L("clutter.size.500mb")).tag(500)
+                                    Text(L("clutter.size.1gb")).tag(1000)
+                                }
+                                .pickerStyle(.menu).labelsHidden().fixedSize()
+                            }
+                            LabeledContent(L("clutter.older_than")) {
+                                Picker("", selection: $model.minAgeDays) {
+                                    Text(L("clutter.age.30d")).tag(30)
+                                    Text(L("clutter.age.90d")).tag(90)
+                                    Text(L("clutter.age.180d")).tag(180)
+                                    Text(L("clutter.age.1y")).tag(365)
+                                }
+                                .pickerStyle(.menu).labelsHidden().fixedSize()
+                            }
+                        }
+                    }
+                    .frame(maxWidth: 480)
+                    .mcAppear(delay: 0.12)
                 }
-                .frame(width: 180)
-                Picker(L("clutter.older_than"), selection: $model.minAgeDays) {
-                    Text(L("clutter.age.30d")).tag(30)
-                    Text(L("clutter.age.90d")).tag(90)
-                    Text(L("clutter.age.180d")).tag(180)
-                    Text(L("clutter.age.1y")).tag(365)
-                }
-                .frame(width: 180)
+                .padding(MCSpacing.page)
+                .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .center)
             }
-            Button(L("clutter.analyze")) { model.start() }
-                .buttonStyle(.borderedProminent)
-                .keyboardShortcut(.defaultAction)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(24)
     }
 
     private var scanningView: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: MCSpacing.md) {
             ProgressView()
             Text(L("clutter.scanning_progress", model.scannedCount, model.findings.count))
                 .monospacedDigit()
-            Button(L("common.cancel")) { model.cancel() }
+            HStack {
+                if model.isScanPaused {
+                    Button(L("common.resume")) { model.resume() }
+                        .keyboardShortcut("r", modifiers: [])
+                        .accessibilityHint(L("clutter.resume_hint"))
+                } else {
+                    Button(L("common.pause")) { model.pause() }
+                        .keyboardShortcut("p", modifiers: [])
+                        .accessibilityHint(L("clutter.pause_hint"))
+                }
+                Button(L("common.cancel")) { model.cancel() }
+                    .keyboardShortcut(.cancelAction)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var emptyView: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: MCSpacing.sm) {
             Image(systemName: "checkmark.circle")
                 .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
                 .accessibilityHidden(true)
@@ -191,7 +260,7 @@ struct LargeOldFilesView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text(L("clutter.results.summary", model.sortedFindings.count, mcFormatBytes(model.totalBytes)))
-                    .font(.headline)
+                    .font(MCFont.cardTitle)
                 Spacer()
                 Picker(L("clutter.sort_by"), selection: $model.sortOption) {
                     ForEach(MyClutterViewModel.SortOption.allCases) { option in
@@ -213,6 +282,7 @@ struct LargeOldFilesView: View {
                                 .tag(String?.some(volume.id))
                         }
                     }
+                    .pickerStyle(.menu)
                     .frame(width: 180)
                 }
                 Spacer()
@@ -233,7 +303,7 @@ struct LargeOldFilesView: View {
                         .accessibilityHidden(true)
                     VStack(alignment: .leading) {
                         Text(finding.url.lastPathComponent)
-                        HStack(spacing: 8) {
+                        HStack(spacing: MCSpacing.xs) {
                             Text(finding.url.deletingLastPathComponent().path)
                                 .lineLimit(1).truncationMode(.middle)
                             if let date = finding.modificationDate {

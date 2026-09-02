@@ -1,6 +1,7 @@
 import Testing
 import Foundation
 import SafetyCore
+import ScanCore
 @testable import CoreTendApp
 
 @Suite("Browser profile detection")
@@ -103,5 +104,41 @@ struct BrowserDetectionTests {
 
         let profiles = BrowserCatalog.detect(home: home)
         #expect(profiles.first?.browser == "Safari")
+    }
+
+    @Test func asyncDetectionHonorsPauseAndResume() async throws {
+        let home = try makeHome()
+        defer { try? fm.removeItem(at: home) }
+        for index in 0..<16 {
+            try write(
+                home.appendingPathComponent("Library/Application Support/Google/Chrome/Profile \(index)/History"),
+                bytes: 16)
+            try write(
+                home.appendingPathComponent("Library/Caches/Google/Chrome/Profile \(index)/cache.bin"),
+                bytes: 128)
+        }
+
+        let pauseController = ScanPauseController()
+        let probe = BrowserCompletionProbe()
+        await pauseController.pause()
+        let task = Task {
+            let profiles = await BrowserCatalog.detect(home: home, pauseController: pauseController)
+            await probe.markCompleted()
+            return profiles
+        }
+        try await Task.sleep(nanoseconds: 40_000_000)
+        #expect(await !probe.completed)
+
+        await pauseController.resume()
+        let profiles = await task.value
+        #expect(profiles.count == 16)
+    }
+}
+
+private actor BrowserCompletionProbe {
+    private(set) var completed = false
+
+    func markCompleted() {
+        completed = true
     }
 }

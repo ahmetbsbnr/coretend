@@ -13,13 +13,10 @@ enum SecurityProfile: String, CaseIterable, Identifiable, Sendable {
     var id: String { rawValue }
 }
 
-/// The safety posture chosen at first run. Only `dryRun` is a *live* knob the
-/// rest of the app reads (persisted as the `dryRunDefault` setting). The other
-/// fields are honest, fixed properties of the app's built-in safety design
-/// (Trash always, medium-risk rules never preselected, no empty-Trash, no
-/// auto-quarantine) — surfaced so the user sees them, not secretly toggled.
+/// The fixed safety posture shown at first run: confirmed removals use the
+/// Trash, medium-risk rules are never preselected, and CoreTend never empties
+/// the Trash or quarantines files automatically.
 struct SecurityConfig: Equatable, Sendable {
-    var dryRun: Bool
     var useTrash: Bool
     var mediumRiskRules: Bool
     var emptyTrash: Bool
@@ -28,7 +25,7 @@ struct SecurityConfig: Equatable, Sendable {
     /// Plan-specified safe defaults, identical across every profile: the app
     /// never ships an unsafe default regardless of which profile is picked.
     static let safeDefaults = SecurityConfig(
-        dryRun: true, useTrash: true, mediumRiskRules: false,
+        useTrash: true, mediumRiskRules: false,
         emptyTrash: false, autoQuarantine: false)
 
     static func forProfile(_ profile: SecurityProfile) -> SecurityConfig {
@@ -88,7 +85,6 @@ enum SystemCheck {
         var resourcesPresent: Bool
         var sqliteAvailable: Bool
         var fullDiskAccess: Bool
-        var clamAVAvailable: Bool
         var freeSpaceBytes: Int64
         var configuredLocationAccessible: Bool
         var safetyCoreReady: Bool
@@ -106,7 +102,6 @@ enum SystemCheck {
             Item(id: "sqlite", status: i.sqliteAvailable ? .ok : .unavailable),
             // Optional capabilities degrade to "limited", never block.
             Item(id: "permissions", status: i.fullDiskAccess ? .ok : .limited),
-            Item(id: "clamav", status: i.clamAVAvailable ? .ok : .limited),
             Item(id: "freespace", status: i.freeSpaceBytes >= lowSpaceThreshold ? .ok : .limited),
             Item(id: "location", status: i.configuredLocationAccessible ? .ok : .limited),
             Item(id: "safetycore", status: i.safetyCoreReady ? .ok : .actionRequired),
@@ -119,26 +114,5 @@ enum SystemCheck {
         if items.contains(where: { $0.status == .actionRequired }) { return .actionRequired }
         if items.contains(where: { $0.status == .limited }) { return .limited }
         return .ok
-    }
-}
-
-// MARK: - ClamAV version parsing
-
-/// Parses `clamscan --version` output, e.g.
-/// "ClamAV 1.0.0/27000/Fri Jan 01 2024" → engine "1.0.0", signatures "27000".
-/// Missing pieces are nil rather than fabricated.
-struct ClamAVVersionInfo: Equatable, Sendable {
-    var engine: String?
-    var signatures: String?
-
-    static func parse(_ output: String) -> ClamAVVersionInfo {
-        let line = output.split(whereSeparator: \.isNewline).first.map(String.init) ?? output
-        let trimmed = line.trimmingCharacters(in: .whitespaces)
-        guard trimmed.hasPrefix("ClamAV") else { return ClamAVVersionInfo(engine: nil, signatures: nil) }
-        let rest = trimmed.dropFirst("ClamAV".count).trimmingCharacters(in: .whitespaces)
-        let parts = rest.split(separator: "/", maxSplits: 2, omittingEmptySubsequences: false)
-        let engine = parts.first.map(String.init).flatMap { $0.isEmpty ? nil : $0 }
-        let signatures = parts.count >= 2 ? String(parts[1]) : nil
-        return ClamAVVersionInfo(engine: engine, signatures: signatures?.isEmpty == false ? signatures : nil)
     }
 }

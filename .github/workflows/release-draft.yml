@@ -25,6 +25,15 @@ jobs:
   build-package-verify:
     runs-on: macos-14
     timeout-minutes: 30
+    permissions:
+      contents: read
+      # Only what actions/attest-build-provenance needs (OIDC signing +
+      # storing the attestation); nothing else in this job needs write of
+      # any kind. This lets the attestation mechanism be exercised for real
+      # on a workflow-artifact build — never on a published release asset —
+      # without granting contents:write or ever creating a GitHub Release.
+      id-token: write
+      attestations: write
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -84,6 +93,18 @@ jobs:
             exit 1
           fi
           echo "OK: no signed/notarized:true claim present."
+
+      - name: Attest build provenance (dry run — workflow artifacts, not a GitHub Release)
+        # Exercises the exact same actions/attest-build-provenance mechanism
+        # release.yml uses, on a real freshly-built ZIP/DMG, without ever
+        # creating a tag or a GitHub Release. This is the only place that
+        # mechanism can be tested end-to-end without publishing: release.yml
+        # only runs on a version-tag push and always ends by publishing.
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        with:
+          subject-path: |
+            Release/CoreTend-${{ inputs.version }}-arm64-unsigned.zip
+            Release/CoreTend-${{ inputs.version }}-arm64-unsigned.dmg
 
       - name: Show recorded provenance
         run: |

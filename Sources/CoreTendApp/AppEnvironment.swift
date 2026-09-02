@@ -40,15 +40,16 @@ final class AppEnvironment {
         return report.didAnything || !report.failures.isEmpty ? report : nil
     }
 
-    /// Interprets the persisted `dryRunDefault` setting. Absent (nil) or any value
-    /// other than the literal "false" means dry-run stays ON — safety is the default,
-    /// so only an explicit "false" opts out. Pure so it is directly testable.
-    nonisolated static func dryRunEnabled(fromSetting value: String?) -> Bool {
-        value != "false"
-    }
-
     func record(_ record: ActivityRecord) {
         guard let store else { return }
         Task { try? await store.recordActivity(record) }
+    }
+
+    /// Marks a folder as recently scanned for Favorites & Recents. Fire-and-forget
+    /// like `record(_:)` above — a missed write here would only cost Recents
+    /// freshness, never data correctness.
+    func recordLocationVisit(path: String, bytes: Int64) {
+        guard let store else { return }
+        Task { try? await store.recordLocationVisit(path: path, bytes: bytes) }
     }
 }

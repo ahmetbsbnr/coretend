@@ -4,8 +4,10 @@ import SwiftUI
 /// weight contrast and rounded numerics — not from an external font.
 public enum MCFont {
     public static let displayMetric = Font.system(size: 40, weight: .semibold, design: .rounded)
-    public static let heroTitle = Font.system(size: 26, weight: .bold)
-    public static let pageTitle = Font.title2.weight(.semibold)
+    public static let heroTitle = Font.system(size: 28, weight: .bold)
+    // Bold, not semibold: module landing headings need a clear weight step
+    // above cardTitle/headline so the text hierarchy reads at a glance.
+    public static let pageTitle = Font.title2.weight(.bold)
     public static let sectionTitle = Font.subheadline.weight(.semibold)
     public static let cardTitle = Font.headline
     public static let body = Font.body
@@ -26,4 +28,12 @@ public enum MCIconSize {
     public static let emptyState: CGFloat = 48
     /// Primary/prominent empty-state glyph (module landing states).
     public static let emptyStateProminent: CGFloat = 56
+    /// Glyph inside the shared MCEmptyState component (deliberately more
+    /// compact than emptyState/emptyStateProminent — this one nests inside
+    /// other content rather than filling a whole module landing screen).
+    public static let compactState: CGFloat = 40
+    /// Glyph inside the shared MCErrorState component.
+    public static let errorState: CGFloat = 36
+    /// Small inline status glyph (lock/cloud indicators on list rows).
+    public static let inline: CGFloat = 8
 }

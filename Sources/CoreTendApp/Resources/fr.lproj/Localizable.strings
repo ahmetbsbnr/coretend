@@ -2,7 +2,21 @@
 
 /* Common */
 "common.cancel" = "Annuler";
-"common.dry_run" = "Simulation";
+"common.trash_confirm.title" = "Déplacer la sélection vérifiée vers la Corbeille ?";
+"common.trash_confirm.message" = "Seuls les éléments sélectionnés seront déplacés vers la Corbeille. Vous pourrez les restaurer tant que la Corbeille n’est pas vidée.";
+"common.trash_confirm.action" = "Déplacer vers la Corbeille";
+"common.pause" = "Pause";
+"common.resume" = "Reprendre";
+"cleanup.pause_hint" = "Suspend temporairement l’analyse en cours.";
+"cleanup.resume_hint" = "Continue l’analyse suspendue.";
+"smartcare.pause_hint" = "Suspend temporairement l’analyse Smart Care.";
+"smartcare.resume_hint" = "Continue l’analyse Smart Care suspendue.";
+"clutter.pause_hint" = "Suspend temporairement l’analyse en cours.";
+"clutter.resume_hint" = "Continue l’analyse suspendue.";
+"spacelens.pause_hint" = "Suspend temporairement l’analyse Space Lens.";
+"spacelens.resume_hint" = "Continue l’analyse Space Lens suspendue.";
+"dupes.pause_hint" = "Suspend temporairement l’analyse des doublons.";
+"dupes.resume_hint" = "Continue l’analyse des doublons suspendue.";
 "common.running" = "En cours…";
 "common.reveal_in_finder" = "Afficher dans le Finder";
 "common.clear" = "Effacer";
@@ -10,8 +24,11 @@
 /* Sidebar */
 "sidebar.free_up_space" = "Libérer de l'espace";
 "sidebar.optimize" = "Optimiser";
-"sidebar.protect" = "Protéger";
+"sidebar.protect" = "Intégrité";
 "sidebar.activity" = "Activité";
+"sidebar.storage" = "Stockage";
+"sidebar.system" = "Système";
+"sidebar.more" = "Plus";
 
 /* Placeholder */
 "placeholder.under_construction" = "Ce module est en construction. Il arrivera dans une prochaine version.";
@@ -21,10 +38,7 @@
 "menubar.memory" = "Mémoire";
 "menubar.free_space" = "Espace libre";
 "menubar.thermal" = "Thermique";
-"menubar.protection" = "Protection";
 "menubar.warning_a11y" = "nécessite une attention";
-"menubar.clamav_ready" = "ClamAV prêt";
-"menubar.clamav_missing" = "ClamAV non installé";
 "menubar.last_smart_care" = "Dernier Smart Care : %@";
 "menubar.no_smart_care_yet" = "Aucun Smart Care exécuté pour l'instant.";
 "menubar.open_app" = "Ouvrir CoreTend";
@@ -32,7 +46,6 @@
 "menubar.quit" = "Quitter";
 
 /* Smart Care */
-"smartcare.protection_unavailable" = "Analyse antimalware pas encore disponible";
 "smartcare.performance_unavailable" = "Tâches de maintenance pas encore disponibles";
 "smartcare.applications_unavailable" = "Analyse des applications pas encore disponible";
 "smartcare.care_categories" = "Catégories de soin";
@@ -40,7 +53,6 @@
 "smartcare.hero.scanning_title" = "Analyse en cours…";
 "smartcare.hero.review_title" = "%@ à nettoyer en toute sécurité";
 "smartcare.hero.cleaning_title" = "Nettoyage en cours…";
-"smartcare.hero.finished_dryrun_title" = "Simulation : %@ seraient libérés";
 "smartcare.hero.finished_title" = "%@ déplacés dans la Corbeille";
 "smartcare.hero.idle_subtitle" = "Une analyse commence par le stockage. Rien n'est supprimé pendant l'analyse.";
 "smartcare.hero.scanning_subtitle" = "Lecture des caches, journaux et fichiers de compilation. Vous pouvez annuler à tout moment.";
@@ -52,7 +64,6 @@
 "smartcare.module.scanning" = "Analyse en cours… %d éléments, %@";
 "smartcare.module.done" = "%d éléments — %@";
 "smartcare.start_scan" = "Démarrer le Smart Care";
-"smartcare.simulate_care" = "Simuler le soin";
 "smartcare.run_care" = "Lancer le soin";
 "smartcare.review_details_hint" = "Consultez les détails dans le module Nettoyage.";
 "smartcare.scan_again" = "Analyser à nouveau";
@@ -66,45 +77,29 @@
 "cleanup.scanning_progress" = "%d éléments analysés — %@ trouvés";
 "cleanup.review.selected" = "%d éléments — %@ sélectionnés";
 "cleanup.review.truncated" = "%d sur %d affichés — %@ trouvés au total";
-"cleanup.simulate" = "Simuler le nettoyage";
 "cleanup.move_to_trash" = "Déplacer vers la Corbeille";
 "cleanup.group.item_count" = "%d éléments";
 "cleanup.select_item" = "Sélectionner %@";
-"cleanup.done.dryrun" = "Simulation : %@ seraient déplacés vers la Corbeille";
 "cleanup.done.moved" = "%@ déplacés vers la Corbeille";
 
 /* Protection */
-"protection.scan_info" = "%@ analysé en %@s — %d menaces";
-"protection.moved_to_quarantine" = "Mis en quarantaine : %@";
-"protection.quarantine_failed" = "Échec de la mise en quarantaine : %@";
-"protection.restore_failed" = "Échec de la restauration : %@";
-"protection.tab.malware" = "Malware";
 "protection.tab.privacy" = "Confidentialité";
-"protection.unavailable.title" = "Moteur antimalware non installé";
-"protection.unavailable.body" = "CoreTend utilise le moteur open-source ClamAV pour l'analyse antimalware locale. Il n'est pas installé sur ce Mac, l'analyse est donc indisponible — ce module ne fera pas semblant du contraire.";
-"protection.unavailable.howto" = "Pour l'activer : installez ClamAV (par exemple `brew install clamav`), lancez `freshclam` une fois pour télécharger les signatures, puis rouvrez cet écran.";
-"protection.unavailable.note" = "Remarque : ce scanner est une vérification de signatures locale, pas un antivirus commercial ni une protection en temps réel.";
-"protection.scan.title" = "Analyse antimalware locale (ClamAV)";
-"protection.scan.subtitle" = "Analyse par signatures. Pas un antivirus commercial ; pas de protection en temps réel.";
-"protection.scan_downloads" = "Analyser Téléchargements";
-"protection.scan_folder" = "Analyser un dossier…";
-"protection.no_threats" = "Aucune menace trouvée";
-"protection.findings" = "Résultats";
-"protection.quarantine" = "Mettre en quarantaine";
-"protection.quarantine_section" = "Quarantaine";
-"protection.quarantine_empty" = "Vide. Les fichiers en quarantaine sont stockés localement, privés des droits d'exécution, et peuvent être restaurés ou supprimés définitivement.";
-"protection.quarantine_was" = "était : %@";
-"protection.restore" = "Restaurer";
-"protection.delete_permanently" = "Supprimer définitivement";
 
 /* Space Lens */
 "spacelens.title" = "Space Lens";
+"spacelens.delete.help" = "Mettre à la Corbeille";
+"spacelens.delete.confirm_title" = "Mettre « %@ » à la Corbeille ?";
+"spacelens.delete.confirm_action" = "Mettre à la Corbeille";
+"spacelens.delete.confirm_message" = "%@ seront libérés. Utilise la Corbeille macOS normale — récupérable tant qu’elle n’est pas vidée.";
+"spacelens.delete.error_title" = "Échec du déplacement vers la Corbeille";
+"spacelens.delete.error_message" = "« %@ » n’a pas été déplacé — il a peut-être déjà disparu, ou se trouve hors du dossier analysé.";
 "spacelens.idle.title" = "Visualisez votre stockage";
 "spacelens.idle.subtitle" = "Construit une carte de taille interactive. Analyse uniquement — rien n'est modifié.";
 "spacelens.scan_home" = "Analyser le dossier personnel";
 "spacelens.choose_folder" = "Choisir un dossier…";
 "spacelens.scanning_progress" = "%d éléments mesurés…";
 "spacelens.new_scan" = "Nouvelle analyse";
+"spacelens.up" = "Remonter d'un niveau";
 "spacelens.treemap.a11y_summary" = "%d éléments, %@ au total.";
 "spacelens.treemap.accessibility" = "Carte de stockage. Utilisez la liste ci-dessous pour la navigation au clavier.";
 "spacelens.fragment.help" = "%@ — %@";
@@ -112,9 +107,17 @@
 "spacelens.cloud_placeholder_suffix" = "espace réservé iCloud, non entièrement téléchargé";
 "spacelens.access_denied_short" = "accès refusé";
 "spacelens.cloud_placeholder_short" = "espace réservé iCloud";
+"spacelens.search_placeholder" = "Rechercher…";
+"spacelens.filter_category" = "Catégorie";
+"spacelens.filter_all" = "Toutes";
+"spacelens.category.folder" = "Dossiers";
+"spacelens.category.media" = "Médias";
+"spacelens.category.document" = "Documents";
+"spacelens.category.archive" = "Archives";
+"spacelens.category.code" = "Code";
+"spacelens.category.other" = "Autres";
 
 /* Applications */
-"apps.uninstall.dryrun_result" = "Simulation : %d éléments (%@) seraient déplacés vers la Corbeille";
 "apps.uninstall.result" = "%d éléments (%@) déplacés vers la Corbeille";
 "apps.tab.installed" = "Installées";
 "apps.tab.leftovers" = "Résidus";
@@ -133,8 +136,9 @@
 "apps.last_used_unknown" = "dernière utilisation : inconnue";
 "apps.associated_data" = "Données associées";
 "apps.associated_data.empty" = "Aucun fichier associé trouvé pour cet identifiant de bundle.";
-"apps.simulate_uninstall" = "Simuler la désinstallation";
 "apps.uninstall" = "Désinstaller (déplacer vers la Corbeille)";
+"apps.uninstall_confirm.title" = "Désinstaller l’application sélectionnée ?";
+"apps.uninstall_confirm.message" = "L’application et les éléments associés sélectionnés seront déplacés vers la Corbeille. Vérifiez la sélection avant de continuer.";
 "apps.select_prompt" = "Sélectionnez une application";
 
 /* My Clutter */
@@ -191,10 +195,8 @@
 "leftovers.scan" = "Rechercher les résidus";
 "leftovers.scanning" = "Analyse en cours…";
 "leftovers.none_found" = "Aucun résidu trouvé";
-"leftovers.finished.dryrun" = "Simulation : %@ seraient récupérés";
 "leftovers.finished.moved" = "%@ déplacés vers la Corbeille";
 "leftovers.results.summary" = "%d candidats — %@ sélectionnés sur %@";
-"leftovers.simulate" = "Simuler la suppression";
 "leftovers.select_item" = "Sélectionner %@";
 "leftovers.shared_ambiguous_a11y" = "partagé ou ambigu";
 "leftovers.shared_review" = "Partagé / à vérifier";
@@ -204,11 +206,9 @@
 "privacy.detecting" = "Détection des profils de navigateur…";
 "privacy.empty.title" = "Aucune donnée de navigateur trouvée";
 "privacy.empty.subtitle" = "Les données Safari nécessitent l'accès complet au disque ; les profils Chrome et Firefox sont détectés automatiquement s'ils sont présents.";
-"privacy.finished.dryrun" = "Simulation : %@ de caches seraient déplacés vers la Corbeille";
 "privacy.finished.moved" = "%@ de caches déplacés vers la Corbeille";
 "privacy.running_warning" = "%@ est en cours d'exécution — les fichiers de cache peuvent être verrouillés. Quittez d'abord le navigateur pour un nettoyage complet.";
 "privacy.caches_selected" = "Caches de navigateur — %@ sélectionnés";
-"privacy.simulate_clean" = "Simuler le nettoyage";
 "privacy.clean_caches" = "Nettoyer les caches";
 "privacy.browser_profile" = "%@ — %@";
 "privacy.cache_size" = "Cache %@";
@@ -227,6 +227,7 @@
 "dupes.move_to_trash" = "Déplacer les copies vers la Corbeille";
 "dupes.select_copy" = "Sélectionner la copie %@";
 "dupes.suggested_keeper" = "Copie à conserver";
+"dupes.suggested_keeper.why" = "Le chemin le plus court l’emporte ; l’ordre alphabétique départage. Ne se base pas sur l’âge du fichier.";
 "dupes.group_header" = "%d copies × %@";
 
 /* Similar Images */
@@ -248,6 +249,7 @@
 "activity.filter" = "Filtre";
 "activity.all_kinds" = "Tous les types";
 "activity.export_csv" = "Exporter en CSV";
+"activity.export_json" = "Exporter en JSON";
 "activity.clear_history" = "Effacer l'historique";
 "activity.range.all" = "Depuis toujours";
 "activity.range.last7" = "7 derniers jours";
@@ -257,14 +259,11 @@
 "activity.empty.subtitle" = "Les analyses et nettoyages apparaîtront ici. Tout reste sur ce Mac.";
 "activity.empty_range" = "Aucune activité sur cette période.";
 "activity.freed_real" = "Libéré (réel)";
-"activity.simulated_dryrun" = "Simulé (essai)";
 "activity.items" = "Éléments";
 "activity.row.detail" = "%d éléments · %@ %@";
-"activity.row.simulated_suffix" = "(simulé, aucun fichier n'a été modifié)";
 "activity.row.real_suffix" = "(réel, appliqué sur le disque)";
 "activity.open_protection" = "Ouvrir Protection";
 "activity.completed" = "Terminé";
-"activity.row.simulated_a11y" = "simulé";
 "activity.row.real_a11y" = "réel";
 
 /* Cloud Cleanup */
@@ -308,21 +307,21 @@
 
 /* Settings */
 "settings.nav_title" = "Réglages";
+"settings.language" = "Langue";
+"settings.language.system" = "Suivre le système";
+"onboarding.language.title" = "Langue";
+"onboarding.language.subtitle" = "Choisis ta langue, ou suis celle de macOS. Modifiable à tout moment dans Réglages.";
 "settings.general" = "Général";
 "settings.show_menu_bar" = "Afficher CoreTend dans la barre de menus";
 "settings.menu_bar_detail" = "L'élément de la barre de menus n'échantillonne les métriques système que lorsque son panneau est ouvert, ou toutes les 30 s en arrière-plan pour afficher l'indicateur d'attention.";
 "settings.appearance" = "Apparence";
 "settings.appearance_detail" = "CoreTend suit l'apparence claire/sombre du système. Il n'y a pas de thème propre à l'application.";
 "settings.scans_cleanup" = "Analyses et nettoyage";
-"settings.dry_run_default" = "Simulation par défaut";
-"settings.dry_run_detail" = "Lorsque activé, les nettoyages simulent leur résultat au lieu de déplacer les fichiers vers la Corbeille.";
 "settings.deletion_method" = "Méthode de suppression";
 "settings.deletion_method_value" = "Corbeille système (réversible)";
-"settings.protection" = "Protection";
-"settings.clamav_engine" = "Moteur ClamAV";
+"settings.protection" = "Intégrité";
 "settings.installed" = "Installé";
 "settings.not_installed" = "Non installé";
-"settings.clamav_install_hint" = "Installez avec `brew install clamav`, exécutez `freshclam` une fois, puis rouvrez Protection.";
 "settings.privileged_helper" = "Assistant privilégié";
 "settings.unavailable" = "Indisponible";
 "settings.privileged_helper_detail" = "Non implémenté — cette version n'a pas d'identité de signature pour installer un assistant privilégié. Toutes les fonctionnalités marchent sans privilèges ; c'est une limitation connue et assumée, pas un bug.";
@@ -368,7 +367,7 @@
 "onboarding.step3.title" = "Réversible par conception";
 "onboarding.step3.bullet1" = "Les analyses ne suppriment jamais rien. Le nettoyage est une étape séparée et vérifiée.";
 "onboarding.step3.bullet2" = "La suppression utilise la Corbeille système — vous pouvez toujours restaurer.";
-"onboarding.step3.bullet3" = "La simulation est activée par défaut : les actions sont simulées tant que vous ne la désactivez pas.";
+"onboarding.step3.bullet3" = "Chaque déplacement vers la Corbeille suit une sélection relue et une action explicite.";
 "onboarding.skip" = "Passer";
 "onboarding.step_of" = "%d sur %d";
 "onboarding.step_a11y" = "Étape %d sur %d";
@@ -385,18 +384,69 @@
 "apps.grouping.last_used" = "Dernière utilisation";
 
 /* Module display names (sidebar / placeholder) */
-"module.protection" = "Protection";
+"module.dashboard" = "Tableau de bord";
+"module.storage" = "Stockage";
+"module.duplicates" = "Doublons";
+"module.protection" = "Intégrité";
+"module.activity" = "Activité";
+"palette.open" = "Palette de commandes…";
+"palette.placeholder" = "Aller à…";
+"palette.no_results" = "Aucun résultat";
+"palette.scan_home" = "Analyser le dossier personnel avec Space Lens";
+"protection.tab.integrity" = "Intégrité";
+"settings.this_copy_signature" = "Signature de cette copie";
+"integrity.explainer.title" = "Des signaux natifs, pas un scanner";
+"integrity.explainer.body" = "CoreTend lit des informations que macOS enregistre déjà — aucun moteur d'analyse, aucune base de signatures, rien à télécharger. Vous voyez ce qui est déjà vrai sur vos téléchargements, vos applications et ce qui démarre à la connexion.";
+"integrity.downloads.title" = "Téléchargements récents";
+"integrity.downloads.empty" = "Aucun fichier dans Téléchargements.";
+"integrity.downloads.no_provenance" = "Aucune origine enregistrée";
+"integrity.inspector.title" = "Vérifier la signature d'une app";
+"integrity.inspector.subtitle" = "Choisissez une application pour voir qui l'a signée et si la signature est valide.";
+"integrity.inspector.choose" = "Choisir une application…";
+"integrity.tier.apple" = "Signé par Apple";
+"integrity.tier.team" = "Signé par l’équipe %@";
+"integrity.tier.unsigned" = "Ad-hoc ou non signé";
+"integrity.tier.invalid" = "La signature ne se valide pas";
+"integrity.login_items.title" = "Démarre à la connexion";
+"integrity.login_items.subtitle" = "Agents et daemons de lancement trouvés dans LaunchAgents/LaunchDaemons.";
+"integrity.login_items.empty" = "Aucun trouvé.";
 "module.my_activity" = "Mon activité";
+
+/* Dashboard */
+"dashboard.title" = "Tableau de bord";
+"dashboard.subtitle" = "Analyses locales, nettoyage réversible et contrôles d’intégrité dans un même espace.";
+"dashboard.primary_action" = "Analyser le stockage";
+"dashboard.secondary_action" = "Ouvrir Space Lens";
+"dashboard.status.signature" = "Signature";
+"dashboard.status.safety" = "Sécurité";
+"dashboard.status.trash_enabled" = "Corbeille activée";
+"dashboard.status.exclusions" = "Exclusions";
+"dashboard.status.exclusion_count" = "%d chemins";
+"dashboard.status.free_space" = "Espace libre";
+"dashboard.status.loading" = "Chargement";
+"dashboard.storage.title" = "Stockage";
+"dashboard.storage.detail" = "Analyse les caches, journaux, rapports de crash et données de compilation avant toute vérification de suppression.";
+"dashboard.storage.free_of_total" = "libres sur %@";
+"dashboard.spacelens.title" = "Space Lens";
+"dashboard.spacelens.detail" = "Cartographie l’usage disque d’un dossier, puis permet de zoomer, chercher et ouvrir les éléments dans le Finder.";
+"dashboard.duplicates.title" = "Doublons";
+"dashboard.duplicates.detail" = "Trouve les copies exactes par contenu et explique quelle version conserver avant toute action.";
+"dashboard.applications.title" = "Applications";
+"dashboard.applications.detail" = "Sépare les apps des caches, assistants, agents et documents personnels.";
+"dashboard.integrity.title" = "Intégrité";
+"dashboard.integrity.detail" = "Vérifiez la provenance des téléchargements, les niveaux de signature et ce qui démarre à la connexion.";
+"dashboard.activity.title" = "Activité";
+"dashboard.activity.empty" = "Aucune activité enregistrée.";
+"dashboard.open_module" = "Ouvrir %@";
 
 /* Safety log (SafetyCore audit trail persistence) */
 "common.done" = "Terminé";
 "safetylog.title" = "Journal de sécurité";
-"safetylog.subtitle" = "%d exécutées · %d simulées (simulation)";
+"safetylog.subtitle" = "%d exécutées";
 "safetylog.empty" = "Aucune entrée dans le journal de sécurité pour le moment.";
 "safetylog.unavailable" = "Base de données locale indisponible";
 "safetylog.purge" = "Purger le journal";
 "safetylog.stage.approved" = "Approuvée";
-"safetylog.stage.dryrun" = "Simulation";
 "safetylog.stage.executed" = "Exécutée";
 "safetylog.stage.skipped" = "Ignorée";
 "safetylog.stage.error" = "Erreur";
@@ -414,10 +464,6 @@
 
 /* Accessibility — Differentiate Without Color for elevated metrics */
 "performance.elevated" = "élevé";
-"protection.watch.title" = "Surveillance en arrière-plan";
-"protection.watch.subtitle" = "Optionnel. Surveille les Téléchargements et vos dossiers Applications pour détecter les nouveaux fichiers et analyse chacun avec ClamAV une fois qu'il ne change plus. Rien n'est jamais supprimé automatiquement — les détections sont listées ici pour que vous les examiniez et les mettiez en quarantaine vous-même.";
-"protection.watch.toggle" = "Activer la surveillance en arrière-plan";
-"protection.watch.alerts_none" = "Surveillance active. Aucune menace détectée dans les dossiers surveillés.";
 
 // MARK: First-run wizard (Step 13)
 "common.yes" = "Oui";
@@ -428,7 +474,6 @@
 "onboarding.welcome.no_telemetry" = "Aucune télémétrie, statistique, publicité ni abonnement.";
 "onboarding.welcome.open_source" = "Open source — vous pouvez lire chaque ligne.";
 "onboarding.welcome.version" = "Version %@";
-"onboarding.welcome.unsigned" = "Version locale non signée";
 "onboarding.move.prompt" = "L'application n'est pas encore dans votre dossier Applications. Il est recommandé de l'y déplacer.";
 "onboarding.move.button" = "Déplacer vers Applications";
 "onboarding.move.done" = "Copiée dans %@. Relancez-la depuis là.";
@@ -441,8 +486,7 @@
 "onboarding.security.cautious" = "Prudent";
 "onboarding.security.cautious_detail" = "Tout vérifier avant action. Mêmes réglages sûrs, prudence maximale.";
 "onboarding.security.custom" = "Personnalisé";
-"onboarding.security.custom_detail" = "Partez des réglages sûrs et ajustez vous-même l'option simulation.";
-"onboarding.security.dry_run" = "Simulation par défaut (actions simulées)";
+"onboarding.security.custom_detail" = "Réglages sûrs, sélection manuelle et confirmation explicite avant retrait.";
 "onboarding.security.trash" = "La suppression utilise toujours la Corbeille";
 "onboarding.security.medium_risk" = "Règles à risque moyen présélectionnées";
 "onboarding.security.empty_trash" = "Vider la Corbeille automatiquement";
@@ -452,17 +496,6 @@
 "onboarding.fileaccess.can_scan" = "Vos fichiers dans les dossiers standards peuvent être analysés.";
 "onboarding.fileaccess.limited" = "Sans accès complet au disque, les données Mail et Safari restent inaccessibles.";
 "onboarding.fileaccess.no_autogrant" = "L'application ne peut pas l'accorder elle-même — elle ouvre seulement les Réglages Système pour que vous décidiez.";
-"onboarding.protection.title" = "Protection facultative";
-"onboarding.protection.subtitle" = "L'analyse antimalware est facultative et utilise ClamAV s'il est installé. Rien n'est installé à votre place.";
-"onboarding.protection.clamav" = "Moteur ClamAV";
-"onboarding.protection.path" = "Chemin";
-"onboarding.protection.version" = "Version du moteur";
-"onboarding.protection.signatures" = "Signatures";
-"onboarding.protection.unknown" = "inconnu";
-"onboarding.protection.no_install" = "Non détecté. Installez ClamAV vous-même (par ex. via Homebrew) pour activer l'analyse.";
-"onboarding.protection.copy_command" = "Copier la commande d'installation";
-"onboarding.protection.fsevents" = "Surveillance des dossiers (FSEvents)";
-"onboarding.protection.available" = "Disponible";
 "onboarding.menubar.title" = "Barre des menus et notifications";
 "onboarding.menubar.subtitle" = "Les deux sont facultatifs et désactivables à tout moment.";
 "onboarding.menubar.show" = "Afficher l'élément dans la barre des menus";
@@ -484,7 +517,6 @@
 "onboarding.check.resources" = "Ressources intégrées";
 "onboarding.check.sqlite" = "Base de données locale (SQLite)";
 "onboarding.check.permissions" = "Accès complet au disque";
-"onboarding.check.clamav" = "Moteur ClamAV";
 "onboarding.check.freespace" = "Espace disque libre";
 "onboarding.check.location" = "Accès aux dossiers configurés";
 "onboarding.check.safetycore" = "Noyau de sécurité";
@@ -499,9 +531,7 @@
 "onboarding.summary.title" = "Tout est prêt";
 "onboarding.summary.subtitle" = "Voici exactement ce qui est activé. Modifiez-le dans les Réglages.";
 "onboarding.summary.profile" = "Profil de sécurité";
-"onboarding.summary.dry_run" = "Simulation par défaut";
 "onboarding.summary.fda" = "Accès complet au disque";
-"onboarding.summary.clamav" = "Moteur ClamAV";
 "onboarding.summary.menu_bar" = "Élément barre des menus";
 "onboarding.summary.notifications" = "Notifications";
 "onboarding.summary.exclusions" = "Dossiers exclus";
@@ -509,6 +539,10 @@
 "onboarding.summary.restore" = "Les suppressions vont à la Corbeille et sont restaurables.";
 "onboarding.summary.docs" = "Lire la documentation";
 "settings.rerun_setup" = "Relancer l’assistant de configuration";
+"settings.about.privacy" = "Politique de confidentialité";
+"settings.about.license" = "Licence (Apache-2.0)";
+"settings.about.source" = "Code source sur GitHub";
+"settings.about.support" = "Assistance";
 
 /* Rename migration (MacCare Local -> CoreTend) */
 "settings.migration_done" = "Les données de la version précédente ont été migrées";
@@ -534,9 +568,45 @@
 "updates.unsigned_warning" = "Cette version n'est ni signée ni notarisée par Apple. Vérifiez son empreinte avant de l'ouvrir.";
 "updates.open_release" = "Ouvrir la page de la version";
 "updates.how_to_verify" = "Comment vérifier un téléchargement";
-"updates.no_autoinstall" = "CoreTend ne télécharge ni n'installe jamais une mise à jour de lui-même. Ses versions ne portant aucune signature d'éditeur, il ne peut pas prouver qui a produit un fichier — c'est donc vous qui téléchargez et vérifiez.";
+"updates.no_autoinstall" = "CoreTend ne télécharge ni n'installe jamais une mise à jour de lui-même. Les versions sont signées Developer ID et notarisées par Apple — vous téléchargez la nouvelle version depuis la page des releases, et macOS la vérifie à l'ouverture.";
 "updates.error_offline" = "Aucune connexion réseau. CoreTend fonctionne entièrement hors ligne ; cette vérification est facultative.";
 "updates.error_not_configured" = "La recherche de mises à jour n'est pas configurée.";
 "updates.error_cancelled" = "Vérification annulée.";
 "updates.error_malformed" = "Le manifeste de version n'a pas pu être lu.";
 "updates.error_response" = "Le serveur a répondu avec le statut %@.";
+
+/* Favoris et récents */
+"module.favorites_recents" = "Favoris et récents";
+"favrec.title" = "Favoris et récents";
+"favrec.add_favorite" = "Ajouter un favori";
+"favrec.analyze" = "Analyser";
+"favrec.section_quicklinks" = "Accès rapides";
+"favrec.section_favorites" = "Favoris";
+"favrec.section_recents" = "Analysés récemment";
+"favrec.empty_favorites" = "Aucun favori pour l’instant. Utilisez Ajouter un favori pour épingler un dossier.";
+"favrec.empty_recents" = "Rien d’analysé pour l’instant. Les dossiers récemment analysés apparaîtront ici.";
+"favrec.status_missing" = "Dossier introuvable — il a peut-être été déplacé ou supprimé.";
+"favrec.status_no_access" = "Permission nécessaire pour lire ce dossier.";
+"favrec.status_never_scanned" = "Pas encore analysé";
+"favrec.status_last_scanned" = "Dernière analyse %@ — %@";
+"favrec.remove" = "Retirer %@";
+"favrec.favorite" = "Ajouter %@ aux favoris";
+"favrec.unfavorite" = "Retirer %@ des favoris";
+"favrec.error_title" = "Favoris et récents indisponibles";
+"favrec.error_no_store" = "Base de données locale indisponible";
+
+/* Cleanup category rows (idle state) */
+"cleanup.idle.what_is_scanned" = "Ce qui est analysé";
+"cleanup.category.caches" = "Caches d'applications";
+"cleanup.category.caches.detail" = "~/Library/Caches — reconstruits automatiquement";
+"cleanup.category.logs" = "Journaux et diagnostics";
+"cleanup.category.logs.detail" = "~/Library/Logs — fichiers de plus de 7 jours";
+"cleanup.category.xcode" = "Données de construction Xcode";
+"cleanup.category.xcode.detail" = "DerivedData — reconstruits à la prochaine compilation";
+"cleanup.category.downloads" = "Téléchargements incomplets";
+"cleanup.category.downloads.detail" = "~/Downloads — fichiers partiels de plus de 7 jours";
+"cleanup.idle.safety_note" = "Rien n'est supprimé pendant l'analyse. Chaque élément est examiné avant toute action.";
+
+/* Space Lens idle */
+"spacelens.idle.tip" = "Code couleur par type : dossiers, médias, documents, archives et code.";
+"spacelens.favorites_recents" = "Favoris et récents";

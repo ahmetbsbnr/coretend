@@ -1,0 +1,3 @@
+import CoreTendApp
+
+CoreTendApp.main()
