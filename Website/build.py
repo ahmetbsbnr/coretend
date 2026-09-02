@@ -114,12 +114,49 @@ def strip_route_metadata(document: str) -> str:
     return document
 
 
-def landing_metadata(language: str, canonical_path: str) -> str:
+def structured_data(language: str, canonical_path: str, release: dict) -> str:
+    """A single SoftwareApplication node describing the current public build.
+
+    Every field is derived from the same canonical record the rest of the page
+    renders, so the JSON-LD can never drift from the visible facts.
+    """
+    meta = META[language]
+    graph = {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "CoreTend",
+        "applicationCategory": "UtilitiesApplication",
+        "operatingSystem": f"macOS {release['minimumMacOS']}+",
+        "processorRequirements": "Apple silicon (arm64)",
+        "softwareVersion": str(release["version"]),
+        "url": f"{ORIGIN}{canonical_path}",
+        "downloadUrl": f"{REPOSITORY}/releases/latest",
+        "image": f"{ORIGIN}/assets/brand/opengraph.png",
+        "description": meta["description"],
+        "inLanguage": "fr" if language == "fr" else "en",
+        "license": "https://www.apache.org/licenses/LICENSE-2.0",
+        "isAccessibleForFree": True,
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"},
+        "author": {
+            "@type": "Organization",
+            "name": "CoreTend",
+            "url": REPOSITORY,
+        },
+    }
+    payload = json.dumps(graph, ensure_ascii=False, separators=(",", ":"))
+    # A JSON-LD data block cannot contain a literal "</script>"; escape defensively.
+    payload = payload.replace("</", "<\\/")
+    return f'<script type="application/ld+json">{payload}</script>'
+
+
+def landing_metadata(language: str, canonical_path: str, release: dict) -> str:
     meta = META[language]
     alternate = "fr_FR" if language == "en" else "en_US"
     return "\n".join(
         (
             '<meta name="robots" content="index, follow">',
+            '<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f6f4ef">',
+            '<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#16191e">',
             f'<link rel="canonical" href="{ORIGIN}{canonical_path}">',
             f'<link rel="alternate" hreflang="en" href="{ORIGIN}/en">',
             f'<link rel="alternate" hreflang="fr" href="{ORIGIN}/fr">',
@@ -136,6 +173,7 @@ def landing_metadata(language: str, canonical_path: str) -> str:
             '<meta property="og:image:height" content="630">',
             '<meta name="twitter:card" content="summary_large_image">',
             '<link rel="manifest" href="/manifest.webmanifest">',
+            structured_data(language, canonical_path, release),
         )
     )
 
@@ -225,6 +263,16 @@ def externalise_scripts(document: str, output: Path, route_key: str) -> str:
         body = match.group("body")
         if re.search(r"\bsrc\s*=", attrs, flags=re.I):
             return match.group(0)
+        type_match = re.search(r'\btype\s*=\s*["\']([^"\']+)["\']', attrs, flags=re.I)
+        if type_match and type_match.group(1).strip().lower() not in (
+            "text/javascript",
+            "application/javascript",
+            "module",
+        ):
+            # A non-executable data block (e.g. application/ld+json). CSP's
+            # script-src never applies to it, so leave it inline rather than
+            # emitting a bogus .js file.
+            return match.group(0)
         digest = hashlib.sha256(body.encode("utf-8")).hexdigest()[:16]
         filename = f"{route_key}-{index}-{digest}.js"
         (generated / filename).write_text(body.strip() + "\n", encoding="utf-8")
@@ -306,7 +354,7 @@ def build_landing(template: str, language: str, canonical_path: str, output: Pat
         r'<meta\s+name=["\']description["\'][^>]*>',
         f'<meta name="description" content="{html.escape(meta["description"], quote=True)}">',
     )
-    document = document.replace("</head>", landing_metadata(language, canonical_path) + "\n</head>", 1)
+    document = document.replace("</head>", landing_metadata(language, canonical_path, release) + "\n</head>", 1)
 
     route_key = language if canonical_path != "/" else "root"
     document = externalise_styles(document, output, route_key)
@@ -849,7 +897,7 @@ def write_documents(stage: Path, release: dict) -> None:
         "start_url": "/",
         "display": "browser",
         "background_color": "#f6f4ef",
-        "theme_color": "#1b45e0",
+        "theme_color": "#f6f4ef",
         "icons": [
             {
                 "src": "/assets/brand/favicon-v2-192.png",
