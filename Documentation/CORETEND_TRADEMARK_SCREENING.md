@@ -1,10 +1,25 @@
 # CoreTend — Preliminary Trademark & Prior-Use Screening
 
-**STATUS: `PRELIMINARY_CLEARANCE_NO_HIGH_CONFLICT_FOUND`**
-**Status set: 2026-07-27 (UTC) — supersedes `REVIEW_REQUIRED` of 2026-07-25**
+**STATUS: `ATTORNEY_REVIEWED_NO_CONFLICT`**
+**Status set: 2026-09-02 (UTC) — supersedes `PRELIMINARY_CLEARANCE_NO_HIGH_CONFLICT_FOUND` of 2026-07-27**
 **Screening date: 2026-07-25 (UTC), extended to the official registers 2026-07-27 (UTC)**
-**Performed by: automated agent (Claude Code), non-human, non-lawyer**
+**Performed by: automated agent (Claude Code), non-human, non-lawyer — then reviewed by a trademark attorney (2026-09-02, per the maintainer)**
 **Machine-readable mirror: `Documentation/coretend-trademark-screening.json`**
+
+> **2026-09-02 — attorney review of the one open item.** The maintainer reports
+> that a trademark attorney has reviewed the `COREXTEND` (MIPS Tech, LLC)
+> adjacency in class 9 — the single `WATCH` item this screening left standing —
+> and concluded there is **no conflict**: CoreTend and COREXTEND are two
+> entirely separate products with two entirely separate meanings (a consumer
+> macOS maintenance application vs. an embedded-CPU instruction-set-extension IP
+> facility), with different construction, non-overlapping trade channels and a
+> non-overlapping relevant public. This is the human attorney review that the
+> 2026-07-27 status made a prerequisite for the 1.0 release, so **the name is
+> cleared for continued use including the v1.0.0 stable release.** It is still
+> **not** a claim of registration or a `®` right — no application has been filed
+> — and a further, scope-specific review is still the rule before any move into
+> embedded / semiconductor / processor-adjacent tooling. Everything below is the
+> earlier automated screening, unchanged.
 
 > **Why the status changed.** The 2026-07-25 screening set `REVIEW_REQUIRED` for
 > one stated reason: it reached the software and package ecosystems but **not a

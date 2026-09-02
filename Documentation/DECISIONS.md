@@ -100,9 +100,14 @@ GitHub, npm, PyPI, Homebrew and the Mac App Store are clear. Status:
 Keep using it. **Do not re-run the whole trademark search** — it is recorded in
 `CORETEND_TRADEMARK_SCREENING.md`.
 
-## D-N2 — COREXTEND is a WATCH item, not a blocker
+## D-N2 — COREXTEND was a WATCH item; attorney-reviewed 2026-09-02, no conflict
 `COREXTEND` (MIPS Tech, live class 9) is one letter away, in a different
-industry. Not a bar to a free beta.
+industry. It was never a bar to a free beta. On 2026-09-02 a trademark
+attorney reviewed the adjacency (per the maintainer) and concluded CoreTend
+and COREXTEND are two entirely separate products with two entirely separate
+meanings — no conflict. The `WATCH` condition "attorney review before 1.0" is
+satisfied; the name is cleared for the 1.0 release. Registration (a `®`) still
+needs a filing, which has not been made — see D-N3, which is unchanged.
 
 ## D-N3 — No definitive legal validation is claimed
 Screening is not clearance. Every document that mentions the name must keep the

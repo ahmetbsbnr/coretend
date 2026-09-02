@@ -119,7 +119,13 @@ line** (rc.6). What is left for the 1.0 tag:
 | DMG Finder visual QA (`TODO.md` #2) | Needs a real graphical session — icon alignment, drag-and-drop feel. |
 | Full client journey with real screenshots (`TODO.md` #3) | Download → quarantine → mount → Gatekeeper → onboarding → scan → uninstall, both languages, real captures. |
 | Interactive VoiceOver / keyboard / Dynamic Type QA (`TODO.md` #7) | Code-level a11y is tested; none observed interactively. |
-| **Trademark attorney review** | `COREXTEND` (MIPS Tech, live, class 9) is one letter away — `legalReviewStatus` stays `pending` until a lawyer signs off. Required before a 1.0 or any commercial use. |
+
+**Trademark attorney review — DONE 2026-09-02.** A trademark attorney
+reviewed the `COREXTEND` (MIPS Tech, class 9) adjacency and concluded CoreTend
+and COREXTEND are two entirely separate products with two entirely separate
+meanings — no conflict. The name is cleared for the 1.0 release. Not a
+registration and not a `®`; a filing remains a separate future step. See
+`Documentation/CORETEND_TRADEMARK_SCREENING.md`.
 
 ### Ship sequence
 1. ~~Bump `PublicIdentity.example.json` → `1.0.0`, `channel: stable`; mirror
