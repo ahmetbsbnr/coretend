@@ -95,6 +95,31 @@ argument-array-only `Process()` call, and 86/86 passing tests hold up
     from session 2 `FEATURE_INVENTORY.md`). Effort: M if real
     self-update-check behavior is wanted; currently honest UI-only.
 
+11. **Model fields computed by an engine but never surfaced in the UI**
+    — category: product polish. `periphery` (run 2026-09-02) flags them as
+    "assign-only". They are correct, cheap, `Sendable`/`Codable` data — kept
+    on purpose — but a "majestic" 1.x should show them:
+    - `ScanFinding.category` / `.confidence` — per-finding classification and
+      certainty; the Cleanup/Storage review lists neither.
+    - `IntegrityCore.QuarantineInfo.originURL` / `.downloadedAt` — download
+      referrer + date from the quarantine metadata; Protection shows only
+      `sourceURL`.
+    - `MCModuleIdentity.color` — the per-module role colour; module headers
+      and cards pull only `.icon` from the identity, not the colour.
+    - `SafetyLogViewModel.skippedOrErrorCount` — the audit view's subtitle
+      shows executed count only; skipped/errored is computed, not shown.
+    - `ReleaseInfo.channel` — parsed from `latest.json`; the update check
+      compares version only, so it cannot yet gate on release channel.
+    Effort: S each; net-new UI + a localized string or two, needs visual QA.
+
+12. **Intentional-library `public` surface flagged as "redundant"** — not
+    debt. `periphery` reports ~42 `public` symbols in `DesignSystem`,
+    `ScanCore`, `SafetyCore`, `Persistence` as "not used outside the module".
+    That is expected: these are deliberately-factored modules whose `public`
+    API is the module boundary, and a design-system component vocabulary is
+    meant to expose pieces the app has not adopted yet. Left as-is on
+    purpose; listed here so a future periphery run has a known baseline.
+
 ## Not technical debt (explicitly checked, found clean this session)
 
 - Localization: 327/327 EN keys have an FR counterpart and vice versa,

@@ -101,11 +101,12 @@ public struct SimilarImagesEngine: Sendable {
                         representatives.append(observation)
                     }
                 }
-                let visionGroups = clusters.filter { $0.count > 1 }.map { members -> SimilarImageGroup in
+                let visionGroups = clusters.compactMap { members -> SimilarImageGroup? in
+                    guard members.count > 1, let anchor = members.first else { return nil }
                     var pixelCounts: [URL: Int64] = [:]
                     for (url, _) in members { pixelCounts[url] = Self.pixelCount(of: url) }
                     return SimilarImageGroup(
-                        id: members.first!.0.path,
+                        id: anchor.0.path,
                         urls: members.map(\.0),
                         totalBytes: members.reduce(0) { $0 + $1.1 },
                         pixelCounts: pixelCounts)
@@ -136,17 +137,16 @@ public struct SimilarImagesEngine: Sendable {
             guard let digest = fileDigest(url) else { continue }
             buckets["\(size):\(digest)", default: []].append((url, size))
         }
-        return buckets.values
-            .filter { $0.count > 1 }
-            .map { members in
-                var pixelCounts: [URL: Int64] = [:]
-                for (url, _) in members { pixelCounts[url] = pixelCount(of: url) }
-                return SimilarImageGroup(
-                    id: members.first!.0.path,
-                    urls: members.map(\.0),
-                    totalBytes: members.reduce(0) { $0 + $1.1 },
-                    pixelCounts: pixelCounts)
-            }
+        return buckets.values.compactMap { members -> SimilarImageGroup? in
+            guard members.count > 1, let anchor = members.first else { return nil }
+            var pixelCounts: [URL: Int64] = [:]
+            for (url, _) in members { pixelCounts[url] = pixelCount(of: url) }
+            return SimilarImageGroup(
+                id: anchor.0.path,
+                urls: members.map(\.0),
+                totalBytes: members.reduce(0) { $0 + $1.1 },
+                pixelCounts: pixelCounts)
+        }
     }
 
     private static func fileDigest(_ url: URL) -> String? {
