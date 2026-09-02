@@ -13,7 +13,7 @@
 # shell and in CI, and Scripts/test-dmg-layout.sh verifies the result.
 #
 # No privileged helper, no install script, no user data — a DMG is a folder.
-set -e
+set -e -o pipefail
 cd "$(dirname "$0")/.."
 
 ARTIFACT_VERSION="${1:-0.8.1}"

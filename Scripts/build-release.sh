@@ -27,7 +27,7 @@
 #
 # Usage: Scripts/build-release.sh [version]
 #        ALLOW_DIRTY_BUILD=1 Scripts/build-release.sh [version]   # local only
-set -e
+set -e -o pipefail
 cd "$(dirname "$0")/.."
 
 ARTIFACT_VERSION="${1:-$(/usr/bin/python3 -c "import json;print(json.load(open('Configuration/PublicIdentity.example.json'))['marketingVersion'])")}"

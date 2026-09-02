@@ -2,7 +2,7 @@
 # Builds CoreTend-<version>-arm64-unsigned.zip from the app bundle
 # produced by package-local.sh. Reuses that script rather than
 # duplicating the bundle-assembly steps.
-set -e
+set -e -o pipefail
 cd "$(dirname "$0")/.."
 
 ARTIFACT_VERSION="${1:-0.7.0}"
