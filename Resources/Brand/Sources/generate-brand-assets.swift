@@ -306,6 +306,36 @@ func openGraph() -> CGImage {
     return ctx.makeImage()!
 }
 
+/// GitHub repository social card, 1280x640. Same composition as the Open Graph
+/// card, retuned for GitHub's 2:1 frame: GitHub re-crops this image for Slack,
+/// Discord and X previews, so every element keeps well clear of the 40pt safe
+/// border they recommend. Not applied automatically — a human uploads it in
+/// Settings -> General -> Social preview.
+func socialPreview() -> CGImage {
+    let w = 1280, h = 640
+    let ctx = makeContext(w, h)
+    ctx.setFillColor(cgColor(coreInk))
+    ctx.fill(CGRect(x: 0, y: 0, width: CGFloat(w), height: CGFloat(h)))
+
+    let halo = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
+                          colors: [cgColor(cobaltBright, 0.16), cgColor(cobaltBright, 0)] as CFArray,
+                          locations: [0, 1])!
+    ctx.drawRadialGradient(halo, startCenter: CGPoint(x: 980, y: 400), startRadius: 0,
+                           endCenter: CGPoint(x: 980, y: 400), endRadius: 520, options: [])
+
+    // Mark centred vertically, its rightmost arc + glow landing ~66px from the
+    // edge — inside the 40pt safe zone with room to spare.
+    drawBloom(ctx, rect: CGRect(x: 905, y: 175, width: 290, height: 290),
+              lineWidthFraction: 0.075, glow: true)
+
+    drawWordmark(ctx, at: CGPoint(x: 88, y: 396), pointSize: 100, color: softPorcelain)
+    _ = drawText(ctx, "A lighter Mac. Always under control.", at: CGPoint(x: 88, y: 306),
+                 size: 42, weight: .medium, color: cobaltBright)
+    _ = drawText(ctx, "Local, transparent and reversible care for macOS.", at: CGPoint(x: 88, y: 244),
+                 size: 28, weight: .regular, color: mutedSlate)
+    return ctx.makeImage()!
+}
+
 /// DMG window background, 600x400 points (1200x800 at @2x).
 ///
 /// Carries the same Porcelain / Slate / Teal palette as the website — the
@@ -541,6 +571,7 @@ savePNG(compactLogo(side: 768, surface: .dark),
         to: out.appendingPathComponent("Onboarding-Hero.png"))
 
 savePNG(openGraph(), to: out.appendingPathComponent("OpenGraph-1200x630.png"))
+savePNG(socialPreview(), to: out.appendingPathComponent("SocialPreview-1280x640.png"))
 savePNG(dmgBackground(), to: out.appendingPathComponent("DMG-Background.png"))
 savePNG(dmgBackground(scale: 2), to: out.appendingPathComponent("DMG-Background@2x.png"))
 
