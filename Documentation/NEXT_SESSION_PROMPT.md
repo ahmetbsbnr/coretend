@@ -9,7 +9,7 @@ test -f .git
 git rev-parse --show-toplevel
 git status --short --branch
 git rev-parse HEAD
-python3 Website/generate.py
+python3 Website/build.py --output Website/dist
 bash Scripts/check-website.sh
 ```
 
