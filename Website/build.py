@@ -33,8 +33,8 @@ ORIGIN = "https://coretend.ahmetbsbnr.com"
 REPOSITORY = "https://github.com/ahmetbsbnr/coretend"
 RELEASE = REPO_ROOT / "Configuration" / "published-release.json"
 
-# Deliberately excludes Website/generate.py, old authored CSS/JS, dev notes,
-# Vercel configuration, Python bytecode and historical generated pages.
+# Deliberately excludes old authored CSS/JS, dev notes, Vercel configuration,
+# Python bytecode and any historical generated pages.
 PUBLIC_ASSET_PATTERNS = (
     "app/*.png",
     "app/*.webp",
