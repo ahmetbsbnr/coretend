@@ -294,11 +294,17 @@ if [ "$POSTURE" = "signed" ]; then
   fi
   APP="build/CoreTend.app"
   if [ -d "$APP" ]; then
-    if codesign --verify --strict --deep "$APP" >/dev/null 2>&1 \
-       && codesign -dv "$APP" 2>&1 | grep -q 'Authority=Developer ID Application'; then
-      PASS "built app carries a valid Developer ID Application signature"
+    # `codesign -dv` alone does not print Authority lines — that needs
+    # --verbose=2 or higher. Captured, not piped (pipefail + SIGPIPE, as noted
+    # elsewhere in this file). A stapled ticket on the bundle is the extra
+    # assurance the exact notarized bytes are on disk.
+    APP_SIG=$(codesign -d --verbose=4 "$APP" 2>&1 || true)
+    if codesign --verify --strict "$APP" >/dev/null 2>&1 \
+       && printf '%s\n' "$APP_SIG" | grep -q 'Authority=Developer ID Application' \
+       && printf '%s\n' "$APP_SIG" | grep -q 'Notarization Ticket=stapled'; then
+      PASS "built app carries a valid, stapled Developer ID Application signature"
     else
-      HUMAN "verify build/CoreTend.app carries the Developer ID identity before publishing (it may be a local dev-signed copy)"
+      HUMAN "verify build/CoreTend.app carries the Developer ID identity + stapled ticket before publishing"
     fi
   fi
 else
