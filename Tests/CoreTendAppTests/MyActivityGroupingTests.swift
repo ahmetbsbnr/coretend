@@ -3,9 +3,9 @@ import Foundation
 import Persistence
 @testable import CoreTendApp
 
-private func record(kind: ActivityRecord.Kind, daysAgo: Int, bytes: Int64 = 0, items: Int = 1, dryRun: Bool = false) -> ActivityRecord {
+private func record(kind: ActivityRecord.Kind, daysAgo: Int, bytes: Int64 = 0, items: Int = 1) -> ActivityRecord {
     ActivityRecord(id: 0, kind: kind, date: Calendar.current.date(byAdding: .day, value: -daysAgo, to: Date())!,
-                   summary: "x", itemCount: items, bytes: bytes, dryRun: dryRun)
+                   summary: "x", itemCount: items, bytes: bytes)
 }
 
 @Suite("My Activity day grouping")
@@ -33,17 +33,41 @@ struct MyActivityGroupingTests {
         #expect(ActivityDateRange.all.contains(old, now: now))
     }
 
-    @Test("real vs simulated cleanup bytes never merge")
-    func realVsSimulated() {
+    @Test("only completed cleanup bytes count as reclaimed space")
+    func completedCleanupImpact() {
         let records = [
-            record(kind: .cleanup, daysAgo: 0, bytes: 100, dryRun: false),
-            record(kind: .cleanup, daysAgo: 0, bytes: 500, dryRun: true),
-            record(kind: .scan, daysAgo: 0, bytes: 999, dryRun: true), // scans never count as freed
+            record(kind: .cleanup, daysAgo: 0, bytes: 100),
+            record(kind: .cleanup, daysAgo: 0, bytes: 500),
+            record(kind: .scan, daysAgo: 0, bytes: 999), // scans never count as freed
         ]
         let summary = ActivityImpactSummary(records)
-        #expect(summary.realFreedBytes == 100)
-        #expect(summary.simulatedFreedBytes == 500)
+        #expect(summary.freedBytes == 600)
         #expect(summary.itemCount == 3)
+    }
+}
+
+@Suite("My Activity export")
+@MainActor
+struct MyActivityExportTests {
+    @Test("JSON export round-trips the visible records as valid JSON")
+    func exportJSONIsValid() throws {
+        let m = MyActivityViewModel()
+        m.allRecords = [record(kind: .cleanup, daysAgo: 0, bytes: 1024, items: 3)]
+        let json = m.exportJSON()
+        let data = try #require(json.data(using: .utf8))
+        let decoded = try JSONSerialization.jsonObject(with: data) as? [[String: Any]]
+        #expect(decoded?.count == 1)
+        #expect(decoded?[0]["bytes"] as? Int64 == 1024)
+        #expect(decoded?[0]["dryRun"] == nil)
+    }
+
+    @Test("JSON export respects the same date-range filter as the CSV export")
+    func exportJSONRespectsDateRange() {
+        let m = MyActivityViewModel()
+        m.allRecords = [record(kind: .scan, daysAgo: 0), record(kind: .scan, daysAgo: 40)]
+        m.dateRange = .last7
+        #expect(m.exportJSON().contains("[") )
+        #expect(m.records.count == 1) // the 40-day-old record is filtered out of both exports
     }
 }
 

@@ -11,11 +11,17 @@ that it contained no malware. Labels vary by macOS version.
 1. Confirm the file name is `CoreTend-0.9.0-arm64-unsigned.dmg` and that it came
    from the official CoreTend release.
 2. Open the DMG and drag CoreTend to Applications.
-3. In Finder, open Applications.
-4. Control-click CoreTend, choose **Open**, and read the confirmation.
-5. If macOS instead offers the option under **System Settings → Privacy &
-   Security**, use the option naming CoreTend specifically, then confirm.
-6. Launch CoreTend again from Applications.
+3. In Finder, open Applications and double-click CoreTend once. macOS refuses
+   to open it and reports that the developer cannot be verified. This is
+   expected, and it is what makes the app appear in the next step.
+4. Open **System Settings → Privacy & Security**, scroll to **Security**, and
+   choose **Open Anyway** next to the CoreTend message. Confirm with Touch ID
+   or your admin password.
+5. Launch CoreTend again from Applications.
+
+On **macOS 14 and earlier** you can instead Control-click CoreTend in Finder
+and choose **Open**. Apple removed that override in macOS 15 Sequoia — on
+macOS 15 and later it silently does nothing, so use System Settings there.
 
 This authorizes that copy of CoreTend only. It is not an approval,
 certification or malware validation. Never disable Gatekeeper or SIP globally.

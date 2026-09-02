@@ -1,0 +1,894 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Coretend - Hardware Support Proposal for Apple</title>
+  <style>:root {
+  --paper: #f4f4f0;
+  --paper-bright: #fcfcfa;
+  --ink: #17191d;
+  --muted: #5d626b;
+  --line: #d7d8d4;
+  --cobalt: #2240e2;
+  --cobalt-deep: #182fb2;
+  --cobalt-soft: #e6e9ff;
+  --amber: #aa6b00;
+  --green: #2e6b48;
+  --coral: #a13c34;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #d9d9d4;
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-size: 10pt;
+  line-height: 1.43;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  counter-reset: proposal-page;
+}
+
+.page {
+  position: relative;
+  width: 210mm;
+  height: 297mm;
+  margin: 10mm auto;
+  overflow: hidden;
+  background: var(--paper);
+  counter-increment: proposal-page;
+  break-after: page;
+  page-break-after: always;
+}
+
+.page:last-child {
+  break-after: auto;
+  page-break-after: auto;
+}
+
+.page-inner {
+  position: absolute;
+  top: 15mm;
+  left: 17mm;
+  width: 176mm;
+  height: 264mm;
+}
+
+.page-footer {
+  position: absolute;
+  left: 17mm;
+  right: 17mm;
+  bottom: 7.5mm;
+  display: flex;
+  justify-content: space-between;
+  padding-top: 2.5mm;
+  border-top: 0.35mm solid var(--line);
+  color: #777b84;
+  font-size: 7.4pt;
+  letter-spacing: 0.03em;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+table,
+blockquote,
+figure {
+  margin-top: 0;
+}
+
+h1 {
+  max-width: 150mm;
+  margin-bottom: 5mm;
+  font-size: 27pt;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+}
+
+h2 {
+  margin: 5mm 0 2.5mm;
+  font-size: 15pt;
+  line-height: 1.15;
+  letter-spacing: -0.018em;
+}
+
+h3 {
+  margin: 4mm 0 1.8mm;
+  color: var(--ink);
+  font-size: 10.4pt;
+  line-height: 1.2;
+}
+
+p {
+  margin-bottom: 3mm;
+}
+
+strong {
+  font-weight: 680;
+}
+
+a {
+  color: var(--cobalt-deep);
+  text-decoration: none;
+  border-bottom: 0.25mm solid rgba(34, 64, 226, 0.35);
+}
+
+code {
+  padding: 0.3mm 0.8mm;
+  border-radius: 1mm;
+  background: #e7e7e2;
+  font-family: "SFMono-Regular", Consolas, monospace;
+  font-size: 0.84em;
+}
+
+ul,
+ol {
+  margin-bottom: 3mm;
+  padding-left: 5mm;
+}
+
+li {
+  margin-bottom: 1.35mm;
+  padding-left: 0.6mm;
+}
+
+li::marker {
+  color: var(--cobalt);
+}
+
+blockquote {
+  margin: 3mm 0 4mm;
+  padding: 3.5mm 4mm;
+  border-left: 1.2mm solid var(--cobalt);
+  background: var(--paper-bright);
+  font-size: 10.3pt;
+  line-height: 1.4;
+}
+
+.section-kicker {
+  margin-bottom: 4.5mm;
+  color: var(--cobalt);
+  font-size: 7.8pt;
+  font-weight: 720;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.lede {
+  max-width: 158mm;
+  color: #343840;
+  font-size: 11.1pt;
+  line-height: 1.5;
+}
+
+.small,
+.source-note,
+figcaption {
+  color: var(--muted);
+  font-size: 7.6pt;
+  line-height: 1.42;
+}
+
+.source-note {
+  margin-top: 3mm;
+}
+
+.eyebrow {
+  color: #9fabe9;
+  font-size: 8pt;
+  font-weight: 720;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+}
+
+.cover {
+  background: var(--ink);
+  color: var(--paper-bright);
+}
+
+.cover .page-inner {
+  top: 0;
+  left: 0;
+  width: 210mm;
+  height: 297mm;
+}
+
+.cover-layout {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 19mm;
+}
+
+.cover-mark {
+  position: absolute;
+  top: 18mm;
+  right: 18mm;
+  width: 39mm;
+  height: 39mm;
+}
+
+.cover-copy {
+  position: absolute;
+  top: 67mm;
+  left: 19mm;
+  width: 154mm;
+}
+
+.cover h1 {
+  max-width: 156mm;
+  margin: 9mm 0 7mm;
+  color: var(--paper-bright);
+  font-size: 37pt;
+  line-height: 0.98;
+  letter-spacing: -0.047em;
+}
+
+.cover-subtitle {
+  margin: 0;
+  color: #c9ceea;
+  font-size: 16pt;
+  line-height: 1.25;
+}
+
+.cover-rule {
+  width: 42mm;
+  margin: 11mm 0 0;
+  border-top: 1.4mm solid var(--cobalt);
+}
+
+.cover-meta {
+  position: absolute;
+  left: 19mm;
+  right: 19mm;
+  bottom: 19mm;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10mm;
+  padding-top: 6mm;
+  border-top: 0.3mm solid #454950;
+  color: #c5c7cc;
+  font-size: 9pt;
+  line-height: 1.55;
+}
+
+.cover-meta strong {
+  color: #fff;
+}
+
+.two-column {
+  display: grid;
+  grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.82fr);
+  gap: 8mm;
+  align-items: start;
+}
+
+.two-column.equal {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.panel {
+  padding: 4.5mm;
+  border: 0.3mm solid var(--line);
+  border-radius: 3mm;
+  background: var(--paper-bright);
+}
+
+.panel h2:first-child,
+.panel h3:first-child {
+  margin-top: 0;
+}
+
+.panel.cobalt {
+  border-color: var(--cobalt);
+  background: var(--cobalt);
+  color: white;
+}
+
+.panel.cobalt h2,
+.panel.cobalt h3,
+.panel.cobalt a,
+.panel.cobalt .small {
+  color: white;
+}
+
+.panel.cobalt a {
+  border-bottom-color: rgba(255, 255, 255, 0.5);
+}
+
+.fact-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 3mm;
+  margin: 4mm 0;
+}
+
+.fact {
+  min-height: 24mm;
+  padding: 3.5mm;
+  border-top: 1mm solid var(--cobalt);
+  background: var(--paper-bright);
+}
+
+.fact strong {
+  display: block;
+  margin-bottom: 1.2mm;
+  font-size: 11.3pt;
+}
+
+.fact span {
+  color: var(--muted);
+  font-size: 8pt;
+  line-height: 1.35;
+}
+
+.status {
+  display: inline-block;
+  margin-right: 1.5mm;
+  padding: 0.7mm 1.8mm;
+  border: 0.25mm solid currentColor;
+  border-radius: 99mm;
+  font-size: 6.8pt;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: 0.2mm;
+}
+
+.status.available { color: var(--green); }
+.status.partial { color: var(--amber); }
+.status.prototype { color: var(--cobalt-deep); }
+.status.idea { color: var(--coral); }
+
+.hero-shot,
+.screenshot-card {
+  margin: 3.5mm 0 0;
+}
+
+.hero-shot img,
+.screenshot-card img {
+  display: block;
+  width: 100%;
+  border: 0.3mm solid #bfc1c6;
+  border-radius: 3mm;
+  background: #0d0e10;
+}
+
+.hero-shot > p,
+.screenshot-card > p {
+  margin: 0;
+}
+
+.hero-shot img {
+  max-height: 123mm;
+  object-fit: contain;
+}
+
+.coretend-vision .hero-shot img {
+  max-height: 109mm;
+}
+
+.coretend-vision p,
+.coretend-vision blockquote {
+  font-size: 9pt;
+}
+
+.coretend-vision .fact {
+  min-height: 20mm;
+  padding: 3mm;
+}
+
+figcaption {
+  margin-top: 1.8mm;
+}
+
+.screenshot-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 0.75fr;
+  gap: 4mm;
+  margin-top: 3mm;
+}
+
+.screenshot-stack {
+  display: grid;
+  gap: 3mm;
+}
+
+.screenshot-card.compact img {
+  max-height: 52mm;
+  object-fit: contain;
+}
+
+.screenshot-card.primary img {
+  height: auto;
+  max-height: 108mm;
+  object-fit: contain;
+}
+
+.status-columns {
+  display: grid;
+  grid-template-columns: 1.06fr 0.94fr;
+  gap: 5mm;
+  margin-top: 3mm;
+}
+
+.status-columns h3 {
+  margin-top: 0;
+}
+
+.status-columns ul {
+  padding-left: 4.5mm;
+  font-size: 8.35pt;
+  line-height: 1.36;
+}
+
+.architecture-image,
+.memory-image {
+  display: block;
+  width: 100%;
+  margin: 3mm 0;
+}
+
+.architecture-image {
+  height: 62mm;
+}
+
+.memory-image {
+  height: 100mm;
+}
+
+.tech-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 2mm;
+  margin: 2mm 0 3mm;
+}
+
+.tech-strip div {
+  padding: 2mm;
+  border-top: 0.75mm solid var(--cobalt);
+  background: var(--paper-bright);
+  font-size: 7.1pt;
+  line-height: 1.3;
+}
+
+.architecture p {
+  margin-bottom: 2mm;
+  font-size: 8.45pt;
+  line-height: 1.34;
+}
+
+.architecture .panel {
+  padding: 3mm;
+}
+
+.architecture .panel h3 {
+  margin-bottom: 1mm;
+}
+
+.architecture .panel ul {
+  margin-bottom: 0;
+  font-size: 7.55pt;
+  line-height: 1.28;
+}
+
+.architecture .panel li {
+  margin-bottom: 0.8mm;
+}
+
+.tech-strip strong {
+  display: block;
+  margin-bottom: 0.6mm;
+  font-size: 8pt;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: var(--paper-bright);
+  font-size: 7.45pt;
+  line-height: 1.28;
+}
+
+th,
+td {
+  padding: 2.1mm 2mm;
+  border-bottom: 0.25mm solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+th {
+  border-top: 0.8mm solid var(--cobalt);
+  color: var(--ink);
+  font-size: 7pt;
+  font-weight: 730;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.ai table th:nth-child(1),
+.ai table td:nth-child(1) { width: 12%; }
+.ai table th:nth-child(2),
+.ai table td:nth-child(2) { width: 23%; }
+.ai table th:nth-child(3),
+.ai table td:nth-child(3) { width: 20%; }
+.ai table th:nth-child(4),
+.ai table td:nth-child(4) { width: 25%; }
+.ai table th:nth-child(5),
+.ai table td:nth-child(5) { width: 20%; }
+
+.callout {
+  margin: 3mm 0;
+  padding: 3.5mm 4mm;
+  border: 0.3mm solid var(--cobalt);
+  background: var(--cobalt-soft);
+}
+
+.callout p:last-child {
+  margin-bottom: 0;
+}
+
+.outcome-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3.5mm;
+  margin-top: 3mm;
+}
+
+.outcome {
+  min-height: 42mm;
+  padding: 4mm;
+  border: 0.3mm solid var(--line);
+  background: var(--paper-bright);
+}
+
+.outcome .number {
+  display: block;
+  margin-bottom: 2mm;
+  color: var(--cobalt);
+  font-size: 16pt;
+  font-weight: 730;
+}
+
+.outcome h3 {
+  margin: 0 0 1.5mm;
+}
+
+.outcome p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 8.1pt;
+}
+
+.request-statement {
+  margin: 4mm 0 5mm;
+  padding: 6mm;
+  border-left: 1.5mm solid var(--cobalt);
+  background: var(--paper-bright);
+  font-size: 12pt;
+  line-height: 1.4;
+}
+
+.support-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 2.5mm;
+  margin: 3mm 0 4mm;
+}
+
+.support-options div {
+  min-height: 21mm;
+  padding: 3mm;
+  border: 0.3mm solid var(--line);
+  background: var(--paper-bright);
+  font-size: 8pt;
+  line-height: 1.32;
+}
+
+.links-list {
+  margin: 8mm 0 6mm;
+  border-top: 0.8mm solid var(--cobalt);
+}
+
+.link-row {
+  display: grid;
+  grid-template-columns: 38mm 1fr;
+  gap: 5mm;
+  align-items: center;
+  min-height: 23mm;
+  border-bottom: 0.3mm solid var(--line);
+}
+
+.link-row strong {
+  font-size: 9pt;
+}
+
+.link-row a {
+  font-size: 11pt;
+  overflow-wrap: anywhere;
+}
+
+.closing {
+  margin-top: 10mm;
+  padding-top: 7mm;
+  border-top: 0.3mm solid var(--line);
+}
+
+.closing p {
+  max-width: 150mm;
+  color: var(--muted);
+}
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  html,
+  body {
+    background: white;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .page {
+    margin: 0;
+  }
+}
+</style>
+</head>
+<body>
+<section class="page cover" id="page-1" data-page="1"><div class="page-inner"><div class="cover-layout">
+<img class="cover-mark" src="assets/coretend-mark.svg" alt="Coretend mark">
+<div class="cover-copy">
+<div class="eyebrow">Independent student proposal · 31 July 2026</div>
+<h1>Coretend — Student Software and AI Development Project</h1>
+<p class="cover-subtitle">Hardware Support Proposal for Apple</p>
+<div class="cover-rule"></div>
+</div>
+<div class="cover-meta">
+<div><strong>Ahmet Basbunar</strong><br>Incoming second-year BUT Informatique student<br>Application Development track</div>
+<div><strong>IUT de Metz, France</strong><br><a href="https://ahmetbsbnr.com">ahmetbsbnr.com</a><br>Prepared for Apple Education, Developer Relations and the Office of the CEO</div>
+</div>
+</div></div></section><section class="page executive" id="page-2" data-page="2"><div class="page-inner"><div class="section-kicker">01 / Executive Summary</div>
+<h1>A working project, ready for a larger learning horizon</h1>
+<p>I am Ahmet Basbunar, an incoming second-year BUT Informatique student in the Application Development track at IUT de Metz. I am building <strong>Coretend</strong>, a native macOS utility for storage exploration, cautious cleanup and audited, user-approved actions. The repository contains working SwiftUI modules, local SQLite persistence and safety controls. Coretend is under active development, not a finished commercial or App Store product.</p>
+<p>Alongside it, I use local language models and development assistants to study inference, quantisation, context windows, runtime design and application integration. This work is separate: Coretend currently contains no LLM integration.</p>
+<p>My MacBook Air with Apple M1 and 8 GB of unified memory has enabled four years of learning and creation. It now has limited headroom when local inference shares memory with macOS, development tools, a browser and services. Strong quantisation, shorter contexts and swap complicate simultaneous inference and development.</p>
+<p>I respectfully seek access to a durable Mac with <strong>24 or 32 GB of unified memory</strong> through any suitable route, including refurbished or demonstration equipment, a long-term loan, donation, exceptional educational discount or programme guidance. The support would enable continued Coretend development, deeper MLX and Apple silicon work, documented experiments, open-source contributions, a stronger portfolio and internship preparation.</p>
+<div class="fact-grid">
+<div class="fact"><strong>Native macOS work</strong><span>Swift 6, SwiftUI, AppKit and Apple frameworks.</span></div>
+<div class="fact"><strong>Local by design</strong><span>No account or remote backend appears in source.</span></div>
+<div class="fact"><strong>Focused request</strong><span>Memory and durability matter more than a premium model.</span></div>
+</div></div><footer class="page-footer"><span>Coretend hardware support proposal</span><span>2</span></footer></section><section class="page developer" id="page-3" data-page="3"><div class="page-inner"><div class="section-kicker">02 / About the Developer</div>
+<h1>Learning by building end-to-end systems</h1>
+<div class="two-column">
+<div>
+<p>I am an <strong>incoming second-year BUT Informatique student</strong> at IUT de Metz, Université de Lorraine, in France. My track, <em>Réalisation d’applications</em> (Application Development), aligns with the work I want to pursue: designing reliable software, understanding the systems beneath it and translating technical constraints into useful interfaces.</p>
+<p>Coretend is the strongest current example of that approach. It requires more than interface work: scanning large file trees, coordinating asynchronous tasks, validating destructive actions, modelling state, persisting audit records, packaging a macOS application and keeping documentation aligned with a fast-moving codebase.</p>
+<p>My ambition is to deepen both <strong>native software engineering</strong> and <strong>applied AI</strong>. I want to understand local-model execution rather than treating AI as a black box, then use that knowledge carefully where it can improve a real application.</p>
+<p>I am registered with the Apple Developer programme. I am registered to continue into the second year of the BUT Informatique programme at IUT de Metz and have completed the required administrative steps, including obtaining my CVEC attestation. Supporting documentation regarding my student status can be provided upon request.</p>
+</div>
+<div class="panel cobalt">
+<h2>Current profile</h2>
+<ul>
+<li>Incoming second-year BUT Informatique student</li>
+<li>Application Development track</li>
+<li>IUT de Metz, France</li>
+<li>Native macOS and Swift development</li>
+<li>Local AI and runtime experimentation</li>
+<li>Registered Apple Developer</li>
+</ul>
+<h2>Public work</h2>
+<p><a href="https://ahmetbsbnr.com">Portfolio</a> <a href="https://github.com/ahmetbsbnr">GitHub</a> <a href="https://www.linkedin.com/in/ahmet-basbunar">LinkedIn</a> <a href="https://coretend.ahmetbsbnr.com">Coretend website</a></p>
+</div>
+</div>
+<div class="callout">
+<p><strong>Authorship and tools.</strong> I remain responsible for Coretend’s conception, implementation decisions and validation. AI assistants are used as learning, analysis and development aids, not represented as autonomous authors of the project.</p>
+</div></div><footer class="page-footer"><span>Coretend hardware support proposal</span><span>3</span></footer></section><section class="page coretend-vision" id="page-4" data-page="4"><div class="page-inner"><div class="section-kicker">03 / Coretend · Vision and Current Build</div>
+<h1>Make Mac maintenance understandable and reversible</h1>
+<p>Many maintenance tools reduce storage decisions to a large number and a single action. Coretend is exploring a more transparent model: analyse locally, explain what was found, let the user review it, validate every approved path, default to simulation and move files to the macOS Trash rather than deleting them permanently.</p>
+<p>The current source targets individual Mac users who want clearer storage information and cautious maintenance. It also includes Xcode-oriented cleanup rules useful to developers. There is no account system or hosted application backend in the repository.</p>
+<blockquote>Coretend is currently under active development and is not presented as a finished commercial product.</blockquote>
+<figure class="hero-shot">
+<p><img src="screenshots/01-smart-care.png" alt="Current Coretend Smart Care screen"></p>
+<figcaption>Current-branch Smart Care interface, captured on macOS on 31 July 2026. The screen accurately shows the present limitation: Cleanup is available in this flow, while other care categories remain unavailable.</figcaption>
+</figure>
+<div class="fact-grid">
+<div class="fact"><strong>0.9.1-rc.3</strong><span>Development bundle version; the source has continued to evolve beyond the tagged release-candidate checkpoint.</span></div>
+<div class="fact"><strong>11 destinations</strong><span>Smart Care, Cleanup, Integrity, Performance, Applications, storage views, activity and Settings.</span></div>
+<div class="fact"><strong>EN + FR</strong><span>English and French localisation resources are present with matching key sets.</span></div>
+</div></div><footer class="page-footer"><span>Coretend hardware support proposal</span><span>4</span></footer></section><section class="page coretend-status" id="page-5" data-page="5"><div class="page-inner"><div class="section-kicker">04 / Coretend · Evidence and Roadmap</div>
+<h1>What is available, partial and next</h1>
+<div class="screenshot-grid">
+<figure class="screenshot-card primary">
+<p><img src="screenshots/02-cleanup.png" alt="Coretend Cleanup screen"></p>
+<figcaption><strong>Cleanup.</strong> The user starts a local scan, reviews grouped findings, and can keep the default dry-run or approve movement to Trash.</figcaption>
+</figure>
+<div class="screenshot-stack">
+<figure class="screenshot-card compact">
+<p><img src="screenshots/04-space-lens.png" alt="Coretend Space Lens screen"></p>
+<figcaption><strong>Space Lens.</strong> An initial, analysis-only entry state with no personal folder contents exposed.</figcaption>
+</figure>
+<figure class="screenshot-card compact">
+<p><img src="screenshots/05-settings.png" alt="Coretend Settings screen"></p>
+<figcaption><strong>Settings.</strong> Safety, language, exclusions and development-state controls.</figcaption>
+</figure>
+</div>
+</div>
+<div class="status-columns">
+<div class="panel">
+<h3><span class="status available">Available in source</span></h3>
+<ul>
+<li>Ten cleanup rules, including caches, logs, crash reports and selected Xcode artefacts.</li>
+<li>Exact duplicate detection, large and old file analysis, similar-image analysis, and Space Lens storage exploration.</li>
+<li>Application inventory and reviewed move-to-Trash uninstall; live performance signals; native Integrity inspection.</li>
+<li>Local activity and safety records, diagnostics export, favourites and recents, English and French UI.</li>
+</ul>
+</div>
+<div class="panel">
+<h3><span class="status partial">Partial</span></h3>
+<ul>
+<li>Smart Care currently orchestrates Cleanup only. Performance and Applications remain unavailable within that combined flow, although their standalone screens are implemented.</li>
+<li>Cloud Cleanup is informational, Similar Images is analysis-only, and App Updates detects mechanisms rather than available versions.</li>
+<li>Privacy Cleaner moves browser caches only; history, cookies and sessions are deferred.</li>
+</ul>
+<h3><span class="status prototype">Next / planned work</span></h3>
+<ul>
+<li>Extend Smart Care beyond Cleanup and propagate exclusions and safety settings consistently across specialised flows.</li>
+<li>Complete clean-machine validation, multi-macOS visual QA, documentation synchronisation, signing and notarisation work.</li>
+</ul>
+</div>
+</div></div><footer class="page-footer"><span>Coretend hardware support proposal</span><span>5</span></footer></section><section class="page architecture" id="page-6" data-page="6"><div class="page-inner"><div class="section-kicker">05 / Technical Architecture</div>
+<h1>A native, modular and safety-centred stack</h1>
+<div class="tech-strip">
+<div><strong>Language</strong>Swift 6</div>
+<div><strong>Platform</strong>macOS 14+</div>
+<div><strong>Interface</strong>SwiftUI + AppKit</div>
+<div><strong>Storage</strong>SQLite3, WAL</div>
+<div><strong>Packaging</strong>Swift Package Manager</div>
+</div>
+<img class="architecture-image" src="assets/architecture.svg" alt="Coretend technical architecture diagram">
+<p>The application shell uses a SwiftUI <code>NavigationSplitView</code> and main-actor observable view models. Internal packages separate scanning and file rules, safety validation, application discovery, system and integrity signals, persistence and shared interface components. Scan engines return asynchronous streams so the interface can report progress without owning filesystem logic.</p>
+<p>For a destructive action, the user first reviews results. <code>SafetyCore</code> validates the path, revalidates it immediately before execution, applies the dry-run state configured for that operation and records an audit event. Approved files are moved through the macOS Trash API. Activity, settings, exclusions, safety events and favourites are stored locally by an actor-backed SQLite layer; safety-log paths are redacted before storage. Propagation of the global dry-run preference across every specialised flow remains incomplete, although those flows independently default to simulation.</p>
+<p>Apple frameworks in active use include Foundation, SwiftUI, AppKit, Vision, ImageIO, CryptoKit, Quick Look, Security, CoreServices and Darwin/Mach interfaces. <strong>Core Data and SwiftData are not used.</strong> The only declared external Swift package is Apple’s Swift Testing library, limited to test targets; no third-party runtime package is declared. UserNotifications is presently limited to an onboarding permission request; no scheduling implementation was found.</p>
+<div class="two-column equal">
+<div class="panel">
+<h3>Current engineering challenges</h3>
+<ul>
+<li>Preserving path safety while supporting user-selected files.</li>
+<li>Scaling cancellable scans and image analysis without obscuring progress.</li>
+<li>Propagating exclusions and settings consistently across specialised engines.</li>
+</ul>
+</div>
+<div class="panel">
+<h3>Boundaries</h3>
+<ul>
+<li>Cloud Cleanup currently analyses local provider state only.</li>
+<li>The only wired update check is user-initiated; it fetches a fixed HTTPS manifest and never installs. An automatic-check preference exists, but no launch trigger is wired yet.</li>
+<li>Distribution signing, notarisation and broad clean-machine testing are not yet complete.</li>
+</ul>
+</div>
+</div></div><footer class="page-footer"><span>Coretend hardware support proposal</span><span>6</span></footer></section><section class="page ai" id="page-7" data-page="7"><div class="page-inner"><div class="section-kicker">06 / AI and LLM Experience</div>
+<h1>From using models to understanding their constraints</h1>
+<p>My AI work is an active learning track alongside Coretend. I use local models and development assistants to compare approaches, analyse code and explore how AI could eventually fit into privacy-conscious applications. The aim is not simply to call a model: it is to understand inference, quantisation, memory requirements, context windows, application integration, runtime differences and optimisation for Apple silicon.</p>
+<table><thead><tr><th>Tool</th><th>Current use</th><th>Environment</th><th>Learning focus</th><th>Present limitation</th></tr></thead><tbody><tr><td>MLX</td><td>Local inference experiments</td><td>Apple silicon</td><td>Unified-memory-aware execution and quantisation</td><td>8 GB limits model and context headroom</td></tr><tr><td>Ollama</td><td>Local model serving and API experiments</td><td>macOS-compatible runtime</td><td>Model lifecycle and application-facing APIs</td><td>Competes with the full development stack</td></tr><tr><td>LM Studio</td><td>Interactive model and configuration comparison</td><td>Desktop local runtime</td><td>Context, quantisation and model-fit trade-offs</td><td>Few resources remain under simultaneous load</td></tr><tr><td>Qwen family</td><td>Local model experiments through compatible runners</td><td>Model-dependent local setup</td><td>Capability, size and quantisation comparisons</td><td>Larger variants require more memory</td></tr><tr><td>Claude</td><td>Development assistant for reasoning and review</td><td>Hosted service</td><td>Prompting, critique and code-analysis workflow</td><td>Outputs require human verification</td></tr><tr><td>Codex</td><td>Repository analysis and implementation assistance</td><td>Development workspace</td><td>Agent tooling, tests and evidence-based changes</td><td>Outputs require human validation</td></tr><tr><td>OpenCode</td><td>CLI assistant workflow comparison</td><td>Compatible development environment</td><td>Tool-use and interaction trade-offs</td><td>Depends on selected model/runtime</td></tr><tr><td>AirLLM</td><td>Study of memory-conscious model execution</td><td>Compatible environments</td><td>Loading strategy and memory constraints</td><td>Platform and model compatibility vary</td></tr><tr><td>vLLM</td><td>Studied or tested where its platform requirements are met</td><td>Compatible Linux/GPU environments</td><td>Serving, batching and engine differences</td><td>Not claimed as native on this M1 Mac</td></tr></tbody></table>
+<div class="callout">
+<p><strong>Important boundary:</strong> the current Coretend repository contains no MLX, Ollama, Qwen or LLM integration. Its use of Apple Vision is limited to local image-similarity feature prints. Any future AI capability would begin as a separately evaluated prototype with explicit privacy and safety criteria.</p>
+</div></div><footer class="page-footer"><span>Coretend hardware support proposal</span><span>7</span></footer></section><section class="page hardware" id="page-8" data-page="8"><div class="page-inner"><div class="section-kicker">07 / Current Hardware Limitations</div>
+<h1>Eight gigabytes, shared across the whole workflow</h1>
+<p>My MacBook Air with Apple M1 and 8 GB of unified memory has been the foundation of my learning and creation for four years. Its efficiency made native development and initial local-AI experiments accessible. The limitation is now one of workload fit, not a criticism of the machine.</p>
+<img class="memory-image" src="assets/memory-pressure.svg" alt="Qualitative diagram of unified-memory pressure on an 8 GB MacBook Air M1">
+<p>Because CPU, GPU and applications use the same memory pool, local-model weights and context must coexist with macOS, Swift tools or an IDE, the browser, databases and supporting services. In practice, this:</p>
+<ul>
+<li>restricts the size of models that can be run locally;</li>
+<li>requires stronger quantisation and reduces practical context headroom;</li>
+<li>leaves little space for a complete development environment beside inference;</li>
+<li>can drive heavy swap use when these workloads overlap;</li>
+<li>makes comparative MLX and local-runtime experiments slower and harder to sustain.</li>
+</ul>
+<p>No per-process allocation or performance benchmark is asserted here. The constraint is the repeatable qualitative pressure created by combining these workloads inside one 8 GB pool.</p></div><footer class="page-footer"><span>Coretend hardware support proposal</span><span>8</span></footer></section><section class="page enablement" id="page-9" data-page="9"><div class="page-inner"><div class="section-kicker">08 / What Additional Hardware Would Enable</div>
+<h1>More memory would become more completed work</h1>
+<p>A Mac with 24 or 32 GB of unified memory would not replace the engineering work. It would remove the narrowest constraint around that work: maintaining a full native-development environment while testing meaningful local-model configurations.</p>
+<div class="outcome-grid">
+<div class="outcome"><span class="number">01</span><h3>Continue and harden Coretend</h3><p>Advance the existing roadmap, strengthen automated and clean-machine testing, synchronise documentation, improve specialised scan flows and prepare responsible distribution work.</p></div>
+<div class="outcome"><span class="number">02</span><h3>Compare local AI runtimes</h3><p>Evaluate MLX and compatible local engines with more useful model sizes and contexts while Swift tools, documentation and diagnostics remain open.</p></div>
+<div class="outcome"><span class="number">03</span><h3>Prototype carefully</h3><p>Investigate offline explanations or local assistance for application data only after defining privacy, safety and performance criteria. These are ideas to test, not current Coretend features.</p></div>
+<div class="outcome"><span class="number">04</span><h3>Publish the learning</h3><p>Create reproducible notes, engine comparisons, open-source contributions and documented demonstrations that other students and developers can inspect.</p></div>
+<div class="outcome"><span class="number">05</span><h3>Prepare for internships</h3><p>Build a stronger technical portfolio for second- and third-year placements, supported by working software and honest engineering records.</p></div>
+<div class="outcome"><span class="number">06</span><h3>Explore Apple silicon deeply</h3><p>Study quantisation, context-memory behaviour and application integration on the architecture for which Coretend is being designed.</p></div>
+</div>
+<div class="callout">
+<p><span class="status idea">Ideas to evaluate</span> Offline explanations and local assistance remain experiments to investigate, not current or promised Coretend features.</p>
+<p>The practical outcome I am seeking is sustained headroom: local inference, native development, tests, a browser and supporting tools running together without the 8 GB pool deciding the experiment before the engineering question can be explored.</p>
+</div></div><footer class="page-footer"><span>Coretend hardware support proposal</span><span>9</span></footer></section><section class="page request" id="page-10" data-page="10"><div class="page-inner"><div class="section-kicker">09 / Support Request</div>
+<h1>A flexible request centred on memory and durability</h1>
+<div class="request-statement">I respectfully ask Apple to consider helping me access a Mac suited to intensive native development and local-AI experimentation, ideally with <strong>24 or 32 GB of unified memory</strong>. I am not requesting the most expensive or a narrowly specified model; long useful life, sufficient memory and a configuration appropriate for real development matter most.</div>
+<h2>Possible forms of support</h2>
+<div class="support-options">
+<div><strong>Refurbished equipment</strong><br>A supported Mac that can continue a useful educational life.</div>
+<div><strong>Demonstration unit</strong><br>Hardware no longer required for its original purpose.</div>
+<div><strong>Long-term loan</strong><br>Access for a defined study and development period.</div>
+<div><strong>Equipment donation</strong><br>Direct educational support where policy permits.</div>
+<div><strong>Exceptional discount</strong><br>A route that makes an appropriate memory tier attainable.</div>
+<div><strong>Programme guidance</strong><br>Referral to a relevant education or developer initiative.</div>
+</div>
+<div class="two-column equal">
+<div class="panel">
+<h2>Intended use</h2>
+<ul>
+<li>Continue Coretend’s implementation and verification.</li>
+<li>Build more ambitious native macOS projects.</li>
+<li>Deepen MLX and Apple silicon optimisation work.</li>
+<li>Test privacy-conscious local-AI prototypes.</li>
+<li>Prepare for upcoming internships and open-source work.</li>
+</ul>
+</div>
+<div class="panel">
+<h2>Commitments</h2>
+<ul>
+<li>Document progress and technical findings.</li>
+<li>Share demonstrations and project outcomes.</li>
+<li>Publish useful results or contributions where appropriate.</li>
+<li>Acknowledge support when permission and policy allow.</li>
+<li>Provide supporting documentation regarding my student status upon request.</li>
+</ul>
+</div>
+</div>
+<p>This request is based on work already underway: a substantial macOS codebase, automated tests, build and prerelease-packaging tooling, public project pages and ongoing local-AI study. The objective is to turn additional capacity into visible, verifiable output.</p></div><footer class="page-footer"><span>Coretend hardware support proposal</span><span>10</span></footer></section><section class="page links" id="page-11" data-page="11"><div class="page-inner"><div class="section-kicker">10 / Links and Contact</div>
+<h1>Project evidence and public profile</h1>
+<div class="links-list">
+<div class="link-row"><strong>Portfolio</strong><a href="https://ahmetbsbnr.com">https://ahmetbsbnr.com</a></div>
+<div class="link-row"><strong>Coretend</strong><a href="https://coretend.ahmetbsbnr.com">https://coretend.ahmetbsbnr.com</a></div>
+<div class="link-row"><strong>GitHub</strong><a href="https://github.com/ahmetbsbnr">https://github.com/ahmetbsbnr</a></div>
+<div class="link-row"><strong>LinkedIn</strong><a href="https://www.linkedin.com/in/ahmet-basbunar">https://www.linkedin.com/in/ahmet-basbunar</a></div>
+</div>
+<p class="small">Direct source repository: <a href="https://github.com/ahmetbsbnr/coretend">github.com/ahmetbsbnr/coretend</a></p>
+<div class="two-column equal">
+<div class="panel">
+<h2>Evidence available</h2>
+<ul>
+<li>Coretend source and Git history</li>
+<li>Project architecture and audit notes</li>
+<li>Automated test and build configuration</li>
+<li>Current-branch macOS screenshots</li>
+<li>Public portfolio and project website</li>
+</ul>
+</div>
+<div class="panel">
+<h2>Evidence to follow</h2>
+<ul>
+<li>Additional supporting documentation regarding my student status, if requested</li>
+<li>Any additional documentation requested for an eligible programme</li>
+<li>Further project demonstrations as development progresses</li>
+</ul>
+</div>
+</div>
+<div class="closing">
+<p>Thank you for considering a student developer who is already using Apple platforms to learn, build and document real software. The requested support would be treated as a responsibility to keep doing that work openly and carefully.</p>
+<p class="small">Prepared independently by Ahmet Basbunar. This proposal does not claim Apple endorsement, affiliation, App Store publication, commercial readiness or an existing AI feature in Coretend. Repository evidence was reviewed at source revision <code>38b8dda</code> on 31 July 2026.</p>
+</div></div><footer class="page-footer"><span>Coretend hardware support proposal</span><span>11</span></footer></section>
+</body>
+</html>

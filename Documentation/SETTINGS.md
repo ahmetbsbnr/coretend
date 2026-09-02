@@ -10,9 +10,6 @@ setting can exist).
 ## What you can change
 - **Menu bar item** (`menuBarEnabled`, default on) — inserts/removes the Core
   Bloom menu-bar item live.
-- **Dry run by default** (`dryRunDefault`, default on) — Cleanup and Smart Care
-  start in preview mode instead of acting. This is the one live safety knob the
-  security profile sets.
 - **Exclusions** (`exclusions`, default empty) — paths that are never included
   in cleanup or Smart Care findings. See [EXCLUSIONS.md](EXCLUSIONS.md).
 - **Run setup assistant again** — re-launches the
@@ -20,14 +17,14 @@ setting can exist).
 
 ## What is recorded but not a live knob
 - **Security profile** (`securityProfile`) — records which first-run profile you
-  picked. Informational; the only behavior it drives is `dryRunDefault`.
+  picked. It is informational; the fixed safety posture always uses protected
+  roots, reviewed selections, explicit confirmation and the Trash.
 - **Onboarding state** (`onboardingDone`, `onboardingStep`) — internal wizard
   progress.
 
 ## Storage
 - `@AppStorage`/UserDefaults: `menuBarEnabled`, `onboardingDone`, `onboardingStep`.
-- Local SQLite (Persistence store): `dryRunDefault`, `securityProfile`,
-  `exclusions`.
+- Local SQLite (Persistence store): `securityProfile`, `exclusions`.
 
 Nothing is stored off-device. Removing
 `~/Library/Application Support/CoreTend` and the app's preferences plist

@@ -52,12 +52,21 @@ private struct Sandbox {
 /// migration is exercised against a real database file rather than a
 /// placeholder that happens to have the right name.
 private func seedRealStore(at path: String) async throws {
-    let store = try Store(path: path)
-    try await store.recordActivity(ActivityRecord(
-        kind: .cleanup, summary: "Smart Care run", itemCount: 7, bytes: 4_096, dryRun: false))
-    try await store.addExclusion(path: "/Users/someone/Keep/This")
-    try await store.setSetting("securityProfile", value: "strict")
-    try await store.setSetting("dryRunDefault", value: "false")
+    do {
+        let store = try Store(path: path)
+        try await store.recordActivity(ActivityRecord(
+            kind: .cleanup, summary: "Smart Care run", itemCount: 7, bytes: 4_096))
+        try await store.addExclusion(path: "/Users/someone/Keep/This")
+        try await store.setSetting("securityProfile", value: "strict")
+        try await store.setSetting("dryRunDefault", value: "false")
+    }
+
+    // This fixture represents a store written by the previous schema. The
+    // current Store constructor has already applied v4, so roll back only the
+    // migration marker after seeding; opening the migrated copy must then run
+    // the real v4 removal exactly as an upgraded installation would.
+    let db = try Database(path: path)
+    try db.run("DELETE FROM schema_migrations WHERE version = 4")
 }
 
 /// `Any` is not `Sendable`, so the stub stores plist-shaped values as strings
@@ -154,7 +163,8 @@ struct LegacyDataMigrationTests {
         let exclusions = try await migrated.exclusions()
         #expect(exclusions.contains("/Users/someone/Keep/This"))
         #expect(try await migrated.setting("securityProfile") == "strict")
-        #expect(try await migrated.setting("dryRunDefault") == "false")
+        #expect(try await migrated.setting("dryRunDefault") == nil,
+                "the retired preview preference is removed during migration")
     }
 
     @Test func quarantineContentsSurviveTheMove() throws {
@@ -198,7 +208,7 @@ struct LegacyDataMigrationTests {
         let newStorePath = box.destination.appendingPathComponent("store.sqlite").path
         let newStore = try Store(path: newStorePath)
         try await newStore.recordActivity(ActivityRecord(
-            kind: .scan, summary: "Already mine", itemCount: 1, bytes: 1, dryRun: true))
+            kind: .scan, summary: "Already mine", itemCount: 1, bytes: 1))
 
         let report = box.migration().run()
 

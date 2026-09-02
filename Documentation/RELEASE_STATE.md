@@ -1,6 +1,102 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 # Release State
 
+## Current release — v0.9.1-rc.6, signed + notarized, published 2026-08-31
+
+`v0.9.1-rc.6` (`sourceCommit 568bdbf`, published from the merged
+`feat/porcelaine-and-signing` branch) is the **first Developer ID signed and
+Apple-notarized** CoreTend release.
+
+| Artifact | Size (bytes) | SHA-256 |
+|---|---|---|
+| `CoreTend-0.9.1-rc.6-arm64.dmg` | 4,790,985 | `770bd0340cf887d90bb2a0a6b6510a420a8e268de550a7ff73c88dcb7138df32` |
+| `CoreTend-0.9.1-rc.6-arm64.zip` | 2,933,940 | `c0ea57e375ef5ef00d38d04687a647a1e9e11cf21302ad836c1aadd415a0112e` |
+
+Verified from a clean re-download of the published DMG:
+`shasum -a 256 -c SHA256SUMS` → OK; `minisign -Vm SHA256SUMS -P <minisign.pub>`
+→ verifies; `xcrun stapler validate` → worked; `spctl --assess --type open`
+→ **accepted, `source=Notarized Developer ID`,
+`origin=Developer ID Application: Ahmet BASBUNAR (NSCUV5G738)`**. The app
+inside the DMG: `codesign` chain Developer ID Application → Developer ID CA →
+Apple Root CA, `TeamIdentifier=NSCUV5G738`, staple validates offline.
+
+`Configuration/published-release.json` and the `/download` redirect
+(`vercel.json`) point at this release. The portfolio case study synced via
+`repository_dispatch`.
+
+**Published manually** (local signed build → `gh release create`, CI workflow
+disabled during the tag push so it could not rebuild an unsigned artifact over
+it). Consequence: **no `actions/attest-build-provenance` attestation** exists
+for rc.6 — `gh attestation verify` returns 404. Minisign + SHA-256 +
+notarization are the provenance guarantees for this release.
+
+## Path to v1.0.0 — remaining gates
+
+Signing/notarization (the historic 1.0 blocker) is **done**. What is left:
+
+### Agent-automatable — not yet done
+| Gate | Note |
+|---|---|
+| Build-provenance attestation | Needs either a CI run or a CI path that can codesign+notarize (`release.yml` currently cannot — no Developer ID in Actions). See `SIGNING_NOTARIZATION.md` → "Publishing a signed release". |
+| Crash-test matrix, 3 open items | disk-nearly-full, CPU-under-load, `URLSession` timeout — `Documentation/Audits/CRASH_MATRIX_CLASSIFICATION.md` items 25/27/38, "feasible, not run". |
+| `SmartCareView` decision (`TODO.md` #8) | Built + tested but wired to no `ModuleID` (`.smartCare` renders `DashboardView`). Reconnect, retire the standalone view + its docs, or rename — a product call. |
+
+### Human-only — cannot be done in this environment
+| Gate | Why |
+|---|---|
+| Clean-Mac launch repro (`TODO.md` #1) | Needs a second Mac / a fresh user account + Console/crash logs. |
+| DMG Finder visual QA (`TODO.md` #2) | Needs a real graphical session — icon alignment, drag-and-drop feel. |
+| Full client journey with real screenshots (`TODO.md` #3) | Download → quarantine → mount → Gatekeeper → onboarding → scan → uninstall, both languages, real captures. |
+| Interactive VoiceOver / keyboard / Dynamic Type QA (`TODO.md` #7) | Code-level a11y is tested; none observed interactively. |
+| **Trademark attorney review** | `COREXTEND` (MIPS Tech, live, class 9) is one letter away — `legalReviewStatus` stays `pending` until a lawyer signs off. Required before a 1.0 or any commercial use. |
+
+### Ship sequence once the gates above clear
+1. Bump `Configuration/PublicIdentity.example.json` → `1.0.0`, `channel: stable`;
+   mirror `Resources/Info.plist` + `Documentation/PROJECT_STATE.json`.
+2. `Release/Notes/1.0.0.{en,fr}.md`.
+3. `Scripts/package-local.sh` → `Scripts/sign-and-notarize.sh 1.0.0 CoreTend-Notary`.
+4. `git tag -a v1.0.0` → `CORETEND_RELEASE_SIGNED=1 Scripts/build-release.sh 1.0.0`.
+5. Run every release gate (`test.sh`, `test-release-manifest.sh`,
+   `test-dmg-layout.sh`, `test-release-sync.sh`, `check-website.sh`).
+6. Minisign-sign the artifacts (human — key password).
+7. `gh workflow disable` the Release workflow, `git push` branch + tag,
+   `gh release create v1.0.0` with the signed assets, `gh workflow enable`.
+8. `Scripts/sync-published-release.sh`; commit `published-release.json`; merge.
+9. Update the site copy (already signed-aware) and redeploy; flip the launch
+   gate to allow 1.x.
+
+---
+
+## Current release — v0.9.1-rc.5, verified 2026-08-02
+
+The annotated `v0.9.1-rc.5` tag resolves to
+`efccece091ca793d8e176edf9249ec104332856a`. The tag-triggered clean macOS
+workflow passed the complete release gates and published the non-draft
+prerelease at
+`https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.5`.
+
+The downloaded public DMG is
+`CoreTend-0.9.1-rc.5-arm64-unsigned.dmg`, 4,703,523 bytes, SHA-256
+`b654975770cc1bfeb7e6a4f3cf180653a3182a55f8dc135db2083a72528998eb`.
+The public ZIP is 2,857,653 bytes, SHA-256
+`c3e2c58a1034a8654c931dabedd279b5b320abd03e84caa300bb9e53e83675ae`.
+GitHub asset digests, `latest.json`, `SHA256SUMS` and Minisign all agree.
+
+The exact public DMG passes `hdiutil imageinfo` and verification, mounts and
+detaches twice, contains the designed Finder layout and Applications link,
+and copies a self-contained arm64 app off-volume. The bundle reports marketing
+version 0.9.1-rc.5, build 915 and macOS 14.0+. Its ad-hoc signature verifies;
+Gatekeeper rejects it with exit 3 as expected without Developer ID or
+notarization. Isolated English/dark and French/light launches stay alive and
+exit normally under the harness. Bundle and Mach-O scans find IntegrityCore
+and no current ClamAV scanner/interface, retired Dry Run UI copy, personal
+checkout path or local dependency.
+
+rc.5 removes the former Dry Run product mode. Scans remain read-only; cleanup
+surfaces present reviewed selections and require explicit confirmation before
+eligible paths move to the macOS Trash. The sections below are retained as
+historical release-state evidence and do not describe the current download.
+
 ## Current post-release checkpoint — 2026-07-27
 
 No application source changed, so no 0.9.1 binary is being prepared. The

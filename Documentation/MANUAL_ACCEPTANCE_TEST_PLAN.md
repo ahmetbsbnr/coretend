@@ -6,21 +6,21 @@ these cannot be automated here. Each item references the requirement ID(s) it wo
 
 ---
 
-## 1. Protection tab visual states (PROTECTION-001)
-- **Setup**: on a Mac without `clamscan` installed, launch the built app, open the Protection tab.
-- **Expect**: an honest "unavailable" card — not a fake scan progress bar, not a silently-passing
-  "0 threats found" result.
-- **Then**: `brew install clamav`, relaunch, open Protection tab again, run a real scan against a
-  test directory (e.g. containing the EICAR test file).
-- **Expect**: a real scan runs, EICAR is detected and reported.
-- **Closes out**: PROTECTION-001 (visual evidence), partially SEC-001 (real subprocess behavior
-  under a real ClamAV install, not just code inspection).
+## 1. Integrity tab visual states (PROTECTION-001)
+- **Setup**: launch the built app with the isolated Integrity fixtures, then open Integrity.
+- **Expect**: the interface reports only local, read-only facts: download provenance, code-signature
+  status and login items. It must not display malware-scan progress, threat counts or quarantine
+  controls.
+- **Then**: inspect one Apple-signed app and one unsigned or ad-hoc-signed test app, and verify the
+  displayed tier against `codesign -dv`/`codesign --verify` evidence.
+- **Expect**: truthful signature tiers, useful empty states and no third-party scanner requirement.
+- **Closes out**: PROTECTION-001 visual evidence and the IntegrityCore product boundary.
 
 ## 2. VoiceOver walkthrough (A11Y — no baseline requirement ID exists yet)
 - **Setup**: enable VoiceOver, navigate the full app (Cleanup, Duplicates, Applications,
   Leftovers, Privacy Cleaner, Protection, Settings) using only VoiceOver + keyboard.
-- **Expect**: every interactive control has a label, every destructive action is announced clearly
-  before commit, dry-run vs. real-delete state is audibly distinguishable.
+- **Expect**: every interactive control has a label and every destructive
+  action announces its reviewed selection and confirmation clearly before commit.
 - **Closes out**: nothing in the current 28-requirement baseline (no A11Y-* IDs exist yet) — this
   test plan entry exists so session 3's baseline extension has a ready-made test to point at.
 
@@ -47,9 +47,10 @@ these cannot be automated here. Each item references the requirement ID(s) it wo
 
 ## 5. Real network-monitor capture during a full app session (PRIV-001)
 - **Setup**: run Little Snitch (or equivalent) or `nettop`/Wireshark while exercising every tab and
-  action in the app for a full session (scan, dry-run delete, real delete, diagnostic export,
-  Protection scan with ClamAV installed).
-- **Expect**: zero outbound network connections initiated by the app process.
+  action in the app for a full session (scan, confirmed Trash action, diagnostic export,
+  Integrity inspection and a user-initiated update check).
+- **Expect**: no outbound connection except the user-initiated request for the
+  public update manifest.
 - **Closes out**: PRIV-001 at full confidence (this session's grep-based verification covers
   known Swift networking symbol names, not e.g. a hypothetical raw syscall path).
 

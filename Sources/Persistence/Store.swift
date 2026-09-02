@@ -1,6 +1,22 @@
 import Foundation
 import SafetyCore
 
+/// A favorite folder, a recently-scanned one, or both — path is the identity.
+public struct LocationRecord: Sendable, Identifiable, Equatable {
+    public var id: String { path }
+    public let path: String
+    public let isFavorite: Bool
+    public let lastScanned: Date?
+    public let lastBytes: Int64?
+
+    public init(path: String, isFavorite: Bool, lastScanned: Date?, lastBytes: Int64?) {
+        self.path = path
+        self.isFavorite = isFavorite
+        self.lastScanned = lastScanned
+        self.lastBytes = lastBytes
+    }
+}
+
 /// One recorded activity entry (scan, cleanup, restore, error…).
 public struct ActivityRecord: Sendable, Identifiable {
     public enum Kind: String, Sendable, CaseIterable {
@@ -13,17 +29,15 @@ public struct ActivityRecord: Sendable, Identifiable {
     public let summary: String
     public let itemCount: Int
     public let bytes: Int64
-    public let dryRun: Bool
 
     public init(id: Int64 = 0, kind: Kind, date: Date = Date(), summary: String,
-                itemCount: Int, bytes: Int64, dryRun: Bool) {
+                itemCount: Int, bytes: Int64) {
         self.id = id
         self.kind = kind
         self.date = date
         self.summary = summary
         self.itemCount = itemCount
         self.bytes = bytes
-        self.dryRun = dryRun
     }
 }
 
@@ -70,6 +84,26 @@ public actor Store {
             result TEXT NOT NULL
         );
         CREATE INDEX idx_safety_log_date ON safety_log(date);
+        """,
+        // v3 — favorites and recently-scanned locations (Favorites & Recents).
+        // One table for both: a favorite with no scan history and a recent with
+        // no favorite flag are both real, distinct rows; a row with neither is
+        // pruned rather than kept as a zeroed-out ghost.
+        """
+        CREATE TABLE locations (
+            path TEXT PRIMARY KEY,
+            is_favorite INTEGER NOT NULL DEFAULT 0,
+            last_scanned REAL,
+            last_bytes INTEGER,
+            created REAL NOT NULL
+        );
+        CREATE INDEX idx_locations_last_scanned ON locations(last_scanned);
+        """,
+        // v4 — remove the retired product preview setting. The original
+        // activity column and audit rows remain on disk for downgrade/data
+        // compatibility, but current APIs neither expose nor create them.
+        """
+        DELETE FROM settings WHERE key = 'dryRunDefault';
         """,
     ]
 
@@ -145,7 +179,7 @@ public actor Store {
             INSERT INTO activity (kind, date, summary, item_count, bytes, dry_run)
             VALUES (?, ?, ?, ?, ?, ?)
             """, [record.kind.rawValue, record.date.timeIntervalSince1970, record.summary,
-                  record.itemCount, record.bytes, record.dryRun ? 1 : 0])
+                  record.itemCount, record.bytes, 0])
         return db.lastInsertRowID
     }
 
@@ -153,10 +187,12 @@ public actor Store {
         let rows: [[String: Any]]
         if let kind {
             rows = try db.query(
-                "SELECT * FROM activity WHERE kind = ? ORDER BY date DESC LIMIT ?",
+                "SELECT * FROM activity WHERE kind = ? AND (kind <> 'cleanup' OR dry_run = 0) ORDER BY date DESC LIMIT ?",
                 [kind.rawValue, limit])
         } else {
-            rows = try db.query("SELECT * FROM activity ORDER BY date DESC LIMIT ?", [limit])
+            rows = try db.query(
+                "SELECT * FROM activity WHERE kind <> 'cleanup' OR dry_run = 0 ORDER BY date DESC LIMIT ?",
+                [limit])
         }
         return rows.compactMap { row in
             guard let id = row["id"] as? Int64,
@@ -167,8 +203,7 @@ public actor Store {
             return ActivityRecord(
                 id: id, kind: kind, date: Date(timeIntervalSince1970: date), summary: summary,
                 itemCount: (row["item_count"] as? Int64).map(Int.init) ?? 0,
-                bytes: row["bytes"] as? Int64 ?? 0,
-                dryRun: (row["dry_run"] as? Int64 ?? 1) != 0)
+                bytes: row["bytes"] as? Int64 ?? 0)
         }
     }
 
@@ -202,10 +237,69 @@ public actor Store {
         try db.query("SELECT value FROM settings WHERE key = ?", [key]).first?["value"] as? String
     }
 
+    // MARK: - Locations (favorites & recents)
+
+    public func addFavorite(path: String) throws {
+        try db.run("""
+            INSERT INTO locations (path, is_favorite, created) VALUES (?, 1, ?)
+            ON CONFLICT(path) DO UPDATE SET is_favorite = 1
+            """, [path, Date().timeIntervalSince1970])
+    }
+
+    public func removeFavorite(path: String) throws {
+        try db.run("UPDATE locations SET is_favorite = 0 WHERE path = ?", [path])
+        try pruneLocationIfEmpty(path: path)
+    }
+
+    /// Called after a location finishes scanning (Space Lens, a custom-folder
+    /// analysis, …) so Recents reflects real scan history rather than intent.
+    public func recordLocationVisit(path: String, bytes: Int64) throws {
+        let now = Date().timeIntervalSince1970
+        try db.run("""
+            INSERT INTO locations (path, is_favorite, last_scanned, last_bytes, created)
+            VALUES (?, 0, ?, ?, ?)
+            ON CONFLICT(path) DO UPDATE SET last_scanned = excluded.last_scanned, last_bytes = excluded.last_bytes
+            """, [path, now, bytes, now])
+    }
+
+    public func removeRecent(path: String) throws {
+        try db.run("UPDATE locations SET last_scanned = NULL, last_bytes = NULL WHERE path = ?", [path])
+        try pruneLocationIfEmpty(path: path)
+    }
+
+    /// A location that is neither a favorite nor has scan history carries no
+    /// information; keeping it around would just be a leaked row.
+    private func pruneLocationIfEmpty(path: String) throws {
+        try db.run("DELETE FROM locations WHERE path = ? AND is_favorite = 0 AND last_scanned IS NULL", [path])
+    }
+
+    public func favorites() throws -> [LocationRecord] {
+        try db.query("SELECT * FROM locations WHERE is_favorite = 1 ORDER BY path").compactMap(Self.locationRecord)
+    }
+
+    public func recents(limit: Int = 10) throws -> [LocationRecord] {
+        try db.query(
+            "SELECT * FROM locations WHERE last_scanned IS NOT NULL ORDER BY last_scanned DESC LIMIT ?",
+            [limit]
+        ).compactMap(Self.locationRecord)
+    }
+
+    private static func locationRecord(_ row: [String: Any]) -> LocationRecord? {
+        guard let path = row["path"] as? String else { return nil }
+        return LocationRecord(
+            path: path,
+            isFavorite: (row["is_favorite"] as? Int64 ?? 0) != 0,
+            lastScanned: (row["last_scanned"] as? Double).map(Date.init(timeIntervalSince1970:)),
+            lastBytes: row["last_bytes"] as? Int64)
+    }
+
     // MARK: - Safety log (append-only)
 
     public func safetyLog(limit: Int = 500) throws -> [SafetyLogRecord] {
-        try db.query("SELECT * FROM safety_log ORDER BY date DESC LIMIT ?", [limit])
+        // Rows written by the retired preview mode remain in the database for
+        // downgrade compatibility, but are intentionally absent from the
+        // current product surface.
+        try db.query("SELECT * FROM safety_log WHERE stage <> 'dryRun' ORDER BY date DESC LIMIT ?", [limit])
             .compactMap { row in
                 guard let id = row["id"] as? Int64,
                       let operationID = row["operation_id"] as? String,
@@ -230,9 +324,7 @@ public actor Store {
     }
 }
 
-/// One durable, redacted-path row of the SafetyCore audit trail. `stage`
-/// distinguishes a dry-run simulation from a real executed action — callers
-/// (e.g. My Activity) must never merge the two into a single count.
+/// One durable, redacted-path row of the SafetyCore audit trail.
 public struct SafetyLogRecord: Sendable, Identifiable {
     public let id: Int64
     public let operationID: String

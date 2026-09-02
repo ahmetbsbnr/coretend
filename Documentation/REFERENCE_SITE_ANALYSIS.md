@@ -64,7 +64,7 @@ illustration, logo, screenshot, or animation is reused by CoreTend.
 
 CoreTend uses its existing Living System palette, Core Bloom mark, system
 typography, bilingual multi-page information architecture, and a restrained
-light/dark surface. Its narrative emphasizes reviewability, dry run, reversible
+light/dark surface. Its narrative emphasizes reviewability, explicit confirmation, reversible
 actions, optional ClamAV, installation safety, and release provenance. Motion
 is event-driven or short-lived rather than atmospheric.
 

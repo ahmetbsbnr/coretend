@@ -28,11 +28,10 @@ Unless a file states otherwise, source code is under Apache-2.0.
 There is no bundled third-party code. `Package.swift` declares **zero external
 package dependencies**, so nothing is vendored and nothing is redistributed.
 
-The one external component is **ClamAV**, and it is not bundled: if a user
-installs it themselves, CoreTend can execute the `clamscan` binary as a separate
-process. It is never linked, its signature database is never shipped, and
-GPL-2.0's copyleft therefore does not reach anything this project distributes.
-See `Documentation/CLAMAV.md`.
+There is no external runtime component either. An earlier version invoked a
+user-installed **ClamAV** `clamscan` binary as a separate process; that
+integration was fully retired (see `Documentation/CLAMAV_DECISION.md`) and
+nothing in the current source tree references ClamAV or GPL-2.0 code.
 
 Apple system frameworks and the system SQLite are linked from the OS and are
 not redistributed here.

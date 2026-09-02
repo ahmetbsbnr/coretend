@@ -140,6 +140,16 @@ jobs:
       - name: Release manifest gate
         run: Scripts/test-release-manifest.sh
 
+      - name: DMG window layout gate
+        # 0.9.1-rc.2 shipped with no .DS_Store, so the installer opened as a
+        # bare Finder window. The layout is generated deterministically now
+        # (dmgbuild, no Finder), and this asserts it survived into the artifact
+        # that is about to be published. There is deliberately no opt-out here.
+        run: |
+          zsh Scripts/test-dmg-layout.sh \
+            "dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64-unsigned.dmg" \
+            "CoreTend ${{ steps.resolve.outputs.version }}"
+
       - name: Verify every declared artifact exists and matches its checksum
         run: |
           set -euo pipefail
@@ -203,13 +213,27 @@ jobs:
           # command line (which would be visible in the process table).
           printf '%s' "$MINISIGN_SECRET_KEY" > "$keyfile"
           cd dist
-          for f in *.zip *.dmg latest.json SHA256SUMS; do
+          signed=0
+          for f in *.zip *.dmg *.spdx.json latest.json SHA256SUMS; do
             [ -e "$f" ] || continue
-            printf '%s' "$MINISIGN_PASSWORD" | minisign -S -s "$keyfile" -m "$f" >/dev/null 2>&1
+            # stdout/stderr are discarded because minisign echoes nothing
+            # sensitive but the password is on stdin; a failure is caught by
+            # the exit status, not by parsing output.
+            if printf '%s' "$MINISIGN_PASSWORD" | minisign -S -s "$keyfile" -m "$f" >/dev/null 2>&1; then
+              signed=$((signed + 1))
+            else
+              rm -f "$keyfile"
+              echo "::error::Minisign failed to sign $f."
+              exit 1
+            fi
           done
           rm -f "$keyfile"
-          if [ -f "$HOME/.minisign/minisign.pub" ]; then :; fi
+          if [ "$signed" -eq 0 ]; then
+            echo "::error::A signing key is configured but nothing was signed."
+            exit 1
+          fi
           echo "minisign_signed=true" >> "$GITHUB_ENV"
+          echo "Signed $signed artifact(s):"
           ls -1 *.minisig
 
       - name: Verify Minisign signatures before publishing them
@@ -223,7 +247,7 @@ jobs:
             exit 1
           fi
           for sig in *.minisig; do
-            minisign -Vm "${sig%.minisig}" -P "$(cat ../Configuration/minisign.pub)"
+            minisign -Vm "${sig%.minisig}" -P "$(sed -n 2p ../Configuration/minisign.pub)"
           done
           echo "All Minisign signatures verify against the published public key."
 
@@ -249,6 +273,8 @@ jobs:
             dist/latest.json
             dist/SHA256SUMS
             dist/coretend-${{ steps.resolve.outputs.version }}-sbom.spdx.json
+            dist/*.minisig
+            Configuration/minisign.pub
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

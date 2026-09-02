@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - Orbital Ecology design tokens
+// MARK: - Paper / Ink / Cobalt design tokens
 
 /// Spacing scale (pt). Views compose from these; no arbitrary values.
 public enum MCSpacing {
@@ -17,8 +17,8 @@ public enum MCSpacing {
 
 public enum MCRadius {
     public static let small: CGFloat = 6
-    public static let card: CGFloat = 12
-    public static let hero: CGFloat = 20
+    public static let card: CGFloat = 8
+    public static let hero: CGFloat = 12
     public static let capsule: CGFloat = 999
 }
 
@@ -60,10 +60,10 @@ public enum MCOpacity {
 
 /// Backwards-compatible theme namespace (older views reference MCTheme).
 public enum MCTheme {
-    public static let accent = MCColor.coreMint
-    public static let accentSecondary = MCColor.ionViolet
-    public static let warning = MCColor.solarAmber
-    public static let danger = MCColor.pulseCoral
+    public static let accent = MCColor.teal
+    public static let accentSecondary = MCColor.graphite
+    public static let warning = MCColor.amber
+    public static let danger = MCColor.coral
     public static let success = MCColor.success
 
     public static let cornerRadius = MCRadius.card

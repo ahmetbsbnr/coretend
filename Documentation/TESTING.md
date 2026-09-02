@@ -16,14 +16,17 @@ Run with `Scripts/test.sh` (never plain `swift test` — see
   activity records).
 - `SystemMetricsTests` — `MetricsCollector` snapshot plausibility.
 - `AppDiscoveryTests` — app discovery/quarantine-attribute reads.
-- `MalwareEngineTests` — `ClamAVScanner` output parsing, `Quarantine`
-  move/restore/delete round-trip.
+- `IntegrityCoreTests` — download provenance, native signature tiers and
+  login-item parsing, including malformed-input behavior.
 - `CoreTendAppTests` — view-model level tests (e.g. duplicate-engine
   totals, large-result-set behavior — see `engineStreamsAllFindingsUncappedAt5001`).
+- `CoreTendIntegrationTests`, `CoreTendAccessibilityTests`,
+  `CoreTendPerformanceTests` and `CoreTendUITests` cover cross-module,
+  accessibility, performance and packaged-application contracts.
 
-As of this session: 83 tests, 0 failing, 0 warnings on release build. This
-must stay true after every change — run `Scripts/test.sh` and
-`swift build -c release` before committing.
+The rc.5 candidate must not regress below the recorded 338 Swift tests. Run
+`Scripts/test.sh`, Debug/Release builds and the Xcode/package gates before
+committing or packaging.
 
 ## Writing new tests
 
@@ -36,8 +39,8 @@ rather than inventing a new one.
 
 ## What's tested that matters for safety
 
-Anything that changes `SafetyCore.PathValidator`, `FileRules` allowlists,
-or `Quarantine` move/restore logic needs a test that proves the invariant
-(protected root rejected, symlink escape rejected, restore returns exact
-original path) — these are the paths a regression would be most damaging
-on.
+Anything that changes `SafetyCore.PathValidator`, `FileRules` allowlists or
+the confirmed Trash path needs a test that proves the invariant (protected
+root rejected, symlink escape rejected, execution-time revalidation and no
+unconfirmed action). These are the paths where a regression would be most
+damaging.

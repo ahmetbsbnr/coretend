@@ -1,6 +1,7 @@
 import SwiftUI
 import DesignSystem
 import Persistence
+import ScanCore
 
 /// Cloud Cleanup — analyzes the *local* folders of cloud providers, showing how
 /// much space files really occupy on this Mac vs their logical size.
@@ -50,6 +51,10 @@ final class CloudCleanupViewModel {
     var providers: [Provider] = []
     var selectedProvider: Provider?
     var entries: [Entry] = []
+    private var scanTask: Task<Void, Never>?
+    private var workerTask: Task<[Entry], Never>?
+    private var pauseController: ScanPauseController?
+    private(set) var isPaused = false
 
     var totalLogical: Int64 { entries.reduce(0) { $0 + $1.logicalBytes } }
     var totalLocal: Int64 { entries.reduce(0) { $0 + $1.localBytes } }
@@ -93,58 +98,131 @@ final class CloudCleanupViewModel {
     }
 
     func scan(_ provider: Provider) {
+        cancel()
         selectedProvider = provider
         phase = .scanning
         entries = []
+        isPaused = false
         let root = provider.root
-        Task {
-            let result = await Task.detached(priority: .utility) { () -> [Entry] in
-                Self.measure(root: root)
-            }.value
+        let pauseController = ScanPauseController()
+        self.pauseController = pauseController
+        let workerTask = Task.detached(priority: .utility) { () -> [Entry] in
+            await Self.measure(root: root, pauseController: pauseController)
+        }
+        self.workerTask = workerTask
+        scanTask = Task {
+            let result = await workerTask.value
+            guard !Task.isCancelled else { return }
             entries = result
             phase = .results
+            isPaused = false
+            self.pauseController = nil
+            self.workerTask = nil
             AppEnvironment.shared.record(ActivityRecord(
                 kind: .scan, summary: "Cloud analysis: \(provider.name)",
-                itemCount: result.count, bytes: result.reduce(0) { $0 + $1.localBytes }, dryRun: true))
+                itemCount: result.count, bytes: result.reduce(0) { $0 + $1.localBytes }))
         }
+    }
+
+    func pauseScan() {
+        guard phase == .scanning, !isPaused else { return }
+        isPaused = true
+        Task { await pauseController?.pause() }
+    }
+
+    func resumeScan() {
+        guard isPaused else { return }
+        isPaused = false
+        Task { await pauseController?.resume() }
+    }
+
+    func cancel() {
+        scanTask?.cancel()
+        workerTask?.cancel()
+        scanTask = nil
+        workerTask = nil
+        isPaused = false
+        let pauseController = pauseController
+        self.pauseController = nil
+        Task { await pauseController?.resume() }
+        if phase == .scanning { phase = providers.isEmpty ? .detecting : .ready }
     }
 
     /// Synchronous walk (DirectoryEnumerator can't be iterated in async contexts).
     /// Read-only: only `resourceValues`/`contentsOfDirectory` are used, never
     /// `startDownloadingUbiquitousItem` — this never triggers a cloud download.
     nonisolated static func measure(root: URL) -> [Entry] {
-                let fm = FileManager.default
-                let keys: Set<URLResourceKey> = [.isDirectoryKey, .fileSizeKey, .totalFileAllocatedSizeKey,
-                                                  .isSymbolicLinkKey, .ubiquitousItemDownloadingStatusKey]
-                guard let top = try? fm.contentsOfDirectory(at: root, includingPropertiesForKeys: Array(keys),
-                                                            options: [.skipsHiddenFiles]) else { return [] }
-                var entries: [Entry] = []
-                for item in top {
-                    guard let values = try? item.resourceValues(forKeys: keys),
-                          values.isSymbolicLink != true else { continue }
-                    if values.isDirectory == true {
-                        var logical: Int64 = 0
-                        var local: Int64 = 0
-                        var anyPlaceholder = false
-                        if let enumerator = fm.enumerator(at: item, includingPropertiesForKeys: Array(keys)) {
-                            for case let sub as URL in enumerator {
-                                guard let v = try? sub.resourceValues(forKeys: keys), v.isDirectory != true else { continue }
-                                logical += Int64(v.fileSize ?? 0)
-                                local += Int64(v.totalFileAllocatedSize ?? 0)
-                                if v.ubiquitousItemDownloadingStatus.map({ $0 != .current }) ?? false { anyPlaceholder = true }
-                            }
-                        }
-                        entries.append(Entry(id: item.path, name: item.lastPathComponent,
-                                             isDirectory: true, logicalBytes: logical, localBytes: local,
-                                             isCloudPlaceholder: anyPlaceholder))
-                    } else {
-                        entries.append(Entry(id: item.path, name: item.lastPathComponent, isDirectory: false,
-                                             logicalBytes: Int64(values.fileSize ?? 0),
-                                             localBytes: Int64(values.totalFileAllocatedSize ?? 0),
-                                             isCloudPlaceholder: values.ubiquitousItemDownloadingStatus.map { $0 != .current } ?? false))
+        let fm = FileManager.default
+        let keys: Set<URLResourceKey> = [.isDirectoryKey, .fileSizeKey, .totalFileAllocatedSizeKey,
+                                          .isSymbolicLinkKey, .ubiquitousItemDownloadingStatusKey]
+        guard let top = try? fm.contentsOfDirectory(at: root, includingPropertiesForKeys: Array(keys),
+                                                    options: [.skipsHiddenFiles]) else { return [] }
+        var entries: [Entry] = []
+        for item in top {
+            guard let values = try? item.resourceValues(forKeys: keys),
+                  values.isSymbolicLink != true else { continue }
+            if values.isDirectory == true {
+                var logical: Int64 = 0
+                var local: Int64 = 0
+                var anyPlaceholder = false
+                if let enumerator = fm.enumerator(at: item, includingPropertiesForKeys: Array(keys)) {
+                    for case let sub as URL in enumerator {
+                        guard let v = try? sub.resourceValues(forKeys: keys), v.isDirectory != true else { continue }
+                        logical += Int64(v.fileSize ?? 0)
+                        local += Int64(v.totalFileAllocatedSize ?? 0)
+                        if v.ubiquitousItemDownloadingStatus.map({ $0 != .current }) ?? false { anyPlaceholder = true }
                     }
                 }
-                return entries.sorted { $0.localBytes > $1.localBytes }
+                entries.append(Entry(id: item.path, name: item.lastPathComponent,
+                                     isDirectory: true, logicalBytes: logical, localBytes: local,
+                                     isCloudPlaceholder: anyPlaceholder))
+            } else {
+                entries.append(Entry(id: item.path, name: item.lastPathComponent, isDirectory: false,
+                                     logicalBytes: Int64(values.fileSize ?? 0),
+                                     localBytes: Int64(values.totalFileAllocatedSize ?? 0),
+                                     isCloudPlaceholder: values.ubiquitousItemDownloadingStatus.map { $0 != .current } ?? false))
+            }
+        }
+        return entries.sorted { $0.localBytes > $1.localBytes }
+    }
+
+    nonisolated static func measure(root: URL, pauseController: ScanPauseController?) async -> [Entry] {
+        let fm = FileManager.default
+        let keys: Set<URLResourceKey> = [.isDirectoryKey, .fileSizeKey, .totalFileAllocatedSizeKey,
+                                          .isSymbolicLinkKey, .ubiquitousItemDownloadingStatusKey]
+        guard let top = try? fm.contentsOfDirectory(at: root, includingPropertiesForKeys: Array(keys),
+                                                    options: [.skipsHiddenFiles]) else { return [] }
+        var entries: [Entry] = []
+        for item in top {
+            if Task.isCancelled { break }
+            await pauseController?.waitIfPaused()
+            guard let values = try? item.resourceValues(forKeys: keys),
+                  values.isSymbolicLink != true else { continue }
+            if values.isDirectory == true {
+                var logical: Int64 = 0
+                var local: Int64 = 0
+                var anyPlaceholder = false
+                if let enumerator = fm.enumerator(at: item, includingPropertiesForKeys: Array(keys)) {
+                    while let sub = enumerator.nextObject() as? URL {
+                        if Task.isCancelled { break }
+                        await pauseController?.waitIfPaused()
+                        guard let v = try? sub.resourceValues(forKeys: keys), v.isDirectory != true else { continue }
+                        logical += Int64(v.fileSize ?? 0)
+                        local += Int64(v.totalFileAllocatedSize ?? 0)
+                        if v.ubiquitousItemDownloadingStatus.map({ $0 != .current }) ?? false { anyPlaceholder = true }
+                    }
+                }
+                entries.append(Entry(id: item.path, name: item.lastPathComponent,
+                                     isDirectory: true, logicalBytes: logical, localBytes: local,
+                                     isCloudPlaceholder: anyPlaceholder))
+            } else {
+                entries.append(Entry(id: item.path, name: item.lastPathComponent, isDirectory: false,
+                                     logicalBytes: Int64(values.fileSize ?? 0),
+                                     localBytes: Int64(values.totalFileAllocatedSize ?? 0),
+                                     isCloudPlaceholder: values.ubiquitousItemDownloadingStatus.map { $0 != .current } ?? false))
+            }
+        }
+        return entries.sorted { $0.localBytes > $1.localBytes }
     }
 }
 
@@ -157,20 +235,34 @@ struct CloudCleanupView: View {
             case .detecting:
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             case .noProviders:
-                VStack(spacing: 12) {
-                    Image(systemName: "icloud.slash")
-                        .font(.system(size: MCIconSize.emptyState)).foregroundStyle(.secondary)
-                    Text(L("cloud.empty.title")).font(.title3.weight(.semibold))
-                    Text(L("cloud.empty.subtitle"))
-                        .foregroundStyle(.secondary).multilineTextAlignment(.center)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                MCEmptyState(icon: "icloud.slash", title: L("cloud.empty.title"), message: L("cloud.empty.subtitle"))
             case .ready:
                 providerPicker
             case .scanning:
-                VStack(spacing: 12) {
-                    ProgressView()
-                    Text(L("cloud.measuring"))
+                VStack(spacing: MCSpacing.lg) {
+                    MCScanStage(isScanning: !model.isPaused) {
+                        Text(L("cloud.measuring"))
+                    }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(L("cloud.measuring"))
+                    HStack(spacing: MCSpacing.sm) {
+                        if model.isPaused {
+                            Button(L("common.resume")) { model.resumeScan() }
+                                .keyboardShortcut("r", modifiers: [])
+                                .help(L("clutter.resume_hint"))
+                                .accessibilityHint(L("clutter.resume_hint"))
+                                .accessibilityIdentifier("cloud.scan.resume")
+                        } else {
+                            Button(L("common.pause")) { model.pauseScan() }
+                                .keyboardShortcut("p", modifiers: [])
+                                .help(L("clutter.pause_hint"))
+                                .accessibilityHint(L("clutter.pause_hint"))
+                                .accessibilityIdentifier("cloud.scan.pause")
+                        }
+                        Button(L("common.cancel")) { model.cancel() }
+                            .keyboardShortcut(.cancelAction)
+                            .accessibilityIdentifier("cloud.scan.cancel")
+                    }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .results:
@@ -178,13 +270,14 @@ struct CloudCleanupView: View {
             }
         }
         .navigationTitle(L("cloud.nav_title"))
+        .accessibilityIdentifier("cloud.root")
         .onAppear { if model.phase == .detecting { model.detect() } }
     }
 
     private var providerPicker: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "icloud").font(.system(size: 56)).foregroundStyle(MCTheme.accent)
-            Text(L("cloud.picker.title")).font(.title2.weight(.semibold))
+        VStack(spacing: MCSpacing.md) {
+            Image(systemName: "icloud").font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
+            Text(L("cloud.picker.title")).font(MCFont.pageTitle)
             Text(L("cloud.picker.subtitle"))
                 .multilineTextAlignment(.center).foregroundStyle(.secondary)
             ForEach(model.providers) { provider in
@@ -204,7 +297,7 @@ struct CloudCleanupView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 VStack(alignment: .leading) {
-                    Text(model.selectedProvider?.name ?? "").font(.headline)
+                    Text(model.selectedProvider?.name ?? "").font(MCFont.cardTitle)
                     Text(L("cloud.results.summary", mcFormatBytes(model.recoverableLocalBytes), mcFormatBytes(model.totalLogical)))
                         .font(.caption).foregroundStyle(.secondary)
                 }

@@ -1,5 +1,150 @@
 # CHANGELOG
 
+## 0.9.1-rc.5 — 2026-08-02 « Review and Confirm »
+
+Supersedes rc.4 without changing its tag or published artifacts.
+
+Published as `CoreTend-0.9.1-rc.5-arm64-unsigned.dmg` (4,703,523
+bytes, SHA-256
+`b654975770cc1bfeb7e6a4f3cf180653a3182a55f8dc135db2083a72528998eb`),
+built by the clean tagged workflow from merge commit
+`efccece091ca793d8e176edf9249ec104332856a`.
+
+- feat(safety): removes the former Dry Run product mode from SafetyCore,
+  destructive views, Settings, onboarding, activity exports, localization and
+  product fixtures. Scanning remains read-only; eligible actions require a
+  reviewed selection and explicit confirmation, then use the macOS Trash.
+- feat(persistence): appends migration v4 to remove the retired setting. Old
+  storage fields remain only for downgrade/data compatibility and are hidden
+  from current reads.
+- fix(site): removes the obsolete mode from current public copy and demo data,
+  keeps release facts generated from the canonical public-release record, and
+  normalizes `/en` and `/fr` without multi-hop redirects.
+- test(safety): adds a repository/Security gate that rejects a returning
+  product-mode switch and requires confirmations on every destructive surface.
+- docs(release): records build 915, the rc.5 Gatekeeper route and the continued
+  IntegrityCore/no-ClamAV product boundary.
+
+## 0.9.1-rc.4 — 2026-08-02 « Integrity and Cohesion »
+
+Supersedes rc.3 without changing or removing its historical artifacts. That
+release's DMG is `CoreTend-0.9.1-rc.4-arm64-unsigned.dmg` (4,726,227 bytes,
+SHA-256 `f321b2ca801d5815163ce89eeb68a4957a451c054693c0a12e064f35b639b4fe`),
+built from tagged merge commit `67bb2e55ca6ddf336df7d0753e878c2293b129b4`.
+
+- feat(integrity): removes the former user-installed ClamAV process wrapper,
+  quarantine folder and background scan watcher. The first-party
+  `IntegrityCore` now reports read-only macOS provenance, code-signature and
+  login-item signals; it is explicitly not antivirus software.
+- feat(app): ships the current Dashboard, Storage, Space Lens, Duplicates,
+  Applications, Integrity, Activity, Settings and onboarding surfaces in
+  English and French, with light and dark appearances and isolated test mode.
+- feat(site): applies the shared Paper / Ink / Cobalt shell, independent logo
+  arcs, route-specific measurement backgrounds, themes, languages, reduced
+  motion, focus treatment and premium footer to every public route and the
+  real 404. The mobile Workflow overlap and hard-coded Support rc.3 version
+  are fixed in the canonical template.
+- test(site): 32 behavior/accessibility gates and 79 reviewed visual
+  fingerprints cover the route, viewport, locale, theme and reduced-motion
+  matrix without committing redundant screenshots.
+- build(release): packages the tag on a clean macOS runner with deterministic
+  `dmgbuild` Finder metadata, validates and mounts the DMG, publishes checksums,
+  Minisign signatures, SBOM and provenance, and records build 914 with an
+  Apple-compatible bundle version.
+- test(release): 338 Swift tests pass, plus Debug/Release builds, Xcode tests,
+  localization, resource, repository, private-data, secret, packaging and
+  distribution gates. The downloaded public app launches in isolated test
+  mode and the ad-hoc signature verifies; Gatekeeper rejection remains
+  expected without Developer ID/notarization.
+
+## 0.9.1-rc.3 — 2026-07-29 « Openable and Legible »
+
+Fixes the two defects that made the rc.2 public download unusable for a new
+user. rc.2's artifacts are left exactly as published.
+
+- fix(docs/site): every published instruction told the user to Control-click
+  the app and choose **Open** to get past Gatekeeper. Apple removed that
+  override in macOS 15 Sequoia, so on macOS 15 and later it silently does
+  nothing — the app never opened and no working recovery path was documented.
+  The site, the install steps, the README and the first-run guide now lead
+  with **System Settings → Privacy & Security → Open Anyway**, and mention
+  Control-click only as the macOS 14-and-earlier route. This was the reported
+  "the app did not work on another Mac".
+- fix(release): the DMG shipped without a `.DS_Store`, so the volume opened as
+  a default Finder window: no background, no icon placement, and three loose
+  licence files to read past. The window layout was produced by driving the
+  Finder over AppleScript, which needs an Automation/TCC grant; when the grant
+  was missing the build only warned and published anyway.
+- build(release): the DMG layout is now generated deterministically by
+  dmgbuild (ds_store/mac_alias). No Finder, no osascript, no TCC grant, no GUI
+  session, no human. Dependencies are pinned in
+  `Scripts/requirements-packaging.txt`. There is no opt-out: a DMG without its
+  layout fails the build.
+- feat(design): the DMG background is redrawn on the site's paper/ink/cobalt
+  palette instead of the dark Living System surface, so the installer and the
+  landing page read as one system. Both the 600×400 and 1200×800
+  representations ship in a single HiDPI TIFF.
+- test(release): `Scripts/test-dmg-layout.sh` mounts the built image and
+  asserts the background, its two resolutions, the recorded window bounds, the
+  view style, the icon size and both icon coordinates, that only CoreTend.app
+  and the Applications alias are visible, that the licence texts are sealed
+  inside the bundle with the signature intact, and that no packaging script
+  has regressed to calling osascript.
+- test(release): `Scripts/test-dmg-headless.sh` builds from a clean clone with
+  the Finder quit, a temporary HOME and the session variables stripped. Runs
+  on every push.
+- test(app): `Scripts/test-robustness.sh`, 37 cases under an isolated HOME —
+  missing and unwritable support directories, empty/truncated/garbage
+  preferences, a database that is empty, corrupt, truncated, read-only or a
+  directory, ClamAV absent/faked/unreadable/garbage, corrupt signature
+  database, no network, invalid update manifests, Unicode, emoji, long paths,
+  symlink cycles, unreadable trees, 3000 files, relaunch after a hard kill at
+  three points during startup, plus 50 cold launches and 50 launch/quit
+  cycles.
+- test(release): `Scripts/test-client-journey.sh` walks the public download to
+  a launched app and distinguishes the expected Gatekeeper block from a
+  packaging defect and from an application defect.
+
+Still unsigned and not notarized: no Apple Developer identity exists for this
+project. macOS will still block the first launch, and that is expected rather
+than a defect — the difference in rc.3 is that the documented way past it is
+the one that actually works.
+
+## 0.9.1-rc.2 — 2026-07-29 « Verifiable Release »
+
+Supersedes 0.9.1-rc.1, whose artifacts predate everything below. rc.1 is left
+exactly as published — replacing its files would invalidate any checksum
+already recorded — and this is a fresh build from the current source.
+
+- feat(app): Check for Updates in Settings and the app menu (Cmd-Shift-U).
+  Reports installed and latest versions and the release notes, and opens the
+  official release page. It never downloads or installs an update: these
+  builds carry no publisher signature Apple recognises, and a checksum
+  published beside its own file proves integrity, not identity.
+- feat(app): stable and prerelease channels separated; a stable user is never
+  offered a release candidate. Automatic checking is off by default.
+- feat(release): tag-triggered release workflow producing a provenance
+  attestation, an SPDX SBOM, SHA-256 checksums and Minisign signatures, and
+  refusing to publish on version/channel mismatch, missing artifacts, failed
+  checksums, or any signed/notarized claim it cannot back.
+- feat(release): a dedicated Minisign identity now signs the artifacts
+  (key ID F8473FB09E1DB730). Minisign is not Apple code signing and not
+  notarization, and is documented as such everywhere it appears.
+- feat(site): trust section where every claim links to its evidence, plus a
+  Verify your download page (FR/EN) generated from the release manifest.
+- feat(ci): single-source-of-truth version gate failing on any divergence
+  between the identity file, Info.plist, project state, manifest, site and
+  the published GitHub release.
+- feat(ci): visual regression suite, 72 captures across 9 viewports in both
+  locales, stored as fingerprints rather than committed screenshots.
+- docs: Documentation/BUILDING.md, verified end to end in a clean clone.
+- fix: generate.py used escapes inside f-string expressions and failed on
+  Python 3.9; it now runs on 3.9 and 3.14 alike.
+
+Still unsigned and not notarized — no Apple Developer identity exists.
+legalReviewStatus remains pending and the COREXTEND trademark watch item is
+unresolved; no clearance is claimed.
+
 ## 0.9.1-rc.1 — 2026-07-28 « Release Candidate »
 
 A technically complete release candidate following 0.9.0, built on the

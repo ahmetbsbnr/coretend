@@ -3,7 +3,20 @@
 CoreTend is a native macOS app for Apple Silicon (macOS 14+). No
 account, no installer package with a background daemon, no subscription.
 
-## From source (current state — no signed releases yet)
+## Public release candidate
+
+CoreTend `v0.9.1-rc.5` is published as an unsigned, non-notarized DMG and ZIP:
+
+- stable download route: `https://coretend.ahmetbsbnr.com/download`;
+- release and checksums:
+  `https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.5`;
+- required system: macOS 14 or later, Apple silicon (`arm64`).
+
+Verify the downloaded file against `SHA256SUMS`, then follow
+[INSTALL_UNSIGNED.md](INSTALL_UNSIGNED.md). The expected first-launch
+Gatekeeper rejection is not an application crash.
+
+## From source
 
 Requirements: macOS 14+, Apple Silicon, Swift command-line tools (Xcode not
 required; see `Scripts/doctor.sh` to check your setup).
@@ -21,14 +34,13 @@ Copy `build/CoreTend.app` to `/Applications` (or run it in place).
 
 See [DEVELOPMENT.md](../DEVELOPMENT.md) for the full developer workflow.
 
-## Signed releases
+## Signing status
 
-There is no notarized, signed public release yet — see
-`Documentation/PUBLIC_RELEASE_READINESS.md`. Until one exists, running an
-ad-hoc-signed local build may trigger Gatekeeper's "unidentified developer"
-prompt; approve it via **System Settings → Privacy & Security** as you
-would for any locally built app. Do not disable Gatekeeper or remove the
-quarantine attribute as a routine workaround — see
+There is no Developer ID-signed or notarized release yet. The public rc.5 and
+local packages are ad-hoc signed, so Gatekeeper may show its unidentified
+developer warning. After verifying the checksum, approve only this copy via
+**System Settings → Privacy & Security → Open Anyway**. Do not disable
+Gatekeeper or remove the quarantine attribute as a routine workaround — see
 [FULL_DISK_ACCESS.md](FULL_DISK_ACCESS.md) for what permissions the app
 actually needs and why.
 

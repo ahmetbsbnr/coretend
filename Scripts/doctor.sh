@@ -56,14 +56,8 @@ else
   echo "WARN: not a git working tree (or git missing) — skipping."
 fi
 
-echo "-- Optional: ClamAV (for Protection tab) --"
-if command -v clamscan >/dev/null 2>&1; then
-  echo "  OK: clamscan found at $(command -v clamscan)"
-else
-  echo "  INFO: clamscan not found. Optional — install with 'brew install clamav'"
-  echo "        if you want to exercise the malware-scan feature. The app"
-  echo "        builds and runs fully without it."
-fi
+echo "-- Integrity --"
+echo "  OK: local integrity checks require no third-party scanner"
 
 echo "======================"
 if [ "$fail" -eq 0 ]; then

@@ -38,9 +38,9 @@ When reporting, please include:
 In scope: CoreTend's Swift source, its build/packaging scripts, and
 its public website's own code.
 
-Out of scope: vulnerabilities in macOS itself, in Apple frameworks, or in
-the externally-installed ClamAV binary (report those upstream to Apple or
-the ClamAV project respectively).
+Out of scope: vulnerabilities in macOS itself or in Apple frameworks. Report
+issues in third-party hosting or release infrastructure with the affected URL
+and evidence so they can be routed to the appropriate provider.
 
 ## Expected process
 

@@ -98,6 +98,29 @@
     );
   }
 
+
+  /* ------------------------------------------------- pointer parallax */
+  /* The halo answers the cursor by a few pixels. Values are written as CSS
+     custom properties and the easing lives in the stylesheet, so this stays
+     one rAF-throttled write per frame and nothing layout-affecting moves. */
+  var halo = document.querySelector('.halo')
+  if (halo && !reduced.matches && window.matchMedia("(hover: hover)").matches) {
+    var queued = false
+    var lastX = 0
+    var lastY = 0
+    window.addEventListener("pointermove", function (e) {
+      lastX = (e.clientX / window.innerWidth - 0.5) * 2
+      lastY = (e.clientY / window.innerHeight - 0.5) * 2
+      if (queued) return
+      queued = true
+      requestAnimationFrame(function () {
+        halo.style.setProperty("--px", lastX.toFixed(3))
+        halo.style.setProperty("--py", lastY.toFixed(3))
+        queued = false
+      })
+    })
+  }
+
   /* -------------------------------------------------------- mobile menu */
   var toggle = document.querySelector(".nav-toggle");
   var menu = document.querySelector(".mobile-menu");

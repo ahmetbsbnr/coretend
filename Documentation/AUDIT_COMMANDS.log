@@ -3497,3 +3497,899 @@ Build complete! (0.24s)
 ✔ Test infectedResultReturnsFindingsAndDoesNotThrow() passed after 10.123 seconds.
 ✔ Suite "ClamAVScanner process execution (fake clamscan)" passed after 10.125 seconds.
 ✔ Test run with 296 tests in 58 suites passed after 10.125 seconds.
+
+$ (audit 2026-08-02, commit c05f4a9) Scripts/test.sh
+[0/1] Planning build
+Building for debugging...
+[0/5] Write swift-version--58304C5D6DBC2206.txt
+[2/24] Emitting module SafetyCore
+[3/24] Compiling SafetyCore SafetyCore.swift
+[4/31] Compiling DesignSystem MeshView.swift
+[5/31] Compiling DesignSystem Tokens.swift
+[6/31] Compiling DesignSystem HeroCore.swift
+[7/31] Compiling DesignSystem OverlapView.swift
+[8/37] Compiling DesignSystem DesignSystem.swift
+[9/37] Compiling DesignSystem FragmentView.swift
+[10/37] Compiling DesignSystem Typography.swift
+[11/37] Emitting module IntegrityCore
+[12/37] Compiling IntegrityCore IntegrityCore.swift
+[13/37] Compiling ScanCore ScanPauseController.swift
+[14/37] Emitting module Persistence
+[15/37] Compiling Persistence TestStoreOverride.swift
+[16/37] Compiling SystemMetrics SystemMetrics.swift
+[17/37] Emitting module SystemMetrics
+[18/37] Compiling Persistence Database.swift
+[19/37] Emitting module DesignSystem
+[20/37] Compiling DesignSystem AccessibilityState.swift
+[21/37] Compiling DesignSystem Colors.swift
+[22/37] Compiling DesignSystem Components.swift
+[23/37] Compiling DesignSystem CoreBloom.swift
+[24/37] Compiling ScanCore SpaceLensEngine.swift
+[25/37] Compiling Persistence LegacyDataMigration.swift
+[26/37] Compiling Persistence Store.swift
+[27/37] Emitting module AppDiscovery
+[28/37] Compiling AppDiscovery AppDiscovery.swift
+[29/37] Compiling ScanCore CloudFile.swift
+[30/37] Compiling ScanCore DuplicateEngine.swift
+[31/37] Emitting module ScanCore
+[32/37] Compiling ScanCore SimilarImagesEngine.swift
+[33/37] Compiling ScanCore ScanCore.swift
+[34/39] Compiling FileRules UserCleanupRules.swift
+[35/39] Emitting module FileRules
+[36/68] Compiling CoreTendApp PerformanceView.swift
+[37/68] Compiling CoreTendApp PrivacyCleanerView.swift
+[38/68] Compiling CoreTendApp ProtectionView.swift
+[39/68] Compiling CoreTendApp SafetyLogView.swift
+[40/71] Compiling CoreTendApp UpdateChecker.swift
+[41/71] Compiling CoreTendApp UpdatesView.swift
+[42/71] Compiling CoreTendApp resource_bundle_accessor.swift
+[43/71] Emitting module CoreTendApp
+[44/71] Compiling CoreTendApp ClutterFiltering.swift
+[45/71] Compiling CoreTendApp CoreTendApp.swift
+[46/71] Compiling CoreTendApp DashboardView.swift
+[47/71] Compiling CoreTendApp DiagnosticReport.swift
+[48/71] Compiling CoreTendApp AppEnvironment.swift
+[49/71] Compiling CoreTendApp AppMetadata.swift
+[50/71] Compiling CoreTendApp AppUpdatesView.swift
+[51/71] Compiling CoreTendApp ApplicationsView.swift
+[52/71] Compiling CoreTendApp BrowserDetection.swift
+[53/71] Compiling CoreTendApp CleanupView.swift
+[54/71] Compiling CoreTendApp CloudCleanupView.swift
+[55/71] Compiling CoreTendApp ClutterControls.swift
+[56/71] Compiling CoreTendApp SettingsView.swift
+[57/71] Compiling CoreTendApp SimilarImagesView.swift
+[58/71] Compiling CoreTendApp SmartCareView.swift
+[59/71] Compiling CoreTendApp SpaceLensView.swift
+[60/71] Compiling CoreTendApp MyActivityView.swift
+[61/71] Compiling CoreTendApp MyClutterView.swift
+[62/71] Compiling CoreTendApp OnboardingLogic.swift
+[63/71] Compiling CoreTendApp OnboardingView.swift
+[64/71] Compiling CoreTendApp DuplicatesView.swift
+[65/71] Compiling CoreTendApp FavoritesRecentsView.swift
+[66/71] Compiling CoreTendApp L10n.swift
+[67/71] Compiling CoreTendApp LeftoversView.swift
+[68/72] Compiling CoreTend main.swift
+[69/72] Emitting module CoreTend
+[69/71] Linking CoreTend
+[70/71] Applying CoreTend
+Build complete! (8.50s)
+◇ Test run started.
+↳ Testing Library Version: 0.99.0
+◇ Suite "AppDiscovery" started.
+◇ Test bundleIDHeuristic() started.
+✔ Test bundleIDHeuristic() passed after 0.001 seconds.
+◇ Test inspectReadsFakeBundle() started.
+✔ Test inspectReadsFakeBundle() passed after 0.035 seconds.
+◇ Test leftoversExcludeAppleAndInstalled() started.
+✔ Test leftoversExcludeAppleAndInstalled() passed after 0.002 seconds.
+◇ Test associatedItemsIncludeReviewOnlyLaunchAgents() started.
+✔ Test associatedItemsIncludeReviewOnlyLaunchAgents() passed after 0.001 seconds.
+◇ Test legacyAssociatedItemsCallStaysUserLibraryOnly() started.
+✔ Test legacyAssociatedItemsCallStaysUserLibraryOnly() passed after 0.001 seconds.
+◇ Test appStoreReceiptWinsOverEverything() started.
+✔ Test appStoreReceiptWinsOverEverything() passed after 0.001 seconds.
+◇ Test sparkleWithSafeFeed() started.
+✔ Test sparkleWithSafeFeed() passed after 0.001 seconds.
+◇ Test sparkleWithDangerousFeedYieldsNoURL() started.
+✔ Test sparkleWithDangerousFeedYieldsNoURL() passed after 0.001 seconds.
+◇ Test sparkleFrameworkWithoutFeed() started.
+✔ Test sparkleFrameworkWithoutFeed() passed after 0.001 seconds.
+◇ Test manualFromWhereFroms() started.
+✔ Test manualFromWhereFroms() passed after 0.001 seconds.
+◇ Test unknownWhenNoSignals() started.
+✔ Test unknownWhenNoSignals() passed after 0.001 seconds.
+◇ Test unknownWhenWhereFromsUnsafe() started.
+✔ Test unknownWhenWhereFromsUnsafe() passed after 0.001 seconds.
+◇ Test labelsNeverOverpromise() started.
+✔ Test labelsNeverOverpromise() passed after 0.001 seconds.
+◇ Test updateSourceReadsRealReceiptBundle() started.
+✔ Test updateSourceReadsRealReceiptBundle() passed after 0.002 seconds.
+◇ Test caskArtifactParsingExactAppNameNotFuzzy() started.
+✔ Test caskArtifactParsingExactAppNameNotFuzzy() passed after 0.001 seconds.
+◇ Test caskArtifactRenameTargetIsTheInstalledName() started.
+✔ Test caskArtifactRenameTargetIsTheInstalledName() passed after 0.001 seconds.
+◇ Test caskArtifactNonAppEntriesIgnored() started.
+✔ Test caskArtifactNonAppEntriesIgnored() passed after 0.001 seconds.
+◇ Test caskIndexClassificationOutranksSparkleAndManual() started.
+✔ Test caskIndexClassificationOutranksSparkleAndManual() passed after 0.001 seconds.
+◇ Test appStoreStillOutranksCask() started.
+✔ Test appStoreStillOutranksCask() passed after 0.001 seconds.
+◇ Test caskIndexBuildsFromFixtureCaskroomTree() started.
+✔ Test caskIndexBuildsFromFixtureCaskroomTree() passed after 0.001 seconds.
+◇ Test caskIndexEmptyWhenNoCaskroom() started.
+✔ Test caskIndexEmptyWhenNoCaskroom() passed after 0.001 seconds.
+◇ Test caskActionLabelDoesNotOverpromise() started.
+✔ Test caskActionLabelDoesNotOverpromise() passed after 0.001 seconds.
+✔ Suite "AppDiscovery" passed after 0.049 seconds.
+◇ Suite "CoreTend accessibility contract" started.
+◇ Test primaryPauseControlsHaveLocalizedVoiceOverHints() started.
+✔ Test primaryPauseControlsHaveLocalizedVoiceOverHints() passed after 0.001 seconds.
+✔ Suite "CoreTend accessibility contract" passed after 0.001 seconds.
+◇ Suite "Applications grouping" started.
+◇ Test "groups by publisher from bundle id, unknowns fall back honestly" started.
+✔ Test "groups by publisher from bundle id, unknowns fall back honestly" passed after 0.001 seconds.
+◇ Test "size buckets never invent data, use real byte thresholds" started.
+✔ Test "size buckets never invent data, use real byte thresholds" passed after 0.001 seconds.
+◇ Test "last-used buckets: nil date is Unknown, never guessed" started.
+✔ Test "last-used buckets: nil date is Unknown, never guessed" passed after 0.001 seconds.
+◇ Test "grouping by none returns a single group preserving all apps" started.
+✔ Test "grouping by none returns a single group preserving all apps" passed after 0.001 seconds.
+◇ Test "only reversible support data is preselected for uninstall" started.
+✔ Test "only reversible support data is preselected for uninstall" passed after 0.001 seconds.
+✔ Suite "Applications grouping" passed after 0.004 seconds.
+◇ Suite "Application inventory test-data isolation" started.
+◇ Test "test mode confines applications, support data and Caskroom to temporary fixtures" started.
+✔ Test "test mode confines applications, support data and Caskroom to temporary fixtures" passed after 0.001 seconds.
+◇ Test "an invalid test override has no application, system or Caskroom roots" started.
+✔ Test "an invalid test override has no application, system or Caskroom roots" passed after 0.001 seconds.
+◇ Test "a normal launch retains standard macOS inventory roots" started.
+✔ Test "a normal launch retains standard macOS inventory roots" passed after 0.001 seconds.
+✔ Suite "Application inventory test-data isolation" passed after 0.001 seconds.
+◇ Suite "Artifact appearance override isolation" started.
+◇ Test "validated test mode maps light and dark without changing normal settings" started.
+✔ Test "validated test mode maps light and dark without changing normal settings" passed after 0.001 seconds.
+◇ Test "an invalid test store cannot force application appearance" started.
+✔ Test "an invalid test store cannot force application appearance" passed after 0.001 seconds.
+◇ Test "normal launches always leave appearance under system control" started.
+✔ Test "normal launches always leave appearance under system control" passed after 0.001 seconds.
+✔ Suite "Artifact appearance override isolation" passed after 0.001 seconds.
+◇ Suite "Browser profile detection" started.
+◇ Test detectsChromiumFamilyEdgeAndBraveNotJustChrome() started.
+✔ Test detectsChromiumFamilyEdgeAndBraveNotJustChrome() passed after 0.004 seconds.
+◇ Test onlyMirroredCacheDirIsActionableNeverHistoryFile() started.
+✔ Test onlyMirroredCacheDirIsActionableNeverHistoryFile() passed after 0.001 seconds.
+◇ Test detectsFirefoxAndSafariLayouts() started.
+✔ Test detectsFirefoxAndSafariLayouts() passed after 0.002 seconds.
+◇ Test cacheOnlyValidatorAcceptsCachesRejectsHistoryAndCookies() started.
+✔ Test cacheOnlyValidatorAcceptsCachesRejectsHistoryAndCookies() passed after 0.002 seconds.
+◇ Test absentBrowsersProduceNoProfiles() started.
+✔ Test absentBrowsersProduceNoProfiles() passed after 0.001 seconds.
+◇ Test sortedByCacheSizeDescending() started.
+✔ Test sortedByCacheSizeDescending() passed after 0.002 seconds.
+◇ Test asyncDetectionHonorsPauseAndResume() started.
+✔ Test asyncDetectionHonorsPauseAndResume() passed after 0.064 seconds.
+✔ Suite "Browser profile detection" passed after 0.078 seconds.
+◇ Suite "Cloud Cleanup sync-state classification" started.
+◇ Test realPlaceholderSignalAlwaysWins() started.
+✔ Test realPlaceholderSignalAlwaysWins() passed after 0.001 seconds.
+◇ Test fullyDownloadedIsLocal() started.
+✔ Test fullyDownloadedIsLocal() passed after 0.001 seconds.
+◇ Test mostlyRemoteIsPlaceholderPartialInBetween() started.
+✔ Test mostlyRemoteIsPlaceholderPartialInBetween() passed after 0.001 seconds.
+◇ Test emptyFolderIsLocalNotRemote() started.
+✔ Test emptyFolderIsLocalNotRemote() passed after 0.001 seconds.
+◇ Test detectsKnownProviderRootsUnderFixtureHome() started.
+✔ Test detectsKnownProviderRootsUnderFixtureHome() passed after 0.001 seconds.
+◇ Test emptyHomeYieldsNoProviders() started.
+✔ Test emptyHomeYieldsNoProviders() passed after 0.001 seconds.
+◇ Test measureWalksTreeSkipsSymlinksAndSortsByLocalBytes() started.
+✔ Test measureWalksTreeSkipsSymlinksAndSortsByLocalBytes() passed after 0.010 seconds.
+◇ Test asyncMeasureHonorsPauseAndResume() started.
+✔ Test asyncMeasureHonorsPauseAndResume() passed after 0.054 seconds.
+◇ Test recoverableCountsOnlyBytesActuallyOnDiskNeverLogical() started.
+✔ Test recoverableCountsOnlyBytesActuallyOnDiskNeverLogical() passed after 0.001 seconds.
+✔ Suite "Cloud Cleanup sync-state classification" passed after 0.068 seconds.
+◇ Suite "ClutterSearch" started.
+◇ Test exactMatch() started.
+✔ Test exactMatch() passed after 0.001 seconds.
+◇ Test partialMatch() started.
+✔ Test partialMatch() passed after 0.001 seconds.
+◇ Test caseInsensitive() started.
+✔ Test caseInsensitive() passed after 0.001 seconds.
+◇ Test noMatch() started.
+✔ Test noMatch() passed after 0.001 seconds.
+◇ Test accentedCharactersMatchReasonably() started.
+✔ Test accentedCharactersMatchReasonably() passed after 0.001 seconds.
+◇ Test matchesOnContainingPathToo() started.
+✔ Test matchesOnContainingPathToo() passed after 0.001 seconds.
+◇ Test emptyQueryMatchesEverything() started.
+✔ Test emptyQueryMatchesEverything() passed after 0.001 seconds.
+◇ Test clearingSearchRestoresFullList() started.
+✔ Test clearingSearchRestoresFullList() passed after 0.001 seconds.
+✔ Suite "ClutterSearch" passed after 0.001 seconds.
+◇ Suite "ClutterExclusions.normalize" started.
+◇ Test absolutePathPassesThrough() started.
+✔ Test absolutePathPassesThrough() passed after 0.001 seconds.
+◇ Test relativePathIsInvalid() started.
+✔ Test relativePathIsInvalid() passed after 0.001 seconds.
+◇ Test emptyPathIsInvalid() started.
+✔ Test emptyPathIsInvalid() passed after 0.001 seconds.
+◇ Test trailingSlashIsStripped() started.
+✔ Test trailingSlashIsStripped() passed after 0.001 seconds.
+◇ Test rootIsLeftAsIs() started.
+✔ Test rootIsLeftAsIs() passed after 0.001 seconds.
+◇ Test symlinkPathStillNormalizesLikeAnyOtherPath() started.
+✔ Test symlinkPathStillNormalizesLikeAnyOtherPath() passed after 0.001 seconds.
+◇ Test volumeNotCurrentlyMountedStillNormalizes() started.
+✔ Test volumeNotCurrentlyMountedStillNormalizes() passed after 0.001 seconds.
+✔ Suite "ClutterExclusions.normalize" passed after 0.001 seconds.
+◇ Suite "ClutterExclusions.targetPath / isExcluded" started.
+◇ Test fileTargetIsTheFileItself() started.
+✔ Test fileTargetIsTheFileItself() passed after 0.001 seconds.
+◇ Test folderTargetIsTheContainingDirectory() started.
+✔ Test folderTargetIsTheContainingDirectory() passed after 0.001 seconds.
+◇ Test excludingParentFolderCoversChildFile() started.
+✔ Test excludingParentFolderCoversChildFile() passed after 0.001 seconds.
+◇ Test exactFileExclusionDoesNotCoverSiblings() started.
+✔ Test exactFileExclusionDoesNotCoverSiblings() passed after 0.001 seconds.
+◇ Test addingSamePathTwiceStaysASingleTarget() started.
+✔ Test addingSamePathTwiceStaysASingleTarget() passed after 0.001 seconds.
+✔ Suite "ClutterExclusions.targetPath / isExcluded" passed after 0.001 seconds.
+◇ Suite "ClutterVolumeGrouping" started.
+◇ Test internalVolume() started.
+✔ Test internalVolume() passed after 0.001 seconds.
+◇ Test externalVolume() started.
+✔ Test externalVolume() passed after 0.001 seconds.
+◇ Test volumeUnavailableAfterUnmountFallsBackToSentinelNotDropped() started.
+✔ Test volumeUnavailableAfterUnmountFallsBackToSentinelNotDropped() passed after 0.001 seconds.
+◇ Test twoVolumesSharingADisplayNameStayDistinctByIdentifier() started.
+✔ Test twoVolumesSharingADisplayNameStayDistinctByIdentifier() passed after 0.001 seconds.
+◇ Test cloudFileVolumeStillResolves() started.
+✔ Test cloudFileVolumeStillResolves() passed after 0.001 seconds.
+◇ Test noFilterMatchesEverything() started.
+✔ Test noFilterMatchesEverything() passed after 0.001 seconds.
+✔ Suite "ClutterVolumeGrouping" passed after 0.001 seconds.
+◇ Suite "Command palette filtering" started.
+◇ Test "empty query matches everything" started.
+✔ Test "empty query matches everything" passed after 0.001 seconds.
+◇ Test "case- and diacritic-insensitive substring match" started.
+✔ Test "case- and diacritic-insensitive substring match" passed after 0.001 seconds.
+◇ Test "every sidebar destination has a non-empty label and icon" started.
+✔ Test "every sidebar destination has a non-empty label and icon" passed after 0.008 seconds.
+✔ Suite "Command palette filtering" passed after 0.009 seconds.
+◇ Suite "Diagnostic report redaction" started.
+◇ Test "report never contains injected sensitive strings" started.
+✔ Test "report never contains injected sensitive strings" passed after 0.001 seconds.
+◇ Test "redactPath strips the real home directory and username" started.
+✔ Test "redactPath strips the real home directory and username" passed after 0.001 seconds.
+◇ Test "redactPath strips arbitrary /Users/<name> paths" started.
+✔ Test "redactPath strips arbitrary /Users/<name> paths" passed after 0.001 seconds.
+✔ Suite "Diagnostic report redaction" passed after 0.002 seconds.
+◇ Suite "DuplicatesViewModel filtering" started.
+◇ Test searchMatchesIfAnyCopyMatches() started.
+✔ Test searchMatchesIfAnyCopyMatches() passed after 0.001 seconds.
+◇ Test volumeFilterKeepsGroupIfAnyCopyIsOnSelectedVolume() started.
+✔ Test volumeFilterKeepsGroupIfAnyCopyIsOnSelectedVolume() passed after 0.001 seconds.
+◇ Test noFilterShowsAllGroups() started.
+✔ Test noFilterShowsAllGroups() passed after 0.001 seconds.
+◇ Test exportCSVIncludesSelectionAndKeeperRecommendation() started.
+✔ Test exportCSVIncludesSelectionAndKeeperRecommendation() passed after 0.004 seconds.
+✔ Suite "DuplicatesViewModel filtering" passed after 0.005 seconds.
+◇ Suite "SimilarImagesViewModel filtering" started.
+◇ Test searchMatchesIfAnyMemberMatches() started.
+✔ Test searchMatchesIfAnyMemberMatches() passed after 0.001 seconds.
+◇ Test volumeFilterKeepsClusterIfAnyMemberIsOnSelectedVolume() started.
+✔ Test volumeFilterKeepsClusterIfAnyMemberIsOnSelectedVolume() passed after 0.001 seconds.
+✔ Suite "SimilarImagesViewModel filtering" passed after 0.001 seconds.
+◇ Suite "Favorites & Recents" started.
+◇ Test "an existing, readable path reports exists and isReadable true" started.
+✔ Test "an existing, readable path reports exists and isReadable true" passed after 0.001 seconds.
+◇ Test "a path that was deleted after being favorited is reported missing, never throws" started.
+✔ Test "a path that was deleted after being favorited is reported missing, never throws" passed after 0.001 seconds.
+◇ Test "isFavorite/lastScanned/lastBytes mirror the underlying record, or read as unset without one" started.
+✔ Test "isFavorite/lastScanned/lastBytes mirror the underlying record, or read as unset without one" passed after 0.001 seconds.
+◇ Test "a favorite that is also a quick link is excluded from the Favorites section, so it isn't shown twice" started.
+✔ Test "a favorite that is also a quick link is excluded from the Favorites section, so it isn't shown twice" passed after 0.001 seconds.
+◇ Test "no overlap leaves every favorite in place" started.
+✔ Test "no overlap leaves every favorite in place" passed after 0.001 seconds.
+✔ Suite "Favorites & Recents" passed after 0.001 seconds.
+◇ Suite "Integrity test-data isolation" started.
+◇ Test "test mode resolves every scan under the validated temporary store" started.
+✔ Test "test mode resolves every scan under the validated temporary store" passed after 0.001 seconds.
+◇ Test "an invalid test override reads nothing and never falls back to personal data" started.
+✔ Test "an invalid test override reads nothing and never falls back to personal data" passed after 0.001 seconds.
+◇ Test "a normal launch keeps the real macOS locations" started.
+✔ Test "a normal launch keeps the real macOS locations" passed after 0.001 seconds.
+✔ Suite "Integrity test-data isolation" passed after 0.001 seconds.
+◇ Suite "Leftover shared/ambiguous detection" started.
+◇ Test "group. prefixed containers are always flagged ambiguous" started.
+✔ Test "group. prefixed containers are always flagged ambiguous" passed after 0.001 seconds.
+◇ Test "two leftovers sharing a vendor prefix are flagged, a lone one is not" started.
+✔ Test "two leftovers sharing a vendor prefix are flagged, a lone one is not" passed after 0.001 seconds.
+✔ Suite "Leftover shared/ambiguous detection" passed after 0.001 seconds.
+◇ Suite "LocalizationManager runtime language override" started.
+◇ Test "system language resolves no override bundle — falls back to Bundle.module" started.
+✔ Test "system language resolves no override bundle — falls back to Bundle.module" passed after 0.001 seconds.
+◇ Test "fr resolves to a real bundle whose lookup is actually French, independent of the system locale" started.
+✔ Test "fr resolves to a real bundle whose lookup is actually French, independent of the system locale" passed after 0.001 seconds.
+◇ Test "en resolves to a real bundle whose lookup is actually English" started.
+✔ Test "en resolves to a real bundle whose lookup is actually English" passed after 0.001 seconds.
+◇ Test "an unknown persisted value falls back to .system rather than crashing" started.
+✔ Test "an unknown persisted value falls back to .system rather than crashing" passed after 0.001 seconds.
+✔ Suite "LocalizationManager runtime language override" passed after 0.002 seconds.
+◇ Suite "My Activity day grouping" started.
+◇ Test "groups records by calendar day, preserving order" started.
+✔ Test "groups records by calendar day, preserving order" passed after 0.001 seconds.
+◇ Test "date range filters honestly by real elapsed time" started.
+✔ Test "date range filters honestly by real elapsed time" passed after 0.001 seconds.
+◇ Test "only completed cleanup bytes count as reclaimed space" started.
+✔ Test "only completed cleanup bytes count as reclaimed space" passed after 0.001 seconds.
+✔ Suite "My Activity day grouping" passed after 0.001 seconds.
+◇ Suite "My Activity export" started.
+◇ Test "JSON export round-trips the visible records as valid JSON" started.
+✔ Test "JSON export round-trips the visible records as valid JSON" passed after 0.002 seconds.
+◇ Test "JSON export respects the same date-range filter as the CSV export" started.
+✔ Test "JSON export respects the same date-range filter as the CSV export" passed after 0.001 seconds.
+✔ Suite "My Activity export" passed after 0.002 seconds.
+◇ Suite "Cloud Cleanup sync state" started.
+◇ Test "fully local file with no placeholder signal classifies local" started.
+✔ Test "fully local file with no placeholder signal classifies local" passed after 0.001 seconds.
+◇ Test "real ubiquitous placeholder signal always wins, even with stale byte counts" started.
+✔ Test "real ubiquitous placeholder signal always wins, even with stale byte counts" passed after 0.001 seconds.
+◇ Test "mixed local/remote bytes without a placeholder signal is partial" started.
+✔ Test "mixed local/remote bytes without a placeholder signal is partial" passed after 0.001 seconds.
+◇ Test "near-zero local bytes without explicit signal still reads as placeholder" started.
+✔ Test "near-zero local bytes without explicit signal still reads as placeholder" passed after 0.001 seconds.
+✔ Suite "Cloud Cleanup sync state" passed after 0.001 seconds.
+◇ Suite "My Clutter (Large & Old) sorting" started.
+◇ Test sortsBySizeLargestFirst() started.
+✔ Test sortsBySizeLargestFirst() passed after 0.001 seconds.
+◇ Test sortsByAgeOldestFirstMissingDatesLast() started.
+✔ Test sortsByAgeOldestFirstMissingDatesLast() passed after 0.001 seconds.
+◇ Test searchNarrowsSortedFindingsWithoutRescanning() started.
+✔ Test searchNarrowsSortedFindingsWithoutRescanning() passed after 0.001 seconds.
+◇ Test volumeFilterNarrowsToSelectedVolumeOnly() started.
+✔ Test volumeFilterNarrowsToSelectedVolumeOnly() passed after 0.001 seconds.
+✔ Suite "My Clutter (Large & Old) sorting" passed after 0.003 seconds.
+◇ Suite "First-run wizard logic" started.
+◇ Test everyProfileMapsToSafeDefaults() started.
+✔ Test everyProfileMapsToSafeDefaults() passed after 0.001 seconds.
+◇ Test detectsApplications() started.
+✔ Test detectsApplications() passed after 0.001 seconds.
+◇ Test detectsDownloads() started.
+✔ Test detectsDownloads() passed after 0.001 seconds.
+◇ Test detectsDiskImage() started.
+✔ Test detectsDiskImage() passed after 0.001 seconds.
+◇ Test detectsTemporaryAndTranslocation() started.
+✔ Test detectsTemporaryAndTranslocation() passed after 0.001 seconds.
+◇ Test detectsOther() started.
+✔ Test detectsOther() passed after 0.001 seconds.
+◇ Test moveOfferedOnlyOutsideApplications() started.
+✔ Test moveOfferedOnlyOutsideApplications() passed after 0.001 seconds.
+◇ Test allGreenIsReady() started.
+✔ Test allGreenIsReady() passed after 0.001 seconds.
+◇ Test missingOptionalsDegradeToLimited() started.
+✔ Test missingOptionalsDegradeToLimited() passed after 0.001 seconds.
+◇ Test badBundleIsActionRequired() started.
+✔ Test badBundleIsActionRequired() passed after 0.001 seconds.
+◇ Test wrongArchOrOldOSIsUnavailable() started.
+✔ Test wrongArchOrOldOSIsUnavailable() passed after 0.001 seconds.
+◇ Test unavailableOutranksActionRequired() started.
+✔ Test unavailableOutranksActionRequired() passed after 0.001 seconds.
+✔ Suite "First-run wizard logic" passed after 0.001 seconds.
+◇ Suite "Menu bar attention detection" started.
+◇ Test "normal readings never trigger attention" started.
+✔ Test "normal readings never trigger attention" passed after 0.001 seconds.
+◇ Test "critical thermal state triggers attention" started.
+✔ Test "critical thermal state triggers attention" passed after 0.001 seconds.
+◇ Test "critical memory pressure triggers attention" started.
+✔ Test "critical memory pressure triggers attention" passed after 0.001 seconds.
+◇ Test "low free disk space triggers attention" started.
+✔ Test "low free disk space triggers attention" passed after 0.001 seconds.
+✔ Suite "Menu bar attention detection" passed after 0.001 seconds.
+◇ Suite "Permission-state formatting" started.
+◇ Test "authorized statuses read as Authorized" started.
+✔ Test "authorized statuses read as Authorized" passed after 0.001 seconds.
+◇ Test "denied reads as Denied" started.
+✔ Test "denied reads as Denied" passed after 0.001 seconds.
+◇ Test "not determined reads as Not requested, never claims granted" started.
+✔ Test "not determined reads as Not requested, never claims granted" passed after 0.001 seconds.
+✔ Suite "Permission-state formatting" passed after 0.001 seconds.
+◇ Suite "Smart Care auto-execute selection" started.
+◇ Test "only low-risk AND preselected findings are auto-executable" started.
+✔ Test "only low-risk AND preselected findings are auto-executable" passed after 0.001 seconds.
+◇ Test "empty and all-ineligible inputs select nothing" started.
+✔ Test "empty and all-ineligible inputs select nothing" passed after 0.001 seconds.
+✔ Suite "Smart Care auto-execute selection" passed after 0.001 seconds.
+◇ Suite "Cleanup rule catalog risk/preselect invariant" started.
+◇ Test "every preselected rule is low-risk" started.
+✔ Test "every preselected rule is low-risk" passed after 0.001 seconds.
+◇ Test "every medium/high-risk rule is not preselected" started.
+✔ Test "every medium/high-risk rule is not preselected" passed after 0.001 seconds.
+◇ Test "the new installer/archive/Xcode rules are present, medium-risk, unchecked" started.
+✔ Test "the new installer/archive/Xcode rules are present, medium-risk, unchecked" passed after 0.001 seconds.
+✔ Suite "Cleanup rule catalog risk/preselect invariant" passed after 0.001 seconds.
+◇ Suite "Space Lens navigation" started.
+◇ Test currentFollowsPathStackThenRoot() started.
+✔ Test currentFollowsPathStackThenRoot() passed after 0.001 seconds.
+◇ Test descendIgnoresLeafAndEmptyDirectories() started.
+✔ Test descendIgnoresLeafAndEmptyDirectories() passed after 0.001 seconds.
+◇ Test popToIndexAndToRoot() started.
+✔ Test popToIndexAndToRoot() passed after 0.001 seconds.
+◇ Test requestDeleteSetsPendingForARealNode() started.
+✔ Test requestDeleteSetsPendingForARealNode() passed after 0.001 seconds.
+◇ Test requestDeleteRefusesTheSyntheticOtherBucket() started.
+✔ Test requestDeleteRefusesTheSyntheticOtherBucket() passed after 0.001 seconds.
+◇ Test pendingDeletionStartsEmpty() started.
+✔ Test pendingDeletionStartsEmpty() passed after 0.001 seconds.
+✔ Suite "Space Lens navigation" passed after 0.001 seconds.
+◇ Suite "Semantic version precedence" started.
+◇ Test parsesAndRejects() started.
+✔ Test parsesAndRejects() passed after 0.001 seconds.
+◇ Test numericSegmentsCompareNumerically() started.
+✔ Test numericSegmentsCompareNumerically() passed after 0.001 seconds.
+◇ Test prereleaseIsLowerThanRelease() started.
+✔ Test prereleaseIsLowerThanRelease() passed after 0.001 seconds.
+◇ Test buildMetadataIsIgnored() started.
+✔ Test buildMetadataIsIgnored() passed after 0.001 seconds.
+✔ Suite "Semantic version precedence" passed after 0.001 seconds.
+◇ Suite "Update checker decisions" started.
+◇ Test rejectsNonHTTPSManifest() started.
+✔ Test rejectsNonHTTPSManifest() passed after 0.001 seconds.
+◇ Test offersNewerStable() started.
+✔ Test offersNewerStable() passed after 0.002 seconds.
+◇ Test equalVersionIsUpToDate() started.
+✔ Test equalVersionIsUpToDate() passed after 0.001 seconds.
+◇ Test olderRemoteVersionNeverPrompts() started.
+✔ Test olderRemoteVersionNeverPrompts() passed after 0.001 seconds.
+◇ Test stableChannelIgnoresPrereleases() started.
+✔ Test stableChannelIgnoresPrereleases() passed after 0.001 seconds.
+◇ Test prereleaseChannelAcceptsPrereleases() started.
+✔ Test prereleaseChannelAcceptsPrereleases() passed after 0.001 seconds.
+◇ Test offlineIsReportedNotThrown() started.
+✔ Test offlineIsReportedNotThrown() passed after 0.001 seconds.
+◇ Test garbageManifestIsRejected() started.
+✔ Test garbageManifestIsRejected() passed after 0.001 seconds.
+◇ Test nonHTTPSReleaseURLIsDropped() started.
+✔ Test nonHTTPSReleaseURLIsDropped() passed after 0.001 seconds.
+◇ Test parsesVerifiedArtifactMetadata() started.
+✔ Test parsesVerifiedArtifactMetadata() passed after 0.001 seconds.
+◇ Test dropsUnverifiedArtifactMetadata() started.
+✔ Test dropsUnverifiedArtifactMetadata() passed after 0.001 seconds.
+◇ Test httpErrorIsSurfaced() started.
+✔ Test httpErrorIsSurfaced() passed after 0.001 seconds.
+✔ Suite "Update checker decisions" passed after 0.004 seconds.
+◇ Suite "CoreTend isolated integration environment" started.
+◇ Test testStoreOverrideNeverFallsBackToUserDataInTestMode() started.
+✔ Test testStoreOverrideNeverFallsBackToUserDataInTestMode() passed after 0.001 seconds.
+✔ Suite "CoreTend isolated integration environment" passed after 0.001 seconds.
+◇ Suite "CoreTend scan performance" started.
+◇ Test smallDeterministicScanCompletesWithinBudget() started.
+✔ Test smallDeterministicScanCompletesWithinBudget() passed after 0.078 seconds.
+✔ Suite "CoreTend scan performance" passed after 0.078 seconds.
+◇ Suite "Design tokens" started.
+◇ Test spacingScaleIsMonotonic() started.
+✔ Test spacingScaleIsMonotonic() passed after 0.001 seconds.
+◇ Test radiiAreOrdered() started.
+✔ Test radiiAreOrdered() passed after 0.001 seconds.
+◇ Test motionDurationsAreReasonable() started.
+✔ Test motionDurationsAreReasonable() passed after 0.001 seconds.
+◇ Test reduceMotionSuppressesAnimation() started.
+✔ Test reduceMotionSuppressesAnimation() passed after 0.003 seconds.
+✔ Suite "Design tokens" passed after 0.004 seconds.
+◇ Suite "Bloom geometry" started.
+◇ Test threeAsymmetricArcs() started.
+✔ Test threeAsymmetricArcs() passed after 0.001 seconds.
+◇ Test arcSpansStayPartial() started.
+✔ Test arcSpansStayPartial() passed after 0.001 seconds.
+✔ Suite "Bloom geometry" passed after 0.001 seconds.
+◇ Suite "Semantic colors" started.
+◇ Test brandColorsAdapt() started.
+✔ Test brandColorsAdapt() passed after 0.065 seconds.
+◇ Test chartSeriesHasDistinctLeadColors() started.
+✔ Test chartSeriesHasDistinctLeadColors() passed after 0.001 seconds.
+◇ Test categoryColorsAdapt() started.
+✔ Test categoryColorsAdapt() passed after 0.001 seconds.
+◇ Test categoryColorsAreMutuallyDistinct() started.
+✔ Test categoryColorsAreMutuallyDistinct() passed after 0.001 seconds.
+✔ Suite "Semantic colors" passed after 0.066 seconds.
+◇ Suite "Brand resources" started.
+◇ Test generatedAssetsExist() started.
+✔ Test generatedAssetsExist() passed after 0.001 seconds.
+◇ Test iconsetCoversAllSizes() started.
+✔ Test iconsetCoversAllSizes() passed after 0.001 seconds.
+◇ Test infoPlistDeclaresIconAndVersion() started.
+✔ Test infoPlistDeclaresIconAndVersion() passed after 0.002 seconds.
+✔ Suite "Brand resources" passed after 0.002 seconds.
+◇ Suite "Paper/Ink/Cobalt palette contrast" started.
+◇ Test darkSurfaceAccentsAreReadableOnInk() started.
+✔ Test darkSurfaceAccentsAreReadableOnInk() passed after 0.001 seconds.
+◇ Test lightSiblingsAreReadableOnPaper() started.
+✔ Test lightSiblingsAreReadableOnPaper() passed after 0.001 seconds.
+◇ Test canonicalCobaltPassesOnPaperDirectly() started.
+✔ Test canonicalCobaltPassesOnPaperDirectly() passed after 0.001 seconds.
+◇ Test canonicalCobaltWouldFailOnInk() started.
+✔ Test canonicalCobaltWouldFailOnInk() passed after 0.001 seconds.
+◇ Test mutedSlateClearsTheLargeTextFloorOnInk() started.
+✔ Test mutedSlateClearsTheLargeTextFloorOnInk() passed after 0.001 seconds.
+✔ Suite "Paper/Ink/Cobalt palette contrast" passed after 0.001 seconds.
+◇ Suite "UserCleanupRules" started.
+◇ Test allRulesHaveStableUniqueIDs() started.
+✔ Test allRulesHaveStableUniqueIDs() passed after 0.001 seconds.
+◇ Test noRuleTargetsUserContent() started.
+✔ Test noRuleTargetsUserContent() passed after 0.001 seconds.
+◇ Test newInstallerAndArchiveRulesAreDownloadsScopedAndOptIn() started.
+✔ Test newInstallerAndArchiveRulesAreDownloadsScopedAndOptIn() passed after 0.001 seconds.
+◇ Test installerMatcherOnlyMatchesInstallerExtensions() started.
+✔ Test installerMatcherOnlyMatchesInstallerExtensions() passed after 0.001 seconds.
+◇ Test archiveMatcherCoversCommonFormatsOnly() started.
+✔ Test archiveMatcherCoversCommonFormatsOnly() passed after 0.001 seconds.
+◇ Test xcodeArchivesRuleIsMediumRiskOptInUnderDeveloper() started.
+✔ Test xcodeArchivesRuleIsMediumRiskOptInUnderDeveloper() passed after 0.001 seconds.
+◇ Test allowedRootsCoverAllRuleRoots() started.
+✔ Test allowedRootsCoverAllRuleRoots() passed after 0.001 seconds.
+✔ Suite "UserCleanupRules" passed after 0.001 seconds.
+◇ Suite "ProvenanceScanner" started.
+◇ Test "a plain file with no quarantine attribute reports isQuarantined == false" started.
+✔ Test "a plain file with no quarantine attribute reports isQuarantined == false" passed after 0.001 seconds.
+◇ Test "a file carrying LSQuarantine metadata is reported as quarantined, with the fields the xattr actually stores" started.
+✔ Test "a file carrying LSQuarantine metadata is reported as quarantined, with the fields the xattr actually stores" passed after 0.035 seconds.
+◇ Test "directories are excluded, only regular files are reported" started.
+✔ Test "directories are excluded, only regular files are reported" passed after 0.001 seconds.
+◇ Test "a missing folder returns an empty list rather than throwing" started.
+✔ Test "a missing folder returns an empty list rather than throwing" passed after 0.001 seconds.
+◇ Test "limit caps the number of results" started.
+✔ Test "limit caps the number of results" passed after 0.002 seconds.
+◇ Test "malformed quarantine metadata (raw bytes the OS can't parse as quarantine properties) is treated as not-quarantined, never crashes" started.
+✔ Test "malformed quarantine metadata (raw bytes the OS can't parse as quarantine properties) is treated as not-quarantined, never crashes" passed after 0.001 seconds.
+◇ Test "an unreadable folder (permission denied) returns an empty list rather than throwing" started.
+✔ Test "an unreadable folder (permission denied) returns an empty list rather than throwing" passed after 0.001 seconds.
+✔ Suite "ProvenanceScanner" passed after 0.042 seconds.
+◇ Suite "CodeSignInspector" started.
+◇ Test "a system app is reported as Apple-signed and valid" started.
+✔ Test "a system app is reported as Apple-signed and valid" passed after 0.022 seconds.
+◇ Test "a nonexistent path is reported unsigned, never crashes" started.
+✔ Test "a nonexistent path is reported unsigned, never crashes" passed after 0.001 seconds.
+◇ Test "a freshly-written plain file (no signature at all) is unsigned" started.
+✔ Test "a freshly-written plain file (no signature at all) is unsigned" passed after 0.003 seconds.
+◇ Test "a binary actually signed ad hoc (codesign -s -) is adHocOrUnsigned but its signature validates — distinct from having no signature at all" started.
+✔ Test "a binary actually signed ad hoc (codesign -s -) is adHocOrUnsigned but its signature validates — distinct from having no signature at all" passed after 0.030 seconds.
+◇ Test "a directory named *.app with no real bundle contents does not crash and reports unsigned" started.
+✔ Test "a directory named *.app with no real bundle contents does not crash and reports unsigned" passed after 0.001 seconds.
+✘ Test "a Developer ID / other team-signed binary is reported teamSigned" skipped: "requires a non-Apple codesigning identity in the keychain — none installed in this environment (see Documentation/HUMAN_BLOCKERS.md, Configuration/DeveloperID/)"
+✔ Suite "CodeSignInspector" passed after 0.059 seconds.
+◇ Suite "LoginItemScanner" started.
+◇ Test "scanning never throws and returns items with a non-empty label" started.
+✔ Test "scanning never throws and returns items with a non-empty label" passed after 0.008 seconds.
+◇ Test "a well-formed plist in a controlled (non-real) location is parsed with the right label, program and scope" started.
+✔ Test "a well-formed plist in a controlled (non-real) location is parsed with the right label, program and scope" passed after 0.001 seconds.
+◇ Test "a malformed plist (not valid property-list data) is skipped, never crashes" started.
+✔ Test "a malformed plist (not valid property-list data) is skipped, never crashes" passed after 0.001 seconds.
+◇ Test "a location that doesn't exist yields an empty list rather than throwing" started.
+✔ Test "a location that doesn't exist yields an empty list rather than throwing" passed after 0.001 seconds.
+◇ Test "an unreadable location (permission denied) yields an empty list rather than throwing" started.
+✔ Test "an unreadable location (permission denied) yields an empty list rather than throwing" passed after 0.001 seconds.
+◇ Test "a plist reached via a symlink is followed and parsed like any other file" started.
+✔ Test "a plist reached via a symlink is followed and parsed like any other file" passed after 0.001 seconds.
+✔ Suite "LoginItemScanner" passed after 0.011 seconds.
+◇ Suite "Legacy data migration" started.
+◇ Test noLegacyDataLeavesEverythingAlone() started.
+✔ Test noLegacyDataLeavesEverythingAlone() passed after 0.001 seconds.
+◇ Test normalMigrationCopiesEveryItemAndLeavesTheSourceUntouched() started.
+✔ Test normalMigrationCopiesEveryItemAndLeavesTheSourceUntouched() passed after 0.021 seconds.
+◇ Test migratedStoreKeepsItsActivityExclusionsAndSettings() started.
+✔ Test migratedStoreKeepsItsActivityExclusionsAndSettings() passed after 0.013 seconds.
+◇ Test quarantineContentsSurviveTheMove() started.
+✔ Test quarantineContentsSurviveTheMove() passed after 0.002 seconds.
+◇ Test alternateLegacyDirectoryNameIsAlsoFound() started.
+✔ Test alternateLegacyDirectoryNameIsAlsoFound() passed after 0.002 seconds.
+◇ Test existingNewDataIsNeverOverwritten() started.
+✔ Test existingNewDataIsNeverOverwritten() passed after 0.012 seconds.
+◇ Test secondRunChangesNothing() started.
+✔ Test secondRunChangesNothing() passed after 0.010 seconds.
+◇ Test interruptedRunResumesAndLeavesNoHalfCopiedItem() started.
+✔ Test interruptedRunResumesAndLeavesNoHalfCopiedItem() passed after 0.003 seconds.
+◇ Test corruptDatabaseFileIsCopiedVerbatimAndNotSilentlyDropped() started.
+✔ Test corruptDatabaseFileIsCopiedVerbatimAndNotSilentlyDropped() passed after 0.003 seconds.
+◇ Test sqliteSidecarsMigrateWithTheirDatabase() started.
+✔ Test sqliteSidecarsMigrateWithTheirDatabase() passed after 0.003 seconds.
+◇ Test unwritableDestinationIsReportedNotSwallowed() started.
+✔ Test unwritableDestinationIsReportedNotSwallowed() passed after 0.007 seconds.
+◇ Test unreadableLegacyItemFailsThatItemOnly() started.
+✔ Test unreadableLegacyItemFailsThatItemOnly() passed after 0.002 seconds.
+◇ Test rollbackRemovesOnlyWhatThisRunCreated() started.
+✔ Test rollbackRemovesOnlyWhatThisRunCreated() passed after 0.009 seconds.
+◇ Test migrationCanBeRerunAfterARollback() started.
+✔ Test migrationCanBeRerunAfterARollback() passed after 0.004 seconds.
+◇ Test onboardingAndMenuBarPreferencesMoveToTheNewDomain() started.
+✔ Test onboardingAndMenuBarPreferencesMoveToTheNewDomain() passed after 0.002 seconds.
+◇ Test preferencesAlreadySetUnderTheNewIdentityWin() started.
+✔ Test preferencesAlreadySetUnderTheNewIdentityWin() passed after 0.001 seconds.
+◇ Test preferencesMigrateEvenWithNoLegacyFilesOnDisk() started.
+✔ Test preferencesMigrateEvenWithNoLegacyFilesOnDisk() passed after 0.001 seconds.
+◇ Test unrelatedLegacyPreferenceKeysAreNotCopied() started.
+✔ Test unrelatedLegacyPreferenceKeysAreNotCopied() passed after 0.001 seconds.
+◇ Test everyRunIsJournalledBesideTheData() started.
+✔ Test everyRunIsJournalledBesideTheData() passed after 0.002 seconds.
+◇ Test migrationTargetsTheDirectoryTheStoreActuallyUses() started.
+✔ Test migrationTargetsTheDirectoryTheStoreActuallyUses() passed after 0.001 seconds.
+✔ Suite "Legacy data migration" passed after 0.108 seconds.
+◇ Suite "Store at scale" started.
+◇ Test largeHistoryStaysFastToQuery() started.
+[stress] store: inserted 8000x2 rows in 0.586976208 seconds, read 3x200 in 0.00801925 seconds
+✔ Test largeHistoryStaysFastToQuery() passed after 0.600 seconds.
+✔ Suite "Store at scale" passed after 0.600 seconds.
+◇ Suite "Store" started.
+◇ Test migrationsApplyOnceAndAreIdempotent() started.
+✔ Test migrationsApplyOnceAndAreIdempotent() passed after 0.004 seconds.
+◇ Test activityRoundTrip() started.
+✔ Test activityRoundTrip() passed after 0.003 seconds.
+◇ Test exclusionsUniqueAndRemovable() started.
+✔ Test exclusionsUniqueAndRemovable() passed after 0.003 seconds.
+◇ Test favoritesAddRemoveAndOrder() started.
+✔ Test favoritesAddRemoveAndOrder() passed after 0.003 seconds.
+◇ Test recentsOrderedByMostRecentAndRespectsLimit() started.
+✔ Test recentsOrderedByMostRecentAndRespectsLimit() passed after 0.003 seconds.
+◇ Test removingRecentPrunesRowUnlessFavorited() started.
+✔ Test removingRecentPrunesRowUnlessFavorited() passed after 0.003 seconds.
+◇ Test favoriteAndRecentAreIndependentSignals() started.
+✔ Test favoriteAndRecentAreIndependentSignals() passed after 0.003 seconds.
+◇ Test settingsUpsert() started.
+✔ Test settingsUpsert() passed after 0.003 seconds.
+◇ Test unicodeSummarySurvives() started.
+✔ Test unicodeSummarySurvives() passed after 0.003 seconds.
+◇ Test safetyLogPersistsApprovedThenExecuted() started.
+✔ Test safetyLogPersistsApprovedThenExecuted() passed after 0.003 seconds.
+◇ Test safetyLogNeverStoresRawHomePath() started.
+✔ Test safetyLogNeverStoresRawHomePath() passed after 0.003 seconds.
+◇ Test safetyLogSurvivesRelaunch() started.
+✔ Test safetyLogSurvivesRelaunch() passed after 0.003 seconds.
+◇ Test safetyLogPurgeIsAllOrNothing() started.
+✔ Test safetyLogPurgeIsAllOrNothing() passed after 0.003 seconds.
+✔ Suite "Store" passed after 0.046 seconds.
+◇ Suite "Test store override" started.
+◇ Test markerAndTemporaryPathTogetherAreAccepted() started.
+✔ Test markerAndTemporaryPathTogetherAreAccepted() passed after 0.001 seconds.
+◇ Test everyDocumentedTemporaryRootIsAccepted() started.
+✔ Test everyDocumentedTemporaryRootIsAccepted() passed after 0.001 seconds.
+◇ Test tmpdirFromTheEnvironmentIsAccepted() started.
+✔ Test tmpdirFromTheEnvironmentIsAccepted() passed after 0.001 seconds.
+◇ Test withoutTheMarkerNothingIsOverridden() started.
+✔ Test withoutTheMarkerNothingIsOverridden() passed after 0.001 seconds.
+◇ Test onlyTheExactMarkerValueCounts() started.
+✔ Test onlyTheExactMarkerValueCounts() passed after 0.001 seconds.
+◇ Test markerAloneWithoutAPathIsNotAnOverride() started.
+✔ Test markerAloneWithoutAPathIsNotAnOverride() passed after 0.001 seconds.
+◇ Test emptyOrWhitespacePathIsRejected() started.
+✔ Test emptyOrWhitespacePathIsRejected() passed after 0.001 seconds.
+◇ Test relativePathIsRejected() started.
+✔ Test relativePathIsRejected() passed after 0.001 seconds.
+◇ Test nonTemporaryAbsolutePathIsRejected() started.
+✔ Test nonTemporaryAbsolutePathIsRejected() passed after 0.001 seconds.
+◇ Test protectedRootsAreRejectedEvenWithTheMarker() started.
+✔ Test protectedRootsAreRejectedEvenWithTheMarker() passed after 0.001 seconds.
+◇ Test filesystemRootIsRejected() started.
+✔ Test filesystemRootIsRejected() passed after 0.001 seconds.
+◇ Test homeDirectoryIsRejected() started.
+✔ Test homeDirectoryIsRejected() passed after 0.001 seconds.
+◇ Test aBareTemporaryRootIsRejected() started.
+✔ Test aBareTemporaryRootIsRejected() passed after 0.001 seconds.
+◇ Test trailingSlashesAndDotsAreNormalisedNotTrusted() started.
+✔ Test trailingSlashesAndDotsAreNormalisedNotTrusted() passed after 0.001 seconds.
+◇ Test traversalCannotEscapeIntoANonTemporaryPath() started.
+✔ Test traversalCannotEscapeIntoANonTemporaryPath() passed after 0.001 seconds.
+◇ Test traversalCannotReachAProtectedRoot() started.
+✔ Test traversalCannotReachAProtectedRoot() passed after 0.001 seconds.
+◇ Test resolveReportsNothingWhenTheMarkerIsSimplyAbsent() started.
+✔ Test resolveReportsNothingWhenTheMarkerIsSimplyAbsent() passed after 0.001 seconds.
+◇ Test resolveReportsAPathThatWasRefused() started.
+✔ Test resolveReportsAPathThatWasRefused() passed after 0.001 seconds.
+◇ Test resolveAcceptsAWellFormedPair() started.
+✔ Test resolveAcceptsAWellFormedPair() passed after 0.001 seconds.
+◇ Test markerDetectionIsIndependentOfPathValidity() started.
+✔ Test markerDetectionIsIndependentOfPathValidity() passed after 0.001 seconds.
+◇ Test storeOpensInsideAnOverriddenDirectoryAndNowhereElse() started.
+✔ Test storeOpensInsideAnOverriddenDirectoryAndNowhereElse() passed after 0.003 seconds.
+◇ Test userPathIsNeverOverridable() started.
+✔ Test userPathIsNeverOverridable() passed after 0.001 seconds.
+✔ Suite "Test store override" passed after 0.007 seconds.
+◇ Suite "PathValidator" started.
+◇ Test validFileInsideRootPasses() started.
+✔ Test validFileInsideRootPasses() passed after 0.001 seconds.
+◇ Test emptyPathRejected() started.
+✔ Test emptyPathRejected() passed after 0.001 seconds.
+◇ Test rootRejected() started.
+✔ Test rootRejected() passed after 0.001 seconds.
+◇ Test systemRejected() started.
+✔ Test systemRejected() passed after 0.001 seconds.
+◇ Test binRejected() started.
+✔ Test binRejected() passed after 0.001 seconds.
+◇ Test sbinRejected() started.
+✔ Test sbinRejected() passed after 0.001 seconds.
+◇ Test usrBinRejected() started.
+✔ Test usrBinRejected() passed after 0.001 seconds.
+◇ Test usrLibRejected() started.
+✔ Test usrLibRejected() passed after 0.001 seconds.
+◇ Test homeDirectoryItselfRejected() started.
+✔ Test homeDirectoryItselfRejected() passed after 0.001 seconds.
+◇ Test outsideAllowedRootsRejected() started.
+✔ Test outsideAllowedRootsRejected() passed after 0.001 seconds.
+◇ Test dotDotTraversalRejected() started.
+✔ Test dotDotTraversalRejected() passed after 0.001 seconds.
+◇ Test prefixBoundaryNotConfused() started.
+✔ Test prefixBoundaryNotConfused() passed after 0.001 seconds.
+◇ Test symlinkEscapingAllowlistRejected() started.
+✔ Test symlinkEscapingAllowlistRejected() passed after 0.001 seconds.
+◇ Test symlinkInsideAllowlistPasses() started.
+✔ Test symlinkInsideAllowlistPasses() passed after 0.001 seconds.
+◇ Test unicodePathPasses() started.
+✔ Test unicodePathPasses() passed after 0.001 seconds.
+◇ Test veryLongPathHandled() started.
+✔ Test veryLongPathHandled() passed after 0.003 seconds.
+✔ Suite "PathValidator" passed after 0.010 seconds.
+◇ Suite "SafetyCenter" started.
+◇ Test confirmedExecutionRemovesOriginalPath() started.
+✔ Test confirmedExecutionRemovesOriginalPath() passed after 0.013 seconds.
+◇ Test vanishedFileSkippedAtExecution() started.
+✔ Test vanishedFileSkippedAtExecution() passed after 0.001 seconds.
+◇ Test symlinkSwappedAfterApprovalRejected() started.
+✔ Test symlinkSwappedAfterApprovalRejected() passed after 0.001 seconds.
+◇ Test emptyApprovedBatchDoesNothing() started.
+✔ Test emptyApprovedBatchDoesNothing() passed after 0.001 seconds.
+◇ Test confirmedBatchMovesEveryValidOriginal() started.
+✔ Test confirmedBatchMovesEveryValidOriginal() passed after 0.001 seconds.
+◇ Test repeatedApprovedPathExecutesOnceThenSkips() started.
+✔ Test repeatedApprovedPathExecutesOnceThenSkips() passed after 0.001 seconds.
+✔ Suite "SafetyCenter" passed after 0.017 seconds.
+◇ Suite "SafetyCenter audit sink" started.
+◇ Test executionEmitsApprovedThenExecuted() started.
+✔ Test executionEmitsApprovedThenExecuted() passed after 0.001 seconds.
+◇ Test everyApprovedOperationHasOneTerminalEvent() started.
+✔ Test everyApprovedOperationHasOneTerminalEvent() passed after 0.001 seconds.
+◇ Test invalidPathEmitsErrorEvent() started.
+✔ Test invalidPathEmitsErrorEvent() passed after 0.001 seconds.
+◇ Test vanishedFileEmitsSkippedEvent() started.
+✔ Test vanishedFileEmitsSkippedEvent() passed after 0.001 seconds.
+✔ Suite "SafetyCenter audit sink" passed after 0.002 seconds.
+◇ Suite "Cloud dataless-file guard" started.
+◇ Test nonUbiquitousFileIsAlwaysLocal() started.
+✔ Test nonUbiquitousFileIsAlwaysLocal() passed after 0.001 seconds.
+◇ Test ubiquitousNotDownloadedIsRemoteOnly() started.
+✔ Test ubiquitousNotDownloadedIsRemoteOnly() passed after 0.001 seconds.
+◇ Test ubiquitousCurrentOrDownloadingIsLocalEnoughToRead() started.
+✔ Test ubiquitousCurrentOrDownloadingIsLocalEnoughToRead() passed after 0.001 seconds.
+✔ Suite "Cloud dataless-file guard" passed after 0.001 seconds.
+◇ Suite "DuplicateEngine" started.
+◇ Test detectsIdenticalFilesAndSkipsUniques() started.
+✔ Test detectsIdenticalFilesAndSkipsUniques() passed after 0.010 seconds.
+◇ Test hardLinksNotTreatedAsDuplicates() started.
+✔ Test hardLinksNotTreatedAsDuplicates() passed after 0.002 seconds.
+◇ Test filesBelowMinimumSizeIgnored() started.
+✔ Test filesBelowMinimumSizeIgnored() passed after 0.001 seconds.
+◇ Test capturesScanTimeModificationDates() started.
+✔ Test capturesScanTimeModificationDates() passed after 0.006 seconds.
+◇ Test hasChangedOnDiskDetectsPostScanEdit() started.
+✔ Test hasChangedOnDiskDetectsPostScanEdit() passed after 0.005 seconds.
+◇ Test hasChangedOnDiskTreatsMissingFileAsChanged() started.
+✔ Test hasChangedOnDiskTreatsMissingFileAsChanged() passed after 0.001 seconds.
+◇ Test keeperPrefersShallowestPath() started.
+✔ Test keeperPrefersShallowestPath() passed after 0.005 seconds.
+✔ Suite "DuplicateEngine" passed after 0.033 seconds.
+◇ Suite "ScanConfiguration exclusions" started.
+◇ Test excludedSubtreeSkipped() started.
+✔ Test excludedSubtreeSkipped() passed after 0.001 seconds.
+✔ Suite "ScanConfiguration exclusions" passed after 0.001 seconds.
+◇ Suite "ScanEngine bounded concurrency" started.
+◇ Test identicalResultSetAcrossConcurrencyLevels() started.
+✔ Test identicalResultSetAcrossConcurrencyLevels() passed after 0.007 seconds.
+◇ Test totalsDoNotDoubleCount() started.
+✔ Test totalsDoNotDoubleCount() passed after 0.007 seconds.
+◇ Test failingRuleDoesNotPoisonRun() started.
+✔ Test failingRuleDoesNotPoisonRun() passed after 0.006 seconds.
+◇ Test cancellationMidRunTerminates() started.
+✔ Test cancellationMidRunTerminates() passed after 0.007 seconds.
+✔ Suite "ScanEngine bounded concurrency" passed after 0.029 seconds.
+◇ Suite "ScanEngine" started.
+◇ Test scanFindsFilesAndReportsSizes() started.
+✔ Test scanFindsFilesAndReportsSizes() passed after 0.001 seconds.
+◇ Test minimumAgeExcludesFreshFiles() started.
+✔ Test minimumAgeExcludesFreshFiles() passed after 0.001 seconds.
+◇ Test missingRootYieldsFinishedNotError() started.
+✔ Test missingRootYieldsFinishedNotError() passed after 0.001 seconds.
+◇ Test symlinkedDirectoryNotDescended() started.
+✔ Test symlinkedDirectoryNotDescended() passed after 0.001 seconds.
+◇ Test cancellationStopsStream() started.
+✔ Test cancellationStopsStream() passed after 0.025 seconds.
+◇ Test independentConsumersSeeIdenticalTotals() started.
+✔ Test independentConsumersSeeIdenticalTotals() passed after 0.002 seconds.
+✔ Suite "ScanEngine" passed after 0.031 seconds.
+◇ Suite "Scan root isolation" started.
+◇ Test downloadsOnlyScanNeverTouchesSiblingDirectories() started.
+✔ Test downloadsOnlyScanNeverTouchesSiblingDirectories() passed after 0.001 seconds.
+◇ Test multipleRulesOnlyVisitTheirOwnRoots() started.
+✔ Test multipleRulesOnlyVisitTheirOwnRoots() passed after 0.002 seconds.
+✔ Suite "Scan root isolation" passed after 0.004 seconds.
+◇ Suite "Totals beyond display cap" started.
+◇ Test engineStreamsAllFindingsUncappedAt5001() started.
+✔ Test engineStreamsAllFindingsUncappedAt5001() passed after 0.732 seconds.
+✔ Suite "Totals beyond display cap" passed after 0.732 seconds.
+◇ Suite "ScanRule matches filter" started.
+◇ Test matchesPredicateFiltersFindings() started.
+✔ Test matchesPredicateFiltersFindings() passed after 0.001 seconds.
+✔ Suite "ScanRule matches filter" passed after 0.001 seconds.
+◇ Suite "Scan pause / resume" started.
+◇ Test pauseAndResumeReflectIsPaused() started.
+✔ Test pauseAndResumeReflectIsPaused() passed after 0.001 seconds.
+◇ Test pausedScanResumesAndCompletesWithCorrectTotals() started.
+✔ Test pausedScanResumesAndCompletesWithCorrectTotals() passed after 0.199 seconds.
+◇ Test breakingOutWhilePausedStillTearsDownFast() started.
+✔ Test breakingOutWhilePausedStillTearsDownFast() passed after 0.525 seconds.
+◇ Test manyPausedWaitsResumeWithoutExecutorStarvation() started.
+✔ Test manyPausedWaitsResumeWithoutExecutorStarvation() passed after 0.154 seconds.
+◇ Test pausedSpaceLensScanResumesAndFinishes() started.
+✔ Test pausedSpaceLensScanResumesAndFinishes() passed after 0.187 seconds.
+◇ Test pausedDuplicateScanResumesAndFindsGroup() started.
+✔ Test pausedDuplicateScanResumesAndFindsGroup() passed after 0.160 seconds.
+◇ Test pausedSimilarImagesScanResumesAndFinishes() started.
+✔ Test pausedSimilarImagesScanResumesAndFinishes() passed after 0.350 seconds.
+✔ Suite "Scan pause / resume" passed after 1.578 seconds.
+◇ Suite "SimilarImagesEngine end-to-end" started.
+◇ Test identicalImagesGroupAndCorruptIsSkipped() started.
+✔ Test identicalImagesGroupAndCorruptIsSkipped() passed after 0.020 seconds.
+✔ Suite "SimilarImagesEngine end-to-end" passed after 0.020 seconds.
+◇ Suite "SimilarImageGroup best-resolution marking" started.
+◇ Test "highest real pixel count wins, never a guess" started.
+✔ Test "highest real pixel count wins, never a guess" passed after 0.001 seconds.
+◇ Test "missing pixel data defaults to zero, never crashes or fabricates" started.
+✔ Test "missing pixel data defaults to zero, never crashes or fabricates" passed after 0.001 seconds.
+✔ Suite "SimilarImageGroup best-resolution marking" passed after 0.001 seconds.
+◇ Suite "SpaceLensEngine" started.
+◇ Test sizesTreeAndBucketsSmallItems() started.
+✔ Test sizesTreeAndBucketsSmallItems() passed after 0.003 seconds.
+◇ Test symbolicLinksAreNeverFollowedOrCounted() started.
+✔ Test symbolicLinksAreNeverFollowedOrCounted() passed after 0.001 seconds.
+◇ Test nestedDirectorySizesRollUpToParent() started.
+✔ Test nestedDirectorySizesRollUpToParent() passed after 0.002 seconds.
+◇ Test depthCapUsesShallowSizeAndStillCountsBytes() started.
+✔ Test depthCapUsesShallowSizeAndStillCountsBytes() passed after 0.001 seconds.
+◇ Test emptyAndZeroSizeContentsDoNotCrashAndBucketToOther() started.
+✔ Test emptyAndZeroSizeContentsDoNotCrashAndBucketToOther() passed after 0.001 seconds.
+◇ Test treemapLayoutCoversBoundsProportionally() started.
+✔ Test treemapLayoutCoversBoundsProportionally() passed after 0.001 seconds.
+✔ Suite "SpaceLensEngine" passed after 0.011 seconds.
+◇ Suite "Cleanup at scale" started.
+◇ Test twelveThousandFindingsStreamUncappedWithExactTotals() started.
+[stress] cleanup: 12000 files scanned in 0.095524958 seconds
+✔ Test twelveThousandFindingsStreamUncappedWithExactTotals() passed after 1.824 seconds.
+✔ Suite "Cleanup at scale" passed after 1.824 seconds.
+◇ Suite "Duplicates at scale" started.
+◇ Test tenThousandSameSizeCandidatesStayCorrectAndSubQuadratic() started.
+[stress] duplicates: 10200 files, 500 groups in 2.528089875 seconds
+✔ Test tenThousandSameSizeCandidatesStayCorrectAndSubQuadratic() passed after 4.029 seconds.
+✔ Suite "Duplicates at scale" passed after 4.030 seconds.
+◇ Suite "Similar Images at scale" started.
+◇ Test hundredsOfImagesWithLargeOnesStayMetadataBounded() started.
+[stress] similar images: 157 images (4 at 5000² ) in 7.396500542 seconds
+✔ Test hundredsOfImagesWithLargeOnesStayMetadataBounded() passed after 8.150 seconds.
+✔ Suite "Similar Images at scale" passed after 8.150 seconds.
+◇ Suite "Space Lens at scale" started.
+◇ Test wideTreeThousandsOfSiblingsCompletesAndCountsBytes() started.
+[stress] space lens wide: 5000 siblings in 0.448841334 seconds
+✔ Test wideTreeThousandsOfSiblingsCompletesAndCountsBytes() passed after 1.168 seconds.
+◇ Test deepTreeManyLevelsDoesNotCrashAndSumsBelowCap() started.
+[stress] space lens deep: 60 levels in 0.004211334 seconds
+✔ Test deepTreeManyLevelsDoesNotCrashAndSumsBelowCap() passed after 0.026 seconds.
+✔ Suite "Space Lens at scale" passed after 1.195 seconds.
+◇ Suite "Rapid cancellation" started.
+◇ Test spaceLensCancelledImmediatelyTearsDownFast() started.
+[stress] rapid cancel (space lens): returned in 0.186146625 seconds
+✔ Test spaceLensCancelledImmediatelyTearsDownFast() passed after 0.782 seconds.
+◇ Test scanEngineCancelledImmediatelyTearsDownFast() started.
+[stress] rapid cancel (scan engine): returned in 0.001726792 seconds
+✔ Test scanEngineCancelledImmediatelyTearsDownFast() passed after 0.592 seconds.
+✔ Suite "Rapid cancellation" passed after 1.375 seconds.
+◇ Suite "MetricsCollector" started.
+◇ Test snapshotHasPlausibleValues() started.
+✔ Test snapshotHasPlausibleValues() passed after 0.443 seconds.
+✔ Suite "MetricsCollector" passed after 0.444 seconds.
+✔ Test run with 338 tests passed after 20.781 seconds.

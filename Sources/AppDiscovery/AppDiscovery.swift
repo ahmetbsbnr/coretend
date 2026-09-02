@@ -75,6 +75,8 @@ public struct AssociatedItem: Sendable, Identifiable {
         case logs = "Logs"
         case savedState = "Saved Application State"
         case containers = "Containers"
+        case launchAgents = "Launch Agents"
+        case launchDaemons = "Launch Daemons"
     }
 
     public let id: String
@@ -94,13 +96,20 @@ public struct AssociatedItem: Sendable, Identifiable {
 /// Discovery is read-only; deletion goes through SafetyCore elsewhere.
 public struct AppDiscovery: Sendable {
     public let home: URL
+    public let applicationRoots: [URL]
+    public let systemLibrary: URL?
 
-    public init(home: URL = FileManager.default.homeDirectoryForCurrentUser) {
+    public init(
+        home: URL = FileManager.default.homeDirectoryForCurrentUser,
+        applicationRoots: [URL]? = nil,
+        systemLibrary: URL? = URL(fileURLWithPath: "/Library", isDirectory: true)
+    ) {
         self.home = home
-    }
-
-    public var applicationRoots: [URL] {
-        [URL(fileURLWithPath: "/Applications"), home.appendingPathComponent("Applications")]
+        self.applicationRoots = applicationRoots ?? [
+            URL(fileURLWithPath: "/Applications", isDirectory: true),
+            home.appendingPathComponent("Applications", isDirectory: true),
+        ]
+        self.systemLibrary = systemLibrary
     }
 
     /// Enumerates .app bundles (top level + one subdirectory level for suites).
@@ -161,18 +170,37 @@ public struct AppDiscovery: Sendable {
     /// Finds files associated with a bundle identifier using exact-id matching only.
     /// Exact matching keeps confidence high; fuzzy name matching is deliberately omitted.
     public func associatedItems(bundleID: String) -> [AssociatedItem] {
+        associatedItems(bundleID: bundleID, includeSystemLaunchItems: false)
+    }
+
+    /// Finds files associated with a bundle identifier using exact-id matching.
+    /// LaunchAgent/LaunchDaemon plists are shown as review-only candidates; they
+    /// are never preselected by the app UI.
+    public func associatedItems(for app: InstalledApp) -> [AssociatedItem] {
+        guard let bundleID = app.bundleIdentifier else { return [] }
+        return associatedItems(bundleID: bundleID, includeSystemLaunchItems: true)
+    }
+
+    private func associatedItems(bundleID: String, includeSystemLaunchItems: Bool) -> [AssociatedItem] {
         var items: [AssociatedItem] = []
         let library = home.appendingPathComponent("Library")
         let fm = FileManager.default
 
-        let candidates: [(AssociatedItem.Kind, URL)] = [
+        var candidates: [(AssociatedItem.Kind, URL)] = [
             (.applicationSupport, library.appendingPathComponent("Application Support/\(bundleID)")),
             (.caches, library.appendingPathComponent("Caches/\(bundleID)")),
             (.preferences, library.appendingPathComponent("Preferences/\(bundleID).plist")),
             (.logs, library.appendingPathComponent("Logs/\(bundleID)")),
             (.savedState, library.appendingPathComponent("Saved Application State/\(bundleID).savedState")),
             (.containers, library.appendingPathComponent("Containers/\(bundleID)")),
+            (.launchAgents, library.appendingPathComponent("LaunchAgents/\(bundleID).plist")),
         ]
+        if includeSystemLaunchItems, let systemLibrary {
+            candidates.append(contentsOf: [
+                (.launchAgents, systemLibrary.appendingPathComponent("LaunchAgents/\(bundleID).plist")),
+                (.launchDaemons, systemLibrary.appendingPathComponent("LaunchDaemons/\(bundleID).plist")),
+            ])
+        }
         for (kind, url) in candidates where fm.fileExists(atPath: url.path) {
             items.append(AssociatedItem(kind: kind, url: url, sizeBytes: Self.directorySize(url)))
         }

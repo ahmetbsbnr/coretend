@@ -16,7 +16,7 @@ How it works. For anything touching scanning/deletion, be explicit about:
 - What paths/roots are affected.
 - How it goes through [SafetyCore](SAFETYCORE.md) (`PathValidator`,
   `SafetyCenter`) — no new destructive path may bypass it.
-- Dry-run behavior.
+- Review, explicit-confirmation and Trash behavior.
 - What's reversible (Trash) vs. not.
 
 ## Alternatives considered

@@ -4,8 +4,9 @@
 No. It runs entirely locally, no account, no subscription, no telemetry.
 
 **Is it a full antivirus?**
-No. Protection is a local, on-demand ClamAV-backed scan and reversible
-quarantine — not real-time protection, not a security guarantee, not a
+No. Integrity reads signals macOS already records (download provenance,
+code-signature tier, login items) — no scanning engine, no signature
+database, not real-time protection, not a security guarantee, not a
 replacement for macOS's built-in protections. See
 [PROTECTION_LIMITATIONS.md](PROTECTION_LIMITATIONS.md).
 

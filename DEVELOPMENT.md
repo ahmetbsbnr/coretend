@@ -27,10 +27,14 @@ Scripts/build.sh release  # release, must build with 0 warnings before committin
 Scripts/test.sh   # do NOT use plain `swift test` — see Documentation/DECISIONS.md D2
 ```
 
-83+ tests across the SwiftPM package (`DesignSystemTests`,
-`MalwareEngineTests`, `AppDiscoveryTests`, `PersistenceTests`,
+286 tests / 57 suites across the SwiftPM package (`DesignSystemTests`,
+`IntegrityCoreTests`, `AppDiscoveryTests`, `PersistenceTests`,
 `SystemMetricsTests`, `ScanCoreTests`, `SafetyCoreTests`, `FileRulesTests`,
-`CoreTendAppTests`). See [Documentation/TESTING.md](Documentation/TESTING.md).
+`CoreTendAppTests`, plus `CoreTendIntegrationTests`,
+`CoreTendAccessibilityTests`, `CoreTendPerformanceTests`,
+`DemoFixturesValidatorTests`). One test is skipped — the Developer-ID
+signature test, gated on a real codesigning identity. See
+[Documentation/TESTING.md](Documentation/TESTING.md).
 
 ## Package and run locally
 
@@ -51,7 +55,7 @@ Scripts/check-placeholders.sh
 
 See [Documentation/ARCHITECTURE.md](Documentation/ARCHITECTURE.md) for the
 module graph (SafetyCore, ScanCore, FileRules, DesignSystem, Persistence,
-SystemMetrics, AppDiscovery, MalwareEngine, CoreTendApp) and
+SystemMetrics, AppDiscovery, IntegrityCore, CoreTendApp) and
 [Documentation/ARCHITECTURE_OVERVIEW.md](Documentation/ARCHITECTURE_OVERVIEW.md)
 for a narrative walkthrough of one end-to-end flow.
 
@@ -78,3 +82,82 @@ the public docs: same two owned paths (Application Support dir + prefs
 plist) plus the app bundle, but with explicit modes, a strict allowlist of
 canonicalized paths, and refusal to follow symlinks. `uninstall-local.sh` is
 kept working as-is rather than deleted.
+
+## Working rules for AI agents
+
+This file, `CONTRIBUTING.md`, and `DESIGN.md` are the conventions. The rules
+below are how an agent operates in this repo. (`.claude/` is git-ignored here
+by choice — this section is the tracked source of truth; anything under
+`.claude/rules/` is a local convenience mirror and defers to this.)
+
+### Definition of done
+
+A change is not done until all of these pass locally:
+
+```sh
+Scripts/build.sh release       # 0 warnings — required before committing
+Scripts/test.sh                # 0 failures — the ONLY correct test command
+Scripts/repository-doctor.sh   # private-data / placeholder / license checks
+```
+
+Never report tests as passing from a plain `swift test` — it omits the
+CommandLineTools framework flags this project needs and behaves differently
+(`Documentation/DECISIONS.md` D2). `Scripts/test.sh`'s `--no-parallel` is
+deliberate, not a speed oversight.
+
+### Release, signing, notarization
+
+- Signing/notarization is **live as of 2026-08-31**: Developer ID identity
+  `Developer ID Application: Ahmet BASBUNAR (NSCUV5G738)` is installed and
+  `Scripts/sign-and-notarize.sh` has produced a real signed+notarized+stapled
+  `0.9.1-rc.5` locally. **But every *published* release still ships unsigned**
+  — the signed build has not been shipped. Do not flip `signed`/`notarized`
+  to `true` in `published-release.json`, `latest.json`, `PublicIdentity`, or
+  the site until a signed release is actually published
+  (`Documentation/SIGNING_NOTARIZATION.md` → "Publishing a signed release").
+  Still no ad-hoc signing or self-signed certs dressed up as a real signature.
+- **Never regenerate** the CSR or private key in `Configuration/DeveloperID/`.
+  The `Developer ID Application` cert was issued against that exact CSR;
+  regenerating breaks the pairing. Never read or echo the private key or the
+  notarization `.p8` (both gitignored in that directory).
+- `Scripts/sign-and-notarize.sh` was corrected on 2026-08-31 (its first real
+  run): the DMG build no longer rebuilds/re-signs the app between notarization
+  and stapling (`CORETEND_SKIP_APP_BUILD=1` guard in `package-dmg.sh`). It
+  needs an identity + a notarytool profile, not further edits.
+- Notarization credentials are a `notarytool store-credentials` keychain
+  profile referenced by name (`CoreTend-Notary`) — the App Store Connect API
+  key `.p8` lives only in the gitignored `Configuration/DeveloperID/`, never
+  in a script, env file, or commit.
+
+### Public repository
+
+This repo is public. No secret, API token, absolute personal path, private
+data, or unreleased-media reference in any diff — `Scripts/check-private-data.sh`
+gates it and is part of `repository-doctor.sh`. Localizable strings: add `en`
+and `fr` together (`Documentation/LOCALIZATION.md`).
+
+### The site in `Website/`
+
+This repo also contains the CoreTend marketing site source under `Website/`
+(not the workspace root — see the naming-collision note in the workspace
+`DIRECTORY_MAP.md`). `DESIGN.md` governs it: system font stack only (no remote
+fonts), functional color, Core Bloom as the single ambient animation, motion
+tokens 150 / 300 / 550 ms, and full parity under `prefers-reduced-motion:
+reduce`. The app's own `MC*` design tokens (`Documentation/DESIGN_SYSTEM.md`)
+are a separate system — don't conflate them.
+
+### Workspace context
+
+This repo lives in the `~/Developer/Website` workspace (itself not a git
+repo). `../../../CLAUDE.md` and `../../../_workspace/docs/CLAUDE_ONBOARDING_MAP.md`
+describe the wider project family. One live cross-repo contract: this repo's
+release workflow dispatches a `coretend-release` event that the portfolio's
+`.github/workflows/sync-coretend.yml` consumes to refresh its case-study
+metadata — a published release version must be real before anything downstream
+states it. No build here may read `../../../shared/…`.
+
+### Review
+
+For a non-trivial change, get an independent review pass (a fresh context, not
+the implementing one) before a PR — with extra weight on anything touching
+`SafetyCore` / deletion paths, migrations, or the release pipeline.

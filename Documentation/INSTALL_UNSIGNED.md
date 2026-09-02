@@ -8,10 +8,12 @@ expected, not a bug.
 
 ## 1. Download from the official release only
 
-Download the ZIP or DMG from the official repository release page (see
-`Documentation/HUMAN_BLOCKERS.md` for current publication status — no
-public release exists yet). Do not download CoreTend from any
-third-party mirror, forum link, or unofficial source.
+Download the current DMG through
+[`https://coretend.ahmetbsbnr.com/download`](https://coretend.ahmetbsbnr.com/download)
+or from the official
+[`v0.9.1-rc.5` GitHub Release](https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.5).
+Do not download CoreTend from any third-party mirror, forum link, or unofficial
+source.
 
 ## 2. Verify the SHA-256 checksum before opening anything
 
@@ -49,7 +51,7 @@ release:
 
 1. Open **System Settings > Privacy & Security**.
 2. Scroll to the Security section — you'll see a note about CoreTend
-   Local being blocked.
+   being blocked.
 3. Click **Open Anyway**.
 4. Confirm again in the dialog that appears.
 

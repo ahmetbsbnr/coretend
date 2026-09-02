@@ -1,0 +1,11 @@
+/* Ahmet Design System 1.1.0 — contrat de thèmes
+   Extrait du site CoreTend (ahmetbsbnr/coretend @ 63cd103). Apache-2.0.
+   Assemblage : node build.mjs → dist/ahmet-design.css. Ne pas éditer dist. */
+
+/* Contrat de thèmes :
+   - les valeurs clair/sombre vivent dans tokens.css (:root et
+     html[data-theme="dark"]) ;
+   - la mécanique de boot (localStorage "ahmet-theme", modes
+     system/light/dark) est décrite dans README.md et implémentée par
+     initTheme() dans core-bloom.js ;
+   - la transition de thème (View Transitions) appartient au reset. */

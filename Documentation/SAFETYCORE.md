@@ -39,10 +39,10 @@ that deletes an unvalidated path.
 ## `SafetyCenter` (actor)
 
 Central approve + execute point. Re-validates a path immediately before
-acting (not just at review time — the filesystem may have changed), and
-carries a `dryRun` flag (defaults to `true`) plus an in-memory `auditLog`
-of what it did. Only produces `.moveToTrash` operations — CoreTend's
-engines never call a permanent-delete API directly; see
+acting (not just at review time — the filesystem may have changed). It emits
+structured approved/executed/skipped/error events through `SafetyAuditSink`.
+Only produces `.moveToTrash` operations — CoreTend's engines never call a
+permanent-delete API directly; see
 [RESTORE.md](RESTORE.md).
 
 ## Extending

@@ -30,7 +30,7 @@ struct StoreStressTests {
             try await store.recordActivity(ActivityRecord(
                 kind: i % 2 == 0 ? .scan : .cleanup,
                 date: base.addingTimeInterval(Double(i)),
-                summary: "row \(i)", itemCount: i, bytes: Int64(i) * 10, dryRun: i % 3 == 0))
+                summary: "row \(i)", itemCount: i, bytes: Int64(i) * 10))
             await store.recordSafetyEvent(SafetyAuditEvent(
                 operationID: UUID(), stage: .executed, path: "/tmp/f\(i)",
                 ruleID: "r", risk: .low, size: Int64(i), result: "ok"))

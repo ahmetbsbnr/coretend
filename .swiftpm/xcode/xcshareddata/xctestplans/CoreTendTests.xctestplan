@@ -1,0 +1,69 @@
+{
+  "configurations" : [
+    {
+      "id" : "A4DF10A9-9E7C-4EE0-9D12-68BB71EB0001",
+      "name" : "Isolated",
+      "options" : {
+        "environmentVariableEntries" : [
+          {
+            "key" : "CORETEND_TEST_MODE",
+            "value" : "1"
+          },
+          {
+            "key" : "CORETEND_TEST_STORE_DIR",
+            "value" : "/tmp/coretend-xcode-tests/store"
+          }
+        ]
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false,
+    "testExecutionOrdering" : "lexical"
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "ScanCoreTests",
+        "name" : "ScanCoreTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "SafetyCoreTests",
+        "name" : "SafetyCoreTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "FileRulesTests",
+        "name" : "FileRulesTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "PersistenceTests",
+        "name" : "PersistenceTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "CoreTendAppTests",
+        "name" : "CoreTendAppTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "CoreTendIntegrationTests",
+        "name" : "CoreTendIntegrationTests"
+      }
+    }
+  ],
+  "version" : 1
+}
