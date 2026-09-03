@@ -1,9 +1,9 @@
 # Public Release Readiness
 
-> Historical verification log. Its early 0.7/0.8 commands and counts are
-> preserved as dated evidence, not as the current product state. The active
-> rc.5 source of truth is `PROJECT_STATE.json`; final artifact evidence belongs
-> in `GOLD_MASTER_STATUS.md`.
+> Historical verification log. Early 0.7/0.8/0.9 commands and counts remain
+> dated evidence, not current product state. Stable 1.0.0 source of truth is
+> `PROJECT_STATE.json`; current artifact facts live in `RELEASE_STATE.md` and
+> `Configuration/published-release.json`.
 
 Tracks concrete verification performed toward the repo being safely
 publishable, and what still blocks it. This is a running record, not a

@@ -1,23 +1,23 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 # Project state
 
-## Current checkpoint — 2026-08-02
+## Current checkpoint — 2026-09-03
 
-- Working branch: `release/v0.9.1-rc.5-publish`
-- Published version/build: `0.9.1-rc.5` / `915`
-- Current public release: `v0.9.1-rc.5`, built from
-  `efccece091ca793d8e176edf9249ec104332856a`
-- Public DMG: 4,703,523 bytes; SHA-256
-  `b654975770cc1bfeb7e6a4f3cf180653a3182a55f8dc135db2083a72528998eb`
+- Working branch: `main`
+- Published version/build: `1.0.0` / `1000`
+- Current public release: stable `v1.0.0`, built from
+  `0ecddeaef0cc0f79d2185632f9c4ff49d1b9230a`
+- Public DMG: 4,938,110 bytes; SHA-256
+  `0969ea2565b98fc950a589855ebafa2b811474fd1383092c3567e192f404534d`
 - Platform: arm64, macOS 14.0+
-- Distribution posture: ad-hoc signed, unsigned identity, not notarized
+- Distribution posture: Developer ID signed, Apple-notarized, stapled,
+  SHA-256 and Minisign verified
 - Product safety: reviewed selection, explicit confirmation, execution-time
   path validation and macOS Trash
 - Integrity: native read-only provenance, code-signature and login-item facts;
   no external scanner or malware-detection claim
 - Public site: bilingual shared shell with canonical `/en` and `/fr` routes;
-  the post-publication branch promotes only the independently verified rc.5
-  release record
+  download route, updater, portfolio, and GitHub release agree on 1.0.0
 
 The machine-readable checkpoint is
 [`PROJECT_STATE.json`](PROJECT_STATE.json). Release provenance and checksums
@@ -38,5 +38,7 @@ test surfaces, localization/resource checks, repository doctor, security and
 secret gates, visual/accessibility site tests, DMG mount/copy/launch checks,
 signature verification and local-versus-public checksum equality.
 
-The remaining future work after rc.5 is limited to Developer ID signing,
-notarization and a later Mac App Store feasibility study.
+Open quality work: run interactive accessibility QA, broaden supported-
+environment testing, and complete native FR/EN light/dark visual coverage.
+Next release should create provenance in its signed-artifact workflow;
+retrospective build provenance for 1.0.0 would misidentify the builder.

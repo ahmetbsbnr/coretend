@@ -1,7 +1,32 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 # Release State
 
-## Current release — v0.9.1-rc.6, signed + notarized, published 2026-08-31
+## Current release — v1.0.0, stable, published 2026-09-03
+
+`v1.0.0` points to source commit `0ecddea`. GitHub release is public, not a
+draft, and not a prerelease. Both arm64 artifacts are Developer ID signed,
+Apple-notarized, and stapled. `SHA256SUMS` and its Minisign signature verify
+against `Configuration/minisign.pub`.
+
+| Artifact | Size (bytes) | SHA-256 |
+|---|---:|---|
+| `CoreTend-1.0.0-arm64.dmg` | 4,938,110 | `0969ea2565b98fc950a589855ebafa2b811474fd1383092c3567e192f404534d` |
+| `CoreTend-1.0.0-arm64.zip` | 3,013,484 | `c11c1cbac95a48c9fa9b3cb54596313f52af9ad89dd930e51bcde6cbd152244b` |
+
+Published assets: DMG, ZIP, `latest.json`, `SHA256SUMS`,
+`SHA256SUMS.minisig`, and `minisign.pub`. `Configuration/published-release.json`,
+site download route, portfolio, and in-app updater agree on 1.0.0.
+
+Current automated result: 342 Swift tests pass, 0 fail. Interactive
+accessibility, broader compatibility, and exhaustive native visual QA remain.
+No SLSA build attestation exists for 1.0.0 because final Apple signing happened
+outside Actions; creating one after downloading the release would falsely name
+the downloader workflow as builder. Developer ID/notarization, SHA-256, and
+Minisign remain the truthful verification chain for 1.0.0. Next release must
+integrate provenance with final signed bytes. See root `TODO.md` and
+`Documentation/PROJECT_STATE.json`.
+
+## Historical release — v0.9.1-rc.6, published 2026-08-31
 
 `v0.9.1-rc.6` (`sourceCommit 568bdbf`, published from the merged
 `feat/porcelaine-and-signing` branch) is the **first Developer ID signed and
@@ -30,7 +55,7 @@ it). Consequence: **no `actions/attest-build-provenance` attestation** exists
 for rc.6 — `gh attestation verify` returns 404. Minisign + SHA-256 +
 notarization are the provenance guarantees for this release.
 
-## v1.0.0 preparation — branch `release/v1.0.0-prep`, tag `v1.0.0` local only
+## Historical v1.0.0 preparation record
 
 The branch is **not merged, not pushed**; the annotated tag `v1.0.0` exists
 **only in this working copy** (recreated at each re-sign, deleted freely).
@@ -109,7 +134,7 @@ signed-posture launch gate and `sign-and-notarize.sh` could not run):
 (unsigned posture) → READY: 54 PASS, 0 FAIL, 0 NA, 4 HUMAN** (all four are the
 sign / notarize / publish steps).
 
-## Path to v1.0.0 — remaining gates
+## Historical path to v1.0.0
 
 Signing/notarization (the historic 1.0 blocker) is **done for the published
 line** (rc.6). What is left for the 1.0 tag:

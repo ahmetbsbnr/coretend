@@ -21,6 +21,7 @@ xcuserdata/
 # latest.json permanently one commit stale. See Documentation/RELEASE_PROVENANCE.md.
 Release/latest.json
 Release/SHA256SUMS
+Release/SHA256SUMS.minisig
 *.pkg
 *.tar
 *.tar.gz
