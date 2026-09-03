@@ -506,7 +506,9 @@ struct LegacyDataMigrationTests {
         // If these ever drift, the migration would faithfully copy data into
         // a directory the app never reads.
         #expect(LegacyDataMigration.currentDirectoryName == "CoreTend")
-        #expect(try Store.defaultPath().contains("/CoreTend/store.sqlite"))
+        // userPath() is the real, non-overridable location defaultPath() falls
+        // through to; assert on it so this test never creates the directory.
+        #expect(try Store.userPath().contains("/CoreTend/store.sqlite"))
         #expect(LegacyDataMigration.legacyBundleIdentifier == "local.maccare.app")
         #expect(LegacyDataMigration.legacyDirectoryNames == ["MacCareLocal", "MacCare Local"])
     }
