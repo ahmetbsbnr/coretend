@@ -167,6 +167,20 @@ run_gate "test suite" bash Scripts/test.sh
 run_gate "Debug build" swift build
 run_gate "Release build" swift build -c release
 
+# Once the GitHub release for this version is published, its bytes are
+# immutable and local work legitimately continues past the tagged commit.
+# "tag on HEAD" / "artifacts built from HEAD" then become "tag and artifacts
+# agree with the *published* commit, and HEAD has only moved forward".
+RELEASE_TAG="v${VERSION}"
+TAG_COMMIT=""
+git rev-parse -q --verify "refs/tags/${RELEASE_TAG}" >/dev/null \
+  && TAG_COMMIT=$(git rev-list -n1 "${RELEASE_TAG}")
+RELEASE_PUBLISHED=0
+if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1 \
+   && gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+  RELEASE_PUBLISHED=1
+fi
+
 # ----------------------------------------------------------------- artifacts
 section "Artifacts"
 
@@ -202,6 +216,9 @@ if [ -f "$MANIFEST" ]; then
 
   if [ "$M_COMMIT" = "$HEAD_SHA" ]; then
     PASS "artifacts were built from the current HEAD"
+  elif [ "$RELEASE_PUBLISHED" = "1" ] && [ -n "$TAG_COMMIT" ] && [ "$M_COMMIT" = "$TAG_COMMIT" ] \
+       && git merge-base --is-ancestor "$TAG_COMMIT" "$HEAD_SHA" 2>/dev/null; then
+    PASS "artifacts match the published ${RELEASE_TAG} commit; HEAD has advanced since"
   else
     FAIL "artifacts were built from $M_COMMIT but HEAD is $HEAD_SHA — rebuild before releasing"
   fi
@@ -413,6 +430,9 @@ if git rev-parse -q --verify "refs/tags/${TAG_NAME}" >/dev/null; then
   PASS "tag ${TAG_NAME} exists locally"
   if [ "$(git rev-list -n1 "${TAG_NAME}")" = "$HEAD_SHA" ]; then
     PASS "tag ${TAG_NAME} points at HEAD"
+  elif [ "$RELEASE_PUBLISHED" = "1" ] \
+       && git merge-base --is-ancestor "$(git rev-list -n1 "${TAG_NAME}")" "$HEAD_SHA" 2>/dev/null; then
+    PASS "tag ${TAG_NAME} is published; HEAD has advanced by $(git rev-list --count "${TAG_NAME}..HEAD") commit(s) since"
   else
     FAIL "tag ${TAG_NAME} does not point at HEAD"
   fi
@@ -420,12 +440,26 @@ else
   HUMAN "tag ${TAG_NAME} does not exist yet — create it once this gate is otherwise green"
 fi
 
+# A stable X.Y.Z release must NOT be a GitHub prerelease; an -rc/-beta/-alpha
+# build MUST be. Everything through 0.9.1-rc.N was a prerelease; 1.0.0 is the
+# first stable release.
+case "$VERSION" in
+  *-rc.*|*-beta.*|*-alpha.*) WANT_PRERELEASE="true" ;;
+  *)                         WANT_PRERELEASE="false" ;;
+esac
 if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
   if gh release view "${TAG_NAME}" >/dev/null 2>&1; then
-    if [ "$(gh release view "${TAG_NAME}" --json isPrerelease --jq .isPrerelease 2>/dev/null)" = "true" ]; then
-      PASS "GitHub release ${TAG_NAME} exists and is marked prerelease"
-    else
+    IS_PRERELEASE=$(gh release view "${TAG_NAME}" --json isPrerelease --jq .isPrerelease 2>/dev/null)
+    if [ "$IS_PRERELEASE" = "$WANT_PRERELEASE" ]; then
+      if [ "$WANT_PRERELEASE" = "true" ]; then
+        PASS "GitHub release ${TAG_NAME} exists and is correctly marked prerelease"
+      else
+        PASS "GitHub release ${TAG_NAME} exists and is correctly a stable (non-prerelease) release"
+      fi
+    elif [ "$WANT_PRERELEASE" = "true" ]; then
       FAIL "GitHub release ${TAG_NAME} is NOT marked prerelease — a beta must not present as stable"
+    else
+      FAIL "GitHub release ${TAG_NAME} IS marked prerelease — a stable ${VERSION} must not present as a beta"
     fi
   else
     HUMAN "no GitHub release for ${TAG_NAME} yet — publishing is a deliberate act"
