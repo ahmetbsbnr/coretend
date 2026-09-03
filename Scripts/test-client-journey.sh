@@ -5,14 +5,17 @@
 # The point of this test is to keep three very different failures apart, since
 # to a user they all look like "the app doesn't work":
 #
-#   EXPECTED-BLOCK — Gatekeeper refuses an unsigned, un-notarized app. Correct
-#                    behaviour for this build. Must be recoverable by the
-#                    documented System Settings route.
-#   PACKAGING      — the download, checksum, signature, DMG layout or bundle is
-#                    wrong. Our defect, blocks the release.
+#   EXPECTED-BLOCK — only for an unsigned, un-notarized build: Gatekeeper
+#                    refuses it, which is correct, and it must be recoverable by
+#                    the documented System Settings route. A signed + notarized
+#                    build has no such block — Gatekeeper must accept it.
+#   PACKAGING      — the download, checksum, signature, notarization ticket, DMG
+#                    layout or bundle is wrong. Our defect, blocks the release.
 #   APP-DEFECT     — once allowed to run, the app crashes or exits. Our defect,
 #                    blocks the release.
 #
+# The signed/unsigned posture is read from Configuration/published-release.json,
+# so this one script covers both a pre-1.0 unsigned line and the 1.0 signed one.
 # Everything happens under a temporary tree. The real /Applications and the
 # real HOME are never touched.
 set -e
@@ -23,6 +26,16 @@ VERSION="${1:?usage: test-client-journey.sh <version> [--local]}"
 LOCAL_MODE="${2:-}"
 DOWNLOAD_URL="https://coretend.ahmetbsbnr.com/download"
 REPO_SLUG="ahmetbsbnr/coretend"
+
+# rc.6 onward is Developer ID signed + Apple-notarized; the artifact name drops
+# the -unsigned tag and Gatekeeper accepts it outright. published-release.json
+# is the tracked record of what GitHub actually serves.
+PUB_SIGNED=$(/usr/bin/python3 -c "import json; r=json.load(open('Configuration/published-release.json')); print('yes' if r.get('signed') and r.get('notarized') else 'no')")
+if [ "$PUB_SIGNED" = "yes" ]; then
+  DMG_NAME="CoreTend-${VERSION}-arm64.dmg"
+else
+  DMG_NAME="CoreTend-${VERSION}-arm64-unsigned.dmg"
+fi
 
 WORK=$(mktemp -d)
 HOME_ISO="$WORK/home"
@@ -47,16 +60,19 @@ echo "test-client-journey: isolated HOME=$HOME_ISO Applications=$APPS_ISO"
 DMG="$WORK/CoreTend.dmg"
 
 if [ "$LOCAL_MODE" = "--local" ]; then
-  cp "Release/CoreTend-${VERSION}-arm64-unsigned.dmg" "$DMG"
-  ok "using the locally built DMG (--local)"
+  cp "Release/$DMG_NAME" "$DMG"
+  ok "using the locally built DMG (--local): $DMG_NAME"
 else
-  # 1-3. Site, /download route, redirect to the right release.
+  # 1-3. Site, /download route, redirect to the right release. GitHub's asset
+  # CDN 302s to release-assets.githubusercontent.com with the artifact name in
+  # the response-content-disposition query, so match the name anywhere in the
+  # resolved URL rather than assuming a .../releases/download/... path.
   EFFECTIVE=$(curl -sSL -o "$DMG" -w '%{url_effective}' "$DOWNLOAD_URL") \
     || die PACKAGING "the public download URL did not resolve"
   ok "downloaded from $DOWNLOAD_URL"
   case "$EFFECTIVE" in
-    *"CoreTend-${VERSION}-arm64-unsigned.dmg"*) ok "/download redirects to $VERSION" ;;
-    *) die PACKAGING "/download resolved to an artifact that is not $VERSION: $EFFECTIVE" ;;
+    *"$DMG_NAME"*) ok "/download resolves to $DMG_NAME" ;;
+    *) die PACKAGING "/download resolved to an artifact that is not $DMG_NAME: $EFFECTIVE" ;;
   esac
 fi
 
@@ -69,7 +85,7 @@ if [ "$LOCAL_MODE" != "--local" ]; then
   curl -sSL -o "$WORK/SHA256SUMS" \
     "https://github.com/$REPO_SLUG/releases/download/v${VERSION}/SHA256SUMS" \
     || die PACKAGING "could not fetch the published SHA256SUMS"
-  EXPECTED_SHA=$(awk -v n="CoreTend-${VERSION}-arm64-unsigned.dmg" '$2 == n || $2 == "*"n {print $1}' "$WORK/SHA256SUMS")
+  EXPECTED_SHA=$(awk -v n="$DMG_NAME" '$2 == n || $2 == "*"n {print $1}' "$WORK/SHA256SUMS")
   [ -n "$EXPECTED_SHA" ] || die PACKAGING "SHA256SUMS has no entry for the DMG"
   [ "$ACTUAL_SHA" = "$EXPECTED_SHA" ] || die PACKAGING "checksum mismatch: got $ACTUAL_SHA, published $EXPECTED_SHA"
   ok "SHA-256 matches the published SHA256SUMS"
@@ -117,24 +133,44 @@ codesign --verify --deep --strict "$APPS_ISO/CoreTend.app" 2>/dev/null \
   || die PACKAGING "the bundle signature is broken after copying off the volume"
 ok "app is self-contained and its signature survives the copy"
 
-# 10-11. Quarantine present, and Gatekeeper refuses it. This is the EXPECTED
-# block for an unsigned build — the test asserts it happens, and that the
-# reason is the missing Developer ID rather than anything else.
+# 10-11. Quarantine present, then Gatekeeper's verdict. For a signed +
+# notarized build that verdict must be "accepted / Notarized Developer ID";
+# for an unsigned build the EXPECTED block is a rejection, and its reason must
+# be the missing Developer ID rather than anything else.
 xattr -p com.apple.quarantine "$APPS_ISO/CoreTend.app" >/dev/null 2>&1 \
   || note "quarantine did not propagate to the copy on this filesystem"
 
 SPCTL_OUT=$(spctl --assess --type execute --verbose=4 "$APPS_ISO/CoreTend.app" 2>&1 || true)
-case "$SPCTL_OUT" in
-  *rejected*) ok "EXPECTED-BLOCK: Gatekeeper rejects the unsigned build" ;;
-  *accepted*) note "Gatekeeper accepted it — this build appears to be signed and notarized" ;;
-  *) die PACKAGING "unreadable spctl verdict: $SPCTL_OUT" ;;
-esac
-
 SIGN_INFO=$(codesign -dvvv "$APPS_ISO/CoreTend.app" 2>&1 || true)
-case "$SIGN_INFO" in
-  *adhoc*) ok "block reason confirmed: ad-hoc signature, no Developer ID (as documented)" ;;
-  *) note "signature is not ad-hoc: $(printf '%s' "$SIGN_INFO" | grep -i '^Authority' | head -1)" ;;
-esac
+if [ "$PUB_SIGNED" = "yes" ]; then
+  case "$SPCTL_OUT" in
+    *accepted*) ok "Gatekeeper accepts the signed, notarized build" ;;
+    *rejected*) die PACKAGING "Gatekeeper rejected a build published as signed + notarized: $SPCTL_OUT" ;;
+    *) die PACKAGING "unreadable spctl verdict: $SPCTL_OUT" ;;
+  esac
+  case "$SPCTL_OUT" in
+    *"Notarized Developer ID"*) ok "verdict source is a notarized Developer ID signature" ;;
+    *) note "spctl accepted but did not name a notarized Developer ID source: $SPCTL_OUT" ;;
+  esac
+  case "$SIGN_INFO" in
+    *"Developer ID Application"*) ok "bundle carries a Developer ID Application signature: $(printf '%s' "$SIGN_INFO" | grep -i '^Authority=Developer ID' | head -1 | sed 's/^Authority=//')" ;;
+    *adhoc*) die PACKAGING "bundle is ad-hoc signed but the release is published as signed" ;;
+    *) die PACKAGING "bundle has no Developer ID Application authority: $(printf '%s' "$SIGN_INFO" | grep -i '^Authority' | head -1)" ;;
+  esac
+  xcrun stapler validate "$APPS_ISO/CoreTend.app" >/dev/null 2>&1 \
+    && ok "notarization ticket is stapled to the app" \
+    || die PACKAGING "the app bundle is not stapled"
+else
+  case "$SPCTL_OUT" in
+    *rejected*) ok "EXPECTED-BLOCK: Gatekeeper rejects the unsigned build" ;;
+    *accepted*) note "Gatekeeper accepted it — this build appears to be signed and notarized" ;;
+    *) die PACKAGING "unreadable spctl verdict: $SPCTL_OUT" ;;
+  esac
+  case "$SIGN_INFO" in
+    *adhoc*) ok "block reason confirmed: ad-hoc signature, no Developer ID (as documented)" ;;
+    *) note "signature is not ad-hoc: $(printf '%s' "$SIGN_INFO" | grep -i '^Authority' | head -1)" ;;
+  esac
+fi
 
 # 12. What "the download won't open" recovery looks like depends on whether the
 # published build is signed. rc.6 onward is Developer ID signed and
@@ -144,7 +180,6 @@ esac
 # System Settings route, because Apple removed the Control-click override in
 # macOS 15. Website/index.html is the bilingual source of truth (the retired
 # Website/en|fr trees were removed).
-PUB_SIGNED=$(/usr/bin/python3 -c "import json; r=json.load(open('Configuration/published-release.json')); print('yes' if r.get('signed') and r.get('notarized') else 'no')")
 MAJOR=$(sw_vers -productVersion | cut -d. -f1)
 # Markdown may wrap a phrase across source lines while rendering it as one
 # sentence. Normalize line breaks so harmless prose reflow cannot turn this
@@ -170,12 +205,18 @@ else
   ok "unsigned build: macOS $MAJOR still supports the Control-click route"
 fi
 
-# 13-17. Simulate the user having chosen "Open Anyway". Approving through the
-# real System Settings pane needs a human at the keyboard, so the equivalent
-# state — an approved, non-quarantined copy — is produced directly, and the app
-# is then exercised for real. Anything that fails from here is an APP-DEFECT.
+# 13-17. Reach the state of an app the user has been allowed to run. A signed +
+# notarized build reaches it on the first double-click with no prompt; an
+# unsigned build needs the one-time System Settings approval. Either way the
+# equivalent end state — a non-quarantined copy — is produced directly here so
+# the app can be exercised for real. Anything that fails from here is an
+# APP-DEFECT.
 xattr -dr com.apple.quarantine "$APPS_ISO/CoreTend.app"
-ok "simulated the user's one-time 'Open Anyway' approval"
+if [ "$PUB_SIGNED" = "yes" ]; then
+  ok "cleared the first-launch quarantine (signed build opens with no prompt)"
+else
+  ok "simulated the user's one-time 'Open Anyway' approval"
+fi
 
 launch_and_hold() {
   local label="$1" hold="$2"
@@ -220,5 +261,10 @@ ok "uninstall removes the bundle and its support directory"
 
 echo
 echo "test-client-journey: PASS — $STEP steps, no packaging or application defect"
-echo "test-client-journey: the only block encountered was the expected Gatekeeper"
-echo "                     refusal of an unsigned, un-notarized build."
+if [ "$PUB_SIGNED" = "yes" ]; then
+  echo "test-client-journey: signed + notarized build — Gatekeeper accepted it with"
+  echo "                     no block to recover from."
+else
+  echo "test-client-journey: the only block encountered was the expected Gatekeeper"
+  echo "                     refusal of an unsigned, un-notarized build."
+fi
