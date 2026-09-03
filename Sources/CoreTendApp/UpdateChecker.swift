@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: The CoreTend Authors
+
 import Foundation
 
 /// Checks whether a newer CoreTend release exists. It **only checks**.
@@ -143,6 +146,10 @@ public struct UpdateChecker: Sendable {
     public let currentVersion: String
     public let channel: UpdateChannel
 
+    /// Ceiling on the built-in fetch, so a hung endpoint resolves to `.offline`
+    /// within a bounded time rather than leaving the check pending forever.
+    public static let defaultRequestTimeout: TimeInterval = 15
+
     /// Injected so tests exercise the decision logic without a network.
     private let fetch: @Sendable (URL) async throws -> (Data, URLResponse)
 
@@ -159,7 +166,7 @@ public struct UpdateChecker: Sendable {
         self.fetch = fetch ?? { url in
             var request = URLRequest(url: url)
             request.cachePolicy = .reloadIgnoringLocalCacheData
-            request.timeoutInterval = 15
+            request.timeoutInterval = UpdateChecker.defaultRequestTimeout
             // No cookies, no credentials, no identifying headers: this request
             // must reveal nothing beyond "someone asked for a public file".
             request.httpShouldHandleCookies = false

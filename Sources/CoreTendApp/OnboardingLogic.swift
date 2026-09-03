@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: The CoreTend Authors
+
 import Foundation
 
 // Pure, testable logic behind the first-run wizard. No SwiftUI, no side effects

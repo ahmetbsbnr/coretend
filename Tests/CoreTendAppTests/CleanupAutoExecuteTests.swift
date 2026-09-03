@@ -1,16 +1,19 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: The CoreTend Authors
+
 import Testing
 import Foundation
 import ScanCore
 import SafetyCore
 import FileRules
-@testable import CoreTendApp
 
-/// Step 2 (Smart Care audit) — the safety-critical invariant: Smart Care may
-/// only ever auto-execute reversible, low-risk, preselected findings. The new
-/// medium/high-risk cleanup rules must be structurally incapable of being
-/// auto-cleaned, both at the finding-filter level and at the rule-catalog level.
-@Suite("Smart Care auto-execute selection")
-struct SmartCareAutoExecuteTests {
+/// The safety-critical invariant that outlived the retired standalone Smart
+/// Care view: any automated flow may only ever act, without a per-item review,
+/// on reversible low-risk preselected findings. The medium/high-risk cleanup
+/// rules must be structurally incapable of being auto-cleaned, both at the
+/// finding-filter level and at the rule-catalog level.
+@Suite("Cleanup auto-execute selection")
+struct CleanupAutoExecuteTests {
     private func finding(risk: RiskLevel, preselected: Bool, size: Int64 = 100) -> ScanFinding {
         ScanFinding(
             url: URL(fileURLWithPath: "/tmp/x-\(UUID().uuidString)"),
@@ -29,25 +32,25 @@ struct SmartCareAutoExecuteTests {
             finding(risk: .medium, preselected: false),  // skip
             finding(risk: .high, preselected: false),    // skip
         ]
-        let selected = SmartCareViewModel.autoExecutableFindings(mixed)
+        let selected = UserCleanupRules.autoExecutable(mixed)
         #expect(selected.count == 1)
         #expect(selected.allSatisfy { $0.risk == .low && $0.preselected })
     }
 
     @Test("empty and all-ineligible inputs select nothing")
     func nothingWhenIneligible() {
-        #expect(SmartCareViewModel.autoExecutableFindings([]).isEmpty)
+        #expect(UserCleanupRules.autoExecutable([]).isEmpty)
         let ineligible = [finding(risk: .medium, preselected: true),
                           finding(risk: .high, preselected: true),
                           finding(risk: .low, preselected: false)]
-        #expect(SmartCareViewModel.autoExecutableFindings(ineligible).isEmpty)
+        #expect(UserCleanupRules.autoExecutable(ineligible).isEmpty)
     }
 }
 
 /// Catalog-level guarantee tying the abstract filter to the real rules: a
-/// normal scan can never hand Smart Care a preselected medium/high finding,
-/// because no such rule exists. If someone adds a preselected risky rule, this
-/// fails loudly.
+/// normal scan can never hand an automated flow a preselected medium/high
+/// finding, because no such rule exists. If someone adds a preselected risky
+/// rule, this fails loudly.
 @Suite("Cleanup rule catalog risk/preselect invariant")
 struct CleanupRuleCatalogTests {
     @Test("every preselected rule is low-risk")

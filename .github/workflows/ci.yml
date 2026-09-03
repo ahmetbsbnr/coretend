@@ -39,6 +39,9 @@ jobs:
       - name: Feature inventory totals (recomputed, never hand-typed)
         run: Scripts/check-feature-inventory.sh
 
+      - name: SPDX headers on every Swift source and test file
+        run: Scripts/check-spdx-headers.sh
+
       - name: Markdown link check (zero broken internal links/anchors)
         run: python3 Scripts/check-markdown-links.py
 
@@ -76,6 +79,11 @@ jobs:
       - name: Launch robustness (hostile state, isolated HOME)
         # Skips the 50x soak; the full suite runs before a release.
         run: zsh Scripts/test-robustness.sh --quick
+
+      - name: Static site contracts (first paint, retired-page redirects)
+        run: |
+          python3 Scripts/check-first-paint.py
+          python3 Scripts/check-retired-pages.py
 
       - name: Visual regression and Axe (79 captures, 7 viewports, FR+EN)
         run: |

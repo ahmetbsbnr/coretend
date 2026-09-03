@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: The CoreTend Authors
+
 import SwiftUI
 import AppKit
 
@@ -139,6 +142,4 @@ public enum MCColor {
         light: (0.9255, 0.9098, 0.8784), dark: (0.0784, 0.0863, 0.0980))
     public static let separator = adaptive("separator",
         light: (0.84, 0.82, 0.78), dark: (0.27, 0.29, 0.32))
-    public static let primaryText = Color.primary
-    public static let secondaryText = Color.secondary
 }

@@ -9,8 +9,6 @@
 "common.resume" = "Resume";
 "cleanup.pause_hint" = "Temporarily suspend the current scan.";
 "cleanup.resume_hint" = "Continue the paused scan.";
-"smartcare.pause_hint" = "Temporarily suspend the Smart Care scan.";
-"smartcare.resume_hint" = "Continue the paused Smart Care scan.";
 "clutter.pause_hint" = "Temporarily suspend the current analysis.";
 "clutter.resume_hint" = "Continue the paused analysis.";
 "spacelens.pause_hint" = "Temporarily suspend the Space Lens scan.";
@@ -39,33 +37,13 @@
 "menubar.free_space" = "Free space";
 "menubar.thermal" = "Thermal";
 "menubar.warning_a11y" = "needs attention";
-"menubar.last_smart_care" = "Last Smart Care: %@";
-"menubar.no_smart_care_yet" = "No Smart Care run yet.";
+"menubar.last_activity" = "Last Smart Care: %@";
+"menubar.no_activity_yet" = "No Smart Care run yet.";
 "menubar.open_app" = "Open CoreTend";
 "menubar.settings" = "Settings…";
 "menubar.quit" = "Quit";
 
 /* Smart Care */
-"smartcare.performance_unavailable" = "Maintenance tasks not yet available";
-"smartcare.applications_unavailable" = "App analysis not yet available";
-"smartcare.care_categories" = "Care categories";
-"smartcare.hero.idle_title" = "Ready to look after this Mac";
-"smartcare.hero.scanning_title" = "Scanning…";
-"smartcare.hero.review_title" = "%@ safe to clean";
-"smartcare.hero.cleaning_title" = "Cleaning…";
-"smartcare.hero.finished_title" = "%@ moved to Trash";
-"smartcare.hero.idle_subtitle" = "A scan looks at storage first. Nothing is deleted during a scan.";
-"smartcare.hero.scanning_subtitle" = "Reading caches, logs and build data. You can cancel at any time.";
-"smartcare.hero.review_subtitle_truncated" = "%@ found in total (%d of %d shown). Only low-risk, reversible items are preselected.";
-"smartcare.hero.review_subtitle" = "%@ found in total. Only low-risk, reversible items are preselected.";
-"smartcare.hero.executing_subtitle" = "Items go to the Trash — you can put them back.";
-"smartcare.hero.finished_subtitle" = "Details are in My Activity.";
-"smartcare.module.waiting" = "Waiting to scan";
-"smartcare.module.scanning" = "Scanning… %d items, %@";
-"smartcare.module.done" = "%d items — %@";
-"smartcare.start_scan" = "Start Smart Care Scan";
-"smartcare.run_care" = "Run Care";
-"smartcare.review_details_hint" = "Review details in the Cleanup module.";
 "smartcare.scan_again" = "Scan Again";
 
 /* Cleanup */
@@ -374,7 +352,6 @@
 "onboarding.back" = "Back";
 "onboarding.get_started" = "Get Started";
 "onboarding.continue" = "Continue";
-"smartcare.nav_title" = "Smart Care";
 
 /* Applications — grouping picker (display only; AppGroupingLogic bucket keys stay English internally) */
 "apps.grouping.none" = "None";
