@@ -105,7 +105,10 @@ class PublicReleaseGateTests(unittest.TestCase):
             releaseURL="https://github.com/ahmetbsbnr/coretend/releases/tag/v1.0.0-rc.1",
             publishedAt="2026-08-01T12:00:00Z",
             # This fixture exercises the un-pinned-checksum path, which is
-            # independent of signing; keep it a consistent unsigned release.
+            # independent of signing; keep it a consistent unsigned release
+            # candidate (the base fixture is now the stable 1.0.0 record).
+            channel="release-candidate",
+            prerelease=True,
             signed=False,
             notarized=False,
             dmgName="CoreTend-1.0.0-rc.1-arm64-unsigned.dmg",

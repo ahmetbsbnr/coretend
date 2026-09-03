@@ -77,6 +77,19 @@ PINNED_RELEASE_EVIDENCE: Mapping[str, Mapping[str, Mapping[str, Any]]] = {
             "size": 2_933_940,
         },
     },
+    # First stable release. Assets re-downloaded from the published GitHub
+    # release and inspected (SHA256SUMS + Minisign + stapler + spctl) on
+    # 2026-09-03 before pinning.
+    "1.0.0": {
+        "dmg": {
+            "sha256": "0969ea2565b98fc950a589855ebafa2b811474fd1383092c3567e192f404534d",
+            "size": 4_938_110,
+        },
+        "zip": {
+            "sha256": "c11c1cbac95a48c9fa9b3cb54596313f52af9ad89dd930e51bcde6cbd152244b",
+            "size": 3_013_484,
+        },
+    },
 }
 
 ALLOWED_SOURCE_KEYS = {
