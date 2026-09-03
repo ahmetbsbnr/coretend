@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: The CoreTend Authors
+
 import SwiftUI
 import Persistence
 import DesignSystem
@@ -131,7 +134,6 @@ final class MyActivityViewModel {
 struct MyActivityView: View {
     @State private var model = MyActivityViewModel()
     @State private var showingSafetyLog = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         Group {

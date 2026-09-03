@@ -13,8 +13,8 @@
     "generatedBy"
   ],
   "product": "CoreTend",
-  "channel": "release-candidate",
-  "prerelease": true,
+  "channel": "stable",
+  "prerelease": false,
   "architecture": "arm64",
   "minimumMacOS": "14.0",
   "signed": false,
@@ -23,10 +23,10 @@
   "zipNamePattern": "CoreTend-{version}-arm64-unsigned.zip",
   "dmgNamePattern": "CoreTend-{version}-arm64-unsigned.dmg",
   "knownLimitations": [
-    "Unsigned, not notarized: Gatekeeper will block first launch (see Documentation/INSTALL_UNSIGNED.md).",
+    "Unsigned, not notarized: Gatekeeper will block first launch (see Documentation/INSTALL_UNSIGNED.md). Scripts/build-release.sh replaces this line for a Developer ID signed + notarized release.",
     "Built and tested on a single physical Mac (arm64) — no multi-OS or multi-hardware verification performed.",
     "This manifest carries no downloadURL field; download links are the GitHub release page's own asset URLs.",
-    "This is a release candidate, not a stable 1.0. The trademark screening found no mark containing 'coretend' across ~141.8M records on TMview, but COREXTEND (MIPS Tech, live class 9) is one letter away and is tracked as a WATCH item: attorney review is required before any trademark filing or commercial use. legalReviewStatus remains pending.",
+    "The trademark screening found no mark containing 'coretend' across ~141.8M records on TMview; on 2026-09-02 a trademark attorney reviewed the nearest neighbour COREXTEND (MIPS Tech, class 9) and concluded there is no conflict — two entirely separate products with two entirely separate meanings. This is not a trademark registration and no application has been filed.",
     "Interactive VoiceOver verification remains unperformed. Automated accessibility gates and isolated bilingual light/dark artifact checks pass in the release gate; see Documentation/VISUAL_QA.md for the boundary."
   ],
   "repositoryURL": "https://github.com/ahmetbsbnr/coretend",

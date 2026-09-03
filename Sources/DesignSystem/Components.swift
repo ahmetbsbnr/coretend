@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: The CoreTend Authors
+
 import SwiftUI
 
 // MARK: - Module identity
@@ -204,40 +207,6 @@ public struct MCEmptyState: View {
             if let actionTitle, let action {
                 Button(actionTitle, action: action)
                     .buttonStyle(.borderedProminent)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(MCSpacing.xl)
-    }
-}
-
-public struct MCErrorState: View {
-    private let title: String
-    private let message: String
-    private let retryTitle: String?
-    private let retry: (() -> Void)?
-
-    public init(title: String, message: String, retryTitle: String? = nil, retry: (() -> Void)? = nil) {
-        self.title = title
-        self.message = message
-        self.retryTitle = retryTitle
-        self.retry = retry
-    }
-
-    public var body: some View {
-        VStack(spacing: MCSpacing.sm) {
-            Image(systemName: "exclamationmark.triangle")
-                .font(.system(size: MCIconSize.errorState, weight: .light))
-                .foregroundStyle(MCColor.attention)
-                .accessibilityHidden(true)
-            Text(title).font(MCFont.cardTitle)
-            Text(message)
-                .font(MCFont.secondaryBody)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 420)
-            if let retry, let retryTitle {
-                Button(retryTitle, action: retry)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

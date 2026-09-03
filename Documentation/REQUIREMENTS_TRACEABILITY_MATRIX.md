@@ -895,9 +895,9 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 - **Priority**: MUST
 - **Source**: MOTION_SYSTEM.md
 - **Status**: **IMPLEMENTED_UNVERIFIED**
-- **Files**: Sources/DesignSystem
-- **Symbols**: OrbitalProgressView
-- **Views**: —
+- **Files**: Sources/DesignSystem/ScanStage.swift
+- **Symbols**: MCScanStage
+- **Views**: CleanupView, DuplicatesView, SpaceLensView, PrivacyCleanerView, SimilarImagesView, CloudCleanupView
 - **Test**: none
 - **Command**: `n/a`
 - **Runtime evidence**: n/a

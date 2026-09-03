@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: The CoreTend Authors
+
 import Foundation
 import ScanCore
 import SafetyCore
@@ -146,6 +149,16 @@ public enum UserCleanupRules {
         incompleteDownloads, xcodeDeviceSupport, iosBackups,
         oldInstallers, oldArchives, xcodeArchives,
     ]
+
+    /// The only findings any automated flow may act on without a per-item
+    /// review: reversible, low-risk, and already preselected. Medium/high-risk
+    /// rules (all the installer/archive/Xcode-archive rules ship
+    /// `preselect: false` + `risk >= .medium`) are structurally excluded here,
+    /// so a bug that left one preselected still cannot make it auto-executable.
+    /// Pure, so the invariant is unit-testable without a store or a filesystem.
+    public static func autoExecutable(_ findings: [ScanFinding]) -> [ScanFinding] {
+        findings.filter { $0.preselected && $0.risk == .low }
+    }
 
     /// Allowed deletion roots corresponding to the rules above.
     public static func allowedRoots(home: URL) -> [URL] {

@@ -514,8 +514,9 @@ exception allowed), **MAY** (optional, discretionary).
 - **Wording**: `MOTION_SYSTEM.md`: "Le mouvement encode un état réel... Repos = zéro moteur d'animation
   actif."; "TimelineView actif *uniquement* pendant scanning/running."
 - **Priority**: MUST
-- **Evidence**: `MOTION_SYSTEM.md`'s own documented implementation (`OrbitalProgressView` — determinate
-  arcs trim-animated by real progress; indeterminate arcs only during active scan/run).
+- **Evidence**: `MOTION_SYSTEM.md`'s own documented implementation (`MCScanStage` — `TimelineView`
+  active only while `isScanning`; determinate count-up ring driven by real `fraction`; Core Bloom
+  arcs at rest; sweep/pings/motes stop under Reduce Motion). Wired in the 6 scan modules.
 - **Current scope**: IMPLEMENTED_UNVERIFIED — documented design intent matches the code's stated
   behavior in `MOTION_SYSTEM.md`, but verifying "animation actually stops at idle" requires a live
   render (BLOCKED_ENVIRONMENT, no display this session).

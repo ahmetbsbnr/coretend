@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: The CoreTend Authors
+
 import SwiftUI
 
 /// A live scanning visualization — the piece the modules were missing.
@@ -162,11 +165,5 @@ public struct MCScanStage<Caption: View>: View {
 
             nucleus(scale: 1 + 0.16 * pulse)
         }
-    }
-}
-
-public extension MCScanStage where Caption == EmptyView {
-    init(isScanning: Bool, fraction: Double? = nil, tint: Color = MCColor.teal) {
-        self.init(isScanning: isScanning, fraction: fraction, tint: tint) { EmptyView() }
     }
 }

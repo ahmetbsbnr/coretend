@@ -34,7 +34,7 @@ gates grep for, and this document must not block the release it tracks.
 | Multi-Mac / multi-macOS-version testing | Only one physical Mac (macOS 26.5.1, arm64) is available | `Documentation/API_AVAILABILITY_AUDIT.md` |
 | Publishing the first GitHub prerelease | Irreversible, outward-facing act | `RELEASE_STATE.md` |
 | Publishing the first **signed** release | The signing/notarization capability is proven (see RESOLVED), but the published tag still serves unsigned `0.9.1-rc.5`. Shipping a signed build = a new RC + `git push` + tag = irreversible, outward-facing. Also needs the human-held **Minisign private key** to sign `SHA256SUMS`. | `Documentation/SIGNING_NOTARIZATION.md` → "Publishing a signed release", `RELEASE_STATE.md` |
-| Trademark attorney review | `COREXTEND` (MIPS Tech, live class 9) is one letter away. Not a bar to a free beta; required before any filing or commercial use. | `Documentation/CORETEND_TRADEMARK_SCREENING.md`, `BRAND_CONFLICT_REGISTER.md` |
+| ~~Trademark attorney review~~ **DONE 2026-09-02** | A trademark attorney reviewed the `COREXTEND` adjacency (per the maintainer) and found no conflict — two entirely separate products, two entirely separate meanings. Name cleared for the 1.0 release. A `®` filing is still a separate future step. | `Documentation/CORETEND_TRADEMARK_SCREENING.md`, `BRAND_CONFLICT_REGISTER.md` |
 
 Token resolutions are recorded centrally in
 `Documentation/PUBLICATION_PLACEHOLDERS.md`.

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: The CoreTend Authors
+
 import SwiftUI
 
 /// Semantic text styles. San Francisco only; identity comes from rhythm,
@@ -14,9 +17,7 @@ public enum MCFont {
     public static let secondaryBody = Font.callout
     public static let caption = Font.caption
     public static let metric = Font.system(.title3, design: .rounded).weight(.semibold)
-    public static let monospacedMetric = Font.body.monospacedDigit()
     public static let badge = Font.caption2.weight(.semibold)
-    public static let tableHeader = Font.caption.weight(.medium)
 }
 
 /// Icon glyph point sizes (Image(systemName:).font(.system(size:))). These
@@ -32,8 +33,6 @@ public enum MCIconSize {
     /// compact than emptyState/emptyStateProminent — this one nests inside
     /// other content rather than filling a whole module landing screen).
     public static let compactState: CGFloat = 40
-    /// Glyph inside the shared MCErrorState component.
-    public static let errorState: CGFloat = 36
     /// Small inline status glyph (lock/cloud indicators on list rows).
     public static let inline: CGFloat = 8
 }

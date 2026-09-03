@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: The CoreTend Authors
+
 import Foundation
 import SafetyCore
 
@@ -77,7 +80,6 @@ public struct ScanRule: Sendable {
 public struct ScanConfiguration: Sendable {
     public var home: URL
     public var maxConcurrency: Int
-    public var followSymlinks: Bool
     /// Absolute paths (and their subtrees) excluded from every scan.
     public var excludedPaths: [String]
 
@@ -88,11 +90,10 @@ public struct ScanConfiguration: Sendable {
     }
 
     public init(home: URL = FileManager.default.homeDirectoryForCurrentUser,
-                maxConcurrency: Int = 3, followSymlinks: Bool = false,
+                maxConcurrency: Int = 3,
                 excludedPaths: [String] = []) {
         self.home = home
         self.maxConcurrency = min(max(maxConcurrency, 1), 4)
-        self.followSymlinks = followSymlinks
         self.excludedPaths = excludedPaths.map {
             Self.canonical(URL(fileURLWithPath: $0).standardizedFileURL.path)
         }
@@ -211,7 +212,10 @@ public struct ScanEngine: Sendable {
                 enumerator.skipDescendants()
                 continue
             }
-            // ponytail: symlinks skipped entirely for now; follow-with-loop-guard later.
+            // Symlinks are never traversed by the scanner: the target may sit
+            // outside `home`, and a cycle would stall the walk. Following them
+            // safely would need a resolved-target allowlist check plus a
+            // visited-inode loop guard — deliberately out of scope.
             if values.isSymbolicLink == true {
                 enumerator.skipDescendants()
                 continue

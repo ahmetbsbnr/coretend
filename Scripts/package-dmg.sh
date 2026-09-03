@@ -13,7 +13,7 @@
 # shell and in CI, and Scripts/test-dmg-layout.sh verifies the result.
 #
 # No privileged helper, no install script, no user data — a DMG is a folder.
-set -e
+set -e -o pipefail
 cd "$(dirname "$0")/.."
 
 ARTIFACT_VERSION="${1:-0.8.1}"
@@ -55,11 +55,27 @@ tiffutil -cathidpicheck "$BG_SRC" "$BG_SRC_2X" -out "$BG_TIFF" >/dev/null
 # dmgbuild and its two libraries are pure Python. A private venv keeps the
 # build off whatever happens to be in the ambient site-packages, so a clean
 # clone and a developer machine produce the same image.
+#
+# dmgbuild 1.6.6+ requires Python >= 3.10, but a macOS box's bare `python3` is
+# still the 3.9 system interpreter. Pick the newest 3.1x we can find for the
+# venv (any of them runs dmgbuild identically); CORETEND_PACKAGING_PYTHON
+# overrides. The requirements file stays exact-pinned for a reproducible
+# .DS_Store.
 VENV="${CORETEND_PACKAGING_VENV:-.build/packaging-venv}"
 if [ ! -x "$VENV/bin/dmgbuild" ]; then
   echo "package-dmg.sh: provisioning packaging venv at $VENV"
   mkdir -p "$(dirname "$VENV")"
-  python3 -m venv "$VENV"
+  VENV_PY="${CORETEND_PACKAGING_PYTHON:-}"
+  if [ -z "$VENV_PY" ]; then
+    for cand in python3.13 python3.12 python3.11 python3.10 python3; do
+      p="$(command -v "$cand" 2>/dev/null)" || continue
+      v="$("$p" -c 'import sys;print("%d%02d"%sys.version_info[:2])' 2>/dev/null)"
+      if [ -n "$v" ] && [ "$v" -ge 310 ]; then VENV_PY="$p"; break; fi
+    done
+  fi
+  [ -n "$VENV_PY" ] || { echo "package-dmg.sh: FAIL — no Python >= 3.10 found for dmgbuild (set CORETEND_PACKAGING_PYTHON)"; exit 1; }
+  echo "package-dmg.sh: venv interpreter = $VENV_PY ($("$VENV_PY" --version 2>&1))"
+  "$VENV_PY" -m venv "$VENV"
   "$VENV/bin/pip" install -q --disable-pip-version-check \
     -r Scripts/requirements-packaging.txt
 fi

@@ -1,6 +1,9 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: The CoreTend Authors
+
 import SwiftUI
 
-// MARK: - Paper / Ink / Cobalt design tokens
+// MARK: - Porcelain / Slate / Teal design tokens
 
 /// Spacing scale (pt). Views compose from these; no arbitrary values.
 public enum MCSpacing {
@@ -27,10 +30,8 @@ public enum MCSize {
     public static let sidebarIdeal: CGFloat = 220
     public static let windowMinWidth: CGFloat = 860
     public static let windowMinHeight: CGFloat = 580
-    public static let heroCore: CGFloat = 200
     public static let metricRing: CGFloat = 76
     public static let chartHeight: CGFloat = 140
-    public static let moduleIcon: CGFloat = 30
 }
 
 /// Motion tokens. All animation in the app routes through these so that
@@ -42,7 +43,6 @@ public enum MCMotion {
 
     public static let snappy = Animation.spring(response: 0.3, dampingFraction: 0.85)
     public static let settle = Animation.spring(response: 0.55, dampingFraction: 0.9)
-    public static let ease = Animation.easeInOut(duration: standard)
 
     /// Returns `nil` (no animation) when Reduce Motion is on.
     public static func animation(_ base: Animation, reduce: Bool) -> Animation? {
@@ -51,22 +51,17 @@ public enum MCMotion {
 }
 
 public enum MCOpacity {
-    public static let hover: Double = 0.08
-    public static let pressed: Double = 0.14
-    public static let disabled: Double = 0.4
+    /// Track ring behind a determinate progress arc (Core Bloom, metric rings).
     public static let orbitTrack: Double = 0.14
-    public static let halo: Double = 0.22
 }
 
-/// Backwards-compatible theme namespace (older views reference MCTheme).
+/// Semantic colour aliases. Views reference these role names (`accent`,
+/// `warning`, …) rather than raw `MCColor` hues, so a palette change is one
+/// edit here. Layout values live in `MCRadius` / `MCSpacing` / `MCSize`.
 public enum MCTheme {
     public static let accent = MCColor.teal
     public static let accentSecondary = MCColor.graphite
     public static let warning = MCColor.amber
     public static let danger = MCColor.coral
     public static let success = MCColor.success
-
-    public static let cornerRadius = MCRadius.card
-    public static let cardPadding = MCSpacing.md
-    public static let sidebarWidth = MCSize.sidebarIdeal
 }

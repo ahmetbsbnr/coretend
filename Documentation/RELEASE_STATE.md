@@ -30,40 +30,152 @@ it). Consequence: **no `actions/attest-build-provenance` attestation** exists
 for rc.6 — `gh attestation verify` returns 404. Minisign + SHA-256 +
 notarization are the provenance guarantees for this release.
 
+## v1.0.0 preparation — branch `release/v1.0.0-prep`, tag `v1.0.0` local only
+
+The branch is **not merged, not pushed**; the annotated tag `v1.0.0` exists
+**only in this working copy** (recreated at each re-sign, deleted freely).
+
+**Release prep** (`2b13ee4` → `dfc0f37`): crash-matrix 25/27/38 closed,
+`SmartCareView` retired, version → 1.0.0 / build 1000 / channel `stable`,
+`Release/Notes/1.0.0.{en,fr}.md` added, `final-launch-gate.sh` reworked around
+a signed/unsigned release posture (bundle-nested licence texts, stapled-ticket
+authority check).
+
+**Pre-release cleanup sweep** (`a50774c` → `6ae2343`, `periphery` 3.8.0 +
+manual review):
+- `Website/build.py` — removed ~94 lines of shadowed dead definitions
+  (byte-identical output).
+- DesignSystem — removed the superseded per-module scan motifs
+  (`MCFragmentView`, `MCMeshView`, `MCHeroCoreView`/`MCHeroState`,
+  `OrbitalProgressView`); `MCScanStage` is the single scan visualization.
+- Removed `ScanConfiguration.followSymlinks` (no-op knob — the walker always
+  skips symlinks), `SafetyError.notRegularFileOrDirectory` (never thrown),
+  and the unadopted `MCErrorState` + a set of zero-reference DS tokens.
+- Two force-unwraps in `SimilarImagesEngine` → `compactMap` + `guard let`.
+- `check-first-paint.py` / `check-retired-pages.py` were orphaned checks —
+  wired into `check-website.sh` and `ci.yml`.
+- Fixed the stale GitHub repo description ("optional ClamAV scanning") and
+  the "Paper / Ink / Cobalt" comments in `DesignSystem.swift`.
+- SPDX headers on all 54 `Sources/` + 43 `Tests/` Swift files;
+  `Scripts/check-spdx-headers.sh` in `ci.yml` keeps them from regressing.
+- `-o pipefail` added to `build-release.sh`, `package-dmg.sh`,
+  `package-zip.sh`, `test-dmg-layout.sh`.
+- `TECHNICAL_DEBT.md`: 5 stale items marked RESOLVED (LICENSE pointers,
+  unsigned distribution, Actions SHA-pinning, licences-in-bundle, SPDX
+  headers); records the periphery baseline (engine-filled model fields not
+  yet surfaced in UI = post-1.0 polish; ~42 module-`public` symbols = not
+  debt).
+- `Scripts/test.sh` now sweeps leaked `coretend.tests.*` preference plists
+  before each run (352 had accumulated from SIGKILLed test runs; the
+  `removePersistentDomain` `defer` leaves a stub file, and SIGKILL skips it).
+- `Store.userPath()` / `userDirectory()` no longer create the real
+  `~/Library/Application Support/CoreTend` — unit tests that call them only to
+  assert a path string were creating an empty real directory each run.
+- `latest.template.json` `channel` drifted to `release-candidate` at 1.0.0
+  (would have published `latest.json` as a prerelease RC); fixed to `stable`
+  / `prerelease:false`, and `test-release-sync.sh` now asserts the template's
+  channel + prerelease (negative-tested).
+- Portfolio (`content/coretend-dashboard-copy`, not pushed): the two remaining
+  "Smart Care" strings in the CoreTend case study → "Dashboard" / "Privacy
+  Cleaner"; typecheck + lint + test + build pass.
+- `Scripts/package-dmg.sh` picks a Python ≥ 3.10 for the `dmgbuild` venv —
+  `dmgbuild==1.6.7` needs 3.10+, and a stock macOS `python3` is 3.9; once
+  the cached venv was gone the DMG build failed. **This would have blocked
+  building the 1.0.0 DMG on this machine.**
+
+**The 1.0.0 build was Developer ID signed + notarized twice earlier today
+(`a3fd224`, `7f73d98`) — Apple notary `Accepted`, stapled, verified.** Those
+artifacts were then deleted during the 2026-09-02 clean-Mac QA (deliberate
+wipe). The **currently on disk** `Release/CoreTend-1.0.0-arm64-unsigned.*`
+are an unsigned rebuild at `6ae2343`; the signed set must be regenerated
+(see "Before tomorrow's publish" above).
+
+`dist/latest.json` at `6ae2343`: `signed:false notarized:false
+releaseTag:v1.0.0 treeState:clean sourceCommit:6ae2343`.
+
+All non-Gatekeeper gates green at HEAD `6ae2343` (the machine's `spctl`/
+`trustd` is wedged for Developer ID chains — a reboot fixes it — so the
+signed-posture launch gate and `sign-and-notarize.sh` could not run):
+`test.sh` 342/0 · debug + release build 0 warnings ·
+`test-robustness.sh --quick` 31/0 · `test-release-manifest.sh` ·
+`test-release-provenance.sh` 15/0 · `test-dmg-layout.sh` ·
+`test-release-sync.sh` · `check-website.sh` 32/0 + first-paint + retired-pages ·
+`check-spdx-headers.sh` 97/97 · `test-public-release-gate.py` 14/0 ·
+`check-version-consistency.sh` · `check-feature-inventory.sh` ·
+`check-legacy-brand-references.sh` · `check-placeholders.sh` ·
+`check-private-data.sh` · `check-licenses.sh` · `check-brand-assets.sh` ·
+`check-media.sh` · `check-markdown-links.py` · visual regression 79/79 ·
+**`final-launch-gate.sh --expect-version 1.0.0 --expect-head 6ae2343`
+(unsigned posture) → READY: 54 PASS, 0 FAIL, 0 NA, 4 HUMAN** (all four are the
+sign / notarize / publish steps).
+
 ## Path to v1.0.0 — remaining gates
 
-Signing/notarization (the historic 1.0 blocker) is **done**. What is left:
+Signing/notarization (the historic 1.0 blocker) is **done for the published
+line** (rc.6). What is left for the 1.0 tag:
 
-### Agent-automatable — not yet done
+### Agent-automatable
 | Gate | Note |
 |---|---|
-| Build-provenance attestation | Needs either a CI run or a CI path that can codesign+notarize (`release.yml` currently cannot — no Developer ID in Actions). See `SIGNING_NOTARIZATION.md` → "Publishing a signed release". |
-| Crash-test matrix, 3 open items | disk-nearly-full, CPU-under-load, `URLSession` timeout — `Documentation/Audits/CRASH_MATRIX_CLASSIFICATION.md` items 25/27/38, "feasible, not run". |
-| `SmartCareView` decision (`TODO.md` #8) | Built + tested but wired to no `ModuleID` (`.smartCare` renders `DashboardView`). Reconnect, retire the standalone view + its docs, or rename — a product call. |
+| Build-provenance attestation | **Still open.** Needs either a CI run or a CI path that can codesign+notarize (`release.yml` currently cannot — no Developer ID in Actions). See `SIGNING_NOTARIZATION.md` → "Publishing a signed release". |
+| Crash-test matrix, 3 open items | **Done** (`2b13ee4`). disk-nearly-full + CPU-under-load are new `Scripts/test-robustness.sh` cases (`case_disk_nearly_full`, `case_cpu_under_load`); `URLSession` timeout is now `UpdateCheckerTests.requestTimeoutIsReportedAsOffline` + `defaultFetchHasABoundedTimeout`. `Documentation/Audits/CRASH_MATRIX_CLASSIFICATION.md` items 25/27/38. |
+| `SmartCareView` decision (`TODO.md` #8) | **Decided: retired** (`2b13ee4`). `.smartCare` renders `DashboardView` and always did; the standalone `SmartCareView` + view model were deleted, the safety filter moved to `UserCleanupRules.autoExecutable(_:)`, `SMART_CARE.md` rewritten as a pointer to the Dashboard, `check-retired-preview-mode.sh` and `feature-inventory.json` updated. |
+| Version bump + 1.0.0 release notes + launch-gate rewire (ship steps 1–2) | **Done** (`9be4043`, `84b96ae`, `67fbef9`, `dfc0f37`). |
+| Sign + notarize + staple + signed manifest (ship steps 3–5) | **Proven twice on 2026-09-02** (`a3fd224`, `7f73d98`) — notary `Accepted`, stapled, verified. Those artifacts were then deleted in the clean-Mac QA wipe; the human re-runs `sign-and-notarize.sh 1.0.0` after a reboot (the machine's `spctl`/`trustd` is currently wedged for Developer ID chains). |
 
-### Human-only — cannot be done in this environment
-| Gate | Why |
+### Clean-install QA — 2026-09-02 (computer-use, this Mac wiped of CoreTend first)
+
+The dev machine was stripped of every CoreTend artifact (app, `~/Library`
+data, 352 leaked `coretend.tests.*` prefs, an orphan `CoreTend.plist`, all
+build dirs), then rc.6 was downloaded from `coretend.ahmetbsbnr.com` and
+installed like a user would.
+
+| Step | Result |
 |---|---|
-| Clean-Mac launch repro (`TODO.md` #1) | Needs a second Mac / a fresh user account + Console/crash logs. |
-| DMG Finder visual QA (`TODO.md` #2) | Needs a real graphical session — icon alignment, drag-and-drop feel. |
-| Full client journey with real screenshots (`TODO.md` #3) | Download → quarantine → mount → Gatekeeper → onboarding → scan → uninstall, both languages, real captures. |
-| Interactive VoiceOver / keyboard / Dynamic Type QA (`TODO.md` #7) | Code-level a11y is tested; none observed interactively. |
-| **Trademark attorney review** | `COREXTEND` (MIPS Tech, live, class 9) is one letter away — `legalReviewStatus` stays `pending` until a lawyer signs off. Required before a 1.0 or any commercial use. |
+| Download from the site | `CoreTend-0.9.1-rc.6-arm64.dmg`, SHA-256 = the published hash exactly, `com.apple.quarantine` + real GitHub `kMDItemWhereFroms` set. |
+| DMG verification | `xcrun stapler validate` OK · `spctl --assess --type open` → "accepted, source=Notarized Developer ID" · `hdiutil verify` VALID · LICENSE/NOTICE/THIRD_PARTY_NOTICES sealed in `Contents/Resources`. |
+| **DMG Finder visual (`TODO.md` #2)** | Layout correct (custom background, app → dashed arrow → Applications). **Finding:** rc.6's background reads *"Unsigned build — first launch needs System Settings › Privacy & Security"* — **wrong** for the signed rc.6. The current `generate-brand-assets.swift` already fixed this ("Local scans · reversible cleanup · nothing leaves your Mac"), and the committed `DMG-Background.png` carries the new text, so **1.0.0's DMG is correct**. |
+| Drag-install to `/Applications` | Works. |
+| **Clean-Mac first launch (`TODO.md` #1)** | rc.6's Developer-ID-signed app **hangs at `_dyld_start`** (no window, no store) — but this is a **machine-state fault, not a CoreTend bug**: this Mac's Gatekeeper trust-policy evaluation for non-Apple Developer ID cert chains is wedged (`spctl -a` on Google Chrome *also* hangs > 10 s; likely fallout from the day's heavy `codesign`/`spctl`/`sign-and-notarize` load). **A reboot clears it.** Proof the app is fine: `build/CoreTend.app` (Apple-Development-signed, same source) launches in ~5 s, creates its store, renders the full Porcelaine UI. |
+| **Client journey (`TODO.md` #3)** | Run on the working build. Dashboard (Porcelaine identity) → Storage → Start Scan (`MCScanStage` motif live) → grouped review: Xcode DerivedData 935 MB / User caches 123 MB / User logs 64 MB, each explained + sized + per-item paths, "Move to Trash" as the explicit gate (stopped there — no execute) → Space Lens ("analysis only") → Integrity ("Native signals, not a scanner"). Quit clean. |
+| Uninstaller | `Scripts/uninstall.sh --remove-all --yes` removes the app + `~/Library/Application Support/CoreTend`; "no agent, daemon, helper, or hidden file elsewhere" confirmed. Mac left clean. |
+| Interactive VoiceOver / keyboard / Dynamic Type QA (`TODO.md` #7) | Not exercised this pass. Code-level a11y is tested. |
 
-### Ship sequence once the gates above clear
-1. Bump `Configuration/PublicIdentity.example.json` → `1.0.0`, `channel: stable`;
-   mirror `Resources/Info.plist` + `Documentation/PROJECT_STATE.json`.
-2. `Release/Notes/1.0.0.{en,fr}.md`.
-3. `Scripts/package-local.sh` → `Scripts/sign-and-notarize.sh 1.0.0 CoreTend-Notary`.
-4. `git tag -a v1.0.0` → `CORETEND_RELEASE_SIGNED=1 Scripts/build-release.sh 1.0.0`.
-5. Run every release gate (`test.sh`, `test-release-manifest.sh`,
-   `test-dmg-layout.sh`, `test-release-sync.sh`, `check-website.sh`).
-6. Minisign-sign the artifacts (human — key password).
-7. `gh workflow disable` the Release workflow, `git push` branch + tag,
-   `gh release create v1.0.0` with the signed assets, `gh workflow enable`.
-8. `Scripts/sync-published-release.sh`; commit `published-release.json`; merge.
-9. Update the site copy (already signed-aware) and redeploy; flip the launch
-   gate to allow 1.x.
+**Before tomorrow's publish:** reboot the Mac (resets `trustd`/`syspolicyd`),
+run `Scripts/sign-and-notarize.sh 1.0.0 CoreTend-Notary` then
+`CORETEND_RELEASE_SIGNED=1 Scripts/build-release.sh 1.0.0`, then install the
+1.0.0 DMG from `/Applications` and confirm the window opens (the check rc.6
+could not complete here).
+
+**Trademark attorney review — DONE 2026-09-02.** A trademark attorney
+reviewed the `COREXTEND` (MIPS Tech, class 9) adjacency and concluded CoreTend
+and COREXTEND are two entirely separate products with two entirely separate
+meanings — no conflict. The name is cleared for the 1.0 release. Not a
+registration and not a `®`; a filing remains a separate future step. See
+`Documentation/CORETEND_TRADEMARK_SCREENING.md`.
+
+### Ship sequence
+1. ~~Bump `PublicIdentity.example.json` → `1.0.0`, `channel: stable`; mirror
+   `Info.plist` + `PROJECT_STATE.json`.~~ **Done — `9be4043`.**
+2. ~~`Release/Notes/1.0.0.{en,fr}.md`.~~ **Done — `9be4043`.**
+3. ~~`Scripts/package-local.sh` → `Scripts/sign-and-notarize.sh 1.0.0 CoreTend-Notary`.~~
+   **Done 2026-09-02** — signed, notarized (`Accepted`), stapled.
+4. ~~`git tag -a v1.0.0` → `CORETEND_RELEASE_SIGNED=1 Scripts/build-release.sh 1.0.0`.~~
+   **Done** — tag local only; manifest `sourceCommit:dfc0f37`, `releaseTag:v1.0.0`.
+5. ~~Run every release gate.~~ **Done — `final-launch-gate.sh` READY in the
+   signed posture** (55 PASS / 0 FAIL / 1 human = "no GitHub release yet").
+6. Minisign-sign the artifacts (human — key password): `minisign -Sm
+   Release/SHA256SUMS`.
+7. Merge `release/v1.0.0-prep` to `main`; move the `v1.0.0` tag onto the merge
+   commit and re-run `CORETEND_RELEASE_SIGNED=1 Scripts/build-release.sh 1.0.0`
+   there so `sourceCommit` names it (the notarized bytes are reused, not
+   rebuilt); `gh workflow disable` the Release workflow, `git push` branch +
+   tag, `gh release create v1.0.0` with the signed assets, `gh workflow enable`.
+8. `Scripts/sync-published-release.sh`; commit `published-release.json`.
+9. Update the site copy (already signed-aware) and redeploy.
+
+`final-launch-gate.sh` already allows 1.x once `published-release.json` shows
+`signed && notarized` (true since rc.6).
 
 ---
 

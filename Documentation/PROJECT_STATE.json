@@ -1,7 +1,7 @@
 {
   "project": "CoreTend",
-  "version": "0.9.1-rc.6",
-  "phase": "0.9.1-rc.6 — First signed and notarized build. A Developer ID Application identity (Team NSCUV5G738) is installed; the app and DMG are code-signed with hardened runtime, notarized by Apple and stapled, so Gatekeeper opens them with no override step. Functionally identical to rc.5 (read-only scans, reviewed selections, explicit confirmations, protected-root validation, recoverable Trash actions; IntegrityCore is the current read-only integrity implementation; the retired ClamAV interface and scanner remain absent; public locale routes normalized to /en and /fr).",
+  "version": "1.0.0",
+  "phase": "1.0.0 — First stable release. Functionally the signed + notarized rc.6 line (Developer ID signed, Apple-notarized, stapled; read-only scans, reviewed selections, explicit confirmations, protected-root validation, recoverable Trash actions; IntegrityCore is the read-only integrity implementation). The standalone Smart Care orchestrator was retired in favour of the Dashboard; crash-matrix items 25/27/38 closed; the visual gate noise floor was raised to stop CI anti-aliasing flake.",
   "toolchain": "Swift 6.3.3 with Xcode 26.6 and Command Line Tools on macOS 26.5.1",
   "build_system": "SwiftPM; app bundle assembled by Scripts/package-local.sh; DMG assembled reproducibly with dmgbuild",
   "test_framework": "Swift Testing via Scripts/test.sh, plus Xcode and distribution/package gates",
@@ -16,7 +16,7 @@
     "AppDiscovery (inventory, associated data, leftovers) + uninstall via Trash",
     "IntegrityCore (download-provenance quarantine metadata, code-signature tier via SecStaticCode, login-item enumeration; replaces the retired ClamAV-based MalwareEngine — see Documentation/CLAMAV_DECISION.md)",
     "Cloud Cleanup (local vs logical footprint, no downloads, analysis only)",
-    "Smart Care orchestrator (reviewed low-risk selection, explicit confirmation, Trash execution)",
+    "Dashboard (free space, Trash state, exclusions, recent activity, large scan action; supersedes the retired Smart Care orchestrator)",
     "Cleanup (7 rules grouped by rule, exclusions honored)",
     "My Activity (history, filters, clear)",
     "Menu bar extra (samples only while open)",

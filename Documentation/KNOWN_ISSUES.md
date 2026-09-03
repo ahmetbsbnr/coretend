@@ -101,13 +101,15 @@ One Apple Silicon Mac, one macOS version. No multi-hardware or multi-OS
 verification, and none claimed. `.github/workflows/compat-matrix.yml` exists but
 has never run.
 
-### 9. COREXTEND trademark watch
+### 9. COREXTEND trademark watch — attorney-reviewed 2026-09-02, no conflict
 `COREXTEND` (MIPS Tech, live class 9) is one letter from CoreTend. TMview
-returned zero marks containing `coretend` across ~141.8M records, but that is
-screening, not clearance.
-
-Not a bar to a free beta. **Attorney review is required before any trademark
-filing or commercial use.** No definitive legal validation is claimed anywhere.
+returned zero marks containing `coretend` across ~141.8M records, and on
+2026-09-02 a trademark attorney reviewed the adjacency (per the maintainer)
+and concluded CoreTend and COREXTEND are two entirely separate products with
+two entirely separate meanings — **no conflict**. The name is cleared for the
+1.0 release. This is still **not** a registration or a `®` right; a filing
+remains a separate future step, and a further scope-specific review is the rule
+before any move into embedded / processor-adjacent tooling.
 
 ### 10. Secret-scanning extras disabled
 `secret_scanning_non_provider_patterns` and `secret_scanning_validity_checks`

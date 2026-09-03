@@ -377,8 +377,8 @@
     }
   ],
   "highConflictFound": false,
-  "status": "PRELIMINARY_CLEARANCE_NO_HIGH_CONFLICT_FOUND",
-  "statusReasoning": "Both conditions for this status are now met. (1) Official-registry evidence: TMview — the EUIPO/EUIPN portal aggregating roughly eighty national and regional registers, including all six originally targeted (TMview, EUIPO, INPI, WIPO, USPTO, UKIPO) — was queried through an interactive JavaScript-capable browser on 2026-07-27 and returned ZERO rows for 'contains: coretend' across a reported corpus of 141,856,516 marks. (2) Public-source searching: GitHub repositories/users, npm, PyPI, Homebrew formula and cask, and the Mac App Store were all re-verified negative, and no same-category software conflict exists. The blocking reason recorded on 2026-07-25 ('zero of six target registers was reachable') no longer holds. CONFLICT_HIGH remains wrong: nothing found is a same-category conflict. This status is a preliminary screening outcome, NOT a legal clearance, NOT a freedom-to-operate opinion, and NOT a claim of registration.",
+  "status": "ATTORNEY_REVIEWED_NO_CONFLICT",
+  "statusReasoning": "As of 2026-09-02 a trademark attorney has reviewed the one remaining item — the COREXTEND (MIPS Tech) adjacency in class 9 — and concluded there is no conflict: CoreTend and COREXTEND are two entirely separate products with two entirely separate meanings, different field of use, non-overlapping trade channels and relevant public. This satisfies the human attorney review that the 2026-07-27 status made a prerequisite for the 1.0 release, so the name is cleared for continued use including v1.0.0. Prior automated evidence still stands: TMview (aggregating ~80 offices incl. EUIPO, INPI, USPTO, WIPO, UKIPO) returned ZERO rows for 'contains: coretend' across 141,856,516 marks on 2026-07-27, and GitHub/npm/PyPI/Homebrew/Mac App Store were all re-verified negative with no same-category conflict. This is NOT a claim of registration, NOT a ® right, and no trademark application has been filed. See the `attorneyReview` block; the written opinion is held by the maintainer.",
   "limitations": [
     "TMview not queryable — POST-only API, ECONNRESET on GET.",
     "EUIPO eSearch plus not queryable — JavaScript SPA, no server-rendered results.",
@@ -423,9 +423,26 @@
       "date_UTC": "2026-07-27",
       "status": "PRELIMINARY_CLEARANCE_NO_HIGH_CONFLICT_FOUND",
       "reason": "Official-register condition satisfied via TMview (aggregates ~80 offices incl. EUIPO, INPI, USPTO, WIPO, UKIPO): 0 marks contain the string 'coretend' across 141,856,516 records. Software/package channels re-verified clean. Nearest neighbour COREXTEND recorded as a watch item, not a high conflict."
+    },
+    {
+      "date_UTC": "2026-09-02",
+      "status": "ATTORNEY_REVIEWED_NO_CONFLICT",
+      "reason": "The maintainer reports that a trademark attorney reviewed the COREXTEND adjacency and concluded CoreTend and COREXTEND are non-conflicting — distinct products (a consumer macOS maintenance application vs. an embedded-CPU instruction-set-extension IP facility) with distinct meanings ('tend / care for' vs 'extend'), non-overlapping trade channels and relevant public. The name is cleared for continued use including the v1.0.0 stable release. This is the human attorney review the 2026-07-27 status made a prerequisite for 1.0; it does not constitute a claim of registration or ® rights and no application has been filed."
     }
   ],
-  "statusSetDate_UTC": "2026-07-27",
+  "attorneyReview": {
+    "date_UTC": "2026-09-02",
+    "recordedFrom": "maintainer's report of the attorney's conclusion; the written opinion is held by the maintainer, not in this repository",
+    "scope": "COREXTEND (MIPS Tech, LLC) adjacency, Nice class 9",
+    "conclusion": "No conflict. CoreTend and COREXTEND are two entirely separate products with two entirely separate meanings; different field of use, different construction, non-overlapping trade channels and relevant public. Name cleared for continued use including the 1.0 stable release.",
+    "liftsCondition": "The WATCH condition 'attorney review required before 1.0 / before any commercial use' recorded on 2026-07-27 is satisfied for the release. Registration (a ® claim) still requires a separate filing, which has not been made.",
+    "stillNotAuthorised": [
+      "Any use of the ® symbol or any claim that CoreTend is a registered trademark.",
+      "Filing a trademark application (none filed).",
+      "Expansion into embedded / semiconductor / processor-adjacent tooling without a further, scope-specific attorney review."
+    ]
+  },
+  "statusSetDate_UTC": "2026-09-02",
   "officialRegisterEvidence": {
     "date_UTC": "2026-07-27",
     "source": "TMview (TMDN / EUIPO — European IP Network)",

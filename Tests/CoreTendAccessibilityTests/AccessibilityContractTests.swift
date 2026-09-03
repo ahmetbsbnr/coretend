@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: The CoreTend Authors
+
 import Foundation
 import Testing
 
@@ -17,7 +20,6 @@ struct AccessibilityContractTests {
         for key in [
             "common.pause", "common.resume", "common.cancel",
             "cleanup.pause_hint", "cleanup.resume_hint",
-            "smartcare.pause_hint", "smartcare.resume_hint",
             "clutter.pause_hint", "clutter.resume_hint",
         ] {
             #expect(baseText.contains("\"\(key)\""))

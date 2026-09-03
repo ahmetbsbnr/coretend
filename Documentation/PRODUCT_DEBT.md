@@ -23,15 +23,13 @@ be blocked by.
 
 ## Missing states / text
 
-- Design/UI audit this session found `MCMeshView` (Protection's
-  containment-mesh motif, `Sources/DesignSystem/MeshView.swift`) is a
-  static `Canvas` draw with 4 well-defined states (incomplete/ready/
-  scanning/alert) and a VoiceOver-facing `accessibilityDescription` — this
-  one is solid. Reduce Motion isn't wired into it because there's no
-  animation to reduce (confirmed by reading the file — no `@State`, no
-  timers). Not a gap.
+- `MCMeshView` (Protection's containment-mesh motif) and `MCFragmentView`
+  (Cleanup's fragment motif) were **removed** before 1.0 — never wired into
+  a view, superseded by the single `MCScanStage` used across the 6 scan
+  modules. Protection could gain a dedicated state motif post-1.0
+  (`MOTION_SYSTEM.md` → "À venir").
 - Reduce Motion / Reduce Transparency handling is centralized in the
-  design-system components that need it (`MCFragmentView`,
+  design-system components that need it (`MCScanStage`,
   `MCOverlapStack` read `accessibilityReduceMotion`; `MCCard` reads
   `accessibilityReduceTransparency`) rather than duplicated per-screen —
   `SpaceLensView` and `MyActivityView` additionally read

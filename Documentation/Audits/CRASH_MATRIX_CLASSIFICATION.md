@@ -51,9 +51,9 @@ the engine/model layer.
 | 22 | cyclic symlinks | B | ✅ executed | `build_tree`: `cycle/self` self-referencing symlink in `hostile-tree` PASS |
 | 23 | file deleted mid-scan | A | ✅ executed | `PathValidatorTests.vanishedFileSkippedAtExecution`, `.vanishedFileEmitsSkippedEvent` — `SafetyCenter` re-validates every path immediately before execution |
 | 24 | external volume unmounted mid-scan | A | ✅ executed | `ClutterFilteringTests`: resolver-returns-nil path surfaces as `.unavailable`, matching a vanished volume |
-| 25 | disk nearly full (simulated safely) | B | ⚠️ not executed | Feasible via a small `hdiutil` sparse image filled near capacity; not run this session — real gap, not claimed done |
+| 25 | disk nearly full (simulated safely) | B | ✅ executed | `test-robustness.sh` `case_disk_nearly_full`: 8 MB HFS+ image mounted at the case's store path, filled to a few KB free; the app still opens its window (SQLite store init on a full volume surfaces, does not crash the launch) |
 | 26 | memory pressure | D | not executed | No safe headless way to induce real system memory pressure without affecting the host outside an isolated VM |
-| 27 | CPU under load | B | ⚠️ not executed | Feasible (background load generator); not run this session — real gap, not claimed done |
+| 27 | CPU under load | B | ✅ executed | `test-robustness.sh` `case_cpu_under_load`: every core pinned by a `yes` busy loop while the window comes up; launch survives the contention |
 | 28 | ClamAV absent | N/A | retired | — |
 | 29 | ClamAV incomplete | N/A | retired | — |
 | 30 | invalid ClamAV binary | N/A | retired | — |
@@ -64,7 +64,7 @@ the engine/model layer.
 | 35 | update manifest unreachable | A+B | ✅ executed | Same as above — offline case covers unreachable |
 | 36 | invalid manifest | B | ✅ executed | `update-manifest-garbage/empty/wrong-shape` PASS; `UpdateCheckerTests.garbageManifestIsRejected` |
 | 37 | unexpected HTTP response | A | ✅ executed | `UpdateCheckerTests.httpErrorIsSurfaced` (503 case) |
-| 38 | timeout | A | ⚠️ not executed | No dedicated `URLSession` timeout test found — real gap, not claimed done |
+| 38 | timeout | A | ✅ executed | `UpdateCheckerTests.requestTimeoutIsReportedAsOffline` (injected `NSURLErrorTimedOut` → `.failed(.offline)`) + `defaultFetchHasABoundedTimeout` (the built-in fetch carries `UpdateChecker.defaultRequestTimeout` = 15 s) |
 | 39 | user cancellation | A | ✅ executed | `swift test`: pause/resume and cancellation suites across ScanEngine, Space Lens, Similar Images, Duplicates |
 | 40 | relaunch after crash | B | ✅ executed | `kill-*-relaunch` cases + `relaunch-over-partial-db` (half-written DB from a hard kill) PASS |
 | 41 | sleep/wake mid-operation | D/E | not executed | Real sleep/wake needs either a second Mac available for the test or `pmset`/`caffeinate` control of *this* host, which is not safe to script against the dev machine mid-session |
@@ -74,13 +74,10 @@ the engine/model layer.
 
 ## Summary
 
-- **31 items**: automatable (A or B), executed for real this session with
-  passing evidence.
+- **34 items**: automatable (A or B), executed for real with passing
+  evidence (items 25, 27, 38 closed 2026-09-02 — see the rows above).
 - **6 items**: ClamAV-specific, not applicable — product no longer has
   ClamAV.
-- **3 items** (disk-nearly-full, CPU-under-load, timeout): automatable in
-  principle, **not executed this session** — stated as a real gap, not
-  hidden or claimed done.
 - **2 items** (memory pressure, sleep/wake): genuinely need either a second
   Mac or host-level control this session should not risk taking on the
   active dev machine.

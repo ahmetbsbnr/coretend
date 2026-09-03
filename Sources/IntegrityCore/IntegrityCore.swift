@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: The CoreTend Authors
+
 // Provides the local Integrity signals used by the Integrity module. The
 // current product does not perform malware scanning or quarantine.
 //

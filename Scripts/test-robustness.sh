@@ -38,12 +38,18 @@ RESULTS="$SANDBOX/results.tsv"
 : > "$RESULTS"
 cleanup() {
   pkill -f "$BIN" 2>/dev/null || true
+  # The disk-pressure case attaches a tiny disk image inside the sandbox;
+  # detach it before rm -rf, or the sandbox cannot be removed.
+  for m in "${MOUNTS[@]:-}"; do
+    [ -n "$m" ] && hdiutil detach "$m" -force >/dev/null 2>&1 || true
+  done
   # Several cases deliberately create unreadable directories (chmod 000/500);
   # restore write access first or the sandbox cannot be removed.
   chmod -R u+rwX "$SANDBOX" 2>/dev/null || true
   rm -rf "$SANDBOX"
 }
 trap cleanup EXIT
+MOUNTS=()
 
 PASS=0; FAIL=0
 FAILED_CASES=()
@@ -198,6 +204,52 @@ kill_during_launch() {
   run_case "$name-relaunch" "$home"
 }
 
+# Store volume with only a few KB free. The app opens its SQLite store at
+# launch; on a nearly-full volume that write can fail, and the failure must
+# surface as a state the window can render, not a silent exit. Runs on a small
+# HFS+ disk image mounted at the case's own store path, filled to capacity.
+case_disk_nearly_full() {
+  local name="disk-nearly-full"
+  local home="$SANDBOX/homes/$name"
+  local store="$home/store"
+  local img="$SANDBOX/$name.dmg"
+  mkdir -p "$home/tmp"
+  rm -rf "$store"
+  if ! hdiutil create -size 8m -type UDIF -fs HFS+ -volname CoreTendTiny -layout NONE "$img" >/dev/null 2>&1; then
+    printf '%s\tFAIL\thdiutil create failed\n' "$name" >> "$RESULTS"
+    FAIL=$((FAIL + 1)); FAILED_CASES+=("$name: hdiutil create failed"); echo "  FAIL  $name — hdiutil create"; return 0
+  fi
+  if ! hdiutil attach "$img" -mountpoint "$store" -nobrowse -owners on >/dev/null 2>&1; then
+    printf '%s\tFAIL\thdiutil attach failed\n' "$name" >> "$RESULTS"
+    FAIL=$((FAIL + 1)); FAILED_CASES+=("$name: hdiutil attach failed"); echo "  FAIL  $name — hdiutil attach"; return 0
+  fi
+  MOUNTS+=("$store")
+  # Fill the volume, leaving it with only kilobytes free.
+  dd if=/dev/zero of="$store/ballast" bs=32768 2>/dev/null || true
+  run_case "$name" "$home"
+  hdiutil detach "$store" -force >/dev/null 2>&1 || true
+  MOUNTS=("${(@)MOUNTS:#$store}")
+}
+
+# Every core pinned by a busy loop while the window comes up. A scan may be
+# slow under contention, but the launch cannot be starved into never opening.
+case_cpu_under_load() {
+  local name="cpu-under-load"
+  local home="$SANDBOX/homes/$name"
+  mkdir -p "$home/store" "$home/tmp"
+  local cores loaders
+  cores=$(sysctl -n hw.ncpu 2>/dev/null || echo 4)
+  loaders=()
+  local i
+  for i in $(seq 1 "$cores"); do
+    yes >/dev/null 2>&1 &
+    loaders+=($!)
+  done
+  run_case "$name" "$home" 6
+  for i in "${loaders[@]}"; do kill -KILL "$i" 2>/dev/null || true; done
+  wait 2>/dev/null || true
+}
+
 echo "test-robustness: $BIN"
 echo "test-robustness: sandbox $SANDBOX (real HOME untouched)"
 
@@ -253,6 +305,11 @@ kill_during_launch int-at-1s INT 1
 # Relaunch over a half-written database, which is what a hard kill mid-write
 # actually leaves on disk.
 with_state relaunch-over-partial-db 'partial_db'
+
+# ------------------------------------------------------------ runtime stress
+echo "-- runtime stress (disk pressure, CPU contention)"
+case_disk_nearly_full
+case_cpu_under_load
 
 # ------------------------------------------------------------ repeat/soak
 if [ "$QUICK" -eq 0 ]; then

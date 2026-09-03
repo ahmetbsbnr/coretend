@@ -2,7 +2,7 @@
 
 Generated from `Documentation/feature-inventory.json` by `Scripts/generate-feature-inventory.py` — the JSON is the single canonical source; this file, `feature-inventory.csv`, and the totals below are all derived from it, never typed by hand. Run `python3 Scripts/generate-feature-inventory.py --check` to verify they still agree.
 
-**Total: 52 features.** Status counts: VERIFIED_COMPLETE=50, VERIFIED_PARTIAL=2.
+**Total: 51 features.** Status counts: VERIFIED_COMPLETE=49, VERIFIED_PARTIAL=2.
 
 Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, UI_ONLY, SIMULATED, DOCUMENTATION_ONLY, BLOCKED_HUMAN, BLOCKED_ENVIRONMENT, BROKEN, DEPRECATED, NOT_STARTED, NOT_APPLICABLE, UNKNOWN.
 
@@ -11,8 +11,8 @@ Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, 
 | id | Name / objective | State | Screen | Demonstration path | Capture | Animation | Demo data | Validation evidence |
 |---|---|---|---|---|---|---|---|---|
 | shell.launch | App launch, `AppEnvironment.shared` singleton creates `Store` at `~/Library/Application Support/CoreTend/store.sqlite`, falls back to `:memory:` if init fails | VERIFIED_COMPLETE | Main window, onboarding, menu bar | Launch, navigate, reopen help | smart-care | yes | isolated temporary store | Sources/CoreTendApp/AppEnvironment.swift:1-17 |
-| shell.nav | `NavigationSplitView` + `List(selection:)` sidebar over a `ModuleID` enum, default selection `.smartCare` | VERIFIED_COMPLETE | Main window, onboarding, menu bar | Launch, navigate, reopen help | smart-care | yes | isolated temporary store | Sources/CoreTendApp/CoreTendApp.swift:235-242 |
-| shell.menubar | Menu-bar extra: `MenuBarLabel`/`MenuBarView`, live `MetricsSnapshot` + last Smart Care activity, `@AppStorage("menuBarEnabled")` toggle in Settings | VERIFIED_COMPLETE | Main window, onboarding, menu bar | Launch, navigate, reopen help | smart-care | yes | isolated temporary store | Sources/CoreTendApp/CoreTendApp.swift:69-94 |
+| shell.nav | `NavigationSplitView` + `List(selection:)` sidebar over a `ModuleID` enum, default selection `.smartCare` (the Dashboard) | VERIFIED_COMPLETE | Main window, onboarding, menu bar | Launch, navigate, reopen help | smart-care | yes | isolated temporary store | Sources/CoreTendApp/CoreTendApp.swift:235-242 |
+| shell.menubar | Menu-bar extra: `MenuBarLabel`/`MenuBarView`, live `MetricsSnapshot` + last activity, `@AppStorage("menuBarEnabled")` toggle in Settings | VERIFIED_COMPLETE | Main window, onboarding, menu bar | Launch, navigate, reopen help | smart-care | yes | isolated temporary store | Sources/CoreTendApp/CoreTendApp.swift:69-94 |
 | shell.onboarding | `OnboardingView`, opens Full Disk Access system pane via a static hardcoded `x-apple.systempreferences:` URL | VERIFIED_COMPLETE | Main window, onboarding, menu bar | Launch, navigate, reopen help | smart-care | yes | isolated temporary store | Sources/CoreTendApp/OnboardingView.swift:22-23 |
 | shell.diagnostics | `DiagnosticReport` — anonymized export, redaction test exists | VERIFIED_COMPLETE | Main window, onboarding, menu bar | Launch, navigate, reopen help | smart-care | yes | isolated temporary store | Sources/CoreTendApp/DiagnosticReport.swift:83-91 |
 | ui.commandpalette | Cmd+K command palette: fuzzy-filtered jump list over all 11 sidebar destinations plus 2 actions (check for updates, scan Home with Space Lens), dispatched through the existing NotificationCenter (.mcNavigate) routing rather than a second navigation system. | VERIFIED_COMPLETE | Main window, onboarding, menu bar | Launch, navigate, reopen help | smart-care | yes | isolated temporary store | Sources/CoreTendApp/CoreTendApp.swift (CommandPaletteView, paletteMatches); Tests/CoreTendAppTests/CommandPaletteTests.swift |
@@ -46,12 +46,6 @@ Status vocabulary: VERIFIED_COMPLETE, VERIFIED_PARTIAL, IMPLEMENTED_UNVERIFIED, 
 | cleanup.incompletedownloads | Cleanup rule: incomplete downloads — .download/.crdownload/.part/.partial files in ~/Downloads older than 7 days (low risk, preselected) | VERIFIED_COMPLETE | Cleanup | Scan and review rule groups | cleanup | yes | neutral temporary folders | Sources/FileRules/UserCleanupRules.swift:55-68 |
 | cleanup.xcodedevicesupport | Cleanup rule: Xcode device support — debug symbols for old iOS devices, regenerated on reconnect (medium risk, not preselected) | VERIFIED_COMPLETE | Cleanup | Scan and review rule groups | cleanup | yes | neutral temporary folders | Sources/FileRules/UserCleanupRules.swift:70-80 |
 | cleanup.iosbackups | Cleanup rule: iOS device backups — local iPhone/iPad backups older than 180 days (high risk, not preselected — user must verify no longer needed) | VERIFIED_COMPLETE | Cleanup | Scan and review rule groups | cleanup | yes | neutral temporary folders | Sources/FileRules/UserCleanupRules.swift:82-92 |
-
-## SmartCare (1: VERIFIED_COMPLETE=1)
-
-| id | Name / objective | State | Screen | Demonstration path | Capture | Animation | Demo data | Validation evidence |
-|---|---|---|---|---|---|---|---|---|
-| smartcare.orchestration | Runs `UserCleanupRules.all` through `ScanEngine`, presents the low-risk selection for review, then uses the same confirmed `SafetyCenter` Trash path as manual Cleanup | VERIFIED_COMPLETE | Smart Care | Start scan, review, cancel or approve | smart-care | yes | empty isolated store; no staged result | Sources/CoreTendApp/SmartCareView.swift:71-113 |
 
 ## IntegrityCore (3: VERIFIED_COMPLETE=3)
 

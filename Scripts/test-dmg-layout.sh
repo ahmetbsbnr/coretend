@@ -8,7 +8,7 @@
 #
 # Reads the .DS_Store with the same ds_store library the build writes it with,
 # so the check needs no Finder and runs in CI.
-set -e
+set -e -o pipefail
 cd "$(dirname "$0")/.."
 
 DMG="${1:?usage: test-dmg-layout.sh <dmg> [volume-name]}"

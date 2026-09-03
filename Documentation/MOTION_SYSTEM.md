@@ -15,15 +15,20 @@ Durées et springs: `MCMotion` (voir DESIGN_TOKENS.md).
 
 ## Reduce Motion
 Point unique: `MCMotion.animation(_:reduce:)` + `@Environment(\.accessibilityReduceMotion)`.
-- OrbitalProgressView: arcs indéterminés statiques (pas de rotation).
-- HeroCore: changements d'état instantanés, halo statique.
+- MCScanStage: sweep radar, pings, pulse et motes arrêtés; un seul anneau calme
+  est affiché à la place.
 - Aucun PhaseAnimator/TimelineView actif sous Reduce Motion.
 
 ## Implémentations
-- **Hero Smart Care**: OrbitalProgressView — TimelineView(.animation 30 fps max)
-  actif *uniquement* pendant scanning/running. Arcs déterminés = trim animé par
-  vraie progression; indéterminés = arc court orbitant (vitesses ±28–55°/s).
-- **Succès**: halo bref (opacité 0.22, spring settle) puis retour au calme.
+- **MCScanStage** (`Sources/DesignSystem/ScanStage.swift`) — le motif de scan
+  unique, câblé dans les 6 modules d'analyse (Cleanup, Duplicates, Space Lens,
+  Privacy Cleaner, Similar Images, Cloud Cleanup). `TimelineView(.animation)`
+  plafonné à 30 fps, actif *uniquement* pendant `isScanning`; anneau de
+  progression qui se remplit vers `fraction` quand l'analyse est bornée; arcs
+  Core Bloom au repos. Les motifs par module antérieurs (`MCFragmentView`
+  Cleanup, `MCMeshView` Protection, `MCHeroCoreView` Smart Care +
+  `OrbitalProgressView`) ont été retirés — superposés par `MCScanStage`.
+- **Succès**: halo bref (spring settle) puis retour au calme.
 - **Cartes/États**: Animation SwiftUI standard, snappy spring.
 
 ## Budget de performance (M1 8 Go)
@@ -32,6 +37,7 @@ Point unique: `MCMotion.animation(_:reduce:)` + `@Environment(\.accessibilityRed
 - Fenêtre cachée/menu fermé: tasks annulées (onDisappear / task lifecycle).
 - Pas de Metal. Canvas uniquement pour les graphes (buffer 60 points).
 
-## À venir (hors 0.4.0)
-matchedGeometryEffect Cleanup (regroupement de résultats), maille Protection,
-construction progressive Space Lens.
+## À venir (post-1.0)
+Un motif d'état dédié pour Protection (l'ancien `MCMeshView` a été retiré sans
+être livré). `matchedGeometryEffect` (regroupement Cleanup, zoom Space Lens)
+est déjà câblé dans les vues.

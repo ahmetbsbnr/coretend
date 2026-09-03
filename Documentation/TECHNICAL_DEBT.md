@@ -12,13 +12,11 @@ argument-array-only `Process()` call, and 86/86 passing tests hold up
 
 ## High
 
-1. **LICENSE file references two non-existent paths** — category: documentation/legal.
-   Evidence: `LEGAL_AND_LICENSE_STATUS.md` session-2 finding, `LICENSE` cites
-   `Documentation/LICENSING.md` (doesn't exist) and `THIRD_PARTY_NOTICES.md`
-   at repo root (real file is `Documentation/THIRD_PARTY.md`). Impact: a
-   reader following the LICENSE's own pointers hits dead links. Risk: low
-   functional risk, real trust/professionalism risk for an OSS repo.
-   Effort: XS. No dependencies. Recommended: fix before any public tag.
+1. **LICENSE file references two non-existent paths** — RESOLVED (verified
+   2026-09-02). `LICENSE` is now the verbatim Apache-2.0 text with no
+   repo-specific path pointers; `Documentation/LICENSING.md`,
+   `THIRD_PARTY_NOTICES.md` (root), `Documentation/THIRD_PARTY.md` and
+   `NOTICE` all exist.
 
 2. **Website legal identity placeholders unresolved** — CLOSED in the 0.9.0
    launch phase. Category: distribution/legal.
@@ -34,11 +32,11 @@ argument-array-only `Process()` call, and 86/86 passing tests hold up
    `legalAddress` stays deliberately `null` under LCEN Art. 6 III-2 and the
    page says so. Website placeholder count is zero.
 
-3. **Unsigned, unnotarized distribution** — category: distribution.
-   Evidence: `DISTRIBUTION_AUDIT.md` this session, `latest.json`
-   `signed:false, notarized:false`. Impact: Gatekeeper blocks first launch
-   for every non-developer user. Effort: BLOCKED_HUMAN (needs an Apple
-   Developer account/cert, not code).
+3. **Unsigned, unnotarized distribution** — RESOLVED. Developer ID identity
+   `Ahmet BASBUNAR (NSCUV5G738)` is installed; `Scripts/sign-and-notarize.sh`
+   produces a real Developer ID signed + Apple-notarized + stapled build.
+   Shipped this way since `v0.9.1-rc.6` (published 2026-08-31); `1.0.0` is
+   signed and notarized on the `release/v1.0.0-prep` branch.
 
 ## Medium
 
@@ -54,27 +52,24 @@ argument-array-only `Process()` call, and 86/86 passing tests hold up
    `set -euo pipefail` swap + spot-check for scripts relying on non-zero
    exit from an intentionally-tolerated command).
 
-5. **GitHub Actions pinned to `@v4` tags, not commit SHAs** — category: CI.
-   Evidence: this session, all three workflows use
-   `actions/checkout@v4`, `actions/upload-artifact@v4`. Tag pinning is
-   standard practice and is not itself a defect, but SHA-pinning is the
-   stricter supply-chain posture GitHub/OSSF recommend for public repos.
-   Impact: low (both actions are first-party GitHub actions, not
-   third-party). Effort: XS if desired, optional hardening not a blocker.
+5. **GitHub Actions pinned to `@v4` tags, not commit SHAs** — RESOLVED.
+   All five actions across the workflows are now SHA-pinned
+   (`actions/checkout@3d3c42e5…`, `actions/upload-artifact@043fb46d…`,
+   `actions/attest-build-provenance@4d101475…`, `anchore/sbom-action@…`,
+   `softprops/action-gh-release@…`).
 
-6. **License text not shipped inside the `.app` bundle itself** — category: distribution.
-   Evidence: `DISTRIBUTION_AUDIT.md` this session — `LICENSE`/`NOTICE`/
-   `THIRD_PARTY_NOTICES.md` ship at the zip/dmg root beside the `.app`, not
-   inside `Contents/Resources`. Once a user drags the app to
-   `/Applications` and discards the zip/dmg, the license text no longer
-   travels with the app. Impact: low (common practice, not required by
-   Apache-2.0/CC-BY-4.0), but a "Licenses" menu item or bundled copy would
-   be friendlier. Effort: S.
+6. **License text not shipped inside the `.app` bundle itself** — RESOLVED.
+   `Scripts/package-local.sh` copies `LICENSE`, `NOTICE` and
+   `THIRD_PARTY_NOTICES.md` into `Contents/Resources/` before signing;
+   `Scripts/test-dmg-layout.sh` asserts "licence texts sealed inside the
+   bundle". They now travel with the app after the dmg/zip is discarded.
 
-7. **Zero SPDX license headers in `Sources/`** — category: legal (carried
-   from session 2, re-confirmed not newly checked this session). Effort: M
-   (mechanical but touches every file) if the project wants per-file SPDX
-   headers; not legally required given the root `LICENSE`.
+7. **Zero SPDX license headers in `Sources/`** — RESOLVED (2026-09-02). The
+   two-line `// SPDX-License-Identifier: Apache-2.0` /
+   `// SPDX-FileCopyrightText: The CoreTend Authors` header is now on all 54
+   `Sources/` and 43 `Tests/` Swift files, matching the shell/Python
+   scripts' convention. `Scripts/check-spdx-headers.sh` (in `ci.yml`)
+   keeps new files from regressing.
 
 ## Low
 
@@ -94,6 +89,51 @@ argument-array-only `Process()` call, and 86/86 passing tests hold up
     does not check for updates itself** — category: architecture (carried
     from session 2 `FEATURE_INVENTORY.md`). Effort: M if real
     self-update-check behavior is wanted; currently honest UI-only.
+
+11. **Model fields computed by an engine but never surfaced in the UI**
+    — category: product polish. `periphery` (run 2026-09-02) flags them as
+    "assign-only". They are correct, cheap, `Sendable`/`Codable` data — kept
+    on purpose — but a "majestic" 1.x should show them:
+    - `ScanFinding.category` / `.confidence` — per-finding classification and
+      certainty; the Cleanup/Storage review lists neither.
+    - `IntegrityCore.QuarantineInfo.originURL` / `.downloadedAt` — download
+      referrer + date from the quarantine metadata; Protection shows only
+      `sourceURL`.
+    - `MCModuleIdentity.color` — the per-module role colour; module headers
+      and cards pull only `.icon` from the identity, not the colour.
+    - `SafetyLogViewModel.skippedOrErrorCount` — the audit view's subtitle
+      shows executed count only; skipped/errored is computed, not shown.
+    - `ReleaseInfo.channel` — parsed from `latest.json`; the update check
+      compares version only, so it cannot yet gate on release channel.
+    Effort: S each; net-new UI + a localized string or two, needs visual QA.
+
+12. **Intentional-library `public` surface flagged as "redundant"** — not
+    debt. `periphery` reports ~42 `public` symbols in `DesignSystem`,
+    `ScanCore`, `SafetyCore`, `Persistence` as "not used outside the module".
+    That is expected: these are deliberately-factored modules whose `public`
+    API is the module boundary, and a design-system component vocabulary is
+    meant to expose pieces the app has not adopted yet. Left as-is on
+    purpose; listed here so a future periphery run has a known baseline.
+
+13. **`dmgbuild` version pin outran the machine's Python** — RESOLVED
+    (`6ae2343`, 2026-09-02). `requirements-packaging.txt` pins
+    `dmgbuild==1.6.7`, which needs Python ≥ 3.10; a stock macOS `python3` is
+    the 3.9 system interpreter, so once the cached `.build/packaging-venv`
+    was gone `package-dmg.sh` failed to provision and **the 1.0.0 DMG could
+    not be built on this machine**. `package-dmg.sh` now probes
+    `python3.13/3.12/3.11/3.10` (`CORETEND_PACKAGING_PYTHON` overrides) and
+    fails loudly if none is ≥ 3.10. The exact pin is kept for a reproducible
+    `.DS_Store`.
+
+14. **rc.6's DMG background says "Unsigned build"** — RESOLVED for 1.0.0.
+    The published `v0.9.1-rc.6` disk image's background artwork reads
+    *"Unsigned build — first launch needs System Settings › Privacy &
+    Security"*, which is false — rc.6 is Developer ID signed and notarized.
+    The current `Resources/Brand/Sources/generate-brand-assets.swift` draws
+    *"Local scans · reversible cleanup · nothing leaves your Mac"* instead,
+    and the committed `Resources/Brand/Generated/DMG-Background.png` already
+    carries the new text, so the 1.0.0 DMG is correct. rc.6 itself is not
+    being re-cut.
 
 ## Not technical debt (explicitly checked, found clean this session)
 

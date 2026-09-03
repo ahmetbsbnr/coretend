@@ -74,6 +74,26 @@ esac
   && ok "channel '$CHANNEL' matches the version shape" \
   || note "version '$VERSION' implies channel '$EXPECTED' but '$CHANNEL' is declared"
 
+# 4b. Release/latest.template.json is hand-authored and flows straight into the
+#     published latest.json — build-release.sh never rewrites its `channel` /
+#     `prerelease`. It drifted once (still 'release-candidate' at 1.0.0), so
+#     assert it agrees with the source of truth and the version shape.
+TPL="Release/latest.template.json"
+if [ -f "$TPL" ]; then
+  TPL_CHANNEL=$(/usr/bin/python3 -c "import json;print(json.load(open('$TPL')).get('channel',''))")
+  TPL_PRERELEASE=$(/usr/bin/python3 -c "import json;print(str(json.load(open('$TPL')).get('prerelease')).lower())")
+  [ "$TPL_CHANNEL" = "$EXPECTED" ] \
+    && ok "$TPL channel '$TPL_CHANNEL' matches the version shape" \
+    || note "$TPL declares channel '$TPL_CHANNEL' but version '$VERSION' implies '$EXPECTED'"
+  case "$EXPECTED" in
+    stable) WANT_PRE=false ;;
+    *)      WANT_PRE=true ;;
+  esac
+  [ "$TPL_PRERELEASE" = "$WANT_PRE" ] \
+    && ok "$TPL prerelease is $TPL_PRERELEASE, matching a '$EXPECTED' release" \
+    || note "$TPL prerelease is '$TPL_PRERELEASE' but a '$EXPECTED' release needs $WANT_PRE"
+fi
+
 # 5. The canonical generated website must render the reviewed public release.
 #    The application tree can legitimately be one candidate ahead while a tag
 #    is pending; publishing that unreviewed candidate on the site would be the

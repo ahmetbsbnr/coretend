@@ -7,11 +7,11 @@ must carry forward regardless of which name is eventually approved.
 
 ## Conceptual heritage to preserve
 
-- **Core Bloom**: the central hero mark — a core/nucleus shape with
-  asymmetric arcs, used as the app icon foundation, the onboarding static
-  mark (`CoreBloomMark`), and the animated hero state in Smart Care
-  (`MCHeroCoreView`, deriving visual state from real scan phase, never a
-  decorative loop).
+- **Core Bloom**: the central mark — a core/nucleus shape with asymmetric
+  arcs, used as the app icon foundation, the onboarding/menu static mark
+  (`CoreBloomMark`), and the resting frame of the animated scan motif
+  (`MCScanStage`, deriving visual state from real scan phase, never a
+  decorative loop). (The retired `MCHeroCoreView` was Smart Care's version.)
 - **Orbital Ecology**: the functional color system — four hues
   (`core-mint`/`ion-violet`/`solar-amber`/`pulse-coral`, per
   `cross-site-design-tokens.json`) mapped to functional categories
