@@ -68,6 +68,16 @@ manual review):
 - `Scripts/test.sh` now sweeps leaked `coretend.tests.*` preference plists
   before each run (352 had accumulated from SIGKILLed test runs; the
   `removePersistentDomain` `defer` leaves a stub file, and SIGKILL skips it).
+- `Store.userPath()` / `userDirectory()` no longer create the real
+  `~/Library/Application Support/CoreTend` — unit tests that call them only to
+  assert a path string were creating an empty real directory each run.
+- `latest.template.json` `channel` drifted to `release-candidate` at 1.0.0
+  (would have published `latest.json` as a prerelease RC); fixed to `stable`
+  / `prerelease:false`, and `test-release-sync.sh` now asserts the template's
+  channel + prerelease (negative-tested).
+- Portfolio (`content/coretend-dashboard-copy`, not pushed): the two remaining
+  "Smart Care" strings in the CoreTend case study → "Dashboard" / "Privacy
+  Cleaner"; typecheck + lint + test + build pass.
 - `Scripts/package-dmg.sh` picks a Python ≥ 3.10 for the `dmgbuild` venv —
   `dmgbuild==1.6.7` needs 3.10+, and a stock macOS `python3` is 3.9; once
   the cached venv was gone the DMG build failed. **This would have blocked
