@@ -272,10 +272,20 @@
           index === 0 ? colors.cobalt : colors.ink, index === 0 ? 0.18 : 0.08,
         ));
         const angle = phase * 0.52;
+        // Keep the sweep inside the outer ring (0.25) and fade it to nothing at
+        // the tip, so it reads as a radar sweep bound to the rings rather than a
+        // straight line slashing across the page content.
+        const reach = scale * 0.22;
+        const ex = x + Math.cos(angle) * reach;
+        const ey = y + Math.sin(angle) * reach;
+        const sweep = context.createLinearGradient(x, y, ex, ey);
+        sweep.addColorStop(0, `rgba(${colors.cobalt},.14)`);
+        sweep.addColorStop(1, `rgba(${colors.cobalt},0)`);
         context.beginPath();
         context.moveTo(x, y);
-        context.lineTo(x + Math.cos(angle) * scale * 0.29, y + Math.sin(angle) * scale * 0.29);
-        context.strokeStyle = `rgba(${colors.cobalt},.2)`;
+        context.lineTo(ex, ey);
+        context.strokeStyle = sweep;
+        context.lineWidth = 1.4;
         context.stroke();
       } else if (page === "legal") {
         for (let index = 0; index < 9; index++) {

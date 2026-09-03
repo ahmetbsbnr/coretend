@@ -196,7 +196,7 @@ p{margin:0}
 
 .radar-search{width:clamp(150px,22vw,250px);aspect-ratio:1;position:relative;margin:0 0 38px;border:1px solid var(--line);border-radius:50%;background:repeating-radial-gradient(circle,transparent 0 24px,var(--line) 25px 26px)}
 .radar-search::before{content:"";position:absolute;left:50%;top:50%;width:4px;height:4px;margin:-2px;border-radius:50%;background:var(--cobalt);box-shadow:0 0 0 8px var(--cobalt-wash)}
-.radar-search::after{content:"";position:absolute;inset:8px 50% 50% 8px;border-top:2px solid var(--cobalt);transform-origin:100% 100%;animation:search 4.2s linear infinite}
+.radar-search::after{content:"";position:absolute;left:50%;top:calc(50% - 1px);width:calc(50% - 9px);height:2px;background:var(--cobalt);transform-origin:0 50%;animation:search 4.2s linear infinite}
 @keyframes search{to{transform:rotate(360deg)}}
 .not-found{min-height:calc(100vh - 70px);display:flex;align-items:center;padding:64px 0 88px}
 .not-found h1{max-width:14ch}
