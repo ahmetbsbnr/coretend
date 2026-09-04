@@ -99,7 +99,7 @@ Full breakdown: `Documentation/FINAL_COMPLIANCE_SCORECARD.md`.
 ## 5. What CoreTend is / is not (from evidence gathered this session)
 
 - **Is**: a local, offline, SwiftUI macOS app for disk cleanup, duplicate/similar-image detection, app
-  uninstall with leftover detection, ClamAV-based malware scanning with reversible quarantine, cloud
+  uninstall with leftover detection, ancien scanner externe-based malware scanning with reversible quarantine, cloud
   storage footprint analysis (without triggering downloads), and system performance metrics — all backed
   by an actor-isolated local SQLite store, no external SwiftPM dependencies.
 - **Is not (yet, per this session's evidence)**: publicly published (no tags, no remotes, nothing
@@ -122,7 +122,7 @@ localizations (en/fr, 372 lines each), 0 external dependencies, 3 GitHub workflo
 See `Documentation/ARCHITECTURE_INVENTORY.md` — 9 SwiftPM targets, 4 Mermaid diagrams (global
 architecture, scan flow, delete/restore/quarantine flow, Smart Care orchestration), concurrency posture
 (18 files use `@MainActor`, 4 use `AsyncStream`, 1 `Process()` shell-out at
-`Sources/MalwareEngine/MalwareEngine.swift:56`).
+`Sources/LegacyScanner/LegacyScanner.swift:56`).
 
 ## 9. Module inventory (partial — target-level only, not full public-API inventory)
 
@@ -152,20 +152,20 @@ from prior sessions (not cleaned up, flagged only).
 
 **Done this session** — see `Documentation/FEATURE_INVENTORY.md` + `feature-inventory.json`/`.csv`. 41
 entries across app shell, SafetyCore, ScanCore (4 engines), all 7 real cleanup rules from
-`UserCleanupRules.swift`, Smart Care, Protection/MalwareEngine, Performance/SystemMetrics,
+`UserCleanupRules.swift`, Smart Care, Protection/LegacyScanner, Performance/SystemMetrics,
 Applications/AppDiscovery, My Clutter, Space Lens, Cloud Cleanup, My Activity/Persistence, and every
 Settings toggle. Status breakdown: mostly VERIFIED_COMPLETE, 5 VERIFIED_PARTIAL (in-memory-only audit
 log, restore edge cases, App Updates deep-link-only, Cloud Cleanup view logic not fully traced), 5
 IMPLEMENTED_UNVERIFIED (My Clutter/Duplicates/Similar Images/Space Lens view-layer logic — engines
 themselves confirmed real and wired, but the surrounding view code wasn't read line-by-line this
 session). Real findings: `AppUpdatesView` only deep-links to the App Store's Updates pane rather than
-checking for updates itself; no test exercises the actual ClamAV `Process()` invocation (only its
+checking for updates itself; no test exercises the actual ancien scanner externe `Process()` invocation (only its
 output parser and quarantine round-trip); no dead/unwired Settings toggle found.
 
 ## 12. Security audit (threat model around the `Process()` shell-out, path validation coverage, sandboxing)
 
 **Done this session** — see `Documentation/SECURITY_AUDIT_CURRENT.md`. The single `Process()` call
-(`MalwareEngine.swift:56`) uses an argument array, never a shell — no injection surface; binary path
+(`LegacyScanner.swift:56`) uses an argument array, never a shell — no injection surface; binary path
 restricted to 3 known install locations. `PathValidator` (`SafetyCore.swift`) provides protected-root
 blocklist + allowlist + symlink-escape resolution + re-validation at execute time, backed by 13 passing
 tests. Exactly 4 force-unwraps in the whole codebase, all on safe compile-time-constant inputs; zero
@@ -186,7 +186,7 @@ script tags in the 27 tracked HTML files (shallow check; full website audit stil
 **Done this session** — see `Documentation/LEGAL_AND_LICENSE_STATUS.md`. `LICENSE`, both texts in
 `LICENSES/`, `TRADEMARKS.md`, and `Documentation/{THIRD_PARTY,ASSET_PROVENANCE,DEPENDENCIES}.md` all
 verified to actually exist and be internally consistent (Apache-2.0 code / CC-BY-4.0 docs-art split,
-zero SwiftPM deps, ClamAV GPL-2.0 external-subprocess-only, no bundled fonts/stock imagery). **Real
+zero SwiftPM deps, ancien scanner externe GPL-2.0 external-subprocess-only, no bundled fonts/stock imagery). **Real
 defect found**: `LICENSE` itself references two files that don't exist in the tree
 (`Documentation/LICENSING.md`, `THIRD_PARTY_NOTICES.md` — the real file is `Documentation/THIRD_PARTY.md`).
 Not fixed this session (content edit, not requested); flagged for follow-up. Zero SPDX headers in

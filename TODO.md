@@ -27,6 +27,27 @@ would still be false and will not be created.
 - Possible privileged helper and Mac App Store edition. Neither is required by
   current features or promised to users.
 
+## Future product ideas — not shipped, not promised
+
+These are recorded proposals only. They require a separate product and safety
+review before any implementation:
+
+- Developer cleanup: Xcode DerivedData and iOS Simulator caches, with explicit
+  scope and confirmation for every location.
+- Universal-binary size analysis: report removable Intel slices first; never
+  alter an app without signature-aware validation and a reversible path.
+- Complete app uninstall: discover related support files with a reviewed,
+  app-specific allowlist rather than broad `~/Library` deletion.
+- Expanded native security signals beyond Integrity's current read-only scope.
+- Background-item manager: list LaunchAgents, LaunchDaemons and login items;
+  any disable action would need explicit review and rollback.
+- Sensitive-metadata cleaner: EXIF/device/date inspection and opt-in removal.
+- Notification Center widget showing free space and linking to the main app.
+- Optional CLI for report and reviewed cleanup workflows; no unattended
+  destructive command by default.
+- Shortcuts actions for inspect/report workflows, with confirmation before any
+  destructive action.
+
 Historical TODOs live under `Documentation/Archive/` and
 `Documentation/Audits/`. `Documentation/PROJECT_STATE.json` is current machine-
 readable state; `Documentation/RELEASE_STATE.md` carries release evidence.

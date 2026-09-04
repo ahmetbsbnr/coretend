@@ -49,7 +49,7 @@
       "name": "localUserData",
       "oldValue": "~/Library/Application Support/MacCareLocal/",
       "newValue": "PARAMETERIZABLE_PENDING_APPROVED_NAME",
-      "files": ["Sources/Persistence/Store.swift", "Sources/MalwareEngine/MalwareEngine.swift", "Sources/MacCareApp/ProtectionView.swift"],
+      "files": ["Sources/Persistence/Store.swift", "Sources/LegacyScanner/LegacyScanner.swift", "Sources/MacCareApp/ProtectionView.swift"],
       "migrationRequired": true,
       "compatibility": "real user data on disk (SQLite store, Quarantine files, FSEvents fingerprint cache) -- see user-data-rename-migration.json for the full plan",
       "risk": "HIGH",

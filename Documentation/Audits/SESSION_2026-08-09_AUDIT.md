@@ -102,16 +102,16 @@ ships in the next RC.
 
 ## 6. `TODO.md` is a stale planning document, not current state
 
-`TODO.md` (repo root) is written as if ClamAV is still part of the product
-("ClamAV absent", "installer ClamAV guidance", "base antivirus corrompue/
+`TODO.md` (repo root) is written as if ancien scanner externe is still part of the product
+("ancien scanner externe absent", "installer ancien scanner externe guidance", "base antivirus corrompue/
 obsolète" throughout its crash-test matrix). But `Documentation/
-CLAMAV_DECISION.md` and `RELEASE_STATE.md` both confirm ClamAV was fully
+LEGACY_SCANNER_DECISION.md` and `RELEASE_STATE.md` both confirm ancien scanner externe was fully
 retired in commit `eac408c`, replaced by IntegrityCore (native, read-only,
 no external scanner). `TODO.md` predates that retirement and was never
 updated. Its other content (Mac-launch-failure repro, DMG redesign, crash
 test matrix, GitHub attestation verification, portfolio-sync workflow
 dry-run) is still procedurally valid and matches `HUMAN_BLOCKERS.md`'s open
-items — only the ClamAV framing is wrong. **Recommend**: strip ClamAV
+items — only the ancien scanner externe framing is wrong. **Recommend**: strip ancien scanner externe
 references from `TODO.md` or archive it under `Documentation/Archive/` and
 regenerate its checklist from `KNOWN_ISSUES.md`/`HUMAN_BLOCKERS.md`, which
 are current.
@@ -206,7 +206,7 @@ tests pass (338 prior + 2 new `SidebarReachabilityTests`).
 
 ## 10. TODO.md rewritten
 
-`TODO.md` no longer frames any item around ClamAV. The prior version is
+`TODO.md` no longer frames any item around ancien scanner externe. The prior version is
 preserved verbatim at `Documentation/Archive/
 TODO_2026-08-08_pre-integritycore-cleanup.md`. The rewritten file keeps only
 genuinely open items (clean-Mac launch repro, DMG redesign, full client
@@ -331,7 +331,7 @@ successful scheduled run from 2026-08-03 predating this session).
 **Crash matrix.** Full classification of all 40 items in
 `Documentation/Audits/CRASH_MATRIX_CLASSIFICATION.md`: 31 executed for real
 this session (`Scripts/test-robustness.sh` full run — 31/31 PASS — plus
-`swift test`'s existing coverage), 6 N/A (ClamAV, retired), 3 honest gaps
+`swift test`'s existing coverage), 6 N/A (ancien scanner externe, retired), 3 honest gaps
 (disk-nearly-full, CPU-under-load, `URLSession` timeout — feasible,
 not run, not claimed done), 2 correctly needing a second Mac/host-level
 control (memory pressure, sleep/wake), 2 correctly needing a display
@@ -373,7 +373,7 @@ known `v0.9.1-rc.5` `SHA256SUMS`.
 **Portfolio verification.** Case study text matches the real 7-module
 architecture, correctly states "neither a Developer ID signature nor Apple
 notarization" and frames Developer ID/notarization as future work, no
-ClamAV, `scripts/check-static.mjs` (51 checks) all pass. **New finding,
+ancien scanner externe, `scripts/check-static.mjs` (51 checks) all pass. **New finding,
 not previously tracked**: `SmartCareView.swift` is a fully-built, tested,
 documented (`Documentation/SMART_CARE.md`) one-click orchestrator — but is
 not referenced by any `ModuleID` case at all (deeper than the

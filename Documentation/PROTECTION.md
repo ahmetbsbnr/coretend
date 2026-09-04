@@ -3,8 +3,8 @@
 The "Protect" sidebar destination's first tab is **Integrity**: three
 read-only checks against signals macOS already records — no scanning
 engine, no signature database, no third-party binary, nothing downloaded.
-See [CLAMAV_DECISION.md](CLAMAV_DECISION.md) for why this replaced an
-earlier ClamAV-based design, and
+See [LEGACY_SCANNER_DECISION.md](LEGACY_SCANNER_DECISION.md) for the history of an
+earlier external-scanner design, and
 [PROTECTION_LIMITATIONS.md](PROTECTION_LIMITATIONS.md) for exactly what it
 does and does not tell you.
 

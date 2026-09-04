@@ -10,7 +10,7 @@ unavailable" means the module is shown as such in the UI, never faked.
 | Module | State | Backing |
 |---|---|---|
 | Cleanup | implemented, enabled | `initialModules()`; drives `ScanEngine(rules: UserCleanupRules.all)` |
-| Protection | unavailable (honest) | `.unavailable(smartcare.protection_unavailable)` — never claims to scan without ClamAV |
+| Protection | unavailable (honest) | `.unavailable(smartcare.protection_unavailable)` — never claims to scan without ancien scanner externe |
 | Performance | unavailable (honest) | `.unavailable(smartcare.performance_unavailable)` |
 | Applications | unavailable (honest) | `.unavailable(smartcare.applications_unavailable)` |
 

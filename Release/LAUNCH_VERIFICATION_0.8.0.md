@@ -30,7 +30,7 @@ Rebuilt via `Scripts/package-local.sh`, launched from `build/MacCare
 Local.app`, and used to take one real, window-only screenshot (Smart Care
 idle screen) confirming the built 0.8.0 UI renders correctly and matches
 `Documentation/FEATURE_MATRIX.md`'s claims (honest "not yet available"
-labels where ClamAV/performance/app-analysis aren't wired to this specific
+labels where ancien scanner externe/performance/app-analysis aren't wired to this specific
 screen state). See `Documentation/KNOWN_LIMITATIONS.md` and
 `Documentation/VISUAL_QA.md` for the full display-availability note and
 what remains for a full visual-QA campaign.

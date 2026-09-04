@@ -30,18 +30,18 @@ can make an informed decision.
 - **Not real-time.** Each check runs on demand when you open its tab; there
   is no background watcher and nothing runs on a schedule.
 
-## Why this replaced a ClamAV-based design
+## Why the external-scanner design was retired
 
-An earlier version of this tab wrapped a user-installed `clamscan` binary
-(ClamAV) plus a local quarantine mechanism. Both required the user to open
-Terminal and run `brew install clamav` — a hard violation of this
+An earlier version of this tab wrapped a user-installed external scanner binary
+plus a local quarantine mechanism. Both required the user to open Terminal and install
+a separate package — a hard violation of this
 project's own bar for this feature ("never Terminal, never Homebrew").
 Building a fully in-app installer/updater for a third-party GPL-licensed
 scanning engine was a real distribution and licensing undertaking this
 project had not had legal review for, so the feature was retired rather
 than shipped as a Terminal-dependent version of itself. Full rationale,
 including what the removed code covered, in
-[CLAMAV_DECISION.md](CLAMAV_DECISION.md).
+[LEGACY_SCANNER_DECISION.md](LEGACY_SCANNER_DECISION.md).
 
 ## If you need real malware protection
 

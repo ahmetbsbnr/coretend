@@ -81,7 +81,7 @@ manual review):
 - Two force-unwraps in `SimilarImagesEngine` → `compactMap` + `guard let`.
 - `check-first-paint.py` / `check-retired-pages.py` were orphaned checks —
   wired into `check-website.sh` and `ci.yml`.
-- Fixed the stale GitHub repo description ("optional ClamAV scanning") and
+- Fixed the stale GitHub repo description ("optional ancien scanner externe scanning") and
   the "Paper / Ink / Cobalt" comments in `DesignSystem.swift`.
 - SPDX headers on all 54 `Sources/` + 43 `Tests/` Swift files;
   `Scripts/check-spdx-headers.sh` in `ci.yml` keeps them from regressing.
@@ -228,7 +228,7 @@ version 0.9.1-rc.5, build 915 and macOS 14.0+. Its ad-hoc signature verifies;
 Gatekeeper rejects it with exit 3 as expected without Developer ID or
 notarization. Isolated English/dark and French/light launches stay alive and
 exit normally under the harness. Bundle and Mach-O scans find IntegrityCore
-and no current ClamAV scanner/interface, retired Dry Run UI copy, personal
+and no current ancien scanner externe scanner/interface, retired Dry Run UI copy, personal
 checkout path or local dependency.
 
 rc.5 removes the former Dry Run product mode. Scans remain read-only; cleanup

@@ -126,7 +126,7 @@ The sidebar has eleven destinations (`Sources/CoreTendApp/CoreTendApp.swift:247-
 | Activity and diagnostics | Local real/simulated activity distinction, CSV/JSON export, redacted safety log, favourites/recents and diagnostics export | Present | `Sources/CoreTendApp/MyActivityView.swift:44-61,87-137,267-282`; `SafetyLogView.swift:6-39`; `FavoritesRecentsView.swift:72-106`; `DiagnosticReport.swift:7-18,67-145` |
 | English and French | Runtime system/English/French selection with matching resource-key sets | Present | `Sources/CoreTendApp/L10n.swift:3-55`; `Sources/CoreTendApp/Resources/Base.lproj/Localizable.strings`; `fr.lproj/Localizable.strings` |
 
-“Protection” in older documentation is not presented as antivirus. Commit `eac408c` retired the former ClamAV direction and introduced native, read-only Integrity signals.
+“Protection” in older documentation is not presented as antivirus. Commit `eac408c` retired the former ancien scanner externe direction and introduced native, read-only Integrity signals.
 
 ## 6. Data management, privacy and safety
 
@@ -193,7 +193,7 @@ Previously documented figures such as 296 tests / 58 suites or structured-state 
 | `7bf18bb` | 19 Jul 2026 | Foundation commit with SafetyCore, ScanCore, FileRules, app shell and Cleanup module |
 | `a6aa3bf` / tag `v0.9.0` | 27 Jul 2026 | `v0.9.0` tagged checkpoint |
 | `119d940` / tag `v0.9.1-rc.3` | 29 Jul 2026 | Release-candidate notes checkpoint |
-| `eac408c` | 29 Jul 2026 | Replaced ClamAV direction with native Integrity signals |
+| `eac408c` | 29 Jul 2026 | Replaced ancien scanner externe direction with native Integrity signals |
 | `523ef1e` | 30 Jul 2026 | Runtime system/English/French selector |
 | `f1a5337` | 30 Jul 2026 | Command palette |
 | `f9803d2` and `9ca3a89` | 30 Jul 2026 | Space Lens Trash action, search, filters and exclusion controls |
@@ -215,7 +215,7 @@ Current source takes precedence over these conflicts:
 | Files named `CURRENT_*` still describe 0.8.1. | `Documentation/CURRENT_PROJECT_STATE.json:1-8`; `CURRENT_AUDIT_STATE.json:1-8` |
 | Test totals differ across README, test inventory and structured state. | `README.md:114-117`; `Documentation/TEST_INVENTORY.md:3-9`; `Documentation/PROJECT_STATE.json:52-55`; current declaration audit |
 | Feature inventory summary fields are internally stale and list fewer Cleanup rules than current source. | `Documentation/FEATURE_INVENTORY.md:5`; `Documentation/feature-inventory.json:6-10,384`; `Sources/FileRules/UserCleanupRules.swift:7-148` |
-| Several architectural documents still refer to ClamAV/MalwareEngine or modules as planned. | `Documentation/FEATURE_MATRIX.md`; `ROADMAP.md`; `ARCHITECTURE_OVERVIEW.md`; `ARCHITECTURE.md:20-22`; contrast current `Package.swift` and `IntegrityCore` |
+| Several architectural documents still refer to ancien scanner externe/LegacyScanner or modules as planned. | `Documentation/FEATURE_MATRIX.md`; `ROADMAP.md`; `ARCHITECTURE_OVERVIEW.md`; `ARCHITECTURE.md:20-22`; contrast current `Package.swift` and `IntegrityCore` |
 | Space Lens documentation predates its reviewed Trash action. | `Documentation/SPACE_LENS.md:19-23`; commits `f9803d2`, `9ca3a89`; current `SpaceLensView.swift` |
 | Older design documents describe the prior Living System direction. | `PRODUCT.md`; `DESIGN.md`; contrast commit `fc46f49` and `Sources/DesignSystem/Colors.swift` |
 

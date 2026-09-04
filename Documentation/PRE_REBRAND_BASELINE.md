@@ -41,7 +41,7 @@ from a prior report without re-verification.
 
 `MacCareApp` (executable target), `ScanCore`, `SafetyCore`, `FileRules`,
 `DesignSystem`, `Persistence`, `SystemMetrics`, `AppDiscovery`,
-`MalwareEngine` (+ matching `*Tests` targets). None of the library names are
+`LegacyScanner` (+ matching `*Tests` targets). None of the library names are
 brand-coupled except the app target/executable itself.
 
 ## Local data paths (current, pre-migration)
@@ -49,7 +49,7 @@ brand-coupled except the app target/executable itself.
 - SQLite store: `~/Library/Application Support/MacCareLocal/store.sqlite`
   (`Sources/Persistence/Store.swift`)
 - Quarantine directory: `~/Library/Application Support/MacCareLocal/Quarantine`
-  (`Sources/MalwareEngine/MalwareEngine.swift`, `Quarantine.defaultDirectory()`)
+  (`Sources/LegacyScanner/LegacyScanner.swift`, `Quarantine.defaultDirectory()`)
 - FSEvents watch fingerprints: same `Application Support/MacCareLocal/`
   parent directory (`watch-fingerprints.json`, sibling to Quarantine — see
   `Sources/MacCareApp/ProtectionView.swift`)

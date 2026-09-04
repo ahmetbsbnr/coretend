@@ -637,7 +637,7 @@ features cards: Privacy Cleaner said it clears "caches, logs and other
 reclaimable local files" → corrected to browser cache-only (Chrome-family/
 Firefox/Safari), only while the browser is closed, history/cookies shown but
 never deleted (matches PrivacyCleanerView + Step 4). Protection card tightened:
-ClamAV installed separately, flags for review, no auto-quarantine. Everything
+ancien scanner externe installed separately, flags for review, no auto-quarantine. Everything
 else already honest (download page discloses unsigned/not-notarized + no live
 link, pre-1.0 banners, no multi-OS testing claim). Regenerated
 `en/features.html` + `fr/features.html`. Site stays static/bilingual, no
@@ -648,7 +648,7 @@ Extended `OnboardingView.swift` (was 4 basic steps) into the full 8-step plan
 wizard, split into a tested pure-logic file + a view. Three atomic commits:
 1. `OnboardingLogic.swift` + `OnboardingLogicTests.swift` (+15 tests, 200→215):
    SecurityProfile→SecurityConfig (safe-default invariant), LaunchLocation.detect,
-   SystemCheck.items/overall (worst-wins), ClamAVVersionInfo.parse.
+   SystemCheck.items/overall (worst-wins), ancien scanner externeVersionInfo.parse.
 2. The 8-step wizard view (Welcome→Summary) driven by that logic. Move-to-
    Applications is a user-space FileManager copy (fallback ~/Applications, then
    reveal-for-drag) — no sudo/privilege escalation. Notification toggle requests
@@ -722,7 +722,7 @@ Given two prior sessions' docs lagged behind actual commits, the next agent
 MUST verify per-step completeness against source, not just this file:
 - **Step 3 (FSEvents)**: core watcher + UI wiring landed — verify the full
   simulated-stream test matrix from the plan (burst, dedup, temp-file,
-  deleted-before-scan, unmounted volume, ClamAV-absent, cancel, restart) is
+  deleted-before-scan, unmounted volume, ancien scanner externe-absent, cancel, restart) is
   actually present; add what's missing.
 - **Step 4 (Privacy Cleaner)**: VERIFIED COMPLETE (audit pass). Detection is
   real for Chromium family (Chrome/Edge/Brave/Vivaldi/Chromium), Firefox, and

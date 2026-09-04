@@ -17,7 +17,7 @@
   (duplicate `public_head` / `shell` / `information_pages` definitions); the
   generated site is byte-for-byte identical.
 - docs(github): the repo description and topics no longer claim "optional
-  ClamAV scanning" — retired in favour of the read-only IntegrityCore.
+  ancien scanner externe scanning" — retired in favour of the read-only IntegrityCore.
 
 ## 0.9.1-rc.5 — 2026-08-02 « Review and Confirm »
 
@@ -42,7 +42,7 @@ built by the clean tagged workflow from merge commit
 - test(safety): adds a repository/Security gate that rejects a returning
   product-mode switch and requires confirmations on every destructive surface.
 - docs(release): records build 915, the rc.5 Gatekeeper route and the continued
-  IntegrityCore/no-ClamAV product boundary.
+  IntegrityCore/no-ancien scanner externe product boundary.
 
 ## 0.9.1-rc.4 — 2026-08-02 « Integrity and Cohesion »
 
@@ -51,7 +51,7 @@ release's DMG is `CoreTend-0.9.1-rc.4-arm64-unsigned.dmg` (4,726,227 bytes,
 SHA-256 `f321b2ca801d5815163ce89eeb68a4957a451c054693c0a12e064f35b639b4fe`),
 built from tagged merge commit `67bb2e55ca6ddf336df7d0753e878c2293b129b4`.
 
-- feat(integrity): removes the former user-installed ClamAV process wrapper,
+- feat(integrity): removes the former user-installed ancien scanner externe process wrapper,
   quarantine folder and background scan watcher. The first-party
   `IntegrityCore` now reports read-only macOS provenance, code-signature and
   login-item signals; it is explicitly not antivirus software.
@@ -115,7 +115,7 @@ user. rc.2's artifacts are left exactly as published.
 - test(app): `Scripts/test-robustness.sh`, 37 cases under an isolated HOME —
   missing and unwritable support directories, empty/truncated/garbage
   preferences, a database that is empty, corrupt, truncated, read-only or a
-  directory, ClamAV absent/faked/unreadable/garbage, corrupt signature
+  directory, ancien scanner externe absent/faked/unreadable/garbage, corrupt signature
   database, no network, invalid update manifests, Unicode, emoji, long paths,
   symlink cycles, unreadable trees, 3000 files, relaunch after a hard kill at
   three points during startup, plus 50 cold launches and 50 launch/quit
@@ -183,9 +183,9 @@ procedure.
   'Testing'`) — added `swift-testing` as an explicit, pinned SwiftPM
   dependency (test targets only, zero footprint in the shipped binary).
   Verified reproducible on a clean clone; 296/296 tests pass.
-- fix: the ClamAV onboarding step's "Recheck" could never detect a binary
+- fix: the ancien scanner externe onboarding step's "Recheck" could never detect a binary
   installed mid-onboarding, since the scanner was captured once at view-model
-  init. Added `recheckClamAV()` plus a "Copy Install Command" button.
+  init. Added `recheckancien scanner externe()` plus a "Copy Install Command" button.
 - docs: `Documentation/DEPENDENCIES.md` and `Scripts/check-licenses.sh`
   updated to reflect the new swift-testing dependency (was previously
   documented as zero external dependencies).
@@ -338,8 +338,8 @@ control script that rejects any screenshot outside its approved manifest; Safety
 audit log is now persisted to SQLite (append-only) instead of in-memory only; Quarantine
 records richer metadata (permissions/size/hash/volume) and handles missing
 parent/volume/collision/permission-denied cases without ever silently overwriting;
-ClamAV wrapper gained a configurable timeout, real cancellation, and an honest
-scanned-file count parsed from clamscan's own summary; Privacy Cleaner now disables
+ancien scanner externe wrapper gained a configurable timeout, real cancellation, and an honest
+scanned-file count parsed from ancien-scanner's own summary; Privacy Cleaner now disables
 cleaning per-profile while that profile's browser is running, with a close-and-rescan
 action; fixed three raw, non-adaptive Space Lens colors and consolidated repeated icon
 size literals into tokens; added real accessibility support (labels/grouping across 5
@@ -423,7 +423,7 @@ warnings.
 - Full open source foundation: LICENSE/LICENSES/NOTICE/COPYRIGHT/
   TRADEMARKS.md/THIRD_PARTY_NOTICES.md, public README, SECURITY.md,
   CODE_OF_CONDUCT.md, CONTRIBUTING.md, GOVERNANCE.md, SUPPORT.md,
-  DEPENDENCIES.md, CLAMAV.md, PROTECTION_LIMITATIONS.md, full user and
+  DEPENDENCIES.md, LEGACY_SCANNER.md, PROTECTION_LIMITATIONS.md, full user and
   developer documentation, `.github/` community files, CI + security
   workflows, and public `Scripts/` (bootstrap, doctor, repository-doctor,
   clean, uninstall-local, check-licenses, check-private-data,
@@ -529,7 +529,7 @@ warnings.
   garantie de survivant), Images similaires (Vision, vignettes à la demande).
 - Space Lens (treemap + liste), Applications (inventaire, désinstallation Corbeille,
   leftovers conservateurs), Performance (métriques live + LaunchAgents),
-  Protection (ClamAV + quarantaine, état honnête), Cloud Cleanup (empreinte locale),
+  Protection (ancien scanner externe + quarantaine, état honnête), Cloud Cleanup (empreinte locale),
   barre de menus, onboarding avec sonde FDA réelle.
 - 46 tests verts, 0 warning, paquet Release arm64.
 

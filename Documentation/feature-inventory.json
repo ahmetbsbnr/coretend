@@ -367,5 +367,5 @@
     }
   ],
   "total": 51,
-  "note": "0.8.1 resync: added the four features delivered by the CoreTend rebrand (legacy data migration, its launch wiring, its Settings surface, and the uninstaller's opt-in legacy handling), which the 0.8.0 inventory predated. No pre-existing entry was altered. 0.9.0 launch phase: added testing.storeisolation, the store-isolation mechanism that closed RESYNC-002 (the distribution smoke test previously ran against the real user store). Post-ClamAV-removal workspace-stabilization phase (2026-07-30): added spacelens.delete, quicklook.extended, activity.jsonexport, l10n.languagepicker, and ui.commandpalette."
+  "note": "0.8.1 resync: added the four features delivered by the CoreTend rebrand (legacy data migration, its launch wiring, its Settings surface, and the uninstaller's opt-in legacy handling), which the 0.8.0 inventory predated. No pre-existing entry was altered. 0.9.0 launch phase: added testing.storeisolation, the store-isolation mechanism that closed RESYNC-002 (the distribution smoke test previously ran against the real user store). Post-ancien scanner externe-removal workspace-stabilization phase (2026-07-30): added spacelens.delete, quicklook.extended, activity.jsonexport, l10n.languagepicker, and ui.commandpalette."
 }

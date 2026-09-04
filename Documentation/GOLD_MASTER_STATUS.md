@@ -142,7 +142,7 @@ The app was copied to an isolated Applications directory. The copied bundle is
 arm64, self-contained, ad-hoc signed and reports the expected identifier,
 version, build and minimum macOS. Bundle/Mach-O scans find:
 
-- no current `ClamAV`, `clamscan` or `MalwareEngine` file/string;
+- no current `ancien scanner externe`, `ancien-scanner` or `LegacyScanner` file/string;
 - no retired Dry Run UI/localization copy;
 - no real build-account or checkout path;
 - `IntegrityCore`, `ProvenanceScanner` and `CodeSignInspector` present.
@@ -207,7 +207,7 @@ normalization, `/privacy`, `/support`, `/legal`, `/licenses`, `/download`,
 `/latest.json`, `/SHA256SUMS`, `/manifest.webmanifest`, `robots.txt`,
 `sitemap.xml`, 404) passed with no redirect loops, no raw `.html` or `/site/`
 exposure, and only rc.5 referenced (no rc.3/rc.4 recommendation, no retired
-Dry Run/ClamAV copy). Real-browser checks confirmed FR/EN, light/dark and
+Dry Run/ancien scanner externe copy). Real-browser checks confirmed FR/EN, light/dark and
 mobile responsive rendering with a clean console.
 
 The rc.5 client journey was re-run as a control only, against a fresh

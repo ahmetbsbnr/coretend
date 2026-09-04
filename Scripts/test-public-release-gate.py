@@ -80,7 +80,7 @@ class PublicReleaseGateTests(unittest.TestCase):
         self.assertNotIn("generatedBy", latest)
 
         combined = latest_bytes.decode("utf-8") + (output / "SHA256SUMS").read_text(encoding="ascii")
-        for forbidden in ("ClamAV", "Documentation/", "Configuration/", "Scripts/", "Release/", ".html", "/Users/"):
+        for forbidden in ("legacy scanner", "Documentation/", "Configuration/", "Scripts/", "Release/", ".html", "/Users/"):
             self.assertNotIn(forbidden, combined)
 
         sums = (output / "SHA256SUMS").read_text(encoding="ascii").splitlines()
@@ -183,10 +183,10 @@ class PublicReleaseGateTests(unittest.TestCase):
         invalid["_comment"] = "Generated from Documentation/private-release.json"
         self.assert_rejected(invalid, "internal repository path")
 
-    def test_clamav_reference_is_rejected(self) -> None:
+    def test_legacy_scanner_reference_is_rejected(self) -> None:
         invalid = copy.deepcopy(self.current)
-        invalid["_comment"] = "Legacy ClamAV release"
-        self.assert_rejected(invalid, "legacy ClamAV reference")
+        invalid["_comment"] = "Legacy scanner release"
+        self.assert_rejected(invalid, "legacy scanner reference")
 
     def test_unreviewed_field_cannot_leak_into_public_output(self) -> None:
         invalid = copy.deepcopy(self.current)

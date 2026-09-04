@@ -1,8 +1,8 @@
-# ClamAV removal — test count audit
+# ancien scanner externe removal — test count audit
 
 Factual accounting of every test removed, modified, or added by
-`eac408c` (refactor(protection): retire ClamAV, replace with native Integrity
-signals). Rationale for the removal itself is in `CLAMAV_DECISION.md`; this
+`eac408c` (refactor(protection): retire ancien scanner externe, replace with native Integrity
+signals). Rationale for the removal itself is in `LEGACY_SCANNER_DECISION.md`; this
 document only accounts for the test suite delta.
 
 Verified directly by diffing `Tests/` between `eac408c~1` (24d7f13) and
@@ -12,13 +12,13 @@ commit only, not the wider gap since the 0.8.1 audit (274 tests) — many
 unrelated commits (DMG layout, distribution/robustness tests, release
 tooling) landed between the two and are not part of this accounting.
 
-## Removed entirely (ClamAV/MalwareEngine-specific, no replacement needed)
+## Removed entirely (ancien scanner externe/LegacyScanner-specific, no replacement needed)
 
 | File | Suite | Tests removed | Reason |
 |---|---|---:|---|
-| `Tests/MalwareEngineTests/MalwareEngineTests.swift` | ClamAV output parsing (7); ClamAVScanner process execution (5); Real ClamAV EICAR scan (1); Quarantine (10) | 23 | Tested `clamscan` output parsing, process execution, and the app-local Quarantine folder — all of it specific to the retired ClamAV integration. |
-| `Tests/MalwareEngineTests/ProtectionWatcherTests.swift` | ProtectionWatcher decisions | 16 | Tested the background FSEvents watcher that triggered ClamAV scans on new files. The watcher itself was removed with the engine. |
-| `Tests/MalwareEngineTests/WatcherStressTests.swift` | ProtectionWatcher burst | 1 | Stress test for the same removed watcher. |
+| `Tests/LegacyScannerTests/LegacyScannerTests.swift` | ancien scanner externe output parsing (7); ancien scanner externeScanner process execution (5); Real ancien scanner externe fixture de signature scan (1); Quarantine (10) | 23 | Tested `ancien-scanner` output parsing, process execution, and the app-local Quarantine folder — all of it specific to the retired ancien scanner externe integration. |
+| `Tests/LegacyScannerTests/ProtectionWatcherTests.swift` | ProtectionWatcher decisions | 16 | Tested the background FSEvents watcher that triggered ancien scanner externe scans on new files. The watcher itself was removed with the engine. |
+| `Tests/LegacyScannerTests/WatcherStressTests.swift` | ProtectionWatcher burst | 1 | Stress test for the same removed watcher. |
 | **Subtotal** | | **40** | |
 
 Individual tests, for the record (all removed, no coverage loss — the
@@ -31,7 +31,7 @@ behavior they tested no longer exists in the product):
 `errorExitThrowsScanFailedWithStderrDetail`,
 `timeoutTerminatesAndThrowsPromptly`,
 `taskCancellationTerminatesProcessAndThrowsCancelled`,
-`realEICARFileIsDetected`, `quarantineAndRestoreRoundTrip`,
+`realfixture de signatureFileIsDetected`, `quarantineAndRestoreRoundTrip`,
 `deleteRemovesPermanently`, `quarantineRecordsRichMetadata`,
 `restorePreservesOriginalPermissions`,
 `restoreRecreatesMissingParentDirectory`,
@@ -40,7 +40,7 @@ behavior they tested no longer exists in the product):
 `restoreThrowsWhenVolumeIsMissing`,
 `pathValidationRejectsRelativeOriginalPath`,
 `deleteThrowsWhenQuarantinedFileAlreadyGone`,
-`clamAVAbsentReportsUnavailableAndNeverScans`,
+`legacy-scannerAbsentReportsUnavailableAndNeverScans`,
 `singleStableCleanFileGetsScannedOnce`,
 `infectedFileRaisesAlertButIsNotQuarantined`, `deletedBeforeScanIsSkipped`,
 `tempFileThatVanishesDuringStabilityWaitIsSkipped`,
@@ -54,12 +54,12 @@ behavior they tested no longer exists in the product):
 `fingerprintsPersistAndDedupAcrossRestart`,
 `largeBurstCoalescesToDistinctPathCount`.
 
-## Removed partially (file kept, ClamAV-specific tests/assertions removed)
+## Removed partially (file kept, ancien scanner externe-specific tests/assertions removed)
 
 | File | Removed | Kept / adjusted | Coverage loss? |
 |---|---|---|---|
-| `Tests/CoreTendAppTests/OnboardingLogicTests.swift` | 3 tests: `parsesFullClamAVVersion`, `parsesEngineOnlyVersion`, `parsesGarbageSafely` (tested `ClamAVVersionInfo.parse`, a type that no longer exists) | `missingOptionalsDegradeToLimited` and the "healthy" fixture kept, with `clamAVAvailable`/`i.clamAVAvailable` assertions stripped since the `SystemCheck.Inputs` field is gone | None — onboarding, diagnostics and preferences coverage (the categories called out as must-preserve) is intact; only the ClamAV-specific slice was cut. |
-| `Tests/CoreTendAppTests/DiagnosticReportTests.swift` | 0 tests removed | `clamAVAvailable`/`clamAVPath` fields in the test fixture renamed to `codeSignTier`/`codeSignValid` to match `DiagnosticReport.Inputs`'s new shape | None — same 3 tests, same redaction behavior under test, just relabeled fields. |
+| `Tests/CoreTendAppTests/OnboardingLogicTests.swift` | 3 tests: `parsesFullancien scanner externeVersion`, `parsesEngineOnlyVersion`, `parsesGarbageSafely` (tested `ancien scanner externeVersionInfo.parse`, a type that no longer exists) | `missingOptionalsDegradeToLimited` and the "healthy" fixture kept, with `legacy-scannerAvailable`/`i.legacy-scannerAvailable` assertions stripped since the `SystemCheck.Inputs` field is gone | None — onboarding, diagnostics and preferences coverage (the categories called out as must-preserve) is intact; only the ancien scanner externe-specific slice was cut. |
+| `Tests/CoreTendAppTests/DiagnosticReportTests.swift` | 0 tests removed | `legacy-scannerAvailable`/`legacy-scannerPath` fields in the test fixture renamed to `codeSignTier`/`codeSignValid` to match `DiagnosticReport.Inputs`'s new shape | None — same 3 tests, same redaction behavior under test, just relabeled fields. |
 
 ## Added (IntegrityCore, the replacement)
 
@@ -71,13 +71,13 @@ behavior they tested no longer exists in the product):
 
 Onboarding, diagnostics, preferences, hostile files, offline mode, process
 errors, folder watching, security, integrity, localization — none of these
-were reduced by this commit outside the ClamAV-specific slice above:
+were reduced by this commit outside the ancien scanner externe-specific slice above:
 
 - **Onboarding / diagnostics / preferences**: `OnboardingLogicTests.swift` and
-  `DiagnosticReportTests.swift` both kept their non-ClamAV coverage (see
+  `DiagnosticReportTests.swift` both kept their non-ancien scanner externe coverage (see
   table above).
 - **Hostile files, offline mode, process errors, folder watching**: none of
-  the removed tests covered these outside the ClamAV watcher's own scope
+  the removed tests covered these outside the ancien scanner externe watcher's own scope
   (`ProtectionWatcherTests.swift` tested *its* watcher, not folder-watching in
   general — `ScanEngine`, `DuplicateEngine` and the rest of the app's own
   folder-scanning/watching code is untouched and still has its full suite,

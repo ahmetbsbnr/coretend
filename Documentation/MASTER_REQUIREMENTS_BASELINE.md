@@ -6,7 +6,7 @@ Each requirement gets a stable ID for later traceability-matrix work (session 2+
 
 **Scope note (honest, not exhaustive):** this pass covers the highest-signal sources — DECISIONS.md,
 SAFETY_MODEL.md/SAFETYCORE.md, KNOWN_LIMITATIONS.md, COMPATIBILITY.md/MACOS_VERSION_POLICY.md,
-CLAMAV_DECISION.md/PROTECTION_LIMITATIONS.md, LEGAL_AND_LICENSE_STATUS.md, and the prior audit reports — plus
+LEGACY_SCANNER_DECISION.md/PROTECTION_LIMITATIONS.md, LEGAL_AND_LICENSE_STATUS.md, and the prior audit reports — plus
 `git log --oneline --all` for phase-defining commits. ROADMAP.md, VISUAL_DIRECTION.md/BRAND_SYSTEM.md/
 DESIGN_TOKENS.md/MOTION_SYSTEM.md were read for the VIS-/MOTION- entries below but not mined line by
 line for every token value; a deeper visual-requirements pass is explicitly deferred to session 2 (see

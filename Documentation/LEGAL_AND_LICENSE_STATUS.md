@@ -43,9 +43,9 @@ dependency is ever added without `Documentation/DEPENDENCIES.md` being updated.
 | Apple system frameworks (SwiftUI, Foundation, AppKit, Vision, IOKit, …) | Linked at build time, ship with macOS | Apple platform terms | No |
 | System SQLite (`libsqlite3`) | Linked system library provided by macOS | Public domain upstream; Apple-provided build | No |
 
-An earlier version invoked a user-supplied `clamscan` (ClamAV, GPL-2.0)
+An earlier version invoked a user-supplied `ancien-scanner` (ancien scanner externe, GPL-2.0)
 binary as a subprocess. That integration was fully retired — see
-`Documentation/CLAMAV_DECISION.md` and `Documentation/DEPENDENCIES.md` — and
+`Documentation/LEGACY_SCANNER_DECISION.md` and `Documentation/DEPENDENCIES.md` — and
 the current source tree links no GPL-licensed code.
 
 Compatibility conclusion: Apache-2.0 for the distributed work is consistent
@@ -59,8 +59,8 @@ with every component above; there is no copyleft component to reconcile.
 - **CC-BY-4.0:** requires attribution for the documentation and illustrations.
   All such material is original to this project, so the obligation runs to
   downstream reusers, not to this repository.
-- **ClamAV:** no attribution obligation — the ClamAV integration was fully
-  retired (`Documentation/CLAMAV_DECISION.md`) and neither `NOTICE` nor
+- **ancien scanner externe:** no attribution obligation — the ancien scanner externe integration was fully
+  retired (`Documentation/LEGACY_SCANNER_DECISION.md`) and neither `NOTICE` nor
   `THIRD_PARTY_NOTICES.md` reference it.
 - Platform and third-party marks remain governed by their owners; the project
   does not claim partnerships or approvals that do not exist.

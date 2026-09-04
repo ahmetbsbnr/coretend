@@ -36,11 +36,11 @@ messages cross-checked against actual diffs for the milestones below (`git show 
    project's stated "honest" self-description convention seen throughout commit messages and test names
    (e.g. "never invent data", "never a guess" test titles).
 
-8. **`2c3978b` — "feat(protection): ClamAV wrapper with honest unavailable state, findings review and reversible quarantine"**
-   Introduces `MalwareEngine`: wraps the system/bundled ClamAV binary via `Process()`
-   (`Sources/MalwareEngine/MalwareEngine.swift:56`, the only `Process()` shell-out in the codebase per
+8. **`2c3978b` — "feat(protection): ancien scanner externe wrapper with honest unavailable state, findings review and reversible quarantine"**
+   Introduces `LegacyScanner`: wraps the system/bundled ancien scanner externe binary via `Process()`
+   (`Sources/LegacyScanner/LegacyScanner.swift:56`, the only `Process()` shell-out in the codebase per
    this session's grep), with output parsing, a findings-review UI, and a reversible quarantine
-   mechanism (confirmed present in `Tests/MalwareEngineTests/MalwareEngineTests.swift`:
+   mechanism (confirmed present in `Tests/LegacyScannerTests/LegacyScannerTests.swift`:
    `quarantineAndRestoreRoundTrip`, `deleteRemovesPermanently`).
 
 9. **`9fc7b2f` — "feat(cloud): local footprint analysis for iCloud/Dropbox/Drive/OneDrive without triggering downloads"**

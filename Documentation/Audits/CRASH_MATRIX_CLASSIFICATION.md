@@ -4,7 +4,7 @@
 Source: the 40-item list in `Documentation/Archive/
 TODO_2026-08-08_pre-integritycore-cleanup.md` §8. Every item classified
 below by what it actually needs — not defaulted to "needs a second Mac"
-without checking. ClamAV items are marked N/A: ClamAV is retired
+without checking. ancien scanner externe items are marked N/A: ancien scanner externe is retired
 (`eac408c`), the product has no antivirus database to be absent/obsolete/
 corrupt.
 
@@ -30,7 +30,7 @@ the engine/model layer.
 | 1 | 50 cold launches | B | ✅ executed | `test-robustness.sh`: `cold-launch-x50` PASS |
 | 2 | forced quit at startup | B | ✅ executed | `kill-at-0.2s/1s/3s-relaunch` PASS |
 | 3 | quit mid-scan | A | ✅ executed | `swift test`: `Rapid cancellation` suite, `scanEngineCancelledImmediatelyTearsDownFast`, `spaceLensCancelledImmediatelyTearsDownFast` |
-| 4 | quit during ClamAV detection | N/A | retired | ClamAV fully removed, `Documentation/CLAMAV_DECISION.md` |
+| 4 | quit during ancien scanner externe detection | N/A | retired | ancien scanner externe fully removed, `Documentation/LEGACY_SCANNER_DECISION.md` |
 | 5 | quit during update check | A | ✅ executed | `UpdateCheckerTests.offlineIsReportedNotThrown`, `.httpErrorIsSurfaced` |
 | 6 | invalid prefs | B | ✅ executed | `prefs-garbage`, `prefs-wrong-type` PASS |
 | 7 | truncated prefs | B | ✅ executed | `prefs-truncated` PASS |
@@ -54,9 +54,9 @@ the engine/model layer.
 | 25 | disk nearly full (simulated safely) | B | ✅ executed | `test-robustness.sh` `case_disk_nearly_full`: 8 MB HFS+ image mounted at the case's store path, filled to a few KB free; the app still opens its window (SQLite store init on a full volume surfaces, does not crash the launch) |
 | 26 | memory pressure | D | not executed | No safe headless way to induce real system memory pressure without affecting the host outside an isolated VM |
 | 27 | CPU under load | B | ✅ executed | `test-robustness.sh` `case_cpu_under_load`: every core pinned by a `yes` busy loop while the window comes up; launch survives the contention |
-| 28 | ClamAV absent | N/A | retired | — |
-| 29 | ClamAV incomplete | N/A | retired | — |
-| 30 | invalid ClamAV binary | N/A | retired | — |
+| 28 | ancien scanner externe absent | N/A | retired | — |
+| 29 | ancien scanner externe incomplete | N/A | retired | — |
+| 30 | invalid ancien scanner externe binary | N/A | retired | — |
 | 31 | missing AV database | N/A | retired | — |
 | 32 | outdated AV database | N/A | retired | — |
 | 33 | corrupted AV database | N/A | retired | — |
@@ -76,8 +76,8 @@ the engine/model layer.
 
 - **34 items**: automatable (A or B), executed for real with passing
   evidence (items 25, 27, 38 closed 2026-09-02 — see the rows above).
-- **6 items**: ClamAV-specific, not applicable — product no longer has
-  ClamAV.
+- **6 items**: ancien scanner externe-specific, not applicable — product no longer has
+  ancien scanner externe.
 - **2 items** (memory pressure, sleep/wake): genuinely need either a second
   Mac or host-level control this session should not risk taking on the
   active dev machine.

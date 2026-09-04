@@ -10,13 +10,13 @@
 - Backup verification: readable; `SHA256SUMS` written
 - Process scan: blocked by macOS sandbox for `/bin/ps`
 - Recovered groups: CoreTend site, tests, Vercel configuration, visual baseline
-- Remaining gates: production HTTP checks, portfolio ClamAV cleanup, isolated UI tests, skip/no-result explanation, visual inspection prep, CI/Security/Vercel/Git verification, public download unchanged until Developer ID is available
+- Remaining gates: production HTTP checks, portfolio ancien scanner externe cleanup, isolated UI tests, skip/no-result explanation, visual inspection prep, CI/Security/Vercel/Git verification, public download unchanged until Developer ID is available
 - Targeted validation: `swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-rescue --filter PathValidatorTests` passed with 23 Swift Testing tests; XCTest wrapper reported 0 selected XCTest tests.
 - Website generation: `python3 Website/generate.py` completed and left no Website diff.
 - Production HTTP: `/`, `/en/`, `/fr/`, `/en/index.html`, `/fr/index.html` returned 200.
 - Production referenced assets: favicon PNGs, Gatekeeper demo media, fonts, `site.js`, and `style.css` returned 200.
 - Public release routes: `/download`, `/latest.json`, and `/SHA256SUMS` still redirect to the existing GitHub `v0.9.1-rc.3` public artifacts and returned 200; download target unchanged.
-- Portfolio: source and production already use IntegrityCore/no ClamAV claim; `https://ahmetbsbnr.com/` and `/en/projets/coretend/` contain `IntegrityCore` and no `ClamAV`. Local portfolio `out/` is stale but untracked; portfolio `npm test` passed, `npx tsc --noEmit --incremental false` passed, `npm run build` is blocked by sandbox write denial on `.next/trace`.
+- Portfolio: source and production already use IntegrityCore/no ancien scanner externe claim; `https://ahmetbsbnr.com/` and `/en/projets/coretend/` contain `IntegrityCore` and no `ancien scanner externe`. Local portfolio `out/` is stale but untracked; portfolio `npm test` passed, `npx tsc --noEmit --incremental false` passed, `npm run build` is blocked by sandbox write denial on `.next/trace`.
 - UI tests, first Xcode run: 8 `CoreTendUITests` were launched and all skipped because `CORETEND_UI_APP_PATH` was absent. The skip text is `Set CORETEND_UI_APP_PATH to a built CoreTend.app for XCUIAutomation.`
 - UI tests, isolated app attempt: `CORETEND_UI_APP_PATH=/Users/ahmetbasbunar/Developer/Website/products/coretend/app/build/CoreTend.app swift test --disable-sandbox --scratch-path /tmp/coretend-swiftpm-scratch-ui --filter CoreTendUITests` built successfully, then the first XCTest process failed with `com.apple.testmanagerd ... Sandbox restriction` / unexpected signal 5 before completing UI assertions.
 - Test with no result explained: the Swift Testing runner line `Test run with 0 tests passed` belongs to the non-XCTest Swift Testing harness inside the same aggregate package; the selected UI tests are XCTest cases, and their run was interrupted by `testmanagerd` sandbox denial.

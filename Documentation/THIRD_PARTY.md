@@ -7,4 +7,4 @@
 - Le produit livré n'embarque et n'exécute aucun moteur ou binaire tiers.
 
 L'ancien prototype de scanner externe est documenté uniquement dans
-[`CLAMAV_DECISION.md`](CLAMAV_DECISION.md) à titre historique.
+[`LEGACY_SCANNER_DECISION.md`](LEGACY_SCANNER_DECISION.md) à titre historique.

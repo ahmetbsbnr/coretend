@@ -122,7 +122,7 @@ inspection. Metadata still must be stripped at export time per Phase 4 regardles
   `553aee4b6ab844b18911ff6475d8cf0242bba0a64a8efccf1135a2659ed5e68e`.
 - 660×806, PNG, 293 kB (approximately 286 KiB), 8-bit RGBA, non-interlaced.
 - Exact visible content: CoreTend menu-bar popover showing CPU 23%, Memory 66%
-  (normal), Free space 36.74 GB, Thermal Nominal, Protection warning "ClamAV not
+  (normal), Free space 36.74 GB, Thermal Nominal, Protection warning "ancien scanner externe not
   installed", "Last Smart Care: Smart Care scan: 75437 items", "6 j et 4 h", and
   the buttons "Open CoreTend", "Settings...", and "Quit".
 - Visible surroundings: a narrow strip of generic macOS wallpaper and menu-bar

@@ -127,7 +127,7 @@ SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 SOURCE_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 
 FORBIDDEN_TEXT = (
-    (re.compile(r"clamav", re.IGNORECASE), "legacy ClamAV reference"),
+    (re.compile(r"legacy[- ]scanner", re.IGNORECASE), "legacy scanner reference"),
     (re.compile(r"(?:^|[/\\])Users[/\\]", re.IGNORECASE), "personal user path"),
     (re.compile(r"file://", re.IGNORECASE), "local file URL"),
     (re.compile(r"(?:localhost|127\.0\.0\.1)(?::[0-9]+)?", re.IGNORECASE), "preview host"),

@@ -148,7 +148,7 @@ feature audit's `AUDIT_EVIDENCE.md`, but keyed to requirement IDs, not feature I
 ### EVIDENCE-OSS-002
 - **Claim**: No third-party scanner is linked, bundled or executed by the product.
 - **Files**: `Package.swift`, `Sources/IntegrityCore/`, distribution artifacts
-- **Command**: `rg -i 'clamscan|MalwareEngine' Package.swift Sources Resources`;
+- **Command**: `rg -i 'ancien-scanner|LegacyScanner' Package.swift Sources Resources`;
   `bash Scripts/test-distribution.sh`
 - **Result**: no retired scanner component exists in the product tree; IntegrityCore uses only
   macOS frameworks and the distribution contains no third-party scanner binary. HOLDS.

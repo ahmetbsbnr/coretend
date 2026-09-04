@@ -60,10 +60,10 @@ notes, fine to include but not user-facing).
 | `SAFETYCORE.md` | `SafetyCore` module contract | current | internal |
 | `SAFETY_MODEL.md` | High-level deletion-safety rules | current | public |
 | `SCANCORE.md` | `ScanCore` engines | current | internal |
-| `PROTECTION.md` | Integrity feature (rewritten this session — was ClamAV-based) | current | public |
-| `PROTECTION_LIMITATIONS.md` | Honest Integrity gaps (rewritten this session — was ClamAV-based) | current | public |
-| `CLAMAV_DECISION.md` | Why ClamAV was retired for Integrity | current | internal |
-| `CLAMAV_TEST_AUDIT.md` | 310→276 test-count audit for the ClamAV removal, plus this session's added IntegrityCore test matrix | current | internal |
+| `PROTECTION.md` | Integrity feature (rewritten this session — was ancien scanner externe-based) | current | public |
+| `PROTECTION_LIMITATIONS.md` | Honest Integrity gaps (rewritten this session — was ancien scanner externe-based) | current | public |
+| `LEGACY_SCANNER_DECISION.md` | Why ancien scanner externe was retired for Integrity | current | internal |
+| `LEGACY_SCANNER_TEST_AUDIT.md` | 310→276 test-count audit for the ancien scanner externe removal, plus this session's added IntegrityCore test matrix | current | internal |
 | `QUARANTINE.md` | Removed mechanism, kept as historical record | historical | internal |
 | `COMPETITIVE_BENCHMARK.md` | CoreTend's own measured numbers vs. non-vérifié public claims about CleanMyMac/Disk Space Analyzer | current | public |
 | `PRIVILEGED_HELPER.md` | Privileged-helper design (unshipped) | current | internal |

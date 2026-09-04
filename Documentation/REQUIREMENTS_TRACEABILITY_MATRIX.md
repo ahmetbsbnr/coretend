@@ -124,7 +124,7 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 
 ### PROTECTION-001
 - **Priority**: MUST
-- **Source**: PROTECTION.md; CLAMAV_DECISION.md
+- **Source**: PROTECTION.md; LEGACY_SCANNER_DECISION.md
 - **Status**: **COMPLIANT_VERIFIED**
 - **Files**: Sources/CoreTendApp/ProtectionView.swift, Sources/IntegrityCore/IntegrityCore.swift
 - **Symbols**: ProvenanceScanner; CodeSignInspector; LoginItemScanner; IntegrityView
@@ -414,13 +414,13 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 
 ### OSS-002
 - **Priority**: MUST
-- **Source**: DEPENDENCIES.md / CLAMAV_DECISION.md
+- **Source**: DEPENDENCIES.md / LEGACY_SCANNER_DECISION.md
 - **Status**: **COMPLIANT_VERIFIED**
 - **Files**: Package.swift; Sources/IntegrityCore/IntegrityCore.swift
 - **Symbols**: IntegrityCore
 - **Views**: —
 - **Test**: retired-component source and distribution gates.
-- **Command**: `rg -i 'clamscan|MalwareEngine' Package.swift Sources Resources`
+- **Command**: `rg -i 'ancien-scanner|LegacyScanner' Package.swift Sources Resources`
 - **Runtime evidence**: n/a
 - **Bundle evidence**: distribution gate confirms no third-party scanner binary or metadata
 - **Visual evidence**: n/a
@@ -669,7 +669,7 @@ Status vocabulary: COMPLIANT_VERIFIED, COMPLIANT_PARTIAL, IMPLEMENTED_UNVERIFIED
 
 ### FUNC-003
 - **Priority**: MUST
-- **Source**: README.md; PROTECTION.md; CLAMAV_DECISION.md
+- **Source**: README.md; PROTECTION.md; LEGACY_SCANNER_DECISION.md
 - **Status**: **COMPLIANT_VERIFIED**
 - **Files**: Sources/IntegrityCore/IntegrityCore.swift; Sources/CoreTendApp/ProtectionView.swift
 - **Symbols**: ProvenanceScanner; CodeSignInspector; LoginItemScanner

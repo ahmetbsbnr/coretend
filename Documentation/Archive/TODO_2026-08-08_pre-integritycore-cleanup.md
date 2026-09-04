@@ -28,7 +28,7 @@ Conditions les plus proches d'un nouveau client :
 - [ ] aucun cache CoreTend
 - [ ] aucune préférence existante
 - [ ] aucun outil de développement supposé installé
-- [ ] ClamAV absent
+- [ ] ancien scanner externe absent
 - [ ] application téléchargée depuis la release publique
 - [ ] attribut de quarantaine présent
 - [ ] copie depuis le DMG vers Applications
@@ -74,7 +74,7 @@ Collecter et analyser les preuves réelles :
 
 Déterminer factuellement si l'échec vient de : Gatekeeper, absence de signature, crash
 applicatif, dépendance manquante, ressource absente, incompatibilité macOS,
-incompatibilité d'architecture, erreur de première initialisation, ClamAV, un chemin
+incompatibilité d'architecture, erreur de première initialisation, ancien scanner externe, un chemin
 local présent uniquement sur la machine de développement, ou plusieurs causes combinées.
 
 **Ne pas conclure sans preuve.**
@@ -84,7 +84,7 @@ local présent uniquement sur la machine de développement, ou plusieurs causes 
 Corriger toute cause applicative ou de distribution reproductible. L'application doit
 démarrer proprement même lorsque :
 
-- [ ] ClamAV est absent
+- [ ] ancien scanner externe est absent
 - [ ] le réseau est indisponible
 - [ ] les préférences n'existent pas
 - [ ] les dossiers de travail n'existent pas
@@ -193,8 +193,8 @@ Test de bout en bout depuis zéro :
 7. [ ] traitement de l'avertissement macOS officiel
 8. [ ] ouverture de CoreTend
 9. [ ] onboarding
-10. [ ] ClamAV absent
-11. [ ] installation ou guidance ClamAV
+10. [ ] ancien scanner externe absent
+11. [ ] installation ou guidance ancien scanner externe
 12. [ ] première analyse
 13. [ ] affichage des résultats
 14. [ ] erreur et récupération
@@ -215,7 +215,7 @@ Ajouter et exécuter au minimum :
 - [ ] 50 lancements à froid successifs
 - [ ] fermeture forcée au démarrage
 - [ ] fermeture pendant une analyse
-- [ ] fermeture pendant la détection de ClamAV
+- [ ] fermeture pendant la détection de ancien scanner externe
 - [ ] fermeture pendant une vérification de mise à jour
 - [ ] préférences invalides
 - [ ] préférences tronquées
@@ -239,9 +239,9 @@ Ajouter et exécuter au minimum :
 - [ ] disque presque plein, simulé sans danger
 - [ ] mémoire sous pression
 - [ ] CPU sous charge
-- [ ] ClamAV absent
-- [ ] ClamAV incomplet
-- [ ] binaire ClamAV invalide
+- [ ] ancien scanner externe absent
+- [ ] ancien scanner externe incomplet
+- [ ] binaire ancien scanner externe invalide
 - [ ] base antivirus absente
 - [ ] base antivirus obsolète
 - [ ] base antivirus corrompue

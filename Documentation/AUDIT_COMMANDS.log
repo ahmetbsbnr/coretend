@@ -55,7 +55,7 @@ exit 0 => Documentation/ 12M, build/ 5.8M, Release/ 5.2M, Resources/ 3.1M, Sourc
 
 $ cat Package.swift
 exit 0 => swift-tools-version 6.0, 1 executable target (CoreTendApp) + 8 library targets
-   (ScanCore, SafetyCore, FileRules, DesignSystem, Persistence, SystemMetrics, AppDiscovery, MalwareEngine),
+   (ScanCore, SafetyCore, FileRules, DesignSystem, Persistence, SystemMetrics, AppDiscovery, LegacyScanner),
    9 test targets total.
 
 $ cat .gitignore
@@ -100,7 +100,7 @@ exit 1 => 2 FAILs: (1) SHA256SUMS does not verify against the just-rebuilt zip/d
 $ find Sources -type d ; per-target wc -l ; grep -rn "Process()" Sources ; grep -rl "@MainActor" Sources | wc -l ;
   grep -rln "AsyncStream" Sources | wc -l ; wc -l Sources/CoreTendApp/Resources/{fr,Base}.lproj/Localizable.strings
 exit 0 => see Documentation/ARCHITECTURE_INVENTORY.md and repository-statistics.json for full figures.
-   Single Process() shell-out: Sources/MalwareEngine/MalwareEngine.swift:56 (invokes ClamAV `clamscan`).
+   Single Process() shell-out: Sources/LegacyScanner/LegacyScanner.swift:56 (invokes ancien scanner externe `ancien-scanner`).
    18 files use @MainActor, 4 files use AsyncStream. fr.lproj and Base.lproj Localizable.strings both
    372 lines (parity at line-count level; string-content parity not verified key-by-key this session).
 
@@ -171,13 +171,13 @@ Build complete! (0.21s)
 ◇ Suite "ScanRule matches filter" started.
 ◇ Suite "Quarantine" started.
 ◇ Suite "My Activity day grouping" started.
-◇ Suite "ClamAVScanner process execution (fake clamscan)" started.
+◇ Suite "ancien scanner externeScanner process execution (fake ancien-scanner)" started.
 ◇ Suite "SpaceLensEngine" started.
 ◇ Suite "Totals beyond display cap" started.
 ◇ Suite "ScanEngine" started.
-◇ Suite "Real ClamAV EICAR scan (only if installed)" started.
+◇ Suite "Real ancien scanner externe fixture de signature scan (only if installed)" started.
 ◇ Suite "DuplicateEngine" started.
-◇ Suite "ClamAV output parsing" started.
+◇ Suite "ancien scanner externe output parsing" started.
 ◇ Test noRuleTargetsUserContent() started.
 ◇ Test allowedRootsCoverAllRuleRoots() started.
 ◇ Test allRulesHaveStableUniqueIDs() started.
@@ -274,7 +274,7 @@ Build complete! (0.21s)
 ◇ Test "grouping by none returns a single group preserving all apps" started.
 ◇ Test "missing pixel data defaults to zero, never crashes or fabricates" started.
 ◇ Test "size buckets never invent data, use real byte thresholds" started.
-◇ Test realEICARFileIsDetected() started.
+◇ Test realfixture de signatureFileIsDetected() started.
 ◇ Test cancellationStopsStream() started.
 ◇ Test symlinkedDirectoryNotDescended() started.
 ◇ Test ignoresCleanAndNoise() started.
@@ -373,7 +373,7 @@ Build complete! (0.21s)
 ✔ Test "groups by publisher from bundle id, unknowns fall back honestly" passed after 0.064 seconds.
 ✔ Test "missing pixel data defaults to zero, never crashes or fabricates" passed after 0.064 seconds.
 ✔ Test "size buckets never invent data, use real byte thresholds" passed after 0.064 seconds.
-✔ Test realEICARFileIsDetected() passed after 0.063 seconds.
+✔ Test realfixture de signatureFileIsDetected() passed after 0.063 seconds.
 ✔ Test restoreThrowsWhenVolumeIsMissing() passed after 0.064 seconds.
 ✔ Test categoryColorsAreMutuallyDistinct() passed after 0.064 seconds.
 ✔ Test ignoresCleanAndNoise() passed after 0.063 seconds.
@@ -408,10 +408,10 @@ Build complete! (0.21s)
 ✔ Suite "My Activity day grouping" passed after 0.068 seconds.
 ✔ Test inspectReadsFakeBundle() passed after 0.068 seconds.
 ✔ Suite "Applications grouping" passed after 0.068 seconds.
-✔ Suite "Real ClamAV EICAR scan (only if installed)" passed after 0.068 seconds.
+✔ Suite "Real ancien scanner externe fixture de signature scan (only if installed)" passed after 0.068 seconds.
 ✔ Test symlinkedDirectoryNotDescended() passed after 0.066 seconds.
 ✔ Test scanFindsFilesAndReportsSizes() passed after 0.061 seconds.
-✔ Suite "ClamAV output parsing" passed after 0.068 seconds.
+✔ Suite "ancien scanner externe output parsing" passed after 0.068 seconds.
 ✔ Suite "ScanConfiguration exclusions" passed after 0.068 seconds.
 ✔ Suite "Scan root isolation" passed after 0.068 seconds.
 ✔ Suite "ScanRule matches filter" passed after 0.068 seconds.
@@ -437,7 +437,7 @@ Build complete! (0.21s)
 ✔ Test timeoutTerminatesAndThrowsPromptly() passed after 0.365 seconds.
 ✔ Test infectedResultReturnsFindingsAndDoesNotThrow() passed after 0.628 seconds.
 ✔ Test errorExitThrowsScanFailedWithStderrDetail() passed after 0.817 seconds.
-✔ Suite "ClamAVScanner process execution (fake clamscan)" passed after 0.818 seconds.
+✔ Suite "ancien scanner externeScanner process execution (fake ancien-scanner)" passed after 0.818 seconds.
 ✔ Test engineStreamsAllFindingsUncappedAt5001() passed after 0.969 seconds.
 ✔ Suite "Totals beyond display cap" passed after 0.970 seconds.
 ✔ Test run with 114 tests in 30 suites passed after 0.970 seconds.
@@ -452,13 +452,13 @@ Build complete! (0.15s)
 ◇ Suite "Store" started.
 ◇ Suite "Brand resources" started.
 ◇ Suite "Scan root isolation" started.
-◇ Suite "ClamAV output parsing" started.
-◇ Suite "ClamAVScanner process execution (fake clamscan)" started.
+◇ Suite "ancien scanner externe output parsing" started.
+◇ Suite "ancien scanner externeScanner process execution (fake ancien-scanner)" started.
 ◇ Suite "DuplicateEngine" started.
 ◇ Suite "MetricsCollector" started.
 ◇ Suite "Design tokens" started.
 ◇ Suite "ScanRule matches filter" started.
-◇ Suite "Real ClamAV EICAR scan (only if installed)" started.
+◇ Suite "Real ancien scanner externe fixture de signature scan (only if installed)" started.
 ◇ Suite "ScanConfiguration exclusions" started.
 ◇ Suite "ScanEngine" started.
 ◇ Suite "Totals beyond display cap" started.
@@ -517,7 +517,7 @@ Build complete! (0.15s)
 ◇ Test detectsIdenticalFilesAndSkipsUniques() started.
 ◇ Test symlinkedDirectoryNotDescended() started.
 ◇ Test excludedSubtreeSkipped() started.
-◇ Test realEICARFileIsDetected() started.
+◇ Test realfixture de signatureFileIsDetected() started.
 ◇ Test missingRootYieldsFinishedNotError() started.
 ◇ Test quarantineRecordsRichMetadata() started.
 ◇ Test threeAsymmetricArcs() started.
@@ -619,7 +619,7 @@ Build complete! (0.15s)
 ✔ Test radiiAreOrdered() passed after 0.080 seconds.
 ✔ Test ignoresCleanAndNoise() passed after 0.081 seconds.
 ✔ Test migrationsApplyOnceAndAreIdempotent() passed after 0.082 seconds.
-✔ Test realEICARFileIsDetected() passed after 0.082 seconds.
+✔ Test realfixture de signatureFileIsDetected() passed after 0.082 seconds.
 ✔ Test threeAsymmetricArcs() passed after 0.082 seconds.
 ✔ Test arcSpansStayPartial() passed after 0.082 seconds.
 ✔ Test quarantineRecordsRichMetadata() passed after 0.084 seconds.
@@ -699,10 +699,10 @@ Build complete! (0.15s)
 ✔ Suite "Design tokens" passed after 0.090 seconds.
 ✔ Test symlinkedDirectoryNotDescended() passed after 0.089 seconds.
 ✔ Test "not determined reads as Not requested, never claims granted" passed after 0.019 seconds.
-✔ Suite "Real ClamAV EICAR scan (only if installed)" passed after 0.090 seconds.
+✔ Suite "Real ancien scanner externe fixture de signature scan (only if installed)" passed after 0.090 seconds.
 ✔ Suite "Bloom geometry" passed after 0.090 seconds.
 ✔ Suite "Semantic colors" passed after 0.090 seconds.
-✔ Suite "ClamAV output parsing" passed after 0.090 seconds.
+✔ Suite "ancien scanner externe output parsing" passed after 0.090 seconds.
 ✔ Suite "Quarantine" passed after 0.090 seconds.
 ✔ Test sizesTreeAndBucketsSmallItems() passed after 0.089 seconds.
 ✔ Suite "SafetyCenter audit sink" passed after 0.090 seconds.
@@ -738,7 +738,7 @@ Build complete! (0.15s)
 ✔ Test cleanResultReturnsNoFindings() passed after 0.332 seconds.
 ✔ Test timeoutTerminatesAndThrowsPromptly() passed after 0.398 seconds.
 ✔ Test infectedResultReturnsFindingsAndDoesNotThrow() passed after 0.565 seconds.
-✔ Suite "ClamAVScanner process execution (fake clamscan)" passed after 0.566 seconds.
+✔ Suite "ancien scanner externeScanner process execution (fake ancien-scanner)" passed after 0.566 seconds.
 ✔ Test engineStreamsAllFindingsUncappedAt5001() passed after 0.942 seconds.
 ✔ Suite "Totals beyond display cap" passed after 0.943 seconds.
 ✔ Test run with 114 tests in 30 suites passed after 0.943 seconds.
@@ -758,11 +758,11 @@ Building for debugging...
 [10/26] Compiling DesignSystem HeroCore.swift
 [11/35] Compiling DesignSystem AccessibilityState.swift
 [12/35] Compiling DesignSystem Colors.swift
-[13/35] Compiling MalwareEngine ProtectionWatcher.swift
+[13/35] Compiling LegacyScanner ProtectionWatcher.swift
 [14/35] Compiling DesignSystem Components.swift
 [15/35] Compiling DesignSystem CoreBloom.swift
-[16/35] Compiling MalwareEngine MalwareEngine.swift
-[17/35] Emitting module MalwareEngine
+[16/35] Compiling LegacyScanner LegacyScanner.swift
+[17/35] Emitting module LegacyScanner
 [18/35] Emitting module AppDiscovery
 [19/35] Compiling AppDiscovery AppDiscovery.swift
 [20/35] Compiling SystemMetrics SystemMetrics.swift
@@ -874,11 +874,11 @@ Build complete! (6.62s)
 ◇ Suite "SpaceLensEngine" started.
 ◇ Suite "Store" started.
 ◇ Suite "ScanConfiguration exclusions" started.
-◇ Suite "Real ClamAV EICAR scan (only if installed)" started.
+◇ Suite "Real ancien scanner externe fixture de signature scan (only if installed)" started.
 ◇ Suite "Browser profile detection" started.
 ◇ Suite "Space Lens at scale" started.
 ◇ Suite "Dry-run default setting" started.
-◇ Suite "ClamAVScanner process execution (fake clamscan)" started.
+◇ Suite "ancien scanner externeScanner process execution (fake ancien-scanner)" started.
 ◇ Suite "Permission-state formatting" started.
 ◇ Suite "Quarantine" started.
 ◇ Suite "Space Lens navigation" started.
@@ -887,7 +887,7 @@ Build complete! (6.62s)
 ◇ Suite "Applications grouping" started.
 ◇ Suite "Cloud Cleanup sync state" started.
 ◇ Suite "Diagnostic report redaction" started.
-◇ Suite "ClamAV output parsing" started.
+◇ Suite "ancien scanner externe output parsing" started.
 ◇ Suite "First-run wizard logic" started.
 ◇ Suite "ProtectionWatcher decisions" started.
 ◇ Suite "My Clutter (Large & Old) sorting" started.
@@ -1008,7 +1008,7 @@ Build complete! (6.62s)
 ◇ Test detectsFirefoxAndSafariLayouts() started.
 ◇ Test wideTreeThousandsOfSiblingsCompletesAndCountsBytes() started.
 ◇ Test cacheOnlyValidatorAcceptsCachesRejectsHistoryAndCookies() started.
-◇ Test realEICARFileIsDetected() started.
+◇ Test realfixture de signatureFileIsDetected() started.
 ◇ Test "absent setting keeps dry-run ON (safe default)" started.
 ◇ Test detectsChromiumFamilyEdgeAndBraveNotJustChrome() started.
 ◇ Test excludedSubtreeSkipped() started.
@@ -1078,7 +1078,7 @@ Build complete! (6.62s)
 ◇ Test detectsDownloads() started.
 ◇ Test allGreenIsReady() started.
 ◇ Test detectsDiskImage() started.
-◇ Test parsesFullClamAVVersion() started.
+◇ Test parsesFullancien scanner externeVersion() started.
 ◇ Test everyProfileMapsToSafeDefaults() started.
 ◇ Test detectsOther() started.
 ◇ Test detectsTemporaryAndTranslocation() started.
@@ -1088,7 +1088,7 @@ Build complete! (6.62s)
 ◇ Test fingerprintsPersistAndDedupAcrossRestart() started.
 ◇ Test burstOfSamePathCoalescesToOneScan() started.
 ◇ Test cancelledConsumeStopsProcessing() started.
-◇ Test clamAVAbsentReportsUnavailableAndNeverScans() started.
+◇ Test legacy-scannerAbsentReportsUnavailableAndNeverScans() started.
 ◇ Test repeatedSameFileIsDedupedAfterFirstScan() started.
 ◇ Test sortsByAgeOldestFirstMissingDatesLast() started.
 ◇ Test stillGrowingFileIsSkippedAsUnstable() started.
@@ -1204,7 +1204,7 @@ Build complete! (6.62s)
 ✔ Test safetyLogSurvivesRelaunch() passed after 1.631 seconds.
 ✔ Test detectsFirefoxAndSafariLayouts() passed after 1.631 seconds.
 ✔ Test cacheOnlyValidatorAcceptsCachesRejectsHistoryAndCookies() passed after 1.631 seconds.
-✔ Test realEICARFileIsDetected() passed after 1.631 seconds.
+✔ Test realfixture de signatureFileIsDetected() passed after 1.631 seconds.
 ✔ Test "absent setting keeps dry-run ON (safe default)" passed after 1.631 seconds.
 ✔ Test detectsChromiumFamilyEdgeAndBraveNotJustChrome() passed after 1.631 seconds.
 ✔ Test unicodeSummarySurvives() passed after 1.632 seconds.
@@ -1259,7 +1259,7 @@ Build complete! (6.62s)
 ✔ Test detectsDownloads() passed after 1.633 seconds.
 ✔ Test detectsDiskImage() passed after 1.633 seconds.
 ✔ Test allGreenIsReady() passed after 1.633 seconds.
-✔ Test parsesFullClamAVVersion() passed after 1.632 seconds.
+✔ Test parsesFullancien scanner externeVersion() passed after 1.632 seconds.
 ✔ Test everyProfileMapsToSafeDefaults() passed after 1.632 seconds.
 ✔ Test detectsOther() passed after 1.631 seconds.
 ✔ Test detectsTemporaryAndTranslocation() passed after 1.631 seconds.
@@ -1268,7 +1268,7 @@ Build complete! (6.62s)
 ✔ Test unmountedVolumeIsSkipped() passed after 1.630 seconds.
 ✔ Test disabledWatcherRefusesEvents() passed after 1.630 seconds.
 ✔ Test burstOfSamePathCoalescesToOneScan() passed after 1.630 seconds.
-✔ Test clamAVAbsentReportsUnavailableAndNeverScans() passed after 1.629 seconds.
+✔ Test legacy-scannerAbsentReportsUnavailableAndNeverScans() passed after 1.629 seconds.
 ✔ Test repeatedSameFileIsDedupedAfterFirstScan() passed after 1.629 seconds.
 ✔ Test stillGrowingFileIsSkippedAsUnstable() passed after 1.629 seconds.
 ✔ Test fingerprintsPersistAndDedupAcrossRestart() passed after 1.630 seconds.
@@ -1299,14 +1299,14 @@ Build complete! (6.62s)
 ✔ Suite "ProtectionWatcher burst" passed after 1.636 seconds.
 ✔ Suite "Store" passed after 1.636 seconds.
 ✔ Suite "Browser profile detection" passed after 1.636 seconds.
-✔ Suite "Real ClamAV EICAR scan (only if installed)" passed after 1.636 seconds.
+✔ Suite "Real ancien scanner externe fixture de signature scan (only if installed)" passed after 1.636 seconds.
 ✔ Suite "Dry-run default setting" passed after 1.636 seconds.
 ✔ Suite "Permission-state formatting" passed after 1.636 seconds.
 ✔ Suite "Quarantine" passed after 1.636 seconds.
 ✔ Suite "Applications grouping" passed after 1.636 seconds.
 ✔ Suite "Cloud Cleanup sync-state classification" passed after 1.636 seconds.
 ✔ Suite "Cloud Cleanup sync state" passed after 1.636 seconds.
-✔ Suite "ClamAV output parsing" passed after 1.636 seconds.
+✔ Suite "ancien scanner externe output parsing" passed after 1.636 seconds.
 ✔ Suite "Diagnostic report redaction" passed after 1.636 seconds.
 ✔ Test cancelledConsumeStopsProcessing() passed after 1.630 seconds.
 ✔ Suite "First-run wizard logic" passed after 1.636 seconds.
@@ -1360,7 +1360,7 @@ Build complete! (6.62s)
 ✔ Suite "Store at scale" passed after 2.019 seconds.
 ✔ Test infectedResultReturnsFindingsAndDoesNotThrow() passed after 2.070 seconds.
 ✔ Test cleanResultReturnsNoFindings() passed after 2.193 seconds.
-✔ Suite "ClamAVScanner process execution (fake clamscan)" passed after 2.195 seconds.
+✔ Suite "ancien scanner externeScanner process execution (fake ancien-scanner)" passed after 2.195 seconds.
 [stress] rapid cancel (space lens): returned in 0.8188055 seconds
 ✔ Test scanEngineCancelledImmediatelyTearsDownFast() passed after 2.506 seconds.
 ✔ Test failingRuleDoesNotPoisonRun() passed after 2.523 seconds.
@@ -1396,7 +1396,7 @@ Build complete! (0.21s)
 ↳ Testing Library Version: 1902
 ↳ Target Platform: arm64e-apple-macos14.0
 ◇ Suite "MetricsCollector" started.
-◇ Suite "ClamAVScanner process execution (fake clamscan)" started.
+◇ Suite "ancien scanner externeScanner process execution (fake ancien-scanner)" started.
 ◇ Suite "ScanRule matches filter" started.
 ◇ Suite "Quarantine" started.
 ◇ Suite "Space Lens at scale" started.
@@ -1407,11 +1407,11 @@ Build complete! (0.21s)
 ◇ Suite "SimilarImageGroup best-resolution marking" started.
 ◇ Suite "Cloud dataless-file guard" started.
 ◇ Suite "SpaceLensEngine" started.
-◇ Suite "ClamAV output parsing" started.
+◇ Suite "ancien scanner externe output parsing" started.
 ◇ Suite "ProtectionWatcher decisions" started.
 ◇ Suite "ScanEngine bounded concurrency" started.
 ◇ Suite "Design tokens" started.
-◇ Suite "Real ClamAV EICAR scan (only if installed)" started.
+◇ Suite "Real ancien scanner externe fixture de signature scan (only if installed)" started.
 ◇ Suite "SafetyCenter audit sink" started.
 ◇ Suite "Brand resources" started.
 ◇ Suite "Rapid cancellation" started.
@@ -1502,7 +1502,7 @@ Build complete! (0.21s)
 ◇ Test motionDurationsAreReasonable() started.
 ◇ Test renamedFileEvaluatesNewPathIndependentlyOfOldPath() started.
 ◇ Test unmountedVolumeIsSkipped() started.
-◇ Test clamAVAbsentReportsUnavailableAndNeverScans() started.
+◇ Test legacy-scannerAbsentReportsUnavailableAndNeverScans() started.
 ◇ Test infectedFileRaisesAlertButIsNotQuarantined() started.
 ◇ Test fingerprintsPersistAndDedupAcrossRestart() started.
 ◇ Test singleStableCleanFileGetsScannedOnce() started.
@@ -1522,7 +1522,7 @@ Build complete! (0.21s)
 ◇ Test largeBurstCoalescesToDistinctPathCount() started.
 ◇ Test vanishedFileEmitsSkippedEvent() started.
 ◇ Test iconsetCoversAllSizes() started.
-◇ Test realEICARFileIsDetected() started.
+◇ Test realfixture de signatureFileIsDetected() started.
 ◇ Test spaceLensCancelledImmediatelyTearsDownFast() started.
 ◇ Test dryRunDoesNotDelete() started.
 ◇ Test symlinkSwappedAfterApprovalRejected() started.
@@ -1623,7 +1623,7 @@ Build complete! (0.21s)
 ◇ Test detectsOther() started.
 ◇ Test missingOptionalsDegradeToLimited() started.
 ◇ Test detectsDiskImage() started.
-◇ Test parsesFullClamAVVersion() started.
+◇ Test parsesFullancien scanner externeVersion() started.
 ◇ Test wrongArchOrOldOSIsUnavailable() started.
 ◇ Test detectsKnownProviderRootsUnderFixtureHome() started.
 ◇ Test allGreenIsReady() started.
@@ -1733,7 +1733,7 @@ Build complete! (0.21s)
 ✔ Test renamedFileEvaluatesNewPathIndependentlyOfOldPath() passed after 1.493 seconds.
 ✔ Test unmountedVolumeIsSkipped() passed after 1.493 seconds.
 ✔ Test repeatedSameFileIsDedupedAfterFirstScan() passed after 1.493 seconds.
-✔ Test clamAVAbsentReportsUnavailableAndNeverScans() passed after 1.493 seconds.
+✔ Test legacy-scannerAbsentReportsUnavailableAndNeverScans() passed after 1.493 seconds.
 ✔ Test ignoresCleanAndNoise() passed after 1.493 seconds.
 ✔ Test infectedFileRaisesAlertButIsNotQuarantined() passed after 1.493 seconds.
 ✔ Test singleStableCleanFileGetsScannedOnce() passed after 1.493 seconds.
@@ -1750,7 +1750,7 @@ Build complete! (0.21s)
 ✔ Test dryRunEmitsApprovedThenDryRunNeverExecuted() passed after 1.493 seconds.
 ✔ Test iconsetCoversAllSizes() passed after 1.493 seconds.
 ✔ Test vanishedFileEmitsSkippedEvent() passed after 1.493 seconds.
-✔ Test realEICARFileIsDetected() passed after 1.493 seconds.
+✔ Test realfixture de signatureFileIsDetected() passed after 1.493 seconds.
 ✔ Test dryRunDoesNotDelete() passed after 1.506 seconds.
 ✔ Test symlinkSwappedAfterApprovalRejected() passed after 1.512 seconds.
 ✔ Test threeAsymmetricArcs() passed after 1.512 seconds.
@@ -1831,7 +1831,7 @@ Build complete! (0.21s)
 ✔ Test detectsOther() passed after 1.556 seconds.
 ✔ Test missingOptionalsDegradeToLimited() passed after 1.556 seconds.
 ✔ Test detectsDiskImage() passed after 1.556 seconds.
-✔ Test parsesFullClamAVVersion() passed after 1.556 seconds.
+✔ Test parsesFullancien scanner externeVersion() passed after 1.556 seconds.
 ✔ Test wrongArchOrOldOSIsUnavailable() passed after 1.556 seconds.
 ✔ Test leftoversExcludeAppleAndInstalled() passed after 1.556 seconds.
 ✔ Test allGreenIsReady() passed after 1.556 seconds.
@@ -1927,13 +1927,13 @@ Build complete! (0.21s)
 ✔ Test "only low-risk AND preselected findings are auto-executable" passed after 0.079 seconds.
 ✔ Suite "Cloud dataless-file guard" passed after 1.563 seconds.
 ✔ Suite "Quarantine" passed after 1.563 seconds.
-✔ Suite "ClamAV output parsing" passed after 1.563 seconds.
+✔ Suite "ancien scanner externe output parsing" passed after 1.563 seconds.
 ✔ Suite "SimilarImageGroup best-resolution marking" passed after 1.563 seconds.
 ✔ Suite "Design tokens" passed after 1.563 seconds.
 ✔ Test cancelledConsumeStopsProcessing() passed after 1.562 seconds.
 ✔ Suite "SafetyCenter audit sink" passed after 1.563 seconds.
 ✔ Suite "Brand resources" passed after 1.563 seconds.
-✔ Suite "Real ClamAV EICAR scan (only if installed)" passed after 1.563 seconds.
+✔ Suite "Real ancien scanner externe fixture de signature scan (only if installed)" passed after 1.563 seconds.
 ✔ Suite "Bloom geometry" passed after 1.563 seconds.
 ✔ Suite "SafetyCenter" passed after 1.563 seconds.
 ✔ Suite "MetricsCollector" passed after 1.564 seconds.
@@ -1995,7 +1995,7 @@ Build complete! (0.21s)
 ✔ Suite "Store at scale" passed after 2.108 seconds.
 [stress] rapid cancel (space lens): returned in 0.63897675 seconds
 ✔ Test errorExitThrowsScanFailedWithStderrDetail() passed after 2.288 seconds.
-✔ Suite "ClamAVScanner process execution (fake clamscan)" passed after 2.290 seconds.
+✔ Suite "ancien scanner externeScanner process execution (fake ancien-scanner)" passed after 2.290 seconds.
 ✔ Test scanEngineCancelledImmediatelyTearsDownFast() passed after 2.356 seconds.
 ✔ Test totalsDoNotDoubleCount() passed after 2.364 seconds.
 ✔ Test identicalResultSetAcrossConcurrencyLevels() passed after 2.375 seconds.
@@ -2032,11 +2032,11 @@ Building for debugging...
 [7/26] Compiling DesignSystem Typography.swift
 [8/30] Compiling DesignSystem HeroCore.swift
 [9/36] Emitting module DesignSystem
-[10/36] Compiling MalwareEngine ProtectionWatcher.swift
+[10/36] Compiling LegacyScanner ProtectionWatcher.swift
 [11/36] Compiling ScanCore CloudFile.swift
 [12/36] Emitting module ScanCore
-[13/36] Emitting module MalwareEngine
-[14/36] Compiling MalwareEngine MalwareEngine.swift
+[13/36] Emitting module LegacyScanner
+[14/36] Compiling LegacyScanner LegacyScanner.swift
 [15/36] Compiling SystemMetrics SystemMetrics.swift
 [16/36] Emitting module SystemMetrics
 [17/36] Compiling Persistence LegacyDataMigration.swift
@@ -2131,9 +2131,9 @@ Build complete! (7.16s)
 ◇ Suite "MetricsCollector" started.
 ◇ Suite "ProtectionWatcher burst" started.
 ◇ Suite "Menu bar attention detection" started.
-◇ Suite "Real ClamAV EICAR scan (only if installed)" started.
-◇ Suite "ClamAVScanner process execution (fake clamscan)" started.
-◇ Suite "ClamAV output parsing" started.
+◇ Suite "Real ancien scanner externe fixture de signature scan (only if installed)" started.
+◇ Suite "ancien scanner externeScanner process execution (fake ancien-scanner)" started.
+◇ Suite "ancien scanner externe output parsing" started.
 ◇ Suite "AppDiscovery" started.
 ◇ Suite "DuplicatesViewModel filtering" started.
 ◇ Suite "Dry-run default setting" started.
@@ -2280,7 +2280,7 @@ Build complete! (7.16s)
 ◇ Test parsesGarbageSafely() started.
 ◇ Test "real ubiquitous placeholder signal always wins, even with stale byte counts" started.
 ◇ Test unavailableOutranksActionRequired() started.
-◇ Test parsesFullClamAVVersion() started.
+◇ Test parsesFullancien scanner externeVersion() started.
 ◇ Test moveOfferedOnlyOutsideApplications() started.
 ◇ Test descendIgnoresLeafAndEmptyDirectories() started.
 ◇ Test detectsTemporaryAndTranslocation() started.
@@ -2334,7 +2334,7 @@ Build complete! (7.16s)
 ◇ Test unknownWhenWhereFromsUnsafe() started.
 ◇ Test cleanResultReturnsNoFindings() started.
 ◇ Test sparkleWithDangerousFeedYieldsNoURL() started.
-◇ Test realEICARFileIsDetected() started.
+◇ Test realfixture de signatureFileIsDetected() started.
 ◇ Test caskIndexEmptyWhenNoCaskroom() started.
 ◇ Test "absent setting keeps dry-run ON (safe default)" started.
 ◇ Test honestScannedCountPrefersSummaryLineOverInputPathCount() started.
@@ -2403,7 +2403,7 @@ Build complete! (7.16s)
 ◇ Test disabledWatcherRefusesEvents() started.
 ◇ Test emptyFolderIsLocalNotRemote() started.
 ◇ Test cancelledConsumeStopsProcessing() started.
-◇ Test clamAVAbsentReportsUnavailableAndNeverScans() started.
+◇ Test legacy-scannerAbsentReportsUnavailableAndNeverScans() started.
 ◇ Test clearingSearchRestoresFullList() started.
 ◇ Test case passing 1 argument path → "/bin/ls" to binSbinUsrRejected(path:) started.
 ◇ Test noMatch() started.
@@ -2515,7 +2515,7 @@ Build complete! (7.16s)
 ✔ Test detectsOther() passed after 1.963 seconds.
 ✔ Test parsesGarbageSafely() passed after 1.963 seconds.
 ✔ Test unavailableOutranksActionRequired() passed after 1.963 seconds.
-✔ Test parsesFullClamAVVersion() passed after 1.963 seconds.
+✔ Test parsesFullancien scanner externeVersion() passed after 1.963 seconds.
 ✔ Test moveOfferedOnlyOutsideApplications() passed after 1.963 seconds.
 ✔ Test detectsTemporaryAndTranslocation() passed after 1.963 seconds.
 ✔ Test everyProfileMapsToSafeDefaults() passed after 1.963 seconds.
@@ -2565,7 +2565,7 @@ Build complete! (7.16s)
 ✔ Test argumentsArrayNeverUsesAShell() passed after 1.964 seconds.
 ✔ Test sparkleWithDangerousFeedYieldsNoURL() passed after 1.964 seconds.
 ✔ Test unknownWhenWhereFromsUnsafe() passed after 1.964 seconds.
-✔ Test realEICARFileIsDetected() passed after 1.964 seconds.
+✔ Test realfixture de signatureFileIsDetected() passed after 1.964 seconds.
 ✔ Test caskIndexEmptyWhenNoCaskroom() passed after 1.964 seconds.
 ✔ Test "absent setting keeps dry-run ON (safe default)" passed after 1.964 seconds.
 ✔ Test honestScannedCountPrefersSummaryLineOverInputPathCount() passed after 1.964 seconds.
@@ -2627,7 +2627,7 @@ Build complete! (7.16s)
 ✔ Test disabledWatcherRefusesEvents() passed after 1.967 seconds.
 ✔ Test emptyFolderIsLocalNotRemote() passed after 1.967 seconds.
 ✔ Test infectedFileRaisesAlertButIsNotQuarantined() passed after 1.967 seconds.
-✔ Test clamAVAbsentReportsUnavailableAndNeverScans() passed after 1.967 seconds.
+✔ Test legacy-scannerAbsentReportsUnavailableAndNeverScans() passed after 1.967 seconds.
 ✔ Test clearingSearchRestoresFullList() passed after 1.965 seconds.
 ✔ Test noMatch() passed after 1.965 seconds.
 ✔ Test rateLimitEnforcesMinimumSpacingBetweenScanLaunches() passed after 1.965 seconds.
@@ -2679,11 +2679,11 @@ Build complete! (7.16s)
 ✔ Suite "Cleanup rule catalog risk/preselect invariant" passed after 1.973 seconds.
 ✔ Suite "ClutterVolumeGrouping" passed after 1.973 seconds.
 ✔ Suite "Quarantine" passed after 1.973 seconds.
-✔ Suite "ClamAV output parsing" passed after 1.973 seconds.
+✔ Suite "ancien scanner externe output parsing" passed after 1.973 seconds.
 ✔ Suite "Menu bar attention detection" passed after 1.973 seconds.
 ✔ Suite "MetricsCollector" passed after 1.973 seconds.
 ✔ Suite "ProtectionWatcher burst" passed after 1.973 seconds.
-✔ Suite "Real ClamAV EICAR scan (only if installed)" passed after 1.973 seconds.
+✔ Suite "Real ancien scanner externe fixture de signature scan (only if installed)" passed after 1.973 seconds.
 ✔ Suite "AppDiscovery" passed after 1.973 seconds.
 ✔ Suite "UserCleanupRules" passed after 1.973 seconds.
 ✔ Suite "Dry-run default setting" passed after 1.973 seconds.
@@ -2740,7 +2740,7 @@ Build complete! (7.16s)
 ✔ Test timeoutTerminatesAndThrowsPromptly() passed after 2.275 seconds.
 ✔ Test errorExitThrowsScanFailedWithStderrDetail() passed after 2.377 seconds.
 ✔ Test infectedResultReturnsFindingsAndDoesNotThrow() passed after 2.498 seconds.
-✔ Suite "ClamAVScanner process execution (fake clamscan)" passed after 2.501 seconds.
+✔ Suite "ancien scanner externeScanner process execution (fake ancien-scanner)" passed after 2.501 seconds.
 [stress] rapid cancel (space lens): returned in 0.710125959 seconds
 ✔ Test scanEngineCancelledImmediatelyTearsDownFast() passed after 2.691 seconds.
 ✔ Test failingRuleDoesNotPoisonRun() passed after 2.720 seconds.
@@ -2791,7 +2791,7 @@ Build complete! (0.24s)
 ◇ Suite "ClutterSearch" started.
 ◇ Suite "Store at scale" started.
 ◇ Suite "Legacy data migration" started.
-◇ Suite "ClamAVScanner process execution (fake clamscan)" started.
+◇ Suite "ancien scanner externeScanner process execution (fake ancien-scanner)" started.
 ◇ Suite "Semantic colors" started.
 ◇ Suite "Brand resources" started.
 ◇ Suite "SimilarImageGroup best-resolution marking" started.
@@ -2801,10 +2801,10 @@ Build complete! (0.24s)
 ◇ Suite "Space Lens at scale" started.
 ◇ Suite "ClutterExclusions.targetPath / isExcluded" started.
 ◇ Suite "ClutterVolumeGrouping" started.
-◇ Suite "ClamAV output parsing" started.
+◇ Suite "ancien scanner externe output parsing" started.
 ◇ Suite "Cloud Cleanup sync-state classification" started.
 ◇ Suite "DuplicateEngine" started.
-◇ Suite "Real ClamAV EICAR scan (only if installed)" started.
+◇ Suite "Real ancien scanner externe fixture de signature scan (only if installed)" started.
 ◇ Suite "ScanEngine bounded concurrency" started.
 ◇ Suite "Cloud Cleanup sync state" started.
 ◇ Suite "Cloud dataless-file guard" started.
@@ -2945,7 +2945,7 @@ Build complete! (0.24s)
 ◇ Test unmountedVolumeIsSkipped() started.
 ◇ Test migrationCanBeRerunAfterARollback() started.
 ◇ Test clearingSearchRestoresFullList() started.
-◇ Test clamAVAbsentReportsUnavailableAndNeverScans() started.
+◇ Test legacy-scannerAbsentReportsUnavailableAndNeverScans() started.
 ◇ Test interruptedRunResumesAndLeavesNoHalfCopiedItem() started.
 ◇ Test preferencesMigrateEvenWithNoLegacyFilesOnDisk() started.
 ◇ Test fingerprintsPersistAndDedupAcrossRestart() started.
@@ -3000,7 +3000,7 @@ Build complete! (0.24s)
 ◇ Test "missing pixel data defaults to zero, never crashes or fabricates" started.
 ◇ Test wideTreeThousandsOfSiblingsCompletesAndCountsBytes() started.
 ◇ Test lightSiblingsAreReadableOnSoftPorcelain() started.
-◇ Test parsesFullClamAVVersion() started.
+◇ Test parsesFullancien scanner externeVersion() started.
 ◇ Test folderTargetIsTheContainingDirectory() started.
 ◇ Test deepTreeManyLevelsDoesNotCrashAndSumsBelowCap() started.
 ◇ Test internalVolume() started.
@@ -3027,7 +3027,7 @@ Build complete! (0.24s)
 ◇ Test honestScannedCountPrefersSummaryLineOverInputPathCount() started.
 ◇ Test mostlyRemoteIsPlaceholderPartialInBetween() started.
 ◇ Test hardLinksNotTreatedAsDuplicates() started.
-◇ Test realEICARFileIsDetected() started.
+◇ Test realfixture de signatureFileIsDetected() started.
 ◇ Test measureWalksTreeSkipsSymlinksAndSortsByLocalBytes() started.
 ◇ Test filesBelowMinimumSizeIgnored() started.
 ◇ Test keeperPrefersShallowestPath() started.
@@ -3237,7 +3237,7 @@ Build complete! (0.24s)
 ✔ Test exactMatch() passed after 0.252 seconds.
 ✔ Test unmountedVolumeIsSkipped() passed after 0.252 seconds.
 ✔ Test repeatedSameFileIsDedupedAfterFirstScan() passed after 0.252 seconds.
-✔ Test clamAVAbsentReportsUnavailableAndNeverScans() passed after 0.252 seconds.
+✔ Test legacy-scannerAbsentReportsUnavailableAndNeverScans() passed after 0.252 seconds.
 ✔ Test "not determined reads as Not requested, never claims granted" passed after 0.252 seconds.
 ✔ Test clearingSearchRestoresFullList() passed after 0.252 seconds.
 ✔ Test rateLimitEnforcesMinimumSpacingBetweenScanLaunches() passed after 0.252 seconds.
@@ -3287,7 +3287,7 @@ Build complete! (0.24s)
 ✔ Test addingSamePathTwiceStaysASingleTarget() passed after 0.262 seconds.
 ✔ Test "missing pixel data defaults to zero, never crashes or fabricates" passed after 0.262 seconds.
 ✔ Test lightSiblingsAreReadableOnSoftPorcelain() passed after 0.262 seconds.
-✔ Test parsesFullClamAVVersion() passed after 0.262 seconds.
+✔ Test parsesFullancien scanner externeVersion() passed after 0.262 seconds.
 ✔ Test preferencesAlreadySetUnderTheNewIdentityWin() passed after 0.262 seconds.
 ✔ Test internalVolume() passed after 0.262 seconds.
 ✔ Test folderTargetIsTheContainingDirectory() passed after 0.262 seconds.
@@ -3314,7 +3314,7 @@ Build complete! (0.24s)
 ✔ Test honestScannedCountPrefersSummaryLineOverInputPathCount() passed after 0.263 seconds.
 ✔ Test mostlyRemoteIsPlaceholderPartialInBetween() passed after 0.263 seconds.
 ✔ Test recoverableCountsOnlyBytesActuallyOnDiskNeverLogical() passed after 0.263 seconds.
-✔ Test realEICARFileIsDetected() passed after 0.263 seconds.
+✔ Test realfixture de signatureFileIsDetected() passed after 0.263 seconds.
 ✔ Test emptyHomeYieldsNoProviders() passed after 0.263 seconds.
 ✔ Test unreadableLegacyItemFailsThatItemOnly() passed after 0.263 seconds.
 ✔ Test measureWalksTreeSkipsSymlinksAndSortsByLocalBytes() passed after 0.263 seconds.
@@ -3409,9 +3409,9 @@ Build complete! (0.24s)
 ✔ Suite "ClutterExclusions.targetPath / isExcluded" passed after 1.651 seconds.
 ✔ Test depthCapUsesShallowSizeAndStillCountsBytes() passed after 1.648 seconds.
 ✔ Suite "ClutterVolumeGrouping" passed after 1.651 seconds.
-✔ Suite "ClamAV output parsing" passed after 1.651 seconds.
+✔ Suite "ancien scanner externe output parsing" passed after 1.651 seconds.
 ✔ Suite "Cloud Cleanup sync-state classification" passed after 1.651 seconds.
-✔ Suite "Real ClamAV EICAR scan (only if installed)" passed after 1.652 seconds.
+✔ Suite "Real ancien scanner externe fixture de signature scan (only if installed)" passed after 1.652 seconds.
 ✔ Suite "Cloud Cleanup sync state" passed after 1.652 seconds.
 ✔ Suite "Cloud dataless-file guard" passed after 1.652 seconds.
 ✔ Suite "Browser profile detection" passed after 1.652 seconds.
@@ -3495,7 +3495,7 @@ Build complete! (0.24s)
 ✔ Suite "Duplicates at scale" passed after 6.627 seconds.
 ✔ Test cleanResultReturnsNoFindings() passed after 8.204 seconds.
 ✔ Test infectedResultReturnsFindingsAndDoesNotThrow() passed after 10.123 seconds.
-✔ Suite "ClamAVScanner process execution (fake clamscan)" passed after 10.125 seconds.
+✔ Suite "ancien scanner externeScanner process execution (fake ancien-scanner)" passed after 10.125 seconds.
 ✔ Test run with 296 tests in 58 suites passed after 10.125 seconds.
 
 $ (audit 2026-08-02, commit c05f4a9) Scripts/test.sh

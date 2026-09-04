@@ -36,7 +36,7 @@ each category.
 - Test target folder: `Tests/MacCareAppTests/` — literal directory name
   tied to the SwiftPM target-naming convention (`<Target>Tests`).
 - Library targets (`ScanCore`, `SafetyCore`, `FileRules`, `DesignSystem`,
-  `Persistence`, `SystemMetrics`, `AppDiscovery`, `MalwareEngine`) —
+  `Persistence`, `SystemMetrics`, `AppDiscovery`, `LegacyScanner`) —
   **not** brand-coupled, no rename needed regardless of product name.
 
 ### Local data paths (SQLite, quarantine, diagnostics)

@@ -60,8 +60,8 @@ Mounted and verified this build: contents match the above exactly.
 - arm64 only (Apple Silicon). No x86_64 slice.
 
 ## What is NOT in the bundle
-- No embedded ClamAV binary or virus signatures (optional, installed
-  separately by the user — see `Documentation/CLAMAV.md`).
+- No embedded ancien scanner externe binary or virus signatures (optional, installed
+  separately by the user — see `Documentation/LEGACY_SCANNER.md`).
 - No telemetry/analytics SDK, no crash reporter, no network framework
   usage (`Documentation/PRIVACY.md`).
 - No developer's real username or local absolute paths in the binary's

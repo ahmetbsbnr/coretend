@@ -16,9 +16,9 @@ Every shipping target (`ScanCore`, `SafetyCore`, `FileRules`, `DesignSystem`,
 `Persistence`, `SystemMetrics`, `AppDiscovery`, `IntegrityCore`,
 `CoreTendApp`) remains first-party Swift code depending only on Apple's
 system frameworks (Foundation, SwiftUI, AppKit, etc.). There is no runtime
-dependency on ClamAV or any other third-party tool — the prior optional
-`clamscan` subprocess integration (`MalwareEngine`) was fully removed; see
-`Documentation/CLAMAV_DECISION.md`.
+dependency on ancien scanner externe or any other third-party tool — the prior optional
+`ancien-scanner` subprocess integration (`LegacyScanner`) was fully removed; see
+`Documentation/LEGACY_SCANNER_DECISION.md`.
 
 | Name | Version | Source | License | Usage | Necessity | Risk | Native alternative | Maintenance | Bundled in app |
 |---|---|---|---|---|---|---|---|---|---|
@@ -27,9 +27,9 @@ dependency on ClamAV or any other third-party tool — the prior optional
 
 ## Runtime, non-linked external tool
 
-None. The prior optional runtime dependency on a user-installed `clamscan`
-(ClamAV) binary was removed with the `MalwareEngine` module; see
-`Documentation/CLAMAV_DECISION.md`. Integrity
+None. The prior optional runtime dependency on a user-installed `ancien-scanner`
+(ancien scanner externe) binary was removed with the `LegacyScanner` module; see
+`Documentation/LEGACY_SCANNER_DECISION.md`. Integrity
 (`Sources/IntegrityCore`) reads only signals macOS already records and
 invokes no external process.
 

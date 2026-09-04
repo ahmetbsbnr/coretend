@@ -116,13 +116,13 @@ expected, honest result of covering the harder domains session 2 skipped — see
 
 ### FUNC-003 — Protection live-scan path is BLOCKED_ENVIRONMENT
 - **Status**: COMPLIANT_PARTIAL (MUST priority)
-- **Evidence**: no `clamscan` installed on this audit machine; only `parse()` output-parsing and the
+- **Evidence**: no `ancien-scanner` installed on this audit machine; only `parse()` output-parsing and the
   quarantine data path are tested, never the real `Process()` invocation.
 - **Priority**: P2 — this is the core promise of the Protection module; an untested live-invocation
   path is a real, if environment-forced, coverage gap.
 - **User impact**: unknown whether the real scan invocation works end-to-end on a machine with
-  ClamAV installed; not exercised in this or any prior session.
-- **Fix**: install ClamAV in a future session (or CI) and run a real scan against an EICAR test
+  ancien scanner externe installed; not exercised in this or any prior session.
+- **Fix**: install ancien scanner externe in a future session (or CI) and run a real scan against an fixture de signature test
   file to close this gap.
 - **Recommended version**: n/a (test-infrastructure gap, not a code defect).
 

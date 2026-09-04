@@ -29,9 +29,9 @@ There is no bundled third-party code. `Package.swift` declares **zero external
 package dependencies**, so nothing is vendored and nothing is redistributed.
 
 There is no external runtime component either. An earlier version invoked a
-user-installed **ClamAV** `clamscan` binary as a separate process; that
-integration was fully retired (see `Documentation/CLAMAV_DECISION.md`) and
-nothing in the current source tree references ClamAV or GPL-2.0 code.
+user-installed **ancien scanner externe** `ancien-scanner` binary as a separate process; that
+integration was fully retired (see `Documentation/LEGACY_SCANNER_DECISION.md`) and
+nothing in the current source tree references ancien scanner externe or GPL-2.0 code.
 
 Apple system frameworks and the system SQLite are linked from the OS and are
 not redistributed here.

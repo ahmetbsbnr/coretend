@@ -23,7 +23,7 @@ the bullets at the top describe the current product.*
 - Symlinks are skipped by scans, not followed.
 - Integrity is a first-party local provenance and login-item inventory. It is
   not an antivirus scanner and makes no malware-detection claim. The former
-  ClamAV/MalwareEngine integration was removed before rc.4.
+  ancien scanner externe/LegacyScanner integration was removed before rc.4.
 - Privileged helper not shipped (blocked: no Developer ID signing available in this
   environment).
 - **Artifact UI QA: completed for the rc.5 release gate.** The application
