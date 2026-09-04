@@ -7,6 +7,7 @@ let package = Package(
     platforms: [.macOS(.v14)],
     products: [
         .executable(name: "CoreTend", targets: ["CoreTend"]),
+        .executable(name: "coretend-cli", targets: ["CoreTendCLI"]),
         .library(name: "ScanCore", targets: ["ScanCore"]),
         .library(name: "SafetyCore", targets: ["SafetyCore"]),
         .library(name: "FileRules", targets: ["FileRules"]),
@@ -23,6 +24,10 @@ let package = Package(
         .executableTarget(
             name: "CoreTend",
             dependencies: ["CoreTendApp"]
+        ),
+        .executableTarget(
+            name: "CoreTendCLI",
+            dependencies: ["FileRules"]
         ),
         .target(
             name: "CoreTendApp",
