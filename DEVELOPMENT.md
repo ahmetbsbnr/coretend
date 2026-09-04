@@ -107,15 +107,19 @@ deliberate, not a speed oversight.
 
 ### Release, signing, notarization
 
-- Signing/notarization is **live as of 2026-08-31**: Developer ID identity
-  `Developer ID Application: Ahmet BASBUNAR (NSCUV5G738)` is installed and
-  `Scripts/sign-and-notarize.sh` has produced a real signed+notarized+stapled
-  `0.9.1-rc.5` locally. **But every *published* release still ships unsigned**
-  — the signed build has not been shipped. Do not flip `signed`/`notarized`
-  to `true` in `published-release.json`, `latest.json`, `PublicIdentity`, or
-  the site until a signed release is actually published
-  (`Documentation/SIGNING_NOTARIZATION.md` → "Publishing a signed release").
-  Still no ad-hoc signing or self-signed certs dressed up as a real signature.
+- Signing/notarization has been **live and published since 2026-09-03**:
+  Developer ID identity `Developer ID Application: Ahmet BASBUNAR (NSCUV5G738)`
+  signed, notarized, and stapled the published `v1.0.0` DMG and ZIP (first
+  proven locally against `0.9.1-rc.5` on 2026-08-31, then shipped for real on
+  `v1.0.0`). `signed`/`notarized`/`stapled` are `true` in
+  `Configuration/published-release.json`, `latest.json`, and the site/updater
+  for the current release — see `Documentation/RELEASE_STATE.md`. Do not flip
+  those fields to `true` for a *future* release until that release's own
+  signed bytes are actually published; still no ad-hoc signing or self-signed
+  certs dressed up as a real signature. No SLSA build attestation exists for
+  `v1.0.0` — final signing happened outside GitHub Actions, so a retroactive
+  attestation would misidentify the builder; the next release's workflow
+  attests the same bytes it signs.
 - **Never regenerate** the CSR or private key in `Configuration/DeveloperID/`.
   The `Developer ID Application` cert was issued against that exact CSR;
   regenerating breaks the pairing. Never read or echo the private key or the
