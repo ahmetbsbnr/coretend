@@ -72,7 +72,7 @@ struct SafetyLogView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text(L("safetylog.title")).font(MCFont.cardTitle)
-                Text(L("safetylog.subtitle", model.executedCount))
+                Text(L("safetylog.subtitle_detail", model.executedCount, model.skippedOrErrorCount))
                     .font(.caption).foregroundStyle(.secondary)
             }
             Spacer()

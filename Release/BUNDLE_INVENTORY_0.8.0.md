@@ -61,7 +61,7 @@ Mounted and verified this build: contents match the above exactly.
 
 ## What is NOT in the bundle
 - No embedded ancien scanner externe binary or virus signatures (optional, installed
-  separately by the user — see `Documentation/LEGACY_SCANNER.md`).
+  separately by the user — see `Documentation/LEGACY_SCANNER_DECISION.md`).
 - No telemetry/analytics SDK, no crash reporter, no network framework
   usage (`Documentation/PRIVACY.md`).
 - No developer's real username or local absolute paths in the binary's

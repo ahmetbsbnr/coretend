@@ -420,6 +420,7 @@
 "common.done" = "Done";
 "safetylog.title" = "Safety Log";
 "safetylog.subtitle" = "%d executed";
+"safetylog.subtitle_detail" = "%d executed · %d skipped or failed";
 "safetylog.empty" = "No safety log entries yet.";
 "safetylog.unavailable" = "Local database unavailable";
 "safetylog.purge" = "Purge Log";

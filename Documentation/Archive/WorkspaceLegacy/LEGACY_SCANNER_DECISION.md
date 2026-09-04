@@ -2,7 +2,7 @@
 
 Status: **ancien scanner externe integration has been fully removed** from the app, the
 onboarding flow, Settings, the menu bar, the website, and all product
-communication. `Documentation/LEGACY_SCANNER.md` described the old design and is
+communication. `Documentation/LEGACY_SCANNER_DECISION.md` describes the retired design and is
 superseded by this document. This decision applies to every distribution
 channel equally — there is one CoreTend, not a version that kept it.
 
