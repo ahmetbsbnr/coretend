@@ -26,7 +26,7 @@ bash Scripts/test.sh            # the ONLY supported runner
 Not `swift test`. XCTest ships with Xcode; Swift Testing needs explicit
 `-F`/`-rpath` flags, which the script supplies.
 
-Expected: **296 tests in 58 suites, 0 failures.**
+Expected: **342 tests in 58 suites, 0 failures.**
 
 ## Site
 
@@ -120,3 +120,19 @@ Never change branch with a dirty working tree. Never export via an orphan
 checkout in the active repository — that method previously destroyed the
 working tree; `Scripts/build-public-branch.sh` builds its commit with
 `commit-tree` against a throwaway index instead.
+# CoreTend commands
+
+## Read-only CLI
+
+Swift Package Manager builds a small inspection binary alongside the app:
+
+```sh
+swift run coretend-cli --list-rules
+swift run coretend-cli --paths
+```
+
+The CLI lists cleanup rules, risk levels, and user-scoped roots. It never
+deletes, moves, edits, or uploads files. Destructive actions stay inside the
+reviewed SwiftUI safety flow, with per-item confirmation and Trash rollback.
+
+Use `swift run coretend-cli --help` for complete usage.

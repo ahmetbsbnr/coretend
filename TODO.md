@@ -43,8 +43,8 @@ review before any implementation:
   any disable action would need explicit review and rollback.
 - Sensitive-metadata cleaner: EXIF/device/date inspection and opt-in removal.
 - Notification Center widget showing free space and linking to the main app.
-- Optional CLI for report and reviewed cleanup workflows; no unattended
-  destructive command by default.
+- Optional CLI destructive workflows remain deferred; `coretend-cli` now ships
+  read-only rule/path inspection with no filesystem mutation.
 - Shortcuts actions for inspect/report workflows, with confirmation before any
   destructive action.
 
