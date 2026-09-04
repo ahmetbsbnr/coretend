@@ -55,4 +55,12 @@ final class AppEnvironment {
         guard let store else { return }
         Task { try? await store.recordLocationVisit(path: path, bytes: bytes) }
     }
+
+    /// Records one scan's category-level footprint into Storage Timeline.
+    /// Fire-and-forget like `record(_:)` — a missed write only costs Timeline
+    /// history, never data correctness.
+    func recordTimelineSnapshot(samples: [TimelineCategorySample]) {
+        guard let store else { return }
+        Task { try? await store.recordTimelineSnapshot(samples: samples) }
+    }
 }
