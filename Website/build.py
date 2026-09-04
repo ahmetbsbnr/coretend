@@ -517,7 +517,7 @@ def shell(
       <li><a href="{REPOSITORY}">{source}</a></li>
     </ul>
   </div>
-  <div class="foot-base"><span>{'Direction et validation : Ahmet Basbunar · Assistance au développement : Claude (Anthropic), sous supervision humaine jusqu’à la livraison · Apache-2.0' if is_fr else 'Direction and validation: Ahmet Basbunar · Development assistance: Claude (Anthropic), under human supervision through delivery · Apache-2.0'}</span><span>{version_status}</span></div>
+  <div class="foot-base"><span>{'Ahmet Basbunar — direction et validation · Claude (Anthropic) — assistant supervisé jusqu’à livraison · Apache-2.0' if is_fr else 'Ahmet Basbunar — direction and validation · Claude (Anthropic) — supervised assistant through delivery · Apache-2.0'}</span><span>{version_status}</span></div>
 </div></footer>
 <div id="toast" role="status" aria-live="polite"></div>
 </body>
