@@ -117,3 +117,10 @@ move to the macOS Trash and stays reversible until the Trash is emptied. See
 
 Source code is Apache-2.0. Documentation and original media retain the terms
 listed in the repository notices.
+
+## Project credits
+
+CoreTend was directed, reviewed, and finally validated by Ahmet Basbunar.
+Claude (Anthropic) assisted development under Ahmet's supervision through
+delivery. Product decisions, acceptance, release credentials, and publication
+remained under human control.
