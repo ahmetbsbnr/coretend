@@ -6,17 +6,16 @@ release. Core functionality is complete; 342 Swift tests pass.
 
 ## Release follow-up
 
-1. Perform interactive VoiceOver, keyboard traversal, focus visibility, and
-   Dynamic Type QA. Automated labels, contrast, and Reduce Motion checks pass,
-   but automation cannot replace assistive-technology observation.
-2. Expand compatibility testing beyond the current Apple-silicon Mac and
-   macOS environment when another supported machine/OS is available.
-3. Complete the native-app FR/EN × light/dark × every-module screenshot
-   campaign. This is visual-regression coverage, not a 1.0 correctness blocker.
-4. For the next release, create provenance in the same trusted workflow that
-   produces or receives the signed final bytes. A retrospective SLSA build
-   attestation for 1.0.0 would falsely identify a downloader as the builder;
-   1.0.0 instead carries Developer ID/notarization, SHA-256, and Minisign.
+Completed 2026-09-04 by maintainer verification: interactive VoiceOver,
+keyboard traversal, focus visibility, Dynamic Type, second-Mac/different-macOS
+compatibility, and 44-frame native FR/EN × light/dark × every-module visual
+matrix. See `Documentation/HUMAN_QA_REPORT.md`.
+
+Release-workflow provenance plumbing is complete for the next release:
+`.github/workflows/release.yml` now uses the dedicated signing Mac and applies
+Developer ID signing, notarization, stapling, SHA-256, SLSA attestation and
+Minisign to the same final bytes. A retrospective SLSA attestation for 1.0.0
+would still be false and will not be created.
 
 ## Deliberately deferred product scope
 

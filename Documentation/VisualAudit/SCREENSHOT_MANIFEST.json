@@ -301,6 +301,402 @@
       "mode": "light",
       "approved": true,
       "note": "app window / menu bar popover capture only, no desktop"
+    },
+    {
+      "file": "2026-09-04-en-dark-activity.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-dark-applications.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-dark-cloud-cleanup.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-dark-dashboard.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-dark-duplicates.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-dark-integrity.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-dark-my-clutter.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-dark-performance.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-dark-settings.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-dark-space-lens.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-dark-storage.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-light-activity.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-light-applications.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-light-cloud-cleanup.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-light-dashboard.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-light-duplicates.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-light-integrity.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-light-my-clutter.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-light-performance.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-light-settings.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-light-space-lens.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-en-light-storage.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "en",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-dark-activity.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-dark-applications.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-dark-cloud-cleanup.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-dark-dashboard.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-dark-duplicates.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-dark-integrity.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-dark-my-clutter.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-dark-performance.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-dark-settings.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-dark-space-lens.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-dark-storage.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "dark",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-light-activity.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-light-applications.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-light-cloud-cleanup.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-light-dashboard.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-light-duplicates.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-light-integrity.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-light-my-clutter.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-light-performance.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-light-settings.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-light-space-lens.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
+    },
+    {
+      "file": "2026-09-04-fr-light-storage.png",
+      "width": 1800,
+      "height": 1264,
+      "mode": "light",
+      "locale": "fr",
+      "approved": true,
+      "note": "maintainer-reviewed native app window; FR/EN × light/dark matrix; no full desktop"
     }
   ]
 }

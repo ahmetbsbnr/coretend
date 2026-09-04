@@ -1,11 +1,11 @@
 name: Release (tag-triggered, publishes)
 
 # The one workflow that publishes. It builds from a clean checkout of an
-# annotated version tag, proves the tag matches the version recorded inside
-# the repository, runs the full test and policy suite, produces the artifacts
-# and their manifest, attests build provenance, generates an SBOM, optionally
-# signs with Minisign when a real key exists, and only then creates the
-# GitHub Release.
+# annotated version tag on the dedicated signing runner. It proves the tag
+# matches the version recorded inside the repository, runs the full test and
+# policy suite, signs with Developer ID, notarizes and staples the final
+# artifacts, generates their manifest and SBOM, attests those exact bytes,
+# signs the verification files with Minisign, and only then publishes.
 #
 # What this workflow will never do, by construction:
 #   - publish a backup/* tag (guarded explicitly below)
@@ -14,10 +14,10 @@ name: Release (tag-triggered, publishes)
 #   - publish when the tag and the in-repo version disagree
 #   - publish when a declared artifact or its checksum is missing
 #
-# Apple code signing and notarization are NOT performed here: this project has
-# no Developer ID. Minisign and the provenance attestation are separate,
-# weaker guarantees and are described as such — see
-# Documentation/VERIFYING_DOWNLOADS.md.
+# This intentionally requires a maintainer-controlled self-hosted Apple-silicon
+# Mac. GitHub-hosted runners cannot access the non-exported Developer ID private
+# key or the notarytool keychain profile. Missing signing material is a hard
+# failure: a release tag must never fall back to unsigned artifacts.
 
 on:
   push:
@@ -38,7 +38,7 @@ concurrency:
 
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: [self-hosted, macOS, ARM64, coretend-signing]
     timeout-minutes: 45
     permissions:
       # contents: write is required only by the final publish step, which
@@ -134,7 +134,22 @@ jobs:
             exit 1
           fi
 
-      - name: Build artifacts and generate the release manifest
+      - name: Build, Developer ID sign, notarize and staple final artifacts
+        env:
+          CORETEND_DEVELOPER_ID_APPLICATION: ${{ secrets.CORETEND_DEVELOPER_ID_APPLICATION }}
+          CORETEND_NOTARY_PROFILE: ${{ secrets.CORETEND_NOTARY_PROFILE }}
+        run: |
+          set -euo pipefail
+          : "${CORETEND_DEVELOPER_ID_APPLICATION:?CORETEND_DEVELOPER_ID_APPLICATION secret is required}"
+          : "${CORETEND_NOTARY_PROFILE:?CORETEND_NOTARY_PROFILE secret is required}"
+          Scripts/package-local.sh
+          Scripts/sign-and-notarize.sh \
+            "${{ steps.resolve.outputs.version }}" \
+            "$CORETEND_NOTARY_PROFILE"
+
+      - name: Generate manifest from final signed bytes
+        env:
+          CORETEND_RELEASE_SIGNED: "1"
         run: bash Scripts/build-release.sh "${{ steps.resolve.outputs.version }}"
 
       - name: Release manifest gate
@@ -147,7 +162,7 @@ jobs:
         # that is about to be published. There is deliberately no opt-out here.
         run: |
           zsh Scripts/test-dmg-layout.sh \
-            "dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64-unsigned.dmg" \
+            "dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64.dmg" \
             "CoreTend ${{ steps.resolve.outputs.version }}"
 
       - name: Verify every declared artifact exists and matches its checksum
@@ -168,13 +183,21 @@ jobs:
           print("All declared artifacts present, sized and checksummed.")
           PY
 
-      - name: Refuse any signed/notarized claim this workflow cannot back
+      - name: Require signed, notarized and stapled final artifacts
         run: |
-          if grep -riE '"(signed|notarized)"[[:space:]]*:[[:space:]]*true' dist/latest.json; then
-            echo "::error::Manifest claims Apple signing/notarization that was not performed."
-            exit 1
-          fi
-          echo "OK: manifest declares unsigned and not notarized."
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          manifest = json.load(open("dist/latest.json"))
+          if manifest.get("signed") is not True or manifest.get("notarized") is not True:
+              raise SystemExit("manifest must declare signed:true and notarized:true")
+          PY
+          codesign --verify --deep --strict --verbose=2 build/CoreTend.app
+          xcrun stapler validate build/CoreTend.app
+          xcrun stapler validate "dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64.dmg"
+          spctl --assess --type execute --verbose build/CoreTend.app
+          spctl --assess --type open --context context:primary-signature --verbose \
+            "dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64.dmg"
 
       - name: Generate SBOM (SPDX) for the built source tree
         uses: anchore/sbom-action@3ad7283483fc7af8ff2b4ea19663c2d5ca935e26 # v0.24.2
@@ -188,24 +211,17 @@ jobs:
         uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: |
-            dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64-unsigned.zip
-            dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64-unsigned.dmg
+            dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64.zip
+            dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64.dmg
 
-      - name: Sign with Minisign when a real key is configured
-        # No key, no signature: the workflow continues and the release simply
-        # ships without .minisig files, which the verification page states
-        # explicitly. A fabricated or self-invented signature would be worse
-        # than none, so there is no fallback path here.
+      - name: Sign verification files with Minisign
         env:
           MINISIGN_SECRET_KEY: ${{ secrets.MINISIGN_SECRET_KEY }}
           MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
         run: |
           set -euo pipefail
-          if [ -z "${MINISIGN_SECRET_KEY:-}" ]; then
-            echo "MINISIGN_SECRET_KEY is not configured — publishing without Minisign signatures."
-            echo "minisign_signed=false" >> "$GITHUB_ENV"
-            exit 0
-          fi
+          : "${MINISIGN_SECRET_KEY:?MINISIGN_SECRET_KEY secret is required}"
+          : "${MINISIGN_PASSWORD:?MINISIGN_PASSWORD secret is required}"
           brew install minisign
           umask 077
           keyfile="$(mktemp)"
@@ -237,7 +253,6 @@ jobs:
           ls -1 *.minisig
 
       - name: Verify Minisign signatures before publishing them
-        if: env.minisign_signed == 'true'
         run: |
           set -euo pipefail
           cd dist
@@ -268,8 +283,8 @@ jobs:
           body_path: Release/Notes/${{ steps.resolve.outputs.version }}.en.md
           fail_on_unmatched_files: true
           files: |
-            dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64-unsigned.zip
-            dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64-unsigned.dmg
+            dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64.zip
+            dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64.dmg
             dist/latest.json
             dist/SHA256SUMS
             dist/coretend-${{ steps.resolve.outputs.version }}-sbom.spdx.json

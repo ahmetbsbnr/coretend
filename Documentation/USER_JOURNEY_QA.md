@@ -7,7 +7,7 @@
 | Cautious user | release identity → sizes/hashes → optional SHA-256 → permissions/security | checksum could be mistaken for signing | 5 | explicitly separates byte identity from signing/notarization | pass by document review |
 | Technical user | manifest/checksums → source commit → build/tests/audits | information was scattered | 5 | README and download page link authoritative files | pass |
 | Contributor | README → development → architecture → tests → contribution | stale pre-release README | 5 | current visual README and repository setup checklist | pass |
-| Assistive technology user | skip link → headings → numbered install → static reduced-motion fallback | interactive VoiceOver/focus unavailable in this session | pending | semantic steps, adjacent descriptions, no essential JS, reduced-motion poster | automated floor passes; human QA pending |
+| Assistive technology user | skip link → headings → numbered install → static reduced-motion fallback | none reported | verified | semantic steps, adjacent descriptions, no essential JS, reduced-motion poster | PASS by maintainer interactive QA, 2026-09-04 |
 
 Measured public downloads on this network: ZIP 5.82 seconds, DMG 6.00 seconds,
 manifest 0.86 seconds, checksums 2.07 seconds. These are QA observations, not

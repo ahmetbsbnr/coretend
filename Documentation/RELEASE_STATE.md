@@ -17,8 +17,10 @@ Published assets: DMG, ZIP, `latest.json`, `SHA256SUMS`,
 `SHA256SUMS.minisig`, and `minisign.pub`. `Configuration/published-release.json`,
 site download route, portfolio, and in-app updater agree on 1.0.0.
 
-Current automated result: 342 Swift tests pass, 0 fail. Interactive
-accessibility, broader compatibility, and exhaustive native visual QA remain.
+Current automated result: 342 Swift tests pass, 0 fail. On 2026-09-04,
+maintainer reported PASS for interactive accessibility and second-Mac/
+different-supported-macOS compatibility. Maintainer also accepted 44 native
+captures covering 11 modules × EN/FR × light/dark.
 No SLSA build attestation exists for 1.0.0 because final Apple signing happened
 outside Actions; creating one after downloading the release would falsely name
 the downloader workflow as builder. Developer ID/notarization, SHA-256, and

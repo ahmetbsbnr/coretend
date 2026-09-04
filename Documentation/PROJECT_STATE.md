@@ -1,7 +1,7 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 # Project state
 
-## Current checkpoint — 2026-09-03
+## Current checkpoint — 2026-09-04
 
 - Working branch: `main`
 - Published version/build: `1.0.0` / `1000`
@@ -38,7 +38,9 @@ test surfaces, localization/resource checks, repository doctor, security and
 secret gates, visual/accessibility site tests, DMG mount/copy/launch checks,
 signature verification and local-versus-public checksum equality.
 
-Open quality work: run interactive accessibility QA, broaden supported-
-environment testing, and complete native FR/EN light/dark visual coverage.
-Next release should create provenance in its signed-artifact workflow;
-retrospective build provenance for 1.0.0 would misidentify the builder.
+Quality follow-up complete by maintainer attestation: interactive VoiceOver,
+keyboard, focus, Dynamic Type, second-Mac/different-supported-macOS testing,
+and 44-frame native FR/EN light/dark visual matrix all pass. Exact secondary
+hardware and macOS build identifiers were not supplied. Next-release
+signed-artifact provenance workflow is integrated; retrospective provenance
+for 1.0.0 remains intentionally absent because it would misidentify builder.

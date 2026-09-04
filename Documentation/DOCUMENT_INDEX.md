@@ -95,7 +95,7 @@ notes, fine to include but not user-facing).
 | `BRAND_SYSTEM.md` | Brand system spec | current | public |
 | `DESIGN_TOKENS.md` | Token values | current | internal |
 | `MOTION_SYSTEM.md` | Motion/animation rules | current | internal |
-| `VISUAL_QA.md` | Per-screen QA checklist | current, some rows still capture-pending (no attached display — see `KNOWN_LIMITATIONS.md`) | internal |
+| `VISUAL_QA.md` | Per-screen QA checklist | current; 44-frame EN/FR light/dark matrix approved 2026-09-04 | internal |
 | `VISUAL_AUDIT.md` | Baseline visual audit (v0.3.0) | historical baseline, still referenced | internal |
 | `VISUAL_TOOLING.md` | `Scripts/capture.sh` tooling notes | current | internal |
 | `ASSET_PIPELINE.md` | Brand asset generation | current | internal |

@@ -1,5 +1,11 @@
 # KNOWN LIMITATIONS
 
+*Current correction, 2026-09-04:* v1.0.0 is Developer ID signed,
+Apple-notarized and stapled. Interactive VoiceOver/keyboard/Dynamic Type and
+second-Mac/different-supported-macOS checks passed by maintainer attestation.
+Complete 44-frame EN/FR light/dark native matrix is approved. Exact secondary
+hardware and OS build were not supplied. Older rc.5 text below is historical.
+
 *Last re-verified against the v0.9.1-rc.5 release candidate, 2026-08-02.
 Historical descriptions remain below only where they explain a regression gate;
 the bullets at the top describe the current product.*

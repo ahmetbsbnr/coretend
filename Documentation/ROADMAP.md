@@ -9,13 +9,12 @@ confirmation, execution-time path validation, and recoverable Trash actions.
 
 ## Near-term quality work
 
-- Design the next signed-release path so final signed bytes receive provenance
-  in the workflow that produces or receives them; never fabricate provenance
-  retrospectively for 1.0.0.
-- Run interactive VoiceOver, keyboard, focus, and Dynamic Type QA.
-- Complete native visual matrix across English/French and light/dark modes.
-- Test supported macOS range and additional Apple-silicon hardware when
-  environments become available.
+- Operate and validate the new dedicated signing-runner release path. It signs,
+  notarizes, staples, hashes and attests the same final bytes. Never fabricate
+  provenance retrospectively for 1.0.0.
+- Preserve interactive VoiceOver/keyboard/Dynamic Type and cross-Mac coverage
+  for future UI or minimum-macOS changes. Baseline passed 2026-09-04.
+- Refresh approved 44-frame native EN/FR light/dark matrix when UI changes.
 
 ## Candidate 1.x improvements
 

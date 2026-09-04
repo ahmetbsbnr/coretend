@@ -58,17 +58,17 @@ A secondary **More** group holds **Large & Old files**, **Cloud Cleanup**
 ## Install
 
 The current release is
-[`v0.9.1-rc.6`](https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.6)
-— the first **Developer ID signed and Apple-notarized** CoreTend build
-(`sourceCommit 568bdbf`).
+[`v1.0.0`](https://github.com/ahmetbsbnr/coretend/releases/tag/v1.0.0), a
+**Developer ID signed, Apple-notarized and stapled** stable build
+(`sourceCommit 0ecddea`).
 
-1. Download `CoreTend-0.9.1-rc.6-arm64.dmg` from the
-   [release page](https://github.com/ahmetbsbnr/coretend/releases/tag/v0.9.1-rc.6),
+1. Download `CoreTend-1.0.0-arm64.dmg` from the
+   [release page](https://github.com/ahmetbsbnr/coretend/releases/tag/v1.0.0),
    or use the site's [`/download`](https://coretend.ahmetbsbnr.com/download) link.
 2. Optionally verify it:
    ```sh
-   shasum -a 256 ~/Downloads/CoreTend-0.9.1-rc.6-arm64.dmg
-   # 770bd0340cf887d90bb2a0a6b6510a420a8e268de550a7ff73c88dcb7138df32
+   shasum -a 256 ~/Downloads/CoreTend-1.0.0-arm64.dmg
+   # 0969ea2565b98fc950a589855ebafa2b811474fd1383092c3567e192f404534d
    ```
 3. Open the DMG and drag **CoreTend** to Applications.
 
@@ -76,7 +76,9 @@ The notarization ticket is stapled, so the app opens without a Gatekeeper
 prompt. macOS 14+ and Apple silicon (`arm64`) are required. Provenance is
 covered by Minisign + SHA-256 + notarization; there is no
 `actions/attest-build-provenance` attestation for this manually published
-release.
+1.0.0 release. Future releases use a dedicated signing runner so Developer ID
+signing, notarization, SLSA attestation, SHA-256, and Minisign all cover the
+same final bytes.
 
 ## Build and test
 

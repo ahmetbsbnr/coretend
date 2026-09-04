@@ -30,18 +30,16 @@ feature-inventory.json wins.
 | Persistence | COMPLETE | SQLite actor, migrations apply-once/idempotent (tested), activity/exclusions/settings storage |
 | Privileged helper | NOT_STARTED | Blocked: no Developer ID signing identity available; all current features work unprivileged, so this is a scope decision, not a stall |
 | Localizations | PARTIAL | English + French (`Base.lproj`, `fr.lproj`); no other locales |
-| Visual QA campaign (After screenshots) | BLOCKED_ENVIRONMENT | No display/window-capture access in this non-interactive execution context (no computer-use/GUI access granted to this session). `Scripts/capture.sh` requires an attached display and System Events automation; neither is available here. Not re-attempted or faked this pass — see `Documentation/VISUAL_QA.md` and `Documentation/NON_COMPLIANCE_REGISTER.md` |
+| Visual QA campaign (After screenshots) | COMPLETE | 44 approved native captures: 11 modules × EN/FR × light/dark, generated 2026-09-04 through isolated capture harness and accepted by maintainer |
 | Public release identity (legal name/address, domain, security contact) | BLOCKED_HUMAN | `Configuration/PublicIdentity.local.json` does not exist; requires a real decision from the maintainer before public push/deploy. Tracked in `Documentation/HUMAN_BLOCKERS.md` |
 | Code signing / notarization | BLOCKED_HUMAN | Requires an Apple Developer ID the maintainer must obtain; out of scope for this environment |
 
 ## Unverifiable-here items and why
 
-- **Live scan against real disk state / on-screen accessibility behavior**: this
-  session has no GUI. Everything verifiable without a physical screen (unit
-  tests over the engines, adaptive-color code paths, Reduce Motion/Reduce
-  Transparency code paths, `swift build` + `swift test` success) was verified.
-  Actual VoiceOver/on-screen rendering was not and cannot be re-verified here —
-  marked BLOCKED_ENVIRONMENT above, not COMPLETE.
+- **Live scan / on-screen accessibility behavior**: interactive VoiceOver,
+  keyboard, focus, Dynamic Type, Reduce Motion/Transparency and visual matrix
+  passed by maintainer attestation on 2026-09-04. Automated tests remain
+  complementary evidence, not substitute observation.
 - **Integrity team-signature tier**: the non-Apple team-signed test remains
   skipped until a real signing identity is available. Apple-signed, unsigned
   and ad-hoc tiers are covered without fabricating an identity.

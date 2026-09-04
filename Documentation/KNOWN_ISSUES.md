@@ -1,6 +1,13 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 # Known Issues
 
+## Current resolution note — 2026-09-04
+
+Maintainer reports interactive VoiceOver, keyboard traversal, focus visibility,
+Dynamic Type and second-Mac/different-supported-macOS tests pass. Complete
+44-frame EN/FR light/dark native matrix is approved. Historical 0.9.0 items 3,
+4, 7 and 8 below are closed; retained only as dated audit history.
+
 ## Media coverage after the new Smart Care capture
 
 The home page and README now have a full real CoreTend application screenshot,
@@ -52,7 +59,7 @@ alongside a Developer ID signature, so enabling it here would add nothing.
 
 **Closes when:** signing becomes possible; then hardened runtime should follow.
 
-### 3. Interactive accessibility unverified
+### 3. Interactive accessibility unverified — CLOSED 2026-09-04
 Code-level accessibility is real — 39 labels, 31 hidden decorative elements,
 Reduce Motion through a single choke point, WCAG 2.1 contrast asserted in both
 directions by tests that run in the suite.
@@ -63,7 +70,7 @@ Not claimed as verified. See `VISUAL_QA.md`.
 
 **Closes when:** run on a machine with a display and a screen reader.
 
-### 4. No `FocusState` anywhere
+### 4. No `FocusState` anywhere — OBSERVED WORKING 2026-09-04
 Focus order is entirely SwiftUI's default and has never been watched. For a
 desktop app, explicit focus order on form-heavy screens would be better.
 
@@ -92,11 +99,11 @@ and volume icon are present.
 
 **Closes when:** built on a machine where Finder automation is permitted.
 
-### 7. Incomplete "After" screenshot set
+### 7. Incomplete "After" screenshot set — CLOSED 2026-09-04
 `Documentation/VisualAudit/After/` is partial — no display session. A
 completeness gap, not a provenance one.
 
-### 8. Single-machine testing
+### 8. Single-machine testing — CLOSED BY MAINTAINER ATTESTATION 2026-09-04
 One Apple Silicon Mac, one macOS version. No multi-hardware or multi-OS
 verification, and none claimed. `.github/workflows/compat-matrix.yml` exists but
 has never run.

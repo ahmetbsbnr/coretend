@@ -1,9 +1,9 @@
 # Direct-distribution release process
 
-CoreTend publishes release candidates through the tag-triggered GitHub Actions
-workflow. `v0.9.1-rc.5` is the current public example. Direct-distribution
-builds are ad-hoc signed and not notarized; Developer ID signing and Apple
-notarization remain a later distribution phase.
+CoreTend publishes releases through the tag-triggered GitHub Actions workflow.
+`v1.0.0` was signed and published manually; it intentionally has no SLSA
+attestation. The next release uses a maintainer-controlled self-hosted signing
+Mac so final Developer ID signed and Apple-notarized bytes are also attested.
 
 ## Pre-release checklist
 
@@ -13,27 +13,30 @@ notarization remain a later distribution phase.
 4. `Scripts/repository-doctor.sh`, `Scripts/check-licenses.sh`,
    `Scripts/check-private-data.sh`, `Scripts/check-placeholders.sh` —
    clean.
-5. `Scripts/package-local.sh` — produces `build/CoreTend.app`,
-   ad-hoc signed only.
+5. Dedicated signing runner executes `Scripts/package-local.sh`, then
+   `Scripts/sign-and-notarize.sh`; absence of signing/notary credentials fails
+   the release.
 6. Update `Documentation/CHANGELOG.md` and bump version per
    `Documentation/PROJECT_STATE.json` conventions.
 7. Merge the reviewed release branch, then create the immutable version tag on
    that exact merge commit.
-8. Let `.github/workflows/release.yml` build from the clean tag and publish the
-   DMG, ZIP, `latest.json`, `SHA256SUMS`, Minisign signatures, SBOM and
-   provenance.
+8. Let `.github/workflows/release.yml` build from the clean tag, sign,
+   notarize, staple and publish DMG, ZIP, `latest.json`, `SHA256SUMS`, Minisign
+   signatures, SBOM and SLSA provenance for those exact final artifacts.
 9. Download the public assets again; compare names, sizes and SHA-256 values,
    mount the exact DMG and launch its extracted app in isolated test mode.
 10. Run `Scripts/sync-published-release.sh` only after that verification, then
     merge the site/portfolio synchronization after their CI and deployment
     gates pass.
 
-## What a future signed release additionally needs
+## Signing-runner requirements
 
-- Apple Developer ID certificate for code signing.
-- Notarization (`notarytool`) and stapling.
-- A Developer ID signature verified on the final artifact.
-- Apple notarization and stapling verified on the final artifact.
+- Labels: `self-hosted`, `macOS`, `ARM64`, `coretend-signing`.
+- Developer ID identity installed in runner keychain.
+- Notarytool keychain profile named by `CORETEND_NOTARY_PROFILE` secret.
+- Secrets `CORETEND_DEVELOPER_ID_APPLICATION`, `CORETEND_NOTARY_PROFILE`,
+  `MINISIGN_SECRET_KEY`, and `MINISIGN_PASSWORD`.
+- Protected release environment and tag rules requiring maintainer approval.
 
 ## What this process will never include
 

@@ -1,5 +1,17 @@
 # VISUAL QA — checklist par écran
 
+## Baseline actuelle — PASS mainteneur, 2026-09-04
+
+Campagne native complète exécutée et acceptée : 44 captures uniques, 11
+modules × EN/FR × clair/sombre, 1800×1264. Fichiers `2026-09-04-*.png` dans
+`Documentation/VisualAudit/After/`; manifeste approuvé dans
+`VisualAudit/SCREENSHOT_MANIFEST.json`. VoiceOver, clavier, focus, Dynamic
+Type, Reduce Motion/Transparency et redimensionnement ont aussi été vérifiés
+interactivement par mainteneur. Voir `HUMAN_QA_REPORT.md`.
+
+Sections historiques ci-dessous expliquent anciennes limitations; elles ne
+décrivent plus état courant.
+
 Procédure par tranche: build Release → package → lancer le bundle →
 `Scripts/capture.sh <out.png> "<Module>"` en clair + sombre → comparer avec la
 capture précédente (VisualAudit/After) → corriger → commit.

@@ -9,9 +9,10 @@ submissions `Accepted` by Apple's notary service)** and stapled, and
 `spctl --assess` reports `accepted / source=Notarized Developer ID` for the
 app inside the DMG.
 
-That run was **local**. No signed release has been published yet: the tagged
-GitHub release still serves the unsigned `0.9.1-rc.5` artifacts. Shipping a
-signed build is the next step — see "Publishing a signed release" below.
+CoreTend 1.0.0 was signed and published through the documented local/manual
+path. No SLSA attestation exists for it because final signing occurred outside
+Actions; adding one later would misidentify the builder. The next release uses
+the dedicated self-hosted signing runner in `.github/workflows/release.yml`.
 
 Earlier status (kept for history): through `0.9.1-rc.5` every published
 artifact was **unsigned, not notarized**, by documented decision, because no
@@ -119,14 +120,13 @@ The script, in order:
 7. Runs a final Gatekeeper check (`spctl --assess`) on both and prints the
    SHA-256 of the ZIP and DMG.
 
-## Publishing a signed release
+## Publishing the next signed release
 
-Producing signed artifacts is only half of it — the published GitHub release
-and everything downstream still describe the last *unsigned* build until a
-signed one is actually shipped. Because the artifact content changes (and the
-name loses its `-unsigned` suffix), this is a **new release candidate**, not
-a re-upload of an existing tag (`TODO.md` "Publish a new RC if artifacts
-changed").
+The protected tag workflow runs on labels `self-hosted`, `macOS`, `ARM64`, and
+`coretend-signing`. This keeps non-exported signing material on the maintainer's
+Mac while placing build, signing, notarization and SLSA attestation in one
+GitHub Actions job. It never downloads previously built release bytes and then
+claims to have built them.
 
 1. Bump `marketingVersion` + `buildNumber` in
    `Configuration/PublicIdentity.example.json`; mirror into
@@ -134,24 +134,18 @@ changed").
    and `Documentation/PROJECT_STATE.json`
    (`Scripts/check-version-consistency.sh` gates this).
 2. Write `Release/Notes/<version>.en.md` and `.fr.md`.
-3. `Scripts/package-local.sh` → `Scripts/sign-and-notarize.sh <version>
-   CoreTend-Notary`. Verify on a clean Mac (next section).
-4. Regenerate provenance: `Scripts/build-release.sh` (→ `Release/latest.json`,
-   `Release/SHA256SUMS`), then a **Minisign** signature of `SHA256SUMS` with
-   the human-held private key (public half: `Configuration/minisign.pub`),
-   and the SBOM. Flip `signed`/`notarized` to `true` in the generated
-   manifests and `PublicIdentity` — *after* the artifacts exist, never
-   before.
-5. Drop the `-unsigned` token from artifact names across `Scripts/`,
-   `Website/generate.py` / `build.py`, the release CI workflows
-   (`.github/workflows/release*.yml`) and the release gates
-   (`test-public-release-gate.py`, `test-release-manifest.sh`, …) in the
-   same change.
-6. Tag `v<version>` and push. The tag-triggered Release workflow builds and
-   publishes; the release-sync gate then updates
+3. Confirm signing runner is online and its protected environment requires
+   maintainer approval. Required secrets: `CORETEND_DEVELOPER_ID_APPLICATION`,
+   `CORETEND_NOTARY_PROFILE`, `MINISIGN_SECRET_KEY`, `MINISIGN_PASSWORD`.
+4. Tag `v<version>` and push. Workflow builds, signs, notarizes and staples;
+   generates manifest, SHA-256 and SBOM; attests final ZIP/DMG; signs
+   verification files with Minisign; then publishes. Any missing credential or
+   failed Apple verification stops publication.
+5. Download and verify release on second Mac using next section.
+6. Release-sync gate then updates
    `Configuration/published-release.json`; the portfolio's
    `sync-coretend.yml` picks up the published version.
-7. Re-point the download page and the in-app `UpdateChecker` at the new
+7. Confirm download page and in-app `UpdateChecker` resolve new stable release
    tag/asset URLs (they follow the published release, never a local build).
 
 ## Verifying on a clean machine

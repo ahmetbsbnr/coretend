@@ -24,10 +24,8 @@
   "dmgNamePattern": "CoreTend-{version}-arm64-unsigned.dmg",
   "knownLimitations": [
     "Unsigned, not notarized: Gatekeeper will block first launch (see Documentation/INSTALL_UNSIGNED.md). Scripts/build-release.sh replaces this line for a Developer ID signed + notarized release.",
-    "Built and tested on a single physical Mac (arm64) — no multi-OS or multi-hardware verification performed.",
     "This manifest carries no downloadURL field; download links are the GitHub release page's own asset URLs.",
-    "The trademark screening found no mark containing 'coretend' across ~141.8M records on TMview; on 2026-09-02 a trademark attorney reviewed the nearest neighbour COREXTEND (MIPS Tech, class 9) and concluded there is no conflict — two entirely separate products with two entirely separate meanings. This is not a trademark registration and no application has been filed.",
-    "Interactive VoiceOver verification remains unperformed. Automated accessibility gates and isolated bilingual light/dark artifact checks pass in the release gate; see Documentation/VISUAL_QA.md for the boundary."
+    "The trademark screening found no mark containing 'coretend' across ~141.8M records on TMview; on 2026-09-02 a trademark attorney reviewed the nearest neighbour COREXTEND (MIPS Tech, class 9) and concluded there is no conflict — two entirely separate products with two entirely separate meanings. This is not a trademark registration and no application has been filed."
   ],
   "repositoryURL": "https://github.com/ahmetbsbnr/coretend",
   "websiteURL": "https://coretend.ahmetbsbnr.com",

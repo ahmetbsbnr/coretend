@@ -1,7 +1,7 @@
 {
   "schemaVersion": 4,
   "project": "CoreTend",
-  "updatedUTC": "2026-09-03",
+  "updatedUTC": "2026-09-04",
   "version": "1.0.0",
   "phase": "stable-published",
   "branch": "main",
@@ -29,18 +29,22 @@
     "integrity": "read-only native download provenance, code-signature, and login-item signals; not antivirus",
     "network": "user-initiated public update-manifest request only; no telemetry, analytics, account, or scan upload"
   },
-  "open": [
-    "interactive VoiceOver, keyboard, focus, and Dynamic Type QA",
-    "native FR/EN light/dark every-module visual matrix",
-    "multi-OS and multi-hardware compatibility testing"
-  ],
+  "open": [],
+  "qualityVerification": {
+    "interactiveAccessibility": "PASS — maintainer attestation 2026-09-04",
+    "nativeVisualMatrix": "PASS — 44 approved captures, 11 modules × FR/EN × light/dark",
+    "crossMacCompatibility": "PASS — maintainer attestation on second Mac and different supported macOS; exact hardware/OS identifiers not supplied"
+  },
   "deferred": [
-    "build provenance integrated into the next signed-release workflow; retrospective provenance for 1.0.0 would misidentify the builder",
     "additional locales",
     "browser history and cookie removal",
     "dedicated safety engines for iOS Simulator, Trash-empty, Mail attachments, and broken LaunchAgents",
     "privileged helper",
     "Mac App Store feasibility study"
   ],
-  "openDecisions": []
+  "openDecisions": [],
+  "releaseWorkflow": {
+    "nextRelease": "dedicated self-hosted signing runner: Developer ID sign, notarize, staple, SHA-256, SBOM, SLSA attest final artifacts, Minisign, publish",
+    "version1_0_0SLSA": "intentionally absent; retrospective attestation would misidentify the builder"
+  }
 }
