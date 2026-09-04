@@ -23,18 +23,22 @@ gates grep for, and this document must not block the release it tracks.
 | Apple Developer Program membership | **Enrolled**, Team `NSCUV5G738` (Apple ID `bas.ahmet5703@gmail.com`) |
 | Code signing identity | **Installed 2026-08-31** — `Developer ID Application: Ahmet BASBUNAR (NSCUV5G738)` in the login keychain, issued (G2 Sub-CA) from the pre-existing `Configuration/DeveloperID/developerID_CSR.csr`. `security find-identity -v -p codesigning` now lists it. |
 | Notarization | **Proven 2026-08-31** — `Scripts/sign-and-notarize.sh` run for real against `0.9.1-rc.5`; app + DMG signed, notarized (both `Accepted`), stapled; `spctl --assess` → `accepted / Notarized Developer ID`. Credential = `notarytool` keychain profile `CoreTend-Notary` (App Store Connect API key, `.p8` in gitignored `Configuration/DeveloperID/`). |
+| Publishing the first **signed** release | **Done 2026-09-03** — `v1.0.0` published signed, notarized, stapled, Minisign-signed; `Configuration/published-release.json` records `signed: true`, `notarized: true`. See `Documentation/RELEASE_STATE.md`. |
+| Final screenshots for the website | **Done 2026-09-04** — 44 native captures (11 modules × EN/FR × light/dark), accepted by maintainer. See `Documentation/HUMAN_QA_REPORT.md`. |
+| Multi-Mac / multi-macOS-version testing | **Done 2026-09-04** — maintainer attestation, second Mac and a different supported macOS version. See `Documentation/HUMAN_QA_REPORT.md`. Exact hardware/OS identifiers were not supplied. |
 
 ## OPEN
 
 | Blocker | Why it needs a human | Where it is tracked |
 |---|---|---|
-| Approval to deploy the website | Irreversible, outward-facing act | `Documentation/WEBSITE_DEPLOYMENT.md`, `RELEASE_STATE.md` |
 | DNS record for `coretend.ahmetbsbnr.com` | Requires registrar access | `RELEASE_STATE.md` |
-| Final screenshots for the website | Requires a real display/session, unavailable in this environment | `Website/README.md` dev placeholder box |
-| Multi-Mac / multi-macOS-version testing | Only one physical Mac (macOS 26.5.1, arm64) is available | `Documentation/API_AVAILABILITY_AUDIT.md` |
-| Publishing the first GitHub prerelease | Irreversible, outward-facing act | `RELEASE_STATE.md` |
-| Publishing the first **signed** release | The signing/notarization capability is proven (see RESOLVED), but the published tag still serves unsigned `0.9.1-rc.5`. Shipping a signed build = a new RC + `git push` + tag = irreversible, outward-facing. Also needs the human-held **Minisign private key** to sign `SHA256SUMS`. | `Documentation/SIGNING_NOTARIZATION.md` → "Publishing a signed release", `RELEASE_STATE.md` |
+| ~~Approval to deploy the website~~ **DONE** | Site is public, FR/EN routes live, version/portfolio synced with `v1.0.0`. Superseded by the DNS row above for the custom subdomain specifically. | `Documentation/WEBSITE_DEPLOYMENT.md`, `RELEASE_STATE.md` |
+| ~~Publishing the first GitHub prerelease~~ **DONE** | Superseded — `v1.0.0` is published as a public, non-prerelease, non-draft stable release. | `RELEASE_STATE.md` |
 | ~~Trademark attorney review~~ **DONE 2026-09-02** | A trademark attorney reviewed the `COREXTEND` adjacency (per the maintainer) and found no conflict — two entirely separate products, two entirely separate meanings. Name cleared for the 1.0 release. A `®` filing is still a separate future step. | `Documentation/CORETEND_TRADEMARK_SCREENING.md`, `BRAND_CONFLICT_REGISTER.md` |
+
+Publishing the first signed release, final website screenshots, and
+multi-Mac/multi-macOS testing are now RESOLVED above (2026-09-03/04) —
+moved out of this table.
 
 Token resolutions are recorded centrally in
 `Documentation/PUBLICATION_PLACEHOLDERS.md`.
