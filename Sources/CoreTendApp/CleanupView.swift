@@ -101,6 +101,12 @@ final class CleanupViewModel {
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .scan, summary: "Cleanup scan: \(findings.count) items found",
                         itemCount: findings.count, bytes: bytes))
+                    AppEnvironment.shared.recordTimelineSnapshot(samples: groups.map { group in
+                        TimelineCategorySample(
+                            category: group.ruleID, engine: "cleanup", logicalBytes: group.bytes,
+                            fileCount: group.findings.count,
+                            risk: group.findings.first?.risk.rawValue ?? "unknown")
+                    })
                 case .cancelled:
                     isScanPaused = false
                     phase = .idle

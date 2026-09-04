@@ -20,9 +20,9 @@
     "zipSHA256": "c11c1cbac95a48c9fa9b3cb54596313f52af9ad89dd930e51bcde6cbd152244b"
   },
   "tests": {
-    "swift": 342,
+    "swift": 348,
     "failing": 0,
-    "lastVerifiedUTC": "2026-09-03"
+    "lastVerifiedUTC": "2026-09-04"
   },
   "productBoundary": {
     "cleanup": "read-only scan, reviewed selection, explicit confirmation, execution-time path revalidation, recoverable macOS Trash action",
@@ -30,6 +30,9 @@
     "network": "user-initiated public update-manifest request only; no telemetry, analytics, account, or scan upload"
   },
   "open": [],
+  "inProgress": [
+    "Storage Timeline (1.1 Insight scope): Persistence schema v5 and Store API shipped and tested; only CleanupViewModel records snapshots so far; other scan engines and a Timeline UI are not started — see Documentation/FEATURE_MATRIX.md"
+  ],
   "qualityVerification": {
     "interactiveAccessibility": "PASS — maintainer attestation 2026-09-04",
     "nativeVisualMatrix": "PASS — 44 approved captures, 11 modules × FR/EN × light/dark",

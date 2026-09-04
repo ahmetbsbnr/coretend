@@ -17,6 +17,18 @@ Developer ID signing, notarization, stapling, SHA-256, SLSA attestation and
 Minisign to the same final bytes. A retrospective SLSA attestation for 1.0.0
 would still be false and will not be created.
 
+## In progress — Storage Timeline (1.1 "Insight" scope)
+
+"What changed since my last scan?" First slice landed: `Persistence` schema
+v5 (`timeline_snapshots`/`timeline_categories`) and a `Store` API to record,
+query, compare (by reference date or "since the previous scan"), retain
+(90-day window, minimum 5 kept), and clear this history — category-level
+aggregates only, never file paths. `CleanupViewModel` records a snapshot on
+every completed scan; the other scan engines (My Clutter, Space Lens, a
+future Developer Center) do not yet, and there is no Timeline UI (sidebar
+view, Dashboard "since last scan" card) yet. See `Documentation/PERSISTENCE.md`
+and `Documentation/FEATURE_MATRIX.md` → "Storage Timeline".
+
 ## Deliberately deferred product scope
 
 - Additional locales beyond English and French.

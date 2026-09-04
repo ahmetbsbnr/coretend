@@ -28,11 +28,12 @@ feature-inventory.json wins.
 | Settings | COMPLETE | Exclusions, language, diagnostics and menu bar toggle |
 | Onboarding | COMPLETE | Real FDA probe, honest claims, uninstall info |
 | Persistence | COMPLETE | SQLite actor, migrations apply-once/idempotent (tested), activity/exclusions/settings storage |
-| Privileged helper | NOT_STARTED | Blocked: no Developer ID signing identity available; all current features work unprivileged, so this is a scope decision, not a stall |
+| Storage Timeline | PARTIAL | Schema v5 (`timeline_snapshots`/`timeline_categories`), Store API (record/query/compare/prune/clear), category-only aggregates (no file paths), tested (`Documentation/PERSISTENCE.md`). Only the Cleanup scan records snapshots so far; My Clutter/Space Lens/future Developer Center wiring and a Timeline UI (sidebar view, "since last scan" display) are not started |
+| Privileged helper | NOT_STARTED | A Developer ID signing identity is now installed (used for the published v1.0.0), so this is a pure product-scope decision (see `Documentation/CORETEND_MOSCOW_STATUS.md`), not an environment block; no current feature requires it |
 | Localizations | PARTIAL | English + French (`Base.lproj`, `fr.lproj`); no other locales |
 | Visual QA campaign (After screenshots) | COMPLETE | 44 approved native captures: 11 modules × EN/FR × light/dark, generated 2026-09-04 through isolated capture harness and accepted by maintainer |
-| Public release identity (legal name/address, domain, security contact) | BLOCKED_HUMAN | `Configuration/PublicIdentity.local.json` does not exist; requires a real decision from the maintainer before public push/deploy. Tracked in `Documentation/HUMAN_BLOCKERS.md` |
-| Code signing / notarization | BLOCKED_HUMAN | Requires an Apple Developer ID the maintainer must obtain; out of scope for this environment |
+| Public release identity (legal name/address, domain, security contact) | COMPLETE | `Configuration/PublicIdentity.local.json` exists (gitignored, real values, verified 2026-07-27); resolution recorded in `Documentation/HUMAN_BLOCKERS.md` → RESOLVED |
+| Code signing / notarization | COMPLETE for v1.0.0 | Developer ID Application (NSCUV5G738) signed, Apple-notarized, and stapled; published as `v1.0.0` on 2026-09-03. See `Documentation/RELEASE_STATE.md` |
 
 ## Unverifiable-here items and why
 

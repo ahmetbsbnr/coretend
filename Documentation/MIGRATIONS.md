@@ -8,11 +8,21 @@ Each element is one version; index `0` is schema version `1`, and so on.
 
 A `schema_migrations` table (`version INTEGER PRIMARY KEY, applied REAL NOT
 NULL`) tracks the highest version already applied. On `Store.init`, it
-reads the current max version and runs every migration with a higher index
-than that, each inside its own transaction (`db.transaction { ... }`) —
+reads the current **max** version and runs every migration with a higher
+index than that, each inside its own transaction (`db.transaction { ... }`) —
 either the whole migration's SQL plus its `schema_migrations` row commits,
 or neither does. A failure throws `DatabaseError.migrationFailed(version:message:)`
 rather than leaving the database in an unknown state.
+
+Because this check is a bare `MAX(version)` rather than "is version N present
+in the table", it assumes markers are applied contiguously from 1 upward, as
+they always are on a real install. Any schema-creating migration (`CREATE
+TABLE`/`CREATE INDEX`) should still use `IF NOT EXISTS` — cheap insurance if
+that assumption is ever violated (as one `PersistenceTests` fixture that
+partially rolls back markers to simulate an old install discovered), since a
+plain `CREATE TABLE` re-run against a schema that already has it throws
+`migrationFailed` instead of degrading gracefully. `DELETE`/`UPDATE`-only
+migrations (v4) are naturally idempotent and don't need this.
 
 ## The rule for adding a migration
 
@@ -45,5 +55,11 @@ table/column. See [TESTING.md](TESTING.md).
 
 ## Current schema
 
-Version 1 only, as of this writing: `activity`, `exclusions`, `settings`
-(see [PERSISTENCE.md](PERSISTENCE.md) for what each holds).
+Version 5, as of this writing:
+- v1 — `activity`, `exclusions`, `settings`
+- v2 — `safety_log` (append-only SafetyCore audit trail)
+- v3 — `locations` (favorites & recently-scanned folders)
+- v4 — removes the retired `dryRunDefault` setting (data-only, no new table)
+- v5 — `timeline_snapshots`, `timeline_categories` (Storage Timeline)
+
+See [PERSISTENCE.md](PERSISTENCE.md) for what each table holds.

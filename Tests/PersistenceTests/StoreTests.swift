@@ -17,10 +17,10 @@ struct StoreTests {
         let path = tempDBPath()
         defer { try? FileManager.default.removeItem(atPath: path) }
         let store = try Store(path: path)
-        #expect(try await store.schemaVersion() == 4)
+        #expect(try await store.schemaVersion() == 5)
         // Re-opening must not re-run migrations or fail.
         let store2 = try Store(path: path)
-        #expect(try await store2.schemaVersion() == 4)
+        #expect(try await store2.schemaVersion() == 5)
     }
 
     @Test func activityRoundTrip() async throws {
@@ -191,5 +191,101 @@ struct StoreTests {
         #expect(try await store.safetyLog().count == 3)
         try await store.purgeSafetyLog()
         #expect(try await store.safetyLog().isEmpty)
+    }
+
+    // MARK: - Timeline
+
+    @Test func timelineSnapshotRoundTripSortsCategoriesByBytesDescending() async throws {
+        let path = tempDBPath()
+        defer { try? FileManager.default.removeItem(atPath: path) }
+        let store = try Store(path: path)
+        let id = try await store.recordTimelineSnapshot(samples: [
+            TimelineCategorySample(category: "downloads", engine: "cleanup", logicalBytes: 100, fileCount: 2, risk: "low"),
+            TimelineCategorySample(category: "xcodeDerivedData", engine: "cleanup", logicalBytes: 900,
+                                    physicalBytes: 850, fileCount: 40, risk: "low"),
+        ])
+        let latest = try await store.latestTimelineSnapshot()
+        #expect(latest?.id == id)
+        #expect(latest?.totalBytes == 1_000)
+        #expect(latest?.trigger == "manual")
+        let categories = try await store.timelineCategories(snapshotID: id)
+        #expect(categories.map(\.category) == ["xcodeDerivedData", "downloads"], "largest first")
+        #expect(categories.first?.physicalBytes == 850)
+        #expect(categories.last?.physicalBytes == nil, "physical size is optional and survives as nil")
+    }
+
+    @Test func comparisonSincePreviousSnapshotNeedsAtLeastTwoSnapshots() async throws {
+        let path = tempDBPath()
+        defer { try? FileManager.default.removeItem(atPath: path) }
+        let store = try Store(path: path)
+        #expect(try await store.timelineComparisonSincePreviousSnapshot() == nil)
+        try await store.recordTimelineSnapshot(samples: [
+            TimelineCategorySample(category: "downloads", engine: "cleanup", logicalBytes: 100, fileCount: 1, risk: "low"),
+        ])
+        #expect(try await store.timelineComparisonSincePreviousSnapshot() == nil, "only one snapshot exists")
+    }
+
+    @Test func comparisonSincePreviousSnapshotComputesPerCategoryDeltas() async throws {
+        let path = tempDBPath()
+        defer { try? FileManager.default.removeItem(atPath: path) }
+        let store = try Store(path: path)
+        try await store.recordTimelineSnapshot(samples: [
+            TimelineCategorySample(category: "xcodeDerivedData", engine: "cleanup", logicalBytes: 1_000, fileCount: 3, risk: "low"),
+        ])
+        try await store.recordTimelineSnapshot(samples: [
+            TimelineCategorySample(category: "xcodeDerivedData", engine: "cleanup", logicalBytes: 5_000, fileCount: 10, risk: "low"),
+            TimelineCategorySample(category: "downloads", engine: "cleanup", logicalBytes: 2_000, fileCount: 1, risk: "low"),
+        ])
+        let comparison = try #require(try await store.timelineComparisonSincePreviousSnapshot())
+        #expect(comparison.totalDeltaBytes == 6_000)
+        let derived = comparison.categoryDeltas.first { $0.category == "xcodeDerivedData" }
+        #expect(derived?.deltaBytes == 4_000)
+        let downloads = comparison.categoryDeltas.first { $0.category == "downloads" }
+        #expect(downloads?.previousBytes == 0, "new category since baseline")
+        #expect(downloads?.currentBytes == 2_000)
+    }
+
+    @Test func comparisonSinceReferenceDateFindsThePriorBaselineNotTheLatestSnapshot() async throws {
+        let path = tempDBPath()
+        defer { try? FileManager.default.removeItem(atPath: path) }
+        let store = try Store(path: path)
+        try await store.recordTimelineSnapshot(samples: [
+            TimelineCategorySample(category: "downloads", engine: "cleanup", logicalBytes: 1_000, fileCount: 1, risk: "low"),
+        ])
+        let mark = Date()
+        try await Task.sleep(nanoseconds: 10_000_000)
+        try await store.recordTimelineSnapshot(samples: [
+            TimelineCategorySample(category: "downloads", engine: "cleanup", logicalBytes: 4_000, fileCount: 4, risk: "low"),
+        ])
+        let comparison = try #require(try await store.timelineComparison(since: mark))
+        #expect(comparison.baseline.totalBytes == 1_000)
+        #expect(comparison.current.totalBytes == 4_000)
+        #expect(comparison.totalDeltaBytes == 3_000)
+        // "since right now" has no baseline old enough — the latest snapshot IS the candidate baseline.
+        #expect(try await store.timelineComparison(since: Date()) == nil)
+    }
+
+    @Test func clearTimelineHistoryRemovesSnapshotsAndCategories() async throws {
+        let path = tempDBPath()
+        defer { try? FileManager.default.removeItem(atPath: path) }
+        let store = try Store(path: path)
+        let id = try await store.recordTimelineSnapshot(samples: [
+            TimelineCategorySample(category: "downloads", engine: "cleanup", logicalBytes: 100, fileCount: 1, risk: "low"),
+        ])
+        try await store.clearTimelineHistory()
+        #expect(try await store.timelineSnapshots().isEmpty)
+        #expect(try await store.timelineCategories(snapshotID: id).isEmpty)
+    }
+
+    @Test func recordingManySnapshotsKeepsAllWithinRetentionWindow() async throws {
+        let path = tempDBPath()
+        defer { try? FileManager.default.removeItem(atPath: path) }
+        let store = try Store(path: path)
+        for i in 0..<10 {
+            try await store.recordTimelineSnapshot(samples: [
+                TimelineCategorySample(category: "c", engine: "cleanup", logicalBytes: Int64(i), fileCount: 1, risk: "low"),
+            ])
+        }
+        #expect(try await store.timelineSnapshots(limit: 100).count == 10, "all recent, none pruned")
     }
 }

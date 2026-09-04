@@ -44,6 +44,69 @@ public struct ActivityRecord: Sendable, Identifiable {
     }
 }
 
+/// One category's aggregated footprint as observed by one scan, ready to be
+/// recorded as part of a Timeline snapshot. No file paths — only a category
+/// identifier (a rule ID or engine-defined bucket name) and aggregated
+/// numbers.
+public struct TimelineCategorySample: Sendable {
+    public let category: String
+    public let engine: String
+    public let logicalBytes: Int64
+    public let physicalBytes: Int64?
+    public let fileCount: Int
+    public let risk: String
+
+    public init(category: String, engine: String, logicalBytes: Int64,
+                physicalBytes: Int64? = nil, fileCount: Int, risk: String) {
+        self.category = category
+        self.engine = engine
+        self.logicalBytes = logicalBytes
+        self.physicalBytes = physicalBytes
+        self.fileCount = fileCount
+        self.risk = risk
+    }
+}
+
+/// One recorded Timeline snapshot — the point-in-time total a scan produced.
+public struct TimelineSnapshotRecord: Sendable, Identifiable, Equatable {
+    public let id: Int64
+    public let date: Date
+    public let trigger: String
+    public let totalBytes: Int64
+}
+
+/// One category row belonging to a `TimelineSnapshotRecord`.
+public struct TimelineCategoryRecord: Sendable, Identifiable, Equatable {
+    public let id: Int64
+    public let snapshotID: Int64
+    public let category: String
+    public let engine: String
+    public let logicalBytes: Int64
+    public let physicalBytes: Int64?
+    public let fileCount: Int
+    public let risk: String
+}
+
+/// One category's change between two snapshots. `previousBytes`/`currentBytes`
+/// is 0 on whichever side the category wasn't observed (new since baseline,
+/// or gone by the current snapshot).
+public struct TimelineCategoryDelta: Sendable, Identifiable, Equatable {
+    public let category: String
+    public let engine: String
+    public let currentBytes: Int64
+    public let previousBytes: Int64
+    public var id: String { engine + "." + category }
+    public var deltaBytes: Int64 { currentBytes - previousBytes }
+}
+
+/// The result of comparing two Timeline snapshots.
+public struct TimelineComparison: Sendable, Equatable {
+    public let current: TimelineSnapshotRecord
+    public let baseline: TimelineSnapshotRecord
+    public let categoryDeltas: [TimelineCategoryDelta]
+    public var totalDeltaBytes: Int64 { current.totalBytes - baseline.totalBytes }
+}
+
 /// Application-wide persistent store. All access is actor-isolated.
 public actor Store {
     private let db: Database
@@ -107,6 +170,36 @@ public actor Store {
         // compatibility, but current APIs neither expose nor create them.
         """
         DELETE FROM settings WHERE key = 'dryRunDefault';
+        """,
+        // v5 — Storage Timeline: category-level snapshots of scan results, so
+        // "what changed since my last scan?" can be answered from history
+        // instead of a single point-in-time total. Deliberately no file paths
+        // anywhere in this schema — only a category identifier (a rule ID or
+        // engine-defined bucket name) and aggregated numbers, so Timeline
+        // history can never become a sensitive per-file audit trail. No
+        // FOREIGN KEY, to match this file's existing style; child rows are
+        // deleted explicitly alongside their snapshot (pruneTimelineSnapshots,
+        // clearTimelineHistory).
+        """
+        CREATE TABLE IF NOT EXISTS timeline_snapshots (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date REAL NOT NULL,
+            trigger TEXT NOT NULL,
+            total_bytes INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_timeline_snapshots_date ON timeline_snapshots(date);
+        CREATE TABLE IF NOT EXISTS timeline_categories (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            snapshot_id INTEGER NOT NULL,
+            category TEXT NOT NULL,
+            engine TEXT NOT NULL,
+            logical_bytes INTEGER NOT NULL,
+            physical_bytes INTEGER,
+            file_count INTEGER NOT NULL DEFAULT 0,
+            risk TEXT NOT NULL DEFAULT 'unknown'
+        );
+        CREATE INDEX IF NOT EXISTS idx_timeline_categories_snapshot ON timeline_categories(snapshot_id);
+        CREATE INDEX IF NOT EXISTS idx_timeline_categories_category ON timeline_categories(category);
         """,
     ]
 
@@ -299,6 +392,143 @@ public actor Store {
             isFavorite: (row["is_favorite"] as? Int64 ?? 0) != 0,
             lastScanned: (row["last_scanned"] as? Double).map(Date.init(timeIntervalSince1970:)),
             lastBytes: row["last_bytes"] as? Int64)
+    }
+
+    // MARK: - Timeline (storage snapshots for "what changed since my last scan")
+
+    /// Records one scan's category-level footprint as a new snapshot, then
+    /// prunes history per the retention policy (`pruneTimelineSnapshots`).
+    /// Safe to call with an empty `samples` array — an empty scan is still a
+    /// real data point (it can show a category shrank to zero).
+    @discardableResult
+    public func recordTimelineSnapshot(trigger: String = "manual", samples: [TimelineCategorySample]) throws -> Int64 {
+        let total = samples.reduce(Int64(0)) { $0 + $1.logicalBytes }
+        var snapshotID: Int64 = 0
+        try db.transaction {
+            try db.run("INSERT INTO timeline_snapshots (date, trigger, total_bytes) VALUES (?, ?, ?)",
+                       [Date().timeIntervalSince1970, trigger, total])
+            snapshotID = db.lastInsertRowID
+            for sample in samples {
+                try db.run("""
+                    INSERT INTO timeline_categories
+                        (snapshot_id, category, engine, logical_bytes, physical_bytes, file_count, risk)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """, [snapshotID, sample.category, sample.engine, sample.logicalBytes,
+                          sample.physicalBytes, sample.fileCount, sample.risk])
+            }
+        }
+        try pruneTimelineSnapshots()
+        return snapshotID
+    }
+
+    public func timelineSnapshots(limit: Int = 60) throws -> [TimelineSnapshotRecord] {
+        try db.query("SELECT * FROM timeline_snapshots ORDER BY date DESC LIMIT ?", [limit])
+            .compactMap(Self.timelineSnapshotRecord)
+    }
+
+    public func latestTimelineSnapshot() throws -> TimelineSnapshotRecord? {
+        try timelineSnapshots(limit: 1).first
+    }
+
+    /// The most recent snapshot at or before `date` — the baseline for
+    /// "since X ago" comparisons.
+    public func timelineSnapshot(atOrBefore date: Date) throws -> TimelineSnapshotRecord? {
+        try db.query("SELECT * FROM timeline_snapshots WHERE date <= ? ORDER BY date DESC LIMIT 1",
+                     [date.timeIntervalSince1970]).compactMap(Self.timelineSnapshotRecord).first
+    }
+
+    public func timelineCategories(snapshotID: Int64) throws -> [TimelineCategoryRecord] {
+        try db.query("SELECT * FROM timeline_categories WHERE snapshot_id = ? ORDER BY logical_bytes DESC",
+                     [snapshotID]).compactMap(Self.timelineCategoryRecord)
+    }
+
+    /// Compares the latest snapshot against the most recent snapshot at or
+    /// before `referenceDate` (e.g. "24 hours ago", "7 days ago"). Returns
+    /// nil when there is no current snapshot, or no snapshot old enough to
+    /// serve as a baseline — never a comparison against a snapshot that
+    /// doesn't exist.
+    public func timelineComparison(since referenceDate: Date) throws -> TimelineComparison? {
+        guard let current = try latestTimelineSnapshot() else { return nil }
+        guard let baseline = try timelineSnapshot(atOrBefore: referenceDate), baseline.id != current.id
+        else { return nil }
+        return try buildTimelineComparison(current: current, baseline: baseline)
+    }
+
+    /// Compares the two most recent snapshots directly — "since my last
+    /// scan", independent of any fixed time window. Returns nil with fewer
+    /// than two recorded snapshots.
+    public func timelineComparisonSincePreviousSnapshot() throws -> TimelineComparison? {
+        let recent = try timelineSnapshots(limit: 2)
+        guard recent.count == 2 else { return nil }
+        return try buildTimelineComparison(current: recent[0], baseline: recent[1])
+    }
+
+    private func buildTimelineComparison(current: TimelineSnapshotRecord,
+                                          baseline: TimelineSnapshotRecord) throws -> TimelineComparison {
+        let currentCategories = try timelineCategories(snapshotID: current.id)
+        let baselineCategories = try timelineCategories(snapshotID: baseline.id)
+        var byKey: [String: (engine: String, category: String, current: Int64, previous: Int64)] = [:]
+        for c in currentCategories {
+            byKey[c.engine + "." + c.category] = (c.engine, c.category, c.logicalBytes, 0)
+        }
+        for b in baselineCategories {
+            let key = b.engine + "." + b.category
+            if var existing = byKey[key] {
+                existing.previous = b.logicalBytes
+                byKey[key] = existing
+            } else {
+                byKey[key] = (b.engine, b.category, 0, b.logicalBytes)
+            }
+        }
+        let deltas = byKey.values
+            .map { TimelineCategoryDelta(category: $0.category, engine: $0.engine,
+                                          currentBytes: $0.current, previousBytes: $0.previous) }
+            .sorted { $0.deltaBytes > $1.deltaBytes }
+        return TimelineComparison(current: current, baseline: baseline, categoryDeltas: deltas)
+    }
+
+    /// Explicit, user-initiated, all-or-nothing deletion — mirrors `purgeSafetyLog()`.
+    public func clearTimelineHistory() throws {
+        try db.run("DELETE FROM timeline_categories")
+        try db.run("DELETE FROM timeline_snapshots")
+    }
+
+    /// Retention: keep snapshots from the last 90 days, but always keep at
+    /// least the 5 most recent regardless of age, so a lightly-used install
+    /// still has a baseline for "since last scan".
+    private func pruneTimelineSnapshots() throws {
+        let cutoff = Date().addingTimeInterval(-90 * 24 * 3600).timeIntervalSince1970
+        try db.transaction {
+            try db.run("""
+                DELETE FROM timeline_categories WHERE snapshot_id IN (
+                    SELECT id FROM timeline_snapshots WHERE date < ?
+                    AND id NOT IN (SELECT id FROM timeline_snapshots ORDER BY date DESC LIMIT 5)
+                )
+                """, [cutoff])
+            try db.run("""
+                DELETE FROM timeline_snapshots WHERE date < ?
+                AND id NOT IN (SELECT id FROM timeline_snapshots ORDER BY date DESC LIMIT 5)
+                """, [cutoff])
+        }
+    }
+
+    private static func timelineSnapshotRecord(_ row: [String: Any]) -> TimelineSnapshotRecord? {
+        guard let id = row["id"] as? Int64, let date = row["date"] as? Double,
+              let trigger = row["trigger"] as? String else { return nil }
+        return TimelineSnapshotRecord(id: id, date: Date(timeIntervalSince1970: date), trigger: trigger,
+                                       totalBytes: row["total_bytes"] as? Int64 ?? 0)
+    }
+
+    private static func timelineCategoryRecord(_ row: [String: Any]) -> TimelineCategoryRecord? {
+        guard let id = row["id"] as? Int64, let snapshotID = row["snapshot_id"] as? Int64,
+              let category = row["category"] as? String, let engine = row["engine"] as? String,
+              let risk = row["risk"] as? String else { return nil }
+        return TimelineCategoryRecord(
+            id: id, snapshotID: snapshotID, category: category, engine: engine,
+            logicalBytes: row["logical_bytes"] as? Int64 ?? 0,
+            physicalBytes: row["physical_bytes"] as? Int64,
+            fileCount: (row["file_count"] as? Int64).map(Int.init) ?? 0,
+            risk: risk)
     }
 
     // MARK: - Safety log (append-only)
