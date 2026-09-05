@@ -268,16 +268,30 @@ struct CleanupView: View {
 
     // MARK: - Scanning
 
+    private static func phaseLabel(_ phase: StorageScanProgress.Phase) -> String {
+        switch phase {
+        case .idle, .scanning: L("cleanup.phase.scanning")
+        case .paused: L("cleanup.phase.paused")
+        case .finalizing: L("cleanup.phase.finalizing")
+        case .done: L("cleanup.phase.finalizing")
+        case .cancelled: L("cleanup.phase.cancelled")
+        case .failed: L("cleanup.phase.failed")
+        }
+    }
+
     private var scanningView: some View {
         let p = model.progress
         return VStack(spacing: MCSpacing.lg) {
             MCScanStage(isScanning: !model.isScanPaused) {
                 VStack(spacing: MCSpacing.xxs) {
+                    Text(Self.phaseLabel(p.phase)).font(.headline)
                     Text(L("cleanup.scanning_progress", p.itemsInspected, mcFormatBytes(p.detectedBytesSoFar)))
                     Text(L("cleanup.scanning_recoverable", mcFormatBytes(p.reclaimableBytesSoFar)))
                         .font(.caption).foregroundStyle(.secondary)
+                    Text(L("cleanup.elapsed", smartScanElapsedText(p.elapsed)))
+                        .font(.caption2).foregroundStyle(.tertiary).monospacedDigit()
                     if !p.currentPath.isEmpty {
-                        Text((p.currentPath as NSString).abbreviatingWithTildeInPath)
+                        Text(L("cleanup.scanning_at", SpaceLensViewModel.friendlyLocation(p.currentPath)))
                             .font(.caption2).foregroundStyle(.tertiary)
                             .lineLimit(1).truncationMode(.middle)
                             .accessibilityHidden(true)
@@ -285,7 +299,9 @@ struct CleanupView: View {
                 }
             }
             .accessibilityElement(children: .combine)
-            .accessibilityLabel(L("cleanup.scanning_progress", p.itemsInspected, mcFormatBytes(p.detectedBytesSoFar)))
+            .accessibilityLabel(Self.phaseLabel(p.phase) + ". "
+                + L("cleanup.scanning_progress", p.itemsInspected, mcFormatBytes(p.detectedBytesSoFar))
+                + ". " + L("cleanup.elapsed", smartScanElapsedText(p.elapsed)))
             HStack(spacing: MCSpacing.sm) {
                 if model.isScanPaused {
                     Button(L("common.resume")) { model.resumeScan() }
