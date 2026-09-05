@@ -16,9 +16,17 @@ enum DeveloperStorage {
         let ruleID: String
         let findings: [ScanFinding]
         var id: String { ruleID }
-        var advisor: AdvisorFinding { AdvisorService.advise(ruleID: ruleID, findings: findings) }
-        var logicalBytes: Int64 { findings.reduce(0) { $0 + $1.logicalSize } }
-        var allocatedBytes: Int64? { findings.totalAllocatedSizeIfFullyKnown }
+        let advisor: AdvisorFinding
+        let logicalBytes: Int64
+        let allocatedBytes: Int64?
+
+        init(ruleID: String, findings: [ScanFinding]) {
+            self.ruleID = ruleID
+            self.findings = findings
+            self.advisor = AdvisorService.advise(ruleID: ruleID, findings: findings)
+            self.logicalBytes = findings.reduce(0) { $0 + $1.logicalSize }
+            self.allocatedBytes = findings.totalAllocatedSizeIfFullyKnown
+        }
 
         /// Uses the scan's existing paths, never another filesystem walk or a
         /// guessed project name. Names are literal first-level folder names.

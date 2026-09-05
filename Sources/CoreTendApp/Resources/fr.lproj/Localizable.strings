@@ -824,6 +824,53 @@
 "apps.detail.associated.confidence.uncertain" = "Incertaine";
 "apps.detail.associated.shared" = "Partagé";
 
+/* Developer Center */
+"module.developer" = "Développement";
+"developer.title" = "Stockage développeur";
+"developer.intro" = "Comprenez les données de build et les caches de paquets, examinez les éléments régénérables et inspectez le stockage de développement.";
+"developer.refresh" = "Actualiser le scan";
+"developer.scanning" = "Mesure du stockage développeur…";
+"developer.running" = "Déplacement des éléments sélectionnés vers la Corbeille…";
+"developer.packages" = "Caches de paquets";
+"developer.packages.scope" = "Emplacements par défaut connus uniquement. Les chemins personnalisés et caches locaux aux projets ne sont pas recherchés.";
+"developer.xcode.scope" = "Derived Data, Archives et iOS Device Support — règles Cleanup et seuils d’ancienneté existants.";
+"developer.xcode.not_found" = "Xcode.app introuvable aux emplacements d’applications connus. Les données de build existantes peuvent toujours être inspectées.";
+"developer.recoverable" = "Potentiellement récupérable — fichiers actionnables";
+"developer.selected" = "%d sélectionnés · %@ logiques";
+"developer.logical_note" = "Tailles logiques des fichiers, sans garantie d’espace disque libéré. Les éléments à examiner sont inclus mais jamais présélectionnés. Simulator et Docker sont exclus. La Corbeille doit être vidée séparément ; du stockage partagé peut rester alloué.";
+"developer.measured_at" = "Mesuré le %@ · Actualisez après des changements externes.";
+"developer.limited" = "Revue limitée à %d fichiers ; %d fichiers supplémentaires sont exclus du total et de la sélection.";
+"developer.failed_rules" = "Certaines catégories n’ont pas pu être mesurées entièrement. Leurs résultats partiels sont exclus des actions et des totaux.";
+"developer.result" = "%d éléments déplacés vers la Corbeille · %@ logiques · %d ignorés";
+"developer.result.note" = "Le journal de sécurité enregistre chaque opération. Actualisez pour mesurer le stockage actuel. Les octets logiques déplacés ne mesurent pas l’espace disque nouvellement disponible.";
+"developer.confirm" = "Déplacer %d éléments sélectionnés (%@ logiques) vers la Corbeille via Cleanup ? Examinez soigneusement Archives, Device Support et Yarn Berry. Simulator et Docker restent en inspection seule.";
+"developer.simulators" = "Simulateurs";
+"developer.inspection_only" = "Inspection seule";
+"developer.simulator.reason" = "Fichiers ordinaires connus sous ~/Library/Developer/CoreSimulator. Les classifications runtime, appareil, cache et actif/inactif ne sont pas disponibles. Les cibles des liens symboliques ne sont pas suivies.";
+"developer.simulator.unavailable" = "Le nettoyage détaillé des simulateurs n’est pas encore disponible. Les runtimes système partagés hors de ce dossier ne sont pas mesurés.";
+"developer.docker.detected" = "Docker Desktop trouvé à un emplacement d’applications connu.";
+"developer.docker.not_detected" = "Docker Desktop non détecté aux emplacements d’applications connus ; son stockage peut toutefois exister.";
+"developer.docker.reason" = "Les disques Docker contiennent images, conteneurs et volumes nécessitant un nettoyage spécialisé Docker. La taille logique des disques sparse peut largement dépasser la taille allouée. Aucune de ces mesures ne représente l’espace récupérable.";
+"developer.docker.unavailable" = "Le nettoyage Docker n’est pas encore disponible dans CoreTend. Seuls les chemins de disques connus sont inspectés ; disques déplacés et structures inconnues ne sont pas recherchés. Consultez les réglages Docker Desktop pour l’emplacement configuré.";
+"developer.used.logical" = "Utilisé — logique : %@";
+"developer.used.physical" = "Utilisé — alloué : %@";
+"developer.metric_unknown" = "Indisponible";
+"developer.state.available" = "Disponible à cet emplacement";
+"developer.state.absent" = "Introuvable aux emplacements connus";
+"developer.state.unavailable" = "Indisponible — accès refusé ou échec de mesure";
+"developer.state.unsupported" = "Structure inconnue ou non prise en charge";
+"developer.state.cancelled" = "Inspection annulée";
+"developer.excluded" = "Exclu par vos réglages de scan";
+"developer.no_candidates" = "Aucun fichier éligible trouvé";
+"developer.regenerable" = "Régénérable";
+"developer.review_required" = "Revue nécessaire";
+"developer.select_group" = "Sélectionner tous les fichiers de %@";
+"developer.selection_count" = "%d sur %d sélectionnés";
+"developer.folder_breakdown" = "Par dossier — noms exacts";
+"developer.review_files" = "Examiner %d fichiers";
+"developer.show_more" = "Afficher 100 fichiers supplémentaires";
+"developer.timeline_coverage" = "Cleanup inclut désormais des caches de paquets dédiés et exclut les dépôts SwiftPM. Les comparaisons avec des scans antérieurs à Developer Center peuvent refléter ce changement de périmètre.";
+
 /* Caches développeur — correspondances Advisor et Timeline explicites */
 "timeline.category.cleanup.dev.cache.swiftpm" = "Cache SwiftPM";
 "timeline.category.cleanup.dev.cache.homebrew" = "Cache Homebrew";
