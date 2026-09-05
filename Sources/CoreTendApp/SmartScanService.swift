@@ -203,6 +203,15 @@ public actor SmartScanCoordinator {
         report.recomputeAggregate()
     }
 
+    /// A progress ping only ever refines the *live* scanning detail. If the
+    /// module has already left `.scanning` (completed / failed / cancelled),
+    /// a late-arriving ping — e.g. a provider that reports progress on its
+    /// last line before returning — must not resurrect it into `.scanning`.
+    private func setScanningDetail(_ m: SmartScanModuleID, _ detail: String) {
+        guard case .scanning = report.modules[m] else { return }
+        report.modules[m] = .scanning(detail: detail)
+    }
+
     private func execute() async {
         let cheap = providers.filter { !$0.module.isDiskHeavy }
         let heavy = providers.filter { $0.module.isDiskHeavy }
@@ -248,7 +257,7 @@ public actor SmartScanCoordinator {
         setState(p.module, .scanning(detail: ""))
         do {
             let result = try await p.scan(progress: { detail in
-                Task { await self.setState(p.module, .scanning(detail: detail)) }
+                Task { await self.setScanningDetail(p.module, detail) }
             })
             if Task.isCancelled { setState(p.module, .cancelled) }
             else { setState(p.module, .completed(result)) }

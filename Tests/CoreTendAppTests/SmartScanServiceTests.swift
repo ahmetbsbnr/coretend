@@ -22,6 +22,9 @@ private struct FakeProvider: SmartScanProvider {
     var delayMs: UInt64 = 5
     var outcome: Outcome = .ok
     var live: Live? = nil
+    /// Emit a progress ping on the very last line before returning — the
+    /// shape a real provider has (it reports its final tally then returns).
+    var progressOnExit = false
 
     enum Outcome { case ok, throwsGeneric, unavailable, hang }
 
@@ -38,6 +41,7 @@ private struct FakeProvider: SmartScanProvider {
         case .throwsGeneric: throw NSError(domain: "x", code: 1)
         case .unavailable: throw SmartScanError.unavailable("permission-limited")
         case .ok, .hang:
+            if progressOnExit { progress("final tally") }
             return SmartScanModuleResult(
                 module: module,
                 headline: "\(module.rawValue) done",
@@ -61,6 +65,18 @@ struct SmartScanServiceTests {
         #expect({ if case .completed = report.modules[.integrity] { return true } else { return false } }())
         #expect(report.modules[.developer] == .unavailable(reason: "not-connected"))
         #expect(report.wasCancelled == false)
+    }
+
+    @Test func aLateProgressPingDoesNotResurrectACompletedModule() async {
+        // Regression: a provider that reports progress on its last line
+        // before returning used to clobber its own `.completed` state back
+        // to `.scanning`, dropping its bytes from the aggregate.
+        let c = SmartScanCoordinator(providers: [
+            FakeProvider(module: .storage, recoverable: 2_000, progressOnExit: true),
+        ])
+        let report = await c.start().value
+        #expect({ if case .completed = report.modules[.storage] { return true } else { return false } }())
+        #expect(report.globalRecoverableBytes == 2_000)
     }
 
     @Test func aggregateSeparatesTheFourBuckets_neverOneNumber() async {
