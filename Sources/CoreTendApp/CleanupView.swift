@@ -23,6 +23,10 @@ final class CleanupViewModel {
     var totalFindingCount = 0
     var isScanPaused = false
 
+    /// Structured live progress fed from real `ScanEvent`s (no fabricated %).
+    var progress = StorageScanProgress()
+    private var scanStartedAt: Date?
+
     private var scanTask: Task<Void, Never>?
     private var pauseController: ScanPauseController?
 
@@ -94,7 +98,11 @@ final class CleanupViewModel {
         scanTask = Task {
             let excluded = (try? await AppEnvironment.shared.store?.exclusions()) ?? []
             let engine = ScanEngine(configuration: ScanConfiguration(excludedPaths: excluded))
+            scanStartedAt = Date()
+            progress = StorageScanProgress(phase: .scanning, startedAt: scanStartedAt, isPausable: true)
             for await event in engine.run(rules: UserCleanupRules.all, pauseController: pauseController) {
+                progress = progress.applying(event)
+                progress.elapsed = scanStartedAt.map { Date().timeIntervalSince($0) } ?? 0
                 switch event {
                 case .started: break
                 case let .progress(scanned, _):
@@ -124,6 +132,7 @@ final class CleanupViewModel {
                         scope: .cleanup, samples: CleanupTimeline.samples(from: findings))
                 case .cancelled:
                     isScanPaused = false
+                    progress.markCancelled()
                     phase = .idle
                 }
             }
@@ -134,17 +143,20 @@ final class CleanupViewModel {
     func pauseScan() {
         guard phase == .scanning, !isScanPaused else { return }
         isScanPaused = true
+        progress.markPaused()
         Task { await pauseController?.pause() }
     }
 
     func resumeScan() {
         guard phase == .scanning, isScanPaused else { return }
         isScanPaused = false
+        progress.markResumed()
         Task { await pauseController?.resume() }
     }
 
     func cancelScan() {
         isScanPaused = false
+        progress.markCancelled()
         scanTask?.cancel()
         Task { await pauseController?.resume() }
     }
@@ -257,12 +269,23 @@ struct CleanupView: View {
     // MARK: - Scanning
 
     private var scanningView: some View {
-        VStack(spacing: MCSpacing.lg) {
+        let p = model.progress
+        return VStack(spacing: MCSpacing.lg) {
             MCScanStage(isScanning: !model.isScanPaused) {
-                Text(L("cleanup.scanning_progress", model.scannedCount, mcFormatBytes(model.totalBytes)))
+                VStack(spacing: MCSpacing.xxs) {
+                    Text(L("cleanup.scanning_progress", p.itemsInspected, mcFormatBytes(p.detectedBytesSoFar)))
+                    Text(L("cleanup.scanning_recoverable", mcFormatBytes(p.reclaimableBytesSoFar)))
+                        .font(.caption).foregroundStyle(.secondary)
+                    if !p.currentPath.isEmpty {
+                        Text((p.currentPath as NSString).abbreviatingWithTildeInPath)
+                            .font(.caption2).foregroundStyle(.tertiary)
+                            .lineLimit(1).truncationMode(.middle)
+                            .accessibilityHidden(true)
+                    }
+                }
             }
             .accessibilityElement(children: .combine)
-            .accessibilityLabel(L("cleanup.scanning_progress", model.scannedCount, mcFormatBytes(model.totalBytes)))
+            .accessibilityLabel(L("cleanup.scanning_progress", p.itemsInspected, mcFormatBytes(p.detectedBytesSoFar)))
             HStack(spacing: MCSpacing.sm) {
                 if model.isScanPaused {
                     Button(L("common.resume")) { model.resumeScan() }

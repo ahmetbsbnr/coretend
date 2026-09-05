@@ -1114,3 +1114,4 @@
 "cleanup.needs_review" = "%@ à examiner individuellement";
 "cleanup.selected_ready" = "%@ sélectionnés · prêts pour la Corbeille";
 "cleanup.move_selected" = "Déplacer %@ vers la Corbeille";
+"cleanup.scanning_recoverable" = "%@ potentiellement récupérables jusqu’ici";
