@@ -7,12 +7,15 @@
 - Website branch `feat/community-contact-site-v1.1` (`3e08b23`) is a separate
   frozen deliverable — **do not touch it** in the app pass.
 - Commits so far: `7f5be65` storage semantics · `4c47554` Dashboard/sidebar/
-  focus bug fixes · `193ccc4` Smart Scan orchestrator domain.
-- **All four gates green** at the latest commit: `Scripts/build.sh`
-  (+release), `Scripts/test.sh` **753 passed / 0 failed** (727 baseline +26),
-  `Scripts/repository-doctor.sh`, `Scripts/build-xcode.sh` (**BUILD
-  SUCCEEDED**; `CoreTendWidget.appex` + `CoreTendFinder.appex` +
-  `Metadata.appintents` with 7 intents / 6 shortcuts all still embedded).
+  focus bug fixes · `193ccc4` Smart Scan orchestrator domain · `8b822bb`
+  StorageScanProgress · `944f33a` pause audit test · `4dc707a` Smart Scan
+  real providers.
+- Gate status at `4dc707a`: `Scripts/build.sh` clean (0 warnings),
+  `Scripts/test.sh` **762 passed / 0 failed**, `Scripts/repository-doctor.sh`
+  passed. `Scripts/build-xcode.sh` **NOT re-run since `7ba9428`** — last
+  known good there (both appex + 7 intents / 6 shortcuts embedded); the
+  changes since are SwiftPM-source + `.strings` only, so it should still
+  pass, but it must be re-run at the next checkpoint to confirm.
 
 ### Done this pass
 
@@ -64,14 +67,25 @@
    `scanningView` shows real counters + running-recoverable + current path.
    `StorageScanProgressTests` (8).
 
-### Remaining (not started — needs a running app to build & verify safely)
+5. **Smart Scan real providers (§1–7) — DONE.** `4dc707a`.
+   `Sources/CoreTendApp/SmartScanProviders.swift`: `SmartScanRecoveryCandidates`
+   actor memoises one `RecoveryPlanService.prepareCandidates()` pass;
+   `SmartScanStorageFamilyProvider` maps its payload slice into
+   `SmartScanTotals` (`.recommended`/`.optional` → recoverable,
+   `.reviewRequired` → review, `.notIncluded` → informational pointer only,
+   never re-summed — reuses `RecoveryPlanEligibility` anti-double-counting so
+   `overlapsStorage = false` and the global recoverable stays exact).
+   `SmartScanApplicationsProvider` = app count + managed-update-path count
+   (counts, not "update available"). `SmartScanIntegrityProvider` = global
+   launch daemons → attention, quarantined downloads + user agents →
+   informational (no malware claim). `SmartScanProviders.live(home:environment:
+   store:)` factory. `SmartScanProvidersTests` (8).
+   Strings `smartscan.headline.{recoverable,nothing,apps,signals}` EN+FR.
 
-- **Smart Scan real providers** wrapping the actual engines (Cleanup rules,
-  Leftovers, DuplicateEngine, DeveloperCenterService, BrowserCatalog,
-  ApplicationInspection, IntegrityCore) as `SmartScanProvider`s; set each
-  provider's `overlapsStorage` from the *proven* Recovery Plan overlap
-  rules (`RecoveryPlanEligibility` / the `user.caches` exclusion).
-- **Smart Scan model + UI**: an `@MainActor @Observable` owner holding the
+### Remaining
+
+- **App-scope Smart Scan model + Dashboard/result UI (§8–17)**: an
+  `@MainActor @Observable` owner holding the
   `SmartScanCoordinator` at app/domain scope (not in `DashboardView`), the
   live module-state list (§18), the structured result screen (§19) reusing
   `AdvisorService`, and the action flow ending at **Review Recovery Plan**
@@ -102,9 +116,21 @@
 
 ### Next exact action
 
-Build the Smart Scan real providers (`SmartScanProviders.swift`) + the
-`@Observable SmartScanModel`, then wire the Dashboard CTA. Then Space Lens
-2.0. Run all four gates at each checkpoint.
+1. Add `@MainActor @Observable SmartScanModel` at app scope (init in
+   `CoreTendApp` / `AppEnvironment`, NOT in `DashboardView`) owning a
+   `SmartScanCoordinator(providers: SmartScanProviders.live())`. Expose:
+   per-module `SmartScanModuleState`, the live `SmartScanReport`, elapsed,
+   `start()` (no-op if running), `cancel()`, last completed report.
+2. Wire `DashboardView` hero → "Start Smart Scan" / "Lancer l'analyse
+   intelligente"; idle = coverage list; running = per-module state rows (no
+   %); result = 4 categories (recoverable / needs review / attention /
+   informational), one global number iff `isGlobalRecoverableExact`.
+3. Result primary CTA "Review Recovery Plan" / "Examiner le plan de
+   récupération" → `router` navigate to `.recoveryPlan` (RecoveryPlanView
+   already calls `prepareCandidates()` on load — NO new executor).
+4. Then Space Lens 2.0 (domain model + bounded aggregation first).
+Run `build.sh` + `test.sh` + `repository-doctor.sh` + `build-xcode.sh` at
+each checkpoint.
 
 ---
 
