@@ -825,7 +825,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
         <span class="num">03</span>
         <h3 data-fr="Agir">Act</h3>
         <p data-fr="Chaque résultat reste vérifiable avant l’action. Après une confirmation explicite, CoreTend demande à macOS de placer les éléments éligibles dans la Corbeille et ajoute une activité agrégée au journal local, exportable en CSV ou JSON.">Every result remains inspectable before action. After explicit confirmation, CoreTend asks macOS to place eligible items in the Trash and adds an aggregate entry to the local record, which can be exported as CSV or JSON.</p>
-        <span class="note" data-fr="CoreTend n'intègre pas de fonction de restauration après l'action. Vérifiez la Corbeille et utilisez Remettre si macOS y a bien placé l'élément.">CoreTend has no built-in restore action after removal. Check the Trash and use Put Back when macOS successfully placed the item there.</span>
+        <span class="note" data-fr="La suppression passe par la Corbeille de macOS : utilisez Finder → Corbeille → Remettre avant de la vider. Le Centre de restauration de CoreTend 1.1 remet un élément à son emplacement d'origine exact.">Removal goes through the macOS Trash — use Finder → Trash → Put Back before emptying it. CoreTend 1.1 adds a Restore Center that returns an item to its exact original location.</span>
       </li>
     </ol>
   </div>
@@ -908,7 +908,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
         </div>
       </div>
       <div class="sl-stage">
-        <svg class="sl-map" id="slMap" viewBox="0 0 420 300" role="img" aria-label="Space Lens size map, demo data"></svg>
+        <svg class="sl-map" id="slMap" viewBox="0 0 420 300" aria-label="Space Lens size map, demo data — the largest folder is centred; select a circle to see its size, activate a folder to step inside"></svg>
         <p class="sl-progress" id="slProgress" role="status" aria-live="polite"></p>
       </div>
       <ul class="sl-list" id="slList" aria-label="Folders by size"></ul>
@@ -1068,7 +1068,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
       </details>
       <details data-reveal>
         <summary data-fr="Puis-je annuler une suppression ?">Can I undo a removal?</summary>
-        <div class="ans"><div><p data-fr="CoreTend n'intègre pas de fonction de restauration après l'action. Lorsqu'un élément a bien été placé dans la Corbeille par macOS, utilisez Finder → Corbeille → Remettre avant de la vider.">CoreTend has no built-in restore action after removal. When macOS successfully placed an item in the Trash, use Finder → Trash → Put Back before emptying it.</p></div></div>
+        <div class="ans"><div><p data-fr="La suppression place les éléments dans la Corbeille de macOS : utilisez Finder → Corbeille → Remettre avant de la vider. Le Centre de restauration, ajouté dans CoreTend 1.1, remet un élément à son emplacement d'origine exact.">Removal places items in the macOS Trash — use Finder → Trash → Put Back before emptying it. The Restore Center, added in CoreTend 1.1, returns an item to its exact original location.</p></div></div>
       </details>
       <details data-reveal>
         <summary data-fr="Comment savoir que le téléchargement est fiable ?">How do I know the download is trustworthy?</summary>

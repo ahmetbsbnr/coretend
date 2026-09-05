@@ -387,6 +387,45 @@ def logo_svg(modifier: str, *, label: Optional[str] = None, initializing: bool =
 </svg>"""
 
 
+def page_structured_data(page: str, language: str, title: str, description: str, canonical: str) -> str:
+    """WebPage + a Home > <page> BreadcrumbList for an information route.
+
+    Emitted only for the compact info pages (not the landing page, which
+    carries its own SoftwareApplication node). Every value is derived from
+    the same strings the page already renders, so the JSON-LD cannot drift.
+    """
+    is_fr = language == "fr"
+    home_name = "Accueil" if is_fr else "Home"
+    # The visible page name is the title minus the " — CoreTend" suffix.
+    page_name = title.split("—")[0].strip() or page.title()
+    graph = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "WebPage",
+                "@id": f"{ORIGIN}{canonical}",
+                "url": f"{ORIGIN}{canonical}",
+                "name": title,
+                "description": description,
+                "inLanguage": "fr" if is_fr else "en",
+                "isPartOf": {"@type": "WebSite", "name": "CoreTend", "url": ORIGIN},
+                "primaryImageOfPage": f"{ORIGIN}/assets/brand/opengraph.png",
+            },
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {"@type": "ListItem", "position": 1, "name": home_name,
+                     "item": f"{ORIGIN}{route_for('home', language)}"},
+                    {"@type": "ListItem", "position": 2, "name": page_name,
+                     "item": f"{ORIGIN}{canonical}"},
+                ],
+            },
+        ],
+    }
+    payload = json.dumps(graph, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
+    return f'<script type="application/ld+json">{payload}</script>'
+
+
 def public_head(
     title: str,
     description: str,
@@ -423,6 +462,7 @@ def public_head(
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
+{page_structured_data(page, language, title, description, canonical)}
 <link rel="icon" href="/assets/brand/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/assets/brand/favicon-v2-16.png" sizes="16x16" type="image/png">
 <link rel="icon" href="/assets/brand/favicon-v2-32.png" sizes="32x32" type="image/png">
