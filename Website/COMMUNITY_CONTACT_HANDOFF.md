@@ -271,26 +271,88 @@ is reduced to downloading the DMG and launching", "No command or manual
 verification is required", "no antivirus feature". No minisign/checksum
 walkthrough exists to remove.
 
-## Still open (P1) — not started this program
+### Session 4 — `8392733` → `081fd22` (P1 visuals / demo / nav)
 
-Brand finish (apple-touch-icon `<link>`, confirm OG is 1200×630) · real
-product-visual redesign of the hero `#app` simulation (the site design rules
-forbid "generative product UI" — it should become real Retina screenshots) ·
-`assets/app/` screenshot library + capture-workflow doc · interactive
-Space Lens web demo · deliberate mobile nav for the widened header ·
-`SoftwareApplication` JSON-LD is on the home page only (fine) but new routes
-could get `WebPage`/`BreadcrumbList` · full a11y (WCAG AA) + responsive +
-performance passes · `/faq` `/features` `/space-lens` standalone routes ·
-`_lib` frontend interaction tests beyond the build assertions.
+`node --test test/*.test.js` = **66 pass**. `python3 build.py` green, 20
+routes, 28 screenshots in dist, no secret, no AI credit.
+
+**Real product visuals — DONE.** Hero `#app` generative simulation removed
+(the fake sidebar, JS rows, progress, Cancel/Pause) → a real Dashboard
+screenshot in a `.shot--hero` macOS window frame. `Website/assets/app/screens/`
+holds 28 webp (7 modules × light/dark × 1600 w + `-sm` 800 w) derived from
+`Documentation/VisualAudit/After` via `cwebp`; `Website/SCREENSHOT_GUIDE.md`
+documents naming / source / regen / capture params / HUMAN ASSET CAPTURE
+items. `#modules` gallery rebuilt as 6 real light/dark `<picture>` figures
+(`prefers-color-scheme` source, `srcset` + `sizes`, `width`/`height`,
+`loading=lazy` + `decoding=async`; hero is `fetchpriority=high`). Dead
+hero-demo JS neutralised (`demo()` early-returns when `#app` absent;
+`#scanToggle`/`#scanCancel`/`#tabs` optional-chained).
+
+**Space Lens web demo — DONE.** New `#space-lens` homepage section + rail
+entry. `spaceLens()` in the inline script: deterministic 12-node dataset
+(3 dirs drillable), states `idle → scanning → complete` via `[data-state]`,
+~1.9 s rAF count/bytes animation with staggered bubble emergence,
+reduced-motion jumps to the result. SVG size map (largest centred, ring
+layout, r ∝ √size, ≤ 12 circles/level) ↔ ordered list, click-select synced
+both ways, double-click / Enter drills, breadcrumb + Back + Restart.
+Circles are `role=button` + `tabindex` + labelled. No destructive verb in
+the section.
+
+**Mobile navigation — DONE (info pages).** `shell()` desktop nav trimmed to
+Community + Contact; at ≤ 720 px a `#navToggle` (`aria-expanded` /
+`aria-controls`) opens `<nav id="mobile-nav" hidden>` with Community /
+Contact / Changelog / Privacy / Security / Support / Download. `public.js`
+`mobileNav()`: toggle + focus first link, Escape closes & refocuses toggle,
+outside-click closes, ≥ 721 px force-resets. Homepage header was already
+mobile-fine (wordmark + locale + theme + Download; section links in `#rail`)
+— unchanged.
+
+**Claims 2nd pass — DONE.** The two "CoreTend has no built-in restore
+action" statements (EN/FR, Modules note + FAQ) rewritten: keep Put-Back
+guidance, name the 1.1 Restore Center. No other stale claims.
+
+**SEO enrichment — DONE.** `page_structured_data()` emits a WebPage +
+Home›Page BreadcrumbList `@graph` on every info route (EN+FR); validated
+parseable. Landing keeps its `SoftwareApplication` node. One shared
+`opengraph.png` used per route (quality over count, per Phase 25).
+
+**A11y — partial (structural).** Fixed: Space Lens SVG `role=img` dropped
+(interactive children), full description in `aria-label`; mobile nav ARIA +
+keyboard; form fields `aria-invalid`/labels (P0); focus-visible rings on all
+new controls; feed status uses text not colour; reduced-motion on the demo +
+install stage. **Not done:** a manual screen-reader pass, a measured
+contrast audit of every surface, Lighthouse.
+
+### Still open (P1 / P2)
+
+- `#findings` homepage section is still a JS-populated fake app slab
+  (smaller offender than the removed hero). Should become a screenshot or be
+  cut — its `findings()` JS + `FINDINGS` data + `#tabs` would go with it.
+- `#health` gauges and the `#privacy` `#term` terminal are mild
+  generative-ish bits — review.
+- Manual WCAG-AA screen-reader + contrast audit; responsive walk at 1440/
+  1280/1024/768/430/390/360; performance/Lighthouse pass.
+- FR screenshot variants (`-fr` captures exist in the source set).
+- Interactive DOM tests for `spaceLens()` / `mobileNav()` / `apiForms()` —
+  need a jsdom/linkedom devDependency, blocked offline; build-contract
+  assertions cover structure. Marked HUMAN VERIFICATION.
+- Homepage `#rail` sidenav mobile behaviour not audited.
+- Portfolio (`ahmetbsbnr-portfolio`) not re-touched — its CoreTend page
+  already reads as a concise gateway with the right copy; the new
+  screenshots could refresh its imagery in a later pass.
 
 ## Status
 
-**P0 FAIT (local). EXTERNAL CONFIGURATION REQUIRED** to run in production:
-Vercel Postgres store + `npm install` + migrate; Resend account + verified
-`ahmetbsbnr.com` + `RESEND_API_KEY`; SPF/DKIM/DMARC records; `ADMIN_TOKEN`;
-deploy. Until then the API validates/persists-to-nothing/returns cleanly and
-`node --test` covers every path with fakes. P1 (visual redesign, Space Lens
-demo, a11y/perf) is the remaining work.
+**P0 FAIT (local). P1 LOCAL IMPLEMENTATION mostly FAIT** — real product
+visuals, the Space Lens demo, mobile nav, claims, and SEO JSON-LD are done
+and covered by 66 passing tests; remaining P1 is the manual a11y/responsive/
+perf audit + the `#findings` slab + FR image variants.
+
+**EXTERNAL CONFIGURATION REQUIRED** to run the backend in production: Vercel
+Postgres store + `npm install` + `node scripts/migrate.mjs`; Resend account
++ verified `ahmetbsbnr.com` + `RESEND_API_KEY`; SPF/DKIM/DMARC; `ADMIN_TOKEN`;
+deploy. Until then the API validates/returns cleanly and `node --test`
+covers every path with fakes.
 
 The Finder Extension vertical on `feat/finder-extension` (`1ed2efb`) is
 separately **FAIT** — do not rework it.
