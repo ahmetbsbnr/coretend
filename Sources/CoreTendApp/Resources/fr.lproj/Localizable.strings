@@ -1169,3 +1169,12 @@
 "spacelens.list_header" = "Contenu";
 "spacelens.scanning_location" = "Analyse de %@";
 "spacelens.partial_top" = "Les plus volumineux jusqu’ici";
+
+/* Analyse du stockage — progression en direct selon la phase (P1) */
+"cleanup.phase.scanning" = "Analyse…";
+"cleanup.phase.paused" = "En pause";
+"cleanup.phase.finalizing" = "Finalisation…";
+"cleanup.phase.cancelled" = "Annulé";
+"cleanup.phase.failed" = "Échec de l’analyse";
+"cleanup.elapsed" = "Durée %@";
+"cleanup.scanning_at" = "Analyse de %@";

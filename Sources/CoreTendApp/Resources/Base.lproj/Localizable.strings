@@ -1169,3 +1169,12 @@
 "spacelens.list_header" = "Contents";
 "spacelens.scanning_location" = "Scanning %@";
 "spacelens.partial_top" = "Largest so far";
+
+/* Storage scan — phase-aware live progress (P1) */
+"cleanup.phase.scanning" = "Scanning…";
+"cleanup.phase.paused" = "Paused";
+"cleanup.phase.finalizing" = "Finalizing…";
+"cleanup.phase.cancelled" = "Cancelled";
+"cleanup.phase.failed" = "Scan failed";
+"cleanup.elapsed" = "Elapsed %@";
+"cleanup.scanning_at" = "Scanning %@";
