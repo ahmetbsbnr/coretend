@@ -165,6 +165,8 @@ struct LeftoversView: View {
                         }
                         Text(L("leftovers.not_installed", item.kind.rawValue))
                             .font(.caption).foregroundStyle(.secondary)
+                        AdvisorSummaryRow(finding: AdvisorService.advise(
+                            leftover: item, isAmbiguous: model.isAmbiguous(item)))
                     }
                     Spacer()
                     Text(mcFormatBytes(item.sizeBytes))
