@@ -199,15 +199,98 @@ crisp — it is vector + web font, so likely fine; (b) add an
 1200×630 exactly and regenerate from `favicon-512` + wordmark if not.
 Do **not** trace or redraw the mark — the vector source is authoritative.
 
+### Session 3 — `967aed5` → `0504b57` (P0 complete)
+
+`node --test test/*.test.js` = **55 pass**. `python3 build.py` green, 20
+HTML routes, no secret in dist.
+
+**P0-A download + install cleanup — DONE.** `api/download.js` +
+`api/_lib/releases.json` resolve `/download` (+ `?channel=stable|beta`) with
+graceful fallback; `beta` is `null` until a real artifact exists.
+`vercel.json` `/download` is a rewrite now. All SHA-256 / Minisign / spctl /
+stapler text removed from `index.html` (#install, hero link, ticker, toast,
+FAQ), `build.py` `support_content` (rewritten), and the JSON-LD. The
+simulated Gatekeeper dialogs in `#stage` are replaced with a
+DMG→Applications→launched composition. `latest.json` + `SHA256SUMS` stay as
+unlinked machine-only files.
+
+**P0-B/C/D backend — DONE (LOCAL). EXTERNAL: Postgres + Resend + DNS.**
+`Website/api/` Vercel Functions, only prod dep `@vercel/postgres` (lazy):
+- `POST /api/contact` — validate → rate-limit (Postgres token bucket, salted
+  IP hash) → honeypot → persist → route to human inbox (general→contact@,
+  support→support@, bug/impr/feature→feedback@, privacy→privacy@,
+  security→security@) → ack the sender iff they gave an email. Mail-fail =
+  202 {mailed:false}, never lost.
+- `GET /api/community` — approved + publicConsent only; `?type=` `?completed=1`;
+  never returns email / notes / un-redacted body.
+- `POST /api/community` — always `pending`, nothing public on submit.
+- `POST /api/community/review` — private unless `publishConsent===true`
+  (never default-checked) and then only after moderation.
+- `/api/admin/community` — GET pending + PATCH {moderationStatus,
+  publicStatus, publicTitle?, publicBody?}; constant-time Bearer
+  `ADMIN_TOKEN`; bare 401.
+- `_lib/`: validate (zero-dep, CR/LF-stripping → no header injection),
+  store (memory for tests + postgres for prod; only public/admin views
+  leave), mail (Resend via one fetch behind an injectable transport;
+  `From: CoreTend <noreply@…>`, Reply-To the human inbox; every address
+  CRLF/comma-guarded), templates (EN/FR, escaped), ratelimit, respond
+  (16 KB cap, safe errors), context.
+- `migrations/0001_init.sql` + `scripts/migrate.mjs` (`--dry-run` needs no
+  DB). `Website/ENVIRONMENT.md` documents POSTGRES_URL / RESEND_API_KEY /
+  ADMIN_TOKEN / RATE_SALT / SITE_ORIGIN (server-side only).
+
+**P0-B/C frontend — DONE.** `/contact` `/fr/contact` `/community`
+`/fr/community` (build.py `contact_content` / `community_content`), fetch
+forms in `assets/shell/public.js` (`apiForms` + `communityFeed`), styled in
+`public.css`. `<noscript>` fallback, hidden honeypot, consent never
+pre-checked, "CoreTend never attaches anything from your Mac" stated.
+
+**P0-E — DONE.** Privacy section 02 (app vs Contact/Community transmission,
+fields, email, moderation, retention = salted-hash IP only, deletion via
+privacy@). New `/security` `/fr/security` (trust guarantees, no crypto
+steps, "signed ≠ safe"). New `/changelog` `/fr/changelog` from
+`Website/changelog.json` — 1.0.0 dated (real), 1.1.0-beta.1 marked
+**unreleased**, no invented date.
+
+**P0-F — DONE.** Public-claim audit: site + portfolio already clean (no
+ClamAV / antivirus / telemetry / account / Intel / universal claims; "not
+an antivirus" disclaimers present; macOS 14+ correct). CSP audited &
+**unchanged** — forms are fetch-based so `form-action 'none'` stays,
+`/api/*` is same-origin so `connect-src 'self'` covers it, no wildcard.
+In-code security: server validation, HTML-escaping, Postgres rate limit,
+honeypot, constant-time admin token, no secret in dist — all covered by
+tests.
+
+**Nav / footer — DONE.** Header: Community · Privacy · Support · Contact.
+Footer: Download · Community · Changelog · Contact · Privacy · Security ·
+Support · Legal · Licenses · Source. AI-credit line gone (session 2).
+
+**Portfolio — no change needed.** `~/Developer/Website/ahmetbsbnr-portfolio`
+`components/CoretendPageContent.tsx` / `content.ts` already say "Installation
+is reduced to downloading the DMG and launching", "No command or manual
+verification is required", "no antivirus feature". No minisign/checksum
+walkthrough exists to remove.
+
+## Still open (P1) — not started this program
+
+Brand finish (apple-touch-icon `<link>`, confirm OG is 1200×630) · real
+product-visual redesign of the hero `#app` simulation (the site design rules
+forbid "generative product UI" — it should become real Retina screenshots) ·
+`assets/app/` screenshot library + capture-workflow doc · interactive
+Space Lens web demo · deliberate mobile nav for the widened header ·
+`SoftwareApplication` JSON-LD is on the home page only (fine) but new routes
+could get `WebPage`/`BreadcrumbList` · full a11y (WCAG AA) + responsive +
+performance passes · `/faq` `/features` `/space-lens` standalone routes ·
+`_lib` frontend interaction tests beyond the build assertions.
+
 ## Status
 
-**PARTIAL — early implementation.** Two verified frontend fixes committed
-(`7e2516f`); the backend (Contact API, Community API, Postgres schema,
-Resend transport), the new pages (`/contact`, `/community`, `/security`,
-`/changelog`, `/faq`, `/features`, `/space-lens`), the product-demo /
-Space Lens work, SEO, a11y, and portfolio cleanup are **not started**.
-Resume at "Ordered next actions" step 1 (brand finish) → step 2 (IA/routes)
-→ step 3 (finish download) → step 6 (Contact) → step 8 (Community).
+**P0 FAIT (local). EXTERNAL CONFIGURATION REQUIRED** to run in production:
+Vercel Postgres store + `npm install` + migrate; Resend account + verified
+`ahmetbsbnr.com` + `RESEND_API_KEY`; SPF/DKIM/DMARC records; `ADMIN_TOKEN`;
+deploy. Until then the API validates/persists-to-nothing/returns cleanly and
+`node --test` covers every path with fakes. P1 (visual redesign, Space Lens
+demo, a11y/perf) is the remaining work.
 
 The Finder Extension vertical on `feat/finder-extension` (`1ed2efb`) is
 separately **FAIT** — do not rework it.
