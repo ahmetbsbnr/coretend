@@ -34,6 +34,12 @@ public struct SpaceNode: Sendable, Identifiable {
 
 public enum SpaceLensEvent: Sendable {
     case progress(scannedItems: Int, currentPath: String)
+    /// A live, still-growing view of the root: emitted after each *top-level*
+    /// child of the scan root finishes sizing, so the UI can show the largest
+    /// folders as they resolve rather than only at the end. `size` and
+    /// `children` are a lower bound that only grows. Never emitted for deeper
+    /// directories (they complete fast enough to wait for `.finished`).
+    case partial(root: SpaceNode)
     case finished(root: SpaceNode)
     case cancelled
 }
@@ -107,6 +113,19 @@ public struct SpaceLensEngine: Sendable {
                                            continuation: continuation, pauseController: pauseController)
                     total += child.size
                     if child.size >= minChildSize { children.append(child) } else { otherBytes += child.size }
+                    if depth == 0 && !Task.isCancelled {
+                        // One top-level folder just resolved — publish the
+                        // partial root so the UI can show it immediately.
+                        var live = children.sorted { $0.size > $1.size }
+                        if otherBytes > 0 {
+                            live.append(SpaceNode(name: "Other (small items)",
+                                                  path: directory.path + "/\u{2026}other",
+                                                  isDirectory: false, size: otherBytes))
+                        }
+                        continuation.yield(.partial(root: SpaceNode(
+                            name: directory.lastPathComponent.isEmpty ? directory.path : directory.lastPathComponent,
+                            path: directory.path, isDirectory: true, size: total, children: live)))
+                    }
                 } else {
                     let bytes = await shallowSize(of: url, scanned: &scanned, pauseController: pauseController)
                     total += bytes

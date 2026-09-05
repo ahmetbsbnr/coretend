@@ -1153,3 +1153,19 @@
 "smartscan.cancelled.title" = "Analyse annulée";
 "smartscan.cancelled.detail" = "Aucune modification n’a été effectuée. Rien n’a été examiné ni supprimé.";
 "recovery.from_smartscan" = "Préparé à partir de votre dernière analyse intelligente — aucune nouvelle analyse n’a été lancée.";
+
+/* Space Lens 2.0 — explorateur borné */
+"spacelens.other_bucket" = "Autres";
+"spacelens.scope_summary" = "%lld éléments · %@ au total";
+"spacelens.folded_note" = "%lld éléments plus petits regroupés dans « Autres »";
+"spacelens.elapsed" = "Durée %@";
+"spacelens.bubble_a11y" = "%1$@, %2$@, %3$lld pour cent de ce dossier, %4$@";
+"spacelens.kind.directory" = "dossier";
+"spacelens.kind.file" = "fichier";
+"spacelens.partial_label" = "Analyse partielle";
+"spacelens.drill_hint" = "Double-cliquez ou appuyez sur Entrée pour ouvrir";
+"spacelens.back" = "Retour";
+"spacelens.canvas_a11y_summary" = "Carte des tailles de %lld éléments. La liste ci-dessous est la vue précise.";
+"spacelens.list_header" = "Contenu";
+"spacelens.scanning_location" = "Analyse de %@";
+"spacelens.partial_top" = "Les plus volumineux jusqu’ici";
