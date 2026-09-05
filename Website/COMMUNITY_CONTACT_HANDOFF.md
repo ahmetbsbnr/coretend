@@ -164,8 +164,50 @@ starts from here. Nothing below is scaffolded-and-called-done.
 - GitHub bot token — only if approved-Community → GitHub-issue sync is
   enabled (optional, not beta.1-blocking).
 
+## Progress log
+
+### Session 2 — `7e2516f` (branch `feat/community-contact-site-v1.1`)
+
+**Done & verified (`python3 Website/build.py` passes):**
+- **Phase 8 (download resolution) — partial fix landed.** `vercel.json`
+  `/download` no longer hardcodes `v1.0.0`; it 302s to
+  `github.com/ahmetbsbnr/coretend/releases/latest`. Survives every release
+  with no per-release edit. *Remaining for full Phase 8:* a
+  `GET /api/download` Vercel Function that reads
+  `Configuration/published-release.json` and 302s straight to the DMG
+  (skips the GitHub release page). Blocked only on the `api/` runtime being
+  stood up (Phase 10).
+- **Phase 27 (footer) — credit line removed.** The
+  "Ahmet Basbunar — direction … Claude (Anthropic) — supervised assistant"
+  string is gone from `build.py`'s generated footer **and** from
+  `index.html` (home). Now `CoreTend — free software for macOS · Apache-2.0`
+  (EN/FR). *Remaining for full Phase 27:* add Download / Community /
+  Changelog / Contact / Security to `foot-links` — deferred deliberately
+  because those routes don't exist yet (adding them now = broken links).
+  Do it in the same commit that creates each page.
+
+**Brand audit correction (Phase 1):** the brand foundation is in better
+shape than session 1's audit implied. `Website/assets/brand/` already has
+vector `favicon.svg`, `mark-light.svg`, `mark-dark.svg` (concentric-arc
+CoreTend symbol, teal `#0B6E6C` / `#5FD3C6`), PNG favicons at 16/32/180/192/512,
+and `opengraph.png` (1200-wide). `build.py:logo_svg()` emits an **inline
+vector** SVG (crisp at any DPI), not an upscaled PNG. Phase 1's real
+remaining work is narrower than "recreate the logo": (a) confirm the header
+`.wordmark` composition (mark + `<span>CoreTend</span>` text) reads as
+crisp — it is vector + web font, so likely fine; (b) add an
+`apple-touch-icon` `<link>` if missing; (c) verify `opengraph.png` is
+1200×630 exactly and regenerate from `favicon-512` + wordmark if not.
+Do **not** trace or redraw the mark — the vector source is authoritative.
+
 ## Status
 
-**PARTIAL — implementation not started.** Audit complete, branch created,
-architecture decided, next actions ordered. The Finder Extension vertical on
-`feat/finder-extension` is separately **FAIT**.
+**PARTIAL — early implementation.** Two verified frontend fixes committed
+(`7e2516f`); the backend (Contact API, Community API, Postgres schema,
+Resend transport), the new pages (`/contact`, `/community`, `/security`,
+`/changelog`, `/faq`, `/features`, `/space-lens`), the product-demo /
+Space Lens work, SEO, a11y, and portfolio cleanup are **not started**.
+Resume at "Ordered next actions" step 1 (brand finish) → step 2 (IA/routes)
+→ step 3 (finish download) → step 6 (Contact) → step 8 (Community).
+
+The Finder Extension vertical on `feat/finder-extension` (`1ed2efb`) is
+separately **FAIT** — do not rework it.
