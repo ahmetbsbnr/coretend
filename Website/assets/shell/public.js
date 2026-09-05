@@ -369,6 +369,125 @@
     update();
   }
 
+  // --- Contact / Community forms (fetch-based; CSP form-action stays 'none') ---
+  function apiForms() {
+    $$("form[data-api-form]").forEach(form => {
+      const endpoint = form.dataset.apiForm;
+      const locale = form.dataset.locale === "fr" ? "fr" : "en";
+      const status = $(".form-status", form);
+      const button = $("button[type=submit]", form);
+      const bugRow = $("[data-when-bug]", form);
+      const typeSelect = form.querySelector("select[name=requestType]");
+      if (bugRow && typeSelect) {
+        const sync = () => { bugRow.hidden = typeSelect.value !== "bug"; };
+        typeSelect.addEventListener("change", sync);
+        sync();
+      }
+      form.addEventListener("submit", async event => {
+        event.preventDefault();
+        if (button.disabled) return;
+        const data = {};
+        new FormData(form).forEach((value, key) => {
+          if (key === "company" || key === "website" || key === "hp") { data[key] = value; return; }
+          if (key === "wantsReply" || key === "publicConsent") { data[key] = true; return; }
+          if (typeof value === "string" && value.trim() !== "") data[key] = value.trim();
+        });
+        data.locale = locale;
+        button.disabled = true;
+        const sending = button.dataset.labelSending || button.textContent;
+        const sendLabel = button.dataset.labelSend || button.textContent;
+        button.textContent = sending;
+        status.textContent = "";
+        status.classList.remove("is-ok", "is-err");
+        try {
+          const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
+          const payload = await res.json().catch(() => ({}));
+          if (res.ok || res.status === 202) {
+            status.textContent = status.dataset.ok;
+            status.classList.add("is-ok");
+            form.reset();
+            if (bugRow) bugRow.hidden = true;
+            const feed = $("#community-feed");
+            if (feed && endpoint === "/api/community") { /* pending: nothing to refresh */ }
+          } else if (res.status === 429) {
+            status.textContent = (locale === "fr"
+              ? "Trop de tentatives. Réessayez dans quelques minutes."
+              : "Too many attempts. Try again in a few minutes.");
+            status.classList.add("is-err");
+          } else if (res.status === 422 && payload.fields) {
+            status.textContent = (locale === "fr"
+              ? "Vérifiez les champs en surbrillance."
+              : "Please check the highlighted fields.");
+            status.classList.add("is-err");
+            payload.fields.forEach(f => {
+              const field = form.querySelector(`[name="${f.field}"]`);
+              if (field) field.setAttribute("aria-invalid", "true");
+            });
+          } else {
+            status.textContent = status.dataset.err;
+            status.classList.add("is-err");
+          }
+        } catch (_) {
+          status.textContent = status.dataset.err;
+          status.classList.add("is-err");
+        } finally {
+          button.disabled = false;
+          button.textContent = sendLabel;
+        }
+      });
+      form.querySelectorAll("[name]").forEach(el => {
+        el.addEventListener("input", () => el.removeAttribute("aria-invalid"));
+      });
+    });
+  }
+
+  function communityFeed() {
+    const feed = $("#community-feed");
+    if (!feed) return;
+    const statusLabels = JSON.parse(feed.dataset.statusLabels || "{}");
+    const emptyText = feed.dataset.empty || "";
+    const errText = feed.dataset.loaderr || "";
+    const chips = $$(".chip-btn");
+    let current = "all";
+
+    const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => (
+      { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    const render = items => {
+      if (!items.length) { feed.innerHTML = `<p class="field-note">${esc(emptyText)}</p>`; return; }
+      feed.innerHTML = items.map(it => `
+        <article class="feed-item" id="${esc(it.id)}">
+          <div class="feed-meta"><span class="chip">${esc(it.type)}</span>
+            <span class="feed-status feed-status--${esc(it.publicStatus)}">${esc(statusLabels[it.publicStatus] || it.publicStatus)}</span></div>
+          <h3>${esc(it.title)}</h3>
+          <p>${esc(it.body).replace(/\n+/g, "<br>")}</p>
+        </article>`).join("");
+    };
+
+    const load = async () => {
+      feed.innerHTML = `<p class="field-note">…</p>`;
+      const qs = current === "all" ? "" : current === "completed" ? "?completed=1" : `?type=${current}`;
+      try {
+        const res = await fetch(`/api/community${qs}`, { headers: { Accept: "application/json" } });
+        const payload = await res.json().catch(() => ({}));
+        render(res.ok && Array.isArray(payload.items) ? payload.items : []);
+      } catch (_) {
+        feed.innerHTML = `<p class="field-note">${esc(errText)}</p>`;
+      }
+    };
+
+    chips.forEach(chip => chip.addEventListener("click", () => {
+      chips.forEach(c => c.classList.toggle("is-on", c === chip));
+      current = chip.dataset.filter;
+      load();
+    }));
+    load();
+  }
+
   theme();
   logos();
   scrollSystems();
@@ -376,4 +495,6 @@
   field();
   copies();
   licenseFilter();
+  apiForms();
+  communityFeed();
 })();

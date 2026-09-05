@@ -455,6 +455,13 @@ def shell(
     legal = "Mentions légales" if is_fr else "Legal"
     licenses = "Licences" if is_fr else "Licenses"
     source = "Code source" if is_fr else "Source"
+    community = "Communauté" if is_fr else "Community"
+    contact = "Contact"
+    changelog = "Journal" if is_fr else "Changelog"
+    security = "Sécurité" if is_fr else "Security"
+
+    def _cur(name):
+        return ' aria-current="page"' if page == name else ""
     _signed = bool(release.get("signed")) and bool(release.get("notarized"))
     if _signed:
         version_status = (
@@ -470,8 +477,6 @@ def shell(
         )
     en_path = route_for(page, "en")
     fr_path = route_for(page, "fr")
-    privacy_current = ' aria-current="page"' if page == "privacy" else ""
-    support_current = ' aria-current="page"' if page == "support" else ""
     return f"""<!doctype html>
 <html lang="{language}" data-theme="light" data-theme-mode="system" data-build="public">
 <head>
@@ -486,8 +491,10 @@ def shell(
 <header class="bar" id="bar"><div class="wrap">
   <a class="wordmark" href="{route_for('home', language)}" aria-label="{home_label}">{logo_svg('header', initializing=True)}<span>CoreTend</span></a>
   <nav class="bar-actions" aria-label="{navigation}">
-    <a class="bar-link" href="{route_for('privacy', language)}"{privacy_current}>{privacy}</a>
-    <a class="bar-link" href="{route_for('support', language)}"{support_current}>{support}</a>
+    <a class="bar-link" href="{route_for('community', language)}"{_cur('community')}>{community}</a>
+    <a class="bar-link" href="{route_for('privacy', language)}"{_cur('privacy')}>{privacy}</a>
+    <a class="bar-link" href="{route_for('support', language)}"{_cur('support')}>{support}</a>
+    <a class="bar-link" href="{route_for('contact', language)}"{_cur('contact')}>{contact}</a>
     <div class="switch" role="group" aria-label="{'Langue' if is_fr else 'Language'}">
       <a href="{en_path}" hreflang="en" lang="en" aria-current="{'page' if not is_fr else 'false'}">EN</a>
       <a href="{fr_path}" hreflang="fr" lang="fr" aria-current="{'page' if is_fr else 'false'}">FR</a>
@@ -503,6 +510,9 @@ def shell(
   <div class="foot-row">
     <a class="wordmark" href="{route_for('home', language)}">{logo_svg('footer')}<span>CoreTend</span></a>
     <ul class="foot-links">
+      <li><a href="/download">{download}</a></li>
+      <li><a href="{route_for('community', language)}">{community}</a></li>
+      <li><a href="{route_for('contact', language)}">{contact}</a></li>
       <li><a href="{route_for('privacy', language)}">{privacy}</a></li>
       <li><a href="{route_for('support', language)}">{support}</a></li>
       <li><a href="{route_for('legal', language)}">{legal}</a></li>
@@ -629,6 +639,143 @@ def licenses_content(release: dict, language: str) -> str:
     return hero + f"""<section class="info-section"><div class="wrap"><div class="section-head"><p class="section-index">01 / {'Registre' if language == 'fr' else 'Register'}</p><div><h2>{'Inventaire public vérifiable.' if language == 'fr' else 'A verifiable public inventory.'}</h2><p class="section-intro">{build_note}</p></div></div><div class="license-toolbar"><label class="field-label" for="license-filter">{label}<input id="license-filter" type="search" placeholder="{placeholder}" autocomplete="off"></label><p id="license-result" role="status">{result}</p></div><div class="license-list">{items}</div></div></section>"""
 
 
+def contact_content(release: dict, language: str) -> str:
+    fr = language == "fr"
+    if fr:
+        hero = info_hero(
+            "contact", language, "Contact", "Parlons de CoreTend.",
+            "Une question, un bug, une idée ou un sujet de confidentialité ? Envoyez uniquement ce que vous souhaitez partager. CoreTend ne joint rien automatiquement depuis votre Mac.",
+            ["Réponse par une personne", "E-mail requis seulement pour une réponse", "Aucune donnée automatique"])
+        types = [("general", "Question générale"), ("support", "Assistance"), ("bug", "Signaler un bug"),
+                 ("improvement", "Amélioration"), ("feature", "Demande de fonctionnalité"),
+                 ("privacy", "Confidentialité"), ("security", "Sécurité")]
+        L = dict(type="Type de demande", name="Nom (facultatif)", email="E-mail",
+                 wants="Je souhaite une réponse", subject="Objet", message="Message",
+                 app="Version de CoreTend (facultatif)", os="Version de macOS (facultatif)",
+                 repro="Reproductibilité", repro_opts=[("", "—"), ("always", "Toujours"), ("sometimes", "Parfois"), ("once", "Une fois")],
+                 send="Envoyer", sending="Envoi…",
+                 ok="Message reçu. Si vous avez demandé une réponse, une personne vous répondra.",
+                 err="Envoi impossible pour le moment. Réessayez, ou écrivez à contact@ahmetbsbnr.com.",
+                 note="Client-side : validation d’aide. La vérification qui compte est côté serveur.",
+                 noscript="JavaScript est désactivé. Écrivez directement à contact@ahmetbsbnr.com.")
+        s1 = "Écrivez-nous"
+    else:
+        hero = info_hero(
+            "contact", language, "Contact", "Let’s talk about CoreTend.",
+            "A question, a bug, an idea, or a privacy matter? Send only what you want to share. CoreTend never attaches anything from your Mac automatically.",
+            ["A human replies", "Email only needed for a reply", "No automatic data"])
+        types = [("general", "General question"), ("support", "Support"), ("bug", "Bug report"),
+                 ("improvement", "Improvement"), ("feature", "Feature request"),
+                 ("privacy", "Privacy"), ("security", "Security")]
+        L = dict(type="Request type", name="Name (optional)", email="Email",
+                 wants="I would like a reply", subject="Subject", message="Message",
+                 app="CoreTend version (optional)", os="macOS version (optional)",
+                 repro="Reproducibility", repro_opts=[("", "—"), ("always", "Always"), ("sometimes", "Sometimes"), ("once", "Once")],
+                 send="Send", sending="Sending…",
+                 ok="Message received. If you asked for a reply, a human will get back to you.",
+                 err="Could not send right now. Try again, or email contact@ahmetbsbnr.com.",
+                 note="Client-side checks are a convenience. The check that matters is server-side.",
+                 noscript="JavaScript is off. Email contact@ahmetbsbnr.com directly.")
+        s1 = "Write to us"
+
+    type_opts = "".join(f'<option value="{v}">{html.escape(t)}</option>' for v, t in types)
+    repro_opts = "".join(f'<option value="{v}">{html.escape(t)}</option>' for v, t in L["repro_opts"])
+    lang_attr = "fr" if fr else "en"
+    return hero + f"""<section class="info-section"><div class="wrap narrow">
+<div class="section-head"><p class="section-index">01 / {s1}</p></div>
+<form class="ct-form" data-api-form="/api/contact" data-locale="{lang_attr}" novalidate>
+  <p class="field-note">{L['note']}</p>
+  <div class="hp" aria-hidden="true"><label>Company<input type="text" name="company" tabindex="-1" autocomplete="off"></label></div>
+  <label class="field-label">{L['type']}<select name="requestType" required>{type_opts}</select></label>
+  <label class="field-label">{L['name']}<input type="text" name="name" autocomplete="name" maxlength="120"></label>
+  <label class="field-label">{L['email']}<input type="email" name="email" autocomplete="email" maxlength="254" inputmode="email"></label>
+  <label class="field-check"><input type="checkbox" name="wantsReply" value="true"><span>{L['wants']}</span></label>
+  <label class="field-label">{L['subject']}<input type="text" name="subject" required minlength="3" maxlength="200"></label>
+  <label class="field-label">{L['message']}<textarea name="message" required minlength="10" maxlength="8000" rows="7"></textarea></label>
+  <div class="field-row" data-when-bug>
+    <label class="field-label">{L['repro']}<select name="reproducibility">{repro_opts}</select></label>
+    <label class="field-label">{L['app']}<input type="text" name="appVersion" maxlength="40"></label>
+    <label class="field-label">{L['os']}<input type="text" name="macosVersion" maxlength="40"></label>
+  </div>
+  <button class="btn btn-primary" type="submit" data-label-send="{L['send']}" data-label-sending="{L['sending']}">{L['send']}</button>
+  <p class="form-status" role="status" data-ok="{html.escape(L['ok'], quote=True)}" data-err="{html.escape(L['err'], quote=True)}"></p>
+  <noscript><p class="field-note">{L['noscript']}</p></noscript>
+</form>
+</div></section>"""
+
+
+def community_content(release: dict, language: str) -> str:
+    fr = language == "fr"
+    if fr:
+        hero = info_hero(
+            "community", language, "Communauté", "Aidez à façonner CoreTend.",
+            "Signalez un bug, proposez une amélioration ou une fonctionnalité, laissez un avis — et parcourez les contributions déjà approuvées. Aucun compte n’est requis.",
+            ["Sans compte", "Modéré avant publication", "Pas un réseau social"])
+        types = [("bug", "Bug"), ("improvement", "Amélioration"), ("feature", "Fonctionnalité"), ("feedback", "Avis")]
+        filters = [("all", "Tout"), ("bug", "Bugs"), ("improvement", "Améliorations"), ("feature", "Fonctionnalités"), ("completed", "Terminé")]
+        L = dict(browse="Contributions publiques", empty="Rien d’approuvé pour l’instant. Soyez la première contribution.",
+                 loaderr="Chargement impossible. Réessayez plus tard.",
+                 submit="Proposer", type="Type", title="Titre", body="Description",
+                 email="E-mail (facultatif, pour un suivi)", app="Version de CoreTend (facultatif)",
+                 os="macOS (facultatif)", consent="J’autorise l’affichage public de ce texte après modération",
+                 send="Envoyer", sending="Envoi…",
+                 ok="Reçu. En attente de modération : rien n’apparaît publiquement avant approbation.",
+                 err="Envoi impossible. Réessayez, ou passez par la page Contact.",
+                 s1="Parcourir", s2="Proposer",
+                 noscript="JavaScript est désactivé. Passez par la page Contact pour envoyer une idée.")
+        status_labels = {"under_review": "À l’étude", "planned": "Prévu", "in_progress": "En cours",
+                         "completed": "Terminé", "declined": "Refusé"}
+    else:
+        hero = info_hero(
+            "community", language, "Community", "Help shape CoreTend.",
+            "Report a bug, suggest an improvement or a feature, leave feedback — and browse submissions that are already approved. No account required.",
+            ["No account", "Moderated before it appears", "Not a social network"])
+        types = [("bug", "Bug"), ("improvement", "Improvement"), ("feature", "Feature"), ("feedback", "Feedback")]
+        filters = [("all", "All"), ("bug", "Bugs"), ("improvement", "Improvements"), ("feature", "Features"), ("completed", "Completed")]
+        L = dict(browse="Public submissions", empty="Nothing approved yet. Be the first submission.",
+                 loaderr="Could not load. Try again later.",
+                 submit="Submit", type="Type", title="Title", body="Description",
+                 email="Email (optional, for follow-up)", app="CoreTend version (optional)",
+                 os="macOS (optional)", consent="I allow this text to be shown publicly after moderation",
+                 send="Send", sending="Sending…",
+                 ok="Received. Pending review — nothing appears publicly until it is approved.",
+                 err="Could not send. Try again, or use the Contact page.",
+                 s1="Browse", s2="Submit",
+                 noscript="JavaScript is off. Use the Contact page to send an idea.")
+        status_labels = {"under_review": "Under review", "planned": "Planned", "in_progress": "In progress",
+                         "completed": "Completed", "declined": "Declined"}
+
+    type_opts = "".join(f'<option value="{v}">{html.escape(t)}</option>' for v, t in types)
+    filter_btns = "".join(
+        f'<button class="chip-btn{" is-on" if v == "all" else ""}" type="button" data-filter="{v}">{html.escape(t)}</button>'
+        for v, t in filters)
+    status_json = json.dumps(status_labels, ensure_ascii=False).replace("</", "<\\/")
+    lang_attr = "fr" if fr else "en"
+    return hero + f"""<section class="info-section"><div class="wrap">
+<div class="section-head"><p class="section-index">01 / {L['s1']}</p><div><h2>{L['browse']}</h2></div></div>
+<div class="chip-row" role="group" aria-label="{L['browse']}">{filter_btns}</div>
+<div class="community-feed" id="community-feed" data-status-labels='{status_json}' data-empty="{html.escape(L['empty'], quote=True)}" data-loaderr="{html.escape(L['loaderr'], quote=True)}" aria-live="polite"><p class="field-note">…</p></div>
+</div></section>
+<section class="info-section"><div class="wrap narrow">
+<div class="section-head"><p class="section-index">02 / {L['s2']}</p></div>
+<form class="ct-form" data-api-form="/api/community" data-locale="{lang_attr}" novalidate>
+  <div class="hp" aria-hidden="true"><label>Website<input type="text" name="website" tabindex="-1" autocomplete="off"></label></div>
+  <label class="field-label">{L['type']}<select name="type" required>{type_opts}</select></label>
+  <label class="field-label">{L['title']}<input type="text" name="title" required minlength="4" maxlength="140"></label>
+  <label class="field-label">{L['body']}<textarea name="body" required minlength="10" maxlength="6000" rows="6"></textarea></label>
+  <div class="field-row">
+    <label class="field-label">{L['email']}<input type="email" name="email" maxlength="254" inputmode="email"></label>
+    <label class="field-label">{L['app']}<input type="text" name="appVersion" maxlength="40"></label>
+    <label class="field-label">{L['os']}<input type="text" name="macosVersion" maxlength="40"></label>
+  </div>
+  <label class="field-check"><input type="checkbox" name="publicConsent" value="true"><span>{L['consent']}</span></label>
+  <button class="btn btn-primary" type="submit" data-label-send="{L['send']}" data-label-sending="{L['sending']}">{L['send']}</button>
+  <p class="form-status" role="status" data-ok="{html.escape(L['ok'], quote=True)}" data-err="{html.escape(L['err'], quote=True)}"></p>
+  <noscript><p class="field-note">{L['noscript']}</p></noscript>
+</form>
+</div></section>"""
+
+
 def information_pages(release: dict) -> dict[str, str]:
     pages: dict[str, str] = {}
     definitions = {
@@ -647,6 +794,14 @@ def information_pages(release: dict) -> dict[str, str]:
         "licenses": {
             "en": ("Licenses — CoreTend", "Exact CoreTend code and website attribution inventory.", licenses_content),
             "fr": ("Licences — CoreTend", "Inventaire exact des licences du code et du site CoreTend.", licenses_content),
+        },
+        "contact": {
+            "en": ("Contact — CoreTend", "Reach the CoreTend project: questions, bugs, ideas, privacy and security. A human replies.", contact_content),
+            "fr": ("Contact — CoreTend", "Contacter le projet CoreTend : questions, bugs, idées, confidentialité et sécurité. Une personne répond.", contact_content),
+        },
+        "community": {
+            "en": ("Community — CoreTend", "Report bugs, suggest improvements and features, leave feedback, and browse approved CoreTend submissions.", community_content),
+            "fr": ("Communauté — CoreTend", "Signalez des bugs, proposez des améliorations et des fonctionnalités, laissez un avis, et parcourez les contributions approuvées.", community_content),
         },
     }
     for page, locales in definitions.items():
@@ -755,10 +910,14 @@ def write_documents(stage: Path, release: dict) -> None:
         "/support",
         "/legal",
         "/licenses",
+        "/contact",
+        "/community",
         "/fr/privacy",
         "/fr/support",
         "/fr/legal",
         "/fr/licenses",
+        "/fr/contact",
+        "/fr/community",
     )
     sitemap = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
