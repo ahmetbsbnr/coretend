@@ -27,14 +27,18 @@ Scripts/build.sh release  # release, must build with 0 warnings before committin
 Scripts/test.sh   # do NOT use plain `swift test` — see Documentation/DECISIONS.md D2
 ```
 
-286 tests / 57 suites across the SwiftPM package (`DesignSystemTests`,
+359 tests / 68 suites across the SwiftPM package (`DesignSystemTests`,
 `IntegrityCoreTests`, `AppDiscoveryTests`, `PersistenceTests`,
 `SystemMetricsTests`, `ScanCoreTests`, `SafetyCoreTests`, `FileRulesTests`,
 `CoreTendAppTests`, plus `CoreTendIntegrationTests`,
-`CoreTendAccessibilityTests`, `CoreTendPerformanceTests`,
-`DemoFixturesValidatorTests`). One test is skipped — the Developer-ID
-signature test, gated on a real codesigning identity. See
-[Documentation/TESTING.md](Documentation/TESTING.md).
+`CoreTendAccessibilityTests`, `CoreTendPerformanceTests`;
+`CoreTendUITests` is a separate XCTest-based UI target, launched
+independently, not part of this count). Zero tests are skipped as of this
+writing — the Developer-ID team-signed-binary test (`IntegrityCoreTests`)
+used to be gated on a real codesigning identity, but one has been installed
+since 2026-08-31, so it now runs and passes for real. See
+[Documentation/TESTING.md](Documentation/TESTING.md) (also carries an older
+count as of this writing).
 
 ## Package and run locally
 

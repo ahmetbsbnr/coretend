@@ -5,7 +5,8 @@ Standard `.strings`-based localization, no third-party i18n library.
 - `defaultLocalization: "en"` in `Package.swift`.
 - Two locales today: `Sources/CoreTendApp/Resources/Base.lproj/Localizable.strings`
   (English, the fallback) and `Sources/CoreTendApp/Resources/fr.lproj/Localizable.strings`
-  (French) — 367 keys each, kept in sync (same key count).
+  (French) — 570 keys each, kept in sync (same key count, verified by
+  diffing the two key sets, not just comparing counts).
 - Lookup goes through one helper, `L(_:_:)` in `Sources/CoreTendApp/L10n.swift`:
 
   ```swift
