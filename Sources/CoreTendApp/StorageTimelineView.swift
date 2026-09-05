@@ -148,6 +148,10 @@ struct StorageTimelineView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: MCSpacing.lg) {
                 scopePicker
+                if model.selectedScope == .cleanup {
+                    Text(L("developer.timeline_coverage"))
+                        .font(MCFont.caption).foregroundStyle(.secondary)
+                }
                 if model.hasHistoryForSelectedScope {
                     summaryCard
                     if let comparison = model.comparison {

@@ -824,6 +824,53 @@
 "apps.detail.associated.confidence.uncertain" = "Uncertain";
 "apps.detail.associated.shared" = "Shared";
 
+/* Developer Center */
+"module.developer" = "Developer";
+"developer.title" = "Developer Storage";
+"developer.intro" = "Understand build data and package caches, review what can be regenerated, and inspect development storage.";
+"developer.refresh" = "Refresh scan";
+"developer.scanning" = "Measuring developer storage…";
+"developer.running" = "Moving selected items to Trash…";
+"developer.packages" = "Package Caches";
+"developer.packages.scope" = "Known default locations only. Custom paths and project-local caches are not searched.";
+"developer.xcode.scope" = "Derived Data, Archives and iOS Device Support — existing Cleanup rules and age limits.";
+"developer.xcode.not_found" = "Xcode.app was not found in known application locations. Existing build data can still be inspected.";
+"developer.recoverable" = "Potentially recoverable — actionable files";
+"developer.selected" = "%d selected · %@ logical";
+"developer.logical_note" = "Logical file sizes, not guaranteed disk space freed. Review items are included but never preselected. Simulator and Docker usage is excluded. Trash must be emptied separately; shared storage may remain allocated.";
+"developer.measured_at" = "Measured %@ · Refresh after external changes.";
+"developer.limited" = "Review limited to %d files; %d additional files are not included in the total or selection.";
+"developer.failed_rules" = "Some categories could not be measured completely. Their partial results are excluded from actions and totals.";
+"developer.result" = "%d items moved to Trash · %@ logical · %d skipped";
+"developer.result.note" = "The safety journal records each operation. Refresh to measure current storage. Logical bytes moved are not a measurement of newly available disk space.";
+"developer.confirm" = "Move %d selected items (%@ logical) to Trash through Cleanup? Review Archives, Device Support and Yarn Berry carefully. Simulator and Docker are inspection only.";
+"developer.simulators" = "Simulators";
+"developer.inspection_only" = "Inspection only";
+"developer.simulator.reason" = "Known regular files under ~/Library/Developer/CoreSimulator. Runtime, device, cache and active/inactive classifications are not available. Symlink targets are not followed.";
+"developer.simulator.unavailable" = "Detailed simulator cleanup is not available yet. Shared system runtimes outside this directory are not measured.";
+"developer.docker.detected" = "Docker Desktop found in a known application location.";
+"developer.docker.not_detected" = "Docker Desktop was not detected in known application locations; storage may still exist.";
+"developer.docker.reason" = "Docker disks contain images, containers and volumes requiring Docker-aware cleanup. Logical size can greatly exceed allocated size for sparse disks. Neither metric is recoverable space.";
+"developer.docker.unavailable" = "Docker cleanup is not available in CoreTend yet. Only known disk paths are inspected; moved disks and unknown layouts are not searched. Check Docker Desktop settings for its configured location.";
+"developer.used.logical" = "Used — logical: %@";
+"developer.used.physical" = "Used — allocated: %@";
+"developer.metric_unknown" = "Unavailable";
+"developer.state.available" = "Available at this location";
+"developer.state.absent" = "Not found at known locations";
+"developer.state.unavailable" = "Unavailable — access denied or measurement failed";
+"developer.state.unsupported" = "Unknown or unsupported layout";
+"developer.state.cancelled" = "Inspection cancelled";
+"developer.excluded" = "Excluded by your scan settings";
+"developer.no_candidates" = "No eligible files found";
+"developer.regenerable" = "Regenerable";
+"developer.review_required" = "Review required";
+"developer.select_group" = "Select all %@ files";
+"developer.selection_count" = "%d of %d selected";
+"developer.folder_breakdown" = "By folder — literal names";
+"developer.review_files" = "Review %d files";
+"developer.show_more" = "Show 100 more files";
+"developer.timeline_coverage" = "Cleanup now includes dedicated package caches and excludes SwiftPM repositories. Comparisons with scans made before Developer Center can reflect this coverage change.";
+
 /* Developer package caches — explicit Advisor + Timeline mappings */
 "timeline.category.cleanup.dev.cache.swiftpm" = "SwiftPM cache";
 "timeline.category.cleanup.dev.cache.homebrew" = "Homebrew cache";

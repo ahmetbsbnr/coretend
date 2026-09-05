@@ -304,6 +304,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
     case timeline = "Timeline"
     case recoveryPlan = "Recovery Plan"
     case apfs = "APFS"
+    case developer = "Developer"
     case myClutter = "My Clutter"
     case spaceLens = "Space Lens"
     case cloudCleanup = "Cloud Cleanup"
@@ -323,6 +324,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .timeline: .timeline
         case .recoveryPlan: .recoveryPlan
         case .apfs: .apfs
+        case .developer: .developer
         case .myClutter: .myClutter
         case .spaceLens: .spaceLens
         case .cloudCleanup: .cloudCleanup
@@ -346,6 +348,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .timeline: L("module.timeline")
         case .recoveryPlan: L("module.recovery_plan")
         case .apfs: L("module.apfs")
+        case .developer: L("module.developer")
         case .myClutter: L("clutter.title")
         case .spaceLens: L("spacelens.title")
         case .cloudCleanup: L("cloud.nav_title")
@@ -364,7 +367,7 @@ struct SidebarGroup: Identifiable {
     static let all: [SidebarGroup] = [
         SidebarGroup(id: "main", title: nil, modules: [.smartCare]),
         SidebarGroup(id: "storage", title: L("sidebar.storage"),
-                     modules: [.cleanup, .spaceLens, .duplicates, .applications, .timeline, .recoveryPlan, .apfs]),
+                     modules: [.cleanup, .spaceLens, .duplicates, .applications, .developer, .timeline, .recoveryPlan, .apfs]),
         // Secondary, lower-priority tools: each does something the seven
         // primary modules above don't (broken-LaunchAgent detection, a
         // large/old-files finder, local-vs-cloud storage analysis) so they
@@ -383,6 +386,7 @@ struct SidebarGroup: Identifiable {
 }
 
 struct MainWindow: View {
+    @State private var developerModel = DeveloperCenterModel()
     @State private var selection: ModuleID? = .smartCare
     @AppStorage("onboardingDone") private var onboardingDone = false
     @State private var showOnboarding = false
@@ -429,6 +433,8 @@ struct MainWindow: View {
                     RecoveryPlanView()
                 case .apfs:
                     APFSIntelligenceView()
+                case .developer:
+                    DeveloperCenterView(model: developerModel)
                 case .performance:
                     PerformanceView()
                 case .spaceLens:
