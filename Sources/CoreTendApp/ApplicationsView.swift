@@ -6,6 +6,7 @@ import AppDiscovery
 import SafetyCore
 import DesignSystem
 import Persistence
+import IntegrityCore
 
 /// Resolves every application-inventory root. Normal launches inspect the
 /// standard macOS locations. Test launches are confined to fixtures beneath a
@@ -187,8 +188,18 @@ final class ApplicationsViewModel {
     var selectedAssociatedPaths: Set<String> = []
     var uninstallResult: String?
     var grouping: AppGrouping = .none
+    /// The selected app's read-only inspection (identity beyond InstalledApp,
+    /// storage breakdown, confidence, provenance, signing, architecture,
+    /// launch items, running state). `nil` while loading or when nothing is
+    /// selected — never populated with a stale app's data (see `select`).
+    private(set) var inspection: ApplicationInspection?
 
     private let discovery: AppDiscovery
+    /// Scanned once per list load, not once per app: LoginItemScanner reads a
+    /// handful of directories, not one per app, so every selection reuses
+    /// this same snapshot rather than rescanning.
+    private var loginItems: [LoginItem] = []
+    private var inspectionTask: Task<Void, Never>?
 
     init(discovery: AppDiscovery = ApplicationInventoryLocations.resolve(
         environment: ProcessInfo.processInfo.environment
@@ -215,19 +226,39 @@ final class ApplicationsViewModel {
         let found = await Task.detached(priority: .utility) { discovery.discoverApps() }.value
         apps = found
         phase = found.isEmpty ? .empty : .ready
+        let locations = IntegrityScanLocations.resolve(environment: ProcessInfo.processInfo.environment)
+        loginItems = await Task.detached(priority: .utility) { LoginItemScanner.scan(locations: locations.loginItems) }.value
     }
 
     func select(_ app: InstalledApp) async {
+        inspectionTask?.cancel()
         selectedApp = app
         uninstallResult = nil
         associated = []
         selectedAssociatedPaths = []
+        inspection = nil
         let discovery = discovery
         let items = await Task.detached(priority: .utility) { discovery.associatedItems(for: app) }.value
+        // A later selection may have already landed while this awaited —
+        // never let a stale app's data overwrite what the user is now looking at.
+        guard selectedApp?.id == app.id else { return }
         associated = items
         // Preselect only reversible support data; preferences, containers, and
         // launch items stay visible but require an explicit user choice.
         selectedAssociatedPaths = Set(items.filter { Self.isPreselectedAssociatedKind($0.kind) }.map(\.url.path))
+
+        let allApps = apps
+        let currentLoginItems = loginItems
+        inspectionTask = Task {
+            let result = await ApplicationInspectionService.inspect(
+                app: app, allInstalledApps: allApps, discovery: discovery,
+                caskIndex: sharedCaskIndex, loginItems: currentLoginItems)
+            // Guards a second time for the same reason as above: this task
+            // may finish after cancellation was requested, or after a newer
+            // selection already landed while it awaited.
+            guard !Task.isCancelled, self.selectedApp?.id == app.id else { return }
+            self.inspection = result
+        }
     }
 
     /// Moves the app bundle and approved associated items to the Trash.
@@ -415,32 +446,27 @@ struct InstalledAppsView: View {
                             .font(.caption).foregroundStyle(.secondary)
                         }
                     }
+                    if let inspection = model.inspection {
+                        headerFactsCard(inspection)
+                        storageCard(inspection)
+                        securityCard(inspection)
+                        startupCard(inspection)
+                    }
                     MCCard {
                         VStack(alignment: .leading, spacing: MCSpacing.xs) {
                             Text(L("apps.associated_data")).font(MCFont.cardTitle)
-                            if model.associated.isEmpty {
+                            if model.associated.isEmpty && (model.inspection?.associatedItems.isEmpty ?? true) {
                                 Text(L("apps.associated_data.empty"))
                                     .font(.caption).foregroundStyle(.secondary)
                             }
                             ForEach(model.associated) { item in
-                                HStack {
-                                    Toggle("", isOn: Binding(
-                                        get: { model.selectedAssociatedPaths.contains(item.url.path) },
-                                        set: { on in
-                                            if on { model.selectedAssociatedPaths.insert(item.url.path) }
-                                            else { model.selectedAssociatedPaths.remove(item.url.path) }
-                                        }
-                                    ))
-                                    .labelsHidden()
-                                    VStack(alignment: .leading) {
-                                        Text(item.kind.rawValue)
-                                        Text(item.url.path).font(.caption).foregroundStyle(.secondary)
-                                            .lineLimit(1).truncationMode(.middle)
-                                    }
-                                    Spacer()
-                                    Text(mcFormatBytes(item.sizeBytes))
-                                        .font(.caption).monospacedDigit().foregroundStyle(.secondary)
-                                }
+                                associatedRow(item, association: model.inspection?.associatedItems.first { $0.item.id == item.id })
+                            }
+                            // Group Container candidates are informational only in
+                            // this pass — never selectable for uninstall (see
+                            // Documentation/APPLICATIONS_CENTER.md "Group Containers").
+                            ForEach((model.inspection?.associatedItems ?? []).filter { $0.method == .vendorPrefixHeuristic }) { association in
+                                associatedRow(association.item, association: association, selectable: false)
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -464,6 +490,192 @@ struct InstalledAppsView: View {
             }
         } else {
             MCEmptyState(icon: "square.grid.2x2", title: L("apps.select_prompt"), message: "", iconColor: MCTheme.accent)
+        }
+    }
+
+    // MARK: - Applications Center 2.0 detail sections (all read-only)
+
+    private func factRow(_ label: String, _ value: String) -> some View {
+        HStack {
+            Text(label).foregroundStyle(.secondary)
+            Spacer(minLength: MCSpacing.sm)
+            Text(value)
+        }
+        .font(.caption)
+        .accessibilityElement(children: .combine)
+    }
+
+    private func headerFactsCard(_ inspection: ApplicationInspection) -> some View {
+        MCCard {
+            VStack(alignment: .leading, spacing: MCSpacing.xxs) {
+                factRow(L("apps.detail.architecture"), architectureLabel(inspection.architecture))
+                factRow(L("apps.detail.installed_via"), installationSourceLabel(inspection.installationSource))
+                factRow(L("apps.detail.updates_via"), updateMechanismLabel(inspection.updateMechanism))
+                factRow(L("apps.detail.running"), runtimeStateLabel(inspection.runtimeState))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    private func storageCard(_ inspection: ApplicationInspection) -> some View {
+        MCCard {
+            VStack(alignment: .leading, spacing: MCSpacing.xs) {
+                Text(L("apps.detail.storage")).font(MCFont.cardTitle)
+                factRow(L("apps.detail.storage.application"), mcFormatBytes(inspection.storage.applicationBytes))
+                ForEach(inspection.storage.byKind, id: \.kind) { entry in
+                    factRow(entry.kind.rawValue, mcFormatBytes(entry.bytes))
+                }
+                Divider()
+                // Deliberately not "Total": this only sums the fixed set of
+                // locations CoreTend actually looks in, never claimed exhaustive.
+                factRow(L("apps.detail.storage.known_associated"), mcFormatBytes(inspection.storage.knownAssociatedStorageBytes))
+                    .fontWeight(.medium)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    private func securityCard(_ inspection: ApplicationInspection) -> some View {
+        MCCard {
+            VStack(alignment: .leading, spacing: MCSpacing.xxs) {
+                Text(L("apps.detail.security")).font(MCFont.cardTitle)
+                if let signature = inspection.signature {
+                    factRow(L("apps.detail.signed"), signingTierLabel(signature.tier))
+                    if let teamID = signature.teamIdentifier {
+                        factRow(L("apps.detail.team_id"), teamID)
+                    }
+                } else {
+                    factRow(L("apps.detail.signed"), L("apps.unknown"))
+                }
+                factRow(L("apps.detail.provenance"),
+                       inspection.app.isQuarantined ? L("apps.detail.provenance.quarantined") : L("apps.detail.provenance.not_quarantined"))
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    private func startupCard(_ inspection: ApplicationInspection) -> some View {
+        MCCard {
+            DisclosureGroup {
+                if inspection.launchItems.isEmpty {
+                    Text(L("apps.detail.startup.none")).font(.caption).foregroundStyle(.secondary)
+                } else {
+                    ForEach(inspection.launchItems) { association in
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text(association.item.label)
+                                Text(association.item.plistPath).font(.caption2).foregroundStyle(.secondary)
+                                    .lineLimit(1).truncationMode(.middle)
+                            }
+                            Spacer()
+                            confidenceBadge(association.confidence)
+                        }
+                        .font(.caption)
+                    }
+                }
+            } label: {
+                Text(L("apps.detail.startup.count", inspection.launchItems.count)).font(MCFont.cardTitle)
+            }
+        }
+        .accessibilityIdentifier("applications.startup")
+    }
+
+    private func confidenceBadge(_ confidence: AdvisorConfidence) -> some View {
+        Text(confidenceLabel(confidence))
+            .font(.caption2)
+            .padding(.horizontal, MCSpacing.xxs)
+            .background(.secondary.opacity(0.15), in: Capsule())
+    }
+
+    private func sharedBadge() -> some View {
+        Text(L("apps.detail.associated.shared"))
+            .font(.caption2)
+            .padding(.horizontal, MCSpacing.xxs)
+            .background(MCColor.protection.opacity(0.2), in: Capsule())
+    }
+
+    private func associatedRow(_ item: AssociatedItem, association: AssociatedItemAssociation?, selectable: Bool = true) -> some View {
+        HStack {
+            if selectable {
+                Toggle("", isOn: Binding(
+                    get: { model.selectedAssociatedPaths.contains(item.url.path) },
+                    set: { on in
+                        if on { model.selectedAssociatedPaths.insert(item.url.path) }
+                        else { model.selectedAssociatedPaths.remove(item.url.path) }
+                    }
+                ))
+                .labelsHidden()
+            }
+            VStack(alignment: .leading) {
+                HStack(spacing: MCSpacing.xxs) {
+                    Text(item.kind.rawValue)
+                    if let association {
+                        confidenceBadge(association.confidence)
+                        if association.isShared { sharedBadge() }
+                    }
+                }
+                Text(item.url.path).font(.caption).foregroundStyle(.secondary)
+                    .lineLimit(1).truncationMode(.middle)
+            }
+            Spacer()
+            Text(mcFormatBytes(item.sizeBytes))
+                .font(.caption).monospacedDigit().foregroundStyle(.secondary)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    private func architectureLabel(_ detail: ApplicationArchitectureDetail) -> String {
+        switch detail.architectures {
+        case ["universal"]: L("apps.detail.architecture.universal")
+        case ["arm64"]: L("apps.detail.architecture.arm64")
+        case ["x86_64"]: L("apps.detail.architecture.x86_64")
+        default: L("apps.detail.architecture.unknown")
+        }
+    }
+
+    private func installationSourceLabel(_ source: InstallationSource) -> String {
+        switch source {
+        case .appStore: L("apps.detail.installed_via.app_store")
+        case .homebrewCask: L("apps.detail.installed_via.homebrew")
+        case .downloaded: L("apps.detail.installed_via.downloaded")
+        case .unknown: L("apps.detail.installed_via.unknown")
+        }
+    }
+
+    private func updateMechanismLabel(_ mechanism: UpdateMechanism) -> String {
+        switch mechanism {
+        case .appStore: L("apps.detail.updates_via.app_store")
+        case .homebrewCask: L("apps.detail.updates_via.homebrew")
+        case .sparkle: L("apps.detail.updates_via.sparkle")
+        case .manual, .unknown: L("apps.detail.updates_via.none")
+        }
+    }
+
+    private func runtimeStateLabel(_ state: ApplicationRuntimeState) -> String {
+        switch state {
+        case .running: L("apps.detail.running.yes")
+        case .notRunning: L("apps.detail.running.no")
+        case .unknown: L("apps.unknown")
+        }
+    }
+
+    private func signingTierLabel(_ tier: CodeSignTier) -> String {
+        switch tier {
+        case .appleSigned: L("apps.detail.signing_tier.apple")
+        case .teamSigned: L("apps.detail.signing_tier.team")
+        case .adHocOrUnsigned: L("apps.detail.signing_tier.adhoc")
+        }
+    }
+
+    private func confidenceLabel(_ confidence: AdvisorConfidence) -> String {
+        switch confidence {
+        case .exact: L("apps.detail.associated.confidence.exact")
+        case .high: L("apps.detail.associated.confidence.high")
+        case .probable: L("apps.detail.associated.confidence.probable")
+        case .uncertain: L("apps.detail.associated.confidence.uncertain")
         }
     }
 }
