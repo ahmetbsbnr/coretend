@@ -283,7 +283,7 @@ CoreTend-Trashed items back where they came from.
 See `Documentation/RESTORE.md` for the user-facing model and the
 external-volume `HUMAN VERIFICATION REQUIRED` note.
 
-## macOS integrations (App Intents / notifications / scheduled scans)
+## macOS integrations (App Intents / notifications / scheduled scans / WidgetKit)
 
 `Sources/CoreTendApp/CoreTendIntents.swift`, `NotificationService.swift`,
 `ScheduledScanService.swift`, `MacIntegrations.swift`, `AppRouter.swift`.
@@ -324,6 +324,24 @@ structure**, not by a runtime flag:
   system-condition-aware). Reuses the single `AppEnvironment.shared.store`;
   an `inProgress` guard prevents overlapping runs; no Full Disk Access is
   assumed or prompted.
+- **The WidgetKit widget cannot scan or delete — by dependency structure.**
+  The `CoreTendWidget` extension target
+  (`WidgetExtension/CoreTendWidget.swift`) links **only** the `WidgetShared`
+  package product. It does not import `ScanCore` / `SafetyCore` /
+  `FileRules` / `Persistence` / `AppDiscovery` / `IntegrityCore` /
+  `CoreTendApp`, and references no `ScanEngine` / `SafetyCenter` /
+  `RestoreService` / `RecoveryPlanService` / `DeveloperCenterService` /
+  `trashItem` symbol
+  (`XcodeHostHygieneTests.theWidgetSourceLinksNothingThatCouldScanOrDelete`
+  greps comment-stripped source). The provider reads exactly one JSON file
+  from the App Group container and never opens the SQLite/WAL store
+  cross-process. The host publishes a tiny **aggregates-only**
+  `WidgetSnapshot` (free/total bytes, optional reclaimable / delta /
+  last-scan-date / activity-kind — never a path, filename, GPS value,
+  restore-manifest entry, browser-profile name, image metadata value, or
+  security finding), written atomically, only on meaningful events, never on
+  a timer. Corrupt / partial / future-version / stale / missing snapshots
+  degrade to an honest "unavailable" placeholder, never a fabricated `0`.
 
 See `Documentation/MACOS_INTEGRATIONS.md`.
 

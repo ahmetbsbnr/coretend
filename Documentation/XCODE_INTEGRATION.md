@@ -1,29 +1,90 @@
 # CoreTend Xcode Integration
 
-SwiftPM remains the source of truth. Xcode opens the package from `Package.swift`; the shared files in `.swiftpm/xcode` only define useful schemes and test plans for local development.
+SwiftPM (`Package.swift`) is the single source of truth for every domain
+module, service, and test. `swift build` / `Scripts/build.sh` /
+`Scripts/test.sh` never need Xcode.
 
-## Schemes
+Two distinct Xcode-facing surfaces exist and must not be confused:
 
-- `CoreTend`: Debug app build, launch, profile, archive, and the primary isolated test plan.
+| Surface | Path | Purpose | Tracked? |
+|---|---|---|---|
+| **Package schemes** | `.swiftpm/xcode/xcshareddata/xcschemes/` | Open `Package.swift` in Xcode for local dev — schemes/test plans only | yes |
+| **Shipping host project** | `CoreTend.xcodeproj` (generated from `project.yml`) | Build the distributable `.app`: nested WidgetKit extension, App Intents metadata bundle, entitlements | yes (generated artifact + drift check) |
+
+## Shipping host project — `CoreTend.xcodeproj`
+
+Apple bundle structures that SwiftPM cannot express — an embedded
+`.appex`, `Contents/Resources/Metadata.appintents`, per-target
+entitlements, a Developer-ID-compatible signing config — require a real
+Xcode project. `CoreTend.xcodeproj` provides exactly that thin container
+and nothing else.
+
+- **Generated, not hand-edited.** `project.yml` is the source;
+  `xcodegen generate` produces `CoreTend.xcodeproj`.
+  `Scripts/repository-doctor.sh` regenerates it and fails on any drift, the
+  same tracked-generated-artifact pattern used for `settings-matrix.json`
+  → `SETTINGS_MATRIX.md`. Install with `brew install xcodegen`.
+- **One product, no fork.** The `application` target `CoreTend` compiles
+  `Sources/CoreTend/` (the existing `main.swift` entry point →
+  `CoreTendApp.main()`) and links the repo package's `CoreTendApp`
+  product. There is no second `@main`, no copied source.
+- **Targets:**
+  - `CoreTend` — `application`, bundle id `com.ahmetbsbnr.coretend`,
+    deployment target macOS 14.0, hardened runtime on, embeds the widget.
+  - `CoreTendWidget` — `app-extension`, bundle id
+    `com.ahmetbsbnr.coretend.widget`, links **only** the `WidgetShared`
+    package product (no scan/cleanup/restore module is reachable).
+- **Shared scheme:** `CoreTend-App` (`xcshareddata/xcschemes/`), tracked so
+  CI can build it. User schemes, `xcuserdata`, `*.xcuserstate`,
+  `DerivedData`, and workspace check files are git-ignored.
+- No absolute `/Users/...` path appears in any committed Xcode file
+  (`repository-doctor.sh` greps for it).
+
+### Building it
+
+```sh
+Scripts/build-xcode.sh
+```
+
+Non-interactive, CI-safe. Runs `xcodegen generate`, then `xcodebuild
+-project CoreTend.xcodeproj -scheme CoreTend-App -configuration Release`
+into a temp derived-data dir with `CODE_SIGNING_ALLOWED=NO` (an ordinary
+build needs no Developer ID), then verifies the built bundle
+structurally: widget embedded at `Contents/PlugIns/CoreTendWidget.appex`
+with the correct extension-point id and bundle id, its FR localization
+present, `Contents/Resources/Metadata.appintents/extract.actionsdata`
+present with ≥ 7 App Intents and ≥ 6 App Shortcuts, and no absolute
+developer path in `Contents/Info.plist`. The verified `.app` is copied to
+`build/CoreTend.app` for the signing lane.
+
+### Signing / release
+
+`Scripts/sign-and-notarize.sh` consumes `build/CoreTend.app` from
+`build-xcode.sh` (not `package-local.sh`, which is a fast widget-less
+SwiftPM build) and signs the nested extension first, then the host — see
+`Documentation/SIGNING_NOTARIZATION.md`.
+
+## Package schemes — `.swiftpm/xcode`
+
+Unchanged. These only define useful schemes/test plans for opening
+`Package.swift` in Xcode during local development.
+
+- `CoreTend`: Debug app build, launch, profile, and the primary isolated
+  test plan.
 - `CoreTendTests`: deterministic unit and integration tests.
-- `CoreTendUITests`: UI contract source retained for a future native Xcode UI-test target. SwiftPM currently emits this test target as a unit-test bundle, so `XCUIApplication` is unsupported and these eight tests skip with that explicit reason rather than pretending to run.
-- `CoreTendAccessibility`: accessibility contract tests and manual Accessibility Inspector runs.
-- `CoreTendPerformance`: deterministic performance smoke tests, intended for Release profiling.
-- `CoreTendRelease`: Release launch, profile, analyze, and archive path for future Developer ID signing.
+- `CoreTendUITests`: UI contract source retained for a future native
+  Xcode UI-test target. SwiftPM emits this as a unit-test bundle, so
+  `XCUIApplication` is unsupported and these tests skip with that explicit
+  reason.
+- `CoreTendAccessibility`: accessibility contract tests and manual
+  Accessibility Inspector runs.
+- `CoreTendPerformance`: deterministic performance smoke tests.
+- `CoreTendRelease`: Release launch/profile/analyze path.
 
-## Isolation
+### Isolation
 
-Every Xcode test plan sets:
-
-- `CORETEND_TEST_MODE=1`
-- `CORETEND_TEST_STORE_DIR=/tmp/coretend-xcode-*/store`
-
-`Persistence.TestStoreOverride` only accepts an override when both variables are present and the path is under a temporary root. These schemes must not read or migrate the user's real CoreTend data.
-
-## Professional Runs
-
-- Unit and integration: run `CoreTendTests`.
-- Artifact UI: build/package the app, launch it with `CORETEND_TEST_MODE=1` plus a validated temporary store, then use `Scripts/capture.sh` for the live window/navigation matrix. The current SwiftPM `CoreTendUITests` target is not counted as executed XCUI coverage; it needs a native Xcode UI-test product before `XCUIApplication` can run.
-- Accessibility: run `CoreTendAccessibility`, then manually verify keyboard-only navigation, VoiceOver, Increase Contrast, Reduce Transparency, Reduce Motion, and enlarged text.
-- Instruments: profile `CoreTendPerformance` or `CoreTendRelease` with Time Profiler, Allocations, Leaks, File Activity, Energy, and SwiftUI instruments when available.
-- Archive/signing: use `CoreTendRelease`; keep `com.ahmetbsbnr.coretend` and the existing entitlements. Developer ID signing is only valid once a `Developer ID Application` identity is installed.
+Every package test plan sets `CORETEND_TEST_MODE=1` and
+`CORETEND_TEST_STORE_DIR=/tmp/coretend-xcode-*/store`.
+`Persistence.TestStoreOverride` only accepts an override when both
+variables are present and the path is under a temporary root — these
+schemes must not read or migrate the user's real CoreTend data.

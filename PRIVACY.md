@@ -13,7 +13,7 @@ that means.
   space analysis, similar images, applications/leftovers, performance,
   privacy cleaner cache scan, Privacy Lab image-metadata inspection,
   my activity, App Intents / Shortcuts, local notifications, scheduled
-  scans).
+  scans, the desktop widget).
 - App Intents / Shortcuts are entirely local and read-only. No Shortcut
   can clean up, delete, empty the Trash, restore, or disable a login item.
   The image-metadata Shortcut does not store the file path.
@@ -24,6 +24,15 @@ that means.
   onboarding action, and every category can be turned off in Settings.
 - Scheduled scans are opt-in and read-only: they update Storage Timeline
   and may send a notification, and never clean up, delete, or move anything.
+- The **desktop widget** (WidgetKit) is read-only and shows **aggregates
+  only** — free disk space of total, a worded storage trend, and optionally
+  a recoverable total / last-scan date / last-activity kind. It never shows
+  a file path, filename, GPS value, restore-item name, image metadata value,
+  browser profile name, or security finding. The app hands the widget these
+  numbers through a small versioned JSON snapshot in a shared **App Group**
+  container (`group.com.ahmetbsbnr.coretend`) on this Mac; the widget never
+  opens the app's database and nothing leaves the machine. If no snapshot
+  exists yet the widget says so rather than showing a fake `0`.
 
 ## The one product network request
 

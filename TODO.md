@@ -38,8 +38,9 @@ Space Lens, Similar Images, Cloud Cleanup).
 
 Follow-up, not blocking the vertical above: wiring more engines as their
 scan semantics allow it; richer physical/APFS-aware sizing (planned as its
-own "APFS Intelligence" roadmap item); a WidgetKit surface reusing
-`TimelineService`.
+own "APFS Intelligence" roadmap item). A read-only WidgetKit surface over
+this data has since shipped — see "Done — WidgetKit status widget + Xcode
+shipping host" below.
 
 ## Done — CoreTend Advisor minimal vertical
 
@@ -231,10 +232,59 @@ HUMAN VERIFICATION REQUIRED: Shortcuts-app discovery + FR phrases (App
 Intents metadata bundle in the packaged `.app`); real notification permission
 + system delivery; live cold-launch deep links; scheduled execution over
 real wall-clock; VoiceOver/keyboard on the new Settings controls. WidgetKit
-and Finder Extension are NOT built (analysis only — see
-`Documentation/FEATURE_MATRIX.md` / final report). See
-`Documentation/MACOS_INTEGRATIONS.md`, `Documentation/SAFETY_MODEL.md` →
-"macOS integrations".
+was NOT built in that vertical — it shipped next (see "Done — WidgetKit
+status widget + Xcode shipping host" below). Finder Extension remains
+analysis only. See `Documentation/MACOS_INTEGRATIONS.md`,
+`Documentation/SAFETY_MODEL.md` → "macOS integrations".
+
+## Done — WidgetKit status widget + Xcode shipping host
+
+A read-only WidgetKit extension and the Xcode project that can ship it.
+
+**Xcode shipping host.** `CoreTend.xcodeproj` is generated from `project.yml`
+by xcodegen — a tracked artifact, drift-checked by
+`Scripts/repository-doctor.sh` (regenerate + `git diff` + no-absolute-path
+grep). It is a thin `application` + `app-extension` container: the app
+target compiles `Sources/CoreTend/` and links the `CoreTendApp` package
+product (one product, no second `@main`, no copied source); the widget
+target links only `WidgetShared`. SwiftPM stays authoritative — `swift
+build` / `Scripts/test.sh` / `Scripts/repository-doctor.sh` need no Xcode.
+`Scripts/build-xcode.sh` builds Release unsigned (`CODE_SIGNING_ALLOWED=NO`,
+temp derived data) and verifies the bundle: widget embedded at
+`Contents/PlugIns/CoreTendWidget.appex`, App Intents metadata bundle present
+with ≥ 7 intents + ≥ 6 shortcuts, no absolute path in `Info.plist`. The App
+Intents metadata packaging path is now **proven** (was
+IMPLEMENTED_UNVERIFIED); intent metadata strings are English literals in the
+shipping build (the extractor rejects a framework-bundle
+`LocalizedStringResource`), user-visible results stay EN+FR.
+
+**Widget.** One widget, `CoreTendStatusWidget`, small + medium, read-only:
+free-of-total disk, worded storage trend, optional reclaimable / last-scan /
+last-activity. Cannot scan or delete by dependency structure (links only
+`WidgetShared`; `XcodeHostHygieneTests` greps the source). Host computes a
+tiny versioned `WidgetSnapshot`, writes it atomically to
+`widget-snapshot.v1.json` in App Group `group.com.ahmetbsbnr.coretend`, then
+`WidgetCenter.reloadTimelines` — only on meaningful events, never polled, no
+cross-process DB access. Aggregates only (no path / filename / GPS /
+restore-item / metadata value / browser profile / security finding).
+Typed empty/error states (missing, corrupt, partial, future schema version,
+stale > 7 d, App Group unavailable) → honest placeholder, never a fake `0`.
+Widget text EN + FR, exact key parity, shared `WidgetShared` bundle.
+
+**One new entitlement anywhere**: `com.apple.security.application-groups` on
+both host and widget. `Scripts/sign-and-notarize.sh` now takes
+`build/CoreTend.app` from `build-xcode.sh` and signs `.appex` → host,
+never re-signing the appex.
+
+**32 new tests** (`WidgetSharedTests` 21, `WidgetPublisherTests` 7,
+`XcodeHostHygieneTests` 8). **HUMAN VERIFICATION REQUIRED**: adding the
+widget from the macOS gallery + rendering + VoiceOver on it; the Shortcuts
+app actually listing/running the actions; a real notarization run with the
+nested `.appex` + App Group (implemented, not exercised — the App Group id
+must be registered on the Apple Developer account). See
+`Documentation/MACOS_INTEGRATIONS.md` §4–5,
+`Documentation/XCODE_INTEGRATION.md`,
+`Documentation/SIGNING_NOTARIZATION.md`.
 
 ## Deliberately deferred product scope
 
@@ -264,7 +314,10 @@ review before any implementation:
   (read-only, see the Done section above). Opt-in **removal** is still
   deferred and must be built as a sanitized-copy export, not an in-place
   strip, with a verify/compare step and the original preserved.
-- Notification Center widget showing free space and linking to the main app.
+- ~~Notification Center widget showing free space and linking to the main
+  app.~~ Shipped as the read-only WidgetKit status widget — see the Done
+  section above. A deeper/interactive widget is not planned (widgets stay
+  read-only by design).
 - Optional CLI destructive workflows remain deferred; `coretend-cli` now ships
   read-only rule/path inspection with no filesystem mutation.
 - Shortcuts actions for inspect/report workflows, with confirmation before any

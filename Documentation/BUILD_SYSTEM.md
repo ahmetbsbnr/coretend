@@ -1,7 +1,16 @@
 # Build System
 
-Plain Swift Package Manager — `swift-tools-version: 6.0`, no Xcode project
-checked in, no CocoaPods/Carthage.
+Swift Package Manager — `swift-tools-version: 6.0`, no CocoaPods/Carthage.
+SwiftPM is authoritative for every domain module, service, and test;
+`Scripts/build.sh` / `Scripts/test.sh` never need Xcode.
+
+A second, separate lane produces the *shipping* app bundle only:
+`CoreTend.xcodeproj` (a tracked artifact generated from `project.yml` by
+xcodegen) wraps the SwiftPM code so it can embed a WidgetKit extension,
+emit the App Intents metadata bundle, and carry per-target entitlements —
+Apple bundle structures SwiftPM cannot express. It is built by
+`Scripts/build-xcode.sh` and adds no domain logic of its own. See
+[XCODE_INTEGRATION.md](XCODE_INTEGRATION.md).
 
 ## Package layout (`Package.swift`)
 
@@ -33,9 +42,14 @@ issue tracked in `Documentation/DECISIONS.md` (decision D2) — using plain
 - `Scripts/build.sh release` — release build; the target must build with
   zero warnings before any commit lands (see `DEVELOPMENT.md`).
 - `Scripts/test.sh` — full test suite.
-- `Scripts/package-local.sh` — produces an arm64 `.app` and DMG, ad-hoc
-  signed when no Developer ID is configured. The release remains explicitly
-  unsigned/not notarized until Developer ID work is completed.
+- `Scripts/package-local.sh` — fast arm64 `.app` + DMG straight from
+  SwiftPM, ad-hoc signed, **no widget / no App Intents metadata bundle**.
+  Local dev only.
+- `Scripts/build-xcode.sh` — the shipping bundle: unsigned Release `.app`
+  via `xcodebuild` with the embedded `CoreTendWidget.appex` and
+  `Contents/Resources/Metadata.appintents`, followed by structural
+  verification. This `.app` (copied to `build/CoreTend.app`) is the input
+  to `Scripts/sign-and-notarize.sh`.
 
 ## CI
 

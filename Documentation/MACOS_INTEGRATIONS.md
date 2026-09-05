@@ -1,10 +1,12 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
-# macOS integrations — App Intents, notifications, scheduled scans
+# macOS integrations — App Intents, notifications, scheduled scans, WidgetKit
 
-The first production CoreTend integration layer. All three components reuse
-existing domain services — there is no second scan, cleanup, or restore
-engine — and every one of them is **read-only** with respect to the user's
-files.
+The production CoreTend integration layer. Every component reuses existing
+domain services — there is no second scan, cleanup, or restore engine — and
+every one of them is **read-only** with respect to the user's files.
+Sections 1–3 (App Intents, notifications, scheduled scans) landed first;
+sections 4–5 (the read-only WidgetKit status widget and the Xcode shipping
+host that can embed it) landed next.
 
 ## 1. App Intents / Shortcuts
 
@@ -48,15 +50,29 @@ message, never a crash.
 
 ### Localization
 
-All runtime strings (dialogs, results, error messages) go through `L()` and
-have full EN + FR parity, verified by `MacIntegrationsLocalizationTests`.
-Intent titles / descriptions / App-Shortcut phrases use
-`LocalizedStringResource` resolved against CoreTend's own `Localizable.strings`
-(EN + FR). **Whether the Shortcuts app surfaces the FR variants, and whether
-it auto-discovers the App Shortcuts at all, depends on the App Intents
-metadata bundle being present in the packaged `.app`** — `swift build` alone
-does not emit `Metadata.appintents`. That packaging step, and confirming
-discovery in Shortcuts.app, are **HUMAN VERIFICATION REQUIRED**.
+All runtime strings — every dialog, result, and error message the user
+actually reads back — go through `L()` and have full EN + FR parity,
+verified by `MacIntegrationsLocalizationTests`.
+
+The Shortcuts-app-facing **metadata** (intent titles, `IntentDescription`s,
+`AppShortcut` phrases, `AppEnum` case labels) is a different matter. Apple's
+App Intents metadata extractor (`appintentsmetadataprocessor`) requires
+every such string to be a plain string literal resolved against the **main
+bundle**; it rejects a `LocalizedStringResource` pointed at a framework's
+own `Localizable.strings`. So in the shipping build that metadata is
+**English literals** (`Sources/CoreTendApp/CoreTendIntents.swift`,
+`Sources/CoreTend/CoreTendAppShortcuts.swift`). The user-visible results
+stay EN + FR.
+
+The metadata **packaging path is now proven**:
+`Scripts/build-xcode.sh` builds through Xcode, the
+`ExtractAppIntentsMetadata` phase emits
+`Contents/Resources/Metadata.appintents/extract.actionsdata`, and the
+script parses it and asserts ≥ 7 App Intents and ≥ 6 auto-discovered App
+Shortcuts (`XcodeHostHygieneTests` re-checks the committed project wiring).
+What is **still HUMAN VERIFICATION REQUIRED**: that the Shortcuts app
+itself lists and runs these actions on a real machine (the extractor
+output is necessary, not sufficient, proof of end-user discovery).
 
 ## 2. Local notifications
 
@@ -184,6 +200,95 @@ scheduler firing while one is still going): the second call returns
 (`isCancelled` is checked between scan events); an app quit / cadence change
 cancels the task.
 
+## 4. WidgetKit status widget (read-only)
+
+A first WidgetKit extension (`WidgetExtension/CoreTendWidget.swift`, target
+`CoreTendWidget`) shipping one **read-only** widget, `CoreTendStatusWidget`
+(kind `CoreTendStatusWidget`), in `.systemSmall` and `.systemMedium`. It is
+a compact, glanceable summary — free disk space of total, storage trend
+since the last comparable scan (**stated in words**, never colour/arrow
+only), and, when available, potentially recoverable space, last scan date,
+and last activity kind.
+
+### It cannot scan or delete — by dependency structure
+
+The widget target links **only** the `WidgetShared` package product. It
+does not — cannot — import `ScanCore`, `SafetyCore`, `FileRules`,
+`Persistence`, `AppDiscovery`, `IntegrityCore`, or `CoreTendApp`, and
+references no `ScanEngine` / `SafetyCenter` / `RestoreService` /
+`RecoveryPlanService` / `DeveloperCenterService` / `trashItem` symbol.
+`XcodeHostHygieneTests.theWidgetSourceLinksNothingThatCouldScanOrDelete`
+greps the comment-stripped source and fails if that ever changes. The
+`TimelineProvider` reads exactly one small JSON file and builds entries;
+its refresh policy is `.after(+1 h)`, never continuous.
+
+### Host → widget data flow (App Group snapshot, no shared DB)
+
+The host and the extension share one App Group,
+`group.com.ahmetbsbnr.coretend` (a macOS group id, used verbatim — no team
+prefix). The host **never** opens its SQLite/WAL store cross-process.
+Instead:
+
+1. On a meaningful event only — launch once metrics are available, a
+   completed interactive scan, a completed scheduled scan, a restore that
+   changed the summary — `WidgetPublisher` (`Sources/CoreTendApp/`)
+   computes a tiny derived `WidgetSnapshot`.
+2. It writes that snapshot atomically (`Data.write(options: [.atomic])`)
+   to `widget-snapshot.v1.json` in the App Group container, then calls
+   `WidgetCenter.shared.reloadTimelines(ofKind:)` (wrapped behind the
+   `WidgetReloading` protocol for testing).
+3. The widget's provider reads it via `WidgetSnapshotStore`.
+
+There is **no polling** and no timer-driven publish.
+
+### Snapshot schema (`Sources/WidgetShared/WidgetSnapshot.swift`)
+
+Versioned from day one (`schemaVersion`, currently `1`). Fields:
+`generatedAt`, `freeBytes`, `totalBytes`, optional `reclaimableBytes`,
+optional `sinceLastScanDeltaBytes`, optional `lastScanDate`, optional
+`lastActivityKind` (`scan` / `cleanup` / `restore` / `error`). **No path,
+filename, GPS value, restore-manifest entry, browser-profile name, image
+metadata value, or security finding** is ever written — aggregates only,
+and the widget is visible on the desktop.
+`WidgetPublisherTests.theSnapshotFileNeverContainsAPathLikeString` proves
+even a path-bearing activity summary reduces to a bare kind string.
+
+### Empty and error states
+
+`WidgetSnapshotStore.read()` returns a typed `unavailable(reason:)` for:
+App Group container missing, file absent, unreadable/partial write, invalid
+JSON, or an unsupported **future** schema version. Every one maps to a
+useful placeholder ("Open CoreTend once to see your storage summary here.")
+— never a fake `0`. A snapshot older than 7 days is still shown but
+labelled "as of <date>". `WidgetDisplayModel` carries an
+`accessibilityLabel` that is a full sentence, not a glyph.
+
+### Localization
+
+Widget user-facing text is EN + FR with exact key parity
+(`Sources/WidgetShared/Resources/{Base,fr}.lproj/Localizable.strings`, UTF-16
+per the repo `.gitattributes`), resolved through `Bundle.module`. No catalog
+is duplicated into the extension — it consumes the shared `WidgetShared`
+resource bundle. Parity is enforced by
+`WidgetLocalizationParityTests` and the CI localization key-parity gate.
+
+**HUMAN VERIFICATION REQUIRED**: adding the widget from the macOS widget
+gallery, its small/medium rendering, and VoiceOver reading of the widget on
+a real machine.
+
+## 5. Xcode shipping host
+
+The widget, the App Intents metadata bundle, and per-target entitlements
+are Apple bundle structures SwiftPM cannot emit. `CoreTend.xcodeproj`
+(generated from `project.yml` by xcodegen, tracked, drift-checked by
+`repository-doctor.sh`) is a thin `application` + `app-extension` container
+around the **same** SwiftPM code — the app target compiles
+`Sources/CoreTend/` and links the `CoreTendApp` package product; there is
+no second `@main` and no copied source. `swift build` / `Scripts/test.sh`
+still run with no Xcode. Full detail:
+[XCODE_INTEGRATION.md](XCODE_INTEGRATION.md); signing of the nested
+extension: [SIGNING_NOTARIZATION.md](SIGNING_NOTARIZATION.md).
+
 ## Settings surface
 
 The **Settings → Scheduled Scans** section is an Off / Daily / Weekly picker
@@ -192,9 +297,10 @@ Notifications…" button (when permission is undetermined) or a System Settings
 link (when denied), plus one toggle per category. Shortcuts are not
 duplicated in Settings — macOS surfaces them itself.
 
-## What this vertical does not include
+## What this does not include
 
-WidgetKit and a Finder Extension are **not** built here — see
-`Documentation/FEATURE_MATRIX.md` and the "Extension targets readiness"
-analysis. Notifications are local only; nothing is transmitted; scheduled
-scans never clean up automatically.
+A **Finder Sync extension** is not built — see `Documentation/FEATURE_MATRIX.md`
+and the "Finder Extension readiness" analysis. Notifications are local only;
+nothing is transmitted; scheduled scans never clean up automatically; the
+widget is strictly read-only and cannot reach any scan, cleanup, or restore
+code path.
