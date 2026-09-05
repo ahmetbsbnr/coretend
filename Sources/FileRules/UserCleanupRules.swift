@@ -14,7 +14,8 @@ public enum UserCleanupRules {
         explanation: "Application cache files in ~/Library/Caches. Apps rebuild these automatically.",
         minimumAgeDays: 0,
         risk: .low,
-        preselect: true
+        preselect: true,
+        excludedRoots: PackageCacheRules.reservedCacheRoots
     ) { home in
         [home.appendingPathComponent("Library/Caches")]
     }
@@ -148,7 +149,7 @@ public enum UserCleanupRules {
         userCaches, userLogs, crashReports, xcodeDerivedData,
         incompleteDownloads, xcodeDeviceSupport, iosBackups,
         oldInstallers, oldArchives, xcodeArchives,
-    ]
+    ] + PackageCacheRules.all
 
     /// The only findings any automated flow may act on without a per-item
     /// review: reversible, low-risk, and already preselected. Medium/high-risk
@@ -170,6 +171,6 @@ public enum UserCleanupRules {
             home.appendingPathComponent("Library/Developer/Xcode/Archives"),
             home.appendingPathComponent("Library/Application Support/MobileSync/Backup"),
             home.appendingPathComponent("Downloads"),
-        ]
+        ] + PackageCacheRules.all.flatMap { $0.roots(home) }
     }
 }

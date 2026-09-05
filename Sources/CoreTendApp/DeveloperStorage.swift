@@ -10,7 +10,7 @@ import FileRules
 enum DeveloperStorage {
     static let xcodeRules = [UserCleanupRules.xcodeDerivedData, UserCleanupRules.xcodeArchives,
                              UserCleanupRules.xcodeDeviceSupport]
-    static var rules: [ScanRule] { xcodeRules }
+    static var rules: [ScanRule] { xcodeRules + PackageCacheRules.all }
 
     struct Group: Identifiable, Sendable {
         let ruleID: String

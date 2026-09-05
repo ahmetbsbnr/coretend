@@ -649,14 +649,14 @@
 "advisor.cleanup.user.crashreports.reason" = "Rapports de diagnostic de plantage de plus de 30 jours.";
 "advisor.cleanup.user.crashreports.consequence" = "Plus rien ne les lit une fois qu'ils ne sont plus utiles pour déboguer un plantage passé.";
 "advisor.cleanup.dev.xcode.deriveddata.summary" = "Données de compilation Xcode";
-"advisor.cleanup.dev.xcode.deriveddata.reason" = "Fichiers intermédiaires générés par Xcode lors de la compilation de vos projets.";
+"advisor.cleanup.dev.xcode.deriveddata.reason" = "Fichiers intermédiaires et index générés par Xcode pendant la compilation. Les builds et configurations multiples peuvent faire grossir ce dossier.";
 "advisor.cleanup.dev.xcode.deriveddata.consequence" = "Xcode les reconstruit à la prochaine compilation.";
 "advisor.cleanup.user.incompletedownloads.summary" = "Téléchargements incomplets";
 "advisor.cleanup.user.incompletedownloads.reason" = "Fichiers de téléchargement partiels de plus de 7 jours.";
 "advisor.cleanup.user.incompletedownloads.consequence" = "Ces téléchargements ne se sont jamais terminés ; rien n'utilise un fichier partiel.";
 "advisor.cleanup.dev.xcode.devicesupport.summary" = "Anciens symboles de débogage d'appareil";
 "advisor.cleanup.dev.xcode.devicesupport.reason" = "Symboles de débogage pour des appareils iOS que vous n'avez peut-être pas utilisés récemment.";
-"advisor.cleanup.dev.xcode.devicesupport.consequence" = "Xcode les régénère automatiquement dès qu'un appareil correspondant se reconnecte.";
+"advisor.cleanup.dev.xcode.devicesupport.consequence" = "Device Support contient des symboles servant au débogage des appareils iOS connectés. Xcode pourra devoir préparer à nouveau leur prise en charge à la reconnexion. Examinez avant suppression ; seuls les fichiers de plus de 90 jours sont proposés.";
 "advisor.cleanup.user.iosbackups.summary" = "Anciennes sauvegardes d'appareil";
 "advisor.cleanup.user.iosbackups.reason" = "Sauvegardes locales d'iPhone ou d'iPad de plus de 180 jours.";
 "advisor.cleanup.user.iosbackups.consequence" = "Supprimer une sauvegarde en supprime votre seule copie locale. Vérifiez que vous n'en avez plus besoin.";
@@ -668,7 +668,7 @@
 "advisor.cleanup.user.oldarchives.consequence" = "Vérifiez vous-même le contenu avant de supprimer — CoreTend ne peut pas vous dire ce qu'il contient.";
 "advisor.cleanup.dev.xcode.archives.summary" = "Anciennes archives Xcode";
 "advisor.cleanup.dev.xcode.archives.reason" = "Builds Xcode archivés de plus de 30 jours.";
-"advisor.cleanup.dev.xcode.archives.consequence" = "Une archive peut être la seule copie d'un build que vous avez publié. Vérifiez avant de supprimer.";
+"advisor.cleanup.dev.xcode.archives.consequence" = "Les archives ne sont pas des caches. Elles peuvent servir à la symbolication, à la redistribution et à l’historique des builds, et être votre seule copie d’un build publié. Examinez avant suppression.";
 "advisor.cleanup.unknown.summary" = "Catégorie non reconnue";
 "advisor.cleanup.unknown.reason" = "CoreTend ne dispose pas d'informations spécifiques sur cette catégorie.";
 "advisor.cleanup.unknown.consequence" = "Examinez cet élément vous-même avant de décider.";
@@ -823,3 +823,29 @@
 "apps.detail.associated.confidence.probable" = "Probable";
 "apps.detail.associated.confidence.uncertain" = "Incertaine";
 "apps.detail.associated.shared" = "Partagé";
+
+/* Caches développeur — correspondances Advisor et Timeline explicites */
+"timeline.category.cleanup.dev.cache.swiftpm" = "Cache SwiftPM";
+"timeline.category.cleanup.dev.cache.homebrew" = "Cache Homebrew";
+"timeline.category.cleanup.dev.cache.npm" = "Cache npm";
+"timeline.category.cleanup.dev.cache.pnpm" = "Store de contenu pnpm";
+"timeline.category.cleanup.dev.cache.yarn" = "Cache Yarn Classic";
+"timeline.category.cleanup.dev.cache.yarn.berry" = "Cache global Yarn Berry";
+"advisor.cleanup.dev.cache.swiftpm.summary" = "Caches régénérables de manifests et d’artefacts binaires";
+"advisor.cleanup.dev.cache.swiftpm.reason" = "Évaluations de manifests et artefacts binaires téléchargés dans le cache macOS par défaut de SwiftPM. Dépôts source, données de registries, configuration et identifiants exclus.";
+"advisor.cleanup.dev.cache.swiftpm.consequence" = "SwiftPM pourra réévaluer les manifests ou télécharger les artefacts binaires. Les builds pourront prendre plus de temps et nécessiter le réseau. Les fichiers Package.swift utilisateur sont exclus.";
+"advisor.cleanup.dev.cache.homebrew.summary" = "Téléchargements et métadonnées de cache Homebrew régénérables";
+"advisor.cleanup.dev.cache.homebrew.reason" = "Fichiers du cache macOS par défaut de Homebrew. Paquets installés, Cellar, Caskroom, taps, configuration et services exclus.";
+"advisor.cleanup.dev.cache.homebrew.consequence" = "Homebrew pourra télécharger à nouveau installateurs, bottles et métadonnées. Les paquets installés restent disponibles ; une prochaine installation pourra nécessiter le réseau.";
+"advisor.cleanup.dev.cache.npm.summary" = "Cache de contenu npm régénérable";
+"advisor.cleanup.dev.cache.npm.reason" = "Seul ~/.npm/_cacache est inclus. Les autres dossiers npm, .npmrc, la configuration et les identifiants sont exclus.";
+"advisor.cleanup.dev.cache.npm.consequence" = "npm pourra télécharger à nouveau les paquets. Les installations hors ligne pourront échouer avant reconstruction du cache ; les projets et node_modules sont exclus.";
+"advisor.cleanup.dev.cache.pnpm.summary" = "Contenu régénérable des stores pnpm pris en charge";
+"advisor.cleanup.dev.cache.pnpm.reason" = "Contenu et index des stores v3/v10 à des emplacements connus. Le store actif n’est pas identifié. Chemins personnalisés, versions inconnues, liens du store virtuel et projets exclus.";
+"advisor.cleanup.dev.cache.pnpm.consequence" = "pnpm pourra télécharger à nouveau les paquets ; les installations hors ligne pourront échouer. Les fichiers de projets liés physiquement sont conservés. Les octets logiques ne garantissent pas l’espace physique libéré.";
+"advisor.cleanup.dev.cache.yarn.summary" = "Cache de téléchargement Yarn Classic régénérable";
+"advisor.cleanup.dev.cache.yarn.reason" = "Cache macOS par défaut de Yarn Classic. Dossiers .yarn des projets, paquets installés, réglages et identifiants exclus.";
+"advisor.cleanup.dev.cache.yarn.consequence" = "Yarn Classic pourra télécharger à nouveau les paquets. Les installations hors ligne pourront échouer avant reconstruction du cache.";
+"advisor.cleanup.dev.cache.yarn.berry.summary" = "Cache Yarn Berry régénérable — revue nécessaire";
+"advisor.cleanup.dev.cache.yarn.berry.reason" = "Cache global par défaut de Yarn Berry. Les projets Plug’n’Play peuvent charger leurs paquets directement depuis ces ZIP ; ce cache peut être utilisé actuellement.";
+"advisor.cleanup.dev.cache.yarn.berry.consequence" = "Les projets Plug’n’Play pourront cesser de fonctionner jusqu’à reconstruction du cache par yarn install, avec un accès réseau éventuellement nécessaire. Examinez et arrêtez d’abord les projets concernés. Caches locaux aux projets, configuration et identifiants exclus.";

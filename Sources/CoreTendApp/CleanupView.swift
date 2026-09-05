@@ -148,18 +148,9 @@ final class CleanupViewModel {
         let selected = findings.filter { selectedIDs.contains($0.id) }
         Task {
             let home = FileManager.default.homeDirectoryForCurrentUser
-            let validator = PathValidator(allowedRoots: UserCleanupRules.allowedRoots(home: home))
-            let center = SafetyCenter(validator: validator, sink: AppEnvironment.shared.store)
-            var approved: [ApprovedFileOperation] = []
-            for finding in selected {
-                if let op = try? await center.approve(
-                    url: finding.url, logicalSize: finding.logicalSize,
-                    ruleID: finding.ruleID, risk: finding.risk
-                ) {
-                    approved.append(op)
-                }
-            }
-            let result = await center.execute(approved)
+            let excluded = (try? await AppEnvironment.shared.store?.exclusions()) ?? []
+            let result = await CleanupExecution.execute(selected, home: home, excludedPaths: excluded,
+                                                        sink: AppEnvironment.shared.store)
             let freed = result.executed.reduce(0) { $0 + $1.logicalSize }
             phase = .done(freed: freed)
             AppEnvironment.shared.record(ActivityRecord(

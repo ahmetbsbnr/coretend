@@ -48,9 +48,15 @@ public struct PathValidator: Sendable {
     }
 
     public let allowedRoots: [URL]
+    public let excludedRoots: [URL]
+    /// Cleanup's file findings must remain regular files without symlink
+    /// traversal, including when revalidated immediately before Trash.
+    public let regularFilesOnly: Bool
 
-    public init(allowedRoots: [URL]) {
+    public init(allowedRoots: [URL], excludedRoots: [URL] = [], regularFilesOnly: Bool = false) {
         self.allowedRoots = allowedRoots.map { $0.standardizedFileURL }
+        self.excludedRoots = excludedRoots.map { $0.standardizedFileURL }
+        self.regularFilesOnly = regularFilesOnly
     }
 
     /// Canonicalizes and validates a candidate path. Rejects protected roots,
@@ -77,6 +83,20 @@ public struct PathValidator: Sendable {
         // Resolve symlinks on the real filesystem; the resolved target must also
         // stay inside the allowlist (defends against symlink swaps).
         let resolved = standardized.resolvingSymlinksInPath()
+        func canonical(_ path: String) -> String {
+            path.hasPrefix("/private/") ? String(path.dropFirst("/private".count)) : path
+        }
+        guard !excludedRoots.contains(where: {
+            Self.isPath(canonical(standardized.path), under: canonical($0.path))
+                || Self.isPath(canonical(resolved.path), under: canonical($0.resolvingSymlinksInPath().path))
+        }) else { throw .outsideAllowedRoots }
+        if regularFilesOnly {
+            guard canonical(resolved.path) == canonical(standardized.path) else { throw .symlinkTraversal(resolved.path) }
+            guard let values = try? standardized.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey]) else {
+                throw .fileVanished
+            }
+            guard values.isRegularFile == true, values.isSymbolicLink != true else { throw .outsideAllowedRoots }
+        }
         if resolved.path != standardized.path {
             guard allowedRoots.contains(where: { Self.isPath(resolved.path, under: $0.path) }) else {
                 throw .symlinkTraversal(resolved.path)
