@@ -34,19 +34,55 @@ Concerns, each a small table (or pair of tables):
   (`Store.redactPath`) before they ever reach disk; `purgeSafetyLog()` is the
   only deletion path and is an explicit, all-or-nothing user action.
 - **Timeline** (`recordTimelineSnapshot`, `timelineSnapshots`,
-  `timelineCategories`, `timelineComparison(since:)`,
-  `timelineComparisonSincePreviousSnapshot`, `clearTimelineHistory`) — one
-  snapshot row per completed scan (a total and a trigger), plus one row per
-  category observed in that scan (a rule ID or engine-defined bucket name,
-  logical/physical bytes, file count, risk). No file paths are ever stored
-  here — aggregates only, so Timeline history can't become a sensitive
-  per-file trail. `pruneTimelineSnapshots` (private, runs after every write)
-  keeps snapshots from the last 90 days but always keeps at least the 5 most
-  recent regardless of age; `clearTimelineHistory()` is the explicit
-  all-or-nothing user action, mirroring `purgeSafetyLog()`. As of this
-  writing, only the Cleanup scan (`CleanupViewModel`) records snapshots —
-  wiring the other scan engines (My Clutter, Space Lens, a future Developer
-  Center) and a Timeline UI are tracked as follow-up work, not yet done.
+  `timelineCategories`, `timelineComparison(scope:since:)`,
+  `timelineComparisonSincePreviousSnapshot(scope:)`,
+  `latestTimelineComparisonAcrossScopes`, `clearTimelineHistory`) — one
+  snapshot row per completed scan (a total, a trigger, and a **scope**), plus
+  one row per category observed in that scan (a rule ID or engine-defined
+  bucket name, logical/physical bytes, file count, risk). No file paths are
+  ever stored here — aggregates only, so Timeline history can't become a
+  sensitive per-file trail.
+
+  **Scope is the comparison boundary.** A snapshot's `scope` identifies the
+  scan methodology that produced it ("cleanup", "duplicates", "leftovers",
+  "privacy"). A Cleanup scan covers a fixed set of system-cache rules; a
+  Duplicates scan covers wasted space from copies in a different fixed root
+  set; neither is "total storage", and they measure disjoint things. Every
+  comparison method therefore takes an explicit `scope` (or derives one from
+  whatever snapshot is most recent) — there is no API that diffs "the two
+  most recent snapshots" regardless of what produced them, because that would
+  silently misrepresent disk usage the moment a second engine is wired in.
+  `latestTimelineComparisonAcrossScopes()` is the one exception worth
+  understanding: it picks the single most recent snapshot *of any scope*,
+  then compares it against the previous snapshot *of that same scope* — this
+  is what a Dashboard-level "since last scan" card should call, never a
+  routine that blends totals across scopes.
+
+  `pruneTimelineSnapshots` (private, runs per-scope after every write to that
+  scope) keeps each scope's snapshots from the last 90 days but always keeps
+  at least that scope's 5 most recent regardless of age — so a rarely-scanned
+  engine (e.g. Duplicates) can't be pruned away just because another scope is
+  scanned often. `clearTimelineHistory()` is the explicit, all-or-nothing,
+  every-scope user action, mirroring `purgeSafetyLog()`; there is
+  deliberately no per-scope clear, since this is a privacy action ("forget my
+  local scan history"), not a per-feature reset.
+
+  Wired scopes, as of this writing: Cleanup (`CleanupViewModel`, one category
+  per rule group), Duplicates (`DuplicatesViewModel`, one "wastedSpace"
+  category), Leftovers (`LeftoversViewModel`, one "applicationData"
+  category), Privacy (`PrivacyCleanerViewModel`, one category per detected
+  browser, cache bytes only — history/cookies are shown but never deleted, so
+  they aren't a "reclaimable" figure). **Not wired**, deliberately: My
+  Clutter/Large & Old (its size/age thresholds are user-adjustable per scan,
+  so two scans aren't a comparable scope), Space Lens (reports the size of an
+  arbitrary folder tree — a different unit than "reclaimable junk", not
+  something to fold into the same kind of total), Similar Images (the
+  engine's public API exposes a group's total bytes, not the reclaimable
+  portion excluding the kept image — recording the raw total would overstate
+  what's actually reclaimable), Cloud Cleanup (reports local-vs-cloud sync
+  state per provider, not a reclaimable figure). See `CoreTendApp`'s
+  `TimelineScope` and `TimelineService` for the UI-facing layer built on top
+  of this.
 
 All access is actor-isolated — call these from anywhere, awaits handle the
 serialization; there is no separate locking to reason about.

@@ -54,6 +54,13 @@ final class LeftoversViewModel {
         AppEnvironment.shared.record(ActivityRecord(
             kind: .scan, summary: "Leftover scan: \(found.count) candidates",
             itemCount: found.count, bytes: totalBytes))
+        // One category: this scan has no sub-rules to split by. Risk is
+        // "medium" — matching is bundle-id heuristic, so items are reviewed,
+        // never preselected (see isAmbiguous above).
+        AppEnvironment.shared.recordTimelineSnapshot(scope: .leftovers, samples: [
+            TimelineCategorySample(category: "applicationData", engine: "leftovers",
+                                    logicalBytes: totalBytes, fileCount: found.count, risk: "medium"),
+        ])
     }
 
     func removeSelected() async {

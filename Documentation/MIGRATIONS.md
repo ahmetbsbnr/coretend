@@ -16,13 +16,33 @@ rather than leaving the database in an unknown state.
 
 Because this check is a bare `MAX(version)` rather than "is version N present
 in the table", it assumes markers are applied contiguously from 1 upward, as
-they always are on a real install. Any schema-creating migration (`CREATE
-TABLE`/`CREATE INDEX`) should still use `IF NOT EXISTS` — cheap insurance if
-that assumption is ever violated (as one `PersistenceTests` fixture that
-partially rolls back markers to simulate an old install discovered), since a
-plain `CREATE TABLE` re-run against a schema that already has it throws
-`migrationFailed` instead of degrading gracefully. `DELETE`/`UPDATE`-only
-migrations (v4) are naturally idempotent and don't need this.
+they always are on a real install. This has never actually failed on a real
+install — the only way to reach the gap is a test fixture that deliberately
+deletes specific markers to simulate an old database — but two migrations
+since have needed a defensive fix because of it, so treat the pattern as a
+real, recurring cost of the `MAX(version)` design rather than a one-off:
+
+- `CREATE TABLE`/`CREATE INDEX` (v5): use `IF NOT EXISTS`. Cheap, and SQLite
+  supports it directly — a plain `CREATE TABLE` re-run against a schema that
+  already has it otherwise throws `migrationFailed` instead of degrading
+  gracefully.
+- `ALTER TABLE ADD COLUMN` (v6): **SQLite has no `IF NOT EXISTS` form for
+  this.** A re-run throws `"duplicate column name"`. The `LegacyDataMigrationTests`
+  fixture that simulates an old install works around this by also dropping
+  the column (and any index on it) it added — see that file's `seedRealStore`
+  comment. Any *future* `ALTER TABLE ADD COLUMN` migration needs the same
+  fixture-side treatment or that test will fail exactly like this again.
+  Prefer a new table (with `IF NOT EXISTS`) over `ALTER TABLE ADD COLUMN`
+  when the schema change allows it, specifically to avoid this gap.
+- `DELETE`/`UPDATE`-only migrations (v4) are naturally idempotent under a
+  re-run and need no special handling.
+
+This is deliberately not "fixed" at the runner level (e.g. replacing
+`MAX(version)` with a per-version presence check, or making the runner
+tolerant of specific SQL errors): no real, supported upgrade path has ever
+exercised the gap, only a test's simulation technique, so a runner change
+would be extra complexity paid for a scenario that can't occur outside tests.
+Revisit this if that ever stops being true.
 
 ## The rule for adding a migration
 
@@ -55,11 +75,14 @@ table/column. See [TESTING.md](TESTING.md).
 
 ## Current schema
 
-Version 5, as of this writing:
+Version 6, as of this writing:
 - v1 — `activity`, `exclusions`, `settings`
 - v2 — `safety_log` (append-only SafetyCore audit trail)
 - v3 — `locations` (favorites & recently-scanned folders)
 - v4 — removes the retired `dryRunDefault` setting (data-only, no new table)
 - v5 — `timeline_snapshots`, `timeline_categories` (Storage Timeline)
+- v6 — `timeline_snapshots.scope` (which scan methodology produced a
+  snapshot — see [PERSISTENCE.md](PERSISTENCE.md) "Timeline" for why
+  comparisons must never cross scopes)
 
 See [PERSISTENCE.md](PERSISTENCE.md) for what each table holds.
