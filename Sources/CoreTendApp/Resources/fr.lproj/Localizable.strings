@@ -751,3 +751,36 @@
 "recovery.result.title" = "%@ déplacés vers la Corbeille";
 "recovery.result.skipped" = "%d élément(s) ignoré(s) — voir Mon activité pour les détails";
 "recovery.result.prepare_again" = "Préparer un nouveau plan";
+
+/* APFS Intelligence */
+"module.apfs" = "APFS";
+"apfs.title" = "APFS";
+"apfs.capacity" = "Capacité";
+"apfs.available" = "Disponible";
+"apfs.available_important_usage" = "Disponible (usage important)";
+"apfs.available_opportunistic_usage" = "Disponible (usage opportuniste)";
+"apfs.unavailable" = "Indisponible";
+"apfs.not_apfs" = "Ce volume utilise %@, pas APFS. Certaines informations ci-dessous peuvent ne pas s'appliquer.";
+"apfs.files_analyzed" = "Fichiers analysés";
+"apfs.logical" = "Taille logique";
+"apfs.physical" = "Taille physique";
+"apfs.files_analyzed.as_of" = "D'après la dernière analyse Nettoyage : %@";
+"apfs.files_analyzed.no_scan" = "Lancez une analyse Nettoyage pour voir l'usage logique et physique des fichiers qu'elle inspecte.";
+"apfs.files_analyzed.run_cleanup" = "Aller à Nettoyage";
+"apfs.semantics.title" = "Sémantique du stockage";
+"apfs.semantics.logical_physical.title" = "Taille logique et taille physique";
+"apfs.semantics.logical_physical.body" = "La taille logique est la taille du contenu d'un fichier. La taille physique (allouée) est l'espace réellement réservé par le système de fichiers — souvent moindre grâce aux fichiers creux (sparse), parfois supérieure à cause de l'arrondi par blocs.";
+"apfs.semantics.available.title" = "Que signifie « disponible »";
+"apfs.semantics.available.body" = "macOS communique plusieurs valeurs d'« espace disponible ». Elles peuvent différer et ne s'additionnent pas toujours à capacité moins espace utilisé — chacune a sa propre définition précise.";
+"apfs.semantics.sharing.title" = "Partage de stockage";
+"apfs.semantics.sharing.body" = "APFS permet à des fichiers de partager leur stockage sous-jacent (clones) ou de lier plusieurs noms aux mêmes données (liens physiques). CoreTend ne peut pas attribuer de façon fiable l'espace ainsi partagé, il n'en estime donc pas la valeur.";
+"apfs.snapshots.title" = "Instantanés locaux";
+"apfs.snapshots.concept" = "Un instantané du système de fichiers conserve un état passé d'un volume, utilisé pour les sauvegardes locales et Time Machine.";
+"apfs.snapshots.not_listed" = "CoreTend ne liste pas les instantanés individuels ni leur taille dans cette version.";
+"apfs.limitations.title" = "Limites de mesure";
+"apfs.limitations.clones_label" = "Partage de stockage (clones/liens physiques)";
+"apfs.limitations.clones_reason" = "Aucun moyen fiable d'attribuer l'espace partagé à des fichiers individuels avec les API disponibles.";
+"apfs.limitations.snapshot_size_label" = "Taille des instantanés";
+"apfs.limitations.snapshot_size_reason" = "Le listing des instantanés et leur taille individuelle ne sont pas disponibles dans cette version.";
+"apfs.limitations.no_scan_reason" = "Aucune analyse Nettoyage n'a encore enregistré cette donnée.";
+"apfs.limitations.partial_reason" = "Au moins une catégorie de la dernière analyse n'a pas fourni de taille physique.";
