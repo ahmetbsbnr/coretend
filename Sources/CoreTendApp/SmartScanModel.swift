@@ -39,30 +39,49 @@ final class SmartScanModel {
         phase == .completed && report?.wasCancelled == false
     }
 
-    @ObservationIgnored private let coordinator: SmartScanCoordinator
+    /// Non-nil only when a test injects a coordinator — production rebuilds a
+    /// fresh coordinator (and a fresh candidate cache) for every run.
+    @ObservationIgnored private let injectedCoordinator: SmartScanCoordinator?
+    @ObservationIgnored private var coordinator: SmartScanCoordinator
     /// The candidate cache the storage-family providers read from. Kept so a
     /// completed run can hand the exact same candidates to Recovery Plan
-    /// without re-scanning. `nil` when a test injects its own coordinator.
-    @ObservationIgnored private let candidates: SmartScanRecoveryCandidates?
+    /// without re-scanning. Rebuilt per run in production so "New Smart Scan"
+    /// genuinely re-reads the disk rather than replaying the last scan.
+    @ObservationIgnored private var candidates: SmartScanRecoveryCandidates?
     @ObservationIgnored private var driver: Task<Void, Never>?
     @ObservationIgnored private var startedAt: Date?
     /// Injected so tests can drive elapsed time deterministically.
     @ObservationIgnored private let now: @Sendable () -> Date
     @ObservationIgnored private let pollInterval: Duration
 
+    /// Test seam: builds the coordinator for each run. Production leaves this
+    /// nil and rebuilds `SmartScanProviders.live(...)` itself.
+    @ObservationIgnored private let coordinatorFactory: (@MainActor () -> SmartScanCoordinator)?
+    /// Test seam: number of times a fresh coordinator has been built (once at
+    /// init if not injected, then once per `start()`).
+    @ObservationIgnored private(set) var coordinatorGeneration = 0
+
     init(coordinator: SmartScanCoordinator? = nil,
          candidates: SmartScanRecoveryCandidates? = nil,
+         coordinatorFactory: (@MainActor () -> SmartScanCoordinator)? = nil,
          now: @Sendable @escaping () -> Date = Date.init,
          pollInterval: Duration = .milliseconds(250)) {
+        self.injectedCoordinator = coordinator
+        self.coordinatorFactory = coordinatorFactory
         if let coordinator {
             self.coordinator = coordinator
             self.candidates = candidates
+        } else if let coordinatorFactory {
+            self.coordinator = coordinatorFactory()
+            self.candidates = candidates
+            self.coordinatorGeneration = 1
         } else {
             let cache = candidates ?? SmartScanRecoveryCandidates(
                 home: FileManager.default.homeDirectoryForCurrentUser,
                 store: AppEnvironment.shared.store)
             self.candidates = cache
             self.coordinator = SmartScanCoordinator(providers: SmartScanProviders.live(candidates: cache))
+            self.coordinatorGeneration = 1
         }
         self.now = now
         self.pollInterval = pollInterval
@@ -72,6 +91,23 @@ final class SmartScanModel {
     /// duplicate scan.
     func start() {
         guard phase != .running else { return }
+
+        // Build a fresh coordinator + candidate cache so this run scans the
+        // disk again from scratch — "New Smart Scan" must not replay the last
+        // scan's snapshot. Tests that inject a single coordinator keep it.
+        if injectedCoordinator == nil {
+            if let coordinatorFactory {
+                coordinator = coordinatorFactory()
+            } else {
+                let cache = SmartScanRecoveryCandidates(
+                    home: FileManager.default.homeDirectoryForCurrentUser,
+                    store: AppEnvironment.shared.store)
+                candidates = cache
+                coordinator = SmartScanCoordinator(providers: SmartScanProviders.live(candidates: cache))
+            }
+            coordinatorGeneration += 1
+        }
+
         phase = .running
         report = nil
         elapsed = 0
