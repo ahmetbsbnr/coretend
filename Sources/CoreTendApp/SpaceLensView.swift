@@ -22,11 +22,62 @@ final class SpaceLensViewModel {
     var pendingDelete: SpaceNode?
     var lastDeleteError: String?
     var isScanPaused = false
+    /// Shared single-click selection — the bubble canvas and the list both
+    /// read and write this, so they always agree. Sidebar module selection
+    /// is a different piece of state entirely and is never touched here.
+    var selectionID: String?
+    /// Friendly "where the scan is right now" label (never a raw full path).
+    var scanningLocation: String = ""
+    /// When the current scan began — the scanning view derives elapsed time
+    /// from this, so there is no fabricated percentage anywhere.
+    private(set) var scanStartedAt: Date?
     private var scanTask: Task<Void, Never>?
     private var pauseController: ScanPauseController?
     private var rootURL: URL?
 
+    // Live partial-tree publication is throttled so a fast scan can't drive
+    // SwiftUI at hundreds of updates per second. Domain correctness is never
+    // throttled — only how often the presentation root is swapped.
+    @ObservationIgnored private let partialThrottle: TimeInterval
+    @ObservationIgnored private let clock: @Sendable () -> Date
+    @ObservationIgnored private var lastPartialAt: Date = .distantPast
+    /// Test seam: how many partial snapshots were actually published.
+    @ObservationIgnored private(set) var publishedPartialCount = 0
+
+    init(partialThrottle: TimeInterval = 0.125, clock: @Sendable @escaping () -> Date = Date.init) {
+        self.partialThrottle = partialThrottle
+        self.clock = clock
+    }
+
     var current: SpaceNode? { pathStack.last ?? root }
+
+    /// The bounded, value-typed projection of the current directory the UI
+    /// renders. Never the raw hierarchy.
+    func scope(filter: String,
+               visualLimit: Int = SpaceLensAggregator.defaultVisualLimit,
+               listLimit: Int = SpaceLensAggregator.defaultListLimit) -> SpaceLensScope {
+        guard let current else { return .empty }
+        let parentID: String?
+        if pathStack.count >= 2 { parentID = pathStack[pathStack.count - 2].path }
+        else if pathStack.count == 1 { parentID = root?.path }
+        else { parentID = nil }
+        return SpaceLensAggregator.scope(
+            for: current, parentID: parentID, depth: pathStack.count,
+            filter: filter, visualLimit: visualLimit, listLimit: listLimit)
+    }
+
+    /// Drill by node id (double-click / Return). Files and the synthetic
+    /// "Other" bucket never drill.
+    func drill(nodeID: String) {
+        guard let current,
+              let child = current.children.first(where: { $0.path == nodeID }),
+              child.isDirectory,
+              !child.path.hasSuffix("\u{2026}other"),
+              !child.children.isEmpty
+        else { return }
+        selectionID = nil
+        descend(into: child)
+    }
 
     private var scanGeneration = UUID()
 
@@ -37,6 +88,11 @@ final class SpaceLensViewModel {
         phase = .scanning(items: 0)
         root = nil
         pathStack = []
+        selectionID = nil
+        scanningLocation = ""
+        scanStartedAt = clock()
+        lastPartialAt = .distantPast
+        publishedPartialCount = 0
         rootURL = url
         isScanPaused = false
         let pauseController = ScanPauseController()
@@ -55,8 +111,11 @@ final class SpaceLensViewModel {
             for await event in engine.run(pauseController: pauseController) {
                 guard !Task.isCancelled, scanGeneration == generation else { return }
                 switch event {
-                case let .progress(items, _):
+                case let .progress(items, path):
                     phase = .scanning(items: items)
+                    scanningLocation = Self.friendlyLocation(path)
+                case let .partial(node):
+                    applyPartial(node)
                 case let .finished(node):
                     root = node
                     phase = .ready
@@ -72,6 +131,28 @@ final class SpaceLensViewModel {
                 }
             }
         }
+    }
+
+    /// Publish a live partial root, throttled to `partialThrottle`. During a
+    /// scan there is no navigation depth yet, so this only ever replaces the
+    /// top-level root the `scanningView` reads. `internal` for the throttle
+    /// test (which drives it with an injected clock).
+    func applyPartial(_ node: SpaceNode) {
+        guard pathStack.isEmpty else { return }
+        let now = clock()
+        guard now.timeIntervalSince(lastPartialAt) >= partialThrottle else { return }
+        lastPartialAt = now
+        publishedPartialCount += 1
+        root = node
+    }
+
+    /// A short, privacy-safe "~/Library/Caches/…" style label — never the raw
+    /// absolute path, which can be long and expose account details.
+    static func friendlyLocation(_ path: String) -> String {
+        guard !path.isEmpty else { return "" }
+        let abbreviated = (path as NSString).abbreviatingWithTildeInPath
+        let parts = abbreviated.split(separator: "/").suffix(3)
+        return parts.joined(separator: "/")
     }
 
     /// Re-runs the scan from the same root, preserving the current navigation
@@ -172,23 +253,26 @@ final class SpaceLensViewModel {
 enum RadialPack {
     struct Bubble: Identifiable {
         let id: String
-        let node: SpaceNode
+        let node: SpaceLensNode
         let center: CGPoint
         let radius: CGFloat
     }
 
-    static func pack(_ nodes: [SpaceNode], in size: CGSize, limit: Int = 13) -> [Bubble] {
+    /// Deterministic: the input order (largest first, ties by path) fixes the
+    /// spiral slot for every id, so a partial-scan update or a re-filter does
+    /// not reshuffle bubbles that were already placed.
+    static func pack(_ nodes: [SpaceLensNode], in size: CGSize, limit: Int = 40) -> [Bubble] {
         guard size.width > 8, size.height > 8, !nodes.isEmpty else { return [] }
         let items = Array(nodes.prefix(limit))
-        let maxByte = Double(max(items.first?.size ?? 1, 1))
+        let maxByte = Double(max(items.first?.logicalBytes ?? 1, 1))
         let shortSide = min(size.width, size.height)
         let maxR = shortSide * 0.27
         let minR: CGFloat = 12
         let gap: CGFloat = 6
         let mid = CGPoint(x: size.width / 2, y: size.height / 2)
 
-        func radius(for node: SpaceNode) -> CGFloat {
-            let frac = (Double(max(node.size, 1)) / maxByte).squareRoot()   // area ∝ bytes
+        func radius(for node: SpaceLensNode) -> CGFloat {
+            let frac = (Double(max(node.logicalBytes, 1)) / maxByte).squareRoot()   // area ∝ bytes
             return max(minR, min(maxR, CGFloat(frac) * maxR))
         }
 
@@ -267,14 +351,19 @@ enum SpaceNodeCategory: String, Hashable {
 struct SpaceLensView: View {
     @State private var model = SpaceLensViewModel()
     @Namespace private var zoomSpace
-    @State private var selectedID: String?
     @State private var hoveredID: String?
     @State private var previewURL: URL?
     @State private var searchText = ""
+    @State private var searchDebounced = ""
     @State private var categoryFilter: SpaceNodeCategory?
     @State private var exclusionsController = ClutterExclusionsController()
     @State private var showFavoritesRecents = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// The bubble-canvas bound. The list bound is looser (see
+    /// `SpaceLensAggregator`), so users who rely on the precise list are
+    /// never limited to what fits on the canvas.
+    private let visualLimit = SpaceLensAggregator.defaultVisualLimit
 
     var body: some View {
         VStack(spacing: 0) {
@@ -407,13 +496,49 @@ struct SpaceLensView: View {
         }
     }
 
+
+    // MARK: - Scanning (real partial state, no fabricated percentage)
+
     private func scanningView(_ items: Int) -> some View {
         VStack(spacing: MCSpacing.lg) {
             MCScanStage(isScanning: !model.isScanPaused) {
-                Text(L("spacelens.scanning_progress", items)).monospacedDigit()
+                VStack(spacing: 4) {
+                    Text(L("spacelens.scanning_progress", items)).monospacedDigit()
+                    TimelineView(.periodic(from: .now, by: 1)) { _ in
+                        Text(L("spacelens.elapsed",
+                               smartScanElapsedText(Date().timeIntervalSince(model.scanStartedAt ?? Date()))))
+                            .font(MCFont.badge).foregroundStyle(.secondary).monospacedDigit()
+                    }
+                    if !model.scanningLocation.isEmpty {
+                        Text(L("spacelens.scanning_location", model.scanningLocation))
+                            .font(MCFont.caption).foregroundStyle(.secondary)
+                            .lineLimit(1).truncationMode(.head)
+                    }
+                }
             }
             .accessibilityElement(children: .combine)
             .accessibilityLabel(L("spacelens.scanning_progress", items))
+
+            if let partial = model.root, !partial.children.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(L("spacelens.partial_top"))
+                        .font(MCFont.badge).textCase(.uppercase).kerning(0.4)
+                        .foregroundStyle(.secondary)
+                    ForEach(partial.children.prefix(5), id: \.id) { child in
+                        HStack(spacing: MCSpacing.xs) {
+                            Image(systemName: child.isDirectory ? "folder" : "doc")
+                                .font(.caption2).foregroundStyle(.secondary)
+                            Text(child.name).font(MCFont.caption).lineLimit(1)
+                            Spacer()
+                            Text(mcFormatBytes(child.size)).font(MCFont.caption)
+                                .monospacedDigit().foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                .frame(maxWidth: 360)
+                .accessibilityElement(children: .combine)
+            }
+
             HStack(spacing: MCSpacing.sm) {
                 if model.isScanPaused {
                     Button(L("common.resume")) { model.resumeScan() }
@@ -436,31 +561,41 @@ struct SpaceLensView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    // MARK: - Ready (bounded explorer)
+
     @ViewBuilder
     private var readyView: some View {
-        if let current = model.current {
+        if model.current != nil {
+            let scope = model.scope(filter: searchDebounced, visualLimit: visualLimit)
             VStack(alignment: .leading, spacing: 0) {
                 breadcrumb
                     .padding(.horizontal).padding(.vertical, 8)
+                if scope.foldedIntoOther > 0 {
+                    Text(L("spacelens.folded_note", scope.foldedIntoOther))
+                        .font(MCFont.caption).foregroundStyle(.secondary)
+                        .padding(.horizontal).padding(.bottom, 4)
+                }
                 searchAndFilterRow
                     .padding(.horizontal).padding(.bottom, 8)
-                bubbleMap(for: current)
+                bubbleCanvas(scope)
                     .padding(.horizontal)
                 Divider().padding(.top, 8)
-                childList(for: current)
+                childList(scope)
+            }
+            .task(id: searchText) {
+                try? await Task.sleep(for: .milliseconds(200))
+                searchDebounced = searchText
+                // If the current selection is no longer visible, drop it so
+                // canvas and list never point at something off-screen.
+                let visible = Set(model.scope(filter: searchDebounced).listNodes.map(\.id))
+                if let sel = model.selectionID, !visible.contains(sel) { model.selectionID = nil }
             }
         }
     }
 
-    /// Filters by name (locale-aware substring, same comparison My Clutter
-    /// uses) and/or category — applied identically to the treemap and the
-    /// accessible list below it, so the two never disagree about what's shown.
-    private func filteredChildren(of node: SpaceNode) -> [SpaceNode] {
-        node.children.filter { child in
-            let matchesSearch = searchText.isEmpty || child.name.localizedStandardContains(searchText)
-            let matchesCategory = categoryFilter == nil || SpaceNodeCategory.of(child) == categoryFilter
-            return matchesSearch && matchesCategory
-        }
+    private func applyCategory(_ nodes: [SpaceLensNode]) -> [SpaceLensNode] {
+        guard let categoryFilter else { return nodes }
+        return nodes.filter { $0.isOther || $0.category == categoryFilter }
     }
 
     private var searchAndFilterRow: some View {
@@ -485,12 +620,12 @@ struct SpaceLensView: View {
                     Button {
                         navigate { model.pop(to: model.pathStack.count >= 2 ? model.pathStack.count - 2 : nil) }
                     } label: {
-                        Image(systemName: "chevron.left")
+                        Label(L("spacelens.back"), systemImage: "chevron.left")
                     }
                     .buttonStyle(.borderless)
                     .keyboardShortcut("[", modifiers: .command)
-                    .help(L("spacelens.up"))
-                    .accessibilityLabel(L("spacelens.up"))
+                    .help(L("spacelens.back"))
+                    .accessibilityLabel(L("spacelens.back"))
                     .accessibilityIdentifier("spacelens.up")
                     .padding(.trailing, 2)
                 }
@@ -508,23 +643,24 @@ struct SpaceLensView: View {
                     .keyboardShortcut(.cancelAction)
             }
         }
+        .accessibilityIdentifier("spacelens.breadcrumb")
     }
 
-    /// Real navigation (descend/pop) wrapped so the matchedGeometryEffect
-    /// zoom interpolates — no animation runs unless a real state change fires it.
+    /// descend/pop wrapped so a real state change animates; clears the shared
+    /// selection so the new scope starts unselected.
     private func navigate(_ action: () -> Void) {
-        selectedID = nil
+        model.selectionID = nil
         withAnimation(MCMotion.animation(MCMotion.settle, reduce: reduceMotion)) {
             action()
         }
     }
 
-    /// Radial size map — the biggest child dead centre, siblings orbiting it,
-    /// bubble area proportional to bytes. Faint concentric rings give the eye
-    /// a fixed centre to read against.
-    private func bubbleMap(for node: SpaceNode) -> some View {
-        GeometryReader { proxy in
-            let bubbles = RadialPack.pack(filteredChildren(of: node), in: proxy.size)
+    // MARK: Canvas
+
+    private func bubbleCanvas(_ scope: SpaceLensScope) -> some View {
+        let nodes = applyCategory(scope.visualNodes)
+        return GeometryReader { proxy in
+            let bubbles = RadialPack.pack(nodes, in: proxy.size, limit: visualLimit)
             ZStack {
                 ForEach(1...3, id: \.self) { ring in
                     Circle()
@@ -532,33 +668,32 @@ struct SpaceLensView: View {
                         .frame(width: min(proxy.size.width, proxy.size.height) * CGFloat(ring) * 0.32)
                         .position(x: proxy.size.width / 2, y: proxy.size.height / 2)
                 }
-                ForEach(bubbles) { bubble(for: $0) }
+                ForEach(bubbles) { bubble($0) }
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
-            // Anchors the map to the node just zoomed into, so descend/pop
-            // reads as continuous rather than a hard cut.
-            .matchedGeometryEffect(id: node.id, in: zoomSpace, isSource: false)
+            .matchedGeometryEffect(id: scope.directoryID, in: zoomSpace, isSource: false)
         }
-        .frame(minHeight: 320, maxHeight: 440)
-        // The map is a purely visual duplicate of the accessible child list
-        // below; collapse it so VoiceOver reads a summary, not dozens of
-        // unlabeled shapes.
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(L("spacelens.treemap.a11y_summary",
-                              node.children.count, mcFormatBytes(node.size))
-                            + " " + L("spacelens.treemap.accessibility"))
+        .frame(minHeight: 340, maxHeight: 460)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(L("spacelens.canvas_a11y_summary", nodes.count))
+    }
+
+    private func bubbleA11y(_ node: SpaceLensNode) -> String {
+        L("spacelens.bubble_a11y",
+          node.displayName,
+          mcFormatBytes(node.logicalBytes),
+          Int((node.percentageOfScope * 100).rounded()),
+          node.isDirectory ? L("spacelens.kind.directory") : L("spacelens.kind.file"))
     }
 
     @ViewBuilder
-    private func bubble(for b: RadialPack.Bubble) -> some View {
-        let category = SpaceNodeCategory.of(b.node)
-        let isSelected = selectedID == b.node.id
+    private func bubble(_ b: RadialPack.Bubble) -> some View {
+        let isSelected = model.selectionID == b.node.id
         let isHovered = hoveredID == b.node.id
         let showLabel = b.radius >= 30
 
         ZStack {
-            Circle().fill(category.color.opacity(b.node.isDirectory ? 0.85 : 0.55))
-            // Top-left sheen for a little depth — transform/opacity only.
+            Circle().fill(b.node.category.color.opacity(b.node.isDirectory ? 0.85 : 0.55))
             Circle().fill(
                 RadialGradient(colors: [.white.opacity(0.20), .clear],
                                center: UnitPoint(x: 0.34, y: 0.30),
@@ -581,97 +716,140 @@ struct SpaceLensView: View {
             }
             if showLabel {
                 VStack(spacing: 1) {
-                    Text(b.node.name).font(.caption2.weight(.semibold)).lineLimit(1)
-                    Text(mcFormatBytes(b.node.size)).font(.system(size: 9)).opacity(0.85)
+                    Text(b.node.displayName).font(.caption2.weight(.semibold)).lineLimit(1)
+                    Text(mcFormatBytes(b.node.logicalBytes)).font(.system(size: 9)).opacity(0.85)
                 }
                 .foregroundStyle(.white)
                 .padding(.horizontal, 4)
                 .frame(maxWidth: b.radius * 1.7)
             }
         }
+        // Selection reads through stroke + halo only — never a scale change,
+        // so layout is identical selected or not (Reduce Motion safe).
         .overlay(Circle().strokeBorder(Color.white,
-                                       lineWidth: isSelected ? 2.5 : (isHovered ? 1.5 : 0)))
+                                       lineWidth: isSelected ? 3 : (isHovered ? 1.5 : 0)))
+        .shadow(color: .white.opacity(isSelected ? 0.55 : 0), radius: isSelected ? 6 : 0)
         .frame(width: b.radius * 2, height: b.radius * 2)
-        .scaleEffect(isHovered && !reduceMotion ? 1.04 : 1)
+        // A mild hover cue only, and only when motion is allowed.
+        .scaleEffect(isHovered && !reduceMotion ? 1.03 : 1)
         .position(b.center)
         .matchedGeometryEffect(id: b.node.id, in: zoomSpace, isSource: true)
-        .onTapGesture {
-            selectedID = b.node.id
-            navigate { model.descend(into: b.node) }
+        .contentShape(Circle())
+        .onTapGesture(count: 2) {
+            if !b.node.isOther { model.drill(nodeID: b.node.id) }
+        }
+        .onTapGesture(count: 1) {
+            model.selectionID = b.node.id
         }
         .onHover { hovering in
-            withAnimation(MCMotion.animation(MCMotion.settle, reduce: reduceMotion)) {
+            if reduceMotion {
                 hoveredID = hovering ? b.node.id : nil
+            } else {
+                withAnimation(MCMotion.animation(MCMotion.settle, reduce: reduceMotion)) {
+                    hoveredID = hovering ? b.node.id : nil
+                }
             }
         }
-        .help(L("spacelens.fragment.help", b.node.path, mcFormatBytes(b.node.size))
+        .accessibilityElement()
+        .accessibilityLabel(bubbleA11y(b.node))
+        .accessibilityAddTraits(b.node.isDrillable ? .isButton : [])
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .accessibilityHint(b.node.isDrillable ? L("spacelens.drill_hint") : "")
+        .help(L("spacelens.fragment.help", b.node.sourcePath.isEmpty ? b.node.displayName : b.node.sourcePath,
+                mcFormatBytes(b.node.logicalBytes))
               + (b.node.isAccessDenied ? " — \(L("spacelens.access_denied_suffix"))" : "")
               + (b.node.isCloudPlaceholder ? " — \(L("spacelens.cloud_placeholder_suffix"))" : ""))
     }
 
-    private func childList(for node: SpaceNode) -> some View {
-        List(filteredChildren(of: node), selection: $selectedID) { child in
-            HStack {
-                Image(systemName: child.isDirectory ? "folder" : "doc")
-                    .foregroundStyle(SpaceNodeCategory.of(child).color)
-                Text(child.name)
-                if child.isAccessDenied {
-                    Image(systemName: "lock.fill").font(.caption2).foregroundStyle(.secondary)
-                        .accessibilityLabel(L("spacelens.access_denied_suffix"))
-                }
-                if child.isCloudPlaceholder {
-                    Image(systemName: "icloud.fill").font(.caption2).foregroundStyle(.secondary)
-                        .accessibilityLabel(L("spacelens.cloud_placeholder_suffix"))
-                }
-                Spacer()
-                Text(mcFormatBytes(child.size)).monospacedDigit().foregroundStyle(.secondary)
-                if child.isDirectory && !child.children.isEmpty {
-                    Button { navigate { model.descend(into: child) } } label: {
-                        Image(systemName: "chevron.right")
-                    }
-                    .buttonStyle(.borderless)
-                    .keyboardShortcut(.rightArrow, modifiers: [])
-                }
-                if !child.path.hasSuffix("\u{2026}other") {
-                    if !child.isDirectory {
-                        Button {
-                            previewURL = URL(fileURLWithPath: child.path)
-                        } label: { Image(systemName: "eye") }
-                        .buttonStyle(.borderless)
-                        .help(L("clutter.quick_look"))
-                        .accessibilityLabel(L("clutter.quick_look"))
-                    }
-                    Button {
-                        NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: child.path)])
-                    } label: { Image(systemName: "magnifyingglass") }
-                    .buttonStyle(.borderless)
-                    .help(L("common.reveal_in_finder"))
-                    Button(role: .destructive) {
-                        model.requestDelete(child)
-                    } label: { Image(systemName: "trash") }
-                    .buttonStyle(.borderless)
-                    .help(L("spacelens.delete.help"))
-                    ExcludeButton(url: URL(fileURLWithPath: child.path), controller: exclusionsController)
-                }
-            }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("\(child.name), \(mcFormatBytes(child.size))"
-                                + (child.isAccessDenied ? ", \(L("spacelens.access_denied_short"))" : "")
-                                + (child.isCloudPlaceholder ? ", \(L("spacelens.cloud_placeholder_short"))" : ""))
+    // MARK: List (the precise, VoiceOver-primary view)
+
+    private func childList(_ scope: SpaceLensScope) -> some View {
+        let rows = applyCategory(scope.listNodes)
+        return List(rows, selection: Binding(
+            get: { model.selectionID },
+            set: { model.selectionID = $0 })
+        ) { node in
+            row(node)
         }
         .listStyle(.inset)
         .quickLookPreview($previewURL)
         .focusable()
         .onKeyPress(.return) {
-            if let id = selectedID, let child = filteredChildren(of: node).first(where: { $0.id == id }) {
-                navigate { model.descend(into: child) }
+            if let id = model.selectionID {
+                withAnimation(MCMotion.animation(MCMotion.settle, reduce: reduceMotion)) {
+                    model.drill(nodeID: id)
+                }
                 return .handled
             }
+            return .ignored
+        }
+        .onKeyPress(.rightArrow) {
+            if let id = model.selectionID { model.drill(nodeID: id); return .handled }
             return .ignored
         }
         .onKeyPress(.escape) {
             navigate { model.pop(to: model.pathStack.count >= 2 ? model.pathStack.count - 2 : nil) }
             return .handled
         }
+    }
+
+    @ViewBuilder
+    private func row(_ node: SpaceLensNode) -> some View {
+        HStack {
+            Image(systemName: node.isOther ? "ellipsis.circle"
+                  : (node.isDirectory ? "folder" : "doc"))
+                .foregroundStyle(node.category.color)
+            Text(node.displayName)
+            if node.isAccessDenied {
+                Image(systemName: "lock.fill").font(.caption2).foregroundStyle(.secondary)
+                    .accessibilityLabel(L("spacelens.access_denied_suffix"))
+            }
+            if node.isCloudPlaceholder {
+                Image(systemName: "icloud.fill").font(.caption2).foregroundStyle(.secondary)
+                    .accessibilityLabel(L("spacelens.cloud_placeholder_suffix"))
+            }
+            Spacer()
+            Text("\(Int((node.percentageOfScope * 100).rounded()))%")
+                .font(MCFont.badge).foregroundStyle(.tertiary).monospacedDigit()
+            Text(mcFormatBytes(node.logicalBytes)).monospacedDigit().foregroundStyle(.secondary)
+            if node.isDrillable {
+                Button { model.drill(nodeID: node.id) } label: {
+                    Image(systemName: "chevron.right")
+                }
+                .buttonStyle(.borderless)
+            }
+            if !node.isOther {
+                if !node.isDirectory {
+                    Button { previewURL = URL(fileURLWithPath: node.sourcePath) } label: {
+                        Image(systemName: "eye")
+                    }
+                    .buttonStyle(.borderless)
+                    .help(L("clutter.quick_look"))
+                    .accessibilityLabel(L("clutter.quick_look"))
+                }
+                Button {
+                    NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: node.sourcePath)])
+                } label: { Image(systemName: "magnifyingglass") }
+                .buttonStyle(.borderless)
+                .help(L("common.reveal_in_finder"))
+                Button(role: .destructive) {
+                    if let real = model.current?.children.first(where: { $0.path == node.sourcePath }) {
+                        model.requestDelete(real)
+                    }
+                } label: { Image(systemName: "trash") }
+                .buttonStyle(.borderless)
+                .help(L("spacelens.delete.help"))
+                ExcludeButton(url: URL(fileURLWithPath: node.sourcePath), controller: exclusionsController)
+            }
+        }
+        .contentShape(Rectangle())
+        .onTapGesture(count: 2) {
+            if node.isDrillable { model.drill(nodeID: node.id) }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(bubbleA11y(node)
+                            + (node.isAccessDenied ? ", \(L("spacelens.access_denied_short"))" : "")
+                            + (node.isCloudPlaceholder ? ", \(L("spacelens.cloud_placeholder_short"))" : ""))
+        .accessibilityHint(node.isDrillable ? L("spacelens.drill_hint") : "")
     }
 }

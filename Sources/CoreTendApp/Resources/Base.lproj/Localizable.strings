@@ -1153,3 +1153,19 @@
 "smartscan.cancelled.title" = "Scan cancelled";
 "smartscan.cancelled.detail" = "No changes were made. Nothing was reviewed or removed.";
 "recovery.from_smartscan" = "Prepared from your last Smart Scan — no new scan was run.";
+
+/* Space Lens 2.0 — bounded explorer */
+"spacelens.other_bucket" = "Other";
+"spacelens.scope_summary" = "%lld items · %@ total";
+"spacelens.folded_note" = "%lld smaller items grouped as “Other”";
+"spacelens.elapsed" = "Elapsed %@";
+"spacelens.bubble_a11y" = "%1$@, %2$@, %3$lld percent of this folder, %4$@";
+"spacelens.kind.directory" = "directory";
+"spacelens.kind.file" = "file";
+"spacelens.partial_label" = "Partial scan";
+"spacelens.drill_hint" = "Double-click or press Return to open";
+"spacelens.back" = "Back";
+"spacelens.canvas_a11y_summary" = "Size map of %lld items. The list below is the precise view.";
+"spacelens.list_header" = "Contents";
+"spacelens.scanning_location" = "Scanning %@";
+"spacelens.partial_top" = "Largest so far";

@@ -112,6 +112,31 @@ struct SpaceLensTests {
         #expect(!node.children.contains { $0.name == "Other (small items)" })
     }
 
+    @Test func emitsGrowingPartialRootsForTopLevelFoldersThenAFinalRoot() async throws {
+        let root = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("coretend-lens-\(UUID().uuidString)")
+        for name in ["a", "b", "c"] {
+            let dir = root.appendingPathComponent(name)
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            try Data(repeating: 7, count: 300_000).write(to: dir.appendingPathComponent("blob.bin"))
+        }
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        var partialChildCounts: [Int] = []
+        var finalCount = -1
+        for await event in SpaceLensEngine(root: root, minChildSize: 1).run() {
+            switch event {
+            case let .partial(node): partialChildCounts.append(node.children.count)
+            case let .finished(node): finalCount = node.children.count
+            default: break
+            }
+        }
+        // At least one partial, and partial child counts never shrink.
+        #expect(!partialChildCounts.isEmpty)
+        #expect(partialChildCounts == partialChildCounts.sorted())
+        #expect(finalCount == 3)
+    }
+
     @Test func treemapLayoutCoversBoundsProportionally() {
         let nodes = [
             SpaceNode(name: "a", path: "/a", isDirectory: true, size: 750),
