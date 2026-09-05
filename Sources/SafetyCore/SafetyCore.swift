@@ -52,11 +52,14 @@ public struct PathValidator: Sendable {
     /// Cleanup's file findings must remain regular files without symlink
     /// traversal, including when revalidated immediately before Trash.
     public let regularFilesOnly: Bool
+    public let allowedDirectoryExtensions: Set<String>
 
-    public init(allowedRoots: [URL], excludedRoots: [URL] = [], regularFilesOnly: Bool = false) {
+    public init(allowedRoots: [URL], excludedRoots: [URL] = [], regularFilesOnly: Bool = false,
+                allowedDirectoryExtensions: Set<String> = []) {
         self.allowedRoots = allowedRoots.map { $0.standardizedFileURL }
         self.excludedRoots = excludedRoots.map { $0.standardizedFileURL }
         self.regularFilesOnly = regularFilesOnly
+        self.allowedDirectoryExtensions = allowedDirectoryExtensions
     }
 
     /// Canonicalizes and validates a candidate path. Rejects protected roots,
@@ -89,13 +92,15 @@ public struct PathValidator: Sendable {
         guard !excludedRoots.contains(where: {
             Self.isPath(canonical(standardized.path), under: canonical($0.path))
                 || Self.isPath(canonical(resolved.path), under: canonical($0.resolvingSymlinksInPath().path))
+                || Self.isPath(canonical($0.path), under: canonical(standardized.path))
         }) else { throw .outsideAllowedRoots }
         if regularFilesOnly {
             guard canonical(resolved.path) == canonical(standardized.path) else { throw .symlinkTraversal(resolved.path) }
-            guard let values = try? standardized.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey]) else {
+            guard let values = try? standardized.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey, .isDirectoryKey]) else {
                 throw .fileVanished
             }
-            guard values.isRegularFile == true, values.isSymbolicLink != true else { throw .outsideAllowedRoots }
+            let allowedDirectory = values.isDirectory == true && allowedDirectoryExtensions.contains(standardized.pathExtension.lowercased())
+            guard values.isRegularFile == true || allowedDirectory, values.isSymbolicLink != true else { throw .outsideAllowedRoots }
         }
         if resolved.path != standardized.path {
             guard allowedRoots.contains(where: { Self.isPath(resolved.path, under: $0.path) }) else {
