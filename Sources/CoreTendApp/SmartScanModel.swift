@@ -40,6 +40,10 @@ final class SmartScanModel {
     }
 
     @ObservationIgnored private let coordinator: SmartScanCoordinator
+    /// The candidate cache the storage-family providers read from. Kept so a
+    /// completed run can hand the exact same candidates to Recovery Plan
+    /// without re-scanning. `nil` when a test injects its own coordinator.
+    @ObservationIgnored private let candidates: SmartScanRecoveryCandidates?
     @ObservationIgnored private var driver: Task<Void, Never>?
     @ObservationIgnored private var startedAt: Date?
     /// Injected so tests can drive elapsed time deterministically.
@@ -47,9 +51,19 @@ final class SmartScanModel {
     @ObservationIgnored private let pollInterval: Duration
 
     init(coordinator: SmartScanCoordinator? = nil,
+         candidates: SmartScanRecoveryCandidates? = nil,
          now: @Sendable @escaping () -> Date = Date.init,
          pollInterval: Duration = .milliseconds(250)) {
-        self.coordinator = coordinator ?? SmartScanCoordinator(providers: SmartScanProviders.live())
+        if let coordinator {
+            self.coordinator = coordinator
+            self.candidates = candidates
+        } else {
+            let cache = candidates ?? SmartScanRecoveryCandidates(
+                home: FileManager.default.homeDirectoryForCurrentUser,
+                store: AppEnvironment.shared.store)
+            self.candidates = cache
+            self.coordinator = SmartScanCoordinator(providers: SmartScanProviders.live(candidates: cache))
+        }
         self.now = now
         self.pollInterval = pollInterval
     }
@@ -63,27 +77,41 @@ final class SmartScanModel {
         elapsed = 0
         startedAt = now()
         modules = Dictionary(uniqueKeysWithValues: SmartScanModuleID.allCases.map { ($0, .queued) })
+        // A new run invalidates any prior Recovery Plan handoff immediately —
+        // the old candidate picture is about to be replaced.
+        SmartScanHandoff.shared.clear()
 
         driver = Task { [coordinator] in
             let runTask = await coordinator.start()
             // Refresh the live snapshot on an interval until the run resolves.
             // (This Task inherits MainActor isolation from the class.)
             while await coordinator.isRunning {
-                self.modules = await coordinator.report.modules
+                let snapshot = await coordinator.report.modules
+                if snapshot != self.modules { self.modules = snapshot }
                 self.tickElapsed()
                 try? await Task.sleep(for: self.pollInterval)
             }
             let final = await runTask.value
-            self.modules = final.modules
+            if final.modules != self.modules { self.modules = final.modules }
             self.report = final
             self.tickElapsed()
             self.phase = final.wasCancelled ? .cancelled : .completed
             self.driver = nil
+            // Publish the exact candidate set to the Recovery Plan handoff —
+            // only for a genuinely finished run, never a cancelled partial.
+            if !final.wasCancelled, let candidates = self.candidates {
+                SmartScanHandoff.shared.record(cache: candidates, report: final, at: self.now())
+            }
         }
     }
 
     private func tickElapsed() {
-        if let started = startedAt { elapsed = now().timeIntervalSince(started) }
+        guard let started = startedAt else { return }
+        // Publish at whole-second granularity only: the driver polls faster
+        // than that for module states, but the visible clock does not need
+        // to — and re-assigning `elapsed` every 250 ms would churn SwiftUI.
+        let seconds = now().timeIntervalSince(started).rounded(.down)
+        if seconds != elapsed { elapsed = seconds }
     }
 
     /// Cancel a running scan. Propagates to every provider; the resulting
@@ -102,5 +130,6 @@ final class SmartScanModel {
         modules = [:]
         elapsed = 0
         startedAt = nil
+        SmartScanHandoff.shared.clear()
     }
 }

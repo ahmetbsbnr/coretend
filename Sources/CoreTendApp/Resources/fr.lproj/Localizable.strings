@@ -1121,3 +1121,35 @@
 "smartscan.headline.nothing" = "Rien à récupérer dans cette catégorie";
 "smartscan.headline.apps" = "%lld applications · %lld avec une mise à jour gérée";
 "smartscan.headline.signals" = "%lld à examiner · %lld pour information";
+
+/* Smart Scan — accueil du tableau de bord, analyse en cours + résultats */
+"smartscan.title" = "Analyse intelligente";
+"smartscan.idle.tagline" = "Une seule analyse. Plusieurs modules CoreTend. Une revue structurée.";
+"smartscan.idle.coverage_title" = "Cette analyse examine";
+"smartscan.start" = "Lancer l’analyse intelligente";
+"smartscan.start_again" = "Relancer";
+"smartscan.new_scan" = "Nouvelle analyse intelligente";
+"smartscan.cancel" = "Annuler l’analyse";
+"smartscan.running.title" = "Analyse en cours…";
+"smartscan.elapsed" = "Durée %@";
+"smartscan.state.queued" = "En attente";
+"smartscan.state.scanning" = "Analyse";
+"smartscan.state.completed" = "Terminé";
+"smartscan.state.unavailable" = "Indisponible";
+"smartscan.state.failed" = "Échec";
+"smartscan.state.cancelled" = "Annulé";
+"smartscan.unavailable.not_connected" = "Indisponible dans cette version";
+"smartscan.unavailable.generic" = "Autorisation requise, ou rien à examiner";
+"smartscan.failed.detail" = "Ce module s’est arrêté prématurément. Les autres résultats ci-dessous restent valides.";
+"smartscan.result.title" = "Résultats de l’analyse intelligente";
+"smartscan.result.partial" = "Résultats partiels — un ou plusieurs modules ne sont pas allés au bout.";
+"smartscan.category.recoverable" = "Potentiellement récupérable";
+"smartscan.category.review" = "À examiner";
+"smartscan.category.attention" = "Attention";
+"smartscan.category.informational" = "Informations";
+"smartscan.recoverable.inexact_note" = "Certaines catégories se recoupent sur le disque : CoreTend garde leurs totaux séparés plutôt que de compter deux fois les mêmes données.";
+"smartscan.count_items" = "%lld éléments";
+"smartscan.review_recovery_plan" = "Examiner le plan de récupération";
+"smartscan.cancelled.title" = "Analyse annulée";
+"smartscan.cancelled.detail" = "Aucune modification n’a été effectuée. Rien n’a été examiné ni supprimé.";
+"recovery.from_smartscan" = "Préparé à partir de votre dernière analyse intelligente — aucune nouvelle analyse n’a été lancée.";

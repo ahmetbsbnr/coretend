@@ -186,11 +186,15 @@ enum SmartScanProviders {
     /// disposable fixture tree and a throwaway store.
     @MainActor
     static func live(
+        candidates sharedCandidates: SmartScanRecoveryCandidates? = nil,
         home: URL = FileManager.default.homeDirectoryForCurrentUser,
         environment: [String: String] = ProcessInfo.processInfo.environment,
         store: Store? = AppEnvironment.shared.store
     ) -> [SmartScanProvider] {
-        let candidates = SmartScanRecoveryCandidates(home: home, store: store)
+        // A caller (SmartScanModel) can pass its own cache so the exact
+        // candidate set the scan produced is reused by the Recovery Plan
+        // handoff without a second scan.
+        let candidates = sharedCandidates ?? SmartScanRecoveryCandidates(home: home, store: store)
         let integrityHome = ApplicationInventoryLocations.resolve(environment: environment).home
 
         return [
