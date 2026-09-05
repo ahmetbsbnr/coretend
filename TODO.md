@@ -2,7 +2,8 @@
 
 CoreTend 1.0.0 shipped on 2026-09-03. It is Developer ID signed,
 Apple-notarized, stapled, Minisign-signed, and published as a stable GitHub
-release. Core functionality is complete; 342 Swift tests pass.
+release. Core functionality is complete; 359 Swift tests pass (post-1.0.0
+work — Storage Timeline — added 17 since the 342 that shipped in 1.0.0).
 
 ## Release follow-up
 
@@ -17,17 +18,24 @@ Developer ID signing, notarization, stapling, SHA-256, SLSA attestation and
 Minisign to the same final bytes. A retrospective SLSA attestation for 1.0.0
 would still be false and will not be created.
 
-## In progress — Storage Timeline (1.1 "Insight" scope)
+## Done — Storage Timeline minimal vertical (1.1 "Insight" scope)
 
-"What changed since my last scan?" First slice landed: `Persistence` schema
-v5 (`timeline_snapshots`/`timeline_categories`) and a `Store` API to record,
-query, compare (by reference date or "since the previous scan"), retain
-(90-day window, minimum 5 kept), and clear this history — category-level
-aggregates only, never file paths. `CleanupViewModel` records a snapshot on
-every completed scan; the other scan engines (My Clutter, Space Lens, a
-future Developer Center) do not yet, and there is no Timeline UI (sidebar
-view, Dashboard "since last scan" card) yet. See `Documentation/PERSISTENCE.md`
-and `Documentation/FEATURE_MATRIX.md` → "Storage Timeline".
+"What changed since my last scan?" is now answerable end to end: `Persistence`
+schema v6 (`timeline_snapshots` incl. `scope`, `timeline_categories`), a
+`TimelineService` layer, a real `StorageTimelineView` (sidebar, under
+Storage), and a Dashboard "Since last scan" card. Comparisons never mix scan
+kinds — every one is scoped (Cleanup/Duplicates/Leftovers/Privacy today) and
+the cross-scope Dashboard card only ever compares a scan against the previous
+snapshot of that same scope. Category aggregates only, never file paths.
+See `Documentation/FEATURE_MATRIX.md` → "Storage Timeline" and
+`Documentation/PERSISTENCE.md` → "Timeline" for the full detail, including
+which engines are deliberately not wired yet and why (My Clutter/Large & Old,
+Space Lens, Similar Images, Cloud Cleanup).
+
+Follow-up, not blocking the vertical above: wiring more engines as their
+scan semantics allow it; richer physical/APFS-aware sizing (planned as its
+own "APFS Intelligence" roadmap item); a WidgetKit surface reusing
+`TimelineService`.
 
 ## Deliberately deferred product scope
 
