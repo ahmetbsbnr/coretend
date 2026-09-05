@@ -33,7 +33,7 @@ struct CommandPaletteTests {
         // re-wired rather than deleted. See Documentation/Audits/
         // SESSION_2026-08-09_AUDIT.md.
         #expect(modules == [
-            .smartCare, .cleanup, .spaceLens, .duplicates, .applications,
+            .smartCare, .cleanup, .spaceLens, .duplicates, .applications, .timeline,
             .myClutter, .cloudCleanup, .performance,
             .protection, .myActivity, .settings,
         ])

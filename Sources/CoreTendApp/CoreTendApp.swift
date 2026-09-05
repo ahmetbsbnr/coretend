@@ -301,6 +301,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
     case performance = "Performance"
     case applications = "Applications"
     case duplicates = "Duplicates"
+    case timeline = "Timeline"
     case myClutter = "My Clutter"
     case spaceLens = "Space Lens"
     case cloudCleanup = "Cloud Cleanup"
@@ -317,6 +318,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .performance: .performance
         case .applications: .applications
         case .duplicates: .duplicates
+        case .timeline: .timeline
         case .myClutter: .myClutter
         case .spaceLens: .spaceLens
         case .cloudCleanup: .cloudCleanup
@@ -337,6 +339,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .performance: L("performance.nav_title")
         case .applications: L("apps.title")
         case .duplicates: L("module.duplicates")
+        case .timeline: L("module.timeline")
         case .myClutter: L("clutter.title")
         case .spaceLens: L("spacelens.title")
         case .cloudCleanup: L("cloud.nav_title")
@@ -355,7 +358,7 @@ struct SidebarGroup: Identifiable {
     static let all: [SidebarGroup] = [
         SidebarGroup(id: "main", title: nil, modules: [.smartCare]),
         SidebarGroup(id: "storage", title: L("sidebar.storage"),
-                     modules: [.cleanup, .spaceLens, .duplicates, .applications]),
+                     modules: [.cleanup, .spaceLens, .duplicates, .applications, .timeline]),
         // Secondary, lower-priority tools: each does something the seven
         // primary modules above don't (broken-LaunchAgent detection, a
         // large/old-files finder, local-vs-cloud storage analysis) so they
@@ -414,6 +417,8 @@ struct MainWindow: View {
                     ApplicationsView()
                 case .duplicates:
                     DuplicatesView()
+                case .timeline:
+                    StorageTimelineView()
                 case .performance:
                     PerformanceView()
                 case .spaceLens:
