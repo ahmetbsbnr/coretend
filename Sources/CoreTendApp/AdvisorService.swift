@@ -90,8 +90,24 @@ enum AdvisorService {
     /// — a `group.`-prefixed container, or a vendor prefix shared by more
     /// than one leftover — never re-derived here from scratch.
     static func advise(leftover item: AssociatedItem, isAmbiguous: Bool) -> AdvisorFinding {
+        advise(leftoversID: "leftovers.\(item.id)", bytes: item.sizeBytes, isAmbiguous: isAmbiguous)
+    }
+
+    /// The aggregate across every leftover candidate sharing one ambiguity
+    /// classification — used where a plan-level view (Recovery Plan) needs
+    /// one line per classification rather than one per item, while still
+    /// keeping the ambiguous/non-ambiguous confidence split Leftovers itself
+    /// already makes. `items` must already be filtered to one classification;
+    /// this never re-derives ambiguity.
+    static func advise(leftovers items: [AssociatedItem], isAmbiguous: Bool) -> AdvisorFinding {
+        let bytes = items.reduce(Int64(0)) { $0 + $1.sizeBytes }
+        return advise(leftoversID: "leftovers.aggregate.\(isAmbiguous ? "ambiguous" : "exact")",
+                       bytes: bytes, isAmbiguous: isAmbiguous)
+    }
+
+    private static func advise(leftoversID: String, bytes: Int64, isAmbiguous: Bool) -> AdvisorFinding {
         AdvisorFinding(
-            id: "leftovers.\(item.id)",
+            id: leftoversID,
             title: TimelineCategoryLabel.display(engine: "leftovers", category: "applicationData"),
             summary: L("advisor.leftovers.summary"),
             reason: L(isAmbiguous ? "advisor.leftovers.reason.ambiguous" : "advisor.leftovers.reason.exact"),
@@ -99,7 +115,7 @@ enum AdvisorService {
             risk: .medium,
             confidence: isAmbiguous ? .probable : .high,
             reversibility: .trash,
-            reclaimableBytes: item.sizeBytes,
+            reclaimableBytes: bytes,
             category: .leftovers,
             source: "bundleIdFormatMatch",
             recommendation: isAmbiguous ? L("advisor.leftovers.recommendation.ambiguous") : nil)
@@ -114,18 +130,31 @@ enum AdvisorService {
     /// product does today (cache-only cleaning) — never a generic privacy
     /// claim broader than the real behavior.
     static func advise(browserProfile profile: BrowserProfile) -> AdvisorFinding {
+        advise(privacyID: "privacy.\(profile.id)", title: profile.browser, bytes: profile.cacheBytes)
+    }
+
+    /// The aggregate across every detected browser profile — one line for a
+    /// plan-level view instead of one per browser. Title is generic
+    /// ("Browser caches"), not a specific browser's proper noun, since it no
+    /// longer names just one.
+    static func advise(browserProfiles profiles: [BrowserProfile]) -> AdvisorFinding {
+        let bytes = profiles.reduce(Int64(0)) { $0 + $1.cacheBytes }
+        return advise(privacyID: "privacy.aggregate", title: L("advisor.privacy.aggregate_title"), bytes: bytes)
+    }
+
+    private static func advise(privacyID: String, title: String, bytes: Int64) -> AdvisorFinding {
         AdvisorFinding(
-            id: "privacy.\(profile.id)",
-            title: profile.browser,
+            id: privacyID,
+            title: title,
             summary: L("advisor.privacy.summary"),
             reason: L("advisor.privacy.reason"),
             consequence: L("advisor.privacy.consequence"),
             risk: .low,
             confidence: .high,
             reversibility: .trash,
-            reclaimableBytes: profile.cacheBytes,
+            reclaimableBytes: bytes,
             category: .privacy,
-            source: profile.browser,
+            source: title,
             notRemoved: [L("advisor.privacy.not_removed.history"), L("advisor.privacy.not_removed.cookies")])
     }
 }

@@ -154,6 +154,23 @@ struct AdvisorServiceLeftoversTests {
         let advisor = AdvisorService.advise(leftover: item(sizeBytes: 12_345), isAmbiguous: false)
         #expect(advisor.reclaimableBytes == 12_345)
     }
+
+    @Test func aggregateSumsBytesAcrossItemsAndSharesTheSameClassificationRules() {
+        let items = [item(sizeBytes: 100), item(sizeBytes: 250)]
+        let exact = AdvisorService.advise(leftovers: items, isAmbiguous: false)
+        #expect(exact.reclaimableBytes == 350)
+        #expect(exact.confidence == .high)
+        let ambiguous = AdvisorService.advise(leftovers: items, isAmbiguous: true)
+        #expect(ambiguous.reclaimableBytes == 350)
+        #expect(ambiguous.confidence == .probable)
+        #expect(exact.id != ambiguous.id, "the two classifications must never collide on one id")
+    }
+
+    @Test func aggregateIDIsStableAcrossDifferentItemSets() {
+        let a = AdvisorService.advise(leftovers: [item(sizeBytes: 1)], isAmbiguous: false)
+        let b = AdvisorService.advise(leftovers: [item(sizeBytes: 999), item(sizeBytes: 1)], isAmbiguous: false)
+        #expect(a.id == b.id, "the aggregate id depends only on the classification, not on which items are in it")
+    }
 }
 
 @Suite("AdvisorService — Privacy")
@@ -187,6 +204,22 @@ struct AdvisorServicePrivacyTests {
     @Test func titleIsTheBrowserNameVerbatimNotATranslatedProperNoun() {
         let advisor = AdvisorService.advise(browserProfile: profile(browser: "Firefox"))
         #expect(advisor.title == "Firefox")
+    }
+
+    @Test func aggregateSumsCacheBytesAcrossEveryProfileWithAGenericTitle() {
+        let profiles = [profile(browser: "Chrome", cacheBytes: 1_000), profile(browser: "Safari", cacheBytes: 2_000)]
+        let advisor = AdvisorService.advise(browserProfiles: profiles)
+        #expect(advisor.reclaimableBytes == 3_000)
+        #expect(advisor.title != "Chrome" && advisor.title != "Safari", "the aggregate names no single browser")
+        #expect(!advisor.title.isEmpty)
+        #expect(advisor.risk == .low)
+        #expect(advisor.confidence == .high)
+        #expect(advisor.notRemoved == ["Browsing history", "Cookies"])
+    }
+
+    @Test func aggregateWithNoProfilesIsAZeroByteFinding() {
+        let advisor = AdvisorService.advise(browserProfiles: [])
+        #expect(advisor.reclaimableBytes == 0)
     }
 }
 
