@@ -305,6 +305,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
     case recoveryPlan = "Recovery Plan"
     case apfs = "APFS"
     case developer = "Developer"
+    case privacyLab = "Privacy Lab"
     case myClutter = "My Clutter"
     case spaceLens = "Space Lens"
     case cloudCleanup = "Cloud Cleanup"
@@ -325,6 +326,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .recoveryPlan: .recoveryPlan
         case .apfs: .apfs
         case .developer: .developer
+        case .privacyLab: .privacyLab
         case .myClutter: .myClutter
         case .spaceLens: .spaceLens
         case .cloudCleanup: .cloudCleanup
@@ -349,6 +351,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .recoveryPlan: L("module.recovery_plan")
         case .apfs: L("module.apfs")
         case .developer: L("module.developer")
+        case .privacyLab: L("module.privacy_lab")
         case .myClutter: L("clutter.title")
         case .spaceLens: L("spacelens.title")
         case .cloudCleanup: L("cloud.nav_title")
@@ -377,7 +380,7 @@ struct SidebarGroup: Identifiable {
         SidebarGroup(id: "more", title: L("sidebar.more"),
                      modules: [.myClutter, .cloudCleanup, .performance]),
         SidebarGroup(id: "system", title: L("sidebar.system"),
-                     modules: [.protection, .myActivity, .settings]),
+                     modules: [.privacyLab, .protection, .myActivity, .settings]),
     ]
 
     static var visibleModules: [ModuleID] {
@@ -435,6 +438,8 @@ struct MainWindow: View {
                     APFSIntelligenceView()
                 case .developer:
                     DeveloperCenterView(model: developerModel)
+                case .privacyLab:
+                    PrivacyLabView()
                 case .performance:
                     PerformanceView()
                 case .spaceLens:
