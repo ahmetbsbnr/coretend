@@ -3,6 +3,7 @@
 
 import SwiftUI
 import ScanCore
+import FinderShared
 import SafetyCore
 import DesignSystem
 import Persistence
@@ -27,7 +28,11 @@ final class SpaceLensViewModel {
 
     var current: SpaceNode? { pathStack.last ?? root }
 
-    func start(url: URL) {
+    private var scanGeneration = UUID()
+
+    func start(url: URL, recordVisit: Bool = true) {
+        let generation = UUID()
+        scanGeneration = generation
         scanTask?.cancel()
         phase = .scanning(items: 0)
         root = nil
@@ -38,17 +43,29 @@ final class SpaceLensViewModel {
         self.pauseController = pauseController
         let engine = SpaceLensEngine(root: url)
         scanTask = Task {
+            if !recordVisit {
+                guard url.isFileURL,
+                      case .success = SelectionValidator.validate(path: url.path, for: .scanFolder) else {
+                    phase = .idle
+                    rootURL = nil
+                    AppRouter.shared.finderSelectionRejected = true
+                    return
+                }
+            }
             for await event in engine.run(pauseController: pauseController) {
+                guard !Task.isCancelled, scanGeneration == generation else { return }
                 switch event {
                 case let .progress(items, _):
                     phase = .scanning(items: items)
                 case let .finished(node):
                     root = node
                     phase = .ready
+                    if recordVisit {
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .scan, summary: "Space Lens: \(node.name) — \(mcFormatBytes(node.size))",
                         itemCount: node.children.count, bytes: node.size))
                     AppEnvironment.shared.recordLocationVisit(path: url.path, bytes: node.size)
+                    }
                 case .cancelled:
                     isScanPaused = false
                     phase = root == nil ? .idle : .ready
@@ -314,7 +331,20 @@ struct SpaceLensView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .mcOpenSpaceLensAt)) { note in
             if let url = note.object as? URL {
-                model.start(url: url)
+                if note.userInfo?["finder"] as? Bool == true {
+                    guard let selected = AppRouter.shared.consumePendingFolderScanURL() else { return }
+                    model.start(url: selected, recordVisit: false)
+                } else {
+                    model.start(url: url)
+                }
+                showFavoritesRecents = false
+            }
+        }
+        .onAppear {
+            // Cold launch / not-yet-mounted: a Finder "Scan Folder" route
+            // left a validated folder URL for us to pick up. Read-only scan.
+            if let url = AppRouter.shared.consumePendingFolderScanURL() {
+                model.start(url: url, recordVisit: false)
                 showFavoritesRecents = false
             }
         }

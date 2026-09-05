@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	The CoreTend Finder Sync extension. macOS app extensions are always
+	sandboxed regardless of the host, so App Sandbox is declared here
+	explicitly.
+
+	That is the ONLY entitlement. The extension:
+	  * reads the current Finder selection via FIFinderSyncController
+	    (the FinderSync API itself — no file entitlement needed);
+	  * classifies each URL using bounded file attributes (no contents read);
+	  * opens one coretend:// URL via NSWorkspace to hand a path to the
+	    host (opening a URL needs no entitlement).
+
+	Deliberately absent, because nothing here uses them:
+	  * com.apple.security.files.user-selected.read-only — the extension
+	    never reads file contents; the non-sandboxed host does every
+	    substantive inspection / scan after the user picks an action.
+	  * com.apple.security.application-groups — the handoff is a URL, not
+	    a shared-container file, so no App Group is required (unlike the
+	    WidgetKit extension, which does need one).
+	  * network, iCloud, push, automation, privileged-helper,
+	    com.apple.security.cs.* exceptions — none apply.
+	-->
+	<key>com.apple.security.app-sandbox</key>
+	<true/>
+</dict>
+</plist>

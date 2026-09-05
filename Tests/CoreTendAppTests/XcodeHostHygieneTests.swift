@@ -81,7 +81,9 @@ struct XcodeHostHygieneTests {
     }
 
     @Test func entitlementsStayMinimal_noSpeculativeCapabilities() throws {
-        for file in ["Configuration/CoreTend.entitlements", "Configuration/CoreTendWidget.entitlements"] {
+        for file in ["Configuration/CoreTend.entitlements",
+                     "Configuration/CoreTendWidget.entitlements",
+                     "Configuration/CoreTendFinder.entitlements"] {
             let text = stripXMLComments(try read(file))
             for forbidden in ["com.apple.developer.icloud", "aps-environment",
                               "com.apple.developer.networking", "com.apple.security.cs.",
@@ -94,6 +96,55 @@ struct XcodeHostHygieneTests {
     @Test func theWidgetExtensionInfoPlistIsAWidgetKitExtension() throws {
         let plist = try read("WidgetExtension/Info.plist")
         #expect(plist.contains("com.apple.widgetkit-extension"))
+    }
+
+    // MARK: - Finder Sync extension (third target)
+
+    @Test func theProjectDeclaresTheFinderSyncExtension() throws {
+        let pbx = try read("CoreTend.xcodeproj/project.pbxproj")
+        #expect(pbx.contains("CoreTendFinder"))
+        #expect(pbx.contains("com.ahmetbsbnr.coretend.finder"))
+        let yml = try read("project.yml")
+        #expect(yml.contains("CoreTendFinder"))
+        #expect(yml.contains("product: FinderShared"))
+        // It must be embedded in the host, like the widget.
+        #expect(yml.contains("target: CoreTendFinder\n        embed: true"))
+    }
+
+    @Test func theFinderExtensionInfoPlistIsAFinderSyncExtension() throws {
+        let plist = try read("FinderExtension/Info.plist")
+        #expect(plist.contains("com.apple.FinderSync"))
+        #expect(plist.contains("CoreTendFinder.CoreTendFinderSync"), "principal class")
+        for path in ["FinderExtension/Info.plist", "WidgetExtension/Info.plist"] {
+            let text = try read(path)
+            #expect(text.contains("CFBundleExecutable"))
+            #expect(text.contains("$(EXECUTABLE_NAME)"))
+        }
+        #expect(!plist.contains("com.apple.widgetkit-extension"))
+    }
+
+    @Test func theFinderExtensionEntitlementsAreSandboxOnly() throws {
+        let text = stripXMLComments(try read("Configuration/CoreTendFinder.entitlements"))
+        #expect(text.contains("com.apple.security.app-sandbox"))
+        // No App Group (the handoff is a URL, not a shared file), no
+        // user-selected-file access (the extension never reads file
+        // contents), no network.
+        #expect(!text.contains("com.apple.security.application-groups"))
+        #expect(!text.contains("com.apple.security.files.user-selected"))
+        #expect(!text.contains("com.apple.security.network"))
+    }
+
+    @Test func noCommittedFinderProjectFileCarriesAnAbsolutePath() throws {
+        for file in ["FinderExtension/Info.plist", "Configuration/CoreTendFinder.entitlements"] {
+            let text = try read(file)
+            #expect(!text.contains("/Users/"), "\(file) contains an absolute /Users path")
+        }
+    }
+
+    @Test func theHostRegistersTheCoretendURLSchemeForTheFinderHandoff() throws {
+        let plist = try read("Resources/Info.plist")
+        #expect(plist.contains("CFBundleURLSchemes"))
+        #expect(plist.contains("coretend"))
     }
 
     @Test func theWidgetSourceLinksNothingThatCouldScanOrDelete() throws {

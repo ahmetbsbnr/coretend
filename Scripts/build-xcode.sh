@@ -71,6 +71,48 @@ check "[ '$WIDGET_ID' = 'com.ahmetbsbnr.coretend.widget' ]" \
 check "find '$BUILT_APP/Contents/PlugIns/CoreTendWidget.appex' -path '*CoreTend_WidgetShared.bundle/*fr.lproj*' | grep -q ." \
   "widget ships its FR localization (CoreTend_WidgetShared.bundle/fr.lproj)"
 
+# --- Finder Sync extension (third target) ---
+FINDER_APPEX="$BUILT_APP/Contents/PlugIns/CoreTendFinder.appex"
+check "[ -d '$FINDER_APPEX' ]" \
+  "Finder Sync extension embedded at Contents/PlugIns/CoreTendFinder.appex"
+check "[ -f '$FINDER_APPEX/Contents/MacOS/CoreTendFinder' ]" \
+  "Finder extension executable present"
+FINDER_EPI=$(/usr/libexec/PlistBuddy -c 'Print :NSExtension:NSExtensionPointIdentifier' \
+  "$FINDER_APPEX/Contents/Info.plist" 2>/dev/null || true)
+check "[ '$FINDER_EPI' = 'com.apple.FinderSync' ]" \
+  "Finder NSExtensionPointIdentifier = com.apple.FinderSync (got: ${FINDER_EPI:-<none>})"
+FINDER_ID=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' \
+  "$FINDER_APPEX/Contents/Info.plist" 2>/dev/null || true)
+check "[ '$FINDER_ID' = 'com.ahmetbsbnr.coretend.finder' ]" \
+  "Finder bundle id = com.ahmetbsbnr.coretend.finder (got: ${FINDER_ID:-<none>})"
+check "find '$FINDER_APPEX' -path '*CoreTend_FinderShared.bundle/*fr.lproj*' | grep -q ." \
+  "Finder extension ships its FR menu localization (CoreTend_FinderShared.bundle/fr.lproj)"
+check "/usr/libexec/PlistBuddy -c 'Print :CFBundleURLTypes:0:CFBundleURLSchemes:0' '$BUILT_APP/Contents/Info.plist' 2>/dev/null | grep -qx coretend" \
+  "host registers the coretend:// URL scheme for the Finder handoff"
+
+# Probe entitlements on a copy of the actual compiled Finder bundle. This
+# is ad-hoc verification only, not Developer ID signing or notarization.
+FINDER_PROBE="$DERIVED/finder-entitlement-probe/CoreTendFinder.appex"
+mkdir -p "$(dirname "$FINDER_PROBE")"
+ditto "$FINDER_APPEX" "$FINDER_PROBE"
+codesign --force --sign - --entitlements Configuration/CoreTendFinder.entitlements "$FINDER_PROBE"
+codesign --verify --strict "$FINDER_PROBE"
+codesign --display --entitlements :- "$FINDER_PROBE" > "$DERIVED/finder-entitlements.plist"
+python3 - "$DERIVED/finder-entitlements.plist" "$BUILT_APP" "$PROJECT" <<'PYVERIFY'
+import pathlib, plistlib, sys
+assert plistlib.loads(pathlib.Path(sys.argv[1]).read_bytes()) == {"com.apple.security.app-sandbox": True}
+app = pathlib.Path(sys.argv[2])
+for name in ("CoreTendFinder", "CoreTendWidget"):
+    bundle = app / "Contents/PlugIns" / (name + ".appex")
+    info = plistlib.loads((bundle / "Contents/Info.plist").read_bytes())
+    assert info.get("CFBundleExecutable") == name, f"{name}: missing/wrong executable declaration"
+    assert (bundle / "Contents/MacOS" / name).is_file()
+for path in pathlib.Path(sys.argv[3]).rglob("*"):
+    if path.suffix in (".pbxproj", ".xcscheme"):
+        assert b"/Users/" not in path.read_bytes(), f"machine-specific path: {path}"
+print("  OK: Finder compiled-bundle ad-hoc entitlements exactly sandbox-only; both executable declarations; portable project")
+PYVERIFY
+
 check "[ -d '$BUILT_APP/Contents/Resources/Metadata.appintents' ]" \
   "App Intents metadata bundle present (Contents/Resources/Metadata.appintents)"
 check "[ -f '$BUILT_APP/Contents/Resources/Metadata.appintents/extract.actionsdata' ]" \

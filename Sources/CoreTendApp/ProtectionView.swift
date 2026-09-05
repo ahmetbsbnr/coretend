@@ -3,6 +3,7 @@
 
 import SwiftUI
 import IntegrityCore
+import FinderShared
 import DesignSystem
 import Persistence
 
@@ -60,8 +61,28 @@ final class IntegrityViewModel {
         isLoading = false
     }
 
+    private var inspectionTask: Task<Void, Never>?
+    private var inspectionGeneration = UUID()
+
     func inspect(_ url: URL) {
-        inspectedApp = (url, CodeSignInspector.inspect(at: url))
+        inspectionTask?.cancel()
+        let token = UUID()
+        inspectionGeneration = token
+        inspectedApp = nil
+        inspectionTask = Task {
+            let info = await Task.detached(priority: .utility) { () -> CodeSignInfo? in
+                guard url.isFileURL,
+                      case .success = SelectionValidator.validate(path: url.path, for: .inspectApplication)
+                else { return nil }
+                return CodeSignInspector.inspect(at: url)
+            }.value
+            guard !Task.isCancelled, inspectionGeneration == token else { return }
+            guard let info else {
+                AppRouter.shared.finderSelectionRejected = true
+                return
+            }
+            inspectedApp = (url, info)
+        }
     }
 }
 
@@ -93,6 +114,11 @@ struct ProtectionView: View {
         }
         .navigationTitle(L("module.protection"))
         .accessibilityIdentifier("integrity.root")
+        .onReceive(NotificationCenter.default.publisher(for: .mcInspectApplicationAt)) { _ in
+            // A Finder "Inspect Application Integrity" route always lands on
+            // the Integrity tab.
+            tab = 0
+        }
     }
 }
 
@@ -116,6 +142,20 @@ struct IntegrityView: View {
             .padding(MCSpacing.page)
         }
         .task { await model.refresh() }
+        .onReceive(NotificationCenter.default.publisher(for: .mcInspectApplicationAt)) { note in
+            if let url = AppRouter.shared.consumePendingApplicationInspectionURL() {
+                model.inspect(url)
+            }
+        }
+        .onAppear {
+            // Cold launch / not-yet-mounted: a Finder "Inspect Application
+            // Integrity" route left a validated .app URL. Read-only
+            // code-signature read (CodeSignInspector), same as the
+            // Choose… button.
+            if let url = AppRouter.shared.consumePendingApplicationInspectionURL() {
+                model.inspect(url)
+            }
+        }
     }
 
     private var explainerCard: some View {

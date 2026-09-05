@@ -37,6 +37,8 @@ DMG_NAME="Release/CoreTend-${VERSION}-arm64.dmg"
 ENTITLEMENTS="Configuration/CoreTend.entitlements"
 WIDGET_ENTITLEMENTS="Configuration/CoreTendWidget.entitlements"
 WIDGET_APPEX="$APP/Contents/PlugIns/CoreTendWidget.appex"
+FINDER_ENTITLEMENTS="Configuration/CoreTendFinder.entitlements"
+FINDER_APPEX="$APP/Contents/PlugIns/CoreTendFinder.appex"
 
 echo "== Preflight =="
 # The shipping .app (with the embedded WidgetKit extension and the App
@@ -47,9 +49,15 @@ echo "== Preflight =="
 [ -d "$APP" ] || { echo "FAIL: $APP not found — run Scripts/build-xcode.sh first"; exit 1; }
 [ -f "$ENTITLEMENTS" ] || { echo "FAIL: $ENTITLEMENTS not found"; exit 1; }
 [ -f "$WIDGET_ENTITLEMENTS" ] || { echo "FAIL: $WIDGET_ENTITLEMENTS not found"; exit 1; }
+[ -f "$FINDER_ENTITLEMENTS" ] || { echo "FAIL: $FINDER_ENTITLEMENTS not found"; exit 1; }
 [ -d "$WIDGET_APPEX" ] || {
   echo "FAIL: $WIDGET_APPEX not found — this .app was not built by Scripts/build-xcode.sh."
   echo "  (Scripts/package-local.sh cannot embed the widget; SwiftPM does not build .appex bundles.)"
+  exit 1
+}
+[ -d "$FINDER_APPEX" ] || {
+  echo "FAIL: $FINDER_APPEX not found — this .app was not built by Scripts/build-xcode.sh."
+  echo "  (The Finder Sync extension is an Xcode app-extension target; SwiftPM cannot produce it.)"
   exit 1
 }
 [ -d "$APP/Contents/Resources/Metadata.appintents" ] || {
@@ -80,10 +88,11 @@ fi
 echo "OK: identity and notarytool profile both present"
 
 echo "== Signing loose embedded Mach-O binaries (deepest first) =="
-# Skips the two bundle executables (the appex and the host) — those are
+# Skips the three bundle executables (both appex and the host) — those are
 # signed as bundles below, in the correct nested order.
 find "$APP" -type f \( -perm -u+x -o -name "*.dylib" \) \
   ! -path "*/CoreTendWidget.appex/Contents/MacOS/*" \
+  ! -path "*/CoreTendFinder.appex/Contents/MacOS/*" \
   ! -path "$APP/Contents/MacOS/*" | while read -r bin; do
   file "$bin" | grep -q "Mach-O" || continue
   echo "  signing: $bin"
@@ -91,18 +100,26 @@ find "$APP" -type f \( -perm -u+x -o -name "*.dylib" \) \
     --sign "$DEVELOPER_ID" "$bin"
 done
 
-# Nested signing order: the extension bundle first (with ITS entitlements —
-# App Sandbox + the shared App Group), then the host .app (with the host
-# entitlements — hardened runtime + the same App Group, no sandbox). Signing
-# the host seals CodeResources over the already-signed appex, so the appex
-# must never be re-signed afterwards.
+# Nested signing order: every extension bundle first (each with ITS OWN
+# entitlements), then the host .app last. Signing the host seals
+# CodeResources over the already-signed appex bundles, so no appex is ever
+# re-signed afterwards.
+#
+#   CoreTendFinder.appex   — App Sandbox only (URL handoff; no App Group)
+#   CoreTendWidget.appex   — App Sandbox + the shared App Group
+#   CoreTend.app (host)    — hardened runtime + the same App Group, no sandbox
 #
 # NOTE on App Groups + Developer ID: the shared group
-# `group.com.ahmetbsbnr.coretend` must be registered on the Apple Developer
-# account for a Developer ID (non-App-Store) distribution to be accepted by
-# notarization with this entitlement. This has not been exercised in a real
-# notarization run yet — see Documentation/SIGNING_NOTARIZATION.md
-# ("Nested extension + App Group — implemented, not yet notarized").
+# `group.com.ahmetbsbnr.coretend` (used ONLY by the widget, not the Finder
+# extension) must be registered on the Apple Developer account for a
+# Developer ID (non-App-Store) distribution to be accepted by notarization
+# with that entitlement. This has not been exercised in a real notarization
+# run yet — see Documentation/SIGNING_NOTARIZATION.md.
+echo "== Signing the Finder Sync extension (App Sandbox only) =="
+codesign --force --options runtime --timestamp \
+  --entitlements "$FINDER_ENTITLEMENTS" \
+  --sign "$DEVELOPER_ID" "$FINDER_APPEX"
+
 echo "== Signing the WidgetKit extension (App Sandbox + App Group) =="
 codesign --force --options runtime --timestamp \
   --entitlements "$WIDGET_ENTITLEMENTS" \
@@ -113,12 +130,17 @@ codesign --force --options runtime --timestamp \
   --entitlements "$ENTITLEMENTS" \
   --sign "$DEVELOPER_ID" "$APP"
 
-echo "== Verifying signatures (host and nested extension) =="
+echo "== Verifying signatures (host and both nested extensions) =="
 codesign --verify --deep --strict --verbose=2 "$APP"
 codesign --verify --strict --verbose=2 "$WIDGET_APPEX"
+codesign --verify --strict --verbose=2 "$FINDER_APPEX"
 codesign --display --entitlements :- "$WIDGET_APPEX" | grep -q "group.com.ahmetbsbnr.coretend" \
-  && echo "  OK: extension carries the shared App Group entitlement" \
-  || { echo "  FAIL: extension lost its App Group entitlement"; exit 1; }
+  && echo "  OK: widget carries the shared App Group entitlement" \
+  || { echo "  FAIL: widget lost its App Group entitlement"; exit 1; }
+codesign --display --entitlements :- "$FINDER_APPEX" | python3 -c '
+import plistlib, sys
+assert plistlib.load(sys.stdin.buffer) == {"com.apple.security.app-sandbox": True}, "Finder entitlements must be exactly sandbox-only"
+print("  OK: Finder extension entitlements exactly sandbox-only")'
 spctl --assess --type execute --verbose "$APP" || {
   echo "NOTE: spctl will still reject until notarization+stapling complete below — expected at this point."
 }

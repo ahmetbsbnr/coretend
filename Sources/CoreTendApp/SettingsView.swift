@@ -151,6 +151,26 @@ struct MCSettingsView: View {
                 Text(L("settings.notifications_categories.detail"))
                     .font(.caption).foregroundStyle(.secondary)
             }
+            Section(L("settings.finder")) {
+                Text(L("settings.finder.detail"))
+                    .font(.caption).foregroundStyle(.secondary)
+                    .accessibilityIdentifier("settings.finder.detail")
+                Label(L("settings.finder.readonly_note"), systemImage: "hand.raised")
+                    .font(.caption).foregroundStyle(.secondary)
+                Button(L("settings.finder.open_settings")) {
+                    // System Settings ▸ General ▸ Login Items & Extensions ▸
+                    // Finder extensions. CoreTend cannot read the exact
+                    // enabled/disabled state without shelling out to
+                    // `pluginkit`, which it deliberately does not — so this
+                    // is truthful guidance, not a fake status indicator.
+                    if let url = URL(string: "x-apple.systempreferences:com.apple.ExtensionsPreferences") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
+                .accessibilityIdentifier("settings.finder.open_settings")
+                Text(L("settings.finder.enable_hint"))
+                    .font(.caption).foregroundStyle(.tertiary)
+            }
             Section(L("settings.protection")) {
                 LabeledContent(L("settings.this_copy_signature")) {
                     Label(model.appSignature.tier == .adHocOrUnsigned ? L("settings.not_installed") : L("settings.installed"),

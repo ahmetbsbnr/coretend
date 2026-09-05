@@ -24,6 +24,11 @@ let package = Package(
         // extension (reader). Foundation only — the widget target links this
         // and nothing that could scan or delete.
         .library(name: "WidgetShared", targets: ["WidgetShared"]),
+        // Tiny value+classification+validation layer shared by the app
+        // (handoff consumer) and the Finder Sync extension. Foundation only
+        // — the Finder extension links this and nothing that could scan,
+        // inspect file contents, or delete.
+        .library(name: "FinderShared", targets: ["FinderShared"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-testing.git", from: "0.12.0"),
@@ -39,10 +44,11 @@ let package = Package(
         ),
         .target(
             name: "CoreTendApp",
-            dependencies: ["ScanCore", "SafetyCore", "FileRules", "DesignSystem", "Persistence", "SystemMetrics", "AppDiscovery", "IntegrityCore", "WidgetShared"],
+            dependencies: ["ScanCore", "SafetyCore", "FileRules", "DesignSystem", "Persistence", "SystemMetrics", "AppDiscovery", "IntegrityCore", "WidgetShared", "FinderShared"],
             resources: [.process("Resources")]
         ),
         .target(name: "WidgetShared", resources: [.process("Resources")]),
+        .target(name: "FinderShared", resources: [.process("Resources")]),
         .target(name: "Persistence", dependencies: ["SafetyCore"]),
         .target(name: "SystemMetrics"),
         .target(name: "AppDiscovery"),
@@ -53,6 +59,7 @@ let package = Package(
         .testTarget(name: "PersistenceTests", dependencies: ["Persistence", "SafetyCore", .product(name: "Testing", package: "swift-testing")]),
         .testTarget(name: "SystemMetricsTests", dependencies: ["SystemMetrics", .product(name: "Testing", package: "swift-testing")]),
         .testTarget(name: "WidgetSharedTests", dependencies: ["WidgetShared", .product(name: "Testing", package: "swift-testing")]),
+        .testTarget(name: "FinderSharedTests", dependencies: ["FinderShared", .product(name: "Testing", package: "swift-testing")]),
         .target(name: "ScanCore", dependencies: ["SafetyCore"]),
         .target(name: "SafetyCore"),
         .target(name: "FileRules", dependencies: ["ScanCore", "SafetyCore"]),
