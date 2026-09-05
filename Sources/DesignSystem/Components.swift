@@ -30,6 +30,7 @@ public struct MCModuleIdentity: Sendable {
     public static let apfs = MCModuleIdentity(icon: "internaldrive", color: MCColor.storage)
     public static let developer = MCModuleIdentity(icon: "hammer", color: MCColor.storage)
     public static let privacyLab = MCModuleIdentity(icon: "eye.trianglebadge.exclamationmark", color: MCColor.protection)
+    public static let restoreCenter = MCModuleIdentity(icon: "arrow.uturn.backward.circle", color: MCColor.protection)
     public static let favoritesRecents = MCModuleIdentity(icon: "star", color: MCColor.performance)
     public static let settings = MCModuleIdentity(icon: "gearshape", color: Color.secondary)
 }

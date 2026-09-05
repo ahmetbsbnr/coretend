@@ -191,10 +191,26 @@ public actor SafetyCenter {
     private let validator: PathValidator
     private let fileManager = FileManager.default
     private let sink: SafetyAuditSink?
+    /// Records a restore manifest for every real Trash move (never for the
+    /// permanent `/tmp` `removeItem` fallback). When constructed with only a
+    /// `sink`, this is that same object if it also conforms to
+    /// `RestoreManifestSink` (`Persistence.Store` does) — so every existing
+    /// `SafetyCenter(validator:sink: store)` call site gets restore capture
+    /// with no change. A nil sink means restore capture is simply off.
+    private let restoreSink: RestoreManifestSink?
 
     public init(validator: PathValidator, sink: SafetyAuditSink? = nil) {
         self.validator = validator
         self.sink = sink
+        self.restoreSink = sink as? RestoreManifestSink
+    }
+
+    /// Explicit form for tests that inject a standalone restore sink (or want
+    /// to prove one is *not* consulted).
+    public init(validator: PathValidator, sink: SafetyAuditSink?, restoreSink: RestoreManifestSink?) {
+        self.validator = validator
+        self.sink = sink
+        self.restoreSink = restoreSink
     }
 
     /// Produces an approved operation, or throws if the path fails validation.
@@ -232,11 +248,19 @@ public actor SafetyCenter {
             do throws(SafetyError) {
                 let url = try validator.validate(op.url)
                 guard fileManager.fileExists(atPath: url.path) else { throw .fileVanished }
+                // Captured before the move; the original is gone afterwards.
+                let wasDirectory = FilesystemIdentity.isDirectory(url)
+                let modified = FilesystemIdentity.modificationDate(url)
+                var trashURL: URL?
                 do {
-                    try fileManager.trashItem(at: url, resultingItemURL: nil)
+                    var resulting: NSURL?
+                    try fileManager.trashItem(at: url, resultingItemURL: &resulting)
+                    trashURL = resulting as URL?
                 } catch {
                     if Self.isTemporaryPath(url) {
                         do {
+                            // Permanent removal — deliberately produces NO
+                            // restore manifest: there is nothing to restore.
                             try fileManager.removeItem(at: url)
                         } catch {
                             skipped.append((op, .fileVanished))
@@ -253,6 +277,14 @@ public actor SafetyCenter {
                 }
                 await emit(.executed, operationID: op.id, path: url.path, ruleID: op.ruleID,
                            risk: op.risk, size: op.logicalSize, result: "moved to trash")
+                if let restoreSink, let trashURL {
+                    await restoreSink.recordRestoreManifest(RestoreManifestRecord(
+                        operationID: op.id, originalURL: url, trashURL: trashURL,
+                        isDirectory: wasDirectory, sizeBytes: op.logicalSize, modificationDate: modified,
+                        volumeUUID: FilesystemIdentity.volumeUUID(of: trashURL),
+                        inode: FilesystemIdentity.inode(atPath: trashURL.path),
+                        ruleID: op.ruleID, risk: op.risk))
+                }
                 executed.append(op)
             } catch {
                 skipped.append((op, error))
