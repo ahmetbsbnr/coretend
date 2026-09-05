@@ -12,6 +12,11 @@ struct DashboardView: View {
     @State private var exclusions: [String] = []
     @State private var collector = MetricsCollector()
     @State private var revealed = false
+    /// nil while loading; still nil afterwards means "not enough Timeline
+    /// history yet" — the card must say that honestly, never show 0 GB as if
+    /// a real comparison happened.
+    @State private var sinceLastScan: TimelineComparison?
+    private let timelineService = TimelineService()
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -31,6 +36,8 @@ struct DashboardView: View {
                 scanHero
                     .modifier(Reveal(revealed: revealed, index: 1, reduceMotion: reduceMotion))
                 statusStrip
+                    .modifier(Reveal(revealed: revealed, index: 2, reduceMotion: reduceMotion))
+                sinceLastScanCard
                     .modifier(Reveal(revealed: revealed, index: 2, reduceMotion: reduceMotion))
                 VStack(alignment: .leading, spacing: MCSpacing.sm) {
                     MCSectionHeader(L("sidebar.more"))
@@ -181,6 +188,80 @@ struct DashboardView: View {
         return CGFloat(Double(snap.diskFreeBytes) / Double(snap.diskTotalBytes))
     }
 
+    // MARK: - Since last scan (Storage Timeline)
+
+    private var sinceLastScanCard: some View {
+        Button {
+            navigate(.timeline)
+        } label: {
+            MCCard {
+                HStack(alignment: .top, spacing: MCSpacing.md) {
+                    Image(systemName: MCModuleIdentity.timeline.icon)
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(MCTheme.accent)
+                        .frame(width: 22)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(L("dashboard.since_last_scan.title")).font(MCFont.cardTitle)
+                        if let comparison = sinceLastScan {
+                            Text(sinceLastScanDeltaText(comparison))
+                                .font(MCFont.secondaryBody)
+                                .foregroundStyle(sinceLastScanTint(comparison))
+                            if !topSinceLastScanCategories(comparison).isEmpty {
+                                Text(topSinceLastScanCategories(comparison))
+                                    .font(MCFont.caption)
+                                    .foregroundStyle(.secondary)
+                                    .lineLimit(2)
+                            }
+                        } else {
+                            Text(L("dashboard.since_last_scan.not_enough_history"))
+                                .font(MCFont.secondaryBody)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    Spacer(minLength: 0)
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.tertiary)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("dashboard.since_last_scan")
+        .accessibilityLabel(sinceLastScan.map { L("dashboard.since_last_scan.title") + ". " + sinceLastScanDeltaText($0) }
+            ?? L("dashboard.since_last_scan.title") + ". " + L("dashboard.since_last_scan.not_enough_history"))
+        .accessibilityAddTraits(.isButton)
+    }
+
+    private func sinceLastScanDeltaText(_ comparison: TimelineComparison) -> String {
+        let delta = comparison.totalDeltaBytes
+        if delta == 0 { return L("dashboard.since_last_scan.no_change") }
+        let magnitude = mcFormatBytes(abs(delta))
+        return delta > 0 ? L("dashboard.since_last_scan.increase", magnitude)
+                          : L("dashboard.since_last_scan.decrease", magnitude)
+    }
+
+    private func sinceLastScanTint(_ comparison: TimelineComparison) -> Color {
+        if comparison.totalDeltaBytes > 0 { return MCTheme.warning }
+        if comparison.totalDeltaBytes < 0 { return MCTheme.success }
+        return .secondary
+    }
+
+    /// Up to 3 categories, largest absolute change first, formatted like
+    /// "Xcode DerivedData +6.3 GB, Downloads +1.2 GB" — never invented, only
+    /// ever built from `comparison.categoryDeltas`.
+    private func topSinceLastScanCategories(_ comparison: TimelineComparison) -> String {
+        comparison.categoryDeltas
+            .filter { $0.deltaBytes != 0 }
+            .sorted { abs($0.deltaBytes) > abs($1.deltaBytes) }
+            .prefix(3)
+            .map { delta in
+                let label = TimelineCategoryLabel.display(engine: delta.engine, category: delta.category)
+                let magnitude = mcFormatBytes(abs(delta.deltaBytes))
+                return "\(label) \(delta.deltaBytes > 0 ? "+" : "-")\(magnitude)"
+            }
+            .joined(separator: ", ")
+    }
+
     // MARK: - Secondary tool tiles
 
     private func toolTile(_ id: String, _ title: String, _ detail: String, _ icon: String,
@@ -253,11 +334,13 @@ struct DashboardView: View {
 
     private func refresh() async {
         async let latestSnapshot = collector.snapshot()
+        async let timelineComparison = timelineService.overallSinceLastScan()
         if let store = AppEnvironment.shared.store {
             activity = (try? await store.activity(limit: 5)) ?? []
             exclusions = (try? await store.exclusions()) ?? []
         }
         snapshot = await latestSnapshot
+        sinceLastScan = await timelineComparison
     }
 
     private func navigate(_ module: ModuleID) {
