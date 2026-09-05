@@ -147,6 +147,42 @@ the path is deprecated` line in build-xcode is a codesign tooling notice.
 - Space Lens drill uses `withAnimation` + `matchedGeometryEffect` (already
   present); no new `matchedGeometryEffect` choreography was added.
 
+### Beta QA / release-hardening pass — done at `92dd1a1`
+
+- Full log: **`Documentation/BETA_QA.md`** (environment, gates, per-section
+  PASS / HUMAN VERIFICATION REQUIRED / EXTERNAL CONFIGURATION REQUIRED).
+- **Bug fixed (P0):** `SmartScanModel` reused one coordinator + candidate
+  cache for every run, so "New Smart Scan" replayed the first scan's
+  memoised disk snapshot. `start()` now builds a fresh coordinator + cache
+  each run. Regression: `eachRunBuildsAFreshCoordinatorSoNewSmartScanReallyRescans`.
+- **Bugs fixed (P2):** Space Lens canvas render bound 40 → 14 (radial pack
+  runs out of clear slots past ~14; overflow → on-canvas "Other"); list-row
+  double-click → `.simultaneousGesture(TapGesture(count: 2))` (won't steal
+  the List's single-click selection); `applyCategory` drops "Other" while a
+  category filter is active.
+- **Static audits PASS:** no-network-dependency (only `UpdateChecker`),
+  Restore Center untouched, entitlements (host App-Group-only / Finder
+  sandbox-only / widget sandbox+App-Group), nested signing order inside-out,
+  static bundle audit (no `/Users` paths, no secrets/fixtures), 7 App
+  Intents / 6 App Shortcuts, launch smoke (beta build starts, no crash).
+- **Version bump NOT performed** — `1.1.0-beta.1` locations documented in
+  BETA_QA §36 (atomic release-branch change gated by
+  `check-version-consistency.sh`): `PublicIdentity.example.json` +
+  `Resources/Info.plist` + `project.yml` (+ regen `CoreTend.xcodeproj`) +
+  `PROJECT_STATE.json`. `published-release.json` untouched (records live
+  v1.0.0).
+- **EXTERNAL CONFIGURATION REQUIRED:** App Group
+  `group.com.ahmetbsbnr.coretend` portal registration; Developer ID
+  identity + notary profile for `sign-and-notarize.sh`.
+- **Gates at `92dd1a1`:** build.sh + release clean (0 warnings), test.sh
+  **797 passed / 0 failed**, repository-doctor passed, build-xcode.sh
+  BUILD SUCCEEDED (both `.appex`, 7/6 intents/shortcuts, no absolute paths).
+- **Next exact action:** run the interactive HUMAN VERIFICATION list in
+  `Documentation/BETA_QA.md` on device (Duplicates sidebar is the P0
+  human check), then perform the atomic version bump on a release branch
+  and run `sign-and-notarize.sh` once the App Group is registered. Do not
+  push / merge / publish without authorization.
+
 
 ## Exact recovered and validated checkpoint
 
