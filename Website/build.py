@@ -38,6 +38,7 @@ RELEASE = REPO_ROOT / "Configuration" / "published-release.json"
 PUBLIC_ASSET_PATTERNS = (
     "app/*.png",
     "app/*.webp",
+    "app/screens/*.webp",
     "brand/favicon-v2-*.png",
     "brand/opengraph.png",
     "brand/*.svg",

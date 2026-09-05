@@ -367,10 +367,26 @@ p{margin:0}
 .shot{margin:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel);
   box-shadow:var(--shadow-lift);transition:transform .4s var(--ease),box-shadow .4s var(--ease)}
 .shot:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
-.shot img{display:block;width:100%;height:auto;aspect-ratio:2024/1488;object-fit:cover;
+.shot picture{display:block}
+.shot img{display:block;width:100%;height:auto;aspect-ratio:1600/1124;object-fit:cover;
   border-bottom:1px solid var(--line)}
 .shot figcaption{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ink-3);
   padding:10px 14px}
+.shots--grid{grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+/* Hero product shot: a plain macOS window frame around a real screenshot. */
+.shot--hero{border:0;background:transparent;box-shadow:none;overflow:visible}
+.shot--hero:hover{transform:none;box-shadow:none}
+.shot-frame{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--panel);
+  box-shadow:var(--shadow-lift)}
+.shot-bar{display:flex;align-items:center;gap:10px;padding:9px 13px;border-bottom:1px solid var(--line);
+  background:var(--panel-2)}
+.shot-bar .shot-dots{display:flex;gap:6px}
+.shot-bar .shot-dots i{width:10px;height:10px;border-radius:50%;background:var(--line-strong)}
+.shot-bar .shot-title{font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;color:var(--ink-3);
+  margin-inline:auto}
+.shot--hero .shot-frame img{border-bottom:0}
+.shot-cap{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ink-3);
+  margin-top:10px;text-align:center}
 .mod{position:relative;border:1px solid var(--line);border-radius:var(--r);padding:20px 18px 18px;
   background:var(--panel);overflow:hidden;transform-style:preserve-3d;
   transition:transform .4s var(--ease),border-color .4s,box-shadow .4s}
@@ -729,50 +745,23 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
       </p>
     </div>
 
-    <div class="app" id="app" data-tilt data-reveal style="--d:400ms" aria-label="Interactive CoreTend interface preview with example data" data-aria-en="Interactive CoreTend interface preview with example data" data-aria-fr="Aperçu interactif de l’interface CoreTend avec données d’exemple">
-      <div class="app-top">
-        <span class="dots"><i></i><i></i><i></i></span>
-        <svg class="app-state-mark ct-logo ct-logo--app" viewBox="0 0 512 512" aria-hidden="true" focusable="false">
-          <g class="ct-arc ct-arc-outer"><path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--cobalt)" stroke-width="38.4" stroke-linecap="round"/></g>
-          <g class="ct-arc ct-arc-middle"><path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--ink)" stroke-width="38.4" stroke-linecap="round"/></g>
-          <g class="ct-arc ct-arc-inner"><path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--line-strong)" stroke-width="38.4" stroke-linecap="round"/></g>
-          <circle class="ct-wave" cx="256" cy="256" r="61.44"/>
-          <circle class="ct-core" cx="256" cy="256" r="61.44" fill="var(--cobalt)"/>
-        </svg>
-        <span class="app-title">CoreTend — Macintosh HD</span>
-        <span class="sample-label" data-fr="Données d’exemple">Example data</span>
-        <span class="pill reviewed" data-fr="Confirmation requise">Confirmation required</span>
+    <figure class="shot shot--hero" data-reveal style="--d:400ms">
+      <div class="shot-frame">
+        <div class="shot-bar"><span class="shot-dots"><i></i><i></i><i></i></span><span class="shot-title">CoreTend — Dashboard</span></div>
+        <picture>
+          <source media="(prefers-color-scheme: dark)" type="image/webp"
+            srcset="/assets/app/screens/dashboard-dark-sm.webp 800w, /assets/app/screens/dashboard-dark.webp 1600w"
+            sizes="(max-width: 900px) 92vw, 46vw">
+          <img src="/assets/app/screens/dashboard-light.webp"
+            srcset="/assets/app/screens/dashboard-light-sm.webp 800w, /assets/app/screens/dashboard-light.webp 1600w"
+            sizes="(max-width: 900px) 92vw, 46vw"
+            width="1600" height="1124" decoding="async" fetchpriority="high"
+            alt="The CoreTend Dashboard: free-space ring, recent activity, exclusions and a large scan action, shown with example data."
+            data-alt-fr="Le tableau de bord CoreTend : anneau d’espace libre, activité récente, exclusions et une grande action d’analyse, avec des données d’exemple.">
+        </picture>
       </div>
-      <div class="app-body">
-        <nav class="app-side" id="side" aria-label="Modules" data-aria-en="Modules" data-aria-fr="Modules">
-          <small>Scan</small>
-          <button type="button" class="on" data-view="storage"><span class="ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="13" height="4" rx="1"/><rect x="1.5" y="9.5" width="13" height="4" rx="1"/><path d="M4 4.5h.01M4 11.5h.01"/></svg></span><span data-fr="Stockage">Storage</span></button>
-          <button type="button" data-view="lens"><span class="ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="7" height="7" rx="1"/><rect x="10" y="1.5" width="4.5" height="4.5" rx="1"/><rect x="1.5" y="10" width="4.5" height="4.5" rx="1"/><rect x="8" y="8" width="6.5" height="6.5" rx="1"/></svg></span><span>Space Lens</span></button>
-          <button type="button" data-view="dupes"><span class="ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="9" height="9" rx="1.5"/><path d="M5.5 14.5h8a1 1 0 0 0 1-1v-8"/></svg></span><span data-fr="Doublons">Duplicates</span></button>
-          <button type="button" data-view="apps"><span class="ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="3"/><path d="M5.5 8h5M8 5.5v5"/></svg></span><span data-fr="Applications">Applications</span></button>
-          <button type="button" data-view="integrity"><span class="ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.6 13.4 4v4.2c0 3-2.2 5.3-5.4 6.2-3.2-.9-5.4-3.2-5.4-6.2V4z"/><path d="M5.8 8.2 7.3 9.8l3-3.2"/></svg></span><span data-fr="Intégrité">Integrity</span></button>
-          <div class="sep"></div>
-          <small data-fr="Journal">Record</small>
-          <button type="button" data-view="activity"><span class="ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 8h3l2-4.5 3 9 2-4.5h3"/></svg></span><span data-fr="Activité">Activity</span></button>
-        </nav>
-        <div class="app-main">
-          <div class="app-head">
-            <strong id="vTitle">Storage</strong>
-            <em id="vMeta">Reading local metadata…</em>
-          </div>
-          <div class="track"><i id="vTrack"></i></div>
-          <div class="lens" id="lens"><div class="sweepline"></div></div>
-          <div class="rows" id="vRows"></div>
-          <div class="app-foot">
-            <span id="vFoot" role="status" aria-live="polite">Nothing has been removed.</span>
-            <span style="display:flex;gap:8px">
-              <button class="mini ghost" id="scanCancel" type="button" data-fr="Annuler">Cancel</button>
-              <button class="mini" id="scanToggle" type="button" data-fr="Pause">Pause</button>
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
+      <figcaption class="shot-cap" data-fr="Interface réelle de CoreTend, avec des données d’exemple.">Real CoreTend interface, shown with example data.</figcaption>
+    </figure>
   </div>
 </section>
 
@@ -826,18 +815,48 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
       <li class="mod" data-tilt data-reveal><span class="k">Record</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Activité">Activity</h3><p data-fr="Jusqu'à 500 activités locales agrégées, avec filtres, journal de sécurité et exports CSV ou JSON.">Up to 500 aggregate local activities, with filters, safety log and CSV or JSON exports.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Control</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Réglages">Settings</h3><p data-fr="Langue, menu bar, exclusions, diagnostic, onboarding et vérification manuelle des mises à jour.">Language, menu bar, exclusions, diagnostics, onboarding and manual update checking.</p></li>
     </ul>
-    <div class="shots" data-reveal>
+    <div class="shots shots--grid" data-reveal>
       <figure class="shot">
-        <img src="/assets/app/smart-care.webp" width="2024" height="1488" loading="lazy" alt="CoreTend dashboard — disk-usage ring, a large scan action and shortcuts into every workflow">
-        <figcaption data-fr="Tableau de bord — l'analyse du stockage au centre">Dashboard — the storage scan at the centre</figcaption>
+        <picture>
+          <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/app/screens/dashboard-dark-sm.webp 800w, /assets/app/screens/dashboard-dark.webp 1600w" sizes="(max-width:700px) 92vw, 30vw">
+          <img src="/assets/app/screens/dashboard-light.webp" srcset="/assets/app/screens/dashboard-light-sm.webp 800w, /assets/app/screens/dashboard-light.webp 1600w" sizes="(max-width:700px) 92vw, 30vw" width="1600" height="1124" loading="lazy" decoding="async" alt="CoreTend Dashboard: free-space ring, recent activity and a large scan action, with example data.">
+        </picture>
+        <figcaption data-fr="Tableau de bord">Dashboard</figcaption>
       </figure>
       <figure class="shot">
-        <img src="/assets/app/space-lens.webp" width="2024" height="1488" loading="lazy" alt="CoreTend Space Lens — a radial size map with the largest folder in the middle">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/app/screens/storage-dark-sm.webp 800w, /assets/app/screens/storage-dark.webp 1600w" sizes="(max-width:700px) 92vw, 30vw">
+          <img src="/assets/app/screens/storage-light.webp" srcset="/assets/app/screens/storage-light-sm.webp 800w, /assets/app/screens/storage-light.webp 1600w" sizes="(max-width:700px) 92vw, 30vw" width="1600" height="1124" loading="lazy" decoding="async" alt="CoreTend Storage: every candidate listed with its path and size before anything moves.">
+        </picture>
+        <figcaption data-fr="Stockage — relu avant tout déplacement">Storage — reviewed before anything moves</figcaption>
+      </figure>
+      <figure class="shot">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/app/screens/space-lens-dark-sm.webp 800w, /assets/app/screens/space-lens-dark.webp 1600w" sizes="(max-width:700px) 92vw, 30vw">
+          <img src="/assets/app/screens/space-lens-light.webp" srcset="/assets/app/screens/space-lens-light-sm.webp 800w, /assets/app/screens/space-lens-light.webp 1600w" sizes="(max-width:700px) 92vw, 30vw" width="1600" height="1124" loading="lazy" decoding="async" alt="CoreTend Space Lens: a radial size map with the largest folder at the centre.">
+        </picture>
         <figcaption data-fr="Space Lens — carte de tailles radiale">Space Lens — the radial size map</figcaption>
       </figure>
       <figure class="shot">
-        <img src="/assets/app/cleanup.webp" width="2024" height="1488" loading="lazy" alt="CoreTend Storage scan review — every candidate listed with its path and size before anything moves">
-        <figcaption data-fr="Stockage — chaque élément relu avant tout déplacement">Storage — every item reviewed before it moves</figcaption>
+        <picture>
+          <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/app/screens/duplicates-dark-sm.webp 800w, /assets/app/screens/duplicates-dark.webp 1600w" sizes="(max-width:700px) 92vw, 30vw">
+          <img src="/assets/app/screens/duplicates-light.webp" srcset="/assets/app/screens/duplicates-light-sm.webp 800w, /assets/app/screens/duplicates-light.webp 1600w" sizes="(max-width:700px) 92vw, 30vw" width="1600" height="1124" loading="lazy" decoding="async" alt="CoreTend Duplicates: exact content-match groups with a suggested keeper.">
+        </picture>
+        <figcaption data-fr="Doublons — correspondance de contenu exacte">Duplicates — exact content match</figcaption>
+      </figure>
+      <figure class="shot">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/app/screens/applications-dark-sm.webp 800w, /assets/app/screens/applications-dark.webp 1600w" sizes="(max-width:700px) 92vw, 30vw">
+          <img src="/assets/app/screens/applications-light.webp" srcset="/assets/app/screens/applications-light-sm.webp 800w, /assets/app/screens/applications-light.webp 1600w" sizes="(max-width:700px) 92vw, 30vw" width="1600" height="1124" loading="lazy" decoding="async" alt="CoreTend Applications: an inventory with bundle-ID-associated data and the detected update source.">
+        </picture>
+        <figcaption data-fr="Applications — l'app et ses données associées">Applications — the app and its associated data</figcaption>
+      </figure>
+      <figure class="shot">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/app/screens/integrity-dark-sm.webp 800w, /assets/app/screens/integrity-dark.webp 1600w" sizes="(max-width:700px) 92vw, 30vw">
+          <img src="/assets/app/screens/integrity-light.webp" srcset="/assets/app/screens/integrity-light-sm.webp 800w, /assets/app/screens/integrity-light.webp 1600w" sizes="(max-width:700px) 92vw, 30vw" width="1600" height="1124" loading="lazy" decoding="async" alt="CoreTend Integrity: download provenance, code-signature tier and launch items. Not an antivirus.">
+        </picture>
+        <figcaption data-fr="Intégrité — signaux macOS, pas un antivirus">Integrity — macOS signals, not an antivirus</figcaption>
       </figure>
     </div>
   </div>
@@ -1544,6 +1563,7 @@ let demoTimer = null, demoRAF = 0;
 const demoState = {view:"storage",status:"idle",progress:0,last:0,auto:true};
 function demoLabel(en, fr) { return lang() === "fr" ? fr : en; }
 function demo(view = "storage", auto = true) {
+  if (!$("#app")) return;              // hero is a static screenshot now
   const v = VIEWS[view]; if (!v) return;
   cancelAnimationFrame(demoRAF); clearTimeout(demoTimer);
   Object.assign(demoState,{view,status:"scanning",progress:0,last:performance.now(),auto});
@@ -1771,7 +1791,7 @@ $$("#side button").forEach(b => b.addEventListener("click", () => {
   demo(b.dataset.view,true);
 }));
 
-$("#tabs").addEventListener("keydown", event => {
+$("#tabs")?.addEventListener("keydown", event => {
   const tabs = $$('#tabs [role="tab"]');
   if (!tabs.length || !["ArrowRight","ArrowDown","ArrowLeft","ArrowUp","Home","End"].includes(event.key)) return;
   event.preventDefault();
@@ -1784,7 +1804,7 @@ $("#tabs").addEventListener("keydown", event => {
   $(`#tabs [data-cat="${nextCategory}"]`)?.focus();
 });
 
-$("#scanToggle").addEventListener("click",() => {
+$("#scanToggle")?.addEventListener("click",() => {
   if (demoState.status === "complete" || demoState.status === "cancelled") {
     demo(demoState.view,demoState.auto); return;
   }
@@ -1828,7 +1848,7 @@ $("#scanToggle").addEventListener("click",() => {
   }
 });
 
-$("#scanCancel").addEventListener("click",() => {
+$("#scanCancel")?.addEventListener("click",() => {
   if (demoState.status === "complete" || demoState.status === "cancelled") return;
   cancelAnimationFrame(demoRAF); clearTimeout(demoTimer);
   demoState.status = "cancelled"; demoState.auto = false;
