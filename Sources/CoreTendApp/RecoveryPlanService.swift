@@ -219,7 +219,7 @@ enum RecoveryPlanService {
             let result = await CleanupExecution.execute(findings.filter { $0.ruleID == ruleID }, home: home,
                                                         excludedPaths: excluded, sink: store)
             if let store {
-                try? await store.recordActivity(ActivityRecord(kind: .cleanup,
+                _ = try? await store.recordActivity(ActivityRecord(kind: .cleanup,
                     summary: "Recovery Plan: moved \(result.executed.count) items (\(ruleID)) to Trash",
                     itemCount: result.executed.count, bytes: result.processedBytes))
             }
