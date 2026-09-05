@@ -1,180 +1,152 @@
 # CoreTend Agent Handoff
 
-## ACTIVE — v1.1 Storage / Smart Scan / Space Lens app polish
+## ACTIVE — v1.1 Smart Scan + Space Lens 2.0 app pass
 
 - Branch: `feat/v1.1-smart-scan-polish`, from `feat/finder-extension`
-  (`1ed2efb`). Not pushed, not merged, `main` untouched.
-- Website branch `feat/community-contact-site-v1.1` (`3e08b23`) is a separate
-  frozen deliverable — **do not touch it** in the app pass.
-- Commits so far: `7f5be65` storage semantics · `4c47554` Dashboard/sidebar/
-  focus bug fixes · `193ccc4` Smart Scan orchestrator domain · `8b822bb`
-  StorageScanProgress · `944f33a` pause audit test · `4dc707a` Smart Scan
-  real providers · `bfb444e` app-scope `SmartScanModel` + late-progress
-  state fix.
-- Gate status at `bfb444e`: `Scripts/build.sh` clean (0 warnings — the
-  only test-target diagnostics are the pre-existing `Suite`/`Test`
-  swift-testing deprecation notices), `Scripts/test.sh` **768 passed /
-  0 failed**, `Scripts/repository-doctor.sh` passed. `Scripts/build-xcode.sh`
-  **NOT re-run since `7ba9428`** — last known good there (both appex + 7
-  intents / 6 shortcuts embedded); every change since is SwiftPM-source +
-  `.strings` only. Re-run it at the next checkpoint to confirm.
+  (`1ed2efb`). **Not pushed, not merged, `main` untouched.**
+- Website branch `feat/community-contact-site-v1.1` is a separate frozen
+  deliverable — not touched in this pass.
+- HEAD: `957751f`. Key commits this program:
+  `7f5be65` storage semantics · `4c47554` sidebar/CTA/focus bug fixes ·
+  `193ccc4` Smart Scan orchestrator domain · `8b822bb` StorageScanProgress ·
+  `944f33a` pause audit proof · `4dc707a` Smart Scan real providers ·
+  `bfb444e` app-scope SmartScanModel + coordinator regression fix ·
+  `402c238` Smart Scan wired into app + Dashboard hero + Recovery Plan
+  handoff · `008bfb2` Space Lens 2.0 · `d874308` Storage phase-aware
+  progress + localization · `957751f` sidebar-structure regression tests.
 
-### Done this pass
+### Gates (all green at `957751f`)
 
-1. **Storage semantics (§1).** `Sources/CoreTendApp/StorageScanSummary.swift`
-   — six deliberately distinct measures (`itemsInspected`,
-   `detectedBytes`/`Count`, `reclaimableBytes`, `reviewRequiredBytes`,
-   `selectedBytes`, `recoveredBytes?`) with invariants (`detected ==
-   reclaimable + reviewRequired`, `selected <= detected`, `recovered <=
-   selected`). `CleanupModel.summary` exposes it; `CleanupView.reviewView`
-   now shows a *labelled* "X potentially recoverable" + "n items inspected",
-   a "Y needs individual review" line, and the CTA reads
-   "Move <selected> to Trash" with a "<selected> selected · ready…" caption.
-   Strings `cleanup.reclaimable_metric` / `items_inspected` / `needs_review`
-   / `selected_ready` / `move_selected` (EN+FR parity); scan progress
-   "found"/"trouvés" → "detected"/"détectés".
-   `StorageScanSummaryTests` (7) prove `inspected != detected != reclaimable
-   != selected != recovered` and the partial-selection CTA math.
-2. **Bug fixes (§8–10).** `CoreTendApp.swift`: `NavigationSplitView` now
-   owns `columnVisibility` pinned to `.all` + `.navigationSplitViewStyle
-   (.balanced)` + an `onChange` guard → a detail view (Duplicates' heavy
-   List) can no longer collapse the sidebar into an empty column.
-   `.listRowBackground(Color.clear)` on sidebar rows → the only selection
-   indicator is `sidebarRow`'s own teal marker (driven by `selection ==
-   module`, not list focus), so moving focus to a Space Lens bubble no
-   longer greys out the active module. `DashboardView.swift`: the primary
-   CTA label wraps to 2 lines with `layoutPriority(1)` on its column → the
-   FR "Analyser le stockage" stops clipping to "Anal…". Translation
-   unchanged.
-3. **Smart Scan coordination domain (§13–17, no UI).**
-   `Sources/CoreTendApp/SmartScanService.swift` — `SmartScanModuleID`
-   (disk-heavy vs cheap), `SmartScanTotals` (four buckets that never
-   collapse: recoverable bytes / review bytes / attention COUNT /
-   informational COUNT — no score), `SmartScanModuleState`,
-   `SmartScanReport` with overlap-aware global aggregation
-   (`isGlobalRecoverableExact=false` when an overlapping module also had
-   recoverable bytes → UI shows category totals separately),
-   `SmartScanProvider` protocol seam, and `actor SmartScanCoordinator`:
-   cheap providers concurrent, disk-heavy through a bounded TaskGroup (cap
-   2, `peakDiskConcurrency` seam), cancellation → `wasCancelled` partial
-   report with no `.completed`/no Timeline write, per-module failure
-   isolation, `start()`-while-running returns the in-flight task.
-   `SmartScanServiceTests` (11) cover all of that + a no-destructive-
-   dependency source grep.
-4. **Live Storage scan progress (§2).** `StorageScanProgress.swift` — a
-   value + pure reducer folding `ScanEvent` into phase / itemsInspected /
-   findingsDetected / reclaimable & review bytes-so-far (risk split) /
-   currentPath / elapsed / isPausable. **No percentage field** (engine has
-   no total). `CleanupModel` owns it and drives pause/resume/cancel;
-   `scanningView` shows real counters + running-recoverable + current path.
-   `StorageScanProgressTests` (8).
+| Gate | Result |
+|---|---|
+| `Scripts/build.sh` | clean, **0 compiler warnings** |
+| `Scripts/build.sh release` | **BUILD SUCCEEDED** |
+| `Scripts/test.sh` | **796 passed / 0 failed** |
+| `Scripts/repository-doctor.sh` | passed (EN/FR parity, Xcode drift, no absolute paths) |
+| `Scripts/build-xcode.sh` | **BUILD SUCCEEDED** — `CoreTendWidget.appex` + `CoreTendFinder.appex` embedded, **7 App Intents / 6 App Shortcuts**, FR localizations, no absolute developer path |
 
-5. **Smart Scan real providers (§1–7) — DONE.** `4dc707a`.
-   `Sources/CoreTendApp/SmartScanProviders.swift`: `SmartScanRecoveryCandidates`
-   actor memoises one `RecoveryPlanService.prepareCandidates()` pass;
-   `SmartScanStorageFamilyProvider` maps its payload slice into
-   `SmartScanTotals` (`.recommended`/`.optional` → recoverable,
-   `.reviewRequired` → review, `.notIncluded` → informational pointer only,
-   never re-summed — reuses `RecoveryPlanEligibility` anti-double-counting so
-   `overlapsStorage = false` and the global recoverable stays exact).
-   `SmartScanApplicationsProvider` = app count + managed-update-path count
-   (counts, not "update available"). `SmartScanIntegrityProvider` = global
-   launch daemons → attention, quarantined downloads + user agents →
-   informational (no malware claim). `SmartScanProviders.live(home:environment:
-   store:)` factory. `SmartScanProvidersTests` (8).
-   Strings `smartscan.headline.{recoverable,nothing,apps,signals}` EN+FR.
+Test-target `Suite`/`Test` swift-testing deprecation notices are pre-existing
+tooling diagnostics, not compiler warnings. The codesign `Specifying ':' in
+the path is deprecated` line in build-xcode is a codesign tooling notice.
 
-6. **App-scope `SmartScanModel` (§8–9) — DONE.** `bfb444e`.
-   `Sources/CoreTendApp/SmartScanModel.swift` — `@MainActor @Observable`,
-   owns a `SmartScanCoordinator`, phases idle/running/completed/cancelled,
-   polled live snapshot + elapsed, `start()`/`cancel()`/`reset()`,
-   `hasCompletedReport` false for a cancelled run. Injectable coordinator/
-   clock/poll-interval. **Not yet held by `MainWindow` / not yet shown in
-   any view** — that is the next step. Also fixed a real coordinator bug:
-   a provider's final-line progress ping used to clobber `.completed` →
-   `.scanning` (now `setScanningDetail` only refines a live scanning
-   state); regression test added.
+### Smart Scan — DONE
 
-### Remaining
+- **Domain** (`SmartScanService.swift`, `SmartScanProviders.swift`): six real
+  providers wrapping existing engines. Storage/Developer/Duplicates/Privacy
+  reuse ONE memoised `RecoveryPlanService.prepareCandidates()` via
+  `SmartScanRecoveryCandidates`; `.recommended`/`.optional` → recoverable
+  bytes, `.reviewRequired` → review bytes, `.notIncluded` → informational
+  count only (never re-summed → anti-double-counting preserved,
+  `isGlobalRecoverableExact` stays true). Applications/Integrity = counts
+  only, no malware claim. `SmartScanCoordinator` actor: bounded disk
+  concurrency, cheap-provider concurrency, cancellation, failure isolation,
+  no duplicate start, late-progress-ping can't clobber `.completed`.
+- **App-scope model** (`SmartScanModel.swift`): `@MainActor @Observable`,
+  held by `MainWindow` `@State` (survives module navigation), passed to
+  `DashboardView(smartScan:)`. Phases idle/running/completed/cancelled,
+  whole-second elapsed, snapshot only re-assigned on change, `start()`
+  (no-op while running) / `cancel()` / `reset()`, `hasCompletedReport`
+  false for a cancelled run.
+- **Dashboard UI** (`SmartScanDashboardSection.swift`): idle hero ("Smart
+  Scan" / "Analyse intelligente" + coverage list, no score); running
+  (`SmartScanModuleRow` × 6 with icon + name + state label + detail +
+  status glyph, never colour alone; elapsed; Cancel); completed (four
+  separate dimensions; exact global recoverable OR per-category + overlap
+  note; per-module drill-in via `.mcNavigate`; "Review Recovery Plan" /
+  "Examiner le plan de récupération" primary CTA → `.recoveryPlan`; "New
+  Smart Scan"); cancelled ("Scan cancelled", partial states, "Start Again",
+  no CTA); partial (a `.failed` module → banner + successful modules shown).
+  Old storage hero demoted to `storageGlance` card. FR-CTA-clip fix carried
+  over (`lineLimit(2)` + `layoutPriority`).
+- **Recovery Plan handoff** (`SmartScanHandoff.swift`): the completed run's
+  exact `SmartScanRecoveryCandidates` is published to `SmartScanHandoff
+  .shared`; `RecoveryPlanViewModel.preparePlan()` reads
+  `freshCandidates()` first (10-min freshness) — same candidates, same
+  `RecoveryPlanEligibility` categories, same identity, **no second scan, no
+  re-sum, no reclassification** — and only falls back to a fresh
+  `prepareCandidates()` when opened directly. `RecoveryPlanView`
+  auto-prepares on a fresh handoff and shows a "prepared from your last
+  Smart Scan" note. Cleared on `start()`/`reset()`. **No new destructive
+  executor** — flow stays Smart Scan → Review Recovery Plan → confirm →
+  SafetyCenter → PathValidator → Trash.
+- **Tests**: `SmartScanServiceTests` (12), `SmartScanProvidersTests` (8),
+  `SmartScanModelTests` (5), `SmartScanHandoffTests` (8) — provider
+  mapping, coordinator concurrency/cancel/failure/no-duplicate-start,
+  model lifetime, handoff publishes exact candidates only on completion,
+  cancelled publishes nothing, new start clears handoff, stale ignored,
+  drill-target mapping, elapsed formatting, no-destructive-dependency grep.
 
-- **Wire `SmartScanModel` into the UI (§8, §10–17)** — start here:
-  - `MainWindow` (`CoreTendApp.swift` ~line 405): add
-    `@State private var smartScan = SmartScanModel()` next to
-    `developerModel`; pass `DashboardView(smartScan: smartScan)`. This is
-    what makes the app-scope lifetime real (survives `selection` changes).
-  - `DashboardView`: accept `let smartScan: SmartScanModel`. Replace / lead
-    the hero with a Smart Scan panel: idle → "Start Smart Scan" /
-    "Lancer l'analyse intelligente" (`smartScan.start()`) + a coverage
-    list (Storage/Privacy/Developer/Applications/Integrity, no health
-    score); running → per-module rows from `smartScan.modules` (Queued/
-    Scanning/Completed/Unavailable/Failed/Cancelled — NO %), elapsed,
-    Cancel; completed → 4 category totals (recoverable / needs review /
-    attention / informational), one global number **iff**
-    `report.isGlobalRecoverableExact` else per-category with a one-line
-    why; cancelled → labelled partial + Dismiss (`reset()`).
-  - Result primary CTA "Review Recovery Plan" / "Examiner le plan de
-    récupération" → `navigate(.recoveryPlan)` (`RecoveryPlanView` already
-    runs `prepareCandidates()` on load — NO new executor, §18).
-  - Category rows drill in via `navigate(.cleanup/.duplicates/.privacyLab/
-    .developer/.protection)` (§16).
-  - New strings (EN+FR): `smartscan.start`, `smartscan.cancel`,
-    `smartscan.coverage.*`, `smartscan.state.{queued,scanning,completed,
-    unavailable,failed,cancelled}`, `smartscan.category.{recoverable,
-    review,attention,informational}`, `smartscan.global.exact`,
-    `smartscan.global.inexact_note`, `smartscan.partial_note`,
-    `smartscan.review_recovery_plan`, `smartscan.elapsed`.
-- **Failure-isolation / permission-limited / cancellation UI (§20–22)** —
-  render `.failed` / `.unavailable` / `.cancelled` module states as
-  first-class rows in the running + result views; a cancelled run shows a
-  labelled partial, never a success state (`hasCompletedReport` already
-  gates this in the model).
-- **Advisor reuse in the result detail (§17)** — when a category row is
-  expanded, show the `AdvisorFinding` domain fields (why / confidence /
-  risk / reversibility / next-action) already on each
-  `RecoveryPlanCandidateData.candidate.finding`; do not parse display text.
-- **Finish Storage progress P1 (§41)** — `CleanupView.scanningView` still
-  needs elapsed-time display + phase-aware copy (the domain type
-  `StorageScanProgress` already carries `elapsed` / `phase`).
-- **Live Storage scan progress (§2)**: extract a structured progress type
-  (`itemsInspected`/`bytesInspected`/`findingsDetected`/`reclaimableSoFar`/
-  `currentCategory`/`elapsed`/`phase`) out of `CleanupModel`/the views into
-  the domain; drive it from real `ScanEngine` events, not fabricated %.
-- **Space Lens 2.0 (§3–6)**: replace `SpaceLensView` with an aggregated
-  (largest-N + Other), throttled (~5–10 updates/s), stable-identity
-  interactive explorer — big canvas + synced list + breadcrumb, single-
-  click select (map↔list), double-click / Return drill, Back, search;
-  Reduce-Motion parity; accessible bubble labels ("Library, 32.4 GB, 38
-  percent of this folder"). Bounded rendering for 500k+ scanned entries.
-- **Pause audit (§7)**: `ScanPauseController` exists and is wired into
-  `ScanEngine.run(rules:pauseController:)` — verify it actually suspends
-  work (not a UI-only toggle); if it doesn't, implement real suspension or
-  remove the Pause button. Cancel already produces no completed
-  Timeline snapshot (`CleanupModel` writes the snapshot only on
-  `.finished`) — keep that invariant for Smart Scan.
-- **Localization sweep (§11)** of any remaining EN-in-FR in Storage / Space
-  Lens / Dashboard / Duplicates / Smart Scan surfaces.
-- **VoiceOver / manual** verification of Space Lens + Smart Scan — **HUMAN
-  VERIFICATION REQUIRED** (no manual pass done).
+### Space Lens 2.0 — DONE
 
-### Next exact action
+- **Domain** (`SpaceLensPresentation.swift`): `SpaceLensNode` (stable path
+  id, %-of-scope, childCount, parentID, depth, category, sourcePath,
+  isOther/isDrillable) + `SpaceLensScope` + `SpaceLensAggregator`. Bounded:
+  ≤40 bubbles, ≤120 list rows per scope; deterministic order (bytes desc,
+  path asc); long tail + engine "Other (small items)" fold into exactly one
+  synthetic Other (aggregate bytes + folded count), never drillable/
+  deletable. SwiftUI never sees the raw hierarchy.
+- **Engine**: `SpaceLensEvent.partial(root:)` added — a growing lower-bound
+  root emitted after each top-level folder resolves (depth 0 only).
+  Existing `.finished`/`.progress`/`.cancelled`/minChildSize/symlink/
+  depth-cap contract unchanged.
+- **View model** (`SpaceLensViewModel`): `selectionID` (one shared value
+  for canvas + list; sidebar selection untouched), `scope(filter:)`,
+  `drill(nodeID:)` (files & Other never drill), throttled `applyPartial`
+  (injectable clock, ~8/s, stops after navigation), `scanStartedAt` +
+  privacy-safe `friendlyLocation`.
+- **View** (`SpaceLensView`): top = breadcrumb + Back + folded-Other note +
+  debounced search (clears off-screen selection) + category filter; center
+  = larger bubble canvas (`RadialPack` on `SpaceLensNode`, deterministic
+  slot per id → no reshuffle on partial/filter); bottom = precise List
+  (Name / % of scope / Size, VoiceOver-primary). **Single click selects**
+  (both), **double-click / Return / → drills**, Esc = Back. Selection =
+  stroke + halo only, **no scale** (Reduce-Motion identical layout); hover
+  scale gated on `!reduceMotion`. Every bubble individually accessible:
+  "Library, 32.4 GB, 38 percent of this folder, directory" + isButton +
+  isSelected + drill hint. Scanning view shows items + real elapsed
+  (`TimelineView`) + friendly location + live "largest so far" list.
+  Delete/reveal/Quick Look/exclude preserved. Pause is the proven-real
+  `ScanPauseController` (engine calls `waitWhilePaused()` in both loops;
+  covered by `pausedSpaceLensScanResumesAndFinishes`). Cancel → `.cancelled`,
+  no completed snapshot.
+- **Tests**: `SpaceLensAggregatorTests` (11 incl. **500k-entry stress**
+  proving bounded render + exact aggregation + <5 s single pass),
+  `SpaceLensExplorerTests` (10 — bounded scope, drill by id, shared
+  selection, clock-driven throttle, partials stop after nav, friendly
+  location privacy), ScanCore `emitsGrowingPartialRoots`. Existing
+  `SpaceLensNavigationTests` + engine tests unchanged & green.
 
-1. Add `@MainActor @Observable SmartScanModel` at app scope (init in
-   `CoreTendApp` / `AppEnvironment`, NOT in `DashboardView`) owning a
-   `SmartScanCoordinator(providers: SmartScanProviders.live())`. Expose:
-   per-module `SmartScanModuleState`, the live `SmartScanReport`, elapsed,
-   `start()` (no-op if running), `cancel()`, last completed report.
-2. Wire `DashboardView` hero → "Start Smart Scan" / "Lancer l'analyse
-   intelligente"; idle = coverage list; running = per-module state rows (no
-   %); result = 4 categories (recoverable / needs review / attention /
-   informational), one global number iff `isGlobalRecoverableExact`.
-3. Result primary CTA "Review Recovery Plan" / "Examiner le plan de
-   récupération" → `router` navigate to `.recoveryPlan` (RecoveryPlanView
-   already calls `prepareCandidates()` on load — NO new executor).
-4. Then Space Lens 2.0 (domain model + bounded aggregation first).
-Run `build.sh` + `test.sh` + `repository-doctor.sh` + `build-xcode.sh` at
-each checkpoint.
+### Polish — DONE
 
----
+- **Storage progress P1** (`CleanupView.scanningView`): phase-aware header
+  (Scanning/Paused/Finalizing/Cancelled/Failed) + elapsed + friendly
+  location. No fabricated bytesInspected.
+- **Localization**: all new Smart Scan / Space Lens / Storage strings EN+FR;
+  `LocalizationParityTests` + existing whole-catalogue parity test green.
+- **Regressions**: FR Dashboard CTA wrap preserved in the new hero; sidebar
+  focus fix intact (`SmartScanDashboardSection` uses no `List(selection:)`);
+  `SidebarStructureTests` locks DuplicatesView free of nested nav
+  containers + MainWindow column-visibility guard.
+
+### HUMAN VERIFICATION REQUIRED (code complete, not visually checked)
+
+- Duplicates empty-sidebar visual confirmation on device
+- Smart Scan hero / running / result visual polish; FR Dashboard layout at
+  narrow + wide window widths
+- Space Lens interaction feel: double-click drill in a real window,
+  keyboard nav, bubble layout at various sizes, drill/selection animation
+- VoiceOver pass over Smart Scan module rows + Space Lens bubbles/list
+- Reduce Motion appearance
+
+### Not done / deferred to P2
+
+- Smart Scan result screen does not yet show an inline expandable Advisor
+  panel (why/confidence/risk) per module — the drill-in modules and the
+  Recovery Plan screen already render full Advisor detail, and the result
+  headlines are built from structured `SmartScanTotals`, never parsed text.
+- Space Lens drill uses `withAnimation` + `matchedGeometryEffect` (already
+  present); no new `matchedGeometryEffect` choreography was added.
+
 
 ## Exact recovered and validated checkpoint
 
