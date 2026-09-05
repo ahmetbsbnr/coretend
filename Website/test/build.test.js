@@ -24,12 +24,47 @@ test("every expected route is generated (EN + FR)", () => {
   for (const f of [
     "index.html", "en-route.html", "fr-route.html",
     "privacy.html", "support.html", "legal.html", "licenses.html",
-    "contact.html", "community.html",
+    "contact.html", "community.html", "security.html", "changelog.html",
     "fr-privacy.html", "fr-support.html", "fr-contact.html", "fr-community.html",
+    "fr-security.html", "fr-changelog.html",
     "404.html",
   ]) {
     assert.ok(existsSync(join(OUT, f)), `missing ${f}`);
   }
+});
+
+test("Privacy page distinguishes the app from Contact/Community transmission", () => {
+  const t = read("privacy.html");
+  assert.match(t, /Contact and Community/);
+  assert.match(t, /only when you send it/i);
+  assert.match(t, /Nothing is taken from your Mac automatically/i);
+  assert.match(t, /privacy@ahmetbsbnr\.com/);
+});
+
+test("Security page explains trust without crypto steps; signed != safe", () => {
+  const t = read("security.html");
+  assert.match(t, /Developer ID/);
+  assert.match(t, /does not mean .safe/i);
+  assert.match(t, /Trash by default/i);
+  assert.match(t, /security@ahmetbsbnr\.com/);
+  assert.ok(!/minisign|SHA-?256|shasum/i.test(t));
+});
+
+test("Changelog: 1.1.0-beta.1 is marked unreleased with no invented date", () => {
+  const t = read("changelog.html");
+  assert.match(t, /1\.1\.0-beta\.1/);
+  assert.match(t, /unreleased/i);
+  // The only date present is the real v1.0.0 publish date.
+  const dates = t.match(/20\d\d-\d\d-\d\d/g) || [];
+  assert.deepEqual([...new Set(dates)], ["2026-09-03"]);
+});
+
+test("CSP unchanged: form-action stays 'none' (forms are fetch-based)", () => {
+  const cfg = JSON.parse(readFileSync(join(SITE, "vercel.json"), "utf8"));
+  const csp = cfg.headers[0].headers.find((h) => h.key === "Content-Security-Policy").value;
+  assert.match(csp, /form-action 'none'/);
+  assert.match(csp, /connect-src 'self'/);
+  assert.ok(!csp.includes("*"), "no wildcard in the CSP");
 });
 
 test("no crypto / verification clutter on any user page", () => {

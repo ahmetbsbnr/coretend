@@ -1,0 +1,55 @@
+{
+  "_comment": "Public changelog source for the CoreTend website. Add an entry per release; 'date' is null and 'status' is 'unreleased' until the artifact is actually published. Do not invent dates.",
+  "entries": [
+    {
+      "version": "1.1.0-beta.1",
+      "channel": "beta",
+      "status": "unreleased",
+      "date": null,
+      "summary": {
+        "en": "First public beta of the 1.1 line. Focus: reversible recovery, macOS surface integration, and a read-only Finder entry point.",
+        "fr": "Première bêta publique de la série 1.1. Axes : récupération réversible, intégration aux surfaces macOS et point d'entrée Finder en lecture seule."
+      },
+      "changes": {
+        "en": [
+          "Restore Center: move a CoreTend-Trashed item back to where it came from, with a local, private restore manifest.",
+          "Read-only Finder extension: right-click a folder, image, or app to open the matching CoreTend screen. It never deletes or reads file contents.",
+          "Read-only desktop widget: a glanceable storage summary from a small App Group snapshot.",
+          "App Intents / Shortcuts, local notifications, and opt-in scheduled read-only scans.",
+          "Privacy Lab: inspect the metadata embedded in an image you choose (local, in-memory, nothing persisted)."
+        ],
+        "fr": [
+          "Centre de restauration : remettre un élément mis à la Corbeille par CoreTend à son emplacement d'origine, via un manifeste de restauration local et privé.",
+          "Extension Finder en lecture seule : clic droit sur un dossier, une image ou une app pour ouvrir l'écran CoreTend correspondant. Elle ne supprime rien et ne lit aucun contenu de fichier.",
+          "Widget de bureau en lecture seule : un résumé du stockage d'un coup d'œil, depuis un petit instantané App Group.",
+          "App Intents / Raccourcis, notifications locales et analyses planifiées en lecture seule (avec accord explicite).",
+          "Privacy Lab : inspecter les métadonnées d'une image choisie (local, en mémoire, rien n'est conservé)."
+        ]
+      }
+    },
+    {
+      "version": "1.0.0",
+      "channel": "stable",
+      "status": "released",
+      "date": "2026-09-03",
+      "summary": {
+        "en": "First public stable release. Local, transparent, reversible storage review for macOS.",
+        "fr": "Première version stable publique. Examen du stockage local, transparent et réversible pour macOS."
+      },
+      "changes": {
+        "en": [
+          "Storage, Space Lens, Duplicates, Applications, Integrity, Developer Center and Privacy Cleaner.",
+          "Every scan is read-only; deletion is a separate, explicitly confirmed step that uses the Trash.",
+          "Developer ID signed and notarized by Apple.",
+          "No account, no telemetry, English and French."
+        ],
+        "fr": [
+          "Stockage, Space Lens, Doublons, Applications, Intégrité, Centre développeur et Nettoyage de confidentialité.",
+          "Chaque analyse est en lecture seule ; la suppression est une étape distincte, confirmée explicitement, qui passe par la Corbeille.",
+          "Signée avec un Developer ID et notarisée par Apple.",
+          "Aucun compte, aucune télémétrie, anglais et français."
+        ]
+      }
+    }
+  ]
+}

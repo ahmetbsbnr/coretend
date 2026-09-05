@@ -6,64 +6,245 @@
   "cleanUrls": false,
   "trailingSlash": false,
   "redirects": [
-    { "source": "/index.html", "destination": "/", "permanent": true },
-    { "source": "/en/index.html", "destination": "/en", "permanent": true },
-    { "source": "/fr/index.html", "destination": "/fr", "permanent": true },
-    { "source": "/privacy.html", "destination": "/privacy", "permanent": true },
-    { "source": "/support.html", "destination": "/support", "permanent": true },
-    { "source": "/contact.html", "destination": "/contact", "permanent": true },
-    { "source": "/community.html", "destination": "/community", "permanent": true },
-    { "source": "/legal.html", "destination": "/legal", "permanent": true },
-    { "source": "/licenses.html", "destination": "/licenses", "permanent": true },
-    { "source": "/fr/privacy.html", "destination": "/fr/privacy", "permanent": true },
-    { "source": "/fr/support.html", "destination": "/fr/support", "permanent": true },
-    { "source": "/fr/legal.html", "destination": "/fr/legal", "permanent": true },
-    { "source": "/fr/licenses.html", "destination": "/fr/licenses", "permanent": true },
-    { "source": "/site", "destination": "/", "permanent": true },
-    { "source": "/site/index.html", "destination": "/", "permanent": true },
-    { "source": "/Website", "destination": "/", "permanent": true },
-    { "source": "/Website/index.html", "destination": "/", "permanent": true },
-    { "source": "/en.html", "destination": "/en", "permanent": true },
-    { "source": "/fr.html", "destination": "/fr", "permanent": true }
+    {
+      "source": "/index.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/en/index.html",
+      "destination": "/en",
+      "permanent": true
+    },
+    {
+      "source": "/fr/index.html",
+      "destination": "/fr",
+      "permanent": true
+    },
+    {
+      "source": "/privacy.html",
+      "destination": "/privacy",
+      "permanent": true
+    },
+    {
+      "source": "/support.html",
+      "destination": "/support",
+      "permanent": true
+    },
+    {
+      "source": "/contact.html",
+      "destination": "/contact",
+      "permanent": true
+    },
+    {
+      "source": "/community.html",
+      "destination": "/community",
+      "permanent": true
+    },
+    {
+      "source": "/legal.html",
+      "destination": "/legal",
+      "permanent": true
+    },
+    {
+      "source": "/licenses.html",
+      "destination": "/licenses",
+      "permanent": true
+    },
+    {
+      "source": "/fr/privacy.html",
+      "destination": "/fr/privacy",
+      "permanent": true
+    },
+    {
+      "source": "/fr/support.html",
+      "destination": "/fr/support",
+      "permanent": true
+    },
+    {
+      "source": "/fr/legal.html",
+      "destination": "/fr/legal",
+      "permanent": true
+    },
+    {
+      "source": "/fr/licenses.html",
+      "destination": "/fr/licenses",
+      "permanent": true
+    },
+    {
+      "source": "/site",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/site/index.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/Website",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/Website/index.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/en.html",
+      "destination": "/en",
+      "permanent": true
+    },
+    {
+      "source": "/fr.html",
+      "destination": "/fr",
+      "permanent": true
+    },
+    {
+      "source": "/security.html",
+      "destination": "/security",
+      "permanent": true
+    },
+    {
+      "source": "/changelog.html",
+      "destination": "/changelog",
+      "permanent": true
+    }
   ],
   "rewrites": [
-    { "source": "/download", "destination": "/api/download" },
-    { "source": "/en", "destination": "/en-route.html" },
-    { "source": "/fr", "destination": "/fr-route.html" },
-    { "source": "/privacy", "destination": "/privacy.html" },
-    { "source": "/support", "destination": "/support.html" },
-    { "source": "/legal", "destination": "/legal.html" },
-    { "source": "/licenses", "destination": "/licenses.html" },
-    { "source": "/contact", "destination": "/contact.html" },
-    { "source": "/community", "destination": "/community.html" },
-    { "source": "/fr/privacy", "destination": "/fr-privacy.html" },
-    { "source": "/fr/support", "destination": "/fr-support.html" },
-    { "source": "/fr/legal", "destination": "/fr-legal.html" },
-    { "source": "/fr/licenses", "destination": "/fr-licenses.html" },
-    { "source": "/fr/contact", "destination": "/fr-contact.html" },
-    { "source": "/fr/community", "destination": "/fr-community.html" }
+    {
+      "source": "/download",
+      "destination": "/api/download"
+    },
+    {
+      "source": "/en",
+      "destination": "/en-route.html"
+    },
+    {
+      "source": "/fr",
+      "destination": "/fr-route.html"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/privacy.html"
+    },
+    {
+      "source": "/support",
+      "destination": "/support.html"
+    },
+    {
+      "source": "/legal",
+      "destination": "/legal.html"
+    },
+    {
+      "source": "/licenses",
+      "destination": "/licenses.html"
+    },
+    {
+      "source": "/contact",
+      "destination": "/contact.html"
+    },
+    {
+      "source": "/community",
+      "destination": "/community.html"
+    },
+    {
+      "source": "/security",
+      "destination": "/security.html"
+    },
+    {
+      "source": "/changelog",
+      "destination": "/changelog.html"
+    },
+    {
+      "source": "/fr/privacy",
+      "destination": "/fr-privacy.html"
+    },
+    {
+      "source": "/fr/support",
+      "destination": "/fr-support.html"
+    },
+    {
+      "source": "/fr/legal",
+      "destination": "/fr-legal.html"
+    },
+    {
+      "source": "/fr/licenses",
+      "destination": "/fr-licenses.html"
+    },
+    {
+      "source": "/fr/contact",
+      "destination": "/fr-contact.html"
+    },
+    {
+      "source": "/fr/community",
+      "destination": "/fr-community.html"
+    },
+    {
+      "source": "/fr/security",
+      "destination": "/fr-security.html"
+    },
+    {
+      "source": "/fr/changelog",
+      "destination": "/fr-changelog.html"
+    }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self'; script-src-attr 'none'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; media-src 'self'; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; form-action 'none'; base-uri 'none'; object-src 'none'" },
-        { "key": "Referrer-Policy", "value": "no-referrer" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "Permissions-Policy", "value": "accelerometer=(), camera=(), geolocation=(), gyroscope=(), microphone=(), payment=(), usb=()" },
-        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
-        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
-        { "key": "Cross-Origin-Resource-Policy", "value": "same-origin" }
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self'; script-src-attr 'none'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data:; media-src 'self'; font-src 'self'; connect-src 'self'; frame-ancestors 'none'; form-action 'none'; base-uri 'none'; object-src 'none'"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "no-referrer"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "accelerometer=(), camera=(), geolocation=(), gyroscope=(), microphone=(), payment=(), usb=()"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin"
+        },
+        {
+          "key": "Cross-Origin-Resource-Policy",
+          "value": "same-origin"
+        }
       ]
     },
     {
       "source": "/assets/(.*)",
-      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     },
     {
       "source": "/(latest.json|SHA256SUMS)",
-      "headers": [{ "key": "Cache-Control", "value": "no-store, max-age=0" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0"
+        }
+      ]
     }
   ]
 }

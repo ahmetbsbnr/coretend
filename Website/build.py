@@ -512,8 +512,10 @@ def shell(
     <ul class="foot-links">
       <li><a href="/download">{download}</a></li>
       <li><a href="{route_for('community', language)}">{community}</a></li>
+      <li><a href="{route_for('changelog', language)}">{changelog}</a></li>
       <li><a href="{route_for('contact', language)}">{contact}</a></li>
       <li><a href="{route_for('privacy', language)}">{privacy}</a></li>
+      <li><a href="{route_for('security', language)}">{security}</a></li>
       <li><a href="{route_for('support', language)}">{support}</a></li>
       <li><a href="{route_for('legal', language)}">{legal}</a></li>
       <li><a href="{route_for('licenses', language)}">{licenses}</a></li>
@@ -548,7 +550,15 @@ def privacy_content(release: dict, language: str) -> str:
 <pre class="local-log" aria-label="Journal local illustratif">scan.store = ~/Library/Application Support/CoreTend/store.sqlite
 telemetry = false
 account_required = false
-update_check = user_initiated → /latest.json</pre></div></section>"""
+update_check = user_initiated → /latest.json</pre></div></section>
+<section class="info-section"><div class="wrap"><div class="section-head"><p class="section-index">02 / Contact et communauté</p><div><h2>Ce que vous nous envoyez, seulement quand vous l’envoyez.</h2><p class="section-intro">Écrire via <a href="/fr/contact">Contact</a> ou <a href="/fr/community">Communauté</a> est une communication que vous initiez. Ce n’est pas de la télémétrie et l’application n’y participe pas.</p></div></div>
+<ul class="measure-list">
+<li><strong>Champs transmis</strong><p>Uniquement ce que vous saisissez dans le formulaire : type de demande, objet, message, et — si vous les fournissez — nom, e-mail, version de CoreTend, version de macOS. Rien n’est prélevé automatiquement sur votre Mac (aucun chemin, inventaire d’apps, EXIF, GPS, journal d’analyse).</p></li>
+<li><strong>E-mail</strong><p>Facultatif. Requis uniquement si vous cochez « je souhaite une réponse ». Il sert à vous répondre et, pour la communauté, à un éventuel suivi ; il n’apparaît jamais publiquement.</p></li>
+<li><strong>Modération</strong><p>Les contributions à la communauté sont d’abord <em>en attente</em>. Rien n’est publié avant approbation, et seulement si vous avez autorisé l’affichage du texte. Un avis reste privé sauf consentement explicite distinct.</p></li>
+<li><strong>Conservation</strong><p>Les messages et contributions sont stockés dans une base Postgres gérée par l’hébergeur (Vercel) pour traiter et suivre votre demande. L’adresse IP n’est jamais conservée en clair : seule une empreinte salée sert à limiter les abus, et ces lignes sont éphémères.</p></li>
+<li><strong>Suppression</strong><p>Pour faire retirer un message, une contribution ou un avis, écrivez à <a href="mailto:privacy@ahmetbsbnr.com">privacy@ahmetbsbnr.com</a>.</p></li>
+</ul></div></section>"""
     hero = info_hero("privacy", language, "Inspectable boundaries", "Your findings stay on the Mac.", "CoreTend processes supported locations on-device. A user-initiated update check contacts only the public release manifest.", ["Local processing", "No account", "No advertising telemetry"])
     return hero + """<section class="info-section"><div class="wrap"><div class="section-head"><p class="section-index">01 / Local flow</p><div><h2>What stays local, what reaches the network.</h2><p class="section-intro">The boundary is documented where it occurs, without claiming the app never makes a network request.</p></div></div>
 <ul class="measure-list"><li><strong>Scan findings</strong><p>Paths, sizes, duplicate matches and aggregate activity remain in CoreTend’s local store.</p></li><li><strong>Manual update check</strong><p>A user action may request <code>/latest.json</code>. No file index is sent with that request.</p></li><li><strong>Public website</strong><p>The site code configures no advertising cookies, analytics pixels or session replay. Vercel hosts the site and GitHub serves release artifacts.</p></li></ul>
@@ -556,7 +566,15 @@ update_check = user_initiated → /latest.json</pre></div></section>"""
 <pre class="local-log" aria-label="Illustrative local log">scan.store = ~/Library/Application Support/CoreTend/store.sqlite
 telemetry = false
 account_required = false
-update_check = user_initiated → /latest.json</pre></div></section>"""
+update_check = user_initiated → /latest.json</pre></div></section>
+<section class="info-section"><div class="wrap"><div class="section-head"><p class="section-index">02 / Contact and Community</p><div><h2>What you send us — only when you send it.</h2><p class="section-intro">Writing through <a href="/contact">Contact</a> or <a href="/community">Community</a> is a communication you start. It is not telemetry, and the app is not involved.</p></div></div>
+<ul class="measure-list">
+<li><strong>Fields transmitted</strong><p>Only what you type into the form: request type, subject, message, and — if you provide them — name, email, CoreTend version, macOS version. Nothing is taken from your Mac automatically (no path, app inventory, EXIF, GPS, or scan log).</p></li>
+<li><strong>Email</strong><p>Optional. Required only if you tick "I would like a reply". It is used to reply to you and, for Community, for possible follow-up; it never appears publicly.</p></li>
+<li><strong>Moderation</strong><p>Community submissions start as <em>pending</em>. Nothing is published until it is approved, and only if you allowed the text to be shown. A review stays private unless you give separate explicit consent.</p></li>
+<li><strong>Retention</strong><p>Messages and submissions are stored in a managed Postgres database (hosted by Vercel) to handle and track your request. Your IP address is never kept in the clear — only a salted hash is used for abuse rate-limiting, and those rows are transient.</p></li>
+<li><strong>Deletion</strong><p>To have a message, submission, or review removed, email <a href="mailto:privacy@ahmetbsbnr.com">privacy@ahmetbsbnr.com</a>.</p></li>
+</ul></div></section>"""
 
 
 def support_content(release: dict, language: str) -> str:
@@ -776,6 +794,83 @@ def community_content(release: dict, language: str) -> str:
 </div></section>"""
 
 
+def security_content(release: dict, language: str) -> str:
+    fr = language == "fr"
+    if fr:
+        hero = info_hero(
+            "security", language, "Confiance", "Comment CoreTend reste sûr.",
+            "CoreTend est local par conception et réversible par défaut. Cette page explique les garanties ; l’installation, elle, reste simple.",
+            ["Local par conception", "Corbeille par défaut", "Aucun nettoyage silencieux"])
+        rows = [
+            ("Traitement local", "Les analyses lisent les emplacements pris en charge sur l’appareil. Aucun résultat n’est envoyé ailleurs ; la seule requête réseau du produit est une vérification de mise à jour lancée manuellement."),
+            ("Developer ID + notarisation", "L’application est signée avec un identifiant Apple Developer ID et notarisée par Apple, donc macOS l’ouvre sans invite. « Signé » ne veut pas dire « sans danger », et « non signé » ne veut pas dire « malveillant » — c’est une garantie d’origine, pas un jugement."),
+            ("Corbeille par défaut", "La suppression place les éléments dans la Corbeille de macOS. Aucun <code>rm -rf</code> nulle part. Vous pouvez tout remettre depuis le Finder."),
+            ("SafetyCenter / validation de chemin", "Tout moteur destructif passe par une validation de chemin : racines système protégées, revalidation au moment de l’exécution (défense contre les échanges de liens symboliques), jamais d’URL brute depuis l’interface."),
+            ("Centre de restauration", "Quand CoreTend a mis un élément à la Corbeille, il peut le remettre à son emplacement d’origine via un manifeste local et privé — jamais transmis."),
+            ("Extension Finder en lecture seule", "Le menu contextuel du Finder ne fait qu’ouvrir CoreTend sur l’écran adéquat. L’extension ne supprime rien, ne déplace rien et ne lit aucun contenu de fichier."),
+            ("Aucun nettoyage silencieux", "Rien n’est supprimé sans une sélection revue et une confirmation explicite. Les analyses ne suppriment jamais."),
+        ]
+        vuln = "Signalement de vulnérabilité"
+        vuln_body = f"Utilisez l’<a href=\"{REPOSITORY}/security/advisories/new\">avis de sécurité privé sur GitHub</a> ou écrivez à <a href=\"mailto:security@ahmetbsbnr.com\">security@ahmetbsbnr.com</a>."
+        s1 = "Garanties"
+    else:
+        hero = info_hero(
+            "security", language, "Trust", "How CoreTend stays safe.",
+            "CoreTend is local by design and reversible by default. This page explains the guarantees; installing it stays simple.",
+            ["Local by design", "Trash by default", "No silent cleanup"])
+        rows = [
+            ("Local processing", "Scans read supported locations on-device. No findings are sent anywhere; the product’s only network request is a user-initiated update check."),
+            ("Developer ID + notarization", "The app is Apple Developer ID signed and notarized by Apple, so macOS opens it with no prompt. “Signed” does not mean “safe” and “unsigned” does not mean “malicious” — it is a provenance guarantee, not a verdict."),
+            ("Trash by default", "Removal moves items to the macOS Trash. No <code>rm -rf</code> anywhere. You can put anything back from Finder."),
+            ("SafetyCenter / path validation", "Every destructive engine goes through path validation: protected system roots, execution-time re-validation (defends against symlink swaps), never a raw URL from the UI."),
+            ("Restore Center", "When CoreTend moved an item to the Trash, it can move it back to where it came from, using a local, private restore manifest — never transmitted."),
+            ("Read-only Finder extension", "The Finder right-click menu only opens CoreTend on the matching screen. The extension never deletes, moves, or reads file contents."),
+            ("No silent cleanup", "Nothing is removed without a reviewed selection and an explicit confirmation. Scans never delete."),
+        ]
+        vuln = "Reporting a vulnerability"
+        vuln_body = f"Use a <a href=\"{REPOSITORY}/security/advisories/new\">private GitHub security advisory</a> or email <a href=\"mailto:security@ahmetbsbnr.com\">security@ahmetbsbnr.com</a>."
+        s1 = "Guarantees"
+    items = "".join(f"<li><strong>{html.escape(t)}</strong><p>{b}</p></li>" for t, b in rows)
+    return hero + f"""<section class="info-section"><div class="wrap"><div class="section-head"><p class="section-index">01 / {s1}</p></div>
+<ul class="measure-list">{items}</ul>
+<div class="section-head" style="margin-top:36px"><p class="section-index">02 / {html.escape(vuln)}</p></div>
+<p class="section-intro">{vuln_body}</p></div></section>"""
+
+
+def _changelog_entries() -> list:
+    path = SITE_ROOT / "changelog.json"
+    with path.open(encoding="utf-8") as handle:
+        return json.load(handle).get("entries", [])
+
+
+def changelog_content(release: dict, language: str) -> str:
+    fr = language == "fr"
+    lang = "fr" if fr else "en"
+    hero = info_hero(
+        "changelog", language,
+        "Journal" if fr else "Changelog",
+        "Ce qui change, par version." if fr else "What changes, by version.",
+        ("Les versions stables sont datées. Une entrée de bêta reste marquée « non publiée » tant que l’artefact n’existe pas."
+         if fr else
+         "Stable releases are dated. A beta entry stays marked “unreleased” until the artifact exists."),
+        ["Stable", "Beta", "Apache-2.0"])
+    blocks = []
+    for e in _changelog_entries():
+        status = e.get("status", "released")
+        date = e.get("date")
+        if status == "released" and date:
+            tag = date
+        else:
+            tag = "non publiée" if fr else "unreleased"
+        badge = e.get("channel", "stable")
+        summary = html.escape(e.get("summary", {}).get(lang, ""))
+        changes = "".join(f"<li>{html.escape(c)}</li>" for c in e.get("changes", {}).get(lang, []))
+        blocks.append(
+            f"""<article class="changelog-entry"><header><h2>{html.escape(e['version'])} <span class="chip {'safe' if badge=='stable' else ''}">{html.escape(badge)}</span> <span class="changelog-date">{html.escape(tag)}</span></h2><p class="section-intro">{summary}</p></header><ul>{changes}</ul></article>"""
+        )
+    return hero + f"""<section class="info-section"><div class="wrap narrow">{''.join(blocks)}</div></section>"""
+
+
 def information_pages(release: dict) -> dict[str, str]:
     pages: dict[str, str] = {}
     definitions = {
@@ -802,6 +897,14 @@ def information_pages(release: dict) -> dict[str, str]:
         "community": {
             "en": ("Community — CoreTend", "Report bugs, suggest improvements and features, leave feedback, and browse approved CoreTend submissions.", community_content),
             "fr": ("Communauté — CoreTend", "Signalez des bugs, proposez des améliorations et des fonctionnalités, laissez un avis, et parcourez les contributions approuvées.", community_content),
+        },
+        "security": {
+            "en": ("Security — CoreTend", "How CoreTend stays safe: local-first, Developer ID, notarization, Trash-by-default, Restore Center, no silent cleanup.", security_content),
+            "fr": ("Sécurité — CoreTend", "Comment CoreTend reste sûr : local d’abord, Developer ID, notarisation, Corbeille par défaut, Centre de restauration, aucun nettoyage silencieux.", security_content),
+        },
+        "changelog": {
+            "en": ("Changelog — CoreTend", "What changes in CoreTend, by version. Stable releases are dated; beta entries are marked unreleased until published.", changelog_content),
+            "fr": ("Journal des versions — CoreTend", "Ce qui change dans CoreTend, par version. Les versions stables sont datées ; les entrées bêta sont non publiées jusqu’à leur sortie.", changelog_content),
         },
     }
     for page, locales in definitions.items():
@@ -912,12 +1015,16 @@ def write_documents(stage: Path, release: dict) -> None:
         "/licenses",
         "/contact",
         "/community",
+        "/security",
+        "/changelog",
         "/fr/privacy",
         "/fr/support",
         "/fr/legal",
         "/fr/licenses",
         "/fr/contact",
         "/fr/community",
+        "/fr/security",
+        "/fr/changelog",
     )
     sitemap = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
