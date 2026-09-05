@@ -1,99 +1,85 @@
 # CoreTend Agent Handoff
 
 ## Git
-- Current branch: `feat/restore-center` (from `feat/privacy-lab` HEAD `d729118`)
-- Current HEAD: `cf00f20`
-- Commits on this branch: `d2ecb8b` (feat), `20ba7f2` (test), `cf00f20` (docs)
-- Working tree: clean for tracked files. Pre-existing untracked agent
-  scaffolding (`AGENTS.md`, `CLAUDE.md`, `.agents/`, `.codex/`,
-  `.agent-setup-backups/`, `Documentation/AGENT_HANDOFF.md`,
-  `Documentation/AGENT_OPERATING_CONTRACT.md`) predates this session; not
-  created or committed here.
+- Current branch: `feat/macos-integrations-core` (from `feat/restore-center` HEAD `cf00f20`)
+- Commits on this branch: `<carry-forward handoff>`, then feat / test / docs (see `git log`)
+- Working tree: clean for tracked files at handoff.
 - Not pushed. Not merged. `main` untouched. No history rewrite.
-- Checkpoints preserved: `feat/privacy-lab` @ `d729118`, `feat/developer-center` @ `6d5ad2e`.
+- Checkpoints preserved: `feat/restore-center`, `feat/privacy-lab`, `feat/developer-center`, …
 
-## Completed — Restore Center (real end-to-end restore)
-- `Sources/SafetyCore/RestoreManifest.swift` — `RestoreManifestRecord`,
-  `RestoreManifestSink`, `RestoreValidationError`, `RestoreValidator`,
-  `FilesystemIdentity` (Foundation + Darwin).
-- `Sources/SafetyCore/SafetyCore.swift` — `SafetyCenter` captures the real
-  `resultingItemURL` and emits a manifest for every successful `trashItem`
-  move (never the permanent `removeItem` fallback). `sink as? RestoreManifest
-  Sink` auto-detect + explicit `init(validator:sink:restoreSink:)`.
-- `Sources/Persistence/Store.swift` — DB migration **v7** `restore_manifest`
-  (`IF NOT EXISTS` DDL, matching v5/v6 style), `RestoreManifestItem`,
-  `RestoreManifestState`, `Store: RestoreManifestSink`, query/state/clear/
-  prune methods. Retention 90d / 30d-terminal.
-- `Sources/CoreTendApp/RestoreService.swift` — `RestoreService` actor,
-  `RestoreAvailability`, `RestoreItemView`, `RestoreOperationGroup`,
-  `RestoreOutcome`, `RestoreExecutionSummary`, `RestoreReversibility`,
-  `RestoreDisplay`.
-- `Sources/CoreTendApp/RestoreCenterView.swift` — `RestoreCenterViewModel`
-  (generation-token load guard) + `RestoreCenterView`.
-- Nav: `ModuleID.restoreCenter` (System sidebar group, after `.myActivity`),
-  `MCModuleIdentity.restoreCenter`.
-- Localization: 55 keys added to both `Base.lproj` / `fr.lproj` (parity
-  933 == 933).
-- Tests: 41 new — `RestoreManifestStoreTests` (8), `RestoreCaptureTests` (4,
-  SafetyCore), `RestoreServiceTests` (22), `RestoreAdvisorReversibilityTests`
-  (4), `RestoreCaptureIntegrationTests` (2), `RestoreLocalizationTests` (3);
-  `StoreTests` (v6→v7), `AdvisorServiceTests` (guard renamed/kept),
-  `CommandPaletteTests` (+restoreCenter), `DiagnosticReportTests` (+1).
-- Docs: `RESTORE.md` (rewritten), `SAFETY_MODEL.md` (+section),
-  `PERSISTENCE.md` (+bullet, +migrations summary), `PRIVACY.md` /
-  `Documentation/PRIVACY.md`, `FEATURE_MATRIX.md` (+row), `TODO.md`,
-  `PROJECT_STATE.json` (tests 603, branch list).
+## Completed — macOS Integrations Core (App Intents / notifications / scheduled scans)
+All read-only, all reusing existing domain services. New files in
+`Sources/CoreTendApp/`:
+- `AppRouter.swift` — `AppRoute`, `AppRouter` (shared deep-link front door,
+  cold-launch buffering, `.mcNavigate` reuse). `MainWindow.onAppear` drains
+  `markReceiverReady()` and calls `MacIntegrations.shared.start()`.
+- `NotificationService.swift` — `NotificationCategory` (lowDiskSpace /
+  scanResults / storageGrowth), `NotificationPolicy` (pure thresholds + rate
+  limits), `NotificationPreferences` (`UserDefaults`), `NotificationDelivering`
+  protocol + `SystemNotificationDelivery`, `NotificationService`
+  (`@MainActor`), `NotificationTapRouter` (delegate + pure `module(from:)`).
+- `ScheduledScanService.swift` — `ScanCadence` (off/daily/weekly),
+  `ScheduledScanResult`, `BackgroundScheduling` protocol +
+  `SystemBackgroundScheduler` (`NSBackgroundActivityScheduler`),
+  `ScheduledScanService` (actor, read-only by imports).
+- `MacIntegrations.swift` — `@MainActor @Observable` glue; owns scheduler +
+  notifications; `start()` (idempotent), `setCadence`, `runScheduledScan`.
+  `InertBackgroundScheduler` for the test marker.
+- `CoreTendIntents.swift` — 7 `AppIntent`s + `CoreTendModuleAppEnum`.
+- `CoreTendIntentText.swift` — pure result-string builders.
+- `CoreTendAppShortcuts.swift` — `AppShortcutsProvider`, 6 shortcuts.
+- `CleanupTimeline.swift` — shared `[ScanFinding] -> [TimelineCategorySample]`
+  (also now used by `CleanupView`).
+- `SettingsView.swift` — Scheduled Scans + Notifications sections; 3 new
+  `@AppStorage("notif.enabled.*")` keys (added to `settings-matrix.json`).
+- Localization: 73 keys added to both `Base.lproj` / `fr.lproj` (parity
+  1006 == 1006).
+- Tests: 46 new — `NotificationServiceTests` (incl. `NotificationPolicyTests`,
+  `NotificationTapRouterTests`), `ScheduledScanServiceTests` (+`ScanCadence`),
+  `MacIntegrationsTests` (+`MacIntegrationsSafetyTests` source-grep),
+  `AppRouterTests`, `CoreTendIntentsTests` (text/enum/open/image/smoke).
+- Docs: new `Documentation/MACOS_INTEGRATIONS.md`; updated `FEATURE_MATRIX.md`,
+  `SAFETY_MODEL.md`, `PRIVACY.md`, `Documentation/PRIVACY.md`, `TODO.md`,
+  `PROJECT_STATE.json` (tests 649), `SETTINGS_MATRIX.md` (regenerated).
 
-## In progress
-- None.
+## Architecture decisions
+- Scheduler = `NSBackgroundActivityScheduler` (not `BGTaskScheduler`) —
+  native, entitlement-free, system-condition-aware, smallest reliable.
+  Limitation: fires only while the app runs; documented.
+- Read-only by dependency structure: `ScheduledScanService` imports only
+  `ScanCore` + `Persistence`; App Intents don't import `FileRules`. Enforced
+  by `MacIntegrationsSafetyTests` (comment-stripped source grep) + a
+  behavioural test. Not a runtime bool.
+- One `AppRouter`, reusing `.mcNavigate`. Notifications + App Intents share it.
+- Scheduled scan reuses the interactive Cleanup engine/rules and the shared
+  `CleanupTimeline.samples` mapping; snapshot only on `ScanEvent.finished`
+  (`trigger = "scheduled"`), never on cancel/incomplete.
+- Notifications: aggregates-only bodies; permission in-context only;
+  rate-limited + coalesced; one `settings` timestamp row per category.
 
-## Not started (out of scope for this vertical)
-- Automatic conflict resolution on restore (deliberately not built —
-  collisions are refused, not renamed/overwritten).
-- Verified real external-volume restore (model uses synthetic volume
-  identity in tests).
-
-## Architecture decisions made
-- Capture at the chokepoint (`SafetyCenter`), not per call site. The sink is
-  auto-detected from the existing `sink:` argument, so no call site changed
-  and there is no second execution path. Recovery Plan / Developer Center /
-  Applications uninstall get manifests for free (verified by test).
-- `safety_log` stays redacted. `restore_manifest` is the single table with
-  real paths, correlated to the audit log only by `operation_id`.
-- Restore is a guarded `FileManager.moveItem` back to the recorded original
-  path only — `RestoreValidator` (a sibling of `PathValidator` for the other
-  direction), destination pinned, protected roots rejected, occupied
-  destination refused (never overwritten).
-- `AdvisorService.advise(...)` UNCHANGED — scan-result findings stay `.trash`
-  (no manifest exists yet). `RestoreReversibility.of(_:)` is the only
-  producer of `.restorableByCoreTend`, from live availability.
-  `RecoveryPlanEligibility` unchanged (no regression).
-- Retention 90d, 30d for terminal states — mirrors Timeline's 90d window.
-
-## Contracts that must not change
-- See `Documentation/AGENT_OPERATING_CONTRACT.md`,
-  `Documentation/SAFETY_MODEL.md` → "Restore Center".
-- `safety_log` must remain redacted; `restore_manifest` is local only,
-  excluded from `DiagnosticReport` / Timeline / audit exports.
-- Restore never overwrites an occupied destination.
-- "Forget Restore History" never empties the Trash.
-- All prior verticals' contracts unchanged.
-
-## Verification (at HEAD cf00f20)
+## Verification (at branch HEAD)
 - Build: `Scripts/build.sh` (debug + release) — `Build complete!`, 0 warnings.
-- Tests: `Scripts/test.sh` — 603 passed, 0 failing (was 562).
-- Repository doctor: `Scripts/repository-doctor.sh` — all checks passed.
+- Tests: `Scripts/test.sh` — 649 passed, 0 failing (was 603; +46).
+- Repository doctor: `Scripts/repository-doctor.sh` — all checks passed
+  (settings matrix updated: 9 settings, no orphans).
+- Localization parity: 1006 == 1006 keys.
 
-## Known limitations / HUMAN VERIFICATION REQUIRED
-- Real external-volume restore (`/Volumes/…/.Trashes/<uid>`, unmount/remount)
-  — model exercised with synthetic volume identity only.
-- Interactive VoiceOver / full keyboard traversal / focus order on
-  `RestoreCenterView` — structural semantics in place, not interactively
-  exercised.
-- Cross-volume restore `moveItem` is copy+delete and not atomic; same-volume
-  (the normal case) is a rename and is atomic.
+## HUMAN VERIFICATION REQUIRED
+- Shortcuts app: does it discover the App Shortcuts, and show FR phrases?
+  (Needs `Metadata.appintents` in the packaged `.app`; `swift build` alone
+  does not emit it — a packaging step in `Scripts/package-*.sh` is likely
+  needed and is not done here.)
+- Real notification permission grant + system delivery + tap.
+- Cold-launch deep link (notification tap / `OpenCoreTendModuleIntent` while
+  the app is quit).
+- Scheduled execution over real wall-clock time (24 h / 7 d).
+- VoiceOver / keyboard on the new Settings picker + toggles.
+- Second Mac / different supported macOS.
+
+## Not built in this vertical
+- WidgetKit and Finder Extension — analysis only (final report / FEATURE_MATRIX).
 
 ## Next concrete action
-- None for this vertical. macOS-integration readiness (Finder Extension,
-  App Intents/Shortcuts, WidgetKit, scheduled scans, notifications) is
-  analyzed (not implemented) at the end of the final report.
+- None for this vertical. If continuing: packaging step to emit and copy the
+  App Intents metadata bundle into the `.app`, then HUMAN VERIFICATION in
+  Shortcuts.app.

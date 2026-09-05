@@ -77,7 +77,46 @@
       "effect": "Records which security profile the user picked at first run. Informational; every profile keeps the fixed Trash, protected-root and explicit-confirmation safety posture.",
       "restartRequired": "no",
       "availability": "always",
-      "test": "OnboardingLogicTests (profile→config mapping), generate-settings-matrix.py --check (repository-doctor gate)",
+      "test": "OnboardingLogicTests (profile\u2192config mapping), generate-settings-matrix.py --check (repository-doctor gate)",
+      "status": "VERIFIED_COMPLETE"
+    },
+    {
+      "id": "notif.enabled.lowDiskSpace",
+      "label": "Notification: low disk space",
+      "default": "true",
+      "storage": "@AppStorage (UserDefaults)",
+      "type": "Bool",
+      "consumer": "SettingsView.swift toggle; NotificationService.swift (NotificationPreferences) gates the low-disk-space local notification",
+      "effect": "When off, CoreTend never sends the low-disk-space local notification. Delivery still also requires granted notification permission.",
+      "restartRequired": "no",
+      "availability": "always",
+      "test": "NotificationServiceTests.swift (aDisabledCategoryNeverPosts), generate-settings-matrix.py --check (repository-doctor gate)",
+      "status": "VERIFIED_COMPLETE"
+    },
+    {
+      "id": "notif.enabled.scanResults",
+      "label": "Notification: scheduled scan results",
+      "default": "true",
+      "storage": "@AppStorage (UserDefaults)",
+      "type": "Bool",
+      "consumer": "SettingsView.swift toggle; NotificationService.swift gates the 'scheduled scan found meaningful reclaimable space' notification",
+      "effect": "When off, a completed scheduled scan never triggers the reclaimable-space notification.",
+      "restartRequired": "no",
+      "availability": "always",
+      "test": "NotificationServiceTests.swift, generate-settings-matrix.py --check (repository-doctor gate)",
+      "status": "VERIFIED_COMPLETE"
+    },
+    {
+      "id": "notif.enabled.storageGrowth",
+      "label": "Notification: storage growth",
+      "default": "true",
+      "storage": "@AppStorage (UserDefaults)",
+      "type": "Bool",
+      "consumer": "SettingsView.swift toggle; NotificationService.swift gates the 'tracked storage grew since the previous comparable scan' notification (delivered coalesced with scan results)",
+      "effect": "When off, a scheduled scan never triggers the storage-growth notification.",
+      "restartRequired": "no",
+      "availability": "always",
+      "test": "NotificationServiceTests.swift, generate-settings-matrix.py --check (repository-doctor gate)",
       "status": "VERIFIED_COMPLETE"
     }
   ]

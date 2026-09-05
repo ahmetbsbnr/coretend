@@ -2,12 +2,12 @@
 
 CoreTend 1.0.0 shipped on 2026-09-03. It is Developer ID signed,
 Apple-notarized, stapled, Minisign-signed, and published as a stable GitHub
-release. Core functionality is complete; 603 Swift tests pass (post-1.0.0
+release. Core functionality is complete; 649 Swift tests pass (post-1.0.0
 work — Storage Timeline, then Advisor, then Recovery Plan, then APFS
 Intelligence, then Applications Center 2.0, then Developer Center, then
-Privacy Lab, then Restore Center — added 261 since the 342 that shipped in
-1.0.0). Post-1.0.0 verticals live on local branches only; nothing is merged
-to `main` or pushed.
+Privacy Lab, then Restore Center, then macOS Integrations Core — added 307
+since the 342 that shipped in 1.0.0). Post-1.0.0 verticals live on local
+branches only; nothing is merged to `main` or pushed.
 
 ## Release follow-up
 
@@ -198,6 +198,43 @@ restore is `HUMAN VERIFICATION REQUIRED` (model exercised with synthetic
 volume identity). See `Documentation/RESTORE.md`,
 `Documentation/SAFETY_MODEL.md` → "Restore Center", `Documentation/
 PERSISTENCE.md`, `Documentation/FEATURE_MATRIX.md` → "Restore Center".
+
+## Done — macOS Integrations Core (App Intents / notifications / scheduled scans)
+
+First production integration layer, all read-only, all reusing existing
+domain services. **App Intents** (`Sources/CoreTendApp/CoreTendIntents.swift`
++ pure `CoreTendIntentText.swift`): 7 intents (free disk space, CoreTend
+summary, storage change, reclaimable developer storage, integrity summary,
+inspect image metadata, open module) + 6 App Shortcuts
+(`CoreTendAppShortcuts.swift`). No destructive intent — enforced by
+dependency structure (no `FileRules` import, no `SafetyCenter`/
+`CleanupExecution`/`RecoveryPlanService`/`RestoreService` reference;
+`MacIntegrationsSafetyTests` greps source). **Local notifications**
+(`NotificationService.swift`, `UNUserNotificationCenter` only): 3 toggleable
+categories (low disk space, scan results, storage growth — coalesced), no
+"a scan ran" category, in-context permission only, `NotificationPolicy` rate
+limiting (24h/12h/24h), aggregates-only bodies (no path/name/location/GPS/
+profile), one `settings` timestamp row per category. **Deep-link router**
+`AppRouter.swift` — one shared front door reusing `.mcNavigate`, cold-launch
+buffered + drained in `MainWindow.onAppear`. **Scheduled scans**
+(`ScheduledScanService` actor + `NSBackgroundActivityScheduler` behind a
+`BackgroundScheduling` protocol): Off/Daily/Weekly, chosen for being native/
+entitlement-free/system-condition-aware/smallest; limitation — fires only
+while the app runs (documented). Same `ScanEngine`+`UserCleanupRules`+shared
+`CleanupTimeline.samples` as interactive Cleanup; Timeline snapshot
+(`trigger="scheduled"`) only on `ScanEvent.finished`; cancelled/incomplete
+writes nothing; reuses the single `AppEnvironment.shared.store`; `inProgress`
+guard; cancellable; no FDA assumed/prompted. Settings: Scheduled Scans
+picker + Notifications section (3 `@AppStorage` keys added to
+`settings-matrix.json`). 73 new EN/FR keys, parity verified. 46 new tests.
+HUMAN VERIFICATION REQUIRED: Shortcuts-app discovery + FR phrases (App
+Intents metadata bundle in the packaged `.app`); real notification permission
++ system delivery; live cold-launch deep links; scheduled execution over
+real wall-clock; VoiceOver/keyboard on the new Settings controls. WidgetKit
+and Finder Extension are NOT built (analysis only — see
+`Documentation/FEATURE_MATRIX.md` / final report). See
+`Documentation/MACOS_INTEGRATIONS.md`, `Documentation/SAFETY_MODEL.md` →
+"macOS integrations".
 
 ## Deliberately deferred product scope
 

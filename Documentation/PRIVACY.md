@@ -16,3 +16,14 @@ never synced or transmitted, is excluded from the diagnostic report, is
 bounded to 90 days (30 for terminal states), and is cleared by "Forget
 Restore History" — which never empties the Trash. See
 `Documentation/RESTORE.md`.
+
+The macOS integration layer (App Intents / Shortcuts, local notifications,
+scheduled scans) is local and read-only. Shortcuts cannot delete, clean up,
+empty the Trash, restore, or disable a login item; the image-metadata
+Shortcut does not store the file path. Local notifications
+(`UNUserNotificationCenter`, no push/server) carry totals only — never a
+path, name, location, GPS value, or browser profile — and every category is
+toggleable in Settings with permission requested only from an explicit
+action. Scheduled scans (`NSBackgroundActivityScheduler`, opt-in Off/Daily/
+Weekly) update Storage Timeline and may notify, and never mutate the
+filesystem. See `Documentation/MACOS_INTEGRATIONS.md`.

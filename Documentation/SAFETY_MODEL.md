@@ -283,6 +283,50 @@ CoreTend-Trashed items back where they came from.
 See `Documentation/RESTORE.md` for the user-facing model and the
 external-volume `HUMAN VERIFICATION REQUIRED` note.
 
+## macOS integrations (App Intents / notifications / scheduled scans)
+
+`Sources/CoreTendApp/CoreTendIntents.swift`, `NotificationService.swift`,
+`ScheduledScanService.swift`, `MacIntegrations.swift`, `AppRouter.swift`.
+The first integration layer — and it is **read-only by dependency
+structure**, not by a runtime flag:
+
+- **No destructive App Intent.** There is no intent to clean, empty the
+  Trash, delete duplicates/caches, restore, or disable a launch item.
+  `CoreTendIntents.swift` / `CoreTendIntentText.swift` do not import
+  `FileRules` and reference no `SafetyCenter` / `CleanupExecution` /
+  `RecoveryPlanService` / `RestoreService` symbol. `MacIntegrationsSafety
+  Tests` greps the comment-stripped source and fails if that changes. The
+  image-metadata intent reuses `ImageMetadataInspector` and contains no
+  persistence call — the selected file URL is used for one call and never
+  stored.
+- **Scheduled scans are scan-only, by construction.** `ScheduledScanService`
+  imports only `ScanCore` (a read-only engine that *emits* findings) and
+  `Persistence` (Timeline). It never imports `FileRules`; the rule catalog
+  is passed in as inert `[ScanRule]` data. It has no code path to
+  `SafetyCenter.execute` / `CleanupExecution` / `RecoveryPlanService.execute`
+  / `RestoreService.restore` / any launch-item mutation. Proven
+  behaviourally: `aScheduledScanNeverDeletesOrMovesAnything` runs a real
+  scheduled scan over deletable fixtures and asserts every file survives.
+  A cancelled or incomplete scan writes **no** Timeline snapshot and **no**
+  Activity record — only `ScanEvent.finished` produces history
+  (`trigger = "scheduled"`, `cleanup` scope, same engine/rules/mapping as
+  interactive Cleanup so comparability is preserved).
+- **Notifications carry aggregates only.** No file path, filename, location,
+  GPS value, browser profile name, or restore-manifest path ever enters a
+  notification title, body, or `userInfo` — only a total (e.g. "8.4 GB
+  potentially recoverable") and a `ModuleID` rawValue for the tap route.
+  Permission is requested only from an explicit user action, never
+  automatically. Rate-limited and coalesced (`NotificationPolicy`, pure);
+  the only persisted state is one `settings` timestamp row per category.
+- **One deep-link router.** `AppRouter` reuses the existing `.mcNavigate`
+  `NotificationCenter` routing; notifications and App Intents share it.
+- **Scheduler.** `NSBackgroundActivityScheduler` (native, entitlement-free,
+  system-condition-aware). Reuses the single `AppEnvironment.shared.store`;
+  an `inProgress` guard prevents overlapping runs; no Full Disk Access is
+  assumed or prompted.
+
+See `Documentation/MACOS_INTEGRATIONS.md`.
+
 ## Not yet implemented (planned)
 Quarantine, reinforced confirmation for non-reversible ops, hard-link and
 open-file checks, automatic conflict resolution on restore (deliberately not

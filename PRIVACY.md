@@ -12,7 +12,18 @@ that means.
 - No network calls as part of any core feature (cleanup, duplicates,
   space analysis, similar images, applications/leftovers, performance,
   privacy cleaner cache scan, Privacy Lab image-metadata inspection,
-  my activity).
+  my activity, App Intents / Shortcuts, local notifications, scheduled
+  scans).
+- App Intents / Shortcuts are entirely local and read-only. No Shortcut
+  can clean up, delete, empty the Trash, restore, or disable a login item.
+  The image-metadata Shortcut does not store the file path.
+- Local notifications are `UNUserNotificationCenter` only — no push, no
+  server. They contain **totals only** (e.g. "8.4 GB potentially
+  recoverable"), never a file path, name, location, GPS value, or browser
+  profile name. Permission is requested only from an explicit Settings /
+  onboarding action, and every category can be turned off in Settings.
+- Scheduled scans are opt-in and read-only: they update Storage Timeline
+  and may send a notification, and never clean up, delete, or move anything.
 
 ## The one product network request
 
