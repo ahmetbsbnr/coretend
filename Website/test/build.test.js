@@ -145,3 +145,117 @@ test("no server secret leaked into the built site", () => {
     assert.ok(!/RESEND_API_KEY|ADMIN_TOKEN|POSTGRES_URL|re_[A-Za-z0-9]{20}/.test(t), f);
   }
 });
+
+// --- P1 visual / demo / nav contract -------------------------------------
+
+test("hero uses a real screenshot, not the generative #app simulation", () => {
+  const t = read("index.html");
+  assert.ok(!/id="app"[\s>]/.test(t), "#app generative window still present");
+  assert.match(t, /class="shot shot--hero"/);
+  assert.match(t, /\/assets\/app\/screens\/dashboard-(light|dark)\.webp/);
+  assert.match(t, /fetchpriority="high"/);
+});
+
+test("every product screenshot referenced by index.html exists in dist", () => {
+  const t = read("index.html");
+  const refs = new Set(
+    [...t.matchAll(/\/assets\/app\/screens\/[A-Za-z0-9@.\-]+\.webp/g)].map((m) => m[0])
+  );
+  assert.ok(refs.size >= 12, `only ${refs.size} screenshot refs`);
+  for (const ref of refs) assert.ok(existsSync(join(OUT, ref)), `missing ${ref}`);
+});
+
+test("product images are lazy + async + carry width/height and alt", () => {
+  const t = read("index.html");
+  const imgs = [...t.matchAll(/<img[^>]+\/assets\/app\/screens\/[^>]+>/g)].map((m) => m[0]);
+  assert.ok(imgs.length >= 6);
+  for (const img of imgs) {
+    assert.match(img, /decoding="async"/, img);
+    assert.match(img, /width="\d+"\s+height="\d+"/, img);
+    assert.match(img, /alt="[^"]{10,}"/, img);
+    // the hero image is intentionally eager (fetchpriority high); the rest lazy
+    if (!/fetchpriority="high"/.test(img)) assert.match(img, /loading="lazy"/, img);
+  }
+});
+
+test("light + dark <source> is provided for product screenshots", () => {
+  const t = read("index.html");
+  assert.ok(
+    (t.match(/media="\(prefers-color-scheme: dark\)"[^>]*\/assets\/app\/screens\//g) || []).length >= 6
+  );
+});
+
+test("Space Lens interactive demo is present, deterministic and non-destructive", () => {
+  const t = read("index.html");
+  assert.match(t, /id="space-lens"/);
+  assert.match(t, /id="slMap"/);
+  assert.match(t, /id="slScan"/);
+  assert.match(t, /Run demo scan/);
+  assert.match(t, /data-state="idle"/);
+  const js = read(join("assets/generated", readdirSync(join(OUT, "assets/generated")).find((f) => /^root-\d+-.*\.js$/.test(f))));
+  assert.match(js, /function spaceLens\(/);
+  assert.match(t, /Deterministic demo data|no files are read/i);
+  // no destructive verb anywhere in the demo section
+  const section = t.slice(t.indexOf('id="space-lens"'), t.indexOf('id="findings"'));
+  for (const bad of [/\bdelete\b/i, /\btrash\b/i, /\bremove\b/i, /\bclean\b/i]) {
+    assert.ok(!bad.test(section), `Space Lens section contains ${bad}`);
+  }
+  assert.match(js, /prefers-reduced-motion|RM\.matches/);
+});
+
+test("reduced-motion styles exist for the new surfaces", () => {
+  const genCss = read(join("assets/generated", readdirSync(join(OUT, "assets/generated")).find((f) => /^root-\d+-.*\.css$/.test(f))));
+  assert.match(genCss, /prefers-reduced-motion:\s*reduce[^}]*\.sl-map/);
+  assert.match(read("assets/shell/public.css"), /prefers-reduced-motion/);
+});
+
+test("mobile navigation exists with correct ARIA on info pages", () => {
+  const t = read("contact.html");
+  assert.match(t, /id="navToggle"[^>]+aria-expanded="false"/);
+  assert.match(t, /aria-controls="mobile-nav"/);
+  assert.match(t, /<nav class="mobile-nav" id="mobile-nav"[^>]*hidden>/);
+  const js = read("assets/shell/public.js");
+  assert.match(js, /function mobileNav\(/);
+  assert.match(js, /key === "Escape"/);
+  assert.match(js, /aria-expanded/);
+});
+
+test("stale 'no built-in restore' wording is gone; 1.1 Restore Center is named", () => {
+  for (const f of htmlFiles()) {
+    assert.ok(!/no built-in restore|pas de fonction de restauration/i.test(read(f)), f);
+  }
+  assert.match(read("index.html"), /Restore Center/);
+});
+
+test("brand: vector favicon + apple-touch-icon linked, no upscaled PNG in the header mark", () => {
+  const t = read("index.html");
+  assert.match(t, /rel="icon" href="\/assets\/brand\/favicon(-v2-\d+)?\.(svg|png)"/);
+  assert.match(t, /rel="apple-touch-icon"/);
+  // header wordmark is inline <svg>, not an <img>
+  const header = t.slice(t.indexOf('<header'), t.indexOf('</header>'));
+  assert.ok(!/<img[^>]+>/.test(header), "header contains a raster image");
+  assert.match(header, /class="mark ct-logo ct-logo--header/);
+});
+
+test("info-page JSON-LD (@graph WebPage + BreadcrumbList) parses", () => {
+  for (const f of ["contact.html", "community.html", "security.html", "changelog.html", "privacy.html"]) {
+    const t = read(f);
+    const blocks = [...t.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/gs)].map((m) => m[1]);
+    assert.ok(blocks.length >= 1, `${f} has no JSON-LD`);
+    const parsed = blocks.map((b) => JSON.parse(b.replace(/<\\\//g, "</")));
+    const graph = parsed.flatMap((p) => p["@graph"] || [p]);
+    assert.ok(graph.some((n) => n["@type"] === "WebPage"), `${f} WebPage`);
+    assert.ok(graph.some((n) => n["@type"] === "BreadcrumbList"), `${f} BreadcrumbList`);
+  }
+});
+
+test("desktop info-page header is compact (2 nav links); footer carries the rest", () => {
+  const t = read("security.html");
+  const bar = t.slice(t.indexOf('<nav class="bar-actions"'), t.indexOf("</nav>"));
+  const desktopLinks = (bar.match(/class="bar-link nav-desktop"/g) || []).length;
+  assert.equal(desktopLinks, 2, "expected exactly Community + Contact in the desktop bar");
+  const foot = t.slice(t.indexOf('class="foot-links"'), t.indexOf("</ul>", t.indexOf('class="foot-links"')));
+  for (const href of ["/security", "/changelog", "/community", "/contact"]) {
+    assert.ok(foot.includes(`href="${href}"`) || foot.includes(`href="/fr${href}"`), `footer missing ${href}`);
+  }
+});
