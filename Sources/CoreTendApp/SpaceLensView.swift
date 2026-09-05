@@ -360,10 +360,12 @@ struct SpaceLensView: View {
     @State private var showFavoritesRecents = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    /// The bubble-canvas bound. The list bound is looser (see
-    /// `SpaceLensAggregator`), so users who rely on the precise list are
-    /// never limited to what fits on the canvas.
-    private let visualLimit = SpaceLensAggregator.defaultVisualLimit
+    /// The bubble-canvas bound. Kept well under the domain model's 40-node
+    /// ceiling: past ~14 circles the radial pack runs out of clear on-canvas
+    /// slots and the map stops being readable. Anything beyond this rolls
+    /// into the on-canvas "Other" bubble; the precise list (bound 120) still
+    /// shows the long tail.
+    private let visualLimit = 14
 
     var body: some View {
         VStack(spacing: 0) {
@@ -843,9 +845,15 @@ struct SpaceLensView: View {
             }
         }
         .contentShape(Rectangle())
-        .onTapGesture(count: 2) {
-            if node.isDrillable { model.drill(nodeID: node.id) }
-        }
+        // Additive so it never steals the List's own single-click selection
+        // or the row's borderless action buttons.
+        .simultaneousGesture(TapGesture(count: 2).onEnded {
+            if node.isDrillable {
+                withAnimation(MCMotion.animation(MCMotion.settle, reduce: reduceMotion)) {
+                    model.drill(nodeID: node.id)
+                }
+            }
+        })
         .accessibilityElement(children: .combine)
         .accessibilityLabel(bubbleA11y(node)
                             + (node.isAccessDenied ? ", \(L("spacelens.access_denied_short"))" : "")

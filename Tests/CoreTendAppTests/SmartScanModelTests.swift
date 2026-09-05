@@ -83,6 +83,30 @@ struct SmartScanModelTests {
         #expect(m.modules.isEmpty)
     }
 
+    @Test func eachRunBuildsAFreshCoordinatorSoNewSmartScanReallyRescans() async {
+        // Regression: the coordinator + candidate cache used to be built once
+        // and reused, so "New Smart Scan" replayed the first scan's disk
+        // snapshot instead of scanning again.
+        var built = 0
+        let m = SmartScanModel(coordinatorFactory: {
+            built += 1
+            return SmartScanCoordinator(providers: [FakeProvider(module: .storage)])
+        }, pollInterval: .milliseconds(20))
+        #expect(built == 1)                 // one at init
+        #expect(m.coordinatorGeneration == 1)
+
+        m.start()
+        await waitUntil { m.phase == .completed }
+        #expect(built == 2)                 // a fresh one for the run
+        #expect(m.coordinatorGeneration == 2)
+
+        m.reset()
+        m.start()
+        await waitUntil { m.phase == .completed }
+        #expect(built == 3)                 // and another for the next run
+        #expect(m.coordinatorGeneration == 3)
+    }
+
     @Test func resetIsIgnoredWhileRunning() async {
         let m = model([FakeProvider(module: .storage, hang: true)])
         m.start()
