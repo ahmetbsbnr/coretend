@@ -35,6 +35,25 @@ public struct ScanFinding: Sendable, Identifiable {
     }
 }
 
+public extension Array where Element == ScanFinding {
+    /// Sums `allocatedSize` (physical/allocated bytes, from
+    /// `totalFileAllocatedSizeKey`) across every finding — or `nil` if even
+    /// one finding lacks a measurement. A partial sum presented as if it
+    /// covered the whole set would be a silently misleading physical figure,
+    /// worse than reporting none at all — see
+    /// `Documentation/APFS_INTELLIGENCE.md` "Pairing rule": a physical total
+    /// is only ever paired with a logical total describing the exact same
+    /// file set, never a partial one dressed up as complete.
+    var totalAllocatedSizeIfFullyKnown: Int64? {
+        var total: Int64 = 0
+        for finding in self {
+            guard let allocated = finding.allocatedSize else { return nil }
+            total += allocated
+        }
+        return total
+    }
+}
+
 /// Events streamed by a running scan.
 public enum ScanEvent: Sendable {
     case started
