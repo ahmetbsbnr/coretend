@@ -34,6 +34,7 @@ feature-inventory.json wins.
 | Visual QA campaign (After screenshots) | COMPLETE | 44 approved native captures: 11 modules × EN/FR × light/dark, generated 2026-09-04 through isolated capture harness and accepted by maintainer |
 | Public release identity (legal name/address, domain, security contact) | COMPLETE | `Configuration/PublicIdentity.local.json` exists (gitignored, real values, verified 2026-07-27); resolution recorded in `Documentation/HUMAN_BLOCKERS.md` → RESOLVED |
 | Code signing / notarization | COMPLETE for v1.0.0 | Developer ID Application (NSCUV5G738) signed, Apple-notarized, and stapled; published as `v1.0.0` on 2026-09-03. See `Documentation/RELEASE_STATE.md` |
+| CoreTend Advisor | COMPLETE (minimal vertical) | Deterministic, local, read-only explanation layer (`AdvisorFinding`/`AdvisorService`, `Sources/CoreTendApp/`) between scan engines and UI — never a mutation, never AI/network. Reuses `SafetyCore.RiskLevel` for risk (no new risk taxonomy) and `TimelineScope` for category; introduces `AdvisorConfidence` (exact/high/probable/uncertain) and `AdvisorReversibility`, since neither existed before. Wired: Cleanup (all 10 rules, one finding per rule group), Duplicates (one per group, `.exact` confidence from the content hash), Leftovers (one per candidate, `.high`/`.probable` confidence matching the existing ambiguity heuristic), Privacy (one per browser profile, cache-only reclaimable figure, states exactly what's not removed). UI: `AdvisorBadgeRow` (Risk/Confidence/Reversible, text always alongside color) and `AdvisorDetailsView` (full inspector: why flagged, what happens, recoverable, recommendation) via `AdvisorSummaryRow`, surfaced inline in CleanupView/DuplicatesView/LeftoversView/PrivacyCleanerView. 24 `AdvisorServiceTests` cases, including a filesystem-touch safety test and a test that no current mapping claims `.restorableByCoreTend`. Not connected yet, deliberately: Applications' installed-app associated files, Integrity signals, APFS/Developer Center/EXIF/Simulator (none of those exist as connectable engines yet) |
 
 ## Unverifiable-here items and why
 
@@ -41,6 +42,9 @@ feature-inventory.json wins.
   keyboard, focus, Dynamic Type, Reduce Motion/Transparency and visual matrix
   passed by maintainer attestation on 2026-09-04. Automated tests remain
   complementary evidence, not substitute observation.
-- **Integrity team-signature tier**: the non-Apple team-signed test remains
-  skipped until a real signing identity is available. Apple-signed, unsigned
-  and ad-hoc tiers are covered without fabricating an identity.
+- ~~Integrity team-signature tier: skipped~~ — corrected 2026-09-05: a
+  Developer ID identity has been installed since 2026-08-31, so
+  `teamSignedBinary()` now runs and passes for real rather than being
+  skipped (verified by grepping the actual test-run log). Apple-signed,
+  unsigned and ad-hoc tiers are covered too, without fabricating an
+  identity.

@@ -20,7 +20,7 @@
     "zipSHA256": "c11c1cbac95a48c9fa9b3cb54596313f52af9ad89dd930e51bcde6cbd152244b"
   },
   "tests": {
-    "swift": 359,
+    "swift": 383,
     "failing": 0,
     "lastVerifiedUTC": "2026-09-05"
   },
@@ -31,7 +31,9 @@
   },
   "open": [],
   "completedSinceRelease": [
-    "Storage Timeline minimal vertical (1.1 Insight scope): Persistence schema v6 (scope-aware), TimelineService, StorageTimelineView (sidebar), Dashboard 'since last scan' card. Wired: Cleanup, Duplicates, Leftovers, Privacy. Deliberately not wired: My Clutter/Large & Old, Space Lens, Similar Images, Cloud Cleanup — see Documentation/FEATURE_MATRIX.md and Documentation/PERSISTENCE.md for why. Not yet on `main` or pushed — local branch feat/storage-timeline-persistence."
+    "Storage Timeline minimal vertical (1.1 Insight scope): Persistence schema v6 (scope-aware), TimelineService, StorageTimelineView (sidebar), Dashboard 'since last scan' card. Wired: Cleanup, Duplicates, Leftovers, Privacy. Deliberately not wired: My Clutter/Large & Old, Space Lens, Similar Images, Cloud Cleanup — see Documentation/FEATURE_MATRIX.md and Documentation/PERSISTENCE.md for why.",
+    "CoreTend Advisor minimal vertical: deterministic local read-only explanation layer (AdvisorFinding/AdvisorService/AdvisorDetailsView) surfaced in Cleanup, Duplicates, Leftovers, and Privacy Cleaner. Reuses SafetyCore.RiskLevel and TimelineScope; adds AdvisorConfidence and AdvisorReversibility. Not yet connected: Applications' associated files, Integrity signals. See Documentation/FEATURE_MATRIX.md and Documentation/SAFETY_MODEL.md.",
+    "Not yet on `main` or pushed — local branch feat/storage-timeline-persistence."
   ],
   "qualityVerification": {
     "interactiveAccessibility": "PASS — maintainer attestation 2026-09-04",

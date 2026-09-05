@@ -2,8 +2,9 @@
 
 CoreTend 1.0.0 shipped on 2026-09-03. It is Developer ID signed,
 Apple-notarized, stapled, Minisign-signed, and published as a stable GitHub
-release. Core functionality is complete; 359 Swift tests pass (post-1.0.0
-work — Storage Timeline — added 17 since the 342 that shipped in 1.0.0).
+release. Core functionality is complete; 383 Swift tests pass (post-1.0.0
+work — Storage Timeline then Advisor — added 41 since the 342 that shipped
+in 1.0.0).
 
 ## Release follow-up
 
@@ -36,6 +37,25 @@ Follow-up, not blocking the vertical above: wiring more engines as their
 scan semantics allow it; richer physical/APFS-aware sizing (planned as its
 own "APFS Intelligence" roadmap item); a WidgetKit surface reusing
 `TimelineService`.
+
+## Done — CoreTend Advisor minimal vertical
+
+A deterministic, local, read-only explanation layer between scan engines and
+UI: `AdvisorFinding`/`AdvisorService`/`AdvisorDetailsView`
+(`Sources/CoreTendApp/`). Reuses `SafetyCore.RiskLevel` and `TimelineScope`
+rather than inventing parallel taxonomies; adds `AdvisorConfidence`
+(exact/high/probable/uncertain) and `AdvisorReversibility`, since neither
+existed. Wired and visible in the UI: Cleanup, Duplicates, Leftovers,
+Privacy. See `Documentation/FEATURE_MATRIX.md` → "CoreTend Advisor" and
+`Documentation/SAFETY_MODEL.md` → "Advisor" for the full mapping and why
+Applications/Integrity aren't connected yet.
+
+Recovery Plan readiness: `AdvisorFinding` already exposes everything Recovery
+Plan needs structurally (`reclaimableBytes`, `risk`, `confidence`, `category`,
+`reversibility`) — Recovery Plan should consume these fields directly, never
+parse Advisor's UI text. Not yet decided: an explicit `isEligibleForRecoveryPlanning`
+rule (deferred to when Recovery Plan's actual eligibility criteria are
+defined, rather than guessed at now).
 
 ## Deliberately deferred product scope
 
