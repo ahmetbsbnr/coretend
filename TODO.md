@@ -2,9 +2,9 @@
 
 CoreTend 1.0.0 shipped on 2026-09-03. It is Developer ID signed,
 Apple-notarized, stapled, Minisign-signed, and published as a stable GitHub
-release. Core functionality is complete; 383 Swift tests pass (post-1.0.0
-work — Storage Timeline then Advisor — added 41 since the 342 that shipped
-in 1.0.0).
+release. Core functionality is complete; 418 Swift tests pass (post-1.0.0
+work — Storage Timeline, then Advisor, then Recovery Plan — added 76 since
+the 342 that shipped in 1.0.0).
 
 ## Release follow-up
 
@@ -50,12 +50,25 @@ Privacy. See `Documentation/FEATURE_MATRIX.md` → "CoreTend Advisor" and
 `Documentation/SAFETY_MODEL.md` → "Advisor" for the full mapping and why
 Applications/Integrity aren't connected yet.
 
-Recovery Plan readiness: `AdvisorFinding` already exposes everything Recovery
-Plan needs structurally (`reclaimableBytes`, `risk`, `confidence`, `category`,
-`reversibility`) — Recovery Plan should consume these fields directly, never
-parse Advisor's UI text. Not yet decided: an explicit `isEligibleForRecoveryPlanning`
-rule (deferred to when Recovery Plan's actual eligibility criteria are
-defined, rather than guessed at now).
+## Done — Recovery Plan minimal vertical
+
+Goal → eligible findings → conservative plan → review → user selection →
+existing safe execution path, working end to end (not plan-only):
+`RecoveryPlanEligibility`/`RecoveryPlanBuilder`/`RecoveryPlanService`/
+`RecoveryPlanView` (`Sources/CoreTendApp/`). Consumes `AdvisorFinding`
+structurally — eligibility is risk/confidence/reversibility/bytes-based, never
+a parse of Advisor's display text. Wired: Cleanup, Duplicates (group-level
+aggregate, `wastedBytes` only, never the group's full size), Leftovers
+(split into exact/ambiguous aggregates), Privacy (cache-only aggregate).
+High risk and uncertain confidence are always excluded from automatic
+planning; Duplicates and ambiguous Leftovers always require review, never
+preselected. See `Documentation/FEATURE_MATRIX.md` → "Recovery Plan" and
+`Documentation/SAFETY_MODEL.md` → "Recovery Plan" for the full eligibility
+rule, the anti-double-counting decision (`user.caches` always excluded —
+it structurally overlaps Privacy and Leftovers on disk), and what's
+deliberately not done yet (a Dashboard card; separate integration tests for
+Leftovers/Privacy execution beyond the pattern Cleanup/Duplicates already
+prove).
 
 ## Deliberately deferred product scope
 

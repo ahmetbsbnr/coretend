@@ -58,6 +58,58 @@ enum for a real future Restore Center, but no mapping produces it yet — a
 dedicated test (`noCurrentMappingClaimsARestoreCenterThatDoesNotExistYet`)
 guards against a future change accidentally claiming it early.
 
+## Recovery Plan
+
+`RecoveryPlanService` (`Sources/CoreTendApp/RecoveryPlanService.swift`)
+orchestrates the four wired engines toward a user-set byte goal:
+Goal → eligible findings → conservative plan → review → user selection →
+existing safe execution path. It is an orchestrator, not a second
+implementation of Safety:
+
+- **No new scanning code.** It calls the exact same `ScanEngine`,
+  `DuplicateEngine`, `AppDiscovery.leftovers`, and `BrowserCatalog.detect`
+  entry points `CleanupView`/`DuplicatesView`/`LeftoversView`/
+  `PrivacyCleanerView` already call.
+- **No new destructive path.** Execution constructs the same
+  `PathValidator`(allowed roots) + `SafetyCenter` pair each of those views
+  already constructs, with the same rule IDs and risk levels. `DuplicateSafety
+  .safeSelection` (staleness check + never-remove-the-last-copy) and
+  `PrivacyCleanerViewModel.isRunning` (re-check a browser is still closed) were
+  extracted from those views into shared, tested, pure functions specifically
+  so Recovery Plan reuses the identical guarantee rather than a second,
+  hand-copied one that could drift.
+- **Never atomic.** Each selected source executes sequentially through its
+  own `SafetyCenter`; a failure in one source never rolls back another.
+  `RecoveryPlanExecutionResult` reports each source's real outcome
+  (processed/skipped counts and bytes) — never the plan's predicted total.
+- **Eligibility is a real rule**, not `risk != .high`: evaluated from
+  `AdvisorFinding`'s structured fields only (risk, confidence, reversibility,
+  reclaimable bytes) — never from Advisor's display text. High risk is
+  always excluded from automatic planning; `.uncertain` confidence,
+  `.readOnly`, and non-Trash reversibility are excluded with a specific,
+  shown reason; anything needing a real human decision (Duplicates' "which
+  copy", an ambiguous Leftover) lands in "Review required" and is never
+  preselected, regardless of how large its goal contribution would be.
+- **Anti-double-counting is structural, not best-effort.** Cleanup's
+  `user.caches` rule reads all of `~/Library/Caches` recursively, which
+  overlaps two other wired sources at the filesystem level (Privacy's
+  browser caches and Leftovers' Caches-location items both live under that
+  same tree). With no shared per-file identifier to subtract the overlap,
+  `user.caches` is unconditionally excluded from planning (shown, with its
+  real bytes, reason "overlaps another source") rather than risking the same
+  bytes counted toward one goal twice.
+- **Staleness is re-validated, never trusted from the plan.** A plan is a
+  snapshot; `SafetyCenter.approve`/`execute` still re-validate every path at
+  execution time exactly as they do for every other destructive surface, and
+  Duplicates' `DuplicateSafety.safeSelection` re-checks each file's
+  modification date against scan time before any path is even approved.
+  Recovery Plan never introduces a "trusted because the plan selected it"
+  shortcut.
+- **Recovery Plan never writes to Timeline.** Timeline measures what a real
+  scan finds after the fact; Recovery Plan only predicts. Writing a Timeline
+  snapshot from "bytes a plan expected to reclaim" would let a failed or
+  partial execution report a measurement that never actually happened.
+
 ## Not yet implemented (planned)
 Quarantine, restore manifests, reinforced confirmation for non-reversible ops,
 hard-link and open-file checks, volume identity checks.
