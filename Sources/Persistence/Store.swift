@@ -229,6 +229,50 @@ public actor Store {
         UPDATE timeline_snapshots SET scope = 'cleanup' WHERE scope = '';
         CREATE INDEX IF NOT EXISTS idx_timeline_snapshots_scope ON timeline_snapshots(scope, date);
         """,
+        // v7 — Restore Center manifest. UNLIKE every other table in this
+        // file, `original_path` and `trash_path` hold REAL, unredacted
+        // filesystem locations: they are the minimum needed to move a
+        // CoreTend-Trashed item back where it came from. This is a
+        // deliberate, documented privacy boundary (see
+        // `Documentation/RESTORE.md` / `Documentation/PRIVACY.md`):
+        //   - never included in DiagnosticReport, debug logs, Timeline, or
+        //     any audit export; `safety_log` stays redacted and correlates
+        //     only by `operation_id`.
+        //   - user-clearable in one action (`clearRestoreManifests`, surfaced
+        //     as "Forget Restore History"), which removes records only and
+        //     never touches the Trash.
+        //   - bounded retention (`pruneRestoreManifests`): non-available rows
+        //     are dropped after 30 days, any row after 90.
+        // One row per Trashed operation item — a directory root is ONE row,
+        // its descendants are never enumerated here.
+        // `IF NOT EXISTS` throughout, matching the v5/v6 style: a store file
+        // copied mid-checkpoint (the pre-rebrand data migration copies
+        // store.sqlite + -wal + -shm) can carry the table without its
+        // `schema_migrations` row yet, and re-running this step must be a
+        // no-op rather than a hard "table already exists" failure.
+        """
+        CREATE TABLE IF NOT EXISTS restore_manifest (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            item_id TEXT NOT NULL UNIQUE,
+            operation_id TEXT NOT NULL,
+            original_path TEXT NOT NULL,
+            trash_path TEXT NOT NULL,
+            volume_uuid TEXT,
+            inode TEXT,
+            is_directory INTEGER NOT NULL DEFAULT 0,
+            size INTEGER NOT NULL DEFAULT 0,
+            modified REAL,
+            rule_id TEXT NOT NULL,
+            risk TEXT NOT NULL,
+            created REAL NOT NULL,
+            state TEXT NOT NULL DEFAULT 'available',
+            state_checked REAL,
+            restored_at REAL
+        );
+        CREATE INDEX IF NOT EXISTS idx_restore_manifest_operation ON restore_manifest(operation_id);
+        CREATE INDEX IF NOT EXISTS idx_restore_manifest_created ON restore_manifest(created);
+        CREATE INDEX IF NOT EXISTS idx_restore_manifest_state ON restore_manifest(state);
+        """,
     ]
 
     /// Default on-disk location: ~/Library/Application Support/CoreTend/store.sqlite
@@ -627,6 +671,92 @@ public actor Store {
             risk: risk)
     }
 
+    // MARK: - Restore manifest (Restore Center)
+    //
+    // The one table in this store that holds real, unredacted filesystem
+    // locations. Access is deliberately narrow: append (via the
+    // `RestoreManifestSink` conformance below), read, update a single row's
+    // state, prune by retention, and an all-or-nothing user clear. See the
+    // v7 migration comment and `Documentation/RESTORE.md`.
+
+    /// Non-`available` rows older than 30 days, and any row older than 90,
+    /// are removed. Keeps a private-path record from lingering once it is no
+    /// longer actionable, while still giving a user three months to restore
+    /// something they Trashed. Mirrors the Timeline 90-day retention window.
+    private static let restoreManifestMaxAgeDays: Double = 90
+    private static let restoreManifestTerminalAgeDays: Double = 30
+
+    /// Newest first. Returns every retained row regardless of state so the
+    /// UI can show "restored"/"missing" history; callers filter for what is
+    /// actually offered for restore.
+    public func restoreManifestItems(limit: Int = 2000) throws -> [RestoreManifestItem] {
+        try db.query("SELECT * FROM restore_manifest ORDER BY created DESC LIMIT ?", [limit])
+            .compactMap(Self.restoreManifestItem)
+    }
+
+    public func restoreManifestItem(id: String) throws -> RestoreManifestItem? {
+        try db.query("SELECT * FROM restore_manifest WHERE item_id = ?", [id])
+            .compactMap(Self.restoreManifestItem).first
+    }
+
+    public func restoreManifestCount() throws -> Int {
+        (try db.query("SELECT COUNT(*) AS n FROM restore_manifest").first?["n"] as? Int64).map(Int.init) ?? 0
+    }
+
+    /// Updates one row's lifecycle state. `checkedAt` stamps when
+    /// availability was last verified; `restoredAt` is set only on a
+    /// successful restore.
+    public func setRestoreManifestState(id: String, state: RestoreManifestState,
+                                         checkedAt: Date? = Date(), restoredAt: Date? = nil) throws {
+        try db.run("""
+            UPDATE restore_manifest
+               SET state = ?, state_checked = ?, restored_at = COALESCE(?, restored_at)
+             WHERE item_id = ?
+            """, [state.rawValue, checkedAt?.timeIntervalSince1970, restoredAt?.timeIntervalSince1970, id])
+    }
+
+    /// "Forget Restore History": removes CoreTend's restore records only.
+    /// Does NOT empty the Trash — Finder may still be able to restore the
+    /// files manually. Mirrors `purgeSafetyLog()` / `clearTimelineHistory()`.
+    public func clearRestoreManifests() throws {
+        try db.run("DELETE FROM restore_manifest")
+    }
+
+    /// Retention. Safe to call after any write and on Restore Center load.
+    public func pruneRestoreManifests(now: Date = Date()) throws {
+        let hardCutoff = now.addingTimeInterval(-Self.restoreManifestMaxAgeDays * 24 * 3600).timeIntervalSince1970
+        let terminalCutoff = now.addingTimeInterval(-Self.restoreManifestTerminalAgeDays * 24 * 3600).timeIntervalSince1970
+        try db.transaction {
+            try db.run("DELETE FROM restore_manifest WHERE created < ?", [hardCutoff])
+            try db.run("""
+                DELETE FROM restore_manifest
+                 WHERE state <> 'available' AND COALESCE(state_checked, created) < ?
+                """, [terminalCutoff])
+        }
+    }
+
+    private static func restoreManifestItem(_ row: [String: Any]) -> RestoreManifestItem? {
+        guard let itemID = row["item_id"] as? String,
+              let operationID = row["operation_id"] as? String,
+              let originalPath = row["original_path"] as? String,
+              let trashPath = row["trash_path"] as? String,
+              let ruleID = row["rule_id"] as? String,
+              let risk = row["risk"] as? String,
+              let created = row["created"] as? Double,
+              let stateRaw = row["state"] as? String,
+              let state = RestoreManifestState(rawValue: stateRaw) else { return nil }
+        return RestoreManifestItem(
+            id: itemID, operationID: operationID, originalPath: originalPath, trashPath: trashPath,
+            volumeUUID: row["volume_uuid"] as? String, inode: row["inode"] as? String,
+            isDirectory: (row["is_directory"] as? Int64 ?? 0) != 0,
+            sizeBytes: row["size"] as? Int64 ?? 0,
+            modificationDate: (row["modified"] as? Double).map(Date.init(timeIntervalSince1970:)),
+            ruleID: ruleID, risk: risk,
+            createdAt: Date(timeIntervalSince1970: created), state: state,
+            stateCheckedAt: (row["state_checked"] as? Double).map(Date.init(timeIntervalSince1970:)),
+            restoredAt: (row["restored_at"] as? Double).map(Date.init(timeIntervalSince1970:)))
+    }
+
     // MARK: - Safety log (append-only)
 
     public func safetyLog(limit: Int = 500) throws -> [SafetyLogRecord] {
@@ -669,6 +799,84 @@ public struct SafetyLogRecord: Sendable, Identifiable {
     public let size: Int64
     public let date: Date
     public let result: String
+}
+
+/// Lifecycle of one restore-manifest row. Only facts about the *source*
+/// Trash item are persisted here; whether the *destination* is currently
+/// clear (occupied, parent missing, …) is recomputed live at restore time,
+/// never stored, because it can change independently of this record.
+public enum RestoreManifestState: String, Sendable, CaseIterable {
+    /// The Trash item was present and matched its recorded identity at the
+    /// last check (or has not been checked yet).
+    case available
+    /// Successfully moved back to its original location.
+    case restored
+    /// The recorded Trash URL no longer exists (Trash emptied, or the item
+    /// was put back / deleted through Finder).
+    case missingFromTrash
+    /// Something exists at the recorded Trash URL but it is not the item
+    /// CoreTend moved there (inode / volume / directory-ness mismatch).
+    case invalidIdentity
+}
+
+/// One retained restore record. `originalPath` and `trashPath` are real,
+/// unredacted locations — see `Store`'s v7 migration comment.
+public struct RestoreManifestItem: Sendable, Identifiable, Equatable {
+    public let id: String
+    public let operationID: String
+    public let originalPath: String
+    public let trashPath: String
+    public let volumeUUID: String?
+    public let inode: String?
+    public let isDirectory: Bool
+    public let sizeBytes: Int64
+    public let modificationDate: Date?
+    public let ruleID: String
+    public let risk: String
+    public let createdAt: Date
+    public let state: RestoreManifestState
+    public let stateCheckedAt: Date?
+    public let restoredAt: Date?
+
+    public init(id: String, operationID: String, originalPath: String, trashPath: String,
+                volumeUUID: String?, inode: String?, isDirectory: Bool, sizeBytes: Int64,
+                modificationDate: Date?, ruleID: String, risk: String, createdAt: Date,
+                state: RestoreManifestState, stateCheckedAt: Date?, restoredAt: Date?) {
+        self.id = id
+        self.operationID = operationID
+        self.originalPath = originalPath
+        self.trashPath = trashPath
+        self.volumeUUID = volumeUUID
+        self.inode = inode
+        self.isDirectory = isDirectory
+        self.sizeBytes = sizeBytes
+        self.modificationDate = modificationDate
+        self.ruleID = ruleID
+        self.risk = risk
+        self.createdAt = createdAt
+        self.state = state
+        self.stateCheckedAt = stateCheckedAt
+        self.restoredAt = restoredAt
+    }
+}
+
+extension Store: RestoreManifestSink {
+    /// Append-only capture from `SafetyCenter` at the moment a real Trash
+    /// move succeeds. Generates the stable `item_id` used by the UI. Prunes
+    /// per the retention policy afterwards, like `recordTimelineSnapshot`.
+    public func recordRestoreManifest(_ record: RestoreManifestRecord) async {
+        try? db.run("""
+            INSERT INTO restore_manifest
+                (item_id, operation_id, original_path, trash_path, volume_uuid, inode,
+                 is_directory, size, modified, rule_id, risk, created, state)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'available')
+            """, [UUID().uuidString, record.operationID.uuidString, record.originalURL.path,
+                  record.trashURL.path, record.volumeUUID, record.inode,
+                  record.isDirectory ? 1 : 0, record.sizeBytes,
+                  record.modificationDate?.timeIntervalSince1970, record.ruleID,
+                  record.risk.rawValue, record.date.timeIntervalSince1970])
+        try? pruneRestoreManifests()
+    }
 }
 
 extension Store: SafetyAuditSink {
