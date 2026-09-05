@@ -110,6 +110,41 @@ implementation of Safety:
   snapshot from "bytes a plan expected to reclaim" would let a failed or
   partial execution report a measurement that never actually happened.
 
+## APFS Intelligence
+
+`APFSVolumeInspector`/`APFSIntelligenceService`
+(`Sources/SystemMetrics/APFSVolumeInspector.swift`,
+`Sources/CoreTendApp/APFSIntelligenceService.swift`) is a read-only
+measurement layer, not a Safety surface:
+
+- **No filesystem mutation, ever.** Every function reads
+  `URLResourceValues` or calls Darwin `statfs()`. There is no
+  `FileManager.removeItem`/`trashItem`, no `Process`, no `tmutil`/`diskutil`
+  invocation anywhere in this vertical. No snapshot deletion, volume
+  modification, or privileged operation exists in the codebase — not behind
+  a flag, not unwired, not marked "future use".
+- **Never Recovery-Plan-eligible, by construction, not by a filter.** Recovery
+  Plan only ever consumes `AdvisorFinding` values produced by
+  `AdvisorService`. APFS Intelligence never constructs an `AdvisorFinding` —
+  its concept explanations (logical vs. physical, availability semantics,
+  storage sharing, snapshots) are plain localized strings rendered directly
+  by `APFSIntelligenceView`, not routed through Advisor at all. There is
+  therefore no APFS-derived value for `RecoveryPlanEligibility` to accept or
+  reject; the existing rule that checks `.readOnly` reversibility first would
+  also exclude one if it ever existed, so this is defense in depth, not the
+  only guarantee.
+- **`SafetyCore.RiskLevel` is not used here.** Risk describes the danger of
+  *acting* on a finding; a read-only volume metric has no action to be
+  dangerous, so no `RiskLevel` value would be meaningful — `.low` would
+  wrongly imply "safe to act on" for something there is nothing to act on.
+  Rather than force a meaningless field, APFS Intelligence's types simply
+  don't have a risk field.
+- **Unavailable is not "safe to assume": it means the value cannot be
+  measured.** `APFSMetric<Value>` only has `.measured`/`.unavailable` —
+  never a fabricated number standing in for a real one. See
+  `Documentation/APFS_INTELLIGENCE.md` for the exact meaning, source, and
+  measured/derived/unavailable status of every field.
+
 ## Not yet implemented (planned)
 Quarantine, restore manifests, reinforced confirmation for non-reversible ops,
 hard-link and open-file checks, volume identity checks.

@@ -2,9 +2,9 @@
 
 CoreTend 1.0.0 shipped on 2026-09-03. It is Developer ID signed,
 Apple-notarized, stapled, Minisign-signed, and published as a stable GitHub
-release. Core functionality is complete; 418 Swift tests pass (post-1.0.0
-work — Storage Timeline, then Advisor, then Recovery Plan — added 76 since
-the 342 that shipped in 1.0.0).
+release. Core functionality is complete; 444 Swift tests pass (post-1.0.0
+work — Storage Timeline, then Advisor, then Recovery Plan, then APFS
+Intelligence — added 102 since the 342 that shipped in 1.0.0).
 
 ## Release follow-up
 
@@ -69,6 +69,30 @@ it structurally overlaps Privacy and Leftovers on disk), and what's
 deliberately not done yet (a Dashboard card; separate integration tests for
 Leftovers/Privacy execution beyond the pattern Cleanup/Duplicates already
 prove).
+
+## Done — APFS Intelligence minimal vertical (read-only)
+
+"Why don't displayed sizes always match real disk usage?" is now answerable
+for Cleanup, plus real volume capacity/availability figures under their own
+Apple names: `APFSVolumeInspector`/`APFSMetric<Value>`/
+`APFSIntelligenceService` (`Sources/SystemMetrics/`, `Sources/CoreTendApp/`),
+zero subprocess usage — Darwin `statfs()` for filesystem type, Foundation
+`URLResourceKey`s for everything else. `TimelineCategorySample.physicalBytes`
+is now populated for Cleanup snapshots (paired only with that same scan's
+logical total, never mixed perimeters); still `nil` for Duplicates/
+Leftovers/Privacy and every pre-existing snapshot, and UIs must treat `nil`
+as a real state, never `0`. New sidebar screen `APFSIntelligenceView`. Zero
+destructive code anywhere in this vertical — no snapshot deletion, no volume
+modification — and zero Recovery-Plan eligibility, by construction (no
+`AdvisorFinding` is ever created for an APFS concept). See
+`Documentation/FEATURE_MATRIX.md` → "APFS Intelligence",
+`Documentation/APFS_INTELLIGENCE.md`, and `Documentation/SAFETY_MODEL.md` →
+"APFS Intelligence" for the full sub-capability breakdown, including what's
+deliberately left `Unavailable`/not started (clone/hard-link storage-sharing
+attribution, snapshot listing and individual snapshot size — none of these
+have a reliable public-API or no-subprocess path yet) and a pre-existing,
+documented-not-fixed hard-link double-counting behavior found in
+`ScanEngine`/`SpaceLensEngine`/`AppDiscovery` during this audit.
 
 ## Deliberately deferred product scope
 
