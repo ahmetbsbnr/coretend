@@ -33,10 +33,11 @@ final class PrivacyCleanerViewModel {
 
     /// Per-profile check — a global "some browser is running" banner isn't
     /// enough: Chrome running must not block cleaning a Firefox profile.
-    /// `static` and dependent only on `profile` (never `self`) so Recovery
-    /// Plan's execution path can share this exact check without a live
-    /// `PrivacyCleanerViewModel` instance.
-    static func isRunning(_ profile: BrowserProfile) -> Bool {
+    /// `static` and `nonisolated` — dependent only on `profile` (never
+    /// `self` or any MainActor state) — so Recovery Plan's execution path
+    /// can share this exact check without a live `PrivacyCleanerViewModel`
+    /// instance or a MainActor hop.
+    nonisolated static func isRunning(_ profile: BrowserProfile) -> Bool {
         NSWorkspace.shared.runningApplications.contains { $0.bundleIdentifier == profile.bundleID }
     }
 

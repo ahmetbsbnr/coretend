@@ -414,3 +414,23 @@ public struct HomebrewCaskIndex: Sendable {
         return names.filter { $0.hasSuffix(".app") }
     }
 }
+
+/// Whether a leftover candidate might belong to more than one app — pure
+/// function of the full leftover set, so both `LeftoversViewModel` (the UI)
+/// and Recovery Plan share one implementation instead of two that could
+/// drift. Ambiguous/shared items: an explicit `group.` container id (Apple's
+/// own convention for data shared across an app family), or a bundle-id
+/// vendor prefix that appears on more than one leftover — either signal
+/// means deleting it could affect more than the one app it looks tied to.
+public enum LeftoversAmbiguity {
+    public static func isAmbiguous(_ item: AssociatedItem, among all: [AssociatedItem]) -> Bool {
+        let name = item.url.deletingPathExtension().lastPathComponent
+        if name.hasPrefix("group.") { return true }
+        let vendorPrefix = name.split(separator: ".").prefix(2).joined(separator: ".")
+        guard !vendorPrefix.isEmpty else { return false }
+        let sharedCount = all.filter {
+            $0.url.deletingPathExtension().lastPathComponent.split(separator: ".").prefix(2).joined(separator: ".") == vendorPrefix
+        }.count
+        return sharedCount > 1
+    }
+}
