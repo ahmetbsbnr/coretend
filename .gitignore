@@ -9,6 +9,15 @@ xcuserdata/
 *.xcuserstate
 *.xcscmblueprint
 
+# Xcode per-user / machine state. CoreTend.xcodeproj itself IS tracked —
+# it is generated deterministically from project.yml by xcodegen
+# (Scripts/build-xcode.sh), and the repository doctor fails on drift. Only
+# the user/IDE state Xcode drops in beside it is ignored here.
+**/xcshareddata/IDEWorkspaceChecks.plist
+**/xcshareddata/WorkspaceSettings.xcsettings
+**/xcshareddata/swiftpm/configuration/
+*.playground/playground.xcworkspace
+
 # Packaged output (release binaries/archives never live in the source repo)
 *.dmg
 *.zip

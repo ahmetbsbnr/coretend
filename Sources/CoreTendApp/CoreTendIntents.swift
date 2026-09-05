@@ -9,25 +9,21 @@
 // `RecoveryPlanService` / `RestoreService`. `CoreTendIntentsSafetyTests`
 // enforces that at the source level.
 //
+// LOCALIZATION NOTE: the Apple App Intents metadata extractor (which the
+// Xcode shipping build runs to make Shortcuts discovery work) requires every
+// `title` / `description` / phrase to be a plain string literal resolved
+// against the *main* bundle — it rejects a custom-bundle `LocalizedString
+// Resource`. So the Shortcuts-app-facing METADATA below is English literals.
+// Everything the user actually reads back — dialogs and result strings — is
+// built by `CoreTendIntentText` via `L()` and is fully EN + FR. See
+// `Documentation/MACOS_INTEGRATIONS.md` → "App Intents localization".
+//
 
 import AppIntents
 import Foundation
 import SystemMetrics
 import IntegrityCore
 import Persistence
-
-// MARK: - Localized metadata helper
-
-extension LocalizedStringResource {
-    /// Resolves against CoreTend's own `Localizable.strings` (EN + FR), so an
-    /// intent's title/description/phrases localize from the same table as the
-    /// rest of the app. (Whether the *Shortcuts app* surfaces the FR variant
-    /// depends on the App Intents metadata bundle being present in the
-    /// packaged `.app` — see `Documentation/MACOS_INTEGRATIONS.md`.)
-    static func ct(_ key: String.LocalizationValue) -> LocalizedStringResource {
-        LocalizedStringResource(key, table: "Localizable", bundle: .atURL(Bundle.module.bundleURL))
-    }
-}
 
 /// Wraps an already-localized runtime string (from `CoreTendIntentText`) as
 /// an `IntentDialog` without a second round of localization.
@@ -37,11 +33,13 @@ func ctDialog(_ localized: String) -> IntentDialog {
 
 // MARK: - Get free disk space
 
-struct GetFreeDiskSpaceIntent: AppIntent {
-    static let title: LocalizedStringResource = .ct("appintent.freespace.title")
-    static let description = IntentDescription(.ct("appintent.freespace.description"))
+public struct GetFreeDiskSpaceIntent: AppIntent {
+    public init() {}
+    public static let title: LocalizedStringResource = "Get Free Disk Space"
+    public static let description = IntentDescription(
+        "Returns the free and total space on this Mac's startup disk.")
 
-    func perform() async throws -> some IntentResult & ReturnsValue<Int> & ProvidesDialog {
+    public func perform() async throws -> some IntentResult & ReturnsValue<Int> & ProvidesDialog {
         let snapshot = await MetricsCollector().snapshot()
         return .result(
             value: Int(snapshot.diskFreeBytes),
@@ -52,12 +50,14 @@ struct GetFreeDiskSpaceIntent: AppIntent {
 
 // MARK: - CoreTend summary
 
-struct GetCoreTendSummaryIntent: AppIntent {
-    static let title: LocalizedStringResource = .ct("appintent.summary.title")
-    static let description = IntentDescription(.ct("appintent.summary.description"))
+public struct GetCoreTendSummaryIntent: AppIntent {
+    public init() {}
+    public static let title: LocalizedStringResource = "Get CoreTend Summary"
+    public static let description = IntentDescription(
+        "A short read-only summary: free space, change since the last scan, and when CoreTend last scanned.")
 
     @MainActor
-    func perform() async throws -> some IntentResult & ReturnsValue<String> & ProvidesDialog {
+    public func perform() async throws -> some IntentResult & ReturnsValue<String> & ProvidesDialog {
         let snapshot = await MetricsCollector().snapshot()
         let comparison = await TimelineService().overallSinceLastScan()
         let lastScan = (try? await AppEnvironment.shared.store?.activity(limit: 1, kind: .scan))?.first
@@ -71,12 +71,14 @@ struct GetCoreTendSummaryIntent: AppIntent {
 
 // MARK: - What changed since last comparable scan
 
-struct GetStorageChangeIntent: AppIntent {
-    static let title: LocalizedStringResource = .ct("appintent.change.title")
-    static let description = IntentDescription(.ct("appintent.change.description"))
+public struct GetStorageChangeIntent: AppIntent {
+    public init() {}
+    public static let title: LocalizedStringResource = "Get Storage Change"
+    public static let description = IntentDescription(
+        "Compares the most recent scan with the previous comparable one and reports the difference.")
 
     @MainActor
-    func perform() async throws -> some IntentResult & ReturnsValue<String> & ProvidesDialog {
+    public func perform() async throws -> some IntentResult & ReturnsValue<String> & ProvidesDialog {
         let comparison = await TimelineService().overallSinceLastScan()
         let text = CoreTendIntentText.storageChange(
             deltaBytes: comparison?.totalDeltaBytes,
@@ -87,12 +89,14 @@ struct GetStorageChangeIntent: AppIntent {
 
 // MARK: - Reclaimable developer storage
 
-struct GetReclaimableDeveloperStorageIntent: AppIntent {
-    static let title: LocalizedStringResource = .ct("appintent.devstorage.title")
-    static let description = IntentDescription(.ct("appintent.devstorage.description"))
+public struct GetReclaimableDeveloperStorageIntent: AppIntent {
+    public init() {}
+    public static let title: LocalizedStringResource = "Get Reclaimable Developer Storage"
+    public static let description = IntentDescription(
+        "Runs a read-only Developer Center scan and returns how much developer-cache space could be reclaimed.")
 
     @MainActor
-    func perform() async throws -> some IntentResult & ReturnsValue<Int> & ProvidesDialog {
+    public func perform() async throws -> some IntentResult & ReturnsValue<Int> & ProvidesDialog {
         let locations = ApplicationInventoryLocations.resolve(environment: ProcessInfo.processInfo.environment)
         let excluded = (try? await AppEnvironment.shared.store?.exclusions()) ?? []
         let snapshot = await DeveloperCenterService.scan(
@@ -106,11 +110,13 @@ struct GetReclaimableDeveloperStorageIntent: AppIntent {
 
 // MARK: - Integrity summary
 
-struct GetIntegritySummaryIntent: AppIntent {
-    static let title: LocalizedStringResource = .ct("appintent.integrity.title")
-    static let description = IntentDescription(.ct("appintent.integrity.description"))
+public struct GetIntegritySummaryIntent: AppIntent {
+    public init() {}
+    public static let title: LocalizedStringResource = "Get Integrity Summary"
+    public static let description = IntentDescription(
+        "A read-only summary of downloads with provenance, quarantined downloads, and login items.")
 
-    func perform() async throws -> some IntentResult & ReturnsValue<String> & ProvidesDialog {
+    public func perform() async throws -> some IntentResult & ReturnsValue<String> & ProvidesDialog {
         let downloads = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads")
         let provenance = ProvenanceScanner.scan(folder: downloads)
         let text = CoreTendIntentText.integrity(
@@ -124,18 +130,20 @@ struct GetIntegritySummaryIntent: AppIntent {
 
 // MARK: - Inspect image metadata
 
-struct InspectImageMetadataIntent: AppIntent {
-    static let title: LocalizedStringResource = .ct("appintent.imagemeta.title")
-    static let description = IntentDescription(.ct("appintent.imagemeta.description"))
+public struct InspectImageMetadataIntent: AppIntent {
+    public init() {}
+    public static let title: LocalizedStringResource = "Inspect Image Metadata"
+    public static let description = IntentDescription(
+        "Inspects the metadata embedded in an image, locally. The image is not modified and its path is not stored.")
 
     // macOS 14: `IntentFile` accepts any file; `perform()` verifies it is an
     // inspectable image and reports cleanly otherwise. The resolved URL is
     // used for this call only — never stored, never logged (same contract as
     // Privacy Lab; there is no `Store`/persistence call in this type).
-    @Parameter(title: .ct("appintent.imagemeta.param"))
-    var image: IntentFile
+    @Parameter(title: "Image")
+    public var image: IntentFile
 
-    func perform() async throws -> some IntentResult & ReturnsValue<String> & ProvidesDialog {
+    public func perform() async throws -> some IntentResult & ReturnsValue<String> & ProvidesDialog {
         guard let url = image.fileURL else {
             let text = L("appintent.imagemeta.unavailable")
             return .result(value: text, dialog: ctDialog(text))
@@ -153,7 +161,7 @@ struct InspectImageMetadataIntent: AppIntent {
 
 // MARK: - Open a CoreTend module
 
-enum CoreTendModuleAppEnum: String, AppEnum {
+public enum CoreTendModuleAppEnum: String, AppEnum {
     case dashboard, storage, timeline, recoveryPlan, developer, privacyLab, restoreCenter, apfs, applications, settings
 
     var moduleID: ModuleID {
@@ -171,32 +179,33 @@ enum CoreTendModuleAppEnum: String, AppEnum {
         }
     }
 
-    static let typeDisplayRepresentation: TypeDisplayRepresentation = .init(name: .ct("appintent.module.type"))
+    public static let typeDisplayRepresentation: TypeDisplayRepresentation = "CoreTend Screen"
 
-    static let caseDisplayRepresentations: [CoreTendModuleAppEnum: DisplayRepresentation] = [
-        .dashboard: .init(title: .ct("appintent.module.dashboard")),
-        .storage: .init(title: .ct("appintent.module.storage")),
-        .timeline: .init(title: .ct("appintent.module.timeline")),
-        .recoveryPlan: .init(title: .ct("appintent.module.recovery_plan")),
-        .developer: .init(title: .ct("appintent.module.developer")),
-        .privacyLab: .init(title: .ct("appintent.module.privacy_lab")),
-        .restoreCenter: .init(title: .ct("appintent.module.restore_center")),
-        .apfs: .init(title: .ct("appintent.module.apfs")),
-        .applications: .init(title: .ct("appintent.module.applications")),
-        .settings: .init(title: .ct("appintent.module.settings")),
+    public static let caseDisplayRepresentations: [CoreTendModuleAppEnum: DisplayRepresentation] = [
+        .dashboard: "Dashboard",
+        .storage: "Storage",
+        .timeline: "Storage Timeline",
+        .recoveryPlan: "Recovery Plan",
+        .developer: "Developer Center",
+        .privacyLab: "Privacy Lab",
+        .restoreCenter: "Restore Center",
+        .apfs: "APFS",
+        .applications: "Applications",
+        .settings: "Settings",
     ]
 }
 
-struct OpenCoreTendModuleIntent: AppIntent {
-    static let title: LocalizedStringResource = .ct("appintent.open.title")
-    static let description = IntentDescription(.ct("appintent.open.description"))
-    static let openAppWhenRun = true
+public struct OpenCoreTendModuleIntent: AppIntent {
+    public init() {}
+    public static let title: LocalizedStringResource = "Open CoreTend Screen"
+    public static let description = IntentDescription("Opens CoreTend to a specific screen.")
+    public static let openAppWhenRun = true
 
-    @Parameter(title: .ct("appintent.open.param"))
-    var module: CoreTendModuleAppEnum
+    @Parameter(title: "Screen")
+    public var module: CoreTendModuleAppEnum
 
     @MainActor
-    func perform() async throws -> some IntentResult {
+    public func perform() async throws -> some IntentResult {
         AppRouter.shared.route(to: .module(module.moduleID))
         return .result()
     }

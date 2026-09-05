@@ -2,12 +2,14 @@
 // SPDX-FileCopyrightText: The CoreTend Authors
 
 import AppIntents
+import CoreTendApp
 
 /// The small, deliberately non-duplicative App Shortcuts catalog CoreTend
 /// exposes to the Shortcuts app and Spotlight. Six entries, each backed by a
 /// read-only intent. Every phrase includes `\(.applicationName)` as Apple
-/// requires; phrases and titles resolve from CoreTend's own string table
-/// (EN + FR).
+/// requires. Phrases and short titles are English string literals — the App
+/// Intents metadata extractor requires main-bundle literals (see the note in
+/// `CoreTendIntents.swift`); all spoken/returned results remain EN + FR.
 struct CoreTendAppShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
@@ -16,7 +18,7 @@ struct CoreTendAppShortcuts: AppShortcutsProvider {
                 "Check \(.applicationName) storage",
                 "\(.applicationName) storage summary",
             ],
-            shortTitle: .ct("shortcut.summary.short"),
+            shortTitle: "CoreTend Summary",
             systemImageName: "internaldrive")
 
         AppShortcut(
@@ -25,7 +27,7 @@ struct CoreTendAppShortcuts: AppShortcutsProvider {
                 "What changed on my Mac in \(.applicationName)",
                 "\(.applicationName) what changed",
             ],
-            shortTitle: .ct("shortcut.change.short"),
+            shortTitle: "What Changed",
             systemImageName: "chart.xyaxis.line")
 
         AppShortcut(
@@ -34,7 +36,7 @@ struct CoreTendAppShortcuts: AppShortcutsProvider {
                 "Check disk space with \(.applicationName)",
                 "How much free space does \(.applicationName) see",
             ],
-            shortTitle: .ct("shortcut.freespace.short"),
+            shortTitle: "Free Disk Space",
             systemImageName: "externaldrive")
 
         AppShortcut(
@@ -43,7 +45,7 @@ struct CoreTendAppShortcuts: AppShortcutsProvider {
                 "Check developer storage with \(.applicationName)",
                 "\(.applicationName) developer cache size",
             ],
-            shortTitle: .ct("shortcut.devstorage.short"),
+            shortTitle: "Developer Storage",
             systemImageName: "hammer")
 
         AppShortcut(
@@ -52,7 +54,7 @@ struct CoreTendAppShortcuts: AppShortcutsProvider {
                 "Inspect image metadata with \(.applicationName)",
                 "Check an image's metadata in \(.applicationName)",
             ],
-            shortTitle: .ct("shortcut.imagemeta.short"),
+            shortTitle: "Inspect Image Metadata",
             systemImageName: "eye.trianglebadge.exclamationmark")
 
         AppShortcut(
@@ -61,7 +63,7 @@ struct CoreTendAppShortcuts: AppShortcutsProvider {
                 "Open \(.applicationName) \(\.$module)",
                 "Open the \(\.$module) screen in \(.applicationName)",
             ],
-            shortTitle: .ct("shortcut.open.short"),
+            shortTitle: "Open CoreTend Screen",
             systemImageName: "arrow.up.forward.app")
     }
 }

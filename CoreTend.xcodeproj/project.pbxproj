@@ -1,0 +1,542 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		76AEE9CCFB7819B1B50DD6F0 /* CoreTendAppShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7746AFC118AE19330CF028B /* CoreTendAppShortcuts.swift */; };
+		9273C69FE437C097E4704D00 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E06577A36DF4AB6EDFE9808 /* main.swift */; };
+		A3D531274128B7FE4ED8B633 /* CoreTendWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AD271960293F78BE873867F7 /* CoreTendWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		B8CC7A59C4DF39C7E8AC495E /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 0911ABD3129DE6DE910C7039 /* AppIcon.icns */; };
+		BAD416C60D050BB569DB879B /* MenuBarTemplate@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 09F0DCBFC39DFB65FFD076EB /* MenuBarTemplate@2x.png */; };
+		BC4EA5B4B3047A5CE2EC557F /* CoreTendApp in Frameworks */ = {isa = PBXBuildFile; productRef = BEB7D42440F94A377E3C6463 /* CoreTendApp */; };
+		C270A379D12C7F0F4C0A3421 /* WidgetShared in Frameworks */ = {isa = PBXBuildFile; productRef = F7EB3EE62053C6452815AA1E /* WidgetShared */; };
+		C586C6D1DBF93F5FE6A70430 /* CoreTendWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9540548A8FB07AC5E59EA12 /* CoreTendWidget.swift */; };
+		D8688A44564523E5B9FF01F3 /* MenuBarTemplate.png in Resources */ = {isa = PBXBuildFile; fileRef = 736719D48C494BA9C1CBB52F /* MenuBarTemplate.png */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		F85B282C7BCFDC3BB5B1B04B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C881D3119F26CE9006CA1EC6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 47A1859EF41D836BD53CCE26;
+			remoteInfo = CoreTendWidget;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		519DDBADA4B2F83841F99725 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A3D531274128B7FE4ED8B633 /* CoreTendWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0911ABD3129DE6DE910C7039 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
+		09F0DCBFC39DFB65FFD076EB /* MenuBarTemplate@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "MenuBarTemplate@2x.png"; sourceTree = "<group>"; };
+		0E06577A36DF4AB6EDFE9808 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		521E881FA51F336E6C27BA9C /* CoreTend.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CoreTend.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		57397C66FA013E03D4354031 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		736719D48C494BA9C1CBB52F /* MenuBarTemplate.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MenuBarTemplate.png; sourceTree = "<group>"; };
+		763E3B78CDF77B180E0FDA92 /* app */ = {isa = PBXFileReference; lastKnownFileType = folder; name = app; path = .; sourceTree = SOURCE_ROOT; };
+		A9540548A8FB07AC5E59EA12 /* CoreTendWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreTendWidget.swift; sourceTree = "<group>"; };
+		AD271960293F78BE873867F7 /* CoreTendWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CoreTendWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B7746AFC118AE19330CF028B /* CoreTendAppShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreTendAppShortcuts.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		935680CCF2E91FCDE670A928 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BC4EA5B4B3047A5CE2EC557F /* CoreTendApp in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CCDDC0FE71B78A253848298F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C270A379D12C7F0F4C0A3421 /* WidgetShared in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		147160261F23585CEE4B2A89 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				763E3B78CDF77B180E0FDA92 /* app */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		4DE7C45042CC6A02FD4BAA4C = {
+			isa = PBXGroup;
+			children = (
+				147160261F23585CEE4B2A89 /* Packages */,
+				5DE3BC196640F5608131E2F3 /* Resources */,
+				B383E4CDB0B917E7E703753D /* Sources */,
+				C2CF4BC778BAAD1018CA3D26 /* WidgetExtension */,
+				F70323FF52FB22B63C11EFFC /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		5DE3BC196640F5608131E2F3 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				EDD92A1BCD3B387C198B5B84 /* Brand */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		882BEBCD615424A6FED2DCC1 /* Generated */ = {
+			isa = PBXGroup;
+			children = (
+				0911ABD3129DE6DE910C7039 /* AppIcon.icns */,
+				736719D48C494BA9C1CBB52F /* MenuBarTemplate.png */,
+				09F0DCBFC39DFB65FFD076EB /* MenuBarTemplate@2x.png */,
+			);
+			path = Generated;
+			sourceTree = "<group>";
+		};
+		A1E1C9FF6A46207E04A240C6 /* CoreTend */ = {
+			isa = PBXGroup;
+			children = (
+				B7746AFC118AE19330CF028B /* CoreTendAppShortcuts.swift */,
+				0E06577A36DF4AB6EDFE9808 /* main.swift */,
+			);
+			path = CoreTend;
+			sourceTree = "<group>";
+		};
+		B383E4CDB0B917E7E703753D /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				A1E1C9FF6A46207E04A240C6 /* CoreTend */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		C2CF4BC778BAAD1018CA3D26 /* WidgetExtension */ = {
+			isa = PBXGroup;
+			children = (
+				A9540548A8FB07AC5E59EA12 /* CoreTendWidget.swift */,
+				57397C66FA013E03D4354031 /* Info.plist */,
+			);
+			path = WidgetExtension;
+			sourceTree = "<group>";
+		};
+		EDD92A1BCD3B387C198B5B84 /* Brand */ = {
+			isa = PBXGroup;
+			children = (
+				882BEBCD615424A6FED2DCC1 /* Generated */,
+			);
+			path = Brand;
+			sourceTree = "<group>";
+		};
+		F70323FF52FB22B63C11EFFC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				521E881FA51F336E6C27BA9C /* CoreTend.app */,
+				AD271960293F78BE873867F7 /* CoreTendWidget.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		07CA65EC18C4F4D32FA4A3E2 /* CoreTend */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A0632A5ABA29C6EDEFA2DEDD /* Build configuration list for PBXNativeTarget "CoreTend" */;
+			buildPhases = (
+				0336CE3F0C3AE2C7210EF229 /* Sources */,
+				82BCCD53642DC0D12CD1A8FA /* Resources */,
+				935680CCF2E91FCDE670A928 /* Frameworks */,
+				519DDBADA4B2F83841F99725 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				686FD61CC585B5691CE52C0D /* PBXTargetDependency */,
+			);
+			name = CoreTend;
+			packageProductDependencies = (
+				BEB7D42440F94A377E3C6463 /* CoreTendApp */,
+			);
+			productName = CoreTend;
+			productReference = 521E881FA51F336E6C27BA9C /* CoreTend.app */;
+			productType = "com.apple.product-type.application";
+		};
+		47A1859EF41D836BD53CCE26 /* CoreTendWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EC1D3F76241E078647F52ABD /* Build configuration list for PBXNativeTarget "CoreTendWidget" */;
+			buildPhases = (
+				7A7C02175FB9F53BF51163D6 /* Sources */,
+				CCDDC0FE71B78A253848298F /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CoreTendWidget;
+			packageProductDependencies = (
+				F7EB3EE62053C6452815AA1E /* WidgetShared */,
+			);
+			productName = CoreTendWidget;
+			productReference = AD271960293F78BE873867F7 /* CoreTendWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C881D3119F26CE9006CA1EC6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					07CA65EC18C4F4D32FA4A3E2 = {
+						ProvisioningStyle = Manual;
+					};
+					47A1859EF41D836BD53CCE26 = {
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = 1ACB6BDEA571D05EEC33A8FA /* Build configuration list for PBXProject "CoreTend" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 4DE7C45042CC6A02FD4BAA4C;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				DFE9C9E76DE205C730647AB8 /* XCLocalSwiftPackageReference "." */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F70323FF52FB22B63C11EFFC /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				07CA65EC18C4F4D32FA4A3E2 /* CoreTend */,
+				47A1859EF41D836BD53CCE26 /* CoreTendWidget */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		82BCCD53642DC0D12CD1A8FA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B8CC7A59C4DF39C7E8AC495E /* AppIcon.icns in Resources */,
+				D8688A44564523E5B9FF01F3 /* MenuBarTemplate.png in Resources */,
+				BAD416C60D050BB569DB879B /* MenuBarTemplate@2x.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0336CE3F0C3AE2C7210EF229 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				76AEE9CCFB7819B1B50DD6F0 /* CoreTendAppShortcuts.swift in Sources */,
+				9273C69FE437C097E4704D00 /* main.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7A7C02175FB9F53BF51163D6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C586C6D1DBF93F5FE6A70430 /* CoreTendWidget.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		686FD61CC585B5691CE52C0D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 47A1859EF41D836BD53CCE26 /* CoreTendWidget */;
+			targetProxy = F85B282C7BCFDC3BB5B1B04B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		15715219C13F63A924E772E5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1000;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		3839A127C61EEFE9DF55B5E6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Configuration/CoreTendWidget.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = WidgetExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/../../../../Frameworks",
+					"@executable_path/../../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ahmetbsbnr.coretend.widget;
+				PRODUCT_NAME = CoreTendWidget;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		600F2E2CF449334F90D04A20 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1000;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		B2D2919CF4A90C50F75D3878 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APP_INTENTS_METADATA_EXTRACTOR_ENABLED = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Configuration/CoreTend.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ahmetbsbnr.coretend;
+				PRODUCT_NAME = CoreTend;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		ECA8053580CB3BE1D71F91C2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Configuration/CoreTendWidget.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = WidgetExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/../../../../Frameworks",
+					"@executable_path/../../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ahmetbsbnr.coretend.widget;
+				PRODUCT_NAME = CoreTendWidget;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		F981F4D70304B160C0D87ECC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APP_INTENTS_METADATA_EXTRACTOR_ENABLED = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Configuration/CoreTend.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ahmetbsbnr.coretend;
+				PRODUCT_NAME = CoreTend;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1ACB6BDEA571D05EEC33A8FA /* Build configuration list for PBXProject "CoreTend" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				600F2E2CF449334F90D04A20 /* Debug */,
+				15715219C13F63A924E772E5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A0632A5ABA29C6EDEFA2DEDD /* Build configuration list for PBXNativeTarget "CoreTend" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F981F4D70304B160C0D87ECC /* Debug */,
+				B2D2919CF4A90C50F75D3878 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EC1D3F76241E078647F52ABD /* Build configuration list for PBXNativeTarget "CoreTendWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ECA8053580CB3BE1D71F91C2 /* Debug */,
+				3839A127C61EEFE9DF55B5E6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		DFE9C9E76DE205C730647AB8 /* XCLocalSwiftPackageReference "." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = .;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BEB7D42440F94A377E3C6463 /* CoreTendApp */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CoreTendApp;
+		};
+		F7EB3EE62053C6452815AA1E /* WidgetShared */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WidgetShared;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = C881D3119F26CE9006CA1EC6 /* Project object */;
+}

@@ -75,6 +75,10 @@ final class RestoreCenterViewModel {
         selected = []
         await load()
         isWorking = false
+        if summary.restoredCount > 0 {
+            // Free space and last-activity changed — refresh the widget.
+            AppEnvironment.shared.publishWidgetSnapshot()
+        }
     }
 
     func forgetHistory() async {

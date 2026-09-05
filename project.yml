@@ -1,0 +1,103 @@
+# XcodeGen manifest — the maintainable, path-relative source for
+# CoreTend.xcodeproj. Regenerate with `Scripts/build-xcode.sh` (or
+# `xcodegen generate`); the repository doctor fails on drift.
+#
+# The Xcode project exists ONLY to produce Apple bundle structures SwiftPM
+# cannot express: the shipping .app, the WidgetKit .appex, entitlements,
+# the App Intents metadata bundle, and the nested-signing relationship.
+# The Swift package (Package.swift) remains the authoritative source for all
+# domain modules, services, and tests — `swift build` / `Scripts/test.sh`
+# are unchanged and do not require Xcode.
+
+name: CoreTend
+
+options:
+  bundleIdPrefix: com.ahmetbsbnr
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: false
+  defaultConfig: Release
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1000"
+    SDKROOT: macosx
+    SUPPORTED_PLATFORMS: macosx
+    SUPPORTS_MACCATALYST: NO
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    # Ordinary xcodebuild (CI / local verification) signs ad-hoc so no
+    # Developer ID credentials are required. The signed release lane
+    # overrides CODE_SIGN_IDENTITY / entitlements on the command line.
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    ENABLE_HARDENED_RUNTIME: YES
+    GENERATE_INFOPLIST_FILE: NO
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    DEAD_CODE_STRIPPING: YES
+
+packages:
+  CoreTend:
+    path: .
+
+targets:
+  CoreTend:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/CoreTend
+      - path: Resources/Brand/Generated/AppIcon.icns
+        buildPhase: resources
+      - path: Resources/Brand/Generated/MenuBarTemplate.png
+        buildPhase: resources
+      - path: Resources/Brand/Generated/MenuBarTemplate@2x.png
+        buildPhase: resources
+    dependencies:
+      - package: CoreTend
+        product: CoreTendApp
+      - target: CoreTendWidget
+        embed: true
+    settings:
+      base:
+        PRODUCT_NAME: CoreTend
+        PRODUCT_BUNDLE_IDENTIFIER: com.ahmetbsbnr.coretend
+        INFOPLIST_FILE: Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Configuration/CoreTend.entitlements
+        LD_RUNPATH_SEARCH_PATHS:
+          - "@executable_path/../Frameworks"
+        # Let Xcode run the App Intents metadata extractor for this app and
+        # its linked package products (this is what the SwiftPM-only
+        # packaging path could not do).
+        APP_INTENTS_METADATA_EXTRACTOR_ENABLED: YES
+
+  CoreTendWidget:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: WidgetExtension
+    dependencies:
+      - package: CoreTend
+        product: WidgetShared
+    settings:
+      base:
+        PRODUCT_NAME: CoreTendWidget
+        PRODUCT_BUNDLE_IDENTIFIER: com.ahmetbsbnr.coretend.widget
+        INFOPLIST_FILE: WidgetExtension/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Configuration/CoreTendWidget.entitlements
+        LD_RUNPATH_SEARCH_PATHS:
+          - "@executable_path/../../../../Frameworks"
+          - "@executable_path/../../../Frameworks"
+        SKIP_INSTALL: YES
+
+schemes:
+  CoreTend-App:
+    build:
+      targets:
+        CoreTend: [run, test, profile, analyze, archive]
+        CoreTendWidget: [run, profile, analyze, archive]
+    run:
+      config: Debug
+    archive:
+      config: Release
