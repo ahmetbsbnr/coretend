@@ -27,11 +27,11 @@ struct AppRouterTests {
         _ = AppRouter.shared.markReceiverReady()
 
         var received: ModuleID?
-        let token = NotificationCenter.default.addObserver(
+        let observer = NotificationCenter.default.addObserver(
             forName: .mcNavigate, object: nil, queue: nil) { note in
             received = note.object as? ModuleID
         }
-        defer { NotificationCenter.default.removeObserver(token) }
+        defer { NotificationCenter.default.removeObserver(observer) }
 
         AppRouter.shared.route(to: .module(.restoreCenter))
         #expect(received == .restoreCenter)
