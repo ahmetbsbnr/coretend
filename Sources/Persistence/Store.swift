@@ -67,11 +67,14 @@ public struct TimelineCategorySample: Sendable {
     }
 }
 
-/// One recorded Timeline snapshot — the point-in-time total a scan produced.
+/// One recorded Timeline snapshot — the point-in-time total one scan
+/// methodology (`scope`) produced. Only ever comparable to another snapshot
+/// with the same `scope`.
 public struct TimelineSnapshotRecord: Sendable, Identifiable, Equatable {
     public let id: Int64
     public let date: Date
     public let trigger: String
+    public let scope: String
     public let totalBytes: Int64
 }
 
@@ -99,12 +102,23 @@ public struct TimelineCategoryDelta: Sendable, Identifiable, Equatable {
     public var deltaBytes: Int64 { currentBytes - previousBytes }
 }
 
-/// The result of comparing two Timeline snapshots.
+/// The result of comparing two Timeline snapshots of the same scope.
 public struct TimelineComparison: Sendable, Equatable {
     public let current: TimelineSnapshotRecord
     public let baseline: TimelineSnapshotRecord
+    /// Sorted largest increase first, largest decrease last.
     public let categoryDeltas: [TimelineCategoryDelta]
     public var totalDeltaBytes: Int64 { current.totalBytes - baseline.totalBytes }
+
+    /// Categories that grew, largest increase first.
+    public var increases: [TimelineCategoryDelta] {
+        categoryDeltas.filter { $0.deltaBytes > 0 }
+    }
+
+    /// Categories that shrank, largest decrease first.
+    public var decreases: [TimelineCategoryDelta] {
+        categoryDeltas.filter { $0.deltaBytes < 0 }.sorted { $0.deltaBytes < $1.deltaBytes }
+    }
 }
 
 /// Application-wide persistent store. All access is actor-isolated.
@@ -200,6 +214,20 @@ public actor Store {
         );
         CREATE INDEX IF NOT EXISTS idx_timeline_categories_snapshot ON timeline_categories(snapshot_id);
         CREATE INDEX IF NOT EXISTS idx_timeline_categories_category ON timeline_categories(category);
+        """,
+        // v6 — Timeline scope: which scan methodology produced a snapshot
+        // ("cleanup", "duplicates", "leftovers", "privacy", …). Two snapshots
+        // are only ever comparable within the same scope — a Cleanup scan
+        // covers a fixed set of system-cache rules, a Duplicates scan covers
+        // wasted-space-from-copies in a different fixed root set, and neither
+        // represents "total storage"; summing or diffing across scopes would
+        // silently misrepresent disk usage. Every row written before this
+        // column existed came only from Cleanup (the only engine wired to
+        // Timeline at v5), so the backfill is exact, not a guess.
+        """
+        ALTER TABLE timeline_snapshots ADD COLUMN scope TEXT NOT NULL DEFAULT '';
+        UPDATE timeline_snapshots SET scope = 'cleanup' WHERE scope = '';
+        CREATE INDEX IF NOT EXISTS idx_timeline_snapshots_scope ON timeline_snapshots(scope, date);
         """,
     ]
 
@@ -395,18 +423,45 @@ public actor Store {
     }
 
     // MARK: - Timeline (storage snapshots for "what changed since my last scan")
+    //
+    // A snapshot belongs to exactly one `scope` — the scan methodology that
+    // produced it ("cleanup", "duplicates", "leftovers", "privacy", …).
+    // Snapshots are only ever compared within the same scope: a Cleanup scan
+    // covers a fixed set of system-cache rules, a Duplicates scan covers
+    // wasted space from copies in a different fixed root set, neither is
+    // "total storage", and summing or diffing across scopes would silently
+    // misrepresent disk usage. Every comparison method below takes an
+    // explicit `scope` (or derives one from a snapshot that already carries
+    // it) rather than ever comparing "the two most recent snapshots"
+    // regardless of what produced them.
 
     /// Records one scan's category-level footprint as a new snapshot, then
-    /// prunes history per the retention policy (`pruneTimelineSnapshots`).
-    /// Safe to call with an empty `samples` array — an empty scan is still a
-    /// real data point (it can show a category shrank to zero).
+    /// prunes that scope's history per the retention policy
+    /// (`pruneTimelineSnapshots`). Safe to call with an empty `samples` array
+    /// — an empty scan is still a real data point (it can show a category
+    /// shrank to zero). Only call this for a scan that actually completed —
+    /// a cancelled or failed scan must not produce a snapshot, since a
+    /// partial result would be a false data point for every future
+    /// comparison against it.
     @discardableResult
-    public func recordTimelineSnapshot(trigger: String = "manual", samples: [TimelineCategorySample]) throws -> Int64 {
+    public func recordTimelineSnapshot(scope: String, trigger: String = "manual",
+                                        samples: [TimelineCategorySample]) throws -> Int64 {
+        try recordTimelineSnapshot(scope: scope, date: Date(), trigger: trigger, samples: samples)
+    }
+
+    /// Test seam: records a snapshot at an explicit `date` instead of `Date()`,
+    /// so retention (`pruneTimelineSnapshots`, a 90-day window) can be
+    /// exercised deterministically without waiting 90 real days. `internal`,
+    /// not `public` — reachable only via `@testable import Persistence`; the
+    /// real app always goes through the `Date()`-only overload above.
+    @discardableResult
+    func recordTimelineSnapshot(scope: String, date: Date, trigger: String = "manual",
+                                 samples: [TimelineCategorySample]) throws -> Int64 {
         let total = samples.reduce(Int64(0)) { $0 + $1.logicalBytes }
         var snapshotID: Int64 = 0
         try db.transaction {
-            try db.run("INSERT INTO timeline_snapshots (date, trigger, total_bytes) VALUES (?, ?, ?)",
-                       [Date().timeIntervalSince1970, trigger, total])
+            try db.run("INSERT INTO timeline_snapshots (date, trigger, total_bytes, scope) VALUES (?, ?, ?, ?)",
+                       [date.timeIntervalSince1970, trigger, total, scope])
             snapshotID = db.lastInsertRowID
             for sample in samples {
                 try db.run("""
@@ -417,24 +472,44 @@ public actor Store {
                           sample.physicalBytes, sample.fileCount, sample.risk])
             }
         }
-        try pruneTimelineSnapshots()
+        try pruneTimelineSnapshots(scope: scope)
         return snapshotID
     }
 
-    public func timelineSnapshots(limit: Int = 60) throws -> [TimelineSnapshotRecord] {
-        try db.query("SELECT * FROM timeline_snapshots ORDER BY date DESC LIMIT ?", [limit])
+    /// Snapshots newest first. `scope` narrows to one scan methodology;
+    /// `nil` returns the cross-scope history (for a "recent activity across
+    /// every scan kind" list — never for building a comparison).
+    public func timelineSnapshots(scope: String? = nil, limit: Int = 60) throws -> [TimelineSnapshotRecord] {
+        if let scope {
+            return try db.query("SELECT * FROM timeline_snapshots WHERE scope = ? ORDER BY date DESC LIMIT ?",
+                                 [scope, limit]).compactMap(Self.timelineSnapshotRecord)
+        }
+        return try db.query("SELECT * FROM timeline_snapshots ORDER BY date DESC LIMIT ?", [limit])
             .compactMap(Self.timelineSnapshotRecord)
     }
 
-    public func latestTimelineSnapshot() throws -> TimelineSnapshotRecord? {
-        try timelineSnapshots(limit: 1).first
+    /// The most recent snapshot. `scope` narrows to one scan methodology;
+    /// `nil` returns the single most recent snapshot regardless of scope
+    /// (used only to discover "what scan last ran at all", never to build a
+    /// comparison against a snapshot of a different scope).
+    public func latestTimelineSnapshot(scope: String? = nil) throws -> TimelineSnapshotRecord? {
+        try timelineSnapshots(scope: scope, limit: 1).first
     }
 
-    /// The most recent snapshot at or before `date` — the baseline for
-    /// "since X ago" comparisons.
-    public func timelineSnapshot(atOrBefore date: Date) throws -> TimelineSnapshotRecord? {
-        try db.query("SELECT * FROM timeline_snapshots WHERE date <= ? ORDER BY date DESC LIMIT 1",
-                     [date.timeIntervalSince1970]).compactMap(Self.timelineSnapshotRecord).first
+    /// The most recent `scope` snapshot at or before `date` — the baseline
+    /// for "since X ago" comparisons.
+    public func timelineSnapshot(scope: String, atOrBefore date: Date) throws -> TimelineSnapshotRecord? {
+        try db.query("SELECT * FROM timeline_snapshots WHERE scope = ? AND date <= ? ORDER BY date DESC LIMIT 1",
+                     [scope, date.timeIntervalSince1970]).compactMap(Self.timelineSnapshotRecord).first
+    }
+
+    /// The most recent `scope` snapshot strictly before `date` — used to find
+    /// "the previous snapshot of this same scope" when the starting point is
+    /// an arbitrary snapshot (e.g. the single most recent one across every
+    /// scope), rather than "now".
+    public func previousTimelineSnapshot(scope: String, before date: Date) throws -> TimelineSnapshotRecord? {
+        try db.query("SELECT * FROM timeline_snapshots WHERE scope = ? AND date < ? ORDER BY date DESC LIMIT 1",
+                     [scope, date.timeIntervalSince1970]).compactMap(Self.timelineSnapshotRecord).first
     }
 
     public func timelineCategories(snapshotID: Int64) throws -> [TimelineCategoryRecord] {
@@ -442,25 +517,41 @@ public actor Store {
                      [snapshotID]).compactMap(Self.timelineCategoryRecord)
     }
 
-    /// Compares the latest snapshot against the most recent snapshot at or
-    /// before `referenceDate` (e.g. "24 hours ago", "7 days ago"). Returns
-    /// nil when there is no current snapshot, or no snapshot old enough to
-    /// serve as a baseline — never a comparison against a snapshot that
-    /// doesn't exist.
-    public func timelineComparison(since referenceDate: Date) throws -> TimelineComparison? {
-        guard let current = try latestTimelineSnapshot() else { return nil }
-        guard let baseline = try timelineSnapshot(atOrBefore: referenceDate), baseline.id != current.id
+    /// Compares the latest `scope` snapshot against the most recent `scope`
+    /// snapshot at or before `referenceDate` (e.g. "24 hours ago", "7 days
+    /// ago"). Returns nil when there is no current snapshot in this scope, or
+    /// no snapshot of this scope old enough to serve as a baseline — never a
+    /// comparison against a snapshot that doesn't exist, and never against a
+    /// different scope's snapshot.
+    public func timelineComparison(scope: String, since referenceDate: Date) throws -> TimelineComparison? {
+        guard let current = try latestTimelineSnapshot(scope: scope) else { return nil }
+        guard let baseline = try timelineSnapshot(scope: scope, atOrBefore: referenceDate), baseline.id != current.id
         else { return nil }
         return try buildTimelineComparison(current: current, baseline: baseline)
     }
 
-    /// Compares the two most recent snapshots directly — "since my last
-    /// scan", independent of any fixed time window. Returns nil with fewer
-    /// than two recorded snapshots.
-    public func timelineComparisonSincePreviousSnapshot() throws -> TimelineComparison? {
-        let recent = try timelineSnapshots(limit: 2)
+    /// Compares the two most recent snapshots of one scope directly — "since
+    /// my last Cleanup scan" — independent of any fixed time window. Returns
+    /// nil with fewer than two recorded snapshots in this scope.
+    public func timelineComparisonSincePreviousSnapshot(scope: String) throws -> TimelineComparison? {
+        let recent = try timelineSnapshots(scope: scope, limit: 2)
         guard recent.count == 2 else { return nil }
         return try buildTimelineComparison(current: recent[0], baseline: recent[1])
+    }
+
+    /// "Since last scan" across every scope: finds the single most recent
+    /// snapshot regardless of what produced it, then compares it against the
+    /// previous snapshot **of that same scope** — never against whatever
+    /// scope happens to be second-most-recent overall, which could be a
+    /// different, non-comparable methodology. This is what a Dashboard-level
+    /// "since last scan" card should call; a Timeline screen focused on one
+    /// scope should call `timelineComparisonSincePreviousSnapshot(scope:)`
+    /// directly instead. Returns nil when no scan has ever completed, or
+    /// when the most recent scan's own scope has no earlier snapshot yet.
+    public func latestTimelineComparisonAcrossScopes() throws -> TimelineComparison? {
+        guard let current = try latestTimelineSnapshot() else { return nil }
+        guard let baseline = try previousTimelineSnapshot(scope: current.scope, before: current.date) else { return nil }
+        return try buildTimelineComparison(current: current, baseline: baseline)
     }
 
     private func buildTimelineComparison(current: TimelineSnapshotRecord,
@@ -487,36 +578,41 @@ public actor Store {
         return TimelineComparison(current: current, baseline: baseline, categoryDeltas: deltas)
     }
 
-    /// Explicit, user-initiated, all-or-nothing deletion — mirrors `purgeSafetyLog()`.
+    /// Explicit, user-initiated, all-or-nothing deletion of every scope's
+    /// history — mirrors `purgeSafetyLog()`. There is deliberately no
+    /// per-scope clear: this is a privacy action ("forget my local scan
+    /// history"), not a per-feature reset.
     public func clearTimelineHistory() throws {
         try db.run("DELETE FROM timeline_categories")
         try db.run("DELETE FROM timeline_snapshots")
     }
 
-    /// Retention: keep snapshots from the last 90 days, but always keep at
-    /// least the 5 most recent regardless of age, so a lightly-used install
-    /// still has a baseline for "since last scan".
-    private func pruneTimelineSnapshots() throws {
+    /// Retention, applied per scope so a rarely-used scan kind (e.g.
+    /// Duplicates) can't be pruned away just because another scope (e.g.
+    /// Cleanup) is scanned often: keep a scope's snapshots from the last 90
+    /// days, but always keep at least its 5 most recent regardless of age, so
+    /// a lightly-used install still has a baseline for "since last scan".
+    private func pruneTimelineSnapshots(scope: String) throws {
         let cutoff = Date().addingTimeInterval(-90 * 24 * 3600).timeIntervalSince1970
         try db.transaction {
             try db.run("""
                 DELETE FROM timeline_categories WHERE snapshot_id IN (
-                    SELECT id FROM timeline_snapshots WHERE date < ?
-                    AND id NOT IN (SELECT id FROM timeline_snapshots ORDER BY date DESC LIMIT 5)
+                    SELECT id FROM timeline_snapshots WHERE scope = ? AND date < ?
+                    AND id NOT IN (SELECT id FROM timeline_snapshots WHERE scope = ? ORDER BY date DESC LIMIT 5)
                 )
-                """, [cutoff])
+                """, [scope, cutoff, scope])
             try db.run("""
-                DELETE FROM timeline_snapshots WHERE date < ?
-                AND id NOT IN (SELECT id FROM timeline_snapshots ORDER BY date DESC LIMIT 5)
-                """, [cutoff])
+                DELETE FROM timeline_snapshots WHERE scope = ? AND date < ?
+                AND id NOT IN (SELECT id FROM timeline_snapshots WHERE scope = ? ORDER BY date DESC LIMIT 5)
+                """, [scope, cutoff, scope])
         }
     }
 
     private static func timelineSnapshotRecord(_ row: [String: Any]) -> TimelineSnapshotRecord? {
         guard let id = row["id"] as? Int64, let date = row["date"] as? Double,
-              let trigger = row["trigger"] as? String else { return nil }
+              let trigger = row["trigger"] as? String, let scope = row["scope"] as? String else { return nil }
         return TimelineSnapshotRecord(id: id, date: Date(timeIntervalSince1970: date), trigger: trigger,
-                                       totalBytes: row["total_bytes"] as? Int64 ?? 0)
+                                       scope: scope, totalBytes: row["total_bytes"] as? Int64 ?? 0)
     }
 
     private static func timelineCategoryRecord(_ row: [String: Any]) -> TimelineCategoryRecord? {

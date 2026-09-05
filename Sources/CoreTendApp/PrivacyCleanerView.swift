@@ -72,6 +72,22 @@ final class PrivacyCleanerViewModel {
         self.pauseController = nil
         isPaused = false
         phase = found.isEmpty ? .empty : .results
+        // Grouped by browser, not by profile — a profile name isn't a file
+        // path, but it can still be personally identifying ("Work", a real
+        // name used as a Chrome profile label); the browser name alone
+        // ("Chrome", "Firefox") is enough to be useful in Timeline history.
+        // Only cacheBytes is recorded: history/cookies are shown in this UI
+        // but never deleted (see the type's doc comment), so they aren't a
+        // "reclaimable" figure Timeline should track.
+        var byBrowser: [String: (bytes: Int64, profiles: Int)] = [:]
+        for profile in found {
+            byBrowser[profile.browser, default: (0, 0)].bytes += profile.cacheBytes
+            byBrowser[profile.browser, default: (0, 0)].profiles += 1
+        }
+        AppEnvironment.shared.recordTimelineSnapshot(scope: .privacy, samples: byBrowser.map { browser, totals in
+            TimelineCategorySample(category: browser, engine: "privacy", logicalBytes: totals.bytes,
+                                    fileCount: totals.profiles, risk: "low")
+        })
     }
 
     func pauseScan() {

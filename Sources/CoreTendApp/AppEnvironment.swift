@@ -57,10 +57,12 @@ final class AppEnvironment {
     }
 
     /// Records one scan's category-level footprint into Storage Timeline.
+    /// `scope` identifies the scan methodology (see `TimelineScope`) — it is
+    /// what keeps later comparisons from mixing incomparable scan kinds.
     /// Fire-and-forget like `record(_:)` — a missed write only costs Timeline
     /// history, never data correctness.
-    func recordTimelineSnapshot(samples: [TimelineCategorySample]) {
+    func recordTimelineSnapshot(scope: TimelineScope, samples: [TimelineCategorySample]) {
         guard let store else { return }
-        Task { try? await store.recordTimelineSnapshot(samples: samples) }
+        Task { try? await store.recordTimelineSnapshot(scope: scope.rawValue, samples: samples) }
     }
 }

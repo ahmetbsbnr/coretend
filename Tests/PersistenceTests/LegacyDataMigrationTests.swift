@@ -73,6 +73,18 @@ private func seedRealStore(at path: String) async throws {
     // installation would.
     let db = try Database(path: path)
     try db.run("DELETE FROM schema_migrations WHERE version >= 4")
+    // v6 adds timeline_snapshots.scope via ALTER TABLE ADD COLUMN, which has
+    // no "IF NOT EXISTS" form in SQLite (unlike v5's CREATE TABLE/INDEX,
+    // fixed for exactly this reason — see MIGRATIONS.md). The column already
+    // physically exists at this point (the Store(path:) call above ran every
+    // migration through v6 before this rollback), so re-running v6 for real
+    // would fail with "duplicate column name". Drop it here too, so this
+    // fixture's rollback matches reality: a store that never saw v6 has no
+    // such column. Any *future* ALTER TABLE ADD COLUMN migration needs the
+    // same treatment added here, or this fixture will break again exactly
+    // like this the day that migration is added.
+    try db.exec("DROP INDEX idx_timeline_snapshots_scope")
+    try db.exec("ALTER TABLE timeline_snapshots DROP COLUMN scope")
 }
 
 /// `Any` is not `Sendable`, so the stub stores plist-shaped values as strings

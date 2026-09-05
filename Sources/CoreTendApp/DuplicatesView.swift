@@ -100,6 +100,15 @@ final class DuplicatesViewModel {
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .scan, summary: "Duplicate scan: \(count) groups",
                         itemCount: count, bytes: wasted))
+                    // One category: Duplicates has no sub-rules to split by.
+                    // fileCount is the removable copies (every URL but each
+                    // group's suggested keeper), not the raw file count, to
+                    // match what `wasted` actually represents.
+                    AppEnvironment.shared.recordTimelineSnapshot(scope: .duplicates, samples: [
+                        TimelineCategorySample(
+                            category: "wastedSpace", engine: "duplicates", logicalBytes: wasted,
+                            fileCount: groups.reduce(0) { $0 + $1.urls.count - 1 }, risk: "medium"),
+                    ])
                 case .cancelled:
                     isScanPaused = false
                     phase = groups.isEmpty ? .idle : .results
