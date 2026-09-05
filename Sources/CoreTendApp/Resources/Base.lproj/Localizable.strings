@@ -1016,3 +1016,88 @@
 "restore.source.apps.leftovers" = "Leftover app data";
 "restore.source.clutter.duplicates" = "Duplicate file";
 "restore.source.privacy.browsercache" = "Browser cache";
+
+/* --- macOS integrations: Settings --- */
+"settings.scheduled_scans" = "Scheduled Scans";
+"settings.scheduled_scans.cadence" = "Run a scan";
+"settings.scheduled_scans.detail" = "Scheduled scans are read-only. They update Storage Timeline and may send a notification. CoreTend never cleans up, deletes, or moves anything to the Trash on a schedule. A scheduled scan runs only while CoreTend is open or in the menu bar.";
+"settings.notifications_categories" = "Notifications";
+"settings.notifications_categories.detail" = "Notifications are local to this Mac. They contain totals only — never file names, paths, or locations. Each type is rate-limited so you are not alerted repeatedly.";
+"settings.notifications.enable" = "Enable Notifications…";
+
+/* --- Scheduled-scan cadence --- */
+"schedule.cadence.off" = "Off";
+"schedule.cadence.daily" = "Daily";
+"schedule.cadence.weekly" = "Weekly";
+
+/* --- Notification categories --- */
+"notif.category.lowDiskSpace.title" = "Low disk space";
+"notif.category.scanResults.title" = "Scan results";
+"notif.category.storageGrowth.title" = "Storage growth";
+
+/* --- Notification content (totals only, no paths) --- */
+"notif.low_disk.title" = "Low disk space";
+"notif.low_disk.body" = "Only %@ free on this Mac. Open CoreTend to review what can be cleaned.";
+"notif.scan.title" = "Scheduled scan finished";
+"notif.scan.reclaimable" = "CoreTend found %@ potentially recoverable.";
+"notif.scan.growth" = "Storage grew %@ since the previous scan.";
+
+/* --- App Intents --- */
+"appintent.freespace.title" = "Get Free Disk Space";
+"appintent.freespace.description" = "Returns the free and total space on this Mac's startup disk.";
+"appintent.freespace.result" = "%@ free of %@.";
+"appintent.summary.title" = "Get CoreTend Summary";
+"appintent.summary.description" = "A short read-only summary: free space, change since the last scan, and when CoreTend last scanned.";
+"appintent.summary.free" = "%@ free.";
+"appintent.summary.no_change" = "No change since the last scan.";
+"appintent.summary.grew" = "Up %@ since the last scan.";
+"appintent.summary.shrank" = "Down %@ since the last scan.";
+"appintent.summary.no_history" = "Not enough scan history to compare yet.";
+"appintent.summary.last_scan" = "Last scan %@.";
+"appintent.change.title" = "Get Storage Change";
+"appintent.change.description" = "Compares the most recent scan with the previous comparable one and reports the difference.";
+"appintent.change.no_history" = "There is no comparable scan history yet. Run a scan in CoreTend first.";
+"appintent.change.none" = "No measurable change since the last comparable scan.";
+"appintent.change.increase" = "Tracked storage is up %@ since the last comparable scan.";
+"appintent.change.decrease" = "Tracked storage is down %@ since the last comparable scan.";
+"appintent.change.top_category" = "The largest increase was %@.";
+"appintent.devstorage.title" = "Get Reclaimable Developer Storage";
+"appintent.devstorage.description" = "Runs a read-only Developer Center scan and returns how much developer-cache space could be reclaimed.";
+"appintent.devstorage.result" = "About %@ of developer caches could be reclaimed.";
+"appintent.integrity.title" = "Get Integrity Summary";
+"appintent.integrity.description" = "A read-only summary of downloads with provenance, quarantined downloads, and login items.";
+"appintent.integrity.result" = "%d downloads with provenance, %d quarantined; %d login items. This copy of CoreTend is %@.";
+"appintent.integrity.tier.appleSigned" = "Apple-signed";
+"appintent.integrity.tier.teamSigned" = "developer-signed";
+"appintent.integrity.tier.adHocOrUnsigned" = "unsigned or ad-hoc";
+"appintent.imagemeta.title" = "Inspect Image Metadata";
+"appintent.imagemeta.description" = "Inspects the metadata embedded in an image, locally. The image is not modified and its path is not stored.";
+"appintent.imagemeta.param" = "Image";
+"appintent.imagemeta.unavailable" = "That file is not available.";
+"appintent.imagemeta.none" = "No supported metadata was detected in this image.";
+"appintent.imagemeta.present" = "This image carries embedded metadata in %d categories: %@.";
+"appintent.imagemeta.unsupported" = "That file type cannot be inspected.";
+"appintent.imagemeta.unreadable" = "That file could not be read as an image.";
+"appintent.imagemeta.missing" = "That file no longer exists.";
+"appintent.module.type" = "CoreTend Screen";
+"appintent.module.dashboard" = "Dashboard";
+"appintent.module.storage" = "Storage";
+"appintent.module.timeline" = "Storage Timeline";
+"appintent.module.recovery_plan" = "Recovery Plan";
+"appintent.module.developer" = "Developer Center";
+"appintent.module.privacy_lab" = "Privacy Lab";
+"appintent.module.restore_center" = "Restore Center";
+"appintent.module.apfs" = "APFS";
+"appintent.module.applications" = "Applications";
+"appintent.module.settings" = "Settings";
+"appintent.open.title" = "Open CoreTend Screen";
+"appintent.open.description" = "Opens CoreTend to a specific screen.";
+"appintent.open.param" = "Screen";
+
+/* --- App Shortcuts (short titles) --- */
+"shortcut.summary.short" = "CoreTend Summary";
+"shortcut.change.short" = "What Changed";
+"shortcut.freespace.short" = "Free Disk Space";
+"shortcut.devstorage.short" = "Developer Storage";
+"shortcut.imagemeta.short" = "Inspect Image Metadata";
+"shortcut.open.short" = "Open CoreTend Screen";

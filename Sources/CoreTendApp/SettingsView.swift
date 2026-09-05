@@ -25,9 +25,17 @@ final class SettingsViewModel {
         await refreshPermissions()
     }
 
+    private let notifications = NotificationService()
+
     func refreshPermissions() async {
         fullDiskAccess = PermissionProbe.hasFullDiskAccess()
         notificationStatus = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
+    }
+
+    /// Explicit, in-context permission request from the Settings button —
+    /// never fired automatically. Re-reads the real status afterwards.
+    func requestNotificationPermission() async {
+        notificationStatus = await notifications.requestPermission()
     }
 
     func addExclusion(_ url: URL) {
@@ -75,8 +83,12 @@ enum PermissionFormatting {
 
 struct MCSettingsView: View {
     @State private var model = SettingsViewModel()
+    @State private var integrations = MacIntegrations.shared
     @AppStorage("menuBarEnabled") private var menuBarEnabled = true
     @AppStorage("appLanguage") private var appLanguageRaw = AppLanguage.system.rawValue
+    @AppStorage("notif.enabled.lowDiskSpace") private var notifLowDisk = true
+    @AppStorage("notif.enabled.scanResults") private var notifScanResults = true
+    @AppStorage("notif.enabled.storageGrowth") private var notifStorageGrowth = true
     @State private var showClearConfirm = false
     @State private var showDiagnostic = false
 
@@ -104,6 +116,40 @@ struct MCSettingsView: View {
             }
             Section(L("settings.scans_cleanup")) {
                 LabeledContent(L("settings.deletion_method"), value: L("settings.deletion_method_value"))
+            }
+            Section(L("settings.scheduled_scans")) {
+                Picker(L("settings.scheduled_scans.cadence"), selection: integrations.cadenceBinding()) {
+                    ForEach(ScanCadence.allCases) { cadence in
+                        Text(L(cadence.labelKey)).tag(cadence)
+                    }
+                }
+                .accessibilityIdentifier("settings.schedule.cadence")
+                Text(L("settings.scheduled_scans.detail"))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Section(L("settings.notifications_categories")) {
+                if model.notificationStatus == .notDetermined {
+                    Button(L("settings.notifications.enable")) {
+                        Task { await model.requestNotificationPermission() }
+                    }
+                    .accessibilityIdentifier("settings.notifications.enable")
+                } else if model.notificationStatus == .denied {
+                    Label(L("settings.notif.denied"), systemImage: "xmark.circle.fill")
+                        .foregroundStyle(MCTheme.warning)
+                    Button(L("settings.open_system_settings")) {
+                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications") {
+                            NSWorkspace.shared.open(url)
+                        }
+                    }
+                }
+                Toggle(L("notif.category.lowDiskSpace.title"), isOn: $notifLowDisk)
+                    .accessibilityIdentifier("settings.notif.lowDiskSpace")
+                Toggle(L("notif.category.scanResults.title"), isOn: $notifScanResults)
+                    .accessibilityIdentifier("settings.notif.scanResults")
+                Toggle(L("notif.category.storageGrowth.title"), isOn: $notifStorageGrowth)
+                    .accessibilityIdentifier("settings.notif.storageGrowth")
+                Text(L("settings.notifications_categories.detail"))
+                    .font(.caption).foregroundStyle(.secondary)
             }
             Section(L("settings.protection")) {
                 LabeledContent(L("settings.this_copy_signature")) {

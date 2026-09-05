@@ -463,7 +463,17 @@ struct MainWindow: View {
             }
             .mcCanvasBackground()
         }
-        .onAppear { if !onboardingDone { showOnboarding = true } }
+        .onAppear {
+            if !onboardingDone { showOnboarding = true }
+            // Start the macOS integration layer (background scan scheduler,
+            // notification tap routing). Idempotent.
+            MacIntegrations.shared.start()
+            // Drain any deep link that arrived before this window subscribed
+            // to `.mcNavigate` (cold launch from a notification / App Intent).
+            if case let .module(module)? = AppRouter.shared.markReceiverReady() {
+                selection = module
+            }
+        }
         .sheet(isPresented: $showOnboarding, onDismiss: { onboardingDone = true }) {
             OnboardingView(isPresented: $showOnboarding)
         }
