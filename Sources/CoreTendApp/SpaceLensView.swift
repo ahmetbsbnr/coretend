@@ -597,7 +597,10 @@ struct SpaceLensView: View {
 
     private func applyCategory(_ nodes: [SpaceLensNode]) -> [SpaceLensNode] {
         guard let categoryFilter else { return nodes }
-        return nodes.filter { $0.isOther || $0.category == categoryFilter }
+        // Drop "Other" while a category filter is active — its aggregate bytes
+        // are computed before category filtering and would misrepresent the
+        // filtered view.
+        return nodes.filter { !$0.isOther && $0.category == categoryFilter }
     }
 
     private var searchAndFilterRow: some View {
