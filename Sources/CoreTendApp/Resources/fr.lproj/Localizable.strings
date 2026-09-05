@@ -52,7 +52,7 @@
 "cleanup.idle.title" = "Rechercher les fichiers à supprimer sans risque";
 "cleanup.idle.subtitle" = "Analyse les caches, journaux, rapports de plantage et fichiers de compilation Xcode.\nRien n'est supprimé pendant l'analyse.";
 "cleanup.start_scan" = "Démarrer l'analyse";
-"cleanup.scanning_progress" = "%d éléments analysés — %@ trouvés";
+"cleanup.scanning_progress" = "%d éléments analysés — %@ détectés";
 "cleanup.review.selected" = "%d éléments — %@ sélectionnés";
 "cleanup.review.truncated" = "%d sur %d affichés — %@ trouvés au total";
 "cleanup.move_to_trash" = "Déplacer vers la Corbeille";
@@ -1109,3 +1109,8 @@
 
 "finder.selection_unavailable" = "Sélection Finder indisponible";
 "finder.selection_unavailable.detail" = "L’élément sélectionné est absent, non pris en charge ou ne correspond plus à cette action. Sélectionnez un dossier existant, une image compatible ou une application. Les liens symboliques ne sont pas pris en charge.";
+"cleanup.reclaimable_metric" = "%@ potentiellement récupérables";
+"cleanup.items_inspected" = "%d éléments inspectés";
+"cleanup.needs_review" = "%@ à examiner individuellement";
+"cleanup.selected_ready" = "%@ sélectionnés · prêts pour la Corbeille";
+"cleanup.move_selected" = "Déplacer %@ vers la Corbeille";
