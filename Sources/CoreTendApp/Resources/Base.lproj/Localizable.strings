@@ -1121,3 +1121,35 @@
 "smartscan.headline.nothing" = "Nothing to reclaim in this area";
 "smartscan.headline.apps" = "%lld apps · %lld with a managed update path";
 "smartscan.headline.signals" = "%lld to review · %lld informational";
+
+/* Smart Scan — Dashboard hero, running + result UI */
+"smartscan.title" = "Smart Scan";
+"smartscan.idle.tagline" = "One scan. Several CoreTend modules. One structured review.";
+"smartscan.idle.coverage_title" = "This scan looks at";
+"smartscan.start" = "Start Smart Scan";
+"smartscan.start_again" = "Start Again";
+"smartscan.new_scan" = "New Smart Scan";
+"smartscan.cancel" = "Cancel scan";
+"smartscan.running.title" = "Scanning…";
+"smartscan.elapsed" = "Elapsed %@";
+"smartscan.state.queued" = "Queued";
+"smartscan.state.scanning" = "Scanning";
+"smartscan.state.completed" = "Completed";
+"smartscan.state.unavailable" = "Unavailable";
+"smartscan.state.failed" = "Failed";
+"smartscan.state.cancelled" = "Cancelled";
+"smartscan.unavailable.not_connected" = "Not available in this build";
+"smartscan.unavailable.generic" = "Permission required, or nothing to inspect";
+"smartscan.failed.detail" = "This module stopped early. The other results below are still valid.";
+"smartscan.result.title" = "Smart Scan results";
+"smartscan.result.partial" = "Partial results — one or more modules did not finish.";
+"smartscan.category.recoverable" = "Potentially recoverable";
+"smartscan.category.review" = "Needs review";
+"smartscan.category.attention" = "Attention";
+"smartscan.category.informational" = "Informational";
+"smartscan.recoverable.inexact_note" = "Some areas overlap on disk, so CoreTend keeps their totals separate rather than counting the same data twice.";
+"smartscan.count_items" = "%lld items";
+"smartscan.review_recovery_plan" = "Review Recovery Plan";
+"smartscan.cancelled.title" = "Scan cancelled";
+"smartscan.cancelled.detail" = "No changes were made. Nothing was reviewed or removed.";
+"recovery.from_smartscan" = "Prepared from your last Smart Scan — no new scan was run.";

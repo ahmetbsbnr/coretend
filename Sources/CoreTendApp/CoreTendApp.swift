@@ -406,6 +406,10 @@ struct SidebarGroup: Identifiable {
 struct MainWindow: View {
     @Environment(\.openWindow) private var openWindow
     @State private var developerModel = DeveloperCenterModel()
+    /// App/window-scope: a Smart Scan started from the Dashboard survives the
+    /// user navigating to another module and back (the Dashboard view is torn
+    /// down and rebuilt; this model is not).
+    @State private var smartScan = SmartScanModel()
     @State private var selection: ModuleID? = .smartCare
     /// Pinned to `.all`. Some detail views (a `List`/`Table` heavy layout,
     /// notably Duplicates) could momentarily report a zero-width detail on
@@ -451,7 +455,7 @@ struct MainWindow: View {
             Group {
                 switch selection {
                 case .smartCare:
-                    DashboardView()
+                    DashboardView(smartScan: smartScan)
                 case .cleanup:
                     CleanupView()
                 case .protection:

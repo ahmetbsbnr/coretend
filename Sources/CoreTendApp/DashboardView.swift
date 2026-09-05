@@ -7,6 +7,11 @@ import Persistence
 import SystemMetrics
 
 struct DashboardView: View {
+    /// App-scope — owned by `MainWindow`, injected here — so a Smart Scan
+    /// started from the Dashboard keeps running while the user is on another
+    /// screen and is still there when they come back.
+    let smartScan: SmartScanModel
+
     @State private var snapshot: MetricsSnapshot?
     @State private var activity: [ActivityRecord] = []
     @State private var exclusions: [String] = []
@@ -33,8 +38,10 @@ struct DashboardView: View {
             VStack(alignment: .leading, spacing: MCSpacing.xl) {
                 brandRow
                     .modifier(Reveal(revealed: revealed, index: 0, reduceMotion: reduceMotion))
-                scanHero
+                SmartScanDashboardSection(smartScan: smartScan, navigate: navigate)
                     .modifier(Reveal(revealed: revealed, index: 1, reduceMotion: reduceMotion))
+                storageGlance
+                    .modifier(Reveal(revealed: revealed, index: 2, reduceMotion: reduceMotion))
                 statusStrip
                     .modifier(Reveal(revealed: revealed, index: 2, reduceMotion: reduceMotion))
                 sinceLastScanCard
@@ -88,88 +95,54 @@ struct DashboardView: View {
         }
     }
 
-    // MARK: - Scan panel: the imposing centrepiece the dashboard is built around
+    // MARK: - Storage glance: demoted below Smart Scan, still a first-class entry point
 
-    private var scanHero: some View {
-        let ringSize: CGFloat = 128
-        return HStack(alignment: .center, spacing: MCSpacing.xl) {
-            ZStack {
-                Circle()
-                    .stroke(MCColor.storage.opacity(MCOpacity.orbitTrack), lineWidth: 10)
-                Circle()
-                    .trim(from: 0, to: freeSpaceFraction)
-                    .stroke(MCColor.storage, style: StrokeStyle(lineWidth: 10, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                    .animation(reduceMotion ? nil : .easeOut(duration: 0.6), value: freeSpaceFraction)
-                Image(systemName: ModuleID.cleanup.systemImage)
-                    .font(.system(size: 30, weight: .semibold))
-                    .foregroundStyle(MCColor.storage)
-            }
-            .frame(width: ringSize, height: ringSize)
-            .accessibilityHidden(true)
-
-            VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                Text(L("dashboard.storage.title")).font(MCFont.pageTitle)
-                Text(L("dashboard.storage.detail"))
-                    .font(MCFont.secondaryBody)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                Button {
-                    navigate(.cleanup)
-                } label: {
-                    Label {
-                        Text(L("dashboard.primary_action"))
-                            .font(.title3.weight(.semibold))
-                            // Wrap to two lines instead of truncating: the FR
-                            // label ("Analyser le stockage") is far longer than
-                            // the EN one and used to clip to "Anal…".
-                            .lineLimit(2)
-                            .multilineTextAlignment(.leading)
-                            .fixedSize(horizontal: false, vertical: true)
-                    } icon: {
-                        Image(systemName: "sparkles")
+    private var storageGlance: some View {
+        Button {
+            navigate(.cleanup)
+        } label: {
+            MCCard {
+                HStack(alignment: .center, spacing: MCSpacing.md) {
+                    ZStack {
+                        Circle()
+                            .stroke(MCColor.storage.opacity(MCOpacity.orbitTrack), lineWidth: 7)
+                        Circle()
+                            .trim(from: 0, to: freeSpaceFraction)
+                            .stroke(MCColor.storage, style: StrokeStyle(lineWidth: 7, lineCap: .round))
+                            .rotationEffect(.degrees(-90))
+                            .animation(reduceMotion ? nil : .easeOut(duration: 0.6), value: freeSpaceFraction)
+                        Image(systemName: ModuleID.cleanup.systemImage)
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(MCColor.storage)
                     }
-                    .padding(.vertical, MCSpacing.sm)
-                    .padding(.horizontal, MCSpacing.lg)
+                    .frame(width: 54, height: 54)
+                    .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(L("dashboard.storage.title")).font(MCFont.cardTitle)
+                        Text(L("dashboard.storage.detail"))
+                            .font(MCFont.caption).foregroundStyle(.secondary)
+                            .lineLimit(2).fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: MCSpacing.sm)
+                    if let snap = snapshot {
+                        VStack(alignment: .trailing, spacing: 2) {
+                            Text(mcFormatBytes(snap.diskFreeBytes))
+                                .font(MCFont.cardTitle).monospacedDigit()
+                            Text(L("dashboard.storage.free_of_total", mcFormatBytes(snap.diskTotalBytes)))
+                                .font(MCFont.badge).foregroundStyle(.secondary)
+                        }
+                        .fixedSize()
+                    }
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 12, weight: .semibold)).foregroundStyle(.tertiary)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .keyboardShortcut(.defaultAction)
-                .padding(.top, MCSpacing.sm)
-                .accessibilityIdentifier("dashboard.scan.start")
-                .accessibilityLabel(L("dashboard.primary_action"))
-            }
-            .layoutPriority(1)   // claim width before the trailing free-space metric
-            Spacer(minLength: MCSpacing.md)
-            if let snap = snapshot {
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(mcFormatBytes(snap.diskFreeBytes))
-                        .font(MCFont.displayMetric)
-                        .monospacedDigit()
-                        .contentTransition(.numericText())
-                    Text(L("dashboard.storage.free_of_total", mcFormatBytes(snap.diskTotalBytes)))
-                        .font(MCFont.badge)
-                        .foregroundStyle(.secondary)
-                }
-                .fixedSize()
-                .accessibilityElement(children: .combine)
             }
         }
-        .padding(MCSpacing.xl)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        // Teal wash sits in front of the solid card fill (it is semi-transparent),
-        // so the panel reads as tinted, not as a flat elevated surface.
-        .background(
-            LinearGradient(colors: [MCColor.teal.opacity(0.12), MCColor.teal.opacity(0.02)],
-                           startPoint: .topLeading, endPoint: .bottomTrailing),
-            in: RoundedRectangle(cornerRadius: MCRadius.card))
-        .background(MCColor.elevatedBackground, in: RoundedRectangle(cornerRadius: MCRadius.card))
-        .overlay(
-            RoundedRectangle(cornerRadius: MCRadius.card)
-                .strokeBorder(MCColor.teal.opacity(0.45), lineWidth: 1.5))
-        .shadow(color: .black.opacity(0.18), radius: 10, x: 0, y: 3)
-        .accessibilityElement(children: .contain)
+        .buttonStyle(.plain)
         .accessibilityIdentifier("dashboard.storage")
+        .accessibilityLabel(L("dashboard.storage.title") + ". "
+            + (snapshot.map { L("dashboard.status.free_space") + " " + mcFormatBytes($0.diskFreeBytes) } ?? ""))
+        .accessibilityAddTraits(.isButton)
     }
 
     // MARK: - Status strip

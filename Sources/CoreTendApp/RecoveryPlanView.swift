@@ -19,9 +19,20 @@ final class RecoveryPlanViewModel {
     var selectedIDs: Set<String> = []
     private(set) var executionResult: RecoveryPlanExecutionResult?
 
+    /// True when this plan was populated from a fresh Smart Scan handoff
+    /// rather than its own scan — surfaced in the UI so the user knows the
+    /// numbers came straight from the scan they just ran.
+    private(set) var fromSmartScan = false
+
     func preparePlan() async {
         phase = .preparing
-        candidateData = await RecoveryPlanService.prepareCandidates()
+        if let handed = await SmartScanHandoff.shared.freshCandidates() {
+            candidateData = handed
+            fromSmartScan = true
+        } else {
+            candidateData = await RecoveryPlanService.prepareCandidates()
+            fromSmartScan = false
+        }
         rebuildPlan()
         phase = .ready
     }
@@ -93,6 +104,15 @@ struct RecoveryPlanView: View {
         }
         .navigationTitle(L("recovery.title"))
         .accessibilityIdentifier("recovery.root")
+        .task {
+            // Arriving from "Review Recovery Plan" in a completed Smart Scan:
+            // the candidates are already prepared and handed off, so land
+            // straight in the review state instead of the manual start card.
+            // `preparePlan()` reuses the handoff — it does not re-scan.
+            if model.phase == .idle, SmartScanHandoff.shared.isFresh {
+                await model.preparePlan()
+            }
+        }
     }
 
     // MARK: - States
@@ -136,6 +156,12 @@ struct RecoveryPlanView: View {
     private var readyView: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: MCSpacing.lg) {
+                if model.fromSmartScan {
+                    Label(L("recovery.from_smartscan"), systemImage: "sparkles")
+                        .font(MCFont.caption)
+                        .foregroundStyle(.secondary)
+                        .accessibilityIdentifier("recovery.fromSmartScan")
+                }
                 goalCard
                 if let plan = model.plan {
                     if plan.isEmpty {
