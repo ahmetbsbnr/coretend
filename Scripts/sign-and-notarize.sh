@@ -35,10 +35,27 @@ APP="build/CoreTend.app"
 ZIP_NAME="Release/CoreTend-${VERSION}-arm64.zip"
 DMG_NAME="Release/CoreTend-${VERSION}-arm64.dmg"
 ENTITLEMENTS="Configuration/CoreTend.entitlements"
+WIDGET_ENTITLEMENTS="Configuration/CoreTendWidget.entitlements"
+WIDGET_APPEX="$APP/Contents/PlugIns/CoreTendWidget.appex"
 
 echo "== Preflight =="
-[ -d "$APP" ] || { echo "FAIL: $APP not found — run Scripts/package-local.sh first"; exit 1; }
+# The shipping .app (with the embedded WidgetKit extension and the App
+# Intents metadata bundle) is produced by Scripts/build-xcode.sh, which
+# copies it to build/CoreTend.app. Scripts/package-local.sh is a fast,
+# widget-less SwiftPM build for local dev only and must NOT be the input
+# here — it has no Contents/PlugIns.
+[ -d "$APP" ] || { echo "FAIL: $APP not found — run Scripts/build-xcode.sh first"; exit 1; }
 [ -f "$ENTITLEMENTS" ] || { echo "FAIL: $ENTITLEMENTS not found"; exit 1; }
+[ -f "$WIDGET_ENTITLEMENTS" ] || { echo "FAIL: $WIDGET_ENTITLEMENTS not found"; exit 1; }
+[ -d "$WIDGET_APPEX" ] || {
+  echo "FAIL: $WIDGET_APPEX not found — this .app was not built by Scripts/build-xcode.sh."
+  echo "  (Scripts/package-local.sh cannot embed the widget; SwiftPM does not build .appex bundles.)"
+  exit 1
+}
+[ -d "$APP/Contents/Resources/Metadata.appintents" ] || {
+  echo "FAIL: $APP/Contents/Resources/Metadata.appintents missing — App Intents metadata was not emitted."
+  exit 1
+}
 
 if [ -z "$DEVELOPER_ID" ]; then
   echo "FAIL: CORETEND_DEVELOPER_ID_APPLICATION is not set."
@@ -62,21 +79,46 @@ if ! xcrun notarytool history --keychain-profile "$NOTARY_PROFILE" >/dev/null 2>
 fi
 echo "OK: identity and notarytool profile both present"
 
-echo "== Signing embedded frameworks and binaries (deepest first) =="
-find "$APP" -type f \( -perm -u+x -o -name "*.dylib" \) | while read -r bin; do
+echo "== Signing loose embedded Mach-O binaries (deepest first) =="
+# Skips the two bundle executables (the appex and the host) — those are
+# signed as bundles below, in the correct nested order.
+find "$APP" -type f \( -perm -u+x -o -name "*.dylib" \) \
+  ! -path "*/CoreTendWidget.appex/Contents/MacOS/*" \
+  ! -path "$APP/Contents/MacOS/*" | while read -r bin; do
   file "$bin" | grep -q "Mach-O" || continue
   echo "  signing: $bin"
   codesign --force --options runtime --timestamp \
     --sign "$DEVELOPER_ID" "$bin"
 done
 
-echo "== Signing the app bundle (with entitlements) =="
+# Nested signing order: the extension bundle first (with ITS entitlements —
+# App Sandbox + the shared App Group), then the host .app (with the host
+# entitlements — hardened runtime + the same App Group, no sandbox). Signing
+# the host seals CodeResources over the already-signed appex, so the appex
+# must never be re-signed afterwards.
+#
+# NOTE on App Groups + Developer ID: the shared group
+# `group.com.ahmetbsbnr.coretend` must be registered on the Apple Developer
+# account for a Developer ID (non-App-Store) distribution to be accepted by
+# notarization with this entitlement. This has not been exercised in a real
+# notarization run yet — see Documentation/SIGNING_NOTARIZATION.md
+# ("Nested extension + App Group — implemented, not yet notarized").
+echo "== Signing the WidgetKit extension (App Sandbox + App Group) =="
+codesign --force --options runtime --timestamp \
+  --entitlements "$WIDGET_ENTITLEMENTS" \
+  --sign "$DEVELOPER_ID" "$WIDGET_APPEX"
+
+echo "== Signing the host app bundle (hardened runtime + App Group) =="
 codesign --force --options runtime --timestamp \
   --entitlements "$ENTITLEMENTS" \
   --sign "$DEVELOPER_ID" "$APP"
 
-echo "== Verifying signature =="
+echo "== Verifying signatures (host and nested extension) =="
 codesign --verify --deep --strict --verbose=2 "$APP"
+codesign --verify --strict --verbose=2 "$WIDGET_APPEX"
+codesign --display --entitlements :- "$WIDGET_APPEX" | grep -q "group.com.ahmetbsbnr.coretend" \
+  && echo "  OK: extension carries the shared App Group entitlement" \
+  || { echo "  FAIL: extension lost its App Group entitlement"; exit 1; }
 spctl --assess --type execute --verbose "$APP" || {
   echo "NOTE: spctl will still reject until notarization+stapling complete below — expected at this point."
 }

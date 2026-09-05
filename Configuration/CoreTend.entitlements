@@ -22,5 +22,18 @@
 	     com.apple.security.cs.* exceptions: no disabled library validation,
 	     no unsigned executable memory, no debugging, no DYLD environment
 	     variables. -->
+
+	<!-- The ONLY entitlement added for the WidgetKit vertical. The host
+	     (not sandboxed) and the widget extension (sandboxed) share this one
+	     App Group so the host can publish a tiny, low-sensitivity status
+	     snapshot into ~/Library/Group Containers/ and the widget can read
+	     it. macOS App Group identifiers are used verbatim — no team prefix
+	     (that is an iOS convention). No iCloud, no push, no network client,
+	     no privileged-helper entitlement is added. See
+	     Documentation/MACOS_INTEGRATIONS.md and Documentation/SIGNING_NOTARIZATION.md. -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.ahmetbsbnr.coretend</string>
+	</array>
 </dict>
 </plist>

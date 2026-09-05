@@ -103,6 +103,33 @@ else
   fail=1
 fi
 
+echo "-- Xcode host: CoreTend.xcodeproj regenerates from project.yml with no drift --"
+if [ -f project.yml ] && [ -d CoreTend.xcodeproj ]; then
+  if command -v xcodegen >/dev/null 2>&1; then
+    xcodegen generate --quiet >/dev/null 2>&1 || true
+    if git diff --quiet -- CoreTend.xcodeproj project.yml 2>/dev/null; then
+      echo "  OK: generated project matches project.yml"
+    else
+      echo "  FAIL: CoreTend.xcodeproj is stale — run 'xcodegen generate' and commit the result"
+      git --no-pager diff --stat -- CoreTend.xcodeproj | sed 's/^/    /'
+      fail=1
+    fi
+  else
+    echo "  WARN: xcodegen not installed — cannot verify project drift (brew install xcodegen)"
+  fi
+  # No absolute developer paths in any committed Xcode file.
+  if grep -rlI "/Users/" project.yml CoreTend.xcodeproj/project.pbxproj \
+       CoreTend.xcodeproj/xcshareddata 2>/dev/null; then
+    echo "  FAIL: an absolute /Users path is committed in the Xcode project above"
+    fail=1
+  else
+    echo "  OK: no absolute developer path in the committed Xcode project"
+  fi
+elif [ -f project.yml ] || [ -d CoreTend.xcodeproj ]; then
+  echo "  FAIL: project.yml and CoreTend.xcodeproj must both exist or neither"
+  fail=1
+fi
+
 echo "-- .gitignore sanity: nothing tracked is newly ignored --"
 tmp_dir=$(mktemp -d)
 trap 'rm -rf "$tmp_dir"' EXIT

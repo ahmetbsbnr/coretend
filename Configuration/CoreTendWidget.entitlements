@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	The CoreTend WidgetKit extension. App extensions on macOS are always
+	sandboxed regardless of the host, so App Sandbox is declared here
+	explicitly. The ONLY capability is the shared App Group — the same
+	identifier the host declares — used to read the low-sensitivity status
+	snapshot the host publishes. The widget links only WidgetShared and has
+	no filesystem-scan, cleanup, or restore code path.
+
+	Nothing speculative: no network, no iCloud, no push, no user-selected
+	files, no com.apple.security.cs.* exceptions.
+	-->
+	<key>com.apple.security.app-sandbox</key>
+	<true/>
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.ahmetbsbnr.coretend</string>
+	</array>
+</dict>
+</plist>

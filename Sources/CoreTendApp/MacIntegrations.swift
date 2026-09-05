@@ -63,6 +63,8 @@ final class MacIntegrations {
         UNUserNotificationCenter.current().delegate = tapRouter
         applyCadence(cadence)
         Task { await self.checkLowDiskSpaceOnce() }
+        // Refresh the Widget snapshot from current numbers at launch.
+        AppEnvironment.shared.publishWidgetSnapshot()
     }
 
     private func checkLowDiskSpaceOnce() async {
@@ -120,6 +122,9 @@ final class MacIntegrations {
             await notifications.reportScheduledScan(reclaimableBytes: reclaimable, growthBytes: growth)
             let snapshot = await metrics.snapshot()
             await notifications.checkLowDiskSpace(freeBytes: snapshot.diskFreeBytes)
+            // The scheduled scan wrote a fresh cleanup Timeline snapshot
+            // directly (not via AppEnvironment) — refresh the widget now.
+            AppEnvironment.shared.publishWidgetSnapshot()
         }
         return result
     }

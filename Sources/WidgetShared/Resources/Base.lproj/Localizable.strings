@@ -1,0 +1,25 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+/* SPDX-FileCopyrightText: The CoreTend Authors */
+
+"widget.display_name" = "CoreTend Status";
+"widget.description" = "A glanceable summary of your Mac's storage and CoreTend's last scan.";
+
+"widget.empty.primary" = "CoreTend";
+"widget.empty.never_opened" = "Open CoreTend once to see your storage summary here.";
+"widget.empty.unavailable" = "Summary unavailable. Open CoreTend to refresh it.";
+
+"widget.free_of_total" = "%@ free of %@";
+"widget.trend.no_change" = "No change since the last scan";
+"widget.trend.increased" = "Storage increased by %@ since the last scan";
+"widget.trend.decreased" = "Storage decreased by %@ since the last scan";
+"widget.trend.no_history" = "No scan history to compare yet";
+
+"widget.reclaimable" = "%@ recoverable";
+"widget.last_scan" = "Scanned %@";
+"widget.last_activity" = "Last activity: %@";
+"widget.as_of" = "as of %@";
+
+"widget.activity.scan" = "scan";
+"widget.activity.cleanup" = "cleanup";
+"widget.activity.restore" = "restore";
+"widget.activity.error" = "error";

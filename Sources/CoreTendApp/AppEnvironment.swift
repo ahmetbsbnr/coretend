@@ -3,6 +3,7 @@
 
 import Foundation
 import Persistence
+import SystemMetrics
 
 /// Shared app services. Created once at launch; injected into view models.
 @MainActor
@@ -45,7 +46,26 @@ final class AppEnvironment {
 
     func record(_ record: ActivityRecord) {
         guard let store else { return }
-        Task { try? await store.recordActivity(record) }
+        Task {
+            _ = try? await store.recordActivity(record)
+            await self.publishWidgetSnapshotNow()
+        }
+    }
+
+    /// Publishes the low-sensitivity Widget snapshot from current derived
+    /// numbers, then reloads the widget. Fire-and-forget and idempotent —
+    /// called after meaningful events (launch, completed scan, cleanup /
+    /// restore completion), never on a timer. A no-op when the App Group
+    /// container is unavailable.
+    func publishWidgetSnapshot() {
+        Task { await self.publishWidgetSnapshotNow() }
+    }
+
+    private func publishWidgetSnapshotNow() async {
+        guard let store else { return }
+        let metrics = await MetricsCollector().snapshot()
+        await WidgetPublisher.gatherAndPublish(
+            store: store, freeBytes: metrics.diskFreeBytes, totalBytes: metrics.diskTotalBytes)
     }
 
     /// Marks a folder as recently scanned for Favorites & Recents. Fire-and-forget
@@ -63,6 +83,9 @@ final class AppEnvironment {
     /// history, never data correctness.
     func recordTimelineSnapshot(scope: TimelineScope, samples: [TimelineCategorySample]) {
         guard let store else { return }
-        Task { try? await store.recordTimelineSnapshot(scope: scope.rawValue, samples: samples) }
+        Task {
+            _ = try? await store.recordTimelineSnapshot(scope: scope.rawValue, samples: samples)
+            await self.publishWidgetSnapshotNow()
+        }
     }
 }
