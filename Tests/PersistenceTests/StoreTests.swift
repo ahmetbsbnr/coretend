@@ -17,10 +17,10 @@ struct StoreTests {
         let path = tempDBPath()
         defer { try? FileManager.default.removeItem(atPath: path) }
         let store = try Store(path: path)
-        #expect(try await store.schemaVersion() == 6)
+        #expect(try await store.schemaVersion() == 7)
         // Re-opening must not re-run migrations or fail.
         let store2 = try Store(path: path)
-        #expect(try await store2.schemaVersion() == 6)
+        #expect(try await store2.schemaVersion() == 7)
     }
 
     @Test func activityRoundTrip() async throws {

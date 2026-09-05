@@ -57,4 +57,22 @@ struct DiagnosticReportTests {
         #expect(redacted.contains("<redacted>"))
         #expect(redacted.contains("secret.txt")) // filename shape kept, identity stripped
     }
+
+    /// Restore Center stores real, unredacted filesystem paths in its own
+    /// manifest table. The diagnostic report is built only from `Inputs`,
+    /// which has no field capable of carrying one — restore activity is a
+    /// count only, never a path.
+    @Test("restore activity appears only as a count, never a path")
+    func restoreActivityIsCountedNotDetailed() {
+        let inputs = DiagnosticReport.Inputs(
+            appVersion: "1.0.0", appBuild: "1", macOSVersion: "Version 15.1", architecture: "arm64",
+            machineModel: "Mac15,6", deploymentTarget: "macOS 14+", fullDiskAccess: true,
+            codeSignTier: .teamSigned, codeSignValid: true, schemaVersion: 7, exclusionCount: 0,
+            activityCountsByKind: ["scan": 0, "cleanup": 3, "restore": 2, "error": 0])
+        let report = DiagnosticReport.build(inputs)
+        #expect(report.contains("Activity[restore]: 2"))
+        #expect(!report.contains("/Users/"))
+        #expect(!report.contains(".Trash"))
+        #expect(!report.contains(NSHomeDirectory()))
+    }
 }

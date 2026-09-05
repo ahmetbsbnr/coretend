@@ -233,7 +233,12 @@ struct AdvisorServiceSafetyTests {
         #expect(FileManager.default.fileExists(atPath: path.path), "AdvisorService must never delete or move a file")
     }
 
-    @Test func noCurrentMappingClaimsARestoreCenterThatDoesNotExistYet() {
+    /// Restore Center now exists, but a *scan-result* Advisor finding is
+    /// produced before anything has been Trashed — there is no manifest yet,
+    /// so it must never claim `.restorableByCoreTend`. That reversibility is
+    /// derived from a live restore manifest by `RestoreReversibility.of(_:)`,
+    /// proven separately in `RestoreAdvisorReversibilityTests`.
+    @Test func scanResultFindingsNeverPreemptivelyClaimRestorability() {
         let cleanup = AdvisorService.advise(ruleID: "user.caches", findings: [finding(ruleID: "user.caches")])
         let duplicate = AdvisorService.advise(duplicateGroup: DuplicateGroup(
             id: "h", fileSize: 1, urls: [URL(fileURLWithPath: "/a"), URL(fileURLWithPath: "/b")]))
