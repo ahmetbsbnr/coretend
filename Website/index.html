@@ -387,6 +387,36 @@ p{margin:0}
 .shot--hero .shot-frame img{border-bottom:0}
 .shot-cap{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--ink-3);
   margin-top:10px;text-align:center}
+/* Space Lens interactive demo (synthetic, deterministic) */
+.sl-demo{margin-top:40px;border:1px solid var(--line);border-radius:16px;background:var(--panel);overflow:hidden}
+.sl-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:12px 16px;border-bottom:1px solid var(--line);background:var(--panel-2)}
+.sl-crumbs{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;color:var(--ink-3);flex-wrap:wrap}
+.sl-crumbs button{font:inherit;color:var(--cobalt);background:none;border:0;padding:2px 3px;cursor:pointer;border-radius:4px}
+.sl-crumbs button:disabled{color:var(--ink-2);cursor:default}
+.sl-crumbs span{color:var(--ink-3)}
+.sl-actions{display:flex;gap:8px}
+.sl-stage{position:relative;display:grid;place-items:center;padding:18px;min-height:280px}
+.sl-map{width:100%;max-width:520px;height:auto;aspect-ratio:420/300}
+.sl-map circle{cursor:pointer;transition:opacity .35s var(--ease),stroke-width .15s var(--ease)}
+.sl-map circle.is-selected{stroke:var(--cobalt);stroke-width:3}
+.sl-map .sl-emerging{opacity:0}
+.sl-map text{font-family:var(--sans);font-size:9px;fill:var(--on-cobalt);pointer-events:none;text-anchor:middle}
+.sl-map text.sl-dark-label{fill:var(--ink)}
+.sl-progress{position:absolute;inset:auto auto 12px 16px;margin:0;font-family:var(--mono);font-size:12px;color:var(--ink-3)}
+.sl-list{list-style:none;margin:0;padding:8px 10px 12px;display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--line)}
+.sl-list li{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;
+  padding:8px 12px;border-radius:8px;cursor:pointer;font-size:13px}
+.sl-list li:hover,.sl-map circle:hover{opacity:.88}
+.sl-list li.is-selected{background:var(--cobalt-wash);outline:1px solid var(--cobalt)}
+.sl-list li .sl-bar{grid-column:1/-1;height:3px;border-radius:2px;background:var(--line);overflow:hidden}
+.sl-list li .sl-bar i{display:block;height:100%;background:var(--cobalt)}
+.sl-list li .sl-size{font-family:var(--mono);color:var(--ink-2)}
+.sl-list li .sl-into{font-family:var(--mono);font-size:11px;color:var(--cobalt)}
+.sl-note{padding:0 16px 14px;color:var(--ink-3);font-size:11px}
+.sl-demo[data-state="idle"] .sl-list,.sl-demo[data-state="idle"] .sl-progress{display:none}
+.sl-demo[data-state="scanning"] .sl-list li{cursor:default}
+@media(prefers-reduced-motion:reduce){.sl-map circle,.sl-map .sl-emerging{transition:none;opacity:1}}
 .mod{position:relative;border:1px solid var(--line);border-radius:var(--r);padding:20px 18px 18px;
   background:var(--panel);overflow:hidden;transform-style:preserve-3d;
   transition:transform .4s var(--ease),border-color .4s,box-shadow .4s}
@@ -705,6 +735,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
   <a href="#top" data-rail="top"><span data-fr="Aperçu">Overview</span><i></i></a>
   <a href="#how" data-rail="how"><span data-fr="Déroulé">Workflow</span><i></i></a>
   <a href="#modules" data-rail="modules"><span data-fr="Modules">Modules</span><i></i></a>
+  <a href="#space-lens" data-rail="space-lens"><span>Space Lens</span><i></i></a>
   <a href="#findings" data-rail="findings"><span data-fr="Trouvailles">Findings</span><i></i></a>
   <a href="#health" data-rail="health"><span data-fr="Santé">Health</span><i></i></a>
   <a href="#privacy" data-rail="privacy"><span data-fr="Vie privée">Privacy</span><i></i></a>
@@ -861,6 +892,31 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
     </div>
   </div>
 </section>
+
+<section id="space-lens">
+  <div class="wrap">
+    <p class="eyebrow" data-scramble><b>04</b> <span>Space Lens</span></p>
+    <h2 data-reveal data-fr="Voyez où l’espace est vraiment parti.">See where the space actually went.</h2>
+    <p class="lead" data-reveal style="--d:100ms" data-fr="Une carte de tailles : le plus gros dossier au centre, les autres autour. Cliquez pour sélectionner, double-cliquez un dossier pour y entrer. C’est une démonstration — aucun fichier n’est lu.">A size map: the largest folder at the centre, the rest around it. Click to select, double-click a folder to step inside. This is a demo — no files are read.</p>
+    <div class="sl-demo" id="slDemo" data-reveal style="--d:140ms" data-state="idle">
+      <div class="sl-toolbar">
+        <nav class="sl-crumbs" id="slCrumbs" aria-label="Location"></nav>
+        <div class="sl-actions">
+          <button class="mini" id="slBack" type="button" hidden data-fr="Retour">Back</button>
+          <button class="mini" id="slScan" type="button" data-fr="Lancer l’analyse de démo">Run demo scan</button>
+          <button class="mini ghost" id="slRestart" type="button" hidden data-fr="Recommencer">Restart</button>
+        </div>
+      </div>
+      <div class="sl-stage">
+        <svg class="sl-map" id="slMap" viewBox="0 0 420 300" role="img" aria-label="Space Lens size map, demo data"></svg>
+        <p class="sl-progress" id="slProgress" role="status" aria-live="polite"></p>
+      </div>
+      <ul class="sl-list" id="slList" aria-label="Folders by size"></ul>
+      <p class="sl-note mono" data-fr="Données de démonstration déterministes. Aucun accès au système de fichiers.">Deterministic demo data. No filesystem access.</p>
+    </div>
+  </div>
+</section>
+
 
 <section id="findings">
   <div class="wrap find">
@@ -1774,12 +1830,161 @@ function i18n() {
   });
 }
 
+/* ─── space lens demo (deterministic synthetic data, no fs access) ─── */
+function spaceLens() {
+  const root = $("#slDemo"); if (!root) return;
+  const svg = $("#slMap"), list = $("#slList"), crumbs = $("#slCrumbs"), prog = $("#slProgress");
+  const bScan = $("#slScan"), bBack = $("#slBack"), bRestart = $("#slRestart");
+  const NS = "http://www.w3.org/2000/svg";
+  const isDark = () => document.documentElement.getAttribute("data-theme") === "dark"
+    || (document.documentElement.getAttribute("data-theme-mode") === "system"
+        && window.matchMedia("(prefers-color-scheme: dark)").matches);
+  // GB, deterministic. A few directories carry children for drill-in.
+  const DATA = {
+    name: "Home", children: [
+      { name: "Library", gb: 148, children: [
+        { name: "Caches", gb: 62 }, { name: "Application Support", gb: 41 },
+        { name: "Containers", gb: 30 }, { name: "Group Containers", gb: 9 }, { name: "Logs", gb: 6 } ] },
+      { name: "Developer", gb: 96, children: [
+        { name: "Xcode", gb: 58 }, { name: "CoreSimulator", gb: 22 },
+        { name: "node_modules", gb: 10 }, { name: "Homebrew", gb: 6 } ] },
+      { name: "Projects", gb: 58, children: [
+        { name: "media", gb: 24 }, { name: "archive.zip", gb: 20 }, { name: "repos", gb: 14 } ] },
+      { name: "iCloud Drive (archives)", gb: 41 },
+      { name: "Downloads", gb: 34 }, { name: "Movies", gb: 26 },
+      { name: "Pictures", gb: 19 }, { name: "Music", gb: 14 },
+      { name: ".cache", gb: 12 }, { name: "Documents", gb: 11 },
+      { name: ".npm", gb: 7 }, { name: "Other", gb: 6 } ]
+  };
+  const sum = n => n.children ? n.children.reduce((s, c) => s + (c.gb || sum(c)), 0) : n.gb;
+  DATA.gb = sum(DATA);
+  let path = [DATA], selected = null;
+  const level = () => path[path.length - 1];
+  const fmt = g => g >= 1000 ? (g / 1000).toFixed(1) + " TB" : g + " GB";
+
+  // Deterministic layout: biggest at centre, the rest on a ring, r ∝ √size.
+  function layout(nodes) {
+    const total = nodes.reduce((s, n) => s + (n.gb || sum(n)), 0) || 1;
+    const cx = 210, cy = 150;
+    return nodes.map((n, i) => {
+      const g = n.gb || sum(n);
+      const r = 14 + Math.sqrt(g / total) * 78;
+      if (i === 0) return { n, x: cx, y: cy, r: Math.max(r, 34) };
+      const ang = (i - 1) / (nodes.length - 1) * Math.PI * 2 - Math.PI / 2;
+      const ring = 96 + (i % 2) * 20;
+      return { n, x: cx + Math.cos(ang) * ring, y: cy + Math.sin(ang) * ring, r: Math.max(18, r * 0.8) };
+    });
+  }
+
+  function renderCrumbs() {
+    crumbs.innerHTML = "";
+    path.forEach((n, i) => {
+      if (i) { const s = document.createElement("span"); s.textContent = "›"; crumbs.appendChild(s); }
+      const b = document.createElement("button");
+      b.type = "button"; b.textContent = i === 0 ? (lang() === "fr" ? "Accueil" : "Home") : n.name;
+      b.disabled = i === path.length - 1;
+      b.addEventListener("click", () => { path = path.slice(0, i + 1); selected = null; draw(); });
+      crumbs.appendChild(b);
+    });
+    bBack.hidden = path.length < 2;
+  }
+
+  function select(node) {
+    selected = node;
+    [...svg.querySelectorAll("circle")].forEach(c => c.classList.toggle("is-selected", c.__node === node));
+    [...list.children].forEach(li => li.classList.toggle("is-selected", li.__node === node));
+  }
+  function drill(node) {
+    if (!node.children) return;
+    path = [...path, node]; selected = null; draw();
+  }
+
+  function draw(emerging) {
+    renderCrumbs();
+    const nodes = [...level().children].sort((a, b) => (b.gb || sum(b)) - (a.gb || sum(a)));
+    const placed = layout(nodes);
+    const dark = isDark();
+    svg.innerHTML = "";
+    placed.forEach((p, i) => {
+      const c = document.createElementNS(NS, "circle");
+      c.setAttribute("cx", p.x.toFixed(1)); c.setAttribute("cy", p.y.toFixed(1));
+      c.setAttribute("r", p.r.toFixed(1));
+      c.setAttribute("fill", i === 0 ? "var(--cobalt)" : "var(--cobalt-lift)");
+      c.setAttribute("stroke", "var(--panel)");
+      c.setAttribute("stroke-width", "1.5");
+      c.__node = p.n;
+      if (emerging && !RM.matches) { c.classList.add("sl-emerging"); setTimeout(() => c.classList.remove("sl-emerging"), 40 + i * 90); }
+      c.addEventListener("click", () => select(p.n));
+      c.addEventListener("dblclick", () => drill(p.n));
+      c.setAttribute("tabindex", "0");
+      c.setAttribute("role", "button");
+      c.setAttribute("aria-label", `${p.n.name}, ${fmt(p.n.gb || sum(p.n))}${p.n.children ? ", folder" : ""}`);
+      c.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(p.n); }
+        if (e.key === "Enter" && p.n.children) drill(p.n);
+      });
+      svg.appendChild(c);
+      if (p.r > 26) {
+        const t = document.createElementNS(NS, "text");
+        t.setAttribute("x", p.x.toFixed(1)); t.setAttribute("y", (p.y + 3).toFixed(1));
+        if (i !== 0 && dark) t.classList.add("sl-dark-label");
+        else if (i !== 0) t.classList.add("sl-dark-label");
+        t.textContent = p.n.name.length > 14 ? p.n.name.slice(0, 13) + "…" : p.n.name;
+        svg.appendChild(t);
+      }
+    });
+
+    list.innerHTML = "";
+    nodes.forEach(n => {
+      const g = n.gb || sum(n);
+      const li = document.createElement("li");
+      li.__node = n;
+      li.innerHTML = `<span>${n.name}</span><span class="sl-size">${fmt(g)}</span>`
+        + (n.children ? `<span class="sl-into">${lang() === "fr" ? "ouvrir ›" : "open ›"}</span>` : "<span></span>")
+        + `<span class="sl-bar"><i style="width:${(g / (nodes[0].gb || sum(nodes[0])) * 100).toFixed(1)}%"></i></span>`;
+      li.addEventListener("click", () => select(n));
+      li.addEventListener("dblclick", () => drill(n));
+      list.appendChild(li);
+    });
+    if (selected) select(selected);
+  }
+
+  function runScan() {
+    root.dataset.state = "scanning";
+    bScan.hidden = true; bRestart.hidden = false;
+    const target = level().children.length;
+    const totalGb = level().children.reduce((s, n) => s + (n.gb || sum(n)), 0);
+    if (RM.matches) { prog.textContent = `${target} items · ${fmt(totalGb)}`; root.dataset.state = "complete"; draw(false); return; }
+    let start = null;
+    const dur = 1900;
+    const tick = ts => {
+      if (start === null) start = ts;
+      const k = Math.min(1, (ts - start) / dur);
+      prog.textContent = `${Math.round(k * target)} items · ${fmt(Math.round(k * totalGb))}`;
+      if (k < 1) requestAnimationFrame(tick);
+      else { root.dataset.state = "complete"; prog.textContent = `${target} items · ${fmt(totalGb)}`; draw(true); }
+    };
+    requestAnimationFrame(tick);
+  }
+
+  bScan.addEventListener("click", runScan);
+  bBack.addEventListener("click", () => { if (path.length > 1) { path = path.slice(0, -1); selected = null; draw(); } });
+  bRestart.addEventListener("click", () => {
+    path = [DATA]; selected = null; root.dataset.state = "idle";
+    bScan.hidden = false; bRestart.hidden = true; svg.innerHTML = ""; list.innerHTML = ""; prog.textContent = "";
+    renderCrumbs();
+  });
+  renderCrumbs();
+  // Redraw labels on theme change so contrast stays correct.
+  window.addEventListener("coretend:theme", () => { if (root.dataset.state === "complete") draw(false); });
+}
+
 /* ─── boot ───────────────────────────────────────────────── */
 splitHeadline();
 logos(); field(); scrollSystems(); observers(); pointer(); ticker();
 let restoredView = "storage";
 try { restoredView = Object.keys(VIEWS).includes(sessionStorage.getItem("coretend-view")) ? sessionStorage.getItem("coretend-view") : "storage"; } catch (_) {}
-demo(restoredView); findings("storage"); terminal(); gatekeeper(); faq(); theme(); i18n();
+demo(restoredView); findings("storage"); terminal(); gatekeeper(); faq(); theme(); i18n(); spaceLens();
 try {
   const savedScroll = Number(sessionStorage.getItem("coretend-scroll"));
   if (Number.isFinite(savedScroll) && savedScroll > 0) {
