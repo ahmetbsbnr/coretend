@@ -117,10 +117,20 @@ struct DashboardView: View {
                 Button {
                     navigate(.cleanup)
                 } label: {
-                    Label(L("dashboard.primary_action"), systemImage: "sparkles")
-                        .font(.title3.weight(.semibold))
-                        .padding(.vertical, MCSpacing.sm)
-                        .padding(.horizontal, MCSpacing.lg)
+                    Label {
+                        Text(L("dashboard.primary_action"))
+                            .font(.title3.weight(.semibold))
+                            // Wrap to two lines instead of truncating: the FR
+                            // label ("Analyser le stockage") is far longer than
+                            // the EN one and used to clip to "Anal…".
+                            .lineLimit(2)
+                            .multilineTextAlignment(.leading)
+                            .fixedSize(horizontal: false, vertical: true)
+                    } icon: {
+                        Image(systemName: "sparkles")
+                    }
+                    .padding(.vertical, MCSpacing.sm)
+                    .padding(.horizontal, MCSpacing.lg)
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
@@ -129,7 +139,8 @@ struct DashboardView: View {
                 .accessibilityIdentifier("dashboard.scan.start")
                 .accessibilityLabel(L("dashboard.primary_action"))
             }
-            Spacer(minLength: MCSpacing.lg)
+            .layoutPriority(1)   // claim width before the trailing free-space metric
+            Spacer(minLength: MCSpacing.md)
             if let snap = snapshot {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(mcFormatBytes(snap.diskFreeBytes))

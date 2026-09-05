@@ -407,18 +407,32 @@ struct MainWindow: View {
     @Environment(\.openWindow) private var openWindow
     @State private var developerModel = DeveloperCenterModel()
     @State private var selection: ModuleID? = .smartCare
+    /// Pinned to `.all`. Some detail views (a `List`/`Table` heavy layout,
+    /// notably Duplicates) could momentarily report a zero-width detail on
+    /// macOS 14 and the split view would then collapse the sidebar into an
+    /// empty column. Owning the visibility and never letting it leave `.all`
+    /// keeps the two columns stable regardless of what the detail renders.
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @AppStorage("onboardingDone") private var onboardingDone = false
     @State private var showOnboarding = false
     @State private var showCommandPalette = false
 
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             List(selection: $selection) {
                 ForEach(SidebarGroup.all) { group in
                     Section {
                         ForEach(group.modules) { module in
                             sidebarRow(module)
                             .tag(module)
+                            // Suppress the system list-selection fill so the
+                            // ONLY selection indicator is sidebarRow's own
+                            // teal marker — which is driven by `selection ==
+                            // module`, not by list focus. Without this, moving
+                            // focus into a detail view (e.g. selecting a Space
+                            // Lens bubble) turns the system fill grey and the
+                            // active module reads as "greyed out".
+                            .listRowBackground(Color.clear)
                             .accessibilityIdentifier("sidebar.\(module.rawValue)")
                         }
                     } header: {
@@ -475,6 +489,11 @@ struct MainWindow: View {
                 }
             }
             .mcCanvasBackground()
+        }
+        .navigationSplitViewStyle(.balanced)
+        .onChange(of: columnVisibility) { _, newValue in
+            // Never let a detail view push the sidebar away.
+            if newValue != .all { columnVisibility = .all }
         }
         .onAppear {
             if !onboardingDone { showOnboarding = true }
