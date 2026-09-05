@@ -32,6 +32,20 @@ final class CleanupViewModel {
         findings.filter { selectedIDs.contains($0.id) }.reduce(0) { $0 + $1.logicalSize }
     }
 
+    /// The six distinct Storage quantities (see `StorageScanSummary`).
+    /// `totalBytes` here is *detected*, not reclaimable and not selected.
+    var summary: StorageScanSummary {
+        var recovered: Int64?
+        if case let .done(freed) = phase { recovered = freed }
+        return StorageScanSummary.from(
+            findings: findings,
+            itemsInspected: scannedCount,
+            totalDetectedCount: totalFindingCount,
+            totalDetectedBytes: totalBytes,
+            selectedIDs: selectedIDs,
+            recoveredBytes: recovered)
+    }
+
     struct RuleGroup: Identifiable {
         let ruleID: String
         let name: String
@@ -272,29 +286,45 @@ struct CleanupView: View {
     // MARK: - Review
 
     private var reviewView: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        let s = model.summary
+        return VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .center, spacing: MCSpacing.lg) {
                 VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-                    // The recoverable total is the whole point of this screen.
-                    Text(mcFormatBytes(model.totalBytes))
+                    // The prominent figure is what COULD be recovered — never
+                    // what will be deleted. It is explicitly labelled so it
+                    // can't be read as the destructive amount.
+                    Text(L("cleanup.reclaimable_metric", mcFormatBytes(s.reclaimableBytes)))
                         .font(MCFont.displayMetric)
                         .monospacedDigit()
                         .contentTransition(.numericText())
-                    Text(L("cleanup.review.selected", model.findings.count, mcFormatBytes(model.selectedBytes)))
+                        .accessibilityLabel(L("cleanup.reclaimable_metric", mcFormatBytes(s.reclaimableBytes)))
+                    Text(L("cleanup.items_inspected", s.itemsInspected))
                         .font(MCFont.secondaryBody)
                         .foregroundStyle(.secondary)
+                    if s.reviewRequiredBytes > 0 {
+                        Text(L("cleanup.needs_review", mcFormatBytes(s.reviewRequiredBytes)))
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
                     if model.isDisplayTruncated {
-                        Text(L("cleanup.review.truncated", model.findings.count, model.totalFindingCount, mcFormatBytes(model.totalBytes)))
+                        Text(L("cleanup.review.truncated", model.findings.count, model.totalFindingCount, mcFormatBytes(s.detectedBytes)))
                             .font(.caption).foregroundStyle(.secondary)
                     }
                 }
                 Spacer()
-                Button(L("cleanup.move_to_trash")) {
-                    showMoveConfirmation = true
+                VStack(alignment: .trailing, spacing: MCSpacing.xxs) {
+                    Button(s.hasSelection
+                           ? L("cleanup.move_selected", mcFormatBytes(s.selectedBytes))
+                           : L("cleanup.move_to_trash")) {
+                        showMoveConfirmation = true
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .disabled(model.phase == .running || model.selectedIDs.isEmpty)
+                    if s.hasSelection {
+                        Text(L("cleanup.selected_ready", mcFormatBytes(s.selectedBytes)))
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(model.phase == .running || model.selectedIDs.isEmpty)
             }
             .padding(.horizontal, MCSpacing.page)
             .padding(.top, MCSpacing.lg)
