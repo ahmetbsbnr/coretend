@@ -492,10 +492,8 @@ def shell(
 <header class="bar" id="bar"><div class="wrap">
   <a class="wordmark" href="{route_for('home', language)}" aria-label="{home_label}">{logo_svg('header', initializing=True)}<span>CoreTend</span></a>
   <nav class="bar-actions" aria-label="{navigation}">
-    <a class="bar-link" href="{route_for('community', language)}"{_cur('community')}>{community}</a>
-    <a class="bar-link" href="{route_for('privacy', language)}"{_cur('privacy')}>{privacy}</a>
-    <a class="bar-link" href="{route_for('support', language)}"{_cur('support')}>{support}</a>
-    <a class="bar-link" href="{route_for('contact', language)}"{_cur('contact')}>{contact}</a>
+    <a class="bar-link nav-desktop" href="{route_for('community', language)}"{_cur('community')}>{community}</a>
+    <a class="bar-link nav-desktop" href="{route_for('contact', language)}"{_cur('contact')}>{contact}</a>
     <div class="switch" role="group" aria-label="{'Langue' if is_fr else 'Language'}">
       <a href="{en_path}" hreflang="en" lang="en" aria-current="{'page' if not is_fr else 'false'}">EN</a>
       <a href="{fr_path}" hreflang="fr" lang="fr" aria-current="{'page' if is_fr else 'false'}">FR</a>
@@ -504,6 +502,18 @@ def shell(
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.5 12h-2M21.5 12h-2M6.7 6.7 5.3 5.3M18.7 18.7l-1.4-1.4M17.3 6.7l1.4-1.4M5.3 18.7l1.4-1.4"/><circle class="system-dot" cx="12" cy="12" r="1" fill="currentColor" stroke="none"/></svg>
     </button>
     <a class="download-pill" href="/download"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></svg><span>{download}</span></a>
+    <button class="nav-toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="{'Menu' if is_fr else 'Menu'}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </nav>
+  <nav class="mobile-nav" id="mobile-nav" aria-label="{navigation}" hidden>
+    <a href="{route_for('community', language)}"{_cur('community')}>{community}</a>
+    <a href="{route_for('contact', language)}"{_cur('contact')}>{contact}</a>
+    <a href="{route_for('changelog', language)}"{_cur('changelog')}>{changelog}</a>
+    <a href="{route_for('privacy', language)}"{_cur('privacy')}>{privacy}</a>
+    <a href="{route_for('security', language)}"{_cur('security')}>{security}</a>
+    <a href="{route_for('support', language)}"{_cur('support')}>{support}</a>
+    <a class="download-pill" href="/download">{download}</a>
   </nav>
 </div></header>
 <main id="main">{content}</main>

@@ -311,3 +311,21 @@ p{margin:0}
   background:color-mix(in srgb,var(--cobalt) 12%,transparent);color:var(--cobalt)}
 .feed-status--completed{background:color-mix(in srgb,#0b6e6c 16%,transparent);color:#0b6e6c}
 .feed-status--declined{background:color-mix(in srgb,var(--ink-3) 14%,transparent);color:var(--ink-3)}
+
+/* --- Mobile navigation (P1) ------------------------------------------------ */
+.nav-toggle{display:none;background:none;border:1px solid var(--line);border-radius:9px;
+  width:38px;height:38px;align-items:center;justify-content:center;color:var(--ink-2);cursor:pointer}
+.nav-toggle svg{width:20px;height:20px}
+.nav-toggle:focus-visible{outline:2px solid var(--cobalt);outline-offset:2px}
+.mobile-nav{display:none;flex-direction:column;gap:2px;padding:10px 14px 16px;
+  border-top:1px solid var(--line);background:var(--paper)}
+.mobile-nav a{padding:12px 8px;border-radius:8px;font-size:15px;font-weight:600;color:var(--ink-2);
+  text-decoration:none}
+.mobile-nav a[aria-current="page"]{color:var(--cobalt)}
+.mobile-nav a:focus-visible{outline:2px solid var(--cobalt);outline-offset:1px}
+.mobile-nav a.download-pill{margin-top:8px;justify-content:center;color:var(--on-cobalt)}
+@media(max-width:720px){
+  .bar-actions .nav-desktop{display:none}
+  .nav-toggle{display:inline-flex}
+  .mobile-nav:not([hidden]){display:flex}
+}

@@ -488,6 +488,40 @@
     load();
   }
 
+  // --- Mobile navigation disclosure -----------------------------------------
+  function mobileNav() {
+    const toggle = $("#navToggle");
+    const panel = $("#mobile-nav");
+    if (!toggle || !panel) return;
+    const bar = $("#bar");
+
+    const setOpen = (open) => {
+      toggle.setAttribute("aria-expanded", String(open));
+      if (open) {
+        panel.hidden = false;
+        panel.querySelector("a")?.focus();
+      } else {
+        panel.hidden = true;
+      }
+    };
+    const close = ({ focusToggle = false } = {}) => {
+      if (panel.hidden) return;
+      setOpen(false);
+      if (focusToggle) toggle.focus();
+    };
+
+    toggle.addEventListener("click", () => setOpen(panel.hidden));
+    panel.addEventListener("click", (e) => { if (e.target.closest("a")) close(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") close({ focusToggle: true }); });
+    document.addEventListener("click", (e) => {
+      if (!panel.hidden && bar && !bar.contains(e.target)) close();
+    });
+    // Leaving mobile width resets the panel so it can't stay stuck open.
+    window.matchMedia("(min-width: 721px)").addEventListener("change", (e) => {
+      if (e.matches) { panel.hidden = true; toggle.setAttribute("aria-expanded", "false"); }
+    });
+  }
+
   theme();
   logos();
   scrollSystems();
@@ -497,4 +531,5 @@
   licenseFilter();
   apiForms();
   communityFeed();
+  mobileNav();
 })();
