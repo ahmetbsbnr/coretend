@@ -82,6 +82,37 @@ struct ScanPauseControllerTests {
         #expect(finishedScanned == fileCount)
     }
 
+    /// The other half of a real pause: while paused, the walk must produce
+    /// NOTHING. `waitWhilePaused()` runs at the top of the per-file loop, so
+    /// with pause set before the scan starts, zero findings can arrive until
+    /// `resume()`. This is race-free (no "pause landed in time" timing), then
+    /// resume and confirm the full count.
+    @Test func pausedScanEmitsNoFindingsUntilResume() async throws {
+        let fileCount = 400
+        let root = try makeRoot(fileCount: fileCount)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let controller = ScanPauseController()
+        await controller.pause()
+
+        actor Counter { var n = 0; func bump() { n += 1 }; func value() -> Int { n } }
+        let seen = Counter()
+
+        let scan = Task {
+            for await event in ScanEngine(configuration: ScanConfiguration(home: root))
+                .run(rules: [rule()], pauseController: controller) {
+                if case .finding = event { await seen.bump() }
+            }
+        }
+
+        // Far longer than the whole 400-file scan would take unpaused.
+        try await Task.sleep(for: .milliseconds(250))
+        #expect(await seen.value() == 0, "the walk produced findings while paused")
+
+        await controller.resume()
+        await scan.value
+        #expect(await seen.value() == fileCount, "resumed scan completes with the full count")
+    }
+
     /// Cancellation (the app closing, or the user hitting Cancel) must win
     /// over an unresolved pause — otherwise a paused scan the user forgot
     /// about would block teardown indefinitely.
