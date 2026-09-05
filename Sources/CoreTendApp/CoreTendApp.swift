@@ -50,10 +50,22 @@ public struct CoreTendApp: App {
     }()
 
     public var body: some Scene {
-        WindowGroup("CoreTend") {
+        WindowGroup("CoreTend", id: "main") {
             MainWindow()
                 .frame(minWidth: MCSize.windowMinWidth, minHeight: MCSize.windowMinHeight)
                 .id(appLanguageRaw)
+                // The Finder Sync extension hands a selected path to the app
+                // as a `coretend://finder/…` URL. Untrusted — `FinderHandoff`
+                // re-validates it against the live filesystem before routing.
+                .onOpenURL { FinderHandoff.handle($0) }
+                .alert(L("finder.selection_unavailable"), isPresented: Binding(
+                    get: { AppRouter.shared.finderSelectionRejected },
+                    set: { AppRouter.shared.finderSelectionRejected = $0 }
+                )) {
+                    Button("OK", role: .cancel) {}
+                } message: {
+                    Text(L("finder.selection_unavailable.detail"))
+                }
         }
         .windowStyle(.automatic)
         .commands {
@@ -392,6 +404,7 @@ struct SidebarGroup: Identifiable {
 }
 
 struct MainWindow: View {
+    @Environment(\.openWindow) private var openWindow
     @State private var developerModel = DeveloperCenterModel()
     @State private var selection: ModuleID? = .smartCare
     @AppStorage("onboardingDone") private var onboardingDone = false
@@ -468,12 +481,17 @@ struct MainWindow: View {
             // Start the macOS integration layer (background scan scheduler,
             // notification tap routing). Idempotent.
             MacIntegrations.shared.start()
+            AppRouter.shared.openMainWindow = { openWindow(id: "main") }
             // Drain any deep link that arrived before this window subscribed
-            // to `.mcNavigate` (cold launch from a notification / App Intent).
-            if case let .module(module)? = AppRouter.shared.markReceiverReady() {
-                selection = module
+            // to `.mcNavigate` (cold launch from a notification / App Intent
+            // / Finder Sync action). The sidebar selection is switched here;
+            // a Finder route's URL payload is left for the destination view
+            // (Space Lens / Privacy Lab / Integrity) to consume on appear.
+            if let route = AppRouter.shared.markReceiverReady() {
+                selection = AppRouter.module(for: route)
             }
         }
+        .onDisappear { AppRouter.shared.markReceiverUnavailable() }
         .sheet(isPresented: $showOnboarding, onDismiss: { onboardingDone = true }) {
             OnboardingView(isPresented: $showOnboarding)
         }

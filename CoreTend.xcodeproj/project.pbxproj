@@ -7,7 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		066F145392EB8A1F79582916 /* FinderShared in Frameworks */ = {isa = PBXBuildFile; productRef = 47B869DA16C0DAC139FDF53F /* FinderShared */; };
+		105FCEE897FD20E5D4964848 /* CoreTendFinder.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A2EFB24707F296027E53FC8B /* CoreTendFinder.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		76AEE9CCFB7819B1B50DD6F0 /* CoreTendAppShortcuts.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7746AFC118AE19330CF028B /* CoreTendAppShortcuts.swift */; };
+		8D9EBC591A75A78DC4B942C5 /* CoreTendFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19C1117FEC1DBF56F7AA3308 /* CoreTendFinder.swift */; };
 		9273C69FE437C097E4704D00 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E06577A36DF4AB6EDFE9808 /* main.swift */; };
 		A3D531274128B7FE4ED8B633 /* CoreTendWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = AD271960293F78BE873867F7 /* CoreTendWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B8CC7A59C4DF39C7E8AC495E /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = 0911ABD3129DE6DE910C7039 /* AppIcon.icns */; };
@@ -19,6 +22,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		0CA3BE22BB72FD8B77FDA85A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C881D3119F26CE9006CA1EC6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DAF8E2D1D0F794EE461F4A8;
+			remoteInfo = CoreTendFinder;
+		};
 		F85B282C7BCFDC3BB5B1B04B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = C881D3119F26CE9006CA1EC6 /* Project object */;
@@ -36,6 +46,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				A3D531274128B7FE4ED8B633 /* CoreTendWidget.appex in Embed Foundation Extensions */,
+				105FCEE897FD20E5D4964848 /* CoreTendFinder.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -46,16 +57,27 @@
 		0911ABD3129DE6DE910C7039 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 		09F0DCBFC39DFB65FFD076EB /* MenuBarTemplate@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "MenuBarTemplate@2x.png"; sourceTree = "<group>"; };
 		0E06577A36DF4AB6EDFE9808 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		19C1117FEC1DBF56F7AA3308 /* CoreTendFinder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreTendFinder.swift; sourceTree = "<group>"; };
 		521E881FA51F336E6C27BA9C /* CoreTend.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CoreTend.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		57397C66FA013E03D4354031 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		736719D48C494BA9C1CBB52F /* MenuBarTemplate.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = MenuBarTemplate.png; sourceTree = "<group>"; };
 		763E3B78CDF77B180E0FDA92 /* app */ = {isa = PBXFileReference; lastKnownFileType = folder; name = app; path = .; sourceTree = SOURCE_ROOT; };
+		A2EFB24707F296027E53FC8B /* CoreTendFinder.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CoreTendFinder.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9540548A8FB07AC5E59EA12 /* CoreTendWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreTendWidget.swift; sourceTree = "<group>"; };
 		AD271960293F78BE873867F7 /* CoreTendWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = CoreTendWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B7746AFC118AE19330CF028B /* CoreTendAppShortcuts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreTendAppShortcuts.swift; sourceTree = "<group>"; };
+		D7A60533EF7011CD7C149583 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		8CF4E061B62C96221BEA9AC2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				066F145392EB8A1F79582916 /* FinderShared in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		935680CCF2E91FCDE670A928 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -86,6 +108,7 @@
 		4DE7C45042CC6A02FD4BAA4C = {
 			isa = PBXGroup;
 			children = (
+				DA71E8998ECD71E9776B7FBB /* FinderExtension */,
 				147160261F23585CEE4B2A89 /* Packages */,
 				5DE3BC196640F5608131E2F3 /* Resources */,
 				B383E4CDB0B917E7E703753D /* Sources */,
@@ -138,6 +161,15 @@
 			path = WidgetExtension;
 			sourceTree = "<group>";
 		};
+		DA71E8998ECD71E9776B7FBB /* FinderExtension */ = {
+			isa = PBXGroup;
+			children = (
+				19C1117FEC1DBF56F7AA3308 /* CoreTendFinder.swift */,
+				D7A60533EF7011CD7C149583 /* Info.plist */,
+			);
+			path = FinderExtension;
+			sourceTree = "<group>";
+		};
 		EDD92A1BCD3B387C198B5B84 /* Brand */ = {
 			isa = PBXGroup;
 			children = (
@@ -150,6 +182,7 @@
 			isa = PBXGroup;
 			children = (
 				521E881FA51F336E6C27BA9C /* CoreTend.app */,
+				A2EFB24707F296027E53FC8B /* CoreTendFinder.appex */,
 				AD271960293F78BE873867F7 /* CoreTendWidget.appex */,
 			);
 			name = Products;
@@ -171,6 +204,7 @@
 			);
 			dependencies = (
 				686FD61CC585B5691CE52C0D /* PBXTargetDependency */,
+				9BD4E7FCC61D4854D95AC4DC /* PBXTargetDependency */,
 			);
 			name = CoreTend;
 			packageProductDependencies = (
@@ -199,6 +233,25 @@
 			productReference = AD271960293F78BE873867F7 /* CoreTendWidget.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		8DAF8E2D1D0F794EE461F4A8 /* CoreTendFinder */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 264DA6368B377A3F37252D79 /* Build configuration list for PBXNativeTarget "CoreTendFinder" */;
+			buildPhases = (
+				3B156215D115059E73C12B98 /* Sources */,
+				8CF4E061B62C96221BEA9AC2 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CoreTendFinder;
+			packageProductDependencies = (
+				47B869DA16C0DAC139FDF53F /* FinderShared */,
+			);
+			productName = CoreTendFinder;
+			productReference = A2EFB24707F296027E53FC8B /* CoreTendFinder.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -212,6 +265,9 @@
 						ProvisioningStyle = Manual;
 					};
 					47A1859EF41D836BD53CCE26 = {
+						ProvisioningStyle = Manual;
+					};
+					8DAF8E2D1D0F794EE461F4A8 = {
 						ProvisioningStyle = Manual;
 					};
 				};
@@ -235,6 +291,7 @@
 			targets = (
 				07CA65EC18C4F4D32FA4A3E2 /* CoreTend */,
 				47A1859EF41D836BD53CCE26 /* CoreTendWidget */,
+				8DAF8E2D1D0F794EE461F4A8 /* CoreTendFinder */,
 			);
 		};
 /* End PBXProject section */
@@ -262,6 +319,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		3B156215D115059E73C12B98 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8D9EBC591A75A78DC4B942C5 /* CoreTendFinder.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7A7C02175FB9F53BF51163D6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -278,9 +343,31 @@
 			target = 47A1859EF41D836BD53CCE26 /* CoreTendWidget */;
 			targetProxy = F85B282C7BCFDC3BB5B1B04B /* PBXContainerItemProxy */;
 		};
+		9BD4E7FCC61D4854D95AC4DC /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8DAF8E2D1D0F794EE461F4A8 /* CoreTendFinder */;
+			targetProxy = 0CA3BE22BB72FD8B77FDA85A /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		14F73E834859511CB7F64EDD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Configuration/CoreTendFinder.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = FinderExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/../../../../Frameworks",
+					"@executable_path/../../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ahmetbsbnr.coretend.finder;
+				PRODUCT_NAME = CoreTendFinder;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
 		15715219C13F63A924E772E5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -437,6 +524,23 @@
 			};
 			name = Debug;
 		};
+		6035C71F21E3C57E4AE29022 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Configuration/CoreTendFinder.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = FinderExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"@executable_path/../../../../Frameworks",
+					"@executable_path/../../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ahmetbsbnr.coretend.finder;
+				PRODUCT_NAME = CoreTendFinder;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
 		B2D2919CF4A90C50F75D3878 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -500,6 +604,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		264DA6368B377A3F37252D79 /* Build configuration list for PBXNativeTarget "CoreTendFinder" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6035C71F21E3C57E4AE29022 /* Debug */,
+				14F73E834859511CB7F64EDD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		A0632A5ABA29C6EDEFA2DEDD /* Build configuration list for PBXNativeTarget "CoreTend" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -528,6 +641,10 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		47B869DA16C0DAC139FDF53F /* FinderShared */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = FinderShared;
+		};
 		BEB7D42440F94A377E3C6463 /* CoreTendApp */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = CoreTendApp;

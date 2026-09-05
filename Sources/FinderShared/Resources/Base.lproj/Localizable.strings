@@ -1,0 +1,7 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+/* SPDX-FileCopyrightText: The CoreTend Authors */
+
+"finder.menu.scan_folder" = "Scan Folder with CoreTend";
+"finder.menu.inspect_image" = "Inspect Image Metadata in CoreTend";
+"finder.menu.inspect_application" = "Inspect Application Integrity in CoreTend";
+"finder.menu.open" = "Open CoreTend";

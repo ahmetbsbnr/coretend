@@ -59,6 +59,8 @@ targets:
         product: CoreTendApp
       - target: CoreTendWidget
         embed: true
+      - target: CoreTendFinder
+        embed: true
     settings:
       base:
         PRODUCT_NAME: CoreTend
@@ -91,12 +93,37 @@ targets:
           - "@executable_path/../../../Frameworks"
         SKIP_INSTALL: YES
 
+  # Finder Sync extension. Read-only, user-initiated: it forwards the Finder
+  # selection to the host via a coretend:// URL and does nothing else. Links
+  # only the FinderShared package product (no destructive module is
+  # reachable). App-sandbox only — no App Group (the handoff is a URL, not a
+  # shared file).
+  CoreTendFinder:
+    type: app-extension
+    platform: macOS
+    sources:
+      - path: FinderExtension
+    dependencies:
+      - package: CoreTend
+        product: FinderShared
+    settings:
+      base:
+        PRODUCT_NAME: CoreTendFinder
+        PRODUCT_BUNDLE_IDENTIFIER: com.ahmetbsbnr.coretend.finder
+        INFOPLIST_FILE: FinderExtension/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Configuration/CoreTendFinder.entitlements
+        LD_RUNPATH_SEARCH_PATHS:
+          - "@executable_path/../../../../Frameworks"
+          - "@executable_path/../../../Frameworks"
+        SKIP_INSTALL: YES
+
 schemes:
   CoreTend-App:
     build:
       targets:
         CoreTend: [run, test, profile, analyze, archive]
         CoreTendWidget: [run, profile, analyze, archive]
+        CoreTendFinder: [run, profile, analyze, archive]
     run:
       config: Debug
     archive:

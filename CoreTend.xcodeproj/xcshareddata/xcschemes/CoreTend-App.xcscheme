@@ -29,6 +29,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "8DAF8E2D1D0F794EE461F4A8"
+               BuildableName = "CoreTendFinder.appex"
+               BlueprintName = "CoreTendFinder"
+               ReferencedContainer = "container:CoreTend.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "NO"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "47A1859EF41D836BD53CCE26"
                BuildableName = "CoreTendWidget.appex"
                BlueprintName = "CoreTendWidget"

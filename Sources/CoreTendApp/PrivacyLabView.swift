@@ -94,6 +94,19 @@ struct PrivacyLabView: View {
         }
         .navigationTitle(L("module.privacy_lab"))
         .accessibilityIdentifier("privacylab.root")
+        .onReceive(NotificationCenter.default.publisher(for: .mcInspectImageAt)) { note in
+            if let url = AppRouter.shared.consumePendingImageInspectionURL() {
+                model.inspect(url: url)
+            }
+        }
+        .onAppear {
+            // Cold launch / not-yet-mounted: a Finder "Inspect Image
+            // Metadata" route left a validated image URL. Same in-memory-only
+            // inspector as the Choose Image… button — nothing is persisted.
+            if let url = AppRouter.shared.consumePendingImageInspectionURL() {
+                model.inspect(url: url)
+            }
+        }
         .toolbar {
             ToolbarItemGroup {
                 Button {

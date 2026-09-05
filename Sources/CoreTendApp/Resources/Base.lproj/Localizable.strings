@@ -1101,3 +1101,11 @@
 "shortcut.devstorage.short" = "Developer Storage";
 "shortcut.imagemeta.short" = "Inspect Image Metadata";
 "shortcut.open.short" = "Open CoreTend Screen";
+"settings.finder" = "Finder Integration";
+"settings.finder.detail" = "Adds a CoreTend submenu to the Finder right-click menu: scan a folder, inspect an image's metadata, or check an application's signature. Each action just opens CoreTend on the matching screen.";
+"settings.finder.readonly_note" = "Finder actions never delete, move, or change files — they only open CoreTend.";
+"settings.finder.open_settings" = "Open Login Items & Extensions…";
+"settings.finder.enable_hint" = "Turn on “CoreTend” under Finder extensions to show the submenu. The integration is optional.";
+
+"finder.selection_unavailable" = "Finder selection unavailable";
+"finder.selection_unavailable.detail" = "The selected item is missing, unsupported, or no longer matches this action. Select an existing folder, supported image, or application. Symbolic links are not supported.";
