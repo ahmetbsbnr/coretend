@@ -101,20 +101,13 @@ final class CleanupViewModel {
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .scan, summary: "Cleanup scan: \(findings.count) items found",
                         itemCount: findings.count, bytes: bytes))
-                    AppEnvironment.shared.recordTimelineSnapshot(scope: .cleanup, samples: groups.map { group in
-                        TimelineCategorySample(
-                            category: group.ruleID, engine: "cleanup", logicalBytes: group.bytes,
-                            // Only Cleanup's findings carry both a logical and
-                            // an allocated size from the exact same scan pass
-                            // over the exact same files — the pairing rule
-                            // physicalBytes requires. nil (not a partial sum)
-                            // when any finding in the group lacks the
-                            // measurement. Duplicates/Leftovers/Privacy don't
-                            // capture allocated size today, so they stay nil.
-                            physicalBytes: group.findings.totalAllocatedSizeIfFullyKnown,
-                            fileCount: group.findings.count,
-                            risk: group.findings.first?.risk.rawValue ?? "unknown")
-                    })
+                    // Shared with the scheduled scan (`CleanupTimeline`) so the
+                    // interactive and background snapshots stay byte-for-byte
+                    // comparable. See that file for the physical-bytes pairing
+                    // rule (nil, never a partial sum, when any finding lacks an
+                    // allocated size).
+                    AppEnvironment.shared.recordTimelineSnapshot(
+                        scope: .cleanup, samples: CleanupTimeline.samples(from: findings))
                 case .cancelled:
                     isScanPaused = false
                     phase = .idle

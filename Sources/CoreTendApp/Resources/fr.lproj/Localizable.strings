@@ -1016,3 +1016,88 @@
 "restore.source.apps.leftovers" = "Données d’app résiduelles";
 "restore.source.clutter.duplicates" = "Fichier en double";
 "restore.source.privacy.browsercache" = "Cache de navigateur";
+
+/* --- Intégrations macOS : Réglages --- */
+"settings.scheduled_scans" = "Analyses planifiées";
+"settings.scheduled_scans.cadence" = "Lancer une analyse";
+"settings.scheduled_scans.detail" = "Les analyses planifiées sont en lecture seule. Elles mettent à jour la chronologie de stockage et peuvent envoyer une notification. CoreTend ne nettoie, ne supprime et ne déplace jamais rien vers la corbeille de façon planifiée. Une analyse planifiée ne s’exécute que lorsque CoreTend est ouvert ou dans la barre des menus.";
+"settings.notifications_categories" = "Notifications";
+"settings.notifications_categories.detail" = "Les notifications sont locales à ce Mac. Elles ne contiennent que des totaux — jamais de noms de fichiers, de chemins ou d’emplacements. Chaque type est limité en fréquence pour éviter les alertes répétées.";
+"settings.notifications.enable" = "Activer les notifications…";
+
+/* --- Cadence des analyses planifiées --- */
+"schedule.cadence.off" = "Désactivé";
+"schedule.cadence.daily" = "Quotidienne";
+"schedule.cadence.weekly" = "Hebdomadaire";
+
+/* --- Catégories de notifications --- */
+"notif.category.lowDiskSpace.title" = "Espace disque faible";
+"notif.category.scanResults.title" = "Résultats d’analyse";
+"notif.category.storageGrowth.title" = "Croissance du stockage";
+
+/* --- Contenu des notifications (totaux uniquement, aucun chemin) --- */
+"notif.low_disk.title" = "Espace disque faible";
+"notif.low_disk.body" = "Il ne reste que %@ de libre sur ce Mac. Ouvrez CoreTend pour voir ce qui peut être nettoyé.";
+"notif.scan.title" = "Analyse planifiée terminée";
+"notif.scan.reclaimable" = "CoreTend a trouvé %@ potentiellement récupérables.";
+"notif.scan.growth" = "Le stockage a augmenté de %@ depuis l’analyse précédente.";
+
+/* --- App Intents --- */
+"appintent.freespace.title" = "Obtenir l’espace disque libre";
+"appintent.freespace.description" = "Renvoie l’espace libre et total du disque de démarrage de ce Mac.";
+"appintent.freespace.result" = "%@ de libre sur %@.";
+"appintent.summary.title" = "Obtenir le résumé CoreTend";
+"appintent.summary.description" = "Un court résumé en lecture seule : espace libre, évolution depuis la dernière analyse, et date de la dernière analyse.";
+"appintent.summary.free" = "%@ de libre.";
+"appintent.summary.no_change" = "Aucun changement depuis la dernière analyse.";
+"appintent.summary.grew" = "En hausse de %@ depuis la dernière analyse.";
+"appintent.summary.shrank" = "En baisse de %@ depuis la dernière analyse.";
+"appintent.summary.no_history" = "Pas encore assez d’historique d’analyse pour comparer.";
+"appintent.summary.last_scan" = "Dernière analyse %@.";
+"appintent.change.title" = "Obtenir l’évolution du stockage";
+"appintent.change.description" = "Compare l’analyse la plus récente à la précédente analyse comparable et indique la différence.";
+"appintent.change.no_history" = "Aucun historique d’analyse comparable pour l’instant. Lancez d’abord une analyse dans CoreTend.";
+"appintent.change.none" = "Aucun changement mesurable depuis la dernière analyse comparable.";
+"appintent.change.increase" = "Le stockage suivi a augmenté de %@ depuis la dernière analyse comparable.";
+"appintent.change.decrease" = "Le stockage suivi a diminué de %@ depuis la dernière analyse comparable.";
+"appintent.change.top_category" = "La plus forte hausse était de %@.";
+"appintent.devstorage.title" = "Obtenir le stockage développeur récupérable";
+"appintent.devstorage.description" = "Lance une analyse du Centre développeur en lecture seule et renvoie l’espace de cache développeur récupérable.";
+"appintent.devstorage.result" = "Environ %@ de caches développeur pourraient être récupérés.";
+"appintent.integrity.title" = "Obtenir le résumé d’intégrité";
+"appintent.integrity.description" = "Un résumé en lecture seule des téléchargements avec provenance, des téléchargements en quarantaine et des éléments de connexion.";
+"appintent.integrity.result" = "%d téléchargements avec provenance, %d en quarantaine ; %d éléments de connexion. Cette copie de CoreTend est %@.";
+"appintent.integrity.tier.appleSigned" = "signée par Apple";
+"appintent.integrity.tier.teamSigned" = "signée par le développeur";
+"appintent.integrity.tier.adHocOrUnsigned" = "non signée ou ad hoc";
+"appintent.imagemeta.title" = "Inspecter les métadonnées d’image";
+"appintent.imagemeta.description" = "Inspecte les métadonnées intégrées à une image, en local. L’image n’est pas modifiée et son chemin n’est pas enregistré.";
+"appintent.imagemeta.param" = "Image";
+"appintent.imagemeta.unavailable" = "Ce fichier n’est pas disponible.";
+"appintent.imagemeta.none" = "Aucune métadonnée prise en charge n’a été détectée dans cette image.";
+"appintent.imagemeta.present" = "Cette image contient des métadonnées intégrées dans %d catégories : %@.";
+"appintent.imagemeta.unsupported" = "Ce type de fichier ne peut pas être inspecté.";
+"appintent.imagemeta.unreadable" = "Ce fichier n’a pas pu être lu comme une image.";
+"appintent.imagemeta.missing" = "Ce fichier n’existe plus.";
+"appintent.module.type" = "Écran CoreTend";
+"appintent.module.dashboard" = "Tableau de bord";
+"appintent.module.storage" = "Stockage";
+"appintent.module.timeline" = "Chronologie de stockage";
+"appintent.module.recovery_plan" = "Plan de récupération";
+"appintent.module.developer" = "Centre développeur";
+"appintent.module.privacy_lab" = "Labo Confidentialité";
+"appintent.module.restore_center" = "Centre de restauration";
+"appintent.module.apfs" = "APFS";
+"appintent.module.applications" = "Applications";
+"appintent.module.settings" = "Réglages";
+"appintent.open.title" = "Ouvrir un écran CoreTend";
+"appintent.open.description" = "Ouvre CoreTend sur un écran précis.";
+"appintent.open.param" = "Écran";
+
+/* --- App Shortcuts (titres courts) --- */
+"shortcut.summary.short" = "Résumé CoreTend";
+"shortcut.change.short" = "Ce qui a changé";
+"shortcut.freespace.short" = "Espace disque libre";
+"shortcut.devstorage.short" = "Stockage développeur";
+"shortcut.imagemeta.short" = "Inspecter les métadonnées d’image";
+"shortcut.open.short" = "Ouvrir un écran CoreTend";
