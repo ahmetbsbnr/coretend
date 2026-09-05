@@ -517,7 +517,7 @@ def shell(
       <li><a href="{REPOSITORY}">{source}</a></li>
     </ul>
   </div>
-  <div class="foot-base"><span>{'Ahmet Basbunar — direction et validation · Claude (Anthropic) — assistant supervisé jusqu’à livraison · Apache-2.0' if is_fr else 'Ahmet Basbunar — direction and validation · Claude (Anthropic) — supervised assistant through delivery · Apache-2.0'}</span><span>{version_status}</span></div>
+  <div class="foot-base"><span>{'CoreTend — logiciel libre pour macOS · Apache-2.0' if is_fr else 'CoreTend — free software for macOS · Apache-2.0'}</span><span>{version_status}</span></div>
 </div></footer>
 <div id="toast" role="status" aria-live="polite"></div>
 </body>
