@@ -504,6 +504,17 @@ p{margin:0}
   transition:.7s var(--ease-out)}
 .stage .launched.show{opacity:1;transform:none}
 .stage .launched .mark{width:74px;height:74px}
+.stage .dmg{position:absolute;inset:24px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:14px;padding:0 24px}
+.stage .dmg-app,.stage .dmg-folder{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;
+  color:var(--ink-2);font-weight:500}
+.stage .dmg-app .mark{width:52px;height:52px}
+.stage .dmg-folder svg{width:46px;height:46px;color:var(--cobalt)}
+.stage .dmg>div:first-child,.stage .dmg .dmg-folder{position:relative}
+.stage .dmg-row{display:flex;align-items:center;gap:18px}
+.stage .dmg-arrow{width:38px;height:22px;color:var(--line-strong)}
+.stage .dmg{flex-direction:row;flex-wrap:wrap}
+.stage .dmg-hint{flex-basis:100%;text-align:center;margin-top:4px;color:var(--ink-3);font-size:12px}
 .stepdots{display:flex;gap:7px;margin-top:16px;justify-content:center}
 .stepdots i{width:22px;height:3px;border-radius:99px;background:var(--line-strong);opacity:.5;transition:.4s}
 .stepdots i.on{opacity:1;background:var(--cobalt);width:34px}
@@ -714,7 +725,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
       </div>
       <p class="hero-meta" data-reveal style="--d:2290ms">
         @@CORETEND_RELEASE_VERSION@@ · macOS @@CORETEND_MINIMUM_MACOS@@+ · @@CORETEND_ARCHITECTURE@@<br>
-        <span data-fr="Libre et open source · @@CORETEND_SIGNING_FR@@ · ">Free and open source · @@CORETEND_SIGNING_EN@@ · </span><a href="/SHA256SUMS" data-fr="voir les sommes de contrôle">see the checksums</a>
+        <span data-fr="Libre et open source · Signée et notarisée pour macOS">Free and open source · Signed and notarized for macOS</span>
       </p>
     </div>
 
@@ -809,7 +820,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
       <li class="mod" data-tilt data-reveal><span class="k">Home</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3>Dashboard</h3><p data-fr="Espace libre, état de la Corbeille, exclusions, activité récente, et un grand bouton d'analyse au centre avec des raccourcis vers les autres workflows.">Free space, Trash status, exclusions, recent activity, and a large scan action at the centre with shortcuts into the other workflows.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Scan</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Stockage">Storage</h3><p data-fr="Caches, journaux, rapports de plantage, installeurs, données de build, téléchargements oubliés.">Caches, logs, crash reports, leftover installers, build data and forgotten downloads.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Map</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3>Space Lens</h3><p data-fr="Carte de tailles radiale — le plus gros dossier au centre, les autres en orbite — navigable, avec fil d'Ariane, recherche et ouverture dans le Finder.">A radial size map — the largest folder at the centre, siblings orbiting it — that you can walk into, with breadcrumbs, search and Reveal in Finder.</p></li>
-      <li class="mod" data-tilt data-reveal><span class="k">Match</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Doublons">Duplicates</h3><p data-fr="Correspondance SHA-256 exacte, choix de l'exemplaire à garder, Quick Look, Finder et export CSV.">Exact SHA-256 matching, keeper selection, Quick Look, Finder and CSV export.</p></li>
+      <li class="mod" data-tilt data-reveal><span class="k">Match</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Doublons">Duplicates</h3><p data-fr="Correspondance de contenu exacte (empreinte), choix de l'exemplaire à garder, Quick Look, Finder et export CSV.">Exact content-hash matching, keeper selection, Quick Look, Finder and CSV export.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Apps</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Applications">Applications</h3><p data-fr="Inventaire de /Applications et ~/Applications, données associées par bundle ID et source de mise à jour détectée.">Inventory of /Applications and ~/Applications, bundle-ID-associated data and detected update source.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Signals</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Intégrité">Integrity</h3><p data-fr="Provenance des téléchargements, inspection d'une app choisie et inventaire des agents de lancement. Ce n'est pas un antivirus.">Download provenance, inspection of one selected app and launch-agent inventory. It is not an antivirus.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Record</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Activité">Activity</h3><p data-fr="Jusqu'à 500 activités locales agrégées, avec filtres, journal de sécurité et exports CSV ou JSON.">Up to 500 aggregate local activities, with filters, safety log and CSV or JSON exports.</p></li>
@@ -913,18 +924,14 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
   <div class="wrap install-grid">
     <div>
       <p class="eyebrow" data-scramble><b>07</b> <span data-fr="Installation">Install</span></p>
-      <h2 data-reveal data-fr="Signée, notarisée, et vérifiable.">Signed, notarized, and yours to verify.</h2>
-      <p class="lead" data-reveal style="--d:100ms" data-fr="CoreTend est signé avec un identifiant Apple Developer ID et notarisé par Apple : il s’ouvre sans invite Gatekeeper. Le SHA-256 et la signature Minisign ci-dessous permettent de vérifier la provenance de façon indépendante.">CoreTend is Developer ID signed and notarized by Apple, so it opens with no Gatekeeper prompt. The SHA-256 and Minisign signature below let you verify provenance independently.</p>
+      <h2 data-reveal data-fr="Signée, notarisée, et simple à installer.">Signed, notarized, and simple to install.</h2>
+      <p class="lead" data-reveal style="--d:100ms" data-fr="CoreTend est signé avec un identifiant Apple Developer ID et notarisé par Apple : il s’ouvre sans invite Gatekeeper. Téléchargez l’image disque, glissez CoreTend dans le dossier Applications, puis lancez-le.">CoreTend is Developer ID signed and notarized by Apple, so it opens with no Gatekeeper prompt. Download the disk image, drag CoreTend into your Applications folder, and launch it.</p>
       <ol class="steps" style="margin-top:32px" data-reveal>
-        <li style="padding-bottom:26px"><span class="num">1</span><h3 style="font-size:17px" data-fr="Ouvrir le .dmg, glisser dans Applications">Open the .dmg, drag to Applications</h3></li>
-        <li style="padding-bottom:26px"><span class="num">2</span><h3 style="font-size:17px" data-fr="Double-cliquer : l’app se lance, aucune exception requise">Double-click it — it launches, no override needed</h3></li>
-        <li><span class="num">3</span><h3 style="font-size:17px" data-fr="Optionnel : vérifier le SHA-256 et la signature Minisign avec la clé publiée">Optional: verify the SHA-256 and Minisign signature against the published key</h3></li>
+        <li style="padding-bottom:26px"><span class="num">1</span><h3 style="font-size:17px" data-fr="Télécharger CoreTend">Download CoreTend</h3></li>
+        <li style="padding-bottom:26px"><span class="num">2</span><h3 style="font-size:17px" data-fr="Ouvrir le .dmg et glisser CoreTend dans Applications">Open the .dmg and drag CoreTend to Applications</h3></li>
+        <li><span class="num">3</span><h3 style="font-size:17px" data-fr="Lancer CoreTend depuis Applications">Launch CoreTend from Applications</h3></li>
       </ol>
-      <div class="hash" data-reveal>
-        <span class="mono" style="color:var(--ink-3);flex:none">SHA-256</span>
-        <code id="sha">@@CORETEND_DMG_SHA256@@</code>
-        <button type="button" id="copy" data-fr="Copier">Copy</button>
-      </div>
+      <p class="mono" data-reveal style="margin-top:22px;color:var(--ink-3);font-size:13px" data-fr="macOS 14+ · Apple Silicon · Signée et notarisée pour macOS">macOS 14+ · Apple Silicon · Signed and notarized for macOS</p>
       <div class="cta" style="margin-top:24px" data-reveal>
         <span class="magnetic" data-magnetic><a class="btn btn-primary btn-lg" href="/download">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></svg>
@@ -934,19 +941,24 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
 
     <div data-reveal style="--d:120ms">
       <div class="stage" id="stage" aria-hidden="true">
-        <div class="menubar"><span></span><span>CoreTend</span><span>Finder</span><span>100%</span></div>
-        <svg class="cursor" id="cur" viewBox="0 0 16 16"><path d="M2 1.5 13 8.2l-4.6.9 2.5 4.4-1.9 1.1-2.5-4.4L2.9 13z" fill="var(--ink)" stroke="var(--paper)" stroke-width="1"/></svg>
-        <div class="sheet warn" id="s1">
-          <div class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 3 2.6 20h18.8z"/><path d="M12 9.5v5M12 17.4h.01"/></svg></div>
-          <h4 data-fr="Ouvrir « CoreTend » ?">Open "CoreTend"?</h4>
-          <p data-fr="Apple a vérifié l’absence de logiciel malveillant.">Apple checked it for malicious software and none was found.</p>
-          <div class="btns"><button type="button" data-fr="Annuler" disabled>Cancel</button><button type="button" class="key" data-fr="Ouvrir" disabled>Open</button></div>
-        </div>
-        <div class="sheet" id="s2">
-          <div class="ic"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2.8 20 6v6.3c0 4.3-3.3 7.6-8 8.9-4.7-1.3-8-4.6-8-8.9V6z"/><path d="M8.8 12.2 11 14.5l4.4-4.7"/></svg></div>
-          <h4 data-fr="Developer ID vérifié">Developer ID verified</h4>
-          <p data-fr="Signature et notarisation confirmées par macOS.">Signature and notarization confirmed by macOS.</p>
-          <div class="btns"><button type="button" class="key" data-fr="Ouvrir" disabled>Open</button></div>
+        <div class="menubar"><span></span><span data-fr="CoreTend — image disque">CoreTend — disk image</span><span>Finder</span><span>100%</span></div>
+        <div class="dmg" id="s1">
+          <div class="dmg-app">
+            <svg class="mark ct-logo ct-logo--launch" viewBox="0 0 512 512" role="img" aria-label="CoreTend">
+              <g class="ct-arc ct-arc-outer"><path d="M 135.680 464.400 A 240.640 240.640 0 0 0 464.400 135.680" fill="none" stroke="var(--cobalt)" stroke-width="38.4" stroke-linecap="round"/></g>
+              <g class="ct-arc ct-arc-middle"><path d="M 434.039 208.294 A 184.320 184.320 0 0 0 137.521 114.803" fill="none" stroke="var(--ink)" stroke-width="38.4" stroke-linecap="round"/></g>
+              <g class="ct-arc ct-arc-inner"><path d="M 135.719 212.221 A 128.000 128.000 0 0 0 192.000 366.851" fill="none" stroke="var(--line-strong)" stroke-width="38.4" stroke-linecap="round"/></g>
+              <circle class="ct-wave" cx="256" cy="256" r="61.44"/>
+              <circle class="ct-core" cx="256" cy="256" r="61.44" fill="var(--cobalt)"/>
+            </svg>
+            <span>CoreTend</span>
+          </div>
+          <svg class="dmg-arrow" viewBox="0 0 40 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h30M25 4l9 8-9 8"/></svg>
+          <div class="dmg-folder">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg>
+            <span data-fr="Applications">Applications</span>
+          </div>
+          <p class="mono dmg-hint" data-fr="Glissez CoreTend dans Applications">Drag CoreTend to Applications</p>
         </div>
         <div class="launched" id="s3">
           <div style="text-align:center">
@@ -957,11 +969,11 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
               <circle class="ct-wave" cx="256" cy="256" r="61.44"/>
               <circle class="ct-core" cx="256" cy="256" r="61.44" fill="var(--cobalt)"/>
             </svg>
-            <p class="mono" style="margin-top:12px;color:var(--ink-2)" data-fr="Prêt. Une seule fois.">Open. Once and for all.</p>
+            <p class="mono" style="margin-top:12px;color:var(--ink-2)" data-fr="Lancez CoreTend depuis Applications.">Launch CoreTend from Applications.</p>
           </div>
         </div>
       </div>
-      <div class="stepdots" id="dots"><i class="on"></i><i></i><i></i></div>
+      <div class="stepdots" id="dots"><i class="on"></i><i></i></div>
     </div>
   </div>
 </section>
@@ -984,8 +996,8 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
         <div class="ans"><div><p data-fr="CoreTend n'intègre pas de fonction de restauration après l'action. Lorsqu'un élément a bien été placé dans la Corbeille par macOS, utilisez Finder → Corbeille → Remettre avant de la vider.">CoreTend has no built-in restore action after removal. When macOS successfully placed an item in the Trash, use Finder → Trash → Put Back before emptying it.</p></div></div>
       </details>
       <details data-reveal>
-        <summary data-fr="Comment vérifier le téléchargement ?">How do I verify the download?</summary>
-        <div class="ans"><div><p data-fr="Comparez le SHA-256 du DMG avec le fichier SHA256SUMS publié, puis vérifiez sa signature Minisign avec la clé publiée (minisign.pub). xcrun stapler validate confirme le ticket de notarisation embarqué.">Compare the DMG’s SHA-256 with the published SHA256SUMS file, then check its Minisign signature with the published key (minisign.pub). xcrun stapler validate confirms the embedded notarization ticket.</p></div></div>
+        <summary data-fr="Comment savoir que le téléchargement est fiable ?">How do I know the download is trustworthy?</summary>
+        <div class="ans"><div><p data-fr="CoreTend est signé avec un identifiant Apple Developer ID et notarisé par Apple : macOS l’ouvre sans invite supplémentaire. Le projet est sous licence Apache-2.0 et tout le code source est public.">CoreTend is Developer ID signed and notarized by Apple, so macOS opens it with no extra prompt. The project is Apache-2.0 licensed and all source is public.</p></div></div>
       </details>
       <details data-reveal>
         <summary data-fr="Que se passe-t-il si je supprime quelque chose d'important ?">What if I remove something I needed?</summary>
@@ -1054,10 +1066,10 @@ const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
 /* ─── copy decks ─────────────────────────────────────────── */
 const TICKER = {
   en:["Local scans","No account","No telemetry","Explicit confirmation","Eligible items use Trash",
-      "Every path shown before it moves","SHA-256 on every release","Apache-2.0","Apple silicon native",
+      "Every path shown before it moves","Signed & notarized","Apache-2.0","Apple silicon native",
       "System locations protected","Interruptible supported scans","Local activity record"],
   fr:["Analyses locales","Aucun compte","Aucune télémétrie","Confirmation explicite","Corbeille pour les éléments éligibles",
-      "Chaque chemin visible avant tout déplacement","SHA-256 à chaque version","Apache-2.0","Natif Apple silicon",
+      "Chaque chemin visible avant tout déplacement","Signée et notarisée","Apache-2.0","Natif Apple silicon",
       "Emplacements système protégés","Analyses prises en charge interruptibles","Journal local"]
 };
 
@@ -1136,7 +1148,7 @@ const FIND = {
       {n:{en:"Demo utility logs",fr:"Journaux de l’utilitaire de démo"},w:{en:"Example local logs",fr:"Journaux locaux d’exemple"},a:"256 MB",g:"safe"},
       {n:{en:"Demo Editor installer",fr:"Installeur Demo Editor"},w:{en:"Medium-risk example, not preselected",fr:"Exemple à risque moyen, non présélectionné"},a:"512 MB",g:"care"}
      ]},
-    {id:"dupes", label:{en:"Duplicates",fr:"Doublons"}, total:{en:"624 MB",fr:"624 Mo"}, measure:{en:"Reclaimable",fr:"Récupérable"}, path:"3 example groups · exact SHA-256",
+    {id:"dupes", label:{en:"Duplicates",fr:"Doublons"}, total:{en:"624 MB",fr:"624 Mo"}, measure:{en:"Reclaimable",fr:"Récupérable"}, path:"3 example groups · exact content match",
      rows:[
       {n:{en:"demo-sequence.mov",fr:"demo-sequence.mov"},w:{en:"Two exact copies, one keeper",fr:"Deux copies exactes, un exemplaire conservé"},a:"512 MB",g:"safe"},
       {n:{en:"annual-report.pdf",fr:"annual-report.pdf"},w:{en:"Four exact copies, one keeper",fr:"Quatre copies exactes, un exemplaire conservé"},a:"96 MB",g:"safe"},
@@ -1170,7 +1182,7 @@ const TERM = {
   ]
 };
 
-const TOAST = {copied:{en:"Checksum copied",fr:"Somme de contrôle copiée"}};
+const TOAST = {copied:{en:"Copied",fr:"Copié"}};
 
 /* ─── tiny helpers ────────────────────────────────────────── */
 const toast = msg => {
@@ -1653,34 +1665,20 @@ function terminal() {
   nextLine();
 }
 
-/* ─── gatekeeper stage ───────────────────────────────────── */
+/* ─── install stage: DMG → Applications → launched ───────── */
 function gatekeeper() {
   const stage = $("#stage"); if (!stage) return;
-  const s1 = $("#s1"), s2 = $("#s2"), s3 = $("#s3"), cur = $("#cur"), dots = $$("#dots i");
-  let step = 0, timer = null;
-  const at = (x, y) => { cur.style.transform = `translate(${x}px,${y}px)`; };
+  const s1 = $("#s1"), s3 = $("#s3"), dots = $$("#dots i");
+  let timer = null;
   const mark = n => dots.forEach((d, i) => d.classList.toggle("on", i === n));
 
   const play = () => {
-    [s1, s2].forEach(s => s.classList.remove("show"));
-    s3.classList.remove("show"); cur.classList.remove("show");
-    step = 0; mark(0);
-    s1.classList.add("show");
-    if (RM.matches) { s2.classList.add("show"); s3.classList.add("show"); return; }
-    setTimeout(() => s1.classList.add("shake"), 700);
-    setTimeout(() => s1.classList.remove("shake"), 1300);
+    s3.classList.remove("show");
+    s1.classList.add("show"); mark(0);
+    if (RM.matches) { s3.classList.add("show"); mark(1); return; }
     timer = setTimeout(() => {
-      s1.classList.remove("show"); s2.classList.add("show"); mark(1); step = 1;
-      const r = stage.getBoundingClientRect();
-      cur.classList.add("show"); at(r.width*.3, r.height*.85);
-      setTimeout(() => at(r.width*.62, r.height*.63), 260);
-      setTimeout(() => { const k = $(".key", s2); k.classList.add("press");
-        setTimeout(() => k.classList.remove("press"), 500); }, 1500);
-      timer = setTimeout(() => {
-        s2.classList.remove("show"); cur.classList.remove("show");
-        s3.classList.add("show"); mark(2);
-        timer = setTimeout(play, 3200);
-      }, 2300);
+      s3.classList.add("show"); mark(1);
+      timer = setTimeout(() => { s3.classList.remove("show"); play(); }, 3600);
     }, 2600);
   };
   const io = new IntersectionObserver(es => es.forEach(e => {
@@ -1843,15 +1841,6 @@ $("#scanCancel").addEventListener("click",() => {
 
 document.addEventListener("visibilitychange",() => {
   if (!document.hidden && demoState.status === "scanning") demoState.last = performance.now();
-});
-
-$("#copy").addEventListener("click", async () => {
-  const txt = $("#sha").textContent.trim();
-  try { await navigator.clipboard.writeText(txt); } catch (_) {
-    const ta = document.createElement("textarea"); ta.value = txt; document.body.appendChild(ta);
-    ta.select(); document.execCommand("copy"); ta.remove();
-  }
-  toast(pick(TOAST.copied));
 });
 
 $$('a[href^="#"]').forEach(a => a.addEventListener("click", e => {
