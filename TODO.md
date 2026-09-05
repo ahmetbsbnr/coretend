@@ -2,10 +2,12 @@
 
 CoreTend 1.0.0 shipped on 2026-09-03. It is Developer ID signed,
 Apple-notarized, stapled, Minisign-signed, and published as a stable GitHub
-release. Core functionality is complete; 486 Swift tests pass (post-1.0.0
+release. Core functionality is complete; 562 Swift tests pass (post-1.0.0
 work — Storage Timeline, then Advisor, then Recovery Plan, then APFS
-Intelligence, then Applications Center 2.0 — added 144 since the 342 that
-shipped in 1.0.0).
+Intelligence, then Applications Center 2.0, then Developer Center, then
+Privacy Lab — added 220 since the 342 that shipped in 1.0.0). Post-1.0.0
+verticals live on local branches only; nothing is merged to `main` or
+pushed.
 
 ## Release follow-up
 
@@ -122,6 +124,39 @@ what's deliberately not started (PKG/receipt provenance beyond the existing
 Mac App Store check, search/filter extensions, `FAT_MAGIC_64` universal
 binaries) and zero Recovery-Plan eligibility, by construction.
 
+## Done — Privacy Lab: image metadata inspection (read-only first vertical)
+
+Select an image → inspect locally → structured, per-category privacy view.
+`ImageMetadataInspector`/`ImageMetadataInspection`/`MetadataField`
+(`Sources/SystemMetrics/ImageMetadataInspector.swift`) is a pure ImageIO read
+(`CGImageSource` property dictionaries only, `kCGImageSourceShouldCache:
+false`, no pixel decode, no subprocess, no network). `PrivacyLabService`/
+`PrivacyLabCatalog`/`PrivacyLabSummary` and `PrivacyLabViewModel`/
+`PrivacyLabView` (`Sources/CoreTendApp/`) add the off-main-actor hop,
+localized "why this can matter" explanations, an honest count-based summary
+(**no privacy score**), and a real sidebar screen (system group).
+
+Coverage: location/GPS, capture date, camera make/model, lens model,
+software/editor, author, copyright, description/comment, keywords, device/lens
+serial number, unique image ID — each reported as **Present / Not detected /
+Unavailable** (never "safe"). GPS is coarse in the main UI; exact coordinates
+are behind an explicit opt-in, never reverse-geocoded, never persisted.
+Formats validated with programmatic fixtures: JPEG, TIFF, PNG, HEIC (when the
+host can encode it), plus corrupt/truncated/non-image/missing/directory
+failure paths. Stale-result guard: a slower earlier inspection can never
+overwrite a newer selection.
+
+Read-only with respect to the user's image: no `CGImageDestination`, no
+`FileManager` mutation, no in-place EXIF strip anywhere. Nothing persisted —
+no Store, Timeline, activity, log or analytics write. No `AdvisorFinding`, so
+not Recovery-Plan-eligible by construction. Photos Library is never scanned
+or modified. **Sanitized-copy / metadata stripping is NOT implemented** — the
+layering leaves a clean seam for a future *original → read → sanitized copy →
+verify → compare → preserve original* flow, which must prefer "create
+sanitized copy" over "modify original". See `Documentation/PRIVACY_LAB.md`,
+`Documentation/FEATURE_MATRIX.md` → "Privacy Lab", and
+`Documentation/SAFETY_MODEL.md` → "Privacy Lab".
+
 ## Deliberately deferred product scope
 
 - Additional locales beyond English and French.
@@ -146,7 +181,10 @@ review before any implementation:
 - Expanded native security signals beyond Integrity's current read-only scope.
 - Background-item manager: list LaunchAgents, LaunchDaemons and login items;
   any disable action would need explicit review and rollback.
-- Sensitive-metadata cleaner: EXIF/device/date inspection and opt-in removal.
+- Sensitive-metadata cleaner: the **inspection** half shipped as Privacy Lab
+  (read-only, see the Done section above). Opt-in **removal** is still
+  deferred and must be built as a sanitized-copy export, not an in-place
+  strip, with a verify/compare step and the original preserved.
 - Notification Center widget showing free space and linking to the main app.
 - Optional CLI destructive workflows remain deferred; `coretend-cli` now ships
   read-only rule/path inspection with no filesystem mutation.

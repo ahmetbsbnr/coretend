@@ -187,6 +187,53 @@ Intelligence:
   header to report slice sizes; there is no thinning, rewriting, or slice
   removal anywhere, not even unwired.
 
+## Privacy Lab
+
+`ImageMetadataInspector` / `PrivacyLabService` / `PrivacyLabViewModel`
+(`Sources/SystemMetrics/ImageMetadataInspector.swift`,
+`Sources/CoreTendApp/PrivacyLabService.swift`,
+`Sources/CoreTendApp/PrivacyLabView.swift`) inspect the metadata embedded in
+one user-selected image file. Same discipline as APFS Intelligence and
+Applications Center — a read-only measurement layer, not a Safety surface:
+
+- **No filesystem mutation, ever.** The inspector calls only ImageIO reads
+  (`CGImageSourceCreateWithURL`, `CGImageSourceCopyPropertiesAtIndex` with
+  `kCGImageSourceShouldCache: false`). There is no `CGImageDestination`,
+  no `FileManager` write/`removeItem`/`trashItem`, no in-place EXIF strip,
+  no `Process` — not behind a flag, not unwired. The pixel buffer is never
+  even decoded.
+- **Never Recovery-Plan-eligible, by construction.** Privacy Lab never
+  constructs an `AdvisorFinding`. Its per-category explanations are plain
+  localized strings rendered directly by `PrivacyLabView`. `RecoveryPlan
+  Service` is untouched and carries zero references to any Privacy Lab type,
+  so there is no Privacy-Lab-derived value for `RecoveryPlanEligibility` to
+  accept or reject.
+- **`SafetyCore.RiskLevel` is not used here.** A read-only metadata fact has
+  no action to be dangerous; `.low` would wrongly imply "safe to act on".
+  Privacy Lab's types simply have no risk field — and no privacy *score*:
+  `PrivacyLabSummary` reports counts and an honest headline only.
+- **Three states kept distinct.** `MetadataPresence` is
+  `present` / `notDetected` / `unavailable(reason:)`. "Not detected" is
+  never rendered as "safe" or "clean": it means no *supported* field was
+  found, nothing more.
+- **Metadata is treated as sensitive and is not persisted.** No GPS
+  coordinates, filenames, paths, author names, comments, device identifiers
+  or free-form values reach the Store, Timeline, activity history, logs or
+  analytics. Inspection data lives in memory for the current image only.
+  Precise GPS coordinates are shown only behind an explicit opt-in
+  disclosure; there is no reverse geocoding and no network call.
+- **Photos Library boundary.** Only a single `NSOpenPanel`-selected file URL
+  is read. The Photos framework is not used; no library is enumerated or
+  modified.
+- **Sanitized-copy is not implemented.** The layering leaves a clean seam
+  for a future *original → read → sanitized copy → verify → compare →
+  preserve original* flow, but no mutation exists today. A future operation
+  must prefer **create sanitized copy** over **modify original**.
+
+See `Documentation/PRIVACY_LAB.md` for the full field/format coverage and
+measured limitations.
+
 ## Not yet implemented (planned)
 Quarantine, restore manifests, reinforced confirmation for non-reversible ops,
-hard-link and open-file checks, volume identity checks.
+hard-link and open-file checks, volume identity checks, image-metadata
+sanitized-copy export.
