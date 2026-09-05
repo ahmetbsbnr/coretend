@@ -302,6 +302,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
     case applications = "Applications"
     case duplicates = "Duplicates"
     case timeline = "Timeline"
+    case recoveryPlan = "Recovery Plan"
     case myClutter = "My Clutter"
     case spaceLens = "Space Lens"
     case cloudCleanup = "Cloud Cleanup"
@@ -319,6 +320,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .applications: .applications
         case .duplicates: .duplicates
         case .timeline: .timeline
+        case .recoveryPlan: .recoveryPlan
         case .myClutter: .myClutter
         case .spaceLens: .spaceLens
         case .cloudCleanup: .cloudCleanup
@@ -340,6 +342,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .applications: L("apps.title")
         case .duplicates: L("module.duplicates")
         case .timeline: L("module.timeline")
+        case .recoveryPlan: L("module.recovery_plan")
         case .myClutter: L("clutter.title")
         case .spaceLens: L("spacelens.title")
         case .cloudCleanup: L("cloud.nav_title")
@@ -358,7 +361,7 @@ struct SidebarGroup: Identifiable {
     static let all: [SidebarGroup] = [
         SidebarGroup(id: "main", title: nil, modules: [.smartCare]),
         SidebarGroup(id: "storage", title: L("sidebar.storage"),
-                     modules: [.cleanup, .spaceLens, .duplicates, .applications, .timeline]),
+                     modules: [.cleanup, .spaceLens, .duplicates, .applications, .timeline, .recoveryPlan]),
         // Secondary, lower-priority tools: each does something the seven
         // primary modules above don't (broken-LaunchAgent detection, a
         // large/old-files finder, local-vs-cloud storage analysis) so they
@@ -419,6 +422,8 @@ struct MainWindow: View {
                     DuplicatesView()
                 case .timeline:
                     StorageTimelineView()
+                case .recoveryPlan:
+                    RecoveryPlanView()
                 case .performance:
                     PerformanceView()
                 case .spaceLens:
