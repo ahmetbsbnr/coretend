@@ -649,14 +649,14 @@
 "advisor.cleanup.user.crashreports.reason" = "Diagnostic crash reports older than 30 days.";
 "advisor.cleanup.user.crashreports.consequence" = "Nothing reads these once they're no longer useful for debugging a past crash.";
 "advisor.cleanup.dev.xcode.deriveddata.summary" = "Xcode build data";
-"advisor.cleanup.dev.xcode.deriveddata.reason" = "Build intermediates Xcode generates while compiling your projects.";
+"advisor.cleanup.dev.xcode.deriveddata.reason" = "Build intermediates and indexes Xcode generates while compiling projects. Multiple builds and configurations can grow this folder.";
 "advisor.cleanup.dev.xcode.deriveddata.consequence" = "Xcode rebuilds these the next time you build.";
 "advisor.cleanup.user.incompletedownloads.summary" = "Incomplete downloads";
 "advisor.cleanup.user.incompletedownloads.reason" = "Partial download files older than 7 days.";
 "advisor.cleanup.user.incompletedownloads.consequence" = "These downloads never finished; nothing uses a partial file.";
 "advisor.cleanup.dev.xcode.devicesupport.summary" = "Old device debug symbols";
 "advisor.cleanup.dev.xcode.devicesupport.reason" = "Debug symbols for iOS devices you may not have used recently.";
-"advisor.cleanup.dev.xcode.devicesupport.consequence" = "Xcode regenerates these automatically the next time a matching device connects.";
+"advisor.cleanup.dev.xcode.devicesupport.consequence" = "Device support includes symbols used to debug connected iOS devices. Xcode may need to prepare support again when a device reconnects. Review before removing; only files older than 90 days are offered.";
 "advisor.cleanup.user.iosbackups.summary" = "Old device backups";
 "advisor.cleanup.user.iosbackups.reason" = "Local iPhone or iPad backups older than 180 days.";
 "advisor.cleanup.user.iosbackups.consequence" = "Removing a backup deletes your only local copy of it. Make sure you don't still need it.";
@@ -668,7 +668,7 @@
 "advisor.cleanup.user.oldarchives.consequence" = "Review the contents yourself before removing — CoreTend can't tell you what's inside.";
 "advisor.cleanup.dev.xcode.archives.summary" = "Old Xcode archives";
 "advisor.cleanup.dev.xcode.archives.reason" = "Archived Xcode builds older than 30 days.";
-"advisor.cleanup.dev.xcode.archives.consequence" = "An archive can be the only copy of a build you shipped. Review before removing.";
+"advisor.cleanup.dev.xcode.archives.consequence" = "Archives are not caches. They may be needed for symbolication, redistribution and build history, and can be your only copy of a shipped build. Review before removing.";
 "advisor.cleanup.unknown.summary" = "Unrecognized category";
 "advisor.cleanup.unknown.reason" = "CoreTend doesn't have specific information about this category.";
 "advisor.cleanup.unknown.consequence" = "Review this item yourself before deciding.";
@@ -823,3 +823,29 @@
 "apps.detail.associated.confidence.probable" = "Probable";
 "apps.detail.associated.confidence.uncertain" = "Uncertain";
 "apps.detail.associated.shared" = "Shared";
+
+/* Developer package caches — explicit Advisor + Timeline mappings */
+"timeline.category.cleanup.dev.cache.swiftpm" = "SwiftPM cache";
+"timeline.category.cleanup.dev.cache.homebrew" = "Homebrew cache";
+"timeline.category.cleanup.dev.cache.npm" = "npm cache";
+"timeline.category.cleanup.dev.cache.pnpm" = "pnpm content store";
+"timeline.category.cleanup.dev.cache.yarn" = "Yarn Classic cache";
+"timeline.category.cleanup.dev.cache.yarn.berry" = "Yarn Berry global cache";
+"advisor.cleanup.dev.cache.swiftpm.summary" = "Regenerable manifest and binary artifact caches";
+"advisor.cleanup.dev.cache.swiftpm.reason" = "Cached manifest evaluations and downloaded binary artifacts in SwiftPM's default macOS cache. Repositories, registry data, configuration and credentials are excluded.";
+"advisor.cleanup.dev.cache.swiftpm.consequence" = "SwiftPM may evaluate manifests or download binary artifacts again. Builds may take longer and require network access. User Package.swift files are not included.";
+"advisor.cleanup.dev.cache.homebrew.summary" = "Regenerable Homebrew downloads and cache metadata";
+"advisor.cleanup.dev.cache.homebrew.reason" = "Files in Homebrew's default macOS cache. Installed packages, Cellar, Caskroom, taps, configuration and services are excluded.";
+"advisor.cleanup.dev.cache.homebrew.consequence" = "Homebrew may download installers, bottles and metadata again. Installed packages remain available; a future install may require network access.";
+"advisor.cleanup.dev.cache.npm.summary" = "Regenerable npm content cache";
+"advisor.cleanup.dev.cache.npm.reason" = "Only ~/.npm/_cacache is included. Other npm folders, .npmrc, configuration and credentials are excluded.";
+"advisor.cleanup.dev.cache.npm.consequence" = "npm may download packages again. Offline installs may fail until the cache is rebuilt; projects and node_modules are not included.";
+"advisor.cleanup.dev.cache.pnpm.summary" = "Regenerable content in supported pnpm stores";
+"advisor.cleanup.dev.cache.pnpm.reason" = "Content and index files in known v3/v10 store locations. This does not identify the active store. Custom paths, unknown versions, virtual store links and projects are excluded.";
+"advisor.cleanup.dev.cache.pnpm.consequence" = "pnpm may download packages again; offline installs may fail. Hard-linked project files are retained. Logical bytes are not a promise of physical space freed.";
+"advisor.cleanup.dev.cache.yarn.summary" = "Regenerable Yarn Classic download cache";
+"advisor.cleanup.dev.cache.yarn.reason" = "Yarn Classic's default macOS cache. Project .yarn folders, installed packages, settings and credentials are excluded.";
+"advisor.cleanup.dev.cache.yarn.consequence" = "Yarn Classic may download packages again. Offline installs may fail until its cache is rebuilt.";
+"advisor.cleanup.dev.cache.yarn.berry.summary" = "Regenerable Yarn Berry cache — review required";
+"advisor.cleanup.dev.cache.yarn.berry.reason" = "The default global Yarn Berry cache. Plug’n’Play projects can load packages directly from these ZIP files; this cache may be in active use.";
+"advisor.cleanup.dev.cache.yarn.berry.consequence" = "Projects using Plug’n’Play may stop running until yarn install rebuilds this cache, possibly requiring network access. Review and stop affected projects first. Project-local caches, configuration and credentials are excluded.";

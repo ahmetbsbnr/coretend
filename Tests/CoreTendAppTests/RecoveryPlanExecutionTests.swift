@@ -3,6 +3,7 @@
 
 import Testing
 import Foundation
+import FileRules
 @testable import CoreTendApp
 
 /// Exercises `RecoveryPlanService` against a disposable fixture home and a
@@ -53,7 +54,7 @@ struct RecoveryPlanExecutionTests {
         defer { try? FileManager.default.removeItem(at: home) }
         // No files created at all — every rule should report 0 bytes, never crash.
         let candidates = await RecoveryPlanService.cleanupCandidates(home: home, store: nil)
-        #expect(candidates.count == 10, "one candidate per shipped Cleanup rule, even with nothing found")
+        #expect(candidates.count == UserCleanupRules.all.count, "one candidate per shipped Cleanup rule, even with nothing found")
         for data in candidates {
             #expect(data.candidate.reclaimableBytes == 0)
         }

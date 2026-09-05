@@ -74,8 +74,10 @@ enum RecoveryPlanService {
     // overlap, so rather than risk the same bytes counted toward one goal
     // twice, `user.caches` is always `.notIncluded` here (exclusion reason
     // `.overlapsAnotherSource`) — still shown, with its real bytes, never
-    // silently dropped. No other rule in `UserCleanupRules.all` reads from
-    // ~/Library/Caches, so this is the only Cleanup rule that needs this.
+    // silently dropped. Package caches own disjoint subtrees excluded from
+    // user.caches. SwiftPM's org.swift.swiftpm directory can also be reported
+    // by Leftovers' reverse-DNS heuristic; overlapping Leftovers candidates
+    // are excluded below, leaving the strict SwiftPM cache rule actionable.
     private static let overlappingCleanupRuleIDs: Set<String> = ["user.caches"]
 
     /// Runs all four wired engines and returns their real results as
@@ -159,7 +161,9 @@ enum RecoveryPlanService {
         var results: [RecoveryPlanCandidateData] = []
         for (items, isAmbiguous) in [(exact, false), (ambiguous, true)] where !items.isEmpty {
             let advisor = AdvisorService.advise(leftovers: items, isAmbiguous: isAmbiguous)
-            let eligibility = RecoveryPlanEligibility.evaluate(advisor)
+            let home = ApplicationInventoryLocations.resolve(environment: ProcessInfo.processInfo.environment).discovery.home
+            let overlaps = overlapsPackageCaches(items: items, home: home)
+            let eligibility = RecoveryPlanEligibility.evaluate(advisor, overlapsAnotherSource: overlaps)
             let candidate = RecoveryPlanCandidate(
                 finding: advisor, category: eligibility.category, exclusionReason: eligibility.exclusionReason)
             results.append(RecoveryPlanCandidateData(candidate: candidate, payload: .leftovers(items: items, isAmbiguous: isAmbiguous)))
@@ -175,6 +179,16 @@ enum RecoveryPlanService {
         let candidate = RecoveryPlanCandidate(
             finding: advisor, category: eligibility.category, exclusionReason: eligibility.exclusionReason)
         return [RecoveryPlanCandidateData(candidate: candidate, payload: .privacy(profiles: profiles))]
+    }
+
+    static func overlapsPackageCaches(items: [AssociatedItem], home: URL) -> Bool {
+        let roots = PackageCacheRules.all.flatMap { $0.roots(home) }
+        return items.contains { item in
+            roots.contains { root in
+                PathValidator.isPath(root.path, under: item.url.path)
+                    || PathValidator.isPath(item.url.path, under: root.path)
+            }
+        }
     }
 
     // MARK: - Execution
@@ -201,20 +215,17 @@ enum RecoveryPlanService {
     static func executeOne(_ data: RecoveryPlanCandidateData, home: URL, store: Store?) async -> RecoveryPlanSourceResult {
         switch data.payload {
         case let .cleanup(ruleID, findings):
-            let center = SafetyCenter(
-                validator: PathValidator(allowedRoots: UserCleanupRules.allowedRoots(home: home)),
-                sink: store)
-            var approved: [ApprovedFileOperation] = []
-            for finding in findings {
-                if let op = try? await center.approve(
-                    url: finding.url, logicalSize: finding.logicalSize, ruleID: ruleID, risk: finding.risk) {
-                    approved.append(op)
-                }
+            let excluded = (try? await store?.exclusions()) ?? []
+            let result = await CleanupExecution.execute(findings.filter { $0.ruleID == ruleID }, home: home,
+                                                        excludedPaths: excluded, sink: store)
+            if let store {
+                try? await store.recordActivity(ActivityRecord(kind: .cleanup,
+                    summary: "Recovery Plan: moved \(result.executed.count) items (\(ruleID)) to Trash",
+                    itemCount: result.executed.count, bytes: result.processedBytes))
             }
-            let result = await center.execute(approved)
-            return finish(id: data.candidate.id, category: data.candidate.finding.category, result: result,
-                          totalRequested: findings.count, store: store,
-                          summary: "Recovery Plan: moved \(result.executed.count) items (\(ruleID)) to Trash")
+            return RecoveryPlanSourceResult(id: data.candidate.id, category: .cleanup,
+                processedBytes: result.processedBytes, processedCount: result.executed.count,
+                skippedCount: findings.count - result.executed.count)
 
         case let .duplicates(groups):
             let allNonKeeperPaths = Set(groups.flatMap { group in group.urls.filter { $0 != group.keeper }.map(\.path) })

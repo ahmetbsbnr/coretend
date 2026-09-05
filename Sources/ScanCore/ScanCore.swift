@@ -78,10 +78,13 @@ public struct ScanRule: Sendable {
     public let matches: (@Sendable (URL) -> Bool)?
     /// Files smaller than this are ignored. 0 = no size filter.
     public let minimumSizeBytes: Int64
+    /// Rule-owned subtrees skipped before traversal, also used at execution.
+    public let excludedRoots: @Sendable (URL) -> [URL]
 
     public init(id: String, name: String, category: String, explanation: String,
                 minimumAgeDays: Int = 0, risk: RiskLevel, preselect: Bool,
                 matches: (@Sendable (URL) -> Bool)? = nil, minimumSizeBytes: Int64 = 0,
+                excludedRoots: @escaping @Sendable (URL) -> [URL] = { _ in [] },
                 roots: @escaping @Sendable (URL) -> [URL]) {
         self.id = id
         self.name = name
@@ -93,6 +96,7 @@ public struct ScanRule: Sendable {
         self.preselect = preselect
         self.matches = matches
         self.minimumSizeBytes = minimumSizeBytes
+        self.excludedRoots = excludedRoots
     }
 }
 
@@ -122,7 +126,7 @@ public struct ScanConfiguration: Sendable {
 /// Streaming, cancellable scan engine. Never deletes anything.
 public struct ScanEngine: Sendable {
     private static let resourceKeys: [URLResourceKey] = [
-        .isDirectoryKey, .isSymbolicLinkKey, .fileSizeKey,
+        .isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey,
         .totalFileAllocatedSizeKey, .contentModificationDateKey, .isPackageKey,
     ]
 
@@ -163,11 +167,34 @@ public struct ScanEngine: Sendable {
                             var localScanned = 0
                             var localBytes: Int64 = 0
                             let fm = FileManager.default
+                            let excluded = config.excludedPaths + rule.excludedRoots(config.home).map {
+                                ScanConfiguration.canonical($0.standardizedFileURL.path)
+                            }
                             for root in rule.roots(config.home) {
                                 if Task.isCancelled { break }
-                                guard fm.fileExists(atPath: root.path) else { continue }
+                                let canonical = ScanConfiguration.canonical(root.standardizedFileURL.path)
+                                if excluded.contains(where: { PathValidator.isPath(canonical, under: $0) }) { continue }
+                                // A symlink in an ancestor of a rule root must not
+                                // turn a known cache location into a project scan.
+                                guard ScanConfiguration.canonical(root.resolvingSymlinksInPath().path) == canonical else {
+                                    continuation.yield(.error(path: root.path, message: "symlink root"))
+                                    continue
+                                }
+                                do {
+                                    let values = try root.resourceValues(forKeys: [.isDirectoryKey])
+                                    guard values.isDirectory == true, fm.isReadableFile(atPath: root.path) else {
+                                        continuation.yield(.error(path: root.path, message: "unreadable directory"))
+                                        continue
+                                    }
+                                } catch {
+                                    let code = (error as NSError).code
+                                    if code != NSFileReadNoSuchFileError && code != NSFileNoSuchFileError {
+                                        continuation.yield(.error(path: root.path, message: "unreadable directory"))
+                                    }
+                                    continue
+                                }
                                 await Self.scanRoot(root, rule: rule, cutoff: cutoff,
-                                                    excludedPaths: config.excludedPaths,
+                                                    excludedPaths: excluded,
                                                     scanned: &localScanned, totalBytes: &localBytes,
                                                     continuation: continuation, pauseController: pauseController)
                             }
@@ -210,7 +237,11 @@ public struct ScanEngine: Sendable {
         guard let enumerator = FileManager.default.enumerator(
             at: root,
             includingPropertiesForKeys: resourceKeys,
-            options: [.skipsPackageDescendants]
+            options: [.skipsPackageDescendants],
+            errorHandler: { url, _ in
+                continuation.yield(.error(path: url.path, message: "unreadable directory"))
+                return true
+            }
         ) else { return }
 
         // Manual nextObject() rather than `for case ... in enumerator`: the
@@ -243,7 +274,7 @@ public struct ScanEngine: Sendable {
             if scanned % 512 == 0 {
                 continuation.yield(.progress(scanned: scanned, currentPath: url.path))
             }
-            guard values.isDirectory != true else { continue }
+            guard values.isRegularFile == true else { continue }
             let size = Int64(values.fileSize ?? 0)
             if let modified = values.contentModificationDate, modified > cutoff { continue }
             if size < rule.minimumSizeBytes { continue }
