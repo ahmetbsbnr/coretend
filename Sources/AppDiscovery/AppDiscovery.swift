@@ -304,6 +304,17 @@ public struct AppDiscovery: Sendable {
         return results
     }
 
+    /// The subset of `groupContainerCandidates(installedApps:)` whose vendor
+    /// prefix matches `app`'s own bundle identifier — the candidates worth
+    /// showing on that one app's detail screen. Returns `[]` when `app` has
+    /// no bundle identifier (nothing to derive a vendor prefix from).
+    public func groupContainerCandidates(for app: InstalledApp, allInstalledApps: [InstalledApp]) -> [GroupContainerCandidate] {
+        guard let bundleID = app.bundleIdentifier, let appPrefix = Self.vendorPrefix(bundleID) else { return [] }
+        return groupContainerCandidates(installedApps: allInstalledApps).filter {
+            Self.vendorPrefix($0.item.url.lastPathComponent) == appPrefix
+        }
+    }
+
     /// The first two dot-separated components of a bundle identifier or group
     /// identifier (e.g. `"com.acme.App"` → `"com.acme"`), stripping a leading
     /// `"group."` first (`"group.com.acme.suite"` → `"com.acme"`) so a bundle
