@@ -61,52 +61,62 @@ and is what notarization actually depends on.
   (`.p8` in the gitignored `Configuration/DeveloperID/`, key material never
   committed) registered as the `notarytool` keychain profile `CoreTend-Notary`.
 
-## Nested WidgetKit extension + App Group — implemented, not yet notarized
+## Nested extensions (WidgetKit + Finder Sync) — implemented, not yet notarized
 
-The shipping `.app` now contains a nested extension,
-`Contents/PlugIns/CoreTendWidget.appex`. This changes the signing flow.
+The shipping `.app` now contains **two** nested app extensions,
+`Contents/PlugIns/CoreTendWidget.appex` (`com.apple.widgetkit-extension`)
+and `Contents/PlugIns/CoreTendFinder.appex` (`com.apple.FinderSync`). This
+changes the signing flow.
 
-**Input.** `Scripts/sign-and-notarize.sh` now consumes `build/CoreTend.app`
+**Input.** `Scripts/sign-and-notarize.sh` consumes `build/CoreTend.app`
 produced by **`Scripts/build-xcode.sh`** (the Xcode Release build), not
 `Scripts/package-local.sh` — the latter is a fast SwiftPM build with no
 `Contents/PlugIns` and no `Metadata.appintents`. Preflight fails loudly if
-the `.appex` or the App Intents metadata bundle is absent.
+either `.appex`, either entitlements file, or the App Intents metadata
+bundle is absent.
 
 **Order (enforced by the script).**
 
-1. Sign every *loose* embedded Mach-O depth-first, **excluding** the two
-   bundle executables (the appex's and the host's `Contents/MacOS/*`).
-2. Sign `CoreTendWidget.appex` with **its own** entitlements,
-   `Configuration/CoreTendWidget.entitlements` — App Sandbox (extensions
-   are always sandboxed on macOS) **+** the shared App Group.
-3. Sign the host `CoreTend.app` with `Configuration/CoreTend.entitlements`
-   — hardened runtime, **no** sandbox, **+ the exact same App Group**.
-   Signing the host seals `CodeResources` over the already-signed appex, so
-   the appex is **never** re-signed afterwards.
-4. Verify both (`codesign --verify --strict`), and assert via
-   `codesign --display --entitlements :-` that the appex still carries
-   `group.com.ahmetbsbnr.coretend`.
+1. Sign every *loose* embedded Mach-O depth-first, **excluding** the three
+   bundle executables (both appex `Contents/MacOS/*` and the host's).
+2. Sign `CoreTendFinder.appex` with `Configuration/CoreTendFinder.entitlements`
+   — **App Sandbox only** (the handoff is a `coretend://` URL, not a shared
+   file, so no App Group; the extension reads no file contents, so no
+   `files.user-selected` entitlement).
+3. Sign `CoreTendWidget.appex` with `Configuration/CoreTendWidget.entitlements`
+   — App Sandbox **+** the shared App Group.
+4. Sign the host `CoreTend.app` with `Configuration/CoreTend.entitlements`
+   — hardened runtime, **no** sandbox, **+ the same App Group** the widget
+   uses. Signing the host seals `CodeResources` over both already-signed
+   appex bundles, so neither is re-signed afterwards.
+5. Verify all three (`codesign --verify --strict`); assert the widget appex
+   still carries `group.com.ahmetbsbnr.coretend`, the Finder appex is
+   entitlement dictionary is exactly `com.apple.security.app-sandbox = true`.
 
-**The one new entitlement** anywhere is `com.apple.security.application-groups`
-(`group.com.ahmetbsbnr.coretend`), added to **both** the host and the widget
-so the host can publish a low-sensitivity status snapshot into the group
-container and the widget can read it. macOS App Group identifiers are used
-verbatim — no team prefix (that is an iOS convention). Nothing else was
-added: no iCloud, no push, no network client, no user-selected-file, no
-`com.apple.security.cs.*` exception, no privileged-helper entitlement.
-`XcodeHostHygieneTests` guards this.
+**New entitlements introduced across both extension verticals:**
+
+| Entitlement | On | Why |
+|---|---|---|
+| `com.apple.security.application-groups` (`group.com.ahmetbsbnr.coretend`) | host **+** widget | host publishes a low-sensitivity status snapshot into the group container; widget reads it |
+| `com.apple.security.app-sandbox` | widget, Finder | macOS app extensions are always sandboxed |
+
+The Finder extension adds **nothing else** — no App Group, no
+`files.user-selected.read-only`, no network, no automation. The host adds
+only `CFBundleURLTypes` for the `coretend` scheme (not an entitlement).
+Still no iCloud, push, `com.apple.security.cs.*`, or privileged-helper
+entitlement anywhere. `XcodeHostHygieneTests` guards this.
 
 **Caveat — not yet exercised.** For a Developer ID (non-App-Store)
-distribution, the App Group identifier must be registered on the Apple
-Developer account or the notary service can reject the entitlement. The
-pipeline **support** is implemented and the local unsigned build +
-structural verification pass, but **no real notarization run with the
-nested extension + App Group has been performed this session.** The
+distribution, the App Group identifier (used **only** by the widget) must be
+registered on the Apple Developer account or the notary service can reject
+the entitlement. The pipeline **support** is implemented and the local
+unsigned build + structural verification pass, but **no real notarization
+run with the nested extensions has been performed this session.** The
 published `v1.0.0` provenance in `Configuration/published-release.json` /
 `latest.json` / `Documentation/RELEASE_STATE.md` is unchanged and remains
-historically accurate (it predates the widget). Do not mark any future
-release `notarized: true` until that release's own bytes, including the
-signed `.appex`, have actually been accepted by Apple.
+historically accurate (it predates both extensions). Do not mark any future
+release `notarized: true` until that release's own bytes, including both
+signed `.appex` bundles, have actually been accepted by Apple.
 
 ## Prerequisites (one-time, human, requires a paid account)
 
@@ -146,28 +156,33 @@ procedure (e.g. after certificate expiry in 2031, or on a new machine).
 
 ```
 export CORETEND_DEVELOPER_ID_APPLICATION="Developer ID Application: Ahmet BASBUNAR (NSCUV5G738)"
-Scripts/build-xcode.sh                         # Xcode Release .app with the embedded widget + App Intents metadata
+Scripts/build-xcode.sh                         # Xcode Release .app: both extensions + App Intents metadata
 Scripts/sign-and-notarize.sh <version> CoreTend-Notary
 ```
 
-(`Scripts/package-local.sh` is **not** a valid input here — it produces a
-widget-less SwiftPM build with no `Contents/PlugIns`.)
+(`Scripts/package-local.sh` is **not** a valid input here — it produces an
+extension-less SwiftPM build with no `Contents/PlugIns`.)
 
 The script, in order:
 
 1. Verifies the identity and notarytool profile both exist, and that the
-   input `.app` carries `Contents/PlugIns/CoreTendWidget.appex` and
-   `Contents/Resources/Metadata.appintents` — refuses to proceed otherwise.
-2. Signs every *loose* embedded Mach-O binary/dylib depth-first (the two
-   bundle executables excluded), then `CoreTendWidget.appex` with
-   `Configuration/CoreTendWidget.entitlements` (App Sandbox + App Group),
-   then the host `.app` with `Configuration/CoreTend.entitlements`
-   (hardened runtime + the same App Group, no sandbox) — all with
-   `--options runtime --timestamp`. The appex is never re-signed after the
-   host seals over it.
-3. Verifies both signatures (`codesign --verify --deep --strict` on the
-   host, `--verify --strict` on the appex) and re-checks the appex's App
-   Group entitlement.
+   input `.app` carries `Contents/PlugIns/CoreTendWidget.appex`,
+   `Contents/PlugIns/CoreTendFinder.appex`, both extension entitlements
+   files, and `Contents/Resources/Metadata.appintents` — refuses to proceed
+   otherwise.
+2. Signs every *loose* embedded Mach-O binary/dylib depth-first (the three
+   bundle executables excluded), then `CoreTendFinder.appex` with
+   `Configuration/CoreTendFinder.entitlements` (App Sandbox only), then
+   `CoreTendWidget.appex` with `Configuration/CoreTendWidget.entitlements`
+   (App Sandbox + App Group), then the host `.app` with
+   `Configuration/CoreTend.entitlements` (hardened runtime + the same App
+   Group, no sandbox) — all with
+   `--options runtime --timestamp`. Neither appex is re-signed after the
+   host seals over them.
+3. Verifies all three signatures (`codesign --verify --deep --strict` on
+   the host, `--verify --strict` on each appex), re-checks the widget
+   appex's App Group entitlement, and asserts the Finder appex is sandboxed
+   and carries **no** App Group.
 4. ZIPs the signed app and submits it to Apple's notary service; waits.
 5. Staples the ticket to that same app bundle and validates the staple.
 6. Builds the DMG from the signed, stapled app

@@ -283,7 +283,7 @@ CoreTend-Trashed items back where they came from.
 See `Documentation/RESTORE.md` for the user-facing model and the
 external-volume `HUMAN VERIFICATION REQUIRED` note.
 
-## macOS integrations (App Intents / notifications / scheduled scans / WidgetKit)
+## macOS integrations (App Intents / notifications / scheduled scans / WidgetKit / Finder)
 
 `Sources/CoreTendApp/CoreTendIntents.swift`, `NotificationService.swift`,
 `ScheduledScanService.swift`, `MacIntegrations.swift`, `AppRouter.swift`.
@@ -342,6 +342,29 @@ structure**, not by a runtime flag:
   security finding), written atomically, only on meaningful events, never on
   a timer. Corrupt / partial / future-version / stale / missing snapshots
   degrade to an honest "unavailable" placeholder, never a fabricated `0`.
+- **The Finder Sync extension cannot scan, inspect, or delete — by
+  dependency structure.** The `CoreTendFinder` extension target
+  (`FinderExtension/CoreTendFinder.swift`) links **only** the `FinderShared`
+  package product (Foundation-only). It does not import `ScanCore` /
+  `SafetyCore` / `FileRules` / `Persistence` / `AppDiscovery` /
+  `IntegrityCore` / `CoreTendApp`, and references no `trashItem` /
+  `removeItem` / `SafetyCenter` / `RecoveryPlanService` / `RestoreService` /
+  `CleanupExecution` / `PathValidator` symbol, nor any content-inspection
+  API (`ImageMetadataInspector` / `CodeSignInspector` / `CGImageSource` /
+  `contentsOfDirectory`) — `FinderExtensionSafetyTests` enforces this at the
+  dependency and source level. The extension reads **no file contents**: it
+  classifies the Finder selection using bounded single-item attributes and hands one
+  path to the host as a `coretend://` URL. The host re-validates that path
+  against the live filesystem with a purpose-built **read-only**
+  `SelectionValidator` (deliberately not `PathValidator`, whose
+  destructive-selection rules would wrongly reject a user's own
+  `~/Documents` file) before routing to Space Lens (read-only size scan),
+  Privacy Lab (in-memory metadata inspection), or the Integrity inspector
+  (off-main-actor code-signature read). Consumption revalidates the path,
+  rejects selected symlinks/incompatible kinds, clears the one-shot URL, and
+  shows EN/FR rejection guidance. Finder scans skip persistent path history.
+  No Finder action deletes, trashes, cleans,
+  restores, or uninstalls anything.
 
 See `Documentation/MACOS_INTEGRATIONS.md`.
 

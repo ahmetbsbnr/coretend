@@ -30,10 +30,17 @@ and nothing else.
   product. There is no second `@main`, no copied source.
 - **Targets:**
   - `CoreTend` — `application`, bundle id `com.ahmetbsbnr.coretend`,
-    deployment target macOS 14.0, hardened runtime on, embeds the widget.
-  - `CoreTendWidget` — `app-extension`, bundle id
+    deployment target macOS 14.0, hardened runtime on, embeds both
+    extensions below.
+  - `CoreTendWidget` — `app-extension`
+    (`com.apple.widgetkit-extension`), bundle id
     `com.ahmetbsbnr.coretend.widget`, links **only** the `WidgetShared`
     package product (no scan/cleanup/restore module is reachable).
+  - `CoreTendFinder` — `app-extension` (`com.apple.FinderSync`), bundle id
+    `com.ahmetbsbnr.coretend.finder`, links **only** the `FinderShared`
+    package product. Read-only: forwards the Finder selection to the host
+    as a `coretend://` URL and does nothing else. App-sandbox-only
+    entitlements, no App Group.
 - **Shared scheme:** `CoreTend-App` (`xcshareddata/xcschemes/`), tracked so
   CI can build it. User schemes, `xcuserdata`, `*.xcuserstate`,
   `DerivedData`, and workspace check files are git-ignored.
@@ -50,18 +57,22 @@ Non-interactive, CI-safe. Runs `xcodegen generate`, then `xcodebuild
 -project CoreTend.xcodeproj -scheme CoreTend-App -configuration Release`
 into a temp derived-data dir with `CODE_SIGNING_ALLOWED=NO` (an ordinary
 build needs no Developer ID), then verifies the built bundle
-structurally: widget embedded at `Contents/PlugIns/CoreTendWidget.appex`
-with the correct extension-point id and bundle id, its FR localization
-present, `Contents/Resources/Metadata.appintents/extract.actionsdata`
-present with ≥ 7 App Intents and ≥ 6 App Shortcuts, and no absolute
-developer path in `Contents/Info.plist`. The verified `.app` is copied to
-`build/CoreTend.app` for the signing lane.
+structurally: **both** extensions embedded at
+`Contents/PlugIns/CoreTendWidget.appex` (`com.apple.widgetkit-extension`)
+and `Contents/PlugIns/CoreTendFinder.appex` (`com.apple.FinderSync`) with
+the right bundle ids and FR localizations,
+`Contents/Resources/Metadata.appintents/extract.actionsdata` present with
+≥ 7 App Intents and ≥ 6 App Shortcuts, both extension `CFBundleExecutable` declarations, exact sandbox-only entitlements
+from an ad-hoc-signed copy of the compiled Finder bundle, the host `Info.plist` registering
+the `coretend://` URL scheme, and no absolute developer path in the generated project/schemes or host plist. The
+verified `.app` is copied to `build/CoreTend.app` for the signing lane.
 
 ### Signing / release
 
 `Scripts/sign-and-notarize.sh` consumes `build/CoreTend.app` from
-`build-xcode.sh` (not `package-local.sh`, which is a fast widget-less
-SwiftPM build) and signs the nested extension first, then the host — see
+`build-xcode.sh` (not `package-local.sh`, which is a fast extension-less
+SwiftPM build) and signs **each extension bundle first** (Finder, then
+widget), then the host last — see
 `Documentation/SIGNING_NOTARIZATION.md`.
 
 ## Package schemes — `.swiftpm/xcode`

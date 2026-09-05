@@ -8,9 +8,9 @@ process (DCO, PR flow); this file is the technical how-to.
 macOS 14+, Apple Silicon, Swift command-line tools. **Xcode is not required
 for domain development or testing** — `swift build` / `Scripts/test.sh` are
 the authoritative loop. Xcode (+ `brew install xcodegen`) is required only to
-produce the *shipping* app bundle: the nested WidgetKit extension, the App
-Intents metadata bundle, and entitlements are Apple bundle structures SwiftPM
-cannot express. See "Two build lanes" below.
+produce the *shipping* app bundle: the nested WidgetKit and Finder Sync
+extensions, the App Intents metadata bundle, and entitlements are Apple
+bundle structures SwiftPM cannot express. See "Two build lanes" below.
 
 ```sh
 git clone https://github.com/ahmetbsbnr/coretend.git
@@ -26,15 +26,15 @@ Scripts/bootstrap.sh     # one-time setup
 | Lane | Command | Produces | Needs Xcode? |
 |---|---|---|---|
 | **Domain / CI** (authoritative) | `Scripts/build.sh` · `Scripts/test.sh` | every module + all tests | no |
-| **Shipping** | `Scripts/build-xcode.sh` | `build/CoreTend.app` with the embedded `CoreTendWidget.appex` and `Contents/Resources/Metadata.appintents`, then structural verification | yes |
+| **Shipping** | `Scripts/build-xcode.sh` | `build/CoreTend.app` with the embedded `CoreTendWidget.appex` + `CoreTendFinder.appex` and `Contents/Resources/Metadata.appintents`, then structural verification | yes |
 
 `Package.swift` remains the single source of truth for every domain module,
 service, and test. `CoreTend.xcodeproj` is **generated** from `project.yml`
-by xcodegen (the repository doctor fails on drift) and only wires the two
-thin bundle targets: the `application` host (which compiles
-`Sources/CoreTend/` and links the `CoreTendApp` package product — the exact
-same app, not a fork) and the `app-extension` widget (which links only the
-`WidgetShared` package product).
+by xcodegen (the repository doctor fails on drift) and only wires the thin
+bundle targets: the `application` host (which compiles `Sources/CoreTend/`
+and links the `CoreTendApp` package product — the exact same app, not a
+fork), the `app-extension` widget (which links only `WidgetShared`), and the
+`app-extension` Finder Sync extension (which links only `FinderShared`).
 
 ```sh
 Scripts/build.sh          # debug (SwiftPM)

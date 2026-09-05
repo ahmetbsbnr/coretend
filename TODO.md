@@ -233,9 +233,23 @@ Intents metadata bundle in the packaged `.app`); real notification permission
 + system delivery; live cold-launch deep links; scheduled execution over
 real wall-clock; VoiceOver/keyboard on the new Settings controls. WidgetKit
 was NOT built in that vertical — it shipped next (see "Done — WidgetKit
-status widget + Xcode shipping host" below). Finder Extension remains
-analysis only. See `Documentation/MACOS_INTEGRATIONS.md`,
-`Documentation/SAFETY_MODEL.md` → "macOS integrations".
+status widget + Xcode shipping host" below). The Finder Sync extension
+shipped after that — see "Done — Finder Sync extension" below. See
+`Documentation/MACOS_INTEGRATIONS.md`, `Documentation/SAFETY_MODEL.md` →
+"macOS integrations".
+
+## Finder Sync extension — FAIT — local gates passed; human verification pending
+
+Real embedded Finder target; three conservative single-selection actions; explicit
+host-targeted URL handoff; consume-once AppRouter routes revalidated on delivery.
+Existing Space Lens, Privacy Lab, and Integrity services reused. No destructive
+extension dependency or automatic mutation. Finder scans skip path history.
+Sandbox-only entitlements; Settings help and errors localized EN/FR; both nested
+extension executable declarations and signing/package checks fixed.
+
+See `Documentation/MACOS_INTEGRATIONS.md` §6 and
+`Documentation/FINDER_EXTENSION_VALIDATION.md` for recovery, exact gates, and
+remaining human verification. Launch Items Manager remains analysis only.
 
 ## Done — WidgetKit status widget + Xcode shipping host
 

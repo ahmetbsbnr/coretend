@@ -1,5 +1,5 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
-# macOS integrations — App Intents, notifications, scheduled scans, WidgetKit
+# macOS integrations — App Intents, notifications, scheduled scans, WidgetKit, Finder
 
 The production CoreTend integration layer. Every component reuses existing
 domain services — there is no second scan, cleanup, or restore engine — and
@@ -285,22 +285,112 @@ are Apple bundle structures SwiftPM cannot emit. `CoreTend.xcodeproj`
 around the **same** SwiftPM code — the app target compiles
 `Sources/CoreTend/` and links the `CoreTendApp` package product; there is
 no second `@main` and no copied source. `swift build` / `Scripts/test.sh`
-still run with no Xcode. Full detail:
+still run with no Xcode. It now embeds **two** app extensions
+(`CoreTendWidget.appex`, `CoreTendFinder.appex`). Full detail:
 [XCODE_INTEGRATION.md](XCODE_INTEGRATION.md); signing of the nested
-extension: [SIGNING_NOTARIZATION.md](SIGNING_NOTARIZATION.md).
+extensions: [SIGNING_NOTARIZATION.md](SIGNING_NOTARIZATION.md).
+
+## 6. Finder Sync extension (read-only, optional, user-initiated)
+
+`CoreTendFinder.appex` is a real `com.apple.FinderSync` extension, bundle id
+`com.ahmetbsbnr.coretend.finder`, embedded alongside `CoreTendWidget.appex`.
+It links only Foundation-based `FinderShared` plus system frameworks.
+Menu construction reads bounded attributes of one item, never contents,
+recursive directories, EXIF, Mach-O, signatures, SQLite, or network services.
+No destructive engine is linked; source/dependency tests enforce that boundary.
+
+| Single selection | Action | Existing host integration |
+|---|---|---|
+| Existing folder | Scan Folder with CoreTend | Space Lens read-only scan |
+| Regular file with supported image extension | Inspect Image Metadata in CoreTend | Privacy Lab → ImageMetadataInspector |
+| Directory named `.app` | Inspect Application Integrity in CoreTend | Integrity → CodeSignInspector, off main actor |
+| Empty, multiple, missing, symlink, unsupported | No CoreTend action | None |
+
+Image suffix eligibility is only a menu hint. ImageIO validates actual content;
+unsupported/corrupt data gets the existing Privacy Lab error state. Symlinks
+selected directly are unsupported; parent aliases such as `/tmp` resolve during
+validation. Sandbox-denied metadata yields no action, not a guessed type.
+
+### Handoff and validation
+
+The extension calls `NSWorkspace.open(_:withApplicationAt:configuration:)`
+with its containing host application and one custom URL:
+
+    coretend://finder/<scan-folder|inspect-image|inspect-application>?path=<percent-encoded-absolute-path>
+
+Explicit host targeting avoids handing sensitive paths to another scheme handler.
+The action in the URL avoids guessing from document-opening events. No App Group
+payload, custom XPC, daemon, socket, or polling is needed.
+
+Host `onOpenURL` → `FinderHandoff` → existing `AppRouter`. Syntax rejects
+credentials, ports, fragments, unknown actions, extra/duplicate query fields,
+relative paths, traversal, control characters, and oversized paths. Percent
+encoding is decoded once. The dedicated read-only `SelectionValidator` checks
+existence and expected kind at receipt and again at consumption. Folder scans
+reject protected system roots and symlinks into them. Image targets must be
+regular files with supported suffixes; `.app` targets must be directories.
+No destructive cleanup `PathValidator` policy is applied to user documents.
+Invalid/stale selections inspect nothing and show localized guidance.
+
+Cold launch buffers navigation and one URL; mounted views and `onAppear` both
+consume the same one-shot stash. A newer route replaces unconsumed payloads.
+Consuming clears sensitive router URLs. Warm routes navigate, then notify the
+existing destination. Structural tests cover cold, warm, and competing consumers;
+real macOS event delivery remains human verification.
+
+Finder folder scans reuse `SpaceLensViewModel.start(url:recordVisit: false)`:
+no persistent location visit or scan activity containing the selected name.
+They never approve or execute cleanup. Any later interactive Trash action remains
+separately reviewed and confirmed through existing SafetyCenter. Privacy Lab uses
+the same inspector as Choose Image; metadata/GPS remain in memory, with no path
+history, Photos mutation, network, or EXIF stripping. Integrity preserves
+signed ≠ safe and unsigned ≠ malicious semantics.
+
+### Registration, entitlements, enablement
+
+Registered roots: actual account home (via `getpwuid`, not sandbox-container home),
+`/Applications`, `/Volumes`. Intended coverage includes Desktop, Documents,
+Downloads, and mounted volumes; coverage outside these roots is not promised.
+Finder controls contextual-menu availability. No badge callbacks or recursive
+monitoring work is implemented. Permission-denied and OS-specific coverage must
+be tested on real Finder; no Full Disk Access assumption.
+
+Finder entitlements are exactly `com.apple.security.app-sandbox = true`.
+No App Group, network, automation, or broad filesystem entitlement. Settings →
+Finder Integration explains optional enablement in macOS System Settings and
+read-only behavior. It neither fakes activation state nor nags at launch.
+Menu, Settings, and rejection guidance have EN/FR key parity.
+
+`build-xcode.sh` checks both embedded extensions, executable declarations,
+Finder identifiers, localizations, portable generated project, and existing
+7-intent/6-shortcut metadata. It signs a copy of the compiled Finder bundle ad-hoc
+to verify its exact entitlement dictionary. The deliverable remains unsigned.
+Release signing order remains Finder → Widget → host. Pipeline support is
+implemented; Developer ID signing/notarization of both extensions is not claimed.
+
+### HUMAN VERIFICATION REQUIRED
+
+System Settings visibility/enablement; real Finder menus and all three actions;
+cold launch, foreground/background/menu-bar-only delivery; Desktop/Documents/
+Downloads/external-volume coverage; EN/FR labels; VoiceOver/keyboard; signed and
+notarized build with both extensions; second Mac/supported macOS.
 
 ## Settings surface
 
 The **Settings → Scheduled Scans** section is an Off / Daily / Weekly picker
 plus a read-only reminder. **Settings → Notifications** has an "Enable
 Notifications…" button (when permission is undetermined) or a System Settings
-link (when denied), plus one toggle per category. Shortcuts are not
-duplicated in Settings — macOS surfaces them itself.
+link (when denied), plus one toggle per category. **Settings → Finder
+Integration** explains the optional Finder extension, states that its actions
+never delete/move/change files, and links to System Settings → Login Items &
+Extensions (§6). Shortcuts are not duplicated in Settings — macOS surfaces
+them itself.
 
 ## What this does not include
 
-A **Finder Sync extension** is not built — see `Documentation/FEATURE_MATRIX.md`
-and the "Finder Extension readiness" analysis. Notifications are local only;
-nothing is transmitted; scheduled scans never clean up automatically; the
-widget is strictly read-only and cannot reach any scan, cleanup, or restore
-code path.
+Notifications are local only; nothing is transmitted. Scheduled scans never
+clean up automatically. The widget and the Finder extension are both
+strictly read-only and — by their targets' dependency graphs — cannot reach
+any scan, cleanup, restore, or delete code path. The Finder extension never
+reads file contents; all inspection happens in the host after the user picks
+an action.

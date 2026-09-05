@@ -1,9 +1,11 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 # Project state
 
-## Current checkpoint — 2026-09-04
+## Current development checkpoint — 2026-09-05
 
-- Working branch: `main`
+- Working branch: `feat/finder-extension`
+- Finder implementation complete; all four final gates passed, 727 tests; evidence recorded in `FINDER_EXTENSION_VALIDATION.md`.
+- Published release evidence below predates this unpushed development work.
 - Published version/build: `1.0.0` / `1000`
 - Current public release: stable `v1.0.0`, built from
   `0ecddeaef0cc0f79d2185632f9c4ff49d1b9230a`
@@ -28,7 +30,8 @@ public-release manifest.
 
 SwiftPM provides one `CoreTend` executable, the `CoreTendApp` UI library and
 first-party ScanCore, SafetyCore, FileRules, DesignSystem, Persistence,
-SystemMetrics, AppDiscovery and IntegrityCore modules. `swift-testing` is a
+SystemMetrics, AppDiscovery, IntegrityCore, WidgetShared and FinderShared modules.
+XcodeGen provides the shipping host and embedded WidgetKit/FinderSync targets. `swift-testing` is a
 test-only dependency and has no release-bundle footprint.
 
 ## Release gates
@@ -38,7 +41,8 @@ test surfaces, localization/resource checks, repository doctor, security and
 secret gates, visual/accessibility site tests, DMG mount/copy/launch checks,
 signature verification and local-versus-public checksum equality.
 
-Quality follow-up complete by maintainer attestation: interactive VoiceOver,
+For the published release only (not Finder/Widget additions), quality follow-up
+complete by maintainer attestation: interactive VoiceOver,
 keyboard, focus, Dynamic Type, second-Mac/different-supported-macOS testing,
 and 44-frame native FR/EN light/dark visual matrix all pass. Exact secondary
 hardware and macOS build identifiers were not supplied. Next-release

@@ -18,7 +18,8 @@ Restore History" — which never empties the Trash. See
 `Documentation/RESTORE.md`.
 
 The macOS integration layer (App Intents / Shortcuts, local notifications,
-scheduled scans, the desktop widget) is local and read-only. Shortcuts
+scheduled scans, the desktop widget, the Finder extension) is local and
+read-only. Shortcuts
 cannot delete, clean up, empty the Trash, restore, or disable a login item;
 the image-metadata Shortcut does not store the file path. Local
 notifications (`UNUserNotificationCenter`, no push/server) carry totals only
@@ -34,4 +35,11 @@ profile, or security finding. The app publishes those numbers to the widget
 as a small versioned JSON snapshot in a shared App Group container
 (`group.com.ahmetbsbnr.coretend`) — the widget never opens the app's
 database, and nothing leaves this Mac; a missing snapshot shows "unavailable"
-rather than a fabricated `0`. See `Documentation/MACOS_INTEGRATIONS.md`.
+rather than a fabricated `0`. The **Finder Sync extension** is optional (off
+until enabled in System Settings) and read-only: its right-click actions
+never delete/move/change files — they open CoreTend on the matching screen
+for the selected item. The extension reads no file contents; it hands the
+selected path to the host as a local `coretend://` URL (no App Group, no
+network), and the host re-validates that path against the live filesystem
+with a read-only validator before inspecting anything. See
+`Documentation/MACOS_INTEGRATIONS.md`.
