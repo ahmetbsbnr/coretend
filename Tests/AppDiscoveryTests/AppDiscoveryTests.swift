@@ -227,4 +227,112 @@ struct AppDiscoveryTests {
     @Test func caskActionLabelDoesNotOverpromise() {
         #expect(UpdateMechanism.homebrewCask(token: "x").actionLabel == "Managed by Homebrew")
     }
+
+    // MARK: - Installation source (distinct from update mechanism)
+
+    @Test func installationSourceAppStoreWinsOverEverything() {
+        #expect(AppDiscovery.classifyInstallationSource(
+            hasMASReceipt: true, caskToken: "widget", whereFroms: "https://d.example/w.dmg") == .appStore)
+    }
+
+    @Test func installationSourceCaskOutranksWhereFroms() {
+        #expect(AppDiscovery.classifyInstallationSource(
+            hasMASReceipt: false, caskToken: "widget", whereFroms: "https://d.example/w.dmg")
+            == .homebrewCask(token: "widget"))
+    }
+
+    @Test func installationSourceFromWhereFroms() {
+        #expect(AppDiscovery.classifyInstallationSource(
+            hasMASReceipt: false, caskToken: nil, whereFroms: "https://d.example/w.dmg")
+            == .downloaded(source: "https://d.example/w.dmg"))
+    }
+
+    @Test func installationSourceUnsafeWhereFromsYieldsUnknown() {
+        #expect(AppDiscovery.classifyInstallationSource(
+            hasMASReceipt: false, caskToken: nil, whereFroms: "javascript:alert(1)") == .unknown)
+    }
+
+    /// Also documents that `classifyInstallationSource` has no Sparkle
+    /// parameter at all: a Sparkle-only update signal must never leak into
+    /// installation source (that would produce the exact "Installed via
+    /// Sparkle" claim the product brief calls out as wrong — Sparkle answers
+    /// only the update question).
+    @Test func installationSourceUnknownWhenNoSignals() {
+        #expect(AppDiscovery.classifyInstallationSource(hasMASReceipt: false, caskToken: nil, whereFroms: nil) == .unknown)
+    }
+
+    // MARK: - Vendor prefix (bundle id ↔ group container matching)
+
+    @Test func vendorPrefixFromPlainBundleID() {
+        #expect(AppDiscovery.vendorPrefix("com.acme.App") == "com.acme")
+    }
+
+    @Test func vendorPrefixStripsGroupPrefix() {
+        #expect(AppDiscovery.vendorPrefix("group.com.acme.suite") == "com.acme")
+    }
+
+    @Test func vendorPrefixNilWhenTooShort() {
+        #expect(AppDiscovery.vendorPrefix("acme") == nil)
+        #expect(AppDiscovery.vendorPrefix("group.acme") == nil)
+    }
+
+    // MARK: - Group Containers (shared-storage-aware, heuristic, never exact)
+
+    @Test func groupContainerMatchingInstalledVendorIsIncluded() throws {
+        let fm = FileManager.default
+        let home = fm.temporaryDirectory.appendingPathComponent("coretend-home-\(UUID())")
+        let groupContainers = home.appendingPathComponent("Library/Group Containers")
+        try fm.createDirectory(at: groupContainers.appendingPathComponent("group.com.acme.suite"),
+                               withIntermediateDirectories: true)
+        defer { try? fm.removeItem(at: home) }
+
+        let app = InstalledApp(name: "Acme Editor", bundleIdentifier: "com.acme.Editor", version: "1.0",
+                               path: URL(fileURLWithPath: "/Applications/Acme Editor.app"),
+                               sizeBytes: 0, architectures: [])
+        let candidates = AppDiscovery(home: home).groupContainerCandidates(installedApps: [app])
+        #expect(candidates.count == 1)
+        #expect(candidates.first?.item.kind == .groupContainers)
+        #expect(candidates.first?.item.url.lastPathComponent == "group.com.acme.suite")
+        #expect(candidates.first?.sharingAppCount == 1)
+    }
+
+    @Test func groupContainerSharedByTwoAppsReportsCountOfTwo() throws {
+        let fm = FileManager.default
+        let home = fm.temporaryDirectory.appendingPathComponent("coretend-home-\(UUID())")
+        let groupContainers = home.appendingPathComponent("Library/Group Containers")
+        try fm.createDirectory(at: groupContainers.appendingPathComponent("group.com.acme.suite"),
+                               withIntermediateDirectories: true)
+        defer { try? fm.removeItem(at: home) }
+
+        let photoEditor = InstalledApp(name: "Acme Photo", bundleIdentifier: "com.acme.Photo", version: "1.0",
+                                       path: URL(fileURLWithPath: "/Applications/Acme Photo.app"),
+                                       sizeBytes: 0, architectures: [])
+        let videoEditor = InstalledApp(name: "Acme Video", bundleIdentifier: "com.acme.Video", version: "1.0",
+                                       path: URL(fileURLWithPath: "/Applications/Acme Video.app"),
+                                       sizeBytes: 0, architectures: [])
+        let candidates = AppDiscovery(home: home).groupContainerCandidates(installedApps: [photoEditor, videoEditor])
+        #expect(candidates.count == 1)
+        #expect(candidates.first?.sharingAppCount == 2)
+    }
+
+    @Test func groupContainerMatchingNoInstalledVendorIsOmitted() throws {
+        let fm = FileManager.default
+        let home = fm.temporaryDirectory.appendingPathComponent("coretend-home-\(UUID())")
+        let groupContainers = home.appendingPathComponent("Library/Group Containers")
+        try fm.createDirectory(at: groupContainers.appendingPathComponent("group.com.unrelated.suite"),
+                               withIntermediateDirectories: true)
+        defer { try? fm.removeItem(at: home) }
+
+        let app = InstalledApp(name: "Acme Editor", bundleIdentifier: "com.acme.Editor", version: "1.0",
+                               path: URL(fileURLWithPath: "/Applications/Acme Editor.app"),
+                               sizeBytes: 0, architectures: [])
+        let candidates = AppDiscovery(home: home).groupContainerCandidates(installedApps: [app])
+        #expect(candidates.isEmpty)
+    }
+
+    @Test func groupContainerMissingDirectoryYieldsEmptyNeverACrash() {
+        let home = URL(fileURLWithPath: "/nonexistent-home-\(UUID().uuidString)")
+        let candidates = AppDiscovery(home: home).groupContainerCandidates(installedApps: [])
+        #expect(candidates.isEmpty)
+    }
 }

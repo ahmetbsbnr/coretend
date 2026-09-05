@@ -69,6 +69,24 @@ public enum UpdateMechanism: Sendable, Equatable {
     }
 }
 
+/// How an installed app most likely first arrived on this Mac — distinct from
+/// `UpdateMechanism` (how it stays current today). See `installationSource(for:)`.
+public enum InstallationSource: Sendable, Equatable {
+    /// Carries a Mac App Store receipt.
+    case appStore
+    /// Installed by Homebrew Cask; `token` is the exact cask token.
+    case homebrewCask(token: String)
+    /// A known download origin recorded by macOS (`kMDItemWhereFroms`) at
+    /// install time. Named `.downloaded` (not `.manual`) to avoid colliding
+    /// with `UpdateMechanism.manual`, which is a different concept answering
+    /// a different question.
+    case downloaded(source: String)
+    /// No reliable installation-origin signal could be determined on disk —
+    /// most PKG installers and directly-copied `.app` bundles leave nothing
+    /// distinguishable here; shown as Unknown rather than guessed.
+    case unknown
+}
+
 /// A file or directory associated with an app (caches, prefs, containers…).
 public struct AssociatedItem: Sendable, Identifiable {
     public enum Kind: String, Sendable, CaseIterable {
@@ -78,6 +96,7 @@ public struct AssociatedItem: Sendable, Identifiable {
         case logs = "Logs"
         case savedState = "Saved Application State"
         case containers = "Containers"
+        case groupContainers = "Group Containers"
         case launchAgents = "Launch Agents"
         case launchDaemons = "Launch Daemons"
     }
@@ -237,6 +256,95 @@ public struct AppDiscovery: Sendable {
             }
         }
         return results.sorted { $0.sizeBytes > $1.sizeBytes }
+    }
+
+    /// A Group Container folder whose vendor prefix (see `vendorPrefix`)
+    /// matches at least one installed app, paired with how many installed
+    /// apps share that same vendor prefix.
+    public struct GroupContainerCandidate: Sendable, Identifiable {
+        public var id: String { item.id }
+        public let item: AssociatedItem
+        /// How many currently installed apps share this container's vendor
+        /// prefix. `1` means only the one app the caller is inspecting; `> 1`
+        /// means the container's vendor prefix is shared, so it must never be
+        /// presented as exclusively owned by a single app.
+        public let sharingAppCount: Int
+
+        public init(item: AssociatedItem, sharingAppCount: Int) {
+            self.item = item
+            self.sharingAppCount = sharingAppCount
+        }
+    }
+
+    /// Group Containers whose folder name's vendor prefix (see `vendorPrefix`)
+    /// matches at least one currently installed app. This is a heuristic, not
+    /// an entitlement read: CoreTend does not parse an app's
+    /// `com.apple.security.application-groups` entitlement, so a match here
+    /// is never treated as proof of exclusive ownership — see
+    /// `Documentation/APPLICATIONS_CENTER.md` "Group Containers". Folders
+    /// whose vendor prefix matches no installed app are omitted entirely
+    /// (never surfaced as an orphaned/unattributed candidate here — that is
+    /// `leftovers`' job, not this one's).
+    public func groupContainerCandidates(installedApps: [InstalledApp]) -> [GroupContainerCandidate] {
+        let root = home.appendingPathComponent("Library/Group Containers")
+        guard let entries = try? FileManager.default.contentsOfDirectory(
+            at: root, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles]) else { return [] }
+        var vendorCounts: [String: Int] = [:]
+        for app in installedApps {
+            guard let id = app.bundleIdentifier, let prefix = Self.vendorPrefix(id) else { continue }
+            vendorCounts[prefix, default: 0] += 1
+        }
+        var results: [GroupContainerCandidate] = []
+        for entry in entries {
+            guard let prefix = Self.vendorPrefix(entry.lastPathComponent),
+                  let sharingCount = vendorCounts[prefix] else { continue }
+            let item = AssociatedItem(kind: .groupContainers, url: entry, sizeBytes: Self.directorySize(entry))
+            results.append(GroupContainerCandidate(item: item, sharingAppCount: sharingCount))
+        }
+        return results
+    }
+
+    /// The first two dot-separated components of a bundle identifier or group
+    /// identifier (e.g. `"com.acme.App"` → `"com.acme"`), stripping a leading
+    /// `"group."` first (`"group.com.acme.suite"` → `"com.acme"`) so a bundle
+    /// identifier and its family's group container compare on the same
+    /// vendor token. `nil` when fewer than two components remain — too short
+    /// to mean anything, so callers never match on an empty or single-token
+    /// "vendor".
+    static func vendorPrefix(_ identifier: String) -> String? {
+        var id = identifier
+        if id.hasPrefix("group.") { id.removeFirst("group.".count) }
+        let parts = id.split(separator: ".")
+        guard parts.count >= 2 else { return nil }
+        return parts.prefix(2).joined(separator: ".")
+    }
+
+    /// How an app most likely first arrived on this Mac — a distinct question
+    /// from `updateMechanism` (how it stays current). A Mac App Store receipt
+    /// or a Homebrew Cask record both answer "how did this get here" as
+    /// reliably as they answer "how is this updated" (the App Store and
+    /// `brew upgrade` are both the install and the update path). A Sparkle
+    /// feed answers only the update question — it says nothing about how the
+    /// app first arrived, so it is deliberately absent here. `kMDItemWhereFroms`
+    /// (a real download-origin signal) answers only the install question.
+    public func installationSource(for bundle: URL, caskIndex: HomebrewCaskIndex? = nil) -> InstallationSource {
+        let fm = FileManager.default
+        let hasReceipt = fm.fileExists(atPath: bundle.appendingPathComponent("Contents/_MASReceipt/receipt").path)
+        return Self.classifyInstallationSource(
+            hasMASReceipt: hasReceipt,
+            caskToken: caskIndex?.token(forAppNamed: bundle.lastPathComponent),
+            whereFroms: Self.whereFromsURL(of: bundle))
+    }
+
+    /// Pure classification core, mirroring `classify(...)` for `UpdateMechanism`
+    /// but answering the install-source question instead — same underlying
+    /// signals, different question, so the two are computed side by side
+    /// rather than one being derived from (or overwriting) the other.
+    static func classifyInstallationSource(hasMASReceipt: Bool, caskToken: String?, whereFroms: String?) -> InstallationSource {
+        if hasMASReceipt { return .appStore }
+        if let caskToken { return .homebrewCask(token: caskToken) }
+        if let source = whereFroms, safeFeedURL(source) != nil { return .downloaded(source: source) }
+        return .unknown
     }
 
     /// Determines an app's update source from real on-disk signals only.
