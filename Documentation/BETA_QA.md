@@ -280,7 +280,7 @@ No accidental broad entitlement. No network / iCloud / push / automation / privi
 **PASS.** `Scripts/build-xcode.sh` produces `build/CoreTend.app` (unsigned Release) with:
 
 - correct layout: `Contents/{MacOS/CoreTend, PlugIns/{CoreTendFinder.appex, CoreTendWidget.appex}, Resources/{CoreTend_CoreTendApp.bundle, CoreTend_FinderShared.bundle, CoreTend_WidgetShared.bundle, Metadata.appintents}}`
-- **no `/Users/...` absolute path, no `ahmetbasbunar` username** anywhere in the bundle
+- **no `/Users/...` absolute path, no build-machine account name** anywhere in the bundle
 - no test fixtures, `.xctest`, debug assets, `.env` / secret / `.pem` / `.key` files
 - `Metadata.appintents` present with 7 App Intents / 6 App Shortcuts
 - FR localization bundles for host, FinderShared, WidgetShared

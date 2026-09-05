@@ -32,6 +32,10 @@ public enum MCSize {
     public static let windowMinHeight: CGFloat = 580
     public static let metricRing: CGFloat = 76
     public static let chartHeight: CGFloat = 140
+    /// Max width for a centred block of body / status copy. Keeps long
+    /// localized strings readable and well away from the window edge instead
+    /// of stretching edge-to-edge on a wide window.
+    public static let readableTextWidth: CGFloat = 460
 }
 
 /// Motion tokens. All animation in the app routes through these so that
