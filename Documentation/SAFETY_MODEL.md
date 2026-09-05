@@ -233,7 +233,58 @@ Applications Center — a read-only measurement layer, not a Safety surface:
 See `Documentation/PRIVACY_LAB.md` for the full field/format coverage and
 measured limitations.
 
+## Restore Center
+
+`RestoreValidator` / `RestoreManifestRecord` / `RestoreManifestSink`
+(`Sources/SafetyCore/RestoreManifest.swift`), `Store` restore-manifest
+methods + v7 migration (`Sources/Persistence/Store.swift`), and
+`RestoreService` (`Sources/CoreTendApp/RestoreService.swift`) let a user move
+CoreTend-Trashed items back where they came from.
+
+- **Capture at the source of truth.** `SafetyCenter.execute` now reads the
+  `resultingItemURL` from `FileManager.trashItem(at:resultingItemURL:)` and,
+  when its sink also conforms to `RestoreManifestSink` (`Persistence.Store`
+  does), emits one `RestoreManifestRecord` per **successful Trash move**.
+  The permanent `removeItem` fallback (temporary paths) is in the `catch`
+  branch and emits nothing — a permanently removed item is never recorded as
+  restorable. Every existing `SafetyCenter(validator:sink: store)` call site
+  gets capture with no change; there is no second execution path.
+- **No parallel raw-move path.** Restore is a single, guarded
+  `FileManager.moveItem` from the recorded Trash URL to the recorded
+  original path, pinned by `RestoreValidator`: destination must equal the
+  recorded original exactly (never an arbitrary path), must not be a
+  protected root, its parent must exist and be writable, and **nothing may
+  already occupy it** — a collision is refused, never renamed or
+  overwritten. The source must be an existing item inside a `.Trash` /
+  `.Trashes` directory.
+- **Revalidated at execution time.** `RestoreService.restore` re-reads each
+  manifest row, recomputes live availability (inode + volume UUID +
+  directory-ness against the Trash item; parent/occupancy against the
+  destination), and runs `RestoreValidator` immediately before the move.
+  The review list is a snapshot; the filesystem is not.
+- **Per-item, never atomic.** Each item is validated and moved
+  independently; a skip/failure never rolls back another. The result reports
+  real per-item outcomes (restored / conflict / unavailable / failed) — never
+  a predicted count.
+- **`safety_log` stays redacted.** A restore writes a redacted `.executed`
+  `SafetyAuditEvent` (`rule_id` = `restore.<original rule>`); the real paths
+  live only in `restore_manifest`. The coarse `.restore` `ActivityRecord`
+  carries counts and bytes, no path.
+- **Advisor reversibility depends on a real manifest.** `RestoreReversibility
+  .of(_:)` is the only producer of `.restorableByCoreTend`, and only for a
+  live `.available` item. Scan-result Advisor findings are unchanged
+  (`.trash`); Recovery Plan eligibility is unchanged.
+- **Privacy boundary.** `restore_manifest` is the one table holding
+  unredacted paths — local only, never synced/transmitted, excluded from
+  `DiagnosticReport`, Timeline, and audit exports; "Forget Restore History"
+  clears it in one action and never touches the Trash; bounded retention
+  (90 days, 30 for terminal states).
+
+See `Documentation/RESTORE.md` for the user-facing model and the
+external-volume `HUMAN VERIFICATION REQUIRED` note.
+
 ## Not yet implemented (planned)
-Quarantine, restore manifests, reinforced confirmation for non-reversible ops,
-hard-link and open-file checks, volume identity checks, image-metadata
-sanitized-copy export.
+Quarantine, reinforced confirmation for non-reversible ops, hard-link and
+open-file checks, automatic conflict resolution on restore (deliberately not
+built — collisions are refused), verified real external-volume restore,
+image-metadata sanitized-copy export.

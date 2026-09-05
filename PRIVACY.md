@@ -32,6 +32,16 @@ because none exists. See
 [Documentation/PERSISTENCE.md](Documentation/PERSISTENCE.md) for exact
 paths and schema.
 
+The ordinary safety/audit log stores **redacted** paths only. The one
+exception is the **Restore Center manifest** (DB schema v7): to move a
+CoreTend-Trashed file back to where it came from, CoreTend records that
+item's real original and Trash locations locally. This record never leaves
+this Mac, is never synced or transmitted, is excluded from the diagnostic
+report, and can be cleared at any time with **Forget Restore History**
+(which removes records only — it never empties the Trash). Entries are
+pruned automatically after 90 days (30 for items no longer restorable). See
+[Documentation/RESTORE.md](Documentation/RESTORE.md).
+
 ## Deletions
 
 Deletions default to the Trash, not permanent removal, so mistakes stay

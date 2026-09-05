@@ -2,12 +2,12 @@
 
 CoreTend 1.0.0 shipped on 2026-09-03. It is Developer ID signed,
 Apple-notarized, stapled, Minisign-signed, and published as a stable GitHub
-release. Core functionality is complete; 562 Swift tests pass (post-1.0.0
+release. Core functionality is complete; 603 Swift tests pass (post-1.0.0
 work — Storage Timeline, then Advisor, then Recovery Plan, then APFS
 Intelligence, then Applications Center 2.0, then Developer Center, then
-Privacy Lab — added 220 since the 342 that shipped in 1.0.0). Post-1.0.0
-verticals live on local branches only; nothing is merged to `main` or
-pushed.
+Privacy Lab, then Restore Center — added 261 since the 342 that shipped in
+1.0.0). Post-1.0.0 verticals live on local branches only; nothing is merged
+to `main` or pushed.
 
 ## Release follow-up
 
@@ -156,6 +156,48 @@ verify → compare → preserve original* flow, which must prefer "create
 sanitized copy" over "modify original". See `Documentation/PRIVACY_LAB.md`,
 `Documentation/FEATURE_MATRIX.md` → "Privacy Lab", and
 `Documentation/SAFETY_MODEL.md` → "Privacy Lab".
+
+## Done — Restore Center (real end-to-end restore)
+
+Move CoreTend-Trashed items back to where they came from. `SafetyCenter
+.execute` now captures the real `resultingItemURL` from
+`FileManager.trashItem(at:resultingItemURL:)` and emits a
+`RestoreManifestRecord` (`Sources/SafetyCore/RestoreManifest.swift`) for
+every **successful** Trash move — never the permanent `removeItem` fallback.
+The sink is auto-detected (`sink as? RestoreManifestSink`; `Persistence
+.Store` conforms), so Cleanup, Developer Center, Applications uninstall,
+Recovery Plan, Duplicates, Leftovers and Privacy all capture manifests with
+**zero call-site changes and no second execution path**.
+
+DB schema **v7** `restore_manifest` is the one table with real, unredacted
+paths (original + Trash location) — one row per Trashed operation item (a
+directory root is one row). `safety_log` stays redacted and correlates only
+by `operation_id`. Retention: any row >90 days pruned, non-`available` rows
+>30 days pruned, on every write. `clearRestoreManifests` ("Forget Restore
+History") removes records only and **never empties the Trash**. Excluded from
+`DiagnosticReport`, Timeline, and audit exports; local only, never synced.
+
+`RestoreService` (`Sources/CoreTendApp/RestoreService.swift`, actor) does
+every move: per item, re-read manifest → recompute live availability (inode +
+volume UUID + directory-ness vs the Trash item; parent exists/writable +
+destination not occupied) → `RestoreValidator` (`Sources/SafetyCore/`,
+destination pinned to the recorded original, never arbitrary; never a
+protected root; **collision refused, never overwritten**; source inside a
+`.Trash`/`.Trashes` dir) → `FileManager.moveItem` back → mark `restored` +
+redacted `.executed` safety event. Per-item, never atomic; one coarse
+`.restore` `ActivityRecord` per run with real counts.
+
+`RestoreReversibility.of(_:)` is the sole producer of
+`.restorableByCoreTend`, and only for a live `.available` item; emptied Trash
+→ `.irreversible`. `AdvisorService` and `RecoveryPlanEligibility` are
+unchanged. UI: `RestoreCenterView` (System sidebar, after My Activity) —
+operations grouped, per-item state badges (text+icon), full paths behind
+disclosure, Refresh, confirm-and-restore, "Forget Restore History" with a
+"does not empty the Trash" confirmation. 41 new tests. Real external-volume
+restore is `HUMAN VERIFICATION REQUIRED` (model exercised with synthetic
+volume identity). See `Documentation/RESTORE.md`,
+`Documentation/SAFETY_MODEL.md` → "Restore Center", `Documentation/
+PERSISTENCE.md`, `Documentation/FEATURE_MATRIX.md` → "Restore Center".
 
 ## Deliberately deferred product scope
 

@@ -33,6 +33,25 @@ Concerns, each a small table (or pair of tables):
   `purgeSafetyLog`) — append-only SafetyCore audit trail. Paths are redacted
   (`Store.redactPath`) before they ever reach disk; `purgeSafetyLog()` is the
   only deletion path and is an explicit, all-or-nothing user action.
+- **Restore manifest** (`recordRestoreManifest` via `RestoreManifestSink`,
+  `restoreManifestItems`, `restoreManifestItem(id:)`,
+  `setRestoreManifestState`, `restoreManifestCount`, `pruneRestoreManifests`,
+  `clearRestoreManifests`) — DB schema **v7**. The **one** table that stores
+  real, unredacted `original_path` and `trash_path` values: they are the
+  minimum needed for Restore Center to move a CoreTend-Trashed item back.
+  One row per Trashed operation item (a directory root is one row; its
+  descendants are never enumerated). Written only by `SafetyCenter` on a
+  successful `trashItem` move, via a sink that also conforms to
+  `RestoreManifestSink` (`Store` does) — the permanent `removeItem` fallback
+  writes nothing. States: `available` / `restored` / `missingFromTrash` /
+  `invalidIdentity`; destination-side problems (conflict, missing/unwritable
+  parent, unmounted volume) are recomputed live and never stored.
+  `pruneRestoreManifests` runs after every write and drops any row older than
+  90 days, plus non-`available` rows older than 30. `clearRestoreManifests`
+  ("Forget Restore History") is the explicit, all-or-nothing user action,
+  mirroring `purgeSafetyLog()`; it removes records only and never touches the
+  Trash. This table is excluded from `DiagnosticReport`, Timeline, and audit
+  exports — see `Documentation/RESTORE.md` / `Documentation/PRIVACY.md`.
 - **Timeline** (`recordTimelineSnapshot`, `timelineSnapshots`,
   `timelineCategories`, `timelineComparison(scope:since:)`,
   `timelineComparisonSincePreviousSnapshot(scope:)`,
@@ -93,3 +112,10 @@ The v4 migration removes the former preview-default setting. Legacy columns
 remain for downgrade compatibility, while current activity and safety-log
 queries hide old preview-only rows. No current product API writes or exposes
 that mode. Integrity is read-only and has no quarantine store.
+
+## Migrations
+
+Ordered, append-only (`Store.migrations`); never edit a shipped entry.
+v1 base tables · v2 `safety_log` · v3 `locations` · v4 drop preview setting ·
+v5 Timeline tables · v6 Timeline `scope` column · **v7 `restore_manifest`**
+(Restore Center; the only table with unredacted paths).
