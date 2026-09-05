@@ -145,6 +145,48 @@ measurement layer, not a Safety surface:
   `Documentation/APFS_INTELLIGENCE.md` for the exact meaning, source, and
   measured/derived/unavailable status of every field.
 
+## Applications Center
+
+`ApplicationInspectionService` and its sub-models
+(`Sources/CoreTendApp/ApplicationInspection.swift`) add read-only inspection
+depth to the existing Applications module. Same discipline as APFS
+Intelligence:
+
+- **No new destructive path.** Nothing here calls `FileManager.removeItem`/
+  `trashItem`, `launchctl`, or any binary-rewriting API. The existing,
+  tested `ApplicationsViewModel.uninstall()` — approve/execute through
+  `PathValidator`/`SafetyCenter`, Trash-only — is completely unchanged and
+  still only ever sees exact-bundle-id associated items. Group Container
+  candidates (a heuristic, `.probable`-at-best match) are shown for
+  visibility only and have no selection Toggle anywhere in this pass — they
+  cannot reach `SafetyCenter` through any path this feature added.
+- **Never Recovery-Plan-eligible.** `RecoveryPlanService` was not modified in
+  this phase and carries zero references to any Applications Center 2.0
+  type (`ApplicationInspection`, `AssociatedItemAdvisory`,
+  `GroupContainerCandidate`, `InstallationSource`) — verified by inspection,
+  not merely asserted. Recovery Plan's wired sources remain exactly
+  {Cleanup, Duplicates, Leftovers, Privacy}.
+- **`AssociatedItemAdvisory` is not an `AdvisorFinding`.** It reuses
+  `RiskLevel`/`AdvisorConfidence`/`AdvisorReversibility` verbatim so the
+  vocabulary never drifts, but `AdvisorFinding.category` is a
+  `TimelineScope`, and Applications Center does not participate in Timeline
+  (no scan, no snapshot, no comparison) — giving an associated item a
+  `TimelineScope` would claim a relationship that doesn't exist. A shared
+  item (Group Container matching more than one installed app) is always
+  `.high` risk in this advisory regardless of its kind, since removing
+  storage another app may depend on is exactly the failure this feature
+  exists to prevent.
+- **Signed is not safe; unsigned is not malicious.** `CodeSignInfo.tier` is
+  shown as a plain technical fact (Apple-signed / team-signed /
+  ad-hoc-or-unsigned) in the new Security & Provenance section — never
+  reinterpreted as a safety verdict or attached to a risk level.
+- **Running state is informational only.** Nothing in this pass force-quits
+  a running app or blocks/gates uninstall on running state; the existing
+  uninstall confirmation flow is unchanged.
+- **No binary mutation.** `UniversalBinaryAnalyzer` only reads a fat Mach-O
+  header to report slice sizes; there is no thinning, rewriting, or slice
+  removal anywhere, not even unwired.
+
 ## Not yet implemented (planned)
 Quarantine, restore manifests, reinforced confirmation for non-reversible ops,
 hard-link and open-file checks, volume identity checks.

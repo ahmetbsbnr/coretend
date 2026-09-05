@@ -20,7 +20,7 @@
     "zipSHA256": "c11c1cbac95a48c9fa9b3cb54596313f52af9ad89dd930e51bcde6cbd152244b"
   },
   "tests": {
-    "swift": 444,
+    "swift": 486,
     "failing": 0,
     "lastVerifiedUTC": "2026-09-05"
   },
@@ -35,7 +35,8 @@
     "CoreTend Advisor minimal vertical: deterministic local read-only explanation layer (AdvisorFinding/AdvisorService/AdvisorDetailsView) surfaced in Cleanup, Duplicates, Leftovers, and Privacy Cleaner. Reuses SafetyCore.RiskLevel and TimelineScope; adds AdvisorConfidence and AdvisorReversibility. Not yet connected: Applications' associated files, Integrity signals. See Documentation/FEATURE_MATRIX.md and Documentation/SAFETY_MODEL.md.",
     "Recovery Plan minimal vertical: Goal -> eligible findings -> conservative plan -> review -> user selection -> existing SafetyCenter execution path, working end to end (not plan-only). Wired: Cleanup, Duplicates, Leftovers, Privacy. Anti-double-counting: Cleanup's user.caches rule always excluded (overlaps Privacy/Leftovers on disk). Not done: a Dashboard card; dedicated execution integration tests for Leftovers/Privacy beyond the pattern Cleanup/Duplicates prove. See Documentation/FEATURE_MATRIX.md and Documentation/SAFETY_MODEL.md.",
     "APFS Intelligence minimal vertical (read-only): APFSVolumeInspector/APFSMetric<Value>/APFSIntelligenceService, zero subprocess usage. Volume capacity/availability and Cleanup-only logical-vs-physical size are COMPLETE; clone/hard-link storage-sharing attribution and snapshot listing/sizing are NOT_STARTED (no reliable no-subprocess path found; disclosed as Unavailable, never estimated). Zero destructive code; not Recovery-Plan-eligible by construction (no AdvisorFinding is ever created for an APFS concept). See Documentation/FEATURE_MATRIX.md, Documentation/APFS_INTELLIGENCE.md, and Documentation/SAFETY_MODEL.md.",
-    "Not yet on `main` or pushed — local branches feat/storage-timeline-persistence (checkpoint) and feat/apfs-intelligence (current)."
+    "Applications Center 2.0 (read-only inspection depth): ApplicationInspection/ApplicationInspectionService composing storage breakdown, associated-item confidence (Group Containers are a vendor-prefix heuristic, never exact), installation source vs. update mechanism as two separate facts, code signing/provenance, architecture incl. universal-binary slice sizes (fail-closed Mach-O parser, no lipo), launch items (reliable-signal-only association), and running state. Loaded lazily/cancellably per app selection, never for the whole app list. Zero destructive code added; existing uninstall path unchanged; not Recovery-Plan-eligible by construction (RecoveryPlanService untouched, zero references to any new type). Not started: PKG/receipt provenance beyond the existing Mac App Store check, search/filter extensions, FAT_MAGIC_64 universal binaries. See Documentation/FEATURE_MATRIX.md, Documentation/APPLICATIONS_CENTER.md, and Documentation/SAFETY_MODEL.md.",
+    "Not yet on `main` or pushed — local branches feat/storage-timeline-persistence (checkpoint), feat/apfs-intelligence (checkpoint), and feat/applications-center-2 (current)."
   ],
   "qualityVerification": {
     "interactiveAccessibility": "PASS — maintainer attestation 2026-09-04",

@@ -2,9 +2,10 @@
 
 CoreTend 1.0.0 shipped on 2026-09-03. It is Developer ID signed,
 Apple-notarized, stapled, Minisign-signed, and published as a stable GitHub
-release. Core functionality is complete; 444 Swift tests pass (post-1.0.0
+release. Core functionality is complete; 486 Swift tests pass (post-1.0.0
 work — Storage Timeline, then Advisor, then Recovery Plan, then APFS
-Intelligence — added 102 since the 342 that shipped in 1.0.0).
+Intelligence, then Applications Center 2.0 — added 144 since the 342 that
+shipped in 1.0.0).
 
 ## Release follow-up
 
@@ -93,6 +94,33 @@ attribution, snapshot listing and individual snapshot size — none of these
 have a reliable public-API or no-subprocess path yet) and a pre-existing,
 documented-not-fixed hard-link double-counting behavior found in
 `ScanEngine`/`SpaceLensEngine`/`AppDiscovery` during this audit.
+
+## Done — Applications Center 2.0 (read-only inspection depth)
+
+Applications Center now explains, per installed app: storage breakdown
+("Known associated storage", never "Total"), associated-item confidence
+(reusing `AdvisorConfidence`; Group Containers are a vendor-prefix
+heuristic, `.probable` at best, flagged `isShared` when more than one app
+shares the vendor prefix), installation source vs. update mechanism as two
+separate facts (a Sparkle-updated, directly-downloaded app never shows
+"Installed via Sparkle"), code signing/provenance (connects the pre-existing
+`IntegrityCore.CodeSignInspector`, shown as a plain technical fact, never
+reworded as safe/unsafe), architecture including universal-binary slice
+sizes via a fail-closed Mach-O parser (no `lipo`), launch items per app
+(`IntegrityCore.LoginItemScanner`, associated only by a reliable signal —
+in-bundle program path or bundle-id-matching Label, never name resemblance),
+and running state (`NSWorkspace`, informational only). New composition:
+`ApplicationInspection`/`ApplicationInspectionService`
+(`Sources/CoreTendApp/ApplicationInspection.swift`), loaded lazily and
+cancellably per app selection — never for the whole app list at launch.
+The existing uninstall path and its confirmation are unchanged: Group
+Container candidates are shown for visibility only, never selectable. See
+`Documentation/FEATURE_MATRIX.md` → "Applications Center 2.0",
+`Documentation/APPLICATIONS_CENTER.md`, and `Documentation/SAFETY_MODEL.md`
+→ "Applications Center" for the full sub-capability breakdown, including
+what's deliberately not started (PKG/receipt provenance beyond the existing
+Mac App Store check, search/filter extensions, `FAT_MAGIC_64` universal
+binaries) and zero Recovery-Plan eligibility, by construction.
 
 ## Deliberately deferred product scope
 
