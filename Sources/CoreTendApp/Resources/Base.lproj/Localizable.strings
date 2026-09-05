@@ -1114,3 +1114,4 @@
 "cleanup.needs_review" = "%@ needs individual review";
 "cleanup.selected_ready" = "%@ selected · ready to move to Trash";
 "cleanup.move_selected" = "Move %@ to Trash";
+"cleanup.scanning_recoverable" = "%@ potentially recoverable so far";
