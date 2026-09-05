@@ -9,7 +9,7 @@
 - Commits so far: `7f5be65` storage semantics · `4c47554` Dashboard/sidebar/
   focus bug fixes · `193ccc4` Smart Scan orchestrator domain.
 - **All four gates green** at the latest commit: `Scripts/build.sh`
-  (+release), `Scripts/test.sh` **745 passed / 0 failed** (727 baseline +18),
+  (+release), `Scripts/test.sh` **753 passed / 0 failed** (727 baseline +26),
   `Scripts/repository-doctor.sh`, `Scripts/build-xcode.sh` (**BUILD
   SUCCEEDED**; `CoreTendWidget.appex` + `CoreTendFinder.appex` +
   `Metadata.appintents` with 7 intents / 6 shortcuts all still embedded).
@@ -56,6 +56,13 @@
    isolation, `start()`-while-running returns the in-flight task.
    `SmartScanServiceTests` (11) cover all of that + a no-destructive-
    dependency source grep.
+4. **Live Storage scan progress (§2).** `StorageScanProgress.swift` — a
+   value + pure reducer folding `ScanEvent` into phase / itemsInspected /
+   findingsDetected / reclaimable & review bytes-so-far (risk split) /
+   currentPath / elapsed / isPausable. **No percentage field** (engine has
+   no total). `CleanupModel` owns it and drives pause/resume/cancel;
+   `scanningView` shows real counters + running-recoverable + current path.
+   `StorageScanProgressTests` (8).
 
 ### Remaining (not started — needs a running app to build & verify safely)
 
