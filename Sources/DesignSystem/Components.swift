@@ -27,6 +27,7 @@ public struct MCModuleIdentity: Sendable {
     public static let myActivity = MCModuleIdentity(icon: "clock.arrow.circlepath", color: MCColor.performance)
     public static let timeline = MCModuleIdentity(icon: "chart.xyaxis.line", color: MCColor.storage)
     public static let recoveryPlan = MCModuleIdentity(icon: "target", color: MCColor.storage)
+    public static let apfs = MCModuleIdentity(icon: "internaldrive", color: MCColor.storage)
     public static let favoritesRecents = MCModuleIdentity(icon: "star", color: MCColor.performance)
     public static let settings = MCModuleIdentity(icon: "gearshape", color: Color.secondary)
 }

@@ -751,3 +751,36 @@
 "recovery.result.title" = "%@ moved to Trash";
 "recovery.result.skipped" = "%d item(s) skipped — see My Activity for details";
 "recovery.result.prepare_again" = "Prepare a New Plan";
+
+/* APFS Intelligence */
+"module.apfs" = "APFS";
+"apfs.title" = "APFS";
+"apfs.capacity" = "Capacity";
+"apfs.available" = "Available";
+"apfs.available_important_usage" = "Available for important usage";
+"apfs.available_opportunistic_usage" = "Available for opportunistic usage";
+"apfs.unavailable" = "Unavailable";
+"apfs.not_apfs" = "This volume uses %@, not APFS. Some information below may not apply.";
+"apfs.files_analyzed" = "Files analyzed";
+"apfs.logical" = "Logical size";
+"apfs.physical" = "Physical size";
+"apfs.files_analyzed.as_of" = "As of the last Cleanup scan: %@";
+"apfs.files_analyzed.no_scan" = "Run a Cleanup scan to see logical vs. physical usage for the files it inspects.";
+"apfs.files_analyzed.run_cleanup" = "Go to Cleanup";
+"apfs.semantics.title" = "Storage semantics";
+"apfs.semantics.logical_physical.title" = "Logical vs. physical size";
+"apfs.semantics.logical_physical.body" = "Logical size is the size of a file's content. Physical (allocated) size is the space the filesystem actually reserves for it — often less, thanks to features like sparse files, and sometimes more, due to block rounding.";
+"apfs.semantics.available.title" = "What \"available\" means";
+"apfs.semantics.available.body" = "macOS reports more than one \"available space\" figure. They can differ, and don't always add up to capacity minus used space — each has its own precise meaning.";
+"apfs.semantics.sharing.title" = "Storage sharing";
+"apfs.semantics.sharing.body" = "APFS can let files share underlying storage (clones) or link multiple names to the same data (hard links). CoreTend can't reliably attribute how much space is shared this way, so it doesn't estimate a number.";
+"apfs.snapshots.title" = "Local snapshots";
+"apfs.snapshots.concept" = "A filesystem snapshot preserves a past state of a volume, used for local backups and Time Machine.";
+"apfs.snapshots.not_listed" = "CoreTend doesn't list individual snapshots or their sizes in this version.";
+"apfs.limitations.title" = "Measurement limitations";
+"apfs.limitations.clones_label" = "Storage sharing (clones/hard links)";
+"apfs.limitations.clones_reason" = "No reliable way to attribute shared space to individual files with the APIs available.";
+"apfs.limitations.snapshot_size_label" = "Snapshot sizes";
+"apfs.limitations.snapshot_size_reason" = "Snapshot listing and individual sizes aren't available in this version.";
+"apfs.limitations.no_scan_reason" = "No Cleanup scan has recorded this yet.";
+"apfs.limitations.partial_reason" = "At least one category from the last scan didn't report a physical size.";
