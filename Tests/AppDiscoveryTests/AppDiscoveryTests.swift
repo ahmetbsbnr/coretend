@@ -37,6 +37,50 @@ struct AppDiscoveryTests {
         #expect(app?.version == "2.1")
     }
 
+    @Test func inspectMalformedInfoPlistYieldsNilNeverACrash() throws {
+        let root = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("coretend-app-\(UUID().uuidString)")
+        let bundle = root.appendingPathComponent("Broken.app")
+        try FileManager.default.createDirectory(
+            at: bundle.appendingPathComponent("Contents"), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        // Not a valid property list at all — garbage bytes.
+        try Data([0x00, 0xFF, 0x13, 0x37, 0xDE, 0xAD]).write(to: bundle.appendingPathComponent("Contents/Info.plist"))
+
+        #expect(AppDiscovery().inspect(bundle: bundle) == nil)
+    }
+
+    @Test func inspectMissingInfoPlistYieldsNil() throws {
+        let root = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("coretend-app-\(UUID().uuidString)")
+        let bundle = root.appendingPathComponent("Empty.app")
+        try FileManager.default.createDirectory(at: bundle, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        #expect(AppDiscovery().inspect(bundle: bundle) == nil)
+    }
+
+    @Test func discoverAppsToleratesTwoBundlesSharingABundleIdentifier() throws {
+        // A duplicate bundle identifier (e.g. a leftover copy in a second
+        // Applications root) must not crash or silently drop one entry —
+        // discovery reports both; de-duplication is a decision for a caller
+        // that actually needs identity uniqueness, not for discovery itself.
+        let root = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("coretend-dup-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        for name in ["First.app", "Second.app"] {
+            let bundle = root.appendingPathComponent(name)
+            try FileManager.default.createDirectory(
+                at: bundle.appendingPathComponent("Contents/MacOS"), withIntermediateDirectories: true)
+            let plist: [String: Any] = ["CFBundleIdentifier": "com.acme.Duplicate", "CFBundleName": name]
+            let data = try PropertyListSerialization.data(fromPropertyList: plist, format: .xml, options: 0)
+            try data.write(to: bundle.appendingPathComponent("Contents/Info.plist"))
+        }
+        let apps = AppDiscovery(applicationRoots: [root]).discoverApps()
+        #expect(apps.count == 2)
+        #expect(apps.allSatisfy { $0.bundleIdentifier == "com.acme.Duplicate" })
+    }
+
     @Test func leftoversExcludeAppleAndInstalled() throws {
         let home = URL(fileURLWithPath: NSTemporaryDirectory())
             .appendingPathComponent("coretend-home-\(UUID().uuidString)")
