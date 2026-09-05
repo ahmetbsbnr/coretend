@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: The CoreTend Authors
 
 import SwiftUI
+import Foundation
 
 // CoreTend design system — Porcelain / Slate / Teal, shared with the portfolio.
 // Tokens: Tokens.swift / Colors.swift / Typography.swift
@@ -33,7 +34,29 @@ public struct MCCard<Content: View>: View {
     }
 }
 
-/// Human-readable byte formatting shared by all views.
+/// The locale CoreTend formats numbers, byte counts and dates in.
+///
+/// The app has an *in-app* language override (Settings ▸ Language) that does
+/// not change `Locale.current`. Byte counts formatted against the process
+/// locale therefore showed "3.9 GB" (period, "GB") even for a user who chose
+/// French. `CoreTendApp` sets this to match the chosen language at launch and
+/// on every change, and every byte value in the product goes through
+/// `mcFormatBytes`, so the whole UI stays in one locale.
+public enum MCFormatting {
+    private static let lock = NSLock()
+    nonisolated(unsafe) private static var _locale: Locale = .autoupdatingCurrent
+
+    public static var locale: Locale {
+        get { lock.withLock { _locale } }
+        set { lock.withLock { _locale = newValue } }
+    }
+}
+
+/// Human-readable, locale-aware byte formatting shared by every view.
+///
+/// Uses `ByteCountFormatStyle` (which honours a `locale`), not
+/// `ByteCountFormatter` (which does not): French renders "3,9 Go" / "664,7 Mo",
+/// English "3.9 GB" / "664.7 MB". Never concatenate a unit string by hand.
 public func mcFormatBytes(_ bytes: Int64) -> String {
-    ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
+    bytes.formatted(.byteCount(style: .file).locale(MCFormatting.locale))
 }

@@ -705,7 +705,7 @@
 "advisor.confidence.probable" = "Probable";
 "advisor.confidence.uncertain" = "Incertaine";
 "advisor.reversibility.readOnly" = "Lecture seule — rien n'est modifié";
-"advisor.reversibility.trash" = "Déplacé vers la Corbeille";
+"advisor.reversibility.trash" = "Récupérable depuis la Corbeille";
 "advisor.reversibility.restorableByCoreTend" = "Restaurable par CoreTend";
 "advisor.reversibility.partial" = "Partiellement réversible";
 "advisor.reversibility.irreversible" = "Irréversible";

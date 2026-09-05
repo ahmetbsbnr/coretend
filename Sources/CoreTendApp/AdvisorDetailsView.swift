@@ -62,7 +62,10 @@ struct AdvisorBadgeRow: View {
     let finding: AdvisorFinding
 
     var body: some View {
-        HStack(spacing: MCSpacing.xs) {
+        // Flow layout so the three badges wrap onto a second line in a
+        // narrow column (e.g. a Recovery Plan row at a compact window
+        // width) instead of clipping or overflowing the viewport.
+        MCFlowLayout(spacing: MCSpacing.xs) {
             MCStatusBadge(AdvisorDisplay.label(finding.risk), status: AdvisorDisplay.status(finding.risk))
             MCStatusBadge(AdvisorDisplay.label(finding.confidence), status: AdvisorDisplay.status(finding.confidence))
             MCStatusBadge(AdvisorDisplay.label(finding.reversibility), status: .neutral)

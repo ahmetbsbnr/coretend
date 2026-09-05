@@ -30,6 +30,21 @@ enum LocalizationManager {
         language(fromStoredValue: UserDefaults.standard.string(forKey: storageKey))
     }
 
+    /// The `Locale` the UI should format numbers, byte counts and dates in —
+    /// follows the in-app language override, not the process locale.
+    /// `.system` falls back to the real system locale.
+    static var locale: Locale {
+        locale(for: language)
+    }
+
+    static func locale(for language: AppLanguage) -> Locale {
+        switch language {
+        case .system: .autoupdatingCurrent
+        case .en: Locale(identifier: "en_US")
+        case .fr: Locale(identifier: "fr_FR")
+        }
+    }
+
     /// Pure parsing keeps fallback behavior testable without mutating the
     /// process-wide UserDefaults domain while other Xcode tests run.
     static func language(fromStoredValue value: String?) -> AppLanguage {

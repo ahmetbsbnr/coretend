@@ -269,12 +269,15 @@ public struct MCSuccessState: View {
             Text(title)
                 .font(MCFont.pageTitle)
                 .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: MCSize.readableTextWidth)
             if let message, !message.isEmpty {
                 Text(message)
                     .font(MCFont.secondaryBody)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
-                    .frame(maxWidth: 420)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: MCSize.readableTextWidth)
             }
             if let actionTitle, let action {
                 Button(actionTitle, action: action)
@@ -282,7 +285,8 @@ public struct MCSuccessState: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(MCSpacing.xl)
+        .padding(.horizontal, MCSpacing.xl)
+        .padding(.vertical, MCSpacing.xl)
         .onAppear {
             guard !reduceMotion else { return }
             withAnimation(.spring(response: 0.45, dampingFraction: 0.62)) { popped = true }
@@ -438,5 +442,63 @@ public struct MCFeatureRow: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .accessibilityElement(children: .combine)
+    }
+}
+
+// MARK: - Flow layout (wrapping row)
+
+/// Lays subviews left-to-right and wraps to a new line when the next one
+/// would overflow the proposed width. Used where a horizontal group of
+/// small elements (status badges, chips) must stay inside a narrow column
+/// instead of being clipped or forcing horizontal scroll.
+public struct MCFlowLayout: Layout {
+    public var spacing: CGFloat
+    public var lineSpacing: CGFloat
+
+    public init(spacing: CGFloat = MCSpacing.xs, lineSpacing: CGFloat = MCSpacing.xs) {
+        self.spacing = spacing
+        self.lineSpacing = lineSpacing
+    }
+
+    /// Pure geometry core — shared by `sizeThatFits` and `placeSubviews`, and
+    /// unit-testable without a SwiftUI layout pass. Returns each item's
+    /// top-left origin (relative to 0,0) and the overall bounding size.
+    public static func arrange(sizes: [CGSize], maxWidth: CGFloat,
+                               spacing: CGFloat, lineSpacing: CGFloat) -> (origins: [CGPoint], size: CGSize) {
+        var origins: [CGPoint] = []
+        var x: CGFloat = 0
+        var y: CGFloat = 0
+        var lineHeight: CGFloat = 0
+        var boundingWidth: CGFloat = 0
+        for size in sizes {
+            if x > 0, x + size.width > maxWidth {
+                boundingWidth = max(boundingWidth, x - spacing)
+                x = 0
+                y += lineHeight + lineSpacing
+                lineHeight = 0
+            }
+            origins.append(CGPoint(x: x, y: y))
+            x += size.width + spacing
+            lineHeight = max(lineHeight, size.height)
+        }
+        boundingWidth = max(boundingWidth, x - spacing)
+        return (origins, CGSize(width: max(0, min(boundingWidth, maxWidth)), height: y + lineHeight))
+    }
+
+    public func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout Void) -> CGSize {
+        let maxWidth = proposal.width ?? .greatestFiniteMagnitude
+        let sizes = subviews.map { $0.sizeThatFits(.unspecified) }
+        return Self.arrange(sizes: sizes, maxWidth: maxWidth,
+                            spacing: spacing, lineSpacing: lineSpacing).size
+    }
+
+    public func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout Void) {
+        let sizes = subviews.map { $0.sizeThatFits(.unspecified) }
+        let origins = Self.arrange(sizes: sizes, maxWidth: bounds.width,
+                                   spacing: spacing, lineSpacing: lineSpacing).origins
+        for (subview, (origin, size)) in zip(subviews, zip(origins, sizes)) {
+            subview.place(at: CGPoint(x: bounds.minX + origin.x, y: bounds.minY + origin.y),
+                          anchor: .topLeading, proposal: ProposedViewSize(size))
+        }
     }
 }

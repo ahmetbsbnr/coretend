@@ -93,11 +93,11 @@ struct RecoveryPlanView: View {
             case .idle:
                 startState
             case .preparing:
-                ProgressView(L("recovery.preparing")).frame(maxWidth: .infinity, maxHeight: .infinity)
+                transientState(L("recovery.preparing"))
             case .ready:
                 readyView
             case .executing:
-                ProgressView(L("recovery.executing")).frame(maxWidth: .infinity, maxHeight: .infinity)
+                transientState(L("recovery.executing"))
             case .finished:
                 finishedView
             }
@@ -117,6 +117,27 @@ struct RecoveryPlanView: View {
 
     // MARK: - States
 
+    /// Shared look for every transient / status screen (preparing, executing,
+    /// and any future one). The copy is width-capped and wraps, with generous
+    /// horizontal padding, so a long FR string never approaches the window
+    /// edge or clips, and it stays vertically + horizontally centred.
+    private func transientState(_ message: String) -> some View {
+        VStack(spacing: MCSpacing.md) {
+            ProgressView()
+                .controlSize(.large)
+            Text(message)
+                .font(MCFont.secondaryBody)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: MCSize.readableTextWidth)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(.horizontal, MCSpacing.xl)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(message)
+    }
+
     /// Deliberately not auto-triggered on appear: preparing a plan runs all
     /// four wired engines (Duplicates in particular can take a while over a
     /// large home folder), so scanning only starts once the user has set a
@@ -128,15 +149,19 @@ struct RecoveryPlanView: View {
                 .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.accent)
                 .accessibilityHidden(true)
             Text(L("recovery.empty.no_scan.title")).font(.title3.weight(.semibold))
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
             Text(L("recovery.empty.no_scan.subtitle")).foregroundStyle(.secondary).multilineTextAlignment(.center)
-                .frame(maxWidth: 420)
-            goalCard.frame(maxWidth: 420)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: MCSize.readableTextWidth)
+            goalCard.frame(maxWidth: MCSize.readableTextWidth)
             Button(L("recovery.prepare_button")) { Task { await model.preparePlan() } }
                 .buttonStyle(.borderedProminent)
                 .accessibilityIdentifier("recovery.prepare")
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(MCSpacing.page)
+        .padding(.horizontal, MCSpacing.xl)
+        .padding(.vertical, MCSpacing.page)
     }
 
     private var finishedView: some View {
@@ -160,6 +185,7 @@ struct RecoveryPlanView: View {
                     Label(L("recovery.from_smartscan"), systemImage: "sparkles")
                         .font(MCFont.caption)
                         .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                         .accessibilityIdentifier("recovery.fromSmartScan")
                 }
                 goalCard
@@ -184,20 +210,46 @@ struct RecoveryPlanView: View {
             .padding(MCSpacing.page)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        // A comfortable margin under the last row, on top of the action bar's
+        // own reserved height, so nothing renders against the window edge.
+        .contentMargins(.bottom, MCSpacing.md, for: .scrollContent)
         .accessibilityIdentifier("recovery.ready")
-        .toolbar {
-            Button(L("recovery.confirm_button")) { showConfirm = true }
-                .buttonStyle(.borderedProminent)
-                .disabled(model.selectedIDs.isEmpty)
-                .accessibilityIdentifier("recovery.confirm")
-                .confirmationDialog(L("recovery.confirm_dialog.title"), isPresented: $showConfirm) {
-                    Button(L("recovery.confirm_dialog.action"), role: .destructive) {
-                        Task { await model.execute() }
-                    }
-                } message: {
-                    Text(L("recovery.confirm_dialog.message", mcFormatBytes(model.selectedBytes)))
+        // The primary destructive action lives in the content area, in a
+        // bottom bar — not jammed into the top-right window chrome. Its
+        // height is reserved by `safeAreaInset`, which is what lets the
+        // final Recovery Plan row scroll fully clear of the bottom edge.
+        .safeAreaInset(edge: .bottom, spacing: 0) { confirmBar }
+    }
+
+    private var confirmBar: some View {
+        VStack(spacing: 0) {
+            Divider()
+            HStack(spacing: MCSpacing.md) {
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(L("recovery.summary.current_selection"))
+                        .font(MCFont.badge).foregroundStyle(.secondary).textCase(.uppercase)
+                    Text(mcFormatBytes(model.selectedBytes))
+                        .font(MCFont.cardTitle).monospacedDigit()
                 }
+                .accessibilityElement(children: .combine)
+                Spacer(minLength: MCSpacing.sm)
+                Button(L("recovery.confirm_button")) { showConfirm = true }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .disabled(model.selectedIDs.isEmpty)
+                    .accessibilityIdentifier("recovery.confirm")
+                    .confirmationDialog(L("recovery.confirm_dialog.title"), isPresented: $showConfirm) {
+                        Button(L("recovery.confirm_dialog.action"), role: .destructive) {
+                            Task { await model.execute() }
+                        }
+                    } message: {
+                        Text(L("recovery.confirm_dialog.message", mcFormatBytes(model.selectedBytes)))
+                    }
+            }
+            .padding(.horizontal, MCSpacing.page)
+            .padding(.vertical, MCSpacing.sm)
         }
+        .background(.bar)
     }
 
     private var noCandidatesState: some View {
@@ -216,7 +268,10 @@ struct RecoveryPlanView: View {
         MCCard {
             VStack(alignment: .leading, spacing: MCSpacing.sm) {
                 Text(L("recovery.goal_label")).font(MCFont.cardTitle)
-                HStack(spacing: MCSpacing.xs) {
+                    .fixedSize(horizontal: false, vertical: true)
+                // Presets + custom field wrap to a second line at a narrow
+                // window width instead of overflowing the card.
+                MCFlowLayout(spacing: MCSpacing.xs, lineSpacing: MCSpacing.xs) {
                     ForEach(RecoveryGoalPreset.allCases) { preset in
                         Button(preset.label) {
                             model.goalBytes = preset.bytes
@@ -226,14 +281,16 @@ struct RecoveryPlanView: View {
                         .tint(preset.bytes == model.goalBytes ? MCTheme.accent : .secondary)
                         .accessibilityIdentifier("recovery.goal.\(preset.id)")
                     }
-                    TextField(L("recovery.goal.custom_placeholder"), value: Binding(
-                        get: { Double(model.goalBytes) / 1_000_000_000 },
-                        set: { model.goalBytes = Int64(max(0, $0) * 1_000_000_000); model.applyGoal() }
-                    ), format: .number)
-                    .textFieldStyle(.roundedBorder)
-                    .frame(width: 70)
-                    .accessibilityLabel(L("recovery.goal.custom_a11y"))
-                    Text(L("recovery.goal.unit_gb"))
+                    HStack(spacing: MCSpacing.xxs) {
+                        TextField(L("recovery.goal.custom_placeholder"), value: Binding(
+                            get: { Double(model.goalBytes) / 1_000_000_000 },
+                            set: { model.goalBytes = Int64(max(0, $0) * 1_000_000_000); model.applyGoal() }
+                        ), format: .number)
+                        .textFieldStyle(.roundedBorder)
+                        .frame(width: 70)
+                        .accessibilityLabel(L("recovery.goal.custom_a11y"))
+                        Text(L("recovery.goal.unit_gb"))
+                    }
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -261,20 +318,37 @@ struct RecoveryPlanView: View {
 
     // MARK: - Summary
 
+    private func summaryMetric(_ label: String, _ value: String, alignment: HorizontalAlignment) -> some View {
+        VStack(alignment: alignment, spacing: 2) {
+            Text(label).font(MCFont.badge)
+                .foregroundStyle(.secondary).textCase(.uppercase)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(value).font(MCFont.displayMetric).monospacedDigit()
+                .minimumScaleFactor(0.7).lineLimit(1)
+        }
+    }
+
     private func summaryCard(_ plan: RecoveryPlan) -> some View {
-        MCCard {
+        let recoverable = summaryMetric(
+            L("recovery.summary.potentially_recoverable"),
+            mcFormatBytes(plan.potentiallyRecoverableBytes), alignment: .leading)
+        let selection = summaryMetric(
+            L("recovery.summary.current_selection"),
+            mcFormatBytes(model.selectedBytes), alignment: .leading)
+
+        return MCCard {
             VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(L("recovery.summary.potentially_recoverable")).font(MCFont.badge)
-                            .foregroundStyle(.secondary).textCase(.uppercase)
-                        Text(mcFormatBytes(plan.potentiallyRecoverableBytes)).font(MCFont.displayMetric).monospacedDigit()
+                // Side-by-side when there is room; stacked when the window is
+                // too narrow for two large metrics — never shrunk to tiny type.
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .top) {
+                        recoverable
+                        Spacer(minLength: MCSpacing.lg)
+                        selection
                     }
-                    Spacer()
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text(L("recovery.summary.current_selection")).font(MCFont.badge)
-                            .foregroundStyle(.secondary).textCase(.uppercase)
-                        Text(mcFormatBytes(model.selectedBytes)).font(MCFont.displayMetric).monospacedDigit()
+                    VStack(alignment: .leading, spacing: MCSpacing.sm) {
+                        recoverable
+                        selection
                     }
                 }
                 if model.goalBytes > 0 {
@@ -283,6 +357,7 @@ struct RecoveryPlanView: View {
                         systemImage: model.goalReached ? "checkmark.circle.fill" : "circle.dashed")
                     .font(MCFont.secondaryBody)
                     .foregroundStyle(model.goalReached ? MCTheme.success : .secondary)
+                    .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -301,6 +376,17 @@ struct RecoveryPlanView: View {
         }
     }
 
+    /// Trailing byte value: fixed to its natural width and never compressed
+    /// or truncated, so the number stays readable and column-aligned even
+    /// when the title/description wraps.
+    private func rowBytes(_ bytes: Int64) -> some View {
+        Text(mcFormatBytes(bytes))
+            .monospacedDigit()
+            .foregroundStyle(.secondary)
+            .fixedSize()
+            .layoutPriority(1)
+    }
+
     private func candidateRow(_ candidate: RecoveryPlanCandidate) -> some View {
         HStack(alignment: .top, spacing: MCSpacing.sm) {
             Toggle("", isOn: Binding(
@@ -311,10 +397,12 @@ struct RecoveryPlanView: View {
             .accessibilityLabel(L("recovery.select_item", candidate.finding.title))
             VStack(alignment: .leading, spacing: 2) {
                 Text(candidate.finding.title).font(MCFont.cardTitle)
+                    .fixedSize(horizontal: false, vertical: true)
                 AdvisorSummaryRow(finding: candidate.finding)
             }
-            Spacer(minLength: 0)
-            Text(mcFormatBytes(candidate.reclaimableBytes)).monospacedDigit().foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Spacer(minLength: MCSpacing.sm)
+            rowBytes(candidate.reclaimableBytes)
         }
         .padding(.vertical, MCSpacing.xxs)
     }
@@ -325,16 +413,20 @@ struct RecoveryPlanView: View {
                 HStack(alignment: .top, spacing: MCSpacing.sm) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(candidate.finding.title).font(MCFont.cardTitle)
+                            .fixedSize(horizontal: false, vertical: true)
                         Text(exclusionText(candidate.exclusionReason))
                             .font(.caption).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
-                    Spacer(minLength: 0)
-                    Text(mcFormatBytes(candidate.reclaimableBytes)).monospacedDigit().foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    Spacer(minLength: MCSpacing.sm)
+                    rowBytes(candidate.reclaimableBytes)
                 }
                 .padding(.vertical, MCSpacing.xxs)
             }
         } label: {
             Text(L("recovery.not_included.count", section.candidates.count)).font(MCFont.cardTitle)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityIdentifier("recovery.not_included")
     }
