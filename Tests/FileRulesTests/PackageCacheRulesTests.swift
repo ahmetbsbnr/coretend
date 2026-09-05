@@ -158,6 +158,68 @@ struct PackageCacheRulesTests {
                            excluded: [home.appendingPathComponent(".npm").path]).isEmpty)
     }
 
+    @Test func xcodeArchiveBundleIsOfferedAsACompleteReviewUnit() async throws {
+        let home = try fixture()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let path = "Library/Developer/Xcode/Archives/2026-01-01/Synthetic.xcarchive"
+        _ = try write(path + "/Products/Applications/Synthetic.app/Contents/MacOS/Synthetic", home: home)
+        _ = try write(path + "/dSYMs/Synthetic.app.dSYM/Contents/Resources/DWARF/Synthetic", home: home)
+        let archive = home.appendingPathComponent(path)
+        try FileManager.default.setAttributes([.modificationDate: Date().addingTimeInterval(-40 * 86400)], ofItemAtPath: archive.path)
+        let found = await scan([UserCleanupRules.xcodeArchives], home: home)
+        #expect(found.count == 1)
+        #expect(found.first?.url.standardizedFileURL.path == archive.standardizedFileURL.path)
+        #expect(found.first?.logicalSize == 254)
+        #expect(found.first?.preselected == false)
+        let sink = PackageAuditSink()
+        let result = await CleanupExecution.execute(found, home: home, sink: sink)
+        #expect(result.executed.count == 1)
+        #expect(!FileManager.default.fileExists(atPath: archive.path))
+        #expect(await sink.stages == [.approved, .executed])
+    }
+
+    @Test func archiveContainingAnExcludedFileIsNeverPartiallyOffered() async throws {
+        let home = try fixture()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let path = "Library/Developer/Xcode/Archives/Old.xcarchive"
+        let protected = try write(path + "/dSYMs/symbols", home: home)
+        _ = try write(path + "/Info.plist", home: home)
+        let archive = home.appendingPathComponent(path)
+        try FileManager.default.setAttributes([.modificationDate: Date().addingTimeInterval(-40 * 86400)], ofItemAtPath: archive.path)
+        #expect(await scan([UserCleanupRules.xcodeArchives], home: home, excluded: [protected.path]).isEmpty)
+        let findings = await scan([UserCleanupRules.xcodeArchives], home: home)
+        let result = await CleanupExecution.execute(findings, home: home, excludedPaths: [protected.path])
+        #expect(result.executed.isEmpty)
+        #expect(try Data(contentsOf: protected).count == 127)
+    }
+
+    @Test func cacheDirectorySubstitutionAfterApprovalIsRejectedAtExecution() async throws {
+        let home = try fixture()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let cache = try write(".npm/_cacache/item", home: home)
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: PackageCacheRules.npm.roots(home), regularFilesOnly: true))
+        let approved = try await center.approve(url: cache, logicalSize: 127, ruleID: PackageCacheRules.npm.id, risk: .low)
+        try FileManager.default.moveItem(at: cache, to: cache.appendingPathExtension("saved"))
+        try FileManager.default.createDirectory(at: cache, withIntermediateDirectories: true)
+        let result = await center.execute([approved])
+        #expect(result.executed.isEmpty)
+        #expect(result.skipped.count == 1)
+        #expect(FileManager.default.fileExists(atPath: cache.path))
+    }
+
+    @Test func cacheSymlinkSwapAfterApprovalCannotReachAnotherAllowedFile() async throws {
+        let home = try fixture()
+        defer { try? FileManager.default.removeItem(at: home) }
+        let cache = try write(".npm/_cacache/item", home: home)
+        let target = try write(".npm/_cacache/other", home: home)
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: PackageCacheRules.npm.roots(home), regularFilesOnly: true))
+        let approved = try await center.approve(url: cache, logicalSize: 127, ruleID: PackageCacheRules.npm.id, risk: .low)
+        try FileManager.default.moveItem(at: cache, to: cache.appendingPathExtension("saved"))
+        try FileManager.default.createSymbolicLink(at: cache, withDestinationURL: target)
+        #expect(await center.execute([approved]).executed.isEmpty)
+        #expect(try Data(contentsOf: target).count == 127)
+    }
+
     @Test func safetyCenterExecutesRealPackageFindingAndPreservesProjectHardLink() async throws {
         let home = try fixture()
         defer { try? FileManager.default.removeItem(at: home) }

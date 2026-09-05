@@ -26,7 +26,7 @@ public enum CleanupExecution {
             let center = SafetyCenter(validator: PathValidator(
                 allowedRoots: rule.roots(home),
                 excludedRoots: rule.excludedRoots(home) + excludedPaths.map { URL(fileURLWithPath: $0) },
-                regularFilesOnly: true), sink: sink)
+                regularFilesOnly: true, allowedDirectoryExtensions: rule.directoryExtensions), sink: sink)
             if let operation = try? await center.approve(url: finding.url, logicalSize: finding.logicalSize,
                                                         ruleID: rule.id, risk: rule.risk) {
                 let result = await center.execute([operation])

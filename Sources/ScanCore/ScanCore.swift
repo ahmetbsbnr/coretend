@@ -4,7 +4,7 @@
 import Foundation
 import SafetyCore
 
-/// A single file found by a scan, with the evidence behind its selection.
+/// A file or an indivisible directory package found by a scan, with evidence.
 public struct ScanFinding: Sendable, Identifiable {
     public let id: UUID
     public let url: URL
@@ -80,11 +80,15 @@ public struct ScanRule: Sendable {
     public let minimumSizeBytes: Int64
     /// Rule-owned subtrees skipped before traversal, also used at execution.
     public let excludedRoots: @Sendable (URL) -> [URL]
+    /// Whole directory packages offered as indivisible review units. Empty
+    /// for file-only caches. Currently used only for Xcode .xcarchive.
+    public let directoryExtensions: Set<String>
 
     public init(id: String, name: String, category: String, explanation: String,
                 minimumAgeDays: Int = 0, risk: RiskLevel, preselect: Bool,
                 matches: (@Sendable (URL) -> Bool)? = nil, minimumSizeBytes: Int64 = 0,
                 excludedRoots: @escaping @Sendable (URL) -> [URL] = { _ in [] },
+                directoryExtensions: Set<String> = [],
                 roots: @escaping @Sendable (URL) -> [URL]) {
         self.id = id
         self.name = name
@@ -97,6 +101,7 @@ public struct ScanRule: Sendable {
         self.matches = matches
         self.minimumSizeBytes = minimumSizeBytes
         self.excludedRoots = excludedRoots
+        self.directoryExtensions = directoryExtensions
     }
 }
 
@@ -274,16 +279,31 @@ public struct ScanEngine: Sendable {
             if scanned % 512 == 0 {
                 continuation.yield(.progress(scanned: scanned, currentPath: url.path))
             }
-            guard values.isRegularFile == true else { continue }
-            let size = Int64(values.fileSize ?? 0)
             if let modified = values.contentModificationDate, modified > cutoff { continue }
+            let size: Int64
+            let allocated: Int64?
+            if values.isDirectory == true, rule.directoryExtensions.contains(url.pathExtension.lowercased()) {
+                enumerator.skipDescendants()
+                // The whole archive is one operation, including its app and
+                // dSYM bundles. Never offer fragments of a shipped build.
+                guard let measured = measurePackage(url, excludedPaths: excludedPaths) else {
+                    continuation.yield(.error(path: url.path, message: "package measurement incomplete or excluded"))
+                    continue
+                }
+                size = measured.logical
+                allocated = measured.allocated
+            } else {
+                guard values.isRegularFile == true else { continue }
+                size = Int64(values.fileSize ?? 0)
+                allocated = values.totalFileAllocatedSize.map(Int64.init)
+            }
             if size < rule.minimumSizeBytes { continue }
             if let matches = rule.matches, !matches(url) { continue }
             totalBytes += size
             continuation.yield(.finding(ScanFinding(
                 url: url,
                 logicalSize: size,
-                allocatedSize: values.totalFileAllocatedSize.map(Int64.init),
+                allocatedSize: allocated,
                 modificationDate: values.contentModificationDate,
                 ruleID: rule.id,
                 category: rule.category,
@@ -293,5 +313,26 @@ public struct ScanEngine: Sendable {
                 preselected: rule.preselect
             )))
         }
+    }
+
+    private static func measurePackage(_ root: URL, excludedPaths: [String]) -> (logical: Int64, allocated: Int64?)? {
+        let canonicalRoot = ScanConfiguration.canonical(root.standardizedFileURL.path)
+        guard !excludedPaths.contains(where: { PathValidator.isPath($0, under: canonicalRoot) }) else { return nil }
+        var failed = false
+        guard let enumerator = FileManager.default.enumerator(at: root, includingPropertiesForKeys: resourceKeys,
+            errorHandler: { _, _ in failed = true; return true }) else { return nil }
+        var logical: Int64 = 0
+        var allocated: Int64? = 0
+        while let url = enumerator.nextObject() as? URL {
+            guard !Task.isCancelled else { return nil }
+            guard let values = try? url.resourceValues(forKeys: Set(resourceKeys)) else { failed = true; continue }
+            if values.isSymbolicLink == true { enumerator.skipDescendants(); continue }
+            guard values.isRegularFile == true else { continue }
+            guard let size = values.fileSize else { failed = true; continue }
+            logical += Int64(size)
+            if let total = allocated, let bytes = values.totalFileAllocatedSize { allocated = total + Int64(bytes) }
+            else { allocated = nil }
+        }
+        return failed ? nil : (logical, allocated)
     }
 }

@@ -140,7 +140,9 @@ public enum UserCleanupRules {
         explanation: "Archived builds in ~/Library/Developer/Xcode/Archives older than 30 days. May contain your only copy of a shipped build — review before removing.",
         minimumAgeDays: 30,
         risk: .medium,
-        preselect: false
+        preselect: false,
+        matches: { $0.pathExtension.lowercased() == "xcarchive" },
+        directoryExtensions: ["xcarchive"]
     ) { home in
         [home.appendingPathComponent("Library/Developer/Xcode/Archives")]
     }
