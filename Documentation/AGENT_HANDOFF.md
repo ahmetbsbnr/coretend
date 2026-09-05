@@ -9,13 +9,15 @@
 - Commits so far: `7f5be65` storage semantics · `4c47554` Dashboard/sidebar/
   focus bug fixes · `193ccc4` Smart Scan orchestrator domain · `8b822bb`
   StorageScanProgress · `944f33a` pause audit test · `4dc707a` Smart Scan
-  real providers.
-- Gate status at `4dc707a`: `Scripts/build.sh` clean (0 warnings),
-  `Scripts/test.sh` **762 passed / 0 failed**, `Scripts/repository-doctor.sh`
-  passed. `Scripts/build-xcode.sh` **NOT re-run since `7ba9428`** — last
-  known good there (both appex + 7 intents / 6 shortcuts embedded); the
-  changes since are SwiftPM-source + `.strings` only, so it should still
-  pass, but it must be re-run at the next checkpoint to confirm.
+  real providers · `bfb444e` app-scope `SmartScanModel` + late-progress
+  state fix.
+- Gate status at `bfb444e`: `Scripts/build.sh` clean (0 warnings — the
+  only test-target diagnostics are the pre-existing `Suite`/`Test`
+  swift-testing deprecation notices), `Scripts/test.sh` **768 passed /
+  0 failed**, `Scripts/repository-doctor.sh` passed. `Scripts/build-xcode.sh`
+  **NOT re-run since `7ba9428`** — last known good there (both appex + 7
+  intents / 6 shortcuts embedded); every change since is SwiftPM-source +
+  `.strings` only. Re-run it at the next checkpoint to confirm.
 
 ### Done this pass
 
@@ -82,17 +84,57 @@
    store:)` factory. `SmartScanProvidersTests` (8).
    Strings `smartscan.headline.{recoverable,nothing,apps,signals}` EN+FR.
 
+6. **App-scope `SmartScanModel` (§8–9) — DONE.** `bfb444e`.
+   `Sources/CoreTendApp/SmartScanModel.swift` — `@MainActor @Observable`,
+   owns a `SmartScanCoordinator`, phases idle/running/completed/cancelled,
+   polled live snapshot + elapsed, `start()`/`cancel()`/`reset()`,
+   `hasCompletedReport` false for a cancelled run. Injectable coordinator/
+   clock/poll-interval. **Not yet held by `MainWindow` / not yet shown in
+   any view** — that is the next step. Also fixed a real coordinator bug:
+   a provider's final-line progress ping used to clobber `.completed` →
+   `.scanning` (now `setScanningDetail` only refines a live scanning
+   state); regression test added.
+
 ### Remaining
 
-- **App-scope Smart Scan model + Dashboard/result UI (§8–17)**: an
-  `@MainActor @Observable` owner holding the
-  `SmartScanCoordinator` at app/domain scope (not in `DashboardView`), the
-  live module-state list (§18), the structured result screen (§19) reusing
-  `AdvisorService`, and the action flow ending at **Review Recovery Plan**
-  (§20 — no new delete executor).
-- **Dashboard integration (§21)**: make "Start Smart Scan / Analyse
-  intelligente" the primary CTA; if a scan is already running show its
-  progress instead of starting a duplicate.
+- **Wire `SmartScanModel` into the UI (§8, §10–17)** — start here:
+  - `MainWindow` (`CoreTendApp.swift` ~line 405): add
+    `@State private var smartScan = SmartScanModel()` next to
+    `developerModel`; pass `DashboardView(smartScan: smartScan)`. This is
+    what makes the app-scope lifetime real (survives `selection` changes).
+  - `DashboardView`: accept `let smartScan: SmartScanModel`. Replace / lead
+    the hero with a Smart Scan panel: idle → "Start Smart Scan" /
+    "Lancer l'analyse intelligente" (`smartScan.start()`) + a coverage
+    list (Storage/Privacy/Developer/Applications/Integrity, no health
+    score); running → per-module rows from `smartScan.modules` (Queued/
+    Scanning/Completed/Unavailable/Failed/Cancelled — NO %), elapsed,
+    Cancel; completed → 4 category totals (recoverable / needs review /
+    attention / informational), one global number **iff**
+    `report.isGlobalRecoverableExact` else per-category with a one-line
+    why; cancelled → labelled partial + Dismiss (`reset()`).
+  - Result primary CTA "Review Recovery Plan" / "Examiner le plan de
+    récupération" → `navigate(.recoveryPlan)` (`RecoveryPlanView` already
+    runs `prepareCandidates()` on load — NO new executor, §18).
+  - Category rows drill in via `navigate(.cleanup/.duplicates/.privacyLab/
+    .developer/.protection)` (§16).
+  - New strings (EN+FR): `smartscan.start`, `smartscan.cancel`,
+    `smartscan.coverage.*`, `smartscan.state.{queued,scanning,completed,
+    unavailable,failed,cancelled}`, `smartscan.category.{recoverable,
+    review,attention,informational}`, `smartscan.global.exact`,
+    `smartscan.global.inexact_note`, `smartscan.partial_note`,
+    `smartscan.review_recovery_plan`, `smartscan.elapsed`.
+- **Failure-isolation / permission-limited / cancellation UI (§20–22)** —
+  render `.failed` / `.unavailable` / `.cancelled` module states as
+  first-class rows in the running + result views; a cancelled run shows a
+  labelled partial, never a success state (`hasCompletedReport` already
+  gates this in the model).
+- **Advisor reuse in the result detail (§17)** — when a category row is
+  expanded, show the `AdvisorFinding` domain fields (why / confidence /
+  risk / reversibility / next-action) already on each
+  `RecoveryPlanCandidateData.candidate.finding`; do not parse display text.
+- **Finish Storage progress P1 (§41)** — `CleanupView.scanningView` still
+  needs elapsed-time display + phase-aware copy (the domain type
+  `StorageScanProgress` already carries `elapsed` / `phase`).
 - **Live Storage scan progress (§2)**: extract a structured progress type
   (`itemsInspected`/`bytesInspected`/`findingsDetected`/`reclaimableSoFar`/
   `currentCategory`/`elapsed`/`phase`) out of `CleanupModel`/the views into
