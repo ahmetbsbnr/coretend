@@ -21,20 +21,11 @@ final class LeftoversViewModel {
         leftovers.filter { selectedPaths.contains($0.url.path) }.reduce(0) { $0 + $1.sizeBytes }
     }
 
-    /// Ambiguous/shared items: an explicit `group.` container id (Apple's own
-    /// convention for data shared across an app family), or a bundle-id
-    /// vendor prefix that appears on more than one leftover — either signal
-    /// means deleting it could affect more than the one app it looks tied to.
-    /// Derived from the real scanned leftovers, never a guess.
+    /// Derived from the real scanned leftovers, never a guess. Delegates to
+    /// `LeftoversAmbiguity` (AppDiscovery) so Recovery Plan shares the exact
+    /// same signal instead of a second, hand-copied version.
     func isAmbiguous(_ item: AssociatedItem) -> Bool {
-        let name = item.url.deletingPathExtension().lastPathComponent
-        if name.hasPrefix("group.") { return true }
-        let vendorPrefix = name.split(separator: ".").prefix(2).joined(separator: ".")
-        guard !vendorPrefix.isEmpty else { return false }
-        let sharedCount = leftovers.filter {
-            $0.url.deletingPathExtension().lastPathComponent.split(separator: ".").prefix(2).joined(separator: ".") == vendorPrefix
-        }.count
-        return sharedCount > 1
+        LeftoversAmbiguity.isAmbiguous(item, among: leftovers)
     }
 
     func scan() async {
