@@ -11,7 +11,8 @@ that means.
 - No advertising, no ad SDKs.
 - No network calls as part of any core feature (cleanup, duplicates,
   space analysis, similar images, applications/leftovers, performance,
-  privacy cleaner cache scan, my activity).
+  privacy cleaner cache scan, Privacy Lab image-metadata inspection,
+  my activity).
 
 ## The one product network request
 
