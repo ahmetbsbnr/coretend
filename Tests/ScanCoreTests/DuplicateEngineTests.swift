@@ -146,3 +146,69 @@ struct ScanExclusionTests {
         #expect(names == ["kept.dat"])
     }
 }
+
+@Suite("DuplicateSafety")
+struct DuplicateSafetyTests {
+    /// A real temp file with a captured modification date — hasChangedOnDisk
+    /// treats a missing/unreadable file as "changed", so these tests need
+    /// files that actually exist to exercise the "not changed" path.
+    private func realFile(_ name: String, in dir: URL) throws -> (url: URL, modified: Date) {
+        let url = dir.appendingPathComponent(name)
+        try Data("x".utf8).write(to: url)
+        let modified = try url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate!
+        return (url, modified)
+    }
+
+    private func tempDir() throws -> URL {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir
+    }
+
+    @Test func neverRemovesTheOnlySurvivingCopy() throws {
+        let dir = try tempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let a = try realFile("a", in: dir), b = try realFile("b", in: dir)
+        let group = DuplicateGroup(id: "h", fileSize: 10, urls: [a.url, b.url],
+                                    modificationDates: [a.url: a.modified, b.url: b.modified])
+        // Both selected — the keeper must survive regardless.
+        let safe = DuplicateSafety.safeSelection(selectedPaths: [a.url.path, b.url.path], groups: [group])
+        #expect(!safe.contains(group.keeper.path))
+        #expect(safe.count == 1, "exactly one copy remains selected for removal, the other (keeper) stays")
+    }
+
+    @Test func dropsACopyThatChangedOnDiskSinceTheScan() throws {
+        let dir = try tempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let changed = try realFile("changed", in: dir), unchanged = try realFile("unchanged", in: dir)
+        // No modificationDates entry for `changed` => hasChangedOnDisk is true.
+        let group = DuplicateGroup(id: "h2", fileSize: 10, urls: [changed.url, unchanged.url],
+                                    modificationDates: [unchanged.url: unchanged.modified])
+        let safe = DuplicateSafety.safeSelection(selectedPaths: [changed.url.path], groups: [group])
+        #expect(safe.isEmpty, "a stale (changed-on-disk) selection must never be executed")
+    }
+
+    @Test func leavesAPartialSelectionThatKeepsAtLeastOneCopyUntouched() throws {
+        let dir = try tempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let a = try realFile("x", in: dir), b = try realFile("y", in: dir), c = try realFile("z", in: dir)
+        let group = DuplicateGroup(
+            id: "h3", fileSize: 10, urls: [a.url, b.url, c.url],
+            modificationDates: [a.url: a.modified, b.url: b.modified, c.url: c.modified])
+        // Only two of three selected — never triggers the "all selected" keeper rule.
+        let selection: Set<String> = [a.url.path, b.url.path]
+        let safe = DuplicateSafety.safeSelection(selectedPaths: selection, groups: [group])
+        #expect(safe == selection, "a partial selection that already leaves a copy behind is untouched")
+    }
+
+    @Test func isPureAndDeterministic() throws {
+        let dir = try tempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let a = try realFile("p", in: dir), b = try realFile("q", in: dir)
+        let group = DuplicateGroup(id: "h4", fileSize: 5, urls: [a.url, b.url],
+                                    modificationDates: [a.url: a.modified, b.url: b.modified])
+        let first = DuplicateSafety.safeSelection(selectedPaths: [a.url.path, b.url.path], groups: [group])
+        let second = DuplicateSafety.safeSelection(selectedPaths: [a.url.path, b.url.path], groups: [group])
+        #expect(first == second)
+    }
+}

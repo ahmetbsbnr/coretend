@@ -179,3 +179,27 @@ public struct DuplicateEngine: Sendable {
         return Data(hasher.finalize())
     }
 }
+
+/// The two safety rules a duplicate-removal selection must always satisfy,
+/// extracted as a pure function so every caller (the Duplicates UI today,
+/// Recovery Plan's execution path tomorrow) shares one implementation
+/// instead of two hand-copied ones that could drift apart.
+public enum DuplicateSafety {
+    /// Narrows `selectedPaths` to a selection that's still safe to act on:
+    /// drops any path whose file changed on disk since the scan (no longer
+    /// known to be a duplicate — trashing it could lose real data), then
+    /// drops each group's suggested keeper if every one of its urls is still
+    /// selected (a group's last surviving copy is never removed).
+    public static func safeSelection(selectedPaths: Set<String>, groups: [DuplicateGroup]) -> Set<String> {
+        var selected = selectedPaths
+        for group in groups {
+            for url in group.urls where group.hasChangedOnDisk(url) {
+                selected.remove(url.path)
+            }
+        }
+        for group in groups where group.urls.allSatisfy({ selected.contains($0.path) }) {
+            selected.remove(group.keeper.path)
+        }
+        return selected
+    }
+}

@@ -33,7 +33,10 @@ final class PrivacyCleanerViewModel {
 
     /// Per-profile check — a global "some browser is running" banner isn't
     /// enough: Chrome running must not block cleaning a Firefox profile.
-    func isRunning(_ profile: BrowserProfile) -> Bool {
+    /// `static` and dependent only on `profile` (never `self`) so Recovery
+    /// Plan's execution path can share this exact check without a live
+    /// `PrivacyCleanerViewModel` instance.
+    static func isRunning(_ profile: BrowserProfile) -> Bool {
         NSWorkspace.shared.runningApplications.contains { $0.bundleIdentifier == profile.bundleID }
     }
 
@@ -123,7 +126,7 @@ final class PrivacyCleanerViewModel {
     /// UI already disables selection for a running browser, but state can
     /// go stale between scan and the click (browser relaunched meanwhile).
     func cleanCaches() async {
-        let selected = profiles.filter { selectedProfileIDs.contains($0.id) && !isRunning($0) }
+        let selected = profiles.filter { selectedProfileIDs.contains($0.id) && !Self.isRunning($0) }
         guard !selected.isEmpty else { return }
         let home = FileManager.default.homeDirectoryForCurrentUser
         let center = SafetyCenter(
@@ -232,7 +235,7 @@ struct PrivacyCleanerView: View {
             }
             .padding()
             List(model.profiles) { profile in
-                let profileIsRunning = model.isRunning(profile)
+                let profileIsRunning = PrivacyCleanerViewModel.isRunning(profile)
                 VStack(alignment: .leading, spacing: MCSpacing.xxs) {
                     HStack {
                         Toggle("", isOn: Binding(
