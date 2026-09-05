@@ -253,6 +253,7 @@ struct PrivacyCleanerView: View {
                                 Text(L("privacy.cookies_size", mcFormatBytes(profile.cookieBytes)))
                             }
                             .font(.caption).foregroundStyle(.secondary)
+                            AdvisorSummaryRow(finding: AdvisorService.advise(browserProfile: profile))
                         }
                         Spacer()
                     }

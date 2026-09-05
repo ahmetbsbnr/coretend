@@ -373,6 +373,8 @@ struct DuplicatesView: View {
             List {
                 ForEach(model.filteredGroups) { group in
                     Section {
+                        AdvisorSummaryRow(finding: AdvisorService.advise(duplicateGroup: group))
+                            .padding(.vertical, MCSpacing.xxs)
                         // Overlap motif: near-duplicate copies shown slightly
                         // overlapping, separating on hover — the rows below
                         // remain the real accessible detail and controls.

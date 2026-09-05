@@ -310,7 +310,10 @@ struct CleanupView: View {
 
             List {
                 ForEach(model.groups) { group in
+                    let advisor = AdvisorService.advise(ruleID: group.ruleID, findings: group.findings)
                     DisclosureGroup {
+                        AdvisorSummaryRow(finding: advisor)
+                            .padding(.vertical, MCSpacing.xxs)
                         ForEach(group.findings) { finding in
                             findingRow(finding)
                         }
@@ -322,8 +325,8 @@ struct CleanupView: View {
                             ))
                             .labelsHidden()
                             VStack(alignment: .leading) {
-                                Text(group.name).font(MCFont.cardTitle)
-                                Text(group.explanation)
+                                Text(advisor.title).font(MCFont.cardTitle)
+                                Text(advisor.summary)
                                     .font(.caption).foregroundStyle(.secondary)
                             }
                             Spacer()
