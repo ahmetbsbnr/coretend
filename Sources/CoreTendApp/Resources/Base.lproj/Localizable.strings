@@ -367,6 +367,8 @@
 "module.protection" = "Integrity";
 "module.activity" = "Activity";
 "palette.open" = "Command Palette…";
+"palette.open.a11y" = "Open command palette";
+"palette.close.a11y" = "Close command palette";
 "palette.placeholder" = "Jump to…";
 "palette.no_results" = "No matches";
 "palette.scan_home" = "Scan Home with Space Lens";
