@@ -68,6 +68,51 @@ tooling diagnostics, not compiler warnings.
 
 ---
 
+## VISUAL QA — interactive pass, 2026-09-06
+
+**Environment:** real GUI. The `computer-use` MCP was blocked all session (every click hit-tested as "Centre de notifications" — a stuck system click-catcher / coordinate mismatch), so the repo's own tooling was used instead: `Scripts/package-local.sh` (SwiftPM release → ad-hoc-signed `build/CoreTend.app`) + AppleScript System Events to drive the sidebar + `screencapture` of the window rect, with the PNGs inspected directly. Build under test: `feat/v1.1-smart-scan-polish` HEAD, macOS 26.6.2 (25G83), arm64, dark mode, French. Screenshots (contain the real disk free-space number → **gitignored**, not committed): `Documentation/VisualAudit/_capture_2026-09-05_sidebar/`.
+
+**Coverage this pass:** Dashboard (FR/dark), Recovery Plan (idle / preparing / bisected states), the sidebar across Dashboard / Stockage / Doublons / Applications / Développement / Évolution / APFS / Plan de récupération, command palette (open / type / dismiss attempts), window resize (900×632 → 1320×820). **Not covered** (budget was consumed by the P0 sidebar root-cause hunt): the full light/dark × EN/FR × 4-size matrix, Space Lens interaction, Smart Scan run, Storage/Applications/Developer/Privacy/Integrity/Restore/Activity/Settings deep walks, VoiceOver, Reduce Motion, Finder/Widget/Shortcuts/Notifications live — these stay HUMAN VERIFICATION REQUIRED (list at the end of this doc).
+
+### V-1 — Sidebar scrolls off-screen on Recovery Plan  ·  **P0**  ·  **FIXED + retested**
+
+| | |
+|---|---|
+| Screen / state | Plan de récupération — idle (`startState`) **and** completed (`finishedView` / `MCSuccessState`) |
+| Window / theme / lang | reproduced at 900×632 **and** 1320×820, dark, FR (theme/lang independent) |
+| Steps | Dashboard → click "Plan de récupération" in the sidebar |
+| Expected | sidebar keeps its position; the selected row is visible; upper groups stay visible |
+| Actual (before) | the sidebar `List` scrolls to an out-of-range offset (**−1252 pt**, measured via AX on row 1). Compact window → sidebar entirely blank; larger window → only the last "Système" group visible — **exactly the reported screenshot**. Recovers when navigating to any other module. |
+| Root cause | A `.borderedProminent` button is the window's default control. In a `NavigationSplitView` **detail with no ScrollView of its own**, AppKit's "reveal the default / first-responder control" pass walks up for an enclosing `NSScrollView` and finds the **sidebar's** list, then scrolls it. Every other module's detail root is a `ScrollView` or `List`, so only Recovery Plan (bare-`VStack` `startState`, and `MCSuccessState` for `finishedView`) triggers it. Pre-existing — reproduces back to the original Recovery Plan commit `fd6eb41`; the recent screenshot merely surfaced it. **Not** caused by `MCFlowLayout`, the goal-card `TextField`, or the `6247549` polish (each ruled out by isolation rebuild). |
+| Fix | `55d184c` — give each centred detail state its own scroll host: `MCSuccessState` + `MCEmptyState` (DesignSystem) bodies wrapped in `ScrollView` + `.scrollBounceBehavior(.basedOnSize)`; `RecoveryPlanView.startState` + `transientState` likewise. `readyView` was already a `ScrollView`. Content still fits without visible scrolling; no `scrollTo(.top)` hack. The `MCSuccessState` fix also removes the same latent bug from every other success screen (Cleanup / Duplicates / Restore …). |
+| Retest | **PASS.** `AFTER-01…04`, `AFTER-13`, `AFTER-14` — sidebar fully intact on Recovery Plan idle at 900×632 and 1320×820 (whole list incl. "Centre de restauration" / "Réglages"), and across navigate-away-and-back; no regression on Dashboard / Doublons / Stockage / Applications / Timeline / APFS. |
+| Regression test | `SidebarStructureTests.centredDetailStatesWithADefaultButtonAreScrollHosted` (structural). |
+| Still HUMAN VERIFICATION | the `.finished` state itself (needs a real destructive execute to reach — same `MCSuccessState` mechanism, code-verified only). |
+
+### V-2 — French byte formatting  ·  **PASS**
+
+`mcFormatBytes` fix from `6247549` **verified live**: Dashboard storageGlance "6,54 Go libres sur 245,11 Go", status pill "Espace libre 6,45 Go", APFS "245,11 Go" / "7,88 Go" / "Zéro ko" — all French conventions (comma decimal, "Go"/"Mo"/"ko"), no "GB"/"MB". *(A `git` accident in `55d184c` had reverted the `MCFormatting.locale` wiring in `CoreTendApp.swift`; restored in `b57b86f` — see V-4.)*
+
+### V-3 — Command palette  ·  **partial**
+
+- ✕ close button present and visible in the search row (`6247549`) — **PASS** (visual). List renders (Tableau de bord / Stockage / …); type-to-filter works ("dev" → Développement, "res" → Centre de restauration).
+- **Escape does not dismiss the palette** in testing — but the automated harness cannot deliver a testable Escape into the SwiftUI `.sheet` (typed characters reach the field; `osascript key code 53` does not trip `.onExitCommand` / `.onKeyPress`). Could not distinguish "harness limitation" from "app bug". `76dd84b` adds belt-and-suspenders handling (`.onKeyPress(.escape)` on the focused field + container `.onExitCommand` + the ✕ button's `.cancelAction`). **HUMAN VERIFICATION REQUIRED** — physical Escape keypress on device.
+- Palette sheet renders in the lower-centre of the window (macOS sheet placement); readable, not clipped. Outside-click dismissal not testable via the harness — HUMAN VERIFICATION.
+
+### V-4 — Git-history correction  ·  **fixed**
+
+`55d184c` (the V-1 fix commit) inadvertently also committed a **stale `CoreTendApp.swift`** — a leftover `git checkout <old> -- <path>` from the root-cause bisect had left the pre-`6247549` version staged, and `git commit` writes the whole index. That silently reverted the `MCFormatting.locale` wiring + the `CommandPaletteView` improvements from `6247549`. All other `6247549` files were unaffected. Restored in `b57b86f`. No feature lost on disk; the running QA build always had the correct file.
+
+### ⌘ command-palette trigger button  ·  **P2 note**
+
+The circular `⌘` button sits in the top-right, hard against the rounded window corner (standard SwiftUI `.toolbar` trailing placement). It does not overlap the page title or any action. Visually a touch corner-stuck but within macOS chrome norms — left as-is (P2, not a defect).
+
+### `mcFormatBytes(0)` in French → "Zéro ko"  ·  **P2 note**
+
+APFS "Disponible (usage opportuniste)" shows "Zéro ko" (from `ByteCountFormatStyle` for a 0 value in FR). Grammatically fine, matches the formatter's locale output; not changed.
+
+---
+
 ## 3. Smart Scan — idle state
 
 | Check | Status | Notes |
