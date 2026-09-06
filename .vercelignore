@@ -1,0 +1,43 @@
+# Deploy is run from the repo root so Website/build.py can read
+# Configuration/published-release.json. This file trims the upload to what the
+# site build actually needs: Website/, Configuration/published-release.json,
+# Scripts/generate-public-release.py, vercel.json.
+#
+# NOTE: .vercelignore does NOT inherit .gitignore — every secret and every
+# large local tree must be listed here explicitly.
+
+# ── Secrets — never upload ──
+.env
+.env.*
+**/.env
+**/.env.*
+Configuration/DeveloperID/
+Configuration/*.local.json
+
+# ── CoreTend Swift application — not part of the website build ──
+.build/
+Sources/
+Tests/
+.swiftpm/
+CoreTend.xcodeproj/
+project.yml
+Package.swift
+Package.resolved
+
+# ── Large local trees the website build never reads ──
+Documentation/
+Release/
+Website/dist/
+_workspace/
+
+# ── Generated / cache / tooling / editor junk ──
+**/DerivedData/
+**/__pycache__/
+**/*.pyc
+**/.venv/
+**/packaging-venv/
+**/.DS_Store
+.claude/
+.agents/
+.agent-setup-backups/
+.github/
