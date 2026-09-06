@@ -365,19 +365,12 @@ await gate('French localizes visible calls to action and accessible control name
   assert.match(await page.locator('.skip').innerText(), /Aller/i)
   assert.match(await page.locator('.bar .wordmark').getAttribute('aria-label'), /accueil/i)
   assert.match(await page.locator('#theme').getAttribute('aria-label'), /(?:apparence|thème)/i)
-  const appLabel = await page.locator('#app').getAttribute('aria-label')
-  assert(/CoreTend/i.test(appLabel) && /(?:aperçu|interface)/i.test(appLabel) && !/preview/i.test(appLabel))
-  assert.match(await page.locator('#tabs').getAttribute('aria-label'), /(?:catégories|résultats|trouvailles)/i)
-  assert.equal((await page.locator('#copy').innerText()).trim(), 'Copier')
-
-  const views = {
-    storage: 'Stockage', lens: 'Space Lens', dupes: 'Doublons',
-    apps: 'Applications', integrity: 'Intégrité', activity: 'Activité',
-  }
-  for (const [id, title] of Object.entries(views)) {
-    await page.locator(`[data-view="${id}"]`).click()
-    assert.equal(await page.locator('#vTitle').innerText(), title)
-  }
+  // #findings is editorial (no simulated app window): the FR build swaps the
+  // category labels.
+  const findings = await page.locator('#findings').innerText()
+  assert.match(findings, /Récupérable/)
+  assert.match(findings, /Réversible/)
+  assert.ok(!/id="app"|id="tabs"|class="slab"/.test(await page.content()))
   await context.close()
 })
 
@@ -392,12 +385,10 @@ await gate('browser language routing and manual language persistence have no loo
   const context = await browser.newContext({ locale: 'fr-FR', reducedMotion: 'reduce' })
   const page = await context.newPage()
   await page.goto(`${origin}/en#top`)
-  await page.locator('[data-view="apps"]').click()
   await page.locator('[data-lang-link="fr"]').click()
   await page.waitForURL(`${origin}/fr#top`)
   assert.equal(await page.evaluate(() => localStorage.getItem('coretend-language')), 'fr')
   assert.equal(await page.evaluate(() => location.hash), '#top')
-  assert(await page.locator('[data-view="apps"]').evaluate(button => button.classList.contains('on')), 'active app view was lost across language switch')
   await page.goto(`${origin}/`)
   await page.waitForURL(`${origin}/fr`)
   await context.close()
@@ -506,88 +497,8 @@ await gate('workflow title never overlays its steps below the two-column breakpo
   }
 })
 
-await gate('six application views switch without an empty state', async () => {
+await gate('FAQ opens and closes, and keyboard focus is visible', async () => {
   const context = await browser.newContext({ reducedMotion: 'reduce' })
-  const page = await context.newPage()
-  const problems = watchPage(page)
-  await page.goto(`${origin}/en`, { waitUntil: 'networkidle' })
-  const views = {
-    storage: 'Storage', lens: 'Space Lens', dupes: 'Duplicates',
-    apps: 'Applications', integrity: 'Integrity', activity: 'Activity',
-  }
-  for (const [id, title] of Object.entries(views)) {
-    const button = page.locator(`[data-view="${id}"]`)
-    await button.click()
-    assert.equal(await page.locator('#vTitle').innerText(), title)
-    assert(await button.evaluate(element => element.classList.contains('on')))
-    assert(await page.locator('#vRows > div').count() > 0)
-    const selectedState = await button.evaluate(element => element.getAttribute('aria-current') ?? element.getAttribute('aria-pressed'))
-    assert(['page', 'true'].includes(selectedState), `${id} selection is not exposed to assistive technology`)
-  }
-  assert.deepEqual(problems, [])
-  await context.close()
-})
-
-await gate('scan pause, resume and cancel preserve causal progress', async () => {
-  const context = await browser.newContext({ reducedMotion: 'no-preference' })
-  const page = await context.newPage()
-  await page.goto(`${origin}/en`, { waitUntil: 'domcontentloaded' })
-  await page.locator('[data-view="storage"]').click()
-  await page.waitForFunction(() => parseFloat(document.querySelector('#vTrack')?.style.width) > 2, null, { timeout: 2000 })
-  const beforePause = parseFloat(await page.locator('#vTrack').evaluate(element => element.style.width))
-  assert(beforePause > 2 && beforePause < 50, `unexpected pre-pause progress ${beforePause}`)
-  await page.locator('#scanToggle').click()
-  assert.equal(await page.locator('#app').getAttribute('data-scan'), 'paused')
-  const paused = parseFloat(await page.locator('#vTrack').evaluate(element => element.style.width))
-  await page.waitForTimeout(450)
-  const stillPaused = parseFloat(await page.locator('#vTrack').evaluate(element => element.style.width))
-  assert(Math.abs(paused - stillPaused) < 0.15, `progress continued during pause (${paused} -> ${stillPaused})`)
-  await page.locator('#scanToggle').click()
-  assert.equal(await page.locator('#app').getAttribute('data-scan'), 'scanning')
-  await page.waitForTimeout(450)
-  const resumed = parseFloat(await page.locator('#vTrack').evaluate(element => element.style.width))
-  assert(resumed > stillPaused + 2, `resume restarted or failed to advance (${stillPaused} -> ${resumed})`)
-  await page.locator('#scanCancel').click()
-  assert.equal(await page.locator('#app').getAttribute('data-scan'), 'cancelled')
-  assert.match(await page.locator('#vFoot').innerText(), /cancelled.*Nothing was removed/i)
-  const cancelled = parseFloat(await page.locator('#vTrack').evaluate(element => element.style.width))
-  await page.waitForTimeout(350)
-  assert.equal(parseFloat(await page.locator('#vTrack').evaluate(element => element.style.width)), cancelled)
-  await context.close()
-})
-
-await gate('application preview auto-cycles after a completed scan', async () => {
-  const context = await browser.newContext({ reducedMotion: 'no-preference' })
-  const page = await context.newPage()
-  await page.goto(`${origin}/en`, { waitUntil: 'domcontentloaded' })
-  await page.waitForFunction(() => document.querySelector('[data-view="lens"]')?.classList.contains('on'), null, { timeout: 7500 })
-  assert.equal(await page.locator('#vTitle').innerText(), 'Space Lens')
-  await context.close()
-})
-
-await gate('Findings tabs, totals and keyboard navigation are functional', async () => {
-  const context = await browser.newContext({ reducedMotion: 'reduce' })
-  const page = await context.newPage()
-  await page.goto(`${origin}/en`)
-  const totals = new Set()
-  for (const category of ['storage', 'dupes', 'apps']) {
-    const tab = page.locator(`#tabs [data-cat="${category}"]`)
-    await tab.click()
-    assert.equal(await tab.getAttribute('aria-selected'), 'true')
-    assert(await page.locator('#findRows > div').count() > 0)
-    totals.add(await page.locator('#findTotal').innerText())
-  }
-  assert.equal(totals.size, 3)
-  const first = page.locator('#tabs [role="tab"]').first()
-  await first.focus()
-  await page.keyboard.press('ArrowRight')
-  assert.equal(await page.locator('#tabs [role="tab"][aria-selected="true"]').getAttribute('data-cat'), 'dupes')
-  assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('data-cat')), 'dupes')
-  await context.close()
-})
-
-await gate('FAQ opens and closes, checksum copies, and keyboard focus is visible', async () => {
-  const context = await browser.newContext({ reducedMotion: 'reduce', permissions: ['clipboard-read', 'clipboard-write'] })
   const page = await context.newPage()
   await page.goto(`${origin}/en`)
   await page.keyboard.press('Tab')
@@ -600,11 +511,6 @@ await gate('FAQ opens and closes, checksum copies, and keyboard focus is visible
   assert(await item.evaluate(element => element.open))
   await item.locator('summary').click()
   await page.waitForFunction(element => !element.open, await item.elementHandle(), { timeout: 1000 })
-
-  const expected = (await page.locator('#sha').innerText()).trim()
-  await page.locator('#copy').click()
-  assert.equal(await page.evaluate(() => navigator.clipboard.readText()), expected)
-  assert.match(await page.locator('#toast').innerText(), /Checksum copied/)
   await context.close()
 })
 
@@ -614,7 +520,6 @@ await gate('reduced motion is static, complete and keeps the logo core fixed', a
   await page.goto(`${origin}/en`, { waitUntil: 'networkidle' })
   await page.waitForTimeout(100)
   const state = await page.evaluate(() => ({
-    scan: document.querySelector('#app')?.getAttribute('data-scan'),
     coreTransforms: [...document.querySelectorAll('.ct-core')].map(element => getComputedStyle(element).transform),
     logoTransforms: [...document.querySelectorAll('.ct-logo')].map(element => getComputedStyle(element).transform),
     hiddenReveals: [...document.querySelectorAll('[data-reveal]')].filter(element => {
@@ -626,7 +531,6 @@ await gate('reduced motion is static, complete and keeps the logo core fixed', a
       return timing?.iterations === Infinity && animation.playState === 'running'
     }).length,
   }))
-  assert.equal(state.scan, 'complete')
   assert(state.coreTransforms.every(value => value === 'none' || value === 'matrix(1, 0, 0, 1, 0, 0)'))
   assert(state.logoTransforms.every(value => value === 'none' || value === 'matrix(1, 0, 0, 1, 0, 0)'))
   assert.equal(state.hiddenReveals, 0)
@@ -832,7 +736,6 @@ await gate('no-JavaScript fallback remains styled, bilingual and usable', async 
   assert.equal(new URL(page.url()).pathname, '/')
   assert.match(await page.locator('#headline').innerText(), /^Know what your Mac is holding/)
   assert(await page.locator('[data-lang-link="fr"]').isVisible())
-  assert(await page.locator('#sha').isVisible())
   assert((await page.evaluate(() => [...document.styleSheets].filter(sheet => !sheet.disabled).length)) > 0)
 
   response = await page.goto(`${origin}/fr`, { waitUntil: 'networkidle' })
@@ -863,7 +766,7 @@ await gate('all required viewports, languages and themes avoid horizontal overfl
         await page.goto(`${origin}/${locale}/`, { waitUntil: 'networkidle' })
         const geometry = await page.evaluate(() => {
           const viewportWidth = document.documentElement.clientWidth
-          const critical = ['header', 'main', '#app', '.term', '#stage', '.faq', 'footer']
+          const critical = ['header', 'main', '#findings', '.term', '#stage', '.faq', 'footer']
           const offenders = []
           for (const selector of critical) {
             for (const element of document.querySelectorAll(selector)) {
@@ -875,7 +778,7 @@ await gate('all required viewports, languages and themes avoid horizontal overfl
               }
             }
           }
-          const moduleControls = [...document.querySelectorAll('#side [data-view]')].filter(element => {
+          const findingCats = [...document.querySelectorAll('#findings .find-cats li')].filter(element => {
             const style = getComputedStyle(element)
             const rect = element.getBoundingClientRect()
             return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0
@@ -885,14 +788,14 @@ await gate('all required viewports, languages and themes avoid horizontal overfl
             htmlWidth: document.documentElement.scrollWidth,
             bodyWidth: document.body.scrollWidth,
             offenders,
-            moduleControls,
+            findingCats,
           }
         })
         const label = `${locale}/${colorScheme}/${viewport.width}x${viewport.height}`
         assert(geometry.htmlWidth <= geometry.viewportWidth + 1, `${label} html overflow ${geometry.htmlWidth} > ${geometry.viewportWidth}`)
         assert(geometry.bodyWidth <= geometry.viewportWidth + 1, `${label} body overflow ${geometry.bodyWidth} > ${geometry.viewportWidth}`)
         assert.deepEqual(geometry.offenders, [], `${label} clipped critical component(s)`)
-        assert.equal(geometry.moduleControls, 6, `${label} does not expose all six app views`)
+        assert.equal(geometry.findingCats, 4, `${label} does not render all four #findings categories`)
         assert.deepEqual(problems, [], `${label} emitted browser errors`)
         await context.close()
       }
