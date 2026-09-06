@@ -8,6 +8,21 @@ Living record of the release-hardening QA pass. Statuses:
 - **HUMAN VERIFICATION REQUIRED** — code is complete and statically sound; only on-device visual / interaction / assistive-tech confirmation is outstanding.
 - **EXTERNAL CONFIGURATION REQUIRED** — depends on an Apple Developer portal / signing-credential action outside this repo.
 
+## RELEASE-CANDIDATE CHECKPOINT — 2026-09-06
+
+A `release/v1.1.0-beta.1` branch was cut from `2c592a7` and the atomic version
+bump applied (see `Documentation/RELEASE_v1.1.0-beta.1.md`). **This does not
+change any status below.** Every "HUMAN VERIFICATION REQUIRED" item in this
+document is a **release sign-off gate**: it may be completed on-device by the
+maintainer and recorded here with a date + build, but until then the release
+verdict stays:
+
+> **V1.1.0-BETA.1 READY TO SIGN: NO** — release-blocking human verification
+> is outstanding. The release branch is prepared; signing/notarising/tagging/
+> publishing must not proceed.
+
+Nothing here was converted to PASS without on-device evidence.
+
 ## FINAL INTERACTIVE BETA QA — 2026-09-06 (HEAD after `9f8b20e` + palette-focus fix)
 
 Real running app (`Scripts/package-local.sh` ad-hoc bundle), driven by

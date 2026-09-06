@@ -1,6 +1,36 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 # Release State
 
+## Candidate — v1.1.0-beta.1, beta, NOT published (2026-09-06)
+
+Release-candidate preparation only. **Nothing published, signed, notarised,
+tagged, pushed, or merged.** The published line stays **v1.0.0 stable**.
+
+- Release branch `release/v1.1.0-beta.1`, forked from
+  `feat/v1.1-smart-scan-polish` @ `2c592a7`. Local only.
+- Atomic version bump committed (`chore(release): bump CoreTend to
+  1.1.0-beta.1`): marketing `1.1.0-beta.1`, bundle short `1.1.0`, build
+  `1100`, channel `beta`, prerelease `true` in `Release/latest.template.json`.
+  `check-version-consistency.sh` + `test-release-sync.sh` green.
+- `Configuration/published-release.json` untouched (still v1.0.0 stable).
+- Updater semantics unchanged and tested — a stable user is not offered
+  `1.1.0-beta.1`; opt-in `prerelease` channel is.
+- Unsigned ad-hoc candidate `build/CoreTend.app` verified: both `.appex`
+  present at `1.1.0`/`1100`, App Intents metadata present (≥7/≥6),
+  `coretend://` scheme, EN+FR bundles, clean of paths/secrets.
+- Signing prerequisites: Developer ID `Ahmet BASBUNAR (NSCUV5G738)` present;
+  notary profile `CoreTend-Notary` working. **App Group
+  `group.com.ahmetbsbnr.coretend` portal registration = EXTERNAL
+  CONFIGURATION REQUIRED** (first release with WidgetKit).
+- 823 Swift tests / 0 fail. `final-launch-gate.sh` → NOT READY: every blocker
+  is "not built / signed / tagged / published yet", plus the human-QA gate in
+  `BETA_QA.md`.
+- Full plan, artifact policy, entitlement audit, screenshot list, and human
+  ship steps: **`Documentation/RELEASE_v1.1.0-beta.1.md`**.
+
+**READY TO SIGN: NO** — the `BETA_QA.md` "HUMAN VERIFICATION REQUIRED" list is
+a release sign-off gate and is still open.
+
 ## Current release — v1.0.0, stable, published 2026-09-03
 
 `v1.0.0` points to source commit `0ecddea`. GitHub release is public, not a

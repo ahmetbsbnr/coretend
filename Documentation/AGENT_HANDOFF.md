@@ -2,6 +2,41 @@
 
 ## ACTIVE — v1.1 Smart Scan + Space Lens 2.0 app pass
 
+### Release-candidate prep for v1.1.0-beta.1 (2026-09-06)
+
+- Branch `release/v1.1.0-beta.1` cut from `feat/v1.1-smart-scan-polish`
+  @ `2c592a7`. **Local only — not pushed, merged, tagged, signed, published.**
+- Commits on the release branch:
+  - `chore(release): bump CoreTend to 1.1.0-beta.1` — atomic version bump
+    (`PublicIdentity.example.json` marketing `1.1.0-beta.1` / build `1100` /
+    channel `beta`; `Info.plist` + widget/finder plists `1.1.0`/`1100`;
+    `project.yml` + regenerated `CoreTend.xcodeproj`; `PROJECT_STATE.json`
+    version; `Release/latest.template.json` channel `beta` / prerelease
+    `true`). `+2` UpdateChecker tests pinning the beta channel contract.
+  - `fix(release): regenerate drifted design-token web assets` — one missing
+    `readableTextWidth` token in `Website/assets/tokens/*` (drift from
+    `6247549`); generated assets only.
+  - `docs(release): prepare 1.1.0-beta.1 notes and release checklist`.
+- `Configuration/published-release.json` untouched — still records the
+  PUBLISHED v1.0.0 stable.
+- Full plan / artifact policy / entitlement audit / signing prereqs /
+  screenshot list / human ship steps: `Documentation/RELEASE_v1.1.0-beta.1.md`.
+- **Signing prereqs:** Developer ID `Ahmet BASBUNAR (NSCUV5G738)` present;
+  `CoreTend-Notary` notary profile works. **App Group
+  `group.com.ahmetbsbnr.coretend` Apple-portal registration = EXTERNAL
+  CONFIGURATION REQUIRED** (first release with WidgetKit; both host +
+  `.widget` App IDs).
+- Gates green: `check-version-consistency`, `build.sh`, `build.sh release`,
+  `test.sh` **823/0**, `repository-doctor`, `build-xcode`,
+  `test-release-sync`, `test-release-manifest`, `test-release-provenance`,
+  `test-public-release-gate`, `generate-public-release.py` dry-run,
+  `check-publish-readiness`, `check-design-tokens`.
+- `final-launch-gate.sh` → **NOT READY**: all blockers are "not built /
+  signed / tagged / published yet" — the intended post-prep state. No code or
+  metadata defect.
+- **READY TO SIGN: NO** — `BETA_QA.md` "HUMAN VERIFICATION REQUIRED" list is a
+  release sign-off gate and is still open.
+
 ### Final interactive beta QA (2026-09-06) — HEAD after `9f8b20e`
 
 - **P1 found & fixed:** the command palette opened **without keyboard focus in
