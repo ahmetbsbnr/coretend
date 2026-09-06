@@ -104,6 +104,35 @@ struct UpdateCheckerTests {
         #expect(info.version == "1.0.0-rc.1")
     }
 
+    /// The exact 1.1.0-beta.1 shipping scenario: a stable 1.0.0 user must NOT
+    /// be nudged to the newer beta by the published manifest.
+    @Test func stableUserIsNotOfferedTheOneOneZeroBeta() async {
+        let c = checker(current: "1.0.0", channel: .stable) {
+            self.manifest("1.1.0-beta.1", prerelease: true, channel: "beta")
+        }
+        #expect(await c.check() == .upToDate(current: "1.0.0"))
+    }
+
+    /// The opt-in beta channel does see it, and once 1.1.0 final ships a beta
+    /// user is pulled forward to the stable release even on the stable channel.
+    @Test func betaChannelSeesTheBetaAndFinalSupersedesIt() async {
+        let optedIn = checker(current: "1.0.0", channel: .prerelease) {
+            self.manifest("1.1.0-beta.1", prerelease: true, channel: "beta")
+        }
+        guard case .updateAvailable(let info) = await optedIn.check() else {
+            Issue.record("prerelease channel should see the beta"); return
+        }
+        #expect(info.version == "1.1.0-beta.1")
+
+        let betaUser = checker(current: "1.1.0-beta.1", channel: .stable) {
+            self.manifest("1.1.0", prerelease: false, channel: "stable")
+        }
+        guard case .updateAvailable(let final) = await betaUser.check() else {
+            Issue.record("a beta user must be offered the final release"); return
+        }
+        #expect(final.version == "1.1.0")
+    }
+
     /// Offline is a normal state, reported rather than thrown.
     @Test func offlineIsReportedNotThrown() async {
         let c = UpdateChecker(

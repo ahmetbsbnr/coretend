@@ -1,10 +1,10 @@
 {
   "schemaVersion": 4,
   "project": "CoreTend",
-  "updatedUTC": "2026-09-05",
-  "version": "1.0.0",
-  "phase": "finder-extension-local-checkpoint",
-  "branch": "feat/finder-extension",
+  "updatedUTC": "2026-09-06",
+  "version": "1.1.0-beta.1",
+  "phase": "v1.1.0-beta.1-release-candidate-unsigned",
+  "branch": "release/v1.1.0-beta.1",
   "release": {
     "tag": "v1.0.0",
     "sourceCommit": "0ecddeaef0cc0f79d2185632f9c4ff49d1b9230a",
@@ -20,9 +20,9 @@
     "zipSHA256": "c11c1cbac95a48c9fa9b3cb54596313f52af9ad89dd930e51bcde6cbd152244b"
   },
   "tests": {
-    "swift": 727,
+    "swift": 823,
     "failing": 0,
-    "lastVerifiedUTC": "2026-09-05"
+    "lastVerifiedUTC": "2026-09-06"
   },
   "productBoundary": {
     "cleanup": "read-only scan, reviewed selection, explicit confirmation, execution-time path revalidation, recoverable macOS Trash action",
