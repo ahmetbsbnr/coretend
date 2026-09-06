@@ -162,6 +162,29 @@ export async function startSite(buildDirectory, options = {}) {
       if (destination) { rewritten = destination; break }
     }
 
+    // Model the /api/download serverless resolver (Website/api/download.js):
+    // a static fixture cannot execute a Vercel Function, so resolve the
+    // channel table here with the same rules. Keeps /download testable and
+    // production-accurate.
+    if (rewritten === '/api/download' || pathname === '/api/download') {
+      const table = JSON.parse(
+        await readFile(join(repoRoot, 'Website', 'api', '_lib', 'releases.json'), 'utf8'),
+      )
+      const requested = (url.searchParams.get('channel') || 'stable').toLowerCase()
+      const channel = requested === 'beta' || requested === 'stable' ? requested : 'stable'
+      const entry =
+        (channel === 'beta' && table.beta && table.beta.dmgURL && table.beta) ||
+        (table.stable && table.stable.dmgURL && table.stable) ||
+        null
+      const target = entry ? entry.dmgURL : 'https://github.com/ahmetbsbnr/coretend/releases/latest'
+      response.writeHead(302, {
+        location: target,
+        'cache-control': 'no-store, max-age=0',
+        'referrer-policy': 'no-referrer',
+      }).end(`Redirecting to ${target}\n`)
+      return
+    }
+
     let file = localFile(buildDirectory, rewritten)
     let statusCode = 200
     try {

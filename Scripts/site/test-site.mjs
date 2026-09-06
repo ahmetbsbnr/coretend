@@ -174,22 +174,40 @@ await gate('isolated production build and public-output allow-list', async () =>
   assert(output.files > 20)
 })
 
-await gate('release identity is generated from one canonical record', async () => {
+await gate('release identity is generated from one canonical record (DMG-first, no public checksum UX)', async () => {
   const template = await readFile(join(repoRoot, 'Website', 'index.html'), 'utf8')
   assert(!/0\.9\.1-rc\.\d+/i.test(template), 'landing template contains a hard-coded release version')
+  // The template pulls identity from the canonical record via tokens. It must
+  // NOT carry a DMG SHA-256 token any more — the public path is DMG-first and
+  // shows no manual-checksum step (build.test.js enforces the same).
   for (const token of [
     '@@CORETEND_RELEASE_VERSION@@',
-    '@@CORETEND_DMG_SHA256@@',
     '@@CORETEND_MINIMUM_MACOS@@',
     '@@CORETEND_ARCHITECTURE@@',
   ]) assert(template.includes(token), `landing template is missing ${token}`)
+  assert(!template.includes('@@CORETEND_DMG_SHA256@@'),
+    'landing template still injects a DMG SHA-256 (manual-checksum UX is retired)')
 
   for (const file of ['index.html', 'en-route.html', 'fr-route.html', 'support.html', 'fr-support.html']) {
-    const document = await readFile(join(build.output, file), 'utf8')
-    assert(document.includes(publishedRelease.version), `${file} does not render ${publishedRelease.version}`)
-    assert(document.includes(publishedRelease.dmgSHA256), `${file} does not render the canonical checksum`)
-    assert(!document.includes('@@CORETEND_'), `${file} exposes an unresolved release token`)
+    const rendered = await readFile(join(build.output, file), 'utf8')
+    assert(rendered.includes(publishedRelease.version), `${file} does not render ${publishedRelease.version}`)
+    assert(!rendered.includes('@@CORETEND_'), `${file} exposes an unresolved release token`)
+    // No public-facing manual verification instructions on any user page.
+    for (const forbidden of ['SHA256SUMS', 'shasum', 'minisign', 'xcrun stapler', 'spctl ']) {
+      assert(!rendered.includes(forbidden), `${file} still shows manual verification UX: ${forbidden}`)
+    }
+    assert(!/SHA-?256/i.test(rendered.replaceAll('latest.json', '')),
+      `${file} still mentions SHA-256 in the public UI`)
   }
+
+  // Machine integrity is preserved OUT of the UI: the updater/CI artifacts
+  // still carry the checksum and stay served.
+  const manifest = JSON.parse(await (await responseAt('/latest.json')).text())
+  assert.equal(manifest.version, publishedRelease.version, 'served latest.json version drift')
+  assert.match(manifest.dmgSHA256 ?? '', /^[0-9a-f]{64}$/, 'latest.json lost its DMG checksum')
+  assert.match(manifest.zipSHA256 ?? '', /^[0-9a-f]{64}$/, 'latest.json lost its ZIP checksum')
+  const sums = await (await responseAt('/SHA256SUMS')).text()
+  assert(sums.includes(publishedRelease.dmgSHA256), 'SHA256SUMS no longer lists the DMG hash')
 })
 
 await gate('root and Website Vercel route contracts cannot drift', async () => {
@@ -250,9 +268,22 @@ await gate('historic routes and slash normalization reach clean canonical destin
       assert.equal((await responseAt('/')).status, 200)
     }
   }
-  const download = await responseAt('/download')
-  assert.equal(download.status, 307, '/download must remain a temporary redirect to the reviewed binary')
-  assert.equal(normalizedLocation(download), publishedRelease.dmgURL)
+  // /download is now the channel-aware resolver (Website/api/download.js via
+  // the /api/download rewrite). It must temporarily redirect to a real DMG,
+  // never a placeholder, and ?channel=beta must fall back to stable while the
+  // beta channel is null.
+  const releases = JSON.parse(await readFile(join(repoRoot, 'Website', 'api', '_lib', 'releases.json'), 'utf8'))
+  assert.equal(releases.stable.version, publishedRelease.version, 'releases.json stable drifted from published-release.json')
+
+  for (const path of ['/download', '/download?channel=stable', '/download?channel=beta']) {
+    const response = await responseAt(path)
+    assert.equal(response.status, 302, `${path} must be a temporary redirect (${response.status})`)
+    const location = normalizedLocation(response)
+    assert.equal(location, releases.stable.dmgURL, `${path} did not resolve to the stable DMG`)
+    assert(/^https:\/\/github\.com\/.+\.dmg$/.test(location), `${path} resolved to a non-DMG / non-GitHub URL: ${location}`)
+    assert(!/@@|example\.com|placeholder|TBD/i.test(location), `${path} exposes a placeholder artifact URL`)
+  }
+  assert.equal(releases.beta, null, 'releases.json beta must stay null until a real beta DMG is published')
 })
 
 await gate('unknown routes return the branded 404 with no redirect', async () => {
@@ -368,8 +399,8 @@ await gate('French localizes visible calls to action and accessible control name
   // #findings is editorial (no simulated app window): the FR build swaps the
   // category labels.
   const findings = await page.locator('#findings').innerText()
-  assert.match(findings, /Récupérable/)
-  assert.match(findings, /Réversible/)
+  assert.match(findings, /récupérable/i)
+  assert.match(findings, /réversible/i)
   assert.ok(!/id="app"|id="tabs"|class="slab"/.test(await page.content()))
   await context.close()
 })
@@ -587,17 +618,24 @@ await gate('semantic controls have unique IDs, names and one accessible logo ide
       const name = button.getAttribute('aria-label') || button.textContent?.trim()
       return !name
     }).length
+    const labelledLogos = [...document.querySelectorAll('.ct-logo[aria-label]')]
     return {
       duplicates,
       unnamedButtons,
       decorativeCanvas: document.querySelector('#field')?.getAttribute('aria-hidden'),
-      labelledLogos: [...document.querySelectorAll('.ct-logo[aria-label]')].map(logo => logo.getAttribute('aria-label')),
+      // Every labelled logo carries the same identity string.
+      logoNames: [...new Set(labelledLogos.map(logo => logo.getAttribute('aria-label')))],
+      // Logos exposed to assistive tech (not inside an aria-hidden container):
+      // exactly one — the hero mark. The install-animation marks live under
+      // #stage[aria-hidden="true"].
+      exposedLogos: labelledLogos.filter(logo => !logo.closest('[aria-hidden="true"]')).length,
     }
   })
   assert.deepEqual(audit.duplicates, [])
   assert.equal(audit.unnamedButtons, 0)
   assert.equal(audit.decorativeCanvas, 'true')
-  assert.deepEqual(audit.labelledLogos, ['CoreTend', 'CoreTend'])
+  assert.deepEqual(audit.logoNames, ['CoreTend'])
+  assert.equal(audit.exposedLogos, 1)
   await context.close()
 })
 
