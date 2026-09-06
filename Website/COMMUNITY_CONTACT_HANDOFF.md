@@ -371,24 +371,79 @@ contrast audit of every surface, Lighthouse.
   'self'`, `connect-src 'self'`, `form-action`/`frame-ancestors`/`base-uri`
   `'none'`). **Not changed.**
 - **Playwright**: the browser **runs here** (`~/Library/Caches/ms-playwright/
-  chromium-1234`). A targeted run confirmed the `#findings` replacement
-  renders 4 categories, localizes EN/FR, has no `#app`/`#tabs`/`.slab` in the
-  DOM, no overflow, no page errors. `Scripts/site/test-site.mjs` was
-  reconciled for the removed demo (4 gates deleted, 5 trimmed). The **full**
-  `test-site.mjs` suite still fails on **pre-existing drift unrelated to this
-  task** — the "release identity" gate expects a rendered DMG `SHA-256` that
-  an earlier *claims* pass removed from the pages (`build.test.js` now forbids
-  it). Reconciling that gate is a separate site-QA task.
+  chromium-1234`; `playwright` 1.62.1 resolved from the adjacent portfolio
+  checkout). `Scripts/site/test-site.mjs` was reconciled for the removed demo
+  (4 gates deleted, 5 trimmed) — full closure result recorded below.
+
+### Website QA closure pass (2026-09-06)
+
+- **Full Playwright suite green**: `node Scripts/site/test-site.mjs` →
+  `SITE GATE PASSED — 28 checks`, exit 0, ~150 s wall. Matrix exercised:
+  7 viewports (1440/1280/1024/820/430/390/360 wide) × EN/FR × light/dark;
+  the overflow gate alone is 7×2×2 = 28 viewport/locale/appearance
+  combinations. `@axe-core/playwright` WCAG 2 A/AA runs in-suite and is
+  clean. No viewports, locales, themes, or assertions were skipped or
+  downgraded to get green.
+- **Release-identity test reconciled with the DMG-first public UX** (no
+  SHA-256 re-added to public pages). The browser gate now proves release
+  identity from truthful public signals: product name, the published stable
+  version rendered on every localized landing/support page, `/download`
+  (+ `?channel=stable` / `?channel=beta`) all 302 → the real GitHub `.dmg`
+  with no `@@`/placeholder/`example.com`, `releases.json` `beta` still
+  `null` (beta falls back to stable), and no `SHA256SUMS`/`shasum`/
+  `minisign`/`xcrun stapler`/`spctl` string on any user page. Machine
+  integrity stays enforced off the UI: `/latest.json` (`dmgSHA256` +
+  `zipSHA256`, 64-hex) and `/SHA256SUMS` are still served and asserted, and
+  `test-public-release-gate.py` / `test-release-manifest.sh` /
+  `test-release-provenance.sh` are unchanged.
+- **Real config drift fixed** (would have shipped): the repo-root
+  `vercel.json` was stale — `/download` hardcoded to the v1.0.0 asset and
+  the `/contact` `/community` `/security` `/changelog` rewrites (EN+FR)
+  missing, so those routes would 404 in production. Synced verbatim from
+  `Website/vercel.json` (root keeps only its `buildCommand`/`outputDirectory`).
+  `Scripts/site/crawl-site.mjs` `CANONICAL_ROUTES` and the fixture's
+  `/api/download` + empty `GET /api/community` modelling were brought in line.
+- **Responsive matrix** (via `Scripts/site/qa-manual.mjs`, a manual helper —
+  not a CI gate): home / `#findings` / Space Lens demo / Contact / Community /
+  changelog / download at the 7 viewports above, EN+FR, light+dark — no
+  horizontal overflow, no clipped nav, no controls outside the viewport.
+- **Browser accessibility audit**: Axe WCAG A/AA clean (in-suite) plus DOM
+  checks — one `h1` per page, heading order, `lang`, one `main`, labelled
+  controls, no positive `tabindex`, no `img` without `alt`, mobile-nav
+  hamburger keyboard open + `Escape` close with focus retained, homepage
+  skip-link / theme / language controls keyboard-reachable and named.
+  **VoiceOver is NOT covered** by these checks — still HUMAN VERIFICATION
+  REQUIRED.
+- **Space Lens web demo** focused walk (synthetic, no filesystem access):
+  idle → scan → `data-state="complete"` → bubbles + list populated → select
+  syncs list → drill (dbl-click) → breadcrumb → back — all pass; the section
+  copy still states the demo reads no files.
+- **Contact / Community** client behaviour tested without production
+  credentials: correct `data-api-form` targets, honeypot fields present,
+  no `mailto:` fallback, invalid-submit marks fields `:invalid`, Community
+  consent checkbox defaults unchecked, no voting UI. Provider success is
+  **not** simulated; server/API paths stay covered by `npm test` fakes.
+- **LIGHTHOUSE: BLOCKED BY ENVIRONMENT** — not installed; `npx lighthouse`
+  would download `lighthouse@13.x` (not part of repo tooling) and the disk
+  is at ~99%. Per the QA brief this does not block closure now that the
+  browser suite is green.
+- **Security regression**: `secret-leak.test.js` (4) + `csp.test.js` (7)
+  green, `check-screenshots.py` clean — no regression from the
+  test-contract changes. CSP unchanged; the test harness adapts to it.
+- **Screenshot manifest** untouched: 44 entries / **0 approved** / 44
+  pending. No `approved` flag flipped, no source capture fabricated.
 
 ### Remaining non-human tasks (site branch)
 
-- Reconcile the `test-site.mjs` "release identity" gate (and any sibling
-  SHA-256 assertions) with the checksum-free pages; then a full green
-  `node Scripts/site/test-site.mjs` run.
 - Capture the real 1.1 screenshots for the manifest's `source:null` entries
   and re-review the 1.0-UI ones (`HUMAN ASSET REVIEW REQUIRED`), then
   `Scripts/site/export-screenshots.py` + flip `approved` per human sign-off.
-- The manual a11y / responsive / Lighthouse audit still owed from the P1 log.
+- VoiceOver / real assistive-tech pass (browser DOM checks do not cover it).
+- Lighthouse run in an environment where it can be installed from repo
+  tooling with disk headroom.
+- Production backend config: Vercel Postgres + `node scripts/migrate.mjs`;
+  Resend account + verified domain + `RESEND_API_KEY` + SPF/DKIM/DMARC;
+  `ADMIN_TOKEN`; deploy — per `Website/PRODUCTION_DEPLOYMENT.md`.
 
 ## Status
 
