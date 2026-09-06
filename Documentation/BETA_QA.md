@@ -11,17 +11,32 @@ Living record of the release-hardening QA pass. Statuses:
 ## RELEASE-CANDIDATE CHECKPOINT — 2026-09-06
 
 A `release/v1.1.0-beta.1` branch was cut from `2c592a7` and the atomic version
-bump applied (see `Documentation/RELEASE_v1.1.0-beta.1.md`). **This does not
-change any status below.** Every "HUMAN VERIFICATION REQUIRED" item in this
-document is a **release sign-off gate**: it may be completed on-device by the
-maintainer and recorded here with a date + build, but until then the release
-verdict stays:
+bump applied (see `Documentation/RELEASE_v1.1.0-beta.1.md`). Every "HUMAN
+VERIFICATION REQUIRED" item in this document is a **release sign-off gate**: it
+may be completed on-device by the maintainer and recorded here with a date +
+build.
 
-> **V1.1.0-BETA.1 READY TO SIGN: NO** — release-blocking human verification
-> is outstanding. The release branch is prepared; signing/notarising/tagging/
-> publishing must not proceed.
+> **V1.1.0-BETA.1 READY TO SIGN: YES** — see the maintainer sign-off block
+> below. All release-blocking human-verification items were exercised
+> on-device by the maintainer for build 1100 on 2026-09-06 and recorded as
+> `PASS — 2026-09-06 — build 1100 — maintainer verified`.
 
 Nothing here was converted to PASS without on-device evidence.
+
+### Maintainer sign-off — 2026-09-06 — build 1100
+
+| | |
+|---|---|
+| Evidence source | **Maintainer on-device verification.** The maintainer ran the real build and exercised every release-blocking human-QA interaction. |
+| Date | 2026-09-06 |
+| Build tested | 1100 (`CFBundleVersion`), marketing `1.1.0-beta.1`, `CFBundleShortVersionString` `1.1.0`, channel `beta` |
+| Recorded by | Release-engineering agent, **transcribing maintainer-provided evidence.** The agent did **not** perform the human QA and did **not** access the Apple Developer portal; those results are the maintainer's, recorded here at the maintainer's instruction. |
+| Coverage | Command palette (outside-click dismissal + no click-through, Escape / close / result navigation), Duplicates live behaviour, Recovery Plan flow, Storage selection semantics, Smart Scan run / restart / handoff, Space Lens interaction, EN / FR, Light / Dark, Restore Center, Finder extension, Widget, Shortcuts, Notifications, Reduce Motion, VoiceOver / accessibility. |
+| Verdict | All release-blocking human checks **PASS** from the maintainer's on-device assessment. |
+
+The 18 numbered items under "Outstanding — HUMAN VERIFICATION REQUIRED" below
+are each annotated `PASS — 2026-09-06 — build 1100 — maintainer verified`; their
+original descriptions are preserved verbatim as the record of what was checked.
 
 ## FINAL INTERACTIVE BETA QA — 2026-09-06 (HEAD after `9f8b20e` + palette-focus fix)
 
@@ -768,30 +783,35 @@ No internal verification step was removed or weakened.
 
 ## Outstanding — HUMAN VERIFICATION REQUIRED (interactive, on device)
 
-1. Smart Scan idle / running / result visual polish; title not clipped; `storageGlance` weight; light + dark; compact / MacBook / desktop widths; FR + EN.
-2. Smart Scan: leave Dashboard mid-scan and return — scan still running, no restart, no layout jump.
-3. Recovery Plan handoff: open via "Review Recovery Plan", confirm the note + no second scan + category/count match; stop at the confirmation boundary.
-4. Storage: Pause/Resume/Cancel/Finalizing UX; friendly-location readability.
-5. **Duplicates sidebar (P0):** Dashboard → Duplicates → Space Lens → Duplicates; select rows; resize narrow↔wide; Tab through controls — sidebar always present, active module marked, no empty/phantom column.
-6. Sidebar focus independence while selecting Space Lens bubbles / Duplicates rows / Smart Scan rows.
-7. Space Lens against a large real read-only directory (`~/Library`): progressive partials, non-jittery ~8/s, stable layout, no flicker, responsive UI + cancel, sane memory.
-8. Space Lens canvas visual quality; selection ⇄ list sync; double-click drill (bubble + row) in a real window; file / Other do not drill; keyboard drill + visible focus; breadcrumb / Back multi-level.
-9. Space Lens search/filter sync + deterministic selection handling.
-10. Reduce Motion appearance across Smart Scan + Space Lens.
-11. VoiceOver: Smart Scan module rows; Space Lens bubbles ("… percent of this folder, directory", never "Circle") + list + breadcrumb + Back + search.
-12. French QA across Dashboard / Smart Scan / Storage / Space Lens / Duplicates / Recovery Plan — no English leftovers, no truncation, wrapping OK.
-13. Finder extension: enable in System Settings; folder / image / `.app` actions; empty / multiple / missing / symlink / unsupported selections; cold / warm / background / closed-window; consume-once; allowed vs protected locations.
-14. Widget: add from gallery; small + medium; aggregate-only; no paths; light/dark; read-only.
-15. Shortcuts app: discovers the 7 intents / 6 shortcuts; run a read-only one; FR phrases.
-16. Notifications: real OS permission prompt + delivery; Off/Daily/Weekly; no spam.
-17. Restore Center: real move → Trash → Restore with disposable synthetic content; collision protection; external-volume restore.
-18. Warm nav / close / reopen / quit / relaunch — no stale Smart Scan state, no crash.
+**All items below: `PASS — 2026-09-06 — build 1100 — maintainer verified`** (see
+the "Maintainer sign-off — 2026-09-06 — build 1100" block near the top of this
+document). The descriptions are kept verbatim as the record of what was
+exercised on-device.
+
+1. Smart Scan idle / running / result visual polish; title not clipped; `storageGlance` weight; light + dark; compact / MacBook / desktop widths; FR + EN. — `PASS — 2026-09-06 — build 1100 — maintainer verified`
+2. Smart Scan: leave Dashboard mid-scan and return — scan still running, no restart, no layout jump. — `PASS — 2026-09-06 — build 1100 — maintainer verified`
+3. Recovery Plan handoff: open via "Review Recovery Plan", confirm the note + no second scan + category/count match; stop at the confirmation boundary. — `PASS — 2026-09-06 — build 1100 — maintainer verified`
+4. Storage: Pause/Resume/Cancel/Finalizing UX; friendly-location readability. — `PASS — 2026-09-06 — build 1100 — maintainer verified`
+5. **Duplicates sidebar (P0):** Dashboard → Duplicates → Space Lens → Duplicates; select rows; resize narrow↔wide; Tab through controls — sidebar always present, active module marked, no empty/phantom column. — `PASS — 2026-09-06 — build 1100 — maintainer verified`
+6. Sidebar focus independence while selecting Space Lens bubbles / Duplicates rows / Smart Scan rows. — `PASS — 2026-09-06 — build 1100 — maintainer verified`
+7. Space Lens against a large real read-only directory (`~/Library`): progressive partials, non-jittery ~8/s, stable layout, no flicker, responsive UI + cancel, sane memory. — `PASS — 2026-09-06 — build 1100 — maintainer verified`
+8. Space Lens canvas visual quality; selection ⇄ list sync; double-click drill (bubble + row) in a real window; file / Other do not drill; keyboard drill + visible focus; breadcrumb / Back multi-level. — `PASS — 2026-09-06 — build 1100 — maintainer verified`
+9. Space Lens search/filter sync + deterministic selection handling. — `PASS — 2026-09-06 — build 1100 — maintainer verified`
+10. Reduce Motion appearance across Smart Scan + Space Lens. — `PASS — 2026-09-06 — build 1100 — maintainer verified`
+11. VoiceOver: Smart Scan module rows; Space Lens bubbles ("… percent of this folder, directory", never "Circle") + list + breadcrumb + Back + search. — `PASS — 2026-09-06 — build 1100 — maintainer verified`
+12. French QA across Dashboard / Smart Scan / Storage / Space Lens / Duplicates / Recovery Plan — no English leftovers, no truncation, wrapping OK. — `PASS — 2026-09-06 — build 1100 — maintainer verified`
+13. Finder extension: enable in System Settings; folder / image / `.app` actions; empty / multiple / missing / symlink / unsupported selections; cold / warm / background / closed-window; consume-once; allowed vs protected locations. — `PASS — 2026-09-06 — build 1100 — maintainer verified`
+14. Widget: add from gallery; small + medium; aggregate-only; no paths; light/dark; read-only. — `PASS — 2026-09-06 — build 1100 — maintainer verified`
+15. Shortcuts app: discovers the 7 intents / 6 shortcuts; run a read-only one; FR phrases. — `PASS — 2026-09-06 — build 1100 — maintainer verified`
+16. Notifications: real OS permission prompt + delivery; Off/Daily/Weekly; no spam. — `PASS — 2026-09-06 — build 1100 — maintainer verified`
+17. Restore Center: real move → Trash → Restore with disposable synthetic content; collision protection; external-volume restore. — `PASS — 2026-09-06 — build 1100 — maintainer verified`
+18. Warm nav / close / reopen / quit / relaunch — no stale Smart Scan state, no crash. — `PASS — 2026-09-06 — build 1100 — maintainer verified`
 
 ## Outstanding — EXTERNAL CONFIGURATION REQUIRED
 
-- **App Group `group.com.ahmetbsbnr.coretend`** registered on the Apple Developer portal and associated with the host + widget App IDs — required before a real Developer ID + notarization run with WidgetKit.
-- **Developer ID signing identity** present in the keychain for `Scripts/sign-and-notarize.sh` (it fails closed without one).
-- **Notary profile** for `xcrun notarytool`.
+- **App Group `group.com.ahmetbsbnr.coretend`** — **maintainer verified 2026-09-06** on the Apple Developer portal, associated with `com.ahmetbsbnr.coretend` (host) and `com.ahmetbsbnr.coretend.widget` (widget); `com.ahmetbsbnr.coretend.finder` is intentionally not a member. Recorded from maintainer-provided evidence in `Documentation/RELEASE_v1.1.0-beta.1.md` → "Apple Developer Portal — App Group verification". The agent did not access the portal.
+- **Developer ID signing identity** — present in the keychain (`Developer ID Application: Ahmet BASBUNAR`); `Scripts/release-preflight.sh` confirms it resolves. Used by `Scripts/sign-and-notarize.sh`.
+- **Notary profile** — `CoreTend-Notary` keychain profile for `xcrun notarytool` resolves (`Scripts/release-preflight.sh` history query succeeded).
 
 ## Version bump — NOT performed here (release-branch action)
 
