@@ -74,4 +74,93 @@ struct SidebarStructureTests {
             #expect(slice.contains("ScrollView {"), "\(state) must be scroll-hosted")
         }
     }
+
+    /// Regression: the sidebar vanished when opening **Duplicates** — the same
+    /// AppKit "reveal the first responder" pass scrolling the sidebar list
+    /// off-range, this time triggered by the centred `idleView` (its only
+    /// focusable control is `MCScanButton`). Every centred Duplicates detail
+    /// state must own a local scroll host, and none may sit in a bare
+    /// non-scrolling detail.
+    @Test func duplicatesCentredStatesOwnALocalScrollHost() throws {
+        let text = try body(of: "DuplicatesView.swift")
+        for state in ["private var idleView: some View {",
+                      "private func scanningView(_ processed: Int, _ total: Int) -> some View {"] {
+            guard let r = text.range(of: state) else { Issue.record("\(state) not found"); continue }
+            let slice = String(text[r.lowerBound...].prefix(4000))
+            #expect(slice.contains(".mcCenteredScrollState()"),
+                    "\(state) must be wrapped in MCCenteredScrollState")
+        }
+        // emptyView / finishedView delegate to the already-scroll-hosted
+        // shared primitives.
+        #expect(text.contains("private var emptyView: some View {\n        MCEmptyState("))
+        #expect(text.contains("private func finishedView(_ freed: Int64) -> some View {\n        MCSuccessState("))
+        // No accidental navigation-container nesting introduced by the fix.
+        #expect(!text.contains("NavigationSplitView"))
+        #expect(!text.contains("TabView"))
+        #expect(!text.contains("NavigationStack"))
+    }
+
+    /// The shared primitive the migration standardised on. It must be a real
+    /// local scroll host, or every migrated call site is a no-op.
+    @Test func mcCenteredScrollStateIsAScrollHost() throws {
+        let text = try source("Sources/DesignSystem/Components.swift")
+        guard let r = text.range(of: "struct MCCenteredScrollState") else {
+            Issue.record("MCCenteredScrollState not found"); return
+        }
+        let slice = String(text[r.lowerBound...].prefix(900))
+        #expect(slice.contains("ScrollView {"))
+        #expect(slice.contains("GeometryReader"))
+        #expect(text.contains("func mcCenteredScrollState()"))
+    }
+
+    /// Broad guard so a *third* module can't regress the same way: every
+    /// centred start/scanning/empty detail state that carries a focusable
+    /// control must resolve to a local scroll host — either `MCCenteredScrollState`,
+    /// its own `ScrollView`/`GeometryReader`, or the shared
+    /// `MCEmptyState` / `MCSuccessState` primitives.
+    @Test func allCentredDetailStatesWithControlsAreScrollHosted() throws {
+        // file : [state-signature]
+        let targets: [String: [String]] = [
+            "DuplicatesView.swift": [
+                "private var idleView: some View {",
+                "private func scanningView(_ processed: Int, _ total: Int) -> some View {",
+            ],
+            "CleanupView.swift": [
+                "private var idleView: some View {",
+                "private var scanningView: some View {",
+            ],
+            "SpaceLensView.swift": [
+                "private var idleView: some View {",
+                "private func scanningView(_ items: Int) -> some View {",
+            ],
+            "MyClutterView.swift": [
+                "private var idleView: some View {",
+                "private var scanningView: some View {",
+                "private var emptyView: some View {",
+            ],
+            "CloudCleanupView.swift": [
+                "private var providerPicker: some View {",
+            ],
+            "StorageTimelineView.swift": [
+                "private var noHistoryAtAllState: some View {",
+            ],
+            "SimilarImagesView.swift": [
+                "case let .scanning(processed, total):",
+                "case .empty:",
+            ],
+        ]
+        let hosts = [".mcCenteredScrollState()", "ScrollView {", "GeometryReader",
+                     "MCEmptyState(", "MCSuccessState("]
+        for (file, states) in targets {
+            let text = try body(of: file)
+            for state in states {
+                guard let r = text.range(of: state) else {
+                    Issue.record("\(file): \(state) not found"); continue
+                }
+                let slice = String(text[r.lowerBound...].prefix(4000))
+                #expect(hosts.contains { slice.contains($0) },
+                        "\(file): \(state) is a centred state with controls but has no local scroll host")
+            }
+        }
+    }
 }

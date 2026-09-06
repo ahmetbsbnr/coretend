@@ -560,7 +560,9 @@ struct SpaceLensView: View {
                     .accessibilityIdentifier("spacelens.scan.cancel")
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        // Local scroll host — centred detail state with focusable controls;
+        // keeps AppKit's first-responder reveal off the sidebar.
+        .mcCenteredScrollState()
     }
 
     // MARK: - Ready (bounded explorer)

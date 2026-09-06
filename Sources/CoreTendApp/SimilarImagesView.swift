@@ -181,7 +181,7 @@ struct SimilarImagesView: View {
                             .accessibilityIdentifier("similar.scan.cancel")
                     }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .mcCenteredScrollState()
             case .empty:
                 VStack(spacing: MCSpacing.sm) {
                     Image(systemName: "checkmark.circle")
@@ -189,7 +189,7 @@ struct SimilarImagesView: View {
                     Text(L("similar.none_found")).font(.title3.weight(.semibold))
                     Button(L("similar.analyze_again")) { model.start() }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .mcCenteredScrollState()
             case .results:
                 HStack {
                     MCSearchField(text: $model.searchText, placeholder: L("clutter.search_placeholder"))

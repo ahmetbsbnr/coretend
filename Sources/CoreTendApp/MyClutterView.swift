@@ -245,7 +245,9 @@ struct LargeOldFilesView: View {
                     .keyboardShortcut(.cancelAction)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        // Local scroll host — centred detail state with focusable controls;
+        // keeps AppKit's first-responder reveal off the sidebar.
+        .mcCenteredScrollState()
     }
 
     private var emptyView: some View {
@@ -256,7 +258,7 @@ struct LargeOldFilesView: View {
             Text(L("clutter.no_matches")).font(.title3.weight(.semibold))
             Button(L("clutter.change_criteria")) { model.phase = .idle }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .mcCenteredScrollState()
     }
 
     private var resultsView: some View {
