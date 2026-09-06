@@ -2,6 +2,37 @@
 
 ## ACTIVE — v1.1 Smart Scan + Space Lens 2.0 app pass
 
+### Visual QA pass (2026-09-06) — HEAD `921db98`
+
+- **P0 FIXED & retested with the running app:** the sidebar scrolled
+  off-screen on Recovery Plan (`-1252 pt`, blank / only "Système" visible —
+  the reported screenshot). Root cause: a `.borderedProminent` default
+  button in a non-scrolling `NavigationSplitView` detail makes AppKit scroll
+  the *sidebar's* list to "reveal" it. Fix (`55d184c`): scroll-host the
+  centred detail states — `MCSuccessState` + `MCEmptyState` (DesignSystem)
+  and `RecoveryPlanView.startState` / `transientState`. Pre-existing bug,
+  not from the recent polish. Regression test
+  `SidebarStructureTests.centredDetailStatesWithADefaultButtonAreScrollHosted`.
+- `b57b86f`: `55d184c` had accidentally re-committed a stale
+  `CoreTendApp.swift` (stray `git checkout` from the bisect left it staged),
+  reverting the `MCFormatting.locale` wiring + palette tweaks from
+  `6247549`. Restored. Also `.onExitCommand` + field-level
+  `.onKeyPress(.escape)` on the command palette.
+- **Verified live:** French byte formatting ("6,54 Go", "245,11 Go") on
+  Dashboard / APFS; sidebar intact across modules at 900x632 and 1320x820.
+- **HUMAN VERIFICATION REQUIRED:** command-palette Escape (harness can't
+  deliver a testable Escape into the sheet); the full light/dark × EN/FR ×
+  window-size matrix; Space Lens / Smart Scan / Storage / other module deep
+  walks; VoiceOver; Reduce Motion; Finder / Widget / Shortcuts /
+  Notifications live. Screenshots (gitignored, contain disk free-space):
+  `Documentation/VisualAudit/_capture_2026-09-05_sidebar/`.
+- **Gates at `921db98`:** build.sh clean (0 warnings), build.sh release
+  BUILD SUCCEEDED, test.sh **812 passed / 0 failed**, repository-doctor
+  passed, build-xcode.sh BUILD SUCCEEDED (widget + Finder embedded, 7/6
+  intents/shortcuts, no absolute paths).
+
+
+
 - Branch: `feat/v1.1-smart-scan-polish`, from `feat/finder-extension`
   (`1ed2efb`). **Not pushed, not merged, `main` untouched.**
 - Website branch `feat/community-contact-site-v1.1` is a separate frozen
