@@ -769,7 +769,15 @@ struct CommandPaletteView: View {
         .contentShape(RoundedRectangle(cornerRadius: MCRadius.card))
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("commandPalette.panel")
-        .onAppear { searchFocused = true }
+        .task {
+            // The overlay opens inside a `withAnimation`, so at `onAppear`
+            // its hosting view is not yet in the key window's responder
+            // chain and a direct `searchFocused = true` is dropped (the
+            // search field never gets the caret — keyboard-driven palette
+            // is dead). Deferring one runloop turn lets the focus land.
+            try? await Task.sleep(for: .milliseconds(50))
+            searchFocused = true
+        }
     }
 
     private func dismiss() {
