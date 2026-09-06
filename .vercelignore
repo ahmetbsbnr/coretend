@@ -41,3 +41,7 @@ _workspace/
 .agents/
 .agent-setup-backups/
 .github/
+
+# Dependencies — Vercel installs from package.json
+node_modules/
+**/node_modules/

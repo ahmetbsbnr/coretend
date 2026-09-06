@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "name": "coretend-web-root",
+  "description": "Root deploy shim: static site (Website/build.py) + Website/api serverless functions.",
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "@vercel/postgres": "^0.10.0"
+  }
+}
