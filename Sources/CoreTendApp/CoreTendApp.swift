@@ -649,6 +649,10 @@ private struct CommandPaletteView: View {
                     .textFieldStyle(.plain)
                     .focused($searchFocused)
                     .onSubmit { activate(filtered.first) }
+                    // The focused field is the only view guaranteed to be in
+                    // the key path inside the sheet, so Escape is handled
+                    // here (container-level `.onExitCommand` is the backup).
+                    .onKeyPress(.escape) { dismiss(); return .handled }
                     .accessibilityIdentifier("commandPalette.search")
                 // A deliberate dismiss affordance. `.cancelAction` binds it to
                 // Escape too, so dismissal is predictable whether the user
