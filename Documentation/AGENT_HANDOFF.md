@@ -2,6 +2,38 @@
 
 ## ACTIVE — v1.1 Smart Scan + Space Lens 2.0 app pass
 
+### Final interactive beta QA (2026-09-06) — HEAD after `9f8b20e`
+
+- **P1 found & fixed:** the command palette opened **without keyboard focus in
+  its search field** — regression from the `99ec272` `.sheet` → `.overlay`
+  migration (a plain `.overlay` doesn't move key focus, and the palette opens
+  inside `withAnimation`, so the synchronous `.onAppear { searchFocused = true }`
+  was dropped). Fix: `CommandPaletteView` now uses `.task { try? await
+  Task.sleep(for: .milliseconds(50)); searchFocused = true }`. Retested live:
+  ⌘K → caret in field → type filters → Return navigates → Escape closes.
+  Test `CommandPaletteTests.searchFieldFocusIsDeferredNotSetInOnAppear`.
+  Suite **820 → 821**.
+- **Walked (real screenshots + sidebar-offset AX):** Dashboard/Smart Scan,
+  Duplicates, Recovery Plan, Space Lens, Storage, Cloud Cleanup provider
+  picker, Storage Timeline, Applications, Developer, APFS, Privacy Lab,
+  Integrity, Activity, Restore Center, Settings — dark large + dark compact +
+  light (key screens). Sidebar `delta = 0` on every module and every
+  navigation-stress path (incl. 12× into Doublons and via the palette).
+  `duplicates.root` is now an `AXScrollArea` (confirms `.mcCenteredScrollState()`).
+- **Smart Scan** completed incidentally: 6 modules "Terminé", "Durée 0:08", 4
+  result dimensions separate, no fake %, FR bytes correct. "Zéro ko" for zero
+  = the known P2 cosmetic (unchanged).
+- **HUMAN VERIFICATION REQUIRED** (no synthetic-click / assistive-tech in this
+  env — computer-use blocked, no cliclick/Quartz): Duplicates & Recovery Plan &
+  Storage & Space Lens *scanning/results* live walks (plain `MCScanButton`
+  doesn't take AX press); physical palette outside-click + no-click-through;
+  EN⇄FR runtime switch re-render; Reduce Motion; VoiceOver; Finder ext; Widget;
+  Shortcuts; Notifications; Restore real restore.
+- **Gates:** build.sh, build.sh release, test.sh **821/0**,
+  repository-doctor, build-xcode — all green. Working tree: `CoreTendApp.swift`
+  + `CommandPaletteTests.swift` + `BETA_QA.md` + `AGENT_HANDOFF.md`. **Not
+  pushed / merged / tagged.**
+
 ### Duplicates sidebar P0 (2026-09-06) — HEAD after the palette commit
 
 - **Confirmed regression:** opening **Duplicates** blanked the sidebar. Same

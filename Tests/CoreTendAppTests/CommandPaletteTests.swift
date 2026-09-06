@@ -96,6 +96,25 @@ struct CommandPalettePresentationTests {
         // The old extreme-trailing toolbar item is gone.
         #expect(!s.contains("Label(L(\"palette.open\"), systemImage: \"command\")"))
     }
+
+    /// Regression: the `.sheet` → `.overlay` migration broke keyboard focus.
+    /// A plain `.onAppear { searchFocused = true }` is dropped because the
+    /// overlay opens inside a `withAnimation` and isn't in the key window's
+    /// responder chain yet — the search field never gets the caret and the
+    /// keyboard-driven palette is dead. Focus must be requested after a
+    /// one-runloop deferral.
+    @Test func searchFieldFocusIsDeferredNotSetInOnAppear() throws {
+        let s = try appSource()
+        guard let r = s.range(of: "struct CommandPaletteView") else {
+            Issue.record("CommandPaletteView not found"); return
+        }
+        let view = String(s[r.lowerBound...])
+        #expect(!view.contains(".onAppear { searchFocused = true }"),
+                "focus must not be set synchronously in onAppear")
+        #expect(view.contains("Task.sleep") && view.contains("searchFocused = true"),
+                "focus must be requested after a deferral (Task.sleep)")
+        #expect(view.contains(".focused($searchFocused)"))
+    }
 }
 
 @Suite("Command palette — localization parity for the a11y strings")

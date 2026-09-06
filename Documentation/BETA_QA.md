@@ -8,6 +8,124 @@ Living record of the release-hardening QA pass. Statuses:
 - **HUMAN VERIFICATION REQUIRED** — code is complete and statically sound; only on-device visual / interaction / assistive-tech confirmation is outstanding.
 - **EXTERNAL CONFIGURATION REQUIRED** — depends on an Apple Developer portal / signing-credential action outside this repo.
 
+## FINAL INTERACTIVE BETA QA — 2026-09-06 (HEAD after `9f8b20e` + palette-focus fix)
+
+Real running app (`Scripts/package-local.sh` ad-hoc bundle), driven by
+AppleScript System Events + `screencapture -x -o -R` + AX inspection of the
+sidebar `NSScrollView` origin. App ran in **French** (the stress locale).
+Screenshots: `Documentation/VisualAudit/_capture_2026-09-06_betaqa/` (gitignored —
+contain real free-space figures, no user file paths).
+
+### Bug found & fixed this pass
+
+**Q-1 — Command palette opens without keyboard focus in its search field · P1 · FIXED + retested**
+
+- **Reproduced:** open palette (⌘K) on any module → type → nothing lands in the
+  "Aller à…" field (placeholder stays, result list unfiltered), Return does
+  nothing. The keyboard-driven palette was dead. AX: `AXFocusedUIElement of
+  window 1` unobtainable (focus nowhere). Screenshot `palette-typed-from-dash.png`.
+- **Cause:** regression from the `99ec272` `.sheet` → `.overlay` migration. A
+  `.sheet` moved key focus into itself automatically; a plain `.overlay` does
+  not, and the palette opens inside a `withAnimation(.snappy)`, so at
+  `.onAppear` the panel is not yet in the key window's responder chain — the
+  synchronous `searchFocused = true` is dropped.
+- **Fix (`CoreTendApp.swift`, `CommandPaletteView`):** replaced
+  `.onAppear { searchFocused = true }` with a `.task { try? await
+  Task.sleep(for: .milliseconds(50)); searchFocused = true }` — one-runloop
+  deferral so the focus request lands. No other change.
+- **Retested live:** ⌘K → caret visible in the field (`FIX2-palette-just-opened.png`)
+  → type "apfs" → list filters to APFS only (`FIX2-palette-filtered-apfs.png`)
+  → Return → navigates to APFS (window title "APFS"), palette closes. Escape
+  closes cleanly (`FIX2-esc-closed.png`). Sidebar `delta = 0` throughout.
+- **Test:** `CommandPaletteTests.searchFieldFocusIsDeferredNotSetInOnAppear`
+  (no synchronous `onAppear` focus; deferral present). Suite 820 → **821**.
+
+### Screen matrix walked (real screenshots + sidebar-offset AX check)
+
+`delta` = sidebar row1.y − scrollArea.top; `0` ⇒ sidebar never scrolled.
+
+| Screen | dark large | dark compact | light large | sidebar `delta` | notes |
+|---|---|---|---|---|---|
+| Dashboard / Smart Scan | ✅ | ✅ | ✅ | 0 | hero card, `CETTE ANALYSE EXAMINE` list (6 modules), storageGlance "4,9x Go libres sur 245,11 Go" |
+| Duplicates (idle) | ✅ | ✅ | ✅ | 0 | migrated state renders; `duplicates.root` is now an `AXScrollArea` |
+| Recovery Plan (start) | ✅ | ✅ | ✅ | 0 | goal presets 5/10/20 Go + custom field + "Préparer le plan" |
+| Space Lens (idle) | ✅ | ✅ | ✅ | 0 | scan disc + "Choisir un dossier…" + category legend |
+| Storage (idle) | ✅ | ✅ | ✅ | 0 | "Démarrer l'analyse" + "CE QUI EST ANALYSÉ" (4 items) |
+| Cloud Cleanup (provider picker) | ✅ | — | — | 0 | **migrated in `9f8b20e`** — 3 provider buttons, sidebar stable |
+| Storage Timeline | ✅ | — | — | 0 | `.ready` state (had history "501,8 Mo"); no-history state migration covered by test |
+| Applications / Developer / APFS / Privacy Lab / Integrity / Activity / Restore Center / Settings | ✅ | — | ✅ (Settings, Integrity) | 0 | List/Form/ScrollView roots; Restore Center shows prior QA records ("6 ko déplacé(s)", "Restaurable") |
+
+### Smart Scan — real completed run (captured incidentally, `FIX2-palette-just-opened.png`)
+
+A full Smart Scan completed during the pass. Observed on the Dashboard result card:
+- **Six modules**, all "Terminé": Stockage (64,5 Mo), Développement (961 ko),
+  Doublons ("Rien à récupérer dans cette catégorie"), Labo Confidentialité
+  (191 Mo), Applications (39 applications · 18 avec une mise à jour gérée),
+  Intégrité (8 à examiner · 153 pour information).
+- **Elapsed** shown: "Durée 0:08". **No fake percentage** — byte amounts / element counts only.
+- **Four result dimensions kept separate:** Potentiellement récupérable 256,5 Mo ·
+  À examiner *Zéro ko* · Attention 8 éléments · Informations 206 éléments.
+- CTAs present: "Examiner le plan de récupération" + "Nouvelle analyse intelligente".
+- FR byte formatting correct throughout ("256,5 Mo", "64,5 Mo", "961 ko", "191 Mo").
+- **P2 cosmetic (unchanged, pre-existing):** "À examiner" shows *"Zéro ko"* for a
+  zero value — `ByteCountFormatStyle` spelling zero as a word in FR. Documented
+  earlier as a P2; brief de-prioritised it.
+
+### Command palette — interaction
+
+| Check | Result | Evidence |
+|---|---|---|
+| Opens as an in-window overlay (not a sheet) | PASS | `FIX2-palette-just-opened.png` — dimmed backdrop, panel near top |
+| Search field focused on open | PASS (after Q-1 fix) | caret visible; typing filters |
+| Type-to-filter | PASS | "apfs" → single "APFS" result |
+| Result selection (Return) navigates + closes | PASS | window title → "APFS" |
+| Escape closes | PASS | `FIX2-esc-closed.png` |
+| ⌘ trigger repositioned, clear of window corner, all sizes | PASS | every screenshot — header-band trailing, no title collision at 900 / 1240 wide |
+| Outside-click (physical pointer) dismissal + no click-through | **HUMAN VERIFICATION REQUIRED** | no synthetic-click tool in this env (computer-use blocked, no cliclick/Quartz). Backdrop hit-testing is covered by `CommandPaletteTests.backdropConsumesTheDismissalClickAndCloses` + the overlay architecture. |
+
+### Sidebar invariant (§7/§9 navigation stress)
+
+Navigated into every module (12 modules) and repeatedly into Doublons from
+Dashboard / Space Lens / Recovery Plan / Applications, at 900×632 and 1240×780,
+plus via the command palette. Sidebar `delta = 0`, 21 rows, no phantom column,
+active module marked — **every time**.
+
+### Not driven in this environment → HUMAN VERIFICATION REQUIRED
+
+- Duplicates **scanning / results / empty / cancelled** live states — the
+  plain-styled `MCScanButton` does not respond to AX `AXPress` and there is no
+  synthetic-click tool. Idle state + the scan *engine* (via the completed Smart
+  Scan's Doublons sub-scan, sidebar intact) are verified; the standalone
+  Duplicates scanning-phase visuals are not.
+- Recovery Plan **prepare → executing → finished** live walk (needs the same
+  button driving + disposable content).
+- Storage **scanning / pause / resume / cancel / complete** live walk.
+- Space Lens live run against `~/Library` (partial-update cadence, cancel/pause
+  latency, bubble canvas, drill-in, breadcrumb, search, resize).
+- EN ⇄ FR **runtime** language switch re-render (Settings `Form` pickers are not
+  exposed to this AX traversal). Byte-formatter-follows-in-app-language is
+  unit-tested (`RecoveryPlanPolishTests`); FR output verified visually.
+- Physical command-palette **outside-click** gesture + no-click-through.
+- Reduce Motion, VoiceOver, Finder extension enable/use, Widget gallery,
+  Shortcuts discovery, Notifications delivery, Restore Center real restore —
+  all require OS-level UI / assistive tech / system-pane interaction not
+  scriptable here.
+- Light/dark verified for Dashboard / Duplicates / Recovery Plan / Space Lens /
+  Storage / Settings / Integrity; the remaining modules in light are not
+  individually shot.
+
+### Gates (this checkpoint)
+
+| Gate | Result |
+|---|---|
+| `Scripts/build.sh` | Build complete |
+| `Scripts/build.sh release` | Build complete (30 s) |
+| `Scripts/test.sh` | **821 passed / 0 failed** (~22 s) |
+| `Scripts/repository-doctor.sh` | all checks passed |
+| `Scripts/build-xcode.sh` | OK — unsigned Release `build/CoreTend.app` |
+
+---
+
 ## Environment
 
 | | |
