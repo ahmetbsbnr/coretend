@@ -341,6 +341,55 @@ contrast audit of every surface, Lighthouse.
   already reads as a concise gateway with the right copy; the new
   screenshots could refresh its imagery in a later pass.
 
+### Final remote non-human cleanup pass (2026-09-06)
+
+- **`#findings` generative product-window removed** (`9a7a1a4`). It was a fake
+  CoreTend window (`.slab`, `#slabPath` fake path, JS-generated rows, animated
+  "recoverable bytes") — an app impersonation, against
+  `.claude/rules/site-design.md`. Replaced with a plain editorial list
+  (`class="facts find-cats"`): Recoverable / Review / Informational /
+  Reversible, EN/FR via `data-fr`. Section id + rail link kept.
+- **Dead code removed**: `demo()`, `findings()`, `bubblePack()`, `VIEWS`,
+  `FIND`, `demoState`/`demoLabel`/`demoTimer`/`demoRAF`, the `#app`/`#side`/
+  `#scanToggle`/`#scanCancel`/`#tabs`-keydown handlers, the `coretend-view`
+  sessionStorage round-trip; the `.app*` / `.lens*` / `.rows*` / `.slab*` /
+  `.tabs*` / `.tag*` / `.pill*` / `.fr*` CSS and `@keyframes rowin/sweepx/
+  confirmation-pulse`. Kept `.dots` (terminal) and `.mini` (Space Lens demo).
+  Generated JS bundle **48K → 28K**; `index.html` −25 KB.
+- **Screenshot manifest**: `Website/screenshots.json` — 44 entries
+  (11 modules × en/fr × light/dark). **0 approved** (the 7 real captures are
+  1.0-UI; the rest are `source:null`). Schema + validation: `Scripts/site/
+  check-screenshots.py` (sanitisation, no OCR) and `Scripts/site/
+  export-screenshots.py` (deterministic cwebp; re-run is byte-identical).
+  `check-screenshots.py` is now in `check-website.sh`.
+- **Tests added** (`npm test` 66 → **91 / 0**): `screenshots.test.js` (10),
+  `secret-leak.test.js` (4 — `ADMIN_TOKEN`/`RESEND_API_KEY`/`POSTGRES_URL`
+  never in client output or an API response; `checkAdmin` fails closed),
+  `csp.test.js` (7 — pins the already-tight vercel.json CSP), plus 4 new
+  `build.test.js` assertions for the `#findings` replacement.
+- **CSP**: reviewed line-by-line, already correct (no `*`, `script-src
+  'self'`, `connect-src 'self'`, `form-action`/`frame-ancestors`/`base-uri`
+  `'none'`). **Not changed.**
+- **Playwright**: the browser **runs here** (`~/Library/Caches/ms-playwright/
+  chromium-1234`). A targeted run confirmed the `#findings` replacement
+  renders 4 categories, localizes EN/FR, has no `#app`/`#tabs`/`.slab` in the
+  DOM, no overflow, no page errors. `Scripts/site/test-site.mjs` was
+  reconciled for the removed demo (4 gates deleted, 5 trimmed). The **full**
+  `test-site.mjs` suite still fails on **pre-existing drift unrelated to this
+  task** — the "release identity" gate expects a rendered DMG `SHA-256` that
+  an earlier *claims* pass removed from the pages (`build.test.js` now forbids
+  it). Reconciling that gate is a separate site-QA task.
+
+### Remaining non-human tasks (site branch)
+
+- Reconcile the `test-site.mjs` "release identity" gate (and any sibling
+  SHA-256 assertions) with the checksum-free pages; then a full green
+  `node Scripts/site/test-site.mjs` run.
+- Capture the real 1.1 screenshots for the manifest's `source:null` entries
+  and re-review the 1.0-UI ones (`HUMAN ASSET REVIEW REQUIRED`), then
+  `Scripts/site/export-screenshots.py` + flip `approved` per human sign-off.
+- The manual a11y / responsive / Lighthouse audit still owed from the P1 log.
+
 ## Status
 
 **P0 FAIT (local). P1 LOCAL IMPLEMENTATION mostly FAIT** — real product

@@ -48,11 +48,12 @@ test("server secrets are referenced only under api/ in the source tree", () => {
       cwd: SITE, encoding: "utf8",
     }).trim().split("\n").filter(Boolean)
       .map((h) => h.replace(/^Website\//, ""));
-    // Server code only: the Functions dir and the migration CLI. Never a
-    // client asset, never the gold-master HTML, never build.py output.
+    // Server / tooling / test code only — the Functions dir, the migration
+    // CLI, and this suite (which sets a canary env var). Never a client
+    // asset, never the gold-master HTML, never build.py output.
     for (const h of hits) {
-      assert.ok(h.startsWith("api/") || h.startsWith("scripts/"),
-                `${name} referenced outside server code: ${h}`);
+      assert.ok(h.startsWith("api/") || h.startsWith("scripts/") || h.startsWith("test/"),
+                `${name} referenced outside server/test code: ${h}`);
     }
   }
   // client JS / the gold-master must not name them at all
