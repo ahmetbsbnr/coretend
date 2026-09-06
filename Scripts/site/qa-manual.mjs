@@ -17,7 +17,7 @@
 // tabindex). Exits non-zero on any console error, first-party 4xx, or
 // horizontal overflow. Needs a Playwright Chromium (same as test-site.mjs).
 import assert from 'node:assert/strict'
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { buildSite, startSite, loadPlaywright, launchChromium, repoRoot } from './site-fixture.mjs'
 
@@ -60,13 +60,19 @@ await shot({ ...DESKTOP }, '/contact', 'contact', p => p.locator('.ct-form').fir
 await shot({ ...DESKTOP }, '/community', 'community')
 await shot({ ...DESKTOP }, '/changelog', 'changelog')
 
-// §7 download resolver — 302 to a real DMG, and ?channel=beta falls back to stable
-for (const q of ['', '?channel=stable', '?channel=beta']) {
-  const r = await fetch(`${O}/download${q}`, { redirect: 'manual' })
-  assert.equal(r.status, 302, `/download${q} status`)
-  assert.match(r.headers.get('location') || '', /^https:\/\/github\.com\/.+\.dmg$/, `/download${q} target`)
+// §7 download resolver — 302 to a real DMG per channel
+{
+  const releases = JSON.parse(await readFile(new URL('../../Website/api/_lib/releases.json', import.meta.url), 'utf8'))
+  const want = q => (/channel=beta/.test(q) && releases.beta?.dmgURL) || releases.stable.dmgURL
+  for (const q of ['', '?channel=stable', '?channel=beta']) {
+    const r = await fetch(`${O}/download${q}`, { redirect: 'manual' })
+    assert.equal(r.status, 302, `/download${q} status`)
+    const loc = r.headers.get('location') || ''
+    assert.match(loc, /^https:\/\/github\.com\/.+\.dmg$/, `/download${q} target`)
+    assert.equal(loc, want(q), `/download${q} resolved to the wrong channel`)
+  }
+  console.log(`download: /download -> stable, ?channel=beta -> ${releases.beta ? releases.beta.version : 'stable (no beta)'} DMG, all 302`)
 }
-console.log('download: /download + ?channel=stable + ?channel=beta all 302 -> real DMG (beta falls back)')
 
 // §13 Space Lens demo interaction (deterministic, synthetic)
 {

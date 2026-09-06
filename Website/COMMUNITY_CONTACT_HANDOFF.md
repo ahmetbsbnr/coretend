@@ -206,7 +206,9 @@ HTML routes, no secret in dist.
 
 **P0-A download + install cleanup — DONE.** `api/download.js` +
 `api/_lib/releases.json` resolve `/download` (+ `?channel=stable|beta`) with
-graceful fallback; `beta` is `null` until a real artifact exists.
+graceful fallback. `beta` was `null` until 2026-09-06; it now points at the
+published `v1.1.0-beta.1` DMG asset (`/download?channel=beta` → that DMG,
+`/download` stays stable).
 `vercel.json` `/download` is a rewrite now. All SHA-256 / Minisign / spctl /
 stapler text removed from `index.html` (#install, hero link, ticker, toast,
 FAQ), `build.py` `support_content` (rewritten), and the JSON-LD. The
@@ -389,8 +391,9 @@ contrast audit of every surface, Lighthouse.
   identity from truthful public signals: product name, the published stable
   version rendered on every localized landing/support page, `/download`
   (+ `?channel=stable` / `?channel=beta`) all 302 → the real GitHub `.dmg`
-  with no `@@`/placeholder/`example.com`, `releases.json` `beta` still
-  `null` (beta falls back to stable), and no `SHA256SUMS`/`shasum`/
+  with no `@@`/placeholder/`example.com` (at that time `releases.json` `beta`
+  was still `null`; it was wired to the published `v1.1.0-beta.1` DMG later
+  the same day), and no `SHA256SUMS`/`shasum`/
   `minisign`/`xcrun stapler`/`spctl` string on any user page. Machine
   integrity stays enforced off the UI: `/latest.json` (`dmgSHA256` +
   `zipSHA256`, 64-hex) and `/SHA256SUMS` are still served and asserted, and

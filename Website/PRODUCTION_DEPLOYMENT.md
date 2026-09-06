@@ -89,9 +89,10 @@ Confirm the CSP still ships as configured in `vercel.json`
 
 ## 5. Post-deploy smoke test **[EXTERNAL — do after deploy]**
 
-1. `/download` → 302 to the stable v1.0.0 DMG.
-   `/download?channel=beta` → falls back to stable (beta is `null` in
-   `api/_lib/releases.json` until the beta DMG is published).
+1. `/download` and `/download?channel=stable` → 302 to the stable v1.0.0 DMG.
+   `/download?channel=beta` → 302 to the published
+   `CoreTend-1.1.0-beta.1-arm64.dmg` GitHub asset (beta channel wired
+   2026-09-06 in `api/_lib/releases.json`).
 2. Submit a **private** Contact message → `202`; it appears in the DB; if
    `RESEND_API_KEY` is set, the routing email arrives at `contact@`.
 3. Submit a **Community** idea with `publicConsent:false` → stored `pending`,
@@ -109,9 +110,11 @@ Confirm the CSP still ships as configured in `vercel.json`
 
 ## 6. After the beta DMG is published
 
-- Set `api/_lib/releases.json` `beta` to the real published beta entry
-  (`version`, `tag`, `dmgURL` ending `.dmg`, `releaseURL`). **Never** a
-  placeholder URL. `check-retired-pages.py` enforces this shape.
+- **DONE 2026-09-06** — `api/_lib/releases.json` `beta` now points at the
+  published `v1.1.0-beta.1` prerelease
+  (`https://github.com/ahmetbsbnr/coretend/releases/download/v1.1.0-beta.1/CoreTend-1.1.0-beta.1-arm64.dmg`).
+  Repeat this step (bump `version`/`tag`/`dmgURL`/`releaseURL`, never a
+  placeholder) for each future `1.1.0-beta.N`.
 - The `1.1.0-beta.1` entry in `changelog.json` already exists as
   `status: "unreleased"`, `date: null` — flip `status` to `"released"` and
   set the real `date` **only after** the GitHub release is public.

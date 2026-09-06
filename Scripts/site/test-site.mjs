@@ -268,22 +268,34 @@ await gate('historic routes and slash normalization reach clean canonical destin
       assert.equal((await responseAt('/')).status, 200)
     }
   }
-  // /download is now the channel-aware resolver (Website/api/download.js via
-  // the /api/download rewrite). It must temporarily redirect to a real DMG,
-  // never a placeholder, and ?channel=beta must fall back to stable while the
-  // beta channel is null.
+  // /download is the channel-aware resolver (Website/api/download.js via the
+  // /api/download rewrite). It must temporarily redirect to a real DMG, never
+  // a placeholder. /download and ?channel=stable stay on stable; ?channel=beta
+  // resolves to the published beta DMG (or falls back to stable if beta is null).
   const releases = JSON.parse(await readFile(join(repoRoot, 'Website', 'api', '_lib', 'releases.json'), 'utf8'))
   assert.equal(releases.stable.version, publishedRelease.version, 'releases.json stable drifted from published-release.json')
+
+  const expectedFor = path =>
+    /channel=beta/.test(path) && releases.beta && releases.beta.dmgURL
+      ? releases.beta.dmgURL
+      : releases.stable.dmgURL
 
   for (const path of ['/download', '/download?channel=stable', '/download?channel=beta']) {
     const response = await responseAt(path)
     assert.equal(response.status, 302, `${path} must be a temporary redirect (${response.status})`)
     const location = normalizedLocation(response)
-    assert.equal(location, releases.stable.dmgURL, `${path} did not resolve to the stable DMG`)
+    assert.equal(location, expectedFor(path), `${path} did not resolve to the expected channel DMG`)
     assert(/^https:\/\/github\.com\/.+\.dmg$/.test(location), `${path} resolved to a non-DMG / non-GitHub URL: ${location}`)
     assert(!/@@|example\.com|placeholder|TBD/i.test(location), `${path} exposes a placeholder artifact URL`)
   }
-  assert.equal(releases.beta, null, 'releases.json beta must stay null until a real beta DMG is published')
+  assert.equal(normalizedLocation(await responseAt('/download')), releases.stable.dmgURL, '/download must stay on the stable channel by default')
+
+  if (releases.beta !== null) {
+    assert.equal(releases.beta.version, '1.1.0-beta.1', 'releases.json beta is not the published 1.1.0-beta.1')
+    assert.equal(releases.beta.prerelease, true, 'releases.json beta must carry prerelease semantics')
+    assert(/^https:\/\/github\.com\/.+\/v1\.1\.0-beta\.1\/.+\.dmg$/.test(releases.beta.dmgURL), `beta dmgURL is not the real v1.1.0-beta.1 GitHub asset: ${releases.beta.dmgURL}`)
+    assert(!/@@|example\.com|placeholder|TBD/i.test(releases.beta.dmgURL), 'releases.json beta exposes a placeholder artifact URL')
+  }
 })
 
 await gate('unknown routes return the branded 404 with no redirect', async () => {

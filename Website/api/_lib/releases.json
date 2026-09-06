@@ -1,10 +1,16 @@
 {
-  "_comment": "Public download channels for the CoreTend website resolver (api/download.js). 'stable' mirrors Configuration/published-release.json. 'beta' stays null until a 1.1.0-beta.N DMG is actually published on GitHub; while null, /download?channel=beta falls back to stable. Do NOT invent a beta artifact URL before the artifact exists.",
+  "_comment": "Public download channels for the CoreTend website resolver (api/download.js). 'stable' mirrors Configuration/published-release.json. 'beta' points to the most recent published 1.1.0-beta.N prerelease on GitHub; /download?channel=beta resolves to it, while /download and /download?channel=stable stay on stable. When 'beta' is null the beta channel falls back to stable. Do NOT invent a beta artifact URL before the artifact exists on GitHub.",
   "stable": {
     "version": "1.0.0",
     "tag": "v1.0.0",
     "dmgURL": "https://github.com/ahmetbsbnr/coretend/releases/download/v1.0.0/CoreTend-1.0.0-arm64.dmg",
     "releaseURL": "https://github.com/ahmetbsbnr/coretend/releases/tag/v1.0.0"
   },
-  "beta": null
+  "beta": {
+    "version": "1.1.0-beta.1",
+    "tag": "v1.1.0-beta.1",
+    "prerelease": true,
+    "dmgURL": "https://github.com/ahmetbsbnr/coretend/releases/download/v1.1.0-beta.1/CoreTend-1.1.0-beta.1-arm64.dmg",
+    "releaseURL": "https://github.com/ahmetbsbnr/coretend/releases/tag/v1.1.0-beta.1"
+  }
 }
