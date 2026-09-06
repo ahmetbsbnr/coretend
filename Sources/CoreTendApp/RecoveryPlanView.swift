@@ -122,18 +122,25 @@ struct RecoveryPlanView: View {
     /// horizontal padding, so a long FR string never approaches the window
     /// edge or clips, and it stays vertically + horizontally centred.
     private func transientState(_ message: String) -> some View {
-        VStack(spacing: MCSpacing.md) {
-            ProgressView()
-                .controlSize(.large)
-            Text(message)
-                .font(MCFont.secondaryBody)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: MCSize.readableTextWidth)
+        // Scroll-hosted like the other centred states so a focus/reveal pass
+        // can never reach the sidebar's scroll view (see `startState`).
+        ScrollView {
+            VStack(spacing: MCSpacing.md) {
+                ProgressView()
+                    .controlSize(.large)
+                Text(message)
+                    .font(MCFont.secondaryBody)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: MCSize.readableTextWidth)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, MCSpacing.xl)
+            .padding(.vertical, MCSpacing.page)
         }
+        .scrollBounceBehavior(.basedOnSize)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, MCSpacing.xl)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(message)
     }
@@ -144,24 +151,36 @@ struct RecoveryPlanView: View {
     /// goal and asked for one — never a surprise background scan from just
     /// opening the tab.
     private var startState: some View {
-        VStack(spacing: MCSpacing.md) {
-            Image(systemName: "target")
-                .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.accent)
-                .accessibilityHidden(true)
-            Text(L("recovery.empty.no_scan.title")).font(.title3.weight(.semibold))
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-            Text(L("recovery.empty.no_scan.subtitle")).foregroundStyle(.secondary).multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: MCSize.readableTextWidth)
-            goalCard.frame(maxWidth: MCSize.readableTextWidth)
-            Button(L("recovery.prepare_button")) { Task { await model.preparePlan() } }
-                .buttonStyle(.borderedProminent)
-                .accessibilityIdentifier("recovery.prepare")
+        // MUST be scroll-hosted. This state is a `NavigationSplitView` detail
+        // whose "Préparer le plan" button is `.borderedProminent` — the
+        // window's default control. In a non-scrolling detail, AppKit's
+        // reveal-the-default-control pass walks up for an enclosing
+        // NSScrollView, finds the *sidebar's* list, and scrolls the whole
+        // navigation off-screen (reproduced: the reported "Recovery Plan
+        // sidebar displaced" bug). A local scroll host keeps that reveal
+        // harmless; the content still fits without visible scrolling.
+        ScrollView {
+            VStack(spacing: MCSpacing.md) {
+                Image(systemName: "target")
+                    .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.accent)
+                    .accessibilityHidden(true)
+                Text(L("recovery.empty.no_scan.title")).font(.title3.weight(.semibold))
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(L("recovery.empty.no_scan.subtitle")).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: MCSize.readableTextWidth)
+                goalCard.frame(maxWidth: MCSize.readableTextWidth)
+                Button(L("recovery.prepare_button")) { Task { await model.preparePlan() } }
+                    .buttonStyle(.borderedProminent)
+                    .accessibilityIdentifier("recovery.prepare")
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, MCSpacing.xl)
+            .padding(.vertical, MCSpacing.page)
         }
+        .scrollBounceBehavior(.basedOnSize)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, MCSpacing.xl)
-        .padding(.vertical, MCSpacing.page)
     }
 
     private var finishedView: some View {
