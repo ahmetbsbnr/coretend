@@ -139,7 +139,9 @@ codesign --display --entitlements :- "$WIDGET_APPEX" | grep -q "group.com.ahmetb
   || { echo "  FAIL: widget lost its App Group entitlement"; exit 1; }
 codesign --display --entitlements :- "$FINDER_APPEX" | python3 -c '
 import plistlib, sys
-assert plistlib.load(sys.stdin.buffer) == {"com.apple.security.app-sandbox": True}, "Finder entitlements must be exactly sandbox-only"
+# Read the pipe fully first: plistlib.load() seeks the stream (Python >= 3.14),
+# which fails on a non-seekable stdin pipe. Same assertion, seek-free.
+assert plistlib.loads(sys.stdin.buffer.read()) == {"com.apple.security.app-sandbox": True}, "Finder entitlements must be exactly sandbox-only"
 print("  OK: Finder extension entitlements exactly sandbox-only")'
 spctl --assess --type execute --verbose "$APP" || {
   echo "NOTE: spctl will still reject until notarization+stapling complete below — expected at this point."
