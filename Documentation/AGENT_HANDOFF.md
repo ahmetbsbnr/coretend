@@ -2,6 +2,54 @@
 
 ## ACTIVE — v1.1 Smart Scan + Space Lens 2.0 app pass
 
+### Pre-QA remote release prep (2026-09-06) — `release/v1.1.0-beta.1` @ `c3bc2a9`+
+
+Release-adjacent work that needs no human visual verification. **BETA_QA.md
+verdict untouched: READY TO SIGN: NO.** Nothing signed, tagged, pushed,
+published, or deployed.
+
+- `Scripts/release-preflight.sh` (new) — reusable, three verdicts: bundle
+  static audit of `build/CoreTend.app`, App Group entitlement config
+  (portal registration printed EXTERNAL, never a local pass), signing
+  toolchain presence. PASSES locally.
+- `Documentation/BETA_QA_QUICKPASS.md` (new) — ~30-minute linear on-device
+  maintainer sequence covering every release-blocking human check. Not
+  evidence; no PASS pre-filled.
+- `Documentation/BETA_RELEASE_COMMANDS.md` (new) — exact post-QA command
+  chain (pre-sign gates → `sign-and-notarize.sh` require Accepted → verify
+  → `CORETEND_RELEASE_SIGNED=1 build-release.sh` → `final-launch-gate.sh`
+  signed posture → smoke test). No secrets; nothing executed.
+- `Release/Notes/1.1.0-beta.1.{en,fr}.md` — "Verify" block trimmed to the
+  DMG-first policy (Gatekeeper right-click-Open, `SHA256SUMS` optional);
+  known-limitations lines added for read-only APFS/Developer/Privacy/
+  Integrity + opt-in Finder. Cross-checked against `FEATURE_MATRIX.md` — no
+  overstatement.
+- `RELEASE_v1.1.0-beta.1.md` — human-steps + gates table updated to point at
+  the new preflight script and command guide.
+- App gates re-run green: `check-version-consistency`, `build.sh`,
+  `build.sh release`, `test.sh` **823/0**, `repository-doctor`,
+  `test-release-sync`, `test-release-manifest`, `test-release-provenance`,
+  `test-public-release-gate`, `check-design-tokens`, `release-preflight`.
+
+**Website branch `feat/community-contact-site-v1.1` @ `432328c`** (separate,
+not merged): `changelog.json` 1.1.0-beta.1 entry synced with the headline
+features (still `status: unreleased`); `Scripts/check-retired-pages.py` fixed
+so the `/download` gate accepts the intentional `/api/download` dynamic
+resolver (was failing `check-website.sh` on a clean tree since `967aed5`);
+`Website/PRODUCTION_DEPLOYMENT.md` (new) — ordered deploy runbook (Postgres,
+Vercel env, Resend SPF/DKIM/DMARC/MX + mail identities, deploy, moderation
+smoke test), all provider steps marked EXTERNAL. API tests 66/0, static build
+OK, migration dry-run OK. `test-site.mjs` (Playwright e2e) needs a browser —
+not runnable here. **Portfolio: no change needed** (version flows in via
+`sync-coretend.yml` repository_dispatch; no stale SHA/Minisign copy found).
+
+Remaining pre-QA non-human tasks (PARTIAL): homepage `#findings` synthetic
+product-preview slab (flagged vs `.claude/rules/site-design.md`; labelled
+"example"; removal is a website-QA design call); a deeper CSP review and a
+standalone `ADMIN_TOKEN`-leak regression test on the site branch; the
+website screenshot manifest and capture automation (`SCREENSHOT_GUIDE.md`
+exists; per-asset manifest not built).
+
 ### Release-candidate prep for v1.1.0-beta.1 (2026-09-06)
 
 - Branch `release/v1.1.0-beta.1` cut from `feat/v1.1-smart-scan-polish`

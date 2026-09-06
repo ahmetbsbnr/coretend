@@ -124,23 +124,27 @@ No manual post-build modification.
 
 1. Complete the release-blocking human QA in `Documentation/BETA_QA.md`
    ("HUMAN VERIFICATION REQUIRED" list) and record each result with a date +
-   build. **READY TO SIGN is NO until this is done.**
+   build. **READY TO SIGN is NO until this is done.** Use the guided
+   ~30-minute sequence in `Documentation/BETA_QA_QUICKPASS.md`.
 2. Register the App Group in the Apple Developer portal (above).
 3. Reboot if `spctl`/`trustd` is wedged for Developer ID chains (a known
    local hazard after heavy `codesign` load — see `RELEASE_STATE.md`).
-4. `Scripts/package-local.sh` → `Scripts/sign-and-notarize.sh 1.1.0-beta.1 CoreTend-Notary`.
-5. `git tag -a v1.1.0-beta.1` at the reviewed commit →
-   `CORETEND_RELEASE_SIGNED=1 Scripts/build-release.sh 1.1.0-beta.1`.
-6. `bash Scripts/final-launch-gate.sh --expect-version 1.1.0-beta.1 --expect-head <sha>`
-   → must be READY in the signed posture.
-7. Minisign-sign `SHA256SUMS` (human — key password) *if* the maintainer wants
+4. Run the exact command sequence in `Documentation/BETA_RELEASE_COMMANDS.md`:
+   pre-sign gates (incl. `Scripts/release-preflight.sh`) →
+   `Scripts/sign-and-notarize.sh 1.1.0-beta.1 CoreTend-Notary` (require
+   `Accepted`) → verify signatures/entitlements/staple →
+   `CORETEND_RELEASE_SIGNED=1 Scripts/build-release.sh 1.1.0-beta.1` →
+   `Scripts/final-launch-gate.sh --expect-version 1.1.0-beta.1 --expect-head <sha>`
+   (must be READY in the signed posture) → smoke-test the signed DMG.
+5. Minisign-sign `SHA256SUMS` (human — key password) *if* the maintainer wants
    Minisign for the beta; otherwise skip per the artifact policy.
-8. `git push` branch + tag; `gh release create v1.1.0-beta.1 --prerelease
+6. `git tag -a v1.1.0-beta.1` at the reviewed commit; `git push` branch + tag;
+   `gh release create v1.1.0-beta.1 --prerelease
    --notes-file Release/Notes/1.1.0-beta.1.en.md <DMG> <ZIP> <latest.json>
    <SHA256SUMS>`.
-9. `Scripts/sync-published-release.sh`; commit `Configuration/published-release.json`.
-10. Website beta-channel sync (separate phase — see below). Do **not** deploy
-    the site as part of this pass.
+7. `Scripts/sync-published-release.sh`; commit `Configuration/published-release.json`.
+8. Website beta-channel sync (separate phase — see `Website/PRODUCTION_DEPLOYMENT.md`
+   and the plan below). Do **not** deploy the site as part of the signing pass.
 
 ## Website post-publication sync plan (NOT done here)
 
@@ -193,5 +197,6 @@ website redesign in this branch.
 | `Scripts/test-public-release-gate.py` | 14 tests OK |
 | `Scripts/generate-public-release.py <tmp>` (dry-run) | OK (emits the published v1.0.0 metadata) |
 | `Scripts/check-publish-readiness.sh` | READY (automated checks) |
-| `Scripts/check-design-tokens.py` / `check-website.sh` | match (after the token regen) |
+| `Scripts/check-design-tokens.py` | Swift and web values match |
+| `Scripts/release-preflight.sh` | PASSED (local) — bundle audit + entitlement config; App Group portal registration printed as EXTERNAL |
 | `Scripts/final-launch-gate.sh` | **NOT READY** — every blocker is "not built / not signed / not tagged / not published yet", the intended post-prep state. No code or metadata defect. |
