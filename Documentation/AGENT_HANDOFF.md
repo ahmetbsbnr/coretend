@@ -2,6 +2,40 @@
 
 ## ACTIVE — v1.1 Smart Scan + Space Lens 2.0 app pass
 
+### Duplicates sidebar P0 (2026-09-06) — HEAD after the palette commit
+
+- **Confirmed regression:** opening **Duplicates** blanked the sidebar. Same
+  mechanism as Recovery Plan — `DuplicatesView.idleView` was a bare centred
+  `VStack` (no local scroll host) whose `MCScanButton` is the focusable
+  control AppKit's "reveal first responder" pass chases, scrolling the
+  sidebar `List` off-range. Peer modules (Cleanup/SpaceLens/MyClutter)
+  already wrapped their idle states in `GeometryReader { ScrollView { … } }`;
+  Duplicates never got it.
+- **Fix:** new `MCCenteredScrollState` primitive + `.mcCenteredScrollState()`
+  extension in `DesignSystem/Components.swift` (formalises the peers'
+  pattern). Migrated the bare centred states that carry a focusable control:
+  Duplicates idle+scanning, Cleanup scanning, Space Lens scanning, My Clutter
+  scanning+empty, Cloud Cleanup provider-picker+scanning, Storage Timeline
+  no-history, Similar Images scanning+empty. Button-less text states and
+  `List`/`Form`/`ScrollView`-root modules left alone. Recovery Plan
+  untouched.
+- **Measured (AX, same method that caught Recovery Plan at −1252 pt):**
+  sidebar `row1Y − scrollAreaTop = 0` after navigating into Doublons from
+  Dashboard / Space Lens / Recovery Plan / Applications, at 900×632 and
+  1240×780, and via the command palette; all 21 rows present. Recovery Plan
+  also `delta 0` (§13 preserved). Visual retest screenshots (gitignored)
+  `Documentation/VisualAudit/_capture_2026-09-06_dupes/`.
+- **Tests:** +3 in `SidebarStructureTests` (`duplicatesCentredStatesOwnALocalScrollHost`,
+  `mcCenteredScrollStateIsAScrollHost`, `allCentredDetailStatesWithControlsAreScrollHosted`).
+  Suite **817 → 820**, all green.
+- **HUMAN VERIFICATION REQUIRED:** physical mouse retest of Duplicates
+  *scanning* / *results* / *empty* states (a real scan touches the FS, not
+  driven here) and the light theme. Idle + navigation offsets are measured 0.
+- **Gates:** build.sh clean, build.sh release BUILD SUCCEEDED, test.sh
+  **820 / 0**, repository-doctor passed, build-xcode.sh OK. Working tree: the
+  8 source files of this change + `BETA_QA.md` / `AGENT_HANDOFF.md`. **Not
+  pushed, not merged, not tagged.**
+
 ### Targeted UI fix pass (2026-09-06) — HEAD after `b200cbd`
 
 Two user-facing items from the visual-QA pass, nothing else touched.

@@ -123,8 +123,9 @@ struct StorageTimelineView: View {
             }
             .padding(.top, MCSpacing.xs)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(MCSpacing.page)
+        // Local scroll host — centred detail state with focusable buttons;
+        // keeps AppKit's first-responder reveal off the sidebar.
+        .mcCenteredScrollState()
     }
 
     private var perScopeEmptyState: some View {

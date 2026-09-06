@@ -243,6 +243,133 @@ pass brief de-prioritised it ("do not spend significant time on this").
 
 ---
 
+## DUPLICATES SIDEBAR REGRESSION — 2026-09-06 (P0, FIXED + retested)
+
+A real screenshot showed the **Duplicates** landing state blanking the sidebar
+(only the top chrome remained). Same class as the Recovery Plan P0.
+
+### D-1 — Root cause (measured, same mechanism as Recovery Plan)
+
+`DuplicatesView.idleView` was a bare centred `VStack` —
+`.frame(maxWidth: .infinity, maxHeight: .infinity).padding(MCSpacing.xl)`, no
+local scroll host — whose only focusable control is the `MCScanButton`
+("Rechercher les doublons"). In a non-scrolling `NavigationSplitView` detail,
+AppKit's "reveal the first-responder / default control" pass walks up, finds the
+**sidebar's** `List` `NSScrollView`, and scrolls the navigation column out of
+range.
+
+**Every peer module already avoided this** — `CleanupView`, `SpaceLensView`,
+`MyClutterView` all wrap their `idleView` in `GeometryReader { ScrollView { … } }`.
+Duplicates' idle state was the one that never got the treatment. `scanningView`
+had the same bare structure.
+
+Measured with AX (`position` of scroll area vs. row 1), the same method that
+caught Recovery Plan at `row1Y = -1252 pt`:
+
+| Navigation into Doublons | sidebar `row1Y − scrollAreaTop` | rows |
+|---|---|---|
+| Dashboard → Doublons | **0** | 21 |
+| Space Lens → Doublons | **0** | 21 |
+| Recovery Plan → Doublons | **0** | 21 |
+| Applications → Doublons | **0** | 21 |
+| (large 1240×780) Dashboard → Doublons | **0** | 21 |
+| (large) Recovery Plan → Doublons | **0** | 21 |
+| palette → Doublons | **0** | 21 |
+| Doublons + palette open + Escape | **0** | 21 |
+
+`delta = 0` ⇒ the sidebar scroll view is never moved off its origin.
+(Pre-fix this would be a large negative `row1Y`.)
+
+### D-2 — Fix — reusable DesignSystem primitive
+
+New `MCCenteredScrollState` in `Sources/DesignSystem/Components.swift` + a
+`.mcCenteredScrollState()` `View` extension:
+
+```swift
+GeometryReader { proxy in
+    ScrollView {
+        content
+            .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .center)
+            .padding(MCSpacing.xl)
+    }
+    .scrollBounceBehavior(.basedOnSize)
+    .scrollIndicators(.hidden)
+}
+```
+
+It formalises the pattern the peers already hand-rolled: a **local** scroll host
+so AppKit's first-responder reveal stays inside the detail; content still centres
+in the viewport when it fits, scrolls instead of clipping when the window is
+short. **Not** applied to normal data `List`s / `ScrollView`s — they are already
+their own scroll host.
+
+### D-3 — Similar-state audit (all 17 modules + sub-views)
+
+| Screen / state | Before | Action |
+|---|---|---|
+| `DuplicatesView.idleView` | bare centred + `MCScanButton` | **migrated** → `.mcCenteredScrollState()` |
+| `DuplicatesView.scanningView` | bare centred + pause/resume/cancel | **migrated** |
+| `DuplicatesView.emptyView` / `finishedView` | `MCEmptyState` / `MCSuccessState` | already scroll-hosted |
+| `CleanupView.scanningView` | bare centred + pause/resume/cancel | **migrated** |
+| `CleanupView.idleView` / `doneView` | `GeometryReader+ScrollView` / `MCSuccessState` | already safe |
+| `SpaceLensView.scanningView` | bare centred + pause/resume/cancel | **migrated** |
+| `SpaceLensView.idleView` | `GeometryReader+ScrollView` | already safe |
+| `MyClutterView.scanningView` | bare centred + pause/resume/cancel | **migrated** |
+| `MyClutterView.emptyView` | bare centred + "change criteria" button | **migrated** |
+| `MyClutterView.idleView` | `GeometryReader+ScrollView` | already safe |
+| `CloudCleanupView.providerPicker` (landing) | bare centred + provider buttons | **migrated** |
+| `CloudCleanupView.scanning` state | bare centred + pause/resume/cancel | **migrated** |
+| `CloudCleanupView.noProviders` | `MCEmptyState` | already safe |
+| `StorageTimelineView.noHistoryAtAllState` | bare centred + scope buttons | **migrated** |
+| `StorageTimelineView.perScopeEmptyState` | inside `readyView`'s `ScrollView` | already safe |
+| `SimilarImagesView` `.scanning` / `.empty` (hosted under MyClutter tab) | bare centred + buttons | **migrated** |
+| `SimilarImagesView` `.idle` | `MCEmptyState` | already safe |
+| Dashboard / Applications / Developer / APFS / Privacy Lab / Integrity / Activity / Restore Center / Settings / Performance | `ScrollView` / `List` / `Form` root, or button-less text states | already safe — no change |
+| `RecoveryPlanView` start / transient / ready | prior P0 fix (`ScrollView` hosts) | **untouched**, retested |
+| `CleanupView.failed` / `MyActivityView.emptyState` | centred text/image, **no focusable control** | not vulnerable — left as-is |
+
+### D-4 — Regression tests (`SidebarStructureTests`, +3; suite 817 → **820**)
+
+- `duplicatesCentredStatesOwnALocalScrollHost` — `idleView` + `scanningView`
+  contain `.mcCenteredScrollState()`; `emptyView`/`finishedView` delegate to the
+  shared primitives; no `NavigationSplitView` / `TabView` / `NavigationStack`.
+- `mcCenteredScrollStateIsAScrollHost` — the primitive really wraps a
+  `GeometryReader` + `ScrollView`.
+- `allCentredDetailStatesWithControlsAreScrollHosted` — broad guard across
+  Duplicates / Cleanup / Space Lens / My Clutter / Cloud Cleanup / Storage
+  Timeline / Similar Images: every centred start/scanning/empty state with a
+  focusable control resolves to a local scroll host (`MCCenteredScrollState`,
+  own `ScrollView`/`GeometryReader`, or `MCEmptyState`/`MCSuccessState`).
+
+### D-5 — Visual retest (real running app, `package-local` bundle)
+
+- **Duplicates idle, 900×632** — full 17-row sidebar, "Doublons" selected, idle
+  screen renders. Screenshot `Documentation/VisualAudit/_capture_2026-09-06_dupes/06-dupes-after-palette.png`.
+- **Duplicates idle, 1240×780** — full sidebar, idle screen renders. `10-dupes-idle-LARGE.png`.
+- **Recovery Plan, 900×632** — full sidebar, start state + "Préparer le plan"
+  renders (§13 regression PASS). `12-recovery-compact.png`.
+- Navigation stress (Dashboard→Doublons→Space Lens→Doublons→Recovery→Doublons
+  →Applications→Doublons→Dashboard) and palette-navigation: sidebar `delta = 0`
+  throughout (table in D-1).
+- Screenshots gitignored (`_capture_*/`) — contain real disk paths, no user data
+  beyond the standard idle copy.
+- **HUMAN VERIFICATION REQUIRED:** a physical mouse retest of the Duplicates
+  *scanning* and *results/empty* states (a real scan touches the filesystem and
+  was not driven here), plus the light-theme variant. Structure is covered by
+  D-4; the AX offset for idle/navigation is measured `0`.
+
+### D-6 — Gates (this checkpoint)
+
+| Gate | Result |
+|---|---|
+| `Scripts/build.sh` | Build complete (12.8 s) |
+| `Scripts/build.sh release` | Build complete (33 s) |
+| `Scripts/test.sh` | **820 tests passed**, 0 failures (~19 s) |
+| `Scripts/repository-doctor.sh` | all checks passed |
+| `Scripts/build-xcode.sh` | OK — unsigned Release `build/CoreTend.app` |
+
+---
+
 ## 3. Smart Scan — idle state
 
 | Check | Status | Notes |

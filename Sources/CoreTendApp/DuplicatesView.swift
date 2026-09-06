@@ -252,6 +252,10 @@ struct DuplicatesView: View {
     }
 
     private var idleView: some View {
+        // Local scroll host: a centred detail state whose only focusable
+        // control is `MCScanButton`. Without this, AppKit's first-responder
+        // reveal scrolls the *sidebar* off-screen (the confirmed "Duplicates
+        // sidebar disappears" P0 — same mechanism as Recovery Plan).
         VStack(spacing: MCSpacing.xl) {
             VStack(spacing: MCSpacing.xs) {
                 Text(L("dupes.idle.title"))
@@ -269,11 +273,12 @@ struct DuplicatesView: View {
                 .accessibilityIdentifier("duplicates.scan.start")
                 .mcAppear(delay: 0.06)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(MCSpacing.xl)
+        .mcCenteredScrollState()
     }
 
     private func scanningView(_ processed: Int, _ total: Int) -> some View {
+        // Scroll-hosted for the same reason as `idleView` — the pause /
+        // resume / cancel controls are focusable in a centred detail state.
         VStack(spacing: MCSpacing.lg) {
             MCScanStage(isScanning: !model.isScanPaused,
                         fraction: total > 0 ? Double(processed) / Double(total) : nil) {
@@ -301,7 +306,7 @@ struct DuplicatesView: View {
                     .accessibilityIdentifier("duplicates.scan.cancel")
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .mcCenteredScrollState()
     }
 
     private var emptyView: some View {

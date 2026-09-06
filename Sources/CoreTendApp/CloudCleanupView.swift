@@ -267,7 +267,7 @@ struct CloudCleanupView: View {
                             .accessibilityIdentifier("cloud.scan.cancel")
                     }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .mcCenteredScrollState()
             case .results:
                 resultsView
             }
@@ -293,7 +293,10 @@ struct CloudCleanupView: View {
                 .buttonStyle(.bordered)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        // Local scroll host — this is Cloud Cleanup's landing state and its
+        // provider buttons are focusable; keeps AppKit's first-responder
+        // reveal off the sidebar (same class as the Duplicates idle P0).
+        .mcCenteredScrollState()
     }
 
     private var resultsView: some View {

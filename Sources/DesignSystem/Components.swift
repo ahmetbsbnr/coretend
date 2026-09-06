@@ -230,6 +230,50 @@ public struct MCEmptyState: View {
     }
 }
 
+// MARK: - Centred detail-state scroll host
+
+/// A local scroll host for a **centred** `NavigationSplitView` detail state
+/// (a module's idle / scanning / empty landing screen).
+///
+/// Non-negotiable for any centred detail state that contains a focusable or
+/// default control. Without a nearest-ancestor `NSScrollView` of its own,
+/// AppKit's "reveal the first-responder / default control" pass walks up the
+/// view tree, finds the **sidebar's** `List` scroll view, and scrolls the
+/// whole navigation column out of range — the "sidebar disappears" P0 seen
+/// first on Recovery Plan, then independently on Duplicates.
+///
+/// Owning a local `ScrollView` keeps that reveal harmless. Content still
+/// centres in the viewport when it fits (`minHeight: proxy.size.height`), and
+/// scrolls instead of clipping when the window is short. Do **not** use this
+/// for normal data `List`s / `ScrollView`s — they already are their own
+/// scroll host.
+public struct MCCenteredScrollState<Content: View>: View {
+    private let content: Content
+
+    public init(@ViewBuilder content: () -> Content) { self.content = content() }
+
+    public var body: some View {
+        GeometryReader { proxy in
+            ScrollView {
+                content
+                    .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .center)
+                    .padding(MCSpacing.xl)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+            .scrollIndicators(.hidden)
+        }
+    }
+}
+
+public extension View {
+    /// Wrap a centred module detail state in its own scroll host so AppKit's
+    /// first-responder reveal can never scroll the sidebar. See
+    /// `MCCenteredScrollState`.
+    func mcCenteredScrollState() -> some View {
+        MCCenteredScrollState { self }
+    }
+}
+
 /// Shared "the cleanup finished" state. One consistent, quietly celebratory
 /// moment across every module that moves things to the Trash — a sealed
 /// checkmark that pops in with a single expanding ring flourish (transform +
