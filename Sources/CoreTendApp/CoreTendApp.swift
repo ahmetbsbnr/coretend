@@ -32,9 +32,6 @@ enum TestAppearanceOverride {
 public struct CoreTendApp: App {
     public init() {
         TestAppearanceOverride.apply(environment: ProcessInfo.processInfo.environment)
-        // Byte counts / numbers follow the in-app language override, not the
-        // process locale. Set before any UI (incl. the menu bar) renders.
-        MCFormatting.locale = LocalizationManager.locale
     }
     @AppStorage("menuBarEnabled") private var menuBarEnabled = true
     // Same UserDefaults key LocalizationManager reads/writes. Observing it
@@ -503,9 +500,6 @@ struct MainWindow: View {
             if newValue != .all { columnVisibility = .all }
         }
         .onAppear {
-            // Re-runs on a language change (the window has `.id(appLanguageRaw)`),
-            // so byte/number formatting follows the new choice immediately.
-            MCFormatting.locale = LocalizationManager.locale
             if !onboardingDone { showOnboarding = true }
             // Start the macOS integration layer (background scan scheduler,
             // notification tap routing). Idempotent.
@@ -643,34 +637,18 @@ private struct CommandPaletteView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            HStack(spacing: MCSpacing.xs) {
+            HStack {
                 Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
                 TextField(L("palette.placeholder"), text: $query)
                     .textFieldStyle(.plain)
                     .focused($searchFocused)
                     .onSubmit { activate(filtered.first) }
                     .accessibilityIdentifier("commandPalette.search")
-                // A deliberate dismiss affordance. `.cancelAction` binds it to
-                // Escape too, so dismissal is predictable whether the user
-                // clicks it, presses Escape, or (on the sheet) clicks away and
-                // then presses Escape.
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.secondary)
-                }
-                .buttonStyle(.plain)
-                .keyboardShortcut(.cancelAction)
-                .help(L("common.cancel"))
-                .accessibilityLabel(L("common.cancel"))
-                .accessibilityIdentifier("commandPalette.close")
             }
             .padding(MCSpacing.sm)
             Divider()
             if filtered.isEmpty {
                 MCEmptyState(icon: "magnifyingglass", title: L("palette.no_results"), message: "")
-                    .frame(height: 180)
             } else {
                 List(filtered) { entry in
                     Button {
@@ -682,20 +660,11 @@ private struct CommandPaletteView: View {
                     .accessibilityIdentifier(entry.id)
                 }
                 .listStyle(.plain)
-                .frame(minHeight: 120, maxHeight: 320)
             }
         }
-        .frame(width: 440)
-        .fixedSize(horizontal: false, vertical: true)
+        .frame(width: 420, height: 360)
         .onAppear { searchFocused = true }
-        // Belt-and-suspenders: works even if the Cancel button isn't in the
-        // key-view loop for some reason.
-        .onKeyPress(.escape) { dismiss(); return .handled }
-    }
-
-    private func dismiss() {
-        isPresented = false
-        query = ""
+        .onKeyPress(.escape) { isPresented = false; return .handled }
     }
 
     private func activate(_ entry: Entry?) {
@@ -704,7 +673,7 @@ private struct CommandPaletteView: View {
         case let .module(m): NotificationCenter.default.post(name: .mcNavigate, object: m)
         case let .action(_, _, _, perform): perform()
         }
-        dismiss()
+        isPresented = false
     }
 }
 

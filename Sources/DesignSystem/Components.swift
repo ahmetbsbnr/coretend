@@ -199,24 +199,34 @@ public struct MCEmptyState: View {
     }
 
     public var body: some View {
-        VStack(spacing: MCSpacing.sm) {
-            Image(systemName: icon)
-                .font(.system(size: iconSize, weight: .light))
-                .foregroundStyle(iconColor)
-                .accessibilityHidden(true)
-            Text(title).font(MCFont.cardTitle)
-            Text(message)
-                .font(MCFont.secondaryBody)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 420)
-            if let actionTitle, let action {
-                Button(actionTitle, action: action)
-                    .buttonStyle(.borderedProminent)
+        // Scroll-hosted for the same reason as `MCSuccessState`: used as a
+        // `NavigationSplitView` detail, and when it carries a
+        // `.borderedProminent` action, a non-scrolling detail lets AppKit's
+        // default-control reveal scroll the sidebar list off-screen.
+        ScrollView {
+            VStack(spacing: MCSpacing.sm) {
+                Image(systemName: icon)
+                    .font(.system(size: iconSize, weight: .light))
+                    .foregroundStyle(iconColor)
+                    .accessibilityHidden(true)
+                Text(title).font(MCFont.cardTitle)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(message)
+                    .font(MCFont.secondaryBody)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: MCSize.readableTextWidth)
+                if let actionTitle, let action {
+                    Button(actionTitle, action: action)
+                        .buttonStyle(.borderedProminent)
+                }
             }
+            .frame(maxWidth: .infinity)
+            .padding(MCSpacing.xl)
         }
+        .scrollBounceBehavior(.basedOnSize)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(MCSpacing.xl)
     }
 }
 
@@ -247,46 +257,57 @@ public struct MCSuccessState: View {
     }
 
     public var body: some View {
-        VStack(spacing: MCSpacing.md) {
-            ZStack {
-                if !reduceMotion {
-                    ForEach(0..<2, id: \.self) { i in
-                        Circle()
-                            .stroke(MCColor.success.opacity(0.35 * Double(1 - flourish)), lineWidth: 2)
-                            .frame(width: 76, height: 76)
-                            .scaleEffect(0.55 + flourish * (1.3 + CGFloat(i) * 0.55))
+        // Scroll-hosted even though it always fits: this state is used as a
+        // `NavigationSplitView` detail, and its `.borderedProminent` action is
+        // the window's default button. In a *non-scrolling* detail, AppKit's
+        // "reveal the default control" pass walks up for an enclosing
+        // NSScrollView and finds the SIDEBAR's list — scrolling the whole
+        // navigation off-screen. Owning a local scroll host keeps that reveal
+        // harmless. (Verified against the Recovery Plan "completed" screen.)
+        ScrollView {
+            VStack(spacing: MCSpacing.md) {
+                ZStack {
+                    if !reduceMotion {
+                        ForEach(0..<2, id: \.self) { i in
+                            Circle()
+                                .stroke(MCColor.success.opacity(0.35 * Double(1 - flourish)), lineWidth: 2)
+                                .frame(width: 76, height: 76)
+                                .scaleEffect(0.55 + flourish * (1.3 + CGFloat(i) * 0.55))
+                        }
                     }
+                    Circle().fill(MCColor.success.opacity(0.14)).frame(width: 76, height: 76)
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.system(size: 34, weight: .semibold))
+                        .foregroundStyle(MCColor.success)
                 }
-                Circle().fill(MCColor.success.opacity(0.14)).frame(width: 76, height: 76)
-                Image(systemName: "checkmark.seal.fill")
-                    .font(.system(size: 34, weight: .semibold))
-                    .foregroundStyle(MCColor.success)
-            }
-            .scaleEffect(popped || reduceMotion ? 1 : 0.7)
-            .opacity(popped || reduceMotion ? 1 : 0)
-            .accessibilityHidden(true)
+                .scaleEffect(popped || reduceMotion ? 1 : 0.7)
+                .opacity(popped || reduceMotion ? 1 : 0)
+                .accessibilityHidden(true)
 
-            Text(title)
-                .font(MCFont.pageTitle)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: MCSize.readableTextWidth)
-            if let message, !message.isEmpty {
-                Text(message)
-                    .font(MCFont.secondaryBody)
-                    .foregroundStyle(.secondary)
+                Text(title)
+                    .font(MCFont.pageTitle)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: MCSize.readableTextWidth)
+                if let message, !message.isEmpty {
+                    Text(message)
+                        .font(MCFont.secondaryBody)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: MCSize.readableTextWidth)
+                }
+                if let actionTitle, let action {
+                    Button(actionTitle, action: action)
+                        .buttonStyle(.borderedProminent)
+                }
             }
-            if let actionTitle, let action {
-                Button(actionTitle, action: action)
-                    .buttonStyle(.borderedProminent)
-            }
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, MCSpacing.xl)
+            .padding(.vertical, MCSpacing.xl)
         }
+        .scrollBounceBehavior(.basedOnSize)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.horizontal, MCSpacing.xl)
-        .padding(.vertical, MCSpacing.xl)
         .onAppear {
             guard !reduceMotion else { return }
             withAnimation(.spring(response: 0.45, dampingFraction: 0.62)) { popped = true }
