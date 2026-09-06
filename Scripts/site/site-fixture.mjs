@@ -185,6 +185,21 @@ export async function startSite(buildDirectory, options = {}) {
       return
     }
 
+    // The community page loads its public feed from GET /api/community on
+    // first paint. A static fixture has no Postgres, so model the
+    // deployed-but-empty response (200 { ok, items: [] }) — the client then
+    // renders its empty-feed state. POST /api/* is not modelled (needs the
+    // real validator/store); its client-side form shape is asserted directly.
+    if (pathname === '/api/community' && method === 'GET') {
+      const payload = JSON.stringify({ ok: true, items: [] })
+      response.writeHead(200, {
+        'content-type': 'application/json; charset=utf-8',
+        'content-length': String(Buffer.byteLength(payload)),
+        'cache-control': 'no-store',
+      }).end(payload)
+      return
+    }
+
     let file = localFile(buildDirectory, rewritten)
     let statusCode = 200
     try {
