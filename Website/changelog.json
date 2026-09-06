@@ -12,18 +12,28 @@
       },
       "changes": {
         "en": [
+          "Smart Scan: one action runs several modules and returns a single structured review — potentially recoverable, to review, attention, and informational as separate dimensions. The scan deletes nothing.",
+          "Space Lens 2.0: an interactive size map with progressive partial results, synced treemap and list, breadcrumb navigation, an Other bucket, search and category filtering.",
+          "Recovery Plan (first vertical): set a space goal and get a conservative, user-editable plan from eligible findings across Cleanup, Duplicates, Leftovers and Privacy.",
           "Restore Center: move a CoreTend-Trashed item back to where it came from, with a local, private restore manifest.",
+          "Storage Timeline (first vertical): since-last-scan changes for Cleanup, Duplicates, Leftovers and Privacy, plus a Dashboard summary card.",
           "Read-only Finder extension: right-click a folder, image, or app to open the matching CoreTend screen. It never deletes or reads file contents.",
           "Read-only desktop widget: a glanceable storage summary from a small App Group snapshot.",
           "App Intents / Shortcuts, local notifications, and opt-in scheduled read-only scans.",
-          "Privacy Lab: inspect the metadata embedded in an image you choose (local, in-memory, nothing persisted)."
+          "Privacy Lab: inspect the metadata embedded in an image you choose (local, in-memory, nothing persisted).",
+          "This beta is unsigned and not notarized — Gatekeeper needs the first-launch right-click-Open step. The stable 1.0.0 line stays signed and notarized."
         ],
         "fr": [
+          "Analyse intelligente : une seule action lance plusieurs modules et renvoie une revue structurée unique — potentiellement récupérable, à examiner, attention et informatif comme dimensions distinctes. L'analyse ne supprime rien.",
+          "Space Lens 2.0 : une carte de taille interactive avec résultats partiels progressifs, carte proportionnelle et liste synchronisées, fil d'Ariane, catégorie Autre, recherche et filtre par catégorie.",
+          "Plan de récupération (première version) : définir un objectif d'espace et obtenir un plan prudent et modifiable à partir des éléments éligibles de Nettoyage, Doublons, Résidus et Confidentialité.",
           "Centre de restauration : remettre un élément mis à la Corbeille par CoreTend à son emplacement d'origine, via un manifeste de restauration local et privé.",
+          "Chronologie du stockage (première version) : les changements depuis la dernière analyse pour Nettoyage, Doublons, Résidus et Confidentialité, plus une carte de synthèse sur le Tableau de bord.",
           "Extension Finder en lecture seule : clic droit sur un dossier, une image ou une app pour ouvrir l'écran CoreTend correspondant. Elle ne supprime rien et ne lit aucun contenu de fichier.",
           "Widget de bureau en lecture seule : un résumé du stockage d'un coup d'œil, depuis un petit instantané App Group.",
           "App Intents / Raccourcis, notifications locales et analyses planifiées en lecture seule (avec accord explicite).",
-          "Privacy Lab : inspecter les métadonnées d'une image choisie (local, en mémoire, rien n'est conservé)."
+          "Privacy Lab : inspecter les métadonnées d'une image choisie (local, en mémoire, rien n'est conservé).",
+          "Cette bêta est non signée et non notarisée — Gatekeeper exige l'étape clic droit → Ouvrir au premier lancement. La lignée stable 1.0.0 reste signée et notarisée."
         ]
       }
     },
