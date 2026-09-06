@@ -423,6 +423,7 @@ struct MainWindow: View {
     @AppStorage("onboardingDone") private var onboardingDone = false
     @State private var showOnboarding = false
     @State private var showCommandPalette = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
@@ -495,6 +496,11 @@ struct MainWindow: View {
                     PlaceholderView(module: selection ?? .smartCare)
                 }
             }
+            // CoreTend's own header band: the command-palette trigger lives
+            // here, trailing-aligned with the page content, NOT jammed into
+            // the extreme top-right macOS toolbar slot against the rounded
+            // window corner. One placement, every module.
+            .safeAreaInset(edge: .top, spacing: 0) { paletteHeader }
             .mcCanvasBackground()
         }
         .navigationSplitViewStyle(.balanced)
@@ -534,23 +540,53 @@ struct MainWindow: View {
             showOnboarding = true
         }
         .onReceive(NotificationCenter.default.publisher(for: .mcShowCommandPalette)) { _ in
-            showCommandPalette = true
-        }
-        .sheet(isPresented: $showCommandPalette) {
-            CommandPaletteView(isPresented: $showCommandPalette)
-        }
-        .toolbar {
-            ToolbarItemGroup {
-                Button {
-                    showCommandPalette = true
-                } label: {
-                    Label(L("palette.open"), systemImage: "command")
-                }
-                .help(L("palette.open"))
-            }
+            openCommandPalette()
         }
         .background(MCColor.background)
         .tint(MCColor.teal)
+        // Transient overlay, NOT a `.sheet`: a document-modal sheet is a
+        // no-op on an outside click. This overlay's backdrop consumes the
+        // dismissal click (so it never activates the control underneath) and
+        // closes the palette; the panel itself stays interactive.
+        .overlay {
+            if showCommandPalette {
+                CommandPaletteOverlay(isPresented: $showCommandPalette, reduceMotion: reduceMotion)
+                    .transition(.opacity)
+            }
+        }
+    }
+
+    private func openCommandPalette() {
+        withAnimation(reduceMotion ? nil : .snappy) { showCommandPalette = true }
+    }
+
+    /// The header band injected above every module's detail content. Holds
+    /// only the command-palette trigger, right-aligned to the page gutter.
+    private var paletteHeader: some View {
+        HStack(spacing: 0) {
+            Spacer(minLength: 0)
+            Button {
+                openCommandPalette()
+            } label: {
+                Image(systemName: "command")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 26, height: 26)
+                    .background(MCColor.elevatedBackground, in: Circle())
+                    .overlay(Circle().strokeBorder(MCColor.separator.opacity(0.8), lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+            // ⌘K is owned by the menu command in `CoreTendHelpCommands`
+            // (which posts `.mcShowCommandPalette`); not re-bound here to
+            // avoid a duplicate-shortcut conflict.
+            .help(L("palette.open.a11y"))
+            .accessibilityLabel(L("palette.open.a11y"))
+            .accessibilityIdentifier("commandPalette.trigger")
+        }
+        .padding(.trailing, MCSpacing.page)
+        .padding(.top, MCSpacing.sm)
+        .padding(.bottom, MCSpacing.xs)
+        .frame(maxWidth: .infinity)
     }
 
     private func sidebarRow(_ module: ModuleID) -> some View {
@@ -585,16 +621,54 @@ func paletteMatches(label: String, query: String) -> Bool {
     return label.localizedStandardContains(trimmed)
 }
 
+/// The palette's transient presentation: a dimmed, hit-testing backdrop with
+/// the search panel floating near the top. NOT a `.sheet` — a document-modal
+/// sheet ignores an outside click. Here:
+///  - the backdrop is a filled, hit-testable view: an outside click lands on
+///    it, is *consumed* (never reaches the control beneath — no click-
+///    through), and closes the palette;
+///  - the panel sits above the backdrop and stays fully interactive;
+///  - Escape is owned in exactly one place (`.onExitCommand` here).
+struct CommandPaletteOverlay: View {
+    @Binding var isPresented: Bool
+    let reduceMotion: Bool
+
+    var body: some View {
+        ZStack(alignment: .top) {
+            Rectangle()
+                .fill(Color.black.opacity(0.18))
+                .ignoresSafeArea()
+                .contentShape(Rectangle())
+                .onTapGesture { close() }
+                .accessibilityLabel(L("palette.close.a11y"))
+                .accessibilityAddTraits(.isButton)
+                .accessibilityIdentifier("commandPalette.backdrop")
+
+            CommandPaletteView(isPresented: $isPresented)
+                .padding(.top, MCSpacing.xxl)
+        }
+        // The single Escape owner. `.onExitCommand` handles `cancelOperation:`
+        // from anywhere in the responder chain, including the focused search
+        // field, so it fires regardless of focus.
+        .onExitCommand { close() }
+    }
+
+    private func close() {
+        withAnimation(reduceMotion ? nil : .snappy) { isPresented = false }
+    }
+}
+
 /// Fuzzy-filtered jump list over every sidebar destination, plus a handful
 /// of actions — dispatched through the same NotificationCenter routing the
 /// sidebar and Help-menu commands already use, not a second navigation
 /// system. Deliberately not a general "search everything" index (see
 /// GRAPHIFY_MAPS.md / the workspace audit for why that's a separate,
 /// larger undertaking, not folded into this).
-private struct CommandPaletteView: View {
+struct CommandPaletteView: View {
     @Binding var isPresented: Bool
     @State private var query = ""
     @FocusState private var searchFocused: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private enum Entry: Identifiable {
         case module(ModuleID)
@@ -649,15 +723,10 @@ private struct CommandPaletteView: View {
                     .textFieldStyle(.plain)
                     .focused($searchFocused)
                     .onSubmit { activate(filtered.first) }
-                    // The focused field is the only view guaranteed to be in
-                    // the key path inside the sheet, so Escape is handled
-                    // here (container-level `.onExitCommand` is the backup).
-                    .onKeyPress(.escape) { dismiss(); return .handled }
+                    .accessibilityLabel(L("palette.placeholder"))
                     .accessibilityIdentifier("commandPalette.search")
-                // A deliberate dismiss affordance. `.cancelAction` binds it to
-                // Escape too, so dismissal is predictable whether the user
-                // clicks it, presses Escape, or (on the sheet) clicks away and
-                // then presses Escape.
+                // Pointer dismiss affordance. Escape is owned by the
+                // overlay's `.onExitCommand`, so no key shortcut here.
                 Button {
                     dismiss()
                 } label: {
@@ -665,9 +734,8 @@ private struct CommandPaletteView: View {
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
-                .keyboardShortcut(.cancelAction)
-                .help(L("common.cancel"))
-                .accessibilityLabel(L("common.cancel"))
+                .help(L("palette.close.a11y"))
+                .accessibilityLabel(L("palette.close.a11y"))
                 .accessibilityIdentifier("commandPalette.close")
             }
             .padding(MCSpacing.sm)
@@ -689,19 +757,24 @@ private struct CommandPaletteView: View {
                 .frame(minHeight: 120, maxHeight: 320)
             }
         }
-        .frame(width: 440)
+        .frame(width: 460)
         .fixedSize(horizontal: false, vertical: true)
+        // Opaque panel chrome so it reads as a floating surface AND so any
+        // click on the panel (incl. its empty regions) is consumed here and
+        // never falls through to the dismissal backdrop.
+        .background(MCColor.elevatedBackground, in: RoundedRectangle(cornerRadius: MCRadius.card))
+        .overlay(RoundedRectangle(cornerRadius: MCRadius.card)
+            .strokeBorder(MCColor.separator.opacity(0.8), lineWidth: 1))
+        .shadow(color: .black.opacity(0.28), radius: 18, x: 0, y: 8)
+        .contentShape(RoundedRectangle(cornerRadius: MCRadius.card))
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("commandPalette.panel")
         .onAppear { searchFocused = true }
-        // `.onExitCommand` is the macOS-native Escape handler: it fires no
-        // matter which subview has focus (the search field would otherwise
-        // swallow the key), so Escape always dismisses. The visible ✕ button
-        // and its `.cancelAction` shortcut stay as the pointer affordance.
-        .onExitCommand { dismiss() }
     }
 
     private func dismiss() {
-        isPresented = false
         query = ""
+        withAnimation(reduceMotion ? nil : .snappy) { isPresented = false }
     }
 
     private func activate(_ entry: Entry?) {

@@ -367,6 +367,8 @@
 "module.protection" = "Intégrité";
 "module.activity" = "Activité";
 "palette.open" = "Palette de commandes…";
+"palette.open.a11y" = "Ouvrir la palette de commandes";
+"palette.close.a11y" = "Fermer la palette de commandes";
 "palette.placeholder" = "Aller à…";
 "palette.no_results" = "Aucun résultat";
 "palette.scan_home" = "Analyser le dossier personnel avec Space Lens";

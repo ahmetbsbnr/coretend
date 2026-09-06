@@ -113,6 +113,136 @@ APFS "Disponible (usage opportuniste)" shows "Zéro ko" (from `ByteCountFormatSt
 
 ---
 
+## TARGETED UI FIX pass — 2026-09-06 (command palette + ⌘ trigger)
+
+Scope: the two user-facing items left unresolved after the visual-QA pass — V-3
+(outside-click dismissal) and the ⌘-trigger P2 note. No other module touched.
+
+### T-1 — Command palette is now a transient overlay, not a `.sheet`  ·  **IMPLEMENTED**
+
+- **Old presentation:** `.sheet(isPresented: $showCommandPalette)` on the detail
+  `Group`. A document-modal sheet on macOS treats an outside click as a no-op —
+  the interaction the user asked for was structurally impossible in that
+  primitive.
+- **New presentation:** `CommandPaletteOverlay` in a `.overlay { if
+  showCommandPalette { … } }` on `MainWindow`, `.transition(.opacity)`. A
+  `ZStack(alignment: .top)`:
+  - a full-window `Rectangle().fill(Color.black.opacity(0.18)).ignoresSafeArea()
+    .contentShape(Rectangle()).onTapGesture { close() }` backdrop — the outside
+    click lands on this, is **consumed** (never reaches the control beneath), and
+    closes the palette;
+  - the `CommandPaletteView` panel above it, with opaque chrome
+    (`MCColor.elevatedBackground` in `RoundedRectangle(MCRadius.card)` + stroke +
+    shadow) and its own `.contentShape(RoundedRectangle(…))`, so any click on the
+    panel — including empty regions — is consumed there and does **not** fall
+    through to the backdrop.
+- **Click-through protection:** by construction. The backdrop is an opaque
+  hit-testing view spanning the window; the dismissal click cannot reach a
+  background control (e.g. Recovery Plan's "Préparer le plan").
+- **Escape — one owner:** `.onExitCommand { close() }` on the overlay `ZStack`,
+  and nowhere else. Removed the previous pass's competing handlers: the search
+  field's `.onKeyPress(.escape)`, the ✕ button's `.keyboardShortcut(
+  .cancelAction)`, and `CommandPaletteView`'s container `.onExitCommand`.
+  `.onExitCommand` handles `cancelOperation:` from anywhere in the responder
+  chain, including the focused `TextField`.
+- **Explicit close paths:** ✕ button → `dismiss()`; result selection →
+  `activate()` → `dismiss()`; Escape → `close()`; outside click → `close()`. All
+  set `isPresented = false` inside `withAnimation` (respecting Reduce Motion).
+- **Focus:** panel `.onAppear { searchFocused = true }`. On close the entire
+  overlay leaves the view tree, so no invisible keyboard focus can remain inside
+  a dismissed palette. Restoring focus specifically to the ⌘ trigger is not
+  wired (would need a `MainWindow`-level `FocusState`); acceptable since the
+  dismissed subtree is gone.
+- **HUMAN VERIFICATION REQUIRED — physical gesture only:** the GUI-automation
+  route (AppleScript System Events + `screencapture`) is not functioning in this
+  environment this session — `CoreTend` launches but its window is not reliably
+  accessible to System Events (0 windows reported), same blocker noted in prior
+  passes. The state machine and structure are unit-tested (see below); a human
+  must confirm on device: open palette → click outside → closes immediately, no
+  second click, no bonk; click on "Préparer le plan" underneath while palette is
+  open → palette closes, button does **not** execute; Escape from the focused
+  field → closes; ✕ → closes; result click → navigates + closes.
+
+### T-2 — ⌘ trigger moved out of the window corner  ·  **IMPLEMENTED**
+
+- **Old ownership:** a global `.toolbar { ToolbarItemGroup { Button … Label(
+  L("palette.open"), systemImage: "command") } }` — extreme trailing titlebar
+  slot, hard against the rounded window corner.
+- **New ownership:** `MainWindow` injects `.safeAreaInset(edge: .top, spacing: 0)
+  { paletteHeader }` on the detail `Group` (before `.mcCanvasBackground()`), so
+  it applies to **every** module, not one view. `paletteHeader` is an `HStack`
+  with a trailing `Spacer` and a 26 pt circular `⌘` button
+  (`MCColor.elevatedBackground` fill + `MCColor.separator` stroke), padded
+  `.trailing MCSpacing.page`, `.top MCSpacing.sm`, `.bottom MCSpacing.xs` — all
+  design tokens, no arbitrary pixel offsets. The trigger now sits inside the
+  visible content region, comfortably clear of the corner, aligned to the page
+  gutter.
+- The old toolbar item is removed entirely. `⌘K` is unchanged — still owned by
+  the `CoreTendHelpCommands` menu command that posts `.mcShowCommandPalette`; the
+  header button is not re-bound (avoids a duplicate-shortcut conflict).
+- **HUMAN VERIFICATION REQUIRED — visual only:** confirm on device at 900×632 and
+  1320×820 that the header band does not visually crowd page titles on
+  Dashboard / Recovery Plan / Storage / Space Lens / Duplicates / Applications /
+  Developer / Timeline / APFS / Large Files / Privacy / Integrity / Activity /
+  Settings, and that at compact width the page title stays readable and the ⌘
+  stays visible. (Structure is identical across modules by construction —
+  single `.safeAreaInset` at `MainWindow` level.)
+
+### T-3 — Sidebar fix (`55d184c`) preserved  ·  **verified structurally**
+
+`SidebarStructureTests.centredDetailStatesWithADefaultButtonAreScrollHosted`
+still passes: `MCSuccessState` / `MCEmptyState` / `RecoveryPlanView` `startState`
+/ `transientState` remain `ScrollView`-hosted. Adding `.safeAreaInset(edge:
+.top)` to the detail `Group` does not remove those local scroll hosts, so the
+AppKit "reveal the default control" pass still stays local. Live re-confirmation
+of the Dashboard → Recovery Plan → other-module → Recovery Plan walk at compact
+and large sizes is **HUMAN VERIFICATION REQUIRED** (same automation blocker).
+
+### T-4 — `mcFormatBytes(0)` "Zéro ko"  ·  **not changed**
+
+Left as the existing P2 note above. Foundation's `ByteCountFormatStyle` spells
+zero as a word in FR ("Zéro ko"); there is no clean formatter switch, and the
+pass brief de-prioritised it ("do not spend significant time on this").
+
+### T-5 — Accessibility
+
+- Trigger: `.help` + `.accessibilityLabel` = `L("palette.open.a11y")` — EN "Open
+  command palette" / FR "Ouvrir la palette de commandes" (new keys, EN+FR
+  parity).
+- ✕ + backdrop: `L("palette.close.a11y")` — EN "Close command palette" / FR
+  "Fermer la palette de commandes" (new keys, EN+FR parity). Backdrop also gets
+  `.accessibilityAddTraits(.isButton)`.
+- Search field: `.accessibilityLabel(L("palette.placeholder"))`.
+- Panel: `.accessibilityElement(children: .contain)`.
+
+### T-6 — Tests (new: +5, suite 812 → 817, all pass via `Scripts/test.sh`)
+
+`Tests/CoreTendAppTests/CommandPaletteTests.swift`:
+- `paletteIsAnOverlayNotASheet` — no `.sheet(isPresented: $showCommandPalette)`;
+  `CommandPaletteOverlay` presented via `.overlay { if showCommandPalette }`.
+- `backdropConsumesTheDismissalClickAndCloses` — `CommandPaletteOverlay` has a
+  filled `Color.black.opacity(0.18)` backdrop with `.contentShape(Rectangle())`
+  + `.onTapGesture { close() }` + id `commandPalette.backdrop`.
+- `escapeHasExactlyOneOwner` — exactly one `.onExitCommand { close() }`; no
+  `.onKeyPress(.escape)` anywhere.
+- `triggerLivesInAHeaderBandNotTheToolbarCorner` — trigger in `.safeAreaInset`
+  with `MCSpacing.page` trailing padding, id `commandPalette.trigger`; old
+  toolbar `Label(L("palette.open"), …)` gone.
+- `newKeysExistInBothLanguages` — `palette.open.a11y` / `palette.close.a11y`
+  present with expected EN + FR values.
+
+### T-7 — Gates (all green, this checkpoint)
+
+| Gate | Result |
+|---|---|
+| `Scripts/build.sh` | Build complete |
+| `Scripts/build.sh release` | Build complete (32 s) |
+| `Scripts/test.sh` | **817 tests passed**, 0 failures (~24 s) |
+| `Scripts/repository-doctor.sh` | all checks passed |
+| `Scripts/build-xcode.sh` | OK — unsigned Release `build/CoreTend.app` |
+
+---
+
 ## 3. Smart Scan — idle state
 
 | Check | Status | Notes |

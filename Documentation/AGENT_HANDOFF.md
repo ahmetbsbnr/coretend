@@ -2,6 +2,44 @@
 
 ## ACTIVE — v1.1 Smart Scan + Space Lens 2.0 app pass
 
+### Targeted UI fix pass (2026-09-06) — HEAD after `b200cbd`
+
+Two user-facing items from the visual-QA pass, nothing else touched.
+
+- **Command palette — outside-click dismissal is now real (`CoreTendApp.swift`).**
+  Replaced `.sheet(isPresented: $showCommandPalette)` (document-modal — outside
+  click is a structural no-op) with `CommandPaletteOverlay` in an `.overlay` on
+  `MainWindow`: an opaque full-window `Color.black.opacity(0.18)` backdrop that
+  **consumes** the dismissal click (no click-through to the control beneath) and
+  closes, with the panel floating above behind its own `.contentShape`. Escape
+  has exactly **one** owner now — `.onExitCommand { close() }` on the overlay;
+  removed the field `.onKeyPress(.escape)`, the ✕ `.keyboardShortcut(
+  .cancelAction)`, and the container `.onExitCommand` from the previous pass.
+  On close the whole overlay leaves the tree (no orphaned focus).
+- **⌘ trigger moved out of the window corner (`CoreTendApp.swift`).** Removed the
+  global `.toolbar` item; `MainWindow` now injects `.safeAreaInset(edge: .top)
+  { paletteHeader }` on the detail `Group` — a 26 pt circular ⌘ button,
+  trailing-aligned to the page gutter (`MCSpacing.page` / `.sm` / `.xs`, tokens
+  only). One placement, every module.
+- **New strings:** `palette.open.a11y` / `palette.close.a11y` (EN + FR, parity
+  checked).
+- **Tests:** +5 in `CommandPaletteTests.swift` (overlay-not-sheet, backdrop
+  consumes+closes, single Escape owner, trigger in header band, a11y string
+  parity). Suite **812 → 817**, all green.
+- **Sidebar fix (`55d184c`) preserved** — scroll hosts untouched;
+  `SidebarStructureTests` still passes.
+- **HUMAN VERIFICATION REQUIRED (physical gesture / visual only):** the
+  AppleScript+`screencapture` route is non-functional this session (CoreTend
+  launches but System Events sees 0 windows — same blocker as prior passes), so
+  a human must confirm on device: outside-click closes with no click-through to
+  "Préparer le plan"; Escape / ✕ / result-click all close; ⌘ trigger placement
+  and compact-width title readability across all 14 modules at 900×632 and
+  1320×820; the Dashboard→Recovery Plan→other→Recovery Plan sidebar walk.
+- **Gates (this checkpoint):** build.sh clean, build.sh release BUILD SUCCEEDED
+  (32 s), test.sh **817 passed / 0 failed**, repository-doctor passed,
+  build-xcode.sh OK. Working tree: only the 4 files of this change +
+  `BETA_QA.md` / `AGENT_HANDOFF.md`. **Not pushed, not merged, not tagged.**
+
 ### Visual QA pass (2026-09-06) — HEAD `921db98`
 
 - **P0 FIXED & retested with the running app:** the sidebar scrolled
