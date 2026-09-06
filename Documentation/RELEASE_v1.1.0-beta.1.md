@@ -200,3 +200,17 @@ website redesign in this branch.
 | `Scripts/check-design-tokens.py` | Swift and web values match |
 | `Scripts/release-preflight.sh` | PASSED (local) — bundle audit + entitlement config; App Group portal registration printed as EXTERNAL |
 | `Scripts/final-launch-gate.sh` | **NOT READY** — every blocker is "not built / not signed / not tagged / not published yet", the intended post-prep state. No code or metadata defect. |
+
+## Apple Developer Portal — App Group verification
+
+PASS — 2026-09-06 — maintainer verified
+
+App Group:
+group.com.ahmetbsbnr.coretend
+
+Associated App IDs:
+- com.ahmetbsbnr.coretend
+- com.ahmetbsbnr.coretend.widget
+
+Finder extension:
+- com.ahmetbsbnr.coretend.finder — App Group not assigned, as designed.
