@@ -235,91 +235,9 @@ p{margin:0}
 .hero-meta a{color:var(--ink-2);border-bottom:1px solid var(--line-strong)}
 .hero-meta a:hover{color:var(--cobalt);border-color:var(--cobalt)}
 
-/* ---------- app window ---------- */
-.app{
-  border:1px solid var(--line);border-radius:16px;background:var(--panel);box-shadow:var(--shadow-lift);
-  overflow:hidden;transform-style:preserve-3d;
-  transition:transform .5s var(--ease),box-shadow .5s var(--ease);
-}
-.app-top{display:flex;align-items:center;gap:8px;padding:11px 14px;border-bottom:1px solid var(--line);
-  background:var(--panel-2)}
 .dots{display:flex;gap:6px}
 .dots i{width:10px;height:10px;border-radius:50%;background:var(--line-strong);display:block}
 .dots i:nth-child(1){background:#e0685f}.dots i:nth-child(2){background:#e2b04a}.dots i:nth-child(3){background:#5cb85c}
-.app-title{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-inline:auto;letter-spacing:.04em}
-.app-state-mark{width:18px;height:18px;flex:none;margin-left:3px}
-.pill{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
-  padding:4px 9px;border-radius:999px;border:1px solid var(--line-strong);color:var(--ink-2)}
-.pill.reviewed{border-color:color-mix(in srgb,var(--safe) 50%,transparent);color:var(--safe);
-  background:color-mix(in srgb,var(--safe) 10%,transparent);animation:confirmation-pulse 3.4s var(--ease) infinite}
-.sample-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;color:var(--ink-3);white-space:nowrap}
-@keyframes confirmation-pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--safe) 35%,transparent)}
-  55%{box-shadow:0 0 0 6px transparent}}
-.app-body{display:grid;grid-template-columns:158px minmax(0,1fr);min-height:394px}
-@media(max-width:560px){
-  .app-body{grid-template-columns:1fr}
-  .app-side{border-right:0!important;border-bottom:1px solid var(--line);padding:8px!important;
-    flex-direction:row!important;gap:5px!important;overflow-x:auto;scrollbar-width:thin;scroll-snap-type:x proximity}
-  .app-side small,.app-side .sep{display:none}
-  .app-side button{flex:0 0 auto;width:auto!important;padding:7px 9px!important;scroll-snap-align:start}
-  .app-side button span:last-child{white-space:nowrap}
-}
-.app-side{border-right:1px solid var(--line);padding:12px 10px;background:var(--panel-2);display:flex;flex-direction:column;gap:2px}
-.app-side button{display:flex;align-items:center;gap:9px;width:100%;padding:8px 10px;border-radius:8px;
-  font-size:13.5px;font-weight:500;color:var(--ink-2);text-align:left;transition:.28s var(--ease);position:relative}
-.app-side button span.ic{width:15px;height:15px;flex:none;opacity:.65}
-.app-side button:hover{background:var(--paper-3);color:var(--ink)}
-.app-side button.on{background:var(--cobalt);color:var(--on-cobalt)}
-.app-side button.on span.ic{opacity:1}
-.app-side .sep{margin:9px 4px;height:1px;background:var(--line)}
-.app-side small{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--ink-3);padding:6px 10px 2px}
-.app-main{padding:16px 18px 18px;display:flex;flex-direction:column;gap:13px;min-width:0}
-.app-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-.app-head strong{font-size:16px;letter-spacing:-.02em}
-.app-head em{font-style:normal;font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}
-.track{height:3px;border-radius:99px;background:var(--paper-3);overflow:hidden}
-.track i{display:block;height:100%;width:0;border-radius:99px;
-  background:linear-gradient(90deg,var(--cobalt),var(--cobalt-lift));transition:width .4s linear}
-
-/* radial size map — mirrors Space Lens in the app */
-.lens{position:relative;height:174px;border-radius:10px;overflow:hidden;background:var(--paper-3);
-  border:1px solid var(--line)}
-.lens b{position:absolute;left:var(--cx);top:var(--cy);width:var(--r);height:var(--r);
-  margin-left:calc(var(--r) / -2);margin-top:calc(var(--r) / -2);
-  display:grid;place-items:center;border-radius:50%;
-  border:1px solid color-mix(in srgb,var(--paper) 45%,transparent);
-  background:
-    radial-gradient(circle at 34% 30%,color-mix(in srgb,var(--cobalt-bright) 32%,transparent),transparent 62%),
-    color-mix(in srgb,var(--cobalt-deep) calc(var(--t)*1%),var(--paper-2));
-  transform:scale(.35);opacity:0;transform-origin:center;
-  transition:transform .7s var(--ease-out) var(--d),opacity .7s var(--ease-out) var(--d),outline-color .2s;
-  outline:1.5px solid transparent;outline-offset:2px}
-.lens b.is-visible{transform:scale(1);opacity:1}
-.lens b.is-leaving{transform:scale(.6);opacity:0}
-.lens b:hover{outline-color:var(--cobalt);z-index:3}
-.lens b i{font-family:var(--mono);font-size:9px;font-style:normal;
-  color:var(--ink);letter-spacing:-.02em;pointer-events:none;text-align:center;
-  white-space:nowrap;overflow:hidden;max-width:calc(100% - 8px)}
-.lens .sweepline{position:absolute;top:0;bottom:0;width:64px;pointer-events:none;
-  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--cobalt) 22%,transparent),transparent);
-  animation:sweepx 2.6s linear infinite}
-.app:not([data-scan="scanning"]) .lens .sweepline{animation-play-state:paused;opacity:0}
-@keyframes sweepx{from{transform:translateX(-70px)}to{transform:translateX(760px)}}
-
-.rows{display:flex;flex-direction:column;gap:1px;font-size:13.5px}
-.rows div{display:grid;grid-template-columns:16px minmax(0,1fr) auto auto;gap:11px;align-items:center;
-  padding:8px 10px;border-radius:8px;transition:background .25s var(--ease)}
-.rows div:hover{background:var(--paper-2)}
-.rows .sw{width:9px;height:9px;border-radius:3px;background:var(--cobalt);opacity:var(--o,1)}
-.rows .pth{font-family:var(--mono);font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;
-  text-overflow:ellipsis;min-width:0}
-.rows .sz{font-family:var(--mono);font-size:12.5px;font-weight:500;font-variant-numeric:tabular-nums}
-.rows .act{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--safe);border:1px solid color-mix(in srgb,var(--safe) 40%,transparent);
-  padding:2px 7px;border-radius:99px}
-.app-foot{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:10px;
-  padding-top:12px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--ink-3)}
 .mini{padding:7px 13px;border-radius:8px;background:var(--ink);color:var(--paper);font-family:var(--sans);
   font-size:13px;font-weight:600;transition:.3s var(--ease)}
 .mini:hover{transform:translateY(-1px)}
@@ -449,36 +367,11 @@ p{margin:0}
 .mod:nth-child(7):hover::after{transform:scaleX(1)}
 
 /* ---------- findings ---------- */
-.find{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:clamp(26px,4vw,58px);align-items:start}
+.find{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:clamp(26px,4vw,58px);align-items:start}
 @media(max-width:900px){.find{grid-template-columns:1fr}}
-.tabs{display:flex;flex-wrap:wrap;gap:7px;margin-top:26px}
-.tabs button{font-family:var(--mono);font-size:12px;padding:8px 13px;border-radius:999px;
-  border:1px solid var(--line);color:var(--ink-2);background:var(--panel);transition:.3s var(--ease)}
-.tabs button:hover{border-color:var(--line-strong);transform:translateY(-1px)}
-.tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.slab{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);overflow:hidden;
-  box-shadow:var(--shadow)}
-.slab-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;
-  border-bottom:1px solid var(--line);background:var(--panel-2);font-family:var(--mono);font-size:11.5px;
-  color:var(--ink-3);letter-spacing:.04em}
-.slab-body{padding:8px}
-.fr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 14px;align-items:center;
-  padding:11px 12px;border-radius:9px;transition:background .25s;position:relative}
-.fr:hover{background:var(--paper-2)}
-.fr+.fr{border-top:1px solid var(--line)}
-.fr .nm{font-size:14.5px;font-weight:500;letter-spacing:-.01em;display:flex;align-items:center;gap:9px}
-.fr .why{grid-column:1/2;font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-top:3px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fr .amt{font-family:var(--mono);font-size:14px;font-weight:500;font-variant-numeric:tabular-nums;
-  grid-row:1/3;align-self:center}
-.tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;
-  border-radius:99px;border:1px solid var(--line-strong);color:var(--ink-3)}
-.tag.safe{color:var(--safe);border-color:color-mix(in srgb,var(--safe) 45%,transparent)}
-.tag.care{color:var(--caution);border-color:color-mix(in srgb,var(--caution) 45%,transparent)}
-.slab-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;
-  border-top:1px solid var(--line);background:var(--panel-2)}
-.total{font-family:var(--mono);font-size:13px;color:var(--ink-2)}
-.total b{font-size:18px;color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.find-cats{margin-top:0}
+.find-cats b{color:var(--ink);text-transform:uppercase;letter-spacing:.06em;font-size:12px}
+.find-cats span{font-family:inherit;font-size:14px;line-height:1.55;color:var(--ink-2)}
 
 /* ---------- health ---------- */
 .gauges{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-top:34px}
@@ -640,10 +533,6 @@ p{margin:0}
 .hero-mark:has(.is-initializing)::after{animation:hero-scan-wave 1s var(--ease-out) 1.05s 1}
 @keyframes hero-scan-wave{0%{opacity:.3;transform:scale(.35)}100%{opacity:0;transform:scale(1.8)}}
 .faq details.is-closing .ans{grid-template-rows:0fr}
-.rows div{opacity:0;transform:translateY(7px);transition:opacity .42s var(--ease-out),transform .42s var(--ease-out)}
-.rows div.is-visible{opacity:1;transform:none}
-@keyframes rowin{from{opacity:0;transform:translateY(7px)}}
-.fr{animation:rowin .45s var(--ease-out) backwards;animation-delay:var(--d,0ms)}
 .gauge .spark{stroke-dasharray:400;stroke-dashoffset:400;transition:stroke-dashoffset 1.8s var(--ease-out)}
 .gauge.in .spark{stroke-dashoffset:0}
 .term-body .l{opacity:0;animation:fade .3s forwards}
@@ -663,14 +552,6 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
   .hero .cta>a,.hero .cta>.magnetic,.hero .cta>.magnetic .btn{width:100%}
   .hero .cta .btn{justify-content:center}
   .hero-facts{max-width:100%;overflow:hidden}
-  .app{width:100%;max-width:100%;transform:none!important}
-  .app-main{padding:14px 12px 16px}
-  .app-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .app-title{display:none}
-  .app-head{align-items:flex-start;flex-direction:column;gap:2px}
-  .rows div{grid-template-columns:12px minmax(0,1fr) auto;gap:7px;padding-inline:5px}
-  .rows .act{grid-column:2/-1;justify-self:start}
-  .app-foot{align-items:flex-start;flex-direction:column}
   .hash{padding-inline:10px}
   .stage{min-height:310px;aspect-ratio:auto}
   .steps li{padding-left:52px}
@@ -686,9 +567,6 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
   .icon-btn{width:32px;height:32px}
   .switch{font-size:10px}
   .hero-mark{margin-bottom:20px}
-  .lens{height:150px}
-  .fr .nm{align-items:flex-start;flex-direction:column;gap:4px}
-  .slab-top,.slab-foot{align-items:flex-start;flex-direction:column}
 }
 </style>
 </head>
@@ -923,21 +801,26 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
     <div>
       <p class="eyebrow" data-scramble><b>04</b> <span data-fr="Trouvailles">Findings</span></p>
       <h2 data-reveal data-fr="Ce qu'une analyse remonte, et pourquoi.">What a scan surfaces, and why.</h2>
-      <p class="lead" data-reveal style="--d:100ms" data-fr="Une taille ne suffit pas à décider. Chaque ligne porte sa raison d'être là, pour que vous puissiez dire non en connaissance de cause.">A size on its own is not a decision. Every row carries the reason it was flagged, so saying no is as informed as saying yes.</p>
-      <div class="tabs" role="tablist" aria-label="Finding categories" data-aria-en="Finding categories" data-aria-fr="Catégories de résultats" id="tabs"></div>
-      <p class="hero-meta" style="--d:200ms" data-reveal data-fr="Données d'exemple. Votre analyse ne ressemblera à celle de personne d'autre.">Sample data. Your scan will look like no one else's.</p>
+      <p class="lead" data-reveal style="--d:100ms" data-fr="Une taille ne suffit pas à décider. Chaque résultat porte sa raison d'être là, classé selon ce que vous pouvez en faire.">A size on its own is not a decision. Every finding carries the reason it was flagged, sorted by what you can do with it.</p>
     </div>
-    <div class="slab" data-reveal style="--d:120ms">
-      <div class="slab-top">
-        <span id="slabPath">~/Library · 4 groups</span>
-        <span class="pill reviewed" data-fr="Sélection relue">Selection reviewed</span>
-      </div>
-      <div class="slab-body" id="findRows"></div>
-      <div class="slab-foot">
-        <span class="total"><span id="findMeasure">Found</span> <b id="findTotal">0 GB</b></span>
-        <span class="mono" style="color:var(--ink-3)" data-fr="Rien n'a été déplacé">Nothing moved yet</span>
-      </div>
-    </div>
+    <ul class="facts find-cats" data-reveal style="--d:120ms">
+      <li>
+        <b data-fr="Récupérable">Recoverable</b>
+        <span data-fr="Éléments à faible risque et réversibles : caches, données de compilation, journaux périmés. Présélectionnés pour vérification, déplacés vers la Corbeille de macOS seulement après votre confirmation.">Low-risk, reversible items — caches, derived build data, stale logs. Preselected for review, moved to the macOS Trash only after you confirm.</span>
+      </li>
+      <li>
+        <b data-fr="À vérifier">Review</b>
+        <span data-fr="Éléments de plus grande valeur ou ambigus : un installeur, un gros téléchargement, un résidu prudent. Affichés avec leur motif, jamais présélectionnés.">Higher-value or ambiguous items — an installer, a large download, a conservative leftover. Shown with their reason, never preselected.</span>
+      </li>
+      <li>
+        <b data-fr="Informatif">Informational</b>
+        <span data-fr="Du contexte qui n'est pas une action : la taille d'un dossier dans Space Lens, un niveau de signature dans Intégrité. Rien à supprimer.">Context that isn't an action — a folder's size in Space Lens, a signature tier in Integrity. Nothing to remove.</span>
+      </li>
+      <li>
+        <b data-fr="Réversible">Reversible</b>
+        <span data-fr="Chaque suppression passe par la Corbeille de macOS et le journal d'activité local. Rien ne quitte votre Mac ; rien n'est supprimé définitivement.">Every removal goes through the macOS Trash and the local activity log. Nothing leaves your Mac; nothing is deleted outright.</span>
+      </li>
+    </ul>
   </div>
 </section>
 
@@ -1148,94 +1031,6 @@ const TICKER = {
       "Emplacements système protégés","Analyses prises en charge interruptibles","Journal local"]
 };
 
-const VIEWS = {
-  storage:{
-    title:{en:"Storage",fr:"Stockage"},
-    meta:{en:"5 example findings · 3.9 GB total",fr:"5 résultats d’exemple · 3,9 Go au total"},
-    foot:{en:"Nothing has been removed.",fr:"Rien n'a été supprimé."},
-    map:[["DemoApp DerivedData",52],["Demo browser caches",26],["Demo Editor installer",13],["Demo utility logs",6],["Demo diagnostic reports",3]],
-    rows:[
-      {p:"/Users/demo/Library/Developer/Xcode/DerivedData/DemoApp-ABC123",s:"2.0 GB",o:1,t:{en:"safe",fr:"sûr"}},
-      {p:"/Users/demo/Library/Caches/com.example.demobrowser",s:"1.0 GB",o:.75,t:{en:"safe",fr:"sûr"}},
-      {p:"/Users/demo/Library/Logs/DemoUtility",s:"256 MB",o:.55,t:{en:"safe",fr:"sûr"}},
-      {p:"/Users/demo/Downloads/DemoEditor-1.2.0.dmg",s:"512 MB",o:.4,t:{en:"review",fr:"à voir"}}
-    ]},
-  lens:{
-    title:{en:"Space Lens",fr:"Space Lens"},
-    meta:{en:"Macintosh HD › Users › demo · 96 GB",fr:"Macintosh HD › Utilisateurs › demo · 96 Go"},
-    foot:{en:"Double-click a bubble to walk into it.",fr:"Double-cliquez une bulle pour y entrer."},
-    map:[["Movies",32],["Library",24],["Pictures",16],["Developer",12],["Documents",8],["Other",4]],
-    rows:[
-      {p:"/Users/demo/Movies",s:"32 GB",o:1,t:{en:"inspect",fr:"inspecter"}},
-      {p:"/Users/demo/Library",s:"24 GB",o:.7,t:{en:"inspect",fr:"inspecter"}},
-      {p:"/Users/demo/Pictures",s:"16 GB",o:.5,t:{en:"inspect",fr:"inspecter"}},
-      {p:"/Users/demo/Developer",s:"12 GB",o:.35,t:{en:"inspect",fr:"inspecter"}}
-    ]},
-  dupes:{
-    title:{en:"Duplicates",fr:"Doublons"},
-    meta:{en:"3 example groups · 624 MB reclaimable",fr:"3 groupes d’exemple · 624 Mo récupérables"},
-    foot:{en:"One copy is kept in every group.",fr:"Un exemplaire est gardé dans chaque groupe."},
-    map:[["Demo video",87],["Annual report",11],["Demo photo",2]],
-    rows:[
-      {p:"demo-sequence.mov · 2 exact copies",s:"512 MB",o:1,t:{en:"1 candidate",fr:"1 candidat"}},
-      {p:"annual-report.pdf · 4 exact copies",s:"32 MB",o:.7,t:{en:"3 candidates",fr:"3 candidats"}},
-      {p:"IMG_1001.HEIC · 3 exact copies",s:"8 MB",o:.5,t:{en:"2 candidates",fr:"2 candidats"}}
-    ]},
-  apps:{
-    title:{en:"Applications",fr:"Applications"},
-    meta:{en:"2 example apps · 1 conservative leftover",fr:"2 apps d’exemple · 1 résidu prudent"},
-    foot:{en:"Residue is listed per app, never guessed.",fr:"Les résidus sont listés par app, jamais devinés."},
-    map:[["Demo Editor",76],["Archive Tool",16],["Retired Tool leftover",8]],
-    rows:[
-      {p:"Demo Editor · app and exact associated items",s:"896 MB",o:1,t:{en:"installed",fr:"installée"}},
-      {p:"Archive Tool · app and exact associated items",s:"192 MB",o:.7,t:{en:"installed",fr:"installée"}},
-      {p:"com.example.retiredtool",s:"96 MB",o:.5,t:{en:"review",fr:"à vérifier"}}
-    ]},
-  integrity:{
-    title:{en:"Integrity",fr:"Intégrité"},
-    meta:{en:"Signals only — not malware detection",fr:"Signaux seuls — pas de détection de malware"},
-    foot:{en:"Example data · notarization not inspected",fr:"Données d’exemple · notarisation non inspectée"},
-    map:[["DemoEditor DMG",89],["Example assets",11]],
-    rows:[
-      {p:"DemoEditor-1.2.0.dmg · Demo Browser",s:"512 MB",o:1,t:{en:"quarantined",fr:"quarantaine"}},
-      {p:"example-assets.zip",s:"64 MB",o:.7,t:{en:"no quarantine",fr:"sans quarantaine"}},
-      {p:"Demo Editor · valid team signature",s:"1 app",o:.5,t:{en:"signature",fr:"signature"}},
-      {p:"com.example.demoutility",s:"1 item",o:.35,t:{en:"login item",fr:"ouverture"}}
-    ]},
-  activity:{
-    title:{en:"Activity",fr:"Activité"},
-    meta:{en:"3 example records · local aggregate history",fr:"3 entrées d’exemple · historique local agrégé"},
-    foot:{en:"Stored on this Mac only.",fr:"Conservé sur ce Mac uniquement."},
-    map:[["Storage scan",49],["Storage review",43],["Duplicates to Trash",8]],
-    rows:[
-      {p:"Example · Storage scan",s:"3.9 GB",o:1,t:{en:"scanned",fr:"analysé"}},
-      {p:"Example · Storage cleanup",s:"3.4 GB",o:.7,t:{en:"moved",fr:"déplacé"}},
-      {p:"Example · Duplicates moved to Trash",s:"624 MB",o:.5,t:{en:"trashed",fr:"corbeille"}}
-    ]}
-};
-
-const FIND = {
-  cats:[
-    {id:"storage", label:{en:"Storage",fr:"Stockage"}, total:{en:"3.9 GB",fr:"3,9 Go"}, measure:{en:"Found",fr:"Trouvé"}, path:"/Users/demo · example fixture",
-     rows:[
-      {n:{en:"DemoApp DerivedData",fr:"DerivedData de DemoApp"},w:{en:"Low-risk example, preselected for review",fr:"Exemple à faible risque, présélectionné pour vérification"},a:"2.0 GB",g:"safe"},
-      {n:{en:"Demo browser caches",fr:"Caches du navigateur de démo"},w:{en:"Exact example path under /Users/demo",fr:"Chemin d’exemple exact sous /Users/demo"},a:"1.0 GB",g:"safe"},
-      {n:{en:"Demo utility logs",fr:"Journaux de l’utilitaire de démo"},w:{en:"Example local logs",fr:"Journaux locaux d’exemple"},a:"256 MB",g:"safe"},
-      {n:{en:"Demo Editor installer",fr:"Installeur Demo Editor"},w:{en:"Medium-risk example, not preselected",fr:"Exemple à risque moyen, non présélectionné"},a:"512 MB",g:"care"}
-     ]},
-    {id:"dupes", label:{en:"Duplicates",fr:"Doublons"}, total:{en:"624 MB",fr:"624 Mo"}, measure:{en:"Reclaimable",fr:"Récupérable"}, path:"3 example groups · exact content match",
-     rows:[
-      {n:{en:"demo-sequence.mov",fr:"demo-sequence.mov"},w:{en:"Two exact copies, one keeper",fr:"Deux copies exactes, un exemplaire conservé"},a:"512 MB",g:"safe"},
-      {n:{en:"annual-report.pdf",fr:"annual-report.pdf"},w:{en:"Four exact copies, one keeper",fr:"Quatre copies exactes, un exemplaire conservé"},a:"96 MB",g:"safe"},
-      {n:{en:"IMG_1001.HEIC",fr:"IMG_1001.HEIC"},w:{en:"Three exact copies, one keeper",fr:"Trois copies exactes, un exemplaire conservé"},a:"16 MB",g:"safe"}
-     ]},
-    {id:"apps", label:{en:"Applications",fr:"Applications"}, total:{en:"96 MB",fr:"96 Mo"}, measure:{en:"Review",fr:"À vérifier"}, path:"1 conservative example leftover",
-     rows:[
-      {n:{en:"com.example.retiredtool",fr:"com.example.retiredtool"},w:{en:"Bundle-ID match, never preselected",fr:"Correspondance par bundle ID, jamais présélectionnée"},a:"96 MB",g:"care"}
-     ]}
-  ]
-};
-
 const TERM = {
   en:[
     {c:"d",t:"# source audit · v@@CORETEND_RELEASE_VERSION@@"},
@@ -1356,43 +1151,6 @@ function logos() {
     else if (state === "complete" || state === "cancelled") setRate(record,.22,600);
     else setRate(record,1.85,260);
   };
-}
-
-/* radial "point of focus" packing — the largest item dead centre, the rest
-   orbiting it on a golden-angle spiral, area proportional to weight. Mirrors
-   RadialPack in the app. Coordinates are pixels within the given box. */
-function bubblePack(items, W, H) {
-  if (!items.length || W < 8 || H < 8) return [];
-  const maxW = Math.max(items[0][1], 1);
-  const shortSide = Math.min(W, H);
-  // r is the DIAMETER. Kept modest so several fit a wide, short box.
-  const maxR = shortSide * 0.52, minR = shortSide * 0.15, gap = shortSide * 0.035;
-  const cx = W / 2, cy = H / 2;
-  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-  const placed = [];
-  items.forEach((it, idx) => {
-    const r = Math.max(minR, Math.min(maxR, Math.sqrt(it[1] / maxW) * maxR));
-    if (idx === 0) { placed.push({l: it[0], cx, cy, r}); return; }
-    let ang = idx * 2.399963, dist = (placed[0].r + r) / 2 + gap, best = null;
-    for (let step = 0; step < 240; step++) {
-      const px = cx + Math.cos(ang) * dist, py = cy + Math.sin(ang) * dist;
-      const clears = placed.every(p => Math.hypot(p.cx - px, p.cy - py) >= (p.r + r) / 2 + gap);
-      if (clears) {
-        // keep the closest-to-centre spot that clears, even if it overflows a little
-        const d = Math.hypot(px - cx, py - cy);
-        if (!best || d < best.d) best = {px, py, d};
-        if (px - r / 2 >= -r * 0.15 && px + r / 2 <= W + r * 0.15 &&
-            py - r / 2 >= -r * 0.15 && py + r / 2 <= H + r * 0.15) {
-          placed.push({l: it[0], cx: px, cy: py, r}); return;
-        }
-      }
-      ang += 0.33; dist += shortSide * 0.02;
-    }
-    const px = best ? best.px : cx + Math.cos(ang) * ((placed[0].r + r) / 2 + gap);
-    const py = best ? best.py : cy + Math.sin(ang) * ((placed[0].r + r) / 2 + gap);
-    placed.push({l: it[0], cx: clamp(px, r / 2, W - r / 2), cy: clamp(py, r / 2, H - r / 2), r});
-  });
-  return placed;
 }
 
 /* ─── ambient canvas ─────────────────────────────────────── */
@@ -1614,102 +1372,6 @@ function ticker() {
   el.innerHTML = ul() + ul();
 }
 
-/* ─── hero app demo ──────────────────────────────────────── */
-let demoTimer = null, demoRAF = 0;
-const demoState = {view:"storage",status:"idle",progress:0,last:0,auto:true};
-function demoLabel(en, fr) { return lang() === "fr" ? fr : en; }
-function demo(view = "storage", auto = true) {
-  if (!$("#app")) return;              // hero is a static screenshot now
-  const v = VIEWS[view]; if (!v) return;
-  cancelAnimationFrame(demoRAF); clearTimeout(demoTimer);
-  Object.assign(demoState,{view,status:"scanning",progress:0,last:performance.now(),auto});
-  $("#app").dataset.scan = "scanning";
-  window.CoreTendLogoState?.("scanning");
-  $("#vTitle").textContent  = pick(v.title);
-  $("#vMeta").textContent   = pick(v.meta);
-  $("#vFoot").textContent   = demoLabel("Scanning example data…","Analyse des données d’exemple…");
-  $("#scanToggle").textContent = demoLabel("Pause","Pause");
-  $("#scanCancel").textContent = demoLabel("Cancel","Annuler");
-  $("#scanCancel").disabled = false;
-  $$("#side button").forEach(b => {
-    const active = b.dataset.view === view;
-    b.classList.toggle("on", active);
-    b.setAttribute("aria-pressed", String(active));
-  });
-
-  const lens = $("#lens");
-  lens.querySelectorAll("b").forEach(n => n.remove());
-  const LW = lens.clientWidth || 320, LH = lens.clientHeight || 174;
-  bubblePack(v.map, LW, LH).forEach((c, i) => {
-    const b = document.createElement("b");
-    b.style.cssText = `--cx:${c.cx.toFixed(1)}px;--cy:${c.cy.toFixed(1)}px;--r:${c.r.toFixed(1)}px;--t:${18 + (v.map.length-i)*7}`;
-    if (c.r > 42) b.innerHTML = `<i>${c.l}</i>`;
-    b.title = c.l;
-    lens.appendChild(b);
-  });
-
-  $("#vRows").innerHTML = v.rows.map((r, i) =>
-    `<div><span class="sw" style="--o:${r.o}"></span>` +
-    `<span class="pth">${r.p}</span><span class="sz">${r.s}</span>` +
-    `<span class="act">${pick(r.t)}</span></div>`).join("");
-
-  const tr = $("#vTrack");
-  tr.style.width = "0%";
-  const blocks = $$("b",lens), rows = $$("#vRows > div");
-
-  const finish = () => {
-    demoState.status = "complete";
-    $("#app").dataset.scan = "complete";
-    tr.style.width = "100%";
-    blocks.forEach(block => block.classList.add("is-visible"));
-    rows.forEach(row => row.classList.add("is-visible"));
-    $("#vFoot").textContent = pick(v.foot);
-    $("#scanToggle").textContent = demoLabel("Restart","Recommencer");
-    $("#scanCancel").disabled = true;
-    window.CoreTendLogoState?.("complete");
-    if (demoState.auto && !RM.matches) {
-      const keys = Object.keys(VIEWS), next = keys[(keys.indexOf(view)+1) % keys.length];
-      demoTimer = setTimeout(() => demo(next,true),1800);
-    }
-  };
-
-  if (RM.matches) { demoState.progress = 1; finish(); return; }
-  const frame = now => {
-    if (demoState.status !== "scanning") return;
-    const delta = Math.min(48,now-demoState.last); demoState.last = now;
-    demoState.progress = clamp(demoState.progress + delta/4200,0,1);
-    const pct = demoState.progress * 100;
-    tr.style.width = `${pct.toFixed(1)}%`;
-    blocks.forEach((block,index) => block.classList.toggle("is-visible",pct >= 8 + index*(68/Math.max(1,blocks.length-1))));
-    rows.forEach((row,index) => row.classList.toggle("is-visible",pct >= 35 + index*(48/Math.max(1,rows.length-1))));
-    $("#vFoot").textContent = demoLabel(
-      `Scanning example data · ${Math.round(pct)}%`,
-      `Analyse des données d’exemple · ${Math.round(pct)} %`
-    );
-    if (demoState.progress >= 1) finish();
-    else demoRAF = requestAnimationFrame(frame);
-  };
-  demoRAF = requestAnimationFrame(frame);
-}
-
-/* ─── findings ───────────────────────────────────────────── */
-function findings(active = "storage") {
-  const tabs = $("#tabs"), rows = $("#findRows");
-  tabs.innerHTML = FIND.cats.map(c =>
-    `<button role="tab" type="button" data-cat="${c.id}" aria-selected="${c.id === active}" tabindex="${c.id === active ? "0" : "-1"}">${pick(c.label)}</button>`).join("");
-  const cat = FIND.cats.find(c => c.id === active);
-  $("#slabPath").textContent = cat.path;
-  $("#findMeasure").textContent = pick(cat.measure);
-  rows.innerHTML = cat.rows.map((r, i) =>
-    `<div class="fr" style="--d:${i*70}ms"><div><div class="nm">${pick(r.n)}` +
-    `<span class="tag ${r.g}">${r.g === "safe" ? (lang()==="fr"?"sûr":"safe") : (lang()==="fr"?"à vérifier":"review")}</span></div>` +
-    `<div class="why">${pick(r.w)}</div></div><div class="amt">${r.a}</div></div>`).join("");
-  const t = $("#findTotal");
-  t.textContent = pick(cat.total);
-  t.animate?.([{opacity:0, transform:"translateY(6px)"},{opacity:1, transform:"none"}], {duration:400, easing:"ease-out"});
-  $$("#tabs button").forEach(b => b.onclick = () => findings(b.dataset.cat));
-}
-
 /* ─── terminal ───────────────────────────────────────────── */
 let termTimer = null;
 function terminal() {
@@ -1821,7 +1483,6 @@ function i18n() {
       try { localStorage.setItem("coretend-language", to); } catch (_) {}
       try {
         sessionStorage.setItem("coretend-scroll", String(Math.round(scrollY)));
-        sessionStorage.setItem("coretend-view", demoState.view);
       } catch (_) {}
       const hash = location.hash || "";
       document.body.classList.add("is-changing-language");
@@ -1982,91 +1643,13 @@ function spaceLens() {
 /* ─── boot ───────────────────────────────────────────────── */
 splitHeadline();
 logos(); field(); scrollSystems(); observers(); pointer(); ticker();
-let restoredView = "storage";
-try { restoredView = Object.keys(VIEWS).includes(sessionStorage.getItem("coretend-view")) ? sessionStorage.getItem("coretend-view") : "storage"; } catch (_) {}
-demo(restoredView); findings("storage"); terminal(); gatekeeper(); faq(); theme(); i18n(); spaceLens();
+terminal(); gatekeeper(); faq(); theme(); i18n(); spaceLens();
 try {
   const savedScroll = Number(sessionStorage.getItem("coretend-scroll"));
   if (Number.isFinite(savedScroll) && savedScroll > 0) {
-    requestAnimationFrame(() => { scrollTo({top:savedScroll,behavior:"auto"}); sessionStorage.removeItem("coretend-scroll"); sessionStorage.removeItem("coretend-view"); });
+    requestAnimationFrame(() => { scrollTo({top:savedScroll,behavior:"auto"}); sessionStorage.removeItem("coretend-scroll"); });
   }
 } catch (_) {}
-
-$$("#side button").forEach(b => b.addEventListener("click", () => {
-  demo(b.dataset.view,true);
-}));
-
-$("#tabs")?.addEventListener("keydown", event => {
-  const tabs = $$('#tabs [role="tab"]');
-  if (!tabs.length || !["ArrowRight","ArrowDown","ArrowLeft","ArrowUp","Home","End"].includes(event.key)) return;
-  event.preventDefault();
-  const current = tabs.indexOf(document.activeElement);
-  const next = event.key === "Home" ? 0
-    : event.key === "End" ? tabs.length - 1
-    : (current + (event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : -1) + tabs.length) % tabs.length;
-  const nextCategory = tabs[next].dataset.cat;
-  findings(nextCategory);
-  $(`#tabs [data-cat="${nextCategory}"]`)?.focus();
-});
-
-$("#scanToggle")?.addEventListener("click",() => {
-  if (demoState.status === "complete" || demoState.status === "cancelled") {
-    demo(demoState.view,demoState.auto); return;
-  }
-  if (demoState.status === "paused") {
-    demoState.status = "scanning"; demoState.last = performance.now();
-    $("#app").dataset.scan = "scanning";
-    $("#scanToggle").textContent = demoLabel("Pause","Pause");
-    $("#vFoot").textContent = demoLabel("Resuming at the same point…","Reprise au même point…");
-    window.CoreTendLogoState?.("scanning");
-    const resume = now => {
-      if (demoState.status !== "scanning") return;
-      const delta = Math.min(48,now-demoState.last); demoState.last = now;
-      demoState.progress = clamp(demoState.progress + delta/4200,0,1);
-      const pct = demoState.progress * 100, v = VIEWS[demoState.view];
-      $("#vTrack").style.width = `${pct.toFixed(1)}%`;
-      $$("#lens b").forEach((block,index,all) => block.classList.toggle("is-visible",pct >= 8 + index*(68/Math.max(1,all.length-1))));
-      $$("#vRows > div").forEach((row,index,all) => row.classList.toggle("is-visible",pct >= 35 + index*(48/Math.max(1,all.length-1))));
-      $("#vFoot").textContent = demoLabel(`Scanning example data · ${Math.round(pct)}%`,`Analyse des données d’exemple · ${Math.round(pct)} %`);
-      if (demoState.progress >= 1) {
-        demoState.status = "complete";
-        $("#app").dataset.scan = "complete";
-        $("#vTrack").style.width = "100%";
-        $$("#lens b,#vRows > div").forEach(item => item.classList.add("is-visible"));
-        $("#vFoot").textContent = pick(v.foot);
-        $("#scanToggle").textContent = demoLabel("Restart","Recommencer");
-        $("#scanCancel").disabled = true;
-        window.CoreTendLogoState?.("complete");
-        if (demoState.auto) {
-          const keys = Object.keys(VIEWS), next = keys[(keys.indexOf(demoState.view)+1)%keys.length];
-          demoTimer = setTimeout(() => demo(next,true),1800);
-        }
-      } else demoRAF = requestAnimationFrame(resume);
-    };
-    demoRAF = requestAnimationFrame(resume);
-  } else {
-    demoState.status = "paused"; cancelAnimationFrame(demoRAF);
-    $("#app").dataset.scan = "paused";
-    $("#scanToggle").textContent = demoLabel("Resume","Reprendre");
-    $("#vFoot").textContent = demoLabel(`Paused at ${Math.round(demoState.progress*100)}%`,`En pause à ${Math.round(demoState.progress*100)} %`);
-    window.CoreTendLogoState?.("paused");
-  }
-});
-
-$("#scanCancel")?.addEventListener("click",() => {
-  if (demoState.status === "complete" || demoState.status === "cancelled") return;
-  cancelAnimationFrame(demoRAF); clearTimeout(demoTimer);
-  demoState.status = "cancelled"; demoState.auto = false;
-  $("#app").dataset.scan = "cancelled";
-  $("#scanToggle").textContent = demoLabel("Restart","Recommencer");
-  $("#scanCancel").disabled = true;
-  $("#vFoot").textContent = demoLabel("Scan cancelled. Nothing was removed.","Analyse annulée. Rien n’a été supprimé.");
-  window.CoreTendLogoState?.("cancelled");
-});
-
-document.addEventListener("visibilitychange",() => {
-  if (!document.hidden && demoState.status === "scanning") demoState.last = performance.now();
-});
 
 $$('a[href^="#"]').forEach(a => a.addEventListener("click", e => {
   const t = $(a.getAttribute("href"));

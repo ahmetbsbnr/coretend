@@ -209,6 +209,78 @@ test("reduced-motion styles exist for the new surfaces", () => {
   assert.match(read("assets/shell/public.css"), /prefers-reduced-motion/);
 });
 
+// --- #findings: no generative product UI ---------------------------------
+
+test("#findings is editorial, not a simulated app window", () => {
+  const src = readFileSync(join(SITE, "index.html"), "utf8");
+  const t = read("index.html");
+  // section kept for its conceptual purpose
+  assert.match(t, /<section id="findings">/);
+  assert.match(t, /id="findings"/); // rail link target still valid
+  // the simulated-window slab and its parts are gone
+  for (const bad of ['class="slab"', 'class="slab-top"', 'class="slab-body"',
+                     'class="slab-foot"', 'id="slabPath"', 'id="findRows"',
+                     'id="findTotal"', 'id="findMeasure"', 'id="tabs"',
+                     'class="fr"', 'class="pill reviewed"']) {
+    assert.ok(!src.includes(bad), `#findings still ships ${bad}`);
+    assert.ok(!t.includes(bad), `built page still ships ${bad}`);
+  }
+  // the replacement uses ordinary site typography
+  const section = t.slice(t.indexOf('id="findings"'), t.indexOf('id="health"'));
+  assert.match(section, /class="facts find-cats"/);
+  assert.match(section, /Recoverable/);
+  assert.match(section, /Reversible/);
+  assert.match(section, /macOS Trash/);
+});
+
+test("no synthetic finding / recoverable-bytes generator remains", () => {
+  const src = readFileSync(join(SITE, "index.html"), "utf8");
+  for (const dead of ["function demo(", "function findings(", "function bubblePack(",
+                      "const VIEWS =", "const FIND =", "demoState", "demoLabel",
+                      "demoTimer", "demoRAF", "#slabPath", "#findRows", "#findTotal",
+                      '#tabs"', "#app", "#vRows", "#vFoot", "#scanToggle", "#scanCancel",
+                      '"coretend-view"']) {
+    assert.ok(!src.includes(dead), `dead demo code still present: ${dead}`);
+  }
+  const js = read(join("assets/generated", readdirSync(join(OUT, "assets/generated"))
+    .find((f) => /^root-\d+-.*\.js$/.test(f))));
+  for (const dead of ["function demo(", "function findings(", "function bubblePack(",
+                      "VIEWS", "demoState"]) {
+    assert.ok(!js.includes(dead), `dead demo code in generated JS: ${dead}`);
+  }
+});
+
+test("no dead .app/.lens/.rows/.slab/.tabs/.tag CSS rules remain", () => {
+  const genCss = read(join("assets/generated", readdirSync(join(OUT, "assets/generated"))
+    .find((f) => /^root-\d+-.*\.css$/.test(f))));
+  for (const sel of [".app-side", ".app-main", ".app-body", ".app-foot", ".app-top",
+                     ".lens b", ".rows div", ".slab-top", ".slab-foot", ".fr .nm",
+                     "@keyframes rowin", "@keyframes sweepx", "@keyframes confirmation-pulse",
+                     ".pill.reviewed", ".sample-label"]) {
+    assert.ok(!genCss.includes(sel), `dead CSS rule still present: ${sel}`);
+  }
+  // shared classes that must survive
+  assert.match(genCss, /\.dots\b/);
+  assert.match(genCss, /\.mini\b/);
+});
+
+test("#findings keeps EN/FR parity (every string translatable)", () => {
+  const src = readFileSync(join(SITE, "index.html"), "utf8");
+  const section = src.slice(src.indexOf('<section id="findings">'),
+                            src.indexOf("</section>", src.indexOf('id="findings"')));
+  // every attribute-less <b>/<span> with prose (not a bare section number)
+  // must carry data-fr — i.e. it should have an attribute
+  const textEls = (section.match(/<(b|span)>[^<]+<\/(b|span)>/g) || [])
+    .filter((el) => !/^<(b|span)>\s*\d+\s*<\/(b|span)>$/.test(el));
+  assert.ok(textEls.length === 0, `#findings has untranslated inline text: ${textEls.join(" | ")}`);
+  assert.ok((section.match(/data-fr="/g) || []).length >= 8, "expected >= 8 data-fr strings");
+  // FR build actually swaps them
+  const fr = read("fr-route.html");
+  const frSection = fr.slice(fr.indexOf('id="findings"'), fr.indexOf('id="health"'));
+  assert.match(frSection, /Récupérable/);
+  assert.match(frSection, /Réversible/);
+});
+
 test("mobile navigation exists with correct ARIA on info pages", () => {
   const t = read("contact.html");
   assert.match(t, /id="navToggle"[^>]+aria-expanded="false"/);
