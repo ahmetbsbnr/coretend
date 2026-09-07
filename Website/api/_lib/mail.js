@@ -20,7 +20,11 @@ const ADDRESSES = {
   contact: "contact@ahmetbsbnr.com",
   support: "support@ahmetbsbnr.com",
   feedback: "feedback@ahmetbsbnr.com",
-  community: "community@ahmetbsbnr.com",
+  // `community@` is not provisioned as a forwarding alias at the mail provider,
+  // so moderation notices to it bounce ("recipient not found"). Route them to
+  // the monitored `contact@` inbox — which the deployment doc already names as
+  // the routing target — until the alias exists. Override via COMMUNITY_INBOX.
+  community: process.env.COMMUNITY_INBOX || "contact@ahmetbsbnr.com",
   security: "security@ahmetbsbnr.com",
   privacy: "privacy@ahmetbsbnr.com",
   noreply: "noreply@ahmetbsbnr.com",
