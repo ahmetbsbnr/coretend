@@ -32,7 +32,7 @@ let package = Package(
         ),
         .target(
             name: "CoreTendApp",
-            dependencies: ["ScanCore", "SafetyCore", "FileRules", "DesignSystem", "Persistence", "SystemMetrics", "AppDiscovery", "IntegrityCore"],
+            dependencies: ["ScanCore", "SafetyCore", "FileRules", "DesignSystem", "Persistence", "SystemMetrics", "AppDiscovery", "IntegrityCore", "DeepScanCore"],
             resources: [.process("Resources")]
         ),
         .target(name: "Persistence", dependencies: ["SafetyCore"]),
@@ -55,7 +55,7 @@ let package = Package(
         .testTarget(name: "ScanCoreTests", dependencies: ["ScanCore", .product(name: "Testing", package: "swift-testing")]),
         .testTarget(name: "SafetyCoreTests", dependencies: ["SafetyCore", .product(name: "Testing", package: "swift-testing")]),
         .testTarget(name: "FileRulesTests", dependencies: ["FileRules", .product(name: "Testing", package: "swift-testing")]),
-        .testTarget(name: "CoreTendAppTests", dependencies: ["CoreTendApp", .product(name: "Testing", package: "swift-testing")]),
+        .testTarget(name: "CoreTendAppTests", dependencies: ["CoreTendApp", "DeepScanCore", .product(name: "Testing", package: "swift-testing")]),
         .testTarget(name: "CoreTendIntegrationTests", dependencies: ["CoreTendApp", "ScanCore", "SafetyCore", "Persistence", .product(name: "Testing", package: "swift-testing")]),
         .testTarget(name: "CoreTendUITests", dependencies: []),
         .testTarget(name: "CoreTendAccessibilityTests", dependencies: ["CoreTendApp", .product(name: "Testing", package: "swift-testing")]),

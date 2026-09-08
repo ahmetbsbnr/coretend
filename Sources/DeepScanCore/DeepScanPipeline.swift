@@ -105,7 +105,7 @@ public struct DeepScanPipeline: Sendable {
 
     /// Best-effort snapshot of running processes. Executable paths come from
     /// `ps`; bundle IDs are derived from any `.app` component in the path.
-    static func runningProcesses() -> (bundleIDs: Set<String>, paths: Set<String>) {
+    public static func runningProcesses() -> (bundleIDs: Set<String>, paths: Set<String>) {
         let p = Process()
         p.executableURL = URL(fileURLWithPath: "/bin/ps")
         p.arguments = ["-axo", "comm="]
