@@ -20,16 +20,48 @@ import SafetyCore
 
 // MARK: - Feature gate
 
-/// Deep Scan execution is not enabled for normal production users yet.
-/// Flip only in controlled QA. There is deliberately no persisted setting and
-/// no UI switch that turns this on for end users.
+/// Deep Scan execution is not enabled for normal production users.
+///
+/// It is turned on ONLY by a build/release configuration — never as an
+/// unconditional source constant and never through a user-facing setting:
+///
+///   * development / default source:  OFF  (`isEnabled == false`, no flag)
+///   * automated tests / QA:          `CORETEND_DEEPSCAN_EXEC=1` in the env,
+///                                    or a test setting `isEnabled = true`
+///   * v1.2.0-beta.1 build:           compiled with `-D DEEPSCAN_BETA_EXECUTION`
+///                                    (see `beta:execution` in package-local.sh
+///                                    and Documentation/DeepScan/EXECUTION_SAFETY.md)
+///   * future stable build:           requires a separate maintainer decision;
+///                                    do NOT add `-D DEEPSCAN_BETA_EXECUTION`
+///                                    to the stable packaging path without it.
+///
+/// With the gate on, execution is still confined to `ExecutableSubsetPolicy`
+/// (developer build output, aged temp, AI runtime/temp/update-payload at
+/// risk `safe` + confidence ≥ `strong`), and nothing is ever pre-selected
+/// (`DefaultSelectionPolicy.preselectionEnabled == false`).
 public enum DeepScanExecutionGate {
-    /// Process-wide opt-in. Default: disabled.
+    /// Test / QA override. Not read by any production code path other than
+    /// `isEnabledResolved`. Default: disabled.
     nonisolated(unsafe) public static var isEnabled = false
 
-    /// Env-var escape hatch for automated QA (`CORETEND_DEEPSCAN_EXEC=1`).
+    /// True when the current build/run is permitted to execute the SAFE
+    /// subset. The compile-time flag is the beta channel's switch; the env
+    /// var and `isEnabled` are for tests and controlled QA only.
     public static var isEnabledResolved: Bool {
-        isEnabled || ProcessInfo.processInfo.environment["CORETEND_DEEPSCAN_EXEC"] == "1"
+        #if DEEPSCAN_BETA_EXECUTION
+        return true
+        #else
+        return isEnabled || ProcessInfo.processInfo.environment["CORETEND_DEEPSCAN_EXEC"] == "1"
+        #endif
+    }
+
+    /// Whether this binary was compiled for the beta execution channel.
+    public static var isBetaExecutionBuild: Bool {
+        #if DEEPSCAN_BETA_EXECUTION
+        return true
+        #else
+        return false
+        #endif
     }
 }
 

@@ -68,15 +68,17 @@ orphaned-leftover detector by design.
 - The entry-screen banner is shown **before** the user starts a scan so the
   expectation is set up front.
 
-## Beta-hardening phase — real toggle QA status
+## Real toggle QA — MAINTAINER VERIFIED (v1.2.0-beta.1 prep)
 
-**Not performed.** Toggling Full Disk Access for CoreTend.app in System
-Settings › Privacy & Security is a security-settings change and was not made
-autonomously; the CoreTend app was also not launched interactively this phase
-(computer-use was held by another session). The observations above are from
-the **read-only headless run** (`DeepScanQA`), whose reported state on this
-machine is **Partial Access** (Terminal has no FDA), with 9 permission-denied
-nodes and the Apple-daemon cache `deniedRoots` listed.
+The maintainer toggled Full Disk Access for CoreTend.app in System Settings
+and reported the **OFF / ON behaviour is truthful**: with FDA off the app
+shows Partial Access and does not present a partial scan as complete; with FDA
+granted the coverage widens truthfully and no stale Partial banner remains.
+Recorded from the maintainer's acceptance summary; Claude did not observe the
+toggle.
+
+The headless observations below (Claude, read-only) remain the recorded
+baseline for the OFF state on this machine.
 
 What was verified in code / headless:
 

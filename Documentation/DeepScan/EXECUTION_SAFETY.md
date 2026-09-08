@@ -24,13 +24,25 @@ except SafetyCenter's own temp-path fallback, and no detector-owned deletion.
 
 ## Stage 0 — feature gate (`DeepScanExecutionGate`)
 
-- `isEnabled` is a process-wide `Bool`, **default `false`**.
-- Env override `CORETEND_DEEPSCAN_EXEC=1` for controlled QA only.
+`isEnabledResolved` is what the executor checks. It is decided by the **build
+configuration**, never by an unconditional source constant and never by a
+user-facing setting:
+
+| Build / run | How the gate resolves | Result |
+|---|---|---|
+| development / default source | `isEnabled == false`, no flag, env unset | **OFF** |
+| automated tests / controlled QA | `CORETEND_DEEPSCAN_EXEC=1` in the env, or a test sets `isEnabled = true` | ON for that run only |
+| **v1.2.0-beta.1 build** | compiled with **`-D DEEPSCAN_BETA_EXECUTION`** (applied by `CORETEND_SWIFT_BUILD_FLAGS='-Xswiftc -DDEEPSCAN_BETA_EXECUTION' Scripts/package-local.sh`) | **ON** (for the SAFE subset only) |
+| future stable build | no flag unless a maintainer adds it deliberately | **OFF** |
+
 - Gate off ⇒ `DeepScanExecutor.execute` returns immediately: `gated == true`,
-  `executed == []`, every candidate listed as skipped at stage `"gate"`.
-- The GUI shows "Cleanup execution is disabled in this build" and the
-  Move-to-Trash button is disabled.
-- **Normal CoreTend builds ship with the gate off.**
+  `executed == []`, every candidate skipped at stage `"gate"`; the GUI shows
+  "Cleanup execution is disabled in this build" and disables Move-to-Trash.
+- `DeepScanExecutionGate.isBetaExecutionBuild` reports whether the binary was
+  compiled for the beta channel.
+- Turning the gate on does **not** broaden categories or enable preselection —
+  Stages 1–3 below are unchanged, and
+  `DefaultSelectionPolicy.preselectionEnabled` stays `false` in every build.
 
 ## Stage 1 — executable subset (`ExecutableSubsetPolicy`, spec §18)
 

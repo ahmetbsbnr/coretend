@@ -592,6 +592,9 @@ private func candidate(path: String, risk: RiskClass = .safe,
 // MARK: - Execution wiring (§17/§18/§19/§27)
 
 @Test func executionGateOffSkipsEverything() async {
+    // A build compiled for the beta execution channel legitimately has the
+    // gate on; this test only covers the default (development/test) build.
+    guard !DeepScanExecutionGate.isBetaExecutionBuild else { return }
     let t = TempTree(); defer { t.cleanup() }
     let f = t.file("app/.next/build.bin", bytes: 16)
     DeepScanExecutionGate.isEnabled = false
@@ -602,6 +605,22 @@ private func candidate(path: String, risk: RiskClass = .safe,
     #expect(report.executed.isEmpty)
     #expect(report.skipped.allSatisfy { $0.stage == "gate" })
     #expect(FileManager.default.fileExists(atPath: f.path))   // untouched
+}
+
+@Test func executionGateResolutionMatchesBuildConfig() {
+    // Default build: gate resolves from `isEnabled` / env only, not on by itself.
+    if DeepScanExecutionGate.isBetaExecutionBuild {
+        #expect(DeepScanExecutionGate.isEnabledResolved)   // beta channel: always on
+    } else {
+        DeepScanExecutionGate.isEnabled = false
+        // (env var CORETEND_DEEPSCAN_EXEC is not set in the test runner)
+        #expect(DeepScanExecutionGate.isEnabledResolved == false)
+        DeepScanExecutionGate.isEnabled = true
+        #expect(DeepScanExecutionGate.isEnabledResolved)
+        DeepScanExecutionGate.isEnabled = false
+    }
+    // Preselection stays off regardless of the execution channel.
+    #expect(DefaultSelectionPolicy.preselectionEnabled == false)
 }
 
 @Test func executableSubsetRejectsOutOfScopeCandidates() {

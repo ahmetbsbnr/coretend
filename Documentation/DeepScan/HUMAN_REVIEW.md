@@ -4,7 +4,42 @@ Honest record of what was and was not verified. No fabricated manual QA.
 
 ---
 
-## Interactive GUI acceptance gate — attempt log
+## Interactive GUI acceptance — MAINTAINER VERIFIED (v1.2.0-beta.1 prep)
+
+The maintainer performed the interactive acceptance review on real
+CoreTend.app and reported the following as acceptable / working. Recorded here
+verbatim from the maintainer's report — Claude did not observe these directly.
+
+| Item | Status |
+|---|---|
+| Real app launch, Deep Scan reachable from navigation | **VERIFIED** |
+| Light / dark UI | **VERIFIED** (acceptable) |
+| Window resize | **VERIFIED** (acceptable) |
+| Keyboard interaction | **VERIFIED** (acceptable) |
+| VoiceOver spot-check | **VERIFIED** (acceptable) |
+| Full Disk Access OFF / ON behaviour truthful | **VERIFIED** |
+| Pause / Resume / Cancel (interactive) | **VERIFIED** |
+| AI / LLM classifications look correct | **VERIFIED** |
+| Git classifications look correct | **VERIFIED** |
+| Cleanup Plan | **VERIFIED** |
+| Controlled GUI cleanup | **VERIFIED** |
+| SafetyCenter / PathValidator / Trash / Journal | **VERIFIED** |
+| Restore Center restores the disposable fixture | **VERIFIED** |
+| State-change protection behaves correctly | **VERIFIED** |
+| French UI | **VERIFIED** (acceptable) |
+| Critical GUI blocker | **NONE FOUND** |
+
+The maintainer approved the conservative beta policy on the basis of this
+review. The primary remaining blocker from the previous phase (GUI Trash →
+Restore round trip) is therefore **closed**.
+
+Not separately attested by the maintainer's summary, still open: exhaustive
+per-screen visual pass of every empty/error/partial state, and a screen-reader
+audit beyond the spot-check (full accessibility certification is not claimed).
+
+---
+
+## Interactive GUI acceptance gate — earlier attempt log (Claude)
 
 **App build under review:** `feat/deep-scan-cleanup-v1.2` @ `c66… (see git log; HEAD at time of this run)`, debug + release both clean, 398 tests passing.
 

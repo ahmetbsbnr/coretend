@@ -13,8 +13,8 @@
     "generatedBy"
   ],
   "product": "CoreTend",
-  "channel": "stable",
-  "prerelease": false,
+  "channel": "beta",
+  "prerelease": true,
   "architecture": "arm64",
   "minimumMacOS": "14.0",
   "signed": false,

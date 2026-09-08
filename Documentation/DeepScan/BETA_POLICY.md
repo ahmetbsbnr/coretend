@@ -1,8 +1,15 @@
-# Deep Scan — proposed beta configuration
+# Deep Scan — beta configuration
 
-**Status: PROPOSAL for maintainer approval. Not activated in code.**
-`DeepScanExecutionGate.isEnabled` and `DefaultSelectionPolicy.preselectionEnabled`
-remain `false` on this branch.
+**Status: APPROVED by the maintainer for v1.2.0-beta.1** (interactive GUI
+acceptance review passed — see `HUMAN_REVIEW.md`).
+
+Source defaults are unchanged: `DeepScanExecutionGate.isEnabled == false` and
+`DefaultSelectionPolicy.preselectionEnabled == false`. The beta build turns
+execution on **at compile time only** — `-D DEEPSCAN_BETA_EXECUTION`, applied
+by the beta packaging invocation (`CORETEND_SWIFT_BUILD_FLAGS='-Xswiftc
+-DDEEPSCAN_BETA_EXECUTION' Scripts/package-local.sh`). There is no user-facing
+setting that turns execution on or off, and no preselection in any build.
+See `EXECUTION_SAFETY.md` for the full gate chain.
 
 ## Recommended beta configuration
 
