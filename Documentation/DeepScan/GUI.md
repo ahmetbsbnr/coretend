@@ -99,7 +99,18 @@ Everything that needs the app actually running:
   trip end to end.
 - The permission banner against a real "Full Disk Access denied" state.
 
-These were **not** performed (no interactive session). The view models,
-grouping, filtering, paging, plan building, phase model, permission probe, and
-settings persistence are covered by `DeepScanPresentationTests` (21 tests) and
-`DeepScanViewModelTests` (3 tests); `swift build` compiles the whole GUI.
+These were **not** performed — see `HUMAN_REVIEW.md` for the exact
+done/not-done list. The view models, grouping, filtering, paging, plan
+building, phase model, permission probe, and settings persistence are covered
+by `DeepScanPresentationTests` + `DeepScanViewModelTests`; `swift build`
+compiles the whole GUI.
+
+## Localization status
+
+Fixed UI chrome, enum labels (risk / confidence / rebuild / category),
+scan phases, permission-state banners, filter/sort labels, the Cleanup Plan,
+settings, and skip reasons are localized **EN + FR** (`deepscan.*` keys,
+`DeepScanLocalizationTests` enforces parity). Per-candidate
+`rationale` / `ifRemoved` / `protectedReason` / evidence sentences are composed
+in `DeepScanCore` from tool names + byte counts + paths and remain **English**;
+a localization-callback for those is deferred to a later phase.

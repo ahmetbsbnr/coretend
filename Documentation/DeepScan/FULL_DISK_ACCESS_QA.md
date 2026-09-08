@@ -68,10 +68,31 @@ orphaned-leftover detector by design.
 - The entry-screen banner is shown **before** the user starts a scan so the
   expectation is set up front.
 
+## Beta-hardening phase — real toggle QA status
+
+**Not performed.** Toggling Full Disk Access for CoreTend.app in System
+Settings › Privacy & Security is a security-settings change and was not made
+autonomously; the CoreTend app was also not launched interactively this phase
+(computer-use was held by another session). The observations above are from
+the **read-only headless run** (`DeepScanQA`), whose reported state on this
+machine is **Partial Access** (Terminal has no FDA), with 9 permission-denied
+nodes and the Apple-daemon cache `deniedRoots` listed.
+
+What was verified in code / headless:
+
+- `DeepScanPermissionProbe.probe()` returns `partialAccess` here and
+  `fullDiskAccess` only when every probed TCC-gated dir is readable.
+- The engine records `permissionDenied` (bytes 0, never guessed) and adds the
+  root to `DiskGraph.deniedRoots`; `subtreeFullyObserved` is `false` for any
+  ancestor, which blocks CONFIRMED confidence and the executable subset.
+- A partial scan sets `DeepScanProgressModel.isPartial` and the results carry
+  reduced-confidence semantics; the code never labels a partial scan complete.
+
 ## HUMAN VERIFICATION REQUIRED
 
 - Toggling FDA for CoreTend.app in System Settings and confirming the banner
-  switches Full ⇄ Partial live.
+  switches Full ⇄ Partial live, and that a rescan after the change picks up the
+  newly-readable subtrees.
 - The exact wording/discoverability of the "grant FDA" guidance in the running
   app.
 - Behaviour on a Mac where `~/Library/Mail` etc. genuinely do not exist (the
