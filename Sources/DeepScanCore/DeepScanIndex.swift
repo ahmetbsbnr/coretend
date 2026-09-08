@@ -78,6 +78,8 @@ public final class DeepScanIndex {
             INSERT INTO schema_version(version) VALUES (1);
             """)
         }
+        // v2: index-health metadata (idempotent).
+        try exec("CREATE TABLE IF NOT EXISTS index_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);")
     }
 
     // MARK: incremental upsert
@@ -149,6 +151,51 @@ public final class DeepScanIndex {
 
     public func nodeCount() throws -> Int {
         Int((try query("SELECT COUNT(*) AS c FROM node").first?["c"] as? Int64) ?? 0)
+    }
+
+    /// Delete exact rows (vanished paths reported by FSEvents).
+    public func delete(paths: [String]) throws {
+        guard !paths.isEmpty else { return }
+        try exec("BEGIN IMMEDIATE")
+        do {
+            let stmt = try prepare("DELETE FROM node WHERE canonical_path = ? OR canonical_path LIKE ? ESCAPE '\\'")
+            defer { sqlite3_finalize(stmt) }
+            for p in paths {
+                sqlite3_reset(stmt)
+                bindText(stmt, 1, p)
+                bindText(stmt, 2, likePrefix(p) + "/%")
+                guard sqlite3_step(stmt) == SQLITE_DONE else {
+                    throw DeepScanIndexError.exec(String(cString: sqlite3_errmsg(db)))
+                }
+            }
+            try exec("COMMIT")
+        } catch { try? exec("ROLLBACK"); throw error }
+    }
+
+    /// After a scoped rescan of `root`, remove rows under `root` that the fresh
+    /// scan did not observe (they were deleted between scans). `keeping` is the
+    /// set of canonical paths present in the new partial graph.
+    public func pruneUnder(root: String, keeping: Set<String>) throws {
+        let rows = try query(
+            "SELECT canonical_path FROM node WHERE canonical_path = ? OR canonical_path LIKE ? ESCAPE '\\'",
+            [root, likePrefix(root) + "/%"])
+        let stale = rows.compactMap { $0["canonical_path"] as? String }.filter { !keeping.contains($0) }
+        try delete(paths: stale)
+    }
+
+    private func likePrefix(_ s: String) -> String {
+        s.replacingOccurrences(of: "\\", with: "\\\\")
+         .replacingOccurrences(of: "%", with: "\\%")
+         .replacingOccurrences(of: "_", with: "\\_")
+    }
+
+    // Index-health persistence (single row).
+    public func storedHealth() throws -> String? {
+        try query("SELECT value FROM index_meta WHERE key = 'health'").first?["value"] as? String
+    }
+    public func setStoredHealth(_ health: String) throws {
+        try exec("INSERT INTO index_meta(key,value) VALUES('health','\(health)') "
+                 + "ON CONFLICT(key) DO UPDATE SET value=excluded.value")
     }
 
     /// Largest N nodes by allocated size — the UI's default sort, paged.
