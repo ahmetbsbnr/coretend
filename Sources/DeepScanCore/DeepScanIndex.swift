@@ -80,6 +80,83 @@ public final class DeepScanIndex {
         }
         // v2: index-health metadata (idempotent).
         try exec("CREATE TABLE IF NOT EXISTS index_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);")
+        // v3: richer scan history (diagnostic session metadata — NOT
+        // reclaimed-space accounting, which the Timeline owns).
+        for col in ["scope TEXT", "permissions TEXT", "candidate_count INTEGER",
+                    "logical_bytes INTEGER", "allocated_bytes INTEGER",
+                    "partial INTEGER", "error_count INTEGER"] {
+            try? exec("ALTER TABLE scan_run ADD COLUMN \(col);")   // no-op if present
+        }
+    }
+
+    public struct ScanRunRecord: Sendable {
+        public let id: Int64
+        public let startedAt: Date
+        public let finishedAt: Date
+        public let scope: String
+        public let permissions: String
+        public let nodeCount: Int
+        public let candidateCount: Int
+        public let logicalBytes: Int64
+        public let allocatedBytes: Int64
+        public let partial: Bool
+        public let errorCount: Int
+    }
+
+    /// Records one Deep Scan session. Call after a scan + detection pass.
+    public func recordScanRun(startedAt: Date, finishedAt: Date, scope: String,
+                              permissions: String, nodeCount: Int, candidateCount: Int,
+                              logicalBytes: Int64, allocatedBytes: Int64,
+                              partial: Bool, errorCount: Int) throws {
+        let stmt = try prepare("""
+        INSERT INTO scan_run(started_at, finished_at, roots, cancelled, timed_out, node_count,
+                             scope, permissions, candidate_count, logical_bytes, allocated_bytes,
+                             partial, error_count)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?);
+        """)
+        defer { sqlite3_finalize(stmt) }
+        sqlite3_bind_double(stmt, 1, startedAt.timeIntervalSince1970)
+        sqlite3_bind_double(stmt, 2, finishedAt.timeIntervalSince1970)
+        bindText(stmt, 3, scope)
+        sqlite3_bind_int(stmt, 4, partial ? 1 : 0)
+        sqlite3_bind_int(stmt, 5, 0)
+        sqlite3_bind_int64(stmt, 6, Int64(nodeCount))
+        bindText(stmt, 7, scope)
+        bindText(stmt, 8, permissions)
+        sqlite3_bind_int64(stmt, 9, Int64(candidateCount))
+        sqlite3_bind_int64(stmt, 10, logicalBytes)
+        sqlite3_bind_int64(stmt, 11, allocatedBytes)
+        sqlite3_bind_int(stmt, 12, partial ? 1 : 0)
+        sqlite3_bind_int64(stmt, 13, Int64(errorCount))
+        guard sqlite3_step(stmt) == SQLITE_DONE else {
+            throw DeepScanIndexError.exec(String(cString: sqlite3_errmsg(db)))
+        }
+    }
+
+    public func recentScans(limit: Int = 20) throws -> [ScanRunRecord] {
+        try query("""
+        SELECT id, started_at, finished_at,
+               COALESCE(scope, roots) AS scope, COALESCE(permissions,'') AS permissions,
+               node_count, COALESCE(candidate_count,0) AS candidate_count,
+               COALESCE(logical_bytes,0) AS logical_bytes,
+               COALESCE(allocated_bytes,0) AS allocated_bytes,
+               COALESCE(partial, cancelled | timed_out) AS partial,
+               COALESCE(error_count,0) AS error_count
+        FROM scan_run ORDER BY started_at DESC LIMIT ?
+        """, [Int64(limit)]).map { r in
+            ScanRunRecord(
+                id: (r["id"] as? Int64) ?? 0,
+                startedAt: Date(timeIntervalSince1970: (r["started_at"] as? Double) ?? 0),
+                finishedAt: Date(timeIntervalSince1970: (r["finished_at"] as? Double) ?? 0),
+                scope: (r["scope"] as? String) ?? "",
+                permissions: (r["permissions"] as? String) ?? "",
+                nodeCount: Int((r["node_count"] as? Int64) ?? 0),
+                candidateCount: Int((r["candidate_count"] as? Int64) ?? 0),
+                logicalBytes: (r["logical_bytes"] as? Int64) ?? 0,
+                allocatedBytes: (r["allocated_bytes"] as? Int64) ?? 0,
+                partial: ((r["partial"] as? Int64) ?? 0) != 0,
+                errorCount: Int((r["error_count"] as? Int64) ?? 0))
+        }
     }
 
     // MARK: incremental upsert
