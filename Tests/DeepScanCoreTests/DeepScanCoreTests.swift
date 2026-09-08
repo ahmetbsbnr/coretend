@@ -1,0 +1,341 @@
+// SPDX-License-Identifier: Apache-2.0
+// SPDX-FileCopyrightText: The CoreTend Authors
+//
+// Unit + adversarial-safety tests for DeepScanCore. Every destructive-looking
+// fixture is built inside an isolated NSTemporaryDirectory subtree and torn
+// down; nothing here touches the real user home or a real repo.
+
+import Foundation
+import Testing
+@testable import DeepScanCore
+
+// MARK: - Fixture helpers
+
+private struct TempTree {
+    let root: URL
+    init() {
+        root = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("deepscan-tests-\(UUID().uuidString)")
+        try? FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+    }
+    func dir(_ rel: String) -> URL {
+        let u = root.appendingPathComponent(rel)
+        try? FileManager.default.createDirectory(at: u, withIntermediateDirectories: true)
+        return u
+    }
+    @discardableResult
+    func file(_ rel: String, bytes: Int) -> URL {
+        let u = root.appendingPathComponent(rel)
+        try? FileManager.default.createDirectory(at: u.deletingLastPathComponent(),
+                                                 withIntermediateDirectories: true)
+        FileManager.default.createFile(atPath: u.path, contents: Data(repeating: 0x41, count: bytes))
+        return u
+    }
+    func cleanup() { try? FileManager.default.removeItem(at: root) }
+}
+
+private func scan(_ roots: [URL], budget: Duration = .seconds(30),
+                  cancellation: DeepScanCancellation = .init()) async -> DiskGraph {
+    let cfg = DeepScanConfiguration(roots: roots, maxConcurrency: 4, timeBudget: budget)
+    return await DeepScanEngine().scan(cfg, cancellation: cancellation)
+}
+
+// MARK: - DiskGraph model
+
+@Test func rollupSumsChildrenAndFlagsCompleteness() async {
+    let t = TempTree(); defer { t.cleanup() }
+    t.file("a/one.bin", bytes: 1000)
+    t.file("a/two.bin", bytes: 2000)
+    t.file("a/b/three.bin", bytes: 500)
+    let g = await scan([t.root])
+
+    let a = g.node(at: t.root.appendingPathComponent("a").path)
+    #expect(a != nil)
+    #expect(a?.logicalBytes == 3500)
+    #expect(a?.completeness == .complete)
+    #expect(g.subtreeFullyObserved(t.root.path))
+}
+
+// MARK: - Hard-link double-count protection
+
+@Test func hardLinkedFileCountedOnce() async throws {
+    let t = TempTree(); defer { t.cleanup() }
+    let original = t.file("dir/original.bin", bytes: 4096)
+    let link = t.root.appendingPathComponent("dir/hardlink.bin")
+    try FileManager.default.linkItem(at: original, to: link)
+
+    let g = await scan([t.root])
+    let dir = g.node(at: t.root.appendingPathComponent("dir").path)
+    // Only one of the two links contributes its bytes.
+    #expect(dir?.logicalBytes == 4096)
+}
+
+// MARK: - Symlink loops / ancestor symlinks are not followed
+
+@Test func symlinkedDirectoryIsRecordedbutNotDescended() async throws {
+    let t = TempTree(); defer { t.cleanup() }
+    let real = t.dir("real")
+    t.file("real/payload.bin", bytes: 100)
+    let loop = t.root.appendingPathComponent("loop")
+    try FileManager.default.createSymbolicLink(at: loop, withDestinationURL: real)
+
+    let g = await scan([t.root])
+    let loopNode = g.node(at: t.root.appendingPathComponent("loop").path)
+    #expect(loopNode?.isSymlink == true)
+    // No child was enumerated through the symlink.
+    #expect(g.children(of: loop.path).isEmpty)
+}
+
+@Test func selfReferentialSymlinkDoesNotHang() async throws {
+    let t = TempTree(); defer { t.cleanup() }
+    let a = t.dir("a")
+    try FileManager.default.createSymbolicLink(
+        at: a.appendingPathComponent("back"), withDestinationURL: t.root)
+    // Must terminate well within the budget.
+    let g = await scan([t.root], budget: .seconds(10))
+    #expect(!g.hitTimeout)
+}
+
+// MARK: - Permission-denied reporting (no guessed bytes)
+
+@Test func unreadableDirectoryIsFlaggedNotGuessed() async throws {
+    let t = TempTree(); defer { t.cleanup() }
+    let secret = t.dir("secret")
+    t.file("secret/inside.bin", bytes: 9999)
+    try FileManager.default.setAttributes([.posixPermissions: 0], ofItemAtPath: secret.path)
+    defer { try? FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: secret.path) }
+
+    let g = await scan([t.root])
+    let node = g.node(at: secret.path)
+    #expect(node?.completeness == .permissionDenied)
+    #expect(node?.logicalBytes == 0)                 // never fabricated
+    #expect(!g.subtreeFullyObserved(t.root.path))    // fail closed upward
+}
+
+// MARK: - Cancellation yields a truthful partial graph
+
+@Test func cancellationProducesPartialNotFakeComplete() async {
+    let t = TempTree(); defer { t.cleanup() }
+    for i in 0..<200 { t.file("d\(i % 10)/f\(i).bin", bytes: 2048) }
+    let cancel = DeepScanCancellation()
+    cancel.cancel()   // cancelled before it starts
+    let g = await scan([t.root], cancellation: cancel)
+    #expect(g.wasCancelled)
+}
+
+// MARK: - AI storage: mandated user-state protection regression
+
+@Test func claudeMemoryAndUserStateAreAlwaysProtected() async {
+    let home = TempTree(); defer { home.cleanup() }
+    // ~/.claude/projects/<slug>/memory  + history + credentials
+    home.file(".claude/projects/-Users-me-proj/memory/MEMORY.md", bytes: 200)
+    home.file(".claude/projects/-Users-me-proj/memory/fact.md", bytes: 50)
+    home.file(".claude/history/session.jsonl", bytes: 300)
+    home.file(".claude/.credentials.json", bytes: 40)
+    home.file(".claude/statsig/cache.json", bytes: 40)
+
+    let g = await scan([home.root.appendingPathComponent(".claude")])
+    let ctx = DetectorContext(home: home.root, installedApps: [], runningBundleIDs: [],
+        runningExecutablePaths: [], scanStartedAt: g.startedAt, scanFinishedAt: g.finishedAt,
+        gitRepos: [])
+    let candidates = AIStorageDetector().detect(in: g, context: ctx)
+
+    // Every candidate under projects/ history/ credentials must be PROTECTED and
+    // NOT default-selected.
+    let protectedPaths = candidates.filter { $0.risk == .protected }.map(\.canonicalPath)
+    #expect(candidates.contains { $0.canonicalPath.hasSuffix("/projects") && $0.risk == .protected })
+    #expect(candidates.contains { $0.canonicalPath.hasSuffix("/history") && $0.risk == .protected })
+    #expect(candidates.contains { $0.canonicalPath.hasSuffix("/.credentials.json") && $0.risk == .protected })
+    #expect(candidates.allSatisfy { !$0.defaultSelected })
+    #expect(!protectedPaths.isEmpty)
+
+    // The runtime cache MAY be a non-protected candidate — that's allowed —
+    // but it still must not be auto-selected.
+    if let statsig = candidates.first(where: { $0.canonicalPath.hasSuffix("/statsig") }) {
+        #expect(!statsig.defaultSelected)
+    }
+}
+
+@Test func genericCacheDirNeverCapturesMemoryPath() async {
+    // Even if a path literally contains "cache" as a parent, a memory subtree
+    // stays protected.
+    let home = TempTree(); defer { home.cleanup() }
+    home.file(".claude/projects/-x/memory/note.md", bytes: 10)
+    let g = await scan([home.root.appendingPathComponent(".claude")])
+    let ctx = DetectorContext(home: home.root, installedApps: [], runningBundleIDs: [],
+        runningExecutablePaths: [], scanStartedAt: g.startedAt, scanFinishedAt: g.finishedAt, gitRepos: [])
+    let candidates = AIStorageDetector().detect(in: g, context: ctx)
+    #expect(candidates.first { $0.canonicalPath.hasSuffix("/projects") }?.risk == .protected)
+    #expect(candidates.allSatisfy { $0.subcategory != AIDataType.downloadCache.rawValue || !$0.canonicalPath.contains("/memory") })
+}
+
+// MARK: - Risk / confidence model
+
+@Test func unknownAttributionFailsClosed() {
+    let v = RiskConfidenceModel().evaluate(
+        evidence: [Evidence(.sizeThreshold, "big")],   // no attribution evidence
+        subtreeComplete: true, reconstruction: .regeneratesLocally,
+        activeState: .idle, gitSafety: nil)
+    #expect(v.risk == .protected)
+    #expect(v.confidence == .unknown)
+    #expect(!v.defaultSelected)
+}
+
+@Test func noConfirmedWithoutCompleteSubtree() {
+    let v = RiskConfidenceModel().evaluate(
+        evidence: [Evidence(.bundleIDExactMatch, "x"), Evidence(.noSiblingOwner, "y"),
+                   Evidence(.regenerableMarker, "z")],
+        subtreeComplete: false, reconstruction: .regeneratesLocally,
+        activeState: .idle, gitSafety: nil)
+    #expect(v.confidence < .confirmed)
+}
+
+@Test func userStateEvidenceForcesProtected() {
+    let v = RiskConfidenceModel().evaluate(
+        evidence: [Evidence(.pathPattern, "x"), Evidence(.userStateMarker, "memory")],
+        subtreeComplete: true, reconstruction: .regeneratesLocally,
+        activeState: .idle, gitSafety: nil)
+    #expect(v.risk == .protected)
+    #expect(v.protectedReason != nil)
+}
+
+@Test func onlySafeStrongCompleteLocalGetsDefaultSelected() {
+    let ok = DefaultSelectionPolicy.allows(
+        risk: .safe, confidence: .strong, reconstruction: .regeneratesLocally,
+        subtreeComplete: true, evidenceKinds: [.regenerableMarker, .bundleIDExactMatch, .noSiblingOwner])
+    #expect(ok)
+    let blockedByVeto = DefaultSelectionPolicy.allows(
+        risk: .safe, confidence: .strong, reconstruction: .regeneratesLocally,
+        subtreeComplete: true, evidenceKinds: [.regenerableMarker, .gitClean])
+    #expect(!blockedByVeto)
+    let blockedByRisk = DefaultSelectionPolicy.allows(
+        risk: .review, confidence: .confirmed, reconstruction: .regeneratesLocally,
+        subtreeComplete: true, evidenceKinds: [.regenerableMarker])
+    #expect(!blockedByRisk)
+}
+
+// MARK: - Execution revalidation (adversarial)
+
+private func candidate(path: String, risk: RiskClass = .safe,
+                       confidence: Confidence = .strong,
+                       category: CleanupCategory = .developer,
+                       owner: String? = nil) -> CleanupCandidate {
+    CleanupCandidate(path: path, canonicalPath: path, category: category,
+        subcategory: "t", detector: "t", logicalBytes: 1, allocatedBytes: 1,
+        estimatedReclaimableBytes: 1, owner: owner, confidence: confidence, risk: risk,
+        recoverability: .trashRestore, reconstructability: .regeneratesLocally,
+        lastActivity: nil, activeState: .idle, evidence: [], protectedReason: nil,
+        recommendedAction: .remove, defaultSelected: false, rationale: "", ifRemoved: "")
+}
+
+@Test func revalidatorDropsVanishedPath() {
+    let out = ExecutionRevalidator().revalidate(
+        [candidate(path: "/tmp/does-not-exist-\(UUID().uuidString)")],
+        originalIdentities: [:], runningBundleIDs: [])
+    #expect(out.approvedForExecution.isEmpty)
+    #expect(out.rejected.first?.reason.contains("no longer exists") == true)
+}
+
+@Test func revalidatorDropsProtectedAndUnknown() {
+    let out = ExecutionRevalidator().revalidate(
+        [candidate(path: "/tmp/x", risk: .protected),
+         candidate(path: "/tmp/y", confidence: .unknown)],
+        originalIdentities: [:], runningBundleIDs: [])
+    #expect(out.approvedForExecution.isEmpty)
+    #expect(out.rejected.count == 2)
+}
+
+@Test func revalidatorDropsPathSwappedToSymlink() async throws {
+    let t = TempTree(); defer { t.cleanup() }
+    let real = t.file("real.bin", bytes: 10)
+    let target = t.root.appendingPathComponent("target.bin")
+    try FileManager.default.moveItem(at: real, to: target)
+    let link = t.root.appendingPathComponent("real.bin")
+    try FileManager.default.createSymbolicLink(at: link, withDestinationURL: target)
+
+    let out = ExecutionRevalidator().revalidate(
+        [candidate(path: link.path)], originalIdentities: [:], runningBundleIDs: [])
+    #expect(out.approvedForExecution.isEmpty)
+    #expect(out.rejected.first?.reason.contains("symlink") == true)
+}
+
+@Test func revalidatorDropsWhenIdentityChanged() {
+    let t = TempTree(); defer { t.cleanup() }
+    let f = t.file("keep.bin", bytes: 10)
+    let bogus = FileIdentity(device: 999, inode: 999)
+    let out = ExecutionRevalidator().revalidate(
+        [candidate(path: f.path)], originalIdentities: [f.path: bogus], runningBundleIDs: [])
+    #expect(out.approvedForExecution.isEmpty)
+    #expect(out.rejected.first?.reason.contains("different file") == true)
+}
+
+@Test func revalidatorDropsWhenOwnerRunning() {
+    let t = TempTree(); defer { t.cleanup() }
+    let f = t.file("cache.bin", bytes: 10)
+    // Age the file so the "just modified" guard doesn't fire first.
+    try? FileManager.default.setAttributes(
+        [.modificationDate: Date(timeIntervalSinceNow: -3600)], ofItemAtPath: f.path)
+    let out = ExecutionRevalidator().revalidate(
+        [candidate(path: f.path, owner: "AcmeApp")],
+        originalIdentities: [:], runningBundleIDs: ["com.acme.AcmeApp"])
+    #expect(out.approvedForExecution.isEmpty)
+    #expect(out.rejected.first?.reason.contains("running") == true)
+}
+
+@Test func revalidatorPassesCleanCandidate() {
+    let t = TempTree(); defer { t.cleanup() }
+    let f = t.file("stale.bin", bytes: 10)
+    try? FileManager.default.setAttributes(
+        [.modificationDate: Date(timeIntervalSinceNow: -86_400)], ofItemAtPath: f.path)
+    let id = ExecutionRevalidator.lstat(f.path).map {
+        FileIdentity(device: UInt64(bitPattern: Int64($0.st_dev)), inode: $0.st_ino)
+    }
+    let out = ExecutionRevalidator().revalidate(
+        [candidate(path: f.path)], originalIdentities: id.map { [f.path: $0] } ?? [:],
+        runningBundleIDs: [])
+    #expect(out.approvedForExecution.count == 1)
+    #expect(out.rejected.isEmpty)
+}
+
+// MARK: - Ownership resolver
+
+@Test func ownershipUsesExactBundleIDNotSubstring() {
+    let app = InstalledApp(bundleID: "com.acme.Widget", bundleURL: "/Applications/Widget.app",
+        displayName: "Widget", nameVariants: ["Widget"], teamID: "TEAM", embeddedBundleIDs: [],
+        lastUsedDate: nil)
+    let r = AppOwnershipResolver(installedApps: [app])
+    #expect(r.resolve(folderName: "com.acme.Widget") == .ownedByInstalledApp(bundleID: "com.acme.Widget"))
+    #expect(r.resolve(folderName: "com.acme.Widget.Helper") == .ownedByInstalledApp(bundleID: "com.acme.Widget"))
+    // A different app whose name merely contains "Widget" is NOT owned.
+    #expect(r.resolve(folderName: "com.evil.WidgetStealerPro") == .noInstalledOwner(bundleID: "com.evil.WidgetStealerPro"))
+    #expect(r.resolve(folderName: "not-a-bundle") == .notBundleShaped)
+}
+
+// MARK: - DeepScanIndex incremental
+
+@Test func indexApplyAndReopenIsIncremental() async throws {
+    let t = TempTree(); defer { t.cleanup() }
+    t.file("data/a.bin", bytes: 4096)
+    t.file("data/b.bin", bytes: 8192)
+    let g = await scan([t.root])
+
+    let dbPath = t.root.appendingPathComponent("index.sqlite").path
+    let idx = try DeepScanIndex(path: dbPath)
+    try idx.apply(g)
+    let firstCount = try idx.nodeCount()
+    #expect(firstCount > 0)
+
+    // Re-apply the same graph: node count is stable (upsert, not duplicate).
+    try idx.apply(g)
+    #expect(try idx.nodeCount() == firstCount)
+
+    let largest = try idx.largestNodes(limit: 1)
+    #expect(largest.first?.path.hasSuffix("b.bin") == true)
+}
+
+// MARK: - Git duplicate-remote normalization
+
+@Test func remoteURLNormalizationMatchesEquivalentForms() {
+    #expect(DuplicateProjectsDetector.normalize("git@github.com:acme/repo.git")
+            == DuplicateProjectsDetector.normalize("https://github.com/acme/repo"))
+}

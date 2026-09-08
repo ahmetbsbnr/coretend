@@ -16,6 +16,7 @@ let package = Package(
         .library(name: "SystemMetrics", targets: ["SystemMetrics"]),
         .library(name: "AppDiscovery", targets: ["AppDiscovery"]),
         .library(name: "IntegrityCore", targets: ["IntegrityCore"]),
+        .library(name: "DeepScanCore", targets: ["DeepScanCore"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-testing.git", from: "0.12.0"),
@@ -45,6 +46,8 @@ let package = Package(
         .testTarget(name: "SystemMetricsTests", dependencies: ["SystemMetrics", .product(name: "Testing", package: "swift-testing")]),
         .target(name: "ScanCore", dependencies: ["SafetyCore"]),
         .target(name: "SafetyCore"),
+        .target(name: "DeepScanCore", dependencies: ["SafetyCore", "Persistence", "ScanCore"]),
+        .testTarget(name: "DeepScanCoreTests", dependencies: ["DeepScanCore", "SafetyCore", .product(name: "Testing", package: "swift-testing")]),
         .target(name: "FileRules", dependencies: ["ScanCore", "SafetyCore"]),
         .target(name: "DesignSystem"),
         .testTarget(name: "ScanCoreTests", dependencies: ["ScanCore", .product(name: "Testing", package: "swift-testing")]),
