@@ -72,6 +72,115 @@ final class PrintingSink: SafetyAuditSink, @unchecked Sendable {
         print("  journal: \(event.stage.rawValue) \(event.ruleID) \(event.path) -> \(event.result)")
     }
 }
+
+// --- FSEvents real-churn QA (spec §7/§8) --------------------------------------
+// Usage: DeepScanQA --fsevents-churn
+// Drives FSEventIncrementalEngine (real FSEventStream) against a disposable
+// fixture under developer-representative churn, printing index health / version
+// / node-count transitions. Also exercises dropped-event -> STALE -> FRESH and
+// index corruption recovery.
+if args.first == "--fsevents-churn" {
+    let fm = FileManager.default
+    let root = URL(fileURLWithPath: NSTemporaryDirectory())
+        .appendingPathComponent("coretend-fsevents-churn-\(UUID().uuidString)")
+    try fm.createDirectory(at: root.appendingPathComponent("proj"), withIntermediateDirectories: true)
+    fm.createFile(atPath: root.appendingPathComponent("proj/package.json").path,
+                  contents: Data(#"{"dependencies":{"next":"14"}}"#.utf8))
+    let dbPath = root.appendingPathComponent("index.sqlite").path
+    let index = try FSEventIncrementalEngine.openIndexRecovering(path: dbPath)
+    let cfg = DeepScanConfiguration(roots: [root], maxConcurrency: 8, timeBudget: .seconds(60))
+
+    final class HealthLog: @unchecked Sendable {
+        let lock = NSLock(); var transitions: [String] = []
+        func note(_ h: IndexHealth) { lock.lock(); transitions.append(h.rawValue); lock.unlock() }
+    }
+    let hlog = HealthLog()
+    let engine = FSEventIncrementalEngine(index: index, roots: [root], baseConfig: cfg,
+                                          debounceMillis: 400,
+                                          onHealthChange: { hlog.note($0) })
+
+    func snap(_ label: String) {
+        let n = (try? index.nodeCount()) ?? -1
+        let lbl = label.padding(toLength: max(label.count, 34), withPad: " ", startingAt: 0)
+        print("  \(lbl) nodes=\(n)  health=\(engine.health.rawValue)  version=\(engine.scanVersion)")
+    }
+
+    print("fixture: \(root.path)")
+    let t0 = Date()
+    await engine.start()
+    print(String(format: "initial full scan: %.2fs", Date().timeIntervalSince(t0)))
+    snap("after start")
+
+    func churn(_ name: String, _ work: () async throws -> Void) async {
+        let s = Date()
+        try? await work()
+        // wait for debounce + async scoped rescan
+        try? await Task.sleep(for: .milliseconds(1600))
+        print("[\(name)] \(String(format: "%.2f", Date().timeIntervalSince(s)))s")
+        snap("  after \(name)")
+    }
+
+    // 1. npm install: ~2000 small files across nested dirs
+    await churn("npm install (2000 files)") {
+        for i in 0..<40 {
+            let d = root.appendingPathComponent("proj/node_modules/pkg\(i)")
+            try fm.createDirectory(at: d, withIntermediateDirectories: true)
+            for j in 0..<50 { fm.createFile(atPath: d.appendingPathComponent("f\(j).js").path, contents: Data(count: 512)) }
+        }
+    }
+    // 2. Next build: create .next then replace it wholesale
+    await churn("next build (.next created)") {
+        let d = root.appendingPathComponent("proj/.next/cache")
+        try fm.createDirectory(at: d, withIntermediateDirectories: true)
+        for j in 0..<200 { fm.createFile(atPath: d.appendingPathComponent("chunk\(j).js").path, contents: Data(count: 2048)) }
+    }
+    await churn("next rebuild (.next replaced)") {
+        try fm.removeItem(at: root.appendingPathComponent("proj/.next"))
+        let d = root.appendingPathComponent("proj/.next/cache")
+        try fm.createDirectory(at: d, withIntermediateDirectories: true)
+        for j in 0..<220 { fm.createFile(atPath: d.appendingPathComponent("chunk\(j).js").path, contents: Data(count: 2048)) }
+    }
+    // 3. mass delete (rm -rf node_modules)
+    await churn("rm -rf node_modules") {
+        try fm.removeItem(at: root.appendingPathComponent("proj/node_modules"))
+    }
+    // 4. renames + rapid repeated writes to one file
+    await churn("rename + rapid writes") {
+        let src = root.appendingPathComponent("proj/a.txt")
+        fm.createFile(atPath: src.path, contents: Data("v0".utf8))
+        try fm.moveItem(at: src, to: root.appendingPathComponent("proj/b.txt"))
+        for k in 0..<50 { try Data("v\(k)".utf8).write(to: root.appendingPathComponent("proj/b.txt")) }
+    }
+    // 5. git checkout-like: touch many files
+    await churn("git checkout (mtime storm)") {
+        let d = root.appendingPathComponent("proj/src")
+        try fm.createDirectory(at: d, withIntermediateDirectories: true)
+        for j in 0..<300 { fm.createFile(atPath: d.appendingPathComponent("s\(j).swift").path, contents: Data(count: 128)) }
+        try? await Task.sleep(for: .milliseconds(50))
+        for j in 0..<300 { try? fm.setAttributes([.modificationDate: Date()], ofItemAtPath: d.appendingPathComponent("s\(j).swift").path) }
+    }
+    // 6. simulated dropped event -> must go STALE then rebuild to FRESH
+    print("[dropped event] injecting kFSEventStreamEventFlagUserDropped-equivalent")
+    engine.ingest([FSChange(path: root.appendingPathComponent("proj").path, dropped: true)])
+    try? await Task.sleep(for: .milliseconds(2500))
+    snap("  after dropped-event rescan")
+
+    engine.stop()
+    print("health transitions: \(hlog.transitions.joined(separator: " -> "))")
+    let sawStale = hlog.transitions.contains("stale")
+    let endsFreshOrPartial = ["fresh", "partial"].contains(engine.health.rawValue)
+    print("dropped-event -> STALE seen: \(sawStale)   ends FRESH/PARTIAL: \(endsFreshOrPartial)")
+
+    // 7. corruption recovery
+    let dbPath2 = root.appendingPathComponent("corrupt.sqlite").path
+    fm.createFile(atPath: dbPath2, contents: Data("not a sqlite database".utf8))
+    let recovered = try FSEventIncrementalEngine.openIndexRecovering(path: dbPath2)
+    print("corruption recovery: reopened, nodeCount=\((try? recovered.nodeCount()) ?? -1) (0 = rebuilt clean)")
+
+    try? fm.removeItem(at: root)
+    print("Live GUI watch loop (index-health badge in the running app) = HUMAN VERIFICATION.")
+    exit(0)
+}
 let home = FileManager.default.homeDirectoryForCurrentUser
 let roots: [URL] = args.isEmpty ? [home] : args.map { URL(fileURLWithPath: $0) }
 
