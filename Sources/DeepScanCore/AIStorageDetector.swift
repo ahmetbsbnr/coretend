@@ -42,14 +42,28 @@ public enum AIDataType: String, Sendable, Codable {
     }
 }
 
+/// How an AI classification rule matches a direct child's name.
+enum AIRuleMatch: Sendable {
+    case exact(String)     // name == value (component boundary, not substring)
+    case prefix(String)    // name begins with value (e.g. "thread_history_3.sqlite")
+    case suffix(String)    // name ends with value (e.g. ".sqlite", ".log")
+    case whole             // matches the tool root itself when nothing else did
+}
+
+struct AIRule: Sendable {
+    let match: AIRuleMatch
+    let type: AIDataType
+    init(_ match: AIRuleMatch, _ type: AIDataType) { self.match = match; self.type = type }
+}
+
 /// A known AI tool and where its data lives, relative to home.
 struct AIToolProfile: Sendable {
     let name: String
     /// Home-relative roots (first path component after `~`).
     let roots: [String]
-    /// Ordered rules: first matching suffix/segment wins. Segments match on a
-    /// path *component* boundary, not substring.
-    let rules: [(segment: String, type: AIDataType)]
+    /// Ordered rules: first match wins. A name that matches NOTHING becomes
+    /// `.unknownData` -> PROTECTED (fail closed).
+    let rules: [AIRule]
 }
 
 public struct AIStorageDetector: Detector {
@@ -61,50 +75,70 @@ public struct AIStorageDetector: Detector {
     // profile does not positively classify becomes `.unknownData` -> PROTECTED.
     static let profiles: [AIToolProfile] = [
         AIToolProfile(name: "Claude Code", roots: [".claude"], rules: [
-            ("memory", .userMemory),
-            ("projects", .projectState),
-            ("history", .conversationHistory),
-            ("todos", .projectState),
-            ("statsig", .runtimeCache),
-            ("shell-snapshots", .tempFiles),
-            (".credentials.json", .auth),
-            ("settings.json", .config),
+            // --- PROTECTED user state (never weakened) ---
+            .init(.exact("memory"), .userMemory),
+            .init(.exact("projects"), .projectState),
+            .init(.exact("history"), .conversationHistory),
+            .init(.exact("todos"), .projectState),
+            .init(.exact("file-history"), .projectState),   // edit-undo history = user work
+            .init(.exact("plugins"), .extensionsPlugins),
+            .init(.exact(".credentials.json"), .auth),
+            .init(.suffix(".json"), .config),               // settings.json, config.json, …
+            // --- deterministically rebuildable ---
+            .init(.exact("statsig"), .runtimeCache),
+            .init(.exact("shell-snapshots"), .tempFiles),
+            .init(.exact("logs"), .runtimeCache),
         ]),
         AIToolProfile(name: "Codex", roots: [".codex"], rules: [
-            ("sessions", .conversationHistory),
-            ("history", .conversationHistory),
-            ("auth.json", .auth),
-            ("config.toml", .config),
-            ("log", .runtimeCache),
+            .init(.exact("sessions"), .conversationHistory),
+            .init(.exact("history"), .conversationHistory),
+            .init(.prefix("thread_history"), .conversationHistory),
+            .init(.prefix("state"), .projectState),
+            .init(.exact("plugins"), .extensionsPlugins),
+            .init(.exact("auth.json"), .auth),
+            .init(.suffix(".toml"), .config),
+            .init(.exact("log"), .runtimeCache),
+            .init(.exact("logs"), .runtimeCache),
+            .init(.suffix(".log"), .runtimeCache),
         ]),
         AIToolProfile(name: "LM Studio", roots: [".cache/lm-studio", ".lmstudio"], rules: [
-            ("models", .modelWeights),
-            ("downloads", .downloadCache),
-            ("conversations", .conversationHistory),
-            ("config-presets", .config),
-            ("logs", .runtimeCache),
+            .init(.exact("models"), .modelWeights),
+            .init(.exact("downloads"), .downloadCache),
+            .init(.exact("conversations"), .conversationHistory),
+            .init(.exact("config-presets"), .config),
+            .init(.suffix(".json"), .config),
+            // Re-downloadable runtime binaries and disposable logs/scratch.
+            .init(.exact("bin"), .runtimeCache),
+            .init(.exact(".internal"), .runtimeCache),
+            .init(.exact("logs"), .runtimeCache),
+            .init(.exact("server-logs"), .runtimeCache),
+            .init(.suffix(".log"), .runtimeCache),
+            .init(.exact("extensions"), .extensionsPlugins),
         ]),
         AIToolProfile(name: "Ollama", roots: [".ollama"], rules: [
-            ("models", .modelWeights),
-            ("history", .conversationHistory),
-            ("id_ed25519", .auth),
-            ("logs", .runtimeCache),
+            .init(.exact("models"), .modelWeights),
+            .init(.exact("history"), .conversationHistory),
+            .init(.exact("id_ed25519"), .auth),
+            .init(.prefix("id_ed25519"), .auth),            // .pub
+            .init(.exact("logs"), .runtimeCache),
         ]),
         AIToolProfile(name: "Hugging Face", roots: [".cache/huggingface", ".huggingface"], rules: [
-            ("hub", .downloadCache),
-            ("datasets", .downloadCache),
-            ("token", .auth),
-            ("modules", .runtimeCache),
+            .init(.exact("hub"), .downloadCache),
+            .init(.exact("datasets"), .downloadCache),
+            .init(.exact("token"), .auth),
+            .init(.exact("stored_tokens"), .auth),
+            .init(.exact("modules"), .runtimeCache),
         ]),
         AIToolProfile(name: "MLX", roots: [".cache/mlx", ".mlx"], rules: [
-            ("models", .compiledModelCache),
+            .init(.exact("models"), .compiledModelCache),
         ]),
         AIToolProfile(name: "llama.cpp", roots: [".cache/llama.cpp"], rules: [
-            ("", .downloadCache),
+            .init(.whole, .downloadCache),
         ]),
         AIToolProfile(name: "Cursor", roots: [".cursor"], rules: [
-            ("extensions", .extensionsPlugins),
-            ("argv.json", .config),
+            .init(.exact("extensions"), .extensionsPlugins),
+            .init(.exact("argv.json"), .config),
+            .init(.suffix(".json"), .config),
         ]),
     ]
 
@@ -120,34 +154,47 @@ public struct AIStorageDetector: Detector {
 
                 // Emit a candidate per direct child that a rule classifies, plus
                 // one for the tool root itself as UNKNOWN if nothing matched.
-                let children = graph.children(of: rootPath)
-                var classifiedAny = false
-                for child in children {
-                    let name = (child.canonicalPath as NSString).lastPathComponent
-                    guard let type = Self.classify(name: name, rules: profile.rules) else {
-                        candidates.append(Self.candidate(node: child, tool: profile.name,
-                            type: .unknownData, graph: graph, context: context, model: model))
-                        classifiedAny = true
-                        continue
-                    }
-                    classifiedAny = true
-                    candidates.append(Self.candidate(node: child, tool: profile.name, type: type,
-                        graph: graph, context: context, model: model))
+                // A `.whole` rule means "treat the entire tool root as this one
+                // data type" (e.g. llama.cpp's cache dir).
+                if let wholeType = profile.rules.first(where: {
+                    if case .whole = $0.match { return true } else { return false }
+                })?.type {
+                    candidates.append(Self.candidate(node: rootNode, tool: profile.name,
+                        type: wholeType, graph: graph, context: context, model: model))
+                    continue
                 }
-                if !classifiedAny {
+
+                let children = graph.children(of: rootPath)
+                if children.isEmpty {
                     candidates.append(Self.candidate(node: rootNode, tool: profile.name,
                         type: .unknownData, graph: graph, context: context, model: model))
+                    continue
+                }
+                for child in children {
+                    let name = (child.canonicalPath as NSString).lastPathComponent
+                    // Unclassified -> .unknownData -> PROTECTED (fail closed).
+                    let type = Self.classify(name: name, rules: profile.rules) ?? .unknownData
+                    candidates.append(Self.candidate(node: child, tool: profile.name, type: type,
+                        graph: graph, context: context, model: model))
                 }
             }
         }
         return candidates
     }
 
-    /// Component-boundary match. `""` matches the root itself (whole dir).
-    static func classify(name: String, rules: [(segment: String, type: AIDataType)]) -> AIDataType? {
+    /// First matching rule wins. No match -> nil -> caller uses `.unknownData`.
+    static func classify(name: String, rules: [AIRule]) -> AIDataType? {
         for rule in rules {
-            if rule.segment.isEmpty { return rule.type }
-            if name == rule.segment { return rule.type }
+            switch rule.match {
+            case .whole:
+                continue   // handled by the caller, not per-child
+            case .exact(let s):
+                if name == s { return rule.type }
+            case .prefix(let s):
+                if name.hasPrefix(s) { return rule.type }
+            case .suffix(let s):
+                if name.hasSuffix(s) { return rule.type }
+            }
         }
         return nil
     }
