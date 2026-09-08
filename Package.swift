@@ -47,6 +47,7 @@ let package = Package(
         .target(name: "ScanCore", dependencies: ["SafetyCore"]),
         .target(name: "SafetyCore"),
         .target(name: "DeepScanCore", dependencies: ["SafetyCore", "Persistence", "ScanCore"]),
+        .executableTarget(name: "DeepScanQA", dependencies: ["DeepScanCore"]),
         .testTarget(name: "DeepScanCoreTests", dependencies: ["DeepScanCore", "SafetyCore", .product(name: "Testing", package: "swift-testing")]),
         .target(name: "FileRules", dependencies: ["ScanCore", "SafetyCore"]),
         .target(name: "DesignSystem"),
