@@ -710,3 +710,8 @@
 "deepscan.plan.changed_line" = "• %@: %@";
 "deepscan.plan.summary_item" = "%@× %@";
 "deepscan.reclaimable_prefix" = "≈ %@";
+
+/* Deep Scan — folder override */
+"deepscan.scan_folder" = "Scan a specific folder…";
+"deepscan.scan_folder_active" = "Scanning: %@";
+"deepscan.scan_whole_home" = "Scan whole home folder";
