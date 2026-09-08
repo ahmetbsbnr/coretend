@@ -516,6 +516,37 @@ private func candidate(path: String, risk: RiskClass = .safe,
     #expect(g.nodes.allSatisfy { $0.volumeClass != .unknown || $0.completeness == .permissionDenied })
 }
 
+// MARK: - Developer storage detector
+
+@Test func developerDetectorFlagsRealBuildDirButNotDepInternalDist() async {
+    let t = TempTree(); defer { t.cleanup() }
+    // A real project build dir next to its manifest.
+    t.file("proj/package.json", bytes: 40)
+    t.file("proj/.next/cache/x.js", bytes: 4096)
+    // A dependency's own dist/ — every npm package has a package.json, so this
+    // would otherwise look "regenerable". It is not: deleting it breaks the
+    // installed package and needs a reinstall.
+    t.file("proj/node_modules/left-pad/package.json", bytes: 40)
+    t.file("proj/node_modules/left-pad/dist/index.js", bytes: 2048)
+    // Vendored Pods build output — same reasoning.
+    t.file("ios/Pods/SomePod/build/thing.o", bytes: 2048)
+
+    let g = await scan([t.root])
+    let ctx = DetectorContext(home: t.root, installedApps: [], runningBundleIDs: [],
+        runningExecutablePaths: [], scanStartedAt: g.startedAt, scanFinishedAt: g.finishedAt, gitRepos: [])
+    let cands = DeveloperStorageDetector().detect(in: g, context: ctx)
+    let paths = cands.map(\.canonicalPath)
+
+    #expect(paths.contains { $0.hasSuffix("/proj/.next") })
+    #expect(!paths.contains { $0.contains("/node_modules/") })   // dep-internal dist excluded
+    #expect(!paths.contains { $0.contains("/Pods/") })
+
+    let next = cands.first { $0.canonicalPath.hasSuffix("/proj/.next") }!
+    #expect(next.risk == .safe)
+    #expect(next.confidence >= .strong)         // manifest present + fully observed
+    #expect(next.evidence.contains { $0.kind == .regenerableMarker })
+}
+
 // MARK: - Execution wiring (§17/§18/§19/§27)
 
 @Test func executionGateOffSkipsEverything() async {
