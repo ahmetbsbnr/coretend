@@ -68,15 +68,19 @@ public struct DeveloperStorageDetector: Detector {
 
             let subtreeComplete = graph.subtreeFullyObserved(node.canonicalPath)
             var evidence: [Evidence] = [
-                Evidence(.pathPattern, "\(rule.note) directory named \(name)", detail: node.canonicalPath),
+                Evidence(.pathPattern, LocalizedText("deepscan.evidence.dev.build_output",
+                    args: [name], fallback: "\(rule.note) directory named \(name)"),
+                    detail: node.canonicalPath),
             ]
             if hasMarker {
-                evidence.append(Evidence(.regenerableMarker,
-                    "A project manifest sits next to it, so it can be rebuilt",
+                evidence.append(Evidence(.regenerableMarker, LocalizedText(
+                    "deepscan.evidence.dev.manifest_present",
+                    fallback: "A project manifest sits next to it, so it can be rebuilt"),
                     detail: rule.siblingMarkers.joined(separator: ", ")))
             }
             if !subtreeComplete {
-                evidence.append(Evidence(.subtreeIncomplete, "Not fully scanned"))
+                evidence.append(Evidence(.subtreeIncomplete, LocalizedText(
+                    "deepscan.evidence.subtree_incomplete", fallback: "Not fully scanned")))
             }
             let verdict = model.evaluate(evidence: evidence, subtreeComplete: subtreeComplete,
                 reconstruction: hasMarker ? rule.reconstruction : .unknown,
@@ -95,9 +99,27 @@ public struct DeveloperStorageDetector: Detector {
                 recommendedAction: verdict.risk == .safe ? .remove : .review,
                 defaultSelected: verdict.defaultSelected,
                 rationale: "\(rule.note); rebuildable from the project.",
-                ifRemoved: reconstructionText(hasMarker ? rule.reconstruction : .unknown)))
+                ifRemoved: reconstructionText(hasMarker ? rule.reconstruction : .unknown),
+                rationaleText: LocalizedText("deepscan.reason.dev.build",
+                    fallback: "\(rule.note); rebuildable from the project."),
+                ifRemovedText: reconstructionLocalized(hasMarker ? rule.reconstruction : .unknown),
+                protectedReasonText: verdict.protectedReasonText))
         }
         return out
+    }
+
+    func reconstructionLocalized(_ r: Reconstructability) -> LocalizedText {
+        let key: String
+        switch r {
+        case .regeneratesLocally: key = "deepscan.ifremoved.dev.local"
+        case .longCompile: key = "deepscan.ifremoved.dev.longcompile"
+        case .networkRedownload: key = "deepscan.ifremoved.dev.redownload"
+        case .reinstallRequired: key = "deepscan.ifremoved.dev.reinstall"
+        case .largeModelDownload: key = "deepscan.ifremoved.dev.large"
+        case .irreplaceable: key = "deepscan.ifremoved.dev.irreplaceable"
+        case .unknown: key = "deepscan.ifremoved.dev.unknown"
+        }
+        return LocalizedText(key, fallback: reconstructionText(r))
     }
 
     func reconstructionText(_ r: Reconstructability) -> String {
@@ -126,10 +148,10 @@ public struct GitProjectDetector: Detector {
             guard let node = graph.node(at: facts.workdir) else { continue }
             var evidence: [Evidence] = []
             if facts.safety == .green {
-                evidence.append(Evidence(.gitClean,
-                    "Clean tree, no stashes, HEAD present on a verified remote"))
+                evidence.append(Evidence(.gitClean, LocalizedText("deepscan.evidence.git.clean",
+                    fallback: "Clean tree, no stashes, HEAD present on a verified remote")))
             } else {
-                evidence.append(Evidence(.gitState, gitStateSummary(facts)))
+                evidence.append(contentsOf: gitStateEvidence(facts))
             }
             let model = RiskConfidenceModel()
             // Repos are never regenerable locally; treat as irreplaceable unless GREEN.
@@ -155,7 +177,15 @@ public struct GitProjectDetector: Detector {
                     : "Repository has local-only work — keep it.",
                 ifRemoved: facts.safety == .green
                     ? "You could re-clone it from \(facts.remotes.first?.value ?? "its remote")."
-                    : "Local commits, stashes or edits would be lost."))
+                    : "Local commits, stashes or edits would be lost.",
+                rationaleText: facts.safety == .green
+                    ? LocalizedText("deepscan.reason.git.green", fallback: "Clean clone; every commit is on a verified remote.")
+                    : LocalizedText("deepscan.reason.git.red", fallback: "Repository has local-only work — keep it."),
+                ifRemovedText: facts.safety == .green
+                    ? LocalizedText("deepscan.ifremoved.git.green", args: [facts.remotes.first?.value ?? "its remote"],
+                        fallback: "You could re-clone it from \(facts.remotes.first?.value ?? "its remote").")
+                    : LocalizedText("deepscan.ifremoved.git.red", fallback: "Local commits, stashes or edits would be lost."),
+                protectedReasonText: verdict.protectedReasonText))
 
             // Stale linked worktree registrations pointing nowhere.
             for wt in facts.worktreePaths where wt != facts.workdir {
@@ -178,9 +208,38 @@ public struct GitProjectDetector: Detector {
         return parts.isEmpty ? "state not fully verified" : parts.joined(separator: ", ")
     }
 
+    /// One structured evidence entry per condition, so the UI localizes each.
+    func gitStateEvidence(_ f: GitRepoFacts) -> [Evidence] {
+        var ev: [Evidence] = []
+        if f.hasStagedChanges || f.hasUnstagedChanges {
+            ev.append(Evidence(.gitState, LocalizedText("deepscan.evidence.git.uncommitted", fallback: "Uncommitted changes")))
+        }
+        if !f.untrackedNonIgnored.isEmpty {
+            ev.append(Evidence(.gitState, LocalizedText("deepscan.evidence.git.untracked",
+                args: ["\(f.untrackedNonIgnored.count)"], fallback: "\(f.untrackedNonIgnored.count) untracked files")))
+        }
+        if f.stashCount > 0 {
+            ev.append(Evidence(.gitState, LocalizedText("deepscan.evidence.git.stashes",
+                args: ["\(f.stashCount)"], fallback: "\(f.stashCount) stash(es)")))
+        }
+        if f.localOnlyCommitCount > 0 {
+            ev.append(Evidence(.gitState, LocalizedText("deepscan.evidence.git.unpushed",
+                args: ["\(f.localOnlyCommitCount)"], fallback: "\(f.localOnlyCommitCount) unpushed commit(s)")))
+        }
+        if f.remotes.isEmpty {
+            ev.append(Evidence(.gitState, LocalizedText("deepscan.evidence.git.no_remote", fallback: "No remote configured")))
+        } else if !f.remoteVerified {
+            ev.append(Evidence(.gitState, LocalizedText("deepscan.evidence.git.remote_unverified", fallback: "Remote not verified")))
+        }
+        if ev.isEmpty {
+            ev.append(Evidence(.gitState, LocalizedText("deepscan.evidence.git.state_unverified", fallback: "Repository state not fully verified")))
+        }
+        return ev
+    }
+
     func staleWorktreeCandidate(repo: GitRepoFacts, missingPath: String) -> CleanupCandidate {
-        let ev = [Evidence(.gitState,
-            "Registered worktree path does not exist on disk", detail: missingPath)]
+        let ev = [Evidence(.gitState, LocalizedText("deepscan.evidence.git.stale_worktree",
+            fallback: "Registered worktree path does not exist on disk"), detail: missingPath)]
         return CleanupCandidate(
             path: repo.gitDir + "/worktrees", canonicalPath: repo.gitDir + "/worktrees",
             category: .gitProjects, subcategory: "staleWorktreeRegistration", detector: id,
@@ -190,7 +249,11 @@ public struct GitProjectDetector: Detector {
             activeState: .idle, evidence: ev, protectedReason: nil,
             recommendedAction: .review, defaultSelected: false,
             rationale: "A worktree registration points at a folder that is gone.",
-            ifRemoved: "Run `git worktree prune` — this only clears bookkeeping.")
+            ifRemoved: "Run `git worktree prune` — this only clears bookkeeping.",
+            rationaleText: LocalizedText("deepscan.reason.git.stale_worktree",
+                fallback: "A worktree registration points at a folder that is gone."),
+            ifRemovedText: LocalizedText("deepscan.ifremoved.git.stale_worktree",
+                fallback: "Run `git worktree prune` — this only clears bookkeeping."))
     }
 }
 
@@ -219,12 +282,13 @@ public struct DuplicateProjectsDetector: Detector {
             for f in group where f.workdir != canonical?.workdir {
                 guard let node = graph.node(at: f.workdir) else { continue }
                 let ev = [
-                    Evidence(.duplicateRemote,
-                        "Another clone of \(remote) exists at \(canonical?.workdir ?? "another path")",
+                    Evidence(.duplicateRemote, LocalizedText("deepscan.evidence.dup.remote",
+                        args: [remote, canonical?.workdir ?? "another path"],
+                        fallback: "Another clone of \(remote) exists at \(canonical?.workdir ?? "another path")"),
                         detail: f.workdir),
                     Evidence(.gitState, f.isDirty || f.localOnlyCommitCount > 0
-                        ? "This clone also has local-only work"
-                        : "This clone has no local-only work"),
+                        ? LocalizedText("deepscan.evidence.dup.has_local_work", fallback: "This clone also has local-only work")
+                        : LocalizedText("deepscan.evidence.dup.no_local_work", fallback: "This clone has no local-only work")),
                 ]
                 let risk: RiskClass = (f.isDirty || f.localOnlyCommitCount > 0 || f.stashCount > 0)
                     ? .protected : .review
@@ -242,7 +306,15 @@ public struct DuplicateProjectsDetector: Detector {
                     rationale: "Duplicate clone of \(remote).",
                     ifRemoved: risk == .protected
                         ? "Local-only work here would be lost — keep it."
-                        : "You would still have the other clone; re-clone if needed."))
+                        : "You would still have the other clone; re-clone if needed.",
+                    rationaleText: LocalizedText("deepscan.reason.dup", args: [remote],
+                        fallback: "Duplicate clone of \(remote)."),
+                    ifRemovedText: risk == .protected
+                        ? LocalizedText("deepscan.ifremoved.dup.protected", fallback: "Local-only work here would be lost — keep it.")
+                        : LocalizedText("deepscan.ifremoved.dup.review", fallback: "You would still have the other clone; re-clone if needed."),
+                    protectedReasonText: risk == .protected
+                        ? LocalizedText("deepscan.protected.dup_local_work", fallback: "This duplicate has its own local-only work")
+                        : nil))
             }
         }
         return out

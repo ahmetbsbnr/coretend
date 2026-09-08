@@ -31,6 +31,8 @@ public struct RiskConfidenceModel: Sendable {
         public let risk: RiskClass
         public let defaultSelected: Bool
         public let protectedReason: String?
+        /// Language-independent form of `protectedReason` for the localized UI.
+        public var protectedReasonText: LocalizedText? = nil
     }
 
     /// `subtreeComplete` is the engine's truth about whether every node under
@@ -46,15 +48,21 @@ public struct RiskConfidenceModel: Sendable {
         // 1. Hard PROTECTED gates.
         if let hit = evidence.first(where: { Self.protectingKinds.contains($0.kind) }) {
             return Verdict(confidence: .unknown, risk: .protected, defaultSelected: false,
-                           protectedReason: hit.humanReadable)
+                           protectedReason: hit.humanReadable,
+                           protectedReasonText: hit.text
+                             ?? LocalizedText("deepscan.protected.user_state", fallback: hit.humanReadable))
         }
         if gitSafety == .red {
             return Verdict(confidence: .weak, risk: .protected, defaultSelected: false,
-                           protectedReason: "Git repository has uncommitted or unpushed work")
+                           protectedReason: "Git repository has uncommitted or unpushed work",
+                           protectedReasonText: LocalizedText("deepscan.protected.git_red",
+                             fallback: "Git repository has uncommitted or unpushed work"))
         }
         if activeState == .activelyWritten {
             return Verdict(confidence: .weak, risk: .protected, defaultSelected: false,
-                           protectedReason: "A process is writing to this location right now")
+                           protectedReason: "A process is writing to this location right now",
+                           protectedReasonText: LocalizedText("deepscan.protected.active_write",
+                             fallback: "A process is writing to this location right now"))
         }
         // No positive evidence at all -> we do not know what this is.
         let attributionKinds: Set<Evidence.Kind> = [
@@ -63,7 +71,9 @@ public struct RiskConfidenceModel: Sendable {
         ]
         if kinds.isDisjoint(with: attributionKinds) {
             return Verdict(confidence: .unknown, risk: .protected, defaultSelected: false,
-                           protectedReason: "Not enough evidence to identify this data")
+                           protectedReason: "Not enough evidence to identify this data",
+                           protectedReasonText: LocalizedText("deepscan.protected.unknown_attribution",
+                             fallback: "Not enough evidence to identify this data"))
         }
 
         // 2. Confidence.

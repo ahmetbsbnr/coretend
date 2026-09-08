@@ -84,6 +84,14 @@ private func dsCategoryName(_ c: CleanupCategory) -> String {
     }
 }
 
+/// Resolve a language-independent `LocalizedText` (from a detector / the risk
+/// model) against the string table, using its English `fallback` when the key
+/// is absent or the structured form is nil.
+private func dsText(_ t: LocalizedText?, fallback: String) -> String {
+    guard let t else { return fallback }
+    return L(t.key, args: t.args, fallback: t.fallback.isEmpty ? fallback : t.fallback)
+}
+
 private func dsSortName(_ s: DeepScanSort) -> String {
     switch s {
     case .size: L("deepscan.sort.size")
@@ -529,8 +537,9 @@ struct DeepScanRowView: View {
     var body: some View {
         DisclosureGroup {
             VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-                ForEach(Array(row.whyBullets.enumerated()), id: \.offset) { _, b in
-                    Label(b, systemImage: "checkmark.circle").font(MCFont.caption)
+                ForEach(Array(row.whyBulletsStructured.enumerated()), id: \.offset) { i, structured in
+                    Label(dsText(structured, fallback: row.whyBullets[i]), systemImage: "checkmark.circle")
+                        .font(MCFont.caption)
                 }
                 Divider()
                 grid(L("deepscan.row.where"), row.whereText)
@@ -540,9 +549,11 @@ struct DeepScanRowView: View {
                 grid(L("deepscan.row.rebuild"), dsRebuildName(row.candidate.reconstructability))
                 grid(L("deepscan.row.last_activity"), row.lastActivity)
                 grid(L("deepscan.row.owner"), row.owner)
-                grid(L("deepscan.row.if_removed"), row.ifRemoved)
-                if let pr = row.protectedReason {
-                    Label(pr, systemImage: "lock.fill")
+                grid(L("deepscan.row.if_removed"),
+                     dsText(row.ifRemovedTextStructured, fallback: row.ifRemoved))
+                if row.protectedReason != nil || row.protectedReasonTextStructured != nil {
+                    Label(dsText(row.protectedReasonTextStructured, fallback: row.protectedReason ?? ""),
+                          systemImage: "lock.fill")
                         .font(MCFont.caption).foregroundStyle(MCTheme.warning)
                 }
             }
@@ -557,7 +568,7 @@ struct DeepScanRowView: View {
                         .toggleStyle(.checkbox)
                 }
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(row.what).font(MCFont.body)
+                    Text(dsText(row.whatText, fallback: row.what)).font(MCFont.body)
                     Text(row.whereText).font(MCFont.caption).foregroundStyle(.secondary)
                         .lineLimit(1).truncationMode(.middle)
                 }
@@ -642,7 +653,7 @@ struct DeepScanPlanSheet: View {
 
             List(plan.selected) { line in
                 HStack {
-                    Text(line.row.what)
+                    Text(dsText(line.row.whatText, fallback: line.row.what))
                     Spacer()
                     Text(line.row.size).foregroundStyle(.secondary)
                 }
