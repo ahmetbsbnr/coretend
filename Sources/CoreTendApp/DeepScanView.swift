@@ -18,6 +18,81 @@ import SafetyCore
 import DesignSystem
 import Persistence
 
+// MARK: - Localized labels for DeepScanCore enums
+//
+// DeepScanCore stays framework- and localization-free; the app maps its enums
+// to `Localizable.strings` here so no Deep Scan screen shows mixed languages.
+
+private func dsPhaseName(_ p: DeepScanPhase) -> String {
+    switch p {
+    case .preparing: L("deepscan.phase.preparing")
+    case .enumerating: L("deepscan.phase.enumerating")
+    case .indexing: L("deepscan.phase.indexing")
+    case .analyzingApps: L("deepscan.phase.apps")
+    case .analyzingAI: L("deepscan.phase.ai")
+    case .analyzingDeveloper: L("deepscan.phase.developer")
+    case .analyzingGit: L("deepscan.phase.git")
+    case .analyzingLeftovers: L("deepscan.phase.leftovers")
+    case .finalizing: L("deepscan.phase.finalizing")
+    case .done: L("deepscan.phase.done")
+    case .cancelledPartial: L("deepscan.phase.partial")
+    }
+}
+
+private func dsRiskName(_ r: RiskClass) -> String {
+    switch r {
+    case .safe: L("deepscan.risk.low")
+    case .review: L("deepscan.risk.review")
+    case .highRisk: L("deepscan.risk.high")
+    case .protected: L("deepscan.risk.protected")
+    }
+}
+
+private func dsConfidenceName(_ c: Confidence) -> String {
+    switch c {
+    case .confirmed: L("deepscan.confidence.confirmed")
+    case .strong: L("deepscan.confidence.strong")
+    case .probable: L("deepscan.confidence.probable")
+    case .weak: L("deepscan.confidence.weak")
+    case .unknown: L("deepscan.confidence.unknown")
+    }
+}
+
+private func dsRebuildName(_ r: Reconstructability) -> String {
+    switch r {
+    case .regeneratesLocally: L("deepscan.rebuild.local")
+    case .reinstallRequired: L("deepscan.rebuild.reinstall")
+    case .networkRedownload: L("deepscan.rebuild.redownload")
+    case .longCompile: L("deepscan.rebuild.long")
+    case .largeModelDownload: L("deepscan.rebuild.large")
+    case .irreplaceable: L("deepscan.rebuild.irreplaceable")
+    case .unknown: L("deepscan.rebuild.unknown")
+    }
+}
+
+private func dsCategoryName(_ c: CleanupCategory) -> String {
+    switch c {
+    case .storage: L("deepscan.category.storage")
+    case .appsAndLeftovers: L("deepscan.category.apps")
+    case .aiAndLLM: L("deepscan.category.ai")
+    case .developer: L("deepscan.category.developer")
+    case .gitProjects: L("deepscan.category.git")
+    case .systemAndSettings: L("deepscan.category.system")
+    case .temporaryFiles: L("deepscan.category.temp")
+    case .installers: L("deepscan.category.installers")
+    case .cloud: L("deepscan.category.cloud")
+    }
+}
+
+private func dsSortName(_ s: DeepScanSort) -> String {
+    switch s {
+    case .size: L("deepscan.sort.size")
+    case .risk: L("deepscan.sort.risk")
+    case .lastActivity: L("deepscan.sort.lastactivity")
+    case .confidence: L("deepscan.sort.confidence")
+    }
+}
+
 @MainActor
 @Observable
 final class DeepScanViewModel {
@@ -190,7 +265,7 @@ struct DeepScanView: View {
             case .results: results
             }
         }
-        .navigationTitle("Deep Scan")
+        .navigationTitle(L("deepscan.nav_title"))
         .accessibilityIdentifier("deepScan.root")
         .sheet(isPresented: $model.showSettings) {
             DeepScanSettingsSheet(settings: $model.settings, onSave: model.saveSettings)
@@ -209,9 +284,9 @@ struct DeepScanView: View {
     private var entry: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: MCSpacing.lg) {
-                Text("Deep Scan")
+                Text(L("deepscan.nav_title"))
                     .font(MCFont.pageTitle)
-                Text("A read-only, evidence-based look at where storage goes: apps and leftovers, AI/LLM stores, developer output, Git projects, system remnants, temporary files, installers, cloud copies, and large old files. Nothing is deleted during analysis.")
+                Text(L("deepscan.intro"))
                     .font(MCFont.secondaryBody)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -221,12 +296,11 @@ struct DeepScanView: View {
                         permissionRow
                         Divider()
                         Label(model.settings.scanExternalVolumes
-                              ? "Home volume + \(model.settings.includedExternalVolumeRoots.count) external"
-                              : "Home volume only (external volumes are opt-in)",
+                              ? L("deepscan.volume_with_external", "\(model.settings.includedExternalVolumeRoots.count)")
+                              : L("deepscan.volume_home_only"),
                               systemImage: "internaldrive")
                             .font(MCFont.secondaryBody)
-                        Label("Analysis is read-only. No cleanup happens while scanning.",
-                              systemImage: "lock.shield")
+                        Label(L("deepscan.readonly_note"), systemImage: "lock.shield")
                             .font(MCFont.secondaryBody)
                             .foregroundStyle(.secondary)
                     }
@@ -237,18 +311,18 @@ struct DeepScanView: View {
                     Button {
                         model.startScan()
                     } label: {
-                        Label("Start Deep Scan", systemImage: "magnifyingglass")
+                        Label(L("deepscan.start"), systemImage: "magnifyingglass")
                             .frame(maxWidth: 220)
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
 
-                    Button("Scan Options…") { model.showSettings = true }
+                    Button(L("deepscan.scan_options")) { model.showSettings = true }
                         .controlSize(.large)
                 }
 
                 if !model.executionAvailable {
-                    Label("Cleanup execution is disabled in this build. Deep Scan can review and plan, but the Move to Trash step is turned off until a maintainer enables it.",
+                    Label(L("deepscan.exec_disabled_note"),
                           systemImage: "exclamationmark.triangle")
                         .font(MCFont.caption)
                         .foregroundStyle(MCTheme.warning)
@@ -262,10 +336,10 @@ struct DeepScanView: View {
     private var permissionRow: some View {
         let (icon, tint, text): (String, Color, String) = {
             switch model.permission {
-            case .fullDiskAccess: return ("checkmark.seal", MCTheme.success, "Full Disk Access is on — the whole home volume can be analysed.")
-            case .partialAccess: return ("exclamationmark.triangle", MCTheme.warning, "Partial access — some folders are hidden by macOS. Grant Full Disk Access in System Settings › Privacy & Security for a complete picture.")
-            case .protectedByOS: return ("lock", .secondary, "Some locations are protected by macOS and will be reported as such.")
-            case .scanError: return ("xmark.octagon", MCTheme.danger, "The last scan hit an error reading part of the disk.")
+            case .fullDiskAccess: return ("checkmark.seal", MCTheme.success, L("deepscan.permission.full"))
+            case .partialAccess: return ("exclamationmark.triangle", MCTheme.warning, L("deepscan.permission.partial"))
+            case .protectedByOS: return ("lock", .secondary, L("deepscan.permission.protected"))
+            case .scanError: return ("xmark.octagon", MCTheme.danger, L("deepscan.permission.error"))
             }
         }()
         return Label(text, systemImage: icon)
@@ -278,13 +352,13 @@ struct DeepScanView: View {
 
     private var scanning: some View {
         VStack(alignment: .leading, spacing: MCSpacing.lg) {
-            Text("Scanning…").font(MCFont.pageTitle)
+            Text(L("deepscan.scanning_title")).font(MCFont.pageTitle)
             VStack(alignment: .leading, spacing: MCSpacing.xs) {
                 ForEach(DeepScanPhase.allCases.filter { $0 != .done && $0 != .cancelledPartial }, id: \.self) { phase in
                     HStack(spacing: MCSpacing.xs) {
                         Image(systemName: phaseIcon(phase))
                             .foregroundStyle(phaseTint(phase))
-                        Text(phase.rawValue)
+                        Text(dsPhaseName(phase))
                             .font(MCFont.secondaryBody)
                             .foregroundStyle(phase == model.progress.phase ? .primary : .secondary)
                     }
@@ -292,22 +366,23 @@ struct DeepScanView: View {
             }
             MCCard {
                 VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-                    Text("\(model.progress.nodesScanned) items · \(DeepScanFormat.bytes(model.progress.bytesObserved)) observed")
+                    Text(L("deepscan.progress.items", "\(model.progress.nodesScanned)",
+                           DeepScanFormat.bytes(model.progress.bytesObserved)))
                         .font(MCFont.metric)
-                    Text("\(model.progress.permissionDeniedCount) folders blocked by permissions")
+                    Text(L("deepscan.progress.blocked", "\(model.progress.permissionDeniedCount)"))
                         .font(MCFont.caption).foregroundStyle(.secondary)
-                    Text(String(format: "Elapsed %.0fs", model.progress.elapsed))
+                    Text(L("deepscan.progress.elapsed", String(format: "%.0f", model.progress.elapsed)))
                         .font(MCFont.caption).foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             HStack {
                 if model.progress.isPaused {
-                    Button("Resume") { model.resume() }
+                    Button(L("common.resume")) { model.resume() }
                 } else {
-                    Button("Pause") { model.pause() }
+                    Button(L("common.pause")) { model.pause() }
                 }
-                Button("Cancel", role: .destructive) { model.cancel() }
+                Button(L("common.cancel"), role: .destructive) { model.cancel() }
             }
             Spacer()
         }
@@ -344,7 +419,7 @@ struct DeepScanView: View {
                 model.selectedCategory = nil
             } label: {
                 HStack {
-                    Label("Overview", systemImage: "square.grid.2x2")
+                    Label(L("deepscan.overview"), systemImage: "square.grid.2x2")
                     Spacer()
                     Text("\(model.candidates.count)").foregroundStyle(.secondary)
                 }
@@ -357,11 +432,12 @@ struct DeepScanView: View {
                 } label: {
                     VStack(alignment: .leading, spacing: 2) {
                         HStack {
-                            Text(group.category.displayName)
+                            Text(dsCategoryName(group.category))
                             Spacer()
                             Text("\(group.count)").foregroundStyle(.secondary)
                         }
-                        Text("≈ \(DeepScanFormat.bytes(group.reviewableBytes)) reviewable · \(group.protectedCount) protected")
+                        Text(L("deepscan.rail.summary",
+                               DeepScanFormat.bytes(group.reviewableBytes), "\(group.protectedCount)"))
                             .font(MCFont.caption).foregroundStyle(.secondary)
                     }
                 }
@@ -375,31 +451,33 @@ struct DeepScanView: View {
     private var resultsList: some View {
         VStack(alignment: .leading, spacing: MCSpacing.sm) {
             HStack {
-                TextField("Search path, owner, kind…", text: $model.results.filter.searchText)
+                TextField(L("deepscan.search_placeholder"), text: $model.results.filter.searchText)
                     .textFieldStyle(.roundedBorder)
                     .frame(maxWidth: 280)
-                Menu("Risk") {
-                    Button("Any") { model.results.filter.maxRisk = nil }
-                    Button("Low only") { model.results.filter.maxRisk = .safe }
-                    Button("Review or lower") { model.results.filter.maxRisk = .review }
+                Menu(L("deepscan.filter.risk")) {
+                    Button(L("deepscan.filter.risk.any")) { model.results.filter.maxRisk = nil }
+                    Button(L("deepscan.filter.risk.low_only")) { model.results.filter.maxRisk = .safe }
+                    Button(L("deepscan.filter.risk.review_or_lower")) { model.results.filter.maxRisk = .review }
                 }
-                Menu("Sort") {
+                Menu(L("deepscan.sort")) {
                     ForEach(DeepScanSort.allCases, id: \.self) { s in
-                        Button(s.rawValue.capitalized) { model.results.sort = s }
+                        Button(dsSortName(s)) { model.results.sort = s }
                     }
                 }
-                Toggle("Protected only", isOn: $model.results.filter.protectedOnly)
+                Toggle(L("deepscan.protected_only"), isOn: $model.results.filter.protectedOnly)
                     .toggleStyle(.checkbox)
                 Spacer()
                 Button {
                     model.openPlan()
                 } label: {
-                    Label("Review Cleanup Plan (\(model.selectedIDs.count))", systemImage: "tray.and.arrow.down")
+                    Label(L("deepscan.review_plan", "\(model.selectedIDs.count)"),
+                          systemImage: "tray.and.arrow.down")
                 }
                 .disabled(model.selectedIDs.isEmpty)
             }
 
-            Text("\(model.totalMatching()) items · ≈ \(DeepScanFormat.bytes(model.reviewableBytes())) reviewable")
+            Text(L("deepscan.results.summary", "\(model.totalMatching())",
+                   DeepScanFormat.bytes(model.reviewableBytes())))
                 .font(MCFont.caption).foregroundStyle(.secondary)
 
             List {
@@ -409,7 +487,7 @@ struct DeepScanView: View {
                                     toggle: { model.toggle(row) })
                 }
                 if model.totalMatching() > model.visibleCount {
-                    Button("Show more (\(model.totalMatching() - model.visibleCount) remaining)") {
+                    Button(L("deepscan.show_more", "\(model.totalMatching() - model.visibleCount)")) {
                         model.visibleCount += model.pageLimit
                     }
                 }
@@ -434,14 +512,14 @@ struct DeepScanRowView: View {
                     Label(b, systemImage: "checkmark.circle").font(MCFont.caption)
                 }
                 Divider()
-                grid("Where", row.whereText)
-                grid("Size", "\(row.size)  (allocated \(row.allocatedSize))")
-                grid("Reclaimable", row.estimatedReclaimable)
-                grid("Confidence", row.confidence)
-                grid("Rebuild", row.reconstructability)
-                grid("Last activity", row.lastActivity)
-                grid("Owner", row.owner)
-                grid("If removed", row.ifRemoved)
+                grid(L("deepscan.row.where"), row.whereText)
+                grid(L("deepscan.row.size"), L("deepscan.row.size_value", row.size, row.allocatedSize))
+                grid(L("deepscan.row.reclaimable"), row.estimatedReclaimable)
+                grid(L("deepscan.row.confidence"), dsConfidenceName(row.candidate.confidence))
+                grid(L("deepscan.row.rebuild"), dsRebuildName(row.candidate.reconstructability))
+                grid(L("deepscan.row.last_activity"), row.lastActivity)
+                grid(L("deepscan.row.owner"), row.owner)
+                grid(L("deepscan.row.if_removed"), row.ifRemoved)
                 if let pr = row.protectedReason {
                     Label(pr, systemImage: "lock.fill")
                         .font(MCFont.caption).foregroundStyle(MCTheme.warning)
@@ -451,7 +529,7 @@ struct DeepScanRowView: View {
         } label: {
             HStack(spacing: MCSpacing.xs) {
                 if row.isProtected {
-                    MCStatusBadge("Protected", status: .attention)
+                    MCStatusBadge(L("deepscan.badge.protected"), status: .attention)
                 } else {
                     Toggle("", isOn: Binding(get: { isSelected }, set: { _ in toggle() }))
                         .labelsHidden()
@@ -478,7 +556,7 @@ struct DeepScanRowView: View {
             case .protected: return .attention
             }
         }()
-        return MCStatusBadge(row.risk, status: status)
+        return MCStatusBadge(dsRiskName(row.candidate.risk), status: status)
     }
 
     private func grid(_ k: String, _ v: String) -> some View {
@@ -500,29 +578,36 @@ struct DeepScanPlanSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: MCSpacing.md) {
-            Text("Cleanup Plan").font(MCFont.pageTitle)
+            Text(L("deepscan.plan.title")).font(MCFont.pageTitle)
 
             HStack(spacing: MCSpacing.lg) {
-                stat("Selected", "\(plan.selected.count)")
-                stat("Logical", DeepScanFormat.bytes(plan.totalLogicalBytes))
-                stat("Reclaimable", "≈ " + DeepScanFormat.bytes(plan.estimatedReclaimableBytes))
+                stat(L("deepscan.plan.selected"), "\(plan.selected.count)")
+                stat(L("deepscan.plan.logical"), DeepScanFormat.bytes(plan.totalLogicalBytes))
+                stat(L("deepscan.plan.reclaimable"),
+                     L("deepscan.reclaimable_prefix", DeepScanFormat.bytes(plan.estimatedReclaimableBytes)))
             }
 
-            if !plan.riskSummary.isEmpty {
-                Text("Risk: " + plan.riskSummary.map { "\($0.value)× \($0.key)" }.joined(separator: ", "))
+            if !plan.riskSummaryByClass.isEmpty {
+                Text(L("deepscan.plan.risk_prefix", plan.riskSummaryByClass
+                    .map { L("deepscan.plan.summary_item", "\($0.value)", dsRiskName($0.key)) }
+                    .joined(separator: ", ")))
                     .font(MCFont.caption).foregroundStyle(.secondary)
             }
-            if !plan.rebuildCostSummary.isEmpty {
-                Text("Rebuild: " + plan.rebuildCostSummary.map { "\($0.value)× \($0.key)" }.joined(separator: ", "))
+            if !plan.rebuildSummaryByKind.isEmpty {
+                Text(L("deepscan.plan.rebuild_prefix", plan.rebuildSummaryByKind
+                    .map { L("deepscan.plan.summary_item", "\($0.value)", dsRebuildName($0.key)) }
+                    .joined(separator: ", ")))
                     .font(MCFont.caption).foregroundStyle(.secondary)
             }
 
             if !plan.changedSinceScan.isEmpty {
                 MCCard {
                     VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-                        Text("Skipped — changed since scan").font(MCFont.sectionTitle)
+                        Text(L("deepscan.plan.changed_title")).font(MCFont.sectionTitle)
                         ForEach(plan.changedSinceScan) { c in
-                            Text("• \(c.reason): \((c.path as NSString).lastPathComponent)")
+                            Text(L("deepscan.plan.changed_line",
+                                   L("deepscan.skip.\(deepScanSkipReasonSlug(c.reason))"),
+                                   (c.path as NSString).lastPathComponent))
                                 .font(MCFont.caption)
                         }
                     }.frame(maxWidth: .infinity, alignment: .leading)
@@ -530,7 +615,7 @@ struct DeepScanPlanSheet: View {
             }
 
             if !plan.protectedHeldBack.isEmpty {
-                Text("\(plan.protectedHeldBack.count) selected item(s) are protected and will not be touched.")
+                Text(L("deepscan.plan.protected_note", "\(plan.protectedHeldBack.count)"))
                     .font(MCFont.caption).foregroundStyle(MCTheme.warning)
             }
 
@@ -545,19 +630,21 @@ struct DeepScanPlanSheet: View {
 
             if let report {
                 Text(report.gated
-                     ? "Execution is disabled — nothing was moved."
-                     : "Moved \(report.executed.count) to Trash · \(report.skipped.count) skipped.")
+                     ? L("deepscan.plan.result_gated")
+                     : L("deepscan.plan.result_done", "\(report.executed.count)", "\(report.skipped.count)"))
                     .font(MCFont.secondaryBody)
                     .foregroundStyle(report.executed.isEmpty ? .secondary : MCTheme.success)
             }
 
             HStack {
-                Button("Close") { dismiss() }
+                Button(L("deepscan.plan.close")) { dismiss() }
                 Spacer()
                 Button {
                     onExecute()
                 } label: {
-                    Label(executionAvailable ? "Move \(plan.movedToTrash.count) to Trash" : "Execution disabled",
+                    Label(executionAvailable
+                          ? L("deepscan.plan.move_to_trash", "\(plan.movedToTrash.count)")
+                          : L("deepscan.plan.exec_disabled"),
                           systemImage: "trash")
                 }
                 .buttonStyle(.borderedProminent)
@@ -585,28 +672,28 @@ struct DeepScanSettingsSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: MCSpacing.md) {
-            Text("Deep Scan Options").font(MCFont.pageTitle)
+            Text(L("deepscan.settings.title")).font(MCFont.pageTitle)
             Form {
-                Section("Scope") {
-                    Toggle("Analyse external volumes (opt-in)", isOn: $settings.scanExternalVolumes)
-                    Toggle("Developer projects & build output", isOn: $settings.developerAnalysisEnabled)
-                    Toggle("AI / LLM storage", isOn: $settings.aiAnalysisEnabled)
-                    Toggle("System & settings remnants", isOn: $settings.systemAnalysisEnabled)
-                    Toggle("Cloud-backed locations (detection only)", isOn: $settings.cloudAnalysisEnabled)
+                Section(L("deepscan.settings.scope")) {
+                    Toggle(L("deepscan.settings.external"), isOn: $settings.scanExternalVolumes)
+                    Toggle(L("deepscan.settings.developer"), isOn: $settings.developerAnalysisEnabled)
+                    Toggle(L("deepscan.settings.ai"), isOn: $settings.aiAnalysisEnabled)
+                    Toggle(L("deepscan.settings.system"), isOn: $settings.systemAnalysisEnabled)
+                    Toggle(L("deepscan.settings.cloud"), isOn: $settings.cloudAnalysisEnabled)
                 }
-                Section("Git") {
-                    Toggle("Verify remotes over the network", isOn: $settings.gitNetworkVerificationEnabled)
-                    Text("When off, repositories with an unverified remote are treated conservatively.")
+                Section(L("deepscan.settings.git_section")) {
+                    Toggle(L("deepscan.settings.git_verify"), isOn: $settings.gitNetworkVerificationEnabled)
+                    Text(L("deepscan.settings.git_note"))
                         .font(MCFont.caption).foregroundStyle(.secondary)
                 }
                 Section {
-                    Text("Safety protections, the protected-path policy, and Trash-only execution are not configurable.")
+                    Text(L("deepscan.settings.protections_note"))
                         .font(MCFont.caption).foregroundStyle(.secondary)
                 }
             }
             HStack {
                 Spacer()
-                Button("Done") { onSave(); dismiss() }
+                Button(L("deepscan.settings.done")) { onSave(); dismiss() }
                     .buttonStyle(.borderedProminent)
             }
         }
