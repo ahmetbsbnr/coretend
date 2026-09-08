@@ -1,10 +1,10 @@
 # CoreTend Deep Scan — READ-ONLY QA report
-Generated: 2026-09-08T20:34:43Z
+Generated: 2026-09-08T21:14:58Z
 
 ## Scan
 - roots: /Users/ahmetbasbunar/.claude, /Users/ahmetbasbunar/.codex, /Users/ahmetbasbunar/.cache, /Users/ahmetbasbunar/Library/Caches, /Users/ahmetbasbunar/Developer, /Users/ahmetbasbunar/Downloads, /Users/ahmetbasbunar/Library/LaunchAgents
-- nodes observed: 126396
-- wall time: 3.0s
+- nodes observed: 127195
+- wall time: 3.1s
 - cancelled: false   timed out: false
 - roots we could not read: /Users/ahmetbasbunar/Library/Caches/CloudKit, /Users/ahmetbasbunar/Library/Caches/FamilyCircle, /Users/ahmetbasbunar/Library/Caches/com.apple.HomeKit, /Users/ahmetbasbunar/Library/Caches/com.apple.Safari, /Users/ahmetbasbunar/Library/Caches/com.apple.Safari.SafeBrowsing, /Users/ahmetbasbunar/Library/Caches/com.apple.ap.adprivacyd, /Users/ahmetbasbunar/Library/Caches/com.apple.containermanagerd, /Users/ahmetbasbunar/Library/Caches/com.apple.homed, /Users/ahmetbasbunar/Library/Caches/familycircled
 - permission-denied nodes: 9   partial nodes: 1
@@ -14,7 +14,7 @@ Generated: 2026-09-08T20:34:43Z
 - git repositories discovered: 8
   - [YELLOW] /Users/ahmetbasbunar/.claude/plugins/marketplaces/context-mode — branch main, dirty=false, stashes=0, unpushed=0
   - [YELLOW] /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio — branch main, dirty=false, stashes=0, unpushed=0
-  - [RED] /Users/ahmetbasbunar/Developer/Website/products/coretend/app — branch feat/deep-scan-cleanup-v1.2, dirty=true, stashes=0, unpushed=9
+  - [RED] /Users/ahmetbasbunar/Developer/Website/products/coretend/app — branch feat/deep-scan-cleanup-v1.2, dirty=true, stashes=0, unpushed=14
   - [YELLOW] /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build/checkouts/swift-syntax — branch detached, dirty=false, stashes=0, unpushed=0
   - [YELLOW] /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build/checkouts/swift-testing — branch detached, dirty=false, stashes=0, unpushed=0
   - [YELLOW] /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build/index-build/checkouts/swift-syntax — branch detached, dirty=false, stashes=0, unpushed=0
@@ -64,7 +64,7 @@ Generated: 2026-09-08T20:34:43Z
     if removed: If you reinstall that app it will recreate this folder.
     · No installed app declares the bundle ID “com.vercel.cli”
     · No installed app or helper claims this identifier
-    · Last changed about 1 days ago
+    · Last changed about 2 days ago
 - 8 bytes  [highRisk/weak]  /Users/ahmetbasbunar/Library/Caches/org.webkit.Playwright
     owner: org.webkit.Playwright  subcategory: orphanedContainer  default-selected: false
     why: Appears to belong to “org.webkit.Playwright”, which is not installed.
@@ -89,7 +89,7 @@ Generated: 2026-09-08T20:34:43Z
     why: Codex — extensions / plugins.
     if removed: You would reinstall the extensions.
     · Inside Codex's data folder
-- 313.3 MB  [protected/unknown]  /Users/ahmetbasbunar/.claude/projects
+- 314.8 MB  [protected/unknown]  /Users/ahmetbasbunar/.claude/projects
     owner: Claude Code  subcategory: projectState  default-selected: false
     why: Claude Code — per-project state.
     if removed: This cannot be recovered. CoreTend will not remove it.
@@ -118,7 +118,7 @@ Generated: 2026-09-08T20:34:43Z
     why: Claude Code — extensions / plugins.
     if removed: You would reinstall the extensions.
     · Inside Claude Code's data folder
-- 17.7 MB  [protected/unknown]  /Users/ahmetbasbunar/.claude/file-history
+- 17.9 MB  [protected/unknown]  /Users/ahmetbasbunar/.claude/file-history
     owner: Claude Code  subcategory: projectState  default-selected: false
     why: Claude Code — per-project state.
     if removed: This cannot be recovered. CoreTend will not remove it.
@@ -172,14 +172,14 @@ Generated: 2026-09-08T20:34:43Z
     PROTECTED: This is Codex data of an unknown kind — protected user state
     · Inside Codex's data folder
     · This is Codex data of an unknown kind — protected user state
-- 214 KB  [protected/unknown]  /Users/ahmetbasbunar/.claude/history.jsonl
+- 223 KB  [protected/unknown]  /Users/ahmetbasbunar/.claude/jobs
     owner: Claude Code  subcategory: unknownData  default-selected: false
     why: Claude Code — data of an unknown kind.
     if removed: This cannot be recovered. CoreTend will not remove it.
     PROTECTED: This is Claude Code data of an unknown kind — protected user state
     · Inside Claude Code's data folder
     · This is Claude Code data of an unknown kind — protected user state
-- 201 KB  [protected/unknown]  /Users/ahmetbasbunar/.claude/jobs
+- 215 KB  [protected/unknown]  /Users/ahmetbasbunar/.claude/history.jsonl
     owner: Claude Code  subcategory: unknownData  default-selected: false
     why: Claude Code — data of an unknown kind.
     if removed: This cannot be recovered. CoreTend will not remove it.
@@ -200,6 +200,13 @@ Generated: 2026-09-08T20:34:43Z
     PROTECTED: This is Codex data of an unknown kind — protected user state
     · Inside Codex's data folder
     · This is Codex data of an unknown kind — protected user state
+- 89 KB  [protected/unknown]  /Users/ahmetbasbunar/.claude/paste-cache
+    owner: Claude Code  subcategory: unknownData  default-selected: false
+    why: Claude Code — data of an unknown kind.
+    if removed: This cannot be recovered. CoreTend will not remove it.
+    PROTECTED: This is Claude Code data of an unknown kind — protected user state
+    · Inside Claude Code's data folder
+    · This is Claude Code data of an unknown kind — protected user state
 - 82 KB  [protected/unknown]  /Users/ahmetbasbunar/.codex/queue_1.sqlite-wal
     owner: Codex  subcategory: unknownData  default-selected: false
     why: Codex — data of an unknown kind.
@@ -207,13 +214,6 @@ Generated: 2026-09-08T20:34:43Z
     PROTECTED: This is Codex data of an unknown kind — protected user state
     · Inside Codex's data folder
     · This is Codex data of an unknown kind — protected user state
-- 66 KB  [protected/unknown]  /Users/ahmetbasbunar/.claude/paste-cache
-    owner: Claude Code  subcategory: unknownData  default-selected: false
-    why: Claude Code — data of an unknown kind.
-    if removed: This cannot be recovered. CoreTend will not remove it.
-    PROTECTED: This is Claude Code data of an unknown kind — protected user state
-    · Inside Claude Code's data folder
-    · This is Claude Code data of an unknown kind — protected user state
 - 51 KB  [protected/unknown]  /Users/ahmetbasbunar/.codex/rules
     owner: Codex  subcategory: unknownData  default-selected: false
     why: Codex — data of an unknown kind.
@@ -228,7 +228,7 @@ Generated: 2026-09-08T20:34:43Z
     PROTECTED: This is Codex data of an unknown kind — protected user state
     · Inside Codex's data folder
     · This is Codex data of an unknown kind — protected user state
-- 41 KB  [protected/unknown]  /Users/ahmetbasbunar/.codex/queue_1.sqlite
+- 41 KB  [protected/unknown]  /Users/ahmetbasbunar/.codex/memories_1.sqlite
     owner: Codex  subcategory: unknownData  default-selected: false
     why: Codex — data of an unknown kind.
     if removed: This cannot be recovered. CoreTend will not remove it.
@@ -236,7 +236,7 @@ Generated: 2026-09-08T20:34:43Z
     · Inside Codex's data folder
     · This is Codex data of an unknown kind — protected user state
 
-### developer — 34 candidates, ~2.39 GB reviewable, 0 protected
+### developer — 35 candidates, ~2.41 GB reviewable, 0 protected
 - 1.58 GB  [review/confirmed]  /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build
     owner: —  subcategory: .build  default-selected: false
     why: SwiftPM build; rebuildable from the project.
@@ -260,6 +260,11 @@ Generated: 2026-09-08T20:34:43Z
     why: npm dependencies; rebuildable from the project.
     if removed: Recovery cost is unknown — review before removing.
     · npm dependencies directory named node_modules
+- 10.1 MB  [highRisk/weak]  /Users/ahmetbasbunar/Developer/Website/products/coretend/app/build
+    owner: —  subcategory: build  default-selected: false
+    why: build output; rebuildable from the project.
+    if removed: Recovery cost is unknown — review before removing.
+    · build output directory named build
 - 5 MB  [highRisk/weak]  /Users/ahmetbasbunar/Library/Caches/com.apple.python/Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build
     owner: —  subcategory: .build  default-selected: false
     why: SwiftPM build; rebuildable from the project.
@@ -365,19 +370,13 @@ Generated: 2026-09-08T20:34:43Z
     if removed: Reinstalling dependencies re-downloads this.
     · npm dependencies directory named node_modules
     · A project manifest sits next to it, so it can be rebuilt
-- 53 KB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/eslint-plugin-import/node_modules
-    owner: —  subcategory: node_modules  default-selected: false
-    why: npm dependencies; rebuildable from the project.
-    if removed: Reinstalling dependencies re-downloads this.
-    · npm dependencies directory named node_modules
-    · A project manifest sits next to it, so it can be rebuilt
 - 53 KB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/eslint-module-utils/node_modules
     owner: —  subcategory: node_modules  default-selected: false
     why: npm dependencies; rebuildable from the project.
     if removed: Reinstalling dependencies re-downloads this.
     · npm dependencies directory named node_modules
     · A project manifest sits next to it, so it can be rebuilt
-- 32 KB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/@typescript-eslint/visitor-keys/node_modules
+- 53 KB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/eslint-plugin-import/node_modules
     owner: —  subcategory: node_modules  default-selected: false
     why: npm dependencies; rebuildable from the project.
     if removed: Reinstalling dependencies re-downloads this.
@@ -385,54 +384,57 @@ Generated: 2026-09-08T20:34:43Z
     · A project manifest sits next to it, so it can be rebuilt
 
 ### gitProjects — 8 candidates, ~Zero KB reviewable, 8 protected
-- 1.75 GB  [protected/weak]  /Users/ahmetbasbunar/Developer/Website/products/coretend/app
+- 1.76 GB  [protected/weak]  /Users/ahmetbasbunar/Developer/Website/products/coretend/app
     owner: git@github.com:ahmetbsbnr/coretend-local-archive.git  subcategory: repository  default-selected: false
     why: Repository has local-only work — keep it.
     if removed: Local commits, stashes or edits would be lost.
     PROTECTED: Git repository has uncommitted or unpushed work
-    · uncommitted changes, 2 untracked files, 9 unpushed commit(s), remote not verified
+    · Uncommitted changes
+    · 2 untracked files
+    · 14 unpushed commit(s)
+    · Remote not verified
 - 712.5 MB  [protected/unknown]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio
     owner: git@github.com:ahmetbsbnr/ahmetbsbnrportfolio.git  subcategory: repository  default-selected: false
     why: Repository has local-only work — keep it.
     if removed: Local commits, stashes or edits would be lost.
     PROTECTED: Not enough evidence to identify this data
-    · remote not verified
+    · Remote not verified
 - 18.6 MB  [protected/unknown]  /Users/ahmetbasbunar/.claude/plugins/marketplaces/context-mode
     owner: git@github.com:mksglu/context-mode.git  subcategory: repository  default-selected: false
     why: Repository has local-only work — keep it.
     if removed: Local commits, stashes or edits would be lost.
     PROTECTED: Not enough evidence to identify this data
-    · remote not verified
+    · Remote not verified
 - 9.2 MB  [protected/unknown]  /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build/index-build/checkouts/swift-syntax
     owner: /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build/index-build/repositories/swift-syntax-e1f983d3  subcategory: repository  default-selected: false
     why: Repository has local-only work — keep it.
     if removed: Local commits, stashes or edits would be lost.
     PROTECTED: Not enough evidence to identify this data
-    · remote not verified
+    · Remote not verified
 - 9.2 MB  [protected/unknown]  /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build/checkouts/swift-syntax
     owner: /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build/repositories/swift-syntax-e1f983d3  subcategory: repository  default-selected: false
     why: Repository has local-only work — keep it.
     if removed: Local commits, stashes or edits would be lost.
     PROTECTED: Not enough evidence to identify this data
-    · remote not verified
+    · Remote not verified
 - 1.7 MB  [protected/unknown]  /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build/index-build/checkouts/swift-testing
     owner: /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build/index-build/repositories/swift-testing-f02b8e0f  subcategory: repository  default-selected: false
     why: Repository has local-only work — keep it.
     if removed: Local commits, stashes or edits would be lost.
     PROTECTED: Not enough evidence to identify this data
-    · remote not verified
+    · Remote not verified
 - 1.7 MB  [protected/unknown]  /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build/checkouts/swift-testing
     owner: /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build/repositories/swift-testing-f02b8e0f  subcategory: repository  default-selected: false
     why: Repository has local-only work — keep it.
     if removed: Local commits, stashes or edits would be lost.
     PROTECTED: Not enough evidence to identify this data
-    · remote not verified
+    · Remote not verified
 - 367 KB  [protected/weak]  /Users/ahmetbasbunar/Library/Caches/mise/python/pyenv
     owner: —  subcategory: repository  default-selected: false
     why: Repository has local-only work — keep it.
     if removed: Local commits, stashes or edits would be lost.
     PROTECTED: Git repository has uncommitted or unpushed work
-    · no remote
+    · No remote configured
 
 ### systemAndSettings — 9 candidates, ~37 KB reviewable, 0 protected
 - 1 KB  [review/probable]  /Users/ahmetbasbunar/Library/LaunchAgents/ai.openclaw.gateway.plist
@@ -494,9 +496,9 @@ Generated: 2026-09-08T20:34:43Z
 - protected candidate default-selected: false  (must be false)
 - unknown-confidence default-selected: false  (must be false)
 - ~/.claude memory/projects/history default-selected: false  (must be false)
-- total default-selected: 0 of 157
+- total default-selected: 0 of 158
 ## Preselection decision inputs
-- total candidates: 157
+- total candidates: 158
 - risk==SAFE && confidence>=STRONG: 1
   by category: developer=1
 - would meet DefaultSelectionPolicy.meetsBar: 1

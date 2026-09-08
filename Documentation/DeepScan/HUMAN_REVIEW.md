@@ -81,6 +81,17 @@ QA screenshots.
 
 ---
 
+## v1.2.0-beta.1 prep — headless QA (Claude, this run)
+
+| Check | How | Result |
+|---|---|---|
+| Final real-Mac read-only scan | `DeepScanQA` over 7 real roots | 127,195 nodes / 3.1 s; **158 candidates**; **0 default-selected**; 1 in the executable SAFE subset (a real `.next`); 8 git repos all protected & not auto-selected; `~/.claude/projects` + `~/.codex/sessions` `protected/unknown`; LM Studio `models` `highRisk/weak` (review); 90/99 AI candidates PROTECTED |
+| Safe-subset + negative-safety QA | `DeepScanQA --safe-subset-qa` (disposable fixtures, gate on) | **PASS** — developer build output executes end-to-end (approve → executed → Trash → journal `deepscan:developer-storage:.next`); **all 11 dangerous shapes blocked** from the executable subset: git repo root, AI model weights, Claude memory, Codex sessions, credentials/auth, unknown AI data, app leftover, system settings, cloud, protected-risk, below-strong-confidence. Aged-temp and AI-runtime-cache are policy-allowed but did not reach the executable subset (temp fixture not enumerated in this run; AI runtime cache requires SAFE+STRONG evidence it rarely reaches — conservative by design). |
+| FSEvents real churn | `DeepScanQA --fsevents-churn` (real FSEventStream) | coalescing (1 rescan/burst); `rm -rf` prune 2,269 → 228; dropped-event → STALE → full rescan → FRESH; corrupt index rebuilt empty |
+| Performance regression | full `DeepScanCorePerfTests` + 50k presentation | no material regression vs baseline (100k 132 ms, 1M 1,399 ms, 1M RSS Δ 637 MiB, 1M apply 3,431 ms, SQLite 184.6 MiB, real walk 146k n/s, cancel 0.1 ms, 50k page 73 ms) |
+| Version consistency | `Scripts/check-version-consistency.sh` | OK (1.2.0-beta.1) |
+| Localization parity | `DeepScanLocalizationTests` | Base/fr key-set parity for every `deepscan.*` key incl. all structured detector reasons; every key emitted by a full pipeline run exists in both files |
+
 ## Earlier phase — headless / code verification (all done, all green)
 
 ## What was actually done (automated / headless, this environment)
