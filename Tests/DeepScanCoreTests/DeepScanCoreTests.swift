@@ -516,6 +516,48 @@ private func candidate(path: String, risk: RiskClass = .safe,
     #expect(g.nodes.allSatisfy { $0.volumeClass != .unknown || $0.completeness == .permissionDenied })
 }
 
+// MARK: - Structured localizable reasons (§5)
+
+@Test func everyCandidateAndEvidenceCarriesStructuredText() async throws {
+    // Build a fixture that trips most detectors.
+    let home = TempTree(); defer { home.cleanup() }
+    home.file(".claude/projects/-x/memory/M.md", bytes: 10)
+    home.file(".claude/statsig/e.json", bytes: 10)
+    home.file(".cache/lm-studio/models/f.gguf", bytes: 10)
+    home.file("proj/package.json", bytes: 20)
+    home.file("proj/.next/cache/c.js", bytes: 4096)
+    home.file("Library/Caches/com.evil.Ghost/blob", bytes: 5000)
+    home.file("Library/LaunchAgents/com.evil.agent.plist", bytes: 100)
+    home.file("Downloads/Thing-1.0.dmg", bytes: 3_000_000)
+    home.file("tmp-old/scratch.bin", bytes: 100)
+    try? FileManager.default.setAttributes([.modificationDate: Date(timeIntervalSinceNow: -400 * 86_400)],
+        ofItemAtPath: home.root.appendingPathComponent("Downloads/Thing-1.0.dmg").path)
+
+    let g = await scan([home.root])
+    let ctx = DetectorContext(home: home.root, installedApps: [], runningBundleIDs: [],
+        runningExecutablePaths: [], scanStartedAt: g.startedAt, scanFinishedAt: g.finishedAt, gitRepos: [])
+    var cands: [CleanupCandidate] = []
+    for d in DeepScanPipeline.defaultDetectors { cands.append(contentsOf: d.detect(in: g, context: ctx)) }
+    #expect(!cands.isEmpty)
+
+    for c in cands {
+        #expect(c.rationaleText != nil, "\(c.detector)/\(c.subcategory) missing rationaleText")
+        #expect(c.ifRemovedText != nil, "\(c.detector)/\(c.subcategory) missing ifRemovedText")
+        if c.risk == .protected {
+            #expect(c.protectedReasonText != nil, "\(c.detector)/\(c.subcategory) protected but no protectedReasonText")
+        }
+        for e in c.evidence {
+            #expect(e.text != nil, "\(c.detector)/\(c.subcategory) evidence \(e.kind) missing structured text")
+            #expect(e.text?.key.hasPrefix("deepscan.") == true)
+        }
+        // Fallbacks must be real English, not empty.
+        let rf = c.rationaleText?.fallback ?? ""
+        let if_ = c.ifRemovedText?.fallback ?? ""
+        #expect(!rf.isEmpty, "\(c.detector)/\(c.subcategory) empty rationale fallback")
+        #expect(!if_.isEmpty, "\(c.detector)/\(c.subcategory) empty ifRemoved fallback")
+    }
+}
+
 // MARK: - Developer storage detector
 
 @Test func developerDetectorFlagsRealBuildDirButNotDepInternalDist() async {

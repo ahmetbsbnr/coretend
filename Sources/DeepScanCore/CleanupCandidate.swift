@@ -124,10 +124,23 @@ public struct Evidence: Sendable, Codable, Hashable {
     public let kind: Kind
     public let humanReadable: String
     public let detail: String?
-    public init(_ kind: Kind, _ humanReadable: String, detail: String? = nil) {
+    /// Language-independent form for the UI. When nil the app shows
+    /// `humanReadable` (English).
+    public let text: LocalizedText?
+    public init(_ kind: Kind, _ humanReadable: String, detail: String? = nil,
+                text: LocalizedText? = nil) {
         self.kind = kind
         self.humanReadable = humanReadable
         self.detail = detail
+        self.text = text
+    }
+    /// Preferred form for detectors going forward: pass a `LocalizedText`; its
+    /// `fallback` doubles as `humanReadable`.
+    public init(_ kind: Kind, _ text: LocalizedText, detail: String? = nil) {
+        self.kind = kind
+        self.humanReadable = text.fallback
+        self.detail = detail
+        self.text = text
     }
 }
 
@@ -170,6 +183,13 @@ public struct CleanupCandidate: Sendable, Codable, Identifiable {
     /// A short line for the UI's "WHAT HAPPENS IF REMOVED?" field.
     public let ifRemoved: String
 
+    /// Language-independent forms of `rationale` / `ifRemoved` /
+    /// `protectedReason` for the localized UI. When nil the app falls back to
+    /// the English strings above.
+    public let rationaleText: LocalizedText?
+    public let ifRemovedText: LocalizedText?
+    public let protectedReasonText: LocalizedText?
+
     public init(id: UUID = UUID(), path: String, canonicalPath: String,
                 category: CleanupCategory, subcategory: String, detector: String,
                 logicalBytes: Int64, allocatedBytes: Int64, estimatedReclaimableBytes: Int64,
@@ -177,7 +197,12 @@ public struct CleanupCandidate: Sendable, Codable, Identifiable {
                 recoverability: Recoverability, reconstructability: Reconstructability,
                 lastActivity: Date?, activeState: ActiveState, evidence: [Evidence],
                 protectedReason: String?, recommendedAction: RecommendedAction,
-                defaultSelected: Bool, rationale: String, ifRemoved: String) {
+                defaultSelected: Bool, rationale: String, ifRemoved: String,
+                rationaleText: LocalizedText? = nil, ifRemovedText: LocalizedText? = nil,
+                protectedReasonText: LocalizedText? = nil) {
+        self.rationaleText = rationaleText
+        self.ifRemovedText = ifRemovedText
+        self.protectedReasonText = protectedReasonText
         self.id = id
         self.path = path
         self.canonicalPath = canonicalPath

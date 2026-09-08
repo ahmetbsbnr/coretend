@@ -128,17 +128,18 @@ public struct OrphanedAppDetector: Detector {
                 let subtreeComplete = graph.subtreeFullyObserved(child.canonicalPath)
 
                 var evidence: [Evidence] = [
-                    Evidence(.bundleIDNoInstall,
-                        "No installed app declares the bundle ID “\(bundleID)”", detail: name),
-                    Evidence(.noSiblingOwner,
-                        "No installed app or helper claims this identifier"),
+                    Evidence(.bundleIDNoInstall, LocalizedText("deepscan.evidence.orphan.no_bundle",
+                        args: [bundleID], fallback: "No installed app declares the bundle ID “\(bundleID)”"), detail: name),
+                    Evidence(.noSiblingOwner, LocalizedText("deepscan.evidence.orphan.no_sibling",
+                        fallback: "No installed app or helper claims this identifier")),
                 ]
                 if idleDays != .max {
-                    evidence.append(Evidence(.lastActivityDays,
-                        "Last changed about \(idleDays) days ago"))
+                    evidence.append(Evidence(.lastActivityDays, LocalizedText("deepscan.evidence.activity.days",
+                        args: ["\(idleDays)"], fallback: "Last changed about \(idleDays) days ago")))
                 }
                 if !subtreeComplete {
-                    evidence.append(Evidence(.subtreeIncomplete, "Not fully scanned"))
+                    evidence.append(Evidence(.subtreeIncomplete, LocalizedText(
+                        "deepscan.evidence.subtree_incomplete", fallback: "Not fully scanned")))
                 }
                 // Weak/idle gating.
                 let idleEnough = idleDays >= idleThresholdDays
@@ -152,7 +153,8 @@ public struct OrphanedAppDetector: Detector {
                 if !idleEnough { risk = max(risk, .highRisk) }
                 verdict = RiskConfidenceModel.Verdict(
                     confidence: min(verdict.confidence, confidenceFloor),
-                    risk: risk, defaultSelected: false, protectedReason: verdict.protectedReason)
+                    risk: risk, defaultSelected: false, protectedReason: verdict.protectedReason,
+                    protectedReasonText: verdict.protectedReasonText)
 
                 out.append(CleanupCandidate(
                     path: child.path, canonicalPath: child.canonicalPath,
@@ -165,7 +167,12 @@ public struct OrphanedAppDetector: Detector {
                     protectedReason: verdict.protectedReason,
                     recommendedAction: .review, defaultSelected: false,
                     rationale: "Appears to belong to “\(bundleID)”, which is not installed.",
-                    ifRemoved: "If you reinstall that app it will recreate this folder."))
+                    ifRemoved: "If you reinstall that app it will recreate this folder.",
+                    rationaleText: LocalizedText("deepscan.reason.orphan", args: [bundleID],
+                        fallback: "Appears to belong to “\(bundleID)”, which is not installed."),
+                    ifRemovedText: LocalizedText("deepscan.ifremoved.orphan",
+                        fallback: "If you reinstall that app it will recreate this folder."),
+                    protectedReasonText: verdict.protectedReasonText))
             }
         }
         return out

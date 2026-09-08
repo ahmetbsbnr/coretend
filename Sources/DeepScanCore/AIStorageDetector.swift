@@ -204,20 +204,25 @@ public struct AIStorageDetector: Detector {
                           model: RiskConfidenceModel) -> CleanupCandidate {
         let subtreeComplete = graph.subtreeFullyObserved(node.canonicalPath)
         var evidence: [Evidence] = [
-            Evidence(.pathPattern, "Inside \(tool)'s data folder", detail: node.canonicalPath),
+            Evidence(.pathPattern, LocalizedText("deepscan.evidence.ai.inside_folder",
+                args: [tool], fallback: "Inside \(tool)'s data folder"), detail: node.canonicalPath),
         ]
         if type.isProtected {
-            evidence.append(Evidence(.userStateMarker,
-                "This is \(tool) \(humanType(type)) — protected user state",
+            evidence.append(Evidence(.userStateMarker, LocalizedText(
+                "deepscan.evidence.ai.protected_state", args: [tool],
+                fallback: "This is \(tool) \(humanType(type)) — protected user state"),
                 detail: node.canonicalPath))
         }
         if !subtreeComplete {
-            evidence.append(Evidence(.subtreeIncomplete,
-                "CoreTend could not fully read this folder", detail: node.canonicalPath))
+            evidence.append(Evidence(.subtreeIncomplete, LocalizedText(
+                "deepscan.evidence.subtree_incomplete",
+                fallback: "CoreTend could not fully read this folder"), detail: node.canonicalPath))
         }
         let running = context.runningBundleIDs.contains { $0.localizedCaseInsensitiveContains(tool) }
         if running {
-            evidence.append(Evidence(.runningProcess, "\(tool) appears to be running"))
+            evidence.append(Evidence(.runningProcess, LocalizedText(
+                "deepscan.evidence.ai.running", args: [tool],
+                fallback: "\(tool) appears to be running")))
         }
 
         let reconstruction: Reconstructability = {
@@ -253,7 +258,32 @@ public struct AIStorageDetector: Detector {
             evidence: evidence, protectedReason: verdict.protectedReason,
             recommendedAction: action, defaultSelected: verdict.defaultSelected,
             rationale: "\(tool) — \(humanType(type)).",
-            ifRemoved: ifRemovedText(type: type, tool: tool))
+            ifRemoved: ifRemovedText(type: type, tool: tool),
+            rationaleText: LocalizedText("deepscan.reason.ai.\(type.rawValue)", args: [tool],
+                fallback: "\(tool) — \(humanType(type))."),
+            ifRemovedText: ifRemovedLocalized(type: type, tool: tool),
+            protectedReasonText: verdict.risk == .protected
+                ? (type == .unknownData
+                   ? LocalizedText("deepscan.protected.ai_unknown", args: [tool],
+                       fallback: verdict.protectedReason ?? "")
+                   : LocalizedText("deepscan.protected.user_state",
+                       fallback: verdict.protectedReason ?? "This is user-created state, not rebuildable cache."))
+                : nil)
+    }
+
+    static func ifRemovedLocalized(type: AIDataType, tool: String) -> LocalizedText {
+        switch type {
+        case .modelWeights:
+            return LocalizedText("deepscan.ifremoved.ai.weights", fallback: ifRemovedText(type: type, tool: tool))
+        case .downloadCache, .compiledModelCache:
+            return LocalizedText("deepscan.ifremoved.ai.redownload", args: [tool], fallback: ifRemovedText(type: type, tool: tool))
+        case .updatePayload, .tempFiles, .runtimeCache, .pluginCache:
+            return LocalizedText("deepscan.ifremoved.ai.recreated", args: [tool], fallback: ifRemovedText(type: type, tool: tool))
+        case .extensionsPlugins:
+            return LocalizedText("deepscan.ifremoved.ai.reinstall_ext", fallback: ifRemovedText(type: type, tool: tool))
+        case .userMemory, .conversationHistory, .projectState, .auth, .config, .unknownData:
+            return LocalizedText("deepscan.ifremoved.ai.irreplaceable", fallback: ifRemovedText(type: type, tool: tool))
+        }
     }
 
     static func humanType(_ t: AIDataType) -> String {

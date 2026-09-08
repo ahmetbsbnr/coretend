@@ -135,6 +135,14 @@ public struct DeepScanDisplayRow: Sendable, Identifiable {
     public var ifRemoved: String { candidate.ifRemoved }
     public var protectedReason: String? { candidate.protectedReason }
 
+    // Structured (language-independent) forms for the localized UI. The app
+    // resolves these via `Localizable.strings`, falling back to the English
+    // strings above when a field is nil.
+    public var whatText: LocalizedText? { candidate.rationaleText }
+    public var ifRemovedTextStructured: LocalizedText? { candidate.ifRemovedText }
+    public var protectedReasonTextStructured: LocalizedText? { candidate.protectedReasonText }
+    public var whyBulletsStructured: [LocalizedText?] { candidate.evidence.map { $0.text } }
+
     public enum DefaultAction: String, Sendable { case selectable, review, keep, evictCloudCopy }
     public var defaultAction: DefaultAction {
         switch candidate.recommendedAction {
