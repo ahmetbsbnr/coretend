@@ -341,7 +341,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .duplicates: L("module.duplicates")
         case .myClutter: L("clutter.title")
         case .spaceLens: L("spacelens.title")
-        case .deepScan: "Deep Scan"
+        case .deepScan: L("deepscan.nav_title")
         case .cloudCleanup: L("cloud.nav_title")
         case .myActivity: L("module.activity")
         case .settings: L("settings.nav_title")

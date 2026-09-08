@@ -358,6 +358,27 @@ public struct DeepScanPermissionProbe: Sendable {
     }
 }
 
+// MARK: - Skip-reason slugs (for localization)
+
+/// Maps a revalidator / executor human-readable skip reason to a stable slug
+/// the app can look up in its string table. Falls back to `"generic"`. Keeping
+/// this here (not an enum on the revalidator) avoids reworking the executor.
+public func deepScanSkipReasonSlug(_ humanReadable: String) -> String {
+    let s = humanReadable.lowercased()
+    if s.contains("protected") { return "protected" }
+    if s.contains("unknown") { return "unknown" }
+    if s.contains("no longer exists") || s.contains("disappeared") { return "gone" }
+    if s.contains("symlink") { return "symlink" }
+    if s.contains("special file") { return "special" }
+    if s.contains("different file") { return "identity" }
+    if s.contains("just modified") || s.contains("being written") { return "modified" }
+    if s.contains("running") { return "running" }
+    if s.contains("git") || s.contains("dirty") || s.contains("unpushed") { return "gitdirty" }
+    if s.contains("feature gate") || s.contains("execution is disabled") { return "gated" }
+    if s.contains("subset") { return "subset" }
+    return "generic"
+}
+
 // MARK: - Cleanup plan (spec §21/§22)
 
 public struct DeepScanCleanupPlan: Sendable {
@@ -370,6 +391,9 @@ public struct DeepScanCleanupPlan: Sendable {
     public let estimatedReclaimableBytes: Int64
     public let riskSummary: [String: Int]              // risk.displayName -> count
     public let rebuildCostSummary: [String: Int]       // reconstructability.displayName -> count
+    /// Enum-keyed variants so the app can localize the labels.
+    public let riskSummaryByClass: [RiskClass: Int]
+    public let rebuildSummaryByKind: [Reconstructability: Int]
     public let movedToTrash: [String]                  // canonical paths
     public let protectedHeldBack: [DeepScanDisplayRow] // selected-but-protected, refused
     public let changedSinceScan: [ChangedItem]
@@ -390,9 +414,12 @@ public struct DeepScanCleanupPlan: Sendable {
         let protectedRows = chosen.filter { $0.risk == .protected }.map(DeepScanDisplayRow.init)
 
         var risk: [String: Int] = [:], rebuild: [String: Int] = [:]
+        var riskByClass: [RiskClass: Int] = [:], rebuildByKind: [Reconstructability: Int] = [:]
         for c in actionable {
             risk[c.risk.displayName, default: 0] += 1
             rebuild[c.reconstructability.displayName, default: 0] += 1
+            riskByClass[c.risk, default: 0] += 1
+            rebuildByKind[c.reconstructability, default: 0] += 1
         }
         let changed: [ChangedItem] = (revalidation?.rejected ?? []).map {
             ChangedItem(path: $0.candidate.canonicalPath, reason: $0.reason)
@@ -405,6 +432,8 @@ public struct DeepScanCleanupPlan: Sendable {
             estimatedReclaimableBytes: actionable.reduce(0) { $0 + $1.estimatedReclaimableBytes },
             riskSummary: risk,
             rebuildCostSummary: rebuild,
+            riskSummaryByClass: riskByClass,
+            rebuildSummaryByKind: rebuildByKind,
             movedToTrash: willTrash,
             protectedHeldBack: protectedRows,
             changedSinceScan: changed)
