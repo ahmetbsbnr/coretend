@@ -13,8 +13,65 @@
 
 import Foundation
 import DeepScanCore
+import SafetyCore
 
 let args = Array(CommandLine.arguments.dropFirst())
+
+// --- controlled cleanup QA (spec §26): disposable fixture only -------------
+// Usage: DeepScanQA --controlled-cleanup
+// Builds an isolated fake project with a rebuildable .next dir, scans it,
+// executes the SAFE subset through the real SafetyCenter -> Trash, and prints
+// the journal. Never touches anything outside its own temp root.
+if args.first == "--controlled-cleanup" {
+    setenv("CORETEND_DEEPSCAN_EXEC", "1", 1)
+    let root = URL(fileURLWithPath: NSTemporaryDirectory())
+        .appendingPathComponent("coretend-controlled-cleanup-\(UUID().uuidString)")
+    let fm = FileManager.default
+    try fm.createDirectory(at: root.appendingPathComponent("myapp/.next/cache"),
+                           withIntermediateDirectories: true)
+    fm.createFile(atPath: root.appendingPathComponent("myapp/package.json").path,
+                  contents: Data(#"{"dependencies":{"next":"14"}}"#.utf8))
+    for i in 0..<20 {
+        fm.createFile(atPath: root.appendingPathComponent("myapp/.next/cache/chunk\(i).js").path,
+                      contents: Data(repeating: 0x2F, count: 4096))
+    }
+    // age the tree so the "just modified" guard doesn't fire
+    let old = Date(timeIntervalSinceNow: -7200)
+    if let en = fm.enumerator(at: root, includingPropertiesForKeys: nil) {
+        while let u = en.nextObject() as? URL {
+            try? fm.setAttributes([.modificationDate: old], ofItemAtPath: u.path)
+        }
+    }
+
+    print("controlled-cleanup fixture: \(root.path)")
+    let cfg = DeepScanConfiguration(roots: [root], maxConcurrency: 4, timeBudget: .seconds(30))
+    let result = await DeepScanPipeline().run(configuration: cfg, home: root)
+    let next = result.candidates.filter { $0.detector == "developer-storage" }
+    print("candidates: \(result.candidates.count), developer-storage: \(next.count)")
+    for c in next { print("  \(c.risk.rawValue)/\(c.confidence.rawValue) \(c.canonicalPath) — default-selected \(c.defaultSelected)") }
+
+    let sink = PrintingSink()
+    let report = await DeepScanExecutor().execute(
+        selected: next,
+        identitiesByPath: result.identitiesByPath,
+        runningBundleIDs: DeepScanPipeline.runningProcesses().bundleIDs,
+        allowedRoots: [root],
+        auditSink: sink)
+    print("executed: \(report.executed.count)  bytesTrashed: \(report.bytesTrashed)  skipped: \(report.skipped.count)  gated: \(report.gated)")
+    for s in report.skipped { print("  SKIP [\(s.stage)] \(s.reason): \((s.candidate.canonicalPath as NSString).lastPathComponent)") }
+    for e in report.executed { print("  TRASHED \(e.trashedFrom) (\(e.bytes) bytes)") }
+    let stillThere = report.executed.filter { fm.fileExists(atPath: $0.trashedFrom) }
+    print(stillThere.isEmpty ? "verify: originals no longer at source ✔" : "verify: FAILED, \(stillThere.count) still present")
+    try? fm.removeItem(at: root)
+    print("Restore: the audit journal above records original + trash paths; Restore Center reinstates them. (HUMAN VERIFICATION for the GUI restore round-trip.)")
+    exit(0)
+}
+
+final class PrintingSink: SafetyAuditSink, @unchecked Sendable {
+    func recordSafetyEvent(_ event: SafetyAuditEvent) async {
+        print("  journal: \(event.stage.rawValue) \(event.ruleID) \(event.path) -> \(event.result)")
+    }
+}
 let home = FileManager.default.homeDirectoryForCurrentUser
 let roots: [URL] = args.isEmpty ? [home] : args.map { URL(fileURLWithPath: $0) }
 

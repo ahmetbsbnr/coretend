@@ -110,14 +110,46 @@ intended for the GUI:
 - **Scan error** — `.error` completeness on I/O failure mid-read.
 Without FDA the scan still runs and degrades to Partial; it does not pretend.
 
+## Productization phase — landed
+
+- **FSEvents incremental engine** (`FSEventIncrementalEngine`, `EventCoalescer`,
+  `IndexHealth`) — see below and `PERFORMANCE.md`.
+- **Volume classification** (`VolumeResolver`) — real system/data/external/
+  network classification via URL volume resource values, cached per mount
+  point; the engine stamps `volumeClass` + `volumeUUID` onto every node.
+- **AI taxonomy refinement** — LM Studio `bin`/`.internal`/`server-logs`,
+  Codex `thread_history_*`/`state_*`, `*.json`/`*.toml`/`*.log` now classified
+  (runtimeCache / conversationHistory / projectState / config). User state
+  (`~/.claude/projects`, `**/memory`, `history`, `sessions`, `credentials`,
+  `auth`) unchanged — still PROTECTED, with regression tests.
+- **Performance proof** — `DeepScanCorePerfTests` at 100k / 500k / 1M nodes;
+  budgets in `PERFORMANCE.md`.
+- **Execution path** — `DeepScanExecutor` behind `DeepScanExecutionGate` (off
+  by default); `ExecutableSubsetPolicy` → `ExecutionRevalidator` →
+  `SafetyCenter`. See `EXECUTION_SAFETY.md`.
+- **GUI** — `DeepScanView` wired into the sidebar. See `GUI.md`.
+- **Default selection** — `DefaultSelectionPolicy.preselectionEnabled = false`
+  for this phase: **0** candidates pre-ticked on real-Mac QA.
+
+## Index health (`IndexHealth`)
+
+`FRESH` (matches the last completed scan) · `STALE` (events dropped or a
+coalesced rescan pending) · `PARTIAL` (last scan was cancel/timeout/denied) ·
+`REBUILDING` (a scan is running) · `ERROR` (root vanished / index corrupt —
+recovered by discarding the SQLite file). The UI must never present `STALE`
+indexed data as a current scan.
+
 ## Known limitations (as of this branch)
-- FSEvents-based live incremental rescan is **not implemented**; `DeepScanIndex`
-  supports the incremental *diff* but the watcher is future work.
-- Volume classification is coarse (`.dataVolume` for everything descended);
-  a DiskArbitration-backed UUID map belongs in the GUI layer.
-- The AI data-type taxonomy is intentionally over-conservative — many real
-  subtrees (`lm-studio/bin`, `server-logs`, `.internal`) resolve to
-  `.unknownData` ⇒ PROTECTED. Tightening these is safe, incremental work.
-- Stress fixtures exercise up to ~10 k nodes in the existing suite; 100 k /
-  500 k / 1 M-node performance runs (spec §23) are **not yet added**.
-- No GUI. Deep Scan is not reachable by an end user.
+- FSEvents wiring (`FSEventStream` callback, live debounced rescan) is
+  **compile-verified and its decision logic unit-tested**, but the
+  interactive watch loop is **HUMAN VERIFICATION REQUIRED** — no long-running
+  session exercised it against real editor/`npm` churn.
+- The whole GUI is compile-verified; layout / VoiceOver / live-scan feel /
+  Restore-Center round trip are **HUMAN VERIFICATION REQUIRED** (`GUI.md`).
+- The executable subset is intentionally tiny (developer build output, aged
+  temp, AI runtime cache). Broadening it is a separate, maintainer-gated step.
+- `VolumeResolver` does not yet use DiskArbitration for disk-image backing-store
+  detection — a read-only `/Volumes` mount is classed `externalVolume`
+  conservatively.
+- Localization: the Deep Scan GUI ships English string literals; it is not yet
+  in `Localizable.strings` (en/fr).

@@ -1,10 +1,10 @@
 # CoreTend Deep Scan — READ-ONLY QA report
-Generated: 2026-09-08T18:18:09Z
+Generated: 2026-09-08T19:21:36Z
 
 ## Scan
 - roots: /Users/ahmetbasbunar/.claude, /Users/ahmetbasbunar/.codex, /Users/ahmetbasbunar/.cache, /Users/ahmetbasbunar/Library/Caches, /Users/ahmetbasbunar/Developer, /Users/ahmetbasbunar/Downloads, /Users/ahmetbasbunar/Library/LaunchAgents
-- nodes observed: 128184
-- wall time: 2.7s
+- nodes observed: 125670
+- wall time: 2.5s
 - cancelled: false   timed out: false
 - roots we could not read: /Users/ahmetbasbunar/Library/Caches/CloudKit, /Users/ahmetbasbunar/Library/Caches/FamilyCircle, /Users/ahmetbasbunar/Library/Caches/com.apple.HomeKit, /Users/ahmetbasbunar/Library/Caches/com.apple.Safari, /Users/ahmetbasbunar/Library/Caches/com.apple.Safari.SafeBrowsing, /Users/ahmetbasbunar/Library/Caches/com.apple.ap.adprivacyd, /Users/ahmetbasbunar/Library/Caches/com.apple.containermanagerd, /Users/ahmetbasbunar/Library/Caches/com.apple.homed, /Users/ahmetbasbunar/Library/Caches/familycircled
 - permission-denied nodes: 9   partial nodes: 1
@@ -14,7 +14,7 @@ Generated: 2026-09-08T18:18:09Z
 - git repositories discovered: 8
   - [YELLOW] /Users/ahmetbasbunar/.claude/plugins/marketplaces/context-mode — branch main, dirty=false, stashes=0, unpushed=0
   - [YELLOW] /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio — branch main, dirty=false, stashes=0, unpushed=0
-  - [RED] /Users/ahmetbasbunar/Developer/Website/products/coretend/app — branch feat/deep-scan-cleanup-v1.2, dirty=true, stashes=0, unpushed=1
+  - [RED] /Users/ahmetbasbunar/Developer/Website/products/coretend/app — branch feat/deep-scan-cleanup-v1.2, dirty=true, stashes=0, unpushed=6
   - [YELLOW] /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build/checkouts/swift-syntax — branch detached, dirty=false, stashes=0, unpushed=0
   - [YELLOW] /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build/checkouts/swift-testing — branch detached, dirty=false, stashes=0, unpushed=0
   - [YELLOW] /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build/index-build/checkouts/swift-syntax — branch detached, dirty=false, stashes=0, unpushed=0
@@ -50,7 +50,7 @@ Generated: 2026-09-08T18:18:09Z
     if removed: If you reinstall that app it will recreate this folder.
     · No installed app declares the bundle ID “com.electron.ollama”
     · No installed app or helper claims this identifier
-    · Last changed about 35 days ago
+    · Last changed about 36 days ago
 - 27 KB  [highRisk/weak]  /Users/ahmetbasbunar/Library/Caches/dev.sigstore.sigstore-rust
     owner: dev.sigstore.sigstore-rust  subcategory: orphanedContainer  default-selected: false
     why: Appears to belong to “dev.sigstore.sigstore-rust”, which is not installed.
@@ -73,40 +73,34 @@ Generated: 2026-09-08T18:18:09Z
     · No installed app or helper claims this identifier
     · Last changed about 35 days ago
 
-### aiAndLLM — 99 candidates, ~3.55 GB reviewable, 96 protected
+### aiAndLLM — 99 candidates, ~5.43 GB reviewable, 90 protected
 - 3.55 GB  [highRisk/weak]  /Users/ahmetbasbunar/.cache/lm-studio/models
     owner: LM Studio  subcategory: modelWeights  default-selected: false
     why: LM Studio — model weights.
     if removed: You would re-download these model weights (can be many GB).
     · Inside LM Studio's data folder
-- 1.16 GB  [protected/unknown]  /Users/ahmetbasbunar/.cache/lm-studio/extensions
-    owner: LM Studio  subcategory: unknownData  default-selected: false
-    why: LM Studio — data of an unknown kind.
-    if removed: This cannot be recovered. CoreTend will not remove it.
-    PROTECTED: This is LM Studio data of an unknown kind — protected user state
+- 1.16 GB  [review/weak]  /Users/ahmetbasbunar/.cache/lm-studio/extensions
+    owner: LM Studio  subcategory: extensionsPlugins  default-selected: false
+    why: LM Studio — extensions / plugins.
+    if removed: You would reinstall the extensions.
     · Inside LM Studio's data folder
-    · This is LM Studio data of an unknown kind — protected user state
-- 319.3 MB  [protected/unknown]  /Users/ahmetbasbunar/.codex/plugins
-    owner: Codex  subcategory: unknownData  default-selected: false
-    why: Codex — data of an unknown kind.
-    if removed: This cannot be recovered. CoreTend will not remove it.
-    PROTECTED: This is Codex data of an unknown kind — protected user state
+- 319.3 MB  [review/weak]  /Users/ahmetbasbunar/.codex/plugins
+    owner: Codex  subcategory: extensionsPlugins  default-selected: false
+    why: Codex — extensions / plugins.
+    if removed: You would reinstall the extensions.
     · Inside Codex's data folder
-    · This is Codex data of an unknown kind — protected user state
-- 310.5 MB  [protected/unknown]  /Users/ahmetbasbunar/.claude/projects
+- 312.2 MB  [protected/unknown]  /Users/ahmetbasbunar/.claude/projects
     owner: Claude Code  subcategory: projectState  default-selected: false
     why: Claude Code — per-project state.
     if removed: This cannot be recovered. CoreTend will not remove it.
     PROTECTED: This is Claude Code per-project state — protected user state
     · Inside Claude Code's data folder
     · This is Claude Code per-project state — protected user state
-- 225.5 MB  [protected/unknown]  /Users/ahmetbasbunar/.cache/lm-studio/.internal
-    owner: LM Studio  subcategory: unknownData  default-selected: false
-    why: LM Studio — data of an unknown kind.
-    if removed: This cannot be recovered. CoreTend will not remove it.
-    PROTECTED: This is LM Studio data of an unknown kind — protected user state
+- 225.5 MB  [safe/weak]  /Users/ahmetbasbunar/.cache/lm-studio/.internal
+    owner: LM Studio  subcategory: runtimeCache  default-selected: false
+    why: LM Studio — runtime cache.
+    if removed: LM Studio recreates this automatically.
     · Inside LM Studio's data folder
-    · This is LM Studio data of an unknown kind — protected user state
 - 172.5 MB  [protected/unknown]  /Users/ahmetbasbunar/.codex/sessions
     owner: Codex  subcategory: conversationHistory  default-selected: false
     why: Codex — conversation history.
@@ -114,48 +108,42 @@ Generated: 2026-09-08T18:18:09Z
     PROTECTED: This is Codex conversation history — protected user state
     · Inside Codex's data folder
     · This is Codex conversation history — protected user state
-- 65.1 MB  [protected/unknown]  /Users/ahmetbasbunar/.cache/lm-studio/bin
-    owner: LM Studio  subcategory: unknownData  default-selected: false
-    why: LM Studio — data of an unknown kind.
-    if removed: This cannot be recovered. CoreTend will not remove it.
-    PROTECTED: This is LM Studio data of an unknown kind — protected user state
+- 65.1 MB  [safe/weak]  /Users/ahmetbasbunar/.cache/lm-studio/bin
+    owner: LM Studio  subcategory: runtimeCache  default-selected: false
+    why: LM Studio — runtime cache.
+    if removed: LM Studio recreates this automatically.
     · Inside LM Studio's data folder
-    · This is LM Studio data of an unknown kind — protected user state
-- 24.9 MB  [protected/unknown]  /Users/ahmetbasbunar/.claude/plugins
-    owner: Claude Code  subcategory: unknownData  default-selected: false
-    why: Claude Code — data of an unknown kind.
-    if removed: This cannot be recovered. CoreTend will not remove it.
-    PROTECTED: This is Claude Code data of an unknown kind — protected user state
+- 24.9 MB  [review/weak]  /Users/ahmetbasbunar/.claude/plugins
+    owner: Claude Code  subcategory: extensionsPlugins  default-selected: false
+    why: Claude Code — extensions / plugins.
+    if removed: You would reinstall the extensions.
     · Inside Claude Code's data folder
-    · This is Claude Code data of an unknown kind — protected user state
-- 16.7 MB  [protected/unknown]  /Users/ahmetbasbunar/.claude/file-history
-    owner: Claude Code  subcategory: unknownData  default-selected: false
-    why: Claude Code — data of an unknown kind.
+- 17.3 MB  [protected/unknown]  /Users/ahmetbasbunar/.claude/file-history
+    owner: Claude Code  subcategory: projectState  default-selected: false
+    why: Claude Code — per-project state.
     if removed: This cannot be recovered. CoreTend will not remove it.
-    PROTECTED: This is Claude Code data of an unknown kind — protected user state
+    PROTECTED: This is Claude Code per-project state — protected user state
     · Inside Claude Code's data folder
-    · This is Claude Code data of an unknown kind — protected user state
+    · This is Claude Code per-project state — protected user state
 - 9.9 MB  [protected/unknown]  /Users/ahmetbasbunar/.codex/thread_history_1.sqlite
-    owner: Codex  subcategory: unknownData  default-selected: false
-    why: Codex — data of an unknown kind.
+    owner: Codex  subcategory: conversationHistory  default-selected: false
+    why: Codex — conversation history.
     if removed: This cannot be recovered. CoreTend will not remove it.
-    PROTECTED: This is Codex data of an unknown kind — protected user state
+    PROTECTED: This is Codex conversation history — protected user state
     · Inside Codex's data folder
-    · This is Codex data of an unknown kind — protected user state
+    · This is Codex conversation history — protected user state
 - 2.5 MB  [protected/unknown]  /Users/ahmetbasbunar/.codex/state_5.sqlite
-    owner: Codex  subcategory: unknownData  default-selected: false
-    why: Codex — data of an unknown kind.
+    owner: Codex  subcategory: projectState  default-selected: false
+    why: Codex — per-project state.
     if removed: This cannot be recovered. CoreTend will not remove it.
-    PROTECTED: This is Codex data of an unknown kind — protected user state
+    PROTECTED: This is Codex per-project state — protected user state
     · Inside Codex's data folder
-    · This is Codex data of an unknown kind — protected user state
-- 967 KB  [protected/unknown]  /Users/ahmetbasbunar/.cache/lm-studio/server-logs
-    owner: LM Studio  subcategory: unknownData  default-selected: false
-    why: LM Studio — data of an unknown kind.
-    if removed: This cannot be recovered. CoreTend will not remove it.
-    PROTECTED: This is LM Studio data of an unknown kind — protected user state
+    · This is Codex per-project state — protected user state
+- 967 KB  [safe/weak]  /Users/ahmetbasbunar/.cache/lm-studio/server-logs
+    owner: LM Studio  subcategory: runtimeCache  default-selected: false
+    why: LM Studio — runtime cache.
+    if removed: LM Studio recreates this automatically.
     · Inside LM Studio's data folder
-    · This is LM Studio data of an unknown kind — protected user state
 - 598 KB  [protected/unknown]  /Users/ahmetbasbunar/.claude/backups
     owner: Claude Code  subcategory: unknownData  default-selected: false
     why: Claude Code — data of an unknown kind.
@@ -184,14 +172,14 @@ Generated: 2026-09-08T18:18:09Z
     PROTECTED: This is Codex data of an unknown kind — protected user state
     · Inside Codex's data folder
     · This is Codex data of an unknown kind — protected user state
-- 213 KB  [protected/unknown]  /Users/ahmetbasbunar/.claude/history.jsonl
+- 214 KB  [protected/unknown]  /Users/ahmetbasbunar/.claude/history.jsonl
     owner: Claude Code  subcategory: unknownData  default-selected: false
     why: Claude Code — data of an unknown kind.
     if removed: This cannot be recovered. CoreTend will not remove it.
     PROTECTED: This is Claude Code data of an unknown kind — protected user state
     · Inside Claude Code's data folder
     · This is Claude Code data of an unknown kind — protected user state
-- 152 KB  [protected/unknown]  /Users/ahmetbasbunar/.claude/jobs
+- 169 KB  [protected/unknown]  /Users/ahmetbasbunar/.claude/jobs
     owner: Claude Code  subcategory: unknownData  default-selected: false
     why: Claude Code — data of an unknown kind.
     if removed: This cannot be recovered. CoreTend will not remove it.
@@ -199,12 +187,12 @@ Generated: 2026-09-08T18:18:09Z
     · Inside Claude Code's data folder
     · This is Claude Code data of an unknown kind — protected user state
 - 103 KB  [protected/unknown]  /Users/ahmetbasbunar/.codex/thread_history_1.sqlite-wal
-    owner: Codex  subcategory: unknownData  default-selected: false
-    why: Codex — data of an unknown kind.
+    owner: Codex  subcategory: conversationHistory  default-selected: false
+    why: Codex — conversation history.
     if removed: This cannot be recovered. CoreTend will not remove it.
-    PROTECTED: This is Codex data of an unknown kind — protected user state
+    PROTECTED: This is Codex conversation history — protected user state
     · Inside Codex's data folder
-    · This is Codex data of an unknown kind — protected user state
+    · This is Codex conversation history — protected user state
 - 98 KB  [protected/unknown]  /Users/ahmetbasbunar/.codex/sqlite
     owner: Codex  subcategory: unknownData  default-selected: false
     why: Codex — data of an unknown kind.
@@ -219,6 +207,13 @@ Generated: 2026-09-08T18:18:09Z
     PROTECTED: This is Codex data of an unknown kind — protected user state
     · Inside Codex's data folder
     · This is Codex data of an unknown kind — protected user state
+- 53 KB  [protected/unknown]  /Users/ahmetbasbunar/.claude/paste-cache
+    owner: Claude Code  subcategory: unknownData  default-selected: false
+    why: Claude Code — data of an unknown kind.
+    if removed: This cannot be recovered. CoreTend will not remove it.
+    PROTECTED: This is Claude Code data of an unknown kind — protected user state
+    · Inside Claude Code's data folder
+    · This is Claude Code data of an unknown kind — protected user state
 - 51 KB  [protected/unknown]  /Users/ahmetbasbunar/.codex/rules
     owner: Codex  subcategory: unknownData  default-selected: false
     why: Codex — data of an unknown kind.
@@ -240,40 +235,33 @@ Generated: 2026-09-08T18:18:09Z
     PROTECTED: This is Codex data of an unknown kind — protected user state
     · Inside Codex's data folder
     · This is Codex data of an unknown kind — protected user state
-- 41 KB  [protected/unknown]  /Users/ahmetbasbunar/.codex/memories_1.sqlite
-    owner: Codex  subcategory: unknownData  default-selected: false
-    why: Codex — data of an unknown kind.
-    if removed: This cannot be recovered. CoreTend will not remove it.
-    PROTECTED: This is Codex data of an unknown kind — protected user state
-    · Inside Codex's data folder
-    · This is Codex data of an unknown kind — protected user state
 
-### developer — 110 candidates, ~2.46 GB reviewable, 0 protected
-- 1.38 GB  [review/probable]  /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build
+### developer — 110 candidates, ~2.48 GB reviewable, 0 protected
+- 1.4 GB  [review/confirmed]  /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build
     owner: —  subcategory: .build  default-selected: false
     why: SwiftPM build; rebuildable from the project.
     if removed: Recreated by the next build (can take minutes).
     · SwiftPM build directory named .build
     · A project manifest sits next to it, so it can be rebuilt
-- 433.5 MB  [highRisk/probable]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules
+- 433.5 MB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules
     owner: —  subcategory: node_modules  default-selected: false
     why: npm dependencies; rebuildable from the project.
     if removed: Reinstalling dependencies re-downloads this.
     · npm dependencies directory named node_modules
     · A project manifest sits next to it, so it can be rebuilt
-- 261.1 MB  [safe/probable]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/.next
+- 261.1 MB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/.next
     owner: —  subcategory: .next  default-selected: false
     why: Next.js build output; rebuildable from the project.
     if removed: Recreated by the next build.
     · Next.js build output directory named .next
     · A project manifest sits next to it, so it can be rebuilt
-- 139.7 MB  [safe/probable]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/next/dist
+- 139.7 MB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/next/dist
     owner: —  subcategory: dist  default-selected: false
     why: bundler output; rebuildable from the project.
     if removed: Recreated by the next build.
     · bundler output directory named dist
     · A project manifest sits next to it, so it can be rebuilt
-- 33 MB  [safe/probable]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/@phosphor-icons/react/dist
+- 33 MB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/@phosphor-icons/react/dist
     owner: —  subcategory: dist  default-selected: false
     why: bundler output; rebuildable from the project.
     if removed: Recreated by the next build.
@@ -294,7 +282,7 @@ Generated: 2026-09-08T18:18:09Z
     why: build output; rebuildable from the project.
     if removed: Recovery cost is unknown — review before removing.
     · build output directory named build
-- 4.2 MB  [safe/probable]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/gsap/dist
+- 4.2 MB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/gsap/dist
     owner: —  subcategory: dist  default-selected: false
     why: bundler output; rebuildable from the project.
     if removed: Recreated by the next build.
@@ -310,85 +298,85 @@ Generated: 2026-09-08T18:18:09Z
     why: npm dependencies; rebuildable from the project.
     if removed: Recovery cost is unknown — review before removing.
     · npm dependencies directory named node_modules
-- 3.2 MB  [highRisk/probable]  /Users/ahmetbasbunar/.cache/lm-studio/extensions/plugins/lmstudio/js-code-sandbox/node_modules
+- 3.2 MB  [highRisk/confirmed]  /Users/ahmetbasbunar/.cache/lm-studio/extensions/plugins/lmstudio/js-code-sandbox/node_modules
     owner: —  subcategory: node_modules  default-selected: false
     why: npm dependencies; rebuildable from the project.
     if removed: Reinstalling dependencies re-downloads this.
     · npm dependencies directory named node_modules
     · A project manifest sits next to it, so it can be rebuilt
-- 3.2 MB  [highRisk/probable]  /Users/ahmetbasbunar/.cache/lm-studio/extensions/plugins/lmstudio/rag-v1/node_modules
+- 3.2 MB  [highRisk/confirmed]  /Users/ahmetbasbunar/.cache/lm-studio/extensions/plugins/lmstudio/rag-v1/node_modules
     owner: —  subcategory: node_modules  default-selected: false
     why: npm dependencies; rebuildable from the project.
     if removed: Reinstalling dependencies re-downloads this.
     · npm dependencies directory named node_modules
     · A project manifest sits next to it, so it can be rebuilt
-- 3 MB  [highRisk/probable]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/@axe-core/playwright/node_modules
+- 3 MB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/@axe-core/playwright/node_modules
     owner: —  subcategory: node_modules  default-selected: false
     why: npm dependencies; rebuildable from the project.
     if removed: Reinstalling dependencies re-downloads this.
     · npm dependencies directory named node_modules
     · A project manifest sits next to it, so it can be rebuilt
-- 2.1 MB  [safe/probable]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/next/dist/compiled/@next/font/dist
+- 2.1 MB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/next/dist/compiled/@next/font/dist
     owner: —  subcategory: dist  default-selected: false
     why: bundler output; rebuildable from the project.
     if removed: Recreated by the next build.
     · bundler output directory named dist
     · A project manifest sits next to it, so it can be rebuilt
-- 2.1 MB  [safe/probable]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/@typescript-eslint/eslint-plugin/dist
+- 2.1 MB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/@typescript-eslint/eslint-plugin/dist
     owner: —  subcategory: dist  default-selected: false
     why: bundler output; rebuildable from the project.
     if removed: Recreated by the next build.
     · bundler output directory named dist
     · A project manifest sits next to it, so it can be rebuilt
-- 2 MB  [safe/probable]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/jiti/dist
+- 2 MB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/jiti/dist
     owner: —  subcategory: dist  default-selected: false
     why: bundler output; rebuildable from the project.
     if removed: Recreated by the next build.
     · bundler output directory named dist
     · A project manifest sits next to it, so it can be rebuilt
-- 1.9 MB  [safe/probable]  /Users/ahmetbasbunar/.cache/lm-studio/extensions/plugins/lmstudio/rag-v1/node_modules/@lmstudio/sdk/dist
+- 1.9 MB  [safe/confirmed]  /Users/ahmetbasbunar/.cache/lm-studio/extensions/plugins/lmstudio/rag-v1/node_modules/@lmstudio/sdk/dist
     owner: —  subcategory: dist  default-selected: false
     why: bundler output; rebuildable from the project.
     if removed: Recreated by the next build.
     · bundler output directory named dist
     · A project manifest sits next to it, so it can be rebuilt
-- 1.9 MB  [safe/probable]  /Users/ahmetbasbunar/.cache/lm-studio/extensions/plugins/lmstudio/js-code-sandbox/node_modules/@lmstudio/sdk/dist
+- 1.9 MB  [safe/confirmed]  /Users/ahmetbasbunar/.cache/lm-studio/extensions/plugins/lmstudio/js-code-sandbox/node_modules/@lmstudio/sdk/dist
     owner: —  subcategory: dist  default-selected: false
     why: bundler output; rebuildable from the project.
     if removed: Recreated by the next build.
     · bundler output directory named dist
     · A project manifest sits next to it, so it can be rebuilt
-- 1.1 MB  [safe/probable]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/sucrase/dist
+- 1.1 MB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/sucrase/dist
     owner: —  subcategory: dist  default-selected: false
     why: bundler output; rebuildable from the project.
     if removed: Recreated by the next build.
     · bundler output directory named dist
     · A project manifest sits next to it, so it can be rebuilt
-- 1 MB  [safe/probable]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/esquery/dist
+- 1 MB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/esquery/dist
     owner: —  subcategory: dist  default-selected: false
     why: bundler output; rebuildable from the project.
     if removed: Recreated by the next build.
     · bundler output directory named dist
     · A project manifest sits next to it, so it can be rebuilt
-- 994 KB  [safe/probable]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/styled-jsx/dist
+- 994 KB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/styled-jsx/dist
     owner: —  subcategory: dist  default-selected: false
     why: bundler output; rebuildable from the project.
     if removed: Recreated by the next build.
     · bundler output directory named dist
     · A project manifest sits next to it, so it can be rebuilt
-- 832 KB  [safe/probable]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/js-yaml/dist
+- 832 KB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/js-yaml/dist
     owner: —  subcategory: dist  default-selected: false
     why: bundler output; rebuildable from the project.
     if removed: Recreated by the next build.
     · bundler output directory named dist
     · A project manifest sits next to it, so it can be rebuilt
-- 725 KB  [highRisk/probable]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/@typescript-eslint/typescript-estree/node_modules
+- 725 KB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/@typescript-eslint/typescript-estree/node_modules
     owner: —  subcategory: node_modules  default-selected: false
     why: npm dependencies; rebuildable from the project.
     if removed: Reinstalling dependencies re-downloads this.
     · npm dependencies directory named node_modules
     · A project manifest sits next to it, so it can be rebuilt
-- 621 KB  [safe/probable]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/sharp/dist
+- 621 KB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/sharp/dist
     owner: —  subcategory: dist  default-selected: false
     why: bundler output; rebuildable from the project.
     if removed: Recreated by the next build.
@@ -396,12 +384,12 @@ Generated: 2026-09-08T18:18:09Z
     · A project manifest sits next to it, so it can be rebuilt
 
 ### gitProjects — 8 candidates, ~Zero KB reviewable, 8 protected
-- 1.55 GB  [protected/weak]  /Users/ahmetbasbunar/Developer/Website/products/coretend/app
+- 1.57 GB  [protected/weak]  /Users/ahmetbasbunar/Developer/Website/products/coretend/app
     owner: git@github.com:ahmetbsbnr/coretend.git  subcategory: repository  default-selected: false
     why: Repository has local-only work — keep it.
     if removed: Local commits, stashes or edits would be lost.
     PROTECTED: Git repository has uncommitted or unpushed work
-    · uncommitted changes, 4 untracked files, 1 unpushed commit(s), remote not verified
+    · uncommitted changes, 2 untracked files, 6 unpushed commit(s), remote not verified
 - 712.5 MB  [protected/unknown]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio
     owner: git@github.com:ahmetbsbnr/ahmetbsbnrportfolio.git  subcategory: repository  default-selected: false
     why: Repository has local-only work — keep it.
@@ -488,17 +476,17 @@ Generated: 2026-09-08T18:18:09Z
     if removed: The background job stops being scheduled at next login.
     · Launch agent “com.adobe.ccxprocess” has no matching installed app
     · Lives in ~/Library/LaunchAgents
-- 181 bytes  [review/probable]  /Users/ahmetbasbunar/Library/LaunchAgents/com.google.keystone.xpcservice.plist
-    owner: com.google.keystone.xpcservice  subcategory: orphanedLaunchAgent  default-selected: false
-    why: A login/background job for an app that is not installed.
-    if removed: The background job stops being scheduled at next login.
-    · Launch agent “com.google.keystone.xpcservice” has no matching installed app
-    · Lives in ~/Library/LaunchAgents
 - 181 bytes  [review/probable]  /Users/ahmetbasbunar/Library/LaunchAgents/com.google.keystone.agent.plist
     owner: com.google.keystone.agent  subcategory: orphanedLaunchAgent  default-selected: false
     why: A login/background job for an app that is not installed.
     if removed: The background job stops being scheduled at next login.
     · Launch agent “com.google.keystone.agent” has no matching installed app
+    · Lives in ~/Library/LaunchAgents
+- 181 bytes  [review/probable]  /Users/ahmetbasbunar/Library/LaunchAgents/com.google.keystone.xpcservice.plist
+    owner: com.google.keystone.xpcservice  subcategory: orphanedLaunchAgent  default-selected: false
+    why: A login/background job for an app that is not installed.
+    if removed: The background job stops being scheduled at next login.
+    · Launch agent “com.google.keystone.xpcservice” has no matching installed app
     · Lives in ~/Library/LaunchAgents
 
 ## Safety self-check
