@@ -100,4 +100,62 @@ candidate list. `DeepScanResultsModel` exposes a filtered/sorted **page**
 (default 200 rows) over the candidate set; scrolling advances the page.
 Candidate counts of 10k / 50k were exercised in
 `DeepScanPresentationTests.pagingStaysBoundedAtFiftyThousandCandidates`
-(filter + sort + page slice < 30 ms).
+(filter + sort + page slice, ~63 ms for 50k).
+
+## Regression check (after the GUI + localization + FSEvents work)
+
+Re-run of the full `DeepScanCorePerfTests` + the 50k presentation benchmark,
+same M1 / 8 GB machine:
+
+| metric | baseline | now | verdict |
+|---|---:|---:|---|
+| build DiskGraph 100K | 144 ms | 139 ms | no regression |
+| build DiskGraph 500K | 818 ms | 755 ms | no regression |
+| build DiskGraph 1M | 1,487 ms | 1,459 ms | no regression |
+| index.apply 1M | 3,837 ms | 3,620 ms | no regression |
+| SQLite size 1M | 184.6 MiB | 184.6 MiB | identical |
+| paged query 1M | 9.3 ms | 0.7 ms | no regression |
+| real walk | 127k n/s | 137k n/s | no regression |
+| cancel latency | 0.1 ms | 0.1 ms | no regression |
+| 50k filter+sort+page | 72 ms | 63 ms | no regression |
+
+The GUI, localization and FSEvents changes do not touch `DeepScanEngine` /
+`DiskGraph` / `DeepScanIndex` hot paths, so this is expected.
+
+## Memory analysis (spec §17) — 1M-node RSS
+
+The 1M synthetic-graph RSS delta is **high-variance across runs** (measured
++690 / +798 / +911 MiB on three runs). The perf test builds 100K → 500K → 1M
+in one process, so the 1M figure carries allocator slack and fragmentation
+from the two earlier graphs; it is an upper bound, not a steady-state cost.
+
+Where the bytes go, for 1M `ScanNode`s held in RAM:
+
+| consumer | approx | note |
+|---|---:|---|
+| `[ScanNode]` array | ~200 MiB | ~200 B/struct: 3 String slots (2 usually share one buffer), ~6 optionals, 3 `Date?`, enums |
+| path string buffers | ~50 MiB | one heap buffer per node; `path` and `canonicalPath` are handed the **same** `String` value in the common case, so they share storage (no double-copy) |
+| `byCanonicalPath: [String:Int]` | ~55 MiB | inherent to O(1) node lookup |
+| `childrenOf: [String:[Int]]` | ~45 MiB | inherent to O(1) child lookup + per-parent `[Int]` |
+| Array/dict capacity slack + malloc fragmentation | ~100–350 MiB | the run-to-run variance |
+
+**Decision: no engine rewrite.** Rationale:
+
+1. It is not the normal path. Real-Mac scans are ~125k nodes ≈ **+180 MiB**
+   RSS — comfortable on 8 GB. 500k ≈ +460–640 MiB, acceptable.
+2. The architecture already routes large results through `DeepScanIndex`
+   (paged SQLite reads), and the budget below says *prefer not to hold >
+   ~500k nodes in RAM*. The GUI binds to `DeepScanResultsModel` pages and to
+   `DeepScanIndex.largestNodes`, never to the raw 1M-node array.
+3. The one "free" win — sharing the `path`/`canonicalPath` buffer — is
+   **already in place** (`DeepScanEngine.node(fromLstat:)` passes the same
+   `canon` value to both fields).
+4. Dropping `path` entirely, or interning path components, would touch
+   `DiskGraph` / engine / index / presentation / QA and add complexity for a
+   ceiling that is not hit in practice — explicitly out of scope for this
+   phase ("Do not prematurely rewrite the engine").
+
+If a future phase needs 1M+ nodes resident, the low-risk step is a streaming
+`apply` that never materialises the full `[ScanNode]` (feed the walker's
+output straight into SQLite), keeping only the lookup dictionaries the
+detectors need.

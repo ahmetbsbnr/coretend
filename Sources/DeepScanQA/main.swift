@@ -260,3 +260,22 @@ print("- unknown-confidence default-selected: \(anyUnknownSelected)  (must be fa
 print("- ~/.claude memory/projects/history default-selected: \(memorySelected)  (must be false)")
 let defaultCount = result.candidates.filter { $0.defaultSelected }.count
 print("- total default-selected: \(defaultCount) of \(result.candidates.count)")
+
+// Preselection-decision inputs (spec §14).
+let safeStrong = result.candidates.filter {
+    $0.risk == .safe && $0.confidence >= .strong
+}
+let (subsetEligible, _) = ExecutableSubsetPolicy.partition(result.candidates)
+print("## Preselection decision inputs")
+print("- total candidates: \(result.candidates.count)")
+print("- risk==SAFE && confidence>=STRONG: \(safeStrong.count)")
+print("  by category: " + Dictionary(grouping: safeStrong, by: { $0.category.rawValue })
+        .map { "\($0.key)=\($0.value.count)" }.sorted().joined(separator: ", "))
+print("- would meet DefaultSelectionPolicy.meetsBar: " + String(safeStrong.filter {
+    DefaultSelectionPolicy.meetsBar(risk: $0.risk, confidence: $0.confidence,
+        reconstruction: $0.reconstructability,
+        subtreeComplete: !$0.evidence.contains { $0.kind == .subtreeIncomplete },
+        evidenceKinds: Set($0.evidence.map(\.kind)))
+}.count))
+print("- in executable SAFE subset (manually selectable for execution): \(subsetEligible.count)")
+print("  " + subsetEligible.prefix(20).map { "\($0.detector):\($0.subcategory) \(($0.canonicalPath as NSString).lastPathComponent)" }.joined(separator: "\n  "))

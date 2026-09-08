@@ -48,6 +48,18 @@ public struct DeveloperStorageDetector: Detector {
             guard let rule = Self.rules.first(where: { $0.name == name }) else { continue }
             // Skip if this lives inside a .git dir or an .app bundle.
             if node.canonicalPath.contains("/.git/") || node.bundleContext != nil { continue }
+            // A build/output dir *inside* a dependency store (node_modules,
+            // .venv/site-packages, vendored Pods/Carthage) is part of an
+            // installed package — deleting it breaks the package and it is NOT
+            // locally regenerable (needs a reinstall). Only the top-level
+            // dependency dir itself (its own rule) is a candidate.
+            if name != "node_modules",
+               node.canonicalPath.range(of: "/node_modules/") != nil
+                || node.canonicalPath.range(of: "/site-packages/") != nil
+                || node.canonicalPath.range(of: "/Pods/") != nil
+                || node.canonicalPath.range(of: "/Carthage/") != nil {
+                continue
+            }
 
             let parent = node.parentCanonicalPath
             let siblings = parent.map { graph.children(of: $0).map { ($0.canonicalPath as NSString).lastPathComponent } } ?? []

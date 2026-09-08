@@ -1,10 +1,10 @@
 # CoreTend Deep Scan — READ-ONLY QA report
-Generated: 2026-09-08T19:21:36Z
+Generated: 2026-09-08T20:34:43Z
 
 ## Scan
 - roots: /Users/ahmetbasbunar/.claude, /Users/ahmetbasbunar/.codex, /Users/ahmetbasbunar/.cache, /Users/ahmetbasbunar/Library/Caches, /Users/ahmetbasbunar/Developer, /Users/ahmetbasbunar/Downloads, /Users/ahmetbasbunar/Library/LaunchAgents
-- nodes observed: 125670
-- wall time: 2.5s
+- nodes observed: 126396
+- wall time: 3.0s
 - cancelled: false   timed out: false
 - roots we could not read: /Users/ahmetbasbunar/Library/Caches/CloudKit, /Users/ahmetbasbunar/Library/Caches/FamilyCircle, /Users/ahmetbasbunar/Library/Caches/com.apple.HomeKit, /Users/ahmetbasbunar/Library/Caches/com.apple.Safari, /Users/ahmetbasbunar/Library/Caches/com.apple.Safari.SafeBrowsing, /Users/ahmetbasbunar/Library/Caches/com.apple.ap.adprivacyd, /Users/ahmetbasbunar/Library/Caches/com.apple.containermanagerd, /Users/ahmetbasbunar/Library/Caches/com.apple.homed, /Users/ahmetbasbunar/Library/Caches/familycircled
 - permission-denied nodes: 9   partial nodes: 1
@@ -14,7 +14,7 @@ Generated: 2026-09-08T19:21:36Z
 - git repositories discovered: 8
   - [YELLOW] /Users/ahmetbasbunar/.claude/plugins/marketplaces/context-mode — branch main, dirty=false, stashes=0, unpushed=0
   - [YELLOW] /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio — branch main, dirty=false, stashes=0, unpushed=0
-  - [RED] /Users/ahmetbasbunar/Developer/Website/products/coretend/app — branch feat/deep-scan-cleanup-v1.2, dirty=true, stashes=0, unpushed=6
+  - [RED] /Users/ahmetbasbunar/Developer/Website/products/coretend/app — branch feat/deep-scan-cleanup-v1.2, dirty=true, stashes=0, unpushed=9
   - [YELLOW] /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build/checkouts/swift-syntax — branch detached, dirty=false, stashes=0, unpushed=0
   - [YELLOW] /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build/checkouts/swift-testing — branch detached, dirty=false, stashes=0, unpushed=0
   - [YELLOW] /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build/index-build/checkouts/swift-syntax — branch detached, dirty=false, stashes=0, unpushed=0
@@ -89,7 +89,7 @@ Generated: 2026-09-08T19:21:36Z
     why: Codex — extensions / plugins.
     if removed: You would reinstall the extensions.
     · Inside Codex's data folder
-- 312.2 MB  [protected/unknown]  /Users/ahmetbasbunar/.claude/projects
+- 313.3 MB  [protected/unknown]  /Users/ahmetbasbunar/.claude/projects
     owner: Claude Code  subcategory: projectState  default-selected: false
     why: Claude Code — per-project state.
     if removed: This cannot be recovered. CoreTend will not remove it.
@@ -118,7 +118,7 @@ Generated: 2026-09-08T19:21:36Z
     why: Claude Code — extensions / plugins.
     if removed: You would reinstall the extensions.
     · Inside Claude Code's data folder
-- 17.3 MB  [protected/unknown]  /Users/ahmetbasbunar/.claude/file-history
+- 17.7 MB  [protected/unknown]  /Users/ahmetbasbunar/.claude/file-history
     owner: Claude Code  subcategory: projectState  default-selected: false
     why: Claude Code — per-project state.
     if removed: This cannot be recovered. CoreTend will not remove it.
@@ -179,7 +179,7 @@ Generated: 2026-09-08T19:21:36Z
     PROTECTED: This is Claude Code data of an unknown kind — protected user state
     · Inside Claude Code's data folder
     · This is Claude Code data of an unknown kind — protected user state
-- 169 KB  [protected/unknown]  /Users/ahmetbasbunar/.claude/jobs
+- 201 KB  [protected/unknown]  /Users/ahmetbasbunar/.claude/jobs
     owner: Claude Code  subcategory: unknownData  default-selected: false
     why: Claude Code — data of an unknown kind.
     if removed: This cannot be recovered. CoreTend will not remove it.
@@ -207,7 +207,7 @@ Generated: 2026-09-08T19:21:36Z
     PROTECTED: This is Codex data of an unknown kind — protected user state
     · Inside Codex's data folder
     · This is Codex data of an unknown kind — protected user state
-- 53 KB  [protected/unknown]  /Users/ahmetbasbunar/.claude/paste-cache
+- 66 KB  [protected/unknown]  /Users/ahmetbasbunar/.claude/paste-cache
     owner: Claude Code  subcategory: unknownData  default-selected: false
     why: Claude Code — data of an unknown kind.
     if removed: This cannot be recovered. CoreTend will not remove it.
@@ -236,8 +236,8 @@ Generated: 2026-09-08T19:21:36Z
     · Inside Codex's data folder
     · This is Codex data of an unknown kind — protected user state
 
-### developer — 110 candidates, ~2.48 GB reviewable, 0 protected
-- 1.4 GB  [review/confirmed]  /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build
+### developer — 34 candidates, ~2.39 GB reviewable, 0 protected
+- 1.58 GB  [review/confirmed]  /Users/ahmetbasbunar/Developer/Website/products/coretend/app/.build
     owner: —  subcategory: .build  default-selected: false
     why: SwiftPM build; rebuildable from the project.
     if removed: Recreated by the next build (can take minutes).
@@ -255,18 +255,6 @@ Generated: 2026-09-08T19:21:36Z
     if removed: Recreated by the next build.
     · Next.js build output directory named .next
     · A project manifest sits next to it, so it can be rebuilt
-- 139.7 MB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/next/dist
-    owner: —  subcategory: dist  default-selected: false
-    why: bundler output; rebuildable from the project.
-    if removed: Recreated by the next build.
-    · bundler output directory named dist
-    · A project manifest sits next to it, so it can be rebuilt
-- 33 MB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/@phosphor-icons/react/dist
-    owner: —  subcategory: dist  default-selected: false
-    why: bundler output; rebuildable from the project.
-    if removed: Recreated by the next build.
-    · bundler output directory named dist
-    · A project manifest sits next to it, so it can be rebuilt
 - 25.6 MB  [highRisk/weak]  /Users/ahmetbasbunar/Developer/Website/products/coretend/app/node_modules
     owner: —  subcategory: node_modules  default-selected: false
     why: npm dependencies; rebuildable from the project.
@@ -277,22 +265,6 @@ Generated: 2026-09-08T19:21:36Z
     why: SwiftPM build; rebuildable from the project.
     if removed: Recovery cost is unknown — review before removing.
     · SwiftPM build directory named .build
-- 4.5 MB  [highRisk/weak]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/next/dist/build
-    owner: —  subcategory: build  default-selected: false
-    why: build output; rebuildable from the project.
-    if removed: Recovery cost is unknown — review before removing.
-    · build output directory named build
-- 4.2 MB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/gsap/dist
-    owner: —  subcategory: dist  default-selected: false
-    why: bundler output; rebuildable from the project.
-    if removed: Recreated by the next build.
-    · bundler output directory named dist
-    · A project manifest sits next to it, so it can be rebuilt
-- 4 MB  [highRisk/weak]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/next/dist/esm/build
-    owner: —  subcategory: build  default-selected: false
-    why: build output; rebuildable from the project.
-    if removed: Recovery cost is unknown — review before removing.
-    · build output directory named build
 - 3.9 MB  [highRisk/weak]  /Users/ahmetbasbunar/Developer/Website/products/coretend/app/Website/node_modules
     owner: —  subcategory: node_modules  default-selected: false
     why: npm dependencies; rebuildable from the project.
@@ -316,80 +288,109 @@ Generated: 2026-09-08T19:21:36Z
     if removed: Reinstalling dependencies re-downloads this.
     · npm dependencies directory named node_modules
     · A project manifest sits next to it, so it can be rebuilt
-- 2.1 MB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/next/dist/compiled/@next/font/dist
-    owner: —  subcategory: dist  default-selected: false
-    why: bundler output; rebuildable from the project.
-    if removed: Recreated by the next build.
-    · bundler output directory named dist
-    · A project manifest sits next to it, so it can be rebuilt
-- 2.1 MB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/@typescript-eslint/eslint-plugin/dist
-    owner: —  subcategory: dist  default-selected: false
-    why: bundler output; rebuildable from the project.
-    if removed: Recreated by the next build.
-    · bundler output directory named dist
-    · A project manifest sits next to it, so it can be rebuilt
-- 2 MB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/jiti/dist
-    owner: —  subcategory: dist  default-selected: false
-    why: bundler output; rebuildable from the project.
-    if removed: Recreated by the next build.
-    · bundler output directory named dist
-    · A project manifest sits next to it, so it can be rebuilt
-- 1.9 MB  [safe/confirmed]  /Users/ahmetbasbunar/.cache/lm-studio/extensions/plugins/lmstudio/rag-v1/node_modules/@lmstudio/sdk/dist
-    owner: —  subcategory: dist  default-selected: false
-    why: bundler output; rebuildable from the project.
-    if removed: Recreated by the next build.
-    · bundler output directory named dist
-    · A project manifest sits next to it, so it can be rebuilt
-- 1.9 MB  [safe/confirmed]  /Users/ahmetbasbunar/.cache/lm-studio/extensions/plugins/lmstudio/js-code-sandbox/node_modules/@lmstudio/sdk/dist
-    owner: —  subcategory: dist  default-selected: false
-    why: bundler output; rebuildable from the project.
-    if removed: Recreated by the next build.
-    · bundler output directory named dist
-    · A project manifest sits next to it, so it can be rebuilt
-- 1.1 MB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/sucrase/dist
-    owner: —  subcategory: dist  default-selected: false
-    why: bundler output; rebuildable from the project.
-    if removed: Recreated by the next build.
-    · bundler output directory named dist
-    · A project manifest sits next to it, so it can be rebuilt
-- 1 MB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/esquery/dist
-    owner: —  subcategory: dist  default-selected: false
-    why: bundler output; rebuildable from the project.
-    if removed: Recreated by the next build.
-    · bundler output directory named dist
-    · A project manifest sits next to it, so it can be rebuilt
-- 994 KB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/styled-jsx/dist
-    owner: —  subcategory: dist  default-selected: false
-    why: bundler output; rebuildable from the project.
-    if removed: Recreated by the next build.
-    · bundler output directory named dist
-    · A project manifest sits next to it, so it can be rebuilt
-- 832 KB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/js-yaml/dist
-    owner: —  subcategory: dist  default-selected: false
-    why: bundler output; rebuildable from the project.
-    if removed: Recreated by the next build.
-    · bundler output directory named dist
-    · A project manifest sits next to it, so it can be rebuilt
 - 725 KB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/@typescript-eslint/typescript-estree/node_modules
     owner: —  subcategory: node_modules  default-selected: false
     why: npm dependencies; rebuildable from the project.
     if removed: Reinstalling dependencies re-downloads this.
     · npm dependencies directory named node_modules
     · A project manifest sits next to it, so it can be rebuilt
-- 621 KB  [safe/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/sharp/dist
+- 333 KB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/eslint-import-resolver-node/node_modules
+    owner: —  subcategory: node_modules  default-selected: false
+    why: npm dependencies; rebuildable from the project.
+    if removed: Reinstalling dependencies re-downloads this.
+    · npm dependencies directory named node_modules
+    · A project manifest sits next to it, so it can be rebuilt
+- 280 KB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/eslint-plugin-react/node_modules
+    owner: —  subcategory: node_modules  default-selected: false
+    why: npm dependencies; rebuildable from the project.
+    if removed: Reinstalling dependencies re-downloads this.
+    · npm dependencies directory named node_modules
+    · A project manifest sits next to it, so it can be rebuilt
+- 156 KB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/playwright/node_modules
+    owner: —  subcategory: node_modules  default-selected: false
+    why: npm dependencies; rebuildable from the project.
+    if removed: Reinstalling dependencies re-downloads this.
+    · npm dependencies directory named node_modules
+    · A project manifest sits next to it, so it can be rebuilt
+- 145 KB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/tinyglobby/node_modules
+    owner: —  subcategory: node_modules  default-selected: false
+    why: npm dependencies; rebuildable from the project.
+    if removed: Reinstalling dependencies re-downloads this.
+    · npm dependencies directory named node_modules
+    · A project manifest sits next to it, so it can be rebuilt
+- 109 KB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/@next/eslint-plugin-next/node_modules
+    owner: —  subcategory: node_modules  default-selected: false
+    why: npm dependencies; rebuildable from the project.
+    if removed: Reinstalling dependencies re-downloads this.
+    · npm dependencies directory named node_modules
+    · A project manifest sits next to it, so it can be rebuilt
+- 106 KB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/eslint/node_modules
+    owner: —  subcategory: node_modules  default-selected: false
+    why: npm dependencies; rebuildable from the project.
+    if removed: Reinstalling dependencies re-downloads this.
+    · npm dependencies directory named node_modules
+    · A project manifest sits next to it, so it can be rebuilt
+- 101 KB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/sharp/node_modules
+    owner: —  subcategory: node_modules  default-selected: false
+    why: npm dependencies; rebuildable from the project.
+    if removed: Reinstalling dependencies re-downloads this.
+    · npm dependencies directory named node_modules
+    · A project manifest sits next to it, so it can be rebuilt
+- 101 KB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/is-bun-module/node_modules
+    owner: —  subcategory: node_modules  default-selected: false
+    why: npm dependencies; rebuildable from the project.
+    if removed: Reinstalling dependencies re-downloads this.
+    · npm dependencies directory named node_modules
+    · A project manifest sits next to it, so it can be rebuilt
+- 78 KB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/tsconfig-paths/node_modules
+    owner: —  subcategory: node_modules  default-selected: false
+    why: npm dependencies; rebuildable from the project.
+    if removed: Reinstalling dependencies re-downloads this.
+    · npm dependencies directory named node_modules
+    · A project manifest sits next to it, so it can be rebuilt
+- 63 KB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/@typescript-eslint/eslint-plugin/node_modules
+    owner: —  subcategory: node_modules  default-selected: false
+    why: npm dependencies; rebuildable from the project.
+    if removed: Reinstalling dependencies re-downloads this.
+    · npm dependencies directory named node_modules
+    · A project manifest sits next to it, so it can be rebuilt
+- 63 KB  [highRisk/weak]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/vendor/ahmet-design-system/dist
     owner: —  subcategory: dist  default-selected: false
     why: bundler output; rebuildable from the project.
-    if removed: Recreated by the next build.
+    if removed: Recovery cost is unknown — review before removing.
     · bundler output directory named dist
+- 55 KB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/rimraf/node_modules
+    owner: —  subcategory: node_modules  default-selected: false
+    why: npm dependencies; rebuildable from the project.
+    if removed: Reinstalling dependencies re-downloads this.
+    · npm dependencies directory named node_modules
+    · A project manifest sits next to it, so it can be rebuilt
+- 53 KB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/eslint-plugin-import/node_modules
+    owner: —  subcategory: node_modules  default-selected: false
+    why: npm dependencies; rebuildable from the project.
+    if removed: Reinstalling dependencies re-downloads this.
+    · npm dependencies directory named node_modules
+    · A project manifest sits next to it, so it can be rebuilt
+- 53 KB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/eslint-module-utils/node_modules
+    owner: —  subcategory: node_modules  default-selected: false
+    why: npm dependencies; rebuildable from the project.
+    if removed: Reinstalling dependencies re-downloads this.
+    · npm dependencies directory named node_modules
+    · A project manifest sits next to it, so it can be rebuilt
+- 32 KB  [highRisk/confirmed]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio/node_modules/@typescript-eslint/visitor-keys/node_modules
+    owner: —  subcategory: node_modules  default-selected: false
+    why: npm dependencies; rebuildable from the project.
+    if removed: Reinstalling dependencies re-downloads this.
+    · npm dependencies directory named node_modules
     · A project manifest sits next to it, so it can be rebuilt
 
 ### gitProjects — 8 candidates, ~Zero KB reviewable, 8 protected
-- 1.57 GB  [protected/weak]  /Users/ahmetbasbunar/Developer/Website/products/coretend/app
-    owner: git@github.com:ahmetbsbnr/coretend.git  subcategory: repository  default-selected: false
+- 1.75 GB  [protected/weak]  /Users/ahmetbasbunar/Developer/Website/products/coretend/app
+    owner: git@github.com:ahmetbsbnr/coretend-local-archive.git  subcategory: repository  default-selected: false
     why: Repository has local-only work — keep it.
     if removed: Local commits, stashes or edits would be lost.
     PROTECTED: Git repository has uncommitted or unpushed work
-    · uncommitted changes, 2 untracked files, 6 unpushed commit(s), remote not verified
+    · uncommitted changes, 2 untracked files, 9 unpushed commit(s), remote not verified
 - 712.5 MB  [protected/unknown]  /Users/ahmetbasbunar/Developer/Website/ahmetbsbnr-portfolio
     owner: git@github.com:ahmetbsbnr/ahmetbsbnrportfolio.git  subcategory: repository  default-selected: false
     why: Repository has local-only work — keep it.
@@ -493,4 +494,11 @@ Generated: 2026-09-08T19:21:36Z
 - protected candidate default-selected: false  (must be false)
 - unknown-confidence default-selected: false  (must be false)
 - ~/.claude memory/projects/history default-selected: false  (must be false)
-- total default-selected: 0 of 233
+- total default-selected: 0 of 157
+## Preselection decision inputs
+- total candidates: 157
+- risk==SAFE && confidence>=STRONG: 1
+  by category: developer=1
+- would meet DefaultSelectionPolicy.meetsBar: 1
+- in executable SAFE subset (manually selectable for execution): 1
+  developer-storage:.next .next
