@@ -34,6 +34,18 @@ public struct AppOwnershipResolver: Sendable {
     public func resolve(folderName: String) -> Ownership {
         let trimmed = folderName.hasSuffix(".plist")
             ? String(folderName.dropLast(6)) : folderName
+        // A name carrying a non-plist file extension (….png, ….sqlite, ….log)
+        // is a loose file, not a bundle-identified container.
+        // A name carrying a known loose-file extension is a file, not a
+        // bundle-identified container. (Bundle IDs like "com.acme.App.Helper"
+        // have a trailing component but not one of these extensions.)
+        let looseFileExtensions: Set<String> = [
+            "png", "jpg", "jpeg", "gif", "webp", "heic", "sqlite", "sqlite3",
+            "db", "log", "txt", "json", "data", "cache", "tmp", "lock", "bin",
+        ]
+        if looseFileExtensions.contains((folderName as NSString).pathExtension.lowercased()) {
+            return .notBundleShaped
+        }
         // Bundle-ID shape: at least one dot, reverse-DNS-ish, no spaces.
         guard trimmed.contains("."), !trimmed.contains(" "),
               trimmed.split(separator: ".").count >= 2 else {
@@ -78,6 +90,13 @@ public struct OrphanedAppDetector: Detector {
         "Library/Logs",
     ]
 
+    /// Reverse-DNS prefixes for first-party developer toolchains that own and
+    /// regenerate their own cache/support directories.
+    static let toolchainBundlePrefixes: [String] = [
+        "org.swift", "com.swift", "org.llvm", "rs.rustup", "com.jetbrains",
+        "org.python", "com.googlecode.iterm2", "org.nixos",
+    ]
+
     public func detect(in graph: DiskGraph, context: DetectorContext) -> [CleanupCandidate] {
         let resolver = AppOwnershipResolver(installedApps: context.installedApps)
         let home = context.home.standardizedFileURL.path
@@ -92,6 +111,16 @@ public struct OrphanedAppDetector: Detector {
                 let name = (child.canonicalPath as NSString).lastPathComponent
                 let ownership = resolver.resolve(folderName: name)
                 guard case let .noInstalledOwner(bundleID) = ownership else { continue }
+                // Apple's own daemons/agents own and recreate their caches and
+                // support dirs whether or not a matching .app exists. They are
+                // not third-party leftovers and are not CoreTend's to remove.
+                if bundleID.hasPrefix("com.apple.") { continue }
+                // First-party developer toolchains (SwiftPM, Xcode helpers,
+                // rustup, etc.) manage their own caches too — do not present
+                // them as orphaned app residue.
+                if Self.toolchainBundlePrefixes.contains(where: { bundleID == $0 || bundleID.hasPrefix($0 + ".") }) {
+                    continue
+                }
 
                 let idleDays = child.modifiedAt.map {
                     Int(Date().timeIntervalSince($0) / 86_400)

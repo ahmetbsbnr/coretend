@@ -29,6 +29,7 @@ public struct SystemSettingsDetector: Detector {
                 let label = (plist.canonicalPath as NSString).lastPathComponent
                     .replacingOccurrences(of: ".plist", with: "")
                 guard case let .noInstalledOwner(bundleID) = resolver.resolve(folderName: label) else { continue }
+                if bundleID.hasPrefix("com.apple.") { continue }   // Apple-managed agent
                 let ev = [
                     Evidence(.bundleIDNoInstall,
                         "Launch agent “\(label)” has no matching installed app", detail: plist.canonicalPath),
