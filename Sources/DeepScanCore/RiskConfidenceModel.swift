@@ -72,7 +72,11 @@ public struct RiskConfidenceModel: Sendable {
             confidence = .strong
         } else if kinds.contains(.bundleIDExactMatch) || kinds.contains(.gitClean) {
             confidence = .probable
-        } else if kinds.contains(.regenerableMarker) || kinds.contains(.reconstructionKnown) {
+        } else if kinds.contains(.regenerableMarker) {
+            // A generated directory sitting next to the manifest that produces
+            // it, with the whole subtree observed, is strongly attributed.
+            confidence = subtreeComplete ? .strong : .probable
+        } else if kinds.contains(.reconstructionKnown) {
             confidence = .probable
         } else if kinds.contains(.pathPattern) {
             confidence = .weak
@@ -123,19 +127,33 @@ public struct RiskConfidenceModel: Sendable {
 
 /// Extremely conservative. The default answer is NO; a candidate must clear
 /// every bar to be pre-ticked.
+///
+/// PRODUCTIZATION PHASE POLICY (spec §20/§35): pre-selection is held at **zero**
+/// until the maintainer has reviewed real execution behaviour. `meetsBar`
+/// captures the criteria a candidate would need; `allows` currently always
+/// returns false so the UI ships with nothing pre-ticked. Flip
+/// `preselectionEnabled` only after that review.
 public enum DefaultSelectionPolicy {
-    public static func allows(risk: RiskClass, confidence: Confidence,
-                              reconstruction: Reconstructability, subtreeComplete: Bool,
-                              evidenceKinds: Set<Evidence.Kind>) -> Bool {
-        guard risk == .safe else { return false }
-        guard confidence >= .strong else { return false }
-        guard subtreeComplete else { return false }
-        guard reconstruction == .regeneratesLocally else { return false }
-        // Never auto-select anything touching these, even if the above passed.
+    nonisolated(unsafe) public static var preselectionEnabled = false
+
+    /// The bar a candidate must clear to be *eligible* for pre-selection.
+    public static func meetsBar(risk: RiskClass, confidence: Confidence,
+                                reconstruction: Reconstructability, subtreeComplete: Bool,
+                                evidenceKinds: Set<Evidence.Kind>) -> Bool {
+        guard risk == .safe, confidence >= .strong, subtreeComplete,
+              reconstruction == .regeneratesLocally else { return false }
         let vetoes: Set<Evidence.Kind> = [
             .userStateMarker, .cloudBacked, .sharedVendorDir, .gitState, .gitClean,
             .mountBoundary, .subtreeIncomplete, .runningProcess, .duplicateRemote,
         ]
         return evidenceKinds.isDisjoint(with: vetoes)
+    }
+
+    public static func allows(risk: RiskClass, confidence: Confidence,
+                              reconstruction: Reconstructability, subtreeComplete: Bool,
+                              evidenceKinds: Set<Evidence.Kind>) -> Bool {
+        guard preselectionEnabled else { return false }
+        return meetsBar(risk: risk, confidence: confidence, reconstruction: reconstruction,
+                        subtreeComplete: subtreeComplete, evidenceKinds: evidenceKinds)
     }
 }

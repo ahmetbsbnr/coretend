@@ -281,19 +281,22 @@ private func scan(_ roots: [URL], budget: Duration = .seconds(30),
     #expect(v.protectedReason != nil)
 }
 
-@Test func onlySafeStrongCompleteLocalGetsDefaultSelected() {
-    let ok = DefaultSelectionPolicy.allows(
+@Test func defaultSelectionBarAndPhaseGate() {
+    // The eligibility bar: safe + strong + complete + locally-regenerable + no veto.
+    #expect(DefaultSelectionPolicy.meetsBar(
         risk: .safe, confidence: .strong, reconstruction: .regeneratesLocally,
-        subtreeComplete: true, evidenceKinds: [.regenerableMarker, .bundleIDExactMatch, .noSiblingOwner])
-    #expect(ok)
-    let blockedByVeto = DefaultSelectionPolicy.allows(
+        subtreeComplete: true, evidenceKinds: [.regenerableMarker, .bundleIDExactMatch, .noSiblingOwner]))
+    #expect(!DefaultSelectionPolicy.meetsBar(
         risk: .safe, confidence: .strong, reconstruction: .regeneratesLocally,
-        subtreeComplete: true, evidenceKinds: [.regenerableMarker, .gitClean])
-    #expect(!blockedByVeto)
-    let blockedByRisk = DefaultSelectionPolicy.allows(
+        subtreeComplete: true, evidenceKinds: [.regenerableMarker, .gitClean]))   // veto
+    #expect(!DefaultSelectionPolicy.meetsBar(
         risk: .review, confidence: .confirmed, reconstruction: .regeneratesLocally,
-        subtreeComplete: true, evidenceKinds: [.regenerableMarker])
-    #expect(!blockedByRisk)
+        subtreeComplete: true, evidenceKinds: [.regenerableMarker]))              // risk
+    // Productization phase: pre-selection is held at zero regardless of the bar.
+    #expect(DefaultSelectionPolicy.preselectionEnabled == false)
+    #expect(!DefaultSelectionPolicy.allows(
+        risk: .safe, confidence: .confirmed, reconstruction: .regeneratesLocally,
+        subtreeComplete: true, evidenceKinds: [.regenerableMarker]))
 }
 
 // MARK: - Execution revalidation (adversarial)
