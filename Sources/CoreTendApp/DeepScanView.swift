@@ -102,6 +102,10 @@ final class DeepScanViewModel {
     var progress = DeepScanProgressModel()
     var permission: DeepScanPermissionState = .partialAccess
     var settings = DeepScanSettings.load()
+    /// When set (via "Scan a specific folder…"), the scan is limited to this
+    /// path instead of the home volume. Used for controlled QA of a disposable
+    /// fixture; the detector context still uses the real home.
+    var overrideRoot: URL?
 
     // Results
     private(set) var candidates: [CleanupCandidate] = []
@@ -136,7 +140,7 @@ final class DeepScanViewModel {
         permission = DeepScanPermissionProbe().probe()
 
         let home = FileManager.default.homeDirectoryForCurrentUser
-        let roots = settings.scanRoots(home: home)
+        let roots = overrideRoot.map { [$0] } ?? settings.scanRoots(home: home)
         var cfg = DeepScanConfiguration(
             roots: roots, maxConcurrency: 8, timeBudget: .seconds(240),
             excludedPrefixes: ["/System", "/Volumes"],
@@ -319,6 +323,23 @@ struct DeepScanView: View {
 
                     Button(L("deepscan.scan_options")) { model.showSettings = true }
                         .controlSize(.large)
+                }
+
+                HStack(spacing: MCSpacing.xs) {
+                    Button(L("deepscan.scan_folder")) {
+                        let panel = NSOpenPanel()
+                        panel.canChooseDirectories = true
+                        panel.canChooseFiles = false
+                        panel.allowsMultipleSelection = false
+                        if panel.runModal() == .OK { model.overrideRoot = panel.url }
+                    }
+                    if let r = model.overrideRoot {
+                        Text(L("deepscan.scan_folder_active", r.path))
+                            .font(MCFont.caption).foregroundStyle(.secondary)
+                            .lineLimit(1).truncationMode(.middle)
+                        Button(L("deepscan.scan_whole_home")) { model.overrideRoot = nil }
+                            .font(MCFont.caption)
+                    }
                 }
 
                 if !model.executionAvailable {

@@ -1,7 +1,52 @@
 # Deep Scan — Human review log
 
-Honest record of what was and was not verified in the beta-hardening phase.
-No fabricated manual QA.
+Honest record of what was and was not verified. No fabricated manual QA.
+
+---
+
+## Interactive GUI acceptance gate — attempt log
+
+**App build under review:** `feat/deep-scan-cleanup-v1.2` @ `c66… (see git log; HEAD at time of this run)`, debug + release both clean, 398 tests passing.
+
+**Result of this run: NOT PERFORMED.** The interactive acceptance work
+(§1–§14, §17 of the acceptance-gate spec) requires computer-use control of
+this Mac to launch and drive the CoreTend GUI. Computer-use was held by
+another Claude session (`fe1857ff…`) for the entire session; access was
+requested 6 times across two phases and denied every time. There is no
+headless substitute for "review every screen in light/dark", "turn VoiceOver
+on", "click Restore in the Restore Center", "toggle Full Disk Access", or
+"capture QA screenshots".
+
+**Prepared for whoever runs the acceptance pass:**
+
+- Disposable fixture created at `/tmp/coretend-deepscan-gui-qa/`:
+  - `myapp/` — `package.json` declaring `next`, `.next/cache/` with 40 × 4 KiB
+    chunks (≈160 KiB), `src/page.tsx`. Aged to 2026-01-01 so the
+    just-modified guard won't fire.
+  - `repo/` — a git repo with an `origin` remote and one commit, clean, for
+    the state-change skip test (dirty it after scanning).
+- **New GUI affordance** (compile-verified only, not run): the Deep Scan entry
+  screen now has **"Scan a specific folder…"** (`NSOpenPanel`, dir-only) which
+  sets `DeepScanViewModel.overrideRoot`; the scan is then limited to that path
+  while the detector context still uses the real home. This is what makes the
+  `/tmp` fixture reachable from the GUI without a full home scan. "Scan whole
+  home folder" clears it. Strings `deepscan.scan_folder*` are EN+FR.
+- **QA execution gate mechanism** (source default unchanged): launch with
+  `CORETEND_DEEPSCAN_EXEC=1 ./.build/debug/CoreTend` — `DeepScanExecutionGate.
+  isEnabledResolved` honours that env var; `DeepScanExecutionGate.isEnabled`
+  stays `false` in source and `DefaultSelectionPolicy.preselectionEnabled`
+  stays `false`.
+
+**Still HUMAN VERIFICATION REQUIRED (unchanged, none closed this run):**
+real app launch · light/dark/resize visual pass of every screen · keyboard
+traversal · VoiceOver spot-check · FDA OFF→ON toggle QA · interactive
+Pause/Resume/Cancel · GUI Cleanup Plan → Confirm → Trash · Restore Center
+round trip · interactive state-change skip · French UI visual pass ·
+QA screenshots.
+
+---
+
+## Earlier phase — headless / code verification (all done, all green)
 
 ## What was actually done (automated / headless, this environment)
 
