@@ -62,9 +62,15 @@ public struct DeepScanConfiguration: Sendable {
 public final class DeepScanCancellation: @unchecked Sendable {
     private let lock = NSLock()
     private var cancelled = false
+    private var paused = false
     public init() {}
     public func cancel() { lock.lock(); cancelled = true; lock.unlock() }
     public var isCancelled: Bool { lock.lock(); defer { lock.unlock() }; return cancelled }
+    /// Pause/resume are advisory: the engine stops dequeuing new directories
+    /// while paused but never abandons in-flight work.
+    public func pause() { lock.lock(); paused = true; lock.unlock() }
+    public func resume() { lock.lock(); paused = false; lock.unlock() }
+    public var isPaused: Bool { lock.lock(); defer { lock.unlock() }; return paused }
 }
 
 public struct DeepScanProgress: Sendable {
@@ -111,6 +117,10 @@ public actor DeepScanEngine {
         var lastProgress = ContinuousClock.now
 
         outer: while !queue.isEmpty {
+            if cancellation.isCancelled || Task.isCancelled { break }
+            while cancellation.isPaused && !cancellation.isCancelled && !Task.isCancelled {
+                try? await Task.sleep(for: .milliseconds(60))
+            }
             if cancellation.isCancelled || Task.isCancelled { break }
             if ContinuousClock.now >= deadline { hitTimeout = true; break }
 

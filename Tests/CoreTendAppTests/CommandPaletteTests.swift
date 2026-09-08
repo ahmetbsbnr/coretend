@@ -34,7 +34,7 @@ struct CommandPaletteTests {
         // SESSION_2026-08-09_AUDIT.md.
         #expect(modules == [
             .smartCare, .cleanup, .spaceLens, .duplicates, .applications,
-            .myClutter, .cloudCleanup, .performance,
+            .deepScan, .myClutter, .cloudCleanup, .performance,
             .protection, .myActivity, .settings,
         ])
         #expect(Set(modules.map(\.rawValue)).count == modules.count)
