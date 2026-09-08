@@ -7,7 +7,31 @@
 
 import Foundation
 import Testing
+import SafetyCore
 @testable import DeepScanCore
+
+// MARK: - Audit sink test double
+
+actor CapturingAuditSink: SafetyAuditSink {
+    private(set) var events: [SafetyAuditEvent] = []
+    func recordSafetyEvent(_ event: SafetyAuditEvent) async { events.append(event) }
+    func stages() -> [String] { events.map { $0.stage.rawValue } }
+}
+
+private func execCandidate(path: String, detector: String = "developer-storage",
+                           subcategory: String = ".next",
+                           category: CleanupCategory = .developer,
+                           risk: RiskClass = .safe, confidence: Confidence = .strong,
+                           reconstructability: Reconstructability = .regeneratesLocally,
+                           evidence: [Evidence] = [Evidence(.regenerableMarker, "manifest next to it")],
+                           owner: String? = nil) -> CleanupCandidate {
+    CleanupCandidate(path: path, canonicalPath: path, category: category, subcategory: subcategory,
+        detector: detector, logicalBytes: 16, allocatedBytes: 16, estimatedReclaimableBytes: 16,
+        owner: owner, confidence: confidence, risk: risk, recoverability: .trashRestore,
+        reconstructability: reconstructability, lastActivity: nil, activeState: .idle,
+        evidence: evidence, protectedReason: nil, recommendedAction: .remove,
+        defaultSelected: false, rationale: "", ifRemoved: "")
+}
 
 // MARK: - Fixture helpers
 
@@ -391,6 +415,74 @@ private func candidate(path: String, risk: RiskClass = .safe,
     #expect(largest.first?.path.hasSuffix("b.bin") == true)
 }
 
+// MARK: - FSEvents incremental engine
+
+@Test func coalescerDroppedEventsForceFullRescanAndStale() {
+    let plan = EventCoalescer().coalesce(
+        [FSChange(path: "/w/a", dropped: true)], watchedRoots: ["/w"])
+    #expect(plan.requiresFullRescan)
+    #expect(plan.health == .stale)
+    #expect(plan.rescanRoots == ["/w"])
+}
+
+@Test func coalescerRootChangeIsError() {
+    let plan = EventCoalescer().coalesce(
+        [FSChange(path: "/w", rootChanged: true)], watchedRoots: ["/w"])
+    #expect(plan.health == .error)
+    #expect(plan.requiresFullRescan)
+}
+
+@Test func coalescerCollapsesNestedDirsAndExtractsDeletes() {
+    let plan = EventCoalescer().coalesce([
+        FSChange(path: "/w/a/b/c.txt", created: true),
+        FSChange(path: "/w/a", isDir: true),
+        FSChange(path: "/w/a/b/old.txt", removed: true),
+    ], watchedRoots: ["/w"])
+    #expect(plan.rescanRoots == ["/w/a"])           // /w/a/b folded into /w/a
+    #expect(plan.deletedPaths == ["/w/a/b/old.txt"])
+    #expect(!plan.requiresFullRescan)
+}
+
+@Test func incrementalEngineScopedRescanPicksUpNewFileAndPrunesDeleted() async throws {
+    let t = TempTree(); defer { t.cleanup() }
+    t.file("proj/keep.bin", bytes: 100)
+    t.file("proj/gone.bin", bytes: 100)
+    let dbPath = t.root.appendingPathComponent("idx.sqlite").path
+    let index = try FSEventIncrementalEngine.openIndexRecovering(path: dbPath)
+    let cfg = DeepScanConfiguration(roots: [t.root], maxConcurrency: 4, timeBudget: .seconds(20))
+    let engine = FSEventIncrementalEngine(index: index, roots: [t.root], baseConfig: cfg,
+                                          debounceMillis: 50)
+    await engine.start()
+    engine.stop()   // don't need the live stream for this test
+    #expect(try index.nodeCount() > 0)
+    let v0 = engine.scanVersion
+
+    // Mutate: add a file, remove another.
+    t.file("proj/added.bin", bytes: 200)
+    try FileManager.default.removeItem(at: t.root.appendingPathComponent("proj/gone.bin"))
+    engine.ingest([
+        FSChange(path: t.root.appendingPathComponent("proj/added.bin").path, created: true),
+        FSChange(path: t.root.appendingPathComponent("proj/gone.bin").path, removed: true),
+    ])
+
+    // Wait for the debounced flush + async rescan.
+    try await Task.sleep(for: .milliseconds(1500))
+
+    let paths = try index.largestNodes(limit: 500).map(\.path)
+    #expect(paths.contains { $0.hasSuffix("/proj/added.bin") })
+    #expect(!paths.contains { $0.hasSuffix("/proj/gone.bin") })
+    #expect(engine.scanVersion > v0)
+    #expect(engine.health == .fresh || engine.health == .partial)
+}
+
+@Test func indexCorruptionIsRecovered() throws {
+    let t = TempTree(); defer { t.cleanup() }
+    let dbPath = t.root.appendingPathComponent("corrupt.sqlite").path
+    FileManager.default.createFile(atPath: dbPath, contents: Data("not a database".utf8))
+    let index = try FSEventIncrementalEngine.openIndexRecovering(path: dbPath)
+    #expect(try index.nodeCount() == 0)   // rebuilt empty, usable
+}
+
 // MARK: - Volume classification
 
 @Test func tempDirClassifiesAsDataVolumeAndIsCached() {
@@ -419,6 +511,147 @@ private func candidate(path: String, risk: RiskClass = .safe,
         $0.identity == nil || $0.volumeClass == .dataVolume || $0.volumeClass == .systemVolume
     })
     #expect(g.nodes.allSatisfy { $0.volumeClass != .unknown || $0.completeness == .permissionDenied })
+}
+
+// MARK: - Execution wiring (§17/§18/§19/§27)
+
+@Test func executionGateOffSkipsEverything() async {
+    let t = TempTree(); defer { t.cleanup() }
+    let f = t.file("app/.next/build.bin", bytes: 16)
+    DeepScanExecutionGate.isEnabled = false
+    let report = await DeepScanExecutor().execute(
+        selected: [execCandidate(path: f.path)], identitiesByPath: [:],
+        runningBundleIDs: [], allowedRoots: [t.root], auditSink: nil)
+    #expect(report.gated)
+    #expect(report.executed.isEmpty)
+    #expect(report.skipped.allSatisfy { $0.stage == "gate" })
+    #expect(FileManager.default.fileExists(atPath: f.path))   // untouched
+}
+
+@Test func executableSubsetRejectsOutOfScopeCandidates() {
+    let git = execCandidate(path: "/x/repo", detector: "git-project",
+                            subcategory: "repository", category: .gitProjects)
+    let weights = execCandidate(path: "/x/w", detector: "ai-storage",
+                                subcategory: AIDataType.modelWeights.rawValue, category: .aiAndLLM)
+    let risky = execCandidate(path: "/x/r", risk: .review)
+    let unknownConf = execCandidate(path: "/x/u", confidence: .weak)
+    let (eligible, rejected) = ExecutableSubsetPolicy.partition([git, weights, risky, unknownConf])
+    #expect(eligible.isEmpty)
+    #expect(rejected.count == 4)
+}
+
+@Test func executionGateOnTrashesEligibleCandidateAndJournals() async throws {
+    let t = TempTree(); defer { t.cleanup() }
+    let f = t.file("app/.next/output.bin", bytes: 16)
+    try FileManager.default.setAttributes([.modificationDate: Date(timeIntervalSinceNow: -3600)],
+                                          ofItemAtPath: f.path)
+    let sink = CapturingAuditSink()
+    DeepScanExecutionGate.isEnabled = true
+    defer { DeepScanExecutionGate.isEnabled = false }
+
+    let id = ExecutionRevalidator.lstat(f.path).map {
+        FileIdentity(device: UInt64(bitPattern: Int64($0.st_dev)), inode: $0.st_ino)
+    }
+    let report = await DeepScanExecutor().execute(
+        selected: [execCandidate(path: f.path)],
+        identitiesByPath: id.map { [f.path: $0] } ?? [:],
+        runningBundleIDs: [], allowedRoots: [t.root], auditSink: sink)
+
+    #expect(!report.gated)
+    #expect(report.executed.count == 1)
+    #expect(report.bytesTrashed == 16)
+    #expect(!FileManager.default.fileExists(atPath: f.path))     // moved to Trash
+    // Journal recorded an approve + an executed event with the deepscan ruleID.
+    let stages = await sink.stages()
+    let events = await sink.events
+    #expect(stages.contains("approved"))
+    #expect(stages.contains("executed"))
+    #expect(events.contains { $0.ruleID == "deepscan:developer-storage:.next" })
+}
+
+@Test func adversarialExecutionAllSkipWithTruthfulReasons() async throws {
+    DeepScanExecutionGate.isEnabled = true
+    defer { DeepScanExecutionGate.isEnabled = false }
+    let exec = DeepScanExecutor()
+
+    // (a) path vanished between scan and execute
+    do {
+        let t = TempTree(); defer { t.cleanup() }
+        let f = t.file("app/.next/v.bin", bytes: 16)
+        let path = f.path
+        try FileManager.default.removeItem(at: f)
+        let r = await exec.execute(selected: [execCandidate(path: path)],
+            identitiesByPath: [:], runningBundleIDs: [], allowedRoots: [t.root], auditSink: nil)
+        #expect(r.executed.isEmpty)
+        #expect(r.skipped.first?.reason.contains("no longer exists") == true)
+    }
+    // (b) owner app launches
+    do {
+        let t = TempTree(); defer { t.cleanup() }
+        let f = t.file("app/.next/o.bin", bytes: 16)
+        try FileManager.default.setAttributes([.modificationDate: Date(timeIntervalSinceNow: -3600)],
+                                              ofItemAtPath: f.path)
+        let c = execCandidate(path: f.path, detector: "ai-storage",
+                              subcategory: AIDataType.runtimeCache.rawValue, category: .aiAndLLM,
+                              evidence: [Evidence(.pathPattern, "runtime cache")], owner: "LM Studio")
+        let r = await exec.execute(selected: [c], identitiesByPath: [:],
+            runningBundleIDs: ["LM Studio", "LM Studio Helper"], allowedRoots: [t.root], auditSink: nil)
+        #expect(r.executed.isEmpty)
+        #expect(r.skipped.contains { $0.reason.contains("running") })
+        #expect(FileManager.default.fileExists(atPath: f.path))
+    }
+    // (c) inode replaced
+    do {
+        let t = TempTree(); defer { t.cleanup() }
+        let f = t.file("app/.next/i.bin", bytes: 16)
+        let bogus = FileIdentity(device: 1, inode: 424242)
+        let r = await exec.execute(selected: [execCandidate(path: f.path)],
+            identitiesByPath: [f.path: bogus], runningBundleIDs: [], allowedRoots: [t.root], auditSink: nil)
+        #expect(r.executed.isEmpty)
+        #expect(r.skipped.contains { $0.reason.contains("different file") })
+    }
+    // (d) path became a symlink
+    do {
+        let t = TempTree(); defer { t.cleanup() }
+        let real = t.file("app/.next/real.bin", bytes: 16)
+        let target = t.root.appendingPathComponent("target.bin")
+        try FileManager.default.moveItem(at: real, to: target)
+        try FileManager.default.createSymbolicLink(at: real, withDestinationURL: target)
+        let r = await exec.execute(selected: [execCandidate(path: real.path)],
+            identitiesByPath: [:], runningBundleIDs: [], allowedRoots: [t.root], auditSink: nil)
+        #expect(r.executed.isEmpty)
+        #expect(r.skipped.contains { $0.reason.contains("symlink") })
+    }
+    // (e) enclosing git repo is now dirty
+    do {
+        let t = TempTree(); defer { t.cleanup() }
+        let repo = t.dir("repo")
+        _ = try? runGit(["init", "-q"], in: repo)
+        try FileManager.default.createDirectory(
+            at: repo.appendingPathComponent(".next"), withIntermediateDirectories: true)
+        let f = repo.appendingPathComponent(".next/build.bin")
+        FileManager.default.createFile(atPath: f.path, contents: Data(count: 16))
+        try FileManager.default.setAttributes([.modificationDate: Date(timeIntervalSinceNow: -3600)],
+                                              ofItemAtPath: f.path)
+        // untracked file makes the repo "dirty"
+        FileManager.default.createFile(atPath: repo.appendingPathComponent("scratch.txt").path,
+                                       contents: Data("wip".utf8))
+        let r = await exec.execute(selected: [execCandidate(path: f.path)],
+            identitiesByPath: [:], runningBundleIDs: [], allowedRoots: [t.root], auditSink: nil)
+        #expect(r.executed.isEmpty)
+        #expect(r.skipped.contains { $0.reason.lowercased().contains("git") || $0.reason.contains("dirty") })
+        #expect(FileManager.default.fileExists(atPath: f.path))
+    }
+}
+
+@discardableResult
+private func runGit(_ args: [String], in dir: URL) throws -> String {
+    let p = Process()
+    p.executableURL = URL(fileURLWithPath: "/usr/bin/git")
+    p.arguments = ["-C", dir.path] + args
+    let out = Pipe(); p.standardOutput = out; p.standardError = Pipe()
+    try p.run(); p.waitUntilExit()
+    return String(data: out.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
 }
 
 // MARK: - Git duplicate-remote normalization

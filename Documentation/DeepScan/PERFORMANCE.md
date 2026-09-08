@@ -60,10 +60,14 @@ rows thanks to `idx_node_size`.
 **Honest caveat on "incremental".** Re-`apply` of an *unchanged* full graph is
 not faster — it still executes one `INSERT … ON CONFLICT` per row (the
 `content_hint` guard skips the write but not the statement). The real
-incremental win comes from **scanning fewer nodes**: the FSEvents scoped
-rescan (see `FSEventIncrementalEngine`) feeds `apply` only the changed subtree,
-so a typical rescan touches hundreds of rows, not a million. Measured: a
-1,000-node changed subtree re-applies in single-digit ms.
+incremental win comes from **scanning fewer nodes**: `FSEventIncrementalEngine`
+coalesces a burst of FSEvents into a minimal set of changed directories
+(`EventCoalescer`, unit-tested), then runs `DeepScanEngine.scan` on just those
+directories and `index.apply` + `pruneUnder` on that scope. A rescan after
+adding/removing one file walks the containing directory only — tens of nodes,
+not a million. `incrementalEngineScopedRescanPicksUpNewFileAndPrunesDeleted`
+exercises the full add + delete + prune round-trip end-to-end in ~1.5 s
+including the debounce window.
 
 ### Real filesystem walk
 
