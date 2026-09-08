@@ -89,7 +89,15 @@ public struct EventCoalescer: Sendable {
             let dir = c.isDir ? c.path : (c.path as NSString).deletingLastPathComponent
             dirs.insert(dir)
             if c.mustScanSubdirs { dirs.insert(c.path) }
-            if c.removed { deleted.insert(c.path) }
+            if c.removed {
+                deleted.insert(c.path)
+                // The removed path itself no longer exists, so a scoped rescan
+                // *of it* observes nothing and can't prune it. Rescan the
+                // PARENT so `pruneUnder(parent, keeping:)` drops the whole gone
+                // subtree. (Covers `rm -rf node_modules`, `git checkout`
+                // deleting a dir, generated-output dir replacement.)
+                dirs.insert((c.path as NSString).deletingLastPathComponent)
+            }
             if c.renamed {
                 // A rename touches both names; we only get one path per event,
                 // so rescan the containing dir (already added) and let the
