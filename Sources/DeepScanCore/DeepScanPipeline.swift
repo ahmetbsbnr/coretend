@@ -65,7 +65,8 @@ public struct DeepScanPipeline: Sendable {
                     cancellation: DeepScanCancellation = DeepScanCancellation(),
                     onProgress: (@Sendable (DeepScanProgress) -> Void)? = nil) async -> DeepScanResult {
         let engine = DeepScanEngine()
-        let graph = await engine.scan(configuration, cancellation: cancellation, onProgress: onProgress)
+        let graph = await engine.scan(configuration, cancellation: cancellation,
+                                      volumeResolver: VolumeResolver(), onProgress: onProgress)
 
         let apps = AppInventoryScanner().scan(roots: AppInventoryScanner.defaultSearchRoots(home: home))
         let (runningBundleIDs, runningPaths) = Self.runningProcesses()

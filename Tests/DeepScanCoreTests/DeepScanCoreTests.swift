@@ -169,6 +169,64 @@ private func scan(_ roots: [URL], budget: Duration = .seconds(30),
     #expect(candidates.allSatisfy { $0.subcategory != AIDataType.downloadCache.rawValue || !$0.canonicalPath.contains("/memory") })
 }
 
+// MARK: - AI taxonomy refinement (§7) — rebuildable reclassified, user state untouched
+
+@Test func lmStudioRuntimeSubtreesAreReclassifiedNotUnknown() async {
+    let home = TempTree(); defer { home.cleanup() }
+    home.file(".cache/lm-studio/bin/llama-server", bytes: 100)
+    home.file(".cache/lm-studio/.internal/scratch", bytes: 100)
+    home.file(".cache/lm-studio/server-logs/2026.log", bytes: 100)
+    home.file(".cache/lm-studio/models/foo.gguf", bytes: 100)
+    home.file(".cache/lm-studio/conversations/c1.json", bytes: 100)
+    let g = await scan([home.root.appendingPathComponent(".cache/lm-studio")])
+    let ctx = DetectorContext(home: home.root, installedApps: [], runningBundleIDs: [],
+        runningExecutablePaths: [], scanStartedAt: g.startedAt, scanFinishedAt: g.finishedAt, gitRepos: [])
+    let byPath = Dictionary(uniqueKeysWithValues:
+        AIStorageDetector().detect(in: g, context: ctx).map { ($0.canonicalPath, $0) })
+    func c(_ suffix: String) -> CleanupCandidate? { byPath.first { $0.key.hasSuffix(suffix) }?.value }
+
+    #expect(c("/bin")?.subcategory == AIDataType.runtimeCache.rawValue)
+    #expect(c("/bin")?.risk != .protected)
+    #expect(c("/.internal")?.subcategory == AIDataType.runtimeCache.rawValue)
+    #expect(c("/server-logs")?.subcategory == AIDataType.runtimeCache.rawValue)
+    // Weights stay review-only; conversations stay protected.
+    #expect(c("/models")?.subcategory == AIDataType.modelWeights.rawValue)
+    #expect(c("/models")?.defaultSelected == false)
+    #expect(c("/conversations")?.risk == .protected)
+}
+
+@Test func claudeAndCodexUserStateStaysProtectedAfterRefinement() async {
+    let home = TempTree(); defer { home.cleanup() }
+    home.file(".claude/projects/-x/memory/M.md", bytes: 10)
+    home.file(".claude/history/s.jsonl", bytes: 10)
+    home.file(".claude/file-history/edit-1.json", bytes: 10)
+    home.file(".claude/.credentials.json", bytes: 10)
+    home.file(".claude/settings.json", bytes: 10)
+    home.file(".claude/statsig/evaluations.json", bytes: 10)
+    home.file(".codex/sessions/2026/s.jsonl", bytes: 10)
+    home.file(".codex/thread_history_1.sqlite", bytes: 10)
+    home.file(".codex/state_5.sqlite", bytes: 10)
+    home.file(".codex/log/codex.log", bytes: 10)
+
+    let g = await scan([home.root.appendingPathComponent(".claude"),
+                        home.root.appendingPathComponent(".codex")])
+    let ctx = DetectorContext(home: home.root, installedApps: [], runningBundleIDs: [],
+        runningExecutablePaths: [], scanStartedAt: g.startedAt, scanFinishedAt: g.finishedAt, gitRepos: [])
+    let cands = AIStorageDetector().detect(in: g, context: ctx)
+    func c(_ s: String) -> CleanupCandidate? { cands.first { $0.canonicalPath.hasSuffix(s) } }
+
+    for s in ["/projects", "/history", "/file-history", "/.credentials.json", "/settings.json",
+              "/sessions", "/thread_history_1.sqlite", "/state_5.sqlite"] {
+        #expect(c(s)?.risk == .protected, "\(s) must stay PROTECTED")
+        #expect(c(s)?.defaultSelected == false)
+    }
+    // Deterministically rebuildable telemetry / logs are allowed to be non-protected…
+    #expect(c("/statsig")?.risk != .protected)
+    #expect(c("/log")?.risk != .protected)
+    // …but still never auto-selected here.
+    #expect(cands.allSatisfy { !$0.defaultSelected })
+}
+
 // MARK: - Risk / confidence model
 
 @Test func unknownAttributionFailsClosed() {
@@ -331,6 +389,36 @@ private func candidate(path: String, risk: RiskClass = .safe,
 
     let largest = try idx.largestNodes(limit: 1)
     #expect(largest.first?.path.hasSuffix("b.bin") == true)
+}
+
+// MARK: - Volume classification
+
+@Test func tempDirClassifiesAsDataVolumeAndIsCached() {
+    let r = VolumeResolver()
+    let t = TempTree(); defer { t.cleanup() }
+    let a = r.classify(path: t.root.path)
+    let b = r.classify(path: t.root.appendingPathComponent("deeper/child").path)
+    // Local internal storage — never external / network / unknown.
+    #expect(a.volumeClass == .dataVolume || a.volumeClass == .systemVolume)
+    #expect(a.volumeRoot == b.volumeRoot)          // same mount point resolved
+    #expect(a.volumeClass == b.volumeClass)        // and cached consistently
+}
+
+@Test func systemPathIsNotClassifiedAsPlainDataVolume() {
+    let info = VolumeResolver().classify(path: "/System/Library")
+    // On a modern sealed macOS install "/" is the read-only system volume.
+    #expect(info.volumeClass == .systemVolume || info.volumeClass == .dataVolume)
+    #expect(info.volumeClass != .unknown)
+}
+
+@Test func engineStampsRealVolumeClassOntoNodes() async {
+    let t = TempTree(); defer { t.cleanup() }
+    t.file("x/y.bin", bytes: 32)
+    let g = await scan([t.root])
+    #expect(g.nodes.allSatisfy {
+        $0.identity == nil || $0.volumeClass == .dataVolume || $0.volumeClass == .systemVolume
+    })
+    #expect(g.nodes.allSatisfy { $0.volumeClass != .unknown || $0.completeness == .permissionDenied })
 }
 
 // MARK: - Git duplicate-remote normalization

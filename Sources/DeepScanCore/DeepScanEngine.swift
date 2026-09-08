@@ -83,6 +83,7 @@ public actor DeepScanEngine {
     /// relevant flags set and per-node `completeness` populated.
     public func scan(_ config: DeepScanConfiguration,
                      cancellation: DeepScanCancellation = DeepScanCancellation(),
+                     volumeResolver: VolumeResolver? = nil,
                      onProgress: (@Sendable (DeepScanProgress) -> Void)? = nil) async -> DiskGraph {
         let started = Date()
         let deadline = ContinuousClock.now.advanced(by: config.timeBudget)
@@ -177,7 +178,10 @@ public actor DeepScanEngine {
         let rolled = Self.rollUpDirectoryTotals(nodes,
                                                 interrupted: cancellation.isCancelled || Task.isCancelled || hitTimeout)
 
-        return DiskGraph(nodes: rolled, scannedRoots: config.roots.map { $0.standardizedFileURL.path },
+        // Stamp real volume class + UUID (cached per mount point).
+        let stamped = Self.stampVolumes(rolled, resolver: volumeResolver ?? VolumeResolver())
+
+        return DiskGraph(nodes: stamped, scannedRoots: config.roots.map { $0.standardizedFileURL.path },
                          startedAt: started, finishedAt: Date(),
                          wasCancelled: cancellation.isCancelled || Task.isCancelled,
                          hitTimeout: hitTimeout,
@@ -322,6 +326,33 @@ public actor DeepScanEngine {
                 observedAt: dir.observedAt)
         }
         return nodes
+    }
+
+    /// Replaces the placeholder `.dataVolume` on every node with a real
+    /// classification. One `VolumeResolver` lookup per distinct device id
+    /// (which is per mounted volume), then a struct copy per node.
+    private static func stampVolumes(_ input: [ScanNode], resolver: VolumeResolver) -> [ScanNode] {
+        var infoByDevice: [UInt64: VolumeInfo] = [:]
+        return input.map { n in
+            guard let dev = n.identity?.device else { return n }   // denied nodes stay .unknown
+            let info: VolumeInfo
+            if let cached = infoByDevice[dev] {
+                info = cached
+            } else {
+                info = resolver.classify(path: n.canonicalPath)
+                infoByDevice[dev] = info
+            }
+            return ScanNode(path: n.path, canonicalPath: n.canonicalPath,
+                parentCanonicalPath: n.parentCanonicalPath, type: n.type, identity: n.identity,
+                volumeClass: info.volumeClass, volumeUUID: info.uuid,
+                logicalBytes: n.logicalBytes, allocatedBytes: n.allocatedBytes, childCount: n.childCount,
+                createdAt: n.createdAt, modifiedAt: n.modifiedAt, accessedAt: n.accessedAt,
+                posixPermissions: n.posixPermissions, ownerUID: n.ownerUID, ownerName: n.ownerName,
+                isSymlink: n.isSymlink, symlinkTarget: n.symlinkTarget,
+                symlinkResolvesInsideRoot: n.symlinkResolvesInsideRoot,
+                bundleContext: n.bundleContext, cloudRemoteOnly: n.cloudRemoteOnly,
+                completeness: n.completeness, observedAt: n.observedAt)
+        }
     }
 
     // MARK: - stat helpers
