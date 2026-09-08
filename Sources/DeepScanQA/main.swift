@@ -323,6 +323,17 @@ func fmt(_ bytes: Int64) -> String {
     ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
 }
 
+/// Redact the real home directory (and any `/Users/<name>` prefix) so the
+/// committed report never carries the developer's macOS account name.
+let homePathForRedaction = home.standardizedFileURL.path
+func redact(_ s: String) -> String {
+    var out = s.replacingOccurrences(of: homePathForRedaction, with: "~")
+    // Any other /Users/<name>/ that slipped through (e.g. a second account).
+    out = out.replacingOccurrences(
+        of: #"/Users/[^/ ]+"#, with: "/Users/<user>", options: .regularExpression)
+    return out
+}
+
 FileHandle.standardError.write(Data("scanning \(roots.map(\.path).joined(separator: ", "))…\n".utf8))
 
 let cfg = DeepScanConfiguration(
@@ -345,11 +356,11 @@ print("# CoreTend Deep Scan — READ-ONLY QA report")
 print("Generated: \(ISO8601DateFormatter().string(from: Date()))")
 print()
 print("## Scan")
-print("- roots: \(g.scannedRoots.joined(separator: ", "))")
+print("- roots: \(redact(g.scannedRoots.joined(separator: ", ")))")
 print("- nodes observed: \(g.nodes.count)")
 print("- wall time: \(String(format: "%.1f", g.finishedAt.timeIntervalSince(g.startedAt)))s")
 print("- cancelled: \(g.wasCancelled)   timed out: \(g.hitTimeout)")
-print("- roots we could not read: \(g.deniedRoots.isEmpty ? "none" : g.deniedRoots.joined(separator: ", "))")
+print("- roots we could not read: \(g.deniedRoots.isEmpty ? "none" : redact(g.deniedRoots.joined(separator: ", ")))")
 let denied = g.nodes.filter { $0.completeness == .permissionDenied }.count
 let partial = g.nodes.filter { $0.completeness == .partial }.count
 print("- permission-denied nodes: \(denied)   partial nodes: \(partial)")
@@ -359,7 +370,7 @@ print("## Installed apps & git repos")
 print("- installed apps discovered: \(result.context.installedApps.count)")
 print("- git repositories discovered: \(result.context.gitRepos.count)")
 for r in result.context.gitRepos.sorted(by: { $0.workdir < $1.workdir }) {
-    print("  - [\(r.safety.rawValue.uppercased())] \(r.workdir) — branch \(r.currentBranch ?? "detached"), "
+    print("  - [\(r.safety.rawValue.uppercased())] \(redact(r.workdir)) — branch \(r.currentBranch ?? "detached"), "
           + "dirty=\(r.isDirty), stashes=\(r.stashCount), unpushed=\(r.localOnlyCommitCount)")
 }
 print()
@@ -372,12 +383,12 @@ for cat in CleanupCategory.allCases {
     let prot = items.filter { $0.risk == .protected }.count
     print("### \(cat.rawValue) — \(items.count) candidates, ~\(fmt(reclaimable)) reviewable, \(prot) protected")
     for c in items.sorted(by: { $0.logicalBytes > $1.logicalBytes }).prefix(25) {
-        print("- \(fmt(c.logicalBytes))  [\(c.risk.rawValue)/\(c.confidence.rawValue)]  \(c.canonicalPath)")
-        print("    owner: \(c.owner ?? "—")  subcategory: \(c.subcategory)  default-selected: \(c.defaultSelected)")
-        print("    why: \(c.rationale)")
-        print("    if removed: \(c.ifRemoved)")
-        if let pr = c.protectedReason { print("    PROTECTED: \(pr)") }
-        for e in c.evidence { print("    · \(e.humanReadable)") }
+        print("- \(fmt(c.logicalBytes))  [\(c.risk.rawValue)/\(c.confidence.rawValue)]  \(redact(c.canonicalPath))")
+        print("    owner: \(redact(c.owner ?? "—"))  subcategory: \(c.subcategory)  default-selected: \(c.defaultSelected)")
+        print("    why: \(redact(c.rationale))")
+        print("    if removed: \(redact(c.ifRemoved))")
+        if let pr = c.protectedReason { print("    PROTECTED: \(redact(pr))") }
+        for e in c.evidence { print("    · \(redact(e.humanReadable))") }
     }
     print()
 }
