@@ -302,6 +302,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
     case applications = "Applications"
     case duplicates = "Duplicates"
     case myClutter = "My Clutter"
+    case deepScan = "Deep Scan"
     case spaceLens = "Space Lens"
     case cloudCleanup = "Cloud Cleanup"
     case myActivity = "My Activity"
@@ -319,6 +320,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .duplicates: .duplicates
         case .myClutter: .myClutter
         case .spaceLens: .spaceLens
+        case .deepScan: .deepScan
         case .cloudCleanup: .cloudCleanup
         case .myActivity: .myActivity
         case .settings: .settings
@@ -339,6 +341,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .duplicates: L("module.duplicates")
         case .myClutter: L("clutter.title")
         case .spaceLens: L("spacelens.title")
+        case .deepScan: L("deepscan.nav_title")
         case .cloudCleanup: L("cloud.nav_title")
         case .myActivity: L("module.activity")
         case .settings: L("settings.nav_title")
@@ -363,7 +366,7 @@ struct SidebarGroup: Identifiable {
         // compact primary architecture — see Documentation/Audits/
         // SESSION_2026-08-09_AUDIT.md for the redundancy check that led here.
         SidebarGroup(id: "more", title: L("sidebar.more"),
-                     modules: [.myClutter, .cloudCleanup, .performance]),
+                     modules: [.deepScan, .myClutter, .cloudCleanup, .performance]),
         SidebarGroup(id: "system", title: L("sidebar.system"),
                      modules: [.protection, .myActivity, .settings]),
     ]
@@ -418,6 +421,8 @@ struct MainWindow: View {
                     PerformanceView()
                 case .spaceLens:
                     SpaceLensView()
+                case .deepScan:
+                    DeepScanView()
                 case .myClutter:
                     MyClutterView()
                 case .cloudCleanup:
@@ -432,7 +437,16 @@ struct MainWindow: View {
             }
             .mcCanvasBackground()
         }
-        .onAppear { if !onboardingDone { showOnboarding = true } }
+        .onAppear {
+            if !onboardingDone { showOnboarding = true }
+            PermissionCoordinator.shared.refresh(.launch)
+        }
+        // Re-probe permissions whenever the app comes back to the foreground —
+        // this is what fixes "Unverified after relaunch / return from System
+        // Settings" without the user having to press anything.
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            PermissionCoordinator.shared.refresh(.appActive)
+        }
         .sheet(isPresented: $showOnboarding, onDismiss: { onboardingDone = true }) {
             OnboardingView(isPresented: $showOnboarding)
         }

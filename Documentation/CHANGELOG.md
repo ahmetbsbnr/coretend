@@ -1,5 +1,96 @@
 # CHANGELOG
 
+## 1.2.0-beta.1 — 2026-09-08 « Deep Scan (first beta) »
+
+First beta of the Deep Scan storage-analysis and evidence-based cleanup
+system. Does not touch the published `v1.0.0` or `v1.1.0-beta.1` releases.
+
+### Added
+
+- **Deep Scan module** (`DeepScanCore` + `DeepScanView`), reachable from the
+  sidebar. Read-only full-disk analysis producing an evidence-carrying
+  `DiskGraph`: bounded/cancellable/pausable walk, logical vs allocated bytes,
+  per-node scan completeness, `(dev,ino)` hard-link de-duplication,
+  mount-boundary stop, permission-denied reporting (bytes never guessed),
+  real volume classification (`VolumeResolver`).
+- Detectors: AI/LLM storage (14-way data-type taxonomy across LM Studio,
+  Ollama, Hugging Face, MLX, llama.cpp, Claude Code, Codex, Cursor), orphaned
+  app data (exact bundle-ID ownership), developer build output, Git projects
+  (GREEN/YELLOW/RED + stale worktrees), duplicate clones, orphaned launch
+  agents, aged temp files, installers, cloud-backed objects, large/old files.
+- Deterministic `RiskConfidenceModel` (no AI, no network) + `Evidence` trail;
+  `DeepScanCleanupPlan` preview; humanized, fully **EN/FR-localized** UI
+  including structured (parameterised) detector reasons.
+- `FSEventIncrementalEngine` — coalesced, scoped incremental rescans over a
+  persisted SQLite index (`DeepScanIndex`); `IndexHealth` FRESH/STALE/PARTIAL/
+  REBUILDING/ERROR; corrupt-index recovery.
+- `DeepScanExecutor` → `ExecutionRevalidator` → existing `SafetyCenter` →
+  Trash + Journal; scan history in `DeepScanIndex`; `DeepScanSettings`
+  (analysis scope only).
+- `DeepScanQA` harness with `--controlled-cleanup` and `--fsevents-churn`
+  modes; docs under `Documentation/DeepScan/`.
+
+### Changed
+
+- Version surfaces to `1.2.0-beta.1` (build 1200); channel `beta`,
+  `prerelease` true.
+
+- **Minisign release-signing key rotated**, effective this release. Previous
+  key `A399E8FD75C1719E` → new key `F8473FB09E1DB730`. The previous key's
+  private-key password could no longer be unlocked; there is **no evidence of
+  compromise**. Apple Developer ID signing and notarization (Team
+  `NSCUV5G738`) are unchanged. `v1.0.0` and earlier remain verifiable with
+  `A399E8FD75C1719E` (kept as `Configuration/minisign-A399E8FD75C1719E.pub`).
+  Anyone who pinned the old key must trust `F8473FB09E1DB730` for
+  `v1.2.0-beta.1` and later. See `Documentation/MINISIGN_KEY_ROTATION.md`.
+
+- **Permissions reliability** — a single `PermissionCoordinator` now owns all
+  macOS permission state (Settings, Deep Scan, Onboarding, Diagnostics read it,
+  so they can't disagree). Fixes "Settings shows the permission as unverified
+  after quit/relaunch and Re-check doesn't help": the Full Disk Access probe is
+  now multi-signal (8 independent TCC-gated targets, a missing target ≠
+  denied), re-probes automatically on launch / app-active / return from System
+  Settings / before a scan (debounced), persists diagnostics only (a fresh
+  probe always wins), retires legacy boolean keys, and a transient probe error
+  no longer clobbers a known-good state. New Settings **Permissions Center**
+  with explicit states, timestamps, Check Again / Open System Settings /
+  Relaunch, and Copy Diagnostics (EN/FR). `Documentation/PERMISSIONS.md`;
+  `Scripts/test-permission-relaunch.sh`.
+
+### Safety
+
+- `DeepScanExecutionGate` is a **build-configuration** switch: source default
+  OFF; the beta build enables it at compile time only
+  (`-D DEEPSCAN_BETA_EXECUTION`); no user-facing bypass. With it on, execution
+  is still confined to a narrow SAFE subset (developer build output, aged
+  temp, AI runtime/temp/update-payload) at risk `safe` + confidence `strong`.
+- **Automatic preselection stays OFF** in every build
+  (`DefaultSelectionPolicy.preselectionEnabled == false`); real-Mac read-only
+  QA shows 0 pre-selected candidates.
+- Git repositories are never routed to the executor and never default-selected.
+  AI memory / history / auth / config / unknown are PROTECTED. Model weights
+  are review-only. Cloud data is PROTECTED (provider-eviction only). Weak
+  app-leftover matches are HIGH_RISK / PROTECTED. System findings are
+  review-only.
+- Execution-time revalidation drops any candidate whose path vanished, became
+  a symlink, changed identity, was just written, whose owning app is running,
+  or whose enclosing repo went dirty — each with a truthful journalled reason.
+- Dependency-internal build directories (`node_modules/**`, Pods,
+  site-packages, Carthage) are excluded from the developer detector.
+- Removed a stale `~/.deno/env` sourcing line from `~/.zshrc` (guarded).
+
+### Known limitations
+
+- Deep Scan is a beta. Cleanup execution is intentionally minimal.
+- The live FSEvents watch loop and the full interactive GUI acceptance were
+  performed by the maintainer (see `Documentation/DeepScan/HUMAN_REVIEW.md`);
+  a screen-reader audit beyond a spot-check is not claimed.
+- 1M-node in-RAM graphs cost ~0.7–1.0 GiB; the UI pages from SQLite past
+  ~500k nodes (`Documentation/DeepScan/PERFORMANCE.md`).
+- Detector-generated AI data-type *bucket* names in the (not-yet-built)
+  dedicated AI grouping screen are English; all shipped Deep Scan surfaces are
+  EN/FR.
+
 ## 1.0.0-prep — 2026-09-02 « Clean before release »
 
 - chore(design-system): remove the superseded per-module scan motifs. `MCScanStage`

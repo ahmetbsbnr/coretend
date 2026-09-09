@@ -82,6 +82,8 @@ enum DiagnosticReport {
             }
         }
         let signature = CodeSignInspector.inspect(at: Bundle.main.bundleURL)
+        // Same authoritative permission source as Settings / Deep Scan.
+        let fdaState = await PermissionCoordinator.shared.refreshNow(.manual)
         var schemaVersion: Int?
         var exclusionCount = 0
         var counts: [String: Int] = [:]
@@ -99,7 +101,7 @@ enum DiagnosticReport {
             architecture: "arm64",
             machineModel: model,
             deploymentTarget: "macOS 14+",
-            fullDiskAccess: PermissionProbe.hasFullDiskAccess(),
+            fullDiskAccess: fdaState == .granted,
             codeSignTier: signature.tier,
             codeSignValid: signature.signatureValid,
             schemaVersion: schemaVersion,

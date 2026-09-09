@@ -68,3 +68,13 @@ func L(_ key: String, _ args: CVarArg...) -> String {
     if args.isEmpty { return format }
     return String(format: format, arguments: args)
 }
+
+/// Array form, for callers holding a `[String]` of substitution values
+/// (e.g. `LocalizedText.args`). If the key is missing, `LocalizationManager`
+/// returns the key itself — callers pass a `fallback` to avoid showing it.
+func L(_ key: String, args: [CVarArg], fallback: String) -> String {
+    let format = LocalizationManager.string(forKey: key)
+    if format == key { return fallback }          // key not in the table
+    if args.isEmpty { return format }
+    return String(format: format, arguments: args)
+}

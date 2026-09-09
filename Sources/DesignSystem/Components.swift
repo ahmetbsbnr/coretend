@@ -27,6 +27,7 @@ public struct MCModuleIdentity: Sendable {
     public static let myActivity = MCModuleIdentity(icon: "clock.arrow.circlepath", color: MCColor.performance)
     public static let favoritesRecents = MCModuleIdentity(icon: "star", color: MCColor.performance)
     public static let settings = MCModuleIdentity(icon: "gearshape", color: Color.secondary)
+    public static let deepScan = MCModuleIdentity(icon: "magnifyingglass.circle", color: MCColor.storage)
 }
 
 // MARK: - Section header

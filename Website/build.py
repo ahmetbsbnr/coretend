@@ -127,10 +127,12 @@ def structured_data(language: str, canonical_path: str, release: dict) -> str:
         "name": "CoreTend",
         "applicationCategory": "UtilitiesApplication",
         "operatingSystem": f"macOS {release['minimumMacOS']}+",
-        "processorRequirements": "Apple silicon (arm64)",
+        "processorRequirements": f"Apple silicon ({release['architecture']})",
         "softwareVersion": str(release["version"]),
         "url": f"{ORIGIN}{canonical_path}",
-        "downloadUrl": f"{REPOSITORY}/releases/latest",
+        "downloadUrl": release["dmgURL"],
+        "fileSize": str(release["dmgSize"]),
+        "datePublished": str(release["publishedAt"]),
         "image": f"{ORIGIN}/assets/brand/opengraph.png",
         "description": meta["description"],
         "inLanguage": "fr" if language == "fr" else "en",
@@ -177,7 +179,12 @@ def landing_metadata(language: str, canonical_path: str, release: dict) -> str:
             f'<meta property="og:image" content="{ORIGIN}/assets/brand/opengraph.png">',
             '<meta property="og:image:width" content="1200">',
             '<meta property="og:image:height" content="630">',
+            f'<meta property="og:image:alt" content="{html.escape(meta["title"], quote=True)}">',
             '<meta name="twitter:card" content="summary_large_image">',
+            f'<meta name="twitter:title" content="{html.escape(meta["title"], quote=True)}">',
+            f'<meta name="twitter:description" content="{html.escape(meta["description"], quote=True)}">',
+            f'<meta name="twitter:image" content="{ORIGIN}/assets/brand/opengraph.png">',
+            f'<meta name="twitter:image:alt" content="{html.escape(meta["title"], quote=True)}">',
             '<link rel="manifest" href="/manifest.webmanifest">',
             structured_data(language, canonical_path, release),
         )
@@ -256,6 +263,35 @@ def render_translated_content(document: str, language: str) -> str:
     for start, end, translated in sorted(outermost, reverse=True):
         document = document[:start] + translated + document[end:]
     return document
+
+
+def render_localized_attributes(document: str, language: str) -> str:
+    """Pre-render authored accessible labels for no-JavaScript visitors."""
+    sources = (("aria-label", "aria"), ("alt", "alt"))
+
+    def localize_tag(match: re.Match[str]) -> str:
+        tag = match.group(0)
+        for target, source in sources:
+            authored = re.search(
+                rf'\sdata-{source}-{language}=(?P<quote>["\'])(?P<value>.*?)(?P=quote)',
+                tag,
+                flags=re.S,
+            )
+            if not authored:
+                continue
+            target_pattern = rf'(\s{re.escape(target)}=)(["\']).*?\2'
+            tag, count = re.subn(
+                target_pattern,
+                lambda current: f'{current.group(1)}{current.group(2)}{authored.group("value")}{current.group(2)}',
+                tag,
+                count=1,
+                flags=re.S,
+            )
+            if not count:
+                raise SystemExit(f'data-{source}-{language} has no matching {target}')
+        return tag
+
+    return re.sub(r'<[A-Za-z][^>]*>', localize_tag, document, flags=re.S)
 
 
 def externalise_scripts(document: str, output: Path, route_key: str) -> str:
@@ -340,6 +376,7 @@ def build_landing(template: str, language: str, canonical_path: str, output: Pat
     document = set_document_language(document, language)
     document = render_release_facts(document, release)
     document = render_translated_content(document, language)
+    document = render_localized_attributes(document, language)
     for code in ("en", "fr"):
         current = "page" if code == language else "false"
         document = re.sub(
@@ -428,7 +465,12 @@ def public_head(
 <meta property="og:image" content="{ORIGIN}/assets/brand/opengraph.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="{html.escape(title, quote=True)}">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{html.escape(title, quote=True)}">
+<meta name="twitter:description" content="{html.escape(description, quote=True)}">
+<meta name="twitter:image" content="{ORIGIN}/assets/brand/opengraph.png">
+<meta name="twitter:image:alt" content="{html.escape(title, quote=True)}">
 <link rel="icon" href="/assets/brand/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="/assets/brand/favicon-v2-16.png" sizes="16x16" type="image/png">
 <link rel="icon" href="/assets/brand/favicon-v2-32.png" sizes="32x32" type="image/png">

@@ -1,8 +1,8 @@
 # Security Policy
 
-CoreTend is pre-1.0 software. There is no signed/notarized release
-yet, and no formal security-response infrastructure beyond what's
-described here.
+CoreTend's published releases are Developer ID signed and Apple-notarized.
+There is no formal security-response infrastructure beyond what's described
+here.
 
 ## Supported versions
 
@@ -60,8 +60,28 @@ scope, bypass the Trash-by-default behavior unexpectedly, or delete files
 without the explanation step, treat that as a security-relevant bug and
 report it via the channel above rather than a public issue.
 
-## Pre-1.0 status
+## Release signing
 
-The current public beta is unsigned and not notarized. Treat it and any binary
-you build yourself as pre-1.0 software, verify published checksums, and follow
-the per-app first-open guidance without disabling system protections globally.
+Published releases are Developer ID signed and Apple-notarized (Team
+`NSCUV5G738`), so Gatekeeper opens them with no override step. Each release
+also ships a `SHA256SUMS` file signed with a
+[Minisign](https://jedisct1.github.io/minisign/) key for independent
+provenance verification.
+
+**Minisign key history:**
+
+| Key ID | Used for | Status |
+|---|---|---|
+| `A399E8FD75C1719E` | releases before `v1.2.0-beta.1` (through `v1.0.0`) | Historical verification key — still correct for `v1.0.0` and earlier. Not used for new releases. No evidence of compromise. |
+| `F8473FB09E1DB730` | releases from `v1.2.0-beta.1` onward | Current release-signing key. |
+
+The Minisign key was rotated effective `v1.2.0-beta.1` because the previous
+key's private-key password could no longer be unlocked — a custody problem,
+not a compromise. Apple Developer ID signing and notarization are unchanged.
+If you pinned `A399E8FD75C1719E`, fetch the new `minisign.pub` from the
+`v1.2.0-beta.1` release and confirm its key ID is `F8473FB09E1DB730` before
+trusting it. Full detail: `Documentation/SIGNING_NOTARIZATION.md` and
+`Documentation/MINISIGN_KEY_ROTATION.md`.
+
+Always verify published checksums, and follow the per-app first-open guidance
+without disabling system protections globally.

@@ -653,13 +653,13 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
         <circle class="ct-core" cx="256" cy="256" r="61.44" fill="var(--cobalt)"/>
       </svg><span>CoreTend</span>
     </a>
-    <nav class="bar-actions" aria-label="Main">
+    <nav class="bar-actions" aria-label="Main" data-aria-en="Main" data-aria-fr="Principale">
       <div class="switch" role="group" aria-label="Language" data-aria-en="Language" data-aria-fr="Langue">
         <a href="/en" data-lang-link="en" hreflang="en" lang="en" aria-current="page">EN</a>
         <a href="/fr" data-lang-link="fr" hreflang="fr" lang="fr">FR</a>
       </div>
       <button class="icon-btn" id="theme" type="button" aria-label="Switch appearance" data-aria-en="Switch appearance" data-aria-fr="Changer d’apparence">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true">
           <circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M4.2 12H2M22 12h-2.2M6.3 6.3 4.8 4.8M19.2 19.2l-1.5-1.5M17.7 6.3l1.5-1.5M4.8 19.2l1.5-1.5"/>
         </svg>
       </button>
@@ -674,7 +674,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
   </div>
 </header>
 
-<nav class="rail" id="rail" aria-label="Sections">
+<nav class="rail" id="rail" aria-label="Sections" data-aria-en="Sections" data-aria-fr="Sections">
   <a href="#top" data-rail="top"><span data-fr="Aperçu">Overview</span><i></i></a>
   <a href="#how" data-rail="how"><span data-fr="Déroulé">Workflow</span><i></i></a>
   <a href="#modules" data-rail="modules"><span data-fr="Modules">Modules</span><i></i></a>
@@ -697,7 +697,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
         <circle class="ct-core" cx="256" cy="256" r="61.44" fill="var(--cobalt)"/>
       </svg></span>
       <h1 id="headline" data-fr="Sachez ce que votre Mac garde. &lt;em&gt;Reprenez la place.&lt;/em&gt;">Know what your Mac is holding. <em>Take the space back.</em></h1>
-      <p class="hero-sub" data-reveal style="--d:1950ms" data-fr="CoreTend analyse en local les emplacements pris en charge et explique chaque résultat. Les opérations sensibles exigent une sélection relue et une confirmation explicite avant de confier les éléments éligibles à la Corbeille de macOS.">CoreTend reads supported locations on-device and explains each finding. Sensitive actions require a reviewed selection and explicit confirmation before eligible items are handed to the macOS Trash.</p>
+      <p class="hero-sub" data-reveal style="--d:1950ms" data-fr="CoreTend montre ce qui prend de la place, pourquoi chaque élément est signalé et ce qui se passera ensuite. Tout reste sur votre Mac ; rien ne bouge sans sélection relue et confirmation explicite.">CoreTend shows what is taking space, why each item was flagged and what happens next. Everything stays on your Mac; nothing moves without a reviewed selection and explicit confirmation.</p>
       <div class="hero-facts" data-reveal style="--d:2080ms">
         <span class="chip dot" data-fr="Analyses locales">Local scans</span>
         <span class="chip" data-fr="Aucun compte">No account</span>
@@ -706,7 +706,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
       </div>
       <div class="cta" data-reveal style="--d:2190ms">
         <span class="magnetic" data-magnetic><a class="btn btn-primary btn-lg" href="#install">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></svg>
           <span data-fr="Télécharger pour macOS">Download for macOS</span></a></span>
         <a class="btn btn-secondary btn-lg" href="https://github.com/ahmetbsbnr/coretend" target="_blank" rel="noopener">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.11.79-.25.79-.56v-2.02c-3.23.7-3.91-1.37-3.91-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.77 2.72 1.26 3.38.96.1-.75.41-1.26.74-1.55-2.58-.29-5.29-1.29-5.29-5.73 0-1.27.45-2.3 1.2-3.11-.12-.29-.52-1.47.11-3.07 0 0 .98-.31 3.16 1.19a10.95 10.95 0 0 1 5.76 0c2.19-1.5 3.16-1.19 3.16-1.19.63 1.6.23 2.78.11 3.07.75.81 1.2 1.84 1.2 3.11 0 4.45-2.72 5.43-5.31 5.72.42.36.79 1.07.79 2.16v3.02c0 .31.21.68.8.56A11.5 11.5 0 0 0 12 .7Z"/></svg>
@@ -804,7 +804,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
   <div class="wrap">
     <p class="eyebrow" data-scramble><b>03</b> <span data-fr="Ce qui est livré">What ships</span></p>
     <h2 data-reveal data-fr="Huit modules. Aucune promesse au-delà.">Eight modules. Nothing promised beyond them.</h2>
-    <p class="lead" data-reveal style="--d:100ms;margin-bottom:38px" data-fr="Voici l'architecture réelle de la version 0.9.1. Si une fonction n'est pas dans cette liste, elle n'est pas dans l'application.">This is the actual architecture of 0.9.1. If a capability is not on this list, it is not in the app.</p>
+    <p class="lead" data-reveal style="--d:100ms;margin-bottom:38px" data-fr="Voici l'architecture réelle de la version @@CORETEND_RELEASE_VERSION@@. Si une fonction n'est pas dans cette liste, elle n'est pas dans l'application.">This is the actual architecture of @@CORETEND_RELEASE_VERSION@@. If a capability is not on this list, it is not in the app.</p>
     <ul class="modules">
       <li class="mod" data-tilt data-reveal><span class="k">Home</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3>Dashboard</h3><p data-fr="Espace libre, état de la Corbeille, exclusions, activité récente, et un grand bouton d'analyse au centre avec des raccourcis vers les autres workflows.">Free space, Trash status, exclusions, recent activity, and a large scan action at the centre with shortcuts into the other workflows.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Scan</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Stockage">Storage</h3><p data-fr="Caches, journaux, rapports de plantage, installeurs, données de build, téléchargements oubliés.">Caches, logs, crash reports, leftover installers, build data and forgotten downloads.</p></li>
@@ -817,15 +817,15 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
     </ul>
     <div class="shots" data-reveal>
       <figure class="shot">
-        <img src="/assets/app/smart-care.webp" width="2024" height="1488" loading="lazy" alt="CoreTend dashboard — disk-usage ring, a large scan action and shortcuts into every workflow">
+        <img src="/assets/app/smart-care.webp" width="2024" height="1488" loading="lazy" decoding="async" alt="CoreTend dashboard — disk-usage ring, a large scan action and shortcuts into every workflow" data-alt-en="CoreTend dashboard — disk-usage ring, a large scan action and shortcuts into every workflow" data-alt-fr="Tableau de bord CoreTend — anneau d’utilisation du disque, grande action d’analyse et raccourcis vers chaque parcours">
         <figcaption data-fr="Tableau de bord — l'analyse du stockage au centre">Dashboard — the storage scan at the centre</figcaption>
       </figure>
       <figure class="shot">
-        <img src="/assets/app/space-lens.webp" width="2024" height="1488" loading="lazy" alt="CoreTend Space Lens — a radial size map with the largest folder in the middle">
+        <img src="/assets/app/space-lens.webp" width="2024" height="1488" loading="lazy" decoding="async" alt="CoreTend Space Lens — a radial size map with the largest folder in the middle" data-alt-en="CoreTend Space Lens — a radial size map with the largest folder in the middle" data-alt-fr="CoreTend Space Lens — carte radiale des tailles avec le dossier le plus volumineux au centre">
         <figcaption data-fr="Space Lens — carte de tailles radiale">Space Lens — the radial size map</figcaption>
       </figure>
       <figure class="shot">
-        <img src="/assets/app/cleanup.webp" width="2024" height="1488" loading="lazy" alt="CoreTend Storage scan review — every candidate listed with its path and size before anything moves">
+        <img src="/assets/app/cleanup.webp" width="2024" height="1488" loading="lazy" decoding="async" alt="CoreTend Storage scan review — every candidate listed with its path and size before anything moves" data-alt-en="CoreTend Storage scan review — every candidate listed with its path and size before anything moves" data-alt-fr="Relecture d’une analyse Stockage CoreTend — chaque élément, son chemin et sa taille avant tout déplacement">
         <figcaption data-fr="Stockage — chaque élément relu avant tout déplacement">Storage — every item reviewed before it moves</figcaption>
       </figure>
     </div>
@@ -927,7 +927,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
       </div>
       <div class="cta" style="margin-top:24px" data-reveal>
         <span class="magnetic" data-magnetic><a class="btn btn-primary btn-lg" href="/download">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></svg>
           <span data-fr="Télécharger @@CORETEND_RELEASE_VERSION@@">Download @@CORETEND_RELEASE_VERSION@@</span></a></span>
       </div>
     </div>
@@ -985,7 +985,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
       </details>
       <details data-reveal>
         <summary data-fr="Comment vérifier le téléchargement ?">How do I verify the download?</summary>
-        <div class="ans"><div><p data-fr="Comparez le SHA-256 du DMG avec le fichier SHA256SUMS publié, puis vérifiez sa signature Minisign avec la clé publiée (minisign.pub). xcrun stapler validate confirme le ticket de notarisation embarqué.">Compare the DMG’s SHA-256 with the published SHA256SUMS file, then check its Minisign signature with the published key (minisign.pub). xcrun stapler validate confirms the embedded notarization ticket.</p></div></div>
+        <div class="ans"><div><p data-fr="Comparez le SHA-256 du DMG avec le fichier SHA256SUMS publié, puis vérifiez sa signature Minisign avec la clé publiée (minisign.pub). xcrun stapler validate confirme le ticket de notarisation embarqué.">Compare the DMG’s SHA-256 with the published SHA256SUMS file, then check its Minisign signature with the published key (minisign.pub). xcrun stapler validate confirms the embedded notarization ticket.</p><p data-fr="Historique des clés Minisign : la clé a changé à partir de v1.2.0-beta.1. Ancienne clé A399E8FD75C1719E (versions jusqu’à v1.0.0) ; clé actuelle F8473FB09E1DB730 (v1.2.0-beta.1 et suivantes). Rien n’indique une compromission ; la clé privée précédente ne pouvait plus être déverrouillée. La signature Developer ID Apple et la notarisation sont inchangées.">Minisign key history: the key changed starting with v1.2.0-beta.1. Previous key A399E8FD75C1719E (releases through v1.0.0); current key F8473FB09E1DB730 (v1.2.0-beta.1 and later). There is no evidence of compromise — the previous private key could no longer be unlocked. Apple Developer ID signing and notarization are unchanged.</p></div></div>
       </details>
       <details data-reveal>
         <summary data-fr="Que se passe-t-il si je supprime quelque chose d'important ?">What if I remove something I needed?</summary>
@@ -1005,7 +1005,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
     <p class="lead" style="margin:0 auto 26px" data-reveal data-fr="Une analyse ne déplace rien. C'est le principe.">A scan moves nothing. That is the point.</p>
     <div class="cta" data-reveal>
       <span class="magnetic" data-magnetic><a class="btn btn-primary btn-lg" href="/download">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 11l5 5 5-5M4 20h16"/></svg>
         <span data-fr="Télécharger pour macOS">Download for macOS</span></a></span>
       <a class="btn btn-secondary btn-lg" href="https://github.com/ahmetbsbnr/coretend" target="_blank" rel="noopener"><span data-fr="Lire le code">Read the source</span></a>
     </div>
