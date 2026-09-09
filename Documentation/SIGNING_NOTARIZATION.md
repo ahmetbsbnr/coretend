@@ -18,6 +18,49 @@ Earlier status (kept for history): through `0.9.1-rc.5` every published
 artifact was **unsigned, not notarized**, by documented decision, because no
 Developer ID was available.
 
+## Minisign key history
+
+CoreTend publishes a `SHA256SUMS` file with every release and signs it with a
+[Minisign](https://jedisct1.github.io/minisign/) key, so provenance can be
+checked independently of GitHub and independently of Apple's Developer ID
+signature. The Apple **Developer ID Application** identity
+(`Developer ID Application: Ahmet BASBUNAR (NSCUV5G738)`) and Apple
+notarization are **unchanged** by anything in this section.
+
+| Minisign key ID | Used for | Status |
+|---|---|---|
+| `A399E8FD75C1719E` | releases **before** `v1.2.0-beta.1` (through `v1.0.0`) | **Historical verification key.** Still the correct key to verify `v1.0.0` and earlier. No longer used to sign new releases. No evidence of compromise. |
+| `F8473FB09E1DB730` | releases **from `v1.2.0-beta.1` onward** | **Current release-signing key.** |
+
+**Why the key changed (effective `v1.2.0-beta.1`):** the private key for
+`A399E8FD75C1719E` still exists but its password could no longer be unlocked,
+so it can no longer sign new releases. This is a key-custody problem, **not a
+compromise** — there is no evidence the previous key was exposed, and older
+releases are unaffected. Anyone who pinned `A399E8FD75C1719E` to verify
+CoreTend downloads must fetch the new `minisign.pub` from the
+`v1.2.0-beta.1` release (or `Configuration/minisign.pub` in the repo) and
+confirm its key ID is `F8473FB09E1DB730` before trusting it.
+
+The trusted public keys live in the repository:
+
+- `Configuration/minisign.pub` — the **current** key (`F8473FB09E1DB730`).
+- `Configuration/minisign-F8473FB09E1DB730.pub` — same, explicitly named.
+- `Configuration/minisign-A399E8FD75C1719E.pub` — the **historical** key,
+  kept so pre-`v1.2` releases stay verifiable from a checkout.
+
+To verify a release:
+
+```
+minisign -Vm SHA256SUMS -p minisign.pub          # current: key ID F8473FB09E1DB730
+shasum -a 256 -c SHA256SUMS                       # then check the artifacts
+```
+
+For `v1.0.0` and earlier, use the historical key instead:
+
+```
+minisign -Vm SHA256SUMS -p minisign-A399E8FD75C1719E.pub   # key ID A399E8FD75C1719E
+```
+
 ## Why CoreTend is not App Sandboxed
 
 `Configuration/CoreTend.entitlements` is intentionally close to empty.

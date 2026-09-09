@@ -35,6 +35,15 @@ system. Does not touch the published `v1.0.0` or `v1.1.0-beta.1` releases.
 - Version surfaces to `1.2.0-beta.1` (build 1200); channel `beta`,
   `prerelease` true.
 
+- **Minisign release-signing key rotated**, effective this release. Previous
+  key `A399E8FD75C1719E` → new key `F8473FB09E1DB730`. The previous key's
+  private-key password could no longer be unlocked; there is **no evidence of
+  compromise**. Apple Developer ID signing and notarization (Team
+  `NSCUV5G738`) are unchanged. `v1.0.0` and earlier remain verifiable with
+  `A399E8FD75C1719E` (kept as `Configuration/minisign-A399E8FD75C1719E.pub`).
+  Anyone who pinned the old key must trust `F8473FB09E1DB730` for
+  `v1.2.0-beta.1` and later. See `Documentation/MINISIGN_KEY_ROTATION.md`.
+
 - **Permissions reliability** — a single `PermissionCoordinator` now owns all
   macOS permission state (Settings, Deep Scan, Onboarding, Diagnostics read it,
   so they can't disagree). Fixes "Settings shows the permission as unverified

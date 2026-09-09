@@ -1,12 +1,28 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 # Release State
 
+## Minisign key rotation — effective v1.2.0-beta.1
+
+The Minisign release-signing key was rotated:
+
+| Key ID | Signs | Status |
+|---|---|---|
+| `A399E8FD75C1719E` | releases before `v1.2.0-beta.1` (through `v1.0.0`) | Historical verification key. Kept as `Configuration/minisign-A399E8FD75C1719E.pub`. No evidence of compromise. |
+| `F8473FB09E1DB730` | `v1.2.0-beta.1` and later | Current signing key. `Configuration/minisign.pub` and `Configuration/minisign-F8473FB09E1DB730.pub`. |
+
+Reason: the private key for `A399E8FD75C1719E` still exists but its password
+could no longer be unlocked. Apple Developer ID identity
+(`Ahmet BASBUNAR`, Team `NSCUV5G738`) and notarization are unchanged. Full
+record: `Documentation/MINISIGN_KEY_ROTATION.md`.
+
 ## Current release — v1.0.0, stable, published 2026-09-03
 
 `v1.0.0` points to source commit `0ecddea`. GitHub release is public, not a
 draft, and not a prerelease. Both arm64 artifacts are Developer ID signed,
 Apple-notarized, and stapled. `SHA256SUMS` and its Minisign signature verify
-against `Configuration/minisign.pub`.
+against the **historical** key `A399E8FD75C1719E`
+(`Configuration/minisign-A399E8FD75C1719E.pub`, and the `minisign.pub` asset
+published with the `v1.0.0` release itself).
 
 | Artifact | Size (bytes) | SHA-256 |
 |---|---:|---|

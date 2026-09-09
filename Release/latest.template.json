@@ -31,5 +31,7 @@
   "websiteURL": "https://coretend.ahmetbsbnr.com",
   "license": "Apache-2.0",
   "telemetry": false,
-  "accountRequired": false
+  "accountRequired": false,
+  "minisignKeyId": "F8473FB09E1DB730",
+  "_minisignKeyIdNote": "Minisign key that signs SHA256SUMS for this and later releases. Rotated from A399E8FD75C1719E effective v1.2.0-beta.1 (previous private key's password unavailable; no evidence of compromise; Apple Developer ID unchanged). Pre-v1.2 releases verify with A399E8FD75C1719E."
 }

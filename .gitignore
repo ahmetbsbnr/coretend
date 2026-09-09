@@ -67,6 +67,7 @@ Website/package-lock.json
 
 # Local agent/editor tooling state
 .claude/
+.claude-flow/
 .vscode/
 .idea/
 
