@@ -18,7 +18,6 @@ Scripts/
 Documentation/
 Release/
 Resources/
-LICENSES/
 
 # Local-only files and caches.
 .DS_Store
