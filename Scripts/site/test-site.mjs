@@ -183,6 +183,8 @@ await gate('release identity is generated from one canonical record', async () =
     '@@CORETEND_MINIMUM_MACOS@@',
     '@@CORETEND_ARCHITECTURE@@',
   ]) assert(template.includes(token), `landing template is missing ${token}`)
+  assert(!/actual architecture of \d+\.\d+\.\d+/i.test(template), 'landing template hard-codes the module architecture version')
+  assert(!/architecture réelle de la version \d+\.\d+\.\d+/i.test(template), 'French landing template hard-codes the module architecture version')
 
   for (const file of ['index.html', 'en-route.html', 'fr-route.html', 'support.html', 'fr-support.html']) {
     const document = await readFile(join(build.output, file), 'utf8')
@@ -300,12 +302,19 @@ await gate('canonical, hreflang, Open Graph and document languages are exact', a
       alternates: Object.fromEntries([...document.querySelectorAll('link[rel="alternate"][hreflang]')].map(link => [link.hreflang, link.href])),
       ogUrl: document.querySelector('meta[property="og:url"]')?.content,
       ogTitle: document.querySelector('meta[property="og:title"]')?.content,
+      ogImageAlt: document.querySelector('meta[property="og:image:alt"]')?.content,
+      twitterCards: document.querySelectorAll('meta[name="twitter:card"]').length,
+      twitterTitle: document.querySelector('meta[name="twitter:title"]')?.content,
+      twitterDescription: document.querySelector('meta[name="twitter:description"]')?.content,
+      twitterImage: document.querySelector('meta[name="twitter:image"]')?.content,
       description: document.querySelector('meta[name="description"]')?.content,
     }))
     assert.equal(meta.lang, language, `${route} has lang=${meta.lang}`)
     assert.equal(meta.canonical, EXPECTED_CANONICAL[route])
     assert.equal(meta.ogUrl, EXPECTED_CANONICAL[route])
     assert(meta.title && meta.description && meta.ogTitle)
+    assert.equal(meta.twitterCards, 1, `${route} must expose one Twitter card declaration`)
+    assert(meta.ogImageAlt && meta.twitterTitle && meta.twitterDescription && meta.twitterImage)
     assert(!/\.html(?:$|[?#/])/.test(meta.canonical))
     if (['/', '/en', '/fr'].includes(route)) {
       assert.deepEqual(meta.alternates, {
@@ -324,6 +333,24 @@ await gate('canonical, hreflang, Open Graph and document languages are exact', a
     titles.set(route, meta.title)
   }
   assert.notEqual(titles.get('/en'), titles.get('/fr'), 'localized titles must differ')
+  await context.close()
+})
+
+await gate('landing structured data matches the canonical downloadable release', async () => {
+  const context = await browser.newContext({ javaScriptEnabled: false })
+  const page = await context.newPage()
+  for (const route of ['/en', '/fr']) {
+    await page.goto(`${origin}${route}`)
+    const blocks = await page.locator('script[type="application/ld+json"]').allTextContents()
+    assert.equal(blocks.length, 1, `${route} must expose one JSON-LD block`)
+    const data = JSON.parse(blocks[0])
+    assert.equal(data['@type'], 'SoftwareApplication')
+    assert.equal(data.softwareVersion, publishedRelease.version)
+    assert.equal(data.downloadUrl, publishedRelease.dmgURL)
+    assert.equal(data.fileSize, String(publishedRelease.dmgSize))
+    assert.equal(data.datePublished, publishedRelease.publishedAt)
+    assert.equal(data.processorRequirements, `Apple silicon (${publishedRelease.architecture})`)
+  }
   await context.close()
 })
 
@@ -353,6 +380,8 @@ await gate('French is pre-rendered and every authored translation remains valid 
   })
   assert.match(await page.locator('#headline').innerText(), /^Sachez ce que votre Mac garde\./)
   assert(!((await page.locator('body').innerText()).includes('Know what your Mac is holding.')))
+  assert.equal(await page.locator('.bar-actions').getAttribute('aria-label'), 'Principale')
+  assert.match(await page.locator('.shots img').first().getAttribute('alt'), /^Tableau de bord CoreTend/)
   await context.close()
 })
 
@@ -364,6 +393,8 @@ await gate('French localizes visible calls to action and accessible control name
   assert(!/Read the source/i.test(sourceCallToAction) && /(?:code|source)/i.test(sourceCallToAction))
   assert.match(await page.locator('.skip').innerText(), /Aller/i)
   assert.match(await page.locator('.bar .wordmark').getAttribute('aria-label'), /accueil/i)
+  assert.equal(await page.locator('.bar-actions').getAttribute('aria-label'), 'Principale')
+  assert.equal(await page.locator('#rail').getAttribute('aria-label'), 'Sections')
   assert.match(await page.locator('#theme').getAttribute('aria-label'), /(?:apparence|thème)/i)
   const appLabel = await page.locator('#app').getAttribute('aria-label')
   assert(/CoreTend/i.test(appLabel) && /(?:aperçu|interface)/i.test(appLabel) && !/preview/i.test(appLabel))
