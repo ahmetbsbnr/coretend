@@ -81,6 +81,26 @@ QA screenshots.
 
 ---
 
+## v1.2.0-beta.1 — Settings + permission reliability blocker (Claude, this run)
+
+The maintainer-observed bug ("Settings shows the permission as unverified after
+quit/relaunch; Verify does not detect existing access") was root-caused and
+fixed at the probe/state layer:
+
+| Check | How | Result |
+|---|---|---|
+| Root cause | code inspection | fragile single-signal FDA probe (`~/Library/Safari` + `~/Library/Mail` only), probed once at view-model init, re-check re-ran the same probe; two divergent probes (app vs Deep Scan); missing path read as denied. No persisted "unverified" key involved. |
+| PermissionCoordinator | `PermissionCoordinatorTests` (17 tests) | one authoritative source; 8-state model; fresh probe overrides persisted state; transient error keeps known-good; legacy keys retired; debounce coalesces; Settings/DeepScan derive the same state. |
+| Multi-signal FDA probe | `FDAProbeTests` | 8 TCC-gated targets incl. `/Library/Application Support/com.apple.TCC`; missing ≠ denied; one readable ⇒ granted. |
+| 5-relaunch stability | `Scripts/test-permission-relaunch.sh` — real probe in 5 fresh processes | **5/5 identical state**; rebuild-stable. PASSED. |
+| Auto-refresh wiring | code | `MainWindow` + `DeepScanView` refresh on `NSApplication.didBecomeActive` (covers relaunch + return from System Settings), on launch, on Settings appear, before every Deep Scan. |
+| EN/FR | `PermissionLocalizationTests` | 32 `perm.*` keys, Base/fr parity, prose translated. |
+
+**HUMAN VERIFICATION REQUIRED** (not performed — no interactive session): the
+real Settings screen on the packaged app across grant → quit → reopen (must
+show `Checking… → Granted` with no button press), the return-from-System-
+Settings refresh, and the VoiceOver/keyboard pass of the new Permissions Center.
+
 ## v1.2.0-beta.1 prep — headless QA (Claude, this run)
 
 | Check | How | Result |

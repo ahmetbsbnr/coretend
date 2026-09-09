@@ -1,10 +1,10 @@
 # CoreTend Deep Scan — READ-ONLY QA report
-Generated: 2026-09-08T21:23:24Z
+Generated: 2026-09-09T05:46:25Z
 
 ## Scan
 - roots: ~/.claude, ~/.codex, ~/.cache, ~/Library/Caches, ~/Developer, ~/Downloads, ~/Library/LaunchAgents
-- nodes observed: 127218
-- wall time: 2.9s
+- nodes observed: 127499
+- wall time: 3.3s
 - cancelled: false   timed out: false
 - roots we could not read: ~/Library/Caches/CloudKit, ~/Library/Caches/FamilyCircle, ~/Library/Caches/com.apple.HomeKit, ~/Library/Caches/com.apple.Safari, ~/Library/Caches/com.apple.Safari.SafeBrowsing, ~/Library/Caches/com.apple.ap.adprivacyd, ~/Library/Caches/com.apple.containermanagerd, ~/Library/Caches/com.apple.homed, ~/Library/Caches/familycircled
 - permission-denied nodes: 9   partial nodes: 1
@@ -14,7 +14,7 @@ Generated: 2026-09-08T21:23:24Z
 - git repositories discovered: 8
   - [YELLOW] ~/.claude/plugins/marketplaces/context-mode — branch main, dirty=false, stashes=0, unpushed=0
   - [YELLOW] ~/Developer/Website/ahmetbsbnr-portfolio — branch main, dirty=false, stashes=0, unpushed=0
-  - [RED] ~/Developer/Website/products/coretend/app — branch feat/deep-scan-cleanup-v1.2, dirty=true, stashes=0, unpushed=15
+  - [RED] ~/Developer/Website/products/coretend/app — branch feat/deep-scan-cleanup-v1.2, dirty=true, stashes=0, unpushed=1
   - [YELLOW] ~/Developer/Website/products/coretend/app/.build/checkouts/swift-syntax — branch detached, dirty=false, stashes=0, unpushed=0
   - [YELLOW] ~/Developer/Website/products/coretend/app/.build/checkouts/swift-testing — branch detached, dirty=false, stashes=0, unpushed=0
   - [YELLOW] ~/Developer/Website/products/coretend/app/.build/index-build/checkouts/swift-syntax — branch detached, dirty=false, stashes=0, unpushed=0
@@ -36,7 +36,7 @@ Generated: 2026-09-08T21:23:24Z
     if removed: If you reinstall that app it will recreate this folder.
     · No installed app declares the bundle ID “com.google.GoogleUpdater”
     · No installed app or helper claims this identifier
-    · Last changed about 1 days ago
+    · Last changed about 2 days ago
 - 82 KB  [highRisk/weak]  ~/Library/Caches/com.openai.sky.CUAService
     owner: com.openai.sky.CUAService  subcategory: orphanedContainer  default-selected: false
     why: Appears to belong to “com.openai.sky.CUAService”, which is not installed.
@@ -73,7 +73,7 @@ Generated: 2026-09-08T21:23:24Z
     · No installed app or helper claims this identifier
     · Last changed about 35 days ago
 
-### aiAndLLM — 99 candidates, ~5.43 GB reviewable, 90 protected
+### aiAndLLM — 100 candidates, ~5.43 GB reviewable, 91 protected
 - 3.55 GB  [highRisk/weak]  ~/.cache/lm-studio/models
     owner: LM Studio  subcategory: modelWeights  default-selected: false
     why: LM Studio — model weights.
@@ -89,7 +89,7 @@ Generated: 2026-09-08T21:23:24Z
     why: Codex — extensions / plugins.
     if removed: You would reinstall the extensions.
     · Inside Codex's data folder
-- 315.1 MB  [protected/unknown]  ~/.claude/projects
+- 316.3 MB  [protected/unknown]  ~/.claude/projects
     owner: Claude Code  subcategory: projectState  default-selected: false
     why: Claude Code — per-project state.
     if removed: This cannot be recovered. CoreTend will not remove it.
@@ -118,7 +118,7 @@ Generated: 2026-09-08T21:23:24Z
     why: Claude Code — extensions / plugins.
     if removed: You would reinstall the extensions.
     · Inside Claude Code's data folder
-- 17.9 MB  [protected/unknown]  ~/.claude/file-history
+- 18.2 MB  [protected/unknown]  ~/.claude/file-history
     owner: Claude Code  subcategory: projectState  default-selected: false
     why: Claude Code — per-project state.
     if removed: This cannot be recovered. CoreTend will not remove it.
@@ -144,7 +144,7 @@ Generated: 2026-09-08T21:23:24Z
     why: LM Studio — runtime cache.
     if removed: LM Studio recreates this automatically.
     · Inside LM Studio's data folder
-- 598 KB  [protected/unknown]  ~/.claude/backups
+- 599 KB  [protected/unknown]  ~/.claude/backups
     owner: Claude Code  subcategory: unknownData  default-selected: false
     why: Claude Code — data of an unknown kind.
     if removed: This cannot be recovered. CoreTend will not remove it.
@@ -172,7 +172,7 @@ Generated: 2026-09-08T21:23:24Z
     PROTECTED: This is Codex data of an unknown kind — protected user state
     · Inside Codex's data folder
     · This is Codex data of an unknown kind — protected user state
-- 225 KB  [protected/unknown]  ~/.claude/jobs
+- 230 KB  [protected/unknown]  ~/.claude/jobs
     owner: Claude Code  subcategory: unknownData  default-selected: false
     why: Claude Code — data of an unknown kind.
     if removed: This cannot be recovered. CoreTend will not remove it.
@@ -193,6 +193,13 @@ Generated: 2026-09-08T21:23:24Z
     PROTECTED: This is Codex conversation history — protected user state
     · Inside Codex's data folder
     · This is Codex conversation history — protected user state
+- 103 KB  [protected/unknown]  ~/.claude/paste-cache
+    owner: Claude Code  subcategory: unknownData  default-selected: false
+    why: Claude Code — data of an unknown kind.
+    if removed: This cannot be recovered. CoreTend will not remove it.
+    PROTECTED: This is Claude Code data of an unknown kind — protected user state
+    · Inside Claude Code's data folder
+    · This is Claude Code data of an unknown kind — protected user state
 - 98 KB  [protected/unknown]  ~/.codex/sqlite
     owner: Codex  subcategory: unknownData  default-selected: false
     why: Codex — data of an unknown kind.
@@ -200,13 +207,6 @@ Generated: 2026-09-08T21:23:24Z
     PROTECTED: This is Codex data of an unknown kind — protected user state
     · Inside Codex's data folder
     · This is Codex data of an unknown kind — protected user state
-- 89 KB  [protected/unknown]  ~/.claude/paste-cache
-    owner: Claude Code  subcategory: unknownData  default-selected: false
-    why: Claude Code — data of an unknown kind.
-    if removed: This cannot be recovered. CoreTend will not remove it.
-    PROTECTED: This is Claude Code data of an unknown kind — protected user state
-    · Inside Claude Code's data folder
-    · This is Claude Code data of an unknown kind — protected user state
 - 82 KB  [protected/unknown]  ~/.codex/queue_1.sqlite-wal
     owner: Codex  subcategory: unknownData  default-selected: false
     why: Codex — data of an unknown kind.
@@ -236,8 +236,8 @@ Generated: 2026-09-08T21:23:24Z
     · Inside Codex's data folder
     · This is Codex data of an unknown kind — protected user state
 
-### developer — 35 candidates, ~2.41 GB reviewable, 0 protected
-- 1.59 GB  [review/confirmed]  ~/Developer/Website/products/coretend/app/.build
+### developer — 35 candidates, ~2.48 GB reviewable, 0 protected
+- 1.66 GB  [review/confirmed]  ~/Developer/Website/products/coretend/app/.build
     owner: —  subcategory: .build  default-selected: false
     why: SwiftPM build; rebuildable from the project.
     if removed: Recreated by the next build (can take minutes).
@@ -260,7 +260,7 @@ Generated: 2026-09-08T21:23:24Z
     why: npm dependencies; rebuildable from the project.
     if removed: Recovery cost is unknown — review before removing.
     · npm dependencies directory named node_modules
-- 10.2 MB  [highRisk/weak]  ~/Developer/Website/products/coretend/app/build
+- 10.3 MB  [highRisk/weak]  ~/Developer/Website/products/coretend/app/build
     owner: —  subcategory: build  default-selected: false
     why: build output; rebuildable from the project.
     if removed: Recovery cost is unknown — review before removing.
@@ -384,14 +384,13 @@ Generated: 2026-09-08T21:23:24Z
     · A project manifest sits next to it, so it can be rebuilt
 
 ### gitProjects — 8 candidates, ~Zero KB reviewable, 8 protected
-- 1.76 GB  [protected/weak]  ~/Developer/Website/products/coretend/app
-    owner: git@github.com:ahmetbsbnr/coretend-local-archive.git  subcategory: repository  default-selected: false
+- 1.84 GB  [protected/weak]  ~/Developer/Website/products/coretend/app
+    owner: git@github.com:ahmetbsbnr/coretend.git  subcategory: repository  default-selected: false
     why: Repository has local-only work — keep it.
     if removed: Local commits, stashes or edits would be lost.
     PROTECTED: Git repository has uncommitted or unpushed work
     · Uncommitted changes
-    · 2 untracked files
-    · 15 unpushed commit(s)
+    · 1 unpushed commit(s)
     · Remote not verified
 - 712.5 MB  [protected/unknown]  ~/Developer/Website/ahmetbsbnr-portfolio
     owner: git@github.com:ahmetbsbnr/ahmetbsbnrportfolio.git  subcategory: repository  default-selected: false
@@ -496,9 +495,9 @@ Generated: 2026-09-08T21:23:24Z
 - protected candidate default-selected: false  (must be false)
 - unknown-confidence default-selected: false  (must be false)
 - ~/.claude memory/projects/history default-selected: false  (must be false)
-- total default-selected: 0 of 158
+- total default-selected: 0 of 159
 ## Preselection decision inputs
-- total candidates: 158
+- total candidates: 159
 - risk==SAFE && confidence>=STRONG: 1
   by category: developer=1
 - would meet DefaultSelectionPolicy.meetsBar: 1

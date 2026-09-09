@@ -35,6 +35,19 @@ system. Does not touch the published `v1.0.0` or `v1.1.0-beta.1` releases.
 - Version surfaces to `1.2.0-beta.1` (build 1200); channel `beta`,
   `prerelease` true.
 
+- **Permissions reliability** — a single `PermissionCoordinator` now owns all
+  macOS permission state (Settings, Deep Scan, Onboarding, Diagnostics read it,
+  so they can't disagree). Fixes "Settings shows the permission as unverified
+  after quit/relaunch and Re-check doesn't help": the Full Disk Access probe is
+  now multi-signal (8 independent TCC-gated targets, a missing target ≠
+  denied), re-probes automatically on launch / app-active / return from System
+  Settings / before a scan (debounced), persists diagnostics only (a fresh
+  probe always wins), retires legacy boolean keys, and a transient probe error
+  no longer clobbers a known-good state. New Settings **Permissions Center**
+  with explicit states, timestamps, Check Again / Open System Settings /
+  Relaunch, and Copy Diagnostics (EN/FR). `Documentation/PERMISSIONS.md`;
+  `Scripts/test-permission-relaunch.sh`.
+
 ### Safety
 
 - `DeepScanExecutionGate` is a **build-configuration** switch: source default
