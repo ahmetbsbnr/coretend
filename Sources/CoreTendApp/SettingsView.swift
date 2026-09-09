@@ -13,22 +13,20 @@ final class SettingsViewModel {
     var exclusions: [String] = []
     var loaded = false
 
-    // Real, queried permission/availability states — never simulated.
-    var fullDiskAccess = PermissionProbe.hasFullDiskAccess()
     var appSignature = CodeSignInspector.inspect(at: Bundle.main.bundleURL)
-    var notificationStatus: UNAuthorizationStatus = .notDetermined
+
+    /// All permission state comes from the one shared coordinator so Settings
+    /// can never disagree with Deep Scan / Onboarding.
+    var permissions: PermissionCoordinator { PermissionCoordinator.shared }
 
     func load() async {
         guard let store = AppEnvironment.shared.store else { return }
         exclusions = (try? await store.exclusions()) ?? []
         loaded = true
-        await refreshPermissions()
+        await permissions.refreshNow(.settingsAppear)
     }
 
-    func refreshPermissions() async {
-        fullDiskAccess = PermissionProbe.hasFullDiskAccess()
-        notificationStatus = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
-    }
+    func recheck() async { await permissions.refreshNow(.manual) }
 
     func addExclusion(_ url: URL) {
         guard let store = AppEnvironment.shared.store else { return }
@@ -70,6 +68,40 @@ enum PermissionFormatting {
         case .denied: "xmark.circle.fill"
         default: "questionmark.circle"
         }
+    }
+
+    // Full Disk Access / general permission state.
+    static func fdaLabel(_ s: PermissionState) -> String {
+        L("perm.state." + s.rawValue)
+    }
+    static func fdaIcon(_ s: PermissionState) -> String {
+        switch s {
+        case .granted: "checkmark.circle.fill"
+        case .partial: "exclamationmark.circle.fill"
+        case .denied, .needsReauthorization: "lock.circle.fill"
+        case .checking: "arrow.triangle.2.circlepath.circle"
+        case .notRequested: "questionmark.circle"
+        case .unavailable: "minus.circle"
+        case .error: "exclamationmark.triangle.fill"
+        }
+    }
+    static func fdaTintName(_ s: PermissionState) -> String {   // for a11y-safe mapping
+        switch s {
+        case .granted: "success"
+        case .partial, .notRequested: "attention"
+        case .denied, .needsReauthorization, .error: "warning"
+        case .checking, .unavailable: "secondary"
+        }
+    }
+    /// Relative "last checked" / "last verified" phrasing.
+    static func relative(_ date: Date?, now: Date = Date()) -> String {
+        guard let date else { return L("perm.never") }
+        let s = Int(now.timeIntervalSince(date))
+        if s < 5 { return L("perm.just_now") }
+        if s < 60 { return L("perm.seconds_ago", "\(s)") }
+        if s < 3600 { return L("perm.minutes_ago", "\(s / 60)") }
+        if s < 86_400 { return L("perm.hours_ago", "\(s / 3600)") }
+        return L("perm.days_ago", "\(s / 86_400)")
     }
 }
 
@@ -118,34 +150,7 @@ struct MCSettingsView: View {
                 Text(L("settings.privileged_helper_detail"))
                     .font(.caption).foregroundStyle(.secondary)
             }
-            Section(L("settings.monitoring_permissions")) {
-                LabeledContent(L("settings.full_disk_access")) {
-                    Label(model.fullDiskAccess ? L("settings.granted") : L("settings.not_granted"),
-                          systemImage: model.fullDiskAccess ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                        .foregroundStyle(model.fullDiskAccess ? MCTheme.success : MCTheme.warning)
-                }
-                if !model.fullDiskAccess {
-                    HStack {
-                        Button(L("settings.open_system_settings")) { PermissionProbe.openFullDiskAccessSettings() }
-                            .accessibilityIdentifier("settings.full_disk.open")
-                        Button(L("settings.recheck")) { Task { await model.refreshPermissions() } }
-                            .accessibilityIdentifier("settings.full_disk.recheck")
-                    }
-                }
-                LabeledContent(L("settings.notifications")) {
-                    Label(notificationStatusLabel, systemImage: notificationStatusIcon)
-                        .foregroundStyle(notificationStatusColor)
-                }
-                if model.notificationStatus == .denied {
-                    Button(L("settings.open_system_settings")) {
-                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications") {
-                            NSWorkspace.shared.open(url)
-                        }
-                    }
-                }
-                Text(L("settings.notifications_detail"))
-                    .font(.caption).foregroundStyle(.secondary)
-            }
+            PermissionsSection(model: model)
             Section(L("settings.exclusions")) {
                 if model.exclusions.isEmpty {
                     Text(L("settings.exclusions_empty"))
@@ -221,13 +226,111 @@ struct MCSettingsView: View {
         .task { await model.load() }
     }
 
-    private var notificationStatusLabel: String { PermissionFormatting.notificationLabel(model.notificationStatus) }
-    private var notificationStatusIcon: String { PermissionFormatting.notificationIcon(model.notificationStatus) }
+}
 
-    private var notificationStatusColor: Color {
-        switch model.notificationStatus {
-        case .authorized, .provisional, .ephemeral: MCTheme.success
-        case .denied: MCTheme.warning
+// MARK: - Permissions Center (first-class Settings surface)
+
+/// Everything permission-related in one place, all reading from the single
+/// `PermissionCoordinator`. When healthy it is quiet; when something needs
+/// attention it says so specifically — never a generic "Unverified".
+struct PermissionsSection: View {
+    @Bindable var model: SettingsViewModel
+    @State private var showDiag = false
+    @Environment(\.openURL) private var openURL
+
+    private var coord: PermissionCoordinator { model.permissions }
+
+    var body: some View {
+        Section(L("perm.section")) {
+            healthSummary
+
+            // --- Full Disk Access ---
+            LabeledContent(L("settings.full_disk_access")) {
+                Label(PermissionFormatting.fdaLabel(coord.fullDiskAccess),
+                      systemImage: PermissionFormatting.fdaIcon(coord.fullDiskAccess))
+                    .foregroundStyle(tint(coord.fullDiskAccess))
+                    .accessibilityLabel(L("settings.full_disk_access") + ": " + PermissionFormatting.fdaLabel(coord.fullDiskAccess))
+            }
+            Text(L("perm.fda.why"))
+                .font(.caption).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            if coord.fullDiskAccess == .partial, let p = coord.lastProbe {
+                Text(L("perm.fda.partial_detail", "\(p.permissionDenied)"))
+                    .font(.caption).foregroundStyle(MCTheme.warning)
+            }
+            LabeledContent(L("perm.last_checked"), value: PermissionFormatting.relative(coord.lastCheckedAt))
+                .font(.caption)
+            if coord.lastSuccessfulCheckAt != nil {
+                LabeledContent(L("perm.last_verified"),
+                               value: PermissionFormatting.relative(coord.lastSuccessfulCheckAt))
+                    .font(.caption)
+            }
+            HStack {
+                Button(L("perm.check_again")) { Task { await model.recheck() } }
+                    .accessibilityIdentifier("settings.full_disk.recheck")
+                Button(L("settings.open_system_settings")) { coord.openFullDiskAccessSettings() }
+                    .accessibilityIdentifier("settings.full_disk.open")
+                if coord.fullDiskAccess == .partial || coord.fullDiskAccess == .denied {
+                    Button(L("perm.relaunch")) { coord.relaunchApp() }
+                        .accessibilityIdentifier("settings.full_disk.relaunch")
+                }
+            }
+
+            // --- Notifications (kept separate from disk access) ---
+            LabeledContent(L("settings.notifications")) {
+                Label(L("perm.notif." + coord.notifications.rawValue),
+                      systemImage: coord.notifications == .allowed ? "checkmark.circle.fill"
+                                 : coord.notifications == .denied ? "xmark.circle.fill" : "questionmark.circle")
+                    .foregroundStyle(coord.notifications == .allowed ? MCTheme.success
+                                   : coord.notifications == .denied ? MCTheme.warning : .secondary)
+            }
+            if coord.notifications == .denied {
+                Button(L("settings.open_system_settings")) {
+                    if let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
+            }
+            Text(L("settings.notifications_detail")).font(.caption).foregroundStyle(.secondary)
+
+            // --- Diagnostics ---
+            Button(L("perm.copy_diagnostics")) {
+                let text = coord.diagnosticsText(
+                    appVersion: AppMetadata.marketingVersion,
+                    buildNumber: AppMetadata.buildNumber,
+                    channel: AppMetadata.releaseChannel,
+                    bundleID: Bundle.main.bundleIdentifier ?? "—",
+                    signingMode: model.appSignature.tier == .adHocOrUnsigned ? "ad-hoc/unsigned" : "signed",
+                    teamID: model.appSignature.teamIdentifier)
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(text, forType: .string)
+            }
+            .accessibilityIdentifier("settings.permissions.copy_diagnostics")
+        }
+    }
+
+    @ViewBuilder private var healthSummary: some View {
+        let s = coord.fullDiskAccess
+        let (text, icon, color): (String, String, Color) = {
+            switch s {
+            case .granted: return (L("perm.health.ready"), "checkmark.seal.fill", MCTheme.success)
+            case .partial: return (L("perm.health.partial"), "exclamationmark.triangle.fill", MCTheme.warning)
+            case .checking: return (L("perm.health.checking"), "arrow.triangle.2.circlepath", .secondary)
+            case .unavailable, .error: return (L("perm.health.unknown"), "questionmark.circle", .secondary)
+            default: return (L("perm.health.needs_attention"), "exclamationmark.circle.fill", MCTheme.warning)
+            }
+        }()
+        Label(text, systemImage: icon)
+            .font(.callout.weight(.medium))
+            .foregroundStyle(color)
+            .accessibilityElement(children: .combine)
+    }
+
+    private func tint(_ s: PermissionState) -> Color {
+        switch PermissionFormatting.fdaTintName(s) {
+        case "success": MCTheme.success
+        case "attention": MCTheme.warning
+        case "warning": MCTheme.warning
         default: .secondary
         }
     }

@@ -145,7 +145,13 @@ final class DeepScanViewModel {
         progress = DeepScanProgressModel()
         progress.phase = .preparing
         candidates = []; gitFacts = []; selectedIDs = []
-        permission = DeepScanPermissionProbe().probe()
+        // Deep Scan and Settings must show the SAME permission state — both
+        // derive it from the one PermissionCoordinator.
+        permission = Self.mapPermission(PermissionCoordinator.shared.fullDiskAccess)
+        Task { @MainActor in
+            await PermissionCoordinator.shared.refreshNow(.beforeDeepScan)
+            self.permission = Self.mapPermission(PermissionCoordinator.shared.fullDiskAccess)
+        }
 
         let home = FileManager.default.homeDirectoryForCurrentUser
         let roots = overrideRoot.map { [$0] } ?? settings.scanRoots(home: home)
@@ -185,6 +191,19 @@ final class DeepScanViewModel {
                 itemCount: result.candidates.count,
                 bytes: result.candidates.filter { $0.risk != .protected }
                     .reduce(0) { $0 + $1.estimatedReclaimableBytes }))
+        }
+    }
+
+    /// One mapping from the app-wide `PermissionState` to the Deep Scan view's
+    /// four-state banner, so the two surfaces can never disagree.
+    static func mapPermission(_ s: PermissionState) -> DeepScanPermissionState {
+        switch s {
+        case .granted: .fullDiskAccess
+        case .partial: .partialAccess
+        case .denied, .needsReauthorization, .notRequested: .partialAccess
+        case .unavailable: .protectedByOS
+        case .checking: .partialAccess
+        case .error: .scanError
         }
     }
 
@@ -279,6 +298,13 @@ struct DeepScanView: View {
         }
         .navigationTitle(L("deepscan.nav_title"))
         .accessibilityIdentifier("deepScan.root")
+        .task {
+            await PermissionCoordinator.shared.refreshNow(.beforeDeepScan)
+            model.permission = DeepScanViewModel.mapPermission(PermissionCoordinator.shared.fullDiskAccess)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            model.permission = DeepScanViewModel.mapPermission(PermissionCoordinator.shared.fullDiskAccess)
+        }
         .sheet(isPresented: $model.showSettings) {
             DeepScanSettingsSheet(settings: $model.settings, onSave: model.saveSettings)
         }
