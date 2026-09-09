@@ -1,0 +1,30 @@
+# Vercel builds only the static public site from Website/ and the canonical
+# release record in Configuration/. Keep local Swift, test and release output
+# out of deployment archives.
+.build/
+build/
+dist/
+node_modules/
+Website/node_modules/
+Website/dist/
+.swiftpm/
+.claude/
+.claude-flow/
+.git/
+.github/
+Sources/
+Tests/
+Scripts/
+Documentation/
+Release/
+Resources/
+LICENSES/
+
+# Local-only files and caches.
+.DS_Store
+__pycache__/
+*.pyc
+*.dmg
+*.zip
+*.sqlite*
+*.log
