@@ -144,7 +144,7 @@ if args.first == "--safe-subset-qa" {
     let result = await DeepScanPipeline(allowNetwork: false).run(configuration: cfg, home: root)
     print("candidates: \(result.candidates.count)")
 
-    let (eligible, rejected) = ExecutableSubsetPolicy.partition(result.candidates)
+    let (eligible, _) = ExecutableSubsetPolicy.partition(result.candidates)
     print("\n-- executable SAFE subset (\(eligible.count)) --")
     for c in eligible { print("  \(c.detector):\(c.subcategory)  \((c.canonicalPath as NSString).lastPathComponent)  [\(c.risk.rawValue)/\(c.confidence.rawValue)]") }
 
