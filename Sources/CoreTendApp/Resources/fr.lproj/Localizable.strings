@@ -803,3 +803,37 @@
 "deepscan.protected.cloud" = "Stocké dans le nuage — CoreTend ne le supprimera pas. Utilisez plutôt « Libérer de l’espace » chez le fournisseur.";
 "deepscan.protected.dup_local_work" = "Ce doublon contient son propre travail purement local.";
 "deepscan.protected.ai_unknown" = "Données de type inconnu de %@ — protégées jusqu’à identification.";
+
+/* Permissions Center */
+"perm.section" = "Autorisations";
+"perm.fda.why" = "L’accès complet au disque permet à CoreTend d’examiner tout le volume de départ pendant une analyse. Sans lui, certains dossiers restent masqués — CoreTend vous indiquera lesquels.";
+"perm.fda.partial_detail" = "%@ emplacements protégés n’ont pas pu être lus.";
+"perm.last_checked" = "Dernière vérification";
+"perm.last_verified" = "Dernière vérification réussie";
+"perm.check_again" = "Revérifier";
+"perm.relaunch" = "Relancer CoreTend";
+"perm.copy_diagnostics" = "Copier le diagnostic";
+"perm.never" = "jamais";
+"perm.just_now" = "à l’instant";
+"perm.seconds_ago" = "il y a %@ s";
+"perm.minutes_ago" = "il y a %@ min";
+"perm.hours_ago" = "il y a %@ h";
+"perm.days_ago" = "il y a %@ j";
+"perm.state.checking" = "Vérification…";
+"perm.state.granted" = "Accordé";
+"perm.state.partial" = "Accès partiel";
+"perm.state.denied" = "Accès requis";
+"perm.state.notRequested" = "Non demandé";
+"perm.state.needsReauthorization" = "Ré-autorisation requise";
+"perm.state.unavailable" = "Indéterminé";
+"perm.state.error" = "À vérifier";
+"perm.notif.notRequested" = "Non demandé";
+"perm.notif.allowed" = "Autorisé";
+"perm.notif.denied" = "Refusé";
+"perm.notif.provisional" = "Provisoire";
+"perm.notif.unavailable" = "Indisponible";
+"perm.health.ready" = "Tous les accès requis sont prêts.";
+"perm.health.partial" = "CoreTend a une visibilité partielle du disque.";
+"perm.health.needs_attention" = "1 autorisation nécessite votre attention.";
+"perm.health.checking" = "Vérification des autorisations…";
+"perm.health.unknown" = "L’état des autorisations n’a pas pu être déterminé.";

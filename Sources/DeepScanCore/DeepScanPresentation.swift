@@ -345,24 +345,36 @@ public enum DeepScanPermissionState: String, Sendable {
     case scanError = "Scan error"
 }
 
+/// Read-only, multi-signal Full Disk Access probe.
+///
+/// The CoreTend app itself gets permission state from `PermissionCoordinator`
+/// (which owns refresh/debounce/persistence). This struct is the standalone
+/// equivalent for headless contexts — the `DeepScanQA` harness — and mirrors
+/// the coordinator's probe logic: several independent TCC-gated targets, a
+/// missing target is "missing" not "denied", and one readable target is
+/// enough to conclude Full access.
 public struct DeepScanPermissionProbe: Sendable {
     public init() {}
-    /// Heuristic, read-only: try to list a couple of TCC-gated locations. Full
-    /// access ⇒ readable; otherwise Partial. Never writes.
     public func probe(home: URL = FileManager.default.homeDirectoryForCurrentUser) -> DeepScanPermissionState {
         let gated = [
-            home.appendingPathComponent("Library/Application Support/com.apple.TCC"),
-            home.appendingPathComponent("Library/Mail"),
-            home.appendingPathComponent("Library/Safari"),
+            "/Library/Application Support/com.apple.TCC",
+            home.appendingPathComponent("Library/Application Support/com.apple.TCC").path,
+            home.appendingPathComponent("Library/Safari").path,
+            home.appendingPathComponent("Library/Mail").path,
+            home.appendingPathComponent("Library/Messages").path,
+            home.appendingPathComponent("Library/Suggestions").path,
         ]
         let fm = FileManager.default
-        var readable = 0, present = 0
-        for g in gated where fm.fileExists(atPath: g.path) {
+        var readable = 0, denied = 0, present = 0
+        for path in gated where fm.fileExists(atPath: path) {
             present += 1
-            if (try? fm.contentsOfDirectory(atPath: g.path)) != nil { readable += 1 }
+            do { _ = try fm.contentsOfDirectory(atPath: path); readable += 1 }
+            catch { denied += 1 }
         }
-        if present == 0 { return .partialAccess }        // can't tell — assume limited
-        return readable == present ? .fullDiskAccess : .partialAccess
+        if present == 0 { return .protectedByOS }          // nothing to probe — not "denied"
+        if readable > 0 && denied == 0 { return .fullDiskAccess }
+        if readable > 0 { return .partialAccess }
+        return .partialAccess                              // all denied — still surface, not an error
     }
 }
 

@@ -803,3 +803,37 @@
 "deepscan.protected.cloud" = "Cloud-backed — CoreTend will not delete this. Use “Free Up Space” in the provider instead.";
 "deepscan.protected.dup_local_work" = "This duplicate has its own local-only work.";
 "deepscan.protected.ai_unknown" = "%@ data of an unknown kind — protected until identified.";
+
+/* Permissions Center */
+"perm.section" = "Permissions";
+"perm.fda.why" = "Full Disk Access lets CoreTend see the whole home volume during a scan. Without it, some folders stay hidden — CoreTend will tell you which.";
+"perm.fda.partial_detail" = "%@ protected locations could not be read.";
+"perm.last_checked" = "Last checked";
+"perm.last_verified" = "Last successfully verified";
+"perm.check_again" = "Check Again";
+"perm.relaunch" = "Relaunch CoreTend";
+"perm.copy_diagnostics" = "Copy Diagnostics";
+"perm.never" = "never";
+"perm.just_now" = "just now";
+"perm.seconds_ago" = "%@ s ago";
+"perm.minutes_ago" = "%@ min ago";
+"perm.hours_ago" = "%@ h ago";
+"perm.days_ago" = "%@ d ago";
+"perm.state.checking" = "Checking…";
+"perm.state.granted" = "Granted";
+"perm.state.partial" = "Partial access";
+"perm.state.denied" = "Needs access";
+"perm.state.notRequested" = "Not requested";
+"perm.state.needsReauthorization" = "Needs reauthorization";
+"perm.state.unavailable" = "Cannot determine";
+"perm.state.error" = "Needs attention";
+"perm.notif.notRequested" = "Not requested";
+"perm.notif.allowed" = "Allowed";
+"perm.notif.denied" = "Denied";
+"perm.notif.provisional" = "Provisional";
+"perm.notif.unavailable" = "Unavailable";
+"perm.health.ready" = "All required access is ready.";
+"perm.health.partial" = "CoreTend has partial disk visibility.";
+"perm.health.needs_attention" = "1 permission needs attention.";
+"perm.health.checking" = "Checking permissions…";
+"perm.health.unknown" = "Permission state could not be determined.";

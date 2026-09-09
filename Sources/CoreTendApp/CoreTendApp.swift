@@ -437,7 +437,16 @@ struct MainWindow: View {
             }
             .mcCanvasBackground()
         }
-        .onAppear { if !onboardingDone { showOnboarding = true } }
+        .onAppear {
+            if !onboardingDone { showOnboarding = true }
+            PermissionCoordinator.shared.refresh(.launch)
+        }
+        // Re-probe permissions whenever the app comes back to the foreground —
+        // this is what fixes "Unverified after relaunch / return from System
+        // Settings" without the user having to press anything.
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            PermissionCoordinator.shared.refresh(.appActive)
+        }
         .sheet(isPresented: $showOnboarding, onDismiss: { onboardingDone = true }) {
             OnboardingView(isPresented: $showOnboarding)
         }
