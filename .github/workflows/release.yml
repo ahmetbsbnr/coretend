@@ -330,24 +330,73 @@ jobs:
       # failure here leaves nothing for anyone to download.
       # ---------------------------------------------------------------- #
       - name: Upload the assets as a DRAFT release (not visible to anyone)
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
-        with:
-          draft: true
-          prerelease: ${{ steps.resolve.outputs.prerelease }}
-          name: CoreTend ${{ steps.resolve.outputs.version }}
-          body_path: Release/Notes/${{ steps.resolve.outputs.version }}.en.md
-          fail_on_unmatched_files: true
-          files: |
-            dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64.zip
-            dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64.dmg
-            dist/latest.json
-            dist/SHA256SUMS
-            dist/release-manifest.json
-            dist/coretend-${{ steps.resolve.outputs.version }}-sbom.spdx.json
-            dist/*.minisig
-            Configuration/minisign.pub
+        # Done with gh rather than a third-party action. The action failed here
+        # with "Error creating asset temp dir" after uploading 10 of 11 assets,
+        # leaving a draft missing only its SBOM — a partial upload is exactly
+        # the failure this whole draft-first design exists to contain, and it
+        # should not come from the uploader itself. gh is already required by
+        # the verification step below, so this also removes one third-party
+        # action from the path that touches the signing runner.
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.resolve.outputs.version }}
+          PRERELEASE: ${{ steps.resolve.outputs.prerelease }}
+        run: |
+          set -euo pipefail
+          TAG="v$VERSION"
+          REPO="${{ github.repository }}"
+
+          # Name every asset explicitly. A glob that silently matches nothing is
+          # how an artifact goes missing without anyone noticing.
+          ASSETS=(
+            "dist/CoreTend-$VERSION-arm64.zip"
+            "dist/CoreTend-$VERSION-arm64.dmg"
+            "dist/latest.json"
+            "dist/SHA256SUMS"
+            "dist/release-manifest.json"
+            "dist/coretend-$VERSION-sbom.spdx.json"
+            "Configuration/minisign.pub"
+          )
+          shopt -s nullglob
+          for sig in dist/*.minisig; do ASSETS+=("$sig"); done
+          shopt -u nullglob
+
+          missing=0
+          for f in "${ASSETS[@]}"; do
+            if [ ! -s "$f" ]; then
+              echo "::error::Declared release asset is missing or empty: $f"
+              missing=1
+            fi
+          done
+          [ "$missing" -eq 0 ] || exit 1
+          echo "Uploading ${#ASSETS[@]} assets to draft $TAG."
+
+          EXTRA=()
+          [ "$PRERELEASE" = "true" ] && EXTRA+=(--prerelease)
+
+          if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            # A release already exists. Only ever touch it if it is still a
+            # draft: clobbering a published release would rewrite bytes users
+            # may already hold.
+            if [ "$(gh release view "$TAG" --repo "$REPO" --json isDraft --jq .isDraft)" != "true" ]; then
+              echo "::error::Release $TAG is already published. Refusing to overwrite it."
+              echo "Expected: no release, or a draft left by a previous attempt."
+              echo "Fix: release a new patch version; never rewrite a published one."
+              exit 1
+            fi
+            echo "Reusing the existing draft (previous attempt) and replacing its assets."
+            gh release upload "$TAG" "${ASSETS[@]}" --repo "$REPO" --clobber
+          else
+            gh release create "$TAG" "${ASSETS[@]}" \
+              --repo "$REPO" \
+              --draft \
+              --title "CoreTend $VERSION" \
+              --notes-file "Release/Notes/$VERSION.en.md" \
+              "${EXTRA[@]}"
+          fi
+
+          echo "Draft assets now attached:"
+          gh release view "$TAG" --repo "$REPO" --json assets --jq '.assets[] | "  \(.name)  \(.size)"'
 
       - name: Verify the DISTRIBUTED bytes, downloaded back from the draft
         env:
