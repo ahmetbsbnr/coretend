@@ -39,7 +39,17 @@ concurrency:
 jobs:
   build:
     runs-on: [self-hosted, macOS, ARM64, coretend-signing]
-    timeout-minutes: 45
+    # Generous on purpose: Apple's notarization queue is the variable here, and
+    # this job now also downloads the draft's assets back and re-verifies them.
+    # Aborting after notarization has already been paid for is the worst
+    # possible place to run out of time.
+    #
+    # Note this bounds EXECUTION, not queueing. A job waiting for an offline
+    # self-hosted runner sits queued for GitHub's 24h maximum and is then
+    # cancelled with no step ever run — which is exactly how v1.1.0-beta.1 and
+    # v1.2.0-beta.1 died. Scripts/release-preflight.sh checks the runner is
+    # online before you tag, because nothing downstream will tell you.
+    timeout-minutes: 75
     permissions:
       # contents: write is required only by the final publish step, which
       # creates the GitHub Release and uploads its assets. Everything else in

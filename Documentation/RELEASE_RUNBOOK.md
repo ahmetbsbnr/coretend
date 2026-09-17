@@ -227,7 +227,7 @@ keys stay tracked and why the registry maps *ranges*, not a single current key.
 
 | Symptom | What it means | What to do |
 |---|---|---|
-| Release job queues forever | No online runner with all four labels | Start the runner; re-run the job. Nothing was published. |
+| Release job queues forever | No online runner with all four labels. GitHub queues it for **24 hours**, then cancels it with no step ever run — this is how `v1.1.0-beta.1` and `v1.2.0-beta.1` both died, silently | Start the runner, then re-run. Nothing was published. Preflight checks this before you tag precisely because nothing downstream reports it. |
 | Preflight: key mismatch | The secret signs with a different key than the version requires | Land the rotation properly (above). **Never** edit the registry to make it pass. |
 | `notarytool` rejects | Apple found a signing/entitlement problem | `xcrun notarytool log <submission-id> --keychain-profile CoreTend-Notary`. Fix, re-tag a new patch version. |
 | Apple timeout / outage | Notarization did not complete | Re-run the job. Nothing was published; the tag stays valid. |
