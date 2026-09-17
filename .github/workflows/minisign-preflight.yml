@@ -1,0 +1,91 @@
+name: Minisign preflight (publishes nothing)
+
+# Answers one question before a release tag is pushed: can MINISIGN_SECRET_KEY
+# actually produce a signature that verifies against the Configuration/
+# minisign.pub this branch publishes?
+#
+# release.yml already refuses to publish on a mismatch, but it only finds out
+# *after* building, Developer ID signing and notarizing — a wasted Apple round
+# trip and a release left half-made. This runs that check alone, in seconds.
+#
+# It exists because the key was rotated on the v1.2 line (A399E8FD75C1719E ->
+# F8473FB09E1DB730) while the stable line still publishes the older key, and
+# the repo secret predates that rotation. Which key the secret actually holds
+# is therefore worth proving rather than assuming.
+#
+# Nothing here is published, uploaded or committed. The secret is written only
+# to a mktemp file with umask 077, never to a command line, and the file is
+# removed on every path. Key IDs are public information and are printed; the
+# key itself never is.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    name: Can the configured key sign for the published public key?
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install minisign
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq minisign
+
+      - name: Report the public key this branch publishes
+        run: |
+          set -euo pipefail
+          test -f Configuration/minisign.pub \
+            || { echo "::error::Configuration/minisign.pub is absent on this ref."; exit 1; }
+          echo "Public key on this ref:"
+          sed -n 1p Configuration/minisign.pub
+
+      - name: Sign a throwaway file and verify it against that public key
+        env:
+          MINISIGN_SECRET_KEY: ${{ secrets.MINISIGN_SECRET_KEY }}
+          MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          : "${MINISIGN_SECRET_KEY:?MINISIGN_SECRET_KEY secret is required}"
+          : "${MINISIGN_PASSWORD:?MINISIGN_PASSWORD secret is required}"
+
+          umask 077
+          work="$(mktemp -d)"
+          keyfile="$work/key"
+          cleanup() { rm -rf "$work"; }
+          trap cleanup EXIT
+
+          printf '%s' "$MINISIGN_SECRET_KEY" > "$keyfile"
+          printf 'minisign preflight — not a release artifact\n' > "$work/probe.txt"
+
+          # The secret key's own key ID is public information: minisign writes
+          # it into every signature it produces. Reading it back from the
+          # signature avoids parsing the secret key file itself.
+          if ! printf '%s' "$MINISIGN_PASSWORD" \
+              | minisign -S -s "$keyfile" -m "$work/probe.txt" >/dev/null 2>&1; then
+            echo "::error::The configured key and password could not produce a signature."
+            echo "Either MINISIGN_SECRET_KEY is not a valid minisign key, or MINISIGN_PASSWORD does not unlock it."
+            exit 1
+          fi
+          echo "Signing: OK"
+
+          PUB="$(sed -n 2p Configuration/minisign.pub)"
+          if minisign -Vm "$work/probe.txt" -P "$PUB" >/dev/null 2>&1; then
+            echo "Verification against Configuration/minisign.pub: OK"
+            echo
+            echo "The configured secret matches the public key this branch publishes."
+            echo "release.yml's Minisign steps will pass on this ref."
+          else
+            echo "::error::The signature does NOT verify against Configuration/minisign.pub."
+            echo "The configured secret signs with a different key than this branch publishes."
+            echo "Signature key ID (public) vs expected:"
+            sed -n 1p "$work/probe.txt.minisig" || true
+            sed -n 1p Configuration/minisign.pub
+            echo
+            echo "Do NOT rotate the published key just to make a release pass:"
+            echo "that silently breaks verification for everyone holding the old one."
+            exit 1
+          fi
