@@ -70,12 +70,24 @@ done
 note "Checking localizations shipped"
 BUNDLE=$(ls -d "$APP/Contents/Resources"/*.bundle 2>/dev/null | head -1)
 if [ -n "$BUNDLE" ]; then
-  if [ -d "$BUNDLE/en.lproj" ] || [ -d "$BUNDLE/Base.lproj" ]; then
+  # SwiftPM used to emit a flat resource bundle (Base.lproj beside Info.plist)
+  # and now emits a nested macOS one (Contents/Resources/Base.lproj). Both are
+  # valid and Bundle.path(forResource:ofType:) resolves either, so this check
+  # accepts both rather than pinning a toolchain's layout. Asserting only the
+  # flat form made this gate fail on a perfectly good bundle.
+  if [ -d "$BUNDLE/Contents/Resources" ]; then
+    LPROJ_ROOT="$BUNDLE/Contents/Resources"
+  else
+    LPROJ_ROOT="$BUNDLE"
+  fi
+  if [ -d "$LPROJ_ROOT/en.lproj" ] || [ -d "$LPROJ_ROOT/Base.lproj" ]; then
     ok "English (Base) localization present"
   else
     bad "English (Base) localization missing"
   fi
-  [ -d "$BUNDLE/fr.lproj" ] && ok "fr.lproj present" || bad "fr.lproj missing"
+  [ -d "$LPROJ_ROOT/fr.lproj" ] && ok "fr.lproj present" || bad "fr.lproj missing"
+else
+  bad "no SwiftPM resource bundle in Contents/Resources"
 fi
 
 note "Checking arm64 architecture"

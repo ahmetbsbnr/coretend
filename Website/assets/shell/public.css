@@ -261,6 +261,20 @@ p{margin:0}
   #spot{display:none}
 }
 
+/* ─── site advisory ──────────────────────────────────────────
+   Shown while a published release is known-broken (build.py ADVISORY).
+   Amber, not coral: this warns about the download, it is not an error state
+   of the page. Sits directly under the header that carries the button. */
+.site-advisory{background:#FDF3E0;border-block:1px solid #E3C07A;color:#5C3D0B}
+.site-advisory .wrap{padding-block:12px}
+.site-advisory p{margin:0;font-size:.9375rem;line-height:1.5;max-width:74ch}
+.site-advisory b{color:#4A2F06}
+@media (prefers-color-scheme:dark){
+  .site-advisory{background:#332616;border-block-color:#6B5322;color:#F2DCB4}
+  .site-advisory b{color:#FFF1D6}
+}
+@media print{.site-advisory{background:none;border-block:1pt solid #000;color:#000}}
+
 @media print{
   :root{--paper:#fff;--ink:#000;--ink-2:#222;--ink-3:#444;--line:#bbb;--panel:#fff}
   #field,#grain,#spot,#progress,.bar,.info-mark,.foot,#toast,.action-row{display:none!important}

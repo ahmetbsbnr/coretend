@@ -202,7 +202,18 @@ fi
 
 # 11. What GitHub actually publishes, when we can ask.
 if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
-  LIVE=$(gh release list -R ahmetbsbnr/coretend --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || true)
+  # Compare like with like. "gh release list --limit 1" returns the newest
+  # release of ANY kind, so an open beta on a newer line (1.2.0-beta.1) would
+  # be read as "the published release is newer than the code in hand" and block
+  # a legitimate stable patch (1.0.1) on the older line. A stable tree is
+  # therefore measured against the newest stable release; a prerelease tree
+  # still sees everything, since anything published is relevant to it.
+  if [ "$CHANNEL" = "stable" ]; then
+    LIVE=$(gh release list -R ahmetbsbnr/coretend --limit 30 --json tagName,isPrerelease \
+      --jq 'map(select(.isPrerelease | not)) | .[0].tagName' 2>/dev/null || true)
+  else
+    LIVE=$(gh release list -R ahmetbsbnr/coretend --limit 1 --json tagName --jq '.[0].tagName' 2>/dev/null || true)
+  fi
   if [ -n "$LIVE" ]; then
     LIVE_VERSION="${LIVE#v}"
     if [ "$LIVE_VERSION" = "$VERSION" ]; then

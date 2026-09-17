@@ -19,7 +19,7 @@
 	<key>CFBundleVersion</key>
 	<string>1001</string>
 	<key>CoreTendMarketingVersion</key>
-	<string>1.0.0</string>
+	<string>1.0.1</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.utilities</string>
 	<key>LSMinimumSystemVersion</key>

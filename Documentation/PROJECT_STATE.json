@@ -1,10 +1,10 @@
 {
   "schemaVersion": 4,
   "project": "CoreTend",
-  "updatedUTC": "2026-09-04",
-  "version": "1.0.0",
-  "phase": "stable-published",
-  "branch": "main",
+  "updatedUTC": "2026-09-17",
+  "version": "1.0.1",
+  "phase": "patch-pending",
+  "branch": "hotfix/v1.0.1-launch-crash",
   "release": {
     "tag": "v1.0.0",
     "sourceCommit": "0ecddeaef0cc0f79d2185632f9c4ff49d1b9230a",
@@ -17,12 +17,14 @@
     "minisign": true,
     "stable": true,
     "dmgSHA256": "0969ea2565b98fc950a589855ebafa2b811474fd1383092c3567e192f404534d",
-    "zipSHA256": "c11c1cbac95a48c9fa9b3cb54596313f52af9ad89dd930e51bcde6cbd152244b"
+    "zipSHA256": "c11c1cbac95a48c9fa9b3cb54596313f52af9ad89dd930e51bcde6cbd152244b",
+    "knownBroken": true,
+    "knownBrokenReason": "v1.0.0 traps at launch (SIGTRAP) on every Mac except the one that built it; SwiftPM Bundle.module resource-bundle resolution. Fixed by 1.0.1. Signing, notarization and stapling are valid and were never the cause."
   },
   "tests": {
-    "swift": 342,
+    "swift": 418,
     "failing": 0,
-    "lastVerifiedUTC": "2026-09-03"
+    "lastVerifiedUTC": "2026-09-17"
   },
   "productBoundary": {
     "cleanup": "read-only scan, reviewed selection, explicit confirmation, execution-time path revalidation, recoverable macOS Trash action",
