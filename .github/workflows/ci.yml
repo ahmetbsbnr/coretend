@@ -146,6 +146,11 @@ jobs:
       - name: Package ZIP and DMG, verify checksums, run distribution tests
         run: Scripts/test-distribution.sh 0.0.0-ci
 
+      - name: App launch smoke test
+        # v1.0.0 passed every signature, notarization and checksum check and
+        # still trapped at launch on every Mac but the one that built it.
+        run: Scripts/test-app-launch.sh
+
       - name: Release-manifest / checksum / dangerous-command checks
         run: Scripts/test-release-manifest.sh
 
