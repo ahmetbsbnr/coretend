@@ -62,6 +62,11 @@ if ! xcrun notarytool history --keychain-profile "$NOTARY_PROFILE" >/dev/null 2>
 fi
 echo "OK: identity and notarytool profile both present"
 
+# Before spending a notarization round trip on it, confirm the app actually
+# opens. v1.0.0 was signed, notarized, stapled and unlaunchable.
+echo "== Launch smoke test =="
+bash Scripts/test-app-launch.sh "$APP"
+
 echo "== Signing embedded frameworks and binaries (deepest first) =="
 find "$APP" -type f \( -perm -u+x -o -name "*.dylib" \) | while read -r bin; do
   file "$bin" | grep -q "Mach-O" || continue

@@ -97,6 +97,9 @@ else
   bash Scripts/package-dmg.sh "$ARTIFACT_VERSION"
 fi
 
+# Both modes: never publish a manifest describing an app that does not open.
+bash Scripts/test-app-launch.sh
+
 mkdir -p "$DIST"
 
 ZIP_SHA=$(shasum -a 256 "Release/$ZIP_NAME" | awk '{print $1}')

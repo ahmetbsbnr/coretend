@@ -9,10 +9,18 @@
 #   /Users/<real-name>/Documents/.../app/.build/.../CoreTend_CoreTendApp.bundle
 #
 # — the developer's account name and folder layout, inside a binary meant for
-# other people. The fallback is never *reached* (the bundle ships inside
-# Contents/Resources), but a string does not have to be reached to be read.
-# Building from a scratch path outside $HOME makes that same fallback carry
-# nothing personal.
+# other people. Building from a scratch path outside $HOME makes that same
+# fallback carry nothing personal.
+#
+# NOTE: an earlier version of this comment claimed the fallback "is never
+# reached (the bundle ships inside Contents/Resources)". That was wrong and it
+# cost v1.0.0: the generated accessor looks in the .app *root* and in the build
+# directory, never in Contents/Resources, so the fallback was the only branch
+# that ever resolved — on the build machine, where the scratch path still
+# exists. Everywhere else the app trapped at launch. Contents/Resources remains
+# the right place (codesign rejects content at an .app root), and
+# Sources/CoreTendApp/L10n.swift now resolves the bundle from there without
+# evaluating Bundle.module. See Scripts/test-app-launch.sh.
 set -e
 cd "$(dirname "$0")/.."
 
