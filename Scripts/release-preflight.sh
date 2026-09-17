@@ -150,10 +150,28 @@ else
   note "Fix: land the work on main and re-run, or release from the right commit."
 fi
 
-if git rev-parse "v$VERSION" >/dev/null 2>&1; then
-  bad "tag v$VERSION already exists locally"
-  note "Expected: a new version tag. Re-tagging silently changes what a release means."
-  note "Fix: bump the version, or delete the tag deliberately if it was never pushed."
+# The right assertion about the tag depends on which side of it we are.
+# Before tagging, the tag must NOT exist: re-pointing one silently changes what
+# a version means. Inside the release, which checks out the tag, it must exist
+# and point at exactly this commit — that is the stronger invariant, and it
+# catches a tag moved between validation and build.
+if [ "${GITHUB_REF:-}" != "${GITHUB_REF#refs/tags/}" ]; then
+  TAG_REF="${GITHUB_REF#refs/tags/}"
+  if [ "$TAG_REF" != "v$VERSION" ]; then
+    bad "running from tag $TAG_REF but releasing version $VERSION"
+    note "Expected: the tag and the version to describe the same release."
+  elif [ "$(git rev-parse "$TAG_REF^{commit}" 2>/dev/null)" = "$HEAD_SHA" ]; then
+    ok "tag $TAG_REF points at this exact commit (${HEAD_SHA:0:7})"
+  else
+    bad "tag $TAG_REF does not point at the commit being built"
+    note "Expected: $HEAD_SHA"
+    note "Found:    $(git rev-parse "$TAG_REF^{commit}" 2>/dev/null || echo '<unresolvable>')"
+    note "A tag moved after validation means the release is not the code that was checked."
+  fi
+elif git rev-parse "v$VERSION" >/dev/null 2>&1; then
+  bad "tag v$VERSION already exists"
+  note "Expected: a new version tag. Re-pointing one silently changes what a release means."
+  note "Fix: bump the version, or delete the tag deliberately if it published nothing."
 else
   ok "tag v$VERSION does not exist yet"
 fi

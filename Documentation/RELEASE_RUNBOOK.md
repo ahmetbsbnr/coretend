@@ -233,7 +233,8 @@ keys stay tracked and why the registry maps *ranges*, not a single current key.
 | Apple timeout / outage | Notarization did not complete | Re-run the job. Nothing was published; the tag stays valid. |
 | `verify-published-artifacts` fails | The uploaded bytes are not what was built and verified | The release is still a **draft** — delete the draft, fix, re-tag. No user saw anything. |
 | Draft exists, job failed | Assets uploaded, publication never happened | `gh release delete v<version> --yes` then re-tag, or fix and re-run. A draft is not public. |
-| Tag pushed, pipeline red | The tag exists but nothing was published | Fix on `main`, then release a new patch version. Do not move an existing tag: it would silently change what a version means. |
+| Tag pushed, pipeline red, **nothing published** (no release, not even a draft) | The tag names a commit but that version has never meant anything publicly | Fix on `main`, delete the tag locally and remotely, re-tag the corrected commit. Safe precisely because no artifact, release or checksum refers to it yet. |
+| Tag pushed, pipeline red, **a release or draft exists** | The version already means something to someone | Do **not** move the tag. Fix on `main` and release a new patch version; delete the draft if there is one. |
 | Release published but wrong | Bytes are public | Do not delete. Publish a corrected patch version and mark the bad one clearly in its notes; deleting breaks anyone who already has the URL. |
 | Site shows the old version | `published-release.json` not synced | `Scripts/sync-published-release.sh`, commit, push, redeploy. |
 | Certificate expired | Developer ID validity ended | Issue a new Developer ID Application certificate, install on the runner, update `CORETEND_DEVELOPER_ID_APPLICATION` if the string changed. Already-notarized releases keep working: notarization outlives the certificate. |
