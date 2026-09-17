@@ -18,8 +18,30 @@ cd "$(dirname "$0")/.."
 REPO="${CORETEND_REPO:-ahmetbsbnr/coretend}"
 OUT="Configuration/published-release.json"
 
-latest=$(gh api "repos/$REPO/releases" --jq '[.[]|select(.draft|not)]|sort_by(.published_at)|reverse|.[0]')
-[ -n "$latest" ] || { echo "no published release found"; exit 1; }
+# The site's download button is the stable channel, so this must resolve to the
+# newest published STABLE release — not merely the newest release. Selecting
+# "newest of any kind" was a latent bug: publish a beta after a stable patch and
+# the public download button would silently start serving the prerelease.
+#
+# Drafts are excluded because a draft is not published: during a release the
+# assets exist as a draft while they are being verified, and the site must never
+# point at one.
+#
+# CORETEND_SYNC_CHANNEL=any restores the old behaviour for a prerelease-only
+# site, if that is ever wanted; it is not the default and never should be.
+CHANNEL="${CORETEND_SYNC_CHANNEL:-stable}"
+if [ "$CHANNEL" = "stable" ]; then
+  FILTER='[.[]|select(.draft|not)|select(.prerelease|not)]|sort_by(.published_at)|reverse|.[0]'
+else
+  FILTER='[.[]|select(.draft|not)]|sort_by(.published_at)|reverse|.[0]'
+fi
+latest=$(gh api "repos/$REPO/releases" --jq "$FILTER")
+if [ -z "$latest" ] || [ "$latest" = "null" ]; then
+  echo "sync-published-release.sh: FAIL — no published $CHANNEL release found in $REPO."
+  echo "  Expected: at least one non-draft, non-prerelease release to point the site at."
+  echo "  Fix: publish one, or set CORETEND_SYNC_CHANNEL=any deliberately."
+  exit 1
+fi
 
 tag=$(printf '%s' "$latest" | /usr/bin/python3 -c "import json,sys;print(json.load(sys.stdin)['tag_name'])")
 
@@ -35,6 +57,8 @@ manifest = json.load(open(sys.argv[2]))
 out, repo = sys.argv[3], sys.argv[4]
 
 tag = api["tag_name"]
+if api.get("draft"):
+    sys.exit(f"{tag} is a draft — the site must never point at an unpublished release")
 assets = {a["name"]: a["browser_download_url"] for a in api.get("assets", [])}
 dmg = manifest["dmgName"]
 if dmg not in assets:
