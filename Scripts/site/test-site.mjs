@@ -560,7 +560,14 @@ await gate('application preview auto-cycles after a completed scan', async () =>
   const context = await browser.newContext({ reducedMotion: 'no-preference' })
   const page = await context.newPage()
   await page.goto(`${origin}/en`, { waitUntil: 'domcontentloaded' })
-  await page.waitForFunction(() => document.querySelector('[data-view="lens"]')?.classList.contains('on'), null, { timeout: 7500 })
+  // 7500 was not a budget, it was a coin flip. This waits for the whole demo
+  // scan sequence to run to completion and then advance to the next view, and
+  // the last passing CI run measured 6976ms against that 7500ms ceiling — 93%
+  // of it — before the next run tipped over and failed. The assertion is "it
+  // auto-cycles", not "it auto-cycles within 7.5 seconds": a genuinely broken
+  // cycle never fires at all, so a wider ceiling costs wall-clock only on a
+  // real failure while removing a flake that blocks releases.
+  await page.waitForFunction(() => document.querySelector('[data-view="lens"]')?.classList.contains('on'), null, { timeout: 25000 })
   assert.equal(await page.locator('#vTitle').innerText(), 'Space Lens')
   await context.close()
 })
