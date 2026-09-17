@@ -36,8 +36,12 @@ SIGNING=0
 [ "${2:-}" = "--signing" ] && SIGNING=1
 
 fail=0
+skipped=0
 ok()   { printf '  OK   %s\n' "$1"; }
 bad()  { printf '  FAIL %s\n' "$1"; fail=$((fail + 1)); }
+# A check this host cannot perform is not a check that failed. Conflating the
+# two is how a gate earns a reputation for crying wolf and stops being read.
+skip() { printf '  SKIP %s\n' "$1"; skipped=$((skipped + 1)); }
 note() { printf '       %s\n' "$1"; }
 head_() { printf '\n== %s ==\n' "$1"; }
 
@@ -56,11 +60,51 @@ else
   note "Fix: bump marketingVersion there, then re-run Scripts/check-version-consistency.sh"
 fi
 
-if bash Scripts/check-version-consistency.sh >/dev/null 2>&1; then
-  ok "Info.plist, PROJECT_STATE.json and the changelog agree"
+if [ -x /usr/libexec/PlistBuddy ]; then
+  if bash Scripts/check-version-consistency.sh >/dev/null 2>&1; then
+    ok "Info.plist, PROJECT_STATE.json and the changelog agree"
+  else
+    bad "version copies disagree — Scripts/check-version-consistency.sh fails"
+    note "Fix: run it directly; it names the file that is out of step."
+  fi
 else
-  bad "version copies disagree — Scripts/check-version-consistency.sh fails"
-  note "Fix: run it directly; it names the file that is out of step."
+  # The canonical script uses PlistBuddy, which is macOS-only. Rather than skip
+  # the invariant on Linux, check the same thing portably: plistlib reads the
+  # very same file. Skipping here would have let a version mismatch through the
+  # one gate that runs before a tag.
+  if /usr/bin/env python3 - "$VERSION" <<'PYEOF' >/dev/null 2>&1
+import json, plistlib, sys
+version = sys.argv[1]
+with open("Resources/Info.plist", "rb") as fh:
+    plist = plistlib.load(fh)
+state = json.load(open("Documentation/PROJECT_STATE.json"))
+problems = []
+for key in ("CFBundleShortVersionString", "CoreTendMarketingVersion"):
+    if plist.get(key) != version:
+        problems.append(f"Info.plist {key}={plist.get(key)!r} != {version!r}")
+if str(state.get("version")) != version:
+    problems.append(f"PROJECT_STATE.json version={state.get('version')!r} != {version!r}")
+if problems:
+    print("; ".join(problems))
+    sys.exit(1)
+PYEOF
+  then
+    ok "Info.plist and PROJECT_STATE.json agree on $VERSION (portable check)"
+  else
+    bad "version copies disagree with $VERSION"
+    /usr/bin/env python3 - "$VERSION" <<'PYEOF' 2>&1 | sed 's/^/       /'
+import json, plistlib, sys
+version = sys.argv[1]
+with open("Resources/Info.plist", "rb") as fh:
+    plist = plistlib.load(fh)
+state = json.load(open("Documentation/PROJECT_STATE.json"))
+for key in ("CFBundleShortVersionString", "CoreTendMarketingVersion"):
+    if plist.get(key) != version:
+        print(f"Expected {key}={version}, found {plist.get(key)}")
+if str(state.get("version")) != version:
+    print(f"Expected PROJECT_STATE.json version={version}, found {state.get('version')}")
+PYEOF
+  fi
 fi
 
 for notes in "Release/Notes/${VERSION}.en.md" "Release/Notes/${VERSION}.fr.md"; do
@@ -135,22 +179,38 @@ if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
     *) ok "CI for ${HEAD_SHA:0:7} is green ($CI_STATE)" ;;
   esac
 
-  RUNNERS=$(gh api "repos/$REPO/actions/runners" --jq '[.runners[] | select(.status=="online")] | length' 2>/dev/null || echo 0)
-  if [ "${RUNNERS:-0}" -gt 0 ]; then
-    ok "$RUNNERS self-hosted runner(s) online"
+  # Listing runners and secrets needs an admin-scoped token. The workflow
+  # GITHUB_TOKEN has neither, so a 403 here means "not visible from this
+  # context", not "absent" — reporting it as a failure would be a lie, and the
+  # kind that trains people to ignore the gate.
+  if RUNNER_JSON=$(gh api "repos/$REPO/actions/runners" 2>/dev/null); then
+    RUNNERS=$(printf '%s' "$RUNNER_JSON" | /usr/bin/env python3 -c "import json,sys;print(sum(1 for r in json.load(sys.stdin).get('runners',[]) if r.get('status')=='online'))" 2>/dev/null || echo 0)
+    if [ "${RUNNERS:-0}" -gt 0 ]; then
+      ok "$RUNNERS self-hosted runner(s) online"
+    else
+      bad "no self-hosted runner is online — the release job would queue forever, not fail"
+      note "Fix: cd ~/actions-runner-coretend && caffeinate -dimsu ./run.sh"
+      note "See Documentation/RELEASE_RUNBOOK.md → 'The signing runner'."
+    fi
   else
-    bad "no self-hosted runner is online — the release job would queue forever"
-    note "Fix: start the signing runner (see Documentation/RELEASE_RUNBOOK.md)."
+    skip "runner status not visible from this token (needs admin scope)"
+    note "Check it before tagging: gh api repos/$REPO/actions/runners"
   fi
 
-  for secret in CORETEND_DEVELOPER_ID_APPLICATION CORETEND_NOTARY_PROFILE MINISIGN_SECRET_KEY MINISIGN_PASSWORD; do
-    if gh secret list -R "$REPO" --json name --jq '.[].name' 2>/dev/null | grep -qx "$secret"; then
-      ok "secret $secret is configured"
-    else
-      bad "secret $secret is missing"
-      note "Fix: gh secret set $secret -R $REPO   (see Documentation/RELEASE_RUNBOOK.md)"
-    fi
-  done
+  if gh secret list -R "$REPO" >/dev/null 2>&1; then
+    SECRET_NAMES=$(gh secret list -R "$REPO" --json name --jq '.[].name' 2>/dev/null)
+    for secret in CORETEND_DEVELOPER_ID_APPLICATION CORETEND_NOTARY_PROFILE MINISIGN_SECRET_KEY MINISIGN_PASSWORD; do
+      if printf '%s\n' "$SECRET_NAMES" | grep -qx "$secret"; then
+        ok "secret $secret is configured"
+      else
+        bad "secret $secret is missing"
+        note "Fix: gh secret set $secret -R $REPO   (see Documentation/RELEASE_RUNBOOK.md)"
+      fi
+    done
+  else
+    skip "secret names not visible from this token (needs admin scope)"
+    note "Check them before tagging: gh secret list -R $REPO"
+  fi
 else
   note "gh is unavailable or unauthenticated — skipped the GitHub-side checks"
   note "These are exactly the checks that catch a queued-forever release; prefer running with gh."
@@ -192,8 +252,16 @@ fi
 
 # ---------------------------------------------------------------- done ----
 printf '\n'
+if [ "$skipped" -ne 0 ]; then
+  echo "release-preflight: $skipped check(s) could not be performed from this host."
+fi
 if [ "$fail" -ne 0 ]; then
   echo "release-preflight: $fail check(s) FAILED — do not tag v$VERSION."
   exit 1
 fi
-echo "release-preflight: all checks passed for v$VERSION."
+if [ "$skipped" -ne 0 ]; then
+  echo "release-preflight: every check this host could perform passed for v$VERSION."
+  echo "                   Run it again where the skipped ones are visible before tagging."
+else
+  echo "release-preflight: all checks passed for v$VERSION."
+fi
