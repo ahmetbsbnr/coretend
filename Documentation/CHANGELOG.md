@@ -1,5 +1,35 @@
 # CHANGELOG
 
+## 1.0.1 — 2026-09-17 « The app opens »
+
+- fix(app): CoreTend 1.0.0 trapped at launch (SIGTRAP) on every Mac but the one
+  that built it — no window, no dialog, no Gatekeeper prompt. SwiftPM's
+  generated `Bundle.module` accessor resolves only from the `.app` root and
+  from the build machine's absolute scratch directory; the resource bundle
+  ships in `Contents/Resources`, the sole layout `codesign` accepts. The only
+  branch that ever resolved was the build machine's own path.
+  `Sources/CoreTendApp/L10n.swift` now resolves the bundle from
+  `Contents/Resources` without evaluating `Bundle.module`, whose initializer
+  traps and so could not be used as a fallback.
+- fix(release): the published `.zip` shipped an app with no stapled
+  notarization ticket — it was the notarization *submission* copy, packaged
+  before stapling and never rebuilt. It opened only on a Mac able to reach
+  Apple's notarization service. `Scripts/sign-and-notarize.sh` now builds the
+  published ZIP after stapling, from a throwaway submission copy. The `.dmg`
+  was unaffected.
+- test(release): `Scripts/test-app-launch.sh` — the gate that was missing.
+  Every prior release check examined metadata (signature, notarization,
+  staple, checksums, manifest); none ever started the binary. It launches the
+  packaged app from a copy outside the build tree with the scratch path
+  hidden, so a stale build directory cannot mask the failure. Wired into
+  `ci.yml`, `Scripts/build-release.sh` (both modes) and the
+  `sign-and-notarize.sh` preflight. It fails against the published 1.0.0 app.
+- test(release): `Scripts/verify-release-staple.sh` asserts signature *and*
+  staple on both published artifacts; `build-release.sh` signed mode checked
+  only the DMG, which is how the ZIP defect reached two releases.
+- Signing, notarization and stapling are unchanged from 1.0.0. Neither defect
+  was a signing problem.
+
 ## 1.0.0-prep — 2026-09-02 « Clean before release »
 
 - chore(design-system): remove the superseded per-module scan motifs. `MCScanStage`
