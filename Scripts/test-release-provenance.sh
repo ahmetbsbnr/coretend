@@ -42,7 +42,16 @@ EOF
 mkdir -p Release
 printf 'fake-dmg-%s' "$1" > "Release/CoreTend-$1-arm64-unsigned.dmg"
 EOF
-  chmod +x "$root/Scripts/package-zip.sh" "$root/Scripts/package-dmg.sh"
+  # build-release.sh gates on the app actually launching. That gate needs a
+  # real compiled bundle, which is exactly what this harness stubs out — same
+  # reason package-zip/package-dmg are stubs here. Provenance logic is what is
+  # under test; Scripts/test-app-launch.sh is exercised for real by ci.yml and
+  # by the release pipeline.
+  cat > "$root/Scripts/test-app-launch.sh" <<'EOF'
+#!/bin/sh
+echo "test-app-launch.sh: stubbed in the provenance harness"
+EOF
+  chmod +x "$root/Scripts/package-zip.sh" "$root/Scripts/package-dmg.sh" "$root/Scripts/test-app-launch.sh"
 
   printf 'notes\n' > "$root/Release/Notes/9.9.9.en.md"
   printf 'dist/\nRelease/latest.json\nRelease/SHA256SUMS\n*.zip\n*.dmg\n' > "$root/.gitignore"
