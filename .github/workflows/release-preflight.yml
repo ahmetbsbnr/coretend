@@ -1,0 +1,211 @@
+name: Release preflight (publishes nothing)
+
+# Everything that can be known to be wrong before a release tag is pushed.
+#
+# The v1.0.1 near-miss is the reason this exists: the Minisign key had been
+# rotated in the repository secret while the branch still published the retired
+# public key. release.yml would have caught it — after building, Developer ID
+# signing and an Apple notarization round trip, leaving a half-made release.
+# Every check here is cheap and answers a question that used to be answered
+# too late.
+#
+# Run it from the Actions tab before tagging. It publishes nothing, uploads
+# nothing and never touches the signing runner.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to preflight (e.g. 1.0.1)'
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-preflight-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repository-invariants:
+    name: Repository invariants for ${{ inputs.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Install gh-visible tooling
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq minisign
+
+      - name: Preflight
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Without --signing: this runner has no Developer ID and is not meant to.
+        run: bash Scripts/release-preflight.sh "${{ inputs.version }}"
+
+      - name: The Minisign secret really signs for the key this version requires
+        env:
+          MINISIGN_SECRET_KEY: ${{ secrets.MINISIGN_SECRET_KEY }}
+          MINISIGN_PASSWORD: ${{ secrets.MINISIGN_PASSWORD }}
+        run: |
+          set -euo pipefail
+          : "${MINISIGN_SECRET_KEY:?MINISIGN_SECRET_KEY secret is required}"
+          : "${MINISIGN_PASSWORD:?MINISIGN_PASSWORD secret is required}"
+
+          VERSION="${{ inputs.version }}"
+          KEY_ID="$(python3 Scripts/resolve-minisign-key.py "$VERSION")"
+          PUB_FILE="$(python3 Scripts/resolve-minisign-key.py "$VERSION" --pub)"
+          echo "Version $VERSION must be signed by $KEY_ID ($PUB_FILE)."
+
+          umask 077
+          work="$(mktemp -d)"
+          trap 'rm -rf "$work"' EXIT
+          # The secret reaches a file through the environment, never a command
+          # line, which would be visible in the process table.
+          printf '%s' "$MINISIGN_SECRET_KEY" > "$work/key"
+          printf 'release preflight — not a release artifact\n' > "$work/probe.txt"
+
+          if ! printf '%s' "$MINISIGN_PASSWORD" \
+              | minisign -S -s "$work/key" -m "$work/probe.txt" >/dev/null 2>&1; then
+            echo "::error::The configured Minisign key and password cannot produce a signature."
+            echo "Expected: MINISIGN_SECRET_KEY is a valid minisign key that MINISIGN_PASSWORD unlocks."
+            echo "Fix: re-store both secrets from the key recorded in Configuration/minisign-keys.json."
+            exit 1
+          fi
+
+          if minisign -Vm "$work/probe.txt" -P "$(sed -n 2p "$PUB_FILE")" >/dev/null 2>&1; then
+            echo "OK: the configured secret signs with $KEY_ID, which is what version $VERSION requires."
+            exit 0
+          fi
+
+          # Name the key rather than only saying "not that one". A minisign
+          # signature is base64 of algorithm||key_id||sig, key id little-endian.
+          # Key ids are public; the key itself is never printed.
+          SIGKEY="$(sed -n 2p "$work/probe.txt.minisig" | base64 -d 2>/dev/null \
+            | dd bs=1 skip=2 count=8 2>/dev/null | xxd -p | tr -d '\n' \
+            | fold -w2 | tac | tr -d '\n' | tr 'a-f' 'A-F')"
+          echo "::error::Release v$VERSION expects Minisign key $KEY_ID, but the configured secret produced key ${SIGKEY:-<undetermined>}. Refusing before signing or notarization."
+          echo
+          echo "Checking every public key tracked in Configuration/:"
+          for pub in Configuration/minisign*.pub; do
+            [ -e "$pub" ] || continue
+            if minisign -Vm "$work/probe.txt" -P "$(sed -n 2p "$pub")" >/dev/null 2>&1; then
+              echo "  $pub — MATCHES"
+            else
+              echo "  $pub — no"
+            fi
+          done
+          echo
+          echo "If a tracked key matches, this is a rotation that never reached this branch."
+          echo "Land it properly: update Configuration/minisign-keys.json AND minisign.pub,"
+          echo "per Documentation/MINISIGN_KEY_ROTATION.md."
+          echo "Do NOT edit the registry merely to make a release pass: that silently breaks"
+          echo "verification for everyone holding the published key."
+          exit 1
+
+  pipeline-lint:
+    name: The release machinery itself
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Shell scripts parse and pass shellcheck
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck zsh
+          status=0
+
+          # Parse check first, with the interpreter each script declares.
+          # Most of CoreTend's scripts are zsh; a few are bash or sh.
+          for f in Scripts/*.sh; do
+            case "$(head -1 "$f")" in
+              *zsh*) zsh -n "$f"  || { echo "::error::$f does not parse (zsh)";  status=1; } ;;
+              *)     bash -n "$f" || { echo "::error::$f does not parse (bash)"; status=1; } ;;
+            esac
+          done
+
+          # shellcheck only understands sh/bash/dash/ksh, so pointing it at the
+          # zsh scripts would fail every one of them on SC1071 and say nothing
+          # about their quality. Lint exactly the ones it can actually read.
+          mapfile -t SHELLCHECKABLE < <(grep -lE '^#!.*/(bash|sh)$' Scripts/*.sh || true)
+          if [ "${#SHELLCHECKABLE[@]}" -gt 0 ]; then
+            echo "shellcheck on ${#SHELLCHECKABLE[@]} bash/sh script(s):"
+            printf '  %s\n' "${SHELLCHECKABLE[@]}"
+            shellcheck -S error "${SHELLCHECKABLE[@]}" || status=1
+          else
+            echo "No bash/sh scripts to shellcheck."
+          fi
+          exit $status
+
+      - name: Workflows are valid YAML
+        run: |
+          python3 - <<'PY'
+          import pathlib, sys, yaml
+          bad = 0
+          for f in sorted(pathlib.Path(".github/workflows").glob("*.yml")):
+              try:
+                  yaml.safe_load(f.read_text())
+              except Exception as exc:
+                  print(f"::error::{f} is not valid YAML: {exc}")
+                  bad = 1
+          sys.exit(bad)
+          PY
+
+      - name: No third-party action is used unpinned
+        # A mutable tag on a third-party action is arbitrary code that can
+        # change under a release. First-party actions/* are allowed by tag;
+        # everything else must be a 40-character commit SHA.
+        run: |
+          python3 - <<'PY'
+          import pathlib, re, sys
+          bad = 0
+          # Anchored: only a real YAML "uses:" key, never a regex or a
+          # comment that happens to contain the word (this file included).
+          pattern = re.compile(r"^\s*-?\s*uses:\s*([^\s@'\"]+)@([^\s#'\"]+)")
+          for f in sorted(pathlib.Path(".github/workflows").glob("*.yml")):
+              for n, line in enumerate(f.read_text().splitlines(), 1):
+                  m = pattern.match(line)
+                  if not m:
+                      continue
+                  action, ref = m.group(1), m.group(2).strip()
+                  if action.startswith("actions/"):
+                      continue
+                  if not re.fullmatch(r"[0-9a-f]{40}", ref):
+                      print(f"::error file={f},line={n}::{action} is pinned to '{ref}', not a commit SHA.")
+                      print(f"  Fix: pin it to the full 40-character SHA and keep the version in a trailing comment.")
+                      bad = 1
+          sys.exit(bad)
+          PY
+
+      - name: No workflow exposes the signing runner to untrusted code
+        # The signing runner holds a non-exportable Developer ID key. Only a
+        # tag push may reach it: pull_request or issue_comment would let an
+        # outside contributor run arbitrary code next to that key.
+        run: |
+          python3 - <<'PY'
+          import pathlib, sys, yaml
+          FORBIDDEN = {"pull_request", "pull_request_target", "issue_comment", "workflow_call"}
+          bad = 0
+          for f in sorted(pathlib.Path(".github/workflows").glob("*.yml")):
+              doc = yaml.safe_load(f.read_text()) or {}
+              # Look at what jobs actually run on, not at any mention of the
+              # word — this file names it inside the check itself.
+              jobs = (doc.get("jobs") or {}).values()
+              def on_self_hosted(job):
+                  runs = job.get("runs-on")
+                  labels = runs if isinstance(runs, list) else [runs]
+                  return any("self-hosted" == str(l) for l in labels)
+              if not any(on_self_hosted(j) for j in jobs):
+                  continue
+              on = doc.get(True) or doc.get("on") or {}
+              triggers = set(on) if isinstance(on, dict) else {on} if isinstance(on, str) else set(on)
+              leak = triggers & FORBIDDEN
+              if leak:
+                  print(f"::error file={f}::uses the self-hosted signing runner and triggers on {sorted(leak)}.")
+                  print("  Expected: only a version-tag push reaches the signing runner.")
+                  print("  Found: a trigger an outside contributor can cause.")
+                  bad = 1
+              else:
+                  print(f"OK: {f.name} reaches the signing runner only via {sorted(triggers)}")
+          sys.exit(bad)
+          PY

@@ -119,6 +119,17 @@ jobs:
       - name: Release/sync consistency gate (fails on version divergence)
         run: bash Scripts/test-release-sync.sh
 
+      - name: Release preflight (everything knowable before Apple is involved)
+        # Runs before the test suite and long before notarization: a wrong
+        # Minisign key, a missing secret, an absent runner or a version that
+        # disagrees with itself all fail here, in seconds, having published
+        # nothing and having spent no Apple round trip.
+        env:
+          CORETEND_DEVELOPER_ID_APPLICATION: ${{ secrets.CORETEND_DEVELOPER_ID_APPLICATION }}
+          CORETEND_NOTARY_PROFILE: ${{ secrets.CORETEND_NOTARY_PROFILE }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash Scripts/release-preflight.sh "${{ steps.resolve.outputs.version }}" --signing
+
       - name: Test suite
         run: Scripts/test.sh
 
@@ -261,10 +272,21 @@ jobs:
             echo "A signature nobody can verify is worse than no signature."
             exit 1
           fi
+          # Verify against the key Configuration/minisign-keys.json names for
+          # THIS version, not merely against whatever minisign.pub happens to
+          # hold. Those two disagreed before v1.0.1 and nothing noticed.
+          PUB_FILE="$(/usr/bin/python3 ../Scripts/resolve-minisign-key.py "${{ steps.resolve.outputs.version }}" --pub)"
+          KEY_ID="$(/usr/bin/python3 ../Scripts/resolve-minisign-key.py "${{ steps.resolve.outputs.version }}")"
+          echo "Version ${{ steps.resolve.outputs.version }} must verify with $KEY_ID ($PUB_FILE)."
           for sig in *.minisig; do
-            minisign -Vm "${sig%.minisig}" -P "$(sed -n 2p ../Configuration/minisign.pub)"
+            if ! minisign -Vm "${sig%.minisig}" -P "$(sed -n 2p "../$PUB_FILE")"; then
+              echo "::error::${sig%.minisig} does not verify with $KEY_ID."
+              echo "Expected: every signature made by the key the registry names for this version."
+              echo "Refusing to publish. Do not rotate the published key to make this pass."
+              exit 1
+            fi
           done
-          echo "All Minisign signatures verify against the published public key."
+          echo "All Minisign signatures verify with $KEY_ID."
 
       - name: Record the resolved release facts
         run: |
@@ -275,9 +297,32 @@ jobs:
               print(f'{k}: {m.get(k)}')
           "
 
-      - name: Publish the GitHub Release
+      - name: Write the machine-readable release manifest
+        # One auditable record per release, derived from what was actually
+        # produced rather than retyped. Published as an asset so a release can
+        # be audited later without trusting this log.
+        run: |
+          bash Scripts/write-release-manifest.sh \
+            "${{ steps.resolve.outputs.version }}" \
+            "${{ steps.resolve.outputs.channel }}" \
+            "${{ github.sha }}" \
+            "${{ github.run_id }}"
+
+      # ---------------------------------------------------------------- #
+      # Publishing is the LAST operation, not the one that reveals a fault.
+      #
+      # Until v1.0.1 the release was published directly from dist/. Every gate
+      # before it inspected the builder's own files, which proves what was
+      # built and says nothing about what was uploaded — and a fault found
+      # afterwards is already public. So: upload as a DRAFT, download the
+      # assets back, verify those bytes, and only then flip it visible.
+      # A draft is invisible to users and to the "latest release" API, so a
+      # failure here leaves nothing for anyone to download.
+      # ---------------------------------------------------------------- #
+      - name: Upload the assets as a DRAFT release (not visible to anyone)
         uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         with:
+          draft: true
           prerelease: ${{ steps.resolve.outputs.prerelease }}
           name: CoreTend ${{ steps.resolve.outputs.version }}
           body_path: Release/Notes/${{ steps.resolve.outputs.version }}.en.md
@@ -287,11 +332,37 @@ jobs:
             dist/CoreTend-${{ steps.resolve.outputs.version }}-arm64.dmg
             dist/latest.json
             dist/SHA256SUMS
+            dist/release-manifest.json
             dist/coretend-${{ steps.resolve.outputs.version }}-sbom.spdx.json
             dist/*.minisig
             Configuration/minisign.pub
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify the DISTRIBUTED bytes, downloaded back from the draft
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash Scripts/verify-published-artifacts.sh "${{ steps.resolve.outputs.version }}"
+
+      - name: Publish the release (every gate has passed)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release edit "v${{ steps.resolve.outputs.version }}" \
+            --repo "${{ github.repository }}" \
+            --draft=false
+          echo "Published: ${{ github.server_url }}/${{ github.repository }}/releases/tag/v${{ steps.resolve.outputs.version }}"
+
+      - name: Leave no credential behind on the signing runner
+        # The runner is persistent: its workspace survives the job. Anything
+        # secret-shaped that a step wrote must not outlive it, including on the
+        # failure paths where it matters most.
+        if: always()
+        run: |
+          rm -f "$RUNNER_TEMP"/*.key "$RUNNER_TEMP"/minisign* 2>/dev/null || true
+          find . -name '*.minisig.tmp' -delete 2>/dev/null || true
+          echo "Temporary signing material removed."
 
   sync:
     # Tells the site and the portfolio that a new release exists. Both consume

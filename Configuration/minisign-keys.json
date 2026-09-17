@@ -1,0 +1,28 @@
+{
+  "_comment": "Versioned source of truth mapping a release version to the Minisign public key it must be verifiable with. Scripts/resolve-minisign-key.py reads this; the release preflight and release.yml both gate on it. Adding a rotation here is what makes it real — nothing else infers the key.",
+  "_why": "v1.0.1 was nearly published unverifiable: the key was rotated in the GitHub Actions secret, but its public half landed only on the v1.2 branch, so main published A399E8FD75C1719E while CI signed with F8473FB09E1DB730. Nothing in the repository related a version to a key, so nothing could notice. This file is that relation.",
+  "schemaVersion": 1,
+  "keys": [
+    {
+      "keyId": "A399E8FD75C1719E",
+      "status": "retired",
+      "publicKeyFile": "Configuration/minisign-A399E8FD75C1719E.pub",
+      "firstVersion": "0.9.1-rc.1",
+      "lastVersion": "1.0.0",
+      "retiredOn": "2026-09-09",
+      "reason": "The private key still exists but its password could no longer be unlocked, so it can no longer sign. A custody failure, not a compromise: there is no evidence the key was ever exposed, and every release it signed stays verifiable with it.",
+      "channels": ["stable", "beta", "release-candidate"]
+    },
+    {
+      "keyId": "F8473FB09E1DB730",
+      "status": "active",
+      "publicKeyFile": "Configuration/minisign-F8473FB09E1DB730.pub",
+      "firstVersion": "1.0.1",
+      "lastVersion": null,
+      "retiredOn": null,
+      "reason": "Current release-signing key. Replaces A399E8FD75C1719E from v1.0.1 onward on the stable line and from v1.2.0-beta.1 on the beta line — the boundary is by release date, not by branch.",
+      "channels": ["stable", "beta", "release-candidate"]
+    }
+  ],
+  "_rotationProcedure": "Documentation/MINISIGN_KEY_ROTATION.md — do not rotate by editing Configuration/minisign.pub alone; that is exactly how the v1.0.1 near-miss happened."
+}
