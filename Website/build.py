@@ -612,7 +612,13 @@ def support_content(release: dict, language: str) -> str:
     architecture = html.escape(str(release["architecture"]))
     signed = bool(release.get("signed")) and bool(release.get("notarized"))
     if language == "fr":
+        # While ADVISORY is raised the published build does not launch, so the
+        # signed branch must not claim it "opens normally" — that sentence sat
+        # directly under the banner saying the opposite, on the very page
+        # someone reaches when the app will not open.
         lead = (
+            f"CoreTend {version} est signé avec un identifiant Developer ID et notarisé par Apple, et pourtant cette version ne s’ouvre pas : voyez l’avis ci-dessus. La signature et la notarisation sont valides — elles ne sont pas en cause."
+            if signed and ADVISORY else
             f"CoreTend {version} est signé avec un identifiant Developer ID et notarisé par Apple. Il s’ouvre normalement ; les vérifications ci-dessous confirment la provenance."
             if signed else
             f"CoreTend {version} est sans signature Developer ID et non notarisé. Le premier blocage Gatekeeper est donc attendu, pas un crash."
@@ -639,6 +645,8 @@ notarisation: {notarised}
 SHA-256: {checksum}</pre><button class="copy-button" type="button" data-copy-target="support-details">Copier les informations techniques</button></div><ul class="link-stack"><li><a href="{REPOSITORY}/issues">Suivi public des problèmes</a></li><li><a href="{REPOSITORY}/security/advisories/new">Signalement privé de vulnérabilité</a></li><li><a href="{REPOSITORY}/blob/main/Documentation/README.md">Documentation</a></li></ul></div>
 <div class="faq"><details><summary>L’application ne s’ouvre pas après le téléchargement</summary>{faq_open}</details><details><summary>Une analyse ne voit pas certains dossiers</summary><p>Vérifiez les exclusions et l’Accès complet au disque. N’accordez que l’autorisation requise pour le workflow utilisé.</p></details><details><summary>Que joindre à un rapport ?</summary><p>La version, macOS, l’architecture, le module concerné et des étapes reproductibles. Supprimez les noms de fichiers personnels de toute capture.</p></details></div></div></section>"""
     lead = (
+        f"CoreTend {version} is Developer ID signed and notarized by Apple, and this build still does not open — see the notice above. The signature and the notarization are valid; they are not the cause."
+        if signed and ADVISORY else
         f"CoreTend {version} is Developer ID signed and notarized by Apple. It opens normally; the checks below confirm provenance."
         if signed else
         f"CoreTend {version} has no Developer ID signature and is not notarized. The first Gatekeeper block is expected, not an application crash."
