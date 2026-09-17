@@ -84,8 +84,11 @@ if [ "$SIGNED" = "1" ]; then
   for f in "Release/$ZIP_NAME" "Release/$DMG_NAME"; do
     [ -f "$f" ] || { echo "build-release.sh: FAIL — $f not found. Run Scripts/sign-and-notarize.sh $ARTIFACT_VERSION <profile> first."; exit 1; }
   done
-  if ! xcrun stapler validate "Release/$DMG_NAME" >/dev/null 2>&1; then
-    echo "build-release.sh: FAIL — Release/$DMG_NAME is not stapled. Re-run sign-and-notarize.sh."
+  # Both artifacts, not just the DMG: checking only the DMG is what let a ZIP
+  # containing an un-stapled app reach v1.0.0 and v1.2.0-beta.1. The shared
+  # gate also verifies the signatures of the exact bytes being checksummed.
+  if ! bash Scripts/verify-release-staple.sh "$ARTIFACT_VERSION"; then
+    echo "build-release.sh: FAIL — Release/$ZIP_NAME or Release/$DMG_NAME is not correctly signed and stapled. Re-run sign-and-notarize.sh."
     exit 1
   fi
   echo "build-release.sh: signed mode — using notarized artifacts from Release/ (no rebuild)."

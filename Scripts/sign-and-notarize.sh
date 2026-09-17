@@ -86,16 +86,29 @@ spctl --assess --type execute --verbose "$APP" || {
 # "submit" and "staple" (e.g. a DMG build that rebuilds the app) invalidates
 # the pairing. So: ZIP -> submit -> staple the *same* bundle -> only then build
 # the DMG from it, and never rebuild the app inside package-dmg.sh.
-echo "== Packaging the signed app for notarization =="
+# The submission ZIP is a throwaway: it carries the *pre-staple* bundle, which
+# is what notarytool wants. It must never become the published asset — an app
+# with no stapled ticket opens only on a Mac that can reach Apple's
+# notarization service, and reports "CoreTend.app is damaged and can't be
+# opened" offline or behind a proxy that blocks the ticket lookup. That is the
+# v1.0.0 / v1.2.0-beta.1 regression this ordering fixes.
+echo "== Packaging the signed app for notarization (submission copy) =="
 mkdir -p Release
-ditto -c -k --keepParent "$APP" "$ZIP_NAME"
+SUBMISSION_ZIP="$(mktemp -d)/CoreTend-${VERSION}-arm64-submission.zip"
+ditto -c -k --keepParent "$APP" "$SUBMISSION_ZIP"
 
 echo "== Submitting the app for notarization =="
-xcrun notarytool submit "$ZIP_NAME" --keychain-profile "$NOTARY_PROFILE" --wait
+xcrun notarytool submit "$SUBMISSION_ZIP" --keychain-profile "$NOTARY_PROFILE" --wait
 
 echo "== Stapling the notarized app =="
 xcrun stapler staple "$APP"
 xcrun stapler validate "$APP"
+
+# Only now is the bundle openable with no network, so only now can the
+# published ZIP be built from it.
+echo "== Packaging the stapled app as the published ZIP =="
+rm -f "$ZIP_NAME"
+ditto -c -k --keepParent "$APP" "$ZIP_NAME"
 
 echo "== Building the DMG from the signed, stapled app (no rebuild) =="
 CORETEND_SKIP_APP_BUILD=1 bash Scripts/package-dmg.sh "$VERSION"
@@ -116,6 +129,11 @@ xcrun stapler validate "$DMG_NAME"
 echo "== Final Gatekeeper verification =="
 spctl --assess --type execute --verbose "$APP"
 spctl --assess --type open --context context:primary-signature --verbose "$DMG_NAME"
+
+# Assert on the published bytes, not on build/CoreTend.app: this is what
+# catches a ZIP that was packaged at the wrong point in the flow.
+echo "== Verifying the published artifacts are signed AND stapled =="
+bash Scripts/verify-release-staple.sh "$VERSION"
 
 echo "== Done =="
 echo "Signed, notarized, stapled: $APP, $DMG_NAME"
