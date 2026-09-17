@@ -633,6 +633,39 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
   .fr .nm{align-items:flex-start;flex-direction:column;gap:4px}
   .slab-top,.slab-foot{align-items:flex-start;flex-direction:column}
 }
+/* ─── site advisory ───────────────────────────────────────────
+   Deliberately duplicated from Website/assets/shell/public.css.
+
+   The landing page does not load public.css: it carries its own <style>,
+   which build.py externalises into /assets/generated/. And the CSP is
+   `style-src 'self'` with only `style-src-attr 'unsafe-inline'`, so a
+   <style> element emitted next to the banner markup would be blocked
+   outright — the banner would render unstyled, which is exactly how it
+   first shipped here: a warning that looked like page chrome.
+
+   Both copies exist only while build.py's ADVISORY is set, and both are
+   removed together when it goes back to None. Keep them identical. */
+.site-advisory{
+  --advisory-icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 1 21h22L12 2Zm0 6a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0V9a1 1 0 0 1 1-1Zm0 9.25a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Z'/%3E%3C/svg%3E");
+  background:#F7E4B8;
+  border-block-start:4px solid #B8860B;
+  border-block-end:1px solid #C9A24E;
+  color:#4A2F06;
+}
+.site-advisory .wrap{padding-block:14px;display:flex;gap:12px;align-items:flex-start}
+.site-advisory .wrap::before{
+  content:"";flex:0 0 auto;width:20px;height:20px;margin-top:2px;
+  background:currentColor;
+  -webkit-mask:var(--advisory-icon) center/contain no-repeat;
+  mask:var(--advisory-icon) center/contain no-repeat;
+}
+.site-advisory p{margin:0;font-size:.9375rem;line-height:1.5;max-width:74ch}
+.site-advisory b{color:#2E1D03;font-weight:700}
+@media (prefers-color-scheme:dark){
+  .site-advisory{background:#4A3410;border-block-start-color:#D9A62B;border-block-end-color:#8A6A22;color:#FBEBC8}
+  .site-advisory b{color:#FFF6E2}
+}
+@media print{.site-advisory{background:none;border-block:1pt solid #000;color:#000}}
 </style>
 </head>
 <body>

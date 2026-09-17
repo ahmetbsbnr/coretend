@@ -18,6 +18,33 @@ Earlier status (kept for history): through `0.9.1-rc.5` every published
 artifact was **unsigned, not notarized**, by documented decision, because no
 Developer ID was available.
 
+## Minisign key history
+
+Minisign signs the `SHA256SUMS` published beside each release. It is
+supplemental to Apple's Developer ID signature and notarization, which have
+never changed (Team `NSCUV5G738`).
+
+| Key ID | Signs | Role now |
+|---|---|---|
+| `A399E8FD75C1719E` | releases through `v1.0.0` | Historical verification key. Still the correct key for `v1.0.0` and earlier. No evidence of compromise. |
+| `F8473FB09E1DB730` | `v1.0.1` and every later release | Current release-signing key — `Configuration/minisign.pub`. |
+
+The key changed because the previous private key's password could no longer be
+unlocked: a custody problem, not a compromise. Full record:
+`Documentation/MINISIGN_KEY_ROTATION.md`.
+
+The rotation reached the GitHub Actions secret when it happened, but its public
+half was landed only on the `v1.2` branch — `main` went on publishing
+`A399E8FD75C1719E` as `Configuration/minisign.pub` while CI signed with
+`F8473FB09E1DB730`. release.yml would have caught the mismatch at its "verify
+before publishing" step, but only after a full build, Developer ID signing and
+an Apple notarization round trip. That is what the `Minisign preflight`
+workflow (`.github/workflows/minisign-preflight.yml`) exists to answer first:
+it dispatches on demand, signs a throwaway file, verifies it against this
+branch's `minisign.pub`, names the key id on a mismatch, and publishes nothing.
+Run it before pushing a release tag whenever the key or the secret may have
+moved.
+
 ## Why CoreTend is not App Sandboxed
 
 `Configuration/CoreTend.entitlements` is intentionally close to empty.
