@@ -170,6 +170,9 @@ notes, fine to include but not user-facing).
 | `MASTER_REQUIREMENTS_BASELINE.md` | Reconstructed requirements register with stable IDs | current, new this session | public |
 | `REQUIREMENTS_DECISION_HISTORY.md` | Verified settled-decision history (Apple/product/architecture/data/site/licensing stances) | current, new this session | public |
 | `DOCUMENT_INDEX.md` | This file | current, new this session | internal |
+| `RELEASE_RUNBOOK.md` | Operational release procedure: runner, secrets, preflight, tag, channels, key rotation, failure/recovery table | current, authoritative for *how* to release | internal |
+| `DISTRIBUTION_STRATEGY.md` | What CoreTend ships and what it deliberately does not (Sparkle, Homebrew), with the TalkInk comparison behind those calls | current | public |
+| `MINISIGN_KEY_ROTATION.md` | Completed rotation record and the version→key boundary | current | public |
 
 ## This reconciliation phase's session 2-4 documents (requirements-compliance vocabulary)
 

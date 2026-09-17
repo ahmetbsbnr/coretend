@@ -147,33 +147,23 @@ The script, in order:
 7. Runs a final Gatekeeper check (`spctl --assess`) on both and prints the
    SHA-256 of the ZIP and DMG.
 
-## Publishing the next signed release
+## Publishing a release
 
-The protected tag workflow runs on labels `self-hosted`, `macOS`, `ARM64`, and
-`coretend-signing`. This keeps non-exported signing material on the maintainer's
-Mac while placing build, signing, notarization and SLSA attestation in one
-GitHub Actions job. It never downloads previously built release bytes and then
-claims to have built them.
+The procedure lives in **`Documentation/RELEASE_RUNBOOK.md`** — prerequisites,
+the signing runner, secrets, preflight, tagging, channels, key rotation, and a
+failure/recovery table. It is the operational document; this file explains why
+the signing model is shaped the way it is.
 
-1. Bump `marketingVersion` + `buildNumber` in
-   `Configuration/PublicIdentity.example.json`; mirror into
-   `Resources/Info.plist` (`CoreTendMarketingVersion`, `CFBundleVersion`)
-   and `Documentation/PROJECT_STATE.json`
-   (`Scripts/check-version-consistency.sh` gates this).
-2. Write `Release/Notes/<version>.en.md` and `.fr.md`.
-3. Confirm signing runner is online and its protected environment requires
-   maintainer approval. Required secrets: `CORETEND_DEVELOPER_ID_APPLICATION`,
-   `CORETEND_NOTARY_PROFILE`, `MINISIGN_SECRET_KEY`, `MINISIGN_PASSWORD`.
-4. Tag `v<version>` and push. Workflow builds, signs, notarizes and staples;
-   generates manifest, SHA-256 and SBOM; attests final ZIP/DMG; signs
-   verification files with Minisign; then publishes. Any missing credential or
-   failed Apple verification stops publication.
-5. Download and verify release on second Mac using next section.
-6. Release-sync gate then updates
-   `Configuration/published-release.json`; the portfolio's
-   `sync-coretend.yml` picks up the published version.
-7. Confirm download page and in-app `UpdateChecker` resolve new stable release
-   tag/asset URLs (they follow the published release, never a local build).
+The step list that used to sit here described a flow that no longer exists: it
+predated the draft-then-verify publication path, and it claimed the release-sync
+gate updated `Configuration/published-release.json` automatically, which it
+never did. Keeping a second, stale copy of a procedure is how a release gets cut
+from the wrong instructions, so it is gone rather than patched.
+
+In outline, and only in outline: preflight, tag, the workflow builds, signs,
+notarizes and staples on the signing runner, uploads a **draft**, re-downloads
+those assets and verifies them, and only then publishes. Site metadata is synced
+after that, never before.
 
 ## Verifying on a clean machine
 
