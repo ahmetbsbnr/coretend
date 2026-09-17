@@ -87,7 +87,17 @@ jobs:
 
       - name: Visual regression and Axe (79 captures, 7 viewports, FR+EN)
         run: |
-          npm install --no-save playwright pngjs @axe-core/playwright
+          # Playwright is PINNED on purpose. Installing it unpinned made the
+          # browser change underneath a byte-comparison gate: every capture
+          # drifts when Chromium ships new rendering, so the baseline rots and
+          # the gate fails on commits that changed nothing visual. That is what
+          # forced the wholesale "Accept reviewed public-site visual baseline"
+          # refresh (8b32ef5) — all 79 entries at once, which tells you nothing
+          # about what actually changed.
+          #
+          # Bump this deliberately, and regenerate the baseline in the same
+          # commit with: node Scripts/visual/capture.mjs --update
+          npm install --no-save playwright@1.63.0 pngjs @axe-core/playwright
           npx playwright install --with-deps chromium
           node Scripts/site/test-site.mjs
           node Scripts/visual/capture.mjs
