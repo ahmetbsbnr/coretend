@@ -81,9 +81,44 @@ jobs:
           else
             echo "::error::The signature does NOT verify against Configuration/minisign.pub."
             echo "The configured secret signs with a different key than this branch publishes."
-            echo "Signature key ID (public) vs expected:"
-            sed -n 1p "$work/probe.txt.minisig" || true
-            sed -n 1p Configuration/minisign.pub
+            echo
+
+            # Name the key rather than just saying "not this one". A minisign
+            # signature line is base64 of: algorithm(2) || key_id(8) || sig(64),
+            # and the key id is stored little-endian — the same 8 bytes minisign
+            # prints in a public key's comment. Key ids are public.
+            SIGKEY="$(sed -n 2p "$work/probe.txt.minisig" \
+              | base64 -d 2>/dev/null \
+              | dd bs=1 skip=2 count=8 2>/dev/null \
+              | xxd -p | tr -d '\n' \
+              | fold -w2 | tac | tr -d '\n' | tr 'a-f' 'A-F')"
+            echo "The configured secret signs with key id: ${SIGKEY:-<undetermined>}"
+            echo "Configuration/minisign.pub expects:     $(sed -n 1p Configuration/minisign.pub | awk '{print $NF}')"
+            echo
+
+            # Any other public key tracked in the repo that DOES match tells us
+            # this is a missing rotation rather than an unknown key.
+            echo "Checking every public key tracked in Configuration/:"
+            matched=""
+            for pub in Configuration/minisign*.pub; do
+              [ -e "$pub" ] || continue
+              if minisign -Vm "$work/probe.txt" -P "$(sed -n 2p "$pub")" >/dev/null 2>&1; then
+                echo "  $pub — MATCHES"
+                matched="$pub"
+              else
+                echo "  $pub — no"
+              fi
+            done
+            echo
+            if [ -n "$matched" ]; then
+              echo "The secret matches $matched, which this branch does not publish as"
+              echo "Configuration/minisign.pub. That is a rotation this branch never"
+              echo "received, not an unknown or compromised key. Land the rotation here"
+              echo "(public key + the note recording it), then re-run this preflight."
+            else
+              echo "The secret matches no public key tracked in this repository."
+              echo "Do not publish until that is explained."
+            fi
             echo
             echo "Do NOT rotate the published key just to make a release pass:"
             echo "that silently breaks verification for everyone holding the old one."
