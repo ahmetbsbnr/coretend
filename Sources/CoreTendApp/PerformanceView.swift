@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: The CoreTend Authors
 
 import SwiftUI
+import Charts
 import SystemMetrics
 import DesignSystem
 
@@ -9,7 +10,16 @@ import DesignSystem
 @Observable
 final class PerformanceViewModel {
     var snapshot: MetricsSnapshot?
-    var history: [Double] = []          // CPU history ring, newest last
+    /// One point every two seconds, the last two minutes. Newest last.
+    struct Sample: Identifiable {
+        let date: Date
+        let cpu: Double
+        let memory: Double
+        var id: Date { date }
+    }
+    var samples: [Sample] = []
+    private var firstSnapshotSeen = false
+    var history: [Double] { samples.map(\.cpu) }
     private let collector = MetricsCollector()
     private var timerTask: Task<Void, Never>?
 
@@ -19,8 +29,14 @@ final class PerformanceViewModel {
             while !Task.isCancelled {
                 let snap = await collector.snapshot()
                 snapshot = snap
-                history.append(snap.cpuUsedFraction)
-                if history.count > 60 { history.removeFirst(history.count - 60) }
+                // The first snapshot has no interval to measure CPU over, so
+                // its 0% is a reading of nothing; it is not kept as a sample.
+                if firstSnapshotSeen {
+                    samples.append(Sample(date: snap.date, cpu: snap.cpuUsedFraction, memory: snap.memoryUsedFraction))
+                }
+                firstSnapshotSeen = true
+                if samples.count > 60 { samples.removeFirst(samples.count - 60) }
+                if samples.count == 2 { CaptureHarness.note(state: "charting") }
                 try? await Task.sleep(for: .seconds(2))
             }
         }
@@ -69,55 +85,28 @@ struct PerformanceView: View {
     @State private var model = PerformanceViewModel()
     @Environment(\.scenePhase) private var scenePhase
 
+    /// Performance is about time. The screen is the current values in one
+    /// line, then two curves over the last two minutes with a real time axis.
+    /// The three rings that used to sit on top answered "what is it now" with
+    /// a gauge and could not answer "what was it a minute ago" at all.
     var body: some View {
         ScrollView {
-            VStack(spacing: MCSpacing.md) {
+            VStack(alignment: .leading, spacing: MCSpacing.lg) {
                 if let snap = model.snapshot {
-                    HStack(spacing: MCSpacing.md) {
-                        MCMetricCard(title: L("performance.cpu"),
-                                     value: "\(Int(snap.cpuUsedFraction * 100))%",
-                                     detail: L("performance.of_all_cores"),
-                                     fraction: snap.cpuUsedFraction,
-                                     color: statusColor(snap.cpuUsedFraction, base: MCColor.performance),
-                                     isElevated: snap.cpuUsedFraction > 0.75,
-                                     elevatedLabel: L("performance.elevated"))
-                        MCMetricCard(title: L("performance.memory"),
-                                     value: "\(Int(snap.memoryUsedFraction * 100))%",
-                                     detail: L("performance.memory_detail", mcFormatBytes(snap.memoryUsedBytes), mcFormatBytes(snap.memoryTotalBytes)),
-                                     fraction: snap.memoryUsedFraction,
-                                     color: statusColor(snap.memoryUsedFraction, base: MCColor.protection),
-                                     isElevated: snap.memoryUsedFraction > 0.75,
-                                     elevatedLabel: L("performance.elevated"))
-                        MCMetricCard(title: L("performance.storage"),
-                                     value: "\(Int(snap.diskUsedFraction * 100))%",
-                                     detail: L("performance.free_detail", mcFormatBytes(snap.diskFreeBytes)),
-                                     fraction: snap.diskUsedFraction,
-                                     color: statusColor(snap.diskUsedFraction, base: MCColor.storage),
-                                     isElevated: snap.diskUsedFraction > 0.75,
-                                     elevatedLabel: L("performance.elevated"))
-                    }
-                    VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                        VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                            Text(L("performance.cpu_chart_title")).font(MCFont.cardTitle)
-                            cpuChart
-                                .frame(height: MCSize.chartHeight)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                        VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                            Text(L("performance.system")).font(MCFont.cardTitle)
-                            LabeledContent(L("performance.memory_pressure"), value: snap.memoryPressureLevel.capitalized)
-                            LabeledContent(L("performance.thermal_state"), value: snap.thermalState.capitalized)
-                            LabeledContent(L("performance.uptime"), value: formatUptime(snap.uptimeSeconds))
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
+                    currentLine(snap)
+                    Divider()
+                    chart(L("performance.cpu"), keyPath: \.cpu, color: MCColor.teal,
+                          latest: "\(Int(snap.cpuUsedFraction * 100))%")
+                    chart(L("performance.memory"), keyPath: \.memory, color: MCColor.graphite,
+                          latest: L("performance.memory_detail", mcFormatBytes(snap.memoryUsedBytes), mcFormatBytes(snap.memoryTotalBytes)))
                 } else {
-                    ProgressView().padding(MCSpacing.xxl)
+                    Text(L("performance.collecting_samples"))
+                        .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
             .padding(MCSpacing.page)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .navigationTitle(L("performance.nav_title"))
         .onAppear { if scenePhase == .active { model.start() } }
@@ -129,43 +118,64 @@ struct PerformanceView: View {
         }
     }
 
-    private func statusColor(_ fraction: Double, base: Color) -> Color {
-        fraction > 0.9 ? MCColor.destructive : fraction > 0.75 ? MCColor.attention : base
+    private func currentLine(_ snap: MetricsSnapshot) -> some View {
+        HStack(spacing: MCSpacing.lg) {
+            // The first sample has no interval to measure CPU over; 0% there
+            // would be a reading of nothing. Say so until the second sample.
+            fact(L("performance.cpu"), model.samples.isEmpty ? "—" : "\(Int(snap.cpuUsedFraction * 100))%")
+            fact(L("performance.memory"), "\(Int(snap.memoryUsedFraction * 100))%")
+            fact(L("performance.memory_pressure"), snap.memoryPressureLevel.capitalized)
+            fact(L("performance.thermal_state"), snap.thermalState.capitalized)
+            fact(L("performance.uptime"), formatUptime(snap.uptimeSeconds))
+            Spacer(minLength: 0)
+        }
+    }
+
+    private func fact(_ label: String, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label).font(MCFont.groupHeader).foregroundStyle(MCColor.textSecondary).textCase(.uppercase)
+            Text(value).font(MCFont.metric).monospacedDigit()
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(label), \(value)")
     }
 
     @ViewBuilder
-    private var cpuChart: some View {
-        if model.history.count > 1 {
-            Canvas { context, size in
-                // Grid: 25 / 50 / 75 %
-                for level in [0.25, 0.5, 0.75] {
-                    let y = size.height * (1 - level)
-                    var grid = Path()
-                    grid.move(to: CGPoint(x: 0, y: y))
-                    grid.addLine(to: CGPoint(x: size.width, y: y))
-                    context.stroke(grid, with: .color(MCColor.graphGrid.opacity(0.4)), lineWidth: 1)
-                }
-                let step = size.width / CGFloat(max(model.history.count - 1, 1))
-                var line = Path()
-                for (index, value) in model.history.enumerated() {
-                    let point = CGPoint(x: CGFloat(index) * step,
-                                        y: size.height * (1 - CGFloat(value)))
-                    if index == 0 { line.move(to: point) } else { line.addLine(to: point) }
-                }
-                var fill = line
-                fill.addLine(to: CGPoint(x: CGFloat(model.history.count - 1) * step, y: size.height))
-                fill.addLine(to: CGPoint(x: 0, y: size.height))
-                fill.closeSubpath()
-                context.fill(fill, with: .linearGradient(
-                    Gradient(colors: [Color(MCColor.performance).opacity(0.25), .clear]),
-                    startPoint: .zero, endPoint: CGPoint(x: 0, y: size.height)))
-                context.stroke(line, with: .color(MCColor.performance), lineWidth: 2)
+    private func chart(_ title: String, keyPath: KeyPath<PerformanceViewModel.Sample, Double>,
+                       color: Color, latest: String) -> some View {
+        VStack(alignment: .leading, spacing: MCSpacing.xs) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(title).font(MCFont.sectionTitle)
+                Spacer()
+                Text(latest).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
             }
-            .accessibilityLabel(L("performance.chart_a11y", Int((model.history.last ?? 0) * 100)))
-        } else {
-            Text(L("performance.collecting_samples"))
-                .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            if model.samples.count > 1 {
+                Chart(model.samples) { sample in
+                    AreaMark(x: .value("Time", sample.date), y: .value(title, sample[keyPath: keyPath]))
+                        .foregroundStyle(color.opacity(0.18))
+                    LineMark(x: .value("Time", sample.date), y: .value(title, sample[keyPath: keyPath]))
+                        .foregroundStyle(color)
+                        .interpolationMethod(.monotone)
+                }
+                .chartYScale(domain: 0...1)
+                .chartYAxis {
+                    AxisMarks(values: [0, 0.5, 1]) { value in
+                        AxisGridLine()
+                        AxisValueLabel { if let v = value.as(Double.self) { Text("\(Int(v * 100))%") } }
+                    }
+                }
+                .chartXAxis {
+                    AxisMarks(values: .stride(by: .second, count: 30)) { _ in
+                        AxisGridLine(); AxisValueLabel(format: .dateTime.minute().second())
+                    }
+                }
+                .frame(height: MCSize.chartHeight)
+                .accessibilityLabel(L("performance.chart_a11y", Int((model.samples.last?[keyPath: keyPath] ?? 0) * 100)))
+            } else {
+                Text(L("performance.collecting_samples"))
+                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+                    .frame(height: MCSize.chartHeight)
+            }
         }
     }
 

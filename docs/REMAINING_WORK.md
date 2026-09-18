@@ -39,7 +39,7 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 - ☑ D-05 Duplicates decision workflow.
 - ☑ D-06 Applications `Table` + inspector + uninstall sheet.
 - ☑ D-07 Integrity provenance `Table`.
-- ☐ D-08 Performance time axis.
+- ☑ D-08 Performance time axis.
 - ☑ D-09 Settings final set (General · Permissions · Exclusions · Data · Updates · About).
 - ☑ D-10 Onboarding three steps.
 
