@@ -9,7 +9,9 @@ corrects constraints that used to be stated and are no longer true.
 - `swift build` · `swift build -c release`
 - **`bash Scripts/test.sh` — never raw `swift test`**
 - `bash Scripts/package-local.sh` — signed local .app into `build/`
-- `CORETEND_CAPTURE_SEED=seed-record.sh zsh Scripts/capture-module.sh <out.png> <module>`
+- `zsh Scripts/capture-module.sh <out.png> <module> <light|dark> <compact|standard|large> [seed,seed] [state]`
+  — seeds live in `Scripts/support/` (`seed-record.sh`, `seed-apps.sh`; `CORETEND_CAPTURE_HOME_SEED=seed-cleanup-home.sh` for a stand-in home); a state (`review`, `ready`, `results`, `charting`) starts the scan and waits
+- `zsh Scripts/capture-matrix.sh` — the whole QA matrix into `Documentation/Captures/` + `index.html`
 - `bash Scripts/render-mockups.sh` — renders `Documentation/Mockups/*.html`
 
 Several of these need a real macOS sandbox of their own and fail with
@@ -80,9 +82,12 @@ to take on purpose, not a detail to smooth over.
 4. **The sidebar follows the user's accent**, not a decorative brand accent
    (HIG, sidebar, 8 June 2026). Measured 10.83–12.28:1 across all seven system
    accents in the running app.
-5. **The app owns its palette** rather than inheriting system black and white —
-   but it is not mono-theme: Light and Dark are both real, both derived from the
-   brand.
+5. **Identity lives in the accent, the ink-on-ground pairing and the tint on
+   state — not in repainting controls or neutrals.** Controls use the system
+   accent and system styles; the brand teal is for data. Light and Dark are
+   both real and both measured in all four modes (`AppearancePaletteTests`).
+   Nobody owns white: a neutral that coincides with the system's is not a
+   defect.
 6. **Verify negatively.** A check that cannot fail is not a check. The capture
    script once photographed the Dashboard eleven times while every assertion
    passed, because the Dashboard renders fine.
@@ -90,3 +95,9 @@ to take on purpose, not a detail to smooth over.
    views are seeded (`Scripts/support/seed-record.sh`).
 8. **Destructive and irreversible are not the same thing.** Anything with no
    path back is confirmed, and is never the most prominent control on screen.
+9. **No `.fixedSize(horizontal: false, …)` in a detail column.** It starves the
+   NavigationSplitView sidebar to nothing — bisected in Phase 1, reproduced by
+   the Integrity rebuild, now a contract test (`DetailColumnLayoutTests`).
+10. **A capture must prove itself.** The app writes what it shows in test mode;
+    the script refuses a mismatch. Never present a gallery the tool could not
+    verify.
