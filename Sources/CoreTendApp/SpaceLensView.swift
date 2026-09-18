@@ -135,14 +135,22 @@ final class SpaceLensViewModel {
                 lastDeleteError = node.name
                 return
             }
-            let result = await center.execute([op])
-            let freed = result.executed.reduce(0) { $0 + $1.logicalSize }
+            let outcome = ExecutionOutcome(result: await center.execute([op]))
             AppEnvironment.shared.record(ActivityRecord(
                 kind: .cleanup,
-                summary: "Space Lens: moved \(node.name) to Trash (\(mcFormatBytes(freed)))",
-                itemCount: result.executed.count, bytes: freed))
-            if !result.executed.isEmpty {
+                summary: outcome.annotate(
+                    "Space Lens: moved \(node.name) to Trash (\(mcFormatBytes(outcome.freedBytes)))"),
+                itemCount: outcome.executedCount, bytes: outcome.freedBytes))
+            if outcome.executedCount > 0 {
                 rescanPreservingDepth()
+            } else {
+                // One operation in, so a skip means nothing happened at all.
+                // Previously this branch was silent: the folder stayed, the
+                // view did not refresh, and no alert appeared — the click
+                // looked like it had simply been ignored. Re-validation
+                // refusing a path that changed is the product working, and it
+                // has to say so.
+                lastDeleteError = node.name
             }
         }
     }
