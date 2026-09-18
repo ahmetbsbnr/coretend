@@ -18,12 +18,10 @@ STRINGS = {lang: APP / f"Resources/{lang}.lproj/Localizable.strings" for lang in
 
 # Views the user can actually land on, keyed by the module they back.
 MODULE_VIEWS = {
-    "Dashboard": "DashboardView.swift", "Record": "RecordView.swift",
-    "Storage": "CleanupView.swift", "Space Lens": "SpaceLensView.swift",
+    "Overview": "DashboardView.swift", "Record": "RecordView.swift",
+    "Cleanup": "CleanupView.swift", "Explore": "SpaceLensView.swift",
     "Duplicates": "DuplicatesView.swift", "Applications": "ApplicationsView.swift",
-    "My Clutter": "MyClutterView.swift", "Cloud Cleanup": "CloudCleanupView.swift",
-    "Performance": "PerformanceView.swift", "Integrity": "ProtectionView.swift",
-    "Activity": "MyActivityView.swift",
+    "Integrity": "ProtectionView.swift", "Performance": "PerformanceView.swift",
 }
 
 def read(p):
