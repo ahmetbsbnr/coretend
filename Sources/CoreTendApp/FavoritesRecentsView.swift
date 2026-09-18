@@ -92,6 +92,24 @@ final class FavoritesRecentsViewModel {
         await load()
     }
 
+    /// Persists a new arrangement of favourites.
+    ///
+    /// Only the favourites section is reorderable. Quick Links are the three
+    /// folders macOS gives everyone and are not the user's list to arrange;
+    /// Recents is ordered by when they were last scanned, which is a fact
+    /// rather than a preference — dragging a row there would be asking the user
+    /// to rewrite history.
+    func reorderFavorites(from offsets: IndexSet, to destination: Int) async {
+        guard let store = AppEnvironment.shared.store else { return }
+        var arranged = favoriteLocations.map(\.path)
+        arranged.move(fromOffsets: offsets, toOffset: destination)
+        // Optimistic: the list reflects the drop immediately, because a row
+        // that snaps back while a write completes reads as a failed drag.
+        let byPath = Dictionary(uniqueKeysWithValues: favorites.map { ($0.path, $0) })
+        favorites = arranged.compactMap { byPath[$0] } + favorites.filter { !arranged.contains($0.path) }
+        try? await store.setFavoriteOrder(arranged)
+    }
+
     func removeFavorite(_ path: String) async {
         guard let store = AppEnvironment.shared.store else { return }
         try? await store.removeFavorite(path: path)
@@ -147,9 +165,7 @@ struct FavoritesRecentsView: View {
                 if model.favoriteLocations.isEmpty {
                     Text(L("favrec.empty_favorites")).foregroundStyle(MCColor.textSecondary)
                 }
-                ForEach(model.favoriteLocations) { location in
-                    LocationRow(location: location, model: model)
-                }
+                favoriteRows
             }
             Section(L("favrec.section_recents")) {
                 if model.recentLocations.isEmpty {
@@ -161,6 +177,28 @@ struct FavoritesRecentsView: View {
             }
         }
         .listStyle(.inset)
+    }
+
+    /// Favourites, draggable on macOS 27.
+    ///
+    /// `reorderable()` is new this cycle. Below it the rows render exactly as
+    /// before — the list simply is not draggable, which is what the app has
+    /// always been.
+    @ViewBuilder
+    private var favoriteRows: some View {
+        if #available(macOS 27.0, *) {
+            ForEach(model.favoriteLocations) { location in
+                LocationRow(location: location, model: model)
+            }
+            .onMove { offsets, destination in
+                Task { await model.reorderFavorites(from: offsets, to: destination) }
+            }
+            .reorderable()
+        } else {
+            ForEach(model.favoriteLocations) { location in
+                LocationRow(location: location, model: model)
+            }
+        }
     }
 }
 

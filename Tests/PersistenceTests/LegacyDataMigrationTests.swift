@@ -63,12 +63,18 @@ private func seedRealStore(at path: String) async throws {
         try await store.setSetting("dryRunDefault", value: "false")
     }
 
-    // This fixture represents a store written by the previous schema. The
-    // current Store constructor has already applied v4, so roll back only the
-    // migration marker after seeding; opening the migrated copy must then run
-    // the real v4 removal exactly as an upgraded installation would.
+    // This fixture represents a store written before v4. The current `Store`
+    // constructor has already applied every migration, so the markers from v4
+    // onward are rolled back after seeding; opening the migrated copy must then
+    // run the real v4 removal exactly as an upgraded installation would.
+    //
+    // `>= 4` rather than `= 4`, and that is load-bearing. `migrate` resumes
+    // from `MAX(version)`, so deleting one marker in the middle does nothing —
+    // when v5 was added, this fixture silently stopped re-running v4 and the
+    // test it supports began asserting against a store that had never been
+    // downgraded. Any future migration extends the tail automatically now.
     let db = try Database(path: path)
-    try db.run("DELETE FROM schema_migrations WHERE version = 4")
+    try db.run("DELETE FROM schema_migrations WHERE version >= 4")
 }
 
 /// `Any` is not `Sendable`, so the stub stores plist-shaped values as strings

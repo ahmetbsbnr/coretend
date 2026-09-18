@@ -193,3 +193,99 @@ struct StoreTests {
         #expect(try await store.safetyLog().isEmpty)
     }
 }
+
+/// Favourites keep the order the user arranged them in.
+///
+/// They were returned `ORDER BY path` — an order nobody chose. A list someone
+/// curates is a list they expect to arrange, and macOS 27's `reorderable()`
+/// makes the gesture free; the order is what needed somewhere to live.
+@Suite("Favourite ordering")
+struct FavoriteOrderingTests {
+    private func store() async throws -> Store { try Store(path: ":memory:") }
+
+    @Test func anUpgradeChangesNothingUntilSomethingIsDragged() async throws {
+        let store = try await store()
+        for path in ["/b", "/a", "/c"] { try await store.addFavorite(path: path) }
+        // No order set: the path ordering the app already had.
+        #expect(try await store.favorites().map(\.path) == ["/a", "/b", "/c"])
+    }
+
+    @Test func anArrangementIsRemembered() async throws {
+        let store = try await store()
+        for path in ["/a", "/b", "/c"] { try await store.addFavorite(path: path) }
+        try await store.setFavoriteOrder(["/c", "/a", "/b"])
+        #expect(try await store.favorites().map(\.path) == ["/c", "/a", "/b"])
+    }
+
+    /// Nulls sort last, so a favourite added after an arrangement does not
+    /// appear above the ones deliberately placed.
+    @Test func anUnplacedFavouriteSortsBelowPlacedOnes() async throws {
+        let store = try await store()
+        for path in ["/a", "/b"] { try await store.addFavorite(path: path) }
+        try await store.setFavoriteOrder(["/b", "/a"])
+        try await store.addFavorite(path: "/new")
+        #expect(try await store.favorites().map(\.path) == ["/b", "/a", "/new"])
+    }
+
+    /// Reordering must not touch anything that is not a favourite. A path
+    /// that is merely a recent scan has a row in the same table.
+    @Test func reorderingIgnoresNonFavourites() async throws {
+        let store = try await store()
+        try await store.addFavorite(path: "/fav")
+        try await store.recordLocationVisit(path: "/recent", bytes: 1)
+        try await store.setFavoriteOrder(["/fav", "/recent"])
+        #expect(try await store.favorites().map(\.path) == ["/fav"])
+    }
+
+    /// An arrangement is one transaction. Half-applying it would leave two
+    /// favourites claiming a position, and the next read would resolve that by
+    /// path — silently undoing part of what the user just did.
+    @Test func reorderingTwiceLeavesNoStalepositions() async throws {
+        let store = try await store()
+        for path in ["/a", "/b", "/c"] { try await store.addFavorite(path: path) }
+        try await store.setFavoriteOrder(["/c", "/b", "/a"])
+        try await store.setFavoriteOrder(["/b", "/c", "/a"])
+        #expect(try await store.favorites().map(\.path) == ["/b", "/c", "/a"])
+    }
+}
+
+@Suite("Favourite ordering, replayability")
+struct FavoriteOrderReplayTests {
+    /// The reason the order is a settings row rather than a column.
+    ///
+    /// `ALTER TABLE ... ADD COLUMN` is not idempotent and SQLite has no
+    /// `IF NOT EXISTS` for it, so a migration carrying one cannot be replayed.
+    /// Opening the same file twice must simply work.
+    @Test func openingTheSameStoreTwiceIsFine() async throws {
+        let path = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("\(UUID().uuidString).sqlite").path
+        defer { try? FileManager.default.removeItem(atPath: path) }
+        do {
+            let store = try Store(path: path)
+            try await store.addFavorite(path: "/a")
+            try await store.addFavorite(path: "/b")
+            try await store.setFavoriteOrder(["/b", "/a"])
+        }
+        let reopened = try Store(path: path)
+        #expect(try await reopened.favorites().map(\.path) == ["/b", "/a"])
+    }
+
+    /// A stored order naming a favourite that no longer exists must not break
+    /// the list — someone removes a favourite, the order keeps its name.
+    @Test func aStaleNameInTheOrderIsIgnored() async throws {
+        let store = try Store(path: ":memory:")
+        try await store.addFavorite(path: "/a")
+        try await store.setFavoriteOrder(["/gone", "/a"])
+        #expect(try await store.favorites().map(\.path) == ["/a"])
+    }
+
+    /// Paths can contain almost anything except a newline, which is why that is
+    /// the separator.
+    @Test func awkwardPathsSurviveARoundTrip() async throws {
+        let store = try Store(path: ":memory:")
+        let awkward = ["/Users/x/Séparé, avec virgule", "/Users/x/with;semi", "/Users/x/a b"]
+        for path in awkward { try await store.addFavorite(path: path) }
+        try await store.setFavoriteOrder(awkward.reversed())
+        #expect(try await store.favorites().map(\.path) == awkward.reversed())
+    }
+}

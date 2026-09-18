@@ -108,6 +108,7 @@ public actor Store {
         """
         DELETE FROM settings WHERE key = 'dryRunDefault';
         """,
+
     ]
 
     /// Default on-disk location: ~/Library/Application Support/CoreTend/store.sqlite
@@ -281,8 +282,51 @@ public actor Store {
         try db.run("DELETE FROM locations WHERE path = ? AND is_favorite = 0 AND last_scanned IS NULL", [path])
     }
 
+    /// The key the favourites order lives under.
+    ///
+    /// A settings row rather than a column on `locations`, and that is a
+    /// deliberate reversal. The column came first and it worked — but
+    /// `ALTER TABLE ... ADD COLUMN` is not idempotent, SQLite has no
+    /// `IF NOT EXISTS` for it, and the migration-fixture that simulates an
+    /// older store by rolling markers back then failed on the second run with
+    /// "duplicate column name".
+    ///
+    /// That fixture is artificial, but the property it exposed is not: a
+    /// migration that cannot be replayed is a migration whose only safe path is
+    /// the happy one. An ordered list of a handful of paths does not need a
+    /// schema change to hold it, so it does not get one.
+    static let favoriteOrderKey = "favoriteOrder"
+
+    /// Favourites, in the order the user arranged them.
+    ///
+    /// Anything not named in the stored order keeps the path ordering it had
+    /// and sorts after everything that was placed — so an upgrade changes
+    /// nothing until the user drags something, and a favourite added later does
+    /// not appear above the ones they arranged.
     public func favorites() throws -> [LocationRecord] {
-        try db.query("SELECT * FROM locations WHERE is_favorite = 1 ORDER BY path").compactMap(Self.locationRecord)
+        let records = try db.query("SELECT * FROM locations WHERE is_favorite = 1 ORDER BY path")
+            .compactMap(Self.locationRecord)
+        guard let raw = try setting(Self.favoriteOrderKey) else { return records }
+        let arranged = raw.split(separator: "\n").map(String.init)
+        let rank = Dictionary(uniqueKeysWithValues: arranged.enumerated().map { ($1, $0) })
+        return records.sorted { lhs, rhs in
+            switch (rank[lhs.path], rank[rhs.path]) {
+            case let (l?, r?): l < r
+            case (nil, _?): false
+            case (_?, nil): true
+            // Both unplaced: the `ORDER BY path` they arrived in.
+            case (nil, nil): lhs.path < rhs.path
+            }
+        }
+    }
+
+    /// Records a new arrangement of favourites.
+    ///
+    /// Newline-separated because a path can contain almost anything except a
+    /// newline, and a separator that can appear inside a value is a parser
+    /// waiting to be wrong.
+    public func setFavoriteOrder(_ paths: [String]) throws {
+        try setSetting(Self.favoriteOrderKey, value: paths.joined(separator: "\n"))
     }
 
     public func recents(limit: Int = 10) throws -> [LocationRecord] {
