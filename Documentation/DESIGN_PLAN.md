@@ -153,12 +153,29 @@ Each lands as its own commit with tests and a verified capture, the way the
 previous eighteen did. Outcome: an app that looks current on macOS 27 rather
 than a year stale. This does not make it distinctive.
 
-**Phase 2 — direction.** Three static HTML mockups of the *same screen* in the
-chosen direction, side by side, before any Swift. You compare and choose. No
-Swift changes until you have.
+**Phase 2 — direction. Done.** Three mockups of the record, rendered offline at
+the real window size (`Scripts/render-mockups.sh`), compared in
+`Documentation/Mockups/COMPARISON.md`. **B2 — list + inspector — chosen.**
+
+B3 was rejected on correctness rather than taste: its running `RECLAIMED`
+balance is a number CoreTend cannot compute, since the app moves items to the
+Trash and is never told when the user empties it. That finding then turned up
+already shipped, as "Freed (real)", and was fixed.
+
+Measuring the renders caught two contrast defects invisible to the eye
+(timestamps 3.58:1, neutral state pill 3.67:1, both on the surface they
+actually sit on). Capturing the *implemented* module against a seeded store
+caught three more the mockups could not show: a plural bug, a title that
+named an operation by its one failure instead of its substance, and "0
+refused" printed on operations that refused nothing.
+
+The record now ships as the second sidebar module rather than a sheet buried
+inside My Activity, and erasing it — irreversible, on an append-only table —
+is behind a menu and a confirmation instead of a single click.
 
 **Phase 3 — build it.** The chosen direction, module by module, against the
-existing test suite. The engines do not change.
+existing test suite. The engines do not change. *Started:* the record itself is
+built and verified; the remaining modules have yet to be brought onto it.
 
 **Phase 4 — the words.** All 560 strings reviewed as copy, not as keys. Never
 done; not started.
@@ -174,8 +191,8 @@ entitlements file and one flow.
 
 ## 4. What I will not do without you
 
-- Choose the direction (§2).
-- Resolve the sidebar accent conflict (§0.1).
+- ~~Choose the direction (§2).~~ Chosen: B, built as B2.
+- ~~Resolve the sidebar accent conflict (§0.1).~~ Resolved in favour of the system.
 - Reverse the dark-only decision (§0.2).
 
 Everything else in §1 and §3 Phase 1 I can carry alone, and will, on your word.
