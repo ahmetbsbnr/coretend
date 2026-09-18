@@ -598,3 +598,10 @@
 "finding.risk_prefix" = "%@";
 "finding.modified_prefix" = "modifié %@";
 "finding.a11y.evidence" = "%@, %@";
+
+/* Provenance des téléchargements. macOS enregistre ces clés de quarantaine
+   indépendamment : LSQuarantineDataURL est très souvent absente alors que
+   l’agent et l’horodatage sont présents. */
+"integrity.downloads.by_agent_on_date" = "Téléchargé par %@ · %@";
+"integrity.downloads.by_agent" = "Téléchargé par %@";
+"integrity.downloads.on_date" = "Téléchargé le %@";

@@ -599,3 +599,11 @@
 "finding.risk_prefix" = "%@";
 "finding.modified_prefix" = "modified %@";
 "finding.a11y.evidence" = "%@, %@";
+
+/* Download provenance. macOS records these quarantine keys independently:
+   LSQuarantineDataURL is very often absent while the agent and timestamp are
+   present, which is why the list used to claim "no provenance" for files it
+   knew the origin of. */
+"integrity.downloads.by_agent_on_date" = "Downloaded by %@ · %@";
+"integrity.downloads.by_agent" = "Downloaded by %@";
+"integrity.downloads.on_date" = "Downloaded %@";
