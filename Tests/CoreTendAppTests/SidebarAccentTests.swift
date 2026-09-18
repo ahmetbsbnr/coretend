@@ -71,7 +71,7 @@ struct SidebarAccentTests {
     /// from the app entirely, the reversal went too far.
     @Test func theBrandAccentSurvivesOutsideTheSidebar() throws {
         let dir = root.appendingPathComponent("Sources/CoreTendApp")
-        let users = try FileManager.default.contentsOfDirectory(atPath: dir.path)
+        let users = try SourceTree.swiftFiles(under: dir)
             .filter { $0.hasSuffix(".swift") && $0 != "Sidebar.swift" }
             .filter { try! String(contentsOf: dir.appendingPathComponent($0), encoding: .utf8)
                         .contains("MCColor.teal") }

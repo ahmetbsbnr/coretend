@@ -18,7 +18,7 @@ struct ModuleSubNavContractTests {
 
     private func appSources() throws -> [(name: String, text: String)] {
         let dir = root.appendingPathComponent("Sources/CoreTendApp")
-        let names = try FileManager.default.contentsOfDirectory(atPath: dir.path)
+        let names = try SourceTree.swiftFiles(under: dir)
             .filter { $0.hasSuffix(".swift") }
             .sorted()
         return try names.map {
@@ -54,7 +54,7 @@ struct ModuleSubNavContractTests {
         let declaring = try appSources()
             .filter { $0.text.contains("NavigationSplitView {") }
             .map(\.name)
-        #expect(declaring == ["CoreTendApp.swift"], "unexpected NavigationSplitView in \(declaring)")
+        #expect(declaring == ["App/MainWindow.swift"], "unexpected NavigationSplitView in \(declaring)")
     }
 
     /// Sub-navigation goes through ModuleSubNav, so the idiom cannot drift back

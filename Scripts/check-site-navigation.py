@@ -20,7 +20,7 @@ from pathlib import Path
 import re, sys
 
 ROOT = Path(__file__).resolve().parents[1]
-SWIFT = ROOT / "Sources/CoreTendApp/CoreTendApp.swift"
+SWIFT = ROOT / "Sources/CoreTendApp/App/ModuleCatalogue.swift"
 PAGE = ROOT / "Website/index.html"
 
 # The demo's `data-view` values are short slugs; this maps them onto ModuleID

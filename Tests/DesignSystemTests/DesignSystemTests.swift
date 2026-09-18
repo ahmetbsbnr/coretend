@@ -357,7 +357,7 @@ struct MotionSystemTests {
         var out: [(String, String)] = []
         for relative in sourceRoots {
             let dir = root.appendingPathComponent(relative)
-            for name in try FileManager.default.contentsOfDirectory(atPath: dir.path)
+            for name in try SourceTree.swiftFiles(under: dir)
                 where name.hasSuffix(".swift") {
                 out.append((name, try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)))
             }
@@ -410,7 +410,7 @@ struct MotionSystemTests {
         var uses: [String] = []
         for relative in ["Sources/CoreTendApp", "Sources/DesignSystem"] {
             let dir = root.appendingPathComponent(relative)
-            for name in try FileManager.default.contentsOfDirectory(atPath: dir.path)
+            for name in try SourceTree.swiftFiles(under: dir)
                 where name.hasSuffix(".swift") && name != "Tokens.swift" {
                 let text = try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)
                 for line in text.split(separator: "\n") {
@@ -462,7 +462,7 @@ struct TypographySystemTests {
         var out: [(String, String)] = []
         for relative in ["Sources/CoreTendApp", "Sources/DesignSystem"] {
             let dir = root.appendingPathComponent(relative)
-            for name in try FileManager.default.contentsOfDirectory(atPath: dir.path)
+            for name in try SourceTree.swiftFiles(under: dir)
                 where name.hasSuffix(".swift") && name != "Typography.swift" {
                 out.append((name, try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)))
             }
@@ -590,7 +590,7 @@ struct ButtonStyleAssignmentTests {
         var out: [(String, String)] = []
         for relative in ["Sources/CoreTendApp", "Sources/DesignSystem"] {
             let dir = root.appendingPathComponent(relative)
-            for name in try FileManager.default.contentsOfDirectory(atPath: dir.path)
+            for name in try SourceTree.swiftFiles(under: dir)
                 where name.hasSuffix(".swift") {
                 out.append((name, try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)))
             }
@@ -634,7 +634,7 @@ struct SurfaceSystemTests {
         var out: [(String, String)] = []
         for relative in ["Sources/CoreTendApp", "Sources/DesignSystem"] {
             let dir = root.appendingPathComponent(relative)
-            for name in try FileManager.default.contentsOfDirectory(atPath: dir.path)
+            for name in try SourceTree.swiftFiles(under: dir)
                 // Components.swift is where the one implementation lives.
                 where name.hasSuffix(".swift") && name != "Components.swift" {
                 out.append((name, try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)))
@@ -699,7 +699,7 @@ struct GlassAdoptionTests {
         var out: [(String, String)] = []
         for relative in ["Sources/CoreTendApp", "Sources/DesignSystem"] {
             let dir = root.appendingPathComponent(relative)
-            for name in try FileManager.default.contentsOfDirectory(atPath: dir.path)
+            for name in try SourceTree.swiftFiles(under: dir)
                 where name.hasSuffix(".swift") {
                 out.append((name, try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)))
             }
@@ -784,7 +784,7 @@ struct GlassButtonAdoptionTests {
         var out: [(String, String)] = []
         for relative in ["Sources/CoreTendApp", "Sources/DesignSystem"] {
             let dir = root.appendingPathComponent(relative)
-            for name in try FileManager.default.contentsOfDirectory(atPath: dir.path)
+            for name in try SourceTree.swiftFiles(under: dir)
                 where name.hasSuffix(".swift") {
                 out.append((name, try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)))
             }

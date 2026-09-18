@@ -10,8 +10,17 @@ struct MenuAndShortcutsTests {
     private let root = URL(fileURLWithPath: #filePath)
         .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
 
+    /// `CoreTendApp.swift` was split into App/ and Shell/. Tests that read
+    /// "the app file" for its commands, scenes and palette now read the files
+    /// it became, concatenated, so each assertion keeps meaning what it meant.
     private func source(_ relative: String) throws -> String {
-        try String(contentsOf: root.appendingPathComponent(relative), encoding: .utf8)
+        if relative == "Sources/CoreTendApp/CoreTendApp.swift" {
+            return try ["App/CoreTendApp.swift", "App/MainWindow.swift",
+                        "Shell/HelpCommands.swift", "Shell/MenuBar.swift"]
+                .map { try String(contentsOf: root.appendingPathComponent("Sources/CoreTendApp/\($0)"), encoding: .utf8) }
+                .joined(separator: "\n")
+        }
+        return try String(contentsOf: root.appendingPathComponent(relative), encoding: .utf8)
     }
 
     private func strings(_ lang: String) throws -> [String: Any] {
@@ -67,7 +76,7 @@ struct MenuAndShortcutsTests {
     @Test func documentedScanShortcutsAreBoundExactlyOnce() throws {
         let dir = root.appendingPathComponent("Sources/CoreTendApp")
         var occurrences: [String: [String]] = [:]
-        for name in try FileManager.default.contentsOfDirectory(atPath: dir.path)
+        for name in try SourceTree.swiftFiles(under: dir)
             where name.hasSuffix(".swift") {
             let text = try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)
             for chord in [#"keyboardShortcut("p", modifiers: [])"#,
@@ -91,7 +100,7 @@ struct MenuAndShortcutsTests {
     @Test func escapeCancelIsStillBound() throws {
         let dir = root.appendingPathComponent("Sources/CoreTendApp")
         var found = false
-        for name in try FileManager.default.contentsOfDirectory(atPath: dir.path)
+        for name in try SourceTree.swiftFiles(under: dir)
             where name.hasSuffix(".swift") {
             let text = try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)
             if text.contains("keyboardShortcut(.cancelAction)") { found = true }
@@ -142,8 +151,9 @@ struct SettingsPlacementTests {
         .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
 
     private func app() throws -> String {
-        try String(contentsOf: root.appendingPathComponent("Sources/CoreTendApp/CoreTendApp.swift"),
-                   encoding: .utf8)
+        try ["App/CoreTendApp.swift", "App/MainWindow.swift", "Shell/HelpCommands.swift", "Shell/MenuBar.swift"]
+            .map { try String(contentsOf: root.appendingPathComponent("Sources/CoreTendApp/\($0)"), encoding: .utf8) }
+            .joined(separator: "\n")
     }
 
     /// Declaring the `Settings` scene is what makes "Settings…" appear in the

@@ -123,7 +123,7 @@ struct ApprovalRejectionTests {
         let dir = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
             .appendingPathComponent("Sources/CoreTendApp")
-        let names = try FileManager.default.contentsOfDirectory(atPath: dir.path)
+        let names = try SourceTree.swiftFiles(under: dir)
             .filter { $0.hasSuffix(".swift") }
         for name in names {
             let text = try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)

@@ -116,7 +116,7 @@ struct DistributionTests {
     @Test func theCompileFlagIsReadInOnlyOnePlace() throws {
         let dir = root.appendingPathComponent("Sources/CoreTendApp")
         var readers: [String] = []
-        for name in try FileManager.default.contentsOfDirectory(atPath: dir.path)
+        for name in try SourceTree.swiftFiles(under: dir)
             where name.hasSuffix(".swift") {
             let text = try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)
             if text.contains("#if CORETEND_APP_STORE") { readers.append(name) }
@@ -184,7 +184,7 @@ struct FolderPickerContractTests {
 
     private func sources() throws -> [(name: String, text: String)] {
         let dir = root.appendingPathComponent("Sources/CoreTendApp")
-        return try FileManager.default.contentsOfDirectory(atPath: dir.path)
+        return try SourceTree.swiftFiles(under: dir)
             .filter { $0.hasSuffix(".swift") }
             .map { ($0, try String(contentsOf: dir.appendingPathComponent($0), encoding: .utf8)) }
     }

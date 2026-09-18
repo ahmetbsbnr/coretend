@@ -41,7 +41,7 @@ def swift_sources():
     return sorted(p for p in (ROOT / "Sources").rglob("*.swift"))
 
 def main():
-    app_src = {p.name: read(p) for p in APP.glob("*.swift")}
+    app_src = {p.name: read(p) for p in APP.rglob("*.swift")}
     all_src = {str(p.relative_to(ROOT)): read(p) for p in swift_sources()}
     code = "\n".join(all_src.values())
     out = []

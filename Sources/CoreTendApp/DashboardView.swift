@@ -2,283 +2,276 @@
 // SPDX-FileCopyrightText: The CoreTend Authors
 
 import SwiftUI
-import DesignSystem
 import Persistence
 import SystemMetrics
+import DesignSystem
+
+/// Overview: in five seconds — how the disk is, what needs attention, what
+/// changed, what to run next.
+///
+/// Four sections, each omitted when it has nothing to say. No score, no
+/// gauge, no total that adds unlike things. Every figure is something the
+/// Mac or CoreTend measured; where nothing has been measured yet the row says
+/// so instead of estimating. See docs/FRONTEND_REBUILD.md § Overview.
+@MainActor
+@Observable
+final class OverviewViewModel {
+    struct Volume: Identifiable {
+        let url: URL
+        let name: String
+        let total: Int64
+        let free: Int64
+        var id: String { url.path }
+        var used: Int64 { max(0, total - free) }
+        var usedFraction: Double { total > 0 ? Double(used) / Double(total) : 0 }
+    }
+
+    enum Attention: Identifiable {
+        case fullDiskAccessMissing
+        case brokenLoginItems(Int)
+        case neverScanned
+        var id: String {
+            switch self {
+            case .fullDiskAccessMissing: "fda"
+            case .brokenLoginItems: "login"
+            case .neverScanned: "never"
+            }
+        }
+    }
+
+    struct Scan: Identifiable {
+        let module: ModuleID
+        let lastRun: Date?
+        var id: String { module.rawValue }
+    }
+
+    private(set) var volumes: [Volume] = []
+    private(set) var attention: [Attention] = []
+    private(set) var recent: [RecordItem] = []
+    private(set) var scans: [Scan] = []
+    private(set) var loaded = false
+
+    func load() async {
+        volumes = Self.mountedVolumes()
+        let events = (try? await AppEnvironment.shared.store?.activity(limit: 500)) ?? []
+        let ops = SafetyLedger.entries(from: (try? await AppEnvironment.shared.store?.safetyLog(limit: 200)) ?? [])
+        recent = Array(SafetyLedger.items(operations: ops, events: events).prefix(5))
+        scans = Self.scanRows(from: events)
+        attention = Self.attentionRows(
+            fullDisk: SystemAuthorization.probeLive().grant(for: .fullDisk),
+            brokenLoginItems: LaunchAgentInspector.userAgents().filter(\.broken).count,
+            anyScan: events.contains { $0.kind == .scan })
+        loaded = true
+    }
+
+    /// Only what needs a person. Everything fine → nothing listed, and the
+    /// section disappears rather than saying "all good" in green.
+    nonisolated static func attentionRows(fullDisk: SystemAuthorization.Grant,
+                                          brokenLoginItems: Int, anyScan: Bool) -> [Attention] {
+        var rows: [Attention] = []
+        if fullDisk == .denied || fullDisk == .undetermined { rows.append(.fullDiskAccessMissing) }
+        if brokenLoginItems > 0 { rows.append(.brokenLoginItems(brokenLoginItems)) }
+        if !anyScan { rows.append(.neverScanned) }
+        return rows
+    }
+
+    /// The scans a person can run, with when each last ran. A scan event's
+    /// summary starts with the module's stable name, which is how the app
+    /// wrote it; anything else counts as "never" rather than guessed.
+    nonisolated static func scanRows(from events: [ActivityRecord]) -> [Scan] {
+        let scannable: [ModuleID] = [.cleanup, .spaceLens, .duplicates, .applications]
+        return scannable.map { module in
+            let last = events
+                .filter { $0.kind == .scan && $0.summary.hasPrefix(module.rawValue) }
+                .map(\.date).max()
+            return Scan(module: module, lastRun: last)
+        }
+    }
+
+    private static func mountedVolumes() -> [Volume] {
+        let keys: [URLResourceKey] = [.volumeNameKey, .volumeTotalCapacityKey,
+                                      .volumeAvailableCapacityForImportantUsageKey, .volumeIsInternalKey]
+        let urls = FileManager.default.mountedVolumeURLs(includingResourceValuesForKeys: keys,
+                                                          options: [.skipHiddenVolumes]) ?? []
+        return urls.compactMap { url in
+            guard let v = try? url.resourceValues(forKeys: Set(keys)),
+                  let total = v.volumeTotalCapacity, total > 0 else { return nil }
+            return Volume(url: url, name: v.volumeName ?? url.lastPathComponent,
+                          total: Int64(total),
+                          free: v.volumeAvailableCapacityForImportantUsage ?? 0)
+        }
+        .sorted { $0.total > $1.total }
+    }
+}
 
 struct DashboardView: View {
-    @State private var snapshot: MetricsSnapshot?
-    @State private var activity: [ActivityRecord] = []
-    @State private var exclusions: [String] = []
-    @State private var collector = MetricsCollector()
-    @State private var revealed = false
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    // Secondary tools sit in a tighter, denser grid; Storage gets the hero.
-    private let toolColumns = [
-        GridItem(.adaptive(minimum: 200, maximum: 320), spacing: MCSpacing.sm, alignment: .top),
-    ]
-    private let statusColumns = [
-        GridItem(.adaptive(minimum: 168, maximum: 260), spacing: MCSpacing.sm, alignment: .top),
-    ]
+    @State private var model = OverviewViewModel()
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: MCSpacing.xl) {
-                brandRow
-                    .modifier(Reveal(revealed: revealed, index: 0, reduceMotion: reduceMotion))
-                scanHero
-                    .modifier(Reveal(revealed: revealed, index: 1, reduceMotion: reduceMotion))
-                statusStrip
-                    .modifier(Reveal(revealed: revealed, index: 2, reduceMotion: reduceMotion))
-                VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                    MCSectionHeader(L("sidebar.space"))
-                    LazyVGrid(columns: toolColumns, alignment: .leading, spacing: MCSpacing.sm) {
-                        toolTile("dashboard.spacelens", L("dashboard.spacelens.title"),
-                                 L("dashboard.spacelens.detail"), ModuleID.spaceLens.systemImage, .spaceLens)
-                        toolTile("dashboard.duplicates", L("dashboard.duplicates.title"),
-                                 L("dashboard.duplicates.detail"), ModuleID.duplicates.systemImage, .duplicates)
-                        toolTile("dashboard.applications", L("dashboard.applications.title"),
-                                 L("dashboard.applications.detail"), ModuleID.applications.systemImage, .applications)
-                        toolTile("dashboard.integrity", L("dashboard.integrity.title"),
-                                 L("dashboard.integrity.detail"), ModuleID.protection.systemImage, .protection)
-                        toolTile("dashboard.activity", L("dashboard.activity.title"),
-                                 latestActivityText, ModuleID.record.systemImage, .record)
-                    }
-                }
-                .modifier(Reveal(revealed: revealed, index: 3, reduceMotion: reduceMotion))
+            VStack(alignment: .leading, spacing: MCSpacing.lg) {
+                if !model.volumes.isEmpty { diskSection }
+                if !model.attention.isEmpty { attentionSection }
+                if !model.recent.isEmpty { recentSection }
+                scanSection
             }
             .padding(MCSpacing.page)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .navigationTitle(L("module.overview"))
-        .accessibilityIdentifier("dashboard.root")
-        .task {
-            await refresh()
-            if reduceMotion { revealed = true }
-            else { withAnimation(MCMotion.reveal) { revealed = true } }
+        .task { await model.load() }
+    }
+
+    // MARK: Disk
+
+    private var diskSection: some View {
+        section(L("overview.disk")) {
+            ForEach(model.volumes) { volume in
+                HStack(alignment: .firstTextBaseline, spacing: MCSpacing.md) {
+                    Text(volume.name).font(MCFont.rowTitle)
+                        .frame(width: 160, alignment: .leading).lineLimit(1)
+                    usageBar(volume.usedFraction)
+                    Text(L("overview.disk_free", mcFormatBytes(volume.free), mcFormatBytes(volume.total)))
+                        .font(MCFont.tabular).foregroundStyle(MCColor.textSecondary)
+                        .frame(width: 190, alignment: .trailing)
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel(L("overview.disk_a11y", volume.name,
+                                      mcFormatBytes(volume.used), mcFormatBytes(volume.total)))
+            }
         }
     }
 
-    // MARK: - Brand row: quiet identity line above the scan panel
-
-    private var brandRow: some View {
-        HStack(alignment: .center, spacing: MCSpacing.md) {
-            CoreBloomMark(tint: [MCColor.teal], lineWidthFraction: 0.08)
-                .frame(width: 52, height: 52)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(verbatim: "CoreTend")
-                    .font(MCFont.heroTitle)
-                Text(L("dashboard.subtitle"))
-                    .font(MCFont.secondaryBody)
-                    .foregroundStyle(MCColor.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+    /// One bar, two colours: used and free. Teal is data here, not a control.
+    private func usageBar(_ fraction: Double) -> some View {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                Capsule().fill(MCColor.separator)
+                Capsule().fill(MCColor.teal).frame(width: max(2, geo.size.width * fraction))
             }
-            .accessibilityElement(children: .combine)
-            Spacer(minLength: 0)
+        }
+        .frame(height: 6)
+        .accessibilityHidden(true)
+    }
+
+    // MARK: Attention
+
+    private var attentionSection: some View {
+        section(L("overview.attention")) {
+            ForEach(model.attention) { item in
+                HStack(spacing: MCSpacing.sm) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(MCTheme.warning).accessibilityHidden(true)
+                    Text(attentionText(item)).font(MCFont.body)
+                    Spacer(minLength: MCSpacing.md)
+                    Button(attentionAction(item)) { act(on: item) }
+                        .buttonStyle(.bordered)
+                }
+                .accessibilityElement(children: .contain)
+            }
         }
     }
 
-    // MARK: - Scan panel: the imposing centrepiece the dashboard is built around
+    private func attentionText(_ item: OverviewViewModel.Attention) -> String {
+        switch item {
+        case .fullDiskAccessMissing: L("overview.attention_fda")
+        case let .brokenLoginItems(n): L(n == 1 ? "overview.attention_login_one" : "overview.attention_login_other", n)
+        case .neverScanned: L("overview.attention_never")
+        }
+    }
 
-    private var scanHero: some View {
-        let ringSize: CGFloat = 128
-        return HStack(alignment: .center, spacing: MCSpacing.xl) {
-            ZStack {
-                Circle()
-                    .stroke(MCColor.storage.opacity(MCOpacity.orbitTrack), lineWidth: 10)
-                Circle()
-                    .trim(from: 0, to: freeSpaceFraction)
-                    .stroke(MCColor.storage, style: StrokeStyle(lineWidth: 10, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                    .mcAnimation(MCMotion.settle, value: freeSpaceFraction)
-                Image(systemName: ModuleID.cleanup.systemImage)
-                    .font(.system(size: MCIconSize.feature, weight: .semibold))
-                    .foregroundStyle(MCColor.storage)
+    private func attentionAction(_ item: OverviewViewModel.Attention) -> String {
+        switch item {
+        case .fullDiskAccessMissing: L("overview.action_open_settings")
+        case .brokenLoginItems: L("overview.action_review")
+        case .neverScanned: L("overview.action_open_cleanup")
+        }
+    }
+
+    private func act(on item: OverviewViewModel.Attention) {
+        switch item {
+        case .fullDiskAccessMissing:
+            if let url = SystemAuthorization.fullDiskAccessSettingsURL { NSWorkspace.shared.open(url) }
+        case .brokenLoginItems:
+            NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.protection)
+        case .neverScanned:
+            NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.cleanup)
+        }
+    }
+
+    // MARK: Recent
+
+    private var recentSection: some View {
+        section(L("overview.recent"), trailing: {
+            Button(L("overview.see_record")) {
+                NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.record)
             }
-            .frame(width: ringSize, height: ringSize)
-            .accessibilityHidden(true)
-
-            // Three columns share this row: a fixed ring, this copy block, and
-            // a 40pt metric. Without priorities the metric took the width it
-            // wanted and squeezed this column until the primary action read
-            // "Sc…". The copy block is the one that must survive, so it gets
-            // the priority and a floor; the metric gives way instead.
-            VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                Text(L("dashboard.storage.title")).font(MCFont.pageTitle)
-                Text(L("dashboard.storage.detail"))
-                    .font(MCFont.secondaryBody)
-                    .foregroundStyle(MCColor.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                Button {
-                    navigate(.cleanup)
-                } label: {
-                    Label(L("dashboard.primary_action"), systemImage: "sparkles")
-                        .font(MCFont.actionLabel)
-                        // The label of the app's primary action never
-                        // truncates. If the window is too narrow for it, the
-                        // window is too narrow.
-                        .fixedSize(horizontal: true, vertical: false)
-                        .padding(.vertical, MCSpacing.sm)
-                        .padding(.horizontal, MCSpacing.lg)
+            .buttonStyle(.borderless)
+        }) {
+            ForEach(model.recent) { item in
+                HStack(alignment: .firstTextBaseline, spacing: MCSpacing.sm) {
+                    Text(recentTitle(item)).font(MCFont.body).lineLimit(1)
+                    Spacer(minLength: MCSpacing.md)
+                    Text(AppDateFormatting.string(item.date, style: .dayMonthYearWithTime))
+                        .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 }
-                .mcPrimaryButton()
-                .controlSize(.large)
-                .keyboardShortcut(.defaultAction)
-                .padding(.top, MCSpacing.sm)
-                .accessibilityIdentifier("dashboard.scan.start")
-                .accessibilityLabel(L("dashboard.primary_action"))
-            }
-            .frame(minWidth: 220, alignment: .leading)
-            .layoutPriority(1)
-
-            Spacer(minLength: MCSpacing.md)
-            if let snap = snapshot {
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(mcFormatBytes(snap.diskFreeBytes))
-                        .font(MCFont.displayMetric)
-                        .monospacedDigit()
-                        .contentTransition(.numericText())
-                    Text(L("dashboard.storage.free_of_total", mcFormatBytes(snap.diskTotalBytes)))
-                        .font(MCFont.badge)
-                        .foregroundStyle(MCColor.textSecondary)
-                }
-                .fixedSize()
                 .accessibilityElement(children: .combine)
             }
         }
-        .padding(MCSpacing.xl)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        // The one panel this screen is built around, so the one surface that
-        // carries the accent tint and a shadow.
-        .mcSurface(.feature)
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("dashboard.storage")
     }
 
-    // MARK: - Status strip
-
-    // A short live read of the machine — what the user is here to act on.
-    // Build/signature status is meta and lives in Settings, not here.
-    private var statusStrip: some View {
-        LazyVGrid(columns: statusColumns, alignment: .leading, spacing: MCSpacing.sm) {
-            statusPill(L("dashboard.status.free_space"),
-                       value: snapshot.map { mcFormatBytes($0.diskFreeBytes) } ?? L("dashboard.status.loading"),
-                       icon: "internaldrive",
-                       attention: (snapshot?.diskFreeBytes ?? 20_000_000_000) < 20_000_000_000)
-            statusPill(L("dashboard.status.safety"),
-                       value: L("dashboard.status.trash_enabled"),
-                       icon: "trash",
-                       attention: false)
-            statusPill(L("dashboard.status.exclusions"),
-                       value: L("dashboard.status.exclusion_count", exclusions.count),
-                       icon: "line.3.horizontal.decrease.circle",
-                       attention: false)
+    private func recentTitle(_ item: RecordItem) -> String {
+        switch item {
+        case let .operation(entry): RecordPhrasing.title(entry)
+        case let .event(record): "\(RecordPhrasing.eventTitle(record)) — \(record.summary)"
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var freeSpaceFraction: CGFloat {
-        guard let snap = snapshot, snap.diskTotalBytes > 0 else { return 0 }
-        return CGFloat(Double(snap.diskFreeBytes) / Double(snap.diskTotalBytes))
-    }
+    // MARK: Scan
 
-    // MARK: - Secondary tool tiles
-
-    private func toolTile(_ id: String, _ title: String, _ detail: String, _ icon: String,
-                          _ module: ModuleID, attention: Bool = false) -> some View {
-        Button {
-            navigate(module)
-        } label: {
-            MCCard {
-                VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                    HStack(spacing: MCSpacing.xs) {
-                        Image(systemName: attention ? "exclamationmark.triangle.fill" : icon)
-                            .font(.system(size: MCIconSize.row, weight: .semibold))
-                            .foregroundStyle(attention ? MCColor.attention : .secondary)
-                            .frame(width: 20)
-                        Text(title).font(MCFont.cardTitle)
-                        Spacer(minLength: 0)
-                        Image(systemName: "arrow.right")
-                            .font(.system(size: MCIconSize.chevron, weight: .semibold))
-                            .foregroundStyle(MCColor.textTertiary)
+    private var scanSection: some View {
+        section(L("overview.scans")) {
+            ForEach(model.scans) { scan in
+                HStack(spacing: MCSpacing.sm) {
+                    Image(systemName: scan.module.systemImage)
+                        .foregroundStyle(MCColor.textSecondary).frame(width: 20)
+                        .accessibilityHidden(true)
+                    Text(scan.module.label).font(MCFont.rowTitle)
+                    Text(scan.lastRun.map { L("overview.last_run", AppDateFormatting.string($0, style: .dayMonthYearWithTime)) }
+                         ?? L("overview.never_run"))
+                        .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+                    Spacer(minLength: MCSpacing.md)
+                    Button(L("overview.open")) {
+                        NotificationCenter.default.post(name: .mcNavigate, object: scan.module)
                     }
-                    Text(detail)
-                        .font(MCFont.caption)
-                        .foregroundStyle(MCColor.textSecondary)
-                        .lineLimit(3)
-                        .fixedSize(horizontal: false, vertical: true)
+                    .buttonStyle(.bordered)
                 }
-                .frame(maxWidth: .infinity, minHeight: 78, alignment: .topLeading)
+                .accessibilityElement(children: .contain)
             }
         }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier(id)
-        .accessibilityLabel("\(title). \(detail)")
-        .accessibilityAddTraits(.isButton)
     }
 
-    private func statusPill(_ title: String, value: String, icon: String, attention: Bool) -> some View {
-        HStack(spacing: MCSpacing.xs) {
-            Image(systemName: attention ? "exclamationmark.triangle.fill" : icon)
-                .foregroundStyle(attention ? MCColor.attention : MCColor.teal)
-                .frame(width: 18)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(title)
-                    .font(MCFont.badge)
-                    .foregroundStyle(MCColor.textSecondary)
+    // MARK: Section — a label, a hairline, rows. No enclosure.
+
+    private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        section(title, trailing: { EmptyView() }, content: content)
+    }
+
+    private func section<Trailing: View, Content: View>(
+        _ title: String, @ViewBuilder trailing: () -> Trailing, @ViewBuilder content: () -> Content
+    ) -> some View {
+        VStack(alignment: .leading, spacing: MCSpacing.xs) {
+            HStack {
+                Text(title).font(MCFont.groupHeader).foregroundStyle(MCColor.textSecondary)
                     .textCase(.uppercase)
-                    .kerning(0.4)
-                Text(value)
-                    .font(MCFont.secondaryBody)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.78)
-                    .contentTransition(.opacity)
+                Spacer()
+                trailing()
             }
+            Divider()
+            VStack(alignment: .leading, spacing: MCSpacing.xs) { content() }
+                .padding(.top, MCSpacing.xxs)
         }
-        .padding(.horizontal, MCSpacing.sm)
-        .padding(.vertical, MCSpacing.xs)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .mcSurface(.raised, radius: MCRadius.small)
-        .accessibilityElement(children: .combine)
-    }
-
-    // MARK: - Derived text
-
-    private var latestActivityText: String {
-        guard let record = activity.first else { return L("dashboard.activity.empty") }
-        return "\(record.summary) · \(AppDateFormatting.string(record.date, style: .dayMonthYearWithTime))"
-    }
-
-    private func refresh() async {
-        async let latestSnapshot = collector.snapshot()
-        if let store = AppEnvironment.shared.store {
-            activity = (try? await store.activity(limit: 5)) ?? []
-            exclusions = (try? await store.exclusions()) ?? []
-        }
-        snapshot = await latestSnapshot
-    }
-
-    private func navigate(_ module: ModuleID) {
-        NotificationCenter.default.post(name: .mcNavigate, object: module)
-    }
-}
-
-/// Load-time staggered reveal. Transform/opacity only; a no-op under Reduce
-/// Motion, where `revealed` is set without an animation.
-private struct Reveal: ViewModifier {
-    let revealed: Bool
-    let index: Int
-    let reduceMotion: Bool
-
-    func body(content: Content) -> some View {
-        content
-            .opacity(revealed ? 1 : 0)
-            .offset(y: revealed || reduceMotion ? 0 : 10)
-            // Capped stagger: an ungated `index * 0.06` makes the last card of
-            // a long grid wait seconds for its turn.
-            .mcAnimation(MCMotion.reveal.delay(MCMotion.stagger(index: index)), value: revealed)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(title)
     }
 }

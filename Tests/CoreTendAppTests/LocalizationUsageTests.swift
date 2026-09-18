@@ -40,7 +40,7 @@ struct LocalizationUsageTests {
     private func usedKeys() throws -> Set<String> {
         let dir = root.appendingPathComponent("Sources/CoreTendApp")
         var keys = Set<String>()
-        for name in try FileManager.default.contentsOfDirectory(atPath: dir.path)
+        for name in try SourceTree.swiftFiles(under: dir)
             where name.hasSuffix(".swift") {
             let text = try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)
             for pattern in [#"\bL\("([^"\\]+)"\)"#,
