@@ -18,7 +18,7 @@ it is honest about three places where the HIG and your instructions disagree.
 These are not mistakes to fix. They are deliberate product decisions that
 depart from the platform, and they should be departed from *knowingly*.
 
-### 0.1 The sidebar accent — HIG says the opposite of what we built
+### 0.1 The sidebar accent — resolved in favour of the system
 
 Sidebars, HIG, **updated 8 June 2026**:
 
@@ -27,20 +27,19 @@ Sidebars, HIG, **updated 8 June 2026**:
 > this, they expect all sidebar icons to appear in that color**, so make sure
 > your sidebar icons display the color people choose."
 
-The green selection you objected to was the system working as designed, and
-the platform-native fix would have been to make the *icon* follow the accent
-too — not to take the accent away. We took it away.
+**Resolved: the sidebar follows `Color.accentColor`.** The green selection that
+started this was the system working as designed, and the native fix was to make
+the *icon* follow the accent too — not to take the accent away, which is what
+the first attempt did.
 
-**Consequence if unchanged:** on a Mac with a pink or red accent, every app
-except CoreTend honours it. That reads as an app that ignores the user, and it
-is the kind of thing raised in App Store review.
+Measured in the running app across four system accents, label on the selection
+wash: red 11.95:1, green 10.83:1, blue 12.28:1, pink 11.95:1. A test computes
+the same for all seven macOS offers, so a change to the wash opacity fails
+against every accent rather than only the developer's.
 
-**Recommendation:** honour the system accent for the sidebar *selection*, keep
-teal everywhere the app genuinely owns the pixels. HIG explicitly allows fixed
-colours "if you use them sparingly… to clarify the meaning of an icon or draw
-attention to it".
-**Your call.** You said the app owns its colours; I am not overriding that
-silently.
+Teal remains the brand accent everywhere the app genuinely owns the pixels —
+buttons, rings, charts, links, hero elements — and a test fails if it disappears
+from the app rather than just from the sidebar.
 
 ### 0.2 Light appearance
 

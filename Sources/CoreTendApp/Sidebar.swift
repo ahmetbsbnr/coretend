@@ -168,13 +168,13 @@ struct Sidebar: View {
                 // who cannot distinguish the teal wash from the ground still
                 // sees which module is open.
                 RoundedRectangle(cornerRadius: 1.5)
-                    .fill(isSelected ? MCColor.teal : .clear)
+                    .fill(isSelected ? Color.accentColor : .clear)
                     .frame(width: 3, height: metrics.iconSize + 2)
                     .accessibilityHidden(true)
 
                 Image(systemName: module.systemImage)
                     .font(.system(size: metrics.iconSize, weight: .medium))
-                    .foregroundStyle(isSelected ? MCColor.teal : MCColor.textTertiary)
+                    .foregroundStyle(isSelected ? Color.accentColor : MCColor.textTertiary)
                     .frame(width: metrics.iconSize + 4)
                     .accessibilityHidden(true)
 
@@ -222,7 +222,10 @@ struct Sidebar: View {
     }
 
     private func background(isSelected: Bool, isHovered: Bool) -> Color {
-        if isSelected { return MCColor.tealWash }
+        // Derived from the accent rather than fixed, so it follows the user's
+        // choice. 0.18 keeps `textPrimary` well past 4.5:1 on every accent
+        // macOS offers — measured, not assumed; see SidebarAccentTests.
+        if isSelected { return Color.accentColor.opacity(0.18) }
         if isHovered { return MCColor.elevatedBackground }
         return .clear
     }
