@@ -82,24 +82,6 @@ const GRID = 32
 const CELL_TOLERANCE = 10
 const MAX_CHANGED_CELLS = 8
 
-// Per-capture budget for captures with a known, understood noise source. Kept
-// deliberately small and named, rather than raising MAX_CHANGED_CELLS for all
-// 79: the other 78 stay strict, and anything listed here has to justify itself.
-//
-// `workflow-scanning` reproduces the flake the comment above describes, and the
-// stabilisation is already as tight as it can get — progress pinned to 28%,
-// every animation paused at currentTime 0, the text content set explicitly. The
-// residue is macOS text anti-aliasing across a text-dense panel: identical
-// input, different output between runs. Observed on this capture alone, as a
-// 1px height change on one run and as 31 cells at max delta 33 on another,
-// while the commit under test changed no site file at all.
-//
-// 40 still separates noise from signal by a wide margin: the regressions this
-// project has actually caught move 80-400 cells at delta 15-200, and the delta
-// ceiling stays at CELL_TOLERANCE for every cell counted.
-const CELL_BUDGET = {
-  'workflow-scanning': 40,
-}
 const FREEZE = `
   *, *::before, *::after {
     animation-play-state: paused !important;
@@ -165,10 +147,8 @@ function compare(label, record, references, failures) {
     if (delta > CELL_TOLERANCE) changed++
     worst = Math.max(worst, delta)
   }
-  const budget = CELL_BUDGET[label] ?? MAX_CHANGED_CELLS
-  if (changed > budget) {
-    const scope = budget === MAX_CHANGED_CELLS ? '' : ` (budget ${budget} for this capture)`
-    failures.push(`${label}: ${changed}/${GRID * GRID} cells changed (max delta ${worst})${scope}`)
+  if (changed > MAX_CHANGED_CELLS) {
+    failures.push(`${label}: ${changed}/${GRID * GRID} cells changed (max delta ${worst})`)
     return false
   }
   return true
@@ -220,6 +200,17 @@ async function prepareOrbit(page, selector, times = [4250, 6600, 8750]) {
   }, times)
 }
 
+// The site's sticky header floats over the page, so how much of it overlaps the
+// #app element being clipped depends on the scroll position at capture time.
+// That is not a property of the app preview, and it moved between runs: a CI
+// capture showed the app's own title bar while the local one showed the site nav
+// covering it — 41/1024 cells at delta 160, far outside anti-aliasing noise.
+// The mobile workflow captures already hide it for exactly this reason; the
+// desktop ones did not, which is the bug.
+async function hideStickyHeader(page) {
+  await page.addStyleTag({ content: '#bar { display: none !important }' })
+}
+
 async function stabilizeWorkflowPreview(page, status) {
   await page.locator('[data-view="storage"]').click()
   await page.waitForFunction(() => parseFloat(document.querySelector('#vTrack')?.style.width) >= 15)
@@ -242,6 +233,7 @@ async function stabilizeWorkflowPreview(page, status) {
       animation.pause()
     }
   }, status)
+  await hideStickyHeader(page)
   await prepareOrbit(page, '.ct-logo--app')
 }
 
@@ -328,11 +320,14 @@ async function stateCaptures(browser, base) {
   await state('workflow-paused', { viewport: DESKTOP }, async page => {
     await stabilizeWorkflowPreview(page, 'paused')
   }, '#app')
-  await state('workflow-complete', { viewport: DESKTOP, reducedMotion: 'reduce' }, page => freeze(page), '#app')
+  await state('workflow-complete', { viewport: DESKTOP, reducedMotion: 'reduce' }, async page => {
+    await freeze(page)
+    await hideStickyHeader(page)
+  }, '#app')
   await state('mobile-reduced', { viewport: MOBILE, reducedMotion: 'reduce', theme: 'dark' }, page => freeze(page), null)
   const workflow = async page => {
     await freeze(page)
-    await page.addStyleTag({ content: '#bar { display:none !important }' })
+    await hideStickyHeader(page)
   }
   await state('workflow-mobile-en', { viewport: MOBILE, reducedMotion: 'reduce', path: '/en' }, workflow, '#how')
   await state('workflow-mobile-fr', { viewport: MOBILE, reducedMotion: 'reduce', path: '/fr' }, workflow, '#how')
