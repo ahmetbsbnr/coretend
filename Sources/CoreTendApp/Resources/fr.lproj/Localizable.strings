@@ -719,3 +719,10 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "cleanup.group.item_count_one" = "1 élément";
 "cleanup.group.item_count_other" = "%d éléments";
 "spacelens.open_folder" = "Ouvrir le dossier";
+"dupes.results.sentence" = "%d groupes · %@ en copies supplémentaires · %@ sélectionnés";
+"dupes.select_extras" = "Sélectionner toutes les copies en trop";
+"dupes.copies_count" = "%d copies";
+"dupes.group_a11y" = "%@, %d copies, %@ en copies supplémentaires";
+"dupes.group_fact" = "%d copies de %@ · les copies en trop occupent %@";
+"dupes.select_group_title" = "Sélectionnez un groupe";
+"dupes.select_group_message" = "Chaque groupe est un même fichier présent à plusieurs endroits.";

@@ -30,4 +30,14 @@ mk "Library/Developer/Xcode/iOS DeviceSupport/17.4 (21E219)/Symbols/usr/lib/dyld
 mk "Downloads/Firefox 128.0.dmg" 130 45
 mk "Downloads/A very long archive name that a person actually gave their download because they were in a hurry.zip" 590 90
 mk "Downloads/report.pdf.download/report.pdf" 3 15
+# Duplicates: the same bytes in several places. Content must be identical, so
+# each copy is written from one source, not from /dev/zero separately.
+mkdir -p "$home/Documents/Projects/Archive" "$home/Pictures/2025" "$home/Desktop"
+head -c 3145728 /dev/urandom > "$home/Pictures/2025/IMG_4821.HEIC"
+cp "$home/Pictures/2025/IMG_4821.HEIC" "$home/Downloads/IMG_4821 (2).HEIC"
+cp "$home/Pictures/2025/IMG_4821.HEIC" "$home/Desktop/IMG_4821 copy.HEIC"
+head -c 8388608 /dev/urandom > "$home/Documents/Projects/proposal-final.pdf"
+cp "$home/Documents/Projects/proposal-final.pdf" "$home/Documents/Projects/Archive/proposal-final.pdf"
+head -c 1048576 /dev/urandom > "$home/Downloads/setup-notes.txt"
+cp "$home/Downloads/setup-notes.txt" "$home/Documents/setup-notes.txt"
 echo "$home"

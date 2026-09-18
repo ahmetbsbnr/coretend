@@ -97,6 +97,7 @@ final class DuplicatesViewModel: CancellableScan {
                     }
                 case let .finished(count, wasted):
                     phase = groups.isEmpty ? .empty : .results
+                    CaptureHarness.note(state: groups.isEmpty ? "empty" : "results")
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .scan, summary: "Duplicate scan: \(count) groups",
                         itemCount: count, bytes: wasted))
@@ -128,6 +129,16 @@ final class DuplicatesViewModel: CancellableScan {
 
     func resetPhaseAfterCancellation() {
         if case .scanning = phase { phase = groups.isEmpty ? .idle : .results }
+    }
+
+    /// Every copy that is not the suggested keeper. The batch rule people
+    /// actually want, offered as one click rather than a hundred.
+    func selectAllButKeepers() {
+        for group in filteredGroups {
+            for url in group.urls where url.path != group.keeper.path {
+                selectedPaths.insert(url.path)
+            }
+        }
     }
 
     func removeSelected() {
@@ -227,11 +238,12 @@ final class DuplicatesViewModel: CancellableScan {
 struct DuplicatesView: View {
     @State private var model = DuplicatesViewModel()
     @State private var showMoveConfirmation = false
+    @State private var selectedGroupID: String?
 
     var body: some View {
         VStack(spacing: 0) {
             switch model.phase {
-            case .idle: idleView
+            case .idle: idleView.onAppear { if CaptureHarness.autostartScan { model.start() } }
             case let .scanning(processed, total): scanningView(processed, total)
             case .empty: emptyView
             case .results, .executing: resultsView
@@ -320,106 +332,78 @@ struct DuplicatesView: View {
                      actionTitle: L("smartcare.scan_again")) { model.start() }
     }
 
+    /// The decision workflow: pick a group on the left, decide on the right.
+    ///
+    /// Every group is one line — the name, how many copies, what one copy
+    /// weighs, what the extra copies cost. The right pane shows the copies of
+    /// the selected group with the suggested keeper marked and the reason
+    /// spelled out, a checkbox per copy, and Quick Look on Space. The former
+    /// layout listed every copy of every group in one scroll, with the wasted
+    /// total in 40pt on top; a decision screen that starts with a number in
+    /// display type is a screen that has decided for you.
     private var resultsView: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .center) {
-                VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-                    Text(mcFormatBytes(model.wastedBytes))
-                        .font(MCFont.displayMetric)
-                        .monospacedDigit()
-                        .contentTransition(.numericText())
-                    Text(L("dupes.results.summary", model.groups.count, mcFormatBytes(model.selectedBytes), mcFormatBytes(model.wastedBytes)))
-                        .font(MCFont.secondaryBody)
-                        .foregroundStyle(MCColor.textSecondary)
-                    // The keeper-selection rule, stated once — not repeated on
-                    // every group's keeper row.
-                    Text(L("dupes.suggested_keeper.why"))
-                        .font(MCFont.caption)
-                        .foregroundStyle(MCColor.textSecondary)
-                }
+            HStack(alignment: .firstTextBaseline, spacing: MCSpacing.md) {
+                Text(L("dupes.results.sentence", model.groups.count, mcFormatBytes(model.wastedBytes),
+                       mcFormatBytes(model.selectedBytes)))
+                    .font(MCFont.body)
                 Spacer()
-                Button {
-                    exportResults()
-                } label: {
-                    Label(L("activity.export_csv"), systemImage: "square.and.arrow.down")
-                }
-                .disabled(model.filteredGroups.isEmpty)
-                .accessibilityIdentifier("duplicates.results.export")
-                Button(L("dupes.move_to_trash")) {
-                    showMoveConfirmation = true
-                }
-                .buttonStyle(.bordered)
-                .disabled(model.selectedPaths.isEmpty || model.phase == .executing)
-                .accessibilityIdentifier("duplicates.results.remove")
+                Button(L("dupes.select_extras")) { model.selectAllButKeepers() }
+                    .buttonStyle(.bordered)
+                    .disabled(model.filteredGroups.isEmpty)
+                Button(L("dupes.move_to_trash")) { showMoveConfirmation = true }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(model.selectedPaths.isEmpty || model.phase == .executing)
+                    .accessibilityIdentifier("duplicates.results.remove")
             }
-            .padding()
-            HStack {
-                MCSearchField(text: $model.searchText, placeholder: L("clutter.search_placeholder"))
-                if model.availableVolumes.count > 1 {
-                    Picker(L("clutter.volume"), selection: $model.selectedVolumeID) {
-                        Text(L("clutter.all_volumes")).tag(String?.none)
-                        ForEach(model.availableVolumes) { volume in
-                            Text(volume.id == VolumeInfo.unavailable.id ? L("clutter.volume_unavailable") : volume.name)
-                                .tag(String?.some(volume.id))
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .frame(width: 180)
-                }
-                Spacer()
-                ExclusionsMenu(controller: model.exclusionsController)
-            }
-            .padding(.horizontal).padding(.bottom, MCSpacing.xs)
-            List {
-                ForEach(model.filteredGroups) { group in
-                    Section {
-                        // Overlap motif: near-duplicate copies shown slightly
-                        // overlapping, separating on hover — the rows below
-                        // remain the real accessible detail and controls.
-                        MCOverlapStack(items: group.urls.map { DupMember(id: $0.path, url: $0) },
-                                       markedID: group.keeper.path) { member in
-                            Image(nsImage: NSWorkspace.shared.icon(forFile: member.url.path))
-                                .resizable().frame(width: 32, height: 32)
-                                .padding(MCSpacing.xxs)
-                        }
-                        .padding(.vertical, MCSpacing.xxs)
-                        ForEach(group.urls, id: \.path) { url in
-                            HStack {
-                                Toggle("", isOn: Binding(
-                                    get: { model.selectedPaths.contains(url.path) },
-                                    set: { on in
-                                        if on { model.selectedPaths.insert(url.path) }
-                                        else { model.selectedPaths.remove(url.path) }
-                                    }
-                                ))
-                                .labelsHidden()
-                                .accessibilityLabel(L("dupes.select_copy", url.lastPathComponent))
-                                Text(url.lastPathComponent)
-                                if url.path == group.keeper.path {
-                                    Text(L("dupes.suggested_keeper"))
-                                        .font(MCFont.microEmphasis)
-                                        .padding(.horizontal, MCSpacing.xs).padding(.vertical, MCSpacing.xxs)
-                                        .background(MCTheme.accent.opacity(0.2), in: Capsule())
-                                        .help(L("dupes.suggested_keeper.why"))
+            .padding(.horizontal, MCSpacing.page).padding(.vertical, MCSpacing.sm)
+            Divider()
+            HStack(spacing: 0) {
+                VStack(spacing: 0) {
+                    HStack(spacing: MCSpacing.xs) {
+                        MCSearchField(text: $model.searchText, placeholder: L("clutter.search_placeholder"))
+                        if model.availableVolumes.count > 1 {
+                            Picker(L("clutter.volume"), selection: $model.selectedVolumeID) {
+                                Text(L("clutter.all_volumes")).tag(String?.none)
+                                ForEach(model.availableVolumes) { volume in
+                                    Text(volume.id == VolumeInfo.unavailable.id ? L("clutter.volume_unavailable") : volume.name)
+                                        .tag(String?.some(volume.id))
                                 }
-                                Spacer()
-                                Text(url.deletingLastPathComponent().path)
-                                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                                    .lineLimit(1).truncationMode(.middle)
-                                ExcludeButton(url: url, controller: model.exclusionsController)
                             }
-                            .fileRowActions(FileRowAction.inspection(for: url) {
-                                model.previewURL = $0
-                            })
+                            .pickerStyle(.menu).labelsHidden().frame(width: 140)
                         }
-                    } header: {
-                        Text(L("dupes.group_header", group.urls.count, mcFormatBytes(group.fileSize)))
+                        Spacer(minLength: 0)
+                        ExclusionsMenu(controller: model.exclusionsController)
                     }
+                    .padding(.horizontal, MCSpacing.sm).padding(.vertical, MCSpacing.xs)
+                    Divider()
+                    List(model.filteredGroups, selection: $selectedGroupID) { group in
+                        HStack(spacing: MCSpacing.xs) {
+                            Image(nsImage: NSWorkspace.shared.icon(forFile: group.keeper.path))
+                                .resizable().frame(width: 16, height: 16).accessibilityHidden(true)
+                            Text(group.keeper.lastPathComponent).lineLimit(1)
+                            Text(L("dupes.copies_count", group.urls.count))
+                                .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+                            Spacer(minLength: MCSpacing.xs)
+                            Text(mcFormatBytes(group.wastedBytes)).font(MCFont.tabular)
+                                .foregroundStyle(MCColor.textSecondary)
+                        }
+                        .tag(group.id)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel(L("dupes.group_a11y", group.keeper.lastPathComponent,
+                                              group.urls.count, mcFormatBytes(group.wastedBytes)))
+                    }
+                    .listStyle(.plain)
+                    .environment(\.defaultMinListRowHeight, 28)
                 }
+                .frame(minWidth: 300, idealWidth: 380, maxWidth: 460)
+                Divider()
+                groupDetail
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .listStyle(.inset)
-            .quickLookPreview($model.previewURL)
         }
+        .onAppear { if selectedGroupID == nil { selectedGroupID = model.filteredGroups.first?.id } }
+        .quickLookPreview($model.previewURL)
         .alert(L("settings.migration_failed"), isPresented: Binding(
             get: { model.exportError != nil },
             set: { if !$0 { model.exportError = nil } }
@@ -428,6 +412,64 @@ struct DuplicatesView: View {
         } message: {
             Text(model.exportError ?? "")
         }
+    }
+
+    @ViewBuilder
+    private var groupDetail: some View {
+        if let group = model.filteredGroups.first(where: { $0.id == selectedGroupID }) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: MCSpacing.md) {
+                    Text(group.keeper.lastPathComponent).font(MCFont.pageTitle).lineLimit(2)
+                    Text(L("dupes.group_fact", group.urls.count, mcFormatBytes(group.fileSize),
+                           mcFormatBytes(group.wastedBytes)))
+                        .font(MCFont.body).foregroundStyle(MCColor.textSecondary)
+                    Text(L("dupes.suggested_keeper.why")).font(MCFont.caption)
+                        .foregroundStyle(MCColor.textSecondary)
+                    Divider()
+                    ForEach(group.urls, id: \.path) { url in
+                        copyRow(url, in: group)
+                        Divider()
+                    }
+                }
+                .padding(MCSpacing.page)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        } else {
+            MCEmptyState(icon: "sidebar.left", title: L("dupes.select_group_title"),
+                         message: L("dupes.select_group_message"))
+        }
+    }
+
+    private func copyRow(_ url: URL, in group: DuplicateGroup) -> some View {
+        let isKeeper = url.path == group.keeper.path
+        return HStack(alignment: .top, spacing: MCSpacing.sm) {
+            Toggle("", isOn: Binding(
+                get: { model.selectedPaths.contains(url.path) },
+                set: { on in
+                    if on { model.selectedPaths.insert(url.path) } else { model.selectedPaths.remove(url.path) }
+                }
+            ))
+            .labelsHidden()
+            .accessibilityLabel(L("dupes.select_copy", url.lastPathComponent))
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: MCSpacing.xs) {
+                    Text(url.deletingLastPathComponent().path).font(MCFont.monoCaption)
+                        .lineLimit(1).truncationMode(.middle)
+                    if isKeeper {
+                        Text(L("dupes.suggested_keeper")).font(MCFont.badge)
+                            .padding(.horizontal, 6).padding(.vertical, 2)
+                            .background(MCTheme.success.opacity(0.18), in: Capsule())
+                            .foregroundStyle(MCTheme.success)
+                    }
+                }
+                Text(model.recommendationText(for: url, in: group))
+                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+            }
+            Spacer(minLength: 0)
+            ExcludeButton(url: url, controller: model.exclusionsController)
+        }
+        .padding(.vertical, MCSpacing.xxs)
+        .fileRowActions(FileRowAction.inspection(for: url) { model.previewURL = $0 })
     }
 
     private func finishedView(_ outcome: ExecutionOutcome) -> some View {
