@@ -211,6 +211,10 @@ struct CleanupView: View {
             }
         }
         .navigationTitle(L("module.storage"))
+        .scanCommands(
+            start: { model.startScan() },
+            pauseOrResume: { model.isScanPaused ? model.resumeScan() : model.pauseScan() },
+            cancel: { model.cancelScan() })
         .accessibilityIdentifier("storage.root")
         .confirmationDialog(
             L("common.trash_confirm.title"),

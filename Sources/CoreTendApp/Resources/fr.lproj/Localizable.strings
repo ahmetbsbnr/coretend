@@ -648,3 +648,8 @@
 "spacelens.delete.changed" = "il a changé sur le disque après vérification, donc rien n'a été supprimé";
 "safety.reason.permission" = "macOS a refusé l'autorisation de les déplacer.";
 "safety.reason.trash_failed" = "macOS a refusé le déplacement (%@ %d).";
+"menu.go" = "Aller";
+"menu.scan" = "Analyse";
+"menu.scan.start" = "Lancer l'analyse";
+"menu.scan.pause_resume" = "Suspendre ou reprendre l'analyse";
+"menu.scan.cancel" = "Annuler l'analyse";

@@ -107,6 +107,7 @@ public struct CoreTendApp: App {
         .defaultSize(width: MCSize.windowDefaultWidth, height: MCSize.windowDefaultHeight)
         .commands {
             CoreTendHelpCommands()
+            CoreTendNavigationCommands()
         }
 
         // Settings is a scene, not a sidebar row.

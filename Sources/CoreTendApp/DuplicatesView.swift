@@ -239,6 +239,10 @@ struct DuplicatesView: View {
             }
         }
         .navigationTitle(L("module.duplicates"))
+        .scanCommands(
+            start: { model.start() },
+            pauseOrResume: { model.isScanPaused ? model.resumeScan() : model.pauseScan() },
+            cancel: { model.cancel() })
         .accessibilityIdentifier("duplicates.root")
         .confirmationDialog(
             L("common.trash_confirm.title"),

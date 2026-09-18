@@ -154,6 +154,7 @@ struct MyClutterView: View {
             if tab == 0 { LargeOldFilesView() } else { SimilarImagesView() }
         }
         .navigationTitle(L("clutter.title"))
+
     }
 }
 
@@ -331,6 +332,10 @@ struct LargeOldFilesView: ModuleSubScreen {
             }
             .listStyle(.inset)
             .quickLookPreview($model.previewURL)
+            .scanCommands(
+                start: { model.start() },
+                pauseOrResume: { model.isScanPaused ? model.resume() : model.pause() },
+                cancel: { model.cancel() })
         }
     }
 }
