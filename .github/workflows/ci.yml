@@ -59,6 +59,12 @@ jobs:
       - name: Brand assets (app and website agree)
         run: zsh Scripts/sync-brand-to-site.sh --check
 
+      # The landing page's demo may show fewer modules than the app, never
+      # different ones. It had a "Scan" group the app does not have, with
+      # Integrity inside it instead of under System.
+      - name: Site demo matches the app's navigation
+        run: python3 Scripts/check-site-navigation.py
+
       - name: Debug build
         run: Scripts/build.sh
 
