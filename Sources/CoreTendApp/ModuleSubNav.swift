@@ -38,6 +38,37 @@ struct ModuleSubNav<Content: View>: View {
     /// Matches the width the three call sites had converged on independently.
     private let controlWidth: CGFloat = 360
 
+    /// Sub-navigation, in whatever the current system idiom is.
+    ///
+    /// macOS 27 introduced `PickerStyle.tabs`, which is the platform's own
+    /// answer to exactly this control: a small set of peer sections at the top
+    /// of a pane. A segmented control is the previous generation's answer and
+    /// still reads as one on 27 — it is a *value* picker borrowed for
+    /// navigation, which is why it has always looked slightly wrong here.
+    ///
+    /// Gated rather than adopted outright, because the deployment target is
+    /// macOS 14 and `.tabs` does not exist there. Below 27 the segmented
+    /// control stays, which is not a degraded experience: it is what the app
+    /// shipped and what that OS expects.
+    @ViewBuilder
+    private var picker: some View {
+        if #available(macOS 27.0, *) {
+            Picker("", selection: $selection) {
+                ForEach(sections) { section in
+                    Text(section.label).tag(section.id)
+                }
+            }
+            .pickerStyle(.tabs)
+        } else {
+            Picker("", selection: $selection) {
+                ForEach(sections) { section in
+                    Text(section.label).tag(section.id)
+                }
+            }
+            .pickerStyle(.segmented)
+        }
+    }
+
     // A VStack, not `.safeAreaInset(edge: .top)`. The inset variant is what the
     // two earlier hand-rolled sub-navs used, and it works only as long as the
     // content honours the safe area. `InstalledAppsView` is an `HSplitView`,
@@ -49,15 +80,10 @@ struct ModuleSubNav<Content: View>: View {
     var body: some View {
         VStack(spacing: 0) {
             VStack(spacing: 0) {
-                Picker("", selection: $selection) {
-                    ForEach(sections) { section in
-                        Text(section.label).tag(section.id)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .frame(maxWidth: controlWidth)
-                .padding(.vertical, MCSpacing.sm)
+                picker
+                    .labelsHidden()
+                    .frame(maxWidth: controlWidth)
+                    .padding(.vertical, MCSpacing.sm)
                 Divider()
             }
             .frame(maxWidth: .infinity)

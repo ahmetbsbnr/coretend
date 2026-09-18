@@ -143,3 +143,31 @@ struct SidebarSizeContractTests {
         }
     }
 }
+
+@Suite("Sub-navigation adopts the current idiom")
+struct SubNavIdiomTests {
+    private let root = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+
+    private func subNav() throws -> String {
+        try String(contentsOf: root.appendingPathComponent("Sources/CoreTendApp/ModuleSubNav.swift"),
+                   encoding: .utf8)
+    }
+
+    /// macOS 27 introduced `PickerStyle.tabs`, the platform's own answer to a
+    /// small set of peer sections at the top of a pane. A segmented control is
+    /// the previous generation's answer and is a *value* picker borrowed for
+    /// navigation, which is why it always read slightly wrong here.
+    @Test func theCurrentIdiomIsAdopted() throws {
+        #expect(try subNav().contains(".pickerStyle(.tabs)"))
+    }
+
+    /// And gated, because the deployment target is macOS 14 where `.tabs` does
+    /// not exist — the compiler refuses it ungated, which is the check working.
+    @Test func itIsGatedForTheDeploymentTarget() throws {
+        let text = try subNav()
+        #expect(text.contains("#available(macOS 27.0, *)"))
+        #expect(text.contains(".pickerStyle(.segmented)"),
+                "no fallback for macOS 14–26, where .tabs does not exist")
+    }
+}
