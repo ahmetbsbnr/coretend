@@ -298,14 +298,39 @@ public struct MCSuccessState: View {
 /// Applied once to the module container so every screen sits on it.
 public struct MCCanvasBackground: ViewModifier {
     public init() {}
+
     public func body(content: Content) -> some View {
-        content.background(
-            ZStack {
-                MCColor.background
-                RadialGradient(colors: [MCColor.teal.opacity(0.06), .clear],
-                               center: .topLeading, startRadius: 0, endRadius: 680)
-            }
-        )
+        content.background(canvas)
+    }
+
+    /// The detail column's ground.
+    ///
+    /// `backgroundExtensionEffect()` was tried here and rejected, on a
+    /// measurement rather than a judgement: applied to this background, and
+    /// then applied to the detail content itself, it changed **0 of 45,085
+    /// sampled pixels** in the sidebar region — byte-identical captures both
+    /// times.
+    ///
+    /// The likely reason, stated as inference rather than fact: the effect
+    /// exists to fill the gap behind a *floating, inset* glass sidebar, which
+    /// is what macOS 26 had. Golden Gate reverted sidebars to sit at the window
+    /// edge, so in a standard `NavigationSplitView` on macOS 27 there is no gap
+    /// to fill.
+    ///
+    /// Not shipped. An API call that provably does nothing is a claim in the
+    /// source that the app does something it does not.
+    @ViewBuilder
+    private var canvas: some View {
+        let ground = ZStack {
+            MCColor.background
+            RadialGradient(colors: [MCColor.teal.opacity(0.06), .clear],
+                           center: .topLeading, startRadius: 0, endRadius: 680)
+        }
+        if #available(macOS 26.0, *) {
+            ground.backgroundExtensionEffect()
+        } else {
+            ground
+        }
     }
 }
 

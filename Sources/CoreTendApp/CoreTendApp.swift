@@ -715,3 +715,4 @@ private struct CommandPaletteView: View {
         isPresented = false
     }
 }
+
