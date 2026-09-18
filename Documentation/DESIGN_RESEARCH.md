@@ -1,6 +1,14 @@
 # Design research — what current, and what CoreTend gets wrong
 
-Date: 2026-09-18 · Status: research complete, direction not yet chosen
+Date: 2026-09-18 · **Partly superseded — see `DESIGN_RESEARCH_MACOS27.md`**
+
+> This document was researched against macOS Tahoe 26 guidance. This machine
+> runs macOS 27 Golden Gate, which **reverses §1.1 (sidebar icon tinting) and
+> §1.3 (window corner radius)**. §1.5 (the app icon) and §2 (motion) stand.
+> §3 — that the app has no visual idea — is unaffected by any OS release.
+> Read `DESIGN_RESEARCH_MACOS27.md` before acting on anything here.
+
+Status: research complete, direction not yet chosen
 
 Written because the previous pass systematized the existing design instead of
 reimagining it. This is the research that should have come first.
