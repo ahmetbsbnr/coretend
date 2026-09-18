@@ -10,7 +10,7 @@ import Persistence
 @MainActor
 @Observable
 final class LeftoversViewModel {
-    enum Phase: Equatable { case idle, scanning, results, empty, finished(freed: Int64) }
+    enum Phase: Equatable { case idle, scanning, results, empty, finished(ExecutionOutcome) }
 
     var phase: Phase = .idle
     var leftovers: [AssociatedItem] = []
@@ -70,13 +70,12 @@ final class LeftoversViewModel {
                 approved.append(op)
             }
         }
-        let result = await center.execute(approved)
-        let freed = result.executed.reduce(0) { $0 + $1.logicalSize }
-        phase = .finished(freed: freed)
+        let outcome = ExecutionOutcome(result: await center.execute(approved))
+        phase = .finished(outcome)
         AppEnvironment.shared.record(ActivityRecord(
             kind: .cleanup,
-            summary: "Removed \(result.executed.count) leftover items",
-            itemCount: result.executed.count, bytes: freed))
+            summary: outcome.annotate("Removed \(outcome.executedCount) leftover items"),
+            itemCount: outcome.executedCount, bytes: outcome.freedBytes))
     }
 }
 
@@ -101,9 +100,10 @@ struct LeftoversView: View {
                     actionTitle: L("smartcare.scan_again")) { Task { await model.scan() } }
             case .results:
                 resultsView
-            case let .finished(freed):
+            case let .finished(outcome):
                 MCSuccessState(
-                    title: L("leftovers.finished.moved", mcFormatBytes(freed)),
+                    title: L("leftovers.finished.moved", mcFormatBytes(outcome.freedBytes)),
+                    message: outcome.message,
                     actionTitle: L("smartcare.scan_again")) { Task { await model.scan() } }
             }
         }

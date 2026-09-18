@@ -15,7 +15,7 @@ import ScanCore
 @MainActor
 @Observable
 final class PrivacyCleanerViewModel {
-    enum Phase: Equatable { case scanning, results, empty, finished(freed: Int64) }
+    enum Phase: Equatable { case scanning, results, empty, finished(ExecutionOutcome) }
 
     var phase: Phase = .scanning
     var profiles: [BrowserProfile] = []
@@ -122,13 +122,12 @@ final class PrivacyCleanerViewModel {
                 }
             }
         }
-        let result = await center.execute(approved)
-        let freed = result.executed.reduce(0) { $0 + $1.logicalSize }
-        phase = .finished(freed: freed)
+        let outcome = ExecutionOutcome(result: await center.execute(approved))
+        phase = .finished(outcome)
         AppEnvironment.shared.record(ActivityRecord(
             kind: .cleanup,
-            summary: "Browser caches moved to Trash",
-            itemCount: result.executed.count, bytes: freed))
+            summary: outcome.annotate("Browser caches moved to Trash"),
+            itemCount: outcome.executedCount, bytes: outcome.freedBytes))
     }
 }
 
@@ -171,9 +170,10 @@ struct PrivacyCleanerView: View {
                              iconSize: MCIconSize.emptyState)
             case .results:
                 resultsView
-            case let .finished(freed):
+            case let .finished(outcome):
                 MCSuccessState(
-                    title: L("privacy.finished.moved", mcFormatBytes(freed)),
+                    title: L("privacy.finished.moved", mcFormatBytes(outcome.freedBytes)),
+                    message: outcome.message,
                     actionTitle: L("smartcare.scan_again")) { Task { await model.scan() } }
             }
         }

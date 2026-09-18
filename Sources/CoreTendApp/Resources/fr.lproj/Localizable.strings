@@ -598,3 +598,7 @@
 "finding.risk_prefix" = "%@";
 "finding.modified_prefix" = "modifié %@";
 "finding.a11y.evidence" = "%@, %@";
+
+/* Issue d’exécution — les éléments ignorés étaient auparavant écartés par
+   chaque écran de nettoyage, rendant un échec partiel invisible. */
+"cleanup.done.skipped" = "%d élément(s) ont été ignorés et laissés intacts. Le journal de sécurité en explique la raison.";

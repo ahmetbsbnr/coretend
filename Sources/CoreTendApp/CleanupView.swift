@@ -12,7 +12,7 @@ import Persistence
 @Observable
 final class CleanupViewModel {
     enum Phase: Equatable {
-        case idle, scanning, review, running, done(freed: Int64), failed(String)
+        case idle, scanning, review, running, done(ExecutionOutcome), failed(String)
     }
 
     var phase: Phase = .idle
@@ -145,13 +145,16 @@ final class CleanupViewModel {
                     approved.append(op)
                 }
             }
-            let result = await center.execute(approved)
-            let freed = result.executed.reduce(0) { $0 + $1.logicalSize }
-            phase = .done(freed: freed)
+            let outcome = ExecutionOutcome(result: await center.execute(approved))
+            phase = .done(outcome)
+            // Both counts reach the log, not just the successes: SafetyCore
+            // skipping a path that changed between approval and execution is
+            // the product working, and a record that omits it reads as if
+            // everything went through.
             AppEnvironment.shared.record(ActivityRecord(
                 kind: .cleanup,
-                summary: "Moved \(result.executed.count) items to Trash",
-                itemCount: result.executed.count, bytes: freed))
+                summary: outcome.annotate("Moved \(outcome.executedCount) items to Trash"),
+                itemCount: outcome.executedCount, bytes: outcome.freedBytes))
         }
     }
 }
@@ -169,8 +172,8 @@ struct CleanupView: View {
                 scanningView
             case .review, .running:
                 reviewView.padding(MCSpacing.page)
-            case let .done(freed):
-                doneView(freed: freed)
+            case let .done(outcome):
+                doneView(outcome)
             case let .failed(message):
                 Text(L("cleanup.failed", message)).foregroundStyle(MCTheme.danger)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -384,9 +387,10 @@ struct CleanupView: View {
         }
     }
 
-    private func doneView(freed: Int64) -> some View {
+    private func doneView(_ outcome: ExecutionOutcome) -> some View {
         MCSuccessState(
-            title: L("cleanup.done.moved", mcFormatBytes(freed)),
+            title: outcome.title,
+            message: outcome.message,
             actionTitle: L("smartcare.scan_again")) { model.startScan() }
     }
 }

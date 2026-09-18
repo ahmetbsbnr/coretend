@@ -18,7 +18,7 @@ private struct DupMember: Identifiable {
 @MainActor
 @Observable
 final class DuplicatesViewModel {
-    enum Phase: Equatable { case idle, scanning(processed: Int, total: Int), results, empty, executing, finished(freed: Int64) }
+    enum Phase: Equatable { case idle, scanning(processed: Int, total: Int), results, empty, executing, finished(ExecutionOutcome) }
 
     var phase: Phase = .idle
     var groups: [DuplicateGroup] = []
@@ -154,13 +154,12 @@ final class DuplicatesViewModel {
                     approved.append(op)
                 }
             }
-            let result = await center.execute(approved)
-            let freed = result.executed.reduce(0) { $0 + $1.logicalSize }
-            phase = .finished(freed: freed)
+            let outcome = ExecutionOutcome(result: await center.execute(approved))
+            phase = .finished(outcome)
             AppEnvironment.shared.record(ActivityRecord(
                 kind: .cleanup,
-                summary: "Moved \(result.executed.count) duplicate copies to Trash",
-                itemCount: result.executed.count, bytes: freed))
+                summary: outcome.annotate("Moved \(outcome.executedCount) duplicate copies to Trash"),
+                itemCount: outcome.executedCount, bytes: outcome.freedBytes))
         }
     }
 
@@ -233,7 +232,7 @@ struct DuplicatesView: View {
             case let .scanning(processed, total): scanningView(processed, total)
             case .empty: emptyView
             case .results, .executing: resultsView
-            case let .finished(freed): finishedView(freed)
+            case let .finished(outcome): finishedView(outcome)
             }
         }
         .navigationTitle(L("module.duplicates"))
@@ -430,9 +429,10 @@ struct DuplicatesView: View {
         }
     }
 
-    private func finishedView(_ freed: Int64) -> some View {
+    private func finishedView(_ outcome: ExecutionOutcome) -> some View {
         MCSuccessState(
-            title: L("leftovers.finished.moved", mcFormatBytes(freed)),
+            title: L("leftovers.finished.moved", mcFormatBytes(outcome.freedBytes)),
+            message: outcome.message,
             actionTitle: L("smartcare.scan_again")) { model.start() }
     }
 
