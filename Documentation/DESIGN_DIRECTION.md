@@ -64,38 +64,68 @@ Three principles the rest of the work is held to:
 
 ## 3. Done
 
+### Correctness
 - **Cancel works in five modules.** `AsyncStream` exits the loop before the
   `.cancelled` event, so every `case .cancelled: phase = .idle` was dead code.
-  `CancellableScan` resets synchronously. 8 tests, 6 verified negatively.
-- **Blank sidebar.** Not the documented `TabView` hazard — a
-  `.fixedSize(horizontal: false, vertical: true)` on a long `Text` propagating
-  its unwrapped ideal width as the detail column's minimum, collapsing the
-  sidebar to zero. Rows stayed in the accessibility tree the whole time, which
-  is why every existing gate passed. `Scripts/check-sidebar-rendered.py` is the
-  pixel gate that catches it.
-- **One sub-navigation idiom** (`ModuleSubNav`) replacing three.
-- **The app owns its appearance, palette and sidebar.** The selected row was
-  the user's *system* accent — green on this Mac, pink on another — while the
-  brand is teal.
-- **Per-capability authorization model** replacing one boolean.
-- **Update check and download verification**, with the automatic check that was
-  specified in the strings tables and never implemented.
-- **Help menu localized**; Keyboard Shortcuts shows shortcuts (⌘/).
-- **A shipped localization bug**: a `|||||||` merge-conflict marker in both
-  tables silently truncated the parser, so every key after it resolved to its
-  own name in a released build.
+  8 tests, 6 verified negatively.
+- **An unreadable exclusion list is no longer the same value as an empty one.**
+  `(try? …) ?? []` made a failed store produce zero exclusions, so folders the
+  user had explicitly protected came back *already ticked* for deletion.
+- **A run that did nothing no longer reports as a quiet success.** Validator
+  refusals were dropped by `try? await center.approve(…)` before reaching the
+  result, so forty refused files rendered as "Moved 0 bytes to Trash".
+- **Execution failures say what happened.** Every `trashItem` failure was
+  reported as `.fileVanished`, including permission denied.
+- **Store failure is a reportable state**, not two stacked silent `try?`s that
+  could leave the app writing the user's history to RAM.
 
-## 4. Removed for describing what does not exist
+### Visual system
+- **One owned appearance.** Fixed palette, contrast ratios recomputed by tests
+  rather than trusted from comments, four-step elevation ladder.
+- **The app owns its accent.** The selected sidebar row was the user's *system*
+  accent — green on this Mac, pink on another — while the brand is teal.
+- **The primary action was white on teal: 1.87:1.** Now 9.65:1. "Move to Trash"
+  was also rendered in the primary style, identical to "Scan".
+- **Four motion tokens** replacing eight durations across four curve families,
+  with a Reduce Motion choke point that cannot be forgotten.
+- **Typography named for what text is**, not how big it is. `.font(.caption)`
+  appeared 56 times while `MCFont.caption` sat unused; zero numeric font
+  literals remain.
+- **One surface implementation.** `MCCard` was used eleven times while the
+  Dashboard hand-rolled five more.
+- **Liquid Glass** on the two navigation-layer surfaces, gated on macOS 26 and
+  disabled under Reduce Transparency.
+- **One Pause/Resume/Cancel cluster** instead of seven, two of which had lost
+  their accessibility identifiers entirely.
 
+### Four app-to-website contracts, all silently broken
+- **Design tokens.** The exporter parsed a format the palette no longer used,
+  exported zero colours and exited 0. The site's `var(--ct-…)` fallbacks then
+  hid it by resolving to the previous palette's literals.
+- **Brand artwork.** The generator restated the palette under a comment
+  promising it mirrored `MCColor.Canonical`. The app icon, DMG background and
+  Open Graph card were regenerated while all seven brand files the site serves
+  stayed in the old palette.
+- **No publish step existed** between generated artwork and the website.
+- **The demo's navigation** invented a group the app does not have.
+
+All four now fail loudly, three of them in CI.
+
+### Removed for describing what does not exist
 - "Privileged helper — Unavailable", whose explanation stopped being true when
   the app started shipping signed.
 - The Appearance section, whose only line said there was nothing to configure.
-- `PlaceholderView` / "This module is under construction" — unreachable.
+- `PlaceholderView` — and its removal was claimed once before it happened.
 - The Notifications permission row. Worse than dead UI: onboarding *requested*
-  notification authorization for a feature that posts no notification anywhere
-  in `Sources/`.
+  notification authorization for a feature that posts no notification anywhere.
 
----
+### Two false reports, corrected
+- `capture-module.sh` passed identifiers that did not resolve, so eleven
+  screenshots of eleven modules were eleven screenshots of the Dashboard, and
+  every check against them passed. "11/11 modules verified" was false.
+- A commit claimed `PlaceholderView` was removed. The replacement had not
+  matched. The view remained, calling a localization key that same commit had
+  deleted.
 
 ## 5. Remaining — the programme
 
