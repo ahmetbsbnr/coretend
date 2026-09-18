@@ -171,3 +171,31 @@ struct SubNavIdiomTests {
                 "no fallback for macOS 14–26, where .tabs does not exist")
     }
 }
+
+/// `.fixedSize(horizontal: false, vertical: true)` inside a module's detail
+/// column starves the NavigationSplitView sidebar to nothing. Phase 1
+/// bisected a blank sidebar to exactly this; the Integrity rebuild then
+/// reproduced it with one explainer line. A capture check catches it after
+/// the fact; this catches it before a build.
+///
+/// Sheets and the onboarding window are not in the split view and may wrap.
+@Suite("Detail columns do not use fixedSize")
+struct DetailColumnLayoutTests {
+    private let root = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+
+    @Test func noModuleViewUsesHorizontalFixedSize() throws {
+        let dir = root.appendingPathComponent("Sources/CoreTendApp")
+        let exempt = ["OnboardingView.swift", "KeyboardShortcutsView.swift", "SettingsView.swift",
+                      "UpdatesView.swift", "DiagnosticReport.swift"]
+        for name in try SourceTree.swiftFiles(under: dir) where !exempt.contains((name as NSString).lastPathComponent) {
+            let text = try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)
+            for line in text.split(separator: "\n") {
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                guard !trimmed.hasPrefix("//") else { continue }
+                #expect(!trimmed.contains("fixedSize(horizontal: false"),
+                        "\(name) uses fixedSize in a detail column, which blanks the sidebar: \(trimmed)")
+            }
+        }
+    }
+}

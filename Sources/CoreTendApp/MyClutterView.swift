@@ -168,7 +168,7 @@ struct LargeOldFilesView: ModuleSubScreen {
                         Text(L("clutter.idle.subtitle"))
                             .font(MCFont.secondaryBody)
                             .multilineTextAlignment(.center).foregroundStyle(MCColor.textSecondary)
-                            .fixedSize(horizontal: false, vertical: true)
+                            .lineLimit(3)
                     }
                     .mcAppear()
 

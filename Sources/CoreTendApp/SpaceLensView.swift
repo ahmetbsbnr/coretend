@@ -305,7 +305,7 @@ struct SpaceMapView: View {
                         .font(MCFont.secondaryBody)
                         .foregroundStyle(MCColor.textSecondary)
                         .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
+                        .lineLimit(3)
                 }
                 .mcAppear()
 

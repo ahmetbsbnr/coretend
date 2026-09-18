@@ -245,7 +245,7 @@ struct JunkCleanupView: View {
                         .font(MCFont.secondaryBody)
                         .foregroundStyle(MCColor.textSecondary)
                         .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
+                        .lineLimit(3)
                 }
                 .mcAppear()
 
@@ -310,7 +310,7 @@ struct JunkCleanupView: View {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundStyle(MCTheme.warning).accessibilityHidden(true)
                     Text(L("cleanup.exclusions_unavailable"))
-                        .font(MCFont.caption).fixedSize(horizontal: false, vertical: true)
+                        .font(MCFont.caption).lineLimit(3)
                 }
                 .padding(.horizontal, MCSpacing.page).padding(.vertical, MCSpacing.xs)
                 .accessibilityElement(children: .combine)

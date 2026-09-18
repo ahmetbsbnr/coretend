@@ -109,9 +109,12 @@ struct IntegrityView: ModuleSubScreen {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .firstTextBaseline, spacing: MCSpacing.md) {
+                // No .fixedSize here. Phase 1 bisected a blank sidebar to a
+                // .fixedSize in a detail column, and this header reproduced it
+                // exactly: the split view starved the sidebar to nothing.
                 Text(L("integrity.explainer.body")).font(MCFont.caption)
                     .foregroundStyle(MCColor.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(2)
                 Spacer()
                 Button(L("integrity.inspector.choose")) { chooseAppToInspect() }
                     .buttonStyle(.bordered)
