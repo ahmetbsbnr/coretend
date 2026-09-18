@@ -251,13 +251,15 @@ final class ApplicationsViewModel {
                 approved.append(op)
             }
         }
-        let result = await center.execute(approved)
-        let freed = result.executed.reduce(0) { $0 + $1.logicalSize }
-        uninstallResult = L("apps.uninstall.result", result.executed.count, mcFormatBytes(freed))
+        let outcome = ExecutionOutcome(result: await center.execute(approved))
+        uninstallResult = [
+            L("apps.uninstall.result", outcome.executedCount, mcFormatBytes(outcome.freedBytes)),
+            outcome.message,
+        ].compactMap { $0 }.joined(separator: "\n")
         AppEnvironment.shared.record(ActivityRecord(
             kind: .cleanup,
-            summary: "Uninstalled \(app.name)",
-            itemCount: result.executed.count, bytes: freed))
+            summary: outcome.annotate("Uninstalled \(app.name)"),
+            itemCount: outcome.executedCount, bytes: outcome.freedBytes))
         await load()
     }
 }

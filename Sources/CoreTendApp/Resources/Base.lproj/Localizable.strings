@@ -599,3 +599,7 @@
 "finding.risk_prefix" = "%@";
 "finding.modified_prefix" = "modified %@";
 "finding.a11y.evidence" = "%@, %@";
+
+/* Execution outcome — skipped operations were previously discarded by every
+   cleanup screen, leaving partial failure invisible outside the Safety Log. */
+"cleanup.done.skipped" = "%d item(s) were skipped and left untouched. The Safety Log explains why.";
