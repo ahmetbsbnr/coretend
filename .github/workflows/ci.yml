@@ -98,7 +98,28 @@ jobs:
           # Bump this deliberately, and regenerate the baseline in the same
           # commit with: node Scripts/visual/capture.mjs --update
           npm install --no-save playwright@1.63.0 pngjs @axe-core/playwright
-          npx playwright install --with-deps chromium
+
+          # Downloading the browser is a network operation inside a blocking
+          # gate, and it fails the way network operations do: main went red on
+          # a TLS timeout pulling Chrome for Testing from Playwright's CDN, on
+          # a commit whose own PR run had passed. A one-shot download turns
+          # every CDN hiccup into a red main and a manual re-run.
+          #
+          # Three attempts with backoff. Still fails loudly if the CDN is
+          # genuinely down — this buys resilience, not silence.
+          for attempt in 1 2 3; do
+            if npx playwright install --with-deps chromium; then
+              break
+            fi
+            if [ "$attempt" = 3 ]; then
+              echo "::error::Playwright could not download Chromium after 3 attempts."
+              echo "Expected: a browser binary for the visual regression gate."
+              echo "This is a download failure, not a test failure — check Playwright CDN reachability."
+              exit 1
+            fi
+            echo "::warning::Browser download failed (attempt $attempt/3); retrying in $((attempt * 15))s."
+            sleep $((attempt * 15))
+          done
           node Scripts/site/test-site.mjs
           node Scripts/visual/capture.mjs
 
