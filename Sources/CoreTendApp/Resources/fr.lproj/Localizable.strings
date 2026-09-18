@@ -588,3 +588,13 @@
 /* Space Lens idle */
 "spacelens.idle.tip" = "Code couleur par type : dossiers, médias, documents, archives et code.";
 "spacelens.favorites_recents" = "Favoris et récents";
+
+/* Niveaux de risque — partagés par les résultats d’analyse et le journal de sécurité. */
+"risk.low" = "Risque faible";
+"risk.medium" = "Risque moyen";
+"risk.high" = "Risque élevé";
+
+/* Ligne de preuve sous un résultat d’analyse. */
+"finding.risk_prefix" = "%@";
+"finding.modified_prefix" = "modifié %@";
+"finding.a11y.evidence" = "%@, %@";

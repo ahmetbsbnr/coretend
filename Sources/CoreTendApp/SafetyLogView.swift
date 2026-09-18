@@ -96,7 +96,7 @@ private struct SafetyLogRow: View {
                 Text(record.redactedPath)
                     .font(.system(.callout, design: .monospaced))
                     .lineLimit(1).truncationMode(.middle)
-                Text("\(record.ruleID) · \(record.risk) · \(mcFormatBytes(record.size)) · \(record.date.formatted(date: .abbreviated, time: .shortened))")
+                Text("\(record.ruleID) · \(FindingMetadata.riskLabel(rawValue: record.risk)) · \(mcFormatBytes(record.size)) · \(record.date.formatted(date: .abbreviated, time: .shortened))")
                     .font(.caption2).foregroundStyle(.secondary)
             }
             Spacer()
@@ -106,7 +106,7 @@ private struct SafetyLogRow: View {
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(
-            "\(stageLabel), \(record.redactedPath), \(L("safetylog.a11y.rule", record.ruleID)), \(L("safetylog.a11y.risk", record.risk)), \(mcFormatBytes(record.size)), \(record.date.formatted(date: .abbreviated, time: .shortened)), \(record.result)"
+            "\(stageLabel), \(record.redactedPath), \(L("safetylog.a11y.rule", record.ruleID)), \(L("safetylog.a11y.risk", FindingMetadata.riskLabel(rawValue: record.risk))), \(mcFormatBytes(record.size)), \(record.date.formatted(date: .abbreviated, time: .shortened)), \(record.result)"
         )
     }
 

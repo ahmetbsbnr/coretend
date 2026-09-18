@@ -588,3 +588,14 @@
 /* Space Lens idle */
 "spacelens.idle.tip" = "Color-coded by type: folders, media, documents, archives and code.";
 "spacelens.favorites_recents" = "Favorites & Recents";
+
+/* Risk levels — shared by scan findings and the Safety Log. Previously the raw
+   enum value leaked into the UI untranslated. */
+"risk.low" = "Low risk";
+"risk.medium" = "Medium risk";
+"risk.high" = "High risk";
+
+/* Evidence line under a scan finding: what the engine already knew and did not say. */
+"finding.risk_prefix" = "%@";
+"finding.modified_prefix" = "modified %@";
+"finding.a11y.evidence" = "%@, %@";
