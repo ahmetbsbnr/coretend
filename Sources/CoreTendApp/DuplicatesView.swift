@@ -423,8 +423,6 @@ struct DuplicatesView: View {
                     Text(L("dupes.group_fact", group.urls.count, mcFormatBytes(group.fileSize),
                            mcFormatBytes(group.wastedBytes)))
                         .font(MCFont.body).foregroundStyle(MCColor.textSecondary)
-                    Text(L("dupes.suggested_keeper.why")).font(MCFont.caption)
-                        .foregroundStyle(MCColor.textSecondary)
                     Divider()
                     ForEach(group.urls, id: \.path) { url in
                         copyRow(url, in: group)

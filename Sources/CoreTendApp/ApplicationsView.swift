@@ -182,6 +182,7 @@ final class ApplicationsViewModel {
     var phase: Phase = .loading
     var apps: [InstalledApp] = []
     var searchText = ""
+    var sortOrder: [KeyPathComparator<InstalledApp>] = [KeyPathComparator(\.sizeBytes, order: .reverse)]
     var selectedApp: InstalledApp?
     var associated: [AssociatedItem] = []
     var selectedAssociatedPaths: Set<String> = []
@@ -199,6 +200,13 @@ final class ApplicationsViewModel {
     var filteredApps: [InstalledApp] {
         guard !searchText.isEmpty else { return apps }
         return apps.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
+    }
+
+    /// The visible apps in the table's order. Grouping contributes a sort
+    /// key ahead of the chosen column, so "group by publisher" reads as
+    /// publisher blocks without losing the table.
+    var sortedApps: [InstalledApp] {
+        groupedApps.flatMap(\.apps).sorted(using: sortOrder)
     }
 
     var groupedApps: [AppGroup] {
@@ -311,11 +319,11 @@ struct InstalledAppsView: ModuleSubScreen {
     var body: some View {
         HStack(spacing: 0) {
             appList
-                .frame(minWidth: 280, idealWidth: 320, maxWidth: 380)
+                .frame(minWidth: 440, idealWidth: 560, maxWidth: 720)
                 .background(MCColor.elevatedBackground)
             Divider()
             detail
-                .frame(minWidth: 360, maxWidth: .infinity, maxHeight: .infinity)
+                .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
         }
         .task { await model.load() }
         .confirmationDialog(
@@ -334,21 +342,18 @@ struct InstalledAppsView: ModuleSubScreen {
 
     private var appList: some View {
         VStack(spacing: 0) {
-            TextField(L("apps.search"), text: $model.searchText)
-                .textFieldStyle(.roundedBorder)
-                .padding(.horizontal, MCSpacing.sm).padding(.top, MCSpacing.sm)
-                .accessibilityIdentifier("applications.search")
             HStack(spacing: MCSpacing.xs) {
-                Text(L("apps.group_by")).foregroundStyle(MCColor.textSecondary)
-                Picker("", selection: $model.grouping) {
+                TextField(L("apps.search"), text: $model.searchText)
+                    .textFieldStyle(.roundedBorder)
+                    .accessibilityIdentifier("applications.search")
+                Picker(L("apps.group_by"), selection: $model.grouping) {
                     ForEach(AppGrouping.allCases) { Text($0.displayName).tag($0) }
                 }
                 .pickerStyle(.menu)
-                .labelsHidden()
+                .fixedSize()
                 .accessibilityIdentifier("applications.grouping")
-                Spacer()
             }
-            .padding(MCSpacing.sm)
+            .padding(.horizontal, MCSpacing.sm).padding(.vertical, MCSpacing.xs)
             switch model.phase {
             case .loading:
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -356,62 +361,53 @@ struct InstalledAppsView: ModuleSubScreen {
                 Text(L("apps.empty")).foregroundStyle(MCColor.textSecondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .ready:
-                // Native, reliable list is always the primary view — grouping
-                // only changes section boundaries, never replaces the list.
-                List(selection: Binding(
+                // A table, because an inventory has four attributes a person
+                // sorts by — name, size, last use, where it came from — and a
+                // capsule row could only show them stacked. Grouping stays as
+                // a sort key rather than as sections, so the table keeps its
+                // columns and its keyboard behaviour.
+                Table(model.sortedApps, selection: Binding(
                     get: { model.selectedApp?.id },
                     set: { id in
                         if let app = model.apps.first(where: { $0.id == id }) {
                             Task { await model.select(app) }
                         }
                     }
-                )) {
-                    ForEach(model.groupedApps) { group in
-                        Section(group.id) {
-                            ForEach(group.apps) { app in
-                                appCapsuleRow(app)
-                                    .tag(app.id)
-                                    .matchedGeometryEffect(id: app.id, in: rowTransition)
+                ), sortOrder: $model.sortOrder) {
+                    TableColumn(L("apps.column_name"), value: \.name) { app in
+                        HStack(spacing: MCSpacing.xs) {
+                            Image(nsImage: NSWorkspace.shared.icon(forFile: app.path.path))
+                                .resizable().frame(width: 16, height: 16).accessibilityHidden(true)
+                            Text(app.name).lineLimit(1)
+                            if app.isQuarantined {
+                                Image(systemName: "arrow.down.circle")
+                                    .foregroundStyle(MCColor.textTertiary)
+                                    .help(L("apps.downloaded.help"))
+                                    .accessibilityLabel(L("apps.downloaded"))
                             }
                         }
                     }
+                    .width(min: 160, ideal: 220)
+                    TableColumn(L("apps.column_size"), value: \.sizeBytes) { app in
+                        Text(mcFormatBytes(app.sizeBytes)).font(MCFont.tabular)
+                    }
+                    .width(min: 70, ideal: 84)
+                    TableColumn(L("apps.column_last_used"), value: \.lastUsedSortKey) { app in
+                        Text(app.lastUsedDate.map { AppDateFormatting.string($0, style: .dayMonthYear) }
+                             ?? L("apps.last_used_unknown_short"))
+                            .foregroundStyle(MCColor.textSecondary)
+                    }
+                    .width(min: 90, ideal: 110)
+                    TableColumn(L("apps.column_source"), value: \.sourceSortKey) { app in
+                        Text(AppUpdateSource.detect(for: app).source.rawValue)
+                            .foregroundStyle(MCColor.textSecondary)
+                    }
+                    .width(min: 90, ideal: 120)
                 }
-                .listStyle(.inset)
-                .mcAnimation(MCMotion.transition, value: model.grouping)
+                .tableStyle(.inset(alternatesRowBackgrounds: false))
                 .accessibilityIdentifier("applications.list")
             }
         }
-    }
-
-    private func appCapsuleRow(_ app: InstalledApp) -> some View {
-        let update = AppUpdateSource.detect(for: app).source
-        return HStack(spacing: MCSpacing.sm) {
-            Image(nsImage: NSWorkspace.shared.icon(forFile: app.path.path))
-                .resizable().frame(width: 28, height: 28)
-            VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-                Text(app.name)
-                HStack(spacing: MCSpacing.xxs) {
-                    Text(app.version ?? "—")
-                    if app.isQuarantined {
-                        Label(L("apps.downloaded"), systemImage: "arrow.down.circle")
-                            .labelStyle(.iconOnly)
-                            .help(L("apps.downloaded.help"))
-                    }
-                    if update != .none {
-                        Text(update.rawValue)
-                            .padding(.horizontal, MCSpacing.xxs)
-                            .background(MCColor.protection.opacity(0.15), in: Capsule())
-                    }
-                }
-                .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-            }
-            Spacer()
-            Text(mcFormatBytes(app.sizeBytes))
-                .font(MCFont.caption).monospacedDigit().foregroundStyle(MCColor.textSecondary)
-        }
-        .padding(.vertical, MCSpacing.xxs)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(app.name), \(L("apps.a11y.version", app.version ?? L("apps.unknown"))), \(mcFormatBytes(app.sizeBytes)), \(update.rawValue)\(app.isQuarantined ? ", \(L("apps.downloaded"))" : "")")
     }
 
     @ViewBuilder
@@ -489,7 +485,14 @@ struct InstalledAppsView: ModuleSubScreen {
                 .padding(MCSpacing.page)
             }
         } else {
-            MCEmptyState(icon: "square.grid.2x2", title: L("apps.select_prompt"), message: "", iconColor: MCTheme.accent)
+            MCEmptyState(icon: "sidebar.left", title: L("apps.select_prompt"), message: "")
         }
     }
+}
+
+
+extension InstalledApp {
+    /// Apps never used sort last, whichever direction the column is in.
+    var lastUsedSortKey: Date { lastUsedDate ?? .distantPast }
+    var sourceSortKey: String { AppUpdateSource.detect(for: self).source.rawValue }
 }

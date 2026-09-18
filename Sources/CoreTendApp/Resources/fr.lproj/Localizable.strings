@@ -726,3 +726,8 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "dupes.group_fact" = "%d copies de %@ · les copies en trop occupent %@";
 "dupes.select_group_title" = "Sélectionnez un groupe";
 "dupes.select_group_message" = "Chaque groupe est un même fichier présent à plusieurs endroits.";
+"apps.column_name" = "Nom";
+"apps.column_size" = "Taille";
+"apps.column_last_used" = "Dernier usage";
+"apps.column_source" = "Source";
+"apps.last_used_unknown_short" = "—";

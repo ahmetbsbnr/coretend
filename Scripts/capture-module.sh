@@ -33,8 +33,11 @@ cleanup() { rm -rf "$store"; }
 trap cleanup EXIT
 
 # An empty screen proves nothing about a layout, so a capture may be seeded.
+# Several seeds may be given, comma-separated; each receives the store dir.
 if [[ -n "$seed" ]]; then
-  bash "$(dirname "$0")/support/${seed}" "$store" >/dev/null
+  for one in ${(s:,:)seed}; do
+    bash "$(dirname "$0")/support/${one}" "$store" >/dev/null
+  done
 fi
 
 fixture_home=""

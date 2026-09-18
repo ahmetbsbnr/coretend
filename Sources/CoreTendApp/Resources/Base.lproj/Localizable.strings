@@ -728,3 +728,8 @@ Analysis only — deleting synced files would remove them on every device.";
 "dupes.group_fact" = "%d copies of %@ · the extra copies take %@";
 "dupes.select_group_title" = "Select a group";
 "dupes.select_group_message" = "Each group is one file that exists in several places.";
+"apps.column_name" = "Name";
+"apps.column_size" = "Size";
+"apps.column_last_used" = "Last used";
+"apps.column_source" = "Source";
+"apps.last_used_unknown_short" = "—";
