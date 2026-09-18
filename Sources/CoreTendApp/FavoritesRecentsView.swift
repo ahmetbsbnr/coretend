@@ -226,7 +226,7 @@ private struct LocationRow: View {
         } else if !location.isReadable {
             Text(L("favrec.status_no_access")).font(.caption2).foregroundStyle(MCTheme.warning)
         } else if let date = location.lastScanned, let bytes = location.lastBytes {
-            Text(L("favrec.status_last_scanned", date.formatted(date: .abbreviated, time: .shortened), mcFormatBytes(bytes)))
+            Text(L("favrec.status_last_scanned", AppDateFormatting.string(date, style: .dayMonthYearWithTime), mcFormatBytes(bytes)))
                 .font(.caption2).foregroundStyle(.secondary)
         } else {
             Text(L("favrec.status_never_scanned")).font(.caption2).foregroundStyle(.secondary)
