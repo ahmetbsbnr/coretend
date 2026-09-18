@@ -76,31 +76,20 @@ META = {
 
 # A site-wide advisory banner, or None when there is nothing to warn about.
 #
-# Set while a published release is known-broken and the fix is not out yet.
+# Set this while a published release is known-broken and its fix is not out yet.
 # "/download" is a straight redirect to the DMG (Website/vercel.json), so there
-# is no download *page* to put this on — every visitor reaches the artifact
-# through the header button, which is why the banner rides in the shell.
+# is no download *page* to put a notice on — every visitor reaches the artifact
+# through the header button, which is why the banner rides in the shell and is
+# injected into the landing page separately.
 #
-# Raised 2026-09-17: CoreTend 1.0.0 traps at launch on every Mac except the one
-# that built it (SwiftPM Bundle.module resource-bundle resolution — see
-# Documentation/CHANGELOG.md 1.0.1). Remove this assignment, set it to None,
-# once 1.0.1 is published and Configuration/published-release.json points at it.
-ADVISORY = {
-    "en": (
-        "<b>CoreTend 1.0.0 does not open.</b> A defect in this build stops the app "
-        "at launch on any Mac other than the one that built it. It is not a "
-        "Gatekeeper block and not a corrupted download \u2014 re-downloading will not "
-        "help. A fixed 1.0.1 is on its way; please wait for it rather than "
-        "troubleshooting your Mac."
-    ),
-    "fr": (
-        "<b>CoreTend 1.0.0 ne s\u2019ouvre pas.</b> Un d\u00e9faut de cette version arr\u00eate "
-        "l\u2019application au lancement sur tout Mac autre que celui qui l\u2019a compil\u00e9e. "
-        "Ce n\u2019est ni un blocage Gatekeeper ni un t\u00e9l\u00e9chargement corrompu : "
-        "re-t\u00e9l\u00e9charger n\u2019y changera rien. Une version 1.0.1 corrig\u00e9e arrive ; "
-        "mieux vaut l\u2019attendre que chercher la panne sur votre Mac."
-    ),
-}
+# When raising one: the copy goes here, and the .site-advisory rules must be
+# present in BOTH Website/assets/shell/public.css (information pages) and
+# Website/index.html (the landing page carries its own <style>; the CSP is
+# style-src 'self', so a <style> beside the markup would be blocked).
+#
+# Cleared 2026-09-18: v1.0.1 is published and verified, so the v1.0.0 launch
+# defect no longer describes what the site offers.
+ADVISORY = None
 
 
 def advisory_banner(language: str) -> str:
@@ -627,10 +616,18 @@ def support_content(release: dict, language: str) -> str:
         if signed:
             steps = """<li><div><h3>Vérifier l’empreinte</h3><p>Comparez le SHA-256 du DMG avec <code>SHA256SUMS</code> publié à côté.</p></div><span class="scan-state">Provenance</span></li><li><div><h3>Vérifier la signature</h3><p><code>minisign -Vm SHA256SUMS -P …</code> avec la clé publiée, et <code>xcrun stapler validate</code> sur le DMG.</p></div><span class="scan-state">Signature</span></li><li><div><h3>Installer</h3><p>Ouvrez le .dmg, glissez CoreTend dans Applications, double-cliquez. Aucune exception Gatekeeper n’est nécessaire.</p></div><span class="scan-state">Direct</span></li>"""
             devid, notarised = "oui (NSCUV5G738)", "oui"
-            faq_open = ("<p><b>CoreTend 1.0.0 ne s’ouvre pas, et re-télécharger n’y change rien.</b> "
-                        "Un défaut de cette version arrête l’application au lancement sur tout Mac autre que celui qui l’a compilée. "
+            # Tied to ADVISORY, not hardcoded: this text was left unconditional
+            # once, and it went on telling visitors the app does not open after
+            # the release that fixed it had shipped.
+            faq_open = ("<p><b>Cette version ne s’ouvre pas, et re-télécharger n’y change rien.</b> "
+                        "Un défaut l’arrête au lancement sur tout Mac autre que celui qui l’a compilée. "
                         "La signature, la notarisation et l’empreinte sont pourtant valides : les vérifier ne vous apprendra rien ici. "
-                        "Attendez la 1.0.1, qui existe précisément pour corriger cela.</p>")
+                        "Voyez l’avis en haut de page.</p>"
+                        ) if ADVISORY else (
+                        "<p>Une version notarisée s’ouvre normalement. Vérifiez l’empreinte SHA-256 et la signature Minisign "
+                        "publiées à côté du fichier : elles confirment que vous avez bien les octets distribués. "
+                        "Si l’application ne démarre toujours pas, ouvrez un ticket avec votre version de macOS — "
+                        "une build signée et notarisée qui ne se lance pas est un bug, pas un blocage Gatekeeper.</p>")
         else:
             steps = """<li><div><h3>Vérifier le téléchargement</h3><p>Comparez l’empreinte SHA-256 avec le fichier publié à côté du DMG.</p></div><span class="scan-state">Provenance</span></li><li><div><h3>Ouvrir une première fois</h3><p>Copiez CoreTend dans Applications et double-cliquez. Le blocage initial fait apparaître l’option système suivante.</p></div><span class="scan-state">Attendu</span></li><li><div><h3>Autoriser cette copie</h3><p>Réglages Système → Confidentialité et sécurité → Ouvrir quand même. Ne désactivez jamais Gatekeeper globalement.</p></div><span class="scan-state">Une fois</span></li>"""
             devid, notarised = "non", "non"
@@ -655,10 +652,15 @@ SHA-256: {checksum}</pre><button class="copy-button" type="button" data-copy-tar
     if signed:
         steps = """<li><div><h3>Check the digest</h3><p>Compare the DMG's SHA-256 with the published <code>SHA256SUMS</code> beside it.</p></div><span class="scan-state">Provenance</span></li><li><div><h3>Check the signature</h3><p><code>minisign -Vm SHA256SUMS -P …</code> with the published key, and <code>xcrun stapler validate</code> on the DMG.</p></div><span class="scan-state">Signature</span></li><li><div><h3>Install</h3><p>Open the .dmg, drag CoreTend to Applications, double-click it. No Gatekeeper exception is needed.</p></div><span class="scan-state">Direct</span></li>"""
         devid, notarised = "yes (NSCUV5G738)", "yes"
-        faq_open = ("<p><b>CoreTend 1.0.0 does not open, and no amount of re-downloading fixes it.</b> "
-                    "A defect in that build stops the app at launch on every Mac except the one that built it. "
+        faq_open = ("<p><b>This build does not open, and no amount of re-downloading fixes it.</b> "
+                    "A defect stops the app at launch on every Mac except the one that built it. "
                     "The signature, the notarization and the checksum are all valid \u2014 verifying them tells you nothing here. "
-                    "Wait for 1.0.1, which exists to fix exactly this.</p>")
+                    "See the notice at the top of the page.</p>"
+                    ) if ADVISORY else (
+                    "<p>A notarized build opens normally. Check the SHA-256 and the Minisign signature published beside "
+                    "the file: together they confirm you have the distributed bytes. If it still will not start, open an "
+                    "issue with your macOS version \u2014 a signed, notarized build that does not launch is a bug, not a "
+                    "Gatekeeper block.</p>")
     else:
         steps = """<li><div><h3>Verify the download</h3><p>Compare its SHA-256 with the checksum file published beside the DMG.</p></div><span class="scan-state">Provenance</span></li><li><div><h3>Open it once</h3><p>Copy CoreTend to Applications and double-click it. The initial block makes the next system option available.</p></div><span class="scan-state">Expected</span></li><li><div><h3>Allow this copy</h3><p>System Settings → Privacy &amp; Security → Open Anyway. Never disable Gatekeeper globally.</p></div><span class="scan-state">Once</span></li>"""
         devid, notarised = "no", "no"

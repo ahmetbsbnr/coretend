@@ -261,37 +261,6 @@ p{margin:0}
   #spot{display:none}
 }
 
-/* ─── site advisory ──────────────────────────────────────────
-   Shown while a published release is known-broken (build.py ADVISORY).
-   This one has to be *seen*. A first pass used a pale cream sitting within a
-   few percent of the page's own paper tone, which read as part of the chrome:
-   a warning nobody notices is the same as no warning. It now carries a
-   saturated amber field, a heavy top rule and a warning glyph — deliberately
-   the loudest thing above the fold, and deliberately amber rather than the
-   coral this design system reserves for destructive and error states. */
-.site-advisory{
-  --advisory-icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 1 21h22L12 2Zm0 6a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0V9a1 1 0 0 1 1-1Zm0 9.25a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Z'/%3E%3C/svg%3E");
-  background:#F7E4B8;
-  border-block-start:4px solid #B8860B;
-  border-block-end:1px solid #C9A24E;
-  color:#4A2F06;
-}
-.site-advisory .wrap{padding-block:14px;display:flex;gap:12px;align-items:flex-start}
-/* Masked inline SVG: themeable via currentColor, no network and no icon font. */
-.site-advisory .wrap::before{
-  content:"";flex:0 0 auto;width:20px;height:20px;margin-top:2px;
-  background:currentColor;
-  -webkit-mask:var(--advisory-icon) center/contain no-repeat;
-  mask:var(--advisory-icon) center/contain no-repeat;
-}
-.site-advisory p{margin:0;font-size:.9375rem;line-height:1.5;max-width:74ch}
-.site-advisory b{color:#2E1D03;font-weight:700}
-@media (prefers-color-scheme:dark){
-  .site-advisory{background:#4A3410;border-block-start-color:#D9A62B;border-block-end-color:#8A6A22;color:#FBEBC8}
-  .site-advisory b{color:#FFF6E2}
-}
-@media print{.site-advisory{background:none;border-block:1pt solid #000;color:#000}}
-
 @media print{
   :root{--paper:#fff;--ink:#000;--ink-2:#222;--ink-3:#444;--line:#bbb;--panel:#fff}
   #field,#grain,#spot,#progress,.bar,.info-mark,.foot,#toast,.action-row{display:none!important}

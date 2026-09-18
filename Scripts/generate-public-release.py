@@ -90,6 +90,19 @@ PINNED_RELEASE_EVIDENCE: Mapping[str, Mapping[str, Mapping[str, Any]]] = {
             "size": 3_013_484,
         },
     },
+    # v1.0.1. Recorded after Scripts/verify-published-artifacts.sh re-downloaded
+    # the published assets and re-checked every hash, signature, staple and
+    # Gatekeeper verdict against them — not copied from a build log.
+    "1.0.1": {
+        "dmg": {
+            "sha256": "91026c89313e7b36a546b395ae4ba21dee2542e0e7592c22a0cec8cdb5d86fde",
+            "size": 4_935_908,
+        },
+        "zip": {
+            "sha256": "453efe5c3e35c272796e6922af670dcfb01c92dad1493b176fc25e007c7753c1",
+            "size": 3_014_331,
+        },
+    },
 }
 
 ALLOWED_SOURCE_KEYS = {
