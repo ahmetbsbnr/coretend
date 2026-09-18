@@ -2,10 +2,16 @@
 
 ## Current state
 
-CoreTend 1.0.0 is shipped: stable, Developer ID signed, Apple-notarized,
-stapled, and independently verifiable with SHA-256 plus Minisign. Product
-boundary remains local-first: read-only analysis, reviewed selection, explicit
-confirmation, execution-time path validation, and recoverable Trash actions.
+CoreTend 1.0.1 is the current stable release: Developer ID signed,
+Apple-notarized, stapled, and independently verifiable with SHA-256 plus
+Minisign. Product boundary remains local-first: read-only analysis, reviewed
+selection, explicit confirmation, execution-time path validation, and
+recoverable Trash actions.
+
+1.0.0 and 1.2.0-beta.1 do not launch and are marked as such on their releases.
+The release pipeline now publishes a draft, downloads its own assets back and
+verifies them — signature, staple, Gatekeeper, and that the app actually starts
+— before anything becomes visible. See `Documentation/RELEASE_RUNBOOK.md`.
 
 ## Near-term quality work
 
