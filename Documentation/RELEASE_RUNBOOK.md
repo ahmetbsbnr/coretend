@@ -47,6 +47,22 @@ cd ~/actions-runner-coretend
 caffeinate -dimsu ./run.sh          # -dimsu: no display/idle/disk sleep
 ```
 
+A foreground `run.sh` dies with the terminal that started it, and the release
+then waits 24 hours for a runner that is not coming back. That happened three
+times while cutting v1.0.1. For anything but a one-off release, install it as a
+launchd service instead, which survives logout and reboot:
+
+```bash
+cd ~/actions-runner-coretend
+./svc.sh install                    # writes a LaunchAgent
+./svc.sh start
+./svc.sh status
+```
+
+This is a standing decision, not a convenience: it means the machine accepts
+signing jobs whenever it is awake. Weigh that against a release queueing
+silently. `./svc.sh stop && ./svc.sh uninstall` reverses it.
+
 It must print `Connected to GitHub` and `Listening for Jobs`. Confirm from
 anywhere with:
 
