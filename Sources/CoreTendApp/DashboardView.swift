@@ -73,7 +73,7 @@ struct DashboardView: View {
                     .font(MCFont.heroTitle)
                 Text(L("dashboard.subtitle"))
                     .font(MCFont.secondaryBody)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(MCColor.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             .accessibilityElement(children: .combine)
@@ -124,7 +124,7 @@ struct DashboardView: View {
                         .padding(.vertical, MCSpacing.sm)
                         .padding(.horizontal, MCSpacing.lg)
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.mcPrimary)
                 .controlSize(.large)
                 .keyboardShortcut(.defaultAction)
                 .padding(.top, MCSpacing.sm)
@@ -143,7 +143,7 @@ struct DashboardView: View {
                         .contentTransition(.numericText())
                     Text(L("dashboard.storage.free_of_total", mcFormatBytes(snap.diskTotalBytes)))
                         .font(MCFont.badge)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(MCColor.textSecondary)
                 }
                 .fixedSize()
                 .accessibilityElement(children: .combine)
@@ -211,11 +211,11 @@ struct DashboardView: View {
                         Spacer(minLength: 0)
                         Image(systemName: "arrow.right")
                             .font(.system(size: MCIconSize.chevron, weight: .semibold))
-                            .foregroundStyle(.tertiary)
+                            .foregroundStyle(MCColor.textTertiary)
                     }
                     Text(detail)
                         .font(MCFont.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(MCColor.textSecondary)
                         .lineLimit(3)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -236,7 +236,7 @@ struct DashboardView: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
                     .font(MCFont.badge)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(MCColor.textSecondary)
                     .textCase(.uppercase)
                     .kerning(0.4)
                 Text(value)

@@ -452,3 +452,92 @@ struct TypographySystemTests {
         }
     }
 }
+
+/// Text must be readable on whatever it sits on, including accent fills.
+///
+/// The palette's contrast suite measured text colours against the *ground*. It
+/// never measured a label against the fill it was printed on, and the app's
+/// primary action was white on the brand teal: **1.87:1**, against a 4.5:1
+/// minimum, on Scan Storage, Find Duplicates and Scan Home Folder. It looked
+/// fine to anyone who already knew what the button said.
+///
+/// `.buttonStyle(.borderedProminent)` is what produced it: the system style
+/// pairs the view's tint with a white label and never checks that the two can
+/// be read together.
+@Suite("On-accent contrast")
+struct OnAccentContrastTests {
+    private let onAccent = MCColor.Canonical.ground
+
+    /// Every fill a label is printed on must carry that label at 4.5:1.
+    @Test func labelsAreReadableOnEveryAccentFill() {
+        for (name, fill) in [
+            ("teal", MCColor.Canonical.teal),
+            ("tealDeep", MCColor.Canonical.tealDeep),
+            ("coral", MCColor.Canonical.coral),
+            ("amber", MCColor.Canonical.amber),
+            ("green", MCColor.Canonical.green),
+        ] {
+            let ratio = MCColor.contrastRatio(onAccent, fill)
+            #expect(ratio >= 4.5, "onAccent on \(name) is \(ratio):1, under the 4.5:1 text minimum")
+        }
+    }
+
+    /// The regression, stated as a fact so it cannot be reintroduced by someone
+    /// deciding white looks better.
+    @Test func whiteOnTealIsUnreadableAndIsNotWhatWeUse() {
+        let white: UInt32 = 0xFFFFFF
+        #expect(MCColor.contrastRatio(white, MCColor.Canonical.teal) < 2.0,
+                "if this ever passes, the teal changed and the comment explaining onAccent is stale")
+        #expect(MCColor.contrastRatio(onAccent, MCColor.Canonical.teal) > 9.0)
+    }
+
+    /// The pressed state must stay readable too — a button is most often read
+    /// at the moment it is being pressed.
+    @Test func thePressedFillIsAlsoReadable() {
+        #expect(MCColor.contrastRatio(onAccent, MCColor.Canonical.tealDeep) >= 4.5)
+    }
+}
+
+/// Destructive actions must not wear the primary action's clothes.
+@Suite("Button style assignment")
+struct ButtonStyleAssignmentTests {
+    private let root = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+
+    private func sources() throws -> [(name: String, text: String)] {
+        var out: [(String, String)] = []
+        for relative in ["Sources/CoreTendApp", "Sources/DesignSystem"] {
+            let dir = root.appendingPathComponent(relative)
+            for name in try FileManager.default.contentsOfDirectory(atPath: dir.path)
+                where name.hasSuffix(".swift") {
+                out.append((name, try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)))
+            }
+        }
+        return out
+    }
+
+    /// The system prominent style is banned outright. It is where the 1.87:1
+    /// label came from, and it also made "Move to Trash" and "Uninstall" look
+    /// exactly like "Scan Storage" — the button that deletes files rendered
+    /// identically to the one that starts a scan.
+    @Test func noViewUsesTheSystemProminentStyle() throws {
+        for file in try sources() {
+            for line in file.text.split(separator: "\n") {
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                guard !trimmed.hasPrefix("//") && !trimmed.hasPrefix("///") else { continue }
+                #expect(!trimmed.contains(".buttonStyle(.borderedProminent)"),
+                        "\(file.name) uses the system prominent style — use .mcPrimary or .mcDestructive")
+            }
+        }
+    }
+
+    /// Coral must be distinguishable from teal without colour — the two fills
+    /// differ in luminance as well as hue, so a greyscale or colourblind reader
+    /// still sees two different buttons.
+    @Test func destructiveAndPrimaryDifferWithoutColour() {
+        let teal = MCColor.relativeLuminance(MCColor.Canonical.teal)
+        let coral = MCColor.relativeLuminance(MCColor.Canonical.coral)
+        #expect(abs(teal - coral) > 0.08,
+                "teal and coral fills are too close in luminance to tell apart in greyscale")
+    }
+}

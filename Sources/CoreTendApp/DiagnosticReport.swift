@@ -119,7 +119,7 @@ struct DiagnosticReportView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(L("diagnostic.title")).font(MCFont.cardTitle)
             Text(L("diagnostic.review_notice"))
-                .font(MCFont.caption).foregroundStyle(.secondary)
+                .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
             ScrollView {
                 Text(report)
                     .font(MCFont.monoBody)

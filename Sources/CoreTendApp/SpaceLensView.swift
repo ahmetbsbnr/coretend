@@ -361,7 +361,7 @@ struct SpaceLensView: View {
                         .multilineTextAlignment(.center)
                     Text(L("spacelens.idle.subtitle"))
                         .font(MCFont.secondaryBody)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(MCColor.textSecondary)
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -497,7 +497,7 @@ struct SpaceLensView: View {
                 Button(root.name) { navigate { model.pop(to: nil) } }
                     .buttonStyle(.link)
                 ForEach(Array(model.pathStack.enumerated()), id: \.element.id) { index, node in
-                    Image(systemName: "chevron.right").font(MCFont.micro).foregroundStyle(.tertiary)
+                    Image(systemName: "chevron.right").font(MCFont.micro).foregroundStyle(MCColor.textTertiary)
                     Button(node.name) { navigate { model.pop(to: index) } }
                         .buttonStyle(.link)
                 }
@@ -616,15 +616,15 @@ struct SpaceLensView: View {
                     .foregroundStyle(SpaceNodeCategory.of(child).color)
                 Text(child.name)
                 if child.isAccessDenied {
-                    Image(systemName: "lock.fill").font(MCFont.micro).foregroundStyle(.secondary)
+                    Image(systemName: "lock.fill").font(MCFont.micro).foregroundStyle(MCColor.textSecondary)
                         .accessibilityLabel(L("spacelens.access_denied_suffix"))
                 }
                 if child.isCloudPlaceholder {
-                    Image(systemName: "icloud.fill").font(MCFont.micro).foregroundStyle(.secondary)
+                    Image(systemName: "icloud.fill").font(MCFont.micro).foregroundStyle(MCColor.textSecondary)
                         .accessibilityLabel(L("spacelens.cloud_placeholder_suffix"))
                 }
                 Spacer()
-                Text(mcFormatBytes(child.size)).monospacedDigit().foregroundStyle(.secondary)
+                Text(mcFormatBytes(child.size)).monospacedDigit().foregroundStyle(MCColor.textSecondary)
                 if child.isDirectory && !child.children.isEmpty {
                     Button { navigate { model.descend(into: child) } } label: {
                         Image(systemName: "chevron.right")

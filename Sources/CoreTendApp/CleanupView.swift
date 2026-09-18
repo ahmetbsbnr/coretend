@@ -238,7 +238,7 @@ struct CleanupView: View {
                         .multilineTextAlignment(.center)
                     Text(L("cleanup.idle.safety_note"))
                         .font(MCFont.secondaryBody)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(MCColor.textSecondary)
                         .multilineTextAlignment(.center)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -341,17 +341,17 @@ struct CleanupView: View {
                         .contentTransition(.numericText())
                     Text(L("cleanup.review.selected", model.findings.count, mcFormatBytes(model.selectedBytes)))
                         .font(MCFont.secondaryBody)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(MCColor.textSecondary)
                     if model.isDisplayTruncated {
                         Text(L("cleanup.review.truncated", model.findings.count, model.totalFindingCount, mcFormatBytes(model.totalBytes)))
-                            .font(MCFont.caption).foregroundStyle(.secondary)
+                            .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                     }
                 }
                 Spacer()
                 Button(L("cleanup.move_to_trash")) {
                     showMoveConfirmation = true
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.mcDestructive)
                 .controlSize(.large)
                 .disabled(model.phase == .running || model.selectedIDs.isEmpty)
             }
@@ -375,11 +375,11 @@ struct CleanupView: View {
                             VStack(alignment: .leading) {
                                 Text(group.name).font(MCFont.cardTitle)
                                 Text(group.explanation)
-                                    .font(MCFont.caption).foregroundStyle(.secondary)
+                                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                             }
                             Spacer()
                             Text(L("cleanup.group.item_count", group.findings.count))
-                                .font(MCFont.caption).foregroundStyle(.secondary)
+                                .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                             Text(mcFormatBytes(group.bytes))
                                 .monospacedDigit().font(MCFont.rowTitle)
                         }
@@ -411,7 +411,7 @@ struct CleanupView: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(finding.url.lastPathComponent)
                 Text(finding.url.deletingLastPathComponent().path)
-                    .font(MCFont.caption).foregroundStyle(.secondary)
+                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                     .lineLimit(1).truncationMode(.middle)
                 // The evidence the scan already had and never showed. Size
                 // alone is the weakest of the three signals for deciding
@@ -420,7 +420,7 @@ struct CleanupView: View {
                 if let evidence = FindingMetadata.summary(
                     risk: finding.risk, modificationDate: finding.modificationDate) {
                     Text(evidence)
-                        .font(MCFont.micro).foregroundStyle(.tertiary)
+                        .font(MCFont.micro).foregroundStyle(MCColor.textTertiary)
                         // One line at ordinary sizes keeps rows compact; at
                         // accessibility sizes it wraps instead. Truncating here
                         // would cut "Low risk · modified 1 month ago" down to
@@ -436,7 +436,7 @@ struct CleanupView: View {
             }
             Spacer()
             Text(mcFormatBytes(finding.logicalSize))
-                .monospacedDigit().foregroundStyle(.secondary)
+                .monospacedDigit().foregroundStyle(MCColor.textSecondary)
             Button {
                 NSWorkspace.shared.activateFileViewerSelecting([finding.url])
             } label: {

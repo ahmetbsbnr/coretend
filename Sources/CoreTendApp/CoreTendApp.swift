@@ -258,13 +258,13 @@ struct MenuBarView: View {
             Divider()
             if let last = lastActivity {
                 Text(L("menubar.last_activity", last.summary))
-                    .font(MCFont.caption).foregroundStyle(.secondary)
+                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                     .lineLimit(2)
                 Text(last.date, style: .relative)
-                    .font(MCFont.micro).foregroundStyle(.tertiary)
+                    .font(MCFont.micro).foregroundStyle(MCColor.textTertiary)
             } else {
                 Text(L("menubar.no_activity_yet"))
-                    .font(MCFont.caption).foregroundStyle(.secondary)
+                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
             }
             Divider()
             Button(L("menubar.open_app")) { openWindow() }
@@ -309,7 +309,7 @@ struct MenuBarView: View {
                         .font(MCFont.micro).foregroundStyle(MCTheme.warning)
                         .accessibilityHidden(true)
                 }
-                Text(value).foregroundStyle(.secondary).monospacedDigit()
+                Text(value).foregroundStyle(MCColor.textSecondary).monospacedDigit()
             }
             .font(MCFont.secondaryBody)
             GeometryReader { geo in
@@ -337,7 +337,7 @@ struct MenuBarView: View {
                     .font(MCFont.micro).foregroundStyle(MCTheme.warning)
                     .accessibilityHidden(true)
             }
-            Text(value).foregroundStyle(.secondary).monospacedDigit()
+            Text(value).foregroundStyle(MCColor.textSecondary).monospacedDigit()
         }
         .font(MCFont.secondaryBody)
         .accessibilityElement(children: .combine)
@@ -630,7 +630,7 @@ private struct CommandPaletteView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                Image(systemName: "magnifyingglass").foregroundStyle(MCColor.textSecondary)
                 TextField(L("palette.placeholder"), text: $query)
                     .textFieldStyle(.plain)
                     .focused($searchFocused)

@@ -12,7 +12,7 @@ struct MCSearchField: View {
 
     var body: some View {
         HStack(spacing: MCSpacing.xxs) {
-            Image(systemName: "magnifyingglass").foregroundStyle(.secondary).accessibilityHidden(true)
+            Image(systemName: "magnifyingglass").foregroundStyle(MCColor.textSecondary).accessibilityHidden(true)
             TextField(placeholder, text: $text)
                 .textFieldStyle(.plain)
             if !text.isEmpty {
@@ -22,7 +22,7 @@ struct MCSearchField: View {
                     Image(systemName: "xmark.circle.fill")
                 }
                 .buttonStyle(.plain)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(MCColor.textSecondary)
                 .accessibilityLabel(L("common.clear"))
             }
         }
@@ -42,7 +42,7 @@ struct ExclusionsMenu: View {
     var body: some View {
         Menu {
             if controller.exclusions.isEmpty {
-                Text(L("clutter.exclusions_empty")).foregroundStyle(.secondary)
+                Text(L("clutter.exclusions_empty")).foregroundStyle(MCColor.textSecondary)
             } else {
                 ForEach(controller.exclusions, id: \.self) { path in
                     Button {
@@ -52,7 +52,7 @@ struct ExclusionsMenu: View {
                     }
                 }
                 Divider()
-                Text(L("clutter.exclusions_rescan_note")).foregroundStyle(.secondary)
+                Text(L("clutter.exclusions_rescan_note")).foregroundStyle(MCColor.textSecondary)
             }
         } label: {
             Label(L("clutter.exclusions_count", controller.exclusions.count), systemImage: "eye.slash")
@@ -70,7 +70,7 @@ struct ExcludeButton: View {
     var body: some View {
         if controller.isExcluded(url) {
             Image(systemName: "eye.slash.fill")
-                .foregroundStyle(.secondary)
+                .foregroundStyle(MCColor.textSecondary)
                 .help(L("clutter.already_excluded"))
                 .accessibilityLabel(L("clutter.already_excluded"))
         } else {

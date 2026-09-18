@@ -208,7 +208,7 @@ struct MyActivityView: View {
             Text(model.filter == nil ? L("activity.empty") : L("activity.empty_kind"))
                 .font(MCFont.actionLabel)
             Text(L("activity.empty.subtitle"))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(MCColor.textSecondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -218,7 +218,7 @@ struct MyActivityView: View {
             summaryBar
             if model.records.isEmpty {
                 Text(L("activity.empty_range"))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(MCColor.textSecondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List {
@@ -257,7 +257,7 @@ struct MyActivityView: View {
     private func summaryMetric(label: String, value: String, color: Color) -> some View {
         VStack(alignment: .leading, spacing: MCSpacing.xxs) {
             Text(value).font(MCFont.actionLabel).monospacedDigit().foregroundStyle(color)
-            Text(label).font(MCFont.caption).foregroundStyle(.secondary)
+            Text(label).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
         }
     }
 
@@ -290,7 +290,7 @@ private struct ActivityRow: View {
         DisclosureGroup(isExpanded: $expanded) {
             VStack(alignment: .leading, spacing: MCSpacing.xxs) {
                 Text(AppDateFormatting.string(record.date, style: .dayMonthYearWithTime))
-                    .font(MCFont.caption).foregroundStyle(.secondary)
+                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 Text(L("activity.row.detail", record.itemCount, mcFormatBytes(record.bytes),
                        L("activity.row.real_suffix")))
                     .font(MCFont.caption)
@@ -320,7 +320,7 @@ private struct ActivityRow: View {
                         .foregroundStyle(MCTheme.success)
                 }
                 Text(mcFormatBytes(record.bytes))
-                    .monospacedDigit().foregroundStyle(.secondary)
+                    .monospacedDigit().foregroundStyle(MCColor.textSecondary)
             }
         }
         .accessibilityLabel("\(record.summary), \(AppDateFormatting.string(record.date, style: .dayMonthYearWithTime)), \(L("activity.row.real_a11y")), \(mcFormatBytes(record.bytes))")

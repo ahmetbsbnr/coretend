@@ -134,7 +134,7 @@ struct LeftoversView: ModuleSubScreen {
                 Button(L("cleanup.move_to_trash")) {
                     showMoveConfirmation = true
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.mcDestructive)
                 .disabled(model.selectedPaths.isEmpty)
             }
             .padding()
@@ -161,11 +161,11 @@ struct LeftoversView: ModuleSubScreen {
                             }
                         }
                         Text(L("leftovers.not_installed", item.kind.rawValue))
-                            .font(MCFont.caption).foregroundStyle(.secondary)
+                            .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                     }
                     Spacer()
                     Text(mcFormatBytes(item.sizeBytes))
-                        .monospacedDigit().foregroundStyle(.secondary)
+                        .monospacedDigit().foregroundStyle(MCColor.textSecondary)
                     Button {
                         NSWorkspace.shared.activateFileViewerSelecting([item.url])
                     } label: { Image(systemName: "magnifyingglass") }

@@ -262,7 +262,7 @@ struct DuplicatesView: View {
                     .multilineTextAlignment(.center)
                 Text(L("dupes.idle.subtitle"))
                     .font(MCFont.secondaryBody)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(MCColor.textSecondary)
                     .multilineTextAlignment(.center)
                     // No .fixedSize here. fixedSize(vertical:) makes a Text
                     // report its ideal, UNWRAPPED width upward; for this
@@ -336,12 +336,12 @@ struct DuplicatesView: View {
                         .contentTransition(.numericText())
                     Text(L("dupes.results.summary", model.groups.count, mcFormatBytes(model.selectedBytes), mcFormatBytes(model.wastedBytes)))
                         .font(MCFont.secondaryBody)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(MCColor.textSecondary)
                     // The keeper-selection rule, stated once — not repeated on
                     // every group's keeper row.
                     Text(L("dupes.suggested_keeper.why"))
                         .font(MCFont.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(MCColor.textSecondary)
                 }
                 Spacer()
                 Button {
@@ -354,7 +354,7 @@ struct DuplicatesView: View {
                 Button(L("dupes.move_to_trash")) {
                     showMoveConfirmation = true
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.mcDestructive)
                 .disabled(model.selectedPaths.isEmpty || model.phase == .executing)
                 .accessibilityIdentifier("duplicates.results.remove")
             }
@@ -411,7 +411,7 @@ struct DuplicatesView: View {
                                 }
                                 Spacer()
                                 Text(url.deletingLastPathComponent().path)
-                                    .font(MCFont.caption).foregroundStyle(.secondary)
+                                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                                     .lineLimit(1).truncationMode(.middle)
                                 Button {
                                     model.previewURL = url

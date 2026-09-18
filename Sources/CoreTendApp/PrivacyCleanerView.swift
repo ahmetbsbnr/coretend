@@ -214,7 +214,7 @@ struct PrivacyCleanerView: ModuleSubScreen {
                 Button(L("privacy.clean_caches")) {
                     showMoveConfirmation = true
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.mcDestructive)
                 .accessibilityIdentifier("privacy.clean")
                 .disabled(model.selectedProfileIDs.isEmpty)
             }
@@ -240,7 +240,7 @@ struct PrivacyCleanerView: ModuleSubScreen {
                                 Text(L("privacy.history_size", mcFormatBytes(profile.historyBytes)))
                                 Text(L("privacy.cookies_size", mcFormatBytes(profile.cookieBytes)))
                             }
-                            .font(MCFont.caption).foregroundStyle(.secondary)
+                            .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                         }
                         Spacer()
                     }
@@ -265,7 +265,7 @@ struct PrivacyCleanerView: ModuleSubScreen {
             }
             .listStyle(.inset)
             Text(L("privacy.footer"))
-                .font(MCFont.caption).foregroundStyle(.secondary)
+                .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 .padding()
         }
     }

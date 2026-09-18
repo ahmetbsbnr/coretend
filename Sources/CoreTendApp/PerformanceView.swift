@@ -165,7 +165,7 @@ struct PerformanceView: View {
             .accessibilityLabel(L("performance.chart_a11y", Int((model.history.last ?? 0) * 100)))
         } else {
             Text(L("performance.collecting_samples"))
-                .font(MCFont.caption).foregroundStyle(.secondary)
+                .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
@@ -177,9 +177,9 @@ struct PerformanceView: View {
             VStack(alignment: .leading, spacing: MCSpacing.xs) {
                 Text(L("performance.launchagents.title")).font(MCFont.cardTitle)
                 Text(L("performance.launchagents.subtitle"))
-                    .font(MCFont.caption).foregroundStyle(.secondary)
+                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 if agents.isEmpty {
-                    Text(L("performance.launchagents.empty")).font(MCFont.caption).foregroundStyle(.secondary)
+                    Text(L("performance.launchagents.empty")).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 }
                 ForEach(agents) { agent in
                     HStack {
@@ -189,7 +189,7 @@ struct PerformanceView: View {
                             Text(agent.label).font(MCFont.secondaryBody)
                             if let program = agent.programPath {
                                 Text(agent.broken ? L("performance.launchagents.missing", program) : program)
-                                    .font(MCFont.caption).foregroundStyle(.secondary)
+                                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                                     .lineLimit(1).truncationMode(.middle)
                             }
                         }

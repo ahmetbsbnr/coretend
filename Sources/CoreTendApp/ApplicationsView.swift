@@ -339,7 +339,7 @@ struct InstalledAppsView: ModuleSubScreen {
                 .padding(.horizontal, MCSpacing.sm).padding(.top, MCSpacing.sm)
                 .accessibilityIdentifier("applications.search")
             HStack(spacing: MCSpacing.xs) {
-                Text(L("apps.group_by")).foregroundStyle(.secondary)
+                Text(L("apps.group_by")).foregroundStyle(MCColor.textSecondary)
                 Picker("", selection: $model.grouping) {
                     ForEach(AppGrouping.allCases) { Text($0.displayName).tag($0) }
                 }
@@ -353,7 +353,7 @@ struct InstalledAppsView: ModuleSubScreen {
             case .loading:
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
-                Text(L("apps.empty")).foregroundStyle(.secondary)
+                Text(L("apps.empty")).foregroundStyle(MCColor.textSecondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .ready:
                 // Native, reliable list is always the primary view — grouping
@@ -403,11 +403,11 @@ struct InstalledAppsView: ModuleSubScreen {
                             .background(MCColor.protection.opacity(0.15), in: Capsule())
                     }
                 }
-                .font(MCFont.caption).foregroundStyle(.secondary)
+                .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
             }
             Spacer()
             Text(mcFormatBytes(app.sizeBytes))
-                .font(MCFont.caption).monospacedDigit().foregroundStyle(.secondary)
+                .font(MCFont.caption).monospacedDigit().foregroundStyle(MCColor.textSecondary)
         }
         .padding(.vertical, MCSpacing.xxs)
         .accessibilityElement(children: .combine)
@@ -425,7 +425,7 @@ struct InstalledAppsView: ModuleSubScreen {
                         VStack(alignment: .leading) {
                             Text(app.name).font(MCFont.pageTitle)
                             Text(app.bundleIdentifier ?? L("apps.unknown_bundle_id"))
-                                .font(MCFont.caption).foregroundStyle(.secondary)
+                                .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                             HStack(spacing: MCSpacing.xs) {
                                 if let version = app.version { Text(L("apps.version_prefix", version)) }
                                 if !app.architectures.isEmpty {
@@ -438,7 +438,7 @@ struct InstalledAppsView: ModuleSubScreen {
                                     Text(L("apps.last_used_unknown"))
                                 }
                             }
-                            .font(MCFont.caption).foregroundStyle(.secondary)
+                            .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                         }
                     }
                     MCCard {
@@ -446,7 +446,7 @@ struct InstalledAppsView: ModuleSubScreen {
                             Text(L("apps.associated_data")).font(MCFont.cardTitle)
                             if model.associated.isEmpty {
                                 Text(L("apps.associated_data.empty"))
-                                    .font(MCFont.caption).foregroundStyle(.secondary)
+                                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                             }
                             ForEach(model.associated) { item in
                                 HStack {
@@ -460,12 +460,12 @@ struct InstalledAppsView: ModuleSubScreen {
                                     .labelsHidden()
                                     VStack(alignment: .leading) {
                                         Text(item.kind.rawValue)
-                                        Text(item.url.path).font(MCFont.caption).foregroundStyle(.secondary)
+                                        Text(item.url.path).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                                             .lineLimit(1).truncationMode(.middle)
                                     }
                                     Spacer()
                                     Text(mcFormatBytes(item.sizeBytes))
-                                        .font(MCFont.caption).monospacedDigit().foregroundStyle(.secondary)
+                                        .font(MCFont.caption).monospacedDigit().foregroundStyle(MCColor.textSecondary)
                                 }
                             }
                         }
@@ -475,7 +475,7 @@ struct InstalledAppsView: ModuleSubScreen {
                         Button(L("apps.uninstall"), role: .destructive) {
                             showUninstallConfirmation = true
                         }
-                        .buttonStyle(.borderedProminent)
+                        .buttonStyle(.mcDestructive)
                         .accessibilityIdentifier("applications.uninstall")
                         Button(L("common.reveal_in_finder")) {
                             NSWorkspace.shared.activateFileViewerSelecting([app.path])

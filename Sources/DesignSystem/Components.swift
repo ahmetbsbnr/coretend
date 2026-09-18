@@ -42,11 +42,11 @@ public struct MCSectionHeader: View {
 
     public var body: some View {
         VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-            Text(title).font(MCFont.sectionTitle).foregroundStyle(.secondary)
+            Text(title).font(MCFont.sectionTitle).foregroundStyle(MCColor.textSecondary)
                 .textCase(.uppercase)
                 .kerning(0.5)
             if let subtitle {
-                Text(subtitle).font(MCFont.caption).foregroundStyle(.tertiary)
+                Text(subtitle).font(MCFont.caption).foregroundStyle(MCColor.textTertiary)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -155,7 +155,7 @@ public struct MCMetricCard: View {
                 }
                 .frame(width: MCSize.metricRing, height: MCSize.metricRing)
                 Text(title).font(MCFont.cardTitle)
-                Text(detail).font(MCFont.caption).foregroundStyle(.secondary)
+                Text(detail).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                     .multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity)
@@ -201,12 +201,12 @@ public struct MCEmptyState: View {
             Text(title).font(MCFont.cardTitle)
             Text(message)
                 .font(MCFont.secondaryBody)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(MCColor.textSecondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 420)
             if let actionTitle, let action {
                 Button(actionTitle, action: action)
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.mcPrimary)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -266,13 +266,13 @@ public struct MCSuccessState: View {
             if let message, !message.isEmpty {
                 Text(message)
                     .font(MCFont.secondaryBody)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(MCColor.textSecondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 420)
             }
             if let actionTitle, let action {
                 Button(actionTitle, action: action)
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.mcPrimary)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -426,11 +426,111 @@ public struct MCFeatureRow: View {
                 if let subtitle {
                     Text(subtitle)
                         .font(MCFont.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(MCColor.textSecondary)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .accessibilityElement(children: .combine)
     }
+}
+
+// MARK: - Buttons
+
+/// The app's primary action.
+///
+/// Replaces `.buttonStyle(.mcPrimary)`, which pairs the view's tint
+/// with a white label and never checks that the two can be read together. With
+/// CoreTend's teal that combination measures **1.87:1** — against a 4.5:1 text
+/// minimum — and it was the label of the primary action on every screen that
+/// had one: Scan Storage, Find Duplicates, Scan Home Folder.
+///
+/// The same teal with `MCColor.onAccent` measures 9.65:1.
+///
+/// Pressed and disabled states are explicit rather than inherited, so they
+/// cannot be whatever the system decides a tinted button should look like.
+public struct MCPrimaryButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    public init() {}
+
+    public func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(MCFont.actionLabel)
+            .foregroundStyle(MCColor.onAccent)
+            .padding(.vertical, MCSpacing.sm)
+            .padding(.horizontal, MCSpacing.lg)
+            .background(fill(pressed: configuration.isPressed), in: RoundedRectangle(cornerRadius: MCRadius.card))
+            // Opacity, not a third fill colour: a disabled control should read
+            // as the same control turned down, not as a different one.
+            .opacity(isEnabled ? 1 : 0.45)
+            .contentShape(RoundedRectangle(cornerRadius: MCRadius.card))
+    }
+
+    private func fill(pressed: Bool) -> Color {
+        pressed ? MCColor.tealDeep : MCColor.teal
+    }
+}
+
+/// A secondary action: real emphasis, but never competing with the primary one
+/// on the same screen.
+///
+/// A tinted outline rather than a filled surface, so that two buttons side by
+/// side have an obvious order.
+public struct MCSecondaryButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    public init() {}
+
+    public func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(MCFont.rowTitle)
+            .foregroundStyle(MCColor.teal)
+            .padding(.vertical, MCSpacing.xs)
+            .padding(.horizontal, MCSpacing.md)
+            .background(
+                configuration.isPressed ? MCColor.tealWash : Color.clear,
+                in: RoundedRectangle(cornerRadius: MCRadius.card))
+            .overlay(
+                RoundedRectangle(cornerRadius: MCRadius.card)
+                    .stroke(MCColor.teal.opacity(0.55), lineWidth: 1))
+            .opacity(isEnabled ? 1 : 0.45)
+            .contentShape(RoundedRectangle(cornerRadius: MCRadius.card))
+    }
+}
+
+/// An irreversible action.
+///
+/// Filled, because "Move to Trash" should not be reachable by accident, and
+/// filled in coral so it cannot be mistaken for the primary action even at a
+/// glance or in greyscale.
+public struct MCDestructiveButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    public init() {}
+
+    public func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(MCFont.rowTitle)
+            .foregroundStyle(MCColor.onAccent)
+            .padding(.vertical, MCSpacing.xs)
+            .padding(.horizontal, MCSpacing.md)
+            .background(
+                configuration.isPressed ? MCColor.coral.opacity(0.8) : MCColor.coral,
+                in: RoundedRectangle(cornerRadius: MCRadius.card))
+            .opacity(isEnabled ? 1 : 0.45)
+            .contentShape(RoundedRectangle(cornerRadius: MCRadius.card))
+    }
+}
+
+public extension ButtonStyle where Self == MCPrimaryButtonStyle {
+    static var mcPrimary: MCPrimaryButtonStyle { MCPrimaryButtonStyle() }
+}
+
+public extension ButtonStyle where Self == MCSecondaryButtonStyle {
+    static var mcSecondary: MCSecondaryButtonStyle { MCSecondaryButtonStyle() }
+}
+
+public extension ButtonStyle where Self == MCDestructiveButtonStyle {
+    static var mcDestructive: MCDestructiveButtonStyle { MCDestructiveButtonStyle() }
 }

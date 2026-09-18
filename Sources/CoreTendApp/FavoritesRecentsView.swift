@@ -149,7 +149,7 @@ struct FavoritesRecentsView: View {
             }
             Section(L("favrec.section_favorites")) {
                 if model.favoriteLocations.isEmpty {
-                    Text(L("favrec.empty_favorites")).foregroundStyle(.secondary)
+                    Text(L("favrec.empty_favorites")).foregroundStyle(MCColor.textSecondary)
                 }
                 ForEach(model.favoriteLocations) { location in
                     LocationRow(location: location, model: model)
@@ -157,7 +157,7 @@ struct FavoritesRecentsView: View {
             }
             Section(L("favrec.section_recents")) {
                 if model.recentLocations.isEmpty {
-                    Text(L("favrec.empty_recents")).foregroundStyle(.secondary)
+                    Text(L("favrec.empty_recents")).foregroundStyle(MCColor.textSecondary)
                 }
                 ForEach(model.recentLocations) { location in
                     LocationRow(location: location, model: model)
@@ -179,13 +179,13 @@ private struct LocationRow: View {
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text(location.displayName).lineLimit(1)
-                Text(location.path).font(MCFont.caption).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
+                Text(location.path).font(MCFont.caption).foregroundStyle(MCColor.textSecondary).lineLimit(1).truncationMode(.middle)
                 statusLine
             }
             Spacer()
             if location.exists && location.isReadable {
                 Button(L("favrec.analyze")) { model.analyze(location.path) }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.mcSecondary)
             }
             if !location.isQuickLink {
                 Button(role: .destructive) {
@@ -227,9 +227,9 @@ private struct LocationRow: View {
             Text(L("favrec.status_no_access")).font(MCFont.micro).foregroundStyle(MCTheme.warning)
         } else if let date = location.lastScanned, let bytes = location.lastBytes {
             Text(L("favrec.status_last_scanned", AppDateFormatting.string(date, style: .dayMonthYearWithTime), mcFormatBytes(bytes)))
-                .font(MCFont.micro).foregroundStyle(.secondary)
+                .font(MCFont.micro).foregroundStyle(MCColor.textSecondary)
         } else {
-            Text(L("favrec.status_never_scanned")).font(MCFont.micro).foregroundStyle(.secondary)
+            Text(L("favrec.status_never_scanned")).font(MCFont.micro).foregroundStyle(MCColor.textSecondary)
         }
     }
 }

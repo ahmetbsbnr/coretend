@@ -130,7 +130,7 @@ struct AsyncThumbnail: View {
                 Image(nsImage: image).resizable().aspectRatio(contentMode: .fill)
             } else {
                 Rectangle().fill(.quaternary)
-                    .overlay(Image(systemName: "photo").foregroundStyle(.tertiary))
+                    .overlay(Image(systemName: "photo").foregroundStyle(MCColor.textTertiary))
             }
         }
         .frame(width: 72, height: 72)

@@ -143,6 +143,18 @@ public enum MCColor {
     public static let textSecondary = srgb(Canonical.textSecondary)
     public static let textTertiary = srgb(Canonical.textTertiary)
 
+    /// Text and glyphs sitting **on** an accent fill.
+    ///
+    /// The ground colour, not white. White on the brand teal measures 1.87:1 —
+    /// far under the 4.5:1 text minimum — and that was the label of the app's
+    /// primary action on every screen that had one. The same teal with the
+    /// ground colour on it measures 9.65:1.
+    ///
+    /// This is why `MCPrimaryButtonStyle` exists rather than
+    /// `.buttonStyle(.borderedProminent)`: the system style pairs a tint with a
+    /// white label and does not check whether the two can be read together.
+    public static let onAccent = srgb(Canonical.ground)
+
     // MARK: - Accent and signal
 
     public static let teal = srgb(Canonical.teal)

@@ -120,7 +120,7 @@ struct IntegrityView: ModuleSubScreen {
                 Image(systemName: "info.circle").font(MCFont.pageTitle).foregroundStyle(MCTheme.accent)
                 VStack(alignment: .leading, spacing: MCSpacing.xxs) {
                     Text(L("integrity.explainer.title")).font(MCFont.cardTitle)
-                    Text(L("integrity.explainer.body")).foregroundStyle(.secondary)
+                    Text(L("integrity.explainer.body")).foregroundStyle(MCColor.textSecondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -136,7 +136,7 @@ struct IntegrityView: ModuleSubScreen {
                     if model.isLoading { ProgressView().controlSize(.small) }
                 }
                 if model.downloads.isEmpty && !model.isLoading {
-                    Text(L("integrity.downloads.empty")).font(MCFont.caption).foregroundStyle(.secondary)
+                    Text(L("integrity.downloads.empty")).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 }
                 ForEach(model.downloads.prefix(25)) { item in
                     HStack(alignment: .top) {
@@ -145,21 +145,21 @@ struct IntegrityView: ModuleSubScreen {
                         VStack(alignment: .leading, spacing: MCSpacing.xxs) {
                             Text(item.name).font(MCFont.rowTitle).lineLimit(1)
                             if let location = ProvenanceSummary.location(for: item) {
-                                Text(location).font(MCFont.caption).foregroundStyle(.secondary)
+                                Text(location).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                                     .lineLimit(1).truncationMode(.middle)
                             }
                             // Which app brought the file in and when. macOS
                             // records this for almost everything, and the list
                             // showed none of it — see ProvenanceSummary.
                             if let acquisition = ProvenanceSummary.acquisition(for: item) {
-                                Text(acquisition).font(MCFont.micro).foregroundStyle(.tertiary)
+                                Text(acquisition).font(MCFont.micro).foregroundStyle(MCColor.textTertiary)
                                     // Wraps rather than truncates at
                                     // accessibility sizes — see CleanupView.
                                     .lineLimit(evidenceLineLimit)
                             }
                             if ProvenanceSummary.isUnknown(item) {
                                 Text(L("integrity.downloads.no_provenance"))
-                                    .font(MCFont.caption).foregroundStyle(.tertiary)
+                                    .font(MCFont.caption).foregroundStyle(MCColor.textTertiary)
                             }
                         }
                         Spacer()
@@ -181,7 +181,7 @@ struct IntegrityView: ModuleSubScreen {
         MCCard {
             VStack(alignment: .leading, spacing: MCSpacing.sm) {
                 Text(L("integrity.inspector.title")).font(MCFont.cardTitle)
-                Text(L("integrity.inspector.subtitle")).font(MCFont.caption).foregroundStyle(.secondary)
+                Text(L("integrity.inspector.subtitle")).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 Button(L("integrity.inspector.choose")) {
                     let panel = NSOpenPanel()
                     panel.canChooseDirectories = false
@@ -213,7 +213,7 @@ struct IntegrityView: ModuleSubScreen {
             Image(systemName: icon).foregroundStyle(color)
             VStack(alignment: .leading, spacing: MCSpacing.xxs) {
                 Text(name).font(MCFont.rowTitle)
-                Text(label).font(MCFont.caption).foregroundStyle(.secondary)
+                Text(label).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 if !info.signatureValid {
                     Text(L("integrity.tier.invalid")).font(MCFont.caption).foregroundStyle(MCTheme.danger)
                 }
@@ -226,17 +226,17 @@ struct IntegrityView: ModuleSubScreen {
         MCCard {
             VStack(alignment: .leading, spacing: MCSpacing.xs) {
                 Text(L("integrity.login_items.title")).font(MCFont.cardTitle)
-                Text(L("integrity.login_items.subtitle")).font(MCFont.caption).foregroundStyle(.secondary)
+                Text(L("integrity.login_items.subtitle")).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 if model.loginItems.isEmpty && !model.isLoading {
-                    Text(L("integrity.login_items.empty")).font(MCFont.caption).foregroundStyle(.secondary)
+                    Text(L("integrity.login_items.empty")).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 }
                 ForEach(model.loginItems) { item in
                     HStack {
-                        Image(systemName: "power").foregroundStyle(.secondary)
+                        Image(systemName: "power").foregroundStyle(MCColor.textSecondary)
                         VStack(alignment: .leading) {
                             Text(item.label).font(MCFont.rowTitle).lineLimit(1)
                             if let program = item.programPath {
-                                Text(program).font(MCFont.caption).foregroundStyle(.secondary)
+                                Text(program).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                                     .lineLimit(1).truncationMode(.middle)
                             }
                         }

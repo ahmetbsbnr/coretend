@@ -90,7 +90,7 @@ struct MCSettingsView: View {
                 Toggle(L("settings.show_menu_bar"), isOn: $menuBarEnabled)
                     .accessibilityIdentifier("settings.menu_bar")
                 Text(L("settings.menu_bar_detail"))
-                    .font(MCFont.caption).foregroundStyle(.secondary)
+                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
             }
             Section(L("settings.scans_cleanup")) {
                 LabeledContent(L("settings.deletion_method"), value: L("settings.deletion_method_value"))
@@ -117,7 +117,7 @@ struct MCSettingsView: View {
                     // scan will come back short.
                     if status.grant.needsAttention {
                         Text(L(status.capability.impactKey))
-                            .font(MCFont.caption).foregroundStyle(.secondary)
+                            .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                     }
                 }
                 HStack {
@@ -134,12 +134,12 @@ struct MCSettingsView: View {
                 Text(model.authorization.isComplete
                      ? L("authorization.complete")
                      : L("authorization.incomplete", model.authorization.denied.count))
-                    .font(MCFont.caption).foregroundStyle(.secondary)
+                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
             }
             Section(L("settings.exclusions")) {
                 if model.exclusions.isEmpty {
                     Text(L("settings.exclusions_empty"))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(MCColor.textSecondary)
                 }
                 ForEach(model.exclusions, id: \.self) { path in
                     HStack {
@@ -167,7 +167,7 @@ struct MCSettingsView: View {
             }
             Section(L("settings.data")) {
                 Text(L("settings.data_detail"))
-                    .font(MCFont.caption).foregroundStyle(.secondary)
+                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 // Shown only when the rename migration actually did something.
                 // A migration that moved a user's history has to say so, and a
                 // migration that failed must never look like one that worked.
@@ -186,7 +186,7 @@ struct MCSettingsView: View {
                     .accessibilityIdentifier("settings.diagnostic.export")
                     .sheet(isPresented: $showDiagnostic) { DiagnosticReportView() }
                 Text(L("settings.export_diagnostic_detail"))
-                    .font(MCFont.caption).foregroundStyle(.secondary)
+                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
             }
             UpdatesView()
             // No version row here: the installed version is stated once, in
@@ -261,7 +261,7 @@ struct MigrationNoticeRow: View {
                     .font(MCFont.rowTitle)
             }
             Text(detail)
-                .font(MCFont.caption).foregroundStyle(.secondary)
+                .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .accessibilityElement(children: .combine)

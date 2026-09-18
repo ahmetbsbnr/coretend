@@ -63,7 +63,7 @@ public struct MCScanStage<Caption: View>: View {
             caption
                 .font(MCFont.metric)
                 .monospacedDigit()
-                .foregroundStyle(.primary)
+                .foregroundStyle(MCColor.textPrimary)
                 .contentTransition(.numericText())
                 .accessibilityElement(children: .combine)
         }

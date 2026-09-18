@@ -52,7 +52,7 @@ struct SafetyLogView: View {
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
                 Text(L("safetylog.empty"))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(MCColor.textSecondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case let .failed(message):
                 Text(message).foregroundStyle(MCTheme.danger)
@@ -73,7 +73,7 @@ struct SafetyLogView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(L("safetylog.title")).font(MCFont.cardTitle)
                 Text(L("safetylog.subtitle_detail", model.executedCount, model.skippedOrErrorCount))
-                    .font(MCFont.caption).foregroundStyle(.secondary)
+                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
             }
             Spacer()
             Button(L("safetylog.purge"), role: .destructive) {
@@ -97,11 +97,11 @@ private struct SafetyLogRow: View {
                     .font(MCFont.monoCaption)
                     .lineLimit(1).truncationMode(.middle)
                 Text("\(record.ruleID) · \(FindingMetadata.riskLabel(rawValue: record.risk)) · \(mcFormatBytes(record.size)) · \(AppDateFormatting.string(record.date, style: .dayMonthYearWithTime))")
-                    .font(MCFont.micro).foregroundStyle(.secondary)
+                    .font(MCFont.micro).foregroundStyle(MCColor.textSecondary)
             }
             Spacer()
             Text(record.result)
-                .font(MCFont.micro).foregroundStyle(.secondary)
+                .font(MCFont.micro).foregroundStyle(MCColor.textSecondary)
                 .lineLimit(1)
         }
         .accessibilityElement(children: .combine)

@@ -69,7 +69,7 @@ struct AppUpdatesView: ModuleSubScreen {
                 ProgressView(L("updates.loading"))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
-                Text(L("apps.empty")).foregroundStyle(.secondary)
+                Text(L("apps.empty")).foregroundStyle(MCColor.textSecondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .ready:
                 List {
@@ -82,7 +82,7 @@ struct AppUpdatesView: ModuleSubScreen {
                                 VStack(alignment: .leading) {
                                     Text(info.app.name)
                                     Text(L("updates.version_source", info.app.version ?? "?", info.source.rawValue))
-                                        .font(MCFont.caption).foregroundStyle(.secondary)
+                                        .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                                 }
                                 .accessibilityElement(children: .combine)
                                 Spacer()
@@ -96,7 +96,7 @@ struct AppUpdatesView: ModuleSubScreen {
                         }
                     } footer: {
                         Text(L("updates.footer"))
-                            .font(MCFont.caption).foregroundStyle(.secondary)
+                            .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                     }
                 }
                 .listStyle(.inset)

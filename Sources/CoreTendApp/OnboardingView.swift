@@ -194,7 +194,7 @@ struct OnboardingView: View {
             }
             Spacer(minLength: 0)
             Text(L("onboarding.welcome.version", appVersion))
-                .font(MCFont.badge).foregroundStyle(.tertiary)
+                .font(MCFont.badge).foregroundStyle(MCColor.textTertiary)
         }
         .padding(MCSpacing.lg)
         .frame(width: 236)
@@ -269,7 +269,7 @@ struct OnboardingView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             Text(L("onboarding.step0.subtitle"))
-                .font(MCFont.body).foregroundStyle(.secondary)
+                .font(MCFont.body).foregroundStyle(MCColor.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
             VStack(alignment: .leading, spacing: MCSpacing.sm) {
                 bullet("internaldrive", L("onboarding.welcome.local"))
@@ -279,7 +279,7 @@ struct OnboardingView: View {
             }
             Divider().padding(.vertical, MCSpacing.xxs)
             VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                Text(L("onboarding.language.title")).font(MCFont.sectionTitle).foregroundStyle(.secondary)
+                Text(L("onboarding.language.title")).font(MCFont.sectionTitle).foregroundStyle(MCColor.textSecondary)
                 Picker(L("onboarding.language.title"), selection: $appLanguageRaw) {
                     Text(L("settings.language.system")).tag(AppLanguage.system.rawValue)
                     Text("Français").tag(AppLanguage.fr.rawValue)
@@ -290,7 +290,7 @@ struct OnboardingView: View {
                 .frame(maxWidth: 320)
                 .accessibilityIdentifier("onboarding.language")
                 Text(L("onboarding.language.subtitle"))
-                    .font(MCFont.caption).foregroundStyle(.secondary)
+                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             if model.launchLocation.canOfferMove { moveBanner }
@@ -302,7 +302,7 @@ struct OnboardingView: View {
             Text(L("onboarding.move.prompt")).font(MCFont.secondaryBody)
                 .multilineTextAlignment(.center)
             if let result = model.moveResult {
-                Text(result).font(MCFont.caption).foregroundStyle(.secondary)
+                Text(result).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                     .multilineTextAlignment(.center)
             } else {
                 Button(L("onboarding.move.button")) { model.moveToApplications() }
@@ -342,7 +342,7 @@ struct OnboardingView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(L("onboarding.security.\(p.rawValue)")).font(MCFont.secondaryBody).bold()
                     Text(L("onboarding.security.\(p.rawValue)_detail"))
-                        .font(MCFont.caption).foregroundStyle(.secondary)
+                        .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer()
@@ -360,7 +360,7 @@ struct OnboardingView: View {
         HStack(spacing: MCSpacing.xs) {
             Image(systemName: on ? "checkmark.circle.fill" : "circle")
                 .foregroundStyle(on ? MCTheme.success : .secondary)
-            Text(label).font(MCFont.caption).foregroundStyle(.secondary)
+            Text(label).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
         }
     }
 
@@ -389,7 +389,7 @@ struct OnboardingView: View {
                     Button(L("settings.recheck")) { Task { await model.refreshPermissions() } }
                 }
                 Text(L("onboarding.fileaccess.no_autogrant"))
-                    .font(MCFont.caption).foregroundStyle(.secondary)
+                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                     .multilineTextAlignment(.center).frame(maxWidth: 460)
             }
         }
@@ -419,7 +419,7 @@ struct OnboardingView: View {
                 folderSection(L("onboarding.folders.scannable"), model.scannableFolders,
                               add: { model.addScannable($0) }, remove: { model.removeScannable($0) })
                 Text(L("onboarding.folders.protected"))
-                    .font(MCFont.caption).foregroundStyle(.secondary)
+                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 Divider()
                 folderSection(L("onboarding.folders.exclusions"), model.exclusions,
                               add: { model.addExclusion($0) }, remove: { model.removeExclusion($0) })
@@ -443,7 +443,7 @@ struct OnboardingView: View {
             }
             ForEach(folders, id: \.self) { url in
                 HStack {
-                    Image(systemName: "folder").foregroundStyle(.secondary)
+                    Image(systemName: "folder").foregroundStyle(MCColor.textSecondary)
                     Text(url.path).lineLimit(1).truncationMode(.middle).font(MCFont.caption)
                     Spacer()
                     Button {
@@ -470,14 +470,14 @@ struct OnboardingView: View {
                                 .foregroundStyle(itemColor(item.status))
                             Text(L("onboarding.check.\(item.id)")).font(MCFont.caption)
                             Spacer()
-                            Text(statusLabel(item.status)).font(MCFont.caption).foregroundStyle(.secondary)
+                            Text(statusLabel(item.status)).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                         }
                     }
                 }
                 .frame(maxWidth: 460)
             } else {
                 ProgressView().controlSize(.large)
-                Text(L("onboarding.check.running")).font(MCFont.caption).foregroundStyle(.secondary)
+                Text(L("onboarding.check.running")).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
             }
         }
         .task(id: step) { if step == 5 { await model.runSystemCheck() } }
@@ -512,7 +512,7 @@ struct OnboardingView: View {
     private var footer: some View {
         HStack {
             Button(L("onboarding.skip")) { model.persist(); finish() }
-                .buttonStyle(.plain).foregroundStyle(.secondary)
+                .buttonStyle(.plain).foregroundStyle(MCColor.textSecondary)
                 .accessibilityIdentifier("onboarding.skip")
             Spacer()
             if step > 0 {
@@ -522,7 +522,7 @@ struct OnboardingView: View {
             Button(step == stepCount - 1 ? L("onboarding.start") : L("onboarding.continue")) {
                 if step == stepCount - 1 { model.persist(); finish() } else { step += 1 }
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.mcPrimary)
             .keyboardShortcut(.defaultAction)
             .accessibilityIdentifier(step == stepCount - 1 ? "onboarding.start" : "onboarding.continue")
         }
@@ -549,7 +549,7 @@ struct OnboardingView: View {
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: MCSpacing.xxs) {
                 Text(title).font(MCFont.pageTitle)
-                Text(subtitle).font(MCFont.secondaryBody).foregroundStyle(.secondary)
+                Text(subtitle).font(MCFont.secondaryBody).foregroundStyle(MCColor.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -567,7 +567,7 @@ struct OnboardingView: View {
         HStack {
             Text(label).font(MCFont.secondaryBody)
             Spacer()
-            Text(value).font(MCFont.secondaryBody).foregroundStyle(.secondary)
+            Text(value).font(MCFont.secondaryBody).foregroundStyle(MCColor.textSecondary)
         }
     }
 

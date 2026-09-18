@@ -183,7 +183,7 @@ struct LargeOldFilesView: ModuleSubScreen {
                             .multilineTextAlignment(.center)
                         Text(L("clutter.idle.subtitle"))
                             .font(MCFont.secondaryBody)
-                            .multilineTextAlignment(.center).foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center).foregroundStyle(MCColor.textSecondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .mcAppear()
@@ -292,7 +292,7 @@ struct LargeOldFilesView: ModuleSubScreen {
             if model.sortedFindings.isEmpty {
                 Spacer()
                 Text(L("clutter.search_no_results"))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(MCColor.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .center)
                 Spacer()
             }
@@ -310,7 +310,7 @@ struct LargeOldFilesView: ModuleSubScreen {
                                 Text(L("clutter.modified", AppDateFormatting.string(date, style: .dayMonthYear)))
                             }
                         }
-                        .font(MCFont.caption).foregroundStyle(.secondary)
+                        .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                     }
                     Spacer()
                     // Large, legible metric number — this screen is

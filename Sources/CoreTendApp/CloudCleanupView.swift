@@ -284,7 +284,7 @@ struct CloudCleanupView: View {
             Image(systemName: "icloud").font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
             Text(L("cloud.picker.title")).font(MCFont.pageTitle)
             Text(L("cloud.picker.subtitle"))
-                .multilineTextAlignment(.center).foregroundStyle(.secondary)
+                .multilineTextAlignment(.center).foregroundStyle(MCColor.textSecondary)
             ForEach(model.providers) { provider in
                 Button {
                     model.scan(provider)
@@ -292,7 +292,7 @@ struct CloudCleanupView: View {
                     Label(provider.name, systemImage: provider.icon)
                         .frame(width: 220)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.mcSecondary)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -304,7 +304,7 @@ struct CloudCleanupView: View {
                 VStack(alignment: .leading) {
                     Text(model.selectedProvider?.name ?? "").font(MCFont.cardTitle)
                     Text(L("cloud.results.summary", mcFormatBytes(model.recoverableLocalBytes), mcFormatBytes(model.totalLogical)))
-                        .font(MCFont.caption).foregroundStyle(.secondary)
+                        .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 }
                 Spacer()
                 Button(L("cloud.back")) { model.phase = .ready }
@@ -323,7 +323,7 @@ struct CloudCleanupView: View {
                     VStack(alignment: .trailing) {
                         Text(L("cloud.local_bytes", mcFormatBytes(entry.localBytes))).monospacedDigit()
                         Text(L("cloud.total_bytes", mcFormatBytes(entry.logicalBytes)))
-                            .font(MCFont.caption).foregroundStyle(.secondary).monospacedDigit()
+                            .font(MCFont.caption).foregroundStyle(MCColor.textSecondary).monospacedDigit()
                     }
                     Button {
                         NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: entry.id)])
