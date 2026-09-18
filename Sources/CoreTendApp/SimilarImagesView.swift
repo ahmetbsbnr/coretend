@@ -11,7 +11,7 @@ import QuickLook
 
 @MainActor
 @Observable
-final class SimilarImagesViewModel {
+final class SimilarImagesViewModel: CancellableScan {
     enum Phase: Equatable { case idle, scanning(processed: Int, total: Int), results, empty }
 
     var phase: Phase = .idle
@@ -21,8 +21,8 @@ final class SimilarImagesViewModel {
     var selectedVolumeID: String?
     let volumeResolver: VolumeResolving
     let exclusionsController = ClutterExclusionsController()
-    private var scanTask: Task<Void, Never>?
-    private var pauseController: ScanPauseController?
+    var scanTask: Task<Void, Never>?
+    var pauseController: ScanPauseController?
     private(set) var isPaused = false
 
     init(volumeResolver: VolumeResolving = SystemVolumeResolver()) {
@@ -73,6 +73,7 @@ final class SimilarImagesViewModel {
                         itemCount: found.count,
                         bytes: found.reduce(0) { $0 + $1.totalBytes }))
                 case .cancelled:
+                    // Normally unreachable — see CancellableScan.
                     phase = groups.isEmpty ? .idle : .results
                     isPaused = false
                     self.pauseController = nil
@@ -103,8 +104,12 @@ final class SimilarImagesViewModel {
     }
 
     func cancel() {
-        scanTask?.cancel()
-        Task { await pauseController?.resume() }
+        isPaused = false
+        cancelScanning()
+    }
+
+    func resetPhaseAfterCancellation() {
+        if case .scanning = phase { phase = groups.isEmpty ? .idle : .results }
     }
 }
 

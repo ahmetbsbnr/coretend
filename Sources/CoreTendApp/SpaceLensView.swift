@@ -11,7 +11,7 @@ import QuickLook
 
 @MainActor
 @Observable
-final class SpaceLensViewModel {
+final class SpaceLensViewModel: CancellableScan {
     enum Phase: Equatable { case idle, scanning(items: Int), ready }
 
     var phase: Phase = .idle
@@ -21,8 +21,8 @@ final class SpaceLensViewModel {
     var pendingDelete: SpaceNode?
     var lastDeleteError: String?
     var isScanPaused = false
-    private var scanTask: Task<Void, Never>?
-    private var pauseController: ScanPauseController?
+    var scanTask: Task<Void, Never>?
+    var pauseController: ScanPauseController?
     private var rootURL: URL?
 
     var current: SpaceNode? { pathStack.last ?? root }
@@ -50,6 +50,7 @@ final class SpaceLensViewModel {
                         itemCount: node.children.count, bytes: node.size))
                     AppEnvironment.shared.recordLocationVisit(path: url.path, bytes: node.size)
                 case .cancelled:
+                    // Normally unreachable — see CancellableScan.
                     isScanPaused = false
                     phase = root == nil ? .idle : .ready
                 }
@@ -72,7 +73,12 @@ final class SpaceLensViewModel {
         let engine = SpaceLensEngine(root: rootURL)
         scanTask = Task {
             for await event in engine.run(pauseController: pauseController) {
-                if case let .finished(node) = event {
+                switch event {
+                case let .progress(items, _):
+                    // Was unhandled: the rescan showed a frozen "0 items"
+                    // counter for its whole duration.
+                    phase = .scanning(items: items)
+                case let .finished(node):
                     root = node
                     var stack: [SpaceNode] = []
                     var cursor = node
@@ -83,6 +89,10 @@ final class SpaceLensViewModel {
                     }
                     pathStack = stack
                     phase = .ready
+                case .cancelled:
+                    // Was unhandled: a cancelled rescan left the view spinning
+                    // on .scanning permanently, with no way back.
+                    phase = root == nil ? .idle : .ready
                 }
             }
         }
@@ -102,8 +112,11 @@ final class SpaceLensViewModel {
 
     func cancel() {
         isScanPaused = false
-        scanTask?.cancel()
-        Task { await pauseController?.resume() }
+        cancelScanning()
+    }
+
+    func resetPhaseAfterCancellation() {
+        if case .scanning = phase { phase = root == nil ? .idle : .ready }
     }
 
     func descend(into node: SpaceNode) {

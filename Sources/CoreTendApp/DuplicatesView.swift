@@ -17,7 +17,7 @@ private struct DupMember: Identifiable {
 
 @MainActor
 @Observable
-final class DuplicatesViewModel {
+final class DuplicatesViewModel: CancellableScan {
     enum Phase: Equatable { case idle, scanning(processed: Int, total: Int), results, empty, executing, finished(ExecutionOutcome) }
 
     var phase: Phase = .idle
@@ -32,8 +32,8 @@ final class DuplicatesViewModel {
     let volumeResolver: VolumeResolving
     let exclusionsController = ClutterExclusionsController()
 
-    private var scanTask: Task<Void, Never>?
-    private var pauseController: ScanPauseController?
+    var scanTask: Task<Void, Never>?
+    var pauseController: ScanPauseController?
     private var scannedRoots: [URL] = []
 
     init(volumeResolver: VolumeResolving = SystemVolumeResolver()) {
@@ -101,6 +101,7 @@ final class DuplicatesViewModel {
                         kind: .scan, summary: "Duplicate scan: \(count) groups",
                         itemCount: count, bytes: wasted))
                 case .cancelled:
+                    // Normally unreachable — see CancellableScan.
                     isScanPaused = false
                     phase = groups.isEmpty ? .idle : .results
                 }
@@ -122,8 +123,11 @@ final class DuplicatesViewModel {
 
     func cancel() {
         isScanPaused = false
-        scanTask?.cancel()
-        Task { await pauseController?.resume() }
+        cancelScanning()
+    }
+
+    func resetPhaseAfterCancellation() {
+        if case .scanning = phase { phase = groups.isEmpty ? .idle : .results }
     }
 
     func removeSelected() {

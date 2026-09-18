@@ -14,7 +14,7 @@ import QuickLook
 /// allowlist by design).
 @MainActor
 @Observable
-final class MyClutterViewModel {
+final class MyClutterViewModel: CancellableScan {
     enum Phase: Equatable { case idle, scanning, results, empty }
 
     enum SortOption: String, CaseIterable, Identifiable {
@@ -35,8 +35,8 @@ final class MyClutterViewModel {
     let volumeResolver: VolumeResolving
     let exclusionsController = ClutterExclusionsController()
 
-    private var scanTask: Task<Void, Never>?
-    private var pauseController: ScanPauseController?
+    var scanTask: Task<Void, Never>?
+    var pauseController: ScanPauseController?
 
     init(volumeResolver: VolumeResolving = SystemVolumeResolver()) {
         self.volumeResolver = volumeResolver
@@ -99,12 +99,18 @@ final class MyClutterViewModel {
                         let index = findings.firstIndex { $0.logicalSize < finding.logicalSize } ?? findings.count
                         findings.insert(finding, at: index)
                     }
-                case .finished, .cancelled:
+                case .finished:
                     isScanPaused = false
                     phase = findings.isEmpty ? .empty : .results
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .scan, summary: "Large & Old scan: \(findings.count) files",
                         itemCount: findings.count, bytes: totalBytes))
+                case .cancelled:
+                    // Normally unreachable — see CancellableScan. Deliberately
+                    // records nothing: a cancelled scan is a partial result and
+                    // must not appear in Activity as a completed one.
+                    isScanPaused = false
+                    phase = findings.isEmpty ? .idle : .results
                 default: break
                 }
             }
@@ -126,8 +132,11 @@ final class MyClutterViewModel {
 
     func cancel() {
         isScanPaused = false
-        scanTask?.cancel()
-        Task { await pauseController?.resume() }
+        cancelScanning()
+    }
+
+    func resetPhaseAfterCancellation() {
+        if phase == .scanning { phase = findings.isEmpty ? .idle : .results }
     }
 }
 

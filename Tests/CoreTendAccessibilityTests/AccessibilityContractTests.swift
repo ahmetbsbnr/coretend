@@ -61,6 +61,24 @@ struct AccessibilityContractTests {
         #expect(view.contains("ProvenanceSummary.acquisition"))
     }
 
+    @Test func evidenceLinesWrapRatherThanTruncateAtAccessibilitySizes() throws {
+        // Both evidence lines are caption2 with a single-line limit, which keeps
+        // rows compact at ordinary text sizes. Left unconditional, large
+        // Dynamic Type would cut "Low risk · modified 1 month ago" down to the
+        // risk alone — removing exactly the evidence the line exists to show,
+        // from the readers who most need it. The limit is therefore relaxed at
+        // accessibility sizes rather than fixed at 1.
+        //
+        // The path line above keeps a hard limit deliberately: paths are
+        // arbitrarily long and middle-truncate readably.
+        for file in ["Sources/CoreTendApp/CleanupView.swift",
+                     "Sources/CoreTendApp/ProtectionView.swift"] {
+            let view = try source(file)
+            #expect(view.contains("dynamicTypeSize.isAccessibilitySize"), "no Dynamic Type handling in \(file)")
+            #expect(view.contains("lineLimit(evidenceLineLimit)"), "evidence line not using the relaxed limit in \(file)")
+        }
+    }
+
     @Test func skipReportingKeysExistInBothLanguages() throws {
         // A partial cleanup says so on screen. If the key is missing from one
         // table the sentence silently becomes its own key name.

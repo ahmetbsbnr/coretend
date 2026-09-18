@@ -11,7 +11,7 @@ import ScanCore
 /// Never triggers a download; never deletes (a synced deletion would propagate).
 @MainActor
 @Observable
-final class CloudCleanupViewModel {
+final class CloudCleanupViewModel: CancellableScan {
     struct Provider: Identifiable {
         let id: String
         let name: String
@@ -54,9 +54,9 @@ final class CloudCleanupViewModel {
     var providers: [Provider] = []
     var selectedProvider: Provider?
     var entries: [Entry] = []
-    private var scanTask: Task<Void, Never>?
+    var scanTask: Task<Void, Never>?
     private var workerTask: Task<[Entry], Never>?
-    private var pauseController: ScanPauseController?
+    var pauseController: ScanPauseController?
     private(set) var isPaused = false
 
     var totalLogical: Int64 { entries.reduce(0) { $0 + $1.logicalBytes } }
@@ -139,16 +139,18 @@ final class CloudCleanupViewModel {
         Task { await pauseController?.resume() }
     }
 
+    func resetPhaseAfterCancellation() {
+        if phase == .scanning { phase = providers.isEmpty ? .detecting : .ready }
+    }
+
     func cancel() {
-        scanTask?.cancel()
+        // This view model already cancelled correctly; it is the reference the
+        // other five were brought in line with. It keeps one extra step of its
+        // own: a second task doing the measuring work.
         workerTask?.cancel()
-        scanTask = nil
         workerTask = nil
         isPaused = false
-        let pauseController = pauseController
-        self.pauseController = nil
-        Task { await pauseController?.resume() }
-        if phase == .scanning { phase = providers.isEmpty ? .detecting : .ready }
+        cancelScanning()
     }
 
     /// Synchronous walk (DirectoryEnumerator can't be iterated in async contexts).

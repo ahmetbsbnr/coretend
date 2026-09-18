@@ -103,6 +103,15 @@ struct ProtectionView: View {
 /// The compatibility shell does not claim malware detection; current
 /// integrity checks are local and informational.
 struct IntegrityView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    /// Evidence lines wrap instead of truncating once text is large enough
+    /// that a single line would cut them short. Typed explicitly: an inline
+    /// `? nil : 1` inside a view builder leaves the compiler unable to infer
+    /// the surrounding ForEach.
+    private var evidenceLineLimit: Int? {
+        dynamicTypeSize.isAccessibilitySize ? nil : 1
+    }
     @State private var model = IntegrityViewModel()
 
     var body: some View {
@@ -157,7 +166,9 @@ struct IntegrityView: View {
                             // showed none of it — see ProvenanceSummary.
                             if let acquisition = ProvenanceSummary.acquisition(for: item) {
                                 Text(acquisition).font(.caption2).foregroundStyle(.tertiary)
-                                    .lineLimit(1)
+                                    // Wraps rather than truncates at
+                                    // accessibility sizes — see CleanupView.
+                                    .lineLimit(evidenceLineLimit)
                             }
                             if ProvenanceSummary.isUnknown(item) {
                                 Text(L("integrity.downloads.no_provenance"))

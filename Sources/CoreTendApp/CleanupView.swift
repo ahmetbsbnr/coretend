@@ -10,7 +10,7 @@ import Persistence
 
 @MainActor
 @Observable
-final class CleanupViewModel {
+final class CleanupViewModel: CancellableScan {
     enum Phase: Equatable {
         case idle, scanning, review, running, done(ExecutionOutcome), failed(String)
     }
@@ -23,8 +23,8 @@ final class CleanupViewModel {
     var totalFindingCount = 0
     var isScanPaused = false
 
-    private var scanTask: Task<Void, Never>?
-    private var pauseController: ScanPauseController?
+    var scanTask: Task<Void, Never>?
+    var pauseController: ScanPauseController?
 
     var isDisplayTruncated: Bool { totalFindingCount > findings.count }
 
@@ -102,6 +102,8 @@ final class CleanupViewModel {
                         kind: .scan, summary: "Cleanup scan: \(findings.count) items found",
                         itemCount: findings.count, bytes: bytes))
                 case .cancelled:
+                    // Normally unreachable: the loop exits on cancellation
+                    // before this arrives. See CancellableScan.
                     isScanPaused = false
                     phase = .idle
                 }
@@ -124,8 +126,11 @@ final class CleanupViewModel {
 
     func cancelScan() {
         isScanPaused = false
-        scanTask?.cancel()
-        Task { await pauseController?.resume() }
+        cancelScanning()
+    }
+
+    func resetPhaseAfterCancellation() {
+        if phase == .scanning { phase = .idle }
     }
 
     func runCleanup() {
@@ -160,7 +165,16 @@ final class CleanupViewModel {
 }
 
 struct CleanupView: View {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var model = CleanupViewModel()
+
+    /// Evidence lines wrap instead of truncating once text is large enough
+    /// that a single line would cut them short. Typed explicitly: an inline
+    /// `? nil : 1` inside a view builder leaves the compiler unable to infer
+    /// the surrounding ForEach.
+    private var evidenceLineLimit: Int? {
+        dynamicTypeSize.isAccessibilitySize ? nil : 1
+    }
     @State private var showMoveConfirmation = false
 
     var body: some View {
@@ -367,7 +381,14 @@ struct CleanupView: View {
                     risk: finding.risk, modificationDate: finding.modificationDate) {
                     Text(evidence)
                         .font(.caption2).foregroundStyle(.tertiary)
-                        .lineLimit(1)
+                        // One line at ordinary sizes keeps rows compact; at
+                        // accessibility sizes it wraps instead. Truncating here
+                        // would cut "Low risk · modified 1 month ago" down to
+                        // the risk alone — losing exactly the evidence the line
+                        // was added to show, for the readers who most need it.
+                        // The path above keeps its hard limit because paths are
+                        // arbitrarily long and middle-truncate readably.
+                        .lineLimit(evidenceLineLimit)
                         // VoiceOver reads the row as one sentence; this line is
                         // part of it rather than a separate stop.
                         .accessibilityHidden(true)
