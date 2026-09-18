@@ -130,7 +130,12 @@ final class PrivacyCleanerViewModel {
     }
 }
 
-struct PrivacyCleanerView: View {
+struct PrivacyCleanerView: ModuleSubScreen {
+    /// Reached from protection's sub-navigation, which already owns
+    /// the window title — so this view deliberately sets none.
+    static let parent = ModuleID.protection
+    static let labelKey = "protection.tab.privacy"
+
     @State private var model = PrivacyCleanerViewModel()
     @State private var showMoveConfirmation = false
 

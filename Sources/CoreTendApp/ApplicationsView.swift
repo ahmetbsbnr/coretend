@@ -286,7 +286,10 @@ struct ApplicationsView: View {
     }
 }
 
-struct InstalledAppsView: View {
+struct InstalledAppsView: ModuleSubScreen {
+    static let parent = ModuleID.applications
+    static let labelKey = "apps.tab.installed"
+
     @State private var model = ApplicationsViewModel()
     @State private var showUninstallConfirmation = false
     @Namespace private var rowTransition

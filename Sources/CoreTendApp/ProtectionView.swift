@@ -86,7 +86,10 @@ struct ProtectionView: View {
 /// reads metadata macOS itself already recorded. See
 /// The compatibility shell does not claim malware detection; current
 /// integrity checks are local and informational.
-struct IntegrityView: View {
+struct IntegrityView: ModuleSubScreen {
+    static let parent = ModuleID.protection
+    static let labelKey = "protection.tab.integrity"
+
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     /// Evidence lines wrap instead of truncating once text is large enough

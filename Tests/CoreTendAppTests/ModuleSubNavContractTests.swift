@@ -68,8 +68,36 @@ struct ModuleSubNavContractTests {
         #expect(handRolled.isEmpty, "hand-rolled pinned sub-nav in \(handRolled) — use ModuleSubNav")
     }
 
+    /// Every sub-screen declares itself one.
+    ///
+    /// A sub-screen must not set a window title — its parent module already
+    /// did, and the last writer would win. But "correctly has no title" and
+    /// "forgot the title" look identical in source, which is how three views
+    /// shipped untitled. Conforming to `ModuleSubScreen` is the declaration
+    /// that the absence is deliberate, and this test is what makes the
+    /// declaration load-bearing.
+    @Test func everySubScreenIsDeclaredAsOneAndSetsNoTitle() throws {
+        let subScreens = [
+            "LeftoversView", "AppUpdatesView", "PrivacyCleanerView",
+            "SimilarImagesView", "InstalledAppsView", "IntegrityView", "LargeOldFilesView",
+        ]
+        let sources = Dictionary(uniqueKeysWithValues: try appSources().map { ($0.name, $0.text) })
+        for (name, text) in sources {
+            for screen in subScreens where text.contains("struct \(screen):") {
+                #expect(text.contains("struct \(screen): ModuleSubScreen"),
+                        "\(screen) in \(name) is a sub-screen but does not declare it")
+            }
+        }
+        // And none of them claims the window title.
+        for file in ["LeftoversView.swift", "AppUpdatesView.swift",
+                     "PrivacyCleanerView.swift", "SimilarImagesView.swift"] {
+            let text = try #require(sources[file], "missing \(file)")
+            #expect(!text.contains("navigationTitle("),
+                    "\(file) sets a window title its parent module already owns")
+        }
+    }
+
     /// Every module reachable from the sidebar names itself in the title bar.
-    /// Three views shipped without a title because nothing checked.
     @Test func everyRoutedModuleSetsANavigationTitle() throws {
         let routed = [
             "DashboardView", "CleanupView", "ProtectionView", "ApplicationsView",

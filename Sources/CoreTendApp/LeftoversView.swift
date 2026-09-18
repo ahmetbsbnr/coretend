@@ -78,7 +78,12 @@ final class LeftoversViewModel {
     }
 }
 
-struct LeftoversView: View {
+struct LeftoversView: ModuleSubScreen {
+    /// Reached from applications's sub-navigation, which already owns
+    /// the window title — so this view deliberately sets none.
+    static let parent = ModuleID.applications
+    static let labelKey = "apps.tab.leftovers"
+
     @State private var model = LeftoversViewModel()
     @State private var showMoveConfirmation = false
 

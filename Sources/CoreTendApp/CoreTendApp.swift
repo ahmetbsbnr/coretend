@@ -668,19 +668,3 @@ private struct CommandPaletteView: View {
         isPresented = false
     }
 }
-
-struct PlaceholderView: View {
-    let module: ModuleID
-
-    var body: some View {
-        VStack(spacing: 12) {
-            Image(systemName: module.systemImage)
-                .font(.system(size: MCIconSize.emptyState))
-                .foregroundStyle(MCTheme.accent)
-            Text(module.label).font(MCFont.pageTitle)
-            Text(L("placeholder.under_construction"))
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}

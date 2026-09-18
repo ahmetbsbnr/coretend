@@ -54,7 +54,12 @@ final class AppUpdatesViewModel {
     }
 }
 
-struct AppUpdatesView: View {
+struct AppUpdatesView: ModuleSubScreen {
+    /// Reached from applications's sub-navigation, which already owns
+    /// the window title — so this view deliberately sets none.
+    static let parent = ModuleID.applications
+    static let labelKey = "apps.tab.updates"
+
     @State private var model = AppUpdatesViewModel()
 
     var body: some View {

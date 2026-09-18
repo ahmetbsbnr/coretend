@@ -157,7 +157,10 @@ struct MyClutterView: View {
     }
 }
 
-struct LargeOldFilesView: View {
+struct LargeOldFilesView: ModuleSubScreen {
+    static let parent = ModuleID.myClutter
+    static let labelKey = "clutter.tab.large_old"
+
     @State private var model = MyClutterViewModel()
 
     var body: some View {
