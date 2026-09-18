@@ -47,7 +47,7 @@
 /* Cleanup */
 "cleanup.title" = "Cleanup";
 "cleanup.failed" = "Cleanup failed: %@";
-"cleanup.idle.title" = "Scan for safe-to-remove files";
+"cleanup.idle.title" = "Find files worth reviewing";
 "cleanup.idle.subtitle" = "Scans user caches, logs, crash reports and Xcode build data.\nNothing is deleted during a scan.";
 "cleanup.start_scan" = "Start Scan";
 "cleanup.scanning_progress" = "Scanned %d items — %@ found";
@@ -66,7 +66,7 @@
 "spacelens.delete.help" = "Move to Trash";
 "spacelens.delete.confirm_title" = "Move \"%@\" to Trash?";
 "spacelens.delete.confirm_action" = "Move to Trash";
-"spacelens.delete.confirm_message" = "%@ will be reclaimed. This uses the ordinary macOS Trash — recoverable until it's emptied.";
+"spacelens.delete.confirm_message" = "Moves %@ to the Trash. It stays recoverable there, and the space comes back when you empty it.";
 "spacelens.delete.error_title" = "Couldn't Move to Trash";
 "spacelens.delete.error_message" = "\"%@\" wasn't moved — it may already be gone, or outside the scanned folder.";
 "spacelens.idle.title" = "Visualize your storage";
@@ -183,7 +183,7 @@
 "privacy.empty.title" = "No browser data found";
 "privacy.empty.subtitle" = "Safari data requires Full Disk Access; Chrome and Firefox profiles are detected automatically when present.";
 "privacy.finished.moved" = "%@ of caches moved to Trash";
-"privacy.running_warning" = "%@ is running — cache files may be locked. Quit the browser first for a complete clean.";
+"privacy.running_warning" = "%@ is running, so some of its cache files are locked. Quit it first to include those.";
 "privacy.caches_selected" = "Browser caches — %@ selected";
 "privacy.clean_caches" = "Clean Caches";
 "privacy.browser_profile" = "%@ — %@";
@@ -199,7 +199,7 @@
 "dupes.comparing" = "Comparing %d of %d candidates";
 "dupes.building_inventory" = "Building file inventory…";
 "dupes.none_found" = "No duplicates found";
-"dupes.results.summary" = "%d groups — %@ selected of %@ reclaimable";
+"dupes.results.summary" = "%d groups — %@ selected of %@ duplicated";
 "dupes.move_to_trash" = "Move Copies to Trash";
 "dupes.select_copy" = "Select copy %@";
 "dupes.suggested_keeper" = "Suggested keeper";
@@ -306,7 +306,6 @@
 "settings.exclusions_empty" = "No excluded folders. Excluded locations are never scanned or cleaned.";
 "settings.add_folder" = "Add Folder…";
 "settings.data" = "Data";
-"settings.data_detail" = "CoreTend is fully offline. No telemetry, no accounts, no network calls. All data stays on this Mac.";
 "settings.export_diagnostic" = "Export diagnostic report…";
 "settings.export_diagnostic_detail" = "Generates an anonymized report (versions, permission states, counts) for troubleshooting. No usernames, paths, filenames, or app lists are included. You review it before saving.";
 "diagnostic.title" = "Diagnostic Report";
@@ -324,7 +323,6 @@
 "onboarding.step0.title" = "Welcome to CoreTend";
 "onboarding.step0.signature" = "A lighter Mac. Always under control.";
 "onboarding.step1.title" = "Everything stays here";
-"onboarding.step1.bullet1" = "All analysis runs on this Mac. No accounts, no telemetry, no network calls.";
 "onboarding.step1.bullet2" = "Your history lives in a local database you can clear at any time.";
 "onboarding.step1.bullet3" = "CoreTend is not an antivirus replacement and never claims otherwise.";
 "onboarding.step2.title" = "Full Disk Access — optional";
@@ -554,7 +552,7 @@
 "cleanup.category.xcode.detail" = "DerivedData — rebuilt on next build";
 "cleanup.category.downloads" = "Incomplete Downloads";
 "cleanup.category.downloads.detail" = "~/Downloads — partial files, older than 7 days";
-"cleanup.idle.safety_note" = "Nothing is deleted during a scan. All items are reviewed before any action.";
+"cleanup.idle.safety_note" = "A scan deletes nothing. You review every item before anything moves.";
 
 /* Space Lens idle */
 "spacelens.idle.tip" = "Color-coded by type: folders, media, documents, archives and code.";
@@ -686,3 +684,6 @@
 "record.purge_confirm_action" = "Erase the Record";
 "record.purge_confirm_message" = "All %d entries are removed permanently. The record is append-only: nothing restores them, and files already moved to the Trash are not affected.";
 "common.more" = "More";
+
+"settings.data_detail_offline" = "Everything CoreTend analyses stays on this Mac. No accounts, no telemetry, no analytics, and no network requests of any kind.";
+"settings.data_detail_updates" = "Everything CoreTend analyses stays on this Mac. No accounts, no telemetry, no analytics. The one request it makes is the update check below: it asks a public address for a version file and sends nothing about you, your files or your Mac.";

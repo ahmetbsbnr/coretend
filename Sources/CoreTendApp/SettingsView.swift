@@ -167,7 +167,14 @@ struct MCSettingsView: View {
                 .accessibilityIdentifier("settings.exclusions.add")
             }
             Section(L("settings.data")) {
-                Text(L("settings.data_detail"))
+                // Build-aware because the sentence is not the same sentence in
+                // both products. The Developer ID build checks for updates over
+                // the network; the App Store build cannot. One string claiming
+                // "no network calls" was false in one of the two, which is a
+                // privacy claim, not a wording preference.
+                Text(AppCapabilities.forCurrentBuild().canCheckForUpdates
+                     ? L("settings.data_detail_updates")
+                     : L("settings.data_detail_offline"))
                     .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 // Shown only when the rename migration actually did something.
                 // A migration that moved a user's history has to say so, and a

@@ -47,7 +47,7 @@
 /* Cleanup */
 "cleanup.title" = "Nettoyage";
 "cleanup.failed" = "Échec du nettoyage : %@";
-"cleanup.idle.title" = "Rechercher les fichiers à supprimer sans risque";
+"cleanup.idle.title" = "Trouver les fichiers à examiner";
 "cleanup.idle.subtitle" = "Analyse les caches, journaux, rapports de plantage et fichiers de compilation Xcode.\nRien n'est supprimé pendant l'analyse.";
 "cleanup.start_scan" = "Démarrer l'analyse";
 "cleanup.scanning_progress" = "%d éléments analysés — %@ trouvés";
@@ -66,7 +66,7 @@
 "spacelens.delete.help" = "Mettre à la Corbeille";
 "spacelens.delete.confirm_title" = "Mettre « %@ » à la Corbeille ?";
 "spacelens.delete.confirm_action" = "Mettre à la Corbeille";
-"spacelens.delete.confirm_message" = "%@ seront libérés. Utilise la Corbeille macOS normale — récupérable tant qu’elle n’est pas vidée.";
+"spacelens.delete.confirm_message" = "Déplace %@ vers la corbeille. Les fichiers y restent récupérables, et l’espace revient quand vous la videz.";
 "spacelens.delete.error_title" = "Échec du déplacement vers la Corbeille";
 "spacelens.delete.error_message" = "« %@ » n’a pas été déplacé — il a peut-être déjà disparu, ou se trouve hors du dossier analysé.";
 "spacelens.idle.title" = "Visualisez votre stockage";
@@ -183,7 +183,7 @@
 "privacy.empty.title" = "Aucune donnée de navigateur trouvée";
 "privacy.empty.subtitle" = "Les données Safari nécessitent l'accès complet au disque ; les profils Chrome et Firefox sont détectés automatiquement s'ils sont présents.";
 "privacy.finished.moved" = "%@ de caches déplacés vers la Corbeille";
-"privacy.running_warning" = "%@ est en cours d'exécution — les fichiers de cache peuvent être verrouillés. Quittez d'abord le navigateur pour un nettoyage complet.";
+"privacy.running_warning" = "%@ est en cours d’exécution, donc certains de ses fichiers de cache sont verrouillés. Quittez-le d’abord pour les inclure.";
 "privacy.caches_selected" = "Caches de navigateur — %@ sélectionnés";
 "privacy.clean_caches" = "Nettoyer les caches";
 "privacy.browser_profile" = "%@ — %@";
@@ -199,7 +199,7 @@
 "dupes.comparing" = "Comparaison de %d sur %d candidats";
 "dupes.building_inventory" = "Construction de l'inventaire des fichiers…";
 "dupes.none_found" = "Aucun doublon trouvé";
-"dupes.results.summary" = "%d groupes — %@ sélectionnés sur %@ récupérables";
+"dupes.results.summary" = "%d groupes — %@ sélectionnés sur %@ en double";
 "dupes.move_to_trash" = "Déplacer les copies vers la Corbeille";
 "dupes.select_copy" = "Sélectionner la copie %@";
 "dupes.suggested_keeper" = "Copie à conserver";
@@ -306,7 +306,6 @@
 "settings.exclusions_empty" = "Aucun dossier exclu. Les emplacements exclus ne sont jamais analysés ni nettoyés.";
 "settings.add_folder" = "Ajouter un dossier…";
 "settings.data" = "Données";
-"settings.data_detail" = "CoreTend est entièrement hors ligne. Aucune télémétrie, aucun compte, aucun appel réseau. Toutes les données restent sur ce Mac.";
 "settings.export_diagnostic" = "Exporter un rapport de diagnostic…";
 "settings.export_diagnostic_detail" = "Génère un rapport anonymisé (versions, états de permission, compteurs) pour le dépannage. Aucun nom d'utilisateur, chemin, nom de fichier ou liste d'applications n'est inclus. Vous le relisez avant de l'enregistrer.";
 "diagnostic.title" = "Rapport de diagnostic";
@@ -324,7 +323,6 @@
 "onboarding.step0.title" = "Bienvenue dans CoreTend";
 "onboarding.step0.signature" = "Un Mac plus léger. Toujours sous contrôle.";
 "onboarding.step1.title" = "Tout reste ici";
-"onboarding.step1.bullet1" = "Toute l'analyse s'exécute sur ce Mac. Aucun compte, aucune télémétrie, aucun appel réseau.";
 "onboarding.step1.bullet2" = "Votre historique vit dans une base de données locale que vous pouvez effacer à tout moment.";
 "onboarding.step1.bullet3" = "CoreTend ne remplace pas un antivirus et ne prétend jamais l'être.";
 "onboarding.step2.title" = "Accès complet au disque — facultatif";
@@ -554,7 +552,7 @@
 "cleanup.category.xcode.detail" = "DerivedData — reconstruits à la prochaine compilation";
 "cleanup.category.downloads" = "Téléchargements incomplets";
 "cleanup.category.downloads.detail" = "~/Downloads — fichiers partiels de plus de 7 jours";
-"cleanup.idle.safety_note" = "Rien n'est supprimé pendant l'analyse. Chaque élément est examiné avant toute action.";
+"cleanup.idle.safety_note" = "Une analyse ne supprime rien. Vous examinez chaque élément avant tout déplacement.";
 
 /* Space Lens idle */
 "spacelens.idle.tip" = "Code couleur par type : dossiers, médias, documents, archives et code.";
@@ -684,3 +682,6 @@
 "record.purge_confirm_action" = "Effacer le registre";
 "record.purge_confirm_message" = "Les %d entrées sont supprimées définitivement. Le registre est en ajout seul : rien ne les restaure, et les fichiers déjà mis à la corbeille ne sont pas affectés.";
 "common.more" = "Plus";
+
+"settings.data_detail_offline" = "Tout ce que CoreTend analyse reste sur ce Mac. Aucun compte, aucune télémétrie, aucune statistique, et aucune requête réseau d’aucune sorte.";
+"settings.data_detail_updates" = "Tout ce que CoreTend analyse reste sur ce Mac. Aucun compte, aucune télémétrie, aucune statistique. La seule requête qu’il effectue est la vérification de mise à jour ci-dessous : elle demande un fichier de version à une adresse publique et n’envoie rien sur vous, vos fichiers ou votre Mac.";
