@@ -240,18 +240,16 @@ final class ApplicationsViewModel {
         allowedRoots.append(URL(fileURLWithPath: "/Library/LaunchAgents"))
         allowedRoots.append(URL(fileURLWithPath: "/Library/LaunchDaemons"))
         let center = SafetyCenter(validator: PathValidator(allowedRoots: allowedRoots), sink: AppEnvironment.shared.store)
-        var approved: [ApprovedFileOperation] = []
-        if let op = try? await center.approve(url: app.path, logicalSize: app.sizeBytes,
-                                              ruleID: "apps.uninstall", risk: .medium) {
-            approved.append(op)
-        }
-        for item in items {
-            if let op = try? await center.approve(url: item.url, logicalSize: item.sizeBytes,
-                                                  ruleID: "apps.uninstall.associated", risk: .medium) {
-                approved.append(op)
-            }
-        }
-        let outcome = ExecutionOutcome(result: await center.execute(approved))
+        // The bundle itself first, then its leftovers, so the audit log reads
+        // in the order the user thinks about the uninstall.
+        let requests = [ApprovalRequest(url: app.path, logicalSize: app.sizeBytes,
+                                        ruleID: "apps.uninstall", risk: .medium)]
+            + items.map { ApprovalRequest(url: $0.url, logicalSize: $0.sizeBytes,
+                                          ruleID: "apps.uninstall.associated", risk: .medium) }
+        let batch = await center.approveAll(requests)
+        let outcome = ExecutionOutcome(
+            result: await center.execute(batch.approved),
+            rejections: batch.rejections)
         uninstallResult = [
             L("apps.uninstall.result", outcome.executedCount, mcFormatBytes(outcome.freedBytes)),
             outcome.message,

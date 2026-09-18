@@ -113,16 +113,15 @@ final class PrivacyCleanerViewModel {
         let center = SafetyCenter(
             validator: PathValidator(allowedRoots: [home.appendingPathComponent("Library/Caches")]),
             sink: AppEnvironment.shared.store)
-        var approved: [ApprovedFileOperation] = []
-        for profile in selected {
-            for url in profile.cacheURLs {
-                if let op = try? await center.approve(url: url, logicalSize: profile.cacheBytes,
-                                                      ruleID: "privacy.browsercache", risk: .low) {
-                    approved.append(op)
-                }
+        let batch = await center.approveAll(selected.flatMap { profile in
+            profile.cacheURLs.map {
+                ApprovalRequest(url: $0, logicalSize: profile.cacheBytes,
+                                ruleID: "privacy.browsercache", risk: .low)
             }
-        }
-        let outcome = ExecutionOutcome(result: await center.execute(approved))
+        })
+        let outcome = ExecutionOutcome(
+            result: await center.execute(batch.approved),
+            rejections: batch.rejections)
         phase = .finished(outcome)
         AppEnvironment.shared.record(ActivityRecord(
             kind: .cleanup,

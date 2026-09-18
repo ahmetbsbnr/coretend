@@ -151,14 +151,13 @@ final class DuplicatesViewModel: CancellableScan {
         let roots = scannedRoots
         Task {
             let center = SafetyCenter(validator: PathValidator(allowedRoots: roots), sink: AppEnvironment.shared.store)
-            var approved: [ApprovedFileOperation] = []
-            for (url, size) in toRemove {
-                if let op = try? await center.approve(url: url, logicalSize: size,
-                                                      ruleID: "clutter.duplicates", risk: .medium) {
-                    approved.append(op)
-                }
-            }
-            let outcome = ExecutionOutcome(result: await center.execute(approved))
+            let batch = await center.approveAll(toRemove.map {
+                ApprovalRequest(url: $0.0, logicalSize: $0.1,
+                                ruleID: "clutter.duplicates", risk: .medium)
+            })
+            let outcome = ExecutionOutcome(
+                result: await center.execute(batch.approved),
+                rejections: batch.rejections)
             phase = .finished(outcome)
             AppEnvironment.shared.record(ActivityRecord(
                 kind: .cleanup,

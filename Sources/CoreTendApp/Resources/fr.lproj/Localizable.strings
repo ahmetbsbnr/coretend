@@ -639,3 +639,10 @@
 "cleanup.exclusions_unavailable" = "Vos dossiers exclus n'ont pas pu être lus, donc rien n'a été sélectionné pour vous. Des dossiers que vous avez protégés peuvent figurer dans cette liste — vérifiez chaque élément avant de mettre quoi que ce soit à la corbeille.";
 "settings.store_ephemeral" = "CoreTend n'a pas pu ouvrir sa base de données : cette session fonctionne en mémoire, et vos exclusions, le journal de sûreté et l'historique disparaîtront à la fermeture. Raison : %@";
 "settings.store_unavailable" = "CoreTend n'a pas pu ouvrir sa base de données. Les exclusions, le journal de sûreté et l'historique sont indisponibles cette session. Raison : %@";
+"cleanup.done.rejected" = "%d élément(s) ont été refusés avant toute tentative.";
+"safety.reason.protected_root" = "Ils se trouvent dans un emplacement que macOS ou CoreTend ne supprime jamais.";
+"safety.reason.outside_roots" = "Ils sont hors des dossiers sur lesquels cette analyse a le droit d'agir.";
+"safety.reason.symlink" = "Ce sont des liens pointant hors du dossier nettoyé.";
+"safety.reason.vanished" = "Ils n'étaient plus présents sur le disque.";
+"safety.reason.invalid_path" = "Leur emplacement n'a pas pu être lu.";
+"spacelens.delete.changed" = "il a changé sur le disque après vérification, donc rien n'a été supprimé";

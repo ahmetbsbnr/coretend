@@ -141,11 +141,17 @@ final class SpaceLensViewModel: CancellableScan {
         Task {
             let validator = PathValidator(allowedRoots: [rootURL])
             let center = SafetyCenter(validator: validator, sink: AppEnvironment.shared.store)
-            guard let op = try? await center.approve(
-                url: URL(fileURLWithPath: node.path), logicalSize: node.size,
-                ruleID: "spacelens.delete", risk: .medium
-            ) else {
-                lastDeleteError = node.name
+            // Carry the refusal's reason. `lastDeleteError = node.name` was
+            // assigned identically here and at execution-time skip, so the
+            // alert could say only *that* a delete failed — never why, and
+            // never which of two very different causes it was.
+            let op: ApprovedFileOperation
+            do throws(SafetyError) {
+                op = try await center.approve(
+                    url: URL(fileURLWithPath: node.path), logicalSize: node.size,
+                    ruleID: "spacelens.delete", risk: .medium)
+            } catch {
+                lastDeleteError = "\(node.name) — \(ExecutionOutcome.explain(error))"
                 return
             }
             let outcome = ExecutionOutcome(result: await center.execute([op]))
@@ -163,7 +169,10 @@ final class SpaceLensViewModel: CancellableScan {
                 // looked like it had simply been ignored. Re-validation
                 // refusing a path that changed is the product working, and it
                 // has to say so.
-                lastDeleteError = node.name
+                // ...and say *which* refusal it was: the two reachable
+                // causes (refused before acting, refused at the moment
+                // of acting) mean different things to the user.
+                lastDeleteError = "\(node.name) — \(L("spacelens.delete.changed"))"
             }
         }
     }

@@ -160,16 +160,13 @@ final class CleanupViewModel: CancellableScan {
             let home = FileManager.default.homeDirectoryForCurrentUser
             let validator = PathValidator(allowedRoots: UserCleanupRules.allowedRoots(home: home))
             let center = SafetyCenter(validator: validator, sink: AppEnvironment.shared.store)
-            var approved: [ApprovedFileOperation] = []
-            for finding in selected {
-                if let op = try? await center.approve(
-                    url: finding.url, logicalSize: finding.logicalSize,
-                    ruleID: finding.ruleID, risk: finding.risk
-                ) {
-                    approved.append(op)
-                }
-            }
-            let outcome = ExecutionOutcome(result: await center.execute(approved))
+            let batch = await center.approveAll(selected.map {
+                ApprovalRequest(url: $0.url, logicalSize: $0.logicalSize,
+                                ruleID: $0.ruleID, risk: $0.risk)
+            })
+            let outcome = ExecutionOutcome(
+                result: await center.execute(batch.approved),
+                rejections: batch.rejections)
             phase = .done(outcome)
             // Both counts reach the log, not just the successes: SafetyCore
             // skipping a path that changed between approval and execution is

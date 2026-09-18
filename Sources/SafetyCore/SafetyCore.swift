@@ -21,7 +21,7 @@ public enum RiskLevel: String, Sendable, Codable, Comparable {
 }
 
 /// Typed errors produced by path validation.
-public enum SafetyError: Error, Equatable, Sendable {
+public enum SafetyError: Error, Equatable, Hashable, Sendable {
     case emptyPath
     case relativePath
     case protectedRoot(String)
