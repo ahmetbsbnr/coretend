@@ -248,7 +248,7 @@ struct DashboardView: View {
 
     private var latestActivityText: String {
         guard let record = activity.first else { return L("dashboard.activity.empty") }
-        return "\(record.summary) · \(record.date.formatted(date: .abbreviated, time: .shortened))"
+        return "\(record.summary) · \(AppDateFormatting.string(record.date, style: .dayMonthYearWithTime))"
     }
 
     private func refresh() async {
