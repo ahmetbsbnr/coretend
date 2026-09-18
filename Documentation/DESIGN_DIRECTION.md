@@ -170,7 +170,14 @@ surfaced rather than assumed.
 
 - `bash Scripts/test.sh` — 439 tests. Never raw `swift test`.
 - `zsh Scripts/capture-module.sh <out.png> <module>` — launches on a module via
-  a test-marker-gated variable and captures by CoreGraphics window id.
+  a test-marker-gated variable and captures by CoreGraphics window id. It
+  prints the title of the window it captured, and that line is the evidence: an
+  earlier version silently captured the Dashboard eleven times, because the
+  identifiers it passed ("spaceLens") are not `ModuleID`'s raw values
+  ("Space Lens") and the lookup fell through. Every check run against those
+  screenshots passed, since the Dashboard renders correctly. Reports of
+  "11/11 modules verified" made before 2026-09-18 were therefore false;
+  `ModuleIdentifierTests` now makes the mapping an asserted contract.
 - `python3 Scripts/check-sidebar-rendered.py <captures>` — fails when a
   sidebar region is one flat colour. Verified against the pre-fix capture.
 

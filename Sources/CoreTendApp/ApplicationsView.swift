@@ -292,10 +292,25 @@ struct InstalledAppsView: View {
     @Namespace private var rowTransition
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    /// List and inspector, not a second split view.
+    ///
+    /// This was an `HSplitView` nested inside the window's own
+    /// `NavigationSplitView`, which gave the screen a second draggable divider
+    /// and a second sunken column sitting right beside the real sidebar. Two
+    /// columns of the same shape, three pixels apart, reading as two sidebars —
+    /// and nothing else in the app does it, so the pattern had to be learned
+    /// here and nowhere else.
+    ///
+    /// An `HStack` instead: the list is content on a raised surface rather than
+    /// chrome on a sunken one, the boundary is a hairline rather than a grab
+    /// handle, and the proportions are fixed. Nothing is lost — the divider was
+    /// draggable but there was no reason to drag it.
     var body: some View {
-        HSplitView {
+        HStack(spacing: 0) {
             appList
-                .frame(minWidth: 300)
+                .frame(minWidth: 280, idealWidth: 320, maxWidth: 380)
+                .background(MCColor.elevatedBackground)
+            Divider()
             detail
                 .frame(minWidth: 360, maxWidth: .infinity, maxHeight: .infinity)
         }

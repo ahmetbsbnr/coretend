@@ -48,9 +48,10 @@ enum TestModuleOverride {
         guard TestStoreOverride.isTestMarkerSet(environment: environment),
               TestStoreOverride.resolve(environment: environment).directory != nil,
               let raw = environment["CORETEND_TEST_MODULE"]?
-                  .trimmingCharacters(in: .whitespacesAndNewlines)
+                  .trimmingCharacters(in: .whitespacesAndNewlines),
+              !raw.isEmpty
         else { return nil }
-        return ModuleID(rawValue: raw)
+        return ModuleID(testIdentifier: raw)
     }
 }
 
@@ -363,6 +364,30 @@ enum ModuleID: String, CaseIterable, Identifiable {
     case settings = "Settings"
 
     var id: String { rawValue }
+
+    /// Resolves a module from a shell-friendly identifier.
+    ///
+    /// `rawValue` is a display-shaped string with capitals and spaces
+    /// ("Space Lens", "Smart Care") because it is a stable identity matched
+    /// elsewhere. Passing that through a shell argument is awkward, and
+    /// guessing at it silently does not work: the capture script passed
+    /// "spaceLens" and "applications", `ModuleID(rawValue:)` returned nil, and
+    /// every screenshot was of the Dashboard — while the checks run against
+    /// those screenshots all passed, because the Dashboard renders fine.
+    ///
+    /// So matching is explicit and forgiving: case-insensitive, and ignoring
+    /// spaces, so both the raw value and the Swift case name resolve.
+    /// `ModuleIdentifierTests` asserts every module is reachable both ways.
+    init?(testIdentifier: String) {
+        let normalized = testIdentifier
+            .replacingOccurrences(of: " ", with: "")
+            .lowercased()
+        guard let match = ModuleID.allCases.first(where: {
+            $0.rawValue.replacingOccurrences(of: " ", with: "").lowercased() == normalized
+            || String(describing: $0).lowercased() == normalized
+        }) else { return nil }
+        self = match
+    }
 
     var identity: MCModuleIdentity {
         switch self {

@@ -69,4 +69,14 @@ if [[ -z "$id" ]]; then
 fi
 
 screencapture -o -x -l "$id" "$out"
-print "captured: $module -> $out  (window $id)"
+
+# Confirm the app actually opened the module that was asked for.
+#
+# It did not, for a while: the identifiers this script passes ("spaceLens")
+# are not ModuleID's raw values ("Space Lens"), the lookup returned nil, and
+# the app fell back to the Dashboard. Eleven screenshots of eleven modules
+# were eleven screenshots of the Dashboard, and every check run against them
+# passed. A verification tool that silently checks the wrong thing produces
+# confident, wrong reports, so it now checks itself.
+title=$(osascript -e 'tell application "System Events" to tell process "CoreTend" to return name of front window' 2>/dev/null || true)
+print "captured: $module -> $out  (window $id, showing \"$title\")"
