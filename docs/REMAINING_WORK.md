@@ -60,10 +60,10 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 - ☐ H-01 Compact strategy per module (inspector → pushed detail).
 
 ## I/J — Coherence and polish
-- ☐ I-01 Side-by-side contact sheet script (`Scripts/contact-sheet.py`).
+- ☑ I-01 Side-by-side gallery (`Scripts/build-gallery.py` → `Documentation/Captures/index.html`).
 
 ## K — QA
-- ☐ K-01 `Scripts/capture-matrix.sh` producing `Documentation/Captures/` + gallery HTML.
+- ☑ K-01 `Scripts/capture-matrix.sh` producing `Documentation/Captures/` + gallery HTML.
 - ☐ K-02 Release build + notarisation dry run.
 
 ## R — Restoration (real inverse)
