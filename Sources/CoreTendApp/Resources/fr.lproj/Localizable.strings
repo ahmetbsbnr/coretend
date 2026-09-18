@@ -599,6 +599,13 @@
 "finding.modified_prefix" = "modifié %@";
 "finding.a11y.evidence" = "%@, %@";
 
+/* Provenance des téléchargements. macOS enregistre ces clés de quarantaine
+   indépendamment : LSQuarantineDataURL est très souvent absente alors que
+   l’agent et l’horodatage sont présents. */
+"integrity.downloads.by_agent_on_date" = "Téléchargé par %@ · %@";
+"integrity.downloads.by_agent" = "Téléchargé par %@";
+"integrity.downloads.on_date" = "Téléchargé le %@";
+||||||| 2809736
 /* Issue d’exécution — les éléments ignorés étaient auparavant écartés par
    chaque écran de nettoyage, rendant un échec partiel invisible. */
 "cleanup.done.skipped" = "%d élément(s) ont été ignorés et laissés intacts. Le journal de sécurité en explique la raison.";
