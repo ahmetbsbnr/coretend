@@ -134,3 +134,71 @@ struct MenuAndShortcutsTests {
         }
     }
 }
+
+/// Settings is a scene, not a sidebar row.
+@Suite("Settings placement")
+struct SettingsPlacementTests {
+    private let root = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+
+    private func app() throws -> String {
+        try String(contentsOf: root.appendingPathComponent("Sources/CoreTendApp/CoreTendApp.swift"),
+                   encoding: .utf8)
+    }
+
+    /// Declaring the `Settings` scene is what makes "Settings…" appear in the
+    /// app menu with ⌘, bound, without wiring either by hand.
+    @Test func theSettingsSceneExists() throws {
+        #expect(try app().contains("Settings {"))
+    }
+
+    /// It was module eleven, at the bottom of the sidebar — which the HIG warns
+    /// against ("People often relocate a window in a way that hides its bottom
+    /// edge"), and which was not theoretical: at the Large sidebar size the row
+    /// was cut off by the window edge.
+    @Test func settingsIsNotAModule() {
+        #expect(!ModuleID.allCases.contains { String(describing: $0) == "settings" })
+        for group in SidebarGroup.all {
+            #expect(!group.modules.contains { String(describing: $0) == "settings" })
+        }
+    }
+
+    /// Every place that used to navigate to the settings module must open the
+    /// scene. A leftover `.mcNavigate` to a case that no longer exists would
+    /// not compile; a leftover one to *another* module would compile and send
+    /// the user somewhere wrong.
+    @Test func nothingNavigatesToASettingsModule() throws {
+        #expect(!(try app().contains("ModuleID.settings")))
+    }
+
+    /// `SettingsLink` is the supported way and is used wherever there is a view
+    /// to hold it: the Help menu, the menu-bar panel, the update badge.
+    @Test func settingsLinkIsUsedWhereAViewExists() throws {
+        let text = try app()
+        #expect(text.components(separatedBy: "SettingsLink").count - 1 >= 3,
+                "a place that should open Settings is still doing it another way")
+    }
+
+    /// The command palette invokes closures, not views, so it cannot hold a
+    /// link. Its stringly-typed selector is isolated and guarded so a macOS
+    /// that renames it makes the entry do nothing rather than crash.
+    @Test func theSelectorFallbackIsIsolatedAndGuarded() throws {
+        let window = try String(
+            contentsOf: root.appendingPathComponent("Sources/CoreTendApp/SettingsWindow.swift"),
+            encoding: .utf8)
+        #expect(window.contains("showSettingsWindow:"))
+        // The name changed once already, before macOS 13.
+        #expect(window.contains("showPreferencesWindow:"),
+                "only one selector name is tried — it has been renamed before")
+        #expect(window.contains("@discardableResult"))
+        // And nowhere else may reach for it — in code. The comment in
+        // CoreTendApp.swift explaining why the palette cannot use SettingsLink
+        // names the selector on purpose.
+        let codeOnly = try app()
+            .split(separator: "\n", omittingEmptySubsequences: false)
+            .filter { !$0.trimmingCharacters(in: .whitespaces).hasPrefix("//") }
+            .joined(separator: "\n")
+        #expect(!codeOnly.contains("showSettingsWindow"),
+                "the selector is reached for outside SettingsWindow.swift")
+    }
+}

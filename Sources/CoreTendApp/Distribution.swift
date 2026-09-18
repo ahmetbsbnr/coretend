@@ -122,7 +122,7 @@ struct AppCapabilities: Sendable, Equatable {
         // the container.
         case .cloudCleanup: canReachSystemLocations
         case .smartCare, .performance, .duplicates, .myClutter,
-             .spaceLens, .myActivity, .settings:
+             .spaceLens, .myActivity:
             true
         }
     }

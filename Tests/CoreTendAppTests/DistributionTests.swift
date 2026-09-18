@@ -54,7 +54,7 @@ struct DistributionTests {
         let modules = groups.flatMap(\.modules)
         #expect(modules.count >= 5, "only \(modules.count) modules survive the sandbox")
         // The four that work on user-chosen folders are the product there.
-        for module in [ModuleID.spaceLens, .duplicates, .myClutter, .settings, .smartCare] {
+        for module in [ModuleID.spaceLens, .duplicates, .myClutter, .smartCare] {
             #expect(modules.contains(module), "\(module) should survive the sandbox")
         }
     }
@@ -90,7 +90,7 @@ struct DistributionTests {
     @Test func modulesNotNamedInSupportsWorkEverywhere() {
         let store = AppCapabilities.of(.appStore)
         for module in [ModuleID.spaceLens, .duplicates, .myClutter, .performance,
-                       .myActivity, .settings, .smartCare] {
+                       .myActivity, .smartCare] {
             #expect(store.supports(module))
         }
     }

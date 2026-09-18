@@ -109,6 +109,25 @@ public struct CoreTendApp: App {
             CoreTendHelpCommands()
         }
 
+        // Settings is a scene, not a sidebar row.
+        //
+        // It was module eleven, sitting at the bottom of the sidebar — which
+        // the HIG warns against twice over. "Avoid putting critical
+        // information or actions at the bottom of a sidebar. People often
+        // relocate a window in a way that hides its bottom edge", and that is
+        // not theoretical: at the Large sidebar size the row is cut off by the
+        // window edge on a 1000 pt window.
+        //
+        // And no Mac app puts its preferences in a sidebar. ⌘, opens a
+        // Settings window; that is where people look, and declaring the scene
+        // is what makes the standard menu item appear and the shortcut work
+        // without wiring either by hand.
+        Settings {
+            MCSettingsView()
+                .id(appLanguageRaw)
+                .frame(minWidth: 620, minHeight: 520)
+        }
+
         MenuBarExtra(isInserted: $menuBarEnabled) {
             MenuBarView()
                 .id(appLanguageRaw)
@@ -129,8 +148,11 @@ struct CoreTendHelpCommands: Commands {
 
     var body: some Commands {
         CommandGroup(after: .appInfo) {
-            Button(L("updates.check_now")) {
-                NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.settings)
+            // A SettingsLink rather than a navigation: the Settings window is
+            // where updates live now, and SwiftUI opens it for us rather than
+            // us reaching for a stringly-typed selector.
+            SettingsLink {
+                Text(L("updates.check_now"))
             }
             .keyboardShortcut("u", modifiers: [.command, .shift])
         }
@@ -268,9 +290,8 @@ struct MenuBarView: View {
             }
             Divider()
             Button(L("menubar.open_app")) { openWindow() }
-            Button(L("menubar.settings")) {
-                openWindow()
-                NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.settings)
+            SettingsLink {
+                Text(L("menubar.settings"))
             }
             Button(L("menubar.quit")) { NSApp.terminate(nil) }
         }
@@ -361,7 +382,6 @@ enum ModuleID: String, CaseIterable, Identifiable {
     case spaceLens = "Space Lens"
     case cloudCleanup = "Cloud Cleanup"
     case myActivity = "My Activity"
-    case settings = "Settings"
 
     var id: String { rawValue }
 
@@ -401,7 +421,6 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .spaceLens: .spaceLens
         case .cloudCleanup: .cloudCleanup
         case .myActivity: .myActivity
-        case .settings: .settings
         }
     }
 
@@ -421,7 +440,6 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .spaceLens: L("spacelens.title")
         case .cloudCleanup: L("cloud.nav_title")
         case .myActivity: L("module.activity")
-        case .settings: L("settings.nav_title")
         }
     }
 }
@@ -445,7 +463,7 @@ struct SidebarGroup: Identifiable {
         SidebarGroup(id: "more", title: L("sidebar.more"),
                      modules: [.myClutter, .cloudCleanup, .performance]),
         SidebarGroup(id: "system", title: L("sidebar.system"),
-                     modules: [.protection, .myActivity, .settings]),
+                     modules: [.protection, .myActivity]),
     ]
 
     /// The groups this build can actually deliver, with unsupported modules
@@ -520,8 +538,6 @@ struct MainWindow: View {
                     CloudCleanupView()
                 case .myActivity:
                     MyActivityView()
-                case .settings:
-                    MCSettingsView()
                 case nil:
                     // Only reachable before a selection exists; every ModuleID
                     // has a real view. There is no "under construction" state.
@@ -566,9 +582,7 @@ struct MainWindow: View {
                 // affordance in the toolbar: that belongs in Settings, and a
                 // badge that is always present stops meaning anything.
                 if case .result(.updateAvailable(let info)) = updates.phase {
-                    Button {
-                        selection = .settings
-                    } label: {
+                    SettingsLink {
                         Label(L("updates.available", info.version), systemImage: "arrow.down.circle.fill")
                     }
                     .help(L("updates.available", info.version))
@@ -637,8 +651,14 @@ private struct CommandPaletteView: View {
 
     private var actions: [Entry] {
         [
+            // The palette invokes closures, not views, so it cannot hold a
+            // SettingsLink. `showSettingsWindow:` is the responder-chain action
+            // the Settings scene installs; it is the only supported way to open
+            // that window from outside a view, and it is guarded so a future
+            // macOS that renames it degrades to doing nothing rather than
+            // crashing.
             .action(id: "checkUpdates", label: L("updates.check_now"), icon: "arrow.triangle.2.circlepath") {
-                NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.settings)
+                MCSettingsWindow.open()
             },
             .action(id: "scanHome", label: L("palette.scan_home"), icon: "circle.hexagongrid") {
                 NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.spaceLens)
