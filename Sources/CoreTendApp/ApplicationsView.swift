@@ -265,16 +265,24 @@ final class ApplicationsViewModel {
 }
 
 struct ApplicationsView: View {
+    @State private var tab = 0
+
+    // Was a TabView, which is exactly the construct the rest of this codebase
+    // documents as able to blank the NavigationSplitView sidebar on macOS —
+    // the 1.0.1 defect. Protection and My Clutter had already been moved off
+    // it; this one had not. See ModuleSubNav.
     var body: some View {
-        TabView {
-            InstalledAppsView()
-                .tabItem { Label(L("apps.tab.installed"), systemImage: "square.grid.2x2") }
-            LeftoversView()
-                .tabItem { Label(L("apps.tab.leftovers"), systemImage: "trash.slash") }
-            AppUpdatesView()
-                .tabItem { Label(L("apps.tab.updates"), systemImage: "arrow.triangle.2.circlepath") }
+        ModuleSubNav(sections: [
+            .init(0, L("apps.tab.installed")),
+            .init(1, L("apps.tab.leftovers")),
+            .init(2, L("apps.tab.updates")),
+        ], selection: $tab) { tab in
+            switch tab {
+            case 1: LeftoversView()
+            case 2: AppUpdatesView()
+            default: InstalledAppsView()
+            }
         }
-        .padding(MCSpacing.xs)
         .navigationTitle(L("apps.title"))
         .accessibilityIdentifier("applications.root")
     }

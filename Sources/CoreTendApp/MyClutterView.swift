@@ -143,30 +143,15 @@ final class MyClutterViewModel: CancellableScan {
 struct MyClutterView: View {
     @State private var tab = 0
 
-    // Plain segmented sub-nav pinned via .safeAreaInset, not a TabView: a
-    // TabView as a NavigationSplitView detail can blank the split view's
-    // sidebar on macOS. Duplicates is a first-class tool in the Storage group
-    // and is not re-exposed here — this hub covers what nothing else does:
-    // large/old files and visually-similar images.
+    // Duplicates is a first-class tool in the Storage group and is not
+    // re-exposed here — this hub covers what nothing else does: large/old
+    // files and visually-similar images.
     var body: some View {
-        Group {
+        ModuleSubNav(sections: [
+            .init(0, L("clutter.tab.large_old")),
+            .init(1, L("clutter.tab.similar_images")),
+        ], selection: $tab) { tab in
             if tab == 0 { LargeOldFilesView() } else { SimilarImagesView() }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .safeAreaInset(edge: .top, spacing: 0) {
-            VStack(spacing: 0) {
-                Picker("", selection: $tab) {
-                    Text(L("clutter.tab.large_old")).tag(0)
-                    Text(L("clutter.tab.similar_images")).tag(1)
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .frame(maxWidth: 360)
-                .padding(.vertical, MCSpacing.sm)
-                Divider()
-            }
-            .frame(maxWidth: .infinity)
-            .background(.bar)
         }
         .navigationTitle(L("clutter.title"))
     }

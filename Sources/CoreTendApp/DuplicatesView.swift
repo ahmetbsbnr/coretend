@@ -265,7 +265,20 @@ struct DuplicatesView: View {
                     .font(MCFont.secondaryBody)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
+                    // No .fixedSize here. fixedSize(vertical:) makes a Text
+                    // report its ideal, UNWRAPPED width upward; for this
+                    // three-line string that ideal width propagated out as the
+                    // detail column's minimum and collapsed the
+                    // NavigationSplitView sidebar to zero width. The rows
+                    // stayed in the accessibility tree — they were simply laid
+                    // out at no width — which is why the sidebar looked empty
+                    // rather than missing. That was the blank sidebar reported
+                    // against 1.0.1, and it reproduced only here because this
+                    // is the longest idle subtitle in the app.
+                    //
+                    // Reordering does not help: .frame(maxWidth:) is a maximum,
+                    // not a clamp, so the ideal width still propagates. The
+                    // frame alone wraps the text correctly and is enough.
                     .frame(maxWidth: 460)
             }
             .mcAppear()
