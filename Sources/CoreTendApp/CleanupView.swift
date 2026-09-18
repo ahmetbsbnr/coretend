@@ -343,12 +343,32 @@ struct CleanupView: View {
                 }
             ))
             .labelsHidden()
-            .accessibilityLabel(L("cleanup.select_item", finding.url.lastPathComponent))
-            VStack(alignment: .leading) {
+            .accessibilityLabel(
+                FindingMetadata.summary(
+                    risk: finding.risk, modificationDate: finding.modificationDate
+                ).map {
+                    L("finding.a11y.evidence",
+                      L("cleanup.select_item", finding.url.lastPathComponent), $0)
+                } ?? L("cleanup.select_item", finding.url.lastPathComponent)
+            )
+            VStack(alignment: .leading, spacing: 1) {
                 Text(finding.url.lastPathComponent)
                 Text(finding.url.deletingLastPathComponent().path)
                     .font(.caption).foregroundStyle(.secondary)
                     .lineLimit(1).truncationMode(.middle)
+                // The evidence the scan already had and never showed. Size
+                // alone is the weakest of the three signals for deciding
+                // whether a file should go; risk also explains why a row is or
+                // is not ticked by default.
+                if let evidence = FindingMetadata.summary(
+                    risk: finding.risk, modificationDate: finding.modificationDate) {
+                    Text(evidence)
+                        .font(.caption2).foregroundStyle(.tertiary)
+                        .lineLimit(1)
+                        // VoiceOver reads the row as one sentence; this line is
+                        // part of it rather than a separate stop.
+                        .accessibilityHidden(true)
+                }
             }
             Spacer()
             Text(mcFormatBytes(finding.logicalSize))
