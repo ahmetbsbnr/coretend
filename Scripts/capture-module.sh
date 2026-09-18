@@ -1,17 +1,24 @@
 #!/bin/zsh
-# capture-module.sh <out.png> <moduleRawValue>
+# capture-module.sh <out.png> <module> [light|dark] [compact|standard|large] [seed-script]
 #
-# Launches a fresh, isolated CoreTend on the named module and captures its
-# window. Replaces the AppleScript sidebar walk in capture.sh, which bound every
-# screenshot to one AppKit view hierarchy (and broke the moment the sidebar
-# stopped being a List) and which is flaky across rapid relaunches — the AX tree
-# intermittently reports an empty window.
+# Launches a fresh, isolated CoreTend on the named module, in the named
+# appearance and window size, optionally on a seeded store, and captures its
+# window by CoreGraphics window id.
 #
-# Module raw values: smartCare cleanup protection performance applications
-#                    duplicates myClutter spaceLens cloudCleanup myActivity record settings
+# The capture is refused unless the app itself reports showing what was asked
+# for. This script once photographed the Dashboard eleven times while claiming
+# eleven modules, because the identifiers it passed did not resolve and the app
+# fell back silently; every check run against those images passed. A tool that
+# cannot detect that it is wrong produces confident, wrong reports.
+#
+# Module identifiers: smartCare record cleanup spaceLens duplicates applications
+#                     myClutter cloudCleanup performance protection myActivity
 set -euo pipefail
-out="${1:?usage: $0 <out.png> <module>}"
-module="${2:?usage: $0 <out.png> <module>}"
+out="${1:?usage: $0 <out.png> <module> [light|dark] [compact|standard|large] [seed]}"
+module="${2:?usage: $0 <out.png> <module> [light|dark] [compact|standard|large] [seed]}"
+appearance="${3:-dark}"
+size="${4:-standard}"
+seed="${5:-${CORETEND_CAPTURE_SEED:-}}"
 app="${CORETEND_APP:-build/CoreTend.app}"
 mkdir -p "$(dirname "$out")"
 
@@ -19,11 +26,9 @@ store="$(mktemp -d "${TMPDIR:-/tmp}/coretend-capture.XXXXXX")"
 cleanup() { rm -rf "$store"; }
 trap cleanup EXIT
 
-# An empty screen proves nothing about a layout, so a capture may be seeded
-# with a plausible store first. Opt-in: CORETEND_CAPTURE_SEED names a script
-# under Scripts/support that populates the isolated store directory.
-if [[ -n "${CORETEND_CAPTURE_SEED:-}" ]]; then
-  bash "$(dirname "$0")/support/${CORETEND_CAPTURE_SEED}" "$store" >/dev/null
+# An empty screen proves nothing about a layout, so a capture may be seeded.
+if [[ -n "$seed" ]]; then
+  bash "$(dirname "$0")/support/${seed}" "$store" >/dev/null
 fi
 
 pkill -x CoreTend 2>/dev/null || true
@@ -31,45 +36,36 @@ sleep 1
 CORETEND_TEST_MODE=1 \
 CORETEND_TEST_STORE_DIR="$store" \
 CORETEND_TEST_MODULE="$module" \
+CORETEND_TEST_APPEARANCE="$appearance" \
+CORETEND_TEST_WINDOW="$size" \
   open -n "$app"
 
-# Wait for the window rather than sleeping a fixed amount.
-for _ in {1..40}; do
-  if osascript -e 'tell application "System Events" to tell process "CoreTend" to return count of windows' 2>/dev/null | grep -qv '^0$'; then
-    break
-  fi
+# Wait for the app to write its evidence rather than for a fixed delay: the
+# evidence file exists only once the main window's content has appeared and
+# been resized, which is the earliest moment a capture is meaningful.
+for _ in {1..60}; do
+  [[ -f "$store/showing.txt" ]] && break
   sleep 0.25
 done
-sleep 1.5
+if [[ ! -f "$store/showing.txt" ]]; then
+  print -u2 "capture-module: CoreTend never reported what it was showing"
+  exit 1
+fi
+sleep 1.2
 
 osascript -e 'tell application "System Events" to tell process "CoreTend" to set frontmost to true' >/dev/null 2>&1 || true
-sleep 0.5
+sleep 0.4
 
-# Capture the window itself, by its CoreGraphics window id.
-#
-# Two earlier attempts were wrong and both failed silently, which is worse than
-# failing loudly:
-#   - `AXWindowNumber` is not a real accessibility attribute, so `-l` received
-#     nothing and the script fell back to capturing the whole screen.
-#   - Capturing the window's AX rectangle with `-R` captures a screen *region*,
-#     so anything overlapping CoreTend — a browser, this terminal — ended up in
-#     the "app screenshot".
-#
-# `screencapture -l <cgWindowID>` captures that window's own surface regardless
-# of what is in front of it. The id comes from CGWindowListCopyWindowInfo via a
-# tiny helper, because no shell tool exposes it.
 helper="${TMPDIR:-/tmp}/coretend-window-id"
 if [[ ! -x "$helper" || Scripts/support/window-id.swift -nt "$helper" ]]; then
   swiftc -O -o "$helper" Scripts/support/window-id.swift
 fi
-
 id=""
 for _ in {1..20}; do
   id=$("$helper" CoreTend 2>/dev/null || true)
   [[ -n "$id" ]] && break
   sleep 0.25
 done
-
 if [[ -z "$id" ]]; then
   print -u2 "capture-module: no on-screen CoreTend window found"
   exit 1
@@ -77,13 +73,26 @@ fi
 
 screencapture -o -x -l "$id" "$out"
 
-# Confirm the app actually opened the module that was asked for.
-#
-# It did not, for a while: the identifiers this script passes ("spaceLens")
-# are not ModuleID's raw values ("Space Lens"), the lookup returned nil, and
-# the app fell back to the Dashboard. Eleven screenshots of eleven modules
-# were eleven screenshots of the Dashboard, and every check run against them
-# passed. A verification tool that silently checks the wrong thing produces
-# confident, wrong reports, so it now checks itself.
-title=$(osascript -e 'tell application "System Events" to tell process "CoreTend" to return name of front window' 2>/dev/null || true)
-print "captured: $module -> $out  (window $id, showing \"$title\")"
+# Refuse the capture unless the app reports exactly what was requested.
+shown_module=$(sed -n 's/^module=//p' "$store/showing.txt")
+shown_appearance=$(sed -n 's/^appearance=//p' "$store/showing.txt")
+shown_window=$(sed -n 's/^window=//p' "$store/showing.txt")
+normalise() { print -r -- "${1//[[:space:]]/}" | tr '[:upper:]' '[:lower:]'; }
+if [[ "$(normalise "$shown_module")" != "$(normalise "$module")" \
+   && "$(normalise "$shown_module")" != "$(normalise "$(print -r -- "$module" | sed 's/smartcare/Smart Care/i')")" ]]; then
+  # ModuleID raw values are display-shaped ("Space Lens"); identifiers are not.
+  # Compare with spaces and case removed, which is how the app resolves them.
+  if [[ "$(normalise "$shown_module")" != "$(normalise "$module")" ]]; then
+    print -u2 "capture-module: asked for '$module' but the app shows '$shown_module' — capture refused"
+    rm -f "$out"; exit 2
+  fi
+fi
+if [[ "$shown_appearance" != "$appearance" ]]; then
+  print -u2 "capture-module: asked for $appearance but the app is $shown_appearance — capture refused"
+  rm -f "$out"; exit 2
+fi
+if [[ "$shown_window" != "$size" ]]; then
+  print -u2 "capture-module: asked for $size window but the app reports $shown_window — capture refused"
+  rm -f "$out"; exit 2
+fi
+print "captured: $module $appearance $size ${seed:+seed=$seed }-> $out"

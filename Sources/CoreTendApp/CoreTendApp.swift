@@ -72,7 +72,10 @@ enum AppAppearance {
     /// Nil: resolve from the system. Every token in `MCPalette` re-resolves at
     /// draw time, so the switch needs no work beyond not fighting it.
     static func apply() {
-        NSApplication.shared.appearance = nil
+        // A capture may pin an appearance so a screenshot can say which one it
+        // is. Only in test mode; a user never sees this path.
+        NSApplication.shared.appearance = CaptureHarness.requestedAppearance
+            .map { NSAppearance(named: $0.name) } ?? nil
     }
 }
 
@@ -567,7 +570,10 @@ struct MainWindow: View {
             }
             .mcCanvasBackground()
         }
-        .onAppear { if !onboardingDone { showOnboarding = true } }
+        .onAppear {
+            if !onboardingDone { showOnboarding = true }
+            CaptureHarness.settle(showing: routed)
+        }
         .task {
             // No-op unless the user opted in and a day has passed. Failures are
             // deliberately silent: an app that works fully offline must not
