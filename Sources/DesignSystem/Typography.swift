@@ -26,8 +26,11 @@ public enum MCFont {
     // MARK: Display and headings
 
     /// The one number a screen exists to show: recoverable bytes, free space.
-    public static let displayMetric = Font.system(size: 40, weight: .semibold, design: .rounded)
-    public static let heroTitle = Font.system(size: 28, weight: .bold)
+    /// The one number a screen is about. Large Title, not "40pt because it
+    /// looked good in a screenshot": it scales with the system text size like
+    /// everything else, which a fixed size did not.
+    public static let displayMetric = Font.system(.largeTitle, design: .rounded).weight(.semibold)
+    public static let heroTitle = Font.title.weight(.bold)
     /// Module landing headings. Bold, not semibold: it needs a clear step above
     /// `cardTitle` so the hierarchy reads at a glance.
     public static let pageTitle = Font.title2.weight(.bold)
@@ -73,7 +76,13 @@ public enum MCFont {
     /// related rows. Small, tracked and uppercased at the call site, like the
     /// sidebar's, but fixed: it is not a sidebar and must not follow the
     /// sidebar size setting.
-    public static let groupHeader = Font.system(size: 11, weight: .semibold)
+    /// Small uppercase labels over a group of rows or a metric. Caption
+    /// weight, not a fixed 11pt — under a larger system text size an 11pt
+    /// label beside 17pt rows is a label nobody asked to shrink.
+    public static let groupHeader = Font.caption.weight(.semibold)
+    /// Numbers that sit in a column: sizes, counts, times. Monospaced digits
+    /// keep "1.41 GB" and "902 MB" aligned without a monospaced face.
+    public static let tabular = Font.callout.monospacedDigit()
 
     // MARK: Navigation
     //

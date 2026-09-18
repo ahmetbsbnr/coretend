@@ -473,6 +473,19 @@ struct TypographySystemTests {
     /// No numeric point size outside the token file. A glyph size belongs to
     /// `MCIconSize`; a text size belongs to `MCFont`. A literal is neither, and
     /// is how 13, 14 and 15 all came to exist for the same job.
+    /// The type system itself carried three absolute sizes — 40, 28 and 11pt —
+    /// next to twelve Dynamic Type styles, so the interface scaled *partially*
+    /// under a larger system text size, which is worse than either choice made
+    /// consistently. The only sizes left are the sidebar's, and those mirror
+    /// the system row-size setting rather than a taste.
+    @Test func theTypeSystemHasNoAbsoluteSizes() throws {
+        let text = try String(contentsOf: root.appendingPathComponent("Sources/DesignSystem/Typography.swift"), encoding: .utf8)
+        let pattern = try NSRegularExpression(pattern: #"size:\s*\d"#)
+        let range = NSRange(text.startIndex..., in: text)
+        #expect(pattern.firstMatch(in: text, range: range) == nil,
+                "Typography.swift hardcodes a point size")
+    }
+
     @Test func noViewHardcodesAPointSize() throws {
         let pattern = try NSRegularExpression(pattern: #"\.system\(size:\s*\d"#)
         for file in try sources() {
