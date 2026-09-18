@@ -1,8 +1,17 @@
 # TODO — CoreTend
 
-CoreTend 1.0.0 shipped on 2026-09-03. It is Developer ID signed,
-Apple-notarized, stapled, Minisign-signed, and published as a stable GitHub
-release. Core functionality is complete; 342 Swift tests pass.
+CoreTend 1.0.1 is the current stable release (2026-09-18). It is Developer ID
+signed, Apple-notarized, stapled, Minisign-signed (`F8473FB09E1DB730`), and
+published as a stable GitHub release. 381 Swift tests pass.
+
+**1.0.0 and 1.2.0-beta.1 do not open.** Both trap at launch (SIGTRAP) on every
+Mac except the one that built them: SwiftPM's generated `Bundle.module`
+accessor resolved only from the `.app` root and the build machine's own scratch
+directory, while the resource bundle ships in `Contents/Resources`. The build
+machine had that directory, so the app ran for whoever built it and for nobody
+else. Both releases carry an explicit warning in their titles and notes; 1.0.1
+fixes it. This is why "core functionality is complete" was true of the source
+and false of the artifact — the two are not the same claim.
 
 ## Release follow-up
 
