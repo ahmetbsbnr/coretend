@@ -344,7 +344,7 @@ struct DuplicatesView: View {
                 Button(L("dupes.move_to_trash")) {
                     showMoveConfirmation = true
                 }
-                .buttonStyle(.mcDestructive)
+                .mcDestructiveButton()
                 .disabled(model.selectedPaths.isEmpty || model.phase == .executing)
                 .accessibilityIdentifier("duplicates.results.remove")
             }

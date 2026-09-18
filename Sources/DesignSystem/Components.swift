@@ -206,7 +206,7 @@ public struct MCEmptyState: View {
                 .frame(maxWidth: 420)
             if let actionTitle, let action {
                 Button(actionTitle, action: action)
-                    .buttonStyle(.mcPrimary)
+                    .mcPrimaryButton()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -272,7 +272,7 @@ public struct MCSuccessState: View {
             }
             if let actionTitle, let action {
                 Button(actionTitle, action: action)
-                    .buttonStyle(.mcPrimary)
+                    .mcPrimaryButton()
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -442,7 +442,7 @@ public struct MCFeatureRow: View {
 
 /// The app's primary action.
 ///
-/// Replaces `.buttonStyle(.mcPrimary)`, which pairs the view's tint
+/// Replaces `.buttonStyle(.borderedProminent)`, which pairs the view's tint
 /// with a white label and never checks that the two can be read together. With
 /// CoreTend's teal that combination measures **1.87:1** — against a 4.5:1 text
 /// minimum — and it was the label of the primary action on every screen that
@@ -528,6 +528,49 @@ public struct MCDestructiveButtonStyle: ButtonStyle {
 
 public extension ButtonStyle where Self == MCPrimaryButtonStyle {
     static var mcPrimary: MCPrimaryButtonStyle { MCPrimaryButtonStyle() }
+}
+
+// MARK: - Button roles
+//
+// ## The system glass styles were measured and rejected
+//
+// WWDC26 says "for a glass button, you should use `glassButtonStyle` (or
+// `glassProminent`) rather than applying a raw `glassEffect`", and CoreTend's
+// own styles existed only because `.borderedProminent` paired the tint with a
+// white label at 1.87:1. So `.glassProminent` was measured on macOS 27 rather
+// than assumed.
+//
+// **In isolation it passes.** On a flat ground at #14171A with the brand teal
+// as tint, in an activated window, it renders a *dark* label and measures
+// **11.13:1** — the system picks a legible label for the tint now, and that
+// beats the 9.65:1 of the fill below.
+//
+// **In place it fails.** CoreTend's primary action sits inside the Dashboard's
+// feature card, which carries a teal wash. Glass samples what is behind it, so
+// the fill resolved to a muddy #5BA0A1, the system then chose a near-white
+// label, and the pair measured **2.61:1** — worse than what it replaced, and
+// under the 4.5:1 minimum.
+//
+// That is not a bug in the system style. It is the HIG's own rule arriving as
+// a measurement: Liquid Glass belongs to the navigation layer, and "Don't use
+// Liquid Glass in the content layer... including it in the content layer can
+// result in unnecessary complexity and a confusing visual hierarchy." A button
+// on a tinted card is content.
+//
+// So the styles below stay, and the glass styles stay where they belong — the
+// sidebar and the sub-navigation bar, via `mcNavigationGlass`.
+//
+// The lesson is the method, not the result: a contrast measurement taken
+// anywhere but the surface the control actually sits on is a measurement of
+// something else.
+
+public extension View {
+    /// A screen's primary action.
+    func mcPrimaryButton() -> some View { buttonStyle(.mcPrimary) }
+    /// A secondary action, never competing with the primary one.
+    func mcSecondaryButton() -> some View { buttonStyle(.mcSecondary) }
+    /// An irreversible action.
+    func mcDestructiveButton() -> some View { buttonStyle(.mcDestructive) }
 }
 
 public extension ButtonStyle where Self == MCSecondaryButtonStyle {

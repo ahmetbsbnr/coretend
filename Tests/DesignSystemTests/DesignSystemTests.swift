@@ -673,8 +673,14 @@ struct GlassAdoptionTests {
     @Test func onlyNavigationSurfacesUseGlass() throws {
         let allowed: Set<String> = ["Sidebar.swift", "ModuleSubNav.swift", "Glass.swift"]
         for file in try sources() where !allowed.contains(file.name) {
-            #expect(!file.text.contains("mcNavigationGlass"),
-                    "\(file.name) applies glass to something that is not the navigation layer")
+            for line in file.text.split(separator: "\n") {
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                // Comments may name it — Components.swift explains, at length,
+                // why content-layer buttons do not use it.
+                guard !trimmed.hasPrefix("//") else { continue }
+                #expect(!trimmed.contains("mcNavigationGlass"),
+                        "\(file.name) applies glass to something that is not the navigation layer")
+            }
         }
     }
 
@@ -711,6 +717,70 @@ struct GlassAdoptionTests {
         for name in ["Sidebar.swift", "ModuleSubNav.swift"] {
             let text = try #require(sources[name])
             #expect(text.contains("fallback: MCColor."), "\(name) passes no opaque fallback")
+        }
+    }
+}
+
+/// The system's glass button styles were measured and rejected for content.
+@Suite("Glass button adoption")
+struct GlassButtonAdoptionTests {
+    private let root = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+
+    private func sources() throws -> [(name: String, text: String)] {
+        var out: [(String, String)] = []
+        for relative in ["Sources/CoreTendApp", "Sources/DesignSystem"] {
+            let dir = root.appendingPathComponent(relative)
+            for name in try FileManager.default.contentsOfDirectory(atPath: dir.path)
+                where name.hasSuffix(".swift") {
+                out.append((name, try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)))
+            }
+        }
+        return out
+    }
+
+    /// No content-layer button uses a glass style.
+    ///
+    /// `.glassProminent` measures 11.13:1 on a flat ground — and 2.61:1 inside
+    /// the Dashboard's teal-washed feature card, where the primary action
+    /// actually sits, because glass samples what is behind it. That is the
+    /// HIG's own rule arriving as a measurement: "Don't use Liquid Glass in the
+    /// content layer."
+    @Test func noContentButtonUsesAGlassStyle() throws {
+        for file in try sources() {
+            for line in file.text.split(separator: "\n") {
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                guard !trimmed.hasPrefix("//") && !trimmed.hasPrefix("///") else { continue }
+                for style in [".buttonStyle(.glassProminent)", ".buttonStyle(.glass)"] {
+                    #expect(!trimmed.contains(style),
+                            "\(file.name) puts glass on a content-layer button — measured 2.61:1 there")
+                }
+            }
+        }
+    }
+
+    /// Call sites go through the role modifiers rather than naming a style, so
+    /// the decision above lives in one place and can be revisited in one place.
+    @Test func callSitesUseTheRoleModifiers() throws {
+        for file in try sources() where file.name != "Components.swift" {
+            for line in file.text.split(separator: "\n") {
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                guard !trimmed.hasPrefix("//") else { continue }
+                for style in [".buttonStyle(.mcPrimary)", ".buttonStyle(.mcSecondary)",
+                              ".buttonStyle(.mcDestructive)"] {
+                    #expect(!trimmed.contains(style),
+                            "\(file.name) names a style directly — use mcPrimaryButton() and friends")
+                }
+            }
+        }
+    }
+
+    /// Glass stays where the HIG puts it: the navigation layer.
+    @Test func glassRemainsOnTheNavigationLayer() throws {
+        let sources = Dictionary(uniqueKeysWithValues: try sources().map { ($0.name, $0.text) })
+        for name in ["Sidebar.swift", "ModuleSubNav.swift"] {
+            #expect(sources[name]?.contains("mcNavigationGlass") == true,
+                    "\(name) no longer uses glass")
         }
     }
 }

@@ -475,7 +475,7 @@ struct InstalledAppsView: ModuleSubScreen {
                         Button(L("apps.uninstall"), role: .destructive) {
                             showUninstallConfirmation = true
                         }
-                        .buttonStyle(.mcDestructive)
+                        .mcDestructiveButton()
                         .accessibilityIdentifier("applications.uninstall")
                         Button(L("common.reveal_in_finder")) {
                             NSWorkspace.shared.activateFileViewerSelecting([app.path])

@@ -343,7 +343,7 @@ struct CleanupView: View {
                 Button(L("cleanup.move_to_trash")) {
                     showMoveConfirmation = true
                 }
-                .buttonStyle(.mcDestructive)
+                .mcDestructiveButton()
                 .controlSize(.large)
                 .disabled(model.phase == .running || model.selectedIDs.isEmpty)
             }

@@ -124,7 +124,7 @@ struct DashboardView: View {
                         .padding(.vertical, MCSpacing.sm)
                         .padding(.horizontal, MCSpacing.lg)
                 }
-                .buttonStyle(.mcPrimary)
+                .mcPrimaryButton()
                 .controlSize(.large)
                 .keyboardShortcut(.defaultAction)
                 .padding(.top, MCSpacing.sm)

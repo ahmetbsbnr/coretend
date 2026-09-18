@@ -181,7 +181,7 @@ private struct LocationRow: View {
             Spacer()
             if location.exists && location.isReadable {
                 Button(L("favrec.analyze")) { model.analyze(location.path) }
-                    .buttonStyle(.mcSecondary)
+                    .mcSecondaryButton()
             }
             if !location.isQuickLink {
                 Button(role: .destructive) {
