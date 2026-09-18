@@ -74,6 +74,34 @@ struct FindingMetadataTests {
         #expect(old != recent)
     }
 
+    @Test("the age follows the in-app language, not the system locale")
+    func ageUsesAppLanguage() {
+        // Foundation formatters default to the system locale. The first version
+        // of this code did, and rendered "modifié 1 month ago" in a French UI —
+        // English leaking into a translated interface, which is exactly the
+        // defect this type exists to remove. Only looking at the running app
+        // caught it, so the regression is pinned here.
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let old = now.addingTimeInterval(-60 * 60 * 24 * 40)
+        let english = FindingMetadata.ageDescription(for: old, now: now, language: .en)
+        let french = FindingMetadata.ageDescription(for: old, now: now, language: .fr)
+        #expect(english != nil)
+        #expect(french != nil)
+        #expect(english != french)
+    }
+
+    @Test("the whole summary is translated, separator included")
+    func summaryIsFullyLocalized() {
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+        let old = now.addingTimeInterval(-60 * 60 * 24 * 40)
+        let english = FindingMetadata.summary(risk: .low, modificationDate: old, now: now, language: .en)
+        let french = FindingMetadata.summary(risk: .low, modificationDate: old, now: now, language: .fr)
+        #expect(english != french)
+        // "ago" appearing in the French line means the formatter fell back to
+        // the system locale again.
+        #expect(french?.contains("ago") == false)
+    }
+
     // MARK: - Summary line
 
     @Test("the summary always carries the risk, even with no date")

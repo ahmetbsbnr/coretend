@@ -21,14 +21,17 @@ import SafetyCore
 /// - `confidence`, which is an engine-internal weight. Showing "90%" next to a
 ///   file invites a precision the number does not have, and the honest version
 ///   of that signal is the risk level, which is already here.
-public enum FindingMetadata {
+// Internal, like the rest of CoreTendApp: nothing outside this module
+// consumes it, and a public default argument cannot reference
+// LocalizationManager, which is internal.
+enum FindingMetadata {
 
     /// Localized name for a risk level.
     ///
     /// Shared so the same level never reads two different ways: the Safety Log
     /// previously interpolated the raw enum, which printed "low"/"medium"/"high"
     /// untranslated in a fully French UI.
-    public static func riskLabel(_ risk: RiskLevel) -> String {
+    static func riskLabel(_ risk: RiskLevel) -> String {
         switch risk {
         case .low: L("risk.low")
         case .medium: L("risk.medium")
@@ -42,7 +45,7 @@ public enum FindingMetadata {
     /// possible after a schema change. It is passed through rather than
     /// dropped: a log is evidence, and silently hiding a value it actually
     /// holds would be worse than showing an unfamiliar word.
-    public static func riskLabel(rawValue: String) -> String {
+    static func riskLabel(rawValue: String) -> String {
         RiskLevel(rawValue: rawValue).map(riskLabel) ?? rawValue
     }
 
@@ -51,7 +54,11 @@ public enum FindingMetadata {
     /// Relative rather than absolute ("8 months ago", not "12 Jan 2026"): the
     /// question a row has to answer is how stale something is, and a reader
     /// should not have to subtract dates to find out.
-    public static func ageDescription(for date: Date?, now: Date = Date()) -> String? {
+    static func ageDescription(
+        for date: Date?,
+        now: Date = Date(),
+        language: AppLanguage = LocalizationManager.language
+    ) -> String? {
         guard let date else { return nil }
         // A modification date in the future is real — a bad clock, a restored
         // backup, an archive that preserved timestamps. Treating it as "in 3
@@ -59,6 +66,15 @@ public enum FindingMetadata {
         let past = min(date, now)
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .full
+        // Foundation formatters follow the *system* locale, which is not the
+        // same thing as the language the user picked inside CoreTend. Without
+        // this the line rendered "Risque faible · modifié 1 month ago" in a
+        // fully French UI — the very defect this type was written to fix,
+        // reintroduced one line below the fix. Caught by looking at the running
+        // app, not by a test: the tests asserted structure, not language.
+        if let identifier = language.localeIdentifier {
+            formatter.locale = Locale(identifier: identifier)
+        }
         return formatter.localizedString(for: past, relativeTo: now)
     }
 
@@ -66,9 +82,14 @@ public enum FindingMetadata {
     ///
     /// Returns nil when there is nothing to add, so the caller can omit the
     /// line entirely rather than render an empty or dangling separator.
-    public static func summary(risk: RiskLevel, modificationDate: Date?, now: Date = Date()) -> String? {
+    static func summary(
+        risk: RiskLevel,
+        modificationDate: Date?,
+        now: Date = Date(),
+        language: AppLanguage = LocalizationManager.language
+    ) -> String? {
         var parts: [String] = [L("finding.risk_prefix", riskLabel(risk))]
-        if let age = ageDescription(for: modificationDate, now: now) {
+        if let age = ageDescription(for: modificationDate, now: now, language: language) {
             parts.append(L("finding.modified_prefix", age))
         }
         return parts.isEmpty ? nil : parts.joined(separator: " · ")
