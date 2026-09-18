@@ -4,16 +4,18 @@
 #
 # Builds a stand-in home directory with the kinds of files Cleanup's rules
 # find, so the review screen can be captured on controlled data instead of
-# whatever this machine's caches hold. Sizes are real (sparse files), dates
-# are set old enough to match the "older than N days" rules.
+# whatever this machine's caches hold. Files carry real bytes — a sparse file
+# reports its allocated size to the Explore scan, which turned a 2 GB fixture
+# into 16 MB of map — so sizes are kept modest (units of 100 KB). Dates are
+# old enough to match the "older than N days" rules.
 #
 # usage: seed-cleanup-home.sh <home-dir>
 set -euo pipefail
 home="${1:?usage: $0 <home-dir>}"
 mkdir -p "$home"
-mk () { # path size-in-MB days-old
+mk () { # path size-in-100KB-units days-old
   mkdir -p "$(dirname "$home/$1")"
-  mkfile -n "${2}m" "$home/$1"
+  dd if=/dev/zero of="$home/$1" bs=102400 count="$2" status=none
   touch -t "$(date -v-"$3"d +%Y%m%d%H%M)" "$home/$1"
 }
 mk "Library/Caches/com.apple.Safari/WebKitCache/Version 17/Blobs/3f9c" 212 40

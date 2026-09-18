@@ -166,29 +166,65 @@ public enum TreemapLayout {
         public let frame: CGRect
     }
 
+    /// Squarified treemap (Bruls, Huizing, van Wijk). Slice-and-dice — the
+    /// previous layout — gives a hundred children a hundred hairline strips
+    /// that cannot be read or clicked; squarifying keeps every cell close to
+    /// a square so names fit and the eye can compare areas.
+    ///
+    /// Nodes are expected largest-first, as `SpaceLensEngine` delivers them.
+    /// Zero-size nodes are skipped rather than given a zero-area cell.
     public static func layout(nodes: [SpaceNode], in bounds: CGRect) -> [Rect] {
+        let items = nodes.filter { $0.size > 0 }
+        let total = items.reduce(Int64(0)) { $0 + $1.size }
+        guard total > 0, bounds.width > 1, bounds.height > 1 else { return [] }
+        let scale = Double(bounds.width * bounds.height) / Double(total)
+        let areas = items.map { Double($0.size) * scale }
         var result: [Rect] = []
-        slice(nodes: nodes, bounds: bounds, horizontal: bounds.width >= bounds.height, into: &result)
+        var remaining = bounds
+        var index = 0
+        while index < items.count {
+            // Grow a row while the worst aspect ratio in it keeps improving.
+            let side = Double(min(remaining.width, remaining.height))
+            var row: [Int] = [index]
+            var rowArea = areas[index]
+            var worst = worstRatio(areas: [areas[index]], side: side)
+            var next = index + 1
+            while next < items.count {
+                let candidate = worstRatio(areas: Array(areas[index...next]), side: side)
+                if candidate > worst { break }
+                worst = candidate
+                row.append(next); rowArea += areas[next]; next += 1
+            }
+            // Lay the row along the shorter side of what is left.
+            let horizontalRow = remaining.width >= remaining.height
+            let thickness = CGFloat(rowArea / side)
+            var offset: CGFloat = 0
+            for i in row {
+                let length = CGFloat(areas[i] / Double(thickness))
+                let frame = horizontalRow
+                    ? CGRect(x: remaining.minX, y: remaining.minY + offset, width: thickness, height: length)
+                    : CGRect(x: remaining.minX + offset, y: remaining.minY, width: length, height: thickness)
+                result.append(Rect(id: items[i].id, node: items[i], frame: frame))
+                offset += length
+            }
+            if horizontalRow {
+                remaining = CGRect(x: remaining.minX + thickness, y: remaining.minY,
+                                   width: remaining.width - thickness, height: remaining.height)
+            } else {
+                remaining = CGRect(x: remaining.minX, y: remaining.minY + thickness,
+                                   width: remaining.width, height: remaining.height - thickness)
+            }
+            index = next
+            if remaining.width < 1 || remaining.height < 1 { break }
+        }
         return result
     }
 
-    private static func slice(nodes: [SpaceNode], bounds: CGRect, horizontal: Bool, into result: inout [Rect]) {
-        let total = nodes.reduce(Int64(0)) { $0 + $1.size }
-        guard total > 0, !nodes.isEmpty, bounds.width > 1, bounds.height > 1 else { return }
-        var offset: CGFloat = 0
-        for node in nodes {
-            let fraction = CGFloat(Double(node.size) / Double(total))
-            let frame: CGRect
-            if horizontal {
-                frame = CGRect(x: bounds.minX + offset, y: bounds.minY,
-                               width: bounds.width * fraction, height: bounds.height)
-                offset += bounds.width * fraction
-            } else {
-                frame = CGRect(x: bounds.minX, y: bounds.minY + offset,
-                               width: bounds.width, height: bounds.height * fraction)
-                offset += bounds.height * fraction
-            }
-            result.append(Rect(id: node.id, node: node, frame: frame))
-        }
+    private static func worstRatio(areas: [Double], side: Double) -> Double {
+        let sum = areas.reduce(0, +)
+        guard sum > 0, side > 0 else { return .infinity }
+        let maxA = areas.max() ?? 0, minA = areas.min() ?? 0
+        let s2 = side * side
+        return max(s2 * maxA / (sum * sum), (sum * sum) / (s2 * minA))
     }
 }

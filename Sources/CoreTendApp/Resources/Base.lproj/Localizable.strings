@@ -720,3 +720,4 @@ Analysis only — deleting synced files would remove them on every device.";
 "cleanup.select_group" = "Select all in %@";
 "cleanup.group.item_count_one" = "1 item";
 "cleanup.group.item_count_other" = "%d items";
+"spacelens.open_folder" = "Open Folder";

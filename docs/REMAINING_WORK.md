@@ -35,7 +35,7 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 - ☑ D-02 Record: 28pt rows, filter + search, sentence summary, inspector
   without tiles, keyboard (↑↓ select, Return focus inspector).
 - ☑ D-03 Cleanup review as `Table` grouped by category.
-- ☐ D-04 Explore Map: breadcrumb + inspector + keyboard.
+- ☑ D-04 Explore Map is a squarified treemap (breadcrumb + list existed); ☐ D-04b nested cells one level deep, ↑↓/Return on the map itself.
 - ☐ D-05 Duplicates decision workflow.
 - ☐ D-06 Applications `Table` + inspector + uninstall sheet.
 - ☐ D-07 Integrity provenance `Table`.

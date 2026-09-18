@@ -44,7 +44,7 @@ final class SpaceLensViewModel: CancellableScan {
                     phase = .scanning(items: items)
                 case let .finished(node):
                     root = node
-                    phase = .ready
+                    phase = .ready; CaptureHarness.note(state: "ready")
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .scan, summary: "Space Lens: \(node.name) — \(mcFormatBytes(node.size))",
                         itemCount: node.children.count, bytes: node.size))
@@ -88,7 +88,7 @@ final class SpaceLensViewModel: CancellableScan {
                         cursor = match
                     }
                     pathStack = stack
-                    phase = .ready
+                    phase = .ready; CaptureHarness.note(state: "ready")
                 case .cancelled:
                     // Was unhandled: a cancelled rescan left the view spinning
                     // on .scanning permanently, with no way back.
@@ -178,66 +178,6 @@ final class SpaceLensViewModel: CancellableScan {
     }
 }
 
-/// Radial "point of focus" packing for Space Lens — the biggest folder sits
-/// dead centre and its siblings cluster outward around it, each bubble's area
-/// proportional to its byte size. Pure geometry so it can be reasoned about
-/// (and unit-tested) without a view.
-enum RadialPack {
-    struct Bubble: Identifiable {
-        let id: String
-        let node: SpaceNode
-        let center: CGPoint
-        let radius: CGFloat
-    }
-
-    static func pack(_ nodes: [SpaceNode], in size: CGSize, limit: Int = 13) -> [Bubble] {
-        guard size.width > 8, size.height > 8, !nodes.isEmpty else { return [] }
-        let items = Array(nodes.prefix(limit))
-        let maxByte = Double(max(items.first?.size ?? 1, 1))
-        let shortSide = min(size.width, size.height)
-        let maxR = shortSide * 0.27
-        let minR: CGFloat = 12
-        let gap: CGFloat = 6
-        let mid = CGPoint(x: size.width / 2, y: size.height / 2)
-
-        func radius(for node: SpaceNode) -> CGFloat {
-            let frac = (Double(max(node.size, 1)) / maxByte).squareRoot()   // area ∝ bytes
-            return max(minR, min(maxR, CGFloat(frac) * maxR))
-        }
-
-        var placed: [Bubble] = []
-        for (i, node) in items.enumerated() {
-            let r = radius(for: node)
-            guard i > 0 else {
-                placed.append(Bubble(id: node.id, node: node, center: mid, radius: r))
-                continue
-            }
-            // Walk outward along a golden-angle spiral until the disc clears
-            // every placed disc and stays on-canvas.
-            var angle = Double(i) * 2.399963
-            var dist = (placed.first?.radius ?? r) + r + gap
-            var spot = mid
-            var settled = false
-            var steps = 0
-            while !settled && steps < 6000 {
-                let p = CGPoint(x: mid.x + CGFloat(cos(angle)) * dist,
-                                y: mid.y + CGFloat(sin(angle)) * dist)
-                let onCanvas = p.x - r >= 0 && p.x + r <= size.width
-                    && p.y - r >= 0 && p.y + r <= size.height
-                let clears = placed.allSatisfy { hypot($0.center.x - p.x, $0.center.y - p.y) >= $0.radius + r + gap }
-                if onCanvas && clears { spot = p; settled = true }
-                else { angle += 0.32; dist += 1.4 }
-                steps += 1
-            }
-            if !settled {
-                spot = CGPoint(x: mid.x + CGFloat(cos(angle)) * dist,
-                               y: mid.y + CGFloat(sin(angle)) * dist)
-            }
-            placed.append(Bubble(id: node.id, node: node, center: spot, radius: r))
-        }
-        return placed
-    }
-}
 
 /// Semantic color-by-type for Space Lens bubbles — never arbitrary index cycling.
 enum SpaceNodeCategory: String, Hashable {
@@ -296,6 +236,9 @@ struct SpaceMapView: View {
             case let .scanning(items): scanningView(items)
             case .ready: readyView
             }
+        }
+        .onAppear {
+            if CaptureHarness.autostartScan, case .idle = model.phase { model.start(url: CaptureHarness.scanHome) }
         }
         .toolbar {
             ToolbarItem {
@@ -508,27 +451,25 @@ struct SpaceMapView: View {
     /// Radial size map — the biggest child dead centre, siblings orbiting it,
     /// bubble area proportional to bytes. Faint concentric rings give the eye
     /// a fixed centre to read against.
+    /// The map: a squarified treemap of the current folder's children.
+    ///
+    /// Bubbles were decorative — one orb per folder in a ring, sized by
+    /// radius, so a 10× difference in bytes read as a 3× difference in
+    /// diameter and the eye could not compare anything. A treemap gives area
+    /// to bytes directly and puts a name on every cell big enough to hold one.
+    /// Click selects; double-click or Return descends; the list below is the
+    /// same data for keyboard and VoiceOver users.
     private func bubbleMap(for node: SpaceNode) -> some View {
         GeometryReader { proxy in
-            let bubbles = RadialPack.pack(filteredChildren(of: node), in: proxy.size)
+            let rects = TreemapLayout.layout(nodes: filteredChildren(of: node),
+                                             in: CGRect(origin: .zero, size: proxy.size).insetBy(dx: 1, dy: 1))
             ZStack {
-                ForEach(1...3, id: \.self) { ring in
-                    Circle()
-                        .stroke(MCColor.separator.opacity(0.18), lineWidth: 1)
-                        .frame(width: min(proxy.size.width, proxy.size.height) * CGFloat(ring) * 0.32)
-                        .position(x: proxy.size.width / 2, y: proxy.size.height / 2)
-                }
-                ForEach(bubbles) { bubble(for: $0) }
+                ForEach(rects) { cell(for: $0) }
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
-            // Anchors the map to the node just zoomed into, so descend/pop
-            // reads as continuous rather than a hard cut.
-            .matchedGeometryEffect(id: node.id, in: zoomSpace, isSource: false)
         }
-        .frame(minHeight: 320, maxHeight: 440)
-        // The map is a purely visual duplicate of the accessible child list
-        // below; collapse it so VoiceOver reads a summary, not dozens of
-        // unlabeled shapes.
+        .frame(minHeight: 280, maxHeight: 460)
+        .background(MCColor.secondaryBackground)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(L("spacelens.treemap.a11y_summary",
                               node.children.count, mcFormatBytes(node.size))
@@ -536,63 +477,50 @@ struct SpaceMapView: View {
     }
 
     @ViewBuilder
-    private func bubble(for b: RadialPack.Bubble) -> some View {
-        let category = SpaceNodeCategory.of(b.node)
-        let isSelected = selectedID == b.node.id
-        let isHovered = hoveredID == b.node.id
-        let showLabel = b.radius >= 30
-
-        ZStack {
-            Circle().fill(category.color.opacity(b.node.isDirectory ? 0.85 : 0.55))
-            // Top-left sheen for a little depth — transform/opacity only.
-            Circle().fill(
-                RadialGradient(colors: [.white.opacity(0.20), .clear],
-                               center: UnitPoint(x: 0.34, y: 0.30),
-                               startRadius: 0, endRadius: b.radius))
-            if b.node.isAccessDenied {
-                Canvas { context, size in
-                    var path = Path()
-                    var x = -size.height
-                    while x < size.width {
-                        path.move(to: CGPoint(x: x, y: size.height))
-                        path.addLine(to: CGPoint(x: x + size.height, y: 0))
-                        x += 6
-                    }
-                    context.stroke(path, with: .color(.white.opacity(0.5)), lineWidth: 1)
-                }
-                .clipShape(Circle())
-            } else if b.node.isCloudPlaceholder {
-                Circle().strokeBorder(style: StrokeStyle(lineWidth: 1.5, dash: [4, 3]))
-                    .foregroundStyle(.white.opacity(0.7))
+    private func cell(for r: TreemapLayout.Rect) -> some View {
+        let category = SpaceNodeCategory.of(r.node)
+        let isSelected = selectedID == r.node.id
+        let isHovered = hoveredID == r.node.id
+        let frame = r.frame.insetBy(dx: 1, dy: 1)
+        let showLabel = frame.width >= 64 && frame.height >= 30
+        ZStack(alignment: .topLeading) {
+            Rectangle().fill(category.color.opacity(r.node.isDirectory ? 0.78 : 0.5))
+            if isHovered || isSelected {
+                Rectangle().fill(Color.white.opacity(isSelected ? 0.14 : 0.07))
+            }
+            if r.node.isAccessDenied {
+                Rectangle().fill(Color.black.opacity(0.35))
             }
             if showLabel {
-                VStack(spacing: 1) {
-                    Text(b.node.name).font(MCFont.badge).lineLimit(1)
-                    Text(mcFormatBytes(b.node.size)).font(MCFont.micro).opacity(0.85)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(r.node.name).font(MCFont.captionEmphasis).lineLimit(1)
+                    Text(mcFormatBytes(r.node.size)).font(MCFont.micro).opacity(0.85)
                 }
                 .foregroundStyle(.white)
-                .padding(.horizontal, 4)
-                .frame(maxWidth: b.radius * 1.7)
+                .padding(5)
             }
         }
-        .overlay(Circle().strokeBorder(Color.white,
-                                       lineWidth: isSelected ? 2.5 : (isHovered ? 1.5 : 0)))
-        .frame(width: b.radius * 2, height: b.radius * 2)
-        .scaleEffect(isHovered && !reduceMotion ? 1.04 : 1)
-        .position(b.center)
-        .matchedGeometryEffect(id: b.node.id, in: zoomSpace, isSource: true)
-        .onTapGesture {
-            selectedID = b.node.id
-            navigate { model.descend(into: b.node) }
-        }
-        .onHover { hovering in
-            withAnimation(MCMotion.animation(MCMotion.settle, reduce: reduceMotion)) {
-                hoveredID = hovering ? b.node.id : nil
+        .overlay(Rectangle().strokeBorder(Color.accentColor, lineWidth: isSelected ? 2 : 0))
+        .frame(width: max(0, frame.width), height: max(0, frame.height))
+        // position, not offset: offset moves from wherever the stack chose to
+        // put the child, and the first capture showed every cell shifted by
+        // the width of a label. A position is absolute in the map.
+        .position(x: frame.midX, y: frame.midY)
+        .contentShape(Rectangle())
+        .onTapGesture(count: 2) { navigate { model.descend(into: r.node) } }
+        .onTapGesture { selectedID = r.node.id }
+        .onHover { hovering in hoveredID = hovering ? r.node.id : nil }
+        .help(L("spacelens.fragment.help", r.node.path, mcFormatBytes(r.node.size))
+              + (r.node.isAccessDenied ? " — \(L("spacelens.access_denied_suffix"))" : "")
+              + (r.node.isCloudPlaceholder ? " — \(L("spacelens.cloud_placeholder_suffix"))" : ""))
+        .contextMenu {
+            if r.node.isDirectory {
+                Button(L("spacelens.open_folder")) { navigate { model.descend(into: r.node) } }
+            }
+            Button(L("common.reveal_in_finder")) {
+                NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: r.node.path)])
             }
         }
-        .help(L("spacelens.fragment.help", b.node.path, mcFormatBytes(b.node.size))
-              + (b.node.isAccessDenied ? " — \(L("spacelens.access_denied_suffix"))" : "")
-              + (b.node.isCloudPlaceholder ? " — \(L("spacelens.cloud_placeholder_suffix"))" : ""))
     }
 
     private func childList(for node: SpaceNode) -> some View {
