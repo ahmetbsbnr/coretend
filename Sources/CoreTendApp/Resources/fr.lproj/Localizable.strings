@@ -28,8 +28,6 @@
 "sidebar.system" = "Système";
 "sidebar.more" = "Plus";
 
-/* Placeholder */
-"placeholder.under_construction" = "Ce module est en construction. Il arrivera dans une prochaine version.";
 
 /* Menu bar */
 "menubar.cpu" = "Processeur";
@@ -292,29 +290,18 @@
 "settings.general" = "Général";
 "settings.show_menu_bar" = "Afficher CoreTend dans la barre de menus";
 "settings.menu_bar_detail" = "L'élément de la barre de menus n'échantillonne les métriques système que lorsque son panneau est ouvert, ou toutes les 30 s en arrière-plan pour afficher l'indicateur d'attention.";
-"settings.appearance" = "Apparence";
-"settings.appearance_detail" = "CoreTend suit l'apparence claire/sombre du système. Il n'y a pas de thème propre à l'application.";
 "settings.scans_cleanup" = "Analyses et nettoyage";
 "settings.deletion_method" = "Méthode de suppression";
 "settings.deletion_method_value" = "Corbeille système (réversible)";
 "settings.protection" = "Intégrité";
 "settings.installed" = "Installé";
 "settings.not_installed" = "Non installé";
-"settings.privileged_helper" = "Assistant privilégié";
-"settings.unavailable" = "Indisponible";
-"settings.privileged_helper_detail" = "Non implémenté — cette version n'a pas d'identité de signature pour installer un assistant privilégié. Toutes les fonctionnalités marchent sans privilèges ; c'est une limitation connue et assumée, pas un bug.";
 "settings.monitoring_permissions" = "Surveillance et autorisations";
 "settings.full_disk_access" = "Accès complet au disque";
 "settings.granted" = "Accordé";
 "settings.not_granted" = "Non accordé";
 "settings.open_system_settings" = "Ouvrir les Réglages Système";
 "settings.recheck" = "Revérifier";
-"settings.notifications" = "Notifications";
-"settings.notifications_detail" = "CoreTend n'envoie actuellement aucune notification ; ceci reflète uniquement l'état d'autorisation système réel.";
-"settings.notif.authorized" = "Autorisé";
-"settings.notif.denied" = "Refusé";
-"settings.notif.not_requested" = "Non demandé";
-"settings.notif.unknown" = "Inconnu";
 "settings.exclusions" = "Exclusions";
 "settings.exclusions_empty" = "Aucun dossier exclu. Les emplacements exclus ne sont jamais analysés ni nettoyés.";
 "settings.add_folder" = "Ajouter un dossier…";
@@ -474,12 +461,9 @@
 "onboarding.fileaccess.can_scan" = "Vos fichiers dans les dossiers standards peuvent être analysés.";
 "onboarding.fileaccess.limited" = "Sans accès complet au disque, les données Mail et Safari restent inaccessibles.";
 "onboarding.fileaccess.no_autogrant" = "L'application ne peut pas l'accorder elle-même — elle ouvre seulement les Réglages Système pour que vous décidiez.";
-"onboarding.menubar.title" = "Barre des menus et notifications";
-"onboarding.menubar.subtitle" = "Les deux sont facultatifs et désactivables à tout moment.";
+"onboarding.menubar.title" = "Barre de menus";
+"onboarding.menubar.subtitle" = "Optionnel, et désactivable à tout moment.";
 "onboarding.menubar.show" = "Afficher l'élément dans la barre des menus";
-"onboarding.menubar.notifications" = "Autoriser les notifications";
-"onboarding.menubar.denied" = "Les notifications sont désactivées dans les Réglages Système.";
-"onboarding.menubar.optin_detail" = "Activer les notifications demande l'autorisation à macOS — nous ne l'accordons jamais nous-mêmes.";
 "onboarding.folders.title" = "Dossiers et exclusions";
 "onboarding.folders.subtitle" = "Choisissez les dossiers à analyser et ceux à toujours laisser tranquilles.";
 "onboarding.folders.scannable" = "Dossiers à analyser";
@@ -511,7 +495,6 @@
 "onboarding.summary.profile" = "Profil de sécurité";
 "onboarding.summary.fda" = "Accès complet au disque";
 "onboarding.summary.menu_bar" = "Élément barre des menus";
-"onboarding.summary.notifications" = "Notifications";
 "onboarding.summary.exclusions" = "Dossiers exclus";
 "onboarding.summary.privacy" = "Rien ne quitte ce Mac. Aucun compte, aucune télémétrie.";
 "onboarding.summary.restore" = "Les suppressions vont à la Corbeille et sont restaurables.";

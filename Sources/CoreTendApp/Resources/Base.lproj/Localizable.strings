@@ -28,8 +28,6 @@
 "sidebar.system" = "System";
 "sidebar.more" = "More";
 
-/* Placeholder */
-"placeholder.under_construction" = "This module is under construction. Coming in a later slice.";
 
 /* Menu bar */
 "menubar.cpu" = "CPU";
@@ -292,29 +290,18 @@
 "settings.general" = "General";
 "settings.show_menu_bar" = "Show CoreTend in the menu bar";
 "settings.menu_bar_detail" = "The menu bar item samples system metrics only while its panel is open, or every 30s in the background just to show the attention indicator.";
-"settings.appearance" = "Appearance";
-"settings.appearance_detail" = "CoreTend follows the system light/dark appearance. There is no separate in-app theme.";
 "settings.scans_cleanup" = "Scans & Cleanup";
 "settings.deletion_method" = "Deletion method";
 "settings.deletion_method_value" = "System Trash (reversible)";
 "settings.protection" = "Integrity";
 "settings.installed" = "Installed";
 "settings.not_installed" = "Not installed";
-"settings.privileged_helper" = "Privileged helper";
-"settings.unavailable" = "Unavailable";
-"settings.privileged_helper_detail" = "Not implemented — this build has no signing identity to install a privileged helper. Every feature works unprivileged; this is a known, honest limitation, not a bug.";
 "settings.monitoring_permissions" = "Monitoring & Permissions";
 "settings.full_disk_access" = "Full Disk Access";
 "settings.granted" = "Granted";
 "settings.not_granted" = "Not granted";
 "settings.open_system_settings" = "Open System Settings";
 "settings.recheck" = "Re-check";
-"settings.notifications" = "Notifications";
-"settings.notifications_detail" = "CoreTend does not currently send notifications; this reflects the real system-level authorization state only.";
-"settings.notif.authorized" = "Authorized";
-"settings.notif.denied" = "Denied";
-"settings.notif.not_requested" = "Not requested";
-"settings.notif.unknown" = "Unknown";
 "settings.exclusions" = "Exclusions";
 "settings.exclusions_empty" = "No excluded folders. Excluded locations are never scanned or cleaned.";
 "settings.add_folder" = "Add Folder…";
@@ -474,12 +461,9 @@
 "onboarding.fileaccess.can_scan" = "Your files in standard folders can be scanned.";
 "onboarding.fileaccess.limited" = "Without Full Disk Access, Mail and Safari data stay out of reach.";
 "onboarding.fileaccess.no_autogrant" = "The app can't grant this itself — it only opens System Settings so you can decide.";
-"onboarding.menubar.title" = "Menu bar & notifications";
-"onboarding.menubar.subtitle" = "Both are opt-in and can be turned off at any time.";
+"onboarding.menubar.title" = "Menu bar";
+"onboarding.menubar.subtitle" = "Opt-in, and can be turned off at any time.";
 "onboarding.menubar.show" = "Show the menu bar item";
-"onboarding.menubar.notifications" = "Allow notifications";
-"onboarding.menubar.denied" = "Notifications are turned off in System Settings.";
-"onboarding.menubar.optin_detail" = "Turning notifications on asks macOS for permission — we never grant it ourselves.";
 "onboarding.folders.title" = "Folders & exclusions";
 "onboarding.folders.subtitle" = "Choose which folders to scan and which to always leave alone.";
 "onboarding.folders.scannable" = "Folders to scan";
@@ -511,7 +495,6 @@
 "onboarding.summary.profile" = "Security profile";
 "onboarding.summary.fda" = "Full Disk Access";
 "onboarding.summary.menu_bar" = "Menu bar item";
-"onboarding.summary.notifications" = "Notifications";
 "onboarding.summary.exclusions" = "Excluded folders";
 "onboarding.summary.privacy" = "Nothing leaves this Mac. No account, no telemetry.";
 "onboarding.summary.restore" = "Removals go to the Trash and can be restored.";

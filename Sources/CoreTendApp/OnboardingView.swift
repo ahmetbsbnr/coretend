@@ -2,7 +2,6 @@
 // SPDX-FileCopyrightText: The CoreTend Authors
 
 import SwiftUI
-@preconcurrency import UserNotifications
 import DesignSystem
 
 /// Detects real permission state. Full Disk Access is probed by attempting to
@@ -41,8 +40,6 @@ final class OnboardingViewModel {
 
     // Live permission / capability state (queried, never simulated)
     var fdaGranted = PermissionProbe.hasFullDiskAccess()
-    var notificationStatus: UNAuthorizationStatus = .notDetermined
-    var notificationsOptIn = false
 
     // Folders & exclusions
     var scannableFolders: [URL] = []
@@ -74,17 +71,6 @@ final class OnboardingViewModel {
 
     func refreshPermissions() async {
         fdaGranted = PermissionProbe.hasFullDiskAccess()
-        notificationStatus = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
-    }
-
-    /// Toggles notification opt-in. Enabling requests real authorization; we
-    /// never claim it was granted — we re-read the actual status afterwards.
-    func setNotifications(_ on: Bool) async {
-        notificationsOptIn = on
-        if on {
-            _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
-        }
-        await refreshPermissions()
     }
 
     func addScannable(_ url: URL) {
@@ -426,7 +412,7 @@ struct OnboardingView: View {
     }
 
 
-    // MARK: Step 3 — Menu bar & notifications
+    // MARK: Step 3 — Menu bar
 
     private var menuBarStep: some View {
         page {
@@ -434,20 +420,6 @@ struct OnboardingView: View {
                        L("onboarding.menubar.subtitle"))
             VStack(alignment: .leading, spacing: MCSpacing.md) {
                 Toggle(L("onboarding.menubar.show"), isOn: $menuBarEnabled)
-                Toggle(L("onboarding.menubar.notifications"),
-                       isOn: Binding(get: { model.notificationsOptIn },
-                                     set: { on in Task { await model.setNotifications(on) } }))
-                if model.notificationStatus == .denied {
-                    Text(L("onboarding.menubar.denied"))
-                        .font(MCFont.caption).foregroundStyle(.secondary)
-                    Button(L("settings.open_system_settings")) {
-                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications") {
-                            NSWorkspace.shared.open(url)
-                        }
-                    }
-                }
-                Text(L("onboarding.menubar.optin_detail"))
-                    .font(MCFont.caption).foregroundStyle(.secondary)
             }
             .frame(maxWidth: 460)
         }
@@ -537,7 +509,6 @@ struct OnboardingView: View {
                 summaryRow(L("onboarding.summary.fda"),
                            model.fdaGranted ? L("settings.granted") : L("settings.not_granted"))
                 summaryRow(L("onboarding.summary.menu_bar"), yesNo(menuBarEnabled))
-                summaryRow(L("onboarding.summary.notifications"), yesNo(model.notificationsOptIn))
                 summaryRow(L("onboarding.summary.exclusions"), "\(model.exclusions.count)")
             }
             .frame(maxWidth: 460)

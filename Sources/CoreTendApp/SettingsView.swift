@@ -2,7 +2,6 @@
 // SPDX-FileCopyrightText: The CoreTend Authors
 
 import SwiftUI
-@preconcurrency import UserNotifications
 import Persistence
 import DesignSystem
 import IntegrityCore
@@ -16,7 +15,6 @@ final class SettingsViewModel {
     // Real, queried permission/availability states — never simulated.
     var fullDiskAccess = PermissionProbe.hasFullDiskAccess()
     var appSignature = CodeSignInspector.inspect(at: Bundle.main.bundleURL)
-    var notificationStatus: UNAuthorizationStatus = .notDetermined
 
     func load() async {
         guard let store = AppEnvironment.shared.store else { return }
@@ -27,7 +25,6 @@ final class SettingsViewModel {
 
     func refreshPermissions() async {
         fullDiskAccess = PermissionProbe.hasFullDiskAccess()
-        notificationStatus = await UNUserNotificationCenter.current().notificationSettings().authorizationStatus
     }
 
     func addExclusion(_ url: URL) {
@@ -49,27 +46,6 @@ final class SettingsViewModel {
     func clearActivityHistory() {
         guard let store = AppEnvironment.shared.store else { return }
         Task { try? await store.clearActivity() }
-    }
-}
-
-/// Pure formatting so permission-state text is directly testable.
-enum PermissionFormatting {
-    static func notificationLabel(_ status: UNAuthorizationStatus, language: AppLanguage? = nil) -> String {
-        let key = switch status {
-        case .authorized, .provisional, .ephemeral: "settings.notif.authorized"
-        case .denied: "settings.notif.denied"
-        case .notDetermined: "settings.notif.not_requested"
-        @unknown default: "settings.notif.unknown"
-        }
-        return language.map { LocalizationManager.string(forKey: key, language: $0) } ?? L(key)
-    }
-
-    static func notificationIcon(_ status: UNAuthorizationStatus) -> String {
-        switch status {
-        case .authorized, .provisional, .ephemeral: "checkmark.circle.fill"
-        case .denied: "xmark.circle.fill"
-        default: "questionmark.circle"
-        }
     }
 }
 
@@ -98,10 +74,6 @@ struct MCSettingsView: View {
                 Text(L("settings.menu_bar_detail"))
                     .font(.caption).foregroundStyle(.secondary)
             }
-            Section(L("settings.appearance")) {
-                Text(L("settings.appearance_detail"))
-                    .font(.caption).foregroundStyle(.secondary)
-            }
             Section(L("settings.scans_cleanup")) {
                 LabeledContent(L("settings.deletion_method"), value: L("settings.deletion_method_value"))
             }
@@ -111,12 +83,6 @@ struct MCSettingsView: View {
                           systemImage: model.appSignature.tier == .adHocOrUnsigned ? "xmark.circle" : "checkmark.circle.fill")
                         .foregroundStyle(model.appSignature.tier == .adHocOrUnsigned ? .secondary : MCTheme.success)
                 }
-                LabeledContent(L("settings.privileged_helper")) {
-                    Label(L("settings.unavailable"), systemImage: "xmark.circle")
-                        .foregroundStyle(.secondary)
-                }
-                Text(L("settings.privileged_helper_detail"))
-                    .font(.caption).foregroundStyle(.secondary)
             }
             Section(L("settings.monitoring_permissions")) {
                 LabeledContent(L("settings.full_disk_access")) {
@@ -132,19 +98,6 @@ struct MCSettingsView: View {
                             .accessibilityIdentifier("settings.full_disk.recheck")
                     }
                 }
-                LabeledContent(L("settings.notifications")) {
-                    Label(notificationStatusLabel, systemImage: notificationStatusIcon)
-                        .foregroundStyle(notificationStatusColor)
-                }
-                if model.notificationStatus == .denied {
-                    Button(L("settings.open_system_settings")) {
-                        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.notifications") {
-                            NSWorkspace.shared.open(url)
-                        }
-                    }
-                }
-                Text(L("settings.notifications_detail"))
-                    .font(.caption).foregroundStyle(.secondary)
             }
             Section(L("settings.exclusions")) {
                 if model.exclusions.isEmpty {
@@ -221,16 +174,6 @@ struct MCSettingsView: View {
         .task { await model.load() }
     }
 
-    private var notificationStatusLabel: String { PermissionFormatting.notificationLabel(model.notificationStatus) }
-    private var notificationStatusIcon: String { PermissionFormatting.notificationIcon(model.notificationStatus) }
-
-    private var notificationStatusColor: Color {
-        switch model.notificationStatus {
-        case .authorized, .provisional, .ephemeral: MCTheme.success
-        case .denied: MCTheme.warning
-        default: .secondary
-        }
-    }
 }
 
 /// Reports the outcome of the one-time MacCare Local -> CoreTend data

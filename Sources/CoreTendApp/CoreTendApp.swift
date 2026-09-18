@@ -426,8 +426,10 @@ struct MainWindow: View {
                     MyActivityView()
                 case .settings:
                     MCSettingsView()
-                default:
-                    PlaceholderView(module: selection ?? .smartCare)
+                case nil:
+                    // Only reachable before a selection exists; every ModuleID
+                    // has a real view. There is no "under construction" state.
+                    DashboardView()
                 }
             }
             .mcCanvasBackground()
