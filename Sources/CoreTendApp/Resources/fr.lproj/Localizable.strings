@@ -618,3 +618,4 @@
 "updates.verify_mismatch" = "Ce fichier ne correspond pas à la somme de contrôle publiée. Ne l'ouvrez pas — retéléchargez-le depuis la page de version.";
 "updates.verify_wrong_size" = "Taille incorrecte : la version publie %@, ce fichier fait %@. Le téléchargement est probablement incomplet.";
 "updates.verify_unreadable" = "%@ n'a pas pu être lu, ou n'est pas un fichier publié par cette version.";
+"sidebar.a11y.label" = "Modules";

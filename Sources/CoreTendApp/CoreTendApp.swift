@@ -6,32 +6,67 @@ import DesignSystem
 import SystemMetrics
 import Persistence
 
-/// A per-process appearance override used only by the isolated artifact
-/// harness. It requires the same validated two-key test marker as the store and
-/// filesystem fixtures, so normal launches always continue to follow macOS.
-enum TestAppearanceOverride {
-    static func resolve(environment: [String: String]) -> NSAppearance.Name? {
+/// CoreTend renders in its own appearance, not the system's.
+///
+/// This is a product decision, not a technical one. The app is a single
+/// designed surface — one canvas colour, one elevation ladder, one accent —
+/// and every value in `MCColor` is tuned against the Slate ground it was
+/// designed on. Following the system light/dark switch meant maintaining two
+/// complete palettes, each of which had to independently clear contrast
+/// minimums, and shipping a product whose identity changed depending on a
+/// setting elsewhere on the Mac.
+///
+/// What this costs, stated plainly rather than discovered later: a user who
+/// runs their Mac in Light appearance now gets one dark window among light
+/// ones, and users who prefer light interfaces for visual-comfort reasons
+/// have no in-app alternative. The mitigation is that the owned palette is
+/// held to a higher contrast bar than the system default would enforce —
+/// `DesignSystem` documents the measured ratios — and macOS's own Increase
+/// Contrast and Reduce Transparency settings are still honoured, because
+/// those are accessibility settings rather than taste settings.
+///
+/// Forced at launch before any window exists, so no view ever renders in the
+/// inherited appearance first and then swaps.
+/// Selects the module a test launch opens on, so a visual capture does not have
+/// to drive the sidebar through the accessibility API.
+///
+/// The capture script used to find the sidebar row by walking
+/// `outline 1 of scroll area 1 of group 1 of splitter group 1 of …` and calling
+/// `select`. That coupled every screenshot to one specific AppKit view
+/// hierarchy: replacing the `List` with CoreTend's own sidebar broke every
+/// capture at once, and the AX tree is in any case flaky across rapid
+/// relaunches — `entire contents` intermittently returns nothing.
+///
+/// A launch argument is deterministic, has no timing, and survives any future
+/// change to how the sidebar is built.
+///
+/// Gated behind the same validated two-key test marker as the store and
+/// filesystem fixtures, so a normal launch can never be steered by an
+/// environment variable.
+enum TestModuleOverride {
+    static func resolve(environment: [String: String]) -> ModuleID? {
         guard TestStoreOverride.isTestMarkerSet(environment: environment),
-              TestStoreOverride.resolve(environment: environment).directory != nil
+              TestStoreOverride.resolve(environment: environment).directory != nil,
+              let raw = environment["CORETEND_TEST_MODULE"]?
+                  .trimmingCharacters(in: .whitespacesAndNewlines)
         else { return nil }
-
-        switch environment["CORETEND_TEST_APPEARANCE"]?.lowercased() {
-        case "light": return .aqua
-        case "dark": return .darkAqua
-        default: return nil
-        }
+        return ModuleID(rawValue: raw)
     }
+}
 
-    @MainActor
-    static func apply(environment: [String: String]) {
-        guard let name = resolve(environment: environment) else { return }
+@MainActor
+enum AppAppearance {
+    /// The one appearance CoreTend renders in.
+    static let name: NSAppearance.Name = .darkAqua
+
+    static func apply() {
         NSApplication.shared.appearance = NSAppearance(named: name)
     }
 }
 
 public struct CoreTendApp: App {
     public init() {
-        TestAppearanceOverride.apply(environment: ProcessInfo.processInfo.environment)
+        AppAppearance.apply()
     }
     @AppStorage("menuBarEnabled") private var menuBarEnabled = true
     // Same UserDefaults key LocalizationManager reads/writes. Observing it
@@ -374,7 +409,8 @@ struct SidebarGroup: Identifiable {
 }
 
 struct MainWindow: View {
-    @State private var selection: ModuleID? = .smartCare
+    @State private var selection: ModuleID? =
+        TestModuleOverride.resolve(environment: ProcessInfo.processInfo.environment) ?? .smartCare
     @AppStorage("onboardingDone") private var onboardingDone = false
     @State private var showOnboarding = false
     @State private var showCommandPalette = false
@@ -385,26 +421,10 @@ struct MainWindow: View {
 
     var body: some View {
         NavigationSplitView {
-            List(selection: $selection) {
-                ForEach(SidebarGroup.all) { group in
-                    Section {
-                        ForEach(group.modules) { module in
-                            sidebarRow(module)
-                            .tag(module)
-                            .accessibilityIdentifier("sidebar.\(module.rawValue)")
-                        }
-                    } header: {
-                        if let title = group.title {
-                            Text(title)
-                        }
-                    }
-                }
-            }
-            .scrollContentBackground(.hidden)
-            .background(MCColor.secondaryBackground)
-            .listStyle(.sidebar)
-            .navigationSplitViewColumnWidth(min: MCSize.sidebarMin, ideal: MCSize.sidebarIdeal)
-            .accessibilityIdentifier("sidebar.list")
+            Sidebar(selection: Binding(
+                get: { selection ?? .smartCare },
+                set: { selection = $0 }))
+                .navigationSplitViewColumnWidth(min: MCSize.sidebarMin, ideal: MCSize.sidebarIdeal)
         } detail: {
             Group {
                 switch selection {
@@ -490,26 +510,6 @@ struct MainWindow: View {
         .tint(MCColor.teal)
     }
 
-    private func sidebarRow(_ module: ModuleID) -> some View {
-        let isSelected = selection == module
-        return Label {
-            Text(module.label)
-                .font(.callout.weight(isSelected ? .semibold : .regular))
-        } icon: {
-            Image(systemName: module.systemImage)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(isSelected ? MCColor.teal : Color.secondary)
-                .frame(width: 20)
-        }
-        .padding(.vertical, 3)
-        .padding(.horizontal, 2)
-        .background {
-            if isSelected {
-                RoundedRectangle(cornerRadius: MCRadius.small)
-                    .fill(MCColor.teal.opacity(0.12))
-            }
-        }
-    }
 }
 
 /// Same locale-aware, diacritic-insensitive comparison ClutterSearch uses

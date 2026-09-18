@@ -59,34 +59,25 @@ struct ApplicationInventoryIsolationTests {
     }
 }
 
-@Suite("Artifact appearance override isolation")
-struct TestAppearanceOverrideTests {
-    @Test("validated test mode maps light and dark without changing normal settings")
-    func validTestModeMapsAppearances() {
-        let root = "/tmp/coretend-appearance-\(UUID().uuidString)"
-        for (value, expected) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
-            let result = TestAppearanceOverride.resolve(environment: [
-                "CORETEND_TEST_MODE": "1",
-                "CORETEND_TEST_STORE_DIR": root,
-                "CORETEND_TEST_APPEARANCE": value,
-            ])
-            #expect(result == expected)
-        }
+/// The appearance override is gone: CoreTend renders in its own appearance and
+/// no environment variable changes it. What replaces those three tests is the
+/// one property that now matters — that the app pins an appearance at all, and
+/// pins the one the palette was measured against.
+@Suite("Owned appearance")
+@MainActor
+struct AppAppearanceTests {
+    @Test("the app pins the appearance its palette was designed for")
+    func pinsDarkAqua() {
+        #expect(AppAppearance.name == .darkAqua)
     }
 
-    @Test("an invalid test store cannot force application appearance")
-    func invalidTestStoreCannotOverrideAppearance() {
-        #expect(TestAppearanceOverride.resolve(environment: [
-            "CORETEND_TEST_MODE": "1",
-            "CORETEND_TEST_STORE_DIR": "/Applications/not-a-test-store",
-            "CORETEND_TEST_APPEARANCE": "light",
-        ]) == nil)
-    }
-
-    @Test("normal launches always leave appearance under system control")
-    func normalLaunchDoesNotOverrideAppearance() {
-        #expect(TestAppearanceOverride.resolve(environment: [
-            "CORETEND_TEST_APPEARANCE": "dark",
-        ]) == nil)
+    /// Applying it must be idempotent and must not depend on a window
+    /// existing: it runs in `CoreTendApp.init()`, before any scene is built,
+    /// so no view can render in the inherited appearance and then swap.
+    @Test("applying is safe before any window exists, and repeatable")
+    func applyIsIdempotent() {
+        AppAppearance.apply()
+        AppAppearance.apply()
+        #expect(NSApplication.shared.appearance?.name == AppAppearance.name)
     }
 }

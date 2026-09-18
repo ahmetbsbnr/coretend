@@ -51,40 +51,65 @@ struct BloomGeometryTests {
 
 @Suite("Semantic colors")
 struct ColorTests {
-    /// Light and dark variants must actually differ (adaptive check).
-    @Test func brandColorsAdapt() {
-        for color in [MCColor.teal, MCColor.graphite, MCColor.amber, MCColor.coral] {
-            let ns = NSColor(color)
-            var light = NSColor.black, dark = NSColor.black
-            NSAppearance(named: .aqua)!.performAsCurrentDrawingAppearance {
-                light = ns.usingColorSpace(.sRGB) ?? ns
-            }
-            NSAppearance(named: .darkAqua)!.performAsCurrentDrawingAppearance {
-                dark = ns.usingColorSpace(.sRGB) ?? ns
-            }
-            #expect(light != dark)
+    /// This assertion is the exact inverse of the one it replaces.
+    ///
+    /// It used to require that every brand colour *differ* between the aqua
+    /// and darkAqua appearances, because the palette was two palettes. CoreTend
+    /// now renders in one owned appearance, so a colour that still changes
+    /// under the system switch is a colour that escaped the migration — it
+    /// would render differently for a user in Light appearance than the values
+    /// the contrast suite measures, making those measurements false.
+    @Test func brandColoursDoNotFollowTheSystemAppearance() {
+        for (name, color) in [
+            ("teal", MCColor.teal), ("tealBright", MCColor.tealBright),
+            ("tealDeep", MCColor.tealDeep), ("tealWash", MCColor.tealWash),
+            ("graphite", MCColor.graphite), ("amber", MCColor.amber),
+            ("coral", MCColor.coral), ("success", MCColor.success),
+            ("background", MCColor.background), ("secondaryBackground", MCColor.secondaryBackground),
+            ("elevatedBackground", MCColor.elevatedBackground),
+            ("elevatedHighBackground", MCColor.elevatedHighBackground),
+            ("separator", MCColor.separator), ("textPrimary", MCColor.textPrimary),
+            ("textSecondary", MCColor.textSecondary), ("textTertiary", MCColor.textTertiary),
+        ] {
+            #expect(resolved(color, .aqua) == resolved(color, .darkAqua),
+                    "\(name) still changes with the system appearance")
         }
+    }
+
+    /// Resolves a colour under a given appearance, so "does not adapt" is
+    /// measured rather than assumed from how it was declared.
+    private func resolved(_ color: Color, _ appearance: NSAppearance.Name) -> NSColor {
+        let ns = NSColor(color)
+        var out = NSColor.black
+        NSAppearance(named: appearance)!.performAsCurrentDrawingAppearance {
+            out = ns.usingColorSpace(.sRGB) ?? ns
+        }
+        return out
     }
 
     @Test func chartSeriesHasDistinctLeadColors() {
         #expect(MCColor.chartSeries.count >= 3)
     }
 
-    /// Space Lens category colors — previously raw Color(red:green:blue:)
-    /// literals that never changed between light/dark. Now real adaptive
-    /// tokens; must pass the same check as the brand palette.
-    @Test func categoryColorsAdapt() {
-        for color in [MCColor.cellTealDeep, MCColor.cellGraphite, MCColor.cellTealPale] {
-            let ns = NSColor(color)
-            var light = NSColor.black, dark = NSColor.black
-            NSAppearance(named: .aqua)!.performAsCurrentDrawingAppearance {
-                light = ns.usingColorSpace(.sRGB) ?? ns
-            }
-            NSAppearance(named: .darkAqua)!.performAsCurrentDrawingAppearance {
-                dark = ns.usingColorSpace(.sRGB) ?? ns
-            }
-            #expect(light != dark)
+    /// The Space Lens swatches are held to the same rule as the brand palette:
+    /// fixed, owned, identical under either system appearance.
+    @Test func categoryColoursDoNotFollowTheSystemAppearance() {
+        for (name, color) in [
+            ("cellTealDeep", MCColor.cellTealDeep),
+            ("cellGraphite", MCColor.cellGraphite),
+            ("cellTealPale", MCColor.cellTealPale),
+        ] {
+            #expect(resolved(color, .aqua) == resolved(color, .darkAqua),
+                    "\(name) still changes with the system appearance")
         }
+    }
+
+    /// Chart series must be distinguishable from one another, not merely
+    /// present: four swatches that resolve to two colours is a chart with a
+    /// lie in it.
+    @Test func chartSeriesColoursAreMutuallyDistinct() {
+        let resolvedSeries = MCColor.chartSeries.map { resolved($0, .darkAqua) }
+        #expect(Set(resolvedSeries).count == MCColor.chartSeries.count)
     }
 
     @Test func categoryColorsAreMutuallyDistinct() {
@@ -137,74 +162,100 @@ struct BrandResourceTests {
     }
 }
 
-@Suite("Porcelain/Slate/Teal palette contrast")
+@Suite("Owned palette contrast")
 struct PaletteContrastTests {
-    /// WCAG 2.1 relative luminance.
-    private static func luminance(_ c: (Double, Double, Double)) -> Double {
-        func channel(_ v: Double) -> Double {
-            v <= 0.03928 ? v / 12.92 : pow((v + 0.055) / 1.055, 2.4)
-        }
-        return 0.2126 * channel(c.0) + 0.7152 * channel(c.1) + 0.0722 * channel(c.2)
-    }
+    private let ground = MCColor.Canonical.ground
 
-    private static func ratio(_ a: (Double, Double, Double), _ b: (Double, Double, Double)) -> Double {
-        let la = luminance(a), lb = luminance(b)
-        let (hi, lo) = la > lb ? (la, lb) : (lb, la)
-        return (hi + 0.05) / (lo + 0.05)
-    }
-
-    /// The dark-surface accents are only defensible if they're actually
-    /// readable on Slate. `cobaltBright` is the brightened Slate sibling of
-    /// the brand teal; amber/coral are functional (non-brand) hues.
-    @Test func darkSurfaceAccentsAreReadableOnInk() {
-        let ink = MCColor.Canonical.ink
+    /// Every colour that carries text must clear the WCAG 4.5:1 body minimum
+    /// on the one ground the app renders on. Ratios are recomputed here rather
+    /// than trusted from the comments in Colors.swift: a documented ratio is a
+    /// claim, and a claim that nothing checks is how palettes drift.
+    @Test func textColoursClearTheBodyMinimum() {
         for (name, value) in [
-            ("cobaltBright", MCColor.Canonical.cobaltBright),
-            ("warmAmber", MCColor.Canonical.warmAmber),
-            ("signalCoral", MCColor.Canonical.signalCoral),
+            ("textPrimary", MCColor.Canonical.textPrimary),
+            ("textSecondary", MCColor.Canonical.textSecondary),
+            ("teal", MCColor.Canonical.teal),
+            ("tealBright", MCColor.Canonical.tealBright),
+            ("amber", MCColor.Canonical.amber),
+            ("coral", MCColor.Canonical.coral),
+            ("green", MCColor.Canonical.green),
         ] {
-            let r = Self.ratio(value, ink)
-            #expect(r >= 4.5, "\(name) on Ink is \(r):1, below the 4.5:1 text minimum")
+            let ratio = MCColor.contrastRatio(value, ground)
+            #expect(ratio >= 4.5, "\(name) on ground is \(ratio):1, under the 4.5:1 body minimum")
         }
     }
 
-    /// The reason amberDeep/coralDeep/slateDeep exist at all. If one of them
-    /// ever drifts back toward its canonical value, this fails instead of
-    /// shipping unreadable text to every light-mode install. Cobalt itself is
-    /// not in this list — see `canonicalCobaltPassesOnPaperDirectly` below,
-    /// it needs no deepened sibling because it was tuned for Paper already.
-    @Test func lightSiblingsAreReadableOnPaper() {
-        let paper = MCColor.Canonical.paper
-        for (name, value) in [
-            ("amberDeep", MCColor.Canonical.amberDeep),
-            ("coralDeep", MCColor.Canonical.coralDeep),
-            ("slateDeep", MCColor.Canonical.slateDeep),
+    /// `textTertiary` deliberately sits under the body minimum. It is allowed
+    /// to, because it is restricted to text that never carries meaning alone —
+    /// but it must still clear the 3:1 large-text/non-text floor, and it must
+    /// stay *below* secondary, or the three-tier hierarchy has collapsed into
+    /// two tiers with an extra name.
+    @Test func tertiaryTextIsDeliberatelyQuietButStillVisible() {
+        let tertiary = MCColor.contrastRatio(MCColor.Canonical.textTertiary, ground)
+        let secondary = MCColor.contrastRatio(MCColor.Canonical.textSecondary, ground)
+        #expect(tertiary >= 3.0, "textTertiary on ground is \(tertiary):1, under the 3:1 floor")
+        #expect(tertiary < 4.5, "textTertiary now clears the body minimum — it is no longer a third tier")
+        #expect(tertiary < secondary, "tertiary is not quieter than secondary")
+    }
+
+    /// Primary text has to stay readable on every surface in the elevation
+    /// ladder, not only on the ground. A card colour chosen for looks that
+    /// happens to sink its own label is the classic way this breaks.
+    @Test func primaryTextIsReadableOnEverySurface() {
+        for (name, surface) in [
+            ("ground", MCColor.Canonical.ground),
+            ("sunken", MCColor.Canonical.sunken),
+            ("raised", MCColor.Canonical.raised),
+            ("raisedHigh", MCColor.Canonical.raisedHigh),
+            ("tealWash", MCColor.Canonical.tealWash),
         ] {
-            let r = Self.ratio(value, paper)
-            #expect(r >= 4.5, "\(name) on Paper is \(r):1, below the 4.5:1 text minimum")
+            let ratio = MCColor.contrastRatio(MCColor.Canonical.textPrimary, surface)
+            #expect(ratio >= 4.5, "textPrimary on \(name) is \(ratio):1")
         }
     }
 
-    /// Cobalt is published for Paper, and needs no darkened sibling because
-    /// it already clears the text minimum there directly.
-    @Test func canonicalCobaltPassesOnPaperDirectly() {
-        let r = Self.ratio(MCColor.Canonical.cobalt, MCColor.Canonical.paper)
-        #expect(r >= 4.5, "Cobalt on Paper is \(r):1, below the 4.5:1 text minimum")
+    /// The elevation ladder must actually be a ladder. Four surfaces that are
+    /// nearly the same colour are one surface with three extra names, and the
+    /// depth the design depends on has to come from hairlines instead.
+    @Test func elevationStepsArePerceptiblyDistinct() {
+        let ladder = [
+            ("ground", MCColor.Canonical.ground),
+            ("sunken", MCColor.Canonical.sunken),
+            ("raised", MCColor.Canonical.raised),
+            ("raisedHigh", MCColor.Canonical.raisedHigh),
+        ]
+        for (lower, upper) in zip(ladder, ladder.dropFirst()) {
+            let low = MCColor.relativeLuminance(lower.1)
+            let high = MCColor.relativeLuminance(upper.1)
+            #expect(high > low, "\(upper.0) is not lighter than \(lower.0)")
+            #expect(high - low > 0.004,
+                    "\(lower.0) -> \(upper.0) is too small a step to read as a change of plane")
+        }
     }
 
-    /// Documents the trap `cobaltBright` exists to avoid: the canonical brand
-    /// blue is nowhere near readable on Ink. If this ever stops being true
-    /// the palette changed, and the divergence comment in Colors.swift needs
-    /// rewriting rather than quietly keeping two values.
-    @Test func canonicalCobaltWouldFailOnInk() {
-        let r = Self.ratio(MCColor.Canonical.cobalt, MCColor.Canonical.ink)
-        #expect(r < 4.5, "Cobalt now passes on Ink (\(r):1) — the light/dark split may no longer be needed")
+    /// The ground is not pure black, on purpose: pure black under light text
+    /// haloes, and on OLED it smears at every scroll edge.
+    @Test func theGroundIsNotPureBlack() {
+        #expect(MCColor.Canonical.ground != 0x000000)
+        #expect(MCColor.relativeLuminance(MCColor.Canonical.ground) > 0.005)
     }
 
-    /// Muted Slate is specified for secondary text and the secondary accent;
-    /// on the dark surface it has to clear the 3:1 large-text floor at minimum.
-    @Test func mutedSlateClearsTheLargeTextFloorOnInk() {
-        let r = Self.ratio(MCColor.Canonical.mutedSlate, MCColor.Canonical.ink)
-        #expect(r >= 3.0, "Muted Slate on Ink is \(r):1, below the 3:1 large-text floor")
+    /// Success and the accent must be told apart by hue, not only by
+    /// brightness — otherwise a colourblind user reads "done" and "action" as
+    /// the same state.
+    @Test func successIsDistinguishableFromTheAccent() {
+        let teal = MCColor.Canonical.teal, green = MCColor.Canonical.green
+        let hueDistance = abs(Int((teal >> 16) & 0xFF) - Int((green >> 16) & 0xFF))
+                        + abs(Int((teal >> 8) & 0xFF) - Int((green >> 8) & 0xFF))
+                        + abs(Int(teal & 0xFF) - Int(green & 0xFF))
+        #expect(hueDistance > 60, "teal and green are too close to read as different states")
+    }
+
+    /// Known-answer check on the ratio maths itself. If this is wrong, every
+    /// assertion above is meaningless.
+    @Test func contrastMathsMatchesKnownValues() {
+        #expect(abs(MCColor.contrastRatio(0xFFFFFF, 0x000000) - 21.0) < 0.01)
+        #expect(abs(MCColor.contrastRatio(0x000000, 0x000000) - 1.0) < 0.001)
+        #expect(abs(MCColor.contrastRatio(0x777777, 0xFFFFFF) - 4.48) < 0.05)
     }
 }

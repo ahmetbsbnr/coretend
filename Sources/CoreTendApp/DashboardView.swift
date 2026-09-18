@@ -101,17 +101,26 @@ struct DashboardView: View {
             .frame(width: ringSize, height: ringSize)
             .accessibilityHidden(true)
 
+            // Three columns share this row: a fixed ring, this copy block, and
+            // a 40pt metric. Without priorities the metric took the width it
+            // wanted and squeezed this column until the primary action read
+            // "Sc…". The copy block is the one that must survive, so it gets
+            // the priority and a floor; the metric gives way instead.
             VStack(alignment: .leading, spacing: MCSpacing.xs) {
                 Text(L("dashboard.storage.title")).font(MCFont.pageTitle)
                 Text(L("dashboard.storage.detail"))
                     .font(MCFont.secondaryBody)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(MCColor.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                 Button {
                     navigate(.cleanup)
                 } label: {
                     Label(L("dashboard.primary_action"), systemImage: "sparkles")
                         .font(.title3.weight(.semibold))
+                        // The label of the app's primary action never
+                        // truncates. If the window is too narrow for it, the
+                        // window is too narrow.
+                        .fixedSize(horizontal: true, vertical: false)
                         .padding(.vertical, MCSpacing.sm)
                         .padding(.horizontal, MCSpacing.lg)
                 }
@@ -122,7 +131,10 @@ struct DashboardView: View {
                 .accessibilityIdentifier("dashboard.scan.start")
                 .accessibilityLabel(L("dashboard.primary_action"))
             }
-            Spacer(minLength: MCSpacing.lg)
+            .frame(minWidth: 220, alignment: .leading)
+            .layoutPriority(1)
+
+            Spacer(minLength: MCSpacing.md)
             if let snap = snapshot {
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(mcFormatBytes(snap.diskFreeBytes))

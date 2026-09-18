@@ -18,6 +18,19 @@ public enum MCFont {
     public static let caption = Font.caption
     public static let metric = Font.system(.title3, design: .rounded).weight(.semibold)
     public static let badge = Font.caption2.weight(.semibold)
+
+    // MARK: Navigation
+    //
+    // The sidebar has its own three styles because it is the one surface read
+    // at a glance rather than read properly. Section labels are small, tracked
+    // and uppercased so they register as structure and not as items; the
+    // active item steps up in weight rather than in size, so the row's height
+    // never changes as selection moves and the list does not twitch.
+
+    /// Sidebar group headers — uppercased at the call site.
+    public static let sidebarSection = Font.system(size: 11, weight: .semibold)
+    public static let sidebarItem = Font.system(size: 13, weight: .regular)
+    public static let sidebarItemActive = Font.system(size: 13, weight: .semibold)
 }
 
 /// Icon glyph point sizes (Image(systemName:).font(.system(size:))). These

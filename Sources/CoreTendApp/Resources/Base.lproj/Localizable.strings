@@ -620,3 +620,4 @@
 "updates.verify_mismatch" = "This file does not match the published checksum. Do not open it — download it again from the release page.";
 "updates.verify_wrong_size" = "Wrong size: the release publishes %@, this file is %@. The download is probably incomplete.";
 "updates.verify_unreadable" = "%@ could not be read, or is not a file this release publishes.";
+"sidebar.a11y.label" = "Modules";
