@@ -277,7 +277,7 @@ enum SpaceNodeCategory: String, Hashable {
     }
 }
 
-struct SpaceLensView: View {
+struct SpaceMapView: View {
     @State private var model = SpaceLensViewModel()
     @Namespace private var zoomSpace
     @State private var selectedID: String?
@@ -297,7 +297,6 @@ struct SpaceLensView: View {
             case .ready: readyView
             }
         }
-        .navigationTitle(L("spacelens.title"))
         .toolbar {
             ToolbarItem {
                 Button {
@@ -660,5 +659,33 @@ struct SpaceLensView: View {
             navigate { model.pop(to: model.pathStack.count >= 2 ? model.pathStack.count - 2 : nil) }
             return .handled
         }
+    }
+}
+
+
+/// Explore: one place to look at the disk, four ways.
+///
+/// The map, the largest and oldest files, visually similar images and the
+/// local footprint of cloud folders were three sidebar destinations and one
+/// module. They are all the same question — where is the space going — asked
+/// with different instruments, so they are tabs of one screen.
+struct SpaceLensView: View {
+    @State private var tab = 0
+
+    var body: some View {
+        ModuleSubNav(sections: [
+            .init(0, L("explore.tab.map")),
+            .init(1, L("explore.tab.large_old")),
+            .init(2, L("explore.tab.similar")),
+            .init(3, L("explore.tab.cloud")),
+        ], selection: $tab) { tab in
+            switch tab {
+            case 1: LargeOldFilesView()
+            case 2: SimilarImagesView()
+            case 3: CloudCleanupView()
+            default: SpaceMapView()
+            }
+        }
+        .navigationTitle(L("module.explore"))
     }
 }

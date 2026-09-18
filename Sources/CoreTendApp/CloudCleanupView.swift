@@ -264,7 +264,6 @@ struct CloudCleanupView: View {
                 resultsView
             }
         }
-        .navigationTitle(L("cloud.nav_title"))
         .accessibilityIdentifier("cloud.root")
         .onAppear { if model.phase == .detecting { model.detect() } }
     }

@@ -33,7 +33,7 @@ struct DashboardView: View {
                 statusStrip
                     .modifier(Reveal(revealed: revealed, index: 2, reduceMotion: reduceMotion))
                 VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                    MCSectionHeader(L("sidebar.more"))
+                    MCSectionHeader(L("sidebar.space"))
                     LazyVGrid(columns: toolColumns, alignment: .leading, spacing: MCSpacing.sm) {
                         toolTile("dashboard.spacelens", L("dashboard.spacelens.title"),
                                  L("dashboard.spacelens.detail"), ModuleID.spaceLens.systemImage, .spaceLens)
@@ -44,7 +44,7 @@ struct DashboardView: View {
                         toolTile("dashboard.integrity", L("dashboard.integrity.title"),
                                  L("dashboard.integrity.detail"), ModuleID.protection.systemImage, .protection)
                         toolTile("dashboard.activity", L("dashboard.activity.title"),
-                                 latestActivityText, ModuleID.myActivity.systemImage, .myActivity)
+                                 latestActivityText, ModuleID.record.systemImage, .record)
                     }
                 }
                 .modifier(Reveal(revealed: revealed, index: 3, reduceMotion: reduceMotion))
@@ -52,7 +52,7 @@ struct DashboardView: View {
             .padding(MCSpacing.page)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .navigationTitle(L("module.dashboard"))
+        .navigationTitle(L("module.overview"))
         .accessibilityIdentifier("dashboard.root")
         .task {
             await refresh()

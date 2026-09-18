@@ -31,14 +31,14 @@ struct SidebarNavigationKeyboardTests {
     }
 
     /// Movement crosses group boundaries: the groups are a visual grouping, not
-    /// a navigation barrier. Down from the last row of "Storage" must land on
-    /// the first row of "More", not stop.
-    @Test func movementCrossesGroupBoundaries() {
-        let storage = SidebarGroup.all.first { $0.id == "storage" }!
-        let more = SidebarGroup.all.first { $0.id == "more" }!
-        let lastOfStorage = storage.modules.last!
-        #expect(SidebarNavigation.destination(from: lastOfStorage, moving: false, in: order)
-                == more.modules.first!)
+    /// a navigation barrier. Down from the last row of "Space" must land on
+    /// the first row of "This Mac", not stop.
+    @Test func movementCrossesGroupBoundaries() throws {
+        let space = try #require(SidebarGroup.all.first { $0.id == "space" })
+        let mac = try #require(SidebarGroup.all.first { $0.id == "mac" })
+        let lastOfSpace = try #require(space.modules.last)
+        #expect(SidebarNavigation.destination(from: lastOfSpace, moving: false, in: order)
+                == mac.modules.first)
     }
 
     /// Clamps rather than wraps. In a list short enough to see all at once,

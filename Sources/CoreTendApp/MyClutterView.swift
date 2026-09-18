@@ -140,26 +140,9 @@ final class MyClutterViewModel: CancellableScan {
     }
 }
 
-struct MyClutterView: View {
-    @State private var tab = 0
-
-    // Duplicates is a first-class tool in the Storage group and is not
-    // re-exposed here — this hub covers what nothing else does: large/old
-    // files and visually-similar images.
-    var body: some View {
-        ModuleSubNav(sections: [
-            .init(0, L("clutter.tab.large_old")),
-            .init(1, L("clutter.tab.similar_images")),
-        ], selection: $tab) { tab in
-            if tab == 0 { LargeOldFilesView() } else { SimilarImagesView() }
-        }
-        .navigationTitle(L("clutter.title"))
-
-    }
-}
 
 struct LargeOldFilesView: ModuleSubScreen {
-    static let parent = ModuleID.myClutter
+    static let parent = ModuleID.spaceLens
     static let labelKey = "clutter.tab.large_old"
 
     @State private var model = MyClutterViewModel()

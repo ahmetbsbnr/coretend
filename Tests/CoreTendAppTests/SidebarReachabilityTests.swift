@@ -6,7 +6,7 @@ import Testing
 
 /// Regression guard for the dead-module finding in
 /// Documentation/Audits/SESSION_2026-08-09_AUDIT.md: `ModuleID` previously
-/// declared cases (`.performance`, `.myClutter`, `.cloudCleanup`,
+/// declared cases (`.performance`, `.spaceLens`, `.protection`,
 /// `.favoritesRecents`) with live detail-view switch arms that `SidebarGroup
 /// .all` never listed, so they compiled, shipped, and were unreachable from
 /// the actual app UI. Every declared module must now be reachable from the

@@ -24,9 +24,6 @@
 "sidebar.optimize" = "Optimiser";
 "sidebar.protect" = "Intégrité";
 "sidebar.activity" = "Activité";
-"sidebar.storage" = "Stockage";
-"sidebar.system" = "Système";
-"sidebar.more" = "Plus";
 
 
 /* Menu bar */
@@ -59,7 +56,6 @@
 "cleanup.done.moved" = "%@ déplacés vers la Corbeille";
 
 /* Protection */
-"protection.tab.privacy" = "Confidentialité";
 
 /* Space Lens */
 "spacelens.title" = "Space Lens";
@@ -118,9 +114,7 @@
 "apps.select_prompt" = "Sélectionnez une application";
 
 /* My Clutter */
-"clutter.tab.large_old" = "Volumineux et anciens";
 "clutter.tab.duplicates" = "Doublons";
-"clutter.tab.similar_images" = "Images similaires";
 "clutter.title" = "Mes fichiers encombrants";
 "clutter.idle.title" = "Trouvez les fichiers volumineux et oubliés";
 "clutter.idle.subtitle" = "Analyse Téléchargements, Documents, Bureau et les dossiers média.\nRien n'est jamais supprimé automatiquement — vous examinez et agissez dans le Finder.";
@@ -346,11 +340,9 @@
 "apps.grouping.last_used" = "Dernière utilisation";
 
 /* Module display names (sidebar / placeholder) */
-"module.dashboard" = "Tableau de bord";
 "module.storage" = "Stockage";
 "module.duplicates" = "Doublons";
 "module.protection" = "Intégrité";
-"module.activity" = "Activité";
 "palette.open" = "Palette de commandes…";
 "palette.placeholder" = "Aller à…";
 "palette.no_results" = "Aucun résultat";
@@ -685,3 +677,18 @@
 
 "settings.data_detail_offline" = "Tout ce que CoreTend analyse reste sur ce Mac. Aucun compte, aucune télémétrie, aucune statistique, et aucune requête réseau d’aucune sorte.";
 "settings.data_detail_updates" = "Tout ce que CoreTend analyse reste sur ce Mac. Aucun compte, aucune télémétrie, aucune statistique. La seule requête qu’il effectue est la vérification de mise à jour ci-dessous : elle demande un fichier de version à une adresse publique et n’envoie rien sur vous, vos fichiers ou votre Mac.";
+
+"module.overview" = "Vue d’ensemble";
+"module.cleanup" = "Nettoyage";
+"module.explore" = "Explorer";
+"sidebar.space" = "Espace";
+"sidebar.mac" = "Ce Mac";
+"cleanup.tab.junk" = "Caches et journaux";
+"cleanup.tab.browsers" = "Caches des navigateurs";
+"explore.tab.map" = "Carte";
+"explore.tab.large_old" = "Plus volumineux et plus anciens";
+"explore.tab.similar" = "Images similaires";
+"explore.tab.cloud" = "Empreinte cloud";
+"protection.tab.startup" = "Démarre à l’ouverture de session";
+"startup.empty_title" = "Rien ne démarre à l’ouverture de session";
+"startup.empty_message" = "Aucun agent de lancement n’est installé pour votre compte.";

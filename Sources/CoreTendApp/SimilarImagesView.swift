@@ -149,7 +149,7 @@ struct AsyncThumbnail: View {
 struct SimilarImagesView: ModuleSubScreen {
     /// Reached from myClutter's sub-navigation, which already owns
     /// the window title — so this view deliberately sets none.
-    static let parent = ModuleID.myClutter
+    static let parent = ModuleID.spaceLens
     static let labelKey = "clutter.tab.similar_images"
 
     @State private var model = SimilarImagesViewModel()

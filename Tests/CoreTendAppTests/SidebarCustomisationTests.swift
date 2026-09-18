@@ -30,8 +30,8 @@ struct SidebarCustomisationTests {
     @Test func hidingRemovesAModuleFromTheSidebar() {
         let (custom, defaults, suite) = make()
         defer { defaults.removePersistentDomain(forName: suite) }
-        custom.setHidden(.cloudCleanup, true)
-        #expect(!custom.groups().flatMap(\.modules).contains(.cloudCleanup))
+        custom.setHidden(.performance, true)
+        #expect(!custom.groups().flatMap(\.modules).contains(.performance))
     }
 
     /// Hiding is not removing. A hidden module stays reachable from the Go menu
@@ -42,8 +42,8 @@ struct SidebarCustomisationTests {
     @Test func aHiddenModuleIsStillReachableElsewhere() {
         let (custom, defaults, suite) = make()
         defer { defaults.removePersistentDomain(forName: suite) }
-        custom.setHidden(.cloudCleanup, true)
-        #expect(SidebarGroup.visibleModules.contains(.cloudCleanup),
+        custom.setHidden(.performance, true)
+        #expect(SidebarGroup.visibleModules.contains(.performance),
                 "hiding a module removed it from the menus too")
     }
 
@@ -59,12 +59,16 @@ struct SidebarCustomisationTests {
 
     /// A group emptied by hiding disappears rather than rendering a header with
     /// nothing under it — the same rule the distribution filter follows.
-    @Test func aGroupEmptiedByHidingIsDropped() {
+    @Test func aGroupEmptiedByHidingIsDropped() throws {
         let (custom, defaults, suite) = make()
         defer { defaults.removePersistentDomain(forName: suite) }
-        let more = SidebarGroup.all.first { $0.id == "more" }!
-        for module in more.modules { custom.setHidden(module, true) }
-        #expect(!custom.groups().contains { $0.id == "more" })
+        // #require, not a force-unwrap: when the "more" group was removed in
+        // the architecture pass this crashed the whole test process, taking
+        // every later test's report with it. A missing group is a failure of
+        // this test, not of the run.
+        let mac = try #require(SidebarGroup.all.first { $0.id == "mac" })
+        for module in mac.modules { custom.setHidden(module, true) }
+        #expect(!custom.groups().contains { $0.id == "mac" })
         for group in custom.groups() { #expect(!group.modules.isEmpty) }
     }
 
@@ -75,7 +79,7 @@ struct SidebarCustomisationTests {
         custom.setOrder([.duplicates, .cleanup])
         let reopened = SidebarCustomisation(defaults: defaults)
         #expect(reopened.isHidden(.performance))
-        #expect(reopened.groups().first { $0.id == "storage" }?.modules.first == .duplicates)
+        #expect(reopened.groups().first { $0.id == "space" }?.modules.first == .duplicates)
     }
 
     /// Grouping survives customisation: a reordered module keeps its group,
@@ -99,10 +103,13 @@ struct SidebarCustomisationTests {
         let name = "coretend.tests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: name)!
         defer { defaults.removePersistentDomain(forName: name) }
-        defaults.set(["Retired Module", "Cloud Cleanup"], forKey: SidebarCustomisation.hiddenKey)
+        // "Cloud Cleanup" is a real retired name now — it was a module until
+        // the architecture pass folded it into Explore — so this is no longer
+        // a hypothetical: someone's defaults genuinely carry it.
+        defaults.set(["Cloud Cleanup", "My Activity", "Performance"], forKey: SidebarCustomisation.hiddenKey)
         defaults.set(["Retired Module", "Duplicates"], forKey: SidebarCustomisation.orderKey)
         let custom = SidebarCustomisation(defaults: defaults)
-        #expect(custom.isHidden(.cloudCleanup))
+        #expect(custom.isHidden(.performance))
         #expect(custom.groups().flatMap(\.modules).allSatisfy { ModuleID.allCases.contains($0) })
     }
 

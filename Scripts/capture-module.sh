@@ -11,8 +11,8 @@
 # fell back silently; every check run against those images passed. A tool that
 # cannot detect that it is wrong produces confident, wrong reports.
 #
-# Module identifiers: smartCare record cleanup spaceLens duplicates applications
-#                     myClutter cloudCleanup performance protection myActivity
+# Module identifiers: smartCare record cleanup spaceLens duplicates
+#                     applications protection performance
 set -euo pipefail
 out="${1:?usage: $0 <out.png> <module> [light|dark] [compact|standard|large] [seed]}"
 module="${2:?usage: $0 <out.png> <module> [light|dark] [compact|standard|large] [seed]}"

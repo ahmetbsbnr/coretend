@@ -90,7 +90,8 @@ struct ModuleSubNavContractTests {
         }
         // And none of them claims the window title.
         for file in ["LeftoversView.swift", "AppUpdatesView.swift",
-                     "PrivacyCleanerView.swift", "SimilarImagesView.swift"] {
+                     "PrivacyCleanerView.swift", "SimilarImagesView.swift",
+                     "CloudCleanupView.swift", "StartupItemsView.swift"] {
             let text = try #require(sources[file], "missing \(file)")
             #expect(!text.contains("navigationTitle("),
                     "\(file) sets a window title its parent module already owns")
@@ -100,9 +101,8 @@ struct ModuleSubNavContractTests {
     /// Every module reachable from the sidebar names itself in the title bar.
     @Test func everyRoutedModuleSetsANavigationTitle() throws {
         let routed = [
-            "DashboardView", "CleanupView", "ProtectionView", "ApplicationsView",
-            "DuplicatesView", "PerformanceView", "SpaceLensView", "MyClutterView",
-            "CloudCleanupView", "MyActivityView",
+            "DashboardView", "RecordView", "CleanupView", "SpaceLensView",
+            "DuplicatesView", "ApplicationsView", "ProtectionView", "PerformanceView",
         ]
         let sources = Dictionary(uniqueKeysWithValues: try appSources().map { ($0.name, $0.text) })
         for module in routed {

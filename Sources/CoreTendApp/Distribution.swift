@@ -118,13 +118,12 @@ struct AppCapabilities: Sendable, Equatable {
         case .cleanup: canReachSystemLocations
         case .applications: canManageApplications
         case .protection: canInspectIntegrity
-        // Cloud Cleanup reads iCloud Drive's local mirror, which lives outside
-        // the container.
-        case .cloudCleanup: canReachSystemLocations
         // The record reads CoreTend's own database and nothing else, so it
         // is one of the few modules the sandbox takes nothing away from.
-        case .smartCare, .record, .performance, .duplicates, .myClutter,
-             .spaceLens, .myActivity:
+        // Explore hosts the cloud-footprint lens, which reads iCloud Drive's
+        // local mirror outside the container; that lens reports its own
+        // reach rather than removing the whole module.
+        case .smartCare, .record, .performance, .duplicates, .spaceLens:
             true
         }
     }

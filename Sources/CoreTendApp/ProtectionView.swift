@@ -71,9 +71,9 @@ struct ProtectionView: View {
     var body: some View {
         ModuleSubNav(sections: [
             .init(0, L("protection.tab.integrity")),
-            .init(1, L("protection.tab.privacy")),
+            .init(1, L("protection.tab.startup")),
         ], selection: $tab) { tab in
-            if tab == 0 { IntegrityView() } else { PrivacyCleanerView() }
+            if tab == 0 { IntegrityView() } else { StartupItemsView() }
         }
         .navigationTitle(L("module.protection"))
         .accessibilityIdentifier("integrity.root")

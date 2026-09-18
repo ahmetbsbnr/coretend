@@ -41,7 +41,7 @@ struct ModuleIdentifierTests {
         #expect(ModuleID(testIdentifier: "space lens") == .spaceLens)
         #expect(ModuleID(testIdentifier: "SPACELENS") == .spaceLens)
         #expect(ModuleID(testIdentifier: "  Smart Care  ") == .smartCare)
-        #expect(ModuleID(testIdentifier: "myclutter") == .myClutter)
+        #expect(ModuleID(testIdentifier: "spacelens") == .spaceLens)
     }
 
     /// An unknown identifier must resolve to nil rather than to something

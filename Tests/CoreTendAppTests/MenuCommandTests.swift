@@ -38,11 +38,15 @@ struct MenuCommandTests {
         #expect(text.contains("index < 9"), "the shortcut cap is gone")
     }
 
-    /// There are ten modules and nine digits, so the cap is load-bearing rather
-    /// than theoretical — and it must stay a shortcut cap.
-    @Test func thereAreMoreModulesThanDigits() {
-        #expect(SidebarGroup.visibleModules.count > 9,
-                "if this ever fails, the shortcut cap has become dead code and should say so")
+    /// Eight destinations, nine digits: every module now has a shortcut, and
+    /// the cap in MenuCommands is a guard for the day a ninth-plus module is
+    /// added rather than something a user can currently hit. This used to
+    /// assert the opposite (ten modules, so the cap was load-bearing); the
+    /// architecture pass that merged Activity into the Record and folded three
+    /// lenses into Explore is what changed it.
+    @Test func everyModuleHasADigit() {
+        #expect(SidebarGroup.visibleModules.count <= 9,
+                "a module past the ninth has no ⌘-digit; decide whether that is acceptable")
     }
 
     /// Scan commands cross a boundary commands cannot hold a reference across,

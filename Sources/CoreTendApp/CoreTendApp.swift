@@ -398,10 +398,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
     case performance = "Performance"
     case applications = "Applications"
     case duplicates = "Duplicates"
-    case myClutter = "My Clutter"
     case spaceLens = "Space Lens"
-    case cloudCleanup = "Cloud Cleanup"
-    case myActivity = "My Activity"
 
     var id: String { rawValue }
 
@@ -437,11 +434,8 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .performance: .performance
         case .applications: .applications
         case .duplicates: .duplicates
-        case .myClutter: .myClutter
         case .spaceLens: .spaceLens
-        case .cloudCleanup: .cloudCleanup
         case .record: .record
-        case .myActivity: .myActivity
         }
     }
 
@@ -451,17 +445,14 @@ enum ModuleID: String, CaseIterable, Identifiable {
     /// (matched against `ActivityRecord.summary` prefixes elsewhere).
     var label: String {
         switch self {
-        case .smartCare: L("module.dashboard")
-        case .cleanup: L("module.storage")
+        case .smartCare: L("module.overview")
+        case .cleanup: L("module.cleanup")
         case .protection: L("module.protection")
         case .performance: L("performance.nav_title")
         case .applications: L("apps.title")
         case .duplicates: L("module.duplicates")
-        case .myClutter: L("clutter.title")
-        case .spaceLens: L("spacelens.title")
-        case .cloudCleanup: L("cloud.nav_title")
+        case .spaceLens: L("module.explore")
         case .record: L("record.title")
-        case .myActivity: L("module.activity")
         }
     }
 }
@@ -472,20 +463,30 @@ struct SidebarGroup: Identifiable {
     let title: String?
     let modules: [ModuleID]
 
+    /// The information architecture, rebuilt from what a person is trying to
+    /// do rather than from where code happened to live.
+    ///
+    /// Two things at the top with no heading: where you are, and what has
+    /// happened. Then the disk — find space, explore it, resolve duplicates.
+    /// Then the Mac itself — what is installed, whether it can be trusted, how
+    /// it is running.
+    ///
+    /// What is *not* here any more, and why:
+    /// - "My Clutter" and "Cloud Cleanup" were read-only lenses on the disk
+    ///   presented as destinations. They are tabs of Explore now, next to the
+    ///   map they were always a different view of.
+    /// - "Activity" duplicated the Record with less evidence. Merged.
+    /// - The browser-cache cleaner lived under Integrity, where it did not
+    ///   belong: it cleans caches. It is a tab of Cleanup.
+    /// - Launch agents lived under Performance, where they were the one
+    ///   non-temporal thing on a temporal screen. They are what starts
+    ///   automatically, which is an integrity question.
     static let all: [SidebarGroup] = [
         SidebarGroup(id: "main", title: nil, modules: [.smartCare, .record]),
-        SidebarGroup(id: "storage", title: L("sidebar.storage"),
-                     modules: [.cleanup, .spaceLens, .duplicates, .applications]),
-        // Secondary, lower-priority tools: each does something the seven
-        // primary modules above don't (broken-LaunchAgent detection, a
-        // large/old-files finder, local-vs-cloud storage analysis) so they
-        // stay reachable rather than deleted, but they aren't part of the
-        // compact primary architecture — see Documentation/Audits/
-        // SESSION_2026-08-09_AUDIT.md for the redundancy check that led here.
-        SidebarGroup(id: "more", title: L("sidebar.more"),
-                     modules: [.myClutter, .cloudCleanup, .performance]),
-        SidebarGroup(id: "system", title: L("sidebar.system"),
-                     modules: [.protection, .myActivity]),
+        SidebarGroup(id: "space", title: L("sidebar.space"),
+                     modules: [.cleanup, .spaceLens, .duplicates]),
+        SidebarGroup(id: "mac", title: L("sidebar.mac"),
+                     modules: [.applications, .protection, .performance]),
     ]
 
     /// The groups this build can actually deliver, with unsupported modules
@@ -554,14 +555,8 @@ struct MainWindow: View {
                     PerformanceView()
                 case .spaceLens:
                     SpaceLensView()
-                case .myClutter:
-                    MyClutterView()
-                case .cloudCleanup:
-                    CloudCleanupView()
                 case .record:
                     RecordView()
-                case .myActivity:
-                    MyActivityView()
                 case nil:
                     // Only reachable before a selection exists; every ModuleID
                     // has a real view. There is no "under construction" state.

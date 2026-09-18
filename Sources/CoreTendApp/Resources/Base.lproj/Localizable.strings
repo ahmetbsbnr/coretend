@@ -24,9 +24,6 @@
 "sidebar.optimize" = "Optimize";
 "sidebar.protect" = "Integrity";
 "sidebar.activity" = "Activity";
-"sidebar.storage" = "Storage";
-"sidebar.system" = "System";
-"sidebar.more" = "More";
 
 
 /* Menu bar */
@@ -59,7 +56,6 @@
 "cleanup.done.moved" = "%@ moved to Trash";
 
 /* Protection */
-"protection.tab.privacy" = "Privacy";
 
 /* Space Lens */
 "spacelens.title" = "Space Lens";
@@ -118,9 +114,7 @@
 "apps.select_prompt" = "Select an application";
 
 /* My Clutter */
-"clutter.tab.large_old" = "Large & Old";
 "clutter.tab.duplicates" = "Duplicates";
-"clutter.tab.similar_images" = "Similar Images";
 "clutter.title" = "My Clutter";
 "clutter.idle.title" = "Find large, forgotten files";
 "clutter.idle.subtitle" = "Analyzes Downloads, Documents, Desktop and media folders.\nNothing is ever deleted automatically — you review and act in Finder.";
@@ -346,11 +340,9 @@
 "apps.grouping.last_used" = "Last Used";
 
 /* Module display names (sidebar / placeholder) */
-"module.dashboard" = "Dashboard";
 "module.storage" = "Storage";
 "module.duplicates" = "Duplicates";
 "module.protection" = "Integrity";
-"module.activity" = "Activity";
 "palette.open" = "Command Palette…";
 "palette.placeholder" = "Jump to…";
 "palette.no_results" = "No matches";
@@ -687,3 +679,18 @@
 
 "settings.data_detail_offline" = "Everything CoreTend analyses stays on this Mac. No accounts, no telemetry, no analytics, and no network requests of any kind.";
 "settings.data_detail_updates" = "Everything CoreTend analyses stays on this Mac. No accounts, no telemetry, no analytics. The one request it makes is the update check below: it asks a public address for a version file and sends nothing about you, your files or your Mac.";
+
+"module.overview" = "Overview";
+"module.cleanup" = "Cleanup";
+"module.explore" = "Explore";
+"sidebar.space" = "Space";
+"sidebar.mac" = "This Mac";
+"cleanup.tab.junk" = "Caches & logs";
+"cleanup.tab.browsers" = "Browser caches";
+"explore.tab.map" = "Map";
+"explore.tab.large_old" = "Largest & oldest";
+"explore.tab.similar" = "Similar images";
+"explore.tab.cloud" = "Cloud footprint";
+"protection.tab.startup" = "Starts at login";
+"startup.empty_title" = "Nothing starts at login";
+"startup.empty_message" = "No launch agents are installed for your account.";

@@ -180,7 +180,7 @@ final class CleanupViewModel: CancellableScan {
     }
 }
 
-struct CleanupView: View {
+struct JunkCleanupView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var model = CleanupViewModel()
 
@@ -210,7 +210,6 @@ struct CleanupView: View {
                     .padding(MCSpacing.page)
             }
         }
-        .navigationTitle(L("module.storage"))
         .scanCommands(
             start: { model.startScan() },
             pauseOrResume: { model.isScanPaused ? model.resumeScan() : model.pauseScan() },
@@ -449,5 +448,25 @@ struct CleanupView: View {
             title: outcome.title,
             message: outcome.message,
             actionTitle: L("smartcare.scan_again")) { model.startScan() }
+    }
+}
+
+
+/// Cleanup: the things CoreTend can move to the Trash on your behalf.
+///
+/// Browser caches were filed under Integrity. They are caches — rebuilt
+/// automatically, plain files, moved to the Trash like any other — so they
+/// belong with the other cleanup, not with code signing.
+struct CleanupView: View {
+    @State private var tab = 0
+
+    var body: some View {
+        ModuleSubNav(sections: [
+            .init(0, L("cleanup.tab.junk")),
+            .init(1, L("cleanup.tab.browsers")),
+        ], selection: $tab) { tab in
+            if tab == 0 { JunkCleanupView() } else { PrivacyCleanerView() }
+        }
+        .navigationTitle(L("module.cleanup"))
     }
 }

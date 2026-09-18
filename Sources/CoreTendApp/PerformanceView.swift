@@ -113,7 +113,6 @@ struct PerformanceView: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    launchAgentsCard
                 } else {
                     ProgressView().padding(MCSpacing.xxl)
                 }
@@ -168,43 +167,6 @@ struct PerformanceView: View {
                 .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-    }
-
-    @State private var agents: [LaunchAgentInfo] = []
-
-    private var launchAgentsCard: some View {
-        MCCard {
-            VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                Text(L("performance.launchagents.title")).font(MCFont.cardTitle)
-                Text(L("performance.launchagents.subtitle"))
-                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                if agents.isEmpty {
-                    Text(L("performance.launchagents.empty")).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                }
-                ForEach(agents) { agent in
-                    HStack {
-                        Image(systemName: agent.broken ? "exclamationmark.triangle.fill" : "checkmark.circle")
-                            .foregroundStyle(agent.broken ? MCTheme.warning : MCTheme.success)
-                        VStack(alignment: .leading) {
-                            Text(agent.label).font(MCFont.secondaryBody)
-                            if let program = agent.programPath {
-                                Text(agent.broken ? L("performance.launchagents.missing", program) : program)
-                                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                                    .lineLimit(1).truncationMode(.middle)
-                            }
-                        }
-                        Spacer()
-                        Button {
-                            NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: agent.id)])
-                        } label: { Image(systemName: "magnifyingglass") }
-                        .buttonStyle(.borderless)
-                        .accessibilityLabel(L("common.reveal_in_finder"))
-                    }
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .onAppear { agents = LaunchAgentInspector.userAgents() }
     }
 
     private func formatUptime(_ seconds: Int64) -> String {
