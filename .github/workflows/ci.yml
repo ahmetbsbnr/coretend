@@ -52,6 +52,13 @@ jobs:
       - name: Design tokens (app and website agree)
         run: python3 Scripts/check-design-tokens.py
 
+      # There was no step publishing generated artwork to the site, so the two
+      # held different files: the app icon and Open Graph card were regenerated
+      # in a new palette while every favicon the site served stayed in the old
+      # one.
+      - name: Brand assets (app and website agree)
+        run: zsh Scripts/sync-brand-to-site.sh --check
+
       - name: Debug build
         run: Scripts/build.sh
 

@@ -136,6 +136,27 @@ stale=$(find "$GEN" -iname '*maccare*' 2>/dev/null || true)
 
 # The generator itself must stay in the repo: assets without their source are
 # assets nobody can change.
+# The generator must read the palette rather than restate it.
+#
+# It used to restate it, as float tuples with comments claiming each one
+# "mirrors MCColor.Canonical exactly". When the palette was replaced those
+# comments became false and nothing said so: the app icon, every favicon, the
+# DMG background and the Open Graph card kept being generated in the previous
+# palette — which is the identity a link preview shows before anyone has opened
+# the app. A comment asserting two files agree is not a mechanism.
+if grep -qE 'RGB\(r: *[0-9]' Resources/Brand/Sources/generate-brand-assets.swift; then
+  echo "FAIL — generate-brand-assets.swift hardcodes an RGB literal."
+  echo "       Colours must come from canonicalPalette(), which parses"
+  echo "       Sources/DesignSystem/Colors.swift. A restated value drifts silently."
+  grep -nE 'RGB\(r: *[0-9]' Resources/Brand/Sources/generate-brand-assets.swift
+  exit 1
+fi
+
+if ! grep -q 'canonicalPalette()' Resources/Brand/Sources/generate-brand-assets.swift; then
+  echo "FAIL — generate-brand-assets.swift no longer reads the canonical palette."
+  exit 1
+fi
+
 [ -f Resources/Brand/Sources/generate-brand-assets.swift ] \
   || note "the asset generator is missing — the generated files would be unreproducible"
 

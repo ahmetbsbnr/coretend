@@ -31,38 +31,100 @@ let arcs: [(start: Double, span: Double, radius: CGFloat)] = [
 ]
 let nucleusFraction: CGFloat = 0.24
 
-// MARK: - Porcelain / Slate / Teal palette
-//
-// These mirror MCColor.Canonical (Sources/DesignSystem/Colors.swift) exactly.
-// The symbol names are kept (`cobalt`, `cobaltBright`, …) so the generated
-// SVG/CSS custom-property names don't churn; the *values* are the identity.
+// MARK: - Palette, read from the one place that defines it
 
+/// The brand palette is **parsed from `Sources/DesignSystem/Colors.swift`**,
+/// not restated here.
+///
+/// It used to be restated, as float tuples with comments claiming each one
+/// "mirrors MCColor.Canonical exactly". When the palette was replaced those
+/// comments became false and nothing said so: the app icon, every favicon, the
+/// DMG background and the Open Graph card kept being generated in the previous
+/// Porcelain/Slate/Teal values, which is the identity a link preview shows
+/// before anyone has opened the app.
+///
+/// A comment asserting two files agree is not a mechanism. Reading the values
+/// is.
 struct RGB: Equatable {
     let r, g, b: CGFloat
     var hex: String {
         String(format: "#%02X%02X%02X", Int(r * 255 + 0.5), Int(g * 255 + 0.5), Int(b * 255 + 0.5))
     }
+
+    init(r: CGFloat, g: CGFloat, b: CGFloat) {
+        self.r = r; self.g = g; self.b = b
+    }
+
+    init(hex: UInt32) {
+        r = CGFloat((hex >> 16) & 0xFF) / 255
+        g = CGFloat((hex >> 8) & 0xFF) / 255
+        b = CGFloat(hex & 0xFF) / 255
+    }
 }
 
-let coreInk       = RGB(r: 0.1059, g: 0.1176, b: 0.1333) // #1B1E22 — Slate (Canonical.ink)
-let softPorcelain = RGB(r: 0.9647, g: 0.9569, b: 0.9373) // #F6F4EF — Porcelain (Canonical.paper)
-let mutedSlate    = RGB(r: 0.4941, g: 0.5333, b: 0.5804) // #7E8894 — neutral (Canonical.mutedSlate)
+/// Parses `public static let name: UInt32 = 0xRRGGBB` out of Colors.swift.
+///
+/// Fails loudly rather than falling back to a default. A brand generator that
+/// silently draws in the wrong colours is exactly the failure being fixed, and
+/// a default would reintroduce it in a new shape.
+func canonicalPalette() -> [String: RGB] {
+    let path = "Sources/DesignSystem/Colors.swift"
+    guard let source = try? String(contentsOfFile: path, encoding: .utf8) else {
+        FileHandle.standardError.write(Data("error: cannot read \(path) — run from the package root\n".utf8))
+        exit(1)
+    }
+    var palette: [String: RGB] = [:]
+    let pattern = try! NSRegularExpression(
+        pattern: #"public static let (\w+):\s*UInt32\s*=\s*0x([0-9A-Fa-f]{6})"#)
+    let range = NSRange(source.startIndex..., in: source)
+    for match in pattern.matches(in: source, range: range) {
+        guard let name = Range(match.range(at: 1), in: source),
+              let value = Range(match.range(at: 2), in: source),
+              let hex = UInt32(source[value], radix: 16) else { continue }
+        palette[String(source[name])] = RGB(hex: hex)
+    }
+    let required = ["ground", "teal", "tealBright", "tealDeep", "slate",
+                    "textPrimary", "webPaper", "webTealOnLight"]
+    let missing = required.filter { palette[$0] == nil }
+    guard missing.isEmpty else {
+        FileHandle.standardError.write(Data(
+            "error: \(path) is missing canonical colour(s): \(missing.joined(separator: ", "))\n".utf8))
+        exit(1)
+    }
+    return palette
+}
 
-// The one brand accent — oceanic teal — in three tonal steps. `cobalt` is
-// the canonical light-tuned teal; the others are same-hue lightness steps.
-let cobalt        = RGB(r: 0.0431, g: 0.4314, b: 0.4235) // #0B6E6C — Canonical.cobalt
-let cobaltBright  = RGB(r: 0.3725, g: 0.8275, b: 0.7765) // #5FD3C6 — dark-surface step (Canonical.cobaltBright)
-let cobaltDeep    = RGB(r: 0.0314, g: 0.3176, b: 0.3098) // #08514F — Canonical.cobaltDeep
-let cobaltDeepest = RGB(r: 0.0235, g: 0.2471, b: 0.2392) // #063F3D — light-surface third step (Canonical.cobaltDeepest)
+let palette = canonicalPalette()
+func canonical(_ name: String) -> RGB { palette[name]! }
 
-// Light-surface sibling for the subtitle/mutedSlate role only. Same hue,
-// lower luminance — see the divergence note in Colors.swift.
-let slateDeep = RGB(r: 0.2902, g: 0.3255, b: 0.3725)     // #4A5360 — Canonical.slateDeep
+/// The dark ground the mark is drawn on, and the app's canvas.
+let coreInk       = canonical("ground")
+/// The light surface, for the light-surface mark and the DMG background.
+let softPorcelain = canonical("webPaper")
+/// Neutral, for secondary type in the wordmark.
+let mutedSlate    = canonical("slate")
 
-// Three tonal steps of cobalt, lightest-to-boldest for dark, boldest-to-
-// darkest for light — an editorial one-colour mark, not three brand hues.
-let arcColorsDark  = [cobaltBright, cobalt, cobaltDeep]
-let arcColorsLight = [cobalt, cobaltDeep, cobaltDeepest]
+// The one brand accent in three tonal steps. `cobalt` keeps its symbol name so
+// the generated SVG/CSS custom-property names do not churn; its *value* is now
+// whatever Colors.swift says the light-surface teal is.
+let cobalt        = canonical("webTealOnLight")
+let cobaltBright  = canonical("teal")
+let cobaltDeep    = canonical("tealDeep")
+let cobaltDeepest = canonical("tealWash")
+
+/// Light-surface sibling for the subtitle role.
+let slateDeep     = canonical("slate")
+
+// Three tonal steps, lightest-to-boldest on dark and boldest-to-darkest on
+// light — an editorial one-colour mark, not three brand hues.
+//
+// All three steps must stay legible against the ground they sit on. The first
+// regeneration used `tealWash` (#0E3B38) as the third dark step: it is a
+// background tint, measures about 1.4:1 on the ground, and the third arc
+// simply vanished — a mark with two arcs where the design has three. The three
+// dark steps are now the three *foreground* teals.
+let arcColorsDark  = [canonical("tealBright"), canonical("teal"), canonical("tealDeep")]
+let arcColorsLight = [cobalt, cobaltDeep, canonical("slate")]
 
 func cgColor(_ c: RGB, _ a: CGFloat = 1) -> CGColor {
     CGColor(srgbRed: c.r, green: c.g, blue: c.b, alpha: a)
@@ -357,13 +419,16 @@ func dmgBackground(scale: Int = 1) -> CGImage {
     let f = CGFloat(scale)
     let ctx = makeContext(w, h)
 
-    // Paper, very slightly warmer at the top so the surface is not dead flat.
-    let paper = RGB(r: 0.9647, g: 0.9569, b: 0.9373) // #F6F4EF, Porcelain
-    let card  = RGB(r: 0.988, g: 0.984, b: 0.976)    // #FCFBF9, warm near-white
-    let ink   = RGB(r: 0.1059, g: 0.1176, b: 0.1333) // #1B1E22, Slate
-    let sub   = RGB(r: 0.2902, g: 0.3255, b: 0.3725) // #4A5360, slateDeep
-    let dim   = RGB(r: 0.4941, g: 0.5333, b: 0.5804) // #7E8894, mutedSlate
-    let cobalt = RGB(r: 0.0431, g: 0.4314, b: 0.4235) // #0B6E6C, teal accent
+    // The DMG window is a light surface — a Finder window, not the app — so it
+    // uses the web-light siblings rather than the app's ground.
+    let paper = softPorcelain
+    // A hair warmer than paper so the surface is not dead flat. Derived rather
+    // than declared: a literal here is a fifth colour nobody would find.
+    let card  = RGB(r: min(paper.r + 0.024, 1), g: min(paper.g + 0.028, 1), b: min(paper.b + 0.039, 1))
+    let ink   = canonical("webInk")
+    let sub   = canonical("slate")
+    let dim   = canonical("slate")
+    let cobalt = canonical("webTealOnLight")
 
     let bg = CGGradient(colorsSpace: CGColorSpace(name: CGColorSpace.sRGB)!,
                         colors: [cgColor(card), cgColor(paper)] as CFArray,
