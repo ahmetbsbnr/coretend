@@ -314,7 +314,7 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "palette.placeholder" = "Aller à…";
 "palette.no_results" = "Aucun résultat";
 "palette.scan_home" = "Analyser le dossier personnel avec Space Lens";
-"protection.tab.integrity" = "Intégrité";
+"protection.tab.integrity" = "Provenance";
 "settings.this_copy_signature" = "Signature de cette copie";
 "integrity.explainer.title" = "Des signaux natifs, pas un scanner";
 "integrity.explainer.body" = "CoreTend lit des informations que macOS enregistre déjà — aucun moteur d'analyse, aucune base de signatures, rien à télécharger. Vous voyez ce qui est déjà vrai sur vos téléchargements, vos applications et ce qui démarre à la connexion.";

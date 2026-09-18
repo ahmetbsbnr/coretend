@@ -314,7 +314,7 @@ Analysis only — deleting synced files would remove them on every device.";
 "palette.placeholder" = "Jump to…";
 "palette.no_results" = "No matches";
 "palette.scan_home" = "Scan Home with Space Lens";
-"protection.tab.integrity" = "Integrity";
+"protection.tab.integrity" = "Provenance";
 "settings.this_copy_signature" = "This copy's signature";
 "integrity.explainer.title" = "Native signals, not a scanner";
 "integrity.explainer.body" = "CoreTend reads information macOS already records — no scanning engine, no signature database, nothing downloaded. It shows you what is already true about your downloads, your apps, and what runs at login.";
