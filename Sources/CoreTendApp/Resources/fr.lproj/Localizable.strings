@@ -731,3 +731,4 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "apps.column_last_used" = "Dernier usage";
 "apps.column_source" = "Source";
 "apps.last_used_unknown_short" = "—";
+"integrity.inspect_this" = "Inspecter la signature";

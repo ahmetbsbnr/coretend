@@ -733,3 +733,4 @@ Analysis only — deleting synced files would remove them on every device.";
 "apps.column_last_used" = "Last used";
 "apps.column_source" = "Source";
 "apps.last_used_unknown_short" = "—";
+"integrity.inspect_this" = "Inspect Signature";

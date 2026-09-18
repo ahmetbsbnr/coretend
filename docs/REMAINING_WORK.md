@@ -36,9 +36,9 @@ Status: ☐ open · ☑ done · ⊘ blocked.
   without tiles, keyboard (↑↓ select, Return focus inspector).
 - ☑ D-03 Cleanup review as `Table` grouped by category.
 - ☑ D-04 Explore Map is a squarified treemap (breadcrumb + list existed); ☐ D-04b nested cells one level deep, ↑↓/Return on the map itself.
-- ☐ D-05 Duplicates decision workflow.
-- ☐ D-06 Applications `Table` + inspector + uninstall sheet.
-- ☐ D-07 Integrity provenance `Table`.
+- ☑ D-05 Duplicates decision workflow.
+- ☑ D-06 Applications `Table` + inspector + uninstall sheet.
+- ☑ D-07 Integrity provenance `Table`.
 - ☐ D-08 Performance time axis.
 - ☐ D-09 Settings final set.
 - ☐ D-10 Onboarding three steps.

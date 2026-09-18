@@ -101,105 +101,74 @@ struct IntegrityView: ModuleSubScreen {
     }
     @State private var model = IntegrityViewModel()
 
+    /// Provenance: where recent downloads came from, and what an app's
+    /// signature says. One dense list, one sentence of explanation, one
+    /// button to inspect any app. Login items moved to the "Starts at login"
+    /// tab, where they sit beside launch agents — the same question asked of
+    /// two mechanisms.
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: MCSpacing.md) {
-                explainerCard
-                downloadsCard
-                inspectorCard
-                loginItemsCard
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .firstTextBaseline, spacing: MCSpacing.md) {
+                Text(L("integrity.explainer.body")).font(MCFont.caption)
+                    .foregroundStyle(MCColor.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer()
+                Button(L("integrity.inspector.choose")) { chooseAppToInspect() }
+                    .buttonStyle(.bordered)
+                    .accessibilityIdentifier("integrity.inspect.choose")
             }
-            .padding(MCSpacing.page)
+            .padding(.horizontal, MCSpacing.page).padding(.vertical, MCSpacing.sm)
+            if let inspected = model.inspectedApp {
+                Divider()
+                signatureRow(name: inspected.url.lastPathComponent, info: inspected.info)
+                    .padding(.horizontal, MCSpacing.page).padding(.vertical, MCSpacing.xs)
+            }
+            Divider()
+            if model.downloads.isEmpty && !model.isLoading {
+                MCEmptyState(icon: "arrow.down.circle", title: L("integrity.downloads.title"),
+                             message: L("integrity.downloads.empty"))
+            } else {
+                List(model.downloads) { item in
+                    HStack(spacing: MCSpacing.xs) {
+                        Image(systemName: item.isQuarantined ? "checkmark.shield" : "doc")
+                            .foregroundStyle(item.isQuarantined ? MCTheme.success : MCColor.textTertiary)
+                            .frame(width: 16).accessibilityHidden(true)
+                        Text(item.name).lineLimit(1)
+                        if let location = ProvenanceSummary.location(for: item) {
+                            Text(location).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+                                .lineLimit(1).truncationMode(.middle)
+                        }
+                        Spacer(minLength: MCSpacing.xs)
+                        Text(ProvenanceSummary.acquisition(for: item)
+                             ?? (ProvenanceSummary.isUnknown(item) ? L("integrity.downloads.no_provenance") : ""))
+                            .font(MCFont.caption).foregroundStyle(MCColor.textTertiary)
+                            .lineLimit(evidenceLineLimit)
+                    }
+                    .accessibilityElement(children: .combine)
+                    .contextMenu {
+                        Button(L("common.reveal_in_finder")) {
+                            NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: item.path)])
+                        }
+                        if item.path.hasSuffix(".app") {
+                            Button(L("integrity.inspect_this")) { model.inspect(URL(fileURLWithPath: item.path)) }
+                        }
+                    }
+                }
+                .listStyle(.plain)
+                .environment(\.defaultMinListRowHeight, 28)
+                .accessibilityIdentifier("integrity.downloads")
+            }
         }
         .task { await model.refresh() }
     }
 
-    private var explainerCard: some View {
-        VStack(alignment: .leading, spacing: MCSpacing.sm) {
-            HStack(alignment: .top, spacing: MCSpacing.md) {
-                Image(systemName: "info.circle").font(MCFont.pageTitle).foregroundStyle(MCTheme.accent)
-                VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-                    Text(L("integrity.explainer.title")).font(MCFont.cardTitle)
-                    Text(L("integrity.explainer.body")).foregroundStyle(MCColor.textSecondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
-        }
-    }
-
-    private var downloadsCard: some View {
-        VStack(alignment: .leading, spacing: MCSpacing.sm) {
-            VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                HStack {
-                    Text(L("integrity.downloads.title")).font(MCFont.cardTitle)
-                    Spacer()
-                    if model.isLoading { ProgressView().controlSize(.small) }
-                }
-                if model.downloads.isEmpty && !model.isLoading {
-                    Text(L("integrity.downloads.empty")).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                }
-                ForEach(model.downloads.prefix(25)) { item in
-                    HStack(alignment: .top) {
-                        Image(systemName: item.isQuarantined ? "shield.checkerboard" : "doc")
-                            .foregroundStyle(item.isQuarantined ? MCTheme.accent : .secondary)
-                        VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-                            Text(item.name).font(MCFont.rowTitle).lineLimit(1)
-                            if let location = ProvenanceSummary.location(for: item) {
-                                Text(location).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                                    .lineLimit(1).truncationMode(.middle)
-                            }
-                            // Which app brought the file in and when. macOS
-                            // records this for almost everything, and the list
-                            // showed none of it — see ProvenanceSummary.
-                            if let acquisition = ProvenanceSummary.acquisition(for: item) {
-                                Text(acquisition).font(MCFont.micro).foregroundStyle(MCColor.textTertiary)
-                                    // Wraps rather than truncates at
-                                    // accessibility sizes — see CleanupView.
-                                    .lineLimit(evidenceLineLimit)
-                            }
-                            if ProvenanceSummary.isUnknown(item) {
-                                Text(L("integrity.downloads.no_provenance"))
-                                    .font(MCFont.caption).foregroundStyle(MCColor.textTertiary)
-                            }
-                        }
-                        Spacer()
-                        Button {
-                            NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: item.path)])
-                        } label: { Image(systemName: "magnifyingglass") }
-                        .buttonStyle(.borderless)
-                        .accessibilityLabel(L("common.reveal_in_finder"))
-                    }
-                    .accessibilityElement(children: .combine)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .accessibilityIdentifier("integrity.downloads")
-    }
-
-    private var inspectorCard: some View {
-        VStack(alignment: .leading, spacing: MCSpacing.sm) {
-            VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                Text(L("integrity.inspector.title")).font(MCFont.cardTitle)
-                Text(L("integrity.inspector.subtitle")).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                Button(L("integrity.inspector.choose")) {
-                    let panel = NSOpenPanel()
-                    panel.canChooseDirectories = false
-                    panel.canChooseFiles = true
-                    panel.allowedContentTypes = [.application]
-                    panel.directoryURL = URL(fileURLWithPath: "/Applications")
-                    if panel.runModal() == .OK, let url = panel.url {
-                        model.inspect(url)
-                    }
-                }
-                .accessibilityIdentifier("integrity.inspect.choose")
-                if let inspected = model.inspectedApp {
-                    signatureRow(name: inspected.url.lastPathComponent, info: inspected.info)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .accessibilityIdentifier("integrity.inspector")
+    private func chooseAppToInspect() {
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = false
+        panel.canChooseFiles = true
+        panel.allowedContentTypes = [.application]
+        panel.directoryURL = URL(fileURLWithPath: "/Applications")
+        if panel.runModal() == .OK, let url = panel.url { model.inspect(url) }
     }
 
     @ViewBuilder
@@ -222,31 +191,4 @@ struct IntegrityView: ModuleSubScreen {
         .accessibilityElement(children: .combine)
     }
 
-    private var loginItemsCard: some View {
-        VStack(alignment: .leading, spacing: MCSpacing.sm) {
-            VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                Text(L("integrity.login_items.title")).font(MCFont.cardTitle)
-                Text(L("integrity.login_items.subtitle")).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                if model.loginItems.isEmpty && !model.isLoading {
-                    Text(L("integrity.login_items.empty")).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                }
-                ForEach(model.loginItems) { item in
-                    HStack {
-                        Image(systemName: "power").foregroundStyle(MCColor.textSecondary)
-                        VStack(alignment: .leading) {
-                            Text(item.label).font(MCFont.rowTitle).lineLimit(1)
-                            if let program = item.programPath {
-                                Text(program).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                                    .lineLimit(1).truncationMode(.middle)
-                            }
-                        }
-                        Spacer()
-                    }
-                    .accessibilityElement(children: .combine)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        .accessibilityIdentifier("integrity.login_items")
-    }
 }
