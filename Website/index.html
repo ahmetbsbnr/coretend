@@ -24,16 +24,16 @@
 @font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:500;font-display:swap;src:url("/assets/fonts/plexmono-500-latin.woff2") format("woff2")}
 @font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:600;font-display:swap;src:url("/assets/fonts/plexmono-600-latin.woff2") format("woff2")}
 :root{
-  --paper:var(--ct-paper,#f6f4ef);
+  --paper:var(--ct-webPaper);
   --paper-2:#eee9e0;
   --paper-3:#e4ded1;
-  --ink:var(--ct-ink,#1b1e22);
+  --ink:var(--ct-webInk);
   --ink-2:#4a535f;
   --ink-3:#5b6470;
   --line:#e0dccf;
   --line-strong:#b6b1a0;
-  --cobalt:var(--ct-cobalt,#0b6e6c);
-  --cobalt-deep:var(--ct-cobaltDeep,#08514f);
+  --cobalt:var(--ct-webTealOnLight);
+  --cobalt-deep:var(--ct-tealDeep);
   --cobalt-lift:#0e7c7b;
   --cobalt-wash:rgba(11,110,108,.10);
   --on-cobalt:#fff;
@@ -54,23 +54,23 @@
   --sweep:rgba(11,110,108,.5);
 }
 html[data-theme="dark"]{
-  --paper:#16191e;
-  --paper-2:#1c2026;
-  --paper-3:#232830;
-  --ink:#ecebe4;
-  --ink-2:#a7abb5;
-  --ink-3:#858c99;
-  --line:#262b33;
-  --line-strong:#3b414d;
-  --cobalt:#5fd3c6;
-  --cobalt-deep:#1f6f68;
-  --cobalt-lift:#a7e6de;
-  --cobalt-wash:rgba(95,211,198,.13);
-  --on-cobalt:#10221f;
-  --safe:#43c98c;
-  --caution:#e0aa4a;
-  --panel:#161a20;
-  --panel-2:#1c212a;
+  --paper:var(--ct-ground);
+  --paper-2:var(--ct-sunken);
+  --paper-3:var(--ct-raised);
+  --ink:var(--ct-textPrimary);
+  --ink-2:var(--ct-textSecondary);
+  --ink-3:var(--ct-textTertiary);
+  --line:var(--ct-border);
+  --line-strong:var(--ct-raisedHigh);
+  --cobalt:var(--ct-teal);
+  --cobalt-deep:var(--ct-tealDeep);
+  --cobalt-lift:var(--ct-tealBright);
+  --cobalt-wash:var(--ct-tealWash);
+  --on-cobalt:var(--ct-ground);
+  --safe:var(--ct-green);
+  --caution:var(--ct-amber);
+  --panel:var(--ct-sunken);
+  --panel-2:var(--ct-raised);
   --shadow:0 1px 2px rgba(0,0,0,.5), 0 20px 50px -26px rgba(0,0,0,.9);
   --shadow-lift:0 2px 8px rgba(0,0,0,.5), 0 44px 90px -40px rgba(0,0,0,1);
   --sweep:rgba(95,211,198,.55);

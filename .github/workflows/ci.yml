@@ -45,6 +45,13 @@ jobs:
       - name: Markdown link check (zero broken internal links/anchors)
         run: python3 Scripts/check-markdown-links.py
 
+      # CLAUDE.md names the app's design system as the single source of truth
+      # for the website's visual language. Nothing enforced it: the exporter
+      # silently produced zero colours for an entire redesign while the site
+      # kept serving the previous palette.
+      - name: Design tokens (app and website agree)
+        run: python3 Scripts/check-design-tokens.py
+
       - name: Debug build
         run: Scripts/build.sh
 

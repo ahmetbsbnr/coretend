@@ -116,6 +116,28 @@ public enum MCColor {
         /// `#8794A0` — inert, structural, "not the primary action".
         public static let slate: UInt32 = 0x8794A0
 
+        // MARK: Light surfaces — published for the website only
+        //
+        // The app renders on `ground` and has no light palette; that is settled
+        // and `AppAppearance` explains why. The marketing site is a different
+        // surface: long-form text someone reads in a browser, where taking away
+        // the light theme is a real cost for no product benefit.
+        //
+        // So the site keeps both themes, and these three values exist so that
+        // its light theme still has a source of truth in this file rather than
+        // three hex literals in a stylesheet nobody cross-checks. Its dark
+        // theme maps to the tokens above, so it is the app's palette exactly.
+        //
+        // `webTealOnLight` is a darkened sibling: the brand teal is tuned for a
+        // dark ground and measures under 2:1 on paper.
+
+        /// `#F6F4EF` — the site's light canvas.
+        public static let webPaper: UInt32 = 0xF6F4EF
+        /// `#1B1E22` — text on the light canvas. 14.9:1.
+        public static let webInk: UInt32 = 0x1B1E22
+        /// `#0B6E6C` — the accent on the light canvas. 5.0:1.
+        public static let webTealOnLight: UInt32 = 0x0B6E6C
+
         // MARK: Data visualisation
         //
         // Space Lens needs several swatches legible at once. Tonal steps of
