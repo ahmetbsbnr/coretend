@@ -18,18 +18,11 @@ public struct MCCard<Content: View>: View {
     }
 
     public var body: some View {
-        // Read directly (not via @Environment — macOS SwiftUI has no
-        // accessibilityIncreaseContrast environment key); Observation
-        // tracks this read and re-renders the card when the system
-        // setting changes, same effect as an environment value.
-        let increaseContrast = MCAccessibilityState.shared.increaseContrast
-        let shape = RoundedRectangle(cornerRadius: MCRadius.card)
+        // One surface implementation for the whole app — see `mcSurface`. This
+        // type is now just "a raised surface with standard padding".
         content
             .padding(MCSpacing.md)
-            .background(shape.fill(MCColor.elevatedBackground))
-            .overlay(shape.strokeBorder(MCColor.separator.opacity(increaseContrast ? 1.0 : 0.8),
-                                         lineWidth: increaseContrast ? 1.5 : 1))
-            .shadow(color: .black.opacity(0.16), radius: 5, x: 0, y: 2)
+            .mcSurface(.raised)
     }
 }
 

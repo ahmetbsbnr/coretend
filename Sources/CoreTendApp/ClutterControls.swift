@@ -27,7 +27,7 @@ struct MCSearchField: View {
             }
         }
         .padding(.horizontal, MCSpacing.xs).padding(.vertical, 4)
-        .background(MCColor.elevatedBackground, in: RoundedRectangle(cornerRadius: MCRadius.small))
+        .mcSurface(.raised, radius: MCRadius.small)
         .frame(width: 220)
         .accessibilityLabel(placeholder)
     }

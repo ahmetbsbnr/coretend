@@ -534,3 +534,89 @@ public extension ButtonStyle where Self == MCSecondaryButtonStyle {
 public extension ButtonStyle where Self == MCDestructiveButtonStyle {
     static var mcDestructive: MCDestructiveButtonStyle { MCDestructiveButtonStyle() }
 }
+
+// MARK: - Surfaces
+
+/// Where a surface sits in the elevation ladder.
+///
+/// `MCColor` defines four ground-to-raised steps and documents them as a
+/// ladder, but views were assembling surfaces by hand — a fill, a stroke, a
+/// radius and sometimes a shadow, restated at each site with small differences
+/// nobody chose. `MCCard` existed and was used eleven times; the Dashboard
+/// alone hand-rolled five more with a different radius and no shadow.
+///
+/// Naming the level rather than the colour means a view says how far forward
+/// something sits, and the ladder stays a ladder.
+public enum MCElevation {
+    /// Recessed: the sidebar, inset wells.
+    case sunken
+    /// The default raised surface: cards, rows, popovers.
+    case raised
+    /// One step further forward: a hovered or selected row inside a card.
+    case raisedHigh
+    /// Raised, and tinted with the accent — reserved for the one panel a
+    /// screen is built around.
+    case feature
+
+    var fill: Color {
+        switch self {
+        case .sunken: MCColor.secondaryBackground
+        case .raised: MCColor.elevatedBackground
+        case .raisedHigh: MCColor.elevatedHighBackground
+        case .feature: MCColor.elevatedBackground
+        }
+    }
+
+    /// Only the feature surface carries a shadow. A shadow on every card makes
+    /// none of them read as raised.
+    var shadowOpacity: Double {
+        switch self {
+        case .feature: 0.22
+        case .raised: 0.16
+        case .sunken, .raisedHigh: 0
+        }
+    }
+
+    var strokeColor: Color {
+        self == .feature ? MCColor.teal.opacity(0.35) : MCColor.separator
+    }
+}
+
+public extension View {
+    /// Applies one step of the elevation ladder: fill, hairline, and shadow if
+    /// the level has one.
+    ///
+    /// Increase Contrast strengthens the hairline rather than the fill —
+    /// brightening surfaces would flatten the ladder, which is the opposite of
+    /// what someone turning that setting on is asking for.
+    func mcSurface(_ level: MCElevation = .raised,
+                   radius: CGFloat = MCRadius.card) -> some View {
+        modifier(MCSurfaceModifier(level: level, radius: radius))
+    }
+}
+
+private struct MCSurfaceModifier: ViewModifier {
+    let level: MCElevation
+    let radius: CGFloat
+
+    func body(content: Content) -> some View {
+        // Read directly rather than via @Environment: macOS SwiftUI has no
+        // accessibilityIncreaseContrast environment key. Observation tracks
+        // this read and re-renders when the system setting changes.
+        let increaseContrast = MCAccessibilityState.shared.increaseContrast
+        let shape = RoundedRectangle(cornerRadius: radius)
+        return content
+            .background {
+                shape.fill(level.fill)
+                if level == .feature {
+                    shape.fill(LinearGradient(
+                        colors: [MCColor.teal.opacity(0.12), MCColor.teal.opacity(0.02)],
+                        startPoint: .topLeading, endPoint: .bottomTrailing))
+                }
+            }
+            .overlay(shape.strokeBorder(
+                level.strokeColor.opacity(increaseContrast ? 1.0 : 0.8),
+                lineWidth: increaseContrast ? 1.5 : 1))
+            .shadow(color: .black.opacity(level.shadowOpacity), radius: 5, x: 0, y: 2)
+    }
+}

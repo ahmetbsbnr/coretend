@@ -151,17 +151,9 @@ struct DashboardView: View {
         }
         .padding(MCSpacing.xl)
         .frame(maxWidth: .infinity, alignment: .leading)
-        // Teal wash sits in front of the solid card fill (it is semi-transparent),
-        // so the panel reads as tinted, not as a flat elevated surface.
-        .background(
-            LinearGradient(colors: [MCColor.teal.opacity(0.12), MCColor.teal.opacity(0.02)],
-                           startPoint: .topLeading, endPoint: .bottomTrailing),
-            in: RoundedRectangle(cornerRadius: MCRadius.card))
-        .background(MCColor.elevatedBackground, in: RoundedRectangle(cornerRadius: MCRadius.card))
-        .overlay(
-            RoundedRectangle(cornerRadius: MCRadius.card)
-                .strokeBorder(MCColor.teal.opacity(0.45), lineWidth: 1.5))
-        .shadow(color: .black.opacity(0.18), radius: 10, x: 0, y: 3)
+        // The one panel this screen is built around, so the one surface that
+        // carries the accent tint and a shadow.
+        .mcSurface(.feature)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("dashboard.storage")
     }
@@ -249,10 +241,7 @@ struct DashboardView: View {
         .padding(.horizontal, MCSpacing.sm)
         .padding(.vertical, MCSpacing.xs)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(MCColor.elevatedBackground, in: RoundedRectangle(cornerRadius: MCRadius.small))
-        .overlay(
-            RoundedRectangle(cornerRadius: MCRadius.small)
-                .strokeBorder(MCColor.separator.opacity(0.8), lineWidth: 1))
+        .mcSurface(.raised, radius: MCRadius.small)
         .accessibilityElement(children: .combine)
     }
 

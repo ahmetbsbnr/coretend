@@ -541,3 +541,58 @@ struct ButtonStyleAssignmentTests {
                 "teal and coral fills are too close in luminance to tell apart in greyscale")
     }
 }
+
+/// Raised surfaces go through one implementation.
+@Suite("Surface system")
+struct SurfaceSystemTests {
+    private let root = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+
+    private func viewSources() throws -> [(name: String, text: String)] {
+        var out: [(String, String)] = []
+        for relative in ["Sources/CoreTendApp", "Sources/DesignSystem"] {
+            let dir = root.appendingPathComponent(relative)
+            for name in try FileManager.default.contentsOfDirectory(atPath: dir.path)
+                // Components.swift is where the one implementation lives.
+                where name.hasSuffix(".swift") && name != "Components.swift" {
+                out.append((name, try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)))
+            }
+        }
+        return out
+    }
+
+    /// No view paints its own card. `MCCard` existed and was used eleven times
+    /// while the Dashboard alone hand-rolled five more surfaces with a
+    /// different radius, a different stroke opacity and no shadow — none of
+    /// those differences chosen, all of them visible.
+    @Test func noViewPaintsItsOwnRaisedSurface() throws {
+        for file in try viewSources() {
+            for line in file.text.split(separator: "\n") {
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                guard !trimmed.hasPrefix("//") else { continue }
+                #expect(!trimmed.contains("MCColor.elevatedBackground, in: RoundedRectangle"),
+                        "\(file.name) builds its own surface — use .mcSurface(): \(trimmed)")
+            }
+        }
+    }
+
+    /// Only the feature surface carries a shadow, and only one surface per
+    /// screen should be a feature. A shadow on every card makes none of them
+    /// read as raised.
+    @Test func onlyTheFeatureSurfaceCastsAStrongShadow() {
+        #expect(MCElevation.feature.shadowOpacity > MCElevation.raised.shadowOpacity)
+        #expect(MCElevation.sunken.shadowOpacity == 0)
+        #expect(MCElevation.raisedHigh.shadowOpacity == 0,
+                "a hovered row is a row, not a floating object")
+    }
+
+    /// The feature surface is the only one that borrows the accent for its
+    /// edge; everything else uses the neutral hairline, or the accent stops
+    /// meaning "this is the thing".
+    @Test func onlyTheFeatureSurfaceUsesTheAccentForItsEdge() {
+        for level in [MCElevation.sunken, .raised, .raisedHigh] {
+            #expect(level.strokeColor == MCColor.separator, "\(level) borrows the accent")
+        }
+        #expect(MCElevation.feature.strokeColor != MCColor.separator)
+    }
+}

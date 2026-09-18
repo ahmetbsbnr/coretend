@@ -387,7 +387,7 @@ struct DuplicatesView: View {
                             Image(nsImage: NSWorkspace.shared.icon(forFile: member.url.path))
                                 .resizable().frame(width: 32, height: 32)
                                 .padding(MCSpacing.xxs)
-                                .background(MCColor.elevatedBackground, in: RoundedRectangle(cornerRadius: MCRadius.small))
+                                .mcSurface(.raised, radius: MCRadius.small)
                         }
                         .padding(.vertical, MCSpacing.xxs)
                         ForEach(group.urls, id: \.path) { url in

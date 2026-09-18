@@ -324,7 +324,7 @@ struct CleanupView: View {
                 }
                 .padding(MCSpacing.sm)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(MCColor.elevatedBackground, in: RoundedRectangle(cornerRadius: MCRadius.card))
+                .mcSurface(.raised)
                 .overlay(
                     RoundedRectangle(cornerRadius: MCRadius.card)
                         .stroke(MCTheme.warning.opacity(0.5), lineWidth: 1))
