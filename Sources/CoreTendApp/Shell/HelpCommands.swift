@@ -31,7 +31,21 @@ struct CoreTendHelpCommands: Commands {
         // Every item here was a hardcoded English string. The app ships in
         // French and English and localizes 540 keys; the Help menu — the one
         // menu a confused user opens — was not among them.
+        // File › Export the Record. The same export the Record's own menu
+        // offers, reached from the menu bar: it navigates there and asks the
+        // Record to run it, so there is one implementation, not two.
+        CommandGroup(after: .newItem) {
+            Button(L("menu.file.export_record")) {
+                NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.record)
+                NotificationCenter.default.post(name: .mcExportRecord, object: nil)
+            }
+            .keyboardShortcut("e", modifiers: [.command, .shift])
+        }
         CommandGroup(replacing: .help) {
+            Button(L("menu.help.welcome")) {
+                NotificationCenter.default.post(name: .mcShowOnboarding, object: nil)
+            }
+            Divider()
             Button(L("menu.help.app")) {
                 NSWorkspace.shared.open(site.appending(path: "support#documentation"))
             }

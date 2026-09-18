@@ -10,5 +10,7 @@ extension Notification.Name {
     static let mcNavigate = Notification.Name("mc.navigate")
     static let mcShowOnboarding = Notification.Name("mc.showOnboarding")
     static let mcShowCommandPalette = Notification.Name("mc.showCommandPalette")
+    /// Asks the Record to run its CSV export. Posted by File › Export Record.
+    static let mcExportRecord = Notification.Name("mc.exportRecord")
     static let mcShowKeyboardShortcuts = Notification.Name("mc.showKeyboardShortcuts")
 }

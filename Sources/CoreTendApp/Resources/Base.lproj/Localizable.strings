@@ -670,3 +670,5 @@ Analysis only — deleting synced files would remove them on every device.";
 "onboarding.start.applications" = "What is installed, and what each app leaves behind.";
 "onboarding.move.title" = "CoreTend is running from a temporary place";
 "onboarding.move.body" = "Move it to Applications so macOS keeps its permissions and it stays in Launchpad.";
+"menu.file.export_record" = "Export Record as CSV…";
+"menu.help.welcome" = "Welcome to CoreTend…";

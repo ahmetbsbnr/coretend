@@ -20,7 +20,7 @@
 "common.clear" = "Effacer";
 
 /* Sidebar */
-"sidebar.free_up_space" = "Libérer de l'espace";
+"sidebar.free_up_space" = "Libérer de l’espace";
 "sidebar.optimize" = "Optimiser";
 "sidebar.protect" = "Intégrité";
 "sidebar.activity" = "Activité";
@@ -46,8 +46,8 @@
 "cleanup.failed" = "Échec du nettoyage : %@";
 "cleanup.idle.title" = "Trouver les fichiers à examiner";
 "cleanup.idle.subtitle" = "Analyse les caches, journaux, rapports de plantage et fichiers de compilation Xcode.
-Rien n'est supprimé pendant l'analyse.";
-"cleanup.start_scan" = "Démarrer l'analyse";
+Rien n’est supprimé pendant l’analyse.";
+"cleanup.start_scan" = "Démarrer l’analyse";
 "cleanup.scanning_progress" = "%d éléments analysés — %@ trouvés";
 "cleanup.review.selected" = "%d éléments — %@ sélectionnés";
 "cleanup.review.truncated" = "%d sur %d affichés — %@ trouvés au total";
@@ -66,12 +66,12 @@ Rien n'est supprimé pendant l'analyse.";
 "spacelens.delete.error_title" = "Échec du déplacement vers la Corbeille";
 "spacelens.delete.error_message" = "« %@ » n’a pas été déplacé — il a peut-être déjà disparu, ou se trouve hors du dossier analysé.";
 "spacelens.idle.title" = "Voir où va l’espace";
-"spacelens.idle.subtitle" = "Construit une carte de taille interactive. Analyse uniquement — rien n'est modifié.";
+"spacelens.idle.subtitle" = "Construit une carte de taille interactive. Analyse uniquement — rien n’est modifié.";
 "spacelens.scan_home" = "Analyser le dossier personnel";
 "spacelens.choose_folder" = "Choisir un dossier…";
 "spacelens.scanning_progress" = "%d éléments mesurés…";
 "spacelens.new_scan" = "Nouvelle analyse";
-"spacelens.up" = "Remonter d'un niveau";
+"spacelens.up" = "Remonter d’un niveau";
 "spacelens.treemap.a11y_summary" = "%d éléments, %@ au total.";
 "spacelens.treemap.accessibility" = "Carte du disque. Utilisez la liste ci-dessous pour naviguer au clavier.";
 "spacelens.fragment.help" = "%@ — %@";
@@ -118,7 +118,7 @@ Rien n'est supprimé pendant l'analyse.";
 "clutter.title" = "Plus volumineux et plus anciens";
 "clutter.idle.title" = "Trouvez les fichiers volumineux et oubliés";
 "clutter.idle.subtitle" = "Analyse Téléchargements, Documents, Bureau et les dossiers média.
-Rien n'est jamais supprimé automatiquement — vous examinez et agissez dans le Finder.";
+Rien n’est jamais supprimé automatiquement — vous examinez et agissez dans le Finder.";
 "clutter.larger_than" = "Plus grand que";
 "clutter.size.50mb" = "50 Mo";
 "clutter.size.100mb" = "100 Mo";
@@ -157,13 +157,13 @@ Rien n'est jamais supprimé automatiquement — vous examinez et agissez dans le
 "updates.loading" = "Lecture des mécanismes de mise à jour…";
 "updates.version_source" = "v%@ — %@";
 "updates.open_app_store" = "Ouvrir les mises à jour App Store";
-"updates.open_app" = "Ouvrir l'application pour mettre à jour";
-"updates.footer" = "CoreTend détecte le canal de mise à jour propre à chaque application et vous y redirige. Il ne télécharge ni ne remplace jamais les binaires d'applications lui-même.";
+"updates.open_app" = "Ouvrir l’application pour mettre à jour";
+"updates.footer" = "CoreTend détecte le canal de mise à jour propre à chaque application et vous y redirige. Il ne télécharge ni ne remplace jamais les binaires d’applications lui-même.";
 
 /* Leftovers */
-"leftovers.idle.title" = "Trouvez les résidus d'applications supprimées";
-"leftovers.idle.subtitle" = "Recherche les données de support dont l'application n'est plus installée.
-La correspondance est prudente ; rien n'est présélectionné.";
+"leftovers.idle.title" = "Trouvez les résidus d’applications supprimées";
+"leftovers.idle.subtitle" = "Recherche les données de support dont l’application n’est plus installée.
+La correspondance est prudente ; rien n’est présélectionné.";
 "leftovers.scan" = "Rechercher les résidus";
 "leftovers.scanning" = "Analyse en cours…";
 "leftovers.none_found" = "Aucun résidu trouvé";
@@ -172,12 +172,12 @@ La correspondance est prudente ; rien n'est présélectionné.";
 "leftovers.select_item" = "Sélectionner %@";
 "leftovers.shared_ambiguous_a11y" = "partagé ou ambigu";
 "leftovers.shared_review" = "Partagé / à vérifier";
-"leftovers.not_installed" = "%@ — l'application avec cet identifiant n'est plus installée";
+"leftovers.not_installed" = "%@ — l’application avec cet identifiant n’est plus installée";
 
 /* Privacy Cleaner */
 "privacy.detecting" = "Détection des profils de navigateur…";
 "privacy.empty.title" = "Aucune donnée de navigateur trouvée";
-"privacy.empty.subtitle" = "Les données Safari nécessitent l'accès complet au disque ; les profils Chrome et Firefox sont détectés automatiquement s'ils sont présents.";
+"privacy.empty.subtitle" = "Les données Safari nécessitent l’accès complet au disque ; les profils Chrome et Firefox sont détectés automatiquement s’ils sont présents.";
 "privacy.finished.moved" = "%@ de caches déplacés vers la Corbeille";
 "privacy.running_warning" = "%@ est en cours d’exécution, donc certains de ses fichiers de cache sont verrouillés. Quittez-le d’abord pour les inclure.";
 "privacy.caches_selected" = "Caches de navigateur — %@ sélectionnés";
@@ -186,7 +186,7 @@ La correspondance est prudente ; rien n'est présélectionné.";
 "privacy.cache_size" = "Cache %@";
 "privacy.history_size" = "Historique %@";
 "privacy.cookies_size" = "Cookies %@";
-"privacy.footer" = "Seuls les caches sont nettoyés (reconstruits automatiquement, déplacés vers la Corbeille). Historique, cookies et sessions sont affichés à titre indicatif ; leur suppression n'est pas encore prise en charge pour éviter de corrompre les bases de données du navigateur ou de vous déconnecter.";
+"privacy.footer" = "Seuls les caches sont nettoyés (reconstruits automatiquement, déplacés vers la Corbeille). Historique, cookies et sessions sont affichés à titre indicatif ; leur suppression n’est pas encore prise en charge pour éviter de corrompre les bases de données du navigateur ou de vous déconnecter.";
 
 /* Duplicates */
 "dupes.idle.title" = "Trouver les fichiers en double";
@@ -195,7 +195,7 @@ Une copie de chaque groupe est toujours conservée — la suggestion est modifia
 Les liens physiques vers le même fichier représentent déjà les mêmes données et ne sont jamais comptés comme doublons.";
 "dupes.find" = "Rechercher les doublons";
 "dupes.comparing" = "Comparaison de %d sur %d candidats";
-"dupes.building_inventory" = "Construction de l'inventaire des fichiers…";
+"dupes.building_inventory" = "Construction de l’inventaire des fichiers…";
 "dupes.none_found" = "Aucun doublon trouvé";
 "dupes.results.summary" = "%d groupes — %@ sélectionnés sur %@ en double";
 "dupes.move_to_trash" = "Déplacer les copies vers la Corbeille";
@@ -206,12 +206,12 @@ Les liens physiques vers le même fichier représentent déjà les mêmes donné
 
 /* Similar Images */
 "similar.idle.title" = "Trouver les images visuellement similaires";
-"similar.idle.subtitle" = "Utilise l'analyse Vision sur l'appareil de Photos, Téléchargements et Bureau.
-Les bibliothèques Photos ne sont jamais touchées. Examinez dans le Finder ; rien n'est supprimé ici.";
+"similar.idle.subtitle" = "Utilise l’analyse Vision sur l’appareil de Photos, Téléchargements et Bureau.
+Les bibliothèques Photos ne sont jamais touchées. Examinez dans le Finder ; rien n’est supprimé ici.";
 "similar.analyze" = "Analyser les images";
 "similar.analyzing" = "Analyse de %d sur %d images";
 "similar.collecting" = "Collecte des images…";
-"similar.none_found" = "Aucun groupe d'images similaires trouvé";
+"similar.none_found" = "Aucun groupe d’images similaires trouvé";
 "similar.analyze_again" = "Analyser à nouveau";
 "similar.group_header" = "%d similaires — %@";
 "similar.best_resolution" = "Meilleure résolution";
@@ -227,12 +227,12 @@ Les bibliothèques Photos ne sont jamais touchées. Examinez dans le Finder ; ri
 /* Cloud Cleanup */
 "cloud.nav_title" = "Cloud Cleanup";
 "cloud.empty.title" = "Aucun dossier cloud trouvé";
-"cloud.empty.subtitle" = "Les dossiers locaux d'iCloud Drive, Dropbox, Google Drive et OneDrive sont détectés automatiquement s'ils sont présents.";
-"cloud.measuring" = "Mesure de l'empreinte locale…";
+"cloud.empty.subtitle" = "Les dossiers locaux d’iCloud Drive, Dropbox, Google Drive et OneDrive sont détectés automatiquement s’ils sont présents.";
+"cloud.measuring" = "Mesure de l’empreinte locale…";
 "cloud.picker.title" = "Empreinte cloud sur ce Mac";
-"cloud.picker.subtitle" = "Indique quels fichiers synchronisés occupent réellement de l'espace disque sur ce Mac.
+"cloud.picker.subtitle" = "Indique quels fichiers synchronisés occupent réellement de l’espace disque sur ce Mac.
 Analyse uniquement — supprimer des fichiers synchronisés les retirerait de tous les appareils.";
-"cloud.results.summary" = "%@ sur ce Mac sur %@ au total — analyse uniquement, rien n'est téléchargé ni supprimé";
+"cloud.results.summary" = "%@ sur ce Mac sur %@ au total — analyse uniquement, rien n’est téléchargé ni supprimé";
 "cloud.back" = "Retour";
 "cloud.local_bytes" = "%@ en local";
 "cloud.total_bytes" = "%@ au total";
@@ -257,10 +257,10 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "performance.memory_pressure" = "Pression mémoire";
 "performance.thermal_state" = "État thermique";
 "performance.uptime" = "Disponibilité";
-"performance.chart_a11y" = "Graphique d'utilisation du CPU, actuellement %d pour cent";
+"performance.chart_a11y" = "Graphique d’utilisation du CPU, actuellement %d pour cent";
 "performance.collecting_samples" = "Collecte des échantillons…";
 "performance.launchagents.title" = "Agents de connexion (LaunchAgents)";
-"performance.launchagents.subtitle" = "Agents tiers lancés à la connexion (~/Library/LaunchAgents). Les entrées rompues pointent vers des programmes qui n'existent plus. Inspection uniquement — désactivez-les dans Réglages Système › Éléments de connexion.";
+"performance.launchagents.subtitle" = "Agents tiers lancés à la connexion (~/Library/LaunchAgents). Les entrées rompues pointent vers des programmes qui n’existent plus. Inspection uniquement — désactivez-les dans Réglages Système › Éléments de connexion.";
 "performance.launchagents.empty" = "Aucun LaunchAgent utilisateur.";
 "performance.launchagents.missing" = "manquant : %@";
 
@@ -271,7 +271,7 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "onboarding.language.title" = "Langue";
 "settings.general" = "Général";
 "settings.show_menu_bar" = "Afficher CoreTend dans la barre de menus";
-"settings.menu_bar_detail" = "L'élément de la barre de menus n'échantillonne les métriques système que lorsque son panneau est ouvert, ou toutes les 30 s en arrière-plan pour afficher l'indicateur d'attention.";
+"settings.menu_bar_detail" = "L’élément de la barre de menus n’échantillonne les métriques système que lorsque son panneau est ouvert, ou toutes les 30 s en arrière-plan pour afficher l’indicateur d’attention.";
 "settings.installed" = "Installé";
 "settings.not_installed" = "Non installé";
 "settings.full_disk_access" = "Accès complet au disque";
@@ -284,9 +284,9 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "settings.add_folder" = "Ajouter un dossier…";
 "settings.data" = "Données";
 "settings.export_diagnostic" = "Exporter un rapport de diagnostic…";
-"settings.export_diagnostic_detail" = "Génère un rapport anonymisé (versions, états de permission, compteurs) pour le dépannage. Aucun nom d'utilisateur, chemin, nom de fichier ou liste d'applications n'est inclus. Vous le relisez avant de l'enregistrer.";
+"settings.export_diagnostic_detail" = "Génère un rapport anonymisé (versions, états de permission, compteurs) pour le dépannage. Aucun nom d’utilisateur, chemin, nom de fichier ou liste d’applications n’est inclus. Vous le relisez avant de l’enregistrer.";
 "diagnostic.title" = "Rapport de diagnostic";
-"diagnostic.review_notice" = "Vérifiez toujours le contenu avant de le publier sur GitHub ou de l'envoyer à qui que ce soit.";
+"diagnostic.review_notice" = "Vérifiez toujours le contenu avant de le publier sur GitHub ou de l’envoyer à qui que ce soit.";
 "diagnostic.save" = "Enregistrer…";
 "settings.about" = "À propos";
 "settings.version" = "Version";
@@ -317,12 +317,12 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "protection.tab.integrity" = "Provenance";
 "settings.this_copy_signature" = "Signature de cette copie";
 "integrity.explainer.title" = "Des signaux natifs, pas un scanner";
-"integrity.explainer.body" = "CoreTend lit des informations que macOS enregistre déjà — aucun moteur d'analyse, aucune base de signatures, rien à télécharger. Vous voyez ce qui est déjà vrai sur vos téléchargements, vos applications et ce qui démarre à la connexion.";
+"integrity.explainer.body" = "CoreTend lit des informations que macOS enregistre déjà — aucun moteur d’analyse, aucune base de signatures, rien à télécharger. Vous voyez ce qui est déjà vrai sur vos téléchargements, vos applications et ce qui démarre à la connexion.";
 "integrity.downloads.title" = "Téléchargements récents";
 "integrity.downloads.empty" = "Aucun fichier dans Téléchargements.";
 "integrity.downloads.no_provenance" = "Aucune origine enregistrée";
-"integrity.inspector.title" = "Vérifier la signature d'une app";
-"integrity.inspector.subtitle" = "Choisissez une application pour voir qui l'a signée et si la signature est valide.";
+"integrity.inspector.title" = "Vérifier la signature d’une app";
+"integrity.inspector.subtitle" = "Choisissez une application pour voir qui l’a signée et si la signature est valide.";
 "integrity.inspector.choose" = "Choisir une application…";
 "integrity.tier.apple" = "Signé par Apple";
 "integrity.tier.team" = "Signé par l’équipe %@";
@@ -364,12 +364,12 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "common.done" = "Terminé";
 
 /* Privacy Cleaner — per-profile running-browser handling */
-"privacy.profile_running_reason" = "%@ est en cours d'exécution — le nettoyage est désactivé pour ce profil tant qu'il n'est pas fermé.";
+"privacy.profile_running_reason" = "%@ est en cours d’exécution — le nettoyage est désactivé pour ce profil tant qu’il n’est pas fermé.";
 "privacy.close_and_rescan" = "Fermer le navigateur et rescanner";
 
 /* Accessibility labels — AppUpdatesView, SettingsView */
 "updates.action_hint" = "Ouvre le mécanisme de mise à jour de %@";
-"settings.remove_exclusion" = "Supprimer l'exclusion %@";
+"settings.remove_exclusion" = "Supprimer l’exclusion %@";
 
 /* Accessibility — Differentiate Without Color for elevated metrics */
 "performance.elevated" = "élevé";
@@ -378,18 +378,18 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "common.yes" = "Oui";
 "common.no" = "Non";
 "onboarding.start" = "Démarrer";
-"onboarding.welcome.local" = "Tout s'exécute localement sur ce Mac.";
+"onboarding.welcome.local" = "Tout s’exécute localement sur ce Mac.";
 "onboarding.welcome.no_telemetry" = "Aucune télémétrie, statistique, publicité ni abonnement.";
 "onboarding.welcome.open_source" = "Open source — vous pouvez lire chaque ligne.";
 "onboarding.move.button" = "Déplacer vers Applications";
 "onboarding.move.done" = "Copiée dans %@. Relancez-la depuis là.";
 "onboarding.move.already" = "Une copie existe déjà dans %@.";
-"onboarding.move.manual" = "Copie automatique impossible. Glissez l'application dans Applications depuis la fenêtre du Finder qui vient de s'ouvrir.";
+"onboarding.move.manual" = "Copie automatique impossible. Glissez l’application dans Applications depuis la fenêtre du Finder qui vient de s’ouvrir.";
 "onboarding.fileaccess.title" = "Accès aux fichiers";
-"onboarding.fileaccess.subtitle" = "L'accès complet au disque est facultatif. L'application fonctionne sans ; certains dossiers ne peuvent alors pas être analysés.";
+"onboarding.fileaccess.subtitle" = "L’accès complet au disque est facultatif. L’application fonctionne sans ; certains dossiers ne peuvent alors pas être analysés.";
 "onboarding.fileaccess.can_scan" = "Vos fichiers dans les dossiers standards peuvent être analysés.";
 "onboarding.fileaccess.limited" = "Sans accès complet au disque, les données Mail et Safari restent inaccessibles.";
-"onboarding.fileaccess.no_autogrant" = "L'application ne peut pas l'accorder elle-même — elle ouvre seulement les Réglages Système pour que vous décidiez.";
+"onboarding.fileaccess.no_autogrant" = "L’application ne peut pas l’accorder elle-même — elle ouvre seulement les Réglages Système pour que vous décidiez.";
 "onboarding.check.status.ok" = "OK";
 "settings.rerun_setup" = "Relancer l’assistant de configuration";
 "settings.about.privacy" = "Politique de confidentialité";
@@ -399,17 +399,17 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 
 /* Rename migration (MacCare Local -> CoreTend) */
 "settings.migration_done" = "Les données de la version précédente ont été migrées";
-"settings.migration_failed" = "Certaines données n'ont pas pu être migrées";
+"settings.migration_failed" = "Certaines données n’ont pas pu être migrées";
 "settings.migration_items" = "Migré : %@.";
 "settings.migration_prefs" = "Votre configuration et vos préférences de barre des menus ont été conservées.";
-"settings.migration_source_kept" = "Les fichiers d'origine ont été copiés, pas déplacés — le dossier de la version précédente est toujours sur ce Mac, intact.";
-"settings.migration_failed_detail" = "Les éléments suivants sont restés à leur place et rien n'a été supprimé : %@. Les données de la version précédente sont toujours intactes sur ce Mac.";
+"settings.migration_source_kept" = "Les fichiers d’origine ont été copiés, pas déplacés — le dossier de la version précédente est toujours sur ce Mac, intact.";
+"settings.migration_failed_detail" = "Les éléments suivants sont restés à leur place et rien n’a été supprimé : %@. Les données de la version précédente sont toujours intactes sur ce Mac.";
 
 /* Updates */
 "updates.title" = "Mises à jour";
 "updates.installed" = "Version installée";
 "updates.automatic" = "Rechercher les mises à jour automatiquement";
-"updates.automatic_detail" = "Désactivé par défaut. Si activé, CoreTend récupère un seul petit fichier public sur coretend.ahmetbsbnr.com pour comparer les numéros de version. Rien vous concernant, ni concernant votre Mac, n'est transmis.";
+"updates.automatic_detail" = "Désactivé par défaut. Si activé, CoreTend récupère un seul petit fichier public sur coretend.ahmetbsbnr.com pour comparer les numéros de version. Rien vous concernant, ni concernant votre Mac, n’est transmis.";
 "updates.channel" = "Canal";
 "updates.channel_stable" = "Versions stables uniquement";
 "updates.channel_prerelease" = "Inclure les préversions";
@@ -417,15 +417,15 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "updates.check_now" = "Rechercher les mises à jour…";
 "updates.up_to_date" = "CoreTend %@ est à jour.";
 "updates.available" = "La version %@ est disponible.";
-"updates.is_prerelease" = "Il s'agit d'une préversion.";
-"updates.unsigned_warning" = "Cette version n'est ni signée ni notarisée par Apple. Vérifiez son empreinte avant de l'ouvrir.";
+"updates.is_prerelease" = "Il s’agit d’une préversion.";
+"updates.unsigned_warning" = "Cette version n’est ni signée ni notarisée par Apple. Vérifiez son empreinte avant de l’ouvrir.";
 "updates.open_release" = "Ouvrir la page de la version";
 "updates.how_to_verify" = "Comment vérifier un téléchargement";
-"updates.no_autoinstall" = "CoreTend ne télécharge ni n'installe jamais une mise à jour de lui-même. Les versions sont signées Developer ID et notarisées par Apple — vous téléchargez la nouvelle version depuis la page des releases, et macOS la vérifie à l'ouverture.";
+"updates.no_autoinstall" = "CoreTend ne télécharge ni n’installe jamais une mise à jour de lui-même. Les versions sont signées Developer ID et notarisées par Apple — vous téléchargez la nouvelle version depuis la page des releases, et macOS la vérifie à l’ouverture.";
 "updates.error_offline" = "Aucune connexion réseau. CoreTend fonctionne entièrement hors ligne ; cette vérification est facultative.";
-"updates.error_not_configured" = "La recherche de mises à jour n'est pas configurée.";
+"updates.error_not_configured" = "La recherche de mises à jour n’est pas configurée.";
 "updates.error_cancelled" = "Vérification annulée.";
-"updates.error_malformed" = "Le manifeste de version n'a pas pu être lu.";
+"updates.error_malformed" = "Le manifeste de version n’a pas pu être lu.";
 "updates.error_response" = "Le serveur a répondu avec le statut %@.";
 
 /* Favoris et récents */
@@ -450,7 +450,7 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 
 /* Cleanup category rows (idle state) */
 "cleanup.idle.what_is_scanned" = "Ce qui est analysé";
-"cleanup.category.caches" = "Caches d'applications";
+"cleanup.category.caches" = "Caches d’applications";
 "cleanup.category.caches.detail" = "~/Library/Caches — reconstruits automatiquement";
 "cleanup.category.logs" = "Journaux et diagnostics";
 "cleanup.category.logs.detail" = "~/Library/Logs — fichiers de plus de 7 jours";
@@ -505,11 +505,11 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "updates.last_checked" = "Dernière vérification";
 "updates.verify_download" = "Vérifier un téléchargement…";
 "updates.verify_prompt" = "Choisissez le fichier CoreTend que vous avez téléchargé.";
-"updates.verify_detail" = "Compare le fichier présent sur votre disque avec la somme de contrôle publiée pour cette version. Tout se passe localement, rien n'est ouvert, et cela prouve que les octets sont intacts — c'est la notarisation Apple, vérifiée par macOS à l'ouverture, qui prouve qui l'a produit.";
+"updates.verify_detail" = "Compare le fichier présent sur votre disque avec la somme de contrôle publiée pour cette version. Tout se passe localement, rien n’est ouvert, et cela prouve que les octets sont intacts — c’est la notarisation Apple, vérifiée par macOS à l’ouverture, qui prouve qui l’a produit.";
 "updates.verify_ok" = "%@ correspond à la somme de contrôle publiée.";
-"updates.verify_mismatch" = "Ce fichier ne correspond pas à la somme de contrôle publiée. Ne l'ouvrez pas — retéléchargez-le depuis la page de version.";
+"updates.verify_mismatch" = "Ce fichier ne correspond pas à la somme de contrôle publiée. Ne l’ouvrez pas — retéléchargez-le depuis la page de version.";
 "updates.verify_wrong_size" = "Taille incorrecte : la version publie %@, ce fichier fait %@. Le téléchargement est probablement incomplet.";
-"updates.verify_unreadable" = "%@ n'a pas pu être lu, ou n'est pas un fichier publié par cette version.";
+"updates.verify_unreadable" = "%@ n’a pas pu être lu, ou n’est pas un fichier publié par cette version.";
 "sidebar.a11y.label" = "Modules";
 "shortcuts.title" = "Raccourcis clavier";
 "shortcuts.group.app" = "Partout dans CoreTend";
@@ -517,37 +517,37 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "shortcuts.group.spacelens" = "Space Lens";
 "shortcuts.group.sidebar" = "Barre latérale";
 "shortcuts.close_window" = "Fermer la fenêtre";
-"shortcuts.start_scan" = "Lancer l'analyse";
-"shortcuts.go_up" = "Remonter d'un dossier";
+"shortcuts.start_scan" = "Lancer l’analyse";
+"shortcuts.go_up" = "Remonter d’un dossier";
 "shortcuts.descend" = "Ouvrir le dossier sélectionné";
-"shortcuts.close_preview" = "Fermer l'aperçu";
+"shortcuts.close_preview" = "Fermer l’aperçu";
 "shortcuts.move_module" = "Naviguer entre les modules";
 "menu.help.app" = "Aide CoreTend";
-"menu.help.install" = "Aide à l'installation";
+"menu.help.install" = "Aide à l’installation";
 "menu.help.shortcuts" = "Raccourcis clavier";
 "menu.help.report" = "Signaler un problème";
 "menu.help.security" = "Sécurité";
 "menu.help.about" = "À propos de CoreTend";
-"cleanup.exclusions_unavailable" = "Vos dossiers exclus n'ont pas pu être lus, donc rien n'a été sélectionné pour vous. Des dossiers que vous avez protégés peuvent figurer dans cette liste — vérifiez chaque élément avant de mettre quoi que ce soit à la corbeille.";
-"settings.store_ephemeral" = "CoreTend n'a pas pu ouvrir sa base de données : cette session fonctionne en mémoire, et vos exclusions, le journal de sûreté et l'historique disparaîtront à la fermeture. Raison : %@";
-"settings.store_unavailable" = "CoreTend n'a pas pu ouvrir sa base de données. Les exclusions, le journal de sûreté et l'historique sont indisponibles cette session. Raison : %@";
+"cleanup.exclusions_unavailable" = "Vos dossiers exclus n’ont pas pu être lus, donc rien n’a été sélectionné pour vous. Des dossiers que vous avez protégés peuvent figurer dans cette liste — vérifiez chaque élément avant de mettre quoi que ce soit à la corbeille.";
+"settings.store_ephemeral" = "CoreTend n’a pas pu ouvrir sa base de données : cette session fonctionne en mémoire, et vos exclusions, le journal de sûreté et l’historique disparaîtront à la fermeture. Raison : %@";
+"settings.store_unavailable" = "CoreTend n’a pas pu ouvrir sa base de données. Les exclusions, le journal de sûreté et l’historique sont indisponibles cette session. Raison : %@";
 "cleanup.done.rejected" = "%d élément(s) ont été refusés avant toute tentative.";
 "safety.reason.protected_root" = "Ils se trouvent dans un emplacement que macOS ou CoreTend ne supprime jamais.";
-"safety.reason.outside_roots" = "Ils sont hors des dossiers sur lesquels cette analyse a le droit d'agir.";
+"safety.reason.outside_roots" = "Ils sont hors des dossiers sur lesquels cette analyse a le droit d’agir.";
 "safety.reason.symlink" = "Ce sont des liens pointant hors du dossier nettoyé.";
-"safety.reason.vanished" = "Ils n'étaient plus présents sur le disque.";
-"safety.reason.invalid_path" = "Leur emplacement n'a pas pu être lu.";
-"spacelens.delete.changed" = "il a changé sur le disque après vérification, donc rien n'a été supprimé";
-"safety.reason.permission" = "macOS a refusé l'autorisation de les déplacer.";
+"safety.reason.vanished" = "Ils n’étaient plus présents sur le disque.";
+"safety.reason.invalid_path" = "Leur emplacement n’a pas pu être lu.";
+"spacelens.delete.changed" = "il a changé sur le disque après vérification, donc rien n’a été supprimé";
+"safety.reason.permission" = "macOS a refusé l’autorisation de les déplacer.";
 "safety.reason.trash_failed" = "macOS a refusé le déplacement (%@ %d).";
 "menu.go" = "Aller";
 "menu.scan" = "Analyse";
-"menu.scan.start" = "Lancer l'analyse";
-"menu.scan.pause_resume" = "Suspendre ou reprendre l'analyse";
-"menu.scan.cancel" = "Annuler l'analyse";
+"menu.scan.start" = "Lancer l’analyse";
+"menu.scan.pause_resume" = "Suspendre ou reprendre l’analyse";
+"menu.scan.cancel" = "Annuler l’analyse";
 "sidebar.reset" = "Réinitialiser la barre latérale";
 
-/* The record — direction B's spine. */
+/* The record — direction B’s spine. */
 "record.title" = "Registre";
 "record.unavailable" = "Le registre est indisponible : aucune base de données n’a pu être ouverte.";
 "record.error_title" = "Le registre n’a pas pu être lu";
@@ -668,3 +668,5 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "onboarding.start.applications" = "Ce qui est installé, et ce que chaque app laisse derrière elle.";
 "onboarding.move.title" = "CoreTend s’exécute depuis un emplacement temporaire";
 "onboarding.move.body" = "Déplacez-le dans Applications pour que macOS conserve ses autorisations et qu’il reste dans Launchpad.";
+"menu.file.export_record" = "Exporter le registre en CSV…";
+"menu.help.welcome" = "Bienvenue dans CoreTend…";

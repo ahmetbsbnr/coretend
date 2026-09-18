@@ -168,6 +168,9 @@ struct RecordView: View {
             Text(L("record.purge_confirm_message", model.items.count))
         }
         .task { await model.load() }
+        .onReceive(NotificationCenter.default.publisher(for: .mcExportRecord)) { _ in
+            if !model.items.isEmpty { exportCSV() }
+        }
     }
 
     private var loaded: some View {
