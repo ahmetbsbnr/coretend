@@ -53,6 +53,36 @@ enum CaptureHarness {
         return Appearance(rawValue: raw.lowercased())
     }
 
+    /// A stand-in home directory for scans, so a capture of a review screen
+    /// shows controlled files rather than whatever is in this machine's
+    /// caches. Every scan that takes a `home` reads this first.
+    static var homeOverride: URL? {
+        guard isActive, let raw = environment["CORETEND_TEST_HOME"], !raw.isEmpty else { return nil }
+        return URL(fileURLWithPath: raw, isDirectory: true)
+    }
+
+    /// The home a scan should use: the fixture in test mode, the real one
+    /// otherwise.
+    static var scanHome: URL { homeOverride ?? FileManager.default.homeDirectoryForCurrentUser }
+
+    /// Whether a capture asked the module to start its scan on appear, so a
+    /// review or scanning state can be photographed without a pointer.
+    static var autostartScan: Bool {
+        isActive && environment["CORETEND_TEST_AUTOSTART"] == "1"
+    }
+
+    /// Appends the state a module has reached to the evidence file. The
+    /// capture script waits for the state it was asked for and refuses the
+    /// capture otherwise — an idle screen photographed as "review" is the
+    /// kind of silent wrong that this whole file exists to prevent.
+    @MainActor
+    static func note(state: String) {
+        guard isActive, let directory = TestStoreOverride.resolve(environment: environment).directory else { return }
+        let url = directory.appendingPathComponent("showing.txt")
+        let existing = (try? String(contentsOf: url, encoding: .utf8)) ?? ""
+        try? (existing + "state=\(state)\n").write(to: url, atomically: true, encoding: .utf8)
+    }
+
     static var requestedWindowSize: WindowSize? {
         guard isActive, let raw = environment["CORETEND_TEST_WINDOW"] else { return nil }
         return WindowSize(rawValue: raw.lowercased())

@@ -52,7 +52,6 @@ Rien n'est supprimé pendant l'analyse.";
 "cleanup.review.selected" = "%d éléments — %@ sélectionnés";
 "cleanup.review.truncated" = "%d sur %d affichés — %@ trouvés au total";
 "cleanup.move_to_trash" = "Déplacer vers la Corbeille";
-"cleanup.group.item_count" = "%d éléments";
 "cleanup.select_item" = "Sélectionner %@";
 "cleanup.done.moved" = "%@ déplacés vers la Corbeille";
 
@@ -715,3 +714,7 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "record.fact_items" = "%d éléments";
 "record.fact_seen" = "%@ examinés";
 "common.copy_path" = "Copier le chemin";
+"cleanup.review.sentence" = "%@ iraient à la corbeille — %d éléments sélectionnés sur %d";
+"cleanup.select_group" = "Tout sélectionner dans %@";
+"cleanup.group.item_count_one" = "1 élément";
+"cleanup.group.item_count_other" = "%d éléments";

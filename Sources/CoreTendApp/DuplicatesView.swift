@@ -78,7 +78,7 @@ final class DuplicatesViewModel: CancellableScan {
         isScanPaused = false
         let pauseController = ScanPauseController()
         self.pauseController = pauseController
-        let home = FileManager.default.homeDirectoryForCurrentUser
+        let home = CaptureHarness.scanHome
         scannedRoots = ["Downloads", "Documents", "Desktop"].map { home.appendingPathComponent($0) }
         let engine = DuplicateEngine(roots: scannedRoots)
         scanTask = Task {

@@ -52,7 +52,6 @@ Nothing is deleted during a scan.";
 "cleanup.review.selected" = "%d items — %@ selected";
 "cleanup.review.truncated" = "%d of %d shown — %@ found in total";
 "cleanup.move_to_trash" = "Move to Trash";
-"cleanup.group.item_count" = "%d items";
 "cleanup.select_item" = "Select %@";
 "cleanup.done.moved" = "%@ moved to Trash";
 
@@ -717,3 +716,7 @@ Analysis only — deleting synced files would remove them on every device.";
 "record.fact_items" = "%d items";
 "record.fact_seen" = "%@ seen";
 "common.copy_path" = "Copy Path";
+"cleanup.review.sentence" = "%@ would move to the Trash — %d of %d items selected";
+"cleanup.select_group" = "Select all in %@";
+"cleanup.group.item_count_one" = "1 item";
+"cleanup.group.item_count_other" = "%d items";

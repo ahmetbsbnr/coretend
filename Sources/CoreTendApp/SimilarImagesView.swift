@@ -52,7 +52,7 @@ final class SimilarImagesViewModel: CancellableScan {
         isPaused = false
         let pauseController = ScanPauseController()
         self.pauseController = pauseController
-        let home = FileManager.default.homeDirectoryForCurrentUser
+        let home = CaptureHarness.scanHome
         let engine = SimilarImagesEngine(roots: [
             home.appendingPathComponent("Pictures"),
             home.appendingPathComponent("Downloads"),

@@ -92,7 +92,7 @@ final class CleanupViewModel: CancellableScan {
             // for deletion. See ExclusionsSnapshot.
             let exclusions = await AppEnvironment.shared.exclusions()
             exclusionsUnavailable = !exclusions.isTrustworthy
-            let engine = ScanEngine(configuration: ScanConfiguration(excludedPaths: exclusions.paths))
+            let engine = ScanEngine(configuration: ScanConfiguration(home: CaptureHarness.scanHome, excludedPaths: exclusions.paths))
             for await event in engine.run(rules: UserCleanupRules.all, pauseController: pauseController) {
                 switch event {
                 case .started: break
@@ -117,6 +117,7 @@ final class CleanupViewModel: CancellableScan {
                     scannedCount = scanned
                     totalBytes = bytes
                     phase = .review
+            CaptureHarness.note(state: "review")
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .scan, summary: "Cleanup scan: \(findings.count) items found",
                         itemCount: findings.count, bytes: bytes))
@@ -157,7 +158,7 @@ final class CleanupViewModel: CancellableScan {
         phase = .running
         let selected = findings.filter { selectedIDs.contains($0.id) }
         Task {
-            let home = FileManager.default.homeDirectoryForCurrentUser
+            let home = CaptureHarness.scanHome
             let validator = PathValidator(allowedRoots: UserCleanupRules.allowedRoots(home: home))
             let center = SafetyCenter(validator: validator, sink: AppEnvironment.shared.store)
             let batch = await center.approveAll(selected.map {
@@ -210,6 +211,7 @@ struct JunkCleanupView: View {
                     .padding(MCSpacing.page)
             }
         }
+        .onAppear { if CaptureHarness.autostartScan, model.phase == .idle { model.startScan() } }
         .scanCommands(
             start: { model.startScan() },
             pauseOrResume: { model.isScanPaused ? model.resumeScan() : model.pauseScan() },
@@ -303,142 +305,102 @@ struct JunkCleanupView: View {
 
     private var reviewView: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // A warning, not a note: the user's protected folders may be in
-            // these results and the app cannot tell. Placed above the total so
-            // it is read before any decision, and worded as what it means for
-            // them rather than as a database error.
             if model.exclusionsUnavailable {
-                HStack(alignment: .top, spacing: MCSpacing.sm) {
+                HStack(alignment: .top, spacing: MCSpacing.xs) {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .foregroundStyle(MCTheme.warning)
-                        .accessibilityHidden(true)
+                        .foregroundStyle(MCTheme.warning).accessibilityHidden(true)
                     Text(L("cleanup.exclusions_unavailable"))
-                        .font(MCFont.secondaryBody)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Spacer(minLength: 0)
+                        .font(MCFont.caption).fixedSize(horizontal: false, vertical: true)
                 }
-                .padding(MCSpacing.sm)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .overlay(
-                    RoundedRectangle(cornerRadius: MCRadius.card)
-                        .stroke(MCTheme.warning.opacity(0.5), lineWidth: 1))
-                .padding(.bottom, MCSpacing.md)
+                .padding(.horizontal, MCSpacing.page).padding(.vertical, MCSpacing.xs)
                 .accessibilityElement(children: .combine)
                 .accessibilityIdentifier("cleanup.exclusions_unavailable")
+                Divider()
             }
-            HStack(alignment: .center, spacing: MCSpacing.lg) {
-                VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-                    // The recoverable total is the whole point of this screen.
-                    Text(mcFormatBytes(model.totalBytes))
-                        .font(MCFont.displayMetric)
-                        .monospacedDigit()
-                        .contentTransition(.numericText())
-                    Text(L("cleanup.review.selected", model.findings.count, mcFormatBytes(model.selectedBytes)))
-                        .font(MCFont.secondaryBody)
-                        .foregroundStyle(MCColor.textSecondary)
-                    if model.isDisplayTruncated {
-                        Text(L("cleanup.review.truncated", model.findings.count, model.totalFindingCount, mcFormatBytes(model.totalBytes)))
-                            .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                    }
+            // A sentence and the one button. The total is not a hero number:
+            // it is what *would* move to the Trash, which is a proposal, and a
+            // proposal in 40pt reads as a promise.
+            HStack(alignment: .firstTextBaseline, spacing: MCSpacing.md) {
+                Text(L("cleanup.review.sentence", mcFormatBytes(model.selectedBytes),
+                       model.selectedIDs.count, model.findings.count))
+                    .font(MCFont.body)
+                if model.isDisplayTruncated {
+                    Text(L("cleanup.review.truncated", model.findings.count, model.totalFindingCount, mcFormatBytes(model.totalBytes)))
+                        .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 }
                 Spacer()
-                Button(L("cleanup.move_to_trash")) {
-                    showMoveConfirmation = true
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
-                .disabled(model.phase == .running || model.selectedIDs.isEmpty)
+                Button(L("cleanup.move_to_trash")) { showMoveConfirmation = true }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(model.phase == .running || model.selectedIDs.isEmpty)
             }
-            .padding(.horizontal, MCSpacing.page)
-            .padding(.top, MCSpacing.lg)
-            .padding(.bottom, MCSpacing.md)
-
+            .padding(.horizontal, MCSpacing.page).padding(.vertical, MCSpacing.sm)
+            Divider()
             List {
                 ForEach(model.groups) { group in
-                    DisclosureGroup {
-                        ForEach(group.findings) { finding in
-                            findingRow(finding)
-                        }
-                    } label: {
-                        HStack {
-                            Toggle("", isOn: Binding(
-                                get: { model.selectionState(for: group) },
-                                set: { model.setSelection($0, for: group) }
-                            ))
-                            .labelsHidden()
-                            VStack(alignment: .leading) {
-                                Text(group.name).font(MCFont.cardTitle)
-                                Text(group.explanation)
-                                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                            }
-                            Spacer()
-                            Text(L("cleanup.group.item_count", group.findings.count))
-                                .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                            Text(mcFormatBytes(group.bytes))
-                                .monospacedDigit().font(MCFont.rowTitle)
-                        }
+                    Section {
+                        ForEach(group.findings) { finding in findingRow(finding) }
+                    } header: {
+                        groupHeader(group)
                     }
                 }
             }
-            .listStyle(.inset)
+            .listStyle(.plain)
+            .environment(\.defaultMinListRowHeight, 28)
         }
     }
 
+    /// The whole category in one line: tick it, read what it is, see what it
+    /// weighs. The explanation is the header's tooltip and its VoiceOver
+    /// hint, not a second line on every screen.
+    private func groupHeader(_ group: CleanupViewModel.RuleGroup) -> some View {
+        HStack(spacing: MCSpacing.xs) {
+            Toggle("", isOn: Binding(
+                get: { model.selectionState(for: group) },
+                set: { model.setSelection($0, for: group) }
+            ))
+            .labelsHidden()
+            .accessibilityLabel(L("cleanup.select_group", group.name))
+            Text(group.name).font(MCFont.sectionTitle)
+            Text(L(group.findings.count == 1 ? "cleanup.group.item_count_one" : "cleanup.group.item_count_other",
+                   group.findings.count))
+                .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+            Spacer()
+            Text(mcFormatBytes(group.bytes)).font(MCFont.tabular.weight(.semibold))
+        }
+        .padding(.top, MCSpacing.sm)
+        .help(group.explanation)
+        .accessibilityHint(group.explanation)
+    }
+
     private func findingRow(_ finding: ScanFinding) -> some View {
-        HStack {
+        let evidence = FindingMetadata.summary(risk: finding.risk, modificationDate: finding.modificationDate)
+        return HStack(spacing: MCSpacing.xs) {
             Toggle("", isOn: Binding(
                 get: { model.selectedIDs.contains(finding.id) },
                 set: { on in
-                    if on { model.selectedIDs.insert(finding.id) }
-                    else { model.selectedIDs.remove(finding.id) }
+                    if on { model.selectedIDs.insert(finding.id) } else { model.selectedIDs.remove(finding.id) }
                 }
             ))
             .labelsHidden()
-            .accessibilityLabel(
-                FindingMetadata.summary(
-                    risk: finding.risk, modificationDate: finding.modificationDate
-                ).map {
-                    L("finding.a11y.evidence",
-                      L("cleanup.select_item", finding.url.lastPathComponent), $0)
-                } ?? L("cleanup.select_item", finding.url.lastPathComponent)
-            )
-            VStack(alignment: .leading, spacing: 1) {
-                Text(finding.url.lastPathComponent)
-                Text(finding.url.deletingLastPathComponent().path)
-                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                    .lineLimit(1).truncationMode(.middle)
-                // The evidence the scan already had and never showed. Size
-                // alone is the weakest of the three signals for deciding
-                // whether a file should go; risk also explains why a row is or
-                // is not ticked by default.
-                if let evidence = FindingMetadata.summary(
-                    risk: finding.risk, modificationDate: finding.modificationDate) {
-                    Text(evidence)
-                        .font(MCFont.micro).foregroundStyle(MCColor.textTertiary)
-                        // One line at ordinary sizes keeps rows compact; at
-                        // accessibility sizes it wraps instead. Truncating here
-                        // would cut "Low risk · modified 1 month ago" down to
-                        // the risk alone — losing exactly the evidence the line
-                        // was added to show, for the readers who most need it.
-                        // The path above keeps its hard limit because paths are
-                        // arbitrarily long and middle-truncate readably.
-                        .lineLimit(evidenceLineLimit)
-                        // VoiceOver reads the row as one sentence; this line is
-                        // part of it rather than a separate stop.
-                        .accessibilityHidden(true)
-                }
+            .accessibilityLabel(evidence.map {
+                L("finding.a11y.evidence", L("cleanup.select_item", finding.url.lastPathComponent), $0)
+            } ?? L("cleanup.select_item", finding.url.lastPathComponent))
+            Text(finding.url.lastPathComponent).lineLimit(1)
+            Text(finding.url.deletingLastPathComponent().path)
+                .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+                .lineLimit(1).truncationMode(.middle)
+            Spacer(minLength: MCSpacing.xs)
+            if let evidence {
+                Text(evidence).font(MCFont.caption).foregroundStyle(MCColor.textTertiary)
+                    .lineLimit(evidenceLineLimit)
             }
-            Spacer()
-            Text(mcFormatBytes(finding.logicalSize))
-                .monospacedDigit().foregroundStyle(MCColor.textSecondary)
-            Button {
+            Text(mcFormatBytes(finding.logicalSize)).font(MCFont.tabular)
+                .foregroundStyle(MCColor.textSecondary).frame(width: 80, alignment: .trailing)
+        }
+        .contextMenu {
+            Button(L("common.reveal_in_finder")) {
                 NSWorkspace.shared.activateFileViewerSelecting([finding.url])
-            } label: {
-                Image(systemName: "magnifyingglass")
             }
-            .buttonStyle(.borderless)
-            .accessibilityLabel(L("common.reveal_in_finder"))
-            .help(L("common.reveal_in_finder"))
         }
     }
 

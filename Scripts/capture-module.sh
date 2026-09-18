@@ -1,5 +1,9 @@
 #!/bin/zsh
-# capture-module.sh <out.png> <module> [light|dark] [compact|standard|large] [seed-script]
+# capture-module.sh <out.png> <module> [light|dark] [compact|standard|large] [seed-script] [state]
+#
+# Environment: CORETEND_CAPTURE_HOME_SEED=<script under Scripts/support> builds
+# a stand-in home for scans; a [state] argument starts the module's scan and
+# waits for the module to report that state before capturing.
 #
 # Launches a fresh, isolated CoreTend on the named module, in the named
 # appearance and window size, optionally on a seeded store, and captures its
@@ -19,6 +23,8 @@ module="${2:?usage: $0 <out.png> <module> [light|dark] [compact|standard|large] 
 appearance="${3:-dark}"
 size="${4:-standard}"
 seed="${5:-${CORETEND_CAPTURE_SEED:-}}"
+state="${6:-}"
+home_seed="${CORETEND_CAPTURE_HOME_SEED:-}"
 app="${CORETEND_APP:-build/CoreTend.app}"
 mkdir -p "$(dirname "$out")"
 
@@ -31,8 +37,16 @@ if [[ -n "$seed" ]]; then
   bash "$(dirname "$0")/support/${seed}" "$store" >/dev/null
 fi
 
+fixture_home=""
+if [[ -n "$home_seed" ]]; then
+  fixture_home="$store/home"
+  bash "$(dirname "$0")/support/${home_seed}" "$fixture_home" >/dev/null
+fi
+
 pkill -x CoreTend 2>/dev/null || true
 sleep 1
+CORETEND_TEST_HOME="$fixture_home" \
+CORETEND_TEST_AUTOSTART="$([[ -n "$state" ]] && echo 1 || echo 0)" \
 CORETEND_TEST_MODE=1 \
 CORETEND_TEST_STORE_DIR="$store" \
 CORETEND_TEST_MODULE="$module" \
@@ -50,6 +64,17 @@ done
 if [[ ! -f "$store/showing.txt" ]]; then
   print -u2 "capture-module: CoreTend never reported what it was showing"
   exit 1
+fi
+# If a state was asked for, wait for the module to report reaching it.
+if [[ -n "$state" ]]; then
+  for _ in {1..120}; do
+    grep -q "^state=$state\$" "$store/showing.txt" 2>/dev/null && break
+    sleep 0.25
+  done
+  if ! grep -q "^state=$state\$" "$store/showing.txt"; then
+    print -u2 "capture-module: asked for state '$state' but the module never reported it — capture refused"
+    exit 2
+  fi
 fi
 sleep 1.2
 
@@ -95,4 +120,4 @@ if [[ "$shown_window" != "$size" ]]; then
   print -u2 "capture-module: asked for $size window but the app reports $shown_window — capture refused"
   rm -f "$out"; exit 2
 fi
-print "captured: $module $appearance $size ${seed:+seed=$seed }-> $out"
+print "captured: $module $appearance $size ${seed:+seed=$seed }${state:+state=$state }-> $out"

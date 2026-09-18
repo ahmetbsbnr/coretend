@@ -367,7 +367,7 @@ struct SpaceMapView: View {
                 .mcAppear()
 
                 MCScanButton(L("spacelens.scan_home"), systemImage: "circle.hexagongrid") {
-                    model.start(url: FileManager.default.homeDirectoryForCurrentUser)
+                    model.start(url: CaptureHarness.scanHome)
                 }
                 .accessibilityIdentifier("spacelens.scan.home")
                 .mcAppear(delay: 0.06)
