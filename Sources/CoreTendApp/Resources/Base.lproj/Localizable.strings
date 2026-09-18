@@ -11,8 +11,8 @@
 "cleanup.resume_hint" = "Continue the paused scan.";
 "clutter.pause_hint" = "Temporarily suspend the current analysis.";
 "clutter.resume_hint" = "Continue the paused analysis.";
-"spacelens.pause_hint" = "Temporarily suspend the Space Lens scan.";
-"spacelens.resume_hint" = "Continue the paused Space Lens scan.";
+"spacelens.pause_hint" = "Temporarily suspend the Explore scan.";
+"spacelens.resume_hint" = "Continue the paused Explore scan.";
 "dupes.pause_hint" = "Temporarily suspend the duplicate scan.";
 "dupes.resume_hint" = "Continue the paused duplicate scan.";
 "common.running" = "Running…";
@@ -32,8 +32,8 @@
 "menubar.free_space" = "Free space";
 "menubar.thermal" = "Thermal";
 "menubar.warning_a11y" = "needs attention";
-"menubar.last_activity" = "Last Smart Care: %@";
-"menubar.no_activity_yet" = "No Smart Care run yet.";
+"menubar.last_activity" = "Last cleanup: %@";
+"menubar.no_activity_yet" = "No cleanup yet.";
 "menubar.open_app" = "Open CoreTend";
 "menubar.settings" = "Settings…";
 "menubar.quit" = "Quit";
@@ -58,14 +58,14 @@ Nothing is deleted during a scan.";
 /* Protection */
 
 /* Space Lens */
-"spacelens.title" = "Space Lens";
+"spacelens.title" = "Explore";
 "spacelens.delete.help" = "Move to Trash";
 "spacelens.delete.confirm_title" = "Move \"%@\" to Trash?";
 "spacelens.delete.confirm_action" = "Move to Trash";
 "spacelens.delete.confirm_message" = "Moves %@ to the Trash. It stays recoverable there, and the space comes back when you empty it.";
 "spacelens.delete.error_title" = "Couldn't Move to Trash";
 "spacelens.delete.error_message" = "\"%@\" wasn't moved — it may already be gone, or outside the scanned folder.";
-"spacelens.idle.title" = "Visualize your storage";
+"spacelens.idle.title" = "See where the space goes";
 "spacelens.idle.subtitle" = "Builds an interactive size map. Analysis only — nothing is modified.";
 "spacelens.scan_home" = "Scan Home Folder";
 "spacelens.choose_folder" = "Choose Folder…";
@@ -73,7 +73,7 @@ Nothing is deleted during a scan.";
 "spacelens.new_scan" = "New Scan";
 "spacelens.up" = "Up one level";
 "spacelens.treemap.a11y_summary" = "%d items, %@ total.";
-"spacelens.treemap.accessibility" = "Storage treemap. Use the list below for keyboard navigation.";
+"spacelens.treemap.accessibility" = "Disk map. Use the list below for keyboard navigation.";
 "spacelens.fragment.help" = "%@ — %@";
 "spacelens.access_denied_suffix" = "permission denied, size is a lower bound";
 "spacelens.cloud_placeholder_suffix" = "iCloud placeholder, not fully downloaded";
@@ -115,7 +115,7 @@ Nothing is deleted during a scan.";
 
 /* My Clutter */
 "clutter.tab.duplicates" = "Duplicates";
-"clutter.title" = "My Clutter";
+"clutter.title" = "Largest & oldest";
 "clutter.idle.title" = "Find large, forgotten files";
 "clutter.idle.subtitle" = "Analyzes Downloads, Documents, Desktop and media folders.
 Nothing is ever deleted automatically — you review and act in Finder.";
@@ -229,7 +229,7 @@ Photos libraries are never touched. Review in Finder; nothing is deleted here.";
 "cloud.empty.title" = "No cloud folders found";
 "cloud.empty.subtitle" = "iCloud Drive, Dropbox, Google Drive and OneDrive local folders are detected automatically when present.";
 "cloud.measuring" = "Measuring local footprint…";
-"cloud.picker.title" = "Analyze cloud storage footprint";
+"cloud.picker.title" = "Cloud footprint on this Mac";
 "cloud.picker.subtitle" = "Shows which synced files actually occupy disk space on this Mac.
 Analysis only — deleting synced files would remove them on every device.";
 "cloud.results.summary" = "%@ on this Mac of %@ total — analysis only, nothing downloaded or deleted";
@@ -248,7 +248,7 @@ Analysis only — deleting synced files would remove them on every device.";
 "performance.nav_title" = "Performance";
 "performance.cpu" = "CPU";
 "performance.memory" = "Memory";
-"performance.storage" = "Storage";
+"performance.storage" = "Disk";
 "performance.of_all_cores" = "of all cores";
 "performance.memory_detail" = "%@ of %@";
 "performance.free_detail" = "%@ free";
@@ -313,7 +313,7 @@ Analysis only — deleting synced files would remove them on every device.";
 "palette.open" = "Command Palette…";
 "palette.placeholder" = "Jump to…";
 "palette.no_results" = "No matches";
-"palette.scan_home" = "Scan Home with Space Lens";
+"palette.scan_home" = "Scan Home in Explore";
 "protection.tab.integrity" = "Provenance";
 "settings.this_copy_signature" = "This copy's signature";
 "integrity.explainer.title" = "Native signals, not a scanner";

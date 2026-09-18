@@ -11,8 +11,8 @@
 "cleanup.resume_hint" = "Continue l’analyse suspendue.";
 "clutter.pause_hint" = "Suspend temporairement l’analyse en cours.";
 "clutter.resume_hint" = "Continue l’analyse suspendue.";
-"spacelens.pause_hint" = "Suspend temporairement l’analyse Space Lens.";
-"spacelens.resume_hint" = "Continue l’analyse Space Lens suspendue.";
+"spacelens.pause_hint" = "Suspendre temporairement l’analyse d’Explorer.";
+"spacelens.resume_hint" = "Reprendre l’analyse d’Explorer.";
 "dupes.pause_hint" = "Suspend temporairement l’analyse des doublons.";
 "dupes.resume_hint" = "Continue l’analyse des doublons suspendue.";
 "common.running" = "En cours…";
@@ -32,8 +32,8 @@
 "menubar.free_space" = "Espace libre";
 "menubar.thermal" = "Thermique";
 "menubar.warning_a11y" = "nécessite une attention";
-"menubar.last_activity" = "Dernier Smart Care : %@";
-"menubar.no_activity_yet" = "Aucun Smart Care exécuté pour l'instant.";
+"menubar.last_activity" = "Dernier nettoyage : %@";
+"menubar.no_activity_yet" = "Aucun nettoyage pour l’instant.";
 "menubar.open_app" = "Ouvrir CoreTend";
 "menubar.settings" = "Réglages…";
 "menubar.quit" = "Quitter";
@@ -58,14 +58,14 @@ Rien n'est supprimé pendant l'analyse.";
 /* Protection */
 
 /* Space Lens */
-"spacelens.title" = "Space Lens";
+"spacelens.title" = "Explorer";
 "spacelens.delete.help" = "Mettre à la Corbeille";
 "spacelens.delete.confirm_title" = "Mettre « %@ » à la Corbeille ?";
 "spacelens.delete.confirm_action" = "Mettre à la Corbeille";
 "spacelens.delete.confirm_message" = "Déplace %@ vers la corbeille. Les fichiers y restent récupérables, et l’espace revient quand vous la videz.";
 "spacelens.delete.error_title" = "Échec du déplacement vers la Corbeille";
 "spacelens.delete.error_message" = "« %@ » n’a pas été déplacé — il a peut-être déjà disparu, ou se trouve hors du dossier analysé.";
-"spacelens.idle.title" = "Visualisez votre stockage";
+"spacelens.idle.title" = "Voir où va l’espace";
 "spacelens.idle.subtitle" = "Construit une carte de taille interactive. Analyse uniquement — rien n'est modifié.";
 "spacelens.scan_home" = "Analyser le dossier personnel";
 "spacelens.choose_folder" = "Choisir un dossier…";
@@ -73,7 +73,7 @@ Rien n'est supprimé pendant l'analyse.";
 "spacelens.new_scan" = "Nouvelle analyse";
 "spacelens.up" = "Remonter d'un niveau";
 "spacelens.treemap.a11y_summary" = "%d éléments, %@ au total.";
-"spacelens.treemap.accessibility" = "Carte de stockage. Utilisez la liste ci-dessous pour la navigation au clavier.";
+"spacelens.treemap.accessibility" = "Carte du disque. Utilisez la liste ci-dessous pour naviguer au clavier.";
 "spacelens.fragment.help" = "%@ — %@";
 "spacelens.access_denied_suffix" = "accès refusé, la taille est une estimation basse";
 "spacelens.cloud_placeholder_suffix" = "espace réservé iCloud, non entièrement téléchargé";
@@ -115,7 +115,7 @@ Rien n'est supprimé pendant l'analyse.";
 
 /* My Clutter */
 "clutter.tab.duplicates" = "Doublons";
-"clutter.title" = "Mes fichiers encombrants";
+"clutter.title" = "Plus volumineux et plus anciens";
 "clutter.idle.title" = "Trouvez les fichiers volumineux et oubliés";
 "clutter.idle.subtitle" = "Analyse Téléchargements, Documents, Bureau et les dossiers média.
 Rien n'est jamais supprimé automatiquement — vous examinez et agissez dans le Finder.";
@@ -229,7 +229,7 @@ Les bibliothèques Photos ne sont jamais touchées. Examinez dans le Finder ; ri
 "cloud.empty.title" = "Aucun dossier cloud trouvé";
 "cloud.empty.subtitle" = "Les dossiers locaux d'iCloud Drive, Dropbox, Google Drive et OneDrive sont détectés automatiquement s'ils sont présents.";
 "cloud.measuring" = "Mesure de l'empreinte locale…";
-"cloud.picker.title" = "Analyser l'empreinte du stockage cloud";
+"cloud.picker.title" = "Empreinte cloud sur ce Mac";
 "cloud.picker.subtitle" = "Indique quels fichiers synchronisés occupent réellement de l'espace disque sur ce Mac.
 Analyse uniquement — supprimer des fichiers synchronisés les retirerait de tous les appareils.";
 "cloud.results.summary" = "%@ sur ce Mac sur %@ au total — analyse uniquement, rien n'est téléchargé ni supprimé";
@@ -248,7 +248,7 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "performance.nav_title" = "Performance";
 "performance.cpu" = "CPU";
 "performance.memory" = "Mémoire";
-"performance.storage" = "Stockage";
+"performance.storage" = "Disque";
 "performance.of_all_cores" = "de tous les cœurs";
 "performance.memory_detail" = "%@ sur %@";
 "performance.free_detail" = "%@ libres";
@@ -313,7 +313,7 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "palette.open" = "Palette de commandes…";
 "palette.placeholder" = "Aller à…";
 "palette.no_results" = "Aucun résultat";
-"palette.scan_home" = "Analyser le dossier personnel avec Space Lens";
+"palette.scan_home" = "Analyser le dossier personnel dans Explorer";
 "protection.tab.integrity" = "Provenance";
 "settings.this_copy_signature" = "Signature de cette copie";
 "integrity.explainer.title" = "Des signaux natifs, pas un scanner";
