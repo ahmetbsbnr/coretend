@@ -47,21 +47,27 @@ cd ~/actions-runner-coretend
 caffeinate -dimsu ./run.sh          # -dimsu: no display/idle/disk sleep
 ```
 
-A foreground `run.sh` dies with the terminal that started it, and the release
-then waits 24 hours for a runner that is not coming back. That happened three
-times while cutting v1.0.1. For anything but a one-off release, install it as a
-launchd service instead, which survives logout and reboot:
+**It is installed as a launchd service, so normally there is nothing to start.**
 
 ```bash
 cd ~/actions-runner-coretend
-./svc.sh install                    # writes a LaunchAgent
-./svc.sh start
-./svc.sh status
+./svc.sh status                     # expected: Started, with a PID
 ```
 
-This is a standing decision, not a convenience: it means the machine accepts
-signing jobs whenever it is awake. Weigh that against a release queueing
-silently. `./svc.sh stop && ./svc.sh uninstall` reverses it.
+A foreground `run.sh` dies with the terminal that started it, and the release
+then waits 24 hours for a runner that is not coming back — that happened three
+times while cutting v1.0.1, and is how both beta releases died before it. The
+service survives logout and reboot, which is why it is installed:
+
+```bash
+./svc.sh install && ./svc.sh start   # if it ever needs re-installing
+./svc.sh stop && ./svc.sh uninstall  # to remove it
+```
+
+This is a standing posture, not just a convenience: the machine accepts signing
+jobs whenever it is awake. That is the trade for releases that do not queue
+silently. If the Mac is ever shared or left unattended somewhere untrusted,
+uninstall the service rather than relying on the runner being idle.
 
 It must print `Connected to GitHub` and `Listening for Jobs`. Confirm from
 anywhere with:
