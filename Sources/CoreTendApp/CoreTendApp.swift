@@ -374,6 +374,11 @@ enum ModuleID: String, CaseIterable, Identifiable {
     /// (`sidebar.<rawValue>` a11y ids, activity-summary prefixes); the
     /// standalone Smart Care view was retired in favour of the Dashboard.
     case smartCare = "Smart Care"
+    /// The record. Direction B's spine: every scan, approval and refusal,
+    /// readable backwards. It was a sheet buried inside My Activity; a product
+    /// whose strongest engineering is its safety model cannot keep the
+    /// evidence of that model hidden two levels down.
+    case record = "Record"
     case cleanup = "Cleanup"
     case protection = "Protection"
     case performance = "Performance"
@@ -421,6 +426,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .myClutter: .myClutter
         case .spaceLens: .spaceLens
         case .cloudCleanup: .cloudCleanup
+        case .record: .record
         case .myActivity: .myActivity
         }
     }
@@ -440,6 +446,7 @@ enum ModuleID: String, CaseIterable, Identifiable {
         case .myClutter: L("clutter.title")
         case .spaceLens: L("spacelens.title")
         case .cloudCleanup: L("cloud.nav_title")
+        case .record: L("record.title")
         case .myActivity: L("module.activity")
         }
     }
@@ -452,7 +459,7 @@ struct SidebarGroup: Identifiable {
     let modules: [ModuleID]
 
     static let all: [SidebarGroup] = [
-        SidebarGroup(id: "main", title: nil, modules: [.smartCare]),
+        SidebarGroup(id: "main", title: nil, modules: [.smartCare, .record]),
         SidebarGroup(id: "storage", title: L("sidebar.storage"),
                      modules: [.cleanup, .spaceLens, .duplicates, .applications]),
         // Secondary, lower-priority tools: each does something the seven
@@ -537,6 +544,8 @@ struct MainWindow: View {
                     MyClutterView()
                 case .cloudCleanup:
                     CloudCleanupView()
+                case .record:
+                    RecordView()
                 case .myActivity:
                     MyActivityView()
                 case nil:

@@ -166,3 +166,70 @@ struct SafetyLedgerSummaryTests {
         #expect(SafetyLedger.summary(of: []) == SafetyLedger.Summary())
     }
 }
+
+@Suite("How an entry reads")
+struct RecordPhrasingTests {
+
+    /// An operation that moved 1.24 GB and hit one permission error is a move
+    /// with a failure in it, not a failure. Titling it by the failure buried
+    /// the substance and contradicted its own subtitle — caught by capturing
+    /// the module against a seeded store, not by looking at a mockup.
+    @Test func amoveWithOneFailureIsStillTitledAsAMove() {
+        let entry = SafetyLedger.entries(from: [
+            record(1, "A", .executed, size: 1_200_000_000),
+            record(2, "A", .executed, size: 40_000_000),
+            record(3, "A", .error),
+        ])[0]
+        let title = RecordPhrasing.title(entry)
+        #expect(title.contains("2"))
+        #expect(!title.lowercased().contains("could not"))
+        // The failure is not lost — it is in the subtitle and its own section.
+        #expect(RecordPhrasing.subtitle(entry).contains("1"))
+        #expect(entry.failed.count == 1)
+    }
+
+    @Test func afailureOnlyOperationIsTitledAsAFailure() {
+        let entry = SafetyLedger.entries(from: [record(1, "A", .error)])[0]
+        #expect(RecordPhrasing.title(entry).lowercased().contains("could not"))
+    }
+
+    @Test func arefusalOnlyOperationIsTitledAsARefusal() {
+        let entry = SafetyLedger.entries(from: [record(1, "A", .skipped)])[0]
+        #expect(RecordPhrasing.title(entry).lowercased().contains("refused"))
+    }
+
+    /// "1 items could not be moved" shipped in the first capture. Counts of
+    /// one take a singular form, in every language the app carries.
+    @Test func aCountOfOneIsSingular() {
+        let moved = SafetyLedger.entries(from: [record(1, "A", .executed, size: 10)])[0]
+        #expect(RecordPhrasing.title(moved) == "Moved 1 item to the Trash")
+        let failed = SafetyLedger.entries(from: [record(1, "B", .error)])[0]
+        #expect(RecordPhrasing.title(failed) == "1 item could not be moved")
+        let refused = SafetyLedger.entries(from: [record(1, "C", .skipped)])[0]
+        #expect(RecordPhrasing.title(refused) == "Refused to touch 1 item")
+    }
+
+    @Test func aCountAboveOneIsPlural() {
+        let entry = SafetyLedger.entries(from: [
+            record(1, "A", .executed, size: 10), record(2, "A", .executed, size: 20),
+        ])[0]
+        #expect(RecordPhrasing.title(entry) == "Moved 2 items to the Trash")
+    }
+
+    /// "0 refused" on an operation that refused nothing is noise dressed up as
+    /// information. A component only appears when it has something to say.
+    @Test func zeroCountsAreOmittedFromTheSubtitle() {
+        let entry = SafetyLedger.entries(from: [record(1, "A", .executed, size: 1024)])[0]
+        let subtitle = RecordPhrasing.subtitle(entry)
+        #expect(!subtitle.contains("0"))
+        #expect(!subtitle.contains("·"))
+    }
+
+    @Test func aSubtitleJoinsOnlyWhatItHas() {
+        let entry = SafetyLedger.entries(from: [
+            record(1, "A", .executed, size: 1024), record(2, "A", .skipped),
+        ])[0]
+        #expect(RecordPhrasing.subtitle(entry).contains("·"))
+        #expect(RecordPhrasing.subtitle(entry).contains("1 refused"))
+    }
+}

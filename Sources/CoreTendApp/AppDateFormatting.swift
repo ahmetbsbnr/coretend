@@ -30,6 +30,10 @@ enum AppDateFormatting {
         case dayMonthYearWithTime
         /// "lundi 2 février 2026" — a section heading for one day's activity.
         case fullDay
+        /// "14:03" — a row already sitting under a day heading, where
+        /// repeating the date on every line would be noise. Only ever correct
+        /// inside a view that groups by day; on its own it is ambiguous.
+        case timeOnly
     }
 
     /// The locale to format in: the chosen app language, or the system's when
@@ -55,6 +59,9 @@ enum AppDateFormatting {
         case .fullDay:
             formatter.dateStyle = .full
             formatter.timeStyle = .none
+        case .timeOnly:
+            formatter.dateStyle = .none
+            formatter.timeStyle = .short
         }
         return formatter.string(from: date)
     }

@@ -45,12 +45,19 @@ enum ActivityDateRange: String, CaseIterable, Identifiable {
 }
 
 /// Bytes moved to the Trash across cleanup records.
+///
+/// Named for what it measures. It was `movedToTrashBytes`, shown as "Freed (real)",
+/// and it is neither: CoreTend moves items to the Trash and is never told when
+/// the user empties it, so nothing here has been verified as freed. The word
+/// "real" claimed a check the app never performed. Same arithmetic, honest
+/// label — see Documentation/Mockups/COMPARISON.md, where the same fabricated
+/// total is why mockup B3 was rejected.
 struct ActivityImpactSummary {
-    let freedBytes: Int64
+    let movedToTrashBytes: Int64
     let itemCount: Int
 
     init(_ records: [ActivityRecord]) {
-        freedBytes = records.filter { $0.kind == .cleanup }.reduce(0) { $0 + $1.bytes }
+        movedToTrashBytes = records.filter { $0.kind == .cleanup }.reduce(0) { $0 + $1.bytes }
         itemCount = records.reduce(0) { $0 + $1.itemCount }
     }
 }
@@ -134,7 +141,6 @@ final class MyActivityViewModel {
 
 struct MyActivityView: View {
     @State private var model = MyActivityViewModel()
-    @State private var showingSafetyLog = false
 
     var body: some View {
         Group {
@@ -181,14 +187,16 @@ struct MyActivityView: View {
             }
             .accessibilityIdentifier("activity.clear")
             .disabled(model.allRecords.isEmpty)
+            // The safety log used to open here as a sheet. It is now the
+            // Record module in the sidebar, so this navigates rather than
+            // presenting a second, shallower copy of the same evidence.
             Button {
-                showingSafetyLog = true
+                NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.record)
             } label: {
-                Label(L("activity.open_safety_log"), systemImage: "checklist")
+                Label(L("activity.open_safety_log"), systemImage: "list.bullet.rectangle")
             }
             .accessibilityIdentifier("activity.safety_log")
         }
-        .sheet(isPresented: $showingSafetyLog) { SafetyLogView() }
         .task(id: model.filter) { await model.load() }
     }
 
@@ -245,7 +253,7 @@ struct MyActivityView: View {
 
     private var summaryBar: some View {
         HStack(spacing: MCSpacing.lg) {
-            summaryMetric(label: L("activity.freed_real"), value: mcFormatBytes(model.summary.freedBytes), color: MCTheme.success)
+            summaryMetric(label: L("activity.moved_to_trash"), value: mcFormatBytes(model.summary.movedToTrashBytes), color: MCTheme.success)
             summaryMetric(label: L("activity.items"), value: "\(model.summary.itemCount)", color: .primary)
             Spacer()
         }

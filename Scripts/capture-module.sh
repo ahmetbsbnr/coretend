@@ -8,7 +8,7 @@
 # intermittently reports an empty window.
 #
 # Module raw values: smartCare cleanup protection performance applications
-#                    duplicates myClutter spaceLens cloudCleanup myActivity settings
+#                    duplicates myClutter spaceLens cloudCleanup myActivity record settings
 set -euo pipefail
 out="${1:?usage: $0 <out.png> <module>}"
 module="${2:?usage: $0 <out.png> <module>}"
@@ -18,6 +18,13 @@ mkdir -p "$(dirname "$out")"
 store="$(mktemp -d "${TMPDIR:-/tmp}/coretend-capture.XXXXXX")"
 cleanup() { rm -rf "$store"; }
 trap cleanup EXIT
+
+# An empty screen proves nothing about a layout, so a capture may be seeded
+# with a plausible store first. Opt-in: CORETEND_CAPTURE_SEED names a script
+# under Scripts/support that populates the isolated store directory.
+if [[ -n "${CORETEND_CAPTURE_SEED:-}" ]]; then
+  bash "$(dirname "$0")/support/${CORETEND_CAPTURE_SEED}" "$store" >/dev/null
+fi
 
 pkill -x CoreTend 2>/dev/null || true
 sleep 1

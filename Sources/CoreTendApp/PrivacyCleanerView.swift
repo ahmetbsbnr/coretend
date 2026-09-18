@@ -126,7 +126,7 @@ final class PrivacyCleanerViewModel {
         AppEnvironment.shared.record(ActivityRecord(
             kind: .cleanup,
             summary: outcome.annotate("Browser caches moved to Trash"),
-            itemCount: outcome.executedCount, bytes: outcome.freedBytes))
+            itemCount: outcome.executedCount, bytes: outcome.movedToTrashBytes))
     }
 }
 
@@ -166,7 +166,7 @@ struct PrivacyCleanerView: ModuleSubScreen {
                 resultsView
             case let .finished(outcome):
                 MCSuccessState(
-                    title: L("privacy.finished.moved", mcFormatBytes(outcome.freedBytes)),
+                    title: L("privacy.finished.moved", mcFormatBytes(outcome.movedToTrashBytes)),
                     message: outcome.message,
                     actionTitle: L("smartcare.scan_again")) { Task { await model.scan() } }
             }

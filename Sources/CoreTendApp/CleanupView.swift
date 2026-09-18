@@ -175,7 +175,7 @@ final class CleanupViewModel: CancellableScan {
             AppEnvironment.shared.record(ActivityRecord(
                 kind: .cleanup,
                 summary: outcome.annotate("Moved \(outcome.executedCount) items to Trash"),
-                itemCount: outcome.executedCount, bytes: outcome.freedBytes))
+                itemCount: outcome.executedCount, bytes: outcome.movedToTrashBytes))
         }
     }
 }

@@ -234,7 +234,7 @@
 "activity.empty_kind" = "Aucune activité de ce type pour l'instant";
 "activity.empty.subtitle" = "Les analyses et nettoyages apparaîtront ici. Tout reste sur ce Mac.";
 "activity.empty_range" = "Aucune activité sur cette période.";
-"activity.freed_real" = "Libéré (réel)";
+"activity.moved_to_trash" = "Mis à la corbeille";
 "activity.items" = "Éléments";
 "activity.row.detail" = "%d éléments · %@ %@";
 "activity.row.real_suffix" = "(réel, appliqué sur le disque)";
@@ -405,19 +405,7 @@
 
 /* Safety log (SafetyCore audit trail persistence) */
 "common.done" = "Terminé";
-"safetylog.title" = "Journal de sécurité";
-"safetylog.subtitle" = "%d exécutées";
-"safetylog.subtitle_detail" = "%d exécutées · %d ignorées ou en erreur";
-"safetylog.empty" = "Aucune entrée dans le journal de sécurité pour le moment.";
-"safetylog.unavailable" = "Base de données locale indisponible";
-"safetylog.purge" = "Purger le journal";
-"safetylog.stage.approved" = "Approuvée";
-"safetylog.stage.executed" = "Exécutée";
-"safetylog.stage.skipped" = "Ignorée";
-"safetylog.stage.error" = "Erreur";
-"safetylog.a11y.rule" = "règle %@";
-"safetylog.a11y.risk" = "risque %@";
-"activity.open_safety_log" = "Voir le journal de sécurité";
+"activity.open_safety_log" = "Ouvrir le registre";
 
 /* Privacy Cleaner — per-profile running-browser handling */
 "privacy.profile_running_reason" = "%@ est en cours d'exécution — le nettoyage est désactivé pour ce profil tant qu'il n'est pas fermé.";
@@ -654,3 +642,45 @@
 "menu.scan.pause_resume" = "Suspendre ou reprendre l'analyse";
 "menu.scan.cancel" = "Annuler l'analyse";
 "sidebar.reset" = "Réinitialiser la barre latérale";
+
+/* The record — direction B's spine. */
+"record.title" = "Registre";
+"record.unavailable" = "Le registre est indisponible : aucune base de données n’a pu être ouverte.";
+"record.error_title" = "Le registre n’a pas pu être lu";
+"record.empty_title" = "Rien d’enregistré pour l’instant";
+"record.empty_message" = "Chaque analyse, chaque approbation et chaque refus s’inscrit ici au fil de l’eau.";
+"record.no_selection_title" = "Sélectionnez une entrée";
+"record.no_selection_message" = "Chaque entrée détaille ce que CoreTend a déplacé et ce qu’il a refusé de toucher.";
+"record.purge" = "Effacer le registre…";
+"record.summary_moved" = "MIS À LA CORBEILLE";
+"record.summary_refused" = "REFUSÉS";
+"record.reversible_note" = "Chaque élément reste récupérable tant que la corbeille n’est pas vidée.";
+"record.stat_moved" = "MIS À LA CORBEILLE";
+"record.stat_items" = "ÉLÉMENTS";
+"record.stat_refused" = "REFUSÉS";
+"record.section_moved" = "CE QUI A ÉTÉ DÉPLACÉ";
+"record.section_kept_back" = "CE QUI A ÉTÉ ÉCARTÉ";
+"record.section_failed" = "CE QUI N’A PAS PU ÊTRE DÉPLACÉ";
+"record.tag_reversible" = "Réversible";
+"record.tag_refused" = "Refusé";
+"record.tag_failed" = "Échec";
+"record.tag_recorded" = "Consigné";
+
+"record.title_moved_one" = "1 élément mis à la corbeille";
+"record.title_moved_other" = "%d éléments mis à la corbeille";
+"record.title_refused_one" = "Refus de toucher 1 élément";
+"record.title_refused_other" = "Refus de toucher %d éléments";
+"record.title_failed_one" = "1 élément n’a pas pu être déplacé";
+"record.title_failed_other" = "%d éléments n’ont pas pu être déplacés";
+"record.title_approved_one" = "1 élément approuvé";
+"record.title_approved_other" = "%d éléments approuvés";
+"record.subtitle_refused_one" = "1 refusé";
+"record.subtitle_refused_other" = "%d refusés";
+"record.subtitle_failed_one" = "1 échec";
+"record.subtitle_failed_other" = "%d échecs";
+"record.subtitle_approved_one" = "1 approuvé";
+"record.subtitle_approved_other" = "%d approuvés";
+"record.purge_confirm_title" = "Effacer tout le registre ?";
+"record.purge_confirm_action" = "Effacer le registre";
+"record.purge_confirm_message" = "Les %d entrées sont supprimées définitivement. Le registre est en ajout seul : rien ne les restaure, et les fichiers déjà mis à la corbeille ne sont pas affectés.";
+"common.more" = "Plus";

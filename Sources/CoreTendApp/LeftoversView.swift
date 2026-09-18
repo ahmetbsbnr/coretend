@@ -74,7 +74,7 @@ final class LeftoversViewModel {
         AppEnvironment.shared.record(ActivityRecord(
             kind: .cleanup,
             summary: outcome.annotate("Removed \(outcome.executedCount) leftover items"),
-            itemCount: outcome.executedCount, bytes: outcome.freedBytes))
+            itemCount: outcome.executedCount, bytes: outcome.movedToTrashBytes))
     }
 }
 
@@ -106,7 +106,7 @@ struct LeftoversView: ModuleSubScreen {
                 resultsView
             case let .finished(outcome):
                 MCSuccessState(
-                    title: L("leftovers.finished.moved", mcFormatBytes(outcome.freedBytes)),
+                    title: L("leftovers.finished.moved", mcFormatBytes(outcome.movedToTrashBytes)),
                     message: outcome.message,
                     actionTitle: L("smartcare.scan_again")) { Task { await model.scan() } }
             }

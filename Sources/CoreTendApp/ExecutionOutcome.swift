@@ -47,7 +47,11 @@ struct ExecutionOutcome: Equatable {
     let skippedCount: Int
     /// Refused at approval time: never attempted at all.
     let rejectedCount: Int
-    let freedBytes: Int64
+    /// Bytes CoreTend moved to the Trash. Not "freed": the space comes back
+    /// only when the user empties the Trash, outside the app, at a time the
+    /// app is never told about. The name used to be `freedBytes`, and the one
+    /// label that rendered it said "Freed (real)".
+    let movedToTrashBytes: Int64
     /// Distinct reasons behind the rejections, most frequent first. Empty when
     /// nothing was rejected.
     let rejectionReasons: [SafetyError]
@@ -63,7 +67,7 @@ struct ExecutionOutcome: Equatable {
          rejections: [SafetyError] = []) {
         executedCount = result.executed.count
         skippedCount = result.skipped.count
-        freedBytes = result.executed.reduce(0) { $0 + $1.logicalSize }
+        movedToTrashBytes = result.executed.reduce(0) { $0 + $1.logicalSize }
         rejectedCount = rejections.count
         // Ordered by frequency so the dominant reason is the one shown, and
         // deduplicated: forty files refused for the same reason is one fact.
@@ -74,18 +78,18 @@ struct ExecutionOutcome: Equatable {
 
     /// Test seam: building one directly avoids constructing approved
     /// operations, which require a validator and real paths.
-    init(executedCount: Int, skippedCount: Int, freedBytes: Int64,
+    init(executedCount: Int, skippedCount: Int, movedToTrashBytes: Int64,
          rejectedCount: Int = 0, rejectionReasons: [SafetyError] = []) {
         self.executedCount = executedCount
         self.skippedCount = skippedCount
-        self.freedBytes = freedBytes
+        self.movedToTrashBytes = movedToTrashBytes
         self.rejectedCount = rejectedCount
         self.rejectionReasons = rejectionReasons
     }
 
     /// Headline for the success screen.
     var title: String {
-        L("cleanup.done.moved", mcFormatBytes(freedBytes))
+        L("cleanup.done.moved", mcFormatBytes(movedToTrashBytes))
     }
 
     /// Second line, present only when something was skipped.

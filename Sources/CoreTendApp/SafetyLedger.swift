@@ -101,6 +101,30 @@ enum SafetyLedger {
         var failedItems: Int = 0
     }
 
+    /// One day's entries, most recent day first.
+    struct DayGroup: Identifiable {
+        let day: Date
+        let entries: [LedgerEntry]
+        var id: Date { day }
+    }
+
+    /// Groups entries by calendar day so a row can show only its time.
+    ///
+    /// The day heading is what makes a bare "14:32" unambiguous; without the
+    /// grouping the list would be a column of times with no dates on it.
+    /// Input order is preserved within a day, which for `entries(from:)` is
+    /// already most-recent-first.
+    static func byDay(_ entries: [LedgerEntry], calendar: Calendar = .current) -> [DayGroup] {
+        var order: [Date] = []
+        var buckets: [Date: [LedgerEntry]] = [:]
+        for entry in entries {
+            let day = calendar.startOfDay(for: entry.date)
+            if buckets[day] == nil { order.append(day) }
+            buckets[day, default: []].append(entry)
+        }
+        return order.map { DayGroup(day: $0, entries: buckets[$0] ?? []) }
+    }
+
     static func summary(of entries: [LedgerEntry]) -> Summary {
         entries.reduce(into: Summary()) { total, entry in
             total.movedBytes += entry.movedBytes

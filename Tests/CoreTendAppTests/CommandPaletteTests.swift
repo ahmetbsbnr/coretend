@@ -32,8 +32,11 @@ struct CommandPaletteTests {
         // analysis, broken-LaunchAgent detection) so they were kept and
         // re-wired rather than deleted. See Documentation/Audits/
         // SESSION_2026-08-09_AUDIT.md.
+        // .record sits second, beside the Dashboard and above the scanners:
+        // direction B makes the record the app's spine rather than a sheet
+        // buried inside My Activity. See Documentation/Mockups/COMPARISON.md.
         #expect(modules == [
-            .smartCare, .cleanup, .spaceLens, .duplicates, .applications,
+            .smartCare, .record, .cleanup, .spaceLens, .duplicates, .applications,
             .myClutter, .cloudCleanup, .performance,
             .protection, .myActivity,
         ])

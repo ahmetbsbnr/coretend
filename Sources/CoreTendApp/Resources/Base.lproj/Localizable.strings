@@ -234,7 +234,7 @@
 "activity.empty_kind" = "No activity of this kind yet";
 "activity.empty.subtitle" = "Scans and cleanups will appear here. Everything stays on this Mac.";
 "activity.empty_range" = "No activity in this range.";
-"activity.freed_real" = "Freed (real)";
+"activity.moved_to_trash" = "Moved to Trash";
 "activity.items" = "Items";
 "activity.row.detail" = "%d items · %@ %@";
 "activity.row.real_suffix" = "(real, applied to disk)";
@@ -405,19 +405,7 @@
 
 /* Safety log (SafetyCore audit trail persistence) */
 "common.done" = "Done";
-"safetylog.title" = "Safety Log";
-"safetylog.subtitle" = "%d executed";
-"safetylog.subtitle_detail" = "%d executed · %d skipped or failed";
-"safetylog.empty" = "No safety log entries yet.";
-"safetylog.unavailable" = "Local database unavailable";
-"safetylog.purge" = "Purge Log";
-"safetylog.stage.approved" = "Approved";
-"safetylog.stage.executed" = "Executed";
-"safetylog.stage.skipped" = "Skipped";
-"safetylog.stage.error" = "Error";
-"safetylog.a11y.rule" = "rule %@";
-"safetylog.a11y.risk" = "risk %@";
-"activity.open_safety_log" = "View Safety Log";
+"activity.open_safety_log" = "Open the Record";
 
 /* Privacy Cleaner — per-profile running-browser handling */
 "privacy.profile_running_reason" = "%@ is running — cleaning is disabled for this profile until it's closed.";
@@ -656,3 +644,45 @@
 "menu.scan.pause_resume" = "Pause or Resume Scan";
 "menu.scan.cancel" = "Cancel Scan";
 "sidebar.reset" = "Reset Sidebar";
+
+/* The record — direction B's spine. */
+"record.title" = "Record";
+"record.unavailable" = "The record is unavailable because no database could be opened.";
+"record.error_title" = "The record could not be read";
+"record.empty_title" = "Nothing recorded yet";
+"record.empty_message" = "Every scan, every approval and every refusal is written here as it happens.";
+"record.no_selection_title" = "Select an entry";
+"record.no_selection_message" = "Each entry lists what CoreTend moved and what it declined to touch.";
+"record.purge" = "Erase the Record…";
+"record.summary_moved" = "MOVED TO TRASH";
+"record.summary_refused" = "REFUSED";
+"record.reversible_note" = "Every item is recoverable until the Trash is emptied.";
+"record.stat_moved" = "MOVED TO TRASH";
+"record.stat_items" = "ITEMS";
+"record.stat_refused" = "REFUSED";
+"record.section_moved" = "WHAT MOVED";
+"record.section_kept_back" = "WHAT WAS KEPT BACK";
+"record.section_failed" = "WHAT COULD NOT BE MOVED";
+"record.tag_reversible" = "Reversible";
+"record.tag_refused" = "Refused";
+"record.tag_failed" = "Failed";
+"record.tag_recorded" = "Recorded";
+
+"record.title_moved_one" = "Moved 1 item to the Trash";
+"record.title_moved_other" = "Moved %d items to the Trash";
+"record.title_refused_one" = "Refused to touch 1 item";
+"record.title_refused_other" = "Refused to touch %d items";
+"record.title_failed_one" = "1 item could not be moved";
+"record.title_failed_other" = "%d items could not be moved";
+"record.title_approved_one" = "Approved 1 item";
+"record.title_approved_other" = "Approved %d items";
+"record.subtitle_refused_one" = "1 refused";
+"record.subtitle_refused_other" = "%d refused";
+"record.subtitle_failed_one" = "1 failed";
+"record.subtitle_failed_other" = "%d failed";
+"record.subtitle_approved_one" = "1 approved";
+"record.subtitle_approved_other" = "%d approved";
+"record.purge_confirm_title" = "Erase the entire record?";
+"record.purge_confirm_action" = "Erase the Record";
+"record.purge_confirm_message" = "All %d entries are removed permanently. The record is append-only: nothing restores them, and files already moved to the Trash are not affected.";
+"common.more" = "More";

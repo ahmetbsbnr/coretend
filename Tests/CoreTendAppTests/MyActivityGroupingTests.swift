@@ -44,7 +44,7 @@ struct MyActivityGroupingTests {
             record(kind: .scan, daysAgo: 0, bytes: 999), // scans never count as freed
         ]
         let summary = ActivityImpactSummary(records)
-        #expect(summary.freedBytes == 600)
+        #expect(summary.movedToTrashBytes == 600)
         #expect(summary.itemCount == 3)
     }
 }

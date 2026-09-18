@@ -19,7 +19,7 @@ struct ApprovalRejectionTests {
 
     @Test func aRunWhereEverythingWasRefusedIsNotSilent() {
         let outcome = ExecutionOutcome(
-            executedCount: 0, skippedCount: 0, freedBytes: 0,
+            executedCount: 0, skippedCount: 0, movedToTrashBytes: 0,
             rejectedCount: 40, rejectionReasons: [.outsideAllowedRoots])
         #expect(outcome.hasRejections)
         #expect(outcome.didNothing)
@@ -31,7 +31,7 @@ struct ApprovalRejectionTests {
     /// of rejection, so `hasSkips` was false and `message` was nil.
     @Test func rejectionsAloneAreEnoughToProduceAMessage() {
         let outcome = ExecutionOutcome(
-            executedCount: 0, skippedCount: 0, freedBytes: 0,
+            executedCount: 0, skippedCount: 0, movedToTrashBytes: 0,
             rejectedCount: 3, rejectionReasons: [.protectedRoot("/System")])
         #expect(outcome.hasSkips == false)
         #expect(outcome.message != nil)
@@ -41,7 +41,7 @@ struct ApprovalRejectionTests {
     /// successful cleanup is noise, and noise is what hides the one run that
     /// did refuse something.
     @Test func aCleanRunStillProducesNoMessage() {
-        let outcome = ExecutionOutcome(executedCount: 12, skippedCount: 0, freedBytes: 4096)
+        let outcome = ExecutionOutcome(executedCount: 12, skippedCount: 0, movedToTrashBytes: 4096)
         #expect(outcome.message == nil)
         #expect(outcome.didNothing == false)
         #expect(outcome.hasRejections == false)
@@ -52,7 +52,7 @@ struct ApprovalRejectionTests {
     /// away at the moment of acting.
     @Test func skipsAndRejectionsAreBothReported() {
         let outcome = ExecutionOutcome(
-            executedCount: 5, skippedCount: 2, freedBytes: 1024,
+            executedCount: 5, skippedCount: 2, movedToTrashBytes: 1024,
             rejectedCount: 3, rejectionReasons: [.symlinkTraversal("/tmp/link")])
         let message = outcome.message ?? ""
         #expect(message.contains("2"), "the skip count is missing")
@@ -107,7 +107,7 @@ struct ApprovalRejectionTests {
     /// show a partial run as a complete one.
     @Test func theActivitySummaryCarriesBothCounts() {
         let outcome = ExecutionOutcome(
-            executedCount: 1, skippedCount: 2, freedBytes: 0,
+            executedCount: 1, skippedCount: 2, movedToTrashBytes: 0,
             rejectedCount: 3, rejectionReasons: [.fileVanished])
         let summary = outcome.annotate("Cleanup")
         #expect(summary.contains("2 skipped"))

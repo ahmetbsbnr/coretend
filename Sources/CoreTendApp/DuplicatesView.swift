@@ -162,7 +162,7 @@ final class DuplicatesViewModel: CancellableScan {
             AppEnvironment.shared.record(ActivityRecord(
                 kind: .cleanup,
                 summary: outcome.annotate("Moved \(outcome.executedCount) duplicate copies to Trash"),
-                itemCount: outcome.executedCount, bytes: outcome.freedBytes))
+                itemCount: outcome.executedCount, bytes: outcome.movedToTrashBytes))
         }
     }
 
@@ -433,7 +433,7 @@ struct DuplicatesView: View {
 
     private func finishedView(_ outcome: ExecutionOutcome) -> some View {
         MCSuccessState(
-            title: L("leftovers.finished.moved", mcFormatBytes(outcome.freedBytes)),
+            title: L("leftovers.finished.moved", mcFormatBytes(outcome.movedToTrashBytes)),
             message: outcome.message,
             actionTitle: L("smartcare.scan_again")) { model.start() }
     }

@@ -158,8 +158,8 @@ final class SpaceLensViewModel: CancellableScan {
             AppEnvironment.shared.record(ActivityRecord(
                 kind: .cleanup,
                 summary: outcome.annotate(
-                    "Space Lens: moved \(node.name) to Trash (\(mcFormatBytes(outcome.freedBytes)))"),
-                itemCount: outcome.executedCount, bytes: outcome.freedBytes))
+                    "Space Lens: moved \(node.name) to Trash (\(mcFormatBytes(outcome.movedToTrashBytes)))"),
+                itemCount: outcome.executedCount, bytes: outcome.movedToTrashBytes))
             if outcome.executedCount > 0 {
                 rescanPreservingDepth()
             } else {
