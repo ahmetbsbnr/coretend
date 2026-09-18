@@ -371,9 +371,6 @@ jobs:
           [ "$missing" -eq 0 ] || exit 1
           echo "Uploading ${#ASSETS[@]} assets to draft $TAG."
 
-          EXTRA=()
-          [ "$PRERELEASE" = "true" ] && EXTRA+=(--prerelease)
-
           if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
             # A release already exists. Only ever touch it if it is still a
             # draft: clobbering a published release would rewrite bytes users
@@ -386,13 +383,20 @@ jobs:
             fi
             echo "Reusing the existing draft (previous attempt) and replacing its assets."
             gh release upload "$TAG" "${ASSETS[@]}" --repo "$REPO" --clobber
-          else
+          elif [ "$PRERELEASE" = "true" ]; then
             gh release create "$TAG" "${ASSETS[@]}" \
-              --repo "$REPO" \
-              --draft \
+              --repo "$REPO" --draft --prerelease \
               --title "CoreTend $VERSION" \
-              --notes-file "Release/Notes/$VERSION.en.md" \
-              "${EXTRA[@]}"
+              --notes-file "Release/Notes/$VERSION.en.md"
+          else
+            # The two branches are spelled out rather than built from an
+            # optional array: the signing runner is macOS, whose /bin/bash is
+            # 3.2, and there "${EXTRA[@]}" on an empty array is an unbound
+            # variable under set -u. That is what failed here.
+            gh release create "$TAG" "${ASSETS[@]}" \
+              --repo "$REPO" --draft \
+              --title "CoreTend $VERSION" \
+              --notes-file "Release/Notes/$VERSION.en.md"
           fi
 
           echo "Draft assets now attached:"
