@@ -58,9 +58,6 @@ struct MCSettingsView: View {
     @State private var showClearConfirm = false
     @State private var showDiagnostic = false
 
-    private var appVersion: String {
-        AppMetadata.marketingVersion
-    }
 
     var body: some View {
         Form {
@@ -173,8 +170,11 @@ struct MCSettingsView: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
             UpdatesView()
+            // No version row here: the installed version is stated once, in
+            // Updates, where it is the operand of the comparison against the
+            // published release. Two rows showing the same number in one
+            // window is not thoroughness, it is noise.
             Section(L("settings.about")) {
-                LabeledContent(L("settings.version"), value: appVersion)
                 Link(L("settings.about.privacy"),
                      destination: URL(string: "https://coretend.ahmetbsbnr.com/privacy")!)
                 Link(L("settings.about.license"),

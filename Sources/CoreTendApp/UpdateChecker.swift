@@ -7,19 +7,30 @@ import Foundation
 ///
 /// Why this deliberately does not install anything:
 ///
-/// Installing an update means executing code fetched from the network, which
-/// is only safe if the artifact's *publisher* can be cryptographically proven.
-/// CoreTend has no Apple Developer ID, so its builds are neither signed nor
-/// notarized, and Minisign signing is prepared but has no key yet. A SHA-256
-/// checksum published beside the file it describes proves the download was not
-/// corrupted — it proves nothing about who produced it, because anyone able to
-/// replace the artifact can replace the checksum too.
+/// Installing an update means executing code fetched from the network into the
+/// running app's own bundle. Releases *are* Developer ID signed, Apple
+/// notarized and Minisign signed, so the publisher is provable — but a
+/// self-updater still has to get the download, the verification, the atomic
+/// replacement and the relaunch right, and every one of those is a way to
+/// brick an installed app or to execute an attacker's payload with the user's
+/// privileges. That is a large amount of security-critical machinery to
+/// maintain for a release cadence of a handful of builds a year.
 ///
-/// So until a real publisher signature exists, this type does the honest
-/// subset: it reports what version is available, shows the release notes, and
-/// opens the official release page so the user downloads and verifies it
-/// themselves. It never downloads an artifact, never writes to the app bundle,
-/// and never builds a shell command.
+/// So this type does the subset that carries no such risk: it reports what
+/// version is available, shows the release notes, and opens the official
+/// release page so the user fetches the build through their browser, where
+/// macOS applies quarantine and checks the notarization on open.
+/// `DownloadVerification` then lets the user confirm locally that the file
+/// they received is byte-for-byte the one the manifest describes.
+///
+/// This type never downloads an artifact, never writes to the app bundle, and
+/// never builds a shell command.
+///
+/// Note on the checksum's meaning: a SHA-256 published beside the file it
+/// describes proves integrity, not authorship — anyone able to replace the
+/// artifact can replace the checksum too. Authorship is proved by the
+/// Developer ID signature and the notarization ticket, which macOS verifies
+/// without this app's involvement.
 ///
 /// The whole app remains fully functional offline: every failure below is a
 /// state this type reports, never an error the rest of the app has to handle.

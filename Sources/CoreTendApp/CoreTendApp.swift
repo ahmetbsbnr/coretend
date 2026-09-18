@@ -378,6 +378,10 @@ struct MainWindow: View {
     @AppStorage("onboardingDone") private var onboardingDone = false
     @State private var showOnboarding = false
     @State private var showCommandPalette = false
+    /// Owned here rather than inside Settings so the automatic check runs at
+    /// launch. A check that only happens once the user opens the Settings
+    /// screen is not an automatic check.
+    @State private var updates = UpdatesViewModel()
 
     var body: some View {
         NavigationSplitView {
@@ -435,6 +439,12 @@ struct MainWindow: View {
             .mcCanvasBackground()
         }
         .onAppear { if !onboardingDone { showOnboarding = true } }
+        .task {
+            // No-op unless the user opted in and a day has passed. Failures are
+            // deliberately silent: an app that works fully offline must not
+            // greet the user with a network error it chose to go looking for.
+            await updates.checkAutomaticallyIfDue()
+        }
         .sheet(isPresented: $showOnboarding, onDismiss: { onboardingDone = true }) {
             OnboardingView(isPresented: $showOnboarding)
         }
@@ -455,6 +465,19 @@ struct MainWindow: View {
         }
         .toolbar {
             ToolbarItemGroup {
+                // Surfaced only when an automatic check actually found
+                // something newer. There is no permanent "check for updates"
+                // affordance in the toolbar: that belongs in Settings, and a
+                // badge that is always present stops meaning anything.
+                if case .result(.updateAvailable(let info)) = updates.phase {
+                    Button {
+                        selection = .settings
+                    } label: {
+                        Label(L("updates.available", info.version), systemImage: "arrow.down.circle.fill")
+                    }
+                    .help(L("updates.available", info.version))
+                    .accessibilityIdentifier("toolbar.update_available")
+                }
                 Button {
                     showCommandPalette = true
                 } label: {

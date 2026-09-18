@@ -612,3 +612,11 @@
 "authorization.complete" = "Scans can read everything they are asked to read.";
 "authorization.incomplete" = "%d location(s) refused — scans will come back incomplete.";
 "authorization.recheck" = "Re-check";
+"updates.last_checked" = "Last checked";
+"updates.verify_download" = "Verify a Download…";
+"updates.verify_prompt" = "Choose the CoreTend file you downloaded.";
+"updates.verify_detail" = "Compares the file on your disk with the checksum published for this release. It runs locally, opens nothing, and proves the bytes are intact — Apple's notarization, which macOS checks when you open the app, is what proves who built it.";
+"updates.verify_ok" = "%@ matches the published checksum.";
+"updates.verify_mismatch" = "This file does not match the published checksum. Do not open it — download it again from the release page.";
+"updates.verify_wrong_size" = "Wrong size: the release publishes %@, this file is %@. The download is probably incomplete.";
+"updates.verify_unreadable" = "%@ could not be read, or is not a file this release publishes.";

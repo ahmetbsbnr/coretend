@@ -610,3 +610,11 @@
 "authorization.complete" = "Les analyses peuvent lire tout ce qui leur est demandé.";
 "authorization.incomplete" = "%d emplacement(s) refusé(s) — les analyses seront incomplètes.";
 "authorization.recheck" = "Revérifier";
+"updates.last_checked" = "Dernière vérification";
+"updates.verify_download" = "Vérifier un téléchargement…";
+"updates.verify_prompt" = "Choisissez le fichier CoreTend que vous avez téléchargé.";
+"updates.verify_detail" = "Compare le fichier présent sur votre disque avec la somme de contrôle publiée pour cette version. Tout se passe localement, rien n'est ouvert, et cela prouve que les octets sont intacts — c'est la notarisation Apple, vérifiée par macOS à l'ouverture, qui prouve qui l'a produit.";
+"updates.verify_ok" = "%@ correspond à la somme de contrôle publiée.";
+"updates.verify_mismatch" = "Ce fichier ne correspond pas à la somme de contrôle publiée. Ne l'ouvrez pas — retéléchargez-le depuis la page de version.";
+"updates.verify_wrong_size" = "Taille incorrecte : la version publie %@, ce fichier fait %@. Le téléchargement est probablement incomplet.";
+"updates.verify_unreadable" = "%@ n'a pas pu être lu, ou n'est pas un fichier publié par cette version.";
