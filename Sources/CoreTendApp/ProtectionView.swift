@@ -115,7 +115,7 @@ struct IntegrityView: ModuleSubScreen {
     }
 
     private var explainerCard: some View {
-        MCCard {
+        VStack(alignment: .leading, spacing: MCSpacing.sm) {
             HStack(alignment: .top, spacing: MCSpacing.md) {
                 Image(systemName: "info.circle").font(MCFont.pageTitle).foregroundStyle(MCTheme.accent)
                 VStack(alignment: .leading, spacing: MCSpacing.xxs) {
@@ -128,7 +128,7 @@ struct IntegrityView: ModuleSubScreen {
     }
 
     private var downloadsCard: some View {
-        MCCard {
+        VStack(alignment: .leading, spacing: MCSpacing.sm) {
             VStack(alignment: .leading, spacing: MCSpacing.sm) {
                 HStack {
                     Text(L("integrity.downloads.title")).font(MCFont.cardTitle)
@@ -178,7 +178,7 @@ struct IntegrityView: ModuleSubScreen {
     }
 
     private var inspectorCard: some View {
-        MCCard {
+        VStack(alignment: .leading, spacing: MCSpacing.sm) {
             VStack(alignment: .leading, spacing: MCSpacing.sm) {
                 Text(L("integrity.inspector.title")).font(MCFont.cardTitle)
                 Text(L("integrity.inspector.subtitle")).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
@@ -223,7 +223,7 @@ struct IntegrityView: ModuleSubScreen {
     }
 
     private var loginItemsCard: some View {
-        MCCard {
+        VStack(alignment: .leading, spacing: MCSpacing.sm) {
             VStack(alignment: .leading, spacing: MCSpacing.xs) {
                 Text(L("integrity.login_items.title")).font(MCFont.cardTitle)
                 Text(L("integrity.login_items.subtitle")).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)

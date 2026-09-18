@@ -132,7 +132,7 @@ public struct MCMetricCard: View {
     }
 
     public var body: some View {
-        MCCard {
+        VStack(alignment: .leading, spacing: MCSpacing.sm) {
             VStack(spacing: MCSpacing.xs) {
                 ZStack {
                     Circle().stroke(color.opacity(MCOpacity.orbitTrack), lineWidth: 6)
@@ -207,7 +207,7 @@ public struct MCEmptyState: View {
                 .frame(maxWidth: 420)
             if let actionTitle, let action {
                 Button(actionTitle, action: action)
-                    .mcPrimaryButton()
+                    .buttonStyle(.borderedProminent)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -273,7 +273,7 @@ public struct MCSuccessState: View {
             }
             if let actionTitle, let action {
                 Button(actionTitle, action: action)
-                    .mcPrimaryButton()
+                    .buttonStyle(.borderedProminent)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -465,230 +465,3 @@ public struct MCFeatureRow: View {
 }
 
 // MARK: - Buttons
-
-/// The app's primary action.
-///
-/// Replaces `.buttonStyle(.borderedProminent)`, which pairs the view's tint
-/// with a white label and never checks that the two can be read together. With
-/// CoreTend's teal that combination measures **1.87:1** — against a 4.5:1 text
-/// minimum — and it was the label of the primary action on every screen that
-/// had one: Scan Storage, Find Duplicates, Scan Home Folder.
-///
-/// The same teal with `MCColor.onAccent` measures 9.65:1.
-///
-/// Pressed and disabled states are explicit rather than inherited, so they
-/// cannot be whatever the system decides a tinted button should look like.
-public struct MCPrimaryButtonStyle: ButtonStyle {
-    @Environment(\.isEnabled) private var isEnabled
-
-    public init() {}
-
-    public func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(MCFont.actionLabel)
-            .foregroundStyle(MCColor.onAccent)
-            .padding(.vertical, MCSpacing.sm)
-            .padding(.horizontal, MCSpacing.lg)
-            .background(fill(pressed: configuration.isPressed), in: RoundedRectangle(cornerRadius: MCRadius.card))
-            // Opacity, not a third fill colour: a disabled control should read
-            // as the same control turned down, not as a different one.
-            .opacity(isEnabled ? 1 : 0.45)
-            .contentShape(RoundedRectangle(cornerRadius: MCRadius.card))
-    }
-
-    private func fill(pressed: Bool) -> Color {
-        pressed ? MCColor.tealDeep : MCColor.teal
-    }
-}
-
-/// A secondary action: real emphasis, but never competing with the primary one
-/// on the same screen.
-///
-/// A tinted outline rather than a filled surface, so that two buttons side by
-/// side have an obvious order.
-public struct MCSecondaryButtonStyle: ButtonStyle {
-    @Environment(\.isEnabled) private var isEnabled
-
-    public init() {}
-
-    public func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(MCFont.rowTitle)
-            .foregroundStyle(MCColor.teal)
-            .padding(.vertical, MCSpacing.xs)
-            .padding(.horizontal, MCSpacing.md)
-            .background(
-                configuration.isPressed ? MCColor.tealWash : Color.clear,
-                in: RoundedRectangle(cornerRadius: MCRadius.card))
-            .overlay(
-                RoundedRectangle(cornerRadius: MCRadius.card)
-                    .stroke(MCColor.teal.opacity(0.55), lineWidth: 1))
-            .opacity(isEnabled ? 1 : 0.45)
-            .contentShape(RoundedRectangle(cornerRadius: MCRadius.card))
-    }
-}
-
-/// An irreversible action.
-///
-/// Filled, because "Move to Trash" should not be reachable by accident, and
-/// filled in coral so it cannot be mistaken for the primary action even at a
-/// glance or in greyscale.
-public struct MCDestructiveButtonStyle: ButtonStyle {
-    @Environment(\.isEnabled) private var isEnabled
-
-    public init() {}
-
-    public func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(MCFont.rowTitle)
-            .foregroundStyle(MCColor.onAccent)
-            .padding(.vertical, MCSpacing.xs)
-            .padding(.horizontal, MCSpacing.md)
-            .background(
-                configuration.isPressed ? MCColor.coral.opacity(0.8) : MCColor.coral,
-                in: RoundedRectangle(cornerRadius: MCRadius.card))
-            .opacity(isEnabled ? 1 : 0.45)
-            .contentShape(RoundedRectangle(cornerRadius: MCRadius.card))
-    }
-}
-
-public extension ButtonStyle where Self == MCPrimaryButtonStyle {
-    static var mcPrimary: MCPrimaryButtonStyle { MCPrimaryButtonStyle() }
-}
-
-// MARK: - Button roles
-//
-// ## The system glass styles were measured and rejected
-//
-// WWDC26 says "for a glass button, you should use `glassButtonStyle` (or
-// `glassProminent`) rather than applying a raw `glassEffect`", and CoreTend's
-// own styles existed only because `.borderedProminent` paired the tint with a
-// white label at 1.87:1. So `.glassProminent` was measured on macOS 27 rather
-// than assumed.
-//
-// **In isolation it passes.** On a flat ground at #14171A with the brand teal
-// as tint, in an activated window, it renders a *dark* label and measures
-// **11.13:1** — the system picks a legible label for the tint now, and that
-// beats the 9.65:1 of the fill below.
-//
-// **In place it fails.** CoreTend's primary action sits inside the Dashboard's
-// feature card, which carries a teal wash. Glass samples what is behind it, so
-// the fill resolved to a muddy #5BA0A1, the system then chose a near-white
-// label, and the pair measured **2.61:1** — worse than what it replaced, and
-// under the 4.5:1 minimum.
-//
-// That is not a bug in the system style. It is the HIG's own rule arriving as
-// a measurement: Liquid Glass belongs to the navigation layer, and "Don't use
-// Liquid Glass in the content layer... including it in the content layer can
-// result in unnecessary complexity and a confusing visual hierarchy." A button
-// on a tinted card is content.
-//
-// So the styles below stay, and the glass styles stay where they belong — the
-// sidebar and the sub-navigation bar, via `mcNavigationGlass`.
-//
-// The lesson is the method, not the result: a contrast measurement taken
-// anywhere but the surface the control actually sits on is a measurement of
-// something else.
-
-public extension View {
-    /// A screen's primary action.
-    func mcPrimaryButton() -> some View { buttonStyle(.mcPrimary) }
-    /// A secondary action, never competing with the primary one.
-    func mcSecondaryButton() -> some View { buttonStyle(.mcSecondary) }
-    /// An irreversible action.
-    func mcDestructiveButton() -> some View { buttonStyle(.mcDestructive) }
-}
-
-public extension ButtonStyle where Self == MCSecondaryButtonStyle {
-    static var mcSecondary: MCSecondaryButtonStyle { MCSecondaryButtonStyle() }
-}
-
-public extension ButtonStyle where Self == MCDestructiveButtonStyle {
-    static var mcDestructive: MCDestructiveButtonStyle { MCDestructiveButtonStyle() }
-}
-
-// MARK: - Surfaces
-
-/// Where a surface sits in the elevation ladder.
-///
-/// `MCColor` defines four ground-to-raised steps and documents them as a
-/// ladder, but views were assembling surfaces by hand — a fill, a stroke, a
-/// radius and sometimes a shadow, restated at each site with small differences
-/// nobody chose. `MCCard` existed and was used eleven times; the Dashboard
-/// alone hand-rolled five more with a different radius and no shadow.
-///
-/// Naming the level rather than the colour means a view says how far forward
-/// something sits, and the ladder stays a ladder.
-public enum MCElevation {
-    /// Recessed: the sidebar, inset wells.
-    case sunken
-    /// The default raised surface: cards, rows, popovers.
-    case raised
-    /// One step further forward: a hovered or selected row inside a card.
-    case raisedHigh
-    /// Raised, and tinted with the accent — reserved for the one panel a
-    /// screen is built around.
-    case feature
-
-    var fill: Color {
-        switch self {
-        case .sunken: MCColor.secondaryBackground
-        case .raised: MCColor.elevatedBackground
-        case .raisedHigh: MCColor.elevatedHighBackground
-        case .feature: MCColor.elevatedBackground
-        }
-    }
-
-    /// Only the feature surface carries a shadow. A shadow on every card makes
-    /// none of them read as raised.
-    var shadowOpacity: Double {
-        switch self {
-        case .feature: 0.22
-        case .raised: 0.16
-        case .sunken, .raisedHigh: 0
-        }
-    }
-
-    var strokeColor: Color {
-        self == .feature ? MCColor.teal.opacity(0.35) : MCColor.separator
-    }
-}
-
-public extension View {
-    /// Applies one step of the elevation ladder: fill, hairline, and shadow if
-    /// the level has one.
-    ///
-    /// Increase Contrast strengthens the hairline rather than the fill —
-    /// brightening surfaces would flatten the ladder, which is the opposite of
-    /// what someone turning that setting on is asking for.
-    func mcSurface(_ level: MCElevation = .raised,
-                   radius: CGFloat = MCRadius.card) -> some View {
-        modifier(MCSurfaceModifier(level: level, radius: radius))
-    }
-}
-
-private struct MCSurfaceModifier: ViewModifier {
-    let level: MCElevation
-    let radius: CGFloat
-
-    func body(content: Content) -> some View {
-        // Read directly rather than via @Environment: macOS SwiftUI has no
-        // accessibilityIncreaseContrast environment key. Observation tracks
-        // this read and re-renders when the system setting changes.
-        let increaseContrast = MCAccessibilityState.shared.increaseContrast
-        let shape = RoundedRectangle(cornerRadius: radius)
-        return content
-            .background {
-                shape.fill(level.fill)
-                if level == .feature {
-                    shape.fill(LinearGradient(
-                        colors: [MCColor.teal.opacity(0.12), MCColor.teal.opacity(0.02)],
-                        startPoint: .topLeading, endPoint: .bottomTrailing))
-                }
-            }
-            .overlay(shape.strokeBorder(
-                level.strokeColor.opacity(increaseContrast ? 1.0 : 0.8),
-                lineWidth: increaseContrast ? 1.5 : 1))
-            .shadow(color: .black.opacity(level.shadowOpacity), radius: 5, x: 0, y: 2)
-    }
-}

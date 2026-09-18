@@ -134,7 +134,7 @@ struct LeftoversView: ModuleSubScreen {
                 Button(L("cleanup.move_to_trash")) {
                     showMoveConfirmation = true
                 }
-                .mcDestructiveButton()
+                .buttonStyle(.bordered)
                 .disabled(model.selectedPaths.isEmpty)
             }
             .padding()

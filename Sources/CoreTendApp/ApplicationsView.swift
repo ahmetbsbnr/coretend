@@ -441,7 +441,7 @@ struct InstalledAppsView: ModuleSubScreen {
                             .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                         }
                     }
-                    MCCard {
+                    VStack(alignment: .leading, spacing: MCSpacing.sm) {
                         VStack(alignment: .leading, spacing: MCSpacing.xs) {
                             Text(L("apps.associated_data")).font(MCFont.cardTitle)
                             if model.associated.isEmpty {
@@ -475,7 +475,7 @@ struct InstalledAppsView: ModuleSubScreen {
                         Button(L("apps.uninstall"), role: .destructive) {
                             showUninstallConfirmation = true
                         }
-                        .mcDestructiveButton()
+                        .buttonStyle(.bordered)
                         .accessibilityIdentifier("applications.uninstall")
                         Button(L("common.reveal_in_finder")) {
                             NSWorkspace.shared.activateFileViewerSelecting([app.path])

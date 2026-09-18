@@ -204,7 +204,7 @@ struct PrivacyCleanerView: ModuleSubScreen {
                 Button(L("privacy.clean_caches")) {
                     showMoveConfirmation = true
                 }
-                .mcDestructiveButton()
+                .buttonStyle(.bordered)
                 .accessibilityIdentifier("privacy.clean")
                 .disabled(model.selectedProfileIDs.isEmpty)
             }

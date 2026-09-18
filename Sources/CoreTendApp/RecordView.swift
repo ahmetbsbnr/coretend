@@ -294,7 +294,6 @@ private struct RecordInspector: View {
             Spacer(minLength: 0)
         }
         .padding(MCSpacing.sm)
-        .mcSurface(.raised, radius: MCRadius.card)
     }
 
     private func stat(_ label: String, _ value: String, _ color: Color) -> some View {
@@ -329,7 +328,6 @@ private struct RecordInspector: View {
                     if row.id != rows.last?.id { Divider() }
                 }
             }
-            .mcSurface(.raised, radius: MCRadius.card)
         }
     }
 }

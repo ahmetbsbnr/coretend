@@ -546,150 +546,30 @@ struct TypographySystemTests {
 /// `.buttonStyle(.borderedProminent)` is what produced it: the system style
 /// pairs the view's tint with a white label and never checks that the two can
 /// be read together.
-@Suite("On-accent contrast")
-struct OnAccentContrastTests {
-    private let onAccent = MCColor.Canonical.ground
-
-    /// Every fill a label is printed on must carry that label at 4.5:1.
-    @Test func labelsAreReadableOnEveryAccentFill() {
-        for (name, fill) in [
-            ("teal", MCColor.Canonical.teal),
-            ("tealDeep", MCColor.Canonical.tealDeep),
-            ("coral", MCColor.Canonical.coral),
-            ("amber", MCColor.Canonical.amber),
-            ("green", MCColor.Canonical.green),
-        ] {
-            let ratio = MCColor.contrastRatio(onAccent, fill)
-            #expect(ratio >= 4.5, "onAccent on \(name) is \(ratio):1, under the 4.5:1 text minimum")
-        }
-    }
-
-    /// The regression, stated as a fact so it cannot be reintroduced by someone
-    /// deciding white looks better.
-    @Test func whiteOnTealIsUnreadableAndIsNotWhatWeUse() {
-        let white: UInt32 = 0xFFFFFF
-        #expect(MCColor.contrastRatio(white, MCColor.Canonical.teal) < 2.0,
-                "if this ever passes, the teal changed and the comment explaining onAccent is stale")
-        #expect(MCColor.contrastRatio(onAccent, MCColor.Canonical.teal) > 9.0)
-    }
-
-    /// The pressed state must stay readable too — a button is most often read
-    /// at the moment it is being pressed.
-    @Test func thePressedFillIsAlsoReadable() {
-        #expect(MCColor.contrastRatio(onAccent, MCColor.Canonical.tealDeep) >= 4.5)
-    }
-}
-
-/// Destructive actions must not wear the primary action's clothes.
-@Suite("Button style assignment")
-struct ButtonStyleAssignmentTests {
+@Suite("Controls are the system's; the brand stays on data")
+struct ControlStyleTests {
     private let root = URL(fileURLWithPath: #filePath)
         .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
 
-    private func sources() throws -> [(name: String, text: String)] {
-        var out: [(String, String)] = []
-        for relative in ["Sources/CoreTendApp", "Sources/DesignSystem"] {
-            let dir = root.appendingPathComponent(relative)
-            for name in try SourceTree.swiftFiles(under: dir)
-                where name.hasSuffix(".swift") {
-                out.append((name, try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)))
+    /// The custom button styles existed to fix white on brand teal (1.87:1).
+    /// Controls no longer wear the brand — they use the system accent through
+    /// `.borderedProminent` / `.bordered`, like every other Mac app — so the
+    /// styles are gone and nothing may quietly rebuild them.
+    @Test func noViewPaintsAButtonWithTheBrand() throws {
+        let dir = root.appendingPathComponent("Sources/CoreTendApp")
+        for name in try SourceTree.swiftFiles(under: dir) {
+            let text = try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)
+            for retired in ["mcPrimaryButton", "mcSecondaryButton", "mcDestructiveButton",
+                            "MCPrimaryButtonStyle", "MCCard", ".mcSurface(", "MCElevation"] {
+                #expect(!text.contains(retired), "\(name) uses retired API \(retired)")
+            }
+            for line in text.split(separator: "\n") where line.contains("buttonStyle") {
+                #expect(!line.contains("MCColor.teal"), "\(name) tints a control with the brand: \(line)")
             }
         }
-        return out
-    }
-
-    /// The system prominent style is banned outright. It is where the 1.87:1
-    /// label came from, and it also made "Move to Trash" and "Uninstall" look
-    /// exactly like "Scan Storage" — the button that deletes files rendered
-    /// identically to the one that starts a scan.
-    @Test func noViewUsesTheSystemProminentStyle() throws {
-        for file in try sources() {
-            for line in file.text.split(separator: "\n") {
-                let trimmed = line.trimmingCharacters(in: .whitespaces)
-                guard !trimmed.hasPrefix("//") && !trimmed.hasPrefix("///") else { continue }
-                #expect(!trimmed.contains(".buttonStyle(.borderedProminent)"),
-                        "\(file.name) uses the system prominent style — use .mcPrimary or .mcDestructive")
-            }
-        }
-    }
-
-    /// Coral must be distinguishable from teal without colour — the two fills
-    /// differ in luminance as well as hue, so a greyscale or colourblind reader
-    /// still sees two different buttons.
-    @Test func destructiveAndPrimaryDifferWithoutColour() {
-        let teal = MCColor.relativeLuminance(MCColor.Canonical.teal)
-        let coral = MCColor.relativeLuminance(MCColor.Canonical.coral)
-        #expect(abs(teal - coral) > 0.08,
-                "teal and coral fills are too close in luminance to tell apart in greyscale")
     }
 }
 
-/// Raised surfaces go through one implementation.
-@Suite("Surface system")
-struct SurfaceSystemTests {
-    private let root = URL(fileURLWithPath: #filePath)
-        .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
-
-    private func viewSources() throws -> [(name: String, text: String)] {
-        var out: [(String, String)] = []
-        for relative in ["Sources/CoreTendApp", "Sources/DesignSystem"] {
-            let dir = root.appendingPathComponent(relative)
-            for name in try SourceTree.swiftFiles(under: dir)
-                // Components.swift is where the one implementation lives.
-                where name.hasSuffix(".swift") && name != "Components.swift" {
-                out.append((name, try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)))
-            }
-        }
-        return out
-    }
-
-    /// No view paints its own card. `MCCard` existed and was used eleven times
-    /// while the Dashboard alone hand-rolled five more surfaces with a
-    /// different radius, a different stroke opacity and no shadow — none of
-    /// those differences chosen, all of them visible.
-    @Test func noViewPaintsItsOwnRaisedSurface() throws {
-        for file in try viewSources() {
-            for line in file.text.split(separator: "\n") {
-                let trimmed = line.trimmingCharacters(in: .whitespaces)
-                guard !trimmed.hasPrefix("//") else { continue }
-                #expect(!trimmed.contains("MCColor.elevatedBackground, in: RoundedRectangle"),
-                        "\(file.name) builds its own surface — use .mcSurface(): \(trimmed)")
-            }
-        }
-    }
-
-    /// Only the feature surface carries a shadow, and only one surface per
-    /// screen should be a feature. A shadow on every card makes none of them
-    /// read as raised.
-    @Test func onlyTheFeatureSurfaceCastsAStrongShadow() {
-        #expect(MCElevation.feature.shadowOpacity > MCElevation.raised.shadowOpacity)
-        #expect(MCElevation.sunken.shadowOpacity == 0)
-        #expect(MCElevation.raisedHigh.shadowOpacity == 0,
-                "a hovered row is a row, not a floating object")
-    }
-
-    /// The feature surface is the only one that borrows the accent for its
-    /// edge; everything else uses the neutral hairline, or the accent stops
-    /// meaning "this is the thing".
-    @Test func onlyTheFeatureSurfaceUsesTheAccentForItsEdge() {
-        for level in [MCElevation.sunken, .raised, .raisedHigh] {
-            #expect(level.strokeColor == MCColor.separator, "\(level) borrows the accent")
-        }
-        #expect(MCElevation.feature.strokeColor != MCColor.separator)
-    }
-}
-
-/// Liquid Glass, and the rules that keep it from making the app worse.
-///
-/// Apple's guidance is narrow: glass belongs to the navigation layer that
-/// floats above content. Not content, not full-screen backgrounds, not
-/// scrollable views, and never glass on glass — a glass surface cannot sample
-/// another glass surface, so stacking them produces a muddy rectangle instead
-/// of depth.
-///
-/// The temptation with a new material is to put it everywhere. These tests are
-/// what stops that, since the result of getting it wrong is an app about
-/// reading numbers where the numbers are harder to read.
 @Suite("Liquid Glass adoption")
 struct GlassAdoptionTests {
     private let root = URL(fileURLWithPath: #filePath)

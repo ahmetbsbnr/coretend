@@ -96,7 +96,7 @@ struct PerformanceView: View {
                                      isElevated: snap.diskUsedFraction > 0.75,
                                      elevatedLabel: L("performance.elevated"))
                     }
-                    MCCard {
+                    VStack(alignment: .leading, spacing: MCSpacing.sm) {
                         VStack(alignment: .leading, spacing: MCSpacing.xs) {
                             Text(L("performance.cpu_chart_title")).font(MCFont.cardTitle)
                             cpuChart
@@ -104,7 +104,7 @@ struct PerformanceView: View {
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                     }
-                    MCCard {
+                    VStack(alignment: .leading, spacing: MCSpacing.sm) {
                         VStack(alignment: .leading, spacing: MCSpacing.sm) {
                             Text(L("performance.system")).font(MCFont.cardTitle)
                             LabeledContent(L("performance.memory_pressure"), value: snap.memoryPressureLevel.capitalized)

@@ -252,7 +252,7 @@ struct JunkCleanupView: View {
                     .accessibilityIdentifier("storage.scan.start")
                     .mcAppear(delay: 0.06)
 
-                MCCard {
+                VStack(alignment: .leading, spacing: MCSpacing.sm) {
                     VStack(alignment: .leading, spacing: MCSpacing.sm) {
                         MCSectionHeader(L("cleanup.idle.what_is_scanned"))
                         MCFeatureRow(L("cleanup.category.caches"),
@@ -319,7 +319,6 @@ struct JunkCleanupView: View {
                 }
                 .padding(MCSpacing.sm)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .mcSurface(.raised)
                 .overlay(
                     RoundedRectangle(cornerRadius: MCRadius.card)
                         .stroke(MCTheme.warning.opacity(0.5), lineWidth: 1))
@@ -346,7 +345,7 @@ struct JunkCleanupView: View {
                 Button(L("cleanup.move_to_trash")) {
                     showMoveConfirmation = true
                 }
-                .mcDestructiveButton()
+                .buttonStyle(.bordered)
                 .controlSize(.large)
                 .disabled(model.phase == .running || model.selectedIDs.isEmpty)
             }

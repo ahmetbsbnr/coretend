@@ -281,7 +281,7 @@ struct CloudCleanupView: View {
                     Label(provider.name, systemImage: provider.icon)
                         .frame(width: 220)
                 }
-                .mcSecondaryButton()
+                .buttonStyle(.bordered)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

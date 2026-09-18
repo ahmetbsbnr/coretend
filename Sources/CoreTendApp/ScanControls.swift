@@ -58,13 +58,13 @@ struct MCScanControls: View {
         HStack(spacing: MCSpacing.sm) {
             if isPaused {
                 Button(L("common.resume"), action: onResume)
-                    .mcSecondaryButton()
+                    .buttonStyle(.bordered)
                     .keyboardShortcut("r", modifiers: [])
                     .accessibilityHint(L(resumeHintKey))
                     .accessibilityIdentifier("\(identifierPrefix).scan.resume")
             } else {
                 Button(L("common.pause"), action: onPause)
-                    .mcSecondaryButton()
+                    .buttonStyle(.bordered)
                     .keyboardShortcut("p", modifiers: [])
                     .accessibilityHint(L(pauseHintKey))
                     .accessibilityIdentifier("\(identifierPrefix).scan.pause")
@@ -74,7 +74,7 @@ struct MCScanControls: View {
             // not delete anything. Dressing it in coral would teach the user to
             // hesitate over the one control that is always safe to press.
             Button(L("common.cancel"), action: onCancel)
-                .mcSecondaryButton()
+                .buttonStyle(.bordered)
                 .keyboardShortcut(.cancelAction)
                 .accessibilityIdentifier("\(identifierPrefix).scan.cancel")
         }

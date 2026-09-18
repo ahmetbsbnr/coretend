@@ -348,7 +348,7 @@ struct DuplicatesView: View {
                 Button(L("dupes.move_to_trash")) {
                     showMoveConfirmation = true
                 }
-                .mcDestructiveButton()
+                .buttonStyle(.bordered)
                 .disabled(model.selectedPaths.isEmpty || model.phase == .executing)
                 .accessibilityIdentifier("duplicates.results.remove")
             }
@@ -381,7 +381,6 @@ struct DuplicatesView: View {
                             Image(nsImage: NSWorkspace.shared.icon(forFile: member.url.path))
                                 .resizable().frame(width: 32, height: 32)
                                 .padding(MCSpacing.xxs)
-                                .mcSurface(.raised, radius: MCRadius.small)
                         }
                         .padding(.vertical, MCSpacing.xxs)
                         ForEach(group.urls, id: \.path) { url in

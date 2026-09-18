@@ -379,7 +379,7 @@ struct SpaceMapView: View {
                 }
                 .buttonStyle(.link)
 
-                MCCard {
+                VStack(alignment: .leading, spacing: MCSpacing.sm) {
                     VStack(alignment: .leading, spacing: MCSpacing.sm) {
                         MCSectionHeader(L("spacelens.filter_category"))
                         MCFeatureRow(L("spacelens.category.folder"),

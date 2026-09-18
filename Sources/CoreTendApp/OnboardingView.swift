@@ -519,7 +519,7 @@ struct OnboardingView: View {
             Button(step == stepCount - 1 ? L("onboarding.start") : L("onboarding.continue")) {
                 if step == stepCount - 1 { model.persist(); finish() } else { step += 1 }
             }
-            .mcPrimaryButton()
+            .buttonStyle(.borderedProminent)
             .keyboardShortcut(.defaultAction)
             .accessibilityIdentifier(step == stepCount - 1 ? "onboarding.start" : "onboarding.continue")
         }

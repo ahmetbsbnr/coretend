@@ -176,7 +176,7 @@ struct LargeOldFilesView: ModuleSubScreen {
                         .keyboardShortcut(.defaultAction)
                         .mcAppear(delay: 0.06)
 
-                    MCCard {
+                    VStack(alignment: .leading, spacing: MCSpacing.sm) {
                         HStack(spacing: MCSpacing.lg) {
                             LabeledContent(L("clutter.larger_than")) {
                                 Picker("", selection: $model.minSizeMB) {
