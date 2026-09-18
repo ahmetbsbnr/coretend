@@ -68,7 +68,7 @@ enum DiagnosticReport {
     }
 
     /// Live gathering, using only already-audited real-state sources
-    /// (PermissionProbe, CodeSignInspector, Store) — never simulated.
+    /// (SystemAuthorization, CodeSignInspector, Store) — never simulated.
     @MainActor
     static func gatherLive() async -> String {
         let info = ProcessInfo.processInfo
@@ -99,7 +99,7 @@ enum DiagnosticReport {
             architecture: "arm64",
             machineModel: model,
             deploymentTarget: "macOS 14+",
-            fullDiskAccess: PermissionProbe.hasFullDiskAccess(),
+            fullDiskAccess: SystemAuthorization.probeLive().hasFullDiskAccess,
             codeSignTier: signature.tier,
             codeSignValid: signature.signatureValid,
             schemaVersion: schemaVersion,

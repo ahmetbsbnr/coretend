@@ -6,29 +6,6 @@ import DesignSystem
 
 /// Detects real permission state. Full Disk Access is probed by attempting to
 /// read a TCC-protected location — never assumed from user actions.
-enum PermissionProbe {
-    static func hasFullDiskAccess() -> Bool {
-        let home = FileManager.default.homeDirectoryForCurrentUser
-        let probes = [
-            home.appendingPathComponent("Library/Safari"),
-            home.appendingPathComponent("Library/Mail"),
-        ]
-        for probe in probes where FileManager.default.fileExists(atPath: probe.path) {
-            if (try? FileManager.default.contentsOfDirectory(atPath: probe.path)) != nil {
-                return true
-            }
-        }
-        // Probe dirs missing entirely: cannot determine; report false (honest default).
-        return false
-    }
-
-    static func openFullDiskAccessSettings() {
-        guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")
-        else { return }
-        NSWorkspace.shared.open(url)
-    }
-}
-
 // MARK: - View model
 
 @MainActor
@@ -39,7 +16,10 @@ final class OnboardingViewModel {
     var config = SecurityConfig.safeDefaults
 
     // Live permission / capability state (queried, never simulated)
-    var fdaGranted = PermissionProbe.hasFullDiskAccess()
+    // Only the blanket grant matters during onboarding: the per-folder ones
+    // are raised by macOS when a scan first touches the folder, and a setup
+    // screen cannot grant them. The full picture lives in Settings.
+    var fdaGranted = SystemAuthorization.probeLive().hasFullDiskAccess
 
     // Folders & exclusions
     var scannableFolders: [URL] = []
@@ -70,7 +50,7 @@ final class OnboardingViewModel {
     }
 
     func refreshPermissions() async {
-        fdaGranted = PermissionProbe.hasFullDiskAccess()
+        fdaGranted = SystemAuthorization.probeLive().hasFullDiskAccess
     }
 
     func addScannable(_ url: URL) {
@@ -401,7 +381,11 @@ struct OnboardingView: View {
             .frame(maxWidth: 460)
             if !model.fdaGranted {
                 HStack(spacing: MCSpacing.sm) {
-                    Button(L("settings.open_system_settings")) { PermissionProbe.openFullDiskAccessSettings() }
+                    Button(L("settings.open_system_settings")) {
+                        if let url = SystemAuthorization.fullDiskAccessSettingsURL {
+                            NSWorkspace.shared.open(url)
+                        }
+                    }
                     Button(L("settings.recheck")) { Task { await model.refreshPermissions() } }
                 }
                 Text(L("onboarding.fileaccess.no_autogrant"))

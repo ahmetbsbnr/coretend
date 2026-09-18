@@ -13,7 +13,7 @@ final class SettingsViewModel {
     var loaded = false
 
     // Real, queried permission/availability states — never simulated.
-    var fullDiskAccess = PermissionProbe.hasFullDiskAccess()
+    var authorization = SystemAuthorization.Report(statuses: [])
     var appSignature = CodeSignInspector.inspect(at: Bundle.main.bundleURL)
 
     func load() async {
@@ -24,7 +24,9 @@ final class SettingsViewModel {
     }
 
     func refreshPermissions() async {
-        fullDiskAccess = PermissionProbe.hasFullDiskAccess()
+        // Off the main actor: every probe is a real directory read, and on a
+        // Mac with slow or sleeping external disks that is not instant.
+        authorization = await Task.detached { SystemAuthorization.probeLive() }.value
     }
 
     func addExclusion(_ url: URL) {
@@ -85,19 +87,38 @@ struct MCSettingsView: View {
                 }
             }
             Section(L("settings.monitoring_permissions")) {
-                LabeledContent(L("settings.full_disk_access")) {
-                    Label(model.fullDiskAccess ? L("settings.granted") : L("settings.not_granted"),
-                          systemImage: model.fullDiskAccess ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                        .foregroundStyle(model.fullDiskAccess ? MCTheme.success : MCTheme.warning)
-                }
-                if !model.fullDiskAccess {
-                    HStack {
-                        Button(L("settings.open_system_settings")) { PermissionProbe.openFullDiskAccessSettings() }
-                            .accessibilityIdentifier("settings.full_disk.open")
-                        Button(L("settings.recheck")) { Task { await model.refreshPermissions() } }
-                            .accessibilityIdentifier("settings.full_disk.recheck")
+                // One row per capability, with its real three-state grant.
+                // The previous single "Full Disk Access: Not granted" row was
+                // both incomplete and, on a Mac with nothing to probe, wrong.
+                ForEach(model.authorization.statuses) { status in
+                    LabeledContent(L(status.capability.titleKey)) {
+                        Label(L(grantKey(status.grant)), systemImage: grantIcon(status.grant))
+                            .foregroundStyle(grantColor(status.grant))
+                    }
+                    .accessibilityIdentifier("settings.authorization.\(status.capability.rawValue)")
+                    // The consequence, shown only where there is one. A refusal
+                    // the user cannot act on is worth less than knowing which
+                    // scan will come back short.
+                    if status.grant.needsAttention {
+                        Text(L(status.capability.impactKey))
+                            .font(.caption).foregroundStyle(.secondary)
                     }
                 }
+                HStack {
+                    // Offered only for the one grant a Settings pane can
+                    // actually give. The per-folder grants have no such pane.
+                    if model.authorization.grant(for: .fullDisk).needsAttention,
+                       let url = SystemAuthorization.fullDiskAccessSettingsURL {
+                        Button(L("settings.open_system_settings")) { NSWorkspace.shared.open(url) }
+                            .accessibilityIdentifier("settings.full_disk.open")
+                    }
+                    Button(L("authorization.recheck")) { Task { await model.refreshPermissions() } }
+                        .accessibilityIdentifier("settings.full_disk.recheck")
+                }
+                Text(model.authorization.isComplete
+                     ? L("authorization.complete")
+                     : L("authorization.incomplete", model.authorization.denied.count))
+                    .font(.caption).foregroundStyle(.secondary)
             }
             Section(L("settings.exclusions")) {
                 if model.exclusions.isEmpty {
@@ -172,6 +193,33 @@ struct MCSettingsView: View {
         .navigationTitle(L("settings.nav_title"))
         .accessibilityIdentifier("settings.root")
         .task { await model.load() }
+    }
+
+    // MARK: - Grant presentation
+    //
+    // Three visual states, not two. `undetermined` and `notApplicable` are
+    // deliberately neutral grey with a dash: neither is a problem, and
+    // painting them as warnings is what made the old single Full Disk Access
+    // row tell users to fix permissions that were never refused.
+
+    private func grantKey(_ grant: SystemAuthorization.Grant) -> String {
+        "authorization.\(grant.rawValue)"
+    }
+
+    private func grantIcon(_ grant: SystemAuthorization.Grant) -> String {
+        switch grant {
+        case .granted: "checkmark.circle.fill"
+        case .denied: "exclamationmark.triangle.fill"
+        case .undetermined, .notApplicable: "minus.circle"
+        }
+    }
+
+    private func grantColor(_ grant: SystemAuthorization.Grant) -> Color {
+        switch grant {
+        case .granted: MCTheme.success
+        case .denied: MCTheme.warning
+        case .undetermined, .notApplicable: .secondary
+        }
     }
 
 }

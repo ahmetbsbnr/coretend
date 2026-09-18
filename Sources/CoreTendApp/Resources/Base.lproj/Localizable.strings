@@ -590,7 +590,25 @@
 "integrity.downloads.by_agent_on_date" = "Downloaded by %@ · %@";
 "integrity.downloads.by_agent" = "Downloaded by %@";
 "integrity.downloads.on_date" = "Downloaded %@";
-||||||| 2809736
 /* Execution outcome — skipped operations were previously discarded by every
    cleanup screen, leaving partial failure invisible outside the Safety Log. */
 "cleanup.done.skipped" = "%d item(s) were skipped and left untouched. The Safety Log explains why.";
+
+/* System authorization */
+"authorization.fullDisk.title" = "Full Disk Access";
+"authorization.fullDisk.impact" = "Without it, scans skip protected locations such as Mail and Safari data, and report smaller totals than the real ones.";
+"authorization.desktop.title" = "Desktop";
+"authorization.desktop.impact" = "Space Lens, Duplicates and Large & Old files will not see anything on your Desktop.";
+"authorization.documents.title" = "Documents";
+"authorization.documents.impact" = "Duplicates and Large & Old files will not see anything in Documents.";
+"authorization.downloads.title" = "Downloads";
+"authorization.downloads.impact" = "Incomplete-download cleanup and duplicate detection will not see anything in Downloads.";
+"authorization.removableVolumes.title" = "External volumes";
+"authorization.removableVolumes.impact" = "Scans cannot read connected external disks.";
+"authorization.granted" = "Granted";
+"authorization.denied" = "Refused by macOS";
+"authorization.undetermined" = "Nothing to check";
+"authorization.notApplicable" = "No external disk";
+"authorization.complete" = "Scans can read everything they are asked to read.";
+"authorization.incomplete" = "%d location(s) refused — scans will come back incomplete.";
+"authorization.recheck" = "Re-check";
