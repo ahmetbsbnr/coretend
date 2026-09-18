@@ -115,6 +115,12 @@ struct ExecutionOutcome: Equatable {
         case .outsideAllowedRoots: L("safety.reason.outside_roots")
         case .symlinkTraversal: L("safety.reason.symlink")
         case .fileVanished: L("safety.reason.vanished")
+        case .permissionDenied: L("safety.reason.permission")
+        // Deliberately surfaces the domain and code. A user reporting "it
+        // failed" is unactionable; "NSCocoaErrorDomain 513" is something a
+        // maintainer can look up, and it is the difference between a bug
+        // report that can be worked and one that cannot.
+        case let .trashFailed(domain, code): L("safety.reason.trash_failed", domain, code)
         case .emptyPath, .relativePath: L("safety.reason.invalid_path")
         }
     }

@@ -648,3 +648,5 @@
 "safety.reason.vanished" = "They were no longer on disk.";
 "safety.reason.invalid_path" = "Their location could not be read.";
 "spacelens.delete.changed" = "it changed on disk after it was checked, so nothing was removed";
+"safety.reason.permission" = "macOS refused permission to move them.";
+"safety.reason.trash_failed" = "macOS refused the move (%@ %d).";

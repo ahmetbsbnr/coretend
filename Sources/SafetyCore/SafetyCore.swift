@@ -27,7 +27,22 @@ public enum SafetyError: Error, Equatable, Hashable, Sendable {
     case protectedRoot(String)
     case outsideAllowedRoots
     case symlinkTraversal(String)
+    /// The path was gone by the time the operation ran.
     case fileVanished
+    /// macOS refused the move for a reason that is not the file vanishing:
+    /// no permission, a read-only volume, the item in use, no Trash on that
+    /// volume. Carries the underlying NSError's domain and code so the cause
+    /// survives into the audit log and the UI.
+    ///
+    /// Before this existed, `execute` reported **every** failure of
+    /// `trashItem` as `.fileVanished`. The realistic case is uninstalling an
+    /// app from /Applications without admin rights: the user was told the
+    /// bundle had disappeared, which is both false and alarming. The audit log
+    /// already distinguished these ("trashItem failed" vs a genuine vanish);
+    /// only the typed error the caller sees did not.
+    case trashFailed(domain: String, code: Int)
+    /// Permission was explicitly denied.
+    case permissionDenied
 }
 
 /// Validates paths against protected roots and per-operation allowlists.
@@ -198,6 +213,44 @@ public actor SafetyCenter {
         public let skipped: [(ApprovedFileOperation, SafetyError)]
     }
 
+    /// Turns a Foundation filesystem error into the typed reason the caller
+    /// and the audit log both need.
+    ///
+    /// Deliberately narrow: only errors that genuinely mean "it is not there"
+    /// become `.fileVanished`, and only explicit permission failures become
+    /// `.permissionDenied`. Everything else keeps its real domain and code
+    /// rather than being flattened into whichever case reads most plausibly —
+    /// flattening is what made every failure look like a vanish.
+    public static func classify(_ error: Error) -> SafetyError {
+        let nsError = error as NSError
+        if nsError.domain == NSCocoaErrorDomain {
+            switch nsError.code {
+            case NSFileNoSuchFileError, NSFileReadNoSuchFileError:
+                return .fileVanished
+            case NSFileReadNoPermissionError, NSFileWriteNoPermissionError:
+                return .permissionDenied
+            default:
+                break
+            }
+        }
+        if nsError.domain == NSPOSIXErrorDomain {
+            switch Int32(nsError.code) {
+            case ENOENT: return .fileVanished
+            case EPERM, EACCES: return .permissionDenied
+            default: break
+            }
+        }
+        // A Cocoa error often wraps the real POSIX one. Look before giving up.
+        if let underlying = nsError.userInfo[NSUnderlyingErrorKey] as? NSError,
+           underlying.domain != nsError.domain || underlying.code != nsError.code {
+            let inner = classify(underlying)
+            if inner != .trashFailed(domain: underlying.domain, code: underlying.code) {
+                return inner
+            }
+        }
+        return .trashFailed(domain: nsError.domain, code: nsError.code)
+    }
+
     /// Moves approved items to the Trash. Every path is re-validated at
     /// execution time; anything that changed since approval is skipped.
     public func execute(_ operations: [ApprovedFileOperation]) async -> ExecutionResult {
@@ -214,15 +267,17 @@ public actor SafetyCenter {
                         do {
                             try fileManager.removeItem(at: url)
                         } catch {
-                            skipped.append((op, .fileVanished))
+                            let failure = Self.classify(error)
+                            skipped.append((op, failure))
                             await emit(.error, operationID: op.id, path: url.path, ruleID: op.ruleID, risk: op.risk,
-                                       size: op.logicalSize, result: "temporary remove failed")
+                                       size: op.logicalSize, result: "temporary remove failed: \(failure)")
                             continue
                         }
                     } else {
-                        skipped.append((op, .fileVanished))
+                        let failure = Self.classify(error)
+                        skipped.append((op, failure))
                         await emit(.error, operationID: op.id, path: url.path, ruleID: op.ruleID, risk: op.risk,
-                                   size: op.logicalSize, result: "trashItem failed")
+                                   size: op.logicalSize, result: "trashItem failed: \(failure)")
                         continue
                     }
                 }

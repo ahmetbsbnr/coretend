@@ -91,8 +91,12 @@ struct ApprovalRejectionTests {
     /// files. A missing case would render as a raw key in the one place the
     /// user is trying to understand what just happened.
     @Test func everyValidatorRefusalHasAnExplanation() {
-        for error: SafetyError in [.emptyPath, .relativePath, .protectedRoot("/System"),
-                                   .outsideAllowedRoots, .symlinkTraversal("/x"), .fileVanished] {
+        let every: [SafetyError] = [
+            .emptyPath, .relativePath, .protectedRoot("/System"), .outsideAllowedRoots,
+            .symlinkTraversal("/x"), .fileVanished, .permissionDenied,
+            .trashFailed(domain: NSCocoaErrorDomain, code: 513),
+        ]
+        for error in every {
             let text = ExecutionOutcome.explain(error)
             #expect(!text.isEmpty)
             #expect(!text.hasPrefix("safety.reason."), "unlocalized: \(text)")

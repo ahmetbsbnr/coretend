@@ -646,3 +646,5 @@
 "safety.reason.vanished" = "Ils n'étaient plus présents sur le disque.";
 "safety.reason.invalid_path" = "Leur emplacement n'a pas pu être lu.";
 "spacelens.delete.changed" = "il a changé sur le disque après vérification, donc rien n'a été supprimé";
+"safety.reason.permission" = "macOS a refusé l'autorisation de les déplacer.";
+"safety.reason.trash_failed" = "macOS a refusé le déplacement (%@ %d).";
