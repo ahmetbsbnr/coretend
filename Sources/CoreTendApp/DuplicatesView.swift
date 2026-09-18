@@ -298,24 +298,14 @@ struct DuplicatesView: View {
             }
             .accessibilityElement(children: .combine)
             .accessibilityLabel(total > 0 ? L("dupes.comparing", processed, total) : L("dupes.building_inventory"))
-            HStack(spacing: MCSpacing.sm) {
-                if model.isScanPaused {
-                    Button(L("common.resume")) { model.resumeScan() }
-                        .keyboardShortcut("r", modifiers: [])
-                        .help(L("dupes.resume_hint"))
-                        .accessibilityHint(L("dupes.resume_hint"))
-                        .accessibilityIdentifier("duplicates.scan.resume")
-                } else {
-                    Button(L("common.pause")) { model.pauseScan() }
-                        .keyboardShortcut("p", modifiers: [])
-                        .help(L("dupes.pause_hint"))
-                        .accessibilityHint(L("dupes.pause_hint"))
-                        .accessibilityIdentifier("duplicates.scan.pause")
-                }
-                Button(L("common.cancel")) { model.cancel() }
-                    .keyboardShortcut(.cancelAction)
-                    .accessibilityIdentifier("duplicates.scan.cancel")
-            }
+            MCScanControls(
+                identifierPrefix: "duplicates",
+                isPaused: model.isScanPaused,
+                pauseHintKey: "cleanup.pause_hint",
+                resumeHintKey: "cleanup.resume_hint",
+                onPause: { model.pauseScan() },
+                onResume: { model.resumeScan() },
+                onCancel: { model.cancel() })
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

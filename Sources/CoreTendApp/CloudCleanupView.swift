@@ -250,24 +250,14 @@ struct CloudCleanupView: View {
                     }
                     .accessibilityElement(children: .combine)
                     .accessibilityLabel(L("cloud.measuring"))
-                    HStack(spacing: MCSpacing.sm) {
-                        if model.isPaused {
-                            Button(L("common.resume")) { model.resumeScan() }
-                                .keyboardShortcut("r", modifiers: [])
-                                .help(L("clutter.resume_hint"))
-                                .accessibilityHint(L("clutter.resume_hint"))
-                                .accessibilityIdentifier("cloud.scan.resume")
-                        } else {
-                            Button(L("common.pause")) { model.pauseScan() }
-                                .keyboardShortcut("p", modifiers: [])
-                                .help(L("clutter.pause_hint"))
-                                .accessibilityHint(L("clutter.pause_hint"))
-                                .accessibilityIdentifier("cloud.scan.pause")
-                        }
-                        Button(L("common.cancel")) { model.cancel() }
-                            .keyboardShortcut(.cancelAction)
-                            .accessibilityIdentifier("cloud.scan.cancel")
-                    }
+                    MCScanControls(
+                        identifierPrefix: "cloud",
+                        isPaused: model.isPaused,
+                        pauseHintKey: "cleanup.pause_hint",
+                        resumeHintKey: "cleanup.resume_hint",
+                        onPause: { model.pauseScan() },
+                        onResume: { model.resumeScan() },
+                        onCancel: { model.cancel() })
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .results:

@@ -228,19 +228,14 @@ struct LargeOldFilesView: ModuleSubScreen {
             ProgressView()
             Text(L("clutter.scanning_progress", model.scannedCount, model.findings.count))
                 .monospacedDigit()
-            HStack {
-                if model.isScanPaused {
-                    Button(L("common.resume")) { model.resume() }
-                        .keyboardShortcut("r", modifiers: [])
-                        .accessibilityHint(L("clutter.resume_hint"))
-                } else {
-                    Button(L("common.pause")) { model.pause() }
-                        .keyboardShortcut("p", modifiers: [])
-                        .accessibilityHint(L("clutter.pause_hint"))
-                }
-                Button(L("common.cancel")) { model.cancel() }
-                    .keyboardShortcut(.cancelAction)
-            }
+            MCScanControls(
+                identifierPrefix: "clutter",
+                isPaused: model.isScanPaused,
+                pauseHintKey: "clutter.pause_hint",
+                resumeHintKey: "clutter.resume_hint",
+                onPause: { model.pause() },
+                onResume: { model.resume() },
+                onCancel: { model.cancel() })
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

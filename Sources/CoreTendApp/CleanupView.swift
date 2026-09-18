@@ -284,22 +284,14 @@ struct CleanupView: View {
             }
             .accessibilityElement(children: .combine)
             .accessibilityLabel(L("cleanup.scanning_progress", model.scannedCount, mcFormatBytes(model.totalBytes)))
-            HStack(spacing: MCSpacing.sm) {
-                if model.isScanPaused {
-                    Button(L("common.resume")) { model.resumeScan() }
-                        .keyboardShortcut("r", modifiers: [])
-                        .accessibilityHint(L("cleanup.resume_hint"))
-                        .accessibilityIdentifier("storage.scan.resume")
-                } else {
-                    Button(L("common.pause")) { model.pauseScan() }
-                        .keyboardShortcut("p", modifiers: [])
-                        .accessibilityHint(L("cleanup.pause_hint"))
-                        .accessibilityIdentifier("storage.scan.pause")
-                }
-                Button(L("common.cancel")) { model.cancelScan() }
-                    .keyboardShortcut(.cancelAction)
-                    .accessibilityIdentifier("storage.scan.cancel")
-            }
+            MCScanControls(
+                identifierPrefix: "storage",
+                isPaused: model.isScanPaused,
+                pauseHintKey: "cleanup.pause_hint",
+                resumeHintKey: "cleanup.resume_hint",
+                onPause: { model.pauseScan() },
+                onResume: { model.resumeScan() },
+                onCancel: { model.cancelScan() })
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

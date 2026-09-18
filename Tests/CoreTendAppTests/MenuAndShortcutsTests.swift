@@ -56,20 +56,53 @@ struct MenuAndShortcutsTests {
     }
 
     /// The catalogue must not drift into fiction. Every scan-scoped shortcut it
-    /// claims has to correspond to a real binding in a view — the failure mode
-    /// of a hand-written shortcut list is that it documents what the app used
-    /// to do.
-    @Test func documentedScanShortcutsAreActuallyBound() throws {
-        let views = ["CleanupView", "DuplicatesView", "SpaceLensView",
-                     "MyClutterView", "SimilarImagesView", "CloudCleanupView"]
-        var combined = ""
-        for view in views {
-            combined += try source("Sources/CoreTendApp/\(view).swift")
+    /// claims has to correspond to a real binding — the failure mode of a
+    /// hand-written shortcut list is that it documents what the app used to do.
+    ///
+    /// Stronger than it was: the pause/resume/cancel cluster used to be written
+    /// out in seven views, so this searched all seven and passed if *any* of
+    /// them still had the binding. It now lives in one component, and binding
+    /// it more than once would mean two controls competing for the same bare
+    /// key — so the count is asserted, not just the presence.
+    @Test func documentedScanShortcutsAreBoundExactlyOnce() throws {
+        let dir = root.appendingPathComponent("Sources/CoreTendApp")
+        var occurrences: [String: [String]] = [:]
+        for name in try FileManager.default.contentsOfDirectory(atPath: dir.path)
+            where name.hasSuffix(".swift") {
+            let text = try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)
+            for chord in [#"keyboardShortcut("p", modifiers: [])"#,
+                          #"keyboardShortcut("r", modifiers: [])"#] {
+                let count = text.components(separatedBy: chord).count - 1
+                if count > 0 { occurrences[chord, default: []].append(contentsOf: Array(repeating: name, count: count)) }
+            }
         }
-        #expect(combined.contains(#"keyboardShortcut("p", modifiers: [])"#), "P (pause) is documented but not bound")
-        #expect(combined.contains(#"keyboardShortcut("r", modifiers: [])"#), "R (resume) is documented but not bound")
-        #expect(combined.contains("keyboardShortcut(.cancelAction)"), "Escape (cancel) is documented but not bound")
-        #expect(combined.contains(#"keyboardShortcut("[", modifiers: .command)"#), "⌘[ is documented but not bound")
+        for chord in [#"keyboardShortcut("p", modifiers: [])"#,
+                      #"keyboardShortcut("r", modifiers: [])"#] {
+            let sites = occurrences[chord] ?? []
+            #expect(sites.count == 1,
+                    "\(chord) is bound \(sites.count) time(s) in \(Set(sites).sorted()) — a bare key must have one owner")
+            #expect(sites.first == "ScanControls.swift",
+                    "\(chord) moved out of the shared component")
+        }
+    }
+
+    /// Escape stays per-view: a cancel button belongs to the thing it cancels,
+    /// and several screens have their own (a sheet, a preview) beyond the scan.
+    @Test func escapeCancelIsStillBound() throws {
+        let dir = root.appendingPathComponent("Sources/CoreTendApp")
+        var found = false
+        for name in try FileManager.default.contentsOfDirectory(atPath: dir.path)
+            where name.hasSuffix(".swift") {
+            let text = try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)
+            if text.contains("keyboardShortcut(.cancelAction)") { found = true }
+        }
+        #expect(found, "Escape (cancel) is documented but bound nowhere")
+    }
+
+    /// Space Lens keeps its own navigation shortcut.
+    @Test func spaceLensNavigationShortcutIsBound() throws {
+        let text = try source("Sources/CoreTendApp/SpaceLensView.swift")
+        #expect(text.contains(#"keyboardShortcut("[", modifiers: .command)"#))
     }
 
     @Test func appWideShortcutsAreBound() throws {

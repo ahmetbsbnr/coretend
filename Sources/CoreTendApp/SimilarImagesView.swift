@@ -172,24 +172,14 @@ struct SimilarImagesView: ModuleSubScreen {
                     }
                     .accessibilityElement(children: .combine)
                     .accessibilityLabel(total > 0 ? L("similar.analyzing", processed, total) : L("similar.collecting"))
-                    HStack(spacing: MCSpacing.sm) {
-                        if model.isPaused {
-                            Button(L("common.resume")) { model.resumeScan() }
-                                .keyboardShortcut("r", modifiers: [])
-                                .help(L("dupes.resume_hint"))
-                                .accessibilityHint(L("dupes.resume_hint"))
-                                .accessibilityIdentifier("similar.scan.resume")
-                        } else {
-                            Button(L("common.pause")) { model.pauseScan() }
-                                .keyboardShortcut("p", modifiers: [])
-                                .help(L("dupes.pause_hint"))
-                                .accessibilityHint(L("dupes.pause_hint"))
-                                .accessibilityIdentifier("similar.scan.pause")
-                        }
-                        Button(L("common.cancel")) { model.cancel() }
-                            .keyboardShortcut(.cancelAction)
-                            .accessibilityIdentifier("similar.scan.cancel")
-                    }
+                    MCScanControls(
+                        identifierPrefix: "similar",
+                        isPaused: model.isPaused,
+                        pauseHintKey: "clutter.pause_hint",
+                        resumeHintKey: "clutter.resume_hint",
+                        onPause: { model.pauseScan() },
+                        onResume: { model.resumeScan() },
+                        onCancel: { model.cancel() })
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:

@@ -414,24 +414,14 @@ struct SpaceLensView: View {
             }
             .accessibilityElement(children: .combine)
             .accessibilityLabel(L("spacelens.scanning_progress", items))
-            HStack(spacing: MCSpacing.sm) {
-                if model.isScanPaused {
-                    Button(L("common.resume")) { model.resumeScan() }
-                        .keyboardShortcut("r", modifiers: [])
-                        .help(L("spacelens.resume_hint"))
-                        .accessibilityHint(L("spacelens.resume_hint"))
-                        .accessibilityIdentifier("spacelens.scan.resume")
-                } else {
-                    Button(L("common.pause")) { model.pauseScan() }
-                        .keyboardShortcut("p", modifiers: [])
-                        .help(L("spacelens.pause_hint"))
-                        .accessibilityHint(L("spacelens.pause_hint"))
-                        .accessibilityIdentifier("spacelens.scan.pause")
-                }
-                Button(L("common.cancel")) { model.cancel() }
-                    .keyboardShortcut(.cancelAction)
-                    .accessibilityIdentifier("spacelens.scan.cancel")
-            }
+            MCScanControls(
+                identifierPrefix: "spacelens",
+                isPaused: model.isScanPaused,
+                pauseHintKey: "cleanup.pause_hint",
+                resumeHintKey: "cleanup.resume_hint",
+                onPause: { model.pauseScan() },
+                onResume: { model.resumeScan() },
+                onCancel: { model.cancel() })
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

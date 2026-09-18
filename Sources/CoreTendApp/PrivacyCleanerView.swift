@@ -149,24 +149,14 @@ struct PrivacyCleanerView: ModuleSubScreen {
                     }
                     .accessibilityElement(children: .combine)
                     .accessibilityLabel(L("privacy.detecting"))
-                    HStack(spacing: MCSpacing.sm) {
-                        if model.isPaused {
-                            Button(L("common.resume")) { model.resumeScan() }
-                                .keyboardShortcut("r", modifiers: [])
-                                .help(L("clutter.resume_hint"))
-                                .accessibilityHint(L("clutter.resume_hint"))
-                                .accessibilityIdentifier("privacy.scan.resume")
-                        } else {
-                            Button(L("common.pause")) { model.pauseScan() }
-                                .keyboardShortcut("p", modifiers: [])
-                                .help(L("clutter.pause_hint"))
-                                .accessibilityHint(L("clutter.pause_hint"))
-                                .accessibilityIdentifier("privacy.scan.pause")
-                        }
-                        Button(L("common.cancel")) { model.cancelScan() }
-                            .keyboardShortcut(.cancelAction)
-                            .accessibilityIdentifier("privacy.scan.cancel")
-                    }
+                    MCScanControls(
+                        identifierPrefix: "privacy",
+                        isPaused: model.isPaused,
+                        pauseHintKey: "cleanup.pause_hint",
+                        resumeHintKey: "cleanup.resume_hint",
+                        onPause: { model.pauseScan() },
+                        onResume: { model.resumeScan() },
+                        onCancel: { model.cancelScan() })
                 }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
