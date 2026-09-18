@@ -61,6 +61,25 @@ struct MCSettingsView: View {
 
     var body: some View {
         Form {
+            // Shown first and unconditionally when the database failed to
+            // open. Previously this state was completely invisible: the app
+            // ran, the Safety Log rendered a normal empty state, and every
+            // write went nowhere.
+            if let reason = AppEnvironment.shared.storeState.failureReason {
+                Section {
+                    HStack(alignment: .top, spacing: MCSpacing.sm) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundStyle(MCTheme.warning)
+                            .accessibilityHidden(true)
+                        Text(L(AppEnvironment.shared.storeState.store == nil
+                               ? "settings.store_unavailable"
+                               : "settings.store_ephemeral", reason))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityIdentifier("settings.store_failure")
+                }
+            }
             Section(L("settings.general")) {
                 Picker(L("settings.language"), selection: $appLanguageRaw) {
                     Text(L("settings.language.system")).tag(AppLanguage.system.rawValue)

@@ -97,13 +97,35 @@ struct Sidebar: View {
                 withAnimation(MCMotion.snappy) { proxy.scrollTo(new, anchor: .center) }
             }
         }
-        // A ScrollView has no intrinsic width, so NavigationSplitView had
-        // nothing to size the column from: it laid the sidebar out narrower
-        // than its own declared minimum and the content overflowed to the
-        // left, clipping every icon and turning the section headers into
-        // "ORAGE", "ORE", "STEM". The `List` this replaced carried an
-        // intrinsic width for free; a hand-built sidebar has to state one.
-        .frame(minWidth: MCSize.sidebarMin, alignment: .leading)
+        // Width, and why it is stated here rather than at the call site.
+        //
+        // A ScrollView has no intrinsic width, so NavigationSplitView has
+        // nothing to size the column from and lays it out narrower than the
+        // declared minimum. The `List` this replaced carried that width for
+        // free; a hand-built sidebar has to state one.
+        //
+        // But a hard `.frame(minWidth:)` on the *content* is the wrong way to
+        // say it: NavigationSplitView persists the divider position across
+        // launches, so on a window whose divider was previously dragged narrow
+        // the content became wider than its column, overflowed, and was
+        // clipped from the centre outwards — headers rendered as "ORAGE",
+        // "ORE", "STEM" with every icon cut off the left edge.
+        //
+        // `navigationSplitViewColumnWidth` applied to the sidebar's own root
+        // tells the split view the constraint, so the column respects it
+        // instead of the content fighting it, and the content stays
+        // compressible.
+        // No hard `.frame(minWidth:)` on the content. NavigationSplitView will
+        // hand the sidebar less than its stated minimum whenever the detail's
+        // own minimum plus the sidebar's exceeds the window, and a content
+        // frame wider than the column does not win that argument — it
+        // overflows and is clipped from the centre, which is how the section
+        // headers came out as "ORAGE", "ORE", "STEM". The constraint is stated
+        // to the split view below, and the content stays compressible so that
+        // even when the constraint loses, the result is a narrow sidebar
+        // rather than a broken one.
+        .navigationSplitViewColumnWidth(
+            min: MCSize.sidebarMin, ideal: MCSize.sidebarIdeal, max: MCSize.sidebarMax)
         .background(MCColor.secondaryBackground)
         .focusable()
         .focused($focused)

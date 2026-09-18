@@ -23,6 +23,11 @@ final class CleanupViewModel: CancellableScan {
     var totalFindingCount = 0
     var isScanPaused = false
 
+    /// Set when the scan ran without a trustworthy exclusion list. Nothing is
+    /// preselected in that state, and the review screen says why: a folder the
+    /// user protected may be in these results, and the app cannot tell.
+    var exclusionsUnavailable = false
+
     var scanTask: Task<Void, Never>?
     var pauseController: ScanPauseController?
 
@@ -75,11 +80,19 @@ final class CleanupViewModel: CancellableScan {
         totalBytes = 0
         totalFindingCount = 0
         isScanPaused = false
+        exclusionsUnavailable = false
         let pauseController = ScanPauseController()
         self.pauseController = pauseController
         scanTask = Task {
-            let excluded = (try? await AppEnvironment.shared.store?.exclusions()) ?? []
-            let engine = ScanEngine(configuration: ScanConfiguration(excludedPaths: excluded))
+            // Two questions, deliberately asked separately: what to exclude,
+            // and whether that answer can be trusted. The old single line
+            // `(try? ... ) ?? []` answered the first and silently assumed the
+            // second — so an unreadable exclusion list looked exactly like an
+            // empty one, and folders the user had protected came back ticked
+            // for deletion. See ExclusionsSnapshot.
+            let exclusions = await AppEnvironment.shared.exclusions()
+            exclusionsUnavailable = !exclusions.isTrustworthy
+            let engine = ScanEngine(configuration: ScanConfiguration(excludedPaths: exclusions.paths))
             for await event in engine.run(rules: UserCleanupRules.all, pauseController: pauseController) {
                 switch event {
                 case .started: break
@@ -89,7 +102,13 @@ final class CleanupViewModel: CancellableScan {
                     // ponytail: cap displayed findings at 5000 to bound memory; paginate later.
                     if findings.count < 5000 {
                         findings.append(finding)
-                        if finding.preselected { selectedIDs.insert(finding.id) }
+                        // Preselection is a deletion suggestion. Making one
+                        // while unable to confirm the user's protected folders
+                        // were honoured is the single most damaging thing this
+                        // screen can do, so it does not.
+                        if finding.preselected && !exclusionsUnavailable {
+                            selectedIDs.insert(finding.id)
+                        }
                     }
                     totalFindingCount += 1
                     totalBytes += finding.logicalSize
@@ -292,6 +311,30 @@ struct CleanupView: View {
 
     private var reviewView: some View {
         VStack(alignment: .leading, spacing: 0) {
+            // A warning, not a note: the user's protected folders may be in
+            // these results and the app cannot tell. Placed above the total so
+            // it is read before any decision, and worded as what it means for
+            // them rather than as a database error.
+            if model.exclusionsUnavailable {
+                HStack(alignment: .top, spacing: MCSpacing.sm) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundStyle(MCTheme.warning)
+                        .accessibilityHidden(true)
+                    Text(L("cleanup.exclusions_unavailable"))
+                        .font(MCFont.secondaryBody)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                }
+                .padding(MCSpacing.sm)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(MCColor.elevatedBackground, in: RoundedRectangle(cornerRadius: MCRadius.card))
+                .overlay(
+                    RoundedRectangle(cornerRadius: MCRadius.card)
+                        .stroke(MCTheme.warning.opacity(0.5), lineWidth: 1))
+                .padding(.bottom, MCSpacing.md)
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("cleanup.exclusions_unavailable")
+            }
             HStack(alignment: .center, spacing: MCSpacing.lg) {
                 VStack(alignment: .leading, spacing: MCSpacing.xxs) {
                     // The recoverable total is the whole point of this screen.

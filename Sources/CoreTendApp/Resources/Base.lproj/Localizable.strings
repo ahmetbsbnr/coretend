@@ -638,3 +638,6 @@
 "menu.help.report" = "Report an Issue";
 "menu.help.security" = "Security";
 "menu.help.about" = "About CoreTend";
+"cleanup.exclusions_unavailable" = "Your excluded folders could not be read, so nothing has been selected for you. Folders you protected may appear in this list — review each item before moving anything to the Trash.";
+"settings.store_ephemeral" = "CoreTend could not open its database, so this session is running in memory: your exclusions, Safety Log and activity history will be gone when you quit. Reason: %@";
+"settings.store_unavailable" = "CoreTend could not open its database. Exclusions, the Safety Log and activity history are unavailable this session. Reason: %@";

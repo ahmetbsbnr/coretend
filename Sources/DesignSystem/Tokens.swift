@@ -28,8 +28,22 @@ public enum MCRadius {
 public enum MCSize {
     public static let sidebarMin: CGFloat = 190
     public static let sidebarIdeal: CGFloat = 220
-    public static let windowMinWidth: CGFloat = 860
+    /// Capped so a dragged divider cannot turn the sidebar into half the
+    /// window on a wide display.
+    public static let sidebarMax: CGFloat = 320
+    /// Sidebar minimum (190) plus what the Dashboard hero genuinely needs
+    /// (ring, copy column, and a 40pt metric side by side ≈ 690), plus room
+    /// rather than exactly enough. At 860 the two minimums did not both fit and
+    /// the split view resolved it by starving the sidebar until its contents
+    /// overflowed and clipped.
+    public static let windowMinWidth: CGFloat = 1000
     public static let windowMinHeight: CGFloat = 580
+    /// What the window opens at on a first launch. Wide enough that the
+    /// Dashboard's three-column hero and the sidebar both have room, so the
+    /// first thing a new user sees is the layout as designed rather than its
+    /// compressed form.
+    public static let windowDefaultWidth: CGFloat = 1180
+    public static let windowDefaultHeight: CGFloat = 800
     public static let metricRing: CGFloat = 76
     public static let chartHeight: CGFloat = 140
 }

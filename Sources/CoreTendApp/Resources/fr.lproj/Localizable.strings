@@ -636,3 +636,6 @@
 "menu.help.report" = "Signaler un problème";
 "menu.help.security" = "Sécurité";
 "menu.help.about" = "À propos de CoreTend";
+"cleanup.exclusions_unavailable" = "Vos dossiers exclus n'ont pas pu être lus, donc rien n'a été sélectionné pour vous. Des dossiers que vous avez protégés peuvent figurer dans cette liste — vérifiez chaque élément avant de mettre quoi que ce soit à la corbeille.";
+"settings.store_ephemeral" = "CoreTend n'a pas pu ouvrir sa base de données : cette session fonctionne en mémoire, et vos exclusions, le journal de sûreté et l'historique disparaîtront à la fermeture. Raison : %@";
+"settings.store_unavailable" = "CoreTend n'a pas pu ouvrir sa base de données. Les exclusions, le journal de sûreté et l'historique sont indisponibles cette session. Raison : %@";

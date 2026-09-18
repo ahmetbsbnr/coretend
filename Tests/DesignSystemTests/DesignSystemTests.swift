@@ -259,3 +259,49 @@ struct PaletteContrastTests {
         #expect(abs(MCColor.contrastRatio(0x777777, 0xFFFFFF) - 4.48) < 0.05)
     }
 }
+
+/// Window and column geometry, as arithmetic rather than as a hope.
+///
+/// The sidebar rendered its section headers as "ORAGE", "ORE", "STEM" with every
+/// icon clipped, through four different attempted fixes, because the real cause
+/// was not in the sidebar at all: `MCSize.windowMinWidth` was 860 while the
+/// sidebar's minimum and the Dashboard hero's own minimum together needed more
+/// than that. NavigationSplitView resolved the impossible constraint by
+/// starving the sidebar below its stated minimum, and its contents then
+/// overflowed and were clipped.
+///
+/// Nothing caught it because it is arithmetic between two numbers that live in
+/// different files and were never compared.
+@Suite("Window geometry")
+struct WindowGeometryTests {
+    /// What the Dashboard hero genuinely occupies: the 128pt ring, the copy
+    /// column's floor, the metric column, their spacings and the page padding.
+    /// Kept explicit so that widening the hero fails here rather than silently
+    /// squeezing the sidebar.
+    private let detailMinimum: CGFloat = 128 + 32 + 220 + 16 + 230 + (24 * 2)
+
+    @Test func theWindowIsWideEnoughForBothColumnsAtTheirMinimums() {
+        let required = MCSize.sidebarMin + detailMinimum
+        #expect(MCSize.windowMinWidth >= required,
+                "window minimum \(MCSize.windowMinWidth) is under the \(required) the two columns need at their minimums — the split view resolves that by starving the sidebar")
+    }
+
+    @Test func theDefaultWindowIsAtLeastTheMinimum() {
+        #expect(MCSize.windowDefaultWidth >= MCSize.windowMinWidth)
+        #expect(MCSize.windowDefaultHeight >= MCSize.windowMinHeight)
+    }
+
+    /// The column bounds must be a coherent range, and the ideal must sit
+    /// inside it — an ideal outside min…max is silently ignored.
+    @Test func sidebarColumnBoundsAreCoherent() {
+        #expect(MCSize.sidebarMin <= MCSize.sidebarIdeal)
+        #expect(MCSize.sidebarIdeal <= MCSize.sidebarMax)
+    }
+
+    /// A sidebar wide enough to matter, capped so a dragged divider cannot turn
+    /// it into half the window.
+    @Test func theSidebarStaysASidebar() {
+        #expect(MCSize.sidebarMin >= 180)
+        #expect(MCSize.sidebarMax <= MCSize.windowMinWidth / 2)
+    }
+}

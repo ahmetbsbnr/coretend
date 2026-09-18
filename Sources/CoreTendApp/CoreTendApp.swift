@@ -91,6 +91,19 @@ public struct CoreTendApp: App {
                 .id(appLanguageRaw)
         }
         .windowStyle(.automatic)
+        // `.frame(minWidth:)` above constrains the *view*, not the window. The
+        // window was freely resizable below it, and the view then overflowed —
+        // which is what produced a 360pt-wide window whose sidebar rendered
+        // its section headers as "ORAGE", "ORE", "STEM" with every icon cut
+        // off the left edge. The minimum has to be expressed to the window
+        // too, or it is only a suggestion the layout system then has to
+        // violate.
+        //
+        // This is the same failure as the three layout bugs already fixed in
+        // the views: something declares a size its container does not honour.
+        // Here the container was the window itself.
+        .windowResizability(.contentMinSize)
+        .defaultSize(width: MCSize.windowDefaultWidth, height: MCSize.windowDefaultHeight)
         .commands {
             CoreTendHelpCommands()
         }
@@ -432,7 +445,6 @@ struct MainWindow: View {
             Sidebar(selection: Binding(
                 get: { selection ?? .smartCare },
                 set: { selection = $0 }))
-                .navigationSplitViewColumnWidth(min: MCSize.sidebarMin, ideal: MCSize.sidebarIdeal)
         } detail: {
             Group {
                 switch selection {
