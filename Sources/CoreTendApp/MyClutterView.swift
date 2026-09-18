@@ -313,24 +313,19 @@ struct LargeOldFilesView: ModuleSubScreen {
                     Text(mcFormatBytes(finding.logicalSize))
                         .monospacedDigit().font(MCFont.actionLabel)
                         .accessibilityHidden(true) // folded into the row's combined label below
-                    Button {
-                        model.previewURL = finding.url
-                    } label: {
-                        Image(systemName: "eye")
-                    }
-                    .buttonStyle(.borderless)
-                    .help(L("clutter.quick_look"))
-                    .accessibilityLabel(L("clutter.quick_look"))
-                    Button {
-                        NSWorkspace.shared.activateFileViewerSelecting([finding.url])
-                    } label: {
-                        Image(systemName: "magnifyingglass")
-                    }
-                    .buttonStyle(.borderless)
-                    .help(L("common.reveal_in_finder"))
-                    .accessibilityLabel(L("common.reveal_in_finder"))
+                    // Quick Look and Reveal moved to the row's swipe and
+                    // context menu. Three permanent icon buttons on every row
+                    // of a long list is three columns of noise between the
+                    // user and the data they came for.
+                    //
+                    // Exclude stays: it shows state ("already excluded" is a
+                    // different control, not a disabled action) and has two
+                    // variants, this file or its folder.
                     ExcludeButton(url: finding.url, controller: model.exclusionsController)
                 }
+                .fileRowActions(FileRowAction.inspection(for: finding.url) {
+                    model.previewURL = $0
+                })
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel("\(finding.url.lastPathComponent), \(mcFormatBytes(finding.logicalSize))")
             }

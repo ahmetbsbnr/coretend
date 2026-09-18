@@ -403,19 +403,11 @@ struct DuplicatesView: View {
                                 Text(url.deletingLastPathComponent().path)
                                     .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                                     .lineLimit(1).truncationMode(.middle)
-                                Button {
-                                    model.previewURL = url
-                                } label: { Image(systemName: "eye") }
-                                .buttonStyle(.borderless)
-                                .help(L("clutter.quick_look"))
-                                .accessibilityLabel(L("clutter.quick_look"))
-                                Button {
-                                    NSWorkspace.shared.activateFileViewerSelecting([url])
-                                } label: { Image(systemName: "magnifyingglass") }
-                                .buttonStyle(.borderless)
-                                .accessibilityLabel(L("common.reveal_in_finder"))
                                 ExcludeButton(url: url, controller: model.exclusionsController)
                             }
+                            .fileRowActions(FileRowAction.inspection(for: url) {
+                                model.previewURL = $0
+                            })
                         }
                     } header: {
                         Text(L("dupes.group_header", group.urls.count, mcFormatBytes(group.fileSize)))

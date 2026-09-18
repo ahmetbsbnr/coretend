@@ -234,19 +234,11 @@ struct SimilarImagesView: ModuleSubScreen {
                                             .foregroundStyle(MCColor.teal)
                                     }
                                     Spacer()
-                                    Button {
-                                        model.previewURL = url
-                                    } label: { Image(systemName: "eye") }
-                                    .buttonStyle(.borderless)
-                                    .help(L("clutter.quick_look"))
-                                    .accessibilityLabel(L("clutter.quick_look"))
-                                    Button {
-                                        NSWorkspace.shared.activateFileViewerSelecting([url])
-                                    } label: { Image(systemName: "magnifyingglass") }
-                                    .buttonStyle(.borderless)
-                                    .accessibilityLabel("\(L("similar.reveal_a11y", url.lastPathComponent))\(url == best ? ", \(L("similar.best_resolution_a11y"))" : "")")
                                     ExcludeButton(url: url, controller: model.exclusionsController)
                                 }
+                                .fileRowActions(FileRowAction.inspection(for: url) {
+                                    model.previewURL = $0
+                                })
                                 .font(MCFont.caption)
                             }
                         }
