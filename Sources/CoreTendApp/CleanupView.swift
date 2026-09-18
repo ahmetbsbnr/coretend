@@ -344,7 +344,7 @@ struct CleanupView: View {
                         .foregroundStyle(.secondary)
                     if model.isDisplayTruncated {
                         Text(L("cleanup.review.truncated", model.findings.count, model.totalFindingCount, mcFormatBytes(model.totalBytes)))
-                            .font(.caption).foregroundStyle(.secondary)
+                            .font(MCFont.caption).foregroundStyle(.secondary)
                     }
                 }
                 Spacer()
@@ -375,13 +375,13 @@ struct CleanupView: View {
                             VStack(alignment: .leading) {
                                 Text(group.name).font(MCFont.cardTitle)
                                 Text(group.explanation)
-                                    .font(.caption).foregroundStyle(.secondary)
+                                    .font(MCFont.caption).foregroundStyle(.secondary)
                             }
                             Spacer()
                             Text(L("cleanup.group.item_count", group.findings.count))
-                                .font(.caption).foregroundStyle(.secondary)
+                                .font(MCFont.caption).foregroundStyle(.secondary)
                             Text(mcFormatBytes(group.bytes))
-                                .monospacedDigit().font(.callout.weight(.medium))
+                                .monospacedDigit().font(MCFont.rowTitle)
                         }
                     }
                 }
@@ -411,7 +411,7 @@ struct CleanupView: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(finding.url.lastPathComponent)
                 Text(finding.url.deletingLastPathComponent().path)
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(MCFont.caption).foregroundStyle(.secondary)
                     .lineLimit(1).truncationMode(.middle)
                 // The evidence the scan already had and never showed. Size
                 // alone is the weakest of the three signals for deciding
@@ -420,7 +420,7 @@ struct CleanupView: View {
                 if let evidence = FindingMetadata.summary(
                     risk: finding.risk, modificationDate: finding.modificationDate) {
                     Text(evidence)
-                        .font(.caption2).foregroundStyle(.tertiary)
+                        .font(MCFont.micro).foregroundStyle(.tertiary)
                         // One line at ordinary sizes keeps rows compact; at
                         // accessibility sizes it wraps instead. Truncating here
                         // would cut "Low risk · modified 1 month ago" down to

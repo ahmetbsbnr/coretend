@@ -206,7 +206,7 @@ struct MyActivityView: View {
                 .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.accent)
                 .accessibilityHidden(true)
             Text(model.filter == nil ? L("activity.empty") : L("activity.empty_kind"))
-                .font(.title3.weight(.semibold))
+                .font(MCFont.actionLabel)
             Text(L("activity.empty.subtitle"))
                 .foregroundStyle(.secondary)
         }
@@ -256,8 +256,8 @@ struct MyActivityView: View {
 
     private func summaryMetric(label: String, value: String, color: Color) -> some View {
         VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-            Text(value).font(.title3.weight(.semibold)).monospacedDigit().foregroundStyle(color)
-            Text(label).font(.caption).foregroundStyle(.secondary)
+            Text(value).font(MCFont.actionLabel).monospacedDigit().foregroundStyle(color)
+            Text(label).font(MCFont.caption).foregroundStyle(.secondary)
         }
     }
 
@@ -290,10 +290,10 @@ private struct ActivityRow: View {
         DisclosureGroup(isExpanded: $expanded) {
             VStack(alignment: .leading, spacing: MCSpacing.xxs) {
                 Text(AppDateFormatting.string(record.date, style: .dayMonthYearWithTime))
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(MCFont.caption).foregroundStyle(.secondary)
                 Text(L("activity.row.detail", record.itemCount, mcFormatBytes(record.bytes),
                        L("activity.row.real_suffix")))
-                    .font(.caption)
+                    .font(MCFont.caption)
                 if record.kind == .restore {
                     Button {
                         NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.protection)
@@ -314,7 +314,7 @@ private struct ActivityRow: View {
                 Spacer()
                 if record.kind == .cleanup {
                     Text(L("activity.completed"))
-                        .font(.caption2.weight(.medium))
+                        .font(MCFont.microEmphasis)
                         .padding(.horizontal, MCSpacing.xs).padding(.vertical, MCSpacing.xxs)
                         .background(MCTheme.success.opacity(0.18), in: Capsule())
                         .foregroundStyle(MCTheme.success)

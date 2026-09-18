@@ -177,9 +177,9 @@ struct PerformanceView: View {
             VStack(alignment: .leading, spacing: MCSpacing.xs) {
                 Text(L("performance.launchagents.title")).font(MCFont.cardTitle)
                 Text(L("performance.launchagents.subtitle"))
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(MCFont.caption).foregroundStyle(.secondary)
                 if agents.isEmpty {
-                    Text(L("performance.launchagents.empty")).font(.caption).foregroundStyle(.secondary)
+                    Text(L("performance.launchagents.empty")).font(MCFont.caption).foregroundStyle(.secondary)
                 }
                 ForEach(agents) { agent in
                     HStack {
@@ -189,7 +189,7 @@ struct PerformanceView: View {
                             Text(agent.label).font(MCFont.secondaryBody)
                             if let program = agent.programPath {
                                 Text(agent.broken ? L("performance.launchagents.missing", program) : program)
-                                    .font(.caption).foregroundStyle(.secondary)
+                                    .font(MCFont.caption).foregroundStyle(.secondary)
                                     .lineLimit(1).truncationMode(.middle)
                             }
                         }

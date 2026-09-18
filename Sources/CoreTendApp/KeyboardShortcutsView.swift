@@ -89,7 +89,7 @@ struct KeyboardShortcutsView: View {
                             ForEach(group.shortcuts) { shortcut in
                                 HStack(spacing: MCSpacing.md) {
                                     Text(shortcut.keys)
-                                        .font(.system(.body, design: .monospaced))
+                                        .font(MCFont.monoBody)
                                         .foregroundStyle(MCColor.teal)
                                         .frame(minWidth: 56, alignment: .leading)
                                     Text(L(shortcut.titleKey))

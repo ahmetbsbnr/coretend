@@ -156,7 +156,7 @@ struct Sidebar: View {
                     .accessibilityHidden(true)
 
                 Image(systemName: module.systemImage)
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.system(size: MCIconSize.row, weight: .medium))
                     .foregroundStyle(isSelected ? MCColor.teal : MCColor.textTertiary)
                     .frame(width: 18)
                     .accessibilityHidden(true)

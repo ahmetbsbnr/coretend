@@ -497,7 +497,7 @@ struct SpaceLensView: View {
                 Button(root.name) { navigate { model.pop(to: nil) } }
                     .buttonStyle(.link)
                 ForEach(Array(model.pathStack.enumerated()), id: \.element.id) { index, node in
-                    Image(systemName: "chevron.right").font(.caption2).foregroundStyle(.tertiary)
+                    Image(systemName: "chevron.right").font(MCFont.micro).foregroundStyle(.tertiary)
                     Button(node.name) { navigate { model.pop(to: index) } }
                         .buttonStyle(.link)
                 }
@@ -581,8 +581,8 @@ struct SpaceLensView: View {
             }
             if showLabel {
                 VStack(spacing: 1) {
-                    Text(b.node.name).font(.caption2.weight(.semibold)).lineLimit(1)
-                    Text(mcFormatBytes(b.node.size)).font(.system(size: 9)).opacity(0.85)
+                    Text(b.node.name).font(MCFont.badge).lineLimit(1)
+                    Text(mcFormatBytes(b.node.size)).font(MCFont.micro).opacity(0.85)
                 }
                 .foregroundStyle(.white)
                 .padding(.horizontal, 4)
@@ -616,11 +616,11 @@ struct SpaceLensView: View {
                     .foregroundStyle(SpaceNodeCategory.of(child).color)
                 Text(child.name)
                 if child.isAccessDenied {
-                    Image(systemName: "lock.fill").font(.caption2).foregroundStyle(.secondary)
+                    Image(systemName: "lock.fill").font(MCFont.micro).foregroundStyle(.secondary)
                         .accessibilityLabel(L("spacelens.access_denied_suffix"))
                 }
                 if child.isCloudPlaceholder {
-                    Image(systemName: "icloud.fill").font(.caption2).foregroundStyle(.secondary)
+                    Image(systemName: "icloud.fill").font(MCFont.micro).foregroundStyle(.secondary)
                         .accessibilityLabel(L("spacelens.cloud_placeholder_suffix"))
                 }
                 Spacer()

@@ -179,7 +179,7 @@ private struct LocationRow: View {
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
                 Text(location.displayName).lineLimit(1)
-                Text(location.path).font(.caption).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
+                Text(location.path).font(MCFont.caption).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
                 statusLine
             }
             Spacer()
@@ -222,14 +222,14 @@ private struct LocationRow: View {
     @ViewBuilder
     private var statusLine: some View {
         if !location.exists {
-            Text(L("favrec.status_missing")).font(.caption2).foregroundStyle(MCTheme.danger)
+            Text(L("favrec.status_missing")).font(MCFont.micro).foregroundStyle(MCTheme.danger)
         } else if !location.isReadable {
-            Text(L("favrec.status_no_access")).font(.caption2).foregroundStyle(MCTheme.warning)
+            Text(L("favrec.status_no_access")).font(MCFont.micro).foregroundStyle(MCTheme.warning)
         } else if let date = location.lastScanned, let bytes = location.lastBytes {
             Text(L("favrec.status_last_scanned", AppDateFormatting.string(date, style: .dayMonthYearWithTime), mcFormatBytes(bytes)))
-                .font(.caption2).foregroundStyle(.secondary)
+                .font(MCFont.micro).foregroundStyle(.secondary)
         } else {
-            Text(L("favrec.status_never_scanned")).font(.caption2).foregroundStyle(.secondary)
+            Text(L("favrec.status_never_scanned")).font(MCFont.micro).foregroundStyle(.secondary)
         }
     }
 }

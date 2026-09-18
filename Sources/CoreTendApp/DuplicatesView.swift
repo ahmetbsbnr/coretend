@@ -404,14 +404,14 @@ struct DuplicatesView: View {
                                 Text(url.lastPathComponent)
                                 if url.path == group.keeper.path {
                                     Text(L("dupes.suggested_keeper"))
-                                        .font(.caption2.weight(.medium))
+                                        .font(MCFont.microEmphasis)
                                         .padding(.horizontal, MCSpacing.xs).padding(.vertical, MCSpacing.xxs)
                                         .background(MCTheme.accent.opacity(0.2), in: Capsule())
                                         .help(L("dupes.suggested_keeper.why"))
                                 }
                                 Spacer()
                                 Text(url.deletingLastPathComponent().path)
-                                    .font(.caption).foregroundStyle(.secondary)
+                                    .font(MCFont.caption).foregroundStyle(.secondary)
                                     .lineLimit(1).truncationMode(.middle)
                                 Button {
                                     model.previewURL = url

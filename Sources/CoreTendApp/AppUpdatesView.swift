@@ -82,7 +82,7 @@ struct AppUpdatesView: ModuleSubScreen {
                                 VStack(alignment: .leading) {
                                     Text(info.app.name)
                                     Text(L("updates.version_source", info.app.version ?? "?", info.source.rawValue))
-                                        .font(.caption).foregroundStyle(.secondary)
+                                        .font(MCFont.caption).foregroundStyle(.secondary)
                                 }
                                 .accessibilityElement(children: .combine)
                                 Spacer()
@@ -96,7 +96,7 @@ struct AppUpdatesView: ModuleSubScreen {
                         }
                     } footer: {
                         Text(L("updates.footer"))
-                            .font(.caption).foregroundStyle(.secondary)
+                            .font(MCFont.caption).foregroundStyle(.secondary)
                     }
                 }
                 .listStyle(.inset)

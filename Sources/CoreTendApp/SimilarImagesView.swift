@@ -196,7 +196,7 @@ struct SimilarImagesView: ModuleSubScreen {
                 VStack(spacing: MCSpacing.sm) {
                     Image(systemName: "checkmark.circle")
                         .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
-                    Text(L("similar.none_found")).font(.title3.weight(.semibold))
+                    Text(L("similar.none_found")).font(MCFont.actionLabel)
                     Button(L("similar.analyze_again")) { model.start() }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -238,7 +238,7 @@ struct SimilarImagesView: ModuleSubScreen {
                                     Text(url.lastPathComponent).lineLimit(1)
                                     if url == best {
                                         Text(L("similar.best_resolution"))
-                                            .font(.caption2.weight(.semibold))
+                                            .font(MCFont.badge)
                                             .padding(.horizontal, MCSpacing.xxs).padding(.vertical, 1)
                                             .background(MCColor.teal.opacity(0.18), in: Capsule())
                                             .foregroundStyle(MCColor.teal)
@@ -257,7 +257,7 @@ struct SimilarImagesView: ModuleSubScreen {
                                     .accessibilityLabel("\(L("similar.reveal_a11y", url.lastPathComponent))\(url == best ? ", \(L("similar.best_resolution_a11y"))" : "")")
                                     ExcludeButton(url: url, controller: model.exclusionsController)
                                 }
-                                .font(.caption)
+                                .font(MCFont.caption)
                             }
                         }
                     }

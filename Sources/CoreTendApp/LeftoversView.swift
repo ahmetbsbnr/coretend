@@ -154,14 +154,14 @@ struct LeftoversView: ModuleSubScreen {
                             Text(item.url.lastPathComponent)
                             if model.isAmbiguous(item) {
                                 Text(L("leftovers.shared_review"))
-                                    .font(.caption2.weight(.semibold))
+                                    .font(MCFont.badge)
                                     .padding(.horizontal, MCSpacing.xxs).padding(.vertical, 1)
                                     .background(MCColor.attention.opacity(0.18), in: Capsule())
                                     .foregroundStyle(MCColor.attention)
                             }
                         }
                         Text(L("leftovers.not_installed", item.kind.rawValue))
-                            .font(.caption).foregroundStyle(.secondary)
+                            .font(MCFont.caption).foregroundStyle(.secondary)
                     }
                     Spacer()
                     Text(mcFormatBytes(item.sizeBytes))

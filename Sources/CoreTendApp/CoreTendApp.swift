@@ -258,13 +258,13 @@ struct MenuBarView: View {
             Divider()
             if let last = lastActivity {
                 Text(L("menubar.last_activity", last.summary))
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(MCFont.caption).foregroundStyle(.secondary)
                     .lineLimit(2)
                 Text(last.date, style: .relative)
-                    .font(.caption2).foregroundStyle(.tertiary)
+                    .font(MCFont.micro).foregroundStyle(.tertiary)
             } else {
                 Text(L("menubar.no_activity_yet"))
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(MCFont.caption).foregroundStyle(.secondary)
             }
             Divider()
             Button(L("menubar.open_app")) { openWindow() }
@@ -306,7 +306,7 @@ struct MenuBarView: View {
                 Spacer(minLength: MCSpacing.xs)
                 if warn {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.caption2).foregroundStyle(MCTheme.warning)
+                        .font(MCFont.micro).foregroundStyle(MCTheme.warning)
                         .accessibilityHidden(true)
                 }
                 Text(value).foregroundStyle(.secondary).monospacedDigit()
@@ -334,7 +334,7 @@ struct MenuBarView: View {
             Spacer()
             if warn {
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.caption2).foregroundStyle(MCTheme.warning)
+                    .font(MCFont.micro).foregroundStyle(MCTheme.warning)
                     .accessibilityHidden(true)
             }
             Text(value).foregroundStyle(.secondary).monospacedDigit()

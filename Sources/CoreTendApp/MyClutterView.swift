@@ -250,7 +250,7 @@ struct LargeOldFilesView: ModuleSubScreen {
             Image(systemName: "checkmark.circle")
                 .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
                 .accessibilityHidden(true)
-            Text(L("clutter.no_matches")).font(.title3.weight(.semibold))
+            Text(L("clutter.no_matches")).font(MCFont.actionLabel)
             Button(L("clutter.change_criteria")) { model.phase = .idle }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -310,13 +310,13 @@ struct LargeOldFilesView: ModuleSubScreen {
                                 Text(L("clutter.modified", AppDateFormatting.string(date, style: .dayMonthYear)))
                             }
                         }
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(MCFont.caption).foregroundStyle(.secondary)
                     }
                     Spacer()
                     // Large, legible metric number — this screen is
                     // primarily a data table, size is the number that matters.
                     Text(mcFormatBytes(finding.logicalSize))
-                        .monospacedDigit().font(.title3.weight(.semibold))
+                        .monospacedDigit().font(MCFont.actionLabel)
                         .accessibilityHidden(true) // folded into the row's combined label below
                     Button {
                         model.previewURL = finding.url

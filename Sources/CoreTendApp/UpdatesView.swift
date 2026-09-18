@@ -149,7 +149,7 @@ struct UpdatesView: View {
                 set: { model.automatic = $0 }))
                 .accessibilityIdentifier("updates.automatic")
             Text(L("updates.automatic_detail"))
-                .font(.caption).foregroundStyle(.secondary)
+                .font(MCFont.caption).foregroundStyle(.secondary)
             if let last = model.lastCheck {
                 LabeledContent(L("updates.last_checked"),
                                value: AppDateFormatting.string(last, style: .dayMonthYearWithTime))
@@ -162,7 +162,7 @@ struct UpdatesView: View {
                 Text(L("updates.channel_prerelease")).tag(UpdateChannel.prerelease)
             }
             Text(L("updates.channel_detail"))
-                .font(.caption).foregroundStyle(.secondary)
+                .font(MCFont.caption).foregroundStyle(.secondary)
 
             HStack {
                 Button(L("updates.check_now")) {
@@ -179,7 +179,7 @@ struct UpdatesView: View {
             // Stated here rather than only on the website: the app must not
             // imply it can update itself safely when it cannot.
             Text(L("updates.no_autoinstall"))
-                .font(.caption).foregroundStyle(.secondary)
+                .font(MCFont.caption).foregroundStyle(.secondary)
         }
     }
 
@@ -194,16 +194,16 @@ struct UpdatesView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Label(L("updates.available", info.version), systemImage: "arrow.down.circle")
                     if info.prerelease {
-                        Text(L("updates.is_prerelease")).font(.caption).foregroundStyle(.secondary)
+                        Text(L("updates.is_prerelease")).font(MCFont.caption).foregroundStyle(.secondary)
                     }
                     // Never softened: an unsigned build stays labelled as one
                     // at the exact moment the user is deciding to fetch it.
                     if !info.signed || !info.notarized {
                         Text(L("updates.unsigned_warning"))
-                            .font(.caption).foregroundStyle(MCTheme.warning)
+                            .font(MCFont.caption).foregroundStyle(MCTheme.warning)
                     }
                     if let notes = info.notes, !notes.isEmpty {
-                        Text(notes).font(.caption).foregroundStyle(.secondary).lineLimit(6)
+                        Text(notes).font(MCFont.caption).foregroundStyle(.secondary).lineLimit(6)
                     }
                     if let url = info.releaseURL {
                         Button(L("updates.open_release")) { NSWorkspace.shared.open(url) }
@@ -244,7 +244,7 @@ struct UpdatesView: View {
                 verdict(outcome)
             }
             Text(L("updates.verify_detail"))
-                .font(.caption).foregroundStyle(.secondary)
+                .font(MCFont.caption).foregroundStyle(.secondary)
         }
     }
 

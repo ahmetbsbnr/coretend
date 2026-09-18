@@ -216,7 +216,7 @@ struct OnboardingView: View {
         let current = i == step
         return HStack(alignment: .top, spacing: MCSpacing.xs) {
             Image(systemName: done ? "checkmark.circle.fill" : (current ? "circle.inset.filled" : "circle"))
-                .font(.system(size: 13))
+                .font(.system(size: MCIconSize.row))
                 .foregroundStyle(done || current ? AnyShapeStyle(MCColor.teal) : AnyShapeStyle(.tertiary))
                 .accessibilityHidden(true)
             Text(stepTitle(i))
@@ -543,7 +543,7 @@ struct OnboardingView: View {
     private func stepHeader(_ icon: String, _ title: String, _ subtitle: String) -> some View {
         HStack(alignment: .top, spacing: MCSpacing.md) {
             Image(systemName: icon)
-                .font(.system(size: 30, weight: .light))
+                .font(.system(size: MCIconSize.feature, weight: .light))
                 .foregroundStyle(MCColor.teal)
                 .frame(width: 34)
                 .accessibilityHidden(true)

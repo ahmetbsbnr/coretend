@@ -240,7 +240,7 @@ struct PrivacyCleanerView: ModuleSubScreen {
                                 Text(L("privacy.history_size", mcFormatBytes(profile.historyBytes)))
                                 Text(L("privacy.cookies_size", mcFormatBytes(profile.cookieBytes)))
                             }
-                            .font(.caption).foregroundStyle(.secondary)
+                            .font(MCFont.caption).foregroundStyle(.secondary)
                         }
                         Spacer()
                     }
@@ -249,13 +249,13 @@ struct PrivacyCleanerView: ModuleSubScreen {
                             Image(systemName: "lock.circle").foregroundStyle(MCTheme.warning)
                                 .accessibilityHidden(true)
                             Text(L("privacy.profile_running_reason", profile.browser))
-                                .font(.caption).foregroundStyle(MCTheme.warning)
+                                .font(MCFont.caption).foregroundStyle(MCTheme.warning)
                             Spacer()
                             Button(L("privacy.close_and_rescan")) {
                                 Task { await model.closeBrowserAndRescan(profile) }
                             }
                             .buttonStyle(.link)
-                            .font(.caption)
+                            .font(MCFont.caption)
                         }
                         .padding(.leading, 28)
                         .accessibilityElement(children: .combine)
@@ -265,7 +265,7 @@ struct PrivacyCleanerView: ModuleSubScreen {
             }
             .listStyle(.inset)
             Text(L("privacy.footer"))
-                .font(.caption).foregroundStyle(.secondary)
+                .font(MCFont.caption).foregroundStyle(.secondary)
                 .padding()
         }
     }

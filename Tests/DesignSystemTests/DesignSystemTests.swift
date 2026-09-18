@@ -372,3 +372,83 @@ struct MotionSystemTests {
         #expect(MCMotion.animation(MCMotion.reveal, reduce: false) != nil)
     }
 }
+
+/// Typography is a system or it is not worth having.
+///
+/// The token set held ten styles and views bypassed it anyway: `.font(.caption)`
+/// appeared 56 times — more than any token here was used — alongside 15 uses of
+/// `.caption2` at three weights, and eleven bare `.system(size: N)` literals
+/// (9, 12, 13, 14, 15, 28, 30, 34). 92 uses of the system against roughly 110
+/// that went around it.
+///
+/// That is not a discipline problem. A token set that does not name the styles
+/// a codebase actually needs will be bypassed, and each bypass is a decision
+/// nobody can find later.
+@Suite("Typography system")
+struct TypographySystemTests {
+    private let root = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+
+    private func sources() throws -> [(name: String, text: String)] {
+        var out: [(String, String)] = []
+        for relative in ["Sources/CoreTendApp", "Sources/DesignSystem"] {
+            let dir = root.appendingPathComponent(relative)
+            for name in try FileManager.default.contentsOfDirectory(atPath: dir.path)
+                where name.hasSuffix(".swift") && name != "Typography.swift" {
+                out.append((name, try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)))
+            }
+        }
+        return out
+    }
+
+    /// No numeric point size outside the token file. A glyph size belongs to
+    /// `MCIconSize`; a text size belongs to `MCFont`. A literal is neither, and
+    /// is how 13, 14 and 15 all came to exist for the same job.
+    @Test func noViewHardcodesAPointSize() throws {
+        let pattern = try NSRegularExpression(pattern: #"\.system\(size:\s*\d"#)
+        for file in try sources() {
+            for line in file.text.split(separator: "\n") {
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                guard !trimmed.hasPrefix("//") else { continue }
+                let range = NSRange(trimmed.startIndex..., in: trimmed)
+                #expect(pattern.firstMatch(in: trimmed, range: range) == nil,
+                        "\(file.name) hardcodes a point size — use MCFont or MCIconSize: \(trimmed)")
+            }
+        }
+    }
+
+    /// No raw Dynamic Type style either. `.font(.caption)` was the single most
+    /// common font call in the app while `MCFont.caption` sat unused beside it.
+    @Test func noViewUsesARawTextStyle() throws {
+        let raw = [".font(.caption)", ".font(.caption2)", ".font(.headline)",
+                   ".font(.title2)", ".font(.title3)", ".font(.footnote)",
+                   ".font(.callout.weight(", ".font(.caption.weight(", ".font(.caption2.weight("]
+        for file in try sources() {
+            for line in file.text.split(separator: "\n") {
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                guard !trimmed.hasPrefix("//") else { continue }
+                for style in raw {
+                    #expect(!trimmed.contains(style),
+                            "\(file.name) uses a raw text style — use an MCFont token: \(trimmed)")
+                }
+            }
+        }
+    }
+
+    /// The icon scale must be a scale. Sizes that differ by a point are not two
+    /// decisions, they are one decision typed twice.
+    @Test func iconSizesAreDistinctEnoughToBeDeliberate() {
+        let scale: [(String, CGFloat)] = [
+            ("inline", MCIconSize.inline), ("chevron", MCIconSize.chevron),
+            ("row", MCIconSize.row), ("card", MCIconSize.card),
+            ("feature", MCIconSize.feature), ("hero", MCIconSize.hero),
+            ("compactState", MCIconSize.compactState), ("emptyState", MCIconSize.emptyState),
+            ("emptyStateProminent", MCIconSize.emptyStateProminent),
+        ]
+        for (lower, upper) in zip(scale, scale.dropFirst()) {
+            #expect(upper.1 > lower.1, "\(upper.0) is not larger than \(lower.0)")
+            #expect(upper.1 - lower.1 >= 2,
+                    "\(lower.0) (\(lower.1)) and \(upper.0) (\(upper.1)) are too close to be two decisions")
+        }
+    }
+}

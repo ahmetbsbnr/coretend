@@ -95,7 +95,7 @@ struct DashboardView: View {
                     .rotationEffect(.degrees(-90))
                     .mcAnimation(MCMotion.settle, value: freeSpaceFraction)
                 Image(systemName: ModuleID.cleanup.systemImage)
-                    .font(.system(size: 30, weight: .semibold))
+                    .font(.system(size: MCIconSize.feature, weight: .semibold))
                     .foregroundStyle(MCColor.storage)
             }
             .frame(width: ringSize, height: ringSize)
@@ -116,7 +116,7 @@ struct DashboardView: View {
                     navigate(.cleanup)
                 } label: {
                     Label(L("dashboard.primary_action"), systemImage: "sparkles")
-                        .font(.title3.weight(.semibold))
+                        .font(MCFont.actionLabel)
                         // The label of the app's primary action never
                         // truncates. If the window is too narrow for it, the
                         // window is too narrow.
@@ -204,13 +204,13 @@ struct DashboardView: View {
                 VStack(alignment: .leading, spacing: MCSpacing.xs) {
                     HStack(spacing: MCSpacing.xs) {
                         Image(systemName: attention ? "exclamationmark.triangle.fill" : icon)
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(.system(size: MCIconSize.row, weight: .semibold))
                             .foregroundStyle(attention ? MCColor.attention : .secondary)
                             .frame(width: 20)
                         Text(title).font(MCFont.cardTitle)
                         Spacer(minLength: 0)
                         Image(systemName: "arrow.right")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.system(size: MCIconSize.chevron, weight: .semibold))
                             .foregroundStyle(.tertiary)
                     }
                     Text(detail)

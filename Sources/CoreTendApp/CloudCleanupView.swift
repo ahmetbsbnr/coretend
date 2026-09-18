@@ -304,7 +304,7 @@ struct CloudCleanupView: View {
                 VStack(alignment: .leading) {
                     Text(model.selectedProvider?.name ?? "").font(MCFont.cardTitle)
                     Text(L("cloud.results.summary", mcFormatBytes(model.recoverableLocalBytes), mcFormatBytes(model.totalLogical)))
-                        .font(.caption).foregroundStyle(.secondary)
+                        .font(MCFont.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
                 Button(L("cloud.back")) { model.phase = .ready }
@@ -323,7 +323,7 @@ struct CloudCleanupView: View {
                     VStack(alignment: .trailing) {
                         Text(L("cloud.local_bytes", mcFormatBytes(entry.localBytes))).monospacedDigit()
                         Text(L("cloud.total_bytes", mcFormatBytes(entry.logicalBytes)))
-                            .font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                            .font(MCFont.caption).foregroundStyle(.secondary).monospacedDigit()
                     }
                     Button {
                         NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: entry.id)])
@@ -357,7 +357,7 @@ struct CloudCleanupView: View {
 
     private func badge(_ text: String, color: Color) -> some View {
         Text(text)
-            .font(.caption2.weight(.medium))
+            .font(MCFont.microEmphasis)
             .padding(.horizontal, 6).padding(.vertical, 2)
             .background(color.opacity(0.16), in: Capsule())
             .foregroundStyle(color)

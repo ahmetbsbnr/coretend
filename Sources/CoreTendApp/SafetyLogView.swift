@@ -73,7 +73,7 @@ struct SafetyLogView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(L("safetylog.title")).font(MCFont.cardTitle)
                 Text(L("safetylog.subtitle_detail", model.executedCount, model.skippedOrErrorCount))
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(MCFont.caption).foregroundStyle(.secondary)
             }
             Spacer()
             Button(L("safetylog.purge"), role: .destructive) {
@@ -94,14 +94,14 @@ private struct SafetyLogRow: View {
             stageBadge
             VStack(alignment: .leading, spacing: 2) {
                 Text(record.redactedPath)
-                    .font(.system(.callout, design: .monospaced))
+                    .font(MCFont.monoCaption)
                     .lineLimit(1).truncationMode(.middle)
                 Text("\(record.ruleID) · \(FindingMetadata.riskLabel(rawValue: record.risk)) · \(mcFormatBytes(record.size)) · \(AppDateFormatting.string(record.date, style: .dayMonthYearWithTime))")
-                    .font(.caption2).foregroundStyle(.secondary)
+                    .font(MCFont.micro).foregroundStyle(.secondary)
             }
             Spacer()
             Text(record.result)
-                .font(.caption2).foregroundStyle(.secondary)
+                .font(MCFont.micro).foregroundStyle(.secondary)
                 .lineLimit(1)
         }
         .accessibilityElement(children: .combine)
@@ -130,7 +130,7 @@ private struct SafetyLogRow: View {
 
     private var stageBadge: some View {
         Text(stageLabel)
-            .font(.caption2.weight(.semibold))
+            .font(MCFont.badge)
             .padding(.horizontal, 6).padding(.vertical, 3)
             .background(stageColor.opacity(0.18), in: Capsule())
             .foregroundStyle(stageColor)

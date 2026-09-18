@@ -147,7 +147,7 @@ public struct MCMetricCard: View {
                         .padding(MCSpacing.xs)
                     if isElevated && differentiateWithoutColor {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.caption2)
+                            .font(MCFont.micro)
                             .foregroundStyle(color)
                             .offset(x: MCSize.metricRing * 0.32, y: -MCSize.metricRing * 0.32)
                             .accessibilityHidden(true)
@@ -253,7 +253,7 @@ public struct MCSuccessState: View {
                 }
                 Circle().fill(MCColor.success.opacity(0.14)).frame(width: 76, height: 76)
                 Image(systemName: "checkmark.seal.fill")
-                    .font(.system(size: 34, weight: .semibold))
+                    .font(.system(size: MCIconSize.hero, weight: .semibold))
                     .foregroundStyle(MCColor.success)
             }
             .scaleEffect(popped || reduceMotion ? 1 : 0.7)
@@ -366,9 +366,9 @@ public struct MCScanButton: View {
         Button(action: action) {
             VStack(spacing: MCSpacing.xs) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 28, weight: .semibold))
+                    .font(.system(size: MCIconSize.card, weight: .semibold))
                 Text(title)
-                    .font(.headline)
+                    .font(MCFont.cardTitle)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                     .minimumScaleFactor(0.8)
@@ -417,7 +417,7 @@ public struct MCFeatureRow: View {
     public var body: some View {
         HStack(alignment: subtitle != nil ? .top : .center, spacing: MCSpacing.sm) {
             Image(systemName: icon)
-                .font(.system(size: 14, weight: .medium))
+                .font(.system(size: MCIconSize.row, weight: .medium))
                 .foregroundStyle(iconColor)
                 .frame(width: 20)
                 .accessibilityHidden(true)
