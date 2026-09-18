@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: The CoreTend Authors
 
 import SwiftUI
+import UniformTypeIdentifiers
 import Persistence
 import SafetyCore
 import DesignSystem
@@ -21,13 +22,14 @@ final class RecordViewModel {
 
     var phase: Phase = .loading
     private(set) var entries: [LedgerEntry] = []
-    var selection: LedgerEntry.ID?
+    private(set) var items: [RecordItem] = []
+    var selection: RecordItem.ID?
 
     var summary: SafetyLedger.Summary { SafetyLedger.summary(of: entries) }
 
-    var selectedEntry: LedgerEntry? {
+    var selectedItem: RecordItem? {
         guard let selection else { return nil }
-        return entries.first { $0.id == selection }
+        return items.first { $0.id == selection }
     }
 
     func load() async {
@@ -37,23 +39,47 @@ final class RecordViewModel {
         }
         do {
             entries = SafetyLedger.entries(from: try await store.safetyLog(limit: 1000))
-            phase = entries.isEmpty ? .empty : .loaded
-            // Selecting the newest entry means the inspector is never an empty
+            let events = try await store.activity(limit: 500)
+            items = SafetyLedger.items(operations: entries, events: events)
+            phase = items.isEmpty ? .empty : .loaded
+            // Selecting the newest item means the inspector is never an empty
             // pane on arrival; a record whose detail side is blank reads as
             // broken rather than as waiting.
-            if selection == nil || !entries.contains(where: { $0.id == selection }) {
-                selection = entries.first?.id
+            if selection == nil || !items.contains(where: { $0.id == selection }) {
+                selection = items.first?.id
             }
         } catch {
             phase = .failed("\(error)")
         }
     }
 
+    /// Erases both tables. The record is one history to the person reading
+    /// it, so erasing "the record" and leaving half of it behind would be a
+    /// lie by omission.
     func purge() async {
         guard let store = AppEnvironment.shared.store else { return }
         try? await store.purgeSafetyLog()
+        try? await store.clearActivity()
         selection = nil
         await load()
+    }
+
+    /// One row per item, in the order shown. Operations carry their evidence
+    /// counts; events carry the sentence the app wrote at the time.
+    func exportCSV() -> String {
+        var lines = ["Date,Kind,Summary,Items,Bytes moved to Trash,Refused,Failed"]
+        let formatter = ISO8601DateFormatter()
+        for item in items {
+            switch item {
+            case let .operation(entry):
+                let summary = RecordPhrasing.title(entry).replacingOccurrences(of: "\"", with: "'")
+                lines.append("\(formatter.string(from: entry.date)),operation,\"\(summary)\",\(entry.itemCount),\(entry.movedBytes),\(entry.refused.count),\(entry.failed.count)")
+            case let .event(record):
+                let summary = record.summary.replacingOccurrences(of: "\"", with: "'")
+                lines.append("\(formatter.string(from: record.date)),\(record.kind.rawValue),\"\(summary)\",\(record.itemCount),\(record.bytes),,")
+            }
+        }
+        return lines.joined(separator: "\n")
     }
 }
 
@@ -84,8 +110,11 @@ struct RecordView: View {
             // be the most prominent control on the screen whose whole point is
             // that the record is kept.
             Menu {
+                Button(L("record.export_csv")) { exportCSV() }
+                    .disabled(model.items.isEmpty)
+                Divider()
                 Button(L("record.purge"), role: .destructive) { confirmingPurge = true }
-                    .disabled(model.entries.isEmpty)
+                    .disabled(model.items.isEmpty)
             } label: {
                 Label(L("common.more"), systemImage: "ellipsis.circle")
             }
@@ -101,9 +130,17 @@ struct RecordView: View {
             }
             Button(L("common.cancel"), role: .cancel) { }
         } message: {
-            Text(L("record.purge_confirm_message", model.entries.count))
+            Text(L("record.purge_confirm_message", model.items.count))
         }
         .task { await model.load() }
+    }
+
+    private func exportCSV() {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = "CoreTend Record.csv"
+        panel.allowedContentTypes = [.commaSeparatedText]
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        try? model.exportCSV().write(to: url, atomically: true, encoding: .utf8)
     }
 
     private var loaded: some View {
@@ -112,10 +149,13 @@ struct RecordView: View {
                 summaryStrip
                 Divider()
                 List(selection: $model.selection) {
-                    ForEach(SafetyLedger.byDay(model.entries)) { group in
+                    ForEach(SafetyLedger.byDay(model.items)) { group in
                         Section(AppDateFormatting.string(group.day, style: .fullDay)) {
-                            ForEach(group.entries) { entry in
-                                RecordRow(entry: entry).tag(entry.id)
+                            ForEach(group.entries) { item in
+                                switch item {
+                                case let .operation(entry): RecordRow(entry: entry).tag(item.id)
+                                case let .event(record): RecordEventRow(record: record).tag(item.id)
+                                }
                             }
                         }
                     }
@@ -124,9 +164,12 @@ struct RecordView: View {
             }
             .frame(width: 320)
             Divider()
-            if let entry = model.selectedEntry {
+            switch model.selectedItem {
+            case let .operation(entry):
                 RecordInspector(entry: entry)
-            } else {
+            case let .event(record):
+                RecordEventInspector(record: record)
+            case nil:
                 MCEmptyState(icon: "sidebar.left",
                              title: L("record.no_selection_title"),
                              message: L("record.no_selection_message"))
@@ -179,6 +222,28 @@ private struct RecordRow: View {
         .padding(.vertical, 2)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(RecordPhrasing.title(entry)), \(RecordPhrasing.subtitle(entry)), \(AppDateFormatting.string(entry.date, style: .dayMonthYearWithTime))")
+    }
+}
+
+private struct RecordEventRow: View {
+    let record: ActivityRecord
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(alignment: .firstTextBaseline, spacing: MCSpacing.xs) {
+                Text(RecordPhrasing.eventTitle(record))
+                    .font(MCFont.rowTitle).lineLimit(1)
+                Spacer(minLength: 0)
+                Text(AppDateFormatting.string(record.date, style: .timeOnly))
+                    .font(MCFont.micro).foregroundStyle(MCColor.textSecondary)
+            }
+            Text(record.summary)
+                .font(MCFont.micro).foregroundStyle(MCColor.textSecondary)
+                .lineLimit(1)
+        }
+        .padding(.vertical, 2)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(RecordPhrasing.eventTitle(record)), \(record.summary), \(AppDateFormatting.string(record.date, style: .dayMonthYearWithTime))")
     }
 }
 
@@ -269,6 +334,46 @@ private struct RecordInspector: View {
     }
 }
 
+/// An event has no per-file evidence — it is the sentence the app wrote at
+/// the time, plus its counts. Shown as such, not padded out to look like an
+/// operation.
+private struct RecordEventInspector: View {
+    let record: ActivityRecord
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: MCSpacing.md) {
+                Text(RecordPhrasing.eventTitle(record)).font(MCFont.pageTitle)
+                Text(AppDateFormatting.string(record.date, style: .dayMonthYearWithTime))
+                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+                Text(record.summary).font(MCFont.body)
+                if record.itemCount > 0 || record.bytes > 0 {
+                    HStack(spacing: MCSpacing.lg) {
+                        if record.itemCount > 0 {
+                            stat(L("record.stat_items"), "\(record.itemCount)")
+                        }
+                        if record.bytes > 0 {
+                            stat(L("record.stat_seen"), mcFormatBytes(record.bytes))
+                        }
+                        Spacer(minLength: 0)
+                    }
+                }
+            }
+            .padding(MCSpacing.page)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private func stat(_ label: String, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(label).font(MCFont.groupHeader).foregroundStyle(MCColor.textSecondary)
+            Text(value).font(MCFont.metric)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(label), \(value)")
+    }
+}
+
 private struct RecordStateTag: View {
     let entry: LedgerEntry
 
@@ -334,6 +439,18 @@ enum RecordPhrasing {
     /// The quantity, and only the counts that are actually non-zero. "0
     /// refused" on an operation that refused nothing is noise dressed up as
     /// information.
+    /// Events are titled by kind. The sentence the app wrote is the subtitle,
+    /// because it was written for exactly this and is the only thing the
+    /// record knows about the event.
+    static func eventTitle(_ record: ActivityRecord) -> String {
+        switch record.kind {
+        case .scan: L("record.event_scan")
+        case .restore: L("record.event_restore")
+        case .error: L("record.event_error")
+        case .cleanup: L("record.event_cleanup")
+        }
+    }
+
     static func subtitle(_ entry: LedgerEntry) -> String {
         var parts: [String] = []
         if !entry.moved.isEmpty { parts.append(mcFormatBytes(entry.movedBytes)) }

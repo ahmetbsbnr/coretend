@@ -58,9 +58,50 @@ struct LedgerEntry: Identifiable, Equatable {
     }
 }
 
+/// One line of the record: either an operation with per-file evidence, or an
+/// event the app noted without touching a file — a scan, a restore, an error.
+///
+/// Both come from the store, from two tables that grew separately: the audit
+/// trail (`safety_log`, one row per file, grouped by operation) and the
+/// activity table (one row per thing the app did, with a sentence). The
+/// record reads them as one history. A cleanup appears in *both* tables, so
+/// cleanup activity rows are dropped here — the operation, with its evidence,
+/// is the one that is kept.
+enum RecordItem: Identifiable, Equatable {
+    case operation(LedgerEntry)
+    case event(ActivityRecord)
+
+    var id: String {
+        switch self {
+        case let .operation(entry): "op:\(entry.operationID)"
+        case let .event(record): "ev:\(record.id)"
+        }
+    }
+
+    var date: Date {
+        switch self {
+        case let .operation(entry): entry.date
+        case let .event(record): record.date
+        }
+    }
+
+    static func == (a: RecordItem, b: RecordItem) -> Bool { a.id == b.id && a.date == b.date }
+}
+
 /// Groups the flat, append-only audit trail into the entries the record shows.
 /// Pure and free of persistence so it is directly testable.
 enum SafetyLedger {
+
+    /// Operations and events as one history, most recent first.
+    ///
+    /// Activity rows of kind `.cleanup` are excluded: the same cleanup is in
+    /// the audit trail as an operation with per-file evidence, and showing it
+    /// twice would double both the entry and the bytes in the summary.
+    static func items(operations: [LedgerEntry], events: [ActivityRecord]) -> [RecordItem] {
+        let kept = events.filter { $0.kind != .cleanup }.map(RecordItem.event)
+        return (operations.map(RecordItem.operation) + kept)
+            .sorted { $0.date == $1.date ? $0.id > $1.id : $0.date > $1.date }
+    }
 
     /// Entries, most recent first.
     ///
@@ -101,10 +142,10 @@ enum SafetyLedger {
         var failedItems: Int = 0
     }
 
-    /// One day's entries, most recent day first.
+    /// One day's items, most recent day first.
     struct DayGroup: Identifiable {
         let day: Date
-        let entries: [LedgerEntry]
+        let entries: [RecordItem]
         var id: Date { day }
     }
 
@@ -114,9 +155,9 @@ enum SafetyLedger {
     /// grouping the list would be a column of times with no dates on it.
     /// Input order is preserved within a day, which for `entries(from:)` is
     /// already most-recent-first.
-    static func byDay(_ entries: [LedgerEntry], calendar: Calendar = .current) -> [DayGroup] {
+    static func byDay(_ entries: [RecordItem], calendar: Calendar = .current) -> [DayGroup] {
         var order: [Date] = []
-        var buckets: [Date: [LedgerEntry]] = [:]
+        var buckets: [Date: [RecordItem]] = [:]
         for entry in entries {
             let day = calendar.startOfDay(for: entry.date)
             if buckets[day] == nil { order.append(day) }

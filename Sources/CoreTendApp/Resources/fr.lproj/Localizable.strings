@@ -45,7 +45,8 @@
 "cleanup.title" = "Nettoyage";
 "cleanup.failed" = "Échec du nettoyage : %@";
 "cleanup.idle.title" = "Trouver les fichiers à examiner";
-"cleanup.idle.subtitle" = "Analyse les caches, journaux, rapports de plantage et fichiers de compilation Xcode.\nRien n'est supprimé pendant l'analyse.";
+"cleanup.idle.subtitle" = "Analyse les caches, journaux, rapports de plantage et fichiers de compilation Xcode.
+Rien n'est supprimé pendant l'analyse.";
 "cleanup.start_scan" = "Démarrer l'analyse";
 "cleanup.scanning_progress" = "%d éléments analysés — %@ trouvés";
 "cleanup.review.selected" = "%d éléments — %@ sélectionnés";
@@ -117,7 +118,8 @@
 "clutter.tab.duplicates" = "Doublons";
 "clutter.title" = "Mes fichiers encombrants";
 "clutter.idle.title" = "Trouvez les fichiers volumineux et oubliés";
-"clutter.idle.subtitle" = "Analyse Téléchargements, Documents, Bureau et les dossiers média.\nRien n'est jamais supprimé automatiquement — vous examinez et agissez dans le Finder.";
+"clutter.idle.subtitle" = "Analyse Téléchargements, Documents, Bureau et les dossiers média.
+Rien n'est jamais supprimé automatiquement — vous examinez et agissez dans le Finder.";
 "clutter.larger_than" = "Plus grand que";
 "clutter.size.50mb" = "50 Mo";
 "clutter.size.100mb" = "100 Mo";
@@ -161,7 +163,8 @@
 
 /* Leftovers */
 "leftovers.idle.title" = "Trouvez les résidus d'applications supprimées";
-"leftovers.idle.subtitle" = "Recherche les données de support dont l'application n'est plus installée.\nLa correspondance est prudente ; rien n'est présélectionné.";
+"leftovers.idle.subtitle" = "Recherche les données de support dont l'application n'est plus installée.
+La correspondance est prudente ; rien n'est présélectionné.";
 "leftovers.scan" = "Rechercher les résidus";
 "leftovers.scanning" = "Analyse en cours…";
 "leftovers.none_found" = "Aucun résidu trouvé";
@@ -188,7 +191,9 @@
 
 /* Duplicates */
 "dupes.idle.title" = "Trouver les fichiers en double";
-"dupes.idle.subtitle" = "Compare le contenu par hachage échelonné dans Téléchargements, Documents et Bureau.\nUne copie de chaque groupe est toujours conservée — la suggestion est modifiable.\nLes liens physiques vers le même fichier représentent déjà les mêmes données et ne sont jamais comptés comme doublons.";
+"dupes.idle.subtitle" = "Compare le contenu par hachage échelonné dans Téléchargements, Documents et Bureau.
+Une copie de chaque groupe est toujours conservée — la suggestion est modifiable.
+Les liens physiques vers le même fichier représentent déjà les mêmes données et ne sont jamais comptés comme doublons.";
 "dupes.find" = "Rechercher les doublons";
 "dupes.comparing" = "Comparaison de %d sur %d candidats";
 "dupes.building_inventory" = "Construction de l'inventaire des fichiers…";
@@ -202,7 +207,8 @@
 
 /* Similar Images */
 "similar.idle.title" = "Trouver les images visuellement similaires";
-"similar.idle.subtitle" = "Utilise l'analyse Vision sur l'appareil de Photos, Téléchargements et Bureau.\nLes bibliothèques Photos ne sont jamais touchées. Examinez dans le Finder ; rien n'est supprimé ici.";
+"similar.idle.subtitle" = "Utilise l'analyse Vision sur l'appareil de Photos, Téléchargements et Bureau.
+Les bibliothèques Photos ne sont jamais touchées. Examinez dans le Finder ; rien n'est supprimé ici.";
 "similar.analyze" = "Analyser les images";
 "similar.analyzing" = "Analyse de %d sur %d images";
 "similar.collecting" = "Collecte des images…";
@@ -214,26 +220,9 @@
 "similar.best_resolution_a11y" = "meilleure résolution";
 
 /* My Activity */
-"activity.title" = "Mon activité";
-"activity.range" = "Période";
-"activity.filter" = "Filtre";
-"activity.all_kinds" = "Tous les types";
 "activity.export_csv" = "Exporter en CSV";
-"activity.export_json" = "Exporter en JSON";
-"activity.clear_history" = "Effacer l'historique";
-"activity.range.all" = "Depuis toujours";
 "activity.range.last7" = "7 derniers jours";
 "activity.range.last30" = "30 derniers jours";
-"activity.empty" = "Aucune activité pour l'instant";
-"activity.empty_kind" = "Aucune activité de ce type pour l'instant";
-"activity.empty.subtitle" = "Les analyses et nettoyages apparaîtront ici. Tout reste sur ce Mac.";
-"activity.empty_range" = "Aucune activité sur cette période.";
-"activity.moved_to_trash" = "Mis à la corbeille";
-"activity.items" = "Éléments";
-"activity.row.detail" = "%d éléments · %@ %@";
-"activity.row.real_suffix" = "(réel, appliqué sur le disque)";
-"activity.open_protection" = "Ouvrir Protection";
-"activity.completed" = "Terminé";
 "activity.row.real_a11y" = "réel";
 
 /* Cloud Cleanup */
@@ -242,7 +231,8 @@
 "cloud.empty.subtitle" = "Les dossiers locaux d'iCloud Drive, Dropbox, Google Drive et OneDrive sont détectés automatiquement s'ils sont présents.";
 "cloud.measuring" = "Mesure de l'empreinte locale…";
 "cloud.picker.title" = "Analyser l'empreinte du stockage cloud";
-"cloud.picker.subtitle" = "Indique quels fichiers synchronisés occupent réellement de l'espace disque sur ce Mac.\nAnalyse uniquement — supprimer des fichiers synchronisés les retirerait de tous les appareils.";
+"cloud.picker.subtitle" = "Indique quels fichiers synchronisés occupent réellement de l'espace disque sur ce Mac.
+Analyse uniquement — supprimer des fichiers synchronisés les retirerait de tous les appareils.";
 "cloud.results.summary" = "%@ sur ce Mac sur %@ au total — analyse uniquement, rien n'est téléchargé ni supprimé";
 "cloud.back" = "Retour";
 "cloud.local_bytes" = "%@ en local";
@@ -395,7 +385,6 @@
 
 /* Safety log (SafetyCore audit trail persistence) */
 "common.done" = "Terminé";
-"activity.open_safety_log" = "Ouvrir le registre";
 
 /* Privacy Cleaner — per-profile running-browser handling */
 "privacy.profile_running_reason" = "%@ est en cours d'exécution — le nettoyage est désactivé pour ce profil tant qu'il n'est pas fermé.";
@@ -692,3 +681,10 @@
 "protection.tab.startup" = "Démarre à l’ouverture de session";
 "startup.empty_title" = "Rien ne démarre à l’ouverture de session";
 "startup.empty_message" = "Aucun agent de lancement n’est installé pour votre compte.";
+
+"record.event_scan" = "Analyse";
+"record.event_restore" = "Restauration";
+"record.event_error" = "Erreur";
+"record.event_cleanup" = "Nettoyage";
+"record.stat_seen" = "EXAMINÉS";
+"record.export_csv" = "Exporter en CSV…";

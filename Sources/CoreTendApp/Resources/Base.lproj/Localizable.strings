@@ -45,7 +45,8 @@
 "cleanup.title" = "Cleanup";
 "cleanup.failed" = "Cleanup failed: %@";
 "cleanup.idle.title" = "Find files worth reviewing";
-"cleanup.idle.subtitle" = "Scans user caches, logs, crash reports and Xcode build data.\nNothing is deleted during a scan.";
+"cleanup.idle.subtitle" = "Scans user caches, logs, crash reports and Xcode build data.
+Nothing is deleted during a scan.";
 "cleanup.start_scan" = "Start Scan";
 "cleanup.scanning_progress" = "Scanned %d items — %@ found";
 "cleanup.review.selected" = "%d items — %@ selected";
@@ -117,7 +118,8 @@
 "clutter.tab.duplicates" = "Duplicates";
 "clutter.title" = "My Clutter";
 "clutter.idle.title" = "Find large, forgotten files";
-"clutter.idle.subtitle" = "Analyzes Downloads, Documents, Desktop and media folders.\nNothing is ever deleted automatically — you review and act in Finder.";
+"clutter.idle.subtitle" = "Analyzes Downloads, Documents, Desktop and media folders.
+Nothing is ever deleted automatically — you review and act in Finder.";
 "clutter.larger_than" = "Larger than";
 "clutter.size.50mb" = "50 MB";
 "clutter.size.100mb" = "100 MB";
@@ -161,7 +163,8 @@
 
 /* Leftovers */
 "leftovers.idle.title" = "Find leftovers from removed apps";
-"leftovers.idle.subtitle" = "Looks for support data whose application is no longer installed.\nMatching is conservative; nothing is preselected.";
+"leftovers.idle.subtitle" = "Looks for support data whose application is no longer installed.
+Matching is conservative; nothing is preselected.";
 "leftovers.scan" = "Scan for Leftovers";
 "leftovers.scanning" = "Scanning…";
 "leftovers.none_found" = "No leftovers found";
@@ -188,7 +191,9 @@
 
 /* Duplicates */
 "dupes.idle.title" = "Find duplicate files";
-"dupes.idle.subtitle" = "Compares content with staged hashing in Downloads, Documents and Desktop.\nOne copy of each group is always kept — the suggestion is reviewable.\nHard links to the same file are already the same data and are never counted as duplicates.";
+"dupes.idle.subtitle" = "Compares content with staged hashing in Downloads, Documents and Desktop.
+One copy of each group is always kept — the suggestion is reviewable.
+Hard links to the same file are already the same data and are never counted as duplicates.";
 "dupes.find" = "Find Duplicates";
 "dupes.comparing" = "Comparing %d of %d candidates";
 "dupes.building_inventory" = "Building file inventory…";
@@ -202,7 +207,8 @@
 
 /* Similar Images */
 "similar.idle.title" = "Find visually similar images";
-"similar.idle.subtitle" = "Uses on-device Vision analysis of Pictures, Downloads and Desktop.\nPhotos libraries are never touched. Review in Finder; nothing is deleted here.";
+"similar.idle.subtitle" = "Uses on-device Vision analysis of Pictures, Downloads and Desktop.
+Photos libraries are never touched. Review in Finder; nothing is deleted here.";
 "similar.analyze" = "Analyze Images";
 "similar.analyzing" = "Analyzing %d of %d images";
 "similar.collecting" = "Collecting images…";
@@ -214,26 +220,9 @@
 "similar.best_resolution_a11y" = "best resolution";
 
 /* My Activity */
-"activity.title" = "My Activity";
-"activity.range" = "Range";
-"activity.filter" = "Filter";
-"activity.all_kinds" = "All kinds";
 "activity.export_csv" = "Export CSV";
-"activity.export_json" = "Export JSON";
-"activity.clear_history" = "Clear History";
-"activity.range.all" = "All time";
 "activity.range.last7" = "Last 7 days";
 "activity.range.last30" = "Last 30 days";
-"activity.empty" = "No activity yet";
-"activity.empty_kind" = "No activity of this kind yet";
-"activity.empty.subtitle" = "Scans and cleanups will appear here. Everything stays on this Mac.";
-"activity.empty_range" = "No activity in this range.";
-"activity.moved_to_trash" = "Moved to Trash";
-"activity.items" = "Items";
-"activity.row.detail" = "%d items · %@ %@";
-"activity.row.real_suffix" = "(real, applied to disk)";
-"activity.open_protection" = "Open Protection";
-"activity.completed" = "Completed";
 "activity.row.real_a11y" = "real";
 
 /* Cloud Cleanup */
@@ -242,7 +231,8 @@
 "cloud.empty.subtitle" = "iCloud Drive, Dropbox, Google Drive and OneDrive local folders are detected automatically when present.";
 "cloud.measuring" = "Measuring local footprint…";
 "cloud.picker.title" = "Analyze cloud storage footprint";
-"cloud.picker.subtitle" = "Shows which synced files actually occupy disk space on this Mac.\nAnalysis only — deleting synced files would remove them on every device.";
+"cloud.picker.subtitle" = "Shows which synced files actually occupy disk space on this Mac.
+Analysis only — deleting synced files would remove them on every device.";
 "cloud.results.summary" = "%@ on this Mac of %@ total — analysis only, nothing downloaded or deleted";
 "cloud.back" = "Back";
 "cloud.local_bytes" = "%@ local";
@@ -395,7 +385,6 @@
 
 /* Safety log (SafetyCore audit trail persistence) */
 "common.done" = "Done";
-"activity.open_safety_log" = "Open the Record";
 
 /* Privacy Cleaner — per-profile running-browser handling */
 "privacy.profile_running_reason" = "%@ is running — cleaning is disabled for this profile until it's closed.";
@@ -694,3 +683,10 @@
 "protection.tab.startup" = "Starts at login";
 "startup.empty_title" = "Nothing starts at login";
 "startup.empty_message" = "No launch agents are installed for your account.";
+
+"record.event_scan" = "Scanned";
+"record.event_restore" = "Restored";
+"record.event_error" = "Error";
+"record.event_cleanup" = "Cleaned up";
+"record.stat_seen" = "SEEN";
+"record.export_csv" = "Export as CSV…";

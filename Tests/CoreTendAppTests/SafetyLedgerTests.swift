@@ -233,3 +233,52 @@ struct RecordPhrasingTests {
         #expect(RecordPhrasing.subtitle(entry).contains("1 refused"))
     }
 }
+
+@Suite("Operations and events read as one history")
+struct RecordItemMergeTests {
+    private func event(_ id: Int64, _ kind: ActivityRecord.Kind, at offset: TimeInterval,
+                       bytes: Int64 = 0) -> ActivityRecord {
+        ActivityRecord(id: id, kind: kind, date: Date(timeIntervalSince1970: 1_700_000_000 + offset),
+                       summary: "summary \(id)", itemCount: 3, bytes: bytes)
+    }
+
+    /// A cleanup is written to both tables by the same action. Showing the
+    /// activity row as well as the operation would list the cleanup twice and,
+    /// worse, count its bytes twice in the summary the person reads first.
+    @Test func aCleanupIsNotListedTwice() {
+        let ops = SafetyLedger.entries(from: [record(1, "A", .executed, size: 100)])
+        let items = SafetyLedger.items(operations: ops, events: [event(9, .cleanup, at: 0, bytes: 100)])
+        #expect(items.count == 1)
+        if case .operation = items[0] {} else { Issue.record("the operation, with its evidence, is the one kept") }
+    }
+
+    @Test func scansRestoresAndErrorsAreKept() {
+        let items = SafetyLedger.items(operations: [], events: [
+            event(1, .scan, at: 0), event(2, .restore, at: 1), event(3, .error, at: 2),
+        ])
+        #expect(items.count == 3)
+    }
+
+    /// The two sources interleave by date. A scan from this morning sits
+    /// above yesterday's cleanup, whichever table it came from.
+    @Test func sourcesInterleaveByDate() {
+        let ops = SafetyLedger.entries(from: [record(1, "old", .executed, size: 1, at: 0)])
+        let items = SafetyLedger.items(operations: ops, events: [event(5, .scan, at: 500)])
+        #expect(items.first?.id == "ev:5")
+        #expect(items.last?.id == "op:old")
+    }
+
+    @Test func idsCannotCollideAcrossSources() {
+        let ops = SafetyLedger.entries(from: [record(1, "7", .executed, size: 1)])
+        let items = SafetyLedger.items(operations: ops, events: [event(7, .scan, at: 0)])
+        #expect(Set(items.map(\.id)).count == 2)
+    }
+
+    @Test func dayGroupingWorksAcrossSources() {
+        let ops = SafetyLedger.entries(from: [record(1, "A", .executed, size: 1, at: 0)])
+        let items = SafetyLedger.items(operations: ops, events: [event(2, .scan, at: 60)])
+        let days = SafetyLedger.byDay(items)
+        #expect(days.count == 1)
+        #expect(days[0].entries.count == 2)
+    }
+}
