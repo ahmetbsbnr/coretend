@@ -5,6 +5,7 @@ import Foundation
 import AppKit
 import Testing
 import AppDiscovery
+import DesignSystem
 @testable import CoreTendApp
 
 @Suite("Application inventory test-data isolation")
@@ -59,25 +60,37 @@ struct ApplicationInventoryIsolationTests {
     }
 }
 
-/// The appearance override is gone: CoreTend renders in its own appearance and
-/// no environment variable changes it. What replaces those three tests is the
-/// one property that now matters — that the app pins an appearance at all, and
-/// pins the one the palette was measured against.
-@Suite("Owned appearance")
+/// CoreTend follows the Mac's appearance.
+///
+/// It used to pin `.darkAqua`, and these tests asserted the pin. Owning a
+/// palette and refusing an appearance are different things: the palette is
+/// still entirely CoreTend's in both modes — Light is warm paper and a deep
+/// teal, never `NSColor.windowBackgroundColor` — but the *choice* of mode
+/// belongs to the person using the Mac, and pinning overrode them.
+///
+/// What is asserted now is the property that replaced the pin: applying leaves
+/// the app resolving from the system, and every palette token has a value for
+/// each appearance so nothing falls back to an unmeasured colour.
+@Suite("System appearance")
 @MainActor
 struct AppAppearanceTests {
-    @Test("the app pins the appearance its palette was designed for")
-    func pinsDarkAqua() {
-        #expect(AppAppearance.name == .darkAqua)
-    }
 
-    /// Applying it must be idempotent and must not depend on a window
-    /// existing: it runs in `CoreTendApp.init()`, before any scene is built,
-    /// so no view can render in the inherited appearance and then swap.
+    /// Runs in `CoreTendApp.init()`, before any scene exists, and must be
+    /// repeatable without accumulating state.
     @Test("applying is safe before any window exists, and repeatable")
     func applyIsIdempotent() {
         AppAppearance.apply()
         AppAppearance.apply()
-        #expect(NSApplication.shared.appearance?.name == AppAppearance.name)
+        #expect(NSApplication.shared.appearance == nil,
+                "a pinned appearance would override the user's choice of Light or Dark")
+    }
+
+    /// The light palette is not the system palette. If these ever match the
+    /// AppKit defaults, the owned-appearance decision has quietly been lost.
+    @Test("light is CoreTend's own, not the system's")
+    func lightIsOwned() {
+        #expect(MCPalette.ground.light == 0xF7F8F9)
+        #expect(MCPalette.teal.light == 0x0F7A72)
+        #expect(MCPalette.ground.light != MCPalette.ground.dark)
     }
 }

@@ -44,30 +44,70 @@ struct BloomGeometryTests {
 
 @Suite("Semantic colors")
 struct ColorTests {
-    /// This assertion is the exact inverse of the one it replaces.
+    /// Every role resolves to a different value in each appearance.
     ///
-    /// It used to require that every brand colour *differ* between the aqua
-    /// and darkAqua appearances, because the palette was two palettes. CoreTend
-    /// now renders in one owned appearance, so a colour that still changes
-    /// under the system switch is a colour that escaped the migration — it
-    /// would render differently for a user in Light appearance than the values
-    /// the contrast suite measures, making those measurements false.
-    @Test func brandColoursDoNotFollowTheSystemAppearance() {
-        for (name, color) in [
-            ("teal", MCColor.teal), ("tealBright", MCColor.tealBright),
-            ("tealDeep", MCColor.tealDeep), ("tealWash", MCColor.tealWash),
-            ("graphite", MCColor.graphite), ("amber", MCColor.amber),
-            ("coral", MCColor.coral), ("success", MCColor.success),
-            ("background", MCColor.background), ("secondaryBackground", MCColor.secondaryBackground),
-            ("elevatedBackground", MCColor.elevatedBackground),
-            ("elevatedHighBackground", MCColor.elevatedHighBackground),
-            ("separator", MCColor.separator), ("textPrimary", MCColor.textPrimary),
-            ("textSecondary", MCColor.textSecondary), ("textTertiary", MCColor.textTertiary),
-        ] {
-            #expect(resolved(color, .aqua) == resolved(color, .darkAqua),
-                    "\(name) still changes with the system appearance")
+    /// This assertion has now been inverted twice, and the history is the
+    /// point. It first required each brand colour to *differ* between aqua and
+    /// darkAqua, because the palette was two palettes. It was then flipped to
+    /// require they be *identical*, because the app pinned `.darkAqua` and
+    /// shipped one owned palette. It is flipped back here — but not to where
+    /// it started.
+    ///
+    /// The mistake in the middle version was conflating two separate things:
+    /// owning a palette, and refusing an appearance. CoreTend still owns every
+    /// value; what it no longer does is override the user's choice of Light or
+    /// Dark. So the invariant is not "fixed" and not merely "adapts" — it is
+    /// *adapts to its own measured values*, which is what the next test checks.
+    @Test func everyRoleHasBothAppearances() {
+        for (name, color) in Self.roles {
+            #expect(resolved(color, .aqua) != resolved(color, .darkAqua),
+                    "\(name) resolves identically in both appearances, so one of them was never designed")
         }
     }
+
+    /// Adapting must not mean deferring to AppKit.
+    ///
+    /// The cheap way to get a light mode is to hand the system colours back —
+    /// `windowBackgroundColor`, `labelColor`, `controlAccentColor` — at which
+    /// point the app has no appearance of its own in half of its life. Each
+    /// resolved value is compared against the system colour that would have
+    /// replaced it.
+    ///
+    /// Which roles are CoreTend's is decided per role, not by a blanket rule.
+    ///
+    /// `elevatedBackground` is deliberately absent. In Light it resolves to
+    /// white, which is also `controlBackgroundColor` — and that is not a
+    /// failure to own anything. Nobody owns white. An app's identity does not
+    /// live in its neutral surfaces, and insisting on a slightly-off white
+    /// purely so a test can call it "ours" is decoration pretending to be
+    /// branding. Identity lives in the accent, in the ink-on-ground pairing,
+    /// and in the tint applied to state — so those are what this pins.
+    @Test func ownedRolesAreNotTheSystemDefaults() {
+        let comparisons: [(String, Color, NSColor)] = [
+            ("background", MCColor.background, .windowBackgroundColor),
+            ("teal", MCColor.teal, .controlAccentColor),
+            ("textPrimary", MCColor.textPrimary, .labelColor),
+            ("textSecondary", MCColor.textSecondary, .secondaryLabelColor),
+        ]
+        for appearance in [NSAppearance.Name.aqua, .darkAqua] {
+            for (name, ours, system) in comparisons {
+                #expect(resolved(ours, appearance) != resolved(Color(nsColor: system), appearance),
+                        "\(name) in \(appearance.rawValue) is just the system colour")
+            }
+        }
+    }
+
+    private static let roles: [(String, Color)] = [
+        ("teal", MCColor.teal), ("tealBright", MCColor.tealBright),
+        ("tealDeep", MCColor.tealDeep), ("tealWash", MCColor.tealWash),
+        ("graphite", MCColor.graphite), ("amber", MCColor.amber),
+        ("coral", MCColor.coral), ("success", MCColor.success),
+        ("background", MCColor.background), ("secondaryBackground", MCColor.secondaryBackground),
+        ("elevatedBackground", MCColor.elevatedBackground),
+        ("elevatedHighBackground", MCColor.elevatedHighBackground),
+        ("separator", MCColor.separator), ("textPrimary", MCColor.textPrimary),
+        ("textSecondary", MCColor.textSecondary), ("textTertiary", MCColor.textTertiary),
+    ]
 
     /// Resolves a colour under a given appearance, so "does not adapt" is
     /// measured rather than assumed from how it was declared.

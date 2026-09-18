@@ -153,17 +153,17 @@ public enum MCColor {
 
     // MARK: - Surfaces
 
-    public static let background = srgb(Canonical.ground)
-    public static let secondaryBackground = srgb(Canonical.sunken)
-    public static let elevatedBackground = srgb(Canonical.raised)
-    public static let elevatedHighBackground = srgb(Canonical.raisedHigh)
-    public static let separator = srgb(Canonical.border)
+    public static let background = MCPalette.ground.color
+    public static let secondaryBackground = MCPalette.sunken.color
+    public static let elevatedBackground = MCPalette.raised.color
+    public static let elevatedHighBackground = MCPalette.raisedHigh.color
+    public static let separator = MCPalette.border.color
 
     // MARK: - Text
 
-    public static let textPrimary = srgb(Canonical.textPrimary)
-    public static let textSecondary = srgb(Canonical.textSecondary)
-    public static let textTertiary = srgb(Canonical.textTertiary)
+    public static let textPrimary = MCPalette.textPrimary.color
+    public static let textSecondary = MCPalette.textSecondary.color
+    public static let textTertiary = MCPalette.textTertiary.color
 
     /// Text and glyphs sitting **on** an accent fill.
     ///
@@ -175,18 +175,18 @@ public enum MCColor {
     /// This is why `MCPrimaryButtonStyle` exists rather than
     /// `.buttonStyle(.borderedProminent)`: the system style pairs a tint with a
     /// white label and does not check whether the two can be read together.
-    public static let onAccent = srgb(Canonical.ground)
+    public static let onAccent = MCPalette.onAccent.color
 
     // MARK: - Accent and signal
 
-    public static let teal = srgb(Canonical.teal)
-    public static let tealBright = srgb(Canonical.tealBright)
-    public static let tealDeep = srgb(Canonical.tealDeep)
-    public static let tealWash = srgb(Canonical.tealWash)
-    public static let graphite = srgb(Canonical.slate)
-    public static let amber = srgb(Canonical.amber)
-    public static let coral = srgb(Canonical.coral)
-    public static let success = srgb(Canonical.green)
+    public static let teal = MCPalette.teal.color
+    public static let tealBright = MCPalette.tealBright.color
+    public static let tealDeep = MCPalette.tealDeep.color
+    public static let tealWash = MCPalette.tealWash.color
+    public static let graphite = MCPalette.slate.color
+    public static let amber = MCPalette.amber.color
+    public static let coral = MCPalette.coral.color
+    public static let success = MCPalette.green.color
 
     // MARK: - Roles
     //
