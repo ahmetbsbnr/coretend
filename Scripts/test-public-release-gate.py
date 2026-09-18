@@ -111,6 +111,13 @@ class PublicReleaseGateTests(unittest.TestCase):
             prerelease=True,
             signed=False,
             notarized=False,
+            # The key registry maps a version to the key that must verify it,
+            # and the gate refuses a record that disagrees. A fixture carrying
+            # the stable release's key under an older version number is itself
+            # invalid input, so it is corrected here rather than the gate being
+            # reordered around it: this test is about the un-pinned-checksum
+            # path, and it should fail for that reason and no other.
+            minisignKeyId="A399E8FD75C1719E",
             dmgName="CoreTend-1.0.0-rc.1-arm64-unsigned.dmg",
             dmgURL="https://github.com/ahmetbsbnr/coretend/releases/download/v1.0.0-rc.1/CoreTend-1.0.0-rc.1-arm64-unsigned.dmg",
             zipName="CoreTend-1.0.0-rc.1-arm64-unsigned.zip",

@@ -50,11 +50,17 @@ tag=$(printf '%s' "$latest" | /usr/bin/python3 -c "import json,sys;print(json.lo
 tmp=$(mktemp -d)
 gh release download "$tag" -R "$REPO" --pattern latest.json --dir "$tmp" --clobber >/dev/null
 
-/usr/bin/python3 - "$latest" "$tmp/latest.json" "$OUT" "$REPO" <<'PY'
+# Which Minisign key verifies this version, from the one place that knows.
+# Never hand-typed: the whole point of the registry is that nothing else gets
+# to have an opinion about which key signed a release.
+MINISIGN_KEY_ID=$(/usr/bin/python3 Scripts/resolve-minisign-key.py \
+  "$(printf '%s' "$latest" | /usr/bin/python3 -c "import json,sys;print(json.load(sys.stdin)['tag_name'].lstrip('v'))")")
+
+/usr/bin/python3 - "$latest" "$tmp/latest.json" "$OUT" "$REPO" "$MINISIGN_KEY_ID" <<'PY'
 import json, os, re, sys, tempfile
 api = json.loads(sys.argv[1])
 manifest = json.load(open(sys.argv[2]))
-out, repo = sys.argv[3], sys.argv[4]
+out, repo, minisign_key_id = sys.argv[3], sys.argv[4], sys.argv[5]
 
 tag = api["tag_name"]
 if api.get("draft"):
@@ -76,6 +82,7 @@ record = {
     "sourceCommit": manifest.get("sourceCommit", ""),
     "releaseURL": api["html_url"],
     "repositoryURL": f"https://github.com/{repo}",
+    "minisignKeyId": minisign_key_id,
     "dmgName": dmg,
     "dmgURL": assets[dmg],
     "dmgSHA256": manifest.get("dmgSHA256", ""),

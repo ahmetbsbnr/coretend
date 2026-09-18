@@ -16,6 +16,7 @@ import hashlib
 import json
 import os
 import re
+import subprocess
 import sys
 import tempfile
 from datetime import datetime
@@ -129,6 +130,7 @@ ALLOWED_SOURCE_KEYS = {
     "minimumMacOS",
     "architecture",
     "publishedAt",
+    "minisignKeyId",
 }
 
 REQUIRED_SOURCE_KEYS = ALLOWED_SOURCE_KEYS - {"_comment"}
@@ -279,6 +281,7 @@ def validate_source(
     minimum_macos = _require_string(source, "minimumMacOS")
     _require(minimum_macos == SUPPORTED_MINIMUM_MACOS, f"minimumMacOS must be {SUPPORTED_MINIMUM_MACOS!r}")
 
+    _require_minisign_key(source)
     signed = _require_bool(source, "signed")
     notarized = _require_bool(source, "notarized")
     # Either a fully unsigned build (both false) or a Developer ID signed +
@@ -339,6 +342,34 @@ def validate_source(
     return dict(source)
 
 
+def _require_minisign_key(source: Mapping[str, Any]) -> None:
+    """The recorded key must be the one the registry maps this version to.
+
+    Double entry, like PINNED_RELEASE_EVIDENCE above: published-release.json is
+    written by the sync script and Configuration/minisign-keys.json is edited by
+    hand during a rotation. Requiring them to agree is what stops the site from
+    telling users to verify with a key that did not sign the release — the
+    failure that nearly shipped in v1.0.1, where the repository published one
+    key while CI signed with another.
+    """
+    version = source["version"]
+    recorded = source.get("minisignKeyId")
+    resolver = REPOSITORY_ROOT / "Scripts" / "resolve-minisign-key.py"
+    try:
+        expected = subprocess.run(
+            [sys.executable, str(resolver), version],
+            cwd=REPOSITORY_ROOT, check=True, capture_output=True, text=True,
+        ).stdout.strip()
+    except subprocess.CalledProcessError as exc:
+        _require(False, f"no Minisign key is registered for {version}: {exc.stderr.strip()}")
+        return
+    _require(
+        recorded == expected,
+        f"minisignKeyId disagrees with Configuration/minisign-keys.json "
+        f"(recorded {recorded!r}, registry says {expected!r} for {version})",
+    )
+
+
 def public_manifest(source: Mapping[str, Any]) -> Dict[str, Any]:
     """Keep only public updater/site fields; never forward comments or paths."""
 
@@ -365,6 +396,11 @@ def public_manifest(source: Mapping[str, Any]) -> Dict[str, Any]:
         "zipURL": source["zipURL"],
         "zipSHA256": source["zipSHA256"],
         "zipSize": source["zipSize"],
+        # Which key verifies this release. Without it the published SHA256SUMS
+        # and its .minisig are checkable only by someone who already knows
+        # which of the two keys signed them, and the rotation boundary is by
+        # release date — exactly the thing a user cannot infer.
+        "minisignKeyId": source["minisignKeyId"],
     }
 
 
