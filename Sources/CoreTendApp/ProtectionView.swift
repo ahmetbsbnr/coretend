@@ -148,10 +148,18 @@ struct IntegrityView: View {
                             .foregroundStyle(item.isQuarantined ? MCTheme.accent : .secondary)
                         VStack(alignment: .leading, spacing: MCSpacing.xxs) {
                             Text(item.name).font(.callout.weight(.medium)).lineLimit(1)
-                            if let source = item.sourceURL {
-                                Text(source).font(.caption).foregroundStyle(.secondary)
+                            if let location = ProvenanceSummary.location(for: item) {
+                                Text(location).font(.caption).foregroundStyle(.secondary)
                                     .lineLimit(1).truncationMode(.middle)
-                            } else {
+                            }
+                            // Which app brought the file in and when. macOS
+                            // records this for almost everything, and the list
+                            // showed none of it — see ProvenanceSummary.
+                            if let acquisition = ProvenanceSummary.acquisition(for: item) {
+                                Text(acquisition).font(.caption2).foregroundStyle(.tertiary)
+                                    .lineLimit(1)
+                            }
+                            if ProvenanceSummary.isUnknown(item) {
                                 Text(L("integrity.downloads.no_provenance"))
                                     .font(.caption).foregroundStyle(.tertiary)
                             }
