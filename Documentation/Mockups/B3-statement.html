@@ -1,0 +1,78 @@
+<!doctype html><meta charset="utf-8"><title>B3 — Le relevé</title>
+<link rel="stylesheet" href="shared.css"><style>
+.wrap{overflow:auto;padding:0 0 40px}
+.hero{padding:26px 28px 22px;border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-end;gap:36px}
+.hero .big{font-size:44px;font-weight:750;letter-spacing:-.03em;color:var(--teal);line-height:1}
+.hero .lbl{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.07em;margin-bottom:9px}
+.hero .sm{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1}
+.spark{margin-left:auto;display:flex;align-items:flex-end;gap:3px;height:52px}
+.spark i{width:9px;background:color-mix(in srgb,var(--teal) 34%,transparent);border-radius:2px 2px 0 0;display:block}
+.spark i.hi{background:var(--teal)}
+.hd,.rw{display:grid;grid-template-columns:96px 1fr 148px 120px 108px;gap:0;align-items:center}
+.hd{position:sticky;top:0;background:rgba(27,31,35,.94);backdrop-filter:blur(18px);
+  font-size:10.5px;font-weight:700;color:var(--text3);letter-spacing:.07em;
+  padding:9px 28px;border-bottom:1px solid var(--border);z-index:2}
+.rw{padding:8px 28px;font-size:12.5px;border-bottom:1px solid color-mix(in srgb,var(--border) 55%,transparent)}
+.rw:hover{background:var(--raised)}
+.rw .when{color:var(--meta)}
+.rw .what{font-weight:600;display:flex;align-items:center;gap:9px}
+.rw .what span.s{font-weight:400;color:var(--text3)}
+.rw .delta{text-align:right;padding-right:28px;font-weight:650}
+.rw .delta.up{color:var(--teal)}
+.rw .delta.dn{color:var(--coral)}
+.rw .delta.z{color:var(--text3);font-weight:400}
+.rw .bal{text-align:right;padding-right:22px;color:var(--text2)}
+.sep{padding:18px 28px 7px;font-size:10.5px;font-weight:700;color:var(--text3);letter-spacing:.07em;
+  background:var(--ground)}
+.num{text-align:right}
+</style><div class="win">
+<div class="side">
+  <div class="row on"><span class="dot"></span><span class="ic">◉</span>Record</div>
+  <div class="grp">SCAN</div>
+  <div class="row"><span class="dot"></span><span class="ic">✦</span>Storage</div>
+  <div class="row"><span class="dot"></span><span class="ic">◫</span>Space Lens</div>
+  <div class="row"><span class="dot"></span><span class="ic">❐</span>Duplicates</div>
+  <div class="row"><span class="dot"></span><span class="ic">⊞</span>Applications</div>
+  <div class="grp">MORE</div>
+  <div class="row"><span class="dot"></span><span class="ic">≣</span>My Clutter</div>
+  <div class="row"><span class="dot"></span><span class="ic">☁</span>Cloud Cleanup</div>
+  <div class="row"><span class="dot"></span><span class="ic">∿</span>Performance</div>
+  <div class="grp">SYSTEM</div>
+  <div class="row"><span class="dot"></span><span class="ic">⛨</span>Integrity</div>
+</div>
+<div class="main">
+  <div class="bar"><h1>Record</h1><span class="sp"></span>
+    <button class="btn ghost">Export</button><button class="btn">New scan</button></div>
+  <div class="wrap">
+    <div class="hero">
+      <div><div class="lbl">RECLAIMED, ALL TIME</div><div class="big mono">41.7 GB</div></div>
+      <div><div class="lbl">STILL REVERSIBLE</div><div class="sm mono">8.9 GB</div></div>
+      <div><div class="lbl">REFUSED</div><div class="sm mono">1 043</div></div>
+      <div class="spark">
+        <i style="height:14px"></i><i style="height:26px"></i><i style="height:9px"></i><i style="height:38px"></i>
+        <i style="height:18px"></i><i style="height:31px"></i><i style="height:12px"></i><i style="height:44px"></i>
+        <i style="height:7px"></i><i style="height:22px"></i><i style="height:35px"></i><i class="hi" style="height:52px"></i>
+      </div>
+    </div>
+    <div class="hd"><span>TIME</span><span>ENTRY</span><span class="num" style="padding-right:28px">CHANGE</span><span class="num" style="padding-right:22px">RECLAIMED</span><span>STATE</span></div>
+
+    <div class="sep">TODAY · 18 SEPTEMBER 2026</div>
+    <div class="rw"><span class="when mono">14:32</span><span class="what">Moved to Trash <span class="s">214 items · Duplicates</span></span><span class="delta up mono">+3.41 GB</span><span class="bal mono">41.7 GB</span><span class="tag ok">Reversible</span></div>
+    <div class="rw"><span class="when mono">14:31</span><span class="what">Kept back <span class="s">6 items in protected paths</span></span><span class="delta z mono">—</span><span class="bal mono">38.3 GB</span><span class="tag ref">Refused</span></div>
+    <div class="rw"><span class="when mono">14:26</span><span class="what">Scanned <span class="s">Duplicates · 412 913 files · 4 min 11 s</span></span><span class="delta z mono">—</span><span class="bal mono">38.3 GB</span><span class="tag neutral">Read only</span></div>
+
+    <div class="sep">YESTERDAY · 17 SEPTEMBER 2026</div>
+    <div class="rw"><span class="when mono">09:14</span><span class="what">Uninstalled Figma <span class="s">bundle + 5 paths</span></span><span class="delta up mono">+1.12 GB</span><span class="bal mono">38.3 GB</span><span class="tag ok">Reversible</span></div>
+    <div class="rw"><span class="when mono">09:11</span><span class="what">Scanned <span class="s">Applications · 148 bundles · 22 s</span></span><span class="delta z mono">—</span><span class="bal mono">37.2 GB</span><span class="tag neutral">Read only</span></div>
+
+    <div class="sep">16 SEPTEMBER 2026</div>
+    <div class="rw"><span class="when mono">18:52</span><span class="what">Restored <span class="s">12 items · undo of 18:40</span></span><span class="delta dn mono">−96 MB</span><span class="bal mono">37.2 GB</span><span class="tag warn">Undone</span></div>
+    <div class="rw"><span class="when mono">18:40</span><span class="what">Emptied caches <span class="s">31 folders</span></span><span class="delta up mono">+780 MB</span><span class="bal mono">37.3 GB</span><span class="tag ok">Reversible</span></div>
+    <div class="rw"><span class="when mono">18:22</span><span class="what">Scanned <span class="s">Storage · 1 106 224 files · 9 min 02 s</span></span><span class="delta z mono">—</span><span class="bal mono">36.5 GB</span><span class="tag neutral">Read only</span></div>
+
+    <div class="sep">12 SEPTEMBER 2026</div>
+    <div class="rw"><span class="when mono">21:06</span><span class="what">Trash emptied <span class="s">by macOS · 1 882 items became permanent</span></span><span class="delta z mono">—</span><span class="bal mono">36.5 GB</span><span class="tag neutral">Final</span></div>
+    <div class="rw"><span class="when mono">20:44</span><span class="what">Moved to Trash <span class="s">1 882 items · My Clutter</span></span><span class="delta up mono">+11.4 GB</span><span class="bal mono">36.5 GB</span><span class="tag neutral">Final</span></div>
+  </div>
+</div></div>

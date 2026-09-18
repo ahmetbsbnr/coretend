@@ -1,0 +1,85 @@
+<!doctype html><meta charset="utf-8"><title>B1 — Le fil</title>
+<link rel="stylesheet" href="shared.css"><style>
+.feed{overflow:auto;padding:20px 24px 40px;display:flex;flex-direction:column;gap:2px}
+.day{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.07em;padding:22px 0 10px}
+.entry{display:grid;grid-template-columns:14px 1fr;gap:16px}
+.rail{display:flex;flex-direction:column;align-items:center;padding-top:6px}
+.node{width:9px;height:9px;border-radius:50%;background:var(--teal);flex:none;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--teal) 20%,transparent)}
+.node.ref{background:var(--coral);box-shadow:0 0 0 3px color-mix(in srgb,var(--coral) 20%,transparent)}
+.node.sc{background:var(--slate);box-shadow:none;width:7px;height:7px}
+.line{flex:1;width:1px;background:var(--border);margin-top:6px}
+.card{background:var(--raised);border:1px solid var(--border);border-radius:12px;
+  padding:14px 16px;margin-bottom:10px}
+.card.plain{background:transparent;border:0;padding:6px 0 14px}
+.h{display:flex;align-items:baseline;gap:10px}
+.h b{font-size:13.5px;font-weight:650;letter-spacing:-.005em}
+.h .t{margin-left:auto;font-size:11.5px;color:var(--meta)}
+.sub{font-size:12px;color:var(--text2);margin-top:3px}
+.amt{font-size:22px;font-weight:700;letter-spacing:-.02em;color:var(--teal);margin:10px 0 2px}
+.acts{display:flex;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+.lnk{font-size:12px;font-weight:600;color:var(--teal)}
+.lnk.q{color:var(--text3)}
+.files{margin-top:10px;display:flex;flex-direction:column;gap:5px}
+.f{display:flex;gap:10px;font-size:12px;color:var(--text2);align-items:center}
+.f .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style>
+<div class="win">
+<div class="side">
+  <div class="row on"><span class="dot"></span><span class="ic">◉</span>Record</div>
+  <div class="grp">SCAN</div>
+  <div class="row"><span class="dot"></span><span class="ic">✦</span>Storage</div>
+  <div class="row"><span class="dot"></span><span class="ic">◫</span>Space Lens</div>
+  <div class="row"><span class="dot"></span><span class="ic">❐</span>Duplicates</div>
+  <div class="row"><span class="dot"></span><span class="ic">⊞</span>Applications</div>
+  <div class="grp">MORE</div>
+  <div class="row"><span class="dot"></span><span class="ic">≣</span>My Clutter</div>
+  <div class="row"><span class="dot"></span><span class="ic">☁</span>Cloud Cleanup</div>
+  <div class="row"><span class="dot"></span><span class="ic">∿</span>Performance</div>
+  <div class="grp">SYSTEM</div>
+  <div class="row"><span class="dot"></span><span class="ic">⛨</span>Integrity</div>
+</div>
+<div class="main">
+  <div class="bar"><h1>Record</h1><span class="tag neutral">1 284 entries</span><span class="sp"></span>
+    <button class="btn ghost">Export</button><button class="btn">New scan</button></div>
+  <div class="feed">
+    <div class="day">TODAY</div>
+
+    <div class="entry"><div class="rail"><span class="node"></span><span class="line"></span></div>
+      <div class="card"><div class="h"><b>Moved 214 items to the Trash</b><span class="tag ok">Reversible</span><span class="t">14:32</span></div>
+        <div class="sub">From Duplicates · every item still recoverable until the Trash is emptied</div>
+        <div class="amt mono">3.41 GB</div>
+        <div class="files">
+          <div class="f"><span class="n">~/Downloads/IMG_4821 (2).HEIC</span><span class="mono">4.8 MB</span></div>
+          <div class="f"><span class="n">~/Pictures/Library/derivatives/3a91…</span><span class="mono">211 MB</span></div>
+          <div class="f"><span class="n">212 more</span><span class="mono">3.19 GB</span></div>
+        </div>
+        <div class="acts"><span class="lnk">Put it all back</span><span class="lnk q">Show in Finder</span><span class="lnk q">Why these</span></div>
+      </div></div>
+
+    <div class="entry"><div class="rail"><span class="node ref"></span><span class="line"></span></div>
+      <div class="card"><div class="h"><b>Refused to touch 6 items</b><span class="tag ref">Protected</span><span class="t">14:31</span></div>
+        <div class="sub">Inside a system path CoreTend never writes to. Listed so you know they were seen, not skipped silently.</div>
+        <div class="files">
+          <div class="f"><span class="n">/System/Library/Caches/com.apple.kernelcaches</span><span class="tag neutral">SIP</span></div>
+          <div class="f"><span class="n">~/Library/Mobile Documents/…</span><span class="tag neutral">iCloud</span></div>
+        </div>
+        <div class="acts"><span class="lnk q">Read the rule</span></div>
+      </div></div>
+
+    <div class="entry"><div class="rail"><span class="node sc"></span><span class="line"></span></div>
+      <div class="card plain"><div class="h"><b style="font-weight:550;color:var(--text2)">Scanned Duplicates — 412 913 files, 6 volumes</b><span class="t">14:26 · 4 min 11 s</span></div></div></div>
+
+    <div class="day">YESTERDAY</div>
+
+    <div class="entry"><div class="rail"><span class="node"></span><span class="line"></span></div>
+      <div class="card"><div class="h"><b>Uninstalled Figma</b><span class="tag ok">Reversible</span><span class="t">09:14</span></div>
+        <div class="sub">Bundle, 4 support folders, 1 launch agent</div>
+        <div class="amt mono">1.12 GB</div>
+        <div class="acts"><span class="lnk">Put it all back</span><span class="lnk q">Show the 6 paths</span></div>
+      </div></div>
+
+    <div class="entry"><div class="rail"><span class="node sc"></span></div>
+      <div class="card plain"><div class="h"><b style="font-weight:550;color:var(--text2)">Scanned Applications — 148 bundles</b><span class="t">09:11 · 22 s</span></div></div></div>
+  </div>
+</div></div>

@@ -1,0 +1,86 @@
+<!doctype html><meta charset="utf-8"><title>B2 — Registre & inspecteur</title>
+<link rel="stylesheet" href="shared.css"><style>
+.split{display:grid;grid-template-columns:330px 1fr;flex:1;overflow:hidden}
+.list{border-right:1px solid var(--border);overflow:auto;background:var(--sunken)}
+.lday{font-size:10.5px;font-weight:700;color:var(--text3);letter-spacing:.07em;
+  padding:16px 16px 6px;position:sticky;top:0;background:var(--sunken)}
+.li{padding:9px 16px;border-left:2px solid transparent;display:flex;flex-direction:column;gap:2px}
+.li.on{background:var(--raised);border-left-color:var(--teal)}
+.li .t1{display:flex;align-items:baseline;gap:8px;font-size:12.5px;font-weight:600}
+.li .t1 .when{margin-left:auto;font-size:11px;font-weight:400;color:var(--meta)}
+.li .t2{font-size:11.5px;color:var(--meta)}
+.li .t2 em{font-style:normal;color:var(--teal);font-weight:600}
+.li.ref .t2 em{color:var(--coral)}
+.insp{overflow:auto;padding:28px 32px 40px}
+.insp h2{font-size:21px;font-weight:700;letter-spacing:-.02em}
+.meta{display:flex;gap:10px;align-items:center;margin-top:8px;color:var(--text3);font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);
+  border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:22px 0}
+.st{background:var(--raised);padding:14px 16px}
+.st .k{font-size:10.5px;font-weight:700;color:var(--text3);letter-spacing:.06em}
+.st .v{font-size:19px;font-weight:700;letter-spacing:-.02em;margin-top:5px}
+.st .v.teal{color:var(--teal)}
+.sec{font-size:11px;font-weight:700;color:var(--text3);letter-spacing:.07em;margin:24px 0 10px}
+.tbl{border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.tr{display:flex;align-items:center;gap:12px;padding:9px 14px;font-size:12.5px;
+  border-bottom:1px solid var(--border);background:var(--raised)}
+.tr:last-child{border-bottom:0}
+.tr .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2)}
+.tr .sz{color:var(--text3)}
+.foot{display:flex;gap:10px;margin-top:26px}
+</style><div class="win">
+<div class="side">
+  <div class="row on"><span class="dot"></span><span class="ic">◉</span>Record</div>
+  <div class="grp">SCAN</div>
+  <div class="row"><span class="dot"></span><span class="ic">✦</span>Storage</div>
+  <div class="row"><span class="dot"></span><span class="ic">◫</span>Space Lens</div>
+  <div class="row"><span class="dot"></span><span class="ic">❐</span>Duplicates</div>
+  <div class="row"><span class="dot"></span><span class="ic">⊞</span>Applications</div>
+  <div class="grp">MORE</div>
+  <div class="row"><span class="dot"></span><span class="ic">≣</span>My Clutter</div>
+  <div class="row"><span class="dot"></span><span class="ic">☁</span>Cloud Cleanup</div>
+  <div class="row"><span class="dot"></span><span class="ic">∿</span>Performance</div>
+  <div class="grp">SYSTEM</div>
+  <div class="row"><span class="dot"></span><span class="ic">⛨</span>Integrity</div>
+</div>
+<div class="main">
+  <div class="bar"><h1>Record</h1><span class="sp"></span>
+    <button class="btn ghost">Export</button><button class="btn">New scan</button></div>
+  <div class="split">
+    <div class="list">
+      <div class="lday">TODAY</div>
+      <div class="li on"><div class="t1">Moved to Trash<span class="when">14:32</span></div><div class="t2">214 items · <em>3.41 GB</em></div></div>
+      <div class="li ref"><div class="t1">Refused<span class="when">14:31</span></div><div class="t2">6 items · <em>protected</em></div></div>
+      <div class="li"><div class="t1">Scanned Duplicates<span class="when">14:26</span></div><div class="t2">412 913 files · 4 min 11 s</div></div>
+      <div class="lday">YESTERDAY</div>
+      <div class="li"><div class="t1">Uninstalled Figma<span class="when">09:14</span></div><div class="t2">6 paths · <em>1.12 GB</em></div></div>
+      <div class="li"><div class="t1">Scanned Applications<span class="when">09:11</span></div><div class="t2">148 bundles · 22 s</div></div>
+      <div class="lday">16 SEPTEMBER</div>
+      <div class="li"><div class="t1">Emptied caches<span class="when">18:40</span></div><div class="t2">31 folders · <em>780 MB</em></div></div>
+      <div class="li"><div class="t1">Restored 12 items<span class="when">18:52</span></div><div class="t2">undo of 18:40</div></div>
+      <div class="li"><div class="t1">Scanned Storage<span class="when">18:22</span></div><div class="t2">1 106 224 files · 9 min</div></div>
+    </div>
+    <div class="insp">
+      <h2>Moved 214 items to the Trash</h2>
+      <div class="meta"><span class="tag ok">Reversible</span><span>Today at 14:32</span><span>·</span><span>from Duplicates</span></div>
+      <div class="stats">
+        <div class="st"><div class="k">RECLAIMED</div><div class="v teal mono">3.41 GB</div></div>
+        <div class="st"><div class="k">ITEMS</div><div class="v mono">214</div></div>
+        <div class="st"><div class="k">REFUSED</div><div class="v mono">6</div></div>
+      </div>
+      <div class="sec">WHAT MOVED</div>
+      <div class="tbl">
+        <div class="tr"><span class="n">~/Downloads/IMG_4821 (2).HEIC</span><span class="sz mono">4.8 MB</span><span class="tag neutral">byte-identical</span></div>
+        <div class="tr"><span class="n">~/Pictures/Library/derivatives/3a91c…/full.jpg</span><span class="sz mono">211 MB</span><span class="tag neutral">byte-identical</span></div>
+        <div class="tr"><span class="n">~/Movies/Screen Recording 2026-04-02.mov</span><span class="sz mono">1.02 GB</span><span class="tag neutral">byte-identical</span></div>
+        <div class="tr"><span class="n" style="color:var(--text3)">211 more</span><span class="sz mono">2.18 GB</span><span></span></div>
+      </div>
+      <div class="sec">WHAT WAS KEPT BACK</div>
+      <div class="tbl">
+        <div class="tr"><span class="n">/System/Library/Caches/com.apple.kernelcaches</span><span class="tag ref">SIP</span></div>
+        <div class="tr"><span class="n">~/Library/Mobile Documents/com~apple~CloudDocs</span><span class="tag ref">iCloud</span></div>
+      </div>
+      <div class="foot"><button class="btn">Put it all back</button><button class="btn ghost">Show in Finder</button></div>
+    </div>
+  </div>
+</div></div>
