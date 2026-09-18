@@ -655,3 +655,4 @@
 "menu.scan.start" = "Start Scan";
 "menu.scan.pause_resume" = "Pause or Resume Scan";
 "menu.scan.cancel" = "Cancel Scan";
+"sidebar.reset" = "Reset Sidebar";

@@ -53,13 +53,15 @@ struct Sidebar: View {
     /// — and Observation re-renders the sidebar when it changes.
     private var metrics: MCSidebarMetrics.Size { MCSidebarMetrics.shared.size }
 
-    /// The groups this build can deliver. Read once per body rather than per
-    /// row: it is a pure function of a compile-time value.
-    private var groups: [SidebarGroup] { SidebarGroup.available() }
+    /// The groups this build can deliver, after the user's own hiding and
+    /// ordering.
+    private var groups: [SidebarGroup] { SidebarCustomisation.shared.groups() }
 
-    /// Flat order, used by keyboard navigation: the groups are visual, and
-    /// Down from the last row of one group goes to the first of the next.
-    private var ordered: [ModuleID] { SidebarGroup.visibleModules }
+    /// Flat order, used by keyboard navigation. Derived from what is actually
+    /// rendered, so Down never lands on a module the user hid — a keyboard
+    /// stop with nothing visible under it is a worse bug than the row being
+    /// missing.
+    private var ordered: [ModuleID] { groups.flatMap(\.modules) }
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -147,6 +149,9 @@ struct Sidebar: View {
         }
         .accessibilityLabel(L("sidebar.a11y.label"))
         .accessibilityIdentifier("sidebar.list")
+        // Customisation lives where the thing being customised is, rather than
+        // buried in Settings: right-click the sidebar, toggle what you want.
+        .contextMenu { customisationMenu }
     }
 
     // MARK: - Row
@@ -220,6 +225,20 @@ struct Sidebar: View {
         if isSelected { return MCColor.tealWash }
         if isHovered { return MCColor.elevatedBackground }
         return .clear
+    }
+
+    /// Show/hide per module, plus a way back.
+    @ViewBuilder
+    private var customisationMenu: some View {
+        let customisation = SidebarCustomisation.shared
+        ForEach(SidebarGroup.available().flatMap(\.modules)) { module in
+            Toggle(module.label, isOn: Binding(
+                get: { !customisation.isHidden(module) },
+                set: { customisation.setHidden(module, !$0) }))
+                .disabled(!SidebarCustomisation.canHide(module))
+        }
+        Divider()
+        Button(L("sidebar.reset")) { customisation.reset() }
     }
 
     // MARK: - Keyboard

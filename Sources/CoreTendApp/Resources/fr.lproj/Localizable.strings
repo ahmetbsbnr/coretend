@@ -653,3 +653,4 @@
 "menu.scan.start" = "Lancer l'analyse";
 "menu.scan.pause_resume" = "Suspendre ou reprendre l'analyse";
 "menu.scan.cancel" = "Annuler l'analyse";
+"sidebar.reset" = "Réinitialiser la barre latérale";
