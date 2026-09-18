@@ -27,9 +27,10 @@
     "webTealOnLight": "#0B6E6C"
   },
   "motion": {
+    "ambient": 0.5,
     "response": 0.15,
-    "reveal": 0.4,
-    "transition": 0.25
+    "reveal": 0.28,
+    "transition": 0.22
   },
   "source": "Sources/DesignSystem/Colors.swift + Tokens.swift",
   "spacing": {

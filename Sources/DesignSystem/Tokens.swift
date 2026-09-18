@@ -75,16 +75,31 @@ public enum MCSize {
 /// setting is no longer something a call site can omit.
 public enum MCMotion {
     /// Content arriving: a card, a row, a result appearing for the first time.
-    /// Long enough to read as "this came in", short enough not to gate the user.
-    public static let reveal = Animation.smooth(duration: 0.4)
+    ///
+    /// Was 0.4 s with a `smooth` curve, and both were wrong for how it is
+    /// actually used. Every one of its four call sites fires because the user
+    /// did something — opened a module, finished a cleanup — and the rule for
+    /// user-triggered motion is ease-out under 300 ms. `smooth` is roughly
+    /// ease-in-out, so the motion started slowly *after* the click, which is
+    /// the specific thing that reads as sluggish. 280 ms ease-out.
+    public static let reveal = Animation.easeOut(duration: 0.28)
 
     /// One state becoming another: a phase change, a tab swap, a filter
     /// applying. Faster than `reveal` because nothing new is being introduced.
-    public static let transition = Animation.smooth(duration: 0.25)
+    public static let transition = Animation.easeOut(duration: 0.22)
 
     /// Direct response to a pointer or key: hover, press, selection. Must feel
     /// attached to the input, so it is the shortest thing here.
     public static let response = Animation.easeOut(duration: 0.15)
+
+    /// Motion that reports nothing and gates nothing — the glow that blooms
+    /// behind a completed cleanup. The one place where taking time is the
+    /// point, and the only token allowed past 300 ms.
+    ///
+    /// Separate from `reveal` precisely so that "this is decorative" has to be
+    /// said out loud at the call site. A single token used for both is how a
+    /// decorative duration ends up gating a result.
+    public static let ambient = Animation.easeOut(duration: 0.5)
 
     /// Something settling into place under its own weight: a zoom, a treemap
     /// rearranging, a value animating to a new number. The only spring, because

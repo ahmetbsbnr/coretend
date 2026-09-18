@@ -280,7 +280,10 @@ public struct MCSuccessState: View {
         .onAppear {
             guard !reduceMotion else { return }
             withAnimation(MCMotion.settle) { popped = true }
-            withAnimation(MCMotion.reveal) { flourish = 1 }
+            // Decorative: a glow blooming behind a finished cleanup. It
+            // reports nothing and gates nothing, which is why it is the one
+            // thing allowed to take half a second.
+            withAnimation(MCMotion.ambient) { flourish = 1 }
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(message.map { $0.isEmpty ? title : "\(title). \($0)" } ?? title)

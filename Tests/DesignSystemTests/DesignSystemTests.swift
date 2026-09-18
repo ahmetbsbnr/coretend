@@ -345,14 +345,43 @@ struct MotionSystemTests {
         }
     }
 
-    /// Reveal is the slowest and response the fastest, or the names mean
-    /// nothing. Checked by duration because an Animation is otherwise opaque.
-    @Test func theTokensAreOrderedTheWayTheirNamesClaim() {
-        // Durations restated here deliberately: if a token's duration changes,
-        // this fails and someone confirms the ordering still holds.
-        let reveal = 0.4, transition = 0.25, response = 0.15
+    /// Ordered the way the names claim, and — the load-bearing part — every
+    /// token a user can trigger stays under the 300 ms threshold. Only
+    /// `ambient`, which reports nothing and gates nothing, is allowed past it.
+    ///
+    /// Durations are restated here deliberately: changing one fails this, and
+    /// someone confirms the ordering and the threshold still hold.
+    @Test func userTriggeredMotionStaysUnderTheThreshold() {
+        let response = 0.15, transition = 0.22, reveal = 0.28, ambient = 0.5
         #expect(response < transition)
         #expect(transition < reveal)
+        for (name, duration) in [("response", response), ("transition", transition),
+                                 ("reveal", reveal)] {
+            #expect(duration < 0.3,
+                    "\(name) is \(duration)s — user-triggered motion over 300ms reads as sluggish")
+        }
+        #expect(ambient > reveal, "ambient is not the slow one")
+    }
+
+    /// `ambient` must have exactly one user. It exists so that "this is
+    /// decorative" has to be said out loud; a second call site is the moment
+    /// that stops being true.
+    @Test func ambientIsUsedOnlyForDecoration() throws {
+        var uses: [String] = []
+        for relative in ["Sources/CoreTendApp", "Sources/DesignSystem"] {
+            let dir = root.appendingPathComponent(relative)
+            for name in try FileManager.default.contentsOfDirectory(atPath: dir.path)
+                where name.hasSuffix(".swift") && name != "Tokens.swift" {
+                let text = try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)
+                for line in text.split(separator: "\n") {
+                    let trimmed = line.trimmingCharacters(in: .whitespaces)
+                    guard !trimmed.hasPrefix("//") else { continue }
+                    if trimmed.contains("MCMotion.ambient") { uses.append(name) }
+                }
+            }
+        }
+        #expect(uses == ["Components.swift"],
+                "MCMotion.ambient is used in \(uses) — it is for decoration only")
     }
 
     /// The stagger must not grow without bound. An ungated `index * step` makes

@@ -45,7 +45,8 @@
   --ct-space-xs: 8px;
   --ct-space-xxl: 48px;
   --ct-space-xxs: 4px;
+  --ct-motion-ambient: 0.5s;
   --ct-motion-response: 0.15s;
-  --ct-motion-reveal: 0.4s;
-  --ct-motion-transition: 0.25s;
+  --ct-motion-reveal: 0.28s;
+  --ct-motion-transition: 0.22s;
 }
