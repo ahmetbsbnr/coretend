@@ -126,11 +126,7 @@ struct FavoritesRecentsView: View {
         .navigationTitle(L("favrec.title"))
         .toolbar {
             Button {
-                let panel = NSOpenPanel()
-                panel.canChooseDirectories = true
-                panel.canChooseFiles = false
-                panel.allowsMultipleSelection = false
-                if panel.runModal() == .OK, let url = panel.url {
+                if let url = FolderPicker.chooseFolderOrNil() {
                     Task { await model.addFavorite(url) }
                 }
             } label: {

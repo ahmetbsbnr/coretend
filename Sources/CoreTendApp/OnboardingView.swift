@@ -435,10 +435,7 @@ struct OnboardingView: View {
                 Text(title).font(MCFont.secondaryBody).bold()
                 Spacer()
                 Button(L("onboarding.folders.add")) {
-                    let panel = NSOpenPanel()
-                    panel.canChooseDirectories = true
-                    panel.canChooseFiles = false
-                    if panel.runModal() == .OK, let url = panel.url { add(url) }
+                    if let url = FolderPicker.chooseFolderOrNil() { add(url) }
                 }
             }
             ForEach(folders, id: \.self) { url in

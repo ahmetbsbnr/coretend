@@ -374,10 +374,7 @@ struct SpaceLensView: View {
                 .mcAppear(delay: 0.06)
 
                 Button(L("spacelens.choose_folder")) {
-                    let panel = NSOpenPanel()
-                    panel.canChooseDirectories = true
-                    panel.canChooseFiles = false
-                    if panel.runModal() == .OK, let url = panel.url {
+                    if let url = FolderPicker.chooseFolderOrNil() {
                         model.start(url: url)
                     }
                 }

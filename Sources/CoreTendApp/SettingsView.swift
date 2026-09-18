@@ -155,11 +155,12 @@ struct MCSettingsView: View {
                     }
                 }
                 Button(L("settings.add_folder")) {
-                    let panel = NSOpenPanel()
-                    panel.canChooseDirectories = true
-                    panel.canChooseFiles = false
-                    panel.allowsMultipleSelection = false
-                    if panel.runModal() == .OK, let url = panel.url {
+                    // Exclusions are folders the app must be able to *see*
+                    // in order to skip them, so they are granted like any other
+                    // root — in the sandboxed build an unreadable exclusion is
+                    // indistinguishable from no exclusion, which is the class
+                    // of bug ExclusionsSnapshot exists to prevent.
+                    if let url = FolderPicker.chooseFolderOrNil() {
                         model.addExclusion(url)
                     }
                 }

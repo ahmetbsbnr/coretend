@@ -168,3 +168,40 @@ struct DistributionTests {
         #expect(plist["com.apple.security.app-sandbox"] == nil)
     }
 }
+
+/// Every folder the user picks as a scan root must go through `FolderPicker`.
+///
+/// Four screens ran their own `NSOpenPanel`. In the sandboxed build, picking a
+/// folder grants access *for this launch only*; turning that into a lasting
+/// grant means recording a security-scoped bookmark at the moment of the pick,
+/// and nowhere else. A panel that forgets is not broken today — it works for
+/// the whole session and then quietly asks again after the next relaunch, which
+/// reads as the app losing the user's settings.
+@Suite("Folder pickers")
+struct FolderPickerContractTests {
+    private let root = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+
+    private func sources() throws -> [(name: String, text: String)] {
+        let dir = root.appendingPathComponent("Sources/CoreTendApp")
+        return try FileManager.default.contentsOfDirectory(atPath: dir.path)
+            .filter { $0.hasSuffix(".swift") }
+            .map { ($0, try String(contentsOf: dir.appendingPathComponent($0), encoding: .utf8)) }
+    }
+
+    @Test func noViewRunsItsOwnFolderPanel() throws {
+        for file in try sources() where file.name != "FolderPicker.swift" {
+            // A panel that chooses *files* is a different thing — an app to
+            // inspect, a download to verify — and needs no folder grant.
+            guard file.text.contains("canChooseDirectories = true") else { continue }
+            Issue.record("\(file.name) runs its own folder panel — use FolderPicker, which records the security-scoped grant at the same moment")
+        }
+    }
+
+    /// The picker must record the grant, or it is just a panel with extra steps.
+    @Test func thePickerRecordsAGrant() throws {
+        let sources = Dictionary(uniqueKeysWithValues: try sources().map { ($0.name, $0.text) })
+        let picker = try #require(sources["FolderPicker.swift"])
+        #expect(picker.contains("access.grant(url)"))
+    }
+}
