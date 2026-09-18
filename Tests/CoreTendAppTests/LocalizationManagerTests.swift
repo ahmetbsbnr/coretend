@@ -77,6 +77,13 @@ struct LocalizationParsingTests {
         let firstUnreachable = unreachable.first ?? "-"
         #expect(unreachable.isEmpty,
                 "\(lang): \(unreachable.count) key(s) in the file are not returned by the parser — the table stops parsing before them. First: \(firstUnreachable)")
+        // A declared/parsed count mismatch with nothing unreachable means a
+        // key is declared twice: the parser keeps one, and whichever
+        // translation loses is silently unreachable. Name it rather than
+        // reporting two numbers.
+        var seen = Set<String>()
+        let duplicates = declared.filter { !seen.insert($0).inserted }
+        #expect(duplicates.isEmpty, "\(lang): duplicate key(s) \(duplicates)")
         #expect(declared.count == parsed.count, "\(lang): \(declared.count) declared vs \(parsed.count) parsed")
     }
 

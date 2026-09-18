@@ -126,24 +126,31 @@ struct CoreTendHelpCommands: Commands {
             }
             .keyboardShortcut("k", modifiers: [.command])
         }
+        // Every item here was a hardcoded English string. The app ships in
+        // French and English and localizes 540 keys; the Help menu — the one
+        // menu a confused user opens — was not among them.
         CommandGroup(replacing: .help) {
-            Button("CoreTend Help") {
+            Button(L("menu.help.app")) {
                 NSWorkspace.shared.open(site.appending(path: "support#documentation"))
             }
-            Button("Installation Help") {
+            Button(L("menu.help.install")) {
                 NSWorkspace.shared.open(site.appending(path: "support"))
             }
-            Button("Keyboard Shortcuts") {
-                NSWorkspace.shared.open(site.appending(path: "support"))
+            // Was: open the website's support page, which lists no shortcuts
+            // at all. A menu item that names a thing and does not show it
+            // costs the user the trip to a browser to find that out.
+            Button(L("menu.help.shortcuts")) {
+                NotificationCenter.default.post(name: .mcShowKeyboardShortcuts, object: nil)
             }
+            .keyboardShortcut("/", modifiers: [.command])
             Divider()
-            Button("Report an Issue") {
+            Button(L("menu.help.report")) {
                 NSWorkspace.shared.open(repository.appending(path: "issues"))
             }
-            Button("Security") {
+            Button(L("menu.help.security")) {
                 NSWorkspace.shared.open(site.appending(path: "support#security"))
             }
-            Button("About CoreTend") {
+            Button(L("menu.help.about")) {
                 NSWorkspace.shared.open(site.appending(path: "en/"))
             }
         }
@@ -414,6 +421,7 @@ struct MainWindow: View {
     @AppStorage("onboardingDone") private var onboardingDone = false
     @State private var showOnboarding = false
     @State private var showCommandPalette = false
+    @State private var showShortcuts = false
     /// Owned here rather than inside Settings so the automatic check runs at
     /// launch. A check that only happens once the user opens the Settings
     /// screen is not an automatic check.
@@ -480,6 +488,10 @@ struct MainWindow: View {
         .onReceive(NotificationCenter.default.publisher(for: .mcShowCommandPalette)) { _ in
             showCommandPalette = true
         }
+        .onReceive(NotificationCenter.default.publisher(for: .mcShowKeyboardShortcuts)) { _ in
+            showShortcuts = true
+        }
+        .sheet(isPresented: $showShortcuts) { KeyboardShortcutsView() }
         .sheet(isPresented: $showCommandPalette) {
             CommandPaletteView(isPresented: $showCommandPalette)
         }
