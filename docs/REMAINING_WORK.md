@@ -40,7 +40,7 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 - ☑ D-06 Applications `Table` + inspector + uninstall sheet.
 - ☑ D-07 Integrity provenance `Table`.
 - ☐ D-08 Performance time axis.
-- ☐ D-09 Settings final set.
+- ☑ D-09 Settings final set (General · Permissions · Exclusions · Data · Updates · About).
 - ☐ D-10 Onboarding three steps.
 
 ## E — Copy

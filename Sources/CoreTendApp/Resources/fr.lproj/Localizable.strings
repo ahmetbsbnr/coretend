@@ -273,13 +273,8 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "settings.general" = "Général";
 "settings.show_menu_bar" = "Afficher CoreTend dans la barre de menus";
 "settings.menu_bar_detail" = "L'élément de la barre de menus n'échantillonne les métriques système que lorsque son panneau est ouvert, ou toutes les 30 s en arrière-plan pour afficher l'indicateur d'attention.";
-"settings.scans_cleanup" = "Analyses et nettoyage";
-"settings.deletion_method" = "Méthode de suppression";
-"settings.deletion_method_value" = "Corbeille système (réversible)";
-"settings.protection" = "Intégrité";
 "settings.installed" = "Installé";
 "settings.not_installed" = "Non installé";
-"settings.monitoring_permissions" = "Surveillance et autorisations";
 "settings.full_disk_access" = "Accès complet au disque";
 "settings.granted" = "Accordé";
 "settings.not_granted" = "Non accordé";
@@ -294,10 +289,6 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "diagnostic.title" = "Rapport de diagnostic";
 "diagnostic.review_notice" = "Vérifiez toujours le contenu avant de le publier sur GitHub ou de l'envoyer à qui que ce soit.";
 "diagnostic.save" = "Enregistrer…";
-"settings.clear_activity" = "Effacer l'historique d'activité…";
-"settings.clear_activity_confirm" = "Effacer tout l'historique d'activité ?";
-"settings.clear_history" = "Effacer l'historique";
-"settings.clear_activity_message" = "Ceci supprime l'enregistrement local des analyses et nettoyages passés. Cela ne restaure ni ne supprime aucun fichier.";
 "settings.about" = "À propos";
 "settings.version" = "Version";
 
@@ -732,3 +723,5 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "apps.column_source" = "Source";
 "apps.last_used_unknown_short" = "—";
 "integrity.inspect_this" = "Inspecter la signature";
+"settings.permissions" = "Autorisations";
+"settings.erase_record_message" = "Chaque opération et chaque événement enregistrés par CoreTend sont supprimés définitivement. Les fichiers déjà mis à la corbeille ne sont pas affectés.";

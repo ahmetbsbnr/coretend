@@ -45,9 +45,15 @@ final class SettingsViewModel {
         }
     }
 
-    func clearActivityHistory() {
+    /// Erases the Record — both tables, the same action the Record itself
+    /// offers. Settings used to clear only the activity table and call it
+    /// "history", leaving the audit trail in place: half an erase.
+    func eraseRecord() {
         guard let store = AppEnvironment.shared.store else { return }
-        Task { try? await store.clearActivity() }
+        Task {
+            try? await store.purgeSafetyLog()
+            try? await store.clearActivity()
+        }
     }
 }
 
@@ -92,17 +98,7 @@ struct MCSettingsView: View {
                 Text(L("settings.menu_bar_detail"))
                     .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
             }
-            Section(L("settings.scans_cleanup")) {
-                LabeledContent(L("settings.deletion_method"), value: L("settings.deletion_method_value"))
-            }
-            Section(L("settings.protection")) {
-                LabeledContent(L("settings.this_copy_signature")) {
-                    Label(model.appSignature.tier == .adHocOrUnsigned ? L("settings.not_installed") : L("settings.installed"),
-                          systemImage: model.appSignature.tier == .adHocOrUnsigned ? "xmark.circle" : "checkmark.circle.fill")
-                        .foregroundStyle(model.appSignature.tier == .adHocOrUnsigned ? .secondary : MCTheme.success)
-                }
-            }
-            Section(L("settings.monitoring_permissions")) {
+            Section(L("settings.permissions")) {
                 // One row per capability, with its real three-state grant.
                 // The previous single "Full Disk Access: Not granted" row was
                 // both incomplete and, on a Mac with nothing to probe, wrong.
@@ -182,13 +178,13 @@ struct MCSettingsView: View {
                 if let report = AppEnvironment.shared.migrationReport {
                     MigrationNoticeRow(report: report)
                 }
-                Button(L("settings.clear_activity"), role: .destructive) { showClearConfirm = true }
+                Button(L("record.purge"), role: .destructive) { showClearConfirm = true }
                     .accessibilityIdentifier("settings.activity.clear")
-                    .confirmationDialog(L("settings.clear_activity_confirm"), isPresented: $showClearConfirm) {
-                        Button(L("settings.clear_history"), role: .destructive) { model.clearActivityHistory() }
+                    .confirmationDialog(L("record.purge_confirm_title"), isPresented: $showClearConfirm) {
+                        Button(L("record.purge_confirm_action"), role: .destructive) { model.eraseRecord() }
                         Button(L("common.cancel"), role: .cancel) {}
                     } message: {
-                        Text(L("settings.clear_activity_message"))
+                        Text(L("settings.erase_record_message"))
                     }
                 Button(L("settings.export_diagnostic")) { showDiagnostic = true }
                     .accessibilityIdentifier("settings.diagnostic.export")
@@ -202,6 +198,11 @@ struct MCSettingsView: View {
             // published release. Two rows showing the same number in one
             // window is not thoroughness, it is noise.
             Section(L("settings.about")) {
+                LabeledContent(L("settings.this_copy_signature")) {
+                    Label(model.appSignature.tier == .adHocOrUnsigned ? L("settings.not_installed") : L("settings.installed"),
+                          systemImage: model.appSignature.tier == .adHocOrUnsigned ? "xmark.circle" : "checkmark.circle.fill")
+                        .foregroundStyle(model.appSignature.tier == .adHocOrUnsigned ? .secondary : MCTheme.success)
+                }
                 Link(L("settings.about.privacy"),
                      destination: URL(string: "https://coretend.ahmetbsbnr.com/privacy")!)
                 Link(L("settings.about.license"),
