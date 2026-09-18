@@ -407,7 +407,7 @@ struct InstalledAppsView: View {
                                 }
                                 Text(mcFormatBytes(app.sizeBytes))
                                 if let lastUsed = app.lastUsedDate {
-                                    Text(L("apps.last_used", lastUsed.formatted(date: .abbreviated, time: .omitted)))
+                                    Text(L("apps.last_used", AppDateFormatting.string(lastUsed, style: .dayMonthYear)))
                                 } else {
                                     Text(L("apps.last_used_unknown"))
                                 }

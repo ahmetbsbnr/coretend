@@ -232,7 +232,7 @@ struct MyActivityView: View {
                                     .fill(MCTheme.accent)
                                     .frame(width: 6, height: 6)
                                     .accessibilityHidden(true)
-                                Text(group.day.formatted(date: .complete, time: .omitted))
+                                Text(AppDateFormatting.string(group.day, style: .fullDay))
                             }
                         }
                     }
@@ -288,7 +288,7 @@ private struct ActivityRow: View {
     var body: some View {
         DisclosureGroup(isExpanded: $expanded) {
             VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-                Text(record.date.formatted(date: .abbreviated, time: .shortened))
+                Text(AppDateFormatting.string(record.date, style: .dayMonthYearWithTime))
                     .font(.caption).foregroundStyle(.secondary)
                 Text(L("activity.row.detail", record.itemCount, mcFormatBytes(record.bytes),
                        L("activity.row.real_suffix")))
@@ -322,7 +322,7 @@ private struct ActivityRow: View {
                     .monospacedDigit().foregroundStyle(.secondary)
             }
         }
-        .accessibilityLabel("\(record.summary), \(record.date.formatted(date: .abbreviated, time: .shortened)), \(L("activity.row.real_a11y")), \(mcFormatBytes(record.bytes))")
+        .accessibilityLabel("\(record.summary), \(AppDateFormatting.string(record.date, style: .dayMonthYearWithTime)), \(L("activity.row.real_a11y")), \(mcFormatBytes(record.bytes))")
     }
 
     private func icon(for kind: ActivityRecord.Kind) -> String {

@@ -310,7 +310,7 @@ struct LargeOldFilesView: View {
                             Text(finding.url.deletingLastPathComponent().path)
                                 .lineLimit(1).truncationMode(.middle)
                             if let date = finding.modificationDate {
-                                Text(L("clutter.modified", date.formatted(date: .abbreviated, time: .omitted)))
+                                Text(L("clutter.modified", AppDateFormatting.string(date, style: .dayMonthYear)))
                             }
                         }
                         .font(.caption).foregroundStyle(.secondary)
