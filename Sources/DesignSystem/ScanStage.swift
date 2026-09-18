@@ -102,7 +102,7 @@ public struct MCScanStage<Caption: View>: View {
                 .trim(from: 0, to: fraction)
                 .stroke(tint, style: StrokeStyle(lineWidth: 4, lineCap: .round))
                 .rotationEffect(.degrees(-90))
-                .animation(reduceMotion ? nil : .easeOut(duration: 0.35), value: fraction)
+                .mcAnimation(MCMotion.transition, value: fraction)
         }
     }
 

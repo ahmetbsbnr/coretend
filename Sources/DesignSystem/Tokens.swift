@@ -48,19 +48,85 @@ public enum MCSize {
     public static let chartHeight: CGFloat = 140
 }
 
-/// Motion tokens. All animation in the app routes through these so that
-/// Reduce Motion has one choke point (`MCMotion.animation(_:reduce:)`).
+/// Motion, named by what it is for.
+///
+/// ## Why the previous version was not a system
+///
+/// It offered `quick`/`standard`/`gentle` (three raw `Double`s nothing used)
+/// and two springs. Views then wrote their own: `.smooth(duration: 0.4)`,
+/// `.smooth(0.45)`, `.smooth(0.3)`, `.easeOut(0.9)`, `.easeOut(0.6)`,
+/// `.easeOut(0.35)`, `.easeOut(0.18)`, `.spring(0.45, 0.62)`. Eight durations
+/// and four curve families across seventeen call sites — not a motion system,
+/// eight separate opinions, and no way to change the app's feel without
+/// finding all of them.
+///
+/// The tokens below are named for the *reason* something moves, so a call site
+/// picks by intent and two screens doing the same kind of thing cannot drift
+/// apart. Four is enough; a fifth would be a duration looking for a purpose.
+///
+/// ## Reduce Motion
+///
+/// The old doc comment claimed `MCMotion.animation(_:reduce:)` was "one choke
+/// point". It was used at five of seventeen call sites; the rest wrote
+/// `reduceMotion ? nil : …` by hand, or forgot. A choke point that must be
+/// remembered is not a choke point.
+///
+/// `.mcAnimation(_:value:)` reads the environment itself, so honouring the
+/// setting is no longer something a call site can omit.
 public enum MCMotion {
-    public static let quick: Double = 0.15
-    public static let standard: Double = 0.3
-    public static let gentle: Double = 0.55
+    /// Content arriving: a card, a row, a result appearing for the first time.
+    /// Long enough to read as "this came in", short enough not to gate the user.
+    public static let reveal = Animation.smooth(duration: 0.4)
 
-    public static let snappy = Animation.spring(response: 0.3, dampingFraction: 0.85)
-    public static let settle = Animation.spring(response: 0.55, dampingFraction: 0.9)
+    /// One state becoming another: a phase change, a tab swap, a filter
+    /// applying. Faster than `reveal` because nothing new is being introduced.
+    public static let transition = Animation.smooth(duration: 0.25)
+
+    /// Direct response to a pointer or key: hover, press, selection. Must feel
+    /// attached to the input, so it is the shortest thing here.
+    public static let response = Animation.easeOut(duration: 0.15)
+
+    /// Something settling into place under its own weight: a zoom, a treemap
+    /// rearranging, a value animating to a new number. The only spring, because
+    /// a spring says "physical" and almost nothing here is.
+    public static let settle = Animation.spring(response: 0.45, dampingFraction: 0.85)
+
+    /// Kept for the two call sites that pass an animation around rather than
+    /// applying it. New code should use `.mcAnimation(_:value:)`.
+    public static let snappy = response
 
     /// Returns `nil` (no animation) when Reduce Motion is on.
+    ///
+    /// Prefer `.mcAnimation(_:value:)`, which cannot be forgotten.
     public static func animation(_ base: Animation, reduce: Bool) -> Animation? {
         reduce ? nil : base
+    }
+
+    /// Stagger between siblings in a revealing group.
+    ///
+    /// Capped deliberately: an ungated `index * delay` turns a list of forty
+    /// into a four-second wait for the last row. Past the cap everything
+    /// arrives together, which is the correct answer for "too many to stagger".
+    public static func stagger(index: Int, step: Double = 0.06, cap: Double = 0.36) -> Double {
+        min(Double(index) * step, cap)
+    }
+}
+
+public extension View {
+    /// Animates `value` changes, honouring Reduce Motion without the call site
+    /// having to remember to.
+    func mcAnimation<V: Equatable>(_ animation: Animation, value: V) -> some View {
+        modifier(MCAnimationModifier(animation: animation, value: value))
+    }
+}
+
+private struct MCAnimationModifier<V: Equatable>: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let animation: Animation
+    let value: V
+
+    func body(content: Content) -> some View {
+        content.animation(reduceMotion ? nil : animation, value: value)
     }
 }
 

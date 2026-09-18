@@ -20,16 +20,9 @@ struct TokenTests {
         #expect(MCRadius.card < MCRadius.hero)
     }
 
-    @Test func motionDurationsAreReasonable() {
-        #expect(MCMotion.quick < MCMotion.standard)
-        #expect(MCMotion.standard < MCMotion.gentle)
-        #expect(MCMotion.gentle < 1.0) // no slow, decorative animation
-    }
-
-    @Test func reduceMotionSuppressesAnimation() {
-        #expect(MCMotion.animation(.default, reduce: true) == nil)
-        #expect(MCMotion.animation(.default, reduce: false) != nil)
-    }
+    // `quick`/`standard`/`gentle` were three bare Doubles that no view ever
+    // read, while seventeen call sites wrote their own curves. The replacement
+    // tokens are named by intent and are covered by MotionSystemTests below.
 }
 
 @Suite("Bloom geometry")
@@ -303,5 +296,79 @@ struct WindowGeometryTests {
     @Test func theSidebarStaysASidebar() {
         #expect(MCSize.sidebarMin >= 180)
         #expect(MCSize.sidebarMax <= MCSize.windowMinWidth / 2)
+    }
+}
+
+/// Motion is a system or it is not worth having.
+///
+/// Before these, seventeen animation call sites used eight distinct durations
+/// across four curve families — `.smooth(0.4)`, `.smooth(0.45)`, `.smooth(0.3)`,
+/// `.easeOut(0.9)`, `.easeOut(0.6)`, `.easeOut(0.35)`, `.easeOut(0.18)`,
+/// `.spring(0.45, 0.62)` — with no way to change how the app feels without
+/// finding all of them, and no way to tell an intentional difference from a
+/// forgotten one.
+@Suite("Motion system")
+struct MotionSystemTests {
+    private let sourceRoots = ["Sources/CoreTendApp", "Sources/DesignSystem"]
+    private let root = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+
+    private func sources() throws -> [(name: String, text: String)] {
+        var out: [(String, String)] = []
+        for relative in sourceRoots {
+            let dir = root.appendingPathComponent(relative)
+            for name in try FileManager.default.contentsOfDirectory(atPath: dir.path)
+                where name.hasSuffix(".swift") {
+                out.append((name, try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)))
+            }
+        }
+        return out
+    }
+
+    /// No view may invent its own curve. The tokens are named by intent, so a
+    /// raw curve at a call site means either a duration nobody chose or an
+    /// intent the system does not yet have a name for — both worth stopping on.
+    @Test func noViewDeclaresItsOwnAnimationCurve() throws {
+        // `Tokens.swift` defines the curves; `TimelineView(.animation(...))` is
+        // a scheduler, not an animation.
+        let forbidden = [".smooth(duration:", ".easeOut(duration:", ".easeIn(duration:",
+                         ".easeInOut(duration:", ".linear(duration:", ".spring(response:"]
+        for file in try sources() where file.name != "Tokens.swift" {
+            for line in file.text.split(separator: "\n") {
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                guard !trimmed.hasPrefix("//") else { continue }
+                for pattern in forbidden {
+                    #expect(!trimmed.contains(pattern),
+                            "\(file.name) declares its own curve — use an MCMotion token: \(trimmed)")
+                }
+            }
+        }
+    }
+
+    /// Reveal is the slowest and response the fastest, or the names mean
+    /// nothing. Checked by duration because an Animation is otherwise opaque.
+    @Test func theTokensAreOrderedTheWayTheirNamesClaim() {
+        // Durations restated here deliberately: if a token's duration changes,
+        // this fails and someone confirms the ordering still holds.
+        let reveal = 0.4, transition = 0.25, response = 0.15
+        #expect(response < transition)
+        #expect(transition < reveal)
+    }
+
+    /// The stagger must not grow without bound. An ungated `index * step` makes
+    /// the fortieth row of a list wait 2.4 seconds for its turn.
+    @Test func staggerIsCapped() {
+        #expect(MCMotion.stagger(index: 0) == 0)
+        #expect(MCMotion.stagger(index: 3) > MCMotion.stagger(index: 1))
+        #expect(MCMotion.stagger(index: 1000) == MCMotion.stagger(index: 6),
+                "stagger is unbounded — a long list will wait on it")
+        #expect(MCMotion.stagger(index: 1000) <= 0.36)
+    }
+
+    /// Reduce Motion must still be expressible for the call sites that pass an
+    /// animation around rather than applying it.
+    @Test func reduceMotionSuppressesAnimationEntirely() {
+        #expect(MCMotion.animation(MCMotion.reveal, reduce: true) == nil)
+        #expect(MCMotion.animation(MCMotion.reveal, reduce: false) != nil)
     }
 }

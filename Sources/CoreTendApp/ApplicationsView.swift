@@ -377,7 +377,7 @@ struct InstalledAppsView: ModuleSubScreen {
                     }
                 }
                 .listStyle(.inset)
-                .animation(MCMotion.animation(MCMotion.snappy, reduce: reduceMotion), value: model.grouping)
+                .mcAnimation(MCMotion.transition, value: model.grouping)
                 .accessibilityIdentifier("applications.list")
             }
         }

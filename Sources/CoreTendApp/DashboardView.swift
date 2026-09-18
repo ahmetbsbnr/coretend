@@ -57,7 +57,7 @@ struct DashboardView: View {
         .task {
             await refresh()
             if reduceMotion { revealed = true }
-            else { withAnimation(.smooth(duration: 0.45)) { revealed = true } }
+            else { withAnimation(MCMotion.reveal) { revealed = true } }
         }
     }
 
@@ -93,7 +93,7 @@ struct DashboardView: View {
                     .trim(from: 0, to: freeSpaceFraction)
                     .stroke(MCColor.storage, style: StrokeStyle(lineWidth: 10, lineCap: .round))
                     .rotationEffect(.degrees(-90))
-                    .animation(reduceMotion ? nil : .easeOut(duration: 0.6), value: freeSpaceFraction)
+                    .mcAnimation(MCMotion.settle, value: freeSpaceFraction)
                 Image(systemName: ModuleID.cleanup.systemImage)
                     .font(.system(size: 30, weight: .semibold))
                     .foregroundStyle(MCColor.storage)
@@ -288,7 +288,8 @@ private struct Reveal: ViewModifier {
         content
             .opacity(revealed ? 1 : 0)
             .offset(y: revealed || reduceMotion ? 0 : 10)
-            .animation(reduceMotion ? nil : .smooth(duration: 0.4).delay(Double(index) * 0.06),
-                       value: revealed)
+            // Capped stagger: an ungated `index * 0.06` makes the last card of
+            // a long grid wait seconds for its turn.
+            .mcAnimation(MCMotion.reveal.delay(MCMotion.stagger(index: index)), value: revealed)
     }
 }

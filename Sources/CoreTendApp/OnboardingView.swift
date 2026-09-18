@@ -205,7 +205,7 @@ struct OnboardingView: View {
         .overlay(alignment: .trailing) {
             Rectangle().fill(MCColor.separator.opacity(0.6)).frame(width: 1)
         }
-        .animation(.smooth(duration: 0.3), value: step)
+        .mcAnimation(MCMotion.transition, value: step)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(L("onboarding.step_a11y", step + 1, stepCount))
         .accessibilityIdentifier("onboarding.step")

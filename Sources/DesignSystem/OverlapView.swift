@@ -40,7 +40,7 @@ public struct MCOverlapStack<Item: Identifiable, ItemContent: View>: View {
                     }
             }
         }
-        .animation(MCMotion.animation(MCMotion.snappy, reduce: reduceMotion), value: isHovering)
+        .mcAnimation(MCMotion.response, value: isHovering)
         .onHover { isHovering = $0 }
         .accessibilityHidden(true)
     }

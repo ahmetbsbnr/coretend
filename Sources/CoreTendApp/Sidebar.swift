@@ -94,7 +94,7 @@ struct Sidebar: View {
             .scrollIndicators(.never)
             .onChange(of: selection) { _, new in
                 // Keyboard navigation must not walk the selection off screen.
-                withAnimation(MCMotion.snappy) { proxy.scrollTo(new, anchor: .center) }
+                withAnimation(MCMotion.transition) { proxy.scrollTo(new, anchor: .center) }
             }
         }
         // Width, and why it is stated here rather than at the call site.
@@ -185,7 +185,7 @@ struct Sidebar: View {
             // Clear only our own hover. Writing `nil` unconditionally would
             // let a stale exit event from the row the pointer just left erase
             // the hover on the row it just entered.
-            withAnimation(MCMotion.snappy) {
+            withAnimation(MCMotion.response) {
                 if hovering {
                     hovered = module
                 } else if hovered == module {

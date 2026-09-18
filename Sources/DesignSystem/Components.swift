@@ -279,8 +279,8 @@ public struct MCSuccessState: View {
         .padding(MCSpacing.xl)
         .onAppear {
             guard !reduceMotion else { return }
-            withAnimation(.spring(response: 0.45, dampingFraction: 0.62)) { popped = true }
-            withAnimation(.easeOut(duration: 0.9)) { flourish = 1 }
+            withAnimation(MCMotion.settle) { popped = true }
+            withAnimation(MCMotion.reveal) { flourish = 1 }
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(message.map { $0.isEmpty ? title : "\(title). \($0)" } ?? title)
@@ -330,7 +330,7 @@ public struct MCAppear: ViewModifier {
             .offset(y: shown || reduceMotion ? 0 : 8)
             .onAppear {
                 guard !reduceMotion, !shown else { return }
-                withAnimation(.smooth(duration: 0.4).delay(delay)) { shown = true }
+                withAnimation(MCMotion.reveal.delay(delay)) { shown = true }
             }
     }
 }
@@ -389,7 +389,7 @@ public struct MCScanButton: View {
         }
         .buttonStyle(.plain)
         .onHover { h in
-            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) { hovering = h }
+            withAnimation(reduceMotion ? nil : MCMotion.response) { hovering = h }
         }
         .accessibilityLabel(title)
         .accessibilityAddTraits(.isButton)
