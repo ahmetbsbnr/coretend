@@ -38,6 +38,17 @@ struct ModuleSubNav<Content: View>: View {
     /// Matches the width the three call sites had converged on independently.
     private let controlWidth: CGFloat = 360
 
+    /// A capture may ask for a tab. Applied once, on appear, and written to
+    /// the evidence file so the capture script can refuse a mismatch — a
+    /// screenshot labelled "Browser caches" that shows the caches-and-logs tab
+    /// is the kind of wrong that reads as right.
+    private func applyRequestedTab() {
+        if let tab = CaptureHarness.requestedTab, sections.contains(where: { $0.id == tab }) {
+            selection = tab
+        }
+        CaptureHarness.note(state: "tab=\(selection)")
+    }
+
     /// Sub-navigation, in whatever the current system idiom is.
     ///
     /// macOS 27 introduced `PickerStyle.tabs`, which is the platform's own
@@ -97,5 +108,6 @@ struct ModuleSubNav<Content: View>: View {
             content(selection)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .onAppear(perform: applyRequestedTab)
     }
 }

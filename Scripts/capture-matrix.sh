@@ -16,25 +16,34 @@ bash Scripts/package-local.sh >/dev/null
 seeds="seed-record.sh,seed-apps.sh"
 export CORETEND_CAPTURE_HOME_SEED=seed-cleanup-home.sh
 
-# module:state:sizes — sizes "csl" = compact, standard, large
+# module:state:sizes:tab — sizes "csl" = compact, standard, large; tab is the
+# sub-navigation index, empty for the first tab.
 specs=(
-  "smartCare::csl"
-  "record::csl"
-  "cleanup:review:cs"
-  "spaceLens:ready:csl"
-  "duplicates:results:cs"
-  "applications::cs"
-  "protection::s"
-  "performance:charting:s"
+  "smartCare::csl:"
+  "record::csl:"
+  "cleanup:review:cs:"
+  "cleanup::s:1"
+  "spaceLens:ready:csl:"
+  "spaceLens::s:1"
+  "spaceLens::s:2"
+  "spaceLens::s:3"
+  "duplicates:results:cs:"
+  "applications::cs:"
+  "applications::s:1"
+  "applications::s:2"
+  "protection::s:"
+  "protection::s:1"
+  "performance:charting:s:"
 )
 failed=0
 for spec in $specs; do
-  module="${spec%%:*}"; rest="${spec#*:}"; state="${rest%%:*}"; sizes="${rest#*:}"
+  parts=(${(s/:/)spec}); module="$spec"
+  module="${spec[(ws/:/)1]}"; state="$(print -r -- "$spec" | cut -d: -f2)"; sizes="$(print -r -- "$spec" | cut -d: -f3)"; tab="$(print -r -- "$spec" | cut -d: -f4)"
   for appearance in dark light; do
     for c in ${(s::)sizes}; do
       case $c in c) size=compact;; s) size=standard;; l) size=large;; esac
-      name="$out/${module}-${state:-idle}-${appearance}-${size}.png"
-      if zsh Scripts/capture-module.sh "$name" "$module" "$appearance" "$size" "$seeds" "$state" >/dev/null 2>&1; then
+      name="$out/${module}${tab:+-tab$tab}-${state:-idle}-${appearance}-${size}.png"
+      if zsh Scripts/capture-module.sh "$name" "$module" "$appearance" "$size" "$seeds" "$state" "$tab" >/dev/null 2>&1; then
         print "ok   $name"
       else
         print "FAIL $module $appearance $size $state"; failed=$((failed+1))

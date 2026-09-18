@@ -83,6 +83,12 @@ enum CaptureHarness {
         try? (existing + "state=\(state)\n").write(to: url, atomically: true, encoding: .utf8)
     }
 
+    /// The sub-navigation tab a capture asked for, as the tab's index.
+    static var requestedTab: Int? {
+        guard isActive, let raw = environment["CORETEND_TEST_TAB"], let n = Int(raw) else { return nil }
+        return n
+    }
+
     static var requestedWindowSize: WindowSize? {
         guard isActive, let raw = environment["CORETEND_TEST_WINDOW"] else { return nil }
         return WindowSize(rawValue: raw.lowercased())
