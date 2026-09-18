@@ -48,6 +48,11 @@ struct Sidebar: View {
     @FocusState private var focused: Bool
     @State private var hovered: ModuleID?
 
+    /// The row size the user chose in System Settings ▸ Appearance. Read
+    /// directly rather than via @Environment — macOS SwiftUI has no key for it
+    /// — and Observation re-renders the sidebar when it changes.
+    private var metrics: MCSidebarMetrics.Size { MCSidebarMetrics.shared.size }
+
     /// The groups this build can deliver. Read once per body rather than per
     /// row: it is a pure function of a compile-time value.
     private var groups: [SidebarGroup] { SidebarGroup.available() }
@@ -63,7 +68,7 @@ struct Sidebar: View {
                     ForEach(groups) { group in
                         if let title = group.title {
                             Text(title.uppercased())
-                                .font(MCFont.sidebarSection)
+                                .font(MCFont.sidebarSection(metrics))
                                 .foregroundStyle(MCColor.textTertiary)
                                 .padding(.horizontal, MCSpacing.sm + MCSpacing.xxs)
                                 .padding(.top, MCSpacing.md)
@@ -159,17 +164,17 @@ struct Sidebar: View {
                 // sees which module is open.
                 RoundedRectangle(cornerRadius: 1.5)
                     .fill(isSelected ? MCColor.teal : .clear)
-                    .frame(width: 3, height: 16)
+                    .frame(width: 3, height: metrics.iconSize + 2)
                     .accessibilityHidden(true)
 
                 Image(systemName: module.systemImage)
-                    .font(.system(size: MCIconSize.row, weight: .medium))
+                    .font(.system(size: metrics.iconSize, weight: .medium))
                     .foregroundStyle(isSelected ? MCColor.teal : MCColor.textTertiary)
-                    .frame(width: 18)
+                    .frame(width: metrics.iconSize + 4)
                     .accessibilityHidden(true)
 
                 Text(module.label)
-                    .font(isSelected ? MCFont.sidebarItemActive : MCFont.sidebarItem)
+                    .font(MCFont.sidebarItem(metrics, active: isSelected))
                     .foregroundStyle(isSelected ? MCColor.textPrimary : MCColor.textSecondary)
                     .lineLimit(1)
                     .truncationMode(.tail)
@@ -180,7 +185,7 @@ struct Sidebar: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.trailing, MCSpacing.sm)
-            .padding(.vertical, MCSpacing.xs)
+            .padding(.vertical, metrics.rowPadding)
             .contentShape(Rectangle())
             .background {
                 RoundedRectangle(cornerRadius: MCRadius.card)

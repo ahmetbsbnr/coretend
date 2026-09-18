@@ -69,6 +69,12 @@ public enum MCFont {
     /// The label of a screen's primary action.
     public static let actionLabel = Font.title3.weight(.semibold)
 
+    /// A group heading inside content — a section of a list, a cluster of
+    /// related rows. Small, tracked and uppercased at the call site, like the
+    /// sidebar's, but fixed: it is not a sidebar and must not follow the
+    /// sidebar size setting.
+    public static let groupHeader = Font.system(size: 11, weight: .semibold)
+
     // MARK: Navigation
     //
     // The sidebar has its own three styles because it is read at a glance
@@ -80,9 +86,18 @@ public enum MCFont {
     // Fixed point sizes, deliberately: the sidebar column has a fixed width and
     // scaling these would clip it rather than reflow.
 
-    public static let sidebarSection = Font.system(size: 11, weight: .semibold)
-    public static let sidebarItem = Font.system(size: 13, weight: .regular)
-    public static let sidebarItemActive = Font.system(size: 13, weight: .semibold)
+    // Functions rather than constants: these follow the user's sidebar icon
+    // size from System Settings ▸ Appearance, which a standard `List` picks up
+    // for free and a hand-built sidebar has to ask for. See MCSidebarMetrics.
+    public static func sidebarSection(_ size: MCSidebarMetrics.Size) -> Font {
+        .system(size: size.sectionSize, weight: .semibold)
+    }
+
+    /// The active item steps up in *weight*, never in size, so row height does
+    /// not change as selection moves and the list does not twitch.
+    public static func sidebarItem(_ size: MCSidebarMetrics.Size, active: Bool) -> Font {
+        .system(size: size.textSize, weight: active ? .semibold : .regular)
+    }
 }
 
 /// Icon glyph point sizes, for `Image(systemName:).font(.system(size:))`.

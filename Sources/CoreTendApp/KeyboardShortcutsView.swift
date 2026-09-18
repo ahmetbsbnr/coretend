@@ -83,7 +83,7 @@ struct KeyboardShortcutsView: View {
                     ForEach(KeyboardShortcutCatalogue.groups) { group in
                         VStack(alignment: .leading, spacing: MCSpacing.xs) {
                             Text(L(group.titleKey))
-                                .font(MCFont.sidebarSection)
+                                .font(MCFont.groupHeader)
                                 .foregroundStyle(MCColor.textTertiary)
                                 .accessibilityAddTraits(.isHeader)
                             ForEach(group.shortcuts) { shortcut in

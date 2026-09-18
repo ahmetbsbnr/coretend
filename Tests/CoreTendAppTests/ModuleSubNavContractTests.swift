@@ -111,3 +111,35 @@ struct ModuleSubNavContractTests {
         }
     }
 }
+
+@Suite("Sidebar follows the system row size")
+struct SidebarSizeContractTests {
+    private let root = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+
+    /// The sidebar's own metrics must come from `MCSidebarMetrics`, not from
+    /// constants. A fixed point size compiles, renders, and quietly ignores a
+    /// setting the user changed for legibility.
+    @Test func theSidebarReadsTheSystemRowSize() throws {
+        let text = try String(
+            contentsOf: root.appendingPathComponent("Sources/CoreTendApp/Sidebar.swift"),
+            encoding: .utf8)
+        #expect(text.contains("MCSidebarMetrics.shared.size"))
+        #expect(text.contains("metrics.iconSize"), "the glyph does not follow the setting")
+        #expect(text.contains("metrics.rowPadding"), "row height does not follow the setting")
+        #expect(text.contains("MCFont.sidebarItem(metrics"), "the label does not follow the setting")
+    }
+
+    /// And it must not hardcode one anywhere, which is what it did before.
+    @Test func theSidebarHardcodesNoRowMetric() throws {
+        let text = try String(
+            contentsOf: root.appendingPathComponent("Sources/CoreTendApp/Sidebar.swift"),
+            encoding: .utf8)
+        for line in text.split(separator: "\n") {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            guard !trimmed.hasPrefix("//") else { continue }
+            #expect(!trimmed.contains("MCIconSize.row"),
+                    "the sidebar uses a fixed glyph size — it must follow MCSidebarMetrics: \(trimmed)")
+        }
+    }
+}
