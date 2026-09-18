@@ -9,6 +9,7 @@
   "sourceCommit": "e79016642cd3a73c221ac4da7ef564976c4f5ec8",
   "releaseURL": "https://github.com/ahmetbsbnr/coretend/releases/tag/v1.0.1",
   "repositoryURL": "https://github.com/ahmetbsbnr/coretend",
+  "minisignKeyId": "F8473FB09E1DB730",
   "dmgName": "CoreTend-1.0.1-arm64.dmg",
   "dmgURL": "https://github.com/ahmetbsbnr/coretend/releases/download/v1.0.1/CoreTend-1.0.1-arm64.dmg",
   "dmgSHA256": "91026c89313e7b36a546b395ae4ba21dee2542e0e7592c22a0cec8cdb5d86fde",
