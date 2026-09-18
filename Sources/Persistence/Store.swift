@@ -387,6 +387,23 @@ public struct SafetyLogRecord: Sendable, Identifiable {
     public let size: Int64
     public let date: Date
     public let result: String
+
+    /// Public so callers outside Persistence — the record's grouping, and its
+    /// tests — can build a row without standing up a database. The struct is
+    /// already public and immutable; only its memberwise initializer was not.
+    public init(id: Int64, operationID: String, stage: SafetyAuditEvent.Stage,
+                redactedPath: String, ruleID: String, risk: String, size: Int64,
+                date: Date, result: String) {
+        self.id = id
+        self.operationID = operationID
+        self.stage = stage
+        self.redactedPath = redactedPath
+        self.ruleID = ruleID
+        self.risk = risk
+        self.size = size
+        self.date = date
+        self.result = result
+    }
 }
 
 extension Store: SafetyAuditSink {
