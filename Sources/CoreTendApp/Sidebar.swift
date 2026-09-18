@@ -48,6 +48,10 @@ struct Sidebar: View {
     @FocusState private var focused: Bool
     @State private var hovered: ModuleID?
 
+    /// The groups this build can deliver. Read once per body rather than per
+    /// row: it is a pure function of a compile-time value.
+    private var groups: [SidebarGroup] { SidebarGroup.available() }
+
     /// Flat order, used by keyboard navigation: the groups are visual, and
     /// Down from the last row of one group goes to the first of the next.
     private var ordered: [ModuleID] { SidebarGroup.visibleModules }
@@ -56,7 +60,7 @@ struct Sidebar: View {
         ScrollViewReader { proxy in
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 0) {
-                    ForEach(SidebarGroup.all) { group in
+                    ForEach(groups) { group in
                         if let title = group.title {
                             Text(title.uppercased())
                                 .font(MCFont.sidebarSection)

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	The Mac App Store build. Sandboxed, as the store requires.
+
+	The entitlement set is the smallest one that lets the surviving modules
+	work, and nothing is here speculatively. What is deliberately ABSENT is
+	the more interesting half:
+
+	  - No com.apple.security.files.downloads.read-write, and no temporary
+	    exceptions for absolute paths. CoreTend's App Store build reaches
+	    exactly the folders the user hands it, and asking for a blanket
+	    Downloads grant would let it reach one they did not.
+	  - No com.apple.security.network.client. The App Store build does not
+	    check for updates — Apple delivers them — so it opens no sockets at
+	    all. See AppCapabilities.canCheckForUpdates.
+	  - No com.apple.security.automation.apple-events. Nothing here scripts
+	    another application.
+
+	Modules the sandbox removes (Storage cleanup, Applications, Privacy
+	Cleaner, Integrity) are not present in this build at all, rather than
+	present and failing. They are filtered out of the sidebar by
+	AppCapabilities, and DistributionTests asserts that no route can reach
+	one. So there is no entitlement here attempting to make them work.
+	-->
+
+	<key>com.apple.security.app-sandbox</key>
+	<true/>
+
+	<!-- Folders the user chooses in an open panel, and only those. Combined
+	     with security-scoped bookmarks so a chosen folder survives a
+	     relaunch without re-prompting. -->
+	<key>com.apple.security.files.user-selected.read-write</key>
+	<true/>
+
+	<key>com.apple.security.files.bookmarks.app-scope</key>
+	<true/>
+</dict>
+</plist>

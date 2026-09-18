@@ -7,6 +7,11 @@ let package = Package(
     platforms: [.macOS(.v14)],
     products: [
         .executable(name: "CoreTend", targets: ["CoreTend"]),
+        // The Mac App Store build. Same sources, same tests; the only
+        // difference is the CORETEND_APP_STORE flag, which `Distribution`
+        // reads once and turns into data. See Sources/CoreTendApp/
+        // Distribution.swift for what the sandbox removes and why.
+        .executable(name: "CoreTend-AppStore", targets: ["CoreTendAppStore"]),
         .executable(name: "coretend-cli", targets: ["CoreTendCLI"]),
         .library(name: "ScanCore", targets: ["ScanCore"]),
         .library(name: "SafetyCore", targets: ["SafetyCore"]),
@@ -24,6 +29,16 @@ let package = Package(
         .executableTarget(
             name: "CoreTend",
             dependencies: ["CoreTendApp"]
+        ),
+        // Same `CoreTendApp` library, compiled with one extra flag. SwiftPM
+        // will not let two targets share a source directory, so this one has
+        // its own one-line entry point; a test fails if the two entry points
+        // stop matching, because a second one that drifts is exactly the
+        // failure this arrangement exists to prevent.
+        .executableTarget(
+            name: "CoreTendAppStore",
+            dependencies: ["CoreTendApp"],
+            swiftSettings: [.define("CORETEND_APP_STORE")]
         ),
         .executableTarget(
             name: "CoreTendCLI",

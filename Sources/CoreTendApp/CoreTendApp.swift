@@ -448,8 +448,23 @@ struct SidebarGroup: Identifiable {
                      modules: [.protection, .myActivity, .settings]),
     ]
 
+    /// The groups this build can actually deliver, with unsupported modules
+    /// removed and any group left empty dropped entirely.
+    ///
+    /// Filtering here rather than in the view is what makes a missing module an
+    /// absence instead of a failure: the sidebar, the command palette and
+    /// keyboard navigation all read from this, so none of them can offer
+    /// something the build cannot do.
+    static func available(_ capabilities: AppCapabilities = .forCurrentBuild()) -> [SidebarGroup] {
+        all.compactMap { group in
+            let modules = group.modules.filter(capabilities.supports)
+            guard !modules.isEmpty else { return nil }
+            return SidebarGroup(id: group.id, title: group.title, modules: modules)
+        }
+    }
+
     static var visibleModules: [ModuleID] {
-        all.flatMap(\.modules)
+        available().flatMap(\.modules)
     }
 }
 
@@ -465,6 +480,18 @@ struct MainWindow: View {
     /// screen is not an automatic check.
     @State private var updates = UpdatesViewModel()
 
+    /// The module actually shown.
+    ///
+    /// A selection can arrive from somewhere the sidebar does not control — the
+    /// command palette, a `.mcNavigate` notification, a restored value — and in
+    /// the sandboxed build some of those name a module this binary cannot
+    /// deliver. Resolving it once here means the detail column can never render
+    /// a screen whose backing capability is absent.
+    private var routed: ModuleID? {
+        guard let selection else { return nil }
+        return AppCapabilities.forCurrentBuild().supports(selection) ? selection : .smartCare
+    }
+
     var body: some View {
         NavigationSplitView {
             Sidebar(selection: Binding(
@@ -472,7 +499,7 @@ struct MainWindow: View {
                 set: { selection = $0 }))
         } detail: {
             Group {
-                switch selection {
+                switch routed {
                 case .smartCare:
                     DashboardView()
                 case .cleanup:
