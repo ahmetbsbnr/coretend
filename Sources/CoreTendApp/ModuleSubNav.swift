@@ -61,7 +61,11 @@ struct ModuleSubNav<Content: View>: View {
                 Divider()
             }
             .frame(maxWidth: .infinity)
-            .background(.bar)
+            // Navigation layer, so this is one of the two places Liquid Glass
+            // belongs. A rectangle rather than a rounded shape: the bar meets
+            // both window edges, and a floating pill here would be a second
+            // floating element competing with the sidebar.
+            .mcNavigationGlass(in: Rectangle(), fallback: MCColor.secondaryBackground)
             .accessibilityIdentifier("module.subnav")
 
             content(selection)

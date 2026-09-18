@@ -596,3 +596,92 @@ struct SurfaceSystemTests {
         #expect(MCElevation.feature.strokeColor != MCColor.separator)
     }
 }
+
+/// Liquid Glass, and the rules that keep it from making the app worse.
+///
+/// Apple's guidance is narrow: glass belongs to the navigation layer that
+/// floats above content. Not content, not full-screen backgrounds, not
+/// scrollable views, and never glass on glass — a glass surface cannot sample
+/// another glass surface, so stacking them produces a muddy rectangle instead
+/// of depth.
+///
+/// The temptation with a new material is to put it everywhere. These tests are
+/// what stops that, since the result of getting it wrong is an app about
+/// reading numbers where the numbers are harder to read.
+@Suite("Liquid Glass adoption")
+struct GlassAdoptionTests {
+    private let root = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+
+    private func sources() throws -> [(name: String, text: String)] {
+        var out: [(String, String)] = []
+        for relative in ["Sources/CoreTendApp", "Sources/DesignSystem"] {
+            let dir = root.appendingPathComponent(relative)
+            for name in try FileManager.default.contentsOfDirectory(atPath: dir.path)
+                where name.hasSuffix(".swift") {
+                out.append((name, try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)))
+            }
+        }
+        return out
+    }
+
+    /// `glassEffect` is macOS 26 only and the deployment target is macOS 14. An
+    /// ungated call does not fail to compile against a newer SDK — it fails to
+    /// launch on the machines this app supports.
+    @Test func glassIsOnlyCalledFromTheGatedModifier() throws {
+        for file in try sources() where file.name != "Glass.swift" {
+            for line in file.text.split(separator: "\n") {
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                guard !trimmed.hasPrefix("//") && !trimmed.hasPrefix("///") else { continue }
+                #expect(!trimmed.contains(".glassEffect("),
+                        "\(file.name) calls glassEffect directly — use .mcNavigationGlass, which gates it")
+            }
+        }
+    }
+
+    /// Only the two navigation-layer surfaces adopt it. Every other call site
+    /// would be content, which is what Apple says not to do.
+    @Test func onlyNavigationSurfacesUseGlass() throws {
+        let allowed: Set<String> = ["Sidebar.swift", "ModuleSubNav.swift", "Glass.swift"]
+        for file in try sources() where !allowed.contains(file.name) {
+            #expect(!file.text.contains("mcNavigationGlass"),
+                    "\(file.name) applies glass to something that is not the navigation layer")
+        }
+    }
+
+    /// Both of them actually adopt it, so the modifier is not dead code that
+    /// only exists to be tested.
+    @Test func bothNavigationSurfacesAdoptIt() throws {
+        let sources = Dictionary(uniqueKeysWithValues: try sources().map { ($0.name, $0.text) })
+        for name in ["Sidebar.swift", "ModuleSubNav.swift"] {
+            let text = try #require(sources[name])
+            #expect(text.contains("mcNavigationGlass"), "\(name) does not adopt glass")
+        }
+    }
+
+    /// The gate and its documentation must not drift apart.
+    @Test func theAvailabilityGateMatchesTheDocumentedVersion() {
+        #expect(MCGlassAvailability.minimumMajorVersion == 26)
+        // On any machine running this suite, the reported support must match
+        // what the OS actually is — a hardcoded `true` would pass silently.
+        let major = ProcessInfo.processInfo.operatingSystemVersion.majorVersion
+        #expect(MCGlassAvailability.isSupported == (major >= MCGlassAvailability.minimumMajorVersion))
+    }
+
+    /// Glass is transparency. Someone who turned Reduce Transparency on has
+    /// said at the system level that translucent chrome is hard for them to
+    /// read, and the fallback must be a real opaque surface rather than
+    /// nothing.
+    @Test func reduceTransparencyIsHonouredWithAnOpaqueFallback() throws {
+        let sources = Dictionary(uniqueKeysWithValues: try sources().map { ($0.name, $0.text) })
+        let glass = try #require(sources["Glass.swift"])
+        #expect(glass.contains("accessibilityReduceTransparency"))
+        #expect(glass.contains("!reduceTransparency"),
+                "the effect is not actually disabled when the setting is on")
+        // Both call sites must pass a fallback colour.
+        for name in ["Sidebar.swift", "ModuleSubNav.swift"] {
+            let text = try #require(sources[name])
+            #expect(text.contains("fallback: MCColor."), "\(name) passes no opaque fallback")
+        }
+    }
+}

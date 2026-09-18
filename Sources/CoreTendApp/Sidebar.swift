@@ -126,7 +126,10 @@ struct Sidebar: View {
         // rather than a broken one.
         .navigationSplitViewColumnWidth(
             min: MCSize.sidebarMin, ideal: MCSize.sidebarIdeal, max: MCSize.sidebarMax)
-        .background(MCColor.secondaryBackground)
+        // The sidebar is the app's primary navigation layer, so it is the
+        // other place glass belongs. Content scrolls in the detail column
+        // beside it, which is exactly what glass is meant to sample.
+        .mcNavigationGlass(in: Rectangle(), fallback: MCColor.secondaryBackground)
         .focusable()
         .focused($focused)
         .focusEffectDisabled()
