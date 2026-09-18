@@ -65,36 +65,53 @@ someone who enlarged their sidebar icons system-wide gets no change here.
 
 ---
 
-## 1. Decided — do these regardless of visual direction
+## 1. Phase 1 — complete
 
-Ordered by value per unit of risk.
+All thirteen items attempted. **Nine shipped, three rejected on measurement,
+one blocked.** The rejections are the useful part: each was recommended by
+Apple's own guidance and each failed when measured in place.
 
-| # | Item | Why now | Evidence |
-|---|---|---|---|
-| 1.1 | ~~App icon through Icon Composer~~ | **Done.** Rendered by `ictool`; true squircle; system effects | commit `2157a42` |
-| 1.2 | Layered icon (`Assets.car`) so macOS re-renders per appearance | The `.icon` exists; this is packaging, needs `actool` | HIG *App icons* |
-| 1.3 | `ModuleSubNav` → `.pickerStyle(.tabs)` behind a macOS 27 gate | `TabsPickerStyle` is new in 27 and is the idiom for exactly this | SDK, verified |
-| 1.4 | `swipeActions` on every file row — exclude, reveal, trash | New on macOS this cycle; the biggest interaction upgrade available to a file-list app | SDK, verified |
-| 1.5 | Measure `.glassProminent` against 4.5:1; adopt if it passes | WWDC26 says use it rather than a raw `glassEffect`; our style exists only because the system one was 1.87:1 | WWDC26 guide |
-| 1.6 | `backgroundExtensionEffect()` under the sidebar | The current idiom for sidebar-over-content; unused today | HIG *Sidebars*, SDK |
-| 1.7 | Sidebar responds to the system sidebar-icon-size setting | Regression from replacing `List` (§0.3) | HIG *Sidebars* |
-| 1.8 | Move Settings out of the sidebar's bottom edge | "Avoid putting critical information or actions at the bottom of a sidebar. People often relocate a window in a way that hides its bottom edge." | HIG *Sidebars* |
-| 1.9 | `reveal` split: sub-300 ms ease-out for user-triggered motion | 400 ms is an ambient duration on a user-triggered transition | Kowalski |
-| 1.10 | Every command in the menu bar | "Use the menu bar to give people easy access to **all** the commands they need." Scan, Pause, Cancel, Move to Trash, Choose Folder are in none | HIG *Designing for macOS* |
-| 1.11 | Navigation transition between modules | `CrossFadeNavigationTransition` new in 27; module switching is an instant cut today | SDK, verified |
-| 1.12 | `reorderable()` on favourites and exclusions | New in 27 | SDK, verified |
-| 1.13 | Let people customise the sidebar's contents and order | "When possible, let people customize the contents of a sidebar" | HIG *Sidebars* |
+| # | Item | Outcome |
+|---|---|---|
+| 1.1 | App icon through Icon Composer | **Shipped** — rendered by `ictool`; true squircle; system effects |
+| 1.2 | Layered icon (`Assets.car`) | **Blocked** — see below |
+| 1.3 | `ModuleSubNav` → `.pickerStyle(.tabs)` | **Shipped**, gated on macOS 27 |
+| 1.4 | `swipeActions` on file rows | **Shipped**, with a context menu beside it |
+| 1.5 | `.glassProminent` for buttons | **Rejected** — 11.13:1 in isolation, 2.61:1 in place |
+| 1.6 | `backgroundExtensionEffect()` | **Rejected** — 0 of 45,085 pixels changed |
+| 1.7 | Sidebar follows the system row size | **Shipped** — an accessibility regression I had introduced |
+| 1.8 | Settings out of the sidebar's bottom | **Shipped** — it is a `Settings` scene now |
+| 1.9 | `reveal` under the 300 ms threshold | **Shipped**, plus `ambient` for the one decorative case |
+| 1.10 | Every command in the menu bar | **Shipped** — Go and Scan menus |
+| 1.11 | Navigation transition between modules | **Rejected** — see below |
+| 1.12 | `reorderable()` on favourites | **Shipped**, after reversing a schema migration |
+| 1.13 | Sidebar customisation | **Shipped** |
 
-Explicitly **not** on this list, and why:
+### Why 1.11 was rejected
 
-- **Card radius**: leave at 8 pt. Golden Gate made windows *less* round; a
-  larger radius would now read as last year's.
-- **Glass opacity**: do not hand-tune. macOS 27 gives users a transparency
-  slider, and `glassEffect` tracks it. A hand-rolled material with a fixed
-  alpha would ignore a setting they deliberately moved.
-- **Sidebar icon tint**: blocked on §0.1.
+`CrossFadeNavigationTransition` and `ZoomNavigationTransition` are both
+`@available(macOS, unavailable)`. Only `.automatic` — the default — exists on
+macOS. Apple made these explicitly unavailable on the Mac, and a hand-rolled
+cross-fade would be inventing a transition the platform has decided against.
 
----
+### Why 1.2 is blocked
+
+`actool` produces no `Assets.car`, no warning and no error from a hand-authored
+`.icon` placed in an asset catalog, at either deployment target tried. It
+appears to compile layered icons only as part of a full Xcode project build.
+
+The shipped `.icns` is already rendered by `ictool` from that same document, so
+it has the correct squircle and the system's own effects at every size. What is
+missing is runtime per-appearance re-rendering — dark, clear and tinted
+variants. Reaching it means either an Xcode project or a route that is not yet
+identified.
+
+### Excluded before starting, with reasons
+
+- **Card radius**: stays at 8 pt. Golden Gate made windows *less* round.
+- **Glass opacity**: not hand-tuned. macOS 27 gives users a transparency
+  slider and `glassEffect` tracks it.
+- **Sidebar icon tint**: blocked on §0.1, which is yours to decide.
 
 ## 2. Undecided — the visual direction
 
