@@ -41,7 +41,7 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 - ☑ D-07 Integrity provenance `Table`.
 - ☐ D-08 Performance time axis.
 - ☑ D-09 Settings final set (General · Permissions · Exclusions · Data · Updates · About).
-- ☐ D-10 Onboarding three steps.
+- ☑ D-10 Onboarding three steps.
 
 ## E — Copy
 - ☐ E-01 Apply PRODUCT_VOCABULARY across all strings (both tables).

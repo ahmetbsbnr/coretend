@@ -4,113 +4,28 @@
 import SwiftUI
 import DesignSystem
 
-/// Detects real permission state. Full Disk Access is probed by attempting to
-/// read a TCC-protected location — never assumed from user actions.
-// MARK: - View model
-
+/// First run. Three steps, all skippable, reopenable from Help.
+///
+/// It was seven: welcome, a "security profile" choice, file access, the menu
+/// bar, folders to scan and exclude, a system check, a summary. Most of that
+/// asked the person to decide things the app should simply do right — there
+/// is one safety behaviour (the Trash, always), the menu bar is a setting,
+/// exclusions are a setting, and the system check is what Overview's
+/// "Needs attention" list is for. What is left is what a first run genuinely
+/// has to do: say what the app is, get the one permission that matters, and
+/// start. See docs/INFORMATION_ARCHITECTURE.md § Onboarding.
 @MainActor
 @Observable
 final class OnboardingViewModel {
-    // Security profile
-    var profile: SecurityProfile = .recommended
-    var config = SecurityConfig.safeDefaults
-
-    // Live permission / capability state (queried, never simulated)
-    // Only the blanket grant matters during onboarding: the per-folder ones
-    // are raised by macOS when a scan first touches the folder, and a setup
-    // screen cannot grant them. The full picture lives in Settings.
     var fdaGranted = SystemAuthorization.probeLive().hasFullDiskAccess
-
-    // Folders & exclusions
-    var scannableFolders: [URL] = []
-    var exclusions: [URL] = []
-
-    // System check
-    var checkItems: [SystemCheck.Item] = []
-    var checkOverall: SystemCheck.Status = .ok
-    var checkRun = false
-
-    // Launch location
-    let launchLocation = LaunchLocation.detect(
-        bundlePath: Bundle.main.bundlePath,
-        home: NSHomeDirectory())
+    let launchLocation = LaunchLocation.detect(bundlePath: Bundle.main.bundlePath, home: NSHomeDirectory())
     var moveAttempted = false
     var moveResult: String?
-
-    func onAppear() {
-        config = SecurityConfig.forProfile(profile)
-        // Default scannable folders: the user's Downloads (safe, common target).
-        let downloads = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads")
-        if FileManager.default.fileExists(atPath: downloads.path) { scannableFolders = [downloads] }
-    }
-
-    func selectProfile(_ p: SecurityProfile) {
-        profile = p
-        if p != .custom { config = SecurityConfig.forProfile(p) }
-    }
 
     func refreshPermissions() async {
         fdaGranted = SystemAuthorization.probeLive().hasFullDiskAccess
     }
 
-    func addScannable(_ url: URL) {
-        if !scannableFolders.contains(url) { scannableFolders.append(url) }
-    }
-    func removeScannable(_ url: URL) { scannableFolders.removeAll { $0 == url } }
-    func addExclusion(_ url: URL) {
-        if !exclusions.contains(url) { exclusions.append(url) }
-    }
-    func removeExclusion(_ url: URL) { exclusions.removeAll { $0 == url } }
-
-    func runSystemCheck() async {
-        await refreshPermissions()
-        let inputs = await Self.gatherCheckInputs(fda: fdaGranted)
-        checkItems = SystemCheck.items(inputs)
-        checkOverall = SystemCheck.overall(checkItems)
-        checkRun = true
-    }
-
-    private static func gatherCheckInputs(fda: Bool) async -> SystemCheck.Inputs {
-        var isARM = false
-        #if arch(arm64)
-        isARM = true
-        #endif
-        let home = URL(fileURLWithPath: NSHomeDirectory())
-        let freeSpace = (try? home.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]))?
-            .volumeAvailableCapacityForImportantUsage ?? 0
-        let homeReadable = (try? FileManager.default.contentsOfDirectory(atPath: home.path)) != nil
-        // Resources present iff a known localized string resolves.
-        let resourcesPresent = L("onboarding.step0.subtitle") != "onboarding.step0.subtitle"
-        var schemaOK = false
-        if let store = AppEnvironment.shared.store {
-            schemaOK = ((try? await store.schemaVersion()) ?? 0) > 0
-        }
-        return SystemCheck.Inputs(
-            isARM64: isARM,
-            macOSMajor: ProcessInfo.processInfo.operatingSystemVersion.majorVersion,
-            bundleValid: Bundle.main.bundleIdentifier != nil,
-            resourcesPresent: resourcesPresent,
-            sqliteAvailable: schemaOK,
-            fullDiskAccess: fda,
-            freeSpaceBytes: Int64(freeSpace),
-            configuredLocationAccessible: homeReadable,
-            safetyCoreReady: AppEnvironment.shared.store != nil)
-    }
-
-    /// Persist the profile choice and exclusions.
-    func persist() {
-        guard let store = AppEnvironment.shared.store else { return }
-        let paths = exclusions.map(\.path)
-        let profileRaw = profile.rawValue
-        Task {
-            try? await store.setSetting("securityProfile", value: profileRaw)
-            for p in paths { try? await store.addExclusion(path: p) }
-        }
-    }
-
-    /// Copy the bundle into /Applications (fallback ~/Applications). No sudo,
-    /// no privilege escalation: a plain user-space copy. On failure we reveal
-    /// the bundle so the user can drag it in themselves.
     func moveToApplications() {
         moveAttempted = true
         let fm = FileManager.default
@@ -133,391 +48,168 @@ final class OnboardingViewModel {
                 return
             } catch { continue }
         }
-        // Could not copy anywhere writable: fall back to drag-in-Finder.
         moveResult = L("onboarding.move.manual")
         NSWorkspace.shared.activateFileViewerSelecting([src])
     }
 }
 
-// MARK: - View
-
-/// Short, skippable, resumable first-run wizard. Seven steps, no forced
-/// permission, keyboard-operable, FR/EN, light/dark, Reduce-Motion aware.
 struct OnboardingView: View {
     @Binding var isPresented: Bool
-    @AppStorage("onboardingStep") private var step = 0
-    @AppStorage("menuBarEnabled") private var menuBarEnabled = true
     @AppStorage("appLanguage") private var appLanguageRaw = AppLanguage.system.rawValue
+    @State private var step = 0
     @State private var model = OnboardingViewModel()
 
-    private let stepCount = 7
-
-    private var appVersion: String {
-        AppMetadata.marketingVersion
-    }
+    private let stepCount = 3
 
     var body: some View {
-        HStack(spacing: 0) {
-            railView
-            VStack(spacing: 0) {
-                ScrollView {
-                    content
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, MCSpacing.xl)
-                        .padding(.vertical, MCSpacing.lg)
+        VStack(spacing: 0) {
+            ScrollView {
+                Group {
+                    switch step {
+                    case 0: welcomeStep
+                    case 1: accessStep
+                    default: startStep
+                    }
                 }
-                Divider()
-                footer
-                    .padding(.horizontal, MCSpacing.xl)
-                    .padding(.vertical, MCSpacing.md)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, MCSpacing.xl)
+                .padding(.vertical, MCSpacing.lg)
             }
+            Divider()
+            footer
+                .padding(.horizontal, MCSpacing.xl)
+                .padding(.vertical, MCSpacing.md)
         }
-        .frame(width: 780, height: 560)
+        .frame(width: 640, height: 480)
         .accessibilityIdentifier("onboarding.root")
-        .onAppear {
-            model.onAppear()
-            Task { await model.refreshPermissions() }
-        }
+        .task { await model.refreshPermissions() }
     }
 
-    // MARK: Brand rail — identity + vertical progress, one frame for every step
-
-    private var railView: some View {
-        VStack(alignment: .leading, spacing: MCSpacing.lg) {
-            HStack(spacing: MCSpacing.xs) {
-                CoreBloomMark(tint: [MCColor.teal], lineWidthFraction: 0.1)
-                    .frame(width: 30, height: 30)
-                Text(verbatim: "CoreTend").font(MCFont.cardTitle)
-            }
-            VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                ForEach(0..<stepCount, id: \.self) { railStepRow($0) }
-            }
-            Spacer(minLength: 0)
-            Text(L("onboarding.welcome.version", appVersion))
-                .font(MCFont.badge).foregroundStyle(MCColor.textTertiary)
-        }
-        .padding(MCSpacing.lg)
-        .frame(width: 236)
-        .frame(maxHeight: .infinity, alignment: .top)
-        .background(
-            LinearGradient(colors: [MCColor.teal.opacity(0.10), MCColor.elevatedBackground],
-                           startPoint: .top, endPoint: .bottom))
-        .overlay(alignment: .trailing) {
-            Rectangle().fill(MCColor.separator.opacity(0.6)).frame(width: 1)
-        }
-        .mcAnimation(MCMotion.transition, value: step)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(L("onboarding.step_a11y", step + 1, stepCount))
-        .accessibilityIdentifier("onboarding.step")
-    }
-
-    private func railStepRow(_ i: Int) -> some View {
-        let done = i < step
-        let current = i == step
-        return HStack(alignment: .top, spacing: MCSpacing.xs) {
-            Image(systemName: done ? "checkmark.circle.fill" : (current ? "circle.inset.filled" : "circle"))
-                .font(.system(size: MCIconSize.row))
-                .foregroundStyle(done || current ? AnyShapeStyle(MCColor.teal) : AnyShapeStyle(.tertiary))
-                .accessibilityHidden(true)
-            Text(stepTitle(i))
-                .font(MCFont.caption)
-                .fontWeight(current ? .semibold : .regular)
-                .foregroundStyle(current ? AnyShapeStyle(.primary)
-                                 : (done ? AnyShapeStyle(.secondary) : AnyShapeStyle(.tertiary)))
-                .lineLimit(2)
-                .fixedSize(horizontal: false, vertical: true)
-            Spacer(minLength: 0)
-        }
-    }
-
-    private func stepTitle(_ i: Int) -> String {
-        switch i {
-        case 0: L("onboarding.step0.title")
-        case 1: L("onboarding.security.title")
-        case 2: L("onboarding.fileaccess.title")
-        case 3: L("onboarding.menubar.title")
-        case 4: L("onboarding.folders.title")
-        case 5: L("onboarding.check.title")
-        default: L("onboarding.summary.title")
-        }
-    }
-
-    @ViewBuilder
-    private var content: some View {
-        switch step {
-        case 0: welcomeStep
-        case 1: securityStep
-        case 2: fileAccessStep
-        case 3: menuBarStep
-        case 4: foldersStep
-        case 5: systemCheckStep
-        default: summaryStep
-        }
-    }
-
-    // MARK: Step 0 — Welcome
+    // MARK: Step 1 — what this is
 
     private var welcomeStep: some View {
-        page {
-            VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-                Text(L("onboarding.step0.title")).font(MCFont.heroTitle)
-                // The product signature — identical here, on the site, in the
-                // DMG and in the README. A product that introduces itself
-                // differently in each place reads as several products.
-                Text(L("onboarding.step0.signature"))
-                    .font(MCFont.pageTitle).foregroundStyle(MCColor.teal)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+        VStack(alignment: .leading, spacing: MCSpacing.md) {
+            Text(L("onboarding.step0.title")).font(MCFont.heroTitle)
             Text(L("onboarding.step0.subtitle"))
                 .font(MCFont.body).foregroundStyle(MCColor.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
-            VStack(alignment: .leading, spacing: MCSpacing.sm) {
+            VStack(alignment: .leading, spacing: MCSpacing.xs) {
                 bullet("internaldrive", L("onboarding.welcome.local"))
-                bullet("person.crop.circle.badge.xmark", L("onboarding.welcome.no_account"))
+                bullet("trash", L("onboarding.welcome.trash_only"))
                 bullet("antenna.radiowaves.left.and.right.slash", L("onboarding.welcome.no_telemetry"))
                 bullet("chevron.left.forwardslash.chevron.right", L("onboarding.welcome.open_source"))
             }
-            Divider().padding(.vertical, MCSpacing.xxs)
-            VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                Text(L("onboarding.language.title")).font(MCFont.sectionTitle).foregroundStyle(MCColor.textSecondary)
-                Picker(L("onboarding.language.title"), selection: $appLanguageRaw) {
-                    Text(L("settings.language.system")).tag(AppLanguage.system.rawValue)
-                    Text("Français").tag(AppLanguage.fr.rawValue)
-                    Text("English").tag(AppLanguage.en.rawValue)
-                }
-                .labelsHidden()
-                .pickerStyle(.segmented)
-                .frame(maxWidth: 320)
-                .accessibilityIdentifier("onboarding.language")
-                Text(L("onboarding.language.subtitle"))
-                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
+            Picker(L("onboarding.language.title"), selection: $appLanguageRaw) {
+                Text(L("settings.language.system")).tag(AppLanguage.system.rawValue)
+                Text("Français").tag(AppLanguage.fr.rawValue)
+                Text("English").tag(AppLanguage.en.rawValue)
             }
+            .pickerStyle(.menu).fixedSize()
+            .accessibilityIdentifier("onboarding.language")
             if model.launchLocation.canOfferMove { moveBanner }
         }
     }
 
+    /// Running from Downloads or a disk image is the one thing worth saying
+    /// on the first screen: nothing else in the app works reliably from there.
     private var moveBanner: some View {
-        VStack(spacing: MCSpacing.xs) {
-            Text(L("onboarding.move.prompt")).font(MCFont.secondaryBody)
-                .multilineTextAlignment(.center)
+        VStack(alignment: .leading, spacing: MCSpacing.xs) {
+            Divider()
+            Text(L("onboarding.move.title")).font(MCFont.sectionTitle)
+            Text(L("onboarding.move.body")).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
             if let result = model.moveResult {
-                Text(result).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                    .multilineTextAlignment(.center)
+                Text(result).font(MCFont.caption)
             } else {
                 Button(L("onboarding.move.button")) { model.moveToApplications() }
+                    .buttonStyle(.bordered)
             }
-        }
-        .padding(MCSpacing.md)
-        .frame(maxWidth: 440)
-        .background(MCColor.storage.opacity(0.08), in: RoundedRectangle(cornerRadius: MCRadius.card))
-    }
-
-    // MARK: Step 1 — Security profile
-
-    private var securityStep: some View {
-        page {
-            stepHeader("lock.shield", L("onboarding.security.title"), L("onboarding.security.subtitle"))
-            VStack(spacing: MCSpacing.sm) {
-                ForEach(SecurityProfile.allCases) { p in profileRow(p) }
-            }
-            .frame(maxWidth: 460)
-            VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                configFixed(L("onboarding.security.trash"), on: model.config.useTrash)
-                configFixed(L("onboarding.security.medium_risk"), on: model.config.mediumRiskRules)
-                configFixed(L("onboarding.security.empty_trash"), on: model.config.emptyTrash)
-                configFixed(L("onboarding.security.auto_quarantine"), on: model.config.autoQuarantine)
-            }
-            .frame(maxWidth: 460)
         }
     }
 
-    private func profileRow(_ p: SecurityProfile) -> some View {
-        Button {
-            model.selectProfile(p)
-        } label: {
-            HStack(alignment: .top, spacing: MCSpacing.sm) {
-                Image(systemName: model.profile == p ? "largecircle.fill.circle" : "circle")
-                    .foregroundStyle(model.profile == p ? MCColor.teal : .secondary)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(L("onboarding.security.\(p.rawValue)")).font(MCFont.secondaryBody).bold()
-                    Text(L("onboarding.security.\(p.rawValue)_detail"))
-                        .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                Spacer()
+    // MARK: Step 2 — the one permission that matters
+
+    private var accessStep: some View {
+        VStack(alignment: .leading, spacing: MCSpacing.md) {
+            Text(L("onboarding.fileaccess.title")).font(MCFont.heroTitle)
+            Text(L("onboarding.fileaccess.subtitle"))
+                .font(MCFont.body).foregroundStyle(MCColor.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: MCSpacing.xs) {
+                Image(systemName: model.fdaGranted ? "checkmark.circle.fill" : "circle.dashed")
+                    .foregroundStyle(model.fdaGranted ? MCTheme.success : MCColor.textTertiary)
+                    .accessibilityHidden(true)
+                Text(model.fdaGranted ? L("settings.granted") : L("settings.not_granted"))
+                    .font(MCFont.rowTitle)
             }
-            .padding(MCSpacing.sm)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(model.profile == p ? MCColor.teal.opacity(0.1) : Color.clear,
-                        in: RoundedRectangle(cornerRadius: MCRadius.small))
-        }
-        .buttonStyle(.plain)
-        .accessibilityAddTraits(model.profile == p ? [.isSelected] : [])
-    }
-
-    private func configFixed(_ label: String, on: Bool) -> some View {
-        HStack(spacing: MCSpacing.xs) {
-            Image(systemName: on ? "checkmark.circle.fill" : "circle")
-                .foregroundStyle(on ? MCTheme.success : .secondary)
-            Text(label).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-        }
-    }
-
-    // MARK: Step 2 — File access
-
-    private var fileAccessStep: some View {
-        page {
-            stepHeader("folder.badge.questionmark", L("onboarding.fileaccess.title"),
-                       L("onboarding.fileaccess.subtitle"))
-            MCStatusBadge(model.fdaGranted ? L("settings.granted") : L("settings.not_granted"),
-                          status: model.fdaGranted ? .success : .neutral)
+            .accessibilityElement(children: .combine)
             VStack(alignment: .leading, spacing: MCSpacing.xs) {
                 bullet("checkmark.circle", L("onboarding.fileaccess.can_scan"))
-                if !model.fdaGranted {
-                    bullet("minus.circle", L("onboarding.fileaccess.limited"))
-                }
+                if !model.fdaGranted { bullet("minus.circle", L("onboarding.fileaccess.limited")) }
             }
-            .frame(maxWidth: 460)
             if !model.fdaGranted {
                 HStack(spacing: MCSpacing.sm) {
                     Button(L("settings.open_system_settings")) {
-                        if let url = SystemAuthorization.fullDiskAccessSettingsURL {
-                            NSWorkspace.shared.open(url)
-                        }
+                        if let url = SystemAuthorization.fullDiskAccessSettingsURL { NSWorkspace.shared.open(url) }
                     }
+                    .buttonStyle(.borderedProminent)
                     Button(L("settings.recheck")) { Task { await model.refreshPermissions() } }
+                        .buttonStyle(.bordered)
                 }
                 Text(L("onboarding.fileaccess.no_autogrant"))
                     .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                    .multilineTextAlignment(.center).frame(maxWidth: 460)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
 
+    // MARK: Step 3 — start
 
-    // MARK: Step 3 — Menu bar
-
-    private var menuBarStep: some View {
-        page {
-            stepHeader("menubar.arrow.up.rectangle", L("onboarding.menubar.title"),
-                       L("onboarding.menubar.subtitle"))
-            VStack(alignment: .leading, spacing: MCSpacing.md) {
-                Toggle(L("onboarding.menubar.show"), isOn: $menuBarEnabled)
-            }
-            .frame(maxWidth: 460)
-        }
-    }
-
-    // MARK: Step 4 — Folders & exclusions
-
-    private var foldersStep: some View {
-        page {
-            stepHeader("folder.badge.gearshape", L("onboarding.folders.title"),
-                       L("onboarding.folders.subtitle"))
-            VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                folderSection(L("onboarding.folders.scannable"), model.scannableFolders,
-                              add: { model.addScannable($0) }, remove: { model.removeScannable($0) })
-                Text(L("onboarding.folders.protected"))
-                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                Divider()
-                folderSection(L("onboarding.folders.exclusions"), model.exclusions,
-                              add: { model.addExclusion($0) }, remove: { model.removeExclusion($0) })
-            }
-            .frame(maxWidth: 460)
-        }
-    }
-
-    private func folderSection(_ title: String, _ folders: [URL],
-                               add: @escaping (URL) -> Void, remove: @escaping (URL) -> Void) -> some View {
-        VStack(alignment: .leading, spacing: MCSpacing.xs) {
-            HStack {
-                Text(title).font(MCFont.secondaryBody).bold()
-                Spacer()
-                Button(L("onboarding.folders.add")) {
-                    if let url = FolderPicker.chooseFolderOrNil() { add(url) }
-                }
-            }
-            ForEach(folders, id: \.self) { url in
-                HStack {
-                    Image(systemName: "folder").foregroundStyle(MCColor.textSecondary)
-                    Text(url.path).lineLimit(1).truncationMode(.middle).font(MCFont.caption)
-                    Spacer()
-                    Button {
-                        remove(url)
-                    } label: { Image(systemName: "minus.circle") }
-                        .buttonStyle(.borderless)
-                        .accessibilityLabel(L("settings.remove_exclusion", url.lastPathComponent))
-                }
-            }
-        }
-    }
-
-    // MARK: Step 5 — System check
-
-    private var systemCheckStep: some View {
-        page {
-            stepHeader("stethoscope", L("onboarding.check.title"), L("onboarding.check.subtitle"))
-            if model.checkRun {
-                MCStatusBadge(overallLabel(model.checkOverall), status: overallBadge(model.checkOverall))
-                VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                    ForEach(model.checkItems, id: \.id) { item in
-                        HStack(spacing: MCSpacing.sm) {
-                            Image(systemName: itemIcon(item.status))
-                                .foregroundStyle(itemColor(item.status))
-                            Text(L("onboarding.check.\(item.id)")).font(MCFont.caption)
-                            Spacer()
-                            Text(statusLabel(item.status)).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                        }
-                    }
-                }
-                .frame(maxWidth: 460)
-            } else {
-                ProgressView().controlSize(.large)
-                Text(L("onboarding.check.running")).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-            }
-        }
-        .task(id: step) { if step == 5 { await model.runSystemCheck() } }
-    }
-
-    // MARK: Step 6 — Summary
-
-    private var summaryStep: some View {
-        page {
-            stepHeader("checkmark.seal", L("onboarding.summary.title"), L("onboarding.summary.subtitle"))
+    private var startStep: some View {
+        VStack(alignment: .leading, spacing: MCSpacing.md) {
+            Text(L("onboarding.start.title")).font(MCFont.heroTitle)
+            Text(L("onboarding.start.subtitle"))
+                .font(MCFont.body).foregroundStyle(MCColor.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
             VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                summaryRow(L("onboarding.summary.profile"), L("onboarding.security.\(model.profile.rawValue)"))
-                summaryRow(L("onboarding.summary.fda"),
-                           model.fdaGranted ? L("settings.granted") : L("settings.not_granted"))
-                summaryRow(L("onboarding.summary.menu_bar"), yesNo(menuBarEnabled))
-                summaryRow(L("onboarding.summary.exclusions"), "\(model.exclusions.count)")
+                startRow(.cleanup, L("onboarding.start.cleanup"))
+                startRow(.spaceLens, L("onboarding.start.explore"))
+                startRow(.applications, L("onboarding.start.applications"))
             }
-            .frame(maxWidth: 460)
-            VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                bullet("lock", L("onboarding.summary.privacy"))
-                bullet("arrow.uturn.backward", L("onboarding.summary.restore"))
-            }
-            .frame(maxWidth: 460)
-            Link(L("onboarding.summary.docs"),
-                 destination: URL(string: "https://github.com/ahmetbsbnr/coretend")!)
-                .font(MCFont.caption)
         }
+    }
+
+    private func startRow(_ module: ModuleID, _ detail: String) -> some View {
+        HStack(spacing: MCSpacing.sm) {
+            Image(systemName: module.systemImage).frame(width: 20)
+                .foregroundStyle(MCColor.textSecondary).accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(module.label).font(MCFont.rowTitle)
+                Text(detail).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+            }
+            Spacer()
+            Button(L("overview.open")) { finish(then: module) }
+                .buttonStyle(.bordered)
+        }
+        .accessibilityElement(children: .contain)
     }
 
     // MARK: Footer
 
     private var footer: some View {
         HStack {
-            Button(L("onboarding.skip")) { model.persist(); finish() }
-                .buttonStyle(.plain).foregroundStyle(MCColor.textSecondary)
+            Button(L("onboarding.skip")) { finish() }
+                .buttonStyle(.borderless)
                 .accessibilityIdentifier("onboarding.skip")
             Spacer()
+            Text(L("onboarding.step_of", step + 1, stepCount))
+                .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+            Spacer()
             if step > 0 {
-                Button(L("onboarding.back")) { step -= 1 }
-                    .accessibilityIdentifier("onboarding.back")
+                Button(L("onboarding.back")) { step -= 1 }.buttonStyle(.bordered)
             }
             Button(step == stepCount - 1 ? L("onboarding.start") : L("onboarding.continue")) {
-                if step == stepCount - 1 { model.persist(); finish() } else { step += 1 }
+                if step == stepCount - 1 { finish() } else { step += 1 }
             }
             .buttonStyle(.borderedProminent)
             .keyboardShortcut(.defaultAction)
@@ -525,89 +217,17 @@ struct OnboardingView: View {
         }
     }
 
-    private func finish() {
-        step = 0
+    private func finish(then module: ModuleID? = nil) {
         isPresented = false
-    }
-
-    // MARK: Shared building blocks
-
-    private func page(@ViewBuilder _ content: () -> some View) -> some View {
-        VStack(alignment: .leading, spacing: MCSpacing.lg) { content() }
-            .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    private func stepHeader(_ icon: String, _ title: String, _ subtitle: String) -> some View {
-        HStack(alignment: .top, spacing: MCSpacing.md) {
-            Image(systemName: icon)
-                .font(.system(size: MCIconSize.feature, weight: .light))
-                .foregroundStyle(MCColor.teal)
-                .frame(width: 34)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-                Text(title).font(MCFont.pageTitle)
-                Text(subtitle).font(MCFont.secondaryBody).foregroundStyle(MCColor.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
+        if let module { NotificationCenter.default.post(name: .mcNavigate, object: module) }
     }
 
     private func bullet(_ icon: String, _ text: String) -> some View {
-        HStack(alignment: .top, spacing: MCSpacing.xs) {
-            Image(systemName: icon).frame(width: 20).foregroundStyle(MCColor.teal)
+        HStack(alignment: .firstTextBaseline, spacing: MCSpacing.xs) {
+            Image(systemName: icon).frame(width: 18).foregroundStyle(MCColor.textSecondary)
                 .accessibilityHidden(true)
-            Text(text).font(MCFont.secondaryBody)
+            Text(text).fixedSize(horizontal: false, vertical: true)
         }
-    }
-
-    private func summaryRow(_ label: String, _ value: String) -> some View {
-        HStack {
-            Text(label).font(MCFont.secondaryBody)
-            Spacer()
-            Text(value).font(MCFont.secondaryBody).foregroundStyle(MCColor.textSecondary)
-        }
-    }
-
-    private func yesNo(_ v: Bool) -> String { v ? L("common.yes") : L("common.no") }
-
-    // System-check presentation helpers
-    private func itemIcon(_ s: SystemCheck.Status) -> String {
-        switch s {
-        case .ok: "checkmark.circle.fill"
-        case .limited: "exclamationmark.circle"
-        case .actionRequired: "exclamationmark.triangle.fill"
-        case .unavailable: "xmark.octagon.fill"
-        }
-    }
-    private func itemColor(_ s: SystemCheck.Status) -> Color {
-        switch s {
-        case .ok: MCTheme.success
-        case .limited: MCTheme.warning
-        case .actionRequired: MCTheme.warning
-        case .unavailable: MCTheme.danger
-        }
-    }
-    private func statusLabel(_ s: SystemCheck.Status) -> String {
-        switch s {
-        case .ok: L("onboarding.check.status.ok")
-        case .limited: L("onboarding.check.status.limited")
-        case .actionRequired: L("onboarding.check.status.action")
-        case .unavailable: L("onboarding.check.status.unavailable")
-        }
-    }
-    private func overallLabel(_ s: SystemCheck.Status) -> String {
-        switch s {
-        case .ok: L("onboarding.check.overall.ready")
-        case .limited: L("onboarding.check.overall.limits")
-        case .actionRequired: L("onboarding.check.overall.action")
-        case .unavailable: L("onboarding.check.overall.unavailable")
-        }
-    }
-    private func overallBadge(_ s: SystemCheck.Status) -> MCStatus {
-        switch s {
-        case .ok: .success
-        case .limited, .actionRequired: .attention
-        case .unavailable: .error
-        }
+        .accessibilityElement(children: .combine)
     }
 }
