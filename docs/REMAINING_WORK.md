@@ -46,7 +46,12 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 ## E — Copy
 - ☐ E-01 Apply PRODUCT_VOCABULARY across all strings (both tables).
 - ☐ E-02 Remove orphan keys to zero (`LocalizationUsageTests` allowance → 0).
-- ☐ E-03 `LocalizationTypographyTests`: French apostrophes and NBSP.
+- ☑ E-03 `LocalizationTypographyTests`: French apostrophes (NBSP before : ; ! ? still ☐ E-04).
+
+## E (continued)
+- ☐ E-04 French non-breaking space before `: ; ! ?` — extend LocalizationTypographyTests, fix values.
+- ☐ E-05 Read every string in `Documentation/Audits/UI_INVENTORY.md §5` against PRODUCT_VOCABULARY; rewrite; both tables.
+- ☐ E-06 Website copy and demo sidebar (`Scripts/check-site-navigation.py` mapping still names retired modules).
 
 ## F — Interaction
 - ☐ F-01 Every `Table`/`List`: ⌘A, ⌘-click, shift-click, Return, Space (Quick Look).
@@ -65,6 +70,26 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 ## K — QA
 - ☑ K-01 `Scripts/capture-matrix.sh` producing `Documentation/Captures/` + gallery HTML.
 - ☐ K-02 Release build + notarisation dry run.
+
+## D (continued) — screens rebuilt once, needing their data-bearing states
+- ☐ D-11 Explore lenses (LargeOldFilesView, SimilarImagesView, CloudCleanupView): results as dense
+  `List`/`Table` rows like Cleanup review; add `CaptureHarness.note(state:)` on results and a
+  matrix spec with that state.
+- ☐ D-12 Applications inspector: associated files as one-line rows; Uninstall sheet listing exactly
+  what moves (FRONTEND_REBUILD § Applications); Leftovers and Updates tabs densified.
+- ☐ D-13 Cleanup › Browser caches: same review list as Caches & logs.
+- ☐ D-14 Duplicates: keeper choice (radio) rather than only the suggestion; Quick Look on Space.
+- ☐ D-15 Overview: multi-volume fixture; attention row for stale scans (> 7 days).
+- ☐ D-16 Settings scene capture (needs a `CORETEND_TEST_SETTINGS=1` that opens Settings on launch).
+- ☐ D-17 Onboarding capture (test flag to present it on launch), both languages.
+
+## G (continued)
+- ☐ G-03 Increase Contrast / Reduce Transparency captures: add `CORETEND_TEST_CONTRAST` is not
+  possible (system setting) — capture manually once per pass and file under Documentation/Captures/manual/.
+
+## H (continued)
+- ☐ H-02 Compact: inspectors (Record, Duplicates, Applications) become a pushed detail below 1100pt
+  content width; today they shrink and still fit at 1000×700 (verified in the matrix).
 
 ## R — Restoration (real inverse)
 - ☐ R-04 SafetyCore: `trashItem(at:resultingItemURL:)` must record the

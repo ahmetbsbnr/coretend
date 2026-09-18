@@ -1,7 +1,8 @@
 # UI QA matrix
 
-Generated captures live in `Documentation/Captures/` via
-`Scripts/capture-matrix.sh` (REMAINING_WORK K-01). File name encodes
+Generated captures live in `Documentation/Captures/` via `Scripts/capture-matrix.sh`;
+open `Documentation/Captures/index.html` for the side-by-side gallery. Last full run:
+2026-09-19, 48 captures, 0 refused, every sidebar rendered. File name encodes
 `<module>-<fixture>-<appearance>-<size>.png`; the app writes `showing.txt`
 and the script refuses any capture whose module/appearance/size differ.
 
