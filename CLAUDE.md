@@ -46,6 +46,20 @@ rather than worked around.
 - Migrations resume from `MAX(version)`, so `ALTER TABLE ADD COLUMN` is not
   idempotent across a partially-applied history. Prefer the `settings` table.
 
+## Where the decisions live
+
+`docs/` is the source of truth for the rebuild: `INFORMATION_ARCHITECTURE.md`
+(destinations, models), `DESIGN_SYSTEM.md` (surfaces, colour, type, states),
+`PRODUCT_VOCABULARY.md` (one name per thing), `FRONTEND_REBUILD.md` (code
+layout and per-module spec), `ACCESSIBILITY.md`, `UI_QA_MATRIX.md`, and
+`REMAINING_WORK.md` — an atomic backlog. Take the next open item there; do
+not redesign.
+
+QA procedure: `bash Scripts/test.sh` → `bash Scripts/package-local.sh` →
+`zsh Scripts/capture-module.sh <out> <module> <light|dark> <compact|standard|large> [seed]`
+→ look at the image. A capture is refused if the app is not showing what was
+asked; a refused capture is a bug to fix, never to work around.
+
 ## Interface principles — so the old design does not creep back
 
 These are conclusions that cost something to reach. Changing one is a decision
