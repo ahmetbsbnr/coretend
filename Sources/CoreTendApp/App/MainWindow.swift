@@ -118,7 +118,6 @@ struct MainWindow: View {
             }
         }
         .background(MCColor.background)
-        .tint(MCColor.teal)
     }
 
 }

@@ -181,7 +181,7 @@ public struct MCEmptyState: View {
 
     public init(
         icon: String, title: String, message: String,
-        iconColor: Color = .secondary, iconSize: CGFloat = MCIconSize.compactState,
+        iconColor: Color = MCColor.textTertiary, iconSize: CGFloat = MCIconSize.compactState,
         actionTitle: String? = nil, action: (() -> Void)? = nil
     ) {
         self.icon = icon
@@ -371,19 +371,17 @@ public extension View {
 
 // MARK: - Scan button
 
-/// The large circular "start" control for a module's landing state — the one
-/// unmistakable focal action on the screen. A filled teal disc with an icon
-/// over a short label, a soft teal glow, and a small hover lift (transform +
-/// shadow only; still under Reduce Motion). Not decoration: it is the primary
-/// button, sized to match its importance.
+/// The action that starts a scan.
+///
+/// This was a 136pt teal disc with a radial gradient, a glow and a white
+/// label — a control wearing the brand, on an otherwise system interface,
+/// with its label measured under the text minimum on its own fill. A scan is
+/// a normal action. It gets a normal prominent button, in the user's accent,
+/// at the large control size so it still reads as the thing to press.
 public struct MCScanButton: View {
     private let title: String
     private let systemImage: String
     private let action: () -> Void
-
-    @State private var hovering = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @Environment(\.isEnabled) private var isEnabled
 
     public init(_ title: String, systemImage: String = "sparkles", action: @escaping () -> Void) {
         self.title = title
@@ -393,35 +391,13 @@ public struct MCScanButton: View {
 
     public var body: some View {
         Button(action: action) {
-            VStack(spacing: MCSpacing.xs) {
-                Image(systemName: systemImage)
-                    .font(.system(size: MCIconSize.card, weight: .semibold))
-                Text(title)
-                    .font(MCFont.cardTitle)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.8)
-            }
-            .foregroundStyle(.white)
-            .padding(MCSpacing.md)
-            .frame(width: 136, height: 136)
-            .background(
-                Circle().fill(
-                    RadialGradient(
-                        colors: [MCColor.teal, MCColor.teal.opacity(0.82)],
-                        center: UnitPoint(x: 0.4, y: 0.32), startRadius: 2, endRadius: 118)))
-            .overlay(Circle().strokeBorder(.white.opacity(0.16), lineWidth: 1))
-            .shadow(color: MCColor.teal.opacity(hovering ? 0.5 : 0.34),
-                    radius: hovering ? 26 : 18, x: 0, y: 6)
-            .scaleEffect(hovering && !reduceMotion ? 1.03 : 1)
-            .opacity(isEnabled ? 1 : 0.5)
+            Label(title, systemImage: systemImage)
+                .font(MCFont.rowTitle)
+                .padding(.horizontal, MCSpacing.xs)
         }
-        .buttonStyle(.plain)
-        .onHover { h in
-            withAnimation(reduceMotion ? nil : MCMotion.response) { hovering = h }
-        }
-        .accessibilityLabel(title)
-        .accessibilityAddTraits(.isButton)
+        .buttonStyle(.borderedProminent)
+        .controlSize(.large)
+        .keyboardShortcut(.defaultAction)
     }
 }
 
