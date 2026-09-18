@@ -15,12 +15,12 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 - ☐ B-05 Tabs remember selection per module for the session (`@SceneStorage`).
 
 ## C — Design system
-- ☐ C-01 Split `CoreTendApp.swift` into App/ files per FRONTEND_REBUILD; add
+- ☑ C-01 Split `CoreTendApp.swift` into App/ files per FRONTEND_REBUILD; add
   `AppShellSizeTests` (≤120 lines).
 - ☐ C-02 `MCSpacing.page` → 20; row-height tokens `rowDense` 28, `row` 36.
-- ☐ C-03 Retire `MCCard`, `mcSurface`, `MCElevation`; replace each use with
+- ☑ C-03 Retire `MCCard`, `mcSurface`, `MCElevation`; replace each use with
   section + hairline (11 `MCCard`, 7 `mcSurface` uses per audit).
-- ☐ C-04 Retire `MCPrimaryButtonStyle`/Secondary/Destructive; use system styles;
+- ☑ C-04 Retire `MCPrimaryButtonStyle`/Secondary/Destructive; use system styles;
   delete `OnAccentContrastTests`; keep a test that no view uses `MCColor.teal`
   as a button background.
 - ☐ C-05 `MCPermissionState` view (title, why, Open System Settings, Continue
@@ -31,8 +31,8 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 - ☐ C-08 Icon rules (DESIGN_SYSTEM §Iconography): fix the 11 double-meaning symbols.
 
 ## D — Modules
-- ☐ D-01 Overview rebuilt per FRONTEND_REBUILD.
-- ☐ D-02 Record: 28pt rows, filter + search, sentence summary, inspector
+- ☑ D-01 Overview rebuilt per FRONTEND_REBUILD.
+- ☑ D-02 Record: 28pt rows, filter + search, sentence summary, inspector
   without tiles, keyboard (↑↓ select, Return focus inspector).
 - ☐ D-03 Cleanup review as `Table` grouped by category.
 - ☐ D-04 Explore Map: breadcrumb + inspector + keyboard.

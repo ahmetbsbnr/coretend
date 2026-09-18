@@ -7,25 +7,67 @@ import Persistence
 import SafetyCore
 import DesignSystem
 
-/// The record — direction B's spine.
+/// The Record — the app's spine: every operation and every event, readable
+/// backwards, with the evidence for each.
 ///
-/// A list of operations with an inspector for the selected one, which is the
-/// shape macOS already teaches for a long record with deep evidence: Mail,
-/// Console, Time Machine. The alternatives were measured against this one in
-/// Documentation/Mockups/COMPARISON.md; a feed of cards fitted three and a
-/// half entries in a full-height window, and a flat table had nowhere to put
-/// per-item evidence, refusal reasoning, or reversal.
+/// List + inspector, the shape macOS teaches for a long record with deep
+/// evidence (Mail, Console). Rows are one line so a full window shows a
+/// month, not an afternoon; the summary is a sentence, not tiles; the
+/// inspector is plain sections separated by hairlines. See
+/// docs/INFORMATION_ARCHITECTURE.md and docs/FRONTEND_REBUILD.md.
 @MainActor
 @Observable
 final class RecordViewModel {
     enum Phase: Equatable { case loading, loaded, empty, failed(String) }
 
+    enum Filter: String, CaseIterable, Identifiable {
+        case all, moved, refused, failed, scans
+        var id: String { rawValue }
+        var label: String { L("record.filter_\(rawValue)") }
+
+        func admits(_ item: RecordItem) -> Bool {
+            switch (self, item) {
+            case (.all, _): true
+            case (.moved, .operation(let e)): !e.moved.isEmpty
+            case (.refused, .operation(let e)): !e.refused.isEmpty
+            case (.failed, .operation(let e)): !e.failed.isEmpty
+            case (.failed, .event(let r)): r.kind == .error
+            case (.scans, .event(let r)): r.kind == .scan
+            default: false
+            }
+        }
+    }
+
     var phase: Phase = .loading
     private(set) var entries: [LedgerEntry] = []
     private(set) var items: [RecordItem] = []
     var selection: RecordItem.ID?
+    var filter: Filter = .all
+    var query = ""
 
     var summary: SafetyLedger.Summary { SafetyLedger.summary(of: entries) }
+
+    /// Filter, then search. Search matches the row's title and subtitle and,
+    /// for operations, any path in its evidence — a person looking for "the
+    /// time it touched Downloads" should find it from the path.
+    var visibleItems: [RecordItem] {
+        let needle = query.trimmingCharacters(in: .whitespaces).lowercased()
+        return items.filter { item in
+            guard filter.admits(item) else { return false }
+            guard !needle.isEmpty else { return true }
+            return Self.searchText(item).contains(needle)
+        }
+    }
+
+    nonisolated static func searchText(_ item: RecordItem) -> String {
+        switch item {
+        case let .operation(e):
+            return ([RecordPhrasing.title(e), RecordPhrasing.subtitle(e)]
+                    + (e.moved + e.refused + e.failed).map(\.redactedPath)).joined(separator: " ").lowercased()
+        case let .event(r):
+            return "\(RecordPhrasing.eventTitle(r)) \(r.summary)".lowercased()
+        }
+    }
 
     var selectedItem: RecordItem? {
         guard let selection else { return nil }
@@ -42,9 +84,6 @@ final class RecordViewModel {
             let events = try await store.activity(limit: 500)
             items = SafetyLedger.items(operations: entries, events: events)
             phase = items.isEmpty ? .empty : .loaded
-            // Selecting the newest item means the inspector is never an empty
-            // pane on arrival; a record whose detail side is blank reads as
-            // broken rather than as waiting.
             if selection == nil || !items.contains(where: { $0.id == selection }) {
                 selection = items.first?.id
             }
@@ -54,8 +93,8 @@ final class RecordViewModel {
     }
 
     /// Erases both tables. The record is one history to the person reading
-    /// it, so erasing "the record" and leaving half of it behind would be a
-    /// lie by omission.
+    /// it; erasing "the record" and leaving half of it would be a lie by
+    /// omission.
     func purge() async {
         guard let store = AppEnvironment.shared.store else { return }
         try? await store.purgeSafetyLog()
@@ -64,8 +103,6 @@ final class RecordViewModel {
         await load()
     }
 
-    /// One row per item, in the order shown. Operations carry their evidence
-    /// counts; events carry the sentence the app wrote at the time.
     func exportCSV() -> String {
         var lines = ["Date,Kind,Summary,Items,Bytes moved to Trash,Refused,Failed"]
         let formatter = ISO8601DateFormatter()
@@ -93,7 +130,7 @@ struct RecordView: View {
             case .loading:
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
-                MCEmptyState(icon: "list.bullet.rectangle",
+                MCEmptyState(icon: "clock.arrow.trianglehead.counterclockwise.rotate.90",
                              title: L("record.empty_title"),
                              message: L("record.empty_message"))
             case let .failed(message):
@@ -105,34 +142,96 @@ struct RecordView: View {
         }
         .navigationTitle(L("record.title"))
         .toolbar {
-            // Behind a menu, not alone in the toolbar. Erasing the record is
-            // the only destructive thing this screen can do, and it should not
-            // be the most prominent control on the screen whose whole point is
-            // that the record is kept.
-            Menu {
-                Button(L("record.export_csv")) { exportCSV() }
-                    .disabled(model.items.isEmpty)
-                Divider()
-                Button(L("record.purge"), role: .destructive) { confirmingPurge = true }
-                    .disabled(model.items.isEmpty)
-            } label: {
-                Label(L("common.more"), systemImage: "ellipsis.circle")
+            ToolbarItemGroup {
+                Picker(L("record.filter"), selection: $model.filter) {
+                    ForEach(RecordViewModel.Filter.allCases) { f in Text(f.label).tag(f) }
+                }
+                .pickerStyle(.menu)
+                .accessibilityLabel(L("record.filter"))
+                Menu {
+                    Button(L("record.export_csv")) { exportCSV() }.disabled(model.items.isEmpty)
+                    Divider()
+                    Button(L("record.purge"), role: .destructive) { confirmingPurge = true }
+                        .disabled(model.items.isEmpty)
+                } label: {
+                    Label(L("common.more"), systemImage: "ellipsis.circle")
+                }
+                .menuIndicator(.hidden)
             }
-            .menuIndicator(.hidden)
         }
-        // The safety log is append-only by design: purgeSafetyLog is the only
-        // path that ever removes a row, it removes all of them, and nothing
-        // restores them. It fired on a single click with no confirmation.
+        .searchable(text: $model.query, placement: .toolbar, prompt: L("record.search"))
         .confirmationDialog(L("record.purge_confirm_title"),
                             isPresented: $confirmingPurge, titleVisibility: .visible) {
-            Button(L("record.purge_confirm_action"), role: .destructive) {
-                Task { await model.purge() }
-            }
+            Button(L("record.purge_confirm_action"), role: .destructive) { Task { await model.purge() } }
             Button(L("common.cancel"), role: .cancel) { }
         } message: {
             Text(L("record.purge_confirm_message", model.items.count))
         }
         .task { await model.load() }
+    }
+
+    private var loaded: some View {
+        HStack(spacing: 0) {
+            VStack(alignment: .leading, spacing: 0) {
+                summaryLine
+                Divider()
+                list
+            }
+            .frame(minWidth: 300, idealWidth: 360, maxWidth: 440)
+            Divider()
+            inspector.frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+    }
+
+    /// One sentence. Two facts CoreTend owns and nothing it cannot compute.
+    private var summaryLine: some View {
+        let s = model.summary
+        var parts = [L("record.summary_moved_sentence", mcFormatBytes(s.movedBytes), s.movedItems)]
+        if s.refusedItems > 0 { parts.append(L("record.summary_refused_sentence", s.refusedItems)) }
+        if s.failedItems > 0 { parts.append(L("record.summary_failed_sentence", s.failedItems)) }
+        return Text(parts.joined(separator: " · "))
+            .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+            .lineLimit(2)
+            .padding(.horizontal, MCSpacing.md).padding(.vertical, MCSpacing.xs)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .accessibilityLabel(parts.joined(separator: ", "))
+    }
+
+    @ViewBuilder
+    private var list: some View {
+        let visible = model.visibleItems
+        if visible.isEmpty {
+            MCEmptyState(icon: "line.3.horizontal.decrease",
+                         title: L("record.nothing_matches_title"),
+                         message: L("record.nothing_matches_message"))
+        } else {
+            List(selection: $model.selection) {
+                ForEach(SafetyLedger.byDay(visible)) { group in
+                    Section {
+                        ForEach(group.entries) { item in
+                            RecordRow(item: item).tag(item.id)
+                        }
+                    } header: {
+                        Text(AppDateFormatting.string(group.day, style: .fullDay))
+                            .font(MCFont.groupHeader).foregroundStyle(MCColor.textSecondary)
+                    }
+                }
+            }
+            .listStyle(.plain)
+            .environment(\.defaultMinListRowHeight, 28)
+        }
+    }
+
+    @ViewBuilder
+    private var inspector: some View {
+        switch model.selectedItem {
+        case let .operation(entry): RecordInspector(entry: entry)
+        case let .event(record): RecordEventInspector(record: record)
+        case nil:
+            MCEmptyState(icon: "sidebar.left",
+                         title: L("record.no_selection_title"),
+                         message: L("record.no_selection_message"))
+        }
     }
 
     private func exportCSV() {
@@ -142,112 +241,65 @@ struct RecordView: View {
         guard panel.runModal() == .OK, let url = panel.url else { return }
         try? model.exportCSV().write(to: url, atomically: true, encoding: .utf8)
     }
-
-    private var loaded: some View {
-        HStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 0) {
-                summaryStrip
-                Divider()
-                List(selection: $model.selection) {
-                    ForEach(SafetyLedger.byDay(model.items)) { group in
-                        Section(AppDateFormatting.string(group.day, style: .fullDay)) {
-                            ForEach(group.entries) { item in
-                                switch item {
-                                case let .operation(entry): RecordRow(entry: entry).tag(item.id)
-                                case let .event(record): RecordEventRow(record: record).tag(item.id)
-                                }
-                            }
-                        }
-                    }
-                }
-                .listStyle(.sidebar)
-            }
-            .frame(width: 320)
-            Divider()
-            switch model.selectedItem {
-            case let .operation(entry):
-                RecordInspector(entry: entry)
-            case let .event(record):
-                RecordEventInspector(record: record)
-            case nil:
-                MCEmptyState(icon: "sidebar.left",
-                             title: L("record.no_selection_title"),
-                             message: L("record.no_selection_message"))
-            }
-        }
-    }
-
-    /// Two figures, both of which CoreTend owns. There is no all-time
-    /// "reclaimed" total here on purpose — see SafetyLedger.Summary.
-    private var summaryStrip: some View {
-        HStack(alignment: .top, spacing: MCSpacing.lg) {
-            metric(L("record.summary_moved"), mcFormatBytes(model.summary.movedBytes), MCColor.teal)
-            metric(L("record.summary_refused"), "\(model.summary.refusedItems)", MCColor.textPrimary)
-            Spacer(minLength: 0)
-        }
-        .padding(MCSpacing.md)
-    }
-
-    private func metric(_ label: String, _ value: String, _ color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text(label).font(MCFont.groupHeader).foregroundStyle(MCColor.textSecondary)
-            Text(value).font(MCFont.metric).foregroundStyle(color)
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(label), \(value)")
-    }
 }
 
-// MARK: - List
+// MARK: - Rows: one line each
 
 private struct RecordRow: View {
-    let entry: LedgerEntry
+    let item: RecordItem
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(alignment: .firstTextBaseline, spacing: MCSpacing.xs) {
-                Text(RecordPhrasing.title(entry))
-                    .font(MCFont.rowTitle).lineLimit(1)
-                Spacer(minLength: 0)
-                Text(AppDateFormatting.string(entry.date, style: .timeOnly))
-                    // Secondary, not tertiary: in a record the time is the
-                    // primary key, not decoration. Measured at 3.58:1 as
-                    // tertiary in the mockups, under the 4.5:1 minimum.
-                    .font(MCFont.micro).foregroundStyle(MCColor.textSecondary)
-            }
-            Text(RecordPhrasing.subtitle(entry))
-                .font(MCFont.micro).foregroundStyle(MCColor.textSecondary)
-                .lineLimit(1)
+        HStack(spacing: MCSpacing.xs) {
+            glyph
+            Text(title).font(MCFont.body).lineLimit(1)
+            Text(subtitle).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+                .lineLimit(1).truncationMode(.tail)
+            Spacer(minLength: MCSpacing.xs)
+            Text(AppDateFormatting.string(item.date, style: .timeOnly))
+                .font(MCFont.tabular).foregroundStyle(MCColor.textSecondary)
         }
-        .padding(.vertical, 2)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(RecordPhrasing.title(entry)), \(RecordPhrasing.subtitle(entry)), \(AppDateFormatting.string(entry.date, style: .dayMonthYearWithTime))")
+        .accessibilityLabel("\(title), \(subtitle), \(AppDateFormatting.string(item.date, style: .dayMonthYearWithTime))")
+    }
+
+    private var title: String {
+        switch item {
+        case let .operation(e): RecordPhrasing.title(e)
+        case let .event(r): RecordPhrasing.eventTitle(r)
+        }
+    }
+
+    private var subtitle: String {
+        switch item {
+        case let .operation(e): RecordPhrasing.subtitle(e)
+        case let .event(r): r.summary
+        }
+    }
+
+    /// One glyph per outcome, from the fixed status vocabulary. A scan is a
+    /// plain magnifier; it did not change anything.
+    private var glyph: some View {
+        let (name, color): (String, Color) = {
+            switch item {
+            case let .operation(e):
+                if !e.failed.isEmpty { return ("xmark.octagon.fill", MCTheme.danger) }
+                if e.isRefusalOnly { return ("lock.fill", MCTheme.warning) }
+                return ("trash.fill", MCColor.textSecondary)
+            case let .event(r):
+                switch r.kind {
+                case .scan: return ("magnifyingglass", MCColor.textTertiary)
+                case .restore: return ("arrow.uturn.backward", MCTheme.success)
+                case .error: return ("xmark.octagon.fill", MCTheme.danger)
+                case .cleanup: return ("trash.fill", MCColor.textSecondary)
+                }
+            }
+        }()
+        return Image(systemName: name).foregroundStyle(color)
+            .frame(width: 16).accessibilityHidden(true)
     }
 }
 
-private struct RecordEventRow: View {
-    let record: ActivityRecord
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(alignment: .firstTextBaseline, spacing: MCSpacing.xs) {
-                Text(RecordPhrasing.eventTitle(record))
-                    .font(MCFont.rowTitle).lineLimit(1)
-                Spacer(minLength: 0)
-                Text(AppDateFormatting.string(record.date, style: .timeOnly))
-                    .font(MCFont.micro).foregroundStyle(MCColor.textSecondary)
-            }
-            Text(record.summary)
-                .font(MCFont.micro).foregroundStyle(MCColor.textSecondary)
-                .lineLimit(1)
-        }
-        .padding(.vertical, 2)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(RecordPhrasing.eventTitle(record)), \(record.summary), \(AppDateFormatting.string(record.date, style: .dayMonthYearWithTime))")
-    }
-}
-
-// MARK: - Inspector
+// MARK: - Inspector: plain sections, hairlines, no tiles
 
 private struct RecordInspector: View {
     let entry: LedgerEntry
@@ -261,80 +313,58 @@ private struct RecordInspector: View {
                     Text(AppDateFormatting.string(entry.date, style: .dayMonthYearWithTime))
                         .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 }
+                Text(factLine).font(MCFont.body).foregroundStyle(MCColor.textSecondary)
                 if entry.isReversible {
-                    // The honest form of the claim. The app knows it moved the
-                    // items; it is never told when the user empties the Trash,
-                    // so it states the condition instead of asserting the state.
                     Text(L("record.reversible_note"))
                         .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 }
-
-                stats
-
-                if !entry.moved.isEmpty {
-                    section(L("record.section_moved"), entry.moved)
-                }
-                if !entry.refused.isEmpty {
-                    section(L("record.section_kept_back"), entry.refused)
-                }
-                if !entry.failed.isEmpty {
-                    section(L("record.section_failed"), entry.failed)
-                }
+                if !entry.moved.isEmpty { section(L("record.section_moved"), entry.moved) }
+                if !entry.refused.isEmpty { section(L("record.section_kept_back"), entry.refused) }
+                if !entry.failed.isEmpty { section(L("record.section_failed"), entry.failed) }
             }
             .padding(MCSpacing.page)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
-    private var stats: some View {
-        HStack(spacing: MCSpacing.lg) {
-            stat(L("record.stat_moved"), mcFormatBytes(entry.movedBytes), MCColor.teal)
-            stat(L("record.stat_items"), "\(entry.itemCount)", MCColor.textPrimary)
-            stat(L("record.stat_refused"), "\(entry.refused.count)", MCColor.textPrimary)
-            Spacer(minLength: 0)
-        }
-        .padding(MCSpacing.sm)
-    }
-
-    private func stat(_ label: String, _ value: String, _ color: Color) -> some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text(label).font(MCFont.groupHeader).foregroundStyle(MCColor.textSecondary)
-            Text(value).font(MCFont.metric).foregroundStyle(color)
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(label), \(value)")
+    private var factLine: String {
+        var parts = [L("record.fact_moved", mcFormatBytes(entry.movedBytes), entry.itemCount)]
+        if !entry.refused.isEmpty { parts.append(L("record.subtitle_refused_other", entry.refused.count)) }
+        if !entry.failed.isEmpty { parts.append(L("record.subtitle_failed_other", entry.failed.count)) }
+        return parts.joined(separator: " · ")
     }
 
     private func section(_ title: String, _ rows: [SafetyLogRecord]) -> some View {
-        VStack(alignment: .leading, spacing: MCSpacing.xs) {
+        VStack(alignment: .leading, spacing: 0) {
             Text(title).font(MCFont.groupHeader).foregroundStyle(MCColor.textSecondary)
-            VStack(spacing: 0) {
-                ForEach(rows) { row in
-                    HStack(spacing: MCSpacing.sm) {
-                        Text(row.redactedPath)
-                            .font(MCFont.monoCaption)
-                            .lineLimit(1).truncationMode(.middle)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        if row.size > 0 {
-                            Text(mcFormatBytes(row.size))
-                                .font(MCFont.micro).foregroundStyle(MCColor.textSecondary)
-                        }
-                        Text(row.result)
-                            .font(MCFont.micro).foregroundStyle(MCColor.textSecondary)
-                            .lineLimit(1)
+                .padding(.bottom, MCSpacing.xxs)
+            Divider()
+            ForEach(rows) { row in
+                HStack(spacing: MCSpacing.sm) {
+                    Text(row.redactedPath).font(MCFont.monoCaption)
+                        .lineLimit(1).truncationMode(.middle)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    if row.size > 0 {
+                        Text(mcFormatBytes(row.size)).font(MCFont.tabular)
+                            .foregroundStyle(MCColor.textSecondary)
                     }
-                    .padding(.horizontal, MCSpacing.sm).padding(.vertical, 6)
-                    .accessibilityElement(children: .combine)
-                    if row.id != rows.last?.id { Divider() }
+                    Text(row.result).font(MCFont.caption)
+                        .foregroundStyle(MCColor.textSecondary).lineLimit(1)
                 }
+                .padding(.vertical, 5)
+                .accessibilityElement(children: .combine)
+                .contextMenu {
+                    Button(L("common.copy_path")) {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(row.redactedPath, forType: .string)
+                    }
+                }
+                if row.id != rows.last?.id { Divider() }
             }
         }
     }
 }
 
-/// An event has no per-file evidence — it is the sentence the app wrote at
-/// the time, plus its counts. Shown as such, not padded out to look like an
-/// operation.
 private struct RecordEventInspector: View {
     let record: ActivityRecord
 
@@ -346,29 +376,15 @@ private struct RecordEventInspector: View {
                     .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 Text(record.summary).font(MCFont.body)
                 if record.itemCount > 0 || record.bytes > 0 {
-                    HStack(spacing: MCSpacing.lg) {
-                        if record.itemCount > 0 {
-                            stat(L("record.stat_items"), "\(record.itemCount)")
-                        }
-                        if record.bytes > 0 {
-                            stat(L("record.stat_seen"), mcFormatBytes(record.bytes))
-                        }
-                        Spacer(minLength: 0)
-                    }
+                    Text([record.itemCount > 0 ? L("record.fact_items", record.itemCount) : nil,
+                          record.bytes > 0 ? L("record.fact_seen", mcFormatBytes(record.bytes)) : nil]
+                         .compactMap { $0 }.joined(separator: " · "))
+                        .font(MCFont.body).foregroundStyle(MCColor.textSecondary)
                 }
             }
             .padding(MCSpacing.page)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-    }
-
-    private func stat(_ label: String, _ value: String) -> some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text(label).font(MCFont.groupHeader).foregroundStyle(MCColor.textSecondary)
-            Text(value).font(MCFont.metric)
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(label), \(value)")
     }
 }
 
@@ -400,8 +416,6 @@ private struct RecordStateTag: View {
 
 // MARK: - Phrasing
 
-/// How an entry reads. Separated from the views so the wording is testable and
-/// there is exactly one place where an operation becomes a sentence.
 enum RecordPhrasing {
 
     /// Singular and plural as separate keys, chosen at n == 1.
