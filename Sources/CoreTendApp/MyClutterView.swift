@@ -102,6 +102,7 @@ final class MyClutterViewModel: CancellableScan {
                 case .finished:
                     isScanPaused = false
                     phase = findings.isEmpty ? .empty : .results
+                    CaptureHarness.note(state: findings.isEmpty ? "empty" : "results")
                     AppEnvironment.shared.record(ActivityRecord(
                         kind: .scan, summary: "Large & Old scan: \(findings.count) files",
                         itemCount: findings.count, bytes: totalBytes))
@@ -150,7 +151,7 @@ struct LargeOldFilesView: ModuleSubScreen {
     var body: some View {
         VStack(spacing: 0) {
             switch model.phase {
-            case .idle: idleView
+            case .idle: idleView.onAppear { if CaptureHarness.autostartScan { model.start() } }
             case .scanning: scanningView
             case .empty: emptyView
             case .results: resultsView
@@ -235,23 +236,27 @@ struct LargeOldFilesView: ModuleSubScreen {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    /// One line per file: name, folder, when it was last touched, size. The
+    /// sentence on top says how many and how much; sort and volume sit beside
+    /// the search. Rows were three lines with the size in title type, which
+    /// made a list of two hundred files a scroll of two hundred headlines.
     private var resultsView: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
+            HStack(spacing: MCSpacing.sm) {
                 Text(L("clutter.results.summary", model.sortedFindings.count, mcFormatBytes(model.totalBytes)))
-                    .font(MCFont.cardTitle)
+                    .font(MCFont.body)
                 Spacer()
                 Picker(L("clutter.sort_by"), selection: $model.sortOption) {
                     ForEach(MyClutterViewModel.SortOption.allCases) { option in
                         Text(option == .size ? L("clutter.sort.size") : L("clutter.sort.age")).tag(option)
                     }
                 }
-                .pickerStyle(.segmented)
-                .frame(width: 160)
-                Button(L("clutter.new_analysis")) { model.phase = .idle }
+                .pickerStyle(.menu).fixedSize()
+                Button(L("clutter.new_analysis")) { model.phase = .idle }.buttonStyle(.bordered)
             }
-            .padding()
-            HStack {
+            .padding(.horizontal, MCSpacing.page).padding(.vertical, MCSpacing.sm)
+            Divider()
+            HStack(spacing: MCSpacing.xs) {
                 MCSearchField(text: $model.searchText, placeholder: L("clutter.search_placeholder"))
                 if model.availableVolumes.count > 1 {
                     Picker(L("clutter.volume"), selection: $model.selectedVolumeID) {
@@ -261,64 +266,45 @@ struct LargeOldFilesView: ModuleSubScreen {
                                 .tag(String?.some(volume.id))
                         }
                     }
-                    .pickerStyle(.menu)
-                    .frame(width: 180)
+                    .pickerStyle(.menu).labelsHidden().frame(width: 140)
                 }
-                Spacer()
+                Spacer(minLength: 0)
                 ExclusionsMenu(controller: model.exclusionsController)
             }
-            .padding(.horizontal).padding(.bottom, MCSpacing.xs)
+            .padding(.horizontal, MCSpacing.sm).padding(.vertical, MCSpacing.xs)
+            Divider()
             if model.sortedFindings.isEmpty {
-                Spacer()
-                Text(L("clutter.search_no_results"))
-                    .foregroundStyle(MCColor.textSecondary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                Spacer()
-            }
-            List(model.sortedFindings) { finding in
-                HStack {
-                    Image(systemName: "doc")
-                        .foregroundStyle(MCTheme.accentSecondary)
-                        .accessibilityHidden(true)
-                    VStack(alignment: .leading) {
-                        Text(finding.url.lastPathComponent)
-                        HStack(spacing: MCSpacing.xs) {
-                            Text(finding.url.deletingLastPathComponent().path)
-                                .lineLimit(1).truncationMode(.middle)
-                            if let date = finding.modificationDate {
-                                Text(L("clutter.modified", AppDateFormatting.string(date, style: .dayMonthYear)))
-                            }
+                MCEmptyState(icon: "line.3.horizontal.decrease", title: L("clutter.search_no_results"), message: "")
+            } else {
+                List(model.sortedFindings) { finding in
+                    HStack(spacing: MCSpacing.xs) {
+                        Image(nsImage: NSWorkspace.shared.icon(forFile: finding.url.path))
+                            .resizable().frame(width: 16, height: 16).accessibilityHidden(true)
+                        Text(finding.url.lastPathComponent).lineLimit(1)
+                        Text(finding.url.deletingLastPathComponent().path)
+                            .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+                            .lineLimit(1).truncationMode(.middle)
+                        Spacer(minLength: MCSpacing.xs)
+                        if let date = finding.modificationDate {
+                            Text(AppDateFormatting.string(date, style: .dayMonthYear))
+                                .font(MCFont.caption).foregroundStyle(MCColor.textTertiary)
                         }
-                        .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+                        Text(mcFormatBytes(finding.logicalSize)).font(MCFont.tabular)
+                            .frame(width: 80, alignment: .trailing)
+                        ExcludeButton(url: finding.url, controller: model.exclusionsController)
                     }
-                    Spacer()
-                    // Large, legible metric number — this screen is
-                    // primarily a data table, size is the number that matters.
-                    Text(mcFormatBytes(finding.logicalSize))
-                        .monospacedDigit().font(MCFont.actionLabel)
-                        .accessibilityHidden(true) // folded into the row's combined label below
-                    // Quick Look and Reveal moved to the row's swipe and
-                    // context menu. Three permanent icon buttons on every row
-                    // of a long list is three columns of noise between the
-                    // user and the data they came for.
-                    //
-                    // Exclude stays: it shows state ("already excluded" is a
-                    // different control, not a disabled action) and has two
-                    // variants, this file or its folder.
-                    ExcludeButton(url: finding.url, controller: model.exclusionsController)
+                    .fileRowActions(FileRowAction.inspection(for: finding.url) { model.previewURL = $0 })
+                    .accessibilityElement(children: .contain)
+                    .accessibilityLabel("\(finding.url.lastPathComponent), \(mcFormatBytes(finding.logicalSize))")
                 }
-                .fileRowActions(FileRowAction.inspection(for: finding.url) {
-                    model.previewURL = $0
-                })
-                .accessibilityElement(children: .contain)
-                .accessibilityLabel("\(finding.url.lastPathComponent), \(mcFormatBytes(finding.logicalSize))")
+                .listStyle(.plain)
+                .environment(\.defaultMinListRowHeight, 28)
+                .quickLookPreview($model.previewURL)
+                .scanCommands(
+                    start: { model.start() },
+                    pauseOrResume: { model.isScanPaused ? model.resume() : model.pause() },
+                    cancel: { model.cancel() })
             }
-            .listStyle(.inset)
-            .quickLookPreview($model.previewURL)
-            .scanCommands(
-                start: { model.start() },
-                pauseOrResume: { model.isScanPaused ? model.resume() : model.pause() },
-                cancel: { model.cancel() })
         }
     }
 }

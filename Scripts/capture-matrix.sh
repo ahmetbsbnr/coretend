@@ -24,7 +24,7 @@ specs=(
   "cleanup:review:cs:"
   "cleanup::s:1"
   "spaceLens:ready:csl:"
-  "spaceLens::s:1"
+  "spaceLens:results:s:1"
   "spaceLens::s:2"
   "spaceLens::s:3"
   "duplicates:results:cs:"
