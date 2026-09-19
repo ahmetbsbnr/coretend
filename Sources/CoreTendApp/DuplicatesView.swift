@@ -451,7 +451,7 @@ struct DuplicatesView: View {
             .accessibilityLabel(L("dupes.select_copy", url.lastPathComponent))
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: MCSpacing.xs) {
-                    Text(url.deletingLastPathComponent().path).font(MCFont.monoCaption)
+                    Text(PathDisplay.folder(of: url)).font(MCFont.monoCaption)
                         .lineLimit(1).truncationMode(.middle)
                     if isKeeper {
                         Text(L("dupes.suggested_keeper")).font(MCFont.badge)

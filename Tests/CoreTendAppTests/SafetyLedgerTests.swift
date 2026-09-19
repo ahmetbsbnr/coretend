@@ -377,3 +377,33 @@ struct PluralKeyTests {
         }
     }
 }
+
+@Suite("Paths are shown the way the Mac shows them")
+struct PathDisplayTests {
+    private let home = "/Users/ada"
+
+    @Test func theHomeDirectoryBecomesATilde() {
+        #expect(PathDisplay.abbreviate("/Users/ada/Library/Caches", home: home) == "~/Library/Caches")
+        #expect(PathDisplay.abbreviate("/Users/ada", home: home) == "~")
+    }
+
+    /// `/Users/adam` is not inside `/Users/ada`. A prefix check without the
+    /// separator abbreviates one user's path into another's home.
+    @Test func aSiblingWhoseNameStartsTheSameIsNotAbbreviated() {
+        #expect(PathDisplay.abbreviate("/Users/adam/Documents", home: home) == "/Users/adam/Documents")
+    }
+
+    @Test func pathsOutsideTheHomeAreLeftAlone() {
+        #expect(PathDisplay.abbreviate("/System/Library/Caches", home: home) == "/System/Library/Caches")
+        #expect(PathDisplay.abbreviate("/Volumes/Backup/x", home: home) == "/Volumes/Backup/x")
+    }
+
+    @Test func anEmptyHomeChangesNothing() {
+        #expect(PathDisplay.abbreviate("/Users/ada/x", home: "") == "/Users/ada/x")
+    }
+
+    @Test func theFolderOfAFileIsAbbreviated() {
+        #expect(PathDisplay.folder(of: URL(fileURLWithPath: "/Users/ada/Downloads/a.zip"), home: home)
+                == "~/Downloads")
+    }
+}

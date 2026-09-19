@@ -472,7 +472,7 @@ struct InstalledAppsView: ModuleSubScreen {
                                     .labelsHidden()
                                     .accessibilityLabel(L("apps.select_associated", item.kind.rawValue, item.url.path))
                                     Text(item.kind.rawValue).font(MCFont.rowTitle)
-                                    Text(item.url.path).font(MCFont.monoCaption)
+                                    Text(PathDisplay.abbreviate(item.url)).font(MCFont.monoCaption)
                                         .foregroundStyle(MCColor.textSecondary)
                                         .lineLimit(1).truncationMode(.middle)
                                     Spacer(minLength: MCSpacing.xs)

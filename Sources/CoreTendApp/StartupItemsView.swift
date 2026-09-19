@@ -48,7 +48,7 @@ struct StartupItemsView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(agent.label).font(MCFont.rowTitle)
                             if let program = agent.programPath {
-                                Text(agent.broken ? L("performance.launchagents.missing", program) : program)
+                                Text(agent.broken ? L("performance.launchagents.missing", PathDisplay.abbreviate(program)) : PathDisplay.abbreviate(program))
                                     .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                                     .lineLimit(1).truncationMode(.middle)
                             }

@@ -386,7 +386,7 @@ struct JunkCleanupView: View {
                 L("finding.a11y.evidence", L("cleanup.select_item", finding.url.lastPathComponent), $0)
             } ?? L("cleanup.select_item", finding.url.lastPathComponent))
             Text(finding.url.lastPathComponent).lineLimit(1)
-            Text(finding.url.deletingLastPathComponent().path)
+            Text(PathDisplay.folder(of: finding.url))
                 .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 .lineLimit(1).truncationMode(.middle)
             Spacer(minLength: MCSpacing.xs)

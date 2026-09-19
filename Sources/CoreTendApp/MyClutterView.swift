@@ -281,7 +281,7 @@ struct LargeOldFilesView: ModuleSubScreen {
                         Image(nsImage: NSWorkspace.shared.icon(forFile: finding.url.path))
                             .resizable().frame(width: 16, height: 16).accessibilityHidden(true)
                         Text(finding.url.lastPathComponent).lineLimit(1)
-                        Text(finding.url.deletingLastPathComponent().path)
+                        Text(PathDisplay.folder(of: finding.url))
                             .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                             .lineLimit(1).truncationMode(.middle)
                         Spacer(minLength: MCSpacing.xs)
