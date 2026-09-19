@@ -137,4 +137,17 @@ if [[ "$shown_window" != "$size" ]]; then
   print -u2 "capture-module: asked for $size window but the app reports $shown_window — capture refused"
   rm -f "$out"; exit 2
 fi
+# And the window must actually be that size. It can refuse: a content minimum
+# wider than the target leaves macOS holding it open, and the label alone would
+# have called that a compact capture.
+shown_size=$(sed -n 's/^size=//p' "$store/showing.txt")
+case $size in
+  compact)  want="1000x700";;
+  standard) want="1180x800";;
+  large)    want="1600x860";;
+esac
+if [[ "$shown_size" != "$want" ]]; then
+  print -u2 "capture-module: asked for $size ($want) but the window is $shown_size — capture refused"
+  rm -f "$out"; exit 2
+fi
 print "captured: $module $appearance $size ${seed:+seed=$seed }${state:+state=$state }${tab:+tab=$tab }-> $out"

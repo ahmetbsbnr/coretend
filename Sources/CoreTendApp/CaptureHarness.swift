@@ -30,7 +30,12 @@ enum CaptureHarness {
             // is a design question for the shell, not for this harness.
             case .compact: CGSize(width: MCSize.windowMinWidth, height: 700)
             case .standard: CGSize(width: MCSize.windowDefaultWidth, height: MCSize.windowDefaultHeight)
-            case .large: CGSize(width: 1600, height: 1000)
+            // 860, not a round 1000: a 16-inch display leaves 869 points
+            // between the menu bar and the bottom of the screen, so a
+            // 1000-point-tall window cannot exist and every "large" capture
+            // would be refused. A size that cannot be captured is not a size
+            // this matrix can claim to have checked.
+            case .large: CGSize(width: 1600, height: 860)
             }
         }
     }
@@ -105,19 +110,44 @@ enum CaptureHarness {
     @MainActor
     static func settle(showing module: ModuleID?) {
         guard isActive, let directory = TestStoreOverride.resolve(environment: environment).directory else { return }
-        if let size = requestedWindowSize, let window = NSApp.keyWindow ?? NSApp.windows.first {
-            var frame = window.frame
-            frame.size = size.size
-            window.setFrame(frame, display: true)
+        applyWindowSize()
+        // Write the evidence a beat later, and measure the window then.
+        //
+        // AppKit restores a window's autosaved frame after the scene appears,
+        // so a size set on appear and measured immediately reported the size
+        // that had just been asked for while the window went back to whatever
+        // the last run left. Three "different" window sizes captured at one
+        // size, and the check passed every time, because it was reading an
+        // intention rather than a window.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            applyWindowSize()
+            let actual = (NSApp.keyWindow ?? NSApp.windows.first)?.frame.size ?? .zero
+            let evidence = [
+                "module=\(module?.rawValue ?? "")",
+                "size=\(Int(actual.width))x\(Int(actual.height))",
+                "appearance=\(NSApp.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? "dark" : "light")",
+                "window=\(requestedWindowSize?.rawValue ?? "inherited")",
+                "increaseContrast=\(NSWorkspace.shared.accessibilityDisplayShouldIncreaseContrast)",
+                "reduceTransparency=\(NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency)",
+            ].joined(separator: "\n") + "\n"
+            try? evidence.write(to: directory.appendingPathComponent("showing.txt"),
+                                atomically: true, encoding: .utf8)
         }
-        let evidence = [
-            "module=\(module?.rawValue ?? "")",
-            "appearance=\(NSApp.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? "dark" : "light")",
-            "window=\(requestedWindowSize?.rawValue ?? "inherited")",
-            "increaseContrast=\(NSWorkspace.shared.accessibilityDisplayShouldIncreaseContrast)",
-            "reduceTransparency=\(NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency)",
-        ].joined(separator: "\n") + "\n"
-        try? evidence.write(to: directory.appendingPathComponent("showing.txt"),
-                            atomically: true, encoding: .utf8)
     }
+
+    /// Sets the window to the requested size and stops AppKit restoring a
+    /// saved frame over it.
+    @MainActor
+    private static func applyWindowSize() {
+        guard let size = requestedWindowSize,
+              let window = NSApp.keyWindow ?? NSApp.windows.first else { return }
+        window.setFrameAutosaveName("")
+        var frame = window.frame
+        // Keep the top-left corner: resizing from the origin walks the window
+        // down the screen on every capture.
+        frame.origin.y += frame.height - size.size.height
+        frame.size = size.size
+        window.setFrame(frame, display: true)
+    }
+
 }

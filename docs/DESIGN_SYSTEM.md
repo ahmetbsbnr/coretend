@@ -106,7 +106,8 @@ to open/inspect, Space for Quick Look where files are involved, ⌘A.
 ## Responsive
 
 Three named widths (`CaptureHarness.WindowSize`): compact 1000×700, standard
-1180×800, large 1600×1000. Per module:
+1180×800, large 1600×860 — 860 because a 16-inch display leaves 869 points of
+usable height, and a size that cannot exist cannot be verified. Per module:
 - compact: inspector becomes a pushed detail; secondary columns hidden.
 - standard: main design.
 - large: inspector widens to 400; tables reveal secondary columns. Reading
