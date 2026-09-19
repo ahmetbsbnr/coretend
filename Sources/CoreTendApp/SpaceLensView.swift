@@ -557,7 +557,7 @@ struct SpaceMapView: View {
                     }
                     Button {
                         NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: child.path)])
-                    } label: { Image(systemName: "magnifyingglass") }
+                    } label: { Image(systemName: "folder") }
                     .buttonStyle(.borderless)
                     .help(L("common.reveal_in_finder"))
                     Button(role: .destructive) {

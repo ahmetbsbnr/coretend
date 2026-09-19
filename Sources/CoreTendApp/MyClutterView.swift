@@ -227,7 +227,7 @@ struct LargeOldFilesView: ModuleSubScreen {
 
     private var emptyView: some View {
         VStack(spacing: MCSpacing.sm) {
-            Image(systemName: "checkmark.circle")
+            Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
                 .accessibilityHidden(true)
             Text(L("clutter.no_matches")).font(MCFont.actionLabel)

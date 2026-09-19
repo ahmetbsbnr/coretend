@@ -185,7 +185,7 @@ struct SimilarImagesView: ModuleSubScreen {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             case .empty:
                 VStack(spacing: MCSpacing.sm) {
-                    Image(systemName: "checkmark.circle")
+                    Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: MCIconSize.emptyState)).foregroundStyle(MCTheme.success)
                     Text(L("similar.none_found")).font(MCFont.actionLabel)
                     Button(L("similar.analyze_again")) { model.start() }

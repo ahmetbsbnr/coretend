@@ -56,7 +56,7 @@ struct StartupItemsView: View {
                         Spacer()
                         Button {
                             NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: agent.id)])
-                        } label: { Image(systemName: "magnifyingglass") }
+                        } label: { Image(systemName: "folder") }
                         .buttonStyle(.borderless)
                         .accessibilityLabel(L("common.reveal_in_finder"))
                     }

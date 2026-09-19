@@ -96,6 +96,9 @@ Navigation (sidebar): 17pt regular, `.hierarchical`, accent when selected.
 Row glyphs: 14pt. Empty-state illustration: 40pt `.thin`, never the module's
 own icon. Status: `checkmark.circle.fill` success, `exclamationmark.triangle.fill`
 attention, `xmark.octagon.fill` failure, `lock.fill` protected — nowhere else.
+Actions: `folder` reveals in Finder (the magnifier means search, everywhere on
+a Mac), `eye.slash` excludes, `trash` moves to the Trash, `arrow.uturn.backward`
+puts back. `Scripts/audit-ui.py §4` lists any symbol carrying two meanings.
 
 ## Tables and lists
 

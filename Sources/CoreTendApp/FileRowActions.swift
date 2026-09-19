@@ -51,7 +51,7 @@ struct FileRowAction: Identifiable {
             FileRowAction(id: "quicklook", titleKey: "clutter.quick_look",
                           systemImage: "eye") { preview(url) },
             FileRowAction(id: "reveal", titleKey: "common.reveal_in_finder",
-                          systemImage: "magnifyingglass") {
+                          systemImage: "folder") {
                 NSWorkspace.shared.activateFileViewerSelecting([url])
             },
         ]
