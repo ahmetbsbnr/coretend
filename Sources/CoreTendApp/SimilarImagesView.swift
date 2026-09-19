@@ -66,6 +66,7 @@ final class SimilarImagesViewModel: CancellableScan {
                 case let .finished(found):
                     groups = found
                     phase = found.isEmpty ? .empty : .results
+                    CaptureHarness.note(state: found.isEmpty ? "empty" : "results")
                     isPaused = false
                     self.pauseController = nil
                     AppEnvironment.shared.record(ActivityRecord(
@@ -230,8 +231,8 @@ struct SimilarImagesView: ModuleSubScreen {
                                         Text(L("similar.best_resolution"))
                                             .font(MCFont.badge)
                                             .padding(.horizontal, MCSpacing.xxs).padding(.vertical, 1)
-                                            .background(MCColor.teal.opacity(0.18), in: Capsule())
-                                            .foregroundStyle(MCColor.teal)
+                                            .background(MCTheme.success.opacity(0.18), in: Capsule())
+                                            .foregroundStyle(MCTheme.success)
                                     }
                                     Spacer()
                                     ExcludeButton(url: url, controller: model.exclusionsController)
