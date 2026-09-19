@@ -49,9 +49,13 @@ struct MCPanel<Content: View, Trailing: View>: View {
 
 /// One measured figure, and the way into the module that measured it.
 ///
-/// The one raised surface on the screen. It earns the relief because it is a
-/// control — a click goes somewhere — and because four of them in a row need
-/// to read as four things rather than as a paragraph of numbers.
+/// Four of these sit side by side in a band. They were bordered boxes in the
+/// first pass and they were the last card UI left on the screen: four
+/// rectangles drawn around four numbers that a row of hairlines already
+/// separates. The relief bought nothing — the figures are large, the labels
+/// small, and that difference is the grouping. What a tile still has to say
+/// is that it is a control, so hovering lays an accent rule under it, the
+/// way a header cell answers a pointer.
 struct MetricTile: View {
     let icon: String
     let label: String
@@ -72,13 +76,14 @@ struct MetricTile: View {
                 Text(label).font(MCFont.groupHeader).foregroundStyle(MCColor.textSecondary)
                     .textCase(.uppercase).lineLimit(1)
                 Spacer(minLength: 0)
-                if destination != nil {
-                    Image(systemName: "chevron.right")
-                        .font(MCFont.caption)
-                        .foregroundStyle(MCColor.textTertiary)
-                        .opacity(isHovered ? 1 : 0.5)
-                        .accessibilityHidden(true)
-                }
+                // Drawn even where it leads nowhere, invisibly: a chevron on
+                // three tiles out of four and absent on the fourth put that
+                // one label on a different baseline from its neighbours.
+                Image(systemName: "chevron.right")
+                    .font(MCFont.caption)
+                    .foregroundStyle(MCColor.textTertiary)
+                    .opacity(destination == nil ? 0 : (isHovered ? 1 : 0.5))
+                    .accessibilityHidden(true)
             }
             // A figure that does not exist is said once, in words, at reading
             // size. An em-dash over the caption "Never run" reads as a broken
@@ -95,18 +100,15 @@ struct MetricTile: View {
                     .frame(maxHeight: .infinity, alignment: .center)
             }
         }
-        .padding(MCSpacing.sm)
-        .frame(maxWidth: .infinity, minHeight: 78, alignment: .topLeading)
-        .background {
-            RoundedRectangle(cornerRadius: MCRadius.card, style: .continuous)
-                .fill(MCColor.elevatedBackground)
-                .overlay {
-                    RoundedRectangle(cornerRadius: MCRadius.card, style: .continuous)
-                        .strokeBorder(isHovered ? Color.accentColor : MCColor.separator,
-                                      lineWidth: isHovered ? 1.5 : 1)
-                }
+        .padding(.vertical, MCSpacing.xs)
+        .padding(.horizontal, MCSpacing.sm)
+        .frame(maxWidth: .infinity, minHeight: 62, alignment: .topLeading)
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(destination != nil && isHovered ? Color.accentColor : .clear)
+                .frame(height: 2)
         }
-        .contentShape(RoundedRectangle(cornerRadius: MCRadius.card, style: .continuous))
+        .contentShape(Rectangle())
         .onHover { hovering in
             withAnimation(MCMotion.response) { isHovered = hovering }
         }

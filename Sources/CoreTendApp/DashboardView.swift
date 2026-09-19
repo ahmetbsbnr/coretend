@@ -71,7 +71,7 @@ final class OverviewViewModel {
 
         let entries = SafetyLedger.entries(from: (try? await AppEnvironment.shared.store?.safetyLog(limit: 400)) ?? [])
         recordSummary = SafetyLedger.summary(of: entries)
-        recent = Array(SafetyLedger.items(operations: entries, events: events).prefix(6))
+        recent = Array(SafetyLedger.items(operations: entries, events: events).prefix(12))
 
         attention = Self.attentionRows(
             fullDisk: SystemAuthorization.probeLive().grant(for: .fullDisk),
@@ -137,7 +137,7 @@ struct DashboardView: View {
                         metrics
                         storageSection
                         if !model.attention.isEmpty { attentionSection }
-                        recentSection
+                        recentSection(rows: wide ? 12 : 6)
                     }
                     .frame(maxWidth: wide ? .infinity : MCSize.readableWidth, alignment: .leading)
                     if wide, let volume = model.selectedVolume {
@@ -181,33 +181,54 @@ struct DashboardView: View {
     private var metrics: some View {
         let volume = model.selectedVolume
         return ViewThatFits(in: .horizontal) {
-            HStack(spacing: MCSpacing.sm) { metricTiles(volume) }
-            VStack(spacing: MCSpacing.xs) { metricTiles(volume) }
+            // A band, not four boxes: hairlines do the separating, and the
+            // negative inset pulls the first label back onto the page's left
+            // edge so it lines up with the title and every heading below.
+            HStack(spacing: 0) {
+                ForEach(Array(metricTiles(volume).enumerated()), id: \.element.label) { index, tile in
+                    if index > 0 { Divider().frame(height: 34) }
+                    tile
+                }
+            }
+            .padding(.horizontal, -MCSpacing.sm)
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(Array(metricTiles(volume).enumerated()), id: \.element.label) { index, tile in
+                    if index > 0 { Divider() }
+                    tile
+                }
+            }
+            .padding(.horizontal, -MCSpacing.sm)
         }
     }
 
-    @ViewBuilder
-    private func metricTiles(_ volume: OverviewViewModel.Volume?) -> some View {
+    private func metricTiles(_ volume: OverviewViewModel.Volume?) -> [MetricTile] {
+        [
         MetricTile(icon: "internaldrive",
                    label: L("overview.metric_free"),
                    value: volume.map { mcFormatBytes($0.free) },
                    detail: volume.map { L("overview.metric_free_detail", mcFormatBytes($0.total)) } ?? "",
-                   destination: nil)
+                   destination: nil),
         MetricTile(icon: ModuleID.cleanup.systemImage,
                    label: L("overview.metric_cleanup"),
                    value: model.scan(for: .cleanup).map { mcFormatBytes($0.bytes) },
                    detail: scanDetail(.cleanup),
-                   destination: .cleanup)
+                   destination: .cleanup),
         MetricTile(icon: ModuleID.duplicates.systemImage,
                    label: L("overview.metric_duplicates"),
                    value: model.scan(for: .duplicates).map { mcFormatBytes($0.bytes) },
                    detail: scanDetail(.duplicates),
-                   destination: .duplicates)
+                   destination: .duplicates),
         MetricTile(icon: ModuleID.record.systemImage,
                    label: L("overview.metric_record"),
-                   value: mcFormatBytes(model.recordSummary.movedBytes),
-                   detail: L("overview.metric_record_detail", model.recordSummary.movedItems),
-                   destination: .record)
+                   // Nothing moved is not "Zero KB" — that is a measurement
+                   // of an event that never happened. Said in words, once.
+                   value: model.recordSummary.movedItems > 0
+                       ? mcFormatBytes(model.recordSummary.movedBytes) : nil,
+                   detail: model.recordSummary.movedItems > 0
+                       ? L("overview.metric_record_detail", model.recordSummary.movedItems)
+                       : L("overview.never_run"),
+                   destination: .record),
+        ]
     }
 
     /// "at the last scan, 3 days ago" — never a bare number, because the
@@ -285,21 +306,24 @@ struct DashboardView: View {
 
     // MARK: Recent
 
-    private var recentSection: some View {
-        MCPanel(title: L("overview.recent"), subtitle: nil, trailing: {
+    /// A wide window is not an excuse to centre a small screen in it: the
+    /// space it adds is filled with more of the history, not more margin.
+    private func recentSection(rows: Int) -> some View {
+        let recent = Array(model.recent.prefix(rows))
+        return MCPanel(title: L("overview.recent"), subtitle: nil, trailing: {
             Button(L("overview.see_record")) {
                 NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.record)
             }
             .buttonStyle(.borderless)
         }) {
-            if model.recent.isEmpty {
+            if recent.isEmpty {
                 Text(L("record.empty_message")).font(MCFont.caption)
                     .foregroundStyle(MCColor.textSecondary)
             } else {
                 VStack(spacing: 0) {
-                    ForEach(model.recent) { item in
+                    ForEach(recent) { item in
                         RecentRow(item: item)
-                        if item.id != model.recent.last?.id { Divider() }
+                        if item.id != recent.last?.id { Divider() }
                     }
                 }
             }
