@@ -9,6 +9,17 @@
 # what its name says. Ends by writing Documentation/Captures/index.html.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+
+# One run at a time, and nothing may rebuild the app underneath it: a
+# package-local.sh during a matrix replaces the binary being launched and the
+# captures fail for reasons that have nothing to do with the app. Seven
+# failures in one run were exactly this.
+lock="${TMPDIR:-/tmp}/coretend-capture-matrix.lock"
+if ! mkdir "$lock" 2>/dev/null; then
+  print -u2 "capture-matrix: another run holds $lock — wait for it, or remove the lock if it is stale"
+  exit 1
+fi
+trap 'rmdir "$lock" 2>/dev/null' EXIT
 out="Documentation/Captures"
 mkdir -p "$out"
 bash Scripts/package-local.sh >/dev/null

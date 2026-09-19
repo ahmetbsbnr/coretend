@@ -68,8 +68,25 @@ extension View {
 private struct FileRowActionsModifier: ViewModifier {
     let actions: [FileRowAction]
 
+    /// Space previews the row, the way it does in Finder.
+    ///
+    /// Quick Look was reachable by swipe and by context menu — a gesture and a
+    /// right-click. Neither is available to someone driving the app from the
+    /// keyboard, and the swipe is not available to Switch Control at all. The
+    /// row is focusable and answers Space, which is the shortcut every Mac
+    /// user already knows.
+    private var quickLook: FileRowAction? {
+        actions.first { $0.id == "quicklook" }
+    }
+
     func body(content: Content) -> some View {
         applyingSwipe(to: content)
+            .focusable(quickLook != nil)
+            .onKeyPress(.space) {
+                guard let quickLook else { return .ignored }
+                quickLook.perform()
+                return .handled
+            }
             .contextMenu {
                 ForEach(actions) { action in
                     Button(role: action.tone == .destructive ? .destructive : nil,
