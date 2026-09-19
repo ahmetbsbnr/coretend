@@ -617,3 +617,4 @@ Analysis only — deleting synced files would remove them on every device.";
 "shortcuts.group.lists" = "Lists and the map";
 "shortcuts.go_module" = "Go to a module";
 "record.entry" = "Entry";
+"overview.attention_stale" = "Nothing has been scanned for %d days.";

@@ -26,15 +26,17 @@ final class OverviewViewModel {
         var usedFraction: Double { total > 0 ? Double(used) / Double(total) : 0 }
     }
 
-    enum Attention: Identifiable {
+    enum Attention: Identifiable, Equatable {
         case fullDiskAccessMissing
         case brokenLoginItems(Int)
         case neverScanned
+        case scansAreStale(days: Int)
         var id: String {
             switch self {
             case .fullDiskAccessMissing: "fda"
             case .brokenLoginItems: "login"
             case .neverScanned: "never"
+            case .scansAreStale: "stale"
             }
         }
     }
@@ -60,18 +62,32 @@ final class OverviewViewModel {
         attention = Self.attentionRows(
             fullDisk: SystemAuthorization.probeLive().grant(for: .fullDisk),
             brokenLoginItems: LaunchAgentInspector.userAgents().filter(\.broken).count,
-            anyScan: events.contains { $0.kind == .scan })
+            lastScan: events.filter { $0.kind == .scan }.map(\.date).max())
         loaded = true
     }
 
     /// Only what needs a person. Everything fine → nothing listed, and the
     /// section disappears rather than saying "all good" in green.
     nonisolated static func attentionRows(fullDisk: SystemAuthorization.Grant,
-                                          brokenLoginItems: Int, anyScan: Bool) -> [Attention] {
+                                          brokenLoginItems: Int,
+                                          lastScan: Date?,
+                                          now: Date = Date()) -> [Attention] {
         var rows: [Attention] = []
         if fullDisk == .denied || fullDisk == .undetermined { rows.append(.fullDiskAccessMissing) }
         if brokenLoginItems > 0 { rows.append(.brokenLoginItems(brokenLoginItems)) }
-        if !anyScan { rows.append(.neverScanned) }
+        guard let lastScan else { return rows + [.neverScanned] }
+        // A week, because that is roughly how long it takes for caches and
+        // build data to become interesting again. Below it, saying nothing is
+        // the right thing to say: an Overview that always has a row to show is
+        // an Overview nobody reads.
+        // Midnight to midnight, which is what a person means by "N days ago".
+        // Counting from instant to instant loses a day whenever the clocks go
+        // back inside the window: a scan thirty days old reported 29.
+        let calendar = Calendar.current
+        let days = calendar.dateComponents([.day],
+                                           from: calendar.startOfDay(for: lastScan),
+                                           to: calendar.startOfDay(for: now)).day ?? 0
+        if days >= 7 { rows.append(.scansAreStale(days: days)) }
         return rows
     }
 
@@ -178,6 +194,7 @@ struct DashboardView: View {
         case .fullDiskAccessMissing: L("overview.attention_fda")
         case let .brokenLoginItems(n): L(n == 1 ? "overview.attention_login_one" : "overview.attention_login_other", n)
         case .neverScanned: L("overview.attention_never")
+        case let .scansAreStale(days): L("overview.attention_stale", days)
         }
     }
 
@@ -185,7 +202,7 @@ struct DashboardView: View {
         switch item {
         case .fullDiskAccessMissing: L("overview.action_open_settings")
         case .brokenLoginItems: L("overview.action_review")
-        case .neverScanned: L("overview.action_open_cleanup")
+        case .neverScanned, .scansAreStale: L("overview.action_open_cleanup")
         }
     }
 
@@ -195,7 +212,7 @@ struct DashboardView: View {
             if let url = SystemAuthorization.fullDiskAccessSettingsURL { NSWorkspace.shared.open(url) }
         case .brokenLoginItems:
             NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.protection)
-        case .neverScanned:
+        case .neverScanned, .scansAreStale:
             NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.cleanup)
         }
     }

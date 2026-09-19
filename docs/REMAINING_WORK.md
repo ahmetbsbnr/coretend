@@ -86,7 +86,8 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 - ☑ D-12b Leftovers and Updates tabs densified.
 - ☑ D-13 Cleanup › Browser caches: one line per profile.
 - ☐ D-14 Duplicates: keeper choice (radio) rather than only the suggestion; Quick Look on Space.
-- ☐ D-15 Overview: multi-volume fixture; attention row for stale scans (> 7 days).
+- ☑ D-15a Overview: attention row for scans older than a week.
+- ☐ D-15b Multi-volume fixture (needs a mounted disk image in the capture harness).
 - ☐ D-16 Settings scene capture (needs a `CORETEND_TEST_SETTINGS=1` that opens Settings on launch).
 - ☐ D-17 Onboarding capture (test flag to present it on launch), both languages.
 
