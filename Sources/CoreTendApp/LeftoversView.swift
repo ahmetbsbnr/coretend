@@ -167,6 +167,7 @@ struct LeftoversView: ModuleSubScreen {
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .environment(\.defaultMinListRowHeight, 28)
         }
     }

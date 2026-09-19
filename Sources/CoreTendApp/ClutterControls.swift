@@ -56,6 +56,12 @@ struct ExclusionsMenu: View {
         } label: {
             Label(L("clutter.exclusions_count", controller.exclusions.count), systemImage: "eye.slash")
         }
+        // A plain Menu here drew the accent-filled pop-up button with its
+        // disclosure arrow in a box of its own — a prominent control, in the
+        // window's loudest colour, for an inert filter that is usually empty.
+        // Bordered and neutral, it reads as what it is.
+        .menuStyle(.borderlessButton)
+        .buttonStyle(.bordered)
         // Without this the menu takes whatever width is going, which in a
         // filter bar is all of it.
         .fixedSize()

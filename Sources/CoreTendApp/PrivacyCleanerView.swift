@@ -246,6 +246,7 @@ struct PrivacyCleanerView: ModuleSubScreen {
                 .accessibilityElement(children: .contain)
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .environment(\.defaultMinListRowHeight, 28)
             Divider()
             Text(L("privacy.footer"))

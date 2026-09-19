@@ -298,6 +298,7 @@ struct LargeOldFilesView: ModuleSubScreen {
                     .accessibilityLabel("\(finding.url.lastPathComponent), \(mcFormatBytes(finding.logicalSize))")
                 }
                 .listStyle(.plain)
+                .scrollContentBackground(.hidden)
                 .environment(\.defaultMinListRowHeight, 28)
                 .quickLookPreview($model.previewURL)
                 .scanCommands(

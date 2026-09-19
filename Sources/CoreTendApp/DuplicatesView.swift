@@ -415,6 +415,7 @@ struct DuplicatesView: View {
                                               group.urls.count, mcFormatBytes(group.wastedBytes)))
                     }
                     .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
                     .environment(\.defaultMinListRowHeight, 28)
                 }
                 .frame(minWidth: 300, idealWidth: 380, maxWidth: 460)

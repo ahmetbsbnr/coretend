@@ -161,6 +161,7 @@ struct IntegrityView: ModuleSubScreen {
                     }
                 }
                 .listStyle(.plain)
+                .scrollContentBackground(.hidden)
                 .environment(\.defaultMinListRowHeight, 28)
                 .accessibilityIdentifier("integrity.downloads")
             }

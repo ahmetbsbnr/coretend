@@ -269,6 +269,7 @@ struct RecordView: View {
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .environment(\.defaultMinListRowHeight, 28)
         }
     }

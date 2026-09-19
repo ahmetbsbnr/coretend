@@ -344,6 +344,7 @@ struct CloudCleanupView: View {
                 }
             }
             .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .environment(\.defaultMinListRowHeight, 28)
             .safeAreaInset(edge: .top, spacing: 0) {
                 HStack(spacing: MCSpacing.xs) {
