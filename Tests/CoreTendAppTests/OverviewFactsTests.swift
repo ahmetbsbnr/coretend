@@ -69,3 +69,27 @@ struct OverviewFactsTests {
         #expect(v.foundFraction == 0)
     }
 }
+
+/// "Which modules scan" is one fact.
+///
+/// The toolbar's scan button, the Overview's scan rows and the summary-prefix
+/// lookup each carried their own list, and they had already drifted: one of
+/// them still expected Applications to be unscannable. `ModuleID.hasScan` is
+/// the single answer, and this keeps the prefix table honest against it.
+@Suite("Scannable modules are listed once")
+struct ScannableModuleTests {
+    @Test func everyScannableModuleHasASummaryPrefix() {
+        for module in ModuleID.allCases where module.hasScan {
+            let prefix = OverviewFacts.summaryPrefix(for: module)
+            #expect(prefix != module.rawValue || module == .applications,
+                    "\(module) falls through to its raw value — add its real prefix")
+            #expect(!prefix.isEmpty)
+        }
+    }
+
+    @Test func modulesWithoutAScanAreNotOfferedOne() {
+        for module in [ModuleID.smartCare, .record, .protection, .performance] {
+            #expect(!module.hasScan, "\(module) would show a Scan button that does nothing")
+        }
+    }
+}

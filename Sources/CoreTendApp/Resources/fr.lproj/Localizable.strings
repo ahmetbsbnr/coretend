@@ -632,3 +632,5 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "overview.volume_subtitle" = "Rapporté par macOS";
 "overview.capacity" = "Capacité";
 "overview.percent_used" = "Utilisé";
+"toolbar.scan" = "Analyser";
+"toolbar.scan_help" = "Lancer l’analyse de %@ (⌘R)";

@@ -50,7 +50,7 @@ enum OverviewFacts {
     /// without a database: the sentences were written by the modules, and a
     /// rename on one side has silently broken this kind of lookup before.
     static func lastScans(from events: [ActivityRecord],
-                          modules: [ModuleID] = [.cleanup, .duplicates, .spaceLens, .applications]) -> [ScanResult] {
+                          modules: [ModuleID] = ModuleID.allCases.filter(\.hasScan)) -> [ScanResult] {
         modules.compactMap { module in
             let prefix = summaryPrefix(for: module)
             guard let latest = events

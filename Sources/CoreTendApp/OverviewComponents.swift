@@ -267,7 +267,7 @@ struct VolumeContextColumn: View {
             }
             MCPanel(title: L("overview.scans"), subtitle: nil) {
                 VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-                    ForEach([ModuleID.cleanup, .spaceLens, .duplicates, .applications], id: \.rawValue) { module in
+                    ForEach(ModuleID.allCases.filter(\.hasScan), id: \.rawValue) { module in
                         Button {
                             NotificationCenter.default.post(name: .mcNavigate, object: module)
                         } label: {

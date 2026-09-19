@@ -68,6 +68,18 @@ enum ModuleID: String, CaseIterable, Identifiable {
 
     var systemImage: String { identity.icon }
 
+    /// Whether this module has a scan to start.
+    ///
+    /// Stated once. The toolbar, the Overview's scan rows and the Overview's
+    /// summary-prefix lookup each had their own list, and two of them were
+    /// already out of date with the third.
+    var hasScan: Bool {
+        switch self {
+        case .cleanup, .spaceLens, .duplicates, .applications: true
+        case .smartCare, .record, .protection, .performance: false
+        }
+    }
+
     /// Localized display label. `rawValue` stays the internal stable identity
     /// (matched against `ActivityRecord.summary` prefixes elsewhere).
     var label: String {

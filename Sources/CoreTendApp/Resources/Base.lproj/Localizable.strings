@@ -634,3 +634,5 @@ Analysis only — deleting synced files would remove them on every device.";
 "overview.volume_subtitle" = "Reported by macOS";
 "overview.capacity" = "Capacity";
 "overview.percent_used" = "Used";
+"toolbar.scan" = "Scan";
+"toolbar.scan_help" = "Start the %@ scan (⌘R)";

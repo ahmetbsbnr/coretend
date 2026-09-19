@@ -9,6 +9,7 @@ import SystemMetrics
 import Persistence
 
 struct MainWindow: View {
+
     @State private var selection: ModuleID? =
         TestModuleOverride.resolve(environment: ProcessInfo.processInfo.environment) ?? .smartCare
     @AppStorage("onboardingDone") private var onboardingDone = false
@@ -100,6 +101,26 @@ struct MainWindow: View {
             CommandPaletteView(isPresented: $showCommandPalette)
         }
         .toolbar {
+            // The module's own verb, on the left of the toolbar where a
+            // document app puts its primary action. Every scanning module
+            // already answers ⌘R; this gives that command a visible control
+            // instead of leaving it to the keyboard and a menu.
+            if let scannable = routed, scannable.hasScan {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        NotificationCenter.default.post(name: .mcStartScan, object: nil)
+                    } label: {
+                        // Labelled, not a bare glyph. This is the verb the
+                        // module exists for, and a triangle on its own says
+                        // "play" — which is what a media control says.
+                        Label(L("toolbar.scan"), systemImage: "sparkle.magnifyingglass")
+                            .labelStyle(.titleAndIcon)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .help(L("toolbar.scan_help", scannable.label))
+                    .accessibilityIdentifier("toolbar.scan")
+                }
+            }
             ToolbarItemGroup {
                 // Surfaced only when an automatic check actually found
                 // something newer. There is no permanent "check for updates"
