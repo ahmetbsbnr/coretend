@@ -47,11 +47,21 @@ if [[ -n "$home_seed" ]]; then
   bash "$(dirname "$0")/support/${home_seed}" "$fixture_home" >/dev/null
 fi
 
+# Two states are scenes rather than phases of a module: they are reached by
+# presenting something, not by scanning, so they must not start a scan and —
+# for Settings — they are not even the same window.
+want_onboarding=0
+want_settings=0
+[[ "$state" == "onboarding" ]] && want_onboarding=1
+[[ "$state" == "settings" ]] && want_settings=1
+
 pkill -x CoreTend 2>/dev/null || true
 sleep 1
 CORETEND_TEST_HOME="$fixture_home" \
 CORETEND_TEST_TAB="$tab" \
-CORETEND_TEST_AUTOSTART="$([[ -n "$state" ]] && echo 1 || echo 0)" \
+CORETEND_TEST_ONBOARDING="$want_onboarding" \
+CORETEND_TEST_SETTINGS="$want_settings" \
+CORETEND_TEST_AUTOSTART="$([[ -n "$state" && "$want_onboarding" == 0 && "$want_settings" == 0 ]] && echo 1 || echo 0)" \
 CORETEND_TEST_MODE=1 \
 CORETEND_TEST_STORE_DIR="$store" \
 CORETEND_TEST_MODULE="$module" \
@@ -103,11 +113,27 @@ if [[ ! -x "$helper" || Scripts/support/window-id.swift -nt "$helper" ]]; then
   swiftc -O -o "$helper" Scripts/support/window-id.swift
 fi
 id=""
-for _ in {1..20}; do
-  id=$("$helper" CoreTend 2>/dev/null || true)
-  [[ -n "$id" ]] && break
-  sleep 0.25
-done
+if [[ "$want_settings" == 1 ]]; then
+  # Settings is its own window, and "the frontmost one" is not proof of which
+  # — nor is its title, which is in whatever language the app is running in.
+  # The app writes the id of the window it drew Settings in; that is the one
+  # photographed, or none is.
+  for _ in {1..40}; do
+    id=$(sed -n 's/^settingsWindow=//p' "$store/state.txt" 2>/dev/null | tail -1)
+    [[ -n "$id" ]] && break
+    sleep 0.25
+  done
+  if [[ -z "$id" ]]; then
+    print -u2 "capture-module: Settings never reported its window — capture refused"
+    exit 2
+  fi
+else
+  for _ in {1..20}; do
+    id=$("$helper" CoreTend 2>/dev/null || true)
+    [[ -n "$id" ]] && break
+    sleep 0.25
+  done
+fi
 if [[ -z "$id" ]]; then
   print -u2 "capture-module: no on-screen CoreTend window found"
   exit 1

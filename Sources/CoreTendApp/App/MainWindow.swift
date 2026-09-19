@@ -14,6 +14,10 @@ struct MainWindow: View {
         TestModuleOverride.resolve(environment: ProcessInfo.processInfo.environment) ?? .smartCare
     @AppStorage("onboardingDone") private var onboardingDone = false
     @State private var showOnboarding = false
+    /// SwiftUI's own way into the Settings scene. `showSettingsWindow:` goes
+    /// through the responder chain and does nothing at launch, before the app
+    /// has been clicked — which is exactly when a capture needs it.
+    @Environment(\.openSettings) private var openSettings
     @State private var showCommandPalette = false
     @State private var showShortcuts = false
     /// Bound so View › Hide Sidebar has something to move. Without a binding
@@ -69,7 +73,21 @@ struct MainWindow: View {
             .mcCanvasBackground()
         }
         .onAppear {
-            if !onboardingDone { showOnboarding = true }
+            // A sheet is modal to its window: with onboarding up, the Settings
+            // window cannot come forward, which is why the Settings capture
+            // reported nothing at all rather than the wrong thing.
+            if CaptureHarness.showOnboarding || (!onboardingDone && !CaptureHarness.showSettings) {
+                showOnboarding = true
+            }
+            // After the main window exists: the Settings scene's responder
+            // action is installed with the scene graph, and at the first
+            // onAppear there is nothing to send it to.
+            if CaptureHarness.showSettings {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                    NSApp.activate(ignoringOtherApps: true)
+                    openSettings()
+                }
+            }
             CaptureHarness.settle(showing: routed)
         }
         .task {

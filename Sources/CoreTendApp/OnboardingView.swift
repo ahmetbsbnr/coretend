@@ -82,6 +82,7 @@ struct OnboardingView: View {
         }
         .frame(width: 640, height: 480)
         .accessibilityIdentifier("onboarding.root")
+        .onAppear { CaptureHarness.note(state: "onboarding") }
         .task { await model.refreshPermissions() }
     }
 

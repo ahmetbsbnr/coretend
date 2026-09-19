@@ -218,6 +218,7 @@ struct MCSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .onAppear { CaptureHarness.note(window: "settings") }
         .navigationTitle(L("settings.nav_title"))
         .accessibilityIdentifier("settings.root")
         .task { await model.load() }

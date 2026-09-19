@@ -45,6 +45,11 @@ specs=(
   "protection::s:"
   "protection::s:1"
   "performance:charting:s:"
+  # Two scenes rather than modules: the first screen anyone sees, and the one
+  # window a capture of the main window cannot reach. Both were uncapturable
+  # until the app could be asked to present them.
+  "smartCare:onboarding:s:"
+  "smartCare:settings:s:"
 )
 failed=0
 for spec in $specs; do

@@ -92,10 +92,46 @@ enum CaptureHarness {
         try? (existing + "\(state)\n").write(to: url, atomically: true, encoding: .utf8)
     }
 
+    /// Records the CoreGraphics id of the window a scene is being drawn in.
+    ///
+    /// The capture script photographs a window by id, and "the frontmost one"
+    /// is not proof of which: Settings is a separate window, and its title is
+    /// whatever language the app is running in. The app knows which window it
+    /// just put on screen, so it says so, and the script photographs the one
+    /// it was told about.
+    @MainActor
+    static func note(window label: String) {
+        guard isActive else { return }
+        // A beat, because the window is not on screen — and has no CG id —
+        // until AppKit has ordered it front.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            guard let window = NSApp.keyWindow ?? NSApp.orderedWindows.first(where: { $0.isVisible }) else { return }
+            note(state: "\(label)Window=\(window.windowNumber)")
+            note(state: label)
+        }
+    }
+
     /// The sub-navigation tab a capture asked for, as the tab's index.
     static var requestedTab: Int? {
         guard isActive, let raw = environment["CORETEND_TEST_TAB"], let n = Int(raw) else { return nil }
         return n
+    }
+
+    /// Present the onboarding sheet on launch, whatever the stored flag says.
+    ///
+    /// Onboarding is shown once and then never again, so the only way to
+    /// photograph it was to be the first person ever to run the build. The
+    /// flag is the reason there was no capture of the first screen anyone
+    /// sees.
+    static var showOnboarding: Bool {
+        isActive && environment["CORETEND_TEST_ONBOARDING"] == "1"
+    }
+
+    /// Open the Settings window on launch. Same problem, different scene:
+    /// Settings is a separate window a capture of the main window cannot
+    /// reach.
+    static var showSettings: Bool {
+        isActive && environment["CORETEND_TEST_SETTINGS"] == "1"
     }
 
     static var requestedWindowSize: WindowSize? {

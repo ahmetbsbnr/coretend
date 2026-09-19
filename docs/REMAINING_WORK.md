@@ -57,7 +57,9 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 
 ## F — Interaction
 - ☑ F-01a Space previews a file row (`fileRowActions`).
-- ☐ F-01b ⌘A / Return on the dense lists; multi-select in Cleanup review.
+- ☑ F-01b ⌘A / ⇧⌘A tick and untick a Cleanup review, with visible controls;
+  refused while the exclusions could not be read. ☐ F-01c Return to open the
+  selected row in the dense lists.
 - ☐ F-02 Context menus mirror row actions via `FileRowAction` everywhere.
 
 ## G — Accessibility
@@ -88,8 +90,16 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 - ☐ D-14 Duplicates: keeper choice (radio) rather than only the suggestion; Quick Look on Space.
 - ☑ D-15a Overview: attention row for scans older than a week.
 - ☐ D-15b Multi-volume fixture (needs a mounted disk image in the capture harness).
-- ☐ D-16 Settings scene capture (needs a `CORETEND_TEST_SETTINGS=1` that opens Settings on launch).
-- ☐ D-17 Onboarding capture (test flag to present it on launch), both languages.
+- ☑ D-16 Settings scene capture. `CORETEND_TEST_SETTINGS=1` opens it through
+  SwiftUI's `openSettings` — `showSettingsWindow:` goes through the responder
+  chain and does nothing before the app has been clicked. The app writes the
+  CG id of the window it drew Settings in; the script photographs that one or
+  refuses, because "the frontmost window" is not proof of which, and its title
+  is in whatever language the app is running in.
+- ☑ D-17 Onboarding capture: `CORETEND_TEST_ONBOARDING=1` presents the sheet
+  whatever the stored flag says. It suppresses itself when Settings is asked
+  for — a sheet is modal to its window, and with onboarding up the Settings
+  window cannot come forward. ☐ D-17b the French pass.
 
 ## G (continued)
 - ☐ G-03 Increase Contrast / Reduce Transparency captures: add `CORETEND_TEST_CONTRAST` is not
@@ -97,7 +107,9 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 
 ## H (continued)
 - ☑ H-02a Record: pushed detail below 900pt content width.
-- ☐ H-02b Duplicates and Applications: same treatment.
+- ☑ H-02b Duplicates (<900pt) and Applications (<980pt) push the detail, with
+  the pushed selection kept apart from the live one so nothing is on screen on
+  arrival.
 
 - ☐ D-18 Similar images groups byte-identical files too (the engine has an exact-digest path),
   which is Duplicates' job. Decide: either exclude exact duplicates from this lens and say so,
