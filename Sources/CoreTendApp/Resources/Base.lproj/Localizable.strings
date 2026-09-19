@@ -618,3 +618,4 @@ Analysis only — deleting synced files would remove them on every device.";
 "shortcuts.group.go" = "Go";
 "shortcuts.group.lists" = "Lists and the map";
 "shortcuts.go_module" = "Go to a module";
+"record.entry" = "Entry";

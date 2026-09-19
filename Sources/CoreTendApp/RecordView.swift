@@ -123,6 +123,8 @@ final class RecordViewModel {
 struct RecordView: View {
     @State private var model = RecordViewModel()
     @State private var confirmingPurge = false
+    /// Only the compact layout pushes. Nil on arrival, always.
+    @State private var pushed: RecordItem.ID?
 
     var body: some View {
         Group {
@@ -175,21 +177,31 @@ struct RecordView: View {
 
     /// List and inspector side by side, unless the window is too narrow for
     /// both to be usable — then the list fills the width and selecting an
-    /// entry pushes its detail, the way a split view behaves when it collapses.
-    /// At 1000pt a 360pt list left the inspector 600pt for paths that are
-    /// routinely longer than that.
+    /// entry pushes its detail, the way a split view behaves when it
+    /// collapses. At 1000pt a 380pt list left the inspector 600pt for paths
+    /// that are routinely longer than that.
+    ///
+    /// The width is measured rather than inferred from `ViewThatFits`,
+    /// because the two layouts need different state: side by side there is
+    /// always a selection, and pushed there must not be one on arrival or the
+    /// person lands on a detail screen they never asked for. The first
+    /// compact capture opened straight into an entry.
     private var loaded: some View {
-        ViewThatFits(in: .horizontal) {
-            HStack(spacing: 0) {
-                listPane.frame(minWidth: 340, idealWidth: 380, maxWidth: 460)
-                Divider()
-                inspector.frame(minWidth: 520, maxWidth: .infinity, maxHeight: .infinity)
-            }
-            NavigationStack {
-                listPane
-                    .navigationDestination(item: $model.selection) { _ in
-                        inspector
-                    }
+        GeometryReader { proxy in
+            if proxy.size.width >= 900 {
+                HStack(spacing: 0) {
+                    listPane.frame(minWidth: 340, idealWidth: 380, maxWidth: 460)
+                    Divider()
+                    inspector.frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .onAppear { pushed = nil }
+            } else {
+                NavigationStack {
+                    listPane
+                        .navigationDestination(item: $pushed) { id in
+                            inspectorFor(id).navigationTitle(L("record.entry"))
+                        }
+                }
             }
         }
     }
@@ -224,7 +236,13 @@ struct RecordView: View {
                          title: L("record.nothing_matches_title"),
                          message: L("record.nothing_matches_message"))
         } else {
-            List(selection: $model.selection) {
+            List(selection: Binding(
+                get: { model.selection },
+                set: { id in
+                    model.selection = id
+                    if let id { pushed = id }
+                }
+            )) {
                 ForEach(SafetyLedger.byDay(visible)) { group in
                     Section {
                         ForEach(group.entries) { item in
@@ -238,6 +256,15 @@ struct RecordView: View {
             }
             .listStyle(.plain)
             .environment(\.defaultMinListRowHeight, 28)
+        }
+    }
+
+    @ViewBuilder
+    private func inspectorFor(_ id: RecordItem.ID) -> some View {
+        switch model.items.first(where: { $0.id == id }) {
+        case let .operation(entry): RecordInspector(entry: entry)
+        case let .event(record): RecordEventInspector(record: record)
+        case nil: EmptyView()
         }
     }
 

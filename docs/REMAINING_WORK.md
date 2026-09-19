@@ -23,12 +23,12 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 - ☑ C-04 Retire `MCPrimaryButtonStyle`/Secondary/Destructive; use system styles;
   delete `OnAccentContrastTests`; keep a test that no view uses `MCColor.teal`
   as a button background.
-- ☐ C-05 `MCPermissionState` view (title, why, Open System Settings, Continue
-  without) used by Cleanup, Explore, Applications, Integrity.
+- ☑ C-05a `MCPermissionState`, used by Cleanup.
+- ☐ C-05b Explore, Applications and Integrity use it too.
 - ☐ C-06 `MCStatusTag` (success/attention/failure/protected/inert) replaces
   ad-hoc capsules in Record, Integrity, Applications.
 - ☐ C-07 Remove every `.opacity(` on a colour outside DesignSystem (22 sites).
-- ☐ C-08 Icon rules (DESIGN_SYSTEM §Iconography): fix the 11 double-meaning symbols.
+- ☑ C-08 Icon rules: Reveal in Finder is `folder`, the magnifier is search only.
 
 ## D — Modules
 - ☑ D-01 Overview rebuilt per FRONTEND_REBUILD.
@@ -54,7 +54,8 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 - ☐ E-06 Website copy and demo sidebar (`Scripts/check-site-navigation.py` mapping still names retired modules).
 
 ## F — Interaction
-- ☐ F-01 Every `Table`/`List`: ⌘A, ⌘-click, shift-click, Return, Space (Quick Look).
+- ☑ F-01a Space previews a file row (`fileRowActions`).
+- ☐ F-01b ⌘A / Return on the dense lists; multi-select in Cleanup review.
 - ☐ F-02 Context menus mirror row actions via `FileRowAction` everywhere.
 
 ## G — Accessibility
@@ -92,8 +93,8 @@ Status: ☐ open · ☑ done · ⊘ blocked.
   possible (system setting) — capture manually once per pass and file under Documentation/Captures/manual/.
 
 ## H (continued)
-- ☐ H-02 Compact: inspectors (Record, Duplicates, Applications) become a pushed detail below 1100pt
-  content width; today they shrink and still fit at 1000×700 (verified in the matrix).
+- ☑ H-02a Record: pushed detail below 900pt content width.
+- ☐ H-02b Duplicates and Applications: same treatment.
 
 - ☐ D-18 Similar images groups byte-identical files too (the engine has an exact-digest path),
   which is Duplicates' job. Decide: either exclude exact duplicates from this lens and say so,
