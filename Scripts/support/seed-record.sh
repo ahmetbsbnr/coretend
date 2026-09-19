@@ -82,10 +82,15 @@ event () { # kind summary items bytes ago dry_run
   sqlite3 "$db" "INSERT INTO activity (kind,date,summary,item_count,bytes,dry_run)
     VALUES ('$1',$((now-$5)),'$2',$3,$4,$6);"
 }
-event scan    'Duplicates — 412 913 files across 6 volumes in 4 min 11 s' 412913 61200000000 3900 0
-event cleanup 'Duplicates — 4 items moved to the Trash' 4 1408533164 3600 0
-event scan    'Applications — 148 bundles in 22 s' 148 0 90100 0
-event scan    'Cleanup — 1 106 224 files in 9 min 02 s' 1106224 0 260100 0
+# The summaries are the sentences the modules actually write — the Overview
+# finds a module's last scan by matching that prefix, so a fixture that
+# invents its own wording makes the screen say "never scanned" while listing
+# the scans underneath. It did exactly that.
+event scan    'Duplicate scan: 28 groups' 28 332000000 3900 0
+event cleanup 'Duplicates: 4 items moved to Trash' 4 1408533164 3600 0
+event scan    'Applications scan: 148 bundles' 148 0 90100 0
+event scan    'Cleanup scan: 1284 items found' 1284 3670000000 260100 0
+event scan    'Large & Old scan: 12 files' 12 2140000000 260200 0
 event restore 'Put back 12 items from the 18:40 cleanup' 12 96000000 259000 0
 
 echo "$db"

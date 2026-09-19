@@ -45,6 +45,7 @@ import DesignSystem
 ///   different questions.
 struct Sidebar: View {
     @Binding var selection: ModuleID
+    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColour
     @FocusState private var focused: Bool
     @State private var hovered: ModuleID?
 
@@ -167,14 +168,23 @@ struct Sidebar: View {
                 // The selection marker is a shape, not only a colour: a user
                 // who cannot distinguish the teal wash from the ground still
                 // sees which module is open.
-                RoundedRectangle(cornerRadius: 1.5)
-                    .fill(isSelected ? Color.accentColor : .clear)
-                    .frame(width: 3, height: metrics.iconSize + 2)
-                    .accessibilityHidden(true)
+                // The bar is the Differentiate Without Colour affordance, and
+                // only that. Shown unconditionally it was a fourth
+                // simultaneous signal — bar, wash, tinted glyph, heavier
+                // label — which is what made the selection read as heavy.
+                if differentiateWithoutColour {
+                    RoundedRectangle(cornerRadius: 1.5)
+                        .fill(isSelected ? Color.accentColor : .clear)
+                        .frame(width: 3, height: metrics.iconSize + 2)
+                        .accessibilityHidden(true)
+                }
 
                 Image(systemName: module.systemImage)
                     .font(.system(size: metrics.iconSize, weight: .medium))
-                    .foregroundStyle(isSelected ? Color.accentColor : MCColor.textTertiary)
+                    // Hierarchical, so a multi-part symbol reads as one shape
+                    // with depth rather than as a flat silhouette.
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(isSelected ? Color.accentColor : MCColor.textSecondary)
                     .frame(width: metrics.iconSize + 4)
                     .accessibilityHidden(true)
 
@@ -189,12 +199,22 @@ struct Sidebar: View {
                     // single-line width upward.
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .padding(.leading, differentiateWithoutColour ? 0 : MCSpacing.xxs)
             .padding(.trailing, MCSpacing.sm)
             .padding(.vertical, metrics.rowPadding)
             .contentShape(Rectangle())
             .background {
-                RoundedRectangle(cornerRadius: MCRadius.card)
+                RoundedRectangle(cornerRadius: MCRadius.small, style: .continuous)
                     .fill(background(isSelected: isSelected, isHovered: isHovered))
+                    .overlay {
+                        // Under Increase Contrast the selection also gets an
+                        // edge. A wash alone is a tint, and a tint is what
+                        // that setting exists to stop relying on.
+                        if isSelected, MCAccessibilityState.shared.increaseContrast {
+                            RoundedRectangle(cornerRadius: MCRadius.small, style: .continuous)
+                                .strokeBorder(Color.accentColor, lineWidth: 1.5)
+                        }
+                    }
             }
         }
         .buttonStyle(.plain)
@@ -225,8 +245,13 @@ struct Sidebar: View {
         // Derived from the accent rather than fixed, so it follows the user's
         // choice. 0.18 keeps `textPrimary` well past 4.5:1 on every accent
         // macOS offers — measured, not assumed; see SidebarAccentTests.
-        if isSelected { return Color.accentColor.opacity(MCOpacity.selectionWash) }
-        if isHovered { return MCColor.elevatedBackground }
+        if isSelected {
+            return Color.accentColor.opacity(
+                MCAccessibilityState.shared.increaseContrast
+                    ? MCOpacity.selectionWashHighContrast
+                    : MCOpacity.selectionWash)
+        }
+        if isHovered { return Color.accentColor.opacity(MCOpacity.hoverWash) }
         return .clear
     }
 

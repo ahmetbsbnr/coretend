@@ -90,3 +90,53 @@ struct SidebarAccentTests {
         return out
     }
 }
+
+/// The selection wash under Increase Contrast, measured the same way as the
+/// ordinary one.
+///
+/// A pale tint of a light accent is exactly what that setting exists to stop
+/// people relying on, so the wash is heavier and the row also gets an edge.
+/// Heavier wash means a darker blend, which could in principle push the label
+/// the other way — so it is measured across all seven accents rather than
+/// assumed to be safe because it is "more contrast".
+@Suite("Increase Contrast selection stays legible")
+struct SidebarHighContrastSelectionTests {
+    private func blend(_ accent: UInt32, _ ground: UInt32, _ alpha: Double) -> UInt32 {
+        var out: UInt32 = 0
+        for shift in [UInt32(16), 8, 0] {
+            let f = Double((accent >> shift) & 0xFF), b = Double((ground >> shift) & 0xFF)
+            out |= UInt32((f * alpha + b * (1 - alpha)).rounded()) << shift
+        }
+        return out
+    }
+
+    /// The seven accents macOS offers, as it renders them.
+    private let accents: [(String, UInt32)] = [
+        ("red", 0xFF5257), ("orange", 0xF7821B), ("yellow", 0xFFC600), ("green", 0x62BA46),
+        ("blue", 0x007AFF), ("purple", 0xA550A7), ("pink", 0xF74F9E),
+    ]
+
+    @Test func everyAccentCarriesTheLabelUnderIncreaseContrast() {
+        for (name, accent) in accents {
+            for (mode, ink, ground) in [("light", MCPalette.textPrimary.lightHighContrast, MCPalette.sunken.lightHighContrast),
+                                        ("dark", MCPalette.textPrimary.darkHighContrast, MCPalette.sunken.darkHighContrast)] {
+                let wash = blend(accent, ground, MCOpacity.selectionWashHighContrast)
+                let ratio = MCColor.contrastRatio(ink, wash)
+                #expect(ratio >= 4.5, "\(name) in \(mode) increase contrast: \(ratio):1")
+            }
+        }
+    }
+
+    /// And the ordinary wash still works, so raising one did not quietly
+    /// become the only measured case.
+    @Test func everyAccentCarriesTheLabelNormally() {
+        for (name, accent) in accents {
+            for (mode, ink, ground) in [("light", MCPalette.textPrimary.light, MCPalette.sunken.light),
+                                        ("dark", MCPalette.textPrimary.dark, MCPalette.sunken.dark)] {
+                let wash = blend(accent, ground, MCOpacity.selectionWash)
+                let ratio = MCColor.contrastRatio(ink, wash)
+                #expect(ratio >= 4.5, "\(name) in \(mode): \(ratio):1")
+            }
+        }
+    }
+}

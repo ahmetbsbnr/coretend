@@ -184,6 +184,14 @@ public enum MCOpacity {
     /// A shade over a cell whose contents could not be read, so it reads as
     /// unavailable rather than as dark-coloured data.
     public static let unavailableOverlay: Double = 0.35
+    /// Hover on a navigation row, over the user's accent. Faint enough that a
+    /// pointer moving down the sidebar does not look like six selections; the
+    /// opaque surface it replaced made hover as loud as selection.
+    public static let hoverWash: Double = 0.08
+    /// Selection wash under Increase Contrast. Someone who turned that setting
+    /// on has said a faint tint is not enough of a boundary for them, and a
+    /// pale wash of a light accent is exactly that. Paired with a stroke.
+    public static let selectionWashHighContrast: Double = 0.34
 }
 
 /// Semantic colour aliases. Views reference these role names (`accent`,

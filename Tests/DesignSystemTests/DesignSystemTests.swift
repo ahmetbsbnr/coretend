@@ -559,11 +559,17 @@ struct ControlStyleTests {
         let dir = root.appendingPathComponent("Sources/CoreTendApp")
         for name in try SourceTree.swiftFiles(under: dir) {
             let text = try String(contentsOf: dir.appendingPathComponent(name), encoding: .utf8)
+            // Code only. A comment explaining why an API was retired is not a
+            // use of it, and counting one reported a file that had removed it
+            // as a file that still called it.
+            let code = text.split(separator: "\n")
+                .filter { !$0.trimmingCharacters(in: .whitespaces).hasPrefix("//") }
+                .joined(separator: "\n")
             for retired in ["mcPrimaryButton", "mcSecondaryButton", "mcDestructiveButton",
                             "MCPrimaryButtonStyle", "MCCard", ".mcSurface(", "MCElevation"] {
-                #expect(!text.contains(retired), "\(name) uses retired API \(retired)")
+                #expect(!code.contains(retired), "\(name) uses retired API \(retired)")
             }
-            for line in text.split(separator: "\n") where line.contains("buttonStyle") {
+            for line in code.split(separator: "\n") where line.contains("buttonStyle") {
                 #expect(!line.contains("MCColor.teal"), "\(name) tints a control with the brand: \(line)")
             }
         }
