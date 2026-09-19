@@ -11,11 +11,6 @@
 "cleanup.resume_hint" = "Continue l’analyse suspendue.";
 "clutter.pause_hint" = "Suspend temporairement l’analyse en cours.";
 "clutter.resume_hint" = "Continue l’analyse suspendue.";
-"spacelens.pause_hint" = "Suspendre temporairement l’analyse d’Explorer.";
-"spacelens.resume_hint" = "Reprendre l’analyse d’Explorer.";
-"dupes.pause_hint" = "Suspend temporairement l’analyse des doublons.";
-"dupes.resume_hint" = "Continue l’analyse des doublons suspendue.";
-"common.running" = "En cours…";
 "common.reveal_in_finder" = "Afficher dans le Finder";
 "common.clear" = "Effacer";
 
@@ -42,14 +37,12 @@
 "smartcare.scan_again" = "Analyser à nouveau";
 
 /* Cleanup */
-"cleanup.title" = "Nettoyage";
 "cleanup.failed" = "Échec du nettoyage : %@";
 "cleanup.idle.title" = "Trouver les fichiers à examiner";
 "cleanup.idle.subtitle" = "Analyse les caches, journaux, rapports de plantage et fichiers de compilation Xcode.
 Rien n’est supprimé pendant l’analyse.";
 "cleanup.start_scan" = "Démarrer l’analyse";
 "cleanup.scanning_progress" = "%d éléments analysés — %@ trouvés";
-"cleanup.review.selected" = "%d éléments — %@ sélectionnés";
 "cleanup.review.truncated" = "%d sur %d affichés — %@ trouvés au total";
 "cleanup.move_to_trash" = "Déplacer vers la Corbeille";
 "cleanup.select_item" = "Sélectionner %@";
@@ -58,7 +51,6 @@ Rien n’est supprimé pendant l’analyse.";
 /* Protection */
 
 /* Space Lens */
-"spacelens.title" = "Explorer";
 "spacelens.delete.help" = "Mettre à la Corbeille";
 "spacelens.delete.confirm_title" = "Mettre « %@ » à la Corbeille ?";
 "spacelens.delete.confirm_action" = "Mettre à la Corbeille";
@@ -100,8 +92,6 @@ Rien n’est supprimé pendant l’analyse.";
 "apps.empty" = "Aucune application trouvée";
 "apps.downloaded" = "Téléchargée";
 "apps.downloaded.help" = "Téléchargée depuis le web ou un e-mail et validée par Gatekeeper";
-"apps.a11y.version" = "version %@";
-"apps.unknown" = "inconnue";
 "apps.unknown_bundle_id" = "identifiant de bundle inconnu";
 "apps.version_prefix" = "v%@";
 "apps.last_used" = "dernière utilisation %@";
@@ -114,8 +104,6 @@ Rien n’est supprimé pendant l’analyse.";
 "apps.select_prompt" = "Sélectionnez une application";
 
 /* My Clutter */
-"clutter.tab.duplicates" = "Doublons";
-"clutter.title" = "Plus volumineux et plus anciens";
 "clutter.idle.title" = "Trouvez les fichiers volumineux et oubliés";
 "clutter.idle.subtitle" = "Analyse Téléchargements, Documents, Bureau et les dossiers média.
 Rien n’est jamais supprimé automatiquement — vous examinez et agissez dans le Finder.";
@@ -138,7 +126,6 @@ Rien n’est jamais supprimé automatiquement — vous examinez et agissez dans 
 "clutter.sort.size" = "Taille";
 "clutter.sort.age" = "Ancienneté";
 "clutter.new_analysis" = "Nouvelle analyse";
-"clutter.modified" = "modifié le %@";
 "clutter.quick_look" = "Aperçu rapide";
 "clutter.search_placeholder" = "Rechercher par nom";
 "clutter.volume" = "Volume";
@@ -170,7 +157,6 @@ La correspondance est prudente ; rien n’est présélectionné.";
 "leftovers.finished.moved" = "%@ déplacés vers la Corbeille";
 "leftovers.results.summary" = "%d candidats — %@ sélectionnés sur %@";
 "leftovers.select_item" = "Sélectionner %@";
-"leftovers.shared_ambiguous_a11y" = "partagé ou ambigu";
 "leftovers.shared_review" = "Partagé / à vérifier";
 "leftovers.not_installed" = "%@ — l’application avec cet identifiant n’est plus installée";
 
@@ -183,7 +169,6 @@ La correspondance est prudente ; rien n’est présélectionné.";
 "privacy.caches_selected" = "Caches de navigateur — %@ sélectionnés";
 "privacy.clean_caches" = "Nettoyer les caches";
 "privacy.browser_profile" = "%@ — %@";
-"privacy.cache_size" = "Cache %@";
 "privacy.history_size" = "Historique %@";
 "privacy.cookies_size" = "Cookies %@";
 "privacy.footer" = "Seuls les caches sont nettoyés (reconstruits automatiquement, déplacés vers la Corbeille). Historique, cookies et sessions sont affichés à titre indicatif ; leur suppression n’est pas encore prise en charge pour éviter de corrompre les bases de données du navigateur ou de vous déconnecter.";
@@ -197,12 +182,10 @@ Les liens physiques vers le même fichier représentent déjà les mêmes donné
 "dupes.comparing" = "Comparaison de %d sur %d candidats";
 "dupes.building_inventory" = "Construction de l’inventaire des fichiers…";
 "dupes.none_found" = "Aucun doublon trouvé";
-"dupes.results.summary" = "%d groupes — %@ sélectionnés sur %@ en double";
 "dupes.move_to_trash" = "Déplacer les copies vers la Corbeille";
 "dupes.select_copy" = "Sélectionner la copie %@";
 "dupes.suggested_keeper" = "Copie à conserver";
 "dupes.suggested_keeper.why" = "Le chemin le plus court l’emporte ; l’ordre alphabétique départage. Ne se base pas sur l’âge du fichier.";
-"dupes.group_header" = "%d copies × %@";
 
 /* Similar Images */
 "similar.idle.title" = "Trouver les images visuellement similaires";
@@ -215,17 +198,10 @@ Les bibliothèques Photos ne sont jamais touchées. Examinez dans le Finder ; 
 "similar.analyze_again" = "Analyser à nouveau";
 "similar.group_header" = "%d similaires — %@";
 "similar.best_resolution" = "Meilleure résolution";
-"similar.reveal_a11y" = "Afficher %@ dans le Finder";
-"similar.best_resolution_a11y" = "meilleure résolution";
 
 /* My Activity */
-"activity.export_csv" = "Exporter en CSV";
-"activity.range.last7" = "7 derniers jours";
-"activity.range.last30" = "30 derniers jours";
-"activity.row.real_a11y" = "réel";
 
 /* Cloud Cleanup */
-"cloud.nav_title" = "Cloud Cleanup";
 "cloud.empty.title" = "Aucun dossier cloud trouvé";
 "cloud.empty.subtitle" = "Les dossiers locaux d’iCloud Drive, Dropbox, Google Drive et OneDrive sont détectés automatiquement s’ils sont présents.";
 "cloud.measuring" = "Mesure de l’empreinte locale…";
@@ -234,9 +210,6 @@ Les bibliothèques Photos ne sont jamais touchées. Examinez dans le Finder ; 
 Analyse uniquement — supprimer des fichiers synchronisés les retirerait de tous les appareils.";
 "cloud.results.summary" = "%@ sur ce Mac sur %@ au total — analyse uniquement, rien n’est téléchargé ni supprimé";
 "cloud.back" = "Retour";
-"cloud.local_bytes" = "%@ en local";
-"cloud.total_bytes" = "%@ au total";
-"cloud.reveal_a11y" = "Afficher %@ dans le Finder";
 "cloud.entry_a11y" = "%@, %@, %@ en local sur %@ au total";
 "cloud.state.partial" = "partiellement local";
 "cloud.state.placeholder" = "en ligne uniquement";
@@ -248,20 +221,13 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "performance.nav_title" = "Performance";
 "performance.cpu" = "CPU";
 "performance.memory" = "Mémoire";
-"performance.storage" = "Disque";
-"performance.of_all_cores" = "de tous les cœurs";
 "performance.memory_detail" = "%@ sur %@";
-"performance.free_detail" = "%@ libres";
-"performance.cpu_chart_title" = "CPU — 2 dernières minutes";
-"performance.system" = "Système";
 "performance.memory_pressure" = "Pression mémoire";
 "performance.thermal_state" = "État thermique";
 "performance.uptime" = "Disponibilité";
 "performance.chart_a11y" = "Graphique d’utilisation du CPU, actuellement %d pour cent";
 "performance.collecting_samples" = "Collecte des échantillons…";
 "performance.launchagents.title" = "Agents de connexion (LaunchAgents)";
-"performance.launchagents.subtitle" = "Agents tiers lancés à la connexion (~/Library/LaunchAgents). Les entrées rompues pointent vers des programmes qui n’existent plus. Inspection uniquement — désactivez-les dans Réglages Système › Éléments de connexion.";
-"performance.launchagents.empty" = "Aucun LaunchAgent utilisateur.";
 "performance.launchagents.missing" = "manquant : %@";
 
 /* Settings */
@@ -274,7 +240,6 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "settings.menu_bar_detail" = "L’élément de la barre de menus n’échantillonne les métriques système que lorsque son panneau est ouvert, ou toutes les 30 s en arrière-plan pour afficher l’indicateur d’attention.";
 "settings.installed" = "Installé";
 "settings.not_installed" = "Non installé";
-"settings.full_disk_access" = "Accès complet au disque";
 "settings.granted" = "Accordé";
 "settings.not_granted" = "Non accordé";
 "settings.open_system_settings" = "Ouvrir les Réglages Système";
@@ -289,7 +254,6 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "diagnostic.review_notice" = "Vérifiez toujours le contenu avant de le publier sur GitHub ou de l’envoyer à qui que ce soit.";
 "diagnostic.save" = "Enregistrer…";
 "settings.about" = "À propos";
-"settings.version" = "Version";
 
 /* Onboarding */
 "onboarding.step0.subtitle" = "Entretien local, transparent et réversible pour macOS. Rien de plus, rien de caché.";
@@ -316,49 +280,19 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "palette.scan_home" = "Analyser le dossier personnel dans Explorer";
 "protection.tab.integrity" = "Provenance";
 "settings.this_copy_signature" = "Signature de cette copie";
-"integrity.explainer.title" = "Des signaux natifs, pas un scanner";
 "integrity.explainer.body" = "CoreTend lit des informations que macOS enregistre déjà — aucun moteur d’analyse, aucune base de signatures, rien à télécharger. Vous voyez ce qui est déjà vrai sur vos téléchargements, vos applications et ce qui démarre à la connexion.";
 "integrity.downloads.title" = "Téléchargements récents";
 "integrity.downloads.empty" = "Aucun fichier dans Téléchargements.";
 "integrity.downloads.no_provenance" = "Aucune origine enregistrée";
-"integrity.inspector.title" = "Vérifier la signature d’une app";
-"integrity.inspector.subtitle" = "Choisissez une application pour voir qui l’a signée et si la signature est valide.";
 "integrity.inspector.choose" = "Choisir une application…";
 "integrity.tier.apple" = "Signé par Apple";
 "integrity.tier.team" = "Signé par l’équipe %@";
 "integrity.tier.unsigned" = "Ad-hoc ou non signé";
 "integrity.tier.invalid" = "La signature ne se valide pas";
 "integrity.login_items.title" = "Démarre à la connexion";
-"integrity.login_items.subtitle" = "Agents et daemons de lancement trouvés dans LaunchAgents/LaunchDaemons.";
-"integrity.login_items.empty" = "Aucun trouvé.";
 "module.my_activity" = "Mon activité";
 
 /* Dashboard */
-"dashboard.title" = "Tableau de bord";
-"dashboard.subtitle" = "Analyses locales, nettoyage réversible et contrôles d’intégrité dans un même espace.";
-"dashboard.primary_action" = "Analyser le stockage";
-"dashboard.secondary_action" = "Ouvrir Space Lens";
-"dashboard.status.signature" = "Signature";
-"dashboard.status.safety" = "Sécurité";
-"dashboard.status.trash_enabled" = "Corbeille activée";
-"dashboard.status.exclusions" = "Exclusions";
-"dashboard.status.exclusion_count" = "%d chemins";
-"dashboard.status.free_space" = "Espace libre";
-"dashboard.status.loading" = "Chargement";
-"dashboard.storage.title" = "Stockage";
-"dashboard.storage.detail" = "Analyse les caches, journaux, rapports de crash et données de compilation avant toute vérification de suppression.";
-"dashboard.storage.free_of_total" = "libres sur %@";
-"dashboard.spacelens.title" = "Space Lens";
-"dashboard.spacelens.detail" = "Cartographie l’usage disque d’un dossier, puis permet de zoomer, chercher et ouvrir les éléments dans le Finder.";
-"dashboard.duplicates.title" = "Doublons";
-"dashboard.duplicates.detail" = "Trouve les copies exactes par contenu et explique quelle version conserver avant toute action.";
-"dashboard.applications.title" = "Applications";
-"dashboard.applications.detail" = "Sépare les apps des caches, assistants, agents et documents personnels.";
-"dashboard.integrity.title" = "Intégrité";
-"dashboard.integrity.detail" = "Vérifiez la provenance des téléchargements, les niveaux de signature et ce qui démarre à la connexion.";
-"dashboard.activity.title" = "Activité";
-"dashboard.activity.empty" = "Aucune activité enregistrée.";
-"dashboard.open_module" = "Ouvrir %@";
 
 /* Safety log (SafetyCore audit trail persistence) */
 "common.done" = "Terminé";
@@ -372,11 +306,8 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "settings.remove_exclusion" = "Supprimer l’exclusion %@";
 
 /* Accessibility — Differentiate Without Color for elevated metrics */
-"performance.elevated" = "élevé";
 
 // MARK: First-run wizard (Step 13)
-"common.yes" = "Oui";
-"common.no" = "Non";
 "onboarding.start" = "Démarrer";
 "onboarding.welcome.local" = "Tout s’exécute localement sur ce Mac.";
 "onboarding.welcome.no_telemetry" = "Aucune télémétrie, statistique, publicité ni abonnement.";
@@ -420,7 +351,6 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "updates.is_prerelease" = "Il s’agit d’une préversion.";
 "updates.unsigned_warning" = "Cette version n’est ni signée ni notarisée par Apple. Vérifiez son empreinte avant de l’ouvrir.";
 "updates.open_release" = "Ouvrir la page de la version";
-"updates.how_to_verify" = "Comment vérifier un téléchargement";
 "updates.no_autoinstall" = "CoreTend ne télécharge ni n’installe jamais une mise à jour de lui-même. Les versions sont signées Developer ID et notarisées par Apple — vous téléchargez la nouvelle version depuis la page des releases, et macOS la vérifie à l’ouverture.";
 "updates.error_offline" = "Aucune connexion réseau. CoreTend fonctionne entièrement hors ligne ; cette vérification est facultative.";
 "updates.error_not_configured" = "La recherche de mises à jour n’est pas configurée.";
@@ -461,7 +391,6 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "cleanup.idle.safety_note" = "Une analyse ne supprime rien. Vous examinez chaque élément avant tout déplacement.";
 
 /* Space Lens idle */
-"spacelens.idle.tip" = "Code couleur par type : dossiers, médias, documents, archives et code.";
 "spacelens.favorites_recents" = "Favoris et récents";
 
 /* Niveaux de risque — partagés par les résultats d’analyse et le journal de sécurité. */
@@ -625,11 +554,6 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "overview.never_run" = "Jamais lancée";
 "overview.open" = "Ouvrir";
 "record.filter" = "Afficher";
-"record.filter_all" = "Tout";
-"record.filter_moved" = "Mis à la corbeille";
-"record.filter_refused" = "Refusés";
-"record.filter_failed" = "Échecs";
-"record.filter_scans" = "Analyses";
 "record.search" = "Rechercher dans le registre";
 "record.summary_moved_sentence" = "%@ mis à la corbeille en %d éléments";
 "record.summary_refused_sentence" = "%d refusés";

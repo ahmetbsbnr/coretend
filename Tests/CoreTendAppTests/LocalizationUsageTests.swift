@@ -73,16 +73,24 @@ struct LocalizationUsageTests {
         let used = try usedKeys()
         // Interpolated families, enumerated by the tests that own them.
         let interpolatedPrefixes = [
-            "authorization.", "risk.", "settings.notif.", "onboarding.security.",
-            "integrity.tier.", "cloud.state.", "apps.grouping.", "safety.reason.",
-            "shortcuts.", "menu.help.", "module.", "sidebar.", "updates.",
+            "authorization.", "risk.", "integrity.tier.", "cloud.state.",
+            "apps.grouping.", "safety.reason.", "shortcuts.", "menu.help.",
+            "module.", "sidebar.", "updates.",
         ]
+        // Plural families: `L(count == 1 ? base + "_one" : base + "_other")`.
+        // The base is a literal, the whole key never is.
+        let pluralSuffixes = ["_one", "_other"]
         let orphans = defined.subtracting(used).filter { key in
-            !interpolatedPrefixes.contains { key.hasPrefix($0) }
+            if interpolatedPrefixes.contains(where: { key.hasPrefix($0) }) { return false }
+            for suffix in pluralSuffixes where key.hasSuffix(suffix) {
+                if used.contains(String(key.dropLast(suffix.count))) { return false }
+            }
+            return true
         }
         // A ratchet, not a target: it may go down freely and must not drift up
-        // without someone noticing.
-        #expect(orphans.count <= 120,
+        // without someone noticing. Was 120 when three modules and a
+        // seven-step wizard were retired; 76 dead keys went with them.
+        #expect(orphans.count <= 25,
                 "\(orphans.count) unused keys — up from the recorded allowance. Sample: \(orphans.sorted().prefix(15))")
     }
 }

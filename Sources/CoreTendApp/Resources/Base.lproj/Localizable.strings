@@ -11,11 +11,6 @@
 "cleanup.resume_hint" = "Continue the paused scan.";
 "clutter.pause_hint" = "Temporarily suspend the current analysis.";
 "clutter.resume_hint" = "Continue the paused analysis.";
-"spacelens.pause_hint" = "Temporarily suspend the Explore scan.";
-"spacelens.resume_hint" = "Continue the paused Explore scan.";
-"dupes.pause_hint" = "Temporarily suspend the duplicate scan.";
-"dupes.resume_hint" = "Continue the paused duplicate scan.";
-"common.running" = "Running…";
 "common.reveal_in_finder" = "Reveal in Finder";
 "common.clear" = "Clear";
 
@@ -42,14 +37,12 @@
 "smartcare.scan_again" = "Scan Again";
 
 /* Cleanup */
-"cleanup.title" = "Cleanup";
 "cleanup.failed" = "Cleanup failed: %@";
 "cleanup.idle.title" = "Find files worth reviewing";
 "cleanup.idle.subtitle" = "Scans user caches, logs, crash reports and Xcode build data.
 Nothing is deleted during a scan.";
 "cleanup.start_scan" = "Start Scan";
 "cleanup.scanning_progress" = "Scanned %d items — %@ found";
-"cleanup.review.selected" = "%d items — %@ selected";
 "cleanup.review.truncated" = "%d of %d shown — %@ found in total";
 "cleanup.move_to_trash" = "Move to Trash";
 "cleanup.select_item" = "Select %@";
@@ -58,7 +51,6 @@ Nothing is deleted during a scan.";
 /* Protection */
 
 /* Space Lens */
-"spacelens.title" = "Explore";
 "spacelens.delete.help" = "Move to Trash";
 "spacelens.delete.confirm_title" = "Move \"%@\" to Trash?";
 "spacelens.delete.confirm_action" = "Move to Trash";
@@ -100,8 +92,6 @@ Nothing is deleted during a scan.";
 "apps.empty" = "No applications found";
 "apps.downloaded" = "Downloaded";
 "apps.downloaded.help" = "Downloaded from the web or mail and passed Gatekeeper";
-"apps.a11y.version" = "version %@";
-"apps.unknown" = "unknown";
 "apps.unknown_bundle_id" = "unknown bundle id";
 "apps.version_prefix" = "v%@";
 "apps.last_used" = "last used %@";
@@ -114,8 +104,6 @@ Nothing is deleted during a scan.";
 "apps.select_prompt" = "Select an application";
 
 /* My Clutter */
-"clutter.tab.duplicates" = "Duplicates";
-"clutter.title" = "Largest & oldest";
 "clutter.idle.title" = "Find large, forgotten files";
 "clutter.idle.subtitle" = "Analyzes Downloads, Documents, Desktop and media folders.
 Nothing is ever deleted automatically — you review and act in Finder.";
@@ -138,7 +126,6 @@ Nothing is ever deleted automatically — you review and act in Finder.";
 "clutter.sort.size" = "Size";
 "clutter.sort.age" = "Age";
 "clutter.new_analysis" = "New Analysis";
-"clutter.modified" = "modified %@";
 "clutter.quick_look" = "Quick Look";
 "clutter.search_placeholder" = "Search by name";
 "clutter.volume" = "Volume";
@@ -170,7 +157,6 @@ Matching is conservative; nothing is preselected.";
 "leftovers.finished.moved" = "%@ moved to Trash";
 "leftovers.results.summary" = "%d candidates — %@ selected of %@";
 "leftovers.select_item" = "Select %@";
-"leftovers.shared_ambiguous_a11y" = "shared or ambiguous";
 "leftovers.shared_review" = "Shared / review";
 "leftovers.not_installed" = "%@ — app with this identifier is not installed";
 
@@ -183,7 +169,6 @@ Matching is conservative; nothing is preselected.";
 "privacy.caches_selected" = "Browser caches — %@ selected";
 "privacy.clean_caches" = "Clean Caches";
 "privacy.browser_profile" = "%@ — %@";
-"privacy.cache_size" = "Cache %@";
 "privacy.history_size" = "History %@";
 "privacy.cookies_size" = "Cookies %@";
 "privacy.footer" = "Only caches are cleaned (rebuilt automatically, moved to Trash). History, cookies and sessions are shown for information; removing them is not yet supported to avoid corrupting browser databases or logging you out.";
@@ -197,12 +182,10 @@ Hard links to the same file are already the same data and are never counted as d
 "dupes.comparing" = "Comparing %d of %d candidates";
 "dupes.building_inventory" = "Building file inventory…";
 "dupes.none_found" = "No duplicates found";
-"dupes.results.summary" = "%d groups — %@ selected of %@ duplicated";
 "dupes.move_to_trash" = "Move Copies to Trash";
 "dupes.select_copy" = "Select copy %@";
 "dupes.suggested_keeper" = "Suggested keeper";
 "dupes.suggested_keeper.why" = "Shallowest path wins; alphabetical order breaks ties. Not based on file age.";
-"dupes.group_header" = "%d copies × %@";
 
 /* Similar Images */
 "similar.idle.title" = "Find visually similar images";
@@ -215,17 +198,10 @@ Photos libraries are never touched. Review in Finder; nothing is deleted here.";
 "similar.analyze_again" = "Analyze Again";
 "similar.group_header" = "%d similar — %@";
 "similar.best_resolution" = "Best resolution";
-"similar.reveal_a11y" = "Reveal %@ in Finder";
-"similar.best_resolution_a11y" = "best resolution";
 
 /* My Activity */
-"activity.export_csv" = "Export CSV";
-"activity.range.last7" = "Last 7 days";
-"activity.range.last30" = "Last 30 days";
-"activity.row.real_a11y" = "real";
 
 /* Cloud Cleanup */
-"cloud.nav_title" = "Cloud Cleanup";
 "cloud.empty.title" = "No cloud folders found";
 "cloud.empty.subtitle" = "iCloud Drive, Dropbox, Google Drive and OneDrive local folders are detected automatically when present.";
 "cloud.measuring" = "Measuring local footprint…";
@@ -234,9 +210,6 @@ Photos libraries are never touched. Review in Finder; nothing is deleted here.";
 Analysis only — deleting synced files would remove them on every device.";
 "cloud.results.summary" = "%@ on this Mac of %@ total — analysis only, nothing downloaded or deleted";
 "cloud.back" = "Back";
-"cloud.local_bytes" = "%@ local";
-"cloud.total_bytes" = "%@ total";
-"cloud.reveal_a11y" = "Reveal %@ in Finder";
 "cloud.entry_a11y" = "%@, %@, %@ local of %@ total";
 "cloud.state.partial" = "partially local";
 "cloud.state.placeholder" = "online only";
@@ -248,20 +221,13 @@ Analysis only — deleting synced files would remove them on every device.";
 "performance.nav_title" = "Performance";
 "performance.cpu" = "CPU";
 "performance.memory" = "Memory";
-"performance.storage" = "Disk";
-"performance.of_all_cores" = "of all cores";
 "performance.memory_detail" = "%@ of %@";
-"performance.free_detail" = "%@ free";
-"performance.cpu_chart_title" = "CPU — last 2 minutes";
-"performance.system" = "System";
 "performance.memory_pressure" = "Memory pressure";
 "performance.thermal_state" = "Thermal state";
 "performance.uptime" = "Uptime";
 "performance.chart_a11y" = "CPU usage chart, currently %d percent";
 "performance.collecting_samples" = "Collecting samples…";
 "performance.launchagents.title" = "Login LaunchAgents";
-"performance.launchagents.subtitle" = "Third-party agents started at login (~/Library/LaunchAgents). Broken entries point to programs that no longer exist. Inspection only — disable them in System Settings › Login Items.";
-"performance.launchagents.empty" = "No user LaunchAgents.";
 "performance.launchagents.missing" = "missing: %@";
 
 /* Settings */
@@ -274,7 +240,6 @@ Analysis only — deleting synced files would remove them on every device.";
 "settings.menu_bar_detail" = "The menu bar item samples system metrics only while its panel is open, or every 30s in the background just to show the attention indicator.";
 "settings.installed" = "Installed";
 "settings.not_installed" = "Not installed";
-"settings.full_disk_access" = "Full Disk Access";
 "settings.granted" = "Granted";
 "settings.not_granted" = "Not granted";
 "settings.open_system_settings" = "Open System Settings";
@@ -289,7 +254,6 @@ Analysis only — deleting synced files would remove them on every device.";
 "diagnostic.review_notice" = "Always check the contents before posting this to GitHub or sending it to anyone.";
 "diagnostic.save" = "Save…";
 "settings.about" = "About";
-"settings.version" = "Version";
 
 /* Onboarding */
 "onboarding.step0.subtitle" = "Local, transparent and reversible care for macOS. Nothing more, nothing hidden.";
@@ -316,49 +280,19 @@ Analysis only — deleting synced files would remove them on every device.";
 "palette.scan_home" = "Scan Home in Explore";
 "protection.tab.integrity" = "Provenance";
 "settings.this_copy_signature" = "This copy's signature";
-"integrity.explainer.title" = "Native signals, not a scanner";
 "integrity.explainer.body" = "CoreTend reads information macOS already records — no scanning engine, no signature database, nothing downloaded. It shows you what is already true about your downloads, your apps, and what runs at login.";
 "integrity.downloads.title" = "Recent downloads";
 "integrity.downloads.empty" = "No files in Downloads.";
 "integrity.downloads.no_provenance" = "No origin recorded";
-"integrity.inspector.title" = "Check an app’s signature";
-"integrity.inspector.subtitle" = "Pick any app to see who signed it and whether the signature is valid.";
 "integrity.inspector.choose" = "Choose an App…";
 "integrity.tier.apple" = "Signed by Apple";
 "integrity.tier.team" = "Signed by team %@";
 "integrity.tier.unsigned" = "Ad-hoc or unsigned";
 "integrity.tier.invalid" = "Signature does not validate";
 "integrity.login_items.title" = "Runs at login";
-"integrity.login_items.subtitle" = "Launch agents and daemons found in LaunchAgents/LaunchDaemons.";
-"integrity.login_items.empty" = "None found.";
 "module.my_activity" = "My Activity";
 
 /* Dashboard */
-"dashboard.title" = "Dashboard";
-"dashboard.subtitle" = "Local scans, reversible cleanup, and integrity checks in one workspace.";
-"dashboard.primary_action" = "Scan Storage";
-"dashboard.secondary_action" = "Open Space Lens";
-"dashboard.status.signature" = "Signature";
-"dashboard.status.safety" = "Safety";
-"dashboard.status.trash_enabled" = "Trash enabled";
-"dashboard.status.exclusions" = "Exclusions";
-"dashboard.status.exclusion_count" = "%d paths";
-"dashboard.status.free_space" = "Free space";
-"dashboard.status.loading" = "Loading";
-"dashboard.storage.title" = "Storage";
-"dashboard.storage.detail" = "Scan caches, logs, crash reports, and build data before reviewing anything that can move to Trash.";
-"dashboard.storage.free_of_total" = "free of %@";
-"dashboard.spacelens.title" = "Space Lens";
-"dashboard.spacelens.detail" = "Map disk usage from a chosen folder, then zoom, search, and open items in Finder.";
-"dashboard.duplicates.title" = "Duplicates";
-"dashboard.duplicates.detail" = "Find exact matches by content and explain the safer copy to keep before any action.";
-"dashboard.applications.title" = "Applications";
-"dashboard.applications.detail" = "Separate app bundles from caches, helpers, agents, and personal documents.";
-"dashboard.integrity.title" = "Integrity";
-"dashboard.integrity.detail" = "Check download provenance, code-signature tiers, and what launches at login.";
-"dashboard.activity.title" = "Activity";
-"dashboard.activity.empty" = "No activity recorded yet.";
-"dashboard.open_module" = "Open %@";
 
 /* Safety log (SafetyCore audit trail persistence) */
 "common.done" = "Done";
@@ -372,11 +306,8 @@ Analysis only — deleting synced files would remove them on every device.";
 "settings.remove_exclusion" = "Remove exclusion %@";
 
 /* Accessibility — Differentiate Without Color for elevated metrics */
-"performance.elevated" = "elevated";
 
 // MARK: First-run wizard (Step 13)
-"common.yes" = "Yes";
-"common.no" = "No";
 "onboarding.start" = "Start";
 "onboarding.welcome.local" = "Everything runs locally on this Mac.";
 "onboarding.welcome.no_telemetry" = "No telemetry, analytics, ads or subscriptions.";
@@ -420,7 +351,6 @@ Analysis only — deleting synced files would remove them on every device.";
 "updates.is_prerelease" = "This is a prerelease.";
 "updates.unsigned_warning" = "This build is not signed or notarized by Apple. Verify its checksum before opening it.";
 "updates.open_release" = "Open the release page";
-"updates.how_to_verify" = "How to verify a download";
 "updates.no_autoinstall" = "CoreTend never downloads or installs an update by itself. Releases are Developer ID signed and Apple-notarized — you download the new build from the release page, and macOS verifies it on open.";
 "updates.error_offline" = "No network connection. CoreTend works fully offline; this check is optional.";
 "updates.error_not_configured" = "Update checking is not configured.";
@@ -461,7 +391,6 @@ Analysis only — deleting synced files would remove them on every device.";
 "cleanup.idle.safety_note" = "A scan deletes nothing. You review every item before anything moves.";
 
 /* Space Lens idle */
-"spacelens.idle.tip" = "Color-coded by type: folders, media, documents, archives and code.";
 "spacelens.favorites_recents" = "Favorites & Recents";
 
 /* Risk levels — shared by scan findings and the Safety Log. Previously the raw
@@ -627,11 +556,6 @@ Analysis only — deleting synced files would remove them on every device.";
 "overview.never_run" = "Never run";
 "overview.open" = "Open";
 "record.filter" = "Show";
-"record.filter_all" = "All";
-"record.filter_moved" = "Moved to Trash";
-"record.filter_refused" = "Refused";
-"record.filter_failed" = "Failed";
-"record.filter_scans" = "Scans";
 "record.search" = "Search the Record";
 "record.summary_moved_sentence" = "%@ moved to the Trash in %d items";
 "record.summary_refused_sentence" = "%d refused";

@@ -8,13 +8,13 @@ What each landing view actually provides. A blank cell is a gap, not a style cho
 
 | Module | Lines | Toolbar | Empty state | Loading | Error | Sub-nav | a11y labels |
 |---|---:|:-:|:-:|:-:|:-:|:-:|---:|
-| Overview | 277 | — | — | — | — | — | 2 |
-| Record | 477 | yes | yes | yes | yes | — | 3 |
+| Overview | 282 | — | — | — | — | — | 4 |
+| Record | 478 | yes | yes | yes | yes | — | 3 |
 | Cleanup | 433 | — | — | — | yes | yes | 3 |
 | Explore | 619 | yes | — | — | yes | yes | 7 |
 | Duplicates | 492 | — | yes | — | yes | — | 3 |
-| Applications | 498 | — | yes | yes | — | yes | 1 |
-| Integrity | 197 | — | yes | — | — | yes | 0 |
+| Applications | 520 | — | yes | yes | — | yes | 2 |
+| Integrity | 201 | — | yes | — | — | yes | 2 |
 | Performance | 188 | — | — | — | — | — | 2 |
 
 **Gaps across 8 modules:** no toolbar ×6, no loading ×6, no empty ×4, no error ×4, no subnav ×4.
@@ -23,7 +23,7 @@ What each landing view actually provides. A blank cell is a gap, not a style cho
 
 - **11 opacity literals**, 6 distinct values: `0.18`×6, `0.16`×1, `0.55`×1, `0.12`×1, `0.35`×1, `0.85`×1.
   None is a token. Each is an unmeasured local decision.
-- **17 numeric paddings** bypassing `MCSpacing`: `2`×3, `8`×3, `6`×2, `1`×2, `5`×2, `4`×1, `28`×1, `7`×1, `3`×1, `14`×1.
+- **17 numeric paddings** bypassing `MCSpacing`: `2`×4, `6`×3, `8`×3, `5`×2, `4`×1, `7`×1, `3`×1, `14`×1, `1`×1.
 - **2 raw `Color(...)` constructions** outside DesignSystem.
 
 ## 3. Typography
@@ -34,8 +34,8 @@ What each landing view actually provides. A blank cell is a gap, not a style cho
 
 ## 4. Iconography
 
-- **34 distinct SF Symbols**, 58 uses.
-- **11 symbols carry more than one meaning**: `exclamationmark.triangle.fill`×8, `magnifyingglass`×7, `star`×3, `checkmark.circle`×3, `minus.circle`×2, `eye.slash`×2, `eye`×2, `exclamationmark.triangle`×2, `arrow.down.circle`×2, `checkmark.seal.fill`×2.
+- **32 distinct SF Symbols**, 54 uses.
+- **11 symbols carry more than one meaning**: `exclamationmark.triangle.fill`×8, `magnifyingglass`×5, `star`×3, `checkmark.circle`×3, `minus.circle`×2, `eye.slash`×2, `eye`×2, `exclamationmark.triangle`×2, `arrow.down.circle`×2, `checkmark.seal.fill`×2.
   A symbol used for both a module and an illustration teaches the user nothing.
 
 ## 5. Copy that claims more than the app knows
@@ -44,7 +44,7 @@ What each landing view actually provides. A blank cell is a gap, not a style cho
 verified. These are every other string of that shape — each needs a decision, not
 a glance.
 
-### Base — 16 of 575 strings
+### Base — 14 of 506 strings
 
 | Key | String |
 |---|---|
@@ -55,9 +55,7 @@ a glance.
 | `onboarding.start.cleanup` | Caches, logs and build data that are safe to review. |
 | `onboarding.start.subtitle` | Every scan is read-only. Nothing moves until you review it. |
 | `onboarding.welcome.open_source` | Open source — you can read every line. |
-| `performance.of_all_cores` | of all cores |
 | `record.empty_message` | Every scan, every approval and every refusal is written here as it happens. |
-| `record.filter_all` | All |
 | `record.purge_confirm_message` | All %d entries are removed permanently. The record is append-only: nothing restores them, and files already moved to the Trash are not affected. |
 | `record.reversible_note` | Every item is recoverable until the Trash is emptied. |
 | `settings.erase_record_message` | Every operation and event CoreTend recorded is removed permanently. Files already moved to the Trash are not affected. |
@@ -65,51 +63,45 @@ a glance.
 | `sidebar.optimize` | Optimize |
 | `spacelens.filter_all` | All |
 
-### fr — 46 of 575 strings
+### fr — 40 of 506 strings
 
 | Key | String |
 |---|---|
-| `apps.uninstall_confirm.message` | L’application et les éléments associés sélectionnés seront déplacés vers la Corbeille. Vérifiez la sélection avant de continuer. |
+| `apps.uninstall_confirm.message` | %1$@ et %2$d éléments vont à la corbeille — %3$@ au total. Ils y restent récupérables tant que vous ne la videz pas. |
 | `authorization.fullDisk.title` | Accès complet au disque |
 | `authorization.undetermined` | Rien à vérifier |
 | `cleanup.exclusions_unavailable` | Vos dossiers exclus n’ont pas pu être lus, donc rien n’a été sélectionné pour vous. Des dossiers que vous avez protégés peuvent figurer dans cette liste — vérifiez chaque élément avant de mettre quoi que ce soit à la corbeille. |
 | `cleanup.idle.safety_note` | Une analyse ne supprime rien. Vous examinez chaque élément avant tout déplacement. |
 | `clutter.all_volumes` | Tous les volumes |
 | `common.trash_confirm.title` | Déplacer la sélection vérifiée vers la Corbeille ? |
-| `dashboard.integrity.detail` | Vérifiez la provenance des téléchargements, les niveaux de signature et ce qui démarre à la connexion. |
-| `dashboard.storage.detail` | Analyse les caches, journaux, rapports de crash et données de compilation avant toute vérification de suppression. |
 | `diagnostic.review_notice` | Vérifiez toujours le contenu avant de le publier sur GitHub ou de l’envoyer à qui que ce soit. |
 | `dupes.select_extras` | Sélectionner toutes les copies en trop |
 | `dupes.select_group_message` | Chaque groupe est un même fichier présent à plusieurs endroits. |
-| `integrity.inspector.title` | Vérifier la signature d’une app |
 | `leftovers.shared_review` | Partagé / à vérifier |
 | `onboarding.fileaccess.limited` | Sans accès complet au disque, les données Mail et Safari restent inaccessibles. |
-| `onboarding.fileaccess.subtitle` | L’accès complet au disque est facultatif. L’application fonctionne sans ; certains dossiers ne peuvent alors pas être analysés. |
+| `onboarding.fileaccess.subtitle` | L’accès complet au disque est facultatif. L’application fonctionne sans ; certains dossiers ne peuvent alors pas être analysés. |
 | `onboarding.start.applications` | Ce qui est installé, et ce que chaque app laisse derrière elle. |
 | `onboarding.start.subtitle` | Chaque analyse est en lecture seule. Rien ne bouge avant votre revue. |
 | `onboarding.welcome.open_source` | Open source — vous pouvez lire chaque ligne. |
 | `overview.attention_fda` | Sans l’accès complet au disque, CoreTend ne voit pas l’essentiel du disque. |
-| `performance.of_all_cores` | de tous les cœurs |
-| `privacy.empty.subtitle` | Les données Safari nécessitent l’accès complet au disque ; les profils Chrome et Firefox sont détectés automatiquement s’ils sont présents. |
+| `privacy.empty.subtitle` | Les données Safari nécessitent l’accès complet au disque ; les profils Chrome et Firefox sont détectés automatiquement s’ils sont présents. |
 | `record.empty_message` | Chaque analyse, chaque approbation et chaque refus s’inscrit ici au fil de l’eau. |
 | `record.no_selection_message` | Chaque entrée détaille ce que CoreTend a déplacé et ce qu’il a refusé de toucher. |
-| `record.purge_confirm_message` | Les %d entrées sont supprimées définitivement. Le registre est en ajout seul : rien ne les restaure, et les fichiers déjà mis à la corbeille ne sont pas affectés. |
+| `record.purge_confirm_message` | Les %d entrées sont supprimées définitivement. Le registre est en ajout seul : rien ne les restaure, et les fichiers déjà mis à la corbeille ne sont pas affectés. |
 | `record.reversible_note` | Chaque élément reste récupérable tant que la corbeille n’est pas vidée. |
-| `settings.data_detail_updates` | Tout ce que CoreTend analyse reste sur ce Mac. Aucun compte, aucune télémétrie, aucune statistique. La seule requête qu’il effectue est la vérification de mise à jour ci-dessous : elle demande un fichier de version à une adresse publique et n’envoie rien sur vous, vos fichiers ou votre Mac. |
+| `settings.data_detail_updates` | Tout ce que CoreTend analyse reste sur ce Mac. Aucun compte, aucune télémétrie, aucune statistique. La seule requête qu’il effectue est la vérification de mise à jour ci-dessous : elle demande un fichier de version à une adresse publique et n’envoie rien sur vous, vos fichiers ou votre Mac. |
 | `settings.erase_record_message` | Chaque opération et chaque événement enregistrés par CoreTend sont supprimés définitivement. Les fichiers déjà mis à la corbeille ne sont pas affectés. |
-| `settings.full_disk_access` | Accès complet au disque |
 | `settings.menu_bar_detail` | L’élément de la barre de menus n’échantillonne les métriques système que lorsque son panneau est ouvert, ou toutes les 30 s en arrière-plan pour afficher l’indicateur d’attention. |
-| `settings.store_ephemeral` | CoreTend n’a pas pu ouvrir sa base de données : cette session fonctionne en mémoire, et vos exclusions, le journal de sûreté et l’historique disparaîtront à la fermeture. Raison : %@ |
-| `settings.store_unavailable` | CoreTend n’a pas pu ouvrir sa base de données. Les exclusions, le journal de sûreté et l’historique sont indisponibles cette session. Raison : %@ |
+| `settings.store_ephemeral` | CoreTend n’a pas pu ouvrir sa base de données : cette session fonctionne en mémoire, et vos exclusions, le journal de sûreté et l’historique disparaîtront à la fermeture. Raison : %@ |
+| `settings.store_unavailable` | CoreTend n’a pas pu ouvrir sa base de données. Les exclusions, le journal de sûreté et l’historique sont indisponibles cette session. Raison : %@ |
 | `sidebar.free_up_space` | Libérer de l’espace |
 | `sidebar.optimize` | Optimiser |
 | `spacelens.delete.changed` | il a changé sur le disque après vérification, donc rien n’a été supprimé |
 | `spacelens.delete.confirm_message` | Déplace %@ vers la corbeille. Les fichiers y restent récupérables, et l’espace revient quand vous la videz. |
 | `spacelens.filter_all` | Toutes |
 | `updates.error_cancelled` | Vérification annulée. |
-| `updates.error_offline` | Aucune connexion réseau. CoreTend fonctionne entièrement hors ligne ; cette vérification est facultative. |
+| `updates.error_offline` | Aucune connexion réseau. CoreTend fonctionne entièrement hors ligne ; cette vérification est facultative. |
 | `updates.footer` | CoreTend détecte le canal de mise à jour propre à chaque application et vous y redirige. Il ne télécharge ni ne remplace jamais les binaires d’applications lui-même. |
-| `updates.how_to_verify` | Comment vérifier un téléchargement |
 | `updates.last_checked` | Dernière vérification |
 | `updates.no_autoinstall` | CoreTend ne télécharge ni n’installe jamais une mise à jour de lui-même. Les versions sont signées Developer ID et notarisées par Apple — vous téléchargez la nouvelle version depuis la page des releases, et macOS la vérifie à l’ouverture. |
 | `updates.unsigned_warning` | Cette version n’est ni signée ni notarisée par Apple. Vérifiez son empreinte avant de l’ouvrir. |
@@ -118,11 +110,11 @@ a glance.
 
 ## 6. Localization
 
-- Base **575** keys · fr **575** keys.
+- Base **506** keys · fr **506** keys.
 - Only in Base: 0 
 - Only in fr: 0 
-- **123 defined but never referenced** — dead weight carried in two languages.
-  Sample: ['activity.export_csv', 'activity.range.last30', 'activity.range.last7', 'activity.row.real_a11y', 'apps.a11y.version', 'apps.unknown', 'authorization.denied', 'authorization.desktop.impact', 'authorization.desktop.title', 'authorization.documents.impact', 'authorization.documents.title', 'authorization.downloads.impact']
+- **53 defined but never referenced** — dead weight carried in two languages.
+  Sample: ['authorization.denied', 'authorization.desktop.impact', 'authorization.desktop.title', 'authorization.documents.impact', 'authorization.documents.title', 'authorization.downloads.impact', 'authorization.downloads.title', 'authorization.fullDisk.impact', 'authorization.fullDisk.title', 'authorization.granted', 'authorization.notApplicable', 'authorization.removableVolumes.impact']
 - **6 referenced but undefined**: ['cloud.picker.subtitle', 'clutter.idle.subtitle', 'dupes.idle.subtitle', 'leftovers.idle.subtitle', 'record.filter_\\(rawValue)', 'similar.idle.subtitle']
 - Longest French relative to English (layout risk): `sidebar.reset` ×2.4, `updates.open_app` ×2.2, `palette.scan_home` ×2.1, `protection.tab.startup` ×2.1, `menubar.no_activity_yet` ×2.1, `settings.about.privacy` ×2.0
 
