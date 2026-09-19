@@ -603,3 +603,8 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "overview.scan_a11y" = "%1$@, %2$@";
 "record.open_trash" = "Ouvrir la corbeille";
 "record.removed_note" = "Certains ont été supprimés directement : leur volume n’a pas de corbeille, ils ne peuvent pas être remis.";
+"record.filter_all" = "Tout";
+"record.filter_moved" = "Mis à la corbeille";
+"record.filter_refused" = "Refusés";
+"record.filter_failed" = "Échecs";
+"record.filter_scans" = "Analyses";

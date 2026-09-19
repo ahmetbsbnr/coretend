@@ -73,7 +73,7 @@ insert app-03 error '<home>/Library/LaunchAgents/com.figma.agent.plist' app.laun
 
 # Three days ago — a large cleanup.
 insert clutter-04 executed '<home>/Library/Caches/Google/Chrome' cache.browser low 780000000 260000 'moved to Trash'
-insert clutter-04 executed '<home>/Library/Logs/DiagnosticReports' log.diagnostic low 122000000 260020 'moved to Trash'
+insert clutter-04 executed '<home>/Library/Logs/DiagnosticReports' log.diagnostic low 122000000 260020 'removed (no Trash on this volume)'
 
 # Events the app noted without touching a file. Scans precede the operations
 # they led to; the cleanup row is deliberately present, because the Record

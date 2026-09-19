@@ -75,7 +75,7 @@ struct LocalizationUsageTests {
         let interpolatedPrefixes = [
             "authorization.", "risk.", "integrity.tier.", "cloud.state.",
             "apps.grouping.", "safety.reason.", "shortcuts.", "menu.help.",
-            "module.", "sidebar.", "updates.",
+            "module.", "sidebar.", "updates.", "record.filter_",
         ]
         // Plural families: `L(count == 1 ? base + "_one" : base + "_other")`.
         // The base is a literal, the whole key never is.

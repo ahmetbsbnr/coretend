@@ -605,3 +605,8 @@ Analysis only — deleting synced files would remove them on every device.";
 "overview.scan_a11y" = "%1$@, %2$@";
 "record.open_trash" = "Open the Trash";
 "record.removed_note" = "Some of these were removed outright: their volume has no Trash, so they cannot be put back.";
+"record.filter_all" = "All";
+"record.filter_moved" = "Moved to Trash";
+"record.filter_refused" = "Refused";
+"record.filter_failed" = "Failed";
+"record.filter_scans" = "Scans";

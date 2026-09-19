@@ -322,3 +322,30 @@ struct LedgerReversibilityTests {
         #expect(entry.removedOutright.isEmpty)
     }
 }
+
+/// Every interpolated key family actually resolves.
+///
+/// The Record's filter labels are built as `L("record.filter_\(rawValue)")`.
+/// A tidy-up that removed "unused" keys deleted all five, and nothing failed:
+/// `L` returns the key itself, so the toolbar shipped a picker reading
+/// "record.filter_all". Enumerating the family is the only check that can
+/// catch it, because the whole key is never a literal anywhere.
+@Suite("Interpolated key families resolve")
+@MainActor
+struct InterpolatedKeyTests {
+    @Test func everyRecordFilterHasALabel() {
+        for filter in RecordViewModel.Filter.allCases {
+            #expect(filter.label != "record.filter_\(filter.rawValue)",
+                    "missing string for record.filter_\(filter.rawValue)")
+            #expect(!filter.label.contains("record."), "\(filter.label) looks like a key")
+        }
+    }
+
+    @Test func everyRecordEventKindHasATitle() {
+        for kind in ActivityRecord.Kind.allCases {
+            let title = RecordPhrasing.eventTitle(
+                ActivityRecord(kind: kind, summary: "", itemCount: 0, bytes: 0))
+            #expect(!title.hasPrefix("record."), "missing string for event kind \(kind)")
+        }
+    }
+}
