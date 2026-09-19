@@ -23,8 +23,10 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 - ☑ C-04 Retire `MCPrimaryButtonStyle`/Secondary/Destructive; use system styles;
   delete `OnAccentContrastTests`; keep a test that no view uses `MCColor.teal`
   as a button background.
-- ☑ C-05a `MCPermissionState`, used by Cleanup.
-- ☐ C-05b Explore, Applications and Integrity use it too.
+- ☑ C-05 `MCPermissionState` used by Cleanup, Explore and Duplicates.
+- ☐ C-05b Applications and Integrity read their own fixture roots and do not
+  depend on Full Disk Access the same way — decide per module whether the
+  gate belongs there at all rather than adding it by symmetry.
 - ☐ C-06 `MCStatusTag` (success/attention/failure/protected/inert) replaces
   ad-hoc capsules in Record, Integrity, Applications.
 - ☐ C-07 Remove every `.opacity(` on a colour outside DesignSystem (22 sites).

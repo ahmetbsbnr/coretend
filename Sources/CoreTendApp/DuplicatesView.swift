@@ -236,6 +236,10 @@ final class DuplicatesViewModel: CancellableScan {
 }
 
 struct DuplicatesView: View {
+    /// Full Disk Access, re-checked on appear. Without it this module reads a
+    /// fraction of what is there and reports it as a result.
+    @State private var hasFullDiskAccess = SystemAuthorization.probeLive().hasFullDiskAccess
+    @State private var scanAnyway = false
     @State private var model = DuplicatesViewModel()
     @State private var showMoveConfirmation = false
     @State private var selectedGroupID: String?
@@ -243,7 +247,17 @@ struct DuplicatesView: View {
     var body: some View {
         VStack(spacing: 0) {
             switch model.phase {
-            case .idle: idleView.onAppear { if CaptureHarness.autostartScan { model.start() } }
+            case .idle where !hasFullDiskAccess && !scanAnyway:
+                MCPermissionState(
+                    title: L("permission.fulldisk.title"),
+                    explanation: L("permission.fulldisk.explanation"),
+                    limitation: L("permission.fulldisk.limitation"),
+                    onContinue: { scanAnyway = true })
+            case .idle:
+                idleView.onAppear {
+                    hasFullDiskAccess = SystemAuthorization.probeLive().hasFullDiskAccess
+                    if CaptureHarness.autostartScan { scanAnyway = true; model.start() }
+                }
             case let .scanning(processed, total): scanningView(processed, total)
             case .empty: emptyView
             case .results, .executing: resultsView

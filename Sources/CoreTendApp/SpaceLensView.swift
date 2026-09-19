@@ -218,6 +218,10 @@ enum SpaceNodeCategory: String, Hashable {
 }
 
 struct SpaceMapView: View {
+    /// Full Disk Access, re-checked on appear. Without it this module reads a
+    /// fraction of what is there and reports it as a result.
+    @State private var hasFullDiskAccess = SystemAuthorization.probeLive().hasFullDiskAccess
+    @State private var scanAnyway = false
     @State private var model = SpaceLensViewModel()
     @Namespace private var zoomSpace
     @State private var selectedID: String?
@@ -232,13 +236,23 @@ struct SpaceMapView: View {
     var body: some View {
         VStack(spacing: 0) {
             switch model.phase {
+            case .idle where !hasFullDiskAccess && !scanAnyway:
+                MCPermissionState(
+                    title: L("permission.fulldisk.title"),
+                    explanation: L("permission.fulldisk.explanation"),
+                    limitation: L("permission.fulldisk.limitation"),
+                    onContinue: { scanAnyway = true })
             case .idle: idleView
             case let .scanning(items): scanningView(items)
             case .ready: readyView
             }
         }
         .onAppear {
-            if CaptureHarness.autostartScan, case .idle = model.phase { model.start(url: CaptureHarness.scanHome) }
+            hasFullDiskAccess = SystemAuthorization.probeLive().hasFullDiskAccess
+            if CaptureHarness.autostartScan, case .idle = model.phase {
+                scanAnyway = true
+                model.start(url: CaptureHarness.scanHome)
+            }
         }
         .toolbar {
             ToolbarItem {
