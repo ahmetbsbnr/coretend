@@ -147,7 +147,10 @@ struct IntegrityView: ModuleSubScreen {
                             .font(MCFont.caption).foregroundStyle(MCColor.textTertiary)
                             .lineLimit(evidenceLineLimit)
                     }
-                    .accessibilityElement(children: .combine)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(L("integrity.row_a11y", item.name,
+                                          ProvenanceSummary.acquisition(for: item) ?? L("integrity.downloads.no_provenance"),
+                                          item.isQuarantined ? L("integrity.a11y.quarantined") : L("integrity.a11y.not_quarantined")))
                     .contextMenu {
                         Button(L("common.reveal_in_finder")) {
                             NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: item.path)])
@@ -182,7 +185,7 @@ struct IntegrityView: ModuleSubScreen {
         case .adHocOrUnsigned: ("exclamationmark.triangle.fill", MCTheme.warning, L("integrity.tier.unsigned"))
         }
         HStack(alignment: .top) {
-            Image(systemName: icon).foregroundStyle(color)
+            Image(systemName: icon).foregroundStyle(color).accessibilityHidden(true)
             VStack(alignment: .leading, spacing: MCSpacing.xxs) {
                 Text(name).font(MCFont.rowTitle)
                 Text(label).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
@@ -191,7 +194,8 @@ struct IntegrityView: ModuleSubScreen {
                 }
             }
         }
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(name), \(label)\(info.signatureValid ? "" : ", " + L("integrity.tier.invalid"))")
     }
 
 }

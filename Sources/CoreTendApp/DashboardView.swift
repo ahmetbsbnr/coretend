@@ -216,7 +216,8 @@ struct DashboardView: View {
                     Text(AppDateFormatting.string(item.date, style: .dayMonthYearWithTime))
                         .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 }
-                .accessibilityElement(children: .combine)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(recentTitle(item)), \(AppDateFormatting.string(item.date, style: .dayMonthYearWithTime))")
             }
         }
     }
@@ -248,6 +249,9 @@ struct DashboardView: View {
                     .buttonStyle(.bordered)
                 }
                 .accessibilityElement(children: .contain)
+                .accessibilityLabel(L("overview.scan_a11y", scan.module.label,
+                                      scan.lastRun.map { AppDateFormatting.string($0, style: .dayMonthYearWithTime) }
+                                      ?? L("overview.never_run")))
             }
         }
     }

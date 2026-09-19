@@ -675,3 +675,7 @@ Analysis only — deleting synced files would remove them on every device.";
 "cloud.column_local" = "On this Mac";
 "cloud.column_total" = "Full size";
 "apps.select_associated" = "Select %1$@ at %2$@";
+"integrity.row_a11y" = "%1$@, %2$@, %3$@";
+"integrity.a11y.quarantined" = "quarantined by macOS";
+"integrity.a11y.not_quarantined" = "no quarantine flag";
+"overview.scan_a11y" = "%1$@, %2$@";

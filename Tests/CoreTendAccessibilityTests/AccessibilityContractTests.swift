@@ -52,13 +52,19 @@ struct AccessibilityContractTests {
         #expect(view.contains("FindingMetadata.summary"))
     }
 
-    @Test func provenanceRowCombinesItsLinesIntoOneAnnouncement() throws {
-        // The Integrity download rows gained a third line ("Downloaded by
-        // Safari · 12 Mar 2026"). Without the combine, each line becomes its
-        // own VoiceOver stop and a list of 25 downloads turns into 75.
+    @Test func provenanceRowIsOneAnnouncementThatSaysAllThreeThings() throws {
+        // A provenance row is a name, where it came from, and whether macOS
+        // quarantined it. Combining the children made it one VoiceOver stop
+        // but read the parts in layout order with the quarantine state
+        // carried only by an icon's tint — which says nothing at all.
+        //
+        // It is now an explicit sentence, so the check is that the label
+        // exists and names all three, not that the children are combined.
         let view = try source("Sources/CoreTendApp/ProtectionView.swift")
-        #expect(view.contains("accessibilityElement(children: .combine)"))
+        #expect(view.contains("accessibilityElement(children: .ignore)"))
+        #expect(view.contains("integrity.row_a11y"))
         #expect(view.contains("ProvenanceSummary.acquisition"))
+        #expect(view.contains("integrity.a11y.quarantined"))
     }
 
     @Test func evidenceLinesWrapRatherThanTruncateAtAccessibilitySizes() throws {
