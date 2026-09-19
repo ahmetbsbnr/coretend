@@ -254,14 +254,21 @@ struct DuplicatesView: View {
                     limitation: L("permission.fulldisk.limitation"),
                     onContinue: { scanAnyway = true })
             case .idle:
-                idleView.onAppear {
-                    hasFullDiskAccess = SystemAuthorization.probeLive().hasFullDiskAccess
-                    if CaptureHarness.autostartScan { scanAnyway = true; model.start() }
-                }
+                idleView
             case let .scanning(processed, total): scanningView(processed, total)
             case .empty: emptyView
             case .results, .executing: resultsView
             case let .finished(outcome): finishedView(outcome)
+            }
+        }
+        // On the body, not on the idle branch: the permission gate matches
+        // first, so the idle branch never appears and an autostarted capture
+        // waited forever for a scan nobody had asked to run.
+        .onAppear {
+            hasFullDiskAccess = SystemAuthorization.probeLive().hasFullDiskAccess
+            if CaptureHarness.autostartScan, model.phase == .idle {
+                scanAnyway = true
+                model.start()
             }
         }
         .navigationTitle(L("module.duplicates"))
