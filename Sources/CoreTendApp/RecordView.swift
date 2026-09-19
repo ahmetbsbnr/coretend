@@ -173,16 +173,32 @@ struct RecordView: View {
         }
     }
 
+    /// List and inspector side by side, unless the window is too narrow for
+    /// both to be usable — then the list fills the width and selecting an
+    /// entry pushes its detail, the way a split view behaves when it collapses.
+    /// At 1000pt a 360pt list left the inspector 600pt for paths that are
+    /// routinely longer than that.
     private var loaded: some View {
-        HStack(spacing: 0) {
-            VStack(alignment: .leading, spacing: 0) {
-                summaryLine
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 0) {
+                listPane.frame(minWidth: 340, idealWidth: 380, maxWidth: 460)
                 Divider()
-                list
+                inspector.frame(minWidth: 520, maxWidth: .infinity, maxHeight: .infinity)
             }
-            .frame(minWidth: 300, idealWidth: 360, maxWidth: 440)
+            NavigationStack {
+                listPane
+                    .navigationDestination(item: $model.selection) { _ in
+                        inspector
+                    }
+            }
+        }
+    }
+
+    private var listPane: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            summaryLine
             Divider()
-            inspector.frame(maxWidth: .infinity, maxHeight: .infinity)
+            list
         }
     }
 
