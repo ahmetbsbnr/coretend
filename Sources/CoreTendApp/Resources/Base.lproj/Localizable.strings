@@ -110,7 +110,7 @@ Nothing is deleted during a scan.";
 "apps.associated_data.empty" = "No associated files found for this bundle identifier.";
 "apps.uninstall" = "Uninstall (move to Trash)";
 "apps.uninstall_confirm.title" = "Uninstall the selected application?";
-"apps.uninstall_confirm.message" = "The application and the support items you selected will move to Trash. Review the selection before continuing.";
+"apps.uninstall_confirm.message" = "%1$@ and %2$d items move to the Trash — %3$@ in total. They stay recoverable there until you empty it.";
 "apps.select_prompt" = "Select an application";
 
 /* My Clutter */
@@ -674,3 +674,4 @@ Analysis only — deleting synced files would remove them on every device.";
 "menu.help.welcome" = "Welcome to CoreTend…";
 "cloud.column_local" = "On this Mac";
 "cloud.column_total" = "Full size";
+"apps.select_associated" = "Select %1$@ at %2$@";

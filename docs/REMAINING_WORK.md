@@ -72,12 +72,13 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 - ☐ K-02 Release build + notarisation dry run.
 
 ## D (continued) — screens rebuilt once, needing their data-bearing states
-- ☐ D-11 Explore lenses (LargeOldFilesView, SimilarImagesView, CloudCleanupView): results as dense
+- ☑ D-11 Explore lenses (LargeOldFilesView, SimilarImagesView, CloudCleanupView): results as dense
   `List`/`Table` rows like Cleanup review; add `CaptureHarness.note(state:)` on results and a
   matrix spec with that state.
-- ☐ D-12 Applications inspector: associated files as one-line rows; Uninstall sheet listing exactly
-  what moves (FRONTEND_REBUILD § Applications); Leftovers and Updates tabs densified.
-- ☐ D-13 Cleanup › Browser caches: same review list as Caches & logs.
+- ☑ D-12a Applications inspector: one-line associated rows; the confirmation names the app, counts
+  the items and totals the bytes.
+- ☐ D-12b Leftovers and Updates tabs densified.
+- ☑ D-13 Cleanup › Browser caches: one line per profile.
 - ☐ D-14 Duplicates: keeper choice (radio) rather than only the suggestion; Quick Look on Space.
 - ☐ D-15 Overview: multi-volume fixture; attention row for stale scans (> 7 days).
 - ☐ D-16 Settings scene capture (needs a `CORETEND_TEST_SETTINGS=1` that opens Settings on launch).

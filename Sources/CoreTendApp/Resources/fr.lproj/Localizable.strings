@@ -110,7 +110,7 @@ Rien n’est supprimé pendant l’analyse.";
 "apps.associated_data.empty" = "Aucun fichier associé trouvé pour cet identifiant de bundle.";
 "apps.uninstall" = "Désinstaller (déplacer vers la Corbeille)";
 "apps.uninstall_confirm.title" = "Désinstaller l’application sélectionnée ?";
-"apps.uninstall_confirm.message" = "L’application et les éléments associés sélectionnés seront déplacés vers la Corbeille. Vérifiez la sélection avant de continuer.";
+"apps.uninstall_confirm.message" = "%1$@ et %2$d éléments vont à la corbeille — %3$@ au total. Ils y restent récupérables tant que vous ne la videz pas.";
 "apps.select_prompt" = "Sélectionnez une application";
 
 /* My Clutter */
@@ -672,3 +672,4 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "menu.help.welcome" = "Bienvenue dans CoreTend…";
 "cloud.column_local" = "Sur ce Mac";
 "cloud.column_total" = "Taille totale";
+"apps.select_associated" = "Sélectionner %1$@ dans %2$@";

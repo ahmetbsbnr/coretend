@@ -239,6 +239,15 @@ final class ApplicationsViewModel {
     }
 
     /// Moves the app bundle and approved associated items to the Trash.
+    /// The bundle plus every ticked associated item — the number the
+    /// confirmation quotes, so what it says and what it does are one
+    /// computation.
+    var uninstallBytes: Int64 {
+        (selectedApp?.sizeBytes ?? 0)
+            + associated.filter { selectedAssociatedPaths.contains($0.url.path) }
+                        .reduce(0) { $0 + $1.sizeBytes }
+    }
+
     func uninstall() async {
         guard let app = selectedApp else { return }
         let items = associated.filter { selectedAssociatedPaths.contains($0.url.path) }
@@ -336,7 +345,14 @@ struct InstalledAppsView: ModuleSubScreen {
             }
             Button(L("common.cancel"), role: .cancel) {}
         } message: {
-            Text(L("apps.uninstall_confirm.message"))
+            // Names the app, counts the items and totals the bytes. "The
+            // support items you selected" was true and useless: a destructive
+            // confirmation has to let a person check the thing they are about
+            // to do without dismissing it first.
+            Text(L("apps.uninstall_confirm.message",
+                   model.selectedApp?.name ?? "",
+                   model.selectedAssociatedPaths.count + 1,
+                   mcFormatBytes(model.uninstallBytes)))
         }
     }
 
@@ -445,7 +461,7 @@ struct InstalledAppsView: ModuleSubScreen {
                                     .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                             }
                             ForEach(model.associated) { item in
-                                HStack {
+                                HStack(spacing: MCSpacing.xs) {
                                     Toggle("", isOn: Binding(
                                         get: { model.selectedAssociatedPaths.contains(item.url.path) },
                                         set: { on in
@@ -454,14 +470,20 @@ struct InstalledAppsView: ModuleSubScreen {
                                         }
                                     ))
                                     .labelsHidden()
-                                    VStack(alignment: .leading) {
-                                        Text(item.kind.rawValue)
-                                        Text(item.url.path).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                                            .lineLimit(1).truncationMode(.middle)
+                                    .accessibilityLabel(L("apps.select_associated", item.kind.rawValue, item.url.path))
+                                    Text(item.kind.rawValue).font(MCFont.rowTitle)
+                                    Text(item.url.path).font(MCFont.monoCaption)
+                                        .foregroundStyle(MCColor.textSecondary)
+                                        .lineLimit(1).truncationMode(.middle)
+                                    Spacer(minLength: MCSpacing.xs)
+                                    Text(mcFormatBytes(item.sizeBytes)).font(MCFont.tabular)
+                                        .foregroundStyle(MCColor.textSecondary)
+                                        .frame(width: 76, alignment: .trailing)
+                                }
+                                .contextMenu {
+                                    Button(L("common.reveal_in_finder")) {
+                                        NSWorkspace.shared.activateFileViewerSelecting([item.url])
                                     }
-                                    Spacer()
-                                    Text(mcFormatBytes(item.sizeBytes))
-                                        .font(MCFont.caption).monospacedDigit().foregroundStyle(MCColor.textSecondary)
                                 }
                             }
                         }
