@@ -63,7 +63,13 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 - ☐ F-02 Context menus mirror row actions via `FileRowAction` everywhere.
 
 ## G — Accessibility
-- ☐ G-01 VoiceOver walk per module; record in UI_QA_MATRIX.
+- ☐ G-01 VoiceOver walk per module; record in UI_QA_MATRIX. Partly covered by
+  `Scripts/audit-accessibility.sh`, which walks the accessibility tree of all
+  eight modules and fails if any control a screen reader can reach has no
+  name (currently 116 controls, all named). It is not the walk: only a person
+  listening can say whether what VoiceOver reads is *useful*, and in what
+  order. It does prove the narrow thing on every module every time, which a
+  person listening does not.
 - ☐ G-02 Increase Contrast captures per module.
 
 ## H — Responsive

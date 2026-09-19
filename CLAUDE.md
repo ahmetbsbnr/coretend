@@ -12,6 +12,9 @@ corrects constraints that used to be stated and are no longer true.
 - `zsh Scripts/capture-module.sh <out.png> <module> <light|dark> <compact|standard|large> [seed,seed] [state]`
   — seeds live in `Scripts/support/` (`seed-record.sh`, `seed-apps.sh`; `CORETEND_CAPTURE_HOME_SEED=seed-cleanup-home.sh` for a stand-in home); a state (`review`, `ready`, `results`, `charting`) starts the scan and waits
 - `zsh Scripts/capture-matrix.sh` — the whole QA matrix into `Documentation/Captures/` + `index.html`
+- `zsh Scripts/audit-accessibility.sh` — walks each module's accessibility tree
+  and fails on any unnamed control (needs this terminal trusted for
+  Accessibility)
 - `bash Scripts/render-mockups.sh` — renders `Documentation/Mockups/*.html`
 
 Several of these need a real macOS sandbox of their own and fail with

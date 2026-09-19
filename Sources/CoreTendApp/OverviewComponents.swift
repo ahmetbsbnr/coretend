@@ -66,6 +66,10 @@ struct MetricTile: View {
 
     @State private var isHovered = false
 
+    private var accessibilityText: String {
+        "\(label), \(value ?? detail)\(value == nil || detail.isEmpty ? "" : ", \(detail)")"
+    }
+
     var body: some View {
         let content = VStack(alignment: .leading, spacing: MCSpacing.xxs) {
             HStack(spacing: MCSpacing.xs) {
@@ -113,13 +117,19 @@ struct MetricTile: View {
             withAnimation(MCMotion.response) { isHovered = hovering }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(label), \(value ?? detail)\(value == nil || detail.isEmpty ? "" : ", \(detail)")")
+        .accessibilityLabel(accessibilityText)
 
         if let destination {
             Button {
                 NotificationCenter.default.post(name: .mcNavigate, object: destination)
             } label: { content }
             .buttonStyle(.plain)
+            // On the button, not on its label: a label set inside the button's
+            // content leaves the button itself nameless, which an audit of the
+            // accessibility tree found on this very screen — two controls a
+            // screen reader would have announced as "button".
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(accessibilityText)
             .accessibilityAddTraits(.isButton)
         } else {
             content
