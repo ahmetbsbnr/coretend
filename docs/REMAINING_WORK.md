@@ -49,7 +49,7 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 - ☑ E-03 `LocalizationTypographyTests`: French apostrophes (NBSP before : ; ! ? still ☐ E-04).
 
 ## E (continued)
-- ☐ E-04 French non-breaking space before `: ; ! ?` — extend LocalizationTypographyTests, fix values.
+- ☑ E-04 French non-breaking spaces before `: ; ! ?`.
 - ☐ E-05 Read every string in `Documentation/Audits/UI_INVENTORY.md §5` against PRODUCT_VOCABULARY; rewrite; both tables.
 - ☐ E-06 Website copy and demo sidebar (`Scripts/check-site-navigation.py` mapping still names retired modules).
 

@@ -29,6 +29,21 @@ struct LocalizationTypographyTests {
         }
     }
 
+    /// French puts a space before `; ! ?` and `:` — and it must not break:
+    /// a line wrapping between the word and its question mark is the tell of
+    /// a translation nobody read in place. U+202F before `; ! ?`, U+00A0
+    /// before `:`.
+    @Test func frenchUsesNonBreakingSpacesBeforePunctuation() throws {
+        for (key, value) in try french() {
+            for (index, character) in value.enumerated() where ":;!?".contains(character) {
+                guard index > 0 else { continue }
+                let preceding = value[value.index(value.startIndex, offsetBy: index - 1)]
+                #expect(preceding != " ",
+                        "fr/\(key) has a breaking space before ‘\(character)’: \(value)")
+            }
+        }
+    }
+
     /// Both tables define the same keys, so a fix in one language cannot be
     /// silently missing from the other.
     @Test func frenchIsNotMissingKeys() throws {
