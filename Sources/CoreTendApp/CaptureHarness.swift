@@ -80,12 +80,16 @@ enum CaptureHarness {
     /// capture script waits for the state it was asked for and refuses the
     /// capture otherwise — an idle screen photographed as "review" is the
     /// kind of silent wrong that this whole file exists to prevent.
+    /// States go in their own file. They used to be appended to showing.txt,
+    /// which `settle` rewrites a beat after launch — so a scan that finished
+    /// quickly had its state erased by the window measurement, and the capture
+    /// was refused for a state the module had genuinely reached.
     @MainActor
     static func note(state: String) {
         guard isActive, let directory = TestStoreOverride.resolve(environment: environment).directory else { return }
-        let url = directory.appendingPathComponent("showing.txt")
+        let url = directory.appendingPathComponent("state.txt")
         let existing = (try? String(contentsOf: url, encoding: .utf8)) ?? ""
-        try? (existing + "state=\(state)\n").write(to: url, atomically: true, encoding: .utf8)
+        try? (existing + "\(state)\n").write(to: url, atomically: true, encoding: .utf8)
     }
 
     /// The sub-navigation tab a capture asked for, as the tab's index.

@@ -73,11 +73,11 @@ fi
 # If a tab was asked for, the module must report having selected it.
 if [[ -n "$tab" ]]; then
   for _ in {1..40}; do
-    grep -q "^state=tab=$tab\$" "$store/showing.txt" 2>/dev/null && break
+    grep -q "^tab=$tab\$" "$store/state.txt" 2>/dev/null && break
     sleep 0.25
   done
-  if ! grep -q "^state=tab=$tab\$" "$store/showing.txt"; then
-    print -u2 "capture-module: asked for tab $tab but the module reports $(grep '^state=tab=' "$store/showing.txt" | tail -1) — capture refused"
+  if ! grep -q "^tab=$tab\$" "$store/state.txt" 2>/dev/null; then
+    print -u2 "capture-module: asked for tab $tab but the module reports $(grep '^tab=' "$store/state.txt" 2>/dev/null | tail -1) — capture refused"
     exit 2
   fi
 fi
@@ -85,10 +85,10 @@ fi
 # If a state was asked for, wait for the module to report reaching it.
 if [[ -n "$state" ]]; then
   for _ in {1..120}; do
-    grep -q "^state=$state\$" "$store/showing.txt" 2>/dev/null && break
+    grep -qx "$state" "$store/state.txt" 2>/dev/null && break
     sleep 0.25
   done
-  if ! grep -q "^state=$state\$" "$store/showing.txt"; then
+  if ! grep -qx "$state" "$store/state.txt" 2>/dev/null; then
     print -u2 "capture-module: asked for state '$state' but the module never reported it — capture refused"
     exit 2
   fi
