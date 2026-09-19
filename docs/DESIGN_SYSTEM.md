@@ -109,5 +109,9 @@ Three named widths (`CaptureHarness.WindowSize`): compact 1000×700, standard
 1180×800, large 1600×1000. Per module:
 - compact: inspector becomes a pushed detail; secondary columns hidden.
 - standard: main design.
-- large: inspector widens to 400; tables reveal secondary columns.
+- large: inspector widens to 400; tables reveal secondary columns. Reading
+  material (Overview, the Record's inspector) caps at `MCSize.readableWidth`
+  (820) and keeps the rest as margin — a large window is not a reason to
+  stretch a sentence until the eye loses the line. Maps and tables take the
+  whole width, because there extra width genuinely shows more.
 Window minimum stays 1000×580 until the sidebar can collapse (B-04).

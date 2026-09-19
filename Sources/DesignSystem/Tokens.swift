@@ -46,6 +46,14 @@ public enum MCSize {
     public static let windowDefaultHeight: CGFloat = 800
     public static let metricRing: CGFloat = 76
     public static let chartHeight: CGFloat = 140
+    /// The widest a column of prose or summary rows may get.
+    ///
+    /// A large window is not a reason to stretch a sentence to 1400pt: the
+    /// eye loses the line. Screens whose content is reading material cap at
+    /// this and keep the extra space as margin; screens whose content is a
+    /// table or a map use the whole width, because there the extra width
+    /// genuinely shows more.
+    public static let readableWidth: CGFloat = 820
 }
 
 /// Motion, named by what it is for.

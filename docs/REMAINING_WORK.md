@@ -64,6 +64,9 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 ## H — Responsive
 - ☐ H-01 Compact strategy per module (inspector → pushed detail).
 
+## H (continued)
+- ☑ H-03 Reading columns capped at `MCSize.readableWidth`.
+
 ## I/J — Coherence and polish
 - ☑ I-01 Side-by-side gallery (`Scripts/build-gallery.py` → `Documentation/Captures/index.html`).
 

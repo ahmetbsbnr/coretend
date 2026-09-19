@@ -326,7 +326,8 @@ private struct RecordInspector: View {
                 if !entry.failed.isEmpty { section(L("record.section_failed"), entry.failed) }
             }
             .padding(MCSpacing.page)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: MCSize.readableWidth, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
         }
     }
 

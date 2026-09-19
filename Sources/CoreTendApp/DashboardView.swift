@@ -116,7 +116,8 @@ struct DashboardView: View {
                 scanSection
             }
             .padding(MCSpacing.page)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: MCSize.readableWidth, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
         }
         .navigationTitle(L("module.overview"))
         .task { await model.load() }
