@@ -349,3 +349,31 @@ struct InterpolatedKeyTests {
         }
     }
 }
+
+/// The plural families, enumerated.
+///
+/// `RecordPhrasing.plural` builds `base + "_one"` / `"_other"`. Neither whole
+/// key is ever a literal, so the same sweep that silently deleted the filter
+/// labels could take these. Every count that reaches a title is checked at
+/// one and at more than one.
+@Suite("Plural families resolve at both counts")
+struct PluralKeyTests {
+    private func record(_ stage: SafetyAuditEvent.Stage, _ n: Int) -> [SafetyLogRecord] {
+        (0..<n).map { i in
+            SafetyLogRecord(id: Int64(i), operationID: "A", stage: stage, redactedPath: "<home>/…/f",
+                            ruleID: "r", risk: "low", size: 1,
+                            date: Date(timeIntervalSince1970: 1_700_000_000), result: SafetyCenter.trashedResult)
+        }
+    }
+
+    @Test(arguments: [1, 3])
+    func titlesResolveAtEveryCount(_ n: Int) {
+        for stage in [SafetyAuditEvent.Stage.executed, .skipped, .error, .approved] {
+            let entry = SafetyLedger.entries(from: record(stage, n))[0]
+            let title = RecordPhrasing.title(entry)
+            #expect(!title.hasPrefix("record."), "missing plural string: \(title)")
+            let subtitle = RecordPhrasing.subtitle(entry)
+            #expect(!subtitle.contains("record."), "missing plural string: \(subtitle)")
+        }
+    }
+}
