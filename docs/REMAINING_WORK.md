@@ -77,7 +77,7 @@ Status: ☐ open · ☑ done · ⊘ blocked.
   matrix spec with that state.
 - ☑ D-12a Applications inspector: one-line associated rows; the confirmation names the app, counts
   the items and totals the bytes.
-- ☐ D-12b Leftovers and Updates tabs densified.
+- ☑ D-12b Leftovers and Updates tabs densified.
 - ☑ D-13 Cleanup › Browser caches: one line per profile.
 - ☐ D-14 Duplicates: keeper choice (radio) rather than only the suggestion; Quick Look on Space.
 - ☐ D-15 Overview: multi-volume fixture; attention row for stale scans (> 7 days).

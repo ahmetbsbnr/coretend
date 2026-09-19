@@ -127,19 +127,19 @@ struct LeftoversView: ModuleSubScreen {
 
     private var resultsView: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text(L("leftovers.results.summary", model.leftovers.count, mcFormatBytes(model.selectedBytes), mcFormatBytes(model.totalBytes)))
-                    .font(MCFont.cardTitle)
+            HStack(alignment: .firstTextBaseline, spacing: MCSpacing.md) {
+                Text(L("leftovers.results.summary", model.leftovers.count,
+                       mcFormatBytes(model.selectedBytes), mcFormatBytes(model.totalBytes)))
+                    .font(MCFont.body)
                 Spacer()
-                Button(L("cleanup.move_to_trash")) {
-                    showMoveConfirmation = true
-                }
-                .buttonStyle(.bordered)
-                .disabled(model.selectedPaths.isEmpty)
+                Button(L("cleanup.move_to_trash")) { showMoveConfirmation = true }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(model.selectedPaths.isEmpty)
             }
-            .padding()
+            .padding(.horizontal, MCSpacing.page).padding(.vertical, MCSpacing.sm)
+            Divider()
             List(model.leftovers) { item in
-                HStack {
+                HStack(spacing: MCSpacing.xs) {
                     Toggle("", isOn: Binding(
                         get: { model.selectedPaths.contains(item.url.path) },
                         set: { on in
@@ -148,32 +148,31 @@ struct LeftoversView: ModuleSubScreen {
                         }
                     ))
                     .labelsHidden()
-                    .accessibilityLabel("\(L("leftovers.select_item", item.url.lastPathComponent))\(model.isAmbiguous(item) ? ", \(L("leftovers.shared_ambiguous_a11y"))" : "")")
-                    VStack(alignment: .leading) {
-                        HStack(spacing: MCSpacing.xxs) {
-                            Text(item.url.lastPathComponent)
-                            if model.isAmbiguous(item) {
-                                Text(L("leftovers.shared_review"))
-                                    .font(MCFont.badge)
-                                    .padding(.horizontal, MCSpacing.xxs).padding(.vertical, 1)
-                                    .background(MCColor.attention.opacity(0.18), in: Capsule())
-                                    .foregroundStyle(MCColor.attention)
-                            }
-                        }
-                        Text(L("leftovers.not_installed", item.kind.rawValue))
-                            .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+                    .accessibilityLabel("\(L("leftovers.select_item", item.url.lastPathComponent))\(model.isAmbiguous(item) ? ", \(L("leftovers.shared_review"))" : "")")
+                    Text(item.url.lastPathComponent).lineLimit(1)
+                    if model.isAmbiguous(item) {
+                        Text(L("leftovers.shared_review"))
+                            .font(MCFont.badge)
+                            .padding(.horizontal, 6).padding(.vertical, 2)
+                            .background(MCTheme.warning.opacity(0.18), in: Capsule())
+                            .foregroundStyle(MCTheme.warning)
                     }
-                    Spacer()
-                    Text(mcFormatBytes(item.sizeBytes))
-                        .monospacedDigit().foregroundStyle(MCColor.textSecondary)
-                    Button {
+                    Text(L("leftovers.not_installed", item.kind.rawValue))
+                        .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+                        .lineLimit(1)
+                    Spacer(minLength: MCSpacing.xs)
+                    Text(mcFormatBytes(item.sizeBytes)).font(MCFont.tabular)
+                        .foregroundStyle(MCColor.textSecondary)
+                        .frame(width: 80, alignment: .trailing)
+                }
+                .contextMenu {
+                    Button(L("common.reveal_in_finder")) {
                         NSWorkspace.shared.activateFileViewerSelecting([item.url])
-                    } label: { Image(systemName: "magnifyingglass") }
-                    .buttonStyle(.borderless)
-                    .accessibilityLabel(L("common.reveal_in_finder"))
+                    }
                 }
             }
-            .listStyle(.inset)
+            .listStyle(.plain)
+            .environment(\.defaultMinListRowHeight, 28)
         }
     }
 }

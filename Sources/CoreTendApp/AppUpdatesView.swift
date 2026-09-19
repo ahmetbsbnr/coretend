@@ -75,31 +75,32 @@ struct AppUpdatesView: ModuleSubScreen {
                 List {
                     Section {
                         ForEach(model.updates) { info in
-                            HStack {
+                            HStack(spacing: MCSpacing.xs) {
                                 Image(nsImage: NSWorkspace.shared.icon(forFile: info.app.path.path))
-                                    .resizable().frame(width: 24, height: 24)
+                                    .resizable().frame(width: 16, height: 16)
                                     .accessibilityHidden(true)
-                                VStack(alignment: .leading) {
-                                    Text(info.app.name)
-                                    Text(L("updates.version_source", info.app.version ?? "?", info.source.rawValue))
-                                        .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                                }
-                                .accessibilityElement(children: .combine)
-                                Spacer()
+                                Text(info.app.name).lineLimit(1)
+                                Text(L("updates.version_source", info.app.version ?? "?", info.source.rawValue))
+                                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+                                    .lineLimit(1)
+                                Spacer(minLength: MCSpacing.xs)
                                 Button(info.source == .appStore ? L("updates.open_app_store")
                                        : info.source == .sparkle ? L("updates.open_app")
                                        : L("common.reveal_in_finder")) {
                                     model.open(info)
                                 }
+                                .buttonStyle(.bordered).controlSize(.small)
                                 .accessibilityHint(L("updates.action_hint", info.app.name))
                             }
+                            .accessibilityElement(children: .contain)
                         }
                     } footer: {
                         Text(L("updates.footer"))
                             .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                     }
                 }
-                .listStyle(.inset)
+                .listStyle(.plain)
+                .environment(\.defaultMinListRowHeight, 28)
             }
         }
         .task { await model.load() }
