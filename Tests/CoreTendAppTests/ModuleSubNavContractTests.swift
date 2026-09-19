@@ -51,8 +51,13 @@ struct ModuleSubNavContractTests {
     /// Exactly one NavigationSplitView exists, in MainWindow. A second one
     /// anywhere means a module has started re-implementing primary navigation.
     @Test func primaryNavigationIsDeclaredExactlyOnce() throws {
+        // Matching "NavigationSplitView" rather than "NavigationSplitView {":
+        // adding a columnVisibility binding changed the call's shape and the
+        // check silently found nothing, which it reported as a failure only
+        // because the expected list was non-empty. A looser match cannot go
+        // quiet the same way.
         let declaring = try appSources()
-            .filter { $0.text.contains("NavigationSplitView {") }
+            .filter { $0.text.contains("NavigationSplitView(") || $0.text.contains("NavigationSplitView {") }
             .map(\.name)
         #expect(declaring == ["App/MainWindow.swift"], "unexpected NavigationSplitView in \(declaring)")
     }

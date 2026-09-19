@@ -23,6 +23,12 @@ struct CoreTendHelpCommands: Commands {
             .keyboardShortcut("u", modifiers: [.command, .shift])
         }
         CommandGroup(after: .toolbar) {
+            Button(L("menu.view.toggle_sidebar")) {
+                NSApp.keyWindow?.firstResponder?.tryToPerform(
+                    #selector(NSSplitViewController.toggleSidebar(_:)), with: nil)
+            }
+            .keyboardShortcut("s", modifiers: [.command, .control])
+            Divider()
             Button(L("palette.open")) {
                 NotificationCenter.default.post(name: .mcShowCommandPalette, object: nil)
             }

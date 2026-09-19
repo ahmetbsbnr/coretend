@@ -15,6 +15,9 @@ struct MainWindow: View {
     @State private var showOnboarding = false
     @State private var showCommandPalette = false
     @State private var showShortcuts = false
+    /// Bound so View › Hide Sidebar has something to move. Without a binding
+    /// the split view owns the state and the menu item is inert.
+    @State private var sidebarVisibility: NavigationSplitViewVisibility = .all
     /// Owned here rather than inside Settings so the automatic check runs at
     /// launch. A check that only happens once the user opens the Settings
     /// screen is not an automatic check.
@@ -33,7 +36,7 @@ struct MainWindow: View {
     }
 
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $sidebarVisibility) {
             Sidebar(selection: Binding(
                 get: { selection ?? .smartCare },
                 set: { selection = $0 }))

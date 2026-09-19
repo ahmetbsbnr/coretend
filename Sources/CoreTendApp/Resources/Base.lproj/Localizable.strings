@@ -610,3 +610,4 @@ Analysis only — deleting synced files would remove them on every device.";
 "record.filter_refused" = "Refused";
 "record.filter_failed" = "Failed";
 "record.filter_scans" = "Scans";
+"menu.view.toggle_sidebar" = "Toggle Sidebar";
