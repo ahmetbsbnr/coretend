@@ -198,7 +198,9 @@ final class CleanupViewModel: CancellableScan {
 
 struct JunkCleanupView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-    @State private var model = CleanupViewModel()
+    @State var model = CleanupViewModel()
+    @State private var highlighted: UUID?
+    @State private var previewURL: URL?
 
     /// Evidence lines wrap instead of truncating once text is large enough
     /// that a single line would cut them short. Typed explicitly: an inline
@@ -208,10 +210,22 @@ struct JunkCleanupView: View {
         dynamicTypeSize.isAccessibilitySize ? nil : 1
     }
     @State private var showMoveConfirmation = false
+    /// Which categories are showing their items. Empty on arrival: the review
+    /// opens as a list of decisions, not a list of files.
+    @State private var expandedGroups: Set<String> = []
+    /// Folded categories left two thirds of a standard window empty. The
+    /// largest one opens on arrival: it is both the most likely thing to be
+    /// inspected and what turns the remaining space into evidence rather than
+    /// into a gap.
+    @State private var didExpandLargest = false
+    /// How many items a folded category previews. Four fills the space a
+    /// six-category review leaves without turning the screen back into a flat
+    /// file list.
+    private static let previewRows = 4
     /// Full Disk Access, checked when the screen appears. A scan without it
     /// finds a fraction of what is there and says nothing about why, which
     /// reads as a clean Mac.
-    @State private var hasFullDiskAccess = SystemAuthorization.probeLive().hasFullDiskAccess
+    @State private var hasFullDiskAccess = ScanTargetAccess.canReadScanTarget
     @State private var scanAnyway = false
 
     var body: some View {
@@ -238,7 +252,7 @@ struct JunkCleanupView: View {
             }
         }
         .onAppear {
-            hasFullDiskAccess = SystemAuthorization.probeLive().hasFullDiskAccess
+            hasFullDiskAccess = ScanTargetAccess.canReadScanTarget
             if CaptureHarness.autostartScan, model.phase == .idle {
                 scanAnyway = true
                 model.startScan()
@@ -353,9 +367,18 @@ struct JunkCleanupView: View {
             // it is what *would* move to the Trash, which is a proposal, and a
             // proposal in 40pt reads as a promise.
             HStack(alignment: .firstTextBaseline, spacing: MCSpacing.md) {
-                Text(L("cleanup.review.sentence", mcFormatBytes(model.selectedBytes),
-                       model.selectedIDs.count, model.findings.count))
-                    .font(MCFont.body)
+                // The decision, stated as a figure and a sentence rather than
+                // one long line of body text. What is about to happen is the
+                // thing this screen exists to make unambiguous.
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(mcFormatBytes(model.selectedBytes))
+                        .font(MCFont.displaySecondary)
+                        .foregroundStyle(MCColor.textPrimary)
+                    Text(L("cleanup.review.sentence_short",
+                           model.selectedIDs.count, model.findings.count))
+                        .font(MCFont.caption)
+                        .foregroundStyle(MCColor.textSecondary)
+                }
                 if model.isDisplayTruncated {
                     Text(L("cleanup.review.truncated", model.findings.count, model.totalFindingCount, mcFormatBytes(model.totalBytes)))
                         .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
@@ -380,10 +403,36 @@ struct JunkCleanupView: View {
             }
             .padding(.horizontal, MCSpacing.page).padding(.vertical, MCSpacing.sm)
             Divider()
-            List {
+            List(selection: $highlighted) {
                 ForEach(model.groups) { group in
                     Section {
-                        ForEach(group.findings) { finding in findingRow(finding) }
+                        // A preview, not all-or-nothing.
+                        //
+                        // Folding every category shut fixed the original
+                        // problem — 478 flat rows burying every category but
+                        // the first — and created the opposite one: measured
+                        // on the capture, 69% of the detail column was a flat
+                        // field. Each category now shows its first few items
+                        // and says how many more there are, so the screen
+                        // carries both the decision and its evidence.
+                        let expanded = expandedGroups.contains(group.id)
+                        let shown = expanded ? group.findings
+                                             : Array(group.findings.prefix(Self.previewRows))
+                        ForEach(shown) { finding in findingRow(finding).tag(finding.id) }
+                        if !expanded, group.findings.count > Self.previewRows {
+                            Button {
+                                withAnimation(MCMotion.response) {
+                                    expandedGroups.insert(group.id)
+                                }
+                            } label: {
+                                Text(L("cleanup.group.show_all",
+                                       group.findings.count - Self.previewRows))
+                                    .font(MCFont.caption)
+                                    .foregroundStyle(MCColor.textSecondary)
+                                    .padding(.leading, MCSpacing.lg)
+                            }
+                            .buttonStyle(.plain)
+                        }
                     } header: {
                         groupHeader(group)
                     }
@@ -396,31 +445,86 @@ struct JunkCleanupView: View {
             // grouped. It sits on the window's ground now, like every other
             // list in the rebuild.
             .scrollContentBackground(.hidden)
-            .environment(\.defaultMinListRowHeight, 28)
+            .environment(\.defaultMinListRowHeight, 24)
+            .onKeyPress(.space) {
+                guard let highlighted else { return .ignored }
+                if !model.selectedIDs.insert(highlighted).inserted { model.selectedIDs.remove(highlighted) }
+                return .handled
+            }
+            .contextMenu(forSelectionType: UUID.self) { ids in
+                if let finding = model.findings.first(where: { ids.contains($0.id) }) {
+                    Button(L("clutter.quick_look")) { previewURL = finding.url }
+                    Button(L("common.reveal_in_finder")) { NSWorkspace.shared.activateFileViewerSelecting([finding.url]) }
+                }
+            } primaryAction: { ids in
+                previewURL = model.findings.first(where: { ids.contains($0.id) })?.url
+            }
+            .quickLookPreview($previewURL)
+
         }
     }
 
     /// The whole category in one line: tick it, read what it is, see what it
     /// weighs. The explanation is the header's tooltip and its VoiceOver
     /// hint, not a second line on every screen.
+    /// The category is the unit of decision: what it is, why it was found, how
+    /// much it weighs, and one control that takes or leaves all of it.
+    ///
+    /// The reason used to live only in a tooltip. "Why is this safe to remove"
+    /// is the question this screen exists to answer, and an answer that
+    /// requires hovering is an answer most people never get.
     private func groupHeader(_ group: CleanupViewModel.RuleGroup) -> some View {
-        HStack(spacing: MCSpacing.xs) {
-            Toggle("", isOn: Binding(
-                get: { model.selectionState(for: group) },
-                set: { model.setSelection($0, for: group) }
-            ))
-            .labelsHidden()
-            .accessibilityLabel(L("cleanup.select_group", group.name))
-            Text(group.name).font(MCFont.sectionTitle)
-            Text(L(group.findings.count == 1 ? "cleanup.group.item_count_one" : "cleanup.group.item_count_other",
-                   group.findings.count))
-                .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-            Spacer()
-            Text(mcFormatBytes(group.bytes)).font(MCFont.tabular.weight(.semibold))
+        let isOpen = expandedGroups.contains(group.id)
+        return VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: MCSpacing.xs) {
+                Toggle("", isOn: Binding(
+                    get: { model.selectionState(for: group) },
+                    set: { model.setSelection($0, for: group) }
+                ))
+                .labelsHidden()
+                .accessibilityLabel(L("cleanup.select_group", group.name))
+                Button {
+                    withAnimation(MCMotion.response) {
+                        if isOpen { expandedGroups.remove(group.id) }
+                        else { expandedGroups.insert(group.id) }
+                    }
+                } label: {
+                    HStack(spacing: MCSpacing.xxs) {
+                        Image(systemName: "chevron.right")
+                            .font(MCFont.micro.weight(.semibold))
+                            .foregroundStyle(MCColor.textTertiary)
+                            .rotationEffect(.degrees(isOpen ? 90 : 0))
+                        Text(CleanupRuleVocabulary.name(group.ruleID, fallback: group.name))
+                            .font(MCFont.sectionTitle)
+                            .foregroundStyle(MCColor.textPrimary)
+                        Text(L(group.findings.count == 1 ? "cleanup.group.item_count_one" : "cleanup.group.item_count_other",
+                               group.findings.count))
+                            .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(group.name)
+                // Two separate calls rather than one taking a ternary: the
+                // localisation audit finds keys by scanning source for a
+                // lookup applied to a string literal, so a key only ever
+                // reached through an expression reads as unused and silently
+                // joins the orphan count.
+                .accessibilityHint(isOpen ? L("cleanup.group.collapse") : L("cleanup.group.expand"))
+                Spacer()
+                Text(mcFormatBytes(group.bytes)).font(MCFont.tabular.weight(.semibold))
+            }
+            // The reason, on screen, once per category rather than as a risk
+            // word repeated on all 466 rows underneath it.
+            Text(CleanupRuleVocabulary.explanation(group.ruleID, fallback: group.explanation))
+                .font(MCFont.caption)
+                .foregroundStyle(MCColor.textSecondary)
+                .lineLimit(2)
+                .padding(.leading, MCSpacing.lg + MCSpacing.xxs)
         }
         .padding(.top, MCSpacing.sm)
-        .help(group.explanation)
-        .accessibilityHint(group.explanation)
+        .padding(.bottom, MCSpacing.xxs)
+        .accessibilityElement(children: .contain)
     }
 
     private func findingRow(_ finding: ScanFinding) -> some View {
@@ -436,13 +540,28 @@ struct JunkCleanupView: View {
             .accessibilityLabel(evidence.map {
                 L("finding.a11y.evidence", L("cleanup.select_item", finding.url.lastPathComponent), $0)
             } ?? L("cleanup.select_item", finding.url.lastPathComponent))
-            Text(finding.url.lastPathComponent).lineLimit(1)
-            Text(PathDisplay.folder(of: finding.url))
-                .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+            Text(finding.url.lastPathComponent)
+                .font(MCFont.rowTitle)
+                .lineLimit(1)
+            // The folder, not the full path, and given the least weight on the
+            // row. A capture of the real fixture showed every row reading as
+            // 70% truncated `/private/var/folders/tc/9z4_b12n…` — a string
+            // nobody can act on, set larger than the file name they can.
+            Text(PathDisplay.shortFolder(of: finding.url))
+                .font(MCFont.caption).foregroundStyle(MCColor.textTertiary)
                 .lineLimit(1).truncationMode(.middle)
+                .layoutPriority(-1)
             Spacer(minLength: MCSpacing.xs)
-            if let evidence {
-                Text(evidence).font(MCFont.caption).foregroundStyle(MCColor.textTertiary)
+            // Only the part that actually varies between rows. The risk word
+            // is a property of the rule that found them, so it is stated once
+            // in the header instead of 466 times here.
+            if let age = FindingMetadata.ageDescription(for: finding.modificationDate) {
+                // The relaxed limit, not a hard 1. At accessibility text sizes
+                // a single line cuts the age off mid-phrase, removing the one
+                // piece of evidence this column carries from the readers who
+                // most need it — the contract AccessibilityContractTests
+                // guards, which this row briefly broke.
+                Text(age).font(MCFont.caption).foregroundStyle(MCColor.textTertiary)
                     .lineLimit(evidenceLineLimit)
             }
             Text(mcFormatBytes(finding.logicalSize)).font(MCFont.tabular)
@@ -471,14 +590,42 @@ struct JunkCleanupView: View {
 /// belong with the other cleanup, not with code signing.
 struct CleanupView: View {
     @State private var tab = 0
+    @State var model = CleanupViewModel()
 
     var body: some View {
         ModuleSubNav(sections: [
             .init(0, L("cleanup.tab.junk")),
             .init(1, L("cleanup.tab.browsers")),
         ], selection: $tab) { tab in
-            if tab == 0 { JunkCleanupView() } else { PrivacyCleanerView() }
+            if tab == 0 { JunkCleanupView(model: model) } else { PrivacyCleanerView() }
         }
         .navigationTitle(L("module.cleanup"))
+    }
+}
+
+/// The rule vocabulary, localised in the UI layer.
+///
+/// `ScanRule` lives in ScanCore, which is a pure engine with no localisation
+/// and no business having any: its `name` and `explanation` are stable English
+/// literals. Looking them up here by rule id keeps the engine free of
+/// `Localizable.strings` while letting a French user read "Anciennes archives"
+/// instead of "Old archives" — which is what a capture on a French Mac showed
+/// after the app started launching in French at all.
+enum CleanupRuleVocabulary {
+    private static func lookup(_ ruleID: String, _ suffix: String, fallback: String) -> String {
+        let key = "rule.\(ruleID.replacingOccurrences(of: ".", with: "_")).\(suffix)"
+        let value = L(key)
+        // `L` returns the key itself when it is absent. A rule with no
+        // translation falls back to the engine's own wording rather than
+        // printing "rule.user_caches.name" on screen.
+        return value == key ? fallback : value
+    }
+
+    static func name(_ ruleID: String, fallback: String) -> String {
+        lookup(ruleID, "name", fallback: fallback)
+    }
+
+    static func explanation(_ ruleID: String, fallback: String) -> String {
+        lookup(ruleID, "explanation", fallback: fallback)
     }
 }

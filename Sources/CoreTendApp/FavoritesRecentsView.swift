@@ -136,7 +136,7 @@ struct FavoritesRecentsView: View {
             case .loading:
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             case let .failed(message):
-                MCEmptyState(icon: "exclamationmark.triangle", title: L("favrec.error_title"), message: message)
+                MCEmptyState(icon: "exclamationmark.triangle.fill", title: L("favrec.error_title"), message: message)
             case .loaded:
                 loadedView
             }

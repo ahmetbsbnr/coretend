@@ -211,7 +211,7 @@ struct UpdatesView: View {
                     verificationControls(for: info)
                 }
             case .failed(let error):
-                Label(message(for: error), systemImage: "exclamationmark.triangle")
+                Label(message(for: error), systemImage: "exclamationmark.triangle.fill")
                     .foregroundStyle(MCTheme.warning)
             }
         }

@@ -8,6 +8,18 @@ import DesignSystem
 import SystemMetrics
 import Persistence
 
+/// The two regions window-level keyboard focus moves between.
+///
+/// The window had no such notion, and that was the focus defect: the sidebar
+/// was a `.focusable()` container and the only focusable thing in the content,
+/// so it took first responder at launch and never gave it up. Tab did nothing,
+/// clicking a list did not move focus, and the arrow keys therefore always
+/// drove module navigation — measured with `FocusProbe`, whose key-view loop
+/// contained the toolbar controls and the sidebar proxy and no list at all.
+enum WindowFocusRegion: Hashable {
+    case sidebar, detail
+}
+
 struct MainWindow: View {
 
     @State private var selection: ModuleID? =
@@ -27,6 +39,12 @@ struct MainWindow: View {
     /// launch. A check that only happens once the user opens the Settings
     /// screen is not an automatic check.
     @State private var updates = UpdatesViewModel()
+    /// Which half of the window the keyboard is in. Owned here because it is a
+    /// property of the window, not of any one module.
+    @FocusState private var region: WindowFocusRegion?
+    // Review decisions belong to the window session, not a transient route.
+    @State private var cleanupModel = CleanupViewModel()
+    @State private var duplicatesModel = DuplicatesViewModel()
 
     /// The module actually shown.
     ///
@@ -45,19 +63,20 @@ struct MainWindow: View {
             Sidebar(selection: Binding(
                 get: { selection ?? .smartCare },
                 set: { selection = $0 }))
+                .focused($region, equals: .sidebar)
         } detail: {
             Group {
                 switch routed {
                 case .smartCare:
-                    DashboardView()
+                    OverviewScreen()
                 case .cleanup:
-                    CleanupView()
+                    CleanupView(model: cleanupModel)
                 case .protection:
                     ProtectionView()
                 case .applications:
                     ApplicationsView()
                 case .duplicates:
-                    DuplicatesView()
+                    DuplicatesView(model: duplicatesModel)
                 case .performance:
                     PerformanceView()
                 case .spaceLens:
@@ -67,10 +86,23 @@ struct MainWindow: View {
                 case nil:
                     // Only reachable before a selection exists; every ModuleID
                     // has a real view. There is no "under construction" state.
-                    DashboardView()
+                    OverviewScreen()
                 }
             }
             .mcCanvasBackground()
+            // A focus *section*, not a focusable container.
+            //
+            // Making the detail itself focusable did break the trap — Tab left
+            // the sidebar and the arrow keys stopped changing module — but it
+            // then parked focus on an empty container, so the journal still
+            // never saw an arrow key. A section is a region the focus system
+            // enters and then resolves to the first real focusable inside it,
+            // which is the module's own list.
+            //
+            // The custom `onKeyPress(.tab)` that went with the previous attempt
+            // is gone too: returning `.handled` consumed the very Tab that
+            // AppKit needed in order to perform the move.
+            .focusSection()
         }
         .onAppear {
             // A sheet is modal to its window: with onboarding up, the Settings
@@ -101,6 +133,9 @@ struct MainWindow: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .mcNavigate)) { note in
             if let module = note.object as? ModuleID { selection = module }
+        }
+        .onChange(of: selection) { _, module in
+            DispatchQueue.main.async { FocusTrace.snapshot("module:\(module?.rawValue ?? "nil")") }
         }
         .onReceive(NotificationCenter.default.publisher(for: .mcOpenSpaceLensAt)) { _ in
             selection = .spaceLens
@@ -139,6 +174,37 @@ struct MainWindow: View {
                     .accessibilityIdentifier("toolbar.scan")
                 }
             }
+            // Global search. The palette is already the app's jump-to-anything
+            // surface; before this it was reachable only from ⌘K and a glyph
+            // that read as a menu. A field says what it does, and clicking it
+            // opens the palette focused — one control, one behaviour, no
+            // second search index.
+            if routed.map({ !$0.hasOwnSearch }) ?? true {
+              ToolbarItem(placement: .principal) {
+                Button {
+                    showCommandPalette = true
+                } label: {
+                    HStack(spacing: MCSpacing.xs) {
+                        Image(systemName: "magnifyingglass")
+                            .font(MCFont.caption.weight(.medium))
+                        Text(L("toolbar.search"))
+                            .font(MCFont.secondaryBody)
+                        Spacer(minLength: MCSpacing.md)
+                        Text("⌘K")
+                            .font(MCFont.micro)
+                            .foregroundStyle(MCColor.textTertiary)
+                    }
+                    .foregroundStyle(MCColor.textSecondary)
+                    .padding(.horizontal, MCSpacing.xs)
+                    .padding(.vertical, MCSpacing.xxs + 1)
+                    .frame(width: 260)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.accessoryBar)
+                .help(L("palette.open"))
+                .accessibilityIdentifier("toolbar.search")
+              }
+            }
             ToolbarItemGroup {
                 // Surfaced only when an automatic check actually found
                 // something newer. There is no permanent "check for updates"
@@ -151,15 +217,46 @@ struct MainWindow: View {
                     .help(L("updates.available", info.version))
                     .accessibilityIdentifier("toolbar.update_available")
                 }
-                Button {
-                    showCommandPalette = true
+                // The window's own options, in the place a Mac app puts them,
+                // rather than only in the menu bar where a pointer-driven user
+                // never finds them.
+                if routed.map({ !$0.hasOwnSearch }) ?? true {
+                  Menu {
+                    Button(L("toolbar.toggle_sidebar")) {
+                        withAnimation(MCMotion.transition) {
+                            sidebarVisibility = sidebarVisibility == .detailOnly ? .all : .detailOnly
+                        }
+                    }
+                    .keyboardShortcut("s", modifiers: [.command, .control])
+                    Divider()
+                    // Routed through the same notification the Help menu
+                    // uses, not local state: one command, one path. Two ways
+                    // to open one screen is two things to keep working.
+                    Button(L("menu.help.shortcuts")) {
+                        NotificationCenter.default.post(name: .mcShowKeyboardShortcuts, object: nil)
+                    }
+                    SettingsLink { Text(L("menubar.settings")) }
                 } label: {
-                    Label(L("palette.open"), systemImage: "command")
+                    Label(L("toolbar.more"), systemImage: "ellipsis.circle")
                 }
-                .help(L("palette.open"))
+                  .menuIndicator(.hidden)
+                  .help(L("toolbar.more"))
+                  .accessibilityIdentifier("toolbar.more")
+                }
             }
         }
-        .background(MCColor.background)
+        // No opaque ground here. This single line was what made the sidebar
+        // render as a flat panel however it asked to be drawn: it composited
+        // an opaque fill across the whole split view, leaving the sidebar's
+        // material nothing behind the window to sample. The detail column
+        // paints its own canvas (`mcCanvasBackground`), so nothing else
+        // depended on it.
+        // Without this the toolbar paints its own material on top of the
+        // sidebar's, and two stacked vibrancy layers produce a visibly lighter
+        // block over the top of the sidebar — a seam exactly where the point
+        // of the exercise was not to have one.
+        .modifier(MCHiddenToolbarBackground())
+        .mcConfigureWindow()
     }
 
 }
@@ -303,5 +400,18 @@ private struct CommandPaletteView: View {
         case let .action(_, _, _, perform): perform()
         }
         isPresented = false
+    }
+}
+
+/// The deployment target is macOS 14, where `toolbarBackgroundVisibility` does
+/// not exist. Below 15 the toolbar keeps its own material and the seam stays —
+/// which is the appearance the app already had, not a regression.
+private struct MCHiddenToolbarBackground: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(macOS 15.0, *) {
+            content.toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
+        } else {
+            content
+        }
     }
 }

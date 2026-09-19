@@ -70,13 +70,25 @@ struct Sidebar: View {
                 LazyVStack(alignment: .leading, spacing: 0) {
                     ForEach(groups) { group in
                         if let title = group.title {
-                            Text(title.uppercased())
-                                .font(MCFont.sidebarSection(metrics))
-                                .foregroundStyle(MCColor.textTertiary)
-                                .padding(.horizontal, MCSpacing.sm + MCSpacing.xxs)
-                                .padding(.top, MCSpacing.md)
-                                .padding(.bottom, MCSpacing.xxs)
-                                .accessibilityAddTraits(.isHeader)
+                            // Title case, not shouted caps. Small caps at
+                            // tertiary weight on a translucent ground was the
+                            // least legible text in the app, and a group name
+                            // is a label — it does not need to be an
+                            // announcement. A hairline carries the separation
+                            // that the letter-spacing used to be doing.
+                            HStack(spacing: MCSpacing.xs) {
+                                Text(title)
+                                    .font(MCFont.sidebarSection(metrics))
+                                    .foregroundStyle(MCColor.textSecondary)
+                                Rectangle()
+                                    .fill(MCColor.separator.opacity(0.5))
+                                    .frame(height: 1)
+                                    .accessibilityHidden(true)
+                            }
+                            .padding(.horizontal, MCSpacing.sm)
+                            .padding(.top, MCSpacing.md + MCSpacing.xxs)
+                            .padding(.bottom, MCSpacing.xs)
+                            .accessibilityAddTraits(.isHeader)
                         }
                         ForEach(group.modules) { module in
                             row(module)
@@ -84,8 +96,9 @@ struct Sidebar: View {
                         }
                     }
                 }
-                .padding(.horizontal, MCSpacing.xs)
-                .padding(.vertical, MCSpacing.xs)
+                .padding(.horizontal, MCSpacing.xs + MCSpacing.xxs)
+                .padding(.top, MCSpacing.xxs)
+                .padding(.bottom, MCSpacing.md)
                 // Pin the stack to the viewport width.
                 //
                 // Without this the LazyVStack sizes itself to its widest child.
@@ -138,14 +151,28 @@ struct Sidebar: View {
         // rather than a broken one.
         .navigationSplitViewColumnWidth(
             min: MCSize.sidebarMin, ideal: MCSize.sidebarIdeal, max: MCSize.sidebarMax)
-        // The sidebar is the app's primary navigation layer, so it is the
-        // other place glass belongs. Content scrolls in the detail column
-        // beside it, which is exactly what glass is meant to sample.
-        .mcNavigationGlass(in: Rectangle(), fallback: MCColor.secondaryBackground)
+        // The real `.sidebar` material, sampling the desktop behind the
+        // window. `glassEffect` was here and could not work: it samples
+        // content *inside* the window, and the window was painting an opaque
+        // ground over everything anyway. See DesignSystem/Materials.swift.
+        .mcSidebarSurface()
+        // A single focus stop owns module navigation. Row buttons opt out of
+        // the key loop below; Tab then reaches the detail column's controls.
+        // Measured with NSWindow.firstResponder, not inferred from FocusState.
         .focusable()
         .focused($focused)
+        .onChange(of: focused) { _, value in FocusTrace.snapshot("swiftui:sidebar.focused=\(value)") }
+        .focusSection()
+        // Applied after `.focusSection()`, and restored after an earlier edit
+        // dropped it: without it the section draws a bright accent halo around
+        // the entire sidebar — the loudest thing in the window, and the first
+        // element this art-direction pass had to remove. Row selection and the
+        // keyboard's own ring already say where focus is.
         .focusEffectDisabled()
         .onMoveCommand { direction in
+            // Only when this sidebar actually holds focus. Unconditional, it
+            // answered arrow keys meant for the list in the detail column.
+            guard focused else { return }
             move(direction)
         }
         .accessibilityLabel(L("sidebar.a11y.label"))
@@ -180,7 +207,7 @@ struct Sidebar: View {
                 }
 
                 Image(systemName: module.systemImage)
-                    .font(.system(size: metrics.iconSize, weight: .medium))
+                    .font(.system(size: metrics.iconSize, weight: .semibold))
                     // Hierarchical, so a multi-part symbol reads as one shape
                     // with depth rather than as a flat silhouette.
                     .symbolRenderingMode(.hierarchical)
@@ -199,25 +226,54 @@ struct Sidebar: View {
                     // single-line width upward.
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(.leading, differentiateWithoutColour ? 0 : MCSpacing.xxs)
+            .padding(.leading, differentiateWithoutColour ? 0 : MCSpacing.sm)
             .padding(.trailing, MCSpacing.sm)
             .padding(.vertical, metrics.rowPadding)
             .contentShape(Rectangle())
             .background {
-                RoundedRectangle(cornerRadius: MCRadius.small, style: .continuous)
+                // A solid accent fill, which is what a Mac sidebar selection
+                // is. The 0.18 wash this replaces was chosen to keep
+                // `textPrimary` readable *through* it — but a tint that has to
+                // stay faint enough for the ink underneath to survive is a
+                // tint that never reads as selection on a translucent ground.
+                // Filling solid and choosing the ink from the accent's own
+                // luminance (MCAccentInk) is both louder and safer: it holds
+                // across all seven system accents including Yellow, where
+                // white ink measures about 1.6:1.
+                RoundedRectangle(cornerRadius: MCRadius.card, style: .continuous)
                     .fill(background(isSelected: isSelected, isHovered: isHovered))
+                    .overlay(alignment: .leading) {
+                        // The accent lives in a 3pt indicator and in the ink,
+                        // not in a saturated block filling the row.
+                        //
+                        // The solid accent fill this replaces was chosen to be
+                        // unmissable on a translucent material, and it was —
+                        // it became the loudest thing in the window, louder
+                        // than any content in any module. A selection has to be
+                        // unambiguous, not dominant. Kept as a shape, so
+                        // Differentiate Without Colour still has something that
+                        // is not a hue.
+                        if isSelected {
+                            RoundedRectangle(cornerRadius: 1.5)
+                                .fill(Color.accentColor)
+                                .frame(width: 3)
+                                .padding(.vertical, 5)
+                                .padding(.leading, 3)
+                        }
+                    }
                     .overlay {
-                        // Under Increase Contrast the selection also gets an
-                        // edge. A wash alone is a tint, and a tint is what
-                        // that setting exists to stop relying on.
                         if isSelected, MCAccessibilityState.shared.increaseContrast {
-                            RoundedRectangle(cornerRadius: MCRadius.small, style: .continuous)
+                            RoundedRectangle(cornerRadius: MCRadius.card, style: .continuous)
                                 .strokeBorder(Color.accentColor, lineWidth: 1.5)
                         }
                     }
             }
         }
         .buttonStyle(.plain)
+        // One keyboard stop for the navigation region. Its arrow handler
+        // selects modules; individual buttons remain clickable and accessible.
+        // Otherwise Tab walks every module button before reaching content.
+        .focusable(false)
         .onHover { hovering in
             // Clear only our own hover. Writing `nil` unconditionally would
             // let a stale exit event from the row the pointer just left erase
@@ -245,13 +301,22 @@ struct Sidebar: View {
         // Derived from the accent rather than fixed, so it follows the user's
         // choice. 0.18 keeps `textPrimary` well past 4.5:1 on every accent
         // macOS offers — measured, not assumed; see SidebarAccentTests.
+        // A neutral raised surface, not the accent. On the sidebar's material
+        // this reads clearly as "this row is open" while leaving the accent to
+        // do its work at small area — in the indicator and the ink.
         if isSelected {
-            return Color.accentColor.opacity(
-                MCAccessibilityState.shared.increaseContrast
-                    ? MCOpacity.selectionWashHighContrast
-                    : MCOpacity.selectionWash)
+            return MCColor.textPrimary.opacity(
+                MCAccessibilityState.shared.increaseContrast ? 0.22 : 0.13)
         }
-        if isHovered { return Color.accentColor.opacity(MCOpacity.hoverWash) }
+        // Hover on a translucent ground has to be a neutral, not the accent:
+        // an accent wash at 0.08 behind an unselected row reads as a second,
+        // weaker selection.
+        //
+        // The value is the token, not 0.09. Three views wrote their own
+        // hover wash — 0.055, 0.06, 0.09 — and the sidebar's was the loudest
+        // of the three, so a pointer crossing it read as a stronger response
+        // than the same pointer crossing a list row two panes over.
+        if isHovered { return MCColor.textPrimary.opacity(MCOpacity.hoverWash) }
         return .clear
     }
 

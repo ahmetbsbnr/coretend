@@ -37,14 +37,22 @@ trap cleanup EXIT
 # Several seeds may be given, comma-separated; each receives the store dir.
 if [[ -n "$seed" ]]; then
   for one in ${(s:,:)seed}; do
-    bash "$(dirname "$0")/support/${one}" "$store" >/dev/null
+    if [[ "$one" == *.py ]]; then
+      python3 "$(dirname "$0")/support/${one}" "$store" >/dev/null
+    else
+      bash "$(dirname "$0")/support/${one}" "$store" >/dev/null
+    fi
   done
 fi
 
 fixture_home=""
 if [[ -n "$home_seed" ]]; then
   fixture_home="$store/home"
-  bash "$(dirname "$0")/support/${home_seed}" "$fixture_home" >/dev/null
+  if [[ "$home_seed" == *.py ]]; then
+    python3 "$(dirname "$0")/support/${home_seed}" "$fixture_home" >/dev/null
+  else
+    bash "$(dirname "$0")/support/${home_seed}" "$fixture_home" >/dev/null
+  fi
 fi
 
 # Two states are scenes rather than phases of a module: they are reached by
@@ -63,6 +71,7 @@ CORETEND_TEST_ONBOARDING="$want_onboarding" \
 CORETEND_TEST_SETTINGS="$want_settings" \
 CORETEND_TEST_AUTOSTART="$([[ -n "$state" && "$want_onboarding" == 0 && "$want_settings" == 0 ]] && echo 1 || echo 0)" \
 CORETEND_TEST_MODE=1 \
+CORETEND_FIXTURE="${CORETEND_FIXTURE:-}" \
 CORETEND_TEST_STORE_DIR="$store" \
 CORETEND_TEST_MODULE="$module" \
 CORETEND_TEST_APPEARANCE="$appearance" \

@@ -65,8 +65,47 @@ struct MCSettingsView: View {
     @State private var showDiagnostic = false
 
 
+    /// Tabs, not one scroll.
+    ///
+    /// Every section below existed already; they were stacked in a single
+    /// Form, so a window opening on "Language" and "Show in the menu bar" hid
+    /// permissions, exclusions, data and about beneath them. macOS Settings
+    /// windows are tabbed, people look for the tabs, and declaring them costs
+    /// nothing but the enum.
     var body: some View {
-        Form {
+        // `.tabItem`, not the macOS 15 `Tab` type: the deployment target is
+        // macOS 14, and this is the same tabbed Settings window either way.
+        TabView {
+            Form { generalSection }.formStyle(.grouped)
+                .tabItem { Label(L("settings.general"), systemImage: "gearshape") }
+            Form { permissionsSection }.formStyle(.grouped)
+                .tabItem { Label(L("settings.permissions"), systemImage: "lock") }
+            Form { exclusionsSection }.formStyle(.grouped)
+                .tabItem { Label(L("settings.exclusions"), systemImage: "minus.circle") }
+            Form { dataSection; UpdatesView() }.formStyle(.grouped)
+                .tabItem { Label(L("settings.data"), systemImage: "externaldrive") }
+            Form { aboutSection }.formStyle(.grouped)
+                .tabItem { Label(L("settings.about"), systemImage: "info.circle") }
+        }
+        // No tall minimum. A Settings window sizes to the tab showing, and
+        // General holds two preferences: forcing 520 points left two thirds of
+        // it empty whatever was selected.
+        //
+        // A *width* minimum is the opposite case. macOS Settings windows keep
+        // one width across their tabs — switching tab moves the content, not
+        // the window — and without it this one jumped from the width of
+        // "Language" to the width of the longest exclusion path and back on
+        // every click. Height still follows the tab; width does not.
+        .frame(minWidth: 540)
+        .onAppear { CaptureHarness.note(window: "settings") }
+        .navigationTitle(L("settings.nav_title"))
+        .accessibilityIdentifier("settings.root")
+        .task { await model.load() }
+    }
+
+    @ViewBuilder
+    private var generalSection: some View {
+        Group {
             // Shown first and unconditionally when the database failed to
             // open. Previously this state was completely invisible: the app
             // ran, the Safety Log rendered a normal empty state, and every
@@ -77,9 +116,9 @@ struct MCSettingsView: View {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .foregroundStyle(MCTheme.warning)
                             .accessibilityHidden(true)
-                        Text(L(AppEnvironment.shared.storeState.store == nil
-                               ? "settings.store_unavailable"
-                               : "settings.store_ephemeral", reason))
+                        Text(AppEnvironment.shared.storeState.store == nil
+                             ? L("settings.store_unavailable", reason)
+                             : L("settings.store_ephemeral", reason))
                             .fixedSize(horizontal: false, vertical: true)
                     }
                     .accessibilityElement(children: .combine)
@@ -98,6 +137,12 @@ struct MCSettingsView: View {
                 Text(L("settings.menu_bar_detail"))
                     .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
             }
+        }
+    }
+
+    @ViewBuilder
+    private var permissionsSection: some View {
+        Group {
             Section(L("settings.permissions")) {
                 // One row per capability, with its real three-state grant.
                 // The previous single "Full Disk Access: Not granted" row was
@@ -132,14 +177,27 @@ struct MCSettingsView: View {
                      : L("authorization.incomplete", model.authorization.denied.count))
                     .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
             }
-            Section(L("settings.exclusions")) {
+        }
+    }
+
+    @ViewBuilder
+    private var exclusionsSection: some View {
+        Group {
+            Section {
                 if model.exclusions.isEmpty {
                     Text(L("settings.exclusions_empty"))
                         .foregroundStyle(MCColor.textSecondary)
                 }
                 ForEach(model.exclusions, id: \.self) { path in
                     HStack {
-                        Text(path).lineLimit(1).truncationMode(.middle)
+                        // Abbreviated, with the literal path one hover away.
+                        // A column of "/Users/<name>/Library/…" strings is a
+                        // column whose first thirty characters are identical,
+                        // so middle truncation was truncating the only part
+                        // that told them apart.
+                        Text(PathDisplay.abbreviate(URL(fileURLWithPath: path)))
+                            .lineLimit(1).truncationMode(.middle)
+                            .help(path)
                         Spacer()
                         Button(role: .destructive) {
                             model.removeExclusion(path)
@@ -161,7 +219,29 @@ struct MCSettingsView: View {
                     }
                 }
                 .accessibilityIdentifier("settings.exclusions.add")
+            } header: {
+                // The count belongs in the header of the thing it counts.
+                // "Exclusions" alone made a list of eleven folders and a list
+                // of none look like the same section until you read it.
+                HStack {
+                    Text(L("settings.exclusions"))
+                    Spacer()
+                    if !model.exclusions.isEmpty {
+                        Text(L("settings.exclusions_count", model.exclusions.count))
+                            .font(MCFont.caption).monospacedDigit()
+                            .foregroundStyle(MCColor.textSecondary)
+                    }
+                }
+            } footer: {
+                Text(L("settings.exclusions_footer"))
+                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
             }
+        }
+    }
+
+    @ViewBuilder
+    private var dataSection: some View {
+        Group {
             Section(L("settings.data")) {
                 // Build-aware because the sentence is not the same sentence in
                 // both products. The Developer ID build checks for updates over
@@ -192,7 +272,12 @@ struct MCSettingsView: View {
                 Text(L("settings.export_diagnostic_detail"))
                     .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
             }
-            UpdatesView()
+        }
+    }
+
+    @ViewBuilder
+    private var aboutSection: some View {
+        Group {
             // No version row here: the installed version is stated once, in
             // Updates, where it is the operand of the comparison against the
             // published release. Two rows showing the same number in one
@@ -217,11 +302,6 @@ struct MCSettingsView: View {
                 .accessibilityIdentifier("settings.onboarding.rerun")
             }
         }
-        .formStyle(.grouped)
-        .onAppear { CaptureHarness.note(window: "settings") }
-        .navigationTitle(L("settings.nav_title"))
-        .accessibilityIdentifier("settings.root")
-        .task { await model.load() }
     }
 
     // MARK: - Grant presentation

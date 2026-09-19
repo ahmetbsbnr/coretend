@@ -29,6 +29,19 @@ public enum MCFont {
     /// The one number a screen is about. Large Title, not "40pt because it
     /// looked good in a screenshot": it scales with the system text size like
     /// everything else, which a fixed size did not.
+    /// The Overview signal band's figure: the largest number in the app, set
+    /// to be read across a desk. Relative (`.system(.title, …)`), so it still
+    /// tracks the user's text-size setting — the point of banning absolute
+    /// sizes was never to ban large type, it was to stop type that ignores
+    /// accessibility preferences.
+    public static let signalMetric = Font.system(.largeTitle, design: .rounded).weight(.semibold)
+    /// A secondary display figure: an inspector's measured quantity, or a
+    /// capacity ring's centre.
+    public static let displaySecondary = Font.system(.title, design: .rounded).weight(.semibold)
+    /// The "never measured" stand-in where a display figure would go. Smaller
+    /// than the figure it replaces on purpose: the absence of a measurement
+    /// must not be set as loudly as a measurement.
+    public static let displayAbsent = Font.system(.title2, design: .rounded).weight(.medium)
     public static let displayMetric = Font.system(.largeTitle, design: .rounded).weight(.semibold)
     public static let heroTitle = Font.title.weight(.bold)
     /// Module landing headings. Bold, not semibold: it needs a clear step above
@@ -135,6 +148,17 @@ public enum MCIconSize {
     public static let card: CGFloat = 28
     /// Anything sitting in a row: sidebar items, status glyphs, small actions.
     public static let row: CGFloat = 14
+    /// A real application or document icon in a list row.
+    ///
+    /// Separate from `row` because these are artwork, not glyphs: an app icon
+    /// at 14pt is a coloured smudge, and at 14pt beside a 14pt SF Symbol it
+    /// also reads as *smaller* than the symbol, because a symbol fills its box
+    /// and an icon does not. 20 is where the artwork becomes identifiable
+    /// without the row growing past the 28pt table row.
+    public static let bundleRow: CGFloat = 20
+    /// The identifying icon at the head of an inspector — the app the whole
+    /// pane is about.
+    public static let bundleHeader: CGFloat = 52
     /// Directional affordances — the arrow that says "this opens something".
     public static let chevron: CGFloat = 12
     /// Small inline status dot (lock/cloud indicators on list rows).

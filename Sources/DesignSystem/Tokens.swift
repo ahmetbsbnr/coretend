@@ -48,7 +48,14 @@ public enum MCSize {
     public static let windowDefaultWidth: CGFloat = 1180
     public static let windowDefaultHeight: CGFloat = 800
     public static let metricRing: CGFloat = 76
-    public static let chartHeight: CGFloat = 140
+    /// A live curve's height.
+    ///
+    /// Was 140. Measured on a capture, two curves at that height plus their
+    /// labels pushed Performance's scan history — the section that makes this
+    /// module temporal rather than a status readout — below the fold, and left
+    /// 38% of the detail column flat. A curve does not need 140 points to show
+    /// its shape.
+    public static let chartHeight: CGFloat = 104
     /// The widest a column of prose or summary rows may get.
     ///
     /// A large window is not a reason to stretch a sentence to 1400pt: the
@@ -93,15 +100,19 @@ public enum MCMotion {
     /// user-triggered motion is ease-out under 300 ms. `smooth` is roughly
     /// ease-in-out, so the motion started slowly *after* the click, which is
     /// the specific thing that reads as sluggish. 280 ms ease-out.
-    public static let reveal = Animation.easeOut(duration: 0.28)
+    /// Shortened from 0.28. A reveal that takes a third of a second reads as
+    /// a transition being performed for the viewer; at 0.18 it reads as the
+    /// interface having already responded. Nothing in this app is a
+    /// spectacle — motion exists to say what changed, then get out of the way.
+    public static let reveal = Animation.easeOut(duration: 0.18)
 
     /// One state becoming another: a phase change, a tab swap, a filter
     /// applying. Faster than `reveal` because nothing new is being introduced.
-    public static let transition = Animation.easeOut(duration: 0.22)
+    public static let transition = Animation.easeOut(duration: 0.16)
 
     /// Direct response to a pointer or key: hover, press, selection. Must feel
     /// attached to the input, so it is the shortest thing here.
-    public static let response = Animation.easeOut(duration: 0.15)
+    public static let response = Animation.easeOut(duration: 0.11)
 
     /// Motion that reports nothing and gates nothing — the glow that blooms
     /// behind a completed cleanup. The one place where taking time is the
@@ -115,7 +126,9 @@ public enum MCMotion {
     /// Something settling into place under its own weight: a zoom, a treemap
     /// rearranging, a value animating to a new number. The only spring, because
     /// a spring says "physical" and almost nothing here is.
-    public static let settle = Animation.spring(response: 0.45, dampingFraction: 0.85)
+    /// Higher damping, shorter response: a spring that visibly oscillates is
+    /// a bounce, and a bounce is decoration.
+    public static let settle = Animation.spring(response: 0.32, dampingFraction: 0.95)
 
     /// Kept for the two call sites that pass an animation around rather than
     /// applying it. New code should use `.mcAnimation(_:value:)`.
@@ -187,7 +200,10 @@ public enum MCOpacity {
     /// Hover on a navigation row, over the user's accent. Faint enough that a
     /// pointer moving down the sidebar does not look like six selections; the
     /// opaque surface it replaced made hover as loud as selection.
-    public static let hoverWash: Double = 0.08
+    /// Hover says "this responds", nothing more. Applied as a neutral ink
+    /// wash rather than an accent tint, so hovering a row never looks like a
+    /// second, weaker selection.
+    public static let hoverWash: Double = 0.055
     /// Selection wash under Increase Contrast. Someone who turned that setting
     /// on has said a faint tint is not enough of a boundary for them, and a
     /// pale wash of a light accent is exactly that. Paired with a stroke.

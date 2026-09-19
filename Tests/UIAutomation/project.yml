@@ -1,0 +1,40 @@
+# A UI-test-only Xcode project, generated on demand.
+#
+# Why this exists: SwiftPM emits `CoreTendUITests` as a *unit*-test bundle, and
+# XCUIApplication requires a native UI-testing bundle — which is why every test
+# in that file skips itself with that exact message. System Events, the other
+# option, cannot reliably produce a right-click, a double-click, or a
+# modifier-click, so several interactions had no way to be proven at all.
+#
+# Deliberately not a migration: the package remains the build system. This
+# project builds no product, contains one target, and drives the already-built
+# CoreTend.app by path.
+name: CoreTendUIAutomation
+options:
+  bundleIdPrefix: com.ahmetbsbnr.coretend.uiautomation
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+targets:
+  CoreTendUIAutomation:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - Sources
+    settings:
+      base:
+        SWIFT_VERSION: "5.0"
+        TEST_TARGET_NAME: ""
+        # Ad-hoc rather than disabled: the XCUITest runner is a real app that
+        # macOS must be able to grant Accessibility to. Unsigned, it built fine
+        # and then "hung before establishing connection".
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGNING_REQUIRED: "YES"
+        GENERATE_INFOPLIST_FILE: "YES"
+schemes:
+  CoreTendUIAutomation:
+    build:
+      targets:
+        CoreTendUIAutomation: [test]
+    test:
+      targets: [CoreTendUIAutomation]

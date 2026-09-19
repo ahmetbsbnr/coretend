@@ -623,14 +623,40 @@ struct GlassAdoptionTests {
         }
     }
 
-    /// Both of them actually adopt it, so the modifier is not dead code that
-    /// only exists to be tested.
-    @Test func bothNavigationSurfacesAdoptIt() throws {
+    /// Every navigation surface adopts a real system material — but not the
+    /// same one, because they are not the same kind of surface.
+    ///
+    /// The sidebar moved from `mcNavigationGlass` to `mcSidebarSurface`. That
+    /// was a correction, not a downgrade: `glassEffect` samples content inside
+    /// the window, and a Mac sidebar samples the desktop behind it, which only
+    /// `NSVisualEffectView(.behindWindow)` does. The sub-nav is genuinely
+    /// in-window chrome, so it keeps the glass. What this test protects is that
+    /// neither of them goes back to being a plain painted rectangle.
+    @Test func everyNavigationSurfaceAdoptsASystemMaterial() throws {
         let sources = Dictionary(uniqueKeysWithValues: try sources().map { ($0.name, $0.text) })
-        for name in ["Sidebar.swift", "ModuleSubNav.swift"] {
-            let text = try #require(sources[name])
-            #expect(text.contains("mcNavigationGlass"), "\(name) does not adopt glass")
-        }
+        let sidebar = try #require(sources["Sidebar.swift"])
+        #expect(sidebar.contains("mcSidebarSurface"),
+                "Sidebar.swift no longer adopts the system sidebar material")
+        let subNav = try #require(sources["ModuleSubNav.swift"])
+        #expect(subNav.contains("mcNavigationGlass"), "ModuleSubNav.swift does not adopt glass")
+    }
+
+    /// A behind-window material cannot work in an opaque window: the backing
+    /// store composites before the material ever samples, and the effect
+    /// degrades to a flat panel with no error. This is the regression that
+    /// made the sidebar look painted however it asked to be drawn.
+    @Test func theWindowIsNotOpaque() throws {
+        let sources = Dictionary(uniqueKeysWithValues: try sources().map { ($0.name, $0.text) })
+        let materials = try #require(sources["Materials.swift"])
+        #expect(materials.contains("isOpaque = false"))
+        // Read directly: this suite's `sources()` helper enumerates the
+        // DesignSystem target, and MainWindow lives in CoreTendApp.
+        let main = try String(contentsOf: root
+            .appendingPathComponent("Sources/CoreTendApp/App/MainWindow.swift"), encoding: .utf8)
+        #expect(main.contains("mcConfigureWindow"),
+                "MainWindow does not configure the window for a behind-window material")
+        #expect(!main.contains(".background(MCColor.background)"),
+                "MainWindow paints an opaque ground over the split view again")
     }
 
     /// The gate and its documentation must not drift apart.
@@ -652,11 +678,20 @@ struct GlassAdoptionTests {
         #expect(glass.contains("accessibilityReduceTransparency"))
         #expect(glass.contains("!reduceTransparency"),
                 "the effect is not actually disabled when the setting is on")
-        // Both call sites must pass a fallback colour.
-        for name in ["Sidebar.swift", "ModuleSubNav.swift"] {
-            let text = try #require(sources[name])
-            #expect(text.contains("fallback: MCColor."), "\(name) passes no opaque fallback")
-        }
+        // The glass call site passes a fallback colour.
+        let subNav = try #require(sources["ModuleSubNav.swift"])
+        #expect(subNav.contains("fallback: MCColor."), "ModuleSubNav.swift passes no opaque fallback")
+        // The sidebar's material honours the setting in its own modifier, and
+        // substitutes an owned opaque colour rather than the system's — which
+        // is the whole reason it does not just let NSVisualEffectView handle
+        // it. Both halves are asserted, because a fallback that is not wired
+        // to the setting is not a fallback.
+        let materials = try #require(sources["Materials.swift"])
+        #expect(materials.contains("accessibilityReduceTransparency"))
+        #expect(materials.contains("if reduceTransparency"),
+                "the sidebar material is not actually skipped when the setting is on")
+        #expect(materials.contains("fallback: MCColor."),
+                "the sidebar surface has no opaque fallback in the app's own colours")
     }
 }
 

@@ -76,6 +76,10 @@ struct LocalizationUsageTests {
             "authorization.", "risk.", "integrity.tier.", "cloud.state.",
             "apps.grouping.", "safety.reason.", "shortcuts.", "menu.help.",
             "module.", "sidebar.", "updates.", "record.filter_",
+            // Cleanup rule vocabulary: the key is built from the rule id
+            // (`CleanupRuleVocabulary`), so the literal never appears in
+            // source. Same shape as every other family listed here.
+            "rule.",
         ]
         // Plural families: `L(count == 1 ? base + "_one" : base + "_other")`.
         // The base is a literal, the whole key never is.

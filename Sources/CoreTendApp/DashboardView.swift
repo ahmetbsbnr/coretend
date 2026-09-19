@@ -74,7 +74,9 @@ final class OverviewViewModel {
         recent = Array(SafetyLedger.items(operations: entries, events: events).prefix(12))
 
         attention = Self.attentionRows(
-            fullDisk: SystemAuthorization.probeLive().grant(for: .fullDisk),
+            fullDisk: OverviewFacts.fixtureDeniesFullDiskAccess
+                ? .denied
+                : SystemAuthorization.probeLive().grant(for: .fullDisk),
             brokenLoginItems: LaunchAgentInspector.userAgents().filter(\.broken).count,
             lastScan: lastScanDate)
     }
@@ -101,6 +103,18 @@ final class OverviewViewModel {
     }
 
     private static func mountedVolumes(cleanupFound: Int64?) -> [Volume] {
+        // A Visual Beta scenario states its own volumes. Same `Volume` type,
+        // same view: only the source of the numbers changes.
+        if let fixtures = OverviewFacts.fixtureVolumes {
+            return fixtures.map { fixture in
+                Volume(url: URL(fileURLWithPath: "/Volumes/\(fixture.name)", isDirectory: true),
+                       name: fixture.name,
+                       isInternal: fixture.isInternal,
+                       breakdown: .init(total: fixture.total,
+                                        free: fixture.free,
+                                        foundByLastScan: fixture.isInternal ? cleanupFound : nil))
+            }
+        }
         let keys: [URLResourceKey] = [.volumeNameKey, .volumeTotalCapacityKey,
                                       .volumeAvailableCapacityForImportantUsageKey, .volumeIsInternalKey]
         let urls = FileManager.default.mountedVolumeURLs(includingResourceValuesForKeys: keys,

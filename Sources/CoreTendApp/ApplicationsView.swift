@@ -337,12 +337,26 @@ struct InstalledAppsView: ModuleSubScreen {
         GeometryReader { proxy in
             if proxy.size.width >= 980 {
                 HStack(spacing: 0) {
+                    // The table takes the slack, the inspector is capped.
+                    //
+                    // These were the other way round — table capped at 720,
+                    // inspector `.infinity` — and a capture showed what that
+                    // costs: on a standard window the inspector was the wider
+                    // of the two while showing a placeholder, and the table's
+                    // Source column was clipped mid-word against the divider.
+                    // This screen's work is comparing many applications, so
+                    // the dense half is the half that grows.
                     appList
-                        .frame(minWidth: 440, idealWidth: 560, maxWidth: 720)
+                        .frame(minWidth: 440, maxWidth: .infinity)
                         .background(MCColor.elevatedBackground)
                     Divider()
+                    // Fixed at standard width, wider once there is genuinely
+                    // spare width. The associated-data list is the one thing
+                    // here that benefits from it: those are full paths, and at
+                    // 360 every one of them truncates in the middle.
                     detail
-                        .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
+                        .frame(width: detailWidth(for: proxy.size.width))
+                        .frame(maxHeight: .infinity)
                 }
                 .onAppear { pushedAppID = nil }
             } else {
@@ -377,11 +391,31 @@ struct InstalledAppsView: ModuleSubScreen {
         }
     }
 
+    /// Fixed at standard width, wider once there is genuinely spare width.
+    /// The associated-data list is the one thing here that benefits from it:
+    /// those are full paths, and at 360 every one of them truncates.
+    private func detailWidth(for total: CGFloat) -> CGFloat {
+        total >= 1400 ? 420 : 360
+    }
+
+    /// Four columns, not five.
+    ///
+    /// A Location column was added and then removed, because a capture
+    /// settled it: at a standard 1180-point window this pane is 630 points
+    /// wide, the four columns already take 611, and `Table` answered a fifth
+    /// by rendering it past its own right edge rather than by shrinking the
+    /// others. A column that is present but unreadable is worse than one that
+    /// is not there. Where an app lives is instead on the name cell's tooltip
+    /// and in the inspector, which is where someone asks the question — about
+    /// one app, not about the whole list at once.
     private var appList: some View {
         VStack(spacing: 0) {
             HStack(spacing: MCSpacing.xs) {
-                TextField(L("apps.search"), text: $model.searchText)
-                    .textFieldStyle(.roundedBorder)
+                // The same search control as Duplicates, Cleanup and Explore.
+                // This one was a bare rounded-border TextField, so the app had
+                // two search fields of different heights and different affordances
+                // depending on which module you were in.
+                MCSearchField(text: $model.searchText, placeholder: L("apps.search"))
                     .accessibilityIdentifier("applications.search")
                 Picker(L("apps.group_by"), selection: $model.grouping) {
                     ForEach(AppGrouping.allCases) { Text($0.displayName).tag($0) }
@@ -414,9 +448,9 @@ struct InstalledAppsView: ModuleSubScreen {
                 ), sortOrder: $model.sortOrder) {
                     TableColumn(L("apps.column_name"), value: \.name) { app in
                         HStack(spacing: MCSpacing.xs) {
-                            Image(nsImage: NSWorkspace.shared.icon(forFile: app.path.path))
-                                .resizable().frame(width: 16, height: 16).accessibilityHidden(true)
-                            Text(app.name).lineLimit(1)
+                            FileIcon(path: app.path.path, size: MCIconSize.bundleRow)
+                            Text(app.name).font(MCFont.rowTitle).lineLimit(1)
+                                .help(PathDisplay.abbreviate(app.path))
                             if app.isQuarantined {
                                 Image(systemName: "arrow.down.circle")
                                     .foregroundStyle(MCColor.textTertiary)
@@ -425,24 +459,43 @@ struct InstalledAppsView: ModuleSubScreen {
                             }
                         }
                     }
-                    .width(min: 160, ideal: 220)
+                    // Only the name column is flexible.
+                    //
+                    // With every column merely given an ideal, `Table` spread
+                    // the detail column's whole width across all five and the
+                    // last one — Location — fell off the right edge entirely.
+                    // Fixed widths on the four short columns, and the slack
+                    // goes where it is useful: to the names.
+                    .width(min: 160, ideal: 240)
                     TableColumn(L("apps.column_size"), value: \.sizeBytes) { app in
-                        Text(mcFormatBytes(app.sizeBytes)).font(MCFont.tabular)
+                        Text(mcFormatBytes(app.sizeBytes))
+                            .font(MCFont.tabular)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
                     }
-                    .width(min: 70, ideal: 84)
+                    .width(92)
+                    .alignment(.trailing)
+                    // Relative, with the exact date one hover away.
+                    //
+                    // "12 Mar 2025" is a fact the reader then has to subtract
+                    // from today to answer the only question this column is
+                    // ever asked — is this still in use? A column of dates is
+                    // also a column of near-identical strings, so nothing
+                    // stands out; "over a year" does.
                     TableColumn(L("apps.column_last_used"), value: \.lastUsedSortKey) { app in
-                        Text(app.lastUsedDate.map { AppDateFormatting.string($0, style: .dayMonthYear) }
-                             ?? L("apps.last_used_unknown_short"))
-                            .foregroundStyle(MCColor.textSecondary)
+                        Text(app.lastUsedRelative)
+                            .foregroundStyle(app.isStale ? MCColor.textPrimary : MCColor.textSecondary)
+                            .help(app.lastUsedDate.map {
+                                AppDateFormatting.string($0, style: .dayMonthYearWithTime)
+                            } ?? L("apps.last_used_unknown"))
                     }
-                    .width(min: 90, ideal: 110)
+                    .width(104)
                     TableColumn(L("apps.column_source"), value: \.sourceSortKey) { app in
                         Text(AppUpdateSource.detect(for: app).source.rawValue)
                             .foregroundStyle(MCColor.textSecondary)
                     }
-                    .width(min: 90, ideal: 120)
+                    .width(120)
                 }
-                .tableStyle(.inset(alternatesRowBackgrounds: false))
+                .tableStyle(.inset(alternatesRowBackgrounds: true))
                 .accessibilityIdentifier("applications.list")
             }
         }
@@ -453,31 +506,26 @@ struct InstalledAppsView: ModuleSubScreen {
         if let app = model.selectedApp {
             ScrollView {
                 VStack(alignment: .leading, spacing: MCSpacing.md) {
-                    HStack(spacing: MCSpacing.sm) {
-                        Image(nsImage: NSWorkspace.shared.icon(forFile: app.path.path))
-                            .resizable().frame(width: 56, height: 56)
-                        VStack(alignment: .leading) {
-                            Text(app.name).font(MCFont.pageTitle)
+                    // Identity first: icon, name, bundle id. The four facts
+                    // under it were a single run-on line of caption text —
+                    // version, architectures, size and last use separated by
+                    // nothing but spaces, so "2.4.1 arm64, x86_64 312 MB" read
+                    // as one string. A label/value grid says which is which.
+                    HStack(alignment: .top, spacing: MCSpacing.sm) {
+                        FileIcon(path: app.path.path, size: MCIconSize.bundleHeader)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(app.name).font(MCFont.pageTitle).lineLimit(2)
                             Text(app.bundleIdentifier ?? L("apps.unknown_bundle_id"))
                                 .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                            HStack(spacing: MCSpacing.xs) {
-                                if let version = app.version { Text(L("apps.version_prefix", version)) }
-                                if !app.architectures.isEmpty {
-                                    Text(app.architectures.joined(separator: ", "))
-                                }
-                                Text(mcFormatBytes(app.sizeBytes))
-                                if let lastUsed = app.lastUsedDate {
-                                    Text(L("apps.last_used", AppDateFormatting.string(lastUsed, style: .dayMonthYear)))
-                                } else {
-                                    Text(L("apps.last_used_unknown"))
-                                }
-                            }
-                            .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+                                .lineLimit(1).truncationMode(.middle)
+                                .textSelection(.enabled)
                         }
+                        Spacer(minLength: 0)
                     }
+                    identityFacts(app)
                     VStack(alignment: .leading, spacing: MCSpacing.sm) {
                         VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                            Text(L("apps.associated_data")).font(MCFont.cardTitle)
+                            associatedHeader
                             if model.associated.isEmpty {
                                 Text(L("apps.associated_data.empty"))
                                     .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
@@ -529,8 +577,128 @@ struct InstalledAppsView: ModuleSubScreen {
                 .padding(MCSpacing.page)
             }
         } else {
-            MCEmptyState(icon: "sidebar.left", title: L("apps.select_prompt"), message: "")
+            inventorySummary
         }
+    }
+
+    /// Version, architectures, size, last use, location — as label/value
+    /// pairs on a shared column, so the values line up vertically and the eye
+    /// can run down them. Nothing is shown that the bundle does not state:
+    /// an app with no version string gets no version row rather than "—".
+    private func identityFacts(_ app: InstalledApp) -> some View {
+        VStack(alignment: .leading, spacing: MCSpacing.xxs) {
+            if let version = app.version {
+                inspectorFact(L("apps.fact.version"), version)
+            }
+            if !app.architectures.isEmpty {
+                inspectorFact(L("apps.fact.architecture"), app.architectures.joined(separator: ", "))
+            }
+            inspectorFact(L("apps.fact.size"), mcFormatBytes(app.sizeBytes))
+            inspectorFact(L("apps.fact.last_used"),
+                          app.lastUsedDate.map { AppDateFormatting.string($0, style: .dayMonthYear) }
+                          ?? L("apps.last_used_unknown"))
+            inspectorFact(L("apps.fact.location"), app.locationLabel)
+            inspectorFact(L("apps.fact.source"), AppUpdateSource.detect(for: app).source.rawValue)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private func inspectorFact(_ label: String, _ value: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: MCSpacing.xs) {
+            Text(label)
+                .font(MCFont.caption).foregroundStyle(MCColor.textTertiary)
+                .frame(width: 96, alignment: .leading)
+            Text(value)
+                .font(MCFont.caption).foregroundStyle(MCColor.textPrimary)
+                .lineLimit(2)
+            Spacer(minLength: 0)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(label), \(value)")
+    }
+
+    /// The associated-data heading carries the two numbers that decide
+    /// whether to read the list at all — how many items are ticked and what
+    /// they weigh — plus one control to tick or untick all of them. A list of
+    /// fourteen checkboxes with no way to clear them is a list that gets
+    /// cleared one click at a time.
+    @ViewBuilder
+    private var associatedHeader: some View {
+        let selected = model.associated.filter { model.selectedAssociatedPaths.contains($0.url.path) }
+        let allSelected = !model.associated.isEmpty && selected.count == model.associated.count
+        HStack(alignment: .firstTextBaseline, spacing: MCSpacing.xs) {
+            Text(L("apps.associated_data")).font(MCFont.cardTitle)
+            Spacer(minLength: MCSpacing.xs)
+            if !model.associated.isEmpty {
+                Text(L("apps.associated_data.selected",
+                       selected.count, model.associated.count,
+                       mcFormatBytes(selected.reduce(Int64(0)) { $0 + $1.sizeBytes })))
+                    .font(MCFont.micro).monospacedDigit()
+                    .foregroundStyle(MCColor.textSecondary)
+                Button(allSelected ? L("common.deselect_all") : L("common.select_all")) {
+                    model.selectedAssociatedPaths = allSelected
+                        ? []
+                        : Set(model.associated.map(\.url.path))
+                }
+                .buttonStyle(.link)
+                .font(MCFont.micro)
+            }
+        }
+    }
+
+    /// What the pane shows before anything is selected.
+    ///
+    /// It was a placeholder glyph and "Select an application". At standard
+    /// width that wastes 360 points; at large width it wastes 460, which is
+    /// the whole reason the large breakpoint exists — extra width has to carry
+    /// content, not a larger gap. Everything here is already computed for the
+    /// table beside it, so the summary costs nothing and answers the questions
+    /// a person opening this screen actually has.
+    @ViewBuilder
+    private var inventorySummary: some View {
+        let apps = model.filteredApps
+        let total = apps.reduce(into: Int64(0)) { $0 += $1.sizeBytes }
+        let largest = apps.max { $0.sizeBytes < $1.sizeBytes }
+        let stale = apps.filter { app in
+            guard let used = app.lastUsedDate else { return false }
+            return used < Date().addingTimeInterval(-90 * 86400)
+        }
+        ScrollView {
+            VStack(alignment: .leading, spacing: MCSpacing.lg) {
+                VStack(alignment: .leading, spacing: MCSpacing.xxs) {
+                    Text(L("apps.summary.title")).font(MCFont.sectionTitle)
+                    Text(L("apps.summary.subtitle")).font(MCFont.caption)
+                        .foregroundStyle(MCColor.textTertiary)
+                }
+                summaryFact(L("apps.summary.count"), "\(apps.count)")
+                summaryFact(L("apps.summary.total"), mcFormatBytes(total))
+                if let largest {
+                    summaryFact(L("apps.summary.largest"),
+                                "\(largest.name) — \(mcFormatBytes(largest.sizeBytes))")
+                }
+                if !stale.isEmpty {
+                    summaryFact(L("apps.summary.stale"), "\(stale.count)")
+                }
+                Text(L("apps.select_prompt"))
+                    .font(MCFont.caption)
+                    .foregroundStyle(MCColor.textTertiary)
+                Spacer(minLength: 0)
+            }
+            .padding(MCSpacing.page)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .accessibilityIdentifier("apps.summary")
+    }
+
+    private func summaryFact(_ label: String, _ value: String) -> some View {
+        VStack(alignment: .leading, spacing: 1) {
+            Text(label.uppercased())
+                .font(MCFont.groupHeader).foregroundStyle(MCColor.textSecondary)
+            Text(value)
+                .font(MCFont.rowTitle).foregroundStyle(MCColor.textPrimary)
+                .lineLimit(2)
+        }
+        .accessibilityElement(children: .combine)
     }
 }
 
@@ -539,4 +707,42 @@ extension InstalledApp {
     /// Apps never used sort last, whichever direction the column is in.
     var lastUsedSortKey: Date { lastUsedDate ?? .distantPast }
     var sourceSortKey: String { AppUpdateSource.detect(for: self).source.rawValue }
+
+    /// Unopened for ninety days or more. Used for emphasis only — nothing is
+    /// recommended, flagged or preselected on the strength of it, because a
+    /// tool used twice a year is not clutter.
+    var isStale: Bool {
+        guard let used = lastUsedDate else { return false }
+        return used < Date().addingTimeInterval(-90 * 86_400)
+    }
+
+    /// How long ago, in the coarsest unit that is still true. Never invents a
+    /// date for an app macOS has no last-use record for.
+    var lastUsedRelative: String {
+        guard let date = lastUsedDate else { return L("apps.last_used_unknown_short") }
+        let days = Calendar.current.dateComponents([.day], from: date, to: Date()).day ?? 0
+        switch days {
+        case ..<1: return L("apps.last_used.today")
+        case ..<7: return L("apps.last_used.days", days)
+        case ..<60: return L("apps.last_used.weeks", days / 7)
+        case ..<365: return L("apps.last_used.months", days / 30)
+        default: return L("apps.last_used.years", max(1, days / 365))
+        }
+    }
+
+    /// Which of the two application folders this bundle is in, named the way
+    /// the Finder names them. Anywhere else — a Caskroom link, a disk image,
+    /// a folder someone dragged it into — shows the enclosing folder instead
+    /// of being flattened into "Other".
+    var locationLabel: String {
+        let parent = path.deletingLastPathComponent()
+        if parent.path == "/Applications" { return L("apps.location.system") }
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        if parent.path == home.appendingPathComponent("Applications").path {
+            return L("apps.location.user")
+        }
+        return parent.lastPathComponent
+    }
+
+    var locationSortKey: String { locationLabel }
 }

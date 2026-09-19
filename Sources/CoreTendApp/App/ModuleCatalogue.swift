@@ -80,6 +80,20 @@ enum ModuleID: String, CaseIterable, Identifiable {
         }
     }
 
+    /// Whether the module installs its own `.searchable` field.
+    ///
+    /// The window-level search added to the toolbar is a jump-to-anything
+    /// palette, not a content filter. On a module that already searches its
+    /// own contents the two sat side by side in one toolbar — two fields, two
+    /// different meanings, no way to tell which was which. The global one
+    /// stands down where a specific one exists.
+    var hasOwnSearch: Bool {
+        switch self {
+        case .record, .cleanup, .duplicates, .applications, .spaceLens: true
+        case .smartCare, .protection, .performance: false
+        }
+    }
+
     /// Localized display label. `rawValue` stays the internal stable identity
     /// (matched against `ActivityRecord.summary` prefixes elsewhere).
     var label: String {

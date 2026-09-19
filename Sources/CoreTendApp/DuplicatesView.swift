@@ -8,6 +8,7 @@ import DesignSystem
 import Persistence
 import QuickLookUI
 import QuickLook
+@preconcurrency import QuickLookThumbnailing
 
 /// Identifiable wrapper so raw `URL`s can drive `MCOverlapStack`.
 private struct DupMember: Identifiable {
@@ -238,9 +239,12 @@ final class DuplicatesViewModel: CancellableScan {
 struct DuplicatesView: View {
     /// Full Disk Access, re-checked on appear. Without it this module reads a
     /// fraction of what is there and reports it as a result.
-    @State private var hasFullDiskAccess = SystemAuthorization.probeLive().hasFullDiskAccess
+    @State private var hasFullDiskAccess = ScanTargetAccess.canReadScanTarget
     @State private var scanAnyway = false
-    @State private var model = DuplicatesViewModel()
+    @State var model = DuplicatesViewModel()
+    @State private var selectionAnchor: String?
+    private enum FocusTarget: Hashable { case groups, detail }
+    @FocusState private var focus: FocusTarget?
     @State private var showMoveConfirmation = false
     @State private var selectedGroupID: String?
     /// Separate from the selection: side by side there is always a selected
@@ -269,7 +273,7 @@ struct DuplicatesView: View {
         // first, so the idle branch never appears and an autostarted capture
         // waited forever for a scan nobody had asked to run.
         .onAppear {
-            hasFullDiskAccess = SystemAuthorization.probeLive().hasFullDiskAccess
+            hasFullDiskAccess = ScanTargetAccess.canReadScanTarget
             if CaptureHarness.autostartScan, model.phase == .idle {
                 scanAnyway = true
                 model.start()
@@ -281,6 +285,9 @@ struct DuplicatesView: View {
             pauseOrResume: { model.isScanPaused ? model.resumeScan() : model.pauseScan() },
             cancel: { model.cancel() })
         .accessibilityIdentifier("duplicates.root")
+        .onChange(of: pushedGroupID) { old, new in
+            if old != nil, new == nil { focus = .groups }
+        }
         .confirmationDialog(
             L("common.trash_confirm.title"),
             isPresented: $showMoveConfirmation,
@@ -373,9 +380,23 @@ struct DuplicatesView: View {
                        mcFormatBytes(model.selectedBytes)))
                     .font(MCFont.body)
                 Spacer()
+                // ⌘A and ⌘⇧A were missing here entirely.
+                //
+                // Cleanup has bound them since the rebuild; Duplicates offered
+                // bulk selection only as a button, so the shortcut a Mac user
+                // reaches for first did nothing on the one screen where
+                // selecting many things at once is the entire task. Found by
+                // exercising the running app, not by reading the view: ⌘A
+                // produced a byte-identical capture.
                 Button(L("dupes.select_extras")) { model.selectAllButKeepers() }
                     .buttonStyle(.bordered)
+                    .keyboardShortcut("a", modifiers: .command)
                     .disabled(model.filteredGroups.isEmpty)
+                Button(L("dupes.select_none")) { model.selectedPaths.removeAll() }
+                    .buttonStyle(.borderless)
+                    .keyboardShortcut("a", modifiers: [.command, .shift])
+                    .disabled(model.selectedPaths.isEmpty)
+                    .accessibilityIdentifier("duplicates.select_none")
                 Button(L("dupes.move_to_trash")) { showMoveConfirmation = true }
                     .buttonStyle(.borderedProminent)
                     .disabled(model.selectedPaths.isEmpty || model.phase == .executing)
@@ -394,6 +415,8 @@ struct DuplicatesView: View {
                         Divider()
                         groupDetail
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .focusable().focused($focus, equals: .detail)
+                            .onKeyPress(.escape) { focus = .groups; return .handled }
                     }
                     .onAppear { pushedGroupID = nil }
                 } else {
@@ -402,6 +425,9 @@ struct DuplicatesView: View {
                             .frame(maxWidth: .infinity)
                             .navigationDestination(item: $pushedGroupID) { _ in
                                 groupDetail.navigationTitle(L("dupes.group"))
+                                    .focusable().focused($focus, equals: .detail)
+                                    .onAppear { focus = .detail }
+                                    .onKeyPress(.escape) { pushedGroupID = nil; return .handled }
                             }
                     }
                 }
@@ -442,13 +468,19 @@ struct DuplicatesView: View {
                         get: { selectedGroupID },
                         set: { id in
                             selectedGroupID = id
-                            if let id { pushedGroupID = id }
+                            selectionAnchor = nil
                         }
                     )) { group in
                         HStack(spacing: MCSpacing.xs) {
-                            Image(nsImage: NSWorkspace.shared.icon(forFile: group.keeper.path))
-                                .resizable().frame(width: 16, height: 16).accessibilityHidden(true)
-                            Text(group.keeper.lastPathComponent).lineLimit(1)
+                            // The group list is the first place a person
+                            // looks for "which pile is this?". A generic
+                            // file-type icon answered "a picture" for every
+                            // one of forty rows; the keeper's own preview
+                            // answers it for this one.
+                            DuplicateThumbnail(url: group.keeper, size: 22)
+                            Text(group.keeper.lastPathComponent)
+                                .font(MCFont.rowTitle)
+                                .lineLimit(1)
                             Text(L("dupes.copies_count", group.urls.count))
                                 .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                             Spacer(minLength: MCSpacing.xs)
@@ -463,6 +495,33 @@ struct DuplicatesView: View {
                     .listStyle(.plain)
                     .scrollContentBackground(.hidden)
                     .environment(\.defaultMinListRowHeight, 28)
+                    .focused($focus, equals: .groups)
+                    // Real actions, not an empty menu — see RecordView for the
+                    // same defect and the audit that found both.
+                    .contextMenu(forSelectionType: String.self) { ids in
+                        if let id = ids.first,
+                           let group = model.filteredGroups.first(where: { $0.id == id }) {
+                            Button(L("dupes.context.open_group")) {
+                                selectedGroupID = id
+                                pushedGroupID = id
+                                focus = .detail
+                            }
+                            Divider()
+                            Button(L("dupes.context.select_group_extras")) {
+                                for url in group.urls where url.path != group.keeper.path {
+                                    model.selectedPaths.insert(url.path)
+                                }
+                            }
+                            Button(L("common.reveal_in_finder")) {
+                                NSWorkspace.shared.activateFileViewerSelecting([group.keeper])
+                            }
+                        }
+                    } primaryAction: { ids in
+                        guard let id = ids.first else { return }
+                        selectedGroupID = id
+                        pushedGroupID = id
+                        focus = .detail
+                    }
                 }
         .frame(minWidth: 300, idealWidth: 380, maxWidth: 460)
     }
@@ -477,7 +536,16 @@ struct DuplicatesView: View {
                            mcFormatBytes(group.wastedBytes)))
                         .font(MCFont.body).foregroundStyle(MCColor.textSecondary)
                     Divider()
-                    ForEach(group.urls, id: \.path) { url in
+                    // Keeper first. It was in document order, so on a group
+                    // of 31 copies the one row that says which file survives
+                    // was the twentieth — below the fold, on a screen whose
+                    // whole job is to show what will be kept.
+                    ForEach(group.urls.sorted { a, b in
+                        if (a.path == group.keeper.path) != (b.path == group.keeper.path) {
+                            return a.path == group.keeper.path
+                        }
+                        return a.path < b.path
+                    }, id: \.path) { url in
                         copyRow(url, in: group)
                         Divider()
                     }
@@ -493,7 +561,20 @@ struct DuplicatesView: View {
 
     private func copyRow(_ url: URL, in group: DuplicateGroup) -> some View {
         let isKeeper = url.path == group.keeper.path
+        // A 52pt preview next to baseline-aligned text pushes the checkbox and
+        // the name down to the preview's first line of text, which is nothing.
+        // Top alignment is what a row with artwork in it needs.
         return HStack(alignment: .top, spacing: MCSpacing.sm) {
+            // Two points of accent against the row, the full height of the
+            // preview. That is the whole "this one survives" signal: it is
+            // unmissable when scanning a column of rows, and it colours none
+            // of the content — the previous treatment put a filled badge in
+            // the title line and the eye read the badge instead of the name.
+            Rectangle()
+                .fill(isKeeper ? MCTheme.accent : Color.clear)
+                .frame(width: 2)
+                .frame(maxHeight: .infinity)
+                .accessibilityHidden(true)
             Toggle("", isOn: Binding(
                 get: { model.selectedPaths.contains(url.path) },
                 set: { on in
@@ -502,21 +583,73 @@ struct DuplicatesView: View {
             ))
             .labelsHidden()
             .accessibilityLabel(L("dupes.select_copy", url.lastPathComponent))
-            VStack(alignment: .leading, spacing: 2) {
+            DuplicateThumbnail(url: url, size: 52)
+            VStack(alignment: .leading, spacing: 1) {
                 HStack(spacing: MCSpacing.xs) {
-                    Text(PathDisplay.folder(of: url)).font(MCFont.monoCaption)
+                    // The name first. Every row showed only the folder, so a
+                    // group of copies sitting in one folder rendered as the
+                    // same truncated path repeated thirty-one times — nothing
+                    // on screen distinguished one copy from another.
+                    Text(url.lastPathComponent)
+                        .font(MCFont.rowTitle)
                         .lineLimit(1).truncationMode(.middle)
                     if isKeeper {
-                        MCStatusTag(L("dupes.suggested_keeper"), tone: .success)
+                        // Text, not a filled pill. The word is small, it sits
+                        // in the accent rather than in a block of it, and the
+                        // rule down the left already carries the state — a
+                        // pill here would be the same fact said twice, louder.
+                        Text(L("dupes.suggested_keeper"))
+                            .font(MCFont.microEmphasis)
+                            .textCase(.uppercase)
+                            .foregroundStyle(MCTheme.accent)
+                            .accessibilityLabel(L("dupes.suggested_keeper"))
                     }
                 }
-                Text(model.recommendationText(for: url, in: group))
-                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+                HStack(spacing: MCSpacing.xs) {
+                    Text(PathDisplay.folder(of: url)).font(MCFont.monoCaption)
+                        .foregroundStyle(MCColor.textTertiary)
+                        .lineLimit(1).truncationMode(.middle)
+                    // The date is what actually differs between copies, and it
+                    // is the fact a person uses to decide which one is theirs.
+                    if let modified = (try? url.resourceValues(forKeys: [.contentModificationDateKey]))?
+                        .contentModificationDate,
+                       let age = FindingMetadata.ageDescription(for: modified) {
+                        Text("·").foregroundStyle(MCColor.textTertiary)
+                        Text(age).font(MCFont.caption)
+                            .foregroundStyle(MCColor.textTertiary).lineLimit(1)
+                    }
+                }
+                // Only the keeper has a recommendation. An empty Text still
+                // occupies a line box, which is what made every one of the
+                // other rows a third taller than it needed to be.
+                let recommendation = model.recommendationText(for: url, in: group)
+                if !recommendation.isEmpty {
+                    Text(recommendation)
+                        .font(MCFont.micro)
+                        .foregroundStyle(MCColor.textTertiary)
+                        .lineLimit(2)
+                }
             }
             Spacer(minLength: 0)
             ExcludeButton(url: url, controller: model.exclusionsController)
         }
         .padding(.vertical, MCSpacing.xxs)
+        .contentShape(Rectangle())
+        .onTapGesture(count: 2) { model.previewURL = url }
+        .onTapGesture {
+            let ordered = group.urls.sorted { a, b in
+                if (a == group.keeper) != (b == group.keeper) { return a == group.keeper }
+                return a.path < b.path
+            }.map(\.path)
+            if NSEvent.modifierFlags.contains(.shift),
+               let anchor = selectionAnchor, let start = ordered.firstIndex(of: anchor),
+               let end = ordered.firstIndex(of: url.path) {
+                model.selectedPaths.formUnion(ordered[min(start, end)...max(start, end)])
+            } else {
+                if !model.selectedPaths.insert(url.path).inserted { model.selectedPaths.remove(url.path) }
+                selectionAnchor = url.path
+            }
+        }
         .fileRowActions(FileRowAction.inspection(for: url) { model.previewURL = $0 })
     }
 
@@ -537,6 +670,54 @@ struct DuplicatesView: View {
             } catch {
                 model.exportError = error.localizedDescription
             }
+        }
+    }
+}
+
+/// A copy's preview, or its file-type icon when it has none.
+///
+/// This screen's verb is *compare*. At 32pt a photograph is a coloured
+/// rectangle — enough to say "this is a picture", not enough to say "this is
+/// the same picture", which is the only question a person is asking while
+/// looking at eight copies of one file. So a real preview is shown at the
+/// size the caller asks for, and a file with no preview falls back to its
+/// type icon at a *smaller* size inside the same box: an icon blown up to
+/// 56pt is a blurred glyph pretending to be content.
+///
+/// The shape stays a plain rounded rect on the row's own surface. A card, a
+/// shadow or a border around each thumbnail would make every row a panel, and
+/// eight panels inside a panel is exactly the "cartes dans des cartes" this
+/// screen had to stop doing.
+struct DuplicateThumbnail: View {
+    let url: URL
+    var size: CGFloat = 32
+    @State private var image: NSImage?
+
+    var body: some View {
+        Group {
+            if let image {
+                Image(nsImage: image).resizable().aspectRatio(contentMode: .fill)
+            } else {
+                Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
+                    .resizable().aspectRatio(contentMode: .fit)
+                    // The icon keeps its own scale rather than filling the
+                    // preview box, so a row of previews and a row of icons
+                    // read as two different things — which they are.
+                    .padding(size > 40 ? size * 0.22 : 4)
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(RoundedRectangle(cornerRadius: size > 40 ? MCRadius.small : 4, style: .continuous))
+        .accessibilityHidden(true)
+        .task(id: url) {
+            // Best representation, not a forced render: a thumbnail the system
+            // has to generate from scratch for a 9 GB archive is not worth the
+            // wait, and the type icon says enough.
+            let request = QLThumbnailGenerator.Request(
+                fileAt: url, size: CGSize(width: size * 2, height: size * 2),
+                scale: 2, representationTypes: .thumbnail)
+            image = try? await QLThumbnailGenerator.shared
+                .generateBestRepresentation(for: request).nsImage
         }
     }
 }

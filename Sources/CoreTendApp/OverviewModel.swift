@@ -19,6 +19,26 @@ import Persistence
 /// figures are the ones CoreTend owns.
 enum OverviewFacts {
 
+    /// A volume as a Visual Beta scenario states it.
+    ///
+    /// The seam exists because "this Mac is 98% full" and "there are three
+    /// volumes mounted" are layouts the app must survive, and neither is a
+    /// state a developer's machine can be put into on demand. Nil in every
+    /// normal launch, so production reads the real hardware and nothing about
+    /// this type is reachable outside test mode.
+    struct FixtureVolume {
+        let name: String
+        let isInternal: Bool
+        let total: Int64
+        let free: Int64
+    }
+
+    /// The volumes a fixture is imposing, or nil to read real hardware.
+    nonisolated(unsafe) static var fixtureVolumes: [FixtureVolume]?
+
+    /// Whether a fixture is reporting Full Disk Access as missing.
+    nonisolated(unsafe) static var fixtureDeniesFullDiskAccess = false
+
     /// A scan CoreTend has actually run, with what it found at the time.
     ///
     /// `bytes` is what that scan *found*, not what was removed, and the UI

@@ -32,7 +32,7 @@ struct MCPermissionState: View {
 
     var body: some View {
         VStack(spacing: MCSpacing.sm) {
-            Image(systemName: "lock")
+            Image(systemName: "lock.fill")
                 .font(.system(size: MCIconSize.compactState, weight: .thin))
                 .foregroundStyle(MCColor.textTertiary)
                 .accessibilityHidden(true)

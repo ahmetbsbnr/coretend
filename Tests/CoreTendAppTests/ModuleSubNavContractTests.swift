@@ -39,8 +39,20 @@ struct ModuleSubNavContractTests {
     /// published build. Two modules had been moved off it and a third —
     /// ApplicationsView — had been left behind for months precisely because
     /// nothing failed when it stayed.
+    /// Scoped to the main window's own views.
+    ///
+    /// The defect this guards is specific and stated above: a `TabView` *as
+    /// the detail of a NavigationSplitView* can blank that split view's
+    /// sidebar. The Settings scene is a separate window with no split view in
+    /// it, and a tabbed Settings window is the standard macOS shape — the one
+    /// people look for. Excluding it keeps the contract pointed at the thing
+    /// that actually broke, rather than turning a specific layout bug into a
+    /// blanket ban on an AppKit idiom.
+    private static let scenesWithoutASplitView = ["SettingsView.swift"]
+
     @Test func noModuleUsesATabView() throws {
-        for file in try appSources() {
+        for file in try appSources()
+        where !Self.scenesWithoutASplitView.contains(file.name) {
             #expect(
                 !codeOnly(file.text).contains("TabView"),
                 "\(file.name) uses TabView — use ModuleSubNav instead (see its doc comment)"

@@ -46,6 +46,9 @@ import Persistence
 public struct CoreTendApp: App {
     public init() {
         AppAppearance.apply()
+        VisualBeta.activateIfRequested()
+        FocusProbe.startIfRequested()
+        FocusTrace.start()
     }
     @AppStorage("menuBarEnabled") private var menuBarEnabled = true
     // Same UserDefaults key LocalizationManager reads/writes. Observing it
@@ -104,7 +107,7 @@ public struct CoreTendApp: App {
         Settings {
             MCSettingsView()
                 .id(appLanguageRaw)
-                .frame(minWidth: 620, minHeight: 520)
+                .frame(minWidth: 620)
         }
 
         MenuBarExtra(isInserted: $menuBarEnabled) {

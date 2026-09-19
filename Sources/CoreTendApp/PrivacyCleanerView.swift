@@ -197,7 +197,7 @@ struct PrivacyCleanerView: ModuleSubScreen {
             let running = model.runningBrowsers()
             if !running.isEmpty {
                 Label(L("privacy.running_warning", running.joined(separator: ", ")),
-                      systemImage: "exclamationmark.triangle")
+                      systemImage: "exclamationmark.triangle.fill")
                     .font(MCFont.caption).foregroundStyle(MCTheme.warning)
                     .padding(.horizontal, MCSpacing.page).padding(.top, MCSpacing.xs)
                     .accessibilityElement(children: .combine)

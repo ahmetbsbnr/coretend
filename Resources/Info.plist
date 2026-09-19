@@ -2,6 +2,21 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<!-- Declared, or macOS never learns this app speaks French.
+	     Without these keys the process launches in the development region
+	     whatever the system prefers, so on a Mac set to French the UI came up
+	     in English while Foundation's formatters — which follow the locale,
+	     not the process language — printed "il y a 2 semaines" and "1,99 GB"
+	     beside it. The French table ships complete and was simply unreachable
+	     unless the user picked French by hand in Settings. Found by reading a
+	     capture, not by a test. -->
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>fr</string>
+	</array>
 	<key>CFBundleDisplayName</key>
 	<string>CoreTend</string>
 	<key>CFBundleExecutable</key>

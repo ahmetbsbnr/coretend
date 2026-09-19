@@ -74,13 +74,26 @@ struct OnboardingView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, MCSpacing.xl)
                 .padding(.vertical, MCSpacing.lg)
+                // The step replaces itself rather than cutting. Opacity only,
+                // and only 160 ms: a slide would imply a spatial relationship
+                // between three unrelated screens, and anything longer turns
+                // the second click of a three-click flow into a wait.
+                .id(step)
+                .transition(.opacity)
             }
+            .mcAnimation(MCMotion.transition, value: step)
             Divider()
             footer
                 .padding(.horizontal, MCSpacing.xl)
                 .padding(.vertical, MCSpacing.md)
         }
-        .frame(width: 640, height: 480)
+        // Sized to its content, not to a fixed 480.
+        //
+        // The first step ends after the "move to Applications" notice, so a
+        // fixed height left roughly two hundred points of nothing between the
+        // last control and the footer — on the very first thing anyone sees.
+        .frame(width: 640)
+        .frame(minHeight: 380)
         .accessibilityIdentifier("onboarding.root")
         .onAppear { CaptureHarness.note(state: "onboarding") }
         .task { await model.refreshPermissions() }
@@ -90,6 +103,14 @@ struct OnboardingView: View {
 
     private var welcomeStep: some View {
         VStack(alignment: .leading, spacing: MCSpacing.md) {
+            // The app's own icon, at the size the Finder shows it. The first
+            // screen of a first run is the one place where saying "this is
+            // the thing you just installed" is the content, not decoration —
+            // and it is the real icon, not an illustration of one.
+            Image(nsImage: NSApp.applicationIconImage)
+                .resizable()
+                .frame(width: 64, height: 64)
+                .accessibilityHidden(true)
             Text(L("onboarding.step0.title")).font(MCFont.heroTitle)
             Text(L("onboarding.step0.subtitle"))
                 .font(MCFont.body).foregroundStyle(MCColor.textSecondary)
@@ -203,11 +224,24 @@ struct OnboardingView: View {
                 .buttonStyle(.borderless)
                 .accessibilityIdentifier("onboarding.skip")
             Spacer()
-            Text(L("onboarding.step_of", step + 1, stepCount))
-                .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+            // Dots, not "2 of 3". Three of them are read at a glance as
+            // "nearly done"; the sentence has to be read. The sentence stays
+            // as the accessibility label, where it is the better form.
+            HStack(spacing: 6) {
+                ForEach(0..<stepCount, id: \.self) { index in
+                    Circle()
+                        .fill(index == step ? MCTheme.accent : MCColor.textTertiary.opacity(0.4))
+                        .frame(width: 6, height: 6)
+                }
+            }
+            .mcAnimation(MCMotion.response, value: step)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(L("onboarding.step_of", step + 1, stepCount))
             Spacer()
             if step > 0 {
-                Button(L("onboarding.back")) { step -= 1 }.buttonStyle(.bordered)
+                Button(L("onboarding.back")) { step -= 1 }
+                    .buttonStyle(.bordered)
+                    .keyboardShortcut("[", modifiers: .command)
             }
             Button(step == stepCount - 1 ? L("onboarding.start") : L("onboarding.continue")) {
                 if step == stepCount - 1 { finish() } else { step += 1 }

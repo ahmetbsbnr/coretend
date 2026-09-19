@@ -195,7 +195,23 @@ enum SpaceNodeCategory: String, Hashable {
     }
 
     static func of(_ node: SpaceNode) -> SpaceNodeCategory {
-        if node.isDirectory { return .folder }
+        // A folder takes the category of what is inside it, weighted by bytes.
+        //
+        // Returning `.folder` for every directory was correct by this type's
+        // own logic and useless on screen: at the top level of a home every
+        // tile is a directory, so the whole treemap drew in one colour and
+        // encoded nothing but area. A folder of films should read as film.
+        // Falls back to `.folder` only when the children say nothing — an
+        // unscanned or genuinely mixed branch.
+        if node.isDirectory {
+            var weights: [SpaceNodeCategory: Int64] = [:]
+            for child in node.children {
+                let category = of(child)
+                guard category != .folder, category != .other else { continue }
+                weights[category, default: 0] += child.size
+            }
+            return weights.max { $0.value < $1.value }?.key ?? .folder
+        }
         switch (node.name as NSString).pathExtension.lowercased() {
         case "jpg", "jpeg", "png", "heic", "gif", "mov", "mp4", "mp3", "m4a", "wav": return .media
         case "pdf", "doc", "docx", "pages", "txt", "rtf", "key", "numbers", "xlsx": return .document
@@ -218,9 +234,11 @@ enum SpaceNodeCategory: String, Hashable {
 }
 
 struct SpaceMapView: View {
+    /// The treemap's fills are tuned per appearance; see `cell(for:)`.
+    @Environment(\.colorScheme) private var colorScheme
     /// Full Disk Access, re-checked on appear. Without it this module reads a
     /// fraction of what is there and reports it as a result.
-    @State private var hasFullDiskAccess = SystemAuthorization.probeLive().hasFullDiskAccess
+    @State private var hasFullDiskAccess = ScanTargetAccess.canReadScanTarget
     @State private var scanAnyway = false
     @State private var model = SpaceLensViewModel()
     @Namespace private var zoomSpace
@@ -248,7 +266,7 @@ struct SpaceMapView: View {
             }
         }
         .onAppear {
-            hasFullDiskAccess = SystemAuthorization.probeLive().hasFullDiskAccess
+            hasFullDiskAccess = ScanTargetAccess.canReadScanTarget
             if CaptureHarness.autostartScan, case .idle = model.phase {
                 scanAnyway = true
                 model.start(url: CaptureHarness.scanHome)
@@ -437,20 +455,53 @@ struct SpaceMapView: View {
                     .accessibilityIdentifier("spacelens.up")
                     .padding(.trailing, MCSpacing.xxs / 2)
                 }
-                Button(root.name) { navigate { model.pop(to: nil) } }
-                    .buttonStyle(.link)
-                ForEach(Array(model.pathStack.enumerated()), id: \.element.id) { index, node in
-                    Image(systemName: "chevron.right").font(MCFont.micro).foregroundStyle(MCColor.textTertiary)
-                    Button(node.name) { navigate { model.pop(to: index) } }
-                        .buttonStyle(.link)
+                let isAtRoot = model.pathStack.isEmpty
+                BreadcrumbSegment(title: root.name,
+                                  isCurrent: isAtRoot) { navigate { model.pop(to: nil) } }
+                // Deep folders elide in the middle, never at the ends.
+                //
+                // Eight segments laid out in full pushed the size and the
+                // "New scan" button off the right edge, and the two segments
+                // that matter — where you started and where you are — were
+                // the first to go. The ellipsis is a real control: it opens
+                // the levels it stands for, so nothing becomes unreachable.
+                let stack = Array(model.pathStack.enumerated())
+                let elided = stack.count > 4 ? Array(stack.suffix(3)) : stack
+                if elided.count < stack.count {
+                    breadcrumbSeparator
+                    Menu {
+                        ForEach(stack.prefix(stack.count - elided.count), id: \.element.id) { index, node in
+                            Button(node.name) { navigate { model.pop(to: index) } }
+                        }
+                    } label: {
+                        Text("…").font(MCFont.caption)
+                    }
+                    .menuStyle(.borderlessButton)
+                    .fixedSize()
+                    .help(L("spacelens.breadcrumb.hidden_levels", stack.count - elided.count))
+                    .accessibilityLabel(L("spacelens.breadcrumb.hidden_levels", stack.count - elided.count))
                 }
-                Spacer()
+                ForEach(elided, id: \.element.id) { index, node in
+                    breadcrumbSeparator
+                    BreadcrumbSegment(title: node.name,
+                                      isCurrent: index == model.pathStack.count - 1) {
+                        navigate { model.pop(to: index) }
+                    }
+                }
+                Spacer(minLength: MCSpacing.sm)
                 Text(mcFormatBytes(model.current?.size ?? 0))
                     .font(MCFont.cardTitle).monospacedDigit()
                 Button(L("spacelens.new_scan")) { model.phase = .idle }
                     .keyboardShortcut(.cancelAction)
             }
         }
+    }
+
+    private var breadcrumbSeparator: some View {
+        Image(systemName: "chevron.compact.right")
+            .font(MCFont.caption)
+            .foregroundStyle(MCColor.textTertiary)
+            .accessibilityHidden(true)
     }
 
     /// Real navigation (descend/pop) wrapped so the matchedGeometryEffect
@@ -482,13 +533,26 @@ struct SpaceMapView: View {
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
         }
-        .frame(minHeight: 280, maxHeight: 460)
+        // The map is the module, so it takes the height the window gives it.
+        // Capped at 460 it stopped growing halfway down a standard window and
+        // left the list below it sitting on 500 points of nothing.
+        .frame(minHeight: 280, maxHeight: .infinity)
         .background(MCColor.secondaryBackground)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(L("spacelens.treemap.a11y_summary",
                               node.children.count, mcFormatBytes(node.size))
                             + " " + L("spacelens.treemap.accessibility"))
     }
+
+    /// The ink a label or a selection ring uses on top of a treemap cell.
+    ///
+    /// The cells are category colour at partial opacity over the module's
+    /// ground, so the correct ink follows the *appearance*, not the category —
+    /// which is exactly what `textPrimary` already resolves to, dark on paper
+    /// and near-white on slate. Naming it here keeps the labels and the
+    /// selection ring reading as one typographic layer instead of two
+    /// per-cell decisions that drift apart.
+    private var labelInk: Color { MCColor.textPrimary }
 
     @ViewBuilder
     private func cell(for r: TreemapLayout.Rect) -> some View {
@@ -498,9 +562,24 @@ struct SpaceMapView: View {
         let frame = r.frame.insetBy(dx: 1, dy: 1)
         let showLabel = frame.width >= 64 && frame.height >= 30
         ZStack(alignment: .topLeading) {
-            Rectangle().fill(category.color.opacity(r.node.isDirectory ? 0.78 : 0.5))
+            // Lighter on paper than on slate. One opacity cannot serve both:
+            // 0.82 over the dark ground is a readable field, and the same
+            // value over the light ground is a saturated slab that the white
+            // label sitting on it has to fight.
+            // Calmer still. A treemap is a reading surface, not a poster: the
+            // fills carry category and area, and the labels sitting on them
+            // have to stay readable in both appearances without a shadow.
+            Rectangle().fill(category.color.opacity(
+                colorScheme == .light
+                    ? (r.node.isDirectory ? 0.42 : 0.24)
+                    : (r.node.isDirectory ? 0.70 : 0.38)))
+            // Wash toward the appearance's own extreme, not always toward
+            // white. On paper a white wash over a pale fill *removes* the
+            // cell — hovering a small file made it disappear into the page,
+            // which is the opposite of "this is interactive".
             if isHovered || isSelected {
-                Rectangle().fill(Color.white.opacity(isSelected ? 0.14 : 0.07))
+                Rectangle().fill((colorScheme == .light ? Color.black : Color.white)
+                    .opacity(isSelected ? 0.14 : MCOpacity.hoverWash))
             }
             if r.node.isAccessDenied {
                 Rectangle().fill(Color.black.opacity(MCOpacity.unavailableOverlay))
@@ -510,11 +589,31 @@ struct SpaceMapView: View {
                     Text(r.node.name).font(MCFont.captionEmphasis).lineLimit(1)
                     Text(mcFormatBytes(r.node.size)).font(MCFont.micro).opacity(MCOpacity.onFillSecondary)
                 }
-                .foregroundStyle(.white)
+                // Ink chosen for the surface it lands on. White was
+                // hardcoded, and on paper the fills are 0.24–0.42 of a light
+                // category colour: white text on that is a rumour of a label.
+                .foregroundStyle(labelInk)
                 .padding(MCSpacing.tight)
             }
         }
-        .overlay(Rectangle().strokeBorder(Color.accentColor, lineWidth: isSelected ? 2 : 0))
+        .overlay {
+            // Tiles first: a hairline in the ground colour is what makes a
+            // treemap read as adjacent cells rather than as one continuous
+            // field of colour that happens to change hue. Then selection on
+            // top of it.
+            Rectangle()
+                .strokeBorder(MCColor.background.opacity(0.45), lineWidth: 0.5)
+        }
+        .overlay {
+            if isSelected {
+                // No `.plusLighter`. That blend adds light, so on paper the
+                // selection ring brightened a pale cell into the background
+                // and there was no ring at all — the mode where a person most
+                // needs to see which cell they picked.
+                Rectangle()
+                    .strokeBorder(labelInk.opacity(0.9), lineWidth: 2)
+            }
+        }
         .frame(width: max(0, frame.width), height: max(0, frame.height))
         // position, not offset: offset moves from wherever the stack chose to
         // put the child, and the first capture showed every cell shifted by
@@ -629,5 +728,41 @@ struct SpaceLensView: View {
             }
         }
         .navigationTitle(L("module.explore"))
+    }
+}
+
+/// One segment of Explore's path bar.
+///
+/// The current folder is a label, not a button: clicking where you already are
+/// does nothing, and offering it as a control is a small lie. Ancestors are
+/// buttons, but drawn as text that responds to the pointer rather than as blue
+/// underlined links.
+private struct BreadcrumbSegment: View {
+    let title: String
+    let isCurrent: Bool
+    let go: () -> Void
+    @State private var hovered = false
+
+    var body: some View {
+        if isCurrent {
+            Text(title)
+                .font(MCFont.rowTitle)
+                .foregroundStyle(MCColor.textPrimary)
+                .lineLimit(1)
+        } else {
+            Button(action: go) {
+                Text(title)
+                    .font(MCFont.rowTitle)
+                    .foregroundStyle(hovered ? MCColor.textPrimary : MCColor.textSecondary)
+                    .lineLimit(1)
+                    .padding(.horizontal, MCSpacing.xxs)
+                    .padding(.vertical, 1)
+                    .background(hovered ? MCColor.textPrimary.opacity(MCOpacity.hoverWash) : .clear,
+                                in: RoundedRectangle(cornerRadius: MCRadius.small, style: .continuous))
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .onHover { hovered = $0 }
+        }
     }
 }

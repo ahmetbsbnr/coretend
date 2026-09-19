@@ -121,6 +121,8 @@ final class RecordViewModel {
 }
 
 struct RecordView: View {
+    private enum FocusTarget: Hashable { case list, detail }
+    @FocusState private var focus: FocusTarget?
     @State private var model = RecordViewModel()
     @State private var confirmingPurge = false
     /// Only the compact layout pushes. Nil on arrival, always.
@@ -136,7 +138,7 @@ struct RecordView: View {
                              title: L("record.empty_title"),
                              message: L("record.empty_message"))
             case let .failed(message):
-                MCEmptyState(icon: "exclamationmark.triangle",
+                MCEmptyState(icon: "exclamationmark.triangle.fill",
                              title: L("record.error_title"), message: message)
             case .loaded:
                 loaded
@@ -184,8 +186,24 @@ struct RecordView: View {
             Text(L("record.purge_confirm_message", model.items.count))
         }
         .task { await model.load() }
+        .onChange(of: focus) { _, value in FocusTrace.snapshot("swiftui:record.focus=\(String(describing: value))") }
+        .onChange(of: pushed) { old, new in
+            if old != nil, new == nil {
+                focus = .list
+                DispatchQueue.main.async { FocusTrace.snapshot("record:detail.closed") }
+            }
+        }
         .onReceive(NotificationCenter.default.publisher(for: .mcExportRecord)) { _ in
             if !model.items.isEmpty { exportCSV() }
+        }
+    }
+
+    /// One line describing an entry, for the clipboard.
+    static func summaryLine(for item: RecordItem) -> String {
+        let when = AppDateFormatting.string(item.date, style: .dayMonthYearWithTime)
+        switch item {
+        case let .operation(entry): return "\(when) — \(RecordPhrasing.title(entry))"
+        case let .event(record): return "\(when) — \(RecordPhrasing.eventTitle(record)): \(record.summary)"
         }
     }
 
@@ -204,9 +222,16 @@ struct RecordView: View {
         GeometryReader { proxy in
             if proxy.size.width >= 900 {
                 HStack(spacing: 0) {
-                    listPane.frame(minWidth: 340, idealWidth: 380, maxWidth: 460)
+                    // The journal takes the slack, the inspector is capped.
+                    //
+                    // These were the other way round: on a standard window the
+                    // list had 780 points and the inspector 1060 to show four
+                    // facts. A register's value is how much of it you can see.
+                    listPane.frame(minWidth: 420, maxWidth: .infinity)
                     Divider()
-                    inspector.frame(maxWidth: .infinity, maxHeight: .infinity)
+                    inspector.frame(width: 380).frame(maxHeight: .infinity)
+                        .focusable().focused($focus, equals: .detail)
+                        .onKeyPress(.escape) { focus = .list; return .handled }
                 }
                 .onAppear { pushed = nil }
             } else {
@@ -214,6 +239,9 @@ struct RecordView: View {
                     listPane
                         .navigationDestination(item: $pushed) { id in
                             inspectorFor(id).navigationTitle(L("record.entry"))
+                                .focusable().focused($focus, equals: .detail)
+                                .onAppear { focus = .detail }
+                                .onKeyPress(.escape) { pushed = nil; return .handled }
                         }
                 }
             }
@@ -254,7 +282,6 @@ struct RecordView: View {
                 get: { model.selection },
                 set: { id in
                     model.selection = id
-                    if let id { pushed = id }
                 }
             )) {
                 ForEach(SafetyLedger.byDay(visible)) { group in
@@ -264,13 +291,42 @@ struct RecordView: View {
                         }
                     } header: {
                         Text(AppDateFormatting.string(group.day, style: .fullDay))
-                            .font(MCFont.groupHeader).foregroundStyle(MCColor.textSecondary)
+                            .font(MCFont.micro.weight(.semibold))
+                            .foregroundStyle(MCColor.textTertiary)
+                            .textCase(nil)
                     }
                 }
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
-            .environment(\.defaultMinListRowHeight, 28)
+            .environment(\.defaultMinListRowHeight, 22)
+            .focused($focus, equals: .list)
+            // Real actions, not an empty menu.
+            //
+            // This rendered `EmptyView()`, so right-clicking a journal entry
+            // opened an empty grey rectangle — the same defect as the
+            // "Inspect" action lost from Integrity, found by the same audit.
+            // `primaryAction` (double-click opens the entry) was the part that
+            // was wanted; the menu came along with it and was never filled.
+            .contextMenu(forSelectionType: RecordItem.ID.self) { ids in
+                if let id = ids.first, let item = model.items.first(where: { $0.id == id }) {
+                    Button(L("record.context.open")) {
+                        model.selection = id
+                        pushed = id
+                        focus = .detail
+                    }
+                    Divider()
+                    Button(L("common.copy_summary")) {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(Self.summaryLine(for: item), forType: .string)
+                    }
+                }
+            } primaryAction: { ids in
+                guard let id = ids.first else { return }
+                model.selection = id
+                pushed = id
+                focus = .detail
+            }
         }
     }
 
@@ -312,13 +368,26 @@ private struct RecordRow: View {
     var body: some View {
         HStack(spacing: MCSpacing.xs) {
             glyph
-            Text(title).font(MCFont.body).lineLimit(1)
-            Text(subtitle).font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+            Text(title)
+                .font(MCFont.rowTitle)
+                .lineLimit(1)
+            Text(subtitle)
+                .font(MCFont.caption).foregroundStyle(MCColor.textTertiary)
                 .lineLimit(1).truncationMode(.tail)
+                .layoutPriority(-1)
             Spacer(minLength: MCSpacing.xs)
+            // A column, not a value floating after the sentence. Sizes are
+            // what a reader compares down a register, and comparing needs
+            // them on one axis.
+            Text(sizeText)
+                .font(MCFont.tabular)
+                .foregroundStyle(MCColor.textSecondary)
+                .frame(width: 78, alignment: .trailing)
             Text(AppDateFormatting.string(item.date, style: .timeOnly))
-                .font(MCFont.tabular).foregroundStyle(MCColor.textSecondary)
+                .font(MCFont.tabular).foregroundStyle(MCColor.textTertiary)
+                .frame(width: 52, alignment: .trailing)
         }
+        .padding(.vertical, 1)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(title), \(subtitle), \(AppDateFormatting.string(item.date, style: .dayMonthYearWithTime))")
     }
@@ -330,10 +399,27 @@ private struct RecordRow: View {
         }
     }
 
+    /// The bytes this entry concerns, or nothing when it concerns none.
+    private var sizeText: String {
+        switch item {
+        case let .operation(e): e.movedBytes > 0 ? mcFormatBytes(e.movedBytes) : ""
+        case let .event(r): r.bytes > 0 ? mcFormatBytes(r.bytes) : ""
+        }
+    }
+
+    /// What the title does not already say.
+    ///
+    /// For an operation this was the byte figure — which now has its own
+    /// right-aligned column, so printing it here too put the same number on
+    /// the row twice. Operations keep their subtitle only when it carries
+    /// something other than the size (a refusal count, a failure count).
     private var subtitle: String {
         switch item {
-        case let .operation(e): RecordPhrasing.subtitle(e)
-        case let .event(r): r.summary
+        case let .operation(e):
+            let text = RecordPhrasing.subtitle(e)
+            return text == mcFormatBytes(e.movedBytes) ? "" : text
+        case let .event(r):
+            return r.summary
         }
     }
 
@@ -348,7 +434,7 @@ private struct RecordRow: View {
                 return ("trash.fill", MCColor.textSecondary)
             case let .event(r):
                 switch r.kind {
-                case .scan: return ("magnifyingglass", MCColor.textTertiary)
+                case .scan: return ("sparkle.magnifyingglass", MCColor.textTertiary)
                 case .restore: return ("arrow.uturn.backward", MCTheme.success)
                 case .error: return ("xmark.octagon.fill", MCTheme.danger)
                 case .cleanup: return ("trash.fill", MCColor.textSecondary)
@@ -458,25 +544,124 @@ private struct RecordInspector: View {
     }
 }
 
+/// The inspector for an event.
+///
+/// This used to be four lines of text in a pane 900 points wide, which is what
+/// a dense-history capture exposed: the list beside it was carrying twenty-four
+/// rows of information and the detail pane was the emptiest surface in the app.
+/// An event has more to say than its own summary — what kind of thing it was,
+/// what it measured, and where it sits in the history around it — and saying
+/// it is what makes the pane worth its width.
 private struct RecordEventInspector: View {
     let record: ActivityRecord
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: MCSpacing.md) {
-                Text(RecordPhrasing.eventTitle(record)).font(MCFont.pageTitle)
-                Text(AppDateFormatting.string(record.date, style: .dayMonthYearWithTime))
-                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                Text(record.summary).font(MCFont.body)
-                if record.itemCount > 0 || record.bytes > 0 {
-                    Text([record.itemCount > 0 ? L("record.fact_items", record.itemCount) : nil,
-                          record.bytes > 0 ? L("record.fact_seen", mcFormatBytes(record.bytes)) : nil]
-                         .compactMap { $0 }.joined(separator: " · "))
-                        .font(MCFont.body).foregroundStyle(MCColor.textSecondary)
-                }
+            VStack(alignment: .leading, spacing: MCSpacing.lg) {
+                header
+                if !facts.isEmpty { factGrid }
+                meaning
             }
             .padding(MCSpacing.page)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: MCSize.readableWidth, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .topLeading)
+        }
+    }
+
+    private var header: some View {
+        VStack(alignment: .leading, spacing: MCSpacing.xs) {
+            HStack(spacing: MCSpacing.xs) {
+                MCStatusTag(kindLabel, tone: kindTone)
+                Text(AppDateFormatting.string(record.date, style: .dayMonthYearWithTime))
+                    .font(MCFont.caption)
+                    .foregroundStyle(MCColor.textSecondary)
+            }
+            Text(RecordPhrasing.eventTitle(record))
+                .font(MCFont.pageTitle)
+            Text(record.summary)
+                .font(MCFont.body)
+                .foregroundStyle(MCColor.textSecondary)
+        }
+    }
+
+    /// The measured quantities, as figures rather than as a sentence. A number
+    /// a person may want to compare against another screen should be set as a
+    /// number.
+    private var factGrid: some View {
+        HStack(alignment: .top, spacing: 0) {
+            ForEach(Array(facts.enumerated()), id: \.element.label) { index, fact in
+                if index > 0 {
+                    Rectangle().fill(MCColor.separator.opacity(MCOpacity.hairline))
+                        .frame(width: 1, height: 40)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(fact.label.uppercased())
+                        .font(MCFont.groupHeader)
+                        .foregroundStyle(MCColor.textSecondary)
+                    Text(fact.value)
+                        .font(MCFont.displaySecondary)
+                        .foregroundStyle(MCColor.textPrimary)
+                }
+                .padding(.horizontal, MCSpacing.sm)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .padding(.horizontal, -MCSpacing.sm)
+        .padding(.vertical, MCSpacing.sm)
+        .overlay(alignment: .top) {
+            Rectangle().fill(MCColor.separator.opacity(MCOpacity.hairline)).frame(height: 1)
+        }
+        .overlay(alignment: .bottom) {
+            Rectangle().fill(MCColor.separator.opacity(MCOpacity.hairline)).frame(height: 1)
+        }
+    }
+
+    private var facts: [(label: String, value: String)] {
+        var out: [(String, String)] = []
+        if record.itemCount > 0 { out.append((L("record.fact_label_items"), "\(record.itemCount)")) }
+        if record.bytes > 0 { out.append((L("record.fact_label_seen"), mcFormatBytes(record.bytes))) }
+        return out
+    }
+
+    /// What this event does and does not entitle the reader to conclude. A
+    /// scan found things; it did not change anything, and the record should
+    /// say so rather than leaving the reader to infer it from the absence of
+    /// an evidence section.
+    private var meaning: some View {
+        VStack(alignment: .leading, spacing: MCSpacing.xs) {
+            Text(L("record.section_meaning"))
+                .font(MCFont.groupHeader)
+                .foregroundStyle(MCColor.textSecondary)
+            Text(meaningText)
+                .font(MCFont.secondaryBody)
+                .foregroundStyle(MCColor.textSecondary)
+        }
+    }
+
+    private var meaningText: String {
+        switch record.kind {
+        case .scan: L("record.meaning_scan")
+        case .cleanup: L("record.meaning_cleanup")
+        case .restore: L("record.meaning_restore")
+        case .error: L("record.meaning_error")
+        }
+    }
+
+    private var kindLabel: String {
+        switch record.kind {
+        case .scan: L("record.filter_scans")
+        case .cleanup: L("record.tag_recorded")
+        case .restore: L("record.tag_reversible")
+        case .error: L("record.tag_failed")
+        }
+    }
+
+    private var kindTone: MCStatusTag.Tone {
+        switch record.kind {
+        case .scan: .inert
+        case .cleanup: .accent
+        case .restore: .success
+        case .error: .failure
         }
     }
 }
