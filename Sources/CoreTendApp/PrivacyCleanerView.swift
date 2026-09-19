@@ -72,6 +72,7 @@ final class PrivacyCleanerViewModel {
         self.pauseController = nil
         isPaused = false
         phase = found.isEmpty ? .empty : .results
+        CaptureHarness.note(state: found.isEmpty ? "empty" : "results")
     }
 
     func pauseScan() {
@@ -187,76 +188,69 @@ struct PrivacyCleanerView: ModuleSubScreen {
         }
     }
 
+    /// One row per browser profile: pick it, see what its caches weigh, see
+    /// history and cookies as context CoreTend does not touch. Rows carried a
+    /// three-part byte line stacked under the name and a running-browser
+    /// notice below that, so two profiles filled the screen.
     private var resultsView: some View {
         VStack(alignment: .leading, spacing: 0) {
             let running = model.runningBrowsers()
             if !running.isEmpty {
                 Label(L("privacy.running_warning", running.joined(separator: ", ")),
                       systemImage: "exclamationmark.triangle")
-                    .font(MCFont.secondaryBody).foregroundStyle(MCTheme.warning)
-                    .padding(.horizontal).padding(.top, MCSpacing.sm)
+                    .font(MCFont.caption).foregroundStyle(MCTheme.warning)
+                    .padding(.horizontal, MCSpacing.page).padding(.top, MCSpacing.xs)
                     .accessibilityElement(children: .combine)
             }
-            HStack {
+            HStack(alignment: .firstTextBaseline, spacing: MCSpacing.md) {
                 Text(L("privacy.caches_selected", mcFormatBytes(model.selectedCacheBytes)))
-                    .font(MCFont.cardTitle)
+                    .font(MCFont.body)
                 Spacer()
-                Button(L("privacy.clean_caches")) {
-                    showMoveConfirmation = true
-                }
-                .buttonStyle(.bordered)
-                .accessibilityIdentifier("privacy.clean")
-                .disabled(model.selectedProfileIDs.isEmpty)
+                Button(L("privacy.clean_caches")) { showMoveConfirmation = true }
+                    .buttonStyle(.borderedProminent)
+                    .accessibilityIdentifier("privacy.clean")
+                    .disabled(model.selectedProfileIDs.isEmpty)
             }
-            .padding()
+            .padding(.horizontal, MCSpacing.page).padding(.vertical, MCSpacing.sm)
+            Divider()
             List(model.profiles) { profile in
                 let profileIsRunning = model.isRunning(profile)
-                VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-                    HStack {
-                        Toggle("", isOn: Binding(
-                            get: { model.selectedProfileIDs.contains(profile.id) },
-                            set: { on in
-                                if on { model.selectedProfileIDs.insert(profile.id) }
-                                else { model.selectedProfileIDs.remove(profile.id) }
-                            }
-                        ))
-                        .labelsHidden()
-                        .accessibilityLabel(L("privacy.browser_profile", profile.browser, profile.profileName))
-                        .disabled(profile.cacheURLs.isEmpty || profileIsRunning)
-                        VStack(alignment: .leading) {
-                            Text(L("privacy.browser_profile", profile.browser, profile.profileName))
-                            HStack(spacing: MCSpacing.sm) {
-                                Text(L("privacy.cache_size", mcFormatBytes(profile.cacheBytes)))
-                                Text(L("privacy.history_size", mcFormatBytes(profile.historyBytes)))
-                                Text(L("privacy.cookies_size", mcFormatBytes(profile.cookieBytes)))
-                            }
-                            .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+                HStack(spacing: MCSpacing.xs) {
+                    Toggle("", isOn: Binding(
+                        get: { model.selectedProfileIDs.contains(profile.id) },
+                        set: { on in
+                            if on { model.selectedProfileIDs.insert(profile.id) }
+                            else { model.selectedProfileIDs.remove(profile.id) }
                         }
-                        Spacer()
-                    }
+                    ))
+                    .labelsHidden()
+                    .accessibilityLabel(L("privacy.browser_profile", profile.browser, profile.profileName))
+                    .disabled(profile.cacheURLs.isEmpty || profileIsRunning)
+                    Text(L("privacy.browser_profile", profile.browser, profile.profileName)).lineLimit(1)
                     if profileIsRunning {
-                        HStack(spacing: MCSpacing.xs) {
-                            Image(systemName: "lock.circle").foregroundStyle(MCTheme.warning)
-                                .accessibilityHidden(true)
-                            Text(L("privacy.profile_running_reason", profile.browser))
-                                .font(MCFont.caption).foregroundStyle(MCTheme.warning)
-                            Spacer()
-                            Button(L("privacy.close_and_rescan")) {
-                                Task { await model.closeBrowserAndRescan(profile) }
-                            }
-                            .buttonStyle(.link)
-                            .font(MCFont.caption)
+                        Text(L("privacy.profile_running_reason", profile.browser))
+                            .font(MCFont.caption).foregroundStyle(MCTheme.warning).lineLimit(1)
+                        Button(L("privacy.close_and_rescan")) {
+                            Task { await model.closeBrowserAndRescan(profile) }
                         }
-                        .padding(.leading, 28)
-                        .accessibilityElement(children: .combine)
+                        .buttonStyle(.link).font(MCFont.caption)
                     }
+                    Spacer(minLength: MCSpacing.xs)
+                    Text(L("privacy.history_size", mcFormatBytes(profile.historyBytes)))
+                        .font(MCFont.caption).foregroundStyle(MCColor.textTertiary)
+                    Text(L("privacy.cookies_size", mcFormatBytes(profile.cookieBytes)))
+                        .font(MCFont.caption).foregroundStyle(MCColor.textTertiary)
+                    Text(mcFormatBytes(profile.cacheBytes)).font(MCFont.tabular)
+                        .frame(width: 80, alignment: .trailing)
                 }
                 .accessibilityElement(children: .contain)
             }
-            .listStyle(.inset)
+            .listStyle(.plain)
+            .environment(\.defaultMinListRowHeight, 28)
+            Divider()
             Text(L("privacy.footer"))
                 .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                .padding()
+                .padding(.horizontal, MCSpacing.page).padding(.vertical, MCSpacing.xs)
         }
     }
 }
