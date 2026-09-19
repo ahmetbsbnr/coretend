@@ -309,6 +309,9 @@ struct InstalledAppsView: ModuleSubScreen {
 
     @State private var model = ApplicationsViewModel()
     @State private var showUninstallConfirmation = false
+    /// Separate from the model's selection, for the same reason the Record
+    /// keeps the two apart: pushed, nothing may be on screen on arrival.
+    @State private var pushedAppID: String?
     @Namespace private var rowTransition
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -326,13 +329,31 @@ struct InstalledAppsView: ModuleSubScreen {
     /// handle, and the proportions are fixed. Nothing is lost — the divider was
     /// draggable but there was no reason to drag it.
     var body: some View {
-        HStack(spacing: 0) {
-            appList
-                .frame(minWidth: 440, idealWidth: 560, maxWidth: 720)
-                .background(MCColor.elevatedBackground)
-            Divider()
-            detail
-                .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
+        // Side by side asks for 760pt before either half is comfortable: a
+        // four-column table at 440 and a detail at 320. A compact window has
+        // around 620 for both, so the table lost its columns to truncation and
+        // the detail its paths. Below the threshold the detail is pushed, the
+        // way the Record and Duplicates do it.
+        GeometryReader { proxy in
+            if proxy.size.width >= 980 {
+                HStack(spacing: 0) {
+                    appList
+                        .frame(minWidth: 440, idealWidth: 560, maxWidth: 720)
+                        .background(MCColor.elevatedBackground)
+                    Divider()
+                    detail
+                        .frame(minWidth: 320, maxWidth: .infinity, maxHeight: .infinity)
+                }
+                .onAppear { pushedAppID = nil }
+            } else {
+                NavigationStack {
+                    appList
+                        .background(MCColor.elevatedBackground)
+                        .navigationDestination(item: $pushedAppID) { _ in
+                            detail.navigationTitle(model.selectedApp?.name ?? "")
+                        }
+                }
+            }
         }
         .task { await model.load() }
         .confirmationDialog(
@@ -387,6 +408,7 @@ struct InstalledAppsView: ModuleSubScreen {
                     set: { id in
                         if let app = model.apps.first(where: { $0.id == id }) {
                             Task { await model.select(app) }
+                            pushedAppID = app.id
                         }
                     }
                 ), sortOrder: $model.sortOrder) {

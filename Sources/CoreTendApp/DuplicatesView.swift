@@ -243,6 +243,10 @@ struct DuplicatesView: View {
     @State private var model = DuplicatesViewModel()
     @State private var showMoveConfirmation = false
     @State private var selectedGroupID: String?
+    /// Separate from the selection: side by side there is always a selected
+    /// group, pushed there must be none on arrival or the person lands on a
+    /// detail screen they never asked for.
+    @State private var pushedGroupID: String?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -379,8 +383,44 @@ struct DuplicatesView: View {
             }
             .padding(.horizontal, MCSpacing.page).padding(.vertical, MCSpacing.sm)
             Divider()
-            HStack(spacing: 0) {
-                VStack(spacing: 0) {
+            // Side by side when both halves can be read, pushed when they
+            // cannot — the shape the Record already uses. At 860pt the list's
+            // 300pt minimum left the detail around 320pt for paths that are
+            // routinely longer than that, and every one of them truncated.
+            GeometryReader { proxy in
+                if proxy.size.width >= 900 {
+                    HStack(spacing: 0) {
+                        groupList
+                        Divider()
+                        groupDetail
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                    .onAppear { pushedGroupID = nil }
+                } else {
+                    NavigationStack {
+                        groupList
+                            .frame(maxWidth: .infinity)
+                            .navigationDestination(item: $pushedGroupID) { _ in
+                                groupDetail.navigationTitle(L("dupes.group"))
+                            }
+                    }
+                }
+            }
+        }
+        .onAppear { if selectedGroupID == nil { selectedGroupID = model.filteredGroups.first?.id } }
+        .quickLookPreview($model.previewURL)
+        .alert(L("settings.migration_failed"), isPresented: Binding(
+            get: { model.exportError != nil },
+            set: { if !$0 { model.exportError = nil } }
+        )) {
+            Button(L("onboarding.check.status.ok"), role: .cancel) { model.exportError = nil }
+        } message: {
+            Text(model.exportError ?? "")
+        }
+    }
+
+    private var groupList: some View {
+        VStack(spacing: 0) {
                     HStack(spacing: MCSpacing.xs) {
                         MCSearchField(text: $model.searchText, placeholder: L("clutter.search_placeholder"))
                         if model.availableVolumes.count > 1 {
@@ -398,7 +438,13 @@ struct DuplicatesView: View {
                     }
                     .padding(.horizontal, MCSpacing.sm).padding(.vertical, MCSpacing.xs)
                     Divider()
-                    List(model.filteredGroups, selection: $selectedGroupID) { group in
+                    List(model.filteredGroups, selection: Binding(
+                        get: { selectedGroupID },
+                        set: { id in
+                            selectedGroupID = id
+                            if let id { pushedGroupID = id }
+                        }
+                    )) { group in
                         HStack(spacing: MCSpacing.xs) {
                             Image(nsImage: NSWorkspace.shared.icon(forFile: group.keeper.path))
                                 .resizable().frame(width: 16, height: 16).accessibilityHidden(true)
@@ -418,22 +464,7 @@ struct DuplicatesView: View {
                     .scrollContentBackground(.hidden)
                     .environment(\.defaultMinListRowHeight, 28)
                 }
-                .frame(minWidth: 300, idealWidth: 380, maxWidth: 460)
-                Divider()
-                groupDetail
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-        }
-        .onAppear { if selectedGroupID == nil { selectedGroupID = model.filteredGroups.first?.id } }
-        .quickLookPreview($model.previewURL)
-        .alert(L("settings.migration_failed"), isPresented: Binding(
-            get: { model.exportError != nil },
-            set: { if !$0 { model.exportError = nil } }
-        )) {
-            Button(L("onboarding.check.status.ok"), role: .cancel) { model.exportError = nil }
-        } message: {
-            Text(model.exportError ?? "")
-        }
+        .frame(minWidth: 300, idealWidth: 380, maxWidth: 460)
     }
 
     @ViewBuilder

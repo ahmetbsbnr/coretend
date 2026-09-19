@@ -574,6 +574,7 @@ Analysis only — deleting synced files would remove them on every device.";
 "dupes.results.sentence" = "%d groups · %@ in extra copies · %@ selected";
 "dupes.select_extras" = "Select All Extra Copies";
 "dupes.copies_count" = "%d copies";
+"dupes.group" = "Group";
 "dupes.group_a11y" = "%@, %d copies, %@ in extra copies";
 "dupes.group_fact" = "%d copies of %@ · the extra copies take %@";
 "dupes.select_group_title" = "Select a group";
