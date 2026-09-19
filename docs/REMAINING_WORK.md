@@ -92,6 +92,11 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 - ☐ H-02 Compact: inspectors (Record, Duplicates, Applications) become a pushed detail below 1100pt
   content width; today they shrink and still fit at 1000×700 (verified in the matrix).
 
+- ☐ D-18 Similar images groups byte-identical files too (the engine has an exact-digest path),
+  which is Duplicates' job. Decide: either exclude exact duplicates from this lens and say so,
+  or label those groups "identical" rather than "similar". Today the header says "3 similar"
+  for three copies of one file — true, but the person has two screens telling them the same thing.
+
 ## R — Restoration (real inverse)
 - ☐ R-04 SafetyCore: `trashItem(at:resultingItemURL:)` must record the
   resulting URL in `safety_log.result` (schema: add `trash_path` via settings

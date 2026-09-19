@@ -66,8 +66,23 @@ final class CloudCleanupViewModel: CancellableScan {
     /// anything itself — this is informational, not an action total.
     var recoverableLocalBytes: Int64 { totalLocal }
 
+    /// A capture asked for results: pick the first provider it found and scan
+    /// it, without a pointer. Test mode only.
+    func autostartFirstProvider() {
+        Task {
+            for _ in 0..<40 {
+                if let first = providers.first {
+                    selectedProvider = first
+                    scan(first)
+                    return
+                }
+                try? await Task.sleep(for: .milliseconds(150))
+            }
+        }
+    }
+
     func detect() {
-        let found = Self.detectProviders(home: FileManager.default.homeDirectoryForCurrentUser)
+        let found = Self.detectProviders(home: CaptureHarness.scanHome)
         providers = found
         phase = found.isEmpty ? .noProviders : .ready
     }
@@ -266,7 +281,10 @@ struct CloudCleanupView: View {
             }
         }
         .accessibilityIdentifier("cloud.root")
-        .onAppear { if model.phase == .detecting { model.detect() } }
+        .onAppear {
+            if model.phase == .detecting { model.detect() }
+            if CaptureHarness.autostartScan { model.autostartFirstProvider() }
+        }
     }
 
     private var providerPicker: some View {

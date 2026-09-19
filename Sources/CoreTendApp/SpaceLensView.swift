@@ -326,7 +326,7 @@ struct SpaceMapView: View {
                     VStack(alignment: .leading, spacing: MCSpacing.sm) {
                         MCSectionHeader(L("spacelens.filter_category"))
                         MCFeatureRow(L("spacelens.category.folder"),
-                                     icon: "folder.fill", iconColor: MCTheme.accent)
+                                     icon: "folder.fill")
                         MCFeatureRow(L("spacelens.category.media"),
                                      icon: "photo", iconColor: MCColor.cellTealDeep)
                         MCFeatureRow(L("spacelens.category.document"),

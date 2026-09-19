@@ -40,4 +40,22 @@ head -c 8388608 /dev/urandom > "$home/Documents/Projects/proposal-final.pdf"
 cp "$home/Documents/Projects/proposal-final.pdf" "$home/Documents/Projects/Archive/proposal-final.pdf"
 head -c 1048576 /dev/urandom > "$home/Downloads/setup-notes.txt"
 cp "$home/Downloads/setup-notes.txt" "$home/Documents/setup-notes.txt"
+# Large & old: the lens looks for files over 100 MB that have not been touched
+# in 30 days, so the fixture needs files that actually clear that bar.
+mk "Movies/Screen Recording 2026-02-11.mov" 3000 120
+mk "Documents/Projects/dataset-export.csv" 1400 95
+mk "Downloads/xcode-beta.xip" 2600 40
+
+# Similar images: real pixels, because Vision is doing the looking. The same
+# picture at two sizes, plus one that is merely adjacent.
+mkdir -p "$home/Pictures/2025" "$home/Desktop"
+python3 "$(dirname "$0")/seed-media.py" "$home/Pictures/2025/sunset.png" 900 700 0.0 >/dev/null
+sips -Z 560 "$home/Pictures/2025/sunset.png" --out "$home/Desktop/sunset-small.png" >/dev/null 2>&1 || true
+python3 "$(dirname "$0")/seed-media.py" "$home/Pictures/2025/harbour.png" 900 700 1.9 >/dev/null
+
+# Cloud footprint: a provider folder with a mix of local and evicted files.
+mkdir -p "$home/Library/Mobile Documents/com~apple~CloudDocs/Shared"
+dd if=/dev/zero of="$home/Library/Mobile Documents/com~apple~CloudDocs/Shared/deck.key" bs=102400 count=900 status=none
+dd if=/dev/zero of="$home/Library/Mobile Documents/com~apple~CloudDocs/Shared/notes.txt" bs=102400 count=4 status=none
+
 echo "$home"

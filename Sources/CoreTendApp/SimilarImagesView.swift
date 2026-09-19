@@ -160,10 +160,10 @@ struct SimilarImagesView: ModuleSubScreen {
             switch model.phase {
             case .idle:
                 MCEmptyState(
-                    icon: "photo.on.rectangle.angled", title: L("similar.idle.title"), message: L("similar.idle.subtitle"),
-                    iconColor: MCTheme.accent, iconSize: MCIconSize.emptyStateProminent,
+                    icon: "photo.on.rectangle.angled", title: L("similar.idle.title"), message: L("similar.idle.subtitle"), iconSize: MCIconSize.emptyStateProminent,
                     actionTitle: L("similar.analyze")) { model.start() }
                     .accessibilityIdentifier("similar.scan.start")
+                    .onAppear { if CaptureHarness.autostartScan { model.start() } }
             case let .scanning(processed, total):
                 VStack(spacing: MCSpacing.lg) {
                     MCScanStage(isScanning: !model.isPaused,
@@ -202,13 +202,12 @@ struct SimilarImagesView: ModuleSubScreen {
                                     .tag(String?.some(volume.id))
                             }
                         }
-                        .pickerStyle(.menu)
-                        .frame(width: 180)
+                        .pickerStyle(.menu).labelsHidden().frame(width: 140)
                     }
-                    Spacer()
+                    Spacer(minLength: 0)
                     ExclusionsMenu(controller: model.exclusionsController)
                 }
-                .padding(.horizontal).padding(.top, MCSpacing.xs)
+                .padding(.horizontal, MCSpacing.sm).padding(.vertical, MCSpacing.xs)
                 List {
                     ForEach(model.filteredGroups) { group in
                         let members = group.urls.map { ImageMember(id: $0.path, url: $0) }

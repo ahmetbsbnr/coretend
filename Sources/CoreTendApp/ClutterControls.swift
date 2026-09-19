@@ -56,6 +56,9 @@ struct ExclusionsMenu: View {
         } label: {
             Label(L("clutter.exclusions_count", controller.exclusions.count), systemImage: "eye.slash")
         }
+        // Without this the menu takes whatever width is going, which in a
+        // filter bar is all of it.
+        .fixedSize()
         .task { await controller.load() }
     }
 }

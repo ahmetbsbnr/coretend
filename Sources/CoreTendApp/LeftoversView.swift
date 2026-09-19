@@ -92,8 +92,7 @@ struct LeftoversView: ModuleSubScreen {
             switch model.phase {
             case .idle:
                 MCEmptyState(
-                    icon: "trash.slash", title: L("leftovers.idle.title"), message: L("leftovers.idle.subtitle"),
-                    iconColor: MCTheme.accent, iconSize: MCIconSize.emptyStateProminent,
+                    icon: "trash.slash", title: L("leftovers.idle.title"), message: L("leftovers.idle.subtitle"), iconSize: MCIconSize.emptyStateProminent,
                     actionTitle: L("leftovers.scan")) { Task { await model.scan() } }
             case .scanning:
                 ProgressView(L("leftovers.scanning")).frame(maxWidth: .infinity, maxHeight: .infinity)

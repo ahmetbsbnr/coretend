@@ -89,7 +89,7 @@ final class MyClutterViewModel: CancellableScan {
         let pauseController = ScanPauseController()
         self.pauseController = pauseController
         scanTask = Task {
-            let engine = ScanEngine()
+            let engine = ScanEngine(configuration: ScanConfiguration(home: CaptureHarness.scanHome))
             for await event in engine.run(rules: [rule], pauseController: pauseController) {
                 switch event {
                 case let .progress(scanned, _): scannedCount = scanned

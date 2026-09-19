@@ -32,9 +32,12 @@ public struct MCOverlapStack<Item: Identifiable, ItemContent: View>: View {
                     .zIndex(Double(items.count - index))
                     .overlay(alignment: .topTrailing) {
                         if item.id == markedID {
-                            Image(systemName: "star.circle.fill")
+                            // The mark means "this is the one to keep" — a
+                            // state, so it takes the success colour. It was
+                            // teal, the brand, which is for data.
+                            Image(systemName: "checkmark.circle.fill")
                                 .font(.system(size: MCIconSize.row))
-                                .foregroundStyle(.white, MCColor.teal)
+                                .foregroundStyle(.white, MCTheme.success)
                                 .offset(x: 4, y: -4)
                         }
                     }
