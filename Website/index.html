@@ -734,15 +734,16 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
       </div>
       <div class="app-body">
         <nav class="app-side" id="side" aria-label="Modules" data-aria-en="Modules" data-aria-fr="Modules">
-          <small data-fr="Stockage">Storage</small>
-          <button type="button" class="on" data-view="storage"><span class="ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="13" height="4" rx="1"/><rect x="1.5" y="9.5" width="13" height="4" rx="1"/><path d="M4 4.5h.01M4 11.5h.01"/></svg></span><span data-fr="Stockage">Storage</span></button>
-          <button type="button" data-view="lens"><span class="ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="7" height="7" rx="1"/><rect x="10" y="1.5" width="4.5" height="4.5" rx="1"/><rect x="1.5" y="10" width="4.5" height="4.5" rx="1"/><rect x="8" y="8" width="6.5" height="6.5" rx="1"/></svg></span><span>Space Lens</span></button>
-          <button type="button" data-view="dupes"><span class="ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="9" height="9" rx="1.5"/><path d="M5.5 14.5h8a1 1 0 0 0 1-1v-8"/></svg></span><span data-fr="Doublons">Duplicates</span></button>
-          <button type="button" data-view="apps"><span class="ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="3"/><path d="M5.5 8h5M8 5.5v5"/></svg></span><span data-fr="Applications">Applications</span></button>
+          <button type="button" data-view="record"><span class="ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 8h3l2-4.5 3 9 2-4.5h3"/></svg></span><span data-fr="Registre">Record</span></button>
           <div class="sep"></div>
-          <small data-fr="Système">System</small>
+          <small data-fr="Espace">Space</small>
+          <button type="button" class="on" data-view="storage"><span class="ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="2.5" width="13" height="4" rx="1"/><rect x="1.5" y="9.5" width="13" height="4" rx="1"/><path d="M4 4.5h.01M4 11.5h.01"/></svg></span><span data-fr="Nettoyage">Cleanup</span></button>
+          <button type="button" data-view="lens"><span class="ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="7" height="7" rx="1"/><rect x="10" y="1.5" width="4.5" height="4.5" rx="1"/><rect x="1.5" y="10" width="4.5" height="4.5" rx="1"/><rect x="8" y="8" width="6.5" height="6.5" rx="1"/></svg></span><span data-fr="Explorer">Explore</span></button>
+          <button type="button" data-view="dupes"><span class="ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1.5" y="1.5" width="9" height="9" rx="1.5"/><path d="M5.5 14.5h8a1 1 0 0 0 1-1v-8"/></svg></span><span data-fr="Doublons">Duplicates</span></button>
+          <div class="sep"></div>
+          <small data-fr="Ce Mac">This Mac</small>
+          <button type="button" data-view="apps"><span class="ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="12" height="12" rx="3"/><path d="M5.5 8h5M8 5.5v5"/></svg></span><span data-fr="Applications">Applications</span></button>
           <button type="button" data-view="integrity"><span class="ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.6 13.4 4v4.2c0 3-2.2 5.3-5.4 6.2-3.2-.9-5.4-3.2-5.4-6.2V4z"/><path d="M5.8 8.2 7.3 9.8l3-3.2"/></svg></span><span data-fr="Intégrité">Integrity</span></button>
-          <button type="button" data-view="activity"><span class="ic"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.5 8h3l2-4.5 3 9 2-4.5h3"/></svg></span><span data-fr="Activité">Activity</span></button>
         </nav>
         <div class="app-main">
           <div class="app-head">
@@ -1055,7 +1056,7 @@ const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
 const TICKER = {
   en:["Local scans","No account","No telemetry","Explicit confirmation","Eligible items use Trash",
       "Every path shown before it moves","SHA-256 on every release","Apache-2.0","Apple silicon native",
-      "System locations protected","Interruptible supported scans","Local activity record"],
+      "System locations protected","Interruptible supported scans","Local record of every operation"],
   fr:["Analyses locales","Aucun compte","Aucune télémétrie","Confirmation explicite","Corbeille pour les éléments éligibles",
       "Chaque chemin visible avant tout déplacement","SHA-256 à chaque version","Apache-2.0","Natif Apple silicon",
       "Emplacements système protégés","Analyses prises en charge interruptibles","Journal local"]
@@ -1115,15 +1116,17 @@ const VIEWS = {
       {p:"Demo Editor · valid team signature",s:"1 app",o:.5,t:{en:"signature",fr:"signature"}},
       {p:"com.example.demoutility",s:"1 item",o:.35,t:{en:"login item",fr:"ouverture"}}
     ]},
-  activity:{
-    title:{en:"Activity",fr:"Activité"},
-    meta:{en:"3 example records · local aggregate history",fr:"3 entrées d’exemple · historique local agrégé"},
-    foot:{en:"Stored on this Mac only.",fr:"Conservé sur ce Mac uniquement."},
-    map:[["Storage scan",49],["Storage review",43],["Duplicates to Trash",8]],
+  record:{
+    title:{en:"Record",fr:"Registre"},
+    meta:{en:"4 example entries · every operation and refusal",fr:"4 entrées d’exemple · chaque opération et chaque refus"},
+    foot:{en:"Kept on this Mac only. Nothing here claims space was freed.",
+          fr:"Conservé sur ce Mac uniquement. Rien ici ne prétend que de l’espace a été libéré."},
+    map:[["Moved to Trash",58],["Scanned",30],["Refused",12]],
     rows:[
-      {p:"Example · Storage scan",s:"3.9 GB",o:1,t:{en:"scanned",fr:"analysé"}},
-      {p:"Example · Storage cleanup",s:"3.4 GB",o:.7,t:{en:"moved",fr:"déplacé"}},
-      {p:"Example · Duplicates moved to Trash",s:"624 MB",o:.5,t:{en:"trashed",fr:"corbeille"}}
+      {p:"Example · moved 214 items to the Trash",s:"3.4 GB",o:1,t:{en:"reversible",fr:"réversible"}},
+      {p:"Example · refused to touch 6 items",s:"6 items",o:.7,t:{en:"protected",fr:"protégé"}},
+      {p:"Example · scanned Duplicates",s:"412 913 files",o:.5,t:{en:"read only",fr:"lecture seule"}},
+      {p:"Example · 1 item could not be moved",s:"1 item",o:.35,t:{en:"failed",fr:"échec"}}
     ]}
 };
 

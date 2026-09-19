@@ -32,7 +32,7 @@ SLUG_TO_CASE = {
     "dupes": "duplicates",
     "apps": "applications",
     "integrity": "protection",
-    "activity": "myActivity",
+    "record": "record",
 }
 
 
@@ -76,7 +76,10 @@ def main() -> int:
     app = app_groups()
     site = site_groups()
     # "sidebar.storage" -> "Storage"; the demo shows English labels.
-    app_by_label = {key.rsplit(".", 1)[-1].capitalize(): members
+    # "sidebar.mac" -> "This Mac". The demo shows the app's English labels, and
+    # two of them are not one word.
+    LABELS = {"sidebar.space": "Space", "sidebar.mac": "This Mac"}
+    app_by_label = {LABELS.get(key, key.rsplit(".", 1)[-1].capitalize()): members
                     for key, members in app.items() if key}
 
     problems: list[str] = []
