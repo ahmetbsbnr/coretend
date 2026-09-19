@@ -290,7 +290,6 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "integrity.tier.unsigned" = "Ad-hoc ou non signé";
 "integrity.tier.invalid" = "La signature ne se valide pas";
 "integrity.login_items.title" = "Démarre à la connexion";
-"module.my_activity" = "Mon activité";
 
 /* Dashboard */
 
@@ -411,13 +410,13 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "integrity.downloads.on_date" = "Téléchargé le %@";
 /* Issue d’exécution — les éléments ignorés étaient auparavant écartés par
    chaque écran de nettoyage, rendant un échec partiel invisible. */
-"cleanup.done.skipped" = "%d élément(s) ont été ignorés et laissés intacts. Le journal de sécurité en explique la raison.";
+"cleanup.done.skipped" = "%d élément(s) ont été passés et laissés intacts. Le registre explique pourquoi.";
 
 /* System authorization */
 "authorization.fullDisk.title" = "Accès complet au disque";
 "authorization.fullDisk.impact" = "Sans lui, les analyses ignorent les emplacements protégés comme les données de Mail et Safari, et annoncent des totaux inférieurs à la réalité.";
 "authorization.desktop.title" = "Bureau";
-"authorization.desktop.impact" = "Space Lens, Doublons et Fichiers volumineux ne verront rien sur votre Bureau.";
+"authorization.desktop.impact" = "Explorer, Doublons et Plus volumineux et plus anciens ne verront rien sur votre bureau.";
 "authorization.documents.title" = "Documents";
 "authorization.documents.impact" = "Doublons et Fichiers volumineux ne verront rien dans Documents.";
 "authorization.downloads.title" = "Téléchargements";
@@ -443,7 +442,6 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "shortcuts.title" = "Raccourcis clavier";
 "shortcuts.group.app" = "Partout dans CoreTend";
 "shortcuts.group.scan" = "Pendant une analyse";
-"shortcuts.group.spacelens" = "Space Lens";
 "shortcuts.group.sidebar" = "Barre latérale";
 "shortcuts.close_window" = "Fermer la fenêtre";
 "shortcuts.start_scan" = "Lancer l’analyse";
@@ -458,8 +456,8 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "menu.help.security" = "Sécurité";
 "menu.help.about" = "À propos de CoreTend";
 "cleanup.exclusions_unavailable" = "Vos dossiers exclus n’ont pas pu être lus, donc rien n’a été sélectionné pour vous. Des dossiers que vous avez protégés peuvent figurer dans cette liste — vérifiez chaque élément avant de mettre quoi que ce soit à la corbeille.";
-"settings.store_ephemeral" = "CoreTend n’a pas pu ouvrir sa base de données : cette session fonctionne en mémoire, et vos exclusions, le journal de sûreté et l’historique disparaîtront à la fermeture. Raison : %@";
-"settings.store_unavailable" = "CoreTend n’a pas pu ouvrir sa base de données. Les exclusions, le journal de sûreté et l’historique sont indisponibles cette session. Raison : %@";
+"settings.store_ephemeral" = "CoreTend n’a pas pu ouvrir sa base de données : cette session s’exécute en mémoire, vos exclusions et le registre disparaîtront à la fermeture.";
+"settings.store_unavailable" = "CoreTend n’a pas pu ouvrir sa base de données. Les exclusions et le registre sont indisponibles pour cette session. Raison : %@";
 "cleanup.done.rejected" = "%d élément(s) ont été refusés avant toute tentative.";
 "safety.reason.protected_root" = "Ils se trouvent dans un emplacement que macOS ou CoreTend ne supprime jamais.";
 "safety.reason.outside_roots" = "Ils sont hors des dossiers sur lesquels cette analyse a le droit d’agir.";

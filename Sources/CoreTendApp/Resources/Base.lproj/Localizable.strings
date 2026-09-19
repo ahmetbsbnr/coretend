@@ -290,7 +290,6 @@ Analysis only — deleting synced files would remove them on every device.";
 "integrity.tier.unsigned" = "Ad-hoc or unsigned";
 "integrity.tier.invalid" = "Signature does not validate";
 "integrity.login_items.title" = "Runs at login";
-"module.my_activity" = "My Activity";
 
 /* Dashboard */
 
@@ -413,13 +412,13 @@ Analysis only — deleting synced files would remove them on every device.";
 "integrity.downloads.on_date" = "Downloaded %@";
 /* Execution outcome — skipped operations were previously discarded by every
    cleanup screen, leaving partial failure invisible outside the Safety Log. */
-"cleanup.done.skipped" = "%d item(s) were skipped and left untouched. The Safety Log explains why.";
+"cleanup.done.skipped" = "%d item(s) were skipped and left untouched. The Record explains why.";
 
 /* System authorization */
 "authorization.fullDisk.title" = "Full Disk Access";
 "authorization.fullDisk.impact" = "Without it, scans skip protected locations such as Mail and Safari data, and report smaller totals than the real ones.";
 "authorization.desktop.title" = "Desktop";
-"authorization.desktop.impact" = "Space Lens, Duplicates and Large & Old files will not see anything on your Desktop.";
+"authorization.desktop.impact" = "Explore, Duplicates and Largest & oldest will not see anything on your Desktop.";
 "authorization.documents.title" = "Documents";
 "authorization.documents.impact" = "Duplicates and Large & Old files will not see anything in Documents.";
 "authorization.downloads.title" = "Downloads";
@@ -445,7 +444,6 @@ Analysis only — deleting synced files would remove them on every device.";
 "shortcuts.title" = "Keyboard Shortcuts";
 "shortcuts.group.app" = "Anywhere in CoreTend";
 "shortcuts.group.scan" = "While a scan is running";
-"shortcuts.group.spacelens" = "Space Lens";
 "shortcuts.group.sidebar" = "Sidebar";
 "shortcuts.close_window" = "Close the window";
 "shortcuts.start_scan" = "Start the scan";
@@ -460,8 +458,8 @@ Analysis only — deleting synced files would remove them on every device.";
 "menu.help.security" = "Security";
 "menu.help.about" = "About CoreTend";
 "cleanup.exclusions_unavailable" = "Your excluded folders could not be read, so nothing has been selected for you. Folders you protected may appear in this list — review each item before moving anything to the Trash.";
-"settings.store_ephemeral" = "CoreTend could not open its database, so this session is running in memory: your exclusions, Safety Log and activity history will be gone when you quit. Reason: %@";
-"settings.store_unavailable" = "CoreTend could not open its database. Exclusions, the Safety Log and activity history are unavailable this session. Reason: %@";
+"settings.store_ephemeral" = "CoreTend could not open its database, so this session runs in memory: your exclusions and the Record will be gone when you quit.";
+"settings.store_unavailable" = "CoreTend could not open its database. Exclusions and the Record are unavailable this session. Reason: %@";
 "cleanup.done.rejected" = "%d item(s) were refused before anything was attempted.";
 "safety.reason.protected_root" = "They are inside a location macOS or CoreTend never removes.";
 "safety.reason.outside_roots" = "They are outside the folders this scan is allowed to act on.";
