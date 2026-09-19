@@ -14,12 +14,13 @@ src="Documentation/Captures"
 dest="Website/assets/app"
 mkdir -p "$dest"
 
-# site slot <- capture. Light, because the page is paper-coloured.
+# site slot <- capture. Dark, because the page renders dark by default and a
+# light screenshot on it glares.
 typeset -A slots=(
-  smart-care  "smartCare-idle-light-standard.png"
-  space-lens  "spaceLens-ready-light-standard.png"
-  cleanup     "cleanup-review-light-standard.png"
-  record      "record-idle-light-standard.png"
+  smart-care  "smartCare-idle-dark-standard.png"
+  space-lens  "spaceLens-ready-dark-standard.png"
+  cleanup     "cleanup-review-dark-standard.png"
+  record      "record-idle-dark-standard.png"
 )
 for slot capture in ${(kv)slots}; do
   [[ -f "$src/$capture" ]] || { print -u2 "missing capture: $capture — run capture-matrix.sh"; exit 1; }

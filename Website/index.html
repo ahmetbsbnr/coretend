@@ -747,7 +747,7 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
         </nav>
         <div class="app-main">
           <div class="app-head">
-            <strong id="vTitle">Storage</strong>
+            <strong id="vTitle">Cleanup</strong>
             <em id="vMeta">Reading local metadata…</em>
           </div>
           <div class="track"><i id="vTrack"></i></div>
@@ -808,12 +808,12 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
     <p class="lead" data-reveal style="--d:100ms;margin-bottom:38px" data-fr="Voici l'architecture réelle de la version 0.9.1. Si une fonction n'est pas dans cette liste, elle n'est pas dans l'application.">This is the actual architecture of 0.9.1. If a capability is not on this list, it is not in the app.</p>
     <ul class="modules">
       <li class="mod" data-tilt data-reveal><span class="k">Home</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3>Overview</h3><p data-fr="Espace disque par volume, ce qui mérite votre attention, les dernières entrées du registre, et les analyses disponibles avec leur date de dernier passage.">Disk space per volume, what needs attention, the latest entries in the Record, and the scans available with when each last ran.</p></li>
-      <li class="mod" data-tilt data-reveal><span class="k">Scan</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Stockage">Storage</h3><p data-fr="Caches, journaux, rapports de plantage, installeurs, données de build, téléchargements oubliés.">Caches, logs, crash reports, leftover installers, build data and forgotten downloads.</p></li>
+      <li class="mod" data-tilt data-reveal><span class="k">Scan</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Nettoyage">Cleanup</h3><p data-fr="Caches, journaux, rapports de plantage, données de build et caches de navigateurs — examinés avant tout déplacement.">Caches, logs, crash reports, build data and browser caches — reviewed before anything moves.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Map</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3>Explore</h3><p data-fr="Carte du disque en aires proportionnelles : la surface d’une case est sa taille. Navigable, avec fil d’Ariane, recherche et ouverture dans le Finder.">A treemap of the disk: a cell's area is its size. You can walk into it, with breadcrumbs, search and Reveal in Finder.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Match</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Doublons">Duplicates</h3><p data-fr="Correspondance SHA-256 exacte, choix de l'exemplaire à garder, Quick Look, Finder et export CSV.">Exact SHA-256 matching, keeper selection, Quick Look, Finder and CSV export.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Apps</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Applications">Applications</h3><p data-fr="Inventaire de /Applications et ~/Applications, données associées par bundle ID et source de mise à jour détectée.">Inventory of /Applications and ~/Applications, bundle-ID-associated data and detected update source.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Signals</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Intégrité">Integrity</h3><p data-fr="Provenance des téléchargements, inspection d'une app choisie et inventaire des agents de lancement. Ce n'est pas un antivirus.">Download provenance, inspection of one selected app and launch-agent inventory. It is not an antivirus.</p></li>
-      <li class="mod" data-tilt data-reveal><span class="k">Record</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Activité">Activity</h3><p data-fr="Jusqu'à 500 activités locales agrégées, avec filtres, journal de sécurité et exports CSV ou JSON.">Up to 500 aggregate local activities, with filters, safety log and CSV or JSON exports.</p></li>
+      <li class="mod" data-tilt data-reveal><span class="k">Record</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Registre">Record</h3><p data-fr="Chaque opération et chaque refus, avec les fichiers concernés. Filtres, recherche et export CSV.">Every operation and every refusal, with the files each one touched. Filter, search and CSV export.</p></li>
       <li class="mod" data-tilt data-reveal><span class="k">Control</span><span class="glyph"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 10h12M11 5l5 5-5 5"/></svg></span><h3 data-fr="Réglages">Settings</h3><p data-fr="Langue, menu bar, exclusions, diagnostic, onboarding et vérification manuelle des mises à jour.">Language, menu bar, exclusions, diagnostics, onboarding and manual update checking.</p></li>
     </ul>
     <div class="shots" data-reveal>
@@ -827,9 +827,9 @@ html[data-theme="dark"] .dots i{filter:saturate(.85)}
       </figure>
       <figure class="shot">
         <img src="/assets/app/cleanup.webp" width="2024" height="1373" loading="lazy" alt="CoreTend Cleanup review — every candidate listed with its folder, evidence and size before anything moves">
-        <figcaption data-fr="Stockage — chaque élément relu avant tout déplacement">Storage — every item reviewed before it moves</figcaption>
+        <figcaption data-fr="Nettoyage — chaque élément relu avant tout déplacement">Cleanup — every item reviewed before it moves</figcaption>
       </figure>
-      <figure data-reveal>
+      <figure class="shot">
         <img src="/assets/app/record.webp" width="2024" height="1373" loading="lazy" alt="CoreTend Record — every operation and refusal, with the files each one touched">
         <figcaption data-fr="Registre — chaque opération et chaque refus, avec les fichiers concernés">Record — every operation and refusal, with the files each one touched</figcaption>
       </figure>
@@ -1068,7 +1068,7 @@ const TICKER = {
 
 const VIEWS = {
   storage:{
-    title:{en:"Storage",fr:"Stockage"},
+    title:{en:"Cleanup",fr:"Nettoyage"},
     meta:{en:"5 example findings · 3.9 GB total",fr:"5 résultats d’exemple · 3,9 Go au total"},
     foot:{en:"Nothing has been removed.",fr:"Rien n'a été supprimé."},
     map:[["DemoApp DerivedData",52],["Demo browser caches",26],["Demo Editor installer",13],["Demo utility logs",6],["Demo diagnostic reports",3]],
@@ -1136,7 +1136,7 @@ const VIEWS = {
 
 const FIND = {
   cats:[
-    {id:"storage", label:{en:"Storage",fr:"Stockage"}, total:{en:"3.9 GB",fr:"3,9 Go"}, measure:{en:"Found",fr:"Trouvé"}, path:"/Users/demo · example fixture",
+    {id:"storage", label:{en:"Cleanup",fr:"Nettoyage"}, total:{en:"3.9 GB",fr:"3,9 Go"}, measure:{en:"Found",fr:"Trouvé"}, path:"/Users/demo · example fixture",
      rows:[
       {n:{en:"DemoApp DerivedData",fr:"DerivedData de DemoApp"},w:{en:"Low-risk example, preselected for review",fr:"Exemple à faible risque, présélectionné pour vérification"},a:"2.0 GB",g:"safe"},
       {n:{en:"Demo browser caches",fr:"Caches du navigateur de démo"},w:{en:"Exact example path under /Users/demo",fr:"Chemin d’exemple exact sous /Users/demo"},a:"1.0 GB",g:"safe"},
