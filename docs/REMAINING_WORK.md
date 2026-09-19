@@ -27,9 +27,9 @@ Status: ☐ open · ☑ done · ⊘ blocked.
 - ☐ C-05b Applications and Integrity read their own fixture roots and do not
   depend on Full Disk Access the same way — decide per module whether the
   gate belongs there at all rather than adding it by symmetry.
-- ☐ C-06 `MCStatusTag` (success/attention/failure/protected/inert) replaces
-  ad-hoc capsules in Record, Integrity, Applications.
-- ☐ C-07 Remove every `.opacity(` on a colour outside DesignSystem (22 sites).
+- ☑ C-06 `MCStatusTag` replaces every hand-built capsule (Record, Duplicates,
+  Similar images, Leftovers, Cloud footprint).
+- ☑ C-07 Every remaining opacity is a named `MCOpacity` token.
 - ☑ C-08 Icon rules: Reveal in Finder is `folder`, the magnifier is search only.
 
 ## D — Modules

@@ -225,7 +225,7 @@ struct Sidebar: View {
         // Derived from the accent rather than fixed, so it follows the user's
         // choice. 0.18 keeps `textPrimary` well past 4.5:1 on every accent
         // macOS offers — measured, not assumed; see SidebarAccentTests.
-        if isSelected { return Color.accentColor.opacity(0.18) }
+        if isSelected { return Color.accentColor.opacity(MCOpacity.selectionWash) }
         if isHovered { return MCColor.elevatedBackground }
         return .clear
     }

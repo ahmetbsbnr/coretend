@@ -368,19 +368,15 @@ struct CloudCleanupView: View {
             switch state {
             case .local: EmptyView()
             case .partial:
-                badge(L("cloud.state.partial"), color: MCTheme.warning)
+                badge(L("cloud.state.partial"), tone: .attention)
             case .placeholder:
-                badge(L("cloud.state.placeholder"), color: .secondary)
+                badge(L("cloud.state.placeholder"), tone: .inert)
             }
         }
     }
 
-    private func badge(_ text: String, color: Color) -> some View {
-        Text(text)
-            .font(MCFont.microEmphasis)
-            .padding(.horizontal, 6).padding(.vertical, 2)
-            .background(color.opacity(0.16), in: Capsule())
-            .foregroundStyle(color)
+    private func badge(_ text: String, tone: MCStatusTag.Tone) -> some View {
+        MCStatusTag(text, tone: tone)
     }
 
     private func accessibilityStateText(_ state: CloudCleanupViewModel.SyncState) -> String {

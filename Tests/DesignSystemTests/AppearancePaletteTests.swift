@@ -115,3 +115,51 @@ struct AppearancePaletteTests {
         }
     }
 }
+
+/// A status pill is a solid fill, not a tint of its own ink.
+///
+/// Five screens built pills as `ink.opacity(0.18)` behind the same ink. That
+/// construction measures 3.67:1 at its worst (slate on a dark raised surface),
+/// and the opacity that would clear 4.5:1 is 0.05 — which is not a pill. A
+/// solid semantic fill with the appearance's on-accent ink measures 5.19:1 at
+/// worst across every state in both appearances.
+@Suite("Status tags are legible on their own fill")
+struct StatusTagContrastTests {
+    private func ratio(_ ink: MCPaletteColor, on fill: MCPaletteColor, dark: Bool, contrast: Bool) -> Double {
+        MCColor.contrastRatio(ink.value(dark: dark, highContrast: contrast),
+                              fill.value(dark: dark, highContrast: contrast))
+    }
+
+    @Test func everyToneCarriesItsLabel() {
+        let tones: [(String, MCPaletteColor)] = [
+            ("success", MCPalette.green), ("attention", MCPalette.amber),
+            ("failure", MCPalette.coral), ("inert", MCPalette.slate),
+            ("accent", MCPalette.teal),
+        ]
+        for (name, fill) in tones {
+            for dark in [true, false] {
+                for contrast in [true, false] {
+                    let r = ratio(MCPalette.onAccent, on: fill, dark: dark, contrast: contrast)
+                    #expect(r >= 4.5,
+                            "\(name) pill in \(dark ? "dark" : "light")\(contrast ? " + contrast" : ""): \(r):1")
+                }
+            }
+        }
+    }
+
+    /// The construction that was replaced, kept as a measurement so nobody
+    /// reintroduces it believing it works.
+    @Test func tintingALabelWithItsOwnColourWouldNotWork() {
+        let ink = MCPalette.slate.dark
+        let surface = MCPalette.raised.dark
+        func blend(_ a: Double) -> UInt32 {
+            var out: UInt32 = 0
+            for shift in [16, 8, 0] {
+                let f = Double((ink >> UInt32(shift)) & 0xFF), b = Double((surface >> UInt32(shift)) & 0xFF)
+                out |= UInt32((f * a + b * (1 - a)).rounded()) << UInt32(shift)
+            }
+            return out
+        }
+        #expect(MCColor.contrastRatio(ink, blend(0.18)) < 4.5)
+    }
+}

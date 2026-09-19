@@ -147,7 +147,7 @@ struct MenuBarView: View {
             .font(MCFont.secondaryBody)
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(MCColor.separator.opacity(0.55))
+                    Capsule().fill(MCColor.separator.opacity(MCOpacity.hairline))
                     Capsule().fill(tint)
                         .frame(width: max(3, geo.size.width * min(max(fraction, 0), 1)))
                 }

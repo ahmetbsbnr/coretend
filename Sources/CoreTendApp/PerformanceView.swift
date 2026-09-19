@@ -152,7 +152,7 @@ struct PerformanceView: View {
             if model.samples.count > 1 {
                 Chart(model.samples) { sample in
                     AreaMark(x: .value("Time", sample.date), y: .value(title, sample[keyPath: keyPath]))
-                        .foregroundStyle(color.opacity(0.18))
+                        .foregroundStyle(color.opacity(MCOpacity.chartArea))
                     LineMark(x: .value("Time", sample.date), y: .value(title, sample[keyPath: keyPath]))
                         .foregroundStyle(color)
                         .interpolationMethod(.monotone)

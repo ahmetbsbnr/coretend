@@ -150,11 +150,7 @@ struct LeftoversView: ModuleSubScreen {
                     .accessibilityLabel("\(L("leftovers.select_item", item.url.lastPathComponent))\(model.isAmbiguous(item) ? ", \(L("leftovers.shared_review"))" : "")")
                     Text(item.url.lastPathComponent).lineLimit(1)
                     if model.isAmbiguous(item) {
-                        Text(L("leftovers.shared_review"))
-                            .font(MCFont.badge)
-                            .padding(.horizontal, 6).padding(.vertical, 2)
-                            .background(MCTheme.warning.opacity(0.18), in: Capsule())
-                            .foregroundStyle(MCTheme.warning)
+                        MCStatusTag(L("leftovers.shared_review"), tone: .attention)
                     }
                     Text(L("leftovers.not_installed", item.kind.rawValue))
                         .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)

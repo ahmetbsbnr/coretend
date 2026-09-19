@@ -32,9 +32,11 @@ else is glass unless it floats (menus, popovers — system).
   `inert` (slate). Each only ever means that.
 - Text: `textPrimary` / `textSecondary` / `textTertiary` — all ≥ 4.5:1 on
   every surface they may sit on, in all four modes (`AppearancePaletteTests`).
-- No ad-hoc `.opacity()` on colours in views. The only tints are
-  `accent.opacity(0.18)` for selection wash and the `MCStatusTag` fills,
-  both measured.
+- No ad-hoc `.opacity()` on colours in views: every value is a named
+  `MCOpacity` token with a reason. Status pills are a **solid** semantic fill
+  with the appearance's on-accent ink (`MCStatusTag`), never a tint of their
+  own colour — that construction measures 3.67:1 at worst, and the opacity
+  that would fix it is 0.05, which is not a pill.
 
 Buttons: system styles. Primary = `.borderedProminent` (system accent),
 secondary = `.bordered`, destructive = `.bordered` with `role: .destructive`.

@@ -453,11 +453,7 @@ private struct RecordStateTag: View {
     let entry: LedgerEntry
 
     var body: some View {
-        Text(label)
-            .font(MCFont.badge)
-            .padding(.horizontal, 7).padding(.vertical, 3)
-            .background(color.opacity(0.18), in: Capsule())
-            .foregroundStyle(color)
+        MCStatusTag(label, tone: tone)
     }
 
     private var label: String {
@@ -467,11 +463,11 @@ private struct RecordStateTag: View {
         return L("record.tag_recorded")
     }
 
-    private var color: Color {
-        if !entry.failed.isEmpty { return MCTheme.danger }
-        if entry.isRefusalOnly { return MCTheme.warning }
-        if entry.isReversible { return MCTheme.success }
-        return MCColor.textSecondary
+    private var tone: MCStatusTag.Tone {
+        if !entry.failed.isEmpty { return .failure }
+        if entry.isRefusalOnly { return .attention }
+        if entry.isReversible { return .success }
+        return .inert
     }
 }
 

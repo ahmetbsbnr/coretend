@@ -475,10 +475,7 @@ struct DuplicatesView: View {
                     Text(PathDisplay.folder(of: url)).font(MCFont.monoCaption)
                         .lineLimit(1).truncationMode(.middle)
                     if isKeeper {
-                        Text(L("dupes.suggested_keeper")).font(MCFont.badge)
-                            .padding(.horizontal, 6).padding(.vertical, 2)
-                            .background(MCTheme.success.opacity(0.18), in: Capsule())
-                            .foregroundStyle(MCTheme.success)
+                        MCStatusTag(L("dupes.suggested_keeper"), tone: .success)
                     }
                 }
                 Text(model.recommendationText(for: url, in: group))

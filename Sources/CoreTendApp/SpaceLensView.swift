@@ -503,12 +503,12 @@ struct SpaceMapView: View {
                 Rectangle().fill(Color.white.opacity(isSelected ? 0.14 : 0.07))
             }
             if r.node.isAccessDenied {
-                Rectangle().fill(Color.black.opacity(0.35))
+                Rectangle().fill(Color.black.opacity(MCOpacity.unavailableOverlay))
             }
             if showLabel {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(r.node.name).font(MCFont.captionEmphasis).lineLimit(1)
-                    Text(mcFormatBytes(r.node.size)).font(MCFont.micro).opacity(0.85)
+                    Text(mcFormatBytes(r.node.size)).font(MCFont.micro).opacity(MCOpacity.onFillSecondary)
                 }
                 .foregroundStyle(.white)
                 .padding(5)

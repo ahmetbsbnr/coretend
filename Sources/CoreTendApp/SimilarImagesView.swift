@@ -227,11 +227,7 @@ struct SimilarImagesView: ModuleSubScreen {
                                 HStack {
                                     Text(url.lastPathComponent).lineLimit(1)
                                     if url == best {
-                                        Text(L("similar.best_resolution"))
-                                            .font(MCFont.badge)
-                                            .padding(.horizontal, MCSpacing.xxs).padding(.vertical, 1)
-                                            .background(MCTheme.success.opacity(0.18), in: Capsule())
-                                            .foregroundStyle(MCTheme.success)
+                                        MCStatusTag(L("similar.best_resolution"), tone: .success)
                                     }
                                     Spacer()
                                     ExcludeButton(url: url, controller: model.exclusionsController)

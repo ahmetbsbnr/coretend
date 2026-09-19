@@ -153,9 +153,34 @@ private struct MCAnimationModifier<V: Equatable>: ViewModifier {
     }
 }
 
+/// The only opacities the app uses, each with a reason.
+///
+/// Views carried ten ad-hoc values between them — 0.16 here, 0.18 there, 0.35,
+/// 0.55, 0.85 — none measured and none reused deliberately. A number nobody
+/// can name is a number nobody checked.
+///
+/// Status pills are deliberately absent: tinting a label with its own colour
+/// at any usable opacity fails the text minimum (worst pairing 3.67:1, and the
+/// opacity that would fix it is 0.05, which is not a pill). `MCStatusTag` uses
+/// a solid fill instead.
 public enum MCOpacity {
     /// Track ring behind a determinate progress arc (Core Bloom, metric rings).
     public static let orbitTrack: Double = 0.14
+    /// Selection wash behind a sidebar row, over the user's accent. Measured
+    /// with the label on top across all seven system accents — see
+    /// `SidebarAccentTests`.
+    public static let selectionWash: Double = 0.18
+    /// A chart's area under its line: enough to read as volume, faint enough
+    /// not to compete with the line.
+    public static let chartArea: Double = 0.18
+    /// A secondary figure on a filled surface, where full strength would fight
+    /// the primary label beside it.
+    public static let onFillSecondary: Double = 0.85
+    /// A hairline that separates without drawing a line the eye stops on.
+    public static let hairline: Double = 0.55
+    /// A shade over a cell whose contents could not be read, so it reads as
+    /// unavailable rather than as dark-coloured data.
+    public static let unavailableOverlay: Double = 0.35
 }
 
 /// Semantic colour aliases. Views reference these role names (`accent`,
