@@ -670,3 +670,5 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "onboarding.move.body" = "Déplacez-le dans Applications pour que macOS conserve ses autorisations et qu’il reste dans Launchpad.";
 "menu.file.export_record" = "Exporter le registre en CSV…";
 "menu.help.welcome" = "Bienvenue dans CoreTend…";
+"cloud.column_local" = "Sur ce Mac";
+"cloud.column_total" = "Taille totale";

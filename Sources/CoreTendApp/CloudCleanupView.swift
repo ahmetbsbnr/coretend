@@ -118,6 +118,7 @@ final class CloudCleanupViewModel: CancellableScan {
             guard !Task.isCancelled else { return }
             entries = result
             phase = .results
+            CaptureHarness.note(state: "results")
             isPaused = false
             self.pauseController = nil
             self.workerTask = nil
@@ -287,43 +288,55 @@ struct CloudCleanupView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
+    /// One line per entry: what it is, its sync state, how much of it is
+    /// actually on this Mac, and what it would be in full. Rows stacked the
+    /// two byte figures vertically, which doubled the height of a list whose
+    /// whole point is comparing those two numbers across many rows.
     private var resultsView: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                VStack(alignment: .leading) {
-                    Text(model.selectedProvider?.name ?? "").font(MCFont.cardTitle)
-                    Text(L("cloud.results.summary", mcFormatBytes(model.recoverableLocalBytes), mcFormatBytes(model.totalLogical)))
-                        .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
-                }
+            HStack(alignment: .firstTextBaseline, spacing: MCSpacing.sm) {
+                Text(model.selectedProvider?.name ?? "").font(MCFont.sectionTitle)
+                Text(L("cloud.results.summary", mcFormatBytes(model.recoverableLocalBytes), mcFormatBytes(model.totalLogical)))
+                    .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 Spacer()
-                Button(L("cloud.back")) { model.phase = .ready }
+                Button(L("cloud.back")) { model.phase = .ready }.buttonStyle(.bordered)
             }
-            .padding()
+            .padding(.horizontal, MCSpacing.page).padding(.vertical, MCSpacing.sm)
+            Divider()
             List(model.entries) { entry in
-                HStack {
-                    // Filled shape = real local bytes on disk; outline shape = online-only
-                    // placeholder not present locally. Shape carries the meaning, not color alone.
+                HStack(spacing: MCSpacing.xs) {
                     Image(systemName: symbolName(for: entry))
-                        .foregroundStyle(entry.syncState == .local ? MCTheme.accent : .secondary)
-                        .accessibilityHidden(true)
-                    Text(entry.name)
+                        .foregroundStyle(entry.syncState == .local ? MCColor.textSecondary : MCColor.textTertiary)
+                        .frame(width: 16).accessibilityHidden(true)
+                    Text(entry.name).lineLimit(1)
                     stateBadge(for: entry.syncState)
-                    Spacer()
-                    VStack(alignment: .trailing) {
-                        Text(L("cloud.local_bytes", mcFormatBytes(entry.localBytes))).monospacedDigit()
-                        Text(L("cloud.total_bytes", mcFormatBytes(entry.logicalBytes)))
-                            .font(MCFont.caption).foregroundStyle(MCColor.textSecondary).monospacedDigit()
-                    }
-                    Button {
-                        NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: entry.id)])
-                    } label: { Image(systemName: "magnifyingglass") }
-                    .buttonStyle(.borderless)
-                    .accessibilityLabel(L("cloud.reveal_a11y", entry.name))
+                    Spacer(minLength: MCSpacing.xs)
+                    Text(mcFormatBytes(entry.localBytes)).font(MCFont.tabular)
+                        .frame(width: 80, alignment: .trailing)
+                    Text(mcFormatBytes(entry.logicalBytes)).font(MCFont.tabular)
+                        .foregroundStyle(MCColor.textSecondary)
+                        .frame(width: 80, alignment: .trailing)
                 }
                 .accessibilityElement(children: .combine)
                 .accessibilityLabel(L("cloud.entry_a11y", entry.name, accessibilityStateText(entry.syncState), mcFormatBytes(entry.localBytes), mcFormatBytes(entry.logicalBytes)))
+                .contextMenu {
+                    Button(L("common.reveal_in_finder")) {
+                        NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: entry.id)])
+                    }
+                }
             }
-            .listStyle(.inset)
+            .listStyle(.plain)
+            .environment(\.defaultMinListRowHeight, 28)
+            .safeAreaInset(edge: .top, spacing: 0) {
+                HStack(spacing: MCSpacing.xs) {
+                    Spacer(minLength: 0)
+                    Text(L("cloud.column_local")).frame(width: 80, alignment: .trailing)
+                    Text(L("cloud.column_total")).frame(width: 80, alignment: .trailing)
+                }
+                .font(MCFont.groupHeader).foregroundStyle(MCColor.textSecondary).textCase(.uppercase)
+                .padding(.horizontal, MCSpacing.sm).padding(.vertical, MCSpacing.xxs)
+                .background(MCColor.secondaryBackground)
+            }
         }
     }
 

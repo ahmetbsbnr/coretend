@@ -672,3 +672,5 @@ Analysis only — deleting synced files would remove them on every device.";
 "onboarding.move.body" = "Move it to Applications so macOS keeps its permissions and it stays in Launchpad.";
 "menu.file.export_record" = "Export Record as CSV…";
 "menu.help.welcome" = "Welcome to CoreTend…";
+"cloud.column_local" = "On this Mac";
+"cloud.column_total" = "Full size";
