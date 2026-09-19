@@ -615,3 +615,6 @@ Analysis only — deleting synced files would remove them on every device.";
 "permission.fulldisk.title" = "CoreTend cannot see most of the disk";
 "permission.fulldisk.explanation" = "Full Disk Access lets CoreTend read the caches, logs and application data that make up most of what a scan finds. macOS grants it in System Settings; no app can grant it to itself.";
 "permission.fulldisk.limitation" = "Without it, a scan still covers the folders you have opened for CoreTend — it will simply find less.";
+"shortcuts.group.go" = "Go";
+"shortcuts.group.lists" = "Lists and the map";
+"shortcuts.go_module" = "Go to a module";

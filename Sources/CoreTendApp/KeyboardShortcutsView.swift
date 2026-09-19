@@ -31,27 +31,37 @@ enum KeyboardShortcutCatalogue {
     /// Grouped by where the shortcut applies, because "⌘K" and "P" are not the
     /// same kind of thing: one works anywhere, the other only while a scan is
     /// running, and a flat list hides that distinction.
+    /// What the app answers to, grouped the way the menus are.
+    ///
+    /// This is the one place a person can read the whole set, so it has to
+    /// match the menus rather than approximate them: ⌘1–⌘8 for the eight
+    /// destinations, the scan commands as the Scan menu binds them, and the
+    /// two that only work inside a list.
     static let groups: [Group] = [
         Group(titleKey: "shortcuts.group.app", shortcuts: [
             KeyboardShortcut2(keys: "⌘K", titleKey: "palette.open"),
+            KeyboardShortcut2(keys: "⌘/", titleKey: "menu.help.shortcuts"),
+            KeyboardShortcut2(keys: "⌃⌘S", titleKey: "menu.view.toggle_sidebar"),
+            KeyboardShortcut2(keys: "⇧⌘E", titleKey: "menu.file.export_record"),
             KeyboardShortcut2(keys: "⇧⌘U", titleKey: "updates.check_now"),
             KeyboardShortcut2(keys: "⌘,", titleKey: "menubar.settings"),
             KeyboardShortcut2(keys: "⌘W", titleKey: "shortcuts.close_window"),
             KeyboardShortcut2(keys: "⌘Q", titleKey: "menubar.quit"),
         ]),
-        Group(titleKey: "shortcuts.group.scan", shortcuts: [
-            KeyboardShortcut2(keys: "↩", titleKey: "shortcuts.start_scan"),
-            KeyboardShortcut2(keys: "P", titleKey: "common.pause"),
-            KeyboardShortcut2(keys: "R", titleKey: "common.resume"),
-            KeyboardShortcut2(keys: "⎋", titleKey: "common.cancel"),
+        Group(titleKey: "shortcuts.group.go", shortcuts: [
+            KeyboardShortcut2(keys: "⌘1 … ⌘8", titleKey: "shortcuts.go_module"),
+            KeyboardShortcut2(keys: "↑ ↓", titleKey: "shortcuts.move_module"),
         ]),
-        Group(titleKey: "shortcuts.group.spacelens", shortcuts: [
+        Group(titleKey: "shortcuts.group.scan", shortcuts: [
+            KeyboardShortcut2(keys: "⌘R", titleKey: "menu.scan.start"),
+            KeyboardShortcut2(keys: "⌘P", titleKey: "menu.scan.pause_resume"),
+            KeyboardShortcut2(keys: "⌘.", titleKey: "menu.scan.cancel"),
+        ]),
+        Group(titleKey: "shortcuts.group.lists", shortcuts: [
+            KeyboardShortcut2(keys: "␣", titleKey: "clutter.quick_look"),
             KeyboardShortcut2(keys: "⌘[", titleKey: "shortcuts.go_up"),
             KeyboardShortcut2(keys: "→", titleKey: "shortcuts.descend"),
             KeyboardShortcut2(keys: "⎋", titleKey: "shortcuts.close_preview"),
-        ]),
-        Group(titleKey: "shortcuts.group.sidebar", shortcuts: [
-            KeyboardShortcut2(keys: "↑ ↓", titleKey: "shortcuts.move_module"),
         ]),
     ]
 

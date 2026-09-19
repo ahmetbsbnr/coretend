@@ -90,3 +90,43 @@ struct MenuCommandTests {
         }
     }
 }
+
+/// The shortcuts screen is the only place a person can read the whole set, so
+/// it has to match the menus rather than approximate them.
+///
+/// It listed "↩ start scan", "P pause", "R resume" — the bare keys a scan
+/// screen answers while it is focused — as if they were app-wide, and omitted
+/// every ⌘-shortcut the menus actually bind: ⌘R, ⌘P, ⌘., ⌘1–⌘8, ⌘/, ⌃⌘S, ⇧⌘E.
+@Suite("The shortcuts screen matches the menus")
+struct ShortcutCatalogueTests {
+    private let root = URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+
+    private func source(_ relative: String) throws -> String {
+        try String(contentsOf: root.appendingPathComponent(relative), encoding: .utf8)
+    }
+
+    @Test func everyMenuShortcutIsDocumented() throws {
+        let listed = KeyboardShortcutCatalogue.groups
+            .flatMap(\.shortcuts).map(\.keys).joined(separator: " ")
+        for keys in ["⌘R", "⌘P", "⌘.", "⌘K", "⌘/", "⌃⌘S", "⇧⌘E", "⇧⌘U", "⌘,"] {
+            #expect(listed.contains(keys), "the shortcuts screen omits \(keys)")
+        }
+        #expect(listed.contains("⌘1"), "the shortcuts screen omits the Go shortcuts")
+    }
+
+    /// Every documented shortcut names a real string. A key typo here shows a
+    /// raw key to the one audience guaranteed to be reading carefully.
+    @Test func everyDocumentedShortcutHasALabel() throws {
+        let defined = try PropertyListSerialization.propertyList(
+            from: try Data(contentsOf: root.appendingPathComponent(
+                "Sources/CoreTendApp/Resources/Base.lproj/Localizable.strings")),
+            format: nil) as? [String: String] ?? [:]
+        for group in KeyboardShortcutCatalogue.groups {
+            #expect(defined[group.titleKey] != nil, "no string for \(group.titleKey)")
+            for shortcut in group.shortcuts {
+                #expect(defined[shortcut.titleKey] != nil, "no string for \(shortcut.titleKey)")
+            }
+        }
+    }
+}
