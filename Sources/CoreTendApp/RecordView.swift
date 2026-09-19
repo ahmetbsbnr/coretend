@@ -395,10 +395,24 @@ private struct RecordInspector: View {
         return parts.joined(separator: " · ")
     }
 
+    /// A section of evidence.
+    ///
+    /// The per-row result is printed only where the rows disagree. Four rows
+    /// under "What moved" each ending in "moved to Trash" is the heading said
+    /// four more times; the one case that matters — a volume with no Trash,
+    /// where an item was removed outright — is exactly the case where the
+    /// results differ, and there the column appears.
     private func section(_ title: String, _ rows: [SafetyLogRecord]) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(title).font(MCFont.groupHeader).foregroundStyle(MCColor.textSecondary)
-                .padding(.bottom, MCSpacing.xxs)
+        let resultsAgree = Set(rows.map(\.result)).count <= 1
+        return VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(title).font(MCFont.groupHeader).foregroundStyle(MCColor.textSecondary)
+                if resultsAgree, let result = rows.first?.result, !result.isEmpty {
+                    Text("· \(result)").font(MCFont.groupHeader)
+                        .foregroundStyle(MCColor.textTertiary)
+                }
+            }
+            .padding(.bottom, MCSpacing.xxs)
             Divider()
             ForEach(rows) { row in
                 HStack(spacing: MCSpacing.sm) {
@@ -409,11 +423,14 @@ private struct RecordInspector: View {
                         Text(mcFormatBytes(row.size)).font(MCFont.tabular)
                             .foregroundStyle(MCColor.textSecondary)
                     }
-                    Text(row.result).font(MCFont.caption)
-                        .foregroundStyle(MCColor.textSecondary).lineLimit(1)
+                    if !resultsAgree {
+                        Text(row.result).font(MCFont.caption)
+                            .foregroundStyle(MCColor.textSecondary).lineLimit(1)
+                    }
                 }
                 .padding(.vertical, MCSpacing.tight)
-                .accessibilityElement(children: .combine)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel("\(row.redactedPath), \(row.size > 0 ? mcFormatBytes(row.size) + ", " : "")\(row.result)")
                 .contextMenu {
                     Button(L("common.copy_path")) {
                         NSPasteboard.general.clearContents()
