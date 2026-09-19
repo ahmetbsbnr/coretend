@@ -282,3 +282,43 @@ struct RecordItemMergeTests {
         #expect(days[0].entries.count == 2)
     }
 }
+
+@Suite("Reversible means the Trash can give it back")
+struct LedgerReversibilityTests {
+    private func executed(_ id: Int64, _ operation: String, result: String) -> SafetyLogRecord {
+        SafetyLogRecord(id: id, operationID: operation, stage: .executed, redactedPath: "<home>/…/f",
+                        ruleID: "rule", risk: "low", size: 10,
+                        date: Date(timeIntervalSince1970: 1_700_000_000), result: result)
+    }
+
+    /// A file on a volume with no Trash is removed outright. Calling that
+    /// entry reversible sends someone looking in the Trash for something that
+    /// is not there.
+    @Test func anOperationThatRemovedOutrightIsNotReversible() {
+        let entry = SafetyLedger.entries(from: [
+            executed(1, "A", result: SafetyCenter.removedResult),
+        ])[0]
+        #expect(!entry.isReversible)
+        #expect(entry.removedOutright.count == 1)
+    }
+
+    /// One removed row is enough: the entry cannot promise the Trash can
+    /// return everything it lists.
+    @Test func aMixedOperationIsNotReversible() {
+        let entry = SafetyLedger.entries(from: [
+            executed(1, "A", result: SafetyCenter.trashedResult),
+            executed(2, "A", result: SafetyCenter.removedResult),
+        ])[0]
+        #expect(!entry.isReversible)
+        #expect(entry.removedOutright.count == 1)
+    }
+
+    @Test func anOperationThatOnlyTrashedIsReversible() {
+        let entry = SafetyLedger.entries(from: [
+            executed(1, "A", result: SafetyCenter.trashedResult),
+            executed(2, "A", result: SafetyCenter.trashedResult),
+        ])[0]
+        #expect(entry.isReversible)
+        #expect(entry.removedOutright.isEmpty)
+    }
+}

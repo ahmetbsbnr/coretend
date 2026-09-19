@@ -318,8 +318,22 @@ private struct RecordInspector: View {
                 }
                 Text(factLine).font(MCFont.body).foregroundStyle(MCColor.textSecondary)
                 if entry.isReversible {
-                    Text(L("record.reversible_note"))
-                        .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+                    // CoreTend does not reimplement restore. macOS already
+                    // knows where each trashed file came from and offers Put
+                    // Back; reproducing that would mean storing every real
+                    // path, which the audit trail deliberately never does.
+                    HStack(spacing: MCSpacing.xs) {
+                        Button(L("record.open_trash")) {
+                            NSWorkspace.shared.open(FileManager.default.homeDirectoryForCurrentUser
+                                .appendingPathComponent(".Trash"))
+                        }
+                        .buttonStyle(.bordered)
+                        Text(L("record.reversible_note"))
+                            .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
+                    }
+                } else if !entry.removedOutright.isEmpty {
+                    Text(L("record.removed_note"))
+                        .font(MCFont.caption).foregroundStyle(MCTheme.warning)
                 }
                 if !entry.moved.isEmpty { section(L("record.section_moved"), entry.moved) }
                 if !entry.refused.isEmpty { section(L("record.section_kept_back"), entry.refused) }

@@ -100,12 +100,17 @@ Status: ☐ open · ☑ done · ⊘ blocked.
   or label those groups "identical" rather than "similar". Today the header says "3 similar"
   for three copies of one file — true, but the person has two screens telling them the same thing.
 
-## R — Restoration (real inverse)
-- ☐ R-04 SafetyCore: `trashItem(at:resultingItemURL:)` must record the
-  resulting URL in `safety_log.result` (schema: add `trash_path` via settings
-  table? No — new migration v6 adding column is fine on a fresh table; use
-  `CREATE TABLE safety_log_v2` + copy to stay idempotent). Then "Put back"
-  in the Record inspector, only for rows whose trash path still exists.
+## R — Restoration — decided, not deferred
+- ☑ R-04 CoreTend does not reimplement restore, and that is the decision, not
+  a gap. macOS already records where each trashed file came from and offers
+  Put Back; reproducing it would mean storing every real path, which the audit
+  trail deliberately never does (it stores redacted paths precisely so it
+  carries no personal information). The Record offers "Open the Trash" on
+  entries whose rows all went to the Trash, and says outright when some were
+  removed outright because their volume has none.
+- ☐ R-05 If per-item Put Back is ever wanted, it needs a separate store of
+  real paths with its own consent and its own purge. Decide that deliberately;
+  do not let it arrive as a side effect.
 
 ## ⊘ Blocked
 - ⊘ 1.2 Layered `.icon` → `Assets.car`. Tried: `actool --app-icon CoreTend

@@ -253,6 +253,12 @@ public actor SafetyCenter {
 
     /// Moves approved items to the Trash. Every path is re-validated at
     /// execution time; anything that changed since approval is skipped.
+    /// The two outcomes an executed row can have, as the exact strings the
+    /// Record reads back. A row that says `removed` is not recoverable from
+    /// the Trash and must never be offered as if it were.
+    public static let trashedResult = "moved to Trash"
+    public static let removedResult = "removed (no Trash on this volume)"
+
     public func execute(_ operations: [ApprovedFileOperation]) async -> ExecutionResult {
         var executed: [ApprovedFileOperation] = []
         var skipped: [(ApprovedFileOperation, SafetyError)] = []
@@ -260,8 +266,13 @@ public actor SafetyCenter {
             do throws(SafetyError) {
                 let url = try validator.validate(op.url)
                 guard fileManager.fileExists(atPath: url.path) else { throw .fileVanished }
+                // The resulting URL says whether the file is in the Trash or
+                // was removed outright, which is the difference between
+                // "recoverable" and "gone" — the one distinction the Record
+                // must not guess at.
+                var trashed: NSURL?
                 do {
-                    try fileManager.trashItem(at: url, resultingItemURL: nil)
+                    try fileManager.trashItem(at: url, resultingItemURL: &trashed)
                 } catch {
                     if Self.isTemporaryPath(url) {
                         do {
@@ -273,6 +284,12 @@ public actor SafetyCenter {
                                        size: op.logicalSize, result: "temporary remove failed: \(failure)")
                             continue
                         }
+                        // Removed, not trashed: a temporary file with no Trash
+                        // on its volume. Recorded as what it is.
+                        await emit(.executed, operationID: op.id, path: url.path, ruleID: op.ruleID,
+                                   risk: op.risk, size: op.logicalSize, result: Self.removedResult)
+                        executed.append(op)
+                        continue
                     } else {
                         let failure = Self.classify(error)
                         skipped.append((op, failure))
@@ -282,7 +299,8 @@ public actor SafetyCenter {
                     }
                 }
                 await emit(.executed, operationID: op.id, path: url.path, ruleID: op.ruleID,
-                           risk: op.risk, size: op.logicalSize, result: "moved to trash")
+                           risk: op.risk, size: op.logicalSize,
+                           result: trashed == nil ? Self.removedResult : Self.trashedResult)
                 executed.append(op)
             } catch {
                 skipped.append((op, error))

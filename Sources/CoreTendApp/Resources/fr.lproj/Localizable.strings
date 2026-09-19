@@ -485,7 +485,7 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "record.no_selection_title" = "Sélectionnez une entrée";
 "record.no_selection_message" = "Chaque entrée détaille ce que CoreTend a déplacé et ce qu’il a refusé de toucher.";
 "record.purge" = "Effacer le registre…";
-"record.reversible_note" = "Chaque élément reste récupérable tant que la corbeille n’est pas vidée.";
+"record.reversible_note" = "Utilisez Remettre dans la corbeille pour replacer ces éléments à leur place d’origine.";
 "record.section_moved" = "CE QUI A ÉTÉ DÉPLACÉ";
 "record.section_kept_back" = "CE QUI A ÉTÉ ÉCARTÉ";
 "record.section_failed" = "CE QUI N’A PAS PU ÊTRE DÉPLACÉ";
@@ -601,3 +601,5 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "integrity.a11y.quarantined" = "mis en quarantaine par macOS";
 "integrity.a11y.not_quarantined" = "aucun indicateur de quarantaine";
 "overview.scan_a11y" = "%1$@, %2$@";
+"record.open_trash" = "Ouvrir la corbeille";
+"record.removed_note" = "Certains ont été supprimés directement : leur volume n’a pas de corbeille, ils ne peuvent pas être remis.";

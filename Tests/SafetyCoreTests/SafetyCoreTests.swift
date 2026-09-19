@@ -71,3 +71,26 @@ struct ExecutionFailureClassificationTests {
         #expect(SafetyCenter.classify(error) == .trashFailed(domain: "X", code: 1))
     }
 }
+
+/// A file removed outright is not a file in the Trash.
+///
+/// `execute` recorded every success as "moved to trash" whether the file went
+/// to the Trash or was deleted because its volume has none. The Record then
+/// told the person every one of them was recoverable — an invitation to look
+/// for something that is gone. The two outcomes are separate strings now, and
+/// the Record reads them.
+@Suite("Trashed and removed are different outcomes")
+struct ExecutionOutcomeVocabularyTests {
+
+    @Test func theTwoResultStringsAreDistinct() {
+        #expect(SafetyCenter.trashedResult != SafetyCenter.removedResult)
+    }
+
+    /// The Record matches on these exactly. A reworded string that still reads
+    /// fine to a person silently turns every past entry unrecoverable in the
+    /// UI, so the values are pinned.
+    @Test func theResultStringsArePinned() {
+        #expect(SafetyCenter.trashedResult == "moved to Trash")
+        #expect(SafetyCenter.removedResult == "removed (no Trash on this volume)")
+    }
+}

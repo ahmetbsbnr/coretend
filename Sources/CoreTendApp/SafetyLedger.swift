@@ -38,11 +38,21 @@ struct LedgerEntry: Identifiable, Equatable {
 
     var itemCount: Int { moved.count }
 
-    /// Every item still recoverable from the Trash by the user. Anything
-    /// CoreTend moved is reversible until the Trash is emptied — the app does
-    /// not claim to know when that happens, so this counts intent, and the UI
-    /// says "until the Trash is emptied" rather than asserting it still holds.
-    var isReversible: Bool { !moved.isEmpty }
+    /// True when every executed row went to the Trash, where macOS's own Put
+    /// Back can return it.
+    ///
+    /// Not simply "something was moved": a file on a volume with no Trash is
+    /// removed outright, and SafetyCore records that as a different result.
+    /// Offering those as reversible would be the app inventing a way back
+    /// that does not exist.
+    var isReversible: Bool {
+        !moved.isEmpty && moved.allSatisfy { $0.result == SafetyCenter.trashedResult }
+    }
+
+    /// Executed rows that did not go to the Trash. Shown as such.
+    var removedOutright: [SafetyLogRecord] {
+        moved.filter { $0.result == SafetyCenter.removedResult }
+    }
 
     /// True when nothing was executed: the operation's whole content is what
     /// CoreTend declined to touch. These are entries in their own right, not
