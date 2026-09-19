@@ -404,7 +404,7 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "finding.a11y.evidence" = "%@, %@";
 
 /* Provenance des téléchargements. macOS enregistre ces clés de quarantaine
-   indépendamment : LSQuarantineDataURL est très souvent absente alors que
+   indépendamment : LSQuarantineDataURL est très souvent absente alors que
    l’agent et l’horodatage sont présents. */
 "integrity.downloads.by_agent_on_date" = "Téléchargé par %@ · %@";
 "integrity.downloads.by_agent" = "Téléchargé par %@";
@@ -609,3 +609,7 @@ Analyse uniquement — supprimer des fichiers synchronisés les retirerait de to
 "record.filter_failed" = "Échecs";
 "record.filter_scans" = "Analyses";
 "menu.view.toggle_sidebar" = "Afficher/Masquer la barre latérale";
+"permission.continue_without" = "Analyser quand même";
+"permission.fulldisk.title" = "CoreTend ne voit pas l’essentiel du disque";
+"permission.fulldisk.explanation" = "L’accès complet au disque permet à CoreTend de lire les caches, les journaux et les données d’applications qui constituent l’essentiel de ce qu’une analyse trouve. macOS l’accorde dans Réglages Système ; aucune app ne peut se l’accorder elle-même.";
+"permission.fulldisk.limitation" = "Sans lui, une analyse couvre quand même les dossiers que vous avez ouverts à CoreTend — elle trouvera simplement moins.";

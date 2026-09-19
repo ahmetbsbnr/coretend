@@ -193,10 +193,21 @@ struct JunkCleanupView: View {
         dynamicTypeSize.isAccessibilitySize ? nil : 1
     }
     @State private var showMoveConfirmation = false
+    /// Full Disk Access, checked when the screen appears. A scan without it
+    /// finds a fraction of what is there and says nothing about why, which
+    /// reads as a clean Mac.
+    @State private var hasFullDiskAccess = SystemAuthorization.probeLive().hasFullDiskAccess
+    @State private var scanAnyway = false
 
     var body: some View {
         Group {
             switch model.phase {
+            case .idle where !hasFullDiskAccess && !scanAnyway:
+                MCPermissionState(
+                    title: L("permission.fulldisk.title"),
+                    explanation: L("permission.fulldisk.explanation"),
+                    limitation: L("permission.fulldisk.limitation"),
+                    onContinue: { scanAnyway = true })
             case .idle:
                 idleView
             case .scanning:
@@ -211,7 +222,13 @@ struct JunkCleanupView: View {
                     .padding(MCSpacing.page)
             }
         }
-        .onAppear { if CaptureHarness.autostartScan, model.phase == .idle { model.startScan() } }
+        .onAppear {
+            hasFullDiskAccess = SystemAuthorization.probeLive().hasFullDiskAccess
+            if CaptureHarness.autostartScan, model.phase == .idle {
+                scanAnyway = true
+                model.startScan()
+            }
+        }
         .scanCommands(
             start: { model.startScan() },
             pauseOrResume: { model.isScanPaused ? model.resumeScan() : model.pauseScan() },
