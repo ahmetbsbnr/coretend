@@ -145,10 +145,18 @@ struct RecordView: View {
         .navigationTitle(L("record.title"))
         .toolbar {
             ToolbarItemGroup {
+                // A pop-up button in a toolbar sizes itself to its widest
+                // option and, with its label shown, reserves room for a title
+                // it never draws — which is why it stood a head taller than
+                // its neighbours and sat off their centre line. Labelled for
+                // VoiceOver, hidden on screen, and given the one width it
+                // needs, it lines up with the rest of the toolbar.
                 Picker(L("record.filter"), selection: $model.filter) {
                     ForEach(RecordViewModel.Filter.allCases) { f in Text(f.label).tag(f) }
                 }
                 .pickerStyle(.menu)
+                .labelsHidden()
+                .frame(width: 130)
                 .accessibilityLabel(L("record.filter"))
                 Menu {
                     Button(L("record.export_csv")) { exportCSV() }.disabled(model.items.isEmpty)
@@ -156,9 +164,15 @@ struct RecordView: View {
                     Button(L("record.purge"), role: .destructive) { confirmingPurge = true }
                         .disabled(model.items.isEmpty)
                 } label: {
+                    // Icon-only *and* indicator-hidden: hiding the indicator
+                    // alone leaves its width behind, and the glyph drifts left
+                    // of the button it sits in.
                     Label(L("common.more"), systemImage: "ellipsis.circle")
+                        .labelStyle(.iconOnly)
                 }
                 .menuIndicator(.hidden)
+                .fixedSize()
+                .help(L("common.more"))
             }
         }
         .searchable(text: $model.query, placement: .toolbar, prompt: L("record.search"))

@@ -81,9 +81,16 @@ struct ExcludeButton: View {
                 Button(L("clutter.exclude_folder")) { controller.exclude(url, asFolder: true) }
             } label: {
                 Image(systemName: "eye.slash")
+                    .frame(width: 22, height: 20)
+                    .contentShape(Rectangle())
             }
+            // A borderless menu keeps room for a disclosure arrow it is not
+            // drawing here; clamped to 20pt that room came out of the glyph,
+            // which sat left of centre in a hit area a few points wide. The
+            // indicator is hidden and the target is the whole square.
             .menuStyle(.borderlessButton)
-            .frame(width: 20)
+            .menuIndicator(.hidden)
+            .fixedSize()
             .help(L("clutter.exclude_menu"))
             .accessibilityLabel(L("clutter.exclude_menu"))
         }

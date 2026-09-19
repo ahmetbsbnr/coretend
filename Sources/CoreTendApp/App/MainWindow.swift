@@ -165,6 +165,7 @@ func paletteMatches(label: String, query: String) -> Bool {
 private struct CommandPaletteView: View {
     @Binding var isPresented: Bool
     @State private var query = ""
+    @State private var highlighted: Entry.ID?
     @FocusState private var searchFocused: Bool
 
     private enum Entry: Identifiable {
@@ -225,7 +226,7 @@ private struct CommandPaletteView: View {
                 TextField(L("palette.placeholder"), text: $query)
                     .textFieldStyle(.plain)
                     .focused($searchFocused)
-                    .onSubmit { activate(filtered.first) }
+                    .onSubmit { activate(id: highlighted) }
                     .accessibilityIdentifier("commandPalette.search")
             }
             .padding(MCSpacing.sm)
@@ -233,21 +234,48 @@ private struct CommandPaletteView: View {
             if filtered.isEmpty {
                 MCEmptyState(icon: "magnifyingglass", title: L("palette.no_results"), message: "")
             } else {
-                List(filtered) { entry in
-                    Button {
-                        activate(entry)
-                    } label: {
-                        Label(entry.label, systemImage: entry.icon)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier(entry.id)
+                // A selectable list, not a stack of plain buttons.
+                //
+                // Plain buttons inside list rows only answered a click that
+                // landed on the glyph or the few characters of the label —
+                // the rest of the row was dead, the pointer never changed,
+                // and the keyboard could not reach them at all: the field
+                // holds focus, so ↑↓ went nowhere and Return always fired the
+                // first result whatever was under the cursor. Selection is
+                // state now, the arrows move it from the field, and the whole
+                // row is the target.
+                List(filtered, selection: $highlighted) { entry in
+                    Label(entry.label, systemImage: entry.icon)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                        .onTapGesture { activate(entry) }
+                        .tag(entry.id)
+                        .accessibilityIdentifier(entry.id)
+                        .accessibilityAddTraits(.isButton)
                 }
                 .listStyle(.plain)
             }
         }
         .frame(width: 420, height: 360)
-        .onAppear { searchFocused = true }
+        .onAppear { searchFocused = true; highlighted = filtered.first?.id }
+        .onChange(of: query) { _, _ in highlighted = filtered.first?.id }
         .onKeyPress(.escape) { isPresented = false; return .handled }
+        .onKeyPress(.downArrow) { move(by: 1); return .handled }
+        .onKeyPress(.upArrow) { move(by: -1); return .handled }
+    }
+
+    /// Moves the highlight without moving focus: the field keeps the caret,
+    /// so typing and choosing are the same gesture.
+    private func move(by step: Int) {
+        let list = filtered
+        guard !list.isEmpty else { return }
+        let current = list.firstIndex { $0.id == highlighted } ?? 0
+        let next = min(max(current + step, 0), list.count - 1)
+        highlighted = list[next].id
+    }
+
+    private func activate(id: Entry.ID?) {
+        activate(filtered.first { $0.id == id } ?? filtered.first)
     }
 
     private func activate(_ entry: Entry?) {

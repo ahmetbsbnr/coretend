@@ -46,6 +46,8 @@ Rien n’est supprimé pendant l’analyse.";
 "cleanup.review.truncated" = "%d sur %d affichés — %@ trouvés au total";
 "cleanup.move_to_trash" = "Déplacer vers la Corbeille";
 "cleanup.select_item" = "Sélectionner %@";
+"cleanup.select_all" = "Tout sélectionner";
+"cleanup.select_none" = "Tout désélectionner";
 "cleanup.done.moved" = "%@ déplacés vers la Corbeille";
 
 /* Protection */

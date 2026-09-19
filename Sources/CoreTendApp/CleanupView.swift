@@ -65,6 +65,21 @@ final class CleanupViewModel: CancellableScan {
         group.findings.allSatisfy { selectedIDs.contains($0.id) }
     }
 
+    /// Tick every finding on screen, or none of them.
+    ///
+    /// Not a suggestion — the app never proposes deleting everything it
+    /// found, and `preselected` stays the only thing it proposes. This is the
+    /// person saying so, from the keyboard, on a list they are looking at;
+    /// what it ticks still has to pass the confirmation and still goes to the
+    /// Trash. It is deliberately absent while the exclusions could not be
+    /// read, for the same reason preselection is.
+    func selectAll() {
+        guard !exclusionsUnavailable else { return }
+        selectedIDs = Set(findings.map(\.id))
+    }
+
+    func selectNone() { selectedIDs = [] }
+
     func setSelection(_ on: Bool, for group: RuleGroup) {
         for finding in group.findings {
             if on { selectedIDs.insert(finding.id) } else { selectedIDs.remove(finding.id) }
@@ -346,6 +361,19 @@ struct JunkCleanupView: View {
                         .font(MCFont.caption).foregroundStyle(MCColor.textSecondary)
                 }
                 Spacer()
+                // Visible because a keyboard shortcut nobody can see is a
+                // feature only its author has.
+                Button(L("cleanup.select_all")) { model.selectAll() }
+                    .buttonStyle(.link)
+                    .keyboardShortcut("a", modifiers: .command)
+                    .disabled(model.exclusionsUnavailable
+                              || model.selectedIDs.count == model.findings.count)
+                    .accessibilityIdentifier("cleanup.select_all")
+                Button(L("cleanup.select_none")) { model.selectNone() }
+                    .buttonStyle(.link)
+                    .keyboardShortcut("a", modifiers: [.command, .shift])
+                    .disabled(model.selectedIDs.isEmpty)
+                    .accessibilityIdentifier("cleanup.select_none")
                 Button(L("cleanup.move_to_trash")) { showMoveConfirmation = true }
                     .buttonStyle(.borderedProminent)
                     .disabled(model.phase == .running || model.selectedIDs.isEmpty)
@@ -362,6 +390,12 @@ struct JunkCleanupView: View {
                 }
             }
             .listStyle(.plain)
+            // The list drew its own light panel, inset and rounded, inside a
+            // window with a different ground: the largest card in the app,
+            // enclosing a list that the hairlines and headings already
+            // grouped. It sits on the window's ground now, like every other
+            // list in the rebuild.
+            .scrollContentBackground(.hidden)
             .environment(\.defaultMinListRowHeight, 28)
         }
     }
