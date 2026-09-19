@@ -384,12 +384,12 @@ struct SpaceMapView: View {
         if let current = model.current {
             VStack(alignment: .leading, spacing: 0) {
                 breadcrumb
-                    .padding(.horizontal).padding(.vertical, 8)
+                    .padding(.horizontal, MCSpacing.page).padding(.vertical, MCSpacing.xs)
                 searchAndFilterRow
-                    .padding(.horizontal).padding(.bottom, 8)
+                    .padding(.horizontal, MCSpacing.page).padding(.bottom, MCSpacing.xs)
                 bubbleMap(for: current)
                     .padding(.horizontal)
-                Divider().padding(.top, 8)
+                Divider().padding(.top, MCSpacing.xs)
                 childList(for: current)
             }
         }
@@ -435,7 +435,7 @@ struct SpaceMapView: View {
                     .help(L("spacelens.up"))
                     .accessibilityLabel(L("spacelens.up"))
                     .accessibilityIdentifier("spacelens.up")
-                    .padding(.trailing, 2)
+                    .padding(.trailing, MCSpacing.xxs / 2)
                 }
                 Button(root.name) { navigate { model.pop(to: nil) } }
                     .buttonStyle(.link)
@@ -511,7 +511,7 @@ struct SpaceMapView: View {
                     Text(mcFormatBytes(r.node.size)).font(MCFont.micro).opacity(MCOpacity.onFillSecondary)
                 }
                 .foregroundStyle(.white)
-                .padding(5)
+                .padding(MCSpacing.tight)
             }
         }
         .overlay(Rectangle().strokeBorder(Color.accentColor, lineWidth: isSelected ? 2 : 0))

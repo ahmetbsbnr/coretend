@@ -16,6 +16,9 @@ public enum MCSpacing {
     public static let xxl: CGFloat = 48
     /// Standard page padding for module screens.
     public static let page: CGFloat = 24
+    /// Inside a control or a dense row, where the 4pt grid's smallest step is
+    /// still too much: a treemap cell's label, a row that has to fit in 28pt.
+    public static let tight: CGFloat = 5
 }
 
 public enum MCRadius {

@@ -107,7 +107,7 @@ struct MenuBarView: View {
             }
             Button(L("menubar.quit")) { NSApp.terminate(nil) }
         }
-        .padding(14)
+        .padding(MCSpacing.md)
         .frame(width: 288)
         .task {
             // Adaptive: only samples while this view exists (menu open).

@@ -8,11 +8,11 @@ What each landing view actually provides. A blank cell is a gap, not a style cho
 
 | Module | Lines | Toolbar | Empty state | Loading | Error | Sub-nav | a11y labels |
 |---|---:|:-:|:-:|:-:|:-:|:-:|---:|
-| Overview | 282 | — | — | — | — | — | 4 |
-| Record | 478 | yes | yes | yes | yes | — | 3 |
-| Cleanup | 433 | — | — | — | yes | yes | 3 |
-| Explore | 619 | yes | — | — | yes | yes | 7 |
-| Duplicates | 492 | — | yes | — | yes | — | 3 |
+| Overview | 299 | — | — | — | — | — | 4 |
+| Record | 531 | yes | yes | yes | yes | — | 3 |
+| Cleanup | 450 | — | — | — | yes | yes | 3 |
+| Explore | 633 | yes | — | — | yes | yes | 7 |
+| Duplicates | 510 | — | yes | — | yes | — | 3 |
 | Applications | 520 | — | yes | yes | — | yes | 2 |
 | Integrity | 201 | — | yes | — | — | yes | 2 |
 | Performance | 188 | — | — | — | — | — | 2 |
@@ -21,10 +21,10 @@ What each landing view actually provides. A blank cell is a gap, not a style cho
 
 ## 2. Where the design system is bypassed
 
-- **11 opacity literals**, 6 distinct values: `0.18`×6, `0.16`×1, `0.55`×1, `0.12`×1, `0.35`×1, `0.85`×1.
+- **0 opacity literals**, 0 distinct values: .
   None is a token. Each is an unmeasured local decision.
-- **17 numeric paddings** bypassing `MCSpacing`: `2`×4, `6`×3, `8`×3, `5`×2, `4`×1, `7`×1, `3`×1, `14`×1, `1`×1.
-- **2 raw `Color(...)` constructions** outside DesignSystem.
+- **0 numeric paddings** bypassing `MCSpacing`: .
+- **0 raw `Color(...)` constructions** outside DesignSystem.
 
 ## 3. Typography
 
@@ -34,8 +34,8 @@ What each landing view actually provides. A blank cell is a gap, not a style cho
 
 ## 4. Iconography
 
-- **32 distinct SF Symbols**, 54 uses.
-- **11 symbols carry more than one meaning**: `exclamationmark.triangle.fill`×8, `magnifyingglass`×5, `star`×3, `checkmark.circle`×3, `minus.circle`×2, `eye.slash`×2, `eye`×2, `exclamationmark.triangle`×2, `arrow.down.circle`×2, `checkmark.seal.fill`×2.
+- **34 distinct SF Symbols**, 55 uses.
+- **12 symbols carry more than one meaning**: `exclamationmark.triangle.fill`×8, `star`×3, `folder`×3, `checkmark.circle.fill`×3, `minus.circle`×2, `eye.slash`×2, `eye`×2, `exclamationmark.triangle`×2, `arrow.down.circle`×2, `checkmark.seal.fill`×2.
   A symbol used for both a module and an illustration teaches the user nothing.
 
 ## 5. Copy that claims more than the app knows
@@ -44,7 +44,7 @@ What each landing view actually provides. A blank cell is a gap, not a style cho
 verified. These are every other string of that shape — each needs a decision, not
 a glance.
 
-### Base — 14 of 506 strings
+### Base — 14 of 521 strings
 
 | Key | String |
 |---|---|
@@ -56,14 +56,14 @@ a glance.
 | `onboarding.start.subtitle` | Every scan is read-only. Nothing moves until you review it. |
 | `onboarding.welcome.open_source` | Open source — you can read every line. |
 | `record.empty_message` | Every scan, every approval and every refusal is written here as it happens. |
+| `record.filter_all` | All |
 | `record.purge_confirm_message` | All %d entries are removed permanently. The record is append-only: nothing restores them, and files already moved to the Trash are not affected. |
-| `record.reversible_note` | Every item is recoverable until the Trash is emptied. |
 | `settings.erase_record_message` | Every operation and event CoreTend recorded is removed permanently. Files already moved to the Trash are not affected. |
 | `settings.menu_bar_detail` | The menu bar item samples system metrics only while its panel is open, or every 30s in the background just to show the attention indicator. |
 | `sidebar.optimize` | Optimize |
 | `spacelens.filter_all` | All |
 
-### fr — 40 of 506 strings
+### fr — 38 of 521 strings
 
 | Key | String |
 |---|---|
@@ -84,16 +84,14 @@ a glance.
 | `onboarding.start.subtitle` | Chaque analyse est en lecture seule. Rien ne bouge avant votre revue. |
 | `onboarding.welcome.open_source` | Open source — vous pouvez lire chaque ligne. |
 | `overview.attention_fda` | Sans l’accès complet au disque, CoreTend ne voit pas l’essentiel du disque. |
+| `permission.fulldisk.explanation` | L’accès complet au disque permet à CoreTend de lire les caches, les journaux et les données d’applications qui constituent l’essentiel de ce qu’une analyse trouve. macOS l’accorde dans Réglages Système ; aucune app ne peut se l’accorder elle-même. |
 | `privacy.empty.subtitle` | Les données Safari nécessitent l’accès complet au disque ; les profils Chrome et Firefox sont détectés automatiquement s’ils sont présents. |
 | `record.empty_message` | Chaque analyse, chaque approbation et chaque refus s’inscrit ici au fil de l’eau. |
 | `record.no_selection_message` | Chaque entrée détaille ce que CoreTend a déplacé et ce qu’il a refusé de toucher. |
 | `record.purge_confirm_message` | Les %d entrées sont supprimées définitivement. Le registre est en ajout seul : rien ne les restaure, et les fichiers déjà mis à la corbeille ne sont pas affectés. |
-| `record.reversible_note` | Chaque élément reste récupérable tant que la corbeille n’est pas vidée. |
 | `settings.data_detail_updates` | Tout ce que CoreTend analyse reste sur ce Mac. Aucun compte, aucune télémétrie, aucune statistique. La seule requête qu’il effectue est la vérification de mise à jour ci-dessous : elle demande un fichier de version à une adresse publique et n’envoie rien sur vous, vos fichiers ou votre Mac. |
 | `settings.erase_record_message` | Chaque opération et chaque événement enregistrés par CoreTend sont supprimés définitivement. Les fichiers déjà mis à la corbeille ne sont pas affectés. |
 | `settings.menu_bar_detail` | L’élément de la barre de menus n’échantillonne les métriques système que lorsque son panneau est ouvert, ou toutes les 30 s en arrière-plan pour afficher l’indicateur d’attention. |
-| `settings.store_ephemeral` | CoreTend n’a pas pu ouvrir sa base de données : cette session fonctionne en mémoire, et vos exclusions, le journal de sûreté et l’historique disparaîtront à la fermeture. Raison : %@ |
-| `settings.store_unavailable` | CoreTend n’a pas pu ouvrir sa base de données. Les exclusions, le journal de sûreté et l’historique sont indisponibles cette session. Raison : %@ |
 | `sidebar.free_up_space` | Libérer de l’espace |
 | `sidebar.optimize` | Optimiser |
 | `spacelens.delete.changed` | il a changé sur le disque après vérification, donc rien n’a été supprimé |
@@ -110,11 +108,11 @@ a glance.
 
 ## 6. Localization
 
-- Base **506** keys · fr **506** keys.
+- Base **521** keys · fr **521** keys.
 - Only in Base: 0 
 - Only in fr: 0 
-- **53 defined but never referenced** — dead weight carried in two languages.
+- **59 defined but never referenced** — dead weight carried in two languages.
   Sample: ['authorization.denied', 'authorization.desktop.impact', 'authorization.desktop.title', 'authorization.documents.impact', 'authorization.documents.title', 'authorization.downloads.impact', 'authorization.downloads.title', 'authorization.fullDisk.impact', 'authorization.fullDisk.title', 'authorization.granted', 'authorization.notApplicable', 'authorization.removableVolumes.impact']
 - **6 referenced but undefined**: ['cloud.picker.subtitle', 'clutter.idle.subtitle', 'dupes.idle.subtitle', 'leftovers.idle.subtitle', 'record.filter_\\(rawValue)', 'similar.idle.subtitle']
-- Longest French relative to English (layout risk): `sidebar.reset` ×2.4, `updates.open_app` ×2.2, `palette.scan_home` ×2.1, `protection.tab.startup` ×2.1, `menubar.no_activity_yet` ×2.1, `settings.about.privacy` ×2.0
+- Longest French relative to English (layout risk): `menu.view.toggle_sidebar` ×2.4, `sidebar.reset` ×2.4, `updates.open_app` ×2.2, `palette.scan_home` ×2.1, `protection.tab.startup` ×2.1, `menubar.no_activity_yet` ×2.1
 

@@ -26,7 +26,7 @@ struct MCSearchField: View {
                 .accessibilityLabel(L("common.clear"))
             }
         }
-        .padding(.horizontal, MCSpacing.xs).padding(.vertical, 4)
+        .padding(.horizontal, MCSpacing.xs).padding(.vertical, MCSpacing.xxs)
         .frame(width: 220)
         .accessibilityLabel(placeholder)
     }

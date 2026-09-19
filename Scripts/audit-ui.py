@@ -73,10 +73,16 @@ def main():
 
     # --- 2. design-system leakage ---------------------------------------
     w("## 2. Where the design system is bypassed\n")
-    app_only = "\n".join(v for k, v in all_src.items() if "/CoreTendApp/" in k)
+    # Code only: a comment explaining why a value was removed is not a use of
+    # it, and counting one made the report claim a literal that is not there.
+    app_only = "\n".join(
+        "\n".join(l for l in v.split("\n") if not l.strip().startswith("//"))
+        for k, v in all_src.items() if "/CoreTendApp/" in k)
     opacities = collections.Counter(re.findall(r"\.opacity\(([0-9.]+)\)", app_only))
     paddings = collections.Counter(re.findall(r"\.padding\((?:\.\w+,\s*)?(\d+)\)", app_only))
-    raw_colors = re.findall(r"Color\((?!\.)", app_only)
+    # \b, or `grantColor(` counts as a raw Color construction — the report
+    # claimed two that did not exist.
+    raw_colors = re.findall(r"\bColor\((?![.)])", app_only)
     w(f"- **{sum(opacities.values())} opacity literals**, {len(opacities)} distinct values: "
       + ", ".join(f"`{v}`×{n}" for v, n in opacities.most_common()) + ".")
     w(f"  None is a token. Each is an unmeasured local decision.")

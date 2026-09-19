@@ -412,7 +412,7 @@ private struct RecordInspector: View {
                     Text(row.result).font(MCFont.caption)
                         .foregroundStyle(MCColor.textSecondary).lineLimit(1)
                 }
-                .padding(.vertical, 5)
+                .padding(.vertical, MCSpacing.tight)
                 .accessibilityElement(children: .combine)
                 .contextMenu {
                     Button(L("common.copy_path")) {
