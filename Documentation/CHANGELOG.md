@@ -1,5 +1,47 @@
 # CHANGELOG
 
+## 1.0.2 — 2026-09-21 « The guards that did not guard »
+
+Two safety defects, both present in every release since the first public
+source commit, both found by auditing the 2.0 rebuild and backported here.
+Nothing else changed: the diff against 1.0.1 is three source files and their
+tests.
+
+- fix(security): `PathValidator`'s protected roots could be walked past by
+  spelling them differently. `isPath` compared with `hasPrefix`, which is
+  case-sensitive, while macOS volumes are case-INsensitive by default — so
+  `/system/Library/CoreServices`, `/Bin/ls` and `/usr/BIN/whoami` were not
+  recognised as protected. Case folding is now chosen per caller and for
+  opposite reasons: protected roots fold case because over-refusing is the
+  safe error there, and the allowlist does not, because on a case-sensitive
+  volume folding would widen it to a directory the user never granted.
+- fix(security): the protected roots were only ever tested against the path as
+  *written*, never against what it resolves to. macOS ships `/etc`, `/var` and
+  `/tmp` as symlinks into `/private` and the list is written in `/private`
+  form, so `/var/db/SystemPolicy` — Gatekeeper's own database — and
+  `/etc/passwd` validated cleanly. Both spellings are now checked, normalised
+  deterministically rather than through `resolvingSymlinksInPath` (which
+  normalises the wrong way, stripping `/private`) or `realpath` (which returns
+  nothing for a path that no longer exists, which is exactly when the check
+  must still hold). `/private/etc` is added to the list.
+
+  **Impact, measured rather than asserted: defence in depth, low real-world
+  impact.** System Integrity Protection is enabled by default and the paths
+  this reaches are `restricted` and root-owned, so macOS refuses the operation
+  regardless; CoreTend only ever moves to the Trash, never deletes; and the
+  allowlist must already contain an ancestor of a system root, which requires
+  a scan pointed at `/`. A guard that did not guard, behind two that do.
+- fix(safety): the audit log dropped entries silently. `Store.recordSafetyEvent`
+  wrote `safety_log` with `try?`, and `SafetyAuditSink` is non-throwing by
+  protocol, so a failed insert was invisible at every level — a file could
+  reach the Trash with no record, in the product whose thesis is that the
+  record exists. The protocol stays non-throwing, because an audit sink must
+  not be able to abort the operation it records; what changes is that the loss
+  is now counted and the Safety Log states it beside its own totals.
+- test: four regression tests for the protected-root pair, each verified to
+  fail before the fix, plus one that drops the `safety_log` table underneath a
+  live store to prove a failed write is counted.
+
 ## 1.0.1 — 2026-09-17 « The app opens »
 
 - fix(app): CoreTend 1.0.0 trapped at launch (SIGTRAP) on every Mac but the one
