@@ -34,10 +34,18 @@ public enum SafetyError: Error, Equatable, Sendable {
 /// All destructive engines must go through this type; they never accept raw URLs.
 public struct PathValidator: Sendable {
     /// Roots that must never be touched, regardless of allowlists.
+    /// Written as the paths these resolve TO. `/etc`, `/var` and `/tmp` are
+    /// symlinks into `/private`, and `validate` tests this list against both
+    /// spellings — see `canonicalSpellings`.
+    ///
+    /// `/Library/LaunchAgents` and `/Library/LaunchDaemons` are deliberately
+    /// absent: app uninstallation legitimately removes an app's own
+    /// `<bundleID>.plist` from them through a per-operation allowlist, and a
+    /// protected root outranks any allowlist.
     public static let protectedRoots: [String] = [
         "/System", "/bin", "/sbin", "/usr/bin", "/usr/sbin", "/usr/lib",
-        "/usr/libexec", "/usr/share", "/private/var/db", "/Library/Apple",
-        "/Volumes/Recovery",
+        "/usr/libexec", "/usr/share", "/private/var/db", "/private/etc",
+        "/Library/Apple", "/Volumes/Recovery",
     ]
 
     /// User-content roots that must never be auto-selected for deletion.
@@ -64,19 +72,35 @@ public struct PathValidator: Sendable {
         let standardized = url.standardizedFileURL
         guard standardized.path != "/" else { throw .protectedRoot("/") }
 
-        for root in Self.protectedRoots where Self.isPath(standardized.path, under: root) {
-            throw .protectedRoot(root)
+        // Resolved here, before the protected-root check, because that check
+        // needs it too: it used to run against the path as *written* only,
+        // while the resolved path was tested against the allowlist alone — so
+        // `/var/db/SystemPolicy` and `/etc/passwd` validated cleanly.
+        let resolved = standardized.resolvingSymlinksInPath()
+
+        // Case-insensitive: macOS volumes are case-insensitive by default, so
+        // `/system/Library` is `/System/Library` and a case-sensitive prefix
+        // test let it past. Over-refusing is the safe error for a protected
+        // root; the allowlist below keeps the exact comparison, where
+        // over-permitting never is.
+        for spelling in Self.canonicalSpellings(of: standardized.path)
+            + Self.canonicalSpellings(of: resolved.path) {
+            for root in Self.protectedRoots
+            where Self.isPath(spelling, under: root, caseInsensitive: true) {
+                throw .protectedRoot(root)
+            }
         }
         let home = FileManager.default.homeDirectoryForCurrentUser.standardizedFileURL
-        guard standardized.path != home.path else { throw .protectedRoot(home.path) }
+        guard standardized.path.compare(home.path, options: .caseInsensitive) != .orderedSame else {
+            throw .protectedRoot(home.path)
+        }
 
         guard allowedRoots.contains(where: { Self.isPath(standardized.path, under: $0.path) }) else {
             throw .outsideAllowedRoots
         }
 
-        // Resolve symlinks on the real filesystem; the resolved target must also
-        // stay inside the allowlist (defends against symlink swaps).
-        let resolved = standardized.resolvingSymlinksInPath()
+        // The resolved target must also stay inside the allowlist (defends
+        // against symlink swaps). Resolution happened above.
         if resolved.path != standardized.path {
             guard allowedRoots.contains(where: { Self.isPath(resolved.path, under: $0.path) }) else {
                 throw .symlinkTraversal(resolved.path)
@@ -85,9 +109,40 @@ public struct PathValidator: Sendable {
         return standardized
     }
 
-    /// Prefix check that respects path-component boundaries ("/a/bc" is not under "/a/b").
-    public static func isPath(_ path: String, under root: String) -> Bool {
-        path == root || path.hasPrefix(root.hasSuffix("/") ? root : root + "/")
+    /// macOS ships these three as symlinks into `/private`; the list is fixed
+    /// by the OS layout, not discovered at runtime.
+    private static let privateAliases = ["/etc", "/var", "/tmp"]
+
+    /// Every spelling of `path` the protected-root list has to be tested
+    /// against. `URL.resolvingSymlinksInPath()` normalises the wrong way — it
+    /// strips a leading `/private` — and `realpath(3)` returns NULL for a path
+    /// that no longer exists, which is exactly when the check must still hold.
+    /// So this normalises deterministically and offline, toward `/private`.
+    static func canonicalSpellings(of path: String) -> [String] {
+        var spellings = [path]
+        for alias in privateAliases
+        where isPath(path, under: alias, caseInsensitive: true) {
+            spellings.append("/private" + path)
+        }
+        return spellings
+    }
+
+    /// Prefix check that respects path-component boundaries ("/a/bc" is not
+    /// under "/a/b").
+    ///
+    /// `caseInsensitive` is a direction-of-safety choice, not a convenience.
+    /// Protected roots fold case (over-refusing is the safe error); the
+    /// allowlist does not, and is the default (on a case-sensitive volume,
+    /// folding would widen it to a directory the user never granted).
+    public static func isPath(_ path: String, under root: String,
+                              caseInsensitive: Bool = false) -> Bool {
+        let trimmed = root.hasSuffix("/") && root != "/" ? String(root.dropLast()) : root
+        guard caseInsensitive else {
+            return path == trimmed || path.hasPrefix(trimmed.hasSuffix("/") ? trimmed : trimmed + "/")
+        }
+        if path.compare(trimmed, options: .caseInsensitive) == .orderedSame { return true }
+        let boundary = trimmed.hasSuffix("/") ? trimmed : trimmed + "/"
+        return path.range(of: boundary, options: [.caseInsensitive, .anchored]) != nil
     }
 }
 

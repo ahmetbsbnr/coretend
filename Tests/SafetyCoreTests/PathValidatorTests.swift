@@ -55,6 +55,51 @@ struct PathValidatorTests {
         }
     }
 
+    /// The protected-root branch, isolated. `systemRejected` above never
+    /// reaches it: that validator's allowlist is a temp directory, so
+    /// `.outsideAllowedRoots` fires first.
+    @Test func protectedRootRejectedEvenWhenTheAllowlistWouldPermitIt() {
+        let permissive = PathValidator(allowedRoots: [URL(fileURLWithPath: "/")])
+        #expect(throws: SafetyError.self) {
+            try permissive.validate(URL(fileURLWithPath: "/System/Library/CoreServices"))
+        }
+    }
+
+    /// macOS volumes are case-insensitive by default, so `/system/Library` is
+    /// `/System/Library` — and a case-sensitive prefix test let it past.
+    @Test func protectedRootIsNotDefeatedByCase() {
+        let permissive = PathValidator(allowedRoots: [URL(fileURLWithPath: "/")])
+        for spelling in ["/system/Library/CoreServices", "/SYSTEM/Library/CoreServices",
+                         "/Bin/ls", "/usr/BIN/whoami"] {
+            #expect(throws: SafetyError.self,
+                    "\(spelling) was not treated as a protected root") {
+                try permissive.validate(URL(fileURLWithPath: spelling))
+            }
+        }
+    }
+
+    /// `/etc`, `/var` and `/tmp` are symlinks into `/private`. The protected
+    /// list is written in `/private` form and was only ever tested against the
+    /// path as written, so `/var/db/SystemPolicy` and `/etc/passwd` validated.
+    @Test func protectedRootSurvivesTheSymlinkedSystemAliases() {
+        let permissive = PathValidator(allowedRoots: [URL(fileURLWithPath: "/")])
+        for spelling in ["/var/db/SystemPolicy", "/etc/passwd", "/etc/sudoers"] {
+            #expect(throws: SafetyError.self,
+                    "\(spelling) resolves inside a protected root and was accepted") {
+                try permissive.validate(URL(fileURLWithPath: spelling))
+            }
+        }
+    }
+
+    /// The opposite direction: folding case on the ALLOWLIST would widen it to
+    /// a directory the user never granted on a case-sensitive volume.
+    @Test func allowlistIsNotWidenedByCase() {
+        #expect(PathValidator.isPath("/Volumes/X/WORK/f", under: "/Volumes/X/work") == false)
+        #expect(PathValidator.isPath("/Volumes/X/work/f", under: "/Volumes/X/work"))
+        #expect(PathValidator.isPath("/system/Library", under: "/System", caseInsensitive: true))
+        #expect(PathValidator.isPath("/Systemic/Library", under: "/System", caseInsensitive: true) == false)
+    }
+
     @Test func binRejected() {
         defer { cleanup() }
         #expect(throws: SafetyError.self) { try validator.validate(URL(fileURLWithPath: "/bin/ls")) }
