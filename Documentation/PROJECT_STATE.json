@@ -2,7 +2,7 @@
   "schemaVersion": 4,
   "project": "CoreTend",
   "updatedUTC": "2026-09-17",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "phase": "patch-pending",
   "branch": "hotfix/v1.0.1-launch-crash",
   "release": {
