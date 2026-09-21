@@ -187,15 +187,29 @@ if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
     ok "no GitHub release v$VERSION yet"
   fi
 
-  CI_STATE=$(gh api "repos/$REPO/commits/$HEAD_SHA/check-runs" \
-    --jq '[.check_runs[] | select(.name=="build-and-test" or .name=="distribution-check")] | map(.conclusion // "pending") | join(",")' 2>/dev/null)
-  case "$CI_STATE" in
-    "") note "no check-runs reported for ${HEAD_SHA:0:7} yet (CI may not have started)" ;;
-    *pending*|*failure*|*cancelled*|*timed_out*)
-       bad "CI for ${HEAD_SHA:0:7} is not green (build-and-test, distribution-check = $CI_STATE)"
-       note "Expected: both success. Tagging a red commit publishes code nothing validated." ;;
-    *) ok "CI for ${HEAD_SHA:0:7} is green ($CI_STATE)" ;;
-  esac
+  # The API call's own success is part of the answer. A commit GitHub has
+  # never seen returns {"message":"No commit found for SHA: …"}, which is not
+  # empty and matches none of the failure patterns below — so it fell through
+  # to the catch-all and this gate reported "CI is green" for a commit that
+  # does not exist on the remote. A release gate that cannot tell "green" from
+  # "never looked" is worse than no gate: it is the one check standing between
+  # a tag and code nothing validated.
+  if ! CI_RAW=$(gh api "repos/$REPO/commits/$HEAD_SHA/check-runs" 2>&1); then
+    bad "cannot read CI status for ${HEAD_SHA:0:7} — GitHub says: $(printf '%s' "$CI_RAW" | head -1)"
+    note "A tag must point at a commit CI validated. If the commit is not pushed, CI has not seen it."
+  elif printf '%s' "$CI_RAW" | grep -q '"message"'; then
+    bad "GitHub does not know commit ${HEAD_SHA:0:7} — it is not pushed, so CI never ran on it"
+  else
+    CI_STATE=$(printf '%s' "$CI_RAW" \
+      | jq -r '[.check_runs[] | select(.name=="build-and-test" or .name=="distribution-check")] | map(.conclusion // .status) | join(",")')
+    case "$CI_STATE" in
+      "") bad "no check-runs reported for ${HEAD_SHA:0:7} — nothing validated this commit" ;;
+      *pending*|*failure*|*cancelled*|*timed_out*)
+         bad "CI for ${HEAD_SHA:0:7} is not green (build-and-test, distribution-check = $CI_STATE)"
+         note "Expected: both success. Tagging a red commit publishes code nothing validated." ;;
+      *) ok "CI for ${HEAD_SHA:0:7} is green ($CI_STATE)" ;;
+    esac
+  fi
 
   # Listing runners and secrets needs an admin-scoped token. The workflow
   # GITHUB_TOKEN has neither, so a 403 here means "not visible from this
