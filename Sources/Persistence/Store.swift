@@ -47,6 +47,8 @@ public struct ActivityRecord: Sendable, Identifiable {
 /// Application-wide persistent store. All access is actor-isolated.
 public actor Store {
     private let db: Database
+    /// Audit events that could not be written. See `recordSafetyEvent`.
+    private var unrecordedEvents = 0
 
     /// Ordered, append-only migrations. Never edit a shipped entry; append a new one.
     private static let migrations: [String] = [
@@ -361,12 +363,33 @@ extension Store: SafetyAuditSink {
         return p
     }
 
+    /// How many audit events failed to reach `safety_log` since launch.
+    ///
+    /// Not persisted: a store that cannot write the log cannot be trusted to
+    /// write a tally of its own failures either, and a number surviving a
+    /// relaunch would imply a durability this path has just shown it lacks.
+    public var unrecordedEventCount: Int { unrecordedEvents }
+
     public func recordSafetyEvent(_ event: SafetyAuditEvent) async {
         let redacted = Store.redactPath(event.path)
-        try? db.run("""
-            INSERT INTO safety_log (operation_id, stage, redacted_path, rule_id, risk, size, date, result)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """, [event.operationID.uuidString, event.stage.rawValue, redacted, event.ruleID,
-                  event.risk.rawValue, event.size, event.date.timeIntervalSince1970, event.result])
+        do {
+            try db.run("""
+                INSERT INTO safety_log (operation_id, stage, redacted_path, rule_id, risk, size, date, result)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, [event.operationID.uuidString, event.stage.rawValue, redacted, event.ruleID,
+                      event.risk.rawValue, event.size, event.date.timeIntervalSince1970, event.result])
+        } catch {
+            // Not rethrown, and not swallowed either.
+            //
+            // `SafetyAuditSink.recordSafetyEvent` is non-throwing on purpose:
+            // an audit sink must not be able to abort the operation it is
+            // recording. That was read as licence to be silent, and those are
+            // different things. A failed insert means a file reached the Trash
+            // with no record, in the product whose thesis is that the record
+            // exists — the one failure it must never hide.
+            //
+            // The operation still proceeds; the loss becomes a countable fact.
+            unrecordedEvents += 1
+        }
     }
 }

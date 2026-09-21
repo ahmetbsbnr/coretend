@@ -5,6 +5,7 @@ import Testing
 import Foundation
 @testable import Persistence
 import SafetyCore
+import SQLite3
 
 private func tempDBPath() -> String {
     URL(fileURLWithPath: NSTemporaryDirectory())
@@ -191,5 +192,42 @@ struct StoreTests {
         #expect(try await store.safetyLog().count == 3)
         try await store.purgeSafetyLog()
         #expect(try await store.safetyLog().isEmpty)
+    }
+}
+
+@Suite("Audit log durability")
+struct AuditLogDurabilityTests {
+    /// A failed `safety_log` insert must stop being invisible.
+    ///
+    /// The sink is non-throwing by protocol on purpose — an audit sink must
+    /// not abort the operation it records — and that was read as licence to
+    /// swallow the error with `try?`. A file could reach the Trash with no
+    /// record, in the product whose thesis is that the record exists.
+    ///
+    /// The failure is real, not mocked: a second SQLite connection drops the
+    /// table underneath the live store. Making the file read-only does not
+    /// work — the database runs in WAL mode with its handles already open, so
+    /// `chmod` after opening changes nothing and the write succeeds.
+    @Test func aFailedWriteIsCountedInsteadOfSwallowed() async throws {
+        let root = URL(fileURLWithPath: NSTemporaryDirectory())
+            .appendingPathComponent("coretend-audit-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let path = root.appendingPathComponent("store.sqlite").path
+        let store = try Store(path: path)
+
+        let event = SafetyAuditEvent(operationID: UUID(), stage: .approved, path: "/tmp/a",
+                                     ruleID: "user.caches", risk: .low, size: 1, result: "approved")
+        await store.recordSafetyEvent(event)
+        #expect(await store.unrecordedEventCount == 0, "a healthy write was counted as lost")
+
+        var other: OpaquePointer?
+        #expect(sqlite3_open_v2(path, &other, SQLITE_OPEN_READWRITE, nil) == SQLITE_OK)
+        defer { sqlite3_close(other) }
+        #expect(sqlite3_exec(other, "DROP TABLE safety_log", nil, nil, nil) == SQLITE_OK)
+
+        await store.recordSafetyEvent(event)
+        #expect(await store.unrecordedEventCount == 1,
+                "a failed audit write left no trace — the Record cannot say it is short")
     }
 }
