@@ -421,6 +421,7 @@
 "safetylog.title" = "Journal de sécurité";
 "safetylog.subtitle" = "%d exécutées";
 "safetylog.subtitle_detail" = "%d exécutées · %d ignorées ou en erreur";
+"safetylog.unrecorded" = "%1$lld événements n’ont pas pu être enregistrés";
 "safetylog.empty" = "Aucune entrée dans le journal de sécurité pour le moment.";
 "safetylog.unavailable" = "Base de données locale indisponible";
 "safetylog.purge" = "Purger le journal";

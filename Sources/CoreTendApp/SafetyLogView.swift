@@ -15,6 +15,10 @@ final class SafetyLogViewModel {
 
     var phase: Phase = .loading
     var records: [SafetyLogRecord] = []
+    /// Audit events that could not be written since launch. A log that is
+    /// short must say so; a counter nobody reads is the same silence with an
+    /// extra step.
+    var unrecordedEvents = 0
 
     var executedCount: Int { records.filter { $0.stage == .executed }.count }
     var skippedOrErrorCount: Int { records.filter { $0.stage == .skipped || $0.stage == .error }.count }
@@ -26,6 +30,7 @@ final class SafetyLogViewModel {
         }
         do {
             records = try await store.safetyLog(limit: 1000)
+            unrecordedEvents = await store.unrecordedEventCount
             phase = records.isEmpty ? .empty : .loaded
         } catch {
             phase = .failed("\(error)")
@@ -74,6 +79,14 @@ struct SafetyLogView: View {
                 Text(L("safetylog.title")).font(MCFont.cardTitle)
                 Text(L("safetylog.subtitle_detail", model.executedCount, model.skippedOrErrorCount))
                     .font(.caption).foregroundStyle(.secondary)
+                if model.unrecordedEvents > 0 {
+                    // The log admitting its own gap — the only figure here
+                    // that is about the journal rather than about the files,
+                    // and the only one that can make the rest untrue.
+                    Text(L("safetylog.unrecorded", model.unrecordedEvents))
+                        .font(.caption)
+                        .foregroundStyle(MCTheme.warning)
+                }
             }
             Spacer()
             Button(L("safetylog.purge"), role: .destructive) {
