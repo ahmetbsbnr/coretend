@@ -130,13 +130,32 @@ function fingerprint(png) {
   return cells
 }
 
-function compare(label, record, references, failures) {
+// A page capture is exactly the viewport, so its size is an integer and any
+// change to it is real. An element crop is not: `#bar` measures 59.5156px
+// tall, which Playwright rounds to a 60px PNG — a value sitting on the
+// rounding boundary, where anything that nudges the box by a hundredth of a
+// pixel flips the answer. It flipped: the same tree captured 1440x60 in the
+// pull-request run and 1440x61 in the push run, and the gate reported a
+// regression on a commit that touched no CSS.
+//
+// So element crops get one pixel of slack in each dimension, and nothing
+// more. It costs nothing real: the fingerprint is a 32x32 grid resampled from
+// whatever size the capture is, so the cell comparison below still runs
+// unchanged and is what actually catches a layout regression — a 1px crop
+// difference moves those cells by far less than CELL_TOLERANCE, while the
+// regressions this gate has caught moved 80-400 cells. What it buys is a gate
+// that fails only when something changed, which is the only kind anyone reads.
+const SIZE_SLACK = 1
+
+function compare(label, record, references, failures, elementCrop = false) {
   const reference = references[label]
   if (!reference) {
     failures.push(`${label}: no reference (review captures, then run --update deliberately)`)
     return false
   }
-  if (reference.width !== record.width || reference.height !== record.height) {
+  const slack = elementCrop ? SIZE_SLACK : 0
+  if (Math.abs(reference.width - record.width) > slack ||
+      Math.abs(reference.height - record.height) > slack) {
     failures.push(`${label}: size changed ${reference.width}x${reference.height} -> ${record.width}x${record.height}`)
     return false
   }
@@ -279,7 +298,7 @@ async function stateCaptures(browser, base) {
     if (prepare) await prepare(page)
     await page.addStyleTag({ content: 'video, #field, #grain, #spot { visibility:hidden !important }' })
     const shot = selector ? await page.locator(selector).screenshot() : await page.screenshot()
-    captures.push({ name, shot })
+    captures.push({ name, shot, elementCrop: Boolean(selector) })
     await context.close()
   }
 
@@ -345,11 +364,13 @@ const references = existsSync(refFile) ? JSON.parse(await readFile(refFile, 'utf
 const next = {}
 const failures = []
 
-async function record(label, shot, alwaysWrite = false) {
+async function record(label, shot, alwaysWrite = false, elementCrop = false) {
   const png = PNG.sync.read(shot)
   const value = { width: png.width, height: png.height, cells: fingerprint(png) }
   next[label] = value
-  const matches = update || captureOnly ? true : compare(label, value, references, failures)
+  const matches = update || captureOnly
+    ? true
+    : compare(label, value, references, failures, elementCrop)
   if (alwaysWrite || captureOnly || !matches) await writeFile(join(outDir, `${label}.png`), shot)
 }
 
@@ -357,7 +378,9 @@ try {
   for (const target of [...ROUTE_MATRIX, ...SUPPORTING_PAGES]) {
     await record(target.name, await capturePage(browser, base, target))
   }
-  for (const target of await stateCaptures(browser, base)) await record(target.name, target.shot, true)
+  for (const target of await stateCaptures(browser, base)) {
+    await record(target.name, target.shot, true, target.elementCrop)
+  }
 } finally {
   await browser.close()
   await fixture?.close()

@@ -200,15 +200,33 @@ if command -v gh >/dev/null 2>&1 && gh auth status >/dev/null 2>&1; then
   elif printf '%s' "$CI_RAW" | grep -q '"message"'; then
     bad "GitHub does not know commit ${HEAD_SHA:0:7} — it is not pushed, so CI never ran on it"
   else
-    CI_STATE=$(printf '%s' "$CI_RAW" \
-      | jq -r '[.check_runs[] | select(.name=="build-and-test" or .name=="distribution-check")] | map(.conclusion // .status) | join(",")')
-    case "$CI_STATE" in
-      "") bad "no check-runs reported for ${HEAD_SHA:0:7} — nothing validated this commit" ;;
-      *pending*|*failure*|*cancelled*|*timed_out*)
-         bad "CI for ${HEAD_SHA:0:7} is not green (build-and-test, distribution-check = $CI_STATE)"
-         note "Expected: both success. Tagging a red commit publishes code nothing validated." ;;
-      *) ok "CI for ${HEAD_SHA:0:7} is green ($CI_STATE)" ;;
-    esac
+    # Say what green means, positively. A denylist of bad words cannot hold
+    # here: GitHub's `status` is queued/in_progress/completed — never the
+    # "pending" this once matched — and its conclusions include neutral,
+    # action_required, stale and startup_failure. Every value not listed read
+    # as green, and one did: a commit whose checks were still in_progress
+    # passed the gate whose whole job is to assert they finished.
+    #
+    # Both required checks must be present, completed, and concluded success.
+    # A re-run leaves several runs under one name, so each name is judged by
+    # its most recent one.
+    CI_VERDICT=$(printf '%s' "$CI_RAW" | jq -r '
+      [.check_runs[]] as $runs
+      | ["build-and-test", "distribution-check"]
+      | map(. as $name
+            | ($runs | map(select(.name == $name)) | max_by(.started_at)) as $run
+            | if $run == null then "\($name)=absent"
+              elif $run.status != "completed" then "\($name)=\($run.status)"
+              else "\($name)=\($run.conclusion // "no-conclusion")"
+              end)
+      | join(" ")')
+    if [ "$CI_VERDICT" = "build-and-test=success distribution-check=success" ]; then
+      ok "CI for ${HEAD_SHA:0:7} is green ($CI_VERDICT)"
+    else
+      bad "CI for ${HEAD_SHA:0:7} is not green ($CI_VERDICT)"
+      note "Green means both checks present, completed and concluded success."
+      note "Anything else — still running, absent, or any other conclusion — is not."
+    fi
   fi
 
   # Listing runners and secrets needs an admin-scoped token. The workflow
