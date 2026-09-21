@@ -4,8 +4,9 @@
 
 Two safety defects, both present in every release since the first public
 source commit, both found by auditing the 2.0 rebuild and backported here.
-Nothing else changed: the diff against 1.0.1 is three source files and their
-tests.
+They are the reason this release exists. It is cut from `main`, so it also
+carries the four correctness fixes merged there since 1.0.1 — each one a case
+of the app knowing something and not saying it.
 
 - fix(security): `PathValidator`'s protected roots could be walked past by
   spelling them differently. `isPath` compared with `hasPrefix`, which is
@@ -41,6 +42,35 @@ tests.
 - test: four regression tests for the protected-root pair, each verified to
   fail before the fix, plus one that drops the `safety_log` table underneath a
   live store to prove a failed write is counted.
+- fix: every cleanup screen discarded the operations it skipped (#27).
+  `SafetyCenter.execute` returns `executed` *and* `skipped`, each skip carrying
+  the `SafetyError` that caused it; all six screens that call it read only the
+  first. Select ten files, have three re-validated away at execution time, and
+  the screen said "Moved 7 items to Trash" with no hint anything else happened.
+  A refusal is the product, not a footnote on it — a promise kept silently
+  reads exactly like a promise broken. Space Lens was worst: a single skipped
+  operation refreshed nothing and showed no alert, so the click looked ignored.
+- fix: every date in the app ignored the in-app language (#26). The language
+  picker changes which string table `L()` reads and nothing else; Foundation
+  formatters follow `Locale.current`, which is the *system* locale. On an
+  English Mac with French selected, the interface read French and every date in
+  it read English. Nine call sites across six views. `AppDateFormatting` now
+  takes its locale from `LocalizationManager`.
+- fix(integrity): the downloads list said "no provenance recorded" about files
+  it knew (#28). It read only `LSQuarantineDataURL`, which macOS often does not
+  store, while the other three quarantine keys were populated independently.
+  Measured across `~/Downloads` and `~/Desktop`: 280 quarantined files, 280
+  without a data URL, 280 with provenance under another key. The module whose
+  whole claim is reporting verifiable native signals was stating the opposite
+  of what the system had recorded.
+- feat(cleanup): show the evidence a scan already had (#25). A finding row
+  showed name, location and size; `ScanFinding` also carries a risk level and a
+  modification date, and size is the weakest of the three for deciding whether
+  something should go. Rows now carry risk and relative age, which also makes
+  visible what drives preselection — a row that is not ticked by default now
+  says why. Fixes a real bug found on the way: `SafetyLogView` interpolated
+  `RiskLevel` directly, printing "low"/"medium"/"high" untranslated in a fully
+  French UI.
 
 ## 1.0.1 — 2026-09-17 « The app opens »
 
