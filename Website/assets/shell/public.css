@@ -174,6 +174,36 @@ p{margin:0}
 .legal-doc section+section{padding-top:48px;border-top:1px solid var(--line)}
 .legal-doc h2{font-size:clamp(28px,4vw,44px)}
 .legal-doc p,.legal-doc li{max-width:70ch;color:var(--ink-2)}
+
+/* Comparison table. The only table on the site, so everything here is scoped
+   to it rather than to `table`.
+   Below 760px each row becomes its own small stack. A six-column grid cannot
+   be read on a phone, and putting it in a sideways-scrolling box turns a
+   claim people are meant to check into a gesture they will not make — so the
+   header row is hidden from sight but kept for screen readers, and each cell
+   carries its column name in `data-label`. */
+.cmp-scroll{overflow-x:auto;margin:8px 0 0}
+.cmp{width:100%;border-collapse:collapse;font-size:15px;min-width:660px}
+.cmp caption{text-align:left;color:var(--ink-2);padding-bottom:14px;max-width:70ch}
+.cmp th,.cmp td{padding:10px 12px;text-align:center;border-top:1px solid var(--line);vertical-align:top}
+.cmp thead td,.cmp thead th{border-top:0}
+.cmp thead th{font-weight:700;white-space:nowrap}
+.cmp tbody th{text-align:left;font-weight:600;white-space:nowrap}
+.cmp .cmp-us{background:var(--cobalt-wash);font-weight:700;color:var(--ink)}
+.cmp .cmp-unverified{color:var(--ink-3)}
+.cmp-notes{font-size:13px;color:var(--ink-2);max-width:70ch;margin-top:14px}
+.cmp-gates code{font-size:13px}
+
+@media (max-width:760px){
+  .cmp-scroll{overflow-x:visible}
+  .cmp{min-width:0}
+  .cmp thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  .cmp tr{display:block;border-top:1px solid var(--line);padding:12px 0}
+  .cmp tbody th{display:block;padding:0 0 8px;font-size:17px;white-space:normal}
+  .cmp td{display:flex;justify-content:space-between;gap:16px;text-align:right;border:0;padding:4px 0}
+  .cmp td::before{content:attr(data-label);color:var(--ink-2);text-align:left;font-weight:600}
+  .cmp .cmp-us{background:none}
+}
 .legal-doc p{margin-top:18px}
 .legal-doc ul{padding-left:1.2rem}
 
