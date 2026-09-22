@@ -6,7 +6,7 @@ project — expect some rough edges in the process itself.
 ## Before you start
 
 - Read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
-- Read [Documentation/SAFETY_MODEL.md](Documentation/SAFETY_MODEL.md) —
+- Read [Documentation/SAFETY_MODEL.md](../Documentation/SAFETY_MODEL.md) —
   any change touching deletion, scanning, or permissions must respect
   the review, explicit-confirmation and Trash-only rules.
 - For anything security-sensitive, see [SECURITY.md](SECURITY.md)
@@ -20,7 +20,7 @@ Scripts/test.sh     # run the test suite
 Scripts/build.sh    # debug build
 ```
 
-See [DEVELOPMENT.md](DEVELOPMENT.md) for the full local setup.
+See [DEVELOPMENT.md](../DEVELOPMENT.md) for the full local setup.
 
 ## Branch & commit conventions
 

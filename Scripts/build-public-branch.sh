@@ -200,7 +200,7 @@ for f in Configuration/PublicIdentity.local.json Configuration/BrandRenameApprov
 done
 
 # 5. The things a public repository must have.
-for f in LICENSE README.md SECURITY.md CONTRIBUTING.md CODE_OF_CONDUCT.md Package.swift; do
+for f in LICENSE README.md .github/SECURITY.md .github/CONTRIBUTING.md .github/CODE_OF_CONDUCT.md Package.swift; do
   [ -e "$STAGING/$f" ] || fail "$f is missing from the export"
 done
 

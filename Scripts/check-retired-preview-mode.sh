@@ -35,7 +35,7 @@ check_absent "public website" \
 check_absent "public product fixture" Resources/DemoFixtures
 
 check_absent "current product documentation" \
-  README.md PRODUCT.md CONTRIBUTING.md \
+  README.md docs/PRODUCT.md .github/CONTRIBUTING.md \
   Documentation/APPLICATIONS.md Documentation/ARCHITECTURE.md \
   Documentation/ARCHITECTURE_OVERVIEW.md Documentation/CLEANUP_GUIDE.md \
   Documentation/FEATURE_INVENTORY.md Documentation/FEATURE_MATRIX.md \

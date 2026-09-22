@@ -42,7 +42,7 @@ then follow the links for the area you need.
 ## When something goes wrong
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
 - [FAQ.md](FAQ.md)
-- [SECURITY.md](../SECURITY.md) — reporting a vulnerability.
+- [SECURITY.md](../.github/SECURITY.md) — reporting a vulnerability.
 - Bug reports: `.github/ISSUE_TEMPLATE/`.
 
 ## Scope
