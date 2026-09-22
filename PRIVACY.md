@@ -54,6 +54,6 @@ detailed model.
 
 ## Contact
 
-Security-relevant privacy concerns: see [SECURITY.md](SECURITY.md), which
+Security-relevant privacy concerns: see [SECURITY.md](.github/SECURITY.md), which
 routes them to [GitHub private vulnerability
 reporting](https://github.com/ahmetbsbnr/coretend/security/advisories/new).

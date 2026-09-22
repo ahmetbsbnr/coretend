@@ -26,7 +26,7 @@ What else was considered, and why this approach.
 Does this touch `SafetyCore`, `FileRules` allowlists, `Quarantine`, or any
 code path that can delete/move a user file? If yes, this RFC requires
 explicit maintainer sign-off on the safety implications before
-implementation — see [GOVERNANCE.md](../GOVERNANCE.md).
+implementation — see [GOVERNANCE.md](../.github/GOVERNANCE.md).
 
 ## Testing plan
 What new tests prove this works and stays safe — see

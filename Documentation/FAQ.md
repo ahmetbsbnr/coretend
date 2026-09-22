@@ -27,7 +27,7 @@ No network calls for app data. Everything stays in
 [DATA_LOCATIONS.md](DATA_LOCATIONS.md).
 
 **How do I report a bug or a vulnerability?**
-Bugs: `.github/ISSUE_TEMPLATE/`. Vulnerabilities: [SECURITY.md](../SECURITY.md)
+Bugs: `.github/ISSUE_TEMPLATE/`. Vulnerabilities: [SECURITY.md](../.github/SECURITY.md)
 (do not file a public issue for security reports).
 
 **How do I completely remove it and its data?**

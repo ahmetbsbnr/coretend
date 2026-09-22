@@ -12,12 +12,25 @@ fail=0
 echo "CoreTend — repository doctor"
 echo "=================================="
 
-echo "-- Required top-level policy files --"
-for f in LICENSE NOTICE COPYRIGHT README.md SECURITY.md CODE_OF_CONDUCT.md CONTRIBUTING.md; do
+echo "-- Required policy files, where GitHub looks for them --"
+# LICENSE, NOTICE, COPYRIGHT and README must be at the root: GitHub's licence
+# detection and the repository front page read them there and nowhere else.
+# The community health files are recognised in the root OR in .github/, and
+# they live in .github/ so a visitor's first screen is the product, not the
+# paperwork. The requirement is that they exist where GitHub finds them.
+for f in LICENSE NOTICE COPYRIGHT README.md; do
   if [ -f "$f" ]; then
     echo "  OK: $f"
   else
     echo "  FAIL: missing $f"
+    fail=1
+  fi
+done
+for f in SECURITY.md CODE_OF_CONDUCT.md CONTRIBUTING.md; do
+  if [ -f "$f" ] || [ -f ".github/$f" ]; then
+    echo "  OK: $f"
+  else
+    echo "  FAIL: missing $f (root or .github/)"
     fail=1
   fi
 done
@@ -92,6 +105,14 @@ if Scripts/check-retired-preview-mode.sh; then
   :
 else
   echo "  FAIL: retired preview mode or an unconfirmed destructive surface was found"
+  fail=1
+fi
+
+echo "-- Homebrew cask: version and checksum still match the published release --"
+if python3 Scripts/generate-homebrew-cask.py --check; then
+  :
+else
+  echo "  FAIL: the cask would point Homebrew at a checksum that is no longer true"
   fail=1
 fi
 

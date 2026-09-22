@@ -32,5 +32,5 @@ therefore has no restore or quarantine path.
 1. Check the Trash first — most removed files are still there.
 2. See [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 3. If you believe CoreTend removed something it should not have,
-   report it per [SECURITY.md](../SECURITY.md) or open a bug report (see
+   report it per [SECURITY.md](../.github/SECURITY.md) or open a bug report (see
    `.github/ISSUE_TEMPLATE/`).
