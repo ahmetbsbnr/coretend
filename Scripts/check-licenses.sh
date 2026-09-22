@@ -14,7 +14,7 @@ fail=0
 
 echo "CoreTend — check-licenses"
 
-for f in LICENSE NOTICE COPYRIGHT THIRD_PARTY_NOTICES.md; do
+for f in LICENSE NOTICE COPYRIGHT docs/THIRD_PARTY_NOTICES.md; do
   if [ -f "$f" ]; then
     echo "  OK: $f present"
   else

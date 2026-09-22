@@ -46,7 +46,7 @@ done
 # Licence texts ship inside the bundle, not loose on the DMG volume root. They
 # have to be added before signing, or the copy breaks the sealed CodeResources
 # and macOS reports the app as damaged.
-cp LICENSE NOTICE THIRD_PARTY_NOTICES.md "$APP/Contents/Resources/"
+cp LICENSE NOTICE docs/THIRD_PARTY_NOTICES.md "$APP/Contents/Resources/"
 # Swift's release linker keeps N_OSO/debug records that name every source file
 # with its absolute checkout path. They are not needed to run the distributed
 # executable and would disclose the build account inside the shipped binary.

@@ -16,7 +16,7 @@ APP="build/CoreTend.app"
 mkdir -p Release
 STAGE=$(mktemp -d)
 cp -R "$APP" "$STAGE/"
-cp LICENSE NOTICE THIRD_PARTY_NOTICES.md "$STAGE/"
+cp LICENSE NOTICE docs/THIRD_PARTY_NOTICES.md "$STAGE/"
 
 rm -f "Release/$ZIP_NAME"
 REPO_ROOT="$(pwd)"
