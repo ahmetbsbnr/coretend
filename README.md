@@ -195,7 +195,9 @@ homebrew/         the cask, generated from the published release
 Vulnerability reports go through the
 [security policy](https://github.com/ahmetbsbnr/coretend/security/policy) —
 please do not open a public issue. The policy is
-[`.github/SECURITY.md`](.github/SECURITY.md).
+[`.github/SECURITY.md`](.github/SECURITY.md); what CoreTend is exposed to, and
+what it deliberately does not defend against, is in
+[`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md).
 
 Two safety defects were found and fixed in 1.0.2, both present since the first
 public source commit, both found by auditing the 2.0 rebuild rather than by a
