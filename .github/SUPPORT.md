@@ -2,9 +2,9 @@
 
 ## Using CoreTend
 
-Start with [Documentation/USER_GUIDE.md](Documentation/USER_GUIDE.md), then
-[Documentation/TROUBLESHOOTING.md](Documentation/TROUBLESHOOTING.md) and
-[Documentation/FAQ.md](Documentation/FAQ.md).
+Start with [Documentation/USER_GUIDE.md](../Documentation/USER_GUIDE.md), then
+[Documentation/TROUBLESHOOTING.md](../Documentation/TROUBLESHOOTING.md) and
+[Documentation/FAQ.md](../Documentation/FAQ.md).
 
 ## Reporting a bug
 
@@ -21,12 +21,12 @@ Do **not** open a public issue. Follow [SECURITY.md](SECURITY.md) instead.
 ## Asking a question / requesting a feature
 
 Use the feature-request issue template, or check
-[Documentation/GOOD_FIRST_ISSUES.md](Documentation/GOOD_FIRST_ISSUES.md)
+[Documentation/GOOD_FIRST_ISSUES.md](../Documentation/GOOD_FIRST_ISSUES.md)
 if you're looking for something to work on.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and [DEVELOPMENT.md](DEVELOPMENT.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [DEVELOPMENT.md](../DEVELOPMENT.md).
 
 ## What support does not include
 
