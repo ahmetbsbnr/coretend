@@ -47,6 +47,7 @@ const ROUTE_MATRIX = VIEWPORTS.flatMap(viewport => [
 const INFORMATION_ROUTES = [
   ['privacy', '/privacy', '/fr/privacy'],
   ['support', '/support', '/fr/support'],
+  ['compare', '/compare', '/fr/compare'],
   ['legal', '/legal', '/fr/legal'],
   ['licenses', '/licenses', '/fr/licenses'],
 ]
