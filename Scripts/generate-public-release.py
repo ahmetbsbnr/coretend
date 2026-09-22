@@ -104,6 +104,21 @@ PINNED_RELEASE_EVIDENCE: Mapping[str, Mapping[str, Mapping[str, Any]]] = {
             "size": 3_014_331,
         },
     },
+    # Taken from the release GitHub is serving, not from a local build. Both
+    # digests match the published SHA256SUMS, whose Minisign signature verifies
+    # against F8473FB09E1DB730, and `Scripts/verify-published-artifacts.sh
+    # 1.0.2` passed every check on the downloaded bytes — signature, staple,
+    # Gatekeeper, bundle identity, and the app actually starting.
+    "1.0.2": {
+        "dmg": {
+            "sha256": "aa9495d55a923409747307cd51779cb0be75db80e39f6682763f03589ba13660",
+            "size": 4_957_458,
+        },
+        "zip": {
+            "sha256": "36b6ef3a50f1834e61cdb9b4d0dbc4a158a5d4168b10bfc113d0e46335214fa1",
+            "size": 3_025_291,
+        },
+    },
 }
 
 ALLOWED_SOURCE_KEYS = {
