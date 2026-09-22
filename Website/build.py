@@ -497,6 +497,7 @@ def shell(
     support = "Assistance" if is_fr else "Support"
     legal = "Mentions légales" if is_fr else "Legal"
     licenses = "Licences" if is_fr else "Licenses"
+    compare = "Comparatif" if is_fr else "Compare"
     source = "Code source" if is_fr else "Source"
     _signed = bool(release.get("signed")) and bool(release.get("notarized"))
     if _signed:
@@ -549,6 +550,7 @@ def shell(
     <ul class="foot-links">
       <li><a href="{route_for('privacy', language)}">{privacy}</a></li>
       <li><a href="{route_for('support', language)}">{support}</a></li>
+      <li><a href="{route_for('compare', language)}">{compare}</a></li>
       <li><a href="{route_for('legal', language)}">{legal}</a></li>
       <li><a href="{route_for('licenses', language)}">{licenses}</a></li>
       <li><a href="{REPOSITORY}">{source}</a></li>
@@ -724,6 +726,113 @@ def licenses_content(release: dict, language: str) -> str:
     return hero + f"""<section class="info-section"><div class="wrap"><div class="section-head"><p class="section-index">01 / {'Registre' if language == 'fr' else 'Register'}</p><div><h2>{'Inventaire public vérifiable.' if language == 'fr' else 'A verifiable public inventory.'}</h2><p class="section-intro">{build_note}</p></div></div><div class="license-toolbar"><label class="field-label" for="license-filter">{label}<input id="license-filter" type="search" placeholder="{placeholder}" autocomplete="off"></label><p id="license-result" role="status">{result}</p></div><div class="license-list">{items}</div></div></section>"""
 
 
+COMPARISON_COLUMNS = ("CoreTend", "CleanMyMac", "Pearcleaner", "PureMac", "OnyX")
+
+# Every cell is either sourced or deliberately empty. An empty cell is not a
+# "no" — it means we did not verify it, and guessing about somebody else's
+# software is the one habit this project refuses everywhere else. The rows are
+# the same ones the README carries, so the two cannot drift into saying
+# different things about the same competitors.
+COMPARISON_ROWS_EN = (
+    ("Licence", ("Apache-2.0", "proprietary", "Apache-2.0 + Commons Clause¹", "MIT", "proprietary")),
+    ("Source published", ("yes", "no", "yes", "yes", "no")),
+    ("Price", ("free", "paid", "free", "free", "free")),
+    ("Removal", ("Trash only, always", "", "", "Trash in some paths, permanent in others²", "")),
+    ("Unattended deletion", ("never offered", "", "", "scheduled auto-clean²", "")),
+    ("Runtime dependencies", ("zero³", "", "", "", "")),
+    ("Network calls", ("one, user-initiated⁴", "", "", "", "")),
+)
+COMPARISON_ROWS_FR = (
+    ("Licence", ("Apache-2.0", "propriétaire", "Apache-2.0 + Commons Clause¹", "MIT", "propriétaire")),
+    ("Code publié", ("oui", "non", "oui", "oui", "non")),
+    ("Prix", ("gratuit", "payant", "gratuit", "gratuit", "gratuit")),
+    ("Suppression", ("corbeille uniquement, toujours", "", "", "corbeille pour certains chemins, définitive pour d’autres²", "")),
+    ("Suppression sans surveillance", ("jamais proposée", "", "", "nettoyage automatique planifié²", "")),
+    ("Dépendances à l’exécution", ("aucune³", "", "", "", "")),
+    ("Requêtes réseau", ("une, lancée par vous⁴", "", "", "", "")),
+)
+
+
+def comparison_table(language: str) -> str:
+    is_fr = language == "fr"
+    rows = COMPARISON_ROWS_FR if is_fr else COMPARISON_ROWS_EN
+    caption = (
+        "CoreTend face à quatre autres outils d’entretien pour macOS. Une cellule vide signifie « non vérifié », pas « non »."
+        if is_fr else
+        "CoreTend against four other macOS care tools. An empty cell means “not verified”, not “no”."
+    )
+    unverified = "non vérifié" if is_fr else "not verified"
+    # Assembled by concatenation rather than f-strings: the site builds with
+    # the system python, which is 3.9 and rejects a backslash inside an
+    # f-string expression — and every cell here carries quoted attributes.
+    head_cells = []
+    for index, name in enumerate(COMPARISON_COLUMNS):
+        attribute = ' class="cmp-us"' if index == 0 else ""
+        head_cells.append('<th scope="col"' + attribute + ">" + html.escape(name) + "</th>")
+    head = "".join(head_cells)
+    body = []
+    for label, cells in rows:
+        rendered = []
+        for index, cell in enumerate(cells):
+            classes = "cmp-us" if index == 0 else ""
+            column = html.escape(COMPARISON_COLUMNS[index])
+            if cell:
+                value = html.escape(cell)
+            else:
+                classes = (classes + " cmp-unverified").strip()
+                value = '<span aria-label="' + unverified + '">—</span>'
+            attribute = ' class="' + classes + '"' if classes else ""
+            rendered.append("<td" + attribute + ' data-label="' + column + '">' + value + "</td>")
+        body.append('<tr><th scope="row">' + html.escape(label) + "</th>" + "".join(rendered) + "</tr>")
+    return (
+        f'<div class="cmp-scroll"><table class="cmp">'
+        f'<caption>{caption}</caption>'
+        f'<thead><tr><td></td>{head}</tr></thead>'
+        f'<tbody>{"".join(body)}</tbody>'
+        f'</table></div>'
+    )
+
+
+def compare_content(release: dict, language: str) -> str:
+    table = comparison_table(language)
+    if language == "fr":
+        hero = info_hero(
+            "compare", language, "Affirmations vérifiables",
+            "Ce que nous pouvons prouver — et ce que nous n’avons pas vérifié.",
+            "Chaque cellule concernant un autre logiciel est sourcée. Celles que nous n’avons pas pu sourcer restent vides, avec la raison écrite.",
+            ["Sources citées", "Cases vides assumées", "Garanties testées"],
+        )
+        nav = [("table", "Le tableau"), ("removal", "La ligne qui compte"),
+               ("gates", "Des tests, pas des adjectifs"), ("method", "Méthode")]
+        sections = f"""<section id="table"><h2>Le tableau</h2>{table}
+<p class="cmp-notes">¹ Source disponible mais non approuvée OSI — son propre <a href="https://github.com/alienator88/Pearcleaner">README</a> parle de « fair-code ».
+² Le <a href="https://github.com/momenbasel/PureMac">README de PureMac</a> l’indique lui-même, ce qui est déjà plus que la moyenne de cette catégorie.
+³ <code>Package.resolved</code> ne contient que <code>swift-testing</code> et <code>swift-syntax</code>, tous deux réservés aux tests.
+⁴ <code>grep -rn URLSession Sources/</code> renvoie exactement un fichier : la vérification de mise à jour.</p></section>
+<section id="removal"><h2>La ligne qui compte</h2><p>La quatrième. CoreTend n’a <strong>aucun chemin de code qui supprime</strong> — ni pour les caches, ni pour les doublons, ni sous une invite administrateur, ni depuis une planification, ni depuis une ligne de commande. Tout élément éligible va à la corbeille du Mac et y reste récupérable.</p><p>C’est aussi pourquoi l’application n’annonce jamais un total « libéré » : elle n’est pas informée du vidage de la corbeille, donc elle ne peut pas honnêtement prétendre que la place est revenue.</p></section>
+<section id="gates"><h2>Des tests, pas des adjectifs</h2><p>Ces affirmations ne sont pas des promesses dans un README. Chacune fait échouer la compilation quand elle cesse d’être vraie :</p><ul class="cmp-gates"><li><strong>Tout est récupérable</strong> — <code>Reversible means the Trash can give it back</code></li><li><strong>Aucune quantité inventée</strong> — <code>Copy does not claim what the app cannot know</code></li><li><strong>Chaque chemin destructif est validé</strong> — <code>PathValidator</code>, <code>SafetyCenter</code></li><li><strong>Un refus est enregistré comme un refus</strong> — <code>Refusals and failures stay distinct</code></li><li><strong>Le registre ne peut pas être silencieusement incomplet</strong> — <code>Audit log durability</code></li></ul><p>Elles s’exécutent avec <code>bash Scripts/test.sh</code>, depuis le <a href="{REPOSITORY}">dépôt public</a>.</p></section>
+<section id="method"><h2>Méthode</h2><p>Les licences viennent de l’API GitHub ou du site de l’éditeur. Le comportement de suppression de PureMac vient de son propre README. Les cellules vides sont celles que nous n’avons pas vérifiées : nous préférons une lacune visible à une supposition sur le logiciel d’autrui.</p><p>Une correction est la bienvenue — le tableau vit dans le dépôt public, et une demande de modification est le moyen le plus court de le corriger.</p></section>"""
+    else:
+        hero = info_hero(
+            "compare", language, "Checkable claims",
+            "What we can prove — and what we did not check.",
+            "Every cell about somebody else’s software is sourced. The ones we could not source are left empty, with the reason said out loud.",
+            ["Sources cited", "Blanks owned", "Guarantees tested"],
+        )
+        nav = [("table", "The table"), ("removal", "The row that matters"),
+               ("gates", "Gates, not adjectives"), ("method", "Method")]
+        sections = f"""<section id="table"><h2>The table</h2>{table}
+<p class="cmp-notes">¹ Source-available, not OSI-approved — its own <a href="https://github.com/alienator88/Pearcleaner">README</a> calls it “fair-code”.
+² <a href="https://github.com/momenbasel/PureMac">PureMac’s README</a> states this itself, which is more than most of this category does.
+³ <code>Package.resolved</code> holds <code>swift-testing</code> and <code>swift-syntax</code>, both test-only.
+⁴ <code>grep -rn URLSession Sources/</code> returns exactly one file: the update check.</p></section>
+<section id="removal"><h2>The row that matters</h2><p>The fourth one. CoreTend has <strong>no code path that deletes</strong> — not for caches, not for duplicates, not under an administrator prompt, not from a schedule, not from a CLI. Everything eligible goes to the macOS Trash and stays recoverable there.</p><p>It is also why the app never reports a “freed” total: it is never told when the Trash is emptied, so it cannot honestly claim the space came back.</p></section>
+<section id="gates"><h2>Gates, not adjectives</h2><p>These are not promises in a README. Each one fails the build when it stops being true:</p><ul class="cmp-gates"><li><strong>Everything is recoverable</strong> — <code>Reversible means the Trash can give it back</code></li><li><strong>No invented quantities</strong> — <code>Copy does not claim what the app cannot know</code></li><li><strong>Every destructive path is validated</strong> — <code>PathValidator</code>, <code>SafetyCenter</code></li><li><strong>A refusal is recorded as a refusal</strong> — <code>Refusals and failures stay distinct</code></li><li><strong>The record cannot go silently short</strong> — <code>Audit log durability</code></li></ul><p>Run them with <code>bash Scripts/test.sh</code>, from the <a href="{REPOSITORY}">public repository</a>.</p></section>
+<section id="method"><h2>Method</h2><p>Licences come from the GitHub API or the vendor's own site. PureMac's removal behaviour comes from its own README. The empty cells are the ones we did not verify: a visible gap beats a guess about somebody else's software.</p><p>Corrections are welcome — the table lives in the public repository, and a pull request is the shortest way to fix it.</p></section>"""
+    links = "".join(f'<li><a href="#{anchor}">{label}</a></li>' for anchor, label in nav)
+    return hero + f"""<section class="info-section"><div class="wrap doc-layout"><nav class="doc-nav" aria-label="{'Navigation du document' if language == 'fr' else 'Document navigation'}"><p>{'Dans ce document' if language == 'fr' else 'In this document'}</p><ol>{links}</ol></nav><article class="legal-doc">{sections}</article></div></section>"""
+
+
 def information_pages(release: dict) -> dict[str, str]:
     pages: dict[str, str] = {}
     definitions = {
@@ -738,6 +847,10 @@ def information_pages(release: dict) -> dict[str, str]:
         "legal": {
             "en": ("Legal notice — CoreTend", "Public project, distribution and hosting notice for CoreTend.", legal_content),
             "fr": ("Mentions légales — CoreTend", "Informations publiques sur le projet, la distribution et l’hébergement de CoreTend.", legal_content),
+        },
+        "compare": {
+            "en": ("How CoreTend compares — CoreTend", "CoreTend against CleanMyMac, Pearcleaner, PureMac and OnyX, with every claim checkable.", compare_content),
+            "fr": ("Comparatif — CoreTend", "CoreTend face à CleanMyMac, Pearcleaner, PureMac et OnyX, chaque affirmation vérifiable.", compare_content),
         },
         "licenses": {
             "en": ("Licenses — CoreTend", "Exact CoreTend code and website attribution inventory.", licenses_content),
@@ -848,10 +961,12 @@ def write_documents(stage: Path, release: dict) -> None:
         "/fr",
         "/privacy",
         "/support",
+        "/compare",
         "/legal",
         "/licenses",
         "/fr/privacy",
         "/fr/support",
+        "/fr/compare",
         "/fr/legal",
         "/fr/licenses",
     )

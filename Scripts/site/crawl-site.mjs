@@ -8,8 +8,8 @@ import { buildSite, launchChromium, loadPlaywright, startSite } from './site-fix
 
 export const CANONICAL_ROUTES = [
   '/', '/en', '/fr',
-  '/privacy', '/support', '/legal', '/licenses',
-  '/fr/privacy', '/fr/support', '/fr/legal', '/fr/licenses',
+  '/privacy', '/support', '/compare', '/legal', '/licenses',
+  '/fr/privacy', '/fr/support', '/fr/compare', '/fr/legal', '/fr/licenses',
 ]
 const TEXT_EXTENSIONS = new Set(['.css', '.html', '.js', '.json', '.svg', '.txt', '.vtt', '.webmanifest', '.xml'])
 const TECHNICAL_URL = /(?:\.html(?:[?#/"'\s<)]|$)|\/(?:site|Website|public|dist|out)(?:\/|$)|localhost|127\.0\.0\.1|\/Users\/(?!demo(?:\/|\b)))/i
