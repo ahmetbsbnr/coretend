@@ -27,6 +27,7 @@ current state.
 | [`ENGINEERING_RULES.md`](ENGINEERING_RULES.md) | how a decision is made: what evidence a claim costs, why a check is made to fail before it is trusted, what is never decided alone |
 | [`PROJECT_METHOD.md`](PROJECT_METHOD.md) | how a task moves from noticed to proven |
 | [`CORETEND_V2_PROGRAM.md`](CORETEND_V2_PROGRAM.md) | the development programme for 2.0: where the product stands, the field it ships into, MoSCoW, the visual programme, the App Store track, sequencing |
+| [`THREAT_MODEL.md`](THREAT_MODEL.md) | what CoreTend is exposed to, what it defends against, and what it does not |
 | [`CORETEND_V2_AUDIT_AND_PLAN.md`](CORETEND_V2_AUDIT_AND_PLAN.md) | the security and quality audit, and what executing it reversed |
 | [`PRODUCT.md`](PRODUCT.md) | what the product is and who it is for |
 | [`PRODUCT_VOCABULARY.md`](PRODUCT_VOCABULARY.md) | one name per thing, in both languages |
