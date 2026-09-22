@@ -10,117 +10,216 @@
 <p align="center"><strong>Know what your Mac is holding. Take the space back.</strong></p>
 
 <p align="center">
-  Local, transparent and reversible care for macOS. CoreTend reads supported
-  locations on-device and explains every finding. Nothing leaves your Mac;
-  sensitive actions need a reviewed selection and explicit confirmation before
-  eligible items go to the Trash.
+  Local, transparent and reversible care for macOS. CoreTend reads what your Mac
+  already records, explains every finding, and never deletes — eligible items go
+  to the Trash after a reviewed selection and an explicit confirmation.
 </p>
 
 <p align="center">
   <a href="https://github.com/ahmetbsbnr/coretend/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/ahmetbsbnr/coretend?include_prereleases&sort=semver&color=0B6E6C&label=release"></a>
   <img alt="Platform" src="https://img.shields.io/badge/macOS-14%2B%20%C2%B7%20Apple%20silicon-1B1E22">
-  <img alt="Signed &amp; notarized" src="https://img.shields.io/badge/Developer%20ID-signed%20%2B%20notarized-0B6E6C">
+  <img alt="Signed and notarized" src="https://img.shields.io/badge/Developer%20ID-signed%20%2B%20notarized-0B6E6C">
+  <img alt="Runtime dependencies" src="https://img.shields.io/badge/runtime%20dependencies-zero-0B6E6C">
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache--2.0-1B1E22"></a>
 </p>
 
 <p align="center">
-  <img src="Website/assets/app/smart-care.png" width="820" alt="CoreTend dashboard">
+  <img src="Website/assets/app/smart-care.png" width="820" alt="CoreTend overview">
 </p>
 
 <p align="center">
   <a href="https://coretend.ahmetbsbnr.com">Product site</a> ·
-  <a href="https://ahmetbsbnr.com/en/projets/coretend/">Portfolio case study</a> ·
-  <a href="Documentation/README.md">Documentation</a>
+  <a href="docs/PROJECT_METHOD.md">How this project is run</a> ·
+  <a href="docs/ENGINEERING_RULES.md">Engineering rules</a> ·
+  <a href="docs/README.md">Docs index</a>
 </p>
 
 ---
 
 ## What it does
 
+Eight destinations, each one a job rather than a data source.
+
 | | |
 |---|---|
-| **Storage** | Scans caches, logs, crash reports and build data, then shows every candidate before anything can move to the Trash. |
-| **Space Lens** | A radial size map — the largest folder at the centre, siblings orbiting it, bubble area proportional to bytes. Descend, search, reveal in Finder. |
+| **Overview** | How the Mac is, what changed, what to do next. No score, no gauge, no invented total. |
+| **Record** | Every scan, every move, every refusal — readable backwards. A refusal is a first-class entry, never a footnote. |
+| **Cleanup** | Caches, logs and browser caches. Every candidate is shown, with its evidence, before anything can move. |
+| **Explore** | A treemap where a folder's area *is* its bytes. Descend, search, inspect, reveal in Finder. Plus largest-and-oldest, similar images and cloud footprint. |
 | **Duplicates** | Exact-content matches by staged hashing. One copy per group is always kept; the suggestion is editable. |
-| **Applications** | Separates apps from their caches, agents and personal documents so an uninstall is complete. |
-| **Integrity** | Native macOS signals only — download provenance, code-signature tiers, and what launches at login. Not malware detection. |
-| **Activity** | A local log of every scan and every reversible action. |
-
-A secondary **More** group holds **Large & Old files**, **Cloud Cleanup**
-(local-vs-cloud storage analysis, never triggers a download) and
-**Performance** (live CPU / memory history, broken-LaunchAgent detection).
+| **Applications** | Apps, the leftovers they abandon, and the updates they declare. |
+| **Integrity** | Only what macOS already recorded: download provenance, code-signature tier, what launches at login. **Not** malware detection, and it says so. |
+| **Performance** | Live CPU and memory over a real time axis, with the history of what past scans found. |
 
 <p align="center">
-  <img src="Website/assets/app/space-lens.png" width="400" alt="Space Lens radial size map">
-  <img src="Website/assets/app/cleanup.png" width="400" alt="Storage scan review">
+  <img src="Website/assets/app/space-lens.png" width="400" alt="Explore treemap">
+  <img src="Website/assets/app/cleanup.png" width="400" alt="Cleanup review">
 </p>
 
 ## Install
 
-The current release is
-[`v1.0.0`](https://github.com/ahmetbsbnr/coretend/releases/tag/v1.0.0), a
-**Developer ID signed, Apple-notarized and stapled** stable build
-(`sourceCommit 0ecddea`).
+```sh
+brew install --cask coretend
+```
 
-1. Download `CoreTend-1.0.0-arm64.dmg` from the
-   [release page](https://github.com/ahmetbsbnr/coretend/releases/tag/v1.0.0),
-   or use the site's [`/download`](https://coretend.ahmetbsbnr.com/download) link.
-2. Optionally verify it:
-   ```sh
-   shasum -a 256 ~/Downloads/CoreTend-1.0.0-arm64.dmg
-   # 0969ea2565b98fc950a589855ebafa2b811474fd1383092c3567e192f404534d
-   ```
-3. Open the DMG and drag **CoreTend** to Applications.
+Or take the DMG from the [latest release](https://github.com/ahmetbsbnr/coretend/releases/latest)
+and check it against the `SHA256SUMS` published beside it:
 
-The notarization ticket is stapled, so the app opens without a Gatekeeper
-prompt. macOS 14+ and Apple silicon (`arm64`) are required. Provenance is
-covered by Minisign + SHA-256 + notarization; there is no
-`actions/attest-build-provenance` attestation for this manually published
-1.0.0 release. Future releases use a dedicated signing runner so Developer ID
-signing, notarization, SLSA attestation, SHA-256, and Minisign all cover the
-same final bytes.
+```sh
+shasum -a 256 ~/Downloads/CoreTend-*-arm64.dmg
+```
+
+Every release is Developer ID signed, notarized by Apple and stapled, so it
+opens without a Gatekeeper prompt, and the checksums are themselves signed with
+[Minisign](https://jedisct1.github.io/minisign/). macOS 14+, Apple silicon.
+
+No version number is written on this page, deliberately. The cask in
+[`homebrew/coretend.rb`](homebrew/coretend.rb) is generated from the published
+release by `Scripts/generate-homebrew-cask.py`, and a gate fails if its checksum
+ever stops matching the DMG — which is a stronger guarantee than a number
+somebody remembered to update.
+
+## What it will not do
+
+The constraints are the product, so they are stated before the features.
+
+- **It never deletes.** Everything goes to the macOS Trash and stays
+  recoverable. It therefore never claims to have "freed" anything — it is not
+  told when the Trash is emptied, and a test fails if such a total reappears.
+- **Nothing leaves the Mac.** No account, no analytics, no telemetry. The one
+  network request is a user-initiated update check for a public manifest, and
+  it downloads nothing.
+- **Zero runtime dependencies.** The only packages in `Package.resolved` are
+  the test framework and its own dependency.
+- **Every destructive path goes through `SafetyCore.PathValidator`** — never a
+  raw `FileManager` call on a user-supplied path.
+
+## How it compares
+
+Only claims that can be checked, with the check named. A blank is not a "no" —
+it means we did not verify it, and we would rather leave a gap than fill it
+with a guess about somebody else's software.
+
+| | **CoreTend** | CleanMyMac | Pearcleaner | PureMac | OnyX |
+|---|:-:|:-:|:-:|:-:|:-:|
+| Licence | **Apache-2.0** | proprietary | Apache-2.0 + Commons Clause¹ | MIT | proprietary |
+| Source published | **yes** | no | yes | yes | no |
+| Price | **free** | paid | free | free | free |
+| Removal | **Trash only, always** | | | Trash in some paths, permanent in others² | |
+| Unattended deletion | **never offered** | | | scheduled auto-clean² | |
+| Runtime dependencies | **zero**³ | | | | |
+| Network calls | **one, user-initiated**⁴ | | | | |
+
+¹ Source-available, not OSI-approved — [its own README](https://github.com/alienator88/Pearcleaner)
+calls it "fair-code". ² [PureMac's README](https://github.com/momenbasel/PureMac)
+states this itself, which is more than most of this category does.
+³ `Package.resolved` holds `swift-testing` and `swift-syntax`, both test-only.
+⁴ `grep -rn URLSession Sources/` returns exactly one file: the update check.
+
+The row that matters is the fourth. CoreTend has no code path that deletes —
+not for caches, not for duplicates, not under an administrator prompt, not from
+a schedule, not from the CLI. Everything eligible goes to the macOS Trash and
+stays recoverable, which is also why the app never reports a "freed" total: it
+is never told when the Trash is emptied, so it cannot honestly claim the space
+came back.
+
+These are not promises in a README. Each one fails the build when it stops
+being true:
+
+| Claim | What fails if it stops holding |
+|---|---|
+| Everything is recoverable | `Reversible means the Trash can give it back` |
+| No invented quantities | `Copy does not claim what the app cannot know` |
+| Every destructive path is validated | `PathValidator`, `SafetyCenter` |
+| A refusal is recorded as a refusal | `Refusals and failures stay distinct` |
+| The record cannot go silently short | `Audit log durability` |
+
+Run them with `bash Scripts/test.sh`.
 
 ## Build and test
 
-Pure SwiftPM — no Xcode project.
+Pure SwiftPM: the package is the build system. There is no Xcode project for
+the app, by decision.
 
 ```sh
-swift build -c release
-bash Scripts/test.sh                    # 340 tests, never raw `swift test`
-python3 Scripts/check-demo-fixtures.py
-python3 Scripts/test-public-release-gate.py
-python3 Website/build.py --output /tmp/coretend-site-dist
+swift build -c release              # must build with 0 warnings
+bash Scripts/test.sh                # the whole suite — never raw `swift test`
+bash Scripts/package-local.sh       # → build/CoreTend.app
+bash Scripts/repository-doctor.sh   # private data, licences, drift, safety gates
 ```
 
-`bash Scripts/package-local.sh` assembles a runnable `build/CoreTend.app` from
-the release binary. The website build is self-contained: fonts, release facts,
-`latest.json` and `SHA256SUMS` are generated from reviewed repository inputs.
+`Scripts/` holds one job per script, and the ones a release goes through —
+`release-preflight.sh`, `sign-and-notarize.sh`, `verify-release-staple.sh`,
+`test-app-launch.sh` — are the same ones CI runs, not a simplified copy.
 
-## Privacy and safety
+## How this project is run
 
-No account, no advertising telemetry, no analytics SDK. Scan data and activity
-stay in the local app store. The only product network request is a
-user-initiated update check for the public `latest.json` manifest. Destructive
-engines route through `SafetyCore.PathValidator`; every removal is a validated
-move to the macOS Trash and stays reversible until the Trash is emptied. See
-[`PRIVACY.md`](PRIVACY.md) and [`SECURITY.md`](SECURITY.md).
+Most of what describes this repository is **generated from the code**, and a
+gate fails when it stops being true. A hand-drawn architecture diagram was
+checked against the source and five of its edges were wrong — so the diagram is
+derived now, not drawn.
 
-## Repository guide
+| | |
+|---|---|
+| [**Project method**](docs/PROJECT_METHOD.md) | How a task moves from noticed to proven: where work comes from, plan before iterating, the commit as the unit, which command runs when. |
+| [**Engineering rules**](docs/ENGINEERING_RULES.md) | How a decision is made: what evidence each claim costs, why a check is made to fail before it is trusted, what is never decided alone. |
+| [**The 2.0 programme**](docs/CORETEND_V2_PROGRAM.md) | Where the product stands, the field it ships into, the MoSCoW breakdown, the visual programme, the App Store track, and the order it happens in. |
+| [**The audit behind it**](docs/CORETEND_V2_AUDIT_AND_PLAN.md) | The security and quality audit, including the findings it reversed after measuring them. |
+| [**Product vocabulary**](docs/PRODUCT_VOCABULARY.md) | One name per thing, in both languages. |
 
-- [`Documentation/README.md`](Documentation/README.md) — maintained index
-- [`CONTRIBUTING.md`](CONTRIBUTING.md) — development and review expectations
-- [`DESIGN.md`](DESIGN.md) · [`DEVELOPMENT.md`](DEVELOPMENT.md) — design system and working rules
-- [`LICENSE`](LICENSE) · [`NOTICE`](NOTICE) · [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)
-- [`SUPPORT.md`](SUPPORT.md) — support route
+The rule underneath all of it: every artifact here is either **decided** or
+**derived**, and the two are never edited the same way. A decided document
+stops being what we want; a derived one stops describing what is. So they get
+opposite guards — review, or a `--check` that fails on drift.
 
-## License
+Development happens on two lines. `main` is the shipping 1.x product; the 2.0
+rebuild lives on `develop/v2` and is **PRE-ALPHA** — not a release candidate,
+not a preview, not ready, and it will not be called any of those until it is.
 
-Source code is Apache-2.0. Documentation and original media retain the terms
-listed in the repository notices.
+## Repository layout
 
-## Project credits
+```
+Sources/          the app and its engines — SafetyCore, ScanCore, FileRules,
+                  Persistence, AppDiscovery, IntegrityCore, SystemMetrics,
+                  DesignSystem, CoreTendApp, and the CoreTendCLI front end
+Tests/            fourteen suites
+Scripts/          one job per script: build, capture, audit, release
+docs/             the decision documents
+Documentation/    research, audits, capture galleries, release evidence
+Website/          the product site, built from reviewed repository inputs
+homebrew/         the cask, generated from the published release
+```
 
-CoreTend was directed, reviewed, and finally validated by Ahmet Basbunar.
-Claude (Anthropic) assisted development under Ahmet's supervision through
-delivery. Product decisions, acceptance, release credentials, and publication
-remained under human control.
+## Security
+
+Vulnerability reports go through the
+[security policy](https://github.com/ahmetbsbnr/coretend/security/policy) —
+please do not open a public issue. The policy is
+[`.github/SECURITY.md`](.github/SECURITY.md).
+
+Two safety defects were found and fixed in 1.0.2, both present since the first
+public source commit, both found by auditing the 2.0 rebuild rather than by a
+report. The [changelog](Documentation/CHANGELOG.md) describes them, including
+how much they actually mattered — which was less than the words "protected root
+bypass" suggest, and saying so is part of the same discipline as fixing them.
+
+## Contributing and support
+
+[Contributing](.github/CONTRIBUTING.md) ·
+[Code of conduct](.github/CODE_OF_CONDUCT.md) ·
+[Support](.github/SUPPORT.md) ·
+[Governance](.github/GOVERNANCE.md) ·
+[Privacy](PRIVACY.md)
+
+## Licence
+
+Source code under [Apache-2.0](LICENSE). Documentation and original media keep
+the terms in [`NOTICE`](NOTICE) and
+[`docs/THIRD_PARTY_NOTICES.md`](docs/THIRD_PARTY_NOTICES.md); full licence
+texts live in [`LICENSES/`](LICENSES) so each file's SPDX header resolves.
+
+## Credits
+
+CoreTend is directed, reviewed and validated by Ahmet Basbunar. Claude
+(Anthropic) assists development under that supervision. Product decisions,
+acceptance, release credentials and publication stay under human control.

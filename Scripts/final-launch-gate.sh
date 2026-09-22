@@ -264,7 +264,7 @@ if [ -f "$ZIP" ]; then
   # the notice travels with the work — so accept either. The unzip -l name
   # column is preceded by spaces at the root and by '/' when nested.
   ZIP_LIST=$(unzip -l "$ZIP" 2>/dev/null)
-  for required in LICENSE NOTICE THIRD_PARTY_NOTICES.md; do
+  for required in LICENSE NOTICE docs/THIRD_PARTY_NOTICES.md; do
     case "$ZIP_LIST" in
       *" ${required}"$'\n'*|*" ${required}"|*"/${required}"$'\n'*|*"/${required}") PASS "ZIP contains $required" ;;
       *) FAIL "ZIP is missing $required (Apache-2.0 §4 requires NOTICE to travel with the work)" ;;
@@ -365,7 +365,7 @@ run_gate "no unexplained pre-rename references" bash Scripts/check-legacy-brand-
 run_gate "website integrity and accessibility floor" bash Scripts/check-website.sh
 run_gate "internal documentation links resolve" /usr/bin/python3 Scripts/check-markdown-links.py
 
-for f in LICENSE NOTICE COPYRIGHT THIRD_PARTY_NOTICES.md TRADEMARKS.md SECURITY.md PRIVACY.md; do
+for f in LICENSE NOTICE COPYRIGHT docs/THIRD_PARTY_NOTICES.md docs/TRADEMARKS.md .github/SECURITY.md PRIVACY.md; do
   [ -f "$f" ] && PASS "$f present" || FAIL "$f missing"
 done
 

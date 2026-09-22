@@ -6,10 +6,10 @@ claims.
 
 ## Product
 
-- [Product brief](../PRODUCT.md)
+- [Product brief](../docs/PRODUCT.md)
 - [Feature matrix](FEATURE_MATRIX.md)
 - [Safety model](SAFETY_MODEL.md)
-- [Support](../SUPPORT.md)
+- [Support](../.github/SUPPORT.md)
 
 ## Engineering
 
@@ -28,7 +28,7 @@ claims.
 ## Security and privacy
 
 - [Privacy](../PRIVACY.md)
-- [Security policy](../SECURITY.md)
+- [Security policy](../.github/SECURITY.md)
 - [Threat model](THREAT_MODEL.md)
 - [Full Disk Access](FULL_DISK_ACCESS.md)
 - [Integrity limitations](PROTECTION_LIMITATIONS.md)
@@ -45,7 +45,7 @@ claims.
 - [Build and install](BUILD_AND_INSTALL.md)
 - [Release installation](INSTALL_UNSIGNED.md)
 - [App Store feasibility](Release/APP_STORE_FEASIBILITY.md)
-- [Third-party notices](../THIRD_PARTY_NOTICES.md)
+- [Third-party notices](../docs/THIRD_PARTY_NOTICES.md)
 
 ## Audits and archive
 

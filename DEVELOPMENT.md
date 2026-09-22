@@ -1,6 +1,6 @@
 # Development
 
-Entry point for contributors. See [CONTRIBUTING.md](CONTRIBUTING.md) for
+Entry point for contributors. See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for
 process (DCO, PR flow); this file is the technical how-to.
 
 ## Prerequisites
