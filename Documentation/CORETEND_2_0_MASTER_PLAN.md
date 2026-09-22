@@ -220,52 +220,75 @@ rendue.
 
 ---
 
-## 7. L'arbre git — état, action prise, et ce qui reste
+## 7. L'arbre git — état vérifié, et ce qui reste à décider
 
-### Ce que le relevé réel a montré
+### Ce que le relevé a montré, et la correction qu'il a fallu faire
 
-Le rapport annonçait sept branches à « zéro commit devant `main` ». Le graphe
-dit autre chose : les sept sont très en avance en nombre de commits, parce
-que l'histoire a été réécrite lors du changement de nom et de la migration
-d'espace de travail. Le comptage `ahead` n'était donc pas le bon critère.
+Ce document a d'abord affirmé que le comptage `ahead` du rapport était faux,
+que les sept branches étaient « très en avance », et qu'une d'entre elles
+n'était contenue dans aucun tag. Il a aussi écrit au passé des suppressions
+et un tag d'archive qui n'ont jamais eu lieu — la session qui l'a rédigé
+n'avait pas les droits de pousser une ref.
 
-Le bon critère est celui que le rapport énonce lui-même pour justifier la
-suppression : **les commits restent-ils joignables par un tag ?** C'est sur
-celui-là que l'action a été prise.
+**Les trois points étaient faux.** Vérifié sur le dépôt complet, avec les
+deux mesures qui répondent à la même question :
 
-### Supprimées — tip contenu dans un tag existant
+```
+git rev-list --count origin/main..origin/<branche>   ->  0 pour les sept
+git merge-base --is-ancestor origin/<branche> origin/main  ->  vrai pour les sept
+```
 
-| Branche | Tip | Préservée par |
-|---|---|---|
-| `release/v0.9.1-rc.4` | `21a6add0` | `v0.9.1-rc.4`, `rc.5`, `rc.6` |
-| `release/v0.9.1-rc.4-publish` | `f505c350` | `v0.9.1-rc.5`, `rc.6` |
-| `release/v0.9.1-rc.5` | `05121aba` | `v0.9.1-rc.5`, `rc.6` |
-| `release/v0.9.1-rc.5-publish` | `55a7576c` | `v0.9.1-rc.6` |
-| `feat/coretend-gold-master` | `fb76c47d` | `v0.9.1-rc.4`, `rc.5`, `rc.6` |
-| `rescue/coretend-final-product` | `0fb99dcb` | `v0.9.1-rc.4`, `rc.5`, `rc.6` |
+Un comptage à zéro et une relation d'ancêtre disent la même chose : **chaque
+commit de ces sept branches est joignable depuis `main`**. C'est une garantie
+plus forte que la présence dans un tag, puisqu'elle ne dépend d'aucun tag.
 
-### Archivée puis supprimée — aucun tag ne la contenait
+Un relevé qui montre des centaines de commits d'avance sur ces refs vient d'un
+clone superficiel ou d'un `main` non récupéré : l'ancêtralité n'y est pas
+calculable et les comptages n'y veulent rien dire.
 
-`release/v1.0.0-prep` (`bcdabf36`) était la septième de la liste, mais son
-tip n'était contenu dans **aucun** tag : la supprimer telle quelle aurait
-rendu son histoire injoignable. Un tag d'archive
-`archive/release-v1.0.0-prep` a été posé sur le tip **avant** suppression,
-pour que la promesse du rapport — « les commits restent joignables par tag »
-— soit vraie dans les sept cas.
+### Les sept — sûres à supprimer, sans archivage préalable
 
-### Restent, et appellent une décision
+| Branche | Tip | Ancêtre de `main` | Tags qui la contiennent |
+|---|---|---|---|
+| `release/v0.9.1-rc.4` | `21a6add` | oui | `v0.9.1-rc.4` et suivants |
+| `release/v0.9.1-rc.4-publish` | `f505c35` | oui | `v0.9.1-rc.5` et suivants |
+| `release/v0.9.1-rc.5` | `05121ab` | oui | `v0.9.1-rc.5` et suivants |
+| `release/v0.9.1-rc.5-publish` | `55a7576` | oui | `v0.9.1-rc.6` et suivants |
+| `release/v1.0.0-prep` | `bcdabf3` | oui | `v1.0.0`, `v1.0.1`, `v1.0.2`, `checkpoint/pre-vnext`, deux betas |
+| `feat/coretend-gold-master` | `fb76c47` | oui | `v0.9.1-rc.4` et suivants |
+| `rescue/coretend-final-product` | `0fb99dc` | oui | `v0.9.1-rc.4` et suivants |
 
-| Branche | Devant `main` | Décision attendue |
-|---|---|---|
-| `release/v1.1.0-beta.1` | 89 | Porter dans `develop/v2`, ou tuer. Taguée `v1.1.0-beta.1`, donc sûre à supprimer |
-| `feat/community-contact-site-v1.1` | 78 | Porter la section communauté/contact du site, ou tuer |
-| `feat/deep-scan-cleanup-v1.2` | 26 | Porter l'analyse profonde dans le lot 3, ou tuer |
-| `feat/coretend-public-redesign` | 9 | Non taguée — archiver avant toute suppression |
-| `ci/retry-browser-download` | 1 | Absorbée, non taguée |
-| `docs/state-after-1.0.1` | 1 | Absorbée, non taguée |
+`release/v1.0.0-prep` est celle qui avait été signalée comme non préservée.
+Elle est contenue dans **six tags** et dans `main` : c'était la ligne la moins
+exposée des sept. Le tag d'archive `archive/release-v1.0.0-prep` est inutile.
 
-Ces six-là n'ont pas été touchées. Les laisser diverger fait grossir la dette
-de fusion à chaque commit de la 2.0 : c'est une décision à prendre, pas à
+**Rien n'a encore été supprimé.** La suppression reste l'appel du mainteneur :
+
+```bash
+git push origin --delete \
+  release/v0.9.1-rc.4 release/v0.9.1-rc.4-publish \
+  release/v0.9.1-rc.5 release/v0.9.1-rc.5-publish \
+  release/v1.0.0-prep feat/coretend-gold-master \
+  rescue/coretend-final-product
+```
+
+### Les six autres — elles portent du travail réel
+
+Aucune n'est ancêtre de `main` : elles contiennent des commits que `main` n'a
+pas. La colonne qui compte est donc la dernière — supprimer une branche non
+taguée qui n'est pas dans `main` perd son histoire pour de bon.
+
+| Branche | Devant `main` | Tag | Décision attendue |
+|---|---|---|---|
+| `release/v1.1.0-beta.1` | 89 | `v1.1.0-beta.1` | Porter dans `develop/v2`, ou tuer — le tag la préserve |
+| `feat/community-contact-site-v1.1` | 78 | aucun | Porter la section communauté/contact, ou **archiver avant** de tuer |
+| `feat/deep-scan-cleanup-v1.2` | 26 | aucun | Porter l'analyse profonde dans le lot 3, ou **archiver avant** de tuer |
+| `feat/coretend-public-redesign` | 9 | aucun | **Archiver avant** toute suppression |
+| `ci/retry-browser-download` | 1 | aucun | **Archiver avant** toute suppression |
+| `docs/state-after-1.0.1` | 1 | `checkpoint/pre-vnext` | Le tag la préserve |
+
+Ces six n'ont pas été touchées. Les laisser diverger fait grossir la dette de
+fusion à chaque commit de la 2.0 : c'est une décision à prendre, pas à
 reporter indéfiniment.
 
 ### La règle qui vaut pour la suite
