@@ -706,7 +706,7 @@ def licenses_content(release: dict, language: str) -> str:
         hero = info_hero("licenses", language, "Inventaire", "Chaque attribution reliée à sa source.", "L’application exécutable ne livre aucune bibliothèque tierce. Le site auto-héberge deux familles de caractères sous OFL-1.1.", ["Code Apache-2.0", "2 polices OFL-1.1", "Aucun moteur antivirus"])
         label, placeholder, result = "Filtrer l’inventaire", "Nom, licence ou usage", "3 licences"
         entries = [
-            ("CoreTend", "Apache-2.0 · code produit", f"Le code source CoreTend est distribué sous Apache-2.0. Consultez <a href=\"{REPOSITORY}/blob/main/LICENSE\">LICENSE</a>, <a href=\"{REPOSITORY}/blob/main/NOTICE\">NOTICE</a> et <a href=\"{REPOSITORY}/blob/main/THIRD_PARTY_NOTICES.md\">docs/THIRD_PARTY_NOTICES.md</a>."),
+            ("CoreTend", "Apache-2.0 · code produit", f"Le code source CoreTend est distribué sous Apache-2.0. Consultez <a href=\"{REPOSITORY}/blob/main/LICENSE\">LICENSE</a>, <a href=\"{REPOSITORY}/blob/main/NOTICE\">NOTICE</a> et <a href=\"{REPOSITORY}/blob/main/docs/THIRD_PARTY_NOTICES.md\">docs/THIRD_PARTY_NOTICES.md</a>."),
             ("Archivo", "SIL Open Font License 1.1 · site", "Archivo est auto-hébergée par le site. <a href=\"/assets/licenses/Archivo-OFL.txt\">Lire la licence incluse</a>. Source : <a href=\"https://github.com/Omnibus-Type/Archivo\">Omnibus-Type/Archivo</a>."),
             ("IBM Plex Mono", "SIL Open Font License 1.1 · site", "IBM Plex Mono est auto-hébergée par le site. <a href=\"/assets/licenses/IBM-Plex-OFL.txt\">Lire la licence incluse</a>. Source : <a href=\"https://github.com/IBM/plex\">IBM/plex</a>."),
         ]
@@ -715,7 +715,7 @@ def licenses_content(release: dict, language: str) -> str:
         hero = info_hero("licenses", language, "Inventory", "Every attribution linked to its source.", "The executable application ships no third-party runtime library. The website self-hosts two font families under OFL-1.1.", ["Apache-2.0 code", "2 OFL-1.1 fonts", "No antivirus engine"])
         label, placeholder, result = "Filter inventory", "Name, license or use", "3 license entries"
         entries = [
-            ("CoreTend", "Apache-2.0 · product code", f"CoreTend source is distributed under Apache-2.0. Read <a href=\"{REPOSITORY}/blob/main/LICENSE\">LICENSE</a>, <a href=\"{REPOSITORY}/blob/main/NOTICE\">NOTICE</a> and <a href=\"{REPOSITORY}/blob/main/THIRD_PARTY_NOTICES.md\">docs/THIRD_PARTY_NOTICES.md</a>."),
+            ("CoreTend", "Apache-2.0 · product code", f"CoreTend source is distributed under Apache-2.0. Read <a href=\"{REPOSITORY}/blob/main/LICENSE\">LICENSE</a>, <a href=\"{REPOSITORY}/blob/main/NOTICE\">NOTICE</a> and <a href=\"{REPOSITORY}/blob/main/docs/THIRD_PARTY_NOTICES.md\">docs/THIRD_PARTY_NOTICES.md</a>."),
             ("Archivo", "SIL Open Font License 1.1 · website", "Archivo is self-hosted by the website. <a href=\"/assets/licenses/Archivo-OFL.txt\">Read the bundled license</a>. Source: <a href=\"https://github.com/Omnibus-Type/Archivo\">Omnibus-Type/Archivo</a>."),
             ("IBM Plex Mono", "SIL Open Font License 1.1 · website", "IBM Plex Mono is self-hosted by the website. <a href=\"/assets/licenses/IBM-Plex-OFL.txt\">Read the bundled license</a>. Source: <a href=\"https://github.com/IBM/plex\">IBM/plex</a>."),
         ]
