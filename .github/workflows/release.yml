@@ -437,20 +437,36 @@ jobs:
     steps:
       - name: Notify the portfolio repository
         # Uses a fine-grained token limited to repository_dispatch on the
-        # portfolio repo. Absent token = skipped, never failed: a site sync is
-        # not a reason to fail a release that already published correctly.
+        # portfolio repo. A site sync is not a reason to fail a release that
+        # already published correctly, so nothing here fails the job — but
+        # nothing here is allowed to look like success either.
+        #
+        # It used to. `curl -sS` returns 0 for a 401 as happily as for a 204,
+        # so an expired token printed "Portfolio notified" and the case study
+        # quietly stayed on the previous version. And an absent token printed
+        # one line in the middle of a release log, which is the same as not
+        # printing it. Both now surface as warning annotations on the run.
+        #
+        # The portfolio also polls daily, so a failure here delays the sync by
+        # up to a day rather than losing it.
         env:
           SYNC_TOKEN: ${{ secrets.PORTFOLIO_SYNC_TOKEN }}
           VERSION: ${{ needs.build.outputs.version }}
           CHANNEL: ${{ needs.build.outputs.channel }}
         run: |
           if [ -z "${SYNC_TOKEN:-}" ]; then
-            echo "PORTFOLIO_SYNC_TOKEN not configured — skipping portfolio sync."
+            echo "::warning title=Portfolio sync skipped::PORTFOLIO_SYNC_TOKEN is not configured, so the case study will not learn about $VERSION until its daily poll runs."
             exit 0
           fi
-          curl -sS -X POST \
+          status=$(curl -sS -o /tmp/dispatch-body -w '%{http_code}' -X POST \
             -H "Authorization: Bearer $SYNC_TOKEN" \
             -H "Accept: application/vnd.github+json" \
             https://api.github.com/repos/ahmetbsbnr/ahmetbsbnrportfolio/dispatches \
-            -d "{\"event_type\":\"coretend-release\",\"client_payload\":{\"version\":\"$VERSION\",\"channel\":\"$CHANNEL\"}}"
-          echo "Portfolio notified for $VERSION."
+            -d "{\"event_type\":\"coretend-release\",\"client_payload\":{\"version\":\"$VERSION\",\"channel\":\"$CHANNEL\"}}" || echo 000)
+          if [ "$status" = "204" ]; then
+            echo "Portfolio notified for $VERSION (HTTP 204)."
+          else
+            echo "::warning title=Portfolio sync failed::repository_dispatch returned HTTP $status. The case study will catch up on its daily poll."
+            # The body can carry a GitHub error message; it never carries the token.
+            head -c 400 /tmp/dispatch-body || true
+          fi
