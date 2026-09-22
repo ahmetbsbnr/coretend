@@ -2,8 +2,8 @@
 # Configuration/published-release.json. Do not hand-edit: `--check` fails when
 # this no longer matches the published release.
 cask "coretend" do
-  version "1.0.1"
-  sha256 "91026c89313e7b36a546b395ae4ba21dee2542e0e7592c22a0cec8cdb5d86fde"
+  version "1.0.2"
+  sha256 "aa9495d55a923409747307cd51779cb0be75db80e39f6682763f03589ba13660"
 
   url "https://github.com/ahmetbsbnr/coretend/releases/download/v#{version}/CoreTend-#{version}-arm64.dmg",
       verified: "github.com/ahmetbsbnr/coretend/"
