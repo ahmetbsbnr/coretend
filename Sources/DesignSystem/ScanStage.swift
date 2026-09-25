@@ -3,20 +3,17 @@
 
 import SwiftUI
 
-/// A live scanning visualization — the piece the modules were missing.
+/// A live scanning visualization — the instrument dial.
 ///
-/// `MCFragmentView` is a static per-phase Canvas; this is its motion
-/// counterpart, driven by `TimelineView(.animation)`:
+/// A ring of graduated ticks (long ticks every 30°) around the static Core
+/// Bloom mark. While `isScanning`, a lit "read head" travels the dial and
+/// leaves a short decaying trail — one clear, calm signal that work is
+/// happening. When the scan is bounded, a thin progress arc fills inside the
+/// ticks.
 ///
-///  - the three Core Bloom arcs rotate as the resting frame,
-///  - a radar wedge sweeps continuously while `isScanning`,
-///  - ping rings pulse outward from the nucleus,
-///  - motes stream inward on their own phases (files being read),
-///  - a count-up ring fills toward `fraction` when the scan is bounded.
-///
-/// Everything animates transform/opacity only. Under Reduce Motion the sweep,
-/// pings, pulse and motes stop and a single calm ring is shown instead — the
-/// caller still gets a clear "work is happening" signal without movement.
+/// Drawn in a single `Canvas` driven by `TimelineView(.animation)`, so it is
+/// cheap regardless of scan throughput. Under Reduce Motion the head stops and
+/// the ticks glow evenly instead — still an unmistakable "busy" state.
 ///
 /// The numeric readout (paths seen, bytes found) is the caller's job — pass it
 /// as `caption`; this view owns only the geometry.
@@ -29,7 +26,8 @@ public struct MCScanStage<Caption: View>: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private let side: CGFloat = 224
+    private let side: CGFloat = 212
+    private let tickCount = 72
 
     public init(
         isScanning: Bool,
@@ -47,15 +45,17 @@ public struct MCScanStage<Caption: View>: View {
         VStack(spacing: MCSpacing.lg) {
             ZStack {
                 if reduceMotion || !isScanning {
-                    restingFrame(rotation: 0)
-                    staticState
+                    dial(head: nil)
                 } else {
-                    TimelineView(.animation(minimumInterval: 1.0 / 60.0)) { timeline in
-                        motion(t: timeline.date.timeIntervalSinceReferenceDate)
+                    TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { timeline in
+                        let t = timeline.date.timeIntervalSinceReferenceDate
+                        dial(head: t.truncatingRemainder(dividingBy: 2.4) / 2.4)
                     }
                 }
-                progressRing
-                nucleus(scale: 1)
+                progressArc
+                CoreBloomMark(tint: [tint], lineWidthFraction: 0.085)
+                    .frame(width: side * 0.30, height: side * 0.30)
+                    .opacity(isScanning ? 1 : 0.45)
             }
             .frame(width: side, height: side)
             .accessibilityHidden(true)
@@ -64,106 +64,56 @@ public struct MCScanStage<Caption: View>: View {
                 .font(MCFont.metric)
                 .monospacedDigit()
                 .foregroundStyle(.primary)
+                .multilineTextAlignment(.center)
                 .contentTransition(.numericText())
                 .accessibilityElement(children: .combine)
         }
     }
 
-    // MARK: - Static parts
-
-    /// The three Core Bloom arcs, optionally rotated as one — the resting frame.
-    private func restingFrame(rotation: Double) -> some View {
-        ZStack {
-            Circle().strokeBorder(tint.opacity(0.10), lineWidth: 1.5)
-            ForEach(0..<3, id: \.self) { i in
-                let a = MCBloomGeometry.arcs[i]
-                MCArc(start: a.0, span: a.1, radiusFraction: a.2)
-                    .stroke(tint.opacity(0.28 - Double(i) * 0.06),
-                            style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+    /// The graduated ring. `head` is the read-head position (0…1, clockwise
+    /// from 12 o'clock) or `nil` for a static dial.
+    private func dial(head: Double?) -> some View {
+        let tint = tint
+        let scanning = isScanning
+        let count = tickCount
+        return Canvas { context, size in
+            let center = CGPoint(x: size.width / 2, y: size.height / 2)
+            let radius = min(size.width, size.height) / 2
+            for i in 0..<count {
+                let position = Double(i) / Double(count)
+                let angle = position * 2 * Double.pi - Double.pi / 2
+                let long = i % 6 == 0
+                let inner = radius * (long ? 0.79 : 0.85)
+                let outer = radius * 0.95
+                var intensity = scanning ? 0.34 : 0.18
+                if let head {
+                    // Distance behind the head, 0…1 around the dial.
+                    let behind = ((head - position).truncatingRemainder(dividingBy: 1) + 1)
+                        .truncatingRemainder(dividingBy: 1)
+                    intensity = max(0.16, 1 - behind * 5)
+                }
+                var tick = Path()
+                tick.move(to: CGPoint(x: center.x + inner * cos(angle), y: center.y + inner * sin(angle)))
+                tick.addLine(to: CGPoint(x: center.x + outer * cos(angle), y: center.y + outer * sin(angle)))
+                context.stroke(tick, with: .color(tint.opacity(intensity)),
+                               style: StrokeStyle(lineWidth: long ? 2 : 1.25, lineCap: .round))
             }
         }
-        .rotationEffect(.degrees(rotation))
-    }
-
-    private func nucleus(scale: CGFloat) -> some View {
-        let d = side * MCBloomGeometry.nucleusFraction * 0.62
-        return ZStack {
-            Circle().fill(tint.opacity(0.18)).frame(width: d * 2.2, height: d * 2.2).blur(radius: 8)
-            Circle().fill(tint).frame(width: d, height: d)
-        }
-        .scaleEffect(scale)
-        .opacity(isScanning ? 1 : 0.5)
     }
 
     /// Determinate progress. Hidden while the scan is open-ended.
-    @ViewBuilder private var progressRing: some View {
+    @ViewBuilder private var progressArc: some View {
         if let fraction {
-            Circle()
-                .trim(from: 0, to: fraction)
-                .stroke(tint, style: StrokeStyle(lineWidth: 4, lineCap: .round))
-                .rotationEffect(.degrees(-90))
-                .animation(reduceMotion ? nil : .easeOut(duration: 0.35), value: fraction)
-        }
-    }
-
-    /// Reduce Motion / resting: one calm inner ring, no movement.
-    private var staticState: some View {
-        Circle()
-            .strokeBorder(tint.opacity(isScanning ? 0.5 : 0.22), lineWidth: 2.5)
+            ZStack {
+                Circle()
+                    .stroke(tint.opacity(MCOpacity.orbitTrack), lineWidth: 2)
+                Circle()
+                    .trim(from: 0, to: fraction)
+                    .stroke(tint, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                    .animation(reduceMotion ? nil : .easeOut(duration: 0.35), value: fraction)
+            }
             .padding(side * 0.20)
-    }
-
-    // MARK: - Motion
-
-    private func motion(t: TimeInterval) -> some View {
-        let sweep = t.truncatingRemainder(dividingBy: 2.0) / 2.0            // 0…1 per revolution
-        let pulse = 0.5 + 0.5 * sin(t * 3.0)
-        let pingCount = 3
-
-        return ZStack {
-            restingFrame(rotation: t * 6)                                    // slow drift, ~one turn / minute
-
-            // Radar wedge — a bright conic sweep, unmistakably "scanning".
-            Circle()
-                .fill(
-                    AngularGradient(
-                        gradient: Gradient(stops: [
-                            .init(color: tint.opacity(0), location: 0.0),
-                            .init(color: tint.opacity(0.06), location: 0.55),
-                            .init(color: tint.opacity(0.38), location: 0.98),
-                            .init(color: tint.opacity(0), location: 1.0),
-                        ]),
-                        center: .center))
-                .mask(Circle().strokeBorder(.black, lineWidth: side * 0.5))
-                .rotationEffect(.degrees(sweep * 360))
-
-            // Leading edge of the sweep, a crisp bright arc.
-            Circle()
-                .trim(from: 0, to: 0.02)
-                .stroke(tint, style: StrokeStyle(lineWidth: 4, lineCap: .round))
-                .rotationEffect(.degrees(sweep * 360 - 90))
-
-            // Ping rings expanding outward from the nucleus.
-            ForEach(0..<pingCount, id: \.self) { i in
-                let p = ((t * 0.6) + Double(i) / Double(pingCount)).truncatingRemainder(dividingBy: 1)
-                Circle()
-                    .strokeBorder(tint.opacity(0.35 * (1 - p)), lineWidth: 1.5)
-                    .scaleEffect(0.12 + 0.9 * p)
-            }
-
-            // Motes: files being read, streaming inward.
-            ForEach(0..<16, id: \.self) { i in
-                let phase = t * 0.9 + Double(i) * (2 * .pi / 16)
-                let cyc = (sin(phase) + 1) / 2                               // 0 (rim) … 1 (centre)
-                let radius = side * (0.10 + 0.36 * (1 - cyc))
-                let angle = phase * 1.7 + Double(i)
-                Circle()
-                    .fill(tint.opacity(0.15 + 0.7 * cyc))
-                    .frame(width: 3 + 4 * cyc, height: 3 + 4 * cyc)
-                    .offset(x: radius * cos(angle), y: radius * sin(angle))
-            }
-
-            nucleus(scale: 1 + 0.16 * pulse)
         }
     }
 }

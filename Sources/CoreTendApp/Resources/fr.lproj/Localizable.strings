@@ -37,8 +37,8 @@
 "menubar.free_space" = "Espace libre";
 "menubar.thermal" = "Thermique";
 "menubar.warning_a11y" = "nécessite une attention";
-"menubar.last_activity" = "Dernier Smart Care : %@";
-"menubar.no_activity_yet" = "Aucun Smart Care exécuté pour l'instant.";
+"menubar.last_activity" = "Dernière activité : %@";
+"menubar.no_activity_yet" = "Aucune activité enregistrée pour l'instant.";
 "menubar.open_app" = "Ouvrir CoreTend";
 "menubar.settings" = "Réglages…";
 "menubar.quit" = "Quitter";
@@ -361,7 +361,7 @@
 "apps.grouping.last_used" = "Dernière utilisation";
 
 /* Module display names (sidebar / placeholder) */
-"module.dashboard" = "Tableau de bord";
+"module.dashboard" = "Vue d'ensemble";
 "module.storage" = "Stockage";
 "module.duplicates" = "Doublons";
 "module.protection" = "Intégrité";
@@ -391,7 +391,7 @@
 
 /* Dashboard */
 "dashboard.title" = "Tableau de bord";
-"dashboard.subtitle" = "Analyses locales, nettoyage réversible et contrôles d’intégrité dans un même espace.";
+"dashboard.subtitle" = "Analyses locales, nettoyage réversible et contrôles d'intégrité — rien ne quitte ce Mac et rien n'est supprimé définitivement.";
 "dashboard.primary_action" = "Analyser le stockage";
 "dashboard.secondary_action" = "Ouvrir Space Lens";
 "dashboard.status.signature" = "Signature";
@@ -610,3 +610,26 @@
 /* Issue d’exécution — les éléments ignorés étaient auparavant écartés par
    chaque écran de nettoyage, rendant un échec partiel invisible. */
 "cleanup.done.skipped" = "%d élément(s) ont été ignorés et laissés intacts. Le journal de sécurité en explique la raison.";
+"sidebar.reclaim" = "Libérer de l'espace";
+"sidebar.apps_system" = "Apps et système";
+"sidebar.history" = "Espace de travail";
+"sidebar.disk_label" = "Disque de démarrage";
+"sidebar.disk_free" = "%@ libres";
+"sidebar.disk_of" = "sur %@";
+"sidebar.search" = "Rechercher ou aller à…";
+"palette.section.go_to" = "Aller à";
+"palette.section.actions" = "Actions";
+"palette.hint.move" = "Déplacer";
+"palette.hint.open" = "Ouvrir";
+"palette.hint.close" = "Fermer";
+"menubar.status_ok" = "Tout va bien";
+"menubar.status_attention" = "Nécessite une attention";
+"dashboard.eyebrow" = "Ce Mac";
+"dashboard.safeguards" = "Garde-fous";
+"dashboard.tools" = "Outils";
+"dashboard.view_all" = "Tout afficher";
+"dashboard.storage.used" = "%d %% utilisés";
+"dashboard.storage.capacity" = "Capacité";
+"dashboard.reclaimed" = "Récupéré avec CoreTend";
+"dashboard.reclaimed.detail" = "Sur %d actions enregistrées";
+"dashboard.status.recoverable" = "Récupérable depuis la Corbeille";

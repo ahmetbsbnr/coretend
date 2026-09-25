@@ -3,7 +3,12 @@
 
 import SwiftUI
 
-// MARK: - Porcelain / Slate / Teal design tokens
+// MARK: - CoreTend "Instrument" design tokens
+//
+// The app reads as a precision instrument: flat panels separated by
+// hairlines, tight radii, dense-but-legible rows, and numbers set large and
+// light. Depth comes from surface steps (canvas → panel → well), never from
+// drop shadows or glass.
 
 /// Spacing scale (pt). Views compose from these; no arbitrary values.
 public enum MCSpacing {
@@ -18,20 +23,32 @@ public enum MCSpacing {
     public static let page: CGFloat = 24
 }
 
+/// Tight, engineered radii. Panels are barely softened; only compact
+/// statuses and toggles use the capsule.
 public enum MCRadius {
-    public static let small: CGFloat = 6
-    public static let card: CGFloat = 8
-    public static let hero: CGFloat = 12
+    public static let small: CGFloat = 4
+    /// Buttons, fields, segmented controls.
+    public static let control: CGFloat = 5
+    public static let card: CGFloat = 7
+    public static let hero: CGFloat = 10
     public static let capsule: CGFloat = 999
 }
 
 public enum MCSize {
-    public static let sidebarMin: CGFloat = 190
-    public static let sidebarIdeal: CGFloat = 220
-    public static let windowMinWidth: CGFloat = 860
-    public static let windowMinHeight: CGFloat = 580
+    public static let sidebarMin: CGFloat = 200
+    public static let sidebarIdeal: CGFloat = 232
+    public static let windowMinWidth: CGFloat = 820
+    public static let windowMinHeight: CGFloat = 560
     public static let metricRing: CGFloat = 76
-    public static let chartHeight: CGFloat = 140
+    public static let chartHeight: CGFloat = 132
+    /// Readable measure for prose and forms inside a page.
+    public static let contentMax: CGFloat = 1120
+    /// Narrow column used by briefing/landing layouts.
+    public static let columnMax: CGFloat = 520
+    /// Standard row height for dense lists.
+    public static let rowHeight: CGFloat = 40
+    /// Icon tile (square) used by rows and empty states.
+    public static let iconTile: CGFloat = 28
 }
 
 /// Motion tokens. All animation in the app routes through these so that

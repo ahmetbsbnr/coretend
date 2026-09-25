@@ -3,18 +3,20 @@
 
 import SwiftUI
 
-// CoreTend design system — Porcelain / Slate / Teal, shared with the portfolio.
+// CoreTend design system — "Instrument": graphite neutrals, one teal signal.
 // Tokens: Tokens.swift / Colors.swift / Typography.swift
-// Brand:  CoreBloom.swift   Components: Components.swift
+// Brand:  CoreBloom.swift   Components: Components.swift / Primitives.swift
 
-/// Card container used across module screens.
-/// The surface is deliberately solid rather than glassy: Porcelain / Slate /
-/// Teal should read as a product interface, not a translucent marketing panel.
+/// Panel container used across module screens.
+/// Flat by design: a solid panel surface and a hairline border. Depth comes
+/// from the canvas → panel surface step, never from a drop shadow or glass.
 public struct MCCard<Content: View>: View {
     private let content: Content
+    private let padding: CGFloat
 
-    public init(@ViewBuilder content: () -> Content) {
+    public init(padding: CGFloat = MCSpacing.md, @ViewBuilder content: () -> Content) {
         self.content = content()
+        self.padding = padding
     }
 
     public var body: some View {
@@ -25,11 +27,10 @@ public struct MCCard<Content: View>: View {
         let increaseContrast = MCAccessibilityState.shared.increaseContrast
         let shape = RoundedRectangle(cornerRadius: MCRadius.card)
         content
-            .padding(MCSpacing.md)
+            .padding(padding)
             .background(shape.fill(MCColor.elevatedBackground))
-            .overlay(shape.strokeBorder(MCColor.separator.opacity(increaseContrast ? 1.0 : 0.8),
+            .overlay(shape.strokeBorder(increaseContrast ? MCColor.rule : MCColor.separator,
                                          lineWidth: increaseContrast ? 1.5 : 1))
-            .shadow(color: .black.opacity(0.16), radius: 5, x: 0, y: 2)
     }
 }
 

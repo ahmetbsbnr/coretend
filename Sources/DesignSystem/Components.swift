@@ -5,8 +5,8 @@ import SwiftUI
 
 // MARK: - Module identity
 
-/// Stable identity (icon + role color) for every module. Sidebar, cards and
-/// module headers all pull from here so iconography stays coherent.
+/// Stable identity (icon + role color) for every module. Sidebar, rows and
+/// page headers all pull from here so iconography stays coherent.
 public struct MCModuleIdentity: Sendable {
     public let icon: String
     public let color: Color
@@ -15,15 +15,15 @@ public struct MCModuleIdentity: Sendable {
         self.color = color
     }
 
-    public static let smartCare = MCModuleIdentity(icon: "circle.hexagonpath", color: MCColor.teal)
+    public static let smartCare = MCModuleIdentity(icon: "gauge.with.dots.needle.33percent", color: MCColor.teal)
     public static let cleanup = MCModuleIdentity(icon: "sparkles", color: MCColor.storage)
-    public static let protection = MCModuleIdentity(icon: "checkerboard.shield", color: MCColor.protection)
+    public static let protection = MCModuleIdentity(icon: "checkmark.shield", color: MCColor.protection)
     public static let performance = MCModuleIdentity(icon: "waveform.path.ecg", color: MCColor.performance)
     public static let applications = MCModuleIdentity(icon: "square.grid.2x2", color: MCColor.protection)
     public static let duplicates = MCModuleIdentity(icon: "doc.on.doc", color: MCColor.storage)
     public static let myClutter = MCModuleIdentity(icon: "square.3.layers.3d", color: MCColor.storage)
-    public static let spaceLens = MCModuleIdentity(icon: "map", color: MCColor.storage)
-    public static let cloudCleanup = MCModuleIdentity(icon: "cloud", color: MCColor.storage)
+    public static let spaceLens = MCModuleIdentity(icon: "square.split.bottomrightquarter", color: MCColor.storage)
+    public static let cloudCleanup = MCModuleIdentity(icon: "icloud", color: MCColor.storage)
     public static let myActivity = MCModuleIdentity(icon: "clock.arrow.circlepath", color: MCColor.performance)
     public static let favoritesRecents = MCModuleIdentity(icon: "star", color: MCColor.performance)
     public static let settings = MCModuleIdentity(icon: "gearshape", color: Color.secondary)
@@ -31,35 +31,57 @@ public struct MCModuleIdentity: Sendable {
 
 // MARK: - Section header
 
-public struct MCSectionHeader: View {
+/// Monospaced caps label followed by a hairline rule running to the trailing
+/// edge — the instrument's way of naming a region without boxing it.
+public struct MCSectionHeader<Accessory: View>: View {
     private let title: String
     private let subtitle: String?
+    private let accessory: Accessory
 
-    public init(_ title: String, subtitle: String? = nil) {
+    public init(_ title: String, subtitle: String? = nil, @ViewBuilder accessory: () -> Accessory) {
         self.title = title
         self.subtitle = subtitle
+        self.accessory = accessory()
     }
 
     public var body: some View {
         VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-            Text(title).font(MCFont.sectionTitle).foregroundStyle(.secondary)
-                .textCase(.uppercase)
-                .kerning(0.5)
+            HStack(spacing: MCSpacing.sm) {
+                Text(title)
+                    .font(MCFont.eyebrow)
+                    .textCase(.uppercase)
+                    .kerning(MCTracking.label)
+                    .foregroundStyle(.secondary)
+                    .fixedSize()
+                Rectangle()
+                    .fill(MCColor.separator)
+                    .frame(height: 1)
+                    .accessibilityHidden(true)
+                accessory
+            }
             if let subtitle {
                 Text(subtitle).font(MCFont.caption).foregroundStyle(.tertiary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityElement(children: .combine)
         .accessibilityAddTraits(.isHeader)
     }
 }
 
-// MARK: - Status badge
+public extension MCSectionHeader where Accessory == EmptyView {
+    init(_ title: String, subtitle: String? = nil) {
+        self.init(title, subtitle: subtitle) { EmptyView() }
+    }
+}
 
-public enum MCStatus {
+// MARK: - Status tag
+
+public enum MCStatus: Sendable {
     case neutral, active, success, attention, error
 
-    var color: Color {
+    public var color: Color {
         switch self {
         case .neutral: .secondary
         case .active: MCColor.teal
@@ -69,7 +91,7 @@ public enum MCStatus {
         }
     }
 
-    var symbol: String {
+    public var symbol: String {
         switch self {
         case .neutral: "circle.dashed"
         case .active: "circle.dotted.circle"
@@ -80,7 +102,8 @@ public enum MCStatus {
     }
 }
 
-/// Color + symbol + text: readable without color.
+/// Compact status tag: glyph + monospaced caps text on a tinted, squared
+/// chip. Colour, shape and word all carry the state — readable without colour.
 public struct MCStatusBadge: View {
     private let text: String
     private let status: MCStatus
@@ -91,28 +114,40 @@ public struct MCStatusBadge: View {
     }
 
     public var body: some View {
-        Label(text, systemImage: status.symbol)
-            .font(MCFont.badge)
-            .foregroundStyle(status.color)
-            .padding(.horizontal, MCSpacing.xs)
-            .padding(.vertical, MCSpacing.xxs)
-            .background(status.color.opacity(0.12), in: Capsule())
+        HStack(spacing: 4) {
+            Image(systemName: status.symbol)
+                .font(.system(size: 9, weight: .bold))
+                .accessibilityHidden(true)
+            Text(text)
+                .font(MCFont.badge)
+                .textCase(.uppercase)
+                .kerning(0.4)
+                .lineLimit(1)
+        }
+        .foregroundStyle(status.color)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 3)
+        .background(status.color.opacity(0.11), in: RoundedRectangle(cornerRadius: MCRadius.small))
+        .overlay(RoundedRectangle(cornerRadius: MCRadius.small)
+            .strokeBorder(status.color.opacity(0.22), lineWidth: 1))
+        .accessibilityElement(children: .combine)
     }
 }
 
-// MARK: - Metric card (ring + value + caption)
+// MARK: - Metric readout (label + figure + meter)
 
+/// A single live figure: caps label, a large light numeral, a detail line and
+/// a segmented meter. Replaces the old ring gauges — a linear meter compares
+/// at a glance across a row, and the numeral stays the loudest element.
 public struct MCMetricCard: View {
-    @Environment(\.accessibilityDifferentiateWithoutColor) private var differentiateWithoutColor
-
     private let title: String
     private let value: String
     private let detail: String
     private let fraction: Double
     private let color: Color
-    /// True once the ring color has escalated to an "attention"/"destructive"
-    /// status color — the ring color alone is the only signal of that today,
-    /// so under Differentiate Without Color a small glyph is added too.
+    /// True once the meter colour has escalated to an attention/destructive
+    /// status colour. A warning glyph always accompanies it, so the state
+    /// never depends on colour alone.
     /// `elevatedLabel` is a caller-supplied, already-localized word (e.g.
     /// "elevated") appended to the accessibility label in that state —
     /// DesignSystem has no localization table of its own.
@@ -132,33 +167,35 @@ public struct MCMetricCard: View {
 
     public var body: some View {
         MCCard {
-            VStack(spacing: MCSpacing.xs) {
-                ZStack {
-                    Circle().stroke(color.opacity(MCOpacity.orbitTrack), lineWidth: 6)
-                    Circle()
-                        .trim(from: 0, to: fraction)
-                        .stroke(color, style: StrokeStyle(lineWidth: 6, lineCap: .round))
-                        .rotationEffect(.degrees(-90))
-                    Text(value)
-                        .font(MCFont.metric)
-                        .monospacedDigit()
-                        .minimumScaleFactor(0.6)
-                        .lineLimit(1)
-                        .padding(MCSpacing.xs)
-                    if isElevated && differentiateWithoutColor {
+            VStack(alignment: .leading, spacing: MCSpacing.xs) {
+                HStack(spacing: MCSpacing.xxs) {
+                    Text(title)
+                        .font(MCFont.eyebrow)
+                        .textCase(.uppercase)
+                        .kerning(MCTracking.label)
+                        .foregroundStyle(.secondary)
+                    Spacer(minLength: 0)
+                    if isElevated {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.caption2)
+                            .font(.system(size: 10, weight: .bold))
                             .foregroundStyle(color)
-                            .offset(x: MCSize.metricRing * 0.32, y: -MCSize.metricRing * 0.32)
                             .accessibilityHidden(true)
                     }
                 }
-                .frame(width: MCSize.metricRing, height: MCSize.metricRing)
-                Text(title).font(MCFont.cardTitle)
-                Text(detail).font(MCFont.caption).foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                Text(value)
+                    .font(MCFont.readout)
+                    .kerning(MCTracking.display / 2)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
+                    .contentTransition(.numericText())
+                MCMeter(fraction: fraction, tint: color)
+                Text(detail)
+                    .font(MCFont.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(isElevated && !elevatedLabel.isEmpty
@@ -169,6 +206,9 @@ public struct MCMetricCard: View {
 
 // MARK: - Empty / error states
 
+/// Quiet, left-weighted placeholder: a squared icon tile, a title, one line
+/// of guidance and at most one action. Used when a list or panel has nothing
+/// to show yet — never as a full-bleed hero.
 public struct MCEmptyState: View {
     private let icon: String
     private let title: String
@@ -194,19 +234,33 @@ public struct MCEmptyState: View {
 
     public var body: some View {
         VStack(spacing: MCSpacing.sm) {
+            // The tile scales with the requested glyph size so prominent
+            // module states still read larger than nested ones.
+            let tile = max(44, iconSize * 1.25)
             Image(systemName: icon)
-                .font(.system(size: iconSize, weight: .light))
+                .font(.system(size: iconSize * 0.5, weight: .regular))
                 .foregroundStyle(iconColor)
+                .frame(width: tile, height: tile)
+                .background(MCColor.sunken, in: RoundedRectangle(cornerRadius: MCRadius.hero))
+                .overlay(RoundedRectangle(cornerRadius: MCRadius.hero)
+                    .strokeBorder(MCColor.separator, lineWidth: 1))
                 .accessibilityHidden(true)
-            Text(title).font(MCFont.cardTitle)
-            Text(message)
-                .font(MCFont.secondaryBody)
-                .foregroundStyle(.secondary)
+                .padding(.bottom, MCSpacing.xxs)
+            Text(title)
+                .font(MCFont.cardTitle)
                 .multilineTextAlignment(.center)
-                .frame(maxWidth: 420)
+            if !message.isEmpty {
+                Text(message)
+                    .font(MCFont.secondaryBody)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 400)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
             if let actionTitle, let action {
                 Button(actionTitle, action: action)
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.mcPrimary)
+                    .padding(.top, MCSpacing.xs)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -214,14 +268,10 @@ public struct MCEmptyState: View {
     }
 }
 
-/// Shared "the cleanup finished" state. One consistent, quietly celebratory
-/// moment across every module that moves things to the Trash — a sealed
-/// checkmark that pops in with a single expanding ring flourish (transform +
-/// opacity only, one-shot, no loop). Under Reduce Motion it simply appears.
-///
-/// Before this, each module hand-rolled its finish screen — some reused
-/// `MCEmptyState` with a green tint, some an ad-hoc `VStack` — so "done"
-/// looked different depending on where you were.
+/// Shared "the cleanup finished" state. One consistent, quietly confident
+/// moment across every module that moves things to the Trash — a check in a
+/// squared tile with a single one-shot ring flourish (transform + opacity
+/// only). Under Reduce Motion it simply appears.
 public struct MCSuccessState: View {
     private let title: String
     private let message: String?
@@ -244,70 +294,68 @@ public struct MCSuccessState: View {
         VStack(spacing: MCSpacing.md) {
             ZStack {
                 if !reduceMotion {
-                    ForEach(0..<2, id: \.self) { i in
-                        Circle()
-                            .stroke(MCColor.success.opacity(0.35 * Double(1 - flourish)), lineWidth: 2)
-                            .frame(width: 76, height: 76)
-                            .scaleEffect(0.55 + flourish * (1.3 + CGFloat(i) * 0.55))
-                    }
+                    RoundedRectangle(cornerRadius: 18)
+                        .stroke(MCColor.success.opacity(0.4 * Double(1 - flourish)), lineWidth: 1.5)
+                        .frame(width: 72, height: 72)
+                        .scaleEffect(1 + flourish * 0.6)
                 }
-                Circle().fill(MCColor.success.opacity(0.14)).frame(width: 76, height: 76)
-                Image(systemName: "checkmark.seal.fill")
-                    .font(.system(size: 34, weight: .semibold))
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(MCColor.success.opacity(0.12))
+                    .frame(width: 72, height: 72)
+                RoundedRectangle(cornerRadius: 16)
+                    .strokeBorder(MCColor.success.opacity(0.35), lineWidth: 1)
+                    .frame(width: 72, height: 72)
+                Image(systemName: "checkmark")
+                    .font(.system(size: 28, weight: .semibold))
                     .foregroundStyle(MCColor.success)
             }
-            .scaleEffect(popped || reduceMotion ? 1 : 0.7)
+            .scaleEffect(popped || reduceMotion ? 1 : 0.8)
             .opacity(popped || reduceMotion ? 1 : 0)
             .accessibilityHidden(true)
 
             Text(title)
                 .font(MCFont.pageTitle)
+                .kerning(MCTracking.title)
                 .multilineTextAlignment(.center)
             if let message, !message.isEmpty {
                 Text(message)
                     .font(MCFont.secondaryBody)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
-                    .frame(maxWidth: 420)
+                    .frame(maxWidth: 440)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             if let actionTitle, let action {
                 Button(actionTitle, action: action)
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.mcSecondary)
+                    .padding(.top, MCSpacing.xs)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(MCSpacing.xl)
         .onAppear {
             guard !reduceMotion else { return }
-            withAnimation(.spring(response: 0.45, dampingFraction: 0.62)) { popped = true }
-            withAnimation(.easeOut(duration: 0.9)) { flourish = 1 }
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.75)) { popped = true }
+            withAnimation(.easeOut(duration: 0.8)) { flourish = 1 }
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(message.map { $0.isEmpty ? title : "\(title). \($0)" } ?? title)
     }
 }
 
-// MARK: - Lit canvas
+// MARK: - Canvas
 
-/// The app's shared canvas: the Slate/Porcelain base with a single faint
-/// teal light source in the top-leading corner. No imagery, no second hue —
-/// just enough gradient that the window never reads as a dead flat field.
-/// Applied once to the module container so every screen sits on it.
+/// The app's shared canvas: a flat graphite/porcelain field. Deliberately no
+/// gradient or light source — the panels on top carry the structure.
 public struct MCCanvasBackground: ViewModifier {
     public init() {}
     public func body(content: Content) -> some View {
-        content.background(
-            ZStack {
-                MCColor.background
-                RadialGradient(colors: [MCColor.teal.opacity(0.06), .clear],
-                               center: .topLeading, startRadius: 0, endRadius: 680)
-            }
-        )
+        content.background(MCColor.background)
     }
 }
 
 public extension View {
-    /// Sits the view on the app's lit canvas (see `MCCanvasBackground`).
+    /// Sits the view on the app's canvas (see `MCCanvasBackground`).
     func mcCanvasBackground() -> some View { modifier(MCCanvasBackground()) }
 }
 
@@ -327,10 +375,10 @@ public struct MCAppear: ViewModifier {
     public func body(content: Content) -> some View {
         content
             .opacity(shown || reduceMotion ? 1 : 0)
-            .offset(y: shown || reduceMotion ? 0 : 8)
+            .offset(y: shown || reduceMotion ? 0 : 6)
             .onAppear {
                 guard !reduceMotion, !shown else { return }
-                withAnimation(.smooth(duration: 0.4).delay(delay)) { shown = true }
+                withAnimation(.smooth(duration: 0.32).delay(delay)) { shown = true }
             }
     }
 }
@@ -340,13 +388,12 @@ public extension View {
     func mcAppear(delay: Double = 0) -> some View { modifier(MCAppear(delay: delay)) }
 }
 
-// MARK: - Scan button
+// MARK: - Scan command
 
-/// The large circular "start" control for a module's landing state — the one
-/// unmistakable focal action on the screen. A filled teal disc with an icon
-/// over a short label, a soft teal glow, and a small hover lift (transform +
-/// shadow only; still under Reduce Motion). Not decoration: it is the primary
-/// button, sized to match its importance.
+/// The primary "start" command for a module's landing state. A wide,
+/// squared teal command bar — icon tile, label, and a ↩ keycap that tells
+/// the user Return runs it. It is the one filled surface on the screen, so it
+/// needs no glow or oversized disc to be found.
 public struct MCScanButton: View {
     private let title: String
     private let systemImage: String
@@ -364,32 +411,37 @@ public struct MCScanButton: View {
 
     public var body: some View {
         Button(action: action) {
-            VStack(spacing: MCSpacing.xs) {
+            HStack(spacing: MCSpacing.sm) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 28, weight: .semibold))
+                    .font(.system(size: 15, weight: .semibold))
+                    .frame(width: 30, height: 30)
+                    .background(MCColor.onAccent.opacity(0.14), in: RoundedRectangle(cornerRadius: MCRadius.small))
                 Text(title)
-                    .font(.headline)
-                    .multilineTextAlignment(.center)
+                    .font(.system(size: 15, weight: .semibold))
                     .lineLimit(2)
-                    .minimumScaleFactor(0.8)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: MCSpacing.md)
+                Text(verbatim: "↩")
+                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                    .frame(width: 24, height: 20)
+                    .overlay(RoundedRectangle(cornerRadius: MCRadius.small)
+                        .strokeBorder(MCColor.onAccent.opacity(0.4), lineWidth: 1))
+                    .accessibilityHidden(true)
             }
-            .foregroundStyle(.white)
-            .padding(MCSpacing.md)
-            .frame(width: 136, height: 136)
-            .background(
-                Circle().fill(
-                    RadialGradient(
-                        colors: [MCColor.teal, MCColor.teal.opacity(0.82)],
-                        center: UnitPoint(x: 0.4, y: 0.32), startRadius: 2, endRadius: 118)))
-            .overlay(Circle().strokeBorder(.white.opacity(0.16), lineWidth: 1))
-            .shadow(color: MCColor.teal.opacity(hovering ? 0.5 : 0.34),
-                    radius: hovering ? 26 : 18, x: 0, y: 6)
-            .scaleEffect(hovering && !reduceMotion ? 1.03 : 1)
-            .opacity(isEnabled ? 1 : 0.5)
+            .foregroundStyle(MCColor.onAccent)
+            .padding(.leading, MCSpacing.sm)
+            .padding(.trailing, MCSpacing.md)
+            .frame(minWidth: 260, maxWidth: 360, minHeight: 56)
+            .background(RoundedRectangle(cornerRadius: MCRadius.hero)
+                .fill(MCColor.teal.opacity(hovering ? 0.9 : 1)))
+            .offset(y: hovering && !reduceMotion ? -1 : 0)
+            .opacity(isEnabled ? 1 : 0.45)
+            .contentShape(RoundedRectangle(cornerRadius: MCRadius.hero))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(MCPressStyle())
         .onHover { h in
-            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.18)) { hovering = h }
+            withAnimation(reduceMotion ? nil : .easeOut(duration: MCMotion.quick)) { hovering = h }
         }
         .accessibilityLabel(title)
         .accessibilityAddTraits(.isButton)
@@ -398,8 +450,8 @@ public struct MCScanButton: View {
 
 // MARK: - Feature row (module landing states)
 
-/// A feature/capability row for module idle states — icon + title + optional subtitle.
-/// Used to list what a module scans or surfaces, giving users context before they act.
+/// A capability row for module landing states — squared icon tile, title and
+/// optional detail. Lists what a module examines before the user commits.
 public struct MCFeatureRow: View {
     private let title: String
     private let subtitle: String?
@@ -416,21 +468,19 @@ public struct MCFeatureRow: View {
 
     public var body: some View {
         HStack(alignment: subtitle != nil ? .top : .center, spacing: MCSpacing.sm) {
-            Image(systemName: icon)
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(iconColor)
-                .frame(width: 20)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-                Text(title).font(MCFont.secondaryBody)
+            MCIconTile(icon, tint: iconColor)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(MCFont.secondaryBody.weight(.medium))
                 if let subtitle {
                     Text(subtitle)
                         .font(MCFont.caption)
                         .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .padding(.vertical, 2)
         .accessibilityElement(children: .combine)
     }
 }

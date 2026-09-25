@@ -37,8 +37,8 @@
 "menubar.free_space" = "Free space";
 "menubar.thermal" = "Thermal";
 "menubar.warning_a11y" = "needs attention";
-"menubar.last_activity" = "Last Smart Care: %@";
-"menubar.no_activity_yet" = "No Smart Care run yet.";
+"menubar.last_activity" = "Last activity: %@";
+"menubar.no_activity_yet" = "No activity recorded yet.";
 "menubar.open_app" = "Open CoreTend";
 "menubar.settings" = "Settings…";
 "menubar.quit" = "Quit";
@@ -361,7 +361,7 @@
 "apps.grouping.last_used" = "Last Used";
 
 /* Module display names (sidebar / placeholder) */
-"module.dashboard" = "Dashboard";
+"module.dashboard" = "Overview";
 "module.storage" = "Storage";
 "module.duplicates" = "Duplicates";
 "module.protection" = "Integrity";
@@ -391,7 +391,7 @@
 
 /* Dashboard */
 "dashboard.title" = "Dashboard";
-"dashboard.subtitle" = "Local scans, reversible cleanup, and integrity checks in one workspace.";
+"dashboard.subtitle" = "Local scans, reversible cleanup and integrity checks — nothing leaves this Mac, and nothing is deleted outright.";
 "dashboard.primary_action" = "Scan Storage";
 "dashboard.secondary_action" = "Open Space Lens";
 "dashboard.status.signature" = "Signature";
@@ -612,3 +612,26 @@
 /* Execution outcome — skipped operations were previously discarded by every
    cleanup screen, leaving partial failure invisible outside the Safety Log. */
 "cleanup.done.skipped" = "%d item(s) were skipped and left untouched. The Safety Log explains why.";
+"sidebar.reclaim" = "Reclaim Space";
+"sidebar.apps_system" = "Apps & System";
+"sidebar.history" = "Workspace";
+"sidebar.disk_label" = "Startup disk";
+"sidebar.disk_free" = "%@ free";
+"sidebar.disk_of" = "of %@";
+"sidebar.search" = "Search or jump to…";
+"palette.section.go_to" = "Go to";
+"palette.section.actions" = "Actions";
+"palette.hint.move" = "Move";
+"palette.hint.open" = "Open";
+"palette.hint.close" = "Close";
+"menubar.status_ok" = "All clear";
+"menubar.status_attention" = "Needs attention";
+"dashboard.eyebrow" = "This Mac";
+"dashboard.safeguards" = "Safeguards";
+"dashboard.tools" = "Tools";
+"dashboard.view_all" = "View all";
+"dashboard.storage.used" = "%d%% used";
+"dashboard.storage.capacity" = "Capacity";
+"dashboard.reclaimed" = "Reclaimed with CoreTend";
+"dashboard.reclaimed.detail" = "Across %d recorded actions";
+"dashboard.status.recoverable" = "Recoverable from Trash";

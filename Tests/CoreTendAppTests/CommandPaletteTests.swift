@@ -32,10 +32,13 @@ struct CommandPaletteTests {
         // analysis, broken-LaunchAgent detection) so they were kept and
         // re-wired rather than deleted. See Documentation/Audits/
         // SESSION_2026-08-09_AUDIT.md.
+        // The 2026-09 redesign regrouped the sidebar by job: reclaim space,
+        // apps & system, then the workspace (history, settings).
         #expect(modules == [
-            .smartCare, .cleanup, .spaceLens, .duplicates, .applications,
-            .myClutter, .cloudCleanup, .performance,
-            .protection, .myActivity, .settings,
+            .smartCare,
+            .cleanup, .spaceLens, .duplicates, .myClutter, .cloudCleanup,
+            .applications, .performance, .protection,
+            .myActivity, .settings,
         ])
         #expect(Set(modules.map(\.rawValue)).count == modules.count)
     }

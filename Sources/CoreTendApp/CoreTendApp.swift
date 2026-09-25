@@ -175,51 +175,59 @@ struct MenuBarView: View {
     @State private var lastActivity: ActivityRecord?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: MCSpacing.sm) {
-            HStack(spacing: MCSpacing.xs) {
-                CoreBloomMark(tint: [MCColor.teal], lineWidthFraction: 0.1)
-                    .frame(width: 18, height: 18)
-                Text(verbatim: "CoreTend").font(MCFont.cardTitle)
-                Spacer(minLength: 0)
+        VStack(alignment: .leading, spacing: 0) {
+            header
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+            MCHairline()
+            VStack(alignment: .leading, spacing: MCSpacing.sm) {
+                if let snap = snapshot {
+                    gaugeRow(L("menubar.cpu"), fraction: snap.cpuUsedFraction,
+                             value: "\(Int(snap.cpuUsedFraction * 100))%",
+                             warn: snap.cpuUsedFraction > 0.85)
+                    gaugeRow(L("menubar.memory"), fraction: snap.memoryUsedFraction,
+                             value: "\(Int(snap.memoryUsedFraction * 100))% · \(snap.memoryPressureLevel)",
+                             warn: snap.memoryPressureLevel != "normal")
+                    gaugeRow(L("menubar.free_space"), fraction: snap.diskUsedFraction,
+                             value: mcFormatBytes(snap.diskFreeBytes),
+                             warn: snap.diskFreeBytes < 20_000_000_000)
+                    MCKeyValueRow(L("menubar.thermal"), value: snap.thermalState.capitalized,
+                                  status: isThermalWarn(snap) ? .attention : nil)
+                } else {
+                    HStack { Spacer(); ProgressView().controlSize(.small); Spacer() }
+                        .padding(.vertical, MCSpacing.lg)
+                }
             }
-            if let snap = snapshot {
-                gaugeRow("cpu", L("menubar.cpu"), fraction: snap.cpuUsedFraction,
-                         value: "\(Int(snap.cpuUsedFraction * 100))%",
-                         warn: snap.cpuUsedFraction > 0.85)
-                gaugeRow("memorychip", L("menubar.memory"), fraction: snap.memoryUsedFraction,
-                         value: "\(Int(snap.memoryUsedFraction * 100))% · \(snap.memoryPressureLevel)",
-                         warn: snap.memoryPressureLevel != "normal")
-                gaugeRow("internaldrive", L("menubar.free_space"), fraction: snap.diskUsedFraction,
-                         value: mcFormatBytes(snap.diskFreeBytes),
-                         warn: snap.diskFreeBytes < 20_000_000_000)
-                metricRow(icon: "thermometer.medium", label: L("menubar.thermal"),
-                          value: snap.thermalState.capitalized,
-                          warn: snap.thermalState == "serious" || snap.thermalState == "critical")
-            } else {
-                HStack { Spacer(); ProgressView().controlSize(.small); Spacer() }
-                    .padding(.vertical, MCSpacing.sm)
+            .padding(14)
+            MCHairline()
+            VStack(alignment: .leading, spacing: 2) {
+                if let last = lastActivity {
+                    Text(L("menubar.last_activity", last.summary))
+                        .font(.caption).foregroundStyle(.secondary)
+                        .lineLimit(2)
+                    Text(last.date, style: .relative)
+                        .font(MCFont.badge).foregroundStyle(.tertiary)
+                } else {
+                    Text(L("menubar.no_activity_yet"))
+                        .font(.caption).foregroundStyle(.secondary)
+                }
             }
-            Divider()
-            if let last = lastActivity {
-                Text(L("menubar.last_activity", last.summary))
-                    .font(.caption).foregroundStyle(.secondary)
-                    .lineLimit(2)
-                Text(last.date, style: .relative)
-                    .font(.caption2).foregroundStyle(.tertiary)
-            } else {
-                Text(L("menubar.no_activity_yet"))
-                    .font(.caption).foregroundStyle(.secondary)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 10)
+            MCHairline()
+            VStack(spacing: 0) {
+                menuAction(L("menubar.open_app"), icon: "macwindow") { openWindow() }
+                menuAction(L("menubar.settings"), icon: "gearshape") {
+                    openWindow()
+                    NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.settings)
+                }
+                menuAction(L("menubar.quit"), icon: "power") { NSApp.terminate(nil) }
             }
-            Divider()
-            Button(L("menubar.open_app")) { openWindow() }
-            Button(L("menubar.settings")) {
-                openWindow()
-                NotificationCenter.default.post(name: .mcNavigate, object: ModuleID.settings)
-            }
-            Button(L("menubar.quit")) { NSApp.terminate(nil) }
+            .padding(.vertical, 4)
         }
-        .padding(14)
-        .frame(width: 288)
+        .frame(width: 300)
+        .background(MCColor.background)
+        .tint(MCColor.teal)
         .task {
             // Adaptive: only samples while this view exists (menu open).
             _ = await collector.snapshot()
@@ -235,55 +243,70 @@ struct MenuBarView: View {
         }
     }
 
+    private var needsAttention: Bool {
+        guard let snap = snapshot else { return false }
+        return MenuBarIconModel.needsAttention(
+            thermalState: snap.thermalState,
+            memoryPressureLevel: snap.memoryPressureLevel,
+            diskFreeBytes: snap.diskFreeBytes)
+    }
+
+    private var header: some View {
+        HStack(spacing: MCSpacing.xs) {
+            CoreBloomMark(tint: [MCColor.teal], lineWidthFraction: 0.1)
+                .frame(width: 18, height: 18)
+            Text(verbatim: "CoreTend").font(MCFont.cardTitle)
+            Spacer(minLength: 0)
+            if snapshot != nil {
+                MCStatusBadge(needsAttention ? L("menubar.status_attention") : L("menubar.status_ok"),
+                              status: needsAttention ? .attention : .success)
+            }
+        }
+    }
+
+    private func isThermalWarn(_ snap: MetricsSnapshot) -> Bool {
+        snap.thermalState == "serious" || snap.thermalState == "critical"
+    }
+
     private func openWindow() {
         NSApp.activate(ignoringOtherApps: true)
         NSApp.windows.first { $0.title == "CoreTend" }?.makeKeyAndOrderFront(nil)
     }
 
-    /// Metric with an inline fill bar — for the 0…1 gauges (CPU, memory, disk).
-    private func gaugeRow(_ icon: String, _ label: String, fraction: Double, value: String, warn: Bool) -> some View {
-        let tint: Color = warn ? MCTheme.warning : MCTheme.accent
-        return VStack(alignment: .leading, spacing: 4) {
+    private func menuAction(_ title: String, icon: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
             HStack(spacing: MCSpacing.xs) {
-                Image(systemName: icon).frame(width: 16).foregroundStyle(tint)
-                Text(label)
+                Image(systemName: icon)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 18)
+                Text(title).font(MCFont.secondaryBody)
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 14)
+            .frame(height: 28)
+        }
+        .buttonStyle(.mcRow)
+    }
+
+    /// Metric with a segmented meter — for the 0…1 gauges (CPU, memory, disk).
+    private func gaugeRow(_ label: String, fraction: Double, value: String, warn: Bool) -> some View {
+        let tint: Color = warn ? MCTheme.warning : MCTheme.accent
+        return VStack(alignment: .leading, spacing: 5) {
+            HStack(spacing: MCSpacing.xs) {
+                MCEyebrow(label)
                 Spacer(minLength: MCSpacing.xs)
                 if warn {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.caption2).foregroundStyle(MCTheme.warning)
                         .accessibilityHidden(true)
                 }
-                Text(value).foregroundStyle(.secondary).monospacedDigit()
+                Text(value)
+                    .font(MCFont.mono)
+                    .foregroundStyle(.primary)
             }
-            .font(MCFont.secondaryBody)
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    Capsule().fill(MCColor.separator.opacity(0.55))
-                    Capsule().fill(tint)
-                        .frame(width: max(3, geo.size.width * min(max(fraction, 0), 1)))
-                }
-            }
-            .frame(height: 4)
+            MCMeter(fraction: fraction, tint: tint, segments: 32, height: 5)
         }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(label), \(value)" + (warn ? ", \(L("menubar.warning_a11y"))" : ""))
-    }
-
-    /// Metric with no meaningful 0…1 fraction — a plain label/value row.
-    private func metricRow(icon: String, label: String, value: String, warn: Bool) -> some View {
-        HStack {
-            Image(systemName: icon).frame(width: 16)
-                .foregroundStyle(warn ? MCTheme.warning : MCTheme.accent)
-            Text(label)
-            Spacer()
-            if warn {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.caption2).foregroundStyle(MCTheme.warning)
-                    .accessibilityHidden(true)
-            }
-            Text(value).foregroundStyle(.secondary).monospacedDigit()
-        }
-        .font(MCFont.secondaryBody)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(label), \(value)" + (warn ? ", \(L("menubar.warning_a11y"))" : ""))
     }
@@ -346,7 +369,9 @@ enum ModuleID: String, CaseIterable, Identifiable {
     }
 }
 
-/// Sidebar groups — logical, quiet, native.
+/// Sidebar groups — organised by the job the user came to do, not by
+/// implementation module: get space back, look after apps and the system,
+/// then the workspace itself (history and settings).
 struct SidebarGroup: Identifiable {
     let id: String
     let title: String?
@@ -354,22 +379,41 @@ struct SidebarGroup: Identifiable {
 
     static let all: [SidebarGroup] = [
         SidebarGroup(id: "main", title: nil, modules: [.smartCare]),
-        SidebarGroup(id: "storage", title: L("sidebar.storage"),
-                     modules: [.cleanup, .spaceLens, .duplicates, .applications]),
-        // Secondary, lower-priority tools: each does something the seven
-        // primary modules above don't (broken-LaunchAgent detection, a
-        // large/old-files finder, local-vs-cloud storage analysis) so they
-        // stay reachable rather than deleted, but they aren't part of the
-        // compact primary architecture — see Documentation/Audits/
-        // SESSION_2026-08-09_AUDIT.md for the redundancy check that led here.
-        SidebarGroup(id: "more", title: L("sidebar.more"),
-                     modules: [.myClutter, .cloudCleanup, .performance]),
-        SidebarGroup(id: "system", title: L("sidebar.system"),
-                     modules: [.protection, .myActivity, .settings]),
+        // Everything that finds bytes to give back, most general first:
+        // rule-based junk, the map, exact copies, then the finer-grained
+        // large/old and cloud-state finders (kept reachable — see
+        // Documentation/Audits/SESSION_2026-08-09_AUDIT.md).
+        SidebarGroup(id: "reclaim", title: L("sidebar.reclaim"),
+                     modules: [.cleanup, .spaceLens, .duplicates, .myClutter, .cloudCleanup]),
+        SidebarGroup(id: "system", title: L("sidebar.apps_system"),
+                     modules: [.applications, .performance, .protection]),
+        SidebarGroup(id: "workspace", title: L("sidebar.history"),
+                     modules: [.myActivity, .settings]),
     ]
 
     static var visibleModules: [ModuleID] {
         all.flatMap(\.modules)
+    }
+}
+
+/// Startup-disk reading for the sidebar footer. Samples slowly (the value
+/// changes on the scale of minutes) and only while the window exists.
+@MainActor
+@Observable
+final class SidebarDiskModel {
+    var freeBytes: Int64?
+    var totalBytes: Int64 = 0
+    var usedFraction: Double = 0
+    private let collector = MetricsCollector()
+
+    func run() async {
+        while !Task.isCancelled {
+            let snap = await collector.snapshot()
+            freeBytes = snap.diskFreeBytes
+            totalBytes = snap.diskTotalBytes
+            usedFraction = snap.diskUsedFraction
+            try? await Task.sleep(for: .seconds(60))
+        }
     }
 }
 
@@ -378,6 +422,7 @@ struct MainWindow: View {
     @AppStorage("onboardingDone") private var onboardingDone = false
     @State private var showOnboarding = false
     @State private var showCommandPalette = false
+    @State private var disk = SidebarDiskModel()
 
     var body: some View {
         NavigationSplitView {
@@ -392,6 +437,9 @@ struct MainWindow: View {
                     } header: {
                         if let title = group.title {
                             Text(title)
+                                .font(MCFont.eyebrow)
+                                .textCase(.uppercase)
+                                .kerning(MCTracking.label)
                         }
                     }
                 }
@@ -399,6 +447,8 @@ struct MainWindow: View {
             .scrollContentBackground(.hidden)
             .background(MCColor.secondaryBackground)
             .listStyle(.sidebar)
+            .safeAreaInset(edge: .top, spacing: 0) { sidebarHeader }
+            .safeAreaInset(edge: .bottom, spacing: 0) { sidebarFooter }
             .navigationSplitViewColumnWidth(min: MCSize.sidebarMin, ideal: MCSize.sidebarIdeal)
             .accessibilityIdentifier("sidebar.list")
         } detail: {
@@ -430,9 +480,11 @@ struct MainWindow: View {
                     PlaceholderView(module: selection ?? .smartCare)
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .mcCanvasBackground()
         }
         .onAppear { if !onboardingDone { showOnboarding = true } }
+        .task { await disk.run() }
         .sheet(isPresented: $showOnboarding, onDismiss: { onboardingDone = true }) {
             OnboardingView(isPresented: $showOnboarding)
         }
@@ -456,34 +508,114 @@ struct MainWindow: View {
                 Button {
                     showCommandPalette = true
                 } label: {
-                    Label(L("palette.open"), systemImage: "command")
+                    Label(L("palette.open"), systemImage: "magnifyingglass")
                 }
-                .help(L("palette.open"))
+                .help(L("palette.open") + " ⌘K")
             }
         }
         .background(MCColor.background)
         .tint(MCColor.teal)
     }
 
+    // MARK: Sidebar chrome
+
+    /// Brand lockup and the search/jump field. The field is a button that
+    /// opens the command palette — one search model for the whole app.
+    private var sidebarHeader: some View {
+        VStack(alignment: .leading, spacing: MCSpacing.sm) {
+            HStack(spacing: MCSpacing.xs) {
+                CoreBloomMark(tint: [MCColor.teal], lineWidthFraction: 0.1)
+                    .frame(width: 20, height: 20)
+                Text(verbatim: "CoreTend")
+                    .font(.system(size: 14, weight: .semibold))
+                Spacer(minLength: 0)
+                Text(verbatim: AppMetadata.marketingVersion)
+                    .font(MCFont.badge)
+                    .foregroundStyle(.tertiary)
+            }
+            .accessibilityElement(children: .combine)
+            Button {
+                showCommandPalette = true
+            } label: {
+                HStack(spacing: MCSpacing.xs) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.secondary)
+                    Text(L("sidebar.search"))
+                        .font(MCFont.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                    Spacer(minLength: 0)
+                    MCKeycap("⌘K")
+                }
+                .padding(.leading, MCSpacing.xs)
+                .padding(.trailing, 4)
+                .frame(height: 28)
+                .background(MCColor.elevatedBackground, in: RoundedRectangle(cornerRadius: MCRadius.control))
+                .overlay(RoundedRectangle(cornerRadius: MCRadius.control)
+                    .strokeBorder(MCColor.separator, lineWidth: 1))
+            }
+            .buttonStyle(MCPressStyle())
+            .accessibilityLabel(L("palette.open"))
+            .accessibilityIdentifier("sidebar.search")
+        }
+        .padding(.horizontal, MCSpacing.sm)
+        .padding(.top, MCSpacing.xs)
+        .padding(.bottom, MCSpacing.xs)
+    }
+
+    /// Always-visible startup-disk reading: the one number a care utility
+    /// should never make the user hunt for. Clicking it opens Space Lens.
+    private var sidebarFooter: some View {
+        Button {
+            selection = .spaceLens
+        } label: {
+            VStack(alignment: .leading, spacing: 6) {
+                HStack {
+                    MCEyebrow(L("sidebar.disk_label"))
+                    Spacer(minLength: 0)
+                    Image(systemName: "internaldrive")
+                        .font(.system(size: 11))
+                        .foregroundStyle(.tertiary)
+                }
+                if let free = disk.freeBytes {
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        Text(L("sidebar.disk_free", mcFormatBytes(free)))
+                            .font(.system(size: 13, weight: .semibold))
+                            .monospacedDigit()
+                        Text(L("sidebar.disk_of", mcFormatBytes(disk.totalBytes)))
+                            .font(MCFont.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    MCMeter(fraction: disk.usedFraction,
+                            tint: free < 20_000_000_000 ? MCTheme.warning : MCTheme.accent,
+                            segments: 24, height: 5)
+                } else {
+                    MCMeter(fraction: 0, segments: 24, height: 5)
+                }
+            }
+            .padding(MCSpacing.sm)
+            .background(MCColor.elevatedBackground, in: RoundedRectangle(cornerRadius: MCRadius.card))
+            .overlay(RoundedRectangle(cornerRadius: MCRadius.card).strokeBorder(MCColor.separator, lineWidth: 1))
+        }
+        .buttonStyle(MCPressStyle())
+        .padding(MCSpacing.sm)
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("sidebar.disk")
+    }
+
     private func sidebarRow(_ module: ModuleID) -> some View {
         let isSelected = selection == module
         return Label {
             Text(module.label)
-                .font(.callout.weight(isSelected ? .semibold : .regular))
+                .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
         } icon: {
             Image(systemName: module.systemImage)
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(isSelected ? MCColor.teal : Color.secondary)
-                .frame(width: 20)
+                .frame(width: 18)
         }
-        .padding(.vertical, 3)
-        .padding(.horizontal, 2)
-        .background {
-            if isSelected {
-                RoundedRectangle(cornerRadius: MCRadius.small)
-                    .fill(MCColor.teal.opacity(0.12))
-            }
-        }
+        .padding(.vertical, 2)
     }
 }
 
@@ -503,9 +635,12 @@ func paletteMatches(label: String, query: String) -> Bool {
 /// system. Deliberately not a general "search everything" index (see
 /// GRAPHIFY_MAPS.md / the workspace audit for why that's a separate,
 /// larger undertaking, not folded into this).
+///
+/// Fully keyboard-driven: ↑/↓ move the highlight, ↩ opens it, esc closes.
 private struct CommandPaletteView: View {
     @Binding var isPresented: Bool
     @State private var query = ""
+    @State private var highlighted = 0
     @FocusState private var searchFocused: Bool
 
     private enum Entry: Identifiable {
@@ -532,6 +667,11 @@ private struct CommandPaletteView: View {
             case let .action(_, _, icon, _): icon
             }
         }
+
+        var isAction: Bool {
+            if case .action = self { return true }
+            return false
+        }
     }
 
     private var actions: [Entry] {
@@ -554,35 +694,102 @@ private struct CommandPaletteView: View {
     }
 
     var body: some View {
+        let results = filtered
         VStack(spacing: 0) {
-            HStack {
-                Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+            HStack(spacing: MCSpacing.sm) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(MCColor.teal)
                 TextField(L("palette.placeholder"), text: $query)
                     .textFieldStyle(.plain)
+                    .font(.system(size: 17))
                     .focused($searchFocused)
-                    .onSubmit { activate(filtered.first) }
+                    .onSubmit { activate(results.indices.contains(highlighted) ? Optional(results[highlighted]) : results.first) }
+                    .onKeyPress(.downArrow) { move(1, count: results.count); return .handled }
+                    .onKeyPress(.upArrow) { move(-1, count: results.count); return .handled }
                     .accessibilityIdentifier("commandPalette.search")
             }
-            .padding(MCSpacing.sm)
-            Divider()
-            if filtered.isEmpty {
+            .padding(.horizontal, MCSpacing.md)
+            .frame(height: 54)
+            MCHairline()
+            if results.isEmpty {
                 MCEmptyState(icon: "magnifyingglass", title: L("palette.no_results"), message: "")
             } else {
-                List(filtered) { entry in
-                    Button {
-                        activate(entry)
-                    } label: {
-                        Label(entry.label, systemImage: entry.icon)
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: 1) {
+                            ForEach(Array(results.enumerated()), id: \.element.id) { index, entry in
+                                if index == 0 || results[index - 1].isAction != entry.isAction {
+                                    MCEyebrow(entry.isAction ? L("palette.section.actions") : L("palette.section.go_to"))
+                                        .padding(.horizontal, MCSpacing.sm)
+                                        .padding(.top, index == 0 ? MCSpacing.xs : MCSpacing.sm)
+                                        .padding(.bottom, 4)
+                                }
+                                row(entry, isHighlighted: index == highlighted)
+                                    .id(entry.id)
+                                    .onHover { if $0 { highlighted = index } }
+                            }
+                        }
+                        .padding(MCSpacing.xs)
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityIdentifier(entry.id)
+                    .onChange(of: highlighted) { _, new in
+                        if results.indices.contains(new) { proxy.scrollTo(results[new].id) }
+                    }
                 }
-                .listStyle(.plain)
             }
+            MCHairline()
+            HStack(spacing: MCSpacing.md) {
+                hint("↑↓", L("palette.hint.move"))
+                hint("↩", L("palette.hint.open"))
+                hint("esc", L("palette.hint.close"))
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, MCSpacing.md)
+            .frame(height: 34)
+            .background(MCColor.secondaryBackground)
         }
-        .frame(width: 420, height: 360)
+        .frame(width: 520, height: 420)
+        .background(MCColor.elevatedBackground)
         .onAppear { searchFocused = true }
+        .onChange(of: query) { _, _ in highlighted = 0 }
         .onKeyPress(.escape) { isPresented = false; return .handled }
+    }
+
+    private func row(_ entry: Entry, isHighlighted: Bool) -> some View {
+        Button {
+            activate(entry)
+        } label: {
+            HStack(spacing: MCSpacing.sm) {
+                MCIconTile(entry.icon, tint: isHighlighted ? MCColor.teal : .secondary, size: 26)
+                Text(entry.label)
+                    .font(.system(size: 13, weight: isHighlighted ? .medium : .regular))
+                Spacer(minLength: 0)
+                if isHighlighted {
+                    Image(systemName: "return")
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.horizontal, MCSpacing.xs)
+            .frame(height: 36)
+            .background(RoundedRectangle(cornerRadius: MCRadius.control)
+                .fill(isHighlighted ? MCColor.accentWash : .clear))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier(entry.id)
+    }
+
+    private func hint(_ key: String, _ label: String) -> some View {
+        HStack(spacing: 5) {
+            MCKeycap(key)
+            Text(label).font(MCFont.caption).foregroundStyle(.secondary)
+        }
+    }
+
+    private func move(_ delta: Int, count: Int) {
+        guard count > 0 else { return }
+        highlighted = (highlighted + delta + count) % count
     }
 
     private func activate(_ entry: Entry?) {
@@ -599,14 +806,8 @@ struct PlaceholderView: View {
     let module: ModuleID
 
     var body: some View {
-        VStack(spacing: 12) {
-            Image(systemName: module.systemImage)
-                .font(.system(size: MCIconSize.emptyState))
-                .foregroundStyle(MCTheme.accent)
-            Text(module.label).font(MCFont.pageTitle)
-            Text(L("placeholder.under_construction"))
-                .foregroundStyle(.secondary)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        MCEmptyState(icon: module.systemImage, title: module.label,
+                     message: L("placeholder.under_construction"),
+                     iconColor: MCTheme.accent, iconSize: MCIconSize.emptyState)
     }
 }

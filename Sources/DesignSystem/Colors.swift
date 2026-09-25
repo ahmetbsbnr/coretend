@@ -130,16 +130,30 @@ public enum MCColor {
     public static let cellTealPale = adaptive("cellTealPale",
         light: Canonical.cobaltDeepest, dark: Canonical.cobaltBrightest)
 
-    // Surfaces. Porcelain/Slate axis, adapting to the user's light/dark
-    // appearance.
+    // Surfaces — the "Instrument" stack. Three steps, each a clear L* step
+    // apart so panels read as raised without any shadow:
+    //   well (sidebar, insets)  <  canvas (window)  <  panel (content)
+    // Neutrals are a cool graphite rather than the older warm porcelain, so
+    // the one teal accent is the only colour on screen with temperature.
     public static let background = adaptive("background",
-        light: Canonical.paper, dark: Canonical.ink)
-    // Dark elevated surface sits a clear ~3 L* steps above Slate so cards
-    // read as raised, not as the same flat field. Light stays near-white.
+        light: (0.9647, 0.9647, 0.9569), dark: (0.0706, 0.0784, 0.0863))
     public static let elevatedBackground = adaptive("elevatedBackground",
-        light: (1.0, 0.996, 0.988), dark: (0.1725, 0.1922, 0.2157))
+        light: (1.0, 1.0, 1.0), dark: (0.1020, 0.1137, 0.1255))
     public static let secondaryBackground = adaptive("secondaryBackground",
-        light: (0.9255, 0.9098, 0.8784), dark: (0.0784, 0.0863, 0.0980))
+        light: (0.9333, 0.9333, 0.9176), dark: (0.0510, 0.0588, 0.0667))
+    /// Inset wells: meter tracks, field backgrounds, icon tiles.
+    public static let sunken = adaptive("sunken",
+        light: (0.9176, 0.9176, 0.8980), dark: (0.1451, 0.1569, 0.1725))
     public static let separator = adaptive("separator",
-        light: (0.84, 0.82, 0.78), dark: (0.27, 0.29, 0.32))
+        light: (0.8588, 0.8588, 0.8353), dark: (0.1765, 0.1922, 0.2118))
+    /// Stronger rule for focused/selected outlines and meter tick marks.
+    public static let rule = adaptive("rule",
+        light: (0.7490, 0.7490, 0.7216), dark: (0.2745, 0.2941, 0.3216))
+    /// Text/glyph colour placed *on* a filled accent surface. Teal is dark
+    /// on Porcelain (white reads) but bright on Slate (white fails), so the
+    /// on-accent ink flips with the appearance instead of being `.white`.
+    public static let onAccent = adaptive("onAccent",
+        light: (1.0, 1.0, 1.0), dark: (0.0314, 0.1098, 0.1059))
+    /// Low-alpha accent fill for selection and hover washes.
+    public static let accentWash = teal.opacity(0.12)
 }

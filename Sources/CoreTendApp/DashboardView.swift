@@ -6,255 +6,288 @@ import DesignSystem
 import Persistence
 import SystemMetrics
 
+/// Overview — the first screen. Answers three questions in reading order:
+/// how much room does this Mac have (and what do I do about it), what keeps
+/// me safe, and what happened recently. Everything else is one row away.
 struct DashboardView: View {
     @State private var snapshot: MetricsSnapshot?
     @State private var activity: [ActivityRecord] = []
+    @State private var impact = ActivityImpactSummary([])
+    @State private var impactRecordCount = 0
     @State private var exclusions: [String] = []
     @State private var collector = MetricsCollector()
-    @State private var revealed = false
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    // Secondary tools sit in a tighter, denser grid; Storage gets the hero.
-    private let toolColumns = [
-        GridItem(.adaptive(minimum: 200, maximum: 320), spacing: MCSpacing.sm, alignment: .top),
-    ]
-    private let statusColumns = [
-        GridItem(.adaptive(minimum: 168, maximum: 260), spacing: MCSpacing.sm, alignment: .top),
-    ]
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: MCSpacing.xl) {
-                brandRow
-                    .modifier(Reveal(revealed: revealed, index: 0, reduceMotion: reduceMotion))
-                scanHero
-                    .modifier(Reveal(revealed: revealed, index: 1, reduceMotion: reduceMotion))
-                statusStrip
-                    .modifier(Reveal(revealed: revealed, index: 2, reduceMotion: reduceMotion))
-                VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                    MCSectionHeader(L("sidebar.more"))
-                    LazyVGrid(columns: toolColumns, alignment: .leading, spacing: MCSpacing.sm) {
-                        toolTile("dashboard.spacelens", L("dashboard.spacelens.title"),
-                                 L("dashboard.spacelens.detail"), ModuleID.spaceLens.systemImage, .spaceLens)
-                        toolTile("dashboard.duplicates", L("dashboard.duplicates.title"),
-                                 L("dashboard.duplicates.detail"), ModuleID.duplicates.systemImage, .duplicates)
-                        toolTile("dashboard.applications", L("dashboard.applications.title"),
-                                 L("dashboard.applications.detail"), ModuleID.applications.systemImage, .applications)
-                        toolTile("dashboard.integrity", L("dashboard.integrity.title"),
-                                 L("dashboard.integrity.detail"), ModuleID.protection.systemImage, .protection)
-                        toolTile("dashboard.activity", L("dashboard.activity.title"),
-                                 latestActivityText, ModuleID.myActivity.systemImage, .myActivity)
+        VStack(spacing: 0) {
+            MCPageHeader(L("module.dashboard"),
+                         eyebrow: L("dashboard.eyebrow"),
+                         subtitle: L("dashboard.subtitle"))
+            ScrollView {
+                VStack(alignment: .leading, spacing: MCSpacing.lg) {
+                    ViewThatFits(in: .horizontal) {
+                        HStack(alignment: .top, spacing: MCSpacing.md) {
+                            storagePanel
+                            safeguardsPanel.frame(width: 300)
+                        }
+                        VStack(spacing: MCSpacing.md) {
+                            storagePanel
+                            safeguardsPanel
+                        }
                     }
+                    .mcAppear()
+
+                    ViewThatFits(in: .horizontal) {
+                        HStack(alignment: .top, spacing: MCSpacing.md) {
+                            toolsPanel
+                            activityPanel.frame(width: 360)
+                        }
+                        VStack(spacing: MCSpacing.md) {
+                            toolsPanel
+                            activityPanel
+                        }
+                    }
+                    .mcAppear(delay: 0.05)
                 }
-                .modifier(Reveal(revealed: revealed, index: 3, reduceMotion: reduceMotion))
+                .padding(MCSpacing.page)
+                .frame(maxWidth: MCSize.contentMax, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(MCSpacing.page)
-            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .navigationTitle(L("module.dashboard"))
         .accessibilityIdentifier("dashboard.root")
-        .task {
-            await refresh()
-            if reduceMotion { revealed = true }
-            else { withAnimation(.smooth(duration: 0.45)) { revealed = true } }
-        }
+        .task { await refresh() }
     }
 
-    // MARK: - Brand row: quiet identity line above the scan panel
+    // MARK: - Storage: the headline figure and the primary action
 
-    private var brandRow: some View {
-        HStack(alignment: .center, spacing: MCSpacing.md) {
-            CoreBloomMark(tint: [MCColor.teal], lineWidthFraction: 0.08)
-                .frame(width: 52, height: 52)
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(verbatim: "CoreTend")
-                    .font(MCFont.heroTitle)
-                Text(L("dashboard.subtitle"))
-                    .font(MCFont.secondaryBody)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .accessibilityElement(children: .combine)
-            Spacer(minLength: 0)
-        }
-    }
-
-    // MARK: - Scan panel: the imposing centrepiece the dashboard is built around
-
-    private var scanHero: some View {
-        let ringSize: CGFloat = 128
-        return HStack(alignment: .center, spacing: MCSpacing.xl) {
-            ZStack {
-                Circle()
-                    .stroke(MCColor.storage.opacity(MCOpacity.orbitTrack), lineWidth: 10)
-                Circle()
-                    .trim(from: 0, to: freeSpaceFraction)
-                    .stroke(MCColor.storage, style: StrokeStyle(lineWidth: 10, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                    .animation(reduceMotion ? nil : .easeOut(duration: 0.6), value: freeSpaceFraction)
-                Image(systemName: ModuleID.cleanup.systemImage)
-                    .font(.system(size: 30, weight: .semibold))
-                    .foregroundStyle(MCColor.storage)
-            }
-            .frame(width: ringSize, height: ringSize)
-            .accessibilityHidden(true)
-
-            VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                Text(L("dashboard.storage.title")).font(MCFont.pageTitle)
-                Text(L("dashboard.storage.detail"))
-                    .font(MCFont.secondaryBody)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                Button {
-                    navigate(.cleanup)
-                } label: {
-                    Label(L("dashboard.primary_action"), systemImage: "sparkles")
-                        .font(.title3.weight(.semibold))
-                        .padding(.vertical, MCSpacing.sm)
-                        .padding(.horizontal, MCSpacing.lg)
+    private var storagePanel: some View {
+        MCPanel(L("dashboard.storage.title")) {
+            VStack(alignment: .leading, spacing: MCSpacing.md) {
+                HStack(alignment: .bottom, spacing: MCSpacing.lg) {
+                    MCReadout(L("dashboard.status.free_space"),
+                              value: snapshot.map { mcFormatBytes($0.diskFreeBytes) } ?? "—",
+                              detail: snapshot.map { L("dashboard.storage.free_of_total", mcFormatBytes($0.diskTotalBytes)) },
+                              large: true)
+                    Spacer(minLength: MCSpacing.md)
+                    if impact.freedBytes > 0 {
+                        MCReadout(L("dashboard.reclaimed"),
+                                  value: mcFormatBytes(impact.freedBytes),
+                                  detail: L("dashboard.reclaimed.detail", impactRecordCount))
+                            .fixedSize()
+                    }
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .keyboardShortcut(.defaultAction)
-                .padding(.top, MCSpacing.sm)
-                .accessibilityIdentifier("dashboard.scan.start")
-                .accessibilityLabel(L("dashboard.primary_action"))
-            }
-            Spacer(minLength: MCSpacing.lg)
-            if let snap = snapshot {
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text(mcFormatBytes(snap.diskFreeBytes))
-                        .font(MCFont.displayMetric)
-                        .monospacedDigit()
-                        .contentTransition(.numericText())
-                    Text(L("dashboard.storage.free_of_total", mcFormatBytes(snap.diskTotalBytes)))
-                        .font(MCFont.badge)
-                        .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 6) {
+                    MCMeter(fraction: snapshot?.diskUsedFraction ?? 0,
+                            tint: lowOnSpace ? MCTheme.warning : MCTheme.accent,
+                            segments: 60, height: 10)
+                    HStack {
+                        Text(L("dashboard.storage.used", Int(((snapshot?.diskUsedFraction ?? 0) * 100).rounded())))
+                        Spacer()
+                        if lowOnSpace {
+                            Label(L("menubar.status_attention"), systemImage: "exclamationmark.triangle.fill")
+                                .foregroundStyle(MCTheme.warning)
+                        }
+                    }
+                    .font(MCFont.mono)
+                    .foregroundStyle(.secondary)
                 }
-                .fixedSize()
-                .accessibilityElement(children: .combine)
+                MCHairline()
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .center, spacing: MCSpacing.md) {
+                        storageCopy
+                        Spacer(minLength: MCSpacing.sm)
+                        storageActions
+                    }
+                    VStack(alignment: .leading, spacing: MCSpacing.sm) {
+                        storageCopy
+                        storageActions
+                    }
+                }
             }
         }
-        .padding(MCSpacing.xl)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        // Teal wash sits in front of the solid card fill (it is semi-transparent),
-        // so the panel reads as tinted, not as a flat elevated surface.
-        .background(
-            LinearGradient(colors: [MCColor.teal.opacity(0.12), MCColor.teal.opacity(0.02)],
-                           startPoint: .topLeading, endPoint: .bottomTrailing),
-            in: RoundedRectangle(cornerRadius: MCRadius.card))
-        .background(MCColor.elevatedBackground, in: RoundedRectangle(cornerRadius: MCRadius.card))
-        .overlay(
-            RoundedRectangle(cornerRadius: MCRadius.card)
-                .strokeBorder(MCColor.teal.opacity(0.45), lineWidth: 1.5))
-        .shadow(color: .black.opacity(0.18), radius: 10, x: 0, y: 3)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("dashboard.storage")
     }
 
-    // MARK: - Status strip
+    private var storageCopy: some View {
+        Text(L("dashboard.storage.detail"))
+            .font(MCFont.secondaryBody)
+            .foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: 420, alignment: .leading)
+    }
 
-    // A short live read of the machine — what the user is here to act on.
-    // Build/signature status is meta and lives in Settings, not here.
-    private var statusStrip: some View {
-        LazyVGrid(columns: statusColumns, alignment: .leading, spacing: MCSpacing.sm) {
-            statusPill(L("dashboard.status.free_space"),
-                       value: snapshot.map { mcFormatBytes($0.diskFreeBytes) } ?? L("dashboard.status.loading"),
-                       icon: "internaldrive",
-                       attention: (snapshot?.diskFreeBytes ?? 20_000_000_000) < 20_000_000_000)
-            statusPill(L("dashboard.status.safety"),
-                       value: L("dashboard.status.trash_enabled"),
-                       icon: "trash",
-                       attention: false)
-            statusPill(L("dashboard.status.exclusions"),
-                       value: L("dashboard.status.exclusion_count", exclusions.count),
-                       icon: "line.3.horizontal.decrease.circle",
-                       attention: false)
+    private var storageActions: some View {
+        HStack(spacing: MCSpacing.xs) {
+            Button {
+                navigate(.spaceLens)
+            } label: {
+                Label(L("dashboard.secondary_action"), systemImage: ModuleID.spaceLens.systemImage)
+            }
+            .buttonStyle(.mcSecondaryLarge)
+            Button {
+                navigate(.cleanup)
+            } label: {
+                Label(L("dashboard.primary_action"), systemImage: "sparkles")
+            }
+            .buttonStyle(.mcPrimaryLarge)
+            .keyboardShortcut(.defaultAction)
+            .accessibilityIdentifier("dashboard.scan.start")
+            .accessibilityLabel(L("dashboard.primary_action"))
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .fixedSize()
     }
 
-    private var freeSpaceFraction: CGFloat {
-        guard let snap = snapshot, snap.diskTotalBytes > 0 else { return 0 }
-        return CGFloat(Double(snap.diskFreeBytes) / Double(snap.diskTotalBytes))
+    private var lowOnSpace: Bool {
+        (snapshot?.diskFreeBytes ?? .max) < 20_000_000_000
     }
 
-    // MARK: - Secondary tool tiles
+    // MARK: - Safeguards: why it is safe to press the button
 
-    private func toolTile(_ id: String, _ title: String, _ detail: String, _ icon: String,
-                          _ module: ModuleID, attention: Bool = false) -> some View {
+    private var safeguardsPanel: some View {
+        MCPanel(L("dashboard.safeguards")) {
+            VStack(spacing: 0) {
+                MCKeyValueRow(L("dashboard.status.safety"), value: L("dashboard.status.trash_enabled"),
+                              icon: "trash", status: .success)
+                MCHairline()
+                MCKeyValueRow(L("dashboard.status.exclusions"),
+                              value: L("dashboard.status.exclusion_count", exclusions.count),
+                              icon: "eye.slash")
+                MCHairline()
+                MCKeyValueRow(L("performance.memory_pressure"),
+                              value: snapshot?.memoryPressureLevel.capitalized ?? "—",
+                              icon: "memorychip",
+                              status: snapshot.map { s -> MCStatus in s.memoryPressureLevel == "normal" ? .success : .attention })
+                MCHairline()
+                MCKeyValueRow(L("performance.thermal_state"),
+                              value: snapshot?.thermalState.capitalized ?? "—",
+                              icon: "thermometer.medium",
+                              status: snapshot.map { s -> MCStatus in ["serious", "critical"].contains(s.thermalState) ? .attention : .success })
+            }
+        }
+    }
+
+    // MARK: - Tools: a dense list, not a tile wall
+
+    private var toolsPanel: some View {
+        MCPanel(L("dashboard.tools"), padded: false) {
+            VStack(spacing: 0) {
+                toolRow("dashboard.spacelens", L("dashboard.spacelens.title"),
+                        L("dashboard.spacelens.detail"), ModuleID.spaceLens.systemImage, .spaceLens)
+                MCHairline().padding(.leading, 56)
+                toolRow("dashboard.duplicates", L("dashboard.duplicates.title"),
+                        L("dashboard.duplicates.detail"), ModuleID.duplicates.systemImage, .duplicates)
+                MCHairline().padding(.leading, 56)
+                toolRow("dashboard.applications", L("dashboard.applications.title"),
+                        L("dashboard.applications.detail"), ModuleID.applications.systemImage, .applications)
+                MCHairline().padding(.leading, 56)
+                toolRow("dashboard.integrity", L("dashboard.integrity.title"),
+                        L("dashboard.integrity.detail"), ModuleID.protection.systemImage, .protection)
+            }
+        }
+    }
+
+    private func toolRow(_ id: String, _ title: String, _ detail: String, _ icon: String,
+                         _ module: ModuleID) -> some View {
         Button {
             navigate(module)
         } label: {
-            MCCard {
-                VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                    HStack(spacing: MCSpacing.xs) {
-                        Image(systemName: attention ? "exclamationmark.triangle.fill" : icon)
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundStyle(attention ? MCColor.attention : .secondary)
-                            .frame(width: 20)
-                        Text(title).font(MCFont.cardTitle)
-                        Spacer(minLength: 0)
-                        Image(systemName: "arrow.right")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(.tertiary)
-                    }
+            HStack(alignment: .center, spacing: MCSpacing.sm) {
+                MCIconTile(icon, size: 30)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title).font(MCFont.cardTitle)
                     Text(detail)
                         .font(MCFont.caption)
                         .foregroundStyle(.secondary)
-                        .lineLimit(3)
+                        .lineLimit(2)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                .frame(maxWidth: .infinity, minHeight: 78, alignment: .topLeading)
+                Spacer(minLength: MCSpacing.sm)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.tertiary)
             }
+            .padding(.horizontal, MCSpacing.md)
+            .padding(.vertical, MCSpacing.sm)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.mcRow)
         .accessibilityIdentifier(id)
         .accessibilityLabel("\(title). \(detail)")
         .accessibilityAddTraits(.isButton)
     }
 
-    private func statusPill(_ title: String, value: String, icon: String, attention: Bool) -> some View {
-        HStack(spacing: MCSpacing.xs) {
-            Image(systemName: attention ? "exclamationmark.triangle.fill" : icon)
-                .foregroundStyle(attention ? MCColor.attention : MCColor.teal)
-                .frame(width: 18)
-            VStack(alignment: .leading, spacing: 1) {
-                Text(title)
-                    .font(MCFont.badge)
-                    .foregroundStyle(.secondary)
-                    .textCase(.uppercase)
-                    .kerning(0.4)
-                Text(value)
+    // MARK: - Recent activity
+
+    private var activityPanel: some View {
+        MCPanel(L("dashboard.activity.title"), padded: false, accessory: {
+            Button(L("dashboard.view_all")) { navigate(.myActivity) }
+                .buttonStyle(.mcQuiet)
+                .accessibilityIdentifier("dashboard.activity")
+        }) {
+            if activity.isEmpty {
+                Text(L("dashboard.activity.empty"))
                     .font(MCFont.secondaryBody)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.78)
-                    .contentTransition(.opacity)
+                    .foregroundStyle(.secondary)
+                    .padding(MCSpacing.md)
+                    .frame(maxWidth: .infinity, minHeight: 120, alignment: .center)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(Array(activity.prefix(5).enumerated()), id: \.element.id) { index, record in
+                        if index > 0 { MCHairline().padding(.leading, MCSpacing.md) }
+                        activityRow(record)
+                    }
+                }
             }
         }
-        .padding(.horizontal, MCSpacing.sm)
-        .padding(.vertical, MCSpacing.xs)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(MCColor.elevatedBackground, in: RoundedRectangle(cornerRadius: MCRadius.small))
-        .overlay(
-            RoundedRectangle(cornerRadius: MCRadius.small)
-                .strokeBorder(MCColor.separator.opacity(0.8), lineWidth: 1))
+    }
+
+    private func activityRow(_ record: ActivityRecord) -> some View {
+        HStack(alignment: .top, spacing: MCSpacing.sm) {
+            Image(systemName: activityIcon(record.kind))
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(record.kind == .error ? MCTheme.danger
+                                 : record.kind == .cleanup ? MCTheme.accent : .secondary)
+                .frame(width: 16, height: 16)
+                .padding(.top, 1)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(record.summary)
+                    .font(MCFont.secondaryBody)
+                    .lineLimit(2)
+                Text(AppDateFormatting.string(record.date, style: .dayMonthYearWithTime))
+                    .font(MCFont.badge)
+                    .foregroundStyle(.tertiary)
+            }
+            Spacer(minLength: MCSpacing.xs)
+            if record.bytes > 0 {
+                Text(mcFormatBytes(record.bytes))
+                    .font(MCFont.mono)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.horizontal, MCSpacing.md)
+        .padding(.vertical, 10)
         .accessibilityElement(children: .combine)
     }
 
-    // MARK: - Derived text
-
-    private var latestActivityText: String {
-        guard let record = activity.first else { return L("dashboard.activity.empty") }
-        return "\(record.summary) · \(AppDateFormatting.string(record.date, style: .dayMonthYearWithTime))"
+    private func activityIcon(_ kind: ActivityRecord.Kind) -> String {
+        switch kind {
+        case .scan: "magnifyingglass"
+        case .cleanup: "trash"
+        case .restore: "arrow.uturn.backward"
+        case .error: "exclamationmark.triangle.fill"
+        }
     }
+
+    // MARK: - Data
 
     private func refresh() async {
         async let latestSnapshot = collector.snapshot()
         if let store = AppEnvironment.shared.store {
-            activity = (try? await store.activity(limit: 5)) ?? []
+            let history = (try? await store.activity(limit: 1000)) ?? []
+            activity = Array(history.prefix(5))
+            impact = ActivityImpactSummary(history)
+            impactRecordCount = history.filter { $0.kind == .cleanup }.count
             exclusions = (try? await store.exclusions()) ?? []
         }
         snapshot = await latestSnapshot
@@ -262,21 +295,5 @@ struct DashboardView: View {
 
     private func navigate(_ module: ModuleID) {
         NotificationCenter.default.post(name: .mcNavigate, object: module)
-    }
-}
-
-/// Load-time staggered reveal. Transform/opacity only; a no-op under Reduce
-/// Motion, where `revealed` is set without an animation.
-private struct Reveal: ViewModifier {
-    let revealed: Bool
-    let index: Int
-    let reduceMotion: Bool
-
-    func body(content: Content) -> some View {
-        content
-            .opacity(revealed ? 1 : 0)
-            .offset(y: revealed || reduceMotion ? 0 : 10)
-            .animation(reduceMotion ? nil : .smooth(duration: 0.4).delay(Double(index) * 0.06),
-                       value: revealed)
     }
 }
