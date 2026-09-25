@@ -379,10 +379,7 @@ struct DuplicatesView: View {
                                 .accessibilityLabel(L("dupes.select_copy", url.lastPathComponent))
                                 Text(url.lastPathComponent)
                                 if url.path == group.keeper.path {
-                                    Text(L("dupes.suggested_keeper"))
-                                        .font(.caption2.weight(.medium))
-                                        .padding(.horizontal, MCSpacing.xs).padding(.vertical, MCSpacing.xxs)
-                                        .background(MCTheme.accent.opacity(0.2), in: Capsule())
+                                    MCTag(L("dupes.suggested_keeper"))
                                         .help(L("dupes.suggested_keeper.why"))
                                 }
                                 Spacer()

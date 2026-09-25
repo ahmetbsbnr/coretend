@@ -379,11 +379,7 @@ struct CloudCleanupView: View {
     }
 
     private func badge(_ text: String, color: Color) -> some View {
-        Text(text)
-            .font(.caption2.weight(.medium))
-            .padding(.horizontal, 6).padding(.vertical, 2)
-            .background(color.opacity(0.16), in: Capsule())
-            .foregroundStyle(color)
+        MCTag(text, tint: color)
     }
 
     private func accessibilityStateText(_ state: CloudCleanupViewModel.SyncState) -> String {

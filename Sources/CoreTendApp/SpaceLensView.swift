@@ -590,7 +590,7 @@ struct SpaceLensView: View {
                         .accessibilityLabel(L("spacelens.cloud_placeholder_suffix"))
                 }
                 Spacer()
-                Text(mcFormatBytes(child.size)).monospacedDigit().foregroundStyle(.secondary)
+                Text(mcFormatBytes(child.size)).font(MCFont.mono).foregroundStyle(.secondary)
                 if child.isDirectory && !child.children.isEmpty {
                     Button { navigate { model.descend(into: child) } } label: {
                         Image(systemName: "chevron.right")

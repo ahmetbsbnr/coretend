@@ -142,11 +142,7 @@ private struct SafetyLogRow: View {
     }
 
     private var stageBadge: some View {
-        Text(stageLabel)
-            .font(.caption2.weight(.semibold))
-            .padding(.horizontal, 6).padding(.vertical, 3)
-            .background(stageColor.opacity(0.18), in: Capsule())
-            .foregroundStyle(stageColor)
+        MCTag(stageLabel, tint: stageColor)
             .accessibilityHidden(true)
     }
 }

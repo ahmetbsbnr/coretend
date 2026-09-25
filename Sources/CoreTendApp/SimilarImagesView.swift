@@ -230,11 +230,7 @@ struct SimilarImagesView: View {
                                 HStack {
                                     Text(url.lastPathComponent).lineLimit(1)
                                     if url == best {
-                                        Text(L("similar.best_resolution"))
-                                            .font(.caption2.weight(.semibold))
-                                            .padding(.horizontal, MCSpacing.xxs).padding(.vertical, 1)
-                                            .background(MCColor.teal.opacity(0.18), in: Capsule())
-                                            .foregroundStyle(MCColor.teal)
+                                        MCTag(L("similar.best_resolution"))
                                     }
                                     Spacer()
                                     Button {

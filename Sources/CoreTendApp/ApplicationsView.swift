@@ -392,9 +392,7 @@ struct InstalledAppsView: View {
                             .help(L("apps.downloaded.help"))
                     }
                     if update != .none {
-                        Text(update.rawValue)
-                            .padding(.horizontal, MCSpacing.xxs)
-                            .background(MCColor.protection.opacity(0.15), in: Capsule())
+                        MCTag(update.rawValue, tint: MCColor.protection)
                     }
                 }
                 .font(.caption).foregroundStyle(.secondary)

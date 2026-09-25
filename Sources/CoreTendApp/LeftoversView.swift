@@ -149,11 +149,7 @@ struct LeftoversView: View {
                         HStack(spacing: MCSpacing.xxs) {
                             Text(item.url.lastPathComponent)
                             if model.isAmbiguous(item) {
-                                Text(L("leftovers.shared_review"))
-                                    .font(.caption2.weight(.semibold))
-                                    .padding(.horizontal, MCSpacing.xxs).padding(.vertical, 1)
-                                    .background(MCColor.attention.opacity(0.18), in: Capsule())
-                                    .foregroundStyle(MCColor.attention)
+                                MCTag(L("leftovers.shared_review"), tint: MCColor.attention)
                             }
                         }
                         Text(L("leftovers.not_installed", item.kind.rawValue))
@@ -161,7 +157,7 @@ struct LeftoversView: View {
                     }
                     Spacer()
                     Text(mcFormatBytes(item.sizeBytes))
-                        .monospacedDigit().foregroundStyle(.secondary)
+                        .font(MCFont.mono).foregroundStyle(.secondary)
                     Button {
                         NSWorkspace.shared.activateFileViewerSelecting([item.url])
                     } label: { Image(systemName: "magnifyingglass") }

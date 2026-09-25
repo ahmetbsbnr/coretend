@@ -304,7 +304,7 @@ struct LargeOldFilesView: View {
                     // Large, legible metric number — this screen is
                     // primarily a data table, size is the number that matters.
                     Text(mcFormatBytes(finding.logicalSize))
-                        .monospacedDigit().font(.title3.weight(.semibold))
+                        .font(MCFont.mono.weight(.semibold))
                         .accessibilityHidden(true) // folded into the row's combined label below
                     Button {
                         model.previewURL = finding.url

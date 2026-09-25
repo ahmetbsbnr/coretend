@@ -481,12 +481,17 @@ struct MainWindow: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // One button language: anything that doesn't pick a style
+            // explicitly renders as the secondary panel button.
+            .buttonStyle(.mcSecondary)
             .mcCanvasBackground()
         }
         .onAppear { if !onboardingDone { showOnboarding = true } }
         .task { await disk.run() }
         .sheet(isPresented: $showOnboarding, onDismiss: { onboardingDone = true }) {
             OnboardingView(isPresented: $showOnboarding)
+                .buttonStyle(.mcSecondary)
+                .tint(MCColor.teal)
         }
         .onReceive(NotificationCenter.default.publisher(for: .mcNavigate)) { note in
             if let module = note.object as? ModuleID { selection = module }

@@ -315,14 +315,10 @@ private struct ActivityRow: View {
                 Text(record.summary)
                 Spacer()
                 if record.kind == .cleanup {
-                    Text(L("activity.completed"))
-                        .font(.caption2.weight(.medium))
-                        .padding(.horizontal, MCSpacing.xs).padding(.vertical, MCSpacing.xxs)
-                        .background(MCTheme.success.opacity(0.18), in: Capsule())
-                        .foregroundStyle(MCTheme.success)
+                    MCTag(L("activity.completed"), tint: MCTheme.success)
                 }
                 Text(mcFormatBytes(record.bytes))
-                    .monospacedDigit().foregroundStyle(.secondary)
+                    .font(MCFont.mono).foregroundStyle(.secondary)
             }
         }
         .accessibilityLabel("\(record.summary), \(AppDateFormatting.string(record.date, style: .dayMonthYearWithTime)), \(L("activity.row.real_a11y")), \(mcFormatBytes(record.bytes))")

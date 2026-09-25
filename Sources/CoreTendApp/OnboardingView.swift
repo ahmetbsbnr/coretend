@@ -233,12 +233,8 @@ struct OnboardingView: View {
         .padding(MCSpacing.lg)
         .frame(width: 236)
         .frame(maxHeight: .infinity, alignment: .top)
-        .background(
-            LinearGradient(colors: [MCColor.teal.opacity(0.10), MCColor.elevatedBackground],
-                           startPoint: .top, endPoint: .bottom))
-        .overlay(alignment: .trailing) {
-            Rectangle().fill(MCColor.separator.opacity(0.6)).frame(width: 1)
-        }
+        .background(MCColor.secondaryBackground)
+        .overlay(alignment: .trailing) { MCHairline(vertical: true) }
         .animation(.smooth(duration: 0.3), value: step)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(L("onboarding.step_a11y", step + 1, stepCount))
@@ -248,11 +244,21 @@ struct OnboardingView: View {
     private func railStepRow(_ i: Int) -> some View {
         let done = i < step
         let current = i == step
-        return HStack(alignment: .top, spacing: MCSpacing.xs) {
-            Image(systemName: done ? "checkmark.circle.fill" : (current ? "circle.inset.filled" : "circle"))
-                .font(.system(size: 13))
-                .foregroundStyle(done || current ? AnyShapeStyle(MCColor.teal) : AnyShapeStyle(.tertiary))
-                .accessibilityHidden(true)
+        return HStack(alignment: .firstTextBaseline, spacing: MCSpacing.sm) {
+            Group {
+                if done {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 10, weight: .bold))
+                } else {
+                    Text(verbatim: String(format: "%02d", i + 1))
+                        .font(MCFont.badge)
+                }
+            }
+            .foregroundStyle(current ? MCColor.onAccent : (done ? MCColor.teal : Color.secondary))
+            .frame(width: 22, height: 18)
+            .background(RoundedRectangle(cornerRadius: MCRadius.small)
+                .fill(current ? MCColor.teal : (done ? MCColor.accentWash : MCColor.sunken)))
+            .accessibilityHidden(true)
             Text(stepTitle(i))
                 .font(MCFont.caption)
                 .fontWeight(current ? .semibold : .regular)
@@ -294,7 +300,7 @@ struct OnboardingView: View {
     private var welcomeStep: some View {
         page {
             VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-                Text(L("onboarding.step0.title")).font(MCFont.heroTitle)
+                Text(L("onboarding.step0.title")).font(MCFont.heroTitle).kerning(MCTracking.title)
                 // The product signature — identical here, on the site, in the
                 // DMG and in the README. A product that introduces itself
                 // differently in each place reads as several products.
@@ -313,7 +319,7 @@ struct OnboardingView: View {
             }
             Divider().padding(.vertical, MCSpacing.xxs)
             VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                Text(L("onboarding.language.title")).font(MCFont.sectionTitle).foregroundStyle(.secondary)
+                MCEyebrow(L("onboarding.language.title"))
                 Picker(L("onboarding.language.title"), selection: $appLanguageRaw) {
                     Text(L("settings.language.system")).tag(AppLanguage.system.rawValue)
                     Text("Français").tag(AppLanguage.fr.rawValue)
@@ -557,7 +563,7 @@ struct OnboardingView: View {
     private var footer: some View {
         HStack {
             Button(L("onboarding.skip")) { model.persist(); finish() }
-                .buttonStyle(.plain).foregroundStyle(.secondary)
+                .buttonStyle(.mcQuiet)
                 .accessibilityIdentifier("onboarding.skip")
             Spacer()
             if step > 0 {
@@ -567,7 +573,7 @@ struct OnboardingView: View {
             Button(step == stepCount - 1 ? L("onboarding.start") : L("onboarding.continue")) {
                 if step == stepCount - 1 { model.persist(); finish() } else { step += 1 }
             }
-            .buttonStyle(.mcPrimary)
+            .buttonStyle(.mcPrimaryLarge)
             .keyboardShortcut(.defaultAction)
             .accessibilityIdentifier(step == stepCount - 1 ? "onboarding.start" : "onboarding.continue")
         }

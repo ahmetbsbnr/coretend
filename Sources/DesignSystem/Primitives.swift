@@ -580,3 +580,31 @@ public extension MCBriefing where Detail == EmptyView {
         self.init(title: title, message: message, action: action, detail: { EmptyView() })
     }
 }
+
+// MARK: - Tag
+
+/// Free-colour sibling of `MCStatusBadge` for labels that aren't a status
+/// (a suggested keeper, a best-resolution pick, an update channel). Same
+/// squared chip and monospaced caps, so every tag in the app looks alike.
+public struct MCTag: View {
+    private let text: String
+    private let tint: Color
+
+    public init(_ text: String, tint: Color = MCColor.teal) {
+        self.text = text
+        self.tint = tint
+    }
+
+    public var body: some View {
+        Text(text)
+            .font(MCFont.badge)
+            .textCase(.uppercase)
+            .kerning(0.4)
+            .lineLimit(1)
+            .foregroundStyle(tint)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(tint.opacity(0.11), in: RoundedRectangle(cornerRadius: MCRadius.small))
+            .overlay(RoundedRectangle(cornerRadius: MCRadius.small).strokeBorder(tint.opacity(0.22), lineWidth: 1))
+    }
+}
