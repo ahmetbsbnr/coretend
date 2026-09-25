@@ -639,3 +639,11 @@
 "protection.subtitle" = "Where downloads came from, who signed your apps, and what starts at login — read from metadata macOS already keeps.";
 "performance.subtitle" = "Live readings sampled every two seconds while this page is open, plus the agents that launch with your session.";
 "performance.live" = "Live";
+"apps.subtitle" = "Every installed app with the data it keeps around it — bundles, caches, helpers and leftovers from apps already gone.";
+"clutter.subtitle" = "Large, old and near-identical files you may have forgotten. Nothing is selected until you choose it.";
+"duplicates.subtitle" = "Exact copies matched by content, with the safer copy to keep explained before any action.";
+"spacelens.subtitle" = "A map of what fills a folder. Zoom in, search, and reveal anything in Finder.";
+"cloud.subtitle" = "What is stored only in the cloud, what is also kept locally, and how much room each takes.";
+"activity.subtitle" = "Every scan and every move to Trash, recorded on this Mac.";
+"settings.subtitle" = "Language, menu bar, exclusions, updates and diagnostics.";
+"clutter.criteria" = "Criteria";

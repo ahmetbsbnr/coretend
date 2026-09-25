@@ -227,12 +227,15 @@ struct DuplicatesView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            switch model.phase {
-            case .idle: idleView
-            case let .scanning(processed, total): scanningView(processed, total)
-            case .empty: emptyView
-            case .results, .executing: resultsView
-            case let .finished(outcome): finishedView(outcome)
+            MCPageHeader(L("module.duplicates"), eyebrow: L("sidebar.reclaim"), subtitle: L("duplicates.subtitle"), icon: ModuleID.duplicates.systemImage)
+            VStack(spacing: 0) {
+                switch model.phase {
+                case .idle: idleView
+                case let .scanning(processed, total): scanningView(processed, total)
+                case .empty: emptyView
+                case .results, .executing: resultsView
+                case let .finished(outcome): finishedView(outcome)
+                }
             }
         }
         .navigationTitle(L("module.duplicates"))
@@ -252,25 +255,11 @@ struct DuplicatesView: View {
     }
 
     private var idleView: some View {
-        VStack(spacing: MCSpacing.xl) {
-            VStack(spacing: MCSpacing.xs) {
-                Text(L("dupes.idle.title"))
-                    .font(MCFont.pageTitle)
-                    .multilineTextAlignment(.center)
-                Text(L("dupes.idle.subtitle"))
-                    .font(MCFont.secondaryBody)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: 460)
-            }
-            .mcAppear()
+        MCBriefing(title: L("dupes.idle.title"), message: L("dupes.idle.subtitle")) {
             MCScanButton(L("dupes.find"), systemImage: "doc.on.doc.fill") { model.start() }
+                .keyboardShortcut(.defaultAction)
                 .accessibilityIdentifier("duplicates.scan.start")
-                .mcAppear(delay: 0.06)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(MCSpacing.xl)
     }
 
     private func scanningView(_ processed: Int, _ total: Int) -> some View {
@@ -285,18 +274,21 @@ struct DuplicatesView: View {
             HStack(spacing: MCSpacing.sm) {
                 if model.isScanPaused {
                     Button(L("common.resume")) { model.resumeScan() }
+                        .buttonStyle(.mcSecondary)
                         .keyboardShortcut("r", modifiers: [])
                         .help(L("dupes.resume_hint"))
                         .accessibilityHint(L("dupes.resume_hint"))
                         .accessibilityIdentifier("duplicates.scan.resume")
                 } else {
                     Button(L("common.pause")) { model.pauseScan() }
+                        .buttonStyle(.mcSecondary)
                         .keyboardShortcut("p", modifiers: [])
                         .help(L("dupes.pause_hint"))
                         .accessibilityHint(L("dupes.pause_hint"))
                         .accessibilityIdentifier("duplicates.scan.pause")
                 }
                 Button(L("common.cancel")) { model.cancel() }
+                    .buttonStyle(.mcQuiet)
                     .keyboardShortcut(.cancelAction)
                     .accessibilityIdentifier("duplicates.scan.cancel")
             }

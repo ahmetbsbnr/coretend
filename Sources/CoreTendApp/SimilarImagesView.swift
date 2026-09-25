@@ -165,18 +165,21 @@ struct SimilarImagesView: View {
                     HStack(spacing: MCSpacing.sm) {
                         if model.isPaused {
                             Button(L("common.resume")) { model.resumeScan() }
+                                .buttonStyle(.mcSecondary)
                                 .keyboardShortcut("r", modifiers: [])
                                 .help(L("dupes.resume_hint"))
                                 .accessibilityHint(L("dupes.resume_hint"))
                                 .accessibilityIdentifier("similar.scan.resume")
                         } else {
                             Button(L("common.pause")) { model.pauseScan() }
+                                .buttonStyle(.mcSecondary)
                                 .keyboardShortcut("p", modifiers: [])
                                 .help(L("dupes.pause_hint"))
                                 .accessibilityHint(L("dupes.pause_hint"))
                                 .accessibilityIdentifier("similar.scan.pause")
                         }
                         Button(L("common.cancel")) { model.cancel() }
+                            .buttonStyle(.mcQuiet)
                             .keyboardShortcut(.cancelAction)
                             .accessibilityIdentifier("similar.scan.cancel")
                     }

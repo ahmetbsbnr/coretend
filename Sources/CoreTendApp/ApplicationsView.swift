@@ -265,16 +265,34 @@ final class ApplicationsViewModel {
 }
 
 struct ApplicationsView: View {
+    @State private var tab = 0
+
     var body: some View {
-        TabView {
-            InstalledAppsView()
-                .tabItem { Label(L("apps.tab.installed"), systemImage: "square.grid.2x2") }
-            LeftoversView()
-                .tabItem { Label(L("apps.tab.leftovers"), systemImage: "trash.slash") }
-            AppUpdatesView()
-                .tabItem { Label(L("apps.tab.updates"), systemImage: "arrow.triangle.2.circlepath") }
+        VStack(spacing: 0) {
+            MCPageHeader(L("apps.title"), eyebrow: L("sidebar.apps_system"),
+                         subtitle: L("apps.subtitle"),
+                         icon: ModuleID.applications.systemImage) {
+                Picker("", selection: $tab) {
+                    Text(L("apps.tab.installed")).tag(0)
+                    Text(L("apps.tab.leftovers")).tag(1)
+                    Text(L("apps.tab.updates")).tag(2)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(width: 320)
+            }
+            // Plain segmented sub-nav rather than a TabView: a TabView as a
+            // NavigationSplitView detail can intermittently blank the
+            // sidebar on macOS (same reason as Protection / My Clutter).
+            Group {
+                switch tab {
+                case 1: LeftoversView()
+                case 2: AppUpdatesView()
+                default: InstalledAppsView()
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .padding(MCSpacing.xs)
         .navigationTitle(L("apps.title"))
         .accessibilityIdentifier("applications.root")
     }

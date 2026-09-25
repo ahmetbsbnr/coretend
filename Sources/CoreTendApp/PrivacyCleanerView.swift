@@ -148,18 +148,21 @@ struct PrivacyCleanerView: View {
                     HStack(spacing: MCSpacing.sm) {
                         if model.isPaused {
                             Button(L("common.resume")) { model.resumeScan() }
+                                .buttonStyle(.mcSecondary)
                                 .keyboardShortcut("r", modifiers: [])
                                 .help(L("clutter.resume_hint"))
                                 .accessibilityHint(L("clutter.resume_hint"))
                                 .accessibilityIdentifier("privacy.scan.resume")
                         } else {
                             Button(L("common.pause")) { model.pauseScan() }
+                                .buttonStyle(.mcSecondary)
                                 .keyboardShortcut("p", modifiers: [])
                                 .help(L("clutter.pause_hint"))
                                 .accessibilityHint(L("clutter.pause_hint"))
                                 .accessibilityIdentifier("privacy.scan.pause")
                         }
                         Button(L("common.cancel")) { model.cancelScan() }
+                            .buttonStyle(.mcQuiet)
                             .keyboardShortcut(.cancelAction)
                             .accessibilityIdentifier("privacy.scan.cancel")
                     }

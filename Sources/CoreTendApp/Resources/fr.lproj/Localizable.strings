@@ -637,3 +637,11 @@
 "protection.subtitle" = "La provenance des téléchargements, la signature de vos apps et ce qui démarre à l'ouverture de session — lu depuis les métadonnées que macOS conserve déjà.";
 "performance.subtitle" = "Mesures en direct toutes les deux secondes tant que cette page est ouverte, et les agents lancés avec votre session.";
 "performance.live" = "En direct";
+"apps.subtitle" = "Chaque app installée et les données qu'elle garde autour d'elle — bundles, caches, assistants et restes d'apps déjà supprimées.";
+"clutter.subtitle" = "Fichiers volumineux, anciens ou quasi identiques que vous avez peut-être oubliés. Rien n'est sélectionné sans votre choix.";
+"duplicates.subtitle" = "Copies exactes identifiées par leur contenu, avec la copie la plus sûre à conserver expliquée avant toute action.";
+"spacelens.subtitle" = "Une carte de ce qui remplit un dossier. Zoomez, recherchez et affichez n'importe quel élément dans le Finder.";
+"cloud.subtitle" = "Ce qui est stocké uniquement dans le cloud, ce qui est aussi gardé localement, et la place que chacun occupe.";
+"activity.subtitle" = "Chaque analyse et chaque déplacement vers la Corbeille, enregistrés sur ce Mac.";
+"settings.subtitle" = "Langue, barre des menus, exclusions, mises à jour et diagnostics.";
+"clutter.criteria" = "Critères";

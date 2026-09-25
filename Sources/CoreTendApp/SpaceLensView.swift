@@ -269,10 +269,13 @@ struct SpaceLensView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            switch model.phase {
-            case .idle: idleView
-            case let .scanning(items): scanningView(items)
-            case .ready: readyView
+            MCPageHeader(L("spacelens.title"), eyebrow: L("sidebar.reclaim"), subtitle: L("spacelens.subtitle"), icon: ModuleID.spaceLens.systemImage)
+            VStack(spacing: 0) {
+                switch model.phase {
+                case .idle: idleView
+                case let .scanning(items): scanningView(items)
+                case .ready: readyView
+                }
             }
         }
         .navigationTitle(L("spacelens.title"))
@@ -330,58 +333,40 @@ struct SpaceLensView: View {
     }
 
     private var idleView: some View {
-        GeometryReader { proxy in
-        ScrollView {
-            VStack(spacing: MCSpacing.xl) {
-                VStack(spacing: MCSpacing.xs) {
-                    Text(L("spacelens.idle.title"))
-                        .font(MCFont.pageTitle)
-                        .multilineTextAlignment(.center)
-                    Text(L("spacelens.idle.subtitle"))
-                        .font(MCFont.secondaryBody)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .mcAppear()
-
+        MCBriefing(title: L("spacelens.idle.title"), message: L("spacelens.idle.subtitle")) {
+            VStack(alignment: .leading, spacing: MCSpacing.sm) {
                 MCScanButton(L("spacelens.scan_home"), systemImage: "circle.hexagongrid") {
                     model.start(url: FileManager.default.homeDirectoryForCurrentUser)
                 }
+                .keyboardShortcut(.defaultAction)
                 .accessibilityIdentifier("spacelens.scan.home")
-                .mcAppear(delay: 0.06)
-
-                Button(L("spacelens.choose_folder")) {
+                Button {
                     let panel = NSOpenPanel()
                     panel.canChooseDirectories = true
                     panel.canChooseFiles = false
                     if panel.runModal() == .OK, let url = panel.url {
                         model.start(url: url)
                     }
+                } label: {
+                    Label(L("spacelens.choose_folder"), systemImage: "folder")
                 }
-                .buttonStyle(.mcQuiet)
-
-                MCCard {
-                    VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                        MCSectionHeader(L("spacelens.filter_category"))
-                        MCFeatureRow(L("spacelens.category.folder"),
-                                     icon: "folder.fill", iconColor: MCTheme.accent)
-                        MCFeatureRow(L("spacelens.category.media"),
-                                     icon: "photo", iconColor: MCColor.cellTealDeep)
-                        MCFeatureRow(L("spacelens.category.document"),
-                                     icon: "doc.text", iconColor: MCColor.cellGraphite)
-                        MCFeatureRow(L("spacelens.category.archive"),
-                                     icon: "archivebox", iconColor: MCTheme.warning)
-                        MCFeatureRow(L("spacelens.category.code"),
-                                     icon: "curlybraces", iconColor: MCColor.cellTealPale)
-                    }
-                }
-                .frame(maxWidth: 480)
-                .mcAppear(delay: 0.12)
+                .buttonStyle(.mcSecondaryLarge)
             }
-            .padding(MCSpacing.page)
-            .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .center)
-        }
+        } detail: {
+            MCPanel(L("spacelens.filter_category")) {
+                VStack(alignment: .leading, spacing: MCSpacing.sm) {
+                    MCFeatureRow(L("spacelens.category.folder"),
+                                 icon: "folder.fill", iconColor: MCTheme.accent)
+                    MCFeatureRow(L("spacelens.category.media"),
+                                 icon: "photo", iconColor: MCColor.cellTealDeep)
+                    MCFeatureRow(L("spacelens.category.document"),
+                                 icon: "doc.text", iconColor: MCColor.cellGraphite)
+                    MCFeatureRow(L("spacelens.category.archive"),
+                                 icon: "archivebox", iconColor: MCTheme.warning)
+                    MCFeatureRow(L("spacelens.category.code"),
+                                 icon: "curlybraces", iconColor: MCColor.cellTealPale)
+                }
+            }
         }
     }
 
@@ -395,18 +380,21 @@ struct SpaceLensView: View {
             HStack(spacing: MCSpacing.sm) {
                 if model.isScanPaused {
                     Button(L("common.resume")) { model.resumeScan() }
+                        .buttonStyle(.mcSecondary)
                         .keyboardShortcut("r", modifiers: [])
                         .help(L("spacelens.resume_hint"))
                         .accessibilityHint(L("spacelens.resume_hint"))
                         .accessibilityIdentifier("spacelens.scan.resume")
                 } else {
                     Button(L("common.pause")) { model.pauseScan() }
+                        .buttonStyle(.mcSecondary)
                         .keyboardShortcut("p", modifiers: [])
                         .help(L("spacelens.pause_hint"))
                         .accessibilityHint(L("spacelens.pause_hint"))
                         .accessibilityIdentifier("spacelens.scan.pause")
                 }
                 Button(L("common.cancel")) { model.cancel() }
+                    .buttonStyle(.mcQuiet)
                     .keyboardShortcut(.cancelAction)
                     .accessibilityIdentifier("spacelens.scan.cancel")
             }

@@ -514,3 +514,69 @@ public struct MCActionBar<Summary: View, Actions: View>: View {
         .background(MCColor.elevatedBackground)
     }
 }
+
+// MARK: - Briefing (module landing layout)
+
+/// The landing state every scanning module shares: a left-aligned column
+/// with a title, one paragraph of context and the start command, then an
+/// optional detail region (what will be examined, options) beside it on wide
+/// windows and beneath it on narrow ones.
+public struct MCBriefing<Action: View, Detail: View>: View {
+    private let title: String
+    private let message: String?
+    private let action: Action
+    private let detail: Detail
+
+    public init(title: String, message: String? = nil,
+                @ViewBuilder action: () -> Action,
+                @ViewBuilder detail: () -> Detail) {
+        self.title = title
+        self.message = message
+        self.action = action()
+        self.detail = detail()
+    }
+
+    public var body: some View {
+        ScrollView {
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .top, spacing: MCSpacing.xl) {
+                    lead.frame(width: 340, alignment: .leading)
+                    detail
+                        .frame(maxWidth: MCSize.columnMax, alignment: .leading)
+                        .mcAppear(delay: 0.05)
+                }
+                VStack(alignment: .leading, spacing: MCSpacing.lg) {
+                    lead
+                    detail.mcAppear(delay: 0.05)
+                }
+            }
+            .padding(MCSpacing.page)
+            .frame(maxWidth: MCSize.contentMax, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private var lead: some View {
+        VStack(alignment: .leading, spacing: MCSpacing.md) {
+            Text(title)
+                .font(MCFont.heroTitle)
+                .kerning(MCTracking.title)
+                .fixedSize(horizontal: false, vertical: true)
+            if let message {
+                Text(message)
+                    .font(MCFont.secondaryBody)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            action
+                .padding(.top, MCSpacing.xxs)
+        }
+        .mcAppear()
+    }
+}
+
+public extension MCBriefing where Detail == EmptyView {
+    init(title: String, message: String? = nil, @ViewBuilder action: () -> Action) {
+        self.init(title: title, message: message, action: action, detail: { EmptyView() })
+    }
+}

@@ -234,42 +234,48 @@ struct CloudCleanupView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            switch model.phase {
-            case .detecting:
-                ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
-            case .noProviders:
-                MCEmptyState(icon: "icloud.slash", title: L("cloud.empty.title"), message: L("cloud.empty.subtitle"))
-            case .ready:
-                providerPicker
-            case .scanning:
-                VStack(spacing: MCSpacing.lg) {
-                    MCScanStage(isScanning: !model.isPaused) {
-                        Text(L("cloud.measuring"))
-                    }
-                    .accessibilityElement(children: .combine)
-                    .accessibilityLabel(L("cloud.measuring"))
-                    HStack(spacing: MCSpacing.sm) {
-                        if model.isPaused {
-                            Button(L("common.resume")) { model.resumeScan() }
-                                .keyboardShortcut("r", modifiers: [])
-                                .help(L("clutter.resume_hint"))
-                                .accessibilityHint(L("clutter.resume_hint"))
-                                .accessibilityIdentifier("cloud.scan.resume")
-                        } else {
-                            Button(L("common.pause")) { model.pauseScan() }
-                                .keyboardShortcut("p", modifiers: [])
-                                .help(L("clutter.pause_hint"))
-                                .accessibilityHint(L("clutter.pause_hint"))
-                                .accessibilityIdentifier("cloud.scan.pause")
+            MCPageHeader(L("cloud.nav_title"), eyebrow: L("sidebar.reclaim"), subtitle: L("cloud.subtitle"), icon: ModuleID.cloudCleanup.systemImage)
+            VStack(spacing: 0) {
+                switch model.phase {
+                case .detecting:
+                    ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
+                case .noProviders:
+                    MCEmptyState(icon: "icloud.slash", title: L("cloud.empty.title"), message: L("cloud.empty.subtitle"))
+                case .ready:
+                    providerPicker
+                case .scanning:
+                    VStack(spacing: MCSpacing.lg) {
+                        MCScanStage(isScanning: !model.isPaused) {
+                            Text(L("cloud.measuring"))
                         }
-                        Button(L("common.cancel")) { model.cancel() }
-                            .keyboardShortcut(.cancelAction)
-                            .accessibilityIdentifier("cloud.scan.cancel")
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel(L("cloud.measuring"))
+                        HStack(spacing: MCSpacing.sm) {
+                            if model.isPaused {
+                                Button(L("common.resume")) { model.resumeScan() }
+                                    .buttonStyle(.mcSecondary)
+                                    .keyboardShortcut("r", modifiers: [])
+                                    .help(L("clutter.resume_hint"))
+                                    .accessibilityHint(L("clutter.resume_hint"))
+                                    .accessibilityIdentifier("cloud.scan.resume")
+                            } else {
+                                Button(L("common.pause")) { model.pauseScan() }
+                                    .buttonStyle(.mcSecondary)
+                                    .keyboardShortcut("p", modifiers: [])
+                                    .help(L("clutter.pause_hint"))
+                                    .accessibilityHint(L("clutter.pause_hint"))
+                                    .accessibilityIdentifier("cloud.scan.pause")
+                            }
+                            Button(L("common.cancel")) { model.cancel() }
+                                .buttonStyle(.mcQuiet)
+                                .keyboardShortcut(.cancelAction)
+                                .accessibilityIdentifier("cloud.scan.cancel")
+                        }
                     }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                case .results:
+                    resultsView
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            case .results:
-                resultsView
             }
         }
         .navigationTitle(L("cloud.nav_title"))
@@ -278,36 +284,55 @@ struct CloudCleanupView: View {
     }
 
     private var providerPicker: some View {
-        VStack(spacing: MCSpacing.md) {
-            Image(systemName: "icloud").font(.system(size: MCIconSize.emptyStateProminent)).foregroundStyle(MCTheme.accent)
-            Text(L("cloud.picker.title")).font(MCFont.pageTitle)
-            Text(L("cloud.picker.subtitle"))
-                .multilineTextAlignment(.center).foregroundStyle(.secondary)
-            ForEach(model.providers) { provider in
-                Button {
-                    model.scan(provider)
-                } label: {
-                    Label(provider.name, systemImage: provider.icon)
-                        .frame(width: 220)
+        MCBriefing(title: L("cloud.picker.title"), message: L("cloud.picker.subtitle")) {
+            EmptyView()
+        } detail: {
+            MCPanel(L("cloud.nav_title"), padded: false) {
+                VStack(spacing: 0) {
+                    ForEach(Array(model.providers.enumerated()), id: \.element.id) { index, provider in
+                        if index > 0 { MCHairline().padding(.leading, 56) }
+                        Button {
+                            model.scan(provider)
+                        } label: {
+                            HStack(spacing: MCSpacing.sm) {
+                                MCIconTile(provider.icon, size: 30)
+                                Text(provider.name).font(MCFont.cardTitle)
+                                Spacer(minLength: 0)
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(.tertiary)
+                            }
+                            .padding(.horizontal, MCSpacing.md)
+                            .padding(.vertical, MCSpacing.sm)
+                        }
+                        .buttonStyle(.mcRow)
+                    }
                 }
-                .buttonStyle(.mcSecondary)
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var resultsView: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 VStack(alignment: .leading) {
-                    Text(model.selectedProvider?.name ?? "").font(MCFont.cardTitle)
+                    MCEyebrow(model.selectedProvider?.name ?? "", tint: MCColor.teal)
+                    Text(mcFormatBytes(model.recoverableLocalBytes))
+                        .font(MCFont.displayMetric)
+                        .kerning(MCTracking.display)
                     Text(L("cloud.results.summary", mcFormatBytes(model.recoverableLocalBytes), mcFormatBytes(model.totalLogical)))
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
-                Button(L("cloud.back")) { model.phase = .ready }
+                Button {
+                    model.phase = .ready
+                } label: {
+                    Label(L("cloud.back"), systemImage: "chevron.left")
+                }
+                .buttonStyle(.mcQuiet)
             }
-            .padding()
+            .padding(.horizontal, MCSpacing.page)
+            .padding(.vertical, MCSpacing.md)
             List(model.entries) { entry in
                 HStack {
                     // Filled shape = real local bytes on disk; outline shape = online-only

@@ -216,6 +216,15 @@ struct MCSettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
+        .frame(maxWidth: 760)
+        .frame(maxWidth: .infinity)
+        .safeAreaInset(edge: .top, spacing: 0) {
+            MCPageHeader(L("settings.nav_title"), eyebrow: L("sidebar.history"),
+                         subtitle: L("settings.subtitle"),
+                         icon: ModuleID.settings.systemImage)
+                .background(MCColor.background)
+        }
         .navigationTitle(L("settings.nav_title"))
         .accessibilityIdentifier("settings.root")
         .task { await model.load() }

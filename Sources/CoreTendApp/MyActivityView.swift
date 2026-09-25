@@ -136,17 +136,20 @@ struct MyActivityView: View {
     @State private var showingSafetyLog = false
 
     var body: some View {
-        Group {
-            switch model.phase {
-            case .loading:
-                ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
-            case .empty:
-                emptyState
-            case .loaded:
-                loadedView
-            case let .failed(message):
-                Text(message).foregroundStyle(MCTheme.danger)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+        VStack(spacing: 0) {
+            MCPageHeader(L("activity.title"), eyebrow: L("sidebar.history"), subtitle: L("activity.subtitle"), icon: ModuleID.myActivity.systemImage)
+            Group {
+                switch model.phase {
+                case .loading:
+                    ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
+                case .empty:
+                    emptyState
+                case .loaded:
+                    loadedView
+                case let .failed(message):
+                    Text(message).foregroundStyle(MCTheme.danger)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                }
             }
         }
         .navigationTitle(L("activity.title"))

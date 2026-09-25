@@ -140,24 +140,22 @@ struct MyClutterView: View {
     // and is not re-exposed here — this hub covers what nothing else does:
     // large/old files and visually-similar images.
     var body: some View {
-        Group {
-            if tab == 0 { LargeOldFilesView() } else { SimilarImagesView() }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .safeAreaInset(edge: .top, spacing: 0) {
-            VStack(spacing: 0) {
+        VStack(spacing: 0) {
+            MCPageHeader(L("clutter.title"), eyebrow: L("sidebar.reclaim"),
+                         subtitle: L("clutter.subtitle"),
+                         icon: ModuleID.myClutter.systemImage) {
                 Picker("", selection: $tab) {
                     Text(L("clutter.tab.large_old")).tag(0)
                     Text(L("clutter.tab.similar_images")).tag(1)
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
-                .frame(maxWidth: 360)
-                .padding(.vertical, MCSpacing.sm)
-                Divider()
+                .frame(width: 300)
             }
-            .frame(maxWidth: .infinity)
-            .background(.bar)
+            Group {
+                if tab == 0 { LargeOldFilesView() } else { SimilarImagesView() }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .navigationTitle(L("clutter.title"))
     }
@@ -178,70 +176,57 @@ struct LargeOldFilesView: View {
     }
 
     private var idleView: some View {
-        GeometryReader { proxy in
-            ScrollView {
-                VStack(spacing: MCSpacing.xl) {
-                    VStack(spacing: MCSpacing.xs) {
-                        Text(L("clutter.idle.title")).font(MCFont.pageTitle)
-                            .multilineTextAlignment(.center)
-                        Text(L("clutter.idle.subtitle"))
-                            .font(MCFont.secondaryBody)
-                            .multilineTextAlignment(.center).foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    .mcAppear()
-
-                    MCScanButton(L("clutter.analyze"), systemImage: "doc.on.doc") { model.start() }
-                        .keyboardShortcut(.defaultAction)
-                        .mcAppear(delay: 0.06)
-
-                    MCCard {
-                        HStack(spacing: MCSpacing.lg) {
-                            LabeledContent(L("clutter.larger_than")) {
-                                Picker("", selection: $model.minSizeMB) {
-                                    Text(L("clutter.size.50mb")).tag(50)
-                                    Text(L("clutter.size.100mb")).tag(100)
-                                    Text(L("clutter.size.500mb")).tag(500)
-                                    Text(L("clutter.size.1gb")).tag(1000)
-                                }
-                                .pickerStyle(.menu).labelsHidden().fixedSize()
-                            }
-                            LabeledContent(L("clutter.older_than")) {
-                                Picker("", selection: $model.minAgeDays) {
-                                    Text(L("clutter.age.30d")).tag(30)
-                                    Text(L("clutter.age.90d")).tag(90)
-                                    Text(L("clutter.age.180d")).tag(180)
-                                    Text(L("clutter.age.1y")).tag(365)
-                                }
-                                .pickerStyle(.menu).labelsHidden().fixedSize()
-                            }
+        MCBriefing(title: L("clutter.idle.title"), message: L("clutter.idle.subtitle")) {
+            MCScanButton(L("clutter.analyze"), systemImage: "doc.on.doc") { model.start() }
+                .keyboardShortcut(.defaultAction)
+        } detail: {
+            MCPanel(L("clutter.criteria")) {
+                VStack(spacing: 0) {
+                    LabeledContent(L("clutter.larger_than")) {
+                        Picker("", selection: $model.minSizeMB) {
+                            Text(L("clutter.size.50mb")).tag(50)
+                            Text(L("clutter.size.100mb")).tag(100)
+                            Text(L("clutter.size.500mb")).tag(500)
+                            Text(L("clutter.size.1gb")).tag(1000)
                         }
+                        .pickerStyle(.menu).labelsHidden().fixedSize()
                     }
-                    .frame(maxWidth: 480)
-                    .mcAppear(delay: 0.12)
+                    .frame(minHeight: 34)
+                    MCHairline()
+                    LabeledContent(L("clutter.older_than")) {
+                        Picker("", selection: $model.minAgeDays) {
+                            Text(L("clutter.age.30d")).tag(30)
+                            Text(L("clutter.age.90d")).tag(90)
+                            Text(L("clutter.age.180d")).tag(180)
+                            Text(L("clutter.age.1y")).tag(365)
+                        }
+                        .pickerStyle(.menu).labelsHidden().fixedSize()
+                    }
+                    .frame(minHeight: 34)
                 }
-                .padding(MCSpacing.page)
-                .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .center)
             }
         }
     }
 
     private var scanningView: some View {
-        VStack(spacing: MCSpacing.md) {
-            ProgressView()
-            Text(L("clutter.scanning_progress", model.scannedCount, model.findings.count))
-                .monospacedDigit()
+        VStack(spacing: MCSpacing.lg) {
+            MCScanStage(isScanning: !model.isScanPaused) {
+                Text(L("clutter.scanning_progress", model.scannedCount, model.findings.count))
+            }
             HStack {
                 if model.isScanPaused {
                     Button(L("common.resume")) { model.resume() }
+                        .buttonStyle(.mcSecondary)
                         .keyboardShortcut("r", modifiers: [])
                         .accessibilityHint(L("clutter.resume_hint"))
                 } else {
                     Button(L("common.pause")) { model.pause() }
+                        .buttonStyle(.mcSecondary)
                         .keyboardShortcut("p", modifiers: [])
                         .accessibilityHint(L("clutter.pause_hint"))
                 }
                 Button(L("common.cancel")) { model.cancel() }
+                    .buttonStyle(.mcQuiet)
                     .keyboardShortcut(.cancelAction)
             }
         }
