@@ -72,24 +72,22 @@ struct ProtectionView: View {
     // NavigationSplitView detail can intermittently blank the split view's
     // sidebar on macOS.
     var body: some View {
-        Group {
-            if tab == 0 { IntegrityView() } else { PrivacyCleanerView() }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .safeAreaInset(edge: .top, spacing: 0) {
-            VStack(spacing: 0) {
+        VStack(spacing: 0) {
+            MCPageHeader(L("module.protection"), eyebrow: L("sidebar.apps_system"),
+                         subtitle: L("protection.subtitle"),
+                         icon: ModuleID.protection.systemImage) {
                 Picker("", selection: $tab) {
                     Text(L("protection.tab.integrity")).tag(0)
                     Text(L("protection.tab.privacy")).tag(1)
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
-                .frame(maxWidth: 360)
-                .padding(.vertical, MCSpacing.sm)
-                Divider()
+                .frame(width: 280)
             }
-            .frame(maxWidth: .infinity)
-            .background(.bar)
+            Group {
+                if tab == 0 { IntegrityView() } else { PrivacyCleanerView() }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .navigationTitle(L("module.protection"))
         .accessibilityIdentifier("integrity.root")
@@ -110,10 +108,20 @@ struct IntegrityView: View {
             VStack(alignment: .leading, spacing: MCSpacing.md) {
                 explainerCard
                 downloadsCard
-                inspectorCard
-                loginItemsCard
+                ViewThatFits(in: .horizontal) {
+                    HStack(alignment: .top, spacing: MCSpacing.md) {
+                        inspectorCard
+                        loginItemsCard
+                    }
+                    VStack(spacing: MCSpacing.md) {
+                        inspectorCard
+                        loginItemsCard
+                    }
+                }
             }
             .padding(MCSpacing.page)
+            .frame(maxWidth: MCSize.contentMax, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .task { await model.refresh() }
     }
@@ -121,7 +129,7 @@ struct IntegrityView: View {
     private var explainerCard: some View {
         MCCard {
             HStack(alignment: .top, spacing: MCSpacing.md) {
-                Image(systemName: "info.circle").font(.title2).foregroundStyle(MCTheme.accent)
+                MCIconTile("info")
                 VStack(alignment: .leading, spacing: MCSpacing.xxs) {
                     Text(L("integrity.explainer.title")).font(MCFont.cardTitle)
                     Text(L("integrity.explainer.body")).foregroundStyle(.secondary)
@@ -132,13 +140,10 @@ struct IntegrityView: View {
     }
 
     private var downloadsCard: some View {
-        MCCard {
+        MCPanel(L("integrity.downloads.title"), accessory: {
+            if model.isLoading { ProgressView().controlSize(.small) }
+        }) {
             VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                HStack {
-                    Text(L("integrity.downloads.title")).font(MCFont.cardTitle)
-                    Spacer()
-                    if model.isLoading { ProgressView().controlSize(.small) }
-                }
                 if model.downloads.isEmpty && !model.isLoading {
                     Text(L("integrity.downloads.empty")).font(.caption).foregroundStyle(.secondary)
                 }
@@ -168,7 +173,7 @@ struct IntegrityView: View {
                         Button {
                             NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: item.path)])
                         } label: { Image(systemName: "magnifyingglass") }
-                        .buttonStyle(.borderless)
+                        .buttonStyle(.mcIcon)
                         .accessibilityLabel(L("common.reveal_in_finder"))
                     }
                     .accessibilityElement(children: .combine)
@@ -180,9 +185,8 @@ struct IntegrityView: View {
     }
 
     private var inspectorCard: some View {
-        MCCard {
+        MCPanel(L("integrity.inspector.title")) {
             VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                Text(L("integrity.inspector.title")).font(MCFont.cardTitle)
                 Text(L("integrity.inspector.subtitle")).font(.caption).foregroundStyle(.secondary)
                 Button(L("integrity.inspector.choose")) {
                     let panel = NSOpenPanel()
@@ -194,6 +198,7 @@ struct IntegrityView: View {
                         model.inspect(url)
                     }
                 }
+                .buttonStyle(.mcSecondary)
                 .accessibilityIdentifier("integrity.inspect.choose")
                 if let inspected = model.inspectedApp {
                     signatureRow(name: inspected.url.lastPathComponent, info: inspected.info)
@@ -225,9 +230,8 @@ struct IntegrityView: View {
     }
 
     private var loginItemsCard: some View {
-        MCCard {
+        MCPanel(L("integrity.login_items.title")) {
             VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                Text(L("integrity.login_items.title")).font(MCFont.cardTitle)
                 Text(L("integrity.login_items.subtitle")).font(.caption).foregroundStyle(.secondary)
                 if model.loginItems.isEmpty && !model.isLoading {
                     Text(L("integrity.login_items.empty")).font(.caption).foregroundStyle(.secondary)

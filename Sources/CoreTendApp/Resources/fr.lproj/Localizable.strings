@@ -633,3 +633,7 @@
 "dashboard.reclaimed" = "Récupéré avec CoreTend";
 "dashboard.reclaimed.detail" = "Sur %d actions enregistrées";
 "dashboard.status.recoverable" = "Récupérable depuis la Corbeille";
+"cleanup.review.found" = "Récupérable";
+"protection.subtitle" = "La provenance des téléchargements, la signature de vos apps et ce qui démarre à l'ouverture de session — lu depuis les métadonnées que macOS conserve déjà.";
+"performance.subtitle" = "Mesures en direct toutes les deux secondes tant que cette page est ouverte, et les agents lancés avec votre session.";
+"performance.live" = "En direct";

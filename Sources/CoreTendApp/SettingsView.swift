@@ -160,7 +160,7 @@ struct MCSettingsView: View {
                         } label: {
                             Image(systemName: "minus.circle")
                         }
-                        .buttonStyle(.borderless)
+                        .buttonStyle(.mcIcon)
                         .accessibilityLabel(L("settings.remove_exclusion", path))
                     }
                 }

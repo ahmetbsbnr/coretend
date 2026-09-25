@@ -299,7 +299,7 @@ private struct ActivityRow: View {
                     } label: {
                         Label(L("activity.open_protection"), systemImage: "shield")
                     }
-                    .buttonStyle(.link)
+                    .buttonStyle(.mcQuiet)
                 }
             }
             .padding(.top, MCSpacing.xxs)

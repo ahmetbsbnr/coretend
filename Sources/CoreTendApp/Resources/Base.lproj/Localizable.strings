@@ -635,3 +635,7 @@
 "dashboard.reclaimed" = "Reclaimed with CoreTend";
 "dashboard.reclaimed.detail" = "Across %d recorded actions";
 "dashboard.status.recoverable" = "Recoverable from Trash";
+"cleanup.review.found" = "Reclaimable";
+"protection.subtitle" = "Where downloads came from, who signed your apps, and what starts at login — read from metadata macOS already keeps.";
+"performance.subtitle" = "Live readings sampled every two seconds while this page is open, plus the agents that launch with your session.";
+"performance.live" = "Live";

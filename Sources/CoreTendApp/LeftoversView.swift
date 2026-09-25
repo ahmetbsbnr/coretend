@@ -130,7 +130,7 @@ struct LeftoversView: View {
                 Button(L("cleanup.move_to_trash")) {
                     showMoveConfirmation = true
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.mcPrimary)
                 .disabled(model.selectedPaths.isEmpty)
             }
             .padding()
@@ -165,7 +165,7 @@ struct LeftoversView: View {
                     Button {
                         NSWorkspace.shared.activateFileViewerSelecting([item.url])
                     } label: { Image(systemName: "magnifyingglass") }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.mcIcon)
                     .accessibilityLabel(L("common.reveal_in_finder"))
                 }
             }

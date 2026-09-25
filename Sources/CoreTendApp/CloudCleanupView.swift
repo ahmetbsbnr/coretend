@@ -290,7 +290,7 @@ struct CloudCleanupView: View {
                     Label(provider.name, systemImage: provider.icon)
                         .frame(width: 220)
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.mcSecondary)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -326,7 +326,7 @@ struct CloudCleanupView: View {
                     Button {
                         NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: entry.id)])
                     } label: { Image(systemName: "magnifyingglass") }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.mcIcon)
                     .accessibilityLabel(L("cloud.reveal_a11y", entry.name))
                 }
                 .accessibilityElement(children: .combine)

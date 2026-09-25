@@ -210,7 +210,7 @@ struct PrivacyCleanerView: View {
                 Button(L("privacy.clean_caches")) {
                     showMoveConfirmation = true
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.mcPrimary)
                 .accessibilityIdentifier("privacy.clean")
                 .disabled(model.selectedProfileIDs.isEmpty)
             }
@@ -250,7 +250,7 @@ struct PrivacyCleanerView: View {
                             Button(L("privacy.close_and_rescan")) {
                                 Task { await model.closeBrowserAndRescan(profile) }
                             }
-                            .buttonStyle(.link)
+                            .buttonStyle(.mcQuiet)
                             .font(.caption)
                         }
                         .padding(.leading, 28)

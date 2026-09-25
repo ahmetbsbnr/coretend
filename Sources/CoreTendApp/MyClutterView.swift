@@ -326,7 +326,7 @@ struct LargeOldFilesView: View {
                     } label: {
                         Image(systemName: "eye")
                     }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.mcIcon)
                     .help(L("clutter.quick_look"))
                     .accessibilityLabel(L("clutter.quick_look"))
                     Button {
@@ -334,7 +334,7 @@ struct LargeOldFilesView: View {
                     } label: {
                         Image(systemName: "magnifyingglass")
                     }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.mcIcon)
                     .help(L("common.reveal_in_finder"))
                     .accessibilityLabel(L("common.reveal_in_finder"))
                     ExcludeButton(url: finding.url, controller: model.exclusionsController)

@@ -11,10 +11,13 @@ struct MCSearchField: View {
     let placeholder: String
 
     var body: some View {
-        HStack(spacing: MCSpacing.xxs) {
-            Image(systemName: "magnifyingglass").foregroundStyle(.secondary).accessibilityHidden(true)
+        HStack(spacing: MCSpacing.xs) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.secondary).accessibilityHidden(true)
             TextField(placeholder, text: $text)
                 .textFieldStyle(.plain)
+                .font(MCFont.secondaryBody)
             if !text.isEmpty {
                 Button {
                     text = ""
@@ -26,9 +29,10 @@ struct MCSearchField: View {
                 .accessibilityLabel(L("common.clear"))
             }
         }
-        .padding(.horizontal, MCSpacing.xs).padding(.vertical, 4)
-        .background(MCColor.elevatedBackground, in: RoundedRectangle(cornerRadius: MCRadius.small))
-        .frame(width: 220)
+        .padding(.horizontal, MCSpacing.xs)
+        .frame(width: 220, height: 26)
+        .background(MCColor.elevatedBackground, in: RoundedRectangle(cornerRadius: MCRadius.control))
+        .overlay(RoundedRectangle(cornerRadius: MCRadius.control).strokeBorder(MCColor.separator, lineWidth: 1))
         .accessibilityLabel(placeholder)
     }
 }

@@ -338,7 +338,7 @@ struct DuplicatesView: View {
                 Button(L("dupes.move_to_trash")) {
                     showMoveConfirmation = true
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.mcPrimary)
                 .disabled(model.selectedPaths.isEmpty || model.phase == .executing)
                 .accessibilityIdentifier("duplicates.results.remove")
             }
@@ -400,13 +400,13 @@ struct DuplicatesView: View {
                                 Button {
                                     model.previewURL = url
                                 } label: { Image(systemName: "eye") }
-                                .buttonStyle(.borderless)
+                                .buttonStyle(.mcIcon)
                                 .help(L("clutter.quick_look"))
                                 .accessibilityLabel(L("clutter.quick_look"))
                                 Button {
                                     NSWorkspace.shared.activateFileViewerSelecting([url])
                                 } label: { Image(systemName: "magnifyingglass") }
-                                .buttonStyle(.borderless)
+                                .buttonStyle(.mcIcon)
                                 .accessibilityLabel(L("common.reveal_in_finder"))
                                 ExcludeButton(url: url, controller: model.exclusionsController)
                             }

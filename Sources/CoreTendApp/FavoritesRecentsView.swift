@@ -185,7 +185,7 @@ private struct LocationRow: View {
             Spacer()
             if location.exists && location.isReadable {
                 Button(L("favrec.analyze")) { model.analyze(location.path) }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.mcSecondary)
             }
             if !location.isQuickLink {
                 Button(role: .destructive) {
@@ -196,7 +196,7 @@ private struct LocationRow: View {
                 } label: {
                     Image(systemName: "xmark.circle")
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(.mcIcon)
                 .accessibilityLabel(L("favrec.remove", location.displayName))
             } else if location.isFavorite {
                 Button(role: .destructive) {
@@ -204,7 +204,7 @@ private struct LocationRow: View {
                 } label: {
                     Image(systemName: "star.slash")
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(.mcIcon)
                 .accessibilityLabel(L("favrec.unfavorite", location.displayName))
             } else {
                 Button {
@@ -212,7 +212,7 @@ private struct LocationRow: View {
                 } label: {
                     Image(systemName: "star")
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(.mcIcon)
                 .accessibilityLabel(L("favrec.favorite", location.displayName))
             }
         }

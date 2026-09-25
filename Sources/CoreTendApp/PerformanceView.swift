@@ -70,10 +70,19 @@ struct PerformanceView: View {
     @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
+        VStack(spacing: 0) {
+        MCPageHeader(L("performance.nav_title"), eyebrow: L("sidebar.apps_system"),
+                     subtitle: L("performance.subtitle"),
+                     icon: ModuleID.performance.systemImage) {
+            if model.snapshot != nil {
+                MCStatusBadge(L("performance.live"), status: .active)
+            }
+        }
         ScrollView {
             VStack(spacing: MCSpacing.md) {
                 if let snap = model.snapshot {
-                    HStack(spacing: MCSpacing.md) {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 200), spacing: MCSpacing.md)],
+                              spacing: MCSpacing.md) {
                         MCMetricCard(title: L("performance.cpu"),
                                      value: "\(Int(snap.cpuUsedFraction * 100))%",
                                      detail: L("performance.of_all_cores"),
@@ -96,22 +105,15 @@ struct PerformanceView: View {
                                      isElevated: snap.diskUsedFraction > 0.75,
                                      elevatedLabel: L("performance.elevated"))
                     }
-                    MCCard {
-                        VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                            Text(L("performance.cpu_chart_title")).font(MCFont.cardTitle)
-                            cpuChart
-                                .frame(height: MCSize.chartHeight)
+                    ViewThatFits(in: .horizontal) {
+                        HStack(alignment: .top, spacing: MCSpacing.md) {
+                            chartPanel
+                            systemPanel(snap).frame(width: 300)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    MCCard {
-                        VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                            Text(L("performance.system")).font(MCFont.cardTitle)
-                            LabeledContent(L("performance.memory_pressure"), value: snap.memoryPressureLevel.capitalized)
-                            LabeledContent(L("performance.thermal_state"), value: snap.thermalState.capitalized)
-                            LabeledContent(L("performance.uptime"), value: formatUptime(snap.uptimeSeconds))
+                        VStack(spacing: MCSpacing.md) {
+                            chartPanel
+                            systemPanel(snap)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                     launchAgentsCard
                 } else {
@@ -119,6 +121,9 @@ struct PerformanceView: View {
                 }
             }
             .padding(MCSpacing.page)
+            .frame(maxWidth: MCSize.contentMax, alignment: .leading)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
         }
         .navigationTitle(L("performance.nav_title"))
         .onAppear { if scenePhase == .active { model.start() } }
@@ -127,6 +132,30 @@ struct PerformanceView: View {
         // (window occluded, minimized, or app not frontmost) so no timer runs unseen.
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { model.start() } else { model.stop() }
+        }
+    }
+
+    private var chartPanel: some View {
+        MCPanel(L("performance.cpu_chart_title")) {
+            cpuChart
+                .frame(height: MCSize.chartHeight)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private func systemPanel(_ snap: MetricsSnapshot) -> some View {
+        MCPanel(L("performance.system")) {
+            VStack(spacing: 0) {
+                MCKeyValueRow(L("performance.memory_pressure"), value: snap.memoryPressureLevel.capitalized,
+                              icon: "memorychip",
+                              status: snap.memoryPressureLevel == "normal" ? MCStatus.success : MCStatus.attention)
+                MCHairline()
+                MCKeyValueRow(L("performance.thermal_state"), value: snap.thermalState.capitalized,
+                              icon: "thermometer.medium",
+                              status: ["serious", "critical"].contains(snap.thermalState) ? MCStatus.attention : MCStatus.success)
+                MCHairline()
+                MCKeyValueRow(L("performance.uptime"), value: formatUptime(snap.uptimeSeconds), icon: "clock")
+            }
         }
     }
 
@@ -158,9 +187,9 @@ struct PerformanceView: View {
                 fill.addLine(to: CGPoint(x: 0, y: size.height))
                 fill.closeSubpath()
                 context.fill(fill, with: .linearGradient(
-                    Gradient(colors: [Color(MCColor.performance).opacity(0.25), .clear]),
+                    Gradient(colors: [Color(MCColor.performance).opacity(0.16), .clear]),
                     startPoint: .zero, endPoint: CGPoint(x: 0, y: size.height)))
-                context.stroke(line, with: .color(MCColor.performance), lineWidth: 2)
+                context.stroke(line, with: .color(MCColor.performance), lineWidth: 1.5)
             }
             .accessibilityLabel(L("performance.chart_a11y", Int((model.history.last ?? 0) * 100)))
         } else {
@@ -173,9 +202,8 @@ struct PerformanceView: View {
     @State private var agents: [LaunchAgentInfo] = []
 
     private var launchAgentsCard: some View {
-        MCCard {
+        MCPanel(L("performance.launchagents.title")) {
             VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                Text(L("performance.launchagents.title")).font(MCFont.cardTitle)
                 Text(L("performance.launchagents.subtitle"))
                     .font(.caption).foregroundStyle(.secondary)
                 if agents.isEmpty {
@@ -197,7 +225,7 @@ struct PerformanceView: View {
                         Button {
                             NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: agent.id)])
                         } label: { Image(systemName: "magnifyingglass") }
-                        .buttonStyle(.borderless)
+                        .buttonStyle(.mcIcon)
                         .accessibilityLabel(L("common.reveal_in_finder"))
                     }
                 }

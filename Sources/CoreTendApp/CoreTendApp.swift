@@ -192,7 +192,7 @@ struct MenuBarView: View {
                              value: mcFormatBytes(snap.diskFreeBytes),
                              warn: snap.diskFreeBytes < 20_000_000_000)
                     MCKeyValueRow(L("menubar.thermal"), value: snap.thermalState.capitalized,
-                                  status: isThermalWarn(snap) ? .attention : nil)
+                                  status: isThermalWarn(snap) ? MCStatus.attention : nil)
                 } else {
                     HStack { Spacer(); ProgressView().controlSize(.small); Spacer() }
                         .padding(.vertical, MCSpacing.lg)
@@ -259,7 +259,7 @@ struct MenuBarView: View {
             Spacer(minLength: 0)
             if snapshot != nil {
                 MCStatusBadge(needsAttention ? L("menubar.status_attention") : L("menubar.status_ok"),
-                              status: needsAttention ? .attention : .success)
+                              status: needsAttention ? MCStatus.attention : MCStatus.success)
             }
         }
     }

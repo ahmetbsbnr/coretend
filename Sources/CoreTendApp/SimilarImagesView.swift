@@ -237,13 +237,13 @@ struct SimilarImagesView: View {
                                     Button {
                                         model.previewURL = url
                                     } label: { Image(systemName: "eye") }
-                                    .buttonStyle(.borderless)
+                                    .buttonStyle(.mcIcon)
                                     .help(L("clutter.quick_look"))
                                     .accessibilityLabel(L("clutter.quick_look"))
                                     Button {
                                         NSWorkspace.shared.activateFileViewerSelecting([url])
                                     } label: { Image(systemName: "magnifyingglass") }
-                                    .buttonStyle(.borderless)
+                                    .buttonStyle(.mcIcon)
                                     .accessibilityLabel("\(L("similar.reveal_a11y", url.lastPathComponent))\(url == best ? ", \(L("similar.best_resolution_a11y"))" : "")")
                                     ExcludeButton(url: url, controller: model.exclusionsController)
                                 }

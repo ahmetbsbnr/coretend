@@ -493,7 +493,7 @@ struct OnboardingView: View {
                     Button {
                         remove(url)
                     } label: { Image(systemName: "minus.circle") }
-                        .buttonStyle(.borderless)
+                        .buttonStyle(.mcIcon)
                         .accessibilityLabel(L("settings.remove_exclusion", url.lastPathComponent))
                 }
             }
@@ -567,7 +567,7 @@ struct OnboardingView: View {
             Button(step == stepCount - 1 ? L("onboarding.start") : L("onboarding.continue")) {
                 if step == stepCount - 1 { model.persist(); finish() } else { step += 1 }
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.mcPrimary)
             .keyboardShortcut(.defaultAction)
             .accessibilityIdentifier(step == stepCount - 1 ? "onboarding.start" : "onboarding.continue")
         }

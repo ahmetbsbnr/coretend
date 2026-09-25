@@ -359,7 +359,7 @@ struct SpaceLensView: View {
                         model.start(url: url)
                     }
                 }
-                .buttonStyle(.link)
+                .buttonStyle(.mcQuiet)
 
                 MCCard {
                     VStack(alignment: .leading, spacing: MCSpacing.sm) {
@@ -465,7 +465,7 @@ struct SpaceLensView: View {
                     } label: {
                         Image(systemName: "chevron.left")
                     }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.mcIcon)
                     .keyboardShortcut("[", modifiers: .command)
                     .help(L("spacelens.up"))
                     .accessibilityLabel(L("spacelens.up"))
@@ -473,11 +473,11 @@ struct SpaceLensView: View {
                     .padding(.trailing, 2)
                 }
                 Button(root.name) { navigate { model.pop(to: nil) } }
-                    .buttonStyle(.link)
+                    .buttonStyle(.mcQuiet)
                 ForEach(Array(model.pathStack.enumerated()), id: \.element.id) { index, node in
                     Image(systemName: "chevron.right").font(.caption2).foregroundStyle(.tertiary)
                     Button(node.name) { navigate { model.pop(to: index) } }
-                        .buttonStyle(.link)
+                        .buttonStyle(.mcQuiet)
                 }
                 Spacer()
                 Text(mcFormatBytes(model.current?.size ?? 0))
@@ -607,7 +607,7 @@ struct SpaceLensView: View {
                     Button { navigate { model.descend(into: child) } } label: {
                         Image(systemName: "chevron.right")
                     }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.mcIcon)
                     .keyboardShortcut(.rightArrow, modifiers: [])
                 }
                 if !child.path.hasSuffix("\u{2026}other") {
@@ -615,19 +615,19 @@ struct SpaceLensView: View {
                         Button {
                             previewURL = URL(fileURLWithPath: child.path)
                         } label: { Image(systemName: "eye") }
-                        .buttonStyle(.borderless)
+                        .buttonStyle(.mcIcon)
                         .help(L("clutter.quick_look"))
                         .accessibilityLabel(L("clutter.quick_look"))
                     }
                     Button {
                         NSWorkspace.shared.activateFileViewerSelecting([URL(fileURLWithPath: child.path)])
                     } label: { Image(systemName: "magnifyingglass") }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.mcIcon)
                     .help(L("common.reveal_in_finder"))
                     Button(role: .destructive) {
                         model.requestDelete(child)
                     } label: { Image(systemName: "trash") }
-                    .buttonStyle(.borderless)
+                    .buttonStyle(.mcIcon)
                     .help(L("spacelens.delete.help"))
                     ExcludeButton(url: URL(fileURLWithPath: child.path), controller: exclusionsController)
                 }
