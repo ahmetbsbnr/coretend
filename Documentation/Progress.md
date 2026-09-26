@@ -1,6 +1,6 @@
 # Reconstruction progress
 
-**Relevé :** 2026-09-26. **État :** reconstruction en cours, non finalisée. Dernier jalon fusionné : SQLite v4 favoris/récents (PR #40); travail suivant : palette clavier bilingue sur branche de fonctionnalité. Build/paquet local vérifiés structurellement; aucune qualification UI native. Cahier et plan approuvés; développement sur lignée `next` du dépôt public historique. Le dépôt greenfield initial `rebuild/` reste copie locale de provenance.
+**Relevé :** 2026-09-26. **État :** reconstruction en cours, non finalisée. Derniers jalons fusionnés : favoris/récents SQLite v4, palette clavier bilingue et écriture batch des récents (PR #40–#44). UI macOS native et VoiceOver non qualifiés. Cahier et plan approuvés; développement sur lignée `next` du dépôt public historique. Le dépôt greenfield initial `rebuild/` reste copie locale de provenance.
 
 ## Livré et prouvé
 
