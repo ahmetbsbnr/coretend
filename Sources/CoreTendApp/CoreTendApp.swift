@@ -13,7 +13,7 @@ struct CoreTendApp: App {
 }
 
 private struct CoreTendRootView: View {
-    @State private var selection: Destination? = Destination(rawValue: UserDefaults.standard.string(forKey: "coretend.lastDestination") ?? "") ?? .overview
+    @State private var selection: Destination? = Destination.restored(from: UserDefaults.standard.string(forKey: "coretend.lastDestination"))
     @State private var activeSheet: RootSheet?
     @AppStorage("coretend.language") private var language = "system"
     @AppStorage("coretend.onboarding.completed") private var onboardingCompleted = false
@@ -111,32 +111,24 @@ private struct DestinationView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(.quaternary, in: RoundedRectangle(cornerRadius: 14))
                 }
-                if destination == .explore {
-                    ExploreScanView(french: french)
-                } else if destination == .overview {
-                    SavedFilesView(french: french)
-                } else if destination == .duplicates {
-                    DuplicateScanView(french: french)
-                } else if destination == .performance {
-                    EmptyView()
-                } else if destination == .record {
-                    RecordView(french: french)
-                } else if destination == .cleanup {
-                    CleanupView(french: french)
-                } else if destination == .applications {
-                    ApplicationsView(french: french)
-                } else if destination == .integrity {
-                    IntegrityView(french: french)
-                } else {
-                    ContentUnavailableView(ProductCopy.value(for: "empty.title", french: french),
-                                           systemImage: destination.symbol,
-                                           description: Text(ProductCopy.value(for: "empty.body", french: french)))
-                        .frame(maxWidth: .infinity, minHeight: 300)
-                }
+                destinationContent
             }
             .padding(32)
             .frame(maxWidth: 960, alignment: .leading)
         }
         .accessibilityIdentifier("destination-\(destination.rawValue)")
+    }
+
+    @ViewBuilder private var destinationContent: some View {
+        switch destination.route {
+        case .overview: SavedFilesView(french: french)
+        case .record: RecordView(french: french)
+        case .cleanup: CleanupView(french: french)
+        case .explore: ExploreScanView(french: french)
+        case .duplicates: DuplicateScanView(french: french)
+        case .applications: ApplicationsView(french: french)
+        case .integrity: IntegrityView(french: french)
+        case .performance: EmptyView()
+        }
     }
 }
