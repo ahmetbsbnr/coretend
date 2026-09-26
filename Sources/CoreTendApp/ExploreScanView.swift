@@ -15,13 +15,18 @@ struct ExploreScanView: View {
     @State private var activeScanID: UUID?
     @State private var query = ""
     @State private var sortMode = "largest"
+    @State private var preset: ExplorePreset = .all
+    @State private var presetEvaluationDate = Date.now
     @State private var previewURL: URL?
     @State private var selectedRoot: URL?
     @State private var previewScopeHeld = false
     @State private var previewScopedRoot: URL?
 
     private var visibleResults: [ScanResult] {
-        let filtered = results.filter { query.isEmpty || $0.url.lastPathComponent.localizedCaseInsensitiveContains(query) || $0.url.deletingLastPathComponent().path.localizedCaseInsensitiveContains(query) }
+        let filtered = results.filter {
+            (query.isEmpty || $0.url.lastPathComponent.localizedCaseInsensitiveContains(query) || $0.url.deletingLastPathComponent().path.localizedCaseInsensitiveContains(query))
+                && preset.matches($0, evaluatedAt: presetEvaluationDate)
+        }
         switch sortMode {
         case "oldest": return filtered.sorted { ($0.modifiedAt ?? .distantFuture) < ($1.modifiedAt ?? .distantFuture) }
         case "name": return filtered.sorted { $0.url.lastPathComponent.localizedStandardCompare($1.url.lastPathComponent) == .orderedAscending }
@@ -69,7 +74,16 @@ struct ExploreScanView: View {
                         Text(copy("explore.name")).tag("name")
                     }
                     .frame(width: 190)
+                    Picker(french ? "Filtre" : "Filter", selection: $preset) {
+                        Text(french ? "Tous" : "All files").tag(ExplorePreset.all)
+                        Text(french ? "≥ 1 Gio local" : "≥ 1 GiB local").tag(ExplorePreset.largeLocal)
+                        Text(french ? "Anciens · 365 jours" : "Older · 365 days").tag(ExplorePreset.olderThan365Days)
+                    }
+                    .frame(width: 190)
+                    .onChange(of: preset) { _, _ in presetEvaluationDate = .now }
                 }
+                Text(presetDescription)
+                    .font(.caption).foregroundStyle(.secondary)
                 let knownCount = treemapInputs.count
                 Text(french ? "Carte proportionnelle : \(knownCount) fichiers à taille locale connue; les inconnus sont exclus." : "Proportional map: \(knownCount) files with known local size; unknown items excluded.")
                     .font(.caption).foregroundStyle(.secondary)
@@ -93,22 +107,27 @@ struct ExploreScanView: View {
                 }
                 .frame(height: 230)
                 .accessibilityElement(children: .contain)
-                List(visibleResults, id: \.url) { result in
-                    HStack {
-                        Image(systemName: "doc")
-                        Text(result.url.lastPathComponent).lineLimit(1)
-                        Spacer()
-                        Text(size(result.allocatedBytes)).monospacedDigit().foregroundStyle(.secondary)
-                        Button { previewURL = result.url } label: {
-                            Label(copy("explore.preview"), systemImage: "eye")
+                if visibleResults.isEmpty {
+                    ContentUnavailableView(french ? "Aucun fichier ne correspond au filtre" : "No files match this filter", systemImage: "line.3.horizontal.decrease.circle")
+                        .frame(minHeight: 260)
+                } else {
+                    List(visibleResults, id: \.url) { result in
+                        HStack {
+                            Image(systemName: "doc")
+                            Text(result.url.lastPathComponent).lineLimit(1)
+                            Spacer()
+                            Text(size(result.allocatedBytes)).monospacedDigit().foregroundStyle(.secondary)
+                            Button { previewURL = result.url } label: {
+                                Label(copy("explore.preview"), systemImage: "eye")
+                            }
+                            .buttonStyle(.borderless)
+                            .accessibilityLabel(previewLabel(for: result.url))
+                            .accessibilityHint(french ? "Ouvre l’aperçu Quick Look." : "Opens the Quick Look preview.")
                         }
-                        .buttonStyle(.borderless)
-                        .accessibilityLabel(previewLabel(for: result.url))
-                        .accessibilityHint(french ? "Ouvre l’aperçu Quick Look." : "Opens the Quick Look preview.")
+                        .accessibilityElement(children: .contain)
                     }
-                    .accessibilityElement(children: .contain)
+                    .frame(minHeight: 260)
                 }
-                .frame(minHeight: 260)
                 Text(french ? "Somme des octets locaux connus : \(ByteCountFormatter.string(fromByteCount: treemapInputs.reduce(0) { $0 + $1.bytes }, countStyle: .file)). Le nuage et les tailles inconnues ne sont pas estimés." : "Known local bytes total: \(ByteCountFormatter.string(fromByteCount: treemapInputs.reduce(0) { $0 + $1.bytes }, countStyle: .file)). Cloud-backed and unknown sizes are not estimated.")
                     .font(.caption).foregroundStyle(.secondary)
             }
@@ -211,5 +230,21 @@ struct ExploreScanView: View {
 
     private func previewLabel(for url: URL) -> String {
         french ? "Aperçu de \(url.lastPathComponent)" : "Preview \(url.lastPathComponent)"
+    }
+
+    private var presetDescription: String {
+        switch preset {
+        case .all:
+            return french ? "Aucun filtre de taille ou de date." : "No size or date filter."
+        case .largeLocal:
+            return french ? "Octets locaux alloués connus ≥ 1 Gio; tailles nuage/inconnues exclues." : "Known allocated local bytes ≥ 1 GiB; cloud/unknown sizes excluded."
+        case .olderThan365Days:
+            let cutoff = presetEvaluationDate.addingTimeInterval(-ExplorePreset.ageWindow)
+            let formatter = DateFormatter()
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss ZZZZZ"
+            let date = formatter.string(from: cutoff)
+            return french ? "Date de modification au plus tard le \(date) (365 jours); dates inconnues exclues." : "Modification date on or before \(date) (365 days); unknown dates excluded."
+        }
     }
 }
