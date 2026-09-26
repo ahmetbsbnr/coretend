@@ -1,6 +1,6 @@
 # CoreTend — cahier des charges greenfield
 
-**Statut :** proposition complète pour revue mainteneur; aucun code autorisé avant revue de ce cahier et plan d’exécution.
+**Statut :** approuvé par le mainteneur le 2026-09-26; reconstruction greenfield autorisée dans `../rebuild/` selon les limites ci-dessous.
 
 **Date :** 2026-09-26. **Périmètre :** application macOS, moteurs, stockage local, CLI lecture seule, site, documentation et qualité de livraison.
 **Référence produit :** direction CoreTend 2.0 observée dans le dépôt source; ce document tranche les contradictions d’archives sans les réécrire.
@@ -231,4 +231,4 @@ Chaque ligne de `traceability.csv/json` suit: `ID, priorité, description, code,
 
 ## 14. Approbation et transition
 
-Cette proposition fige une direction greenfield mais n’autorise pas implicitement une migration réelle de données ni une publication. Après revue mainteneur, corriger ce cahier, établir baseline de contexte/traceability et écrire plans d’exécution par tranche. Aucun code/scaffold ne commence avant approbation de cette version du cahier. Aucun push/tag/release/publication ne fait partie du goal.
+Cette version approuvée fige la direction greenfield et autorise la reconstruction dans `../rebuild/`. Elle n’autorise pas une migration réelle de données ni une publication. Le plan d’exécution et la baseline de contexte/traceability précèdent le code. Aucun push/tag/release/publication ne fait partie du goal.
