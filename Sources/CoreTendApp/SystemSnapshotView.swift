@@ -12,12 +12,15 @@ struct SystemSnapshotView: View {
     @State private var loading = false
     @State private var history: [PerformanceSample] = []
     @State private var historyError = false
+    @State private var clearingHistory = false
+    @State private var confirmClearHistory = false
+    @State private var historyNotice: String?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             Button { refresh() } label: { Label(copy("metrics.refresh"), systemImage: "arrow.clockwise") }
-                .disabled(loading)
-            if loading { ProgressView() }
+                .disabled(loading || clearingHistory)
+            if loading || clearingHistory { ProgressView() }
             if let snapshot {
                 if destination == .overview { storage(snapshot) }
                 else {
@@ -31,6 +34,13 @@ struct SystemSnapshotView: View {
             }
         }
         .task { refresh() }
+        .alert(copy("metrics.clear.title"), isPresented: $confirmClearHistory) {
+            Button(copy("common.cancel"), role: .cancel) {}
+            Button(copy("metrics.clear.confirm"), role: .destructive) {
+                clearingHistory = true
+                Task { await clearPerformanceHistory() }
+            }
+        } message: { Text(copy("metrics.clear.message")) }
     }
 
     @ViewBuilder private func storage(_ value: SystemSnapshot) -> some View {
@@ -69,6 +79,9 @@ struct SystemSnapshotView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(copy("metrics.history")).font(.headline)
             Text(copy("metrics.historyHelp")).font(.caption).foregroundStyle(.secondary)
+            Button(copy("metrics.clear"), role: .destructive) { confirmClearHistory = true }
+                .disabled(history.isEmpty || loading || clearingHistory)
+            if let historyNotice { Text(historyNotice).font(.caption).foregroundStyle(.secondary) }
             if historyError { Text(copy("metrics.historyError")).foregroundStyle(.secondary) }
             let known = history.filter { $0.loadAverage1m != nil }
             if known.isEmpty {
@@ -126,6 +139,7 @@ struct SystemSnapshotView: View {
 
     private func refresh() {
         loading = true
+        historyNotice = nil
         Task {
             let service = SystemSnapshotService()
             let newSnapshot = await Task.detached(priority: .utility) { service.snapshot() }.value
@@ -139,6 +153,20 @@ struct SystemSnapshotView: View {
                 } catch { historyError = true }
             }
             loading = false
+        }
+    }
+
+    @MainActor private func clearPerformanceHistory() async {
+        defer { clearingHistory = false }
+        do {
+            let store = try await LocalStoreAccess.open()
+            try await store.clearPerformanceHistory()
+            history = []
+            historyError = false
+            historyNotice = copy("metrics.clear.done")
+        } catch {
+            historyError = true
+            historyNotice = nil
         }
     }
 

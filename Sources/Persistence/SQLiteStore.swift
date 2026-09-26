@@ -112,6 +112,11 @@ public actor SQLiteStore {
         try execute("DELETE FROM activity_events")
     }
 
+    public func clearPerformanceHistory() throws {
+        guard !readOnly else { throw StoreError.readOnly }
+        try execute("DELETE FROM performance_samples")
+    }
+
     public func appendPerformanceSample(_ sample: PerformanceSample, retentionNow: Date = .now) throws {
         guard !readOnly, let database = connection?.handle else { throw StoreError.readOnly }
         guard sample.loadAverage1m.map({ $0.isFinite && $0 >= 0 }) ?? true,
