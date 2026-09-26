@@ -132,7 +132,8 @@ public struct FileActionService: Sendable {
             }
 
             let outcome = await executor.execute(approved)
-            let event = ActivityEvent(id: UUID(), occurredAt: clock(), kind: activityKind(for: outcome), detail: selection.url.path)
+            let event = ActivityEvent(id: UUID(), occurredAt: clock(), kind: activityKind(for: outcome),
+                                      detail: activityDetail(for: outcome, targetURL: selection.url))
             let recorded: Bool
             do { try await store.append(event); recorded = true }
             catch { recorded = false }
@@ -148,6 +149,13 @@ public struct FileActionService: Sendable {
         case .failed: .failed
         case .cancelled: .cancelled
         }
+    }
+
+    private func activityDetail(for outcome: ActionOutcome, targetURL: URL) -> String {
+        if case .failed(.trashFailed) = outcome {
+            return "\(targetURL.path) | reason=trash_failed"
+        }
+        return targetURL.path
     }
 
     private func recordFailure(for url: URL) async -> Bool {
