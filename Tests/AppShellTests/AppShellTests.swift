@@ -41,13 +41,18 @@ final class AppShellTests: XCTestCase {
     }
 
     func testTrashFailureDetailPresentsEnglishReasonAndOriginalPath() {
-        let detail = "/fixture/My Archive.app | reason=trash_failed"
+        let detail = "/fixture/My Archive.app"
         XCTAssertEqual(ProductCopy.activityDetail(detail, failureCode: "trash_failed", french: false), "\(detail) — Could not move to Trash.")
     }
 
     func testTrashFailureDetailPresentsFrenchReasonAndOriginalPath() {
-        let detail = "/fixture/My Archive.app | reason=trash_failed"
+        let detail = "/fixture/My Archive.app"
         XCTAssertEqual(ProductCopy.activityDetail(detail, failureCode: "trash_failed", french: true), "\(detail) — Déplacement vers la Corbeille impossible.")
+    }
+
+    func testTrashFailureDetailPreservesFilenameEndingInHistoricalMarker() {
+        let detail = "/fixture/report | reason=trash_failed"
+        XCTAssertEqual(ProductCopy.activityDetail(detail, failureCode: "trash_failed", french: false), "\(detail) — Could not move to Trash.")
     }
 
     func testNonFailedFilenameEndingInKnownSuffixPassesThroughUnchanged() {
