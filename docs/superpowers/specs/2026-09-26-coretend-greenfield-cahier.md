@@ -18,6 +18,7 @@ Le produit cible est une application macOS native qui aide à comprendre l’occ
 3. **Publication :** aucun badge, manifest ou état JSON seul ne prouve une release. Faits publics exigent artefact publié et vérification cryptographique correspondante.
 4. **Historique :** mentions de 0.9.x, 1.0.0, 1.0.1, 1.0.2, comptes de tests et matrices visuelles restent des instantanés datés, jamais chiffres courants sans re-mesure.
 5. **Code source existant :** référence en lecture seulement; toute capacité reconstruite part d’une nouvelle implémentation et d’un contrat observable.
+6. **Conflit Trash-only observé :** le SafetyCore courant retombe sur `FileManager.removeItem` pour certaines cibles temporaires après échec de `trashItem` et journalise ensuite `executed` (`Sources/SafetyCore/SafetyCore.swift:266-285`). Les tests existants attendent la disparition de ces fixtures. Ce comportement contredit l’invariant produit; il est explicitement exclu du greenfield et ses tests seront remplacés par une fausse Corbeille qui vérifie l’échec sans toucher au vrai Trash.
 
 ## 2. QQOQCCP
 
@@ -222,6 +223,7 @@ Chaque étape a plan détaillé indépendant, build/test ciblés, audit sûreté
 | D-06 | Performance budgets | Mesurer d’abord, proposer ensuite | Corpus/machine cible et mesures reproductibles |
 | D-07 | Review sécurité indépendante | Non disponible présumée; risque signalé | Reviewer distinct assigné avant qualification candidate |
 | D-08 | Backups/export | Export diagnostic user-opt-in; backup/restore DB en procédure locale | Tests de restauration fixture avant migrations de compatibilité |
+| D-09 | Appelle `removeItem` si Trash échoue sous `/tmp` dans la source de référence | Greenfield supprime ce fallback; toute erreur Trash conserve l’original et reste un échec | Test avec adapter fixture force erreur et prouve source présente + événement `.error`; gate statique bannit mutation depuis SafetyCore hors adaptateur de test |
 
 ## 13. Registre de traçabilité
 

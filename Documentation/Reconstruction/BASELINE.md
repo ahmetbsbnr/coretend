@@ -38,6 +38,7 @@ Untracked paths are listed for preservation only. Their contents were not inspec
 | Version | `Configuration/published-release.json` says 1.0.2; `Documentation/PROJECT_STATE.md` says current version 1.0.2 but its release section identifies v1.0.0; `Documentation/CURRENT_PROJECT_STATE.json` identifies 0.9.1-rc.5; README reports 1.0.2 fixes | **CONTRADICTED across state files.** Do not choose a public version from these documents alone. |
 | Historical published artifact | `PROJECT_STATE.md` records v1.0.0, signature/notarization claims and a known launch defect; no downloaded artifact was checked in this pass | **DOCUMENTED, not independently verified here.** |
 | Signed/notarized current artifact | `published-release.json` has `signed=true` and `notarized=true`; README shows signed/notarized badge | **CONFIGURED/CLAIMED, artifact UNKNOWN.** No artifact bytes or stapling ticket verified. |
+| Trash-only behavior | `Sources/SafetyCore/SafetyCore.swift:266-285` calls `removeItem` after Trash fails for temporary paths, then records `executed`; `Tests/SafetyCoreTests/PathValidatorTests.swift:200-208,249-264` expects original fixture files to disappear | **CONTRADICTED by current source.** This is permanent deletion under temp roots, not a Trash move. Greenfield requirement rejects it; no test was run here. |
 | Test count | Historical documents report different counts (including 687); this pass ran no tests | **UNKNOWN for current branch.** Do not reuse historic counts. |
 | Direct distribution / App Store | README describes direct release and cask; v2 program identifies a constrained App Store build and unresolved product choice | **CONTRADICTED / decision required.** Greenfield cahier defaults to direct local packaging; no App Store scope. |
 | Public website state | Website sources exist; no browser gate run in this pass | **Implementation exists; current rendered/released state UNKNOWN.** |
@@ -51,6 +52,7 @@ No version, checksum, signature, notarization, test count, release channel or pu
 - Automated tests use temporary synthetic roots and a fixture Trash adapter. They must not inspect the maintainer's home, real user store or real Trash.
 - No telemetry, account, cloud sync or analytics. Network, if update-check behavior remains, must be explicit, user-initiated and download no app binary.
 - None of these invariants was re-executed in this baseline pass; they are requirements, not newly verified results.
+- Static source review found the active SafetyCore fallback described above. Do not treat the source suite's current temporary-path execution tests as proof of Trash-only behavior; greenfield acceptance must inject a fixture Trash adapter, force a Trash failure, and prove source preservation plus an error event.
 
 ## 5. Open baseline work
 
