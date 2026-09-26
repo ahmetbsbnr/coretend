@@ -48,6 +48,20 @@ final class SafetyCoreTests: XCTestCase {
         XCTAssertThrowsError(try PathValidator().approve(target: f.file, allowedRoots: [f.root], ruleID: "unknown", allowedRuleIDs: []))
     }
 
+    func testApprovalRejectsAllowedRootThatIsASymbolicLink() throws {
+        let f = try fixture()
+        defer { try? FileManager.default.removeItem(at: f.root) }
+        let realRoot = f.root.appendingPathComponent("real", isDirectory: true)
+        let linkedRoot = f.root.appendingPathComponent("linked", isDirectory: true)
+        try FileManager.default.createDirectory(at: realRoot, withIntermediateDirectories: true)
+        let target = realRoot.appendingPathComponent("candidate.txt")
+        try Data("root-bound".utf8).write(to: target)
+        try FileManager.default.createSymbolicLink(at: linkedRoot, withDestinationURL: realRoot)
+
+        XCTAssertThrowsError(try PathValidator().approve(target: target, allowedRoots: [linkedRoot],
+                                                          ruleID: "cleanup.fixture", allowedRuleIDs: ["cleanup.fixture"]))
+    }
+
     func testExecutionRejectsChangedIdentity() async throws {
         let f = try fixture()
         defer { try? FileManager.default.removeItem(at: f.root) }
