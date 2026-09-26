@@ -1,4 +1,5 @@
 import SwiftUI
+import QuickLook
 import UniformTypeIdentifiers
 import ScanCore
 import ProductContract
@@ -14,6 +15,10 @@ struct ExploreScanView: View {
     @State private var activeScanID: UUID?
     @State private var query = ""
     @State private var sortMode = "largest"
+    @State private var previewURL: URL?
+    @State private var selectedRoot: URL?
+    @State private var previewScopeHeld = false
+    @State private var previewScopedRoot: URL?
 
     private var visibleResults: [ScanResult] {
         let filtered = results.filter { query.isEmpty || $0.url.lastPathComponent.localizedCaseInsensitiveContains(query) || $0.url.deletingLastPathComponent().path.localizedCaseInsensitiveContains(query) }
@@ -94,8 +99,12 @@ struct ExploreScanView: View {
                         Text(result.url.lastPathComponent).lineLimit(1)
                         Spacer()
                         Text(size(result.allocatedBytes)).monospacedDigit().foregroundStyle(.secondary)
+                        Button { previewURL = result.url } label: {
+                            Label(copy("explore.preview"), systemImage: "eye")
+                        }
+                        .buttonStyle(.borderless)
                     }
-                    .accessibilityElement(children: .combine)
+                    .accessibilityElement(children: .contain)
                 }
                 .frame(minHeight: 260)
                 Text(french ? "Somme des octets locaux connus : \(ByteCountFormatter.string(fromByteCount: treemapInputs.reduce(0) { $0 + $1.bytes }, countStyle: .file)). Le nuage et les tailles inconnues ne sont pas estimés." : "Known local bytes total: \(ByteCountFormatter.string(fromByteCount: treemapInputs.reduce(0) { $0 + $1.bytes }, countStyle: .file)). Cloud-backed and unknown sizes are not estimated.")
@@ -111,11 +120,25 @@ struct ExploreScanView: View {
                 status = copy("scan.failed")
             }
         }
-        .onDisappear { scanTask?.cancel(); activeScanID = nil; scanning = false }
+        .onDisappear {
+            scanTask?.cancel(); activeScanID = nil; scanning = false
+            previewURL = nil
+            releasePreviewScope()
+        }
+        .quickLookPreview($previewURL)
+        .onChange(of: previewURL) { _, item in
+            if item == nil { releasePreviewScope() }
+            else if !previewScopeHeld, let selectedRoot {
+                previewScopeHeld = selectedRoot.startAccessingSecurityScopedResource()
+                if previewScopeHeld { previewScopedRoot = selectedRoot }
+            }
+        }
     }
 
     private func beginScan(_ root: URL) {
         scanTask?.cancel()
+        previewURL = nil
+        selectedRoot = root
         let scanID = UUID()
         activeScanID = scanID
         let acquiredScope = root.startAccessingSecurityScopedResource()
@@ -159,6 +182,12 @@ struct ExploreScanView: View {
         activeScanID = nil
         scanning = false
         status = copy("scan.cancelled")
+    }
+
+    private func releasePreviewScope() {
+        if previewScopeHeld, let previewScopedRoot { previewScopedRoot.stopAccessingSecurityScopedResource() }
+        previewScopeHeld = false
+        previewScopedRoot = nil
     }
 
     private func size(_ measurement: ProductMeasurement<Int64>) -> String {
