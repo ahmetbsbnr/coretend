@@ -39,4 +39,26 @@ final class AppShellTests: XCTestCase {
         XCTAssertEqual(CommandPaletteNavigation.move(in: commands, selectedID: commands.first?.id, direction: .up), commands.first?.id)
         XCTAssertNil(CommandPaletteNavigation.move(in: [], selectedID: nil, direction: .down))
     }
+
+    func testTrashFailureDetailPresentsEnglishReasonAndOriginalPath() {
+        let detail = "/fixture/My Archive.app | reason=trash_failed"
+        XCTAssertEqual(ProductCopy.activityDetail(detail, french: false), "/fixture/My Archive.app — Could not move to Trash.")
+    }
+
+    func testTrashFailureDetailPresentsFrenchReasonAndOriginalPath() {
+        let detail = "/fixture/My Archive.app | reason=trash_failed"
+        XCTAssertEqual(ProductCopy.activityDetail(detail, french: true), "/fixture/My Archive.app — Déplacement vers la Corbeille impossible.")
+    }
+
+    func testUnknownActivityDetailPassesThroughUnchanged() {
+        let details = [
+            "/fixture/My Archive.app",
+            "/fixture/My Archive.app | reason=other_failure",
+            "/fixture/My Archive.app | reason=trash_failed | extra=data"
+        ]
+        for detail in details {
+            XCTAssertEqual(ProductCopy.activityDetail(detail, french: true), detail)
+            XCTAssertEqual(ProductCopy.activityDetail(detail, french: false), detail)
+        }
+    }
 }
