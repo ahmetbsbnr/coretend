@@ -42,24 +42,24 @@ final class AppShellTests: XCTestCase {
 
     func testTrashFailureDetailPresentsEnglishReasonAndOriginalPath() {
         let detail = "/fixture/My Archive.app | reason=trash_failed"
-        XCTAssertEqual(ProductCopy.activityDetail(detail, isFailure: true, french: false), "/fixture/My Archive.app — Could not move to Trash.")
+        XCTAssertEqual(ProductCopy.activityDetail(detail, failureCode: "trash_failed", french: false), "\(detail) — Could not move to Trash.")
     }
 
     func testTrashFailureDetailPresentsFrenchReasonAndOriginalPath() {
         let detail = "/fixture/My Archive.app | reason=trash_failed"
-        XCTAssertEqual(ProductCopy.activityDetail(detail, isFailure: true, french: true), "/fixture/My Archive.app — Déplacement vers la Corbeille impossible.")
+        XCTAssertEqual(ProductCopy.activityDetail(detail, failureCode: "trash_failed", french: true), "\(detail) — Déplacement vers la Corbeille impossible.")
     }
 
     func testNonFailedFilenameEndingInKnownSuffixPassesThroughUnchanged() {
         let detail = "/fixture/report | reason=trash_failed"
-        XCTAssertEqual(ProductCopy.activityDetail(detail, isFailure: false, french: true), detail)
-        XCTAssertEqual(ProductCopy.activityDetail(detail, isFailure: false, french: false), detail)
+        XCTAssertEqual(ProductCopy.activityDetail(detail, failureCode: nil, french: true), detail)
+        XCTAssertEqual(ProductCopy.activityDetail(detail, failureCode: nil, french: false), detail)
     }
 
     func testFailedEventWithPlainPathPassesThroughUnchanged() {
-        let detail = "/fixture/My Archive.app"
-        XCTAssertEqual(ProductCopy.activityDetail(detail, isFailure: true, french: true), detail)
-        XCTAssertEqual(ProductCopy.activityDetail(detail, isFailure: true, french: false), detail)
+        let detail = "/fixture/My Archive.app | reason=trash_failed"
+        XCTAssertEqual(ProductCopy.activityDetail(detail, failureCode: nil, french: true), detail)
+        XCTAssertEqual(ProductCopy.activityDetail(detail, failureCode: nil, french: false), detail)
     }
 
     func testUnknownActivityDetailPassesThroughUnchanged() {
@@ -68,8 +68,8 @@ final class AppShellTests: XCTestCase {
             "/fixture/My Archive.app | reason=trash_failed | extra=data"
         ]
         for detail in details {
-            XCTAssertEqual(ProductCopy.activityDetail(detail, isFailure: true, french: true), detail)
-            XCTAssertEqual(ProductCopy.activityDetail(detail, isFailure: true, french: false), detail)
+            XCTAssertEqual(ProductCopy.activityDetail(detail, failureCode: "other_failure", french: true), detail)
+            XCTAssertEqual(ProductCopy.activityDetail(detail, failureCode: "other_failure", french: false), detail)
         }
     }
 }

@@ -14,7 +14,7 @@ final class PersistenceTests: XCTestCase {
         try await store.migrate()
         XCTAssertTrue(FileManager.default.fileExists(atPath: db.path))
         let version = try await store.schemaVersion()
-        XCTAssertEqual(version, 4)
+        XCTAssertEqual(version, 5)
     }
 
     func testAppendAndQueryEventsInTimestampOrder() async throws {
@@ -28,6 +28,7 @@ final class PersistenceTests: XCTestCase {
         let events = try await store.events()
         XCTAssertEqual(events.map(\.kind), [.proposed, .failed])
         XCTAssertEqual(events.first?.detail, "candidate")
+        XCTAssertEqual(events.map(\.failureCode), [nil, nil])
     }
 
     func testActivityRejectsNonFiniteTimestamp() async throws {
@@ -90,6 +91,72 @@ final class PersistenceTests: XCTestCase {
         XCTAssertEqual(decoded, [event])
     }
 
+    func testFailureCodePersistsWithoutChangingActivityExports() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-event-code-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let url = root.appendingPathComponent("fixture.sqlite")
+        let store = try SQLiteStore(url: url)
+        try await store.migrate()
+        let detail = "/fixture/failed.app | reason=trash_failed"
+        let event = ActivityEvent(id: UUID(uuidString: "11111111-1111-4111-8111-111111111111")!,
+                                  occurredAt: Date(timeIntervalSince1970: 0), kind: .failed,
+                                  detail: detail, failureCode: "trash_failed")
+        try await store.append(event)
+        var handle: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(url.path, &handle), SQLITE_OK)
+        defer { sqlite3_close(handle) }
+        var statement: OpaquePointer?
+        XCTAssertEqual(sqlite3_prepare_v2(handle, "SELECT failure_code FROM activity_events WHERE id = '11111111-1111-4111-8111-111111111111'", -1, &statement, nil), SQLITE_OK)
+        defer { sqlite3_finalize(statement) }
+        XCTAssertEqual(sqlite3_step(statement), SQLITE_ROW)
+        XCTAssertEqual(String(cString: sqlite3_column_text(statement, 0)), "trash_failed")
+        let savedEvents = try await store.events()
+        let saved = try XCTUnwrap(savedEvents.first)
+        XCTAssertEqual(saved, event)
+        let json = try ActivityExport.json([saved])
+        let objects = try XCTUnwrap(JSONSerialization.jsonObject(with: json) as? [[String: Any]])
+        XCTAssertEqual(Set(try XCTUnwrap(objects.first).keys), ["id", "occurredAt", "kind", "detail"])
+        XCTAssertEqual(objects.first?["detail"] as? String, detail)
+        let csv = ActivityExport.csv([saved])
+        XCTAssertEqual(csv, "id,occurred_at,kind,detail\n\"11111111-1111-4111-8111-111111111111\",\"1970-01-01T00:00:00Z\",\"failed\",\"/fixture/failed.app | reason=trash_failed\"\n")
+    }
+
+    func testVersionFourMigrationPreservesRowsWithNullFailureCodes() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-v4-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let url = root.appendingPathComponent("fixture.sqlite")
+        var handle: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(url.path, &handle), SQLITE_OK)
+        let fixture = """
+        CREATE TABLE activity_events (id TEXT PRIMARY KEY NOT NULL, occurred_at REAL NOT NULL, kind TEXT NOT NULL, detail TEXT NOT NULL);
+        INSERT INTO activity_events VALUES ('11111111-1111-4111-8111-111111111111', 10, 'failed', '/fixture/report | reason=trash_failed');
+        CREATE TABLE preferences (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL);
+        CREATE TABLE legacy_imports (digest TEXT PRIMARY KEY NOT NULL, imported_at REAL NOT NULL);
+        CREATE TABLE performance_samples (id TEXT PRIMARY KEY NOT NULL, measured_at REAL NOT NULL, load_average_1m REAL, available_bytes INTEGER);
+        CREATE TABLE saved_files (path TEXT PRIMARY KEY NOT NULL, first_seen_at REAL NOT NULL, last_seen_at REAL NOT NULL, logical_bytes INTEGER, allocated_bytes INTEGER, is_favorite INTEGER NOT NULL DEFAULT 0 CHECK(is_favorite IN (0, 1)));
+        PRAGMA user_version = 4;
+        """
+        XCTAssertEqual(sqlite3_exec(handle, fixture, nil, nil, nil), SQLITE_OK)
+        sqlite3_close(handle)
+        let preMigrationReader = try SQLiteStore(url: url, readOnly: true)
+        let preMigrationEvents = try await preMigrationReader.events()
+        XCTAssertEqual(preMigrationEvents.map(\.failureCode), [nil])
+        let store = try SQLiteStore(url: url)
+        try await store.migrate()
+        try await store.migrate()
+        let version = try await store.schemaVersion()
+        XCTAssertEqual(version, 5)
+        let savedEvents = try await store.events()
+        let saved = try XCTUnwrap(savedEvents.first)
+        XCTAssertEqual(saved.detail, "/fixture/report | reason=trash_failed")
+        XCTAssertNil(saved.failureCode)
+        let reader = try SQLiteStore(url: url, readOnly: true)
+        let readOnlyEvents = try await reader.events()
+        XCTAssertEqual(readOnlyEvents, [saved])
+    }
+
     func testDiagnosticExportContainsOnlyAllowlistedAggregateFields() throws {
         let events = [
             ActivityEvent(id: UUID(uuidString: "11111111-1111-4111-8111-111111111111")!,
@@ -145,7 +212,7 @@ final class PersistenceTests: XCTestCase {
         let migratedVersion = try await store.schemaVersion()
         let preservedEvents = try await store.events()
         let exclusions = try await store.exclusions()
-        XCTAssertEqual(migratedVersion, 4)
+        XCTAssertEqual(migratedVersion, 5)
         XCTAssertEqual(preservedEvents.map(\.detail), ["fixture-event"])
         XCTAssertEqual(exclusions, [])
     }
@@ -298,7 +365,7 @@ final class PersistenceTests: XCTestCase {
         let events = try await store.events()
         let language = try await store.languagePreference()
         let samples = try await store.performanceSamples()
-        XCTAssertEqual(version, 4)
+        XCTAssertEqual(version, 5)
         XCTAssertEqual(events.map(\.detail), ["retained"])
         XCTAssertEqual(language, "fr")
         XCTAssertEqual(samples, [])
@@ -321,7 +388,7 @@ final class PersistenceTests: XCTestCase {
         let language = try await store.languagePreference()
         let samples = try await store.performanceSamples()
         let files = try await store.savedFiles()
-        XCTAssertEqual(version, 4)
+        XCTAssertEqual(version, 5)
         XCTAssertEqual(events.map(\.detail), ["v3-retained"])
         XCTAssertEqual(language, "fr")
         XCTAssertEqual(samples.count, 1)
@@ -386,7 +453,7 @@ final class PersistenceTests: XCTestCase {
         let retriedLanguage = try await store.languagePreference()
         let retriedSamples = try await store.performanceSamples()
         let retriedFiles = try await store.savedFiles()
-        XCTAssertEqual(retriedVersion, 4)
+        XCTAssertEqual(retriedVersion, 5)
         XCTAssertEqual(retriedEvents, [originalEvent])
         XCTAssertEqual(retriedLanguage, "fr")
         XCTAssertEqual(retriedSamples, [originalSample])
