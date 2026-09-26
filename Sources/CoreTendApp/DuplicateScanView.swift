@@ -219,7 +219,8 @@ struct DuplicateScanView: View {
     }
 
     @MainActor private func prepareAction() async {
-        guard let root = selectedRoot, !selectedCopies.isEmpty, !scanning, !actionBusy, actionReview == nil else { return }
+        guard let root = selectedRoot, let exactReport = report, !similarMode,
+              !selectedCopies.isEmpty, !scanning, !actionBusy, actionReview == nil else { return }
         actionBusy = true
         defer { actionBusy = false; if actionReview == nil { releaseActionScope() } }
         do {
@@ -231,7 +232,10 @@ struct DuplicateScanView: View {
             let executor = SafeActionExecutor(allowedRoots: [root], allowedRules: allowed, trash: MacOSTrashClient())
             let service = FileActionService(validator: .init(), executor: executor, store: store, allowedRoots: [root], allowedRuleIDs: allowed)
             let selections = selectedCopies.sorted { $0.path < $1.path }.map { FileActionSelection(url: $0, ruleID: rule) }
-            let review = try service.prepareReview(selections)
+            let protectedKeepers = exactReport.groups.compactMap { group in
+                group.files.contains(where: selectedCopies.contains) ? group.suggestedKeeper : nil
+            }
+            let review = try service.prepareReview(selections, protectedKeepers: protectedKeepers)
             guard await service.recordProposal(review) else {
                 status = french ? "Journal indisponible; action bloquée." : "History unavailable; action blocked."
                 return

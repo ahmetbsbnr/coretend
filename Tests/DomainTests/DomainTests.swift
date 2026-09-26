@@ -124,6 +124,51 @@ final class ApplicationAssociationMatcherTests: XCTestCase {
 }
 
 final class DomainTests: XCTestCase {
+    func testDuplicateBatchStopsWhenKeeperDisappearsBetweenCopies() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-duplicate-keeper-race-\(UUID())", isDirectory: true)
+        let trashRoot = root.appendingPathComponent("fixture-trash", isDirectory: true)
+        try FileManager.default.createDirectory(at: trashRoot, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let keeper = root.appendingPathComponent("keeper.bin")
+        let firstCopy = root.appendingPathComponent("copy-a.bin")
+        let secondCopy = root.appendingPathComponent("copy-b.bin")
+        let bytes = Data("identical fixture bytes".utf8)
+        try bytes.write(to: keeper)
+        try bytes.write(to: firstCopy)
+        try bytes.write(to: secondCopy)
+
+        let store = try SQLiteStore(url: root.appendingPathComponent("events.sqlite"))
+        try await store.migrate()
+        let allowed = Set(["scan.duplicates"])
+        let trash = KeeperRemovingTrash(trashRoot: trashRoot, keeper: keeper)
+        let service = FileActionService(validator: .init(),
+                                        executor: SafeActionExecutor(allowedRoots: [root], allowedRules: allowed, trash: trash),
+                                        store: store, allowedRoots: [root], allowedRuleIDs: allowed)
+        let selections = [firstCopy, secondCopy].map { FileActionSelection(url: $0, ruleID: "scan.duplicates") }
+
+        let review = try service.prepareReview(selections, protectedKeepers: [keeper])
+        let proposalRecorded = await service.recordProposal(review)
+        XCTAssertTrue(proposalRecorded)
+        let batch = try service.confirm(review, accepted: true)
+        let report = await service.execute(batch)
+        let firstDestinationValue = await trash.destination(for: firstCopy)
+        let firstDestination = try XCTUnwrap(firstDestinationValue)
+        let trashCallCount = await trash.callCount
+        let events = try await store.events()
+        let actualOutcomes: [ActionOutcome] = report.items.map { $0.outcome }
+        let expectedOutcomes: [ActionOutcome] = [
+            .movedToTrash(original: firstCopy.path, trashURL: firstDestination.path),
+            .failed(.revalidation(.identityChanged))
+        ]
+
+        XCTAssertEqual(report.movedCount, 1)
+        XCTAssertEqual(actualOutcomes, expectedOutcomes)
+        XCTAssertEqual(try Data(contentsOf: secondCopy), bytes)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: keeper.path))
+        XCTAssertEqual(trashCallCount, 1)
+        XCTAssertEqual(events.map(\.kind), [.proposed, .proposed, .approved, .movedToTrash, .approved, .failed])
+    }
+
     func testDuplicateReviewRejectsProtectedKeeperAlongsideSelectedCopies() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-duplicate-keeper-\(UUID())", isDirectory: true)
         let trashRoot = root.appendingPathComponent("fixture-trash", isDirectory: true)
@@ -514,4 +559,24 @@ private actor DomainFixtureTrash: TrashClient {
         try FileManager.default.moveItem(at: url, to: destination)
         return destination
     }
+}
+
+private actor KeeperRemovingTrash: TrashClient {
+    let trashRoot: URL
+    let keeper: URL
+    private(set) var callCount = 0
+    private var destinations: [String: URL] = [:]
+
+    init(trashRoot: URL, keeper: URL) { self.trashRoot = trashRoot; self.keeper = keeper }
+
+    func moveToTrash(_ url: URL) async throws -> URL {
+        callCount += 1
+        let destination = trashRoot.appendingPathComponent(UUID().uuidString + "-" + url.lastPathComponent)
+        try FileManager.default.moveItem(at: url, to: destination)
+        destinations[url.path] = destination
+        if callCount == 1 { try FileManager.default.removeItem(at: keeper) }
+        return destination
+    }
+
+    func destination(for url: URL) -> URL? { destinations[url.path] }
 }
