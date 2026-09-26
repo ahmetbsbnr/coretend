@@ -169,6 +169,67 @@ final class PersistenceTests: XCTestCase {
         XCTAssertEqual(attributesBefore[.posixPermissions] as? NSNumber, attributesAfter[.posixPermissions] as? NSNumber)
     }
 
+    func testLegacyImportRollsBackLateMarkerFailureAndRetriesSamePreview() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-legacy-rollback-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("coretend-preferences-v1.json")
+        let bytes = Data("{\"version\":1,\"excludedPaths\":[\"/tmp/selected\"],\"language\":\"en\"}\n".utf8)
+        try bytes.write(to: source)
+        let database = root.appendingPathComponent("store.sqlite")
+        let store = try SQLiteStore(url: database)
+        try await store.migrate()
+        let importer = LegacyPreferencesImporter()
+        let preview = try importer.preview(sourceURL: source)
+
+        var handle: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(database.path, &handle), SQLITE_OK)
+        defer { sqlite3_close(handle) }
+        XCTAssertEqual(sqlite3_exec(handle, "CREATE TRIGGER reject_legacy_marker BEFORE INSERT ON legacy_imports BEGIN SELECT RAISE(ABORT, 'fixture marker failure'); END", nil, nil, nil), SQLITE_OK)
+
+        do {
+            _ = try await importer.importCopy(preview, into: store)
+            XCTFail("marker failure must reject the import")
+        } catch let error as StoreError {
+            XCTAssertEqual(error, .statement("fixture marker failure"))
+        }
+        let failedExclusions = try await store.exclusions()
+        let failedLanguage = try await store.languagePreference()
+        let failedEvents = try await store.events()
+        XCTAssertEqual(failedExclusions, [])
+        XCTAssertNil(failedLanguage)
+        XCTAssertEqual(failedEvents, [])
+        var counts: OpaquePointer?
+        let countSQL = "SELECT (SELECT COUNT(*) FROM preferences), (SELECT COUNT(*) FROM activity_events), (SELECT COUNT(*) FROM legacy_imports)"
+        XCTAssertEqual(sqlite3_prepare_v2(handle, countSQL, -1, &counts, nil), SQLITE_OK)
+        XCTAssertEqual(sqlite3_step(counts), SQLITE_ROW)
+        XCTAssertEqual(sqlite3_column_int(counts, 0), 0)
+        XCTAssertEqual(sqlite3_column_int(counts, 1), 0)
+        XCTAssertEqual(sqlite3_column_int(counts, 2), 0)
+        sqlite3_finalize(counts)
+        XCTAssertEqual(try Data(contentsOf: source), bytes)
+
+        XCTAssertEqual(sqlite3_exec(handle, "DROP TRIGGER reject_legacy_marker", nil, nil, nil), SQLITE_OK)
+        let firstRetry = try await importer.importCopy(preview, into: store)
+        let secondRetry = try await importer.importCopy(preview, into: store)
+        let importedExclusions = try await store.exclusions()
+        let importedLanguage = try await store.languagePreference()
+        XCTAssertEqual(firstRetry, .imported)
+        XCTAssertEqual(secondRetry, .alreadyImported)
+        XCTAssertEqual(importedExclusions, ["/tmp/selected"])
+        XCTAssertEqual(importedLanguage, "en")
+        let events = try await store.events()
+        XCTAssertEqual(events.map(\.kind), [.migrationImported])
+        XCTAssertEqual(events.map(\.detail), ["legacy_preferences_v1:\(preview.sourceDigest)"])
+        XCTAssertEqual(sqlite3_prepare_v2(handle, countSQL, -1, &counts, nil), SQLITE_OK)
+        XCTAssertEqual(sqlite3_step(counts), SQLITE_ROW)
+        XCTAssertEqual(sqlite3_column_int(counts, 0), 2)
+        XCTAssertEqual(sqlite3_column_int(counts, 1), 1)
+        XCTAssertEqual(sqlite3_column_int(counts, 2), 1)
+        sqlite3_finalize(counts)
+        XCTAssertEqual(try Data(contentsOf: source), bytes)
+    }
+
     func testLegacyImporterRejectsSymlinksAndUnknownFields() throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-legacy-unsafe-\(UUID())", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
