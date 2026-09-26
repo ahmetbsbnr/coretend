@@ -43,8 +43,8 @@ public actor SQLiteStore {
 
     public func migrate() throws {
         let version = try schemaVersion()
-        guard version <= 2 else { throw StoreError.unsupportedSchema(version) }
-        guard version < 2 else { return }
+        guard version <= 3 else { throw StoreError.unsupportedSchema(version) }
+        guard version < 3 else { return }
         guard !readOnly else { throw StoreError.readOnly }
         try execute("BEGIN IMMEDIATE")
         do {
@@ -53,9 +53,13 @@ public actor SQLiteStore {
                 try execute("CREATE INDEX IF NOT EXISTS activity_events_time ON activity_events(occurred_at)")
                 try execute("PRAGMA user_version = 1")
             }
-            try execute("CREATE TABLE IF NOT EXISTS preferences (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL)")
-            try execute("CREATE TABLE IF NOT EXISTS legacy_imports (digest TEXT PRIMARY KEY NOT NULL, imported_at REAL NOT NULL)")
-            try execute("PRAGMA user_version = 2")
+            if version < 2 {
+                try execute("CREATE TABLE IF NOT EXISTS preferences (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL)")
+                try execute("CREATE TABLE IF NOT EXISTS legacy_imports (digest TEXT PRIMARY KEY NOT NULL, imported_at REAL NOT NULL)")
+            }
+            try execute("CREATE TABLE performance_samples (id TEXT PRIMARY KEY NOT NULL, measured_at REAL NOT NULL, load_average_1m REAL, available_bytes INTEGER)")
+            try execute("CREATE INDEX performance_samples_time ON performance_samples(measured_at)")
+            try execute("PRAGMA user_version = 3")
             try execute("COMMIT")
         } catch {
             try? execute("ROLLBACK")
@@ -106,6 +110,59 @@ public actor SQLiteStore {
     public func clearHistory() throws {
         guard !readOnly else { throw StoreError.readOnly }
         try execute("DELETE FROM activity_events")
+    }
+
+    public func appendPerformanceSample(_ sample: PerformanceSample, retentionNow: Date = .now) throws {
+        guard !readOnly, let database = connection?.handle else { throw StoreError.readOnly }
+        guard sample.loadAverage1m.map({ $0.isFinite && $0 >= 0 }) ?? true,
+              sample.availableBytes.map({ $0 >= 0 }) ?? true else { throw StoreError.statement("invalid performance measurement") }
+        try execute("BEGIN IMMEDIATE")
+        do {
+            var statement: OpaquePointer?
+            let sql = "INSERT INTO performance_samples(id, measured_at, load_average_1m, available_bytes) VALUES(?, ?, ?, ?)"
+            guard sqlite3_prepare_v2(database, sql, -1, &statement, nil) == SQLITE_OK, let statement else { throw failure() }
+            bind(sample.id.uuidString, to: 1, in: statement)
+            sqlite3_bind_double(statement, 2, sample.measuredAt.timeIntervalSince1970)
+            if let value = sample.loadAverage1m { sqlite3_bind_double(statement, 3, value) } else { sqlite3_bind_null(statement, 3) }
+            if let value = sample.availableBytes { sqlite3_bind_int64(statement, 4, value) } else { sqlite3_bind_null(statement, 4) }
+            let insertion = sqlite3_step(statement)
+            sqlite3_finalize(statement)
+            guard insertion == SQLITE_DONE else { throw failure() }
+
+            let cutoff = retentionNow.addingTimeInterval(-Double(PerformanceHistoryPolicy.retentionDays) * 86_400)
+            var prune: OpaquePointer?
+            guard sqlite3_prepare_v2(database, "DELETE FROM performance_samples WHERE measured_at < ?", -1, &prune, nil) == SQLITE_OK, let prune else { throw failure() }
+            sqlite3_bind_double(prune, 1, cutoff.timeIntervalSince1970)
+            let deletion = sqlite3_step(prune)
+            sqlite3_finalize(prune)
+            guard deletion == SQLITE_DONE else { throw failure() }
+            try execute("DELETE FROM performance_samples WHERE id NOT IN (SELECT id FROM performance_samples ORDER BY measured_at DESC, id DESC LIMIT \(PerformanceHistoryPolicy.maximumSamples))")
+            try execute("COMMIT")
+        } catch {
+            try? execute("ROLLBACK")
+            throw error
+        }
+    }
+
+    public func performanceSamples(limit: Int = 100) throws -> [PerformanceSample] {
+        guard let database = connection?.handle else { throw StoreError.open("closed") }
+        var statement: OpaquePointer?
+        let sql = "SELECT id, measured_at, load_average_1m, available_bytes FROM performance_samples ORDER BY measured_at DESC, id DESC LIMIT ?"
+        guard sqlite3_prepare_v2(database, sql, -1, &statement, nil) == SQLITE_OK, let statement else { throw failure() }
+        defer { sqlite3_finalize(statement) }
+        sqlite3_bind_int(statement, 1, Int32(min(max(1, limit), PerformanceHistoryPolicy.maximumSamples)))
+        var result: [PerformanceSample] = []
+        while true {
+            let step = sqlite3_step(statement)
+            if step == SQLITE_DONE { break }
+            guard step == SQLITE_ROW else { throw failure() }
+            guard let idText = sqlite3_column_text(statement, 0), let id = UUID(uuidString: String(cString: idText)) else { continue }
+            let load = sqlite3_column_type(statement, 2) == SQLITE_NULL ? nil : sqlite3_column_double(statement, 2)
+            let bytes = sqlite3_column_type(statement, 3) == SQLITE_NULL ? nil : sqlite3_column_int64(statement, 3)
+            result.append(.init(id: id, measuredAt: Date(timeIntervalSince1970: sqlite3_column_double(statement, 1)),
+                                loadAverage1m: load, availableBytes: bytes))
+        }
+        return result.reversed()
     }
 
     public func exclusions() throws -> [String] {
