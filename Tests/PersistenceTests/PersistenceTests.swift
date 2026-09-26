@@ -30,6 +30,22 @@ final class PersistenceTests: XCTestCase {
         XCTAssertEqual(events.first?.detail, "candidate")
     }
 
+    func testActivityRejectsNonFiniteTimestamp() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-event-time-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = try SQLiteStore(url: root.appendingPathComponent("store.sqlite")); try await store.migrate()
+        let event = ActivityEvent(id: UUID(), occurredAt: Date(timeIntervalSince1970: .infinity), kind: .proposed, detail: "fixture")
+        do {
+            try await store.append(event)
+            XCTFail("non-finite activity timestamp must be rejected")
+        } catch let error as StoreError {
+            XCTAssertEqual(error, .statement("invalid activity timestamp"))
+        }
+        let events = try await store.events()
+        XCTAssertTrue(events.isEmpty)
+    }
+
     func testRepeatedMigrationIsIdempotent() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-store-\(UUID())", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
@@ -254,6 +270,38 @@ final class PersistenceTests: XCTestCase {
             try await reader.appendPerformanceSample(zero, retentionNow: now)
             XCTFail("read-only store accepted performance write")
         } catch let error as StoreError { XCTAssertEqual(error, .readOnly) }
+    }
+
+    func testPerformanceHistoryRejectsNonFiniteTimestamp() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-performance-time-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = try SQLiteStore(url: root.appendingPathComponent("store.sqlite")); try await store.migrate()
+        let sample = PerformanceSample(measuredAt: Date(timeIntervalSince1970: .nan), loadAverage1m: 1, availableBytes: 10)
+        do {
+            try await store.appendPerformanceSample(sample, retentionNow: Date(timeIntervalSince1970: 100))
+            XCTFail("non-finite performance timestamp must be rejected")
+        } catch let error as StoreError {
+            XCTAssertEqual(error, .statement("invalid performance timestamp"))
+        }
+        let samples = try await store.performanceSamples()
+        XCTAssertTrue(samples.isEmpty)
+    }
+
+    func testPerformanceHistoryRejectsNonFiniteRetentionClock() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-retention-clock-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = try SQLiteStore(url: root.appendingPathComponent("store.sqlite")); try await store.migrate()
+        let sample = PerformanceSample(measuredAt: Date(timeIntervalSince1970: 10), loadAverage1m: 1, availableBytes: 10)
+        do {
+            try await store.appendPerformanceSample(sample, retentionNow: Date(timeIntervalSince1970: .infinity))
+            XCTFail("non-finite retention clock must be rejected")
+        } catch let error as StoreError {
+            XCTAssertEqual(error, .statement("invalid performance timestamp"))
+        }
+        let samples = try await store.performanceSamples()
+        XCTAssertTrue(samples.isEmpty)
     }
 
     func testSavedFilesKeepOptionalMeasurementsAndFavoritesBeyondRecentRetention() async throws {
