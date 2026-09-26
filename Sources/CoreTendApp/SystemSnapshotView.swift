@@ -109,7 +109,7 @@ struct SystemSnapshotView: View {
                     AxisMarks(values: .automatic(desiredCount: 4)) { value in
                         AxisGridLine().foregroundStyle(.quaternary)
                         AxisTick()
-                        AxisValueLabel(format: .dateTime.hour().minute())
+                        AxisValueLabel(format: .dateTime.day().month().hour())
                     }
                 }
                 .chartYAxis {
