@@ -1,6 +1,6 @@
 # Passation courante — CoreTend Next
 
-**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche de travail `fix/performance-chart-date-axis` basée sur `next` (`574e646` synchronisé avec `origin/next`). PR #46 backend/graphique, #47 site et #48 validation SQLite fusionnées; CI `qualify` verte pour toutes. Tranche courante : abscisse Performance rend la date pour séparer mesures des jours différents; gates locaux/distant encore à faire.
+**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche de travail `feat/performance-chart-selection` basée sur `next` (`5408782` synchronisé avec `origin/next`). PR #46 backend/graphique, #47 site, #48 validation SQLite et #49 date de l’axe fusionnées; CI `qualify` verte pour toutes. Tranche courante : sélection graphique d’un point Performance connu; gate complet/distant encore à faire.
 
 ### Backend migration et graphique Performance — tranche active
 
@@ -11,6 +11,7 @@
 - Site EN/FR en cours : générateur mentionne maintenant favoris/récents/palette et précision confidentialité (chemins/taille locale, récents désactivés par défaut, limite 100, retrait possible). `make build-site site-check` passe. FR-15 demeure PARTIEL : aucune navigation navigateur réelle, audit a11y ni publication.
 - Site EN/FR fusionné par PR #47 (`c87d01d`), CI `qualify` verte.
 - PR #48 horodatages SQLite fusionnée par `574e646`; garde-fous non-finis validés en fixtures et CI `qualify` verte.
+- PR #49 axe date Performance fusionnée par `5408782`; build app, `make qualify` et CI verts. Essai visuel/VoiceOver manuel demeure non effectué.
 - Reprise après site : poursuivre les Must du backlog, surtout FR-26 attribution des données app sûre, FR-10 permissions/diagnostics et qualification graphique SwiftUI/VoiceOver native. Aucun paquet signé/notarié/publié.
 
 ### Validation des horodatages SQLite — en cours
@@ -22,6 +23,11 @@
 
 - Axe X affiche jour/mois/heure pour distinguer points éloignés de plusieurs jours; échantillons restent des points observés, sans interpolation.
 - `swift build --product CoreTendApp`, `make qualify` et `git diff --check` passent; accès natif VoiceOver/UI reste ouvert.
+
+### Interaction graphique Performance — tranche active
+
+- Sélection X se résout vers le point mesuré connu le plus proche; aucune interpolation, points inconnus/horodatage curseur invalide ignorés, égalité choisit observation la plus récente.
+- La ligne de repère et label valeur/date montrent mesure réelle. Tests Domain passés 2/2; `make qualify`, PR/CI et état passation restent à fermer.
 
 ### Écriture groupée des récents — livrée
 
