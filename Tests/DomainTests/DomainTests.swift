@@ -69,6 +69,30 @@ final class LaunchAgentInspectionTests: XCTestCase {
         XCTAssertTrue(report.issues.isEmpty)
     }
 
+    func testOpenedDirectoryDescriptorKeepsReadsInsideSelectedFolderAfterPathReplacement() throws {
+        let parent = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: parent) }
+        let selected = parent.appendingPathComponent("selected", isDirectory: true)
+        let renamed = parent.appendingPathComponent("renamed", isDirectory: true)
+        let outside = parent.appendingPathComponent("outside", isDirectory: true)
+        try FileManager.default.createDirectory(at: selected, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: outside, withIntermediateDirectories: true)
+        let selectedData = try PropertyListSerialization.data(fromPropertyList: ["Label": "org.selected"], format: .xml, options: 0)
+        let outsideData = try PropertyListSerialization.data(fromPropertyList: ["Label": "org.outside"], format: .xml, options: 0)
+        try selectedData.write(to: selected.appendingPathComponent("entry.plist"))
+        try outsideData.write(to: outside.appendingPathComponent("entry.plist"))
+        let directoryDescriptor = selected.path.withCString { open($0, O_RDONLY | O_DIRECTORY | O_CLOEXEC) }
+        XCTAssertGreaterThanOrEqual(directoryDescriptor, 0)
+        defer { if directoryDescriptor >= 0 { _ = close(directoryDescriptor) } }
+
+        try FileManager.default.moveItem(at: selected, to: renamed)
+        try FileManager.default.createSymbolicLink(at: selected, withDestinationURL: outside)
+
+        let result = try LaunchAgentInspector.readPlistData(named: "entry.plist", relativeTo: directoryDescriptor)
+        XCTAssertEqual(result, selectedData)
+        XCTAssertNotEqual(result, outsideData)
+    }
+
     func testCapsPlistCandidatesAndReportsTruncation() throws {
         let root = try fixtureRoot()
         defer { try? FileManager.default.removeItem(at: root) }

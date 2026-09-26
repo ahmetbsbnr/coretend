@@ -33,6 +33,12 @@ public struct LaunchAgentInspector: Sendable {
     public init() {}
 
     public func inspect(in directory: URL) -> LaunchAgentInspectionReport {
+        let rootDescriptor = directory.path.withCString { open($0, O_RDONLY | O_DIRECTORY | O_CLOEXEC) }
+        guard rootDescriptor >= 0 else {
+            return LaunchAgentInspectionReport(candidates: [], issues: [LaunchAgentIssue(plistURL: directory, reason: .directoryUnreadable)])
+        }
+        defer { _ = close(rootDescriptor) }
+
         var issues: [LaunchAgentIssue] = []
         var urls: [URL] = []
         guard let enumerator = FileManager.default.enumerator(at: directory,
@@ -72,28 +78,12 @@ public struct LaunchAgentInspector: Sendable {
         var candidates: [LaunchAgentCandidate] = []
         for url in urls.prefix(Self.maximumCandidates) {
             let data: Data
-            let descriptor = url.path.withCString { open($0, O_RDONLY | O_NOFOLLOW | O_CLOEXEC) }
-            guard descriptor >= 0 else {
-                issues.append(LaunchAgentIssue(plistURL: url, reason: .plistUnreadable)); continue
-            }
-            var info = stat()
-            guard fstat(descriptor, &info) == 0, (info.st_mode & S_IFMT) == S_IFREG else {
-                _ = close(descriptor)
-                issues.append(LaunchAgentIssue(plistURL: url, reason: .plistUnreadable)); continue
-            }
-            guard info.st_size >= 0, info.st_size <= Self.maximumPlistBytes else {
-                _ = close(descriptor)
-                issues.append(LaunchAgentIssue(plistURL: url, reason: .plistTooLarge)); continue
-            }
             do {
-                let handle = FileHandle(fileDescriptor: descriptor, closeOnDealloc: true)
-                data = try handle.read(upToCount: Self.maximumPlistBytes + 1) ?? Data()
-                try handle.close()
+                data = try Self.readPlistData(named: url.lastPathComponent, relativeTo: rootDescriptor)
+            } catch LaunchAgentReadError.tooLarge {
+                issues.append(LaunchAgentIssue(plistURL: url, reason: .plistTooLarge)); continue
             } catch {
                 issues.append(LaunchAgentIssue(plistURL: url, reason: .plistUnreadable)); continue
-            }
-            guard data.count <= Self.maximumPlistBytes else {
-                issues.append(LaunchAgentIssue(plistURL: url, reason: .plistTooLarge)); continue
             }
             guard let value = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil),
                   let dictionary = value as? [String: Any] else {
@@ -109,4 +99,35 @@ public struct LaunchAgentInspector: Sendable {
         }
         return LaunchAgentInspectionReport(candidates: candidates, issues: issues)
     }
+
+    static func readPlistData(named fileName: String, relativeTo rootDescriptor: Int32) throws -> Data {
+        guard !fileName.isEmpty, URL(fileURLWithPath: fileName).lastPathComponent == fileName else {
+            throw LaunchAgentReadError.unreadable
+        }
+        let descriptor = fileName.withCString { openat(rootDescriptor, $0, O_RDONLY | O_NOFOLLOW | O_CLOEXEC) }
+        guard descriptor >= 0 else { throw LaunchAgentReadError.unreadable }
+        var info = stat()
+        guard fstat(descriptor, &info) == 0, (info.st_mode & S_IFMT) == S_IFREG else {
+            _ = close(descriptor)
+            throw LaunchAgentReadError.unreadable
+        }
+        guard info.st_size >= 0, info.st_size <= Self.maximumPlistBytes else {
+            _ = close(descriptor)
+            throw LaunchAgentReadError.tooLarge
+        }
+        do {
+            let handle = FileHandle(fileDescriptor: descriptor, closeOnDealloc: true)
+            let data = try handle.read(upToCount: Self.maximumPlistBytes + 1) ?? Data()
+            try handle.close()
+            guard data.count <= Self.maximumPlistBytes else { throw LaunchAgentReadError.tooLarge }
+            return data
+        } catch {
+            throw error
+        }
+    }
+}
+
+private enum LaunchAgentReadError: Error {
+    case unreadable
+    case tooLarge
 }
