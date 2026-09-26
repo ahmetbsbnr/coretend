@@ -103,6 +103,8 @@ struct ExploreScanView: View {
                             Label(copy("explore.preview"), systemImage: "eye")
                         }
                         .buttonStyle(.borderless)
+                        .accessibilityLabel(previewLabel(for: result.url))
+                        .accessibilityHint(french ? "Ouvre l’aperçu Quick Look." : "Opens the Quick Look preview.")
                     }
                     .accessibilityElement(children: .contain)
                 }
@@ -205,5 +207,9 @@ struct ExploreScanView: View {
     private func copy(_ key: String, count: Int? = nil) -> String {
         if key == "scan.count", let count { return french ? "\(count) fichiers mesurés" : "\(count) measured files" }
         return ProductCopy.value(for: key, french: french)
+    }
+
+    private func previewLabel(for url: URL) -> String {
+        french ? "Aperçu de \(url.lastPathComponent)" : "Preview \(url.lastPathComponent)"
     }
 }

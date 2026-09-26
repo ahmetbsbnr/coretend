@@ -57,8 +57,12 @@ struct DuplicateScanView: View {
                         HStack(alignment: .top, spacing: 12) {
                             Button { previewURL = pair.first } label: { imagePreview(pair.first) }
                                 .buttonStyle(.plain)
+                                .accessibilityLabel(previewLabel(for: pair.first))
+                                .accessibilityHint(french ? "Ouvre l’aperçu Quick Look." : "Opens the Quick Look preview.")
                             Button { previewURL = pair.second } label: { imagePreview(pair.second) }
                                 .buttonStyle(.plain)
+                                .accessibilityLabel(previewLabel(for: pair.second))
+                                .accessibilityHint(french ? "Ouvre l’aperçu Quick Look." : "Opens the Quick Look preview.")
                             VStack(alignment: .leading) {
                                 Text(pair.first.lastPathComponent).font(.headline)
                                 Text(pair.second.lastPathComponent)
@@ -83,6 +87,8 @@ struct DuplicateScanView: View {
                                 Label(copy("explore.preview"), systemImage: "eye")
                             }
                             .buttonStyle(.borderless)
+                            .accessibilityLabel(previewLabel(for: group.suggestedKeeper))
+                            .accessibilityHint(french ? "Ouvre l’aperçu Quick Look du fichier à conserver." : "Opens Quick Look for the suggested file to keep.")
                             ForEach(group.files.filter { $0 != group.suggestedKeeper }, id: \.path) { file in
                                 HStack {
                                     Toggle(isOn: Binding(get: { selectedCopies.contains(file) }, set: { enabled in
@@ -94,6 +100,8 @@ struct DuplicateScanView: View {
                                         Label(copy("explore.preview"), systemImage: "eye")
                                     }
                                     .buttonStyle(.borderless)
+                                    .accessibilityLabel(previewLabel(for: file))
+                                    .accessibilityHint(french ? "Ouvre l’aperçu Quick Look de cette copie." : "Opens Quick Look for this copy.")
                                 }
                                 .disabled(actionBusy || actionReview != nil)
                             }
@@ -284,6 +292,10 @@ struct DuplicateScanView: View {
     private func copy(_ key: String, count: Int? = nil) -> String {
         if key == "duplicates.count", let count { return french ? "\(count) groupes de doublons exacts" : "\(count) exact duplicate groups" }
         return ProductCopy.value(for: key, french: french)
+    }
+
+    private func previewLabel(for url: URL) -> String {
+        french ? "Aperçu de \(url.lastPathComponent)" : "Preview \(url.lastPathComponent)"
     }
 
     private func imagePreview(_ url: URL) -> some View {
