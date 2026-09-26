@@ -11,6 +11,7 @@ struct SystemSnapshotView: View {
     @State private var snapshot: SystemSnapshot?
     @State private var loading = false
     @State private var history: [PerformanceSample] = []
+    @State private var selectedHistoryDate: Date?
     @State private var historyError = false
     @State private var clearingHistory = false
     @State private var confirmClearHistory = false
@@ -103,7 +104,21 @@ struct SystemSnapshotView: View {
                             .symbolSize(44)
                             .foregroundStyle(.blue)
                     }
+                    if let selectedHistoryDate,
+                       let selected = PerformanceHistorySelection.nearestKnownSample(to: selectedHistoryDate, in: known) {
+                        RuleMark(x: .value("Time", selected.measuredAt))
+                            .foregroundStyle(.secondary.opacity(0.7))
+                            .annotation(position: .top, alignment: .leading) {
+                                if let load = selected.loadAverage1m {
+                                    Text(load.formatted(.number.precision(.fractionLength(2))))
+                                        .font(.caption.monospacedDigit().weight(.semibold))
+                                        .padding(.horizontal, 8).padding(.vertical, 5)
+                                        .background(.regularMaterial, in: Capsule())
+                                }
+                            }
+                    }
                 }
+                .chartXSelection(value: $selectedHistoryDate)
                 .chartYAxisLabel(copy("metrics.loadAverage"))
                 .chartXAxis {
                     AxisMarks(values: .automatic(desiredCount: 4)) { value in
@@ -124,6 +139,13 @@ struct SystemSnapshotView: View {
                 }
                 .frame(height: 170)
                 .accessibilityLabel(copy("metrics.history"))
+                if let selectedHistoryDate,
+                   let selected = PerformanceHistorySelection.nearestKnownSample(to: selectedHistoryDate, in: known),
+                   let load = selected.loadAverage1m {
+                    Text("\(copy("metrics.loadAverage")): \(load.formatted(.number.precision(.fractionLength(2)))) · \(selected.measuredAt.formatted(.dateTime.day().month().hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US"))))")
+                        .font(.caption.monospacedDigit())
+                        .accessibilityAddTraits(.updatesFrequently)
+                }
                 ForEach(known.suffix(5)) { sample in
                     if let load = sample.loadAverage1m {
                         Text("\(sample.measuredAt.formatted(.dateTime.day().month().hour().minute())) · \(load.formatted(.number.precision(.fractionLength(2))))")
@@ -178,6 +200,7 @@ struct SystemSnapshotView: View {
                     let store = try await LocalStoreAccess.open()
                     try await store.appendPerformanceSample(newSnapshot.performanceSample)
                     history = try await store.performanceSamples()
+                    selectedHistoryDate = nil
                     historyError = false
                 } catch { historyError = true }
             }
@@ -191,6 +214,7 @@ struct SystemSnapshotView: View {
             let store = try await LocalStoreAccess.open()
             try await store.clearPerformanceHistory()
             history = []
+            selectedHistoryDate = nil
             historyError = false
             historyNotice = copy("metrics.clear.done")
         } catch {
