@@ -38,3 +38,9 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 - Source compilée : commit de fonctionnalité précédant la mise à jour documentaire de cette tranche (`next`). `swift build --product CoreTendApp`, `make traceability`, `make safety-audit`, `make package-local`, `make verify-package` réussis.
 - ZIP local unsigned SHA-256 : `d11cd103e63c58affe766535c49938f3521e51e6f45fafde66b2a097664acb4c`. Vérification porte sur structure/plist/ZIP/Mach-O; pas sur lancement ou parcours natif. Aucun artefact publié.
 - FR-10 reste PARTIEL et aucun état de sécurité ou permission exhaustive n’est inféré.
+
+## Qualification intégrée sur 4f98f5a — 26-09-2026
+
+- `make qualify` passe : site, inventaire, traceability, audit sécurité, `swift test`, builds debug `CoreTendApp` et `CoreTendCLI`.
+- Les tests utilisent fixtures / stockages temporaires et adaptateurs Trash factices selon l’audit. Aucun essai sur données personnelles, vraie Corbeille ou compte HOME temporaire pour installation.
+- Écarts restant : UI native, installation/lancement, VoiceOver/clavier, deuxième version macOS/hôte, signature/notarisation, statut Must partiel/incomplet. Qualification code ≠ release publiable.

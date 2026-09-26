@@ -54,3 +54,10 @@ Ordre de reprise retenu : (1) refermer fonctions Must Applications/Integrity/per
 - Ajout EN/FR; UserGuide/Progress/FR-10 mis à jour. `swift build --product CoreTendApp`, `make traceability`, `make safety-audit` et `git diff --check` passent.
 - FR-10 reste PARTIEL : pas de sondes exhaustives par permission ni de liens profonds vers réglages système; l’aide n’infère pas l’absence d’un élément depuis un scan incomplet.
 - Avant prochaine tranche : release build + paquet local, inscrire le SHA ZIP puis mettre cette passation au même commit que le jalon. Ordre produit après : compléter FR-10 prudemment et qualifier les parcours UI; FR-23 Quick Look natif nécessite aussi essai interactif/accessibilité.
+
+### Qualification intégrée — 26-09-2026
+
+- Après `4f98f5a`, `make qualify` passe : manifeste généré, site EN/FR statique vérifié, traceability (40 exigences FR/NFR + 51 capacités), audit sécurité, `swift test` et builds debug App + CLI.
+- Suite de tests complète réussie; cette invocation a rapporté les bundles ScanCore, SafetyCore, ProductContract, Persistence, Domain, CLIContract et AppShell sans échec. Aucune interaction SwiftUI native n’est couverte; cette commande ne rend donc pas le produit final.
+- Le ZIP local précédent correspond au code de `4f98f5a`; hash `d11cd103e63c58affe766535c49938f3521e51e6f45fafde66b2a097664acb4c`.
+- Écarts Must encore explicites : permissions système complètes, certaines fonctionnalités Record/cleanup, usage historique, onboarding/runtime/accessibilité, compatibilité deuxième OS/hôte et preuve d’installation/lancement/signature. Lire `Documentation/Traceability.csv`; poursuivre ces écarts par tranche, ne pas déclarer finalisation avant preuve.

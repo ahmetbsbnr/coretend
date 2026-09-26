@@ -87,3 +87,7 @@
 
 - ScanCore distingue racine absente/inaccessible, lien symbolique, élément qui n’est pas un dossier et racine exclue. Refus de permission et absence restent séparés dans l’UI; échec de lecture interne reste partiel.
 - Explorer, Nettoyage et Doublons présentent la cause locale connue en EN/FR. 14 tests ScanCore passent sur fixtures temporaires; symlink racine et absence testés. Aucun répertoire système ni donnée utilisateur inspecté. FR-10 reste À_CONSTRUIRE pour les permissions globales et leur réglage; NFR-06 reste PARTIEL.
+
+## Qualification intégrée — 26-09-2026
+
+`make qualify` passe après Quick Look et l’aide d’accès dossiers : génération du manifeste/site, contrôles statiques site, traçabilité (40 FR/NFR + 51 capacités), audit sécurité, suite XCTest complète, builds debug App + CLI. Les bundles XCTest listés terminent sans échec. Ce gate n’inclut aucun parcours SwiftUI natif; les Must restent incomplets comme détaillé dans la traçabilité. Aucun statut de livraison finale n’est acquis.
