@@ -61,3 +61,9 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 
 - Source compilée : `664dbf6` (`next`). `make qualify`, `make package-local`, `make verify-package` réussis. Deux tests ExplorePreset (seuil Gio inclusif/inconnu, date limite 365 jours) passent; suite complète comprise dans gate.
 - ZIP arm64 non signé : SHA-256 `072ff474f4eae77109dd312b342e125c2b1c30d8275afeb0cc3f8a573d522c48`. Verification limitée à Info.plist, archive et Mach-O; aucune exécution UI, install, signature, notarisation ou publication.
+
+## Diagnostic exact preview — 26-09-2026
+
+- Commit source à relever après commit : la feuille Réglages présente le JSON expurgé exact, avant sélection de destination. La feuille se ferme avant que l’exporteur soit ouvert.
+- `make qualify`, `make package-local`, `make verify-package` réussis; test ciblé redaction sur fixture réussi. Qualification ne couvre pas la feuille native ni annulation par interaction.
+- ZIP arm64 unsigned SHA-256 `63b28f04d3382fed0ded640538e99a801ed0cb7ec676074718218e5525bf3bfb`. Aucun lancement, installation, signature/notarisation ou publication.

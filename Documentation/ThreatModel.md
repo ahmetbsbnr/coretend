@@ -1,5 +1,9 @@
 # Threat model — local reconstruction
 
+## Diagnostic export
+
+The opt-in diagnostic contains only product/version, schema version, event counts by kind, and creation time. It omits event details, file names, paths, database contents, and secrets. Settings displays the exact generated JSON before presenting a user-chosen export destination. The current redaction test uses a synthetic path fixture; native export/cancel interaction and external privacy review remain outstanding.
+
 ## Assets
 
 Files selected for inspection; local CoreTend events/preferences; paths and filenames; approved actions; user trust in size and integrity claims.
