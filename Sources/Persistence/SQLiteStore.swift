@@ -82,7 +82,7 @@ public actor SQLiteStore {
                 try execute("CREATE TABLE performance_samples (id TEXT PRIMARY KEY NOT NULL, measured_at REAL NOT NULL, load_average_1m REAL, available_bytes INTEGER)")
                 try execute("CREATE INDEX performance_samples_time ON performance_samples(measured_at)")
             }
-            try execute("CREATE TABLE IF NOT EXISTS saved_files (path TEXT PRIMARY KEY NOT NULL, first_seen_at REAL NOT NULL, last_seen_at REAL NOT NULL, logical_bytes INTEGER, allocated_bytes INTEGER, is_favorite INTEGER NOT NULL DEFAULT 0 CHECK(is_favorite IN (0, 1)))")
+            try execute("CREATE TABLE saved_files (path TEXT PRIMARY KEY NOT NULL, first_seen_at REAL NOT NULL, last_seen_at REAL NOT NULL, logical_bytes INTEGER, allocated_bytes INTEGER, is_favorite INTEGER NOT NULL DEFAULT 0 CHECK(is_favorite IN (0, 1)))")
             try execute("CREATE INDEX saved_files_recency ON saved_files(last_seen_at DESC)")
             try execute("PRAGMA user_version = 4")
             try execute("COMMIT")

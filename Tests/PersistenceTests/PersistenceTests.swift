@@ -344,8 +344,9 @@ final class PersistenceTests: XCTestCase {
         CREATE TABLE legacy_imports (digest TEXT PRIMARY KEY NOT NULL, imported_at REAL NOT NULL);
         CREATE TABLE performance_samples (id TEXT PRIMARY KEY NOT NULL, measured_at REAL NOT NULL, load_average_1m REAL, available_bytes INTEGER);
         INSERT INTO performance_samples VALUES ('22222222-2222-2222-2222-222222222222', 20, NULL, NULL);
-        CREATE TABLE saved_files (path TEXT PRIMARY KEY NOT NULL);
-        INSERT INTO saved_files VALUES ('/synthetic/conflict');
+        CREATE TABLE fixture_index_collision (last_seen_at REAL NOT NULL);
+        INSERT INTO fixture_index_collision VALUES (30);
+        CREATE INDEX saved_files_recency ON fixture_index_collision(last_seen_at DESC);
         PRAGMA user_version = 3;
         """
         XCTAssertEqual(sqlite3_exec(handle, fixture, nil, nil, nil), SQLITE_OK)
@@ -353,9 +354,9 @@ final class PersistenceTests: XCTestCase {
 
         do {
             try await store.migrate()
-            XCTFail("missing last_seen_at must fail while creating the recency index")
+            XCTFail("preexisting index name must fail after saved_files table creation")
         } catch let error as StoreError {
-            XCTAssertEqual(error, .statement("no such column: last_seen_at"))
+            XCTAssertEqual(error, .statement("index saved_files_recency already exists"))
         }
         let failedVersion = try await store.schemaVersion()
         let failedEvents = try await store.events()
@@ -370,14 +371,15 @@ final class PersistenceTests: XCTestCase {
         XCTAssertEqual(failedLanguage, "fr")
         XCTAssertEqual(failedSamples, [originalSample])
         var statement: OpaquePointer?
-        let state = "SELECT (SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = 'saved_files_recency'), (SELECT path FROM saved_files)"
+        let state = "SELECT (SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'saved_files'), (SELECT tbl_name FROM sqlite_master WHERE type = 'index' AND name = 'saved_files_recency'), (SELECT last_seen_at FROM fixture_index_collision)"
         XCTAssertEqual(sqlite3_prepare_v2(handle, state, -1, &statement, nil), SQLITE_OK)
         XCTAssertEqual(sqlite3_step(statement), SQLITE_ROW)
         XCTAssertEqual(sqlite3_column_int(statement, 0), 0)
-        XCTAssertEqual(String(cString: sqlite3_column_text(statement, 1)), "/synthetic/conflict")
+        XCTAssertEqual(String(cString: sqlite3_column_text(statement, 1)), "fixture_index_collision")
+        XCTAssertEqual(sqlite3_column_double(statement, 2), 30)
         sqlite3_finalize(statement)
 
-        XCTAssertEqual(sqlite3_exec(handle, "DROP TABLE saved_files", nil, nil, nil), SQLITE_OK)
+        XCTAssertEqual(sqlite3_exec(handle, "DROP INDEX saved_files_recency", nil, nil, nil), SQLITE_OK)
         try await store.migrate()
         let retriedVersion = try await store.schemaVersion()
         let retriedEvents = try await store.events()
@@ -389,10 +391,31 @@ final class PersistenceTests: XCTestCase {
         XCTAssertEqual(retriedLanguage, "fr")
         XCTAssertEqual(retriedSamples, [originalSample])
         XCTAssertEqual(retriedFiles, [])
-        XCTAssertEqual(sqlite3_prepare_v2(handle, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = 'saved_files_recency'", -1, &statement, nil), SQLITE_OK)
+        XCTAssertEqual(sqlite3_prepare_v2(handle, "SELECT tbl_name FROM sqlite_master WHERE type = 'index' AND name = 'saved_files_recency'", -1, &statement, nil), SQLITE_OK)
         XCTAssertEqual(sqlite3_step(statement), SQLITE_ROW)
-        XCTAssertEqual(sqlite3_column_int(statement, 0), 1)
+        XCTAssertEqual(String(cString: sqlite3_column_text(statement, 0)), "saved_files")
         sqlite3_finalize(statement)
+    }
+
+    func testVersionThreeMigrationRejectsPreexistingIncompleteSavedFilesTable() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-v3-table-collision-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let url = root.appendingPathComponent("fixture.sqlite")
+        var handle: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(url.path, &handle), SQLITE_OK)
+        defer { sqlite3_close(handle) }
+        let fixture = "CREATE TABLE saved_files (path TEXT PRIMARY KEY NOT NULL, last_seen_at REAL NOT NULL); INSERT INTO saved_files VALUES ('/synthetic/conflict', 10); PRAGMA user_version = 3;"
+        XCTAssertEqual(sqlite3_exec(handle, fixture, nil, nil, nil), SQLITE_OK)
+        let store = try SQLiteStore(url: url)
+        do {
+            try await store.migrate()
+            XCTFail("an incomplete v3 table must not be adopted as v4")
+        } catch let error as StoreError {
+            XCTAssertEqual(error, .statement("table saved_files already exists"))
+        }
+        let version = try await store.schemaVersion()
+        XCTAssertEqual(version, 3)
     }
 
     func testPerformanceHistoryKeepsUnknownSeparateFromZeroAndPrunesOldSamples() async throws {
