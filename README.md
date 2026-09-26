@@ -12,7 +12,7 @@
 - CLI lecture seule; scan avec `--root` obligatoire, historique avec `--store` obligatoire.
 - Cahier QQOQCCP, MoSCoW, RACI, baseline, plan d’exécution, traçabilité et site statique EN/FR.
 
-Applications inventorie les bundles d’un dossier choisi et permet la revue consultative de noms associés à un identifiant bundle. Les autres vues restent incomplètes. Consultez `Documentation/Traceability.csv` avant toute hypothèse de parité.
+Applications inventorie les bundles d’un dossier choisi, permet le déplacement confirmé du seul bundle choisi vers la Corbeille et présente des noms de fichiers associés à titre consultatif. Les données associées et héritées restent en place. Les autres vues restent incomplètes. Consultez `Documentation/Traceability.csv` avant toute hypothèse de parité.
 
 ## Construire et vérifier
 
@@ -32,4 +32,4 @@ Les tests utilisent des dossiers temporaires synthétiques. Ils ne lisent ni sto
 
 ## Limites actuelles
 
-Cleanup et Doublons ont des parcours de revue/Corbeille, l’historique est relié aux actions, la migration d’un format synthétique reconnu est disponible et un ZIP local non signé se construit. Attribution sûre des reliquats, historique Performance, désinstallation depuis l’interface, qualification native d’accessibilité et distribution signée restent ouverts. Rien de cette reconstruction n’est publié.
+Cleanup, Doublons et le bundle Applications ont des parcours de revue/Corbeille, l’historique est relié aux actions, la migration d’un format synthétique reconnu est disponible et un ZIP local non signé se construit. Attribution sûre des reliquats, désinstallation complète des composants liés, qualification native d’accessibilité et distribution signée restent ouvertes. Rien de cette reconstruction n’est publié.

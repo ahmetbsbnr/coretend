@@ -6,8 +6,9 @@ public struct FileActionSelection: Sendable, Equatable {
     public let url: URL
     public let ruleID: String
     public let isProtectedKeeper: Bool
-    public init(url: URL, ruleID: String, isProtectedKeeper: Bool = false) {
-        self.url = url; self.ruleID = ruleID; self.isProtectedKeeper = isProtectedKeeper
+    public let expectedIdentity: FileIdentity?
+    public init(url: URL, ruleID: String, isProtectedKeeper: Bool = false, expectedIdentity: FileIdentity? = nil) {
+        self.url = url; self.ruleID = ruleID; self.isProtectedKeeper = isProtectedKeeper; self.expectedIdentity = expectedIdentity
     }
 }
 
@@ -16,13 +17,17 @@ public enum ActionReviewError: Error, Equatable { case empty, duplicateTarget, p
 public struct ActionReview: Sendable {
     public let id: UUID
     public let items: [FileActionSelection]
-    fileprivate init(items: [FileActionSelection]) { id = UUID(); self.items = items }
+    fileprivate let identities: [FileIdentity]
+    fileprivate init(items: [FileActionSelection], identities: [FileIdentity]) {
+        id = UUID(); self.items = items; self.identities = identities
+    }
 }
 
 public struct ConfirmedActionBatch: Sendable {
     public let reviewID: UUID
     fileprivate let items: [FileActionSelection]
-    fileprivate init(review: ActionReview) { reviewID = review.id; items = review.items }
+    fileprivate let identities: [FileIdentity]
+    fileprivate init(review: ActionReview) { reviewID = review.id; items = review.items; identities = review.identities }
 }
 
 public struct ActionItemResult: Sendable, Equatable {
@@ -58,7 +63,12 @@ public struct FileActionService: Sendable {
         guard !selections.contains(where: \.isProtectedKeeper) else { throw ActionReviewError.protectedKeeperSelected }
         let paths = selections.map { $0.url.standardizedFileURL.path }
         guard Set(paths).count == paths.count else { throw ActionReviewError.duplicateTarget }
-        return ActionReview(items: selections)
+        let identities = try selections.map { selection -> FileIdentity in
+            let current = try FileIdentity(url: selection.url)
+            if let expected = selection.expectedIdentity, current != expected { throw PathRefusal.identityChanged }
+            return current
+        }
+        return ActionReview(items: selections, identities: identities)
     }
 
     @discardableResult
@@ -97,11 +107,12 @@ public struct FileActionService: Sendable {
 
     public func execute(_ batch: ConfirmedActionBatch) async -> ActionBatchReport {
         var results: [ActionItemResult] = []
-        for selection in batch.items {
+        for (index, selection) in batch.items.enumerated() {
             let approved: ApprovedFileOperation
             do {
                 approved = try validator.approve(target: selection.url, allowedRoots: allowedRoots,
                                                  ruleID: selection.ruleID, allowedRuleIDs: allowedRuleIDs,
+                                                 expectedIdentity: batch.identities[index],
                                                  now: clock())
             } catch let refusal as PathRefusal {
                 let recorded = await recordFailure(for: selection.url)

@@ -47,11 +47,12 @@ public struct PathValidator: Sendable {
     public init() {}
 
     public func approve(target: URL, allowedRoots: [URL], ruleID: String,
-                        allowedRuleIDs: Set<String>, now: Date = .now,
+                        allowedRuleIDs: Set<String>, expectedIdentity: FileIdentity? = nil, now: Date = .now,
                         lifetime: TimeInterval = 120) throws -> ApprovedFileOperation {
         guard lifetime > 0, lifetime <= 300 else { throw PathRefusal.invalidLifetime }
         guard allowedRuleIDs.contains(ruleID) else { throw PathRefusal.ruleNotAllowed }
         let identity = try FileIdentity(url: target)
+        if let expectedIdentity, identity != expectedIdentity { throw PathRefusal.identityChanged }
         guard Self.isWithin(identity, roots: allowedRoots) else {
             throw PathRefusal.outsideAllowedRoot
         }

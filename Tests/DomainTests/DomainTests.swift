@@ -112,6 +112,94 @@ final class CodeSignatureModelTests: XCTestCase {
 }
 
 final class FileActionServiceTests: XCTestCase {
+    func testReviewedAppBundleMovesToFixtureTrashWithoutAssociatedData() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-app-move-\(UUID())", isDirectory: true)
+        let apps = root.appendingPathComponent("Applications", isDirectory: true)
+        let trashRoot = root.appendingPathComponent("fixture-trash", isDirectory: true)
+        let app = apps.appendingPathComponent("Fixture.app", isDirectory: true)
+        let contents = app.appendingPathComponent("Contents", isDirectory: true)
+        let related = root.appendingPathComponent("Application Support", isDirectory: true).appendingPathComponent("org.example.fixture", isDirectory: true)
+        try FileManager.default.createDirectory(at: contents, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: related, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: trashRoot, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let plist = try PropertyListSerialization.data(fromPropertyList: ["CFBundleIdentifier": "org.example.fixture"], format: .xml, options: 0)
+        try plist.write(to: contents.appendingPathComponent("Info.plist"))
+        try Data("personal fixture".utf8).write(to: related.appendingPathComponent("keep.dat"))
+        let record = try XCTUnwrap(ApplicationDiscoveryService().discover(in: apps).applications.first)
+        let store = try SQLiteStore(url: root.appendingPathComponent("events.sqlite")); try await store.migrate()
+        let allowed = Set(["apps.uninstall"])
+        let service = FileActionService(validator: .init(), executor: SafeActionExecutor(allowedRoots: [apps], allowedRules: allowed,
+                                        trash: DomainFixtureTrash(trashRoot: trashRoot)), store: store, allowedRoots: [apps], allowedRuleIDs: allowed)
+        let review = try service.prepareReview([FileActionSelection(url: record.url, ruleID: "apps.uninstall", expectedIdentity: record.fileIdentity)])
+        let proposed = await service.recordProposal(review)
+        XCTAssertTrue(proposed)
+        let result = await service.execute(try service.confirm(review, accepted: true))
+        XCTAssertEqual(result.movedCount, 1)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: app.path))
+        XCTAssertEqual(try Data(contentsOf: related.appendingPathComponent("keep.dat")), Data("personal fixture".utf8))
+        if case .movedToTrash(_, let destination) = try XCTUnwrap(result.items.first).outcome {
+            XCTAssertTrue(FileManager.default.fileExists(atPath: URL(fileURLWithPath: destination).appendingPathComponent("Contents/Info.plist").path))
+        } else { XCTFail("bundle did not reach fixture Trash") }
+        let events = try await store.events()
+        XCTAssertEqual(events.map(\.kind), [.proposed, .approved, .movedToTrash])
+    }
+
+    func testAppReplacementBetweenInventoryAndReviewIsRejected() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-app-review-\(UUID())", isDirectory: true)
+        let apps = root.appendingPathComponent("Applications", isDirectory: true)
+        let app = apps.appendingPathComponent("Fixture.app", isDirectory: true)
+        let contents = app.appendingPathComponent("Contents", isDirectory: true)
+        try FileManager.default.createDirectory(at: contents, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let plist = try PropertyListSerialization.data(fromPropertyList: ["CFBundleIdentifier": "org.example.fixture"], format: .xml, options: 0)
+        try plist.write(to: contents.appendingPathComponent("Info.plist"))
+        let inventory = ApplicationDiscoveryService().discover(in: apps)
+        let record = try XCTUnwrap(inventory.applications.first)
+        try FileManager.default.moveItem(at: app, to: root.appendingPathComponent("old.app"))
+        try FileManager.default.createDirectory(at: contents, withIntermediateDirectories: true)
+        try plist.write(to: contents.appendingPathComponent("Info.plist"))
+        let store = try SQLiteStore(url: root.appendingPathComponent("events.sqlite")); try await store.migrate()
+        let allowed = Set(["apps.uninstall"])
+        let service = FileActionService(validator: .init(), executor: SafeActionExecutor(allowedRoots: [apps], allowedRules: allowed,
+                                        trash: DomainFixtureTrash(trashRoot: root)), store: store, allowedRoots: [apps], allowedRuleIDs: allowed)
+        XCTAssertThrowsError(try service.prepareReview([FileActionSelection(url: record.url, ruleID: "apps.uninstall", expectedIdentity: record.fileIdentity)])) { error in
+            XCTAssertEqual(error as? PathRefusal, .identityChanged)
+        }
+        XCTAssertTrue(FileManager.default.fileExists(atPath: app.path))
+    }
+
+    func testDirectoryReplacedAfterReviewDoesNotMoveReplacement() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-uninstall-\(UUID())", isDirectory: true)
+        let apps = root.appendingPathComponent("Applications", isDirectory: true)
+        let trashRoot = root.appendingPathComponent("fixture-trash", isDirectory: true)
+        try FileManager.default.createDirectory(at: apps, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: trashRoot, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let app = apps.appendingPathComponent("Fixture.app", isDirectory: true)
+        try FileManager.default.createDirectory(at: app, withIntermediateDirectories: true)
+        let store = try SQLiteStore(url: root.appendingPathComponent("events.sqlite")); try await store.migrate()
+        let trash = DomainFixtureTrash(trashRoot: trashRoot)
+        let allowed = Set(["apps.uninstall"])
+        let service = FileActionService(validator: .init(), executor: SafeActionExecutor(allowedRoots: [apps], allowedRules: allowed, trash: trash),
+                                        store: store, allowedRoots: [apps], allowedRuleIDs: allowed)
+        let review = try service.prepareReview([FileActionSelection(url: app, ruleID: "apps.uninstall")])
+        let proposalRecorded = await service.recordProposal(review)
+        XCTAssertTrue(proposalRecorded)
+        try FileManager.default.moveItem(at: app, to: root.appendingPathComponent("original.app"))
+        try FileManager.default.createDirectory(at: app, withIntermediateDirectories: true)
+        let replacement = app.appendingPathComponent("replacement-data")
+        try Data("keep".utf8).write(to: replacement)
+
+        let report = await service.execute(try service.confirm(review, accepted: true))
+        XCTAssertEqual(report.items.first?.outcome, .failed(.revalidation(.identityChanged)))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: replacement.path))
+        let calls = await trash.callCount
+        XCTAssertEqual(calls, 0)
+        let events = try await store.events()
+        XCTAssertEqual(events.map(\.kind), [.proposed, .failed])
+    }
+
     func testConfirmedActionLogsBeforeAndAfterFixtureTrashMove() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-action-\(UUID())", isDirectory: true)
         let trashRoot = root.appendingPathComponent("trash", isDirectory: true)
