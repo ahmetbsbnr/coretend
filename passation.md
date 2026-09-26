@@ -1,6 +1,6 @@
 # Passation courante — CoreTend Next
 
-**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche de travail `docs/site-capability-refresh` basée sur `next` (`abb0d58` synchronisé avec `origin/next`). Jalon backend/graphique PR #46 fusionné (`abb0d58`); CI `qualify` verte. Tranche courante site locale `make build-site site-check` et `git diff --check` vertes; PR pas encore ouverte. L’ancien dépôt indépendant `rebuild/` reste une copie locale de provenance.
+**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche de travail `fix/persistence-timestamp-validation` basée sur `next` (`c87d01d` synchronisé avec `origin/next`). PR #46 backend/graphique et PR #47 site fusionnées; CI `qualify` verte pour les deux. Tranche de validation timestamps passe `make qualify` et `git diff --check`; CI distante encore à ouvrir. L’ancien dépôt indépendant `rebuild/` reste une copie locale de provenance.
 
 ### Backend migration et graphique Performance — tranche active
 
@@ -9,7 +9,13 @@
 - Graphique Performance conserve les observations ponctuelles (pas de valeur synthétique/interpolée), accent système bleu, grille/axes de temps et dernière valeur/date exposées avec label VoiceOver. La validation SwiftUI native/VoiceOver reste manuelle.
 - PR #46 a fusionné le durcissement backend et le graphique Performance dans `next` (`abb0d58`); gate CI distante `qualify` verte. Ancienne branche distante nettoyée.
 - Site EN/FR en cours : générateur mentionne maintenant favoris/récents/palette et précision confidentialité (chemins/taille locale, récents désactivés par défaut, limite 100, retrait possible). `make build-site site-check` passe. FR-15 demeure PARTIEL : aucune navigation navigateur réelle, audit a11y ni publication.
+- Site EN/FR fusionné par PR #47 (`c87d01d`), CI `qualify` verte.
 - Reprise après site : poursuivre les Must du backlog, surtout FR-26 attribution des données app sûre, FR-10 permissions/diagnostics et qualification graphique SwiftUI/VoiceOver native. Aucun paquet signé/notarié/publié.
+
+### Validation des horodatages SQLite — en cours
+
+- `SQLiteStore.append` doit refuser `ActivityEvent.occurredAt` non fini avant écriture. `appendPerformanceSample` doit refuser timestamp de mesure et horloge de rétention non finis avant transaction, sans ajouter lignes ni exécuter pruning corrompu.
+- Tests fixture ajoutés pour `.infinity` au journal, `.nan` à l’échantillon Performance et `.infinity` à l’horloge de rétention; le premier échoue avant correction. Tous passent après ajout des gardes; `make qualify` complet (site, traceability, sécurité, install smoke, XCTest, App/CLI) passe. `git diff --check` passe; publier et attendre CI distante avant fusion.
 
 ### Écriture groupée des récents — livrée
 
