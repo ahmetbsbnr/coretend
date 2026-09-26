@@ -102,3 +102,8 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 - Catalogue AppShell couvre huit destinations + Réglages, termes associés FR/EN et recherche insensible à la casse/diacritiques. SwiftUI ouvre par ⌘K, filtre dans une feuille, Retour choisit premier résultat, Échap ferme; sélection réutilise binding du `NavigationSplitView` existant.
 - `make qualify` passe après changement; tests AppShell 4/4; builds debug App/CLI inclus. `make package-local`, `make verify-package`, `git diff --check` passent.
 - ZIP arm64 unsigned SHA-256 `fbb8a3d042b89f26a37972930553a9b4b218516c357964ea58be9d198942390b`. Contrôle structure seulement. Aucun lancement runtime, contrôle VoiceOver, signature, notarisation ou publication.
+
+## Palette — sélection par flèches — 26-09-2026
+
+- ↑/↓ change sélection de commande avec limites aux extrémités; Retour ouvre commande sélectionnée; une recherche qui change réinitialise sélection si nécessaire. Tests AppShell 5/5 dont liste vide et bornes.
+- `make qualify`, `make package-local`, `make verify-package`, `git diff --check` passent. ZIP arm64 unsigned SHA-256 `4c63d81a3b25f4c79b26017760fae0ec632ee93c5d8eb2d1dba5abb2316096bd`; structure seulement, aucun lancement UI, test VoiceOver ou signature.

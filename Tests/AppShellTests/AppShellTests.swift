@@ -30,4 +30,13 @@ final class AppShellTests: XCTestCase {
         XCTAssertEqual(aliasResults.map(\.target), [.destination(.overview)])
         XCTAssertTrue(CommandPaletteCatalog.search("sans résultat", french: false).isEmpty)
     }
+
+    func testCommandPaletteArrowNavigationSelectsAndClampsResults() {
+        let commands = CommandPaletteCatalog.search("", french: false)
+        XCTAssertEqual(CommandPaletteNavigation.move(in: commands, selectedID: nil, direction: .down), commands.first?.id)
+        XCTAssertEqual(CommandPaletteNavigation.move(in: commands, selectedID: nil, direction: .up), commands.last?.id)
+        XCTAssertEqual(CommandPaletteNavigation.move(in: commands, selectedID: commands.last?.id, direction: .down), commands.last?.id)
+        XCTAssertEqual(CommandPaletteNavigation.move(in: commands, selectedID: commands.first?.id, direction: .up), commands.first?.id)
+        XCTAssertNil(CommandPaletteNavigation.move(in: [], selectedID: nil, direction: .down))
+    }
 }

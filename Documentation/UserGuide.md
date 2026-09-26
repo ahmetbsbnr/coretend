@@ -14,7 +14,7 @@ Dans Réglages > **Accès aux dossiers**, CoreTend décrit l’accès aux dossie
 
 Au prochain lancement, CoreTend rouvre la dernière des huit destinations choisies. Seul son identifiant est mémorisé dans les préférences locales; les dossiers analysés ne sont pas restaurés automatiquement. Une valeur inconnue revient à Vue d’ensemble.
 
-Appuyez sur **⌘K** pour ouvrir la palette d’accès rapide. Recherchez une destination en français ou anglais par son nom ou un terme associé, puis choisissez-la; la même palette ouvre Réglages. Le retour ouvre le premier résultat et Échap ferme la palette. La navigation applique la sélection de la barre latérale existante.
+Appuyez sur **⌘K** pour ouvrir la palette d’accès rapide. Recherchez une destination en français ou anglais par son nom ou un terme associé, puis choisissez-la; la même palette ouvre Réglages. Utilisez ↑/↓ pour sélectionner une ligne, Retour pour l’ouvrir et Échap pour fermer la palette. La navigation applique la sélection de la barre latérale existante.
 
 Le CLI exige `--root` pour scanner et `--store` pour consulter un historique local. Ne partagez pas sa sortie sans vérifier les noms et chemins qu’elle contient. Aucune fonction de nettoyage automatique ou de suppression permanente n’existe.
 
