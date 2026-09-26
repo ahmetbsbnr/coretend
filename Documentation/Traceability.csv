@@ -27,10 +27,10 @@ FR-25,M,"La commande d’update indique uniquement qu’une source (App Store/Sp
 FR-26,M,"Désinstallation app choisit les seules données associées attribuées avec preuve; aperçu, confirmation et SafetyCore Trash. Les données héritées restent exclues par défaut, incluses opt-in et traitées en dernier; échec laisse l’élément et l’audit distincts.",Sources/Domain/ApplicationDiscovery.swift; Sources/Domain/FileActionService.swift; Sources/CoreTendApp/ApplicationsView.swift,Tests/DomainTests/DomainTests.swift,Documentation/UserGuide.md; Documentation/ThreatModel.md,Fixture app découverte puis désinstallation confirmée avec Trash synthétique en échec : bundle préservé et audit proposed/approved/failed avec reason=trash_failed sans erreur brute. Attribution des données associées et parcours UI natif à qualifier,PARTIEL,Engineering
 shell.launch,M,Capability inventory ID,Sources/CoreTendApp/CoreTendApp.swift,Tests/AppShellTests/AppShellTests.swift,README.md,,EN_COURS,Engineering
 shell.nav,M,Capability inventory ID,Sources/AppShell/Destination.swift,Tests/AppShellTests/AppShellTests.swift,Documentation/Accessibility.md,,EN_COURS,Engineering
-shell.menubar,M,Capability inventory ID,,,,,À_CONSTRUIRE,Engineering
+shell.menubar,S,Capability inventory ID,,,,,À_CONSTRUIRE,Engineering
 shell.onboarding,M,Capability inventory ID,Sources/CoreTendApp/CoreTendApp.swift,,Documentation/UserGuide.md,,PARTIEL,Engineering
 shell.diagnostics,M,Capability inventory ID,Sources/CoreTendApp/SettingsView.swift,,Documentation/ThreatModel.md,,PARTIEL,Engineering
-ui.commandpalette,M,Capability inventory ID,,,,,À_CONSTRUIRE,Engineering
+ui.commandpalette,S,Palette clavier pour destinations et Réglages via navigation existante.,Sources/CoreTendApp/CoreTendApp.swift; Sources/CoreTendApp/CommandPaletteView.swift; Sources/AppShell/CommandPalette.swift,Tests/AppShellTests/AppShellTests.swift,Documentation/UserGuide.md,Tests du catalogue/recherche/navigation clavier; interaction SwiftUI native non qualifiée,PARTIEL,Engineering
 safety.pathvalidator,M,Capability inventory ID,Sources/SafetyCore/SafetyCore.swift,Tests/SafetyCoreTests/SafetyCoreTests.swift,Documentation/ThreatModel.md,,EN_COURS,Engineering
 safety.executiongate,M,Capability inventory ID,Sources/SafetyCore/SafetyCore.swift,Tests/SafetyCoreTests/SafetyCoreTests.swift,Documentation/ThreatModel.md,,EN_COURS,Engineering
 safety.execute,M,Capability inventory ID,Sources/SafetyCore/SafetyCore.swift,Tests/SafetyCoreTests/SafetyCoreTests.swift,Documentation/ThreatModel.md,,EN_COURS,Engineering
@@ -40,7 +40,7 @@ scan.engine,M,Capability inventory ID,Sources/ScanCore/ScanCore.swift,Tests/Scan
 scan.duplicates,M,Capability inventory ID,Sources/ScanCore/DuplicateEngine.swift,Tests/ScanCoreTests/ScanCoreTests.swift,Documentation/UserGuide.md,,EN_COURS,Engineering
 scan.similarimages,M,Empreinte visuelle locale dHash 64 bits; limite fichier/volume; paires candidates consultatives sans action de suppression.,Sources/ScanCore/SimilarImageEngine.swift; Sources/CoreTendApp/DuplicateScanView.swift,Tests/ScanCoreTests/ScanCoreTests.swift,Documentation/UserGuide.md,,PARTIEL,Engineering
 scan.spacelens,M,Capability inventory ID,Sources/Domain/SystemSnapshot.swift,Tests/DomainTests/DomainTests.swift,Documentation/Progress.md,,EN_COURS,Engineering
-clutter.largeold,M,Capability inventory ID,,,,,À_CONSTRUIRE,Engineering
+clutter.largeold,S,Filtres Explorer pour fichiers locaux ≥ 1 Gio et fichiers modifiés il y a au moins 365 jours.,Sources/ScanCore/ScanCore.swift; Sources/CoreTendApp/ExploreScanView.swift,Tests/ScanCoreTests/ScanCoreTests.swift,Documentation/UserGuide.md,Tests des seuils inclusifs et mesures/dates inconnues; interaction SwiftUI native non qualifiée,PARTIEL,Engineering
 clutter.duplicates,M,Capability inventory ID,Sources/ScanCore/DuplicateEngine.swift,Tests/ScanCoreTests/ScanCoreTests.swift,Documentation/UserGuide.md,,EN_COURS,Engineering
 clutter.similarimages,M,Paires d’images proches exposées dans la destination Doublons après choix explicite d’un dossier.,Sources/CoreTendApp/DuplicateScanView.swift,,Documentation/UserGuide.md,,PARTIEL,Engineering
 spacelens.view,M,Capability inventory ID,Sources/ScanCore/TreemapLayout.swift; Sources/CoreTendApp/ExploreScanView.swift,Tests/ScanCoreTests/ScanCoreTests.swift,Documentation/UserGuide.md,,PARTIEL,Engineering
@@ -62,7 +62,7 @@ apps.updates,M,Flux SUFeedURL local déclaré et lien HTTPS explicite; aucune ve
 activity.log,M,Capability inventory ID,Sources/Persistence/SQLiteStore.swift,Tests/PersistenceTests/PersistenceTests.swift,Documentation/Project/DataModel.md,,EN_COURS,Engineering
 activity.grouping,M,Capability inventory ID,Sources/CoreTendApp/RecordView.swift,Tests/PersistenceTests/PersistenceTests.swift,Documentation/UserGuide.md,,EN_COURS,Engineering
 activity.jsonexport,M,Capability inventory ID,Sources/Persistence/SQLiteStore.swift,Tests/PersistenceTests/PersistenceTests.swift,Documentation/UserGuide.md,,EN_COURS,Engineering
-settings.menubar,M,Capability inventory ID,,,,,À_CONSTRUIRE,Engineering
+settings.menubar,S,Capability inventory ID,,,,,À_CONSTRUIRE,Engineering
 settings.appsignature,M,Capability inventory ID,,,,,À_CONSTRUIRE,Engineering
 settings.fulldiskaccess,M,Capability inventory ID,,,,,À_CONSTRUIRE,Engineering
 settings.exclusions,M,Capability inventory ID,Sources/CoreTendApp/SettingsView.swift; Sources/Persistence/SQLiteStore.swift,Tests/PersistenceTests/PersistenceTests.swift,Documentation/UserGuide.md,,PARTIEL,Engineering
@@ -74,8 +74,8 @@ migration.launchwiring,M,Capability inventory ID,Sources/CoreTendApp/CoreTendApp
 settings.migrationnotice,M,Capability inventory ID,Sources/CoreTendApp/SettingsView.swift,,Documentation/Project/Migration.md,,PARTIEL,Engineering
 uninstall.legacydata,M,Capability inventory ID,,,,,À_CONSTRUIRE,Engineering
 testing.storeisolation,M,Capability inventory ID,Scripts/audit_safety.py,Tests/PersistenceTests/PersistenceTests.swift,Documentation/ThreatModel.md,,EN_COURS,Engineering
-quicklook.extended,M,Capability inventory ID,Sources/CoreTendApp/ExploreScanView.swift; Sources/CoreTendApp/DuplicateScanView.swift,,Documentation/UserGuide.md,,PARTIEL,Engineering
-favrec.module,M,Capability inventory ID,Sources/Persistence/SQLiteStore.swift; Sources/CoreTendApp/SavedFilesView.swift; Sources/CoreTendApp/ExploreScanView.swift,Tests/PersistenceTests/PersistenceTests.swift,Documentation/UserGuide.md,,EN_COURS,Engineering
+quicklook.extended,S,Capability inventory ID,Sources/CoreTendApp/ExploreScanView.swift; Sources/CoreTendApp/DuplicateScanView.swift,,Documentation/UserGuide.md,,PARTIEL,Engineering
+favrec.module,S,Capability inventory ID,Sources/Persistence/SQLiteStore.swift; Sources/CoreTendApp/SavedFilesView.swift; Sources/CoreTendApp/ExploreScanView.swift,Tests/PersistenceTests/PersistenceTests.swift,Documentation/UserGuide.md,,EN_COURS,Engineering
 NFR-01,M,"Sûreté: `ApprovedFileOperation`/contrat équivalent est seule entrée d’opération; aucun appel suppression permanente. Validation portée, volume/racine et symlink à approbation et exécution. Refus fermé par défaut.",Sources/SafetyCore/SafetyCore.swift,Tests/SafetyCoreTests/SafetyCoreTests.swift,Documentation/ThreatModel.md,,EN_COURS,Engineering
 NFR-02,M,"Réversibilité: API Trash seulement. Échec de Trash n’entraîne pas fallback de suppression, copie destructive ou succès. Succès signifie déplacé à Trash, jamais espace récupéré.",Sources/SafetyCore/SafetyCore.swift,Tests/SafetyCoreTests/SafetyCoreTests.swift,Documentation/ThreatModel.md,,EN_COURS,Engineering
 NFR-03,M,"Isolation tests: Toute mutation de test vise un sandbox temporaire dédié; adapter Trash fake utilise sa Corbeille fixture. Gate statique/runtime prouve tests ne ciblent pas `$HOME`, vrai Trash ou chemins personnels.",Scripts/audit_safety.py,Tests/SafetyCoreTests/SafetyCoreTests.swift,Documentation/ThreatModel.md,,EN_COURS,Engineering
