@@ -41,6 +41,7 @@
 - Garde-fous SQLite livrés : rejeter horodatages non finis avant écriture d’événement ou transaction/retention Performance; tests régression fixtures démontrent refus et absence de ligne parasite (PR #48).
 - Axe X Performance affiche maintenant jour, mois et heure pour distinguer dates avec même heure; `swift build --product CoreTendApp`, `make qualify` et `git diff --check` passent. Essai visuel natif/VoiceOver reste à faire.
 - Performance accepte sélection graphique du curseur et l’ancre au point valide le plus proche; égalité choisit l’observation la plus récente. Vue affiche valeur et horodatage mesurés avec repère, sans calcul/interpolation. Domain tests couvrent points connus, inconnus, tie-break et curseur invalide; interactions natives restent à qualifier.
+- Paquet de production reconstruit après #50 : ZIP local arm64 unsigned vérifié structurellement, SHA-256 `94503244830030785388e6ea2359dc844af22d719d5e82729f14408f1697a299`. App non lancée/signée/notariée/publiée.
 - CLI a des tests end-to-end fixture pour scan complet et racine manquante; parité complète d’aide/localisation et annulation de processus restent ouvertes.
 - Paquet `.app`/ZIP unsigned construit; installation/ouverture et lancement non vérifiés. Profilage performance, hôte macOS 14, capture UI, vérification VoiceOver/clavier manuelle et revue sécurité indépendante manquent.
 - Must FR/NFR restent `EN_COURS`, `À_CONSTRUIRE` ou `PARTIEL` dans la traceability; aucune qualification finale n’est acquise.

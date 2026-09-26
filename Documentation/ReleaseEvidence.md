@@ -113,3 +113,9 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 - `SQLiteStore.recordRecentFiles` valide le lot complet puis réutilise une requête préparée sous une transaction unique; quota appliqué une fois. Erreurs SQL annulent le lot. Explorer remplace jusqu’à 100 appels individuels par un appel batch.
 - `make qualify`, Persistence ciblé 18/18, `git diff --check`, `make package-local` et `make verify-package` réussis.
 - ZIP arm64 unsigned SHA-256 `45b8c102247d1656171db8e14349498cfd027083c42fac45e7c976f08c10465e`. Structure seulement; app non lancée, non signée, non notariée, non publiée.
+
+## Performance chart selection — 26-09-2026
+
+- Code source app : `b0287bf` (PR #50, `next`). Build de production puis `make package-local verify-package` réussis après interaction graphique sur point connu le plus proche.
+- ZIP local arm64 non signé SHA-256 `94503244830030785388e6ea2359dc844af22d719d5e82729f14408f1697a299` (`Artifacts/CoreTend-local-unsigned.zip`). Verification du plist, archive et Mach-O arm64 seulement.
+- Aucun lancement GUI, VoiceOver, signature, notarisation ou publication. Utiliser `make package-local verify-package` pour reproduire depuis `next`.
