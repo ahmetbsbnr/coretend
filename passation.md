@@ -1,6 +1,6 @@
 # Passation complète — CoreTend Next
 
-**État au 27-09-2026.** Reconstruction active, pas finalisée, aucune release publique. Dépôt `ahmetbsbnr/coretend`; worktree `next/`; base distante `origin/next` à `55e8628`. Travail courant sur `feat/reconstruction-open-musts`, huit commits locaux après `74c6b8b`, dont six commits de code, non poussés et sans PR. Dernière tranche de code Task 20; qualification `make qualify` passée après cette tranche. Reprendre sur cette branche; ouvrir PR vers `next` après la tranche convenue.
+**État au 27-09-2026.** Reconstruction active, pas finalisée, aucune release publique. Dépôt `ahmetbsbnr/coretend`; worktree `next/`; base distante `origin/next` à `55e8628`. Travail courant sur `feat/reconstruction-open-musts`, dix commits locaux après `74c6b8b`, dont sept commits de code, non poussés et sans PR. Dernière tranche de code Task 21; `make qualify` passe. Reprendre sur cette branche; ouvrir PR vers `next` après la tranche convenue.
 
 ## État immédiat
 
@@ -31,6 +31,7 @@
 - **Task 20 — FR-07 keeper protégé** : test Domain temporaire refuse une revue incluant keeper et deux copies; octets préservés et Corbeille fixture vide. `make qualify` passe. FR-07 reste PARTIEL pour race externe et UI native.
 
 - Smoke FR-14 isolé : binaire debug lancé avec `CFFIXED_USER_HOME` temporaire; processus vivant 8 s et store créé exclusivement sous ce profil. GUI visible, bundle emballé, accessibilité restent non qualifiés; preuve dans ReleaseEvidence.
+- **Task 21 — FR-07 keeper revalidé par action** : DuplicateScanView transmet keeper de chaque groupe sélectionné; FileActionService capture son identité et la revérifie avant chaque Trash. Fixture supprime le keeper après premier déplacement; copie suivante reste, second appel Trash bloqué et échec journalisé. `make qualify` passe. Le TOCTOU avant l’API Trash et UI native restent ouverts.
 
 ## Jalons récents intégrés
 
