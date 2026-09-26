@@ -16,9 +16,11 @@ struct DuplicateScanView: View {
     @State private var selectedRoot: URL?
     @State private var selectedCopies: Set<URL> = []
     @State private var actionReview: ActionReview?
+    @State private var actionDialogPresented = false
     @State private var actionService: FileActionService?
     @State private var actionBusy = false
     @State private var actionScopeHeld = false
+    @State private var actionScopedRoot: URL?
     @State private var similarMode = false
     @State private var similarReport: SimilarImageReport?
 
@@ -29,11 +31,11 @@ struct DuplicateScanView: View {
                 Text(french ? "Images similaires" : "Similar images").tag(true)
             }
             .pickerStyle(.segmented)
-            .disabled(scanning)
+            .disabled(scanning || actionBusy || actionReview != nil)
             Button { selectingFolder = true } label: {
                 Label(copy("duplicates.choose"), systemImage: similarMode ? "photo.on.rectangle.angled" : "doc.on.doc")
             }
-            .disabled(scanning)
+            .disabled(scanning || actionBusy || actionReview != nil)
             .accessibilityHint(copy("duplicates.choose.hint"))
             if scanning { ProgressView(copy("scan.progress")) }
             if let status { Text(status).foregroundStyle(.secondary) }
@@ -73,6 +75,7 @@ struct DuplicateScanView: View {
                                 })) {
                                     Label(file.lastPathComponent, systemImage: "doc.on.doc")
                                 }
+                                .disabled(actionBusy || actionReview != nil)
                             }
                         }
                         .padding(.vertical, 6)
@@ -80,7 +83,7 @@ struct DuplicateScanView: View {
                     Button { Task { await prepareAction() } } label: {
                         Label(french ? "Examiner \(selectedCopies.count) copies" : "Review \(selectedCopies.count) copies", systemImage: "trash")
                     }
-                    .disabled(selectedCopies.isEmpty || actionBusy)
+                    .disabled(selectedCopies.isEmpty || scanning || actionBusy || actionReview != nil)
                 }
                 if !report.issues.isEmpty { Text(copy("scan.partial")).foregroundStyle(.secondary) }
             }
@@ -93,12 +96,15 @@ struct DuplicateScanView: View {
             selectedRoot = root
             beginScan(root)
         }
-        .onDisappear { scanTask?.cancel() }
-        .confirmationDialog(french ? "Déplacer vers la Corbeille macOS ?" : "Move to macOS Trash?", isPresented: Binding(get: { actionReview != nil }, set: { if !$0 { cancelAction() } }), titleVisibility: .visible) {
+        .onDisappear { scanTask?.cancel(); if actionReview != nil { cancelAction() } }
+        .confirmationDialog(french ? "Déplacer vers la Corbeille macOS ?" : "Move to macOS Trash?", isPresented: $actionDialogPresented, titleVisibility: .visible) {
             Button(french ? "Déplacer les copies" : "Move copies to Trash", role: .destructive) { beginExecution() }
             Button(copy("common.cancel"), role: .cancel) { cancelAction() }
         } message: {
             Text(reviewMessage)
+        }
+        .onChange(of: actionDialogPresented) { _, presented in
+            if !presented && actionReview != nil { cancelAction() }
         }
     }
 
@@ -135,11 +141,12 @@ struct DuplicateScanView: View {
     }
 
     @MainActor private func prepareAction() async {
-        guard let root = selectedRoot, !selectedCopies.isEmpty else { return }
+        guard let root = selectedRoot, !selectedCopies.isEmpty, !scanning, !actionBusy, actionReview == nil else { return }
         actionBusy = true
-        defer { actionBusy = false }
+        defer { actionBusy = false; if actionReview == nil { releaseActionScope() } }
         do {
             actionScopeHeld = root.startAccessingSecurityScopedResource()
+            actionScopedRoot = root
             let store = try await LocalStoreAccess.open()
             let rule = ScanRule.duplicates.rawValue
             let allowed = Set([rule])
@@ -153,19 +160,20 @@ struct DuplicateScanView: View {
             }
             actionReview = review
             actionService = service
+            actionDialogPresented = true
         } catch { status = french ? "Revue impossible; aucune copie déplacée." : "Review failed; no copies moved." }
-        if actionReview == nil { releaseActionScope() }
     }
 
     private func beginExecution() {
         guard let review = actionReview, let service = actionService else { return }
+        actionBusy = true
+        actionDialogPresented = false
         actionReview = nil; actionService = nil
         Task { await executeAction(review, service) }
     }
 
     @MainActor private func executeAction(_ review: ActionReview, _ service: FileActionService) async {
-        actionBusy = true
-        defer { actionBusy = false }
+        defer { actionBusy = false; releaseActionScope() }
         do {
             let batch = try service.confirm(review, accepted: true)
             let report = await service.execute(batch)
@@ -174,16 +182,18 @@ struct DuplicateScanView: View {
             selectedCopies = []
             self.report = nil
         } catch { status = french ? "Action refusée; aucune copie déplacée." : "Action refused; no copies moved." }
-        releaseActionScope()
     }
 
     private func cancelAction() {
         guard let review = actionReview, let service = actionService else { return }
+        actionBusy = true
+        actionDialogPresented = false
         actionReview = nil; actionService = nil
         Task { @MainActor in
             let saved = await service.recordCancellation(review)
             status = saved ? (french ? "Action annulée; annulation journalisée." : "Action cancelled; cancellation recorded.") : (french ? "Action annulée; journal indisponible." : "Action history unavailable.")
             releaseActionScope()
+            actionBusy = false
         }
     }
 
@@ -196,8 +206,9 @@ struct DuplicateScanView: View {
     }
 
     private func releaseActionScope() {
-        if actionScopeHeld, let selectedRoot { selectedRoot.stopAccessingSecurityScopedResource() }
+        if actionScopeHeld, let actionScopedRoot { actionScopedRoot.stopAccessingSecurityScopedResource() }
         actionScopeHeld = false
+        actionScopedRoot = nil
     }
 
     private func copy(_ key: String, count: Int? = nil) -> String {
