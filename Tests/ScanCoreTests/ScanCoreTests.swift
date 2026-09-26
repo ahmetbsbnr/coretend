@@ -100,6 +100,44 @@ final class ScanCoreTests: XCTestCase {
         }
     }
 
+    func testConsumerCancellationStopsScanBeforeNextFixtureFile() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-cancel-scan-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try Data("first fixture".utf8).write(to: root.appendingPathComponent("first.txt"))
+        try Data("second fixture".utf8).write(to: root.appendingPathComponent("second.txt"))
+        let before = try fixtureTreeSnapshot(root)
+        let reader = BlockingFixtureMetadataReader()
+        let workerFinished = DispatchSemaphore(value: 0)
+        let consumer = Task {
+            var emittedFinished = false
+            var failed = false
+            do {
+                for try await event in LocalScanEngine(metadataReader: reader, workerDidFinish: { workerFinished.signal() }).scan(
+                    .init(roots: [.init(url: root, ruleID: .explore)])
+                ) {
+                    if case .finished = event { emittedFinished = true }
+                }
+            } catch { failed = true }
+            return (emittedFinished, failed)
+        }
+        defer {
+            consumer.cancel()
+            reader.releaseFirstRead.signal()
+        }
+
+        await fulfillment(of: [reader.firstReadStarted], timeout: 2)
+        consumer.cancel()
+        reader.releaseFirstRead.signal()
+        let (emittedFinished, failed) = await consumer.value
+        XCTAssertEqual(workerFinished.wait(timeout: .now() + 2), .success)
+
+        XCTAssertFalse(emittedFinished)
+        XCTAssertFalse(failed)
+        XCTAssertEqual(reader.readCount, 1)
+        XCTAssertEqual(try fixtureTreeSnapshot(root), before)
+    }
+
     func testMissingScanRootReportsMissingCause() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-missing-scan-\(UUID())", isDirectory: true)
         var failures: [(String, String)] = []
@@ -210,6 +248,32 @@ private struct FixtureUbiquitousItemMetadataReader: UbiquitousItemMetadataReadin
 
     func isUbiquitousItem(at url: URL) -> Bool? {
         cloudBackedPaths.contains(url.standardizedFileURL.path)
+    }
+}
+
+private final class BlockingFixtureMetadataReader: UbiquitousItemMetadataReading, @unchecked Sendable {
+    let firstReadStarted = XCTestExpectation(description: "first metadata read started")
+    let releaseFirstRead = DispatchSemaphore(value: 0)
+    private let lock = NSLock()
+    private var reads = 0
+
+    var readCount: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return reads
+    }
+
+    func isUbiquitousItem(at url: URL) -> Bool? {
+        lock.lock()
+        reads += 1
+        let currentRead = reads
+        lock.unlock()
+
+        if currentRead == 1 {
+            firstReadStarted.fulfill()
+            releaseFirstRead.wait()
+        }
+        return false
     }
 }
 
