@@ -1,6 +1,22 @@
 public enum Destination: String, CaseIterable, Sendable, Identifiable {
     case overview, record, cleanup, explore, duplicates, applications, integrity, performance
     public var id: String { rawValue }
+    public static func restored(from rawValue: String?) -> Destination {
+        guard let rawValue, let destination = Destination(rawValue: rawValue) else { return .overview }
+        return destination
+    }
+    public var route: DestinationRoute {
+        switch self {
+        case .overview: .overview
+        case .record: .record
+        case .cleanup: .cleanup
+        case .explore: .explore
+        case .duplicates: .duplicates
+        case .applications: .applications
+        case .integrity: .integrity
+        case .performance: .performance
+        }
+    }
     public var titleKey: String { "\(rawValue).title" }
     public var symbol: String {
         switch self {
@@ -14,6 +30,10 @@ public enum Destination: String, CaseIterable, Sendable, Identifiable {
         case .performance: "gauge.with.dots.needle.67percent"
         }
     }
+}
+
+public enum DestinationRoute: String, CaseIterable, Hashable, Sendable {
+    case overview, record, cleanup, explore, duplicates, applications, integrity, performance
 }
 
 public enum ProductCopy {

@@ -7,6 +7,15 @@ final class AppShellTests: XCTestCase {
         XCTAssertEqual(Set(Destination.allCases.map(\.rawValue)).count, 8)
     }
 
+    func testDestinationRestorationAndRouteMappingCoverAllEightDestinations() {
+        XCTAssertEqual(Destination.restored(from: nil), .overview)
+        XCTAssertEqual(Destination.restored(from: "obsolete-destination"), .overview)
+        for destination in Destination.allCases {
+            XCTAssertEqual(Destination.restored(from: destination.rawValue), destination)
+        }
+        XCTAssertEqual(Set(Destination.allCases.map(\.route)), Set(DestinationRoute.allCases))
+    }
+
     func testCriticalCopyHasEnglishFrenchParity() {
         XCTAssertEqual(Set(ProductCopy.english.keys), Set(ProductCopy.french.keys))
         XCTAssertTrue(ProductCopy.english.keys.contains("overview.title"))
