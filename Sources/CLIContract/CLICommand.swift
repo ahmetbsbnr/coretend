@@ -53,6 +53,7 @@ public enum CoreTendCLIRunner {
       coretend record list --store PATH
       coretend version
     Scans require an explicit root. CLI has no file-removal command.
+    Exit codes: 0 complete; 2 partial scan or unavailable root; 1 command/store failure; 130 cancelled.
     """
 
     public static func run(_ command: CLICommand, write: @Sendable (String) -> Void) async -> Int32 {
@@ -72,19 +73,22 @@ public enum CoreTendCLIRunner {
         case .scan(let root, let rule, let format):
             do {
                 var output: [CLIResult] = []
+                var issues: [CLIIssue] = []
                 for try await event in LocalScanEngine().scan(.init(roots: [.init(url: root, ruleID: rule)])) {
                     if case .result(let result) = event { output.append(CLIResult(result)) }
+                    if case .itemFailure(let path, let reason) = event { issues.append(CLIIssue(path: path, reason: reason)) }
                     if Task.isCancelled { return 130 }
                 }
                 if format == .json {
                     let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys, .prettyPrinted]; encoder.dateEncodingStrategy = .iso8601
-                    let data = try encoder.encode(output)
+                    let data = try encoder.encode(CLIScanReport(files: output, issues: issues, complete: issues.isEmpty))
                     write(String(decoding: data, as: UTF8.self))
                 } else {
                     for row in output { write("\(row.path)\t\(row.logicalBytes.map(String.init) ?? "unknown")") }
                     write("\(output.count) files")
+                    for issue in issues { write("Scan issue [\(issue.reason)]: \(issue.path)") }
                 }
-                return 0
+                return issues.isEmpty ? 0 : 2
             } catch { write("Scan failed."); return 1 }
         }
     }
@@ -102,4 +106,15 @@ private struct CLIResult: Codable {
         if case .known(let value) = result.allocatedBytes { allocatedBytes = value } else { allocatedBytes = nil }
         modifiedAt = result.modifiedAt
     }
+}
+
+private struct CLIScanReport: Codable {
+    let files: [CLIResult]
+    let issues: [CLIIssue]
+    let complete: Bool
+}
+
+private struct CLIIssue: Codable {
+    let path: String
+    let reason: String
 }
