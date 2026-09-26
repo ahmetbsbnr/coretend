@@ -72,3 +72,9 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 
 - `make qualify` passe avec audit étendu : aucun import/API réseau standard, socket/processus d’exécution, SDK analytics connu ou dépendance SwiftPM URL détecté sous runtime.
 - Aucun changement binaire après artefact `5fc9563` (ZIP `63b28f04d3382fed0ded640538e99a801ed0cb7ec676074718218e5525bf3bfb`). Vérification ne vaut pas capture runtime; NFR-04 demeure PARTIEL.
+
+## Local installer — 26-09-2026
+
+- Bundle arm64 source Swift release `5fc9563`, emballé avec installateur actuel. ZIP unsigned SHA-256 `795eab7dbeb13d0d0b241f0a018fb58645c8bfc0c2ebb6d0e4af3622777c0898`.
+- `make verify-install-package`: bundle release réellement copié vers `CoreTend.app` sous HOME temporaire; doublon et source/destination symlink refusés. `make qualify` inclut smoke synthetic, suite XCTest complète, builds debug, audit réseau/sûreté et site; `make verify-package` vérifie archive/plist/Mach-O.
+- Test ne lance pas l’app et ne touche pas installation réelle, données CoreTend, Finder ou Trash. FR-14 demeure PARTIEL : parcours GUI, désinstallation utilisateur, signature, notarisation, OS minimum non qualifiés.

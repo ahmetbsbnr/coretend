@@ -15,7 +15,8 @@
 - Applications inventorie les `.app` du seul dossier explicitement choisi et affiche disponibilité de mise à jour inconnue; Integrity inspecte localement le statut de signature du seul bundle choisi sans verdict malware.
 - Exclusions stockées SQLite et utilisées dans les trois scans; import legacy prefs JSON v1 opt-in, allowlist/digest/trace/idempotence/source intact; onboarding, diagnostic sans chemins/détails et preview d’export ajoutés.
 - Explore ajoute recherche nom/dossier, tri nom/date/taille locale et carte proportionnelle exacte des seuls octets alloués connus; layout couvert par tests.
-- Script crée un `.app` + ZIP local unsigned sous `Artifacts/`; structure lue dans le bundle, aucune installation ou ouverture Finder réalisée.
+- Script crée un `.app` + ZIP local unsigned sous `Artifacts/`; structure vérifiée et installation testée seulement dans HOME fixture, aucune ouverture Finder réalisée.
+- Installateur local prend source et dossier destination explicites, refuse symlinks et bundle existant, stage dans le volume cible puis déplace sans écraser. Smoke synthétique et install du vrai bundle release dans HOME fixture passent; aucune app lancée. FR-14 reste PARTIEL avant lancement, retrait documenté en conditions testées, et gate compatibilité/signature.
 - CLI compilable : `scan --root` explicite, `record list --store` explicite et lecture seule, help/version honnête. Scan distingue succès complet (0), résultat partiel (2), erreur commande/store (1), annulation (130); JSON donne `files`, `issues`, `complete`. Tests fixtures couvrent racine manquante et scan complet. FR-13 reste PARTIEL : parité aide/localisation et validation CLI complète restent ouvertes.
 - Site statique EN/FR, manifeste 51 capacités, CSP, navigation sémantique, sans scripts ni analytics; tests de routes, liens, langues, contenu manifest.
 - Cahier utilisateur, développeur, confidentialité, accessibilité, données, migration, CLI et release evidence présents.

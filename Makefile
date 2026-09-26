@@ -1,4 +1,4 @@
-.PHONY: test build generate-manifest build-site site-check traceability safety-audit qualify package-local verify-package
+.PHONY: test build generate-manifest build-site site-check traceability safety-audit install-smoke qualify package-local verify-package verify-install-package
 
 test:
 	swift test
@@ -22,10 +22,16 @@ traceability:
 safety-audit:
 	python3 Scripts/audit_safety.py
 
-qualify: generate-manifest build-site site-check traceability safety-audit test build
+install-smoke:
+	bash Scripts/test_install_local.sh
+
+qualify: generate-manifest build-site site-check traceability safety-audit install-smoke test build
 
 package-local:
 	bash Scripts/package_local.sh
 
 verify-package:
 	bash Scripts/verify_package.sh
+
+verify-install-package: package-local
+	bash Scripts/test_install_local.sh Artifacts/CoreTend.app
