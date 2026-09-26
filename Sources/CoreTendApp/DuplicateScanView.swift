@@ -13,6 +13,7 @@ struct DuplicateScanView: View {
     @State private var report: DuplicateScanReport?
     @State private var status: String?
     @State private var scanTask: Task<Void, Never>?
+    @State private var activeScanID: UUID?
     @State private var selectedRoot: URL?
     @State private var selectedCopies: Set<URL> = []
     @State private var actionReview: ActionReview?
@@ -37,7 +38,10 @@ struct DuplicateScanView: View {
             }
             .disabled(scanning || actionBusy || actionReview != nil)
             .accessibilityHint(copy("duplicates.choose.hint"))
-            if scanning { ProgressView(copy("scan.progress")) }
+            if scanning {
+                ProgressView(copy("scan.progress"))
+                Button(copy("scan.cancel")) { cancelScan() }
+            }
             if let status { Text(status).foregroundStyle(.secondary) }
             if similarMode, let similarReport {
                 if similarReport.candidates.isEmpty {
@@ -96,7 +100,7 @@ struct DuplicateScanView: View {
             selectedRoot = root
             beginScan(root)
         }
-        .onDisappear { scanTask?.cancel(); if actionReview != nil { cancelAction() } }
+        .onDisappear { scanTask?.cancel(); activeScanID = nil; scanning = false; if actionReview != nil { cancelAction() } }
         .confirmationDialog(french ? "Déplacer vers la Corbeille macOS ?" : "Move to macOS Trash?", isPresented: $actionDialogPresented, titleVisibility: .visible) {
             Button(french ? "Déplacer les copies" : "Move copies to Trash", role: .destructive) { beginExecution() }
             Button(copy("common.cancel"), role: .cancel) { cancelAction() }
@@ -109,6 +113,9 @@ struct DuplicateScanView: View {
     }
 
     private func beginScan(_ root: URL) {
+        scanTask?.cancel()
+        let scanID = UUID()
+        activeScanID = scanID
         let hasScope = root.startAccessingSecurityScopedResource()
         scanning = true
         status = nil
@@ -116,28 +123,52 @@ struct DuplicateScanView: View {
         similarReport = nil
         selectedCopies = []
         scanTask = Task {
+            var rootUnavailable = false
+            var partialFailure = false
             defer {
                 if hasScope { root.stopAccessingSecurityScopedResource() }
-                scanning = false
+                if activeScanID == scanID { scanning = false; activeScanID = nil }
             }
             do {
                 var candidates: [ScanResult] = []
                 let exclusions = try await LocalStoreAccess.exclusions()
                 for try await event in LocalScanEngine().scan(.init(roots: [.init(url: root, ruleID: .duplicates)], exclusions: exclusions)) {
-                    if Task.isCancelled { return }
-                    if case .result(let result) = event { candidates.append(result) }
+                    guard !Task.isCancelled, activeScanID == scanID else { return }
+                    switch event {
+                    case .result(let result): candidates.append(result)
+                    case .itemFailure(let path, _):
+                        if path == root.path { rootUnavailable = true } else { partialFailure = true }
+                    case .progress, .finished: break
+                    }
                 }
+                try Task.checkCancellation()
+                guard activeScanID == scanID else { return }
+                if rootUnavailable { status = copy("scan.accessDenied"); return }
                 if similarMode {
-                    similarReport = try await SimilarImageEngine().findSimilar(in: candidates.map(\.url))
+                    let result = try await SimilarImageEngine().findSimilar(in: candidates.map(\.url))
+                    try Task.checkCancellation()
+                    guard activeScanID == scanID else { return }
+                    similarReport = result
                 } else {
-                    report = try await DuplicateEngine().findGroups(in: candidates)
+                    let result = try await DuplicateEngine().findGroups(in: candidates)
+                    try Task.checkCancellation()
+                    guard activeScanID == scanID else { return }
+                    report = result
                 }
+                if partialFailure { status = copy("scan.partial") }
             } catch is CancellationError {
-                status = copy("scan.cancelled")
+                if activeScanID == scanID { status = copy("scan.cancelled") }
             } catch {
-                status = copy("scan.failed")
+                if activeScanID == scanID { status = copy("scan.failed") }
             }
         }
+    }
+
+    private func cancelScan() {
+        scanTask?.cancel()
+        activeScanID = nil
+        scanning = false
+        status = copy("scan.cancelled")
     }
 
     @MainActor private func prepareAction() async {

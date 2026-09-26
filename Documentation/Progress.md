@@ -74,3 +74,8 @@
 
 - Réglages expose la politique : activité conservée jusqu’à effacement explicite dans Historique; préférences/exclusions jusqu’à modification ou retrait de la base; relevés Performance limités à 30 jours et 500 points.
 - Performances permet de retirer les relevés enregistrés après confirmation, indépendamment des événements et préférences. L’effacement est logique dans SQLite, sans promesse d’effacement physique des sauvegardes. Compilation app réussie; parcours natif et preuve de restauration non effectués. NFR-05 reste PARTIEL.
+
+### États de scan et annulation — 2026-09-26
+
+- Explorer, Nettoyage et Doublons exposent une commande d’annulation. Chaque analyse a un identifiant de génération; les résultats d’une ancienne tâche annulée ne remplacent plus le nouvel état de la vue.
+- Échec de lecture de la racine, dossier vide et erreurs partielles restent distincts. Nettoyage retire ses candidats incomplets à l’annulation. Compilation SwiftUI réussie; parcours natif et tests de course non exécutés dans cette tranche. NFR-06 devient PARTIEL; FR-10 reste À_CONSTRUIRE pour les permissions système détaillées.

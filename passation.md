@@ -22,6 +22,7 @@
 - Cleanup et Doublons utilisent désormais une présentation de confirmation explicite, figent les contrôles pendant l’action et libèrent l’accès temporaire au dossier sur tous les chemins d’échec. Le parcours UI natif reste à qualifier.
 - Applications montre le flux HTTPS `SUFeedURL` déclaré localement et permet son ouverture explicite dans le navigateur; aucune disponibilité de version n’est affirmée. FR-25 reste PARTIEL.
 - Réglages expose la conservation locale; Performances offre l’effacement confirmé de ses relevés sans effacer activité ou préférences. L’effacement SQLite est logique, sans garantie forensique; NFR-05 reste PARTIEL.
+- Explorer, Nettoyage et Doublons distinguent racine indisponible, vide et erreurs partielles, avec annulation visible et rejet des résultats de tâches anciennes. NFR-06 reste PARTIEL sans qualification UI native.
 
 ## Suite prioritaire
 

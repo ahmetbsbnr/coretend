@@ -14,6 +14,7 @@ struct CleanupView: View {
     @State private var status: String?
     @State private var scanning = false
     @State private var task: Task<Void, Never>?
+    @State private var activeScanID: UUID?
     @State private var selectedItems: Set<URL> = []
     @State private var actionReview: ActionReview?
     @State private var actionDialogPresented = false
@@ -46,7 +47,7 @@ struct CleanupView: View {
                         .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .disabled(actionBusy || actionReview != nil)
+                    .disabled(scanning || actionBusy || actionReview != nil)
                     .accessibilityAddTraits(selectedRule == rule.id ? .isSelected : [])
                 }
             }
@@ -67,7 +68,10 @@ struct CleanupView: View {
                     .accessibilityHint(copy("cleanup.scan.hint"))
                 }
             }
-            if scanning { ProgressView(copy("scan.progress")) }
+            if scanning {
+                ProgressView(copy("scan.progress"))
+                Button(copy("scan.cancel")) { cancelScan() }
+            }
             if !results.isEmpty {
                 Text(copy("cleanup.results", count: results.count)).font(.headline)
                 List(results, id: \.url) { item in
@@ -81,7 +85,7 @@ struct CleanupView: View {
                             Text(size(item)).foregroundStyle(.secondary).monospacedDigit()
                         }
                     }
-                    .disabled(actionBusy || actionReview != nil)
+                    .disabled(scanning || actionBusy || actionReview != nil)
                 }
                 .frame(minHeight: 220)
                 Button { Task { await prepareAction() } } label: {
@@ -104,7 +108,7 @@ struct CleanupView: View {
             selectedRoot = url
             status = nil
         }
-        .onDisappear { task?.cancel(); if actionReview != nil { cancelAction() } }
+        .onDisappear { task?.cancel(); activeScanID = nil; scanning = false; if actionReview != nil { cancelAction() } }
         .confirmationDialog(french ? "Déplacer vers la Corbeille macOS ?" : "Move to macOS Trash?", isPresented: $actionDialogPresented, titleVisibility: .visible) {
             Button(french ? "Déplacer vers la Corbeille" : "Move to Trash", role: .destructive) { beginExecution() }
             Button(copy("common.cancel"), role: .cancel) { cancelAction() }
@@ -117,26 +121,48 @@ struct CleanupView: View {
     }
 
     private func startScan(_ rule: CleanupRuleDescriptor, root: URL) {
+        task?.cancel()
+        let scanID = UUID()
+        activeScanID = scanID
         results = []; selectedItems = []; status = nil; scanning = true
         let acquiredScope = root.startAccessingSecurityScopedResource()
         task = Task {
+            var rootUnavailable = false
+            var partialFailure = false
             defer {
                 if acquiredScope { root.stopAccessingSecurityScopedResource() }
-                scanning = false
+                if activeScanID == scanID { scanning = false; activeScanID = nil }
             }
             do {
                 let exclusions = try await LocalStoreAccess.exclusions()
                 for try await event in LocalScanEngine().scan(.init(roots: [.init(url: root, ruleID: rule.id)], exclusions: exclusions)) {
-                    if Task.isCancelled { return }
+                    guard !Task.isCancelled, activeScanID == scanID else { return }
                     switch event {
                     case .result(let result): results.append(result)
-                    case .itemFailure: status = copy("cleanup.partial")
-                    case .finished: if results.isEmpty { status = copy("cleanup.none") }
+                    case .itemFailure(let path, _):
+                        if path == root.path { rootUnavailable = true } else { partialFailure = true }
+                    case .finished:
+                        status = rootUnavailable ? copy("scan.accessDenied")
+                            : partialFailure ? copy("cleanup.partial")
+                            : results.isEmpty ? copy("cleanup.none") : nil
                     case .progress: break
                     }
                 }
-            } catch { status = copy("scan.failed") }
+            } catch is CancellationError {
+                if activeScanID == scanID { status = copy("scan.cancelled") }
+            } catch {
+                if activeScanID == scanID { status = copy("scan.failed") }
+            }
         }
+    }
+
+    private func cancelScan() {
+        task?.cancel()
+        activeScanID = nil
+        scanning = false
+        results = []
+        selectedItems = []
+        status = copy("scan.cancelled")
     }
 
     @MainActor private func prepareAction() async {
