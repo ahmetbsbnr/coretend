@@ -18,10 +18,11 @@
 - `next` a intégré l’arbre de reconstruction sur l’historique public. `make qualify` passe dans `next/`. Branches locales réduites à `main` et `next`; trois anciennes branches `origin` supprimées après archivage de leurs pointes. Détails : `Documentation/Project/Branch-cleanup.md`.
 - Développement après intégration : charge système sur une minute et historique Performance SQLite v3 (30 jours/500 entrées, points mesurés). Tests Persistence ciblés 14/14 et `make qualify` passent; qualification UI native encore ouverte.
 - Intégrité ajoute lecture du marqueur de quarantaine macOS sur l’app choisie; états présent/absent/indisponible et test fixture. La provenance réelle reste non vérifiée.
+- Applications propose désormais le déplacement du seul bundle `.app` choisi vers la Corbeille, avec proposition journalisée, revue nominative et confirmation. L’identité du répertoire est comparée à l’inventaire, à la revue et à l’exécution; tests sur Corbeille fixture et remplacement de répertoire. Données associées/héritées inchangées; FR-26 reste PARTIEL.
 
 ## Suite prioritaire
 
-1. Finir les fonctions Must encore partielles ou absentes; prioriser attribution/installation sûre, historique Performance, états d’accès, favoris et accessibilité selon `Documentation/Project/Implementation-plan.md`.
+1. Finir les fonctions Must encore partielles ou absentes; prioriser attribution des fichiers liés aux apps, sources de mise à jour, états d’accès, favoris et accessibilité selon `Documentation/Project/Implementation-plan.md`.
 2. Vérifier chaque capacité avec fixtures isolées et tests utiles, puis parcours macOS natifs. Corriger la documentation quand la preuve change.
 3. Vérifier CI distante de `next` et régler la protection des branches dans l’hébergement. Ne pas déplacer la version publique `main` avant qualification.
 4. Préparer une version publique uniquement après matrice de compatibilité, signature/notarisation et vérification des artefacts.

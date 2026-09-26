@@ -11,7 +11,7 @@ The user explicitly supplies scan roots. ScanCore reads metadata and content onl
 ## Threats and controls
 
 - Symlink/path traversal: reject symlink targets, canonicalize root and candidate, compare device identity; skip symlinks during scans.
-- Target substitution or expiry: short-lived approval and identity revalidation; changed/missing/expired target fails closed.
+- Target substitution or expiry: inventory captures the app directory identity, review compares it and captures a fresh identity, approval and executor compare it again; changed/missing/expired target fails closed. Identity uses device and inode and does not detect in-place edits to bundle contents.
 - Trash API failure: preserve source, return typed failure; never report successful removal.
 - Scan races/permission failures: report item-level issue; unknown measurement remains unknown.
 - Accidental private-data exposure: no telemetry/network by default; diagnostic export not enabled until preview/redaction review exists; CLI warns paths may be sensitive.
@@ -20,4 +20,4 @@ The user explicitly supplies scan roots. ScanCore reads metadata and content onl
 
 ## Residual work
 
-The current native action UI is not connected to SafetyCore; legacy migration UI and exports are incomplete; no independent security review or hostile race stress test has run; macOS 14 was declared as minimum but this host reports a newer SDK and no older host was tested. These gaps block qualification claims.
+Cleanup, Duplicates and app-bundle actions use SafetyCore, but their native UI flows remain unqualified. App associated data and legacy data are not moved; provenance attribution and update source are unfinished. No independent security review or hostile race stress test has run; macOS 14 was declared as minimum but this host reports a newer SDK and no older host was tested. These gaps block qualification claims.

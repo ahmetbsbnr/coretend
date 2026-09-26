@@ -1,6 +1,7 @@
 import Foundation
 import Darwin
 import ProductContract
+import SafetyCore
 
 public struct ApplicationRecord: Sendable, Equatable, Identifiable {
     public let id: String
@@ -9,6 +10,7 @@ public struct ApplicationRecord: Sendable, Equatable, Identifiable {
     public let version: String?
     public let url: URL
     public let updateAvailability: ProductMeasurement<String>
+    public let fileIdentity: FileIdentity
 }
 
 public struct ApplicationDiscoveryIssue: Sendable, Equatable {
@@ -44,6 +46,7 @@ public struct ApplicationDiscoveryService: Sendable {
             }
             let infoURL = contentsURL.appendingPathComponent("Info.plist")
             do {
+                let initialIdentity = try FileIdentity(url: appURL)
                 let data = try Self.readRegularFileNoFollow(infoURL)
                 guard let info = try PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any],
                       let identifier = info["CFBundleIdentifier"] as? String, !identifier.isEmpty else {
@@ -53,9 +56,11 @@ public struct ApplicationDiscoveryService: Sendable {
                     ?? (info["CFBundleName"] as? String)
                     ?? appURL.deletingPathExtension().lastPathComponent
                 let version = (info["CFBundleShortVersionString"] as? String) ?? (info["CFBundleVersion"] as? String)
+                guard try FileIdentity(url: appURL) == initialIdentity else { throw PathRefusal.identityChanged }
                 applications.append(ApplicationRecord(id: appURL.path, bundleIdentifier: identifier,
                                                        displayName: displayName, version: version, url: appURL,
-                                                       updateAvailability: .unknown(reason: "update_source_not_checked")))
+                                                       updateAvailability: .unknown(reason: "update_source_not_checked"),
+                                                       fileIdentity: initialIdentity))
             } catch {
                 issues.append(.init(path: appURL.path, reason: "bundle_metadata_unavailable"))
             }

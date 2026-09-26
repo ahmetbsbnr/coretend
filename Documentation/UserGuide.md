@@ -6,7 +6,9 @@ Les scans sont en lecture seule. Explorer propose recherche, tri et carte propor
 
 Le CLI exige `--root` pour scanner et `--store` pour consulter un historique local. Ne partagez pas sa sortie sans vérifier les noms et chemins qu’elle contient. Aucune fonction de nettoyage automatique ou de suppression permanente n’existe.
 
-Dans Applications, **Rechercher des fichiers associés** demande un dossier explicite. CoreTend ne retient que les noms contenant un composant exactement égal à l’identifiant de bundle. Ce signal ne prouve pas l’appartenance; les candidats restent consultatifs et aucune action n’est proposée.
+Dans Applications, choisissez un dossier d’apps pour inventorier ses bundles `.app` au premier niveau. **Déplacer cette app vers la Corbeille** propose uniquement le bundle nommé : CoreTend journalise la proposition, affiche son nom, son identifiant et son chemin, puis demande confirmation. L’identité du bundle est comparée à celle de l’inventaire, de la revue et du transfert; si elle change, le déplacement est refusé. Les fichiers associés et les données héritées restent en place. L’action ne désinstalle ni services ni éléments partagés.
+
+**Rechercher des fichiers associés** demande un autre dossier explicite. CoreTend ne retient que les noms contenant un composant exactement égal à l’identifiant de bundle. Ce signal ne prouve pas l’appartenance; les candidats restent consultatifs et aucune action n’est proposée sur eux.
 # Images similaires
 
 Dans **Doublons**, choisissez **Images similaires**, puis sélectionnez un dossier. CoreTend calcule localement une empreinte visuelle réduite pour les fichiers image pris en charge et présente les paires candidates. Cette comparaison heuristique peut manquer des ressemblances ou rapprocher des images distinctes. Elle ne supprime rien; examinez les deux fichiers vous-même.
