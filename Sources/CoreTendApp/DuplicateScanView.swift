@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import QuickLook
 import UniformTypeIdentifiers
 import ScanCore
 import AppShell
@@ -24,6 +25,9 @@ struct DuplicateScanView: View {
     @State private var actionScopedRoot: URL?
     @State private var similarMode = false
     @State private var similarReport: SimilarImageReport?
+    @State private var previewURL: URL?
+    @State private var previewScopeHeld = false
+    @State private var previewScopedRoot: URL?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -51,8 +55,10 @@ struct DuplicateScanView: View {
                     Text(french ? "Comparaison visuelle heuristique. Vérifiez chaque image; aucune suppression proposée." : "Heuristic visual matching. Review every image; no deletion action offered.").foregroundStyle(.secondary)
                     List(similarReport.candidates, id: \.id) { pair in
                         HStack(alignment: .top, spacing: 12) {
-                            imagePreview(pair.first)
-                            imagePreview(pair.second)
+                            Button { previewURL = pair.first } label: { imagePreview(pair.first) }
+                                .buttonStyle(.plain)
+                            Button { previewURL = pair.second } label: { imagePreview(pair.second) }
+                                .buttonStyle(.plain)
                             VStack(alignment: .leading) {
                                 Text(pair.first.lastPathComponent).font(.headline)
                                 Text(pair.second.lastPathComponent)
@@ -73,11 +79,21 @@ struct DuplicateScanView: View {
                             Label(copy("duplicates.keep"), systemImage: "checkmark.circle.fill")
                                 .foregroundStyle(.green)
                             Text(group.suggestedKeeper.lastPathComponent).font(.headline)
+                            Button { previewURL = group.suggestedKeeper } label: {
+                                Label(copy("explore.preview"), systemImage: "eye")
+                            }
+                            .buttonStyle(.borderless)
                             ForEach(group.files.filter { $0 != group.suggestedKeeper }, id: \.path) { file in
-                                Toggle(isOn: Binding(get: { selectedCopies.contains(file) }, set: { enabled in
-                                    if enabled { selectedCopies.insert(file) } else { selectedCopies.remove(file) }
-                                })) {
-                                    Label(file.lastPathComponent, systemImage: "doc.on.doc")
+                                HStack {
+                                    Toggle(isOn: Binding(get: { selectedCopies.contains(file) }, set: { enabled in
+                                        if enabled { selectedCopies.insert(file) } else { selectedCopies.remove(file) }
+                                    })) {
+                                        Label(file.lastPathComponent, systemImage: "doc.on.doc")
+                                    }
+                                    Button { previewURL = file } label: {
+                                        Label(copy("explore.preview"), systemImage: "eye")
+                                    }
+                                    .buttonStyle(.borderless)
                                 }
                                 .disabled(actionBusy || actionReview != nil)
                             }
@@ -100,12 +116,25 @@ struct DuplicateScanView: View {
             selectedRoot = root
             beginScan(root)
         }
-        .onDisappear { scanTask?.cancel(); activeScanID = nil; scanning = false; if actionReview != nil { cancelAction() } }
+        .onDisappear {
+            scanTask?.cancel(); activeScanID = nil; scanning = false
+            previewURL = nil
+            releasePreviewScope()
+            if actionReview != nil { cancelAction() }
+        }
         .confirmationDialog(french ? "Déplacer vers la Corbeille macOS ?" : "Move to macOS Trash?", isPresented: $actionDialogPresented, titleVisibility: .visible) {
             Button(french ? "Déplacer les copies" : "Move copies to Trash", role: .destructive) { beginExecution() }
             Button(copy("common.cancel"), role: .cancel) { cancelAction() }
         } message: {
             Text(reviewMessage)
+        }
+        .quickLookPreview($previewURL)
+        .onChange(of: previewURL) { _, item in
+            if item == nil { releasePreviewScope() }
+            else if !previewScopeHeld, let selectedRoot {
+                previewScopeHeld = selectedRoot.startAccessingSecurityScopedResource()
+                if previewScopeHeld { previewScopedRoot = selectedRoot }
+            }
         }
         .onChange(of: actionDialogPresented) { _, presented in
             if !presented && actionReview != nil { cancelAction() }
@@ -114,6 +143,7 @@ struct DuplicateScanView: View {
 
     private func beginScan(_ root: URL) {
         scanTask?.cancel()
+        previewURL = nil
         let scanID = UUID()
         activeScanID = scanID
         let hasScope = root.startAccessingSecurityScopedResource()
@@ -172,6 +202,12 @@ struct DuplicateScanView: View {
         activeScanID = nil
         scanning = false
         status = copy("scan.cancelled")
+    }
+
+    private func releasePreviewScope() {
+        if previewScopeHeld, let previewScopedRoot { previewScopedRoot.stopAccessingSecurityScopedResource() }
+        previewScopeHeld = false
+        previewScopedRoot = nil
     }
 
     @MainActor private func prepareAction() async {

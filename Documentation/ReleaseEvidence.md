@@ -24,3 +24,11 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 - `swift build --product CoreTendApp` et `make package-local` : réussis. Le nouveau script prépare un bundle propre dans `Artifacts/` avant remplacement; `Info.plist` passe `plutil -lint`.
 - ZIP local non signé actuel : SHA-256 `e1e87a2a611d4793b2043c396ea2d957b34fe9205e73434fa3ce51620c3473fa`. Cette somme identifie seulement cet artefact local; le ZIP est régénéré avec des métadonnées d’horodatage, donc une reconstruction peut produire une autre somme.
 - Relancement natif pour prouver la restauration, inspection du contenu ZIP, tests, installation, signature, notarisation et publication non exécutés pour cette tranche.
+
+## Build Quick Look — 26-09-2026
+
+- Source compilée : commit source à relever après commit de cette tranche (`next`). Hôte : même Mac arm64 / macOS 27.0 / Swift 6.4.
+- `swift build --product CoreTendApp`, `swift build -c release --product CoreTendApp`, `make package-local` et `make verify-package` : réussis. Vérification porte sur compilation, Info.plist, intégrité ZIP et structure Mach-O arm64.
+- Quick Look est disponible pour fichiers choisis dans Explorer, Doublons et Images similaires; portée dossier maintenue pendant aperçu. Compilation prouve les API, pas le comportement natif en exécution.
+- SHA-256 du ZIP local non signé : `7d885f8fa0bac32487205e5faa435e05fd16ed2e096a64dbc21fb50758070fee`. Artefact ignoré par Git, local et non publié.
+- Lancement, parcours Quick Look, accessibilité, signature, notarisation et publication non vérifiés. FR-23 / quicklook.extended restent PARTIELS.

@@ -1,6 +1,6 @@
 # Reconstruction progress
 
-**Relevé :** 2026-09-26. **État :** reconstruction en cours, non finalisée. Cahier et plan approuvés; travail actif sur `next`, branche issue du dépôt public historique. Le dépôt greenfield initial `rebuild/` reste copie locale de provenance.
+**Relevé :** 2026-09-26. **État :** reconstruction en cours, non finalisée. Dernier jalon code : Quick Look local sur fichiers sélectionnés; release build et ZIP local vérifiés structurellement. Cahier et plan approuvés; travail actif sur `next`, branche issue du dépôt public historique. Le dépôt greenfield initial `rebuild/` reste copie locale de provenance.
 
 ## Livré et prouvé
 
@@ -26,7 +26,7 @@
 - Tests UI d’accessibilité et de parcours restent à construire. L’accès Trash natif n’a pas été exécuté sur de vraies données.
 - Record UI, filtres, CSV/JSON et clear history livrés; les parcours Duplicates/Cleanup écrivent propositions, approbations, annulations, succès/échecs. Diagnostic expurgé couvert par test de contrat. Retention et tests UI du parcours restent à faire.
 - Migrations : schéma v1/v2→v3 avec fixtures; import v1 prefs copy-only livré pour format synthétique reconnu. Formats historiques alternatifs, sauvegarde/interruption forcée et analyse migration UI plus complète restent ouverts.
-- Explore : carte proportionnelle, recherche et tri livrés; gros/anciens presets, cloud et Quick Look restent non livrés. Images similaires sont intégrées au parcours Doublons, mais encore partielles (heuristique non calibrée, corpus et accessibilité à vérifier).
+- Explore : carte proportionnelle, recherche, tri et aperçu Quick Look sur fichier choisi livrés. Doublons et Images similaires proposent aussi Quick Look sur fichier choisi. Accès au dossier maintenu pendant l’aperçu, libéré à la fermeture/disparition. Presets gros/anciens et prise en charge cloud restent non livrés. Images similaires restent partielles (heuristique non calibrée, corpus et accessibilité à vérifier).
 - Applications discovery et signal code-signature livrés; revue consultative des reliquats ajoutée sur un dossier choisi avec correspondance exacte bundle ID, sans attribution confirmée ni action sur ces reliquats. Le déplacement confirmé du seul bundle `.app` vers la Corbeille est relié à SafetyCore et au journal; désinstallation complète des éléments associés/hérités et source de mise à jour non livrées. Performance a un historique local de points de charge système, mais pas de qualification UI native; états d’accès, menu bar, favoris/récents et palette restent incomplets. Onboarding de premier lancement livré.
 - CLI n’a pas de test end-to-end qui invoque un scan fixture ni parité complète d’aide/localisation.
 - Paquet `.app`/ZIP unsigned construit; installation/ouverture et lancement non vérifiés. Profilage performance, hôte macOS 14, capture UI, vérification VoiceOver/clavier manuelle et revue sécurité indépendante manquent.

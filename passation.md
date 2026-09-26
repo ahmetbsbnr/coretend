@@ -39,3 +39,11 @@ Ordre de reprise retenu : (1) refermer fonctions Must Applications/Integrity/per
 2. Vérifier chaque capacité avec fixtures isolées et tests utiles, puis parcours macOS natifs. Corriger la documentation quand la preuve change.
 3. Vérifier CI distante de `next` et régler la protection des branches dans l’hébergement. Ne pas déplacer la version publique `main` avant qualification.
 4. Préparer une version publique uniquement après matrice de compatibilité, signature/notarisation et vérification des artefacts.
+
+### Quick Look fichiers sélectionnés — 26-09-2026
+
+- Quick Look SwiftUI est ajouté dans Explore et Doublons : ligne de fichier listé, keeper/copie de doublon exact, chacune des deux images similaires. Dossiers non proposés en aperçu; action d’écriture indépendante inchangée.
+- Le scope security-scoped du dossier sélectionné est conservé pendant l’aperçu et libéré à sa fermeture ou à la disparition de la vue. `swift build --product CoreTendApp` et build release réussis.
+- Guide utilisateur et FR-23 / `quicklook.extended` mis à jour. Statut PARTIEL : compilation et packaging ne qualifient pas le comportement Quick Look natif ni VoiceOver.
+- `make package-local` et `make verify-package` réussis. ZIP local non signé SHA-256 `7d885f8fa0bac32487205e5faa435e05fd16ed2e096a64dbc21fb50758070fee`; aucune signature, installation, ouverture ou publication.
+- Reprise conseillée : examiner besoins Must restants par ordre sécurité/usage, en commençant permissions et aide d’accès macOS (FR-10), sans prétendre que dialogues de scan diagnostiquent permissions complètes. Construire petit jalon, mettre à jour traceability/Progress/UserGuide/passation, builder/packager, puis commit/push `next`.
