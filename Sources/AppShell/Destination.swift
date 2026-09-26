@@ -167,7 +167,9 @@ public enum ProductCopy {
 
     public static func activityDetail(_ detail: String, failureCode: String?, french isFrench: Bool) -> String {
         guard failureCode == "trash_failed" else { return detail }
-        return "\(detail) — \(value(for: "activity.reason.trashFailed", french: isFrench))"
+        let marker = " | reason=trash_failed"
+        let path = detail.hasSuffix(marker) ? String(detail.dropLast(marker.count)) : detail
+        return "\(path) — \(value(for: "activity.reason.trashFailed", french: isFrench))"
     }
 
     public static func scanRootFailure(reason: String, french isFrench: Bool) -> String {
