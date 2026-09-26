@@ -1,6 +1,6 @@
 # Passation courante — CoreTend Next
 
-**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche `next` publiée sur `ahmetbsbnr/coretend` et issue de `main`. Jalon données fusionné : `6052711` (PR #40, qualify distant vert). L’ancien dépôt indépendant `rebuild/` reste une copie locale de provenance.
+**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche `next` publiée sur `ahmetbsbnr/coretend` et issue de `main`. Jalons fusionnés : `6052711` données locales (PR #40) et `e93e657` palette bilingue (PR #41), CI distante verte. Travail courant : `feature/palette-arrow-navigation`. L’ancien dépôt indépendant `rebuild/` reste une copie locale de provenance.
 
 ### Jalon en cours — données locales et favoris/récents
 
@@ -10,7 +10,7 @@
 - Tests Persistence : 17/17 passent, dont fixture v3→v4 et conservation événement/langue/relevé, idempotence, quota et validation. `make qualify` passe : site, traçabilité, audit sécurité, smoke install fixture, suite Swift, builds App/CLI et `git diff --check`.
 - `make package-local` et `make verify-package` réussis. ZIP arm64 unsigned SHA-256 `9b5a340e2513e7f1a9a16a0c0b252a72d8f0eecff6bca62668135019e815b091`; non lancé/installé/signé/notarié/publié.
 - Docs synchronisées : `Documentation/Project/DataModel.md`, `Migration.md`, `Progress.md`, `Traceability.csv`, `UserGuide.md`. FR-24 et `favrec.module` EN_COURS; FR-11 EN_COURS; NFR-05 reste PARTIEL (pas de récupération/restauration utilisateur complète).
-- Contrôle visuel SwiftUI/VoiceOver natif non réalisé. FR-24 reste en cours jusqu’à cette qualification. Suite clavier sur `feature/keyboard-command-palette`: catalogue EN/FR de 8 destinations + Réglages, raccourci ⌘K, recherche avec alias, routeur partagé, Échap pour fermer et Retour pour ouvrir premier résultat. Tests AppShell 4/4; `make qualify`, `make package-local`, `make verify-package`, `git diff --check` passent. ZIP unsigned SHA-256 `fbb8a3d042b89f26a37972930553a9b4b218516c357964ea58be9d198942390b`; non lancé. Branche en attente commit/PR/CI distante.
+- Contrôle visuel SwiftUI/VoiceOver natif non réalisé. FR-24 reste en cours jusqu’à cette qualification. Sous-jalon `feature/palette-arrow-navigation`: sélection clavier ↑/↓, Retour sur commande sélectionnée, recherche réinitialise une sélection devenue invalide. Tests AppShell 5/5. `make qualify`, `make package-local`, `make verify-package`, `git diff --check` passent. ZIP arm64 unsigned SHA-256 `4c63d81a3b25f4c79b26017760fae0ec632ee93c5d8eb2d1dba5abb2316096bd`; non lancé. Branche prête à commit/PR/CI distante.
 
 ## Reprise active — 26-09-2026
 
