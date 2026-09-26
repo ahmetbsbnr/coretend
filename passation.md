@@ -1,6 +1,13 @@
 # Passation courante — CoreTend Next
 
-**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche `next` publiée sur `ahmetbsbnr/coretend` et issue de `main`. Jalons récents fusionnés : PR #40 données locales, PR #41 palette bilingue, PR #42 sélection clavier et PR #44 batch SQLite (`66beb97`); checks `qualify` verts. HEAD local `next` synchronisé sur `origin/next`. L’ancien dépôt indépendant `rebuild/` reste une copie locale de provenance.
+**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche de travail `feat/legacy-import-performance-graph` basée sur `next` (`40c6af2` synchronisé avec `origin/next`). Jalons récents fusionnés : PR #40 données locales, PR #41 palette bilingue, PR #42 sélection clavier et PR #44 batch SQLite (`66beb97`); checks `qualify` verts. La tranche courante passe `make qualify` et `git diff --check`; PR distante pas encore ouverte. L’ancien dépôt indépendant `rebuild/` reste une copie locale de provenance.
+
+### Backend migration et graphique Performance — tranche active
+
+- Import legacy JSON v1 ouvre maintenant la source avec `O_NONBLOCK` en plus de `O_NOFOLLOW`, évitant le blocage sur FIFO portant le nom attendu. Après lecture, `fstat` doit confirmer même device/inode/mode/taille/mtime/ctime; sinon erreur `sourceChanged`. Source jamais modifiée.
+- Fixture `mkfifo` démontre rejet immédiat; import v1 valide, idempotent et source intacte testé. Build App et `make qualify` passent sur cette branche; gates site/traceability/sûreté, install smoke en HOME temporaire, suite XCTest et builds App/CLI verts.
+- Graphique Performance conserve les observations ponctuelles (pas de valeur synthétique/interpolée), accent système bleu, grille/axes de temps et dernière valeur/date exposées avec label VoiceOver. La validation SwiftUI native/VoiceOver reste manuelle.
+- Branche de travail prévue `docs/site-capability-refresh` créée depuis `next`; publier par PR uniquement après gates locaux, CI distante verte et passation synchronisée. Après cette tranche, prochaine reprise : rafraîchir site EN/FR sur favoris/récents/palette et détails de confidentialité, puis continuer le backlog Must et traiter le reste du graphique/qualification visuelle.
 
 ### Écriture groupée des récents — livrée
 

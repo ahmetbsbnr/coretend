@@ -2,7 +2,7 @@ import Foundation
 import Darwin
 import CryptoKit
 
-public enum LegacyImportError: Error, Equatable, Sendable { case unavailableSource, invalidFormat, unsupportedVersion, unsafePath, tooManyPaths }
+public enum LegacyImportError: Error, Equatable, Sendable { case unavailableSource, sourceChanged, invalidFormat, unsupportedVersion, unsafePath, tooManyPaths }
 
 public struct LegacyPreferencesPreview: Sendable, Equatable {
     public let excludedPaths: [String]
@@ -45,7 +45,7 @@ public struct LegacyPreferencesImporter: Sendable {
     }
 
     private func readSelectedRegularFile(_ url: URL) throws -> Data {
-        let descriptor = open(url.path, O_RDONLY | O_NOFOLLOW | O_CLOEXEC)
+        let descriptor = open(url.path, O_RDONLY | O_NOFOLLOW | O_CLOEXEC | O_NONBLOCK)
         guard descriptor >= 0 else { throw LegacyImportError.unavailableSource }
         defer { close(descriptor) }
         var info = stat()
@@ -57,6 +57,16 @@ public struct LegacyPreferencesImporter: Sendable {
             let amount = read(descriptor, &bytes[offset], bytes.count - offset)
             guard amount > 0 else { throw LegacyImportError.unavailableSource }
             offset += amount
+        }
+        var finalInfo = stat()
+        guard fstat(descriptor, &finalInfo) == 0,
+              finalInfo.st_dev == info.st_dev, finalInfo.st_ino == info.st_ino,
+              finalInfo.st_mode == info.st_mode, finalInfo.st_size == info.st_size,
+              finalInfo.st_mtimespec.tv_sec == info.st_mtimespec.tv_sec,
+              finalInfo.st_mtimespec.tv_nsec == info.st_mtimespec.tv_nsec,
+              finalInfo.st_ctimespec.tv_sec == info.st_ctimespec.tv_sec,
+              finalInfo.st_ctimespec.tv_nsec == info.st_ctimespec.tv_nsec else {
+            throw LegacyImportError.sourceChanged
         }
         return Data(bytes)
     }

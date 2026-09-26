@@ -1,6 +1,7 @@
 import Foundation
 import XCTest
 import CSQLite
+import Darwin
 @testable import Persistence
 
 final class PersistenceTests: XCTestCase {
@@ -169,6 +170,17 @@ final class PersistenceTests: XCTestCase {
         try traversal.write(to: unknown)
         XCTAssertThrowsError(try LegacyPreferencesImporter().preview(sourceURL: unknown)) { error in
             XCTAssertEqual(error as? LegacyImportError, .unsafePath)
+        }
+    }
+
+    func testLegacyImporterRejectsNamedPipeWithoutBlocking() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-legacy-pipe-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let pipe = root.appendingPathComponent("coretend-preferences-v1.json")
+        XCTAssertEqual(mkfifo(pipe.path, mode_t(0o600)), 0)
+        XCTAssertThrowsError(try LegacyPreferencesImporter().preview(sourceURL: pipe)) { error in
+            XCTAssertEqual(error as? LegacyImportError, .unavailableSource)
         }
     }
 
