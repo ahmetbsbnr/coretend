@@ -89,3 +89,10 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 ## Branch-policy documentation checkpoint — 26-09-2026
 
 - CI `ed437b1` réussie : [Actions run 36264534176](https://github.com/ahmetbsbnr/coretend/actions/runs/36264534176), macos-latest, build/fixtures/site/contracts + whitespace, 19:01:42Z.
+
+## SQLite v4 — favoris/récents — 26-09-2026
+
+- `make qualify` passe : génération/site statique, traçabilité (40 exigences + 51 capacités), audit sécurité, smoke install en HOME temporaire, suite Swift complète, build app et CLI, whitespace.
+- Tests Persistence ciblés : 17/17. Fixtures v1/v2/v3, préservation du contenu v3, idempotence, rétention 100 récents, favoris et mesures inconnues; aucun store utilisateur lu.
+- `make package-local` et `make verify-package` réussis. ZIP arm64 unsigned SHA-256 `9b5a340e2513e7f1a9a16a0c0b252a72d8f0eecff6bca62668135019e815b091`. Vérification limitée à Info.plist, archive et Mach-O. App non lancée, non signée, non notarisée, non publiée.
+- FR-24/favrec.module en cours; VoiceOver/UI native, palette de commandes et reprise de contenu après re-sélection du dossier restent ouvertes.

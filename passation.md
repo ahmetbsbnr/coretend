@@ -1,6 +1,16 @@
 # Passation courante — CoreTend Next
 
-**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche `next` publiée sur `ahmetbsbnr/coretend` et issue de `main`. L’ancien dépôt indépendant `rebuild/` reste une copie locale de provenance.
+**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche `next` publiée sur `ahmetbsbnr/coretend` et issue de `main`. HEAD de départ pour ce jalon : `4cf98b7`; modifications ci-dessous non encore commitées. L’ancien dépôt indépendant `rebuild/` reste une copie locale de provenance.
+
+### Jalon en cours — données locales et favoris/récents
+
+- `SQLiteStore` schema v4 ajoute `saved_files`; migration v1/v2/v3→v4 transactionnelle, répétable, sans import implicite de chemins. Historique d’activité, préférences et relevés Performance préservés.
+- Favoris s’enregistrent uniquement après clic explicite. Récents Explorer sont opt-in, désactivés par défaut, limités à 100 lignes; mesures inconnues restent SQL NULL. Les écritures valident chemins absolus normalisés et tailles non négatives.
+- Interface : étoile dans Explorer; Vue d’ensemble liste favoris/récents, dernière taille et état indicatif absent/inaccessible; Réglages contrôle opt-in; retrait local d’une entrée disponible. Aucun accès au fichier rouvert depuis un chemin mémorisé.
+- Tests Persistence : 17/17 passent, dont fixture v3→v4 et conservation événement/langue/relevé, idempotence, quota et validation. `make qualify` passe : site, traçabilité, audit sécurité, smoke install fixture, suite Swift, builds App/CLI et `git diff --check`.
+- `make package-local` et `make verify-package` réussis. ZIP arm64 unsigned SHA-256 `9b5a340e2513e7f1a9a16a0c0b252a72d8f0eecff6bca62668135019e815b091`; non lancé/installé/signé/notarié/publié.
+- Docs synchronisées : `Documentation/Project/DataModel.md`, `Migration.md`, `Progress.md`, `Traceability.csv`, `UserGuide.md`. FR-24 et `favrec.module` EN_COURS; FR-11 EN_COURS; NFR-05 reste PARTIEL (pas de récupération/restauration utilisateur complète).
+- Contrôle visuel SwiftUI/VoiceOver natif non réalisé. Palette de commandes et navigation par destinations à venir; FR-24 reste en cours. Reprise : finaliser review/PR de ce jalon, puis continuer `Implementation-plan.md` sur Must et accessibilité.
 
 ## Reprise active — 26-09-2026
 

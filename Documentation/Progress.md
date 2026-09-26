@@ -8,7 +8,7 @@
 - Dépôt Swift 6 vide au départ; cahier, baseline et plan conservés sous `Documentation/Project/`.
 - ProductContract catalogue les 51 IDs de capacité et huit destinations.
 - SafetyCore : capacités à durée courte, revalidation d’existence/chemin/volume/inode/allowlist; adapter prod uniquement `FileManager.trashItem`; fake Trash dans Tests. Cinq tests sur racine refusée, règle inconnue, identité changée, expiration, préservation à l’échec et déplacement fixture.
-- SQLite schema v3 : événements, préférences/imports et mesures Performance séparés; migrations transactionnelles v1/v2→v3, URL injectée; mode CLI read-only. Tests sous répertoires temporaires.
+- SQLite schema v4 : événements, préférences/imports, mesures Performance et favoris/récents séparés; migrations transactionnelles v1/v2/v3→v4, URL injectée; mode CLI read-only. Récents opt-in désactivé par défaut, 100 chemins maximum; favoris explicites; tests en bases temporaires synthétiques.
 - ScanCore : parcours explicite, exclusions, symlinks exclus, tailles logique/allouée inconnues conservées; tests de lecture seule sur fixtures.
 - Doublons exacts : bucket par taille puis SHA-256 par blocs, déduplication d’inodes, un exemplaire proposé à garder; tests sur copies identiques, contenus distincts et hard links.
 - App SwiftUI compilable, huit routes EN/FR. Explore, Duplicates et Cleanup ont sélection de dossier et scan. Duplicates/Cleanup relient sélection manuelle → proposition journalisée → revue nominative → confirmation → validation → adapter Trash; le keeper n’est jamais sélectionnable, sélection vide par défaut, refus/cancel distincts. Actions non lancées sur l’hôte.
