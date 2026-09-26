@@ -54,6 +54,11 @@ struct SettingsView: View {
                 if importing { ProgressView() }
             }
 
+            Section(french ? "Conservation des données" : "Data retention") {
+                Text(french ? "L’activité reste dans la base locale jusqu’à son effacement explicite dans Historique. Les préférences et exclusions restent jusqu’à leur modification ou au retrait de la base." : "Activity stays in the local database until you explicitly clear it in Record. Preferences and exclusions remain until changed or the database is removed.")
+                Text(french ? "Les relevés Performance sont conservés 30 jours et limités à 500. Vous pouvez les effacer dans Performances; une nouvelle ouverture de cette vue créera un nouveau relevé." : "Performance readings are kept for 30 days and capped at 500. You can clear them in Performance; reopening that view creates a new reading.")
+            }
+
             Section(french ? "Diagnostic privé" : "Private diagnostics") {
                 Text(french ? "Aperçu contient version, schéma et compteurs d’événements. Aucun chemin, nom de fichier ni détail d’événement." : "Preview includes app version, schema and event counts. No paths, file names or event details.")
                     .font(.callout).foregroundStyle(.secondary)

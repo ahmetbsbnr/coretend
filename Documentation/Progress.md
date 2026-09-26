@@ -69,3 +69,8 @@
 
 - L’inventaire Applications lit localement `SUFeedURL` depuis `Info.plist`. Seule une adresse HTTPS valide sans identifiants devient un lien explicite vers le navigateur; une adresse invalide ou absente reste signalée. Aucune requête réseau, lecture de flux ou comparaison de versions au moment de l’inventaire.
 - `apps.updates` et FR-25 restent PARTIELS : aucune preuve de source App Store, aucune page produit confirmée, aucune comparaison de versions et aucun parcours natif qualifié.
+
+### Conservation locale des données — 2026-09-26
+
+- Réglages expose la politique : activité conservée jusqu’à effacement explicite dans Historique; préférences/exclusions jusqu’à modification ou retrait de la base; relevés Performance limités à 30 jours et 500 points.
+- Performances permet de retirer les relevés enregistrés après confirmation, indépendamment des événements et préférences. L’effacement est logique dans SQLite, sans promesse d’effacement physique des sauvegardes. Compilation app réussie; parcours natif et preuve de restauration non effectués. NFR-05 reste PARTIEL.

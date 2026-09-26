@@ -17,4 +17,6 @@ Dans **Doublons**, choisissez **Images similaires**, puis sélectionnez un dossi
 
 Dans **Performances**, chaque ouverture ou clic sur **Actualiser** ajoute un relevé local daté. La charge système sur une minute provient de macOS; ce nombre n’est pas un pourcentage CPU. Le graphique montre les relevés connus sous forme de points. Les valeurs indisponibles restent inconnues. L’historique conserve 30 jours et au plus 500 relevés; aucun échantillonnage continu en arrière-plan.
 
+**Effacer les relevés Performance** demande confirmation et retire uniquement les relevés enregistrés. Le relevé courant reste affiché; actualiser ou rouvrir la vue crée un nouveau relevé. Les événements de l’Historique restent jusqu’à leur effacement explicite dans cet écran. Les préférences et exclusions restent dans la base locale jusqu’à modification ou retrait de la base. Ces commandes retirent des lignes SQLite; elles ne promettent pas un effacement physique des copies ou sauvegardes.
+
 Dans **Intégrité**, choisir une app permet de lire deux signaux locaux : validation de signature et présence du marqueur de quarantaine macOS. Ce marqueur peut être absent, présent ou inaccessible; il ne prouve ni la source réelle de l’app ni sa sûreté. Aucun verdict de malware n’est donné.
