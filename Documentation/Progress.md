@@ -8,37 +8,36 @@
 - Dépôt Swift 6 vide au départ; cahier, baseline et plan conservés sous `Documentation/Project/`.
 - ProductContract catalogue les 51 IDs de capacité et huit destinations.
 - SafetyCore : capacités à durée courte, revalidation d’existence/chemin/volume/inode/allowlist; adapter prod uniquement `FileManager.trashItem`; fake Trash dans Tests. Cinq tests sur racine refusée, règle inconnue, identité changée, expiration, préservation à l’échec et déplacement fixture.
-- SQLite schema v1 : historique typé, transaction, migration idempotente, URL injectée; mode CLI read-only. Quatre tests sous répertoire temporaire.
+- SQLite schema v3 : événements, préférences/imports et mesures Performance séparés; migrations transactionnelles v1/v2→v3, URL injectée; mode CLI read-only. Tests sous répertoires temporaires.
 - ScanCore : parcours explicite, exclusions, symlinks exclus, tailles logique/allouée inconnues conservées; tests de lecture seule sur fixtures.
 - Doublons exacts : bucket par taille puis SHA-256 par blocs, déduplication d’inodes, un exemplaire proposé à garder; tests sur copies identiques, contenus distincts et hard links.
 - App SwiftUI compilable, huit routes EN/FR. Explore, Duplicates et Cleanup ont sélection de dossier et scan. Duplicates/Cleanup relient sélection manuelle → proposition journalisée → revue nominative → confirmation → validation → adapter Trash; le keeper n’est jamais sélectionnable, sélection vide par défaut, refus/cancel distincts. Actions non lancées sur l’hôte.
 - Applications inventorie les `.app` du seul dossier explicitement choisi et affiche disponibilité de mise à jour inconnue; Integrity inspecte localement le statut de signature du seul bundle choisi sans verdict malware.
-- Exclusions stockées SQLite v2 et utilisées dans les trois scans; import legacy prefs JSON v1 opt-in, allowlist/digest/trace/idempotence/source intact; onboarding, diagnostic sans chemins/détails et preview d’export ajoutés.
+- Exclusions stockées SQLite et utilisées dans les trois scans; import legacy prefs JSON v1 opt-in, allowlist/digest/trace/idempotence/source intact; onboarding, diagnostic sans chemins/détails et preview d’export ajoutés.
 - Explore ajoute recherche nom/dossier, tri nom/date/taille locale et carte proportionnelle exacte des seuls octets alloués connus; layout couvert par tests.
 - Script crée un `.app` + ZIP local unsigned sous `Artifacts/`; structure lue dans le bundle, aucune installation ou ouverture Finder réalisée.
 - CLI compilable : `scan --root` explicite, `record list --store` explicite et lecture seule, help/version honnête; parsing testé.
 - Site statique EN/FR, manifeste 51 capacités, CSP, navigation sémantique, sans scripts ni analytics; tests de routes, liens, langues, contenu manifest.
 - Cahier utilisateur, développeur, confidentialité, accessibilité, données, migration, CLI et release evidence présents.
-- `make qualify` a passé : contrôles site/traceabilité/sûreté, 41 tests XCTest et builds app + CLI. `make package-local verify-package` passe; ZIP arm64 unsigned SHA-256 `8a0cb259df23e7324866201be51026e78989b3f11464c7d876f92b89b589c984`. `git diff --check` passe. Aucun test n’utilise le vrai store ou la vraie Corbeille.
-- État traceability courant : FR 6 EN_COURS / 10 PARTIEL / 10 À_CONSTRUIRE; NFR 9 EN_COURS / 1 PARTIEL / 4 À_CONSTRUIRE; capacités 23 EN_COURS / 11 PARTIEL / 17 À_CONSTRUIRE. Aucun Must n’est clos par la seule présence documentaire.
+- `make qualify` passe sur `next` après l’ajout de l’historique Performance : contrôles site/traçabilité/sûreté, tests XCTest et builds app + CLI. Tests Persistence ciblés 14/14 passent. `make package-local verify-package` avait passé dans `rebuild/` avant migration; ancien ZIP unsigned SHA-256 `8a0cb259df23e7324866201be51026e78989b3f11464c7d876f92b89b589c984`. Aucun test n’utilise le vrai store ou la vraie Corbeille.
 
 ## En cours ou non livré
 
 - Tests UI d’accessibilité et de parcours restent à construire. L’accès Trash natif n’a pas été exécuté sur de vraies données.
 - Record UI, filtres, CSV/JSON et clear history livrés; les parcours Duplicates/Cleanup écrivent propositions, approbations, annulations, succès/échecs. Diagnostic expurgé couvert par test de contrat. Retention et tests UI du parcours restent à faire.
-- Migrations : schema v1→v2 avec fixture; import v1 prefs copy-only livré pour format synthétique reconnu. Formats historiques alternatifs, sauvegarde/interruption forcée et analyse migration UI plus complète restent ouverts.
-- Explore : carte proportionnelle, recherche et tri livrés; gros/anciens presets, cloud et Quick Look restent non livrés. Images similaires sont intégrées au parcours Doublons, mais encore partielles (heuristique non calibrée et sans tests dédiés).
-- Applications discovery et signal code-signature livrés; revue consultative des reliquats ajoutée sur un dossier choisi avec correspondance exacte bundle ID, sans attribution confirmée ni action. Désinstallation et source de mise à jour non livrées. Performance n’a pas de graphiques ni historique; états d’accès, menu bar, favoris/récents et palette restent incomplets. Onboarding de premier lancement livré.
+- Migrations : schéma v1/v2→v3 avec fixtures; import v1 prefs copy-only livré pour format synthétique reconnu. Formats historiques alternatifs, sauvegarde/interruption forcée et analyse migration UI plus complète restent ouverts.
+- Explore : carte proportionnelle, recherche et tri livrés; gros/anciens presets, cloud et Quick Look restent non livrés. Images similaires sont intégrées au parcours Doublons, mais encore partielles (heuristique non calibrée, corpus et accessibilité à vérifier).
+- Applications discovery et signal code-signature livrés; revue consultative des reliquats ajoutée sur un dossier choisi avec correspondance exacte bundle ID, sans attribution confirmée ni action. Désinstallation et source de mise à jour non livrées. Performance a un historique local de points de charge système, mais pas de qualification UI native; états d’accès, menu bar, favoris/récents et palette restent incomplets. Onboarding de premier lancement livré.
 - CLI n’a pas de test end-to-end qui invoque un scan fixture ni parité complète d’aide/localisation.
 - Paquet `.app`/ZIP unsigned construit; installation/ouverture et lancement non vérifiés. Profilage performance, hôte macOS 14, capture UI, vérification VoiceOver/clavier manuelle et revue sécurité indépendante manquent.
 - Must FR/NFR restent `EN_COURS`, `À_CONSTRUIRE` ou `PARTIEL` dans la traceability; aucune qualification finale n’est acquise.
 
 ## Frontières respectées
 
-- Aucun fichier de code, asset ou historique importé du dépôt de référence.
+- La source runtime a été reconstruite indépendamment. La passation et sa famille documentaire historiques ont été importées sous `Documentation/Archive/Legacy-Reconstruction/`; la branche `next` descend maintenant de l’historique public pour préserver la continuité des releases.
 - Aucun scan exécuté sur données personnelles; tests exclusivement synthétiques et temporaires.
 - L’app n’a pas été lancée; aucune vraie base CoreTend ni vraie Corbeille ouverte.
-- Aucun push, tag, signature, notarisation, publication ou déploiement.
+- `next` a été poussée sur `origin`; `main`, tags et releases sont inchangés. Aucune signature, notarisation ni distribution de la reconstruction.
 # Tranche images similaires — 2026-09-26
 
 - Ajout d’un moteur local d’empreinte différence 64 bits. Il lit des miniatures ImageIO, accepte extensions image courantes, ignore liens symboliques et fichiers illisibles, limite taille à 100 Mio et candidats à 5 000.
@@ -51,3 +50,9 @@
 
 - Dans Applications, l’utilisateur choisit une app inventoriée puis un dossier à analyser. Recherche lecture seule; candidats seulement si un composant du chemin ou le nom sans extension correspond exactement à l’identifiant bundle.
 - Aucune attribution n’est affirmée, aucun nettoyage/suppression proposé. Compilation `swift build` et test de correspondance exacte passent. Capacité reste PARTIELLE. À faire: tests d’inventaire sur fixtures, association par provenance de signature/métadonnées, UX d’accès limité et revue accessibilité.
+
+### Dépôt public et mesures Performance — 2026-09-26
+
+- Branches anciennes : pointes locales et distantes archivées sous `refs/archive/2026-09-26/`; branches locales actives `main` et `next`. Trois branches `origin` anciennes supprimées. `next` créée depuis `origin/main`, puis poussée sans réécriture de `main`.
+- Passation historique et documents cités conservés dans le projet; passation courante, licence, contribution, sécurité, stratégie, CI et formulaires publics ajoutés.
+- Performance : `getloadavg` macOS lu lors d’un rafraîchissement, SQLite v3 conserve charge une minute et espace disponible connus/inconnus, 30 jours/500 entrées; graphique de points. Tests Persistence ciblés 14/14, `make qualify` et `git diff --check` passent. Qualification UI native reste ouverte.

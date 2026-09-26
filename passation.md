@@ -1,6 +1,6 @@
 # Passation courante — CoreTend Next
 
-**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche `next` issue de `ahmetbsbnr/coretend/main`. L’ancien dépôt indépendant `rebuild/` reste une copie locale de provenance.
+**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche `next` publiée sur `ahmetbsbnr/coretend` et issue de `main`. L’ancien dépôt indépendant `rebuild/` reste une copie locale de provenance.
 
 ## Lire d’abord
 
@@ -16,10 +16,11 @@
 - Aucun accès aux données réelles CoreTend ni à la vraie Corbeille pendant les tests. Aucune publication, signature, notarisation ou mise à jour distante.
 - Les documents anciens ont été copiés dans `Documentation/Archive/Legacy-Reconstruction/` sans modifier le worktree historique.
 - `next` a intégré l’arbre de reconstruction sur l’historique public. `make qualify` passe dans `next/`. Branches locales réduites à `main` et `next`; trois anciennes branches `origin` supprimées après archivage de leurs pointes. Détails : `Documentation/Project/Branch-cleanup.md`.
+- Développement après intégration : charge système sur une minute et historique Performance SQLite v3 (30 jours/500 entrées, points mesurés). Tests Persistence ciblés 14/14 et `make qualify` passent; qualification UI native encore ouverte.
 
 ## Suite prioritaire
 
 1. Finir les fonctions Must encore partielles ou absentes; prioriser attribution/installation sûre, historique Performance, états d’accès, favoris et accessibilité selon `Documentation/Project/Implementation-plan.md`.
 2. Vérifier chaque capacité avec fixtures isolées et tests utiles, puis parcours macOS natifs. Corriger la documentation quand la preuve change.
-3. Publier `next` comme branche de travail après contrôle confidentialité/licences/CI. Ne pas déplacer la version publique `main` avant qualification.
+3. Vérifier CI distante de `next` et régler la protection des branches dans l’hébergement. Ne pas déplacer la version publique `main` avant qualification.
 4. Préparer une version publique uniquement après matrice de compatibilité, signature/notarisation et vérification des artefacts.

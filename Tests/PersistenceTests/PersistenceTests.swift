@@ -13,7 +13,7 @@ final class PersistenceTests: XCTestCase {
         try await store.migrate()
         XCTAssertTrue(FileManager.default.fileExists(atPath: db.path))
         let version = try await store.schemaVersion()
-        XCTAssertEqual(version, 2)
+        XCTAssertEqual(version, 3)
     }
 
     func testAppendAndQueryEventsInTimestampOrder() async throws {
@@ -108,7 +108,7 @@ final class PersistenceTests: XCTestCase {
         let migratedVersion = try await store.schemaVersion()
         let preservedEvents = try await store.events()
         let exclusions = try await store.exclusions()
-        XCTAssertEqual(migratedVersion, 2)
+        XCTAssertEqual(migratedVersion, 3)
         XCTAssertEqual(preservedEvents.map(\.detail), ["fixture-event"])
         XCTAssertEqual(exclusions, [])
     }
@@ -170,5 +170,53 @@ final class PersistenceTests: XCTestCase {
         XCTAssertThrowsError(try LegacyPreferencesImporter().preview(sourceURL: unknown)) { error in
             XCTAssertEqual(error as? LegacyImportError, .unsafePath)
         }
+    }
+
+    func testVersionTwoMigrationPreservesEventsAndAddsPerformanceHistory() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-v2-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let url = root.appendingPathComponent("fixture.sqlite")
+        var handle: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(url.path, &handle), SQLITE_OK)
+        let sql = "CREATE TABLE activity_events (id TEXT PRIMARY KEY NOT NULL, occurred_at REAL NOT NULL, kind TEXT NOT NULL, detail TEXT NOT NULL); INSERT INTO activity_events VALUES ('11111111-1111-1111-1111-111111111111', 10, 'proposed', 'retained'); CREATE TABLE preferences (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL); INSERT INTO preferences VALUES ('language', 'fr'); CREATE TABLE legacy_imports (digest TEXT PRIMARY KEY NOT NULL, imported_at REAL NOT NULL); PRAGMA user_version = 2;"
+        XCTAssertEqual(sqlite3_exec(handle, sql, nil, nil, nil), SQLITE_OK)
+        sqlite3_close(handle)
+        let store = try SQLiteStore(url: url)
+        try await store.migrate()
+        try await store.migrate()
+        let version = try await store.schemaVersion()
+        let events = try await store.events()
+        let language = try await store.languagePreference()
+        let samples = try await store.performanceSamples()
+        XCTAssertEqual(version, 3)
+        XCTAssertEqual(events.map(\.detail), ["retained"])
+        XCTAssertEqual(language, "fr")
+        XCTAssertEqual(samples, [])
+    }
+
+    func testPerformanceHistoryKeepsUnknownSeparateFromZeroAndPrunesOldSamples() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-perf-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let db = root.appendingPathComponent("fixture.sqlite")
+        let store = try SQLiteStore(url: db)
+        try await store.migrate()
+        let now = Date(timeIntervalSince1970: 1_000_000_000)
+        let old = PerformanceSample(measuredAt: now.addingTimeInterval(-31 * 86_400), loadAverage1m: 3, availableBytes: 100)
+        let unknown = PerformanceSample(measuredAt: now.addingTimeInterval(-60), loadAverage1m: nil, availableBytes: nil)
+        let zero = PerformanceSample(measuredAt: now, loadAverage1m: 0, availableBytes: 0)
+        try await store.appendPerformanceSample(old, retentionNow: now)
+        try await store.appendPerformanceSample(unknown, retentionNow: now)
+        try await store.appendPerformanceSample(zero, retentionNow: now)
+        let saved = try await store.performanceSamples()
+        XCTAssertEqual(saved, [unknown, zero])
+        let reader = try SQLiteStore(url: db, readOnly: true)
+        let readOnlySamples = try await reader.performanceSamples()
+        XCTAssertEqual(readOnlySamples, [unknown, zero])
+        do {
+            try await reader.appendPerformanceSample(zero, retentionNow: now)
+            XCTFail("read-only store accepted performance write")
+        } catch let error as StoreError { XCTAssertEqual(error, .readOnly) }
     }
 }

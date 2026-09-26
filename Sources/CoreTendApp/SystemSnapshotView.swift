@@ -2,12 +2,16 @@ import SwiftUI
 import Domain
 import ProductContract
 import AppShell
+import Persistence
+import Charts
 
 struct SystemSnapshotView: View {
     let destination: Destination
     let french: Bool
     @State private var snapshot: SystemSnapshot?
     @State private var loading = false
+    @State private var history: [PerformanceSample] = []
+    @State private var historyError = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -16,7 +20,10 @@ struct SystemSnapshotView: View {
             if loading { ProgressView() }
             if let snapshot {
                 if destination == .overview { storage(snapshot) }
-                else { performance(snapshot) }
+                else {
+                    performance(snapshot)
+                    performanceHistory
+                }
                 Text(copy("metrics.measured") + " " + snapshot.measuredAt.formatted(.dateTime.hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US"))))
                     .font(.caption).foregroundStyle(.secondary)
             } else if !loading {
@@ -46,6 +53,7 @@ struct SystemSnapshotView: View {
 
     private func performance(_ value: SystemSnapshot) -> some View {
         Grid(alignment: .leading, horizontalSpacing: 32, verticalSpacing: 16) {
+            metric(copy("metrics.loadAverage"), load(value.loadAverage1m))
             metric(copy("metrics.processors"), "\(value.activeProcessorCount)")
             metric(copy("metrics.memory"), ByteCountFormatter.string(fromByteCount: value.physicalMemoryBytes, countStyle: .memory))
             metric(copy("metrics.uptime"), uptime(value.uptimeSeconds))
@@ -55,6 +63,33 @@ struct SystemSnapshotView: View {
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(.quaternary, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private var performanceHistory: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(copy("metrics.history")).font(.headline)
+            Text(copy("metrics.historyHelp")).font(.caption).foregroundStyle(.secondary)
+            if historyError { Text(copy("metrics.historyError")).foregroundStyle(.secondary) }
+            let known = history.filter { $0.loadAverage1m != nil }
+            if known.isEmpty {
+                Text(copy("metrics.historyEmpty")).foregroundStyle(.secondary)
+            } else {
+                Chart(known) { sample in
+                    if let load = sample.loadAverage1m {
+                        PointMark(x: .value("Time", sample.measuredAt), y: .value("Load", load))
+                    }
+                }
+                .chartYAxisLabel(copy("metrics.loadAverage"))
+                .frame(height: 170)
+                .accessibilityLabel(copy("metrics.history"))
+                ForEach(known.suffix(5)) { sample in
+                    if let load = sample.loadAverage1m {
+                        Text("\(sample.measuredAt.formatted(.dateTime.day().month().hour().minute())) · \(load.formatted(.number.precision(.fractionLength(2))))")
+                            .font(.caption.monospacedDigit())
+                    }
+                }
+            }
+        }
     }
 
     private func metric(_ title: String, _ value: String) -> some View {
@@ -78,6 +113,13 @@ struct SystemSnapshotView: View {
         return french ? "\(days) j \(remainder) h" : "\(days)d \(remainder)h"
     }
 
+    private func load(_ value: ProductMeasurement<Double>) -> String {
+        switch value {
+        case .known(let number): number.formatted(.number.precision(.fractionLength(2)))
+        case .unknown: copy("metrics.unknown")
+        }
+    }
+
     private func thermal(_ state: Domain.ThermalState) -> String {
         copy("thermal.\(state.rawValue)")
     }
@@ -88,6 +130,14 @@ struct SystemSnapshotView: View {
             let service = SystemSnapshotService()
             let newSnapshot = await Task.detached(priority: .utility) { service.snapshot() }.value
             snapshot = newSnapshot
+            if destination == .performance {
+                do {
+                    let store = try await LocalStoreAccess.open()
+                    try await store.appendPerformanceSample(newSnapshot.performanceSample)
+                    history = try await store.performanceSamples()
+                    historyError = false
+                } catch { historyError = true }
+            }
             loading = false
         }
     }
