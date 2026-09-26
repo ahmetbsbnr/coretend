@@ -103,6 +103,7 @@ public actor SQLiteStore {
 
     public func append(_ event: ActivityEvent) throws {
         guard !readOnly else { throw StoreError.readOnly }
+        guard event.occurredAt.timeIntervalSince1970.isFinite else { throw StoreError.statement("invalid activity timestamp") }
         guard let database = connection?.handle else { throw StoreError.open("closed") }
         let sql = "INSERT INTO activity_events(id, occurred_at, kind, detail) VALUES(?, ?, ?, ?)"
         var statement: OpaquePointer?
@@ -243,6 +244,8 @@ public actor SQLiteStore {
 
     public func appendPerformanceSample(_ sample: PerformanceSample, retentionNow: Date = .now) throws {
         guard !readOnly, let database = connection?.handle else { throw StoreError.readOnly }
+        guard sample.measuredAt.timeIntervalSince1970.isFinite,
+              retentionNow.timeIntervalSince1970.isFinite else { throw StoreError.statement("invalid performance timestamp") }
         guard sample.loadAverage1m.map({ $0.isFinite && $0 >= 0 }) ?? true,
               sample.availableBytes.map({ $0 >= 0 }) ?? true else { throw StoreError.statement("invalid performance measurement") }
         try execute("BEGIN IMMEDIATE")
