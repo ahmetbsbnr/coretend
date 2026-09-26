@@ -35,12 +35,20 @@ public struct ApplicationDiscoveryService: Sendable {
 
     public func discover(in selectedRoot: URL) -> ApplicationDiscoveryReport {
         var rootInfo = stat()
-        guard lstat(selectedRoot.path, &rootInfo) == 0, (rootInfo.st_mode & S_IFMT) == S_IFDIR else {
-            return ApplicationDiscoveryReport(applications: [], issues: [.init(path: selectedRoot.path, reason: "selected_root_unavailable")])
+        guard lstat(selectedRoot.path, &rootInfo) == 0 else {
+            return ApplicationDiscoveryReport(applications: [], issues: [.init(path: selectedRoot.path, reason: Self.selectedRootFailureReason(errno: errno))])
+        }
+        switch rootInfo.st_mode & S_IFMT {
+        case S_IFLNK:
+            return ApplicationDiscoveryReport(applications: [], issues: [.init(path: selectedRoot.path, reason: "selected_root_symlink")])
+        case S_IFDIR:
+            break
+        default:
+            return ApplicationDiscoveryReport(applications: [], issues: [.init(path: selectedRoot.path, reason: "selected_root_not_directory")])
         }
         let children: [URL]
         do { children = try FileManager.default.contentsOfDirectory(at: selectedRoot, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles]) }
-        catch { return ApplicationDiscoveryReport(applications: [], issues: [.init(path: selectedRoot.path, reason: "selected_root_unreadable")]) }
+        catch { return ApplicationDiscoveryReport(applications: [], issues: [.init(path: selectedRoot.path, reason: Self.selectedRootReadFailureReason(error))]) }
         var applications: [ApplicationRecord] = []
         var issues: [ApplicationDiscoveryIssue] = []
         for appURL in children where appURL.pathExtension.lowercased() == "app" {
@@ -75,6 +83,29 @@ public struct ApplicationDiscoveryService: Sendable {
             }
         }
         return ApplicationDiscoveryReport(applications: applications.sorted { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }, issues: issues)
+    }
+
+    static func selectedRootFailureReason(errno errorCode: Int32) -> String {
+        switch errorCode {
+        case ENOENT: "selected_root_missing"
+        case EACCES, EPERM: "selected_root_access_denied"
+        case ENOTDIR: "selected_root_not_directory"
+        default: "selected_root_unavailable"
+        }
+    }
+
+    static func selectedRootReadFailureReason(_ error: Error) -> String {
+        let error = error as NSError
+        if error.domain == NSPOSIXErrorDomain {
+            switch error.code {
+            case Int(EACCES), Int(EPERM): return "selected_root_access_denied"
+            default: break
+            }
+        }
+        if error.domain == NSCocoaErrorDomain, error.code == CocoaError.fileReadNoPermission.rawValue {
+            return "selected_root_access_denied"
+        }
+        return "selected_root_unreadable"
     }
 
     private static func updateSource(from info: [String: Any]) -> AppUpdateSource {

@@ -63,6 +63,35 @@ private struct FixedSnapshotReader: SystemSnapshotReading {
 }
 
 final class ApplicationDiscoveryTests: XCTestCase {
+    func testSelectedRootFailureKindsRemainDistinct() throws {
+        let fixture = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-root-status-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: fixture, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: fixture) }
+
+        let missing = fixture.appendingPathComponent("Missing", isDirectory: true)
+        XCTAssertEqual(ApplicationDiscoveryService().discover(in: missing).issues.first?.reason, "selected_root_missing")
+
+        let file = fixture.appendingPathComponent("NotFolder")
+        try Data("fixture".utf8).write(to: file)
+        XCTAssertEqual(ApplicationDiscoveryService().discover(in: file).issues.first?.reason, "selected_root_not_directory")
+        XCTAssertEqual(ApplicationDiscoveryService().discover(in: file.appendingPathComponent("Child")).issues.first?.reason, "selected_root_not_directory")
+
+        let target = fixture.appendingPathComponent("Target", isDirectory: true)
+        try FileManager.default.createDirectory(at: target, withIntermediateDirectories: true)
+        let symlink = fixture.appendingPathComponent("FolderLink", isDirectory: true)
+        try FileManager.default.createSymbolicLink(at: symlink, withDestinationURL: target)
+        XCTAssertEqual(ApplicationDiscoveryService().discover(in: symlink).issues.first?.reason, "selected_root_symlink")
+    }
+
+    func testPermissionErrnosAreNotReportedAsMissingOrEmpty() {
+        XCTAssertEqual(ApplicationDiscoveryService.selectedRootFailureReason(errno: EACCES), "selected_root_access_denied")
+        XCTAssertEqual(ApplicationDiscoveryService.selectedRootFailureReason(errno: EPERM), "selected_root_access_denied")
+        XCTAssertEqual(ApplicationDiscoveryService.selectedRootFailureReason(errno: ENOENT), "selected_root_missing")
+        XCTAssertEqual(ApplicationDiscoveryService.selectedRootFailureReason(errno: ENOTDIR), "selected_root_not_directory")
+        XCTAssertEqual(ApplicationDiscoveryService.selectedRootReadFailureReason(CocoaError(.fileReadNoPermission)), "selected_root_access_denied")
+        XCTAssertEqual(ApplicationDiscoveryService.selectedRootReadFailureReason(NSError(domain: NSPOSIXErrorDomain, code: Int(EACCES))), "selected_root_access_denied")
+    }
+
     func testDiscoversOnlyTopLevelAppBundlesUnderInjectedFixtureRoot() throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-apps-\(UUID())", isDirectory: true)
         let app = root.appendingPathComponent("Fixture.app", isDirectory: true)
