@@ -185,7 +185,8 @@ final class FileActionServiceTests: XCTestCase {
         XCTAssertEqual(try Data(contentsOf: infoURL), plist)
         let events = try await store.events()
         XCTAssertEqual(events.map(\.kind), [.proposed, .approved, .failed])
-        XCTAssertEqual(events.map(\.detail), [record.url.path, record.url.path, record.url.path])
+        XCTAssertEqual(events.map(\.detail), [record.url.path, record.url.path, "\(record.url.path) | reason=trash_failed"])
+        XCTAssertFalse(try XCTUnwrap(events.last).detail.contains("synthetic Trash failure"))
     }
 
     func testReviewedAppBundleMovesToFixtureTrashWithoutAssociatedData() async throws {
