@@ -1,20 +1,20 @@
 # Passation courante — CoreTend Next
 
-**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche de travail `feat/performance-chart-selection` basée sur `next` (`5408782` synchronisé avec `origin/next`). PR #46 backend/graphique, #47 site, #48 validation SQLite et #49 date de l’axe fusionnées; CI `qualify` verte pour toutes. Tranche courante : sélection graphique d’un point Performance connu; gate complet/distant encore à faire.
+**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche `next` propre et synchronisée sur `origin/next` (`b0287bf`). PR #46 backend/graphique, #47 site, #48 validation SQLite, #49 axe date et #50 sélection graphique fusionnées; `qualify` distante verte. Aperçu Vercel `coretend` de #50 refusé pour quota 24 h; seul `qualify` est requis par protection `next`. L’ancien dépôt `rebuild/` reste copie locale de provenance.
 
-### Backend migration et graphique Performance — tranche active
+### Jalons backend, site et graphique Performance — livrés
 
 - Import legacy JSON v1 ouvre maintenant la source avec `O_NONBLOCK` en plus de `O_NOFOLLOW`, évitant le blocage sur FIFO portant le nom attendu. Après lecture, `fstat` doit confirmer même device/inode/mode/taille/mtime/ctime; sinon erreur `sourceChanged`. Source jamais modifiée.
 - Fixture `mkfifo` démontre rejet immédiat; import v1 valide, idempotent et source intacte testé. Build App et `make qualify` passent sur cette branche; gates site/traceability/sûreté, install smoke en HOME temporaire, suite XCTest et builds App/CLI verts.
 - Graphique Performance conserve les observations ponctuelles (pas de valeur synthétique/interpolée), accent système bleu, grille/axes de temps et dernière valeur/date exposées avec label VoiceOver. La validation SwiftUI native/VoiceOver reste manuelle.
 - PR #46 a fusionné le durcissement backend et le graphique Performance dans `next` (`abb0d58`); gate CI distante `qualify` verte. Ancienne branche distante nettoyée.
-- Site EN/FR en cours : générateur mentionne maintenant favoris/récents/palette et précision confidentialité (chemins/taille locale, récents désactivés par défaut, limite 100, retrait possible). `make build-site site-check` passe. FR-15 demeure PARTIEL : aucune navigation navigateur réelle, audit a11y ni publication.
+- Site EN/FR : générateur mentionne favoris/récents/palette et précision confidentialité (chemins/taille locale, récents désactivés par défaut, limite 100, retrait possible). `make build-site site-check` passe. FR-15 demeure PARTIEL : aucune navigation navigateur réelle, audit a11y ni publication.
 - Site EN/FR fusionné par PR #47 (`c87d01d`), CI `qualify` verte.
 - PR #48 horodatages SQLite fusionnée par `574e646`; garde-fous non-finis validés en fixtures et CI `qualify` verte.
-- PR #49 axe date Performance fusionnée par `5408782`; build app, `make qualify` et CI verts. Essai visuel/VoiceOver manuel demeure non effectué.
-- Reprise après site : poursuivre les Must du backlog, surtout FR-26 attribution des données app sûre, FR-10 permissions/diagnostics et qualification graphique SwiftUI/VoiceOver native. Aucun paquet signé/notarié/publié.
+- PR #49 axe date Performance fusionnée par `5408782`; build app, `make qualify` et CI verts. Essai visuel/VoiceOver manuel demeure non effectué. PR #50 fusionnée par `b0287bf`; sélection exacte du point mesuré le plus proche testée 2/2, gate requis vert; essais natifs de sélection, VoiceOver et focus restent manuels.
+- Reprise suivante : poursuivre les Must du backlog, surtout FR-26 attribution des données app sûre, FR-10 permissions/diagnostics et qualification graphique SwiftUI/VoiceOver native. Aucun paquet signé/notarié/publié.
 
-### Validation des horodatages SQLite — en cours
+### Validation des horodatages SQLite — livrée
 
 - `SQLiteStore.append` doit refuser `ActivityEvent.occurredAt` non fini avant écriture. `appendPerformanceSample` doit refuser timestamp de mesure et horloge de rétention non finis avant transaction, sans ajouter lignes ni exécuter pruning corrompu.
 - Tests fixture ajoutés pour `.infinity` au journal, `.nan` à l’échantillon Performance et `.infinity` à l’horloge de rétention; le premier échoue avant correction. Tous passent après ajout des gardes; `make qualify` complet (site, traceability, sécurité, install smoke, XCTest, App/CLI) et CI distante passent. PR #48 fusionnée dans `574e646`.
@@ -24,10 +24,10 @@
 - Axe X affiche jour/mois/heure pour distinguer points éloignés de plusieurs jours; échantillons restent des points observés, sans interpolation.
 - `swift build --product CoreTendApp`, `make qualify` et `git diff --check` passent; accès natif VoiceOver/UI reste ouvert.
 
-### Interaction graphique Performance — tranche active
+### Interaction graphique Performance — livrée
 
 - Sélection X se résout vers le point mesuré connu le plus proche; aucune interpolation, points inconnus/horodatage curseur invalide ignorés, égalité choisit observation la plus récente.
-- La ligne de repère et label valeur/date montrent mesure réelle. Tests Domain passés 2/2; `make qualify`, PR/CI et état passation restent à fermer.
+- La ligne de repère et label valeur/date montrent mesure réelle. Tests Domain passés 2/2; `make qualify` et CI requis passent, PR #50 fusionnée.
 
 ### Écriture groupée des récents — livrée
 
@@ -47,9 +47,9 @@
 
 ## Reprise active — 26-09-2026
 
-L’utilisateur demande de poursuivre le projet jusqu’à finalisation et de tenir cette passation à chaque étape pour reprise après arrêt abrupt. Dernier code fusionné : `66beb97` (PR #44; CI `qualify` verte). Le paquet de ce jalon : SHA-256 `45b8c102247d1656171db8e14349498cfd027083c42fac45e7c976f08c10465e`, vérifié structurellement seulement, aucune ouverture ni signature.
+L’utilisateur demande de poursuivre le projet jusqu’à finalisation et de tenir cette passation à chaque étape pour reprise après arrêt abrupt. Dernier code fusionné : `b0287bf` (PR #50; CI requise `qualify` verte). Vercel coretend a refusé le déploiement preview sur quota 24 h; ce check n’est pas requis par protection `next`. Pas de nouveau paquet depuis les changements app précédents; aucun binaire ouvert, signé, notarié ou publié.
 
-Ordre de reprise retenu : (1) qualifier UI native/VoiceOver clavier, en commençant par palette et favoris; (2) refermer Must restantes Applications/Integrity/permissions; (3) compléter les états de navigation, données, export et migration; (4) traiter les capacités restantes et mettre à jour `Website/`, README et cahier; (5) qualification fixtures/gates/builds puis relever les limites macOS/publication sans revendiquer release non signée. Ne jamais ouvrir vrai store CoreTend ni vraie Corbeille pendant tests. Aucune release signée/notarisée/publication.
+Ordre de reprise retenu : (1) qualifier UI native/VoiceOver clavier/graphiques, sans scanner les données hôte; (2) refermer Must restantes Applications/Integrity/permissions; (3) compléter les états de navigation, données, export et migration; (4) traiter les capacités restantes et mettre à jour `Website/`, README et cahier; (5) qualification fixtures/gates/builds puis relever les limites macOS/publication sans revendiquer release non signée. Ne jamais ouvrir vrai store CoreTend ni vraie Corbeille pendant tests. Aucune release signée/notarisée/publication.
 
 ## Lire d’abord
 
