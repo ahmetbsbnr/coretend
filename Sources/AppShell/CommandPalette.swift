@@ -52,3 +52,18 @@ public enum CommandPaletteCatalog {
         value.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
     }
 }
+
+public enum CommandMoveDirection: Equatable, Sendable { case up, down }
+
+public enum CommandPaletteNavigation {
+    public static func move(in commands: [ProductCommand], selectedID: String?, direction: CommandMoveDirection) -> String? {
+        guard !commands.isEmpty else { return nil }
+        guard let index = commands.firstIndex(where: { $0.id == selectedID }) else {
+            return direction == .down ? commands.first?.id : commands.last?.id
+        }
+        switch direction {
+        case .up: return commands[max(0, index - 1)].id
+        case .down: return commands[min(commands.count - 1, index + 1)].id
+        }
+    }
+}
