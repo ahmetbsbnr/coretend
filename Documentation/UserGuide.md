@@ -14,6 +14,8 @@ Dans Réglages > **Accès aux dossiers**, CoreTend décrit l’accès aux dossie
 
 Au prochain lancement, CoreTend rouvre la dernière des huit destinations choisies. Seul son identifiant est mémorisé dans les préférences locales; les dossiers analysés ne sont pas restaurés automatiquement. Une valeur inconnue revient à Vue d’ensemble.
 
+Appuyez sur **⌘K** pour ouvrir la palette d’accès rapide. Recherchez une destination en français ou anglais par son nom ou un terme associé, puis choisissez-la; la même palette ouvre Réglages. Le retour ouvre le premier résultat et Échap ferme la palette. La navigation applique la sélection de la barre latérale existante.
+
 Le CLI exige `--root` pour scanner et `--store` pour consulter un historique local. Ne partagez pas sa sortie sans vérifier les noms et chemins qu’elle contient. Aucune fonction de nettoyage automatique ou de suppression permanente n’existe.
 
 Dans Applications, choisissez un dossier d’apps pour inventorier ses bundles `.app` au premier niveau. **Déplacer cette app vers la Corbeille** propose uniquement le bundle nommé : CoreTend journalise la proposition, affiche son nom, son identifiant et son chemin, puis demande confirmation. L’identité du bundle est comparée à celle de l’inventaire, de la revue et du transfert; si elle change, le déplacement est refusé. Les fichiers associés et les données héritées restent en place. L’action ne désinstalle ni services ni éléments partagés.

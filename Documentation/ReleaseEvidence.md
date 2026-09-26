@@ -96,3 +96,9 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 - Tests Persistence ciblés : 17/17. Fixtures v1/v2/v3, préservation du contenu v3, idempotence, rétention 100 récents, favoris et mesures inconnues; aucun store utilisateur lu.
 - `make package-local` et `make verify-package` réussis. ZIP arm64 unsigned SHA-256 `9b5a340e2513e7f1a9a16a0c0b252a72d8f0eecff6bca62668135019e815b091`. Vérification limitée à Info.plist, archive et Mach-O. App non lancée, non signée, non notarisée, non publiée.
 - FR-24/favrec.module en cours; VoiceOver/UI native, palette de commandes et reprise de contenu après re-sélection du dossier restent ouvertes.
+
+## Palette clavier bilingue — 26-09-2026
+
+- Catalogue AppShell couvre huit destinations + Réglages, termes associés FR/EN et recherche insensible à la casse/diacritiques. SwiftUI ouvre par ⌘K, filtre dans une feuille, Retour choisit premier résultat, Échap ferme; sélection réutilise binding du `NavigationSplitView` existant.
+- `make qualify` passe après changement; tests AppShell 4/4; builds debug App/CLI inclus. `make package-local`, `make verify-package`, `git diff --check` passent.
+- ZIP arm64 unsigned SHA-256 `fbb8a3d042b89f26a37972930553a9b4b218516c357964ea58be9d198942390b`. Contrôle structure seulement. Aucun lancement runtime, contrôle VoiceOver, signature, notarisation ou publication.
