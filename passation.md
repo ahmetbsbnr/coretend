@@ -1,13 +1,15 @@
 # Passation courante — CoreTend Next
 
-**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche de travail `feat/legacy-import-performance-graph` basée sur `next` (`40c6af2` synchronisé avec `origin/next`). Jalons récents fusionnés : PR #40 données locales, PR #41 palette bilingue, PR #42 sélection clavier et PR #44 batch SQLite (`66beb97`); checks `qualify` verts. La tranche courante passe `make qualify` et `git diff --check`; PR distante pas encore ouverte. L’ancien dépôt indépendant `rebuild/` reste une copie locale de provenance.
+**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche de travail `docs/site-capability-refresh` basée sur `next` (`abb0d58` synchronisé avec `origin/next`). Jalon backend/graphique PR #46 fusionné (`abb0d58`); CI `qualify` verte. Tranche courante site locale `make build-site site-check` et `git diff --check` vertes; PR pas encore ouverte. L’ancien dépôt indépendant `rebuild/` reste une copie locale de provenance.
 
 ### Backend migration et graphique Performance — tranche active
 
 - Import legacy JSON v1 ouvre maintenant la source avec `O_NONBLOCK` en plus de `O_NOFOLLOW`, évitant le blocage sur FIFO portant le nom attendu. Après lecture, `fstat` doit confirmer même device/inode/mode/taille/mtime/ctime; sinon erreur `sourceChanged`. Source jamais modifiée.
 - Fixture `mkfifo` démontre rejet immédiat; import v1 valide, idempotent et source intacte testé. Build App et `make qualify` passent sur cette branche; gates site/traceability/sûreté, install smoke en HOME temporaire, suite XCTest et builds App/CLI verts.
 - Graphique Performance conserve les observations ponctuelles (pas de valeur synthétique/interpolée), accent système bleu, grille/axes de temps et dernière valeur/date exposées avec label VoiceOver. La validation SwiftUI native/VoiceOver reste manuelle.
-- Branche de travail prévue `docs/site-capability-refresh` créée depuis `next`; publier par PR uniquement après gates locaux, CI distante verte et passation synchronisée. Après cette tranche, prochaine reprise : rafraîchir site EN/FR sur favoris/récents/palette et détails de confidentialité, puis continuer le backlog Must et traiter le reste du graphique/qualification visuelle.
+- PR #46 a fusionné le durcissement backend et le graphique Performance dans `next` (`abb0d58`); gate CI distante `qualify` verte. Ancienne branche distante nettoyée.
+- Site EN/FR en cours : générateur mentionne maintenant favoris/récents/palette et précision confidentialité (chemins/taille locale, récents désactivés par défaut, limite 100, retrait possible). `make build-site site-check` passe. FR-15 demeure PARTIEL : aucune navigation navigateur réelle, audit a11y ni publication.
+- Reprise après site : poursuivre les Must du backlog, surtout FR-26 attribution des données app sûre, FR-10 permissions/diagnostics et qualification graphique SwiftUI/VoiceOver native. Aucun paquet signé/notarié/publié.
 
 ### Écriture groupée des récents — livrée
 
