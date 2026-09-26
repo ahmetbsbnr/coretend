@@ -192,7 +192,7 @@ Chaque étape a plan détaillé indépendant, build/test ciblés, audit sûreté
 | D-02 | OS/CPU | macOS 14+, Apple silicon initialement | Vérifier chaque version/hardware supporté en CI/host |
 | D-03 | Destination publique | GitHub releases/site statique comme intention, aucun publish dans goal | Artefact public vérifié; action exige autorisation distincte |
 | D-04 | Données issues ancien app | Aucune vraie DB lue; maintenir formats documentés et fixtures synthétiques | Contrat de migration accepté et fixture anonymisée créée |
-| D-05 | Visibilité du chantier | Nouveau dossier/workspace isolé; référence originale intacte | Chemin et intégration revus avant toute bascule |
+| D-05 | Visibilité du chantier | Nouveau dépôt dans `../rebuild/` (à côté de `app/`); référence originale intacte; reconstruction non fusionnée avant qualification | Dossier reste isolé jusqu’à acceptation d’une candidate locale; toute bascule ultérieure est une décision distincte |
 | D-06 | Performance budgets | Mesurer d’abord, proposer ensuite | Corpus/machine cible et mesures reproductibles |
 | D-07 | Review sécurité indépendante | Non disponible présumée; risque signalé | Reviewer distinct assigné avant qualification candidate |
 | D-08 | Backups/export | Export diagnostic user-opt-in; backup/restore DB en procédure locale | Tests de restauration fixture avant migrations de compatibilité |
