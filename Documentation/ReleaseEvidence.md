@@ -64,6 +64,6 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 
 ## Diagnostic exact preview — 26-09-2026
 
-- Commit source à relever après commit : la feuille Réglages présente le JSON expurgé exact, avant sélection de destination. La feuille se ferme avant que l’exporteur soit ouvert.
+- Source compilée : `5fc9563` (`next`). La feuille Réglages présente le JSON expurgé exact, avant sélection de destination. La feuille se ferme avant que l’exporteur soit ouvert.
 - `make qualify`, `make package-local`, `make verify-package` réussis; test ciblé redaction sur fixture réussi. Qualification ne couvre pas la feuille native ni annulation par interaction.
 - ZIP arm64 unsigned SHA-256 `63b28f04d3382fed0ded640538e99a801ed0cb7ec676074718218e5525bf3bfb`. Aucun lancement, installation, signature/notarisation ou publication.

@@ -95,7 +95,9 @@ Ordre de reprise retenu : (1) refermer fonctions Must Applications/Integrity/per
 
 ### Diagnostic — aperçu du JSON exact — 26-09-2026
 
+- Commit source : `5fc9563` (`origin/next`).
+
 - Réglages affiche désormais le document JSON expurgé exact, sélectionnable, avant ouverture du sélecteur de destination. Annuler ferme l’aperçu sans ouvrir l’exporteur; export se poursuit après fermeture de la feuille.
 - ThreatModel/UserGuide/Progress actualisés. Test redaction existant passe (`testDiagnosticExportOmitsEventDetailsAndPaths`), `swift build --product CoreTendApp` passe. FR-21/NFR-05 restent PARTIELS; parcours natif export/annulation et revue privacy externe non faits.
 - Refaire `make qualify`, `make package-local`, `make verify-package`; enregistrer artifact et commit dans ReleaseEvidence puis pousser ce jalon.
-- ZIP arm64 unsigned SHA-256 `63b28f04d3382fed0ded640538e99a801ed0cb7ec676074718218e5525bf3bfb`; ReleaseEvidence contient la preuve. Source commit à relier après commit.
+- ZIP arm64 unsigned SHA-256 `63b28f04d3382fed0ded640538e99a801ed0cb7ec676074718218e5525bf3bfb`; ReleaseEvidence lie hash au commit source.
