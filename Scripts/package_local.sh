@@ -6,7 +6,14 @@ cd "$repo_root"
 swift build -c release --product CoreTendApp
 bin_dir="$(swift build -c release --show-bin-path)"
 artifact_dir="$repo_root/Artifacts"
-app_path="$artifact_dir/CoreTend.app"
+mkdir -p "$artifact_dir"
+if [[ -L "$artifact_dir" ]]; then
+  printf 'Refusing symlinked Artifacts directory.\n' >&2
+  exit 1
+fi
+stage_dir="$(mktemp -d "$artifact_dir/.coretend-package.XXXXXX")"
+trap 'rm -rf "$stage_dir"' EXIT
+app_path="$stage_dir/CoreTend.app"
 mkdir -p "$app_path/Contents/MacOS"
 cp "$bin_dir/CoreTendApp" "$app_path/Contents/MacOS/CoreTendApp"
 cat > "$app_path/Contents/Info.plist" <<'PLIST'
@@ -26,6 +33,9 @@ cat > "$app_path/Contents/Info.plist" <<'PLIST'
 </plist>
 PLIST
 plutil -lint "$app_path/Contents/Info.plist"
-ditto -c -k --sequesterRsrc --keepParent "$app_path" "$artifact_dir/CoreTend-local-unsigned.zip"
+ditto -c -k --sequesterRsrc --keepParent "$app_path" "$stage_dir/CoreTend-local-unsigned.zip"
+rm -rf "$artifact_dir/CoreTend.app"
+mv "$app_path" "$artifact_dir/CoreTend.app"
+mv -f "$stage_dir/CoreTend-local-unsigned.zip" "$artifact_dir/CoreTend-local-unsigned.zip"
 shasum -a 256 "$artifact_dir/CoreTend-local-unsigned.zip"
 printf 'Local unsigned artifact: %s\n' "$artifact_dir/CoreTend-local-unsigned.zip"
