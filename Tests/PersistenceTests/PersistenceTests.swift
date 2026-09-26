@@ -254,10 +254,11 @@ final class PersistenceTests: XCTestCase {
 
         try await store.recordRecentFile(path: "/tmp/unknown-item", logicalBytes: nil, allocatedBytes: nil, seenAt: now)
         try await store.setFavorite(path: "/tmp/unknown-item", isFavorite: true, at: now)
-        for index in 0...SQLiteStore.maximumRecentFiles {
-            try await store.recordRecentFile(path: "/tmp/recent-\(index)", logicalBytes: Int64(index), allocatedBytes: nil,
-                                             seenAt: now.addingTimeInterval(Double(index + 1)))
+        let batch = (0...SQLiteStore.maximumRecentFiles).map { index in
+            RecentFileMeasurement(path: "/tmp/recent-\(index)", logicalBytes: Int64(index), allocatedBytes: nil,
+                                  seenAt: now.addingTimeInterval(Double(index + 1)))
         }
+        try await store.recordRecentFiles(batch)
 
         let files = try await store.savedFiles()
         XCTAssertEqual(files.filter(\.isFavorite).map(\.path), ["/tmp/unknown-item"])
@@ -280,5 +281,21 @@ final class PersistenceTests: XCTestCase {
             try await store.recordRecentFile(path: "/tmp/file", logicalBytes: -1, allocatedBytes: nil)
             XCTFail("negative saved-file size accepted")
         } catch let error as StoreError { XCTAssertEqual(error, .statement("invalid saved-file measurement")) }
+    }
+
+    func testRecentFileBatchValidationIsAtomicBeforeDatabaseWrites() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-saved-batch-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = try SQLiteStore(url: root.appendingPathComponent("fixture.sqlite")); try await store.migrate()
+        let batch = [RecentFileMeasurement(path: "/tmp/valid", logicalBytes: 5, allocatedBytes: 4),
+                     RecentFileMeasurement(path: "relative/invalid", logicalBytes: 3, allocatedBytes: nil)]
+
+        do {
+            try await store.recordRecentFiles(batch)
+            XCTFail("invalid batch was accepted")
+        } catch let error as StoreError { XCTAssertEqual(error, .statement("invalid saved-file path")) }
+        let saved = try await store.savedFiles()
+        XCTAssertEqual(saved, [])
     }
 }
