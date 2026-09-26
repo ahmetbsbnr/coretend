@@ -75,9 +75,12 @@ public struct PathValidator: Sendable {
 
     private static func isWithin(_ identity: FileIdentity, roots: [URL]) -> Bool {
         roots.contains { root in
-            let rootPath = root.standardizedFileURL.resolvingSymlinksInPath().path
+            let standardizedRoot = root.standardizedFileURL
             var rootInfo = stat()
-            guard stat(rootPath, &rootInfo) == 0, UInt64(rootInfo.st_dev) == identity.device else { return false }
+            guard lstat(standardizedRoot.path, &rootInfo) == 0, (rootInfo.st_mode & S_IFMT) == S_IFDIR else { return false }
+            let rootPath = standardizedRoot.resolvingSymlinksInPath().path
+            var resolvedRootInfo = stat()
+            guard stat(rootPath, &resolvedRootInfo) == 0, UInt64(resolvedRootInfo.st_dev) == identity.device else { return false }
             let candidate = URL(fileURLWithPath: identity.standardizedPath).resolvingSymlinksInPath().path
             return candidate == rootPath || candidate.hasPrefix(rootPath.hasSuffix("/") ? rootPath : rootPath + "/")
         }
@@ -133,10 +136,6 @@ public struct SafeActionExecutor: FileOperationExecutor {
     }
 
     public func execute(_ operation: ApprovedFileOperation) async -> ActionOutcome {
-        let url: URL
-        do { url = try validator.revalidate(operation, allowedRoots: roots, allowedRuleIDs: allowedRules, now: clock()) }
-        catch let refusal as PathRefusal { return .failed(.revalidation(refusal)) }
-        catch { return .failed(.revalidation(.missingTarget)) }
         for (root, expectedIdentity) in expectedRootIdentities {
             guard let currentIdentity = try? FileIdentity(url: root), currentIdentity == expectedIdentity else {
                 return .failed(.revalidation(.identityChanged))
@@ -146,6 +145,10 @@ public struct SafeActionExecutor: FileOperationExecutor {
                 return .failed(.revalidation(.identityChanged))
             }
         }
+        let url: URL
+        do { url = try validator.revalidate(operation, allowedRoots: roots, allowedRuleIDs: allowedRules, now: clock()) }
+        catch let refusal as PathRefusal { return .failed(.revalidation(refusal)) }
+        catch { return .failed(.revalidation(.missingTarget)) }
         do {
             let moved = try await trash.moveToTrash(url)
             return .movedToTrash(original: url.path, trashURL: moved.path)

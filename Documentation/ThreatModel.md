@@ -18,7 +18,7 @@ The user explicitly supplies scan roots. ScanCore reads metadata and content onl
 
 ## Threats and controls
 
-- Symlink/path traversal: reject symlink targets, canonicalize root and candidate, compare device identity; skip symlinks during scans.
+- Symlink/path traversal: reject symlink targets and an allowed root whose final component is a symlink; canonicalize root and candidate, compare device identity; skip symlinks during scans.
 - Target substitution or expiry: inventory captures the app directory identity, review compares it and captures a fresh identity, approval and executor compare it again; changed/missing/expired target fails closed. Identity uses device and inode and does not detect in-place edits to bundle contents. Explore also captures the selected root identity and checks it before review and immediately before Trash. These path checks are not atomic with `FileManager.trashItem`; a narrow concurrent path-replacement race remains and hostile race stress testing is outstanding.
 - Trash API failure: preserve source, return typed failure; never report successful removal.
 - Scan races/permission failures: report item-level issue; unknown measurement remains unknown.
