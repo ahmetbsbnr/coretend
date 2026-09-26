@@ -1,6 +1,6 @@
 # Passation complète — CoreTend Next
 
-**État au 27-09-2026.** Reconstruction active, pas finalisée, aucune release publique. Dépôt `ahmetbsbnr/coretend`; worktree `next/`; base distante `origin/next` à `55e8628`. Travail courant sur `feat/reconstruction-open-musts`, six commits locaux après `74c6b8b`, dont cinq commits de code, non poussés et sans PR. Dernier commit code `29154a5`; qualification `make qualify` passée après Task 19. Reprendre sur cette branche; ouvrir PR vers `next` après la tranche convenue.
+**État au 27-09-2026.** Reconstruction active, pas finalisée, aucune release publique. Dépôt `ahmetbsbnr/coretend`; worktree `next/`; base distante `origin/next` à `55e8628`. Travail courant sur `feat/reconstruction-open-musts`, huit commits locaux après `74c6b8b`, dont six commits de code, non poussés et sans PR. Dernière tranche de code Task 20; qualification `make qualify` passée après cette tranche. Reprendre sur cette branche; ouvrir PR vers `next` après la tranche convenue.
 
 ## État immédiat
 
@@ -8,10 +8,10 @@
 - Cahier des charges complet et approuvé : QQOQCCP, MoSCoW, RACI, objectifs, exigences, architecture, risques et séquence. Voir `Documentation/Project/Cahier-des-charges.md`.
 - Traceability contient 40 FR/NFR + 51 capacités; 91 statuts renseignés. La ligne NFR-07 a été réalignée sur les colonnes CSV; statut PARTIEL tant que revue clavier/VoiceOver/Dynamic Type/contraste/Reduce Motion n’est pas faite.
 - App SwiftUI macOS, CLI Swift, persistance SQLite, modules métier, site statique EN/FR et scripts de paquet sont présents. Résultats/états restent partiels selon `Documentation/Traceability.csv`; aucun jalon ne signifie produit final.
-- Dernière qualification locale : `make qualify` le 27-09 après Task19. Elle couvre génération, site, traçabilité, audit statique de sûreté, installation fixture en HOME temporaire, XCTest complet, builds debug App/CLI et whitespace. Aucune UI native/VoiceOver n’est qualifiée par ce gate.
+- Dernière qualification locale : `make qualify` le 27-09 après Task20. Elle couvre génération, site, traçabilité, audit statique de sûreté, installation fixture en HOME temporaire, XCTest complet, builds debug App/CLI et whitespace. Aucune UI native/VoiceOver n’est qualifiée par ce gate.
 - Paquet courant : `Artifacts/CoreTend-local-unsigned.zip`, arm64, produit depuis le code app `b0287bf`. SHA-256 `94503244830030785388e6ea2359dc844af22d719d5e82729f14408f1697a299`. `make package-local verify-package` passe; vérification limitée à Info.plist, archive et Mach-O. Non lancé, installé sur le Mac, signé, notarié ou publié. Preuve dans `Documentation/ReleaseEvidence.md`.
 - Copie greenfield historique `rebuild/` conservée localement comme provenance. Passation/documents 1.x archivés sous `Documentation/Archive/Legacy-Reconstruction/`; ils ne décrivent pas le code actuel.
-- État après les tâches 15–19 : traçabilité de 91 lignes, 54 `PARTIEL`, 29 `EN_COURS`, 8 `À_CONSTRUIRE`. Critères UI/macOS, compatibilité et distribution restent ouverts.
+- État après les tâches 15–20 : traçabilité de 91 lignes, 54 `PARTIEL`, 29 `EN_COURS`, 8 `À_CONSTRUIRE`. Critères UI/macOS, compatibilité et distribution restent ouverts.
 
 ## Jalons locaux depuis la dernière passation
 
@@ -23,6 +23,12 @@
 
 - Traceability qualifiée localement : NFR-02 et NFR-03 désormais PARTIEL avec preuves fixtures/adapter Trash et audit; NFR-08 PARTIEL, machine observée arm64/macOS 27.0, aucune matrice multi-hôte. Aucun ne vaut clôture.
 - `Documentation/Project/Remaining-musts-plan.md` reste un plan local non suivi à préserver sans l’ajouter aux commits.
+
+- **Task 20 — FR-07 keeper protégé** : test Domain temporaire inclut keeper et deux copies dans sélection interdite; revue échoue, tous octets présents, Corbeille fixture vide. FR-07 reste PARTIEL : keeper disparu concurremment et interaction native pas qualifiés.
+
+- Qualification Task 20 : `swift test --filter DomainTests/testDuplicateReviewRejectsProtectedKeeperAlongsideSelectedCopies`, traceability parser, puis `make qualify` passent.
+
+- **Task 20 — FR-07 keeper protégé** : test Domain temporaire refuse une revue incluant keeper et deux copies; octets préservés et Corbeille fixture vide. `make qualify` passe. FR-07 reste PARTIEL pour race externe et UI native.
 
 ## Jalons récents intégrés
 
