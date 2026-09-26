@@ -42,23 +42,34 @@ final class AppShellTests: XCTestCase {
 
     func testTrashFailureDetailPresentsEnglishReasonAndOriginalPath() {
         let detail = "/fixture/My Archive.app | reason=trash_failed"
-        XCTAssertEqual(ProductCopy.activityDetail(detail, french: false), "/fixture/My Archive.app — Could not move to Trash.")
+        XCTAssertEqual(ProductCopy.activityDetail(detail, isFailure: true, french: false), "/fixture/My Archive.app — Could not move to Trash.")
     }
 
     func testTrashFailureDetailPresentsFrenchReasonAndOriginalPath() {
         let detail = "/fixture/My Archive.app | reason=trash_failed"
-        XCTAssertEqual(ProductCopy.activityDetail(detail, french: true), "/fixture/My Archive.app — Déplacement vers la Corbeille impossible.")
+        XCTAssertEqual(ProductCopy.activityDetail(detail, isFailure: true, french: true), "/fixture/My Archive.app — Déplacement vers la Corbeille impossible.")
+    }
+
+    func testNonFailedFilenameEndingInKnownSuffixPassesThroughUnchanged() {
+        let detail = "/fixture/report | reason=trash_failed"
+        XCTAssertEqual(ProductCopy.activityDetail(detail, isFailure: false, french: true), detail)
+        XCTAssertEqual(ProductCopy.activityDetail(detail, isFailure: false, french: false), detail)
+    }
+
+    func testFailedEventWithPlainPathPassesThroughUnchanged() {
+        let detail = "/fixture/My Archive.app"
+        XCTAssertEqual(ProductCopy.activityDetail(detail, isFailure: true, french: true), detail)
+        XCTAssertEqual(ProductCopy.activityDetail(detail, isFailure: true, french: false), detail)
     }
 
     func testUnknownActivityDetailPassesThroughUnchanged() {
         let details = [
-            "/fixture/My Archive.app",
             "/fixture/My Archive.app | reason=other_failure",
             "/fixture/My Archive.app | reason=trash_failed | extra=data"
         ]
         for detail in details {
-            XCTAssertEqual(ProductCopy.activityDetail(detail, french: true), detail)
-            XCTAssertEqual(ProductCopy.activityDetail(detail, french: false), detail)
+            XCTAssertEqual(ProductCopy.activityDetail(detail, isFailure: true, french: true), detail)
+            XCTAssertEqual(ProductCopy.activityDetail(detail, isFailure: true, french: false), detail)
         }
     }
 }

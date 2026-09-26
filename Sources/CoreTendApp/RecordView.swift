@@ -57,7 +57,7 @@ struct RecordView: View {
                                         .foregroundStyle(event.kind == .failed ? .orange : .secondary)
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(copy("activity.\(event.kind.rawValue)")).font(.headline)
-                                        Text(ProductCopy.activityDetail(event.detail, french: french)).textSelection(.enabled)
+                                        Text(ProductCopy.activityDetail(event.detail, isFailure: event.kind == .failed, french: french)).textSelection(.enabled)
                                     }
                                     Spacer()
                                     Text(event.occurredAt.formatted(.dateTime.hour().minute()))

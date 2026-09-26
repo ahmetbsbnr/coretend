@@ -165,9 +165,9 @@ public enum ProductCopy {
         (isFrench ? french : english)[key] ?? key
     }
 
-    public static func activityDetail(_ detail: String, french isFrench: Bool) -> String {
+    public static func activityDetail(_ detail: String, isFailure: Bool, french isFrench: Bool) -> String {
         let suffix = " | reason=trash_failed"
-        guard detail.hasSuffix(suffix), detail.count > suffix.count else { return detail }
+        guard isFailure, detail.hasSuffix(suffix), detail.count > suffix.count else { return detail }
         let path = detail.dropLast(suffix.count)
         return "\(path) — \(value(for: "activity.reason.trashFailed", french: isFrench))"
     }
