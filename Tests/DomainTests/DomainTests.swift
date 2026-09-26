@@ -153,6 +153,41 @@ final class CodeSignatureModelTests: XCTestCase {
 }
 
 final class FileActionServiceTests: XCTestCase {
+    func testConfirmedAppTrashFailurePreservesBundleAndPersistsDistinctAuditEvents() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-app-trash-failure-\(UUID())", isDirectory: true)
+        let apps = root.appendingPathComponent("Applications", isDirectory: true)
+        let app = apps.appendingPathComponent("Fixture.app", isDirectory: true)
+        let contents = app.appendingPathComponent("Contents", isDirectory: true)
+        try FileManager.default.createDirectory(at: contents, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let plist = try PropertyListSerialization.data(fromPropertyList: ["CFBundleIdentifier": "org.example.fixture"], format: .xml, options: 0)
+        let infoURL = contents.appendingPathComponent("Info.plist")
+        try plist.write(to: infoURL)
+        let record = try XCTUnwrap(ApplicationDiscoveryService().discover(in: apps).applications.first)
+        let store = try SQLiteStore(url: root.appendingPathComponent("events.sqlite"))
+        try await store.migrate()
+        let allowed = Set(["apps.uninstall"])
+        let service = FileActionService(validator: .init(),
+                                        executor: SafeActionExecutor(allowedRoots: [apps], allowedRules: allowed, trash: DomainFailingTrash()),
+                                        store: store, allowedRoots: [apps], allowedRuleIDs: allowed)
+        let review = try service.prepareReview([FileActionSelection(url: record.url, ruleID: "apps.uninstall", expectedIdentity: record.fileIdentity)])
+
+        let proposalRecorded = await service.recordProposal(review)
+        XCTAssertTrue(proposalRecorded)
+        let report = await service.execute(try service.confirm(review, accepted: true))
+
+        XCTAssertEqual(report.reviewID, review.id)
+        XCTAssertEqual(report.movedCount, 0)
+        XCTAssertEqual(report.items.count, 1)
+        XCTAssertEqual(report.items.first?.outcome, .failed(.trashFailed("synthetic Trash failure")))
+        XCTAssertEqual(report.items.first?.historyRecorded, true)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: app.path))
+        XCTAssertEqual(try Data(contentsOf: infoURL), plist)
+        let events = try await store.events()
+        XCTAssertEqual(events.map(\.kind), [.proposed, .approved, .failed])
+        XCTAssertEqual(events.map(\.detail), [record.url.path, record.url.path, record.url.path])
+    }
+
     func testReviewedAppBundleMovesToFixtureTrashWithoutAssociatedData() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-app-move-\(UUID())", isDirectory: true)
         let apps = root.appendingPathComponent("Applications", isDirectory: true)
@@ -301,6 +336,17 @@ final class FileActionServiceTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: file.path))
         let blockedCallCount = await trash.callCount
         XCTAssertEqual(blockedCallCount, 0)
+    }
+}
+
+private enum DomainFixtureTrashError: Error, CustomStringConvertible {
+    case failed
+    var description: String { "synthetic Trash failure" }
+}
+
+private struct DomainFailingTrash: TrashClient {
+    func moveToTrash(_ url: URL) async throws -> URL {
+        throw DomainFixtureTrashError.failed
     }
 }
 
