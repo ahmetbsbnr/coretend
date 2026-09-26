@@ -24,6 +24,7 @@
 - Réglages expose la conservation locale; Performances offre l’effacement confirmé de ses relevés sans effacer activité ou préférences. L’effacement SQLite est logique, sans garantie forensique; NFR-05 reste PARTIEL.
 - Explorer, Nettoyage et Doublons distinguent racine indisponible, vide et erreurs partielles, avec annulation visible et rejet des résultats de tâches anciennes. NFR-06 reste PARTIEL sans qualification UI native.
 - Navigation mémorise la dernière destination en préférence locale (identifiant seulement), avec repli Vue d’ensemble; aucun chemin de scan restauré. Relancement natif à qualifier.
+- Packaging local refait le `.app` en dossier temporaire sous `Artifacts/` avant remplacement; les anciens fichiers du bundle ne contaminent plus le ZIP. Dossier `Artifacts` symbolique refusé. Build de packaging réussi.
 
 ## Suite prioritaire
 
