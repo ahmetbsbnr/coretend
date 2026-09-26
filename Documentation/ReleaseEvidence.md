@@ -107,3 +107,9 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 
 - ↑/↓ change sélection de commande avec limites aux extrémités; Retour ouvre commande sélectionnée; une recherche qui change réinitialise sélection si nécessaire. Tests AppShell 5/5 dont liste vide et bornes.
 - `make qualify`, `make package-local`, `make verify-package`, `git diff --check` passent. ZIP arm64 unsigned SHA-256 `4c63d81a3b25f4c79b26017760fae0ec632ee93c5d8eb2d1dba5abb2316096bd`; structure seulement, aucun lancement UI, test VoiceOver ou signature.
+
+## Recent files batch transaction — 26-09-2026
+
+- `SQLiteStore.recordRecentFiles` valide le lot complet puis réutilise une requête préparée sous une transaction unique; quota appliqué une fois. Erreurs SQL annulent le lot. Explorer remplace jusqu’à 100 appels individuels par un appel batch.
+- `make qualify`, Persistence ciblé 18/18, `git diff --check`, `make package-local` et `make verify-package` réussis.
+- ZIP arm64 unsigned SHA-256 `45b8c102247d1656171db8e14349498cfd027083c42fac45e7c976f08c10465e`. Structure seulement; app non lancée, non signée, non notariée, non publiée.

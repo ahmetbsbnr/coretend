@@ -198,11 +198,12 @@ struct ExploreScanView: View {
                         if recentFilesEnabled {
                             let measured = results.suffix(SQLiteStore.maximumRecentFiles)
                             if let store = try? await LocalStoreAccess.open() {
-                                for item in measured {
+                                let batch = measured.map { item in
                                     let logical: Int64? = { if case .known(let bytes) = item.logicalBytes { return bytes }; return nil }()
                                     let allocated: Int64? = { if case .known(let bytes) = item.allocatedBytes { return bytes }; return nil }()
-                                    try? await store.recordRecentFile(path: item.url.path, logicalBytes: logical, allocatedBytes: allocated)
+                                    return RecentFileMeasurement(path: item.url.path, logicalBytes: logical, allocatedBytes: allocated)
                                 }
+                                try? await store.recordRecentFiles(batch)
                             }
                         }
                         if let rootFailure { status = ProductCopy.scanRootFailure(reason: rootFailure, french: french) }
