@@ -417,7 +417,46 @@ final class PersistenceTests: XCTestCase {
         PRAGMA user_version = 3;
         """
         XCTAssertEqual(sqlite3_exec(handle, fixture, nil, nil, nil), SQLITE_OK)
+        let originalEvent = ActivityEvent(id: UUID(uuidString: "11111111-1111-1111-1111-111111111111")!,
+                                          occurredAt: Date(timeIntervalSince1970: 10), kind: .proposed, detail: "v3-event")
+        let originalSample = PerformanceSample(id: UUID(uuidString: "22222222-2222-2222-2222-222222222222")!,
+                                               measuredAt: Date(timeIntervalSince1970: 20), loadAverage1m: nil, availableBytes: nil)
         let store = try SQLiteStore(url: url)
+        let backupURL = root.appendingPathComponent("backups/pre-migration.sqlite")
+        try FileManager.default.createDirectory(at: backupURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try sqliteFixtureBackup(from: url, to: backupURL)
+
+        let corruptBackup = root.appendingPathComponent("backups/corrupt.sqlite")
+        try Data("not a sqlite database".utf8).write(to: corruptBackup)
+        let rejectedRestore = root.appendingPathComponent("backups/rejected-restore.sqlite")
+        XCTAssertThrowsError(try sqliteFixtureBackup(from: corruptBackup, to: rejectedRestore))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: rejectedRestore.path))
+
+        let restoredURL = root.appendingPathComponent("recovered/pre-migration.sqlite")
+        try FileManager.default.createDirectory(at: restoredURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try sqliteFixtureBackup(from: backupURL, to: restoredURL)
+        let restored = try SQLiteStore(url: restoredURL)
+        let restoredVersion = try await restored.schemaVersion()
+        let restoredEvents = try await restored.events()
+        let restoredLanguage = try await restored.languagePreference()
+        let restoredSamples = try await restored.performanceSamples()
+        XCTAssertEqual(restoredVersion, 3)
+        XCTAssertEqual(restoredEvents, [originalEvent])
+        XCTAssertEqual(restoredLanguage, "fr")
+        XCTAssertEqual(restoredSamples, [originalSample])
+        var restoredHandle: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(restoredURL.path, &restoredHandle), SQLITE_OK)
+        XCTAssertEqual(sqlite3_exec(restoredHandle, "DROP INDEX saved_files_recency", nil, nil, nil), SQLITE_OK)
+        XCTAssertEqual(sqlite3_close(restoredHandle), SQLITE_OK)
+        try await restored.migrate()
+        let migratedRestoreVersion = try await restored.schemaVersion()
+        let migratedRestoreEvents = try await restored.events()
+        let migratedRestoreLanguage = try await restored.languagePreference()
+        let migratedRestoreSamples = try await restored.performanceSamples()
+        XCTAssertEqual(migratedRestoreVersion, 5)
+        XCTAssertEqual(migratedRestoreEvents, [originalEvent])
+        XCTAssertEqual(migratedRestoreLanguage, "fr")
+        XCTAssertEqual(migratedRestoreSamples, [originalSample])
 
         do {
             try await store.migrate()
@@ -429,14 +468,11 @@ final class PersistenceTests: XCTestCase {
         let failedEvents = try await store.events()
         let failedLanguage = try await store.languagePreference()
         let failedSamples = try await store.performanceSamples()
-        let originalEvent = ActivityEvent(id: UUID(uuidString: "11111111-1111-1111-1111-111111111111")!,
-                                          occurredAt: Date(timeIntervalSince1970: 10), kind: .proposed, detail: "v3-event")
-        let originalSample = PerformanceSample(id: UUID(uuidString: "22222222-2222-2222-2222-222222222222")!,
-                                               measuredAt: Date(timeIntervalSince1970: 20), loadAverage1m: nil, availableBytes: nil)
         XCTAssertEqual(failedVersion, 3)
         XCTAssertEqual(failedEvents, [originalEvent])
         XCTAssertEqual(failedLanguage, "fr")
         XCTAssertEqual(failedSamples, [originalSample])
+
         var statement: OpaquePointer?
         let state = "SELECT (SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'saved_files'), (SELECT tbl_name FROM sqlite_master WHERE type = 'index' AND name = 'saved_files_recency'), (SELECT last_seen_at FROM fixture_index_collision)"
         XCTAssertEqual(sqlite3_prepare_v2(handle, state, -1, &statement, nil), SQLITE_OK)
@@ -596,4 +632,64 @@ final class PersistenceTests: XCTestCase {
         let saved = try await store.savedFiles()
         XCTAssertEqual(saved, [])
     }
+}
+
+private func sqliteFixtureBackup(from sourceURL: URL, to destinationURL: URL) throws {
+    guard !FileManager.default.fileExists(atPath: destinationURL.path) else {
+        throw NSError(domain: "SQLiteFixtureBackup", code: Int(SQLITE_CANTOPEN))
+    }
+    let stagingURL = destinationURL.deletingLastPathComponent()
+        .appendingPathComponent(".\(destinationURL.lastPathComponent).\(UUID().uuidString).partial")
+    var source: OpaquePointer?
+    var destination: OpaquePointer?
+    var backup: OpaquePointer?
+    var sourceOpen = false
+    var destinationOpen = false
+    var installed = false
+    defer {
+        if let backup { _ = sqlite3_backup_finish(backup) }
+        if destinationOpen, let destination { _ = sqlite3_close_v2(destination) }
+        if sourceOpen, let source { _ = sqlite3_close_v2(source) }
+        if !installed { try? FileManager.default.removeItem(at: stagingURL) }
+    }
+
+    let sourceResult = sqlite3_open_v2(sourceURL.path, &source, SQLITE_OPEN_READONLY | SQLITE_OPEN_FULLMUTEX, nil)
+    guard sourceResult == SQLITE_OK, let sourceHandle = source else {
+        throw NSError(domain: "SQLiteFixtureBackup", code: Int(sourceResult))
+    }
+    sourceOpen = true
+    let destinationResult = sqlite3_open_v2(stagingURL.path, &destination,
+                                            SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_EXCLUSIVE | SQLITE_OPEN_FULLMUTEX, nil)
+    guard destinationResult == SQLITE_OK, let destinationHandle = destination else {
+        throw NSError(domain: "SQLiteFixtureBackup", code: Int(destinationResult))
+    }
+    destinationOpen = true
+    guard let backupHandle = sqlite3_backup_init(destinationHandle, "main", sourceHandle, "main") else {
+        throw NSError(domain: "SQLiteFixtureBackup", code: Int(sqlite3_errcode(destinationHandle)))
+    }
+    backup = backupHandle
+    let stepResult = sqlite3_backup_step(backupHandle, -1)
+    let finishResult = sqlite3_backup_finish(backupHandle)
+    backup = nil
+    guard stepResult == SQLITE_DONE, finishResult == SQLITE_OK else {
+        throw NSError(domain: "SQLiteFixtureBackup", code: Int(finishResult == SQLITE_OK ? stepResult : finishResult))
+    }
+
+    var statement: OpaquePointer?
+    guard sqlite3_prepare_v2(destinationHandle, "PRAGMA integrity_check", -1, &statement, nil) == SQLITE_OK,
+          let statement else { throw NSError(domain: "SQLiteFixtureBackup", code: Int(sqlite3_errcode(destinationHandle))) }
+    guard sqlite3_step(statement) == SQLITE_ROW,
+          let integrity = sqlite3_column_text(statement, 0), String(cString: integrity) == "ok",
+          sqlite3_step(statement) == SQLITE_DONE else {
+        sqlite3_finalize(statement)
+        throw NSError(domain: "SQLiteFixtureBackup", code: Int(SQLITE_CORRUPT))
+    }
+    sqlite3_finalize(statement)
+
+    guard sqlite3_close_v2(destinationHandle) == SQLITE_OK else { throw NSError(domain: "SQLiteFixtureBackup", code: Int(SQLITE_BUSY)) }
+    destinationOpen = false
+    guard sqlite3_close_v2(sourceHandle) == SQLITE_OK else { throw NSError(domain: "SQLiteFixtureBackup", code: Int(SQLITE_BUSY)) }
+    sourceOpen = false
+    try FileManager.default.moveItem(at: stagingURL, to: destinationURL)
+    installed = true
 }

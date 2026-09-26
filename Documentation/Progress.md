@@ -1,6 +1,6 @@
 # Reconstruction progress
 
-**Relevé :** 2026-09-26. **État :** reconstruction en cours, non finalisée. Derniers jalons fusionnés : favoris/récents SQLite v4, palette clavier bilingue et écriture batch des récents (PR #40–#44). UI macOS native et VoiceOver non qualifiés. Cahier et plan approuvés; développement sur lignée `next` du dépôt public historique. Le dépôt greenfield initial `rebuild/` reste copie locale de provenance.
+**Relevé :** 2026-09-27. **État :** reconstruction en cours, non finalisée. Derniers jalons fusionnés : favoris/récents SQLite v4, palette clavier bilingue et écriture batch des récents (PR #40–#44). UI macOS native et VoiceOver non qualifiés. Cahier et plan approuvés; développement sur lignée `next` du dépôt public historique. Le dépôt greenfield initial `rebuild/` reste copie locale de provenance.
 
 ## Livré et prouvé
 
@@ -17,6 +17,7 @@
 - ScanCore n’a maintenant aucune dépendance SafetyCore/Persistence; audit statique bloque imports et primitives d’écriture. Fixture compare contenu, types, tailles et dates de tout l’arbre avant/après scan. FR-02 reste PARTIEL jusqu’au test déterministe d’annulation et qualification UI.
 - Doublons exacts : bucket par taille puis SHA-256 par blocs, déduplication d’inodes, un exemplaire proposé à garder; tests sur copies identiques, contenus distincts et hard links.
 - FR-01 : routage extrait en correspondance exhaustive des huit destinations; dernière destination valide restaurée, préférence manquante/obsolète retombe sur Overview. Contrat AppShell couvre les huit routes; lancement natif, parcours des états et accessibilité restent à qualifier.
+- FR-11 : fixture v3 sauvegardée via SQLite Online Backup puis restaurée vers un nouveau fichier temporaire; version, événements, préférence et mesures conservés. Fixture corrompue refusée sans destination partielle. Procédure locale hors ligne documentée; aucun store réel lu ni restauré. FR-11 reste PARTIEL, restauration macOS réelle non qualifiée.
 - App SwiftUI compilable, huit routes EN/FR. Explore, Duplicates et Cleanup ont sélection de dossier et scan. Duplicates/Cleanup relient sélection manuelle → proposition journalisée → revue nominative → confirmation → validation → adapter Trash; le keeper n’est jamais sélectionnable, sélection vide par défaut, refus/cancel distincts. Actions non lancées sur l’hôte.
 - Applications inventorie les `.app` du seul dossier explicitement choisi et affiche disponibilité de mise à jour inconnue; Integrity inspecte localement le statut de signature du seul bundle choisi sans verdict malware.
 - Exclusions stockées SQLite et utilisées dans les trois scans; import legacy prefs JSON v1 opt-in, allowlist/digest/trace/idempotence/source intact; onboarding, diagnostic sans chemins/détails et preview d’export ajoutés.
