@@ -44,3 +44,9 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 - `make qualify` passe : site, inventaire, traceability, audit sécurité, `swift test`, builds debug `CoreTendApp` et `CoreTendCLI`.
 - Les tests utilisent fixtures / stockages temporaires et adaptateurs Trash factices selon l’audit. Aucun essai sur données personnelles, vraie Corbeille ou compte HOME temporaire pour installation.
 - Écarts restant : UI native, installation/lancement, VoiceOver/clavier, deuxième version macOS/hôte, signature/notarisation, statut Must partiel/incomplet. Qualification code ≠ release publiable.
+
+## CLI partial-scan contract — 26-09-2026
+
+- Source à commit : jalon CLI scan completion. `make qualify`, `make package-local`, `make verify-package` réussis; tests CLI ciblés 5/5.
+- Le ZIP unsigned local courant est arm64; SHA-256 `835917d81e62930c77208c44d58357e6be9db4c7f1be250e7681eab3c7317c60`. Vérification confirme uniquement plist, structure ZIP et Mach-O; aucun lancement UI/signature/notarisation/publication.
+- Résultat CLI n’améliore pas le scan sur fichiers protégés lui-même; issues et codes sortie empêchent de traiter un résultat incomplet comme succès.

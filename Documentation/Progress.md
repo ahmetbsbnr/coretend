@@ -1,6 +1,6 @@
 # Reconstruction progress
 
-**Relevé :** 2026-09-26. **État :** reconstruction en cours, non finalisée. Dernier jalon code : Quick Look local sur fichiers sélectionnés; release build et ZIP local vérifiés structurellement. Cahier et plan approuvés; travail actif sur `next`, branche issue du dépôt public historique. Le dépôt greenfield initial `rebuild/` reste copie locale de provenance.
+**Relevé :** 2026-09-26. **État :** reconstruction en cours, non finalisée. Dernier jalon code : CLI signale les scans partiels et fournit JSON structuré; build release/paquet à rafraîchir après ce jalon. Cahier et plan approuvés; travail actif sur `next`, branche issue du dépôt public historique. Le dépôt greenfield initial `rebuild/` reste copie locale de provenance.
 
 ## Livré et prouvé
 
@@ -16,7 +16,7 @@
 - Exclusions stockées SQLite et utilisées dans les trois scans; import legacy prefs JSON v1 opt-in, allowlist/digest/trace/idempotence/source intact; onboarding, diagnostic sans chemins/détails et preview d’export ajoutés.
 - Explore ajoute recherche nom/dossier, tri nom/date/taille locale et carte proportionnelle exacte des seuls octets alloués connus; layout couvert par tests.
 - Script crée un `.app` + ZIP local unsigned sous `Artifacts/`; structure lue dans le bundle, aucune installation ou ouverture Finder réalisée.
-- CLI compilable : `scan --root` explicite, `record list --store` explicite et lecture seule, help/version honnête; parsing testé.
+- CLI compilable : `scan --root` explicite, `record list --store` explicite et lecture seule, help/version honnête. Scan distingue succès complet (0), résultat partiel (2), erreur commande/store (1), annulation (130); JSON donne `files`, `issues`, `complete`. Tests fixtures couvrent racine manquante et scan complet. FR-13 reste PARTIEL : parité aide/localisation et validation CLI complète restent ouvertes.
 - Site statique EN/FR, manifeste 51 capacités, CSP, navigation sémantique, sans scripts ni analytics; tests de routes, liens, langues, contenu manifest.
 - Cahier utilisateur, développeur, confidentialité, accessibilité, données, migration, CLI et release evidence présents.
 - `make qualify` passe sur `next` après l’ajout de l’historique Performance : contrôles site/traçabilité/sûreté, tests XCTest et builds app + CLI. Tests Persistence ciblés 14/14 passent. `make package-local verify-package` avait passé dans `rebuild/` avant migration; ancien ZIP unsigned SHA-256 `8a0cb259df23e7324866201be51026e78989b3f11464c7d876f92b89b589c984`. Aucun test n’utilise le vrai store ou la vraie Corbeille.
@@ -29,7 +29,7 @@
 - Explore : carte proportionnelle, recherche, tri et aperçu Quick Look sur fichier choisi livrés. Doublons et Images similaires proposent aussi Quick Look sur fichier choisi. Accès au dossier maintenu pendant l’aperçu, libéré à la fermeture/disparition. Presets gros/anciens et prise en charge cloud restent non livrés. Images similaires restent partielles (heuristique non calibrée, corpus et accessibilité à vérifier).
 - Réglages explique accès aux seuls dossiers choisis, causes pratiques de refus/indisponibilité, reprise par nouveau choix, et limites des protections macOS; aucune demande d’Accès complet au disque. Cela améliore l’aide mais FR-10 reste partiel : aucune sonde exhaustive par permission ni deep link système.
 - Applications discovery et signal code-signature livrés; revue consultative des reliquats ajoutée sur un dossier choisi avec correspondance exacte bundle ID, sans attribution confirmée ni action sur ces reliquats. Le déplacement confirmé du seul bundle `.app` vers la Corbeille est relié à SafetyCore et au journal; désinstallation complète des éléments associés/hérités et source de mise à jour non livrées. Performance a un historique local de points de charge système, mais pas de qualification UI native; états d’accès, menu bar, favoris/récents et palette restent incomplets. Onboarding de premier lancement livré.
-- CLI n’a pas de test end-to-end qui invoque un scan fixture ni parité complète d’aide/localisation.
+- CLI a des tests end-to-end fixture pour scan complet et racine manquante; parité complète d’aide/localisation et annulation de processus restent ouvertes.
 - Paquet `.app`/ZIP unsigned construit; installation/ouverture et lancement non vérifiés. Profilage performance, hôte macOS 14, capture UI, vérification VoiceOver/clavier manuelle et revue sécurité indépendante manquent.
 - Must FR/NFR restent `EN_COURS`, `À_CONSTRUIRE` ou `PARTIEL` dans la traceability; aucune qualification finale n’est acquise.
 

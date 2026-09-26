@@ -61,3 +61,11 @@ Ordre de reprise retenu : (1) refermer fonctions Must Applications/Integrity/per
 - Suite de tests complète réussie; cette invocation a rapporté les bundles ScanCore, SafetyCore, ProductContract, Persistence, Domain, CLIContract et AppShell sans échec. Aucune interaction SwiftUI native n’est couverte; cette commande ne rend donc pas le produit final.
 - Le ZIP local précédent correspond au code de `4f98f5a`; hash `d11cd103e63c58affe766535c49938f3521e51e6f45fafde66b2a097664acb4c`.
 - Écarts Must encore explicites : permissions système complètes, certaines fonctionnalités Record/cleanup, usage historique, onboarding/runtime/accessibilité, compatibilité deuxième OS/hôte et preuve d’installation/lancement/signature. Lire `Documentation/Traceability.csv`; poursuivre ces écarts par tranche, ne pas déclarer finalisation avant preuve.
+
+### CLI — résultat partiel explicite — 26-09-2026
+
+- `coretend scan` ne renvoie plus succès lorsque ScanCore remonte une erreur racine/élément. Codes documentés : 0 complet, 2 partiel, 1 erreur de commande/store, 130 annulation. JSON expose `files`, `issues` (path/reason) et `complete`; texte liste les issues.
+- Tests CLI d’intégration sur répertoire temporaire : scan complet succès; racine inexistante donne issue `missing`, `complete=false`, code 2. `swift test --filter CLIContractTests`: 5/5.
+- `make qualify` passe après ce changement (site, traceability, audit sécurité, XCTest complet, builds debug App/CLI). `make package-local` et `make verify-package` passent.
+- ZIP arm64 local non signé SHA-256 `835917d81e62930c77208c44d58357e6be9db4c7f1be250e7681eab3c7317c60`. Non lancé/installé/signé/publié. FR-13 reste PARTIEL; pas d’ajout de permissions ni de mutation à la CLI.
+- Reprise full-auto : prendre le prochain Must d’usage avec forte valeur, probablement export d’activité/diagnostics et contrat de données, ou NFR accessibilité; vérifier statut précis dans Traceability.csv. Refaire qualification, paquet, ReleaseEvidence et cette passation avant checkpoint poussé.
