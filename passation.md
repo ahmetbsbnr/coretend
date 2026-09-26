@@ -1,6 +1,6 @@
 # Passation courante — CoreTend Next
 
-**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche `next` publiée sur `ahmetbsbnr/coretend` et issue de `main`. Jalons fusionnés : `6052711` données locales (PR #40) et `e93e657` palette bilingue (PR #41), CI distante verte. Travail courant : `feature/palette-arrow-navigation`. L’ancien dépôt indépendant `rebuild/` reste une copie locale de provenance.
+**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche `next` publiée sur `ahmetbsbnr/coretend` et issue de `main`. Jalons fusionnés : `6052711` données locales (PR #40), `e93e657` palette (PR #41), `a031f1c` navigation aux flèches (PR #42); check distant `qualify` vert (run 36265961985, macOS). HEAD local `next` synchronisé sur `origin/next`. L’ancien dépôt indépendant `rebuild/` reste une copie locale de provenance.
 
 ### Jalon en cours — données locales et favoris/récents
 
@@ -10,13 +10,13 @@
 - Tests Persistence : 17/17 passent, dont fixture v3→v4 et conservation événement/langue/relevé, idempotence, quota et validation. `make qualify` passe : site, traçabilité, audit sécurité, smoke install fixture, suite Swift, builds App/CLI et `git diff --check`.
 - `make package-local` et `make verify-package` réussis. ZIP arm64 unsigned SHA-256 `9b5a340e2513e7f1a9a16a0c0b252a72d8f0eecff6bca62668135019e815b091`; non lancé/installé/signé/notarié/publié.
 - Docs synchronisées : `Documentation/Project/DataModel.md`, `Migration.md`, `Progress.md`, `Traceability.csv`, `UserGuide.md`. FR-24 et `favrec.module` EN_COURS; FR-11 EN_COURS; NFR-05 reste PARTIEL (pas de récupération/restauration utilisateur complète).
-- Contrôle visuel SwiftUI/VoiceOver natif non réalisé. FR-24 reste en cours jusqu’à cette qualification. Sous-jalon `feature/palette-arrow-navigation`: sélection clavier ↑/↓, Retour sur commande sélectionnée, recherche réinitialise une sélection devenue invalide. Tests AppShell 5/5. `make qualify`, `make package-local`, `make verify-package`, `git diff --check` passent. ZIP arm64 unsigned SHA-256 `4c63d81a3b25f4c79b26017760fae0ec632ee93c5d8eb2d1dba5abb2316096bd`; non lancé. Branche prête à commit/PR/CI distante.
+- Contrôle visuel SwiftUI/VoiceOver natif non réalisé. FR-24 reste EN_COURS jusqu’à cette qualification. Palette intégrée: ⌘K, recherche EN/FR par alias, sélection clavier ↑/↓, Retour ouvre sélection, Échap ferme; tests AppShell 5/5. `make qualify`, `make package-local`, `make verify-package`, `git diff --check` passent sur contenu PR #42. ZIP arm64 unsigned SHA-256 `4c63d81a3b25f4c79b26017760fae0ec632ee93c5d8eb2d1dba5abb2316096bd`; non lancé.
 
 ## Reprise active — 26-09-2026
 
-L’utilisateur demande de poursuivre le projet jusqu’à finalisation et de tenir cette passation à chaque étape pour reprise après arrêt abrupt. Dernier code fusionné : `6052711` (SQLite v4 favoris/récents, PR #40, CI distante verte). Le commit précédent `ef58ece` a généré ZIP unsigned SHA-256 `9b5a340e2513e7f1a9a16a0c0b252a72d8f0eecff6bca62668135019e815b091`, vérifié structure seulement. Branche active actuelle `feature/keyboard-command-palette`, changements locaux non commités; passation et docs clavier en cours.
+L’utilisateur demande de poursuivre le projet jusqu’à finalisation et de tenir cette passation à chaque étape pour reprise après arrêt abrupt. Dernier code fusionné : `a031f1c` (PR #42; CI `qualify` verte). Le dernier paquet local `4c63d81a3b25f4c79b26017760fae0ec632ee93c5d8eb2d1dba5abb2316096bd` provient du code PR #42; vérification structurelle seulement, aucune ouverture ni signature.
 
-Ordre de reprise retenu : (1) refermer fonctions Must Applications/Integrity/permissions; (2) compléter les états de navigation, données, export et migration; (3) traiter les capacités restantes et mettre à jour `Website/`, README et cahier; (4) qualification en fixtures isolées, gates et builds; (5) relever précisément limites native/macOS/publication sans revendiquer une release non signée. Utiliser les langues utiles au résultat; Swift reste app macOS, Python dépôt/site, sans contrainte générale. Ne jamais ouvrir le vrai store CoreTend ni la vraie Corbeille pendant les tests. Aucune release signée/notarisée/publication.
+Ordre de reprise retenu : (1) qualifier UI native/VoiceOver clavier, en commençant par palette et favoris; (2) refermer Must restantes Applications/Integrity/permissions; (3) compléter les états de navigation, données, export et migration; (4) traiter les capacités restantes et mettre à jour `Website/`, README et cahier; (5) qualification fixtures/gates/builds puis relever les limites macOS/publication sans revendiquer release non signée. Ne jamais ouvrir vrai store CoreTend ni vraie Corbeille pendant tests. Aucune release signée/notarisée/publication.
 
 ## Lire d’abord
 
