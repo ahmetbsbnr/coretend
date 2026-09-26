@@ -16,5 +16,20 @@ for file in (root/'Tests').rglob('*.swift'):
   errors.append(f'personal-store path reference in test: {file.relative_to(root)}')
 for file in (root/'Sources').rglob('*.swift'):
  if 'homeDirectoryForCurrentUser' in file.read_text(): errors.append(f'implicit HOME lookup in runtime: {file.relative_to(root)}')
+network_patterns = (
+ r'^\s*import\s+(?:Network|MetricKit)\b',
+ r'\b(?:URLSession|URLRequest|URLProtocol|NWConnection|NWListener|WebSocketTask|MQTTClient)\b',
+ r'\b(?:TelemetryDeck|PostHog|Mixpanel|Amplitude)\b',
+ r'\b(?:connect|getaddrinfo|socket)\s*\(',
+ r'\bProcess\s*\(',
+)
+for file in (root/'Sources').rglob('*.swift'):
+ text=file.read_text()
+ for pattern in network_patterns:
+  if re.search(pattern,text,re.MULTILINE):
+   errors.append(f'network client or telemetry API in runtime: {file.relative_to(root)}: {pattern}')
+manifest=(root/'Package.swift').read_text()
+if re.search(r'\.package\s*\(\s*url\s*:',manifest):
+ errors.append('external SwiftPM package dependency present; review privacy and network surface')
 if errors: print('\n'.join(errors)); raise SystemExit(1)
-print('Safety audit passed: only SafetyCore calls Trash; no permanent-removal API or personal test paths.')
+print('Safety audit passed: Trash boundary intact; no permanent-removal API, personal test paths, network client, or known telemetry SDK/import.')

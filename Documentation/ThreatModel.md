@@ -4,6 +4,10 @@
 
 The opt-in diagnostic contains only product/version, schema version, event counts by kind, and creation time. It omits event details, file names, paths, database contents, and secrets. Settings displays the exact generated JSON before presenting a user-chosen export destination. The current redaction test uses a synthetic path fixture; native export/cancel interaction and external privacy review remain outstanding.
 
+## Network and telemetry
+
+The runtime has no account, sync, or telemetry feature. The static safety audit rejects common Swift network-client APIs/framework imports and known analytics SDK references under `Sources/`. Application update URLs are displayed as declarations and opened by an explicit user action through a system link; CoreTend does not fetch a feed. This source audit is not runtime traffic capture and can miss obfuscated or indirect networking.
+
 ## Assets
 
 Files selected for inspection; local CoreTend events/preferences; paths and filenames; approved actions; user trust in size and integrity claims.

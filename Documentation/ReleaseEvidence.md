@@ -67,3 +67,8 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 - Source compilée : `5fc9563` (`next`). La feuille Réglages présente le JSON expurgé exact, avant sélection de destination. La feuille se ferme avant que l’exporteur soit ouvert.
 - `make qualify`, `make package-local`, `make verify-package` réussis; test ciblé redaction sur fixture réussi. Qualification ne couvre pas la feuille native ni annulation par interaction.
 - ZIP arm64 unsigned SHA-256 `63b28f04d3382fed0ded640538e99a801ed0cb7ec676074718218e5525bf3bfb`. Aucun lancement, installation, signature/notarisation ou publication.
+
+## Audit statique réseau — 26-09-2026
+
+- `make qualify` passe avec audit étendu : aucun import/API réseau standard, socket/processus d’exécution, SDK analytics connu ou dépendance SwiftPM URL détecté sous runtime.
+- Aucun changement binaire après artefact `5fc9563` (ZIP `63b28f04d3382fed0ded640538e99a801ed0cb7ec676074718218e5525bf3bfb`). Vérification ne vaut pas capture runtime; NFR-04 demeure PARTIEL.

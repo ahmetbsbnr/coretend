@@ -101,3 +101,10 @@ Ordre de reprise retenu : (1) refermer fonctions Must Applications/Integrity/per
 - ThreatModel/UserGuide/Progress actualisés. Test redaction existant passe (`testDiagnosticExportOmitsEventDetailsAndPaths`), `swift build --product CoreTendApp` passe. FR-21/NFR-05 restent PARTIELS; parcours natif export/annulation et revue privacy externe non faits.
 - Refaire `make qualify`, `make package-local`, `make verify-package`; enregistrer artifact et commit dans ReleaseEvidence puis pousser ce jalon.
 - ZIP arm64 unsigned SHA-256 `63b28f04d3382fed0ded640538e99a801ed0cb7ec676074718218e5525bf3bfb`; ReleaseEvidence lie hash au commit source.
+
+### Confidentialité réseau — audit statique — 26-09-2026
+
+- `Scripts/audit_safety.py` bloque maintenant APIs cliente réseau Swift connues (`URLSession`, `Network`, sockets, processus lancés), frameworks/SDK télémétrie connus et dépendance SwiftPM URL. Les liens de mise à jour restent ouverture système à clic explicite; aucune lecture de flux.
+- `make qualify` passe : site/CSP, traceability (40 FR/NFR + 51 capacités), audit renforcé, XCTest complet, builds debug App/CLI.
+- NFR-04 reste PARTIEL : audit statique ne capture pas le trafic en exécution et peut manquer appels indirects/obfusqués. Aucun nouvel artefact binaire; ZIP `63b28f…` reste lié au code app `5fc9563`.
+- Suite A-Z : prioriser gaps produit Must restants dans Traceability et Implementation-plan. Branches/CI distantes et tests UI natifs restent à traiter avant toute revendication de release.
