@@ -64,7 +64,7 @@ activity.grouping,M,Capability inventory ID,Sources/CoreTendApp/RecordView.swift
 activity.jsonexport,M,Capability inventory ID,Sources/Persistence/SQLiteStore.swift,Tests/PersistenceTests/PersistenceTests.swift,Documentation/UserGuide.md,,EN_COURS,Engineering
 settings.menubar,S,Capability inventory ID,,,,,À_CONSTRUIRE,Engineering
 settings.appsignature,M,Capability inventory ID,,,,,À_CONSTRUIRE,Engineering
-settings.fulldiskaccess,M,Capability inventory ID,,,,,À_CONSTRUIRE,Engineering
+settings.fulldiskaccess,M,Settings explains user-selected folder access and states that CoreTend does not request Full Disk Access or open Privacy settings; no system-wide access state is inferred.,Sources/AppShell/Destination.swift; Sources/CoreTendApp/SettingsView.swift,Tests/AppShellTests/AppShellTests.swift,Documentation/UserGuide.md,AppShell tests assert EN/FR folder selection and no Full Disk Access request or Privacy settings opening; native Settings flow and supported OS behavior remain unqualified.,PARTIEL,Engineering
 settings.exclusions,M,Capability inventory ID,Sources/CoreTendApp/SettingsView.swift; Sources/Persistence/SQLiteStore.swift,Tests/PersistenceTests/PersistenceTests.swift,Documentation/UserGuide.md,,PARTIEL,Engineering
 settings.clearactivity,M,Capability inventory ID,Sources/CoreTendApp/RecordView.swift,Tests/PersistenceTests/PersistenceTests.swift,Documentation/UserGuide.md,,EN_COURS,Engineering
 settings.exportdiagnostic,M,Capability inventory ID,Sources/CoreTendApp/SettingsView.swift,,Documentation/ThreatModel.md,,PARTIEL,Engineering

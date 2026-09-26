@@ -12,7 +12,7 @@ Dans **Explorer**, utilisez l’étoile pour enregistrer un favori. Les fichiers
 
 Explorer, Nettoyage et Doublons proposent **Annuler l’analyse**. Une racine de scan indisponible est signalée séparément d’un dossier vide; des fichiers illisibles dans un dossier accessible produisent un résultat partiel. Annuler Nettoyage retire ses candidats incomplets de l’écran. Ces états ne constituent pas un diagnostic général des permissions macOS.
 
-Dans Réglages > **Accès aux dossiers**, CoreTend décrit l’accès aux dossiers explicitement choisis et les causes usuelles d’indisponibilité. Si un dossier échoue, vérifiez qu’il existe et que son volume est monté, puis choisissez-le à nouveau. Cette aide ne diagnostique pas l’ensemble des protections macOS, ne demande pas Accès complet au disque et ne prétend pas ouvrir les réglages système.
+Dans Réglages > **Accès aux dossiers**, CoreTend décrit l’accès aux dossiers explicitement choisis et les causes usuelles d’indisponibilité. Si un dossier échoue, vérifiez qu’il existe et que son volume est monté, puis choisissez-le à nouveau. Cette aide ne diagnostique pas l’ensemble des protections macOS, ne demande pas Accès complet au disque et ne peut pas ouvrir les réglages de confidentialité à votre place. Un scan partiel ou refusé ne signifie pas qu’un élément est absent ni qu’il est sûr.
 
 Au prochain lancement, CoreTend rouvre la dernière des huit destinations choisies. Seul son identifiant est mémorisé dans les préférences locales; les dossiers analysés ne sont pas restaurés automatiquement. Une valeur inconnue revient à Vue d’ensemble.
 

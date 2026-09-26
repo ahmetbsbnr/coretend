@@ -13,6 +13,24 @@ final class AppShellTests: XCTestCase {
         XCTAssertTrue(ProductCopy.french.keys.contains("safety.notice"))
     }
 
+    func testFolderAccessGuidanceIsLocalizedAndLimitedToChosenFolders() {
+        let english = ProductCopy.value(for: "settings.folderaccess.help", french: false)
+        let french = ProductCopy.value(for: "settings.folderaccess.help", french: true)
+
+        XCTAssertTrue(english.contains("only folders you choose in the macOS picker"))
+        XCTAssertTrue(french.contains("dossiers que vous choisissez dans le sélecteur macOS"))
+    }
+
+    func testFullDiskAccessGuidanceIsLocalizedAndDoesNotSolicitOrOpenSettings() {
+        let english = ProductCopy.value(for: "settings.fulldiskaccess.help", french: false)
+        let french = ProductCopy.value(for: "settings.fulldiskaccess.help", french: true)
+
+        XCTAssertTrue(english.contains("does not request Full Disk Access"))
+        XCTAssertTrue(english.contains("cannot open Privacy settings"))
+        XCTAssertTrue(french.contains("ne demande pas l’accès intégral au disque"))
+        XCTAssertTrue(french.contains("ne peut pas ouvrir à votre place les réglages de confidentialité"))
+    }
+
     func testCommandPaletteOffersEveryDestinationAndSettings() {
         let commands = CommandPaletteCatalog.commands(french: true)
         XCTAssertEqual(commands.count, Destination.allCases.count + 1)
