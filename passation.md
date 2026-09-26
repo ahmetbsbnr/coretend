@@ -1,6 +1,6 @@
 # Passation complète — CoreTend Next
 
-**État au 26-09-2026.** Reconstruction active, pas finalisée, aucune release publique. Dépôt `ahmetbsbnr/coretend`; worktree `next/`, branche de travail `feat/access-diagnostics` basée sur `next` au commit documentaire #53 (`55e8628`). Dernière tranche app fusionnée #50 (`b0287bf`). Tranche FR-10 en cours dans ce worktree; qualification complète et paquet mis à jour à faire avant PR. Prochaine reprise sur `feat/access-diagnostics` jusqu’à PR, puis `next`.
+**État au 26-09-2026.** Reconstruction active, pas finalisée, aucune release publique. Dépôt `ahmetbsbnr/coretend`; worktree `next/`, branche de travail `feat/access-diagnostics` basée sur `next` au commit documentaire #53 (`55e8628`). Dernière tranche app fusionnée #50 (`b0287bf`). Tranche FR-10 commitée en `87edd45`, PR #54 ouverte vers `next`; gate locale et premier `qualify` distant passent. Pas de fusion. Après décision d’intégration, reprendre depuis `next`.
 
 ## État immédiat
 
@@ -11,7 +11,7 @@
 - Dernière qualification locale : `make qualify` sur `feat/access-diagnostics`. Elle couvre génération, site, traçabilité, audit statique de sûreté, installation fixture en HOME temporaire, XCTest complet, builds debug App/CLI et whitespace. Aucune UI native/VoiceOver n’est qualifiée par ce gate.
 - Paquet courant : `Artifacts/CoreTend-local-unsigned.zip`, arm64, construit depuis `feat/access-diagnostics`. SHA-256 `20a72cf36d3327018b8c78fef76e2f8aab835629b0558345f2b99749693c6024`. `make verify-package` passe; vérification limitée à Info.plist, archive et Mach-O. Non lancé depuis cette tranche, non installé sur le Mac, signé, notarié ou publié. Preuve dans `Documentation/ReleaseEvidence.md`.
 - Essai UI isolé du 26-09-2026 : copie du bundle lancée depuis HOME temporaire; fenêtre nommée `CoreTend` observée. Lecture détaillée des contrôles via System Events échoue (`-10827`); aucune vérification clavier/VoiceOver/zoom/contraste/mouvement réalisée. NFR-07 reste PARTIEL. Voir `Documentation/Evidence/Accessibility.md`.
-- FR-10 — tranche prête pour PR : Applications distingue racine disparue, accès refusé, mauvais type, symlink et lecture impossible; messages EN/FR ajoutés. `make qualify`, packaging, vérification paquet et whitespace passent. FR-10 demeure PARTIEL faute de sondes TCC complètes et parcours de réglages système.
+- FR-10 — PR #54 : Applications distingue racine disparue, accès refusé, mauvais type, symlink et lecture impossible; messages EN/FR ajoutés. `make qualify`, packaging, vérification paquet, whitespace et premier `qualify` distant passent. FR-10 demeure PARTIEL faute de sondes TCC complètes et parcours de réglages système.
 - Copie greenfield historique `rebuild/` conservée localement comme provenance. Passation/documents 1.x archivés sous `Documentation/Archive/Legacy-Reconstruction/`; ils ne décrivent pas le code actuel.
 
 ## Jalons récents intégrés

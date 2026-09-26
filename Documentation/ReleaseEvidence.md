@@ -6,7 +6,7 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 
 ## Distinction des erreurs d’accès Applications — 26-09-2026
 
-- Source : branche locale `feat/access-diagnostics`, basée sur `55e8628`, avec modifications non commitées pendant le build. Hôte macOS 27.0 (26A428), arm64, Swift 6.4.
+- Source : commit `87edd45` (`feat/access-diagnostics`), basé sur `55e8628`. Hôte macOS 27.0 (26A428), arm64, Swift 6.4.
 - `make qualify` et `git diff --check` passent : site, traçabilité, audit de sûreté, installation fixture, suite XCTest, builds App/CLI et whitespace.
 - `make package-local` et `make verify-package` passent. ZIP arm64 unsigned SHA-256 `20a72cf36d3327018b8c78fef76e2f8aab835629b0558345f2b99749693c6024`. Vérification limitée à Info.plist, intégrité ZIP et architecture Mach-O.
 - Tests Domain sur fixtures distinguent racine absente, mauvais type, symlink, EACCES/EPERM et erreur Cocoa d’accès refusé. La vue Applications affiche causes localisées EN/FR pour le dossier choisi; aucune sonde TCC/Full Disk Access. FR-10 reste PARTIEL.
