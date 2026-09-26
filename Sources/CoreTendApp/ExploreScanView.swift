@@ -11,6 +11,7 @@ struct ExploreScanView: View {
     @State private var results: [ScanResult] = []
     @State private var status: String?
     @State private var scanTask: Task<Void, Never>?
+    @State private var activeScanID: UUID?
     @State private var query = ""
     @State private var sortMode = "largest"
 
@@ -48,7 +49,10 @@ struct ExploreScanView: View {
             .disabled(scanning)
             .accessibilityHint(copy("scan.choose.hint"))
 
-            if scanning { ProgressView(copy("scan.progress")) }
+            if scanning {
+                ProgressView(copy("scan.progress"))
+                Button(copy("scan.cancel")) { cancelScan() }
+            }
             if let status { Text(status).foregroundStyle(.secondary).textSelection(.enabled) }
             if !results.isEmpty {
                 Text(copy("scan.count", count: results.count)).font(.headline)
@@ -107,36 +111,54 @@ struct ExploreScanView: View {
                 status = copy("scan.failed")
             }
         }
-        .onDisappear { scanTask?.cancel() }
+        .onDisappear { scanTask?.cancel(); activeScanID = nil; scanning = false }
     }
 
     private func beginScan(_ root: URL) {
+        scanTask?.cancel()
+        let scanID = UUID()
+        activeScanID = scanID
         let acquiredScope = root.startAccessingSecurityScopedResource()
         results = []
         status = nil
         scanning = true
         scanTask = Task {
+            var rootUnavailable = false
+            var partialFailure = false
             defer {
                 if acquiredScope { root.stopAccessingSecurityScopedResource() }
-                scanning = false
+                if activeScanID == scanID { scanning = false; activeScanID = nil }
             }
             do {
                 let engine = LocalScanEngine()
                 let exclusions = try await LocalStoreAccess.exclusions()
                 let request = ScanRequest(roots: [ScanRoot(url: root, ruleID: .explore)], exclusions: exclusions)
                 for try await event in engine.scan(request) {
-                    if Task.isCancelled { break }
+                    guard !Task.isCancelled, activeScanID == scanID else { return }
                     switch event {
                     case .result(let result): results.append(result)
-                    case .itemFailure: status = copy("scan.partial")
-                    case .finished: status = results.isEmpty ? copy("scan.empty") : nil
+                    case .itemFailure(let path, _):
+                        if path == root.path { rootUnavailable = true } else { partialFailure = true }
+                    case .finished:
+                        status = rootUnavailable ? copy("scan.accessDenied")
+                            : partialFailure ? copy("scan.partial")
+                            : results.isEmpty ? copy("scan.empty") : nil
                     case .progress: break
                     }
                 }
+            } catch is CancellationError {
+                if activeScanID == scanID { status = copy("scan.cancelled") }
             } catch {
-                status = copy("scan.failed")
+                if activeScanID == scanID { status = copy("scan.failed") }
             }
         }
+    }
+
+    private func cancelScan() {
+        scanTask?.cancel()
+        activeScanID = nil
+        scanning = false
+        status = copy("scan.cancelled")
     }
 
     private func size(_ measurement: ProductMeasurement<Int64>) -> String {
