@@ -80,3 +80,8 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 - Test ne lance pas l’app et ne touche pas installation réelle, données CoreTend, Finder ou Trash. FR-14 demeure PARTIEL : parcours GUI, désinstallation utilisateur, signature, notarisation, OS minimum non qualifiés.
 - CI distante du commit `f7d7d73` : [Actions run 36264106677](https://github.com/ahmetbsbnr/coretend/actions/runs/36264106677), macos-latest, conclusion `success` le 2026-09-26 18:54:30 UTC; tous les steps réussis.
 - Protection GitHub activée/vérifiée pour `next` : status check `qualify` (GitHub Actions, app 15368), strict, force-push/suppression interdits, aucune revue PR requise. Protection `main` inspectée mais inchangée; checks historiques y restent configurés sans approbation PR obligatoire.
+
+## Repository protection checkpoint — 26-09-2026
+
+- CI distante de `bea69a3` réussie : [Actions run 36264445630](https://github.com/ahmetbsbnr/coretend/actions/runs/36264445630), `qualify` + whitespace, macos-latest, 18:59:56Z.
+- Run `36264363517` de `c7ea517` a aussi réussi après push; serveur avait signalé bypass admin car check distant était encore en attente au push. La protection conserve status check strict pour merge; privilégier branches de travail + PR pour éviter bypass direct.
