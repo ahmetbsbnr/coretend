@@ -31,6 +31,7 @@ Ordre de reprise retenu : (1) refermer fonctions Must Applications/Integrity/per
 - Explorer, Nettoyage et Doublons distinguent racine indisponible, vide et erreurs partielles, avec annulation visible et rejet des résultats de tâches anciennes. NFR-06 reste PARTIEL sans qualification UI native.
 - Navigation mémorise la dernière destination en préférence locale (identifiant seulement), avec repli Vue d’ensemble; aucun chemin de scan restauré. Relancement natif à qualifier.
 - Packaging local refait le `.app` en dossier temporaire sous `Artifacts/` avant remplacement; les anciens fichiers du bundle ne contaminent plus le ZIP. Dossier `Artifacts` symbolique refusé. Build de packaging réussi.
+- ScanCore donne des causes distinctes pour racine absente, permission refusée, symlink, type incorrect et exclusion. UI EN/FR reprend la cause. `swift test --filter ScanCoreTests`: 14/14, fixtures temporaires uniquement. FR-10 reste À_CONSTRUIRE pour le diagnostic complet des permissions système; NFR-06 PARTIEL.
 
 ## Suite prioritaire
 

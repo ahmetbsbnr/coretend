@@ -27,6 +27,8 @@ public enum ProductCopy {
         "scan.choose": "Choose a folder to inspect", "scan.choose.hint": "CoreTend reads this folder without changing its files.",
         "scan.progress": "Reading selected folder…", "scan.failed": "The folder could not be read.",
         "scan.accessDenied": "Access to the selected folder is unavailable.", "scan.partial": "Some items could not be read.",
+        "scan.rootMissing": "The selected folder no longer exists.", "scan.rootSymlink": "The selected folder is a symbolic link; choose its real folder.",
+        "scan.rootExcluded": "This folder is excluded in Settings.", "scan.rootNotFolder": "The selected item is not a folder.",
         "scan.empty": "No files found in the selected folder.", "scan.unknownSize": "Unknown size",
         "scan.cancelled": "Scan cancelled.", "scan.cancel": "Cancel scan", "duplicates.choose": "Choose a folder to compare",
         "explore.search": "Search names and folders", "explore.sort": "Sort", "explore.largest": "Largest local size", "explore.oldest": "Oldest first", "explore.name": "Name",
@@ -93,6 +95,8 @@ public enum ProductCopy {
         "scan.choose": "Choisir un dossier à examiner", "scan.choose.hint": "CoreTend lit ce dossier sans modifier ses fichiers.",
         "scan.progress": "Lecture du dossier sélectionné…", "scan.failed": "Impossible de lire ce dossier.",
         "scan.accessDenied": "L’accès au dossier sélectionné est indisponible.", "scan.partial": "Certains éléments n’ont pas pu être lus.",
+        "scan.rootMissing": "Le dossier choisi n’existe plus.", "scan.rootSymlink": "Le dossier choisi est un lien symbolique; choisissez le dossier réel.",
+        "scan.rootExcluded": "Ce dossier est exclu dans les réglages.", "scan.rootNotFolder": "L’élément choisi n’est pas un dossier.",
         "scan.empty": "Aucun fichier dans le dossier sélectionné.", "scan.unknownSize": "Taille inconnue",
         "scan.cancelled": "Analyse annulée.", "scan.cancel": "Annuler l’analyse", "duplicates.choose": "Choisir un dossier à comparer",
         "explore.search": "Rechercher noms et dossiers", "explore.sort": "Trier", "explore.largest": "Plus grande taille locale", "explore.oldest": "Plus ancien d’abord", "explore.name": "Nom",
@@ -151,5 +155,18 @@ public enum ProductCopy {
     ]
     public static func value(for key: String, french isFrench: Bool) -> String {
         (isFrench ? french : english)[key] ?? key
+    }
+
+    public static func scanRootFailure(reason: String, french isFrench: Bool) -> String {
+        let key: String
+        switch reason {
+        case "permission_denied": key = "scan.accessDenied"
+        case "missing": key = "scan.rootMissing"
+        case "root_symlink": key = "scan.rootSymlink"
+        case "root_excluded": key = "scan.rootExcluded"
+        case "root_not_directory": key = "scan.rootNotFolder"
+        default: key = "scan.accessDenied"
+        }
+        return value(for: key, french: isFrench)
     }
 }

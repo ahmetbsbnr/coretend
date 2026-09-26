@@ -123,7 +123,7 @@ struct DuplicateScanView: View {
         similarReport = nil
         selectedCopies = []
         scanTask = Task {
-            var rootUnavailable = false
+            var rootFailure: String?
             var partialFailure = false
             defer {
                 if hasScope { root.stopAccessingSecurityScopedResource() }
@@ -136,14 +136,17 @@ struct DuplicateScanView: View {
                     guard !Task.isCancelled, activeScanID == scanID else { return }
                     switch event {
                     case .result(let result): candidates.append(result)
-                    case .itemFailure(let path, _):
-                        if path == root.path { rootUnavailable = true } else { partialFailure = true }
+                    case .itemFailure(let path, let reason):
+                        if path == root.path { rootFailure = reason } else { partialFailure = true }
                     case .progress, .finished: break
                     }
                 }
                 try Task.checkCancellation()
                 guard activeScanID == scanID else { return }
-                if rootUnavailable { status = copy("scan.accessDenied"); return }
+                if let rootFailure {
+                    status = ProductCopy.scanRootFailure(reason: rootFailure, french: french)
+                    return
+                }
                 if similarMode {
                     let result = try await SimilarImageEngine().findSimilar(in: candidates.map(\.url))
                     try Task.checkCancellation()

@@ -59,6 +59,52 @@ final class SimilarImageEngineTests: XCTestCase {
 }
 
 final class ScanCoreTests: XCTestCase {
+    func testMissingScanRootReportsMissingCause() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-missing-scan-\(UUID())", isDirectory: true)
+        var failures: [(String, String)] = []
+        for try await event in LocalScanEngine().scan(.init(roots: [.init(url: root, ruleID: .explore)])) {
+            if case .itemFailure(let path, let reason) = event { failures.append((path, reason)) }
+        }
+        XCTAssertEqual(failures.count, 1)
+        XCTAssertEqual(failures.first?.0, root.path)
+        XCTAssertEqual(failures.first?.1, "missing")
+    }
+
+    func testSymlinkScanRootIsReportedWithoutTraversingTarget() async throws {
+        let base = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-symlink-root-\(UUID())", isDirectory: true)
+        let target = base.appendingPathComponent("target", isDirectory: true)
+        let link = base.appendingPathComponent("link", isDirectory: true)
+        try FileManager.default.createDirectory(at: target, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: base) }
+        let file = target.appendingPathComponent("keep.txt")
+        try Data("keep".utf8).write(to: file)
+        try FileManager.default.createSymbolicLink(at: link, withDestinationURL: target)
+
+        var failures: [(String, String)] = []
+        var results: [URL] = []
+        for try await event in LocalScanEngine().scan(.init(roots: [.init(url: link, ruleID: .explore)])) {
+            switch event {
+            case .itemFailure(let path, let reason): failures.append((path, reason))
+            case .result(let result): results.append(result.url)
+            default: break
+            }
+        }
+        XCTAssertEqual(failures.map(\.1), ["root_symlink"])
+        XCTAssertTrue(results.isEmpty)
+        XCTAssertEqual(try Data(contentsOf: file), Data("keep".utf8))
+    }
+
+    func testExcludedRootReportsSettingsExclusion() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-excluded-root-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        var failures: [String] = []
+        for try await event in LocalScanEngine().scan(.init(roots: [.init(url: root, ruleID: .explore)], exclusions: [root])) {
+            if case .itemFailure(_, let reason) = event { failures.append(reason) }
+        }
+        XCTAssertEqual(failures, ["root_excluded"])
+    }
+
     func testScanFindsFixtureFilesAndHonorsExclusionsWithoutChangingTree() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-scan-\(UUID())", isDirectory: true)
         let excluded = root.appendingPathComponent("excluded", isDirectory: true)

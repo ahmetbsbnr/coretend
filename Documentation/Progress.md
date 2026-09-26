@@ -81,3 +81,8 @@
 - Échec de lecture de la racine, dossier vide et erreurs partielles restent distincts. Nettoyage retire ses candidats incomplets à l’annulation. Compilation SwiftUI réussie; parcours natif et tests de course non exécutés dans cette tranche. NFR-06 devient PARTIEL; FR-10 reste À_CONSTRUIRE pour les permissions système détaillées.
 - La dernière destination de navigation est conservée sous identifiant local; une valeur inconnue revient à Vue d’ensemble. Aucun chemin de dossier n’est restauré. Build app réussi; relancement natif non observé, FR-01 et `shell.nav` restent EN_COURS.
 - Le packaging local construit le bundle et son ZIP dans un dossier temporaire sous `Artifacts/`, puis remplace le bundle généré. Cela évite d’emporter des fichiers résiduels d’un ancien `.app`; `Artifacts` symbolique est refusé. Build de packaging réussi, signature/notarisation inchangées.
+
+### Causes d’échec à la racine d’un scan — 2026-09-26
+
+- ScanCore distingue racine absente/inaccessible, lien symbolique, élément qui n’est pas un dossier et racine exclue. Refus de permission et absence restent séparés dans l’UI; échec de lecture interne reste partiel.
+- Explorer, Nettoyage et Doublons présentent la cause locale connue en EN/FR. 14 tests ScanCore passent sur fixtures temporaires; symlink racine et absence testés. Aucun répertoire système ni donnée utilisateur inspecté. FR-10 reste À_CONSTRUIRE pour les permissions globales et leur réglage; NFR-06 reste PARTIEL.
