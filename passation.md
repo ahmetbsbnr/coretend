@@ -85,3 +85,4 @@ Ordre de reprise retenu : (1) refermer fonctions Must Applications/Integrity/per
 - Test-first : `ExplorePresetTests` a échoué avant API, puis passe (2/2) sur fixtures/mesures injectées. Build app + `make qualify` passent; site, traceability, sécurité, suite XCTest complète et App/CLI debug inclus.
 - `make package-local` et `make verify-package` passent. ZIP arm64 unsigned SHA-256 `072ff474f4eae77109dd312b342e125c2b1c30d8275afeb0cc3f8a573d522c48`; aucun lancement, install, signature ou publication.
 - FR-16 reste PARTIEL : presets sont surtout taille/date, filtres catégorie/presets réutilisables sur les autres modules à examiner.
+- Commit source : `664dbf6`; SHA associé consigné dans `Documentation/ReleaseEvidence.md`.

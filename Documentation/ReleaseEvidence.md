@@ -56,3 +56,8 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 - Source compilée : `cdb3870` (`next`). `make qualify`, `make package-local` et `make verify-package` réussis; gate inclut XCTest complet et builds debug App/CLI.
 - ZIP arm64 non signé SHA-256 : `721cc3311c1ee8c986ca324e534e830be5b2c73b7f2b59acd80f6466b8e0740d`. Vérification limitée à Info.plist, archive et architecture Mach-O. Aucun lancement, VoiceOver, installation, signature ou notarisation.
 - Libellés/hints fichier Quick Look améliorés. NFR-07 reste PARTIEL jusqu’à qualification manuelle clavier, focus, VoiceOver, zoom, contraste et réductions de mouvement/transparence.
+
+## Explore explicit presets — 26-09-2026
+
+- Source compilée : `664dbf6` (`next`). `make qualify`, `make package-local`, `make verify-package` réussis. Deux tests ExplorePreset (seuil Gio inclusif/inconnu, date limite 365 jours) passent; suite complète comprise dans gate.
+- ZIP arm64 non signé : SHA-256 `072ff474f4eae77109dd312b342e125c2b1c30d8275afeb0cc3f8a573d522c48`. Verification limitée à Info.plist, archive et Mach-O; aucune exécution UI, install, signature, notarisation ou publication.
