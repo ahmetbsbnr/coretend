@@ -186,6 +186,7 @@ final class FileActionServiceTests: XCTestCase {
         let events = try await store.events()
         XCTAssertEqual(events.map(\.kind), [.proposed, .approved, .failed])
         XCTAssertEqual(events.map(\.detail), [record.url.path, record.url.path, "\(record.url.path) | reason=trash_failed"])
+        XCTAssertEqual(events.map(\.failureCode), [nil, nil, "trash_failed"])
         XCTAssertFalse(try XCTUnwrap(events.last).detail.contains("synthetic Trash failure"))
     }
 
@@ -253,7 +254,7 @@ final class FileActionServiceTests: XCTestCase {
         try FileManager.default.createDirectory(at: apps, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: trashRoot, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
-        let app = apps.appendingPathComponent("Fixture.app", isDirectory: true)
+        let app = apps.appendingPathComponent("Fixture.app | reason=trash_failed", isDirectory: true)
         try FileManager.default.createDirectory(at: app, withIntermediateDirectories: true)
         let store = try SQLiteStore(url: root.appendingPathComponent("events.sqlite")); try await store.migrate()
         let trash = DomainFixtureTrash(trashRoot: trashRoot)
@@ -275,6 +276,8 @@ final class FileActionServiceTests: XCTestCase {
         XCTAssertEqual(calls, 0)
         let events = try await store.events()
         XCTAssertEqual(events.map(\.kind), [.proposed, .failed])
+        XCTAssertEqual(events.last?.detail, app.path)
+        XCTAssertNil(events.last?.failureCode)
     }
 
     func testConfirmedActionLogsBeforeAndAfterFixtureTrashMove() async throws {
@@ -300,6 +303,7 @@ final class FileActionServiceTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: file.path))
         let events = try await store.events()
         XCTAssertEqual(events.map(\.kind), [.proposed, .approved, .movedToTrash])
+        XCTAssertEqual(events.map(\.failureCode), [nil, nil, nil])
     }
 
     func testDeclinedReviewNeverCallsTrashOrRemovesSource() async throws {

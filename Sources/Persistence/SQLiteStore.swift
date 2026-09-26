@@ -8,8 +8,28 @@ public struct ActivityEvent: Codable, Equatable, Sendable {
     public let occurredAt: Date
     public let kind: ActivityKind
     public let detail: String
-    public init(id: UUID, occurredAt: Date, kind: ActivityKind, detail: String) {
-        self.id = id; self.occurredAt = occurredAt; self.kind = kind; self.detail = detail
+    public let failureCode: String?
+    public init(id: UUID, occurredAt: Date, kind: ActivityKind, detail: String, failureCode: String? = nil) {
+        self.id = id; self.occurredAt = occurredAt; self.kind = kind; self.detail = detail; self.failureCode = failureCode
+    }
+
+    private enum CodingKeys: String, CodingKey { case id, occurredAt, kind, detail }
+
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        id = try values.decode(UUID.self, forKey: .id)
+        occurredAt = try values.decode(Date.self, forKey: .occurredAt)
+        kind = try values.decode(ActivityKind.self, forKey: .kind)
+        detail = try values.decode(String.self, forKey: .detail)
+        failureCode = nil
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encode(id, forKey: .id)
+        try values.encode(occurredAt, forKey: .occurredAt)
+        try values.encode(kind, forKey: .kind)
+        try values.encode(detail, forKey: .detail)
     }
 }
 
@@ -64,8 +84,8 @@ public actor SQLiteStore {
 
     public func migrate() throws {
         let version = try schemaVersion()
-        guard version <= 4 else { throw StoreError.unsupportedSchema(version) }
-        guard version < 4 else { return }
+        guard version <= 5 else { throw StoreError.unsupportedSchema(version) }
+        guard version < 5 else { return }
         guard !readOnly else { throw StoreError.readOnly }
         try execute("BEGIN IMMEDIATE")
         do {
@@ -82,9 +102,12 @@ public actor SQLiteStore {
                 try execute("CREATE TABLE performance_samples (id TEXT PRIMARY KEY NOT NULL, measured_at REAL NOT NULL, load_average_1m REAL, available_bytes INTEGER)")
                 try execute("CREATE INDEX performance_samples_time ON performance_samples(measured_at)")
             }
-            try execute("CREATE TABLE saved_files (path TEXT PRIMARY KEY NOT NULL, first_seen_at REAL NOT NULL, last_seen_at REAL NOT NULL, logical_bytes INTEGER, allocated_bytes INTEGER, is_favorite INTEGER NOT NULL DEFAULT 0 CHECK(is_favorite IN (0, 1)))")
-            try execute("CREATE INDEX saved_files_recency ON saved_files(last_seen_at DESC)")
-            try execute("PRAGMA user_version = 4")
+            if version < 4 {
+                try execute("CREATE TABLE saved_files (path TEXT PRIMARY KEY NOT NULL, first_seen_at REAL NOT NULL, last_seen_at REAL NOT NULL, logical_bytes INTEGER, allocated_bytes INTEGER, is_favorite INTEGER NOT NULL DEFAULT 0 CHECK(is_favorite IN (0, 1)))")
+                try execute("CREATE INDEX saved_files_recency ON saved_files(last_seen_at DESC)")
+            }
+            try execute("ALTER TABLE activity_events ADD COLUMN failure_code TEXT")
+            try execute("PRAGMA user_version = 5")
             try execute("COMMIT")
         } catch {
             try? execute("ROLLBACK")
@@ -105,7 +128,7 @@ public actor SQLiteStore {
         guard !readOnly else { throw StoreError.readOnly }
         guard event.occurredAt.timeIntervalSince1970.isFinite else { throw StoreError.statement("invalid activity timestamp") }
         guard let database = connection?.handle else { throw StoreError.open("closed") }
-        let sql = "INSERT INTO activity_events(id, occurred_at, kind, detail) VALUES(?, ?, ?, ?)"
+        let sql = "INSERT INTO activity_events(id, occurred_at, kind, detail, failure_code) VALUES(?, ?, ?, ?, ?)"
         var statement: OpaquePointer?
         guard sqlite3_prepare_v2(database, sql, -1, &statement, nil) == SQLITE_OK, let statement else { throw failure() }
         defer { sqlite3_finalize(statement) }
@@ -113,13 +136,16 @@ public actor SQLiteStore {
         sqlite3_bind_double(statement, 2, event.occurredAt.timeIntervalSince1970)
         bind(event.kind.rawValue, to: 3, in: statement)
         bind(event.detail, to: 4, in: statement)
+        if let failureCode = event.failureCode { bind(failureCode, to: 5, in: statement) }
+        else { sqlite3_bind_null(statement, 5) }
         guard sqlite3_step(statement) == SQLITE_DONE else { throw failure() }
     }
 
     public func events() throws -> [ActivityEvent] {
         guard let database = connection?.handle else { throw StoreError.open("closed") }
         var statement: OpaquePointer?
-        let sql = "SELECT id, occurred_at, kind, detail FROM activity_events ORDER BY occurred_at ASC, id ASC"
+        let hasFailureCode = try schemaVersion() >= 5
+        let sql = "SELECT id, occurred_at, kind, detail\(hasFailureCode ? ", failure_code" : "") FROM activity_events ORDER BY occurred_at ASC, id ASC"
         guard sqlite3_prepare_v2(database, sql, -1, &statement, nil) == SQLITE_OK, let statement else { throw failure() }
         defer { sqlite3_finalize(statement) }
         var result: [ActivityEvent] = []
@@ -128,7 +154,8 @@ public actor SQLiteStore {
                   let kindText = sqlite3_column_text(statement, 2), let kind = ActivityKind(rawValue: String(cString: kindText)) else { continue }
             let date = Date(timeIntervalSince1970: sqlite3_column_double(statement, 1))
             let detailText = sqlite3_column_text(statement, 3).map { String(cString: $0) } ?? ""
-            result.append(ActivityEvent(id: id, occurredAt: date, kind: kind, detail: detailText))
+            let failureCode = hasFailureCode ? sqlite3_column_text(statement, 4).map { String(cString: $0) } : nil
+            result.append(ActivityEvent(id: id, occurredAt: date, kind: kind, detail: detailText, failureCode: failureCode))
         }
         return result
     }
