@@ -87,6 +87,16 @@ public enum ProductCopy {
         "integrity.identifier": "Bundle identifier", "integrity.team": "Signing team", "integrity.status": "System status code",
         "integrity.quarantine.present": "macOS quarantine marker present", "integrity.quarantine.absent": "No quarantine marker observed",
         "integrity.quarantine.unavailable": "Quarantine marker unavailable", "integrity.quarantine.limit": "Marker presence does not prove origin or safety; absence does not prove the app is safe.",
+        "integrity.loginItems.choose": "Choose a LaunchAgents folder", "integrity.loginItems.choose.hint": "Reviews plist files in the folder you select; no standard folders are scanned automatically.",
+        "integrity.loginItems.limit": "Lists configured candidates from direct-child plist files only. This does not show whether an item is enabled, loaded, active, trusted, or safe.",
+        "integrity.loginItems.progress": "Reviewing configured candidates…", "integrity.loginItems.results": "Configured candidates",
+        "integrity.loginItems.empty": "No configured candidates or review issues found.", "integrity.loginItems.unknownLabel": "Label unavailable",
+        "integrity.loginItems.executable": "Configured executable", "integrity.loginItems.plist": "Property list",
+        "integrity.loginItems.issue.directory": "The selected folder could not be read.",
+        "integrity.loginItems.issue.unreadable": "This property list could not be read.",
+        "integrity.loginItems.issue.malformed": "This file is not a readable property list dictionary.",
+        "integrity.loginItems.issue.tooLarge": "This property list exceeds the 1 MiB review limit.",
+        "integrity.loginItems.issue.limit": "The review stopped at 500 property list candidates.",
         "onboarding.title": "Welcome to CoreTend"
     ]
     public static let french: [String: String] = [
@@ -159,6 +169,16 @@ public enum ProductCopy {
         "integrity.identifier": "Identifiant du bundle", "integrity.team": "Équipe de signature", "integrity.status": "Code d’état système",
         "integrity.quarantine.present": "Marqueur de quarantaine macOS présent", "integrity.quarantine.absent": "Aucun marqueur de quarantaine observé",
         "integrity.quarantine.unavailable": "Marqueur de quarantaine indisponible", "integrity.quarantine.limit": "Sa présence ne prouve ni l’origine ni la sûreté; son absence ne prouve pas que l’app est sûre.",
+        "integrity.loginItems.choose": "Choisir un dossier LaunchAgents", "integrity.loginItems.choose.hint": "Examine les fichiers plist du dossier choisi; aucun dossier connu n’est analysé automatiquement.",
+        "integrity.loginItems.limit": "Liste les candidats configurés des fichiers plist directement présents dans le dossier. Cela n’indique pas si un élément est activé, chargé, actif, fiable ou sûr.",
+        "integrity.loginItems.progress": "Examen des candidats configurés…", "integrity.loginItems.results": "Candidats configurés",
+        "integrity.loginItems.empty": "Aucun candidat configuré ni problème de lecture.", "integrity.loginItems.unknownLabel": "Libellé indisponible",
+        "integrity.loginItems.executable": "Exécutable configuré", "integrity.loginItems.plist": "Liste de propriétés",
+        "integrity.loginItems.issue.directory": "Impossible de lire le dossier choisi.",
+        "integrity.loginItems.issue.unreadable": "Impossible de lire cette liste de propriétés.",
+        "integrity.loginItems.issue.malformed": "Ce fichier ne contient pas de dictionnaire plist lisible.",
+        "integrity.loginItems.issue.tooLarge": "Cette liste de propriétés dépasse la limite d’examen de 1 Mio.",
+        "integrity.loginItems.issue.limit": "L’examen s’est arrêté à 500 fichiers plist candidats.",
         "onboarding.title": "Bienvenue dans CoreTend"
     ]
     public static func value(for key: String, french isFrench: Bool) -> String {
