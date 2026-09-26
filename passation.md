@@ -19,6 +19,7 @@
 - Développement après intégration : charge système sur une minute et historique Performance SQLite v3 (30 jours/500 entrées, points mesurés). Tests Persistence ciblés 14/14 et `make qualify` passent; qualification UI native encore ouverte.
 - Intégrité ajoute lecture du marqueur de quarantaine macOS sur l’app choisie; états présent/absent/indisponible et test fixture. La provenance réelle reste non vérifiée.
 - Applications propose désormais le déplacement du seul bundle `.app` choisi vers la Corbeille, avec proposition journalisée, revue nominative et confirmation. L’identité du répertoire est comparée à l’inventaire, à la revue et à l’exécution; tests sur Corbeille fixture et remplacement de répertoire. Données associées/héritées inchangées; FR-26 reste PARTIEL.
+- Cleanup et Doublons utilisent désormais une présentation de confirmation explicite, figent les contrôles pendant l’action et libèrent l’accès temporaire au dossier sur tous les chemins d’échec. Le parcours UI natif reste à qualifier.
 
 ## Suite prioritaire
 
