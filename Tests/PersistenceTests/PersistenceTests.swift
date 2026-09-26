@@ -90,18 +90,38 @@ final class PersistenceTests: XCTestCase {
         XCTAssertEqual(decoded, [event])
     }
 
-    func testDiagnosticExportOmitsEventDetailsAndPaths() throws {
-        let privateEvent = ActivityEvent(id: UUID(), occurredAt: Date(timeIntervalSince1970: 1), kind: .failed,
-                                         detail: "private-fixture-root/hidden.dat")
-        let bytes = try DiagnosticExport.json(schemaVersion: 2, events: [privateEvent], createdAt: Date(timeIntervalSince1970: 0))
-        let json = String(decoding: bytes, as: UTF8.self)
-        XCTAssertFalse(json.contains("private-fixture-root"))
-        XCTAssertFalse(json.contains("hidden.dat"))
-        XCTAssertTrue(json.contains("\"failed\" : 1") || json.contains("\"failed\": 1"))
+    func testDiagnosticExportContainsOnlyAllowlistedAggregateFields() throws {
+        let events = [
+            ActivityEvent(id: UUID(uuidString: "11111111-1111-4111-8111-111111111111")!,
+                          occurredAt: Date(timeIntervalSince1970: 1_000_000_000), kind: .failed,
+                          detail: "PRIVATE_DETAIL_ALPHA synthetic-root-alpha/secret-alpha.dat"),
+            ActivityEvent(id: UUID(uuidString: "22222222-2222-4222-8222-222222222222")!,
+                          occurredAt: Date(timeIntervalSince1970: 1_000_000_001), kind: .proposed,
+                          detail: "PRIVATE_DETAIL_BETA synthetic-root-beta/secret-beta.log"),
+            ActivityEvent(id: UUID(uuidString: "33333333-3333-4333-8333-333333333333")!,
+                          occurredAt: Date(timeIntervalSince1970: 1_000_000_002), kind: .failed,
+                          detail: "PRIVATE_DETAIL_GAMMA synthetic-root-gamma/secret-gamma.txt")
+        ]
+        let bytes = try DiagnosticExport.json(schemaVersion: 2, events: events, createdAt: Date(timeIntervalSince1970: 0))
+        let json = String(decoding: bytes, as: UTF8.self).lowercased()
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: bytes) as? [String: Any])
+        XCTAssertEqual(Set(object.keys), ["product", "version", "schemaVersion", "eventCounts", "createdAt"])
+        let counts = try XCTUnwrap(object["eventCounts"] as? [String: Int])
+        XCTAssertEqual(counts, ["failed": 2, "proposed": 1])
+        for marker in [
+            "11111111-1111-4111-8111-111111111111", "22222222-2222-4222-8222-222222222222",
+            "33333333-3333-4333-8333-333333333333",
+            "2001-09-09T01:46:40Z", "2001-09-09T01:46:41Z", "2001-09-09T01:46:42Z",
+            "PRIVATE_DETAIL_ALPHA", "PRIVATE_DETAIL_BETA", "PRIVATE_DETAIL_GAMMA",
+            "synthetic-root-alpha", "synthetic-root-beta", "synthetic-root-gamma",
+            "secret-alpha.dat", "secret-beta.log", "secret-gamma.txt"
+        ] {
+            XCTAssertFalse(json.contains(marker.lowercased()), "Diagnostic export leaked synthetic marker: \(marker)")
+        }
         let decoder = JSONDecoder(); decoder.dateDecodingStrategy = .iso8601
         let report = try decoder.decode(DiagnosticSummary.self, from: bytes)
         XCTAssertEqual(report.schemaVersion, 2)
-        XCTAssertEqual(report.eventCounts["failed"], 1)
+        XCTAssertEqual(report.eventCounts, ["failed": 2, "proposed": 1])
     }
 
     func testStoreLocationUsesGreenfieldNamespaceUnderInjectedSupportRoot() {
