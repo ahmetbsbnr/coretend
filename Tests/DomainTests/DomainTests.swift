@@ -63,6 +63,47 @@ private struct FixedSnapshotReader: SystemSnapshotReading {
 }
 
 final class ApplicationDiscoveryTests: XCTestCase {
+    func testDeclaredHTTPSFeedExposesOnlyItsURLWithAvailabilityUnknown() throws {
+        let record = try discoverFixture(updateFeed: "https://updates.example.org/app.xml")
+        XCTAssertEqual(record.updateSource, .declaredHTTPSFeed(URL(string: "https://updates.example.org/app.xml")!))
+        XCTAssertEqual(record.updateAvailability, .unknown(reason: "update_version_not_checked"))
+    }
+
+    func testAbsentFeedHasNoActionableSource() throws {
+        let record = try discoverFixture(updateFeed: nil)
+        XCTAssertEqual(record.updateSource, .unknown)
+        XCTAssertEqual(record.updateAvailability, .unknown(reason: "update_source_not_checked"))
+    }
+
+    func testInvalidDeclaredFeedsHaveNoActionableURL() throws {
+        let invalidFeeds = [
+            "https://[invalid",
+            "http://updates.example.org/app.xml",
+            "https://user:secret@updates.example.org/app.xml",
+            " https://updates.example.org/app.xml ",
+            "https://updates.example.org/a b.xml",
+            "https://updates.example.org/a\n.xml",
+            "https://updates.example.org/\(String(repeating: "a", count: 2_048))"
+        ]
+        for feed in invalidFeeds {
+            let record = try discoverFixture(updateFeed: feed)
+            XCTAssertEqual(record.updateSource, .invalidDeclaredFeed, "Unexpected actionable source for \(feed.debugDescription)")
+            XCTAssertEqual(record.updateAvailability, .unknown(reason: "update_version_not_checked"))
+        }
+    }
+
+    private func discoverFixture(updateFeed: String?) throws -> ApplicationRecord {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-update-feed-\(UUID())", isDirectory: true)
+        let contents = root.appendingPathComponent("Fixture.app/Contents", isDirectory: true)
+        try FileManager.default.createDirectory(at: contents, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        var info: [String: Any] = ["CFBundleIdentifier": "org.example.fixture"]
+        info["SUFeedURL"] = updateFeed
+        let data = try PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0)
+        try data.write(to: contents.appendingPathComponent("Info.plist"))
+        return try XCTUnwrap(ApplicationDiscoveryService().discover(in: root).applications.first)
+    }
+
     func testDiscoversOnlyTopLevelAppBundlesUnderInjectedFixtureRoot() throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-apps-\(UUID())", isDirectory: true)
         let app = root.appendingPathComponent("Fixture.app", isDirectory: true)
