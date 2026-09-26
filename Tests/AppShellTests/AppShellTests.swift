@@ -22,6 +22,42 @@ final class AppShellTests: XCTestCase {
         XCTAssertTrue(ProductCopy.french.keys.contains("safety.notice"))
     }
 
+    func testSystemMeasurementCopyNamesSourceAndLimitsClaimsInBothLanguages() {
+        let english = ProductCopy.value(for: "metrics.scope", french: false)
+        let french = ProductCopy.value(for: "metrics.scope", french: true)
+        let sources = ["volume", "load", "processors", "memory", "uptime", "thermal"]
+
+        XCTAssertTrue(english.contains("macOS"))
+        XCTAssertTrue(english.contains("not a system-health diagnosis"))
+        XCTAssertTrue(english.contains("do not estimate recoverable space"))
+        XCTAssertTrue(french.contains("macOS"))
+        XCTAssertTrue(french.contains("pas un diagnostic de santé du système"))
+        XCTAssertTrue(french.contains("n’estiment pas l’espace récupérable"))
+        for source in sources {
+            let key = "metrics.source.\(source)"
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: false), key, "Missing English source for \(source)")
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: true), key, "Missing French source for \(source)")
+        }
+        XCTAssertTrue(ProductCopy.value(for: "metrics.source.volume", french: false).contains("/"))
+        XCTAssertTrue(ProductCopy.value(for: "metrics.source.volume", french: true).contains("/"))
+    }
+
+    func testProductCopyRejectsAffirmativeHealthAndRecoveredSpaceClaims() {
+        let forbiddenEnglish = ["the system is healthy", "healthy system", "your mac is safe", "space recovered", "space was recovered", "space freed"]
+        let forbiddenFrench = ["le système est sain", "système en bonne santé", "votre mac est sûr", "espace récupéré", "espace a été récupéré", "espace libéré"]
+
+        for copy in ProductCopy.english.values {
+            for claim in forbiddenEnglish {
+                XCTAssertFalse(copy.localizedCaseInsensitiveContains(claim), "Forbidden English claim: \(claim)")
+            }
+        }
+        for copy in ProductCopy.french.values {
+            for claim in forbiddenFrench {
+                XCTAssertFalse(copy.localizedCaseInsensitiveContains(claim), "Forbidden French claim: \(claim)")
+            }
+        }
+    }
+
     func testSpaceLensDeleteCopyCoversSelectionReviewCancelAndStatusInBothLanguages() {
         let keys = [
             "explore.delete.select", "explore.delete.review", "spacelens.delete.title",

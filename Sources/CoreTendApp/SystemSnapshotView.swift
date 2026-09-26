@@ -30,6 +30,7 @@ struct SystemSnapshotView: View {
                 }
                 Text(copy("metrics.measured") + " " + snapshot.measuredAt.formatted(.dateTime.hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US"))))
                     .font(.caption).foregroundStyle(.secondary)
+                Text(copy("metrics.scope")).font(.caption).foregroundStyle(.secondary)
             } else if !loading {
                 ContentUnavailableView(copy("metrics.unavailable"), systemImage: "gauge.with.dots.needle.67percent")
             }
@@ -52,10 +53,9 @@ struct SystemSnapshotView: View {
                 Text(copy("metrics.available")).foregroundStyle(.secondary)
             }
             Text(copy("metrics.trashNote")).font(.callout).foregroundStyle(.secondary)
-            if case .known(let total) = value.totalBytes {
-                Text(copy("metrics.volumeTotal") + " " + ByteCountFormatter.string(fromByteCount: total, countStyle: .file))
-                    .font(.caption).foregroundStyle(.secondary)
-            }
+            Text(copy("metrics.source.volume")).font(.caption).foregroundStyle(.secondary)
+            Text(copy("metrics.volumeTotal") + " " + format(value.totalBytes))
+                .font(.caption).foregroundStyle(.secondary)
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -64,12 +64,12 @@ struct SystemSnapshotView: View {
 
     private func performance(_ value: SystemSnapshot) -> some View {
         Grid(alignment: .leading, horizontalSpacing: 32, verticalSpacing: 16) {
-            metric(copy("metrics.loadAverage"), load(value.loadAverage1m))
-            metric(copy("metrics.processors"), "\(value.activeProcessorCount)")
-            metric(copy("metrics.memory"), ByteCountFormatter.string(fromByteCount: value.physicalMemoryBytes, countStyle: .memory))
-            metric(copy("metrics.uptime"), uptime(value.uptimeSeconds))
-            metric(copy("metrics.thermal"), thermal(value.thermalState))
-            metric(copy("metrics.freeSpace"), format(value.availableBytes))
+            metric(copy("metrics.loadAverage"), load(value.loadAverage1m), source: copy("metrics.source.load"))
+            metric(copy("metrics.processors"), "\(value.activeProcessorCount)", source: copy("metrics.source.processors"))
+            metric(copy("metrics.memory"), ByteCountFormatter.string(fromByteCount: value.physicalMemoryBytes, countStyle: .memory), source: copy("metrics.source.memory"))
+            metric(copy("metrics.uptime"), uptime(value.uptimeSeconds), source: copy("metrics.source.uptime"))
+            metric(copy("metrics.thermal"), thermal(value.thermalState), source: copy("metrics.source.thermal"))
+            metric(copy("metrics.freeSpace"), format(value.availableBytes), source: copy("metrics.source.volume"))
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -156,10 +156,13 @@ struct SystemSnapshotView: View {
         }
     }
 
-    private func metric(_ title: String, _ value: String) -> some View {
+    private func metric(_ title: String, _ value: String, source: String) -> some View {
         GridRow {
-            Text(title).foregroundStyle(.secondary)
-            Text(value).font(.body.monospacedDigit()).accessibilityLabel("\(title): \(value)")
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).foregroundStyle(.secondary)
+                Text(source).font(.caption2).foregroundStyle(.tertiary)
+            }
+            Text(value).font(.body.monospacedDigit()).accessibilityLabel("\(title): \(value). \(source)")
         }
     }
 
