@@ -85,3 +85,7 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 
 - CI distante de `bea69a3` réussie : [Actions run 36264445630](https://github.com/ahmetbsbnr/coretend/actions/runs/36264445630), `qualify` + whitespace, macos-latest, 18:59:56Z.
 - Run `36264363517` de `c7ea517` a aussi réussi après push; serveur avait signalé bypass admin car check distant était encore en attente au push. La protection conserve status check strict pour merge; privilégier branches de travail + PR pour éviter bypass direct.
+
+## Branch-policy documentation checkpoint — 26-09-2026
+
+- CI `ed437b1` réussie : [Actions run 36264534176](https://github.com/ahmetbsbnr/coretend/actions/runs/36264534176), macos-latest, build/fixtures/site/contracts + whitespace, 19:01:42Z.
