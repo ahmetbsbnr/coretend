@@ -3,6 +3,12 @@ import Darwin
 import ProductContract
 import SafetyCore
 
+public enum AppUpdateSource: Sendable, Equatable {
+    case declaredHTTPSFeed(URL)
+    case invalidDeclaredFeed
+    case unknown
+}
+
 public struct ApplicationRecord: Sendable, Equatable, Identifiable {
     public let id: String
     public let bundleIdentifier: String
@@ -10,6 +16,7 @@ public struct ApplicationRecord: Sendable, Equatable, Identifiable {
     public let version: String?
     public let url: URL
     public let updateAvailability: ProductMeasurement<String>
+    public let updateSource: AppUpdateSource
     public let fileIdentity: FileIdentity
 }
 
@@ -56,16 +63,30 @@ public struct ApplicationDiscoveryService: Sendable {
                     ?? (info["CFBundleName"] as? String)
                     ?? appURL.deletingPathExtension().lastPathComponent
                 let version = (info["CFBundleShortVersionString"] as? String) ?? (info["CFBundleVersion"] as? String)
+                let updateSource = Self.updateSource(from: info)
                 guard try FileIdentity(url: appURL) == initialIdentity else { throw PathRefusal.identityChanged }
                 applications.append(ApplicationRecord(id: appURL.path, bundleIdentifier: identifier,
                                                        displayName: displayName, version: version, url: appURL,
-                                                       updateAvailability: .unknown(reason: "update_source_not_checked"),
+                                                       updateAvailability: .unknown(reason: updateSource == .unknown ? "update_source_not_checked" : "update_version_not_checked"),
+                                                       updateSource: updateSource,
                                                        fileIdentity: initialIdentity))
             } catch {
                 issues.append(.init(path: appURL.path, reason: "bundle_metadata_unavailable"))
             }
         }
         return ApplicationDiscoveryReport(applications: applications.sorted { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }, issues: issues)
+    }
+
+    private static func updateSource(from info: [String: Any]) -> AppUpdateSource {
+        guard let raw = info["SUFeedURL"] as? String else { return .unknown }
+        guard raw.count <= 2_048, raw == raw.trimmingCharacters(in: .whitespacesAndNewlines),
+              !raw.unicodeScalars.contains(where: { CharacterSet.controlCharacters.contains($0) }),
+              let components = URLComponents(string: raw),
+              components.scheme?.lowercased() == "https",
+              let host = components.host, !host.isEmpty,
+              components.user == nil, components.password == nil,
+              let url = components.url else { return .invalidDeclaredFeed }
+        return .declaredHTTPSFeed(url)
     }
 
     private static func readRegularFileNoFollow(_ url: URL) throws -> Data {

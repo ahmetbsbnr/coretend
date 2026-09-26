@@ -8,6 +8,8 @@ Le CLI exige `--root` pour scanner et `--store` pour consulter un historique loc
 
 Dans Applications, choisissez un dossier d’apps pour inventorier ses bundles `.app` au premier niveau. **Déplacer cette app vers la Corbeille** propose uniquement le bundle nommé : CoreTend journalise la proposition, affiche son nom, son identifiant et son chemin, puis demande confirmation. L’identité du bundle est comparée à celle de l’inventaire, de la revue et du transfert; si elle change, le déplacement est refusé. Les fichiers associés et les données héritées restent en place. L’action ne désinstalle ni services ni éléments partagés.
 
+Si une app déclare `SUFeedURL` dans son `Info.plist`, Applications affiche son hôte et un lien vers cette adresse uniquement si elle est HTTPS valide. Le lien ouvre le navigateur après votre clic. CoreTend ne lit pas le flux, ne compare aucune version et ne dit pas qu’une mise à jour est disponible. Une adresse absente ou invalide reste indiquée comme telle; elle ne déclenche aucune connexion.
+
 **Rechercher des fichiers associés** demande un autre dossier explicite. CoreTend ne retient que les noms contenant un composant exactement égal à l’identifiant de bundle. Ce signal ne prouve pas l’appartenance; les candidats restent consultatifs et aucune action n’est proposée sur eux.
 # Images similaires
 

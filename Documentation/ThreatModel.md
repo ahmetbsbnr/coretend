@@ -14,10 +14,10 @@ The user explicitly supplies scan roots. ScanCore reads metadata and content onl
 - Target substitution or expiry: inventory captures the app directory identity, review compares it and captures a fresh identity, approval and executor compare it again; changed/missing/expired target fails closed. Identity uses device and inode and does not detect in-place edits to bundle contents.
 - Trash API failure: preserve source, return typed failure; never report successful removal.
 - Scan races/permission failures: report item-level issue; unknown measurement remains unknown.
-- Accidental private-data exposure: no telemetry/network by default; diagnostic export not enabled until preview/redaction review exists; CLI warns paths may be sensitive.
+- Accidental private-data exposure: no telemetry/network by default; an app-declared HTTPS feed can open in the browser only after a user clicks its link. The feed belongs to the inspected app and is not verified as trustworthy. CLI warns paths may be sensitive.
 - Test damage to user data: fixtures under per-test temporary directories; fake Trash exists only in test target; static audit bans mutation APIs in production except `trashItem`.
 - Misleading product claims: unreleased status on site; evidence-gated traceability; no antivirus or reclaimed-space claims.
 
 ## Residual work
 
-Cleanup, Duplicates and app-bundle actions use SafetyCore, but their native UI flows remain unqualified. App associated data and legacy data are not moved; provenance attribution and update source are unfinished. No independent security review or hostile race stress test has run; macOS 14 was declared as minimum but this host reports a newer SDK and no older host was tested. These gaps block qualification claims.
+Cleanup, Duplicates and app-bundle actions use SafetyCore, but their native UI flows remain unqualified. App associated data and legacy data are not moved; provenance attribution and update source coverage remain incomplete. No independent security review or hostile race stress test has run; macOS 14 was declared as minimum but this host reports a newer SDK and no older host was tested. These gaps block qualification claims.

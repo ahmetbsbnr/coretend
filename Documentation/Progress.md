@@ -64,3 +64,8 @@
 - L’identité du répertoire est comparée à l’inventaire lors de la revue, puis à la revue lors de l’approbation et de l’exécution. Un remplacement au même chemin échoue. Les tests utilisent une Corbeille fixture, couvrent déplacement du bundle seul, conservation des données associées et deux courses de remplacement.
 - Cette tranche ne prouve pas les parcours UI natifs, l’accès réel à la Corbeille macOS, l’attribution des reliquats ou les composants de lancement. FR-26 reste PARTIEL.
 - Revue des boîtes de confirmation Cleanup/Doublons : fermeture journalisée, sélection et racine figées pendant revue/exécution, accès temporaire au dossier libéré même si la proposition ne peut pas être journalisée. Compilation SwiftUI passe; interaction native non exécutée.
+
+### Source de mise à jour déclarée — 2026-09-26
+
+- L’inventaire Applications lit localement `SUFeedURL` depuis `Info.plist`. Seule une adresse HTTPS valide sans identifiants devient un lien explicite vers le navigateur; une adresse invalide ou absente reste signalée. Aucune requête réseau, lecture de flux ou comparaison de versions au moment de l’inventaire.
+- `apps.updates` et FR-25 restent PARTIELS : aucune preuve de source App Store, aucune page produit confirmée, aucune comparaison de versions et aucun parcours natif qualifié.
