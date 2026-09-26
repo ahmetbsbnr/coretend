@@ -1,305 +1,153 @@
-// SPDX-License-Identifier: Apache-2.0
-// SPDX-FileCopyrightText: The CoreTend Authors
-
 import Foundation
+import Darwin
 
-/// Risk level attached to every candidate file operation.
-public enum RiskLevel: String, Sendable, Codable, Comparable {
-    case low, medium, high
+public struct FileIdentity: Hashable, Sendable {
+    public let standardizedPath: String
+    public let device: UInt64
+    public let inode: UInt64
 
-    private var rank: Int {
-        switch self {
-        case .low: 0
-        case .medium: 1
-        case .high: 2
+    public init(url: URL) throws {
+        var info = stat()
+        guard lstat(url.path, &info) == 0, (info.st_mode & S_IFMT) != S_IFLNK else {
+            throw PathRefusal.unreadableOrSymlink
         }
-    }
-
-    public static func < (lhs: RiskLevel, rhs: RiskLevel) -> Bool {
-        lhs.rank < rhs.rank
+        standardizedPath = url.standardizedFileURL.path
+        device = UInt64(info.st_dev)
+        inode = UInt64(info.st_ino)
     }
 }
 
-/// Typed errors produced by path validation.
-public enum SafetyError: Error, Equatable, Sendable {
-    case emptyPath
-    case relativePath
-    case protectedRoot(String)
-    case outsideAllowedRoots
-    case symlinkTraversal(String)
-    case fileVanished
+public enum PathRefusal: Error, Equatable, Sendable {
+    case unreadableOrSymlink
+    case outsideAllowedRoot
+    case ruleNotAllowed
+    case missingTarget
+    case identityChanged
+    case expiredApproval
+    case invalidLifetime
 }
 
-/// Validates paths against protected roots and per-operation allowlists.
-/// All destructive engines must go through this type; they never accept raw URLs.
-public struct PathValidator: Sendable {
-    /// Roots that must never be touched, regardless of allowlists.
-    /// Written as the paths these resolve TO. `/etc`, `/var` and `/tmp` are
-    /// symlinks into `/private`, and `validate` tests this list against both
-    /// spellings — see `canonicalSpellings`.
-    ///
-    /// `/Library/LaunchAgents` and `/Library/LaunchDaemons` are deliberately
-    /// absent: app uninstallation legitimately removes an app's own
-    /// `<bundleID>.plist` from them through a per-operation allowlist, and a
-    /// protected root outranks any allowlist.
-    public static let protectedRoots: [String] = [
-        "/System", "/bin", "/sbin", "/usr/bin", "/usr/sbin", "/usr/lib",
-        "/usr/libexec", "/usr/share", "/private/var/db", "/private/etc",
-        "/Library/Apple", "/Volumes/Recovery",
-    ]
-
-    /// User-content roots that must never be auto-selected for deletion.
-    public static func userContentRoots(home: URL) -> [String] {
-        ["Documents", "Desktop", "Pictures", "Music", "Movies"].map {
-            home.appendingPathComponent($0).path
-        }
-    }
-
-    public let allowedRoots: [URL]
-
-    public init(allowedRoots: [URL]) {
-        self.allowedRoots = allowedRoots.map { $0.standardizedFileURL }
-    }
-
-    /// Canonicalizes and validates a candidate path. Rejects protected roots,
-    /// paths outside the allowlist, and symlinks whose target escapes the allowlist.
-    public func validate(_ url: URL) throws(SafetyError) -> URL {
-        let raw = url.path
-        guard !raw.isEmpty else { throw .emptyPath }
-        guard raw.hasPrefix("/") else { throw .relativePath }
-
-        // Standardize removes "..", "." and trailing slashes without touching disk.
-        let standardized = url.standardizedFileURL
-        guard standardized.path != "/" else { throw .protectedRoot("/") }
-
-        // Resolved here, before the protected-root check, because that check
-        // needs it too: it used to run against the path as *written* only,
-        // while the resolved path was tested against the allowlist alone — so
-        // `/var/db/SystemPolicy` and `/etc/passwd` validated cleanly.
-        let resolved = standardized.resolvingSymlinksInPath()
-
-        // Case-insensitive: macOS volumes are case-insensitive by default, so
-        // `/system/Library` is `/System/Library` and a case-sensitive prefix
-        // test let it past. Over-refusing is the safe error for a protected
-        // root; the allowlist below keeps the exact comparison, where
-        // over-permitting never is.
-        for spelling in Self.canonicalSpellings(of: standardized.path)
-            + Self.canonicalSpellings(of: resolved.path) {
-            for root in Self.protectedRoots
-            where Self.isPath(spelling, under: root, caseInsensitive: true) {
-                throw .protectedRoot(root)
-            }
-        }
-        let home = FileManager.default.homeDirectoryForCurrentUser.standardizedFileURL
-        guard standardized.path.compare(home.path, options: .caseInsensitive) != .orderedSame else {
-            throw .protectedRoot(home.path)
-        }
-
-        guard allowedRoots.contains(where: { Self.isPath(standardized.path, under: $0.path) }) else {
-            throw .outsideAllowedRoots
-        }
-
-        // The resolved target must also stay inside the allowlist (defends
-        // against symlink swaps). Resolution happened above.
-        if resolved.path != standardized.path {
-            guard allowedRoots.contains(where: { Self.isPath(resolved.path, under: $0.path) }) else {
-                throw .symlinkTraversal(resolved.path)
-            }
-        }
-        return standardized
-    }
-
-    /// macOS ships these three as symlinks into `/private`; the list is fixed
-    /// by the OS layout, not discovered at runtime.
-    private static let privateAliases = ["/etc", "/var", "/tmp"]
-
-    /// Every spelling of `path` the protected-root list has to be tested
-    /// against. `URL.resolvingSymlinksInPath()` normalises the wrong way — it
-    /// strips a leading `/private` — and `realpath(3)` returns NULL for a path
-    /// that no longer exists, which is exactly when the check must still hold.
-    /// So this normalises deterministically and offline, toward `/private`.
-    static func canonicalSpellings(of path: String) -> [String] {
-        var spellings = [path]
-        for alias in privateAliases
-        where isPath(path, under: alias, caseInsensitive: true) {
-            spellings.append("/private" + path)
-        }
-        return spellings
-    }
-
-    /// Prefix check that respects path-component boundaries ("/a/bc" is not
-    /// under "/a/b").
-    ///
-    /// `caseInsensitive` is a direction-of-safety choice, not a convenience.
-    /// Protected roots fold case (over-refusing is the safe error); the
-    /// allowlist does not, and is the default (on a case-sensitive volume,
-    /// folding would widen it to a directory the user never granted).
-    public static func isPath(_ path: String, under root: String,
-                              caseInsensitive: Bool = false) -> Bool {
-        let trimmed = root.hasSuffix("/") && root != "/" ? String(root.dropLast()) : root
-        guard caseInsensitive else {
-            return path == trimmed || path.hasPrefix(trimmed.hasSuffix("/") ? trimmed : trimmed + "/")
-        }
-        if path.compare(trimmed, options: .caseInsensitive) == .orderedSame { return true }
-        let boundary = trimmed.hasSuffix("/") ? trimmed : trimmed + "/"
-        return path.range(of: boundary, options: [.caseInsensitive, .anchored]) != nil
-    }
-}
-
-/// One lifecycle event for a single file operation, emitted to an optional
-/// `SafetyAuditSink` so callers can persist a durable log. Carries the raw
-/// path — sinks that persist to disk must redact it themselves (see
-/// `Persistence.Store`'s conformance); SafetyCore never writes to disk
-/// itself and never includes file content, only path/rule/risk/size/result.
-public struct SafetyAuditEvent: Sendable {
-    public enum Stage: String, Sendable {
-        case approved   // path validated, operation queued
-        case executed   // real trash/restore action performed after confirmation
-        case skipped    // re-validation failed at execute time, nothing touched
-        case error      // the underlying file-system call itself failed
-    }
-
-    public let operationID: UUID
-    public let stage: Stage
-    public let path: String
-    public let ruleID: String
-    public let risk: RiskLevel
-    public let size: Int64
-    public let date: Date
-    /// Short, non-sensitive result description (e.g. a SafetyError case name).
-    /// Never a full error message that could embed file content or a stack trace.
-    public let result: String
-
-    public init(operationID: UUID, stage: Stage, path: String, ruleID: String,
-                risk: RiskLevel, size: Int64, date: Date = Date(), result: String) {
-        self.operationID = operationID
-        self.stage = stage
-        self.path = path
-        self.ruleID = ruleID
-        self.risk = risk
-        self.size = size
-        self.date = date
-        self.result = result
-    }
-}
-
-/// Durable sink for `SafetyAuditEvent`s. SafetyCore stays storage-agnostic;
-/// `Persistence.Store` is the shipped implementation (append-only SQLite).
-public protocol SafetyAuditSink: Sendable {
-    func recordSafetyEvent(_ event: SafetyAuditEvent) async
-}
-
-/// A file operation that passed SafetyCore validation. Deletion engines accept
-/// only this type — never a raw URL from the UI layer.
-public struct ApprovedFileOperation: Sendable, Identifiable {
-    public enum Kind: String, Sendable, Codable {
-        case moveToTrash
-    }
-
+public struct ApprovedFileOperation: Sendable {
     public let id: UUID
-    public let kind: Kind
-    public let url: URL
-    public let logicalSize: Int64
+    public let target: FileIdentity
     public let ruleID: String
-    public let risk: RiskLevel
     public let approvedAt: Date
+    public let expiresAt: Date
 
-    fileprivate init(kind: Kind, url: URL, logicalSize: Int64, ruleID: String, risk: RiskLevel) {
-        self.id = UUID()
-        self.kind = kind
-        self.url = url
-        self.logicalSize = logicalSize
+    fileprivate init(target: FileIdentity, ruleID: String, approvedAt: Date, expiresAt: Date) {
+        id = UUID()
+        self.target = target
         self.ruleID = ruleID
-        self.risk = risk
-        self.approvedAt = Date()
+        self.approvedAt = approvedAt
+        self.expiresAt = expiresAt
     }
 }
 
-/// Central approval + execution actor. Re-validates every approved path just
-/// before moving it to the Trash.
-public actor SafetyCenter {
+public struct PathValidator: Sendable {
+    public init() {}
+
+    public func approve(target: URL, allowedRoots: [URL], ruleID: String,
+                        allowedRuleIDs: Set<String>, now: Date = .now,
+                        lifetime: TimeInterval = 120) throws -> ApprovedFileOperation {
+        guard lifetime > 0, lifetime <= 300 else { throw PathRefusal.invalidLifetime }
+        guard allowedRuleIDs.contains(ruleID) else { throw PathRefusal.ruleNotAllowed }
+        let identity = try FileIdentity(url: target)
+        guard Self.isWithin(identity, roots: allowedRoots) else {
+            throw PathRefusal.outsideAllowedRoot
+        }
+        return ApprovedFileOperation(target: identity, ruleID: ruleID,
+                                     approvedAt: now, expiresAt: now.addingTimeInterval(lifetime))
+    }
+
+    fileprivate func revalidate(_ operation: ApprovedFileOperation, allowedRoots: [URL],
+                                allowedRuleIDs: Set<String>, now: Date) throws -> URL {
+        guard now <= operation.expiresAt else { throw PathRefusal.expiredApproval }
+        guard allowedRuleIDs.contains(operation.ruleID) else { throw PathRefusal.ruleNotAllowed }
+        let url = URL(fileURLWithPath: operation.target.standardizedPath)
+        let current = try FileIdentity(url: url)
+        guard current == operation.target else { throw PathRefusal.identityChanged }
+        guard Self.isWithin(current, roots: allowedRoots) else {
+            throw PathRefusal.outsideAllowedRoot
+        }
+        return url
+    }
+
+    private static func isWithin(_ identity: FileIdentity, roots: [URL]) -> Bool {
+        roots.contains { root in
+            let rootPath = root.standardizedFileURL.resolvingSymlinksInPath().path
+            var rootInfo = stat()
+            guard stat(rootPath, &rootInfo) == 0, UInt64(rootInfo.st_dev) == identity.device else { return false }
+            let candidate = URL(fileURLWithPath: identity.standardizedPath).resolvingSymlinksInPath().path
+            return candidate == rootPath || candidate.hasPrefix(rootPath.hasSuffix("/") ? rootPath : rootPath + "/")
+        }
+    }
+}
+
+public enum ActionFailure: Error, Equatable, Sendable {
+    case revalidation(PathRefusal)
+    case trashFailed(String)
+    case auditUnavailable
+}
+
+public enum RefusalReason: Equatable, Sendable { case userDeclined }
+public enum ActionOutcome: Equatable, Sendable {
+    case movedToTrash(original: String, trashURL: String)
+    case refused(RefusalReason)
+    case failed(ActionFailure)
+    case cancelled
+}
+
+public protocol TrashClient: Sendable {
+    func moveToTrash(_ url: URL) async throws -> URL
+}
+
+public protocol FileOperationExecutor: Sendable {
+    func execute(_ operation: ApprovedFileOperation) async -> ActionOutcome
+}
+
+public struct ActionEvent: Sendable, Equatable {
+    public let operationID: UUID
+    public let occurredAt: Date
+    public let outcome: ActionOutcome
+}
+
+public struct SafeActionExecutor: FileOperationExecutor {
     private let validator: PathValidator
-    private let fileManager = FileManager.default
-    private let sink: SafetyAuditSink?
+    private let roots: [URL]
+    private let allowedRules: Set<String>
+    private let trash: any TrashClient
+    private let clock: @Sendable () -> Date
 
-    public init(validator: PathValidator, sink: SafetyAuditSink? = nil) {
+    public init(validator: PathValidator = .init(), allowedRoots: [URL],
+                allowedRules: Set<String>, trash: any TrashClient,
+                clock: @escaping @Sendable () -> Date = { .now }) {
         self.validator = validator
-        self.sink = sink
+        self.roots = allowedRoots
+        self.allowedRules = allowedRules
+        self.trash = trash
+        self.clock = clock
     }
 
-    /// Produces an approved operation, or throws if the path fails validation.
-    public func approve(url: URL, logicalSize: Int64, ruleID: String, risk: RiskLevel) async throws(SafetyError) -> ApprovedFileOperation {
-        do throws(SafetyError) {
-            let validated = try validator.validate(url)
-            let op = ApprovedFileOperation(kind: .moveToTrash, url: validated, logicalSize: logicalSize, ruleID: ruleID, risk: risk)
-            await emit(.approved, operationID: op.id, path: validated.path, ruleID: ruleID, risk: risk, size: logicalSize, result: "approved")
-            return op
+    public func execute(_ operation: ApprovedFileOperation) async -> ActionOutcome {
+        let url: URL
+        do { url = try validator.revalidate(operation, allowedRoots: roots, allowedRuleIDs: allowedRules, now: clock()) }
+        catch let refusal as PathRefusal { return .failed(.revalidation(refusal)) }
+        catch { return .failed(.revalidation(.missingTarget)) }
+        do {
+            let moved = try await trash.moveToTrash(url)
+            return .movedToTrash(original: url.path, trashURL: moved.path)
         } catch {
-            await emit(.error, operationID: UUID(), path: url.path, ruleID: ruleID, risk: risk, size: logicalSize, result: "\(error)")
-            throw error
+            return .failed(.trashFailed(String(describing: error)))
         }
     }
+}
 
-    private func emit(_ stage: SafetyAuditEvent.Stage, operationID: UUID, path: String,
-                       ruleID: String, risk: RiskLevel, size: Int64, result: String) async {
-        guard let sink else { return }
-        let event = SafetyAuditEvent(operationID: operationID, stage: stage, path: path,
-                                      ruleID: ruleID, risk: risk, size: size, result: result)
-        await sink.recordSafetyEvent(event)
-    }
-
-    public struct ExecutionResult: Sendable {
-        public let executed: [ApprovedFileOperation]
-        public let skipped: [(ApprovedFileOperation, SafetyError)]
-    }
-
-    /// Moves approved items to the Trash. Every path is re-validated at
-    /// execution time; anything that changed since approval is skipped.
-    public func execute(_ operations: [ApprovedFileOperation]) async -> ExecutionResult {
-        var executed: [ApprovedFileOperation] = []
-        var skipped: [(ApprovedFileOperation, SafetyError)] = []
-        for op in operations {
-            do throws(SafetyError) {
-                let url = try validator.validate(op.url)
-                guard fileManager.fileExists(atPath: url.path) else { throw .fileVanished }
-                do {
-                    try fileManager.trashItem(at: url, resultingItemURL: nil)
-                } catch {
-                    if Self.isTemporaryPath(url) {
-                        do {
-                            try fileManager.removeItem(at: url)
-                        } catch {
-                            skipped.append((op, .fileVanished))
-                            await emit(.error, operationID: op.id, path: url.path, ruleID: op.ruleID, risk: op.risk,
-                                       size: op.logicalSize, result: "temporary remove failed")
-                            continue
-                        }
-                    } else {
-                        skipped.append((op, .fileVanished))
-                        await emit(.error, operationID: op.id, path: url.path, ruleID: op.ruleID, risk: op.risk,
-                                   size: op.logicalSize, result: "trashItem failed")
-                        continue
-                    }
-                }
-                await emit(.executed, operationID: op.id, path: url.path, ruleID: op.ruleID,
-                           risk: op.risk, size: op.logicalSize, result: "moved to trash")
-                executed.append(op)
-            } catch {
-                skipped.append((op, error))
-                await emit(.skipped, operationID: op.id, path: op.url.path, ruleID: op.ruleID, risk: op.risk,
-                           size: op.logicalSize, result: "\(error)")
-            }
-        }
-        return ExecutionResult(executed: executed, skipped: skipped)
-    }
-
-    private static func isTemporaryPath(_ url: URL) -> Bool {
-        let path = url.standardizedFileURL.path
-        let temporaryRoots = [
-            URL(fileURLWithPath: NSTemporaryDirectory()).standardizedFileURL.path,
-            "/private/tmp",
-            "/tmp",
-        ]
-        return temporaryRoots.contains { PathValidator.isPath(path, under: $0) }
+public struct MacOSTrashClient: TrashClient {
+    public init() {}
+    public func moveToTrash(_ url: URL) async throws -> URL {
+        var resultingURL: NSURL?
+        try FileManager.default.trashItem(at: url, resultingItemURL: &resultingURL)
+        guard let resultingURL else { throw CocoaError(.fileWriteUnknown) }
+        return resultingURL as URL
     }
 }

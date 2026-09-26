@@ -1,0 +1,3 @@
+# Migration boundary
+
+The app never discovers legacy data by scanning a real user home. Import starts only after the user selects `coretend-preferences-v1.json` in the Settings file picker. Supported JSON v1 fields are `version`, `excludedPaths`, and optional `language`; unknown keys, path traversal, symbolic links, oversized files and unsupported language values are rejected. UI presents import preview and confirmation. Import copies only these values to schema v2, logs the operation, preserves source, and is idempotent by content digest. Other historical formats remain unsupported because no verified fixture contract is available. Schema migrations are transactional; tests use synthetic v1 databases under unique temporary fixture roots.

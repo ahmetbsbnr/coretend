@@ -1,471 +1,136 @@
-// SPDX-License-Identifier: Apache-2.0
-// SPDX-FileCopyrightText: The CoreTend Authors
-
 import SwiftUI
-import AppDiscovery
-import SafetyCore
-import DesignSystem
-import Persistence
-
-/// Resolves every application-inventory root. Normal launches inspect the
-/// standard macOS locations. Test launches are confined to fixtures beneath a
-/// validated temporary store; an invalid override fails closed with no roots.
-struct ApplicationInventoryLocations {
-    let home: URL
-    let applicationRoots: [URL]
-    let systemLibrary: URL?
-    let caskroomRoots: [String]
-
-    static func resolve(
-        environment: [String: String],
-        realHome: URL = FileManager.default.homeDirectoryForCurrentUser
-    ) -> ApplicationInventoryLocations {
-        if TestStoreOverride.isTestMarkerSet(environment: environment) {
-            guard let temporaryRoot = TestStoreOverride.resolve(environment: environment).directory else {
-                return ApplicationInventoryLocations(
-                    home: URL(fileURLWithPath: "/dev/null"),
-                    applicationRoots: [],
-                    systemLibrary: nil,
-                    caskroomRoots: []
-                )
-            }
-            let fixtures = temporaryRoot.appendingPathComponent("ApplicationFixtures", isDirectory: true)
-            let fixtureHome = fixtures.appendingPathComponent("Home", isDirectory: true)
-            return ApplicationInventoryLocations(
-                home: fixtureHome,
-                applicationRoots: [
-                    fixtures.appendingPathComponent("Applications", isDirectory: true),
-                    fixtureHome.appendingPathComponent("Applications", isDirectory: true),
-                ],
-                systemLibrary: fixtures.appendingPathComponent("SystemLibrary", isDirectory: true),
-                caskroomRoots: [fixtures.appendingPathComponent("Caskroom", isDirectory: true).path]
-            )
-        }
-
-        return ApplicationInventoryLocations(
-            home: realHome,
-            applicationRoots: [
-                URL(fileURLWithPath: "/Applications", isDirectory: true),
-                realHome.appendingPathComponent("Applications", isDirectory: true),
-            ],
-            systemLibrary: URL(fileURLWithPath: "/Library", isDirectory: true),
-            caskroomRoots: HomebrewCaskIndex.caskroomRoots
-        )
-    }
-
-    var discovery: AppDiscovery {
-        AppDiscovery(home: home, applicationRoots: applicationRoots, systemLibrary: systemLibrary)
-    }
-}
-
-/// Real, non-invented update-mechanism detection shared by the Updates tab
-/// and the "by update state" grouping — one place reads Sparkle/App Store
-/// signals so both stay in sync.
-/// Built once per process — the Caskroom doesn't change mid-session, so we scan
-/// it lazily on first use rather than per app. A global `let` is initialized
-/// atomically and is Sendable.
-public let sharedCaskIndex: HomebrewCaskIndex = {
-    let locations = ApplicationInventoryLocations.resolve(environment: ProcessInfo.processInfo.environment)
-    return HomebrewCaskIndex.build(roots: locations.caskroomRoots)
-}()
-
-public enum AppUpdateSource: String, Sendable {
-    case appStore = "App Store"
-    case homebrew = "Homebrew Cask"
-    case sparkle = "Sparkle feed"
-    case none = "In-app / manual"
-
-    /// Delegates to the tested `AppDiscovery.updateMechanism` engine so the
-    /// classification (App Store receipt, Homebrew Cask token, safe-https Sparkle
-    /// feed, download origin) lives in one unit-tested place. `.manual`/`.unknown`
-    /// both map to `.none` here — neither offers an in-app auto-update mechanism.
-    public static func detect(for app: InstalledApp,
-                              caskIndex: HomebrewCaskIndex = sharedCaskIndex) -> (source: AppUpdateSource, feedURL: URL?) {
-        switch AppDiscovery().updateMechanism(for: app.path, caskIndex: caskIndex) {
-        case .appStore: return (.appStore, nil)
-        case .homebrewCask: return (.homebrew, nil)
-        case .sparkle(let feedURL): return (.sparkle, feedURL)
-        case .manual, .unknown: return (.none, nil)
-        }
-    }
-}
-
-/// Grouping strategies for the Applications list — every key is derived
-/// strictly from real `InstalledApp`/`AppUpdateSource` data.
-enum AppGrouping: String, CaseIterable, Identifiable {
-    case none = "None"
-    case publisher = "Publisher"
-    case size = "Size"
-    case updateState = "Update State"
-    case lastUsed = "Last Used"
-    var id: String { rawValue }
-
-    /// Localized label for display. `rawValue` stays the internal grouping/sort
-    /// key (used by `AppGroupingLogic`'s dictionary keys and `order` arrays) —
-    /// only the picker text is translated.
-    var displayName: String {
-        switch self {
-        case .none: L("apps.grouping.none")
-        case .publisher: L("apps.grouping.publisher")
-        case .size: L("apps.grouping.size")
-        case .updateState: L("apps.grouping.update_state")
-        case .lastUsed: L("apps.grouping.last_used")
-        }
-    }
-}
-
-struct AppGroup: Identifiable {
-    let id: String
-    let apps: [InstalledApp]
-}
-
-enum AppGroupingLogic {
-    /// Vendor label from the bundle identifier's second component
-    /// (e.g. "com.acme.App" → "Acme"). Real data; falls back to "Unknown"
-    /// rather than inventing a name when there's no bundle id.
-    static func publisher(_ app: InstalledApp) -> String {
-        guard let id = app.bundleIdentifier else { return "Unknown" }
-        let parts = id.split(separator: ".")
-        guard parts.count >= 2 else { return "Unknown" }
-        return parts[1].capitalized
-    }
-
-    static func sizeBucket(_ app: InstalledApp) -> String {
-        let mb = Double(app.sizeBytes) / 1_000_000
-        switch mb {
-        case ..<50: return "Under 50 MB"
-        case ..<250: return "50–250 MB"
-        case ..<1000: return "250 MB–1 GB"
-        default: return "Over 1 GB"
-        }
-    }
-
-    static func updateState(_ app: InstalledApp) -> String {
-        AppUpdateSource.detect(for: app).source.rawValue
-    }
-
-    static func lastUsedBucket(_ app: InstalledApp) -> String {
-        guard let date = app.lastUsedDate else { return "Unknown" }
-        let days = Calendar.current.dateComponents([.day], from: date, to: Date()).day ?? 0
-        switch days {
-        case ..<7: return "This week"
-        case ..<30: return "This month"
-        case ..<90: return "Last 3 months"
-        case ..<365: return "This year"
-        default: return "Over a year ago"
-        }
-    }
-
-    static func groups(for apps: [InstalledApp], by grouping: AppGrouping) -> [AppGroup] {
-        guard grouping != .none else { return [AppGroup(id: "All Applications", apps: apps)] }
-        let key: (InstalledApp) -> String
-        let order: [String]?
-        switch grouping {
-        case .none: key = { _ in "" }; order = nil
-        case .publisher: key = publisher; order = nil
-        case .size: key = sizeBucket; order = ["Under 50 MB", "50–250 MB", "250 MB–1 GB", "Over 1 GB"]
-        case .updateState: key = updateState; order = [AppUpdateSource.appStore.rawValue, AppUpdateSource.homebrew.rawValue, AppUpdateSource.sparkle.rawValue, AppUpdateSource.none.rawValue]
-        case .lastUsed: key = lastUsedBucket; order = ["This week", "This month", "Last 3 months", "This year", "Over a year ago", "Unknown"]
-        }
-        var buckets: [String: [InstalledApp]] = [:]
-        for app in apps { buckets[key(app), default: []].append(app) }
-        let ids = order?.filter { buckets[$0] != nil } ?? buckets.keys.sorted()
-        return ids.map { AppGroup(id: $0, apps: buckets[$0] ?? []) }
-    }
-}
-
-@MainActor
-@Observable
-final class ApplicationsViewModel {
-    enum Phase: Equatable { case loading, ready, empty }
-
-    var phase: Phase = .loading
-    var apps: [InstalledApp] = []
-    var searchText = ""
-    var selectedApp: InstalledApp?
-    var associated: [AssociatedItem] = []
-    var selectedAssociatedPaths: Set<String> = []
-    var uninstallResult: String?
-    var grouping: AppGrouping = .none
-
-    private let discovery: AppDiscovery
-
-    init(discovery: AppDiscovery = ApplicationInventoryLocations.resolve(
-        environment: ProcessInfo.processInfo.environment
-    ).discovery) {
-        self.discovery = discovery
-    }
-
-    var filteredApps: [InstalledApp] {
-        guard !searchText.isEmpty else { return apps }
-        return apps.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
-    }
-
-    var groupedApps: [AppGroup] {
-        AppGroupingLogic.groups(for: filteredApps, by: grouping)
-    }
-
-    nonisolated static func isPreselectedAssociatedKind(_ kind: AssociatedItem.Kind) -> Bool {
-        kind == .caches || kind == .savedState
-    }
-
-    func load() async {
-        phase = .loading
-        let discovery = discovery
-        let found = await Task.detached(priority: .utility) { discovery.discoverApps() }.value
-        apps = found
-        phase = found.isEmpty ? .empty : .ready
-    }
-
-    func select(_ app: InstalledApp) async {
-        selectedApp = app
-        uninstallResult = nil
-        associated = []
-        selectedAssociatedPaths = []
-        let discovery = discovery
-        let items = await Task.detached(priority: .utility) { discovery.associatedItems(for: app) }.value
-        associated = items
-        // Preselect only reversible support data; preferences, containers, and
-        // launch items stay visible but require an explicit user choice.
-        selectedAssociatedPaths = Set(items.filter { Self.isPreselectedAssociatedKind($0.kind) }.map(\.url.path))
-    }
-
-    /// Moves the app bundle and approved associated items to the Trash.
-    func uninstall() async {
-        guard let app = selectedApp else { return }
-        let items = associated.filter { selectedAssociatedPaths.contains($0.url.path) }
-        let home = FileManager.default.homeDirectoryForCurrentUser
-        var allowedRoots: [URL] = [app.path.deletingLastPathComponent()]
-        allowedRoots.append(home.appendingPathComponent("Library"))
-        allowedRoots.append(URL(fileURLWithPath: "/Library/LaunchAgents"))
-        allowedRoots.append(URL(fileURLWithPath: "/Library/LaunchDaemons"))
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: allowedRoots), sink: AppEnvironment.shared.store)
-        var approved: [ApprovedFileOperation] = []
-        if let op = try? await center.approve(url: app.path, logicalSize: app.sizeBytes,
-                                              ruleID: "apps.uninstall", risk: .medium) {
-            approved.append(op)
-        }
-        for item in items {
-            if let op = try? await center.approve(url: item.url, logicalSize: item.sizeBytes,
-                                                  ruleID: "apps.uninstall.associated", risk: .medium) {
-                approved.append(op)
-            }
-        }
-        let outcome = ExecutionOutcome(result: await center.execute(approved))
-        uninstallResult = [
-            L("apps.uninstall.result", outcome.executedCount, mcFormatBytes(outcome.freedBytes)),
-            outcome.message,
-        ].compactMap { $0 }.joined(separator: "\n")
-        AppEnvironment.shared.record(ActivityRecord(
-            kind: .cleanup,
-            summary: outcome.annotate("Uninstalled \(app.name)"),
-            itemCount: outcome.executedCount, bytes: outcome.freedBytes))
-        await load()
-    }
-}
+import UniformTypeIdentifiers
+import Domain
+import AppShell
+import ScanCore
 
 struct ApplicationsView: View {
-    var body: some View {
-        TabView {
-            InstalledAppsView()
-                .tabItem { Label(L("apps.tab.installed"), systemImage: "square.grid.2x2") }
-            LeftoversView()
-                .tabItem { Label(L("apps.tab.leftovers"), systemImage: "trash.slash") }
-            AppUpdatesView()
-                .tabItem { Label(L("apps.tab.updates"), systemImage: "arrow.triangle.2.circlepath") }
-        }
-        .padding(MCSpacing.xs)
-        .navigationTitle(L("apps.title"))
-        .accessibilityIdentifier("applications.root")
-    }
-}
-
-struct InstalledAppsView: View {
-    @State private var model = ApplicationsViewModel()
-    @State private var showUninstallConfirmation = false
-    @Namespace private var rowTransition
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let french: Bool
+    @State private var selectingFolder = false
+    @State private var scanning = false
+    @State private var records: [ApplicationRecord] = []
+    @State private var issues: [ApplicationDiscoveryIssue] = []
+    @State private var status: String?
+    @State private var task: Task<Void, Never>?
+    @State private var selectingAssociationFolder = false
+    @State private var associationApp: ApplicationRecord?
+    @State private var associationResults: [URL] = []
+    @State private var associationStatus: String?
 
     var body: some View {
-        HSplitView {
-            appList
-                .frame(minWidth: 300)
-            detail
-                .frame(minWidth: 360, maxWidth: .infinity, maxHeight: .infinity)
-        }
-        .task { await model.load() }
-        .confirmationDialog(
-            L("apps.uninstall_confirm.title"),
-            isPresented: $showUninstallConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button(L("apps.uninstall"), role: .destructive) {
-                Task { await model.uninstall() }
+        VStack(alignment: .leading, spacing: 16) {
+            Button { selectingFolder = true } label: {
+                Label(copy("apps.choose"), systemImage: "folder.badge.plus")
             }
-            Button(L("common.cancel"), role: .cancel) {}
-        } message: {
-            Text(L("apps.uninstall_confirm.message"))
-        }
-    }
-
-    private var appList: some View {
-        VStack(spacing: 0) {
-            TextField(L("apps.search"), text: $model.searchText)
-                .textFieldStyle(.roundedBorder)
-                .padding(.horizontal, MCSpacing.sm).padding(.top, MCSpacing.sm)
-                .accessibilityIdentifier("applications.search")
-            HStack(spacing: MCSpacing.xs) {
-                Text(L("apps.group_by")).foregroundStyle(.secondary)
-                Picker("", selection: $model.grouping) {
-                    ForEach(AppGrouping.allCases) { Text($0.displayName).tag($0) }
-                }
-                .pickerStyle(.menu)
-                .labelsHidden()
-                .accessibilityIdentifier("applications.grouping")
-                Spacer()
-            }
-            .padding(MCSpacing.sm)
-            switch model.phase {
-            case .loading:
-                ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
-            case .empty:
-                Text(L("apps.empty")).foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            case .ready:
-                // Native, reliable list is always the primary view — grouping
-                // only changes section boundaries, never replaces the list.
-                List(selection: Binding(
-                    get: { model.selectedApp?.id },
-                    set: { id in
-                        if let app = model.apps.first(where: { $0.id == id }) {
-                            Task { await model.select(app) }
+            .disabled(scanning)
+            .accessibilityHint(copy("apps.choose.hint"))
+            Text(copy("apps.limits")).font(.callout).foregroundStyle(.secondary)
+            if scanning { ProgressView(copy("scan.progress")) }
+            if let status { Text(status).foregroundStyle(.secondary) }
+            if !records.isEmpty {
+                Text(copy("apps.count", count: records.count)).font(.headline)
+                List(records) { app in
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Image(systemName: "app.dashed")
+                            Text(app.displayName).font(.headline)
+                            Spacer()
+                            Text(app.version ?? copy("metrics.unknown")).font(.caption).foregroundStyle(.secondary)
                         }
-                    }
-                )) {
-                    ForEach(model.groupedApps) { group in
-                        Section(group.id) {
-                            ForEach(group.apps) { app in
-                                appCapsuleRow(app)
-                                    .tag(app.id)
-                                    .matchedGeometryEffect(id: app.id, in: rowTransition)
-                            }
+                        Text(app.bundleIdentifier).font(.caption.monospaced()).foregroundStyle(.secondary)
+                        Text(app.url.lastPathComponent).font(.caption).foregroundStyle(.secondary)
+                        Button(french ? "Rechercher des fichiers associés…" : "Review associated files…") {
+                            associationApp = app
+                            associationResults = []
+                            associationStatus = nil
+                            selectingAssociationFolder = true
                         }
+                        .accessibilityHint(french ? "Choisir un dossier à analyser. Aucun fichier ne sera modifié." : "Choose a folder to scan. No files will be changed.")
                     }
+                    .accessibilityElement(children: .combine)
                 }
-                .listStyle(.inset)
-                .animation(MCMotion.animation(MCMotion.snappy, reduce: reduceMotion), value: model.grouping)
-                .accessibilityIdentifier("applications.list")
+                .frame(minHeight: 260)
+            } else if !scanning && status == nil {
+                ContentUnavailableView(copy("apps.empty"), systemImage: "app.dashed")
             }
-        }
-    }
-
-    private func appCapsuleRow(_ app: InstalledApp) -> some View {
-        let update = AppUpdateSource.detect(for: app).source
-        return HStack(spacing: MCSpacing.sm) {
-            Image(nsImage: NSWorkspace.shared.icon(forFile: app.path.path))
-                .resizable().frame(width: 28, height: 28)
-            VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-                Text(app.name)
-                HStack(spacing: MCSpacing.xxs) {
-                    Text(app.version ?? "—")
-                    if app.isQuarantined {
-                        Label(L("apps.downloaded"), systemImage: "arrow.down.circle")
-                            .labelStyle(.iconOnly)
-                            .help(L("apps.downloaded.help"))
-                    }
-                    if update != .none {
-                        Text(update.rawValue)
-                            .padding(.horizontal, MCSpacing.xxs)
-                            .background(MCColor.protection.opacity(0.15), in: Capsule())
-                    }
-                }
-                .font(.caption).foregroundStyle(.secondary)
-            }
-            Spacer()
-            Text(mcFormatBytes(app.sizeBytes))
-                .font(.caption).monospacedDigit().foregroundStyle(.secondary)
-        }
-        .padding(.vertical, MCSpacing.xxs)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(app.name), \(L("apps.a11y.version", app.version ?? L("apps.unknown"))), \(mcFormatBytes(app.sizeBytes)), \(update.rawValue)\(app.isQuarantined ? ", \(L("apps.downloaded"))" : "")")
-    }
-
-    @ViewBuilder
-    private var detail: some View {
-        if let app = model.selectedApp {
-            ScrollView {
-                VStack(alignment: .leading, spacing: MCSpacing.md) {
-                    HStack(spacing: MCSpacing.sm) {
-                        Image(nsImage: NSWorkspace.shared.icon(forFile: app.path.path))
-                            .resizable().frame(width: 56, height: 56)
-                        VStack(alignment: .leading) {
-                            Text(app.name).font(MCFont.pageTitle)
-                            Text(app.bundleIdentifier ?? L("apps.unknown_bundle_id"))
-                                .font(.caption).foregroundStyle(.secondary)
-                            HStack(spacing: MCSpacing.xs) {
-                                if let version = app.version { Text(L("apps.version_prefix", version)) }
-                                if !app.architectures.isEmpty {
-                                    Text(app.architectures.joined(separator: ", "))
-                                }
-                                Text(mcFormatBytes(app.sizeBytes))
-                                if let lastUsed = app.lastUsedDate {
-                                    Text(L("apps.last_used", AppDateFormatting.string(lastUsed, style: .dayMonthYear)))
-                                } else {
-                                    Text(L("apps.last_used_unknown"))
-                                }
-                            }
+            if !issues.isEmpty { Text(copy("apps.partial", count: issues.count)).font(.caption).foregroundStyle(.secondary) }
+            if let app = associationApp {
+                GroupBox(french ? "Candidats possibles — \(app.displayName)" : "Possible candidates — \(app.displayName)") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(french ? "Correspondance de nom seulement; appartenance non prouvée. Vérifiez avant toute action." : "Name match only; ownership is unverified. Inspect before taking any action.")
                             .font(.caption).foregroundStyle(.secondary)
-                        }
-                    }
-                    MCCard {
-                        VStack(alignment: .leading, spacing: MCSpacing.xs) {
-                            Text(L("apps.associated_data")).font(MCFont.cardTitle)
-                            if model.associated.isEmpty {
-                                Text(L("apps.associated_data.empty"))
-                                    .font(.caption).foregroundStyle(.secondary)
-                            }
-                            ForEach(model.associated) { item in
-                                HStack {
-                                    Toggle("", isOn: Binding(
-                                        get: { model.selectedAssociatedPaths.contains(item.url.path) },
-                                        set: { on in
-                                            if on { model.selectedAssociatedPaths.insert(item.url.path) }
-                                            else { model.selectedAssociatedPaths.remove(item.url.path) }
-                                        }
-                                    ))
-                                    .labelsHidden()
-                                    VStack(alignment: .leading) {
-                                        Text(item.kind.rawValue)
-                                        Text(item.url.path).font(.caption).foregroundStyle(.secondary)
-                                            .lineLimit(1).truncationMode(.middle)
-                                    }
-                                    Spacer()
-                                    Text(mcFormatBytes(item.sizeBytes))
-                                        .font(.caption).monospacedDigit().foregroundStyle(.secondary)
-                                }
-                            }
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    HStack {
-                        Button(L("apps.uninstall"), role: .destructive) {
-                            showUninstallConfirmation = true
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .accessibilityIdentifier("applications.uninstall")
-                        Button(L("common.reveal_in_finder")) {
-                            NSWorkspace.shared.activateFileViewerSelecting([app.path])
-                        }
-                        .accessibilityIdentifier("applications.reveal")
-                    }
-                    if let result = model.uninstallResult {
-                        Text(result).font(MCFont.secondaryBody).foregroundStyle(MCTheme.accent)
+                        if let associationStatus { Text(associationStatus).foregroundStyle(.secondary) }
+                        ForEach(associationResults, id: \.path) { url in Text(url.path).font(.caption.monospaced()).textSelection(.enabled) }
+                        if associationResults.isEmpty && associationStatus == nil { Text(french ? "Aucun candidat trouvé." : "No candidates found.").foregroundStyle(.secondary) }
                     }
                 }
-                .padding(MCSpacing.page)
             }
-        } else {
-            MCEmptyState(icon: "square.grid.2x2", title: L("apps.select_prompt"), message: "", iconColor: MCTheme.accent)
         }
+        .fileImporter(isPresented: $selectingFolder, allowedContentTypes: [.folder], allowsMultipleSelection: false) { result in
+            guard case .success(let urls) = result, let root = urls.first else { return }
+            discover(root)
+        }
+        .fileImporter(isPresented: $selectingAssociationFolder, allowedContentTypes: [.folder], allowsMultipleSelection: false) { result in
+            guard case .success(let urls) = result, let root = urls.first, let app = associationApp else { return }
+            reviewAssociations(for: app, in: root)
+        }
+        .onDisappear { task?.cancel() }
+    }
+
+    private func reviewAssociations(for app: ApplicationRecord, in root: URL) {
+        task?.cancel()
+        associationResults = []
+        associationStatus = french ? "Analyse du dossier choisi…" : "Scanning chosen folder…"
+        scanning = true
+        let acquiredScope = root.startAccessingSecurityScopedResource()
+        task = Task {
+            defer {
+                if acquiredScope { root.stopAccessingSecurityScopedResource() }
+                scanning = false
+            }
+            do {
+                var matches: [URL] = []
+                let request = ScanRequest(roots: [.init(url: root, ruleID: .explore)])
+                for try await event in LocalScanEngine().scan(request) {
+                    try Task.checkCancellation()
+                    if case .result(let item) = event {
+                        if ApplicationAssociationMatcher.matches(item.url, bundleIdentifier: app.bundleIdentifier) {
+                            matches.append(item.url)
+                        }
+                    }
+                }
+                associationResults = matches.sorted { $0.path.localizedStandardCompare($1.path) == .orderedAscending }
+                associationStatus = matches.isEmpty
+                    ? (french ? "Aucun nom correspondant dans le dossier choisi." : "No matching names in chosen folder.")
+                    : (french ? "\(matches.count) candidats de nom; aucune attribution confirmée." : "\(matches.count) name candidates; none confirmed as app-owned.")
+            } catch is CancellationError {
+                associationStatus = french ? "Analyse annulée." : "Scan cancelled."
+            } catch {
+                associationStatus = french ? "Analyse impossible." : "Scan failed."
+            }
+        }
+    }
+
+    private func discover(_ root: URL) {
+        records = []; issues = []; status = nil; scanning = true
+        let acquiredScope = root.startAccessingSecurityScopedResource()
+        task = Task {
+            defer {
+                if acquiredScope { root.stopAccessingSecurityScopedResource() }
+                scanning = false
+            }
+            let service = ApplicationDiscoveryService()
+            let report = await Task.detached(priority: .utility) { service.discover(in: root) }.value
+            records = report.applications
+            issues = report.issues
+            if report.applications.isEmpty && report.issues.isEmpty { status = copy("apps.empty") }
+            else if report.applications.isEmpty { status = copy("apps.failed") }
+        }
+    }
+
+    private func copy(_ key: String, count: Int? = nil) -> String {
+        if key == "apps.count", let count { return french ? "\(count) applications locales" : "\(count) local applications" }
+        if key == "apps.partial", let count { return french ? "\(count) éléments ignorés" : "\(count) items skipped" }
+        return ProductCopy.value(for: key, french: french)
     }
 }

@@ -1,16 +1,7 @@
 version: 2
 updates:
-  # Keep GitHub Actions used in .github/workflows/ up to date.
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: github-actions
+    directory: /
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-
-  # swift-testing (test-only, see Documentation/DEPENDENCIES.md) is
-  # CoreTend's first external SwiftPM dependency.
-  - package-ecosystem: "swift"
-    directory: "/"
-    schedule:
-      interval: "weekly"
+      interval: weekly
     open-pull-requests-limit: 5

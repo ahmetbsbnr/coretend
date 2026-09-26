@@ -1,0 +1,7 @@
+# Local data model
+
+CoreTend creates its local SQLite store under the reconstruction-specific Application Support namespace. `SQLiteStore` itself has no default path and never searches a home directory. Schema version is stored in `PRAGMA user_version`; version 1 contains the append-only `activity_events` table. Version 2 adds key/value preferences and a digest ledger for explicit legacy imports. The v1→v2 migration runs in one immediate transaction and preserves existing events. Tests use synthetic v1 stores and unique temporary fixture roots.
+
+Preferences include sorted absolute exclusion paths and the language selection. The app receives exclusion folders through explicit folder pickers; all three scan surfaces pass saved exclusions into ScanCore. The recognized legacy input is exactly `coretend-preferences-v1.json`, schema version 1, allowlisted keys `version`, `excludedPaths`, `language`, maximum 1,000 paths, maximum 1 MB, regular file only, no symlink. Import copies these values, writes an audit event, keys retries by SHA-256 content digest, and never changes or deletes source. Other legacy formats remain unsupported pending evidence from a synthetic contract.
+
+Events distinguish proposals, approvals, refusals, cancellation, Trash success, and failure. They record action outcome, not claimed recovered space. Clearing history deletes event rows only after explicit user action. Local store paths and detailed retention policy still require UX implementation before Must qualification.
