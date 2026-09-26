@@ -32,3 +32,9 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 - Quick Look est disponible pour fichiers choisis dans Explorer, Doublons et Images similaires; portée dossier maintenue pendant aperçu. Compilation prouve les API, pas le comportement natif en exécution.
 - SHA-256 du ZIP local non signé : `7d885f8fa0bac32487205e5faa435e05fd16ed2e096a64dbc21fb50758070fee`. Artefact ignoré par Git, local et non publié.
 - Lancement, parcours Quick Look, accessibilité, signature, notarisation et publication non vérifiés. FR-23 / quicklook.extended restent PARTIELS.
+
+## Aide accès dossiers — 26-09-2026
+
+- Source compilée : commit de fonctionnalité précédant la mise à jour documentaire de cette tranche (`next`). `swift build --product CoreTendApp`, `make traceability`, `make safety-audit`, `make package-local`, `make verify-package` réussis.
+- ZIP local unsigned SHA-256 : `d11cd103e63c58affe766535c49938f3521e51e6f45fafde66b2a097664acb4c`. Vérification porte sur structure/plist/ZIP/Mach-O; pas sur lancement ou parcours natif. Aucun artefact publié.
+- FR-10 reste PARTIEL et aucun état de sécurité ou permission exhaustive n’est inféré.

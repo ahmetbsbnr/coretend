@@ -47,3 +47,10 @@ Ordre de reprise retenu : (1) refermer fonctions Must Applications/Integrity/per
 - Guide utilisateur et FR-23 / `quicklook.extended` mis à jour. Statut PARTIEL : compilation et packaging ne qualifient pas le comportement Quick Look natif ni VoiceOver.
 - `make package-local` et `make verify-package` réussis. ZIP local non signé SHA-256 `7d885f8fa0bac32487205e5faa435e05fd16ed2e096a64dbc21fb50758070fee`; aucune signature, installation, ouverture ou publication.
 - Reprise conseillée : examiner besoins Must restants par ordre sécurité/usage, en commençant permissions et aide d’accès macOS (FR-10), sans prétendre que dialogues de scan diagnostiquent permissions complètes. Construire petit jalon, mettre à jour traceability/Progress/UserGuide/passation, builder/packager, puis commit/push `next`.
+
+### Aide sur accès aux dossiers — 26-09-2026
+
+- Réglages décrit les accès limités au dossier choisi dans le picker macOS, les vérifications pratiques (existence, volume monté, lecture), puis le re-choix. Explique que protections système et exclusions peuvent produire des résultats partiels, sans demander Accès complet au disque.
+- Ajout EN/FR; UserGuide/Progress/FR-10 mis à jour. `swift build --product CoreTendApp`, `make traceability`, `make safety-audit` et `git diff --check` passent.
+- FR-10 reste PARTIEL : pas de sondes exhaustives par permission ni de liens profonds vers réglages système; l’aide n’infère pas l’absence d’un élément depuis un scan incomplet.
+- Avant prochaine tranche : release build + paquet local, inscrire le SHA ZIP puis mettre cette passation au même commit que le jalon. Ordre produit après : compléter FR-10 prudemment et qualifier les parcours UI; FR-23 Quick Look natif nécessite aussi essai interactif/accessibilité.
