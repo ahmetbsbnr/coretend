@@ -1,6 +1,6 @@
 # Passation complète — CoreTend Next
 
-**État au 26-09-2026.** Reconstruction active, pas finalisée, aucune release publique. Dépôt `ahmetbsbnr/coretend`; worktree courant `next/`; branche de produit `next`, basée sur `main`, propre et synchronisée à `origin/next`. Dernier code app : `b0287bf` (PR #50). Commits documentaires qui suivent : `c4b1077` (#51), `d61e501` (#52). Prochaine reprise depuis `next`.
+**État au 27-09-2026.** Reconstruction active, pas finalisée, aucune release publique. Dépôt `ahmetbsbnr/coretend`; worktree `next/`; base distante `origin/next` à `55e8628`. Travail courant sur `feat/reconstruction-open-musts`, cinq commits locaux après `74c6b8b`, non poussés et sans PR. Dernier commit code `65b9195`, suivi de ce commit de passation. Reprendre sur cette branche; ouvrir PR vers `next` après la tranche convenue.
 
 ## État immédiat
 
@@ -8,9 +8,18 @@
 - Cahier des charges complet et approuvé : QQOQCCP, MoSCoW, RACI, objectifs, exigences, architecture, risques et séquence. Voir `Documentation/Project/Cahier-des-charges.md`.
 - Traceability contient 40 FR/NFR + 51 capacités; 91 statuts renseignés. La ligne NFR-07 a été réalignée sur les colonnes CSV; statut PARTIEL tant que revue clavier/VoiceOver/Dynamic Type/contraste/Reduce Motion n’est pas faite.
 - App SwiftUI macOS, CLI Swift, persistance SQLite, modules métier, site statique EN/FR et scripts de paquet sont présents. Résultats/états restent partiels selon `Documentation/Traceability.csv`; aucun jalon ne signifie produit final.
-- Dernière qualification locale : `make qualify` après PR #50. Elle couvre génération, site, traçabilité, audit statique de sûreté, installation fixture en HOME temporaire, XCTest complet, builds debug App/CLI et whitespace. Aucune UI native/VoiceOver n’est qualifiée par ce gate.
+- Dernière qualification locale : `make qualify` le 27-09 après Task18. Elle couvre génération, site, traçabilité, audit statique de sûreté, installation fixture en HOME temporaire, XCTest complet, builds debug App/CLI et whitespace. Aucune UI native/VoiceOver n’est qualifiée par ce gate.
 - Paquet courant : `Artifacts/CoreTend-local-unsigned.zip`, arm64, produit depuis le code app `b0287bf`. SHA-256 `94503244830030785388e6ea2359dc844af22d719d5e82729f14408f1697a299`. `make package-local verify-package` passe; vérification limitée à Info.plist, archive et Mach-O. Non lancé, installé sur le Mac, signé, notarié ou publié. Preuve dans `Documentation/ReleaseEvidence.md`.
 - Copie greenfield historique `rebuild/` conservée localement comme provenance. Passation/documents 1.x archivés sous `Documentation/Archive/Legacy-Reconstruction/`; ils ne décrivent pas le code actuel.
+- État après les tâches 15–18 : traçabilité de 91 lignes, 49 `PARTIEL`, 33 `EN_COURS`, 9 `À_CONSTRUIRE`. Critères UI/macOS, compatibilité et distribution restent ouverts.
+
+## Jalons locaux depuis la dernière passation
+
+- **Task 15 (`fdc6350`) — fixture backup SQLite** : sauvegarde v3 par Online Backup API, `integrity_check`, restauration vers un fichier séparé avant migration, préservation des lignes en v3 puis migration à v5 après retrait de la collision synthétique. Source corrompue rejetée sans destination partielle. Procédure locale hors ligne documentée; aucune vraie base touchée. Revue indépendante sans finding; test ciblé et `make qualify` passent.
+- **Task 16 (`6da08a0`) — annulation bornée ScanCore** : lecteur fixture bloque la première lecture de métadonnées, annulation du consommateur, worker joint par hook interne; deuxième fichier non lu, aucun événement `finished`, arbre inchangé. Revue indépendante approuve; `make qualify` passe. Annulation UI native reste à qualifier.
+- **Task 17 (`6eba339`) — provenance des mesures** : Overview/Performances affichent source de chaque métrique (`/`, charge 1 min, `ProcessInfo`), date mesurée et capacité inconnue au lieu d’omission. Note EN/FR écarte diagnostic de santé et promesse d’espace récupéré; tests catalogues bilingues. Revue indépendante sans finding; `make qualify` passe. FR-03 reste PARTIEL jusqu’à qualification UI native.
+- **Task 18 (`65b9195`) — exclusion après réouverture** : test écrit des exclusions normalisées dans DB temporaire, libère le store puis rouvre même URL; chemins restent présents et triés. Fixtures ScanCore vérifient racine/sous-arbre exclus. Revue indépendante approuve; `make qualify` passe. Settings et relance app restent à qualifier; FR-04 PARTIEL.
+- Dernier commit de code `65b9195`, branche `feat/reconstruction-open-musts`; commits non poussés. `Documentation/Project/Remaining-musts-plan.md` est un plan local non suivi à préserver sans l’ajouter aux commits.
 
 ## Jalons récents intégrés
 
@@ -28,7 +37,7 @@ Jalons antérieurs restent détaillés dans `Documentation/Progress.md` et dans 
 - Swift 6, SwiftPM, macOS 14+; code runtime sans dépendances SwiftPM externes. Cible d’artefact vérifiée actuellement arm64.
 - Couches : `ProductContract` inventaire; `AppShell` destinations/palette; `ScanCore` scans lecture seule; `SafetyCore` capacités d’action bornées; `Persistence` SQLite/migrations; `Domain` application des contrats; `CoreTendApp` SwiftUI; `CLIContract`/`CoreTendCLI` lecture seule.
 - Huit destinations : Overview, Record, Cleanup, Explore, Duplicates, Applications, Integrity, Performance. Interface et site en français/anglais.
-- SQLite schema v4 : événements, préférences/exclusions/imports, Performance, favoris/récents. Migrations transactionnelles v1–v4; store URL injectable. CLI ouverte explicitement en lecture seule. Favoris exigent clic explicite. Récents désactivés par défaut, maximum 100, écritures en batch. Aucun chemin mémorisé ne rouvre automatiquement un fichier.
+- SQLite schema v5 : événements avec failure code nullable, préférences/exclusions/imports, Performance, favoris/récents. Migrations transactionnelles v1–v5; store URL injectable. CLI ouverte explicitement en lecture seule. Favoris exigent clic explicite. Récents désactivés par défaut, maximum 100, écritures en batch. Aucun chemin mémorisé ne rouvre automatiquement un fichier.
 - Mutations fichier seulement via SafetyCore et adaptation macOS Trash; scans ne changent pas l’arbre choisi. Tests utilisent fixtures temporaires et fausse Corbeille. Pas de suppression permanente.
 - App associée : inventaire `.app` seulement sous racine choisie; recherche de reliquats par identifiant exact dans autre dossier choisi, consultation seulement. Attribution de propriété pas prouvée. Action existante déplace uniquement bundle `.app` choisi avec revue/confirmation; données associées/héritées restent intactes.
 - Réseau runtime limité par conception; audit statique bloque API cliente courante et SDK analytiques connus. NFR-04 reste PARTIEL sans capture trafic runtime et revue indépendante.
@@ -41,7 +50,7 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 - **FR-26 Apps :** correspondance de nom/bundle ID n’est pas preuve de propriété. Ne pas supprimer données associées ni héritées; priorité à une méthode d’attribution documentée, contrôlable et sûre avant toute action. Garder parcours consultatif et déplacement bundle seul tant que preuve insuffisante.
 - **FR-10 Permissions :** l’aide actuelle explique accès au dossier choisi et récupération; pas de sondes exhaustives TCC/Full Disk Access ni deep links système. Ne pas inférer absence d’élément depuis résultat partiel.
 - **FR-14 Distribution :** install smoke en HOME fixture et validation de structure passent; app jamais ouverte. Pas de preuve GUI install/désinstall, signature, notarisation, compatibilité deuxième hôte/version macOS ni release.
-- **Données/migration :** import JSON legacy v1 reconnu et copy-only; formats anciens non reconnus, restauration complète, interruption/reprise élargie et qualification UI restent ouverts. Effacement SQLite logique, aucune garantie forensique.
+- **Données/migration :** import JSON legacy v1 reconnu et copy-only; formats anciens non reconnus. Backup/restauration synthétiques vérifiés; restauration réelle, interruption/reprise élargie et qualification UI restent ouvertes. Effacement SQLite logique, aucune garantie forensique.
 - **Applications/Integrity :** aucun contrôle App Store/version update; `SUFeedURL` déclaré seulement. Marqueur quarantine et signature sont des signaux limités, aucun verdict malware/provenance.
 - **Features partielles :** images similaires heuristique non calibrée/corpus à établir; cloud, menu bar et login items non livrés; certains filtres et usages système encore incomplets; CLI localisation/cas d’annulation restent incomplets.
 - **Perf/release :** pas de baseline représentative start/scan/CPU/RSS; pas de capture réseau runtime; aucune review sécurité indépendante; paquet courant unsigned.
