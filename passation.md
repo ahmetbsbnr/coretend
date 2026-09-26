@@ -1,6 +1,6 @@
 # Passation courante — CoreTend Next
 
-**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche `next` propre et synchronisée sur `origin/next` (`b0287bf`). PR #46 backend/graphique, #47 site, #48 validation SQLite, #49 axe date et #50 sélection graphique fusionnées; `qualify` distante verte. Aperçu Vercel `coretend` de #50 refusé pour quota 24 h; seul `qualify` est requis par protection `next`. L’ancien dépôt `rebuild/` reste copie locale de provenance.
+**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche de travail `docs/package-evidence-chart-50` basée sur `c4b1077` (`next` synchronisée). PR #46 backend/graphique, #47 site, #48 validation SQLite, #49 axe date et #50 sélection graphique fusionnées; #51 passation fusionnée. `qualify` distante verte; Vercel a atteint quota d’aperçus sur #50/#51, non requis par protection `next`. Paquet local produit et vérifié; voir preuve ci-dessous. L’ancien dépôt `rebuild/` reste copie locale de provenance.
 
 ### Jalons backend, site et graphique Performance — livrés
 
@@ -18,6 +18,12 @@
 
 - `SQLiteStore.append` doit refuser `ActivityEvent.occurredAt` non fini avant écriture. `appendPerformanceSample` doit refuser timestamp de mesure et horloge de rétention non finis avant transaction, sans ajouter lignes ni exécuter pruning corrompu.
 - Tests fixture ajoutés pour `.infinity` au journal, `.nan` à l’échantillon Performance et `.infinity` à l’horloge de rétention; le premier échoue avant correction. Tous passent après ajout des gardes; `make qualify` complet (site, traceability, sécurité, install smoke, XCTest, App/CLI) et CI distante passent. PR #48 fusionnée dans `574e646`.
+
+### Paquet courant après PR #50
+
+- Produit `CoreTend-local-unsigned.zip` arm64 depuis code app `b0287bf`; `make package-local`, `make verify-package`, `make qualify` réussissent.
+- SHA-256 `94503244830030785388e6ea2359dc844af22d719d5e82729f14408f1697a299`; validation structure/plist/ZIP/Mach-O uniquement. Non lancé/installé/signé/notarié/publié.
+- `Documentation/ReleaseEvidence.md` conserve la preuve complète.
 
 ### Graphique Performance — dates non ambiguës
 
@@ -47,7 +53,7 @@
 
 ## Reprise active — 26-09-2026
 
-L’utilisateur demande de poursuivre le projet jusqu’à finalisation et de tenir cette passation à chaque étape pour reprise après arrêt abrupt. Dernier code fusionné : `b0287bf` (PR #50; CI requise `qualify` verte). Vercel coretend a refusé le déploiement preview sur quota 24 h; ce check n’est pas requis par protection `next`. Pas de nouveau paquet depuis les changements app précédents; aucun binaire ouvert, signé, notarié ou publié.
+L’utilisateur demande de poursuivre le projet jusqu’à finalisation et de tenir cette passation à chaque étape pour reprise après arrêt abrupt. Dernier code fusionné : `b0287bf` (PR #50; CI requise `qualify` verte). Vercel coretend a refusé le déploiement preview sur quota 24 h; ce check n’est pas requis par protection `next`. Paquet arm64 unsigned produit/vérifié structurellement : `94503244830030785388e6ea2359dc844af22d719d5e82729f14408f1697a299`; non lancé/signé/notarié/publié. Détails dans `Documentation/ReleaseEvidence.md`.
 
 Ordre de reprise retenu : (1) qualifier UI native/VoiceOver clavier/graphiques, sans scanner les données hôte; (2) refermer Must restantes Applications/Integrity/permissions; (3) compléter les états de navigation, données, export et migration; (4) traiter les capacités restantes et mettre à jour `Website/`, README et cahier; (5) qualification fixtures/gates/builds puis relever les limites macOS/publication sans revendiquer release non signée. Ne jamais ouvrir vrai store CoreTend ni vraie Corbeille pendant tests. Aucune release signée/notarisée/publication.
 
