@@ -14,6 +14,7 @@ struct SettingsView: View {
     @State private var importing = false
     @State private var exporting = false
     @State private var diagnosticPreview = false
+    @State private var exportAfterPreview = false
     @State private var diagnosticDocument: SettingsJSONDocument?
     @State private var diagnosticSummary = ""
     @State private var status: String?
@@ -93,10 +94,40 @@ struct SettingsView: View {
         } message: {
             Text(legacyMessage)
         }
-        .alert(french ? "Aperçu du diagnostic" : "Diagnostic preview", isPresented: $diagnosticPreview) {
-            Button(ProductCopy.value(for: "common.cancel", french: french), role: .cancel) { diagnosticDocument = nil }
-            Button(french ? "Choisir la destination…" : "Choose destination…") { exporting = true }
-        } message: { Text(diagnosticSummary + "\n" + (french ? "Aucun chemin personnel ni détail d’événement exporté. Vous choisissez la destination." : "No personal paths or event details exported. You choose the destination.")) }
+        .sheet(isPresented: $diagnosticPreview, onDismiss: {
+            guard exportAfterPreview else { return }
+            exportAfterPreview = false
+            exporting = true
+        }) {
+            VStack(alignment: .leading, spacing: 14) {
+                Text(french ? "Aperçu exact du diagnostic" : "Exact diagnostic preview")
+                    .font(.title2.weight(.semibold))
+                Text(diagnosticSummary + " · " + (french ? "Aucun chemin personnel ni détail d’événement." : "No personal paths or event details."))
+                    .font(.callout).foregroundStyle(.secondary)
+                ScrollView {
+                    Text(diagnosticPreviewText)
+                        .font(.system(.caption, design: .monospaced))
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(12)
+                }
+                .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 8))
+                HStack {
+                    Spacer()
+                    Button(ProductCopy.value(for: "common.cancel", french: french), role: .cancel) {
+                        diagnosticDocument = nil
+                        diagnosticPreview = false
+                    }
+                    Button(french ? "Choisir la destination…" : "Choose destination…") {
+                        exportAfterPreview = true
+                        diagnosticPreview = false
+                    }
+                    .keyboardShortcut(.defaultAction)
+                }
+            }
+            .padding(22)
+            .frame(minWidth: 520, minHeight: 440)
+        }
         .fileExporter(isPresented: $exporting, document: diagnosticDocument, contentType: .json,
                       defaultFilename: "coretend-diagnostic") { result in
             if case .failure = result { status = french ? "Export impossible." : "Export failed." }
@@ -108,6 +139,11 @@ struct SettingsView: View {
         let count = legacyPreview.excludedPaths.count
         let lang = legacyPreview.language ?? (french ? "langue absente" : "language absent")
         return french ? "\(count) exclusion(s), langue \(lang). Source conservée; import réessayable." : "\(count) exclusion(s), language \(lang). Source preserved; import can be retried."
+    }
+
+    private var diagnosticPreviewText: String {
+        guard let data = diagnosticDocument?.data else { return "" }
+        return String(decoding: data, as: UTF8.self)
     }
 
     @MainActor private func load() async {
