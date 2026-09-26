@@ -86,3 +86,9 @@ Ordre de reprise retenu : (1) refermer fonctions Must Applications/Integrity/per
 - `make package-local` et `make verify-package` passent. ZIP arm64 unsigned SHA-256 `072ff474f4eae77109dd312b342e125c2b1c30d8275afeb0cc3f8a573d522c48`; aucun lancement, install, signature ou publication.
 - FR-16 reste PARTIEL : presets sont surtout taille/date, filtres catégorie/presets réutilisables sur les autres modules à examiner.
 - Commit source : `664dbf6`; SHA associé consigné dans `Documentation/ReleaseEvidence.md`.
+
+### Cohérence du site public — 26-09-2026
+
+- Le générateur `Scripts/build_site.py` et sorties EN/FR décrivent désormais Explorer livré (recherche/tri/carte/Quick Look/filtres) et CLI avec résultat partiel explicite. Accueil ne présente plus les vues métier comme majoritairement en construction; limites permissions/accessibilité/release restent citées.
+- `make build-site site-check` passe. FR-15 reste PARTIEL : génération/contenu/CSP vérifiés, mais pas de déploiement, revue navigateur réelle ou audit accessibilité.
+- Cette tranche ne change pas binaire; garder dernier paquet local de `664dbf6` et ne pas le présenter comme installateur signé.
