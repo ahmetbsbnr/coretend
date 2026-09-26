@@ -22,6 +22,17 @@ public struct SavedFileRecord: Equatable, Sendable {
     public let isFavorite: Bool
 }
 
+public struct RecentFileMeasurement: Equatable, Sendable {
+    public let path: String
+    public let logicalBytes: Int64?
+    public let allocatedBytes: Int64?
+    public let seenAt: Date
+
+    public init(path: String, logicalBytes: Int64?, allocatedBytes: Int64?, seenAt: Date = .now) {
+        self.path = path; self.logicalBytes = logicalBytes; self.allocatedBytes = allocatedBytes; self.seenAt = seenAt
+    }
+}
+
 public enum StoreError: Error, Equatable { case open(String), statement(String), unsupportedSchema(Int), readOnly }
 
 private final class SQLiteConnection: @unchecked Sendable {
@@ -132,8 +143,16 @@ public actor SQLiteStore {
     }
 
     public func recordRecentFile(path: String, logicalBytes: Int64?, allocatedBytes: Int64?, seenAt: Date = .now) throws {
+        try recordRecentFiles([RecentFileMeasurement(path: path, logicalBytes: logicalBytes,
+                                                      allocatedBytes: allocatedBytes, seenAt: seenAt)])
+    }
+
+    public func recordRecentFiles(_ files: [RecentFileMeasurement]) throws {
         guard !readOnly else { throw StoreError.readOnly }
-        try validateSavedFile(path: path, logicalBytes: logicalBytes, allocatedBytes: allocatedBytes)
+        for file in files {
+            try validateSavedFile(path: file.path, logicalBytes: file.logicalBytes, allocatedBytes: file.allocatedBytes)
+        }
+        guard !files.isEmpty else { return }
         guard let database = connection?.handle else { throw StoreError.open("closed") }
         try execute("BEGIN IMMEDIATE")
         do {
@@ -141,12 +160,16 @@ public actor SQLiteStore {
             let sql = "INSERT INTO saved_files(path, first_seen_at, last_seen_at, logical_bytes, allocated_bytes, is_favorite) VALUES(?, ?, ?, ?, ?, 0) ON CONFLICT(path) DO UPDATE SET last_seen_at = excluded.last_seen_at, logical_bytes = excluded.logical_bytes, allocated_bytes = excluded.allocated_bytes"
             guard sqlite3_prepare_v2(database, sql, -1, &statement, nil) == SQLITE_OK, let statement else { throw failure() }
             defer { sqlite3_finalize(statement) }
-            bind(path, to: 1, in: statement)
-            sqlite3_bind_double(statement, 2, seenAt.timeIntervalSince1970)
-            sqlite3_bind_double(statement, 3, seenAt.timeIntervalSince1970)
-            if let logicalBytes { sqlite3_bind_int64(statement, 4, logicalBytes) } else { sqlite3_bind_null(statement, 4) }
-            if let allocatedBytes { sqlite3_bind_int64(statement, 5, allocatedBytes) } else { sqlite3_bind_null(statement, 5) }
-            guard sqlite3_step(statement) == SQLITE_DONE else { throw failure() }
+            for file in files {
+                sqlite3_reset(statement)
+                sqlite3_clear_bindings(statement)
+                bind(file.path, to: 1, in: statement)
+                sqlite3_bind_double(statement, 2, file.seenAt.timeIntervalSince1970)
+                sqlite3_bind_double(statement, 3, file.seenAt.timeIntervalSince1970)
+                if let logicalBytes = file.logicalBytes { sqlite3_bind_int64(statement, 4, logicalBytes) } else { sqlite3_bind_null(statement, 4) }
+                if let allocatedBytes = file.allocatedBytes { sqlite3_bind_int64(statement, 5, allocatedBytes) } else { sqlite3_bind_null(statement, 5) }
+                guard sqlite3_step(statement) == SQLITE_DONE else { throw failure() }
+            }
             try execute("DELETE FROM saved_files WHERE is_favorite = 0 AND path NOT IN (SELECT path FROM saved_files WHERE is_favorite = 0 ORDER BY last_seen_at DESC, path ASC LIMIT \(Self.maximumRecentFiles))")
             try execute("COMMIT")
         } catch {
