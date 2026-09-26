@@ -221,10 +221,18 @@ final class PersistenceTests: XCTestCase {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-pref-\(UUID())", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
-        let store = try SQLiteStore(url: root.appendingPathComponent("store.sqlite")); try await store.migrate()
-        try await store.saveExclusions(["/tmp/z", "/tmp/a", "/tmp/z"])
-        let exclusions = try await store.exclusions()
-        XCTAssertEqual(exclusions, ["/tmp/a", "/tmp/z"])
+        let url = root.appendingPathComponent("store.sqlite")
+        do {
+            let store = try SQLiteStore(url: url)
+            try await store.migrate()
+            try await store.saveExclusions(["/tmp/z", "/tmp/a", "/tmp/z"])
+            let exclusions = try await store.exclusions()
+            XCTAssertEqual(exclusions, ["/tmp/a", "/tmp/z"])
+        }
+
+        let reopenedStore = try SQLiteStore(url: url)
+        let reopenedExclusions = try await reopenedStore.exclusions()
+        XCTAssertEqual(reopenedExclusions, ["/tmp/a", "/tmp/z"])
     }
 
     func testLegacyImportUsesExplicitFixtureAndIsIdempotentWithoutChangingSource() async throws {
