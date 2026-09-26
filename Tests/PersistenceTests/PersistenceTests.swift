@@ -328,6 +328,73 @@ final class PersistenceTests: XCTestCase {
         XCTAssertEqual(files, [])
     }
 
+    func testVersionThreeMigrationRollsBackIndexFailureAndRetriesAfterFixtureRepair() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-v3-rollback-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let url = root.appendingPathComponent("fixture.sqlite")
+        var handle: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(url.path, &handle), SQLITE_OK)
+        defer { sqlite3_close(handle) }
+        let fixture = """
+        CREATE TABLE activity_events (id TEXT PRIMARY KEY NOT NULL, occurred_at REAL NOT NULL, kind TEXT NOT NULL, detail TEXT NOT NULL);
+        INSERT INTO activity_events VALUES ('11111111-1111-1111-1111-111111111111', 10, 'proposed', 'v3-event');
+        CREATE TABLE preferences (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL);
+        INSERT INTO preferences VALUES ('language', 'fr');
+        CREATE TABLE legacy_imports (digest TEXT PRIMARY KEY NOT NULL, imported_at REAL NOT NULL);
+        CREATE TABLE performance_samples (id TEXT PRIMARY KEY NOT NULL, measured_at REAL NOT NULL, load_average_1m REAL, available_bytes INTEGER);
+        INSERT INTO performance_samples VALUES ('22222222-2222-2222-2222-222222222222', 20, NULL, NULL);
+        CREATE TABLE saved_files (path TEXT PRIMARY KEY NOT NULL);
+        INSERT INTO saved_files VALUES ('/synthetic/conflict');
+        PRAGMA user_version = 3;
+        """
+        XCTAssertEqual(sqlite3_exec(handle, fixture, nil, nil, nil), SQLITE_OK)
+        let store = try SQLiteStore(url: url)
+
+        do {
+            try await store.migrate()
+            XCTFail("missing last_seen_at must fail while creating the recency index")
+        } catch let error as StoreError {
+            XCTAssertEqual(error, .statement("no such column: last_seen_at"))
+        }
+        let failedVersion = try await store.schemaVersion()
+        let failedEvents = try await store.events()
+        let failedLanguage = try await store.languagePreference()
+        let failedSamples = try await store.performanceSamples()
+        let originalEvent = ActivityEvent(id: UUID(uuidString: "11111111-1111-1111-1111-111111111111")!,
+                                          occurredAt: Date(timeIntervalSince1970: 10), kind: .proposed, detail: "v3-event")
+        let originalSample = PerformanceSample(id: UUID(uuidString: "22222222-2222-2222-2222-222222222222")!,
+                                               measuredAt: Date(timeIntervalSince1970: 20), loadAverage1m: nil, availableBytes: nil)
+        XCTAssertEqual(failedVersion, 3)
+        XCTAssertEqual(failedEvents, [originalEvent])
+        XCTAssertEqual(failedLanguage, "fr")
+        XCTAssertEqual(failedSamples, [originalSample])
+        var statement: OpaquePointer?
+        let state = "SELECT (SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = 'saved_files_recency'), (SELECT path FROM saved_files)"
+        XCTAssertEqual(sqlite3_prepare_v2(handle, state, -1, &statement, nil), SQLITE_OK)
+        XCTAssertEqual(sqlite3_step(statement), SQLITE_ROW)
+        XCTAssertEqual(sqlite3_column_int(statement, 0), 0)
+        XCTAssertEqual(String(cString: sqlite3_column_text(statement, 1)), "/synthetic/conflict")
+        sqlite3_finalize(statement)
+
+        XCTAssertEqual(sqlite3_exec(handle, "DROP TABLE saved_files", nil, nil, nil), SQLITE_OK)
+        try await store.migrate()
+        let retriedVersion = try await store.schemaVersion()
+        let retriedEvents = try await store.events()
+        let retriedLanguage = try await store.languagePreference()
+        let retriedSamples = try await store.performanceSamples()
+        let retriedFiles = try await store.savedFiles()
+        XCTAssertEqual(retriedVersion, 4)
+        XCTAssertEqual(retriedEvents, [originalEvent])
+        XCTAssertEqual(retriedLanguage, "fr")
+        XCTAssertEqual(retriedSamples, [originalSample])
+        XCTAssertEqual(retriedFiles, [])
+        XCTAssertEqual(sqlite3_prepare_v2(handle, "SELECT COUNT(*) FROM sqlite_master WHERE type = 'index' AND name = 'saved_files_recency'", -1, &statement, nil), SQLITE_OK)
+        XCTAssertEqual(sqlite3_step(statement), SQLITE_ROW)
+        XCTAssertEqual(sqlite3_column_int(statement, 0), 1)
+        sqlite3_finalize(statement)
+    }
+
     func testPerformanceHistoryKeepsUnknownSeparateFromZeroAndPrunesOldSamples() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-perf-\(UUID())", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
