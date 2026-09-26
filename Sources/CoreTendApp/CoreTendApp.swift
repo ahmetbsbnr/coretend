@@ -13,7 +13,7 @@ struct CoreTendApp: App {
 }
 
 private struct CoreTendRootView: View {
-    @State private var selection: Destination? = .overview
+    @State private var selection: Destination? = Destination(rawValue: UserDefaults.standard.string(forKey: "coretend.lastDestination") ?? "") ?? .overview
     @State private var activeSheet: RootSheet?
     @AppStorage("coretend.language") private var language = "system"
     @AppStorage("coretend.onboarding.completed") private var onboardingCompleted = false
@@ -41,6 +41,9 @@ private struct CoreTendRootView: View {
             case .settings: SettingsView(french: french, language: $language)
             case .onboarding: OnboardingView(french: french) { onboardingCompleted = true; activeSheet = nil }
             }
+        }
+        .onChange(of: selection) { _, destination in
+            if let destination { UserDefaults.standard.set(destination.rawValue, forKey: "coretend.lastDestination") }
         }
         .task {
             if let store = try? await LocalStoreAccess.open(), let saved = try? await store.languagePreference() { language = saved }

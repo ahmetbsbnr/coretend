@@ -79,3 +79,4 @@
 
 - Explorer, Nettoyage et Doublons exposent une commande d’annulation. Chaque analyse a un identifiant de génération; les résultats d’une ancienne tâche annulée ne remplacent plus le nouvel état de la vue.
 - Échec de lecture de la racine, dossier vide et erreurs partielles restent distincts. Nettoyage retire ses candidats incomplets à l’annulation. Compilation SwiftUI réussie; parcours natif et tests de course non exécutés dans cette tranche. NFR-06 devient PARTIEL; FR-10 reste À_CONSTRUIRE pour les permissions système détaillées.
+- La dernière destination de navigation est conservée sous identifiant local; une valeur inconnue revient à Vue d’ensemble. Aucun chemin de dossier n’est restauré. Build app réussi; relancement natif non observé, FR-01 et `shell.nav` restent EN_COURS.
