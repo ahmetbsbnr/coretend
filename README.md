@@ -12,7 +12,7 @@
 - CLI lecture seule; scan avec `--root` obligatoire, historique avec `--store` obligatoire.
 - Cahier QQOQCCP, MoSCoW, RACI, baseline, plan d’exécution, traçabilité et site statique EN/FR.
 
-Applications inventorie les bundles d’un dossier choisi, permet le déplacement confirmé du seul bundle choisi vers la Corbeille et présente des noms de fichiers associés à titre consultatif. Les données associées et héritées restent en place. Les autres vues restent incomplètes. Consultez `Documentation/Traceability.csv` avant toute hypothèse de parité.
+Applications inventorie les bundles d’un dossier choisi, permet le déplacement confirmé du seul bundle choisi vers la Corbeille, présente des noms de fichiers associés à titre consultatif et affiche un éventuel flux HTTPS déclaré sans vérifier les versions. Les données associées et héritées restent en place. Les autres vues restent incomplètes. Consultez `Documentation/Traceability.csv` avant toute hypothèse de parité.
 
 ## Construire et vérifier
 

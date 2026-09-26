@@ -48,6 +48,7 @@ struct ApplicationsView: View {
                         }
                         Text(app.bundleIdentifier).font(.caption.monospaced()).foregroundStyle(.secondary)
                         Text(app.url.lastPathComponent).font(.caption).foregroundStyle(.secondary)
+                        updateSourceView(for: app)
                         Button(french ? "Rechercher des fichiers associés…" : "Review associated files…") {
                             associationApp = app
                             associationResults = []
@@ -180,6 +181,22 @@ struct ApplicationsView: View {
         if removalScopeHeld, let removalScopedRoot { removalScopedRoot.stopAccessingSecurityScopedResource() }
         removalScopeHeld = false
         removalScopedRoot = nil
+    }
+
+    @ViewBuilder private func updateSourceView(for app: ApplicationRecord) -> some View {
+        switch app.updateSource {
+        case .declaredHTTPSFeed(let url):
+            Text(french ? "Flux déclaré par l’app : \(url.host ?? "") · version non vérifiée" : "App-declared feed: \(url.host ?? "") · version not checked")
+                .font(.caption).foregroundStyle(.secondary)
+            Link(french ? "Ouvrir le flux déclaré" : "Open declared feed", destination: url)
+                .accessibilityHint(french ? "Ouvre l’adresse HTTPS déclarée par cette app dans le navigateur. CoreTend ne vérifie aucune version." : "Opens this app’s declared HTTPS address in the browser. CoreTend does not compare versions.")
+        case .invalidDeclaredFeed:
+            Text(french ? "Adresse de mise à jour déclarée inutilisable." : "Declared update address is unusable.")
+                .font(.caption).foregroundStyle(.secondary)
+        case .unknown:
+            Text(french ? "Source de mise à jour inconnue." : "Update source unknown.")
+                .font(.caption).foregroundStyle(.secondary)
+        }
     }
 
     private func reviewAssociations(for app: ApplicationRecord, in root: URL) {
