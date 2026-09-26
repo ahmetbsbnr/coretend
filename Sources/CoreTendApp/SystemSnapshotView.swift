@@ -87,12 +87,41 @@ struct SystemSnapshotView: View {
             if known.isEmpty {
                 Text(copy("metrics.historyEmpty")).foregroundStyle(.secondary)
             } else {
+                if let latest = known.last, let load = latest.loadAverage1m {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(load.formatted(.number.precision(.fractionLength(2))))
+                            .font(.title2.monospacedDigit().weight(.semibold))
+                        Text(latest.measuredAt.formatted(.dateTime.day().month().hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US"))))
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel("\(copy("metrics.loadAverage")): \(load.formatted(.number.precision(.fractionLength(2)))), \(latest.measuredAt.formatted(.dateTime.day().month().hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US"))))")
+                }
                 Chart(known) { sample in
                     if let load = sample.loadAverage1m {
-                        PointMark(x: .value("Time", sample.measuredAt), y: .value("Load", load))
+                        PointMark(x: .value("Time", sample.measuredAt), y: .value(copy("metrics.loadAverage"), load))
+                            .symbolSize(44)
+                            .foregroundStyle(.blue)
                     }
                 }
                 .chartYAxisLabel(copy("metrics.loadAverage"))
+                .chartXAxis {
+                    AxisMarks(values: .automatic(desiredCount: 4)) { value in
+                        AxisGridLine().foregroundStyle(.quaternary)
+                        AxisTick()
+                        AxisValueLabel(format: .dateTime.hour().minute())
+                    }
+                }
+                .chartYAxis {
+                    AxisMarks(position: .leading) { _ in
+                        AxisGridLine().foregroundStyle(.quaternary)
+                        AxisTick()
+                        AxisValueLabel()
+                    }
+                }
+                .chartPlotStyle { plot in
+                    plot.background(.quaternary.opacity(0.18), in: RoundedRectangle(cornerRadius: 8))
+                }
                 .frame(height: 170)
                 .accessibilityLabel(copy("metrics.history"))
                 ForEach(known.suffix(5)) { sample in
