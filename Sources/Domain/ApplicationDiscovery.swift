@@ -79,7 +79,8 @@ public struct ApplicationDiscoveryService: Sendable {
 
     private static func updateSource(from info: [String: Any]) -> AppUpdateSource {
         guard let raw = info["SUFeedURL"] as? String else { return .unknown }
-        guard raw.count <= 2_048, raw == raw.trimmingCharacters(in: .whitespacesAndNewlines),
+        guard raw.count <= 2_048,
+              !raw.unicodeScalars.contains(where: { CharacterSet.whitespacesAndNewlines.contains($0) }),
               !raw.unicodeScalars.contains(where: { CharacterSet.controlCharacters.contains($0) }),
               let components = URLComponents(string: raw),
               components.scheme?.lowercased() == "https",
