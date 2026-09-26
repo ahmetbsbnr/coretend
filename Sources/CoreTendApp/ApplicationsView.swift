@@ -68,7 +68,15 @@ struct ApplicationsView: View {
             } else if !scanning && status == nil {
                 ContentUnavailableView(copy("apps.empty"), systemImage: "app.dashed")
             }
-            if !issues.isEmpty { Text(copy("apps.partial", count: issues.count)).font(.caption).foregroundStyle(.secondary) }
+            if !issues.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(copy("apps.issueCount", count: issues.count)).font(.caption.weight(.medium))
+                    ForEach(issues.indices, id: \.self) { index in
+                        Text(issueDescription(issues[index].reason)).font(.caption)
+                    }
+                }
+                .foregroundStyle(.secondary)
+            }
             if let app = associationApp {
                 GroupBox(french ? "Candidats possibles — \(app.displayName)" : "Possible candidates — \(app.displayName)") {
                     VStack(alignment: .leading, spacing: 8) {
@@ -257,7 +265,21 @@ struct ApplicationsView: View {
 
     private func copy(_ key: String, count: Int? = nil) -> String {
         if key == "apps.count", let count { return french ? "\(count) applications locales" : "\(count) local applications" }
-        if key == "apps.partial", let count { return french ? "\(count) éléments ignorés" : "\(count) items skipped" }
+        if key == "apps.issueCount", let count {
+            if french { return count == 1 ? "1 anomalie détectée" : "\(count) anomalies détectées" }
+            return count == 1 ? "1 issue found" : "\(count) issues found"
+        }
         return ProductCopy.value(for: key, french: french)
+    }
+
+    private func issueDescription(_ reason: String) -> String {
+        switch reason {
+        case "selected_root_missing", "selected_root_access_denied", "selected_root_not_directory",
+             "selected_root_symlink", "selected_root_unavailable", "selected_root_unreadable",
+             "bundle_contents_unavailable", "bundle_identifier_missing", "bundle_metadata_unavailable":
+            copy("apps.issue.\(reason)")
+        default:
+            copy("apps.issue.unknown")
+        }
     }
 }

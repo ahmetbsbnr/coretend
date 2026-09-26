@@ -1,6 +1,6 @@
 # Passation complète — CoreTend Next
 
-**État au 26-09-2026.** Reconstruction active, pas finalisée, aucune release publique. Dépôt `ahmetbsbnr/coretend`; worktree courant `next/`; branche de produit `next`, basée sur `main`, propre et synchronisée à `origin/next`. Dernier code app : `b0287bf` (PR #50). Commits documentaires qui suivent : `c4b1077` (#51), `d61e501` (#52). Prochaine reprise depuis `next`.
+**État au 26-09-2026.** Reconstruction active, pas finalisée, aucune release publique. Dépôt `ahmetbsbnr/coretend`; worktree `next/`, branche de travail `feat/access-diagnostics` basée sur `next` au commit documentaire #53 (`55e8628`). Dernière tranche app fusionnée #50 (`b0287bf`). Tranche FR-10 en cours dans ce worktree; qualification complète et paquet mis à jour à faire avant PR. Prochaine reprise sur `feat/access-diagnostics` jusqu’à PR, puis `next`.
 
 ## État immédiat
 
@@ -8,8 +8,10 @@
 - Cahier des charges complet et approuvé : QQOQCCP, MoSCoW, RACI, objectifs, exigences, architecture, risques et séquence. Voir `Documentation/Project/Cahier-des-charges.md`.
 - Traceability contient 40 FR/NFR + 51 capacités; 91 statuts renseignés. La ligne NFR-07 a été réalignée sur les colonnes CSV; statut PARTIEL tant que revue clavier/VoiceOver/Dynamic Type/contraste/Reduce Motion n’est pas faite.
 - App SwiftUI macOS, CLI Swift, persistance SQLite, modules métier, site statique EN/FR et scripts de paquet sont présents. Résultats/états restent partiels selon `Documentation/Traceability.csv`; aucun jalon ne signifie produit final.
-- Dernière qualification locale : `make qualify` après PR #50. Elle couvre génération, site, traçabilité, audit statique de sûreté, installation fixture en HOME temporaire, XCTest complet, builds debug App/CLI et whitespace. Aucune UI native/VoiceOver n’est qualifiée par ce gate.
-- Paquet courant : `Artifacts/CoreTend-local-unsigned.zip`, arm64, produit depuis le code app `b0287bf`. SHA-256 `94503244830030785388e6ea2359dc844af22d719d5e82729f14408f1697a299`. `make package-local verify-package` passe; vérification limitée à Info.plist, archive et Mach-O. Non lancé, installé sur le Mac, signé, notarié ou publié. Preuve dans `Documentation/ReleaseEvidence.md`.
+- Dernière qualification locale : `make qualify` sur `feat/access-diagnostics`. Elle couvre génération, site, traçabilité, audit statique de sûreté, installation fixture en HOME temporaire, XCTest complet, builds debug App/CLI et whitespace. Aucune UI native/VoiceOver n’est qualifiée par ce gate.
+- Paquet courant : `Artifacts/CoreTend-local-unsigned.zip`, arm64, construit depuis `feat/access-diagnostics`. SHA-256 `20a72cf36d3327018b8c78fef76e2f8aab835629b0558345f2b99749693c6024`. `make verify-package` passe; vérification limitée à Info.plist, archive et Mach-O. Non lancé depuis cette tranche, non installé sur le Mac, signé, notarié ou publié. Preuve dans `Documentation/ReleaseEvidence.md`.
+- Essai UI isolé du 26-09-2026 : copie du bundle lancée depuis HOME temporaire; fenêtre nommée `CoreTend` observée. Lecture détaillée des contrôles via System Events échoue (`-10827`); aucune vérification clavier/VoiceOver/zoom/contraste/mouvement réalisée. NFR-07 reste PARTIEL. Voir `Documentation/Evidence/Accessibility.md`.
+- FR-10 — tranche prête pour PR : Applications distingue racine disparue, accès refusé, mauvais type, symlink et lecture impossible; messages EN/FR ajoutés. `make qualify`, packaging, vérification paquet et whitespace passent. FR-10 demeure PARTIEL faute de sondes TCC complètes et parcours de réglages système.
 - Copie greenfield historique `rebuild/` conservée localement comme provenance. Passation/documents 1.x archivés sous `Documentation/Archive/Legacy-Reconstruction/`; ils ne décrivent pas le code actuel.
 
 ## Jalons récents intégrés
@@ -48,7 +50,7 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 
 ## Ordre de reprise conseillé
 
-1. Reprendre `Documentation/Traceability.csv` et `Documentation/Project/Implementation-plan.md`; choisir un petit Must mesurable et sûr. Priorité : qualification UI/accessibilité sur fixtures/app isolée, puis diagnostic FR-10 et attribution FR-26 sans effacement spéculatif.
+1. Après cette PR, reprendre `Documentation/Traceability.csv` et `Documentation/Project/Implementation-plan.md`; travailler l’attribution FR-26 avec une source de preuve documentée et contrôlable. Garder toute donnée associée consultative tant que propriété non démontrée. Qualification UI/accessibilité clavier/VoiceOver reste à compléter avec inspection native fonctionnelle; l’essai System Events précédent n’a pas suffi.
 2. Pour chaque tranche : ajouter preuve test/fixture, implémenter au plus petit scope, actualiser `Documentation/Progress.md`, Traceability si critère est réellement prouvé, UserGuide/ThreatModel selon besoin, puis ce fichier.
 3. Exécuter `make qualify` et `git diff --check`; paquet seulement après jalon app utile avec `make package-local verify-package`; inscrire hash + limites dans ReleaseEvidence.
 4. Créer branche depuis `next`; commit, push et PR vers `next`; fusionner après `qualify` verte. Ne pas avancer `main`, tags ou release sans décision/conditions formelles prévues dans repository strategy.
