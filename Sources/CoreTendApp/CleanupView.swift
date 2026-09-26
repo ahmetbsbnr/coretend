@@ -127,7 +127,7 @@ struct CleanupView: View {
         results = []; selectedItems = []; status = nil; scanning = true
         let acquiredScope = root.startAccessingSecurityScopedResource()
         task = Task {
-            var rootUnavailable = false
+            var rootFailure: String?
             var partialFailure = false
             defer {
                 if acquiredScope { root.stopAccessingSecurityScopedResource() }
@@ -139,12 +139,12 @@ struct CleanupView: View {
                     guard !Task.isCancelled, activeScanID == scanID else { return }
                     switch event {
                     case .result(let result): results.append(result)
-                    case .itemFailure(let path, _):
-                        if path == root.path { rootUnavailable = true } else { partialFailure = true }
+                    case .itemFailure(let path, let reason):
+                        if path == root.path { rootFailure = reason } else { partialFailure = true }
                     case .finished:
-                        status = rootUnavailable ? copy("scan.accessDenied")
-                            : partialFailure ? copy("cleanup.partial")
-                            : results.isEmpty ? copy("cleanup.none") : nil
+                        if let rootFailure { status = ProductCopy.scanRootFailure(reason: rootFailure, french: french) }
+                        else if partialFailure { status = copy("cleanup.partial") }
+                        else { status = results.isEmpty ? copy("cleanup.none") : nil }
                     case .progress: break
                     }
                 }

@@ -67,10 +67,19 @@ public struct LocalScanEngine: ScanEngine {
         let exclusions = request.exclusions.map { $0.resolvingSymlinksInPath().standardizedFileURL.path }
         for root in request.roots {
             guard !Task.isCancelled else { return }
+            if isExcluded(root.url, by: exclusions) {
+                continuation.yield(.itemFailure(path: root.url.path, reason: "root_excluded")); continue
+            }
             var rootInfo = stat()
-            guard lstat(root.url.path, &rootInfo) == 0, (rootInfo.st_mode & S_IFMT) == S_IFDIR,
-                  !isExcluded(root.url, by: exclusions) else {
-                continuation.yield(.itemFailure(path: root.url.path, reason: "root_unavailable_or_symlink")); continue
+            guard lstat(root.url.path, &rootInfo) == 0 else {
+                continuation.yield(.itemFailure(path: root.url.path, reason: failureReason(errno: errno))); continue
+            }
+            let rootType = rootInfo.st_mode & S_IFMT
+            guard rootType != S_IFLNK else {
+                continuation.yield(.itemFailure(path: root.url.path, reason: "root_symlink")); continue
+            }
+            guard rootType == S_IFDIR else {
+                continuation.yield(.itemFailure(path: root.url.path, reason: "root_not_directory")); continue
             }
             let canonicalRoot = root.url.resolvingSymlinksInPath().path
             var pending = [root.url]
@@ -79,14 +88,14 @@ public struct LocalScanEngine: ScanEngine {
                 let children: [URL]
                 do { children = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey, .fileSizeKey, .contentModificationDateKey], options: [.skipsPackageDescendants]) }
                 catch {
-                    continuation.yield(.itemFailure(path: directory.path, reason: "directory_read_failed")); continue
+                    continuation.yield(.itemFailure(path: directory.path, reason: failureReason(error))); continue
                 }
                 for child in children {
                     guard !Task.isCancelled else { return }
                     if isExcluded(child, by: exclusions) { continue }
                     var info = stat()
                     guard lstat(child.path, &info) == 0 else {
-                        continuation.yield(.itemFailure(path: child.path, reason: "metadata_unavailable")); continue
+                        continuation.yield(.itemFailure(path: child.path, reason: failureReason(errno: errno))); continue
                     }
                     if (info.st_mode & S_IFMT) == S_IFLNK { continue }
                     let resolved = child.resolvingSymlinksInPath().path
@@ -116,6 +125,23 @@ public struct LocalScanEngine: ScanEngine {
     private static func isExcluded(_ url: URL, by exclusions: [String]) -> Bool {
         let path = url.resolvingSymlinksInPath().standardizedFileURL.path
         return exclusions.contains { path == $0 || path.hasPrefix($0.hasSuffix("/") ? $0 : $0 + "/") }
+    }
+    private static func failureReason(errno value: Int32) -> String {
+        switch value {
+        case EACCES, EPERM: "permission_denied"
+        case ENOENT, ENOTDIR: "missing"
+        default: "metadata_unavailable"
+        }
+    }
+    private static func failureReason(_ error: Error) -> String {
+        let value = error as NSError
+        if value.domain == NSPOSIXErrorDomain {
+            return failureReason(errno: Int32(value.code))
+        }
+        if value.domain == NSCocoaErrorDomain && value.code == CocoaError.fileReadNoPermission.rawValue {
+            return "permission_denied"
+        }
+        return "directory_read_failed"
     }
     private static func risk(for rule: ScanRule) -> CandidateRisk {
         switch rule {
