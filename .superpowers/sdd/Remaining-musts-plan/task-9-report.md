@@ -16,3 +16,5 @@
 4. `git diff --check`: exit 0; no output.
 
 Implementation commit: `338b887` (`feat(scan): classify cloud-backed file allocation`). The pre-existing untracked `Documentation/Project/Remaining-musts-plan.md` was left untouched. No manual qualification gate is claimed complete.
+
+Scoped review: no concrete bug or regression found. Reviewer confirmed the default initializer preserves `LocalScanEngine()` call sites, only ubiquitous metadata is injected/read for cloud classification, and `cloud.detect` stays partial pending real provider qualification.

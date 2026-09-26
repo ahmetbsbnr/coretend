@@ -112,3 +112,11 @@
 - Schéma SQLite courant v5 ajoute `activity_events.failure_code` nullable. Une app v4 ne peut pas relire la base migrée v5; retour arrière demande restauration d’une sauvegarde antérieure. Aucune base réelle migrée.
 - Estimation d’avancement fonctionnel : environ 40 %, estimation de portée non calculée par le registre. Aucun Must n’a son critère de qualification complet marqué `VÉRIFIÉ`.
 - Aucun push, merge, tag, signature, notarisation ou publication. UI native/VoiceOver, vraie Corbeille macOS, second hôte/OS, sauvegarde-restauration utilisateur et gates navigateur/release ne sont pas déclarés qualifiés. La passation historique archivée ci-dessus reste contexte; cette section est l’état courant de la reconstruction.
+
+### Suite Musts — Integrity LaunchAgents — 27-09-2026
+
+- Task 10 ajoute une revue locale et consultative des fichiers plist directement présents dans un dossier LaunchAgents explicitement choisi. Lecture plafonnée à 500 candidats et 1 Mio/plist, symlinks exclus, erreurs visibles, aucune activation/suppression ni détection d’état actif revendiquée.
+- Les lectures utilisent un descripteur du dossier sélectionné et `openat`/`O_NOFOLLOW`; une fixture remplace le chemin sélectionné par un symlink vers un dossier extérieur après ouverture et prouve que la lecture reste dans le dossier d’origine. FR-`integrity.loginitems` reste `PARTIEL`, faute de lecture native du service de lancement et de qualification UI.
+- Revue Task 10 : deux constats P2 corrigés (champ evidence CSV et course de remplacement racine), relecture propre. `swift test --filter LaunchAgentInspectionTests` 5/5, AppShell 11/11, `make qualify` et `git diff --check` passent.
+- Dernier comptage CSV standard : 91 exigences/capacités, colonnes cohérentes; parmi 78 Musts : 35 `EN_COURS`, 38 `PARTIEL`, 5 `À_CONSTRUIRE`, 0 `VÉRIFIÉ`. Estimation de recréation reste ≈40 %, non calculée mécaniquement par ce registre; qualification native et release manquent.
+- Commits après le relevé précédent : `569cc4d` LaunchAgents, `fcbb687` root-fd et preuve, précédés du handoff `cf01d4c`. Aucun push/merge/publication.
