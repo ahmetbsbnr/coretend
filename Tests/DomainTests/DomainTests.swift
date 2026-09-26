@@ -124,6 +124,41 @@ final class ApplicationAssociationMatcherTests: XCTestCase {
 }
 
 final class DomainTests: XCTestCase {
+    func testDuplicateReviewRejectsProtectedKeeperAlongsideSelectedCopies() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-duplicate-keeper-\(UUID())", isDirectory: true)
+        let trashRoot = root.appendingPathComponent("fixture-trash", isDirectory: true)
+        try FileManager.default.createDirectory(at: trashRoot, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let keeper = root.appendingPathComponent("keeper.bin")
+        let firstCopy = root.appendingPathComponent("copy-a.bin")
+        let secondCopy = root.appendingPathComponent("copy-b.bin")
+        let bytes = Data("identical fixture bytes".utf8)
+        try bytes.write(to: keeper)
+        try bytes.write(to: firstCopy)
+        try bytes.write(to: secondCopy)
+
+        let store = try SQLiteStore(url: root.appendingPathComponent("events.sqlite"))
+        try await store.migrate()
+        let allowed = Set(["scan.duplicates"])
+        let service = FileActionService(validator: .init(),
+                                        executor: SafeActionExecutor(allowedRoots: [root], allowedRules: allowed,
+                                                                     trash: DomainFixtureTrash(trashRoot: trashRoot)),
+                                        store: store, allowedRoots: [root], allowedRuleIDs: allowed)
+        let selections = [
+            FileActionSelection(url: keeper, ruleID: "scan.duplicates", isProtectedKeeper: true),
+            FileActionSelection(url: firstCopy, ruleID: "scan.duplicates"),
+            FileActionSelection(url: secondCopy, ruleID: "scan.duplicates")
+        ]
+
+        XCTAssertThrowsError(try service.prepareReview(selections)) { error in
+            XCTAssertEqual(error as? ActionReviewError, .protectedKeeperSelected)
+        }
+        XCTAssertEqual(try Data(contentsOf: keeper), bytes)
+        XCTAssertEqual(try Data(contentsOf: firstCopy), bytes)
+        XCTAssertEqual(try Data(contentsOf: secondCopy), bytes)
+        XCTAssertTrue(try FileManager.default.contentsOfDirectory(atPath: trashRoot.path).isEmpty)
+    }
+
     func testSnapshotServicePreservesKnownAndUnknownValues() {
         let expected = SystemSnapshot(measuredAt: Date(timeIntervalSince1970: 100),
                                       availableBytes: .known(500), totalBytes: .unknown(reason: "permission unavailable"),
