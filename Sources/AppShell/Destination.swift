@@ -61,6 +61,7 @@ public enum ProductCopy {
         "record.error": "Local history is unavailable.", "common.cancel": "Cancel",
         "activity.proposed": "Proposed", "activity.approved": "Approved", "activity.refused": "Declined",
         "activity.cancelled": "Cancelled", "activity.movedToTrash": "Moved to Trash", "activity.failed": "Failed",
+        "activity.reason.trashFailed": "Could not move to Trash.",
         "activity.migrationImported": "Legacy preferences imported",
         "cleanup.intro": "Choose one known location to inspect. No rule is selected until you choose it.",
         "cleanup.caches": "User caches", "cleanup.caches.help": "Files under ~/Library/Caches.",
@@ -132,6 +133,7 @@ public enum ProductCopy {
         "record.error": "L’historique local est indisponible.", "common.cancel": "Annuler",
         "activity.proposed": "Proposé", "activity.approved": "Approuvé", "activity.refused": "Refusé",
         "activity.cancelled": "Annulé", "activity.movedToTrash": "Déplacé dans la Corbeille", "activity.failed": "Échec",
+        "activity.reason.trashFailed": "Déplacement vers la Corbeille impossible.",
         "activity.migrationImported": "Préférences héritées importées",
         "cleanup.intro": "Choisissez un emplacement connu à examiner. Aucune règle n’est sélectionnée par défaut.",
         "cleanup.caches": "Caches utilisateur", "cleanup.caches.help": "Fichiers sous ~/Library/Caches.",
@@ -161,6 +163,13 @@ public enum ProductCopy {
     ]
     public static func value(for key: String, french isFrench: Bool) -> String {
         (isFrench ? french : english)[key] ?? key
+    }
+
+    public static func activityDetail(_ detail: String, french isFrench: Bool) -> String {
+        let suffix = " | reason=trash_failed"
+        guard detail.hasSuffix(suffix), detail.count > suffix.count else { return detail }
+        let path = detail.dropLast(suffix.count)
+        return "\(path) — \(value(for: "activity.reason.trashFailed", french: isFrench))"
     }
 
     public static func scanRootFailure(reason: String, french isFrench: Bool) -> String {
