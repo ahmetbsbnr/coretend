@@ -18,6 +18,7 @@ struct SettingsView: View {
     @State private var diagnosticDocument: SettingsJSONDocument?
     @State private var diagnosticSummary = ""
     @State private var status: String?
+    @AppStorage("coretend.recentFiles.enabled") private var recentFilesEnabled = false
 
     var body: some View {
         Form {
@@ -65,6 +66,9 @@ struct SettingsView: View {
             Section(french ? "Conservation des données" : "Data retention") {
                 Text(french ? "L’activité reste dans la base locale jusqu’à son effacement explicite dans Historique. Les préférences et exclusions restent jusqu’à leur modification ou au retrait de la base." : "Activity stays in the local database until you explicitly clear it in Record. Preferences and exclusions remain until changed or the database is removed.")
                 Text(french ? "Les relevés Performance sont conservés 30 jours et limités à 500. Vous pouvez les effacer dans Performances; une nouvelle ouverture de cette vue créera un nouveau relevé." : "Performance readings are kept for 30 days and capped at 500. You can clear them in Performance; reopening that view creates a new reading.")
+                Toggle(french ? "Enregistrer les fichiers récents dans Explorer" : "Save recent files from Explore", isOn: $recentFilesEnabled)
+                Text(french ? "Désactivé par défaut. Activé, le dernier scan Explorer mémorise jusqu’à 100 chemins locaux et leur dernière taille connue. Désactivez-le pour arrêter cet enregistrement; effacez les éléments dans Vue d’ensemble." : "Off by default. When enabled, the latest Explore scan stores up to 100 local paths and their last known size. Turn it off to stop recording; remove entries in Overview.")
+                    .font(.callout).foregroundStyle(.secondary)
             }
 
             Section(french ? "Diagnostic privé" : "Private diagnostics") {
