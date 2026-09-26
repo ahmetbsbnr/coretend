@@ -46,6 +46,13 @@ struct SettingsView: View {
                 }
             }
 
+            Section(french ? "Accès aux dossiers" : "Folder access") {
+                Text(french ? "CoreTend accède uniquement aux dossiers que vous choisissez dans le sélecteur macOS. Si un dossier devient indisponible, vérifiez qu’il existe encore, que le volume est monté et que votre compte peut le lire, puis choisissez-le à nouveau. Les exclusions de cette app ou les protections de confidentialité macOS peuvent limiter certains éléments." : "CoreTend accesses only folders you choose in the macOS picker. If a folder becomes unavailable, check that it still exists, its volume is mounted, and your account can read it, then choose it again. App exclusions or macOS privacy protections can limit individual items.")
+                    .font(.callout).foregroundStyle(.secondary)
+                Text(french ? "CoreTend ne demande pas l’accès intégral au disque et ne peut pas ouvrir à votre place les réglages de confidentialité. Un scan partiel ou refusé ne signifie pas qu’un élément est absent ni qu’il est sûr." : "CoreTend does not request Full Disk Access and cannot open Privacy settings on your behalf. A partial or denied scan does not mean an item is absent or safe.")
+                    .font(.callout).foregroundStyle(.secondary)
+            }
+
             Section(french ? "Données héritées" : "Legacy data") {
                 Text(french ? "Import opt-in des préférences v1 reconnues. Le fichier source reste intact." : "Opt-in import for recognized v1 preferences. Source file remains unchanged.")
                     .font(.callout).foregroundStyle(.secondary)
