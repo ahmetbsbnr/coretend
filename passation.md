@@ -116,4 +116,4 @@ Ordre de reprise retenu : (1) refermer fonctions Must Applications/Integrity/per
 - `make qualify` passe avec install-smoke, tests Swift complets, builds App/CLI, audit sécurité, site et traceability. `make verify-package` passe.
 - ZIP local arm64 unsigned SHA-256 `795eab7dbeb13d0d0b241f0a018fb58645c8bfc0c2ebb6d0e4af3622777c0898`. FR-14 reste PARTIEL : pas de lancement GUI, désinstallation utilisateur testée, signature/notarisation ni test macOS minimum.
 - À poursuivre : test installation/removal complète dans environnement isolé si possible; attention, app data survit removal bundle. Ne pas supprimer automatiquement ses données.
-- CI GitHub Actions pour `f7d7d73` réussie : run 36264106677, macos-latest, 18:54:30Z. `next` reste non protégée selon API; configurer les checks requis demande action propriétaire/admin, aucun réglage distant modifié.
+- CI GitHub Actions pour `f7d7d73` réussie : run 36264106677, macos-latest, 18:54:30Z. Protection `next` activée et vérifiée : `qualify` strict requis; force-push/suppression interdits; approbation PR non requise. `main` conserve protection antérieure/checks historiques; aucun changement appliqué à `main`.
