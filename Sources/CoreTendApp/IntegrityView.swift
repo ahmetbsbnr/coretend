@@ -8,6 +8,7 @@ struct IntegrityView: View {
     @State private var selectingApp = false
     @State private var inspecting = false
     @State private var report: CodeSignatureReport?
+    @State private var quarantine: QuarantineReport?
     @State private var appName: String?
     @State private var status: String?
 
@@ -32,6 +33,12 @@ struct IntegrityView: View {
                         .font(.caption.monospaced())
                 }
             }
+            if let quarantine {
+                Label(quarantineText(quarantine.state), systemImage: "arrow.down.doc")
+                    .foregroundStyle(.secondary)
+                Text(copy("integrity.quarantine.limit"))
+                    .font(.caption).foregroundStyle(.secondary)
+            }
         }
         .fileImporter(isPresented: $selectingApp, allowedContentTypes: [.applicationBundle], allowsMultipleSelection: false) { result in
             guard case .success(let urls) = result, let appURL = urls.first else { return }
@@ -40,7 +47,7 @@ struct IntegrityView: View {
     }
 
     private func inspect(_ url: URL) {
-        report = nil; status = nil; inspecting = true; appName = url.deletingPathExtension().lastPathComponent
+        report = nil; quarantine = nil; status = nil; inspecting = true; appName = url.deletingPathExtension().lastPathComponent
         let acquiredScope = url.startAccessingSecurityScopedResource()
         Task {
             defer {
@@ -48,7 +55,11 @@ struct IntegrityView: View {
                 inspecting = false
             }
             let inspector = MacOSCodeSignatureInspector()
-            report = await Task.detached(priority: .utility) { inspector.inspect(at: url) }.value
+            let results = await Task.detached(priority: .utility) {
+                (inspector.inspect(at: url), MacOSQuarantineInspector().inspect(at: url))
+            }.value
+            report = results.0
+            quarantine = results.1
         }
     }
 
@@ -64,6 +75,13 @@ struct IntegrityView: View {
         case .valid: "checkmark.seal"
         case .invalid: "exclamationmark.seal"
         case .unavailable: "questionmark.circle"
+        }
+    }
+    private func quarantineText(_ state: QuarantineState) -> String {
+        switch state {
+        case .present: copy("integrity.quarantine.present")
+        case .absent: copy("integrity.quarantine.absent")
+        case .unavailable: copy("integrity.quarantine.unavailable")
         }
     }
     private func copy(_ key: String) -> String { ProductCopy.value(for: key, french: french) }

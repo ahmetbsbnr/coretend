@@ -76,6 +76,8 @@ public enum ProductCopy {
         "integrity.progress": "Checking signature…", "integrity.valid": "Signature passes system validation",
         "integrity.invalid": "Signature did not pass validation", "integrity.unavailable": "Signature information unavailable",
         "integrity.identifier": "Bundle identifier", "integrity.team": "Signing team", "integrity.status": "System status code",
+        "integrity.quarantine.present": "macOS quarantine marker present", "integrity.quarantine.absent": "No quarantine marker observed",
+        "integrity.quarantine.unavailable": "Quarantine marker unavailable", "integrity.quarantine.limit": "Marker presence does not prove origin or safety; absence does not prove the app is safe.",
         "onboarding.title": "Welcome to CoreTend"
     ]
     public static let french: [String: String] = [
@@ -137,6 +139,8 @@ public enum ProductCopy {
         "integrity.progress": "Vérification de la signature…", "integrity.valid": "La signature est validée par le système",
         "integrity.invalid": "La signature n’est pas validée", "integrity.unavailable": "Informations de signature indisponibles",
         "integrity.identifier": "Identifiant du bundle", "integrity.team": "Équipe de signature", "integrity.status": "Code d’état système",
+        "integrity.quarantine.present": "Marqueur de quarantaine macOS présent", "integrity.quarantine.absent": "Aucun marqueur de quarantaine observé",
+        "integrity.quarantine.unavailable": "Marqueur de quarantaine indisponible", "integrity.quarantine.limit": "Sa présence ne prouve ni l’origine ni la sûreté; son absence ne prouve pas que l’app est sûre.",
         "onboarding.title": "Bienvenue dans CoreTend"
     ]
     public static func value(for key: String, french isFrench: Bool) -> String {

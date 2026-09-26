@@ -2,7 +2,30 @@ import XCTest
 import ProductContract
 import SafetyCore
 import Persistence
+import Darwin
 @testable import Domain
+
+final class QuarantineInspectionTests: XCTestCase {
+    func testReportsPresenceAndAbsenceOnFixtureWithoutReadingAttributeValue() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-quarantine-\(UUID())", isDirectory: true)
+        let app = root.appendingPathComponent("Fixture.app", isDirectory: true)
+        try FileManager.default.createDirectory(at: app, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let inspector = MacOSQuarantineInspector()
+        XCTAssertEqual(inspector.inspect(at: app).state, .absent)
+        let marker = Data("0081;fixture".utf8)
+        let result = app.path.withCString { path in
+            "com.apple.quarantine".withCString { name in
+                marker.withUnsafeBytes { bytes in setxattr(path, name, bytes.baseAddress, bytes.count, 0, 0) }
+            }
+        }
+        XCTAssertEqual(result, 0)
+        XCTAssertEqual(inspector.inspect(at: app).state, .present)
+        let alias = root.appendingPathComponent("Alias.app")
+        try FileManager.default.createSymbolicLink(at: alias, withDestinationURL: app)
+        XCTAssertEqual(inspector.inspect(at: alias).state, .unavailable)
+    }
+}
 
 final class ApplicationAssociationMatcherTests: XCTestCase {
     func testRequiresExactBundleIdentifierComponentOrFilenameStem() {

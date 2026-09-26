@@ -12,3 +12,5 @@ Dans Applications, **Rechercher des fichiers associés** demande un dossier expl
 Dans **Doublons**, choisissez **Images similaires**, puis sélectionnez un dossier. CoreTend calcule localement une empreinte visuelle réduite pour les fichiers image pris en charge et présente les paires candidates. Cette comparaison heuristique peut manquer des ressemblances ou rapprocher des images distinctes. Elle ne supprime rien; examinez les deux fichiers vous-même.
 
 Dans **Performances**, chaque ouverture ou clic sur **Actualiser** ajoute un relevé local daté. La charge système sur une minute provient de macOS; ce nombre n’est pas un pourcentage CPU. Le graphique montre les relevés connus sous forme de points. Les valeurs indisponibles restent inconnues. L’historique conserve 30 jours et au plus 500 relevés; aucun échantillonnage continu en arrière-plan.
+
+Dans **Intégrité**, choisir une app permet de lire deux signaux locaux : validation de signature et présence du marqueur de quarantaine macOS. Ce marqueur peut être absent, présent ou inaccessible; il ne prouve ni la source réelle de l’app ni sa sûreté. Aucun verdict de malware n’est donné.
