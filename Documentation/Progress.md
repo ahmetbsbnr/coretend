@@ -104,3 +104,11 @@
 ## Qualification intégrée — 26-09-2026
 
 `make qualify` passe après Quick Look et l’aide d’accès dossiers : génération du manifeste/site, contrôles statiques site, traçabilité (40 FR/NFR + 51 capacités), audit sécurité, suite XCTest complète, builds debug App + CLI. Les bundles XCTest listés terminent sans échec. Ce gate n’inclut aucun parcours SwiftUI natif; les Must restent incomplets comme détaillé dans la traçabilité. Aucun statut de livraison finale n’est acquis.
+
+## Continuation de la reconstruction — 27-09-2026
+
+- Tranche de Musts ciblés terminée jusqu’à Task 9 du plan local `.superpowers/sdd/Remaining-musts-plan/`: validation locale de l’URL de mise à jour (FR-25); rollback/retry import legacy (FR-20); allowlist export diagnostic (FR-21); tailles Explore logique/allouée (FR-08); audit échec Trash avec motif persistant (FR-06/26); rollback/retry migration SQLite v3 (FR-11); correction MoSCoW; localisation EN/FR Record par `failure_code` v5 (FR-06/12); classification metadata-only des placeholders cloud (cloud.detect).
+- Vérifications récentes sur fixtures : `make qualify` passe, dont tests Persistence 27, Domain 19, AppShell 11, ScanCore 18 et builds app/CLI. Revue ciblée Task 8 et Task 9 sans constat ouvert. `Traceability.csv` se parse en 91 lignes/9 colonnes; 78 Must: 35 `EN_COURS`, 36 `PARTIEL`, 7 `À_CONSTRUIRE`, 0 `VÉRIFIÉ`. FR-06/FR-08/FR-20/FR-21/FR-25/FR-26 et `cloud.detect` gardent les limites natives explicites.
+- Schéma SQLite courant v5 ajoute `activity_events.failure_code` nullable. Une app v4 ne peut pas relire la base migrée v5; retour arrière demande restauration d’une sauvegarde antérieure. Aucune base réelle migrée.
+- Estimation d’avancement fonctionnel : environ 40 %, estimation de portée non calculée par le registre. Aucun Must n’a son critère de qualification complet marqué `VÉRIFIÉ`.
+- Aucun push, merge, tag, signature, notarisation ou publication. UI native/VoiceOver, vraie Corbeille macOS, second hôte/OS, sauvegarde-restauration utilisateur et gates navigateur/release ne sont pas déclarés qualifiés. La passation historique archivée ci-dessus reste contexte; cette section est l’état courant de la reconstruction.
