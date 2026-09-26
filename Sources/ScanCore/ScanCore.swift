@@ -70,30 +70,46 @@ public enum ScanEvent: Sendable {
 
 public protocol ScanEngine: Sendable { func scan(_ request: ScanRequest) -> AsyncThrowingStream<ScanEvent, Error> }
 
-public struct LocalScanEngine: ScanEngine {
+public protocol UbiquitousItemMetadataReading: Sendable {
+    func isUbiquitousItem(at url: URL) -> Bool?
+}
+
+public struct FoundationUbiquitousItemMetadataReader: UbiquitousItemMetadataReading {
     public init() {}
+
+    public func isUbiquitousItem(at url: URL) -> Bool? {
+        try? url.resourceValues(forKeys: [.isUbiquitousItemKey]).isUbiquitousItem
+    }
+}
+
+public struct LocalScanEngine: ScanEngine {
+    private let metadataReader: any UbiquitousItemMetadataReading
+
+    public init(metadataReader: any UbiquitousItemMetadataReading = FoundationUbiquitousItemMetadataReader()) {
+        self.metadataReader = metadataReader
+    }
 
     public func scan(_ request: ScanRequest) -> AsyncThrowingStream<ScanEvent, Error> {
         AsyncThrowingStream { continuation in
             let worker = Task(priority: .utility) {
-                await Self.run(request, continuation: continuation)
+                await run(request, continuation: continuation)
                 continuation.finish()
             }
             continuation.onTermination = { _ in worker.cancel() }
         }
     }
 
-    private static func run(_ request: ScanRequest, continuation: AsyncThrowingStream<ScanEvent, Error>.Continuation) async {
+    private func run(_ request: ScanRequest, continuation: AsyncThrowingStream<ScanEvent, Error>.Continuation) async {
         var completed = 0
         let exclusions = request.exclusions.map { $0.resolvingSymlinksInPath().standardizedFileURL.path }
         for root in request.roots {
             guard !Task.isCancelled else { return }
-            if isExcluded(root.url, by: exclusions) {
+            if Self.isExcluded(root.url, by: exclusions) {
                 continuation.yield(.itemFailure(path: root.url.path, reason: "root_excluded")); continue
             }
             var rootInfo = stat()
             guard lstat(root.url.path, &rootInfo) == 0 else {
-                continuation.yield(.itemFailure(path: root.url.path, reason: failureReason(errno: errno))); continue
+                continuation.yield(.itemFailure(path: root.url.path, reason: Self.failureReason(errno: errno))); continue
             }
             let rootType = rootInfo.st_mode & S_IFMT
             guard rootType != S_IFLNK else {
@@ -109,14 +125,14 @@ public struct LocalScanEngine: ScanEngine {
                 let children: [URL]
                 do { children = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey, .fileSizeKey, .contentModificationDateKey], options: [.skipsPackageDescendants]) }
                 catch {
-                    continuation.yield(.itemFailure(path: directory.path, reason: failureReason(error))); continue
+                    continuation.yield(.itemFailure(path: directory.path, reason: Self.failureReason(error))); continue
                 }
                 for child in children {
                     guard !Task.isCancelled else { return }
-                    if isExcluded(child, by: exclusions) { continue }
+                    if Self.isExcluded(child, by: exclusions) { continue }
                     var info = stat()
                     guard lstat(child.path, &info) == 0 else {
-                        continuation.yield(.itemFailure(path: child.path, reason: failureReason(errno: errno))); continue
+                        continuation.yield(.itemFailure(path: child.path, reason: Self.failureReason(errno: errno))); continue
                     }
                     if (info.st_mode & S_IFMT) == S_IFLNK { continue }
                     let resolved = child.resolvingSymlinksInPath().path
@@ -127,15 +143,15 @@ public struct LocalScanEngine: ScanEngine {
                     guard (info.st_mode & S_IFMT) == S_IFREG else { continue }
                     if let descriptor = CleanupRuleCatalog.rule(root.ruleID), !descriptor.includes(child, rootURL: root.url) { continue }
                     completed += 1
-                    let values = try? child.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey, .isUbiquitousItemKey])
+                    let values = try? child.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey])
                     let logical = values?.fileSize.map(Int64.init).map(ProductMeasurement.known) ?? .unknown(reason: "size_unavailable")
-                    let allocated: ProductMeasurement<Int64> = values?.isUbiquitousItem == true
+                    let allocated: ProductMeasurement<Int64> = metadataReader.isUbiquitousItem(at: child) == true
                         ? .unknown(reason: "cloud_backed_local_bytes_unverified")
                         : .known(Int64(info.st_blocks) * 512)
                     continuation.yield(.result(ScanResult(url: child, ruleID: root.ruleID,
                                                           logicalBytes: logical, allocatedBytes: allocated,
                                                           modifiedAt: values?.contentModificationDate,
-                                                          risk: risk(for: root.ruleID))))
+                                                          risk: Self.risk(for: root.ruleID))))
                     continuation.yield(.progress(completed: completed))
                 }
             }
