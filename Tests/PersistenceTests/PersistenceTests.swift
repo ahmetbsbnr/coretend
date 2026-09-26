@@ -13,7 +13,7 @@ final class PersistenceTests: XCTestCase {
         try await store.migrate()
         XCTAssertTrue(FileManager.default.fileExists(atPath: db.path))
         let version = try await store.schemaVersion()
-        XCTAssertEqual(version, 3)
+        XCTAssertEqual(version, 4)
     }
 
     func testAppendAndQueryEventsInTimestampOrder() async throws {
@@ -108,7 +108,7 @@ final class PersistenceTests: XCTestCase {
         let migratedVersion = try await store.schemaVersion()
         let preservedEvents = try await store.events()
         let exclusions = try await store.exclusions()
-        XCTAssertEqual(migratedVersion, 3)
+        XCTAssertEqual(migratedVersion, 4)
         XCTAssertEqual(preservedEvents.map(\.detail), ["fixture-event"])
         XCTAssertEqual(exclusions, [])
     }
@@ -189,10 +189,34 @@ final class PersistenceTests: XCTestCase {
         let events = try await store.events()
         let language = try await store.languagePreference()
         let samples = try await store.performanceSamples()
-        XCTAssertEqual(version, 3)
+        XCTAssertEqual(version, 4)
         XCTAssertEqual(events.map(\.detail), ["retained"])
         XCTAssertEqual(language, "fr")
         XCTAssertEqual(samples, [])
+    }
+
+    func testVersionThreeMigrationAddsSavedFilesWithoutChangingExistingRows() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-v3-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let url = root.appendingPathComponent("fixture.sqlite")
+        var handle: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(url.path, &handle), SQLITE_OK)
+        let sql = "CREATE TABLE activity_events (id TEXT PRIMARY KEY NOT NULL, occurred_at REAL NOT NULL, kind TEXT NOT NULL, detail TEXT NOT NULL); INSERT INTO activity_events VALUES ('11111111-1111-1111-1111-111111111111', 10, 'proposed', 'v3-retained'); CREATE TABLE preferences (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL); INSERT INTO preferences VALUES ('language', 'fr'); CREATE TABLE legacy_imports (digest TEXT PRIMARY KEY NOT NULL, imported_at REAL NOT NULL); CREATE TABLE performance_samples (id TEXT PRIMARY KEY NOT NULL, measured_at REAL NOT NULL, load_average_1m REAL, available_bytes INTEGER); INSERT INTO performance_samples VALUES ('22222222-2222-2222-2222-222222222222', 20, NULL, NULL); PRAGMA user_version = 3;"
+        XCTAssertEqual(sqlite3_exec(handle, sql, nil, nil, nil), SQLITE_OK)
+        sqlite3_close(handle)
+        let store = try SQLiteStore(url: url)
+        try await store.migrate(); try await store.migrate()
+        let version = try await store.schemaVersion()
+        let events = try await store.events()
+        let language = try await store.languagePreference()
+        let samples = try await store.performanceSamples()
+        let files = try await store.savedFiles()
+        XCTAssertEqual(version, 4)
+        XCTAssertEqual(events.map(\.detail), ["v3-retained"])
+        XCTAssertEqual(language, "fr")
+        XCTAssertEqual(samples.count, 1)
+        XCTAssertEqual(files, [])
     }
 
     func testPerformanceHistoryKeepsUnknownSeparateFromZeroAndPrunesOldSamples() async throws {
@@ -218,5 +242,43 @@ final class PersistenceTests: XCTestCase {
             try await reader.appendPerformanceSample(zero, retentionNow: now)
             XCTFail("read-only store accepted performance write")
         } catch let error as StoreError { XCTAssertEqual(error, .readOnly) }
+    }
+
+    func testSavedFilesKeepOptionalMeasurementsAndFavoritesBeyondRecentRetention() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-saved-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = try SQLiteStore(url: root.appendingPathComponent("fixture.sqlite"))
+        try await store.migrate()
+        let now = Date(timeIntervalSince1970: 1_000_000_000)
+
+        try await store.recordRecentFile(path: "/tmp/unknown-item", logicalBytes: nil, allocatedBytes: nil, seenAt: now)
+        try await store.setFavorite(path: "/tmp/unknown-item", isFavorite: true, at: now)
+        for index in 0...SQLiteStore.maximumRecentFiles {
+            try await store.recordRecentFile(path: "/tmp/recent-\(index)", logicalBytes: Int64(index), allocatedBytes: nil,
+                                             seenAt: now.addingTimeInterval(Double(index + 1)))
+        }
+
+        let files = try await store.savedFiles()
+        XCTAssertEqual(files.filter(\.isFavorite).map(\.path), ["/tmp/unknown-item"])
+        XCTAssertNil(files.first(where: { $0.path == "/tmp/unknown-item" })?.logicalBytes)
+        XCTAssertEqual(files.filter { !$0.isFavorite }.count, SQLiteStore.maximumRecentFiles)
+        XCTAssertFalse(files.contains(where: { $0.path == "/tmp/recent-0" }))
+    }
+
+    func testSavedFileWritesValidateAbsolutePathsAndNonnegativeSizes() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-saved-invalid-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = try SQLiteStore(url: root.appendingPathComponent("fixture.sqlite")); try await store.migrate()
+
+        do {
+            try await store.recordRecentFile(path: "relative/file", logicalBytes: 1, allocatedBytes: 1)
+            XCTFail("relative saved-file path accepted")
+        } catch let error as StoreError { XCTAssertEqual(error, .statement("invalid saved-file path")) }
+        do {
+            try await store.recordRecentFile(path: "/tmp/file", logicalBytes: -1, allocatedBytes: nil)
+            XCTFail("negative saved-file size accepted")
+        } catch let error as StoreError { XCTAssertEqual(error, .statement("invalid saved-file measurement")) }
     }
 }

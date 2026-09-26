@@ -95,9 +95,11 @@ private struct DestinationView: View {
                 }
                 if destination == .explore {
                     ExploreScanView(french: french)
+                } else if destination == .overview {
+                    SavedFilesView(french: french)
                 } else if destination == .duplicates {
                     DuplicateScanView(french: french)
-                } else if destination == .overview || destination == .performance {
+                } else if destination == .performance {
                     EmptyView()
                 } else if destination == .record {
                     RecordView(french: french)

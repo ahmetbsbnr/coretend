@@ -13,6 +13,15 @@ public struct ActivityEvent: Codable, Equatable, Sendable {
     }
 }
 
+public struct SavedFileRecord: Equatable, Sendable {
+    public let path: String
+    public let firstSeenAt: Date
+    public let lastSeenAt: Date
+    public let logicalBytes: Int64?
+    public let allocatedBytes: Int64?
+    public let isFavorite: Bool
+}
+
 public enum StoreError: Error, Equatable { case open(String), statement(String), unsupportedSchema(Int), readOnly }
 
 private final class SQLiteConnection: @unchecked Sendable {
@@ -22,6 +31,7 @@ private final class SQLiteConnection: @unchecked Sendable {
 }
 
 public actor SQLiteStore {
+    public static let maximumRecentFiles = 100
     private var connection: SQLiteConnection?
     private let readOnly: Bool
     public let url: URL
@@ -43,8 +53,8 @@ public actor SQLiteStore {
 
     public func migrate() throws {
         let version = try schemaVersion()
-        guard version <= 3 else { throw StoreError.unsupportedSchema(version) }
-        guard version < 3 else { return }
+        guard version <= 4 else { throw StoreError.unsupportedSchema(version) }
+        guard version < 4 else { return }
         guard !readOnly else { throw StoreError.readOnly }
         try execute("BEGIN IMMEDIATE")
         do {
@@ -57,9 +67,13 @@ public actor SQLiteStore {
                 try execute("CREATE TABLE IF NOT EXISTS preferences (key TEXT PRIMARY KEY NOT NULL, value TEXT NOT NULL)")
                 try execute("CREATE TABLE IF NOT EXISTS legacy_imports (digest TEXT PRIMARY KEY NOT NULL, imported_at REAL NOT NULL)")
             }
-            try execute("CREATE TABLE performance_samples (id TEXT PRIMARY KEY NOT NULL, measured_at REAL NOT NULL, load_average_1m REAL, available_bytes INTEGER)")
-            try execute("CREATE INDEX performance_samples_time ON performance_samples(measured_at)")
-            try execute("PRAGMA user_version = 3")
+            if version < 3 {
+                try execute("CREATE TABLE performance_samples (id TEXT PRIMARY KEY NOT NULL, measured_at REAL NOT NULL, load_average_1m REAL, available_bytes INTEGER)")
+                try execute("CREATE INDEX performance_samples_time ON performance_samples(measured_at)")
+            }
+            try execute("CREATE TABLE saved_files (path TEXT PRIMARY KEY NOT NULL, first_seen_at REAL NOT NULL, last_seen_at REAL NOT NULL, logical_bytes INTEGER, allocated_bytes INTEGER, is_favorite INTEGER NOT NULL DEFAULT 0 CHECK(is_favorite IN (0, 1)))")
+            try execute("CREATE INDEX saved_files_recency ON saved_files(last_seen_at DESC)")
+            try execute("PRAGMA user_version = 4")
             try execute("COMMIT")
         } catch {
             try? execute("ROLLBACK")
@@ -115,6 +129,93 @@ public actor SQLiteStore {
     public func clearPerformanceHistory() throws {
         guard !readOnly else { throw StoreError.readOnly }
         try execute("DELETE FROM performance_samples")
+    }
+
+    public func recordRecentFile(path: String, logicalBytes: Int64?, allocatedBytes: Int64?, seenAt: Date = .now) throws {
+        guard !readOnly else { throw StoreError.readOnly }
+        try validateSavedFile(path: path, logicalBytes: logicalBytes, allocatedBytes: allocatedBytes)
+        guard let database = connection?.handle else { throw StoreError.open("closed") }
+        try execute("BEGIN IMMEDIATE")
+        do {
+            var statement: OpaquePointer?
+            let sql = "INSERT INTO saved_files(path, first_seen_at, last_seen_at, logical_bytes, allocated_bytes, is_favorite) VALUES(?, ?, ?, ?, ?, 0) ON CONFLICT(path) DO UPDATE SET last_seen_at = excluded.last_seen_at, logical_bytes = excluded.logical_bytes, allocated_bytes = excluded.allocated_bytes"
+            guard sqlite3_prepare_v2(database, sql, -1, &statement, nil) == SQLITE_OK, let statement else { throw failure() }
+            defer { sqlite3_finalize(statement) }
+            bind(path, to: 1, in: statement)
+            sqlite3_bind_double(statement, 2, seenAt.timeIntervalSince1970)
+            sqlite3_bind_double(statement, 3, seenAt.timeIntervalSince1970)
+            if let logicalBytes { sqlite3_bind_int64(statement, 4, logicalBytes) } else { sqlite3_bind_null(statement, 4) }
+            if let allocatedBytes { sqlite3_bind_int64(statement, 5, allocatedBytes) } else { sqlite3_bind_null(statement, 5) }
+            guard sqlite3_step(statement) == SQLITE_DONE else { throw failure() }
+            try execute("DELETE FROM saved_files WHERE is_favorite = 0 AND path NOT IN (SELECT path FROM saved_files WHERE is_favorite = 0 ORDER BY last_seen_at DESC, path ASC LIMIT \(Self.maximumRecentFiles))")
+            try execute("COMMIT")
+        } catch {
+            try? execute("ROLLBACK")
+            throw error
+        }
+    }
+
+    public func setFavorite(path: String, isFavorite: Bool, at date: Date = .now) throws {
+        guard !readOnly else { throw StoreError.readOnly }
+        try validateSavedFile(path: path, logicalBytes: nil, allocatedBytes: nil)
+        guard let database = connection?.handle else { throw StoreError.open("closed") }
+        let sql = isFavorite
+            ? "INSERT INTO saved_files(path, first_seen_at, last_seen_at, is_favorite) VALUES(?, ?, ?, 1) ON CONFLICT(path) DO UPDATE SET is_favorite = 1"
+            : "UPDATE saved_files SET is_favorite = 0 WHERE path = ?"
+        var statement: OpaquePointer?
+        guard sqlite3_prepare_v2(database, sql, -1, &statement, nil) == SQLITE_OK, let statement else { throw failure() }
+        defer { sqlite3_finalize(statement) }
+        bind(path, to: 1, in: statement)
+        if isFavorite {
+            sqlite3_bind_double(statement, 2, date.timeIntervalSince1970)
+            sqlite3_bind_double(statement, 3, date.timeIntervalSince1970)
+        }
+        guard sqlite3_step(statement) == SQLITE_DONE else { throw failure() }
+        if !isFavorite {
+            try execute("DELETE FROM saved_files WHERE is_favorite = 0 AND path NOT IN (SELECT path FROM saved_files WHERE is_favorite = 0 ORDER BY last_seen_at DESC, path ASC LIMIT \(Self.maximumRecentFiles))")
+        }
+    }
+
+    public func savedFiles() throws -> [SavedFileRecord] {
+        guard let database = connection?.handle else { throw StoreError.open("closed") }
+        var statement: OpaquePointer?
+        let sql = "SELECT path, first_seen_at, last_seen_at, logical_bytes, allocated_bytes, is_favorite FROM saved_files ORDER BY is_favorite DESC, last_seen_at DESC, path ASC"
+        guard sqlite3_prepare_v2(database, sql, -1, &statement, nil) == SQLITE_OK, let statement else { throw failure() }
+        defer { sqlite3_finalize(statement) }
+        var result: [SavedFileRecord] = []
+        while true {
+            let step = sqlite3_step(statement)
+            if step == SQLITE_DONE { break }
+            guard step == SQLITE_ROW else { throw failure() }
+            guard let pathText = sqlite3_column_text(statement, 0) else { continue }
+            result.append(SavedFileRecord(path: String(cString: pathText),
+                                          firstSeenAt: Date(timeIntervalSince1970: sqlite3_column_double(statement, 1)),
+                                          lastSeenAt: Date(timeIntervalSince1970: sqlite3_column_double(statement, 2)),
+                                          logicalBytes: sqlite3_column_type(statement, 3) == SQLITE_NULL ? nil : sqlite3_column_int64(statement, 3),
+                                          allocatedBytes: sqlite3_column_type(statement, 4) == SQLITE_NULL ? nil : sqlite3_column_int64(statement, 4),
+                                          isFavorite: sqlite3_column_int(statement, 5) == 1))
+        }
+        return result
+    }
+
+    public func removeSavedFile(path: String) throws {
+        guard !readOnly else { throw StoreError.readOnly }
+        try validateSavedFile(path: path, logicalBytes: nil, allocatedBytes: nil)
+        guard let database = connection?.handle else { throw StoreError.open("closed") }
+        var statement: OpaquePointer?
+        guard sqlite3_prepare_v2(database, "DELETE FROM saved_files WHERE path = ?", -1, &statement, nil) == SQLITE_OK, let statement else { throw failure() }
+        defer { sqlite3_finalize(statement) }
+        bind(path, to: 1, in: statement)
+        guard sqlite3_step(statement) == SQLITE_DONE else { throw failure() }
+    }
+
+    private func validateSavedFile(path: String, logicalBytes: Int64?, allocatedBytes: Int64?) throws {
+        guard path.hasPrefix("/"), URL(fileURLWithPath: path).standardizedFileURL.path == path else {
+            throw StoreError.statement("invalid saved-file path")
+        }
+        guard logicalBytes.map({ $0 >= 0 }) ?? true, allocatedBytes.map({ $0 >= 0 }) ?? true else {
+            throw StoreError.statement("invalid saved-file measurement")
+        }
     }
 
     public func appendPerformanceSample(_ sample: PerformanceSample, retentionNow: Date = .now) throws {

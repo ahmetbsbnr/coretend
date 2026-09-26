@@ -6,6 +6,8 @@ Les scans sont en lecture seule. Explorer propose recherche, tri, carte proporti
 
 Dans **Explorer**, filtrez les résultats par octets locaux alloués connus d’au moins 1 Gio ou date de modification au plus tard 365 jours avant le moment indiqué. Le seuil inclut exactement 1 Gio; taille cloud/inconnue et date inconnue ne correspondent pas à ces filtres. Le filtre ancien montre l’instant limite et son fuseau; il est fixe jusqu’au changement de filtre.
 
+Dans **Explorer**, utilisez l’étoile pour enregistrer un favori. Les fichiers récents restent désactivés par défaut; activez leur enregistrement dans Réglages pour mémoriser jusqu’à 100 chemins du dernier scan Explorer terminé. Vue d’ensemble liste favoris et récents, dernière taille connue et état indicatif « présent » ou « absent ou inaccessible ». Choisissez à nouveau un dossier pour vérifier son contenu; un chemin mémorisé ne restaure pas l’accès macOS. Utilisez la corbeille de ligne pour retirer une entrée locale.
+
 Explorer, Nettoyage et Doublons proposent **Annuler l’analyse**. Une racine de scan indisponible est signalée séparément d’un dossier vide; des fichiers illisibles dans un dossier accessible produisent un résultat partiel. Annuler Nettoyage retire ses candidats incomplets de l’écran. Ces états ne constituent pas un diagnostic général des permissions macOS.
 
 Dans Réglages > **Accès aux dossiers**, CoreTend décrit l’accès aux dossiers explicitement choisis et les causes usuelles d’indisponibilité. Si un dossier échoue, vérifiez qu’il existe et que son volume est monté, puis choisissez-le à nouveau. Cette aide ne diagnostique pas l’ensemble des protections macOS, ne demande pas Accès complet au disque et ne prétend pas ouvrir les réglages système.

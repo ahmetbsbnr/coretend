@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 import ScanCore
 import ProductContract
 import AppShell
+import Persistence
 
 struct ExploreScanView: View {
     let french: Bool
@@ -21,6 +22,8 @@ struct ExploreScanView: View {
     @State private var selectedRoot: URL?
     @State private var previewScopeHeld = false
     @State private var previewScopedRoot: URL?
+    @AppStorage("coretend.recentFiles.enabled") private var recentFilesEnabled = false
+    @State private var favoritePaths: Set<String> = []
 
     private var visibleResults: [ScanResult] {
         let filtered = results.filter {
@@ -117,6 +120,13 @@ struct ExploreScanView: View {
                             Text(result.url.lastPathComponent).lineLimit(1)
                             Spacer()
                             Text(size(result.allocatedBytes)).monospacedDigit().foregroundStyle(.secondary)
+                            Button { Task { await toggleFavorite(result) } } label: {
+                                Image(systemName: favoritePaths.contains(result.url.path) ? "star.fill" : "star")
+                            }
+                            .buttonStyle(.borderless)
+                            .accessibilityLabel(favoritePaths.contains(result.url.path)
+                                ? (french ? "Retirer \(result.url.lastPathComponent) des favoris" : "Remove \(result.url.lastPathComponent) from favorites")
+                                : (french ? "Ajouter \(result.url.lastPathComponent) aux favoris" : "Add \(result.url.lastPathComponent) to favorites"))
                             Button { previewURL = result.url } label: {
                                 Label(copy("explore.preview"), systemImage: "eye")
                             }
@@ -146,6 +156,7 @@ struct ExploreScanView: View {
             previewURL = nil
             releasePreviewScope()
         }
+        .task { await loadFavorites() }
         .quickLookPreview($previewURL)
         .onChange(of: previewURL) { _, item in
             if item == nil { releasePreviewScope() }
@@ -184,6 +195,16 @@ struct ExploreScanView: View {
                     case .itemFailure(let path, let reason):
                         if path == root.path { rootFailure = reason } else { partialFailure = true }
                     case .finished:
+                        if recentFilesEnabled {
+                            let measured = results.suffix(SQLiteStore.maximumRecentFiles)
+                            if let store = try? await LocalStoreAccess.open() {
+                                for item in measured {
+                                    let logical: Int64? = { if case .known(let bytes) = item.logicalBytes { return bytes }; return nil }()
+                                    let allocated: Int64? = { if case .known(let bytes) = item.allocatedBytes { return bytes }; return nil }()
+                                    try? await store.recordRecentFile(path: item.url.path, logicalBytes: logical, allocatedBytes: allocated)
+                                }
+                            }
+                        }
                         if let rootFailure { status = ProductCopy.scanRootFailure(reason: rootFailure, french: french) }
                         else if partialFailure { status = copy("scan.partial") }
                         else { status = results.isEmpty ? copy("scan.empty") : nil }
@@ -209,6 +230,20 @@ struct ExploreScanView: View {
         if previewScopeHeld, let previewScopedRoot { previewScopedRoot.stopAccessingSecurityScopedResource() }
         previewScopeHeld = false
         previewScopedRoot = nil
+    }
+
+    @MainActor private func toggleFavorite(_ result: ScanResult) async {
+        do {
+            let store = try await LocalStoreAccess.open()
+            let isFavorite = !favoritePaths.contains(result.url.path)
+            try await store.setFavorite(path: result.url.path, isFavorite: isFavorite)
+            if isFavorite { favoritePaths.insert(result.url.path) } else { favoritePaths.remove(result.url.path) }
+        } catch { status = french ? "Favori non enregistré." : "Favorite was not saved." }
+    }
+
+    @MainActor private func loadFavorites() async {
+        guard let store = try? await LocalStoreAccess.open(), let records = try? await store.savedFiles() else { return }
+        favoritePaths = Set(records.filter(\.isFavorite).map(\.path))
     }
 
     private func size(_ measurement: ProductMeasurement<Int64>) -> String {
