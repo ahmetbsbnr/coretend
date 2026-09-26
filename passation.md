@@ -2,6 +2,12 @@
 
 **Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche `next` publiée sur `ahmetbsbnr/coretend` et issue de `main`. L’ancien dépôt indépendant `rebuild/` reste une copie locale de provenance.
 
+## Reprise active — 26-09-2026
+
+L’utilisateur demande de poursuivre le projet jusqu’à finalisation et de tenir cette passation à jour à chaque étape pour reprise après arrêt abrupt. Tête actuelle : `b1888ad` (documentation de build); code du paquet actuel issu de `894c107` (packaging propre). Dernier ZIP local observé : SHA-256 `e1e87a2a611d4793b2043c396ea2d957b34fe9205e73434fa3ce51620c3473fa`; il contient le code de `894c107`, pas le commit documentaire `b1888ad`. La passation doit être actualisée et commit/push à chaque tranche terminée.
+
+Ordre de reprise retenu : (1) refermer fonctions Must Applications/Integrity/permissions; (2) compléter les états de navigation, données, export et migration; (3) traiter les capacités restantes et mettre à jour `Website/`, README et cahier; (4) qualification en fixtures isolées, gates et builds; (5) relever précisément limites native/macOS/publication sans revendiquer une release non signée. Utiliser les langues utiles au résultat; Swift reste app macOS, Python dépôt/site, sans contrainte générale. Ne jamais ouvrir le vrai store CoreTend ni la vraie Corbeille pendant les tests. Aucune release signée/notarisée/publication.
+
 ## Lire d’abord
 
 1. [`Documentation/Project/Cahier-des-charges.md`](Documentation/Project/Cahier-des-charges.md) : QQOQCCP, MoSCoW, RACI, exigences, huit destinations.
