@@ -60,6 +60,45 @@ final class SimilarImageEngineTests: XCTestCase {
 }
 
 final class ScanCoreTests: XCTestCase {
+    func testCloudBackedFixtureKeepsLogicalSizeAndDoesNotChangeFileData() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-cloud-scan-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let file = root.appendingPathComponent("placeholder.txt")
+        let contents = Data("locally available fixture bytes".utf8)
+        try contents.write(to: file)
+
+        let engine = LocalScanEngine(metadataReader: FixtureUbiquitousItemMetadataReader(cloudBackedPaths: [file.standardizedFileURL.path]))
+        var result: ScanResult?
+        for try await event in engine.scan(.init(roots: [.init(url: root, ruleID: .explore)])) {
+            if case .result(let value) = event { result = value }
+        }
+
+        XCTAssertEqual(result?.logicalBytes, .known(Int64(contents.count)))
+        XCTAssertEqual(result?.allocatedBytes, .unknown(reason: "cloud_backed_local_bytes_unverified"))
+        XCTAssertEqual(try Data(contentsOf: file), contents)
+    }
+
+    func testLocalFixtureRetainsMeasuredAllocatedBytes() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-local-scan-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let file = root.appendingPathComponent("local.txt")
+        try Data("local fixture".utf8).write(to: file)
+
+        var result: ScanResult?
+        for try await event in LocalScanEngine().scan(.init(roots: [.init(url: root, ruleID: .explore)])) {
+            if case .result(let value) = event { result = value }
+        }
+
+        guard let result else { return XCTFail("Expected the local fixture to be scanned") }
+        if case .known(let allocatedBytes) = result.allocatedBytes {
+            XCTAssertGreaterThan(allocatedBytes, 0)
+        } else {
+            XCTFail("Expected local allocated bytes to remain known")
+        }
+    }
+
     func testMissingScanRootReportsMissingCause() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-missing-scan-\(UUID())", isDirectory: true)
         var failures: [(String, String)] = []
@@ -138,6 +177,14 @@ final class ScanCoreTests: XCTestCase {
             if case .result(let result) = event { urls.append(result.url) }
         }
         XCTAssertEqual(urls.map { $0.resolvingSymlinksInPath().path }, [target.resolvingSymlinksInPath().path])
+    }
+}
+
+private struct FixtureUbiquitousItemMetadataReader: UbiquitousItemMetadataReading {
+    let cloudBackedPaths: Set<String>
+
+    func isUbiquitousItem(at url: URL) -> Bool? {
+        cloudBackedPaths.contains(url.standardizedFileURL.path)
     }
 }
 
