@@ -62,6 +62,30 @@ final class SafetyCoreTests: XCTestCase {
         XCTAssertEqual(try Data(contentsOf: f.file), Data("replacement".utf8))
     }
 
+    func testExecutionRejectsSelectedRootReplacedBySymlinkWithoutCallingTrash() async throws {
+        let f = try fixture()
+        defer { try? FileManager.default.removeItem(at: f.root) }
+        let chosenRoot = f.root.appendingPathComponent("chosen", isDirectory: true)
+        let movedRoot = f.root.appendingPathComponent("chosen-original", isDirectory: true)
+        try FileManager.default.createDirectory(at: chosenRoot, withIntermediateDirectories: true)
+        let chosenFile = chosenRoot.appendingPathComponent("candidate.txt")
+        try Data("root-bound".utf8).write(to: chosenFile)
+        let expectedRoot = try FileIdentity(url: chosenRoot)
+        let allowed = Set(["scan.explore"])
+        let approved = try PathValidator().approve(target: chosenFile, allowedRoots: [chosenRoot], ruleID: "scan.explore", allowedRuleIDs: allowed)
+        let trash = FixtureTrashClient(trashRoot: f.trash)
+        let executor = SafeActionExecutor(allowedRoots: [chosenRoot], allowedRules: allowed,
+                                          trash: trash, expectedRootIdentities: [chosenRoot: expectedRoot])
+
+        try FileManager.default.moveItem(at: chosenRoot, to: movedRoot)
+        try FileManager.default.createSymbolicLink(at: chosenRoot, withDestinationURL: movedRoot)
+
+        let outcome = await executor.execute(approved)
+        if case .failed(.revalidation(.identityChanged)) = outcome { } else { XCTFail("expected selected-root identity failure") }
+        XCTAssertEqual(try Data(contentsOf: movedRoot.appendingPathComponent("candidate.txt")), Data("root-bound".utf8))
+        XCTAssertTrue(try FileManager.default.contentsOfDirectory(atPath: f.trash.path).isEmpty)
+    }
+
     func testExecutionRejectsExpiredApprovalWithoutCallingTrash() async throws {
         let f = try fixture()
         defer { try? FileManager.default.removeItem(at: f.root) }

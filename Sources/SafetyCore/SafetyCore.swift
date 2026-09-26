@@ -117,15 +117,18 @@ public struct SafeActionExecutor: FileOperationExecutor {
     private let roots: [URL]
     private let allowedRules: Set<String>
     private let trash: any TrashClient
+    private let expectedRootIdentities: [URL: FileIdentity]
     private let clock: @Sendable () -> Date
 
     public init(validator: PathValidator = .init(), allowedRoots: [URL],
                 allowedRules: Set<String>, trash: any TrashClient,
+                expectedRootIdentities: [URL: FileIdentity] = [:],
                 clock: @escaping @Sendable () -> Date = { .now }) {
         self.validator = validator
         self.roots = allowedRoots
         self.allowedRules = allowedRules
         self.trash = trash
+        self.expectedRootIdentities = expectedRootIdentities
         self.clock = clock
     }
 
@@ -134,6 +137,15 @@ public struct SafeActionExecutor: FileOperationExecutor {
         do { url = try validator.revalidate(operation, allowedRoots: roots, allowedRuleIDs: allowedRules, now: clock()) }
         catch let refusal as PathRefusal { return .failed(.revalidation(refusal)) }
         catch { return .failed(.revalidation(.missingTarget)) }
+        for (root, expectedIdentity) in expectedRootIdentities {
+            guard let currentIdentity = try? FileIdentity(url: root), currentIdentity == expectedIdentity else {
+                return .failed(.revalidation(.identityChanged))
+            }
+            var info = stat()
+            guard lstat(root.path, &info) == 0, (info.st_mode & S_IFMT) == S_IFDIR else {
+                return .failed(.revalidation(.identityChanged))
+            }
+        }
         do {
             let moved = try await trash.moveToTrash(url)
             return .movedToTrash(original: url.path, trashURL: moved.path)

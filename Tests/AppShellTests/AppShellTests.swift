@@ -13,6 +13,26 @@ final class AppShellTests: XCTestCase {
         XCTAssertTrue(ProductCopy.french.keys.contains("safety.notice"))
     }
 
+    func testSpaceLensDeleteCopyCoversSelectionReviewCancelAndStatusInBothLanguages() {
+        let keys = [
+            "explore.delete.select", "explore.delete.review", "spacelens.delete.title",
+            "spacelens.delete.confirm", "spacelens.delete.success.one", "spacelens.delete.success.many",
+            "spacelens.delete.partial.one", "spacelens.delete.partial.many", "spacelens.delete.failed.one",
+            "spacelens.delete.failed.many", "spacelens.delete.blocked", "spacelens.delete.cancelled"
+        ]
+        for key in keys {
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: false), key, "Missing English copy for \(key)")
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: true), key, "Missing French copy for \(key)")
+        }
+
+        XCTAssertTrue(ProductCopy.value(for: "spacelens.delete.title", french: false).contains("Trash"))
+        XCTAssertTrue(ProductCopy.value(for: "spacelens.delete.title", french: true).contains("Corbeille"))
+        XCTAssertTrue(ProductCopy.value(for: "spacelens.delete.success.many", french: false).contains("Trash"))
+        XCTAssertTrue(ProductCopy.value(for: "spacelens.delete.success.many", french: true).contains("Corbeille"))
+        XCTAssertFalse(ProductCopy.value(for: "spacelens.delete.success.many", french: false).localizedCaseInsensitiveContains("space recovered"))
+        XCTAssertFalse(ProductCopy.value(for: "spacelens.delete.success.many", french: true).localizedCaseInsensitiveContains("espace récupéré"))
+    }
+
     func testFolderAccessGuidanceIsLocalizedAndLimitedToChosenFolders() {
         let english = ProductCopy.value(for: "settings.folderaccess.help", french: false)
         let french = ProductCopy.value(for: "settings.folderaccess.help", french: true)

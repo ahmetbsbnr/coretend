@@ -238,6 +238,35 @@ final class CodeSignatureModelTests: XCTestCase {
 }
 
 final class FileActionServiceTests: XCTestCase {
+    func testExploreRuleReviewAndApprovalPreserveSourceWhenFixtureTrashFails() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-explore-trash-failure-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let file = root.appendingPathComponent("candidate.txt")
+        let original = Data("explore fixture".utf8)
+        try original.write(to: file)
+        let store = try SQLiteStore(url: root.appendingPathComponent("events.sqlite"))
+        try await store.migrate()
+        let allowed = Set(["scan.explore"])
+        let service = FileActionService(validator: .init(),
+                                        executor: SafeActionExecutor(allowedRoots: [root], allowedRules: allowed, trash: DomainFailingTrash()),
+                                        store: store, allowedRoots: [root], allowedRuleIDs: allowed)
+        let review = try service.prepareReview([FileActionSelection(url: file, ruleID: "scan.explore")])
+
+        let proposalRecorded = await service.recordProposal(review)
+        XCTAssertTrue(proposalRecorded)
+        let approved = try service.confirm(review, accepted: true)
+        let report = await service.execute(approved)
+
+        XCTAssertEqual(report.items.first?.outcome, .failed(.trashFailed("synthetic Trash failure")))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: file.path))
+        XCTAssertEqual(try Data(contentsOf: file), original)
+        let events = try await store.events()
+        XCTAssertEqual(events.map(\.kind), [.proposed, .approved, .failed])
+        XCTAssertEqual(events.map(\.detail), [file.path, file.path, "\(file.path) | reason=trash_failed"])
+        XCTAssertEqual(events.map(\.failureCode), [nil, nil, "trash_failed"])
+    }
+
     func testConfirmedAppTrashFailurePreservesBundleAndPersistsDistinctAuditEvents() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-app-trash-failure-\(UUID())", isDirectory: true)
         let apps = root.appendingPathComponent("Applications", isDirectory: true)
