@@ -128,3 +128,4 @@
 - Dernier comptage CSV standard : 91 exigences/capacités, colonnes cohérentes; parmi 78 Musts : 35 `EN_COURS`, 38 `PARTIEL`, 5 `À_CONSTRUIRE`, 0 `VÉRIFIÉ`. Estimation de recréation reste ≈40 %, non calculée mécaniquement par ce registre; qualification native et release manquent.
 - Commits après le relevé précédent : `569cc4d` LaunchAgents, `fcbb687` root-fd et preuve, précédés du handoff `cf01d4c`. Aucun push/merge/publication.
 - FR-07 : Domain fixture prouve qu’une revue refusant le keeper garde les copies intactes et ne touche pas la Corbeille fixture; moteur garde un keeper déterministe. Race externe supprimant ce keeper et UI native restent à qualifier.
+- FR-14 / NFR-08 : lancement runtime du binaire debug avec `HOME`, `CFFIXED_USER_HOME` et `TMPDIR` isolés; processus vivant après 8 s, SQLite créé sous le HOME temporaire. GUI visible, bundle empaqueté et matrice hôte restent non qualifiés.

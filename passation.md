@@ -8,7 +8,7 @@
 - Cahier des charges complet et approuvé : QQOQCCP, MoSCoW, RACI, objectifs, exigences, architecture, risques et séquence. Voir `Documentation/Project/Cahier-des-charges.md`.
 - Traceability contient 40 FR/NFR + 51 capacités; 91 statuts renseignés. La ligne NFR-07 a été réalignée sur les colonnes CSV; statut PARTIEL tant que revue clavier/VoiceOver/Dynamic Type/contraste/Reduce Motion n’est pas faite.
 - App SwiftUI macOS, CLI Swift, persistance SQLite, modules métier, site statique EN/FR et scripts de paquet sont présents. Résultats/états restent partiels selon `Documentation/Traceability.csv`; aucun jalon ne signifie produit final.
-- Dernière qualification locale : `make qualify` le 27-09 après Task20. Elle couvre génération, site, traçabilité, audit statique de sûreté, installation fixture en HOME temporaire, XCTest complet, builds debug App/CLI et whitespace. Aucune UI native/VoiceOver n’est qualifiée par ce gate.
+- Dernière qualification locale : `make qualify` le 27-09 après Task20; smoke runtime debug isolé passe ensuite. Elle couvre génération, site, traçabilité, audit statique de sûreté, installation fixture en HOME temporaire, XCTest complet, builds debug App/CLI et whitespace. Aucune UI native/VoiceOver n’est qualifiée par ce gate.
 - Paquet courant : `Artifacts/CoreTend-local-unsigned.zip`, arm64, produit depuis le code app `b0287bf`. SHA-256 `94503244830030785388e6ea2359dc844af22d719d5e82729f14408f1697a299`. `make package-local verify-package` passe; vérification limitée à Info.plist, archive et Mach-O. Non lancé, installé sur le Mac, signé, notarié ou publié. Preuve dans `Documentation/ReleaseEvidence.md`.
 - Copie greenfield historique `rebuild/` conservée localement comme provenance. Passation/documents 1.x archivés sous `Documentation/Archive/Legacy-Reconstruction/`; ils ne décrivent pas le code actuel.
 - État après les tâches 15–20 : traçabilité de 91 lignes, 54 `PARTIEL`, 29 `EN_COURS`, 8 `À_CONSTRUIRE`. Critères UI/macOS, compatibilité et distribution restent ouverts.
@@ -29,6 +29,8 @@
 - Qualification Task 20 : `swift test --filter DomainTests/testDuplicateReviewRejectsProtectedKeeperAlongsideSelectedCopies`, traceability parser, puis `make qualify` passent.
 
 - **Task 20 — FR-07 keeper protégé** : test Domain temporaire refuse une revue incluant keeper et deux copies; octets préservés et Corbeille fixture vide. `make qualify` passe. FR-07 reste PARTIEL pour race externe et UI native.
+
+- Smoke FR-14 isolé : binaire debug lancé avec `CFFIXED_USER_HOME` temporaire; processus vivant 8 s et store créé exclusivement sous ce profil. GUI visible, bundle emballé, accessibilité restent non qualifiés; preuve dans ReleaseEvidence.
 
 ## Jalons récents intégrés
 

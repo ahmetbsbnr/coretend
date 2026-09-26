@@ -119,3 +119,9 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 - Code source app : `b0287bf` (PR #50, `next`). Build de production puis `make package-local verify-package` réussis après interaction graphique sur point connu le plus proche.
 - ZIP local arm64 non signé SHA-256 `94503244830030785388e6ea2359dc844af22d719d5e82729f14408f1697a299` (`Artifacts/CoreTend-local-unsigned.zip`). Verification du plist, archive et Mach-O arm64 seulement.
 - Aucun lancement GUI, VoiceOver, signature, notarisation ou publication. Utiliser `make package-local verify-package` pour reproduire depuis `next`.
+
+## Lancement runtime isolé — 27-09-2026
+
+- Hôte : macOS 27.0 arm64, Swift 6.4; exécutable `.build/debug/CoreTendApp` produit par la qualification locale de la branche de reconstruction.
+- Lancement avec `HOME`, `CFFIXED_USER_HOME` et `TMPDIR` pointant vers un profil/temporaire unique. Processus resté actif après 8 secondes; `records.sqlite` créé sous `<temporary HOME>/Library/Application Support/CoreTend-Reconstruction/` uniquement. Processus terminé explicitement après observation; profil temporaire nettoyé.
+- Cette preuve couvre démarrage du binaire et isolation du store. Fenêtre réellement visible, parcours GUI/a11y et lancement du bundle empaqueté restent non qualifiés. Aucune ouverture via profil utilisateur réel.
