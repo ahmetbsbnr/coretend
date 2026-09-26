@@ -1,5 +1,6 @@
 import Foundation
 import XCTest
+import Darwin
 import CoreGraphics
 import ImageIO
 import ProductContract
@@ -154,13 +155,37 @@ final class ScanCoreTests: XCTestCase {
         let ignored = excluded.appendingPathComponent("ignored.tmp")
         try Data(repeating: 7, count: 32).write(to: candidate)
         try Data("ignore".utf8).write(to: ignored)
+        let before = try fixtureTreeSnapshot(root)
         let engine = LocalScanEngine()
         let request = ScanRequest(roots: [ScanRoot(url: root, ruleID: .explore)], exclusions: [excluded])
         var results: [ScanResult] = []
         for try await event in engine.scan(request) { if case .result(let value) = event { results.append(value) } }
         XCTAssertEqual(results.map { $0.url.resolvingSymlinksInPath().path }, [candidate.resolvingSymlinksInPath().path])
-        XCTAssertEqual(try Data(contentsOf: candidate).count, 32)
-        XCTAssertTrue(FileManager.default.fileExists(atPath: ignored.path))
+        XCTAssertEqual(try fixtureTreeSnapshot(root), before)
+    }
+
+    private func fixtureTreeSnapshot(_ root: URL) throws -> [String: String] {
+        var snapshot: [String: String] = [:]
+        let keys: [URLResourceKey] = [.isDirectoryKey, .isRegularFileKey, .isSymbolicLinkKey, .fileSizeKey, .contentModificationDateKey]
+        guard let enumerator = FileManager.default.enumerator(at: root, includingPropertiesForKeys: keys) else {
+            throw CocoaError(.fileReadUnknown)
+        }
+        for url in [root] + (enumerator.allObjects as? [URL] ?? []) {
+            let values = try url.resourceValues(forKeys: Set(keys))
+            let relative = url == root ? "." : String(url.path.dropFirst(root.path.count + 1))
+            let content: String
+            if values.isRegularFile == true {
+                content = try Data(contentsOf: url).base64EncodedString()
+            } else if values.isSymbolicLink == true {
+                content = try FileManager.default.destinationOfSymbolicLink(atPath: url.path)
+            } else {
+                content = ""
+            }
+            var info = stat()
+            guard lstat(url.path, &info) == 0 else { throw CocoaError(.fileReadUnknown) }
+            snapshot[relative] = "dir=\(values.isDirectory == true);file=\(values.isRegularFile == true);link=\(values.isSymbolicLink == true);size=\(values.fileSize ?? -1);device=\(info.st_dev);inode=\(info.st_ino);mode=\(info.st_mode);mtime=\(info.st_mtimespec.tv_sec).\(info.st_mtimespec.tv_nsec);ctime=\(info.st_ctimespec.tv_sec).\(info.st_ctimespec.tv_nsec);content=\(content)"
+        }
+        return snapshot
     }
 
     func testScanReportsSymlinkAsNoCandidate() async throws {

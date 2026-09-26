@@ -15,7 +15,7 @@ let package = Package(
     targets: [
         .target(name: "ProductContract"),
         .target(name: "SafetyCore"),
-        .target(name: "ScanCore", dependencies: ["ProductContract", "SafetyCore"]),
+        .target(name: "ScanCore", dependencies: ["ProductContract"]),
         .target(name: "AppShell"),
         .target(name: "Domain", dependencies: ["ProductContract", "SafetyCore", "Persistence"]),
         .executableTarget(name: "CoreTendApp", dependencies: ["AppShell", "ProductContract", "Persistence", "ScanCore", "Domain"]),
