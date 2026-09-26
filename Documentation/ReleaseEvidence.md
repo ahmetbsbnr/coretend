@@ -10,3 +10,10 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 - `make package-local` : réussi. Application locale `Artifacts/CoreTend.app`; ZIP local non signé `Artifacts/CoreTend-local-unsigned.zip` (634 Kio affichés par `ls -lh`). `Info.plist` passe `plutil -lint` pendant le packaging.
 - SHA-256 du ZIP local : `8783aa498e4eb8958e758c9a6eac32f800397c3def3e4376e1ef6d3e78a0ab9f`.
 - `swift build --product CoreTendApp` et `swift build --product CoreTendCLI` : réussis avant packaging. Tests, lancement natif, installation, signature, notarisation et publication non exécutés pour cette tranche. Le ZIP reste ignoré par Git et n’est pas une release.
+
+## Build local après données et états de scan — 26-09-2026
+
+- Source compilée : `c90cd1e` (`next`, incluant `0807db8`). Même hôte macOS 27.0 arm64 et Swift 6.4.
+- `swift build --product CoreTendApp` et `make package-local` : réussis. `Info.plist` passe `plutil -lint` pendant le packaging.
+- ZIP local non signé `Artifacts/CoreTend-local-unsigned.zip` : SHA-256 `876a8ad83fd30741ab378416e0ac4e2dc208544cb9f6b874879ecacb53f7bf93`. Il remplace le ZIP local précédent; aucun artefact publié.
+- Tests, lancement natif, vérification d’annulation par interaction, installation, signature et notarisation non exécutés pour ces changements. Les statuts NFR-05 et NFR-06 restent PARTIELS.
