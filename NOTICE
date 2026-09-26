@@ -1,23 +1,9 @@
 CoreTend
 Copyright (c) 2026 The CoreTend contributors
 
-This product includes software developed as part of the CoreTend
-project (https://github.com/ahmetbsbnr/coretend).
+CoreTend source code is licensed under the Apache License, Version 2.0.
+See LICENSE. Project documentation is licensed under CC-BY-4.0;
+see LICENSES/CC-BY-4.0.txt and Documentation/LICENSING.md.
 
-This product is licensed under the Apache License, Version 2.0.
-See LICENSE and LICENSES/Apache-2.0.txt for the full license text.
-
-Original documentation and illustrations are licensed separately under
-CC-BY-4.0 — see LICENSES/CC-BY-4.0.txt and Documentation/LICENSING.md.
-
-Third-party dependencies retain their own licenses. See
-THIRD_PARTY_NOTICES.md and Documentation/DEPENDENCIES.md for the full
-inventory.
-
-CoreTend's Integrity workflow reports local macOS provenance, code-signature
-and launch-item signals. It is not malware detection and does not bundle or
-invoke a third-party scanning engine.
-
-"CoreTend" is an independent open-source project. It is not
-affiliated with, sponsored by, or endorsed by Apple Inc. or MacPaw Inc.
-See TRADEMARKS.md.
+CoreTend is an independent open-source project. It is not affiliated with,
+sponsored by, or endorsed by Apple Inc.

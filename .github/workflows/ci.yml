@@ -1,168 +1,21 @@
-name: CI
+name: CoreTend Next CI
 
 on:
-  pull_request:
   push:
-    branches: [main]
-  workflow_dispatch:
+    branches: [main, next]
+  pull_request:
+    branches: [main, next]
 
 permissions:
   contents: read
 
-concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  build-and-test:
-    runs-on: macos-15
+  qualify:
+    runs-on: macos-latest
     timeout-minutes: 30
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Doctor (toolchain/prereqs)
-        run: Scripts/doctor.sh
-
-      - name: Repository checks (policy files, private data, placeholders)
-        run: Scripts/repository-doctor.sh
-
-      - name: License check
-        run: Scripts/check-licenses.sh
-
-      - name: Private-data check
-        run: Scripts/check-private-data.sh
-
-      - name: Placeholder check
-        run: Scripts/check-placeholders.sh
-
-      - name: Feature inventory totals (recomputed, never hand-typed)
-        run: Scripts/check-feature-inventory.sh
-
-      - name: SPDX headers on every Swift source and test file
-        run: Scripts/check-spdx-headers.sh
-
-      - name: Markdown link check (zero broken internal links/anchors)
-        run: python3 Scripts/check-markdown-links.py
-
-      - name: Debug build
-        run: Scripts/build.sh
-
-      - name: Tests
-        run: Scripts/test.sh
-
-      - name: Release build (0 warnings expected)
-        run: swift build -c release 2>&1 | tee /tmp/release-build.log
-
-      - name: Fail on release-build warnings
-        run: |
-          if grep -q "warning:" /tmp/release-build.log; then
-            echo "Release build produced warnings — see log above."
-            exit 1
-          fi
-
-      - name: Package local app bundle
-        run: Scripts/package-local.sh
-
-      - name: Bundle sanity check
-        run: |
-          test -d "build/CoreTend.app" || { echo "app bundle not found"; exit 1; }
-          test -f "build/CoreTend.app/Contents/Info.plist" || { echo "Info.plist missing"; exit 1; }
-
-      - name: DMG builds and lays itself out with no Finder and no GUI
-        # A CI runner has no Automation grant and no window session, which is
-        # exactly the environment that used to produce a silently unstyled DMG.
-        # If packaging ever regresses to driving the Finder, this job is where
-        # it fails — not a user's Downloads folder.
-        run: zsh Scripts/test-dmg-headless.sh
-
-      - name: Launch robustness (hostile state, isolated HOME)
-        # Skips the 50x soak; the full suite runs before a release.
-        run: zsh Scripts/test-robustness.sh --quick
-
-      - name: Static site contracts (first paint, retired-page redirects)
-        run: |
-          python3 Scripts/check-first-paint.py
-          python3 Scripts/check-retired-pages.py
-
-      - name: Visual regression and Axe (79 captures, 7 viewports, FR+EN)
-        run: |
-          # Playwright is PINNED on purpose. Installing it unpinned made the
-          # browser change underneath a byte-comparison gate: every capture
-          # drifts when Chromium ships new rendering, so the baseline rots and
-          # the gate fails on commits that changed nothing visual. That is what
-          # forced the wholesale "Accept reviewed public-site visual baseline"
-          # refresh (8b32ef5) — all 79 entries at once, which tells you nothing
-          # about what actually changed.
-          #
-          # Bump this deliberately, and regenerate the baseline in the same
-          # commit with: node Scripts/visual/capture.mjs --update
-          npm install --no-save playwright@1.63.0 pngjs @axe-core/playwright
-          npx playwright install --with-deps chromium
-          node Scripts/site/test-site.mjs
-          node Scripts/visual/capture.mjs
-
-      - name: Upload visual diffs when the gate fails
-        if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: visual-regression-output
-          path: Scripts/visual/output/
-          retention-days: 7
-          if-no-files-found: ignore
-
-      - name: Release/sync consistency gate (fails on version divergence)
-        run: bash Scripts/test-release-sync.sh
-
-      - name: Public release metadata gate (offline and path-free)
-        run: python3 Scripts/test-public-release-gate.py
-
-      - name: Localization key-parity check
-        run: |
-          base="Sources/CoreTendApp/Resources/Base.lproj/Localizable.strings"
-          fr="Sources/CoreTendApp/Resources/fr.lproj/Localizable.strings"
-          base_keys="$(mktemp)"
-          fr_keys="$(mktemp)"
-          trap 'rm -f "$base_keys" "$fr_keys"' EXIT
-          iconv -f UTF-16 -t UTF-8 "$base" |
-            sed -n 's/^"\([^"]*\)".*/\1/p' | sort -u > "$base_keys"
-          iconv -f UTF-16 -t UTF-8 "$fr" |
-            sed -n 's/^"\([^"]*\)".*/\1/p' | sort -u > "$fr_keys"
-          echo "Base: $(wc -l < "$base_keys") keys, fr: $(wc -l < "$fr_keys") keys"
-          if ! diff -u "$base_keys" "$fr_keys"; then
-            echo "Localization keys differ between Base and fr."
-            exit 1
-          fi
-
-  distribution-check:
-    runs-on: macos-15
-    timeout-minutes: 30
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Doctor (toolchain/prereqs)
-        run: Scripts/doctor.sh
-
-      - name: Version consistency check
-        run: Scripts/check-version-consistency.sh
-
-      - name: Placeholder / license / private-data checks
-        run: |
-          Scripts/check-placeholders.sh
-          Scripts/check-licenses.sh
-          Scripts/check-private-data.sh
-
-      - name: Package ZIP and DMG, verify checksums, run distribution tests
-        run: Scripts/test-distribution.sh 0.0.0-ci
-
-      - name: App launch smoke test
-        # v1.0.0 passed every signature, notarization and checksum check and
-        # still trapped at launch on every Mac but the one that built it.
-        run: Scripts/test-app-launch.sh
-
-      - name: Release-manifest / checksum / dangerous-command checks
-        run: Scripts/test-release-manifest.sh
-
-      - name: Uninstall script tests
-        run: Scripts/test-uninstall.sh
+      - uses: actions/checkout@v4
+      - name: Build, fixtures, site and contracts
+        run: make qualify
+      - name: Whitespace check
+        run: git diff --check

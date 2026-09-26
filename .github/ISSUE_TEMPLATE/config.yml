@@ -1,8 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Security vulnerability report
-    url: https://github.com/ahmetbsbnr/coretend/security/policy
-    about: Do NOT open a public issue for a security vulnerability — use the security policy.
-  - name: Support / questions
-    url: https://github.com/ahmetbsbnr/coretend/blob/main/.github/SUPPORT.md
-    about: General usage questions, installation help and troubleshooting.
+  - name: Signalement de sécurité privé
+    url: https://github.com/ahmetbsbnr/coretend/security/advisories/new
+    about: Utiliser ce canal pour une faille, sans données personnelles réelles.

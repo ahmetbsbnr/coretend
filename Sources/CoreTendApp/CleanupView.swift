@@ -1,396 +1,215 @@
-// SPDX-License-Identifier: Apache-2.0
-// SPDX-FileCopyrightText: The CoreTend Authors
-
 import SwiftUI
+import UniformTypeIdentifiers
 import ScanCore
+import AppShell
 import SafetyCore
-import FileRules
-import DesignSystem
-import Persistence
-
-@MainActor
-@Observable
-final class CleanupViewModel {
-    enum Phase: Equatable {
-        case idle, scanning, review, running, done(ExecutionOutcome), failed(String)
-    }
-
-    var phase: Phase = .idle
-    var findings: [ScanFinding] = []
-    var selectedIDs: Set<UUID> = []
-    var scannedCount = 0
-    var totalBytes: Int64 = 0
-    var totalFindingCount = 0
-    var isScanPaused = false
-
-    private var scanTask: Task<Void, Never>?
-    private var pauseController: ScanPauseController?
-
-    var isDisplayTruncated: Bool { totalFindingCount > findings.count }
-
-    var selectedBytes: Int64 {
-        findings.filter { selectedIDs.contains($0.id) }.reduce(0) { $0 + $1.logicalSize }
-    }
-
-    struct RuleGroup: Identifiable {
-        let ruleID: String
-        let name: String
-        let explanation: String
-        var findings: [ScanFinding]
-        var bytes: Int64 { findings.reduce(0) { $0 + $1.logicalSize } }
-        var id: String { ruleID }
-    }
-
-    /// Findings grouped by rule, largest group first.
-    var groups: [RuleGroup] {
-        var byRule: [String: RuleGroup] = [:]
-        let names = Dictionary(uniqueKeysWithValues: UserCleanupRules.all.map { ($0.id, ($0.name, $0.explanation)) })
-        for finding in findings {
-            byRule[finding.ruleID, default: RuleGroup(
-                ruleID: finding.ruleID,
-                name: names[finding.ruleID]?.0 ?? finding.ruleID,
-                explanation: names[finding.ruleID]?.1 ?? finding.explanation,
-                findings: []
-            )].findings.append(finding)
-        }
-        return byRule.values.sorted { $0.bytes > $1.bytes }
-    }
-
-    func selectionState(for group: RuleGroup) -> Bool {
-        group.findings.allSatisfy { selectedIDs.contains($0.id) }
-    }
-
-    func setSelection(_ on: Bool, for group: RuleGroup) {
-        for finding in group.findings {
-            if on { selectedIDs.insert(finding.id) } else { selectedIDs.remove(finding.id) }
-        }
-    }
-
-    func startScan() {
-        guard phase != .scanning else { return }
-        phase = .scanning
-        findings = []
-        selectedIDs = []
-        scannedCount = 0
-        totalBytes = 0
-        totalFindingCount = 0
-        isScanPaused = false
-        let pauseController = ScanPauseController()
-        self.pauseController = pauseController
-        scanTask = Task {
-            let excluded = (try? await AppEnvironment.shared.store?.exclusions()) ?? []
-            let engine = ScanEngine(configuration: ScanConfiguration(excludedPaths: excluded))
-            for await event in engine.run(rules: UserCleanupRules.all, pauseController: pauseController) {
-                switch event {
-                case .started: break
-                case let .progress(scanned, _):
-                    scannedCount = scanned
-                case let .finding(finding):
-                    // ponytail: cap displayed findings at 5000 to bound memory; paginate later.
-                    if findings.count < 5000 {
-                        findings.append(finding)
-                        if finding.preselected { selectedIDs.insert(finding.id) }
-                    }
-                    totalFindingCount += 1
-                    totalBytes += finding.logicalSize
-                case .error: break
-                case let .finished(scanned, bytes):
-                    scannedCount = scanned
-                    totalBytes = bytes
-                    phase = .review
-                    AppEnvironment.shared.record(ActivityRecord(
-                        kind: .scan, summary: "Cleanup scan: \(findings.count) items found",
-                        itemCount: findings.count, bytes: bytes))
-                case .cancelled:
-                    isScanPaused = false
-                    phase = .idle
-                }
-            }
-            self.pauseController = nil
-        }
-    }
-
-    func pauseScan() {
-        guard phase == .scanning, !isScanPaused else { return }
-        isScanPaused = true
-        Task { await pauseController?.pause() }
-    }
-
-    func resumeScan() {
-        guard phase == .scanning, isScanPaused else { return }
-        isScanPaused = false
-        Task { await pauseController?.resume() }
-    }
-
-    func cancelScan() {
-        isScanPaused = false
-        scanTask?.cancel()
-        Task { await pauseController?.resume() }
-    }
-
-    func runCleanup() {
-        guard phase == .review else { return }
-        phase = .running
-        let selected = findings.filter { selectedIDs.contains($0.id) }
-        Task {
-            let home = FileManager.default.homeDirectoryForCurrentUser
-            let validator = PathValidator(allowedRoots: UserCleanupRules.allowedRoots(home: home))
-            let center = SafetyCenter(validator: validator, sink: AppEnvironment.shared.store)
-            var approved: [ApprovedFileOperation] = []
-            for finding in selected {
-                if let op = try? await center.approve(
-                    url: finding.url, logicalSize: finding.logicalSize,
-                    ruleID: finding.ruleID, risk: finding.risk
-                ) {
-                    approved.append(op)
-                }
-            }
-            let outcome = ExecutionOutcome(result: await center.execute(approved))
-            phase = .done(outcome)
-            // Both counts reach the log, not just the successes: SafetyCore
-            // skipping a path that changed between approval and execution is
-            // the product working, and a record that omits it reads as if
-            // everything went through.
-            AppEnvironment.shared.record(ActivityRecord(
-                kind: .cleanup,
-                summary: outcome.annotate("Moved \(outcome.executedCount) items to Trash"),
-                itemCount: outcome.executedCount, bytes: outcome.freedBytes))
-        }
-    }
-}
+import Domain
 
 struct CleanupView: View {
-    @State private var model = CleanupViewModel()
-    @State private var showMoveConfirmation = false
+    let french: Bool
+    @State private var selectedRule: ScanRule?
+    @State private var selectedRoot: URL?
+    @State private var choosingFolder = false
+    @State private var results: [ScanResult] = []
+    @State private var status: String?
+    @State private var scanning = false
+    @State private var task: Task<Void, Never>?
+    @State private var selectedItems: Set<URL> = []
+    @State private var actionReview: ActionReview?
+    @State private var actionService: FileActionService?
+    @State private var actionBusy = false
+    @State private var actionScopeHeld = false
+
+    private var descriptor: CleanupRuleDescriptor? {
+        selectedRule.flatMap(CleanupRuleCatalog.rule)
+    }
 
     var body: some View {
-        Group {
-            switch model.phase {
-            case .idle:
-                idleView
-            case .scanning:
-                scanningView
-            case .review, .running:
-                reviewView.padding(MCSpacing.page)
-            case let .done(outcome):
-                doneView(outcome)
-            case let .failed(message):
-                Text(L("cleanup.failed", message)).foregroundStyle(MCTheme.danger)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .padding(MCSpacing.page)
-            }
-        }
-        .navigationTitle(L("module.storage"))
-        .accessibilityIdentifier("storage.root")
-        .confirmationDialog(
-            L("common.trash_confirm.title"),
-            isPresented: $showMoveConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button(L("common.trash_confirm.action"), role: .destructive) {
-                model.runCleanup()
-            }
-            Button(L("common.cancel"), role: .cancel) {}
-        } message: {
-            Text(L("common.trash_confirm.message"))
-        }
-    }
-
-    // MARK: - Idle (editorial left-aligned layout with category overview)
-
-    private var idleView: some View {
-        GeometryReader { proxy in
-        ScrollView {
-            VStack(spacing: MCSpacing.xl) {
-                VStack(spacing: MCSpacing.xs) {
-                    Text(L("cleanup.idle.title"))
-                        .font(MCFont.pageTitle)
-                        .multilineTextAlignment(.center)
-                    Text(L("cleanup.idle.safety_note"))
-                        .font(MCFont.secondaryBody)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                .mcAppear()
-
-                MCScanButton(L("cleanup.start_scan")) { model.startScan() }
-                    .keyboardShortcut(.defaultAction)
-                    .accessibilityIdentifier("storage.scan.start")
-                    .mcAppear(delay: 0.06)
-
-                MCCard {
-                    VStack(alignment: .leading, spacing: MCSpacing.sm) {
-                        MCSectionHeader(L("cleanup.idle.what_is_scanned"))
-                        MCFeatureRow(L("cleanup.category.caches"),
-                                     subtitle: L("cleanup.category.caches.detail"),
-                                     icon: "folder.badge.gearshape")
-                        MCFeatureRow(L("cleanup.category.logs"),
-                                     subtitle: L("cleanup.category.logs.detail"),
-                                     icon: "doc.text")
-                        MCFeatureRow(L("cleanup.category.xcode"),
-                                     subtitle: L("cleanup.category.xcode.detail"),
-                                     icon: "hammer")
-                        MCFeatureRow(L("cleanup.category.downloads"),
-                                     subtitle: L("cleanup.category.downloads.detail"),
-                                     icon: "arrow.down.circle")
-                    }
-                }
-                .frame(maxWidth: 480)
-                .mcAppear(delay: 0.12)
-            }
-            .padding(MCSpacing.page)
-            .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .center)
-        }
-        }
-    }
-
-    // MARK: - Scanning
-
-    private var scanningView: some View {
-        VStack(spacing: MCSpacing.lg) {
-            MCScanStage(isScanning: !model.isScanPaused) {
-                Text(L("cleanup.scanning_progress", model.scannedCount, mcFormatBytes(model.totalBytes)))
-            }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel(L("cleanup.scanning_progress", model.scannedCount, mcFormatBytes(model.totalBytes)))
-            HStack(spacing: MCSpacing.sm) {
-                if model.isScanPaused {
-                    Button(L("common.resume")) { model.resumeScan() }
-                        .keyboardShortcut("r", modifiers: [])
-                        .accessibilityHint(L("cleanup.resume_hint"))
-                        .accessibilityIdentifier("storage.scan.resume")
-                } else {
-                    Button(L("common.pause")) { model.pauseScan() }
-                        .keyboardShortcut("p", modifiers: [])
-                        .accessibilityHint(L("cleanup.pause_hint"))
-                        .accessibilityIdentifier("storage.scan.pause")
-                }
-                Button(L("common.cancel")) { model.cancelScan() }
-                    .keyboardShortcut(.cancelAction)
-                    .accessibilityIdentifier("storage.scan.cancel")
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    // MARK: - Review
-
-    private var reviewView: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .center, spacing: MCSpacing.lg) {
-                VStack(alignment: .leading, spacing: MCSpacing.xxs) {
-                    // The recoverable total is the whole point of this screen.
-                    Text(mcFormatBytes(model.totalBytes))
-                        .font(MCFont.displayMetric)
-                        .monospacedDigit()
-                        .contentTransition(.numericText())
-                    Text(L("cleanup.review.selected", model.findings.count, mcFormatBytes(model.selectedBytes)))
-                        .font(MCFont.secondaryBody)
-                        .foregroundStyle(.secondary)
-                    if model.isDisplayTruncated {
-                        Text(L("cleanup.review.truncated", model.findings.count, model.totalFindingCount, mcFormatBytes(model.totalBytes)))
-                            .font(.caption).foregroundStyle(.secondary)
-                    }
-                }
-                Spacer()
-                Button(L("cleanup.move_to_trash")) {
-                    showMoveConfirmation = true
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(model.phase == .running || model.selectedIDs.isEmpty)
-            }
-            .padding(.horizontal, MCSpacing.page)
-            .padding(.top, MCSpacing.lg)
-            .padding(.bottom, MCSpacing.md)
-
-            List {
-                ForEach(model.groups) { group in
-                    DisclosureGroup {
-                        ForEach(group.findings) { finding in
-                            findingRow(finding)
-                        }
-                    } label: {
-                        HStack {
-                            Toggle("", isOn: Binding(
-                                get: { model.selectionState(for: group) },
-                                set: { model.setSelection($0, for: group) }
-                            ))
-                            .labelsHidden()
-                            VStack(alignment: .leading) {
-                                Text(group.name).font(MCFont.cardTitle)
-                                Text(group.explanation)
-                                    .font(.caption).foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 18) {
+            Text(copy("cleanup.intro")).foregroundStyle(.secondary)
+            VStack(spacing: 8) {
+                ForEach(CleanupRuleCatalog.rules, id: \.id) { rule in
+                    Button { selectedRule = rule.id; selectedRoot = nil; results = []; selectedItems = []; status = nil } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: selectedRule == rule.id ? "largecircle.fill.circle" : "circle")
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(copy(rule.titleKey)).font(.headline)
+                                Text(copy(rule.explanationKey)).font(.caption).foregroundStyle(.secondary)
                             }
                             Spacer()
-                            Text(L("cleanup.group.item_count", group.findings.count))
-                                .font(.caption).foregroundStyle(.secondary)
-                            Text(mcFormatBytes(group.bytes))
-                                .monospacedDigit().font(.callout.weight(.medium))
+                            Text(riskLabel(rule.risk)).font(.caption.weight(.semibold))
+                                .padding(.horizontal, 8).padding(.vertical, 4)
+                                .background(.quaternary, in: Capsule())
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(selectedRule == rule.id ? .isSelected : [])
+                }
+            }
+            if let descriptor {
+                Text("~/" + descriptor.relativePath.joined(separator: "/"))
+                    .font(.caption.monospaced()).foregroundStyle(.secondary).textSelection(.enabled)
+                Button { choosingFolder = true } label: {
+                    Label(copy("cleanup.choose"), systemImage: "folder.badge.plus")
+                }
+                .disabled(scanning)
+                .accessibilityHint(copy("cleanup.choose.hint"))
+                if let selectedRoot {
+                    Text(selectedRoot.lastPathComponent).font(.caption).foregroundStyle(.secondary)
+                    Button { startScan(descriptor, root: selectedRoot) } label: {
+                        Label(copy("cleanup.scan"), systemImage: "magnifyingglass")
+                    }
+                    .disabled(scanning)
+                    .accessibilityHint(copy("cleanup.scan.hint"))
+                }
+            }
+            if scanning { ProgressView(copy("scan.progress")) }
+            if !results.isEmpty {
+                Text(copy("cleanup.results", count: results.count)).font(.headline)
+                List(results, id: \.url) { item in
+                    Toggle(isOn: Binding(get: { selectedItems.contains(item.url) }, set: { enabled in
+                        if enabled { selectedItems.insert(item.url) } else { selectedItems.remove(item.url) }
+                    })) {
+                        HStack {
+                            Image(systemName: "doc")
+                            Text(item.url.lastPathComponent).lineLimit(1)
+                            Spacer()
+                            Text(size(item)).foregroundStyle(.secondary).monospacedDigit()
                         }
                     }
                 }
+                .frame(minHeight: 220)
+                Button { Task { await prepareAction() } } label: {
+                    Label(french ? "Examiner \(selectedItems.count) éléments" : "Review \(selectedItems.count) items", systemImage: "trash")
+                }
+                .disabled(selectedItems.isEmpty || actionBusy || selectedRoot == nil)
             }
-            .listStyle(.inset)
+            if actionBusy { ProgressView() }
+            if let status { Text(status).foregroundStyle(.secondary) }
+            Text(copy("cleanup.noAction")).font(.callout).foregroundStyle(.secondary)
+        }
+        .fileImporter(isPresented: $choosingFolder, allowedContentTypes: [.folder], allowsMultipleSelection: false) { outcome in
+            guard case .success(let urls) = outcome else { return }
+            guard let url = urls.first, let descriptor,
+                  Array(url.standardizedFileURL.pathComponents.suffix(descriptor.relativePath.count)) == descriptor.relativePath else {
+                selectedRoot = nil
+                status = copy("cleanup.rootMismatch")
+                return
+            }
+            selectedRoot = url
+            status = nil
+        }
+        .onDisappear { task?.cancel() }
+        .confirmationDialog(french ? "Déplacer vers la Corbeille macOS ?" : "Move to macOS Trash?", isPresented: Binding(get: { actionReview != nil }, set: { if !$0 { cancelAction() } }), titleVisibility: .visible) {
+            Button(french ? "Déplacer vers la Corbeille" : "Move to Trash", role: .destructive) { beginExecution() }
+            Button(copy("common.cancel"), role: .cancel) { cancelAction() }
+        } message: {
+            Text(reviewMessage)
         }
     }
 
-    private func findingRow(_ finding: ScanFinding) -> some View {
-        HStack {
-            Toggle("", isOn: Binding(
-                get: { model.selectedIDs.contains(finding.id) },
-                set: { on in
-                    if on { model.selectedIDs.insert(finding.id) }
-                    else { model.selectedIDs.remove(finding.id) }
-                }
-            ))
-            .labelsHidden()
-            .accessibilityLabel(
-                FindingMetadata.summary(
-                    risk: finding.risk, modificationDate: finding.modificationDate
-                ).map {
-                    L("finding.a11y.evidence",
-                      L("cleanup.select_item", finding.url.lastPathComponent), $0)
-                } ?? L("cleanup.select_item", finding.url.lastPathComponent)
-            )
-            VStack(alignment: .leading, spacing: 1) {
-                Text(finding.url.lastPathComponent)
-                Text(finding.url.deletingLastPathComponent().path)
-                    .font(.caption).foregroundStyle(.secondary)
-                    .lineLimit(1).truncationMode(.middle)
-                // The evidence the scan already had and never showed. Size
-                // alone is the weakest of the three signals for deciding
-                // whether a file should go; risk also explains why a row is or
-                // is not ticked by default.
-                if let evidence = FindingMetadata.summary(
-                    risk: finding.risk, modificationDate: finding.modificationDate) {
-                    Text(evidence)
-                        .font(.caption2).foregroundStyle(.tertiary)
-                        .lineLimit(1)
-                        // VoiceOver reads the row as one sentence; this line is
-                        // part of it rather than a separate stop.
-                        .accessibilityHidden(true)
-                }
+    private func startScan(_ rule: CleanupRuleDescriptor, root: URL) {
+        results = []; selectedItems = []; status = nil; scanning = true
+        let acquiredScope = root.startAccessingSecurityScopedResource()
+        task = Task {
+            defer {
+                if acquiredScope { root.stopAccessingSecurityScopedResource() }
+                scanning = false
             }
-            Spacer()
-            Text(mcFormatBytes(finding.logicalSize))
-                .monospacedDigit().foregroundStyle(.secondary)
-            Button {
-                NSWorkspace.shared.activateFileViewerSelecting([finding.url])
-            } label: {
-                Image(systemName: "magnifyingglass")
-            }
-            .buttonStyle(.borderless)
-            .accessibilityLabel(L("common.reveal_in_finder"))
-            .help(L("common.reveal_in_finder"))
+            do {
+                let exclusions = try await LocalStoreAccess.exclusions()
+                for try await event in LocalScanEngine().scan(.init(roots: [.init(url: root, ruleID: rule.id)], exclusions: exclusions)) {
+                    if Task.isCancelled { return }
+                    switch event {
+                    case .result(let result): results.append(result)
+                    case .itemFailure: status = copy("cleanup.partial")
+                    case .finished: if results.isEmpty { status = copy("cleanup.none") }
+                    case .progress: break
+                    }
+                }
+            } catch { status = copy("scan.failed") }
         }
     }
 
-    private func doneView(_ outcome: ExecutionOutcome) -> some View {
-        MCSuccessState(
-            title: outcome.title,
-            message: outcome.message,
-            actionTitle: L("smartcare.scan_again")) { model.startScan() }
+    @MainActor private func prepareAction() async {
+        guard let root = selectedRoot, let rule = descriptor, !selectedItems.isEmpty else { return }
+        actionBusy = true
+        defer { actionBusy = false }
+        do {
+            actionScopeHeld = root.startAccessingSecurityScopedResource()
+            let store = try await LocalStoreAccess.open()
+            let ruleID = rule.id.rawValue
+            let allowed = Set([ruleID])
+            let executor = SafeActionExecutor(allowedRoots: [root], allowedRules: allowed, trash: MacOSTrashClient())
+            let service = FileActionService(validator: .init(), executor: executor, store: store, allowedRoots: [root], allowedRuleIDs: allowed)
+            let selections = selectedItems.sorted { $0.path < $1.path }.map { FileActionSelection(url: $0, ruleID: ruleID) }
+            let review = try service.prepareReview(selections)
+            guard await service.recordProposal(review) else {
+                status = french ? "Journal indisponible; action bloquée." : "History unavailable; action blocked."
+                return
+            }
+            actionReview = review
+            actionService = service
+        } catch { status = french ? "Revue impossible; aucun fichier déplacé." : "Review failed; no files moved." }
+        if actionReview == nil { releaseActionScope() }
+    }
+
+    private func beginExecution() {
+        guard let review = actionReview, let service = actionService else { return }
+        actionReview = nil; actionService = nil
+        Task { await executeAction(review, service) }
+    }
+
+    @MainActor private func executeAction(_ review: ActionReview, _ service: FileActionService) async {
+        actionBusy = true
+        defer { actionBusy = false }
+        do {
+            let batch = try service.confirm(review, accepted: true)
+            let report = await service.execute(batch)
+            let failed = report.items.filter { if case .movedToTrash = $0.outcome { false } else { true } }.count
+            status = french ? "\(report.movedCount) déplacés vers la Corbeille; \(failed) échec(s)." : "\(report.movedCount) moved to Trash; \(failed) failure(s)."
+            selectedItems = []; results.removeAll()
+        } catch { status = french ? "Action refusée; aucun fichier déplacé." : "Action refused; no files moved." }
+        releaseActionScope()
+    }
+
+    private func cancelAction() {
+        guard let review = actionReview, let service = actionService else { return }
+        actionReview = nil; actionService = nil
+        Task { @MainActor in
+            let saved = await service.recordCancellation(review)
+            status = saved ? (french ? "Action annulée; annulation journalisée." : "Action cancelled; cancellation recorded.") : (french ? "Action annulée; journal indisponible." : "Action cancelled; history unavailable.")
+            releaseActionScope()
+        }
+    }
+
+    private var reviewMessage: String {
+        let names = actionReview?.items.prefix(5).map { $0.url.lastPathComponent }.joined(separator: "\n") ?? ""
+        let count = actionReview?.items.count ?? 0
+        let extra = max(0, count - 5)
+        let suffix = extra > 0 ? (french ? "\n… et \(extra) autres" : "\n… and \(extra) more") : ""
+        return french ? "\(count) éléments sélectionnés :\n\(names)\(suffix)\nAction journalisée puis revalidée. Aucun effacement définitif." : "\(count) selected items:\n\(names)\(suffix)\nAction is logged and revalidated. No permanent deletion."
+    }
+
+    private func releaseActionScope() {
+        if actionScopeHeld, let selectedRoot { selectedRoot.stopAccessingSecurityScopedResource() }
+        actionScopeHeld = false
+    }
+
+    private func riskLabel(_ risk: CandidateRisk) -> String {
+        switch risk {
+        case .low: copy("cleanup.risk.low")
+        case .medium: copy("cleanup.risk.medium")
+        case .high: copy("cleanup.risk.high")
+        }
+    }
+    private func size(_ result: ScanResult) -> String {
+        if case .known(let bytes) = result.allocatedBytes { ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file) }
+        else { copy("metrics.unknown") }
+    }
+    private func copy(_ key: String, count: Int? = nil) -> String {
+        if key == "cleanup.results", let count { return french ? "\(count) éléments mesurés" : "\(count) measured items" }
+        return ProductCopy.value(for: key, french: french)
     }
 }

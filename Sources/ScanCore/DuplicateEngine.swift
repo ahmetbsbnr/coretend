@@ -1,181 +1,115 @@
-// SPDX-License-Identifier: Apache-2.0
-// SPDX-FileCopyrightText: The CoreTend Authors
-
 import Foundation
 import CryptoKit
+import Darwin
 
-/// A group of files with identical content.
-public struct DuplicateGroup: Sendable, Identifiable {
-    public let id: String          // full content hash
-    public let fileSize: Int64
-    public let urls: [URL]
-    /// Modification date captured at scan time, per url. Used to detect a file
-    /// that changed between the scan and the moment the user confirms deletion —
-    /// such a file is no longer known to be a duplicate and must not be trashed.
-    public let modificationDates: [URL: Date]
+private struct InodeIdentity: Hashable { let device: UInt64; let inode: UInt64 }
 
-    public init(id: String, fileSize: Int64, urls: [URL], modificationDates: [URL: Date] = [:]) {
-        self.id = id
-        self.fileSize = fileSize
-        self.urls = urls
-        self.modificationDates = modificationDates
-    }
-
-    /// Suggested file to keep: shallowest path wins, lexicographic path as the
-    /// tiebreak. Deliberately not modification-date-based — a duplicate's
-    /// mtime often reflects when a *copy* operation happened, not which one
-    /// is the "original," so path shape is the more honest signal here.
-    public var keeper: URL { urls.min { ($0.pathComponents.count, $0.path) < ($1.pathComponents.count, $1.path) }! }
-    /// Bytes reclaimable if all but the keeper are removed.
-    public var wastedBytes: Int64 { fileSize * Int64(urls.count - 1) }
-
-    /// True when the file on disk no longer matches its scan-time modification
-    /// date (changed, or vanished). Callers must skip such a url before deleting:
-    /// its duplicate status is stale.
-    public func hasChangedOnDisk(_ url: URL) -> Bool {
-        guard let scanned = modificationDates[url] else { return true }
-        // Read through a fresh URL: URL instances cache resource values, so the
-        // scan-time date would otherwise be returned instead of the disk truth.
-        let fresh = URL(fileURLWithPath: url.path)
-        let current = (try? fresh.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate
-        guard let current else { return true }   // unreadable/missing → treat as changed
-        // Tolerance absorbs sub-second timestamp precision drift between the
-        // enumerator's cached values and a fresh read; a real edit moves the
-        // mtime by far more than a second.
-        return abs(current.timeIntervalSince(scanned)) > 1
-    }
+public struct DuplicateGroup: Sendable, Equatable {
+    public let digest: String
+    public let files: [URL]
+    public let suggestedKeeper: URL
 }
 
-public enum DuplicateEvent: Sendable {
-    case progress(stage: String, processed: Int, total: Int)
-    case group(DuplicateGroup)
-    case finished(groups: Int, wastedBytes: Int64)
-    case cancelled
+public struct DuplicateScanIssue: Sendable, Equatable {
+    public let path: String
+    public let reason: String
 }
 
-/// Staged duplicate detector: size grouping → 64 KB partial hash → full SHA-256.
-/// Hard links to the same inode are collapsed to one entry (not duplicates).
+public struct DuplicateScanReport: Sendable, Equatable {
+    public let groups: [DuplicateGroup]
+    public let issues: [DuplicateScanIssue]
+}
+
+private struct FileSnapshot: Equatable {
+    let device: UInt64
+    let inode: UInt64
+    let size: Int64
+    let modifiedSeconds: Int64
+    let modifiedNanoseconds: Int64
+
+    init(url: URL) throws {
+        var info = stat()
+        guard lstat(url.path, &info) == 0, (info.st_mode & S_IFMT) == S_IFREG else {
+            throw CocoaError(.fileReadNoSuchFile)
+        }
+        self.init(info: info)
+    }
+
+    init(fileDescriptor: Int32) throws {
+        var info = stat()
+        guard fstat(fileDescriptor, &info) == 0, (info.st_mode & S_IFMT) == S_IFREG else {
+            throw CocoaError(.fileReadNoSuchFile)
+        }
+        self.init(info: info)
+    }
+
+    private init(info: stat) {
+        device = UInt64(info.st_dev)
+        inode = UInt64(info.st_ino)
+        size = Int64(info.st_size)
+        modifiedSeconds = Int64(info.st_mtimespec.tv_sec)
+        modifiedNanoseconds = Int64(info.st_mtimespec.tv_nsec)
+    }
+    var identity: InodeIdentity { InodeIdentity(device: device, inode: inode) }
+}
+
 public struct DuplicateEngine: Sendable {
-    public let roots: [URL]
-    public let minimumSize: Int64
+    public init() {}
 
-    public init(roots: [URL], minimumSize: Int64 = 1_000_000) {
-        self.roots = roots
-        self.minimumSize = minimumSize
-    }
-
-    public func run(pauseController: ScanPauseController? = nil) -> AsyncStream<DuplicateEvent> {
-        let roots = roots
-        let minimumSize = minimumSize
-        return AsyncStream { continuation in
-            let task = Task.detached(priority: .utility) {
-                // Stage 1: inventory by size, collapsing hard links per (device, inode).
-                var bySize: [Int64: [URL]] = [:]
-                var seenInodes = Set<String>()
-                var modDates: [URL: Date] = [:]
-                let baseKeys: Set<URLResourceKey> = [.isDirectoryKey, .isSymbolicLinkKey,
-                                                     .fileSizeKey, .fileResourceIdentifierKey,
-                                                     .contentModificationDateKey]
-                let keys = baseKeys.union(CloudFile.inventoryKeys)
-                for root in roots {
-                    guard let enumerator = FileManager.default.enumerator(
-                        at: root, includingPropertiesForKeys: Array(keys),
-                        options: [.skipsPackageDescendants]) else { continue }
-                    await Self.inventory(enumerator, keys: keys, minimumSize: minimumSize,
-                                         bySize: &bySize, seenInodes: &seenInodes, modDates: &modDates,
-                                         pauseController: pauseController)
-                    if Task.isCancelled { break }
-                }
-
-                let candidates = bySize.filter { $0.value.count > 1 }
-                let totalFiles = candidates.values.reduce(0) { $0 + $1.count }
-                var processed = 0
-                var groupCount = 0
-                var wasted: Int64 = 0
-
-                // Stages 2+3 per size bucket.
-                for (size, urls) in candidates {
-                    if Task.isCancelled { break }
-                    var byPartial: [Data: [URL]] = [:]
-                    for url in urls {
-                        await pauseController?.waitWhilePaused()
-                        if Task.isCancelled { break }
-                        processed += 1
-                        if processed % 32 == 0 {
-                            continuation.yield(.progress(stage: "hashing", processed: processed, total: totalFiles))
-                        }
-                        guard let partial = Self.hash(url: url, limit: 65_536) else { continue }
-                        byPartial[partial, default: []].append(url)
-                    }
-                    for sameStart in byPartial.values where sameStart.count > 1 {
-                        var byFull: [Data: [URL]] = [:]
-                        for url in sameStart {
-                            await pauseController?.waitWhilePaused()
-                            if Task.isCancelled { break }
-                            guard let full = Self.hash(url: url, limit: nil) else { continue }
-                            byFull[full, default: []].append(url)
-                        }
-                        for (hash, dupes) in byFull where dupes.count > 1 {
-                            let sortedDupes = dupes.sorted { $0.path < $1.path }
-                            let group = DuplicateGroup(
-                                id: hash.map { String(format: "%02x", $0) }.joined(),
-                                fileSize: size,
-                                urls: sortedDupes,
-                                modificationDates: Dictionary(uniqueKeysWithValues:
-                                    sortedDupes.map { ($0, modDates[$0] ?? .distantPast) }))
-                            groupCount += 1
-                            wasted += group.wastedBytes
-                            continuation.yield(.group(group))
-                        }
-                    }
-                }
-                continuation.yield(Task.isCancelled ? .cancelled : .finished(groups: groupCount, wastedBytes: wasted))
-                continuation.finish()
-            }
-            continuation.onTermination = { _ in task.cancel() }
+    public func findGroups(in candidates: [ScanResult]) async throws -> DuplicateScanReport {
+        var sizeBuckets: [Int64: [URL]] = [:]
+        for candidate in candidates {
+            guard case .known(let size) = candidate.logicalBytes, size >= 0 else { continue }
+            sizeBuckets[size, default: []].append(candidate.url)
         }
-    }
-
-    private static func inventory(_ enumerator: FileManager.DirectoryEnumerator,
-                                  keys: Set<URLResourceKey>, minimumSize: Int64,
-                                  bySize: inout [Int64: [URL]], seenInodes: inout Set<String>,
-                                  modDates: inout [URL: Date],
-                                  pauseController: ScanPauseController? = nil) async {
-        while let url = enumerator.nextObject() as? URL {
-            await pauseController?.waitWhilePaused()
-            if Task.isCancelled { break }
-            guard let values = try? url.resourceValues(forKeys: keys) else { continue }
-            if values.isSymbolicLink == true {
-                enumerator.skipDescendants()
-                continue
+        var digestBuckets: [String: [URL]] = [:]
+        var issues: [DuplicateScanIssue] = []
+        for (expectedSize, urls) in sizeBuckets where urls.count > 1 {
+            var seenIdentities: Set<InodeIdentity> = []
+            for url in urls.sorted(by: { $0.path < $1.path }) {
+                try Task.checkCancellation()
+                do {
+                    let before = try FileSnapshot(url: url)
+                    guard before.size == expectedSize else {
+                        issues.append(DuplicateScanIssue(path: url.path, reason: "file_size_changed_since_scan")); continue
+                    }
+                    guard seenIdentities.insert(before.identity).inserted else { continue }
+                    let digest = try hash(url, expected: before)
+                    let after = try FileSnapshot(url: url)
+                    guard before == after else {
+                        issues.append(DuplicateScanIssue(path: url.path, reason: "file_changed_during_hash")); continue
+                    }
+                    digestBuckets[digest, default: []].append(url)
+                } catch is CancellationError { throw CancellationError() }
+                catch { issues.append(DuplicateScanIssue(path: url.path, reason: "hash_failed_or_file_changed")) }
             }
-            guard values.isDirectory != true else { continue }
-            // Never hydrate a remote-only iCloud placeholder just to hash it.
-            if CloudFile.isRemoteOnly(values) { continue }
-            let size = Int64(values.fileSize ?? 0)
-            guard size >= minimumSize else { continue }
-            if let identifier = values.fileResourceIdentifier {
-                let key = "\(identifier)"
-                guard !seenInodes.contains(key) else { continue }   // hard link duplicate
-                seenInodes.insert(key)
-            }
-            bySize[size, default: []].append(url)
-            modDates[url] = values.contentModificationDate ?? .distantPast
         }
+        let groups = digestBuckets.compactMap { digest, urls -> DuplicateGroup? in
+            let sorted = urls.sorted { $0.path < $1.path }
+            guard sorted.count > 1, let keeper = sorted.first else { return nil }
+            return DuplicateGroup(digest: digest, files: sorted, suggestedKeeper: keeper)
+        }.sorted { $0.suggestedKeeper.path < $1.suggestedKeeper.path }
+        return DuplicateScanReport(groups: groups, issues: issues)
     }
 
-    /// Streaming SHA-256; `limit` nil = whole file.
-    private static func hash(url: URL, limit: Int?) -> Data? {
-        guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
-        defer { try? handle.close() }
+    private func hash(_ url: URL, expected: FileSnapshot) throws -> String {
+        let descriptor = open(url.path, O_RDONLY | O_NOFOLLOW | O_CLOEXEC)
+        guard descriptor >= 0 else { throw CocoaError(.fileReadNoSuchFile) }
+        defer { _ = close(descriptor) }
+        guard try FileSnapshot(fileDescriptor: descriptor) == expected else { throw CocoaError(.fileReadCorruptFile) }
         var hasher = SHA256()
-        var remaining = limit ?? Int.max
-        while remaining > 0 {
-            let chunkSize = min(remaining, 1_048_576)
-            guard let chunk = try? handle.read(upToCount: chunkSize), !chunk.isEmpty else { break }
-            hasher.update(data: chunk)
-            remaining -= chunk.count
+        var buffer = [UInt8](repeating: 0, count: 1_048_576)
+        while true {
+            try Task.checkCancellation()
+            let count = buffer.withUnsafeMutableBytes { bytes in read(descriptor, bytes.baseAddress, bytes.count) }
+            if count == 0 { break }
+            if count < 0 {
+                if errno == EINTR { continue }
+                throw CocoaError(.fileReadUnknown)
+            }
+            hasher.update(data: Data(buffer.prefix(count)))
         }
-        return Data(hasher.finalize())
+        guard try FileSnapshot(fileDescriptor: descriptor) == expected else { throw CocoaError(.fileReadCorruptFile) }
+        return hasher.finalize().map { String(format: "%02x", $0) }.joined()
     }
 }
