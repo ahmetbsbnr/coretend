@@ -84,14 +84,22 @@ public struct FoundationUbiquitousItemMetadataReader: UbiquitousItemMetadataRead
 
 public struct LocalScanEngine: ScanEngine {
     private let metadataReader: any UbiquitousItemMetadataReading
+    private let workerDidFinish: @Sendable () -> Void
 
     public init(metadataReader: any UbiquitousItemMetadataReading = FoundationUbiquitousItemMetadataReader()) {
         self.metadataReader = metadataReader
+        self.workerDidFinish = {}
+    }
+
+    init(metadataReader: any UbiquitousItemMetadataReading, workerDidFinish: @escaping @Sendable () -> Void) {
+        self.metadataReader = metadataReader
+        self.workerDidFinish = workerDidFinish
     }
 
     public func scan(_ request: ScanRequest) -> AsyncThrowingStream<ScanEvent, Error> {
         AsyncThrowingStream { continuation in
             let worker = Task(priority: .utility) {
+                defer { workerDidFinish() }
                 await run(request, continuation: continuation)
                 continuation.finish()
             }
