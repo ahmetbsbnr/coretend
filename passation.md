@@ -1,26 +1,26 @@
 # Passation courante — CoreTend Next
 
-**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche `next` publiée sur `ahmetbsbnr/coretend` et issue de `main`. Jalons fusionnés : `6052711` données locales (PR #40), `e93e657` palette (PR #41), `a031f1c` navigation aux flèches (PR #42); check distant `qualify` vert (run 36265961985, macOS). HEAD local `next` synchronisé sur `origin/next`. L’ancien dépôt indépendant `rebuild/` reste une copie locale de provenance.
+**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche `next` publiée sur `ahmetbsbnr/coretend` et issue de `main`. Jalons récents fusionnés : PR #40 données locales, PR #41 palette bilingue, PR #42 sélection clavier et PR #44 batch SQLite (`66beb97`); checks `qualify` verts. HEAD local `next` synchronisé sur `origin/next`. L’ancien dépôt indépendant `rebuild/` reste une copie locale de provenance.
 
-### Écriture groupée des récents — en cours
+### Écriture groupée des récents — livrée
 
 - `SQLiteStore.recordRecentFiles` valide chaque chemin/mesure avant transaction, réutilise une requête SQLite préparée, insère le lot dans une transaction unique et applique quota une fois. `recordRecentFile` reste compatible par délégation.
 - Explorer envoie résultats en lot, évitant une transaction disque par fichier. Validation invalide refuse avant écriture; erreurs SQL rollbackent le lot.
-- Persistence ciblé : 18/18; `make qualify`, `git diff --check`, `make package-local` et `make verify-package` passent. ZIP arm64 unsigned SHA-256 `45b8c102247d1656171db8e14349498cfd027083c42fac45e7c976f08c10465e`, vérification structure uniquement. Branche locale `feature/recent-files-batch-write`, non commitée. Suite : preuve ReleaseEvidence, commit, PR, CI distante.
+- Persistence ciblé : 18/18; `make qualify`, `git diff --check`, `make package-local` et `make verify-package` passent. PR #44 intégrée dans `next`; CI distante `qualify` verte, run 36266510822. ZIP arm64 unsigned SHA-256 `45b8c102247d1656171db8e14349498cfd027083c42fac45e7c976f08c10465e`, vérification structure uniquement.
 
-### Jalon en cours — données locales et favoris/récents
+### Jalon livré — données locales et favoris/récents
 
 - `SQLiteStore` schema v4 ajoute `saved_files`; migration v1/v2/v3→v4 transactionnelle, répétable, sans import implicite de chemins. Historique d’activité, préférences et relevés Performance préservés.
 - Favoris s’enregistrent uniquement après clic explicite. Récents Explorer sont opt-in, désactivés par défaut, limités à 100 lignes; mesures inconnues restent SQL NULL. Les écritures valident chemins absolus normalisés et tailles non négatives.
 - Interface : étoile dans Explorer; Vue d’ensemble liste favoris/récents, dernière taille et état indicatif absent/inaccessible; Réglages contrôle opt-in; retrait local d’une entrée disponible. Aucun accès au fichier rouvert depuis un chemin mémorisé.
-- Tests Persistence précédents : 17/17, migration v3→v4 et conservation, idempotence, quota et validation. Batch récent porte désormais le ciblé à 18/18; gate complet encore à exécuter pour ce changement.
+- Tests Persistence : 18/18 avec migration v3→v4, conservation, idempotence, quota, validation et écritures batch.
 - `make package-local` et `make verify-package` réussis. ZIP arm64 unsigned SHA-256 `9b5a340e2513e7f1a9a16a0c0b252a72d8f0eecff6bca62668135019e815b091`; non lancé/installé/signé/notarié/publié.
 - Docs synchronisées : `Documentation/Project/DataModel.md`, `Migration.md`, `Progress.md`, `Traceability.csv`, `UserGuide.md`. FR-24 et `favrec.module` EN_COURS; FR-11 EN_COURS; NFR-05 reste PARTIEL (pas de récupération/restauration utilisateur complète).
 - Contrôle visuel SwiftUI/VoiceOver natif non réalisé. FR-24 reste EN_COURS jusqu’à cette qualification. Palette intégrée: ⌘K, recherche EN/FR par alias, sélection clavier ↑/↓, Retour ouvre sélection, Échap ferme; tests AppShell 5/5. `make qualify`, `make package-local`, `make verify-package`, `git diff --check` passent sur contenu PR #42. ZIP arm64 unsigned SHA-256 `4c63d81a3b25f4c79b26017760fae0ec632ee93c5d8eb2d1dba5abb2316096bd`; non lancé.
 
 ## Reprise active — 26-09-2026
 
-L’utilisateur demande de poursuivre le projet jusqu’à finalisation et de tenir cette passation à chaque étape pour reprise après arrêt abrupt. Dernier code fusionné : `a031f1c` (PR #42; CI `qualify` verte). Le dernier paquet local `4c63d81a3b25f4c79b26017760fae0ec632ee93c5d8eb2d1dba5abb2316096bd` provient du code PR #42; vérification structurelle seulement, aucune ouverture ni signature.
+L’utilisateur demande de poursuivre le projet jusqu’à finalisation et de tenir cette passation à chaque étape pour reprise après arrêt abrupt. Dernier code fusionné : `66beb97` (PR #44; CI `qualify` verte). Le paquet de ce jalon : SHA-256 `45b8c102247d1656171db8e14349498cfd027083c42fac45e7c976f08c10465e`, vérifié structurellement seulement, aucune ouverture ni signature.
 
 Ordre de reprise retenu : (1) qualifier UI native/VoiceOver clavier, en commençant par palette et favoris; (2) refermer Must restantes Applications/Integrity/permissions; (3) compléter les états de navigation, données, export et migration; (4) traiter les capacités restantes et mettre à jour `Website/`, README et cahier; (5) qualification fixtures/gates/builds puis relever les limites macOS/publication sans revendiquer release non signée. Ne jamais ouvrir vrai store CoreTend ni vraie Corbeille pendant tests. Aucune release signée/notarisée/publication.
 
