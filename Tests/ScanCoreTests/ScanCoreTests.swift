@@ -2,6 +2,7 @@ import Foundation
 import XCTest
 import CoreGraphics
 import ImageIO
+import ProductContract
 @testable import ScanCore
 
 final class SimilarImageEngineTests: XCTestCase {
@@ -155,6 +156,33 @@ final class TreemapLayoutTests: XCTestCase {
                                         size: CGSize(width: 200, height: 100))
         XCTAssertEqual(tiles.map(\.id), ["known"])
         XCTAssertEqual(tiles.first?.areaShare, 1)
+    }
+}
+
+final class ExplorePresetTests: XCTestCase {
+    func testLargePresetUsesKnownAllocatedBytesAndInclusiveGiBThreshold() {
+        let root = FileManager.default.temporaryDirectory
+        let atThreshold = result(root.appendingPathComponent("threshold"), allocated: .known(1_073_741_824), modified: nil)
+        let below = result(root.appendingPathComponent("below"), allocated: .known(1_073_741_823), modified: nil)
+        let unknown = result(root.appendingPathComponent("unknown"), allocated: .unknown(reason: "cloud"), modified: nil)
+        XCTAssertTrue(ExplorePreset.largeLocal.matches(atThreshold, evaluatedAt: .distantPast))
+        XCTAssertFalse(ExplorePreset.largeLocal.matches(below, evaluatedAt: .distantPast))
+        XCTAssertFalse(ExplorePreset.largeLocal.matches(unknown, evaluatedAt: .distantPast))
+    }
+
+    func testOlderPresetUsesExplicit365DayCutoffAndRequiresKnownDate() {
+        let now = Date(timeIntervalSince1970: 2_000_000_000)
+        let cutoff = now.addingTimeInterval(-365 * 24 * 60 * 60)
+        let old = result(FileManager.default.temporaryDirectory.appendingPathComponent("old"), allocated: .known(1), modified: cutoff)
+        let recent = result(FileManager.default.temporaryDirectory.appendingPathComponent("recent"), allocated: .known(1), modified: cutoff.addingTimeInterval(1))
+        let unknown = result(FileManager.default.temporaryDirectory.appendingPathComponent("unknown-date"), allocated: .known(1), modified: nil)
+        XCTAssertTrue(ExplorePreset.olderThan365Days.matches(old, evaluatedAt: now))
+        XCTAssertFalse(ExplorePreset.olderThan365Days.matches(recent, evaluatedAt: now))
+        XCTAssertFalse(ExplorePreset.olderThan365Days.matches(unknown, evaluatedAt: now))
+    }
+
+    private func result(_ url: URL, allocated: ProductMeasurement<Int64>, modified: Date?) -> ScanResult {
+        ScanResult(url: url, ruleID: .explore, logicalBytes: .unknown(reason: "unused"), allocatedBytes: allocated, modifiedAt: modified, risk: .low)
     }
 }
 

@@ -78,3 +78,10 @@ Ordre de reprise retenu : (1) refermer fonctions Must Applications/Integrity/per
 - Build app, `make qualify`, `make package-local` et `make verify-package` passent. NFR-07 reste PARTIEL : noms/hints présents, aucun parcours clavier, VoiceOver, Dynamic Type, contraste ou Reduce Motion observé manuellement.
 - ZIP local arm64 non signé hash `721cc3311c1ee8c986ca324e534e830be5b2c73b7f2b59acd80f6466b8e0740d`; artifact ignoré Git, pas installé/lancé/signé/publié. Commit source à noter dans ReleaseEvidence après checkpoint code.
 - Commit source : `cdb3870`; preuve/hash paquet associés dans `Documentation/ReleaseEvidence.md`.
+
+### Explorer — filtres explicites — 26-09-2026
+
+- FR-16 : choix `Tous`, `≥ 1 Gio local`, `Anciens · 365 jours`. Seuil porte sur octets alloués connus (inclusive); filtre ancien porte sur `modifiedAt <= now - 365*24h`. Date limite ISO avec fuseau affichée et figée tant que preset inchangé. Taille/date inconnue ne passe pas le filtre.
+- Test-first : `ExplorePresetTests` a échoué avant API, puis passe (2/2) sur fixtures/mesures injectées. Build app + `make qualify` passent; site, traceability, sécurité, suite XCTest complète et App/CLI debug inclus.
+- `make package-local` et `make verify-package` passent. ZIP arm64 unsigned SHA-256 `072ff474f4eae77109dd312b342e125c2b1c30d8275afeb0cc3f8a573d522c48`; aucun lancement, install, signature ou publication.
+- FR-16 reste PARTIEL : presets sont surtout taille/date, filtres catégorie/presets réutilisables sur les autres modules à examiner.

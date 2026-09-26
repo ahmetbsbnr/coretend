@@ -16,6 +16,27 @@ public enum ScanRule: String, CaseIterable, Sendable {
 
 public enum CandidateRisk: String, Sendable { case low, medium, high }
 
+public enum ExplorePreset: String, CaseIterable, Sendable {
+    case all
+    case largeLocal
+    case olderThan365Days
+
+    public static let largeLocalThreshold: Int64 = 1_073_741_824
+    public static let ageWindow: TimeInterval = 365 * 24 * 60 * 60
+
+    public func matches(_ result: ScanResult, evaluatedAt: Date) -> Bool {
+        switch self {
+        case .all: return true
+        case .largeLocal:
+            guard case .known(let bytes) = result.allocatedBytes else { return false }
+            return bytes >= Self.largeLocalThreshold
+        case .olderThan365Days:
+            guard let modifiedAt = result.modifiedAt else { return false }
+            return modifiedAt <= evaluatedAt.addingTimeInterval(-Self.ageWindow)
+        }
+    }
+}
+
 public struct ScanRoot: Sendable {
     public let url: URL
     public let ruleID: ScanRule
