@@ -50,3 +50,9 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 - Source compilée : `6dfb493` (`next`). `make qualify`, `make package-local`, `make verify-package` réussis; tests CLI ciblés 5/5.
 - Le ZIP unsigned local courant est arm64; SHA-256 `835917d81e62930c77208c44d58357e6be9db4c7f1be250e7681eab3c7317c60`. Vérification confirme uniquement plist, structure ZIP et Mach-O; aucun lancement UI/signature/notarisation/publication.
 - Résultat CLI n’améliore pas le scan sur fichiers protégés lui-même; issues et codes sortie empêchent de traiter un résultat incomplet comme succès.
+
+## Quick Look accessibility labels — 26-09-2026
+
+- Source compilée : `cdb3870` (`next`). `make qualify`, `make package-local` et `make verify-package` réussis; gate inclut XCTest complet et builds debug App/CLI.
+- ZIP arm64 non signé SHA-256 : `721cc3311c1ee8c986ca324e534e830be5b2c73b7f2b59acd80f6466b8e0740d`. Vérification limitée à Info.plist, archive et architecture Mach-O. Aucun lancement, VoiceOver, installation, signature ou notarisation.
+- Libellés/hints fichier Quick Look améliorés. NFR-07 reste PARTIEL jusqu’à qualification manuelle clavier, focus, VoiceOver, zoom, contraste et réductions de mouvement/transparence.

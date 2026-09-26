@@ -77,3 +77,4 @@ Ordre de reprise retenu : (1) refermer fonctions Must Applications/Integrity/per
 - Boutons d’aperçu d’Explorer, keeper/copies exactes et les deux images similaires nomment maintenant le fichier ciblé; hints EN/FR annoncent Quick Look et rôle keeper/copie quand utile.
 - Build app, `make qualify`, `make package-local` et `make verify-package` passent. NFR-07 reste PARTIEL : noms/hints présents, aucun parcours clavier, VoiceOver, Dynamic Type, contraste ou Reduce Motion observé manuellement.
 - ZIP local arm64 non signé hash `721cc3311c1ee8c986ca324e534e830be5b2c73b7f2b59acd80f6466b8e0740d`; artifact ignoré Git, pas installé/lancé/signé/publié. Commit source à noter dans ReleaseEvidence après checkpoint code.
+- Commit source : `cdb3870`; preuve/hash paquet associés dans `Documentation/ReleaseEvidence.md`.
