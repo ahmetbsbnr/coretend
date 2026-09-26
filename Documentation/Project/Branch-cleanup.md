@@ -15,6 +15,6 @@ Le dépôt public `ahmetbsbnr/coretend` conserve son historique et ses tags. Ava
 | `origin/maintenance/1.x` | `14d2daa` | supprimée du serveur |
 | `origin/main` | `14d2daa` | conservée |
 
-Après nettoyage, branches locales actives : `main` et `next`. `next` provient de `origin/main` et intègre la reconstruction par commit de remplacement d’arbre; aucun push forcé ni tag créé. Les références `archive/tags/...` préexistantes restent intactes.
+Après nettoyage, branches locales actives : `main` et `next`. Branches `origin` actives : `main` et `next`. `next` provient de `origin/main` et intègre la reconstruction par commit de remplacement d’arbre; elle a été poussée sans force. Aucun tag créé. Les références `archive/tags/...` préexistantes restent intactes.
 
 Pour restaurer une ancienne pointe locale, créer une branche depuis sa référence archivée, par exemple `git branch recover-v2 refs/archive/2026-09-26/heads/develop/v2`. Une branche distante supprimée peut être republiée depuis `refs/archive/2026-09-26/remotes/origin/<nom>` si nécessaire.
