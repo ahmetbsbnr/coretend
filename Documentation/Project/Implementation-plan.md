@@ -14,7 +14,8 @@
 - [x] Conserver Apache-2.0 pour code, CC-BY-4.0 pour documentation, attribution et règles de contribution/sécurité.
 - [x] Créer `next` depuis `origin/main` et y intégrer la reconstruction avec un commit local; `make qualify` passe sur ce worktree.
 - [x] Archiver les pointes des branches puis réduire les branches locales à `main` et `next`; supprimer les branches distantes anciennes, sans toucher aux tags.
-- [ ] Vérifier branch protection et CI de `next` sur le service public après publication de la branche; conserver les résultats réels dans `Documentation/ReleaseEvidence.md`.
+- [x] CI GitHub Actions de `next` vérifiée : run 36264106677 (`f7d7d73`, macos-latest) passe build/fixtures/site/contracts + whitespace.
+- [ ] Régler branch protection de `next` sur le service public. Vérification en lecture seule le 26-09-2026 : branche non protégée. Le réglage d’hébergement reste à faire par propriétaire/admin.
 
 ## 2. Fonctions Must à compléter
 

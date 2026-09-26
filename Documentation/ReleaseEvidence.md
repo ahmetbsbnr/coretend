@@ -78,3 +78,5 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 - Bundle arm64 source Swift release `5fc9563`, emballé avec installateur actuel. ZIP unsigned SHA-256 `795eab7dbeb13d0d0b241f0a018fb58645c8bfc0c2ebb6d0e4af3622777c0898`.
 - `make verify-install-package`: bundle release réellement copié vers `CoreTend.app` sous HOME temporaire; doublon et source/destination symlink refusés. `make qualify` inclut smoke synthetic, suite XCTest complète, builds debug, audit réseau/sûreté et site; `make verify-package` vérifie archive/plist/Mach-O.
 - Test ne lance pas l’app et ne touche pas installation réelle, données CoreTend, Finder ou Trash. FR-14 demeure PARTIEL : parcours GUI, désinstallation utilisateur, signature, notarisation, OS minimum non qualifiés.
+- CI distante du commit `f7d7d73` : [Actions run 36264106677](https://github.com/ahmetbsbnr/coretend/actions/runs/36264106677), macos-latest, conclusion `success` le 2026-09-26 18:54:30 UTC; tous les steps réussis.
+- L’API GitHub indique `next` non protégée (404 « Branch not protected »). Réglages branch protection non modifiés; action admin reste ouverte.
