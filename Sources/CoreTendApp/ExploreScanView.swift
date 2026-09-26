@@ -1,9 +1,12 @@
 import SwiftUI
+import Darwin
 import QuickLook
 import UniformTypeIdentifiers
 import ScanCore
 import ProductContract
 import AppShell
+import SafetyCore
+import Domain
 import Persistence
 
 struct ExploreScanView: View {
@@ -20,6 +23,15 @@ struct ExploreScanView: View {
     @State private var presetEvaluationDate = Date.now
     @State private var previewURL: URL?
     @State private var selectedRoot: URL?
+    @State private var selectedRootIdentity: FileIdentity?
+    @State private var selectedExploreFiles: Set<URL> = []
+    @State private var actionReview: ActionReview?
+    @State private var actionDialogPresented = false
+    @State private var actionService: FileActionService?
+    @State private var actionBusy = false
+    @State private var actionScopeHeld = false
+    @State private var actionScopedRoot: URL?
+    @State private var viewVisible = false
     @State private var previewScopeHeld = false
     @State private var previewScopedRoot: URL?
     @AppStorage("coretend.recentFiles.enabled") private var recentFilesEnabled = false
@@ -59,7 +71,7 @@ struct ExploreScanView: View {
             } label: {
                 Label(copy("scan.choose"), systemImage: "folder.badge.plus")
             }
-            .disabled(scanning)
+            .disabled(scanning || actionBusy || actionReview != nil)
             .accessibilityHint(copy("scan.choose.hint"))
 
             if scanning {
@@ -116,6 +128,14 @@ struct ExploreScanView: View {
                 } else {
                     List(visibleResults, id: \.url) { result in
                         HStack {
+                            Toggle(isOn: Binding(get: { selectedExploreFiles.contains(result.url) }, set: { enabled in
+                                guard isSelectableExploreResult(result) else { return }
+                                if enabled { selectedExploreFiles.insert(result.url) }
+                                else { selectedExploreFiles.remove(result.url) }
+                            })) { EmptyView() }
+                                .labelsHidden()
+                                .accessibilityLabel(copy("explore.delete.select"))
+                                .disabled(!isSelectableExploreResult(result) || scanning || actionBusy || actionReview != nil)
                             Image(systemName: "doc")
                             Text(result.url.lastPathComponent).lineLimit(1)
                             Spacer()
@@ -146,6 +166,10 @@ struct ExploreScanView: View {
                         .accessibilityElement(children: .contain)
                     }
                     .frame(minHeight: 260)
+                    Button { Task { await prepareDeleteReview() } } label: {
+                        Label(copy("explore.delete.review"), systemImage: "trash")
+                    }
+                    .disabled(selectedExploreFiles.isEmpty || scanning || actionBusy || actionReview != nil)
                 }
                 Text(french ? "Somme des octets locaux connus : \(ByteCountFormatter.string(fromByteCount: treemapInputs.reduce(0) { $0 + $1.bytes }, countStyle: .file)). Le nuage et les tailles inconnues ne sont pas estimés." : "Known local bytes total: \(ByteCountFormatter.string(fromByteCount: treemapInputs.reduce(0) { $0 + $1.bytes }, countStyle: .file)). Cloud-backed and unknown sizes are not estimated.")
                     .font(.caption).foregroundStyle(.secondary)
@@ -161,10 +185,13 @@ struct ExploreScanView: View {
             }
         }
         .onDisappear {
+            viewVisible = false
             scanTask?.cancel(); activeScanID = nil; scanning = false
             previewURL = nil
             releasePreviewScope()
+            if actionReview != nil { cancelDeleteAction() }
         }
+        .onAppear { viewVisible = true }
         .task { await loadFavorites() }
         .quickLookPreview($previewURL)
         .onChange(of: previewURL) { _, item in
@@ -173,6 +200,15 @@ struct ExploreScanView: View {
                 previewScopeHeld = selectedRoot.startAccessingSecurityScopedResource()
                 if previewScopeHeld { previewScopedRoot = selectedRoot }
             }
+        }
+        .confirmationDialog(copy("spacelens.delete.title"), isPresented: $actionDialogPresented, titleVisibility: .visible) {
+            Button(copy("spacelens.delete.confirm"), role: .destructive) { beginDeleteExecution() }
+            Button(copy("common.cancel"), role: .cancel) {}
+        } message: {
+            Text(deleteReviewMessage)
+        }
+        .onChange(of: actionDialogPresented) { _, presented in
+            if !presented && actionReview != nil { cancelDeleteAction() }
         }
     }
 
@@ -183,9 +219,13 @@ struct ExploreScanView: View {
         let scanID = UUID()
         activeScanID = scanID
         let acquiredScope = root.startAccessingSecurityScopedResource()
+        selectedRootIdentity = try? FileIdentity(url: root)
         results = []
+        selectedExploreFiles = []
         status = nil
         scanning = true
+        actionReview = nil
+        actionService = nil
         scanTask = Task {
             var rootFailure: String?
             var partialFailure = false
@@ -236,6 +276,131 @@ struct ExploreScanView: View {
         status = copy("scan.cancelled")
     }
 
+    @MainActor private func prepareDeleteReview() async {
+        guard let root = selectedRoot, let rootIdentity = selectedRootIdentity,
+              !selectedExploreFiles.isEmpty, !scanning, !actionBusy, actionReview == nil else { return }
+        actionBusy = true
+        actionScopeHeld = root.startAccessingSecurityScopedResource()
+        actionScopedRoot = root
+        defer {
+            actionBusy = false
+            if actionReview == nil { releaseDeleteScope() }
+        }
+
+        let chosen = results.filter { selectedExploreFiles.contains($0.url) && isSelectableExploreResult($0) }
+        guard !chosen.isEmpty, chosen.count == selectedExploreFiles.count,
+              (try? FileIdentity(url: root)) == rootIdentity,
+              chosen.allSatisfy({ isRegularFileInsideSelectedRoot($0.url, root: root) }) else {
+            status = french ? "La sélection a changé; aucune action proposée." : "The selection changed; no action was proposed."
+            return
+        }
+
+        do {
+            let store = try await LocalStoreAccess.open()
+            guard viewVisible else { return }
+            let rule = ScanRule.explore.rawValue
+            let allowed = Set([rule])
+            let executor = SafeActionExecutor(allowedRoots: [root], allowedRules: allowed, trash: MacOSTrashClient(),
+                                              expectedRootIdentities: [root: rootIdentity])
+            let service = FileActionService(validator: .init(), executor: executor, store: store,
+                                            allowedRoots: [root], allowedRuleIDs: allowed)
+            let selections = chosen.map { FileActionSelection(url: $0.url, ruleID: rule) }
+            let review = try service.prepareReview(selections)
+            guard await service.recordProposal(review) else {
+                status = copy("spacelens.delete.blocked")
+                return
+            }
+            guard viewVisible else {
+                _ = await service.recordCancellation(review)
+                return
+            }
+            actionReview = review
+            actionService = service
+            actionDialogPresented = true
+        } catch {
+            status = french ? "Impossible d’examiner la sélection; aucun fichier déplacé." : "Review failed; no files moved."
+        }
+    }
+
+    private func beginDeleteExecution() {
+        guard let review = actionReview, let service = actionService else { return }
+        actionBusy = true
+        actionDialogPresented = false
+        actionReview = nil
+        actionService = nil
+        Task { await executeDeleteAction(review, service) }
+    }
+
+    @MainActor private func executeDeleteAction(_ review: ActionReview, _ service: FileActionService) async {
+        defer { actionBusy = false; releaseDeleteScope() }
+        do {
+            let batch = try service.confirm(review, accepted: true)
+            let report = await service.execute(batch)
+            let movedURLs = Set(report.items.compactMap { item -> URL? in
+                if case .movedToTrash = item.outcome { return item.targetURL }
+                return nil
+            })
+            results.removeAll { movedURLs.contains($0.url) }
+            selectedExploreFiles.subtract(movedURLs)
+            let moved = report.movedCount
+            let failed = report.items.count - moved
+            if failed == 0 {
+                status = countedActionCopy(moved, key: "spacelens.delete.success")
+            } else if moved == 0 {
+                status = countedActionCopy(failed, key: "spacelens.delete.failed")
+            } else {
+                status = "\(countedActionCopy(moved, key: "spacelens.delete.success")); \(countedActionCopy(failed, key: "spacelens.delete.partial"))"
+            }
+        } catch {
+            status = french ? "Action refusée; aucun fichier déplacé." : "Action refused; no files moved."
+        }
+    }
+
+    private func cancelDeleteAction() {
+        guard let review = actionReview, let service = actionService else { return }
+        actionBusy = true
+        actionDialogPresented = false
+        actionReview = nil
+        actionService = nil
+        Task { @MainActor in
+            let recorded = await service.recordCancellation(review)
+            status = copy(recorded ? "spacelens.delete.cancelled" : "spacelens.delete.cancelled.unrecorded")
+            releaseDeleteScope()
+            actionBusy = false
+        }
+    }
+
+    private var deleteReviewMessage: String {
+        let items = actionReview?.items ?? []
+        let paths = items.prefix(10).map { "\($0.url.lastPathComponent)\n\($0.url.path)" }.joined(separator: "\n\n")
+        let remaining = max(0, items.count - 10)
+        let suffix = remaining > 0 ? (french ? "\n\n… et \(remaining) autres" : "\n\n… and \(remaining) more") : ""
+        return "\(paths)\(suffix)\n\n\(french ? "Seuls les fichiers sélectionnés seront déplacés vers la Corbeille." : "Only the selected files will be moved to Trash.")"
+    }
+
+    private func isSelectableExploreResult(_ result: ScanResult) -> Bool {
+        guard result.ruleID == .explore, let root = selectedRoot else { return false }
+        let rootPath = root.standardizedFileURL.path
+        let candidate = result.url.standardizedFileURL.path
+        return candidate != rootPath && candidate.hasPrefix(rootPath.hasSuffix("/") ? rootPath : rootPath + "/")
+    }
+
+    private func isRegularFileInsideSelectedRoot(_ url: URL, root: URL) -> Bool {
+        var rootInfo = stat()
+        guard lstat(root.path, &rootInfo) == 0, (rootInfo.st_mode & S_IFMT) == S_IFDIR else { return false }
+        var fileInfo = stat()
+        guard lstat(url.path, &fileInfo) == 0, (fileInfo.st_mode & S_IFMT) == S_IFREG else { return false }
+        let rootPath = root.resolvingSymlinksInPath().standardizedFileURL.path
+        let candidatePath = url.resolvingSymlinksInPath().standardizedFileURL.path
+        return candidatePath != rootPath && candidatePath.hasPrefix(rootPath.hasSuffix("/") ? rootPath : rootPath + "/")
+    }
+
+    private func releaseDeleteScope() {
+        if actionScopeHeld, let actionScopedRoot { actionScopedRoot.stopAccessingSecurityScopedResource() }
+        actionScopeHeld = false
+        actionScopedRoot = nil
+    }
+
     private func releasePreviewScope() {
         if previewScopeHeld, let previewScopedRoot { previewScopedRoot.stopAccessingSecurityScopedResource() }
         previewScopeHeld = false
@@ -271,6 +436,11 @@ struct ExploreScanView: View {
     private func copy(_ key: String, count: Int? = nil) -> String {
         if key == "scan.count", let count { return french ? "\(count) fichiers mesurés" : "\(count) measured files" }
         return ProductCopy.value(for: key, french: french)
+    }
+
+    private func countedActionCopy(_ count: Int, key: String) -> String {
+        let form = count == 1 ? "one" : "many"
+        return "\(count) \(copy("\(key).\(form)"))"
     }
 
     private func previewLabel(for url: URL) -> String {
