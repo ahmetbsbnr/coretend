@@ -57,14 +57,33 @@ Les sous-fonctions restent dans leur destination de travail; paramètres et accu
 | ID | Destination | Responsabilités et limites |
 |---|---|---|
 | MOD-01 | **Overview** | État récent, espace disponible rapporté par macOS, accès aux tâches et changements observés. Pas de score santé ni d’agrégat inventé. |
-| MOD-02 | **Record** | Historique local des scans, propositions, refus, annulations, réussites et échecs. Distingue événements et espace récupéré; filtrage et effacement utilisateur documentés. |
-| MOD-03 | **Cleanup** | Règles explicites pour caches/journaux admis. Scan lecture seule; résultats avec règle, chemin, taille/date connues et limites; revue/exclusion/confirmation; Corbeille uniquement. |
+| MOD-02 | **Record** | Historique local des scans, propositions, refus, annulations, réussites et échecs. Distingue événements et espace récupéré; groupes par jour, filtres temporels, export CSV/JSON et effacement utilisateur documentés. |
+| MOD-03 | **Cleanup** | Sept règles : caches, logs, rapports de crash, Xcode DerivedData, téléchargements incomplets, Xcode Device Support, sauvegardes iOS. Scan lecture seule; résultats avec règle, risque, chemin, taille/date connues et limites; revue/exclusion/confirmation; Corbeille uniquement. Les deux règles risque moyen/élevé ne sont pas présélectionnées. |
 | MOD-04 | **Explore** | Navigation disque, treemap proportionnelle à tailles observées, recherche, plus grands/anciens, images similaires et footprint cloud. Octets locaux séparés de taille logique/placeholders; ouverture Finder après action explicite. |
 | MOD-05 | **Duplicates** | Correspondance de contenu exacte via hashing progressif. Groupe toujours garde un exemplaire; suggestion explicable et modifiable; aucun scan ne déplace un fichier. |
 | MOD-06 | **Applications** | Inventaire local, provenance d’installation disponible, fichiers associés attribués avec conservatisme, mises à jour annoncées par source. Désinstallation seulement après revue et vers Corbeille. Aucune mise à jour automatique. |
 | MOD-07 | **Integrity** | Provenance de téléchargement, classe de signature et éléments lancés à la connexion à partir de signaux natifs accessibles. Lecture seule; aucune conclusion antivirus ou verdict « sain » par absence de signal. |
 | MOD-08 | **Performance** | Mesures système disponibles, horodatées et contextualisées; graphiques ancrés sur mesures réelles; unités inconnues représentées comme inconnues. Pas de diagnostic médical du Mac. |
-| MOD-X | **Onboarding, réglages, CLI** | Accès expliqué au moment utile; exclusions/préférences/langue; diagnostic exporté seulement sur demande et aperçu; CLI documentée et strictement lecture seule. |
+| MOD-X | **Transversal : onboarding, réglages, CLI, navigation** | Accès expliqué au moment utile; exclusions/préférences/langue; diagnostic exporté seulement sur demande et aperçu; menu bar; favoris/récents; palette clavier; Quick Look; CLI documentée et strictement lecture seule. |
+
+### Catalogue exhaustif de comportements de référence
+
+`Documentation/feature-inventory.json` est la source machine-readable préexistante de 51 capacités fonctionnelles. Ses statuts décrivent seulement le projet source, jamais l’état du greenfield. Chaque ID ci-dessous doit être soit reconstruit selon le même comportement observable, soit explicitement changé après revue; aucune omission silencieuse.
+
+| Domaine de destination | IDs à couvrir dans la nouvelle implémentation |
+|---|---|
+| Lancement, shell et navigation | `shell.launch`, `shell.nav`, `shell.menubar`, `shell.onboarding`, `shell.diagnostics`, `ui.commandpalette` |
+| Frontière sûre, autorisation et audit | `safety.pathvalidator`, `safety.executiongate`, `safety.execute`, `safety.auditlog`, `spacelens.delete` |
+| Analyse et moteurs | `scan.engine`, `scan.duplicates`, `scan.similarimages`, `scan.spacelens`, `clutter.largeold`, `clutter.duplicates`, `clutter.similarimages`, `spacelens.view`, `cloud.detect` |
+| Sept règles Cleanup | `cleanup.usercaches`, `cleanup.userlogs`, `cleanup.crashreports`, `cleanup.xcodederiveddata`, `cleanup.incompletedownloads`, `cleanup.xcodedevicesupport`, `cleanup.iosbackups` |
+| Integrity et performance | `integrity.provenance`, `integrity.codesign`, `integrity.loginitems`, `perf.metrics` |
+| Applications | `apps.discovery`, `apps.leftovers`, `apps.updates` |
+| Record et export | `activity.log`, `activity.grouping`, `activity.jsonexport` |
+| Réglages et localisation | `settings.menubar`, `settings.appsignature`, `settings.fulldiskaccess`, `settings.exclusions`, `settings.clearactivity`, `settings.exportdiagnostic`, `l10n.languagepicker` |
+| Migration, désinstallation et isolation | `migration.legacydata`, `migration.launchwiring`, `settings.migrationnotice`, `uninstall.legacydata`, `testing.storeisolation` |
+| Navigation contextuelle | `quicklook.extended`, `favrec.module` |
+
+Ce registre totalise 51 IDs, sans compter les futurs Could/Won’t. Une matrice greenfield les reliera ensuite à FR/NFR, code, test isolé, preuve et statut; inventaire source seul ne prouve aucun comportement nouveau.
 
 ## 5. Exigences fonctionnelles et critères d’acceptation
 
@@ -91,6 +110,13 @@ Priorité selon §7. **M** est obligatoire pour reconstruction livrable. Statut 
 | FR-17 | S | Cask de package manager seulement généré depuis artefact publié avec checksum vérifié; aucun cask fictif dans cette reconstruction non publiée. |
 | FR-18 | C | Locales supplémentaires, sur demande démontrée et relecture humaine complète. |
 | FR-19 | W | Nettoyage planifié/destructif, purge permanente, vidage Trash, scan malware, cloud sync, assistant privilégié, auto-updater installant. |
+| FR-20 | M | Migration héritée des préférences/données reconnues est copie-seulement, allowlist explicite, idempotente, journalisée, reprend sans fichier partiel trompeur; source historique jamais renommée/modifiée/supprimée. Tests uniquement avec fixtures synthétiques et rollback qui supprime seulement les fichiers créés par cette exécution. |
+| FR-21 | M | Rapport diagnostic opt-in avec aperçu, redaction vérifiée, export user-chosen; aucun secret, chemin personnel ou contenu de fichier exporté. |
+| FR-22 | S | Menu bar optionnelle, échantillonne uniquement quand visible, montre mesures réelles et dernière activité; arrêt d’échantillonnage à fermeture. |
+| FR-23 | S | Quick Look prévisualise seulement les fichiers retenus dans Explore/Duplicates/Similar Images, jamais dossiers ni action d’écriture. |
+| FR-24 | S | Favoris/récents stockent chemins et dernière taille mesurée; état absent/inaccessible visible; palette clavier navigue vers destinations/actions non destructives sans créer un second routeur. |
+| FR-25 | M | La commande d’update indique uniquement qu’une source (App Store/Sparkle) est observée et ouvre sa page déclarée; n’affirme pas qu’une version plus récente existe sans comparaison disponible, ne télécharge/installe rien. |
+| FR-26 | M | Désinstallation app choisit les seules données associées attribuées avec preuve; aperçu, confirmation et SafetyCore Trash. Les données héritées restent exclues par défaut, incluses opt-in et traitées en dernier; échec laisse l’élément et l’audit distincts. |
 
 ## 6. Exigences non fonctionnelles et invariants
 
@@ -115,8 +141,8 @@ Priorité selon §7. **M** est obligatoire pour reconstruction livrable. Statut 
 
 | Priorité | Livrables retenus |
 |---|---|
-| **Must** | Cahier et registre décisions; app native huit destinations; scan en lecture seule; SafetyCore Trash-only/confirmation/revalidation; Record local; migrations synthétiques; exclusions; EN/FR; onboarding/réglages; CLI lecture seule; site statique; docs user/dev; tests isolés; sécurité/confidentialité/accessibilité; build, packaging local, provenance honnête. |
-| **Should** | Filtres/presets; cask généré depuis vraie release future; capture automatisée; profiling multi-macOS; audit ergonomie externe; compatibilité seconde machine; enrichissement historique et diagnostic export. |
+| **Must** | Cahier et registre décisions; app native huit destinations couvrant les 51 IDs source selon leur MoSCoW; scan en lecture seule; SafetyCore Trash-only/confirmation/revalidation; Record local et export; migrations synthétiques + migration héritée copy-only; exclusions; EN/FR; onboarding/réglages; CLI lecture seule; désinstallation sûre; site statique; docs user/dev; tests isolés; sécurité/confidentialité/accessibilité; build, packaging local, provenance honnête. |
+| **Should** | Menu bar, Quick Look, favoris/récents et palette clavier; filtres/presets; cask généré depuis vraie release future; capture automatisée; profiling multi-macOS; audit ergonomie externe; compatibilité seconde machine. |
 | **Could** | Langues additionnelles; App Store après redesign ciblé sandbox; update installant après modèle signature/rollback; widget/Shortcuts; catégories supplémentaires cache/métadonnées. |
 | **Won’t** | Effacement permanent, opération automatique/schedule, télémétrie, cloud/account, score santé, claim antivirus, helper privilégié, App Store dans le livrable actuel, publication de cette reconstruction. |
 
