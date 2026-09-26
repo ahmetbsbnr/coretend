@@ -64,6 +64,8 @@ Ordre de reprise retenu : (1) refermer fonctions Must Applications/Integrity/per
 
 ### CLI — résultat partiel explicite — 26-09-2026
 
+- Commit code/docs/tests : `6dfb493` sur `origin/next`; dépôt propre après checkpoint.
+
 - `coretend scan` ne renvoie plus succès lorsque ScanCore remonte une erreur racine/élément. Codes documentés : 0 complet, 2 partiel, 1 erreur de commande/store, 130 annulation. JSON expose `files`, `issues` (path/reason) et `complete`; texte liste les issues.
 - Tests CLI d’intégration sur répertoire temporaire : scan complet succès; racine inexistante donne issue `missing`, `complete=false`, code 2. `swift test --filter CLIContractTests`: 5/5.
 - `make qualify` passe après ce changement (site, traceability, audit sécurité, XCTest complet, builds debug App/CLI). `make package-local` et `make verify-package` passent.

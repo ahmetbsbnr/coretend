@@ -47,6 +47,6 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 
 ## CLI partial-scan contract — 26-09-2026
 
-- Source à commit : jalon CLI scan completion. `make qualify`, `make package-local`, `make verify-package` réussis; tests CLI ciblés 5/5.
+- Source compilée : `6dfb493` (`next`). `make qualify`, `make package-local`, `make verify-package` réussis; tests CLI ciblés 5/5.
 - Le ZIP unsigned local courant est arm64; SHA-256 `835917d81e62930c77208c44d58357e6be9db4c7f1be250e7681eab3c7317c60`. Vérification confirme uniquement plist, structure ZIP et Mach-O; aucun lancement UI/signature/notarisation/publication.
 - Résultat CLI n’améliore pas le scan sur fichiers protégés lui-même; issues et codes sortie empêchent de traiter un résultat incomplet comme succès.
