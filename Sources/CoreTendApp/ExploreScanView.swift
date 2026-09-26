@@ -119,7 +119,16 @@ struct ExploreScanView: View {
                             Image(systemName: "doc")
                             Text(result.url.lastPathComponent).lineLimit(1)
                             Spacer()
-                            Text(size(result.allocatedBytes)).monospacedDigit().foregroundStyle(.secondary)
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text(french ? "Allouée localement : \(size(result.allocatedBytes))" : "Allocated locally: \(size(result.allocatedBytes))")
+                                Text(french ? "Taille logique : \(size(result.logicalBytes))" : "Logical size: \(size(result.logicalBytes))")
+                            }
+                            .monospacedDigit()
+                            .foregroundStyle(.secondary)
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel(french
+                                ? "Allouée localement : \(size(result.allocatedBytes)), taille logique : \(size(result.logicalBytes))"
+                                : "Allocated locally: \(size(result.allocatedBytes)), logical size: \(size(result.logicalBytes))")
                             Button { Task { await toggleFavorite(result) } } label: {
                                 Image(systemName: favoritePaths.contains(result.url.path) ? "star.fill" : "star")
                             }
