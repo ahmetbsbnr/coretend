@@ -35,10 +35,28 @@ private struct CoreTendRootView: View {
                 ContentUnavailableView(ProductCopy.value(for: "empty.title", french: french), systemImage: "square.grid.2x2")
             }
         }
-        .toolbar { ToolbarItem(placement: .automatic) { Button { activeSheet = .settings } label: { Image(systemName: "gearshape") }.accessibilityLabel(ProductCopy.value(for: "settings.title", french: french)) } }
+        .toolbar {
+            ToolbarItem(placement: .automatic) {
+                Button { activeSheet = .commands } label: { Image(systemName: "command") }
+                    .keyboardShortcut("k", modifiers: [.command])
+                    .accessibilityLabel(ProductCopy.value(for: "command.palette.title", french: french))
+                    .help(french ? "Accéder à… (⌘K)" : "Go to or open… (⌘K)")
+            }
+            ToolbarItem(placement: .automatic) {
+                Button { activeSheet = .settings } label: { Image(systemName: "gearshape") }
+                    .accessibilityLabel(ProductCopy.value(for: "settings.title", french: french))
+            }
+        }
         .sheet(item: $activeSheet) { sheet in
             switch sheet {
             case .settings: SettingsView(french: french, language: $language)
+            case .commands:
+                CommandPaletteView(french: french) { target in
+                    switch target {
+                    case .destination(let destination): selection = destination; activeSheet = nil
+                    case .settings: activeSheet = .settings
+                    }
+                }
             case .onboarding: OnboardingView(french: french) { onboardingCompleted = true; activeSheet = nil }
             }
         }
@@ -52,7 +70,7 @@ private struct CoreTendRootView: View {
     }
 }
 
-private enum RootSheet: String, Identifiable { case settings, onboarding; var id: String { rawValue } }
+private enum RootSheet: String, Identifiable { case settings, commands, onboarding; var id: String { rawValue } }
 
 private struct OnboardingView: View {
     let french: Bool

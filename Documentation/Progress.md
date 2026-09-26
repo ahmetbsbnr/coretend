@@ -1,6 +1,6 @@
 # Reconstruction progress
 
-**Relevé :** 2026-09-26. **État :** reconstruction en cours, non finalisée. Dernier jalon code : CLI rapporte les scans partiels; Explore offre filtres exacts taille/date, build release/paquet local vérifiés structurellement. Cahier et plan approuvés; travail actif sur `next`, branche issue du dépôt public historique. Le dépôt greenfield initial `rebuild/` reste copie locale de provenance.
+**Relevé :** 2026-09-26. **État :** reconstruction en cours, non finalisée. Dernier jalon fusionné : SQLite v4 favoris/récents (PR #40); travail suivant : palette clavier bilingue sur branche de fonctionnalité. Build/paquet local vérifiés structurellement; aucune qualification UI native. Cahier et plan approuvés; développement sur lignée `next` du dépôt public historique. Le dépôt greenfield initial `rebuild/` reste copie locale de provenance.
 
 ## Livré et prouvé
 
@@ -9,6 +9,7 @@
 - ProductContract catalogue les 51 IDs de capacité et huit destinations.
 - SafetyCore : capacités à durée courte, revalidation d’existence/chemin/volume/inode/allowlist; adapter prod uniquement `FileManager.trashItem`; fake Trash dans Tests. Cinq tests sur racine refusée, règle inconnue, identité changée, expiration, préservation à l’échec et déplacement fixture.
 - SQLite schema v4 : événements, préférences/imports, mesures Performance et favoris/récents séparés; migrations transactionnelles v1/v2/v3→v4, URL injectée; mode CLI read-only. Récents opt-in désactivé par défaut, 100 chemins maximum; favoris explicites; tests en bases temporaires synthétiques.
+- Palette clavier ⌘K en anglais/français : recherche des huit destinations et Réglages par libellé/alias; utilise le routeur existant, ouvre première correspondance par Retour, ferme par Échap. Tests AppShell couvrent catalogue et recherche. Comportement natif du raccourci, focus et VoiceOver restent à essayer manuellement.
 - ScanCore : parcours explicite, exclusions, symlinks exclus, tailles logique/allouée inconnues conservées; tests de lecture seule sur fixtures.
 - Doublons exacts : bucket par taille puis SHA-256 par blocs, déduplication d’inodes, un exemplaire proposé à garder; tests sur copies identiques, contenus distincts et hard links.
 - App SwiftUI compilable, huit routes EN/FR. Explore, Duplicates et Cleanup ont sélection de dossier et scan. Duplicates/Cleanup relient sélection manuelle → proposition journalisée → revue nominative → confirmation → validation → adapter Trash; le keeper n’est jamais sélectionnable, sélection vide par défaut, refus/cancel distincts. Actions non lancées sur l’hôte.

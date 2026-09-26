@@ -1,6 +1,6 @@
 # Passation courante — CoreTend Next
 
-**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche `next` publiée sur `ahmetbsbnr/coretend` et issue de `main`. HEAD de départ pour ce jalon : `4cf98b7`; modifications ci-dessous non encore commitées. L’ancien dépôt indépendant `rebuild/` reste une copie locale de provenance.
+**Date :** 26-09-2026. **État :** reconstruction en cours, sans release. Dépôt actif : worktree `next/`, branche `next` publiée sur `ahmetbsbnr/coretend` et issue de `main`. Jalon données fusionné : `6052711` (PR #40, qualify distant vert). L’ancien dépôt indépendant `rebuild/` reste une copie locale de provenance.
 
 ### Jalon en cours — données locales et favoris/récents
 
@@ -10,11 +10,11 @@
 - Tests Persistence : 17/17 passent, dont fixture v3→v4 et conservation événement/langue/relevé, idempotence, quota et validation. `make qualify` passe : site, traçabilité, audit sécurité, smoke install fixture, suite Swift, builds App/CLI et `git diff --check`.
 - `make package-local` et `make verify-package` réussis. ZIP arm64 unsigned SHA-256 `9b5a340e2513e7f1a9a16a0c0b252a72d8f0eecff6bca62668135019e815b091`; non lancé/installé/signé/notarié/publié.
 - Docs synchronisées : `Documentation/Project/DataModel.md`, `Migration.md`, `Progress.md`, `Traceability.csv`, `UserGuide.md`. FR-24 et `favrec.module` EN_COURS; FR-11 EN_COURS; NFR-05 reste PARTIEL (pas de récupération/restauration utilisateur complète).
-- Contrôle visuel SwiftUI/VoiceOver natif non réalisé. Palette de commandes et navigation par destinations à venir; FR-24 reste en cours. Reprise : finaliser review/PR de ce jalon, puis continuer `Implementation-plan.md` sur Must et accessibilité.
+- Contrôle visuel SwiftUI/VoiceOver natif non réalisé. FR-24 reste en cours jusqu’à cette qualification. Suite clavier sur `feature/keyboard-command-palette`: catalogue EN/FR de 8 destinations + Réglages, raccourci ⌘K, recherche avec alias, routeur partagé, Échap pour fermer et Retour pour ouvrir premier résultat. Tests AppShell 4/4; `make qualify`, `make package-local`, `make verify-package`, `git diff --check` passent. ZIP unsigned SHA-256 `fbb8a3d042b89f26a37972930553a9b4b218516c357964ea58be9d198942390b`; non lancé. Branche en attente commit/PR/CI distante.
 
 ## Reprise active — 26-09-2026
 
-L’utilisateur demande de poursuivre le projet jusqu’à finalisation et de tenir cette passation à jour à chaque étape pour reprise après arrêt abrupt. Tête actuelle : `b1888ad` (documentation de build); code du paquet actuel issu de `894c107` (packaging propre). Dernier ZIP local observé : SHA-256 `e1e87a2a611d4793b2043c396ea2d957b34fe9205e73434fa3ce51620c3473fa`; il contient le code de `894c107`, pas le commit documentaire `b1888ad`. La passation doit être actualisée et commit/push à chaque tranche terminée.
+L’utilisateur demande de poursuivre le projet jusqu’à finalisation et de tenir cette passation à chaque étape pour reprise après arrêt abrupt. Dernier code fusionné : `6052711` (SQLite v4 favoris/récents, PR #40, CI distante verte). Le commit précédent `ef58ece` a généré ZIP unsigned SHA-256 `9b5a340e2513e7f1a9a16a0c0b252a72d8f0eecff6bca62668135019e815b091`, vérifié structure seulement. Branche active actuelle `feature/keyboard-command-palette`, changements locaux non commités; passation et docs clavier en cours.
 
 Ordre de reprise retenu : (1) refermer fonctions Must Applications/Integrity/permissions; (2) compléter les états de navigation, données, export et migration; (3) traiter les capacités restantes et mettre à jour `Website/`, README et cahier; (4) qualification en fixtures isolées, gates et builds; (5) relever précisément limites native/macOS/publication sans revendiquer une release non signée. Utiliser les langues utiles au résultat; Swift reste app macOS, Python dépôt/site, sans contrainte générale. Ne jamais ouvrir le vrai store CoreTend ni la vraie Corbeille pendant les tests. Aucune release signée/notarisée/publication.
 
