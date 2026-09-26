@@ -27,6 +27,67 @@ final class QuarantineInspectionTests: XCTestCase {
     }
 }
 
+final class LaunchAgentInspectionTests: XCTestCase {
+    func testReadsOnlyExpectedFieldsFromExplicitFixtureFolderAndPreservesBytes() throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let programURL = root.appendingPathComponent("program.plist")
+        let argumentsURL = root.appendingPathComponent("arguments.plist")
+        let programData = try PropertyListSerialization.data(fromPropertyList: ["Label": "org.fixture.program", "Program": "/fixture/program", "ProgramArguments": ["/ignored/first"]], format: .xml, options: 0)
+        let argumentsData = try PropertyListSerialization.data(fromPropertyList: ["Label": "org.fixture.arguments", "ProgramArguments": ["/fixture/agent", "--flag"]], format: .xml, options: 0)
+        try programData.write(to: programURL)
+        try argumentsData.write(to: argumentsURL)
+        let report = LaunchAgentInspector().inspect(in: root)
+        XCTAssertEqual(report.candidates.map(\.label), ["org.fixture.arguments", "org.fixture.program"])
+        XCTAssertEqual(report.candidates.map(\.executablePath), ["/fixture/agent", "/fixture/program"])
+        XCTAssertEqual(report.candidates.map(\.plistURL.lastPathComponent), ["arguments.plist", "program.plist"])
+        XCTAssertTrue(report.issues.isEmpty)
+        XCTAssertEqual(try Data(contentsOf: programURL), programData)
+        XCTAssertEqual(try Data(contentsOf: argumentsURL), argumentsData)
+    }
+
+    func testMalformedAndOversizedPlistsAreReportedAsIssues() throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        try Data("not a plist".utf8).write(to: root.appendingPathComponent("broken.plist"))
+        try Data(repeating: 0x41, count: LaunchAgentInspector.maximumPlistBytes + 1).write(to: root.appendingPathComponent("large.plist"))
+        let report = LaunchAgentInspector().inspect(in: root)
+        XCTAssertEqual(Set(report.issues.map(\.reason)), [.malformedPlist, .plistTooLarge])
+        XCTAssertTrue(report.candidates.isEmpty)
+    }
+
+    func testSkipsSymlinksAndNonPlistFiles() throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let external = root.appendingPathComponent("external.plist")
+        let contents = try PropertyListSerialization.data(fromPropertyList: ["Label": "org.fixture.external", "Program": "/fixture/external"], format: .xml, options: 0)
+        try contents.write(to: external)
+        try FileManager.default.createSymbolicLink(at: root.appendingPathComponent("linked.plist"), withDestinationURL: external)
+        try contents.write(to: root.appendingPathComponent("ignored.txt"))
+        let report = LaunchAgentInspector().inspect(in: root)
+        XCTAssertEqual(report.candidates.map(\.label), ["org.fixture.external"])
+        XCTAssertTrue(report.issues.isEmpty)
+    }
+
+    func testCapsPlistCandidatesAndReportsTruncation() throws {
+        let root = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: root) }
+        let contents = try PropertyListSerialization.data(fromPropertyList: ["Label": "org.fixture", "Program": "/fixture/program"], format: .xml, options: 0)
+        for index in 0...LaunchAgentInspector.maximumCandidates {
+            try contents.write(to: root.appendingPathComponent(String(format: "%04d.plist", index)))
+        }
+        let report = LaunchAgentInspector().inspect(in: root)
+        XCTAssertEqual(report.candidates.count, LaunchAgentInspector.maximumCandidates)
+        XCTAssertEqual(report.issues.map(\.reason), [.candidateLimitReached])
+    }
+
+    private func fixtureRoot() throws -> URL {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-launch-agents-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        return root
+    }
+}
+
 final class ApplicationAssociationMatcherTests: XCTestCase {
     func testRequiresExactBundleIdentifierComponentOrFilenameStem() {
         let id = "org.example.PhotoTool"
