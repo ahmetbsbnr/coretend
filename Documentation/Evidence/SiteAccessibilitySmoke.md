@@ -1,6 +1,6 @@
 # Site browser accessibility smoke
 
-**Date:** 2026-09-27  
+**Date:** 2026-09-27
 **Scope:** generated French home route only, served from the local `Website/` directory. This is browser evidence for one route, not a human accessibility sign-off or release qualification.
 
 ## Observed
