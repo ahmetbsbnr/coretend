@@ -16,6 +16,34 @@ public enum ScanRule: String, CaseIterable, Sendable {
 
 public enum CandidateRisk: String, Sendable { case low, medium, high }
 
+public enum ExploreFileCategory: String, CaseIterable, Hashable, Sendable {
+    case all, images, videos, audio, documents, archives, other
+
+    private static let extensionsByCategory: [ExploreFileCategory: Set<String>] = [
+        .images: ["bmp", "gif", "heic", "heif", "jpeg", "jpg", "png", "svg", "tif", "tiff", "webp"],
+        .videos: ["avi", "m4v", "mkv", "mov", "mp4", "webm"],
+        .audio: ["aac", "aif", "aiff", "flac", "m4a", "mp3", "ogg", "wav"],
+        .documents: ["csv", "doc", "docx", "key", "md", "numbers", "odt", "pages", "pdf", "ppt", "pptx", "rtf", "txt", "xls", "xlsx"],
+        .archives: ["7z", "bz2", "dmg", "gz", "iso", "rar", "tar", "xz", "zip"]
+    ]
+
+    private static let categorizedExtensions = extensionsByCategory.values.reduce(into: Set<String>()) { result, extensions in
+        result.formUnion(extensions)
+    }
+
+    public var fileExtensions: [String] {
+        Self.extensionsByCategory[self]?.sorted() ?? []
+    }
+
+    public func matches(_ url: URL) -> Bool {
+        let fileExtension = url.pathExtension.lowercased()
+        guard self != .all else { return true }
+        guard !fileExtension.isEmpty else { return self == .other }
+        if self == .other { return !Self.categorizedExtensions.contains(fileExtension) }
+        return Self.extensionsByCategory[self]?.contains(fileExtension) == true
+    }
+}
+
 public enum ExplorePreset: String, CaseIterable, Sendable {
     case all
     case largeLocal

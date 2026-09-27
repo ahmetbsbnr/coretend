@@ -291,3 +291,4 @@
 
 - Le guide promettait recherche EN ou FR sans dépendre de langue UI, mais le catalogue n’incluait que l’alias courant. Fixtures rouges reproduisent `home` dans UI française et `historique` dans UI anglaise sans résultat; catalogue ajoute les alias deux langues, test couvre les huit destinations et Réglages dans les deux sens. `make qualify` passe.
 - Navigation flèches native et activation Réglages native restent non qualifiées; aucun statut ou score de conformité ne change.
+- FR-16 avance : Explorer combine catégories par extensions explicites insensibles à la casse et presets taille/ancienneté. Critères visibles, extensions listées; tests ScanCore couvrent catégories et repli « autres ». Interaction native reste à qualifier.

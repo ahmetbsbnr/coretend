@@ -1,5 +1,11 @@
 # Passation complète — CoreTend Next
 
+### FR-16 — catégories explicites dans Explorer — 27-09-2026
+
+- Explorer filtre par catégories définies via extensions explicites, insensibles à la casse : images, vidéos, audio, documents, archives; « autres » prend extensions non listées et fichiers sans extension. Critères affichés dans l’interface, filtres catégorie/taille/âge combinés.
+- ScanCore couvre correspondances, casse, extension inconnue, fichier sans extension et non-correspondance. `swift build --product CoreTendApp`, test ciblé et `make qualify` passent, dont builds propres identiques et suite Swift complète. Interaction UI native reste à qualifier; FR-16 PARTIEL.
+- Registre : 91 lignes, 83 PARTIEL, 6 À_CONSTRUIRE, 2 VÉRIFIÉ; pondération indicative 51,3 % Must et 47,8 % global. Pas un score officiel de complétion.
+
 ### FR-11 — migration simultanée au lancement — 27-09-2026
 
 - AX sur app Debug isolée reproduisait « Données locales indisponibles » dans Overview; SQLite fixture était valide. Shell et SavedFilesView ouvraient simultanément le store neuf; les deux migrations pouvaient lire version 0 avant attente du verrou puis rejouer les mêmes créations de tables.

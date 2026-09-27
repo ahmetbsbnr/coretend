@@ -22,6 +22,7 @@ struct ExploreScanView: View {
     @State private var query = ""
     @State private var sortMode = "largest"
     @State private var preset: ExplorePreset = .all
+    @State private var category: ExploreFileCategory = .all
     @State private var presetEvaluationDate = Date.now
     @State private var previewURL: URL?
     @State private var selectedRoot: URL?
@@ -41,6 +42,7 @@ struct ExploreScanView: View {
     private var visibleResults: [ScanResult] {
         let filtered = results.filter {
             (query.isEmpty || $0.url.lastPathComponent.localizedCaseInsensitiveContains(query) || $0.url.deletingLastPathComponent().path.localizedCaseInsensitiveContains(query))
+                && category.matches($0.url)
                 && preset.matches($0, evaluatedAt: presetEvaluationDate)
         }
         switch sortMode {
@@ -93,6 +95,14 @@ struct ExploreScanView: View {
                         Text(copy("explore.name")).tag("name")
                     }
                     .frame(width: 190)
+                }
+                HStack {
+                    Picker(french ? "Catégorie" : "Category", selection: $category) {
+                        ForEach(ExploreFileCategory.allCases, id: \.self) { value in
+                            Text(categoryName(value)).tag(value)
+                        }
+                    }
+                    .frame(width: 190)
                     Picker(french ? "Filtre" : "Filter", selection: $preset) {
                         Text(french ? "Tous" : "All files").tag(ExplorePreset.all)
                         Text(french ? "≥ 1 Gio local" : "≥ 1 GiB local").tag(ExplorePreset.largeLocal)
@@ -101,6 +111,8 @@ struct ExploreScanView: View {
                     .frame(width: 190)
                     .onChange(of: preset) { _, _ in presetEvaluationDate = .now }
                 }
+                Text(categoryDescription)
+                    .font(.caption).foregroundStyle(.secondary)
                 Text(presetDescription)
                     .font(.caption).foregroundStyle(.secondary)
                 let knownCount = treemapInputs.count
@@ -493,5 +505,30 @@ struct ExploreScanView: View {
             let date = formatter.string(from: cutoff)
             return french ? "Date de modification au plus tard le \(date) (365 jours); dates inconnues exclues." : "Modification date on or before \(date) (365 days); unknown dates excluded."
         }
+    }
+
+    private func categoryName(_ value: ExploreFileCategory) -> String {
+        switch value {
+        case .all: french ? "Toutes les catégories" : "All categories"
+        case .images: french ? "Images" : "Images"
+        case .videos: french ? "Vidéos" : "Videos"
+        case .audio: french ? "Audio" : "Audio"
+        case .documents: french ? "Documents" : "Documents"
+        case .archives: french ? "Archives" : "Archives"
+        case .other: french ? "Autres extensions" : "Other extensions"
+        }
+    }
+
+    private var categoryDescription: String {
+        guard category != .all else {
+            return french ? "Aucun filtre de type; fichiers avec ou sans extension inclus." : "No file-type filter; files with or without extensions are included."
+        }
+        guard category != .other else {
+            return french
+                ? "Extensions hors Images, Vidéos, Audio, Documents et Archives; fichiers sans extension inclus."
+                : "Extensions outside Images, Videos, Audio, Documents, and Archives; files without an extension included."
+        }
+        let extensions = category.fileExtensions.map { ".\($0)" }.joined(separator: ", ")
+        return french ? "Extensions incluses : \(extensions)." : "Included extensions: \(extensions)."
     }
 }
