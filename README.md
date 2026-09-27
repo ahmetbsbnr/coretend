@@ -1,5 +1,7 @@
 # CoreTend
 
+Current repository recovery: [handoff](docs/PASSATION.md) · [priorities](docs/TODO.md).
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="Resources/Brand/Generated/Logo-Horizontal-dark@2x.png">

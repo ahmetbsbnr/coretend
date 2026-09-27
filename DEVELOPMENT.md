@@ -27,14 +27,10 @@ Scripts/build.sh release  # release, must build with 0 warnings before committin
 Scripts/test.sh   # do NOT use plain `swift test` — see Documentation/DECISIONS.md D2
 ```
 
-286 tests / 57 suites across the SwiftPM package (`DesignSystemTests`,
-`IntegrityCoreTests`, `AppDiscoveryTests`, `PersistenceTests`,
-`SystemMetricsTests`, `ScanCoreTests`, `SafetyCoreTests`, `FileRulesTests`,
-`CoreTendAppTests`, plus `CoreTendIntegrationTests`,
-`CoreTendAccessibilityTests`, `CoreTendPerformanceTests`,
-`DemoFixturesValidatorTests`). One test is skipped — the Developer-ID
-signature test, gated on a real codesigning identity. See
-[Documentation/TESTING.md](Documentation/TESTING.md).
+The test runner uses Swift Testing with XCTest disabled and suites serialized.
+Do not reuse historical test counts: current evidence is in
+[the handoff](docs/PASSATION.md). The separate CoreTendUITests target requires
+an Xcode UI-test run; a successful Scripts/test.sh does not execute it.
 
 ## Package and run locally
 
@@ -66,7 +62,7 @@ for a narrative walkthrough of one end-to-end flow.
 - Destructive engines only ever go through `SafetyCore.PathValidator` —
   never raw `FileManager` calls on user-supplied paths.
 - No new dependency without checking `Documentation/DEPENDENCIES.md`.
-- No telemetry, no network calls from app code.
+- No telemetry. Only the explicit, metadata-only update check uses the network.
 
 ## Cleaning up a dev machine
 
@@ -107,15 +103,10 @@ deliberate, not a speed oversight.
 
 ### Release, signing, notarization
 
-- Signing/notarization is **live as of 2026-08-31**: Developer ID identity
-  `Developer ID Application: Ahmet BASBUNAR (NSCUV5G738)` is installed and
-  `Scripts/sign-and-notarize.sh` has produced a real signed+notarized+stapled
-  `0.9.1-rc.5` locally. **But every *published* release still ships unsigned**
-  — the signed build has not been shipped. Do not flip `signed`/`notarized`
-  to `true` in `published-release.json`, `latest.json`, `PublicIdentity`, or
-  the site until a signed release is actually published
-  (`Documentation/SIGNING_NOTARIZATION.md` → "Publishing a signed release").
-  Still no ad-hoc signing or self-signed certs dressed up as a real signature.
+- Published release facts are recorded in `Configuration/published-release.json`.
+  Source flags and historical reports are not proof of downloaded artifact signing.
+  Do not change publication metadata without artifact verification, and do not
+  sign, notarize or publish as part of routine local validation.
 - **Never regenerate** the CSR or private key in `Configuration/DeveloperID/`.
   The `Developer ID Application` cert was issued against that exact CSR;
   regenerating breaks the pairing. Never read or echo the private key or the

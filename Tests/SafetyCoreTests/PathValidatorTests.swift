@@ -201,7 +201,7 @@ struct SafetyCenterTests {
         defer { cleanup() }
         let file = tempRoot.appendingPathComponent("victim.txt")
         try Data("data".utf8).write(to: file)
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]))
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), moveToTrash: fixtureTrash(in: tempRoot))
         let op = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
         let result = await center.execute([op])
         #expect(result.executed.count == 1)
@@ -212,7 +212,7 @@ struct SafetyCenterTests {
         defer { cleanup() }
         let file = tempRoot.appendingPathComponent("gone.txt")
         try Data("data".utf8).write(to: file)
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]))
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), moveToTrash: fixtureTrash(in: tempRoot))
         let op = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
         try FileManager.default.removeItem(at: file)
         let result = await center.execute([op])
@@ -224,7 +224,7 @@ struct SafetyCenterTests {
         defer { cleanup() }
         let file = tempRoot.appendingPathComponent("swap.txt")
         try Data("data".utf8).write(to: file)
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]))
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), moveToTrash: fixtureTrash(in: tempRoot))
         let op = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
         // Replace the file with a symlink pointing outside the allowlist.
         let outside = URL(fileURLWithPath: NSTemporaryDirectory())
@@ -240,7 +240,7 @@ struct SafetyCenterTests {
 
     @Test func emptyApprovedBatchDoesNothing() async {
         defer { cleanup() }
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]))
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), moveToTrash: fixtureTrash(in: tempRoot))
         let result = await center.execute([])
         #expect(result.executed.isEmpty)
         #expect(result.skipped.isEmpty)
@@ -252,7 +252,7 @@ struct SafetyCenterTests {
         let second = tempRoot.appendingPathComponent("second.txt")
         try Data("one".utf8).write(to: first)
         try Data("two".utf8).write(to: second)
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]))
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), moveToTrash: fixtureTrash(in: tempRoot))
         let operations = try await [first, second].asyncMap { file in
             try await center.approve(url: file, logicalSize: 3, ruleID: "test", risk: .low)
         }
@@ -267,7 +267,7 @@ struct SafetyCenterTests {
         defer { cleanup() }
         let file = tempRoot.appendingPathComponent("single.txt")
         try Data("data".utf8).write(to: file)
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]))
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), moveToTrash: fixtureTrash(in: tempRoot))
         let first = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
         let second = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
         let result = await center.execute([first, second])
@@ -307,7 +307,7 @@ struct SafetyCenterAuditSinkTests {
         let file = tempRoot.appendingPathComponent("victim.txt")
         try Data("data".utf8).write(to: file)
         let sink = MockAuditSink()
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), sink: sink)
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), sink: sink, moveToTrash: fixtureTrash(in: tempRoot))
         let op = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
         _ = await center.execute([op])
         let stages = await sink.events.map(\.stage)
@@ -320,7 +320,7 @@ struct SafetyCenterAuditSinkTests {
         let file = tempRoot.appendingPathComponent("victim.txt")
         try Data("data".utf8).write(to: file)
         let sink = MockAuditSink()
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), sink: sink)
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), sink: sink, moveToTrash: fixtureTrash(in: tempRoot))
         let op = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
         _ = await center.execute([op])
         let stages = await sink.events.map(\.stage)
@@ -331,7 +331,7 @@ struct SafetyCenterAuditSinkTests {
     @Test func invalidPathEmitsErrorEvent() async throws {
         defer { cleanup() }
         let sink = MockAuditSink()
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), sink: sink)
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), sink: sink, moveToTrash: fixtureTrash(in: tempRoot))
         _ = try? await center.approve(url: URL(fileURLWithPath: "/System/Library"), logicalSize: 0, ruleID: "test", risk: .low)
         let events = await sink.events
         #expect(events.count == 1)
@@ -343,11 +343,54 @@ struct SafetyCenterAuditSinkTests {
         let file = tempRoot.appendingPathComponent("gone.txt")
         try Data("data".utf8).write(to: file)
         let sink = MockAuditSink()
-        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), sink: sink)
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [tempRoot]), sink: sink, moveToTrash: fixtureTrash(in: tempRoot))
         let op = try await center.approve(url: file, logicalSize: 4, ruleID: "test", risk: .low)
         try FileManager.default.removeItem(at: file)
         _ = await center.execute([op])
         let stages = await sink.events.map(\.stage)
         #expect(stages == [.approved, .skipped])
+    }
+}
+
+/// Preserves fixture contents without touching the user's macOS Trash.
+private func fixtureTrash(in root: URL) -> @Sendable (URL) throws -> Void {
+    { url in
+        let trash = root.appendingPathComponent("fixture-trash", isDirectory: true)
+        try FileManager.default.createDirectory(at: trash, withIntermediateDirectories: true)
+        try FileManager.default.moveItem(at: url, to: trash.appendingPathComponent(url.lastPathComponent))
+    }
+}
+
+@Suite("Trash-only failure contract")
+struct TrashFailureTests {
+    @Test func failedTrashPreservesSourceAndContinuesBatch() async throws {
+        let root = try makeTempRoot("coretend-trash-failure")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let rejected = root.appendingPathComponent("rejected.txt")
+        let accepted = root.appendingPathComponent("accepted.txt")
+        let bytes = Data("recoverable".utf8)
+        try bytes.write(to: rejected)
+        try bytes.write(to: accepted)
+        let sink = MockAuditSink()
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [root]), sink: sink) { url in
+            if url.lastPathComponent == "rejected.txt" { throw CocoaError(.fileWriteNoPermission) }
+            try fixtureTrash(in: root)(url)
+        }
+        let operations = try await [rejected, accepted].asyncMap {
+            try await center.approve(url: $0, logicalSize: Int64(bytes.count), ruleID: "test", risk: .low)
+        }
+        let result = await center.execute(operations)
+        #expect(result.executed.map(\.id) == [operations[1].id])
+        #expect(result.skipped.map { $0.0.id } == [operations[0].id])
+        #expect(result.skipped.first?.1 == .trashFailed)
+        #expect(FileManager.default.fileExists(atPath: rejected.path))
+        if FileManager.default.fileExists(atPath: rejected.path) {
+            #expect(try Data(contentsOf: rejected) == bytes)
+        }
+        #expect(try Data(contentsOf: root.appendingPathComponent("fixture-trash/accepted.txt")) == bytes)
+        #expect(!FileManager.default.fileExists(atPath: accepted.path))
+        let events = await sink.events
+        #expect(events.filter { $0.operationID == operations[0].id }.map(\.stage) == [.approved, .error])
+        #expect(events.filter { $0.operationID == operations[1].id }.map(\.stage) == [.approved, .executed])
     }
 }

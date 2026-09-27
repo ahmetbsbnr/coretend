@@ -1,5 +1,13 @@
 # Engineering rules — how a decision gets made here
 
+> Current-worktree correction (2026-09-27): the layout and v2 tooling below
+> describe another development line. There is no tracked CLAUDE.md, dev.sh,
+> generated docs/architecture tree or CORETEND_VNEXT_TASKS.md here. Use
+> [the handoff](PASSATION.md), [TODO](TODO.md), Package.swift and
+> [the current architecture](../Documentation/ARCHITECTURE.md) for navigation.
+> Evidence, safety and review principles below still apply. Ordinary local
+> builds/tests are authorized by the current recovery request; publication is not.
+
 The conventions are written down elsewhere and this file does not repeat them.
 `CLAUDE.md` holds the eleven interface principles and the hard constraints;
 `DEVELOPMENT.md` holds the commands; `DESIGN.md` and

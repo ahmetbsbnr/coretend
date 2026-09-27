@@ -1,5 +1,8 @@
 # CoreTend Greenfield Implementation Plan
 
+> Historical proposal for a separate workspace. The current in-place recovery is
+> tracked in [the handoff](../../PASSATION.md); do not execute this plan here.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Rebuild CoreTend from a clean repository with eight native macOS destinations, auditable local engines, a Trash-only action boundary, read-only CLI, static site, and complete verification evidence.
@@ -12,7 +15,7 @@
 
 ## Global Constraints
 
-- Work only in `/Users/ahmetbasbunar/Developer/Website/products/coretend/rebuild/` after creating it empty; keep `app/` and its pre-existing untracked paths untouched.
+- Work only in `<historical-workspace>/rebuild/` after creating it empty; keep `app/` and its pre-existing untracked paths untouched.
 - Do not copy/import Swift, assets, generated artifacts, or git history from `app/`; use documents and observable contracts as reference.
 - No test may enumerate, read, write, move, or remove real user home, CoreTend store, or macOS Trash; every mutation uses a unique temporary fixture root and fake Trash adapter.
 - Production file operation is `FileManager.trashItem` only; no permanent deletion fallback, shell deletion, privileged helper, schedule, or cleanup-on-deinit.

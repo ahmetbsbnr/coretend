@@ -1,5 +1,9 @@
 # CONTINUATION
 
+> Historical snapshot. For the current worktree, use [the handoff](../docs/PASSATION.md)
+> and [the prioritized backlog](../docs/TODO.md). Counts, release claims and next
+> actions below are not current verification evidence.
+
 ## Refonte commerciale complète du site — 2026-07-27
 
 Après retour visuel explicite, la direction précédente a été remplacée avant

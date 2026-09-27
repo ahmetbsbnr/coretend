@@ -10,7 +10,7 @@ through this — it is the only place that decides a path is safe to touch.
 1. Rejects empty/relative paths.
 2. Rejects `/` itself and every hard-coded `protectedRoots` entry
    (`/System`, `/bin`, `/sbin`, `/usr/bin`, `/usr/sbin`, `/usr/lib`,
-   `/usr/libexec`, `/usr/share`, `/private/var/db`, `/Library/Apple`,
+   `/usr/libexec`, `/usr/share`, `/private/var/db`, `/private/etc`, `/Library/Apple`,
    `/Volumes/Recovery`) — prefix-matched on path-component boundaries
    (`isPath(_:under:)`, so `/a/bc` does not match root `/a/b`).
 3. Rejects the user's home directory itself (never auto-select `~`
@@ -42,7 +42,11 @@ Central approve + execute point. Re-validates a path immediately before
 acting (not just at review time — the filesystem may have changed). It emits
 structured approved/executed/skipped/error events through `SafetyAuditSink`.
 Only produces `.moveToTrash` operations — CoreTend's engines never call a
-permanent-delete API directly; see
+permanent-delete API directly. A Trash error retains the source and returns
+`.trashFailed` in ExecutionResult.skipped, with an error audit event. Missing
+files still return `.fileVanished`; validation refusals emit skipped. The internal
+test initializer injects a fixture mover so tests never use the real Trash.
+Path revalidation reduces but does not eliminate filesystem TOCTOU races. See
 [RESTORE.md](RESTORE.md).
 
 ## Extending

@@ -1,5 +1,9 @@
 # CoreTend Roadmap
 
+> Historical snapshot. For the current worktree, use [the handoff](../docs/PASSATION.md)
+> and [the prioritized backlog](../docs/TODO.md). Counts, release claims and next
+> actions below are not current verification evidence.
+
 ## Current state
 
 CoreTend 1.0.0 is shipped: stable, Developer ID signed, Apple-notarized,

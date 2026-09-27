@@ -1,5 +1,7 @@
 # docs — the decision documents
 
+Current repository recovery: [handoff](PASSATION.md) · [priorities](TODO.md).
+
 Two kinds of file live in this repository, and they are not edited the same
 way. **Decided** documents are written by a person on purpose. **Derived** ones
 are generated from the source and fail a gate when they stop describing it —

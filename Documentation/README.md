@@ -1,5 +1,7 @@
 # CoreTend documentation
 
+Current repository recovery: [handoff](../docs/PASSATION.md) · [priorities](../docs/TODO.md).
+
 This index names the maintained documents. Historical audits and retired
 feature decisions live under `Documentation/Archive/` and are not product
 claims.

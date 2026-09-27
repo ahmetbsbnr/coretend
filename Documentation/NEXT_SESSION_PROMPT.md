@@ -1,4 +1,8 @@
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
+
+> Historical snapshot. For the current worktree, use [the handoff](../docs/PASSATION.md)
+> and [the prioritized backlog](../docs/TODO.md). Counts, release claims and next
+> actions below are not current verification evidence.
 # Next Session Prompt
 
 ## Immediate resume command

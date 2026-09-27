@@ -1,5 +1,9 @@
 # Product Debt — sessions 1-3
 
+> Historical snapshot. For the current worktree, use [the handoff](../docs/PASSATION.md)
+> and [the prioritized backlog](../docs/TODO.md). Counts, release claims and next
+> actions below are not current verification evidence.
+
 Partial features, missing states, UX gaps, trust gaps. Not code architecture
 debt (see `TECHNICAL_DEBT.md`) — this is what a real user would notice or
 be blocked by.

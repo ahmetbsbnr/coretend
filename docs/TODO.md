@@ -1,53 +1,79 @@
-# TODO — CoreTend
+# TODO — CoreTend current worktree
 
-CoreTend 1.0.0 shipped on 2026-09-03. It is Developer ID signed,
-Apple-notarized, stapled, Minisign-signed, and published as a stable GitHub
-release. Core functionality is complete; 342 Swift tests pass.
+Priority source for in-place recovery, 2026-09-27. See [PASSATION](PASSATION.md)
+and [milestones](../Documentation/Reconstruction/RECOVERY_PLAN.md).
+Historical release counts and greenfield task lists are not current acceptance.
 
-## Release follow-up
+## P0 — Blocking / broken
 
-Completed 2026-09-04 by maintainer verification: interactive VoiceOver,
-keyboard traversal, focus visibility, Dynamic Type, second-Mac/different-macOS
-compatibility, and 44-frame native FR/EN × light/dark × every-module visual
-matrix. See `Documentation/HUMAN_QA_REPORT.md`.
+- No unresolved P0 reproduced in the reviewed safety/persistence scope. This is
+  not a complete-product security certification.
 
-Release-workflow provenance plumbing is complete for the next release:
-`.github/workflows/release.yml` now uses the dedicated signing Mac and applies
-Developer ID signing, notarization, stapling, SHA-256, SLSA attestation and
-Minisign to the same final bytes. A retrospective SLSA attestation for 1.0.0
-would still be false and will not be created.
+## P1 — Required for current milestone
+
+- Include approval refusals in cleanup outcome counts across Cleanup, Applications,
+  Leftovers, Duplicates and PrivacyCleaner; handle SpaceLens refusal explicitly.
+  Current `try? await center.approve` drops them before ExecutionOutcome. Add a
+  regression where a selected path disappears before approval; show a failure,
+  not an apparently successful empty batch.
+- Make unavailable/volatile persistence visible from AppEnvironment through
+  Settings/SafetyLog and mutation screens. Current optional Store / :memory:
+  fallback and try? reads can hide degraded audit availability. Requires fixture
+  tests for failed open/read/write, then native UI acceptance; do not silently
+  change audit-sink failure policy.
+- Run native CoreTendUITests separately with an isolated app/store/preferences:
+  Scripts/test.sh disables XCTest. Validate all eight destinations, onboarding,
+  settings, confirmations and failure outcomes in EN/FR with keyboard and VoiceOver.
+- Verify distribution/package compatibility independently from source tests before
+  any release-readiness claim. Do not alter published-release.json from doc dates.
+
+## P2 — Important improvements
+
+- Review Swift 6.4 warnings from the explicit swift-testing dependency while
+  preserving Swift 6.0/macOS 14 support; choose toolchain/dependency strategy with
+  a compatibility run, not a blind package removal.
+- Re-run website Playwright/Axe/visual gates using existing pinned tooling; static
+  Python checks cannot establish rendered accessibility or interaction.
+- Reconcile remaining historical state JSON/feature assertions through their
+  generators and evidence inputs. Never rewrite release provenance as source state.
+- Review error presentation for Store activity/settings reads after database errors
+  are propagated; distinguish empty history from failed reads.
+- Localize persisted activity summaries using message keys/arguments (currently
+  English sentences); migration/compatibility design required before schema edits.
+
+## P3 — Nice to have
+
+- Additional locales after EN/FR acceptance.
+- Shortcuts/read-only automation beyond existing CLI rule/path inspection.
+
+## Technical debt
+
+- Filesystem path validation is not an atomic identity-bound OS move; document and
+  evaluate TOCTOU limits before promising swap-proof operations.
+- Audit sink counts failed writes but remains non-throwing; optional store can
+  remove even that visibility. Track as P1, not as guaranteed durability.
+- PlaceholderView appears unreferenced; leave it until UI contract review confirms
+  removal scope. No broad dead-code deletion during safety repair.
+- Safety failures remain in ExecutionResult.skipped for caller compatibility;
+  distinct error case/audit stage retains cause without changing six UI flows.
+
+## Completed / verified
+
+- Independently revalidated existing Trash-only and SQLite read-error repairs:
+  69 focused tests and 390 full Swift Testing tests pass on 2026-09-27.
+- SQLite binding errors now prevent execution and finalize the statement; excess
+  parameter regression reproduced before fix and passes after it.
+- Repository doctor, SPDX, site build, first-paint/redirect contracts and 14 release
+  metadata tests pass. Native UI and release artifact acceptance remain separate.
+
+- Inventory of SwiftPM modules, six mutation entry points, SQLite migration path,
+  CLI, static site and CI; recovery architecture/plan written.
+- Initial repository-doctor executed; private-path failure identified in an old
+  tracked greenfield plan. Personal workspace prefix removed without changing scope.
 
 ## Deliberately deferred product scope
 
-- Additional locales beyond English and French.
-- Browser history/cookie deletion; cache-only cleaning avoids live-profile DB
-  corruption.
-- Dedicated safe engines for iOS Simulators, emptying Trash, Mail attachments,
-  and broken LaunchAgents. Never implement these as blind file rules.
-- Possible privileged helper and Mac App Store edition. Neither is required by
-  current features or promised to users.
-
-## Future product ideas — not shipped, not promised
-
-These are recorded proposals only. They require a separate product and safety
-review before any implementation:
-
-- Developer cleanup: Xcode DerivedData and iOS Simulator caches, with explicit
-  scope and confirmation for every location.
-- Universal-binary size analysis: report removable Intel slices first; never
-  alter an app without signature-aware validation and a reversible path.
-- Complete app uninstall: discover related support files with a reviewed,
-  app-specific allowlist rather than broad `~/Library` deletion.
-- Expanded native security signals beyond Integrity's current read-only scope.
-- Background-item manager: list LaunchAgents, LaunchDaemons and login items;
-  any disable action would need explicit review and rollback.
-- Sensitive-metadata cleaner: EXIF/device/date inspection and opt-in removal.
-- Notification Center widget showing free space and linking to the main app.
-- Optional CLI destructive workflows remain deferred; `coretend-cli` now ships
-  read-only rule/path inspection with no filesystem mutation.
-- Shortcuts actions for inspect/report workflows, with confirmation before any
-  destructive action.
-
-Historical TODOs live under `Documentation/Archive/` and
-`Documentation/Audits/`. `Documentation/PROJECT_STATE.json` is current machine-
-readable state; `Documentation/RELEASE_STATE.md` carries release evidence.
+No blind Simulator/Trash/Mail/LaunchAgent cleanup, browser history/cookie deletion,
+privileged helper, automatic destructive CLI, malware engine, telemetry or accounts.
+Mac App Store is a separate product/distribution decision. Existing app-update
+handoffs are not a promise to download/install third-party applications.

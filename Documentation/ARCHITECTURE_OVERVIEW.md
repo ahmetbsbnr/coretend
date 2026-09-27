@@ -13,13 +13,12 @@ SafetyCore  (no deps)
 ScanCore   FileRules ---> (also depends on ScanCore)
    ^
    |
-CoreTendApp (executable) ---> also depends on: DesignSystem, Persistence,
+CoreTendApp (library target) ---> also depends on: DesignSystem, Persistence,
                               SystemMetrics, AppDiscovery, IntegrityCore
 ```
 
-`SafetyCore` sits at the bottom deliberately — nothing above it can bypass
-path validation, because everything above it depends on it, never the
-other way around.
+`SafetyCore` sits at the bottom deliberately. Callers must route cleanup through
+its validated operations; dependency direction alone cannot enforce that rule.
 
 ## Walkthrough: a Cleanup scan-to-delete run
 
@@ -38,7 +37,7 @@ other way around.
    — see [SAFETYCORE.md](SAFETYCORE.md) — and produces an
    `ApprovedFileOperation`, the only type the actual trash-move call
    accepts.
-6. The result (files actually moved and bytes reclaimed) is recorded via
+6. The result (files actually moved and their logical bytes (not freed disk space)) is recorded via
    **Persistence.Store.recordActivity** — see [PERSISTENCE.md](PERSISTENCE.md).
 7. UI shows the done screen; user can restore from Trash — see
    [RESTORE.md](RESTORE.md).

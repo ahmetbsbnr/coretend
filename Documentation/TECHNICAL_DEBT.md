@@ -1,5 +1,9 @@
 # Technical Debt — consolidated, sessions 1-3
 
+> Historical snapshot. For the current worktree, use [the handoff](../docs/PASSATION.md)
+> and [the prioritized backlog](../docs/TODO.md). Counts, release claims and next
+> actions below are not current verification evidence.
+
 Real gaps only, each with evidence. Severity: critical/high/medium/low.
 Effort: XS/S/M/L/XL (relative, no hours).
 

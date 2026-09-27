@@ -28,6 +28,7 @@ public enum SafetyError: Error, Equatable, Sendable {
     case outsideAllowedRoots
     case symlinkTraversal(String)
     case fileVanished
+    case trashFailed
 }
 
 /// Validates paths against protected roots and per-operation allowlists.
@@ -221,10 +222,22 @@ public actor SafetyCenter {
     private let validator: PathValidator
     private let fileManager = FileManager.default
     private let sink: SafetyAuditSink?
+    private let moveToTrash: @Sendable (URL) throws -> Void
 
     public init(validator: PathValidator, sink: SafetyAuditSink? = nil) {
         self.validator = validator
         self.sink = sink
+        self.moveToTrash = { url in
+            try FileManager.default.trashItem(at: url, resultingItemURL: nil)
+        }
+    }
+
+    /// Internal seam for fixture-only tests; production always uses macOS Trash.
+    init(validator: PathValidator, sink: SafetyAuditSink? = nil,
+         moveToTrash: @escaping @Sendable (URL) throws -> Void) {
+        self.validator = validator
+        self.sink = sink
+        self.moveToTrash = moveToTrash
     }
 
     /// Produces an approved operation, or throws if the path fails validation.
@@ -263,23 +276,14 @@ public actor SafetyCenter {
                 let url = try validator.validate(op.url)
                 guard fileManager.fileExists(atPath: url.path) else { throw .fileVanished }
                 do {
-                    try fileManager.trashItem(at: url, resultingItemURL: nil)
+                    try moveToTrash(url)
                 } catch {
-                    if Self.isTemporaryPath(url) {
-                        do {
-                            try fileManager.removeItem(at: url)
-                        } catch {
-                            skipped.append((op, .fileVanished))
-                            await emit(.error, operationID: op.id, path: url.path, ruleID: op.ruleID, risk: op.risk,
-                                       size: op.logicalSize, result: "temporary remove failed")
-                            continue
-                        }
-                    } else {
-                        skipped.append((op, .fileVanished))
-                        await emit(.error, operationID: op.id, path: url.path, ruleID: op.ruleID, risk: op.risk,
-                                   size: op.logicalSize, result: "trashItem failed")
-                        continue
-                    }
+                    // Trash is the only permitted mutation. Failure must leave the
+                    // source intact, including files under temporary directories.
+                    skipped.append((op, .trashFailed))
+                    await emit(.error, operationID: op.id, path: url.path, ruleID: op.ruleID, risk: op.risk,
+                               size: op.logicalSize, result: "trashItem failed")
+                    continue
                 }
                 await emit(.executed, operationID: op.id, path: url.path, ruleID: op.ruleID,
                            risk: op.risk, size: op.logicalSize, result: "moved to trash")
@@ -293,13 +297,4 @@ public actor SafetyCenter {
         return ExecutionResult(executed: executed, skipped: skipped)
     }
 
-    private static func isTemporaryPath(_ url: URL) -> Bool {
-        let path = url.standardizedFileURL.path
-        let temporaryRoots = [
-            URL(fileURLWithPath: NSTemporaryDirectory()).standardizedFileURL.path,
-            "/private/tmp",
-            "/tmp",
-        ]
-        return temporaryRoots.contains { PathValidator.isPath(path, under: $0) }
-    }
 }

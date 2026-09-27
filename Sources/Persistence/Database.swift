@@ -56,7 +56,12 @@ final class Database {
         let statement = try prepare(sql, bindings)
         defer { sqlite3_finalize(statement) }
         var rows: [[String: Any]] = []
-        while sqlite3_step(statement) == SQLITE_ROW {
+        while true {
+            let rc = sqlite3_step(statement)
+            if rc == SQLITE_DONE { break }
+            guard rc == SQLITE_ROW else {
+                throw DatabaseError.stepFailed(String(cString: sqlite3_errmsg(handle)))
+            }
             var row: [String: Any] = [:]
             for i in 0..<sqlite3_column_count(statement) {
                 let name = String(cString: sqlite3_column_name(statement, i))
@@ -96,19 +101,25 @@ final class Database {
         }
         for (index, value) in bindings.enumerated() {
             let position = Int32(index + 1)
+            let result: Int32
             switch value {
-            case let v as Int64: sqlite3_bind_int64(statement, position, v)
-            case let v as Int: sqlite3_bind_int64(statement, position, Int64(v))
-            case let v as Double: sqlite3_bind_double(statement, position, v)
-            case let v as String: sqlite3_bind_text(statement, position, v, -1, SQLITE_TRANSIENT)
+            case let v as Int64: result = sqlite3_bind_int64(statement, position, v)
+            case let v as Int: result = sqlite3_bind_int64(statement, position, Int64(v))
+            case let v as Double: result = sqlite3_bind_double(statement, position, v)
+            case let v as String: result = sqlite3_bind_text(statement, position, v, -1, SQLITE_TRANSIENT)
             case let v as Data:
-                _ = v.withUnsafeBytes {
+                result = v.withUnsafeBytes {
                     sqlite3_bind_blob(statement, position, $0.baseAddress, Int32(v.count), SQLITE_TRANSIENT)
                 }
-            case nil: sqlite3_bind_null(statement, position)
+            case nil: result = sqlite3_bind_null(statement, position)
             default:
                 sqlite3_finalize(statement)
                 throw DatabaseError.prepareFailed("unsupported binding type", sql: sql)
+            }
+            guard result == SQLITE_OK else {
+                let message = String(cString: sqlite3_errmsg(handle))
+                sqlite3_finalize(statement)
+                throw DatabaseError.prepareFailed(message, sql: sql)
             }
         }
         return statement

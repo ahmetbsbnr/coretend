@@ -24,9 +24,12 @@ Run with `Scripts/test.sh` (never plain `swift test` — see
   `CoreTendPerformanceTests` and `CoreTendUITests` cover cross-module,
   accessibility, performance and packaged-application contracts.
 
-The rc.5 candidate must not regress below the recorded 338 Swift tests. Run
-`Scripts/test.sh`, Debug/Release builds and the Xcode/package gates before
-committing or packaging.
+Current results are in [the handoff](../docs/PASSATION.md). Historical counts
+are not a minimum baseline. Scripts/test.sh runs Swift Testing with XCTest
+**disabled**: CoreTendUITests requires a separate Xcode UI run. SafetyCenter
+execution tests use an internal fixture Trash adapter, including forced failure
+and byte-preservation assertions. DatabaseTests forces a SQLite step error after
+a successful row to reject silently truncated query results.
 
 ## Writing new tests
 
