@@ -9,12 +9,11 @@ en fixture, invariants et particularités de l’hôte :
 
 - **Mis à jour :** 27-09-2026, fin de session.
 - **Phase :** P2 — Fondations Serre → [`P2-fondations-interaction.md`](Documentation/Passation/P2-fondations-interaction.md)
-- **Lot courant :** 2.4a (barre latérale, navigation « pousse ») **livré, recette en attente** (`8a3fb5f`) ;
-  prochain : 2.4b (recherche ⌘K).
+- **Lot courant :** 2.4b (recherche ⌘K) **livré, recette en attente** (`05f810a`) ; prochain : 2.5 (site en Serre), puis G2.
 - **Branche :** `next`, en avance sur `origin/next` (non poussé ; push sur demande du mainteneur).
 - **Registre :** Must `VÉRIFIÉ` **2 / 78** (Should 0 / 11). Source : `Documentation/Traceability.csv`.
 - **Apparence :** Serre en place : couleurs, typo, logo, icônes, composants, barre latérale et
-  navigation animée (2.1–2.4a) ; recherche animée : lot 2.4b.
+  navigation et recherche animées (2.1–2.4b) ; site : lot 2.5.
 
 ## Prochaine action
 
@@ -23,7 +22,7 @@ en fixture, invariants et particularités de l’hôte :
 
 ## En attente du mainteneur
 
-- Recette 2.4a : barre latérale Serre, marqueur feuille, vrille, vue qui pousse (clic, ⌘1…⌘8, ↑/↓).
+- Recette 2.4b : recherche ⌘K (naissance depuis le bouton, racine, éclosion, pousse fanée, fermeture au clic dehors).
 - Optionnel : publier 1.0.3 depuis `fix/1.x-trash-sqlite` (P5, piste 1.x).
 
 ## Phases

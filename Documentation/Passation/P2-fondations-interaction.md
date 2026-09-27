@@ -12,8 +12,8 @@
 | 2.1 | Jetons Serre (couleurs Nuit/Jour, typographie, motion, formes) + tests | Accepté (27-09) |
 | 2.2 | Logo Serre et germination ; jeu d’icônes ; feuilles de risque | Accepté (27-09) |
 | 2.3 | Composants et états (guide § 7) + gate `check_architecture.py` | Accepté (27-09) |
-| 2.4a | Coquille : barre latérale Serre, logo, marqueur feuille, vrille, transition « pousse », clavier | Livré — recette en attente (`8a3fb5f`) |
-| 2.4b | Recherche ⌘K qui naît du bouton : racine sous le champ, résultats qui éclosent, pousse fanée | À faire |
+| 2.4a | Coquille : barre latérale Serre, logo, marqueur feuille, vrille, transition « pousse », clavier | Accepté (27-09) |
+| 2.4b | Recherche ⌘K qui naît du bouton : racine sous le champ, résultats qui éclosent, pousse fanée ; fermeture au clic hors de la recherche | Livré — recette en attente (`05f810a`) |
 | 2.5 | Site en Serre : jetons exportés, logo, navigation, racine au défilement (CSS seul) | À faire |
 
 ## Journal
@@ -108,16 +108,38 @@
   la barre latérale. Échap non qualifiable sur cet hôte.
 - **Recette 2.4a (mainteneur) :** changer de destination (clic, ⌘1…⌘8, ↑/↓, palette), regarder
   marqueur, vrille et vue qui pousse ; clair/sombre ; Réduire les animations.
+- **Recette 2.4a — acceptée (27-09) :** « validé, aussi ajoute le fait de sortir de la recherche
+  commandK avec un clique de souris hors fenetre de recherche etc ». Exigence ajoutée à 2.4b.
+
+### 27-09-2026 — lot 2.4b, recherche ⌘K
+
+- **Fait :** `05f810a` — la palette n’est plus une feuille modale : `SearchLayer` la dessine au-dessus
+  de la fenêtre sur un `SerreScrim` ; **clic sur le fond**, Échap, ⌘K ou choix d’un résultat la
+  ferment (exigence du mainteneur à la recette 2.4a). La boîte naît du bouton Rechercher
+  (`matchedGeometryEffect`, `standard`), son contenu apparaît ensuite ; `SearchRoot` sous le
+  champ (longueur liée à la saisie, pleine à 14 caractères, radicelles) ; résultats qui éclosent
+  (35 ms, 8 premiers) ; pousse fanée sans résultat. Logique clavier inchangée ; `close` remplace
+  `dismiss` ; `RootSheet.commands` supprimé.
+- **Vérifié :** test `SearchRoot` (monotone, vide sans saisie, pleine à longueur). App packagée en
+  fixture pilotée : ⌘K capturé image par image (boîte en vol depuis le bouton, résultats qui
+  éclosent), « per » filtre et fait pousser la racine, « perzzz » montre la pousse fanée, **clic
+  souris synthétique hors de la boîte → fermée**. `make qualify` PASS. Captures palette FR/EN
+  clair/sombre.
+- **Limites :** la bande de la barre de titre n’est pas assombrie ; un clic à cet endroit déplace
+  la fenêtre au lieu de fermer. Échap non qualifiable sur cet hôte. Le focus clavier n’est pas
+  rendu explicitement au bouton Rechercher à la fermeture.
+- **Recette 2.4b (mainteneur) :** ⌘K ou bouton Rechercher, taper, choisir, fermer au clic dehors.
 
 ## Point d’arrêt
 
-- 2.4a livré, recette du mainteneur en attente.
-- Prochain lot **2.4b — recherche ⌘K** : remplacer la feuille modale par une couche au-dessus de la
-  fenêtre qui **naît du bouton Rechercher** de la barre latérale (`matchedGeometryEffect` du
-  bouton à la boîte, `standard`) ; **racine** tracée sous le champ, longueur liée à la saisie ;
-  résultats qui **éclosent** (`stagger` 35 ms, 8 max, `sprout`) ; **pousse fanée** sans résultat ;
-  fermeture : clic sur le fond, Échap, choix ; focus rendu au bouton ; Reduce Motion : apparition
-  immédiate. Garder la logique de `CommandPaletteView` (flèches, Retour, sélection) et ses tests.
+- 2.4b livré, recette du mainteneur en attente. Après elle, **2.4 est complet**.
+- Prochain lot **2.5 — site en Serre** (guide § 9) : `Scripts/build_site.py` et `Website/site.css`
+  sur les jetons exportés (déjà Serre), polices système Iowan Old Style / Avenir Next, logo qui
+  germe en CSS (une fois), en-tête et navigation avec nervure au survol, racine décorative qui
+  pousse au défilement et sections qui poussent à l’entrée (`animation-timeline`, sous
+  `@supports`, `aria-hidden`), contrat `prefers-reduced-motion`, **sans JavaScript** (CSP
+  `script-src 'none'`). Vérifier : `make build-site site-check`, Chrome sans interface à 1280 et
+  390 px, clair/sombre, reduced-motion. Puis **gate G2** (recette de toute la P2).
 
 ## Problèmes ouverts
 
