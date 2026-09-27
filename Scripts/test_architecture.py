@@ -35,6 +35,28 @@ class ArchitectureContractTests(unittest.TestCase):
         package["platforms"][0]["version"] = "13.0"
         self.assertIn("macOS deployment target must be at least 14.0", check_architecture.validate(package))
 
+    def test_design_rules_reject_generic_styling_outside_design_system(self):
+        bad = {
+            "Sources/CoreTendApp/A.swift": "Button {} label: { Text(\"x\") }.buttonStyle(.plain)\n"
+                                             ".foregroundStyle(Color.blue)\n"
+                                             "let c = Color(red: 0.1, green: 0.2, blue: 0.3)\n"
+                                             ".foregroundStyle(.orange)\n"
+                                             "withAnimation(.linear.repeatForever()) {}\n",
+        }
+        errors = check_architecture.design_violations(bad)
+        self.assertEqual(len(errors), 5, errors)
+        self.assertTrue(errors[0].startswith("Sources/CoreTendApp/A.swift:1:"))
+
+    def test_design_rules_allow_the_design_system_palette_and_comments(self):
+        fine = {
+            "Sources/DesignSystem/Palette.swift": "Color(red: 1, green: 1, blue: 1)\n.buttonStyle(.plain)\n",
+            "Sources/CoreTendApp/B.swift": "// .buttonStyle(.plain) is forbidden\n"
+                                            ".foregroundStyle(Palette.accent.color)\n"
+                                            "case .red: break\n"
+                                            "RGB(red: 0.1, green: 0.2, blue: 0.3)\n",
+        }
+        self.assertEqual(check_architecture.design_violations(fine), [])
+
     def test_rejects_write_capable_dependencies_in_scancore(self):
         package = package_fixture()
         package["targets"][1]["dependencies"].append({"byName": ["SafetyCore", None]})

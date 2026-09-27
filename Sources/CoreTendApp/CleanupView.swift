@@ -56,12 +56,8 @@ struct CleanupView: View {
                                 .padding(.horizontal, 8).padding(.vertical, 4)
                                 .background(Palette.raisedSurface.color, in: Capsule())
                         }
-                        .contentShape(Rectangle())
-                        .padding(12)
-                        .background(selectedRule == rule.id ? Palette.raisedSurface.color : Palette.surface.color,
-                                    in: RoundedRectangle(cornerRadius: 10))
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.serre(.row(selected: selectedRule == rule.id)))
                     .disabled(scanning || actionBusy || actionReview != nil)
                     .accessibilityAddTraits(selectedRule == rule.id ? .isSelected : [])
                 }

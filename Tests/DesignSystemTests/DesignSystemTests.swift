@@ -138,6 +138,10 @@ final class SerreRenderSheet: XCTestCase {
         guard let folder = ProcessInfo.processInfo.environment["CORETEND_RENDER_DIR"] else {
             throw XCTSkip("set CORETEND_RENDER_DIR to render the sheet")
         }
+        let kinds: [SerreButtonKind] = [.primary, .secondary, .destructive, .row(selected: false), .row(selected: true), .icon]
+        // rest, hover, pressed, focused, disabled
+        let states = [SerreControlState(), SerreControlState(hovered: true), SerreControlState(hovered: true, pressed: true),
+                      SerreControlState(focused: true), SerreControlState(enabled: false)]
         let steps: [SerreLogoState] = [
             .seed,
             SerreLogoState(seedDrop: 0, seedScale: 1, stem: 0.5, firstLeaf: 0, secondLeaf: 0),
@@ -150,6 +154,21 @@ final class SerreRenderSheet: XCTestCase {
                 HStack(spacing: 22) { ForEach(Array(SerreGlyph.allCases.enumerated()), id: \.offset) { SerreIcon($0.element, size: 18) } }
                 HStack(spacing: 18) { ForEach(RiskLevel.allCases, id: \.self) { RiskLeaf($0, size: 28) } }
                 HStack(spacing: 24) { ForEach(Array(steps.enumerated()), id: \.offset) { SerreLogo(size: 96, frozenAt: $0.element) } }
+                ForEach(Array(kinds.enumerated()), id: \.offset) { _, kind in
+                    HStack(spacing: 14) {
+                        ForEach(Array(states.enumerated()), id: \.offset) { _, state in
+                            SerreButtonChrome(kind: kind, state: state) {
+                                Label { Text("Analyser") } icon: { SerreIcon(.search, size: 15) }
+                            }
+                            .frame(width: 150)
+                        }
+                    }
+                }
+                HStack(alignment: .top, spacing: 14) {
+                    SerreBanner(.partial, title: "3 éléments illisibles", message: "Leur absence ne prouve rien.")
+                    SerreBanner(.error, title: "Déplacement impossible", message: "Le fichier est resté en place.")
+                }
+                SerreParcel { Text("Parcelle").font(CoreTendTypography.sectionTitle) }
             }
             .padding(28)
             .foregroundStyle(Palette.ink.color)

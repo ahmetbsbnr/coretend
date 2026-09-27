@@ -2,8 +2,10 @@
 """Check architecture constraints from SwiftPM's evaluated package graph."""
 
 import json
+import re
 import subprocess
 import sys
+from pathlib import Path
 
 
 def dependency_names(target):
@@ -66,6 +68,35 @@ def validate(package):
     return errors
 
 
+# Serre UI guide (Documentation/Design/UI-guide.md §§ 2, 7, 8, 11): views outside
+# Sources/DesignSystem use its components and tokens instead of these.
+DESIGN_RULES = (
+    (re.compile(r"\.buttonStyle\(\s*(?:\.plain|PlainButtonStyle\(\))\s*\)"),
+     "unstyled plain button (use a Serre button style)"),
+    (re.compile(r"\bColor\s*\(\s*(?:red|hue|white|\.sRGB|\.displayP3)\b"),
+     "literal colour (use a Palette role)"),
+    (re.compile(r"(?:\bColor\.|[(,:]\s*\.)(?:blue|red|green|orange|yellow|purple|pink|teal|cyan|indigo|mint|brown)\b(?!\s*[:=])"),
+     "system colour (use a Palette role)"),
+    (re.compile(r"\brepeatForever\b"),
+     "looping animation outside DesignSystem (no loop at rest)"),
+)
+
+
+def design_violations(sources):
+    """sources: {relative path: text}. Returns messages for files outside Sources/DesignSystem."""
+    errors = []
+    for path, text in sorted(sources.items()):
+        if path.startswith("Sources/DesignSystem/"):
+            continue
+        for number, line in enumerate(text.splitlines(), start=1):
+            if line.lstrip().startswith("//"):
+                continue
+            for pattern, message in DESIGN_RULES:
+                if pattern.search(line):
+                    errors.append(f"{path}:{number}: {message}")
+    return errors
+
+
 def main():
     try:
         result = subprocess.run(
@@ -79,11 +110,14 @@ def main():
         print(f"Could not inspect SwiftPM package graph: {error}", file=sys.stderr)
         return 1
 
-    errors = validate(package)
+    root = Path(__file__).resolve().parents[1]
+    sources = {path.relative_to(root).as_posix(): path.read_text(encoding="utf-8")
+               for path in (root / "Sources").rglob("*.swift")}
+    errors = validate(package) + design_violations(sources)
     if errors:
         print("\n".join(errors), file=sys.stderr)
         return 1
-    print("Architecture audit passed: Swift 6+, macOS 14+, no external SwiftPM packages, ScanCore isolated from action and persistence layers.")
+    print("Architecture audit passed: Swift 6+, macOS 14+, no external SwiftPM packages, ScanCore isolated from action and persistence layers, views use the Serre design system.")
     return 0
 
 

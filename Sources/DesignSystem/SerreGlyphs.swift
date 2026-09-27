@@ -109,6 +109,8 @@ public struct SerreGlyphShape: Shape {
 public struct SerreIcon: View {
     let glyph: SerreGlyph
     let size: CGFloat
+    @Environment(\.serreHover) private var hovered
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public init(_ glyph: SerreGlyph, size: CGFloat = 18) {
         self.glyph = glyph
@@ -119,6 +121,8 @@ public struct SerreIcon: View {
         SerreGlyphShape(glyph: glyph)
             .stroke(style: StrokeStyle(lineWidth: 1.6 * size / 24, lineCap: .round, lineJoin: .round))
             .frame(width: size, height: size)
+            .rotationEffect(.degrees(hovered ? -6 : 0))
+            .animation(MotionToken.quick.animation(.sprout, reduceMotion: reduceMotion), value: hovered)
             .accessibilityHidden(true)
     }
 }
