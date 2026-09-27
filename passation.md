@@ -107,7 +107,7 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 
 ## Reprise Musts — 27-09-2026
 
-État à jour sur la branche `feat/reconstruction-open-musts`, depuis `3bd0298`; changements de cette reprise présents localement et pas encore commités.
+État au début de cette reprise (avant commits `8918503` et suivants), branche `feat/reconstruction-open-musts` depuis `3bd0298`; les statuts et indications de publication du bloc ci-dessous sont historiques.
 
 - CLI : `--lang en|fr` avant commande, défaut anglais. Aide, erreurs et texte scan localisés; JSON et codes de cause stables. Parseur refuse langue invalide/mal placée et arguments surnuméraires de `help`/`version`. Annulation SIGINT vérifiée avant et après fin du flux pour garantir code 130 même si annulation ferme le stream sans événement suivant.
 - Signature : Réglages inspecte localement la signature du bundle courant via Security.framework, affiche état/identifiant/équipe disponibles et limites de ce signal en EN/FR.
@@ -118,7 +118,7 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 - Gate après reprise : `make qualify` PASS; builds Release `CoreTendApp` et `CoreTendCLI` PASS; matrice subprocess/SIGINT Release PASS; traceability, safety audit, désinstallateur fixture et `git diff --check` PASS. App runtime isolation smoke debug PASS sous HOME/CFFIXED_USER_HOME temporaires. Aucun HOME/store réel touché.
 - Registre : 91 lignes; parmi 78 Must, 18 `EN_COURS`, 60 `PARTIEL`, 0 `À_CONSTRUIRE`, 0 `VÉRIFIÉ`. Estimation qualitative courante ≈42 % des Musts / ≈40 % du registre total. Aucun Must n’est qualifié de bout en bout.
 - Restent : parcours SwiftUI/VoiceOver/focus, vrai Trash/UI d’action, matrice autre macOS/hôte, release/distribution GUI/sig/notarisation, compatibilité et preuve NFR-14; FR-10/FDA exhaustive; attribution prudente Apps et quelques écarts `EN_COURS`. Voir `Documentation/Traceability.csv` pour owners/écarts détaillés.
-- Pas de commit de cette tranche encore, pas de push/merge/tag/publication. Préserver `Documentation/Project/Remaining-musts-plan.md` local, `.superpowers/sdd/Remaining-musts-plan/`, artefacts de paquet existants et ce fichier.
+- À cette étape historique : pas encore de commit/push/PR. Aucun merge/tag/publication. Préserver `Documentation/Project/Remaining-musts-plan.md` local, `.superpowers/sdd/Remaining-musts-plan/`, artefacts de paquet existants et ce fichier.
 
 ### NFR-10 — gate d’architecture SwiftPM — 27-09-2026
 
@@ -144,3 +144,10 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 - CLI : `version` localise maintenant son statut EN/FR. Test unitaire rouge/vert et subprocess sur binaire réel intégrés au gate. FR-13 reste `PARTIEL`.
 - Traçabilité : chaque Must exige une date ISO valide ancrée en début de preuve et identique à la date `Relevé` de `Progress.md`. Fixtures rejettent date périmée, calendrier invalide et date non ancrée. NFR-13 normalisée.
 - `make qualify` passe après ces changements; `git diff --check` passe. `Documentation/Project/Remaining-musts-plan.md` reste fichier local non suivi à préserver.
+
+
+### État de branche actuel — 27-09-2026
+
+- Commits de reprise : `8918503`, `47ec49e`, `1dec13b`, `f39cc3f`. Branche poussée sur `origin/feat/reconstruction-open-musts`; PR brouillon #55 vers `next`: https://github.com/ahmetbsbnr/coretend/pull/55.
+- CI GitHub `qualify` de PR #55 réussie le 27-09; contrôles Vercel également verts. PR reste ouverte en brouillon. Aucun merge/tag/release/publication.
+- L’unique changement local non suivi `Documentation/Project/Remaining-musts-plan.md` est préservé et absent des commits.
