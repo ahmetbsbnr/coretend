@@ -29,14 +29,14 @@ Après le déplacement du workspace vers `~/Developer/projects`. Chaque pointe s
 | stash « Phase 6 material » sur `develop/v2` | Matériel v2 abandonné | archivé en `refs/archive/2026-09-27/stash/develop-v2-phase6`, stash supprimé |
 | worktrees `next` et `coretend-reconstruction` | Dossiers disparus au déplacement | métadonnées élaguées ; `feat/reconstruction-open-musts` recréé dans `~/Developer/projects/coretend-next` |
 
+Le soir même, sur décision du mainteneur (tout développement directement sur `next`) : `feat/reconstruction-open-musts` (PR #55) a été avancée dans `next` par fast-forward et `feat/access-diagnostics` (PR #54) y a été fusionnée (`0acf44d`). Leurs pointes sont archivées sous `refs/archive/2026-09-27/heads/`, puis les branches locales supprimées. Leurs copies sur `origin` et les PR #54/#55 restent ouvertes tant que `next` n’est pas poussée.
+
 Branches restantes et rôle :
 
 | Branche | Rôle |
 | --- | --- |
 | `main` | 1.x publiée (1.0.2) |
-| `next` | intégration de la reconstruction |
-| `feat/reconstruction-open-musts` | lot courant, PR #55 vers `next` |
-| `fix/1.x-trash-sqlite` (locale) | correctifs de sûreté 1.x, dossier `../coretend` ; release 1.0.3 à décider |
-| `feat/access-diagnostics` | fonction non intégrée (signalement des erreurs d’accès aux dossiers dans Applications, 2 commits au-dessus de `next`) ; à intégrer ou fermer par décision du mainteneur |
+| `next` | seule branche de développement de la reconstruction ; worktree `~/Developer/projects/coretend-next` |
+| `fix/1.x-trash-sqlite` (locale) | correctifs de sûreté 1.x, dossier `~/Developer/projects/coretend` ; release 1.0.3 à décider |
 
 Restaurer : `git branch <nom> refs/archive/2026-09-27/heads/<nom>`.
