@@ -1,0 +1,32 @@
+/* Generated from Sources/DesignSystem/Palette.swift by Scripts/export_design_tokens.py. */
+:root {
+  color-scheme: dark;
+  --ct-canvas: #18263A;
+  --ct-surface: #1D2A3C;
+  --ct-raised-surface: #253348;
+  --ct-separator: #35445A;
+  --ct-ink: #EFF2F4;
+  --ct-secondary-ink: #ABB6C4;
+  --ct-accent: #77C9C0;
+  --ct-on-accent: #18263A;
+  --ct-caution: #E1A071;
+  --ct-danger: #F08A7E;
+  --ct-focus: #77C9C0;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color-scheme: light;
+    --ct-canvas: #EDF0F4;
+    --ct-surface: #F9FAFC;
+    --ct-raised-surface: #FFFFFF;
+    --ct-separator: #D5DCE5;
+    --ct-ink: #1A2638;
+    --ct-secondary-ink: #5F6B7E;
+    --ct-accent: #176C74;
+    --ct-on-accent: #FFFFFF;
+    --ct-caution: #9A5731;
+    --ct-danger: #B83C33;
+    --ct-focus: #176C74;
+  }
+}

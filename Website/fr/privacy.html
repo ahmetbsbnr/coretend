@@ -1,1 +1,44 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="description" content="CoreTend est conçu pour fonctionner localement. Cette reconstruction non publiée n’envoie aucune télémétrie et ne propose ni compte ni synchronisation cloud. Un flux de mise à jour déclaré s’ouvre dans votre navigateur seulement après un clic."><meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; img-src 'self' data:; script-src 'none'; base-uri 'none'; object-src 'none'"><title>Confidentialité dès la conception — CoreTend</title><link rel="stylesheet" href="../site.css"></head><body><a class="skip" href="#main">Aller au contenu</a><header><a class="brand" href="index.html">CoreTend</a><nav aria-label="Navigation principale"><a href="index.html">Accueil</a><a href="features.html">Fonctions</a><a href="privacy.html">Confidentialité</a><a href="support.html">Assistance</a><a href="developer.html">Développement</a></nav><a href="../en/privacy.html">English</a></header><main id="main"><p class="eyebrow">Aperçu local · non publié</p><h1>Confidentialité dès la conception</h1><p>CoreTend est conçu pour fonctionner localement. Cette reconstruction non publiée n’envoie aucune télémétrie et ne propose ni compte ni synchronisation cloud. Un flux de mise à jour déclaré s’ouvre dans votre navigateur seulement après un clic.</p><section class="grid"><article class="card"><h2>Accès aux fichiers</h2><p>L’aperçu analyse uniquement le dossier que vous choisissez. Il lit les métadonnées et le contenu seulement si nécessaire pour comparer exactement les doublons. Une analyse n’écrit jamais dans le dossier choisi.</p></article><article class="card"><h2>Actions et historique</h2><p>Les actions demandent revue et confirmation, revalident chaque cible et utilisent seulement la Corbeille macOS. Favoris et historique récent activé enregistrent localement les chemins et dernières tailles connues; l’historique récent est désactivé par défaut, limité à 100 entrées, et les entrées peuvent être retirées. Événements et mesures Performance manuelles restent locaux; conservation des événements et export complet demandent encore qualification.</p></article></section><p class="notice">Aucun téléchargement ni publication publique disponible.</p></main><footer><p>CoreTend · Reconstruction locale · 2026</p></footer></body></html>
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Comment la reconstruction locale CoreTend sur macOS traite analyses, contenus, chemins enregistrés, historique et actions destructives.">
+  <link rel="canonical" href="privacy.html">
+  <link rel="alternate" hreflang="fr" href="privacy.html">
+  <link rel="alternate" hreflang="en" href="../en/privacy.html">
+  <link rel="alternate" hreflang="x-default" href="../index.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Vos fichiers restent sous votre contrôle — CoreTend">
+  <meta property="og:description" content="Comment la reconstruction locale CoreTend sur macOS traite analyses, contenus, chemins enregistrés, historique et actions destructives.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'">
+  <title>Vos fichiers restent sous votre contrôle — CoreTend</title>
+  <link rel="stylesheet" href="../design-tokens.css">
+  <link rel="stylesheet" href="../site.css">
+  <script src="../site.js" defer></script>
+</head>
+<body class="page-privacy">
+  <a class="skip-link" href="#main">Aller au contenu</a>
+<header class="site-header">
+  <a class="brand" href="index.html" aria-label="CoreTend — Vue d’ensemble">
+    <span class="brand-mark" aria-hidden="true"><i></i></span><span class="brand-name">CoreTend<small>EXPLORATEUR MACOS LOCAL</small></span>
+  </a>
+  <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation"><span class="menu-icon" aria-hidden="true"><i></i><i></i></span><span>Menu</span></button>
+  <nav class="primary-navigation" id="primary-navigation" aria-label="Navigation principale" data-collapsed="false"><a href="index.html">Vue d’ensemble</a><a href="features.html">Fonctionnalités</a><a href="privacy.html" aria-current="page">Confidentialité</a><a href="developer.html">Développeur</a><a href="support.html">Assistance</a></nav>
+  <a class="language-link" href="../en/privacy.html" lang="en" hreflang="en">English<span aria-hidden="true"> ↗</span></a>
+</header>
+  <main id="main" class="page-main">
+  <section class="page-intro section-shell" aria-labelledby="page-title"><p class="eyebrow">Confidentialité et sûreté</p><h1 id="page-title">Vos fichiers restent sous votre contrôle</h1><p class="page-lead">Cette reconstruction n’envoie aucune télémétrie et ne propose ni compte ni synchronisation cloud. L’inspection se limite au dossier choisi ; toute modification suit une revue et une confirmation explicites.</p></section>
+  <section class="page-content section-shell" aria-label="Vos fichiers restent sous votre contrôle"><div class="topic-list"><article class="topic"><h3>Inspection locale</h3><p>Une analyse lit les métadonnées du dossier sélectionné. Le contenu est lu uniquement si nécessaire au calcul d’empreintes comparées pour les doublons exacts. L’analyse n’écrit pas dans l’arborescence inspectée. L’accès dépend du dossier choisi et des permissions macOS.</p></article>
+<article class="topic"><h3>Chemins et historique conservés</h3><p>Les favoris et l’historique récent activé conservent localement les chemins et dernières tailles connues. L’historique récent est désactivé par défaut et limité à 100 entrées. Événements et mesures Performance manuelles restent locaux ; conservation et export complet restent à qualifier.</p></article>
+<article class="topic"><h3>Un déplacement exige votre décision</h3><p>Une candidate n’est jamais retirée du seul fait de sa détection. Vous choisissez les éléments, examinez la proposition, confirmez l’action ; CoreTend revalide ensuite les cibles avant d’utiliser la Corbeille macOS. L’app ne promet pas de retirer les données associées.</p></article>
+<article class="topic"><h3>Limite réseau</h3><p>Cette reconstruction ne comporte ni télémétrie, ni compte, ni synchronisation cloud. Un lien HTTPS de mise à jour déclaré par l’app peut s’ouvrir dans votre navigateur après votre clic ; ce signal ne vérifie pas le flux indépendamment.</p></article></div><aside class="notice" aria-labelledby="notice-title"><span class="notice-symbol" aria-hidden="true">!</span><div><h2 id="notice-title">Avant de partager un diagnostic</h2><p>Les exports et événements peuvent contenir des noms de fichiers ou des chemins. Relisez tout contenu avant partage. N’incluez pas de chemins privés ou de base de données dans un retour public.</p></div></aside></section>
+</main>
+  <footer class="site-footer">
+  <div class="footer-brand"><a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><i></i></span><span class="brand-name">CoreTend<small>EXPLORATEUR MACOS LOCAL</small></span></a><p>Pensé pour le local. Aucune version n’est publiée.</p></div>
+  <div class="footer-nav"><h2>Explorer</h2><nav aria-label="Explorer"><a href="features.html">Fonctionnalités</a><a href="privacy.html">Confidentialité</a><a href="developer.html">Développeur</a><a href="support.html">Assistance</a></nav></div>
+  <p class="footer-meta">© 2026 CoreTend · Reconstruction locale non publiée</p>
+</footer>
+</body>
+</html>
