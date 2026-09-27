@@ -26,7 +26,7 @@ struct CoreTendApp: App {
             Image(systemName: "externaldrive")
                 .accessibilityLabel("CoreTend")
         }
-        .menuBarExtraStyle(.menu)
+        .menuBarExtraStyle(.window)
     }
 }
 
@@ -130,18 +130,26 @@ private struct CoreTendMenuBar: View {
     }
 
     var body: some View {
-        ForEach(Destination.allCases) { destination in
-            Button(ProductCopy.value(for: destination.titleKey, french: french)) {
-                navigation.selection = destination
-                navigation.activeSheet = nil
+        VStack(alignment: .leading, spacing: 12) {
+            MenuBarMetricsView(french: french)
+            Divider()
+            Text(ProductCopy.value(for: "menubar.open", french: french))
+                .font(.headline)
+            ForEach(Destination.allCases) { destination in
+                Button(ProductCopy.value(for: destination.titleKey, french: french)) {
+                    navigation.selection = destination
+                    navigation.activeSheet = nil
+                    openWindow(id: "coretend.main")
+                }
+            }
+            Divider()
+            Button(ProductCopy.value(for: "settings.title", french: french)) {
+                navigation.activeSheet = .settings
                 openWindow(id: "coretend.main")
             }
         }
-        Divider()
-        Button(ProductCopy.value(for: "settings.title", french: french)) {
-            navigation.activeSheet = .settings
-            openWindow(id: "coretend.main")
-        }
+        .padding(16)
+        .frame(width: 360, alignment: .leading)
     }
 }
 
