@@ -27,10 +27,20 @@ public struct SimilarImageEngine: Sendable {
         self.maximumDifferingBits = max(0, min(64, maximumDifferingBits))
     }
 
-    public func findSimilar(in urls: [URL]) async throws -> SimilarImageReport {
+    public func findSimilar(
+        in urls: [URL],
+        progress: @escaping @Sendable (DuplicateScanProgress) -> Void = { _ in }
+    ) async throws -> SimilarImageReport {
         var hashes: [(URL, UInt64)] = []
         var skipped = 0
+        let candidateCount = min(urls.count, maximumCandidates)
+        progress(.imageCandidates(completedCandidates: 0, totalCandidates: candidateCount))
+        var completedCandidates = 0
         for url in urls.prefix(maximumCandidates) {
+            defer {
+                completedCandidates += 1
+                progress(.imageCandidates(completedCandidates: completedCandidates, totalCandidates: candidateCount))
+            }
             try Task.checkCancellation()
             guard Self.imageExtensions.contains(url.pathExtension.lowercased()), let size = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize,
                   Int64(size) <= maximumFileBytes, let hash = Self.hash(url) else { skipped += 1; continue }
@@ -38,14 +48,20 @@ public struct SimilarImageEngine: Sendable {
         }
         skipped += max(0, urls.count - maximumCandidates)
         var pairs: [SimilarImagePair] = []
+        let totalPairs = hashes.count * max(0, hashes.count - 1) / 2
+        progress(.imageComparisons(completedPairs: 0, totalPairs: totalPairs))
+        var completedPairs = 0
         for i in hashes.indices {
             try Task.checkCancellation()
             for j in hashes.indices where j > i {
+                try Task.checkCancellation()
                 let distance = (hashes[i].1 ^ hashes[j].1).nonzeroBitCount
                 if distance <= maximumDifferingBits {
                     pairs.append(.init(first: hashes[i].0, second: hashes[j].0, differingBits: distance))
                 }
+                completedPairs += 1
             }
+            progress(.imageComparisons(completedPairs: completedPairs, totalPairs: totalPairs))
         }
         return .init(candidates: pairs.sorted { $0.differingBits == $1.differingBits ? $0.first.path < $1.first.path : $0.differingBits < $1.differingBits }, skippedCount: skipped)
     }

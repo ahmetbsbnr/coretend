@@ -20,6 +20,12 @@ public struct DuplicateScanReport: Sendable, Equatable {
     public let issues: [DuplicateScanIssue]
 }
 
+public enum DuplicateScanProgress: Sendable, Equatable {
+    case duplicateHashing(completedCandidates: Int, totalCandidates: Int)
+    case imageCandidates(completedCandidates: Int, totalCandidates: Int)
+    case imageComparisons(completedPairs: Int, totalPairs: Int)
+}
+
 private struct FileSnapshot: Equatable {
     let device: UInt64
     let inode: UInt64
@@ -56,17 +62,27 @@ private struct FileSnapshot: Equatable {
 public struct DuplicateEngine: Sendable {
     public init() {}
 
-    public func findGroups(in candidates: [ScanResult]) async throws -> DuplicateScanReport {
+    public func findGroups(
+        in candidates: [ScanResult],
+        progress: @escaping @Sendable (DuplicateScanProgress) -> Void = { _ in }
+    ) async throws -> DuplicateScanReport {
         var sizeBuckets: [Int64: [URL]] = [:]
         for candidate in candidates {
             guard case .known(let size) = candidate.logicalBytes, size >= 0 else { continue }
             sizeBuckets[size, default: []].append(candidate.url)
         }
+        let totalCandidates = sizeBuckets.values.filter { $0.count > 1 }.reduce(0) { $0 + $1.count }
+        progress(.duplicateHashing(completedCandidates: 0, totalCandidates: totalCandidates))
         var digestBuckets: [String: [URL]] = [:]
         var issues: [DuplicateScanIssue] = []
+        var completedCandidates = 0
         for (expectedSize, urls) in sizeBuckets where urls.count > 1 {
             var seenIdentities: Set<InodeIdentity> = []
             for url in urls.sorted(by: { $0.path < $1.path }) {
+                defer {
+                    completedCandidates += 1
+                    progress(.duplicateHashing(completedCandidates: completedCandidates, totalCandidates: totalCandidates))
+                }
                 try Task.checkCancellation()
                 do {
                     let before = try FileSnapshot(url: url)

@@ -7,6 +7,7 @@ import Domain
 struct SettingsView: View {
     let french: Bool
     @Binding var language: String
+    @Binding var recentFilesEnabled: Bool
     @State private var store: SQLiteStore?
     @State private var exclusions: [String] = []
     @State private var chooseExclusion = false
@@ -20,7 +21,6 @@ struct SettingsView: View {
     @State private var diagnosticSummary = ""
     @State private var ownSignature: CodeSignatureReport?
     @State private var status: String?
-    @AppStorage("coretend.recentFiles.enabled") private var recentFilesEnabled = false
 
     var body: some View {
         Form {

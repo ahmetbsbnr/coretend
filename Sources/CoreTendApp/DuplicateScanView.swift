@@ -11,6 +11,8 @@ struct DuplicateScanView: View {
     let french: Bool
     @State private var selectingFolder = false
     @State private var scanning = false
+    @State private var scanCompletedFiles = 0
+    @State private var analysisProgress: DuplicateScanProgress?
     @State private var report: DuplicateScanReport?
     @State private var status: String?
     @State private var scanTask: Task<Void, Never>?
@@ -43,7 +45,9 @@ struct DuplicateScanView: View {
             .disabled(scanning || actionBusy || actionReview != nil)
             .accessibilityHint(copy("duplicates.choose.hint"))
             if scanning {
-                ProgressView(copy("scan.progress"))
+                ProgressView(progressTitle)
+                Text(progressDetail)
+                    .font(.caption).foregroundStyle(.secondary)
                 Button(copy("scan.cancel")) { cancelScan() }
             }
             if let status { Text(status).foregroundStyle(.secondary) }
@@ -55,11 +59,11 @@ struct DuplicateScanView: View {
                     Text(french ? "Comparaison visuelle heuristique. Vérifiez chaque image; aucune suppression proposée." : "Heuristic visual matching. Review every image; no deletion action offered.").foregroundStyle(.secondary)
                     List(similarReport.candidates, id: \.id) { pair in
                         HStack(alignment: .top, spacing: 12) {
-                            Button { previewURL = pair.first } label: { imagePreview(pair.first) }
+                            Button { showPreview(pair.first) } label: { imagePreview(pair.first) }
                                 .buttonStyle(.plain)
                                 .accessibilityLabel(previewLabel(for: pair.first))
                                 .accessibilityHint(french ? "Ouvre l’aperçu Quick Look." : "Opens the Quick Look preview.")
-                            Button { previewURL = pair.second } label: { imagePreview(pair.second) }
+                            Button { showPreview(pair.second) } label: { imagePreview(pair.second) }
                                 .buttonStyle(.plain)
                                 .accessibilityLabel(previewLabel(for: pair.second))
                                 .accessibilityHint(french ? "Ouvre l’aperçu Quick Look." : "Opens the Quick Look preview.")
@@ -83,7 +87,7 @@ struct DuplicateScanView: View {
                             Label(copy("duplicates.keep"), systemImage: "checkmark.circle.fill")
                                 .foregroundStyle(.green)
                             Text(group.suggestedKeeper.lastPathComponent).font(.headline)
-                            Button { previewURL = group.suggestedKeeper } label: {
+                            Button { showPreview(group.suggestedKeeper) } label: {
                                 Label(copy("explore.preview"), systemImage: "eye")
                             }
                             .buttonStyle(.borderless)
@@ -96,7 +100,7 @@ struct DuplicateScanView: View {
                                     })) {
                                         Label(file.lastPathComponent, systemImage: "doc.on.doc")
                                     }
-                                    Button { previewURL = file } label: {
+                                    Button { showPreview(file) } label: {
                                         Label(copy("explore.preview"), systemImage: "eye")
                                     }
                                     .buttonStyle(.borderless)
@@ -126,6 +130,7 @@ struct DuplicateScanView: View {
         }
         .onDisappear {
             scanTask?.cancel(); activeScanID = nil; scanning = false
+            analysisProgress = nil
             previewURL = nil
             releasePreviewScope()
             if actionReview != nil { cancelAction() }
@@ -139,10 +144,6 @@ struct DuplicateScanView: View {
         .quickLookPreview($previewURL)
         .onChange(of: previewURL) { _, item in
             if item == nil { releasePreviewScope() }
-            else if !previewScopeHeld, let selectedRoot {
-                previewScopeHeld = selectedRoot.startAccessingSecurityScopedResource()
-                if previewScopeHeld { previewScopedRoot = selectedRoot }
-            }
         }
         .onChange(of: actionDialogPresented) { _, presented in
             if !presented && actionReview != nil { cancelAction() }
@@ -156,13 +157,15 @@ struct DuplicateScanView: View {
         activeScanID = scanID
         let hasScope = root.startAccessingSecurityScopedResource()
         scanning = true
+        scanCompletedFiles = 0
+        analysisProgress = nil
         status = nil
         report = nil
         similarReport = nil
         selectedCopies = []
         scanTask = Task {
             var rootFailure: String?
-            var partialFailure = false
+            var partialFailures = Set<String>()
             defer {
                 if hasScope { root.stopAccessingSecurityScopedResource() }
                 if activeScanID == scanID { scanning = false; activeScanID = nil }
@@ -175,8 +178,9 @@ struct DuplicateScanView: View {
                     switch event {
                     case .result(let result): candidates.append(result)
                     case .itemFailure(let path, let reason):
-                        if path == root.path { rootFailure = reason } else { partialFailure = true }
-                    case .progress, .finished: break
+                        if path == root.path { rootFailure = reason } else { partialFailures.insert(reason) }
+                    case .progress(let completed): scanCompletedFiles = completed
+                    case .finished: break
                     }
                 }
                 try Task.checkCancellation()
@@ -186,17 +190,17 @@ struct DuplicateScanView: View {
                     return
                 }
                 if similarMode {
-                    let result = try await SimilarImageEngine().findSimilar(in: candidates.map(\.url))
+                    let result = try await findSimilarWithProgress(candidates.map(\.url))
                     try Task.checkCancellation()
                     guard activeScanID == scanID else { return }
                     similarReport = result
                 } else {
-                    let result = try await DuplicateEngine().findGroups(in: candidates)
+                    let result = try await findDuplicatesWithProgress(candidates)
                     try Task.checkCancellation()
                     guard activeScanID == scanID else { return }
                     report = result
                 }
-                if partialFailure { status = copy("scan.partial") }
+                if !partialFailures.isEmpty { status = ProductCopy.scanPartialFailure(reasons: partialFailures, french: french) }
             } catch is CancellationError {
                 if activeScanID == scanID { status = copy("scan.cancelled") }
             } catch {
@@ -209,13 +213,92 @@ struct DuplicateScanView: View {
         scanTask?.cancel()
         activeScanID = nil
         scanning = false
+        scanCompletedFiles = 0
+        analysisProgress = nil
         status = copy("scan.cancelled")
+    }
+
+    private var progressTitle: String {
+        guard let analysisProgress else { return copy("scan.progress") }
+        switch analysisProgress {
+        case .duplicateHashing: return french ? "Hachage des doublons" : "Hashing duplicates"
+        case .imageCandidates: return french ? "Analyse des images" : "Checking images"
+        case .imageComparisons: return french ? "Comparaison des images" : "Comparing images"
+        }
+    }
+
+    private var progressDetail: String {
+        guard let analysisProgress else { return ProductCopy.scanProgress(completedFiles: scanCompletedFiles, french: french) }
+        switch analysisProgress {
+        case .duplicateHashing(let completed, let total):
+            return ProductCopy.duplicateHashProgress(completed: completed, total: total, french: french)
+        case .imageCandidates(let completed, let total):
+            return ProductCopy.similarImageProgress(completed: completed, total: total, comparingPairs: false, french: french)
+        case .imageComparisons(let completed, let total):
+            return ProductCopy.similarImageProgress(completed: completed, total: total, comparingPairs: true, french: french)
+        }
+    }
+
+    private func findDuplicatesWithProgress(_ candidates: [ScanResult]) async throws -> DuplicateScanReport {
+        let channel = AsyncStream<DuplicateScanProgress>.makeStream(bufferingPolicy: .bufferingNewest(1))
+        let worker = Task.detached(priority: .utility) {
+            defer { channel.continuation.finish() }
+            return try await DuplicateEngine().findGroups(in: candidates) { channel.continuation.yield($0) }
+        }
+        return try await withTaskCancellationHandler {
+            for await progress in channel.stream {
+                try Task.checkCancellation()
+                analysisProgress = progress
+            }
+            try Task.checkCancellation()
+            return try await worker.value
+        } onCancel: {
+            worker.cancel()
+        }
+    }
+
+    private func findSimilarWithProgress(_ urls: [URL]) async throws -> SimilarImageReport {
+        let channel = AsyncStream<DuplicateScanProgress>.makeStream(bufferingPolicy: .bufferingNewest(1))
+        let worker = Task.detached(priority: .utility) {
+            defer { channel.continuation.finish() }
+            return try await SimilarImageEngine().findSimilar(in: urls) { channel.continuation.yield($0) }
+        }
+        return try await withTaskCancellationHandler {
+            for await progress in channel.stream {
+                try Task.checkCancellation()
+                analysisProgress = progress
+            }
+            try Task.checkCancellation()
+            return try await worker.value
+        } onCancel: {
+            worker.cancel()
+        }
     }
 
     private func releasePreviewScope() {
         if previewScopeHeld, let previewScopedRoot { previewScopedRoot.stopAccessingSecurityScopedResource() }
         previewScopeHeld = false
         previewScopedRoot = nil
+    }
+
+    private func showPreview(_ url: URL) {
+        guard let selectedRoot else {
+            status = copy("preview.unavailable")
+            return
+        }
+        if previewScopeHeld, previewScopedRoot != selectedRoot { releasePreviewScope() }
+        let alreadyScopedToRoot = previewScopeHeld && previewScopedRoot == selectedRoot
+        let acquiredScope = alreadyScopedToRoot ? false : selectedRoot.startAccessingSecurityScopedResource()
+        guard QuickLookCandidate.isAllowed(url, within: selectedRoot) else {
+            if acquiredScope { selectedRoot.stopAccessingSecurityScopedResource() }
+            status = copy("preview.unavailable")
+            return
+        }
+        if acquiredScope {
+            previewScopeHeld = true
+            previewScopedRoot = selectedRoot
+        }
+        previewURL = url
     }
 
     @MainActor private func prepareAction() async {

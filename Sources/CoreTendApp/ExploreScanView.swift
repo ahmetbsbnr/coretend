@@ -11,8 +11,10 @@ import Persistence
 
 struct ExploreScanView: View {
     let french: Bool
+    @Binding var recentFilesEnabled: Bool
     @State private var selectingFolder = false
     @State private var scanning = false
+    @State private var scanCompletedFiles = 0
     @State private var results: [ScanResult] = []
     @State private var status: String?
     @State private var scanTask: Task<Void, Never>?
@@ -34,7 +36,6 @@ struct ExploreScanView: View {
     @State private var viewVisible = false
     @State private var previewScopeHeld = false
     @State private var previewScopedRoot: URL?
-    @AppStorage("coretend.recentFiles.enabled") private var recentFilesEnabled = false
     @State private var favoritePaths: Set<String> = []
 
     private var visibleResults: [ScanResult] {
@@ -77,6 +78,8 @@ struct ExploreScanView: View {
 
             if scanning {
                 ProgressView(copy("scan.progress"))
+                Text(ProductCopy.scanProgress(completedFiles: scanCompletedFiles, french: french))
+                    .font(.caption).foregroundStyle(.secondary)
                 Button(copy("scan.cancel")) { cancelScan() }
             }
             if let status { Text(status).foregroundStyle(.secondary).textSelection(.enabled) }
@@ -143,13 +146,18 @@ struct ExploreScanView: View {
                             VStack(alignment: .trailing, spacing: 2) {
                                 Text(french ? "Allouée localement : \(size(result.allocatedBytes))" : "Allocated locally: \(size(result.allocatedBytes))")
                                 Text(french ? "Taille logique : \(size(result.logicalBytes))" : "Logical size: \(size(result.logicalBytes))")
+                                Text(french ? "Modifié : \(modified(result))" : "Modified: \(modified(result))")
                             }
                             .monospacedDigit()
                             .foregroundStyle(.secondary)
                             .accessibilityElement(children: .ignore)
-                            .accessibilityLabel(french
-                                ? "Allouée localement : \(size(result.allocatedBytes)), taille logique : \(size(result.logicalBytes))"
-                                : "Allocated locally: \(size(result.allocatedBytes)), logical size: \(size(result.logicalBytes))")
+                            .accessibilityLabel(ProductCopy.scanResultAccessibilitySummary(
+                                name: result.url.lastPathComponent,
+                                source: french ? "Explorer" : "Explore",
+                                state: french ? "Résultat mesuré" : "Measured result",
+                                allocated: size(result.allocatedBytes), logical: size(result.logicalBytes),
+                                modified: modified(result), french: french
+                            ))
                             Button { Task { await toggleFavorite(result) } } label: {
                                 Image(systemName: favoritePaths.contains(result.url.path) ? "star.fill" : "star")
                             }
@@ -157,7 +165,7 @@ struct ExploreScanView: View {
                             .accessibilityLabel(favoritePaths.contains(result.url.path)
                                 ? (french ? "Retirer \(result.url.lastPathComponent) des favoris" : "Remove \(result.url.lastPathComponent) from favorites")
                                 : (french ? "Ajouter \(result.url.lastPathComponent) aux favoris" : "Add \(result.url.lastPathComponent) to favorites"))
-                            Button { previewURL = result.url } label: {
+                            Button { showPreview(result.url) } label: {
                                 Label(copy("explore.preview"), systemImage: "eye")
                             }
                             .buttonStyle(.borderless)
@@ -197,10 +205,6 @@ struct ExploreScanView: View {
         .quickLookPreview($previewURL)
         .onChange(of: previewURL) { _, item in
             if item == nil { releasePreviewScope() }
-            else if !previewScopeHeld, let selectedRoot {
-                previewScopeHeld = selectedRoot.startAccessingSecurityScopedResource()
-                if previewScopeHeld { previewScopedRoot = selectedRoot }
-            }
         }
         .confirmationDialog(copy("spacelens.delete.title"), isPresented: $actionDialogPresented, titleVisibility: .visible) {
             Button(copy("spacelens.delete.confirm"), role: .destructive) { beginDeleteExecution() }
@@ -223,13 +227,14 @@ struct ExploreScanView: View {
         selectedRootIdentity = try? FileIdentity(url: root)
         results = []
         selectedExploreFiles = []
+        scanCompletedFiles = 0
         status = nil
         scanning = true
         actionReview = nil
         actionService = nil
         scanTask = Task {
             var rootFailure: String?
-            var partialFailure = false
+            var partialFailures = Set<String>()
             defer {
                 if acquiredScope { root.stopAccessingSecurityScopedResource() }
                 if activeScanID == scanID { scanning = false; activeScanID = nil }
@@ -243,7 +248,7 @@ struct ExploreScanView: View {
                     switch event {
                     case .result(let result): results.append(result)
                     case .itemFailure(let path, let reason):
-                        if path == root.path { rootFailure = reason } else { partialFailure = true }
+                        if path == root.path { rootFailure = reason } else { partialFailures.insert(reason) }
                     case .finished:
                         if recentFilesEnabled {
                             let measured = results.suffix(SQLiteStore.maximumRecentFiles)
@@ -257,9 +262,9 @@ struct ExploreScanView: View {
                             }
                         }
                         if let rootFailure { status = ProductCopy.scanRootFailure(reason: rootFailure, french: french) }
-                        else if partialFailure { status = copy("scan.partial") }
+                        else if !partialFailures.isEmpty { status = ProductCopy.scanPartialFailure(reasons: partialFailures, french: french) }
                         else { status = results.isEmpty ? copy("scan.empty") : nil }
-                    case .progress: break
+                    case .progress(let completed): scanCompletedFiles = completed
                     }
                 }
             } catch is CancellationError {
@@ -274,6 +279,7 @@ struct ExploreScanView: View {
         scanTask?.cancel()
         activeScanID = nil
         scanning = false
+        scanCompletedFiles = 0
         status = copy("scan.cancelled")
     }
 
@@ -408,6 +414,26 @@ struct ExploreScanView: View {
         previewScopedRoot = nil
     }
 
+    private func showPreview(_ url: URL) {
+        guard let selectedRoot else {
+            status = copy("preview.unavailable")
+            return
+        }
+        if previewScopeHeld, previewScopedRoot != selectedRoot { releasePreviewScope() }
+        let alreadyScopedToRoot = previewScopeHeld && previewScopedRoot == selectedRoot
+        let acquiredScope = alreadyScopedToRoot ? false : selectedRoot.startAccessingSecurityScopedResource()
+        guard QuickLookCandidate.isAllowed(url, within: selectedRoot) else {
+            if acquiredScope { selectedRoot.stopAccessingSecurityScopedResource() }
+            status = copy("preview.unavailable")
+            return
+        }
+        if acquiredScope {
+            previewScopeHeld = true
+            previewScopedRoot = selectedRoot
+        }
+        previewURL = url
+    }
+
     @MainActor private func toggleFavorite(_ result: ScanResult) async {
         do {
             let store = try await LocalStoreAccess.open()
@@ -427,6 +453,11 @@ struct ExploreScanView: View {
         case .known(let bytes): ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
         case .unknown: copy("scan.unknownSize")
         }
+    }
+
+    private func modified(_ result: ScanResult) -> String {
+        guard let date = result.modifiedAt else { return copy("metrics.unknown") }
+        return date.formatted(.dateTime.year().month().day().hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US")))
     }
 
     private func allocated(_ result: ScanResult) -> Int64? {

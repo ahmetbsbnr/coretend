@@ -5,6 +5,32 @@ import Darwin
 @testable import Persistence
 
 final class PersistenceTests: XCTestCase {
+    func testConcurrentFreshStoreMigrationsRecheckSchemaAfterAcquiringWriteLock() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-store-concurrent-migrate-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let db = root.appendingPathComponent("fixture.sqlite")
+        let first = try SQLiteStore(url: db)
+        let second = try SQLiteStore(url: db)
+        var lockHandle: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(db.path, &lockHandle), SQLITE_OK)
+        guard let lockHandle else { return XCTFail("failed to open lock connection") }
+        defer { sqlite3_close(lockHandle) }
+        XCTAssertEqual(sqlite3_exec(lockHandle, "BEGIN IMMEDIATE", nil, nil, nil), SQLITE_OK)
+
+        let firstMigration = Task { try await first.migrate() }
+        let secondMigration = Task { try await second.migrate() }
+        try await Task.sleep(for: .milliseconds(100))
+        XCTAssertEqual(sqlite3_exec(lockHandle, "COMMIT", nil, nil, nil), SQLITE_OK)
+
+        try await firstMigration.value
+        try await secondMigration.value
+        let version = try await first.schemaVersion()
+        let savedFiles = try await second.savedFiles()
+        XCTAssertEqual(version, 5)
+        XCTAssertEqual(savedFiles, [])
+    }
+
     func testStoreCreatesVersionedSchemaOnlyAtInjectedURL() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-store-\(UUID())", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
