@@ -34,10 +34,19 @@ public extension ButtonStyle where Self == SerreButtonStyle {
 /// Whether the enclosing Serre control is hovered; SerreIcon tilts when it is.
 private struct SerreHoverKey: EnvironmentKey { static let defaultValue = false }
 
+/// Whether Serre buttons draw their own focus ring. A focusable container whose selection is
+/// its focus indicator (the sidebar) turns it off: its descendants all read as focused.
+private struct SerreFocusRingKey: EnvironmentKey { static let defaultValue = true }
+
 public extension EnvironmentValues {
     var serreHover: Bool {
         get { self[SerreHoverKey.self] }
         set { self[SerreHoverKey.self] = newValue }
+    }
+
+    var serreFocusRing: Bool {
+        get { self[SerreFocusRingKey.self] }
+        set { self[SerreFocusRingKey.self] = newValue }
     }
 }
 
@@ -46,11 +55,12 @@ private struct SerreButtonBody: View {
     let configuration: ButtonStyleConfiguration
     @Environment(\.isEnabled) private var isEnabled
     @Environment(\.isFocused) private var isFocused
+    @Environment(\.serreFocusRing) private var focusRing
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var hovered = false
 
     var body: some View {
-        SerreButtonChrome(kind: kind, state: .init(hovered: hovered, pressed: configuration.isPressed, focused: isFocused, enabled: isEnabled)) {
+        SerreButtonChrome(kind: kind, state: .init(hovered: hovered, pressed: configuration.isPressed, focused: isFocused && focusRing, enabled: isEnabled)) {
             configuration.label
         }
         .onHover { inside in

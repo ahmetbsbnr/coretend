@@ -331,10 +331,35 @@ final class AppShellTests: XCTestCase {
             XCTAssertEqual(ProductCopy.activityDetail(detail, failureCode: "other_failure", french: false), detail)
         }
     }
+    func testSidebarOrderGroupsYourMacThenUnderstandAndCoversEveryDestination() {
+        XCTAssertEqual(Destination.sidebarOrder, [.overview, .explore, .cleanup, .duplicates, .applications, .integrity, .performance, .record])
+        XCTAssertEqual(Set(Destination.sidebarOrder), Set(Destination.allCases))
+    }
+
+    func testSidebarStepMovesByOneAndStopsAtTheEnds() {
+        XCTAssertEqual(Destination.overview.step(1), .explore)
+        XCTAssertEqual(Destination.explore.step(-1), .overview)
+        XCTAssertEqual(Destination.overview.step(-1), .overview)
+        XCTAssertEqual(Destination.record.step(1), .record)
+        XCTAssertEqual(Destination.duplicates.step(1), .applications, "crossing the section boundary")
+    }
+
+    func testShortcutNumbersFollowTheSidebar() {
+        XCTAssertEqual(Destination.sidebarOrder.map(\.shortcutNumber), Array(1...8))
+    }
+
+    func testCommandPaletteListsDestinationsInSidebarOrder() {
+        let destinations = CommandPaletteCatalog.commands(french: false).compactMap { command -> Destination? in
+            if case .destination(let destination) = command.target { return destination } else { return nil }
+        }
+        XCTAssertEqual(destinations, Destination.sidebarOrder)
+    }
+
 }
 
 private actor SamplingCounter {
     private var count = 0
     func record() { count += 1 }
     func currentCount() -> Int { count }
+
 }

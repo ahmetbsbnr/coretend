@@ -14,7 +14,7 @@ public struct ProductCommand: Equatable, Identifiable, Sendable {
 
 public enum CommandPaletteCatalog {
     public static func commands(french: Bool) -> [ProductCommand] {
-        let destinations = Destination.allCases.map { destination in
+        let destinations = Destination.sidebarOrder.map { destination in
             let aliases = searchAliases(for: destination)
             return ProductCommand(id: destination.rawValue,
                                   title: ProductCopy.value(for: destination.titleKey, french: french),
