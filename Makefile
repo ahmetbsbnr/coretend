@@ -1,4 +1,16 @@
-.PHONY: test build generate-manifest build-site site-check traceability safety-audit architecture-audit install-smoke uninstall-smoke app-runtime-smoke clean-release-build-smoke test-cli-interrupt qualify package-local verify-package verify-install-package benchmark-scan
+PY_TARGETS = generate-manifest build-site site-check traceability safety-audit architecture-audit uninstall-smoke app-runtime-smoke clean-release-build-smoke test-cli-interrupt benchmark-scan
+
+.PHONY: python-version test build generate-manifest build-site site-check traceability safety-audit architecture-audit install-smoke uninstall-smoke app-runtime-smoke clean-release-build-smoke test-cli-interrupt qualify package-local verify-package verify-install-package benchmark-scan
+
+# The scripts use Python 3.10 syntax. An older python3 (macOS ships 3.9 in /usr/bin)
+# fails deep inside a script, after others have already run, so check it first.
+python-version:
+	@python3 -c 'import sys; sys.exit(sys.version_info < (3, 10))' 2>/dev/null || { \
+	  echo "CoreTend scripts need Python 3.10 or newer as python3; found: $$(python3 --version 2>&1 || echo none) at $$(command -v python3 || echo nowhere)." >&2; \
+	  echo "On macOS, put a newer Python first in PATH, e.g. export PATH=/opt/homebrew/bin:\$$PATH" >&2; \
+	  exit 1; }
+
+$(PY_TARGETS): python-version
 
 test:
 	swift test
