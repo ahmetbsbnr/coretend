@@ -173,3 +173,11 @@
 - Revue actuelle : 78 Must `PARTIEL`, 0 `EN_COURS`, 0 `À_CONSTRUIRE`, 0 `VÉRIFIÉ`. Ce changement de statut signifie qu’un comportement partiel et sa preuve sont tracés; il ne signifie pas que critère utilisateur complet est satisfait. L’estimation globale reste qualitative, environ 42 % des Musts.
 - L’onboarding est extrait dans `ProductCopy` et un test AppShell vérifie en EN/FR le choix des dossiers, la lecture seule, la confirmation Corbeille et l’absence de demande Full Disk Access. Première fenêtre et interactions natives non observées.
 - Gate final du 2026-09-27 après onboarding et réconciliation traceability : `make qualify` code 0. `git diff --check` et `python3 Scripts/check_traceability.py` passent. Release runtime isolé confirmé; aucune UI visible, release signée ou qualification multi-hôte n’est revendiquée.
+
+
+### Revue de date et correction du CLI — 2026-09-27
+
+- Désinstallateur : fixture HOME isolée avec `Library` symlinkée vers un autre dossier temporaire confirme refus sans toucher aux données extérieures. Le code canonise déjà le parent complet; la fixture documente cette garantie. Fenêtre TOCTOU validation/suppression reste ouverte.
+- CLI `version` suit `--lang en|fr`; XCTest et test subprocess valident texte exact et code 0. FR-13 reste `PARTIEL`, les validations terminal/macOS plus larges manquent.
+- `check_traceability.py` compare toute preuve Must à date ISO valide du relevé Progress; tests couvrent date courante, périmée, calendrier invalide, non ancrée. Gate complet `make qualify` réussi.
+- Comptage courant : 78 Must `PARTIEL` / aucun clos; pondération indicative à 50 % Must et 46 % registre entier (83 `PARTIEL`, 2 `EN_COURS`, 6 `À_CONSTRUIRE`). UI, accessibilité, hôtes, vraie Corbeille et release demandent preuves restantes.

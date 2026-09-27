@@ -71,6 +71,19 @@ def main() -> None:
         assert refused.returncode != 0
         assert unsafe_app.exists(), "symlink target must remain untouched"
 
+        linked_library_home = root / "linked-library-home"
+        linked_library_home.mkdir()
+        outside_library = root / "outside-library"
+        outside_support = outside_library / "Application Support" / "CoreTend-Reconstruction"
+        touch(outside_support / "records.sqlite", "outside fixture")
+        (linked_library_home / "Library").symlink_to(outside_library)
+        linked_app_inside_home = linked_library_home / "Applications" / "CoreTend.app"
+        touch(linked_app_inside_home / "Contents" / "Info.plist")
+        touch(linked_app_inside_home / "Contents" / "MacOS" / "CoreTendApp")
+        ancestor_refused = run(script, linked_library_home, linked_app_inside_home, "--remove-all", "--yes")
+        assert ancestor_refused.returncode != 0, "symlinked Library ancestor must block destructive mode"
+        assert (outside_support / "records.sqlite").read_text() == "outside fixture"
+
     print("Local uninstaller passed isolated dry-run, opt-in legacy removal, and symlink refusal fixtures.")
 
 

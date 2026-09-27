@@ -11,7 +11,7 @@
 - Dernière qualification locale : `make qualify` le 27-09 après annulation SIGINT CLI; smoke runtime debug isolé passe également. Elle couvre génération, site, traçabilité, audit statique de sûreté, installation fixture en HOME temporaire, XCTest complet, builds debug App/CLI, test subprocess Control-C et whitespace. Aucune UI native/VoiceOver n’est qualifiée par ce gate.
 - Paquet courant : `Artifacts/CoreTend-local-unsigned.zip`, arm64, produit depuis le code app `b0287bf`. SHA-256 `94503244830030785388e6ea2359dc844af22d719d5e82729f14408f1697a299`. `make package-local verify-package` passe; vérification limitée à Info.plist, archive et Mach-O. Non lancé, installé sur le Mac, signé, notarié ou publié. Preuve dans `Documentation/ReleaseEvidence.md`.
 - Copie greenfield historique `rebuild/` conservée localement comme provenance. Passation/documents 1.x archivés sous `Documentation/Archive/Legacy-Reconstruction/`; ils ne décrivent pas le code actuel.
-- État courant : traçabilité de 91 lignes, 57 `PARTIEL`, 26 `EN_COURS`, 8 `À_CONSTRUIRE`. Estimation indicative pondérée (VÉRIFIÉ=100 %, PARTIEL=50 %, EN_COURS=25 %, À_CONSTRUIRE=0 %) : 41 % des 78 Must, 39 % des 91 lignes. Ce n’est pas un indicateur officiel; critères UI/macOS, compatibilité et distribution restent ouverts.
+- État courant après reprise du 27-09-2026 : 91 lignes, 83 `PARTIEL`, 2 `EN_COURS`, 6 `À_CONSTRUIRE`. Les 78 Must sont `PARTIEL` (aucun `VÉRIFIÉ`). Estimation indicative pondérée (VÉRIFIÉ=100 %, PARTIEL=50 %, EN_COURS=25 %, À_CONSTRUIRE=0 %) : 50 % des Must, 46 % du registre. Ce n’est pas un indicateur officiel; critères UI/macOS, compatibilité et distribution restent ouverts.
 
 ## Jalons locaux depuis la dernière passation
 
@@ -133,6 +133,14 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 ### NFR-12 — gate de complétude des preuves Must — 27-09-2026
 
 - `check_traceability.py` exige maintenant pour chacune des 78 lignes Must : code, tests, preuve datée, owner; chaque référence de fichier dans `code`/`tests` doit exister. Le gate a d’abord échoué sur FR-05 sans preuve, puis passe après réconciliation des preuves disponibles et lacunes restantes.
-- Toutes les lignes Must sont désormais `PARTIEL` (78), aucune `EN_COURS`/`À_CONSTRUIRE`/`VÉRIFIÉ`. Ce statut ne clôt pas les critères; les gaps visibles restent notamment UI/accessibilité native, vraie Corbeille, FDA exhaustive, compatibilité macOS 14/autre hôte, attribution des données Apps et release. Avancement global reste estimé ≈42 %, sans calcul pondéré du registre.
+- Toutes les lignes Must sont désormais `PARTIEL` (78), aucune `EN_COURS`/`À_CONSTRUIRE`/`VÉRIFIÉ`. Ce statut ne clôt pas les critères; les gaps visibles restent notamment UI/accessibilité native, vraie Corbeille, FDA exhaustive, compatibilité macOS 14/autre hôte, attribution des données Apps et release. Avancement pondéré estimé à 50 % des Must et 46 % du registre (PARTIEL=50 %, EN_COURS=25 %, À_CONSTRUIRE=0 %, VÉRIFIÉ=100 %). Chiffre indicatif uniquement; aucun Must n’est vérifié de bout en bout.
 - L’onboarding a des clés `ProductCopy` EN/FR pour portée, confidentialité et action de démarrage; test rouge/vert AppShell couvre dossiers choisis, scans lecture seule, confirmation Corbeille et politique FDA. Sheet/interaction première ouverture restent à qualifier.
 - `make qualify` a repassé après réconciliation du registre et extraction/tests d’onboarding; code sortie 0. Il inclut smoke Release isolé, XCTest, builds App/CLI, audits et CLI SIGINT. `git diff --check` et `check_traceability.py` passent. Aucun artefact dans `Artifacts/` remplacé; plan `Documentation/Project/Remaining-musts-plan.md` préservé et non suivi.
+
+
+### Correctifs de revue et gate — 27-09-2026
+
+- Finding désinstallateur : ajout fixture `Library` symlinkée vers arbre temporaire extérieur avec base existante. Le test passe sans changement production : `check_target` canonicalise le parent complet via `cd -P`, détecte l’écart et refuse avant retrait. Le risque TOCTOU entre validation et `rm` reste distinct et n’est pas clos par cette fixture.
+- CLI : `version` localise maintenant son statut EN/FR. Test unitaire rouge/vert et subprocess sur binaire réel intégrés au gate. FR-13 reste `PARTIEL`.
+- Traçabilité : chaque Must exige une date ISO valide ancrée en début de preuve et identique à la date `Relevé` de `Progress.md`. Fixtures rejettent date périmée, calendrier invalide et date non ancrée. NFR-13 normalisée.
+- `make qualify` passe après ces changements; `git diff --check` passe. `Documentation/Project/Remaining-musts-plan.md` reste fichier local non suivi à préserver.

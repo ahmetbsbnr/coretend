@@ -18,6 +18,7 @@ site-check:
 
 traceability:
 	python3 Scripts/check_traceability.py
+	python3 Scripts/test_traceability.py
 
 safety-audit:
 	python3 Scripts/audit_safety.py

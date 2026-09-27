@@ -27,6 +27,13 @@ def verify_usage_contract(executable, root):
     if french_help.returncode != 0 or "Utilisation :" not in french_help.stdout:
         raise RuntimeError(f"French help contract failed: {french_help.returncode}, {french_help.stdout!r}, {french_help.stderr!r}")
 
+    english_version = invoke(["version"])
+    french_version = invoke(["--lang", "fr", "version"])
+    if english_version.returncode != 0 or english_version.stdout != "CoreTend greenfield — unreleased\n":
+        raise RuntimeError(f"English version contract failed: {english_version.returncode}, {english_version.stdout!r}")
+    if french_version.returncode != 0 or french_version.stdout != "CoreTend greenfield — non publiée\n":
+        raise RuntimeError(f"French version contract failed: {french_version.returncode}, {french_version.stdout!r}")
+
     bad_language = invoke(["--lang", "de", "help"])
     if bad_language.returncode != 2 or bad_language.stderr != "Invalid or unsupported command. Run 'coretend help'.\n":
         raise RuntimeError(f"invalid language contract failed: {bad_language.returncode}, {bad_language.stderr!r}")

@@ -48,6 +48,18 @@ final class CLIContractTests: XCTestCase {
         XCTAssertThrowsError(try CLIInvocation.parse(["help", "--lang", "fr"]))
     }
 
+    func testVersionOutputUsesSelectedLanguage() async throws {
+        let english = OutputCapture()
+        let englishExit = await CoreTendCLIRunner.run(.version, language: .en) { english.append($0) }
+        XCTAssertEqual(englishExit, 0)
+        XCTAssertEqual(english.values, ["CoreTend greenfield — unreleased"])
+
+        let french = OutputCapture()
+        let frenchExit = await CoreTendCLIRunner.run(.version, language: .fr) { french.append($0) }
+        XCTAssertEqual(frenchExit, 0)
+        XCTAssertEqual(french.values, ["CoreTend greenfield — non publiée"])
+    }
+
     func testFrenchTextOutputAndJSONShapeStayStable() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         let textOutput = OutputCapture()
