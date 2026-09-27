@@ -38,25 +38,40 @@ extra=set(by_id)-expected
 if missing or extra:
  print('Missing:',', '.join(sorted(missing))); print('Extra:',', '.join(sorted(extra))); raise SystemExit(1)
 for row in rows:
- if row['description'].strip() in ('Capability inventory ID', '', 'TODO'):
-  raise SystemExit(f"{row['ID']} has no capability description")
- if row['priority']=='M':
-  missing=[key for key in ('code','tests','evidence','gap/owner') if not row[key].strip()]
-  if missing:
-   raise SystemExit(f"{row['ID']} Must row missing traceability fields: {', '.join(missing)}")
-  evidence_match=re.match(r'(?:Revue du registre )?(\d{4}-\d{2}-\d{2})(?:;|:)',row['evidence'])
-  evidence_date=iso_date(evidence_match.group(1)) if evidence_match else None
-  if not evidence_date:
-   raise SystemExit(f"{row['ID']} Must evidence has no valid anchored ISO review date")
-  if evidence_match.group(1)!=current_review:
-   raise SystemExit(f"{row['ID']} Must evidence review date {evidence_match.group(1)} is stale; Progress.md says {current_review}")
-  for field in ('code','tests'):
-   for reference in row[field].split(';'):
-    reference=reference.strip().split(' (',1)[0]
-    if reference.startswith(('make ', 'swift ', 'python3 ', 'bash ')):
-     continue
-    if not (root/reference).exists():
-     raise SystemExit(f"{row['ID']} {field} reference does not exist: {reference}")
- if row['status']=='VÉRIFIÉ' and not all(row[k].strip() for k in ('code','tests','evidence')):
-  raise SystemExit(f"{row['ID']} marked VÉRIFIÉ without code/test/evidence")
+    if row['description'].strip() in ('Capability inventory ID', '', 'TODO'):
+        raise SystemExit(f"{row['ID']} has no capability description")
+    if row['status'] not in ('PARTIEL', 'EN_COURS', 'À_CONSTRUIRE', 'VÉRIFIÉ'):
+        raise SystemExit(f"{row['ID']} has unknown status: {row['status']}")
+    if row['priority'] not in ('M', 'S', 'C', 'W'):
+        raise SystemExit(f"{row['ID']} has unknown priority: {row['priority']}")
+
+    required = ('documentation', 'evidence', 'gap/owner')
+    if row['status'] != 'À_CONSTRUIRE':
+        required += ('code', 'tests')
+    if row['priority'] == 'M':
+        required += ('code', 'tests')
+    missing=[key for key in required if not row[key].strip()]
+    if missing:
+        raise SystemExit(f"{row['ID']} traceability row missing fields: {', '.join(sorted(set(missing)))}")
+
+    if row['status'] in ('PARTIEL', 'EN_COURS', 'À_CONSTRUIRE', 'VÉRIFIÉ'):
+        evidence_match=re.match(r'(?:Revue du registre )?(\d{4}-\d{2}-\d{2})(?:;|:)',row['evidence'])
+        evidence_date=iso_date(evidence_match.group(1)) if evidence_match else None
+        if not evidence_date:
+            raise SystemExit(f"{row['ID']} evidence has no valid anchored ISO review date")
+        if evidence_match.group(1)!=current_review:
+            raise SystemExit(f"{row['ID']} evidence review date {evidence_match.group(1)} is stale; Progress.md says {current_review}")
+
+    for field in ('code', 'tests', 'documentation'):
+        for reference in row[field].split(';'):
+            reference=reference.strip().split(' (',1)[0]
+            if not reference or reference.startswith(('make ', 'swift ', 'python3 ', 'bash ')):
+                continue
+            if not (root/reference).exists():
+                raise SystemExit(f"{row['ID']} {field} reference does not exist: {reference}")
+
+    if row['priority']=='M' and row['status'] != 'À_CONSTRUIRE':
+        missing=[key for key in ('code','tests','evidence','gap/owner') if not row[key].strip()]
+        if missing:
+            raise SystemExit(f"{row['ID']} Must row missing traceability fields: {', '.join(missing)}")
 print(f'Traceability complete: {len(requirements)} FR/NFR + {len(caps)} capabilities; current statuses remain explicit.')

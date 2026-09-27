@@ -2,6 +2,41 @@
 
 **Relevé :** 2026-09-27. **État :** reconstruction en cours, non finalisée. Derniers jalons fusionnés : favoris/récents SQLite v4, palette clavier bilingue et écriture batch des récents (PR #40–#44). UI macOS native et VoiceOver non qualifiés. Cahier et plan approuvés; développement sur lignée `next` du dépôt public historique. Le dépôt greenfield initial `rebuild/` reste copie locale de provenance.
 
+### FR-11 — migrations simultanées au démarrage — 2026-09-27
+
+- L’observation AX native sur fixture a reproduit `Données locales indisponibles.` dans Overview quand le store neuf était ouvert simultanément par shell et vue Favoris/Récents. Le schéma était valide ensuite; les deux connexions avaient capturé `user_version` obsolète avant `BEGIN IMMEDIATE`.
+- Migration relit désormais `user_version` une fois le verrou acquis; le second writer ne rejoue pas DDL déjà validé. Le test rouge force deux migrateurs à attendre le verrou, échouait sur `table performance_samples already exists`, puis passe avec schéma v5 et lecture `saved_files`.
+- Après correctif, nouveau lancement isolé puis clic AX Overview ne montre plus l’erreur; SQLite est resté sous store fixture. FR-11 demeure `PARTIEL` pour récupération de vrai store et matrice hôte ancienne.
+
+### NFR-07 — route clavier palette native — 2026-09-27
+
+- Dans un `.app` fixture isolé, `⌘K` ouvre la palette, AX confirme le focus du champ, saisie « Performances » + Retour affiche le contenu de la vue Performances. Preuve limitée à une route sur arm64/macOS 27.
+- NFR-07 reste `PARTIEL`: sidebar par flèches, VoiceOver parlé, Dynamic Type/zoom, contrastes, Reduce Motion/Transparency et revue humaine non qualifiés.
+
+### NFR-06 — progression de scan observée — 2026-09-27
+
+- Explorer, Nettoyage et Doublons consomment les événements `progress(completed:)` de ScanCore et montrent le nombre de fichiers mesurés, sans total ni pourcentage estimé. Annulation remet le compteur à zéro.
+- Doublons expose désormais progression causale du hachage des candidats, du décodage image et des comparaisons (total des paires effectivement décodées). Ces moteurs tournent dans une tâche utilitaire détachée; l’annulation de la tâche UI est relayée au worker. Les compteurs ne promettent ni taux ni durée.
+- Tests ScanCore vérifient les comptes finaux mesurés des trois phases; AppShell couvre copies EN/FR et bornage. NFR-06 reste `PARTIEL`: réactivité/cancellation UX native, VoiceOver et accessibilité restent à qualifier.
+
+### FR-10 — causes de lecture partielle — 2026-09-27
+
+- Les trois vues de scan conservent maintenant les causes des échecs internes au lieu d’un booléen. Messages EN/FR distinguent refus d’accès macOS, éléments disparus, métadonnées/lecture indisponibles et combinaisons; les chemins ne sont pas affichés et aucune absence/sûreté n’est déduite.
+- AppShell test couvre refus permission vs indisponibilité, en anglais et français; `swift build --product CoreTendApp` passe. FR-10 reste `PARTIEL`: aucun sondage TCC/FDA exhaustif ni parcours natif de Réglages n’est prétendu.
+
+### FR-03 et FR-06 — détails des résultats et audit de décision — 2026-09-27
+
+- Cleanup affiche désormais octets alloués localement, taille logique, date modifiée et risque; Explore ajoute aussi date modifiée aux deux mesures. Valeurs absentes demeurent « Unknown/Inconnu ». Les descriptions accessibles EN/FR incluent nom, source, état/risque et mesures distinctes; test AppShell couvre composantes bilingues et inconnues.
+- FR-03 reste `PARTIEL`: preuves SwiftUI source/test seulement; ordre visuel, Dynamic Type et VoiceOver natif non qualifiés.
+- `FileActionService` fixture démontre propositions suivies de refus ou annulation distincts; les deux originaux restent octet-identiques et Fake Trash reçoit zéro appel. FR-06 demeure `PARTIEL`, l’expérience native et Trash réel ne sont pas qualifiés.
+
+### Suite de développement — traceabilité et Quick Look — 2026-09-27
+
+- Quick Look Explore/Doublons/Images similaires valide maintenant chaque candidat au moment de l’ouverture : racine choisie réelle, fichier régulier existant, chemin restant strictement dans cette racine. Accès security-scoped conservé pendant l’aperçu et libéré à fermeture/départ; candidat disparu, remplacé par symlink, dossier ou extérieur refusé avec message EN/FR.
+- `QuickLookCandidateTests` couvre fichiers ordinaires/nestés et refus des racines symlink, dossiers, chemins externes, liens, absences et racines invalides. Tests ciblés passent; interaction/fermeture Quick Look native et course TOCTOU restent non qualifiées. FR-23 et `quicklook.extended` restent `PARTIEL`.
+- Gate NFR-12 étendu aux 91 entrées : références code/tests requises pour tout statut actif et toute priorité, sources documentaires/proof datée/owner pour chaque ligne; reports À_CONSTRUIRE pointent vers cahier et raison explicite. Fixtures rejettent preuve périmée/invalide/non ancrée, colonnes mal formées et Should actif sans tests. Independent documentation review remains open; NFR-12 stays PARTIEL.
+- Les six capacités Should et reports C/W sont réconciliés dans le registre. Cela suit l’état présent, sans marquer les menus système livrés ni les interactions natives qualifiées.
+
 ## Livré et prouvé
 
 - Cahier complet : QQOQCCP, 8 destinations, 26 FR, 14 NFR, MoSCoW, RACI, architecture et risques; plan d’exécution par 8 tranches.
@@ -27,7 +62,7 @@
 - Explore ajoute recherche nom/dossier, tri nom/date/taille locale et carte proportionnelle exacte des seuls octets alloués connus; layout couvert par tests.
 - Explore permet désormais de sélectionner des fichiers réguliers du dossier choisi, de revoir noms/chemins, puis de confirmer leur déplacement vers la Corbeille via FileActionService/SafetyCore. Journalisation préalable obligatoire; annulation et résultats tracés; échecs restent visibles. Sélecteur de dossier bloqué pendant l’action. `spacelens.delete` reste PARTIEL en attente de parcours natif et qualification Trash réelle.
 - Script crée un `.app` + ZIP local unsigned sous `Artifacts/`; structure vérifiée et installation testée seulement dans HOME fixture, aucune ouverture Finder réalisée.
-- Installateur local prend source et dossier destination explicites, refuse symlinks et bundle existant, stage dans le volume cible puis déplace sans écraser. Smoke synthétique et install du vrai bundle release dans HOME fixture passent; aucune app lancée. FR-14 reste PARTIEL avant lancement, retrait documenté en conditions testées, et gate compatibilité/signature.
+- Installateur local prend source et dossier destination explicites, refuse symlinks et bundle existant, stage dans le volume cible puis déplace sans écraser. Smokes synthétique et bundle release passent sous HOME fixture; smoke runtime installe puis lance le bundle installé, avec SQLite sous le store fixture. Finder/Launch Services, désinstallation GUI, signature et compatibilité restent à qualifier; FR-14 reste PARTIEL.
 - CLI compilable : `scan --root` explicite, `record list --store` explicite et lecture seule, help/version honnête. Scan distingue succès complet (0), résultat partiel (2), erreur commande/store (1), annulation (130); JSON donne `files`, `issues`, `complete`. Tests fixtures couvrent racine manquante et scan complet. FR-13 reste PARTIEL : parité aide/localisation et validation CLI complète restent ouvertes.
 - Site statique EN/FR, manifeste 51 capacités, CSP, navigation sémantique, sans scripts ni analytics; tests de routes, liens, langues, contenu manifest.
 - Cahier utilisateur, développeur, confidentialité, accessibilité, données, migration, CLI et release evidence présents.
@@ -44,7 +79,7 @@
 - Diagnostic Réglages montre désormais le JSON expurgé exact (texte sélectionnable) avant choix de destination; l’annulation ne lance pas l’exporteur. Test Persistence confirme omission des chemins/détails sur fixture. FR-21 et NFR-05 restent PARTIELS jusqu’au parcours UI, preuve d’annulation/export et limites d’effacement documentées.
 - Audit sécurité rejette maintenant imports/APIs réseau Swift courants et références aux SDK analytics connus dans `Sources/`. NFR-04 est PARTIEL : vérification statique seulement; pas de capture réseau en exécution ni revue indépendante.
 - Applications discovery et signal code-signature livrés; revue consultative des reliquats ajoutée sur un dossier choisi avec correspondance exacte bundle ID, sans attribution confirmée ni action sur ces reliquats. Le déplacement confirmé du seul bundle `.app` vers la Corbeille est relié à SafetyCore et au journal; désinstallation complète des éléments associés/hérités et source de mise à jour non livrées. Performance conserve des points locaux de charge; présentation graphique améliorée en marqueurs datés, axes lisibles et dernière valeur accessible, sans interpolation de données. Qualification UI native toujours ouverte.
-- Le site EN/FR explique désormais favoris explicites, récents opt-in (off par défaut, maximum 100), recherche ⌘K et conservation locale des chemins/tailles. Entrées sauvegardées retirables; pas de synchronisation réseau. Génération et contrôles statiques passent; FR-15 demeure partiel jusqu’à revue navigateur/accessibilité et déploiement.
+- Le site EN/FR explique désormais favoris explicites, récents opt-in (off par défaut, maximum 100), recherche ⌘K et conservation locale des chemins/tailles. Entrées sauvegardées retirables; pas de synchronisation réseau. Génération et contrôles statiques passent; FR-15 est maintenant `VÉRIFIÉ` dans son périmètre statique documenté; contrôles OS/navigateur et déploiement restent sous NFR-11/NFR-14.
 - Garde-fous SQLite livrés : rejeter horodatages non finis avant écriture d’événement ou transaction/retention Performance; tests régression fixtures démontrent refus et absence de ligne parasite (PR #48).
 - Axe X Performance affiche maintenant jour, mois et heure pour distinguer dates avec même heure; `swift build --product CoreTendApp`, `make qualify` et `git diff --check` passent. Essai visuel natif/VoiceOver reste à faire.
 - Performance accepte sélection graphique du curseur et l’ancre au point valide le plus proche; égalité choisit l’observation la plus récente. Vue affiche valeur et horodatage mesurés avec repère, sans calcul/interpolation. Domain tests couvrent points connus, inconnus, tie-break et curseur invalide; interactions natives restent à qualifier.
@@ -144,8 +179,8 @@
 
 ### NFR-11 — smoke navigateur local — 27-09-2026
 
-- Homepage française: Lighthouse Accessibilité 100, Bonnes pratiques 100. Tab atteint le lien d’évitement avec contour visible 3 px; vue d’accessibilité expose les régions principales. À 640 px CSS (approximation d’un viewport 1280 px à 200 %), aucun débordement horizontal.
-- Audit et limites détaillés dans `Documentation/Evidence/SiteAccessibilitySmoke.md`. Réduction du mouvement uniquement observée dans CSS, pas émulée au runtime; autres routes, navigateurs et vraie commande zoom restent à vérifier. NFR-11 passe à `PARTIEL`, pas vérifié.
+- Chrome Lighthouse mobile couvre les 11 routes EN/FR et sélecteur de langue : Accessibilité, Bonnes pratiques, Agentic Browsing 100 sur chaque page. Les 10 pages de contenu à 640 px CSS n’ont pas de débordement; Tab atteint sur chacune le lien d’évitement avec contour visible 3 px.
+- Détails et limites dans `Documentation/Evidence/SiteAccessibilitySmoke.md`. Zoom réel, VoiceOver, taille système, contrastes tous états, emulation reduced-motion, headers déployés et autres navigateurs restent à vérifier. SEO 50 en raison du noindex voulu + description meta absente. NFR-11 reste `PARTIEL`; FR-15 est `VÉRIFIÉ` pour son périmètre de contenu statique et de routes.
 
 ### FR-13 — annulation SIGINT du CLI — 27-09-2026
 
@@ -164,7 +199,7 @@
 - Historique filtre maintenant dates calendaires (7/30/tout) et type, groupe du plus récent au plus ancien; CSV/JSON reprennent les filtres visibles. Tests couvrent borne incluse, jours futurs écartés, ordre, copie EN/FR et effacement limité aux événements. Parcours file-exporter natif reste non qualifié.
 - Les descriptions placeholder de 26 capacités ont été remplacées par des comportements verts explicites; `check_traceability.py` rejette ces placeholders. Comptage actuel : 91 lignes, 18 Musts `EN_COURS`, 60 `PARTIEL`, 0 `À_CONSTRUIRE`, 0 `VÉRIFIÉ`. Progression fonctionnelle estimée ≈42 % des Musts, ≈40 % des 91 lignes du registre. Estimation qualitative; aucun statut Must vérifié de bout en bout.
 
-- NFR-10 architecture gate added to `make qualify`: it reads `swift package dump-package` and checks Swift tools ≥6.0, macOS ≥14.0, no external SwiftPM package dependencies, and no SafetyCore/Persistence dependency from ScanCore. Four synthetic contract tests cover compliant graph and rejection cases; existing safety audit checks the production Trash boundary. NFR-10 moves from `EN_COURS` to `PARTIEL`; independent architecture review is still open.
+- NFR-10 architecture gate added to `make qualify`: it reads `swift package dump-package` and checks Swift tools ≥6.0, macOS ≥14.0, no external SwiftPM package dependencies, and no SafetyCore/Persistence dependency from ScanCore. Five synthetic contract tests cover compliant graph and rejection cases, including transitive write-capable dependencies; existing safety audit checks the production Trash boundary. NFR-10 moves from `EN_COURS` to `PARTIEL`; independent architecture review is still open.
 - FR-14 runtime smoke is now repeatable: `make app-runtime-smoke` builds Release and runs its executable from a temporary `.app` fixture for eight seconds with a fail-closed test-store override. SQLite appears under the fixture store. This improves runtime startup evidence but leaves visible GUI/Finder, signature, notarization and minimum-OS host checks open.
 
 ### Mise à niveau du registre Must — 2026-09-27
@@ -180,7 +215,7 @@
 - Désinstallateur : fixture HOME isolée avec `Library` symlinkée vers un autre dossier temporaire confirme refus sans toucher aux données extérieures. Le code canonise déjà le parent complet; la fixture documente cette garantie. Fenêtre TOCTOU validation/suppression reste ouverte.
 - CLI `version` suit `--lang en|fr`; XCTest et test subprocess valident texte exact et code 0. FR-13 reste `PARTIEL`, les validations terminal/macOS plus larges manquent.
 - `check_traceability.py` compare toute preuve Must à date ISO valide du relevé Progress et refuse lignes CSV mal formées; tests couvrent date courante, périmée, calendrier invalide, non ancrée et colonnes surnuméraires. Gate complet `make qualify` réussi.
-- Comptage courant : 78 Must `PARTIEL` / aucun clos; pondération indicative à 50 % Must et 46 % registre entier (83 `PARTIEL`, 2 `EN_COURS`, 6 `À_CONSTRUIRE`). UI, accessibilité, hôtes, vraie Corbeille et release demandent preuves restantes.
+- Comptage courant : 76 Must `PARTIEL`, 2 `VÉRIFIÉ`; pondération indicative à 51,3 % Must et 47,3 % registre entier (81 `PARTIEL`, 2 `EN_COURS`, 6 `À_CONSTRUIRE`, 2 `VÉRIFIÉ`). UI, accessibilité, hôtes, vraie Corbeille et distribution demandent preuves restantes.
 
 
 ### FR-08 — allocations physiques uniques — 2026-09-27
@@ -188,3 +223,45 @@
 - ScanCore conserve device/inode comme identité d’allocation observée. Les lignes Explorer gardent tailles logiques/allouées par chemin; treemap déduplique les chemins hard linkés par identité, sélectionne le chemin visible lexicographiquement premier et indique des allocations distinctes plutôt que des fichiers. Les mesures inconnues restent exclues.
 - Fixtures synthétiques valident deux chemins partageant une identité physique, une seule aire de treemap pour eux, et un fichier sparse de 8 Mio dont l’allocation observée est inférieure à la taille logique. `swift test --filter 'ScanCoreTests/testHardLinkResultsSharePhysicalAllocationIdentity|TreemapLayoutTests/testHardLinksContributePhysicalAllocationOnlyOnce|ScanCoreTests/testSparseFixtureKeepsLogicalAndAllocatedSizesDistinct'` passe.
 - FR-08 reste `PARTIEL` : rendu visuel/VoiceOver, fournisseurs cloud et couverture de systèmes de fichiers restent à qualifier. Aucun comportement utilisateur natif n’est déclaré vérifié. PR #55 mise à jour sur `356d7c7`; revue indépendante sans blocage et CI `qualify` réussie.
+
+### NFR-13 — builds Release propres — 2026-09-27
+
+- `Scripts/test_clean_release_builds.py` construit deux fois `CoreTendApp` et `CoreTendCLI` depuis deux racines et scratch directories temporaires vides et indépendants, exposés au linker via un symlink au chemin stable `.build/qualify-clean-release-scratch`. Le gate échoue sur avertissement, erreur de build, binaire absent ou hash différent; il est inclus dans `make qualify`.
+- Les quatre builds réussissent sans warning sur arm64/macOS 27.0 et les deux paires sont octet-identiques. Cette méthode stabilise le chemin OSO embarqué sans partager le contenu des scratch dirs. SHA et limites dans `Documentation/Evidence/ReleaseReproducibility.md`.
+- NFR-13 est `VÉRIFIÉ` pour le source, host, toolchain et chemin de checkout observés. La compatibilité autres hôtes/versions reste sous NFR-08.
+
+### shell.launch — fenêtre visible en fixture — 2026-09-27
+
+- Lancement du binaire Release dans un `.app` temporaire avec `HOME`, `CFFIXED_USER_HOME`, `TMPDIR` et store SQLite isolés. CoreGraphics observe une fenêtre écran `CoreTend`; son arbre AX expose accueil FR et huit destinations. La base apparaît uniquement sous le store fixture.
+- Preuve et limites dans `Documentation/Evidence/AppWindowRuntimeQualification.md`. Observation sur arm64/macOS 27.0; Finder/Launch Services, activation des routes, VoiceOver parlé et autres critères a11y restent non qualifiés. `shell.launch`, FR-01 et FR-14 restent `PARTIEL`.
+
+### Isolation des préférences fixtures et routes natives — 2026-09-27
+
+- Probe Foundation : `HOME`/`CFFIXED_USER_HOME` temporaires ne redirigent pas assez sûrement `UserDefaults` adossé à `cfprefsd`. `CoreTendPreferences` choisit donc les valeurs `CORETEND_TEST_*` et désactive les écritures persistantes dès qu’un override de store test existe. `SettingsView` et `ExploreScanView` partagent maintenant les bindings détenus par la racine.
+- 7 tests AppShell couvrent overrides, profil incomplet fermé, écritures no-op, profil production et priorité de langue. Revue finale sans finding : environnement fixture prévaut sur la langue stockée et SQLite n’est lu qu’en production. `make qualify` passe après correctif. Matrice AX antérieure : routes natives 8/8, fallback ID obsolète 1/1, premier lancement français; SQLite uniquement sous chaque fixture.
+- Lancement distinct par préférence env ne prouve pas persistance UserDefaults de production ni clic clavier/souris dans la sidebar. `FR-01`, `shell.nav` et NFR-03 restent `PARTIEL`; détail dans `Documentation/Evidence/AppWindowRuntimeQualification.md`.
+
+### Revue du plan Remaining Musts — 2026-09-27
+
+- Audit du registre contre le MoSCoW §7 : `shell.menubar`, `settings.menubar`, `quicklook.extended`, `favrec.module`, `ui.commandpalette` et `clutter.largeold` sont classés `Should`. Les deux capacités de barre système restent `À_CONSTRUIRE`; les autres gardent leur état partiel/en cours selon les preuves natives manquantes.
+- Les 22 tâches du plan local sont représentées dans le code, les tests ou les preuves documentées. Les qualifications manuelles/macOS, multi-hôte et publication ne sont pas remplacées par des assertions de complétion.
+- Gate complet rejoué après correctif de langue : `make qualify` passe, dont 28 tests AppShell, smoke runtime isolé, quatre builds Release propres (App/CLI en paires octet-identiques), builds Debug App/CLI et subprocess CLI/SIGINT. Hash App `9bc252b070a11d8ebf4a2143b6b73d5635941d494c7ccdaad94fc1b25e34397c`; CLI `803ab48ab6c0fcd03aead4fac192a85c50caf9e1f3632bafbb27c349d3ff9161`.
+- Pondération actuelle : Must 76/78 PARTIEL + 2/78 VÉRIFIÉ = 51,3 %; registre entier 81 PARTIEL, 2 EN_COURS, 6 À_CONSTRUIRE, 2 VÉRIFIÉ = 47,3 %. Mesure de preuve, pas complétion produit ni score des Should.
+
+### FR-14 — lancement depuis l’installation fixture — 2026-09-27
+
+- `Scripts/test_app_runtime_isolation.py` installe son `.app` Release fixture via `Scripts/install_local.sh` sous HOME temporaire, lance l’exécutable installé huit secondes puis l’arrête et le retire avec `uninstall_local.sh --keep-data`. Il rescane SQLite/sidecars après arrêt, avant retrait. La base fixture reste après retrait; tests synthétiques couvrent artefacts permis et rejetés.
+- Tests rouges préalables exigeaient installation et retrait de l’app; tests verts après ajout des étapes install→lancement→retrait. `make qualify` passe. Cela ne couvre pas Finder/Launch Services, désinstallation interactive, signature/notarisation ou macOS minimum; FR-14 reste PARTIEL.
+
+
+### Mise à jour FR-15 et audit transitif NFR-10 — 2026-09-27
+
+- Revue indépendante conclut qu’aucun critère FR-15 ne reste ouvert dans son périmètre : contenu statique fidèle, état de publication honnête, routes EN/FR, CSP et smoke browser local sont contrôlés. FR-15 passe à `VÉRIFIÉ`; zoom réel, VoiceOver, reduced-motion en exécution, autre navigateur et publication restent suivis sous NFR-11/NFR-14.
+- NFR-10 gate vérifie maintenant fermeture transitive du graphe ScanCore. Test synthétique refuse ScanCore → ScanAdapter → Persistence. Cinq cas d’architecture au total; revue indépendante du gate restant à tracer.
+- Comptage recalculé depuis CSV : 91 lignes, 81 `PARTIEL`, 2 `EN_COURS`, 6 `À_CONSTRUIRE`, 2 `VÉRIFIÉ`; Must : 76 `PARTIEL`, 2 `VÉRIFIÉ`. Score pondéré indicatif : 51,3 % Must, 47,3 % registre.
+
+### NFR-04 — socket observation du runtime Release — 2026-09-27
+
+- `Scripts/test_app_runtime_isolation.py` échantillonne les sockets Internet du processus `.app` installé par fixture avec `lsof` pendant huit secondes. Exécution observée : 14 échantillons, aucun socket IPv4/IPv6 ouvert; HOME/TMPDIR/store restent isolés, app retirée et base fixture conservée.
+- `Scripts/test_runtime_network_scope.py` crée un listener loopback dans le processus test et vérifie que l’observateur le détecte; ce trafic est local et ne contacte pas Internet. Le helper échoue fermé si `lsof` manque ou échoue.
+- NFR-04 reste `PARTIEL`: échantillonnage de sockets au repos, pas capture de paquets; lien HTTPS déclenché par l’utilisateur et fenêtres entre échantillons non exercés. Audit source statique continue de bloquer les clients réseau usuels et SDK analytics connus.

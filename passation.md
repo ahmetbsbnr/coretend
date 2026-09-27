@@ -1,6 +1,35 @@
 # Passation complète — CoreTend Next
 
-**État au 27-09-2026.** Reconstruction active, pas finalisée, aucune release publique. Dépôt `ahmetbsbnr/coretend`; worktree `next/`; base distante `origin/next` à `55e8628`. Branche courante `feat/reconstruction-open-musts`, PR brouillon #55 ouverte vers `next`; dernier head qualifié `356d7c7`. Dernière tranche code : FR-08 hard links/sparse; `make qualify` local et CI GitHub passent. Aucun merge/tag/release/publication.
+### FR-11 — migration simultanée au lancement — 27-09-2026
+
+- AX sur app Debug isolée reproduisait « Données locales indisponibles » dans Overview; SQLite fixture était valide. Shell et SavedFilesView ouvraient simultanément le store neuf; les deux migrations pouvaient lire version 0 avant attente du verrou puis rejouer les mêmes créations de tables.
+- `SQLiteStore.migrate()` relit `user_version` sous `BEGIN IMMEDIATE`; deuxième connexion applique seulement migrations manquantes. Test fixture force deux connexions derrière un writer lock : rouge auparavant (`table performance_samples already exists`), vert après; schéma v5 et lecture `saved_files` disponibles.
+- AX relancé avec HOME/store/TMPDIR isolés : Overview montre son état vide normal sans erreur de stockage. Aucun store personnel touché. FR-11 reste PARTIEL; test ciblé et `make qualify` passent.
+
+### NFR-06 — compteur de progression réel — 27-09-2026
+
+- Les vues Explorer, Nettoyage et Doublons affichent désormais le compteur `ScanCore.progress(completed:)` pendant l’analyse; le compteur est remis à zéro au départ/annulation. Aucun total ni taux de progression inventé.
+- Moteurs Doublons/Images similaires émettent maintenant progrès mesuré par candidat haché/décodé et paire comparée. Travail déplacé vers tâche utilitaire détachée; annulation UI relayée au worker, flux borné à dernière valeur. Tests ScanCore/AppShell passent. Builds Release propres identiques : App `022d65ca…`, CLI `e2d6987d…`; hashes complets dans `Documentation/Evidence/ReleaseReproducibility.md`. NFR-06 reste PARTIEL jusqu’à qualification native, VoiceOver et accessibilité.
+
+### FR-10 — erreurs d’accès sur éléments internes — 27-09-2026
+
+- Explorer, Doublons et Nettoyage conservent désormais l’ensemble des causes `itemFailure`; messages séparent refus `permission_denied`, élément `missing`, indisponibilité/autres erreurs, et cas combinés. Aucun chemin ignoré n’est rendu, aucune conclusion de sûreté ou d’absence.
+- AppShell vérifie distinction EN/FR; app compile. `make qualify` passe après la logique FR-10; FR-10 reste PARTIEL sans diagnostic TCC/FDA exhaustif et qualification native. Hash Release actuel après NFR-06 documenté dans la section ci-dessus et `Documentation/Evidence/ReleaseReproducibility.md`.
+
+### Suite Must — FR-03/FR-06 — 27-09-2026
+
+- FR-03 : lignes Cleanup montrent octets alloués, taille logique, date et risque; Explore ajoute date aux mesures. Description VoiceOver inclut nom, source, état/risque, mesures EN/FR, avec unknown conservé. Test AppShell de résumé bilingue et build App passent. Native visual/VoiceOver reste à qualifier.
+- FR-06 : nouvelle fixture Domain exerce proposition→refus et proposition→annulation, confirme événements distincts, contenu original inchangé et aucun appel Fake Trash. Test ciblé passe. Statut reste PARTIEL jusqu’aux parcours natifs/Trash macOS.
+- Qualification précédente FR-03/FR-06 : `make qualify` passe avec 31 tests AppShell et le nouveau test Domain, runtime fixture, builds et subprocess CLI/SIGINT. Hashes Release à ce point étaient App `acad10e6…`, CLI `803ab48a…`; les hashes courants FR-10 sont consignés dans section ci-dessus et `Documentation/Evidence/ReleaseReproducibility.md`. Changements restent locaux.
+
+### Reprise en cours — 27-09-2026
+
+- Quick Look Explore/Doublons/Images similaires vérifie le candidat juste avant aperçu : racine réelle, fichier régulier, chemin toujours sous racine. Scope d’accès conservé pendant aperçu puis libéré à fermeture/départ; chemins disparus, symlinks, dossiers et extérieurs refusés. Deux tests AppShell couvrent acceptation/refus; interaction native reste à qualifier, FR-23/`quicklook.extended` PARTIEL.
+- Guide utilisateur précise ce refus de candidats invalides. NFR-12 traceability gate couvre maintenant 91 lignes, exige docs/preuve ISO à jour/owner partout, code+tests pour tout statut actif et référence cahier pour scope différé. Fixtures rejettent Should actif sans tests, preuve périmée/mal formée et CSV irrégulier; NFR-12 reste PARTIEL jusqu’à revue indépendante.
+- `make qualify` complet passe après FR-11 : gates site/traceabilité/sûreté/architecture, smokes install/uninstall et runtime Release, XCTest, builds Debug et CLI/SIGINT. Les builds Release propres App/CLI sont byte-identiques (`022d65ca…` / `e2d6987d…`); test migration concurrente, tests AppShell FR-10/NFR-06 et `git diff --check` passent.
+- État registre recalculé : 91 lignes = 81 PARTIEL, 2 EN_COURS, 6 À_CONSTRUIRE, 2 VÉRIFIÉ. Must = 76 PARTIEL, 2 VÉRIFIÉ; pondération indicative 51,3 % Must / 47,3 % total. Pas score de complétion produit. Plan local `Documentation/Project/Remaining-musts-plan.md` conservé non suivi.
+
+**État au 27-09-2026.** Reconstruction active, pas finalisée, aucune release publique. Dépôt `ahmetbsbnr/coretend`; worktree `next/`; base distante `origin/next` à `55e8628`. Branche courante `feat/reconstruction-open-musts`, PR brouillon #55 ouverte vers `next`; dernier head distant avec CI réussi `0f29b90`. La tranche locale NFR-13 ajoute un smoke de builds Release propres et passe `make qualify`; elle reste non commitée/non poussée. Aucun merge/tag/release/publication.
 
 ## État immédiat
 
@@ -8,10 +37,10 @@
 - Cahier des charges complet et approuvé : QQOQCCP, MoSCoW, RACI, objectifs, exigences, architecture, risques et séquence. Voir `Documentation/Project/Cahier-des-charges.md`.
 - Traceability contient 40 FR/NFR + 51 capacités; 91 statuts renseignés. La ligne NFR-07 a été réalignée sur les colonnes CSV; statut PARTIEL tant que revue clavier/VoiceOver/Dynamic Type/contraste/Reduce Motion n’est pas faite.
 - App SwiftUI macOS, CLI Swift, persistance SQLite, modules métier, site statique EN/FR et scripts de paquet sont présents. Résultats/états restent partiels selon `Documentation/Traceability.csv`; aucun jalon ne signifie produit final.
-- Dernière qualification locale : `make qualify` le 27-09 après la tranche FR-08; elle couvre génération/site, intégrité et dates du registre CSV, audits sûreté/architecture, install/uninstall fixtures, smoke runtime Release isolé, XCTest, builds Debug App/CLI et subprocess CLI/SIGINT. Le CI GitHub `qualify` passe sur le head `356d7c7`. Aucune UI native/VoiceOver n’est qualifiée par ce gate.
+- Dernière qualification locale : `make qualify` le 27-09 sur le worktree avec builds Release reproductibles; elle couvre génération/site, intégrité et dates du registre CSV, audits sûreté/architecture, install/uninstall fixtures, smoke runtime Release isolé, quatre builds Release propres octet-identiques par paires via `.build/qualify-clean-release-scratch`, XCTest, builds Debug App/CLI et subprocess CLI/SIGINT. Le CI GitHub `qualify` passe sur le head distant `0f29b90` (sans cette tranche locale). Aucune UI native/VoiceOver n’est qualifiée par ce gate.
 - Paquet courant : `Artifacts/CoreTend-local-unsigned.zip`, arm64, produit depuis le code app `b0287bf`. SHA-256 `94503244830030785388e6ea2359dc844af22d719d5e82729f14408f1697a299`. `make package-local verify-package` passe; vérification limitée à Info.plist, archive et Mach-O. Non lancé, installé sur le Mac, signé, notarié ou publié. Preuve dans `Documentation/ReleaseEvidence.md`.
 - Copie greenfield historique `rebuild/` conservée localement comme provenance. Passation/documents 1.x archivés sous `Documentation/Archive/Legacy-Reconstruction/`; ils ne décrivent pas le code actuel.
-- État courant après reprise du 27-09-2026 : 91 lignes, 83 `PARTIEL`, 2 `EN_COURS`, 6 `À_CONSTRUIRE`. Les 78 Must sont `PARTIEL` (aucun `VÉRIFIÉ`). Estimation indicative pondérée (VÉRIFIÉ=100 %, PARTIEL=50 %, EN_COURS=25 %, À_CONSTRUIRE=0 %) : 50 % des Must, 46 % du registre. Ce n’est pas un indicateur officiel; critères UI/macOS, compatibilité et distribution restent ouverts.
+- État courant après reprise du 27-09-2026 : 91 lignes, 81 `PARTIEL`, 2 `EN_COURS`, 6 `À_CONSTRUIRE`, 2 `VÉRIFIÉ`. Parmi les Must : 76 `PARTIEL`, 2 `VÉRIFIÉ`. Estimation indicative pondérée (VÉRIFIÉ=100 %, PARTIEL=50 %, EN_COURS=25 %, À_CONSTRUIRE=0 %) : 51,3 % des Must, 47,3 % du registre. Ce n’est pas un indicateur officiel; critères UI/macOS, compatibilité et distribution restent ouverts.
 
 ## Jalons locaux depuis la dernière passation
 
@@ -30,15 +59,15 @@
 
 - **Task 22 — NFR-09 baseline synthétique** : `make benchmark-scan` mesure CLI Release sur 10 000 fichiers. Warm median 0,913 s wall / 0,979 s CPU / 74,18 MiB RSS max sur arm64/macOS 27.0. Aucun budget choisi; mesures UI/corpus réel restent ouvertes. Détails dans `Documentation/Evidence/PerformanceBaseline.md`. `make qualify` passe.
 - **Task 10 — Integrity LaunchAgents (`569cc4d`, `fcbb687`)** : revue consultative plist dans seul dossier explicitement choisi, plafonds 500 candidats/1 Mio, lecture sans suivre symlinks et ancrage au descripteur de racine; erreurs visibles. Tests synthétiques couvrent plist valide/malformé/trop grand, symlink, limite et remplacement de racine. N’affirme ni activité ni sûreté; `integrity.loginitems` reste PARTIEL avant qualification native et intégration aux services système.
-- **NFR-13 — builds Release** : `swift build -c release --product CoreTendApp` et `CoreTendCLI` réussissent sans avertissement sur arm64/macOS 27.0. Dépendance externe absente de Package.swift; pas de `Package.resolved`. NFR-13 reste PARTIEL faute de preuve de reproductibilité entre builds propres et hôtes.
+- **NFR-13 — builds Release** : deux scratch builds propres indépendants produisent des binaires octet-identiques pour App/CLI via préfixe logique stable, sans avertissement, arm64/macOS 27.0. Pas de dépendance SwiftPM externe ni `Package.resolved`; `make qualify` n’exige pas de secret. NFR-13 est `VÉRIFIÉ` sur l’hôte observé; matrice de compatibilité relève de NFR-08.
 - **FR-10 — erreurs de racine distinctes** : `permission_denied` affiche un refus explicite, `missing` l’absence de racine, `metadata_unavailable` la disponibilité indéterminée. Test AppShell bilingue rouge/vert; `make qualify` passe. Aucun diagnostic TCC/FDA exhaustif ni qualification UI native.
-- **NFR-11 — smoke navigateur site local** : Lighthouse sur homepage FR donne Accessibilité 100/Bonnes pratiques 100; clavier montre skip-link et contour visible; largeur 640 CSS sans débordement. Réduction du mouvement non émulée, zoom réel et autres pages non vérifiés. Détails et limites dans `Documentation/Evidence/SiteAccessibilitySmoke.md`.
+- **NFR-11 — smoke navigateur site local** : la première passe homepage FR (résumée dans l’entrée historique ci-dessous) a été étendue ensuite aux 11 routes. Résultat courant : Lighthouse Accessibilité/Bonnes pratiques/Agentic Browsing 100 sur chacune; les 10 pages contenu passent clavier skip-link et largeur 640 CSS. Réduction du mouvement en runtime, zoom réel et VoiceOver restent ouverts. Détails dans `Documentation/Evidence/SiteAccessibilitySmoke.md`.
 - **FR-13 — contrat CLI** : script subprocess vérifie help/usage/store inaccessible/scan partiel et codes 0/1/2 avec stderr stable; paths/store non créés implicitement. Scan Control-C sur 30 000 fichiers temporaires sort 130, pas terminaison POSIX `-2`. Intégré à `make qualify`, matrice passe Debug et Release. Parseur distingue store manquant et argument invalide; aide/localisation CLI restent à compléter.
 
 ## Jalons récents intégrés
 
 - **PR #46 — backend import et présentation Performance (`abb0d58`)** : import prefs legacy ouvre avec `O_NONBLOCK | O_NOFOLLOW`; lit un fichier régulier seulement; revalide device, inode, mode, taille, mtime et ctime après lecture. FIFO est rejeté sans blocage; source reste intacte. Test fixture FIFO et test d’import idempotent passent. Premier raffinement du graphique Performance.
-- **PR #47 — site et confidentialité (`c87d01d`)** : contenu EN/FR décrit palette ⌘K, favoris explicites, récents opt-in (off par défaut, 100 max), chemins/dernières tailles mémorisés localement et retrait des entrées. `make build-site site-check` passe. FR-15 reste PARTIEL : revue navigateur, a11y et déploiement réel non faits.
+- **PR #47 — site et confidentialité (`c87d01d`)** : contenu EN/FR décrit palette ⌘K, favoris explicites, récents opt-in (off par défaut, 100 max), chemins/dernières tailles mémorisés localement et retrait des entrées. `make build-site site-check` passe. FR-15 est maintenant VÉRIFIÉ dans son périmètre statique; contrôles navigateur/OS relèvent de NFR-11, déploiement de NFR-14.
 - **PR #48 — validation SQLite (`574e646`)** : journal refuse timestamps non finis avant insert; Performance refuse date de mesure ou horloge de retention non finie avant transaction/pruning. Trois tests couvrent +∞/NaN et absence d’écriture. `make qualify` passe.
 - **PR #49 — axe du graphique (`5408782`)** : axe X affiche jour/mois/heure. Échantillons demeurent des points mesurés; pas d’interpolation.
 - **PR #50 — sélection graphique (`b0287bf`)** : curseur résolu au point connu le plus proche; égalité choisit observation la plus récente; inconnues et curseur invalide ignorés. Repère et lecture valeur/date montrent mesure réelle. Tests Domain : 2/2. UI souris/clavier/VoiceOver native reste à vérifier.
@@ -133,7 +162,7 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 ### NFR-12 — gate de complétude des preuves Must — 27-09-2026
 
 - `check_traceability.py` exige maintenant pour chacune des 78 lignes Must : code, tests, preuve datée, owner; chaque référence de fichier dans `code`/`tests` doit exister. Le gate a d’abord échoué sur FR-05 sans preuve, puis passe après réconciliation des preuves disponibles et lacunes restantes.
-- Toutes les lignes Must sont désormais `PARTIEL` (78), aucune `EN_COURS`/`À_CONSTRUIRE`/`VÉRIFIÉ`. Ce statut ne clôt pas les critères; les gaps visibles restent notamment UI/accessibilité native, vraie Corbeille, FDA exhaustive, compatibilité macOS 14/autre hôte, attribution des données Apps et release. Avancement pondéré estimé à 50 % des Must et 46 % du registre (PARTIEL=50 %, EN_COURS=25 %, À_CONSTRUIRE=0 %, VÉRIFIÉ=100 %). Chiffre indicatif uniquement; aucun Must n’est vérifié de bout en bout.
+- À cette étape historique, toutes les lignes Must étaient `PARTIEL` (78), aucune `EN_COURS`/`À_CONSTRUIRE`/`VÉRIFIÉ`. Ce statut ne clôt pas les critères; les gaps visibles restent notamment UI/accessibilité native, vraie Corbeille, FDA exhaustive, compatibilité macOS 14/autre hôte, attribution des données Apps et release. Avancement pondéré estimé à 50 % des Must et 46 % du registre (PARTIEL=50 %, EN_COURS=25 %, À_CONSTRUIRE=0 %, VÉRIFIÉ=100 %). Chiffre indicatif uniquement; aucun Must n’est vérifié de bout en bout.
 - L’onboarding a des clés `ProductCopy` EN/FR pour portée, confidentialité et action de démarrage; test rouge/vert AppShell couvre dossiers choisis, scans lecture seule, confirmation Corbeille et politique FDA. Sheet/interaction première ouverture restent à qualifier.
 - `make qualify` a repassé après réconciliation du registre et extraction/tests d’onboarding; code sortie 0. Il inclut smoke Release isolé, XCTest, builds App/CLI, audits et CLI SIGINT. `git diff --check` et `check_traceability.py` passent. Aucun artefact dans `Artifacts/` remplacé; plan `Documentation/Project/Remaining-musts-plan.md` préservé et non suivi.
 
@@ -148,9 +177,9 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 
 ### État de branche actuel — 27-09-2026
 
-- Commits de reprise : `8918503`, `47ec49e`, `1dec13b`, `f39cc3f`, `ba6e7a5`, `356d7c7`. Branche poussée sur `origin/feat/reconstruction-open-musts`; PR brouillon #55 vers `next`: https://github.com/ahmetbsbnr/coretend/pull/55.
-- CI GitHub `qualify` de PR #55 réussie le 27-09; contrôles Vercel également verts. PR reste ouverte en brouillon. Aucun merge/tag/release/publication.
-- L’unique changement local non suivi `Documentation/Project/Remaining-musts-plan.md` est préservé et absent des commits.
+- Commits de reprise : `8918503`, `47ec49e`, `1dec13b`, `f39cc3f`, `ba6e7a5`, `356d7c7`, `0f29b90`. Branche poussée sur `origin/feat/reconstruction-open-musts`; PR brouillon #55 vers `next`: https://github.com/ahmetbsbnr/coretend/pull/55.
+- CI GitHub `qualify` de PR #55 passe sur le head distant `0f29b90` le 27-09; contrôles Vercel également verts à ce head. PR reste ouverte en brouillon. Aucun merge/tag/release/publication.
+- `Documentation/Project/Remaining-musts-plan.md` reste préservé et exclu des commits. Changements NFR-13 actuels restent locaux après revue indépendante sans finding.
 
 
 ### FR-08 — déduplication des allocations treemap — 27-09-2026
@@ -158,4 +187,52 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 - `ScanResult` porte identité device/inode issue de `lstat`; `TreemapLayout` déduplique seulement la carte, choisit de façon stable le chemin visible lexicographiquement premier et laisse les mesures ligne inchangées. Libellé bilingue parle d’allocations distinctes.
 - Tests ScanCore : scan d’un hard link expose identité/allocation identiques sur deux chemins; treemap attribue une seule aire à l’inode; fixture sparse distingue 8 Mio logiques et allocation locale plus faible. Tests ciblés et `make qualify` passent. `git diff --check` passe.
 - Le gate de traçabilité couvre aussi les lignes CSV surnuméraires; cette vérification a détecté puis corrigé une colonne décalée dans la preuve FR-08.
-- FR-08 reste `PARTIEL` jusqu’aux vérifications native/VoiceOver, cloud et volumes représentatifs. PR #55 mise à jour; revue indépendante sans blocage; CI GitHub qualifie le head `356d7c7`. Le plan local non suivi reste préservé.
+- FR-08 reste `PARTIEL` jusqu’aux vérifications native/VoiceOver, cloud et volumes représentatifs. Le head `0f29b90` inclut la correction hard links/sparse et sa documentation; revue indépendante sans blocage; CI GitHub passe. Le plan local non suivi reste préservé.
+
+
+### NFR-13 — deux builds Release propres — 27-09-2026
+
+- `Scripts/test_clean_release_builds.py` compile les deux produits Release dans deux scratch dirs temporaires, contrôle absence d’avertissement et présence de binaire, puis affiche SHA-256. Intégré à `make qualify` via `make clean-release-build-smoke`.
+- Deux builds propres par produit utilisent des scratch dirs physiques distincts via le même symlink workspace stable; quatre builds réussissent sans warning et chaque paire est octet-identique. Hashes dans `Documentation/Evidence/ReleaseReproducibility.md`.
+- Revue indépendante valide le nettoyage ownership-checked du symlink et les tests de collision/remplacement. `make qualify`, `git diff --check`, checker de traceabilité et fixtures unitaires passent. NFR-13 est `VÉRIFIÉ` pour source/host/toolchain/checkout observés; compatibilité autre hôte/version reste NFR-08. Pas de push/merge/publication.
+
+### Revue MoSCoW — 27-09-2026
+
+- Les six capacités `shell.menubar`, `settings.menubar`, `quicklook.extended`, `favrec.module`, `ui.commandpalette` et `clutter.largeold` sont bien classées `Should` selon le §7 du cahier. Les statuts restent fondés sur leurs preuves : menus système `À_CONSTRUIRE`, palette/filtres/Quick Look `PARTIEL`, favoris/récents `EN_COURS`.
+- Les 22 tâches du plan local sont couvertes par implémentation/preuve. Il reste 76 Must `PARTIEL` et deux `VÉRIFIÉ`; preuves d’interface native, compatibilité hôte, Corbeille réelle et distribution restent à faire sans simulation de validation humaine.
+- Gate complet rejoué après correctif de langue : `make qualify` passe, dont 28 tests AppShell, smoke runtime isolé, quatre builds Release propres (App/CLI en paires octet-identiques), builds Debug App/CLI et subprocess CLI/SIGINT. `git diff --check`, `check_traceability.py` et `test_traceability.py` passent. Hash Release App `9bc252b070a11d8ebf4a2143b6b73d5635941d494c7ccdaad94fc1b25e34397c`; CLI `803ab48ab6c0fcd03aead4fac192a85c50caf9e1f3632bafbb27c349d3ff9161`.
+- Calcul registre : 76/78 Must PARTIEL, 2/78 VÉRIFIÉ = 51,3 % pondéré (PARTIEL 50 %, VÉRIFIÉ 100 %). Registre entier : 81 PARTIEL, 2 EN_COURS, 6 À_CONSTRUIRE, 2 VÉRIFIÉ = 47,3 %. Score de preuve, pas complétion produit ni score des Should.
+
+### FR-14 — smoke install→lancement — 2026-09-27
+
+- Runtime smoke copie le Release executable dans `.app` fixture, installe via `install_local.sh` sous HOME temporaire, lance 8 s, puis retire seulement l’app via `uninstall_local.sh --keep-data`; SQLite reste présent au store fixture après retrait.
+- Revue a détecté absence de recherche des autres bases SQLite fixture et besoin de rescanner après arrêt. Smoke balaie `.sqlite`/`.sqlite3`/`.db` et sidecars WAL/SHM/journal avant et après `wait()`, chemin résolu comparé au store; deux tests acceptent l’intérieur et rejettent l’extérieur. Test rouge d’intégration, puis 4 tests helper verts.
+- `make qualify` repasse (site/traceability/safety/architecture/install/uninstall/runtime/reproducible Release/XCTest/builds/CLI SIGINT). FR-14 reste PARTIEL : Finder/Launch Services, désinstallation interactive, signature, notarisation, macOS minimum et autre hôte non qualifiés.
+- Preuve AX d’origine reste correctement séparée : fenêtre/titres observés sur `.app` fixture, tandis que test d’installation confirme seulement processus vivant + store fixture. Voir `Documentation/Evidence/AppWindowRuntimeQualification.md`.
+
+### FR-15 / NFR-11 — routes du site local — 2026-09-27
+
+- Lighthouse Chrome mobile sur 11 routes locales (language chooser + 5 EN + 5 FR) : Accessibilité, Bonnes pratiques et Agentic Browsing 100 par route. Sur 10 pages contenu à 640 × 900 CSS px : aucun overflow; première touche Tab focalise lien d’évitement traduit, contour 3 px, cible existante.
+- SEO 50 attendu en partie par `noindex,nofollow` tant que l’aperçu n’est pas publié; descriptions meta manquantes. Zoom navigateur réel, VoiceOver, taille texte OS, reduced-motion runtime, headers publiés et deuxième navigateur non vérifiés. FR-15 est VÉRIFIÉ dans son périmètre; NFR-11 reste PARTIEL.
+
+### Qualification fenêtre SwiftUI isolée — 27-09-2026
+
+- Lancement Release dans un `.app` fixture, avec HOME/TMPDIR/store sous racine temporaire; CoreGraphics observe une fenêtre écran `CoreTend` appartenant au processus et SQLite reste sous le store fixture.
+- Test d’acceptation fixture ensuite : AX voit l’accueil français; 8 lancements avec chaque route env rendent le heading attendu, ID obsolète retombe sur Vue d’ensemble. Preuve dans `Documentation/Evidence/AppWindowRuntimeQualification.md`; pas de preuve pour clic de sidebar, VoiceOver parlé, Finder/Launch Services ou distribution. FR-01, FR-14 et `shell.launch` demeurent `PARTIEL`.
+
+### Isolation des préférences en fixtures — 27-09-2026
+
+- `HOME`/`CFFIXED_USER_HOME` n’isolent pas à eux seuls `UserDefaults` derrière `cfprefsd`. `CoreTendPreferences` contourne CFPreferences lorsqu’un override de store test est présent; valeurs explicites `CORETEND_TEST_*`, écritures no-op. Recent Files passe par un binding racine partagé.
+- 7 tests AppShell passent, dont priorité de la langue fixture sur valeur SQLite; revue finale sans finding. `make qualify` passe après correctif. Matrice Release/AX utilise uniquement valeurs d’environnement et store fixture; persistance production via UserDefaults reste hors de cette preuve.
+
+
+### Suite FR-15 / NFR-10 — 2026-09-27
+
+- Revue indépendante : aucun critère FR-15 non satisfait identifié. Statut `VÉRIFIÉ` limité au périmètre approuvé de contenu/capacités/OS/langues/état publication, génération statique et gate browser/accessibilité existant. Pas d’URL/checksum fictif. Zoom réel, VoiceOver, reduced-motion runtime, autres navigateurs et déploiement restent sous NFR-11/NFR-14.
+- `Scripts/check_architecture.py` suit maintenant les dépendances transitives de ScanCore; test couvre chemin ScanCore → ScanAdapter → Persistence. Cinq cas synthétiques passent; revue indépendante architecture reste ouverte.
+- Comptage actuel: 76 Must `PARTIEL`, 2 `VÉRIFIÉ`; 81 `PARTIEL`, 2 `EN_COURS`, 6 `À_CONSTRUIRE`, 2 `VÉRIFIÉ` sur 91. Pondération indicative: 51,3 % Must, 47,3 % registre.
+
+### NFR-04 — observation des sockets runtime — 2026-09-27
+
+- Smoke d’installation Release fixture observe le processus avec `lsof` toutes les ~0,5 s pendant huit secondes. Exécution réelle : 14 échantillons, aucun socket Internet IPv4/IPv6 ouvert; test unitaire détecte un listener loopback détenu par son propre processus.
+- Le gate est ajouté à `make qualify` via `app-runtime-smoke` et test helper. `NFR-04` reste `PARTIEL`: pas de capture paquets, le lien de mise à jour déclenché explicitement n’a pas été suivi, et une socket de durée inférieure à l’intervalle peut échapper aux échantillons.

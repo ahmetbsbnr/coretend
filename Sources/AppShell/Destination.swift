@@ -51,6 +51,7 @@ public enum ProductCopy {
         "scan.rootMissing": "The selected folder no longer exists.", "scan.rootSymlink": "The selected folder is a symbolic link; choose its real folder.",
         "scan.rootExcluded": "This folder is excluded in Settings.", "scan.rootNotFolder": "The selected item is not a folder.",
         "scan.empty": "No files found in the selected folder.", "scan.unknownSize": "Unknown size",
+        "preview.unavailable": "This file is no longer available inside the selected folder.",
         "scan.cancelled": "Scan cancelled.", "scan.cancel": "Cancel scan", "duplicates.choose": "Choose a folder to compare",
         "explore.search": "Search names and folders", "explore.sort": "Sort", "explore.largest": "Largest local size", "explore.oldest": "Oldest first", "explore.name": "Name",
         "explore.preview": "Preview",
@@ -166,6 +167,7 @@ public enum ProductCopy {
         "scan.rootMissing": "Le dossier choisi n’existe plus.", "scan.rootSymlink": "Le dossier choisi est un lien symbolique; choisissez le dossier réel.",
         "scan.rootExcluded": "Ce dossier est exclu dans les réglages.", "scan.rootNotFolder": "L’élément choisi n’est pas un dossier.",
         "scan.empty": "Aucun fichier dans le dossier sélectionné.", "scan.unknownSize": "Taille inconnue",
+        "preview.unavailable": "Ce fichier n’est plus disponible dans le dossier sélectionné.",
         "scan.cancelled": "Analyse annulée.", "scan.cancel": "Annuler l’analyse", "duplicates.choose": "Choisir un dossier à comparer",
         "explore.search": "Rechercher noms et dossiers", "explore.sort": "Trier", "explore.largest": "Plus grande taille locale", "explore.oldest": "Plus ancien d’abord", "explore.name": "Nom",
         "explore.preview": "Aperçu",
@@ -271,6 +273,15 @@ public enum ProductCopy {
         (isFrench ? french : english)[key] ?? key
     }
 
+    public static func scanResultAccessibilitySummary(name: String, source: String, state: String,
+                                                       allocated: String, logical: String, modified: String,
+                                                       french isFrench: Bool) -> String {
+        if isFrench {
+            return "\(name). Source : \(source). État : \(state). Allouée localement : \(allocated). Taille logique : \(logical). Modifié : \(modified). Candidat à examiner avant toute action."
+        }
+        return "\(name). Source: \(source). State: \(state). Allocated locally: \(allocated). Logical size: \(logical). Modified: \(modified). Candidate to review before action."
+    }
+
     public static func activityDetail(_ detail: String, failureCode: String?, french isFrench: Bool) -> String {
         guard failureCode == "trash_failed" else { return detail }
         let marker = " | reason=trash_failed"
@@ -290,5 +301,44 @@ public enum ProductCopy {
         default: key = "scan.rootUnavailable"
         }
         return value(for: key, french: isFrench)
+    }
+
+    public static func scanPartialFailure(reasons: Set<String>, french isFrench: Bool) -> String {
+        let denied = reasons.contains("permission_denied")
+        let missing = reasons.contains("missing")
+        let other = reasons.contains(where: { !["permission_denied", "missing"].contains($0) })
+        if isFrench {
+            if denied && other { return "macOS a refusé l’accès à certains éléments; les détails d’autres éléments n’ont pas pu être lus." }
+            if denied { return "macOS a refusé l’accès à certains éléments du dossier choisi." }
+            if missing && other { return "Certains éléments ont disparu pendant l’analyse; d’autres détails n’ont pas pu être lus." }
+            if missing { return "Certains éléments ont disparu pendant l’analyse." }
+            return "Les détails de certains éléments n’ont pas pu être lus."
+        }
+        if denied && other { return "macOS denied access to some items; details for other items could not be read." }
+        if denied { return "macOS denied access to some items in the chosen folder." }
+        if missing && other { return "Some items disappeared during the scan; details for others could not be read." }
+        if missing { return "Some items disappeared during the scan." }
+        return "Details for some items could not be read."
+    }
+
+    public static func scanProgress(completedFiles: Int, french isFrench: Bool) -> String {
+        let count = max(0, completedFiles)
+        if isFrench { return count == 1 ? "1 fichier examiné" : "\(count) fichiers examinés" }
+        return "\(count) files examined"
+    }
+
+    public static func duplicateHashProgress(completed: Int, total: Int, french isFrench: Bool) -> String {
+        let total = max(0, total)
+        let done = min(max(0, completed), total)
+        return isFrench ? "Hachage des candidats : \(done)/\(total)" : "Hashing candidates: \(done)/\(total)"
+    }
+
+    public static func similarImageProgress(completed: Int, total: Int, comparingPairs: Bool, french isFrench: Bool) -> String {
+        let total = max(0, total)
+        let done = min(max(0, completed), total)
+        if comparingPairs {
+            return isFrench ? "Comparaison des paires : \(done)/\(total)" : "Comparing pairs: \(done)/\(total)"
+        }
+        return isFrench ? "Analyse des images : \(done)/\(total)" : "Checking images: \(done)/\(total)"
     }
 }

@@ -16,6 +16,20 @@ def dependency_names(target):
     return names
 
 
+def reachable_dependencies(target, targets):
+    pending = list(dependency_names(target))
+    visited = set()
+    while pending:
+        name = pending.pop()
+        if name in visited:
+            continue
+        visited.add(name)
+        dependency = targets.get(name)
+        if dependency is not None:
+            pending.extend(dependency_names(dependency) - visited)
+    return visited
+
+
 def version_tuple(value):
     try:
         return tuple(int(part) for part in value.split("."))
@@ -44,7 +58,7 @@ def validate(package):
     scan_core = targets.get("ScanCore")
     if scan_core is None:
         errors.append("ScanCore target is missing")
-    elif dependency_names(scan_core) & {"SafetyCore", "Persistence"}:
+    elif reachable_dependencies(scan_core, targets) & {"SafetyCore", "Persistence"}:
         errors.append("ScanCore may not depend on SafetyCore or Persistence")
 
     if "SafetyCore" not in targets:

@@ -13,11 +13,22 @@ struct CoreTendApp: App {
 }
 
 private struct CoreTendRootView: View {
-    @State private var selection: Destination? = Destination.restored(from: UserDefaults.standard.string(forKey: "coretend.lastDestination"))
+    private let preferences: CoreTendPreferences
+    @State private var selection: Destination?
     @State private var activeSheet: RootSheet?
-    @AppStorage("coretend.language") private var language = "system"
-    @AppStorage("coretend.onboarding.completed") private var onboardingCompleted = false
+    @State private var language: String
+    @State private var onboardingCompleted: Bool
+    @State private var recentFilesEnabled: Bool
     private var french: Bool { language == "fr" || (language == "system" && Locale.preferredLanguages.first?.hasPrefix("fr") == true) }
+
+    init() {
+        let preferences = CoreTendPreferences()
+        self.preferences = preferences
+        _selection = State(initialValue: Destination.restored(from: preferences.lastDestination))
+        _language = State(initialValue: preferences.resolvedLanguage(storedValue: nil))
+        _onboardingCompleted = State(initialValue: preferences.onboardingCompleted)
+        _recentFilesEnabled = State(initialValue: preferences.recentFilesEnabled)
+    }
 
     var body: some View {
         NavigationSplitView {
@@ -30,7 +41,7 @@ private struct CoreTendRootView: View {
             .listStyle(.sidebar)
         } detail: {
             if let selection {
-                DestinationView(destination: selection, french: french)
+                DestinationView(destination: selection, french: french, recentFilesEnabled: $recentFilesEnabled)
             } else {
                 ContentUnavailableView(ProductCopy.value(for: "empty.title", french: french), systemImage: "square.grid.2x2")
             }
@@ -49,7 +60,7 @@ private struct CoreTendRootView: View {
         }
         .sheet(item: $activeSheet) { sheet in
             switch sheet {
-            case .settings: SettingsView(french: french, language: $language)
+            case .settings: SettingsView(french: french, language: $language, recentFilesEnabled: $recentFilesEnabled)
             case .commands:
                 CommandPaletteView(french: french) { target in
                     switch target {
@@ -61,10 +72,16 @@ private struct CoreTendRootView: View {
             }
         }
         .onChange(of: selection) { _, destination in
-            if let destination { UserDefaults.standard.set(destination.rawValue, forKey: "coretend.lastDestination") }
+            if let destination { preferences.saveLastDestination(destination.rawValue) }
         }
+        .onChange(of: language) { _, value in preferences.saveLanguage(value) }
+        .onChange(of: onboardingCompleted) { _, value in preferences.saveOnboardingCompleted(value) }
+        .onChange(of: recentFilesEnabled) { _, value in preferences.saveRecentFilesEnabled(value) }
         .task {
-            if let store = try? await LocalStoreAccess.open(), let saved = try? await store.languagePreference() { language = saved }
+            if let store = try? await LocalStoreAccess.open(), preferences.usesPersistentStorage,
+               let saved = try? await store.languagePreference() {
+                language = preferences.resolvedLanguage(storedValue: saved)
+            }
             if !onboardingCompleted { activeSheet = .onboarding }
         }
     }
@@ -92,6 +109,7 @@ private struct OnboardingView: View {
 private struct DestinationView: View {
     let destination: Destination
     let french: Bool
+    @Binding var recentFilesEnabled: Bool
 
     var body: some View {
         ScrollView {
@@ -124,7 +142,7 @@ private struct DestinationView: View {
         case .overview: SavedFilesView(french: french)
         case .record: RecordView(french: french)
         case .cleanup: CleanupView(french: french)
-        case .explore: ExploreScanView(french: french)
+        case .explore: ExploreScanView(french: french, recentFilesEnabled: $recentFilesEnabled)
         case .duplicates: DuplicateScanView(french: french)
         case .applications: ApplicationsView(french: french)
         case .integrity: IntegrityView(french: french)

@@ -568,6 +568,45 @@ final class FileActionServiceTests: XCTestCase {
         XCTAssertEqual(declinedCallCount, 0)
     }
 
+    func testRefusalAndCancellationAreDistinctAuditedOutcomesWithoutMutation() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-action-decline-cancel-\(UUID())", isDirectory: true)
+        let trashRoot = root.appendingPathComponent("trash", isDirectory: true)
+        try FileManager.default.createDirectory(at: trashRoot, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let refusedFile = root.appendingPathComponent("refused.tmp")
+        let cancelledFile = root.appendingPathComponent("cancelled.tmp")
+        let refusedBytes = Data("refusal fixture".utf8)
+        let cancelledBytes = Data("cancellation fixture".utf8)
+        try refusedBytes.write(to: refusedFile)
+        try cancelledBytes.write(to: cancelledFile)
+        let store = try SQLiteStore(url: root.appendingPathComponent("events.sqlite")); try await store.migrate()
+        let trash = DomainFixtureTrash(trashRoot: trashRoot)
+        let service = FileActionService(validator: PathValidator(),
+                                        executor: SafeActionExecutor(allowedRoots: [root], allowedRules: ["cleanup.fixture"], trash: trash),
+                                        store: store, allowedRoots: [root], allowedRuleIDs: ["cleanup.fixture"])
+
+        let refusal = try service.prepareReview([FileActionSelection(url: refusedFile, ruleID: "cleanup.fixture")])
+        let refusalProposalRecorded = await service.recordProposal(refusal)
+        XCTAssertTrue(refusalProposalRecorded)
+        XCTAssertThrowsError(try service.confirm(refusal, accepted: false))
+        let refusalRecorded = await service.recordRefusal(refusal)
+        XCTAssertTrue(refusalRecorded)
+
+        let cancellation = try service.prepareReview([FileActionSelection(url: cancelledFile, ruleID: "cleanup.fixture")])
+        let cancellationProposalRecorded = await service.recordProposal(cancellation)
+        XCTAssertTrue(cancellationProposalRecorded)
+        let cancellationRecorded = await service.recordCancellation(cancellation)
+        XCTAssertTrue(cancellationRecorded)
+
+        XCTAssertEqual(try Data(contentsOf: refusedFile), refusedBytes)
+        XCTAssertEqual(try Data(contentsOf: cancelledFile), cancelledBytes)
+        let calls = await trash.callCount
+        XCTAssertEqual(calls, 0)
+        let events = try await store.events()
+        XCTAssertEqual(events.map(\.kind), [.proposed, .refused, .proposed, .cancelled])
+        XCTAssertEqual(events.map(\.detail), [refusedFile.path, refusedFile.path, cancelledFile.path, cancelledFile.path])
+    }
+
     func testAuditWriteFailureBlocksTrashCall() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-action-\(UUID())", isDirectory: true)
         let trashRoot = root.appendingPathComponent("trash", isDirectory: true)

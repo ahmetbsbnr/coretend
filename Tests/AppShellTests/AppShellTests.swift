@@ -66,6 +66,32 @@ final class AppShellTests: XCTestCase {
         XCTAssertTrue(ProductCopy.value(for: "metrics.source.volume", french: true).contains("/"))
     }
 
+    func testScanResultAccessibilitySummaryPreservesSourceRiskAndIndependentMeasurementsInBothLanguages() {
+        let english = ProductCopy.scanResultAccessibilitySummary(
+            name: "fixture.bin", source: "User caches", state: "Low risk",
+            allocated: "Unknown", logical: "4 KB", modified: "Unknown", french: false
+        )
+        XCTAssertTrue(english.contains("fixture.bin"))
+        XCTAssertTrue(english.contains("Source: User caches"))
+        XCTAssertTrue(english.contains("State: Low risk"))
+        XCTAssertTrue(english.contains("Allocated locally: Unknown"))
+        XCTAssertTrue(english.contains("Logical size: 4 KB"))
+        XCTAssertTrue(english.contains("Modified: Unknown"))
+        XCTAssertTrue(english.contains("review before action"))
+
+        let french = ProductCopy.scanResultAccessibilitySummary(
+            name: "fixture.bin", source: "Caches utilisateur", state: "Risque élevé",
+            allocated: "Inconnu", logical: "4 Ko", modified: "Inconnu", french: true
+        )
+        XCTAssertTrue(french.contains("fixture.bin"))
+        XCTAssertTrue(french.contains("Source : Caches utilisateur"))
+        XCTAssertTrue(french.contains("État : Risque élevé"))
+        XCTAssertTrue(french.contains("Allouée localement : Inconnu"))
+        XCTAssertTrue(french.contains("Taille logique : 4 Ko"))
+        XCTAssertTrue(french.contains("Modifié : Inconnu"))
+        XCTAssertTrue(french.contains("examiner avant toute action"))
+    }
+
     func testProductCopyRejectsAffirmativeHealthAndRecoveredSpaceClaims() {
         let forbiddenEnglish = ["the system is healthy", "healthy system", "your mac is safe", "space recovered", "space was recovered", "space freed"]
         let forbiddenFrench = ["le système est sain", "système en bonne santé", "votre mac est sûr", "espace récupéré", "espace a été récupéré", "espace libéré"]
@@ -126,6 +152,42 @@ final class AppShellTests: XCTestCase {
         XCTAssertEqual(ProductCopy.scanRootFailure(reason: "permission_denied", french: true), "macOS a refusé l’accès au dossier sélectionné.")
         XCTAssertEqual(ProductCopy.scanRootFailure(reason: "metadata_unavailable", french: true), "Impossible de déterminer la disponibilité du dossier choisi.")
         XCTAssertEqual(ProductCopy.scanRootFailure(reason: "missing", french: true), "Le dossier choisi n’existe plus.")
+    }
+
+    func testPartialScanFailuresDistinguishPermissionDenialFromOtherUnavailableItems() {
+        let deniedEN = ProductCopy.scanPartialFailure(reasons: ["permission_denied"], french: false)
+        let unavailableEN = ProductCopy.scanPartialFailure(reasons: ["metadata_unavailable"], french: false)
+        XCTAssertTrue(deniedEN.contains("macOS denied access"))
+        XCTAssertTrue(unavailableEN.contains("could not be read"))
+        XCTAssertNotEqual(deniedEN, unavailableEN)
+        XCTAssertFalse(deniedEN.contains("absent"))
+
+        let deniedFR = ProductCopy.scanPartialFailure(reasons: ["permission_denied"], french: true)
+        let unavailableFR = ProductCopy.scanPartialFailure(reasons: ["metadata_unavailable"], french: true)
+        XCTAssertTrue(deniedFR.contains("macOS a refusé l’accès"))
+        XCTAssertTrue(unavailableFR.contains("n’ont pas pu être lus"))
+        XCTAssertNotEqual(deniedFR, unavailableFR)
+        XCTAssertFalse(deniedFR.localizedCaseInsensitiveContains("absent"))
+        let combined = ProductCopy.scanPartialFailure(reasons: ["permission_denied", "directory_read_failed"], french: false)
+        XCTAssertTrue(combined.contains("macOS denied access"))
+        XCTAssertTrue(combined.contains("other items could not be read"))
+        let missing = ProductCopy.scanPartialFailure(reasons: ["missing"], french: true)
+        XCTAssertTrue(missing.contains("ont disparu pendant l’analyse"))
+    }
+
+    func testScanProgressCopyReportsOnlyMeasuredCountInBothLanguages() {
+        XCTAssertEqual(ProductCopy.scanProgress(completedFiles: 0, french: false), "0 files examined")
+        XCTAssertEqual(ProductCopy.scanProgress(completedFiles: 12, french: false), "12 files examined")
+        XCTAssertEqual(ProductCopy.scanProgress(completedFiles: 0, french: true), "0 fichiers examinés")
+        XCTAssertEqual(ProductCopy.scanProgress(completedFiles: 12, french: true), "12 fichiers examinés")
+        XCTAssertEqual(ProductCopy.scanProgress(completedFiles: -2, french: false), "0 files examined")
+    }
+
+    func testAnalysisProgressCopyReportsMeasuredWorkAndClampsValues() {
+        XCTAssertEqual(ProductCopy.duplicateHashProgress(completed: 2, total: 5, french: false), "Hashing candidates: 2/5")
+        XCTAssertEqual(ProductCopy.duplicateHashProgress(completed: 9, total: 5, french: true), "Hachage des candidats : 5/5")
+        XCTAssertEqual(ProductCopy.similarImageProgress(completed: 3, total: 7, comparingPairs: false, french: true), "Analyse des images : 3/7")
+        XCTAssertEqual(ProductCopy.similarImageProgress(completed: 4, total: 6, comparingPairs: true, french: false), "Comparing pairs: 4/6")
     }
 
     func testFullDiskAccessGuidanceIsLocalizedAndDoesNotSolicitOrOpenSettings() {

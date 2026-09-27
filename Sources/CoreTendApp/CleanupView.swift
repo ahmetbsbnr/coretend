@@ -1,6 +1,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import ScanCore
+import ProductContract
 import AppShell
 import SafetyCore
 import Domain
@@ -13,6 +14,7 @@ struct CleanupView: View {
     @State private var results: [ScanResult] = []
     @State private var status: String?
     @State private var scanning = false
+    @State private var scanCompletedFiles = 0
     @State private var task: Task<Void, Never>?
     @State private var activeScanID: UUID?
     @State private var selectedItems: Set<URL> = []
@@ -70,6 +72,8 @@ struct CleanupView: View {
             }
             if scanning {
                 ProgressView(copy("scan.progress"))
+                Text(ProductCopy.scanProgress(completedFiles: scanCompletedFiles, french: french))
+                    .font(.caption).foregroundStyle(.secondary)
                 Button(copy("scan.cancel")) { cancelScan() }
             }
             if !results.isEmpty {
@@ -82,9 +86,24 @@ struct CleanupView: View {
                             Image(systemName: "doc")
                             Text(item.url.lastPathComponent).lineLimit(1)
                             Spacer()
-                            Text(size(item)).foregroundStyle(.secondary).monospacedDigit()
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text(french ? "Allouée : \(size(item.allocatedBytes))" : "Allocated: \(size(item.allocatedBytes))")
+                                Text(french ? "Logique : \(size(item.logicalBytes))" : "Logical: \(size(item.logicalBytes))")
+                                Text(french ? "Modifié : \(modified(item))" : "Modified: \(modified(item))")
+                                Text(riskLabel(item.risk))
+                            }
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
                         }
                     }
+                    .accessibilityLabel(ProductCopy.scanResultAccessibilitySummary(
+                        name: item.url.lastPathComponent,
+                        source: descriptor.map { copy($0.titleKey) } ?? item.ruleID.rawValue,
+                        state: riskLabel(item.risk),
+                        allocated: size(item.allocatedBytes), logical: size(item.logicalBytes),
+                        modified: modified(item), french: french
+                    ))
                     .disabled(scanning || actionBusy || actionReview != nil)
                 }
                 .frame(minHeight: 220)
@@ -124,11 +143,11 @@ struct CleanupView: View {
         task?.cancel()
         let scanID = UUID()
         activeScanID = scanID
-        results = []; selectedItems = []; status = nil; scanning = true
+        results = []; selectedItems = []; scanCompletedFiles = 0; status = nil; scanning = true
         let acquiredScope = root.startAccessingSecurityScopedResource()
         task = Task {
             var rootFailure: String?
-            var partialFailure = false
+            var partialFailures = Set<String>()
             defer {
                 if acquiredScope { root.stopAccessingSecurityScopedResource() }
                 if activeScanID == scanID { scanning = false; activeScanID = nil }
@@ -140,12 +159,12 @@ struct CleanupView: View {
                     switch event {
                     case .result(let result): results.append(result)
                     case .itemFailure(let path, let reason):
-                        if path == root.path { rootFailure = reason } else { partialFailure = true }
+                        if path == root.path { rootFailure = reason } else { partialFailures.insert(reason) }
                     case .finished:
                         if let rootFailure { status = ProductCopy.scanRootFailure(reason: rootFailure, french: french) }
-                        else if partialFailure { status = copy("cleanup.partial") }
+                        else if !partialFailures.isEmpty { status = ProductCopy.scanPartialFailure(reasons: partialFailures, french: french) }
                         else { status = results.isEmpty ? copy("cleanup.none") : nil }
-                    case .progress: break
+                    case .progress(let completed): scanCompletedFiles = completed
                     }
                 }
             } catch is CancellationError {
@@ -162,6 +181,7 @@ struct CleanupView: View {
         scanning = false
         results = []
         selectedItems = []
+        scanCompletedFiles = 0
         status = copy("scan.cancelled")
     }
 
@@ -242,9 +262,15 @@ struct CleanupView: View {
         case .high: copy("cleanup.risk.high")
         }
     }
-    private func size(_ result: ScanResult) -> String {
-        if case .known(let bytes) = result.allocatedBytes { ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file) }
-        else { copy("metrics.unknown") }
+    private func size(_ measurement: ProductMeasurement<Int64>) -> String {
+        switch measurement {
+        case .known(let bytes): ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
+        case .unknown: copy("metrics.unknown")
+        }
+    }
+    private func modified(_ result: ScanResult) -> String {
+        guard let date = result.modifiedAt else { return copy("metrics.unknown") }
+        return date.formatted(.dateTime.year().month().day().hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US")))
     }
     private func copy(_ key: String, count: Int? = nil) -> String {
         if key == "cleanup.results", let count { return french ? "\(count) éléments mesurés" : "\(count) measured items" }

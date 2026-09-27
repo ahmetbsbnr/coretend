@@ -9,3 +9,8 @@ Automated structure currently uses SwiftUI navigation, semantic labels, headings
 - Verify Reduce Motion and Reduce Transparency behavior; no continuous idle animation.
 - Test EN and FR copy for truncation and terminology consistency.
 - Record OS/build, route, assistive technology, result, and unresolved issue in `Documentation/Evidence/Accessibility.md`.
+
+## Automated native probe — 2026-09-27
+
+- On arm64/macOS 27, a temporary `.app` bundle with isolated HOME, preferences and SQLite store accepted `⌘K`, exposed the palette search field as focused, accepted “Performances”, and opened Performance on Return. Accessibility inspection found the route's measured system labels and history content.
+- This confirms one keyboard route through the palette in the fixture bundle. Direct sidebar arrow navigation was not confirmed; VoiceOver speech, focus order across all destinations, Dynamic Type, zoom, contrast, Reduce Motion/Transparency, and production preference restoration remain unqualified. No real user store was used.

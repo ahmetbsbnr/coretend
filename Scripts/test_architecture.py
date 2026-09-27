@@ -40,6 +40,12 @@ class ArchitectureContractTests(unittest.TestCase):
         package["targets"][1]["dependencies"].append({"byName": ["SafetyCore", None]})
         self.assertIn("ScanCore may not depend on SafetyCore or Persistence", check_architecture.validate(package))
 
+    def test_rejects_transitive_write_capable_dependencies_in_scancore(self):
+        package = package_fixture()
+        package["targets"][1]["dependencies"].append({"byName": ["ScanAdapter", None]})
+        package["targets"].append({"name": "ScanAdapter", "dependencies": [{"byTarget": ["Persistence", None]}]})
+        self.assertIn("ScanCore may not depend on SafetyCore or Persistence", check_architecture.validate(package))
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -6,6 +6,21 @@ import ImageIO
 import ProductContract
 @testable import ScanCore
 
+private final class ScanProgressRecorder: @unchecked Sendable {
+    private let lock = NSLock()
+    private var stored: [DuplicateScanProgress] = []
+
+    func append(_ progress: DuplicateScanProgress) {
+        lock.lock(); defer { lock.unlock() }
+        stored.append(progress)
+    }
+
+    var values: [DuplicateScanProgress] {
+        lock.lock(); defer { lock.unlock() }
+        return stored
+    }
+}
+
 final class SimilarImageEngineTests: XCTestCase {
     func testReportsVisualCopiesAndSkipsSymlinkWithoutChangingFixture() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-images-\(UUID())", isDirectory: true)
@@ -21,12 +36,15 @@ final class SimilarImageEngineTests: XCTestCase {
         try FileManager.default.createSymbolicLink(at: link, withDestinationURL: first)
         let before = try Data(contentsOf: first)
 
-        let report = try await SimilarImageEngine().findSimilar(in: [first, second, opposite, link])
+        let progress = ScanProgressRecorder()
+        let report = try await SimilarImageEngine().findSimilar(in: [first, second, opposite, link], progress: progress.append)
         XCTAssertEqual(report.candidates.count, 1)
         XCTAssertEqual(report.candidates.first?.first, first)
         XCTAssertEqual(report.candidates.first?.second, second)
         XCTAssertEqual(report.skippedCount, 1)
         XCTAssertEqual(try Data(contentsOf: first), before)
+        XCTAssertTrue(progress.values.contains(.imageCandidates(completedCandidates: 4, totalCandidates: 4)))
+        XCTAssertTrue(progress.values.contains(.imageComparisons(completedPairs: 3, totalPairs: 3)))
     }
 
     func testCandidateLimitIsReported() async throws {
@@ -391,7 +409,8 @@ final class DuplicateEngineTests: XCTestCase {
         try Data(repeating: 1, count: 128 * 1024).write(to: second)
         try Data(repeating: 2, count: 128 * 1024).write(to: unrelated)
         let candidates = [first, second, unrelated].map { ScanResult(url: $0, ruleID: .explore, logicalBytes: .known(131072), allocatedBytes: .known(131072), modifiedAt: nil, risk: .low) }
-        let report = try await DuplicateEngine().findGroups(in: candidates)
+        let progress = ScanProgressRecorder()
+        let report = try await DuplicateEngine().findGroups(in: candidates, progress: progress.append)
         XCTAssertEqual(report.groups.count, 1)
         XCTAssertEqual(report.groups[0].files.count, 2)
         XCTAssertEqual(report.groups[0].suggestedKeeper, first)
@@ -399,6 +418,8 @@ final class DuplicateEngineTests: XCTestCase {
         let firstContents = try Data(contentsOf: first)
         let secondContents = try Data(contentsOf: second)
         XCTAssertEqual(firstContents, secondContents)
+        XCTAssertEqual(progress.values.first, .duplicateHashing(completedCandidates: 0, totalCandidates: 3))
+        XCTAssertEqual(progress.values.last, .duplicateHashing(completedCandidates: 3, totalCandidates: 3))
     }
 
     func testHardLinksDoNotAppearAsSeparateDuplicateFiles() async throws {

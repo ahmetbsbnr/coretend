@@ -6,7 +6,7 @@ The opt-in diagnostic contains only product/version, schema version, event count
 
 ## Network and telemetry
 
-The runtime has no account, sync, or telemetry feature. The static safety audit rejects common Swift network-client APIs/framework imports and known analytics SDK references under `Sources/`. Application update URLs are displayed as declarations and opened by an explicit user action through a system link; CoreTend does not fetch a feed. This source audit is not runtime traffic capture and can miss obfuscated or indirect networking.
+The runtime has no account, sync, or telemetry feature. The static safety audit rejects common Swift network-client APIs/framework imports and known analytics SDK references under `Sources/`. Application update URLs are displayed as declarations and opened by an explicit user action through a system link; CoreTend does not fetch a feed. The installed Release app was also observed with `lsof` at 14 points over an eight-second isolated idle run; no IPv4/IPv6 Internet socket was open. This samples open sockets rather than packets, does not exercise the explicit user-clicked update link, and can miss short-lived activity between samples or obfuscated/indirect networking.
 
 ## Assets
 
@@ -24,6 +24,7 @@ The user explicitly supplies scan roots. ScanCore reads metadata and content onl
 - Scan races/permission failures: report item-level issue; unknown measurement remains unknown.
 - Accidental private-data exposure: no telemetry/network by default; an app-declared HTTPS feed can open in the browser only after a user clicks its link. The feed belongs to the inspected app and is not verified as trustworthy. CLI warns paths may be sensitive.
 - Test damage to user data: fixtures under per-test temporary directories; fake Trash exists only in test target; static audit bans mutation APIs in production except `trashItem`.
+- Runtime fixture isolation: when either `CORETEND_TEST_MODE` or `CORETEND_TEST_STORE_DIR` is present, app preferences bypass `UserDefaults.standard`; tests can supply only explicit `CORETEND_TEST_*` values. Fixture preference writes are no-ops.
 - Misleading product claims: unreleased status on site; evidence-gated traceability; no antivirus or reclaimed-space claims.
 
 ## Residual work

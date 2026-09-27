@@ -1,4 +1,4 @@
-.PHONY: test build generate-manifest build-site site-check traceability safety-audit architecture-audit install-smoke uninstall-smoke app-runtime-smoke test-cli-interrupt qualify package-local verify-package verify-install-package benchmark-scan
+.PHONY: test build generate-manifest build-site site-check traceability safety-audit architecture-audit install-smoke uninstall-smoke app-runtime-smoke clean-release-build-smoke test-cli-interrupt qualify package-local verify-package verify-install-package benchmark-scan
 
 test:
 	swift test
@@ -37,7 +37,11 @@ app-runtime-smoke:
 	swift build -c release --product CoreTendApp
 	python3 Scripts/test_app_runtime_isolation.py .build/release/CoreTendApp
 
-qualify: generate-manifest build-site site-check traceability safety-audit architecture-audit install-smoke uninstall-smoke app-runtime-smoke test test-cli-interrupt
+clean-release-build-smoke:
+	python3 -B -m unittest Scripts.test_clean_release_builds_unit Scripts.test_runtime_sqlite_scope Scripts.test_runtime_network_scope
+	python3 Scripts/test_clean_release_builds.py
+
+qualify: generate-manifest build-site site-check traceability safety-audit architecture-audit install-smoke uninstall-smoke app-runtime-smoke clean-release-build-smoke test test-cli-interrupt
 
 test-cli-interrupt: build
 	python3 Scripts/test_cli_interrupt.py .build/debug/CoreTendCLI

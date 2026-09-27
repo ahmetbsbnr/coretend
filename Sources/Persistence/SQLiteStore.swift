@@ -83,12 +83,19 @@ public actor SQLiteStore {
     }
 
     public func migrate() throws {
-        let version = try schemaVersion()
-        guard version <= 5 else { throw StoreError.unsupportedSchema(version) }
-        guard version < 5 else { return }
+        let observedVersion = try schemaVersion()
+        guard observedVersion <= 5 else { throw StoreError.unsupportedSchema(observedVersion) }
+        guard observedVersion < 5 else { return }
         guard !readOnly else { throw StoreError.readOnly }
         try execute("BEGIN IMMEDIATE")
         do {
+            // Another process may have migrated while this connection waited for the write lock.
+            let version = try schemaVersion()
+            guard version <= 5 else { throw StoreError.unsupportedSchema(version) }
+            if version == 5 {
+                try execute("COMMIT")
+                return
+            }
             if version == 0 {
                 try execute("CREATE TABLE IF NOT EXISTS activity_events (id TEXT PRIMARY KEY NOT NULL, occurred_at REAL NOT NULL, kind TEXT NOT NULL, detail TEXT NOT NULL)")
                 try execute("CREATE INDEX IF NOT EXISTS activity_events_time ON activity_events(occurred_at)")
