@@ -89,6 +89,7 @@ def main():
             "TMPDIR": str(temp_directory),
             "CORETEND_TEST_MODE": "1",
             "CORETEND_TEST_STORE_DIR": str(store),
+            "CORETEND_TEST_MENU_BAR_ENABLED": "1",
         })
         process = subprocess.Popen(
             [str(installed_executable)],
@@ -155,7 +156,7 @@ def main():
             if installed_bundle.exists() or not database.is_file():
                 print("Uninstall must remove only the installed app and preserve fixture data.", file=sys.stderr)
                 return 1
-            print(f"Installed app launched with no Internet sockets in {socket_samples} samples, then removed; fixture SQLite data stayed under the isolated store.")
+            print(f"Installed app launched with its fixture-enabled MenuBarExtra and no Internet sockets in {socket_samples} samples, then removed; fixture SQLite data stayed under the isolated store.")
             return 0
         finally:
             if process.poll() is None:
