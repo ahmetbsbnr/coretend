@@ -236,3 +236,10 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 
 - Smoke d’installation Release fixture observe le processus avec `lsof` toutes les ~0,5 s pendant huit secondes. Exécution réelle : 14 échantillons, aucun socket Internet IPv4/IPv6 ouvert; test unitaire détecte un listener loopback détenu par son propre processus.
 - Le gate est ajouté à `make qualify` via `app-runtime-smoke` et test helper. `NFR-04` reste `PARTIEL`: pas de capture paquets, le lien de mise à jour déclenché explicitement n’a pas été suivi, et une socket de durée inférieure à l’intervalle peut échapper aux échantillons.
+
+### Revue gate traçabilité et migration concurrente — 27-09-2026
+
+- `Scripts/check_traceability.py` refuse maintenant les IDs dupliqués, exigences dupliquées dans le cahier et priorités CSV divergentes du cahier. NFR sont Must; priorités capacités dérivées de la réconciliation explicite section 7. Fixtures couvrent doublons et rétrogradation Must. NFR-12 reste PARTIEL jusqu’à revue indépendante.
+- Test migration utilise barrière conditionnelle interne à `SQLiteStore` : les deux connexions observent version 0 avant migration concurrente, sans délai 100 ms heuristique. Test ciblé passe.
+- `make qualify` complet passe après ces changements, y compris reproduction des builds Release propres App/CLI (`9fa47b9ca35f992318f0b3e427e44de6f729c5acab3206ffbe813fe1103ee2ec` / `64b8c3a65986cf915fa778ea2531cbf581899673e4726e30f959287621716ace`), runtime isolé, XCTest, builds Debug et CLI/SIGINT.
+- Registre recalculé : 91 lignes; 78 Must = 76 PARTIEL, 2 VÉRIFIÉ; pondération indicative inchangée 51,3 %. Changements locaux uniquement, PR #55 non actualisée.

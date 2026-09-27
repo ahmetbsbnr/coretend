@@ -149,6 +149,8 @@ Priorité selon §7. **M** est obligatoire pour reconstruction livrable. Statut 
 
 Règle : Must fermé par preuve avant qualification; Should ne bloque pas le socle mais reste transparent; Could nécessite nouveau cadrage; Won’t ne doit pas apparaître par accident via dépendance ou UI.
 
+Réconciliation des capacités source : `shell.menubar`, `settings.menubar`, `quicklook.extended`, `favrec.module`, `ui.commandpalette` et `clutter.largeold` sont Should; autres IDs du catalogue §4 sont Must. `Traceability.csv` reprend cette priorité et le gate la compare à ce cahier.
+
 ## 8. Matrice RACI
 
 R réalise; A assume l’approbation/résultat; C consulté; I informé. Rôles logiques; ne pas inventer collaborateurs. Si même mainteneur remplit plusieurs rôles, l’absence de revue indépendante est déclarée.

@@ -4,24 +4,44 @@ import CSQLite
 import Darwin
 @testable import Persistence
 
+private final class MigrationReadBarrier: @unchecked Sendable {
+    private let condition = NSCondition()
+    private var arrivals = 0
+    private var released = false
+
+    func arriveAndWait() {
+        condition.lock()
+        arrivals += 1
+        condition.broadcast()
+        while !released { condition.wait() }
+        condition.unlock()
+    }
+
+    func waitForBothReaders() {
+        condition.lock()
+        while arrivals < 2 { condition.wait() }
+        released = true
+        condition.broadcast()
+        condition.unlock()
+    }
+}
+
 final class PersistenceTests: XCTestCase {
     func testConcurrentFreshStoreMigrationsRecheckSchemaAfterAcquiringWriteLock() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-store-concurrent-migrate-\(UUID())", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: root) }
         let db = root.appendingPathComponent("fixture.sqlite")
-        let first = try SQLiteStore(url: db)
-        let second = try SQLiteStore(url: db)
-        var lockHandle: OpaquePointer?
-        XCTAssertEqual(sqlite3_open(db.path, &lockHandle), SQLITE_OK)
-        guard let lockHandle else { return XCTFail("failed to open lock connection") }
-        defer { sqlite3_close(lockHandle) }
-        XCTAssertEqual(sqlite3_exec(lockHandle, "BEGIN IMMEDIATE", nil, nil, nil), SQLITE_OK)
-
+        let barrier = MigrationReadBarrier()
+        let first = try SQLiteStore(url: db, migrationVersionObserver: { version in
+            if version == 0 { barrier.arriveAndWait() }
+        })
+        let second = try SQLiteStore(url: db, migrationVersionObserver: { version in
+            if version == 0 { barrier.arriveAndWait() }
+        })
         let firstMigration = Task { try await first.migrate() }
         let secondMigration = Task { try await second.migrate() }
-        try await Task.sleep(for: .milliseconds(100))
-        XCTAssertEqual(sqlite3_exec(lockHandle, "COMMIT", nil, nil, nil), SQLITE_OK)
+        await Task.detached { barrier.waitForBothReaders() }.value
 
         try await firstMigration.value
         try await secondMigration.value

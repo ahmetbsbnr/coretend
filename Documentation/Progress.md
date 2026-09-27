@@ -265,3 +265,9 @@
 - `Scripts/test_app_runtime_isolation.py` échantillonne les sockets Internet du processus `.app` installé par fixture avec `lsof` pendant huit secondes. Exécution observée : 14 échantillons, aucun socket IPv4/IPv6 ouvert; HOME/TMPDIR/store restent isolés, app retirée et base fixture conservée.
 - `Scripts/test_runtime_network_scope.py` crée un listener loopback dans le processus test et vérifie que l’observateur le détecte; ce trafic est local et ne contacte pas Internet. Le helper échoue fermé si `lsof` manque ou échoue.
 - NFR-04 reste `PARTIEL`: échantillonnage de sockets au repos, pas capture de paquets; lien HTTPS déclenché par l’utilisateur et fenêtres entre échantillons non exercés. Audit source statique continue de bloquer les clients réseau usuels et SDK analytics connus.
+
+### Gate traçabilité durci — 27-09-2026
+
+- Le checker compare chaque priorité du registre à sa source approuvée, rejette ID dupliqués et exigences répétées. Section 7 documente la réconciliation des 51 capacités et six Should; NFR (§6) classés Must. Fixtures couvrent doublon, promotion/rétrogradation et dates.
+- Test SQLite concurrent déterministe via barrière après lecture version, sans temporisation d’attente. `make qualify` complet passe; releases propres App/CLI byte-identiques. FR-11 reste PARTIEL, NFR-12 attend revue indépendante.
+- Comptage conservé : 78 Must, dont 76 PARTIEL et 2 VÉRIFIÉ; pondération indicative 51,3 %.

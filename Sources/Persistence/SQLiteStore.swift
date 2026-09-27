@@ -65,11 +65,17 @@ public actor SQLiteStore {
     public static let maximumRecentFiles = 100
     private var connection: SQLiteConnection?
     private let readOnly: Bool
+    private let migrationVersionObserver: (@Sendable (Int) -> Void)?
     public let url: URL
 
     public init(url: URL, readOnly: Bool = false) throws {
+        try self.init(url: url, readOnly: readOnly, migrationVersionObserver: nil)
+    }
+
+    init(url: URL, readOnly: Bool = false, migrationVersionObserver: (@Sendable (Int) -> Void)?) throws {
         self.url = url
         self.readOnly = readOnly
+        self.migrationVersionObserver = migrationVersionObserver
         var handle: OpaquePointer?
         let flags = (readOnly ? SQLITE_OPEN_READONLY : SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE) | SQLITE_OPEN_FULLMUTEX
         let result = url.path.withCString { sqlite3_open_v2($0, &handle, flags, nil) }
@@ -84,6 +90,7 @@ public actor SQLiteStore {
 
     public func migrate() throws {
         let observedVersion = try schemaVersion()
+        migrationVersionObserver?(observedVersion)
         guard observedVersion <= 5 else { throw StoreError.unsupportedSchema(observedVersion) }
         guard observedVersion < 5 else { return }
         guard !readOnly else { throw StoreError.readOnly }
