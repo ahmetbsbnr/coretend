@@ -19,15 +19,23 @@
 
 ## 2. Fonctions Must à compléter
 
-- [ ] **Applications** : `Sources/Domain/ApplicationDiscovery.swift`, `Sources/Domain/ApplicationAssociationMatcher.swift`, `Sources/CoreTendApp/ApplicationsView.swift`. Remplacer la simple correspondance de nom par provenance attribuable ou état inconnu; distinguer app et données associées; ajouter revue nominative avant tout déplacement Trash, avec exclusions des fichiers partagés. Tester sur bundles et dossiers synthétiques.
-- [ ] **Performance** : `Sources/Domain/SystemSnapshot.swift`, `Sources/Persistence/SQLiteStore.swift`, `Sources/CoreTendApp/SystemSnapshotView.swift`. Persister échantillons datés minimaux, durée de rétention définie, graphique des mesures connues, états inconnus explicites. Tester migrations/retention sur store temporaire.
-- [ ] **Integrity** : `Sources/Domain/CodeSignatureInspection.swift`, `Sources/CoreTendApp/IntegrityView.swift`. Ajouter signaux locaux disponibles et leurs limites, état de permission, provenance de chaque observation. Aucun verdict malware.
-- [ ] **Explore et navigation** : `Sources/CoreTendApp/ExploreScanView.swift`, `Sources/CoreTendApp/CoreTendApp.swift`, `Sources/AppShell/Destination.swift`. Quick Look sur sélection explicite, favoris/récents locaux, palette clavier et statut menu bar seulement si leur périmètre de confidentialité est documenté.
-- [ ] **Données** : `Sources/Persistence/SQLiteStore.swift`, `Sources/CoreTendApp/SettingsView.swift`. Politique de rétention, effacement et sauvegarde/restauration sur HOME fixture; importer uniquement formats hérités reconnus et vérifiés.
+- [x] **Applications — comportement borné** : bundles inventoriés séparément des candidats de fichiers associés. Correspondance d’identifiant ne vaut jamais preuve; UI expose « candidats possibles, attribution non confirmée » et ne propose aucune action sur données associées/partagées. Revue nominative et Corbeille concernent uniquement bundle .app choisi. Fixtures Domain couvrent découverte et échec audit/Trash. Attribution positive et action sur données associées restent explicitement indisponibles; FR-26 demeure PARTIEL.
+- [x] **Performance — implémentation** : mesures locales horodatées, inconnues explicites, historique SQLite 30 jours/500 entrées, graphique sur points mesurés et effacement borné. Fixtures couvrent mesures, rétention, sélection et effacement. FR-03/perf.metrics restent PARTIEL jusqu’à parcours natif/accessibilité.
+- [x] **Integrity — signaux limités** : signature/quarantaine locales avec états indisponibles et limites; inspection LaunchAgents consultative sous dossier choisi, bornée et sans verdict malware. Fixtures couvrent états et plist. Qualification native et couverture des services macOS restent ouvertes.
+- [x] **Explore et navigation — implémentation** : Quick Look valide les candidats au moment de l’aperçu; favoris/récents locaux; palette bilingue; filtres/presets taille, âge et catégorie; MenuBarExtra facultatif, ses mesures restent actives seulement pendant présentation. Fixtures et qualification Release isolée documentées. Navigation, aperçu, menu et accessibilité natifs restent à qualifier.
+- [x] **Données — implémentation** : rétention, effacement, diagnostic opt-in avec allowlist, backup/restauration fixture et import historique allowlisté/copie seule/transactionnel. Fixtures synthétiques couvrent migration, rollback, reprise et isolation; aucune vraie base utilisateur lue. Parcours natif et récupération réelle restent à qualifier.
+
+Les cases ci-dessus suivent la livraison du code et des fixtures, pas la clôture des exigences. Le statut contractuel reste celui de `Documentation/Traceability.csv`; Musts encore PARTIEL ne deviennent pas VÉRIFIÉ sans preuve native, hôte ou humaine requise.
 
 ## 3. Qualification
 
-- [ ] Couvrir chaque comportement critique avec fixtures dédiées, particulièrement races chemin/symlink, images similaires, app associés, annulation et échecs de persistance. Exécuter `make qualify` et `git diff --check` après changement.
-- [ ] Tester app lancée en environnement isolé, clavier/VoiceOver, zoom, Reduce Motion et états accès refusé. Noter version macOS, architecture et limites dans `Documentation/ReleaseEvidence.md`.
-- [ ] Valider package installé/désinstallé en compte de test, signature/notarisation et artefacts publiés avant tag. Aucun script de build ne touche au vrai store ni à la vraie Corbeille.
-- [ ] Mettre à jour `Documentation/Traceability.csv` seulement avec code, tests et preuve réelle. Tant qu’un Must reste PARTIEL/À_CONSTRUIRE, conserver l’étiquette aperçu.
+- [x] Fixtures couvrent règles de chemin/symlink, similarité consultative, données d’app non attribuées, annulation déterministe et échecs/rollback de persistance. `make qualify` passe sur le worktree local; `git diff --check` passe.
+- [ ] Compléter qualification native clavier/sidebar/Quick Look/menu, VoiceOver parlé, zoom/Dynamic Type, contraste, Reduce Motion/Transparency et états d’accès refusé. Tests Release isolés couvrent fenêtre, huit routes, une route palette, menu inséré sans interaction et store fixture; ne remplacent pas critères restants. Noter hôte et limites dans les preuves.
+- [x] Installer/lancer/désinstaller app Release dans HOME fixture; tests préservent store fixture et refusent chemins invalides. [ ] Signature/notarisation, hôte macOS minimum, autre machine et artefacts publics avant tag restent non qualifiés ou hors mandat; ne pas fabriquer de preuve.
+- [x] Garder `Documentation/Traceability.csv` relié au code/tests/preuves datées par le gate. Tant qu’un Must reste PARTIEL/À_CONSTRUIRE, conserver l’étiquette aperçu.
+
+## 4. Should et preuves externes
+
+- [x] Catégories Explore, Quick Look borné, favoris/récents, palette bilingue et menu-bar (accès + mesures visibles) ont une implémentation locale et fixtures; leurs interactions natives restent PARTIEL.
+- [ ] Cask uniquement après artefact de release authentique et checksum vérifié; cette reconstruction n’est ni publiée ni candidate de release.
+- [ ] Capture UI automatisée, profiling multi-macOS, audit ergonomie externe et compatibilité seconde machine exigent cadrage/outillage/hôtes/relecteur non présents. Ne pas déclarer ces preuves réalisées.

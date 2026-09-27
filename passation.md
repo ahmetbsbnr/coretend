@@ -5,6 +5,7 @@
 - La fenêtre `MenuBarExtra` affiche charge, mémoire, espace libre avec sources, puis type/heure de la dernière activité sans détail ni chemin. Snapshot immédiat et rafraîchissement toutes les 30 s via `.task`; annulation liée à la disparition. Aucune ligne Performance ajoutée; valeurs gardées en mémoire.
 - `SQLiteStore.latestActivity()` sélectionne uniquement date/type et un seul événement. Fixtures vérifient ordre du dernier événement; AppShell vérifie arrêt de la boucle après annulation. Build App et tests ciblés passent. Qualification native ouverture/fermeture, activation menu, VoiceOver reste ouverte; FR-22 PARTIEL.
 - Registre : 91 lignes, 86 PARTIEL, 3 À_CONSTRUIRE, 2 VÉRIFIÉ. Pondération indicative : 51,3 % Must, 45,5 % Should, 49,5 % global; aucune n’est mesure officielle de complétion.
+- `Documentation/Project/Implementation-plan.md` réconcilié : fixtures/code cochés seulement quand présents; qualification native, release, hôtes/revue externes restent explicitement ouverts. Le plan local non suivi `Remaining-musts-plan.md` reste préservé.
 
 ### Should — menu-bar facultatif — 27-09-2026
 
