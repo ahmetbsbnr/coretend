@@ -5,9 +5,9 @@
 ## État courant
 
 - Dépôt canonique : `ahmetbsbnr/coretend`, worktree `next/`.
-- Branche : `feat/reconstruction-open-musts`; dernier commit fonctionnel `b8e2769` (`fix: keep site content visible during entrance and qualify dark appearance`), suivi des mises à jour de passation/preuves `f745e95` et `8e1319b`. Base de PR : `next` (`origin/next` à `55e8628`).
+- Branche : `feat/reconstruction-open-musts`; dernier commit fonctionnel `b8e2769` (`fix: keep site content visible during entrance and qualify dark appearance`), suivi des mises à jour de passation/preuves `f745e95`, `8e1319b` et `512ff78`. Base de PR : `next` (`origin/next` à `55e8628`).
 - PR brouillon [#55](https://github.com/ahmetbsbnr/coretend/pull/55) vers `next`.
-- CI GitHub `qualify` passe sur le HEAD de cette mise à jour, `8e1319b`, run [36311612004](https://github.com/ahmetbsbnr/coretend/actions/runs/36311612004); le commit de passation qui suivra aura son propre run. Sur `8e1319b`, Vercel `app` passe, `coretend` est bloqué par quota (« retry in 24 hours ») et l’agrégat reste en attente.
+- CI GitHub `qualify` passe sur `8e1319b` (run [36311612004](https://github.com/ahmetbsbnr/coretend/actions/runs/36311612004)) et sur la mise à jour de passation `512ff78` (run [36311782272](https://github.com/ahmetbsbnr/coretend/actions/runs/36311782272)). Sur `512ff78`, Vercel `app` et `coretend` sont bloqués par quota (« retry in 24 hours »); l’agrégat reste en attente.
 - `git status` : seuls fichiers non suivis `Documentation/Project/Remaining-musts-plan.md` (**garder local, ne jamais ajouter**), `Scripts/__pycache__/` (généré par `make qualify`) et `.impeccable/` (configuration locale du hook design, contient une exception `overused-font=helvetica`).
 - Aucun merge, tag, signature, notarisation, publication ni déploiement CoreTend effectué.
 
