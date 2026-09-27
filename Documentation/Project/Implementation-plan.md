@@ -37,28 +37,34 @@ Les durées sont des estimations pour un lot par jour de travail, recette compri
 - [x] **1.1 Kit de captures** (`3098745`, recette en attente). Script qui lance l’app en fixture et capture 8 destinations,
   Réglages, ⌘K, onboarding et barre de menus, clair/sombre, FR/EN, avec données synthétiques,
   puis une planche HTML locale. Prérequis mainteneur : autoriser l’enregistrement d’écran.
-- [ ] **1.2 Séance G1 (mainteneur, ~45 min).** Parcourir l’app lancée et la planche ; pour chaque
-  écran : garder / changer / refaire, avec ce qui ne va pas en mots simples.
-- [ ] **1.3 Guide UI** `Documentation/Design/UI-guide.md`, rédigé depuis la séance : palette et
+- [x] **1.2 Séance G1** (27-09) : Observatoire refusé ; brief consigné. **1.2b** trois directions animées (`15056a4`) ; **Serre choisie** (décision 0002).
+- [x] **1.3 Guide UI** (rédigé le 27-09, acceptation G1 en attente) `Documentation/Design/UI-guide.md`, rédigé depuis la séance : palette et
   rôles, typographie, grille et densité, composants et **leurs états (repos, survol, pressé,
   focus, désactivé, sélectionné)**, sidebar, cartes (quand en mettre, quand non), icônes,
-  mouvement, textes. Décision `0002-direction-visuelle.md` qui l’approuve. Plus aucun choix
+  mouvement, textes. Décision `0002-direction-serre.md`. Plus aucun choix
   visuel hors de ce guide.
 - **Sortie :** G1 accepté. Si la direction est refusée, on refait P1 ; rien de P2 ne commence.
 
-### P2 — Fondations d’interaction (3 j) — gate G2
+### P2 — Fondations Serre (4–5 j) — gate G2
 
-- [ ] **2.1 Composants communs** dans `DesignSystem`, selon le guide : styles de bouton
-  (principal, secondaire, destructif, ligne), ligne de sidebar, ligne de liste sélectionnable,
-  carte, champ de recherche, état vide. Survol, zone cliquable pleine (`contentShape`), focus
-  clavier, pressé, désactivé ; Reduce Motion respecté. Tests unitaires des jetons et états.
-- [ ] **2.2 Application partout** : remplacer les styles ad hoc des 8 destinations, Réglages,
-  palette, onboarding. **Gate automatique** dans `check_architecture.py` : aucun
-  `.buttonStyle(.plain)` ni couleur littérale hors `DesignSystem`.
-- [ ] **2.3 Clavier et pointeur** : focus visible, `.help` sur les actions icône, raccourcis
-  documentés, Échap sur feuilles et palette (à re-tester : Échap n’atteint pas l’app sur l’hôte
-  actuel, probable utilitaire tiers).
-- **Recette G2 :** survol, clic sur toute la ligne, clavier, sur chaque écran, clair/sombre.
+Référence : `Documentation/Design/UI-guide.md` (direction « Serre », décision 0002).
+
+- [ ] **2.1 Jetons Serre** : `Palette` (Nuit/Jour, rôles `sidebar`, `deep`, `tertiaryInk`,
+  `strongSeparator`), `CoreTendTypography` (Iowan Old Style / Avenir Next), `MotionToken`
+  (`press`, `quick`, `standard`, `grow`, `bloom`, courbes `sève`, `pousse`, `chute`, `retrait`),
+  formes « coin feuille ». Tests de contraste et de durées mis à jour.
+- [ ] **2.2 Logo et icônes** : logo Serre en tracés SwiftUI avec la germination ; jeu d’icônes
+  Serre des 8 destinations, Réglages, Recherche ; feuilles de risque.
+- [ ] **2.3 Composants** : boutons (principal, secondaire, destructif), ligne de barre latérale
+  et **marqueur feuille** dessinés par CoreTend, ligne de liste avec nervure, case, champ de
+  recherche, parcelle, badge de risque, bandeaux, états de vue. Tous les états du guide § 7.
+  Gate `check_architecture.py` : pas de `.buttonStyle(.plain)`, couleur littérale ou
+  `repeatForever` hors `DesignSystem`.
+- [ ] **2.4 Coquille de l’app** : barre latérale Serre, transition « pousse » entre destinations,
+  recherche ⌘K qui naît du bouton, remplacement de tous les styles ad hoc, clavier et focus.
+- [ ] **2.5 Site en Serre** : export des jetons, polices système, logo qui germe en CSS, en-tête
+  et navigation, racine qui pousse au défilement (CSS seul, `@supports`), contrat reduced-motion.
+- **Recette G2 :** l’app et le site en Serre, survol/clic/clavier sur chaque écran, clair/sombre.
 
 ### P3 — Destinations, une par une (9 lots, ~2 semaines) — gates G3.1 → G3.9
 
@@ -77,6 +83,7 @@ FR/EN ; clair/sombre ; clavier ; captures ; recette ; puis passage des lignes li
 | 3.7 | Performances | perf.metrics, NFR-09 (mesure seulement) |
 | 3.8 | Historique | activity.*, FR-06, FR-24, favrec.module |
 | 3.9 | Réglages, palette ⌘K, barre de menus, langue, import ancien | settings.*, ui.commandpalette, shell.menubar, FR-21, FR-22, l10n.languagepicker, migration.* |
+| 3.10 | Site : pages Fonctionnalités, Confidentialité, Développeur, Assistance en Serre, captures réelles | FR-15, NFR-11 |
 
 Ordre : ce que l’on voit d’abord (3.1), puis la valeur centrale et le chemin le plus risqué
 (3.2), puis le reste par usage. Pour 3.2, la recette inclut **un vrai passage par la Corbeille

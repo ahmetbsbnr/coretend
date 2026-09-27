@@ -11,8 +11,8 @@
 |---|---|---|
 | 1.1 | Kit de captures (8 destinations, Réglages, ⌘K, onboarding ; clair/sombre ; FR/EN ; planche HTML) | Livré — recette en attente (`3098745`) |
 | 1.2 | Séance G1 avec le mainteneur (~45 min) | Fait — **Observatoire refusé** (27-09) |
-| 1.2b | Exploration : trois directions artistiques animées (thème, motion, logo, recherche, navigation), prototype hors app | Livré — choix du mainteneur en attente (`15056a4`) |
-| 1.3 | Guide UI + décision 0002, sur la direction choisie en 1.2b | À faire |
+| 1.2b | Exploration : trois directions artistiques animées (thème, motion, logo, recherche, navigation), prototype hors app | Accepté — **Serre choisie** (27-09) |
+| 1.3 | Guide UI + décision 0002, sur la direction choisie en 1.2b | Livré — acceptation G1 en attente |
 
 ## Journal
 
@@ -78,6 +78,23 @@ pas choisie sur prototype animé (1.2b), puis écrite en guide (1.3) et accepté
   d’arrêt » de ce fichier sans erreur ; rétablie ici. Les scripts de mise à jour doivent
   vérifier chaque remplacement.
 
+### 27-09-2026 — choix du mainteneur et lot 1.3
+
+- **Mainteneur :** « j'obte pour la premiere, j'adore cette theme d'analyse en profondeur dans les
+  racines etc ce systeme de plantes, applique cette vision de serre puis aussi dan sle site
+  evidement, en améliorant les motions qui sont deja a un niveau supérieur. »
+- **Fait :** décision `Documentation/Decisions/0002-direction-serre.md` ; guide
+  `Documentation/Design/UI-guide.md` (thème et règle d’honnêteté, couleurs Nuit/Jour, typographie,
+  coin feuille, icônes, logo et germination, composants et états, système de motion avec
+  jetons/courbes/catalogue et équivalents Reduce Motion, site, interdits, vérification).
+  Programme : P2 devient « Fondations Serre » (2.1–2.5, site inclus), P3 gagne 3.10 (pages du site).
+- **Vérifié :** contrastes WCAG calculés pour chaque jeton texte sur `canvas`, `surface`,
+  `raisedSurface`, `sidebar` dans les deux ambiances : tous ≥ 4,5:1 ; contours de contrôle
+  (`strongSeparator`) ≥ 3:1. Deux valeurs ajustées pour y arriver (`tertiaryInk` Jour,
+  `strongSeparator` Jour).
+- **Écart assumé avec le prototype :** le balancement en boucle du logo et des états vides est
+  retiré (NFR-09 : aucune animation continue au repos).
+
 ## Ordre du jour proposé pour la séance G1 (constats de l’agent, à confirmer)
 
 Constats relevés en relisant les captures ; ce ne sont pas des décisions.
@@ -101,13 +118,9 @@ Pour chaque écran, le mainteneur dit : garder / changer / refaire, et pourquoi.
 
 ## Point d’arrêt
 
-- **Attente du mainteneur :** ouvrir `Documentation/Design/Directions/index.html`, essayer les trois
-  directions (menus, ⌘K, « Lancer l’analyse », « Rejouer le logo »), puis choisir : A, B, C, un
-  mélange (dire quoi prendre où), ou aucune (dire ce qui manque). Confirmer aussi la lecture de
-  « logiciel moche » (voir séance G1).
-- Ensuite, lot 1.3 : étendre la direction choisie à tous les écrans et composants dans le
-  prototype, puis écrire `Documentation/Design/UI-guide.md` (thème, palette, typo, formes,
-  composants et états, motion : rôle, durées, courbes, Reduce Motion) et la décision 0002.
+- **Attente du mainteneur (gate G1) :** relire `Documentation/Design/UI-guide.md` et dire
+  « accepté » ou ce qu’il faut changer. Rien n’est codé en SwiftUI avant.
+- Après G1 : clore P1, ouvrir P2 au lot 2.1 (jetons Serre) dans `P2-fondations-interaction.md`.
 
 ## Problèmes ouverts
 
