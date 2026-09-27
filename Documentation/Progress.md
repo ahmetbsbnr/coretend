@@ -146,3 +146,8 @@
 
 - Homepage française: Lighthouse Accessibilité 100, Bonnes pratiques 100. Tab atteint le lien d’évitement avec contour visible 3 px; vue d’accessibilité expose les régions principales. À 640 px CSS (approximation d’un viewport 1280 px à 200 %), aucun débordement horizontal.
 - Audit et limites détaillés dans `Documentation/Evidence/SiteAccessibilitySmoke.md`. Réduction du mouvement uniquement observée dans CSS, pas émulée au runtime; autres routes, navigateurs et vraie commande zoom restent à vérifier. NFR-11 passe à `PARTIEL`, pas vérifié.
+
+### FR-13 — annulation SIGINT du CLI — 27-09-2026
+
+- Cause prouvée : `Task.isCancelled` retournait 130 si tâche déjà annulée, mais exécutable n’interceptait pas Control-C; test subprocess avant correction finissait par signal POSIX (`-2`). L’exécutable installe un Dispatch signal source pour annuler la tâche du scan et restaure le gestionnaire après fin.
+- `Scripts/test_cli_interrupt.py` crée 30 000 fichiers sous dossier temporaire, interrompt le processus et exige code 130. Intégré à `make qualify` via `make test-cli-interrupt`; passe sur CLI Debug et Release. Aide/localisation et matrice d’erreurs CLI restent à couvrir; FR-13 reste `PARTIEL`.

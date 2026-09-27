@@ -1,4 +1,4 @@
-.PHONY: test build generate-manifest build-site site-check traceability safety-audit install-smoke qualify package-local verify-package verify-install-package benchmark-scan
+.PHONY: test build generate-manifest build-site site-check traceability safety-audit install-smoke test-cli-interrupt qualify package-local verify-package verify-install-package benchmark-scan
 
 test:
 	swift test
@@ -25,7 +25,10 @@ safety-audit:
 install-smoke:
 	bash Scripts/test_install_local.sh
 
-qualify: generate-manifest build-site site-check traceability safety-audit install-smoke test build
+qualify: generate-manifest build-site site-check traceability safety-audit install-smoke test test-cli-interrupt
+
+test-cli-interrupt: build
+	python3 Scripts/test_cli_interrupt.py .build/debug/CoreTendCLI
 
 package-local:
 	bash Scripts/package_local.sh
