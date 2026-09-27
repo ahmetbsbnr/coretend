@@ -9,6 +9,7 @@
 
 ### Reprise dev — 27-09-2026
 
+- FR-14: le smoke lancé depuis `make qualify` construit maintenant le ZIP/.app Release réel sous dossier temporaire, vérifie bundle/ZIP/Mach-O, installe le `.app` packagé, lance l’exécutable installé, prélève 14 échantillons réseau (zéro socket Internet), vérifie SQLite/sidecars isolés, puis désinstalle et conserve la DB fixture. Hash du ZIP temporaire testé `5904b8efb73fac47054153a2ca578204b7399c30b0e09cd62824112f4b388868`. FR-14 reste PARTIEL pour Finder/Launch Services, GUI uninstall, signature/notarisation et hôte macOS minimum.
 - NFR-11: `site-check` vérifie maintenant par fixtures la présence de `prefers-reduced-motion: reduce`, le désactivage du smooth scroll et la réduction des durées animation/transition. Trois tests passent, et le contrat est branché à `make qualify`. Le gate complet passe après changement. Le navigateur DevTools accessible ne permet pas l’émulation runtime; qualification runtime toujours ouverte.
 - `make qualify` complet repassé après FR-22 : génération/site, 91 lignes de traçabilité, sécurité/architecture, install/uninstall fixture, app Release isolée avec MenuBarExtra activé et zéro socket Internet sur 13 échantillons, builds propres App/CLI byte-identiques, suites XCTest (dont AppShell 40), builds Debug et CLI/SIGINT. Résultat vert.
 - Hash observés: App `c96e5a32739ef31b1b580419724942eb62fa416dfc5bbe9cfa26d19be59d4c22`; CLI `9800f0d19f839ef82a57ebee7616966672195871b7510f7a6a11193b228af2ba`.

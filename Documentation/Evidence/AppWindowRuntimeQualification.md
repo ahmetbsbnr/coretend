@@ -21,3 +21,9 @@ An AX-driven Debug launch with isolated `HOME`, `CFFIXED_USER_HOME`, `TMPDIR`, p
 ## Keyboard command-palette route — 2026-09-27
 
 In a temporary `.app` bundle on arm64/macOS 27 with isolated HOME/preferences/store, keyboard automation sent `⌘K`; AX found the palette search field focused. It typed `Performances`, sent Return, and AX then exposed Performance metrics/history content in the main window. The app was stopped before the fixture root was removed. This proves one keyboard route through the palette in the fixture bundle. It does not verify arrow movement among multiple results, Settings activation, sidebar arrow behavior, or VoiceOver speech.
+
+## Packaged app install-to-runtime — 2026-09-27
+
+`make app-runtime-smoke` now builds the actual Release `.app` and ZIP in a unique temporary artifact directory, validates the bundle plist/archive/Mach-O, installs that packaged `.app` into fixture `HOME/Applications`, launches the installed executable, then removes the app while preserving its fixture database. The runtime remained alive through 14 Internet-socket samples with none open; SQLite database and sidecars remained under the explicit fixture store before and after shutdown. SHA-256 of the tested temporary ZIP: `5904b8efb73fac47054153a2ca578204b7399c30b0e09cd62824112f4b388868`.
+
+This closes the previous gap where runtime smoke rebuilt a synthetic bundle around the Release executable. It still does not qualify Finder/Launch Services, interactive GUI uninstall, signature/notarization, or the minimum macOS host; FR-14 stays `PARTIEL`.

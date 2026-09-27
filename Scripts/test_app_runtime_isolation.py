@@ -38,9 +38,18 @@ def sqlite_artifacts_outside_store(fixture, store):
 
 def main():
     repo = Path(__file__).resolve().parents[1]
-    executable = Path(sys.argv[1]).resolve() if len(sys.argv) == 2 else repo / ".build/debug/CoreTendApp"
-    if len(sys.argv) > 2 or not executable.is_file() or not os.access(executable, os.X_OK):
-        print(f"Usage: {Path(sys.argv[0]).name} [executable]; executable must exist", file=sys.stderr)
+    source = Path(sys.argv[1]).resolve() if len(sys.argv) == 2 else repo / ".build/debug/CoreTendApp"
+    source_is_bundle = source.is_dir() and source.suffix == ".app"
+    if len(sys.argv) > 2:
+        print(f"Usage: {Path(sys.argv[0]).name} [executable|CoreTend.app]", file=sys.stderr)
+        return 64
+    if source_is_bundle:
+        source_executable = source / "Contents" / "MacOS" / "CoreTendApp"
+        if not source_executable.is_file() or not os.access(source_executable, os.X_OK):
+            print("App bundle executable must exist and be executable.", file=sys.stderr)
+            return 64
+    elif not source.is_file() or not os.access(source, os.X_OK):
+        print(f"Usage: {Path(sys.argv[0]).name} [executable|CoreTend.app]; input must exist", file=sys.stderr)
         return 64
 
     with tempfile.TemporaryDirectory(prefix="coretend-app-runtime-") as temporary:
@@ -48,22 +57,24 @@ def main():
         temp_directory = fixture / "tmp"
         home = temp_directory / "home"
         store = temp_directory / "store"
-        bundle = fixture / "CoreTend.app"
+        bundle = source if source_is_bundle else fixture / "CoreTend.app"
         contents = bundle / "Contents"
         macos = contents / "MacOS"
-        for directory in (temp_directory, home, store, macos):
+        for directory in (temp_directory, home, store):
             directory.mkdir(parents=True, exist_ok=True)
-        bundle_executable = macos / "CoreTendApp"
-        shutil.copy2(executable, bundle_executable)
-        bundle_executable.chmod(0o755)
-        with (contents / "Info.plist").open("wb") as stream:
-            plistlib.dump({
-                "CFBundleExecutable": "CoreTendApp",
-                "CFBundleIdentifier": "local.coretend.runtime-fixture",
-                "CFBundleName": "CoreTend",
-                "CFBundlePackageType": "APPL",
-                "LSMinimumSystemVersion": "14.0",
-            }, stream)
+        if not source_is_bundle:
+            macos.mkdir(parents=True, exist_ok=True)
+            bundle_executable = macos / "CoreTendApp"
+            shutil.copy2(source, bundle_executable)
+            bundle_executable.chmod(0o755)
+            with (contents / "Info.plist").open("wb") as stream:
+                plistlib.dump({
+                    "CFBundleExecutable": "CoreTendApp",
+                    "CFBundleIdentifier": "local.coretend.runtime-fixture",
+                    "CFBundleName": "CoreTend",
+                    "CFBundlePackageType": "APPL",
+                    "LSMinimumSystemVersion": "14.0",
+                }, stream)
 
         installed_bundle = home / "Applications" / "CoreTend.app"
         installed_executable = installed_bundle / "Contents" / "MacOS" / "CoreTendApp"

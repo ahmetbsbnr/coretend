@@ -4,6 +4,12 @@
 
 La qualification locale doit consigner commit, hôte/OS, commandes, sorties, provenance du paquet local, audits, tests, accessibilité, limites et écarts Must. Toute version publiée ou action de distribution exige une décision distincte, hors mandat courant.
 
+## Paquet local installé et lancé en fixture — 2026-09-27
+
+- `make app-runtime-smoke` construit le Release `.app` et le ZIP dans un répertoire temporaire dédié, valide structure/plist/Mach-O, installe le bundle dans HOME fixture, lance l’exécutable installé et le désinstalle en préservant la base fixture.
+- ZIP temporaire observé : SHA-256 `5904b8efb73fac47054153a2ca578204b7399c30b0e09cd62824112f4b388868`. Runtime isolé: 14 échantillons sans socket Internet et aucun fichier SQLite/sidecar hors store déclaré.
+- L’artefact temporaire a été supprimé à la fin du test. Ce hash prouve uniquement les octets testés; il ne désigne pas un artefact distribué/candidat. Signature, notarisation, Finder/Launch Services et hôte minimum non vérifiés.
+
 ## Build local du 26-09-2026
 
 - Source compilée : `d53e71888d83d30d9defe395e4e851a5c2e04061` (`next`). Hôte : macOS 27.0 (26A428), arm64, Apple Swift 6.4.

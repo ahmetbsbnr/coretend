@@ -2,6 +2,11 @@
 
 **Relevé :** 2026-09-27. **État :** reconstruction en cours, non finalisée. Derniers jalons fusionnés : favoris/récents SQLite v4, palette clavier bilingue et écriture batch des récents (PR #40–#44). UI macOS native et VoiceOver non qualifiés. Cahier et plan approuvés; développement sur lignée `next` du dépôt public historique. Le dépôt greenfield initial `rebuild/` reste copie locale de provenance.
 
+### FR-14 — smoke du vrai paquet local — 2026-09-27
+
+- `make app-runtime-smoke` teste maintenant le vrai bundle produit par `package_local.sh`: paquet ZIP généré sous un dossier temporaire isolé, structure/plist/Mach-O vérifiés, `.app` installée sous HOME fixture, exécutable installé lancé puis retiré. Store fixture préservé; 14 échantillons de sockets sans connexion Internet; aucun sidecar SQLite hors store.
+- ZIP temporaire testé: SHA-256 `5904b8efb73fac47054153a2ca578204b7399c30b0e09cd62824112f4b388868`. Smoke ciblé passe. FR-14 reste `PARTIEL`: Finder/Launch Services, désinstallation GUI, signature/notarisation et hôte macOS minimum ne sont pas couverts.
+
 ### NFR-11 — contrat reduced-motion du site — 2026-09-27
 
 - `site-check` valide désormais le CSS `prefers-reduced-motion: reduce`: défilement fluide neutralisé, animations et transitions ramenées à une durée minimale avec `!important`. Trois tests couvrent règle complète, media query absente et protections manquantes.
