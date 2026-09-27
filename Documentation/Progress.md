@@ -131,3 +131,8 @@
 - FR-14 / NFR-08 : lancement runtime du binaire debug avec `HOME`, `CFFIXED_USER_HOME` et `TMPDIR` isolés; processus vivant après 8 s, SQLite créé sous le HOME temporaire. GUI visible, bundle empaqueté et matrice hôte restent non qualifiés.
 - FR-07 race de lot : revue reçoit identité de keeper pour chaque groupe sélectionné et la vérifie avant chaque copie. Fixture retire keeper après première copie déplacée; copie suivante reste intacte, aucun second appel Trash, échec journalisé. Course étroite entre validation et API Trash et UI native restent ouvertes.
 - NFR-09 baseline initiale : CLI Release sur fixture synthétique de 10 000 fichiers/100 dossiers, arm64/macOS 27.0; 4 runs chauds médiane 0,913 s wall, 0,979 s CPU, RSS max 74,18 MiB. `make benchmark-scan` reproduit. Aucun budget fixé; UI, corpus réel et mesures multi-hôte restent ouvertes.
+
+### NFR-13 — builds Release locaux — 27-09-2026
+
+- `swift build -c release --product CoreTendApp` et `swift build -c release --product CoreTendCLI` réussissent sur arm64/macOS 27.0 sans avertissement émis. `make qualify` a également réussi (XCTest et builds debug App/CLI).
+- `Package.swift` ne déclare aucune dépendance SwiftPM externe et aucun `Package.resolved` n’existe. Reproductibilité entre builds propres/hôtes et compatibilité multi-hôte restent non prouvées; NFR-13 demeure `PARTIEL`.
