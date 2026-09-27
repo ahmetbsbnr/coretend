@@ -148,6 +148,14 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 
 ### État de branche actuel — 27-09-2026
 
-- Commits de reprise : `8918503`, `47ec49e`, `1dec13b`, `f39cc3f`. Branche poussée sur `origin/feat/reconstruction-open-musts`; PR brouillon #55 vers `next`: https://github.com/ahmetbsbnr/coretend/pull/55.
+- Commits de reprise : `8918503`, `47ec49e`, `1dec13b`, `f39cc3f`, `ba6e7a5` (avant tranche FR-08). Branche poussée sur `origin/feat/reconstruction-open-musts`; PR brouillon #55 vers `next`: https://github.com/ahmetbsbnr/coretend/pull/55.
 - CI GitHub `qualify` de PR #55 réussie le 27-09; contrôles Vercel également verts. PR reste ouverte en brouillon. Aucun merge/tag/release/publication.
 - L’unique changement local non suivi `Documentation/Project/Remaining-musts-plan.md` est préservé et absent des commits.
+
+
+### FR-08 — déduplication des allocations treemap — 27-09-2026
+
+- `ScanResult` porte identité device/inode issue de `lstat`; `TreemapLayout` déduplique seulement la carte, choisit de façon stable le chemin visible lexicographiquement premier et laisse les mesures ligne inchangées. Libellé bilingue parle d’allocations distinctes.
+- Tests ScanCore : scan d’un hard link expose identité/allocation identiques sur deux chemins; treemap attribue une seule aire à l’inode; fixture sparse distingue 8 Mio logiques et allocation locale plus faible. Tests ciblés et `make qualify` passent. `git diff --check` passe.
+- Le gate de traçabilité couvre aussi les lignes CSV surnuméraires; cette vérification a détecté puis corrigé une colonne décalée dans la preuve FR-08.
+- FR-08 reste `PARTIEL` jusqu’aux vérifications native/VoiceOver, cloud et volumes représentatifs. Mise à jour PR #55 et CI GitHub requises après revue indépendante. Le plan local non suivi reste préservé.

@@ -179,5 +179,12 @@
 
 - Désinstallateur : fixture HOME isolée avec `Library` symlinkée vers un autre dossier temporaire confirme refus sans toucher aux données extérieures. Le code canonise déjà le parent complet; la fixture documente cette garantie. Fenêtre TOCTOU validation/suppression reste ouverte.
 - CLI `version` suit `--lang en|fr`; XCTest et test subprocess valident texte exact et code 0. FR-13 reste `PARTIEL`, les validations terminal/macOS plus larges manquent.
-- `check_traceability.py` compare toute preuve Must à date ISO valide du relevé Progress; tests couvrent date courante, périmée, calendrier invalide, non ancrée. Gate complet `make qualify` réussi.
+- `check_traceability.py` compare toute preuve Must à date ISO valide du relevé Progress et refuse lignes CSV mal formées; tests couvrent date courante, périmée, calendrier invalide, non ancrée et colonnes surnuméraires. Gate complet `make qualify` réussi.
 - Comptage courant : 78 Must `PARTIEL` / aucun clos; pondération indicative à 50 % Must et 46 % registre entier (83 `PARTIEL`, 2 `EN_COURS`, 6 `À_CONSTRUIRE`). UI, accessibilité, hôtes, vraie Corbeille et release demandent preuves restantes.
+
+
+### FR-08 — allocations physiques uniques — 2026-09-27
+
+- ScanCore conserve device/inode comme identité d’allocation observée. Les lignes Explorer gardent tailles logiques/allouées par chemin; treemap déduplique les chemins hard linkés par identité, sélectionne le chemin visible lexicographiquement premier et indique des allocations distinctes plutôt que des fichiers. Les mesures inconnues restent exclues.
+- Fixtures synthétiques valident deux chemins partageant une identité physique, une seule aire de treemap pour eux, et un fichier sparse de 8 Mio dont l’allocation observée est inférieure à la taille logique. `swift test --filter 'ScanCoreTests/testHardLinkResultsSharePhysicalAllocationIdentity|TreemapLayoutTests/testHardLinksContributePhysicalAllocationOnlyOnce|ScanCoreTests/testSparseFixtureKeepsLogicalAndAllocatedSizesDistinct'` passe.
+- FR-08 reste `PARTIEL` : rendu visuel/VoiceOver, fournisseurs cloud et couverture de systèmes de fichiers restent à qualifier. Aucun comportement utilisateur natif n’est déclaré vérifié.

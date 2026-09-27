@@ -6,7 +6,7 @@ import tempfile
 from pathlib import Path
 
 
-def make_fixture(root: Path, evidence: str) -> Path:
+def make_fixture(root: Path, evidence: str, extra_field: bool = False) -> Path:
     (root / "Scripts").mkdir(parents=True)
     (root / "Sources/ProductContract").mkdir(parents=True)
     (root / "Tests").mkdir()
@@ -22,12 +22,15 @@ def make_fixture(root: Path, evidence: str) -> Path:
         writer = csv.writer(stream)
         writer.writerow(["ID", "priority", "description", "code", "tests", "documentation", "evidence", "status", "gap/owner"])
         writer.writerow(["FR-01", "M", "Fixture requirement", "Sources/ProductContract/Capability.swift", "Tests/fixture.swift", "Documentation/Progress.md", evidence, "PARTIEL", "Engineering"])
+    if extra_field:
+        csv_path = root / "Documentation/Traceability.csv"
+        csv_path.write_text(csv_path.read_text().rstrip("\n") + ",unexpected-column\n")
     return root / "Scripts/check_traceability.py"
 
 
-def check(evidence: str) -> subprocess.CompletedProcess[str]:
+def check(evidence: str, extra_field: bool = False) -> subprocess.CompletedProcess[str]:
     with tempfile.TemporaryDirectory(prefix="coretend-traceability-test-") as temporary:
-        script = make_fixture(Path(temporary), evidence)
+        script = make_fixture(Path(temporary), evidence, extra_field)
         return subprocess.run(["python3", str(script)], text=True, capture_output=True)
 
 
@@ -43,7 +46,10 @@ def main() -> None:
         stale = check(evidence)
         assert stale.returncode != 0, f"outdated or malformed evidence was accepted: {evidence}"
 
-    print("Traceability review-date fixtures passed: current ISO date accepted; stale, invalid and unanchored dates rejected.")
+    malformed = check("Revue du registre 2026-09-27; fixture", extra_field=True)
+    assert malformed.returncode != 0, "CSV rows with extra columns must be rejected"
+
+    print("Traceability fixtures passed: current ISO date accepted; stale, invalid, unanchored and malformed-column rows rejected.")
 
 
 if __name__ == "__main__":

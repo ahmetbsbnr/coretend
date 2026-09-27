@@ -21,7 +21,16 @@ cap_source=(root/'Sources/ProductContract/Capability.swift').read_text()
 caps=set(re.findall(r'case\s+\w+\s*=\s*"([a-z][a-z0-9.]+)"',cap_source))
 spec=(root/'Documentation/Project/Cahier-des-charges.md').read_text()
 requirements=set(re.findall(r'\| ((?:FR|NFR)-\d+) \|',spec))
-with (root/'Documentation/Traceability.csv').open(newline='') as f: rows=list(csv.DictReader(f))
+expected_columns=['ID','priority','description','code','tests','documentation','evidence','status','gap/owner']
+with (root/'Documentation/Traceability.csv').open(newline='') as f:
+ reader=csv.DictReader(f)
+ if reader.fieldnames!=expected_columns:
+  raise SystemExit(f"Traceability.csv columns differ from the required schema: {reader.fieldnames}")
+ rows=[]
+ for line_number,row in enumerate(reader,start=2):
+  if None in row or any(value is None for value in row.values()):
+   raise SystemExit(f"Traceability.csv line {line_number} has a malformed column count")
+  rows.append(row)
 by_id={row['ID']:row for row in rows}
 expected=caps|requirements
 missing=expected-set(by_id)

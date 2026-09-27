@@ -4,7 +4,12 @@ import CoreGraphics
 public struct TreemapInput: Sendable, Equatable, Identifiable {
     public let id: String
     public let bytes: Int64
-    public init(id: String, bytes: Int64) { self.id = id; self.bytes = bytes }
+    public let allocationIdentity: String?
+    public init(id: String, bytes: Int64, allocationIdentity: String? = nil) {
+        self.id = id
+        self.bytes = bytes
+        self.allocationIdentity = allocationIdentity
+    }
 }
 
 public struct TreemapTile: Sendable, Identifiable {
@@ -20,7 +25,12 @@ public struct TreemapTile: Sendable, Identifiable {
 /// Binary slice-and-dice treemap: each known byte contributes area in exact proportion.
 public enum TreemapLayout {
     public static func tiles(for input: [TreemapInput], size: CGSize) -> [TreemapTile] {
-        let items = input.filter { $0.bytes > 0 }.sorted { $0.bytes == $1.bytes ? $0.id < $1.id : $0.bytes > $1.bytes }
+        var seenAllocations = Set<String>()
+        let unique = input.filter { $0.bytes > 0 }.sorted { $0.id < $1.id }.filter { item in
+            guard let identity = item.allocationIdentity else { return true }
+            return seenAllocations.insert(identity).inserted
+        }
+        let items = unique.sorted { $0.bytes == $1.bytes ? $0.id < $1.id : $0.bytes > $1.bytes }
         guard !items.isEmpty, size.width > 0, size.height > 0 else { return [] }
         let total = items.reduce(0.0) { $0 + Double($1.bytes) }
         var output: [TreemapTile] = []
