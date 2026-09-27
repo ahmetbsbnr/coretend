@@ -99,6 +99,7 @@ private struct CoreTendRootView: View {
             .motion(.standard, value: navigation.selection)
         }
         .tint(Palette.accent.color)
+        .preferredColorScheme(preferences.fixtureAppearance.map { $0 == .dark ? ColorScheme.dark : .light })
         .toolbar {
             ToolbarItem(placement: .automatic) {
                 Button { navigation.activeSheet = .commands } label: { Image(systemName: "command") }

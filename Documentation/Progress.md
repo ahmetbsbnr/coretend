@@ -339,3 +339,9 @@
 - App : teinte teal, fond porcelaine/ardoise du détail, risques Nettoyage en ambre/corail en plus du libellé, carte proportionnelle en tons de teal, transition fondu + glissement entre destinations, transition numérique de l’espace libre, surlignage animé de la palette; toutes les animations passent par `accessibilityReduceMotion`. `⌘,` ouvre Réglages; barre latérale élargie (libellé FR « Vue d’ensemble » tronqué observé puis corrigé); feuille Réglages bornée en hauteur. La sélection de la barre latérale suit l’accent système macOS de l’utilisateur.
 - Site : `site.css` suit la même direction (couleurs, rayons 9/14 px, apparition échelonnée, survol des cartes, halo teal lent), contrat reduced-motion inchangé et renforcé (délais et répétitions neutralisés). Observé dans Chrome en mode sombre; largeur mobile réelle et Lighthouse non relancés.
 - `make qualify` passe. Aucun statut ne change : Dynamic Type, VoiceOver, contraste de tous les états et Reduce Motion réel restent à qualifier.
+
+### Direction artistique — vérifications clair/sombre et largeur réduite — 27-09-2026
+
+- Override fixture `CORETEND_TEST_APPEARANCE=light|dark`, actif uniquement avec un profil de test (test AppShell), pour qualifier l’apparence sans modifier le réglage de l’hôte. App Release observée en sombre sur Nettoyage et Performances : fond ardoise, accent teal éclairci, ambre/corail éclaircis, textes lisibles.
+- Site à 500 px (largeur minimale d’une fenêtre Chrome headless; 390 px non atteignable ainsi) : deux défauts corrigés. L’entrée animait l’opacité depuis 0, laissant le contenu invisible tant que l’animation n’avait pas joué; elle n’anime plus que la translation. Le halo débordait et élargissait la page; il est désormais borné dans `main`.
+- `make qualify` passe. Reduce Motion réel, Dynamic Type et VoiceOver restent non qualifiés.
