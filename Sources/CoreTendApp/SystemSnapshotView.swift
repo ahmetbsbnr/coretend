@@ -9,6 +9,7 @@ import Charts
 struct SystemSnapshotView: View {
     let destination: Destination
     let french: Bool
+    @Environment(CoreTendNavigation.self) private var navigation
     @State private var snapshot: SystemSnapshot?
     @State private var loading = false
     @State private var history: [PerformanceSample] = []
@@ -30,28 +31,26 @@ struct SystemSnapshotView: View {
                 Button { refresh() } label: { Label(copy("metrics.refresh"), systemImage: "arrow.clockwise") }
                     .disabled(loading || clearingHistory)
             }
-            if loading || clearingHistory { ProgressView(copy("metrics.refresh")) }
+            .serreRise(1)
+            if loading || clearingHistory { ProgressView(copy("metrics.refresh")).tint(Palette.accent.color) }
             if let snapshot {
                 if destination == .overview {
-                    storage(snapshot)
-                    recentActivity
-                    Label(french
-                          ? "Pour examiner les fichiers, choisissez un dossier dans Explorer. Pour revoir les actions, ouvrez Historique."
-                          : "To inspect files, choose a folder in Explore. To review actions, open Record.",
-                          systemImage: "arrow.right.circle")
-                        .font(CoreTendTypography.secondary)
-                        .foregroundStyle(Palette.secondaryInk.color)
-                        .fixedSize(horizontal: false, vertical: true)
+                    storage(snapshot).serreRise(2)
+                    recentActivity.serreRise(3)
+                    nextSteps.serreRise(4)
                 }
                 else {
                     performance(snapshot)
                     performanceHistory
                 }
                 Text(copy("metrics.scope"))
-                    .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                    .font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .serreRise(5)
             } else if !loading {
-                ContentUnavailableView(copy("metrics.unavailable"), systemImage: "gauge.with.dots.needle.67percent",
-                                       description: Text(copy("metrics.source.volume")))
+                SerreBanner(.error, title: copy("metrics.unavailable"), message: copy("metrics.source.volume")) {
+                    Button(copy("metrics.refresh")) { refresh() }.padding(.top, 6)
+                }
             }
         }
         .motion(.standard, value: snapshot?.measuredAt)
@@ -65,62 +64,92 @@ struct SystemSnapshotView: View {
         } message: { Text(copy("metrics.clear.message")) }
     }
 
+    /// The state of the greenhouse: free space as the hero figure over a soil band of what was measured.
     @ViewBuilder private func storage(_ value: SystemSnapshot) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(copy("metrics.freeSpace")).font(CoreTendTypography.sectionTitle)
-                .foregroundStyle(Palette.ink.color)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(format(value.availableBytes)).font(CoreTendTypography.measurement)
-                    .contentTransition(.numericText())
-                    .motion(.standard, value: value.availableBytes)
-                Text(copy("metrics.available")).font(CoreTendTypography.secondary)
+        SerreParcel {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(copy("metrics.freeSpace")).font(CoreTendTypography.sectionTitle)
                     .foregroundStyle(Palette.secondaryInk.color)
-            }
-            if case .known(let free) = value.availableBytes,
-               case .known(let total) = value.totalBytes, total > 0, free >= 0, free <= total {
-                GeometryReader { geometry in
-                    ZStack(alignment: .leading) {
-                        Capsule().fill(Palette.separator.color)
-                        Capsule().fill(Palette.accent.color)
-                            .frame(width: geometry.size.width * CGFloat(free) / CGFloat(total))
-                    }
+                HStack(alignment: .firstTextBaseline, spacing: 10) {
+                    Text(format(value.availableBytes)).font(CoreTendTypography.hero)
+                        .foregroundStyle(Palette.ink.color)
+                        .contentTransition(.numericText())
+                        .motion(.standard, value: value.availableBytes)
+                    Text(copy("metrics.available")).font(CoreTendTypography.secondary)
+                        .foregroundStyle(Palette.secondaryInk.color)
                 }
-                .frame(height: 10)
-                .accessibilityHidden(true)
-                Text("\(copy("metrics.freeSpace")): \(format(value.availableBytes)) · \(copy("metrics.volumeTotal")): \(format(value.totalBytes))")
-                    .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-            } else {
-                Text(copy("metrics.volumeTotal") + " " + format(value.totalBytes))
-                    .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                if case .known(let free) = value.availableBytes, case .known(let total) = value.totalBytes,
+                   let soil = SoilFractions(free: free, total: total) {
+                    SoilBand(used: soil.used, free: soil.free)
+                    HStack(spacing: 14) {
+                        legend(copy("metrics.used"), ProductFormat.bytes(total - free, french: french), tone: Palette.strongSeparator.color)
+                        legend(copy("metrics.free.short"), ProductFormat.bytes(free, french: french), tone: Palette.accent.color)
+                        Spacer(minLength: 0)
+                        Text("\(copy("metrics.volumeTotal")) \(ProductFormat.bytes(total, french: french))")
+                            .font(CoreTendTypography.secondary.monospacedDigit()).foregroundStyle(Palette.secondaryInk.color)
+                    }
+                } else {
+                    Text(copy("metrics.volumeTotal") + " " + format(value.totalBytes))
+                        .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                }
+                Text(copy("metrics.trashNote")).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                measurementSource(copy("metrics.source.volume"), at: value.measuredAt)
             }
-            Text(copy("metrics.trashNote")).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-            measurementSource(copy("metrics.source.volume"), at: value.measuredAt)
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 16))
     }
 
+    private func legend(_ title: String, _ value: String, tone: Color) -> some View {
+        HStack(spacing: 6) {
+            LeafCorner.control.shape.fill(tone).frame(width: 12, height: 10)
+            Text("\(title) \(value)").font(CoreTendTypography.secondary.monospacedDigit()).foregroundStyle(Palette.ink.color)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    /// The herbarium's latest page.
     private var recentActivity: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(copy("menubar.activity.title"))
-                .font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
-            if activityUnavailable {
-                Label(copy("menubar.activity.unavailable"), systemImage: "exclamationmark.circle")
-                    .foregroundStyle(Palette.caution.color)
-            } else if let latestActivity {
-                Label(copy("activity.\(latestActivity.kind.rawValue)"), systemImage: "clock.arrow.circlepath")
-                    .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
-                Text(timestamp(latestActivity.occurredAt))
-                    .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-            } else {
-                Text(copy("menubar.activity.empty"))
-                    .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+        SerreParcel {
+            VStack(alignment: .leading, spacing: 8) {
+                Label { Text(copy("menubar.activity.title")) } icon: { SerreIcon(.record, size: 16).foregroundStyle(Palette.accent.color) }
+                    .font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.secondaryInk.color)
+                if activityUnavailable {
+                    SerreBanner(.partial, title: copy("menubar.activity.unavailable"))
+                } else if let latestActivity {
+                    Text(copy("activity.\(latestActivity.kind.rawValue)"))
+                        .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
+                    Text(timestamp(latestActivity.occurredAt))
+                        .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                } else {
+                    Text(copy("menubar.activity.empty"))
+                        .font(CoreTendTypography.body).foregroundStyle(Palette.secondaryInk.color)
+                }
             }
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    /// Where to go from here: two paths into the greenhouse.
+    private var nextSteps: some View {
+        HStack(alignment: .top, spacing: 14) {
+            path(.explore, title: copy("overview.next.explore"), help: copy("overview.next.explore.help"))
+            path(.record, title: copy("overview.next.record"), help: copy("overview.next.record.help"))
+        }
+    }
+
+    private func path(_ target: Destination, title: String, help: String) -> some View {
+        Button { navigation.selection = target } label: {
+            VStack(alignment: .leading, spacing: 6) {
+                Label { Text(title) } icon: { SerreIcon(target.glyph, size: 18).foregroundStyle(Palette.accent.color) }
+                    .font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
+                Text(help).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Palette.surface.color, in: LeafCorner.parcel.shape)
+            .overlay(LeafCorner.parcel.shape.strokeBorder(Palette.separator.color, lineWidth: 1))
+        }
+        .buttonStyle(.serre(.tile))
     }
 
     private func measurementSource(_ source: String, at date: Date) -> some View {
@@ -250,7 +279,7 @@ struct SystemSnapshotView: View {
 
     private func format(_ value: ProductMeasurement<Int64>) -> String {
         switch value {
-        case .known(let bytes): ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
+        case .known(let bytes): ProductFormat.bytes(bytes, french: french)
         case .unknown: copy("metrics.unknown")
         }
     }

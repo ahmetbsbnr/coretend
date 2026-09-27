@@ -355,6 +355,45 @@ final class AppShellTests: XCTestCase {
         XCTAssertEqual(destinations, Destination.sidebarOrder)
     }
 
+
+    func testEveryDestinationHasASerreLedeInBothLanguages() {
+        for destination in Destination.allCases {
+            for french in [false, true] {
+                let lede = ProductCopy.value(for: destination.ledeKey, french: french)
+                XCTAssertFalse(lede.isEmpty)
+                XCTAssertNotEqual(lede, destination.ledeKey, "\(destination) has no \(french ? "French" : "English") lede")
+            }
+        }
+    }
+
+    func testByteSizesFollowTheAppLanguageNotTheSystemLocale() {
+        let french = ProductFormat.bytes(58_540_000_000, french: true)
+        let english = ProductFormat.bytes(58_540_000_000, french: false)
+        XCTAssertTrue(french.contains("Go") && french.contains(","), french)
+        XCTAssertTrue(english.contains("GB") && english.contains("."), english)
+    }
+
+    func testSoilShowsOnlyMeasuredConsistentQuantities() throws {
+        let soil = try XCTUnwrap(SoilFractions(free: 50, total: 200))
+        XCTAssertEqual(soil.used, 0.75, accuracy: 0.0001)
+        XCTAssertEqual(soil.free, 0.25, accuracy: 0.0001)
+        XCTAssertNil(SoilFractions(free: nil, total: 200), "unknown free space draws no soil")
+        XCTAssertNil(SoilFractions(free: 50, total: nil))
+        XCTAssertNil(SoilFractions(free: 300, total: 200), "free larger than capacity is not drawn")
+        XCTAssertNil(SoilFractions(free: 50, total: 0))
+        XCTAssertNil(SoilFractions(free: -1, total: 200))
+    }
+
+    func testFirstLaunchStepsExistInBothLanguages() {
+        for step in 1...3 {
+            for french in [false, true] {
+                for part in ["title", "body"] {
+                    let key = "onboarding.step\(step).\(part)"
+                    XCTAssertNotEqual(ProductCopy.value(for: key, french: french), key)
+                }
+            }
+        }
+    }
 }
 
 private actor SamplingCounter {
