@@ -65,9 +65,19 @@ def main() -> None:
                 digest = hashlib.sha256(executable.read_bytes()).hexdigest()
                 observed[(build_name, product)] = digest
                 print(f"{build_name} {product}: {digest}")
+                if os.environ.get("CI") == "true":
+                    shutil.copy2(executable, package_root / ".build" / f"{product}-{build_name}-repro-diagnostic")
 
     for product in PRODUCTS:
         if observed[("first", product)] != observed[("second", product)]:
+            first = package_root / ".build" / f"{product}-first-repro-diagnostic"
+            second = package_root / ".build" / f"{product}-second-repro-diagnostic"
+            if first.is_file() and second.is_file():
+                comparison = subprocess.run(["cmp", "-l", str(first), str(second)], text=True, stdout=subprocess.PIPE, check=False)
+                print(f"First differing byte positions for {product}:\n" + "\n".join(comparison.stdout.splitlines()[:32]))
+                for binary in (first, second):
+                    result = subprocess.run(["otool", "-l", str(binary)], text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False)
+                    print(f"Load-command SHA {binary.name}: {hashlib.sha256(result.stdout.encode()).hexdigest()}")
             raise RuntimeError(f"{product} is not reproducible across clean scratch builds")
         print(f"{product}: byte-identical across clean scratch builds")
     print("Two cold builds used the same physical scratch path per product, cleared between builds; LC_UUID disabled for deterministic Mach-O output; all outputs removed with the unique temporary root.")
