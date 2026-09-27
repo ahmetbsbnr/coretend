@@ -7,8 +7,8 @@
 | Référence | Rôle | Règle |
 | --- | --- | --- |
 | `main` | Version publique stable et documentation correspondante | CI requise, aucun push forcé/suppression; revue PR non imposée par règle d’hébergement observée |
-| `next` | Intégration temporaire de la reconstruction complète | Check `qualify` strict requis, aucun push forcé/suppression; pas de promesse publique |
-| `feature/<sujet>` ou `fix/<sujet>` | Travail bref issu de `next` ou `main` selon cible | Pull request, suppression après fusion |
+| `next` | Seule branche de développement de la reconstruction (décision du 27-09-2026 : commits directs, plus de branche de lot) | Check `qualify` strict requis, aucun push forcé/suppression; pas de promesse publique |
+| `fix/<sujet>` | Correctif 1.x issu de `main` uniquement | Pull request vers `main`, suppression après fusion |
 | `maintenance/1.x` | Correctifs 1.x seulement si une maintenance réelle reprend | Pas de développement parallèle permanent |
 | `vX.Y.Z` | Version immuable | Créé après preuves de build, signature, notarisation et distribution |
 

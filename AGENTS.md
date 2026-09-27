@@ -8,7 +8,7 @@ maintenance seulement.
 
 ## Avant toute action
 
-1. `git status --short --branch` : vérifier dossier et branche.
+1. `git status --short --branch` : vérifier que l’on est sur `next` dans ce dossier. Tout développement se fait directement sur `next` ; ne pas créer de branche de travail.
 2. Lire `passation.md` (état et reprise), puis `Documentation/Project/Pilotage.md`
    (phases, gates, lots). Le produit est défini par
    `Documentation/Project/Cahier-des-charges.md` ; le statut de chaque exigence est

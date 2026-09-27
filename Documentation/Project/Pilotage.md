@@ -19,7 +19,7 @@ La RACI du cahier (§ 8) reste la référence ; ce tableau en est la lecture op�
 
 | Sujet | Source unique | Règle |
 |---|---|---|
-| Où travailler | dossier `~/Developer/projects/coretend-next`, branche de lot issue de `next` | jamais dans le dossier 1.x pour du travail produit |
+| Où travailler | dossier `~/Developer/projects/coretend-next`, branche `next` directement | jamais dans le dossier 1.x pour du travail produit |
 | État courant et reprise | `passation.md` | réécrite à la fin de chaque lot, pas de seconde passation ailleurs |
 | Exigences et statut | `Documentation/Traceability.csv` | `VÉRIFIÉ` seulement après recette (§ 5) |
 | Historique des preuves | `Documentation/Progress.md` | ajout daté, jamais réécrit |
@@ -46,10 +46,11 @@ On ne commence pas une phase avant que la gate précédente soit passée. Aucun 
 
 ## 4. Un lot de travail
 
-Un lot = une intention, au plus une journée, une branche `feat/<sujet>` ou
-`fix/<sujet>` issue de `next`, une PR. **Un seul lot ouvert à la fois.**
+Un lot = une intention, au plus une journée, commité directement sur `next`
+(décision du mainteneur du 27-09 : plus de branche de lot). **Un seul lot ouvert
+à la fois** ; un lot non accepté est corrigé sur `next`, pas mis de côté.
 
-**Avant de coder**, l’agent écrit dans la PR (ou dans la conversation) :
+**Avant de coder**, l’agent écrit dans la conversation :
 objectif, fichiers touchés, lignes de `Traceability.csv` concernées, ce que le
 mainteneur regardera à la recette. Si le lot touche l’apparence et que ce n’est pas
 couvert par une décision acceptée, il s’arrête et demande.

@@ -7,8 +7,8 @@
 - **Branche unique de développement : `next`** (décision du mainteneur, 27-09). `feat/reconstruction-open-musts` (PR #55) et `feat/access-diagnostics` (PR #54, diagnostic FR-10 des erreurs d’accès Applications) y sont intégrées localement ; plus de branche de lot.
 - **Dossier de travail : `~/Developer/projects/coretend-next`** (worktree recréé après le déplacement de `~/Developer/Website`). `../coretend` est la maintenance 1.x (`fix/1.x-trash-sqlite`), pas un lieu de travail produit.
 - La refonte **Observatoire** (commits `23b3f32` → `4451f8b`) a remplacé Porcelain/Slate/Teal dans l’app et le site, sans relecture de sa spec. Elle est l’état actuel, **pas une direction validée**.
-- **10 commits de cette branche ne sont pas sur GitHub** (`5f44839..4451f8b`). Les pousser est une décision du mainteneur.
-- **Bloquant : `make qualify` échoue sur `4451f8b`.** `Scripts/audit_safety.py` refuse `homeDirectoryForCurrentUser` dans `Sources/CoreTendApp/CleanupView.swift:171` (commit `6d744ea`). Premier lot à faire, avant tout push ou G1. Sur cet hôte, lancer les scripts avec `/opt/homebrew/bin/python3` : le `python3` système (3.9) casse `Scripts/test_traceability.py`.
+- **`next` local est en avance sur `origin/next`** (refonte Observatoire, audit, intégrations, correctif `audit_safety`). Les pousser est une décision du mainteneur ; `next` exige le check `qualify` côté GitHub.
+- Corrigé le 27-09 : `audit_safety.py` échouait depuis `6d744ea` (`homeDirectoryForCurrentUser` dans `CleanupView.swift`). Le dossier choisi est désormais vérifié par `CleanupRuleDescriptor.isExpectedRoot`, sans lire HOME. Sur cet hôte, lancer les scripts avec `/opt/homebrew/bin/python3` : le `python3` système (3.9) casse `Scripts/test_traceability.py`.
 - Perdus au déplacement (non suivis par Git) : `Documentation/Project/Remaining-musts-plan.md` et `design-preview/`.
 - Défaut signalé par le mainteneur : pas de retour au survol (aucun `onHover` dans l’app) et zone cliquable du bouton Réglages de la sidebar limitée au texte (`.buttonStyle(.plain)`, fond hors du bouton, `CoreTendApp.swift`). À traiter en P2 par des composants communs.
 
@@ -73,13 +73,13 @@ Relecture des 89 lignes non vérifiées : tous les gaps restants demandent une o
 
 ## Ordre de reprise
 
-0. Corriger l’échec de `audit_safety.py` ci-dessus et repasser `make qualify`. Puis suivre la phase courante de `Pilotage.md` : préparer G1 (captures de l’app lancée, 8 destinations, Réglages, ⌘K, clair/sombre) puis s’arrêter pour la décision du mainteneur. Les étapes ci-dessous ne reprennent qu’après G1, un lot à la fois.
+0. Suivre la phase courante de `Pilotage.md` : préparer G1 (captures de l’app lancée, 8 destinations, Réglages, ⌘K, clair/sombre) puis s’arrêter pour la décision du mainteneur. Les étapes ci-dessous ne reprennent qu’après G1, un lot à la fois.
 1. Vérifier CI `qualify` de PR #55 sur HEAD courant.
 2. Poursuivre les qualifications natives réalisables (liste ci-dessus), une par une, en fixture; corriger les défauts trouvés avec test quand possible; inscrire seulement ce qui a été observé, avec hôte et limites.
 3. Lighthouse post-refonte et viewport EN/FR 640/320 sont faits et consignés; relancer après prochain changement de contenu ou de style.
 4. Réconcilier `Traceability.csv`, puis `Progress.md`, preuves dédiées, guide et cette passation. Garder `PARTIEL` si un seul critère manque.
 5. Avant commit : `make qualify`, `python3 Scripts/check_traceability.py`, `python3 Scripts/test_traceability.py`, `git diff --check`, `git status --short --branch`. Ne pas stager `Remaining-musts-plan.md`, `Scripts/__pycache__/`, `.impeccable/`.
-6. Commit sur la branche du lot; push seulement sur demande du mainteneur. Vercel peut rester rouge pour quota. Aucun merge/tag/release/publication sans conditions formelles. Must avant Should; pas de Cask sans release publiée/checksum.
+6. Commit sur `next`; push seulement sur demande du mainteneur. Vercel peut rester rouge pour quota. Aucun merge/tag/release/publication sans conditions formelles. Must avant Should; pas de Cask sans release publiée/checksum.
 
 ## Lancer l’app en fixture isolée (protocole utilisé)
 
