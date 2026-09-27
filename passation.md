@@ -33,7 +33,7 @@
 - **NFR-13 — builds Release** : `swift build -c release --product CoreTendApp` et `CoreTendCLI` réussissent sans avertissement sur arm64/macOS 27.0. Dépendance externe absente de Package.swift; pas de `Package.resolved`. NFR-13 reste PARTIEL faute de preuve de reproductibilité entre builds propres et hôtes.
 - **FR-10 — erreurs de racine distinctes** : `permission_denied` affiche un refus explicite, `missing` l’absence de racine, `metadata_unavailable` la disponibilité indéterminée. Test AppShell bilingue rouge/vert; `make qualify` passe. Aucun diagnostic TCC/FDA exhaustif ni qualification UI native.
 - **NFR-11 — smoke navigateur site local** : Lighthouse sur homepage FR donne Accessibilité 100/Bonnes pratiques 100; clavier montre skip-link et contour visible; largeur 640 CSS sans débordement. Réduction du mouvement non émulée, zoom réel et autres pages non vérifiés. Détails et limites dans `Documentation/Evidence/SiteAccessibilitySmoke.md`.
-- **FR-13 — annulation CLI SIGINT** : le scan intercepte Control-C, annule sa tâche et sort 130. Script subprocess crée 30 000 fichiers temporaires et distingue la sortie 130 d’une terminaison POSIX `-2`; passe sur CLI Debug et Release, `make test-cli-interrupt` inclus dans `make qualify`. Aide/localisation CLI restent à compléter.
+- **FR-13 — contrat CLI** : script subprocess vérifie help/usage/store inaccessible/scan partiel et codes 0/1/2 avec stderr stable; paths/store non créés implicitement. Scan Control-C sur 30 000 fichiers temporaires sort 130, pas terminaison POSIX `-2`. Intégré à `make qualify`, matrice passe Debug et Release. Parseur distingue store manquant et argument invalide; aide/localisation CLI restent à compléter.
 
 ## Jalons récents intégrés
 

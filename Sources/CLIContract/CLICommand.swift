@@ -36,7 +36,9 @@ public enum CLICommand: Sendable {
         while index < arguments.count {
             let key = arguments[index]
             guard allowed.contains(key), result[key] == nil, index + 1 < arguments.count else { throw CLIError.invalidArguments }
-            result[key] = arguments[index + 1]
+            let value = arguments[index + 1]
+            guard !value.hasPrefix("-") else { throw CLIError.invalidArguments }
+            result[key] = value
             index += 2
         }
         return result
@@ -53,7 +55,7 @@ public enum CoreTendCLIRunner {
       coretend record list --store PATH
       coretend version
     Scans require an explicit root. CLI has no file-removal command.
-    Exit codes: 0 complete; 2 partial scan or unavailable root; 1 command/store failure; 130 cancelled.
+    Exit codes: 0 complete/help; 1 scan or store failure; 2 partial scan or usage error; 130 cancelled.
     """
 
     public static func run(_ command: CLICommand, write: @Sendable (String) -> Void) async -> Int32 {

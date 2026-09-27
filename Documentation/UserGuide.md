@@ -23,7 +23,7 @@ Au prochain lancement, CoreTend rouvre la dernière des huit destinations choisi
 
 Appuyez sur **⌘K** pour ouvrir la palette d’accès rapide. Recherchez une destination en français ou anglais par son nom ou un terme associé, puis choisissez-la; la même palette ouvre Réglages. Utilisez ↑/↓ pour sélectionner une ligne, Retour pour l’ouvrir et Échap pour fermer la palette. La navigation applique la sélection de la barre latérale existante.
 
-Le CLI exige `--root` pour scanner et `--store` pour consulter un historique local. Ctrl-C annule une analyse et retourne le code 130. Ne partagez pas sa sortie sans vérifier les noms et chemins qu’elle contient. Aucune fonction de nettoyage automatique ou de suppression permanente n’existe.
+Le CLI exige `--root` pour scanner et `--store` pour consulter un historique local. Une valeur d’option commençant par `-` est refusée; préfixez par `./` un chemin relatif qui commence par un tiret. Ctrl-C annule une analyse et retourne le code 130. Ne partagez pas sa sortie sans vérifier les noms et chemins qu’elle contient. Aucune fonction de nettoyage automatique ou de suppression permanente n’existe.
 
 Dans Applications, choisissez un dossier d’apps pour inventorier ses bundles `.app` au premier niveau. **Déplacer cette app vers la Corbeille** propose uniquement le bundle nommé : CoreTend journalise la proposition, affiche son nom, son identifiant et son chemin, puis demande confirmation. L’identité du bundle est comparée à celle de l’inventaire, de la revue et du transfert; si elle change, le déplacement est refusé. Les fichiers associés et les données héritées restent en place. L’action ne désinstalle ni services ni éléments partagés.
 
