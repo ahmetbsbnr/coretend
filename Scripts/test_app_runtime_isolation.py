@@ -4,6 +4,7 @@
 import os
 import plistlib
 import shutil
+import statistics
 import subprocess
 import sys
 import tempfile
@@ -12,8 +13,10 @@ from pathlib import Path
 
 try:
     from .runtime_network_scope import internet_socket_processes
+    from .runtime_metrics import process_metrics
 except ImportError:
     from runtime_network_scope import internet_socket_processes
+    from runtime_metrics import process_metrics
 
 
 def sqlite_artifacts_outside_store(fixture, store):
@@ -102,6 +105,7 @@ def main():
             "CORETEND_TEST_STORE_DIR": str(store),
             "CORETEND_TEST_MENU_BAR_ENABLED": "1",
         })
+        launch_started = time.perf_counter()
         process = subprocess.Popen(
             [str(installed_executable)],
             cwd=fixture,
@@ -114,6 +118,8 @@ def main():
             deadline = time.monotonic() + 8
             next_socket_sample = time.monotonic()
             socket_samples = 0
+            performance_samples = []
+            store_ready_seconds = None
             database = store / "CoreTend-Reconstruction" / "records.sqlite"
             while time.monotonic() < deadline:
                 if process.poll() is not None:
@@ -121,12 +127,15 @@ def main():
                     print(f"App exited before opening its fixture store (status {process.returncode}): {stderr}", file=sys.stderr)
                     return 1
                 time.sleep(0.1)
+                if database.is_file() and store_ready_seconds is None:
+                    store_ready_seconds = time.perf_counter() - launch_started
                 if database.is_file() and time.monotonic() >= next_socket_sample:
                     socket_processes = internet_socket_processes(process.pid)
                     if socket_processes:
                         print(f"Release app owns Internet sockets during isolated idle runtime: {sorted(socket_processes)}", file=sys.stderr)
                         return 1
                     socket_samples += 1
+                    performance_samples.append(process_metrics(process.pid))
                     next_socket_sample = time.monotonic() + 0.5
             if not database.is_file():
                 print("App did not create SQLite beneath the explicit fixture store.", file=sys.stderr)
@@ -142,6 +151,20 @@ def main():
             if socket_samples < 8:
                 print(f"Expected at least 8 runtime Internet-socket samples, observed {socket_samples}.", file=sys.stderr)
                 return 1
+            cpu_samples = [sample[0] for sample in performance_samples]
+            rss_samples = [sample[1] for sample in performance_samples]
+            if len(cpu_samples) != socket_samples or store_ready_seconds is None:
+                print("Runtime performance sample count or store-ready timing is incomplete.", file=sys.stderr)
+                return 1
+            print(
+                "Runtime baseline: "
+                f"launch_to_fixture_store_s={store_ready_seconds:.3f} "
+                f"ps_cpu_percent_median={statistics.median(cpu_samples):.1f} "
+                f"ps_cpu_percent_max={max(cpu_samples):.1f} "
+                f"rss_mib_median={statistics.median(rss_samples):.1f} "
+                f"rss_mib_max={max(rss_samples):.1f} "
+                f"samples={len(performance_samples)}"
+            )
             process.terminate()
             try:
                 process.wait(timeout=3)

@@ -7,6 +7,10 @@
 - PR #55 a révélé `LC_UUID` aléatoire et timestamp objet dans `N_OSO.n_value`. Après détection que dyld macOS 26 refuse un binaire sans `LC_UUID`, `Package.swift` applique le linker Apple `-reproducible` en Release, qui conserve UUID déterministe et fixe metadata; minimum macOS reste 14.0.
 - `make qualify` complet passe local et GitHub run 36304912826 (`macos-26-arm64`): App/CLI hash pairs byte-identical sur deux hôtes. Paquet Release démarre/se désinstalle en HOME/store fixture et conserve `LC_UUID`. NFR-13 devient VÉRIFIÉ dans environnements observés; aucun hash inter-hôtes promis, couverture support macOS reste NFR-08.
 
+### NFR-09 — lancement paquet et échantillons résidentiels — 2026-09-27
+
+- Deux runs Release fixture arm64/macOS 27: 1.094 s jusqu’au premier store SQLite; 13 échantillons `ps` par run; RSS médian 92.5–96.3/max 95.4–97.6 MiB; `%CPU` cumulative médiane 0/max 55.2–69.1. Parseur de métriques testé. Ce n’est pas prêt-fenêtre ni CPU idle instantané; NFR-09 PARTIEL faute latence UI, scan représentatif et autres hôtes.
+
 ### FR-14 — smoke du vrai paquet local — 2026-09-27
 
 - `make app-runtime-smoke` teste maintenant le vrai bundle produit par `package_local.sh`: paquet ZIP généré sous un dossier temporaire isolé, structure/plist/Mach-O vérifiés, `.app` installée sous HOME fixture, exécutable installé lancé puis retiré. Store fixture préservé; 14 échantillons de sockets sans connexion Internet; aucun sidecar SQLite hors store.
