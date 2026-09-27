@@ -81,12 +81,25 @@ def main() -> None:
                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False,
                 )
                 print("\n".join(comparison.stdout.splitlines()[:32]))
+                offsets = []
+                for line in comparison.stdout.splitlines()[:32]:
+                    try:
+                        offsets.append(int(line.split()[0]) - 1)
+                    except (IndexError, ValueError):
+                        continue
+                for offset in offsets[:3]:
+                    for binary in (first, second):
+                        with binary.open("rb") as stream:
+                            stream.seek(max(0, offset - 32))
+                            context = stream.read(80)
+                        print(f"Hex context {binary.name} @{offset}: {context.hex()}")
                 for binary in (first, second):
                     metadata = subprocess.run(
                         ["otool", "-l", str(binary)], text=True,
                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False,
                     )
                     print(f"Load commands: {binary.name}; sha256={hashlib.sha256(metadata.stdout.encode()).hexdigest()}")
+                    print("\n".join(metadata.stdout.splitlines()[-100:]))
                 for binary in (first, second):
                     if binary.is_file() and not binary.is_symlink():
                         binary.unlink()
