@@ -34,7 +34,7 @@ Les durées sont des estimations pour un lot par jour de travail, recette compri
 
 ### P1 — Direction visuelle et guide UI (2 j) — gate G1
 
-- [ ] **1.1 Kit de captures.** Script qui lance l’app en fixture et capture 8 destinations,
+- [x] **1.1 Kit de captures** (`3098745`, recette en attente). Script qui lance l’app en fixture et capture 8 destinations,
   Réglages, ⌘K, onboarding et barre de menus, clair/sombre, FR/EN, avec données synthétiques,
   puis une planche HTML locale. Prérequis mainteneur : autoriser l’enregistrement d’écran.
 - [ ] **1.2 Séance G1 (mainteneur, ~45 min).** Parcourir l’app lancée et la planche ; pour chaque
