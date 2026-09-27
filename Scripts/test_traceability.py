@@ -9,7 +9,8 @@ from pathlib import Path
 def make_fixture(root: Path, evidence: str, extra_field: bool = False, *, priority: str = "M",
                  status: str = "PARTIEL", tests: str = "Tests/fixture.swift",
                  documentation: str = "Documentation/Progress.md", spec_priority: str | None = None,
-                 duplicate_row: bool = False, duplicate_capability: bool = False) -> Path:
+                 duplicate_row: bool = False, duplicate_capability: bool = False,
+                 duplicate_requirement: bool = False) -> Path:
     (root / "Scripts").mkdir(parents=True)
     (root / "Sources/ProductContract").mkdir(parents=True)
     (root / "Tests").mkdir()
@@ -24,8 +25,11 @@ def make_fixture(root: Path, evidence: str, extra_field: bool = False, *, priori
     (root / "Sources/ProductContract/Capability.swift").write_text("enum Capability {\n" + "\n".join(capability_cases) + "\n}\n")
     (root / "Tests/fixture.swift").write_text("// fixture\n")
     approved = spec_priority or priority
+    requirement_rows = f"| FR-01 | {approved} | Fixture |\n"
+    if duplicate_requirement:
+        requirement_rows += f"| FR-01 | {approved} | Duplicate fixture |\n"
     (root / "Documentation/Project/Cahier-des-charges.md").write_text(
-        f"| FR-01 | {approved} | Fixture |\n\n## 7. MoSCoW\n| Priorité | Livrables retenus |\n|---|---|\n| **Should** | Menu bar et autres fonctions |\n\nRéconciliation des capacités source : `shell.menubar`, `settings.menubar`, `quicklook.extended`, `favrec.module`, `ui.commandpalette` et `clutter.largeold` sont Should; autres IDs du catalogue §4 sont Must.\n")
+        requirement_rows + "\n## 7. MoSCoW\n| Priorité | Livrables retenus |\n|---|---|\n| **Should** | Menu bar et autres fonctions |\n\nRéconciliation des capacités source : `shell.menubar`, `settings.menubar`, `quicklook.extended`, `favrec.module`, `ui.commandpalette` et `clutter.largeold` sont Should; autres IDs du catalogue §4 sont Must.\n")
     (root / "Documentation/Progress.md").write_text("**Relevé :** 2026-09-27.\n")
     with (root / "Documentation/Traceability.csv").open("w", newline="") as stream:
         writer = csv.writer(stream)
@@ -67,7 +71,10 @@ def main() -> None:
     assert duplicate.returncode != 0, "duplicate traceability IDs must be rejected"
 
     duplicate_source = check("Revue du registre 2026-09-27; fixture", duplicate_capability=True)
-    assert duplicate_source.returncode != 0, "duplicate capability IDs in the approved source must be rejected"
+    assert duplicate_source.returncode != 0 and "duplicate capability IDs" in duplicate_source.stderr, duplicate_source.stderr
+
+    duplicate_requirement = check("Revue du registre 2026-09-27; fixture", duplicate_requirement=True)
+    assert duplicate_requirement.returncode != 0 and "duplicate requirement ID" in duplicate_requirement.stderr, duplicate_requirement.stderr
 
     demoted_must = check("Revue du registre 2026-09-27; fixture", priority="S", spec_priority="M")
     assert demoted_must.returncode != 0, "a Must demoted in the traceability CSV must be rejected"

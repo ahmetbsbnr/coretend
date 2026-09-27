@@ -275,3 +275,5 @@
 ### Inventaire capabilities sans doublons — 27-09-2026
 
 - Le gate NFR-12 refuse désormais les IDs capabilities répétés dans `Capability.swift`; fixture démontre le rejet, registre courant de 91 IDs passe. `make qualify` complet passe. Aucun statut produit modifié; revue indépendante NFR-12 toujours requise.
+
+- Fixtures de `check_traceability.py` vérifient explicitement diagnostics attendus pour doublons source capabilities et exigences du cahier; le code retour seul ne suffit plus à valider ces cas.

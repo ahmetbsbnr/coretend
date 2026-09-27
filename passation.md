@@ -248,3 +248,7 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 
 - Revue du checker a trouvé qu’un `set` masquait des IDs de capabilities dupliqués dans la source Swift, ce qui pouvait réduire le registre attendu sans alerte. Fixture rouge ajoutée; checker échoue maintenant avec la liste des IDs dupliqués. Fixture positive actuelle et registre de 91 entrées passent.
 - `make qualify` complet passe après ce renforcement (runtime isolé, builds Release propres, tests Swift, builds Debug, CLI/SIGINT). `Documentation/Project/Remaining-musts-plan.md` reste non suivi. Comptage Must inchangé : 76 PARTIEL, 2 VÉRIFIÉ, 51,3 % pondéré.
+
+### Fixtures de doublons du cahier et des capabilities — 27-09-2026
+
+- Tests du checker exigent maintenant le motif exact pour IDs capabilities dupliqués dans Swift et exigences dupliquées dans Cahier; ces cas ne passent pas pour une erreur accessoire. `test_traceability.py`, gate réel, et `git diff --check` verts. `make qualify` avait passé juste avant l’élargissement des asserts (aucun code production modifié).
