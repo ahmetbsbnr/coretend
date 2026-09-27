@@ -32,9 +32,10 @@ final class DesignSystemTests: XCTestCase {
     }
 
     func testMotionDurationsFollowTheSpecAndReduceMotionRemovesAnimation() {
+        // Observatoire spec: view transitions 180–280 ms; quick stays immediate feedback.
         XCTAssertEqual(MotionToken.quick.duration, 0.15)
-        XCTAssertEqual(MotionToken.standard.duration, 0.30)
-        XCTAssertEqual(MotionToken.gentle.duration, 0.55)
+        XCTAssertEqual(MotionToken.standard.duration, 0.24)
+        XCTAssertEqual(MotionToken.gentle.duration, 0.28)
         for token in MotionToken.allCases {
             XCTAssertNil(token.animation(reduceMotion: true))
             XCTAssertNotNil(token.animation(reduceMotion: false))
