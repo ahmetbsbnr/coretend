@@ -2,7 +2,7 @@
 
 **Objectif :** l’app et le site en direction Serre : jetons, logo, icônes, composants avec tous leurs états, coquille de l’app et motion du guide.
 **Gate :** G2 — recette survol/clic/clavier sur chaque écran, clair et sombre.
-**Statut de la phase :** En cours depuis le 27-09-2026.
+**Statut de la phase :** Terminée le 27-09-2026 (G2 acceptée avec corrections).
 **Plan :** `Documentation/Project/Implementation-plan.md` § Programme 2.0.
 
 ## Lots
@@ -14,7 +14,7 @@
 | 2.3 | Composants et états (guide § 7) + gate `check_architecture.py` | Accepté (27-09) |
 | 2.4a | Coquille : barre latérale Serre, logo, marqueur feuille, vrille, transition « pousse », clavier | Accepté (27-09) |
 | 2.4b | Recherche ⌘K qui naît du bouton : racine sous le champ, résultats qui éclosent, pousse fanée ; fermeture au clic hors de la recherche | Accepté (27-09) |
-| 2.5 | Site en Serre : jetons exportés, logo, navigation, racine au défilement (CSS seul) | Livré — recette en attente (`97e43d3`) |
+| 2.5 | Site en Serre : jetons exportés, logo, navigation, racine au défilement (CSS seul) | Accepté avec corrections (G2) |
 
 ## Journal
 
@@ -151,12 +151,17 @@
 - **Recette 2.5 (mainteneur) :** ouvrir `Website/fr/index.html` dans Chrome ou Safari, faire
   défiler, survoler le menu, tester clair/sombre.
 
+### 27-09-2026 — gate G2
+
+- **Mainteneur :** « il est deja pas mal mais a ameliorer pour un app public, continue » (après avoir
+  parcouru le site servi en local, `python3 -m http.server 8765 --directory Website`).
+- **Décision :** G2 acceptée avec corrections. Correction portée : le site doit être amélioré pour
+  une sortie publique → lots 3.10 (pages du site, captures réelles, contenu public), 4.5
+  (qualification du site) et 5.2 (mise en ligne). P2 close.
+
 ## Point d’arrêt
 
-- Tous les lots de P2 sont livrés ; 2.5 attend sa recette.
-- **Gate G2** : recette de toute la phase par le mainteneur — app (survol, clic, clavier, focus,
-  navigation, recherche, clair/sombre, Réduire les animations) et site. À l’acceptation : clore P2,
-  ouvrir P3 au lot 3.1 (Vue d’ensemble + premier lancement) dans `P3-destinations.md`.
+- Phase close. La suite est en P3 (`P3-destinations.md`).
 
 ## Problèmes ouverts
 
