@@ -91,7 +91,9 @@ private struct CoreTendRootView: View {
         }
         .sheet(item: $navigation.activeSheet) { sheet in
             switch sheet {
-            case .settings: SettingsView(french: french, language: $language, recentFilesEnabled: $recentFilesEnabled, menuBarEnabled: $menuBarEnabled)
+            case .settings: SettingsView(french: french, language: $language, recentFilesEnabled: $recentFilesEnabled, menuBarEnabled: $menuBarEnabled) {
+                navigation.activeSheet = nil
+            }
             case .commands:
                 CommandPaletteView(french: french) { target in
                     switch target {
