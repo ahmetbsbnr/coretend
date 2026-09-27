@@ -4,6 +4,7 @@ import Domain
 import AppShell
 import ScanCore
 import SafetyCore
+import DesignSystem
 
 struct ApplicationsView: View {
     let french: Bool
@@ -25,62 +26,129 @@ struct ApplicationsView: View {
     @State private var removalBusy = false
     @State private var removalScopeHeld = false
     @State private var removalScopedRoot: URL?
+    @State private var searchText = ""
+
+    private var visibleRecords: [ApplicationRecord] {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !query.isEmpty else { return records }
+        return records.filter {
+            $0.displayName.localizedStandardContains(query)
+                || $0.bundleIdentifier.localizedStandardContains(query)
+                || $0.url.path.localizedStandardContains(query)
+                || ($0.version?.localizedStandardContains(query) ?? false)
+        }
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Button { selectingFolder = true } label: {
-                Label(copy("apps.choose"), systemImage: "folder.badge.plus")
-            }
-            .disabled(scanning || removalBusy || removalReview != nil)
-            .accessibilityHint(copy("apps.choose.hint"))
-            Text(copy("apps.limits")).font(.callout).foregroundStyle(.secondary)
-            if scanning { ProgressView(copy("scan.progress")) }
-            if let status { Text(status).foregroundStyle(.secondary) }
-            if !records.isEmpty {
-                Text(copy("apps.count", count: records.count)).font(.headline)
-                List(records) { app in
-                    VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 20) {
+            ObservatoryCard {
+                VStack(alignment: .leading, spacing: 14) {
+                    HStack(alignment: .top, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(french ? "Inventaire local" : "Local inventory")
+                                .font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
+                            Text(copy("apps.limits"))
+                                .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        Spacer(minLength: 8)
+                        Button { selectingFolder = true } label: {
+                            Label(copy("apps.choose"), systemImage: "folder.badge.plus")
+                        }
+                        .disabled(scanning || removalBusy || removalReview != nil)
+                        .accessibilityHint(copy("apps.choose.hint"))
+                    }
+                    if let selectedRoot {
+                        Label(selectedRoot.path, systemImage: "folder")
+                            .font(CoreTendTypography.secondary.monospaced())
+                            .foregroundStyle(Palette.secondaryInk.color).textSelection(.enabled)
+                    }
+                    if scanning { ProgressView(copy("scan.progress")) }
+                    if let status {
+                        Label(status, systemImage: "info.circle")
+                            .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    if !records.isEmpty {
+                        Palette.separator.color.frame(height: 1)
                         HStack {
-                            Image(systemName: "app.dashed")
-                            Text(app.displayName).font(.headline)
+                            Text(copy("apps.count", count: records.count))
+                                .font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
                             Spacer()
-                            Text(app.version ?? copy("metrics.unknown")).font(.caption).foregroundStyle(.secondary)
+                            Text(french ? "\(visibleRecords.count) affichées" : "\(visibleRecords.count) shown")
+                                .font(CoreTendTypography.secondary.monospacedDigit())
+                                .foregroundStyle(Palette.secondaryInk.color)
                         }
-                        Text(app.bundleIdentifier).font(.caption.monospaced()).foregroundStyle(.secondary)
-                        Text(app.url.lastPathComponent).font(.caption).foregroundStyle(.secondary)
-                        updateSourceView(for: app)
-                        Button(french ? "Rechercher des fichiers associés…" : "Review associated files…") {
-                            associationApp = app
-                            associationResults = []
-                            associationStatus = nil
-                            selectingAssociationFolder = true
+                        HStack(spacing: 9) {
+                            Image(systemName: "magnifyingglass").foregroundStyle(Palette.secondaryInk.color)
+                            TextField(french ? "Rechercher par nom, identifiant, version ou chemin" : "Search name, identifier, version, or path", text: $searchText)
+                                .textFieldStyle(.plain)
+                                .accessibilityLabel(french ? "Rechercher dans l’inventaire d’apps" : "Search app inventory")
+                            if !searchText.isEmpty {
+                                Button { searchText = "" } label: { Image(systemName: "xmark.circle.fill") }
+                                    .buttonStyle(.plain).accessibilityLabel(french ? "Effacer la recherche" : "Clear search")
+                            }
                         }
-                        .disabled(scanning || removalBusy || removalReview != nil)
-                        .accessibilityHint(french ? "Choisir un dossier à analyser. Aucun fichier ne sera modifié." : "Choose a folder to scan. No files will be changed.")
-                        Button(role: .destructive) { Task { await prepareRemoval(app) } } label: {
-                            Label(french ? "Déplacer cette app vers la Corbeille…" : "Move this app to Trash…", systemImage: "trash")
-                        }
-                        .disabled(scanning || removalBusy || removalReview != nil)
-                        .accessibilityHint(french ? "Seul le bundle de cette app sera proposé, après revue et confirmation." : "Only this app bundle will be proposed, after review and confirmation.")
+                        .padding(10)
+                        .background(Palette.raisedSurface.color, in: RoundedRectangle(cornerRadius: 9))
+                        .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(Palette.separator.color, lineWidth: 1))
                     }
                 }
-                .frame(minHeight: 260)
-            } else if !scanning && status == nil {
-                ContentUnavailableView(copy("apps.empty"), systemImage: "app.dashed")
             }
-            if !issues.isEmpty { Text(copy("apps.partial", count: issues.count)).font(.caption).foregroundStyle(.secondary) }
+            if !records.isEmpty {
+                if visibleRecords.isEmpty {
+                    ContentUnavailableView(french ? "Aucune app correspondante" : "No matching apps",
+                                           systemImage: "magnifyingglass",
+                                           description: Text(french ? "Essayez un autre nom, identifiant, version ou chemin." : "Try another name, identifier, version, or path."))
+                        .frame(maxWidth: .infinity, minHeight: 130)
+                }
+                LazyVStack(spacing: 12) {
+                    ForEach(visibleRecords) { app in applicationCard(app) }
+                }
+            } else if !scanning && selectedRoot != nil && issues.isEmpty {
+                ContentUnavailableView(copy("apps.empty"), systemImage: "app.dashed",
+                                       description: Text(french ? "Choisissez un autre dossier pour examiner ses apps au premier niveau." : "Choose another folder to inspect its top-level apps."))
+            } else if !scanning && selectedRoot == nil {
+                ContentUnavailableView(french ? "Choisissez un dossier d’applications" : "Choose an Applications folder",
+                                       systemImage: "app.dashed", description: Text(copy("apps.limits")))
+            }
+            if !issues.isEmpty {
+                ObservatoryCard {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Label(copy("apps.partial", count: issues.count), systemImage: "exclamationmark.circle")
+                            .font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.caution.color)
+                        Text(french ? "Ces bundles n’ont pas fourni assez de métadonnées. Leur absence de l’inventaire ne signifie pas qu’ils sont absents du dossier." : "These bundles did not provide enough metadata. Their absence from this inventory does not mean they are absent from the folder.")
+                            .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                            .fixedSize(horizontal: false, vertical: true)
+                        ForEach(Array(issues.enumerated()), id: \.offset) { _, issue in
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text(issueReason(issue.reason)).font(CoreTendTypography.secondary)
+                                    .foregroundStyle(Palette.ink.color)
+                                Text(issue.path).font(CoreTendTypography.secondary.monospaced())
+                                    .foregroundStyle(Palette.secondaryInk.color).textSelection(.enabled)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                }
+            }
             if let app = associationApp {
-                GroupBox(french ? "Candidats possibles — \(app.displayName)" : "Possible candidates — \(app.displayName)") {
+                ObservatoryCard {
                     VStack(alignment: .leading, spacing: 8) {
+                        Text(french ? "Fichiers candidats · \(app.displayName)" : "Candidate files · \(app.displayName)")
+                            .font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
                         Text(french ? "Correspondance de nom seulement; appartenance non prouvée. Vérifiez avant toute action." : "Name match only; ownership is unverified. Inspect before taking any action.")
-                            .font(.caption).foregroundStyle(.secondary)
-                        if let associationStatus { Text(associationStatus).foregroundStyle(.secondary) }
-                        ForEach(associationResults, id: \.path) { url in Text(url.path).font(.caption.monospaced()).textSelection(.enabled) }
-                        if associationResults.isEmpty && associationStatus == nil { Text(french ? "Aucun candidat trouvé." : "No candidates found.").foregroundStyle(.secondary) }
+                            .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                            .fixedSize(horizontal: false, vertical: true)
+                        if let associationStatus { Text(associationStatus).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color) }
+                        ForEach(associationResults, id: \.path) { url in Text(url.path).font(CoreTendTypography.secondary.monospaced()).textSelection(.enabled) }
+                        if associationResults.isEmpty && associationStatus == nil { Text(french ? "Aucun candidat trouvé." : "No candidates found.").foregroundStyle(Palette.secondaryInk.color) }
                     }
                 }
             }
         }
+        .motion(.standard, value: records)
+        .motion(.quick, value: searchText)
         .fileImporter(isPresented: $selectingFolder, allowedContentTypes: [.folder], allowsMultipleSelection: false) { result in
             guard case .success(let urls) = result, let root = urls.first else { return }
             discover(root)
@@ -100,6 +168,71 @@ struct ApplicationsView: View {
         .onChange(of: removalDialogPresented) { _, presented in
             if !presented && removalReview != nil { cancelRemoval() }
         }
+    }
+
+    private func applicationCard(_ app: ApplicationRecord) -> some View {
+        ObservatoryCard {
+            VStack(alignment: .leading, spacing: 13) {
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: "app.dashed")
+                        .font(.title2).foregroundStyle(Palette.accent.color)
+                        .frame(width: 38, height: 38)
+                        .background(Palette.accent.color.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(app.displayName).font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
+                            .textSelection(.enabled)
+                        Text(app.bundleIdentifier).font(CoreTendTypography.secondary.monospaced())
+                            .foregroundStyle(Palette.secondaryInk.color).textSelection(.enabled)
+                    }
+                    Spacer(minLength: 4)
+                    Text(app.version ?? (french ? "Version inconnue" : "Version unknown"))
+                        .font(CoreTendTypography.secondary.monospacedDigit())
+                        .foregroundStyle(Palette.secondaryInk.color)
+                        .multilineTextAlignment(.trailing)
+                }
+                VStack(alignment: .leading, spacing: 6) {
+                    Label(app.url.path, systemImage: "folder")
+                        .font(CoreTendTypography.secondary.monospaced())
+                        .foregroundStyle(Palette.secondaryInk.color).textSelection(.enabled)
+                    updateSourceView(for: app)
+                }
+                Palette.separator.color.frame(height: 1)
+                ViewThatFits(in: .horizontal) {
+                    HStack {
+                        associationButton(for: app)
+                        Spacer(minLength: 8)
+                        removalButton(for: app)
+                    }
+                    VStack(alignment: .leading, spacing: 4) {
+                        associationButton(for: app)
+                        removalButton(for: app)
+                    }
+                }
+            }
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    private func associationButton(for app: ApplicationRecord) -> some View {
+        Button {
+            associationApp = app
+            associationResults = []
+            associationStatus = nil
+            selectingAssociationFolder = true
+        } label: {
+            Label(french ? "Examiner un dossier associé…" : "Review files in a folder…", systemImage: "doc.text.magnifyingglass")
+        }
+        .disabled(scanning || removalBusy || removalReview != nil)
+        .accessibilityHint(french ? "Choisissez un dossier précis. Aucun fichier ne sera modifié et aucune attribution ne sera déduite." : "Choose a specific folder. No files will be changed and ownership will not be inferred.")
+    }
+
+    private func removalButton(for app: ApplicationRecord) -> some View {
+        Button(role: .destructive) { Task { await prepareRemoval(app) } } label: {
+            Label(french ? "Corbeille…" : "Move to Trash…", systemImage: "trash")
+        }
+        .disabled(scanning || removalBusy || removalReview != nil)
+        .accessibilityHint(french ? "Seul ce bundle sera proposé, après revue, revalidation et confirmation." : "Only this app bundle will be proposed, after review, revalidation, and confirmation.")
     }
 
     @MainActor private func prepareRemoval(_ app: ApplicationRecord) async {
@@ -186,16 +319,28 @@ struct ApplicationsView: View {
     @ViewBuilder private func updateSourceView(for app: ApplicationRecord) -> some View {
         switch app.updateSource {
         case .declaredHTTPSFeed(let url):
-            Text(french ? "Flux déclaré par l’app : \(url.host ?? "") · version non vérifiée" : "App-declared feed: \(url.host ?? "") · version not checked")
-                .font(.caption).foregroundStyle(.secondary)
+            Text(french ? "Flux HTTPS déclaré par l’app : \(url.host ?? "hôte inconnu") · version non vérifiée" : "App-declared HTTPS feed: \(url.host ?? "unknown host") · version not checked")
+                .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
             Link(french ? "Ouvrir le flux déclaré" : "Open declared feed", destination: url)
+                .font(CoreTendTypography.secondary)
                 .accessibilityHint(french ? "Ouvre l’adresse HTTPS déclarée par cette app dans le navigateur. CoreTend ne vérifie aucune version." : "Opens this app’s declared HTTPS address in the browser. CoreTend does not compare versions.")
         case .invalidDeclaredFeed:
             Text(french ? "Adresse de mise à jour déclarée inutilisable." : "Declared update address is unusable.")
-                .font(.caption).foregroundStyle(.secondary)
+                .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
         case .unknown:
             Text(french ? "Source de mise à jour inconnue." : "Update source unknown.")
-                .font(.caption).foregroundStyle(.secondary)
+                .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+        }
+    }
+
+    private func issueReason(_ reason: String) -> String {
+        switch reason {
+        case "selected_root_unavailable": return french ? "Dossier choisi indisponible." : "Selected folder is unavailable."
+        case "selected_root_unreadable": return french ? "Impossible de lire le dossier choisi." : "Could not read the selected folder."
+        case "bundle_contents_unavailable": return french ? "Contenu du bundle indisponible." : "Bundle contents are unavailable."
+        case "bundle_identifier_missing": return french ? "Identifiant de bundle absent ou invalide." : "Bundle identifier is missing or invalid."
+        case "bundle_metadata_unavailable": return french ? "Métadonnées du bundle illisibles, trop volumineuses ou modifiées pendant la lecture." : "Bundle metadata could not be read, exceeded the size limit, or changed while being read."
+        default: return french ? "Métadonnées du bundle indisponibles." : "Bundle metadata unavailable."
         }
     }
 
@@ -259,5 +404,17 @@ struct ApplicationsView: View {
         if key == "apps.count", let count { return french ? "\(count) applications locales" : "\(count) local applications" }
         if key == "apps.partial", let count { return french ? "\(count) éléments ignorés" : "\(count) items skipped" }
         return ProductCopy.value(for: key, french: french)
+    }
+}
+
+private struct ObservatoryCard<Content: View>: View {
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        content
+            .padding(18)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Palette.separator.color.opacity(0.75), lineWidth: 1))
     }
 }
