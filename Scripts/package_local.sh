@@ -5,10 +5,10 @@ repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$repo_root"
 swift build -c release --product CoreTendApp
 bin_dir="$(swift build -c release --show-bin-path)"
-artifact_dir="$repo_root/Artifacts"
+artifact_dir="${CORETEND_ARTIFACT_DIR:-$repo_root/Artifacts}"
 mkdir -p "$artifact_dir"
 if [[ -L "$artifact_dir" ]]; then
-  printf 'Refusing symlinked Artifacts directory.\n' >&2
+  printf 'Refusing symlinked artifact directory.\n' >&2
   exit 1
 fi
 stage_dir="$(mktemp -d "$artifact_dir/.coretend-package.XXXXXX")"

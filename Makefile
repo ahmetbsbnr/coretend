@@ -35,8 +35,7 @@ uninstall-smoke:
 	python3 Scripts/test_uninstall_local.py
 
 app-runtime-smoke:
-	swift build -c release --product CoreTendApp
-	python3 Scripts/test_app_runtime_isolation.py .build/release/CoreTendApp
+	python3 Scripts/test_packaged_app_runtime.py
 
 clean-release-build-smoke:
 	python3 -B -m unittest Scripts.test_clean_release_builds_unit Scripts.test_runtime_sqlite_scope Scripts.test_runtime_network_scope
