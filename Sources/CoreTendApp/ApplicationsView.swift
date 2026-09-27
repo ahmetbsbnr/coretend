@@ -117,7 +117,7 @@ struct ApplicationsView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Label(copy("apps.partial", count: issues.count), systemImage: "exclamationmark.circle")
                             .font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.caution.color)
-                        Text(french ? "Ces bundles n’ont pas fourni assez de métadonnées. Leur absence de l’inventaire ne signifie pas qu’ils sont absents du dossier." : "These bundles did not provide enough metadata. Their absence from this inventory does not mean they are absent from the folder.")
+                        Text(french ? "Certains dossiers ou bundles n’ont pas pu être entièrement examinés. Leur absence de l’inventaire ne prouve pas qu’ils sont absents du dossier." : "Some folders or bundles could not be fully inspected. Their absence from this inventory does not prove they are absent from the folder.")
                             .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
                             .fixedSize(horizontal: false, vertical: true)
                         ForEach(Array(issues.enumerated()), id: \.offset) { _, issue in
