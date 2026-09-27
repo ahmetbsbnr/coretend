@@ -1,10 +1,23 @@
 # Passation — CoreTend `next`
 
+## Remise à plat — 27-09-2026 au soir (à lire en premier)
+
+- **Phase : P0 → P1** de [`Documentation/Project/Pilotage.md`](Documentation/Project/Pilotage.md). Prochaine étape : **G1**, validation de la direction visuelle Observatoire par le mainteneur sur l’app lancée. Aucun nouvel écran ni changement d’apparence avant G1.
+- Diagnostic complet (historique v1/v2/v3/Next, causes d’échec, besoins) : [`Documentation/Project/Audit-2026-09-27.md`](Documentation/Project/Audit-2026-09-27.md). Règles d’agent : `AGENTS.md` (importé par `CLAUDE.md`).
+- **Dossier de travail : `~/Developer/projects/coretend-next`** (worktree recréé après le déplacement de `~/Developer/Website`). `../coretend` est la maintenance 1.x (`fix/1.x-trash-sqlite`), pas un lieu de travail produit.
+- La refonte **Observatoire** (commits `23b3f32` → `4451f8b`) a remplacé Porcelain/Slate/Teal dans l’app et le site, sans relecture de sa spec. Elle est l’état actuel, **pas une direction validée**.
+- **10 commits de cette branche ne sont pas sur GitHub** (`5f44839..4451f8b`). Les pousser est une décision du mainteneur.
+- **Bloquant : `make qualify` échoue sur `4451f8b`.** `Scripts/audit_safety.py` refuse `homeDirectoryForCurrentUser` dans `Sources/CoreTendApp/CleanupView.swift:171` (commit `6d744ea`). Premier lot à faire, avant tout push ou G1. Sur cet hôte, lancer les scripts avec `/opt/homebrew/bin/python3` : le `python3` système (3.9) casse `Scripts/test_traceability.py`.
+- Perdus au déplacement (non suivis par Git) : `Documentation/Project/Remaining-musts-plan.md` et `design-preview/`.
+- Défaut signalé par le mainteneur : pas de retour au survol (aucun `onHover` dans l’app) et zone cliquable du bouton Réglages de la sidebar limitée au texte (`.buttonStyle(.plain)`, fond hors du bouton, `CoreTendApp.swift`). À traiter en P2 par des composants communs.
+
+Les sections suivantes datent du relevé de midi ; elles restent exactes sauf là où la remise à plat ci-dessus les corrige.
+
 **État relevé : 27 septembre 2026, après requalification NFR-11.** Reconstruction en cours, non finalisée; aucune release publique. Cette passation remplace la précédente. Historique détaillé : `Documentation/Progress.md` et l’historique Git.
 
 ## État courant
 
-- Dépôt canonique : `ahmetbsbnr/coretend`, worktree `next/`.
+- Dépôt canonique : `ahmetbsbnr/coretend`, worktree `~/Developer/projects/coretend-next`.
 - Branche : `feat/reconstruction-open-musts`; dernier commit fonctionnel `b8e2769` (`fix: keep site content visible during entrance and qualify dark appearance`), suivi des mises à jour de passation/preuves `f745e95`, `8e1319b` et `512ff78`. Base de PR : `next` (`origin/next` à `55e8628`).
 - PR brouillon [#55](https://github.com/ahmetbsbnr/coretend/pull/55) vers `next`.
 - CI GitHub `qualify` passe sur `8e1319b` (run [36311612004](https://github.com/ahmetbsbnr/coretend/actions/runs/36311612004)) et sur la mise à jour de passation `512ff78` (run [36311782272](https://github.com/ahmetbsbnr/coretend/actions/runs/36311782272)). Sur `512ff78`, Vercel `app` et `coretend` sont bloqués par quota (« retry in 24 hours »); l’agrégat reste en attente.
@@ -18,7 +31,7 @@
 - **Site :** meta description par page, vérifiée par `check_site.py`.
 - **NFR-11, après refonte :** Lighthouse mobile relancé sur les 11 routes; Accessibilité/Bonnes pratiques/Agentic Browsing 100 partout, SEO 60. Dix routes EN/FR contrôlées en viewport émulé 640 × 900 et 320 × 800 : pas d’overflow, `lang`/meta description corrects; à 320, premier Tab atteint le skip-link traduit, contour 3 px. `SiteAccessibilitySmoke.md`, Traceability et Progress actualisés. Zoom navigateur réel et accessibilité humaine restent ouverts.
 - **Clavier natif (app Release en fixture) :** barre latérale ↑/↓ observée sur les huit destinations. Corrigés : flèches ignorées dans la palette ⌘K (champ focalisé), ligne sélectionnée hors vue, feuille Réglages sans sortie et textes tronqués (bouton Terminé/Done, formulaire groupé, hauteur bornée). `⌘,` ouvre Réglages. Barre latérale élargie (libellé FR tronqué corrigé).
-- **Direction artistique retenue appliquée : Porcelain / Slate / Teal** (source : `../app/DESIGN.md`, valeurs réécrites, aucun fichier importé conformément à la Décision 0001).
+- **Direction artistique appliquée à midi : Porcelain / Slate / Teal**, remplacée l’après-midi par Observatoire (voir la remise à plat). Source d’origine : le `DESIGN.md` de la ligne 1.x, valeurs réécrites, aucun fichier importé conformément à la Décision 0001.
   - Nouveau module `DesignSystem` (architecture §9) : palette clair/sombre, contraste WCAG testé (textes ≥ 4,5:1 sur fond et sur accent), jetons de mouvement 150/300/550 ms, animation nulle sous Reduce Motion.
   - App : teinte teal, fond porcelaine/ardoise, risques Nettoyage ambre/corail en plus du libellé, carte proportionnelle en tons de teal, transitions entre destinations, transition numérique de l’espace libre, surlignage animé de la palette. Observée en clair et en sombre.
   - Site : `site.css` refait (couleurs, rayons 9/14 px, apparition par translation, survol des cartes, halo teal borné), contrat reduced-motion renforcé. Observé à 500 px et en sombre. Pas d’Archivo ni d’arcs Core Bloom (fichiers de l’ancien dépôt interdits); police système.
@@ -59,12 +72,13 @@ Relecture des 89 lignes non vérifiées : tous les gaps restants demandent une o
 
 ## Ordre de reprise
 
+0. Corriger l’échec de `audit_safety.py` ci-dessus et repasser `make qualify`. Puis suivre la phase courante de `Pilotage.md` : préparer G1 (captures de l’app lancée, 8 destinations, Réglages, ⌘K, clair/sombre) puis s’arrêter pour la décision du mainteneur. Les étapes ci-dessous ne reprennent qu’après G1, un lot à la fois.
 1. Vérifier CI `qualify` de PR #55 sur HEAD courant.
 2. Poursuivre les qualifications natives réalisables (liste ci-dessus), une par une, en fixture; corriger les défauts trouvés avec test quand possible; inscrire seulement ce qui a été observé, avec hôte et limites.
 3. Lighthouse post-refonte et viewport EN/FR 640/320 sont faits et consignés; relancer après prochain changement de contenu ou de style.
 4. Réconcilier `Traceability.csv`, puis `Progress.md`, preuves dédiées, guide et cette passation. Garder `PARTIEL` si un seul critère manque.
 5. Avant commit : `make qualify`, `python3 Scripts/check_traceability.py`, `python3 Scripts/test_traceability.py`, `git diff --check`, `git status --short --branch`. Ne pas stager `Remaining-musts-plan.md`, `Scripts/__pycache__/`, `.impeccable/`.
-6. Commit/push sur `feat/reconstruction-open-musts`. Vercel peut rester rouge pour quota. Aucun merge/tag/release/publication sans conditions formelles. Must avant Should; pas de Cask sans release publiée/checksum.
+6. Commit sur la branche du lot; push seulement sur demande du mainteneur. Vercel peut rester rouge pour quota. Aucun merge/tag/release/publication sans conditions formelles. Must avant Should; pas de Cask sans release publiée/checksum.
 
 ## Lancer l’app en fixture isolée (protocole utilisé)
 

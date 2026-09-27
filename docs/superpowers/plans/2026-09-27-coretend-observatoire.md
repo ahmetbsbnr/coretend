@@ -18,7 +18,7 @@
 - Scans remain read-only. File changes require explicit selection, review, confirmation and macOS Trash.
 - Keep current domain, persistence, CLI, access scope, exclusions and release contracts unchanged.
 - Keep website pages readable without JavaScript; honor keyboard focus, reduced motion, semantic HTML and WCAG contrast targets in spec.
-- Work stays in existing linked worktree `/Users/ahmetbasbunar/Developer/Website/products/coretend/next` on branch `feat/reconstruction-open-musts`; preserve all pre-existing modifications and untracked files.
+- Work stays in existing linked worktree `~/Developer/projects/coretend-next` (worktree recréé le 27-09 après déplacement du workspace) on branch `feat/reconstruction-open-musts`; preserve all pre-existing modifications and untracked files.
 - Do not add or run automated tests unless user explicitly asks.
 - Use one scoped implementer, followed by one scoped reviewer, per task; never run implementation tasks concurrently.
 

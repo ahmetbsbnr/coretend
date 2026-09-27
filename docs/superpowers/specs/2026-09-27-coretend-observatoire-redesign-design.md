@@ -1,7 +1,7 @@
 # CoreTend « Observatoire » — refonte front-end
 
 **Date:** 2026-09-27  
-**État:** direction choisie, spécification à relire  
+**État:** implémentée le 27-09 sans relecture de la spec; en attente de la décision G1 (`Documentation/Project/Pilotage.md`)
 **Périmètre:** application macOS native et site public français/anglais
 
 ## Intention

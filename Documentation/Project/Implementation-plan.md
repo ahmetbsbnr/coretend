@@ -8,6 +8,8 @@
 
 **Référence :** `Documentation/Project/Cahier-des-charges.md`, `Documentation/Traceability.csv`, `Documentation/Project/Repository-strategy.md`.
 
+**Pilotage :** phases, gates et lots dans `Documentation/Project/Pilotage.md`. Plans et specs sous `docs/superpowers/` ne s’appliquent que s’ils sont liés ici : [refonte Observatoire](../../docs/superpowers/plans/2026-09-27-coretend-observatoire.md) — implémentée, en attente de G1.
+
 ## 1. Base de dépôt et preuves
 
 - [x] Copier passation historique et documents cités dans `Documentation/Archive/Legacy-Reconstruction/`; créer `passation.md` courant.
@@ -15,7 +17,7 @@
 - [x] Créer `next` depuis `origin/main` et y intégrer la reconstruction avec un commit local; `make qualify` passe sur ce worktree.
 - [x] Archiver les pointes des branches puis réduire les branches locales à `main` et `next`; supprimer les branches distantes anciennes, sans toucher aux tags.
 - [x] CI GitHub Actions de `next` vérifiée : run 36264106677 (`f7d7d73`, macos-latest) passe build/fixtures/site/contracts + whitespace.
-- [x] Protéger `next` : check `qualify` strict requis, force-push/suppression interdits. Pas d’approbation PR obligatoire pour préserver le flux full-auto; les commits suivants utiliseront branche PR et merge après check vert. Revue avant fusion vers `main` reste exigée par politique produit.
+- [x] Protéger `next` : check `qualify` strict requis, force-push/suppression interdits. Pas d’approbation PR imposée par l’hébergement; depuis le 27-09, chaque lot se termine par la recette du mainteneur avant fusion (`Pilotage.md`). Revue avant fusion vers `main` reste exigée par politique produit.
 
 ## 2. Fonctions Must à compléter
 

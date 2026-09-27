@@ -27,6 +27,7 @@ Les tests utilisent des dossiers temporaires synthétiques. Ils ne lisent ni sto
 
 ## Projet et contributions
 
+- [Pilotage du projet](Documentation/Project/Pilotage.md) et [audit du 27-09-2026](Documentation/Project/Audit-2026-09-27.md).
 - [Cahier des charges](Documentation/Project/Cahier-des-charges.md), [stratégie du dépôt](Documentation/Project/Repository-strategy.md), [passation courante](passation.md) et [traçabilité](Documentation/Traceability.csv).
 - [Contribuer](CONTRIBUTING.md), [sécurité](SECURITY.md), [licences](Documentation/LICENSING.md).
 
