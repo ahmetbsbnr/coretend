@@ -135,6 +135,24 @@ final class SerreDrawingTests: XCTestCase {
         XCTAssertTrue(SearchRoot(progress: 0).path(in: CGRect(x: 0, y: 0, width: 400, height: 12)).isEmpty)
     }
 
+    func testRootsDescendOnlyWithFilesReadAndStopAtFullDepth() {
+        XCTAssertEqual(RootSystem.depth(forCompletedFiles: 0), 0)
+        XCTAssertEqual(RootSystem.depth(forCompletedFiles: -3), 0)
+        let counts = [1, 10, 100, 1_000, 10_000, 99_999]
+        let depths = counts.map(RootSystem.depth(forCompletedFiles:))
+        XCTAssertEqual(depths, depths.sorted())
+        XCTAssertEqual(Set(depths).count, depths.count)
+        XCTAssertTrue(depths.allSatisfy { $0 > 0 && $0 <= 1 })
+        XCTAssertEqual(RootSystem.depth(forCompletedFiles: 100_000), 1, accuracy: 0.001)
+        XCTAssertEqual(RootSystem.depth(forCompletedFiles: 5_000_000), 1)
+        let box = CGRect(x: 0, y: 0, width: 400, height: 140)
+        XCTAssertTrue(RootSystem(depth: 0).path(in: box).isEmpty)
+        let shallow = RootSystem(depth: 0.2).path(in: box).boundingRect
+        let deep = RootSystem(depth: 1).path(in: box).boundingRect
+        XCTAssertLessThan(shallow.maxY, deep.maxY)
+        XCTAssertTrue(box.insetBy(dx: -1, dy: -1).contains(deep))
+    }
+
     func testLogoGerminationEndsInTheStillFinalState() {
         let final = SerreLogoState.grown
         XCTAssertEqual(final.seedDrop, 0); XCTAssertEqual(final.stem, 1)
@@ -187,6 +205,15 @@ final class SerreRenderSheet: XCTestCase {
                     SerreBanner(.error, title: "Déplacement impossible", message: "Le fichier est resté en place.")
                 }
                 SerreParcel { Text("Parcelle").font(CoreTendTypography.sectionTitle) }
+                HStack(spacing: 10) {
+                    ForEach(RiskLevel.allCases, id: \.self) { SerreRiskBadge($0, label: "Risque") }
+                    SerreCheck(isOn: false)
+                    SerreCheck(isOn: true)
+                }
+                HStack(spacing: 14) {
+                    ScanRoots(completed: 240, count: "240", caption: "fichiers lus", phase: .reading).frame(width: 440)
+                    ScanRoots(completed: 18_000, count: "18 000", caption: "Analyse terminée", phase: .finished).frame(width: 440)
+                }
             }
             .padding(28)
             .foregroundStyle(Palette.ink.color)
