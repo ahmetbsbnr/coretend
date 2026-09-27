@@ -123,10 +123,10 @@ private struct CoreTendRootView: View {
                     Label { Text(ProductCopy.value(for: "settings.title", french: french)) } icon: { SerreIcon(.settings) }
                         .font(CoreTendTypography.body)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 9)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.serre(.row(selected: false)))
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
                 .background(Palette.surface.color)
                 .overlay(alignment: .top) { Palette.separator.color.frame(height: 1) }
                 .accessibilityLabel(ProductCopy.value(for: "settings.title", french: french))
@@ -143,6 +143,8 @@ private struct CoreTendRootView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .background(Palette.canvas.color)
+            // Every button in the content is a Serre button unless it says otherwise.
+            .buttonStyle(.serre(.secondary))
             .motion(.standard, value: navigation.selection)
         }
         .tint(Palette.accent.color)
@@ -161,7 +163,7 @@ private struct CoreTendRootView: View {
         }
         .sheet(item: $navigation.activeSheet) { sheet in
             // Sheets are separate presentations and do not inherit the window's tint.
-            sheetContent(sheet).tint(Palette.accent.color)
+            sheetContent(sheet).tint(Palette.accent.color).buttonStyle(.serre(.secondary))
         }
         .onChange(of: navigation.selection) { _, destination in
             if let destination { preferences.saveLastDestination(destination.rawValue) }
@@ -261,7 +263,7 @@ private struct OnboardingView: View {
                 .font(CoreTendTypography.body).fixedSize(horizontal: false, vertical: true)
             Text(ProductCopy.value(for: "onboarding.privacy", french: french))
                 .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-            HStack { Spacer(); Button(ProductCopy.value(for: "onboarding.start", french: french), action: finish).keyboardShortcut(.defaultAction) }
+            HStack { Spacer(); Button(ProductCopy.value(for: "onboarding.start", french: french), action: finish).keyboardShortcut(.defaultAction).buttonStyle(.serre(.primary)) }
         }
         .padding(32).frame(width: 520)
         .background(Palette.surface.color)

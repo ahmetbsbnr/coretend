@@ -93,11 +93,11 @@ struct DuplicateScanView: View {
                     List(similarReport.candidates, id: \.id) { pair in
                         HStack(alignment: .top, spacing: 12) {
                             Button { showPreview(pair.first) } label: { imagePreview(pair.first) }
-                                .buttonStyle(.plain)
+                                .buttonStyle(.serre(.tile))
                                 .accessibilityLabel(previewLabel(for: pair.first))
                                 .accessibilityHint(french ? "Ouvre l’aperçu Quick Look." : "Opens the Quick Look preview.")
                             Button { showPreview(pair.second) } label: { imagePreview(pair.second) }
-                                .buttonStyle(.plain)
+                                .buttonStyle(.serre(.tile))
                                 .accessibilityLabel(previewLabel(for: pair.second))
                                 .accessibilityHint(french ? "Ouvre l’aperçu Quick Look." : "Opens the Quick Look preview.")
                             VStack(alignment: .leading) {

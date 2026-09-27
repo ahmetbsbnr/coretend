@@ -127,7 +127,7 @@ struct SettingsView: View {
             // Settings is a sheet with no window close control; this is its visible exit.
             HStack {
                 Spacer()
-                Button(french ? "Terminé" : "Done") { close() }
+                Button(french ? "Terminé" : "Done") { close() }.buttonStyle(.serre(.primary))
                     .keyboardShortcut(.cancelAction)
             }
             .padding(12)

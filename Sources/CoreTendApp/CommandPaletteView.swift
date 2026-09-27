@@ -47,15 +47,10 @@ struct CommandPaletteView: View {
                         } label: {
                             Label { Text(command.title) } icon: { SerreIcon(glyph(for: command.target)).foregroundStyle(Palette.accent.color) }
                                 .font(CoreTendTypography.body)
-                                .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
-                                .contentShape(Rectangle())
-                                .padding(.horizontal, 8)
-                                .background(selectedID == command.id ? Palette.accent.color.opacity(0.16) : Palette.surface.color,
-                                            in: RoundedRectangle(cornerRadius: 7))
-                                .overlay(RoundedRectangle(cornerRadius: 7)
-                                    .strokeBorder(selectedID == command.id ? Palette.focus.color : .clear, lineWidth: 1))
+                                .foregroundStyle(Palette.ink.color)
+                                .frame(minHeight: 22)
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(.serre(.row(selected: selectedID == command.id)))
                         .accessibilityValue(selectedID == command.id ? (french ? "Sélectionné" : "Selected") : "")
                     }
                     .listStyle(.plain)

@@ -41,7 +41,7 @@ struct ApplicationsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            ObservatoryCard {
+            SerreParcel {
                 VStack(alignment: .leading, spacing: 14) {
                     HStack(alignment: .top, spacing: 12) {
                         VStack(alignment: .leading, spacing: 5) {
@@ -86,7 +86,7 @@ struct ApplicationsView: View {
                                 .accessibilityLabel(french ? "Rechercher dans l’inventaire d’apps" : "Search app inventory")
                             if !searchText.isEmpty {
                                 Button { searchText = "" } label: { Image(systemName: "xmark.circle.fill") }
-                                    .buttonStyle(.plain).accessibilityLabel(french ? "Effacer la recherche" : "Clear search")
+                                    .buttonStyle(.serre(.icon)).accessibilityLabel(french ? "Effacer la recherche" : "Clear search")
                             }
                         }
                         .padding(10)
@@ -113,7 +113,7 @@ struct ApplicationsView: View {
                                        systemImage: "app.dashed", description: Text(copy("apps.limits")))
             }
             if !issues.isEmpty {
-                ObservatoryCard {
+                SerreParcel {
                     VStack(alignment: .leading, spacing: 10) {
                         Label(copy("apps.issueCount", count: issues.count), systemImage: "exclamationmark.circle")
                             .font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.caution.color)
@@ -133,7 +133,7 @@ struct ApplicationsView: View {
                 }
             }
             if let app = associationApp {
-                ObservatoryCard {
+                SerreParcel {
                     VStack(alignment: .leading, spacing: 8) {
                         Text(french ? "Fichiers candidats · \(app.displayName)" : "Candidate files · \(app.displayName)")
                             .font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
@@ -171,7 +171,7 @@ struct ApplicationsView: View {
     }
 
     private func applicationCard(_ app: ApplicationRecord) -> some View {
-        ObservatoryCard {
+        SerreParcel {
             VStack(alignment: .leading, spacing: 13) {
                 HStack(alignment: .top, spacing: 12) {
                     Image(systemName: "app.dashed")
@@ -407,17 +407,5 @@ struct ApplicationsView: View {
         default:
             copy("apps.issue.unknown")
         }
-    }
-}
-
-private struct ObservatoryCard<Content: View>: View {
-    @ViewBuilder var content: Content
-
-    var body: some View {
-        content
-            .padding(18)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 16))
-            .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Palette.separator.color.opacity(0.75), lineWidth: 1))
     }
 }
