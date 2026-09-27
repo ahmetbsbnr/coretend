@@ -14,6 +14,7 @@ build-site:
 	python3 Scripts/build_site.py
 
 site-check:
+	python3 -B -m unittest Scripts.test_site_accessibility_contract
 	python3 Scripts/check_site.py
 
 traceability:
