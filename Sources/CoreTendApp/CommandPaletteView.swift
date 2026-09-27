@@ -15,7 +15,7 @@ struct CommandPaletteView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 10) {
-                Image(systemName: "magnifyingglass")
+                SerreIcon(.search, size: 16)
                     .foregroundStyle(Palette.secondaryInk.color)
                     .accessibilityHidden(true)
                 TextField(ProductCopy.value(for: "command.palette.search", french: french), text: $query)
@@ -45,7 +45,7 @@ struct CommandPaletteView: View {
                             selectedID = command.id
                             activate(command)
                         } label: {
-                            Label(command.title, systemImage: symbol(for: command.target))
+                            Label { Text(command.title) } icon: { SerreIcon(glyph(for: command.target)).foregroundStyle(Palette.accent.color) }
                                 .font(CoreTendTypography.body)
                                 .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
                                 .contentShape(Rectangle())
@@ -104,10 +104,10 @@ struct CommandPaletteView: View {
         if command.target != .settings { dismiss() }
     }
 
-    private func symbol(for target: CommandTarget) -> String {
+    private func glyph(for target: CommandTarget) -> SerreGlyph {
         switch target {
-        case .destination(let destination): destination.symbol
-        case .settings: "gearshape"
+        case .destination(let destination): destination.glyph
+        case .settings: .settings
         }
     }
 }

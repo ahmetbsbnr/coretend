@@ -80,7 +80,7 @@ struct ApplicationsView: View {
                                 .foregroundStyle(Palette.secondaryInk.color)
                         }
                         HStack(spacing: 9) {
-                            Image(systemName: "magnifyingglass").foregroundStyle(Palette.secondaryInk.color)
+                            SerreIcon(.search, size: 15).foregroundStyle(Palette.secondaryInk.color)
                             TextField(french ? "Rechercher par nom, identifiant, version ou chemin" : "Search name, identifier, version, or path", text: $searchText)
                                 .textFieldStyle(.plain)
                                 .accessibilityLabel(french ? "Rechercher dans l’inventaire d’apps" : "Search app inventory")

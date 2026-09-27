@@ -120,7 +120,7 @@ private struct CoreTendRootView: View {
             .navigationSplitViewColumnWidth(min: 190, ideal: 220)
             .safeAreaInset(edge: .bottom) {
                 Button { navigation.activeSheet = .settings } label: {
-                    Label(ProductCopy.value(for: "settings.title", french: french), systemImage: "gearshape")
+                    Label { Text(ProductCopy.value(for: "settings.title", french: french)) } icon: { SerreIcon(.settings) }
                         .font(CoreTendTypography.body)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 14)
@@ -149,30 +149,19 @@ private struct CoreTendRootView: View {
         .preferredColorScheme(effectiveColorScheme)
         .toolbar {
             ToolbarItem(placement: .automatic) {
-                Button { navigation.activeSheet = .commands } label: { Image(systemName: "command") }
+                Button { navigation.activeSheet = .commands } label: { SerreIcon(.search) }
                     .keyboardShortcut("k", modifiers: [.command])
                     .accessibilityLabel(ProductCopy.value(for: "command.palette.title", french: french))
                     .help(french ? "Accéder à… (⌘K)" : "Go to or open… (⌘K)")
             }
             ToolbarItem(placement: .automatic) {
-                Button { navigation.activeSheet = .settings } label: { Image(systemName: "gearshape") }
+                Button { navigation.activeSheet = .settings } label: { SerreIcon(.settings) }
                     .accessibilityLabel(ProductCopy.value(for: "settings.title", french: french))
             }
         }
         .sheet(item: $navigation.activeSheet) { sheet in
-            switch sheet {
-            case .settings: SettingsView(french: french, language: $language, appearance: $appearance, recentFilesEnabled: $recentFilesEnabled, menuBarEnabled: $menuBarEnabled) {
-                navigation.activeSheet = nil
-            }
-            case .commands:
-                CommandPaletteView(french: french) { target in
-                    switch target {
-                    case .destination(let destination): navigation.selection = destination; navigation.activeSheet = nil
-                    case .settings: navigation.activeSheet = .settings
-                    }
-                }
-            case .onboarding: OnboardingView(french: french) { onboardingCompleted = true; navigation.activeSheet = nil }
-            }
+            // Sheets are separate presentations and do not inherit the window's tint.
+            sheetContent(sheet).tint(Palette.accent.color)
         }
         .onChange(of: navigation.selection) { _, destination in
             if let destination { preferences.saveLastDestination(destination.rawValue) }
@@ -191,10 +180,27 @@ private struct CoreTendRootView: View {
         }
     }
 
+    @ViewBuilder
+    private func sheetContent(_ sheet: RootSheet) -> some View {
+        switch sheet {
+        case .settings: SettingsView(french: french, language: $language, appearance: $appearance, recentFilesEnabled: $recentFilesEnabled, menuBarEnabled: $menuBarEnabled) {
+            navigation.activeSheet = nil
+        }
+        case .commands:
+            CommandPaletteView(french: french) { target in
+                switch target {
+                case .destination(let destination): navigation.selection = destination; navigation.activeSheet = nil
+                case .settings: navigation.activeSheet = .settings
+                }
+            }
+        case .onboarding: OnboardingView(french: french) { onboardingCompleted = true; navigation.activeSheet = nil }
+        }
+    }
+
     private func destinationLink(_ destination: Destination) -> some View {
         let title = ProductCopy.value(for: destination.titleKey, french: french)
         return NavigationLink(value: destination) {
-            Label(title, systemImage: destination.symbol)
+            Label { Text(title) } icon: { SerreIcon(destination.glyph) }
                 .font(CoreTendTypography.body)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.vertical, 4)
@@ -249,7 +255,7 @@ private struct OnboardingView: View {
     let finish: () -> Void
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            Image(systemName: "lock.shield").font(.system(size: 36)).foregroundStyle(.tint)
+            SerreLogo(size: 64, germinates: true)
             Text(ProductCopy.value(for: "onboarding.title", french: french)).font(CoreTendTypography.pageTitle)
             Text(ProductCopy.value(for: "onboarding.scope", french: french))
                 .font(CoreTendTypography.body).fixedSize(horizontal: false, vertical: true)
