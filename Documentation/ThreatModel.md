@@ -14,7 +14,7 @@ Files selected for inspection; local CoreTend events/preferences; paths and file
 
 ## Boundaries
 
-The user explicitly supplies scan roots. ScanCore reads metadata and content only for exact duplicate hashes. ScanCore cannot call SafetyCore. UI cannot invoke filesystem mutation APIs. SafetyCore alone accepts opaque short-lived approvals and revalidates target path, root scope, volume and inode immediately before invoking macOS Trash. Production has no permanent-delete fallback. The CLI is read-only and requires explicit root/store paths. SQLite tests use temporary database URLs.
+The user explicitly supplies scan roots. ScanCore reads metadata and content only for exact duplicate hashes. ScanCore cannot call SafetyCore. UI cannot invoke filesystem mutation APIs. SafetyCore alone accepts opaque short-lived approvals and revalidates target path, root scope, volume and inode immediately before invoking macOS Trash. Production has no permanent-delete fallback. The CLI is read-only and requires explicit root/store paths. SQLite tests use temporary database URLs. A process-level test store override is accepted only when `CORETEND_TEST_MODE=1`, `CORETEND_TEST_STORE_DIR` points to an existing non-symlink directory below the real temporary root, and `HOME` equals `CFFIXED_USER_HOME` under that same root. Home and database directories cannot contain each other. Partial or invalid setup fails closed instead of falling back to a user store.
 
 ## Threats and controls
 

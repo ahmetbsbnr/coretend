@@ -2,6 +2,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 import Persistence
 import AppShell
+import Domain
 
 struct SettingsView: View {
     let french: Bool
@@ -17,6 +18,7 @@ struct SettingsView: View {
     @State private var exportAfterPreview = false
     @State private var diagnosticDocument: SettingsJSONDocument?
     @State private var diagnosticSummary = ""
+    @State private var ownSignature: CodeSignatureReport?
     @State private var status: String?
     @AppStorage("coretend.recentFiles.enabled") private var recentFilesEnabled = false
 
@@ -55,6 +57,22 @@ struct SettingsView: View {
                     .font(.callout).foregroundStyle(.secondary)
             }
 
+            Section(ProductCopy.value(for: "settings.signature.title", french: french)) {
+                if let ownSignature {
+                    Label(signatureText(ownSignature.state), systemImage: signatureIcon(ownSignature.state))
+                    if let identifier = ownSignature.identifier {
+                        LabeledContent(ProductCopy.value(for: "integrity.identifier", french: french), value: identifier)
+                    }
+                    if let team = ownSignature.teamIdentifier {
+                        LabeledContent(ProductCopy.value(for: "integrity.team", french: french), value: team)
+                    }
+                } else {
+                    Label(ProductCopy.value(for: "settings.signature.unavailable", french: french), systemImage: "questionmark.circle")
+                }
+                Text(ProductCopy.value(for: "settings.signature.limit", french: french))
+                    .font(.callout).foregroundStyle(.secondary)
+            }
+
             Section(french ? "Données héritées" : "Legacy data") {
                 Text(french ? "Import opt-in des préférences v1 reconnues. Le fichier source reste intact." : "Opt-in import for recognized v1 preferences. Source file remains unchanged.")
                     .font(.callout).foregroundStyle(.secondary)
@@ -80,7 +98,10 @@ struct SettingsView: View {
         }
         .padding(20)
         .frame(minWidth: 600, minHeight: 520)
-        .task { await load() }
+        .task {
+            await load()
+            ownSignature = MacOSCodeSignatureInspector().inspect(at: Bundle.main.bundleURL)
+        }
         .fileImporter(isPresented: $chooseExclusion, allowedContentTypes: [.folder], allowsMultipleSelection: false) { result in
             guard case .success(let urls) = result, let url = urls.first else { return }
             Task { await addExclusion(url) }
@@ -148,6 +169,24 @@ struct SettingsView: View {
     private var diagnosticPreviewText: String {
         guard let data = diagnosticDocument?.data else { return "" }
         return String(decoding: data, as: UTF8.self)
+    }
+
+    private func signatureText(_ state: CodeSignatureState) -> String {
+        let key: String
+        switch state {
+        case .valid: key = "settings.signature.valid"
+        case .invalid: key = "settings.signature.invalid"
+        case .unavailable: key = "settings.signature.unavailable"
+        }
+        return ProductCopy.value(for: key, french: french)
+    }
+
+    private func signatureIcon(_ state: CodeSignatureState) -> String {
+        switch state {
+        case .valid: "checkmark.seal"
+        case .invalid: "exclamationmark.seal"
+        case .unavailable: "questionmark.circle"
+        }
     }
 
     @MainActor private func load() async {

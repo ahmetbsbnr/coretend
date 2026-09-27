@@ -31,6 +31,26 @@ final class PersistenceTests: XCTestCase {
         XCTAssertEqual(events.map(\.failureCode), [nil, nil])
     }
 
+    func testClearHistoryRemovesEventsButPreservesPreferencesAndPerformance() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-clear-history-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = try SQLiteStore(url: root.appendingPathComponent("fixture.sqlite"))
+        try await store.migrate()
+        try await store.append(ActivityEvent(id: UUID(), occurredAt: Date(timeIntervalSince1970: 20), kind: .failed, detail: "fixture"))
+        try await store.saveExclusions(["/fixture/excluded"])
+        try await store.appendPerformanceSample(PerformanceSample(measuredAt: .now, loadAverage1m: 0.5, availableBytes: 12))
+
+        try await store.clearHistory()
+
+        let events = try await store.events()
+        let exclusions = try await store.exclusions()
+        let samples = try await store.performanceSamples()
+        XCTAssertEqual(events, [])
+        XCTAssertEqual(exclusions, ["/fixture/excluded"])
+        XCTAssertEqual(samples.count, 1)
+    }
+
     func testActivityRejectsNonFiniteTimestamp() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-event-time-\(UUID())", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)

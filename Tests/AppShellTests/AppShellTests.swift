@@ -22,6 +22,30 @@ final class AppShellTests: XCTestCase {
         XCTAssertTrue(ProductCopy.french.keys.contains("safety.notice"))
     }
 
+    func testOnboardingExplainsChosenFoldersReadOnlyScansAndConfirmedTrashInBothLanguages() {
+        for key in ["onboarding.title", "onboarding.scope", "onboarding.privacy", "onboarding.start"] {
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: false), key)
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: true), key)
+        }
+        XCTAssertTrue(ProductCopy.value(for: "onboarding.scope", french: false).contains("Choose folders"))
+        XCTAssertTrue(ProductCopy.value(for: "onboarding.scope", french: false).contains("read-only"))
+        XCTAssertTrue(ProductCopy.value(for: "onboarding.scope", french: false).contains("review and confirmation"))
+        XCTAssertTrue(ProductCopy.value(for: "onboarding.scope", french: true).contains("Choisissez vous-même"))
+        XCTAssertTrue(ProductCopy.value(for: "onboarding.scope", french: true).contains("lecture seule"))
+        XCTAssertTrue(ProductCopy.value(for: "onboarding.scope", french: true).contains("revue et confirmation"))
+        XCTAssertTrue(ProductCopy.value(for: "onboarding.privacy", french: false).contains("does not request Full Disk Access"))
+        XCTAssertTrue(ProductCopy.value(for: "onboarding.privacy", french: true).contains("ne demande pas l’accès intégral"))
+    }
+
+    func testRecordDateRangeCopyExistsInBothLanguages() {
+        for key in ["record.range", "record.range.all", "record.range.last7", "record.range.last30"] {
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: false), key)
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: true), key)
+        }
+        XCTAssertEqual(ProductCopy.value(for: "record.range.last7", french: false), "Last 7 days")
+        XCTAssertEqual(ProductCopy.value(for: "record.range.last7", french: true), "7 derniers jours")
+    }
+
     func testSystemMeasurementCopyNamesSourceAndLimitsClaimsInBothLanguages() {
         let english = ProductCopy.value(for: "metrics.scope", french: false)
         let french = ProductCopy.value(for: "metrics.scope", french: true)
@@ -84,6 +108,15 @@ final class AppShellTests: XCTestCase {
 
         XCTAssertTrue(english.contains("only folders you choose in the macOS picker"))
         XCTAssertTrue(french.contains("dossiers que vous choisissez dans le sélecteur macOS"))
+    }
+
+    func testSettingsOwnSignatureGuidanceExistsInBothLanguages() {
+        for key in ["settings.signature.title", "settings.signature.valid", "settings.signature.invalid", "settings.signature.unavailable", "settings.signature.limit"] {
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: false), key, "Missing English copy for \(key)")
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: true), key, "Missing French copy for \(key)")
+        }
+        XCTAssertTrue(ProductCopy.value(for: "settings.signature.limit", french: false).contains("does not establish"))
+        XCTAssertTrue(ProductCopy.value(for: "settings.signature.limit", french: true).contains("ne prouve"))
     }
 
     func testRootScanFailuresDistinguishDeniedFromUnavailableInBothLanguages() {

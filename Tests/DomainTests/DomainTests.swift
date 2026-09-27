@@ -27,6 +27,57 @@ final class QuarantineInspectionTests: XCTestCase {
     }
 }
 
+final class ActivityGroupingTests: XCTestCase {
+    func testGroupsNewestFirstAndAppliesInclusiveCalendarRangeAndKind() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let now = try date(2025, 3, 10, 12, calendar: calendar)
+        let old = try date(2025, 3, 3, 23, calendar: calendar)
+        let boundary = try date(2025, 3, 4, 0, calendar: calendar)
+        let todayEarlier = try date(2025, 3, 10, 8, calendar: calendar)
+        let future = try date(2025, 3, 11, 8, calendar: calendar)
+        let events = [
+            event(at: old, kind: .failed),
+            event(at: boundary, kind: .proposed),
+            event(at: now, kind: .failed),
+            event(at: todayEarlier, kind: .failed),
+            event(at: future, kind: .failed)
+        ]
+
+        let groups = ActivityHistoryGrouping.groups(
+            events,
+            kind: .failed,
+            range: .last7Days,
+            now: now,
+            calendar: calendar
+        )
+
+        XCTAssertEqual(groups.map(\.day), [calendar.startOfDay(for: now)])
+        XCTAssertEqual(groups.first?.events.map(\.occurredAt), [now, todayEarlier])
+    }
+
+    func testAllRangeRetainsOlderDaysAndExportSelectionMatchesVisibleFilters() throws {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        let now = try date(2025, 3, 10, 12, calendar: calendar)
+        let older = try date(2025, 1, 1, 9, calendar: calendar)
+        let events = [event(at: older, kind: .approved), event(at: now, kind: .failed)]
+
+        let visible = ActivityHistoryGrouping.filteredEvents(events, kind: .failed, range: .all, now: now, calendar: calendar)
+
+        XCTAssertEqual(visible.map(\.kind), [.failed])
+        XCTAssertEqual(ActivityHistoryGrouping.groups(events, range: .all, now: now, calendar: calendar).count, 2)
+    }
+
+    private func event(at date: Date, kind: ActivityKind) -> ActivityEvent {
+        ActivityEvent(id: UUID(), occurredAt: date, kind: kind, detail: "fixture")
+    }
+
+    private func date(_ year: Int, _ month: Int, _ day: Int, _ hour: Int, calendar: Calendar) throws -> Date {
+        try XCTUnwrap(calendar.date(from: DateComponents(year: year, month: month, day: day, hour: hour)))
+    }
+}
+
 final class LaunchAgentInspectionTests: XCTestCase {
     func testReadsOnlyExpectedFieldsFromExplicitFixtureFolderAndPreservesBytes() throws {
         let root = try fixtureRoot()

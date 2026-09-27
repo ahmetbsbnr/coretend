@@ -53,7 +53,7 @@ public struct RecentFileMeasurement: Equatable, Sendable {
     }
 }
 
-public enum StoreError: Error, Equatable { case open(String), statement(String), unsupportedSchema(Int), readOnly }
+public enum StoreError: Error, Equatable { case open(String), statement(String), unsupportedSchema(Int), readOnly, invalidTestStoreOverride }
 
 private final class SQLiteConnection: @unchecked Sendable {
     let handle: OpaquePointer

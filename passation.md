@@ -104,3 +104,35 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 5. `Documentation/Progress.md`, `Documentation/ReleaseEvidence.md` — jalons récents, validations et hashes.
 6. `Documentation/ThreatModel.md`, `Documentation/Accessibility.md`, `Documentation/Project/DataModel.md`, `Documentation/Project/Migration.md` — limites de sûreté, a11y et données.
 7. `Documentation/Archive/Legacy-Reconstruction/passation.md` — historique complet ancien projet; contexte seulement, pas état runtime courant.
+
+## Reprise Musts — 27-09-2026
+
+État à jour sur la branche `feat/reconstruction-open-musts`, depuis `3bd0298`; changements de cette reprise présents localement et pas encore commités.
+
+- CLI : `--lang en|fr` avant commande, défaut anglais. Aide, erreurs et texte scan localisés; JSON et codes de cause stables. Parseur refuse langue invalide/mal placée et arguments surnuméraires de `help`/`version`. Annulation SIGINT vérifiée avant et après fin du flux pour garantir code 130 même si annulation ferme le stream sans événement suivant.
+- Signature : Réglages inspecte localement la signature du bundle courant via Security.framework, affiche état/identifiant/équipe disponibles et limites de ce signal en EN/FR.
+- Désinstallation locale : dry-run par défaut; app uniquement (`--keep-data`) ou app+base/préférences (`--remove-all`) après confirmation. Données MacCare uniquement avec `--include-legacy`, traitées en dernier. Allowlist stricte, symlinks refusés, aucun sudo. Les tests utilisent un HOME temporaire.
+- Isolation du store : deux variables de test obligatoires, HOME et CFFIXED_USER_HOME temporaires concordants; store/home doivent être séparés sous racine temporaire réelle, symlinks refusés. Mauvaise configuration échoue fermée. Tests Persistence et smoke du binaire debug prouvent que seule la base fixture est créée.
+- Historique : filtre date 7/30 jours calendaires inclusifs ou tout, filtre type, groupe par date locale et exports CSV/JSON alignés sur filtres. Effacement événementiel préserve exclusions et Performance. Tests fixtures et copies EN/FR ajoutés.
+- Traceability : descriptions placeholder de 26 capacités remplacées par critères comportementaux; le checker rejette maintenant les placeholders. Les capacités vérifiées uniquement en code/test gardent statut PARTIEL jusqu’aux qualifications natives restantes.
+- Gate après reprise : `make qualify` PASS; builds Release `CoreTendApp` et `CoreTendCLI` PASS; matrice subprocess/SIGINT Release PASS; traceability, safety audit, désinstallateur fixture et `git diff --check` PASS. App runtime isolation smoke debug PASS sous HOME/CFFIXED_USER_HOME temporaires. Aucun HOME/store réel touché.
+- Registre : 91 lignes; parmi 78 Must, 18 `EN_COURS`, 60 `PARTIEL`, 0 `À_CONSTRUIRE`, 0 `VÉRIFIÉ`. Estimation qualitative courante ≈42 % des Musts / ≈40 % du registre total. Aucun Must n’est qualifié de bout en bout.
+- Restent : parcours SwiftUI/VoiceOver/focus, vrai Trash/UI d’action, matrice autre macOS/hôte, release/distribution GUI/sig/notarisation, compatibilité et preuve NFR-14; FR-10/FDA exhaustive; attribution prudente Apps et quelques écarts `EN_COURS`. Voir `Documentation/Traceability.csv` pour owners/écarts détaillés.
+- Pas de commit de cette tranche encore, pas de push/merge/tag/publication. Préserver `Documentation/Project/Remaining-musts-plan.md` local, `.superpowers/sdd/Remaining-musts-plan/`, artefacts de paquet existants et ce fichier.
+
+### NFR-10 — gate d’architecture SwiftPM — 27-09-2026
+
+- `Scripts/check_architecture.py` valide le graphe évalué par SwiftPM : outils Swift ≥6, cible macOS ≥14, zéro package externe et ScanCore sans dépendance SafetyCore/Persistence. `Scripts/test_architecture.py` couvre graphe admis et trois régressions refusées; `make architecture-audit` passe.
+- Le gate entre dans `make qualify`. L’audit de sûreté existant reste responsable de la frontière API Trash. NFR-10 passe de `EN_COURS` à `PARTIEL`; revue indépendante d’architecture non réalisée.
+
+### FR-14 — smoke runtime Release isolé — 27-09-2026
+
+- `Scripts/test_app_runtime_isolation.py` enveloppe le binaire Release dans un `.app` temporaire; `HOME`, `CFFIXED_USER_HOME`, `TMPDIR` et le store explicitement autorisé résident sous une racine fixture. Le processus doit rester vivant huit secondes et créer SQLite uniquement dans le store fixture.
+- `make app-runtime-smoke` passe et entre dans `make qualify`. `Artifacts/` n’est ni remplacé ni modifié. Cela prouve le démarrage isolé du binaire Release, pas l’affichage d’une fenêtre via Finder; signature/notarisation, parcours visible et hôte macOS minimum restent ouverts. FR-14 demeure `PARTIEL`.
+
+### NFR-12 — gate de complétude des preuves Must — 27-09-2026
+
+- `check_traceability.py` exige maintenant pour chacune des 78 lignes Must : code, tests, preuve datée, owner; chaque référence de fichier dans `code`/`tests` doit exister. Le gate a d’abord échoué sur FR-05 sans preuve, puis passe après réconciliation des preuves disponibles et lacunes restantes.
+- Toutes les lignes Must sont désormais `PARTIEL` (78), aucune `EN_COURS`/`À_CONSTRUIRE`/`VÉRIFIÉ`. Ce statut ne clôt pas les critères; les gaps visibles restent notamment UI/accessibilité native, vraie Corbeille, FDA exhaustive, compatibilité macOS 14/autre hôte, attribution des données Apps et release. Avancement global reste estimé ≈42 %, sans calcul pondéré du registre.
+- L’onboarding a des clés `ProductCopy` EN/FR pour portée, confidentialité et action de démarrage; test rouge/vert AppShell couvre dossiers choisis, scans lecture seule, confirmation Corbeille et politique FDA. Sheet/interaction première ouverture restent à qualifier.
+- `make qualify` a repassé après réconciliation du registre et extraction/tests d’onboarding; code sortie 0. Il inclut smoke Release isolé, XCTest, builds App/CLI, audits et CLI SIGINT. `git diff --check` et `check_traceability.py` passent. Aucun artefact dans `Artifacts/` remplacé; plan `Documentation/Project/Remaining-musts-plan.md` préservé et non suivi.

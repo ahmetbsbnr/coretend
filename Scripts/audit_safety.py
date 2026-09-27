@@ -68,4 +68,4 @@ for file in scan_core_sources:
  for pattern in scan_core_mutation_findings(text):
   errors.append(f'filesystem mutation API in ScanCore: {file.relative_to(root)}: {pattern}')
 if errors: print('\n'.join(errors)); raise SystemExit(1)
-print('Safety audit passed: Trash boundary intact; no permanent-removal API, personal test paths, network client, or known telemetry SDK/import.')
+print('Safety audit passed: app Trash boundary intact; no runtime permanent-removal API; local uninstall remains explicit and separate; no personal test paths, network client, or known telemetry SDK/import.')
