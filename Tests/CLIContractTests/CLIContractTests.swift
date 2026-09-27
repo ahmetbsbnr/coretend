@@ -18,7 +18,21 @@ final class CLIContractTests: XCTestCase {
     }
 
     func testRecordRequiresExplicitStorePath() {
-        XCTAssertThrowsError(try CLICommand.parse(["record", "list"]))
+        XCTAssertThrowsError(try CLICommand.parse(["record", "list"])) { error in
+            XCTAssertEqual(error as? CLIError, .storePathRequired)
+        }
+    }
+
+    func testOptionNamesCannotBeConsumedAsFlagValues() {
+        let malformedCommands = [
+            ["record", "list", "--store", "--store"],
+            ["scan", "--root", "--rule", "--rule", "scan.explore"]
+        ]
+        for arguments in malformedCommands {
+            XCTAssertThrowsError(try CLICommand.parse(arguments), "Expected malformed options to fail: \(arguments)") { error in
+                XCTAssertEqual(error as? CLIError, .invalidArguments)
+            }
+        }
     }
 
     func testPermanentMutationCommandsAreRejected() {
