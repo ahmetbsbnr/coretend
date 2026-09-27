@@ -1,6 +1,6 @@
 // Window lookup for Scripts/capture_screens.py.
 //   preflight   exit 0 if this process may record the screen, 3 otherwise
-//   window PID  print the window number of PID's largest on-screen normal window, exit 4 if none
+//   window PID  print the window number of PID's largest normal window, exit 4 if none
 import CoreGraphics
 import Foundation
 
@@ -10,7 +10,9 @@ case "preflight":
     exit(CGPreflightScreenCaptureAccess() ? 0 : 3)
 case "window" where arguments.count == 3:
     guard let pid = Int32(arguments[2]),
-          let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]]
+          // All windows, not only on-screen ones: a new window can open on another Space (for
+          // example beside a full-screen app); screencapture -l still captures it.
+          let windows = CGWindowListCopyWindowInfo([.optionAll, .excludeDesktopElements], kCGNullWindowID) as? [[String: Any]]
     else { exit(64) }
     let candidates = windows.compactMap { window -> (number: Int, area: Double)? in
         guard window[kCGWindowOwnerPID as String] as? Int32 == pid,
