@@ -1,5 +1,6 @@
 import SwiftUI
 import Persistence
+import AppShell
 
 struct SavedFilesView: View {
     let french: Bool
@@ -29,9 +30,10 @@ struct SavedFilesView: View {
                         VStack(alignment: .leading, spacing: 3) {
                             Text(URL(fileURLWithPath: record.path).lastPathComponent).lineLimit(1)
                             Text(record.path).font(.caption.monospaced()).foregroundStyle(.secondary).lineLimit(1)
-                            Text(FileManager.default.fileExists(atPath: record.path)
-                                 ? (french ? "Présent (accès actuel non garanti)" : "Present (current access not verified)")
-                                 : (french ? "Absent ou inaccessible" : "Missing or inaccessible"))
+                            Text(ProductCopy.savedFileAvailability(
+                                isPresent: FileManager.default.fileExists(atPath: record.path),
+                                french: french
+                            ))
                                 .font(.caption).foregroundStyle(.secondary)
                         }
                         Spacer()

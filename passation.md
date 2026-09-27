@@ -257,3 +257,8 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 
 - Fixture crée dossier LaunchAgents réel avec plist candidat puis alias symlink; inspection de l’alias rend zéro candidat et `directoryUnreadable`. Guide utilisateur précise refus racine alias; Traceability `integrity.loginitems` référence fixture et limites humaines/service de lancement restent ouvertes. Statut PARTIEL inchangé.
 - `make qualify` passe après fixture/documentation : site, checker 91 lignes, audits, runtime isolé, builds Release byte-identiques, XCTest, Debug App/CLI et CLI/SIGINT. Aucun dossier système ni HOME réel examiné.
+
+### FR-24 / favrec.module — état de disponibilité des chemins — 27-09-2026
+
+- `SavedFilesView` affiche état présent (accès courant non vérifié) ou absent/inaccessible à partir de métadonnée d’existence seulement; taille reste la dernière mesure connue et aucune lecture/réouverture de chemin n’est déclenchée. Helper `ProductCopy.savedFileAvailability` testé dans les deux langues; build App et `make qualify` passent.
+- FR-24 et `favrec.module` passent de EN_COURS à PARTIEL, preuve de wording/état présente; navigation native, lecture VoiceOver et accès actuel restent à qualifier. Registre recalculé : 83 PARTIEL, 6 À_CONSTRUIRE, 2 VÉRIFIÉ; score pondéré total 47,8 %. Must inchangé à 51,3 %.

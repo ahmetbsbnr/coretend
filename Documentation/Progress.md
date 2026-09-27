@@ -281,3 +281,8 @@
 ### Integrity — racine LaunchAgents explicite — 27-09-2026
 
 - Test fixture confirme qu’un dossier sélectionné via symlink ne produit aucun candidat et signale `directoryUnreadable`; guide et preuve Traceability alignés. `make qualify` passe. `integrity.loginitems` reste PARTIEL, faute d’observation du service launchd et de qualification native.
+
+### FR-24 — état des fichiers favoris/récents — 27-09-2026
+
+- La disponibilité affichée utilise uniquement `fileExists` et libellé prudent : présent sans confirmer accès, ou absent/inaccessible. Taille reste mesure sauvegardée; aucun chemin n’est ouvert. Helper de copy EN/FR ajouté au module testable AppShell et utilisé par la vue; test ciblé, build App et `make qualify` passent.
+- FR-24 et `favrec.module` deviennent PARTIEL (preuve comportement/libellé automatisée); navigation native et VoiceOver/accessibilité restent ouverts. Registre : 83 PARTIEL, 6 À_CONSTRUIRE, 2 VÉRIFIÉ (47,8 % pondéré); Must : 76 PARTIEL, 2 VÉRIFIÉ (51,3 %).
