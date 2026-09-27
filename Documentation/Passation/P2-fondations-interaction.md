@@ -9,8 +9,8 @@
 
 | Lot | Intitulé | Statut |
 |---|---|---|
-| 2.1 | Jetons Serre (couleurs Nuit/Jour, typographie, motion, formes) + tests | Livré — recette en attente (`8635253`) |
-| 2.2 | Logo Serre et germination ; jeu d’icônes ; feuilles de risque | À faire |
+| 2.1 | Jetons Serre (couleurs Nuit/Jour, typographie, motion, formes) + tests | Accepté (27-09) |
+| 2.2 | Logo Serre et germination ; jeu d’icônes ; feuilles de risque | Livré — recette en attente (`9d75517`) |
 | 2.3 | Composants et états (guide § 7) + gate `check_architecture.py` | À faire |
 | 2.4 | Coquille de l’app : barre latérale, transition « pousse », recherche ⌘K, clavier/focus | À faire |
 | 2.5 | Site en Serre : jetons exportés, logo, navigation, racine au défilement (CSS seul) | À faire |
@@ -34,16 +34,43 @@
   système (2.4), boutons et badges système (2.3), icônes SF Symbols (2.2).
 - **Recette 2.1 (mainteneur) :** lancer l’app ou regarder `make capture-screens`, dire si
   couleurs et typographie Serre conviennent.
+- **Recette 2.1 — acceptée (27-09) :** « il a l'aire d'etre bien […] le style generale est bien
+  mieux que tout les design proposé depuis le debut de coretend. » Question du mainteneur sur
+  les animations : elles arrivent en 2.2 (logo), 2.3 (survol), 2.4 (navigation, recherche),
+  2.5 (site) et P3 (analyse, Corbeille, floraison).
+
+### 27-09-2026 — lot 2.2, logo et icônes
+
+- **Fait :** `9d75517` — `SerreLogo` (germination ≈ 1,2 s une fois, puis immobile ; frémissement au
+  survol ; logo final sous Reduce Motion), `SerreGlyph`/`SerreIcon` (10 icônes), `RiskLeaf`
+  (pleine / moitié / fendue). Branchés : barre latérale, barre d’outils, ligne Réglages, palette
+  ⌘K, recherche Applications, écran de bienvenue (logo à la place du bouclier bleu), badges de
+  risque du Nettoyage. Toutes les feuilles modales reçoivent la teinte chlorophylle (elles ne
+  l’héritaient pas : icônes, curseur et bouton bleus). Contenu des feuilles extrait dans
+  `sheetContent(_:)` (le compilateur ne typait plus le `switch` en ligne).
+- **Vérifié :** `SerreDrawingTests` 4/4 + `DesignSystemTests` 9/9. Planche
+  `CORETEND_RENDER_DIR=<dossier> swift test --filter SerreRenderSheet` rendue et relue en clair et
+  en sombre (icônes lisibles à 18 et 36 pt, feuilles de risque, étapes de germination). `make
+  qualify` PASS. Captures palette, bienvenue, Nettoyage FR/EN clair/sombre relues.
+- **Non vérifié :** la germination en mouvement réel (captures fixes, état final) ; à regarder
+  en lançant l’app (premier lancement).
+- **Encore générique :** bouton « Commencer » et boutons de l’app (2.3), barre latérale et
+  sélection système (2.4). Défaut de contenu noté : le texte « Uniquement les rapports .crash »
+  est faux (la règle retient aussi `.ips`) — à corriger en 3.2.
+- **Recette 2.2 (mainteneur) :** lancer l’app (premier lancement : le logo germe), regarder
+  icônes et feuilles de risque.
 
 ## Point d’arrêt
 
-- 2.1 livré, recette du mainteneur en attente.
-- Prochain lot **2.2 — logo et icônes** : logo Serre en `Shape`/`Path` SwiftUI dans
-  `DesignSystem` (graine, tige, deux feuilles) avec la germination du guide § 6 (tracé via
-  `trim`, jetons `bloom`/`sprout`, aucune boucle au repos, image finale sous Reduce Motion) ;
-  icônes des 8 destinations + Réglages + Recherche en tracés 1,6 pt ; feuilles de risque
-  (pleine / entamée / fendue). Les brancher dans la barre latérale et le Nettoyage sans changer
-  la mise en page (celle-ci est le lot 2.4).
+- 2.2 livré, recette du mainteneur en attente.
+- Prochain lot **2.3 — composants** (guide § 7) dans `DesignSystem` : `SerreButtonStyle`
+  (principal, secondaire, destructif : coin feuille, survol +8 % et icône −6°, pressé 0,97 `press`,
+  focus anneau feuille, désactivé 40 %), ligne de liste avec **nervure** au survol (filet `accent`
+  tracé de gauche à droite, `quick`), case, champ de recherche, parcelle (`LeafCorner.parcel`,
+  `surface`), badge de risque, bandeaux (partiel / refus / erreur), états de vue. Remplacer les
+  six `.buttonStyle(.plain)` et les `RoundedRectangle` ad hoc des vues. Gate
+  `Scripts/check_architecture.py` : pas de `.buttonStyle(.plain)`, `Color(red:…)`, `Color.blue` ni
+  `repeatForever` hors `DesignSystem` (le faire échouer d’abord sur le code actuel).
 
 ## Problèmes ouverts
 

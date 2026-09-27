@@ -53,7 +53,7 @@ Référence : `Documentation/Design/UI-guide.md` (direction « Serre », décisi
   `strongSeparator`), `CoreTendTypography` (Iowan Old Style / Avenir Next), `MotionToken`
   (`press`, `quick`, `standard`, `grow`, `bloom`, courbes `sève`, `pousse`, `chute`, `retrait`),
   formes « coin feuille ». Tests de contraste et de durées mis à jour.
-- [ ] **2.2 Logo et icônes** : logo Serre en tracés SwiftUI avec la germination ; jeu d’icônes
+- [x] **2.2 Logo et icônes** (`9d75517`) : logo Serre en tracés SwiftUI avec la germination ; jeu d’icônes
   Serre des 8 destinations, Réglages, Recherche ; feuilles de risque.
 - [ ] **2.3 Composants** : boutons (principal, secondaire, destructif), ligne de barre latérale
   et **marqueur feuille** dessinés par CoreTend, ligne de liste avec nervure, case, champ de
