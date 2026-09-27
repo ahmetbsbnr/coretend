@@ -1,20 +1,20 @@
 import SwiftUI
 
-/// Motion tokens: quick for direct feedback, standard for content changes, gentle for ambient reveals.
+/// Motion tokens for immediate feedback and short, interruptible content transitions.
 public enum MotionToken: CaseIterable, Sendable {
     case quick, standard, gentle
 
     public var duration: Double {
         switch self {
         case .quick: 0.15
-        case .standard: 0.30
-        case .gentle: 0.55
+        case .standard: 0.24
+        case .gentle: 0.28
         }
     }
 
     /// Returns nil under Reduce Motion so changes apply immediately.
     public func animation(reduceMotion: Bool) -> Animation? {
-        reduceMotion ? nil : .easeInOut(duration: duration)
+        reduceMotion ? nil : .smooth(duration: duration)
     }
 }
 
