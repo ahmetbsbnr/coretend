@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import hashlib
+import os
 import shutil
 import subprocess
 import tempfile
@@ -42,10 +43,15 @@ def main() -> None:
                     "--scratch-path", str(scratch),
                     "--product", product,
                 ]
+                environment = os.environ.copy()
+                # SwiftPM defaults to the host's current OS deployment target.
+                # Pin this smoke to the project's minimum so runner/local SDK
+                # differences don't silently change the product binary.
+                environment["MACOSX_DEPLOYMENT_TARGET"] = "14.0"
                 result = subprocess.run(
                     command, cwd=package_root, text=True,
                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                    timeout=600, check=False,
+                    timeout=600, check=False, env=environment,
                 )
                 if result.returncode != 0:
                     raise RuntimeError(f"{build_name} {product} build failed:\n{result.stdout}")

@@ -4,8 +4,8 @@
 
 ### NFR-13 — reproductibilité après échec CI — 2026-09-27
 
-- PR #55 a révélé que le scratch symlink stable ne gardait pas son chemin physique sur le toolchain GitHub: App/CLI différaient entre builds froids, alors que ce smoke passait sur l’hôte local. Le script utilise maintenant un même chemin physique temporaire par produit et le vide entre deux builds; helper vérifie le périmètre supprimé, rejette symlinks et chemins extérieurs.
-- Le smoke local et `make qualify` complet repassent, hashes App `b3fb6719…`, CLI `f0233f8b…`; preuves complètes dans `Documentation/Evidence/ReleaseReproducibility.md`. CI doit être relancé pour confirmer sur runner distant; NFR-13 reste `PARTIEL` tant que ce check n’est pas vert.
+- PR #55 a révélé deux différences runner/local: canonicalisation scratch dans l’ancien symlink smoke, puis builds distants toujours différents avec scratch physiques identiques. Le script utilise un même chemin temporaire par produit, le vide entre builds et fixe la cible `MACOSX_DEPLOYMENT_TARGET=14.0` (minimum déclaré).
+- `make qualify` complet repasse localement sur macOS 27/Xcode 27.0. Hashes Release App `9709b88a…`, CLI `3c58c269…`, chacun identique après deux builds froids. Le run GitHub macOS 26 antérieur échoue encore avant ce pin; CI corrigée attend validation. NFR-13 reste `PARTIEL`; détail dans `Documentation/Evidence/ReleaseReproducibility.md`.
 
 ### FR-14 — smoke du vrai paquet local — 2026-09-27
 
