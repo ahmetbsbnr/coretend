@@ -9,7 +9,8 @@ final class CoreTendPreferencesTests: XCTestCase {
             "CORETEND_TEST_LAST_DESTINATION": "performance",
             "CORETEND_TEST_LANGUAGE": "fr",
             "CORETEND_TEST_ONBOARDING_COMPLETED": "1",
-            "CORETEND_TEST_RECENT_FILES_ENABLED": "1"
+            "CORETEND_TEST_RECENT_FILES_ENABLED": "1",
+            "CORETEND_TEST_MENU_BAR_ENABLED": "1"
         ])
 
         XCTAssertFalse(preferences.usesPersistentStorage)
@@ -17,6 +18,7 @@ final class CoreTendPreferencesTests: XCTestCase {
         XCTAssertEqual(preferences.language, "fr")
         XCTAssertTrue(preferences.onboardingCompleted)
         XCTAssertTrue(preferences.recentFilesEnabled)
+        XCTAssertTrue(preferences.menuBarEnabled)
     }
 
     func testAnyStoreOverrideDisablesPersistentPreferencesFailClosed() {
@@ -27,6 +29,7 @@ final class CoreTendPreferencesTests: XCTestCase {
         XCTAssertEqual(preferences.language, "system")
         XCTAssertFalse(preferences.onboardingCompleted)
         XCTAssertFalse(preferences.recentFilesEnabled)
+        XCTAssertFalse(preferences.menuBarEnabled)
     }
 
     func testFixturePreferenceWritesAreNoOps() {
@@ -40,15 +43,30 @@ final class CoreTendPreferencesTests: XCTestCase {
         preferences.saveLanguage("fr")
         preferences.saveOnboardingCompleted(true)
         preferences.saveRecentFilesEnabled(true)
+        preferences.saveMenuBarEnabled(true)
 
         XCTAssertEqual(preferences.lastDestination, "overview")
         XCTAssertEqual(preferences.language, "system")
         XCTAssertFalse(preferences.onboardingCompleted)
         XCTAssertFalse(preferences.recentFilesEnabled)
+        XCTAssertFalse(preferences.menuBarEnabled)
     }
 
     func testProductionPreferenceProfileUsesPersistentStorage() {
         XCTAssertTrue(CoreTendPreferences(environment: [:]).usesPersistentStorage)
+    }
+
+    func testMenuBarPreferencePersistsInAnInjectedDefaultsSuite() throws {
+        let suiteName = "CoreTend.Tests.MenuBar.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        defer { defaults.removePersistentDomain(forName: suiteName) }
+
+        let initial = CoreTendPreferences(environment: [:], defaults: defaults)
+        XCTAssertFalse(initial.menuBarEnabled)
+        initial.saveMenuBarEnabled(true)
+
+        let reopened = CoreTendPreferences(environment: [:], defaults: defaults)
+        XCTAssertTrue(reopened.menuBarEnabled)
     }
 
     func testFixtureLanguageOverrideWinsOverStoredLanguage() {

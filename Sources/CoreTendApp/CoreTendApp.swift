@@ -1,30 +1,61 @@
 import SwiftUI
 import AppShell
+import Observation
 
 @main
 struct CoreTendApp: App {
+    @State private var navigation: CoreTendNavigation
+    @State private var menuBarEnabled: Bool
+
+    init() {
+        let preferences = CoreTendPreferences()
+        _navigation = State(initialValue: CoreTendNavigation(language: preferences.resolvedLanguage(storedValue: nil)))
+        _menuBarEnabled = State(initialValue: preferences.menuBarEnabled)
+    }
+
     var body: some Scene {
-        WindowGroup {
-            CoreTendRootView()
+        Window("CoreTend", id: "coretend.main") {
+            CoreTendRootView(navigation: navigation, menuBarEnabled: $menuBarEnabled)
                 .frame(minWidth: 920, minHeight: 620)
         }
         .defaultSize(width: 1120, height: 760)
+
+        MenuBarExtra(isInserted: $menuBarEnabled) {
+            CoreTendMenuBar(navigation: navigation)
+        } label: {
+            Image(systemName: "externaldrive")
+                .accessibilityLabel("CoreTend")
+        }
+        .menuBarExtraStyle(.menu)
+    }
+}
+
+@MainActor @Observable
+final class CoreTendNavigation {
+    var selection: Destination?
+    var activeSheet: RootSheet?
+    var language: String
+
+    init(language: String) {
+        self.language = language
+        selection = Destination.restored(from: CoreTendPreferences().lastDestination)
     }
 }
 
 private struct CoreTendRootView: View {
     private let preferences: CoreTendPreferences
-    @State private var selection: Destination?
-    @State private var activeSheet: RootSheet?
+    @Bindable private var navigation: CoreTendNavigation
+    @Binding private var menuBarEnabled: Bool
     @State private var language: String
     @State private var onboardingCompleted: Bool
     @State private var recentFilesEnabled: Bool
     private var french: Bool { language == "fr" || (language == "system" && Locale.preferredLanguages.first?.hasPrefix("fr") == true) }
 
-    init() {
+    init(navigation: CoreTendNavigation, menuBarEnabled: Binding<Bool>) {
         let preferences = CoreTendPreferences()
         self.preferences = preferences
-        _selection = State(initialValue: Destination.restored(from: preferences.lastDestination))
+        self.navigation = navigation
+        _menuBarEnabled = menuBarEnabled
         _language = State(initialValue: preferences.resolvedLanguage(storedValue: nil))
         _onboardingCompleted = State(initialValue: preferences.onboardingCompleted)
         _recentFilesEnabled = State(initialValue: preferences.recentFilesEnabled)
@@ -32,7 +63,7 @@ private struct CoreTendRootView: View {
 
     var body: some View {
         NavigationSplitView {
-            List(Destination.allCases, selection: $selection) { destination in
+            List(Destination.allCases, selection: $navigation.selection) { destination in
                 NavigationLink(value: destination) {
                     Label(ProductCopy.value(for: destination.titleKey, french: french), systemImage: destination.symbol)
                 }
@@ -40,7 +71,7 @@ private struct CoreTendRootView: View {
             .navigationTitle("CoreTend")
             .listStyle(.sidebar)
         } detail: {
-            if let selection {
+            if let selection = navigation.selection {
                 DestinationView(destination: selection, french: french, recentFilesEnabled: $recentFilesEnabled)
             } else {
                 ContentUnavailableView(ProductCopy.value(for: "empty.title", french: french), systemImage: "square.grid.2x2")
@@ -48,46 +79,71 @@ private struct CoreTendRootView: View {
         }
         .toolbar {
             ToolbarItem(placement: .automatic) {
-                Button { activeSheet = .commands } label: { Image(systemName: "command") }
+                Button { navigation.activeSheet = .commands } label: { Image(systemName: "command") }
                     .keyboardShortcut("k", modifiers: [.command])
                     .accessibilityLabel(ProductCopy.value(for: "command.palette.title", french: french))
                     .help(french ? "Accéder à… (⌘K)" : "Go to or open… (⌘K)")
             }
             ToolbarItem(placement: .automatic) {
-                Button { activeSheet = .settings } label: { Image(systemName: "gearshape") }
+                Button { navigation.activeSheet = .settings } label: { Image(systemName: "gearshape") }
                     .accessibilityLabel(ProductCopy.value(for: "settings.title", french: french))
             }
         }
-        .sheet(item: $activeSheet) { sheet in
+        .sheet(item: $navigation.activeSheet) { sheet in
             switch sheet {
-            case .settings: SettingsView(french: french, language: $language, recentFilesEnabled: $recentFilesEnabled)
+            case .settings: SettingsView(french: french, language: $language, recentFilesEnabled: $recentFilesEnabled, menuBarEnabled: $menuBarEnabled)
             case .commands:
                 CommandPaletteView(french: french) { target in
                     switch target {
-                    case .destination(let destination): selection = destination; activeSheet = nil
-                    case .settings: activeSheet = .settings
+                    case .destination(let destination): navigation.selection = destination; navigation.activeSheet = nil
+                    case .settings: navigation.activeSheet = .settings
                     }
                 }
-            case .onboarding: OnboardingView(french: french) { onboardingCompleted = true; activeSheet = nil }
+            case .onboarding: OnboardingView(french: french) { onboardingCompleted = true; navigation.activeSheet = nil }
             }
         }
-        .onChange(of: selection) { _, destination in
+        .onChange(of: navigation.selection) { _, destination in
             if let destination { preferences.saveLastDestination(destination.rawValue) }
         }
-        .onChange(of: language) { _, value in preferences.saveLanguage(value) }
+        .onChange(of: language) { _, value in preferences.saveLanguage(value); navigation.language = value }
         .onChange(of: onboardingCompleted) { _, value in preferences.saveOnboardingCompleted(value) }
         .onChange(of: recentFilesEnabled) { _, value in preferences.saveRecentFilesEnabled(value) }
+        .onChange(of: menuBarEnabled) { _, value in preferences.saveMenuBarEnabled(value) }
         .task {
             if let store = try? await LocalStoreAccess.open(), preferences.usesPersistentStorage,
                let saved = try? await store.languagePreference() {
                 language = preferences.resolvedLanguage(storedValue: saved)
             }
-            if !onboardingCompleted { activeSheet = .onboarding }
+            if !onboardingCompleted { navigation.activeSheet = .onboarding }
         }
     }
 }
 
-private enum RootSheet: String, Identifiable { case settings, commands, onboarding; var id: String { rawValue } }
+enum RootSheet: String, Identifiable { case settings, commands, onboarding; var id: String { rawValue } }
+
+private struct CoreTendMenuBar: View {
+    @Environment(\.openWindow) private var openWindow
+    @Bindable var navigation: CoreTendNavigation
+
+    private var french: Bool {
+        navigation.language == "fr" || (navigation.language == "system" && Locale.preferredLanguages.first?.hasPrefix("fr") == true)
+    }
+
+    var body: some View {
+        ForEach(Destination.allCases) { destination in
+            Button(ProductCopy.value(for: destination.titleKey, french: french)) {
+                navigation.selection = destination
+                navigation.activeSheet = nil
+                openWindow(id: "coretend.main")
+            }
+        }
+        Divider()
+        Button(ProductCopy.value(for: "settings.title", french: french)) {
+            navigation.activeSheet = .settings
+            openWindow(id: "coretend.main")
+        }
+    }
+}
 
 private struct OnboardingView: View {
     let french: Bool

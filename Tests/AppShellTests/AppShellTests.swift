@@ -22,6 +22,17 @@ final class AppShellTests: XCTestCase {
         XCTAssertTrue(ProductCopy.french.keys.contains("safety.notice"))
     }
 
+    func testMenuBarSettingCopyIsPresentInBothLanguages() {
+        for key in ["settings.menubar.title", "settings.menubar.help"] {
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: false), key)
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: true), key)
+        }
+        XCTAssertTrue(ProductCopy.value(for: "settings.menubar.title", french: false).contains("menu bar"))
+        XCTAssertTrue(ProductCopy.value(for: "settings.menubar.title", french: true).contains("barre des menus"))
+        XCTAssertTrue(ProductCopy.value(for: "settings.menubar.help", french: false).contains("Disabled by default"))
+        XCTAssertTrue(ProductCopy.value(for: "settings.menubar.help", french: true).contains("Désactivé par défaut"))
+    }
+
     func testSavedFileAvailabilityDistinguishesPresentFromMissingOrInaccessibleInBothLanguages() {
         XCTAssertEqual(ProductCopy.savedFileAvailability(isPresent: true, french: false), "Present (current access not verified)")
         XCTAssertEqual(ProductCopy.savedFileAvailability(isPresent: false, french: false), "Missing or inaccessible")
