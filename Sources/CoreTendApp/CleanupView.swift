@@ -31,61 +31,96 @@ struct CleanupView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            Text(copy("cleanup.intro")).foregroundStyle(.secondary)
-            VStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: 20) {
+            Text(copy("cleanup.intro")).foregroundStyle(Palette.secondaryInk.color)
+                .font(.body)
+            VStack(alignment: .leading, spacing: 10) {
+                Text(french ? "Choisir une règle" : "Choose a rule")
+                    .font(.headline)
                 ForEach(CleanupRuleCatalog.rules, id: \.id) { rule in
                     Button { selectedRule = rule.id; selectedRoot = nil; results = []; selectedItems = []; status = nil } label: {
                         HStack(spacing: 12) {
                             Image(systemName: selectedRule == rule.id ? "largecircle.fill.circle" : "circle")
+                                .foregroundStyle(selectedRule == rule.id ? Palette.accent.color : Palette.secondaryInk.color)
                             VStack(alignment: .leading, spacing: 3) {
-                                Text(copy(rule.titleKey)).font(.headline)
-                                Text(copy(rule.explanationKey)).font(.caption).foregroundStyle(.secondary)
+                                Text(copy(rule.titleKey)).font(.headline).foregroundStyle(Palette.ink.color)
+                                Text(copy(rule.explanationKey)).font(.caption).foregroundStyle(Palette.secondaryInk.color)
                             }
                             Spacer()
                             Text(riskLabel(rule.risk)).font(.caption.weight(.semibold))
                                 .foregroundStyle(riskColor(rule.risk))
                                 .padding(.horizontal, 8).padding(.vertical, 4)
-                                .background(.quaternary, in: Capsule())
+                                .background(Palette.raisedSurface.color, in: Capsule())
                         }
                         .contentShape(Rectangle())
+                        .padding(12)
+                        .background(selectedRule == rule.id ? Palette.raisedSurface.color : Palette.surface.color,
+                                    in: RoundedRectangle(cornerRadius: 10))
                     }
                     .buttonStyle(.plain)
                     .disabled(scanning || actionBusy || actionReview != nil)
                     .accessibilityAddTraits(selectedRule == rule.id ? .isSelected : [])
                 }
             }
+            .padding(14)
+            .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 14))
+            .motion(.gentle, value: selectedRule)
             if let descriptor {
-                Text("~/" + descriptor.relativePath.joined(separator: "/"))
-                    .font(.caption.monospaced()).foregroundStyle(.secondary).textSelection(.enabled)
-                Button { choosingFolder = true } label: {
-                    Label(copy("cleanup.choose"), systemImage: "folder.badge.plus")
-                }
-                .disabled(scanning || actionBusy || actionReview != nil)
-                .accessibilityHint(copy("cleanup.choose.hint"))
-                if let selectedRoot {
-                    Text(selectedRoot.lastPathComponent).font(.caption).foregroundStyle(.secondary)
-                    Button { startScan(descriptor, root: selectedRoot) } label: {
-                        Label(copy("cleanup.scan"), systemImage: "magnifyingglass")
+                VStack(alignment: .leading, spacing: 10) {
+                    Label(french ? "Dossier attendu" : "Expected folder", systemImage: "checkmark.shield")
+                        .font(.headline)
+                    Text("~/" + descriptor.relativePath.joined(separator: "/"))
+                        .font(.caption.monospaced()).foregroundStyle(Palette.secondaryInk.color).textSelection(.enabled)
+                    Text(french ? "Seul le dossier exact correspondant à ce chemin est accepté. Les éléments restent non sélectionnés jusqu’à votre choix." : "Only the exact folder matching this path is accepted. Items stay unselected until you choose them.")
+                        .font(.caption).foregroundStyle(Palette.secondaryInk.color)
+                    Button { choosingFolder = true } label: {
+                        Label(copy("cleanup.choose"), systemImage: "folder.badge.plus")
                     }
                     .disabled(scanning || actionBusy || actionReview != nil)
-                    .accessibilityHint(copy("cleanup.scan.hint"))
+                    .accessibilityHint(copy("cleanup.choose.hint"))
+                    if let selectedRoot {
+                        Label(selectedRoot.path, systemImage: "folder.fill")
+                            .font(.caption.monospaced()).foregroundStyle(Palette.accent.color).textSelection(.enabled)
+                            .accessibilityElement(children: .combine)
+                        Button { startScan(descriptor, root: selectedRoot) } label: {
+                            Label(copy("cleanup.scan"), systemImage: "magnifyingglass")
+                        }
+                        .disabled(scanning || actionBusy || actionReview != nil)
+                        .accessibilityHint(copy("cleanup.scan.hint"))
+                    }
                 }
+                .padding(14)
+                .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 14))
             }
             if scanning {
-                ProgressView(copy("scan.progress"))
-                Text(ProductCopy.scanProgress(completedFiles: scanCompletedFiles, french: french))
-                    .font(.caption).foregroundStyle(.secondary)
-                Button(copy("scan.cancel")) { cancelScan() }
+                HStack(spacing: 14) {
+                    ProgressView()
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(copy("scan.progress")).font(.headline)
+                        Text(ProductCopy.scanProgress(completedFiles: scanCompletedFiles, french: french))
+                            .font(.caption).foregroundStyle(Palette.secondaryInk.color)
+                    }
+                    Spacer()
+                    Button(copy("scan.cancel")) { cancelScan() }
+                }
+                .padding(14).background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 12))
+                .transition(.opacity.combined(with: .move(edge: .top)))
+                .motion(.gentle, value: scanning)
             }
             if !results.isEmpty {
-                Text(copy("cleanup.results", count: results.count)).font(.headline)
+                HStack {
+                    Text(copy("cleanup.results", count: results.count)).font(.title3.weight(.semibold))
+                    Spacer()
+                    Text(french ? "Aucune sélection automatique" : "Nothing selected automatically")
+                        .font(.caption).foregroundStyle(Palette.secondaryInk.color)
+                }
                 List(results, id: \.url) { item in
                     Toggle(isOn: Binding(get: { selectedItems.contains(item.url) }, set: { enabled in
+                        guard !scanning && !actionBusy && actionReview == nil else { return }
                         if enabled { selectedItems.insert(item.url) } else { selectedItems.remove(item.url) }
                     })) {
                         HStack {
-                            Image(systemName: "doc")
+                            Image(systemName: "doc").foregroundStyle(Palette.accent.color)
                             Text(item.url.lastPathComponent).lineLimit(1)
                             Spacer()
                             VStack(alignment: .trailing, spacing: 2) {
@@ -95,7 +130,7 @@ struct CleanupView: View {
                                 Text(riskLabel(item.risk))
                             }
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(Palette.secondaryInk.color)
                             .monospacedDigit()
                         }
                     }
@@ -113,10 +148,18 @@ struct CleanupView: View {
                     Label(french ? "Examiner \(selectedItems.count) éléments" : "Review \(selectedItems.count) items", systemImage: "trash")
                 }
                 .disabled(selectedItems.isEmpty || scanning || actionBusy || actionReview != nil || selectedRoot == nil)
+                .accessibilityHint(french ? "Les éléments choisis seront revérifiés avant d’être déplacés vers la Corbeille." : "Chosen items are revalidated before moving to Trash.")
             }
             if actionBusy { ProgressView() }
-            if let status { Text(status).foregroundStyle(.secondary) }
-            Text(copy("cleanup.noAction")).font(.callout).foregroundStyle(.secondary)
+            if let status {
+                Label(status, systemImage: "info.circle")
+                    .foregroundStyle(Palette.secondaryInk.color).textSelection(.enabled)
+                    .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 10))
+            }
+            Text(copy("cleanup.noAction")).font(.callout).foregroundStyle(Palette.secondaryInk.color)
+                .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+                .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 10))
         }
         .fileImporter(isPresented: $choosingFolder, allowedContentTypes: [.folder], allowsMultipleSelection: false) { outcome in
             guard case .success(let urls) = outcome else { return }

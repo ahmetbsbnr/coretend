@@ -70,7 +70,7 @@ struct ExploreScanView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 20) {
             Button {
                 selectingFolder = true
             } label: {
@@ -79,15 +79,50 @@ struct ExploreScanView: View {
             .disabled(scanning || actionBusy || actionReview != nil)
             .accessibilityHint(copy("scan.choose.hint"))
 
-            if scanning {
-                ProgressView(copy("scan.progress"))
-                Text(ProductCopy.scanProgress(completedFiles: scanCompletedFiles, french: french))
-                    .font(.caption).foregroundStyle(.secondary)
-                Button(copy("scan.cancel")) { cancelScan() }
+            if let selectedRoot {
+                Label {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(french ? "Périmètre mesuré" : "Measured scope").font(.caption.weight(.semibold))
+                        Text(selectedRoot.path).font(.caption.monospaced()).textSelection(.enabled)
+                    }
+                } icon: {
+                    Image(systemName: "folder.fill").foregroundStyle(Palette.accent.color)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(14)
+                .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 12))
+                .accessibilityElement(children: .combine)
             }
-            if let status { Text(status).foregroundStyle(.secondary).textSelection(.enabled) }
+
+            if scanning {
+                HStack(spacing: 14) {
+                    ProgressView()
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(copy("scan.progress")).font(.headline)
+                        Text(ProductCopy.scanProgress(completedFiles: scanCompletedFiles, french: french))
+                            .font(.caption).foregroundStyle(Palette.secondaryInk.color)
+                    }
+                    Spacer()
+                    Button(copy("scan.cancel")) { cancelScan() }
+                }
+                .padding(14)
+                .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 12))
+                .transition(.opacity.combined(with: .move(edge: .top)))
+                .motion(.gentle, value: scanning)
+            }
+            if let status {
+                Label(status, systemImage: "info.circle")
+                    .font(.callout).foregroundStyle(Palette.secondaryInk.color).textSelection(.enabled)
+                    .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 10))
+            }
             if !results.isEmpty {
-                Text(copy("scan.count", count: results.count)).font(.headline)
+                HStack(alignment: .firstTextBaseline) {
+                    Text(copy("scan.count", count: results.count)).font(.title3.weight(.semibold))
+                    Spacer()
+                    Text(french ? "Résultats de ce dossier" : "Results from this folder")
+                        .font(.caption).foregroundStyle(Palette.secondaryInk.color)
+                }
                 HStack {
                     TextField(copy("explore.search"), text: $query).textFieldStyle(.roundedBorder)
                     Picker(copy("explore.sort"), selection: $sortMode) {
@@ -112,10 +147,13 @@ struct ExploreScanView: View {
                     .frame(width: 190)
                     .onChange(of: preset) { _, _ in presetEvaluationDate = .now }
                 }
-                Text(categoryDescription)
-                    .font(.caption).foregroundStyle(.secondary)
-                Text(presetDescription)
-                    .font(.caption).foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 5) {
+                    Label(categoryDescription, systemImage: "tag")
+                    Label(presetDescription, systemImage: "line.3.horizontal.decrease")
+                }
+                .font(.caption).foregroundStyle(Palette.secondaryInk.color)
+                .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+                .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 10))
                 let knownCount = treemapInputs.count
                 Text(french ? "Carte proportionnelle : \(knownCount) allocations distinctes connues; inconnues exclues." : "Proportional map: \(knownCount) distinct known allocations; unknown items excluded.")
                     .font(.caption).foregroundStyle(.secondary)
@@ -124,7 +162,10 @@ struct ExploreScanView: View {
                     ZStack(alignment: .topLeading) {
                         ForEach(Array(tiles.enumerated()), id: \.element.id) { index, tile in
                             RoundedRectangle(cornerRadius: 5)
-                                .fill(Palette.accent.color.opacity(0.18 + Double(index % 4) * 0.12))
+                    .fill(Palette.accent.color.opacity(0.14 + Double(index % 4) * 0.08))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 5).stroke(Palette.separator.color, lineWidth: 0.5)
+                    }
                                 .overlay(alignment: .topLeading) {
                                     if tile.frame.width > 90 && tile.frame.height > 34 {
                                         Text(URL(fileURLWithPath: tile.id).lastPathComponent)
@@ -138,7 +179,9 @@ struct ExploreScanView: View {
                         }
                     }
                 }
-                .frame(height: 230)
+                .frame(minHeight: 150, idealHeight: 230, maxHeight: 280)
+                .padding(8)
+                .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 12))
                 .motion(.gentle, value: treemapInputs.count)
                 .accessibilityElement(children: .contain)
                 if visibleResults.isEmpty {
@@ -156,6 +199,7 @@ struct ExploreScanView: View {
                                 .accessibilityLabel(copy("explore.delete.select"))
                                 .disabled(!isSelectableExploreResult(result) || scanning || actionBusy || actionReview != nil)
                             Image(systemName: "doc")
+                                .foregroundStyle(Palette.accent.color)
                             Text(result.url.lastPathComponent).lineLimit(1)
                             Spacer()
                             VStack(alignment: .trailing, spacing: 2) {
@@ -194,6 +238,7 @@ struct ExploreScanView: View {
                         Label(copy("explore.delete.review"), systemImage: "trash")
                     }
                     .disabled(selectedExploreFiles.isEmpty || scanning || actionBusy || actionReview != nil)
+                    .accessibilityHint(french ? "Aucun élément n’est déplacé avant confirmation." : "No item moves before confirmation.")
                 }
                 Text(french ? "Somme des octets locaux connus : \(ByteCountFormatter.string(fromByteCount: treemapInputs.reduce(0) { $0 + $1.bytes }, countStyle: .file)). Le nuage et les tailles inconnues ne sont pas estimés." : "Known local bytes total: \(ByteCountFormatter.string(fromByteCount: treemapInputs.reduce(0) { $0 + $1.bytes }, countStyle: .file)). Cloud-backed and unknown sizes are not estimated.")
                     .font(.caption).foregroundStyle(.secondary)
