@@ -11,8 +11,9 @@
 |---|---|---|
 | 2.1 | Jetons Serre (couleurs Nuit/Jour, typographie, motion, formes) + tests | Accepté (27-09) |
 | 2.2 | Logo Serre et germination ; jeu d’icônes ; feuilles de risque | Accepté (27-09) |
-| 2.3 | Composants et états (guide § 7) + gate `check_architecture.py` | Livré — recette en attente (`6050d7e`) |
-| 2.4 | Coquille de l’app : barre latérale, transition « pousse », recherche ⌘K, clavier/focus | À faire |
+| 2.3 | Composants et états (guide § 7) + gate `check_architecture.py` | Accepté (27-09) |
+| 2.4a | Coquille : barre latérale Serre, logo, marqueur feuille, vrille, transition « pousse », clavier | Livré — recette en attente (`8a3fb5f`) |
+| 2.4b | Recherche ⌘K qui naît du bouton : racine sous le champ, résultats qui éclosent, pousse fanée | À faire |
 | 2.5 | Site en Serre : jetons exportés, logo, navigation, racine au défilement (CSS seul) | À faire |
 
 ## Journal
@@ -81,18 +82,42 @@
   fenêtre est active → traité en 2.4 (marqueur feuille dessiné par CoreTend).
 - **Recette 2.3 (mainteneur) :** survoler et cliquer les boutons et lignes (nervure), clavier
   (anneau de focus), clair/sombre.
+- **Recette 2.3 — acceptée (27-09) :** « ca a la'air d'etre pas mal, continue ainsu ». 2.4 découpé
+  en 2.4a (coquille/navigation) et 2.4b (recherche), un lot = une intention.
+
+### 27-09-2026 — lot 2.4a, barre latérale et navigation
+
+- **Fait :** `8a3fb5f` — `SerreSidebar` (logo qui germe, nom, bouton Rechercher ⌘K, sections, Réglages)
+  à la place de la liste système : plus de sélection bleue. Marqueur feuille partagé
+  (`matchedGeometryEffect`, `sprout` 380 ms) quelle que soit la source du changement ; vrille qui se
+  trace puis s’efface ; anneau de focus porté par le marqueur (les lignes, lues comme focalisées
+  par le conteneur, dessinaient toutes un anneau : `serreFocusRing` les coupe). Transition
+  `.grow(from:)` (`GrowMask`, ellipse depuis la hauteur de la ligne, `grow` ; sortie `retreat` ;
+  fondu 120 ms sous Reduce Motion). `Destination.sidebarOrder/step/shortcutNumber` : même ordre
+  pour barre latérale, palette (Historique n’est plus 2ᵉ) et ⌘1…⌘8 ; ↑/↓ après un clic. Barre de
+  titre : fond `canvas`, titre masqué (macOS 15+), plus d’icônes (recherche et réglages dans la
+  barre latérale).
+- **Vérifié :** tests ordre/pas/raccourcis/ordre de la palette (vu échouer avec l’ancien ordre) et
+  rayon du masque. Quatre tests d’abord insérés dans un acteur utilitaire, jamais exécutés par
+  XCTest : déplacés et vus s’exécuter. `make qualify` PASS (le build Release zéro-avertissement a
+  attrapé un avertissement d’isolation Swift 6 dans `GrowMask`, corrigé). Transition ⌘4 capturée
+  image par image : vue qui pousse depuis la ligne, ancienne vue qui se retire, marqueur entre
+  deux lignes, vrille. Captures barre latérale, palette, Vue d’ensemble FR/EN clair/sombre.
+- **Limites :** les blocs de chaque vue ne montent pas encore un par un (`stagger`) : la vue monte
+  d’un bloc ; l’échelonnement se fera écran par écran en P3. ↑/↓ demande un clic préalable dans
+  la barre latérale. Échap non qualifiable sur cet hôte.
+- **Recette 2.4a (mainteneur) :** changer de destination (clic, ⌘1…⌘8, ↑/↓, palette), regarder
+  marqueur, vrille et vue qui pousse ; clair/sombre ; Réduire les animations.
 
 ## Point d’arrêt
 
-- 2.3 livré, recette du mainteneur en attente.
-- Prochain lot **2.4 — coquille de l’app** (guide § 8, catalogue) : barre latérale dessinée par
-  CoreTend (plus de sélection système bleue) avec logo en tête et **marqueur feuille** qui glisse
-  (`sprout`) ; **vrille** du marqueur vers le contenu ; la vue **pousse** depuis ce point (masque
-  ellipse, `grow`) et ses blocs montent en `stagger` ; l’ancienne vue se pose et s’efface
-  (`retreat`) ; interruptible. Recherche ⌘K qui **naît du bouton Rechercher**, **racine** sous le
-  champ qui suit la saisie, résultats qui **éclosent**, pousse qui fane sans résultat. Barre
-  d’outils en `.serre(.icon)`. Clavier : focus visible, ⌘1…⌘8, Échap (à re-tester, voir
-  Reference.md). Reduce Motion : fondu 120 ms ou immédiat.
+- 2.4a livré, recette du mainteneur en attente.
+- Prochain lot **2.4b — recherche ⌘K** : remplacer la feuille modale par une couche au-dessus de la
+  fenêtre qui **naît du bouton Rechercher** de la barre latérale (`matchedGeometryEffect` du
+  bouton à la boîte, `standard`) ; **racine** tracée sous le champ, longueur liée à la saisie ;
+  résultats qui **éclosent** (`stagger` 35 ms, 8 max, `sprout`) ; **pousse fanée** sans résultat ;
+  fermeture : clic sur le fond, Échap, choix ; focus rendu au bouton ; Reduce Motion : apparition
+  immédiate. Garder la logique de `CommandPaletteView` (flèches, Retour, sélection) et ses tests.
 
 ## Problèmes ouverts
 

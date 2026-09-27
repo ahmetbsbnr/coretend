@@ -60,7 +60,7 @@ Référence : `Documentation/Design/UI-guide.md` (direction « Serre », décisi
   recherche, parcelle, badge de risque, bandeaux, états de vue. Tous les états du guide § 7.
   Gate `check_architecture.py` : pas de `.buttonStyle(.plain)`, couleur littérale ou
   `repeatForever` hors `DesignSystem`.
-- [ ] **2.4 Coquille de l’app** : barre latérale Serre, transition « pousse » entre destinations,
+- [ ] **2.4 Coquille de l’app** (découpé en 2.4a navigation, 2.4b recherche) : barre latérale Serre, transition « pousse » entre destinations,
   recherche ⌘K qui naît du bouton, remplacement de tous les styles ad hoc, clavier et focus.
 - [ ] **2.5 Site en Serre** : export des jetons, polices système, logo qui germe en CSS, en-tête
   et navigation, racine qui pousse au défilement (CSS seul, `@supports`), contrat reduced-motion.
