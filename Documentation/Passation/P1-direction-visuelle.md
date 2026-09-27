@@ -10,8 +10,9 @@
 | Lot | Intitulé | Statut |
 |---|---|---|
 | 1.1 | Kit de captures (8 destinations, Réglages, ⌘K, onboarding ; clair/sombre ; FR/EN ; planche HTML) | Livré — recette en attente (`3098745`) |
-| 1.2 | Séance G1 avec le mainteneur (~45 min) | À faire — prochaine étape |
-| 1.3 | Guide UI + décision 0002 | À faire |
+| 1.2 | Séance G1 avec le mainteneur (~45 min) | Fait — **Observatoire refusé** (27-09) |
+| 1.2b | Exploration : trois directions artistiques animées (thème, motion, logo, recherche, navigation), prototype hors app | En cours |
+| 1.3 | Guide UI + décision 0002, sur la direction choisie en 1.2b | À faire |
 
 ## Journal
 
@@ -30,6 +31,35 @@
   menus non capturée ; Vue d’ensemble montre l’espace libre réel de l’hôte (mesure système,
   aucun fichier lu) — les captures restent locales.
 - **Recette 1.1 (mainteneur) :** ouvrir la planche et dire si elle suffit pour la séance G1.
+
+### 27-09-2026 — séance G1 (1.2) : retour du mainteneur
+
+Mots du mainteneur (verbatim) :
+
+> je n'aime pas le visuel de l'app en effet tout les design proposé depuis le debut de coretend
+> ne me contente pas, je ne vois pas de design qui sort de l'ordinaire, la gestion de l'app, les
+> modules d'app qui sont tres generique d'apple, je veux juste un logiciel moche, je veux que tu
+> ajoute du motion, une vrai d/a basé sur un theme basé en générale et que tout se suit, des
+> annimation de logo , de recherche, du motion quand on chage de menu, je veux un truc complet
+
+Lecture de l’agent (à confirmer par le mainteneur) : « un logiciel moche » est lu comme « pas un
+logiciel moche / pas générique ».
+
+**Décision G1 :** direction Observatoire **refusée**, comme toutes les directions précédentes
+(MC*, Instrument, Porcelain). Le brief pour la suite :
+
+1. **Une vraie direction artistique**, construite sur **un thème** qui gouverne tout : couleurs,
+   formes, typographie, vocabulaire, icônes, motion. Tout doit se suivre.
+2. **Sortir de l’ordinaire** : ne plus ressembler à une app Apple générique (List/Form/sidebar
+   système telles quelles).
+3. **Motion partout où il a un sens** : animation du logo, animation de la recherche (⌘K),
+   transition au changement de menu ; « un truc complet ».
+4. Contraintes inchangées : Reduce Motion respecté (le contenu ne dépend jamais d’une
+   animation), sûreté et textes honnêtes, pas de dépendance runtime (polices et assets
+   embarqués avec licence documentée).
+
+Conséquence (Pilotage § 3) : P1 est refaite. Aucune ligne de SwiftUI tant qu’une direction n’est
+pas choisie sur prototype animé (1.2b), puis écrite en guide (1.3) et acceptée (G1).
 
 ## Ordre du jour proposé pour la séance G1 (constats de l’agent, à confirmer)
 
