@@ -33,31 +33,63 @@ struct DuplicateScanView: View {
     @State private var previewScopedRoot: URL?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 20) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(french ? "Comparer sans décider à votre place" : "Compare files without deciding for you")
+                    .font(.title3.weight(.semibold))
+                Text(french ? "Les choix de conservation et de déplacement restent manuels. Aucun fichier n’est présélectionné." : "Keep and move choices stay manual. No file is preselected.")
+                    .font(.callout).foregroundStyle(Palette.secondaryInk.color)
             Picker(french ? "Analyse" : "Analysis", selection: $similarMode) {
                 Text(french ? "Doublons exacts" : "Exact duplicates").tag(false)
                 Text(french ? "Images similaires" : "Similar images").tag(true)
             }
             .pickerStyle(.segmented)
             .disabled(scanning || actionBusy || actionReview != nil)
+            Text(similarMode
+                 ? (french ? "Candidats heuristiques : proximité visuelle possible, égalité exacte non établie." : "Heuristic candidates: visual similarity may exist; exact equality is not established.")
+                 : (french ? "Groupes exacts : contenu identique détecté. Choisissez manuellement les copies à examiner." : "Exact groups: identical content detected. Manually choose copies to review."))
+                .font(.caption).foregroundStyle(Palette.secondaryInk.color)
+            }
+            .padding(14)
+            .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 14))
             Button { selectingFolder = true } label: {
                 Label(copy("duplicates.choose"), systemImage: similarMode ? "photo.on.rectangle.angled" : "doc.on.doc")
             }
             .disabled(scanning || actionBusy || actionReview != nil)
             .accessibilityHint(copy("duplicates.choose.hint"))
-            if scanning {
-                ProgressView(progressTitle)
-                Text(progressDetail)
-                    .font(.caption).foregroundStyle(.secondary)
-                Button(copy("scan.cancel")) { cancelScan() }
+            if let selectedRoot {
+                Label(selectedRoot.path, systemImage: "folder.fill")
+                    .font(.caption.monospaced()).foregroundStyle(Palette.accent.color).textSelection(.enabled)
+                    .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 10))
+                    .accessibilityElement(children: .combine)
             }
-            if let status { Text(status).foregroundStyle(.secondary) }
+            if scanning {
+                HStack(spacing: 14) {
+                    ProgressView()
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(progressTitle).font(.headline)
+                        Text(progressDetail).font(.caption).foregroundStyle(Palette.secondaryInk.color)
+                    }
+                    Spacer()
+                    Button(copy("scan.cancel")) { cancelScan() }
+                }
+                .padding(14).background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 12))
+                .transition(.opacity.combined(with: .move(edge: .top)))
+                .motion(.gentle, value: scanning)
+            }
+            if let status {
+                Label(status, systemImage: "info.circle")
+                    .foregroundStyle(Palette.secondaryInk.color)
+                    .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 10))
+            }
             if similarMode, let similarReport {
                 if similarReport.candidates.isEmpty {
                     ContentUnavailableView(french ? "Aucune paire similaire détectée" : "No similar image pairs found", systemImage: "photo.on.rectangle.angled")
                 } else {
                     Text(french ? "\(similarReport.candidates.count) paires candidates" : "\(similarReport.candidates.count) candidate pairs").font(.headline)
-                    Text(french ? "Comparaison visuelle heuristique. Vérifiez chaque image; aucune suppression proposée." : "Heuristic visual matching. Review every image; no deletion action offered.").foregroundStyle(.secondary)
+                    Text(french ? "Comparaison visuelle heuristique. Vérifiez chaque image; aucune suppression proposée." : "Heuristic visual matching. Review every image; no deletion action offered.").foregroundStyle(Palette.secondaryInk.color)
                     List(similarReport.candidates, id: \.id) { pair in
                         HStack(alignment: .top, spacing: 12) {
                             Button { showPreview(pair.first) } label: { imagePreview(pair.first) }
@@ -71,22 +103,24 @@ struct DuplicateScanView: View {
                             VStack(alignment: .leading) {
                                 Text(pair.first.lastPathComponent).font(.headline)
                                 Text(pair.second.lastPathComponent)
-                            Text(french ? "Écart perceptuel : \(pair.differingBits)/64" : "Perceptual distance: \(pair.differingBits)/64").font(.caption).foregroundStyle(.secondary)
+                            Text(french ? "Écart perceptuel : \(pair.differingBits)/64" : "Perceptual distance: \(pair.differingBits)/64").font(.caption).foregroundStyle(Palette.secondaryInk.color)
                             }
                         }
+                        .padding(10)
+                        .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 12))
                     }
                 }
-                if similarReport.skippedCount > 0 { Text(french ? "\(similarReport.skippedCount) fichiers ignorés (format ou limite)." : "\(similarReport.skippedCount) files skipped (format or limit).") .foregroundStyle(.secondary) }
+                if similarReport.skippedCount > 0 { Text(french ? "\(similarReport.skippedCount) fichiers ignorés (format ou limite)." : "\(similarReport.skippedCount) files skipped (format or limit).") .foregroundStyle(Palette.secondaryInk.color) }
             }
             if !similarMode, let report {
                 if report.groups.isEmpty {
                     ContentUnavailableView(copy("duplicates.none"), systemImage: "doc.on.doc")
                 } else {
-                    Text(copy("duplicates.count", count: report.groups.count)).font(.headline)
+                    Text(copy("duplicates.count", count: report.groups.count)).font(.title3.weight(.semibold))
                     List(report.groups, id: \.digest) { group in
                         VStack(alignment: .leading, spacing: 8) {
-                            Label(copy("duplicates.keep"), systemImage: "checkmark.circle.fill")
-                                .foregroundStyle(Palette.accent.color)
+                            Label(french ? "Suggestion de conservation — à vérifier" : "Suggested keeper — review before deciding", systemImage: "checkmark.circle")
+                                .font(.caption.weight(.semibold)).foregroundStyle(Palette.accent.color)
                             Text(group.suggestedKeeper.lastPathComponent).font(.headline)
                             Button { showPreview(group.suggestedKeeper) } label: {
                                 Label(copy("explore.preview"), systemImage: "eye")
@@ -97,6 +131,7 @@ struct DuplicateScanView: View {
                             ForEach(group.files.filter { $0 != group.suggestedKeeper }, id: \.path) { file in
                                 HStack {
                                     Toggle(isOn: Binding(get: { selectedCopies.contains(file) }, set: { enabled in
+                                        guard !scanning && !actionBusy && actionReview == nil else { return }
                                         if enabled { selectedCopies.insert(file) } else { selectedCopies.remove(file) }
                                     })) {
                                         Label(file.lastPathComponent, systemImage: "doc.on.doc")
@@ -113,12 +148,22 @@ struct DuplicateScanView: View {
                         }
                         .padding(.vertical, 6)
                     }
+                    Text(french ? "Cochez uniquement les copies que vous avez vérifiées. Elles ne seront déplacées qu’après revue et confirmation." : "Check only copies you have reviewed. They move only after review and confirmation.")
+                        .font(.caption).foregroundStyle(Palette.secondaryInk.color)
+                        .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 10))
                     Button { Task { await prepareAction() } } label: {
                         Label(french ? "Examiner \(selectedCopies.count) copies" : "Review \(selectedCopies.count) copies", systemImage: "trash")
                     }
                     .disabled(selectedCopies.isEmpty || scanning || actionBusy || actionReview != nil)
+                    .accessibilityHint(french ? "Les copies choisies seront revérifiées avant déplacement vers la Corbeille." : "Chosen copies are revalidated before moving to Trash.")
                 }
-                if !report.issues.isEmpty { Text(copy("scan.partial")).foregroundStyle(.secondary) }
+                if !report.issues.isEmpty {
+                    Label(copy("scan.partial"), systemImage: "exclamationmark.triangle")
+                        .foregroundStyle(Palette.caution.color)
+                        .padding(12).frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 10))
+                }
             }
             if actionBusy { ProgressView() }
         }
