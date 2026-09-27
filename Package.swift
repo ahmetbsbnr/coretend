@@ -10,6 +10,7 @@ let package = Package(
         .library(name: "ScanCore", targets: ["ScanCore"]),
         .library(name: "AppShell", targets: ["AppShell"]),
         .library(name: "Domain", targets: ["Domain"]),
+        .library(name: "DesignSystem", targets: ["DesignSystem"]),
         .executable(name: "CoreTendApp", targets: ["CoreTendApp"]),
         .executable(name: "CoreTendCLI", targets: ["CoreTendCLI"])],
     targets: [
@@ -17,8 +18,9 @@ let package = Package(
         .target(name: "SafetyCore"),
         .target(name: "ScanCore", dependencies: ["ProductContract"]),
         .target(name: "AppShell"),
+        .target(name: "DesignSystem"),
         .target(name: "Domain", dependencies: ["ProductContract", "SafetyCore", "Persistence"]),
-        .executableTarget(name: "CoreTendApp", dependencies: ["AppShell", "ProductContract", "Persistence", "ScanCore", "Domain"],
+        .executableTarget(name: "CoreTendApp", dependencies: ["AppShell", "DesignSystem", "ProductContract", "Persistence", "ScanCore", "Domain"],
                           linkerSettings: [.unsafeFlags(["-Xlinker", "-reproducible"], .when(configuration: .release))]),
         .target(name: "CLIContract", dependencies: ["Persistence", "ScanCore", "Domain"]),
         .executableTarget(name: "CoreTendCLI", dependencies: ["CLIContract"],
@@ -30,6 +32,7 @@ let package = Package(
         .testTarget(name: "PersistenceTests", dependencies: ["Persistence", "CSQLite"]),
         .testTarget(name: "ScanCoreTests", dependencies: ["ScanCore"]),
         .testTarget(name: "AppShellTests", dependencies: ["AppShell"]),
+        .testTarget(name: "DesignSystemTests", dependencies: ["DesignSystem"]),
         .testTarget(name: "DomainTests", dependencies: ["Domain", "SafetyCore", "Persistence"]),
         .testTarget(name: "CLIContractTests", dependencies: ["CLIContract"])
     ]

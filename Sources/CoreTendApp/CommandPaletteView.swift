@@ -1,3 +1,4 @@
+import DesignSystem
 import SwiftUI
 import AppShell
 
@@ -40,13 +41,14 @@ struct CommandPaletteView: View {
                                 .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
                                 .contentShape(Rectangle())
                                 .padding(.horizontal, 8)
-                                .background(selectedID == command.id ? Color.accentColor.opacity(0.14) : .clear,
+                                .background(selectedID == command.id ? Palette.accent.color.opacity(0.16) : .clear,
                                             in: RoundedRectangle(cornerRadius: 7))
                         }
                         .buttonStyle(.plain)
                         .accessibilityValue(selectedID == command.id ? (french ? "Sélectionné" : "Selected") : "")
                     }
                     .listStyle(.plain)
+                    .motion(.quick, value: selectedID)
                     .onChange(of: selectedID) { _, id in
                         if let id { proxy.scrollTo(id) }
                     }

@@ -1,3 +1,4 @@
+import DesignSystem
 import SwiftUI
 import AppKit
 import QuickLook
@@ -85,7 +86,7 @@ struct DuplicateScanView: View {
                     List(report.groups, id: \.digest) { group in
                         VStack(alignment: .leading, spacing: 8) {
                             Label(copy("duplicates.keep"), systemImage: "checkmark.circle.fill")
-                                .foregroundStyle(.green)
+                                .foregroundStyle(Palette.accent.color)
                             Text(group.suggestedKeeper.lastPathComponent).font(.headline)
                             Button { showPreview(group.suggestedKeeper) } label: {
                                 Label(copy("explore.preview"), systemImage: "eye")

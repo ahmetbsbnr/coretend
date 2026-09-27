@@ -1,3 +1,4 @@
+import DesignSystem
 import SwiftUI
 import Darwin
 import QuickLook
@@ -123,7 +124,7 @@ struct ExploreScanView: View {
                     ZStack(alignment: .topLeading) {
                         ForEach(Array(tiles.enumerated()), id: \.element.id) { index, tile in
                             RoundedRectangle(cornerRadius: 5)
-                                .fill(Color.accentColor.opacity(0.32 + Double(index % 4) * 0.12))
+                                .fill(Palette.accent.color.opacity(0.18 + Double(index % 4) * 0.12))
                                 .overlay(alignment: .topLeading) {
                                     if tile.frame.width > 90 && tile.frame.height > 34 {
                                         Text(URL(fileURLWithPath: tile.id).lastPathComponent)
@@ -132,11 +133,13 @@ struct ExploreScanView: View {
                                 }
                                 .frame(width: tile.frame.width, height: tile.frame.height)
                                 .position(x: tile.frame.midX, y: tile.frame.midY)
+                                .transition(.opacity)
                                 .accessibilityLabel("\(URL(fileURLWithPath: tile.id).lastPathComponent), \(ByteCountFormatter.string(fromByteCount: tile.bytes, countStyle: .file))")
                         }
                     }
                 }
                 .frame(height: 230)
+                .motion(.gentle, value: treemapInputs.count)
                 .accessibilityElement(children: .contain)
                 if visibleResults.isEmpty {
                     ContentUnavailableView(french ? "Aucun fichier ne correspond au filtre" : "No files match this filter", systemImage: "line.3.horizontal.decrease.circle")
