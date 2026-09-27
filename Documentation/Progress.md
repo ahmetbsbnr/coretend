@@ -4,8 +4,8 @@
 
 ### NFR-13 — reproductibilité après échec CI — 2026-09-27
 
-- PR #55 a révélé deux différences runner/local: canonicalisation scratch dans l’ancien symlink smoke, puis builds distants toujours différents avec scratch physiques identiques. Le script utilise un même chemin temporaire par produit, le vide entre builds et fixe la cible `MACOSX_DEPLOYMENT_TARGET=14.0` (minimum déclaré).
-- `make qualify` complet repasse localement sur macOS 27/Xcode 27.0. Hashes Release App `9709b88a…`, CLI `3c58c269…`, chacun identique après deux builds froids. Le run GitHub macOS 26 antérieur échoue encore avant ce pin; CI corrigée attend validation. NFR-13 reste `PARTIEL`; détail dans `Documentation/Evidence/ReleaseReproducibility.md`.
+- PR #55 a révélé que `ld` régénérait `LC_UUID` à chaque link, différent au byte 3449 et recopié dans signature/offsets. Smoke garde scratch temporaire vidé entre builds, fixe minimum `MACOSX_DEPLOYMENT_TARGET=14.0` et passe `-Xlinker -no_uuid` pour rendre les Mach-O déterministes.
+- `make qualify` complet repasse localement macOS 27/Xcode 27.0. Hashes App `c0152592…`, CLI `4b41dffd…`, pairs identiques. Correctif GitHub en attente; NFR-13 reste `PARTIEL` jusqu’au rerun vert. Preuve détaillée dans `Documentation/Evidence/ReleaseReproducibility.md`.
 
 ### FR-14 — smoke du vrai paquet local — 2026-09-27
 

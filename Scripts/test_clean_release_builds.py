@@ -4,7 +4,6 @@ import os
 import shutil
 import subprocess
 import tempfile
-import os.path
 from pathlib import Path
 
 
@@ -43,6 +42,7 @@ def main() -> None:
                     "swift", "build", "-c", "release",
                     "--scratch-path", str(scratch),
                     "--product", product,
+                    "-Xlinker", "-no_uuid",
                 ]
                 environment = os.environ.copy()
                 # SwiftPM defaults to the host's current OS deployment target.
@@ -65,53 +65,12 @@ def main() -> None:
                 digest = hashlib.sha256(executable.read_bytes()).hexdigest()
                 observed[(build_name, product)] = digest
                 print(f"{build_name} {product}: {digest}")
-                if os.environ.get("CORETEND_KEEP_REPRO_ARTIFACTS") == "1" or os.environ.get("CI") == "true":
-                    preserved = package_root / ".build" / f"{product}-{build_name}-repro-diagnostic"
-                    shutil.copy2(executable, preserved)
-                    print(f"Preserved diagnostic binary: {preserved}")
 
     for product in PRODUCTS:
         if observed[("first", product)] != observed[("second", product)]:
-            first = package_root / ".build" / f"{product}-first-repro-diagnostic"
-            second = package_root / ".build" / f"{product}-second-repro-diagnostic"
-            if first.is_file() and second.is_file():
-                print(f"Binary difference positions (first 32): {product}")
-                comparison = subprocess.run(
-                    ["cmp", "-l", str(first), str(second)], text=True,
-                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False,
-                )
-                print("\n".join(comparison.stdout.splitlines()[:32]))
-                offsets = []
-                for line in comparison.stdout.splitlines()[:32]:
-                    try:
-                        offsets.append(int(line.split()[0]) - 1)
-                    except (IndexError, ValueError):
-                        continue
-                for offset in offsets[:3]:
-                    for binary in (first, second):
-                        with binary.open("rb") as stream:
-                            stream.seek(max(0, offset - 32))
-                            context = stream.read(80)
-                        print(f"Hex context {binary.name} @{offset}: {context.hex()}")
-                for binary in (first, second):
-                    metadata = subprocess.run(
-                        ["otool", "-l", str(binary)], text=True,
-                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False,
-                    )
-                    print(f"Load commands: {binary.name}; sha256={hashlib.sha256(metadata.stdout.encode()).hexdigest()}")
-                    print("\n".join(metadata.stdout.splitlines()[-100:]))
-                for binary in (first, second):
-                    if binary.is_file() and not binary.is_symlink():
-                        binary.unlink()
             raise RuntimeError(f"{product} is not reproducible across clean scratch builds")
         print(f"{product}: byte-identical across clean scratch builds")
-    if os.environ.get("CI") == "true":
-        for product in PRODUCTS:
-            for build_name in ("first", "second"):
-                diagnostic = package_root / ".build" / f"{product}-{build_name}-repro-diagnostic"
-                if diagnostic.is_file() and not diagnostic.is_symlink():
-                    diagnostic.unlink()
-    print("Two cold builds used the same physical scratch path per product, cleared between builds; all outputs were removed with the unique temporary root.")
+    print("Two cold builds used the same physical scratch path per product, cleared between builds; LC_UUID disabled for deterministic Mach-O output; all outputs removed with the unique temporary root.")
 
 
 if __name__ == "__main__":
