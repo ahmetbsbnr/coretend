@@ -16,7 +16,7 @@ COPY = {
         "other_language": "Français",
         "skip": "Skip to content",
         "nav_label": "Main navigation",
-        "brand_note": "LOCAL MACOS EXPLORER",
+        "brand_note": "local care",
         "preview": "Unreleased local reconstruction",
         "preview_short": "Local preview · unreleased",
         "no_download": "No download is published.",
@@ -109,7 +109,7 @@ COPY = {
         "other_language": "English",
         "skip": "Aller au contenu",
         "nav_label": "Navigation principale",
-        "brand_note": "EXPLORATEUR MACOS LOCAL",
+        "brand_note": "entretien local",
         "preview": "Reconstruction locale non publiée",
         "preview_short": "Aperçu local · non publié",
         "no_download": "Aucun téléchargement n’est publié.",
@@ -200,6 +200,28 @@ COPY = {
 }
 
 
+# The Serre logo (UI guide § 6): a seed, a stem, two leaves. site.css makes it germinate once.
+LOGO = (
+    '<svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true" focusable="false">'
+    '<path class="logo-leaf logo-leaf-1" d="M20 17C14 16 11 12 11 8C16 8 20 11 20 17Z"/>'
+    '<path class="logo-leaf logo-leaf-2" d="M20 13C25 12 28 9 29 5C24 5 21 8 20 13Z"/>'
+    '<path class="logo-stem" d="M20 26C20 18 20 14 20 8" pathLength="1"/>'
+    '<circle class="logo-seed" cx="20" cy="30" r="5.5"/>'
+    '</svg>'
+)
+
+# A decorative root down the page margin; site.css grows it with the scroll where supported.
+SCROLL_ROOT = (
+    '<svg class="scroll-root" viewBox="0 0 60 1000" preserveAspectRatio="none" aria-hidden="true" focusable="false">'
+    '<path pathLength="1" d="M30 0C24 90 38 160 30 250S20 400 32 480S40 640 28 720S22 880 30 1000"/>'
+    '<path pathLength="1" d="M31 170C40 184 46 196 52 214"/>'
+    '<path pathLength="1" d="M26 430C17 446 12 462 8 482"/>'
+    '<path pathLength="1" d="M33 650C42 664 47 680 50 700"/>'
+    '<path pathLength="1" d="M27 860C19 874 15 890 12 906"/>'
+    '</svg>'
+)
+
+
 def file_name(route: str) -> str:
     return "index.html" if route == "index" else f"{route}.html"
 
@@ -236,7 +258,7 @@ def header(lang: str, route: str) -> str:
     return f"""<a class="skip-link" href="#main">{escape(copy['skip'])}</a>
 <header class="site-header">
   <a class="brand" href="{escape(rel_path(route, 'index'))}" aria-label="CoreTend — {escape(copy['nav']['index'])}">
-    <span class="brand-mark" aria-hidden="true"><i></i></span><span class="brand-name">CoreTend<small>{escape(copy['brand_note'])}</small></span>
+    {LOGO}<span class="brand-name">CoreTend<small>{escape(copy['brand_note'])}</small></span>
   </a>
   <nav class="primary-navigation" id="primary-navigation" aria-label="{escape(copy['nav_label'])}">{nav_links}</nav>
   <a class="language-link" href="../{switch_lang}/{escape(file_name(route))}" lang="{switch_lang}" hreflang="{switch_lang}">{escape(copy['other_language'])}<span aria-hidden="true"> ↗</span></a>
@@ -250,7 +272,7 @@ def footer(lang: str, route: str) -> str:
         for item in ("features", "privacy", "developer", "support")
     )
     return f"""<footer class="site-footer">
-  <div class="footer-brand"><a class="brand" href="{escape(rel_path(route, 'index'))}"><span class="brand-mark" aria-hidden="true"><i></i></span><span class="brand-name">CoreTend<small>{escape(copy['brand_note'])}</small></span></a><p>{escape(copy['footer_note'])}</p></div>
+  <div class="footer-brand"><a class="brand" href="{escape(rel_path(route, 'index'))}">{LOGO}<span class="brand-name">CoreTend<small>{escape(copy['brand_note'])}</small></span></a><p>{escape(copy['footer_note'])}</p></div>
   <div class="footer-nav"><h2>{escape(copy['footer_links'])}</h2><nav aria-label="{escape(copy['footer_links'])}">{links}</nav></div>
   <p class="footer-meta">© 2026 CoreTend · {escape(copy['preview'])}</p>
 </footer>"""
@@ -259,7 +281,7 @@ def footer(lang: str, route: str) -> str:
 def home_content(lang: str) -> str:
     page = COPY[lang]["home"]
     steps = "".join(
-        f'<li><span class="step-index">{escape(number)}</span><div><h3>{escape(title)}</h3><p>{escape(body)}</p></div></li>'
+        f'<li><span class="step-index">{escape(number.lstrip("0"))}</span><div><h3>{escape(title)}</h3><p>{escape(body)}</p></div></li>'
         for number, title, body in page["scene_steps"]
     )
     topics = section_markup(page["sections"])
@@ -267,7 +289,7 @@ def home_content(lang: str) -> str:
   <section class="hero section-shell" aria-labelledby="hero-title">
     <div class="hero-copy"><p class="eyebrow"><span class="status-dot" aria-hidden="true"></span>{escape(page['kicker'])}</p><h1 id="hero-title">{escape(page['title'])}</h1><p class="hero-lead">{escape(page['lead'])}</p><div class="hero-actions"><a class="button button-primary" href="features.html">{escape(page['primary'])}<span aria-hidden="true"> ↗</span></a><a class="text-link" href="privacy.html">{escape(page['secondary'])}</a></div><p class="release-note"><span class="release-marker" aria-hidden="true">i</span>{escape(COPY[lang]['preview'])}. {escape(COPY[lang]['no_download'])}</p></div>
     <figure class="flow-scene" aria-labelledby="scene-title" aria-describedby="scene-caption">
-      <div class="scene-heading"><span class="scene-index">CORETEND / 01</span><span class="scene-status"><span aria-hidden="true"></span>{'READ-ONLY BY DEFAULT' if lang == 'en' else 'LECTURE SEULE PAR DÉFAUT'}</span></div>
+      <div class="scene-heading"><span class="scene-index">{'Step by step' if lang == 'en' else 'Pas à pas'}</span><span class="scene-status"><span aria-hidden="true"></span>{'Read-only by default' if lang == 'en' else 'Lecture seule par défaut'}</span></div>
       <ol class="flow-steps">{steps}</ol>
       <div class="scene-baseline"><span aria-hidden="true"></span><p id="scene-title">{escape(page['scene_label'])}</p><span aria-hidden="true"></span></div>
       <figcaption id="scene-caption">{escape(page['scene_caption'])}</figcaption>
@@ -321,6 +343,7 @@ def document(lang: str, route: str) -> str:
   <link rel="stylesheet" href="../site.css">
 </head>
 <body class="page-{escape(route)}">
+  {SCROLL_ROOT}
   {header(lang, route)}
   {content_for(lang, route)}
   {footer(lang, route)}
@@ -345,8 +368,8 @@ def language_index() -> str:
 <body class="language-page">
   <a class="skip-link" href="#main">Skip to language choice / Aller au choix de langue</a>
   <main class="language-choice" id="main">
-    <a class="brand" href="en/index.html"><span class="brand-mark" aria-hidden="true"><i></i></span><span class="brand-name">CoreTend<small>LOCAL MACOS EXPLORER</small></span></a>
-    <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span>LOCAL PREVIEW · UNRELEASED</p>
+    <a class="brand" href="en/index.html">""" + LOGO + """<span class="brand-name">CoreTend<small>local care · entretien local</small></span></a>
+    <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span>Local preview · unreleased</p>
     <h1>Choose your language<span lang="fr">Choisir votre langue</span></h1>
     <p class="language-lead">CoreTend is an unreleased macOS reconstruction. This local site explains current behavior and limits.<br><span lang="fr">CoreTend est une reconstruction macOS non publiée. Ce site local présente ses fonctions et limites actuelles.</span></p>
     <nav class="language-options" aria-label="Language / Langue"><a class="button button-primary" href="en/index.html" lang="en">English <span aria-hidden="true">→</span></a><a class="button button-secondary" href="fr/index.html" lang="fr">Français <span aria-hidden="true">→</span></a></nav>
