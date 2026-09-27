@@ -1,4 +1,4 @@
-.PHONY: test build generate-manifest build-site site-check traceability safety-audit install-smoke qualify package-local verify-package verify-install-package
+.PHONY: test build generate-manifest build-site site-check traceability safety-audit install-smoke qualify package-local verify-package verify-install-package benchmark-scan
 
 test:
 	swift test
@@ -35,3 +35,7 @@ verify-package:
 
 verify-install-package: package-local
 	bash Scripts/test_install_local.sh Artifacts/CoreTend.app
+
+benchmark-scan:
+	swift build -c release --product CoreTendCLI
+	python3 Scripts/benchmark_scan.py
