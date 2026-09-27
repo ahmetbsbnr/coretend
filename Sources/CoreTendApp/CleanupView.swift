@@ -163,8 +163,15 @@ struct CleanupView: View {
         }
         .fileImporter(isPresented: $choosingFolder, allowedContentTypes: [.folder], allowsMultipleSelection: false) { outcome in
             guard case .success(let urls) = outcome else { return }
-            guard let url = urls.first, let descriptor,
-                  Array(url.standardizedFileURL.pathComponents.suffix(descriptor.relativePath.count)) == descriptor.relativePath else {
+            guard let url = urls.first, let descriptor else {
+                selectedRoot = nil
+                status = copy("cleanup.rootMismatch")
+                return
+            }
+            let expectedRoot = descriptor.root(homeDirectory: FileManager.default.homeDirectoryForCurrentUser)
+                .resolvingSymlinksInPath().standardizedFileURL
+            let chosenRoot = url.resolvingSymlinksInPath().standardizedFileURL
+            guard chosenRoot == expectedRoot else {
                 selectedRoot = nil
                 status = copy("cleanup.rootMismatch")
                 return
