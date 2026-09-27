@@ -47,8 +47,12 @@ struct CleanupView: View {
                                 Text(copy(rule.explanationKey)).font(.caption).foregroundStyle(Palette.secondaryInk.color)
                             }
                             Spacer()
-                            Text(riskLabel(rule.risk)).font(.caption.weight(.semibold))
-                                .foregroundStyle(riskColor(rule.risk))
+                            HStack(spacing: 5) {
+                                RiskLeaf(riskLevel(rule.risk))
+                                Text(riskLabel(rule.risk))
+                            }
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(riskColor(rule.risk))
                                 .padding(.horizontal, 8).padding(.vertical, 4)
                                 .background(Palette.raisedSurface.color, in: Capsule())
                         }
@@ -127,7 +131,10 @@ struct CleanupView: View {
                                 Text(french ? "Allouée : \(size(item.allocatedBytes))" : "Allocated: \(size(item.allocatedBytes))")
                                 Text(french ? "Logique : \(size(item.logicalBytes))" : "Logical: \(size(item.logicalBytes))")
                                 Text(french ? "Modifié : \(modified(item))" : "Modified: \(modified(item))")
-                                Text(riskLabel(item.risk))
+                                HStack(spacing: 4) {
+                                    RiskLeaf(riskLevel(item.risk), size: 10)
+                                    Text(riskLabel(item.risk))
+                                }
                             }
                             .font(.caption)
                             .foregroundStyle(Palette.secondaryInk.color)
@@ -310,6 +317,13 @@ struct CleanupView: View {
         case .low: Palette.secondaryInk.color
         case .medium: Palette.caution.color
         case .high: Palette.danger.color
+        }
+    }
+    private func riskLevel(_ risk: CandidateRisk) -> RiskLevel {
+        switch risk {
+        case .low: .low
+        case .medium: .medium
+        case .high: .high
         }
     }
     private func riskLabel(_ risk: CandidateRisk) -> String {
