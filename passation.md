@@ -252,3 +252,8 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 ### Fixtures de doublons du cahier et des capabilities — 27-09-2026
 
 - Tests du checker exigent maintenant le motif exact pour IDs capabilities dupliqués dans Swift et exigences dupliquées dans Cahier; ces cas ne passent pas pour une erreur accessoire. `test_traceability.py`, gate réel, et `git diff --check` verts. `make qualify` avait passé juste avant l’élargissement des asserts (aucun code production modifié).
+
+### Integrity — racine LaunchAgents symlink refusée — 27-09-2026
+
+- Fixture crée dossier LaunchAgents réel avec plist candidat puis alias symlink; inspection de l’alias rend zéro candidat et `directoryUnreadable`. Guide utilisateur précise refus racine alias; Traceability `integrity.loginitems` référence fixture et limites humaines/service de lancement restent ouvertes. Statut PARTIEL inchangé.
+- `make qualify` passe après fixture/documentation : site, checker 91 lignes, audits, runtime isolé, builds Release byte-identiques, XCTest, Debug App/CLI et CLI/SIGINT. Aucun dossier système ni HOME réel examiné.
