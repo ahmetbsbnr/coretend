@@ -4,6 +4,7 @@
 
 - **Phase : P0 → P1** de [`Documentation/Project/Pilotage.md`](Documentation/Project/Pilotage.md). Prochaine étape : **G1**, validation de la direction visuelle Observatoire par le mainteneur sur l’app lancée. Aucun nouvel écran ni changement d’apparence avant G1.
 - Diagnostic complet (historique v1/v2/v3/Next, causes d’échec, besoins) : [`Documentation/Project/Audit-2026-09-27.md`](Documentation/Project/Audit-2026-09-27.md). Règles d’agent : `AGENTS.md` (importé par `CLAUDE.md`).
+- **Branche unique de développement : `next`** (décision du mainteneur, 27-09). `feat/reconstruction-open-musts` (PR #55) et `feat/access-diagnostics` (PR #54, diagnostic FR-10 des erreurs d’accès Applications) y sont intégrées localement ; plus de branche de lot.
 - **Dossier de travail : `~/Developer/projects/coretend-next`** (worktree recréé après le déplacement de `~/Developer/Website`). `../coretend` est la maintenance 1.x (`fix/1.x-trash-sqlite`), pas un lieu de travail produit.
 - La refonte **Observatoire** (commits `23b3f32` → `4451f8b`) a remplacé Porcelain/Slate/Teal dans l’app et le site, sans relecture de sa spec. Elle est l’état actuel, **pas une direction validée**.
 - **10 commits de cette branche ne sont pas sur GitHub** (`5f44839..4451f8b`). Les pousser est une décision du mainteneur.

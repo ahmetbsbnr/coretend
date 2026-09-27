@@ -115,14 +115,14 @@ struct ApplicationsView: View {
             if !issues.isEmpty {
                 ObservatoryCard {
                     VStack(alignment: .leading, spacing: 10) {
-                        Label(copy("apps.partial", count: issues.count), systemImage: "exclamationmark.circle")
+                        Label(copy("apps.issueCount", count: issues.count), systemImage: "exclamationmark.circle")
                             .font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.caution.color)
                         Text(french ? "Certains dossiers ou bundles n’ont pas pu être entièrement examinés. Leur absence de l’inventaire ne prouve pas qu’ils sont absents du dossier." : "Some folders or bundles could not be fully inspected. Their absence from this inventory does not prove they are absent from the folder.")
                             .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
                             .fixedSize(horizontal: false, vertical: true)
                         ForEach(Array(issues.enumerated()), id: \.offset) { _, issue in
                             VStack(alignment: .leading, spacing: 3) {
-                                Text(issueReason(issue.reason)).font(CoreTendTypography.secondary)
+                                Text(issueDescription(issue.reason)).font(CoreTendTypography.secondary)
                                     .foregroundStyle(Palette.ink.color)
                                 Text(issue.path).font(CoreTendTypography.secondary.monospaced())
                                     .foregroundStyle(Palette.secondaryInk.color).textSelection(.enabled)
@@ -333,17 +333,6 @@ struct ApplicationsView: View {
         }
     }
 
-    private func issueReason(_ reason: String) -> String {
-        switch reason {
-        case "selected_root_unavailable": return french ? "Dossier choisi indisponible." : "Selected folder is unavailable."
-        case "selected_root_unreadable": return french ? "Impossible de lire le dossier choisi." : "Could not read the selected folder."
-        case "bundle_contents_unavailable": return french ? "Contenu du bundle indisponible." : "Bundle contents are unavailable."
-        case "bundle_identifier_missing": return french ? "Identifiant de bundle absent ou invalide." : "Bundle identifier is missing or invalid."
-        case "bundle_metadata_unavailable": return french ? "Métadonnées du bundle illisibles, trop volumineuses ou modifiées pendant la lecture." : "Bundle metadata could not be read, exceeded the size limit, or changed while being read."
-        default: return french ? "Métadonnées du bundle indisponibles." : "Bundle metadata unavailable."
-        }
-    }
-
     private func reviewAssociations(for app: ApplicationRecord, in root: URL) {
         task?.cancel()
         associationResults = []
@@ -402,8 +391,22 @@ struct ApplicationsView: View {
 
     private func copy(_ key: String, count: Int? = nil) -> String {
         if key == "apps.count", let count { return french ? "\(count) applications locales" : "\(count) local applications" }
-        if key == "apps.partial", let count { return french ? "\(count) éléments ignorés" : "\(count) items skipped" }
+        if key == "apps.issueCount", let count {
+            if french { return count == 1 ? "1 anomalie détectée" : "\(count) anomalies détectées" }
+            return count == 1 ? "1 issue found" : "\(count) issues found"
+        }
         return ProductCopy.value(for: key, french: french)
+    }
+
+    private func issueDescription(_ reason: String) -> String {
+        switch reason {
+        case "selected_root_missing", "selected_root_access_denied", "selected_root_not_directory",
+             "selected_root_symlink", "selected_root_unavailable", "selected_root_unreadable",
+             "bundle_contents_unavailable", "bundle_identifier_missing", "bundle_metadata_unavailable":
+            copy("apps.issue.\(reason)")
+        default:
+            copy("apps.issue.unknown")
+        }
     }
 }
 

@@ -10,6 +10,20 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 - ZIP temporaire observé : SHA-256 `5904b8efb73fac47054153a2ca578204b7399c30b0e09cd62824112f4b388868`. Runtime isolé: 14 échantillons sans socket Internet et aucun fichier SQLite/sidecar hors store déclaré.
 - L’artefact temporaire a été supprimé à la fin du test. Ce hash prouve uniquement les octets testés; il ne désigne pas un artefact distribué/candidat. Signature, notarisation, Finder/Launch Services et hôte minimum non vérifiés.
 
+## Distinction des erreurs d’accès Applications — 26-09-2026
+
+- Source : commit `87edd45` (`feat/access-diagnostics`), basé sur `55e8628`. Hôte macOS 27.0 (26A428), arm64, Swift 6.4.
+- `make qualify` et `git diff --check` passent : site, traçabilité, audit de sûreté, installation fixture, suite XCTest, builds App/CLI et whitespace.
+- `make package-local` et `make verify-package` passent. ZIP arm64 unsigned SHA-256 `20a72cf36d3327018b8c78fef76e2f8aab835629b0558345f2b99749693c6024`. Vérification limitée à Info.plist, intégrité ZIP et architecture Mach-O.
+- Tests Domain sur fixtures distinguent racine absente, mauvais type, symlink, EACCES/EPERM et erreur Cocoa d’accès refusé. La vue Applications affiche causes localisées EN/FR pour le dossier choisi; aucune sonde TCC/Full Disk Access. FR-10 reste PARTIEL.
+- Artefact local uniquement : non lancé depuis cette tranche, non signé, non notarié, non publié.
+
+## Essai UI/accessibilité isolé — 26-09-2026
+
+- macOS 27.0 (26A428), arm64. Le bundle arm64 déjà présent sous `Artifacts/` a été copié dans un HOME temporaire et ouvert avec `open -n`; commande terminée avec code 0 et System Events a retourné le nom de fenêtre `CoreTend`.
+- ZIP local unsigned : SHA-256 `94503244830030785388e6ea2359dc844af22d719d5e82729f14408f1697a299`. `make verify-package` passe; contrôle limité à plist, ZIP et Mach-O.
+- Lecture des détails d’éléments UI via System Events échoue avec erreur AppleScript `-10827`. Aucun parcours clavier/VoiceOver ou contrôle visuel d’accessibilité effectué; NFR-07 reste PARTIEL. Détails : `Documentation/Evidence/Accessibility.md`.
+
 ## Build local du 26-09-2026
 
 - Source compilée : `d53e71888d83d30d9defe395e4e851a5c2e04061` (`next`). Hôte : macOS 27.0 (26A428), arm64, Apple Swift 6.4.
