@@ -16,7 +16,6 @@ COPY = {
         "other_language": "Français",
         "skip": "Skip to content",
         "nav_label": "Main navigation",
-        "menu": "Menu",
         "brand_note": "LOCAL MACOS EXPLORER",
         "preview": "Unreleased local reconstruction",
         "preview_short": "Local preview · unreleased",
@@ -110,7 +109,6 @@ COPY = {
         "other_language": "English",
         "skip": "Aller au contenu",
         "nav_label": "Navigation principale",
-        "menu": "Menu",
         "brand_note": "EXPLORATEUR MACOS LOCAL",
         "preview": "Reconstruction locale non publiée",
         "preview_short": "Aperçu local · non publié",
@@ -240,8 +238,7 @@ def header(lang: str, route: str) -> str:
   <a class="brand" href="{escape(rel_path(route, 'index'))}" aria-label="CoreTend — {escape(copy['nav']['index'])}">
     <span class="brand-mark" aria-hidden="true"><i></i></span><span class="brand-name">CoreTend<small>{escape(copy['brand_note'])}</small></span>
   </a>
-  <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation"><span class="menu-icon" aria-hidden="true"><i></i><i></i></span><span>{escape(copy['menu'])}</span></button>
-  <nav class="primary-navigation" id="primary-navigation" aria-label="{escape(copy['nav_label'])}" data-collapsed="false">{nav_links}</nav>
+  <nav class="primary-navigation" id="primary-navigation" aria-label="{escape(copy['nav_label'])}">{nav_links}</nav>
   <a class="language-link" href="../{switch_lang}/{escape(file_name(route))}" lang="{switch_lang}" hreflang="{switch_lang}">{escape(copy['other_language'])}<span aria-hidden="true"> ↗</span></a>
 </header>"""
 
@@ -318,11 +315,10 @@ def document(lang: str, route: str) -> str:
   <meta property="og:type" content="website">
   <meta property="og:title" content="{escape(title, quote=True)} — CoreTend">
   <meta property="og:description" content="{escape(description, quote=True)}">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'">
   <title>{escape(title)} — CoreTend</title>
   <link rel="stylesheet" href="../design-tokens.css">
   <link rel="stylesheet" href="../site.css">
-  <script src="../site.js" defer></script>
 </head>
 <body class="page-{escape(route)}">
   {header(lang, route)}
@@ -341,7 +337,7 @@ def language_index() -> str:
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <meta name="description" content="CoreTend local reconstruction — choose English or French. Reconstruction locale CoreTend — choisir anglais ou français.">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'">
   <title>CoreTend — choose language / choisir la langue</title>
   <link rel="stylesheet" href="design-tokens.css">
   <link rel="stylesheet" href="site.css">
