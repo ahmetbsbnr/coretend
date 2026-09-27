@@ -20,7 +20,7 @@ La RACI du cahier (§ 8) reste la référence ; ce tableau en est la lecture op�
 | Sujet | Source unique | Règle |
 |---|---|---|
 | Où travailler | dossier `~/Developer/projects/coretend-next`, branche `next` directement | jamais dans le dossier 1.x pour du travail produit |
-| État courant et reprise | `passation.md` | réécrite à la fin de chaque lot, pas de seconde passation ailleurs |
+| État courant et reprise | `passation.md` (point d’entrée) et `Documentation/Passation/` (un journal par phase, référence) | mis à jour au début, à chaque arrêt et à la fin de chaque lot, selon `Documentation/Passation/README.md` ; pas d’autre passation |
 | Exigences et statut | `Documentation/Traceability.csv` | `VÉRIFIÉ` seulement après recette (§ 5) |
 | Historique des preuves | `Documentation/Progress.md` | ajout daté, jamais réécrit |
 | Décisions | `Documentation/Decisions/NNNN-*.md` | une décision = un fichier daté, approuvé par le mainteneur |
@@ -57,9 +57,9 @@ couvert par une décision acceptée, il s’arrête et demande.
 
 **Pour finir**, l’agent :
 1. lance `make qualify` et `git diff --check` ;
-2. pour tout changement visible, lance l’app en fixture (protocole dans `passation.md`)
+2. pour tout changement visible, lance l’app en fixture (protocole dans `Documentation/Passation/Reference.md`)
    et joint des captures clair/sombre qu’il a ouvertes et relues ;
-3. met à jour `passation.md` et, si un statut change, `Progress.md`/`Traceability.csv` ;
+3. met à jour `passation.md`, le journal de la phase (`Documentation/Passation/`) et, si un statut change, `Progress.md`/`Traceability.csv` ;
 4. **s’arrête** et présente la recette. Le lot suivant attend le résultat.
 
 ## 5. Recette

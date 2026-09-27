@@ -27,7 +27,7 @@ Les durées sont des estimations pour un lot par jour de travail, recette compri
 
 ### P0 — Clôture de la remise à plat (0,5 j)
 
-- [ ] **0.1** CI `qualify` verte sur `origin/next` ; sinon, corriger d’abord.
+- [x] **0.1** CI `qualify` verte sur `origin/next` (`5b589b0`, `3d8c4b1`, 27-09).
 - [ ] **0.2** Le `Makefile` vérifie Python ≥ 3.10 et échoue avec un message clair (le `python3`
   système 3.9 casse `test_traceability.py` sans erreur lisible).
 - **Recette :** aucune. **Sortie :** gate P0.
@@ -108,7 +108,7 @@ macOS sur un dossier jetable créé pour l’occasion**, fait par le mainteneur.
 ### Suivi
 
 Indicateur unique : **Must `VÉRIFIÉ` / 78** (2 au départ). Visée : ≥ 40 après P3, 78 avant G5.
-`passation.md` est réécrite à chaque fin de lot ; `Progress.md` reçoit le résultat daté de
+`passation.md` et le journal de phase (`Documentation/Passation/`) sont tenus à jour au début, à chaque arrêt et à la fin de chaque lot ; `Progress.md` reçoit le résultat daté de
 chaque recette. Un point hebdomadaire compare l’indicateur, les gates passées et les lots refusés.
 
 ### Risques

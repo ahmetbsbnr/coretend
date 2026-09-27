@@ -9,8 +9,9 @@ maintenance seulement.
 ## Avant toute action
 
 1. `git status --short --branch` : vérifier que l’on est sur `next` dans ce dossier. Tout développement se fait directement sur `next` ; ne pas créer de branche de travail.
-2. Lire `passation.md` (état et reprise), puis `Documentation/Project/Pilotage.md`
-   (phases, gates, lots). Le produit est défini par
+2. Lire `passation.md` (où on en est, prochaine action), le journal de la phase courante
+   dans `Documentation/Passation/`, puis `Documentation/Project/Pilotage.md` (phases, gates,
+   lots). Si le lot courant est « En cours », reprendre à son « Point d’arrêt ». Le produit est défini par
    `Documentation/Project/Cahier-des-charges.md` ; le statut de chaque exigence est
    dans `Documentation/Traceability.csv`.
 3. Les documents sous `Documentation/Archive/` et ceux de la ligne 1.x décrivent
@@ -25,8 +26,11 @@ maintenance seulement.
   `Documentation/Decisions/`. Une spec « à relire » n’est pas une décision.
 - Gate avant commit : `make qualify`, puis `git diff --check`. Tests ciblés :
   `swift test --filter <Suite>`.
-- Changement visible : lancer l’app en fixture isolée (protocole dans `passation.md`)
+- Changement visible : lancer l’app en fixture isolée (protocole dans `Documentation/Passation/Reference.md`)
   et relire soi-même les captures avant d’affirmer un rendu.
+- Tenir la passation à jour au début, à chaque arrêt et à la fin d’un lot
+  (`Documentation/Passation/README.md`) ; une session coupée doit pouvoir reprendre au point
+  d’arrêt écrit, sans rien deviner.
 - Pas de push, fusion, tag, signature ou publication sans demande explicite.
 
 ## Invariants de sûreté
