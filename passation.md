@@ -1,6 +1,6 @@
 # Passation complète — CoreTend Next
 
-**État au 27-09-2026.** Reconstruction active, pas finalisée, aucune release publique. Dépôt `ahmetbsbnr/coretend`; worktree `next/`; base distante `origin/next` à `55e8628`. Travail courant sur `feat/reconstruction-open-musts`, douze commits locaux après `74c6b8b`, dont huit commits de code, non poussés et sans PR. Dernière tranche Task 22 — NFR-09; `make benchmark-scan` et `make qualify` passent. Reprendre sur cette branche; ouvrir PR vers `next` après la tranche convenue.
+**État au 27-09-2026.** Reconstruction active, pas finalisée, aucune release publique. Dépôt `ahmetbsbnr/coretend`; worktree `next/`; base distante `origin/next` à `55e8628`. Branche courante `feat/reconstruction-open-musts`, PR brouillon #55 ouverte vers `next`; dernier head qualifié `356d7c7`. Dernière tranche code : FR-08 hard links/sparse; `make qualify` local et CI GitHub passent. Aucun merge/tag/release/publication.
 
 ## État immédiat
 
@@ -8,7 +8,7 @@
 - Cahier des charges complet et approuvé : QQOQCCP, MoSCoW, RACI, objectifs, exigences, architecture, risques et séquence. Voir `Documentation/Project/Cahier-des-charges.md`.
 - Traceability contient 40 FR/NFR + 51 capacités; 91 statuts renseignés. La ligne NFR-07 a été réalignée sur les colonnes CSV; statut PARTIEL tant que revue clavier/VoiceOver/Dynamic Type/contraste/Reduce Motion n’est pas faite.
 - App SwiftUI macOS, CLI Swift, persistance SQLite, modules métier, site statique EN/FR et scripts de paquet sont présents. Résultats/états restent partiels selon `Documentation/Traceability.csv`; aucun jalon ne signifie produit final.
-- Dernière qualification locale : `make qualify` le 27-09 après annulation SIGINT CLI; smoke runtime debug isolé passe également. Elle couvre génération, site, traçabilité, audit statique de sûreté, installation fixture en HOME temporaire, XCTest complet, builds debug App/CLI, test subprocess Control-C et whitespace. Aucune UI native/VoiceOver n’est qualifiée par ce gate.
+- Dernière qualification locale : `make qualify` le 27-09 après la tranche FR-08; elle couvre génération/site, intégrité et dates du registre CSV, audits sûreté/architecture, install/uninstall fixtures, smoke runtime Release isolé, XCTest, builds Debug App/CLI et subprocess CLI/SIGINT. Le CI GitHub `qualify` passe sur le head `356d7c7`. Aucune UI native/VoiceOver n’est qualifiée par ce gate.
 - Paquet courant : `Artifacts/CoreTend-local-unsigned.zip`, arm64, produit depuis le code app `b0287bf`. SHA-256 `94503244830030785388e6ea2359dc844af22d719d5e82729f14408f1697a299`. `make package-local verify-package` passe; vérification limitée à Info.plist, archive et Mach-O. Non lancé, installé sur le Mac, signé, notarié ou publié. Preuve dans `Documentation/ReleaseEvidence.md`.
 - Copie greenfield historique `rebuild/` conservée localement comme provenance. Passation/documents 1.x archivés sous `Documentation/Archive/Legacy-Reconstruction/`; ils ne décrivent pas le code actuel.
 - État courant après reprise du 27-09-2026 : 91 lignes, 83 `PARTIEL`, 2 `EN_COURS`, 6 `À_CONSTRUIRE`. Les 78 Must sont `PARTIEL` (aucun `VÉRIFIÉ`). Estimation indicative pondérée (VÉRIFIÉ=100 %, PARTIEL=50 %, EN_COURS=25 %, À_CONSTRUIRE=0 %) : 50 % des Must, 46 % du registre. Ce n’est pas un indicateur officiel; critères UI/macOS, compatibilité et distribution restent ouverts.
@@ -116,7 +116,7 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 - Historique : filtre date 7/30 jours calendaires inclusifs ou tout, filtre type, groupe par date locale et exports CSV/JSON alignés sur filtres. Effacement événementiel préserve exclusions et Performance. Tests fixtures et copies EN/FR ajoutés.
 - Traceability : descriptions placeholder de 26 capacités remplacées par critères comportementaux; le checker rejette maintenant les placeholders. Les capacités vérifiées uniquement en code/test gardent statut PARTIEL jusqu’aux qualifications natives restantes.
 - Gate après reprise : `make qualify` PASS; builds Release `CoreTendApp` et `CoreTendCLI` PASS; matrice subprocess/SIGINT Release PASS; traceability, safety audit, désinstallateur fixture et `git diff --check` PASS. App runtime isolation smoke debug PASS sous HOME/CFFIXED_USER_HOME temporaires. Aucun HOME/store réel touché.
-- Registre : 91 lignes; parmi 78 Must, 18 `EN_COURS`, 60 `PARTIEL`, 0 `À_CONSTRUIRE`, 0 `VÉRIFIÉ`. Estimation qualitative courante ≈42 % des Musts / ≈40 % du registre total. Aucun Must n’est qualifié de bout en bout.
+- Registre à cette étape antérieure : 91 lignes; les statuts Must n’avaient pas encore été réconciliés. Voir le comptage courant en tête de passation; aucun Must n’est qualifié de bout en bout.
 - Restent : parcours SwiftUI/VoiceOver/focus, vrai Trash/UI d’action, matrice autre macOS/hôte, release/distribution GUI/sig/notarisation, compatibilité et preuve NFR-14; FR-10/FDA exhaustive; attribution prudente Apps et quelques écarts `EN_COURS`. Voir `Documentation/Traceability.csv` pour owners/écarts détaillés.
 - À cette étape historique : pas encore de commit/push/PR. Aucun merge/tag/publication. Préserver `Documentation/Project/Remaining-musts-plan.md` local, `.superpowers/sdd/Remaining-musts-plan/`, artefacts de paquet existants et ce fichier.
 
@@ -148,7 +148,7 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 
 ### État de branche actuel — 27-09-2026
 
-- Commits de reprise : `8918503`, `47ec49e`, `1dec13b`, `f39cc3f`, `ba6e7a5` (avant tranche FR-08). Branche poussée sur `origin/feat/reconstruction-open-musts`; PR brouillon #55 vers `next`: https://github.com/ahmetbsbnr/coretend/pull/55.
+- Commits de reprise : `8918503`, `47ec49e`, `1dec13b`, `f39cc3f`, `ba6e7a5`, `356d7c7`. Branche poussée sur `origin/feat/reconstruction-open-musts`; PR brouillon #55 vers `next`: https://github.com/ahmetbsbnr/coretend/pull/55.
 - CI GitHub `qualify` de PR #55 réussie le 27-09; contrôles Vercel également verts. PR reste ouverte en brouillon. Aucun merge/tag/release/publication.
 - L’unique changement local non suivi `Documentation/Project/Remaining-musts-plan.md` est préservé et absent des commits.
 
@@ -158,4 +158,4 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 - `ScanResult` porte identité device/inode issue de `lstat`; `TreemapLayout` déduplique seulement la carte, choisit de façon stable le chemin visible lexicographiquement premier et laisse les mesures ligne inchangées. Libellé bilingue parle d’allocations distinctes.
 - Tests ScanCore : scan d’un hard link expose identité/allocation identiques sur deux chemins; treemap attribue une seule aire à l’inode; fixture sparse distingue 8 Mio logiques et allocation locale plus faible. Tests ciblés et `make qualify` passent. `git diff --check` passe.
 - Le gate de traçabilité couvre aussi les lignes CSV surnuméraires; cette vérification a détecté puis corrigé une colonne décalée dans la preuve FR-08.
-- FR-08 reste `PARTIEL` jusqu’aux vérifications native/VoiceOver, cloud et volumes représentatifs. Mise à jour PR #55 et CI GitHub requises après revue indépendante. Le plan local non suivi reste préservé.
+- FR-08 reste `PARTIEL` jusqu’aux vérifications native/VoiceOver, cloud et volumes représentatifs. PR #55 mise à jour; revue indépendante sans blocage; CI GitHub qualifie le head `356d7c7`. Le plan local non suivi reste préservé.
