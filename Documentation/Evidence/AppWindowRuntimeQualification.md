@@ -10,6 +10,10 @@ CoreGraphics observed an on-screen window named `CoreTend`. Accessibility inspec
 
 The named-window and AX observations came from the temporary bundle launch; the install-to-runtime smoke separately proves fixture install, installed executable startup, app-only uninstall, and store preservation. This does not verify production `UserDefaults` persistence, sidebar mouse/keyboard activation, spoken VoiceOver output, Dynamic Type, zoom, contrast, motion settings, Finder/Launch Services launch, interactive uninstall, signature/notarization, or another macOS version. FR-01 and `shell.nav` remain `PARTIEL`; FR-14 and NFR-07 remain `PARTIEL`.
 
+## Menu-bar scene launch — 2026-09-27
+
+The Release install-to-runtime smoke now sets `CORETEND_TEST_MENU_BAR_ENABLED=1` within its temporary HOME/store fixture. The app remained alive for 12 Internet-socket samples, opened SQLite only beneath the fixture store, and was removed by the fixture uninstaller. This proves the enabled MenuBarExtra scene does not prevent isolated app startup. The smoke does not inspect rendered menu visibility, open the menu window, activate a command, wait for the 30-second refresh, or observe task cancellation on close; those native behaviors remain unqualified.
+
 ## Fresh-store launch race — 2026-09-27
 
 An AX-driven Debug launch with isolated `HOME`, `CFFIXED_USER_HOME`, `TMPDIR`, preference overrides and SQLite store exposed `Données locales indisponibles.` on Overview. The app shell and Saved Files view each opened a store connection and could race their initial migrations. A two-connection SQLite fixture reproduced the stale-version migration failure while both waited for `BEGIN IMMEDIATE`; migration now rereads `user_version` under the acquired lock. After the fix, the same AX launch and Overview selection showed the normal empty Favorites and Recents state without a store error, and SQLite existed only under the explicit fixture store. The temporary root was removed after the process exited. This qualifies one Overview runtime path on this host; it does not qualify persistent production preferences or other native accessibility criteria.

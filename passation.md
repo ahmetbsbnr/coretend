@@ -1,15 +1,21 @@
 # Passation complète — CoreTend Next
 
+### FR-22 — mesures dans le menu visible — 27-09-2026
+
+- La fenêtre `MenuBarExtra` affiche charge, mémoire, espace libre avec sources, puis type/heure de la dernière activité sans détail ni chemin. Snapshot immédiat et rafraîchissement toutes les 30 s via `.task`; annulation liée à la disparition. Aucune ligne Performance ajoutée; valeurs gardées en mémoire.
+- `SQLiteStore.latestActivity()` sélectionne uniquement date/type et un seul événement. Fixtures vérifient ordre du dernier événement; AppShell vérifie arrêt de la boucle après annulation. Build App et tests ciblés passent. Qualification native ouverture/fermeture, activation menu, VoiceOver reste ouverte; FR-22 PARTIEL.
+- Registre : 91 lignes, 86 PARTIEL, 3 À_CONSTRUIRE, 2 VÉRIFIÉ. Pondération indicative : 51,3 % Must, 45,5 % Should, 49,5 % global; aucune n’est mesure officielle de complétion.
+
 ### Should — menu-bar facultatif — 27-09-2026
 
 - `MenuBarExtra` donne accès aux huit destinations existantes et à Réglages avec état de navigation partagé. Réglage persistant `coretend.menuBar.enabled`, désactivé par défaut, copie et aide EN/FR.
-- Suite `UserDefaults` injectée vérifie le défaut et la persistance; copie bilingue et `make qualify` passent. Le runtime Release fixture démarre avec menu activé, store isolé et aucun socket réseau observé. Visibilité native, activation des commandes, parcours toggle et accessibilité restent à qualifier; `shell.menubar` et `settings.menubar` PARTIEL. Hash Release App `1ec7693e…`, CLI `0062ec3a…`.
+- Suite `UserDefaults` injectée vérifie le défaut et la persistance; copie bilingue et `make qualify` passent. Le runtime Release fixture démarre avec menu activé, store isolé et aucun socket réseau observé. Visibilité native, activation des commandes, parcours toggle et accessibilité restent à qualifier; `shell.menubar` et `settings.menubar` PARTIEL. Hash Release courant App `c96e5a32…`, CLI `9800f0d1…`.
 
 ### FR-16 — catégories explicites dans Explorer — 27-09-2026
 
 - Explorer filtre par catégories définies via extensions explicites, insensibles à la casse : images, vidéos, audio, documents, archives; « autres » prend extensions non listées et fichiers sans extension. Critères affichés dans l’interface, filtres catégorie/taille/âge combinés.
 - ScanCore couvre correspondances, casse, extension inconnue, fichier sans extension et non-correspondance. `swift build --product CoreTendApp`, test ciblé et `make qualify` passent, dont builds propres identiques et suite Swift complète. Interaction UI native reste à qualifier; FR-16 PARTIEL.
-- Registre après menu-bar : 91 lignes, 85 PARTIEL, 4 À_CONSTRUIRE, 2 VÉRIFIÉ; pondération indicative 51,3 % Must et 48,9 % global. Pas un score officiel de complétion.
+- Registre après FR-22 : 91 lignes, 86 PARTIEL, 3 À_CONSTRUIRE, 2 VÉRIFIÉ; pondération indicative 51,3 % Must et 49,5 % global. Pas un score officiel de complétion.
 
 ### FR-11 — migration simultanée au lancement — 27-09-2026
 
@@ -38,7 +44,7 @@
 - Quick Look Explore/Doublons/Images similaires vérifie le candidat juste avant aperçu : racine réelle, fichier régulier, chemin toujours sous racine. Scope d’accès conservé pendant aperçu puis libéré à fermeture/départ; chemins disparus, symlinks, dossiers et extérieurs refusés. Deux tests AppShell couvrent acceptation/refus; interaction native reste à qualifier, FR-23/`quicklook.extended` PARTIEL.
 - Guide utilisateur précise ce refus de candidats invalides. NFR-12 traceability gate couvre maintenant 91 lignes, exige docs/preuve ISO à jour/owner partout, code+tests pour tout statut actif et référence cahier pour scope différé. Fixtures rejettent Should actif sans tests, preuve périmée/mal formée et CSV irrégulier; NFR-12 reste PARTIEL jusqu’à revue indépendante.
 - `make qualify` complet passe après FR-11 : gates site/traceabilité/sûreté/architecture, smokes install/uninstall et runtime Release, XCTest, builds Debug et CLI/SIGINT. Les builds Release propres App/CLI sont byte-identiques (`022d65ca…` / `e2d6987d…`); test migration concurrente, tests AppShell FR-10/NFR-06 et `git diff --check` passent.
-- État registre à cette reprise : 91 lignes = 85 PARTIEL, 4 À_CONSTRUIRE, 2 VÉRIFIÉ. Must = 76 PARTIEL, 2 VÉRIFIÉ; pondération indicative 51,3 % Must / 48,9 % total. Pas score de complétion produit. Plan local `Documentation/Project/Remaining-musts-plan.md` conservé non suivi.
+- État registre à cette reprise : 91 lignes = 86 PARTIEL, 3 À_CONSTRUIRE, 2 VÉRIFIÉ. Must = 76 PARTIEL, 2 VÉRIFIÉ; pondération indicative 51,3 % Must / 49,5 % total. Pas score de complétion produit. Plan local `Documentation/Project/Remaining-musts-plan.md` conservé non suivi.
 
 **État au 27-09-2026.** Reconstruction active, pas finalisée, aucune release publique. Dépôt `ahmetbsbnr/coretend`; worktree `next/`; base distante `origin/next` à `55e8628`. Branche courante `feat/reconstruction-open-musts`, PR brouillon #55 ouverte vers `next`; dernier head distant avec CI réussi `0f29b90`. La tranche locale NFR-13 ajoute un smoke de builds Release propres et passe `make qualify`; elle reste non commitée/non poussée. Aucun merge/tag/release/publication.
 
@@ -48,10 +54,10 @@
 - Cahier des charges complet et approuvé : QQOQCCP, MoSCoW, RACI, objectifs, exigences, architecture, risques et séquence. Voir `Documentation/Project/Cahier-des-charges.md`.
 - Traceability contient 40 FR/NFR + 51 capacités; 91 statuts renseignés. La ligne NFR-07 a été réalignée sur les colonnes CSV; statut PARTIEL tant que revue clavier/VoiceOver/Dynamic Type/contraste/Reduce Motion n’est pas faite.
 - App SwiftUI macOS, CLI Swift, persistance SQLite, modules métier, site statique EN/FR et scripts de paquet sont présents. Résultats/états restent partiels selon `Documentation/Traceability.csv`; aucun jalon ne signifie produit final.
-- Dernière qualification locale : `make qualify` après menu-bar, le 27-09. Elle couvre génération/site, intégrité et dates du registre CSV, audits sûreté/architecture, install/uninstall fixtures, smoke runtime Release avec MenuBarExtra fixture activé et aucun socket réseau, quatre builds Release propres octet-identiques par paires, XCTest, builds Debug App/CLI et subprocess CLI/SIGINT. Hashs dans `Documentation/Evidence/ReleaseReproducibility.md`. CI GitHub `qualify` passe sur le head distant `0f29b90` (sans ces commits locaux). Aucune UI native/VoiceOver n’est qualifiée par ce gate.
+- Dernière qualification locale : `make qualify` après FR-22, le 27-09. Elle couvre génération/site, intégrité et dates du registre CSV, audits sûreté/architecture, install/uninstall fixtures, smoke runtime Release avec MenuBarExtra fixture activé et aucun socket réseau, quatre builds Release propres octet-identiques par paires, 40 tests AppShell, tests XCTest, builds Debug App/CLI et subprocess CLI/SIGINT. Hashs dans `Documentation/Evidence/ReleaseReproducibility.md`. CI GitHub `qualify` passe sur le head distant `0f29b90` (sans ces commits locaux). Aucune interaction native d’ouverture/fermeture du menu ni VoiceOver n’est qualifiée par ce gate.
 - Paquet courant : `Artifacts/CoreTend-local-unsigned.zip`, arm64, produit depuis le code app `b0287bf`. SHA-256 `94503244830030785388e6ea2359dc844af22d719d5e82729f14408f1697a299`. `make package-local verify-package` passe; vérification limitée à Info.plist, archive et Mach-O. Non lancé, installé sur le Mac, signé, notarié ou publié. Preuve dans `Documentation/ReleaseEvidence.md`.
 - Copie greenfield historique `rebuild/` conservée localement comme provenance. Passation/documents 1.x archivés sous `Documentation/Archive/Legacy-Reconstruction/`; ils ne décrivent pas le code actuel.
-- État courant après menu-bar (27-09-2026) : 91 lignes, 85 `PARTIEL`, 4 `À_CONSTRUIRE`, 2 `VÉRIFIÉ`. Parmi les Must : 76 `PARTIEL`, 2 `VÉRIFIÉ`. Estimation indicative pondérée (VÉRIFIÉ=100 %, PARTIEL=50 %, EN_COURS=25 %, À_CONSTRUIRE=0 %) : 51,3 % des Must, 48,9 % du registre. Ce n’est pas un indicateur officiel; critères UI/macOS, compatibilité et distribution restent ouverts.
+- État courant après FR-22 (27-09-2026) : 91 lignes, 86 `PARTIEL`, 3 `À_CONSTRUIRE`, 2 `VÉRIFIÉ`. Parmi les Must : 76 `PARTIEL`, 2 `VÉRIFIÉ`. Estimation indicative pondérée (VÉRIFIÉ=100 %, PARTIEL=50 %, EN_COURS=25 %, À_CONSTRUIRE=0 %) : 51,3 % des Must, 45,5 % des Should, 49,5 % du registre. Ce n’est pas un indicateur officiel; critères UI/macOS, compatibilité et distribution restent ouverts.
 
 ## Jalons locaux depuis la dernière passation
 

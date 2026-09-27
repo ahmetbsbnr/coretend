@@ -33,6 +33,34 @@ final class AppShellTests: XCTestCase {
         XCTAssertTrue(ProductCopy.value(for: "settings.menubar.help", french: true).contains("Désactivé par défaut"))
     }
 
+    func testMenuBarMetricsAndLatestActivityCopyExistsInBothLanguages() {
+        for key in ["menubar.metrics.title", "menubar.metrics.help", "menubar.metrics.updated", "menubar.activity.title", "menubar.activity.empty", "menubar.activity.unavailable", "menubar.open"] {
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: false), key)
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: true), key)
+        }
+        XCTAssertTrue(ProductCopy.value(for: "menubar.metrics.help", french: false).contains("30 seconds"))
+        XCTAssertTrue(ProductCopy.value(for: "menubar.metrics.help", french: true).contains("30 secondes"))
+    }
+
+    func testVisibleSamplingLoopStopsWhenItsTaskIsCancelled() async throws {
+        let counter = SamplingCounter()
+        let task = Task.detached {
+            await VisibleSamplingLoop.run(interval: .milliseconds(5)) {
+                await counter.record()
+            }
+        }
+
+        try await Task.sleep(for: .milliseconds(30))
+        task.cancel()
+        try await Task.sleep(for: .milliseconds(10))
+        let stoppedCount = await counter.currentCount()
+        try await Task.sleep(for: .milliseconds(20))
+
+        XCTAssertGreaterThan(stoppedCount, 0)
+        let finalCount = await counter.currentCount()
+        XCTAssertEqual(finalCount, stoppedCount)
+    }
+
     func testSavedFileAvailabilityDistinguishesPresentFromMissingOrInaccessibleInBothLanguages() {
         XCTAssertEqual(ProductCopy.savedFileAvailability(isPresent: true, french: false), "Present (current access not verified)")
         XCTAssertEqual(ProductCopy.savedFileAvailability(isPresent: false, french: false), "Missing or inaccessible")
@@ -303,4 +331,10 @@ final class AppShellTests: XCTestCase {
             XCTAssertEqual(ProductCopy.activityDetail(detail, failureCode: "other_failure", french: false), detail)
         }
     }
+}
+
+private actor SamplingCounter {
+    private var count = 0
+    func record() { count += 1 }
+    func currentCount() -> Int { count }
 }

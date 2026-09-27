@@ -33,6 +33,16 @@ public struct ActivityEvent: Codable, Equatable, Sendable {
     }
 }
 
+public struct ActivitySummary: Equatable, Sendable {
+    public let occurredAt: Date
+    public let kind: ActivityKind
+
+    public init(occurredAt: Date, kind: ActivityKind) {
+        self.occurredAt = occurredAt
+        self.kind = kind
+    }
+}
+
 public struct SavedFileRecord: Equatable, Sendable {
     public let path: String
     public let firstSeenAt: Date
@@ -172,6 +182,18 @@ public actor SQLiteStore {
             result.append(ActivityEvent(id: id, occurredAt: date, kind: kind, detail: detailText, failureCode: failureCode))
         }
         return result
+    }
+
+    public func latestActivity() throws -> ActivitySummary? {
+        guard let database = connection?.handle else { throw StoreError.open("closed") }
+        var statement: OpaquePointer?
+        let sql = "SELECT occurred_at, kind FROM activity_events ORDER BY occurred_at DESC, id DESC LIMIT 1"
+        guard sqlite3_prepare_v2(database, sql, -1, &statement, nil) == SQLITE_OK, let statement else { throw failure() }
+        defer { sqlite3_finalize(statement) }
+        guard sqlite3_step(statement) == SQLITE_ROW,
+              let kindText = sqlite3_column_text(statement, 1),
+              let kind = ActivityKind(rawValue: String(cString: kindText)) else { return nil }
+        return ActivitySummary(occurredAt: Date(timeIntervalSince1970: sqlite3_column_double(statement, 0)), kind: kind)
     }
 
     public func clearHistory() throws {
