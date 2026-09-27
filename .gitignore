@@ -10,3 +10,4 @@ Website/dist/
 *.cer
 *.key
 *.xcuserstate
+Scripts/__pycache__/

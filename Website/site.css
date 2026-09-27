@@ -146,7 +146,6 @@ a:focus-visible, button:focus-visible {
   text-decoration: none;
 }
 .language-link:hover { border-color: var(--ct-accent); }
-.menu-toggle { display: none; }
 
 main { display: block; }
 .hero {
@@ -423,33 +422,9 @@ h1 {
 @media (max-width: 780px) {
   .site-header { min-height: 76px; flex-wrap: wrap; justify-content: space-between; gap: 7px 12px; padding-block: 13px; }
   .brand { margin-right: auto; }
-  .menu-toggle {
-    min-width: 48px;
-    min-height: 44px;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    order: 3;
-    padding: 8px 11px;
-    border: 1px solid var(--ct-separator);
-    border-radius: 999px;
-    color: var(--ct-ink);
-    background: var(--ct-surface);
-    font: inherit;
-    font-size: .82rem;
-    font-weight: 690;
-    cursor: pointer;
-  }
-  .menu-icon { display: grid; gap: 4px; }
-  .menu-icon i { width: 14px; height: 1.5px; background: currentColor; transition: transform var(--duration-fast) var(--ease-observatory); }
-  .menu-toggle[aria-expanded="true"] .menu-icon i:first-child { transform: translateY(2.75px) rotate(45deg); }
-  .menu-toggle[aria-expanded="true"] .menu-icon i:last-child { transform: translateY(-2.75px) rotate(-45deg); }
   .language-link { order: 2; min-height: 42px; }
   .primary-navigation { width: 100%; order: 4; justify-content: stretch; flex-direction: column; align-items: stretch; gap: 2px; margin: 5px 0 2px; padding: 8px; border: 1px solid var(--ct-separator); border-radius: var(--radius-panel); background: var(--ct-surface); }
   .primary-navigation a { min-height: 46px; padding-inline: 12px; font-size: .92rem; }
-  html.js .primary-navigation[data-collapsed="true"] { display: none; }
-  html.js .menu-toggle { display: inline-flex; }
   .hero { min-height: auto; grid-template-columns: 1fr; gap: 48px; padding-block: 76px 98px; }
   .hero-copy { max-width: 680px; }
   h1 { max-width: 12ch; font-size: clamp(3.2rem, 10vw, 5.4rem); }
@@ -504,7 +479,7 @@ h1 {
   body { color: #000; background: #fff; }
   .site-header, .site-footer, .section-shell { width: 100%; padding-inline: 0; }
   .site-header { min-height: auto; border: 0; }
-  .menu-toggle, .language-link, .hero-actions, .status-section > .button { display: none !important; }
+  .language-link, .hero-actions, .status-section > .button { display: none !important; }
   .primary-navigation { display: flex !important; flex-wrap: wrap; }
   .hero { min-height: auto; grid-template-columns: 1fr; padding-block: 24px; }
   .flow-scene, .topic, .notice, .limits-panel { break-inside: avoid; box-shadow: none; }
