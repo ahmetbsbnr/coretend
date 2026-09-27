@@ -2,7 +2,7 @@
 
 **Objectif :** un dossier, une branche, des documents cohérents, un gate vert, rien de local seulement.
 **Gate :** P0 — `make qualify` vert sur `next` localement et en CI ; audit accepté par le mainteneur.
-**Statut de la phase :** Lots livrés ; gate P0 en attente de l’acceptation de l’audit par le mainteneur.
+**Statut de la phase :** Terminée le 27-09-2026 (gate P0 acceptée par le mainteneur).
 **Plan :** `Documentation/Project/Implementation-plan.md` § Programme 2.0 › P0.
 
 ## Lots
@@ -44,12 +44,13 @@
   message (exit 2) ; avec Python 3.14 en tête, `make qualify` PASS. `git diff --check` PASS.
   CI : `macos-latest` fournit un Python récent ; non relancée (commit non poussé).
 
+### 27-09-2026 — gate P0
+
+- **Mainteneur :** audit accepté ; push des lots autorisé. Phase terminée.
+
 ## Point d’arrêt
 
-- P0 est livrée. Reste la gate : **le mainteneur accepte l’audit**
-  (`Documentation/Project/Audit-2026-09-27.md`). Noter son acceptation datée ici, passer la phase
-  à « Terminée », puis ouvrir P1 (lot 1.1) dans `P1-direction-visuelle.md` et `passation.md`.
-- `origin/next` ne contient pas encore le lot 0.2 : pousser sur demande du mainteneur.
+- Phase close. La suite est en P1 (`P1-direction-visuelle.md`).
 
 ## Problèmes ouverts
 

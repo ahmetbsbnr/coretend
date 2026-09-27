@@ -8,11 +8,9 @@ en fixture, invariants et particularités de l’hôte :
 ## Où on en est
 
 - **Mis à jour :** 27-09-2026, fin de session.
-- **Phase :** P0 — Remise à plat → [`P0-remise-a-plat.md`](Documentation/Passation/P0-remise-a-plat.md)
-- **Lot courant :** aucun. Lots 0.1 et 0.2 acceptés (0.2 : `e3d80a8`). **Gate P0 : en attente de
-  l’acceptation de l’audit par le mainteneur.**
-- **Branche :** `next`. `origin/next` à `1f68d83` (CI `qualify` PASS) ; le lot 0.2 et cette
-  passation sont au-dessus, **non poussés** (push sur demande du mainteneur). `make qualify` PASS en local.
+- **Phase :** P1 — Direction visuelle et guide UI → [`P1-direction-visuelle.md`](Documentation/Passation/P1-direction-visuelle.md)
+- **Lot courant :** 1.1 (kit de captures), statut **En cours**. P0 terminée (audit accepté).
+- **Branche :** `next`, poussée avec la clôture de P0.
 - **Registre :** Must `VÉRIFIÉ` **2 / 78** (Should 0 / 11). Source : `Documentation/Traceability.csv`.
 - **Apparence :** refonte Observatoire appliquée, **non validée** (gate G1 en P1). Aucun
   changement d’apparence avant G1.
@@ -20,12 +18,10 @@ en fixture, invariants et particularités de l’hôte :
 ## Prochaine action
 
 1. Protocole de démarrage (`Documentation/Passation/README.md` › Démarrer).
-2. Si le mainteneur a accepté l’audit ([`Audit-2026-09-27.md`](Documentation/Project/Audit-2026-09-27.md)) : le consigner dans `P0-remise-a-plat.md`, clore P0.
-3. Ouvrir P1, lot 1.1 (kit de captures) : `P1-direction-visuelle.md` › Point d’arrêt.
+2. Lot **1.1** : reprendre au « Point d’arrêt » de `P1-direction-visuelle.md`.
 
 ## En attente du mainteneur
 
-- Acceptation de l’audit (fin de P0).
 - Autoriser l’enregistrement d’écran pour le kit de captures (P1.1).
 - Séance G1 (P1.2).
 - Optionnel : publier 1.0.3 depuis `fix/1.x-trash-sqlite` (P5, piste 1.x).
@@ -34,8 +30,8 @@ en fixture, invariants et particularités de l’hôte :
 
 | Phase | Fichier | Statut |
 |---|---|---|
-| P0 Remise à plat | [`P0-remise-a-plat.md`](Documentation/Passation/P0-remise-a-plat.md) | Lots livrés, gate en attente |
-| P1 Direction visuelle (G1) | [`P1-direction-visuelle.md`](Documentation/Passation/P1-direction-visuelle.md) | À faire |
+| P0 Remise à plat | [`P0-remise-a-plat.md`](Documentation/Passation/P0-remise-a-plat.md) | Terminée (27-09) |
+| P1 Direction visuelle (G1) | [`P1-direction-visuelle.md`](Documentation/Passation/P1-direction-visuelle.md) | En cours |
 | P2 Fondations d’interaction (G2) | [`P2-fondations-interaction.md`](Documentation/Passation/P2-fondations-interaction.md) | À faire |
 | P3 Destinations (G3.x) | [`P3-destinations.md`](Documentation/Passation/P3-destinations.md) | À faire |
 | P4 Qualification (G4) | [`P4-qualification.md`](Documentation/Passation/P4-qualification.md) | À faire |
