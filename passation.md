@@ -1,13 +1,13 @@
 # Passation — CoreTend `next`
 
-**État relevé : 27 septembre 2026, fin de session.** Reconstruction en cours, non finalisée; aucune release publique. Cette passation remplace la précédente. Historique détaillé : `Documentation/Progress.md` et l’historique Git.
+**État relevé : 27 septembre 2026, après requalification NFR-11.** Reconstruction en cours, non finalisée; aucune release publique. Cette passation remplace la précédente. Historique détaillé : `Documentation/Progress.md` et l’historique Git.
 
 ## État courant
 
 - Dépôt canonique : `ahmetbsbnr/coretend`, worktree `next/`.
-- Branche : `feat/reconstruction-open-musts`, HEAD `b8e2769` (`fix: keep site content visible during entrance and qualify dark appearance`), synchronisée avec `origin`. Base de PR : `next` (`origin/next` à `55e8628`).
+- Branche : `feat/reconstruction-open-musts`; dernier commit fonctionnel `b8e2769` (`fix: keep site content visible during entrance and qualify dark appearance`), suivi de la passation `f745e95`. Base de PR : `next` (`origin/next` à `55e8628`).
 - PR brouillon [#55](https://github.com/ahmetbsbnr/coretend/pull/55) vers `next`.
-- CI GitHub `qualify` passe sur `b8e2769`, run [36310421804](https://github.com/ahmetbsbnr/coretend/actions/runs/36310421804). Contrôle Vercel `coretend` en échec pour quota de déploiement (« retry in 24 hours »), pas pour un échec de build.
+- CI GitHub `qualify` passe sur `b8e2769`, run [36310421804](https://github.com/ahmetbsbnr/coretend/actions/runs/36310421804), et sur le précédent HEAD doc `f745e95`, run [36311102757](https://github.com/ahmetbsbnr/coretend/actions/runs/36311102757). Vérifier le nouveau run après push de cette mise à jour. Vercel `app` et `coretend` échouent par limite de déploiement (« retry in 24 hours »), pas par échec de build.
 - `git status` : seuls fichiers non suivis `Documentation/Project/Remaining-musts-plan.md` (**garder local, ne jamais ajouter**), `Scripts/__pycache__/` (généré par `make qualify`) et `.impeccable/` (configuration locale du hook design, contient une exception `overused-font=helvetica`).
 - Aucun merge, tag, signature, notarisation, publication ni déploiement CoreTend effectué.
 
@@ -16,6 +16,7 @@
 - **FR-26 tranché par l’utilisateur : retrait du bundle seul.** Aucune source de preuve d’appartenance approuvée; fichiers associés trouvés par bundle ID restent consultatifs, sans action. Consigné dans Traceability et Progress. Ne pas coder d’action sur données associées sans nouveau contrat approuvé.
 - **Smoke runtime :** `Scripts/runtime_metrics.py` lance `ps` en locale `C`; la locale française (`68,8`) cassait `make app-runtime-smoke`. Tests de régression ajoutés.
 - **Site :** meta description par page, vérifiée par `check_site.py`.
+- **NFR-11, après refonte :** Lighthouse mobile relancé sur les 11 routes; Accessibilité/Bonnes pratiques/Agentic Browsing 100 partout, SEO 60. Dix routes EN/FR contrôlées en viewport émulé 640 × 900 et 320 × 800 : pas d’overflow, `lang`/meta description corrects; à 320, premier Tab atteint le skip-link traduit, contour 3 px. `SiteAccessibilitySmoke.md`, Traceability et Progress actualisés. Zoom navigateur réel et accessibilité humaine restent ouverts.
 - **Clavier natif (app Release en fixture) :** barre latérale ↑/↓ observée sur les huit destinations. Corrigés : flèches ignorées dans la palette ⌘K (champ focalisé), ligne sélectionnée hors vue, feuille Réglages sans sortie et textes tronqués (bouton Terminé/Done, formulaire groupé, hauteur bornée). `⌘,` ouvre Réglages. Barre latérale élargie (libellé FR tronqué corrigé).
 - **Direction artistique retenue appliquée : Porcelain / Slate / Teal** (source : `../app/DESIGN.md`, valeurs réécrites, aucun fichier importé conformément à la Décision 0001).
   - Nouveau module `DesignSystem` (architecture §9) : palette clair/sombre, contraste WCAG testé (textes ≥ 4,5:1 sur fond et sur accent), jetons de mouvement 150/300/550 ms, animation nulle sous Reduce Motion.
@@ -47,7 +48,7 @@ Relecture des 89 lignes non vérifiées : tous les gaps restants demandent une o
 - **Nécessitent l’utilisateur :** VoiceOver parlé, Dynamic Type/zoom, contraste tous états, Reduce Motion/Transparency réels (réglages système, ne pas les modifier soi-même); vraie Corbeille.
 - **Conditions externes :** hôte macOS 14 minimum, second hôte/version, revues indépendantes (NFR-10, NFR-12), signature/notarisation/release (FR-17, NFR-14), ergonomie externe.
 - **Différés par périmètre :** FR-18, FR-19.
-- **Site :** Lighthouse non relancé après refonte; 390 px réels non vérifiés (Chrome headless descend à 500 px); zoom navigateur réel non établi (NFR-11).
+- **Site :** 640/320 CSS px vérifiés par émulation; pas de test sur appareil mobile physique ni de vrai zoom navigateur. Lighthouse mobile post-refonte : SEO 60; autres catégories mesurées 100. NFR-11 reste PARTIEL pour zoom réel, VoiceOver, réglages OS, reduced-motion à l’exécution et qualification multi-navigateur/déployée.
 
 ## Limites d’environnement constatées sur cet hôte
 
@@ -60,7 +61,7 @@ Relecture des 89 lignes non vérifiées : tous les gaps restants demandent une o
 
 1. Vérifier CI `qualify` de PR #55 sur HEAD courant.
 2. Poursuivre les qualifications natives réalisables (liste ci-dessus), une par une, en fixture; corriger les défauts trouvés avec test quand possible; inscrire seulement ce qui a été observé, avec hôte et limites.
-3. Relancer Lighthouse sur les 11 pages après la refonte et mettre à jour `SiteAccessibilitySmoke.md`.
+3. Lighthouse post-refonte et viewport EN/FR 640/320 sont faits et consignés; relancer après prochain changement de contenu ou de style.
 4. Réconcilier `Traceability.csv`, puis `Progress.md`, preuves dédiées, guide et cette passation. Garder `PARTIEL` si un seul critère manque.
 5. Avant commit : `make qualify`, `python3 Scripts/check_traceability.py`, `python3 Scripts/test_traceability.py`, `git diff --check`, `git status --short --branch`. Ne pas stager `Remaining-musts-plan.md`, `Scripts/__pycache__/`, `.impeccable/`.
 6. Commit/push sur `feat/reconstruction-open-musts`. Vercel peut rester rouge pour quota. Aucun merge/tag/release/publication sans conditions formelles. Must avant Should; pas de Cask sans release publiée/checksum.

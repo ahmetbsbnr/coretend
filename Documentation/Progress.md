@@ -345,3 +345,9 @@
 - Override fixture `CORETEND_TEST_APPEARANCE=light|dark`, actif uniquement avec un profil de test (test AppShell), pour qualifier l’apparence sans modifier le réglage de l’hôte. App Release observée en sombre sur Nettoyage et Performances : fond ardoise, accent teal éclairci, ambre/corail éclaircis, textes lisibles.
 - Site à 500 px (largeur minimale d’une fenêtre Chrome headless; 390 px non atteignable ainsi) : deux défauts corrigés. L’entrée animait l’opacité depuis 0, laissant le contenu invisible tant que l’animation n’avait pas joué; elle n’anime plus que la translation. Le halo débordait et élargissait la page; il est désormais borné dans `main`.
 - `make qualify` passe. Reduce Motion réel, Dynamic Type et VoiceOver restent non qualifiés.
+
+### NFR-11 — smoke du site après refonte — 27-09-2026
+
+- Chrome DevTools local a relancé Lighthouse mobile navigation sur 11 routes après refonte Porcelain / Slate / Teal et génération des meta descriptions. Chaque route obtient Accessibilité 100, Bonnes pratiques 100, Agentic Browsing 100 et SEO 60; les dix routes contenu passent 42 audits chacune, la page de choix de langue 35.
+- Les dix routes EN/FR ont été vérifiées après refonte à 640 × 900 puis 320 × 800 CSS px (DPR 1). `lang` correct, scrollWidth document/corps égal à la largeur, meta description non vide. À 320 px, premier Tab focalise lien `#main` traduit; cible présente et contour `solid 3px`.
+- Ces vues sont des émulées viewport, pas un vrai zoom navigateur/écran physique. Zoom réel, VoiceOver, Dynamic Type, contraste tous états, reduced-motion runtime, headers déployés et second navigateur restent ouverts. NFR-11 reste PARTIEL; aucun statut ne change.
