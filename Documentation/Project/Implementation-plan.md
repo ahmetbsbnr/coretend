@@ -28,7 +28,7 @@ Les durées sont des estimations pour un lot par jour de travail, recette compri
 ### P0 — Clôture de la remise à plat (0,5 j)
 
 - [x] **0.1** CI `qualify` verte sur `origin/next` (`5b589b0`, `3d8c4b1`, 27-09).
-- [ ] **0.2** Le `Makefile` vérifie Python ≥ 3.10 et échoue avec un message clair (le `python3`
+- [x] **0.2** (`e3d80a8`) Le `Makefile` vérifie Python ≥ 3.10 et échoue avec un message clair (le `python3`
   système 3.9 casse `test_traceability.py` sans erreur lisible).
 - **Recette :** aucune. **Sortie :** gate P0.
 

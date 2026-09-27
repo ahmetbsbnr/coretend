@@ -2,7 +2,7 @@
 
 **Objectif :** un dossier, une branche, des documents cohérents, un gate vert, rien de local seulement.
 **Gate :** P0 — `make qualify` vert sur `next` localement et en CI ; audit accepté par le mainteneur.
-**Statut de la phase :** En cours (reste 0.2).
+**Statut de la phase :** Lots livrés ; gate P0 en attente de l’acceptation de l’audit par le mainteneur.
 **Plan :** `Documentation/Project/Implementation-plan.md` § Programme 2.0 › P0.
 
 ## Lots
@@ -11,7 +11,7 @@
 |---|---|---|
 | — | Remise à plat du 27-09 (audit, pilotage, branches, intégration, correctifs du gate) | Livré |
 | 0.1 | CI `qualify` verte sur `origin/next` | Accepté (automatique) |
-| 0.2 | `Makefile` vérifie Python ≥ 3.10 avec message clair | À faire |
+| 0.2 | `Makefile` vérifie Python ≥ 3.10 avec message clair | Accepté (automatique, `e3d80a8`) |
 
 ## Journal
 
@@ -33,13 +33,23 @@
   `3d8c4b1`. `next` poussée (fast-forward), PR #54/#55 marquées fusionnées par GitHub.
 - **Programme 2.0** écrit dans `Implementation-plan.md` (`3d8c4b1`).
 
+### 27-09-2026 — lot 0.2
+
+- **Fait :** `e3d80a8` — cible `python-version` dans le `Makefile`, prérequis de toutes les cibles qui
+  lancent `python3` (`PY_TARGETS`). Elle sort avant tout script, nomme le `python3` trouvé et
+  indique comment corriger le `PATH`.
+- **Vérifié :** rouge avant — `PATH=/usr/bin:/bin make traceability` échouait par
+  `TypeError: unsupported operand type(s) for |` dans `test_traceability.py`, après un autre
+  script. Après — même commande et `make qualify` s’arrêtent sur `python-version` avec le
+  message (exit 2) ; avec Python 3.14 en tête, `make qualify` PASS. `git diff --check` PASS.
+  CI : `macos-latest` fournit un Python récent ; non relancée (commit non poussé).
+
 ## Point d’arrêt
 
-- Prochaine étape : lot **0.2**. Dans le `Makefile`, avant les cibles qui lancent `python3`,
-  échouer si `python3 -c 'import sys; sys.exit(sys.version_info < (3, 10))'` échoue, avec un
-  message qui indique d’utiliser Python ≥ 3.10 (ex. `/opt/homebrew/bin`). Vérifier : `make
-  qualify` PASS avec 3.14, et échec lisible avec `PATH=/usr/bin:/bin make traceability`.
-- Puis demander au mainteneur d’accepter l’audit et passer à P1.
+- P0 est livrée. Reste la gate : **le mainteneur accepte l’audit**
+  (`Documentation/Project/Audit-2026-09-27.md`). Noter son acceptation datée ici, passer la phase
+  à « Terminée », puis ouvrir P1 (lot 1.1) dans `P1-direction-visuelle.md` et `passation.md`.
+- `origin/next` ne contient pas encore le lot 0.2 : pousser sur demande du mainteneur.
 
 ## Problèmes ouverts
 

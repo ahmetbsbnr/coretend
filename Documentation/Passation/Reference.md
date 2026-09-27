@@ -61,7 +61,7 @@ overrides : `CORETEND_TEST_LAST_DESTINATION`, `CORETEND_TEST_RECENT_FILES_ENABLE
 
 ## Particularités de l’hôte actuel (Mac arm64, macOS 27)
 
-- `python3` système = 3.9 : casse `Scripts/test_traceability.py`. Mettre `/opt/homebrew/bin` en tête.
+- `python3` système = 3.9 : `make` s’arrête sur `python-version` avec un message. Mettre `/opt/homebrew/bin` en tête.
 - Échap n’atteint pas CoreTend (probable raccourci global d’un utilitaire tiers) : fermeture
   par Échap non qualifiable ici tant que l’utilitaire n’est pas identifié.
 - Clics souris dans la fenêtre refusés à l’automatisation (overlay Centre de notifications) :
