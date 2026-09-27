@@ -1,6 +1,6 @@
 # Passation complète — CoreTend Next
 
-**État au 27-09-2026.** Reconstruction active, pas finalisée, aucune release publique. Dépôt `ahmetbsbnr/coretend`; worktree `next/`; base distante `origin/next` à `55e8628`. Travail courant sur `feat/reconstruction-open-musts`, dix commits locaux après `74c6b8b`, dont sept commits de code, non poussés et sans PR. Dernière tranche de code Task 21; `make qualify` passe. Reprendre sur cette branche; ouvrir PR vers `next` après la tranche convenue.
+**État au 27-09-2026.** Reconstruction active, pas finalisée, aucune release publique. Dépôt `ahmetbsbnr/coretend`; worktree `next/`; base distante `origin/next` à `55e8628`. Travail courant sur `feat/reconstruction-open-musts`, douze commits locaux après `74c6b8b`, dont huit commits de code, non poussés et sans PR. Dernière tranche Task 22 — NFR-09; `make benchmark-scan` et `make qualify` passent. Reprendre sur cette branche; ouvrir PR vers `next` après la tranche convenue.
 
 ## État immédiat
 
@@ -11,7 +11,7 @@
 - Dernière qualification locale : `make qualify` le 27-09 après Task21; smoke runtime debug isolé passe également. Elle couvre génération, site, traçabilité, audit statique de sûreté, installation fixture en HOME temporaire, XCTest complet, builds debug App/CLI et whitespace. Aucune UI native/VoiceOver n’est qualifiée par ce gate.
 - Paquet courant : `Artifacts/CoreTend-local-unsigned.zip`, arm64, produit depuis le code app `b0287bf`. SHA-256 `94503244830030785388e6ea2359dc844af22d719d5e82729f14408f1697a299`. `make package-local verify-package` passe; vérification limitée à Info.plist, archive et Mach-O. Non lancé, installé sur le Mac, signé, notarié ou publié. Preuve dans `Documentation/ReleaseEvidence.md`.
 - Copie greenfield historique `rebuild/` conservée localement comme provenance. Passation/documents 1.x archivés sous `Documentation/Archive/Legacy-Reconstruction/`; ils ne décrivent pas le code actuel.
-- État après les tâches 15–21 : traçabilité de 91 lignes, 54 `PARTIEL`, 29 `EN_COURS`, 8 `À_CONSTRUIRE`. Critères UI/macOS, compatibilité et distribution restent ouverts.
+- État après les tâches 15–22 : traçabilité de 91 lignes, 55 `PARTIEL`, 28 `EN_COURS`, 8 `À_CONSTRUIRE`. Critères UI/macOS, compatibilité et distribution restent ouverts.
 
 ## Jalons locaux depuis la dernière passation
 
@@ -27,6 +27,10 @@
 - **Task 20 — FR-07 keeper protégé** : test Domain temporaire refuse une revue incluant keeper et deux copies; octets préservés et Corbeille fixture vide. Test ciblé et `make qualify` passent.
 - Smoke FR-14 isolé : binaire debug lancé avec `CFFIXED_USER_HOME` temporaire; processus vivant 8 s et store créé exclusivement sous ce profil. GUI visible, bundle emballé, accessibilité restent non qualifiés; preuve dans ReleaseEvidence.
 - **Task 21 — FR-07 keeper revalidé par action** : DuplicateScanView transmet keeper de chaque groupe sélectionné; FileActionService capture son identité et la revérifie avant chaque Trash. Fixture supprime le keeper après premier déplacement; copie suivante reste, second appel Trash bloqué et échec journalisé. `make qualify` passe. Le TOCTOU avant l’API Trash et UI native restent ouverts.
+
+- **Task 22 — NFR-09 baseline synthétique** : `make benchmark-scan` mesure CLI Release sur 10 000 fichiers. Warm median 0,913 s wall / 0,979 s CPU / 74,18 MiB RSS max sur arm64/macOS 27.0. Aucun budget choisi; mesures UI/corpus réel restent ouvertes. Détails dans `Documentation/Evidence/PerformanceBaseline.md`.
+
+- **Task 22 — NFR-09 baseline synthétique** : `make benchmark-scan` mesure CLI Release sur 10 000 fichiers. Warm median 0,913 s wall / 0,979 s CPU / 74,18 MiB RSS max sur arm64/macOS 27.0. Aucun budget choisi; mesures UI/corpus réel restent ouvertes. Détails dans `Documentation/Evidence/PerformanceBaseline.md`. `make qualify` passe.
 
 ## Jalons récents intégrés
 
