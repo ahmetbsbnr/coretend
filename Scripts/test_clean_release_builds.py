@@ -4,6 +4,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import os.path
 from pathlib import Path
 
 
@@ -64,9 +65,28 @@ def main() -> None:
                 digest = hashlib.sha256(executable.read_bytes()).hexdigest()
                 observed[(build_name, product)] = digest
                 print(f"{build_name} {product}: {digest}")
+                if os.environ.get("CORETEND_KEEP_REPRO_ARTIFACTS") == "1":
+                    preserved = package_root / ".build" / f"{product}-{build_name}-repro-diagnostic"
+                    shutil.copy2(executable, preserved)
+                    print(f"Preserved diagnostic binary: {preserved}")
 
     for product in PRODUCTS:
         if observed[("first", product)] != observed[("second", product)]:
+            first = package_root / ".build" / f"{product}-first-repro-diagnostic"
+            second = package_root / ".build" / f"{product}-second-repro-diagnostic"
+            if first.is_file() and second.is_file():
+                print(f"Binary difference positions (first 32): {product}")
+                comparison = subprocess.run(
+                    ["cmp", "-l", str(first), str(second)], text=True,
+                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False,
+                )
+                print("\n".join(comparison.stdout.splitlines()[:32]))
+                for binary in (first, second):
+                    metadata = subprocess.run(
+                        ["otool", "-l", str(binary)], text=True,
+                        stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False,
+                    )
+                    print(f"Load commands: {binary.name}; sha256={hashlib.sha256(metadata.stdout.encode()).hexdigest()}")
             raise RuntimeError(f"{product} is not reproducible across clean scratch builds")
         print(f"{product}: byte-identical across clean scratch builds")
     print("Two cold builds used the same physical scratch path per product, cleared between builds; all outputs were removed with the unique temporary root.")
