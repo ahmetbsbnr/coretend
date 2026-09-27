@@ -323,3 +323,7 @@
 ### Smoke runtime — locale de `ps` — 27-09-2026
 
 - `make app-runtime-smoke` échouait sous locale française : `ps` imprimait `68,8` et le parseur strict rejetait la mesure. `runtime_metrics.py` lance désormais `ps` avec `LC_ALL=C`/`LANG=C`; le parseur reste strict et refuse toujours la virgule décimale. Tests de régression ajoutés; `make qualify` passe. Aucun statut modifié.
+
+### Site — meta descriptions — 27-09-2026
+
+- `build_site.py` génère une meta description par page à partir du texte d’introduction échappé; `check_site.py` exige exactement une description non vide. Le fichier `index.html` de choix de langue porte une description bilingue. Lighthouse SEO n’a pas été relancé; NFR-11 reste PARTIEL (zoom réel, VoiceOver, réglages OS).

@@ -7,18 +7,20 @@ from urllib.parse import urlparse
 from site_accessibility_contract import reduced_motion_contract_errors
 root = Path(__file__).resolve().parents[1] / 'Website'
 class Page(HTMLParser):
-    def __init__(self): super().__init__(); self.links=[]; self.scripts=0; self.lang=None; self.has_main=False
+    def __init__(self): super().__init__(); self.links=[]; self.scripts=0; self.lang=None; self.has_main=False; self.descriptions=[]
     def handle_starttag(self, tag, attrs):
         data=dict(attrs)
         if tag=='a' and data.get('href'): self.links.append(data['href'])
         if tag=='script': self.scripts+=1
         if tag=='html': self.lang=data.get('lang')
         if tag=='main': self.has_main=True
+        if tag=='meta' and data.get('name')=='description': self.descriptions.append((data.get('content') or '').strip())
 errors=[]
 for file in sorted(root.rglob('*.html')):
     page=Page(); page.feed(file.read_text())
     if not page.lang: errors.append(f'{file}: missing lang')
     if not page.has_main: errors.append(f'{file}: missing main landmark')
+    if len(page.descriptions)!=1 or not page.descriptions[0]: errors.append(f'{file}: needs exactly one non-empty meta description')
     if page.scripts: errors.append(f'{file}: scripts are forbidden in site preview')
     for link in page.links:
         parsed=urlparse(link)
@@ -44,4 +46,4 @@ for page in ('index.html','features.html','privacy.html','support.html','develop
         if not (root/lang/page).is_file(): errors.append(f'missing {lang}/{page}')
 if errors:
     print('\n'.join(errors)); raise SystemExit(1)
-print('Static site checks passed: bilingual routes, local links, landmarks, CSP headers, reduced-motion CSS contract, no scripts.')
+print('Static site checks passed: bilingual routes, local links, landmarks, meta descriptions, CSP headers, reduced-motion CSS contract, no scripts.')
