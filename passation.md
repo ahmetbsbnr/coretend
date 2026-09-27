@@ -55,7 +55,7 @@ Les 76 Must `PARTIEL` ont des gaps individuels dans Traceability. Les catégorie
 
 Points précis :
 
-- **FR-26 — attribution de données d’app** : `ApplicationsView` peut trouver des noms correspondant à un bundle ID sous un dossier choisi, mais les présente comme candidats non attribués et n’offre aucune action dessus. Désinstallation actuelle déplace uniquement le bundle choisi après revue/confirmation. Le cahier exige preuve d’appartenance avant toute sélection des données associées, mais ne définit pas la source de preuve. Une question est en attente auprès de l’utilisateur : receipt d’installation, manifeste explicite avec bundle ID, ou rester au retrait du bundle seul. Ne pas coder d’action sur données associées avant définition/approbation du contrat; aucune attribution par simple nom.
+- **FR-26 — attribution de données d’app** : décision utilisateur du 27-09-2026 : **retrait du bundle seul**. Aucune source de preuve d’appartenance approuvée; les candidats par bundle ID restent consultatifs, sans action. Consigné dans Traceability et Progress. Reste PARTIEL pour UI native et Corbeille réelle. Ne pas coder d’action sur données associées sans nouveau contrat approuvé.
 - **NFR-11 — zoom du site** : largeur 640 CSS px est seulement un proxy antérieur; vrai zoom navigateur non vérifié. DevTools actuel fixe le viewport et ne permet pas d’en tirer une preuve.
 - **NFR-13 — reproductibilité Release** : `VÉRIFIÉ` uniquement pour source/checkout/hôtes/toolchains observés. Pas d’identité de hash revendiquée entre hôtes.
 - **FR-15** : `VÉRIFIÉ` dans son périmètre de contenu/génération statique EN/FR et état de publication honnête. Accessibilité navigateur/OS et déploiement restent NFR-11/NFR-14.
@@ -64,7 +64,7 @@ Le plan officiel conserve des cases ouvertes pour qualification native/accessibi
 
 ## Ordre de reprise
 
-1. Attendre la réponse de preuve FR-26. Une fois le contrat défini, cadrer puis implémenter en fixtures selon TDD; preuve explicite, aperçu, consentement, revalidation, journal et retrait vers Trash seulement. Legacy reste exclu par défaut et traité en dernier selon cahier.
+1. FR-26 tranché (bundle seul, voir ci-dessus); aucune implémentation d’attribution à faire.
 2. Continuer les qualifications natives/accessibilité réalisables sur app/store fixture; inscrire uniquement observations réellement faites, hôte, protocole et limites.
 3. Réconcilier chaque exigence dans `Documentation/Traceability.csv`, puis `Documentation/Progress.md`, preuves dédiées, guide et `passation.md`. Garder `PARTIEL` quand un seul critère requis manque.
 4. Avant commit : `make qualify`, `python3 Scripts/check_traceability.py`, `git diff --check`; examiner `git status --short --branch`. Ne pas stage `Documentation/Project/Remaining-musts-plan.md`.

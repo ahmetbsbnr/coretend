@@ -314,3 +314,12 @@
 - FR-16 avance : Explorer combine catégories par extensions explicites insensibles à la casse et presets taille/ancienneté. Critères visibles, extensions listées; tests ScanCore couvrent catégories et repli « autres ». Interaction native reste à qualifier.
 - Should `shell.menubar` et `settings.menubar` avancent : `MenuBarExtra` facultatif, préférence locale désactivée par défaut, routes partagées vers les huit destinations et Réglages, copie EN/FR. Suite `UserDefaults` injectée vérifie le défaut et la persistance; `make qualify` démarre aussi l’app Release avec menu activé sous fixture et sans socket réseau. Activation, visibilité native et accessibilité du menu restent à qualifier.
 - FR-22 avance : le menu fenêtre lit charge, mémoire, capacité libre et type/heure de dernière activité; relevés à 30 s uniquement pendant présentation, mémoire seulement, sans ajout Performance. `VisibleSamplingLoop` est annulée par la disparition SwiftUI; fixtures testent annulation et requête d’activité bornée sans détail. Ouverture/fermeture et accessibilité natives restent à qualifier.
+
+### FR-26 — décision de périmètre des données associées — 27-09-2026
+
+- Décision produit : aucune source de preuve d’appartenance (receipt d’installation, manifeste) n’est approuvée. La désinstallation reste limitée au retrait du bundle choisi; les candidats trouvés par identifiant de bundle restent consultatifs, sans action. Aucun code modifié; guide et modèle de menace décrivent déjà ce comportement.
+- FR-26 reste PARTIEL : parcours UI natif et Corbeille réelle non qualifiés. Toute future attribution exige d’abord un contrat de preuve approuvé; jamais par simple nom.
+
+### Smoke runtime — locale de `ps` — 27-09-2026
+
+- `make app-runtime-smoke` échouait sous locale française : `ps` imprimait `68,8` et le parseur strict rejetait la mesure. `runtime_metrics.py` lance désormais `ps` avec `LC_ALL=C`/`LANG=C`; le parseur reste strict et refuse toujours la virgule décimale. Tests de régression ajoutés; `make qualify` passe. Aucun statut modifié.
