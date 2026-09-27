@@ -69,7 +69,7 @@ def main() -> None:
         if observed[("first", product)] != observed[("second", product)]:
             raise RuntimeError(f"{product} is not reproducible across clean scratch builds")
         print(f"{product}: byte-identical across clean scratch builds")
-    print("Two cold builds used same physical scratch path per product, cleared between builds; Package.swift release linker policy removes random LC_UUID and zeroes OSO timestamps; all outputs removed with the unique temporary root.")
+    print("Two cold builds used same physical scratch path per product, cleared between builds; Package.swift release linker policy uses ld -reproducible; all outputs removed with the unique temporary root.")
 
 
 if __name__ == "__main__":

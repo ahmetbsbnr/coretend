@@ -4,8 +4,8 @@
 
 ### NFR-13 — reproductibilité après échec CI — 2026-09-27
 
-- PR #55 a révélé `LC_UUID` aléatoire et timestamp objet dans `N_OSO.n_value`. `Package.swift` applique désormais en Release linker `-no_uuid` et `-x`; cible minimale reste macOS 14.0. Les builds SwiftPM standards et package app partagent ces réglages.
-- `make qualify` complet passe après réglages: App `b1929c5e…`, CLI `4bc4b076…`, hashes pairs identiques; app packagée démarre et se désinstalle en HOME/store fixture. CI GitHub après réglages package-level attend; NFR-13 reste PARTIEL jusque là.
+- PR #55 a révélé `LC_UUID` aléatoire et timestamp objet dans `N_OSO.n_value`. Après détection que dyld macOS 26 refuse un binaire sans `LC_UUID`, `Package.swift` applique le linker Apple `-reproducible` en Release, qui conserve UUID déterministe et fixe metadata; minimum macOS reste 14.0.
+- `make qualify` complet passe avec `-reproducible`: App `3d63e32c…`, CLI `0d6630bf…`, hashes pairs identiques; app packagée démarre/se désinstalle en HOME/store fixture et conserve `LC_UUID`. CI GitHub sur réglage final reste attendu; NFR-13 PARTIEL jusque CI verte.
 
 ### FR-14 — smoke du vrai paquet local — 2026-09-27
 
