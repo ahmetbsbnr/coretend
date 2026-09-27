@@ -9,11 +9,11 @@ en fixture, invariants et particularités de l’hôte :
 
 - **Mis à jour :** 27-09-2026, fin de session.
 - **Phase :** P2 — Fondations Serre → [`P2-fondations-interaction.md`](Documentation/Passation/P2-fondations-interaction.md)
-- **Lot courant :** 2.2 (logo et icônes) **livré, recette en attente** (`9d75517`) ; prochain : 2.3 (composants).
+- **Lot courant :** 2.3 (composants) **livré, recette en attente** (`6050d7e`) ; prochain : 2.4 (coquille, navigation, recherche).
 - **Branche :** `next`, en avance sur `origin/next` (non poussé ; push sur demande du mainteneur).
 - **Registre :** Must `VÉRIFIÉ` **2 / 78** (Should 0 / 11). Source : `Documentation/Traceability.csv`.
-- **Apparence :** couleurs, typographie, logo et icônes Serre en place (2.1–2.2) ; boutons,
-  barre latérale et motion de navigation encore génériques jusqu’aux lots 2.3–2.4.
+- **Apparence :** couleurs, typo, logo, icônes et composants Serre en place (2.1–2.3) ; barre
+  latérale (sélection bleue), navigation et recherche animées : lot 2.4.
 
 ## Prochaine action
 
@@ -22,7 +22,7 @@ en fixture, invariants et particularités de l’hôte :
 
 ## En attente du mainteneur
 
-- Recette 2.2 : logo qui germe (premier lancement), icônes Serre, feuilles de risque.
+- Recette 2.3 : boutons et lignes Serre (survol, nervure, focus), clair/sombre.
 - Optionnel : publier 1.0.3 depuis `fix/1.x-trash-sqlite` (P5, piste 1.x).
 
 ## Phases

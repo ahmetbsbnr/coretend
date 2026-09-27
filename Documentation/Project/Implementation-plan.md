@@ -55,7 +55,7 @@ Référence : `Documentation/Design/UI-guide.md` (direction « Serre », décisi
   formes « coin feuille ». Tests de contraste et de durées mis à jour.
 - [x] **2.2 Logo et icônes** (`9d75517`) : logo Serre en tracés SwiftUI avec la germination ; jeu d’icônes
   Serre des 8 destinations, Réglages, Recherche ; feuilles de risque.
-- [ ] **2.3 Composants** : boutons (principal, secondaire, destructif), ligne de barre latérale
+- [x] **2.3 Composants** (`6050d7e`) : boutons (principal, secondaire, destructif), ligne de barre latérale
   et **marqueur feuille** dessinés par CoreTend, ligne de liste avec nervure, case, champ de
   recherche, parcelle, badge de risque, bandeaux, états de vue. Tous les états du guide § 7.
   Gate `check_architecture.py` : pas de `.buttonStyle(.plain)`, couleur littérale ou

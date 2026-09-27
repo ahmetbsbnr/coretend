@@ -10,8 +10,8 @@
 | Lot | Intitulé | Statut |
 |---|---|---|
 | 2.1 | Jetons Serre (couleurs Nuit/Jour, typographie, motion, formes) + tests | Accepté (27-09) |
-| 2.2 | Logo Serre et germination ; jeu d’icônes ; feuilles de risque | Livré — recette en attente (`9d75517`) |
-| 2.3 | Composants et états (guide § 7) + gate `check_architecture.py` | À faire |
+| 2.2 | Logo Serre et germination ; jeu d’icônes ; feuilles de risque | Accepté (27-09) |
+| 2.3 | Composants et états (guide § 7) + gate `check_architecture.py` | Livré — recette en attente (`6050d7e`) |
 | 2.4 | Coquille de l’app : barre latérale, transition « pousse », recherche ⌘K, clavier/focus | À faire |
 | 2.5 | Site en Serre : jetons exportés, logo, navigation, racine au défilement (CSS seul) | À faire |
 
@@ -59,18 +59,40 @@
   est faux (la règle retient aussi `.ips`) — à corriger en 3.2.
 - **Recette 2.2 (mainteneur) :** lancer l’app (premier lancement : le logo germe), regarder
   icônes et feuilles de risque.
+- **Recette 2.2 — acceptée (27-09) :** « validé continue ».
+
+### 27-09-2026 — lot 2.3, composants
+
+- **Fait :** `6050d7e` — `SerreButtonStyle` (`.serre(.primary|.secondary|.destructive|.row(selected:)|.icon|.tile)`,
+  tous les états, nervure animée sous les lignes, icône inclinée au survol, dessin dans
+  `SerreButtonChrome`) ; `SerreParcel`, `SerreBanner`, `SerreEmptyState`. Style secondaire Serre par
+  défaut dans le contenu et les feuilles ; « Commencer » et « Terminé » en principal ; les six
+  `.buttonStyle(.plain)` remplacés ; `ObservatoryCard` → `SerreParcel`.
+  `check_architecture.py` : règles de design (bouton plain, couleur littérale ou système,
+  `repeatForever` hors `DesignSystem`) + 2 tests.
+- **Vérifié :** gate de design rouge sur les 6 boutons avant, vert après. Planche de rendu
+  (toutes variantes × repos/survol/pressé/focus/désactivé, bandeaux, parcelle) relue clair/sombre ;
+  survol du bouton principal qui assombrissait → corrigé. `make qualify` PASS. Captures Nettoyage,
+  Applications, palette, Vue d’ensemble relues.
+- **Pas encore adopté partout (P3, écran par écran) :** bandeaux et états vides Serre à la place
+  des `ContentUnavailableView` et textes d’état actuels ; nombreuses cartes encore en
+  `RoundedRectangle` ; 5 boutons `.borderless` dans les listes.
+- **Vu sur capture :** la sélection de la barre latérale est **bleue** (accent système) quand la
+  fenêtre est active → traité en 2.4 (marqueur feuille dessiné par CoreTend).
+- **Recette 2.3 (mainteneur) :** survoler et cliquer les boutons et lignes (nervure), clavier
+  (anneau de focus), clair/sombre.
 
 ## Point d’arrêt
 
-- 2.2 livré, recette du mainteneur en attente.
-- Prochain lot **2.3 — composants** (guide § 7) dans `DesignSystem` : `SerreButtonStyle`
-  (principal, secondaire, destructif : coin feuille, survol +8 % et icône −6°, pressé 0,97 `press`,
-  focus anneau feuille, désactivé 40 %), ligne de liste avec **nervure** au survol (filet `accent`
-  tracé de gauche à droite, `quick`), case, champ de recherche, parcelle (`LeafCorner.parcel`,
-  `surface`), badge de risque, bandeaux (partiel / refus / erreur), états de vue. Remplacer les
-  six `.buttonStyle(.plain)` et les `RoundedRectangle` ad hoc des vues. Gate
-  `Scripts/check_architecture.py` : pas de `.buttonStyle(.plain)`, `Color(red:…)`, `Color.blue` ni
-  `repeatForever` hors `DesignSystem` (le faire échouer d’abord sur le code actuel).
+- 2.3 livré, recette du mainteneur en attente.
+- Prochain lot **2.4 — coquille de l’app** (guide § 8, catalogue) : barre latérale dessinée par
+  CoreTend (plus de sélection système bleue) avec logo en tête et **marqueur feuille** qui glisse
+  (`sprout`) ; **vrille** du marqueur vers le contenu ; la vue **pousse** depuis ce point (masque
+  ellipse, `grow`) et ses blocs montent en `stagger` ; l’ancienne vue se pose et s’efface
+  (`retreat`) ; interruptible. Recherche ⌘K qui **naît du bouton Rechercher**, **racine** sous le
+  champ qui suit la saisie, résultats qui **éclosent**, pousse qui fane sans résultat. Barre
+  d’outils en `.serre(.icon)`. Clavier : focus visible, ⌘1…⌘8, Échap (à re-tester, voir
+  Reference.md). Reduce Motion : fondu 120 ms ou immédiat.
 
 ## Problèmes ouverts
 
