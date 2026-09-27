@@ -100,6 +100,52 @@ final class ScanCoreTests: XCTestCase {
         }
     }
 
+    func testSparseFixtureKeepsLogicalAndAllocatedSizesDistinct() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-sparse-scan-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let file = root.appendingPathComponent("sparse.bin")
+        let descriptor = open(file.path, O_CREAT | O_WRONLY | O_CLOEXEC, S_IRUSR | S_IWUSR)
+        guard descriptor >= 0 else { throw POSIXError(.init(rawValue: errno) ?? .EIO) }
+        defer { close(descriptor) }
+        guard ftruncate(descriptor, 8 * 1_024 * 1_024) == 0,
+              pwrite(descriptor, [UInt8(1)], 1, 0) == 1 else {
+            throw POSIXError(.init(rawValue: errno) ?? .EIO)
+        }
+
+        var result: ScanResult?
+        for try await event in LocalScanEngine().scan(.init(roots: [.init(url: root, ruleID: .explore)])) {
+            if case .result(let value) = event { result = value }
+        }
+        guard let result,
+              case .known(let logicalBytes) = result.logicalBytes,
+              case .known(let allocatedBytes) = result.allocatedBytes else {
+            return XCTFail("Expected both sparse file measurements to be known")
+        }
+        XCTAssertEqual(logicalBytes, 8 * 1_024 * 1_024)
+        XCTAssertGreaterThan(allocatedBytes, 0)
+        XCTAssertLessThan(allocatedBytes, logicalBytes)
+    }
+
+    func testHardLinkResultsSharePhysicalAllocationIdentity() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-hardlink-scan-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let first = root.appendingPathComponent("first.bin")
+        let alias = root.appendingPathComponent("second.bin")
+        try Data(repeating: 8, count: 4_096).write(to: first)
+        try FileManager.default.linkItem(at: first, to: alias)
+
+        var results: [ScanResult] = []
+        for try await event in LocalScanEngine().scan(.init(roots: [.init(url: root, ruleID: .explore)])) {
+            if case .result(let value) = event { results.append(value) }
+        }
+        XCTAssertEqual(results.count, 2)
+        XCTAssertNotNil(results[0].allocationIdentity)
+        XCTAssertEqual(results[0].allocationIdentity, results[1].allocationIdentity)
+        XCTAssertEqual(results[0].allocatedBytes, results[1].allocatedBytes)
+    }
+
     func testConsumerCancellationStopsScanBeforeNextFixtureFile() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-cancel-scan-\(UUID())", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
@@ -278,6 +324,17 @@ private final class BlockingFixtureMetadataReader: UbiquitousItemMetadataReading
 }
 
 final class TreemapLayoutTests: XCTestCase {
+    func testHardLinksContributePhysicalAllocationOnlyOnce() {
+        let alias = TreemapInput(id: "/fixture/alias", bytes: 512, allocationIdentity: "device-1:inode-7")
+        let canonical = TreemapInput(id: "/fixture/canonical", bytes: 512, allocationIdentity: "device-1:inode-7")
+        let unique = TreemapInput(id: "/fixture/unique", bytes: 512, allocationIdentity: "device-1:inode-8")
+
+        let tiles = TreemapLayout.tiles(for: [alias, unique, canonical], size: CGSize(width: 300, height: 120))
+
+        XCTAssertEqual(tiles.map(\.id), ["/fixture/alias", "/fixture/unique"])
+        XCTAssertEqual(tiles.reduce(Int64(0)) { $0 + $1.bytes }, 1_024)
+    }
+
     func testKnownByteAreasAreProportionalAndCoverCanvas() {
         let tiles = TreemapLayout.tiles(for: [.init(id: "large", bytes: 300), .init(id: "small", bytes: 100)],
                                         size: CGSize(width: 400, height: 200))

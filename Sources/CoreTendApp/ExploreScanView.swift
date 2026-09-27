@@ -60,7 +60,8 @@ struct ExploreScanView: View {
     private var treemapInputs: [TreemapInput] {
         visibleResults.compactMap { result in
             guard case .known(let bytes) = result.allocatedBytes, bytes > 0 else { return nil }
-            return TreemapInput(id: result.url.path, bytes: bytes)
+            let identity = result.allocationIdentity.map { "\($0.device):\($0.inode)" }
+            return TreemapInput(id: result.url.path, bytes: bytes, allocationIdentity: identity)
         }
     }
 
@@ -100,7 +101,7 @@ struct ExploreScanView: View {
                 Text(presetDescription)
                     .font(.caption).foregroundStyle(.secondary)
                 let knownCount = treemapInputs.count
-                Text(french ? "Carte proportionnelle : \(knownCount) fichiers à taille locale connue; les inconnus sont exclus." : "Proportional map: \(knownCount) files with known local size; unknown items excluded.")
+                Text(french ? "Carte proportionnelle : \(knownCount) allocations distinctes connues; inconnues exclues." : "Proportional map: \(knownCount) distinct known allocations; unknown items excluded.")
                     .font(.caption).foregroundStyle(.secondary)
                 GeometryReader { proxy in
                     let tiles = TreemapLayout.tiles(for: treemapInputs, size: proxy.size)

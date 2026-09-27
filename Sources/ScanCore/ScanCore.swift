@@ -54,10 +54,33 @@ public struct ScanResult: Sendable, Equatable {
     public let ruleID: ScanRule
     public let logicalBytes: ProductMeasurement<Int64>
     public let allocatedBytes: ProductMeasurement<Int64>
+    public let allocationIdentity: ScanAllocationIdentity?
     public let modifiedAt: Date?
     public let risk: CandidateRisk
+    public init(url: URL, ruleID: ScanRule, logicalBytes: ProductMeasurement<Int64>,
+                allocatedBytes: ProductMeasurement<Int64>, modifiedAt: Date?, risk: CandidateRisk,
+                allocationIdentity: ScanAllocationIdentity? = nil) {
+        self.url = url
+        self.ruleID = ruleID
+        self.logicalBytes = logicalBytes
+        self.allocatedBytes = allocatedBytes
+        self.allocationIdentity = allocationIdentity
+        self.modifiedAt = modifiedAt
+        self.risk = risk
+    }
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.url == rhs.url && lhs.ruleID == rhs.ruleID && lhs.modifiedAt == rhs.modifiedAt && lhs.risk == rhs.risk
+        lhs.url == rhs.url && lhs.ruleID == rhs.ruleID && lhs.allocationIdentity == rhs.allocationIdentity
+            && lhs.modifiedAt == rhs.modifiedAt && lhs.risk == rhs.risk
+    }
+}
+
+public struct ScanAllocationIdentity: Hashable, Sendable {
+    public let device: UInt64
+    public let inode: UInt64
+
+    public init(device: UInt64, inode: UInt64) {
+        self.device = device
+        self.inode = inode
     }
 }
 
@@ -159,7 +182,8 @@ public struct LocalScanEngine: ScanEngine {
                     continuation.yield(.result(ScanResult(url: child, ruleID: root.ruleID,
                                                           logicalBytes: logical, allocatedBytes: allocated,
                                                           modifiedAt: values?.contentModificationDate,
-                                                          risk: Self.risk(for: root.ruleID))))
+                                                          risk: Self.risk(for: root.ruleID),
+                                                          allocationIdentity: .init(device: UInt64(info.st_dev), inode: UInt64(info.st_ino)))))
                     continuation.yield(.progress(completed: completed))
                 }
             }
