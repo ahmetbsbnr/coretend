@@ -31,6 +31,10 @@ public enum CLILanguage: String, Equatable, Sendable {
         self == .fr ? "Échec de l’analyse." : "Scan failed."
     }
 
+    public var versionMessage: String {
+        self == .fr ? "CoreTend greenfield — non publiée" : "CoreTend greenfield — unreleased"
+    }
+
     public func fileCountMessage(_ count: Int) -> String {
         self == .fr ? "\(count) fichiers" : "\(count) files"
     }
@@ -145,7 +149,7 @@ public enum CoreTendCLIRunner {
         case .help:
             write(language.helpText); return 0
         case .version:
-            write("CoreTend greenfield — unreleased"); return 0
+            write(language.versionMessage); return 0
         case .record(let url):
             do {
                 let store = try SQLiteStore(url: url, readOnly: true)
