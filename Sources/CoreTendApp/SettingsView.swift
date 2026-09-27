@@ -9,6 +9,7 @@ struct SettingsView: View {
     @Binding var language: String
     @Binding var recentFilesEnabled: Bool
     @Binding var menuBarEnabled: Bool
+    let close: () -> Void
     @State private var store: SQLiteStore?
     @State private var exclusions: [String] = []
     @State private var chooseExclusion = false
@@ -24,86 +25,96 @@ struct SettingsView: View {
     @State private var status: String?
 
     var body: some View {
-        Form {
-            Section(french ? "Langue" : "Language") {
-                Picker(ProductCopy.value(for: "settings.language", french: french), selection: $language) {
-                    Text(ProductCopy.value(for: "settings.system", french: french)).tag("system")
-                    Text("Français").tag("fr")
-                    Text("English").tag("en")
+        VStack(spacing: 0) {
+            Form {
+                Section(french ? "Langue" : "Language") {
+                    Picker(ProductCopy.value(for: "settings.language", french: french), selection: $language) {
+                        Text(ProductCopy.value(for: "settings.system", french: french)).tag("system")
+                        Text("Français").tag("fr")
+                        Text("English").tag("en")
+                    }
+                    .onChange(of: language) { _, value in Task { try? await store?.saveLanguagePreference(value) } }
                 }
-                .onChange(of: language) { _, value in Task { try? await store?.saveLanguagePreference(value) } }
-            }
 
-            Section(french ? "Exclusions locales" : "Local exclusions") {
-                Text(french ? "Les scans ignoreront ces dossiers lors des prochains parcours. Rien n’est supprimé." : "Scans will skip these folders in future scans. Nothing is deleted.")
-                    .font(.callout).foregroundStyle(.secondary)
-                ForEach(exclusions, id: \.self) { path in
-                    HStack {
-                        Text(URL(fileURLWithPath: path).lastPathComponent).lineLimit(1)
-                        Text(path).font(.caption.monospaced()).foregroundStyle(.secondary).lineLimit(1)
-                        Spacer()
-                        Button(role: .destructive) { Task { await removeExclusion(path) } } label: { Image(systemName: "minus.circle") }
-                            .accessibilityLabel(french ? "Retirer \(path) des exclusions" : "Remove \(path) from exclusions")
+                Section(french ? "Exclusions locales" : "Local exclusions") {
+                    Text(french ? "Les scans ignoreront ces dossiers lors des prochains parcours. Rien n’est supprimé." : "Scans will skip these folders in future scans. Nothing is deleted.")
+                        .font(.callout).foregroundStyle(.secondary)
+                    ForEach(exclusions, id: \.self) { path in
+                        HStack {
+                            Text(URL(fileURLWithPath: path).lastPathComponent).lineLimit(1)
+                            Text(path).font(.caption.monospaced()).foregroundStyle(.secondary).lineLimit(1)
+                            Spacer()
+                            Button(role: .destructive) { Task { await removeExclusion(path) } } label: { Image(systemName: "minus.circle") }
+                                .accessibilityLabel(french ? "Retirer \(path) des exclusions" : "Remove \(path) from exclusions")
+                        }
+                    }
+                    Button { chooseExclusion = true } label: {
+                        Label(french ? "Ajouter un dossier exclu…" : "Add excluded folder…", systemImage: "folder.badge.plus")
                     }
                 }
-                Button { chooseExclusion = true } label: {
-                    Label(french ? "Ajouter un dossier exclu…" : "Add excluded folder…", systemImage: "folder.badge.plus")
+
+                Section(french ? "Accès aux dossiers" : "Folder access") {
+                    Text(ProductCopy.value(for: "settings.folderaccess.help", french: french))
+                        .font(.callout).foregroundStyle(.secondary)
+                    Text(ProductCopy.value(for: "settings.fulldiskaccess.help", french: french))
+                        .font(.callout).foregroundStyle(.secondary)
                 }
-            }
 
-            Section(french ? "Accès aux dossiers" : "Folder access") {
-                Text(ProductCopy.value(for: "settings.folderaccess.help", french: french))
-                    .font(.callout).foregroundStyle(.secondary)
-                Text(ProductCopy.value(for: "settings.fulldiskaccess.help", french: french))
-                    .font(.callout).foregroundStyle(.secondary)
-            }
-
-            Section(ProductCopy.value(for: "settings.signature.title", french: french)) {
-                if let ownSignature {
-                    Label(signatureText(ownSignature.state), systemImage: signatureIcon(ownSignature.state))
-                    if let identifier = ownSignature.identifier {
-                        LabeledContent(ProductCopy.value(for: "integrity.identifier", french: french), value: identifier)
+                Section(ProductCopy.value(for: "settings.signature.title", french: french)) {
+                    if let ownSignature {
+                        Label(signatureText(ownSignature.state), systemImage: signatureIcon(ownSignature.state))
+                        if let identifier = ownSignature.identifier {
+                            LabeledContent(ProductCopy.value(for: "integrity.identifier", french: french), value: identifier)
+                        }
+                        if let team = ownSignature.teamIdentifier {
+                            LabeledContent(ProductCopy.value(for: "integrity.team", french: french), value: team)
+                        }
+                    } else {
+                        Label(ProductCopy.value(for: "settings.signature.unavailable", french: french), systemImage: "questionmark.circle")
                     }
-                    if let team = ownSignature.teamIdentifier {
-                        LabeledContent(ProductCopy.value(for: "integrity.team", french: french), value: team)
-                    }
-                } else {
-                    Label(ProductCopy.value(for: "settings.signature.unavailable", french: french), systemImage: "questionmark.circle")
+                    Text(ProductCopy.value(for: "settings.signature.limit", french: french))
+                        .font(.callout).foregroundStyle(.secondary)
                 }
-                Text(ProductCopy.value(for: "settings.signature.limit", french: french))
-                    .font(.callout).foregroundStyle(.secondary)
-            }
 
-            Section(french ? "Données héritées" : "Legacy data") {
-                Text(french ? "Import opt-in des préférences v1 reconnues. Le fichier source reste intact." : "Opt-in import for recognized v1 preferences. Source file remains unchanged.")
-                    .font(.callout).foregroundStyle(.secondary)
-                Button { chooseLegacy = true } label: { Label(french ? "Choisir le fichier d’origine…" : "Choose source file…", systemImage: "arrow.down.doc") }
-                    .disabled(importing)
-                if importing { ProgressView() }
-            }
+                Section(french ? "Données héritées" : "Legacy data") {
+                    Text(french ? "Import opt-in des préférences v1 reconnues. Le fichier source reste intact." : "Opt-in import for recognized v1 preferences. Source file remains unchanged.")
+                        .font(.callout).foregroundStyle(.secondary)
+                    Button { chooseLegacy = true } label: { Label(french ? "Choisir le fichier d’origine…" : "Choose source file…", systemImage: "arrow.down.doc") }
+                        .disabled(importing)
+                    if importing { ProgressView() }
+                }
 
-            Section(french ? "Conservation des données" : "Data retention") {
-                Text(french ? "L’activité reste dans la base locale jusqu’à son effacement explicite dans Historique. Les préférences et exclusions restent jusqu’à leur modification ou au retrait de la base." : "Activity stays in the local database until you explicitly clear it in Record. Preferences and exclusions remain until changed or the database is removed.")
-                Text(french ? "Les relevés Performance sont conservés 30 jours et limités à 500. Vous pouvez les effacer dans Performances; une nouvelle ouverture de cette vue créera un nouveau relevé." : "Performance readings are kept for 30 days and capped at 500. You can clear them in Performance; reopening that view creates a new reading.")
-                Toggle(french ? "Enregistrer les fichiers récents dans Explorer" : "Save recent files from Explore", isOn: $recentFilesEnabled)
-                Text(french ? "Désactivé par défaut. Activé, le dernier scan Explorer mémorise jusqu’à 100 chemins locaux et leur dernière taille connue. Désactivez-le pour arrêter cet enregistrement; effacez les éléments dans Vue d’ensemble." : "Off by default. When enabled, the latest Explore scan stores up to 100 local paths and their last known size. Turn it off to stop recording; remove entries in Overview.")
-                    .font(.callout).foregroundStyle(.secondary)
-            }
+                Section(french ? "Conservation des données" : "Data retention") {
+                    Text(french ? "L’activité reste dans la base locale jusqu’à son effacement explicite dans Historique. Les préférences et exclusions restent jusqu’à leur modification ou au retrait de la base." : "Activity stays in the local database until you explicitly clear it in Record. Preferences and exclusions remain until changed or the database is removed.")
+                    Text(french ? "Les relevés Performance sont conservés 30 jours et limités à 500. Vous pouvez les effacer dans Performances; une nouvelle ouverture de cette vue créera un nouveau relevé." : "Performance readings are kept for 30 days and capped at 500. You can clear them in Performance; reopening that view creates a new reading.")
+                    Toggle(french ? "Enregistrer les fichiers récents dans Explorer" : "Save recent files from Explore", isOn: $recentFilesEnabled)
+                    Text(french ? "Désactivé par défaut. Activé, le dernier scan Explorer mémorise jusqu’à 100 chemins locaux et leur dernière taille connue. Désactivez-le pour arrêter cet enregistrement; effacez les éléments dans Vue d’ensemble." : "Off by default. When enabled, the latest Explore scan stores up to 100 local paths and their last known size. Turn it off to stop recording; remove entries in Overview.")
+                        .font(.callout).foregroundStyle(.secondary)
+                }
 
-            Section(french ? "Barre des menus" : "Menu bar") {
-                Toggle(ProductCopy.value(for: "settings.menubar.title", french: french), isOn: $menuBarEnabled)
-                Text(ProductCopy.value(for: "settings.menubar.help", french: french))
-                    .font(.callout).foregroundStyle(.secondary)
-            }
+                Section(french ? "Barre des menus" : "Menu bar") {
+                    Toggle(ProductCopy.value(for: "settings.menubar.title", french: french), isOn: $menuBarEnabled)
+                    Text(ProductCopy.value(for: "settings.menubar.help", french: french))
+                        .font(.callout).foregroundStyle(.secondary)
+                }
 
-            Section(french ? "Diagnostic privé" : "Private diagnostics") {
-                Text(french ? "Aperçu contient version, schéma et compteurs d’événements. Aucun chemin, nom de fichier ni détail d’événement." : "Preview includes app version, schema and event counts. No paths, file names or event details.")
-                    .font(.callout).foregroundStyle(.secondary)
-                Button(french ? "Prévisualiser l’export…" : "Preview export…") { Task { await buildDiagnosticPreview() } }
+                Section(french ? "Diagnostic privé" : "Private diagnostics") {
+                    Text(french ? "Aperçu contient version, schéma et compteurs d’événements. Aucun chemin, nom de fichier ni détail d’événement." : "Preview includes app version, schema and event counts. No paths, file names or event details.")
+                        .font(.callout).foregroundStyle(.secondary)
+                    Button(french ? "Prévisualiser l’export…" : "Preview export…") { Task { await buildDiagnosticPreview() } }
+                }
+                if let status { Text(status).foregroundStyle(.secondary) }
             }
-            if let status { Text(status).foregroundStyle(.secondary) }
+            .formStyle(.grouped)
+            Divider()
+            // Settings is a sheet with no window close control; this is its visible exit.
+            HStack {
+                Spacer()
+                Button(french ? "Terminé" : "Done") { close() }
+                    .keyboardShortcut(.cancelAction)
+            }
+            .padding(12)
         }
-        .padding(20)
         .frame(minWidth: 600, minHeight: 520)
         .task {
             await load()

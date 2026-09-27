@@ -18,6 +18,9 @@ struct CommandPaletteView: View {
                 .font(.title3)
                 .padding(16)
                 .focused($searchFocused)
+                // The focused field editor consumes arrow keys, so `onMoveCommand` below never sees them.
+                .onKeyPress(.upArrow) { moveSelection(.up) }
+                .onKeyPress(.downArrow) { moveSelection(.down) }
             .onSubmit {
                 if let command = commands.first(where: { $0.id == selectedID }) ?? commands.first { activate(command) }
             }
@@ -27,22 +30,27 @@ struct CommandPaletteView: View {
                                        systemImage: "magnifyingglass")
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
-                List(commands) { command in
-                    Button {
-                        selectedID = command.id
-                        activate(command)
-                    } label: {
-                        Label(command.title, systemImage: symbol(for: command.target))
-                            .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
-                            .contentShape(Rectangle())
-                            .padding(.horizontal, 8)
-                            .background(selectedID == command.id ? Color.accentColor.opacity(0.14) : .clear,
-                                        in: RoundedRectangle(cornerRadius: 7))
+                ScrollViewReader { proxy in
+                    List(commands) { command in
+                        Button {
+                            selectedID = command.id
+                            activate(command)
+                        } label: {
+                            Label(command.title, systemImage: symbol(for: command.target))
+                                .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
+                                .contentShape(Rectangle())
+                                .padding(.horizontal, 8)
+                                .background(selectedID == command.id ? Color.accentColor.opacity(0.14) : .clear,
+                                            in: RoundedRectangle(cornerRadius: 7))
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityValue(selectedID == command.id ? (french ? "Sélectionné" : "Selected") : "")
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityValue(selectedID == command.id ? (french ? "Sélectionné" : "Selected") : "")
+                    .listStyle(.plain)
+                    .onChange(of: selectedID) { _, id in
+                        if let id { proxy.scrollTo(id) }
+                    }
                 }
-                .listStyle(.plain)
             }
             Divider()
             HStack {
@@ -63,12 +71,17 @@ struct CommandPaletteView: View {
         }
         .onMoveCommand { direction in
             switch direction {
-            case .up: selectedID = CommandPaletteNavigation.move(in: commands, selectedID: selectedID, direction: .up)
-            case .down: selectedID = CommandPaletteNavigation.move(in: commands, selectedID: selectedID, direction: .down)
+            case .up: _ = moveSelection(.up)
+            case .down: _ = moveSelection(.down)
             default: break
             }
         }
         .onExitCommand { dismiss() }
+    }
+
+    private func moveSelection(_ direction: CommandMoveDirection) -> KeyPress.Result {
+        selectedID = CommandPaletteNavigation.move(in: commands, selectedID: selectedID, direction: direction)
+        return .handled
     }
 
     private func activate(_ command: ProductCommand) {

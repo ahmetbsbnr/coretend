@@ -327,3 +327,8 @@
 ### Site — meta descriptions — 27-09-2026
 
 - `build_site.py` génère une meta description par page à partir du texte d’introduction échappé; `check_site.py` exige exactement une description non vide. Le fichier `index.html` de choix de langue porte une description bilingue. Lighthouse SEO n’a pas été relancé; NFR-11 reste PARTIEL (zoom réel, VoiceOver, réglages OS).
+
+### Qualification clavier native — palette et Réglages — 27-09-2026
+
+- Parcours natif sur `.app` Release en fixture isolée (arm64/macOS 27) : navigation clavier de la barre latérale observée sur les huit destinations. Trois défauts trouvés et corrigés : flèches ignorées dans la palette (champ focalisé), ligne sélectionnée hors vue sans défilement, feuille Réglages sans contrôle de sortie et textes tronqués. Correctifs observés sur l’app reconstruite.
+- Échap n’atteint pas l’app sur cet hôte (moniteur `NSEvent` temporaire), ni par automatisation ni au clavier réel : fermeture par Échap non qualifiée. Détails : `Documentation/Evidence/AppWindowRuntimeQualification.md`. `make qualify` passe. Aucun statut ne change.

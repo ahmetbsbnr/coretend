@@ -27,3 +27,15 @@ In a temporary `.app` bundle on arm64/macOS 27 with isolated HOME/preferences/st
 `make app-runtime-smoke` now builds the actual Release `.app` and ZIP in a unique temporary artifact directory, validates the bundle plist/archive/Mach-O, installs that packaged `.app` into fixture `HOME/Applications`, launches the installed executable, then removes the app while preserving its fixture database. The runtime remained alive through 14 Internet-socket samples with none open; SQLite database and sidecars remained under the explicit fixture store before and after shutdown. SHA-256 of the tested temporary ZIP: `5904b8efb73fac47054153a2ca578204b7399c30b0e09cd62824112f4b388868`.
 
 This closes the previous gap where runtime smoke rebuilt a synthetic bundle around the Release executable. It still does not qualify Finder/Launch Services, interactive GUI uninstall, signature/notarization, or the minimum macOS host; FR-14 stays `PARTIEL`.
+
+## Keyboard sidebar, palette and Settings exit — 2026-09-27
+
+Host arm64, macOS 27.0. `make package-local` Release `.app` copied under a temporary directory and launched with isolated `HOME`, `CFFIXED_USER_HOME`, `TMPDIR`, `CORETEND_TEST_MODE=1`, fixture store, onboarding completed and English UI. Driven by screenshot-based keyboard automation plus System Events AX; no file action or Trash operation was started. The fixture root was removed after the run.
+
+- Sidebar: Down moved Overview → Record → Cleanup → Explore → Duplicates → Applications → Integrity → Performance, each updating the detail heading; extra Down stayed on Performance; Up returned to Overview and stayed there.
+- Palette before fix: with the search field focused, Down/Up did not move the highlighted row (reproduced twice). Cause: the field editor consumes arrow keys, so the ancestor `onMoveCommand` never ran. After `onKeyPress` handlers on the field: Down twice selected Cleanup, Up then Return opened Record, eight Downs scrolled to and selected Settings, and Return opened Settings.
+- Settings before fix: the sheet had no visible close control and rows truncated with ellipses. After the grouped form and an explicit **Done** button, text wrapped fully and pressing Done through AX closed the sheet (sheet count 1 → 0).
+- Escape: neither palette nor Settings closed on Escape, with automation or the user's physical keyboard. A temporary local `NSEvent` key monitor logged ⌘K and Down but never Escape (keyCode 53), so Escape was intercepted before reaching CoreTend on this host. Escape dismissal therefore remains unqualified; the diagnostic monitor was removed.
+- The CoreTend app menu has no Settings… (⌘,) item; not changed.
+
+Pointer clicks inside the window were refused by the automation layer (a Notification Center overlay), so mouse interaction remains unqualified. VoiceOver speech, Dynamic Type, contrast and motion settings were not exercised.
