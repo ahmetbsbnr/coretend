@@ -11,4 +11,13 @@
 | `CoreTendApp` | `3d63e32c93363def121038419b10bafb9ffaac0ce30f81c0e379ec5742390cd3` | `3d63e32c93363def121038419b10bafb9ffaac0ce30f81c0e379ec5742390cd3` | Byte-identical |
 | `CoreTendCLI` | `0d6630bf1600cc87f07bf1e2020980bf7d2b85382433860dd85c7eb53466d37f` | `0d6630bf1600cc87f07bf1e2020980bf7d2b85382433860dd85c7eb53466d37f` | Byte-identical |
 
-Using distinct physical scratch paths can embed those paths in Mach-O OSO debug-map records. Exact GitHub diagnosis separated random `LC_UUID` at byte 3449 and object-file mtimes in `N_OSO` symbol records. Package-level `-reproducible` addresses both while retaining `LC_UUID`; local package runtime launches in isolated HOME/store fixture. GitHub rerun after this setting is pending; NFR-13 stays PARTIEL until it passes. No identity across checkout roots, hosts, or toolchains claimed; supported-host compatibility remains NFR-08.
+GitHub Actions image `macos-26-arm64` (runner image `20260907.0351`) passed full `make qualify` after the local builds above; its two cold product pairs matched:
+
+| Product | GitHub cold build 1 SHA-256 | GitHub cold build 2 SHA-256 | Result |
+|---|---|---|---|
+| `CoreTendApp` | `f225a3cbddea5bb5d7c0ad98d7794f7b861bb27c06953f8aac0f7e699a6a729d` | `f225a3cbddea5bb5d7c0ad98d7794f7b861bb27c06953f8aac0f7e699a6a729d` | Byte-identical |
+| `CoreTendCLI` | `ee0fa8110a9f7272698685b5bb75526b1036d3f0415fe2fe68d3ff8930d83a4c` | `ee0fa8110a9f7272698685b5bb75526b1036d3f0415fe2fe68d3ff8930d83a4c` | Byte-identical |
+
+Run: [GitHub Actions 36304912826](https://github.com/ahmetbsbnr/coretend/actions/runs/36304912826). It also packaged, installed, launched and removed the Release app in isolated HOME/store fixtures; `LC_UUID` remained present and dyld launch succeeded.
+
+Using distinct physical scratch paths can embed those paths in Mach-O OSO debug-map records. Exact GitHub diagnosis separated random `LC_UUID` and object-file mtimes in `N_OSO` symbol records. Package-level `-reproducible` addresses both while retaining `LC_UUID`. Local arm64/macOS 27/Xcode 27 and GitHub arm64/macOS 26 both passed two cold Release builds per product plus full qualification. NFR-13 is verified for these observed environments; cross-host binary identity is not claimed and supported-host compatibility remains NFR-08.

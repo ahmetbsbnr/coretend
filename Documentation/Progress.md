@@ -5,7 +5,7 @@
 ### NFR-13 — reproductibilité après échec CI — 2026-09-27
 
 - PR #55 a révélé `LC_UUID` aléatoire et timestamp objet dans `N_OSO.n_value`. Après détection que dyld macOS 26 refuse un binaire sans `LC_UUID`, `Package.swift` applique le linker Apple `-reproducible` en Release, qui conserve UUID déterministe et fixe metadata; minimum macOS reste 14.0.
-- `make qualify` complet passe avec `-reproducible`: App `3d63e32c…`, CLI `0d6630bf…`, hashes pairs identiques; app packagée démarre/se désinstalle en HOME/store fixture et conserve `LC_UUID`. CI GitHub sur réglage final reste attendu; NFR-13 PARTIEL jusque CI verte.
+- `make qualify` complet passe local et GitHub run 36304912826 (`macos-26-arm64`): App/CLI hash pairs byte-identical sur deux hôtes. Paquet Release démarre/se désinstalle en HOME/store fixture et conserve `LC_UUID`. NFR-13 devient VÉRIFIÉ dans environnements observés; aucun hash inter-hôtes promis, couverture support macOS reste NFR-08.
 
 ### FR-14 — smoke du vrai paquet local — 2026-09-27
 
