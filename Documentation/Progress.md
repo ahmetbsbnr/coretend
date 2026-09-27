@@ -10,6 +10,7 @@
 ### NFR-11 — contrat reduced-motion du site — 2026-09-27
 
 - `site-check` valide désormais le CSS `prefers-reduced-motion: reduce`: défilement fluide neutralisé, animations et transitions ramenées à une durée minimale avec `!important`. Trois tests couvrent règle complète, media query absente et protections manquantes.
+- Chrome local a aussi parcouru les dix routes EN/FR à 320 × 800 CSS px: langue du document correcte, largeur scroll document/corps égale à 320 partout. Viewport étroit uniquement, pas zoom navigateur réel.
 - Test statique ne remplace pas l’émulation navigateur. L’interface Chrome DevTools disponible ne permet pas d’émuler cette préférence; zoom réel, réglages OS, contraste exhaustif, VoiceOver et navigateur déployé restent à qualifier. NFR-11 reste `PARTIEL`.
 
 ### FR-11 — migrations simultanées au démarrage — 2026-09-27

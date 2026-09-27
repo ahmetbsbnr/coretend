@@ -8,6 +8,7 @@
 
 - Lighthouse mobile navigation audit ran on all 11 pages: language chooser, five English pages, and five French pages. Every page scored Accessibility 100, Best Practices 100, and Agentic Browsing 100. SEO scored 50 throughout; findings include intentional `noindex,nofollow` for the unreleased preview and missing meta descriptions.
 - The ten EN/FR content pages were checked at 640 × 900 CSS pixels, device scale factor 1. This approximates the reduced layout width expected at 200% zoom on a 1280-pixel viewport; it does not emulate the browser zoom control itself. Each page had `innerWidth` 640 and `scrollWidth` 640, with no horizontal overflow.
+- A second local Chrome emulation checked all ten content routes at 320 × 800 CSS pixels, device scale factor 1. Each loaded the expected EN/FR document language and had document/body scroll width 320 with no horizontal overflow. This is a narrow viewport check, not evidence of actual browser zoom or Dynamic Type.
 - On each of those ten pages, first Tab focused the localized skip link; its target existed and focus outline was solid 3 px.
 - `Website/site.css` contains a `prefers-reduced-motion: reduce` rule that disables smooth scrolling and reduces animation/transition duration.
 - `make site-check` now tests that contract: the media query must disable smooth scrolling and set minimal animation/transition durations with `!important`; fixtures reject a missing query or protection.
