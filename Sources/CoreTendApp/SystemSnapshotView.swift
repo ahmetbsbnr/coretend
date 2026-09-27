@@ -17,23 +17,41 @@ struct SystemSnapshotView: View {
     @State private var clearingHistory = false
     @State private var confirmClearHistory = false
     @State private var historyNotice: String?
+    @State private var latestActivity: ActivitySummary?
+    @State private var activityUnavailable = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            Button { refresh() } label: { Label(copy("metrics.refresh"), systemImage: "arrow.clockwise") }
-                .disabled(loading || clearingHistory)
-            if loading || clearingHistory { ProgressView() }
+            HStack {
+                Text(copy("menubar.metrics.title"))
+                    .font(CoreTendTypography.sectionTitle)
+                    .foregroundStyle(Palette.ink.color)
+                Spacer()
+                Button { refresh() } label: { Label(copy("metrics.refresh"), systemImage: "arrow.clockwise") }
+                    .disabled(loading || clearingHistory)
+            }
+            if loading || clearingHistory { ProgressView(copy("metrics.refresh")) }
             if let snapshot {
-                if destination == .overview { storage(snapshot) }
+                if destination == .overview {
+                    storage(snapshot)
+                    recentActivity
+                    Label(french
+                          ? "Pour examiner les fichiers, choisissez un dossier dans Explorer. Pour revoir les actions, ouvrez Historique."
+                          : "To inspect files, choose a folder in Explore. To review actions, open Record.",
+                          systemImage: "arrow.right.circle")
+                        .font(CoreTendTypography.secondary)
+                        .foregroundStyle(Palette.secondaryInk.color)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 else {
                     performance(snapshot)
                     performanceHistory
                 }
-                Text(copy("metrics.measured") + " " + snapshot.measuredAt.formatted(.dateTime.hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US"))))
-                    .font(.caption).foregroundStyle(.secondary)
-                Text(copy("metrics.scope")).font(.caption).foregroundStyle(.secondary)
+                Text(copy("metrics.scope"))
+                    .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
             } else if !loading {
-                ContentUnavailableView(copy("metrics.unavailable"), systemImage: "gauge.with.dots.needle.67percent")
+                ContentUnavailableView(copy("metrics.unavailable"), systemImage: "gauge.with.dots.needle.67percent",
+                                       description: Text(copy("metrics.source.volume")))
             }
         }
         .motion(.standard, value: snapshot?.measuredAt)
@@ -48,56 +66,113 @@ struct SystemSnapshotView: View {
     }
 
     @ViewBuilder private func storage(_ value: SystemSnapshot) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(copy("metrics.freeSpace")).font(.headline)
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                Text(format(value.availableBytes)).font(.system(size: 34, weight: .semibold, design: .rounded))
+        VStack(alignment: .leading, spacing: 12) {
+            Text(copy("metrics.freeSpace")).font(CoreTendTypography.sectionTitle)
+                .foregroundStyle(Palette.ink.color)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(format(value.availableBytes)).font(CoreTendTypography.measurement)
                     .contentTransition(.numericText())
                     .motion(.standard, value: value.availableBytes)
-                Text(copy("metrics.available")).foregroundStyle(.secondary)
+                Text(copy("metrics.available")).font(CoreTendTypography.secondary)
+                    .foregroundStyle(Palette.secondaryInk.color)
             }
-            Text(copy("metrics.trashNote")).font(.callout).foregroundStyle(.secondary)
-            Text(copy("metrics.source.volume")).font(.caption).foregroundStyle(.secondary)
-            Text(copy("metrics.volumeTotal") + " " + format(value.totalBytes))
-                .font(.caption).foregroundStyle(.secondary)
+            if case .known(let free) = value.availableBytes,
+               case .known(let total) = value.totalBytes, total > 0, free >= 0, free <= total {
+                GeometryReader { geometry in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(Palette.separator.color)
+                        Capsule().fill(Palette.accent.color)
+                            .frame(width: geometry.size.width * CGFloat(free) / CGFloat(total))
+                    }
+                }
+                .frame(height: 10)
+                .accessibilityHidden(true)
+                Text("\(copy("metrics.freeSpace")): \(format(value.availableBytes)) · \(copy("metrics.volumeTotal")): \(format(value.totalBytes))")
+                    .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+            } else {
+                Text(copy("metrics.volumeTotal") + " " + format(value.totalBytes))
+                    .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+            }
+            Text(copy("metrics.trashNote")).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+            measurementSource(copy("metrics.source.volume"), at: value.measuredAt)
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.quaternary, in: RoundedRectangle(cornerRadius: 16))
+        .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private var recentActivity: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(copy("menubar.activity.title"))
+                .font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
+            if activityUnavailable {
+                Label(copy("menubar.activity.unavailable"), systemImage: "exclamationmark.circle")
+                    .foregroundStyle(Palette.caution.color)
+            } else if let latestActivity {
+                Label(copy("activity.\(latestActivity.kind.rawValue)"), systemImage: "clock.arrow.circlepath")
+                    .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
+                Text(timestamp(latestActivity.occurredAt))
+                    .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+            } else {
+                Text(copy("menubar.activity.empty"))
+                    .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+            }
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 16))
+    }
+
+    private func measurementSource(_ source: String, at date: Date) -> some View {
+        Text("\(source) · \(copy("metrics.measured")) \(timestamp(date))")
+            .font(CoreTendTypography.secondary)
+            .foregroundStyle(Palette.secondaryInk.color)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func timestamp(_ date: Date) -> String {
+        date.formatted(.dateTime.day().month().hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US")))
     }
 
     private func performance(_ value: SystemSnapshot) -> some View {
-        Grid(alignment: .leading, horizontalSpacing: 32, verticalSpacing: 16) {
-            metric(copy("metrics.loadAverage"), load(value.loadAverage1m), source: copy("metrics.source.load"))
-            metric(copy("metrics.processors"), "\(value.activeProcessorCount)", source: copy("metrics.source.processors"))
-            metric(copy("metrics.memory"), ByteCountFormatter.string(fromByteCount: value.physicalMemoryBytes, countStyle: .memory), source: copy("metrics.source.memory"))
-            metric(copy("metrics.uptime"), uptime(value.uptimeSeconds), source: copy("metrics.source.uptime"))
-            metric(copy("metrics.thermal"), thermal(value.thermalState), source: copy("metrics.source.thermal"))
-            metric(copy("metrics.freeSpace"), format(value.availableBytes), source: copy("metrics.source.volume"))
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 230), spacing: 16)], alignment: .leading, spacing: 16) {
+            metric(copy("metrics.loadAverage"), load(value.loadAverage1m), source: copy("metrics.source.load"), at: value.measuredAt)
+            metric(copy("metrics.processors"), "\(value.activeProcessorCount)", source: copy("metrics.source.processors"), at: value.measuredAt)
+            metric(copy("metrics.memory"), ByteCountFormatter.string(fromByteCount: value.physicalMemoryBytes, countStyle: .memory), source: copy("metrics.source.memory"), at: value.measuredAt)
+            metric(copy("metrics.uptime"), uptime(value.uptimeSeconds), source: copy("metrics.source.uptime"), at: value.measuredAt)
+            metric(copy("metrics.thermal"), thermal(value.thermalState), source: copy("metrics.source.thermal"), at: value.measuredAt)
+            metric(copy("metrics.freeSpace"), format(value.availableBytes), source: copy("metrics.source.volume"), at: value.measuredAt)
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.quaternary, in: RoundedRectangle(cornerRadius: 16))
+        .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 16))
     }
 
     private var performanceHistory: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(copy("metrics.history")).font(.headline)
-            Text(copy("metrics.historyHelp")).font(.caption).foregroundStyle(.secondary)
+            Text(copy("metrics.history")).font(CoreTendTypography.sectionTitle)
+                .foregroundStyle(Palette.ink.color)
+            Text(copy("metrics.historyHelp"))
+                .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
             Button(copy("metrics.clear"), role: .destructive) { confirmClearHistory = true }
                 .disabled(history.isEmpty || loading || clearingHistory)
-            if let historyNotice { Text(historyNotice).font(.caption).foregroundStyle(.secondary) }
-            if historyError { Text(copy("metrics.historyError")).foregroundStyle(.secondary) }
+            if let historyNotice {
+                Text(historyNotice).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+            }
+            if historyError {
+                Label(copy("metrics.historyError"), systemImage: "exclamationmark.triangle")
+                    .foregroundStyle(Palette.caution.color)
+            }
             let known = history.filter { $0.loadAverage1m != nil }
             if known.isEmpty {
-                Text(copy("metrics.historyEmpty")).foregroundStyle(.secondary)
+                Text(copy("metrics.historyEmpty"))
+                    .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
             } else {
                 if let latest = known.last, let load = latest.loadAverage1m {
                     VStack(alignment: .leading, spacing: 3) {
                         Text(load.formatted(.number.precision(.fractionLength(2))))
-                            .font(.title2.monospacedDigit().weight(.semibold))
-                        Text(latest.measuredAt.formatted(.dateTime.day().month().hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US"))))
-                            .font(.caption).foregroundStyle(.secondary)
+                            .font(CoreTendTypography.measurement)
+                        measurementSource(copy("metrics.source.load"), at: latest.measuredAt)
                     }
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel("\(copy("metrics.loadAverage")): \(load.formatted(.number.precision(.fractionLength(2)))), \(latest.measuredAt.formatted(.dateTime.day().month().hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US"))))")
@@ -115,7 +190,7 @@ struct SystemSnapshotView: View {
                             .annotation(position: .top, alignment: .leading) {
                                 if let load = selected.loadAverage1m {
                                     Text(load.formatted(.number.precision(.fractionLength(2))))
-                                        .font(.caption.monospacedDigit().weight(.semibold))
+                                        .font(CoreTendTypography.secondary.monospacedDigit().weight(.semibold))
                                         .padding(.horizontal, 8).padding(.vertical, 5)
                                         .background(.regularMaterial, in: Capsule())
                                 }
@@ -147,27 +222,30 @@ struct SystemSnapshotView: View {
                    let selected = PerformanceHistorySelection.nearestKnownSample(to: selectedHistoryDate, in: known),
                    let load = selected.loadAverage1m {
                     Text("\(copy("metrics.loadAverage")): \(load.formatted(.number.precision(.fractionLength(2)))) · \(selected.measuredAt.formatted(.dateTime.day().month().hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US"))))")
-                        .font(.caption.monospacedDigit())
+                        .font(CoreTendTypography.secondary.monospacedDigit())
                         .accessibilityAddTraits(.updatesFrequently)
                 }
                 ForEach(known.suffix(5)) { sample in
                     if let load = sample.loadAverage1m {
                         Text("\(sample.measuredAt.formatted(.dateTime.day().month().hour().minute())) · \(load.formatted(.number.precision(.fractionLength(2))))")
-                            .font(.caption.monospacedDigit())
+                            .font(CoreTendTypography.secondary.monospacedDigit())
                     }
                 }
             }
         }
     }
 
-    private func metric(_ title: String, _ value: String, source: String) -> some View {
-        GridRow {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).foregroundStyle(.secondary)
-                Text(source).font(.caption2).foregroundStyle(.tertiary)
-            }
-            Text(value).font(.body.monospacedDigit()).accessibilityLabel("\(title): \(value). \(source)")
+    private func metric(_ title: String, _ value: String, source: String, at date: Date) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title).font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
+            Text(value).font(CoreTendTypography.measurement).foregroundStyle(Palette.ink.color)
+            measurementSource(source, at: date)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(Palette.raisedSurface.color, in: RoundedRectangle(cornerRadius: 10))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(title): \(value). \(source). \(copy("metrics.measured")) \(timestamp(date))")
     }
 
     private func format(_ value: ProductMeasurement<Int64>) -> String {
@@ -210,6 +288,15 @@ struct SystemSnapshotView: View {
                     selectedHistoryDate = nil
                     historyError = false
                 } catch { historyError = true }
+            } else {
+                do {
+                    let store = try await LocalStoreAccess.open()
+                    latestActivity = try await store.latestActivity()
+                    activityUnavailable = false
+                } catch {
+                    latestActivity = nil
+                    activityUnavailable = true
+                }
             }
             loading = false
         }
