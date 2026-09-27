@@ -9,20 +9,20 @@ en fixture, invariants et particularités de l’hôte :
 
 - **Mis à jour :** 27-09-2026, fin de session.
 - **Phase :** P2 — Fondations Serre → [`P2-fondations-interaction.md`](Documentation/Passation/P2-fondations-interaction.md)
-- **Lot courant :** 2.4b (recherche ⌘K) **livré, recette en attente** (`05f810a`) ; prochain : 2.5 (site en Serre), puis G2.
+- **Lot courant :** 2.5 (site en Serre) **livré, recette en attente** (`97e43d3`). **Tous les lots de P2 livrés : gate G2.**
 - **Branche :** `next`, en avance sur `origin/next` (non poussé ; push sur demande du mainteneur).
 - **Registre :** Must `VÉRIFIÉ` **2 / 78** (Should 0 / 11). Source : `Documentation/Traceability.csv`.
 - **Apparence :** Serre en place : couleurs, typo, logo, icônes, composants, barre latérale et
-  navigation et recherche animées (2.1–2.4b) ; site : lot 2.5.
+  navigation et recherche animées, site (2.1–2.5).
 
 ## Prochaine action
 
 1. Protocole de démarrage (`Documentation/Passation/README.md` › Démarrer).
-2. Lot **2.1** : reprendre au « Point d’arrêt » de `P2-fondations-interaction.md`.
+2. Gate **G2** : `P2-fondations-interaction.md` › Point d’arrêt. Après acceptation, P3 lot 3.1.
 
 ## En attente du mainteneur
 
-- Recette 2.4b : recherche ⌘K (naissance depuis le bouton, racine, éclosion, pousse fanée, fermeture au clic dehors).
+- Recette 2.5 (site) puis **gate G2** : recette de toute la P2 (app et site).
 - Optionnel : publier 1.0.3 depuis `fix/1.x-trash-sqlite` (P5, piste 1.x).
 
 ## Phases

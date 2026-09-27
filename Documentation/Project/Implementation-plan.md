@@ -62,7 +62,7 @@ Référence : `Documentation/Design/UI-guide.md` (direction « Serre », décisi
   `repeatForever` hors `DesignSystem`.
 - [x] **2.4 Coquille de l’app** (2.4a `8a3fb5f` navigation, 2.4b `05f810a` recherche) : barre latérale Serre, transition « pousse » entre destinations,
   recherche ⌘K qui naît du bouton, remplacement de tous les styles ad hoc, clavier et focus.
-- [ ] **2.5 Site en Serre** : export des jetons, polices système, logo qui germe en CSS, en-tête
+- [x] **2.5 Site en Serre** (`97e43d3`) : export des jetons, polices système, logo qui germe en CSS, en-tête
   et navigation, racine qui pousse au défilement (CSS seul, `@supports`), contrat reduced-motion.
 - **Recette G2 :** l’app et le site en Serre, survol/clic/clavier sur chaque écran, clair/sombre.
 

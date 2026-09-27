@@ -13,8 +13,8 @@
 | 2.2 | Logo Serre et germination ; jeu d’icônes ; feuilles de risque | Accepté (27-09) |
 | 2.3 | Composants et états (guide § 7) + gate `check_architecture.py` | Accepté (27-09) |
 | 2.4a | Coquille : barre latérale Serre, logo, marqueur feuille, vrille, transition « pousse », clavier | Accepté (27-09) |
-| 2.4b | Recherche ⌘K qui naît du bouton : racine sous le champ, résultats qui éclosent, pousse fanée ; fermeture au clic hors de la recherche | Livré — recette en attente (`05f810a`) |
-| 2.5 | Site en Serre : jetons exportés, logo, navigation, racine au défilement (CSS seul) | À faire |
+| 2.4b | Recherche ⌘K qui naît du bouton : racine sous le champ, résultats qui éclosent, pousse fanée ; fermeture au clic hors de la recherche | Accepté (27-09) |
+| 2.5 | Site en Serre : jetons exportés, logo, navigation, racine au défilement (CSS seul) | Livré — recette en attente (`97e43d3`) |
 
 ## Journal
 
@@ -129,17 +129,34 @@
   la fenêtre au lieu de fermer. Échap non qualifiable sur cet hôte. Le focus clavier n’est pas
   rendu explicitement au bouton Rechercher à la fermeture.
 - **Recette 2.4b (mainteneur) :** ⌘K ou bouton Rechercher, taper, choisir, fermer au clic dehors.
+- **Recette 2.4b — acceptée (27-09) :** « validé continue ».
+
+### 27-09-2026 — lot 2.5, site en Serre
+
+- **Fait :** `97e43d3` — `Website/site.css` et `Scripts/build_site.py` : jetons Serre, Iowan Old Style /
+  Avenir Next, coins feuille (plus de pilules), plus de dégradé ni de capitales/chasse fixe sur
+  les étiquettes ; logo Serre en SVG (en-tête, pied, page de langue) qui germe une fois dans
+  l’en-tête ; nervure au survol des liens ; racine décorative qui pousse au défilement
+  (`animation-timeline: scroll()` sous `@supports`, masquée sous 1200 px) ; sections et étapes
+  qui poussent à l’entrée (`view()`) ; « CORETEND / 01 » → mots simples, numéros d’étape dans des
+  feuilles. Tout sous `prefers-reduced-motion: no-preference` ; le contrat reduced-motion arrête
+  aussi la racine. Toujours sans JavaScript.
+- **Défaut attrapé :** l’entrée de l’accueil partait d’un masque fermé et a laissé le titre
+  invisible sur une capture (même défaut que `b8e2769`) ; l’accueil ne fait plus que glisser.
+- **Vérifié :** `make build-site site-check`, `make qualify` PASS. Chrome sans interface : accueil
+  1280 px clair et sombre ; mobile dans des cadres de **vraie** largeur 390 et 320 px, sans
+  débordement (une fenêtre sans interface de 390 px déborde aussi avec l’ancien site : largeur
+  minimale de Chrome, pas un défaut du site).
+- **Non vérifié :** racine au défilement en navigateur réel (captures fixes), Safari, zoom réel.
+- **Recette 2.5 (mainteneur) :** ouvrir `Website/fr/index.html` dans Chrome ou Safari, faire
+  défiler, survoler le menu, tester clair/sombre.
 
 ## Point d’arrêt
 
-- 2.4b livré, recette du mainteneur en attente. Après elle, **2.4 est complet**.
-- Prochain lot **2.5 — site en Serre** (guide § 9) : `Scripts/build_site.py` et `Website/site.css`
-  sur les jetons exportés (déjà Serre), polices système Iowan Old Style / Avenir Next, logo qui
-  germe en CSS (une fois), en-tête et navigation avec nervure au survol, racine décorative qui
-  pousse au défilement et sections qui poussent à l’entrée (`animation-timeline`, sous
-  `@supports`, `aria-hidden`), contrat `prefers-reduced-motion`, **sans JavaScript** (CSP
-  `script-src 'none'`). Vérifier : `make build-site site-check`, Chrome sans interface à 1280 et
-  390 px, clair/sombre, reduced-motion. Puis **gate G2** (recette de toute la P2).
+- Tous les lots de P2 sont livrés ; 2.5 attend sa recette.
+- **Gate G2** : recette de toute la phase par le mainteneur — app (survol, clic, clavier, focus,
+  navigation, recherche, clair/sombre, Réduire les animations) et site. À l’acceptation : clore P2,
+  ouvrir P3 au lot 3.1 (Vue d’ensemble + premier lancement) dans `P3-destinations.md`.
 
 ## Problèmes ouverts
 
