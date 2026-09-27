@@ -139,9 +139,9 @@ are a separate system — don't conflate them.
 
 ### Workspace context
 
-This repo lives in the `~/Developer/Website` workspace (itself not a git
-repo). `../../../CLAUDE.md` and `../../../_workspace/docs/CLAUDE_ONBOARDING_MAP.md`
-describe the wider project family. One live cross-repo contract: this repo's
+This checkout lives in `~/Developer/projects/coretend`, beside the CoreTend Next
+worktree `../coretend-next` and the portfolio repository. Nothing here may
+depend on those paths. One live cross-repo contract: this repo's
 release workflow dispatches a `coretend-release` event that the portfolio's
 `.github/workflows/sync-coretend.yml` consumes to refresh its case-study
 metadata — a published release version must be real before anything downstream

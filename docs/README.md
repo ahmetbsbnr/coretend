@@ -1,6 +1,6 @@
 # docs — the decision documents
 
-Current repository recovery: [handoff](PASSATION.md) · [priorities](TODO.md).
+1.x maintenance: [handoff](PASSATION.md) · [priorities](TODO.md). Product development happens on CoreTend Next (branch `next`).
 
 Two kinds of file live in this repository, and they are not edited the same
 way. **Decided** documents are written by a person on purpose. **Derived** ones

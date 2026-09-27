@@ -1,7 +1,10 @@
 # Repository recovery — 2026-09-27
 
-Current instruction: repair this repository incrementally. Earlier proposals for a
-separate greenfield repository are historical inputs, not the execution plan.
+> **1.x maintenance line.** Product development happens on CoreTend Next
+> (`feat/reconstruction-open-musts` → `next`; local folder `../coretend-next`).
+> This branch only carries fixes for the published 1.x release.
+
+Scope: repair the published 1.x incrementally. The rebuild is not planned here.
 No commit, release, signing, deployment or user-data cleanup is authorized here.
 
 ## Goal and ledger

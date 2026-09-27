@@ -1,6 +1,6 @@
 # CoreTend
 
-Current repository recovery: [handoff](docs/PASSATION.md) · [priorities](docs/TODO.md).
+1.x maintenance: [handoff](docs/PASSATION.md) · [priorities](docs/TODO.md). Product development happens on CoreTend Next (branch `next`).
 
 <p align="center">
   <picture>
@@ -174,9 +174,9 @@ The rule underneath all of it: every artifact here is either **decided** or
 stops being what we want; a derived one stops describing what is. So they get
 opposite guards — review, or a `--check` that fails on drift.
 
-Development happens on two lines. `main` is the shipping 1.x product; the 2.0
-rebuild lives on `develop/v2` and is **PRE-ALPHA** — not a release candidate,
-not a preview, not ready, and it will not be called any of those until it is.
+Development happens on two lines. `main` is the shipping 1.x product; the
+rebuild, CoreTend Next, lives on `next` and is **not released** — not a release
+candidate, not a preview, and it will not be called either until it is.
 
 ## Repository layout
 

@@ -1,4 +1,8 @@
-# Project Handoff
+# Project Handoff — 1.x maintenance
+
+> **1.x maintenance line.** Product development happens on CoreTend Next
+> (`feat/reconstruction-open-musts` → `next`; local folder `../coretend-next`).
+> This branch only carries fixes for the published 1.x release.
 
 Observed 2026-09-27 in the current worktree. This document and [TODO](TODO.md)
 are the active handoff/queue. Historical counts and release assertions are not
@@ -17,8 +21,8 @@ Substantial implementation exists, not an empty scaffold. SwiftPM declares Swift
 6, macOS 14+, CoreTend and coretend-cli executables, eight engine/UI libraries and
 CoreTendApp. UI files are in a flat CoreTendApp directory; old v2 nested-module
 instructions and generated architecture tooling do not describe this tree.
-Several generations of release/reconstruction documents coexist. Current request
-is incremental repair here, superseding the separate greenfield plan operationally.
+Several generations of release/reconstruction documents coexist. This handoff
+covers 1.x maintenance only; the rebuild continues on CoreTend Next.
 
 Existing user changes were preserved: deleted .impeccable/live/config.json;
 untracked local configs, Xcode, captures, graph outputs, AGENTS.md and three

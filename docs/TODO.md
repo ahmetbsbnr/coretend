@@ -1,4 +1,8 @@
-# TODO — CoreTend current worktree
+# TODO — CoreTend 1.x maintenance
+
+> **1.x maintenance line.** Product development happens on CoreTend Next
+> (`feat/reconstruction-open-musts` → `next`; local folder `../coretend-next`).
+> This branch only carries fixes for the published 1.x release.
 
 Priority source for in-place recovery, 2026-09-27. See [PASSATION](PASSATION.md)
 and [milestones](../Documentation/Reconstruction/RECOVERY_PLAN.md).

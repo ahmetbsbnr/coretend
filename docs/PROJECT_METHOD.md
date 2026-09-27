@@ -1,4 +1,8 @@
-# Project method — current repository
+# Project method — 1.x maintenance
+
+> **1.x maintenance line.** Product development happens on CoreTend Next
+> (`feat/reconstruction-open-musts` → `next`; local folder `../coretend-next`).
+> This branch only carries fixes for the published 1.x release.
 
 Start with [PASSATION](PASSATION.md), [TODO](TODO.md),
 [architecture](../Documentation/ARCHITECTURE.md) and
