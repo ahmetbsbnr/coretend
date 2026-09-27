@@ -1,5 +1,6 @@
 import SwiftUI
 import AppShell
+import DesignSystem
 import Observation
 
 @main
@@ -19,6 +20,14 @@ struct CoreTendApp: App {
                 .frame(minWidth: 920, minHeight: 620)
         }
         .defaultSize(width: 1120, height: 760)
+        .commands {
+            CommandGroup(replacing: .appSettings) {
+                Button(ProductCopy.value(for: "settings.title", french: navigation.usesFrench) + "…") {
+                    navigation.activeSheet = .settings
+                }
+                .keyboardShortcut(",", modifiers: [.command])
+            }
+        }
 
         MenuBarExtra(isInserted: $menuBarEnabled) {
             CoreTendMenuBar(navigation: navigation)
@@ -39,6 +48,10 @@ final class CoreTendNavigation {
     init(language: String) {
         self.language = language
         selection = Destination.restored(from: CoreTendPreferences().lastDestination)
+    }
+
+    var usesFrench: Bool {
+        language == "fr" || (language == "system" && Locale.preferredLanguages.first?.hasPrefix("fr") == true)
     }
 }
 
@@ -70,13 +83,22 @@ private struct CoreTendRootView: View {
             }
             .navigationTitle("CoreTend")
             .listStyle(.sidebar)
+            .navigationSplitViewColumnWidth(min: 190, ideal: 220)
         } detail: {
-            if let selection = navigation.selection {
-                DestinationView(destination: selection, french: french, recentFilesEnabled: $recentFilesEnabled)
-            } else {
-                ContentUnavailableView(ProductCopy.value(for: "empty.title", french: french), systemImage: "square.grid.2x2")
+            ZStack {
+                if let selection = navigation.selection {
+                    DestinationView(destination: selection, french: french, recentFilesEnabled: $recentFilesEnabled)
+                        .id(selection)
+                        .transition(.opacity.combined(with: .offset(y: 8)))
+                } else {
+                    ContentUnavailableView(ProductCopy.value(for: "empty.title", french: french), systemImage: "square.grid.2x2")
+                }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .background(Palette.canvas.color)
+            .motion(.standard, value: navigation.selection)
         }
+        .tint(Palette.accent.color)
         .toolbar {
             ToolbarItem(placement: .automatic) {
                 Button { navigation.activeSheet = .commands } label: { Image(systemName: "command") }
@@ -127,9 +149,7 @@ private struct CoreTendMenuBar: View {
     @Environment(\.openWindow) private var openWindow
     @Bindable var navigation: CoreTendNavigation
 
-    private var french: Bool {
-        navigation.language == "fr" || (navigation.language == "system" && Locale.preferredLanguages.first?.hasPrefix("fr") == true)
-    }
+    private var french: Bool { navigation.usesFrench }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -152,6 +172,7 @@ private struct CoreTendMenuBar: View {
         }
         .padding(16)
         .frame(width: 360, alignment: .leading)
+        .tint(Palette.accent.color)
     }
 }
 

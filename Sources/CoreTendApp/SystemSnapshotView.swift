@@ -1,3 +1,4 @@
+import DesignSystem
 import SwiftUI
 import Domain
 import ProductContract
@@ -35,6 +36,7 @@ struct SystemSnapshotView: View {
                 ContentUnavailableView(copy("metrics.unavailable"), systemImage: "gauge.with.dots.needle.67percent")
             }
         }
+        .motion(.standard, value: snapshot?.measuredAt)
         .task { refresh() }
         .alert(copy("metrics.clear.title"), isPresented: $confirmClearHistory) {
             Button(copy("common.cancel"), role: .cancel) {}
@@ -50,6 +52,8 @@ struct SystemSnapshotView: View {
             Text(copy("metrics.freeSpace")).font(.headline)
             HStack(alignment: .firstTextBaseline, spacing: 6) {
                 Text(format(value.availableBytes)).font(.system(size: 34, weight: .semibold, design: .rounded))
+                    .contentTransition(.numericText())
+                    .motion(.standard, value: value.availableBytes)
                 Text(copy("metrics.available")).foregroundStyle(.secondary)
             }
             Text(copy("metrics.trashNote")).font(.callout).foregroundStyle(.secondary)
@@ -102,7 +106,7 @@ struct SystemSnapshotView: View {
                     if let load = sample.loadAverage1m {
                         PointMark(x: .value("Time", sample.measuredAt), y: .value(copy("metrics.loadAverage"), load))
                             .symbolSize(44)
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(Palette.accent.color)
                     }
                     if let selectedHistoryDate,
                        let selected = PerformanceHistorySelection.nearestKnownSample(to: selectedHistoryDate, in: known) {

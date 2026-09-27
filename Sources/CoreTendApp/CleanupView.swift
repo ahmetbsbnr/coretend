@@ -1,3 +1,4 @@
+import DesignSystem
 import SwiftUI
 import UniformTypeIdentifiers
 import ScanCore
@@ -43,6 +44,7 @@ struct CleanupView: View {
                             }
                             Spacer()
                             Text(riskLabel(rule.risk)).font(.caption.weight(.semibold))
+                                .foregroundStyle(riskColor(rule.risk))
                                 .padding(.horizontal, 8).padding(.vertical, 4)
                                 .background(.quaternary, in: Capsule())
                         }
@@ -255,6 +257,14 @@ struct CleanupView: View {
         actionScopedRoot = nil
     }
 
+    /// Risk stays readable as text; color only reinforces caution (amber) and high risk (coral).
+    private func riskColor(_ risk: CandidateRisk) -> Color {
+        switch risk {
+        case .low: Palette.secondaryInk.color
+        case .medium: Palette.caution.color
+        case .high: Palette.danger.color
+        }
+    }
     private func riskLabel(_ risk: CandidateRisk) -> String {
         switch risk {
         case .low: copy("cleanup.risk.low")

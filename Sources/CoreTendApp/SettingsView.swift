@@ -115,7 +115,7 @@ struct SettingsView: View {
             }
             .padding(12)
         }
-        .frame(minWidth: 600, minHeight: 520)
+        .frame(minWidth: 600, idealWidth: 640, minHeight: 420, idealHeight: 560, maxHeight: 640)
         .task {
             await load()
             ownSignature = MacOSCodeSignatureInspector().inspect(at: Bundle.main.bundleURL)
