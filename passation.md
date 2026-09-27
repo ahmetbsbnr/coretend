@@ -10,8 +10,8 @@ en fixture, invariants et particularités de l’hôte :
 - **Mis à jour :** 27-09-2026, fin de session.
 - **Phase :** P0 — Remise à plat → [`P0-remise-a-plat.md`](Documentation/Passation/P0-remise-a-plat.md)
 - **Lot courant :** 0.2 (`Makefile` : Python ≥ 3.10), statut **À faire**. Lot 0.1 accepté.
-- **Branche :** `next`. `origin/next` à `3d8c4b1` (CI `qualify` PASS) ; le commit qui crée ce
-  système de passation est au-dessus, à pousser sur demande du mainteneur. `make qualify` PASS en local.
+- **Branche :** `next`, synchronisée avec `origin/next` (poussée le 27-09 ; CI `qualify` PASS
+  sur `3d8c4b1`, vérifier le dernier run au démarrage). `make qualify` PASS en local.
 - **Registre :** Must `VÉRIFIÉ` **2 / 78** (Should 0 / 11). Source : `Documentation/Traceability.csv`.
 - **Apparence :** refonte Observatoire appliquée, **non validée** (gate G1 en P1). Aucun
   changement d’apparence avant G1.
