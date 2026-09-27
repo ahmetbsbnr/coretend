@@ -108,7 +108,7 @@ struct ExploreScanView: View {
                 .padding(14)
                 .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 12))
                 .transition(.opacity.combined(with: .move(edge: .top)))
-                .motion(.gentle, value: scanning)
+                .motion(.standard, value: scanning)
             }
             if let status {
                 Label(status, systemImage: "info.circle")
@@ -182,7 +182,7 @@ struct ExploreScanView: View {
                 .frame(minHeight: 150, idealHeight: 230, maxHeight: 280)
                 .padding(8)
                 .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 12))
-                .motion(.gentle, value: treemapInputs.count)
+                .motion(.standard, value: treemapInputs.count)
                 .accessibilityElement(children: .contain)
                 if visibleResults.isEmpty {
                     ContentUnavailableView(french ? "Aucun fichier ne correspond au filtre" : "No files match this filter", systemImage: "line.3.horizontal.decrease.circle")

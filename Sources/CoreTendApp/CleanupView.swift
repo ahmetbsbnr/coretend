@@ -64,7 +64,7 @@ struct CleanupView: View {
             }
             .padding(14)
             .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 14))
-            .motion(.gentle, value: selectedRule)
+            .motion(.standard, value: selectedRule)
             if let descriptor {
                 VStack(alignment: .leading, spacing: 10) {
                     Label(french ? "Dossier attendu" : "Expected folder", systemImage: "checkmark.shield")
@@ -105,7 +105,7 @@ struct CleanupView: View {
                 }
                 .padding(14).background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 12))
                 .transition(.opacity.combined(with: .move(edge: .top)))
-                .motion(.gentle, value: scanning)
+                .motion(.standard, value: scanning)
             }
             if !results.isEmpty {
                 HStack {

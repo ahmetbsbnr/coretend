@@ -1,9 +1,10 @@
 import SwiftUI
 import AppKit
 
-/// Observatoire colors: slate surfaces, mineral cyan actions, copper caution, coral danger.
-/// Text and signal roles meet 4.5:1 against canvas and both surfaces in each appearance.
-/// Separator is a decorative boundary; focus provides the visible control outline.
+/// Serre colors (Documentation/Design/UI-guide.md § 2): night-greenhouse and frosted-glass
+/// greens, one chlorophyll accent, pollen caution, terracotta danger. Every text role meets
+/// 4.5:1 and every control outline 3:1 on canvas, sidebar, surface and raised surface, in both
+/// appearances (DesignSystemTests). Separator is decorative; strongSeparator outlines controls.
 public enum Appearance: CaseIterable, Sendable { case light, dark }
 
 public struct RGB: Equatable, Sendable {
@@ -51,26 +52,25 @@ public struct PaletteRole: Sendable {
 }
 
 public enum Palette {
-    // Light: mist canvas / white panels. Dark: deep slate / progressively raised panels.
-    // Surface/canvas contrast: 1.09 light, 1.05 dark. Raised/surface: 1.04 light, 1.14 dark.
-    // Separator/surface: 1.32 light, 1.47 dark; it does not carry meaning alone.
-    public static let canvas = PaletteRole(name: "coretend.canvas", light: RGB(hex: 0xEDF0F4), dark: RGB(hex: 0x18263A))
-    public static let surface = PaletteRole(name: "coretend.surface", light: RGB(hex: 0xF9FAFC), dark: RGB(hex: 0x1D2A3C))
-    public static let raisedSurface = PaletteRole(name: "coretend.raisedSurface", light: RGB(hex: 0xFFFFFF), dark: RGB(hex: 0x253348))
-    public static let separator = PaletteRole(name: "coretend.separator", light: RGB(hex: 0xD5DCE5), dark: RGB(hex: 0x35445A))
+    // Grounds.
+    public static let canvas = PaletteRole(name: "coretend.canvas", light: RGB(hex: 0xE7EFE4), dark: RGB(hex: 0x0F2019))
+    public static let sidebar = PaletteRole(name: "coretend.sidebar", light: RGB(hex: 0xDCE7D8), dark: RGB(hex: 0x0B1913))
+    public static let surface = PaletteRole(name: "coretend.surface", light: RGB(hex: 0xF4F8F1), dark: RGB(hex: 0x14291F))
+    public static let raisedSurface = PaletteRole(name: "coretend.raisedSurface", light: RGB(hex: 0xFFFFFF), dark: RGB(hex: 0x183126))
+    /// Soil behind visualisations (roots, strata).
+    public static let deep = PaletteRole(name: "coretend.deep", light: RGB(hex: 0xD3E0CF), dark: RGB(hex: 0x0A1510))
+    public static let separator = PaletteRole(name: "coretend.separator", light: RGB(hex: 0xBFD0C1), dark: RGB(hex: 0x2C4A37))
+    public static let strongSeparator = PaletteRole(name: "coretend.strongSeparator", light: RGB(hex: 0x65826D), dark: RGB(hex: 0x5F8A6C))
 
-    // Minimum contrast on canvas / surface / raisedSurface respectively:
-    // ink 13.33 / 14.59 / 15.24 (light), 13.56 / 12.89 / 11.35 (dark)
-    // secondaryInk 4.72 / 5.17 / 5.40 (light), 7.42 / 7.05 / 6.21 (dark)
-    // accent 5.35 / 5.86 / 6.12 (light), 7.91 / 7.52 / 6.62 (dark)
-    // caution 4.86 / 5.32 / 5.56 (light), 6.88 / 6.54 / 5.75 (dark)
-    // danger 4.92 / 5.39 / 5.63 (light), 6.27 / 5.97 / 5.25 (dark)
-    public static let ink = PaletteRole(name: "coretend.ink", light: RGB(hex: 0x1A2638), dark: RGB(hex: 0xEFF2F4))
-    public static let secondaryInk = PaletteRole(name: "coretend.secondaryInk", light: RGB(hex: 0x5F6B7E), dark: RGB(hex: 0xABB6C4))
-    public static let accent = PaletteRole(name: "coretend.accent", light: RGB(hex: 0x176C74), dark: RGB(hex: 0x77C9C0))
-    public static let onAccent = PaletteRole(name: "coretend.onAccent", light: RGB(hex: 0xFFFFFF), dark: RGB(hex: 0x18263A))
-    public static let caution = PaletteRole(name: "coretend.caution", light: RGB(hex: 0x9A5731), dark: RGB(hex: 0xE1A071))
-    public static let danger = PaletteRole(name: "coretend.danger", light: RGB(hex: 0xB83C33), dark: RGB(hex: 0xF08A7E))
-    public static let focus = PaletteRole(name: "coretend.focus", light: RGB(hex: 0x176C74), dark: RGB(hex: 0x77C9C0))
-    // onAccent/accent: 6.12 light, 7.91 dark. Focus/raisedSurface: 6.12 light, 6.62 dark.
+    // Ink and signals. Lowest ratio over the four grounds, light / dark:
+    // ink 12.5 / 12.2, secondaryInk 6.9 / 8.5, tertiaryInk 4.9 / 5.0,
+    // accent 4.9 / 9.0, caution 4.7 / 7.5, danger 4.7 / 5.5; onAccent on accent 5.8 / 11.7.
+    public static let ink = PaletteRole(name: "coretend.ink", light: RGB(hex: 0x10261C), dark: RGB(hex: 0xEEF1E6))
+    public static let secondaryInk = PaletteRole(name: "coretend.secondaryInk", light: RGB(hex: 0x35503F), dark: RGB(hex: 0xC3CDB9))
+    public static let tertiaryInk = PaletteRole(name: "coretend.tertiaryInk", light: RGB(hex: 0x4F6557), dark: RGB(hex: 0x8FA088))
+    public static let accent = PaletteRole(name: "coretend.accent", light: RGB(hex: 0x2C6E35), dark: RGB(hex: 0x9BE36D))
+    public static let onAccent = PaletteRole(name: "coretend.onAccent", light: RGB(hex: 0xF4F8F1), dark: RGB(hex: 0x0B1913))
+    public static let caution = PaletteRole(name: "coretend.caution", light: RGB(hex: 0x8A5A00), dark: RGB(hex: 0xE8B64A))
+    public static let danger = PaletteRole(name: "coretend.danger", light: RGB(hex: 0xA9431C), dark: RGB(hex: 0xE98A63))
+    public static let focus = PaletteRole(name: "coretend.focus", light: RGB(hex: 0x2C6E35), dark: RGB(hex: 0x9BE36D))
 }

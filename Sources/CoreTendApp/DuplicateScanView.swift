@@ -76,7 +76,7 @@ struct DuplicateScanView: View {
                 }
                 .padding(14).background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 12))
                 .transition(.opacity.combined(with: .move(edge: .top)))
-                .motion(.gentle, value: scanning)
+                .motion(.standard, value: scanning)
             }
             if let status {
                 Label(status, systemImage: "info.circle")
