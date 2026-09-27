@@ -62,6 +62,8 @@ private extension AppearancePreference {
 final class CoreTendNavigation {
     var selection: Destination?
     var activeSheet: RootSheet?
+    /// The command palette, drawn over the window (not a sheet: a click outside closes it).
+    var searchOpen = false
     var language: String
 
     init(language: String) {
@@ -84,6 +86,7 @@ private struct CoreTendRootView: View {
     @State private var recentFilesEnabled: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var rowFrames: [Destination: CGRect] = [:]
+    @Namespace private var searchSpace
     private var french: Bool { language == "fr" || (language == "system" && Locale.preferredLanguages.first?.hasPrefix("fr") == true) }
 
     private var effectiveColorScheme: ColorScheme? {
@@ -104,8 +107,8 @@ private struct CoreTendRootView: View {
 
     var body: some View {
         NavigationSplitView {
-            SerreSidebar(selection: $navigation.selection, french: french,
-                         openSearch: { navigation.activeSheet = .commands },
+            SerreSidebar(selection: $navigation.selection, french: french, searchNamespace: searchSpace,
+                         openSearch: toggleSearch,
                          openSettings: { navigation.activeSheet = .settings })
                 .navigationSplitViewColumnWidth(min: 200, ideal: 232)
                 .navigationTitle("CoreTend")
@@ -132,6 +135,17 @@ private struct CoreTendRootView: View {
         .preferredColorScheme(effectiveColorScheme)
         .toolbarBackground(Palette.canvas.color, for: .windowToolbar)
         .modifier(HiddenWindowTitle())
+        .overlay {
+            if navigation.searchOpen {
+                SearchLayer(french: french, namespace: searchSpace, select: { target in
+                    switch target {
+                    case .destination(let destination): navigation.selection = destination
+                    case .settings: navigation.activeSheet = .settings
+                    }
+                }, close: closeSearch)
+                .transition(.opacity.animation(MotionCurve.retreat.animation(duration: reduceMotion ? 0.01 : 0.18)))
+            }
+        }
         .sheet(item: $navigation.activeSheet) { sheet in
             // Sheets are separate presentations and do not inherit the window's tint.
             sheetContent(sheet).tint(Palette.accent.color).buttonStyle(.serre(.secondary))
@@ -159,15 +173,16 @@ private struct CoreTendRootView: View {
         case .settings: SettingsView(french: french, language: $language, appearance: $appearance, recentFilesEnabled: $recentFilesEnabled, menuBarEnabled: $menuBarEnabled) {
             navigation.activeSheet = nil
         }
-        case .commands:
-            CommandPaletteView(french: french) { target in
-                switch target {
-                case .destination(let destination): navigation.selection = destination; navigation.activeSheet = nil
-                case .settings: navigation.activeSheet = .settings
-                }
-            }
         case .onboarding: OnboardingView(french: french) { onboardingCompleted = true; navigation.activeSheet = nil }
         }
+    }
+
+    private func toggleSearch() {
+        if navigation.searchOpen { closeSearch() } else { navigation.searchOpen = true }
+    }
+
+    private func closeSearch() {
+        withAnimation(MotionCurve.retreat.animation(duration: reduceMotion ? 0.01 : 0.18)) { navigation.searchOpen = false }
     }
 
     /// The point, in the content, level with the chosen sidebar row; the leading edge if unknown.
@@ -185,7 +200,7 @@ private struct HiddenWindowTitle: ViewModifier {
     }
 }
 
-enum RootSheet: String, Identifiable { case settings, commands, onboarding; var id: String { rawValue } }
+enum RootSheet: String, Identifiable { case settings, onboarding; var id: String { rawValue } }
 
 private struct CoreTendMenuBar: View {
     @Environment(\.openWindow) private var openWindow

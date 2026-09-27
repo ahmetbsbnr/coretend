@@ -18,6 +18,8 @@ struct SidebarRowFrames: PreferenceKey {
 struct SerreSidebar: View {
     @Binding var selection: Destination?
     let french: Bool
+    /// Shared with SearchLayer, so the palette grows out of the Search button.
+    let searchNamespace: Namespace.ID
     let openSearch: () -> Void
     let openSettings: () -> Void
 
@@ -91,6 +93,7 @@ struct SerreSidebar: View {
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.serre(.secondary))
+        .matchedGeometryEffect(id: "search.button", in: searchNamespace, properties: .frame, isSource: true)
         .keyboardShortcut("k", modifiers: [.command])
         .environment(\.serreFocusRing, false)
         .help(french ? "Accéder à… (⌘K)" : "Go to or open… (⌘K)")

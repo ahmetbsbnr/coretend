@@ -124,6 +124,17 @@ final class SerreDrawingTests: XCTestCase {
         XCTAssertEqual(GrowMask.radius(origin: CGPoint(x: 0, y: 600), in: size), 1000, accuracy: 0.001)
     }
 
+    func testSearchRootGrowsWithTheQueryAndStopsAtFullLength() {
+        XCTAssertEqual(SearchRoot.progress(forQueryLength: 0), 0)
+        let lengths = [1, 3, 6, 10]
+        let values = lengths.map { SearchRoot.progress(forQueryLength: $0) }
+        XCTAssertEqual(values, values.sorted(), "the root never shrinks as the query grows")
+        XCTAssertGreaterThan(values[0], 0)
+        XCTAssertEqual(SearchRoot.progress(forQueryLength: 40), 1)
+        XCTAssertFalse(SearchRoot(progress: 1).path(in: CGRect(x: 0, y: 0, width: 400, height: 12)).isEmpty)
+        XCTAssertTrue(SearchRoot(progress: 0).path(in: CGRect(x: 0, y: 0, width: 400, height: 12)).isEmpty)
+    }
+
     func testLogoGerminationEndsInTheStillFinalState() {
         let final = SerreLogoState.grown
         XCTAssertEqual(final.seedDrop, 0); XCTAssertEqual(final.stem, 1)

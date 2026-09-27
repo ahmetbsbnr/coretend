@@ -128,3 +128,16 @@ public struct SerreEmptyState<Action: View>: View {
         }
     }
 }
+
+/// The dimmed ground behind a layer drawn over the window (the command palette). It covers the
+/// whole window; tapping it is how the layer is dismissed with the pointer.
+public struct SerreScrim: View {
+    public init() {}
+
+    public var body: some View {
+        Rectangle()
+            .fill(Color.black.opacity(0.45))
+            .ignoresSafeArea()
+            .contentShape(Rectangle())
+    }
+}
