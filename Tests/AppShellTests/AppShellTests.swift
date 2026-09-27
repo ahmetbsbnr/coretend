@@ -225,6 +225,24 @@ final class AppShellTests: XCTestCase {
         XCTAssertTrue(CommandPaletteCatalog.search("sans résultat", french: false).isEmpty)
     }
 
+    func testCommandPaletteSearchAcceptsEnglishAndFrenchAliasesInEitherInterfaceLanguage() {
+        let aliases: [(String, String, CommandTarget)] = [
+            ("home", "accueil", .destination(.overview)),
+            ("history", "historique", .destination(.record)),
+            ("clean", "nettoyer", .destination(.cleanup)),
+            ("folders", "dossiers", .destination(.explore)),
+            ("duplicate files", "doublons exacts", .destination(.duplicates)),
+            ("software", "logiciels", .destination(.applications)),
+            ("quarantine", "quarantaine", .destination(.integrity)),
+            ("measurements", "mesures", .destination(.performance)),
+            ("preferences", "préférences", .settings)
+        ]
+        for (english, french, target) in aliases {
+            XCTAssertTrue(CommandPaletteCatalog.search(english, french: true).contains { $0.target == target }, "French UI should find (target) with (english)")
+            XCTAssertTrue(CommandPaletteCatalog.search(french, french: false).contains { $0.target == target }, "English UI should find (target) with (french)")
+        }
+    }
+
     func testCommandPaletteArrowNavigationSelectsAndClampsResults() {
         let commands = CommandPaletteCatalog.search("", french: false)
         XCTAssertEqual(CommandPaletteNavigation.move(in: commands, selectedID: nil, direction: .down), commands.first?.id)

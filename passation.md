@@ -262,3 +262,8 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 
 - `SavedFilesView` affiche état présent (accès courant non vérifié) ou absent/inaccessible à partir de métadonnée d’existence seulement; taille reste la dernière mesure connue et aucune lecture/réouverture de chemin n’est déclenchée. Helper `ProductCopy.savedFileAvailability` testé dans les deux langues; build App et `make qualify` passent.
 - FR-24 et `favrec.module` passent de EN_COURS à PARTIEL, preuve de wording/état présente; navigation native, lecture VoiceOver et accès actuel restent à qualifier. Registre recalculé : 83 PARTIEL, 6 À_CONSTRUIRE, 2 VÉRIFIÉ; score pondéré total 47,8 %. Must inchangé à 51,3 %.
+
+### FR-24 — recherche palette bilingue — 27-09-2026
+
+- Corrige un écart entre guide (recherche FR ou EN) et catalogue (alias jusque-là limités à la langue affichée). Recherche palette contient maintenant alias français et anglais pour huit destinations et Réglages; test rouge initial trouvait `home` depuis interface française et `historique` depuis interface anglaise sans résultat, tests verts couvrent toutes destinations dans les deux directions.
+- `make qualify` complet passe. Traceability confirme preuve AppShell et garde interaction native arrows/Settings non qualifiée. Aucun statut Must/Should ou score ne change; plan local reste non suivi.

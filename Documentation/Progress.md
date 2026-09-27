@@ -286,3 +286,8 @@
 
 - La disponibilité affichée utilise uniquement `fileExists` et libellé prudent : présent sans confirmer accès, ou absent/inaccessible. Taille reste mesure sauvegardée; aucun chemin n’est ouvert. Helper de copy EN/FR ajouté au module testable AppShell et utilisé par la vue; test ciblé, build App et `make qualify` passent.
 - FR-24 et `favrec.module` deviennent PARTIEL (preuve comportement/libellé automatisée); navigation native et VoiceOver/accessibilité restent ouverts. Registre : 83 PARTIEL, 6 À_CONSTRUIRE, 2 VÉRIFIÉ (47,8 % pondéré); Must : 76 PARTIEL, 2 VÉRIFIÉ (51,3 %).
+
+### FR-24 — alias bilingues Command Palette — 27-09-2026
+
+- Le guide promettait recherche EN ou FR sans dépendre de langue UI, mais le catalogue n’incluait que l’alias courant. Fixtures rouges reproduisent `home` dans UI française et `historique` dans UI anglaise sans résultat; catalogue ajoute les alias deux langues, test couvre les huit destinations et Réglages dans les deux sens. `make qualify` passe.
+- Navigation flèches native et activation Réglages native restent non qualifiées; aucun statut ou score de conformité ne change.
