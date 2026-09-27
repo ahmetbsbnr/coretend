@@ -136,3 +136,8 @@
 
 - `swift build -c release --product CoreTendApp` et `swift build -c release --product CoreTendCLI` réussissent sur arm64/macOS 27.0 sans avertissement émis. `make qualify` a également réussi (XCTest et builds debug App/CLI).
 - `Package.swift` ne déclare aucune dépendance SwiftPM externe et aucun `Package.resolved` n’existe. Reproductibilité entre builds propres/hôtes et compatibilité multi-hôte restent non prouvées; NFR-13 demeure `PARTIEL`.
+
+### FR-10 — causes d’échec de racine — 27-09-2026
+
+- ScanCore distingue `permission_denied`, `missing` et indisponibilité technique. ProductCopy présente maintenant refus macOS, absence et disponibilité indéterminée avec messages EN/FR distincts; test rouge/vert AppShell couvre le mapping.
+- Pas de sonde TCC/FDA exhaustive ni d’ouverture des réglages Confidentialité. FR-10 reste `PARTIEL`; ne pas inférer l’absence d’un élément depuis un scan incomplet.
