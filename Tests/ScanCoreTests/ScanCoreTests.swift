@@ -371,6 +371,18 @@ final class TreemapLayoutTests: XCTestCase {
 }
 
 final class ExplorePresetTests: XCTestCase {
+    func testExploreCategoriesUseExplicitCaseInsensitiveExtensionsAndUnknownFallback() {
+        XCTAssertTrue(ExploreFileCategory.images.matches(URL(fileURLWithPath: "/fixture/PHOTO.HEIC")))
+        XCTAssertTrue(ExploreFileCategory.videos.matches(URL(fileURLWithPath: "/fixture/clip.mov")))
+        XCTAssertTrue(ExploreFileCategory.audio.matches(URL(fileURLWithPath: "/fixture/voice.flac")))
+        XCTAssertTrue(ExploreFileCategory.documents.matches(URL(fileURLWithPath: "/fixture/report.PDF")))
+        XCTAssertTrue(ExploreFileCategory.archives.matches(URL(fileURLWithPath: "/fixture/backup.7z")))
+        XCTAssertTrue(ExploreFileCategory.other.matches(URL(fileURLWithPath: "/fixture/data.custom")))
+        XCTAssertTrue(ExploreFileCategory.other.matches(URL(fileURLWithPath: "/fixture/README")))
+        XCTAssertFalse(ExploreFileCategory.images.matches(URL(fileURLWithPath: "/fixture/report.pdf")))
+        XCTAssertTrue(ExploreFileCategory.all.matches(URL(fileURLWithPath: "/fixture/README")))
+    }
+
     func testLargePresetUsesKnownAllocatedBytesAndInclusiveGiBThreshold() {
         let root = FileManager.default.temporaryDirectory
         let atThreshold = result(root.appendingPathComponent("threshold"), allocated: .known(1_073_741_824), modified: nil)
