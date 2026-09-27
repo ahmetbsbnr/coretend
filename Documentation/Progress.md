@@ -2,6 +2,11 @@
 
 **Relevé :** 2026-09-27. **État :** reconstruction en cours, non finalisée. Derniers jalons fusionnés : favoris/récents SQLite v4, palette clavier bilingue et écriture batch des récents (PR #40–#44). UI macOS native et VoiceOver non qualifiés. Cahier et plan approuvés; développement sur lignée `next` du dépôt public historique. Le dépôt greenfield initial `rebuild/` reste copie locale de provenance.
 
+### NFR-11 — contrat reduced-motion du site — 2026-09-27
+
+- `site-check` valide désormais le CSS `prefers-reduced-motion: reduce`: défilement fluide neutralisé, animations et transitions ramenées à une durée minimale avec `!important`. Trois tests couvrent règle complète, media query absente et protections manquantes.
+- Test statique ne remplace pas l’émulation navigateur. L’interface Chrome DevTools disponible ne permet pas d’émuler cette préférence; zoom réel, réglages OS, contraste exhaustif, VoiceOver et navigateur déployé restent à qualifier. NFR-11 reste `PARTIEL`.
+
 ### FR-11 — migrations simultanées au démarrage — 2026-09-27
 
 - L’observation AX native sur fixture a reproduit `Données locales indisponibles.` dans Overview quand le store neuf était ouvert simultanément par shell et vue Favoris/Récents. Le schéma était valide ensuite; les deux connexions avaient capturé `user_version` obsolète avant `BEGIN IMMEDIATE`.

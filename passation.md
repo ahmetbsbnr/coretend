@@ -7,6 +7,15 @@
 - Registre : 91 lignes, 86 PARTIEL, 3 À_CONSTRUIRE, 2 VÉRIFIÉ. Pondération indicative : 51,3 % Must, 45,5 % Should, 49,5 % global; aucune n’est mesure officielle de complétion.
 - `Documentation/Project/Implementation-plan.md` réconcilié : fixtures/code cochés seulement quand présents; qualification native, release, hôtes/revue externes restent explicitement ouverts. Le plan local non suivi `Remaining-musts-plan.md` reste préservé.
 
+### Reprise dev — 27-09-2026
+
+- NFR-11: `site-check` vérifie maintenant par fixtures la présence de `prefers-reduced-motion: reduce`, le désactivage du smooth scroll et la réduction des durées animation/transition. Trois tests passent, et le contrat est branché à `make qualify`. Le gate complet passe après changement. Le navigateur DevTools accessible ne permet pas l’émulation runtime; qualification runtime toujours ouverte.
+- `make qualify` complet repassé après FR-22 : génération/site, 91 lignes de traçabilité, sécurité/architecture, install/uninstall fixture, app Release isolée avec MenuBarExtra activé et zéro socket Internet sur 13 échantillons, builds propres App/CLI byte-identiques, suites XCTest (dont AppShell 40), builds Debug et CLI/SIGINT. Résultat vert.
+- Hash observés: App `c96e5a32739ef31b1b580419724942eb62fa416dfc5bbe9cfa26d19be59d4c22`; CLI `9800f0d19f839ef82a57ebee7616966672195871b7510f7a6a11193b228af2ba`.
+- Comptage CSV recalculé: 91 lignes; 86 PARTIEL, 3 À_CONSTRUIRE, 2 VÉRIFIÉ. Must: 76 PARTIEL + 2 VÉRIFIÉ = 51,3 % pondéré; Should: 10 PARTIEL + 1 À_CONSTRUIRE = 45,5 %; ensemble = 49,5 % (PARTIEL=50 %, EN_COURS=25 %, VÉRIFIÉ=100 %, À_CONSTRUIRE=0 %). Indice de couverture de preuve, pas % de produit recréé.
+- Aucun Must n’est EN_COURS/À_CONSTRUIRE, mais 76/78 restent PARTIEL. Reste bloqué par qualification native/accessibilité, vraie Corbeille/parcours d’action, FDA, compatibilité hôtes, distribution et autres critères indiqués par ligne dans `Documentation/Traceability.csv`. Pas de clôture fictive.
+- Les Tasks 1–22 du plan non suivi décrivent du travail déjà présent selon inspection ciblée; `make qualify` valide l’état général du worktree. Cela ne remplace pas les qualifications manuelles listées par exigence. Le fichier non suivi reste intact.
+
 ### Should — menu-bar facultatif — 27-09-2026
 
 - `MenuBarExtra` donne accès aux huit destinations existantes et à Réglages avec état de navigation partagé. Réglage persistant `coretend.menuBar.enabled`, désactivé par défaut, copie et aide EN/FR.
