@@ -8,10 +8,10 @@
 - Cahier des charges complet et approuvé : QQOQCCP, MoSCoW, RACI, objectifs, exigences, architecture, risques et séquence. Voir `Documentation/Project/Cahier-des-charges.md`.
 - Traceability contient 40 FR/NFR + 51 capacités; 91 statuts renseignés. La ligne NFR-07 a été réalignée sur les colonnes CSV; statut PARTIEL tant que revue clavier/VoiceOver/Dynamic Type/contraste/Reduce Motion n’est pas faite.
 - App SwiftUI macOS, CLI Swift, persistance SQLite, modules métier, site statique EN/FR et scripts de paquet sont présents. Résultats/états restent partiels selon `Documentation/Traceability.csv`; aucun jalon ne signifie produit final.
-- Dernière qualification locale : `make qualify` le 27-09 après Task21; smoke runtime debug isolé passe également. Elle couvre génération, site, traçabilité, audit statique de sûreté, installation fixture en HOME temporaire, XCTest complet, builds debug App/CLI et whitespace. Aucune UI native/VoiceOver n’est qualifiée par ce gate.
+- Dernière qualification locale : `make qualify` le 27-09 après Task22; smoke runtime debug isolé passe également. Elle couvre génération, site, traçabilité, audit statique de sûreté, installation fixture en HOME temporaire, XCTest complet, builds debug App/CLI et whitespace. Aucune UI native/VoiceOver n’est qualifiée par ce gate.
 - Paquet courant : `Artifacts/CoreTend-local-unsigned.zip`, arm64, produit depuis le code app `b0287bf`. SHA-256 `94503244830030785388e6ea2359dc844af22d719d5e82729f14408f1697a299`. `make package-local verify-package` passe; vérification limitée à Info.plist, archive et Mach-O. Non lancé, installé sur le Mac, signé, notarié ou publié. Preuve dans `Documentation/ReleaseEvidence.md`.
 - Copie greenfield historique `rebuild/` conservée localement comme provenance. Passation/documents 1.x archivés sous `Documentation/Archive/Legacy-Reconstruction/`; ils ne décrivent pas le code actuel.
-- État après les tâches 15–22 : traçabilité de 91 lignes, 55 `PARTIEL`, 28 `EN_COURS`, 8 `À_CONSTRUIRE`. Critères UI/macOS, compatibilité et distribution restent ouverts.
+- État après les tâches 15–22 : traçabilité de 91 lignes, 55 `PARTIEL`, 28 `EN_COURS`, 8 `À_CONSTRUIRE`. Estimation indicative pondérée (VÉRIFIÉ=100 %, PARTIEL=50 %, EN_COURS=25 %, À_CONSTRUIRE=0 %) : 40 % des 78 Must, 38 % des 91 lignes. Ce n’est pas un indicateur officiel; critères UI/macOS, compatibilité et distribution restent ouverts.
 
 ## Jalons locaux depuis la dernière passation
 
@@ -28,9 +28,8 @@
 - Smoke FR-14 isolé : binaire debug lancé avec `CFFIXED_USER_HOME` temporaire; processus vivant 8 s et store créé exclusivement sous ce profil. GUI visible, bundle emballé, accessibilité restent non qualifiés; preuve dans ReleaseEvidence.
 - **Task 21 — FR-07 keeper revalidé par action** : DuplicateScanView transmet keeper de chaque groupe sélectionné; FileActionService capture son identité et la revérifie avant chaque Trash. Fixture supprime le keeper après premier déplacement; copie suivante reste, second appel Trash bloqué et échec journalisé. `make qualify` passe. Le TOCTOU avant l’API Trash et UI native restent ouverts.
 
-- **Task 22 — NFR-09 baseline synthétique** : `make benchmark-scan` mesure CLI Release sur 10 000 fichiers. Warm median 0,913 s wall / 0,979 s CPU / 74,18 MiB RSS max sur arm64/macOS 27.0. Aucun budget choisi; mesures UI/corpus réel restent ouvertes. Détails dans `Documentation/Evidence/PerformanceBaseline.md`.
-
 - **Task 22 — NFR-09 baseline synthétique** : `make benchmark-scan` mesure CLI Release sur 10 000 fichiers. Warm median 0,913 s wall / 0,979 s CPU / 74,18 MiB RSS max sur arm64/macOS 27.0. Aucun budget choisi; mesures UI/corpus réel restent ouvertes. Détails dans `Documentation/Evidence/PerformanceBaseline.md`. `make qualify` passe.
+- **Task 10 — Integrity LaunchAgents (`569cc4d`, `fcbb687`)** : revue consultative plist dans seul dossier explicitement choisi, plafonds 500 candidats/1 Mio, lecture sans suivre symlinks et ancrage au descripteur de racine; erreurs visibles. Tests synthétiques couvrent plist valide/malformé/trop grand, symlink, limite et remplacement de racine. N’affirme ni activité ni sûreté; `integrity.loginitems` reste PARTIEL avant qualification native et intégration aux services système.
 
 ## Jalons récents intégrés
 
@@ -63,8 +62,8 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 - **FR-14 Distribution :** install smoke en HOME fixture et validation de structure passent; app jamais ouverte. Pas de preuve GUI install/désinstall, signature, notarisation, compatibilité deuxième hôte/version macOS ni release.
 - **Données/migration :** import JSON legacy v1 reconnu et copy-only; formats anciens non reconnus. Backup/restauration synthétiques vérifiés; restauration réelle, interruption/reprise élargie et qualification UI restent ouvertes. Effacement SQLite logique, aucune garantie forensique.
 - **Applications/Integrity :** aucun contrôle App Store/version update; `SUFeedURL` déclaré seulement. Marqueur quarantine et signature sont des signaux limités, aucun verdict malware/provenance.
-- **Features partielles :** images similaires heuristique non calibrée/corpus à établir; cloud, menu bar et login items non livrés; certains filtres et usages système encore incomplets; CLI localisation/cas d’annulation restent incomplets.
-- **Perf/release :** pas de baseline représentative start/scan/CPU/RSS; pas de capture réseau runtime; aucune review sécurité indépendante; paquet courant unsigned.
+- **Features partielles :** images similaires heuristique non calibrée/corpus à établir; classification metadata-only des éléments cloud et revue LaunchAgents sont présentes, sans qualification comportementale générale; menu bar non livrée; certains filtres et usages système encore incomplets; CLI localisation/cas d’annulation restent incomplets.
+- **Perf/release :** baseline initiale CLI synthétique existe; startup-to-window, UI/idle et corpus représentatif restent non mesurés; pas de capture réseau runtime; aucune review sécurité indépendante; paquet courant unsigned.
 
 ## Ordre de reprise conseillé
 
