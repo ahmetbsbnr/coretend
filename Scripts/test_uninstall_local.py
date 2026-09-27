@@ -82,6 +82,7 @@ def main() -> None:
         touch(linked_app_inside_home / "Contents" / "MacOS" / "CoreTendApp")
         ancestor_refused = run(script, linked_library_home, linked_app_inside_home, "--remove-all", "--yes")
         assert ancestor_refused.returncode != 0, "symlinked Library ancestor must block destructive mode"
+        assert (linked_app_inside_home / "Contents" / "Info.plist").read_text() == "fixture"
         assert (outside_support / "records.sqlite").read_text() == "outside fixture"
 
     print("Local uninstaller passed isolated dry-run, opt-in legacy removal, and symlink refusal fixtures.")
