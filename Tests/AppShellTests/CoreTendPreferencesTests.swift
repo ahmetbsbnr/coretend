@@ -90,4 +90,15 @@ final class CoreTendPreferencesTests: XCTestCase {
 
         XCTAssertEqual(preferences.resolvedLanguage(storedValue: "fr"), "fr")
     }
+
+    func testAppearanceOverrideAppliesOnlyInFixtureMode() {
+        XCTAssertEqual(CoreTendPreferences(environment: ["CORETEND_TEST_MODE": "1", "CORETEND_TEST_APPEARANCE": "dark"],
+                                           defaults: UserDefaults(suiteName: "coretend.appearance.fixture")!).fixtureAppearance, .dark)
+        XCTAssertEqual(CoreTendPreferences(environment: ["CORETEND_TEST_MODE": "1", "CORETEND_TEST_APPEARANCE": "light"],
+                                           defaults: UserDefaults(suiteName: "coretend.appearance.fixture")!).fixtureAppearance, .light)
+        XCTAssertNil(CoreTendPreferences(environment: ["CORETEND_TEST_MODE": "1", "CORETEND_TEST_APPEARANCE": "sepia"],
+                                         defaults: UserDefaults(suiteName: "coretend.appearance.fixture")!).fixtureAppearance)
+        XCTAssertNil(CoreTendPreferences(environment: ["CORETEND_TEST_APPEARANCE": "dark"],
+                                         defaults: UserDefaults(suiteName: "coretend.appearance.fixture")!).fixtureAppearance)
+    }
 }

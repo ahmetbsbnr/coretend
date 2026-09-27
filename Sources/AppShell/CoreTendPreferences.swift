@@ -1,5 +1,7 @@
 import Foundation
 
+public enum FixtureAppearance: String, Sendable { case light, dark }
+
 /// Application preferences are host-persistent only in normal launches.
 /// Any declared fixture mode reads overrides from the process environment and never touches CFPreferences.
 public struct CoreTendPreferences {
@@ -37,6 +39,12 @@ public struct CoreTendPreferences {
     public var recentFilesEnabled: Bool {
         if !usesPersistentStorage { return environment["CORETEND_TEST_RECENT_FILES_ENABLED"] == "1" }
         return defaults.bool(forKey: "coretend.recentFiles.enabled")
+    }
+
+    /// Fixture-only appearance override so light and dark qualification never changes the host setting.
+    public var fixtureAppearance: FixtureAppearance? {
+        guard !usesPersistentStorage else { return nil }
+        return environment["CORETEND_TEST_APPEARANCE"].flatMap(FixtureAppearance.init(rawValue:))
     }
 
     public var menuBarEnabled: Bool {
