@@ -78,6 +78,7 @@ def main() -> None:
                 for binary in (first, second):
                     result = subprocess.run(["otool", "-l", str(binary)], text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False)
                     print(f"Load-command SHA {binary.name}: {hashlib.sha256(result.stdout.encode()).hexdigest()}")
+                    print("\n".join(line for line in result.stdout.splitlines() if any(key in line for key in ("sectname", "segname", "size ", "offset "))))
             raise RuntimeError(f"{product} is not reproducible across clean scratch builds")
         print(f"{product}: byte-identical across clean scratch builds")
     print("Two cold builds used the same physical scratch path per product, cleared between builds; LC_UUID disabled for deterministic Mach-O output; all outputs removed with the unique temporary root.")
