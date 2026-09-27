@@ -43,14 +43,32 @@
   bande de sol, chemins cliquables), clair/sombre, FR/EN. **Acceptée le 27-09-2026** (« validé ») ;
   registre : shell.onboarding `VÉRIFIÉ`, FR-01/FR-03/shell.launch/shell.nav preuves datées, `PARTIEL`.
 
+### 27-09-2026 — lot 3.2, Nettoyage (en cours, arrêt demandé par le mainteneur)
+
+- **Fait :** `a76d15b7` — règles en lignes Serre + badges de risque, texte « .crash et .ips » corrigé ;
+  `ScanRoots` (racines au rythme des vrais événements, compteur Iowan, floraison en fin, retrait à
+  l’annulation) ; résultats triés par taille connue ; bandeaux refus/partiel/erreur/vide ;
+  `FileActionService.execute(_:onItem:)` rapporte chaque élément dès son issue finale ; feuille qui
+  tombe vers l’indicateur Corbeille, ligne restée en place avec contour `danger` et raison
+  (`ActionItemResult.failureKey`) ; défilement sur toute la largeur de la fenêtre.
+- **Vérifié :** tests Domain/DesignSystem/AppShell ajoutés et passés ; `make qualify` PASS avant les
+  deux derniers ajustements (zone de défilement, hauteur de liste) ; app fixture observée : règles,
+  mauvais dossier (bandeau + Choisir à nouveau), analyse, résultats, sélection, dialogue de revue,
+  annulation journalisée.
+- **Non vérifié :** `make qualify` après les deux derniers ajustements (interrompu à la demande du
+  mainteneur) ; déplacement réel vers la Corbeille et chute de feuille (jamais confirmés par
+  l’agent) ; position du bandeau d’action sous la barre Corbeille ; VoiceOver.
+
 ## Point d’arrêt
 
-- 3.1 accepté. Lot en cours : **3.2 — Nettoyage**.
-- Lot **3.2 — Nettoyage** (chemin destructif) : règles en lignes Serre avec feuilles de
-  risque, texte « .crash » corrigé (la règle retient aussi `.ips`), analyse avec **racines** qui
-  suivent la vraie progression, revue en parcelles, confirmation, **feuille qui tombe vers la
-  Corbeille** à chaque élément déplacé, échec visible (bandeau, la ligne reste). La recette inclut
-  un vrai passage par la Corbeille sur un dossier jetable, fait par le mainteneur.
+- Lot **3.2 — Nettoyage** en cours, code commité (`a76d15b7`). Reprendre par : `make qualify` ; vérifier
+  en app fixture le bandeau d’action sous la barre Corbeille (sélection → Examiner → Annuler) ;
+  puis livrer pour recette. La recette inclut le vrai passage par la Corbeille sur un dossier
+  jetable, fait par le mainteneur (vérifier la chute de feuille et les lignes restées en place).
+- Fixture pratique : dossier `…/home/Library/Logs/DiagnosticReports` rempli de faux `.ips`/`.crash`
+  (la règle compare la fin du chemin).
+- Non fait dans 3.2 : « nœud qui gonfle aux gros dossiers » (ScanCore ne remonte pas de taille par
+  dossier pendant l’analyse).
 
 ## Problèmes ouverts
 
