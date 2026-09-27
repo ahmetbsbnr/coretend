@@ -1,6 +1,7 @@
 """Read CPU and resident-memory samples for one explicitly supplied process."""
 
 import math
+import os
 import subprocess
 
 
@@ -30,6 +31,8 @@ def process_metrics(process_id):
         capture_output=True,
         text=True,
         check=False,
+        # A decimal-comma locale makes ps print "68,8"; the parser accepts only C-locale output.
+        env={**os.environ, "LC_ALL": "C", "LANG": "C"},
     )
     if result.returncode != 0:
         raise RuntimeError(f"ps could not inspect process {process_id}: {result.stderr.strip()}")
