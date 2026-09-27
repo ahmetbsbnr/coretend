@@ -1,4 +1,4 @@
-:root{color-scheme:light dark;--paper:#f6f4ef;--surface:rgb(255 255 255 / .62);--ink:#1b1e22;--muted:#4a535f;--accent:#0b6e6c;--on-accent:#f6f4ef;--caution:#8a5a12;--line:rgb(27 30 34 / .12);--bloom:rgb(11 110 108 / .16);--r-sm:9px;--r:14px;--wrap:1080px;--gutter:clamp(20px,5vw,48px);--quick:150ms;--standard:300ms;--gentle:550ms;--ease:cubic-bezier(.2,.7,.2,1);font-family:"Helvetica Neue",Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+:root{color-scheme:light dark;--paper:#f6f4ef;--surface:rgb(255 255 255 / .62);--ink:#1b1e22;--muted:#4a535f;--accent:#0b6e6c;--on-accent:#f6f4ef;--caution:#8a5a12;--line:rgb(27 30 34 / .12);--bloom:rgb(11 110 108 / .16);--r-sm:9px;--r:14px;--wrap:1080px;--gutter:clamp(20px,5vw,48px);--quick:150ms;--standard:300ms;--gentle:550ms;--ease:cubic-bezier(.2,.7,.2,1);font-family:"Helvetica Neue",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;background:var(--paper);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{color:var(--accent);text-underline-offset:.2em;text-decoration-thickness:1px;transition:color var(--quick) var(--ease),text-decoration-thickness var(--quick) var(--ease)}
@@ -25,7 +25,7 @@ main>p:not(.eyebrow):not(.notice){color:var(--muted);font-size:1.12rem}
 .card h2{font-size:1.2rem;margin-top:0}
 .card p{color:var(--muted);margin-bottom:0}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:1rem;margin-top:2.5rem}
-.notice{border-left:3px solid var(--caution);border-radius:0 var(--r-sm) var(--r-sm) 0;padding:1rem 1.25rem;background:var(--surface);margin-top:2rem}
+.notice{border:1px solid color-mix(in srgb,var(--caution) 45%,transparent);border-radius:var(--r-sm);padding:1rem 1.25rem;background:var(--surface);margin-top:2rem}
 footer{border-top:1px solid var(--line);color:var(--muted);font-size:.9rem}
 main>*{animation:rise var(--gentle) var(--ease) both}
 main>:nth-child(2){animation-delay:60ms}
