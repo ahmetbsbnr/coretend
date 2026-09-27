@@ -86,6 +86,15 @@ final class AppShellTests: XCTestCase {
         XCTAssertTrue(french.contains("dossiers que vous choisissez dans le sélecteur macOS"))
     }
 
+    func testRootScanFailuresDistinguishDeniedFromUnavailableInBothLanguages() {
+        XCTAssertEqual(ProductCopy.scanRootFailure(reason: "permission_denied", french: false), "macOS denied access to the selected folder.")
+        XCTAssertEqual(ProductCopy.scanRootFailure(reason: "metadata_unavailable", french: false), "The selected folder's availability could not be determined.")
+        XCTAssertEqual(ProductCopy.scanRootFailure(reason: "missing", french: false), "The selected folder no longer exists.")
+        XCTAssertEqual(ProductCopy.scanRootFailure(reason: "permission_denied", french: true), "macOS a refusé l’accès au dossier sélectionné.")
+        XCTAssertEqual(ProductCopy.scanRootFailure(reason: "metadata_unavailable", french: true), "Impossible de déterminer la disponibilité du dossier choisi.")
+        XCTAssertEqual(ProductCopy.scanRootFailure(reason: "missing", french: true), "Le dossier choisi n’existe plus.")
+    }
+
     func testFullDiskAccessGuidanceIsLocalizedAndDoesNotSolicitOrOpenSettings() {
         let english = ProductCopy.value(for: "settings.fulldiskaccess.help", french: false)
         let french = ProductCopy.value(for: "settings.fulldiskaccess.help", french: true)
