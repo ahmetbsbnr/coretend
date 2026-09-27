@@ -332,3 +332,10 @@
 
 - Parcours natif sur `.app` Release en fixture isolée (arm64/macOS 27) : navigation clavier de la barre latérale observée sur les huit destinations. Trois défauts trouvés et corrigés : flèches ignorées dans la palette (champ focalisé), ligne sélectionnée hors vue sans défilement, feuille Réglages sans contrôle de sortie et textes tronqués. Correctifs observés sur l’app reconstruite.
 - Échap n’atteint pas l’app sur cet hôte (moniteur `NSEvent` temporaire), ni par automatisation ni au clavier réel : fermeture par Échap non qualifiée. Détails : `Documentation/Evidence/AppWindowRuntimeQualification.md`. `make qualify` passe. Aucun statut ne change.
+
+### Direction artistique Porcelain / Slate / Teal et mouvement — 27-09-2026
+
+- Nouveau module `DesignSystem` (exigé par l’architecture §9) : palette Porcelain / Slate / Teal clair/sombre reprise des valeurs de la direction CoreTend retenue (réécrites, aucun fichier importé), calcul de contraste WCAG et jetons de mouvement 150/300/550 ms. Tests : textes ≥ 4,5:1 sur le fond dans les deux apparences, texte sur accent ≥ 4,5:1, animation absente sous Reduce Motion.
+- App : teinte teal, fond porcelaine/ardoise du détail, risques Nettoyage en ambre/corail en plus du libellé, carte proportionnelle en tons de teal, transition fondu + glissement entre destinations, transition numérique de l’espace libre, surlignage animé de la palette; toutes les animations passent par `accessibilityReduceMotion`. `⌘,` ouvre Réglages; barre latérale élargie (libellé FR « Vue d’ensemble » tronqué observé puis corrigé); feuille Réglages bornée en hauteur. La sélection de la barre latérale suit l’accent système macOS de l’utilisateur.
+- Site : `site.css` suit la même direction (couleurs, rayons 9/14 px, apparition échelonnée, survol des cartes, halo teal lent), contrat reduced-motion inchangé et renforcé (délais et répétitions neutralisés). Observé dans Chrome en mode sombre; largeur mobile réelle et Lighthouse non relancés.
+- `make qualify` passe. Aucun statut ne change : Dynamic Type, VoiceOver, contraste de tous les états et Reduce Motion réel restent à qualifier.
