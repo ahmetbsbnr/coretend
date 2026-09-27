@@ -2,6 +2,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 import Persistence
 import AppShell
+import Domain
 
 struct RecordView: View {
     let french: Bool
@@ -10,18 +11,17 @@ struct RecordView: View {
     @State private var loading = false
     @State private var errorMessage: String?
     @State private var selectedKind = "all"
+    @State private var selectedRange: ActivityDateRange = .all
     @State private var confirmClear = false
     @State private var isExporting = false
     @State private var exportDocument: ActivityExportDocument?
     @State private var exportName = "coretend-activity"
 
     private var filtered: [ActivityEvent] {
-        selectedKind == "all" ? events : events.filter { $0.kind.rawValue == selectedKind }
+        ActivityHistoryGrouping.filteredEvents(events, kind: ActivityKind(rawValue: selectedKind), range: selectedRange)
     }
-    private var groups: [(day: Date, events: [ActivityEvent])] {
-        Dictionary(grouping: filtered) { Calendar.current.startOfDay(for: $0.occurredAt) }
-            .map { (day: $0.key, events: $0.value) }
-            .sorted { $0.day > $1.day }
+    private var groups: [ActivityDayGroup] {
+        ActivityHistoryGrouping.groups(events, kind: ActivityKind(rawValue: selectedKind), range: selectedRange)
     }
 
     var body: some View {
@@ -34,7 +34,13 @@ struct RecordView: View {
                         Text(copy("activity.\(kind.rawValue)")).tag(kind.rawValue)
                     }
                 }
-                .frame(maxWidth: 240)
+                .frame(maxWidth: 210)
+                Picker(copy("record.range"), selection: $selectedRange) {
+                    Text(copy("record.range.all")).tag(ActivityDateRange.all)
+                    Text(copy("record.range.last7")).tag(ActivityDateRange.last7Days)
+                    Text(copy("record.range.last30")).tag(ActivityDateRange.last30Days)
+                }
+                .frame(maxWidth: 180)
                 Spacer()
                 Menu {
                     Button(copy("record.export.json")) { prepareExport(json: true) }
@@ -102,7 +108,9 @@ struct RecordView: View {
         guard let store else { return }
         Task {
             do {
-                let current = try await store.events()
+                let current = ActivityHistoryGrouping.filteredEvents(
+                    try await store.events(), kind: ActivityKind(rawValue: selectedKind), range: selectedRange
+                )
                 let data = json ? try ActivityExport.json(current) : Data(ActivityExport.csv(current).utf8)
                 let type: UTType = json ? .json : .commaSeparatedText
                 exportDocument = ActivityExportDocument(data: data, contentType: type)

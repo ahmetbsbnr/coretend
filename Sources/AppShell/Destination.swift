@@ -73,6 +73,11 @@ public enum ProductCopy {
         "settings.title": "Settings", "settings.language": "Language", "settings.system": "Follow system",
         "settings.folderaccess.help": "CoreTend accesses only folders you choose in the macOS picker. If a folder becomes unavailable, check that it still exists, its volume is mounted, and your account can read it, then choose it again. App exclusions or macOS privacy protections can limit individual items.",
         "settings.fulldiskaccess.help": "CoreTend does not request Full Disk Access and cannot open Privacy settings on your behalf. A partial or denied scan does not mean an item is absent or safe.",
+        "settings.signature.title": "This copy’s signature",
+        "settings.signature.valid": "This app bundle passes system signature validation",
+        "settings.signature.invalid": "This app bundle did not pass system signature validation",
+        "settings.signature.unavailable": "Signature information unavailable",
+        "settings.signature.limit": "This local check describes the installed bundle only. It does not establish publisher identity, malware status, or safety.",
         "command.palette.title": "Go to or open…", "command.palette.search": "Search destinations and actions",
         "command.palette.empty": "No matching destinations or actions",
         "metrics.refresh": "Refresh measurements", "metrics.unavailable": "System measurements unavailable",
@@ -96,7 +101,9 @@ public enum ProductCopy {
         "metrics.clear.confirm": "Clear readings", "metrics.clear.done": "Saved performance readings cleared.",
         "thermal.nominal": "Nominal", "thermal.fair": "Fair", "thermal.serious": "Serious",
         "thermal.critical": "Critical", "thermal.unknown": "Unknown",
-        "record.filter": "Filter", "record.all": "All events", "record.actions": "Record actions", "record.export.json": "Export JSON…",
+        "record.filter": "Filter", "record.all": "All events", "record.range": "Date range",
+        "record.range.all": "All dates", "record.range.last7": "Last 7 days", "record.range.last30": "Last 30 days",
+        "record.actions": "Record actions", "record.export.json": "Export JSON…",
         "record.export.csv": "Export CSV…", "record.clear": "Clear history…", "record.clear.title": "Clear local history?",
         "record.clear.message": "This permanently removes CoreTend activity records from this reconstruction’s local database.",
         "record.clear.confirm": "Clear history", "record.empty": "No recorded actions yet",
@@ -140,7 +147,10 @@ public enum ProductCopy {
         "integrity.loginItems.issue.malformed": "This file is not a readable property list dictionary.",
         "integrity.loginItems.issue.tooLarge": "This property list exceeds the 1 MiB review limit.",
         "integrity.loginItems.issue.limit": "The review stopped at 500 property list candidates.",
-        "onboarding.title": "Welcome to CoreTend"
+        "onboarding.title": "Welcome to CoreTend",
+        "onboarding.scope": "Choose folders yourself. Scans stay local and read-only. Any move requires selection, review and confirmation to macOS Trash.",
+        "onboarding.privacy": "CoreTend does not request Full Disk Access. You can begin without granting additional access.",
+        "onboarding.start": "Get started"
     ]
     public static let french: [String: String] = [
         "overview.title": "Vue d’ensemble", "record.title": "Historique", "cleanup.title": "Nettoyage",
@@ -178,6 +188,11 @@ public enum ProductCopy {
         "settings.title": "Réglages", "settings.language": "Langue", "settings.system": "Langue du système",
         "settings.folderaccess.help": "CoreTend accède uniquement aux dossiers que vous choisissez dans le sélecteur macOS. Si un dossier devient indisponible, vérifiez qu’il existe encore, que le volume est monté et que votre compte peut le lire, puis choisissez-le à nouveau. Les exclusions de cette app ou les protections de confidentialité macOS peuvent limiter certains éléments.",
         "settings.fulldiskaccess.help": "CoreTend ne demande pas l’accès intégral au disque et ne peut pas ouvrir à votre place les réglages de confidentialité. Un scan partiel ou refusé ne signifie pas qu’un élément est absent ni qu’il est sûr.",
+        "settings.signature.title": "Signature de cette copie",
+        "settings.signature.valid": "Le bundle de cette app est validé par le système",
+        "settings.signature.invalid": "Le bundle de cette app n’est pas validé par le système",
+        "settings.signature.unavailable": "Informations de signature indisponibles",
+        "settings.signature.limit": "Cette vérification locale concerne uniquement le bundle installé. Elle ne prouve ni l’identité de l’éditeur, ni la présence d’un logiciel malveillant, ni la sûreté.",
         "command.palette.title": "Accéder à…", "command.palette.search": "Rechercher une destination ou une action",
         "command.palette.empty": "Aucune destination ni action correspondante",
         "metrics.refresh": "Actualiser les mesures", "metrics.unavailable": "Mesures système indisponibles",
@@ -201,7 +216,9 @@ public enum ProductCopy {
         "metrics.clear.confirm": "Effacer les relevés", "metrics.clear.done": "Relevés Performance enregistrés effacés.",
         "thermal.nominal": "Normal", "thermal.fair": "Modéré", "thermal.serious": "Élevé",
         "thermal.critical": "Critique", "thermal.unknown": "Inconnu",
-        "record.filter": "Filtrer", "record.all": "Tous les événements", "record.actions": "Actions de l’historique", "record.export.json": "Exporter en JSON…",
+        "record.filter": "Filtrer", "record.all": "Tous les événements", "record.range": "Période",
+        "record.range.all": "Toutes les dates", "record.range.last7": "7 derniers jours", "record.range.last30": "30 derniers jours",
+        "record.actions": "Actions de l’historique", "record.export.json": "Exporter en JSON…",
         "record.export.csv": "Exporter en CSV…", "record.clear": "Effacer l’historique…", "record.clear.title": "Effacer l’historique local ?",
         "record.clear.message": "Cette action supprime définitivement les événements CoreTend de la base locale de cette reconstruction.",
         "record.clear.confirm": "Effacer l’historique", "record.empty": "Aucune action enregistrée",
@@ -245,7 +262,10 @@ public enum ProductCopy {
         "integrity.loginItems.issue.malformed": "Ce fichier ne contient pas de dictionnaire plist lisible.",
         "integrity.loginItems.issue.tooLarge": "Cette liste de propriétés dépasse la limite d’examen de 1 Mio.",
         "integrity.loginItems.issue.limit": "L’examen s’est arrêté à 500 fichiers plist candidats.",
-        "onboarding.title": "Bienvenue dans CoreTend"
+        "onboarding.title": "Bienvenue dans CoreTend",
+        "onboarding.scope": "Choisissez vous-même les dossiers. Les scans restent locaux et en lecture seule. Tout déplacement demande sélection, revue et confirmation vers la Corbeille macOS.",
+        "onboarding.privacy": "CoreTend ne demande pas l’accès intégral au disque. Vous pouvez commencer sans autoriser d’accès supplémentaire.",
+        "onboarding.start": "Commencer"
     ]
     public static func value(for key: String, french isFrench: Bool) -> String {
         (isFrench ? french : english)[key] ?? key

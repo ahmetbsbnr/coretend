@@ -40,6 +40,31 @@ final class CLIContractTests: XCTestCase {
         XCTAssertThrowsError(try CLICommand.parse(["scan", "--root", "/tmp", "--rule", "unknown"]))
     }
 
+    func testLanguageOptionIsExplicitAndMustPrecedeCommand() throws {
+        XCTAssertEqual(try CLIInvocation.parse(["--lang", "fr", "help"]).language, .fr)
+        XCTAssertEqual(try CLIInvocation.parse(["help"]).language, .en)
+        XCTAssertThrowsError(try CLIInvocation.parse(["--lang", "de", "help"]))
+        XCTAssertThrowsError(try CLIInvocation.parse(["--lang", "fr"]))
+        XCTAssertThrowsError(try CLIInvocation.parse(["help", "--lang", "fr"]))
+    }
+
+    func testFrenchTextOutputAndJSONShapeStayStable() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        let textOutput = OutputCapture()
+        let textExit = await CoreTendCLIRunner.run(.scan(root: root, rule: .explore, format: .text), language: .fr) { textOutput.append($0) }
+        XCTAssertEqual(textExit, 2)
+        XCTAssertTrue(textOutput.values.contains("0 fichiers"))
+        XCTAssertTrue(textOutput.values.contains(where: { $0.contains("Problème d’analyse [missing]") }))
+
+        let jsonOutput = OutputCapture()
+        let jsonExit = await CoreTendCLIRunner.run(.scan(root: root, rule: .explore, format: .json), language: .fr) { jsonOutput.append($0) }
+        XCTAssertEqual(jsonExit, 2)
+        let data = Data(jsonOutput.values.joined().utf8)
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        XCTAssertEqual(object["complete"] as? Bool, false)
+        XCTAssertEqual((object["issues"] as? [[String: Any]])?.first?["reason"] as? String, "missing")
+    }
+
     func testScanMissingRootReturnsPartialExitAndStructuredIssue() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         let output = OutputCapture()

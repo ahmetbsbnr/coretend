@@ -78,12 +78,12 @@ private struct OnboardingView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             Image(systemName: "lock.shield").font(.system(size: 36)).foregroundStyle(.tint)
-            Text(french ? "Bienvenue dans CoreTend" : "Welcome to CoreTend").font(.largeTitle.bold())
-            Text(french ? "Choisissez vous-même les dossiers à examiner. Les scans restent locaux et en lecture seule. Tout déplacement nécessite sélection, revue et confirmation vers la Corbeille macOS." : "Choose folders yourself. Scans stay local and read-only. Any move requires selection, review and confirmation to macOS Trash.")
+            Text(ProductCopy.value(for: "onboarding.title", french: french)).font(.largeTitle.bold())
+            Text(ProductCopy.value(for: "onboarding.scope", french: french))
                 .font(.body).fixedSize(horizontal: false, vertical: true)
-            Text(french ? "Aucun accès intégral au disque n’est demandé. Vous pouvez commencer sans autoriser d’accès supplémentaire." : "CoreTend does not request Full Disk Access. You can begin without granting extra access.")
+            Text(ProductCopy.value(for: "onboarding.privacy", french: french))
                 .font(.callout).foregroundStyle(.secondary)
-            HStack { Spacer(); Button(french ? "Commencer" : "Get started", action: finish).keyboardShortcut(.defaultAction) }
+            HStack { Spacer(); Button(ProductCopy.value(for: "onboarding.start", french: french), action: finish).keyboardShortcut(.defaultAction) }
         }
         .padding(32).frame(width: 520)
     }
