@@ -384,6 +384,38 @@ final class AppShellTests: XCTestCase {
         XCTAssertNil(SoilFractions(free: -1, total: 200))
     }
 
+    func testCleanupStatesAndMoveFailureReasonsExistInBothLanguages() {
+        let keys = ["cleanup.rules", "cleanup.expected", "cleanup.expected.help", "cleanup.none.help", "cleanup.denied.retry",
+                    "scan.retry", "scan.reading", "scan.finished", "cleanup.selectNone", "cleanup.review",
+                    "cleanup.trash", "cleanup.moving", "cleanup.moved", "cleanup.stayed",
+                    "action.failure.trash", "action.failure.history", "action.failure.changed", "action.failure.missing",
+                    "action.failure.outside", "action.failure.expired", "action.failure.cancelled"]
+        for key in keys {
+            let english = ProductCopy.value(for: key, french: false)
+            let french = ProductCopy.value(for: key, french: true)
+            XCTAssertNotEqual(english, key, key)
+            XCTAssertNotEqual(french, key, key)
+            XCTAssertNotEqual(english, french, key)
+        }
+        // A file that stays is always said to stay; no reason claims a deletion.
+        for key in keys where key.hasPrefix("action.failure.") && key != "action.failure.missing" {
+            XCTAssertFalse(ProductCopy.value(for: key, french: false).lowercased().contains("deleted"), key)
+        }
+    }
+
+    func testScanCountsFollowTheAppLanguage() {
+        XCTAssertEqual(ProductFormat.count(18_000, french: false), "18,000")
+        XCTAssertTrue(["18 000", "18\u{202F}000", "18\u{00A0}000"].contains(ProductFormat.count(18_000, french: true)))
+        XCTAssertEqual(ProductFormat.filesExamined(1, french: true), "fichier examiné")
+        XCTAssertEqual(ProductFormat.filesExamined(2, french: true), "fichiers examinés")
+        XCTAssertEqual(ProductFormat.filesExamined(1, french: false), "file examined")
+    }
+
+    func testCrashReportRuleNamesBothExtensionsItReads() {
+        XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: false).contains(".ips"))
+        XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: true).contains(".ips"))
+    }
+
     func testFirstLaunchStepsExistInBothLanguages() {
         for step in 1...3 {
             for french in [false, true] {

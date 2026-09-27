@@ -414,6 +414,19 @@ final class CodeSignatureModelTests: XCTestCase {
 }
 
 final class FileActionServiceTests: XCTestCase {
+    func testEveryOutcomeThatKeepsTheFileHasAReason() {
+        let url = URL(fileURLWithPath: "/tmp/x")
+        func key(_ outcome: ActionOutcome) -> String? { ActionItemResult(targetURL: url, outcome: outcome, historyRecorded: true).failureKey }
+        XCTAssertNil(key(.movedToTrash(original: "/tmp/x", trashURL: "/tmp/t")))
+        XCTAssertEqual(key(.failed(.trashFailed("x"))), "action.failure.trash")
+        XCTAssertEqual(key(.failed(.auditUnavailable)), "action.failure.history")
+        XCTAssertEqual(key(.cancelled), "action.failure.cancelled")
+        XCTAssertEqual(key(.refused(.userDeclined)), "action.failure.cancelled")
+        XCTAssertEqual(key(.failed(.revalidation(.identityChanged))), "action.failure.changed")
+        XCTAssertEqual(key(.failed(.revalidation(.outsideAllowedRoot))), "action.failure.outside")
+        XCTAssertEqual(key(.failed(.revalidation(.expiredApproval))), "action.failure.expired")
+    }
+
     func testExploreRuleReviewAndApprovalPreserveSourceWhenFixtureTrashFails() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-explore-trash-failure-\(UUID())", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
@@ -596,6 +609,39 @@ final class FileActionServiceTests: XCTestCase {
         XCTAssertEqual(events.map(\.failureCode), [nil, nil, nil])
     }
 
+    func testEachItemIsReportedOnceItsOutcomeIsFinal() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-action-\(UUID())", isDirectory: true)
+        let trashRoot = root.appendingPathComponent("trash", isDirectory: true)
+        try FileManager.default.createDirectory(at: trashRoot, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let gone = root.appendingPathComponent("a-gone.tmp")
+        let moves = root.appendingPathComponent("b-moves.tmp")
+        try Data("gone".utf8).write(to: gone)
+        try Data("moves".utf8).write(to: moves)
+        let store = try SQLiteStore(url: root.appendingPathComponent("events.sqlite"))
+        try await store.migrate()
+        let service = FileActionService(validator: PathValidator(),
+                                        executor: SafeActionExecutor(allowedRoots: [root], allowedRules: ["cleanup.fixture"], trash: DomainFixtureTrash(trashRoot: trashRoot)),
+                                        store: store, allowedRoots: [root], allowedRuleIDs: ["cleanup.fixture"])
+        let review = try service.prepareReview([FileActionSelection(url: gone, ruleID: "cleanup.fixture"),
+                                                FileActionSelection(url: moves, ruleID: "cleanup.fixture")])
+        let proposalRecorded = await service.recordProposal(review)
+        XCTAssertTrue(proposalRecorded)
+        try FileManager.default.removeItem(at: gone)
+        let seen = ReportedItems()
+        let report = await service.execute(try service.confirm(review, accepted: true)) { item in
+            await seen.add(item, sourceStillExists: FileManager.default.fileExists(atPath: item.targetURL.path))
+        }
+
+        let reported = await seen.items
+        XCTAssertEqual(reported.map(\.item), report.items)
+        XCTAssertEqual(reported.map(\.item.targetURL), [gone, moves])
+        XCTAssertEqual(reported.map(\.item.moved), [false, true])
+        // The moved file had already left its folder when it was reported.
+        XCTAssertEqual(reported.map(\.sourceStillExists), [false, false])
+        XCTAssertEqual(report.items.map(\.failureKey), ["action.failure.changed", nil])
+    }
+
     func testDeclinedReviewNeverCallsTrashOrRemovesSource() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-action-\(UUID())", isDirectory: true)
         let trashRoot = root.appendingPathComponent("trash", isDirectory: true)
@@ -671,6 +717,11 @@ final class FileActionServiceTests: XCTestCase {
         let blockedCallCount = await trash.callCount
         XCTAssertEqual(blockedCallCount, 0)
     }
+}
+
+private actor ReportedItems {
+    private(set) var items: [(item: ActionItemResult, sourceStillExists: Bool)] = []
+    func add(_ item: ActionItemResult, sourceStillExists: Bool) { items.append((item, sourceStillExists)) }
 }
 
 private enum DomainFixtureTrashError: Error, CustomStringConvertible {

@@ -3,6 +3,17 @@ import Foundation
 public enum ProductFormat {
     /// A file size in the app's language ("58,54 Go" in French, "58.54 GB" in English), whatever
     /// the system locale is.
+    /// A count in the app's language ("18 000" in French, "18,000" in English).
+    public static func count(_ value: Int, french: Bool) -> String {
+        value.formatted(.number.locale(Locale(identifier: french ? "fr_FR" : "en_US")))
+    }
+
+    /// The unit written under a count of files read ("fichiers examinés").
+    public static func filesExamined(_ value: Int, french: Bool) -> String {
+        if french { return value == 1 ? "fichier examiné" : "fichiers examinés" }
+        return value == 1 ? "file examined" : "files examined"
+    }
+
     public static func bytes(_ count: Int64, french: Bool) -> String {
         count.formatted(.byteCount(style: .file).locale(Locale(identifier: french ? "fr_FR" : "en_US")))
     }

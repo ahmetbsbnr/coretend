@@ -47,6 +47,28 @@ public struct ActionBatchReport: Sendable, Equatable {
     public var movedCount: Int { items.filter { if case .movedToTrash = $0.outcome { true } else { false } }.count }
 }
 
+public extension ActionItemResult {
+    /// True when the file is now in the Trash.
+    var moved: Bool { if case .movedToTrash = outcome { true } else { false } }
+
+    /// The copy key explaining why this item stayed where it was, or nil when it moved.
+    var failureKey: String? {
+        switch outcome {
+        case .movedToTrash: nil
+        case .refused, .cancelled: "action.failure.cancelled"
+        case .failed(.auditUnavailable): "action.failure.history"
+        case .failed(.trashFailed): "action.failure.trash"
+        case .failed(.revalidation(let refusal)):
+            switch refusal {
+            case .missingTarget: "action.failure.missing"
+            case .identityChanged, .unreadableOrSymlink: "action.failure.changed"
+            case .outsideAllowedRoot, .ruleNotAllowed: "action.failure.outside"
+            case .expiredApproval, .invalidLifetime: "action.failure.expired"
+            }
+        }
+    }
+}
+
 public struct FileActionService: Sendable {
     private let validator: PathValidator
     private let executor: any FileOperationExecutor
@@ -119,7 +141,18 @@ public struct FileActionService: Sendable {
     }
 
     public func execute(_ batch: ConfirmedActionBatch) async -> ActionBatchReport {
+        await execute(batch, onItem: { _ in })
+    }
+
+    /// Executes the batch and reports each item as soon as its outcome is final, in batch order,
+    /// so the interface can show every file leave (or stay) when it actually does.
+    public func execute(_ batch: ConfirmedActionBatch,
+                        onItem: @Sendable (ActionItemResult) async -> Void) async -> ActionBatchReport {
         var results: [ActionItemResult] = []
+        func finish(_ item: ActionItemResult) async {
+            results.append(item)
+            await onItem(item)
+        }
         for (index, selection) in batch.items.enumerated() {
             let approved: ApprovedFileOperation
             do {
@@ -129,26 +162,26 @@ public struct FileActionService: Sendable {
                                                  now: clock())
             } catch let refusal as PathRefusal {
                 let recorded = await recordFailure(for: selection.url)
-                results.append(ActionItemResult(targetURL: selection.url, outcome: .failed(.revalidation(refusal)), historyRecorded: recorded))
+                await finish(ActionItemResult(targetURL: selection.url, outcome: .failed(.revalidation(refusal)), historyRecorded: recorded))
                 continue
             } catch {
                 let recorded = await recordFailure(for: selection.url)
-                results.append(ActionItemResult(targetURL: selection.url, outcome: .failed(.revalidation(.missingTarget)), historyRecorded: recorded))
+                await finish(ActionItemResult(targetURL: selection.url, outcome: .failed(.revalidation(.missingTarget)), historyRecorded: recorded))
                 continue
             }
 
             do {
                 try await store.append(ActivityEvent(id: UUID(), occurredAt: clock(), kind: .approved, detail: selection.url.path))
             } catch {
-                results.append(ActionItemResult(targetURL: selection.url, outcome: .failed(.auditUnavailable), historyRecorded: false))
+                await finish(ActionItemResult(targetURL: selection.url, outcome: .failed(.auditUnavailable), historyRecorded: false))
                 continue
             }
 
             guard protectedKeepersAreUnchanged(batch.protectedKeepers) else {
                 let recorded = await recordFailure(for: selection.url)
-                results.append(ActionItemResult(targetURL: selection.url,
-                                                outcome: .failed(.revalidation(.identityChanged)),
-                                                historyRecorded: recorded))
+                await finish(ActionItemResult(targetURL: selection.url,
+                                              outcome: .failed(.revalidation(.identityChanged)),
+                                              historyRecorded: recorded))
                 continue
             }
 
@@ -159,7 +192,7 @@ public struct FileActionService: Sendable {
             let recorded: Bool
             do { try await store.append(event); recorded = true }
             catch { recorded = false }
-            results.append(ActionItemResult(targetURL: selection.url, outcome: outcome, historyRecorded: recorded))
+            await finish(ActionItemResult(targetURL: selection.url, outcome: outcome, historyRecorded: recorded))
         }
         return ActionBatchReport(reviewID: batch.reviewID, items: results)
     }

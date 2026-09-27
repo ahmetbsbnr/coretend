@@ -303,6 +303,8 @@ private struct DestinationView: View {
             }
             .padding(32)
             .frame(maxWidth: 960, alignment: .leading)
+            // The whole width scrolls, not only the reading column.
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .accessibilityIdentifier("destination-\(destination.rawValue)")
     }
