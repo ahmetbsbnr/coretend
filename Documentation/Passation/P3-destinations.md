@@ -9,8 +9,8 @@
 
 | Lot | Intitulé | Statut |
 |---|---|---|
-| 3.1 | Vue d’ensemble + premier lancement | Livré — recette en attente (`6f66447a`) |
-| 3.2 | Nettoyage (inclut un vrai passage par la Corbeille sur dossier jetable, fait par le mainteneur) | À faire |
+| 3.1 | Vue d’ensemble + premier lancement | Accepté 27-09-2026 (`6f66447a`) |
+| 3.2 | Nettoyage (inclut un vrai passage par la Corbeille sur dossier jetable, fait par le mainteneur) | En cours |
 | 3.3 | Explorer | À faire |
 | 3.4 | Doublons et images proches | À faire |
 | 3.5 | Applications | À faire |
@@ -40,14 +40,13 @@
 - **Non vérifié :** montée des blocs en mouvement réel ; clic sur les deux chemins (observé en code,
   pas en capture) ; VoiceOver.
 - **Recette 3.1 (mainteneur) :** premier lancement (logo, étapes, Commencer), Vue d’ensemble (chiffre,
-  bande de sol, chemins cliquables), clair/sombre, FR/EN.
+  bande de sol, chemins cliquables), clair/sombre, FR/EN. **Acceptée le 27-09-2026** (« validé ») ;
+  registre : shell.onboarding `VÉRIFIÉ`, FR-01/FR-03/shell.launch/shell.nav preuves datées, `PARTIEL`.
 
 ## Point d’arrêt
 
-- 3.1 livré, recette du mainteneur en attente. À l’acceptation : mettre à jour
-  `Documentation/Traceability.csv` (preuve datée pour FR-01, FR-03, shell.launch, shell.onboarding,
-  shell.nav ; `VÉRIFIÉ` seulement si la recette couvre tout le critère) et `Progress.md`.
-- Prochain lot **3.2 — Nettoyage** (chemin destructif) : règles en lignes Serre avec feuilles de
+- 3.1 accepté. Lot en cours : **3.2 — Nettoyage**.
+- Lot **3.2 — Nettoyage** (chemin destructif) : règles en lignes Serre avec feuilles de
   risque, texte « .crash » corrigé (la règle retient aussi `.ips`), analyse avec **racines** qui
   suivent la vraie progression, revue en parcelles, confirmation, **feuille qui tombe vers la
   Corbeille** à chaque élément déplacé, échec visible (bandeau, la ligne reste). La recette inclut

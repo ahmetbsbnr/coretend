@@ -2,6 +2,11 @@
 
 **Relevé :** 2026-09-27. **État :** reconstruction en cours, non finalisée. Derniers jalons fusionnés : favoris/récents SQLite v4, palette clavier bilingue et écriture batch des récents (PR #40–#44). UI macOS native et VoiceOver non qualifiés. Cahier et plan approuvés; développement sur lignée `next` du dépôt public historique. Le dépôt greenfield initial `rebuild/` reste copie locale de provenance.
 
+
+### P3 lot 3.1 — Vue d’ensemble et premier lancement — 2026-09-27
+
+- Recette mainteneur acceptée : premier lancement (logo qui germe, trois étapes, Commencer) et Vue d’ensemble Serre (chiffre héros dans la langue de l’app, bande de sol mesurée, dernière activité, chemins vers Explorer et Historique), FR/EN, clair/sombre.
+- `shell.onboarding` devient `VÉRIFIÉ`. FR-01, FR-03, shell.launch, shell.nav restent `PARTIEL` : les autres destinations sont recettées dans les lots 3.2–3.9 ; Finder, UserDefaults de production et VoiceOver restent non qualifiés.
 ### NFR-13 — reproductibilité après échec CI — 2026-09-27
 
 - PR #55 a révélé `LC_UUID` aléatoire et timestamp objet dans `N_OSO.n_value`. Après détection que dyld macOS 26 refuse un binaire sans `LC_UUID`, `Package.swift` applique le linker Apple `-reproducible` en Release, qui conserve UUID déterministe et fixe metadata; minimum macOS reste 14.0.
