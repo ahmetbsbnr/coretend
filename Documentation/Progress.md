@@ -141,3 +141,8 @@
 
 - ScanCore distingue `permission_denied`, `missing` et indisponibilité technique. ProductCopy présente maintenant refus macOS, absence et disponibilité indéterminée avec messages EN/FR distincts; test rouge/vert AppShell couvre le mapping.
 - Pas de sonde TCC/FDA exhaustive ni d’ouverture des réglages Confidentialité. FR-10 reste `PARTIEL`; ne pas inférer l’absence d’un élément depuis un scan incomplet.
+
+### NFR-11 — smoke navigateur local — 27-09-2026
+
+- Homepage française: Lighthouse Accessibilité 100, Bonnes pratiques 100. Tab atteint le lien d’évitement avec contour visible 3 px; vue d’accessibilité expose les régions principales. À 640 px CSS (approximation d’un viewport 1280 px à 200 %), aucun débordement horizontal.
+- Audit et limites détaillés dans `Documentation/Evidence/SiteAccessibilitySmoke.md`. Réduction du mouvement uniquement observée dans CSS, pas émulée au runtime; autres routes, navigateurs et vraie commande zoom restent à vérifier. NFR-11 passe à `PARTIEL`, pas vérifié.

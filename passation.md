@@ -11,7 +11,7 @@
 - Dernière qualification locale : `make qualify` le 27-09 après correction du mapping FR-10; smoke runtime debug isolé passe également. Elle couvre génération, site, traçabilité, audit statique de sûreté, installation fixture en HOME temporaire, XCTest complet, builds debug App/CLI et whitespace. Aucune UI native/VoiceOver n’est qualifiée par ce gate.
 - Paquet courant : `Artifacts/CoreTend-local-unsigned.zip`, arm64, produit depuis le code app `b0287bf`. SHA-256 `94503244830030785388e6ea2359dc844af22d719d5e82729f14408f1697a299`. `make package-local verify-package` passe; vérification limitée à Info.plist, archive et Mach-O. Non lancé, installé sur le Mac, signé, notarié ou publié. Preuve dans `Documentation/ReleaseEvidence.md`.
 - Copie greenfield historique `rebuild/` conservée localement comme provenance. Passation/documents 1.x archivés sous `Documentation/Archive/Legacy-Reconstruction/`; ils ne décrivent pas le code actuel.
-- État courant : traçabilité de 91 lignes, 56 `PARTIEL`, 27 `EN_COURS`, 8 `À_CONSTRUIRE`. Estimation indicative pondérée (VÉRIFIÉ=100 %, PARTIEL=50 %, EN_COURS=25 %, À_CONSTRUIRE=0 %) : 41 % des 78 Must, 38 % des 91 lignes. Ce n’est pas un indicateur officiel; critères UI/macOS, compatibilité et distribution restent ouverts.
+- État courant : traçabilité de 91 lignes, 57 `PARTIEL`, 26 `EN_COURS`, 8 `À_CONSTRUIRE`. Estimation indicative pondérée (VÉRIFIÉ=100 %, PARTIEL=50 %, EN_COURS=25 %, À_CONSTRUIRE=0 %) : 41 % des 78 Must, 39 % des 91 lignes. Ce n’est pas un indicateur officiel; critères UI/macOS, compatibilité et distribution restent ouverts.
 
 ## Jalons locaux depuis la dernière passation
 
@@ -32,6 +32,7 @@
 - **Task 10 — Integrity LaunchAgents (`569cc4d`, `fcbb687`)** : revue consultative plist dans seul dossier explicitement choisi, plafonds 500 candidats/1 Mio, lecture sans suivre symlinks et ancrage au descripteur de racine; erreurs visibles. Tests synthétiques couvrent plist valide/malformé/trop grand, symlink, limite et remplacement de racine. N’affirme ni activité ni sûreté; `integrity.loginitems` reste PARTIEL avant qualification native et intégration aux services système.
 - **NFR-13 — builds Release** : `swift build -c release --product CoreTendApp` et `CoreTendCLI` réussissent sans avertissement sur arm64/macOS 27.0. Dépendance externe absente de Package.swift; pas de `Package.resolved`. NFR-13 reste PARTIEL faute de preuve de reproductibilité entre builds propres et hôtes.
 - **FR-10 — erreurs de racine distinctes** : `permission_denied` affiche un refus explicite, `missing` l’absence de racine, `metadata_unavailable` la disponibilité indéterminée. Test AppShell bilingue rouge/vert; `make qualify` passe. Aucun diagnostic TCC/FDA exhaustif ni qualification UI native.
+- **NFR-11 — smoke navigateur site local** : Lighthouse sur homepage FR donne Accessibilité 100/Bonnes pratiques 100; clavier montre skip-link et contour visible; largeur 640 CSS sans débordement. Réduction du mouvement non émulée, zoom réel et autres pages non vérifiés. Détails et limites dans `Documentation/Evidence/SiteAccessibilitySmoke.md`.
 
 ## Jalons récents intégrés
 
