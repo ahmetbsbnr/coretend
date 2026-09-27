@@ -49,7 +49,7 @@ Les durées sont des estimations pour un lot par jour de travail, recette compri
 
 Référence : `Documentation/Design/UI-guide.md` (direction « Serre », décision 0002).
 
-- [ ] **2.1 Jetons Serre** : `Palette` (Nuit/Jour, rôles `sidebar`, `deep`, `tertiaryInk`,
+- [x] **2.1 Jetons Serre** (`8635253`) : `Palette` (Nuit/Jour, rôles `sidebar`, `deep`, `tertiaryInk`,
   `strongSeparator`), `CoreTendTypography` (Iowan Old Style / Avenir Next), `MotionToken`
   (`press`, `quick`, `standard`, `grow`, `bloom`, courbes `sève`, `pousse`, `chute`, `retrait`),
   formes « coin feuille ». Tests de contraste et de durées mis à jour.

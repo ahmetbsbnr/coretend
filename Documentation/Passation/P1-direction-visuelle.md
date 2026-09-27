@@ -2,17 +2,17 @@
 
 **Objectif :** une direction visuelle acceptée par le mainteneur sur l’app lancée, et un guide UI qui devient la seule référence d’apparence.
 **Gate :** G1 — décision `Documentation/Decisions/0002-direction-visuelle.md` acceptée ; `Documentation/Design/UI-guide.md` rédigé.
-**Statut de la phase :** En cours depuis le 27-09-2026.
+**Statut de la phase :** Terminée le 27-09-2026 (G1 : guide Serre accepté).
 **Plan :** `Documentation/Project/Implementation-plan.md` § Programme 2.0.
 
 ## Lots
 
 | Lot | Intitulé | Statut |
 |---|---|---|
-| 1.1 | Kit de captures (8 destinations, Réglages, ⌘K, onboarding ; clair/sombre ; FR/EN ; planche HTML) | Livré — recette en attente (`3098745`) |
+| 1.1 | Kit de captures (8 destinations, Réglages, ⌘K, onboarding ; clair/sombre ; FR/EN ; planche HTML) | Accepté (utilisé pour G1) |
 | 1.2 | Séance G1 avec le mainteneur (~45 min) | Fait — **Observatoire refusé** (27-09) |
 | 1.2b | Exploration : trois directions artistiques animées (thème, motion, logo, recherche, navigation), prototype hors app | Accepté — **Serre choisie** (27-09) |
-| 1.3 | Guide UI + décision 0002, sur la direction choisie en 1.2b | Livré — acceptation G1 en attente |
+| 1.3 | Guide UI + décision 0002, sur la direction choisie en 1.2b | Accepté (27-09) |
 
 ## Journal
 
@@ -95,6 +95,10 @@ pas choisie sur prototype animé (1.2b), puis écrite en guide (1.3) et accepté
 - **Écart assumé avec le prototype :** le balancement en boucle du logo et des états vides est
   retiré (NFR-09 : aucune animation continue au repos).
 
+### 27-09-2026 — gate G1
+
+- **Mainteneur :** « acceté continue ainsi et commence le dev. » Guide UI Serre accepté ; P1 close.
+
 ## Ordre du jour proposé pour la séance G1 (constats de l’agent, à confirmer)
 
 Constats relevés en relisant les captures ; ce ne sont pas des décisions.
@@ -118,9 +122,7 @@ Pour chaque écran, le mainteneur dit : garder / changer / refaire, et pourquoi.
 
 ## Point d’arrêt
 
-- **Attente du mainteneur (gate G1) :** relire `Documentation/Design/UI-guide.md` et dire
-  « accepté » ou ce qu’il faut changer. Rien n’est codé en SwiftUI avant.
-- Après G1 : clore P1, ouvrir P2 au lot 2.1 (jetons Serre) dans `P2-fondations-interaction.md`.
+- Phase close. La suite est en P2 (`P2-fondations-interaction.md`).
 
 ## Problèmes ouverts
 

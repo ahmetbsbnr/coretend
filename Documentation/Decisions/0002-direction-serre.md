@@ -1,7 +1,6 @@
 # Décision 0002 — Direction artistique « Serre »
 
-**Date :** 27-09-2026. **Décideur :** le mainteneur. **Statut :** direction choisie ; le guide
-`Documentation/Design/UI-guide.md` qui la précise attend l’acceptation du mainteneur (gate G1).
+**Date :** 27-09-2026. **Décideur :** le mainteneur. **Statut :** acceptée, guide compris (gate G1 passée le 27-09-2026).
 
 ## Contexte
 
