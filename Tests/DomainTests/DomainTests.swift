@@ -120,6 +120,22 @@ final class LaunchAgentInspectionTests: XCTestCase {
         XCTAssertTrue(report.issues.isEmpty)
     }
 
+    func testRejectsSymlinkAsExplicitLaunchAgentsFolder() throws {
+        let parent = try fixtureRoot()
+        defer { try? FileManager.default.removeItem(at: parent) }
+        let selected = parent.appendingPathComponent("selected", isDirectory: true)
+        try FileManager.default.createDirectory(at: selected, withIntermediateDirectories: true)
+        let plist = try PropertyListSerialization.data(fromPropertyList: ["Label": "org.fixture"], format: .xml, options: 0)
+        try plist.write(to: selected.appendingPathComponent("agent.plist"))
+        let alias = parent.appendingPathComponent("LaunchAgents", isDirectory: true)
+        try FileManager.default.createSymbolicLink(at: alias, withDestinationURL: selected)
+
+        let report = LaunchAgentInspector().inspect(in: alias)
+
+        XCTAssertTrue(report.candidates.isEmpty)
+        XCTAssertEqual(report.issues.map(\.reason), [.directoryUnreadable])
+    }
+
     func testOpenedDirectoryDescriptorKeepsReadsInsideSelectedFolderAfterPathReplacement() throws {
         let parent = try fixtureRoot()
         defer { try? FileManager.default.removeItem(at: parent) }
