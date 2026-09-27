@@ -18,7 +18,11 @@ if not progress_match or not iso_date(progress_match.group(1)):
 current_review=progress_match.group(1)
 
 cap_source=(root/'Sources/ProductContract/Capability.swift').read_text()
-caps=set(re.findall(r'case\s+\w+\s*=\s*"([a-z][a-z0-9.]+)"',cap_source))
+capability_ids=re.findall(r'case\s+\w+\s*=\s*"([a-z][a-z0-9.]+)"',cap_source)
+if len(capability_ids)!=len(set(capability_ids)):
+ duplicates=sorted({capability for capability in capability_ids if capability_ids.count(capability)>1})
+ raise SystemExit('Capability.swift has duplicate capability IDs: '+', '.join(duplicates))
+caps=set(capability_ids)
 spec=(root/'Documentation/Project/Cahier-des-charges.md').read_text()
 requirement_rows=re.findall(r'^\| ((?:FR|NFR)-\d+) \| (?:\*\*)?([^|]+)',spec,re.MULTILINE)
 requirement_priorities={}

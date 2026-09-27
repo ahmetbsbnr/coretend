@@ -9,7 +9,7 @@ from pathlib import Path
 def make_fixture(root: Path, evidence: str, extra_field: bool = False, *, priority: str = "M",
                  status: str = "PARTIEL", tests: str = "Tests/fixture.swift",
                  documentation: str = "Documentation/Progress.md", spec_priority: str | None = None,
-                 duplicate_row: bool = False) -> Path:
+                 duplicate_row: bool = False, duplicate_capability: bool = False) -> Path:
     (root / "Scripts").mkdir(parents=True)
     (root / "Sources/ProductContract").mkdir(parents=True)
     (root / "Tests").mkdir()
@@ -18,9 +18,10 @@ def make_fixture(root: Path, evidence: str, extra_field: bool = False, *, priori
         Path(__file__).with_name("check_traceability.py").read_bytes()
     )
     capabilities = ("shell.menubar", "settings.menubar", "quicklook.extended", "favrec.module", "ui.commandpalette", "clutter.largeold")
-    (root / "Sources/ProductContract/Capability.swift").write_text(
-        "enum Capability {\n" + "\n".join(f' case fixture{i} = "{capability}"' for i, capability in enumerate(capabilities)) + "\n}\n"
-    )
+    capability_cases = [f' case fixture{i} = "{capability}"' for i, capability in enumerate(capabilities)]
+    if duplicate_capability:
+        capability_cases.append(' case duplicate = "shell.menubar"')
+    (root / "Sources/ProductContract/Capability.swift").write_text("enum Capability {\n" + "\n".join(capability_cases) + "\n}\n")
     (root / "Tests/fixture.swift").write_text("// fixture\n")
     approved = spec_priority or priority
     (root / "Documentation/Project/Cahier-des-charges.md").write_text(
@@ -64,6 +65,9 @@ def main() -> None:
 
     duplicate = check("Revue du registre 2026-09-27; fixture", duplicate_row=True)
     assert duplicate.returncode != 0, "duplicate traceability IDs must be rejected"
+
+    duplicate_source = check("Revue du registre 2026-09-27; fixture", duplicate_capability=True)
+    assert duplicate_source.returncode != 0, "duplicate capability IDs in the approved source must be rejected"
 
     demoted_must = check("Revue du registre 2026-09-27; fixture", priority="S", spec_priority="M")
     assert demoted_must.returncode != 0, "a Must demoted in the traceability CSV must be rejected"

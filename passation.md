@@ -243,3 +243,8 @@ La traçabilité est source de vérité par exigence. Elle suit 40 FR/NFR et 51 
 - Test migration utilise barrière conditionnelle interne à `SQLiteStore` : les deux connexions observent version 0 avant migration concurrente, sans délai 100 ms heuristique. Test ciblé passe.
 - `make qualify` complet passe après ces changements, y compris reproduction des builds Release propres App/CLI (`9fa47b9ca35f992318f0b3e427e44de6f729c5acab3206ffbe813fe1103ee2ec` / `64b8c3a65986cf915fa778ea2531cbf581899673e4726e30f959287621716ace`), runtime isolé, XCTest, builds Debug et CLI/SIGINT.
 - Registre recalculé : 91 lignes; 78 Must = 76 PARTIEL, 2 VÉRIFIÉ; pondération indicative inchangée 51,3 %. Changements locaux uniquement, PR #55 non actualisée.
+
+### Gate inventaire capabilities — 27-09-2026
+
+- Revue du checker a trouvé qu’un `set` masquait des IDs de capabilities dupliqués dans la source Swift, ce qui pouvait réduire le registre attendu sans alerte. Fixture rouge ajoutée; checker échoue maintenant avec la liste des IDs dupliqués. Fixture positive actuelle et registre de 91 entrées passent.
+- `make qualify` complet passe après ce renforcement (runtime isolé, builds Release propres, tests Swift, builds Debug, CLI/SIGINT). `Documentation/Project/Remaining-musts-plan.md` reste non suivi. Comptage Must inchangé : 76 PARTIEL, 2 VÉRIFIÉ, 51,3 % pondéré.

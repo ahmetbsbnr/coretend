@@ -271,3 +271,7 @@
 - Le checker compare chaque priorité du registre à sa source approuvée, rejette ID dupliqués et exigences répétées. Section 7 documente la réconciliation des 51 capacités et six Should; NFR (§6) classés Must. Fixtures couvrent doublon, promotion/rétrogradation et dates.
 - Test SQLite concurrent déterministe via barrière après lecture version, sans temporisation d’attente. `make qualify` complet passe; releases propres App/CLI byte-identiques. FR-11 reste PARTIEL, NFR-12 attend revue indépendante.
 - Comptage conservé : 78 Must, dont 76 PARTIEL et 2 VÉRIFIÉ; pondération indicative 51,3 %.
+
+### Inventaire capabilities sans doublons — 27-09-2026
+
+- Le gate NFR-12 refuse désormais les IDs capabilities répétés dans `Capability.swift`; fixture démontre le rejet, registre courant de 91 IDs passe. `make qualify` complet passe. Aucun statut produit modifié; revue indépendante NFR-12 toujours requise.
