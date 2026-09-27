@@ -22,6 +22,13 @@ final class AppShellTests: XCTestCase {
         XCTAssertTrue(ProductCopy.french.keys.contains("safety.notice"))
     }
 
+    func testSavedFileAvailabilityDistinguishesPresentFromMissingOrInaccessibleInBothLanguages() {
+        XCTAssertEqual(ProductCopy.savedFileAvailability(isPresent: true, french: false), "Present (current access not verified)")
+        XCTAssertEqual(ProductCopy.savedFileAvailability(isPresent: false, french: false), "Missing or inaccessible")
+        XCTAssertEqual(ProductCopy.savedFileAvailability(isPresent: true, french: true), "Présent (accès actuel non garanti)")
+        XCTAssertEqual(ProductCopy.savedFileAvailability(isPresent: false, french: true), "Absent ou inaccessible")
+    }
+
     func testOnboardingExplainsChosenFoldersReadOnlyScansAndConfirmedTrashInBothLanguages() {
         for key in ["onboarding.title", "onboarding.scope", "onboarding.privacy", "onboarding.start"] {
             XCTAssertNotEqual(ProductCopy.value(for: key, french: false), key)

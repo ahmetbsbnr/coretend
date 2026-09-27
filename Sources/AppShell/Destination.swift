@@ -289,6 +289,13 @@ public enum ProductCopy {
         return "\(path) — \(value(for: "activity.reason.trashFailed", french: isFrench))"
     }
 
+    public static func savedFileAvailability(isPresent: Bool, french isFrench: Bool) -> String {
+        if isFrench {
+            return isPresent ? "Présent (accès actuel non garanti)" : "Absent ou inaccessible"
+        }
+        return isPresent ? "Present (current access not verified)" : "Missing or inaccessible"
+    }
+
     public static func scanRootFailure(reason: String, french isFrench: Bool) -> String {
         let key: String
         switch reason {
