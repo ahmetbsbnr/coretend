@@ -65,7 +65,7 @@ def main() -> None:
                 digest = hashlib.sha256(executable.read_bytes()).hexdigest()
                 observed[(build_name, product)] = digest
                 print(f"{build_name} {product}: {digest}")
-                if os.environ.get("CORETEND_KEEP_REPRO_ARTIFACTS") == "1":
+                if os.environ.get("CORETEND_KEEP_REPRO_ARTIFACTS") == "1" or os.environ.get("CI") == "true":
                     preserved = package_root / ".build" / f"{product}-{build_name}-repro-diagnostic"
                     shutil.copy2(executable, preserved)
                     print(f"Preserved diagnostic binary: {preserved}")
@@ -87,8 +87,17 @@ def main() -> None:
                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False,
                     )
                     print(f"Load commands: {binary.name}; sha256={hashlib.sha256(metadata.stdout.encode()).hexdigest()}")
+                for binary in (first, second):
+                    if binary.is_file() and not binary.is_symlink():
+                        binary.unlink()
             raise RuntimeError(f"{product} is not reproducible across clean scratch builds")
         print(f"{product}: byte-identical across clean scratch builds")
+    if os.environ.get("CI") == "true":
+        for product in PRODUCTS:
+            for build_name in ("first", "second"):
+                diagnostic = package_root / ".build" / f"{product}-{build_name}-repro-diagnostic"
+                if diagnostic.is_file() and not diagnostic.is_symlink():
+                    diagnostic.unlink()
     print("Two cold builds used the same physical scratch path per product, cleared between builds; all outputs were removed with the unique temporary root.")
 
 
