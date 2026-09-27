@@ -10,11 +10,15 @@ OUTPUT = ROOT / "Website/design-tokens.css"
 
 ROLE_NAMES = {
     "canvas": "canvas",
+    "sidebar": "sidebar",
     "surface": "surface",
     "raisedSurface": "raised-surface",
+    "deep": "deep",
     "separator": "separator",
+    "strongSeparator": "strong-separator",
     "ink": "ink",
     "secondaryInk": "secondary-ink",
+    "tertiaryInk": "tertiary-ink",
     "accent": "accent",
     "onAccent": "on-accent",
     "caution": "caution",

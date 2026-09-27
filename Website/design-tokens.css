@@ -1,32 +1,40 @@
 /* Generated from Sources/DesignSystem/Palette.swift by Scripts/export_design_tokens.py. */
 :root {
   color-scheme: dark;
-  --ct-canvas: #18263A;
-  --ct-surface: #1D2A3C;
-  --ct-raised-surface: #253348;
-  --ct-separator: #35445A;
-  --ct-ink: #EFF2F4;
-  --ct-secondary-ink: #ABB6C4;
-  --ct-accent: #77C9C0;
-  --ct-on-accent: #18263A;
-  --ct-caution: #E1A071;
-  --ct-danger: #F08A7E;
-  --ct-focus: #77C9C0;
+  --ct-canvas: #0F2019;
+  --ct-sidebar: #0B1913;
+  --ct-surface: #14291F;
+  --ct-raised-surface: #183126;
+  --ct-deep: #0A1510;
+  --ct-separator: #2C4A37;
+  --ct-strong-separator: #5F8A6C;
+  --ct-ink: #EEF1E6;
+  --ct-secondary-ink: #C3CDB9;
+  --ct-tertiary-ink: #8FA088;
+  --ct-accent: #9BE36D;
+  --ct-on-accent: #0B1913;
+  --ct-caution: #E8B64A;
+  --ct-danger: #E98A63;
+  --ct-focus: #9BE36D;
 }
 
 @media (prefers-color-scheme: light) {
   :root {
     color-scheme: light;
-    --ct-canvas: #EDF0F4;
-    --ct-surface: #F9FAFC;
+    --ct-canvas: #E7EFE4;
+    --ct-sidebar: #DCE7D8;
+    --ct-surface: #F4F8F1;
     --ct-raised-surface: #FFFFFF;
-    --ct-separator: #D5DCE5;
-    --ct-ink: #1A2638;
-    --ct-secondary-ink: #5F6B7E;
-    --ct-accent: #176C74;
-    --ct-on-accent: #FFFFFF;
-    --ct-caution: #9A5731;
-    --ct-danger: #B83C33;
-    --ct-focus: #176C74;
+    --ct-deep: #D3E0CF;
+    --ct-separator: #BFD0C1;
+    --ct-strong-separator: #65826D;
+    --ct-ink: #10261C;
+    --ct-secondary-ink: #35503F;
+    --ct-tertiary-ink: #4F6557;
+    --ct-accent: #2C6E35;
+    --ct-on-accent: #F4F8F1;
+    --ct-caution: #8A5A00;
+    --ct-danger: #A9431C;
+    --ct-focus: #2C6E35;
   }
 }

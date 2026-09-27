@@ -1,7 +1,7 @@
 # Guide UI — CoreTend « Serre »
 
-**Statut :** proposé le 27-09-2026 ; devient la référence à l’acceptation du mainteneur (gate G1,
-décision `Documentation/Decisions/0002-direction-serre.md`). S’applique à l’app **et** au site.
+**Statut :** accepté par le mainteneur le 27-09-2026 (gate G1, décision
+`Documentation/Decisions/0002-direction-serre.md`). S’applique à l’app **et** au site.
 Référence animée : `Documentation/Design/Directions/index.html` (direction A). Là où le
 prototype et ce guide diffèrent, **le guide gagne** (il corrige et prolonge le prototype).
 
@@ -87,7 +87,7 @@ Deux familles livrées avec macOS : aucune police embarquée, aucune licence à 
 
 | Rôle | Police | Taille / graisse | Usage |
 |---|---|---|---|
-| Titre de page | Iowan Old Style | 44 pt, semibold | titre de destination |
+| Titre de page | Iowan Old Style | 44 pt, bold (Iowan n’a pas de semibold) | titre de destination |
 | Chiffre héros | Iowan Old Style | 40 pt, regular | la mesure principale d’une vue |
 | Titre de section | Avenir Next | 13 pt, demibold, +0,04 em | titres de parcelles |
 | Corps | Avenir Next | 14 pt, regular | texte courant, listes |
