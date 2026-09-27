@@ -1,63 +1,85 @@
 import SwiftUI
 import Persistence
 import AppShell
+import DesignSystem
 
 struct SavedFilesView: View {
     let french: Bool
     @State private var records: [SavedFileRecord] = []
     @State private var status: String?
+    @State private var loading = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Text(french ? "Favoris et récents" : "Favorites and recent files")
-                    .font(.title2.weight(.semibold))
+                    .font(CoreTendTypography.sectionTitle)
+                    .foregroundStyle(Palette.ink.color)
                 Spacer()
-                Button { Task { await load() } } label: { Image(systemName: "arrow.clockwise") }
-                    .accessibilityLabel(french ? "Actualiser favoris et récents" : "Refresh favorites and recent files")
+                Button { Task { await load() } } label: {
+                    Label(french ? "Actualiser" : "Refresh", systemImage: "arrow.clockwise")
+                }
+                .disabled(loading)
             }
-            if records.isEmpty {
+            if loading && records.isEmpty {
+                ProgressView(french ? "Chargement des fichiers enregistrés" : "Loading saved files")
+            } else if records.isEmpty && status == nil {
                 ContentUnavailableView(french ? "Aucun fichier enregistré" : "No saved files",
                                        systemImage: "star", description: Text(french
                                            ? "Ajoutez un favori dans Explorer ou activez l’historique récent dans Réglages."
                                            : "Add a favorite in Explore or enable recent history in Settings."))
                     .frame(minHeight: 130)
+            } else if records.isEmpty, let status {
+                ContentUnavailableView(status, systemImage: "exclamationmark.triangle")
             } else {
                 ForEach(records, id: \.path) { record in
-                    HStack(spacing: 10) {
-                        Image(systemName: record.isFavorite ? "star.fill" : "clock")
-                            .foregroundStyle(record.isFavorite ? .yellow : .secondary)
-                        VStack(alignment: .leading, spacing: 3) {
-                            Text(URL(fileURLWithPath: record.path).lastPathComponent).lineLimit(1)
-                            Text(record.path).font(.caption.monospaced()).foregroundStyle(.secondary).lineLimit(1)
-                            Text(ProductCopy.savedFileAvailability(
-                                isPresent: FileManager.default.fileExists(atPath: record.path),
-                                french: french
-                            ))
-                                .font(.caption).foregroundStyle(.secondary)
-                        }
-                        Spacer()
+                    VStack(alignment: .leading, spacing: 6) {
+                        Label(URL(fileURLWithPath: record.path).lastPathComponent,
+                              systemImage: record.isFavorite ? "star.fill" : "clock")
+                            .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
+                        Text(record.path)
+                            .font(CoreTendTypography.secondary.monospaced())
+                            .foregroundStyle(Palette.secondaryInk.color)
+                            .textSelection(.enabled)
+                        Text(ProductCopy.savedFileAvailability(
+                            isPresent: FileManager.default.fileExists(atPath: record.path),
+                            french: french
+                        ))
+                            .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                        Text((french ? "Dernière observation : " : "Last observed: ") +
+                             record.lastSeenAt.formatted(.dateTime.day().month().year().hour().minute()))
+                            .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                        Text(record.isFavorite ? (french ? "Favori" : "Favorite") : (french ? "Récent" : "Recent"))
+                            .font(CoreTendTypography.secondary).foregroundStyle(Palette.accent.color)
                         Text(record.logicalBytes.map { ByteCountFormatter.string(fromByteCount: $0, countStyle: .file) }
                              ?? (french ? "Taille inconnue" : "Size unknown"))
-                            .font(.caption.monospacedDigit()).foregroundStyle(.secondary)
+                            .font(CoreTendTypography.secondary.monospacedDigit())
+                            .foregroundStyle(Palette.secondaryInk.color)
                         Button(role: .destructive) {
                             Task { await remove(record) }
-                        } label: { Image(systemName: "trash") }
+                        } label: { Label(french ? "Retirer" : "Remove", systemImage: "trash") }
                             .buttonStyle(.borderless)
-                            .accessibilityLabel(french ? "Retirer de la liste" : "Remove from list")
                     }
-                    .padding(.vertical, 5)
-                    Divider()
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 14))
                 }
             }
-            if let status { Text(status).font(.caption).foregroundStyle(.secondary) }
+            if let status, !records.isEmpty {
+                Label(status, systemImage: "exclamationmark.triangle")
+                    .font(CoreTendTypography.secondary).foregroundStyle(Palette.caution.color)
+            }
             Text(french ? "Les chemins sont conservés localement. L’état et la taille reflètent la dernière observation; choisissez à nouveau un dossier pour vérifier son contenu." : "Paths stay local. Status and size reflect the last observation; choose a folder again to verify its contents.")
-                .font(.caption).foregroundStyle(.secondary)
+                .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                .fixedSize(horizontal: false, vertical: true)
         }
+        .motion(.standard, value: records)
         .task { await load() }
     }
 
     @MainActor private func load() async {
+        loading = true
+        defer { loading = false }
         do { records = try await LocalStoreAccess.open().savedFiles(); status = nil }
         catch { status = french ? "Données locales indisponibles." : "Local data unavailable." }
     }
