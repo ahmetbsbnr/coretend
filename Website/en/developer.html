@@ -1,1 +1,44 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="description" content="Build and test locally with Swift 6 and Swift Package Manager. No runtime package dependencies are used."><meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; img-src 'self' data:; script-src 'none'; base-uri 'none'; object-src 'none'"><title>Developer notes — CoreTend</title><link rel="stylesheet" href="../site.css"></head><body><a class="skip" href="#main">Skip to content</a><header><a class="brand" href="index.html">CoreTend</a><nav aria-label="Main navigation"><a href="index.html">Home</a><a href="features.html">Features</a><a href="privacy.html">Privacy</a><a href="support.html">Support</a><a href="developer.html">Developers</a></nav><a href="../fr/developer.html">Français</a></header><main id="main"><p class="eyebrow">Local preview · unreleased</p><h1>Developer notes</h1><p>Build and test locally with Swift 6 and Swift Package Manager. No runtime package dependencies are used.</p><section class="grid"><article class="card"><h2>Commands</h2><p>Run `swift test`, `swift build --product CoreTendApp`, and `swift build --product CoreTendCLI` from the reconstruction repository. Tests create unique temporary fixtures.</p></article><article class="card"><h2>Safety boundary</h2><p>Do not test against a real home directory, CoreTend store, or Trash. The production Trash adapter is not called by tests. The next branch is public source. Signing, notarization, release tags, and distribution remain separate gates.</p></article></section><p class="notice">No download or public release is available.</p></main><footer><p>CoreTend · Local reconstruction · 2026</p></footer></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Developer notes for the unreleased CoreTend macOS reconstruction: local build products, interface boundaries and known qualification gaps.">
+  <link rel="canonical" href="developer.html">
+  <link rel="alternate" hreflang="en" href="developer.html">
+  <link rel="alternate" hreflang="fr" href="../fr/developer.html">
+  <link rel="alternate" hreflang="x-default" href="../index.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Build and inspect the source — CoreTend">
+  <meta property="og:description" content="Developer notes for the unreleased CoreTend macOS reconstruction: local build products, interface boundaries and known qualification gaps.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'">
+  <title>Build and inspect the source — CoreTend</title>
+  <link rel="stylesheet" href="../design-tokens.css">
+  <link rel="stylesheet" href="../site.css">
+  <script src="../site.js" defer></script>
+</head>
+<body class="page-developer">
+  <a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="brand" href="index.html" aria-label="CoreTend — Overview">
+    <span class="brand-mark" aria-hidden="true"><i></i></span><span class="brand-name">CoreTend<small>LOCAL MACOS EXPLORER</small></span>
+  </a>
+  <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation"><span class="menu-icon" aria-hidden="true"><i></i><i></i></span><span>Menu</span></button>
+  <nav class="primary-navigation" id="primary-navigation" aria-label="Main navigation" data-collapsed="false"><a href="index.html">Overview</a><a href="features.html">Features</a><a href="privacy.html">Privacy</a><a href="developer.html" aria-current="page">Developers</a><a href="support.html">Support</a></nav>
+  <a class="language-link" href="../fr/developer.html" lang="fr" hreflang="fr">Français<span aria-hidden="true"> ↗</span></a>
+</header>
+  <main id="main" class="page-main">
+  <section class="page-intro section-shell" aria-labelledby="page-title"><p class="eyebrow">For contributors</p><h1 id="page-title">Build and inspect the source</h1><p class="page-lead">The repository contains a Swift 6 package with a native macOS app and a read-only command-line product. No external runtime package dependency is required.</p></section>
+  <section class="page-content section-shell" aria-label="Build and inspect the source"><div class="topic-list"><article class="topic"><h3>Build locally</h3><p>From the repository root, use Swift Package Manager to build the app or command-line product. The website is generated separately with the Python scripts in Scripts/.</p><ul class="command-list"><li><code>swift build --product CoreTendApp</code></li><li><code>swift build --product CoreTendCLI</code></li><li><code>python3 Scripts/build_site.py</code></li></ul></article>
+<article class="topic"><h3>Keep boundaries intact</h3><p>Scan code is read-only. File actions must retain chosen-folder scope, explicit selection, proposal review, confirmation, target revalidation and macOS Trash. Do not treat signature, quarantine or login-item presence as a security verdict.</p></article>
+<article class="topic"><h3>Report source issues safely</h3><p>Include macOS version, architecture, command and complete error output. Use repository issues for code feedback. Remove personal file paths and database contents before sharing logs.</p></article>
+<article class="topic"><h3>Release status</h3><p>This branch is an unreleased public-source reconstruction. Signing, notarization, release artifacts, download links and product support are not available or promised.</p></article></div><aside class="notice" aria-labelledby="notice-title"><span class="notice-symbol" aria-hidden="true">!</span><div><h2 id="notice-title">Repository scope</h2><p>No new runtime dependency, telemetry, remote asset, or account flow is part of this website rebuild.</p></div></aside></section>
+</main>
+  <footer class="site-footer">
+  <div class="footer-brand"><a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><i></i></span><span class="brand-name">CoreTend<small>LOCAL MACOS EXPLORER</small></span></a><p>Local-first by design. No release is available.</p></div>
+  <div class="footer-nav"><h2>Explore</h2><nav aria-label="Explore"><a href="features.html">Features</a><a href="privacy.html">Privacy</a><a href="developer.html">Developers</a><a href="support.html">Support</a></nav></div>
+  <p class="footer-meta">© 2026 CoreTend · Unreleased local reconstruction</p>
+</footer>
+</body>
+</html>

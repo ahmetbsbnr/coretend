@@ -1,1 +1,44 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="description" content="CoreTend is designed to work locally. This unreleased reconstruction sends no telemetry and has no account or cloud sync. A declared update feed opens in your browser only when you click its link."><meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; img-src 'self' data:; script-src 'none'; base-uri 'none'; object-src 'none'"><title>Privacy by design — CoreTend</title><link rel="stylesheet" href="../site.css"></head><body><a class="skip" href="#main">Skip to content</a><header><a class="brand" href="index.html">CoreTend</a><nav aria-label="Main navigation"><a href="index.html">Home</a><a href="features.html">Features</a><a href="privacy.html">Privacy</a><a href="support.html">Support</a><a href="developer.html">Developers</a></nav><a href="../fr/privacy.html">Français</a></header><main id="main"><p class="eyebrow">Local preview · unreleased</p><h1>Privacy by design</h1><p>CoreTend is designed to work locally. This unreleased reconstruction sends no telemetry and has no account or cloud sync. A declared update feed opens in your browser only when you click its link.</p><section class="grid"><article class="card"><h2>File access</h2><p>The app preview scans only a folder you select. Scans read metadata and file contents only when needed for exact duplicate hashing. A scan never writes to the selected tree.</p></article><article class="card"><h2>Actions and records</h2><p>File actions require review and confirmation, revalidate each target, and use macOS Trash only. Favorites and enabled recent history store file paths and last known sizes locally; recent history is off by default and capped at 100 entries. You can remove saved entries. Event records and manual performance samples also stay local; event retention and the full export UI still need qualification.</p></article></section><p class="notice">No download or public release is available.</p></main><footer><p>CoreTend · Local reconstruction · 2026</p></footer></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="How CoreTend&#x27;s local macOS reconstruction handles scans, file contents, saved paths, history and destructive actions.">
+  <link rel="canonical" href="privacy.html">
+  <link rel="alternate" hreflang="en" href="privacy.html">
+  <link rel="alternate" hreflang="fr" href="../fr/privacy.html">
+  <link rel="alternate" hreflang="x-default" href="../index.html">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Your files stay in your hands — CoreTend">
+  <meta property="og:description" content="How CoreTend&#x27;s local macOS reconstruction handles scans, file contents, saved paths, history and destructive actions.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'">
+  <title>Your files stay in your hands — CoreTend</title>
+  <link rel="stylesheet" href="../design-tokens.css">
+  <link rel="stylesheet" href="../site.css">
+  <script src="../site.js" defer></script>
+</head>
+<body class="page-privacy">
+  <a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <a class="brand" href="index.html" aria-label="CoreTend — Overview">
+    <span class="brand-mark" aria-hidden="true"><i></i></span><span class="brand-name">CoreTend<small>LOCAL MACOS EXPLORER</small></span>
+  </a>
+  <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-navigation"><span class="menu-icon" aria-hidden="true"><i></i><i></i></span><span>Menu</span></button>
+  <nav class="primary-navigation" id="primary-navigation" aria-label="Main navigation" data-collapsed="false"><a href="index.html">Overview</a><a href="features.html">Features</a><a href="privacy.html" aria-current="page">Privacy</a><a href="developer.html">Developers</a><a href="support.html">Support</a></nav>
+  <a class="language-link" href="../fr/privacy.html" lang="fr" hreflang="fr">Français<span aria-hidden="true"> ↗</span></a>
+</header>
+  <main id="main" class="page-main">
+  <section class="page-intro section-shell" aria-labelledby="page-title"><p class="eyebrow">Privacy and safety</p><h1 id="page-title">Your files stay in your hands</h1><p class="page-lead">This reconstruction sends no telemetry and has no account or cloud sync. Inspection is scoped to the folder you choose; any file change follows an explicit review and confirmation flow.</p></section>
+  <section class="page-content section-shell" aria-label="Your files stay in your hands"><div class="topic-list"><article class="topic"><h3>Local inspection</h3><p>A scan reads metadata from the selected folder. It reads file contents only when needed to hash content for exact-duplicate comparison. It does not write into the scanned tree. Access is limited by the folder you select and macOS permissions.</p></article>
+<article class="topic"><h3>Paths and saved history</h3><p>Favorites and enabled recent history store paths and last known sizes locally. Recent history is off by default and limited to 100 entries. Activity records and manual performance samples are local; their retention and complete export flow still need qualification.</p></article>
+<article class="topic"><h3>Moves need your decision</h3><p>A candidate is never removed just because it was found. You select items, inspect a proposal, confirm the action, and CoreTend revalidates targets before using macOS Trash. It does not promise to remove related application data.</p></article>
+<article class="topic"><h3>Network boundary</h3><p>There is no telemetry, account, or cloud synchronization in this reconstruction. An app-declared HTTPS update-feed link can open in your browser when you choose it; the feed is not independently verified by that signal.</p></article></div><aside class="notice" aria-labelledby="notice-title"><span class="notice-symbol" aria-hidden="true">!</span><div><h2 id="notice-title">Before sharing diagnostics</h2><p>Exports and event records can contain file names or paths. Review any material before sharing it. Do not include private paths or database contents in source feedback.</p></div></aside></section>
+</main>
+  <footer class="site-footer">
+  <div class="footer-brand"><a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"><i></i></span><span class="brand-name">CoreTend<small>LOCAL MACOS EXPLORER</small></span></a><p>Local-first by design. No release is available.</p></div>
+  <div class="footer-nav"><h2>Explore</h2><nav aria-label="Explore"><a href="features.html">Features</a><a href="privacy.html">Privacy</a><a href="developer.html">Developers</a><a href="support.html">Support</a></nav></div>
+  <p class="footer-meta">© 2026 CoreTend · Unreleased local reconstruction</p>
+</footer>
+</body>
+</html>
