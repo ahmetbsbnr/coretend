@@ -2,6 +2,11 @@
 
 **Relevé :** 2026-09-27. **État :** reconstruction en cours, non finalisée. Derniers jalons fusionnés : favoris/récents SQLite v4, palette clavier bilingue et écriture batch des récents (PR #40–#44). UI macOS native et VoiceOver non qualifiés. Cahier et plan approuvés; développement sur lignée `next` du dépôt public historique. Le dépôt greenfield initial `rebuild/` reste copie locale de provenance.
 
+### NFR-13 — reproductibilité après échec CI — 2026-09-27
+
+- PR #55 a révélé que le scratch symlink stable ne gardait pas son chemin physique sur le toolchain GitHub: App/CLI différaient entre builds froids, alors que ce smoke passait sur l’hôte local. Le script utilise maintenant un même chemin physique temporaire par produit et le vide entre deux builds; helper vérifie le périmètre supprimé, rejette symlinks et chemins extérieurs.
+- Le smoke local et `make qualify` complet repassent, hashes App `b3fb6719…`, CLI `f0233f8b…`; preuves complètes dans `Documentation/Evidence/ReleaseReproducibility.md`. CI doit être relancé pour confirmer sur runner distant; NFR-13 reste `PARTIEL` tant que ce check n’est pas vert.
+
 ### FR-14 — smoke du vrai paquet local — 2026-09-27
 
 - `make app-runtime-smoke` teste maintenant le vrai bundle produit par `package_local.sh`: paquet ZIP généré sous un dossier temporaire isolé, structure/plist/Mach-O vérifiés, `.app` installée sous HOME fixture, exécutable installé lancé puis retiré. Store fixture préservé; 14 échantillons de sockets sans connexion Internet; aucun sidecar SQLite hors store.
