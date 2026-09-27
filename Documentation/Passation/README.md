@@ -50,6 +50,9 @@ corrections`, ou `Refusé`). Un lot `Refusé` redevient `En cours` ; on ne passe
 4. Commit sur `next` (documentation comprise). Push seulement sur demande du mainteneur.
 5. Dire au mainteneur ce qui est livré, ce qu’il doit regarder, et s’arrêter.
 
+Après toute modification scriptée d’un fichier de passation, vérifier que ses sections
+« Lots », « Journal », « Point d’arrêt » et « Problèmes ouverts » sont toutes présentes.
+
 ## Écrire un point d’arrêt utile
 
 Une personne sans contexte doit pouvoir agir sans rien deviner :

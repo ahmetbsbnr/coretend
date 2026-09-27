@@ -11,7 +11,7 @@
 |---|---|---|
 | 1.1 | Kit de captures (8 destinations, Réglages, ⌘K, onboarding ; clair/sombre ; FR/EN ; planche HTML) | Livré — recette en attente (`3098745`) |
 | 1.2 | Séance G1 avec le mainteneur (~45 min) | Fait — **Observatoire refusé** (27-09) |
-| 1.2b | Exploration : trois directions artistiques animées (thème, motion, logo, recherche, navigation), prototype hors app | En cours |
+| 1.2b | Exploration : trois directions artistiques animées (thème, motion, logo, recherche, navigation), prototype hors app | Livré — choix du mainteneur en attente (`15056a4`) |
 | 1.3 | Guide UI + décision 0002, sur la direction choisie en 1.2b | À faire |
 
 ## Journal
@@ -61,6 +61,23 @@ logiciel moche / pas générique ».
 Conséquence (Pilotage § 3) : P1 est refaite. Aucune ligne de SwiftUI tant qu’une direction n’est
 pas choisie sur prototype animé (1.2b), puis écrite en guide (1.3) et acceptée (G1).
 
+### 27-09-2026 — lot 1.2b, trois directions animées
+
+- **Fait :** `15056a4` — `Documentation/Design/Directions/index.html`, prototype autonome (HTML/CSS/SVG,
+  sans dépendance, polices livrées avec macOS) : **A · Serre** (jardin, croissance, Iowan Old Style,
+  vert chlorophylle), **B · Sonar** (sondage, échos, DIN Condensed, ambre), **C · Atelier**
+  (horlogerie, loupe, Didot, laiton et rubis). Chacune : logo animé, transition au changement de
+  menu, recherche ⌘K animée, analyse de démonstration animée, survol, vues Vue d’ensemble,
+  Nettoyage et états vides. Paramètres d’URL `dir`, `view`, `search`, `scan`.
+- **Vérifié :** Chrome sans interface, captures ouvertes et relues : les trois vues d’ensemble,
+  recherche Sonar ouverte, Nettoyage Serre, analyses Serre/Sonar/Atelier. Corrigés en cours de
+  route : marqueur de sélection décalé d’une ligne, cadran Atelier qui dépassait. Mouvement
+  réduit respecté (`prefers-reduced-motion`) et simulable par une case à cocher.
+- **Non vérifié :** transitions de menu en interaction réelle (captures statiques seulement).
+- **Incident de passation :** la mise à jour du lot 1.1 avait supprimé la section « Point
+  d’arrêt » de ce fichier sans erreur ; rétablie ici. Les scripts de mise à jour doivent
+  vérifier chaque remplacement.
+
 ## Ordre du jour proposé pour la séance G1 (constats de l’agent, à confirmer)
 
 Constats relevés en relisant les captures ; ce ne sont pas des décisions.
@@ -81,6 +98,16 @@ Constats relevés en relisant les captures ; ce ne sont pas des décisions.
 8. **Survol :** aucun retour au survol nulle part (connu, traité en P2 selon le guide).
 
 Pour chaque écran, le mainteneur dit : garder / changer / refaire, et pourquoi.
+
+## Point d’arrêt
+
+- **Attente du mainteneur :** ouvrir `Documentation/Design/Directions/index.html`, essayer les trois
+  directions (menus, ⌘K, « Lancer l’analyse », « Rejouer le logo »), puis choisir : A, B, C, un
+  mélange (dire quoi prendre où), ou aucune (dire ce qui manque). Confirmer aussi la lecture de
+  « logiciel moche » (voir séance G1).
+- Ensuite, lot 1.3 : étendre la direction choisie à tous les écrans et composants dans le
+  prototype, puis écrire `Documentation/Design/UI-guide.md` (thème, palette, typo, formes,
+  composants et états, motion : rôle, durées, courbes, Reduce Motion) et la décision 0002.
 
 ## Problèmes ouverts
 
