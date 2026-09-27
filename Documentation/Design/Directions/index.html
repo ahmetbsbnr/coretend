@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CoreTend — trois directions artistiques</title>
+<!--
+  Prototype de décision (lot P1.2b). Hors app, hors site, hors build.
+  Données fictives. Polices : uniquement celles livrées avec macOS, donc utilisables telles quelles en SwiftUI.
+-->
+<style>
+:root { --chrome: #0e0f11; --chrome-ink: #d9d9d4; --chrome-dim: #8b8c88; }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--chrome); color: var(--chrome-ink); font: 15px/1.45 "Avenir Next", -apple-system, sans-serif; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--focus, #fff); outline-offset: 3px; }
+
+/* ---------- barre de choix (hors prototype) ---------- */
+.picker { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; padding: 20px 28px 12px; }
+.picker h1 { font-size: 15px; font-weight: 600; margin: 0 16px 0 0; letter-spacing: .01em; }
+.picker [role=tablist] { display: flex; gap: 4px; }
+.picker [role=tab] { padding: 7px 14px; border-radius: 6px; color: var(--chrome-dim); }
+.picker [role=tab][aria-selected=true] { background: #23252a; color: var(--chrome-ink); }
+.picker p { margin: 0; color: var(--chrome-dim); font-size: 13px; flex-basis: 100%; }
+.brief { padding: 0 28px 14px; max-width: 1180px; color: var(--chrome-ink); }
+.brief strong { font-weight: 600; }
+.brief span { color: var(--chrome-dim); }
+
+/* ---------- fenêtre de l'app ---------- */
+.app {
+  --radius: 10px;
+  position: relative; margin: 6px 28px 28px; height: 720px; max-width: 1180px;
+  display: grid; grid-template-columns: 236px 1fr; overflow: hidden;
+  border-radius: 12px; background: var(--bg); color: var(--ink);
+  font-family: var(--body-font); box-shadow: 0 30px 80px rgba(0,0,0,.45);
+}
+.sidebar { position: relative; padding: 18px 12px 12px; background: var(--side); display: flex; flex-direction: column; gap: 4px; border-right: 1px solid var(--line); }
+.brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 18px; }
+.brand svg { width: 38px; height: 38px; overflow: visible; }
+.brand b { font-family: var(--display-font); font-weight: var(--display-weight); font-size: var(--brand-size); letter-spacing: var(--brand-track); }
+.brand small { display: block; font-size: 11px; color: var(--dim); letter-spacing: .02em; }
+.group { font-size: 11.5px; color: var(--dim); padding: 12px 10px 4px; letter-spacing: var(--group-track); text-transform: var(--group-case); }
+.nav { position: relative; display: flex; align-items: center; gap: 11px; width: 100%; text-align: left; padding: 8px 10px; border-radius: var(--item-radius); color: var(--ink-2); transition: color .15s, background-color .15s; }
+.nav svg { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.6; transition: transform .35s var(--ease-out); }
+.nav:hover { color: var(--ink); background: var(--hover); }
+.nav[aria-current=page] { color: var(--sel-ink); }
+.marker { position: absolute; top: 0; left: 12px; right: 12px; height: 36px; border-radius: var(--item-radius); background: var(--sel); pointer-events: none; transition: transform .42s var(--ease-spring), height .3s; z-index: 0; }
+.nav > * { position: relative; z-index: 1; }
+.side-foot { margin-top: auto; padding: 10px; font-size: 12px; color: var(--dim); display: flex; gap: 8px; align-items: center; }
+.kbd { border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; font-size: 11px; }
+.search-btn { margin: 0 0 8px; display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--item-radius); border: 1px solid var(--line); color: var(--dim); }
+.search-btn:hover { color: var(--ink); border-color: var(--accent); }
+.search-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.7; }
+.search-btn .kbd { margin-left: auto; }
+
+.stage { position: relative; overflow: hidden; }
+.view { position: absolute; inset: 0; padding: 34px 40px; overflow: auto; }
+.view h2 { font-family: var(--display-font); font-weight: var(--display-weight); font-size: var(--h-size); letter-spacing: var(--h-track); line-height: 1.02; margin: 0 0 6px; text-transform: var(--h-case); }
+.view .lede { color: var(--ink-2); margin: 0 0 26px; max-width: 58ch; font-size: 16px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 16px; }
+.panel h3 { margin: 0 0 12px; font-size: 13px; font-weight: 600; color: var(--dim); letter-spacing: var(--group-track); text-transform: var(--group-case); }
+.figure { font-family: var(--figure-font); font-size: 44px; line-height: 1; letter-spacing: -.01em; }
+.figure small { font-size: 16px; color: var(--ink-2); margin-left: 6px; font-family: var(--body-font); }
+.note { color: var(--dim); font-size: 13px; margin: 10px 0 0; }
+.grid2 { display: grid; grid-template-columns: 1.35fr 1fr; gap: 16px; }
+.action { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: var(--btn-radius); background: var(--accent); color: var(--on-accent); font-weight: 600; transition: transform .12s, filter .15s; }
+.action:hover { filter: brightness(1.08); }
+.action:active { transform: scale(.97); }
+.ghost { display: inline-flex; padding: 9px 14px; border-radius: var(--btn-radius); border: 1px solid var(--line); color: var(--ink); }
+.ghost:hover { border-color: var(--accent); }
+
+.rule { display: grid; grid-template-columns: 26px 1fr auto; gap: 12px; align-items: center; padding: 12px 10px; border-radius: 8px; transition: background-color .15s; }
+.rule + .rule { border-top: 1px solid var(--line); }
+.rule:hover { background: var(--hover); }
+.rule b { font-weight: 600; display: block; }
+.rule span { color: var(--dim); font-size: 13px; }
+.risk { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 5px; }
+.risk.low { color: var(--ok); background: color-mix(in srgb, var(--ok) 14%, transparent); }
+.risk.mid { color: var(--warn); background: color-mix(in srgb, var(--warn) 16%, transparent); }
+.risk.high { color: var(--danger); background: color-mix(in srgb, var(--danger) 16%, transparent); }
+.tick { width: 18px; height: 18px; border: 1.5px solid var(--ink-2); border-radius: 50%; }
+.rule:hover .tick { border-color: var(--accent); }
+
+.empty { display: grid; place-items: center; text-align: center; padding: 50px 20px; }
+.empty svg { width: 150px; height: 150px; overflow: visible; }
+.empty p { color: var(--ink-2); max-width: 44ch; }
+.scan-viz { height: 210px; border-radius: var(--radius); background: var(--deep); position: relative; overflow: hidden; margin: 14px 0 10px; }
+.scan-viz svg { width: 100%; height: 100%; }
+.counter { font-family: var(--figure-font); font-size: 15px; color: var(--ink-2); }
+.fictive { position: absolute; right: 14px; bottom: 10px; font-size: 11px; color: var(--dim); z-index: 5; }
+
+/* ---------- recherche ⌘K ---------- */
+.search { position: absolute; inset: 0; z-index: 20; display: none; }
+.search.open { display: block; }
+.search .scrim { position: absolute; inset: 0; background: var(--scrim); animation: fade .25s both; }
+.search .box { position: absolute; left: 50%; top: 92px; width: min(560px, 80%); transform: translateX(-50%); background: var(--panel-hi); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.35); }
+.search .field { display: flex; gap: 10px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); position: relative; }
+.search input { flex: 1; font: inherit; font-size: 17px; color: var(--ink); background: none; border: 0; outline: 0; }
+.search input::placeholder { color: var(--dim); }
+.search .fx { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+.search ul { list-style: none; margin: 0; padding: 6px; max-height: 330px; overflow: auto; }
+.search li button { width: 100%; text-align: left; display: flex; align-items: center; gap: 12px; padding: 9px 10px; border-radius: 7px; }
+.search li button svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+.search li button:hover, .search li button.hot { background: var(--sel); color: var(--sel-ink); }
+.search .hint { padding: 8px 14px; font-size: 12px; color: var(--dim); border-top: 1px solid var(--line); }
+
+@keyframes fade { from { opacity: 0; } }
+
+/* =========================================================================
+   A — SERRE : entretenir un jardin. Croissance, racines, sève.
+   ========================================================================= */
+.app[data-dir=serre] {
+  --bg: #0f2019; --side: #0b1913; --panel: #14291f; --panel-hi: #183126; --deep: #0a1510;
+  --ink: #eef1e6; --ink-2: #c3cdb9; --dim: #86977f; --line: #24402f;
+  --accent: #9be36d; --on-accent: #0b1913; --sel: #1f3a2a; --sel-ink: #dff7cf; --hover: #16301f;
+  --ok: #9be36d; --warn: #e8b64a; --danger: #e0714b; --scrim: rgba(5,12,8,.55); --focus: #9be36d;
+  --display-font: "Iowan Old Style", "New York", serif; --display-weight: 600; --body-font: "Avenir Next", sans-serif;
+  --figure-font: "Iowan Old Style", serif; --h-size: 46px; --h-track: -.01em; --h-case: none;
+  --brand-size: 21px; --brand-track: 0; --group-track: .04em; --group-case: none;
+  --item-radius: 18px 6px 18px 6px; --btn-radius: 20px 6px 20px 6px; --radius: 22px 8px 22px 8px;
+  --ease-out: cubic-bezier(.2,.8,.2,1); --ease-spring: cubic-bezier(.34,1.45,.5,1);
+}
+.app[data-dir=serre] .nav:hover svg { transform: rotate(-8deg) translateY(-1px); }
+.app[data-dir=serre] .view.enter { animation: serre-grow .62s var(--ease-out) both; }
+.app[data-dir=serre] .view.leave { animation: serre-wither .28s ease-in both; }
+@keyframes serre-grow { from { clip-path: circle(0 at var(--ox) var(--oy)); } to { clip-path: circle(150% at var(--ox) var(--oy)); } }
+@keyframes serre-wither { to { opacity: 0; transform: translateY(6px); } }
+.app[data-dir=serre] .view.enter > * { animation: rise .6s var(--ease-out) both; }
+.app[data-dir=serre] .view.enter > *:nth-child(2) { animation-delay: .06s; }
+.app[data-dir=serre] .view.enter > *:nth-child(3) { animation-delay: .12s; }
+.app[data-dir=serre] .view.enter > *:nth-child(n+4) { animation-delay: .18s; }
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } }
+.app[data-dir=serre] .search.open .box { animation: serre-box .45s var(--ease-spring) both; transform-origin: 50% 0; }
+@keyframes serre-box { from { opacity: 0; transform: translateX(-50%) scaleY(.6); } }
+.app[data-dir=serre] .search.open li { animation: sprout .4s var(--ease-spring) both; animation-delay: calc(var(--i) * 40ms + .15s); }
+@keyframes sprout { from { opacity: 0; transform: translateX(-10px) scale(.96); } }
+
+/* =========================================================================
+   B — SONAR : sonder les profondeurs. Balayage, échos, phosphore ambre.
+   ========================================================================= */
+.app[data-dir=sonar] {
+  --bg: #0a0d0f; --side: #070a0b; --panel: #101518; --panel-hi: #131a1e; --deep: #05080a;
+  --ink: #f1e6d0; --ink-2: #c6b89c; --dim: #7d7563; --line: #26211a;
+  --accent: #ffae2b; --on-accent: #120c02; --sel: #2a1f0e; --sel-ink: #ffcf7d; --hover: #16130e;
+  --ok: #7fd6a6; --warn: #ffae2b; --danger: #ff5a4d; --scrim: rgba(0,0,0,.6); --focus: #ffae2b;
+  --display-font: "DIN Condensed", "Avenir Next Condensed", sans-serif; --display-weight: 700; --body-font: "Avenir Next", sans-serif;
+  --figure-font: "DIN Alternate", "DIN Condensed", sans-serif; --h-size: 58px; --h-track: .02em; --h-case: uppercase;
+  --brand-size: 25px; --brand-track: .06em; --group-track: .14em; --group-case: uppercase;
+  --item-radius: 3px; --btn-radius: 3px; --radius: 4px;
+  --ease-out: cubic-bezier(.16,1,.3,1); --ease-spring: cubic-bezier(.22,1.2,.36,1);
+}
+.app[data-dir=sonar] .brand b { text-transform: uppercase; }
+.app[data-dir=sonar] .panel { background-image: radial-gradient(circle at 1px 1px, #ffffff08 1px, transparent 0); background-size: 18px 18px; }
+.app[data-dir=sonar] .nav:hover svg { filter: drop-shadow(0 0 4px var(--accent)); }
+.app[data-dir=sonar] .marker { box-shadow: inset 3px 0 0 var(--accent); }
+.app[data-dir=sonar] .sweep { position: absolute; top: 0; bottom: 0; width: 2px; left: 0; background: var(--accent); box-shadow: 0 0 18px 4px color-mix(in srgb, var(--accent) 60%, transparent); z-index: 6; pointer-events: none; opacity: 0; }
+.app[data-dir=sonar] .sweep.run { animation: sweep .5s cubic-bezier(.5,0,.3,1) both; }
+@keyframes sweep { 0% { left: 0; opacity: 1; } 100% { left: 100%; opacity: .2; } }
+.app[data-dir=sonar] .view.enter { animation: sonar-reveal .5s cubic-bezier(.5,0,.3,1) both; }
+@keyframes sonar-reveal { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+.app[data-dir=sonar] .view.leave { animation: sonar-fade .3s linear both; }
+@keyframes sonar-fade { to { opacity: 0; filter: blur(2px); } }
+.app[data-dir=sonar] .view.enter > * { animation: echo .5s var(--ease-out) both; animation-delay: calc(var(--n, 0) * 70ms + .2s); }
+@keyframes echo { 0% { opacity: 0; } 40% { opacity: 1; filter: brightness(1.8); } 100% { filter: none; } }
+.app[data-dir=sonar] .search.open .box { animation: sonar-box .3s var(--ease-out) both; }
+@keyframes sonar-box { from { opacity: 0; transform: translateX(-50%) scaleX(.2); } }
+.app[data-dir=sonar] .search.open li { animation: echo .45s both; animation-delay: calc(var(--i) * 55ms + .12s); }
+
+/* =========================================================================
+   C — ATELIER : l'horloger. Précision, laiton, rubis, rouages.
+   ========================================================================= */
+.app[data-dir=atelier] {
+  --bg: #141820; --side: #10131a; --panel: #1a1f29; --panel-hi: #1e2430; --deep: #0d1016;
+  --ink: #eceef2; --ink-2: #b9bfcb; --dim: #7e8594; --line: #2a3140;
+  --accent: #d4ad5b; --on-accent: #16120a; --sel: #252c39; --sel-ink: #f3dca7; --hover: #1a2029;
+  --ok: #8ec9a8; --warn: #d4ad5b; --danger: #d6455d; --scrim: rgba(8,10,14,.62); --focus: #d4ad5b;
+  --display-font: "Didot", "Bodoni 72", serif; --display-weight: 400; --body-font: "Avenir Next", sans-serif;
+  --figure-font: "Didot", serif; --h-size: 54px; --h-track: 0; --h-case: none;
+  --brand-size: 23px; --brand-track: .08em; --group-track: .18em; --group-case: uppercase;
+  --item-radius: 7px; --btn-radius: 7px; --radius: 9px;
+  --ease-out: cubic-bezier(.25,.9,.25,1); --ease-spring: cubic-bezier(.3,1.35,.45,1);
+}
+.app[data-dir=atelier] .brand b { font-weight: 400; }
+.app[data-dir=atelier] .panel { border-top: 1px solid #3a4254; }
+.app[data-dir=atelier] .marker::before { content: ""; position: absolute; left: -12px; top: 50%; width: 7px; height: 7px; margin-top: -3.5px; transform: rotate(45deg); background: var(--danger); }
+.app[data-dir=atelier] .nav:hover svg { transform: rotate(30deg); }
+.app[data-dir=atelier] .stage { perspective: 1400px; }
+.app[data-dir=atelier] .view.enter { animation: dial-in .55s var(--ease-out) both; transform-origin: 0% 50%; }
+@keyframes dial-in { from { opacity: 0; transform: rotateY(-14deg) translateX(-24px); } }
+.app[data-dir=atelier] .view.leave { animation: dial-out .3s ease-in both; transform-origin: 100% 50%; }
+@keyframes dial-out { to { opacity: 0; transform: rotateY(10deg) translateX(20px); } }
+.app[data-dir=atelier] .search.open .box { animation: loupe .42s var(--ease-out) both; }
+@keyframes loupe { from { clip-path: circle(0 at 30px 28px); } to { clip-path: circle(140% at 30px 28px); } }
+.app[data-dir=atelier] .search.open li { animation: tickin .32s steps(4, end) both; animation-delay: calc(var(--i) * 45ms + .2s); }
+@keyframes tickin { from { opacity: 0; transform: translateX(-8px); } }
+
+/* ---------- logos ---------- */
+.logo-draw { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: draw 1.1s var(--ease-out) forwards; animation-delay: var(--d, 0s); }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+.pop { transform-box: fill-box; transform-origin: center; animation: pop .5s var(--ease-spring) both; animation-delay: var(--d, 0s); }
+@keyframes pop { from { transform: scale(0); opacity: 0; } }
+.spin { transform-box: fill-box; transform-origin: center; animation: spin var(--t, 6s) linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.balance { transform-box: fill-box; transform-origin: center; animation: balance 1.2s ease-in-out infinite alternate; }
+@keyframes balance { from { transform: rotate(-38deg); } to { transform: rotate(38deg); } }
+.ping { transform-box: fill-box; transform-origin: center; animation: ping 2.4s var(--ease-out) infinite; animation-delay: var(--d, 0s); }
+@keyframes ping { from { transform: scale(.2); opacity: .9; } to { transform: scale(1.6); opacity: 0; } }
+.rotor { transform-box: view-box; transform-origin: 50% 50%; animation: spin 3s linear infinite; }
+.sway { transform-box: fill-box; transform-origin: 50% 100%; animation: sway 3.2s ease-in-out infinite alternate; }
+@keyframes sway { from { transform: rotate(-4deg); } to { transform: rotate(4deg); } }
+
+/* ---------- mouvement réduit : tout reste lisible et immédiat ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+  .logo-draw { stroke-dashoffset: 0; }
+}
+.reduced *, .reduced *::before, .reduced *::after { animation-duration: .001ms !important; animation-delay: 0s !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+.reduced .logo-draw { stroke-dashoffset: 0; }
+
+.controls { display: flex; gap: 10px; flex-wrap: wrap; padding: 0 28px; max-width: 1180px; }
+.controls button, .controls label { font-size: 13px; color: var(--chrome-dim); border: 1px solid #2b2d33; border-radius: 6px; padding: 6px 12px; }
+.controls button:hover { color: var(--chrome-ink); }
+</style>
+</head>
+<body>
+<header class="picker">
+  <h1>CoreTend — directions artistiques</h1>
+  <div role="tablist" aria-label="Direction">
+    <button role="tab" data-dir="serre" aria-selected="true">A · Serre</button>
+    <button role="tab" data-dir="sonar" aria-selected="false">B · Sonar</button>
+    <button role="tab" data-dir="atelier" aria-selected="false">C · Atelier</button>
+  </div>
+  <p>Cliquez les menus, ouvrez la recherche (⌘K ou le champ), lancez l’analyse de démonstration. Données fictives. Prototype de décision, pas l’app.</p>
+</header>
+<p class="brief" id="brief"></p>
+<div class="controls">
+  <button id="replay">Rejouer le logo</button>
+  <label><input type="checkbox" id="reduce"> Simuler « Réduire les animations »</label>
+</div>
+
+<div class="app" data-dir="serre" id="app">
+  <aside class="sidebar">
+    <div class="brand"><span id="logo"></span><div><b>CoreTend</b><small id="tagline"></small></div></div>
+    <button class="search-btn" id="open-search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>Rechercher<span class="kbd">⌘K</span></button>
+    <div class="marker" id="marker"></div>
+    <nav id="nav" aria-label="Navigation"></nav>
+    <div class="side-foot"><span id="foot"></span></div>
+  </aside>
+  <main class="stage" id="stage"><div class="sweep" id="sweep"></div><span class="fictive">données fictives</span></main>
+  <div class="search" id="search" role="dialog" aria-modal="true" aria-label="Recherche">
+    <div class="scrim" data-close></div>
+    <div class="box">
+      <div class="field"><svg class="fx" id="search-fx" aria-hidden="true"></svg><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="1.7"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="q" placeholder="Aller à… ou chercher une action" autocomplete="off"></div>
+      <ul id="results"></ul>
+      <div class="hint">↑ ↓ pour choisir · Retour pour ouvrir · Échap pour fermer</div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const ICONS = {
+  overview: '<path d="M4 13a8 8 0 1 1 16 0"/><path d="M12 13l4-4"/><circle cx="12" cy="13" r="1.2"/>',
+  explore: '<path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3z"/><path d="M9 4v13M15 7v13"/>',
+  cleanup: '<path d="M5 20l7-16 7 16"/><path d="M8 13h8"/>',
+  duplicates: '<rect x="4" y="7" width="11" height="13" rx="2"/><path d="M9 4h9a2 2 0 0 1 2 2v11"/>',
+  applications: '<rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/>',
+  integrity: '<path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  performance: '<path d="M3 17l5-6 4 3 5-7 4 4"/>',
+  record: '<path d="M4 12a8 8 0 1 0 3-6.2"/><path d="M4 4v4h4"/><path d="M12 8v4l3 2"/>',
+};
+const NAV = [
+  ["Votre Mac", ["overview", "explore", "cleanup", "duplicates"]],
+  ["Comprendre", ["applications", "integrity", "performance", "record"]],
+];
+const LABEL = { overview: "Vue d’ensemble", explore: "Explorer", cleanup: "Nettoyage", duplicates: "Doublons", applications: "Applications", integrity: "Intégrité", performance: "Performances", record: "Historique" };
+
+const THEMES = {
+  serre: {
+    brief: "<strong>A · Serre.</strong> CoreTend entretient votre Mac comme on entretient une serre : on observe, on taille, rien n’est arraché. Formes feuilles (coins asymétriques), vert chlorophylle sur nuit de serre, Iowan Old Style. <span>Motion : le logo germe, chaque menu pousse depuis l’élément cliqué, la recherche fait éclore ses résultats, l’analyse étend des racines dans les couches du disque.</span>",
+    tagline: "entretien local", foot: "Tout reste sur ce Mac · rien n’est arraché",
+    lede: { overview: "L’état de la serre, mesuré à l’instant.", explore: "Choisissez une parcelle : CoreTend en relève chaque couche, sans rien toucher.", cleanup: "Des tailles connues et sûres. Rien n’est coupé sans votre accord.", duplicates: "Des pousses identiques. Vous choisissez celle qu’on garde.", applications: "Les plantes installées et ce qu’elles laissent autour.", integrity: "Ce que macOS sait de chaque plant : signature, provenance.", performance: "La respiration de la machine, point par point.", record: "L’herbier : tout ce qui a été observé et taillé." },
+    logo: () => `<svg viewBox="0 0 40 40" aria-hidden="true"><circle class="pop" cx="20" cy="30" r="6" fill="var(--accent)" style="--d:.0s"/>
+      <g class="sway"><path class="logo-draw" d="M20 26 C20 18 20 14 20 8" stroke="var(--ink)" stroke-width="2" fill="none" style="--len:20;--d:.35s"/>
+      <path class="logo-draw" d="M20 17 C14 16 11 12 11 8 C16 8 20 11 20 17" stroke="var(--accent)" stroke-width="1.8" fill="none" style="--len:30;--d:.8s"/>
+      <path class="logo-draw" d="M20 13 C25 12 28 9 29 5 C24 5 21 8 20 13" stroke="var(--accent)" stroke-width="1.8" fill="none" style="--len:30;--d:1.05s"/></g></svg>`,
+    gauge: (free, total) => { const w = 100 * (total - free) / total; return `<svg viewBox="0 0 400 70" style="width:100%;height:70px;margin-top:14px">
+      ${[0,1,2,3].map(i => `<rect x="0" y="${8 + i*14}" width="${w - i*9}%" height="10" rx="5" fill="var(--accent)" opacity="${.85 - i*.18}"><animate attributeName="width" from="0" to="${w - i*9}%" dur="${.8 + i*.15}s" fill="freeze" calcMode="spline" keySplines=".2 .8 .2 1"/></rect>`).join("")}
+      </svg><p class="note">Couches occupées, du système aux fichiers récents. 60,62 Go libres sur 245 Go.</p>`; },
+    scan: () => `<svg viewBox="0 0 600 210" preserveAspectRatio="none">
+      ${[0,1,2,3].map(i => `<rect x="0" y="${30 + i*45}" width="600" height="44" fill="var(--accent)" opacity="${.03 + i*.025}"/>`).join("")}
+      ${Array.from({length: 9}, (_, i) => { const x = 40 + i*65; const d = `M${x} 0 C ${x+20} 50, ${x-25} 110, ${x+10} ${150 + (i%3)*18} S ${x-10} 200, ${x+6} 210`; return `<path class="logo-draw" d="${d}" stroke="var(--accent)" stroke-width="${2.2 - (i%3)*.5}" fill="none" style="--len:260;--d:${i*.12}s;animation-duration:2.2s"/>`; }).join("")}
+      </svg>`,
+    empty: () => `<svg viewBox="0 0 150 150" aria-hidden="true"><ellipse cx="75" cy="128" rx="46" ry="7" fill="var(--line)"/><g class="sway"><path class="logo-draw" d="M75 126 C75 100 75 80 75 50" stroke="var(--ink-2)" stroke-width="3" fill="none" style="--len:80"/><path class="logo-draw" d="M75 86 C55 84 46 70 46 56 C62 56 75 66 75 86" stroke="var(--accent)" stroke-width="2.5" fill="none" style="--len:90;--d:.4s"/></g></svg>`,
+    searchFx: (svg) => { svg.innerHTML = `<path class="logo-draw" d="M10 48 C 120 40, 200 60, 330 46 S 520 52, 560 44" stroke="var(--accent)" stroke-width="1.5" fill="none" style="--len:600;animation-duration:.9s"/>`; },
+    transition: (view, origin) => { view.style.setProperty("--ox", origin.x + "px"); view.style.setProperty("--oy", origin.y + "px"); },
+  },
+  sonar: {
+    brief: "<strong>B · Sonar.</strong> CoreTend sonde les profondeurs du disque et rend ce qui revient : des échos, pas des suppositions. Phosphore ambre sur noir d’abysse, DIN Condensed, angles francs, trame de coordonnées. <span>Motion : le logo émet un ping, chaque changement de menu est un balayage qui révèle la vue, les résultats de recherche reviennent comme des échos, l’analyse est un radar dont chaque blip est un fichier trouvé.</span>",
+    tagline: "sondage local", foot: "Aucun signal ne quitte ce Mac",
+    lede: { overview: "Relevé de surface : ce que macOS mesure maintenant.", explore: "Choisissez une zone : CoreTend la sonde sans rien modifier.", cleanup: "Cibles connues, classées par risque. Rien ne part sans votre ordre.", duplicates: "Deux échos identiques. Vous décidez lequel reste.", applications: "Les applications détectées et leurs traces.", integrity: "Signaux natifs de macOS : signature, quarantaine.", performance: "Télémétrie locale, échantillon par échantillon.", record: "Le journal de bord : chaque sondage, chaque action." },
+    logo: () => `<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="15" stroke="var(--line)" fill="none"/><circle cx="20" cy="20" r="9" stroke="var(--line)" fill="none"/>
+      <circle class="ping" cx="20" cy="20" r="12" stroke="var(--accent)" stroke-width="1.5" fill="none"/><circle class="ping" cx="20" cy="20" r="12" stroke="var(--accent)" stroke-width="1.5" fill="none" style="--d:1.2s"/>
+      <g class="rotor"><path d="M20 20 L20 5 A15 15 0 0 1 32 11 Z" fill="var(--accent)" opacity=".35"/><path d="M20 20 L20 5" stroke="var(--accent)" stroke-width="1.8"/></g><circle class="pop" cx="20" cy="20" r="2.6" fill="var(--accent)"/></svg>`,
+    gauge: (free, total) => { const used = (total - free) / total; return `<svg viewBox="0 0 400 76" style="width:100%;height:76px;margin-top:12px">
+      ${Array.from({length: 40}, (_, i) => `<rect x="${i*10}" y="${i % 5 ? 30 : 18}" width="3" height="${i % 5 ? 22 : 34}" fill="${i/40 < used ? "var(--accent)" : "var(--line)"}"><animate attributeName="opacity" from="0" to="1" begin="${i*18}ms" dur="120ms" fill="freeze"/></rect>`).join("")}
+      <text x="0" y="72" fill="var(--dim)" font-size="10" font-family="DIN Alternate">0</text><text x="370" y="72" fill="var(--dim)" font-size="10" font-family="DIN Alternate">245 GO</text></svg>
+      <p class="note">Profondeur occupée : ${Math.round(used*100)} %. 60,62 Go libres.</p>`; },
+    scan: () => `<svg viewBox="0 0 600 210"><g transform="translate(300 105)">
+      ${[40,80,120].map(r => `<circle r="${r}" stroke="var(--line)" fill="none"/>`).join("")}<path d="M-150 0H150M0 -110V110" stroke="var(--line)"/>
+      <g class="rotor" style="transform-box:fill-box;transform-origin:center;animation-duration:2.4s"><path d="M0 0 L0 -130 A130 130 0 0 1 92 -92 Z" fill="var(--accent)" opacity=".22"/><path d="M0 0L0 -130" stroke="var(--accent)" stroke-width="2"/><circle r="130" fill="none"/></g>
+      ${[[50,-40],[-70,30],[95,55],[-30,-85],[20,70],[-110,-20],[70,-90]].map(([x,y],i) => `<circle class="ping" cx="${x}" cy="${y}" r="5" fill="var(--accent)" style="--d:${i*.35}s"/>`).join("")}</g></svg>`,
+    empty: () => `<svg viewBox="0 0 150 150" aria-hidden="true"><circle cx="75" cy="75" r="60" stroke="var(--line)" fill="none"/><circle class="ping" cx="75" cy="75" r="40" stroke="var(--accent)" fill="none"/><circle class="ping" cx="75" cy="75" r="40" stroke="var(--accent)" fill="none" style="--d:1.2s"/><circle cx="75" cy="75" r="4" fill="var(--accent)"/></svg>`,
+    searchFx: (svg) => { svg.innerHTML = `<circle class="ping" cx="28" cy="26" r="18" stroke="var(--accent)" fill="none" style="animation-iteration-count:1;animation-duration:.9s"/><circle class="ping" cx="28" cy="26" r="18" stroke="var(--accent)" fill="none" style="--d:.25s;animation-iteration-count:1;animation-duration:.9s"/>`; },
+    transition: () => { const s = document.getElementById("sweep"); s.classList.remove("run"); void s.offsetWidth; s.classList.add("run"); },
+  },
+  atelier: {
+    brief: "<strong>C · Atelier.</strong> CoreTend est l’établi d’un horloger : on ouvre le boîtier, on observe à la loupe, on règle avec précision. Acier bleui, laiton, un rubis pour ce qui est irréversible, Didot pour les titres. <span>Motion : le balancier du logo bat la mesure, chaque menu tourne comme une complication, la recherche s’ouvre en loupe et ses résultats arrivent à la seconde, l’analyse fait tourner les rouages.</span>",
+    tagline: "réglage local", foot: "Mécanisme ouvert · rien ne sort de l’atelier",
+    lede: { overview: "Le boîtier ouvert : ce que macOS indique à cette seconde.", explore: "Posez une pièce sous la loupe. CoreTend la mesure sans y toucher.", cleanup: "Des réglages connus, classés du plus sûr au plus délicat.", duplicates: "Deux pièces identiques. Vous choisissez celle qui reste dans le mouvement.", applications: "Les mécanismes installés et leurs pièces détachées.", integrity: "Les poinçons de macOS : signature, provenance.", performance: "La marche de la machine, battement par battement.", record: "Le carnet d’atelier : chaque mesure, chaque intervention." },
+    logo: () => `<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="16" stroke="var(--accent)" stroke-width="1.4" fill="none" class="logo-draw" style="--len:101"/>
+      ${Array.from({length: 12}, (_, i) => { const a = i * Math.PI / 6; return `<path d="M${20 + 13*Math.sin(a)} ${20 - 13*Math.cos(a)} L${20 + 15*Math.sin(a)} ${20 - 15*Math.cos(a)}" stroke="var(--ink-2)" stroke-width="1" class="pop" style="--d:${.3 + i*.04}s"/>`; }).join("")}
+      <g class="balance"><circle cx="20" cy="20" r="8" stroke="var(--ink)" stroke-width="1.3" fill="none"/><path d="M12 20H28M20 12V28" stroke="var(--ink)" stroke-width="1"/></g><circle class="pop" cx="20" cy="20" r="2.4" fill="var(--danger)" style="--d:.9s"/></svg>`,
+    gauge: (free, total) => { const used = (total - free) / total; const a = -90 + 180 * used; return `<svg viewBox="0 0 400 118" style="width:100%;height:118px;margin-top:6px"><g transform="translate(200 108)">
+      <path d="M-96 0 A96 96 0 0 1 96 0" stroke="var(--line)" stroke-width="8" fill="none"/>
+      ${Array.from({length: 25}, (_, i) => { const t = (-90 + i*7.5) * Math.PI/180, o = i%6 ? 84 : 78; return `<path d="M${88*Math.sin(t)} ${-88*Math.cos(t)} L${o*Math.sin(t)} ${-o*Math.cos(t)}" stroke="var(--ink-2)" stroke-width="${i%6?1:1.6}"/>`; }).join("")}
+      <g transform="rotate(${a})"><path d="M0 8 L0 -92" stroke="var(--accent)" stroke-width="2"><animateTransform attributeName="transform" type="rotate" from="${-90 - a} 0 0" to="0 0 0" dur="1.3s" fill="freeze" calcMode="spline" keySplines=".3 1.35 .45 1"/></path></g>
+      <circle r="5" fill="var(--danger)"/></g></svg><p class="note">Aiguille : part occupée du volume. 60,62 Go libres sur 245 Go.</p>`; },
+    scan: () => { const gear = (cx, cy, r, n, t, rev) => `<g class="spin" style="--t:${t}s;animation-direction:${rev ? "reverse" : "normal"};transform-origin:${cx}px ${cy}px;transform-box:view-box"><circle cx="${cx}" cy="${cy}" r="${r}" stroke="var(--accent)" stroke-width="2" fill="none"/>${Array.from({length: n}, (_, i) => { const a = i * 2 * Math.PI / n; return `<rect x="${cx - 3}" y="${cy - r - 7}" width="6" height="8" fill="var(--accent)" transform="rotate(${a * 180 / Math.PI} ${cx} ${cy})"/>`; }).join("")}<circle cx="${cx}" cy="${cy}" r="4" fill="var(--danger)"/></g>`;
+      return `<svg viewBox="0 0 600 210">${gear(230, 105, 60, 18, 6, false)}${gear(343, 80, 40, 12, 4, true)}${gear(400, 150, 26, 8, 2.6, false)}</svg>`; },
+    empty: () => `<svg viewBox="0 0 150 150" aria-hidden="true"><circle cx="64" cy="64" r="40" stroke="var(--accent)" stroke-width="3" fill="none" class="logo-draw" style="--len:252"/><path d="M93 93 L126 126" stroke="var(--ink-2)" stroke-width="7" stroke-linecap="round"/></svg>`,
+    searchFx: (svg) => { svg.innerHTML = ""; },
+    transition: () => {},
+  },
+};
+
+const app = document.getElementById("app"), stage = document.getElementById("stage"), nav = document.getElementById("nav");
+let dir = "serre", current = "overview", busy = false;
+
+function viewHTML(id) {
+  const t = THEMES[dir], lede = `<p class="lede">${t.lede[id]}</p>`;
+  if (id === "overview") return `<h2>Vue d’ensemble</h2>${lede}
+    <div class="grid2" style="--n:2"><div class="panel"><h3>Espace libre du volume</h3><div class="figure">60,62<small>Go sur 245 Go</small></div>${t.gauge(60.62, 245)}</div>
+    <div class="panel"><h3>Analyse de démonstration</h3><p style="margin:0 0 12px;color:var(--ink-2)">Voir comment l’analyse d’un dossier s’animerait.</p><button class="action" id="scan">Lancer l’analyse</button></div></div>
+    <div class="panel" id="scan-panel" hidden style="--n:3"><h3>Analyse en cours · lecture seule</h3><div class="scan-viz">${t.scan()}</div><span class="counter" id="count">0 fichier lu</span></div>`;
+  if (id === "cleanup") return `<h2>Nettoyage</h2>${lede}<div class="panel" style="--n:2"><h3>Choisir une règle</h3>
+    ${[["Caches utilisateur", "~/Library/Caches", "low", "Risque faible"], ["Journaux utilisateur", "~/Library/Logs", "low", "Risque faible"], ["Rapports de crash", ".crash et .ips de DiagnosticReports", "low", "Risque faible"], ["Données dérivées Xcode", "Xcode/DerivedData", "low", "Risque faible"], ["Support d’appareils Xcode", "iOS DeviceSupport", "mid", "Risque moyen"], ["Sauvegardes iOS", "MobileSync/Backup", "high", "Risque élevé"]]
+      .map(([a, b, c, d]) => `<div class="rule"><span class="tick"></span><div><b>${a}</b><span>${b}</span></div><span class="risk ${c}">${d}</span></div>`).join("")}</div>`;
+  return `<h2>${LABEL[id]}</h2>${lede}<div class="empty" style="--n:2">${t.empty()}<p>${id === "record" ? "Aucune action enregistrée pour l’instant." : "Choisissez un dossier pour commencer. CoreTend lit sans rien modifier."}</p><button class="ghost">Choisir un dossier…</button></div>`;
+}
+
+function renderNav() {
+  nav.innerHTML = NAV.map(([g, ids]) => `<div class="group">${g}</div>` + ids.map(id => `<button class="nav" data-id="${id}"${id === current ? ' aria-current="page"' : ""}><svg viewBox="0 0 24 24">${ICONS[id]}</svg><span>${LABEL[id]}</span></button>`).join("")).join("");
+  moveMarker(false);
+}
+function moveMarker(animate = true) {
+  const item = nav.querySelector(`[data-id="${current}"]`), m = document.getElementById("marker");
+  if (!item) return;
+  m.style.transition = animate ? "" : "none";
+  m.style.transform = `translateY(${item.offsetTop}px)`; m.style.height = item.offsetHeight + "px";
+  if (!animate) { void m.offsetWidth; m.style.transition = ""; }
+}
+function show(id, origin) {
+  const old = stage.querySelector(".view:not(.leave)");
+  const view = document.createElement("section"); view.className = "view"; view.innerHTML = viewHTML(id);
+  [...view.children].forEach((c, i) => c.style.setProperty("--n", i));
+  if (old && origin) {
+    old.classList.add("leave"); setTimeout(() => old.remove(), 320);
+    THEMES[dir].transition(view, origin); view.classList.add("enter");
+  } else if (old) old.remove();
+  stage.appendChild(view); bindView(view);
+}
+function go(id, originEl) {
+  if (id === current) return;
+  current = id;
+  nav.querySelectorAll(".nav").forEach(b => { if (b.dataset.id === id) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+  moveMarker();
+  const s = stage.getBoundingClientRect(), r = (originEl || nav.querySelector(`[data-id="${id}"]`)).getBoundingClientRect();
+  show(id, { x: Math.max(0, r.right - s.left), y: r.top + r.height / 2 - s.top });
+}
+function bindView(view) {
+  const b = view.querySelector("#scan");
+  if (!b) return;
+  b.addEventListener("click", () => {
+    const panel = view.querySelector("#scan-panel"), count = view.querySelector("#count");
+    panel.hidden = false; panel.querySelector(".scan-viz").innerHTML = THEMES[dir].scan();
+    let n = 0; clearInterval(view._timer);
+    view._timer = setInterval(() => { n += Math.round(40 + Math.random() * 90); count.textContent = `${n.toLocaleString("fr-FR")} fichiers lus`; if (n > 4200) { clearInterval(view._timer); count.textContent = `${n.toLocaleString("fr-FR")} fichiers lus · terminé`; } }, 120);
+  });
+}
+function setDir(d) {
+  dir = d; app.dataset.dir = d; const t = THEMES[d];
+  document.querySelectorAll("[role=tab]").forEach(b => b.setAttribute("aria-selected", b.dataset.dir === d));
+  document.getElementById("brief").innerHTML = t.brief;
+  document.getElementById("tagline").textContent = t.tagline;
+  document.getElementById("foot").textContent = t.foot;
+  document.getElementById("logo").innerHTML = t.logo();
+  renderNav(); show(current);
+}
+
+/* recherche */
+const search = document.getElementById("search"), q = document.getElementById("q"), results = document.getElementById("results");
+let hot = 0;
+function renderResults() {
+  const term = q.value.trim().toLowerCase();
+  const items = Object.keys(LABEL).filter(id => LABEL[id].toLowerCase().includes(term));
+  hot = Math.min(hot, Math.max(0, items.length - 1));
+  results.innerHTML = items.map((id, i) => `<li style="--i:${i}"><button data-id="${id}" class="${i === hot ? "hot" : ""}"><svg viewBox="0 0 24 24">${ICONS[id]}</svg>${LABEL[id]}</button></li>`).join("") || `<li style="padding:14px;color:var(--dim)">Aucun résultat</li>`;
+}
+function openSearch() { search.classList.add("open"); q.value = ""; hot = 0; renderResults(); THEMES[dir].searchFx(document.getElementById("search-fx")); setTimeout(() => q.focus(), 30); }
+function closeSearch() { search.classList.remove("open"); document.getElementById("open-search").focus(); }
+document.getElementById("open-search").addEventListener("click", openSearch);
+q.addEventListener("input", () => { hot = 0; renderResults(); });
+results.addEventListener("click", e => { const b = e.target.closest("button"); if (b) { closeSearch(); go(b.dataset.id); } });
+search.addEventListener("click", e => { if (e.target.hasAttribute("data-close")) closeSearch(); });
+document.addEventListener("keydown", e => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") { e.preventDefault(); search.classList.contains("open") ? closeSearch() : openSearch(); return; }
+  if (!search.classList.contains("open")) return;
+  const buttons = [...results.querySelectorAll("button")];
+  if (e.key === "Escape") closeSearch();
+  else if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); hot = (hot + (e.key === "ArrowDown" ? 1 : -1) + buttons.length) % buttons.length; buttons.forEach((b, i) => b.classList.toggle("hot", i === hot)); }
+  else if (e.key === "Enter" && buttons[hot]) { closeSearch(); go(buttons[hot].dataset.id); }
+});
+
+nav.addEventListener("click", e => { const b = e.target.closest(".nav"); if (b) go(b.dataset.id, b); });
+document.querySelectorAll("[role=tab]").forEach(b => b.addEventListener("click", () => setDir(b.dataset.dir)));
+document.getElementById("replay").addEventListener("click", () => { document.getElementById("logo").innerHTML = THEMES[dir].logo(); });
+document.getElementById("reduce").addEventListener("change", e => app.classList.toggle("reduced", e.target.checked));
+const params = new URLSearchParams(location.search), initial = params.get("dir");
+if (LABEL[params.get("view")]) current = params.get("view");
+setDir(THEMES[initial] ? initial : "serre");
+if (params.has("search")) openSearch();
+if (params.has("scan")) document.getElementById("scan")?.click();
+</script>
+</body>
+</html>
