@@ -1,6 +1,6 @@
-PY_TARGETS = generate-manifest build-site site-check traceability safety-audit architecture-audit uninstall-smoke app-runtime-smoke clean-release-build-smoke test-cli-interrupt benchmark-scan
+PY_TARGETS = generate-manifest build-site site-check traceability safety-audit architecture-audit uninstall-smoke app-runtime-smoke clean-release-build-smoke test-cli-interrupt benchmark-scan capture-kit-check capture-screens
 
-.PHONY: python-version test build generate-manifest build-site site-check traceability safety-audit architecture-audit install-smoke uninstall-smoke app-runtime-smoke clean-release-build-smoke test-cli-interrupt qualify package-local verify-package verify-install-package benchmark-scan
+.PHONY: python-version capture-kit-check capture-screens test build generate-manifest build-site site-check traceability safety-audit architecture-audit install-smoke uninstall-smoke app-runtime-smoke clean-release-build-smoke test-cli-interrupt qualify package-local verify-package verify-install-package benchmark-scan
 
 # The scripts use Python 3.10 syntax. An older python3 (macOS ships 3.9 in /usr/bin)
 # fails deep inside a script, after others have already run, so check it first.
@@ -29,6 +29,14 @@ site-check:
 	python3 -B -m unittest Scripts.test_site_accessibility_contract
 	python3 Scripts/check_site.py
 
+capture-kit-check:
+	python3 -B -m unittest Scripts.test_capture_screens
+
+# Screenshots of every screen for visual review; needs a display and Screen Recording
+# permission, so it is not part of qualify. Output under Artifacts/Captures/.
+capture-screens:
+	python3 Scripts/capture_screens.py
+
 traceability:
 	python3 Scripts/check_traceability.py
 	python3 Scripts/test_traceability.py
@@ -54,7 +62,7 @@ clean-release-build-smoke:
 	python3 -B -m unittest Scripts.test_clean_release_builds_unit Scripts.test_runtime_sqlite_scope Scripts.test_runtime_network_scope
 	python3 Scripts/test_clean_release_builds.py
 
-qualify: generate-manifest build-site site-check traceability safety-audit architecture-audit install-smoke uninstall-smoke app-runtime-smoke clean-release-build-smoke test test-cli-interrupt
+qualify: generate-manifest build-site site-check capture-kit-check traceability safety-audit architecture-audit install-smoke uninstall-smoke app-runtime-smoke clean-release-build-smoke test test-cli-interrupt
 
 test-cli-interrupt: build
 	python3 Scripts/test_cli_interrupt.py .build/debug/CoreTendCLI
