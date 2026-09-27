@@ -15,14 +15,14 @@ public struct ProductCommand: Equatable, Identifiable, Sendable {
 public enum CommandPaletteCatalog {
     public static func commands(french: Bool) -> [ProductCommand] {
         let destinations = Destination.allCases.map { destination in
-            let aliases = searchAliases(for: destination, french: french)
+            let aliases = searchAliases(for: destination)
             return ProductCommand(id: destination.rawValue,
                                   title: ProductCopy.value(for: destination.titleKey, french: french),
                                   searchTerms: aliases,
                                   target: .destination(destination))
         }
         return destinations + [ProductCommand(id: "settings", title: ProductCopy.value(for: "settings.title", french: french),
-                                              searchTerms: french ? ["préférences", "configuration"] : ["preferences", "configuration"],
+                                              searchTerms: ["preferences", "préférences", "configuration"],
                                               target: .settings)]
     }
 
@@ -35,16 +35,16 @@ public enum CommandPaletteCatalog {
         }
     }
 
-    private static func searchAliases(for destination: Destination, french: Bool) -> [String] {
+    private static func searchAliases(for destination: Destination) -> [String] {
         switch destination {
-        case .overview: french ? ["accueil", "favoris", "récents"] : ["home", "favorites", "recent files"]
-        case .record: french ? ["journal", "activité", "historique"] : ["history", "activity", "log"]
-        case .cleanup: french ? ["nettoyer", "récupérer de l’espace"] : ["clean", "free space"]
-        case .explore: french ? ["fichiers", "dossiers", "stockage"] : ["files", "folders", "storage"]
-        case .duplicates: french ? ["copies", "doublons exacts"] : ["copies", "duplicate files"]
-        case .applications: french ? ["apps", "logiciels"] : ["apps", "software"]
-        case .integrity: french ? ["signature", "quarantaine"] : ["signature", "quarantine"]
-        case .performance: french ? ["système", "mesures", "charge"] : ["system", "measurements", "load"]
+        case .overview: ["home", "favorites", "recent files", "accueil", "favoris", "récents"]
+        case .record: ["history", "activity", "log", "journal", "activité", "historique"]
+        case .cleanup: ["clean", "free space", "nettoyer", "récupérer de l’espace"]
+        case .explore: ["files", "folders", "storage", "fichiers", "dossiers", "stockage"]
+        case .duplicates: ["copies", "duplicate files", "doublons exacts"]
+        case .applications: ["apps", "software", "logiciels"]
+        case .integrity: ["signature", "quarantine", "quarantaine"]
+        case .performance: ["system", "measurements", "load", "système", "mesures", "charge"]
         }
     }
 
