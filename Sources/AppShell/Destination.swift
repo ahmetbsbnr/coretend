@@ -18,6 +18,20 @@ public enum Destination: String, CaseIterable, Sendable, Identifiable {
         }
     }
     public var titleKey: String { "\(rawValue).title" }
+
+    /// The sidebar's order: "Your Mac", then "Understand". Everything that lists destinations
+    /// (sidebar, command palette, ⌘1…⌘8) follows it.
+    public static let sidebarOrder: [Destination] = [.overview, .explore, .cleanup, .duplicates, .applications, .integrity, .performance, .record]
+
+    /// The destination `offset` places away in the sidebar, stopping at the first and last.
+    public func step(_ offset: Int) -> Destination {
+        let order = Self.sidebarOrder
+        let index = order.firstIndex(of: self) ?? 0
+        return order[min(max(index + offset, 0), order.count - 1)]
+    }
+
+    /// 1…8, for ⌘1…⌘8.
+    public var shortcutNumber: Int { (Self.sidebarOrder.firstIndex(of: self) ?? 0) + 1 }
     public var sectionTitleKey: String {
         switch self {
         case .overview, .explore, .cleanup, .duplicates: "sidebar.yourMac"

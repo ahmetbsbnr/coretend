@@ -117,6 +117,13 @@ final class SerreDrawingTests: XCTestCase {
         XCTAssertEqual(Set(shapes).count, RiskLevel.allCases.count)
     }
 
+    func testGrowMaskRadiusReachesTheFarthestCorner() {
+        let size = CGSize(width: 800, height: 600)
+        XCTAssertEqual(GrowMask.radius(origin: CGPoint(x: 0, y: 0), in: size), 1000, accuracy: 0.001)
+        XCTAssertEqual(GrowMask.radius(origin: CGPoint(x: 0, y: 300), in: size), (800.0 * 800 + 300 * 300).squareRoot(), accuracy: 0.001)
+        XCTAssertEqual(GrowMask.radius(origin: CGPoint(x: 0, y: 600), in: size), 1000, accuracy: 0.001)
+    }
+
     func testLogoGerminationEndsInTheStillFinalState() {
         let final = SerreLogoState.grown
         XCTAssertEqual(final.seedDrop, 0); XCTAssertEqual(final.stem, 1)

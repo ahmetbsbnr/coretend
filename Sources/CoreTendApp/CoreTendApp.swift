@@ -83,6 +83,7 @@ private struct CoreTendRootView: View {
     @State private var onboardingCompleted: Bool
     @State private var recentFilesEnabled: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var rowFrames: [Destination: CGRect] = [:]
     private var french: Bool { language == "fr" || (language == "system" && Locale.preferredLanguages.first?.hasPrefix("fr") == true) }
 
     private var effectiveColorScheme: ColorScheme? {
@@ -103,64 +104,34 @@ private struct CoreTendRootView: View {
 
     var body: some View {
         NavigationSplitView {
-            List(selection: $navigation.selection) {
-                Section(ProductCopy.value(for: Destination.overview.sectionTitleKey, french: french)) {
-                    ForEach([Destination.overview, .explore, .cleanup, .duplicates]) { destination in
-                        destinationLink(destination)
-                    }
-                }
-                Section(ProductCopy.value(for: Destination.applications.sectionTitleKey, french: french)) {
-                    ForEach([Destination.applications, .integrity, .performance, .record]) { destination in
-                        destinationLink(destination)
-                    }
-                }
-            }
-            .navigationTitle("CoreTend")
-            .listStyle(.sidebar)
-            .navigationSplitViewColumnWidth(min: 190, ideal: 220)
-            .safeAreaInset(edge: .bottom) {
-                Button { navigation.activeSheet = .settings } label: {
-                    Label { Text(ProductCopy.value(for: "settings.title", french: french)) } icon: { SerreIcon(.settings) }
-                        .font(CoreTendTypography.body)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
-                .buttonStyle(.serre(.row(selected: false)))
-                .padding(.horizontal, 8)
-                .padding(.vertical, 6)
-                .background(Palette.surface.color)
-                .overlay(alignment: .top) { Palette.separator.color.frame(height: 1) }
-                .accessibilityLabel(ProductCopy.value(for: "settings.title", french: french))
-            }
+            SerreSidebar(selection: $navigation.selection, french: french,
+                         openSearch: { navigation.activeSheet = .commands },
+                         openSettings: { navigation.activeSheet = .settings })
+                .navigationSplitViewColumnWidth(min: 200, ideal: 232)
+                .navigationTitle("CoreTend")
         } detail: {
+            GeometryReader { detail in
             ZStack {
                 if let selection = navigation.selection {
                     DestinationView(destination: selection, french: french, recentFilesEnabled: $recentFilesEnabled)
                         .id(selection)
-                        .transition(reduceMotion ? .identity : .opacity.combined(with: .offset(y: 8)))
+                        // The view grows from the height of the sidebar row that was chosen.
+                        .transition(.grow(from: growOrigin(for: selection, in: detail.frame(in: .global)), reduceMotion: reduceMotion))
                 } else {
                     ContentUnavailableView(ProductCopy.value(for: "empty.title", french: french), systemImage: "square.grid.2x2")
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            }
             .background(Palette.canvas.color)
             // Every button in the content is a Serre button unless it says otherwise.
             .buttonStyle(.serre(.secondary))
-            .motion(.standard, value: navigation.selection)
         }
+        .onPreferenceChange(SidebarRowFrames.self) { rowFrames = $0 }
         .tint(Palette.accent.color)
         .preferredColorScheme(effectiveColorScheme)
-        .toolbar {
-            ToolbarItem(placement: .automatic) {
-                Button { navigation.activeSheet = .commands } label: { SerreIcon(.search) }
-                    .keyboardShortcut("k", modifiers: [.command])
-                    .accessibilityLabel(ProductCopy.value(for: "command.palette.title", french: french))
-                    .help(french ? "Accéder à… (⌘K)" : "Go to or open… (⌘K)")
-            }
-            ToolbarItem(placement: .automatic) {
-                Button { navigation.activeSheet = .settings } label: { SerreIcon(.settings) }
-                    .accessibilityLabel(ProductCopy.value(for: "settings.title", french: french))
-            }
-        }
+        .toolbarBackground(Palette.canvas.color, for: .windowToolbar)
+        .modifier(HiddenWindowTitle())
         .sheet(item: $navigation.activeSheet) { sheet in
             // Sheets are separate presentations and do not inherit the window's tint.
             sheetContent(sheet).tint(Palette.accent.color).buttonStyle(.serre(.secondary))
@@ -199,22 +170,18 @@ private struct CoreTendRootView: View {
         }
     }
 
-    private func destinationLink(_ destination: Destination) -> some View {
-        let title = ProductCopy.value(for: destination.titleKey, french: french)
-        return NavigationLink(value: destination) {
-            Label { Text(title) } icon: { SerreIcon(destination.glyph) }
-                .font(CoreTendTypography.body)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 4)
-                .padding(.leading, 8)
-                .background(navigation.selection == destination ? Palette.accent.color.opacity(0.16) : .clear,
-                            in: RoundedRectangle(cornerRadius: 8))
-                .overlay(alignment: .leading) {
-                    if navigation.selection == destination {
-                        Capsule().fill(Palette.focus.color).frame(width: 3).padding(.vertical, 4)
-                    }
-                }
-        }
+    /// The point, in the content, level with the chosen sidebar row; the leading edge if unknown.
+    private func growOrigin(for destination: Destination, in detail: CGRect) -> CGPoint {
+        guard let row = rowFrames[destination], row != .zero else { return CGPoint(x: 0, y: 0) }
+        return CGPoint(x: 0, y: min(max(row.midY - detail.minY, 0), detail.height))
+    }
+}
+
+/// The sidebar shows the name beside the logo, so the title bar does not repeat it (macOS 15 and
+/// later; macOS 14 keeps the title). The window keeps its title for the system either way.
+private struct HiddenWindowTitle: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(macOS 15.0, *) { content.toolbar(removing: .title) } else { content }
     }
 }
 
