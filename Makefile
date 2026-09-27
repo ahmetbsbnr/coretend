@@ -35,6 +35,7 @@ uninstall-smoke:
 	python3 Scripts/test_uninstall_local.py
 
 app-runtime-smoke:
+	python3 -B -m unittest Scripts.test_runtime_metrics
 	python3 Scripts/test_packaged_app_runtime.py
 
 clean-release-build-smoke:
