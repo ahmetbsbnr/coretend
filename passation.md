@@ -7,7 +7,7 @@
 - **Branche unique de développement : `next`** (décision du mainteneur, 27-09). `feat/reconstruction-open-musts` (PR #55) y est avancée et `feat/access-diagnostics` (PR #54, diagnostic FR-10 des erreurs d’accès Applications) fusionnée ; branches locales supprimées après archivage. **`make qualify` passe sur `next`** (27-09, 20:05).
 - **Dossier de travail : `~/Developer/projects/coretend-next`** (worktree recréé après le déplacement de `~/Developer/Website`). `../coretend` est la maintenance 1.x (`fix/1.x-trash-sqlite`), pas un lieu de travail produit.
 - La refonte **Observatoire** (commits `23b3f32` → `4451f8b`) a remplacé Porcelain/Slate/Teal dans l’app et le site, sans relecture de sa spec. Elle est l’état actuel, **pas une direction validée**.
-- **`next` local est en avance sur `origin/next`** (refonte Observatoire, audit, intégrations, correctif `audit_safety`). Les pousser est une décision du mainteneur ; `next` exige le check `qualify` côté GitHub.
+- **`next` poussée le 27-09** (`55e8628..5b589b0`, fast-forward, contournement admin de la règle `qualify` attendue). GitHub a marqué les PR #54 et #55 fusionnées et supprimé leurs branches. `fix/1.x-trash-sqlite` poussée comme sauvegarde, sans PR.
 - Corrigé le 27-09, trois échecs du gate introduits par la refonte Observatoire sans que le gate soit lancé : `audit_safety.py` (`homeDirectoryForCurrentUser` dans `CleanupView.swift`, remplacé par `CleanupRuleDescriptor.isExpectedRoot`), `check_site.py` (`site.js` et CSP `script-src 'self'` ; script retiré, CSP `script-src 'none'`, navigation compacte affichée en liste sans JS) et `DesignSystemTests` (durées de mouvement alignées sur la spec Observatoire). Sur cet hôte, lancer `make` avec `/opt/homebrew/bin` en tête du `PATH` : le `python3` système (3.9) casse `Scripts/test_traceability.py`.
 - Perdus au déplacement (non suivis par Git) : `Documentation/Project/Remaining-musts-plan.md` et `design-preview/`.
 - Défaut signalé par le mainteneur : pas de retour au survol (aucun `onHover` dans l’app) et zone cliquable du bouton Réglages de la sidebar limitée au texte (`.buttonStyle(.plain)`, fond hors du bouton, `CoreTendApp.swift`). À traiter en P2 par des composants communs.
@@ -73,7 +73,7 @@ Relecture des 89 lignes non vérifiées : tous les gaps restants demandent une o
 
 ## Ordre de reprise
 
-0. Suivre la phase courante de `Pilotage.md` : préparer G1 (captures de l’app lancée, 8 destinations, Réglages, ⌘K, clair/sombre) puis s’arrêter pour la décision du mainteneur. Les étapes ci-dessous ne reprennent qu’après G1, un lot à la fois.
+0. Suivre le **Programme 2.0** de `Documentation/Project/Implementation-plan.md`, lot par lot, en commençant par P0 (0.1, 0.2) puis P1. Préparer G1 (captures de l’app lancée, 8 destinations, Réglages, ⌘K, clair/sombre) puis s’arrêter pour la décision du mainteneur. Les étapes ci-dessous ne reprennent qu’après G1, un lot à la fois.
 1. Vérifier CI `qualify` de PR #55 sur HEAD courant.
 2. Poursuivre les qualifications natives réalisables (liste ci-dessus), une par une, en fixture; corriger les défauts trouvés avec test quand possible; inscrire seulement ce qui a été observé, avec hôte et limites.
 3. Lighthouse post-refonte et viewport EN/FR 640/320 sont faits et consignés; relancer après prochain changement de contenu ou de style.

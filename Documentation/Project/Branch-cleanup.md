@@ -29,7 +29,7 @@ Après le déplacement du workspace vers `~/Developer/projects`. Chaque pointe s
 | stash « Phase 6 material » sur `develop/v2` | Matériel v2 abandonné | archivé en `refs/archive/2026-09-27/stash/develop-v2-phase6`, stash supprimé |
 | worktrees `next` et `coretend-reconstruction` | Dossiers disparus au déplacement | métadonnées élaguées ; `feat/reconstruction-open-musts` recréé dans `~/Developer/projects/coretend-next` |
 
-Le soir même, sur décision du mainteneur (tout développement directement sur `next`) : `feat/reconstruction-open-musts` (PR #55) a été avancée dans `next` par fast-forward et `feat/access-diagnostics` (PR #54) y a été fusionnée (`0acf44d`). Leurs pointes sont archivées sous `refs/archive/2026-09-27/heads/`, puis les branches locales supprimées. Leurs copies sur `origin` et les PR #54/#55 restent ouvertes tant que `next` n’est pas poussée.
+Le soir même, sur décision du mainteneur (tout développement directement sur `next`) : `feat/reconstruction-open-musts` (PR #55) a été avancée dans `next` par fast-forward et `feat/access-diagnostics` (PR #54) y a été fusionnée (`0acf44d`). Leurs pointes sont archivées sous `refs/archive/2026-09-27/heads/`, puis les branches locales supprimées. `next` a ensuite été poussée ; GitHub a marqué les PR #54 et #55 fusionnées et supprimé `feat/reconstruction-open-musts` et `feat/access-diagnostics` sur `origin`. `fix/1.x-trash-sqlite` est poussée comme sauvegarde des correctifs 1.x.
 
 Branches restantes et rôle :
 
@@ -37,6 +37,6 @@ Branches restantes et rôle :
 | --- | --- |
 | `main` | 1.x publiée (1.0.2) |
 | `next` | seule branche de développement de la reconstruction ; worktree `~/Developer/projects/coretend-next` |
-| `fix/1.x-trash-sqlite` (locale) | correctifs de sûreté 1.x, dossier `~/Developer/projects/coretend` ; release 1.0.3 à décider |
+| `fix/1.x-trash-sqlite` | correctifs de sûreté 1.x, dossier `~/Developer/projects/coretend` ; release 1.0.3 à décider |
 
 Restaurer : `git branch <nom> refs/archive/2026-09-27/heads/<nom>`.
