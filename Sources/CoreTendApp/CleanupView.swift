@@ -168,10 +168,7 @@ struct CleanupView: View {
                 status = copy("cleanup.rootMismatch")
                 return
             }
-            let expectedRoot = descriptor.root(homeDirectory: FileManager.default.homeDirectoryForCurrentUser)
-                .resolvingSymlinksInPath().standardizedFileURL
-            let chosenRoot = url.resolvingSymlinksInPath().standardizedFileURL
-            guard chosenRoot == expectedRoot else {
+            guard descriptor.isExpectedRoot(url) else {
                 selectedRoot = nil
                 status = copy("cleanup.rootMismatch")
                 return

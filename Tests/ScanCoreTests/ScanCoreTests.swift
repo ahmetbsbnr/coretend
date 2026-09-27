@@ -481,6 +481,20 @@ final class CleanupRuleCatalogTests: XCTestCase {
         XCTAssertFalse(crashReports.includes(URL(fileURLWithPath: "/tmp/crashes/readme.txt")))
     }
 
+    func testChosenFolderMustBeTheRuleFolderOfSomeHomeWithoutReadingHome() throws {
+        let home = URL(fileURLWithPath: "/tmp/coretend-fixture-home", isDirectory: true)
+        for rule in CleanupRuleCatalog.rules {
+            XCTAssertTrue(rule.isExpectedRoot(rule.root(homeDirectory: home)), "\(rule.id)")
+        }
+        let caches = try XCTUnwrap(CleanupRuleCatalog.rule(.userCaches))
+        XCTAssertFalse(caches.isExpectedRoot(URL(fileURLWithPath: "/Library/Caches", isDirectory: true)))
+        XCTAssertFalse(caches.isExpectedRoot(home.appendingPathComponent("Library", isDirectory: true)))
+        XCTAssertFalse(caches.isExpectedRoot(home.appendingPathComponent("Library/Caches/com.example", isDirectory: true)))
+        XCTAssertFalse(caches.isExpectedRoot(home.appendingPathComponent("Library/Logs", isDirectory: true)))
+        let downloads = try XCTUnwrap(CleanupRuleCatalog.rule(.incompleteDownloads))
+        XCTAssertFalse(downloads.isExpectedRoot(URL(fileURLWithPath: "/Downloads", isDirectory: true)))
+    }
+
     func testIncompleteDownloadsScanReturnsOnlyDownloadPartials() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-downloads-\(UUID())", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)

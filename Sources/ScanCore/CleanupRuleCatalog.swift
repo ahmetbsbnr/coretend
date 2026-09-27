@@ -13,6 +13,16 @@ public struct CleanupRuleDescriptor: Sendable, Equatable {
         relativePath.reduce(homeDirectory.standardizedFileURL) { $0.appendingPathComponent($1, isDirectory: true) }
     }
 
+    /// Whether a folder the person chose is this rule's folder: its path ends with
+    /// `relativePath` below at least one other component, so `/Library/Caches` and
+    /// `/Downloads` are refused. Checked without reading HOME, which runtime code
+    /// must not look up implicitly (`Scripts/audit_safety.py`).
+    public func isExpectedRoot(_ url: URL) -> Bool {
+        let components = url.resolvingSymlinksInPath().standardizedFileURL.pathComponents
+        guard !relativePath.isEmpty, components.count >= relativePath.count + 2 else { return false }
+        return Array(components.suffix(relativePath.count)) == relativePath
+    }
+
     public func includes(_ url: URL, rootURL: URL? = nil) -> Bool {
         if let allowedExtensions, !allowedExtensions.contains(url.pathExtension.lowercased()) { return false }
         if let rootURL, !excludedRelativePaths.isEmpty {
