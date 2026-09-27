@@ -24,13 +24,14 @@ struct SavedFilesView: View {
             if loading && records.isEmpty {
                 ProgressView(french ? "Chargement des fichiers enregistrés" : "Loading saved files")
             } else if records.isEmpty && status == nil {
-                ContentUnavailableView(french ? "Aucun fichier enregistré" : "No saved files",
-                                       systemImage: "star", description: Text(french
-                                           ? "Ajoutez un favori dans Explorer ou activez l’historique récent dans Réglages."
-                                           : "Add a favorite in Explore or enable recent history in Settings."))
-                    .frame(minHeight: 130)
+                SerreParcel {
+                    SerreEmptyState(title: french ? "Aucun fichier enregistré" : "No saved files",
+                                    message: french
+                                        ? "Ajoutez un favori dans Explorer ou activez l’historique récent dans Réglages."
+                                        : "Add a favorite in Explore or enable recent history in Settings.")
+                }
             } else if records.isEmpty, let status {
-                ContentUnavailableView(status, systemImage: "exclamationmark.triangle")
+                SerreBanner(.error, title: status)
             } else {
                 ForEach(records, id: \.path) { record in
                     VStack(alignment: .leading, spacing: 6) {
@@ -51,7 +52,7 @@ struct SavedFilesView: View {
                             .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
                         Text(record.isFavorite ? (french ? "Favori" : "Favorite") : (french ? "Récent" : "Recent"))
                             .font(CoreTendTypography.secondary).foregroundStyle(Palette.accent.color)
-                        Text(record.logicalBytes.map { ByteCountFormatter.string(fromByteCount: $0, countStyle: .file) }
+                        Text(record.logicalBytes.map { ProductFormat.bytes($0, french: french) }
                              ?? (french ? "Taille inconnue" : "Size unknown"))
                             .font(CoreTendTypography.secondary.monospacedDigit())
                             .foregroundStyle(Palette.secondaryInk.color)
@@ -62,12 +63,11 @@ struct SavedFilesView: View {
                     }
                     .padding(16)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 14))
+                    .background(Palette.surface.color, in: LeafCorner.parcel.shape)
                 }
             }
             if let status, !records.isEmpty {
-                Label(status, systemImage: "exclamationmark.triangle")
-                    .font(CoreTendTypography.secondary).foregroundStyle(Palette.caution.color)
+                SerreBanner(.partial, title: status)
             }
             Text(french ? "Les chemins sont conservés localement. L’état et la taille reflètent la dernière observation; choisissez à nouveau un dossier pour vérifier son contenu." : "Paths stay local. Status and size reflect the last observation; choose a folder again to verify its contents.")
                 .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)

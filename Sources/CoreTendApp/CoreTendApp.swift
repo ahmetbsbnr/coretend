@@ -131,6 +131,8 @@ private struct CoreTendRootView: View {
             .buttonStyle(.serre(.secondary))
         }
         .onPreferenceChange(SidebarRowFrames.self) { rowFrames = $0 }
+        // Views such as the Overview's shortcuts change destination through the navigation.
+        .environment(navigation)
         .tint(Palette.accent.color)
         .preferredColorScheme(effectiveColorScheme)
         .toolbarBackground(Palette.canvas.color, for: .windowToolbar)
@@ -243,6 +245,25 @@ private struct OnboardingView: View {
             Text(ProductCopy.value(for: "onboarding.title", french: french)).font(CoreTendTypography.pageTitle)
             Text(ProductCopy.value(for: "onboarding.scope", french: french))
                 .font(CoreTendTypography.body).fixedSize(horizontal: false, vertical: true)
+            VStack(alignment: .leading, spacing: 10) {
+                ForEach(1...3, id: \.self) { step in
+                    HStack(alignment: .top, spacing: 12) {
+                        Text("\(step)")
+                            .font(.custom("IowanOldStyle-Bold", size: 16, relativeTo: .headline))
+                            .foregroundStyle(Palette.onAccent.color)
+                            .frame(width: 28, height: 28)
+                            .background(Palette.accent.color, in: LeafCorner.control.shape)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(ProductCopy.value(for: "onboarding.step\(step).title", french: french))
+                                .font(CoreTendTypography.body.weight(.semibold))
+                            Text(ProductCopy.value(for: "onboarding.step\(step).body", french: french))
+                                .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    .serreRise(step + 2)
+                }
+            }
             Text(ProductCopy.value(for: "onboarding.privacy", french: french))
                 .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
             HStack { Spacer(); Button(ProductCopy.value(for: "onboarding.start", french: french), action: finish).keyboardShortcut(.defaultAction).buttonStyle(.serre(.primary)) }
@@ -260,22 +281,25 @@ private struct DestinationView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                Text(ProductCopy.value(for: destination.titleKey, french: french))
-                    .font(CoreTendTypography.pageTitle)
-                    .accessibilityAddTraits(.isHeader)
-                if destination == .overview {
-                    Text(ProductCopy.value(for: "overview.summary", french: french)).font(CoreTendTypography.sectionTitle)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(ProductCopy.value(for: destination.titleKey, french: french))
+                        .font(CoreTendTypography.pageTitle)
+                        .foregroundStyle(Palette.ink.color)
+                        .accessibilityAddTraits(.isHeader)
+                    Text(ProductCopy.value(for: destination.ledeKey, french: french))
+                        .font(CoreTendTypography.lede)
+                        .foregroundStyle(Palette.secondaryInk.color)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
+                .serreRise(0)
                 if destination == .overview || destination == .performance {
                     SystemSnapshotView(destination: destination, french: french)
                 } else if destination != .record {
-                    Label(ProductCopy.value(for: "safety.notice", french: french), systemImage: "lock.shield")
-                        .font(CoreTendTypography.secondary)
-                        .padding()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 14))
+                    SerreBanner(.note, title: ProductCopy.value(for: "safety.notice", french: french))
+                        .serreRise(1)
                 }
                 destinationContent
+                    .serreRise(destination == .overview ? 6 : 2)
             }
             .padding(32)
             .frame(maxWidth: 960, alignment: .leading)

@@ -18,6 +18,8 @@ public enum Destination: String, CaseIterable, Sendable, Identifiable {
         }
     }
     public var titleKey: String { "\(rawValue).title" }
+    /// The sentence under the title: the destination in the Serre theme (UI guide § 1).
+    public var ledeKey: String { "\(rawValue).lede" }
 
     /// The sidebar's order: "Your Mac", then "Understand". Everything that lists destinations
     /// (sidebar, command palette, ⌘1…⌘8) follows it.
@@ -64,6 +66,20 @@ public enum ProductCopy {
         "sidebar.yourMac": "Your Mac", "sidebar.understand": "Understand",
         "safety.notice": "Scans only read files. Any removal requires review, confirmation, and moves to Trash.",
         "overview.summary": "Understand what is happening on this Mac.",
+        "overview.lede": "The state of the greenhouse, measured just now.",
+        "explore.lede": "Choose a plot: CoreTend surveys every layer without touching it.",
+        "cleanup.lede": "Known, safe pruning. Nothing is cut without your consent.",
+        "duplicates.lede": "Twin shoots. You choose which one stays.",
+        "applications.lede": "What is planted, and what it leaves around it.",
+        "integrity.lede": "What macOS knows about each plant: signature, provenance.",
+        "performance.lede": "The machine's breath, point by point.",
+        "record.lede": "The herbarium: everything observed and pruned.",
+        "onboarding.step1.title": "Choose", "onboarding.step1.body": "You pick the folders CoreTend may look at.",
+        "onboarding.step2.title": "Understand", "onboarding.step2.body": "CoreTend measures and explains, read-only.",
+        "onboarding.step3.title": "Decide", "onboarding.step3.body": "Nothing moves without your review and confirmation, and only to the Trash.",
+        "overview.next.explore": "Inspect a folder", "overview.next.explore.help": "Measure a folder you choose, layer by layer.",
+        "overview.next.record": "Open the herbarium", "overview.next.record.help": "Everything observed and moved, by day.",
+        "metrics.used": "Used", "metrics.free.short": "Free",
         "empty.title": "No results yet", "empty.body": "Start a scan to see measured results here.",
         "scan.choose": "Choose a folder to inspect", "scan.choose.hint": "CoreTend reads this folder without changing its files.",
         "scan.progress": "Reading selected folder…", "scan.failed": "The folder could not be read.",
@@ -200,6 +216,20 @@ public enum ProductCopy {
         "sidebar.yourMac": "Votre Mac", "sidebar.understand": "Comprendre",
         "safety.notice": "Les analyses lisent les fichiers sans les modifier. Tout retrait demande une revue et une confirmation, puis passe par la Corbeille.",
         "overview.summary": "Comprendre l’état de ce Mac.",
+        "overview.lede": "L’état de la serre, mesuré à l’instant.",
+        "explore.lede": "Choisissez une parcelle : CoreTend en relève chaque couche, sans rien toucher.",
+        "cleanup.lede": "Des tailles connues et sûres. Rien n’est coupé sans votre accord.",
+        "duplicates.lede": "Des pousses identiques. Vous choisissez celle qu’on garde.",
+        "applications.lede": "Les plantes installées et ce qu’elles laissent autour.",
+        "integrity.lede": "Ce que macOS sait de chaque plant : signature, provenance.",
+        "performance.lede": "La respiration de la machine, point par point.",
+        "record.lede": "L’herbier : tout ce qui a été observé et taillé.",
+        "onboarding.step1.title": "Choisir", "onboarding.step1.body": "Vous choisissez les dossiers que CoreTend peut examiner.",
+        "onboarding.step2.title": "Comprendre", "onboarding.step2.body": "CoreTend mesure et explique, en lecture seule.",
+        "onboarding.step3.title": "Décider", "onboarding.step3.body": "Rien ne part sans votre revue et votre confirmation, et seulement vers la Corbeille.",
+        "overview.next.explore": "Examiner un dossier", "overview.next.explore.help": "Mesurer un dossier que vous choisissez, couche par couche.",
+        "overview.next.record": "Ouvrir l’herbier", "overview.next.record.help": "Tout ce qui a été observé et déplacé, jour par jour.",
+        "metrics.used": "Occupé", "metrics.free.short": "Libre",
         "empty.title": "Aucun résultat", "empty.body": "Lancez une analyse pour afficher les mesures ici.",
         "scan.choose": "Choisir un dossier à examiner", "scan.choose.hint": "CoreTend lit ce dossier sans modifier ses fichiers.",
         "scan.progress": "Lecture du dossier sélectionné…", "scan.failed": "Impossible de lire ce dossier.",
