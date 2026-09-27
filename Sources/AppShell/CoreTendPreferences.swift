@@ -1,6 +1,7 @@
 import Foundation
 
 public enum FixtureAppearance: String, Sendable { case light, dark }
+public enum AppearancePreference: String, CaseIterable, Sendable { case system, light, dark }
 
 /// Application preferences are host-persistent only in normal launches.
 /// Any declared fixture mode reads overrides from the process environment and never touches CFPreferences.
@@ -24,6 +25,11 @@ public struct CoreTendPreferences {
     public var language: String {
         if !usesPersistentStorage { return environment["CORETEND_TEST_LANGUAGE"] ?? "system" }
         return defaults.string(forKey: "coretend.language") ?? "system"
+    }
+
+    public var appearance: AppearancePreference {
+        guard usesPersistentStorage else { return .system }
+        return defaults.string(forKey: "coretend.appearance").flatMap(AppearancePreference.init(rawValue:)) ?? .system
     }
 
     public func resolvedLanguage(storedValue: String?) -> String {
@@ -60,6 +66,11 @@ public struct CoreTendPreferences {
     public func saveLanguage(_ value: String) {
         guard usesPersistentStorage else { return }
         defaults.set(value, forKey: "coretend.language")
+    }
+
+    public func saveAppearance(_ value: AppearancePreference) {
+        guard usesPersistentStorage else { return }
+        defaults.set(value.rawValue, forKey: "coretend.appearance")
     }
 
     public func saveOnboardingCompleted(_ value: Bool) {

@@ -3,6 +3,7 @@ import AppShell
 import Domain
 import Persistence
 import ProductContract
+import DesignSystem
 
 struct MenuBarMetricsView: View {
     let french: Bool
@@ -12,29 +13,38 @@ struct MenuBarMetricsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(copy("menubar.metrics.title")).font(.headline)
+            Text(copy("menubar.metrics.title")).font(CoreTendTypography.sectionTitle)
             Text(copy("menubar.metrics.help"))
-                .font(.caption).foregroundStyle(.secondary)
+                .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
             if let snapshot {
                 metric(copy("metrics.loadAverage"), load(snapshot.loadAverage1m), source: copy("metrics.source.load"))
                 metric(copy("metrics.memory"), ByteCountFormatter.string(fromByteCount: snapshot.physicalMemoryBytes, countStyle: .memory), source: copy("metrics.source.memory"))
                 metric(copy("metrics.freeSpace"), bytes(snapshot.availableBytes), source: copy("metrics.source.volume"))
                 Text(copy("menubar.metrics.updated") + " " + timestamp(snapshot.measuredAt))
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
             } else {
-                ProgressView()
+                HStack(spacing: 8) {
+                    ProgressView()
+                    Text(copy("metrics.refresh"))
+                        .font(CoreTendTypography.secondary)
+                        .foregroundStyle(Palette.secondaryInk.color)
+                }
+                .accessibilityElement(children: .combine)
             }
-            Divider()
-            Text(copy("menubar.activity.title")).font(.headline)
+            Palette.separator.color.frame(height: 1)
+            Text(copy("menubar.activity.title")).font(CoreTendTypography.sectionTitle)
             if activityUnavailable {
-                Text(copy("menubar.activity.unavailable")).foregroundStyle(.secondary)
+                Label(copy("menubar.activity.unavailable"), systemImage: "exclamationmark.circle")
+                    .font(CoreTendTypography.secondary)
+                    .foregroundStyle(Palette.secondaryInk.color)
             } else if let latestActivity {
                 Text(copy("activity.\(latestActivity.kind.rawValue)"))
-                    .font(.callout)
+                    .font(CoreTendTypography.body)
                 Text(timestamp(latestActivity.occurredAt))
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
             } else {
-                Text(copy("menubar.activity.empty")).foregroundStyle(.secondary)
+                Text(copy("menubar.activity.empty"))
+                    .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
             }
         }
         .accessibilityElement(children: .contain)
@@ -49,11 +59,11 @@ struct MenuBarMetricsView: View {
     private func metric(_ title: String, _ value: String, source: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(alignment: .firstTextBaseline) {
-                Text(title).foregroundStyle(.secondary)
+                Text(title).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
                 Spacer(minLength: 8)
-                Text(value).font(.body.monospacedDigit())
+                Text(value).font(CoreTendTypography.measurement)
             }
-            Text(source).font(.caption2).foregroundStyle(.tertiary)
+            Text(source).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(title): \(value). \(source)")

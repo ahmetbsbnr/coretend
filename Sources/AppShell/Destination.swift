@@ -18,6 +18,12 @@ public enum Destination: String, CaseIterable, Sendable, Identifiable {
         }
     }
     public var titleKey: String { "\(rawValue).title" }
+    public var sectionTitleKey: String {
+        switch self {
+        case .overview, .explore, .cleanup, .duplicates: "sidebar.yourMac"
+        case .applications, .integrity, .performance, .record: "sidebar.understand"
+        }
+    }
     public var symbol: String {
         switch self {
         case .overview: "square.grid.2x2"
@@ -41,6 +47,7 @@ public enum ProductCopy {
         "overview.title": "Overview", "record.title": "Record", "cleanup.title": "Cleanup",
         "explore.title": "Explore", "duplicates.title": "Duplicates", "applications.title": "Applications",
         "integrity.title": "Integrity", "performance.title": "Performance",
+        "sidebar.yourMac": "Your Mac", "sidebar.understand": "Understand",
         "safety.notice": "Scans only read files. Any removal requires review, confirmation, and moves to Trash.",
         "overview.summary": "Understand what is happening on this Mac.",
         "empty.title": "No results yet", "empty.body": "Start a scan to see measured results here.",
@@ -166,6 +173,7 @@ public enum ProductCopy {
         "overview.title": "Vue d’ensemble", "record.title": "Historique", "cleanup.title": "Nettoyage",
         "explore.title": "Explorer", "duplicates.title": "Doublons", "applications.title": "Applications",
         "integrity.title": "Intégrité", "performance.title": "Performances",
+        "sidebar.yourMac": "Votre Mac", "sidebar.understand": "Comprendre",
         "safety.notice": "Les analyses lisent les fichiers sans les modifier. Tout retrait demande une revue et une confirmation, puis passe par la Corbeille.",
         "overview.summary": "Comprendre l’état de ce Mac.",
         "empty.title": "Aucun résultat", "empty.body": "Lancez une analyse pour afficher les mesures ici.",

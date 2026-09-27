@@ -14,18 +14,26 @@ struct CommandPaletteView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            TextField(ProductCopy.value(for: "command.palette.search", french: french), text: $query)
-                .textFieldStyle(.plain)
-                .font(.title3)
-                .padding(16)
-                .focused($searchFocused)
-                // The focused field editor consumes arrow keys, so `onMoveCommand` below never sees them.
-                .onKeyPress(.upArrow) { moveSelection(.up) }
-                .onKeyPress(.downArrow) { moveSelection(.down) }
-            .onSubmit {
-                if let command = commands.first(where: { $0.id == selectedID }) ?? commands.first { activate(command) }
+            HStack(spacing: 10) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(Palette.secondaryInk.color)
+                    .accessibilityHidden(true)
+                TextField(ProductCopy.value(for: "command.palette.search", french: french), text: $query)
+                    .textFieldStyle(.plain)
+                    .font(CoreTendTypography.body)
+                    .focused($searchFocused)
+                    // The focused field editor consumes arrow keys, so `onMoveCommand` below never sees them.
+                    .onKeyPress(.upArrow) { moveSelection(.up) }
+                    .onKeyPress(.downArrow) { moveSelection(.down) }
+                    .onSubmit {
+                        if let command = commands.first(where: { $0.id == selectedID }) ?? commands.first { activate(command) }
+                    }
             }
-            Divider()
+            .padding(12)
+            .background(Palette.raisedSurface.color, in: RoundedRectangle(cornerRadius: 10))
+            .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(Palette.focus.color, lineWidth: 1))
+            .padding(16)
+            Palette.separator.color.frame(height: 1)
             if commands.isEmpty {
                 ContentUnavailableView(ProductCopy.value(for: "command.palette.empty", french: french),
                                        systemImage: "magnifyingglass")
@@ -38,32 +46,37 @@ struct CommandPaletteView: View {
                             activate(command)
                         } label: {
                             Label(command.title, systemImage: symbol(for: command.target))
+                                .font(CoreTendTypography.body)
                                 .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
                                 .contentShape(Rectangle())
                                 .padding(.horizontal, 8)
-                                .background(selectedID == command.id ? Palette.accent.color.opacity(0.16) : .clear,
+                                .background(selectedID == command.id ? Palette.accent.color.opacity(0.16) : Palette.surface.color,
                                             in: RoundedRectangle(cornerRadius: 7))
+                                .overlay(RoundedRectangle(cornerRadius: 7)
+                                    .strokeBorder(selectedID == command.id ? Palette.focus.color : .clear, lineWidth: 1))
                         }
                         .buttonStyle(.plain)
                         .accessibilityValue(selectedID == command.id ? (french ? "Sélectionné" : "Selected") : "")
                     }
                     .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
                     .motion(.quick, value: selectedID)
                     .onChange(of: selectedID) { _, id in
                         if let id { proxy.scrollTo(id) }
                     }
                 }
             }
-            Divider()
+            Palette.separator.color.frame(height: 1)
             HStack {
                 Text(french ? "↑ ↓ pour choisir · Retour ouvre · esc ferme" : "↑ ↓ to select · Return to open · esc to close")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
                 Spacer()
-                Text("esc").font(.caption.monospaced()).foregroundStyle(.secondary)
+                Text("esc").font(CoreTendTypography.secondary.monospaced()).foregroundStyle(Palette.secondaryInk.color)
             }
             .padding(.horizontal, 16).padding(.vertical, 10)
         }
         .frame(width: 520, height: 480)
+        .background(Palette.surface.color)
         .task {
             selectedID = commands.first?.id
             searchFocused = true

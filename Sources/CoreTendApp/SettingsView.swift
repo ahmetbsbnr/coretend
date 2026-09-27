@@ -3,10 +3,12 @@ import UniformTypeIdentifiers
 import Persistence
 import AppShell
 import Domain
+import DesignSystem
 
 struct SettingsView: View {
     let french: Bool
     @Binding var language: String
+    @Binding var appearance: AppearancePreference
     @Binding var recentFilesEnabled: Bool
     @Binding var menuBarEnabled: Bool
     let close: () -> Void
@@ -26,6 +28,12 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            Text(ProductCopy.value(for: "settings.title", french: french))
+                .font(CoreTendTypography.pageTitle)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 24)
+                .padding(.top, 22)
+                .padding(.bottom, 8)
             Form {
                 Section(french ? "Langue" : "Language") {
                     Picker(ProductCopy.value(for: "settings.language", french: french), selection: $language) {
@@ -34,6 +42,15 @@ struct SettingsView: View {
                         Text("English").tag("en")
                     }
                     .onChange(of: language) { _, value in Task { try? await store?.saveLanguagePreference(value) } }
+                }
+
+                Section(french ? "Apparence" : "Appearance") {
+                    Picker(french ? "Apparence" : "Appearance", selection: $appearance) {
+                        Text(french ? "Système" : "System").tag(AppearancePreference.system)
+                        Text(french ? "Clair" : "Light").tag(AppearancePreference.light)
+                        Text(french ? "Sombre" : "Dark").tag(AppearancePreference.dark)
+                    }
+                    .disabled(!CoreTendPreferences().usesPersistentStorage)
                 }
 
                 Section(french ? "Exclusions locales" : "Local exclusions") {
@@ -106,7 +123,7 @@ struct SettingsView: View {
                 if let status { Text(status).foregroundStyle(.secondary) }
             }
             .formStyle(.grouped)
-            Divider()
+            Palette.separator.color.frame(height: 1)
             // Settings is a sheet with no window close control; this is its visible exit.
             HStack {
                 Spacer()
@@ -116,6 +133,7 @@ struct SettingsView: View {
             .padding(12)
         }
         .frame(minWidth: 600, idealWidth: 640, minHeight: 420, idealHeight: 560, maxHeight: 640)
+        .background(Palette.surface.color)
         .task {
             await load()
             ownSignature = MacOSCodeSignatureInspector().inspect(at: Bundle.main.bundleURL)
@@ -144,9 +162,9 @@ struct SettingsView: View {
         }) {
             VStack(alignment: .leading, spacing: 14) {
                 Text(french ? "Aperçu exact du diagnostic" : "Exact diagnostic preview")
-                    .font(.title2.weight(.semibold))
+                    .font(CoreTendTypography.sectionTitle)
                 Text(diagnosticSummary + " · " + (french ? "Aucun chemin personnel ni détail d’événement." : "No personal paths or event details."))
-                    .font(.callout).foregroundStyle(.secondary)
+                    .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
                 ScrollView {
                     Text(diagnosticPreviewText)
                         .font(.system(.caption, design: .monospaced))
@@ -154,7 +172,7 @@ struct SettingsView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(12)
                 }
-                .background(.quaternary.opacity(0.35), in: RoundedRectangle(cornerRadius: 8))
+                .background(Palette.raisedSurface.color, in: RoundedRectangle(cornerRadius: 8))
                 HStack {
                     Spacer()
                     Button(ProductCopy.value(for: "common.cancel", french: french), role: .cancel) {
@@ -170,6 +188,7 @@ struct SettingsView: View {
             }
             .padding(22)
             .frame(minWidth: 520, minHeight: 440)
+            .background(Palette.surface.color)
         }
         .fileExporter(isPresented: $exporting, document: diagnosticDocument, contentType: .json,
                       defaultFilename: "coretend-diagnostic") { result in
