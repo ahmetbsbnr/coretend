@@ -1,6 +1,6 @@
 # Contribuer à CoreTend
 
-Le code en reconstruction vit sur `next`; `main` représente la version publique stable. Ouvrir une issue pour un changement de produit important, puis une branche courte issue de la branche visée. Une pull request doit expliquer comportement, risques, documentation et preuve de vérification.
+Le code en reconstruction vit sur `next`, où le mainteneur développe directement; `main` représente la version publique stable. Pour une contribution externe, ouvrir une issue pour un changement de produit important, puis une branche courte issue de `next`. Une pull request doit expliquer comportement, risques, documentation et preuve de vérification.
 
 ## Travail local
 
