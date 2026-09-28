@@ -12,7 +12,7 @@
 | U2 | Menu de la barre des menus | En partie (`eddb70d6` : apparence, texte) |
 | U3 | Vue d'ensemble « tableau de serre » | En partie (`eddb70d6` : activité avec contexte) |
 | U4 | Applications (taille, tri, détail, échecs expliqués) | À faire |
-| U5 | Accueil | À faire |
+| U5 | Accueil | Livré (`035207c2`) |
 | U6 | Réglages en fenêtre dédiée | À faire |
 | U7 | Modules enrichis | À faire |
 | U8 | Qualification et retest M5 | À faire |
@@ -29,15 +29,13 @@
 
 ## Point d'arrêt
 
-- U1 livré ; U2, U3 en partie ; **U9 en cours** (`af7ba932` : `AmbientLife`, `GreenhouseScene`,
-  réglage « Serre vivante »). À faire pour U9 : vérifier le balancement fenêtre active (capture
-  à 1 s d'écart avec la fenêtre devant) et mesurer le CPU au repos avant/après (NFR-09) ;
-  plante-signature par destination ; transitions organiques ; frémissement au survol ;
-  particules au déplacement vers la Corbeille.
-- Puis U4 (Applications), U5 (accueil), U6 (Réglages en fenêtre), U7, U8 (build notarisé,
-  retest M5).
-- Capture d'une fenêtre en fixture quand le Terminal est en plein écran :
-  `swiftc Scripts/capture_window_helper.swift -o cwh`, `cwh window <pid>`, `screencapture -l <n>`.
+- Livrés : U1, U5 ; U9 bien avancé (`LayerSway`/`PollenField` Core Animation, scène, plantes
+  de page réactives aux analyses, fond vivant, frémissement au survol, parcelles qui respirent,
+  menu vivant) — dernier commit `035207c2`.
+- Reste U9 : transitions de page en tiges/vrilles ; souffle de pollen à l'arrivée d'une feuille
+  dans la Corbeille ; vérifier à l'écran la courbure pendant une analyse et la fleur.
+- Puis U4 (Applications), U2/U3 restants, U6 (Réglages en fenêtre), U7, U8 : build notarisé avec
+  `CORETEND_BUNDLE_ID=<id distinct>` (ne plus partager l'identifiant des démos) et retest M5.
 
 ## Problèmes ouverts
 
