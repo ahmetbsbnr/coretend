@@ -85,6 +85,10 @@ FR/EN ; clair/sombre ; clavier ; captures ; recette ; puis passage des lignes li
 | 3.9 | Réglages, palette ⌘K, barre de menus, langue, import ancien | settings.*, ui.commandpalette, shell.menubar, FR-21, FR-22, l10n.languagepicker, migration.* |
 | 3.10 | Site : pages Fonctionnalités, Confidentialité, Développeur, Assistance en Serre, captures réelles | FR-15, NFR-11 |
 
+État au 28-09-2026 : 3.1–3.8 livrés (3.1, 3.4–3.6 acceptés), 3.9 en cours, 3.10 à faire ;
+détail et commits dans `Documentation/Passation/P3-destinations.md`. Décision du mainteneur du
+28-09 : lots suivants livrés à la suite, recette groupée avant G3.
+
 Ordre : ce que l’on voit d’abord (3.1), puis la valeur centrale et le chemin le plus risqué
 (3.2), puis le reste par usage. Pour 3.2, la recette inclut **un vrai passage par la Corbeille
 macOS sur un dossier jetable créé pour l’occasion**, fait par le mainteneur.

@@ -71,3 +71,46 @@ overrides : `CORETEND_TEST_LAST_DESTINATION`, `CORETEND_TEST_RECENT_FILES_ENABLE
 - Après un déplacement du dossier, un `.build/` existant peut casser la compilation
   (`_TestingInternals` introuvable) : reconstruire ou utiliser `--scratch-path`.
 - La sélection de la sidebar suit l’accent système macOS (vert sur cet hôte) ; `.tint` ne la change pas.
+
+## Pièces Serre à réutiliser (P3)
+
+- `DesignSystem` : `ScanRoots` (racines pilotées par de vrais événements, floraison, retrait),
+  `FallingLeaf`, `SerreCheck`, `SerreRiskBadge`, `SerreSignalTag` (étiquette de plant),
+  `serreRise`, `serrePress`, `traceReveal`, `OncePulse`, `SoilBand`, `CoreTendTypography.figure`.
+- `CoreTendApp/SerreActionKit.swift` : `PageNotice` + `PageNoticeBanner` (bandeaux avec
+  « Choisir à nouveau » / « Réessayer »), `LeafFlight` + `.leafFlightLayer/Row/Anchor`,
+  `TrashIndicator`, `executeShowingEachItem` (déplacement élément par élément,
+  `FileActionService.execute(_:onItem:)`), `PageNotice.moveOutcome`.
+- `Domain` : `DuplicateKeepers` (exemplaire gardé jamais déplaçable), `ApplicationFolders`,
+  `LaunchAgentFolders` (dossiers proposés en un clic, rien lu avant le choix ; HOME via
+  `NSHomeDirectory()`, jamais `homeDirectoryForCurrentUser`, refusé par `audit_safety.py`).
+- `AppShell` : `ProductFormat.bytes/count/items/frenchPlural/memory/filesExamined` — toujours dans
+  la langue de l’app, jamais `ByteCountFormatter` ni format système.
+
+## Règles apprises en P3
+
+- **Toute confirmation destructive** met un bouton non destructif en défaut de Retour
+  (`.keyboardShortcut(.defaultAction)` sur Annuler) ; `check_architecture.py` le vérifie.
+  Origine : incident du 28-09 où une confirmation a été validée sans clic de l’agent.
+- Un mouvement doit avoir une cause réelle (guide § 8) : pas de racines pour Applications
+  (aucun événement de progression), pas de boucle au repos.
+- `.position` en dernier sur une vue interactive : sinon elle capte survol et clics de tout
+  son conteneur (bug de la carte Explorer).
+- Pas de `if let x` qui masque un `@State x` réaffecté dans la même portée (plantage du
+  compilateur, RecordView).
+- Rendu d’image (`ImageRenderer`) : passer une vue nommée, pas une chaîne de modificateurs
+  (avertissement d’isolation, fatal pour la porte « zéro avertissement »).
+
+## Démos en fixture (vérification visuelle)
+
+- Nettoyage : créer `$R/home/Library/Logs/DiagnosticReports` rempli de faux `.ips`/`.crash`
+  (la règle compare la fin du chemin), `CORETEND_TEST_LAST_DESTINATION=cleanup`.
+- Explorer : dossier varié sous `$R/home/…` ; Doublons : `cp` de fichiers identiques.
+- Applications : proposer `/Applications` (lecture seule). Intégrité :
+  `/System/Applications/Calculator.app` + `$R/home/Library/LaunchAgents` avec un plist valide
+  et un cassé. Historique : insérer des lignes dans `$R/store/…/records.sqlite`
+  (`activity_events(id, occurred_at, kind, detail, failure_code)`), jamais dans le vrai store.
+- Pilotage à l’écran par computer-use : le Terminal peut repasser devant l’app et bloquer un
+  clic ; ne **jamais** ouvrir la confirmation de déplacement dans l’app packagée (vraie
+  Corbeille). Pour voir une animation de déplacement, faire un build de diagnostic temporaire
+  qui la déclenche sans fichier (ex. à la sélection d’une ligne), puis le retirer.

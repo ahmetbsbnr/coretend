@@ -1,7 +1,7 @@
 # P3 — Destinations, une par une
 
 **Objectif :** chaque écran complet dans tous ses états, accepté par le mainteneur, avec ses lignes du registre passées à VÉRIFIÉ pour leur part native.
-**Gate :** G3.1 → G3.9 — une recette par lot.
+**Gate :** G3.1 → G3.9 — une recette par lot jusqu’à 3.6 ; depuis le 28-09, décision du mainteneur : lots livrés à la suite, recette groupée avant G3.
 **Statut de la phase :** En cours depuis le 27-09-2026.
 **Plan :** `Documentation/Project/Implementation-plan.md` § Programme 2.0.
 
@@ -17,7 +17,7 @@
 | 3.6 | Intégrité | Accepté 28-09-2026 (`5430106d`) |
 | 3.7 | Performances | Livré, vérifié par l’agent (`52d8fd16`) |
 | 3.8 | Historique | Livré, vérifié par l’agent (`05f7aa51`) |
-| 3.9 | Réglages, ⌘K, barre de menus, langue, import ancien | À faire |
+| 3.9 | Réglages, ⌘K, barre de menus, langue, import ancien | En cours, arrêté (`ab0cd928` WIP) |
 | 3.10 | Site : pages publiques en Serre, captures réelles de l’app, contenu pour une sortie publique (correction G2) | À faire |
 
 ## Journal
@@ -197,12 +197,26 @@
 
 ## Point d’arrêt
 
-- Arrêt demandé le 28-09-2026 pendant **3.9**. `ab0cd928` (WIP) : Réglages en parcelles Serre (choix en
-  lignes, exclusions, signature en étiquette, conservation, barre des menus, diagnostic), menu de
-  barre des menus Serre (logo, glyphes, formats dans la langue de l’app, icône pousse). Compile sans
-  avertissement. **Reprendre par :** `make qualify`, vérification visuelle des Réglages et du menu
-  (`CORETEND_TEST_MENU_BAR_ENABLED=1`), palette ⌘K et langue, puis clore 3.9, puis 3.10 (site),
-  puis push de `next` (autorisé).
+**Lot 3.9, arrêté le 28-09-2026 à la demande du mainteneur.**
+
+- **Fait (`ab0cd928`, WIP) :**
+  - `SettingsView.swift` : `Form` remplacé par des parcelles Serre (`section(_:help:content:)`),
+    langue et apparence en lignes `SerreCheck` (`choices`), exclusions en lignes avec bouton icône,
+    signature de CoreTend en `SerreSignalTag`, interrupteurs teintés accent, statut en
+    `SerreBanner(.note)`, aperçu diagnostic en boutons Serre (JSON brut conservé en monospace :
+    c’est la donnée exacte). Toute la logique (store, import, export, exclusions) est inchangée.
+  - `MenuBarMetricsView.swift` : formats dans la langue de l’app (`ProductFormat.memory/bytes`,
+    charge localisée), chiffres en `CoreTendTypography.figure`, plus de `ProgressView`.
+  - `CoreTendApp.swift` (`CoreTendMenuBar`) : logo + « CoreTend », destinations dans l’ordre de
+    la barre latérale avec leur glyphe en lignes Serre, Réglages en ligne ; icône de barre des
+    menus = pousse Serre rendue en image modèle (`MenuBarGlyph`, vue nommée `MenuBarSprout` pour
+    éviter l’avertissement d’isolation Swift 6).
+- **Non fait / non vérifié :** `make qualify` ; rendu à l’écran (Réglages, menu) ; palette ⌘K
+  (vérification des textes seulement) ; accords FR restants dans Réglages
+  (`legacyMessage` : « exclusion(s) ») ; tests de copie pour les nouveaux textes (aucune nouvelle
+  clé n’a été ajoutée dans ce WIP) ; registre et `Progress.md` pour 3.9.
+- **Reprendre par :** Prochaine action de `passation.md`, étape 2.
+- **Ensuite :** 3.10 (site), puis push de `next` (autorisé), puis recette groupée G3.
 
 ## Problèmes ouverts
 
