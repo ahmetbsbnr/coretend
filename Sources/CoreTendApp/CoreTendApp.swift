@@ -310,15 +310,20 @@ private struct DestinationView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(ProductCopy.value(for: destination.titleKey, french: french))
-                        .font(CoreTendTypography.pageTitle)
-                        .foregroundStyle(Palette.ink.color)
-                        .accessibilityAddTraits(.isHeader)
-                    Text(ProductCopy.value(for: destination.ledeKey, french: french))
-                        .font(CoreTendTypography.lede)
-                        .foregroundStyle(Palette.secondaryInk.color)
-                        .fixedSize(horizontal: false, vertical: true)
+                HStack(alignment: .bottom, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(ProductCopy.value(for: destination.titleKey, french: french))
+                            .font(CoreTendTypography.pageTitle)
+                            .foregroundStyle(Palette.ink.color)
+                            .accessibilityAddTraits(.isHeader)
+                        Text(ProductCopy.value(for: destination.ledeKey, french: french))
+                            .font(CoreTendTypography.lede)
+                            .foregroundStyle(Palette.secondaryInk.color)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    Spacer(minLength: 12)
+                    // Each destination has its plant; it grows on arrival and lives while the window does.
+                    DestinationPlant(destination.glyph).id(destination)
                 }
                 .serreRise(0)
                 if destination == .overview || destination == .performance {

@@ -70,7 +70,7 @@ struct SerreSidebar: View {
 
     private var brand: some View {
         HStack(spacing: 10) {
-            SerreLogo(size: 32, germinates: true)
+            SerreLogo(size: 32, germinates: true).ambientSway(degrees: 5)
             VStack(alignment: .leading, spacing: 0) {
                 Text("CoreTend").font(.custom("IowanOldStyle-Bold", size: 20, relativeTo: .title3)).foregroundStyle(Palette.ink.color)
                 Text(french ? "entretien local" : "local care").font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
@@ -111,6 +111,7 @@ struct SerreSidebar: View {
                 Text(ProductCopy.value(for: destination.titleKey, french: french))
             } icon: {
                 SerreIcon(destination.glyph).foregroundStyle(selected ? Palette.accent.color : Palette.secondaryInk.color)
+                    .ambientSway(degrees: selected ? 6 : 3, phase: Double(destination.shortcutNumber) * 0.61)
             }
             .font(CoreTendTypography.body.weight(selected ? .semibold : .regular))
             .foregroundStyle(selected ? Palette.ink.color : Palette.secondaryInk.color)
