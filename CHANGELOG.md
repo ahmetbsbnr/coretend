@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.0 — unreleased
+## 2.0.0 — 2026-09-28
 
 A complete rebuild of CoreTend, in a new identity: the living greenhouse.
 
