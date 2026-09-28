@@ -479,6 +479,16 @@ final class AppShellTests: XCTestCase {
         XCTAssertTrue(ProductFormat.memory(16 * 1_073_741_824, french: false).contains("GB"))
     }
 
+    func testRecordStatesExistInBothLanguages() {
+        for key in ["record.search", "record.export", "record.retry", "record.noResults", "record.noResults.help", "record.empty.help"] {
+            let english = ProductCopy.value(for: key, french: false)
+            let french = ProductCopy.value(for: key, french: true)
+            XCTAssertNotEqual(english, key, key)
+            XCTAssertNotEqual(french, key, key)
+            XCTAssertNotEqual(english, french, key)
+        }
+    }
+
     func testCrashReportRuleNamesBothExtensionsItReads() {
         XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: false).contains(".ips"))
         XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: true).contains(".ips"))
