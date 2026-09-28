@@ -413,6 +413,16 @@ final class CodeSignatureModelTests: XCTestCase {
     }
 }
 
+final class ApplicationFoldersTests: XCTestCase {
+    func testOffersTheSystemThenThePersonalApplicationsFolderWhenTheyExist() {
+        let home = URL(fileURLWithPath: "/tmp/someone", isDirectory: true)
+        XCTAssertEqual(ApplicationFolders.candidates(home: home) { _ in true }.map(\.path),
+                       ["/Applications", "/tmp/someone/Applications"])
+        XCTAssertEqual(ApplicationFolders.candidates(home: home) { $0.path == "/Applications" }.map(\.path), ["/Applications"])
+        XCTAssertEqual(ApplicationFolders.candidates(home: home) { _ in false }, [])
+    }
+}
+
 final class DuplicateKeepersTests: XCTestCase {
     private let a = URL(fileURLWithPath: "/tmp/g/a.jpg"), b = URL(fileURLWithPath: "/tmp/g/b.jpg")
     private let c = URL(fileURLWithPath: "/tmp/g/c.jpg"), other = URL(fileURLWithPath: "/tmp/h/x.jpg")
