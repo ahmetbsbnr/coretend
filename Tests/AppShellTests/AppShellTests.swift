@@ -411,6 +411,16 @@ final class AppShellTests: XCTestCase {
         XCTAssertEqual(ProductFormat.filesExamined(1, french: false), "file examined")
     }
 
+    func testItemCountsAgreeInBothLanguages() {
+        XCTAssertEqual(ProductFormat.items(0, french: true), "0 élément")
+        XCTAssertEqual(ProductFormat.items(1, french: true), "1 élément")
+        XCTAssertEqual(ProductFormat.items(3, french: true), "3 éléments")
+        XCTAssertEqual(ProductFormat.items(1, french: false), "1 item")
+        XCTAssertEqual(ProductFormat.items(0, french: false), "0 items")
+        XCTAssertEqual(ProductFormat.frenchPlural(1), "")
+        XCTAssertEqual(ProductFormat.frenchPlural(2), "s")
+    }
+
     func testCrashReportRuleNamesBothExtensionsItReads() {
         XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: false).contains(".ips"))
         XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: true).contains(".ips"))

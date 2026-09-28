@@ -8,6 +8,16 @@ public enum ProductFormat {
         value.formatted(.number.locale(Locale(identifier: french ? "fr_FR" : "en_US")))
     }
 
+    /// A number of items with its noun agreed ("1 élément", "0 élément", "3 éléments"; "1 item").
+    public static func items(_ value: Int, french: Bool) -> String {
+        let number = count(value, french: french)
+        if french { return "\(number) \(value > 1 ? "éléments" : "élément")" }
+        return "\(number) \(value == 1 ? "item" : "items")"
+    }
+
+    /// The French plural mark of a past participle agreeing with `value` ("déplacé" + "s").
+    public static func frenchPlural(_ value: Int) -> String { value > 1 ? "s" : "" }
+
     /// The unit written under a count of files read ("fichiers examinés").
     public static func filesExamined(_ value: Int, french: Bool) -> String {
         if french { return value == 1 ? "fichier examiné" : "fichiers examinés" }
