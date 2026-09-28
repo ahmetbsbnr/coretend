@@ -348,7 +348,7 @@ def capture(lang: str, surface: str, title: str, *, hero: bool = False) -> str:
     image = f"../screenshots/{surface}-{lang}"
     return (f'<figure class="capture reveal{" capture-hero" if hero else ""}">'
             f'<picture><source media="(prefers-color-scheme: light)" srcset="{image}-light.png">'
-            f'<img src="{image}-dark.png" alt="CoreTend — {escape(title, quote=True)}" width="2048" height="1125" loading="{"eager" if hero else "lazy"}"></picture>'
+            f'<img src="{image}-dark.png" alt="CoreTend — {escape(title, quote=True)}" width="2240" height="1520" loading="{"eager" if hero else "lazy"}"></picture>'
             f'<figcaption>{escape(title)}</figcaption></figure>')
 
 
@@ -363,8 +363,7 @@ def cards(items, css: str = "card") -> str:
     return "".join(out)
 
 
-SURFACE = {"overview": "overview", "explore": "explore", "cleanup": "cleanup", "duplicates": "duplicates",
-           "applications": "overview", "integrity": "overview", "performance": "performance", "record": "settings-bottom"}
+SURFACE = {key: key for key in ("overview", "explore", "cleanup", "duplicates", "applications", "integrity", "performance", "record")}
 
 
 def home(lang: str, rel: dict) -> str:
