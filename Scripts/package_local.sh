@@ -25,8 +25,8 @@ cat > "$app_path/Contents/Info.plist" <<PLIST
   <key>CFBundleIdentifier</key><string>${CORETEND_BUNDLE_ID:-local.coretend.reconstruction}</string>
   <key>CFBundleName</key><string>CoreTend</string>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>0.1.0-local</string>
-  <key>CFBundleVersion</key><string>1</string>
+  <key>CFBundleShortVersionString</key><string>${CORETEND_VERSION:-0.1.0-local}</string>
+  <key>CFBundleVersion</key><string>${CORETEND_BUILD:-1}</string>
   <key>LSMinimumSystemVersion</key><string>14.0</string>
   <key>NSPrincipalClass</key><string>NSApplication</string>
 </dict>
