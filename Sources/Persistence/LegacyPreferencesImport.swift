@@ -23,6 +23,8 @@ public struct LegacyPreferencesImporter: Sendable {
               Set(object.keys).isSubset(of: Set(["version", "excludedPaths", "language"])),
               let version = object["version"] as? Int else { throw LegacyImportError.invalidFormat }
         guard version == 1 else { throw LegacyImportError.unsupportedVersion }
+        if let paths = object["excludedPaths"], !(paths is [String]) { throw LegacyImportError.invalidFormat }
+        if let language = object["language"], !(language is String) { throw LegacyImportError.invalidFormat }
         let rawPaths = object["excludedPaths"] as? [String] ?? []
         guard rawPaths.count <= 1_000 else { throw LegacyImportError.tooManyPaths }
         let paths = try rawPaths.map(validatePath)

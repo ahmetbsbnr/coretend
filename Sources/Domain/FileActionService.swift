@@ -84,7 +84,8 @@ public struct FileActionService: Sendable {
         self.allowedRoots = allowedRoots; self.allowedRuleIDs = allowedRuleIDs; self.clock = clock
     }
 
-    public func prepareReview(_ selections: [FileActionSelection], protectedKeepers: [URL] = []) throws -> ActionReview {
+    public func prepareReview(_ selections: [FileActionSelection], protectedKeepers: [URL] = [],
+                              expectedProtectedKeepers: [URL: FileIdentity] = [:]) throws -> ActionReview {
         guard !selections.isEmpty else { throw ActionReviewError.empty }
         guard selections.allSatisfy({ allowedRuleIDs.contains($0.ruleID) }) else { throw ActionReviewError.ruleNotAllowed }
         guard !selections.contains(where: \.isProtectedKeeper) else { throw ActionReviewError.protectedKeeperSelected }
@@ -101,7 +102,7 @@ public struct FileActionService: Sendable {
         let keeperIdentities = try protectedKeepers.map { keeper in
             try validator.approve(target: keeper, allowedRoots: allowedRoots,
                                   ruleID: selections[0].ruleID, allowedRuleIDs: allowedRuleIDs,
-                                  now: clock()).target
+                                  expectedIdentity: expectedProtectedKeepers[keeper], now: clock()).target
         }
         return ActionReview(items: selections, identities: identities, protectedKeepers: keeperIdentities)
     }

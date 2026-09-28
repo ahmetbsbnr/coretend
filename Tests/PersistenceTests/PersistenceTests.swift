@@ -784,3 +784,22 @@ private func sqliteFixtureBackup(from sourceURL: URL, to destinationURL: URL) th
     try FileManager.default.moveItem(at: stagingURL, to: destinationURL)
     installed = true
 }
+
+
+extension PersistenceTests {
+    func testLegacyImportRejectsPresentFieldsWithWrongTypes() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-legacy-types-\(UUID())")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("coretend-preferences-v1.json")
+        for json in [#"{"version":1,"excludedPaths":["/fixture/keep",42]}"#,
+                     #"{"version":1,"excludedPaths":null}"#,
+                     #"{"version":1,"language":42}"#,
+                     #"{"version":1,"language":null}"#] {
+            try Data(json.utf8).write(to: source)
+            XCTAssertThrowsError(try LegacyPreferencesImporter().preview(sourceURL: source)) { error in
+                XCTAssertEqual(error as? LegacyImportError, .invalidFormat)
+            }
+        }
+    }
+}

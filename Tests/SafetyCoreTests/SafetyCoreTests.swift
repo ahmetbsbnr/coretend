@@ -116,3 +116,24 @@ final class SafetyCoreTests: XCTestCase {
         XCTAssertTrue(contents.isEmpty)
     }
 }
+
+
+extension SafetyCoreTests {
+    func testExecutionRejectsInPlaceContentEditAfterApproval() async throws {
+        let f = try fixture()
+        defer { try? FileManager.default.removeItem(at: f.root) }
+        let allowed = Set(["cleanup.fixture"])
+        let approval = try PathValidator().approve(target: f.file, allowedRoots: [f.root],
+                                                  ruleID: "cleanup.fixture", allowedRuleIDs: allowed)
+        let before = try FileIdentity(url: f.file)
+        let handle = try FileHandle(forWritingTo: f.file)
+        try handle.write(contentsOf: Data("unique!".utf8))
+        try handle.close()
+        XCTAssertEqual(try FileIdentity(url: f.file).inode, before.inode)
+        let executor = SafeActionExecutor(allowedRoots: [f.root], allowedRules: allowed,
+                                          trash: FixtureTrashClient(trashRoot: f.trash))
+        let outcome = await executor.execute(approval)
+        XCTAssertEqual(outcome, .failed(.revalidation(.identityChanged)))
+        XCTAssertTrue(try FileManager.default.contentsOfDirectory(atPath: f.trash.path).isEmpty)
+    }
+}

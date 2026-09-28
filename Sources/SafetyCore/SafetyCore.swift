@@ -5,6 +5,13 @@ public struct FileIdentity: Hashable, Sendable {
     public let standardizedPath: String
     public let device: UInt64
     public let inode: UInt64
+    // Content metadata is checked for regular files; directory child mutations must not
+    // invalidate the selected root's identity during a batch.
+    public let size: Int64?
+    public let modifiedSeconds: Int64?
+    public let modifiedNanoseconds: Int64?
+    public let changedSeconds: Int64?
+    public let changedNanoseconds: Int64?
 
     public init(url: URL) throws {
         var info = stat()
@@ -14,6 +21,12 @@ public struct FileIdentity: Hashable, Sendable {
         standardizedPath = url.standardizedFileURL.path
         device = UInt64(info.st_dev)
         inode = UInt64(info.st_ino)
+        let regular = (info.st_mode & S_IFMT) == S_IFREG
+        size = regular ? Int64(info.st_size) : nil
+        modifiedSeconds = regular ? Int64(info.st_mtimespec.tv_sec) : nil
+        modifiedNanoseconds = regular ? Int64(info.st_mtimespec.tv_nsec) : nil
+        changedSeconds = regular ? Int64(info.st_ctimespec.tv_sec) : nil
+        changedNanoseconds = regular ? Int64(info.st_ctimespec.tv_nsec) : nil
     }
 }
 

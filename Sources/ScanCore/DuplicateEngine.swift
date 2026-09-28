@@ -18,6 +18,7 @@ public struct DuplicateScanIssue: Sendable, Equatable {
 public struct DuplicateScanReport: Sendable, Equatable {
     public let groups: [DuplicateGroup]
     public let issues: [DuplicateScanIssue]
+    public let snapshots: [URL: DuplicateFileSnapshot]
 }
 
 public enum DuplicateScanProgress: Sendable, Equatable {
@@ -26,12 +27,14 @@ public enum DuplicateScanProgress: Sendable, Equatable {
     case imageComparisons(completedPairs: Int, totalPairs: Int)
 }
 
-private struct FileSnapshot: Equatable {
-    let device: UInt64
-    let inode: UInt64
-    let size: Int64
-    let modifiedSeconds: Int64
-    let modifiedNanoseconds: Int64
+public struct DuplicateFileSnapshot: Equatable, Sendable {
+    public let device: UInt64
+    public let inode: UInt64
+    public let size: Int64
+    public let modifiedSeconds: Int64
+    public let modifiedNanoseconds: Int64
+    public let changedSeconds: Int64
+    public let changedNanoseconds: Int64
 
     init(url: URL) throws {
         var info = stat()
@@ -55,8 +58,10 @@ private struct FileSnapshot: Equatable {
         size = Int64(info.st_size)
         modifiedSeconds = Int64(info.st_mtimespec.tv_sec)
         modifiedNanoseconds = Int64(info.st_mtimespec.tv_nsec)
+        changedSeconds = Int64(info.st_ctimespec.tv_sec)
+        changedNanoseconds = Int64(info.st_ctimespec.tv_nsec)
     }
-    var identity: InodeIdentity { InodeIdentity(device: device, inode: inode) }
+    fileprivate var identity: InodeIdentity { InodeIdentity(device: device, inode: inode) }
 }
 
 public struct DuplicateEngine: Sendable {
@@ -75,6 +80,7 @@ public struct DuplicateEngine: Sendable {
         progress(.duplicateHashing(completedCandidates: 0, totalCandidates: totalCandidates))
         var digestBuckets: [String: [URL]] = [:]
         var issues: [DuplicateScanIssue] = []
+        var snapshots: [URL: DuplicateFileSnapshot] = [:]
         var completedCandidates = 0
         for (expectedSize, urls) in sizeBuckets where urls.count > 1 {
             var seenIdentities: Set<InodeIdentity> = []
@@ -85,17 +91,18 @@ public struct DuplicateEngine: Sendable {
                 }
                 try Task.checkCancellation()
                 do {
-                    let before = try FileSnapshot(url: url)
+                    let before = try DuplicateFileSnapshot(url: url)
                     guard before.size == expectedSize else {
                         issues.append(DuplicateScanIssue(path: url.path, reason: "file_size_changed_since_scan")); continue
                     }
                     guard seenIdentities.insert(before.identity).inserted else { continue }
                     let digest = try hash(url, expected: before)
-                    let after = try FileSnapshot(url: url)
+                    let after = try DuplicateFileSnapshot(url: url)
                     guard before == after else {
                         issues.append(DuplicateScanIssue(path: url.path, reason: "file_changed_during_hash")); continue
                     }
                     digestBuckets[digest, default: []].append(url)
+                    snapshots[url] = after
                 } catch is CancellationError { throw CancellationError() }
                 catch { issues.append(DuplicateScanIssue(path: url.path, reason: "hash_failed_or_file_changed")) }
             }
@@ -105,14 +112,14 @@ public struct DuplicateEngine: Sendable {
             guard sorted.count > 1, let keeper = sorted.first else { return nil }
             return DuplicateGroup(digest: digest, files: sorted, suggestedKeeper: keeper)
         }.sorted { $0.suggestedKeeper.path < $1.suggestedKeeper.path }
-        return DuplicateScanReport(groups: groups, issues: issues)
+        return DuplicateScanReport(groups: groups, issues: issues, snapshots: snapshots)
     }
 
-    private func hash(_ url: URL, expected: FileSnapshot) throws -> String {
+    private func hash(_ url: URL, expected: DuplicateFileSnapshot) throws -> String {
         let descriptor = open(url.path, O_RDONLY | O_NOFOLLOW | O_CLOEXEC)
         guard descriptor >= 0 else { throw CocoaError(.fileReadNoSuchFile) }
         defer { _ = close(descriptor) }
-        guard try FileSnapshot(fileDescriptor: descriptor) == expected else { throw CocoaError(.fileReadCorruptFile) }
+        guard try DuplicateFileSnapshot(fileDescriptor: descriptor) == expected else { throw CocoaError(.fileReadCorruptFile) }
         var hasher = SHA256()
         var buffer = [UInt8](repeating: 0, count: 1_048_576)
         while true {
@@ -125,7 +132,7 @@ public struct DuplicateEngine: Sendable {
             }
             hasher.update(data: Data(buffer.prefix(count)))
         }
-        guard try FileSnapshot(fileDescriptor: descriptor) == expected else { throw CocoaError(.fileReadCorruptFile) }
+        guard try DuplicateFileSnapshot(fileDescriptor: descriptor) == expected else { throw CocoaError(.fileReadCorruptFile) }
         return hasher.finalize().map { String(format: "%02x", $0) }.joined()
     }
 }
