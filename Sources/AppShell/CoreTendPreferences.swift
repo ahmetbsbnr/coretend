@@ -53,6 +53,26 @@ public struct CoreTendPreferences {
         return environment["CORETEND_TEST_APPEARANCE"].flatMap(FixtureAppearance.init(rawValue:))
     }
 
+    /// Fixture-only: a folder a destination opens by itself, so captures show the screen in use.
+    /// Never read in a normal launch.
+    public var fixtureScanRoot: URL? {
+        guard !usesPersistentStorage, let path = environment["CORETEND_TEST_SCAN_ROOT"], !path.isEmpty else { return nil }
+        return URL(fileURLWithPath: path, isDirectory: true)
+    }
+
+    /// Fixture-only: the first window's size in points ("1440x900"), for store captures.
+    public var fixtureWindowSize: (width: Double, height: Double)? {
+        guard !usesPersistentStorage, let value = environment["CORETEND_TEST_WINDOW_SIZE"] else { return nil }
+        let parts = value.split(separator: "x").compactMap { Double($0) }
+        return parts.count == 2 ? (parts[0], parts[1]) : nil
+    }
+
+    /// Fixture-only: the Cleanup rule opened with `fixtureScanRoot`.
+    public var fixtureCleanupRule: String? {
+        guard !usesPersistentStorage else { return nil }
+        return environment["CORETEND_TEST_CLEANUP_RULE"]
+    }
+
     public var menuBarEnabled: Bool {
         if !usesPersistentStorage { return environment["CORETEND_TEST_MENU_BAR_ENABLED"] == "1" }
         return defaults.bool(forKey: "coretend.menuBar.enabled")

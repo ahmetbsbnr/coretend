@@ -88,6 +88,15 @@ struct CleanupView: View {
         }
         // The panel opens on the rule's expected place in the person's real home.
         .fileDialogDefaultDirectory(descriptor.map { SandboxAccess.userHome.appending(path: $0.relativePath.joined(separator: "/"), directoryHint: .isDirectory) })
+        // Fixture-only (captures): open the folder given by the environment, as if chosen.
+        .task {
+            let preferences = CoreTendPreferences()
+            guard selectedRoot == nil, let raw = preferences.fixtureCleanupRule, let rule = ScanRule(rawValue: raw),
+                  let root = preferences.fixtureScanRoot, let found = CleanupRuleCatalog.rule(rule) else { return }
+            choose(rule)
+            selectedRoot = root
+            startScan(found, root: root)
+        }
         .onDisappear { task?.cancel(); activeScanID = nil; scanning = false; if actionReview != nil { cancelAction() } }
         .confirmationDialog(french ? "Déplacer vers la Corbeille macOS ?" : "Move to macOS Trash?", isPresented: $actionDialogPresented, titleVisibility: .visible) {
             Button(french ? "Déplacer vers la Corbeille" : "Move to Trash", role: .destructive) { beginExecution() }
@@ -144,7 +153,7 @@ struct CleanupView: View {
                 if let selectedRoot {
                     HStack(spacing: 8) {
                         SerreIcon(.explore, size: 14).foregroundStyle(Palette.accent.color)
-                        Text(selectedRoot.path).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                        Text(SandboxAccess.displayPath(selectedRoot)).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                             .lineLimit(1).truncationMode(.middle).textSelection(.enabled)
                     }
                     .accessibilityElement(children: .combine)
@@ -328,6 +337,11 @@ struct CleanupView: View {
                                                    recovery: .chooseAgain)
                         } else {
                             rootsPhase = .finished
+                            // Bring the finished roots and the candidates under them into view.
+                            // A fresh request on the next turn: a quick scan can end in the same update as the one
+                            // that scrolled at its start, and an unchanged value would not scroll again.
+                            scrollTarget = nil
+                            Task { @MainActor in scrollTarget = "cleanup.roots" }
                             // Largest known allocation first; unknown sizes last, never guessed.
                             var still = Transaction()
                             still.disablesAnimations = true

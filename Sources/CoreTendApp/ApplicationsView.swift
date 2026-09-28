@@ -141,6 +141,8 @@ struct ApplicationsView: View {
             guard case .success(let urls) = result, let root = urls.first, let app = associationApp else { return }
             reviewAssociations(for: app, in: root)
         }
+        // Fixture-only (captures): open the folder given by the environment, as if chosen.
+        .task { if selectedRoot == nil, let root = CoreTendPreferences().fixtureScanRoot { discover(root) } }
         .onDisappear { task?.cancel(); scanning = false; if removalReview != nil { cancelRemoval() } }
         .confirmationDialog(french ? "Déplacer l’app vers la Corbeille macOS ?" : "Move app to macOS Trash?",
                             isPresented: $removalDialogPresented, titleVisibility: .visible) {
@@ -165,7 +167,7 @@ struct ApplicationsView: View {
                     SerreIcon(.applications, size: 18).foregroundStyle(Palette.accent.color)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(copy("explore.scope")).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
-                        Text(root.path).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                        Text(SandboxAccess.displayPath(root)).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                             .lineLimit(1).truncationMode(.middle).textSelection(.enabled)
                     }
                     .accessibilityElement(children: .combine)
@@ -350,7 +352,7 @@ struct ApplicationsView: View {
                 ForEach(associationResults, id: \.path) { url in
                     HStack(spacing: 8) {
                         RiskLeaf(.medium, size: 10)
-                        Text(url.path).font(CoreTendTypography.caption).foregroundStyle(Palette.ink.color)
+                        Text(SandboxAccess.displayPath(url)).font(CoreTendTypography.caption).foregroundStyle(Palette.ink.color)
                             .lineLimit(1).truncationMode(.middle).textSelection(.enabled)
                         Spacer(minLength: 6)
                         Text(copy(associationEvidence[url] == .name ? "apps.evidence.name" : "apps.evidence.identifier"))
@@ -470,8 +472,8 @@ struct ApplicationsView: View {
             Text(french ? "Adresse de mise à jour déclarée inutilisable." : "Declared update address is unusable.")
                 .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
         case .unknown:
-            Text(french ? "Source de mise à jour inconnue." : "Update source unknown.")
-                .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+            // Said once in the scope note ("updates are not checked"), not repeated on every row.
+            EmptyView()
         }
     }
 

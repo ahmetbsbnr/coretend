@@ -101,4 +101,31 @@ final class CoreTendPreferencesTests: XCTestCase {
         XCTAssertNil(CoreTendPreferences(environment: ["CORETEND_TEST_APPEARANCE": "dark"],
                                          defaults: UserDefaults(suiteName: "coretend.appearance.fixture")!).fixtureAppearance)
     }
+
+    func testStoreCaptureHooksApplyOnlyToFixtureLaunches() {
+        let fixture = CoreTendPreferences(environment: [
+            "CORETEND_TEST_MODE": "1",
+            "CORETEND_TEST_SCAN_ROOT": "/fixture/home/Greenhouse",
+            "CORETEND_TEST_CLEANUP_RULE": "cleanup.usercaches",
+            "CORETEND_TEST_WINDOW_SIZE": "1440x900"
+        ], defaults: UserDefaults(suiteName: "coretend.capture.fixture")!)
+        XCTAssertEqual(fixture.fixtureScanRoot?.path, "/fixture/home/Greenhouse")
+        XCTAssertEqual(fixture.fixtureCleanupRule, "cleanup.usercaches")
+        XCTAssertEqual(fixture.fixtureWindowSize?.width, 1440)
+        XCTAssertEqual(fixture.fixtureWindowSize?.height, 900)
+
+        // A normal launch ignores the same variables: no folder is ever opened by itself.
+        let normal = CoreTendPreferences(environment: [
+            "CORETEND_TEST_SCAN_ROOT": "/private/tmp/elsewhere",
+            "CORETEND_TEST_CLEANUP_RULE": "cleanup.usercaches",
+            "CORETEND_TEST_WINDOW_SIZE": "1440x900"
+        ], defaults: UserDefaults(suiteName: "coretend.capture.normal")!)
+        XCTAssertNil(normal.fixtureScanRoot)
+        XCTAssertNil(normal.fixtureCleanupRule)
+        XCTAssertNil(normal.fixtureWindowSize)
+
+        let malformed = CoreTendPreferences(environment: ["CORETEND_TEST_MODE": "1", "CORETEND_TEST_WINDOW_SIZE": "wide"],
+                                            defaults: UserDefaults(suiteName: "coretend.capture.malformed")!)
+        XCTAssertNil(malformed.fixtureWindowSize)
+    }
 }
