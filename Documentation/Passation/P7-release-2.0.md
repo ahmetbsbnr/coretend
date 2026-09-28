@@ -18,8 +18,8 @@ release, site, cask).
 
 | Lot | Intitulé | Statut |
 |---|---|---|
-| 7.1 | Marque : icône Icon Composer (Liquid Glass) + logotypes SVG | En cours |
-| 7.2 | Site 2.0 recréé (serre vivante, animations CSS, sans script) | À faire |
+| 7.1 | Marque : icône Icon Composer (Liquid Glass) + logotypes SVG | Livré (`a23fcd99`) |
+| 7.2 | Site 2.0 recréé (serre vivante, animations CSS, sans script) | Livré (`67bd00a3`) — captures 2.0 à refaire en 7.4 |
 | 7.3 | Dépôt : README, changelog, gouvernance, workflows, cask | À faire |
 | 7.4 | Build 2.0.0 signé, notarisé, DMG, SHA256SUMS | À faire |
 | 7.5 | Publication (PR, tag, release, site, cask) — sur accord | À faire |
@@ -36,7 +36,8 @@ release, site, cask).
 
 ## Point d'arrêt
 
-- 7.1 livré ; suite 7.2 (site).
+- 7.1, 7.2 livrés. Suite **7.3 dépôt** : README 2.0, CHANGELOG, workflows (réconcilier ceux de `main`), cask 2.0.0, gouvernance.
+- 7.4 : `make package-release`, signature, notarisation (Organizer), DMG, SHA256SUMS, nouvelles captures du site, `Website/release.json` rempli.
 
 ## Problèmes ouverts
 
