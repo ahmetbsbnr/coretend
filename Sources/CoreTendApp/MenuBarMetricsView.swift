@@ -13,18 +13,17 @@ struct MenuBarMetricsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(copy("menubar.metrics.title")).font(CoreTendTypography.sectionTitle)
+            Text(copy("menubar.metrics.title")).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
             Text(copy("menubar.metrics.help"))
                 .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
             if let snapshot {
                 metric(copy("metrics.loadAverage"), load(snapshot.loadAverage1m), source: copy("metrics.source.load"))
-                metric(copy("metrics.memory"), ByteCountFormatter.string(fromByteCount: snapshot.physicalMemoryBytes, countStyle: .memory), source: copy("metrics.source.memory"))
+                metric(copy("metrics.memory"), ProductFormat.memory(snapshot.physicalMemoryBytes, french: french), source: copy("metrics.source.memory"))
                 metric(copy("metrics.freeSpace"), bytes(snapshot.availableBytes), source: copy("metrics.source.volume"))
                 Text(copy("menubar.metrics.updated") + " " + timestamp(snapshot.measuredAt))
                     .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
             } else {
                 HStack(spacing: 8) {
-                    ProgressView()
                     Text(copy("metrics.refresh"))
                         .font(CoreTendTypography.secondary)
                         .foregroundStyle(Palette.secondaryInk.color)
@@ -32,7 +31,7 @@ struct MenuBarMetricsView: View {
                 .accessibilityElement(children: .combine)
             }
             Palette.separator.color.frame(height: 1)
-            Text(copy("menubar.activity.title")).font(CoreTendTypography.sectionTitle)
+            Text(copy("menubar.activity.title")).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
             if activityUnavailable {
                 Label(copy("menubar.activity.unavailable"), systemImage: "exclamationmark.circle")
                     .font(CoreTendTypography.secondary)
@@ -61,9 +60,9 @@ struct MenuBarMetricsView: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(title).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
                 Spacer(minLength: 8)
-                Text(value).font(CoreTendTypography.measurement)
+                Text(value).font(CoreTendTypography.figure).foregroundStyle(Palette.ink.color)
             }
-            Text(source).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+            Text(source).font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(title): \(value). \(source)")
@@ -84,14 +83,14 @@ struct MenuBarMetricsView: View {
 
     private func bytes(_ value: ProductMeasurement<Int64>) -> String {
         switch value {
-        case .known(let amount): ByteCountFormatter.string(fromByteCount: amount, countStyle: .file)
+        case .known(let amount): ProductFormat.bytes(amount, french: french)
         case .unknown: copy("metrics.unknown")
         }
     }
 
     private func load(_ value: ProductMeasurement<Double>) -> String {
         switch value {
-        case .known(let amount): amount.formatted(.number.precision(.fractionLength(2)))
+        case .known(let amount): amount.formatted(.number.precision(.fractionLength(2)).locale(Locale(identifier: french ? "fr_FR" : "en_US")))
         case .unknown: copy("metrics.unknown")
         }
     }

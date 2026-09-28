@@ -41,7 +41,7 @@ struct CoreTendApp: App {
             CoreTendMenuBar(navigation: navigation)
                 .preferredColorScheme(effectiveColorScheme)
         } label: {
-            Image(systemName: "externaldrive")
+            Image(nsImage: MenuBarGlyph.image)
                 .accessibilityLabel("CoreTend")
         }
         .menuBarExtraStyle(.window)
@@ -212,27 +212,45 @@ private struct CoreTendMenuBar: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                SerreLogo(size: 26, germinates: false)
+                Text("CoreTend").font(.custom("IowanOldStyle-Bold", size: 18, relativeTo: .title3)).foregroundStyle(Palette.ink.color)
+            }
             MenuBarMetricsView(french: french)
-            Divider()
+            Palette.separator.color.frame(height: 1)
             Text(ProductCopy.value(for: "menubar.open", french: french))
-                .font(CoreTendTypography.sectionTitle)
-            ForEach(Destination.allCases) { destination in
-                Button(ProductCopy.value(for: destination.titleKey, french: french)) {
-                    navigation.selection = destination
-                    navigation.activeSheet = nil
-                    openWindow(id: "coretend.main")
+                .font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
+            VStack(spacing: 2) {
+                ForEach(Destination.sidebarOrder) { destination in
+                    Button {
+                        navigation.selection = destination
+                        navigation.activeSheet = nil
+                        openWindow(id: "coretend.main")
+                    } label: {
+                        Label { Text(ProductCopy.value(for: destination.titleKey, french: french)) } icon: {
+                            SerreIcon(destination.glyph, size: 15).foregroundStyle(Palette.accent.color)
+                        }
+                        .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    }
+                    .buttonStyle(.serre(.row(selected: false)))
                 }
             }
-            Divider()
-            Button(ProductCopy.value(for: "settings.title", french: french)) {
+            Palette.separator.color.frame(height: 1)
+            Button {
                 navigation.activeSheet = .settings
                 openWindow(id: "coretend.main")
+            } label: {
+                Label { Text(ProductCopy.value(for: "settings.title", french: french)) } icon: { SerreIcon(.settings, size: 15) }
+                    .font(CoreTendTypography.body).foregroundStyle(Palette.secondaryInk.color)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .buttonStyle(.serre(.row(selected: false)))
         }
         .padding(16)
         .frame(width: 360, alignment: .leading)
         .tint(Palette.accent.color)
-        .background(Palette.surface.color)
+        .background(Palette.canvas.color)
     }
 }
 
@@ -320,5 +338,27 @@ private struct DestinationView: View {
         case .integrity: IntegrityView(french: french)
         case .performance: EmptyView()
         }
+    }
+}
+
+/// The menu bar icon: the Serre sprout, drawn once as a template image so macOS tints it like any
+/// other menu bar item.
+@MainActor
+enum MenuBarGlyph {
+    static let image: NSImage = {
+        let renderer = ImageRenderer(content: MenuBarSprout())
+        renderer.scale = 2
+        let image = renderer.nsImage ?? NSImage(systemSymbolName: "leaf", accessibilityDescription: "CoreTend") ?? NSImage()
+        image.isTemplate = true
+        return image
+    }()
+}
+
+private struct MenuBarSprout: View {
+    var body: some View {
+        SerreGlyphShape(glyph: .overview)
+            .stroke(Palette.ink.color, style: StrokeStyle(lineWidth: 1.6, lineCap: .round, lineJoin: .round))
+            .frame(width: 16, height: 16)
+            .padding(1)
     }
 }
