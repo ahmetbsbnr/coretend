@@ -33,9 +33,8 @@ Base de la clôture P4 : branche locale `next`, HEAD de code `ac27e45b`
 ensuite ; à sa fin, le dépôt est propre et aucun push n’a été effectué.
 Le résultat CI demandé au démarrage est maintenant connu : `qualify` SUCCESS sur
 `1f62627e0c0733d285258466559dc7c7344eb0d8` (run fini à 09:16:57 UTC). Ce SHA précède les
-six commits locaux : la CI ne les couvre pas. Une qualification locale complète a été lancée
-pendant la clôture documentaire ; consulter le journal P4 et le log local avant de la déclarer
-PASS. Les commits locaux sont déjà enregistrés ; ne pas pousser sans autorisation.
+six commits locaux : la CI ne les couvre pas. La qualification locale complète a ensuite fini avec code 0 sur HEAD de code `ac27e45b`
+(log `/tmp/coretend-p4-passation-qualify.log`). Le commit suivant ne change que la documentation. Les commits locaux sont déjà enregistrés ; ne pas pousser sans autorisation.
 
 ## Lancer l’app en fixture isolée
 

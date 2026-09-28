@@ -113,8 +113,8 @@
 ## Point d’arrêt
 
 - Dernier commit P4 de code et preuve : `ac27e45b432b72df30bdc6c487df8e8b337093cd`.
-  Six commits P4 locaux depuis la pointe distante observée ; le commit documentaire de clôture
-  suit ce bilan. Aucun push. CI `qualify` de
+  Six commits P4 locaux depuis la pointe distante observée, puis deux commits de clôture
+  documentaire. Qualification locale code 0 sur `ac27e45b`. Aucun push. CI `qualify` de
   `1f62627e0c0733d285258466559dc7c7344eb0d8` SUCCESS (GitHub, terminé 09:16:57 UTC) ;
   cette exécution CI ne couvre pas les commits locaux. Requalification locale complète
   en cours pour cette reprise documentaire.

@@ -16,7 +16,9 @@ point où le précédent s’est arrêté, même si la session a été coupée a
 `Documentation/Passation/P4-qualification.md` peut terminer les lots réalisables tout en
 laissant G4 explicitement ouverte. Il distingue les contrôles exécutés des observations
 humaines, copies ou hôtes manquants. `passation.md` renvoie vers ce tableau des réserves :
-« livré » ne signifie ni « accepté » ni gate passée.
+« livré » ne signifie ni « accepté » ni gate passée. À chaque fin de session, confirmer
+que les commandes en cours ont réellement terminé, noter leur code de sortie et supprimer
+les formulations « en cours » si elles ont fini.
 
 Il n’existe pas d’autre passation, TODO ou roadmap. Une ancienne passation va dans
 `Documentation/Archive/`.
