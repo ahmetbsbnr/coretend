@@ -22,7 +22,7 @@ release, site, cask).
 | 7.2 | Site 2.0 recréé (serre vivante, animations CSS, sans script) | Livré (`67bd00a3`) — captures 2.0 à refaire en 7.4 |
 | 7.3 | Dépôt : README, changelog, gouvernance, workflows, cask | Livré (`dbad205a`) — workflows de release 1.x non repris (publication locale via Organizer) |
 | 7.4 | Build 2.0.0 signé, notarisé, ZIP + DMG, SHA256SUMS, captures du site | Livré — DMG signé mais non notarisé (voir journal) |
-| 7.5 | Publication (fusion, tag, release, site, cask) — sur accord | Fusion, tag, release, site faits ; cask à décider |
+| 7.5 | Publication (fusion, tag, release, site, cask) — sur accord | Livré le 28-09-2026 (fusion, tag, release, site, tap Homebrew) |
 
 ## Journal
 
@@ -74,11 +74,22 @@ release, site, cask).
 - La commande `brew install --cask coretend` n'est plus annoncée : aucun cask officiel
   (API Homebrew : 404) ni tap n'existe. La 1.x l'annonçait déjà à tort.
 
+- **Homebrew** (accord : « validé, continue ») : le cask officiel est hors de portée (1 étoile,
+  critères de notoriété). Tap public créé : https://github.com/ahmetbsbnr/homebrew-coretend
+  (`Casks/coretend.rb`). `brew style` et `brew audit --cask --online --strict` : 0 ; retapé
+  depuis GitHub, `brew fetch` : ZIP téléchargé, SHA-256 vérifié. Remarques corrigées : desc sans
+  « Mac », ordre des stanzas, `depends_on macos: :sonoma`, `verified:` obsolète retiré. Pas
+  d'installation d'essai : elle remplacerait l'app du mainteneur (même identifiant).
+  Commande réannoncée : `brew install --cask ahmetbsbnr/coretend/coretend` (README, site).
+
 ## Point d'arrêt
 
-- CoreTend 2.0.0 est publiée. Reste l'étape 4, **Homebrew**, sur décision du mainteneur :
-  tap personnel `ahmetbsbnr/homebrew-coretend` (immédiat) ou PR vers `Homebrew/homebrew-cask`
-  (critères de notoriété). Ensuite, réannoncer la commande dans le README et sur le site.
+- **P7 terminée : CoreTend 2.0.0 est publiée** (release GitHub, site, tap Homebrew).
+- À chaque nouvelle version : `make package-release`, signature par empreinte, archive manuelle,
+  `xcodebuild -exportArchive` (upload) puis `-exportNotarizedApp`, ZIP + `SHA256SUMS`, tag et
+  release, `Website/release.json`, `homebrew/coretend.rb` recopié dans le tap.
+- Réserves toujours ouvertes : macOS 14 et VoiceOver non testés sur un vrai Mac ; DMG non
+  notarisé (demande `notarytool`).
 
 ## Problèmes ouverts
 
