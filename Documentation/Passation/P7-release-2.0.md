@@ -88,8 +88,10 @@ release, site, cask).
 - À chaque nouvelle version : `make package-release`, signature par empreinte, archive manuelle,
   `xcodebuild -exportArchive` (upload) puis `-exportNotarizedApp`, ZIP + `SHA256SUMS`, tag et
   release, `Website/release.json`, `homebrew/coretend.rb` recopié dans le tap.
-- Réserves toujours ouvertes : macOS 14 et VoiceOver non testés sur un vrai Mac ; DMG non
-  notarisé (demande `notarytool`).
+- 28-09-2026 : tests visuels validés par le mainteneur (« tout les test visuel sont validé »).
+- Suite : `Documentation/Project/Roadmap-2.x.md` — Q0 DMG notarisé (clé API App Store Connect
+  à créer par le mainteneur ; `Scripts/make_release_dmg.sh --notary-profile` prêt), puis 2.0.1,
+  2.1. Réserves ouvertes : macOS 14 et VoiceOver non testés sur un vrai Mac.
 
 ## Problèmes ouverts
 
