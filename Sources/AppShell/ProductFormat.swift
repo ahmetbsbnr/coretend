@@ -18,6 +18,11 @@ public enum ProductFormat {
     /// The French plural mark of a past participle agreeing with `value` ("déplacé" + "s").
     public static func frenchPlural(_ value: Int) -> String { value > 1 ? "s" : "" }
 
+    /// A memory capacity in the app's language ("16 Go" / "16 GB").
+    public static func memory(_ bytes: Int64, french: Bool) -> String {
+        bytes.formatted(.byteCount(style: .memory).locale(Locale(identifier: french ? "fr_FR" : "en_US")))
+    }
+
     /// The unit written under a count of files read ("fichiers examinés").
     public static func filesExamined(_ value: Int, french: Bool) -> String {
         if french { return value == 1 ? "fichier examiné" : "fichiers examinés" }

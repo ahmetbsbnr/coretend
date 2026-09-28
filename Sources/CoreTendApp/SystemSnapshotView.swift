@@ -28,11 +28,18 @@ struct SystemSnapshotView: View {
                     .font(CoreTendTypography.sectionTitle)
                     .foregroundStyle(Palette.ink.color)
                 Spacer()
+                if destination == .performance, let snapshot {
+                    Text("\(copy("metrics.measured")) \(timestamp(snapshot.measuredAt))")
+                        .font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
+                }
                 Button { refresh() } label: { Label(copy("metrics.refresh"), systemImage: "arrow.clockwise") }
+                    .buttonStyle(.serre(.secondary))
                     .disabled(loading || clearingHistory)
             }
             .serreRise(1)
-            if loading || clearingHistory { ProgressView(copy("metrics.refresh")).tint(Palette.accent.color) }
+            if (loading || clearingHistory) && snapshot == nil {
+                Text(copy("metrics.refresh")).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+            }
             if let snapshot {
                 if destination == .overview {
                     storage(snapshot).serreRise(2)
@@ -164,118 +171,158 @@ struct SystemSnapshotView: View {
         date.formatted(.dateTime.day().month().hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US")))
     }
 
+    /// The measurements of now, one parcel each, figures in Iowan.
     private func performance(_ value: SystemSnapshot) -> some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 230), spacing: 16)], alignment: .leading, spacing: 16) {
-            metric(copy("metrics.loadAverage"), load(value.loadAverage1m), source: copy("metrics.source.load"), at: value.measuredAt)
-            metric(copy("metrics.processors"), "\(value.activeProcessorCount)", source: copy("metrics.source.processors"), at: value.measuredAt)
-            metric(copy("metrics.memory"), ByteCountFormatter.string(fromByteCount: value.physicalMemoryBytes, countStyle: .memory), source: copy("metrics.source.memory"), at: value.measuredAt)
-            metric(copy("metrics.uptime"), uptime(value.uptimeSeconds), source: copy("metrics.source.uptime"), at: value.measuredAt)
-            metric(copy("metrics.thermal"), thermal(value.thermalState), source: copy("metrics.source.thermal"), at: value.measuredAt)
-            metric(copy("metrics.freeSpace"), format(value.availableBytes), source: copy("metrics.source.volume"), at: value.measuredAt)
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 14)], alignment: .leading, spacing: 14) {
+            metric(copy("metrics.loadAverage"), load(value.loadAverage1m), source: copy("metrics.source.load"), at: value.measuredAt, order: 2)
+            metric(copy("metrics.processors"), "\(value.activeProcessorCount)", source: copy("metrics.source.processors"), at: value.measuredAt, order: 3)
+            metric(copy("metrics.memory"), ProductFormat.memory(value.physicalMemoryBytes, french: french), source: copy("metrics.source.memory"), at: value.measuredAt, order: 4)
+            metric(copy("metrics.uptime"), uptime(value.uptimeSeconds), source: copy("metrics.source.uptime"), at: value.measuredAt, order: 5)
+            metric(copy("metrics.thermal"), thermal(value.thermalState), source: copy("metrics.source.thermal"), at: value.measuredAt, order: 6,
+                   tone: thermalTone(value.thermalState))
+            metric(copy("metrics.freeSpace"), format(value.availableBytes), source: copy("metrics.source.volume"), at: value.measuredAt, order: 7)
         }
-        .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 16))
     }
 
+    /// The sap: the 1-minute load, reading by reading. The curve is traced from left to right when
+    /// it appears, and the newest reading pulses once; nothing moves at rest.
     private var performanceHistory: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(copy("metrics.history")).font(CoreTendTypography.sectionTitle)
-                .foregroundStyle(Palette.ink.color)
-            Text(copy("metrics.historyHelp"))
-                .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-            Button(copy("metrics.clear"), role: .destructive) { confirmClearHistory = true }
-                .disabled(history.isEmpty || loading || clearingHistory)
-            if let historyNotice {
-                Text(historyNotice).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-            }
-            if historyError {
-                Label(copy("metrics.historyError"), systemImage: "exclamationmark.triangle")
-                    .foregroundStyle(Palette.caution.color)
-            }
-            let known = history.filter { $0.loadAverage1m != nil }
-            if known.isEmpty {
-                Text(copy("metrics.historyEmpty"))
-                    .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-            } else {
-                if let latest = known.last, let load = latest.loadAverage1m {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(load.formatted(.number.precision(.fractionLength(2))))
-                            .font(CoreTendTypography.measurement)
-                        measurementSource(copy("metrics.source.load"), at: latest.measuredAt)
-                    }
-                    .accessibilityElement(children: .ignore)
-                    .accessibilityLabel("\(copy("metrics.loadAverage")): \(load.formatted(.number.precision(.fractionLength(2)))), \(latest.measuredAt.formatted(.dateTime.day().month().hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US"))))")
+        SerreParcel {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(copy("metrics.sap")).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
+                        .accessibilityAddTraits(.isHeader)
+                    Spacer()
+                    Button(copy("metrics.clear")) { confirmClearHistory = true }
+                        .buttonStyle(.serre(.icon))
+                        .disabled(history.isEmpty || loading || clearingHistory)
                 }
-                Chart(known) { sample in
-                    if let load = sample.loadAverage1m {
-                        PointMark(x: .value("Time", sample.measuredAt), y: .value(copy("metrics.loadAverage"), load))
-                            .symbolSize(44)
-                            .foregroundStyle(Palette.accent.color)
-                    }
+                Text(copy("metrics.historyHelp"))
+                    .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                    .fixedSize(horizontal: false, vertical: true)
+                if let historyNotice {
+                    SerreBanner(.note, title: historyNotice)
+                }
+                if historyError {
+                    SerreBanner(.error, title: copy("metrics.historyError"))
+                }
+                let known = history.filter { $0.loadAverage1m != nil }
+                if known.isEmpty {
+                    SerreEmptyState(title: copy("metrics.historyEmpty"), message: copy("metrics.source.load"))
+                } else {
+                    sapChart(known)
                     if let selectedHistoryDate,
-                       let selected = PerformanceHistorySelection.nearestKnownSample(to: selectedHistoryDate, in: known) {
-                        RuleMark(x: .value("Time", selected.measuredAt))
-                            .foregroundStyle(.secondary.opacity(0.7))
-                            .annotation(position: .top, alignment: .leading) {
-                                if let load = selected.loadAverage1m {
-                                    Text(load.formatted(.number.precision(.fractionLength(2))))
-                                        .font(CoreTendTypography.secondary.monospacedDigit().weight(.semibold))
-                                        .padding(.horizontal, 8).padding(.vertical, 5)
-                                        .background(.regularMaterial, in: Capsule())
-                                }
+                       let selected = PerformanceHistorySelection.nearestKnownSample(to: selectedHistoryDate, in: known),
+                       let load = selected.loadAverage1m {
+                        Text("\(copy("metrics.loadAverage")) : \(load.formatted(.number.precision(.fractionLength(2)).locale(Locale(identifier: french ? "fr_FR" : "en_US")))) · \(timestamp(selected.measuredAt))")
+                            .font(CoreTendTypography.secondary.monospacedDigit()).foregroundStyle(Palette.ink.color)
+                            .accessibilityAddTraits(.updatesFrequently)
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(copy("metrics.latest")).font(CoreTendTypography.caption.weight(.semibold)).foregroundStyle(Palette.secondaryInk.color)
+                        ForEach(known.suffix(5).reversed()) { sample in
+                            if let load = sample.loadAverage1m {
+                                Text("\(timestamp(sample.measuredAt)) · \(load.formatted(.number.precision(.fractionLength(2)).locale(Locale(identifier: french ? "fr_FR" : "en_US"))))")
+                                    .font(CoreTendTypography.caption.monospacedDigit()).foregroundStyle(Palette.secondaryInk.color)
                             }
-                    }
-                }
-                .chartXSelection(value: $selectedHistoryDate)
-                .chartYAxisLabel(copy("metrics.loadAverage"))
-                .chartXAxis {
-                    AxisMarks(values: .automatic(desiredCount: 4)) { value in
-                        AxisGridLine().foregroundStyle(.quaternary)
-                        AxisTick()
-                        AxisValueLabel(format: .dateTime.day().month().hour())
-                    }
-                }
-                .chartYAxis {
-                    AxisMarks(position: .leading) { _ in
-                        AxisGridLine().foregroundStyle(.quaternary)
-                        AxisTick()
-                        AxisValueLabel()
-                    }
-                }
-                .chartPlotStyle { plot in
-                    plot.background(.quaternary.opacity(0.18), in: RoundedRectangle(cornerRadius: 8))
-                }
-                .frame(height: 170)
-                .accessibilityLabel(copy("metrics.history"))
-                if let selectedHistoryDate,
-                   let selected = PerformanceHistorySelection.nearestKnownSample(to: selectedHistoryDate, in: known),
-                   let load = selected.loadAverage1m {
-                    Text("\(copy("metrics.loadAverage")): \(load.formatted(.number.precision(.fractionLength(2)))) · \(selected.measuredAt.formatted(.dateTime.day().month().hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US"))))")
-                        .font(CoreTendTypography.secondary.monospacedDigit())
-                        .accessibilityAddTraits(.updatesFrequently)
-                }
-                ForEach(known.suffix(5)) { sample in
-                    if let load = sample.loadAverage1m {
-                        Text("\(sample.measuredAt.formatted(.dateTime.day().month().hour().minute())) · \(load.formatted(.number.precision(.fractionLength(2))))")
-                            .font(CoreTendTypography.secondary.monospacedDigit())
+                        }
                     }
                 }
             }
         }
+        .serreRise(8)
     }
 
-    private func metric(_ title: String, _ value: String, source: String, at date: Date) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title).font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
-            Text(value).font(CoreTendTypography.measurement).foregroundStyle(Palette.ink.color)
-            measurementSource(source, at: date)
+    private func sapChart(_ known: [PerformanceSample]) -> some View {
+        let latest = known.last
+        return Chart(known) { sample in
+            if let load = sample.loadAverage1m {
+                AreaMark(x: .value("Time", sample.measuredAt), y: .value(copy("metrics.loadAverage"), load))
+                    .interpolationMethod(.catmullRom)
+                    .foregroundStyle(LinearGradient(colors: [Palette.accent.color.opacity(0.28), Palette.accent.color.opacity(0.02)],
+                                                    startPoint: .top, endPoint: .bottom))
+                LineMark(x: .value("Time", sample.measuredAt), y: .value(copy("metrics.loadAverage"), load))
+                    .interpolationMethod(.catmullRom)
+                    .lineStyle(StrokeStyle(lineWidth: 2, lineCap: .round))
+                    .foregroundStyle(Palette.accent.color)
+                PointMark(x: .value("Time", sample.measuredAt), y: .value(copy("metrics.loadAverage"), load))
+                    .symbolSize(sample.id == latest?.id ? 60 : 18)
+                    .foregroundStyle(Palette.accent.color)
+            }
+            if let selectedHistoryDate,
+               let selected = PerformanceHistorySelection.nearestKnownSample(to: selectedHistoryDate, in: known) {
+                RuleMark(x: .value("Time", selected.measuredAt))
+                    .foregroundStyle(Palette.strongSeparator.color)
+            }
         }
+        .chartXSelection(value: $selectedHistoryDate)
+        .chartXAxis {
+            AxisMarks(values: .automatic(desiredCount: 4)) { _ in
+                AxisGridLine().foregroundStyle(Palette.separator.color)
+                AxisValueLabel(format: .dateTime.day().month().hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US")))
+                    .foregroundStyle(Palette.secondaryInk.color)
+            }
+        }
+        .chartYAxis {
+            AxisMarks(position: .leading) { _ in
+                AxisGridLine().foregroundStyle(Palette.separator.color)
+                AxisValueLabel().foregroundStyle(Palette.secondaryInk.color)
+            }
+        }
+        .chartOverlay { proxy in
+            // The newest reading pulses once; a new reading brings a new pulse.
+            if let latest, let load = latest.loadAverage1m,
+               let point = proxy.position(for: (x: latest.measuredAt, y: load)) {
+                OncePulse()
+                    .position(point)
+                    .id(latest.id)
+            }
+        }
+        .padding(.vertical, 8)
+        .traceReveal()
+        .frame(height: 200)
+        .accessibilityLabel(copy("metrics.history"))
+    }
+
+    private func metric(_ title: String, _ value: String, source: String, at date: Date, order: Int,
+                        tone: SerreSignalTone? = nil) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                if let tone { toneLeaf(tone) }
+                Text(title).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+            }
+            Text(value).font(CoreTendTypography.figure).foregroundStyle(Palette.ink.color)
+                .contentTransition(.numericText())
+                .lineLimit(1).minimumScaleFactor(0.7)
+            Text(source).font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(Palette.raisedSurface.color, in: RoundedRectangle(cornerRadius: 10))
+        .background(Palette.surface.color, in: LeafCorner.parcel.shape)
+        .overlay(LeafCorner.parcel.shape.strokeBorder(Palette.separator.color, lineWidth: 1))
+        .serreRise(order)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(title): \(value). \(source). \(copy("metrics.measured")) \(timestamp(date))")
+    }
+
+    @ViewBuilder private func toneLeaf(_ tone: SerreSignalTone) -> some View {
+        switch tone {
+        case .good: RiskLeaf(.low, size: 11)
+        case .caution: RiskLeaf(.medium, size: 11)
+        case .bad: RiskLeaf(.high, size: 11)
+        case .neutral: RiskLeafShape(level: .low).stroke(Palette.secondaryInk.color, lineWidth: 1.2).frame(width: 11, height: 11)
+        }
+    }
+
+    private func thermalTone(_ state: Domain.ThermalState) -> SerreSignalTone {
+        switch state {
+        case .nominal: .good
+        case .fair: .neutral
+        case .serious: .caution
+        case .critical: .bad
+        case .unknown: .neutral
+        }
     }
 
     private func format(_ value: ProductMeasurement<Int64>) -> String {
@@ -294,7 +341,7 @@ struct SystemSnapshotView: View {
 
     private func load(_ value: ProductMeasurement<Double>) -> String {
         switch value {
-        case .known(let number): number.formatted(.number.precision(.fractionLength(2)))
+        case .known(let number): number.formatted(.number.precision(.fractionLength(2)).locale(Locale(identifier: french ? "fr_FR" : "en_US")))
         case .unknown: copy("metrics.unknown")
         }
     }
