@@ -52,6 +52,8 @@ struct ExploreScanView: View {
     @State private var flight = LeafFlight()
     /// The plot the reader pointed at on the map; its row is brought into view and outlined.
     @State private var focusedPath: String?
+    /// The folder the map shows, from the chosen folder down; nil means the chosen folder.
+    @State private var mapFolder: URL?
     /// Changes once per finished scan, so the plots appear (largest first) once per scan.
     @State private var mapSeed = UUID()
     @State private var scrollTarget: String?
@@ -80,13 +82,17 @@ struct ExploreScanView: View {
         }
     }
 
-    private var treemapInputs: [TreemapInput] {
-        visibleResults.compactMap { result in
-            guard case .known(let bytes) = result.allocatedBytes, bytes > 0 else { return nil }
-            let identity = result.allocationIdentity.map { "\($0.device):\($0.inode)" }
-            return TreemapInput(id: result.url.path, bytes: bytes, allocationIdentity: identity)
-        }
+    /// The plots of the folder the map shows: files there, and each subfolder as one plot.
+    private var folderPlots: [FolderPlots.Plot] {
+        guard let base = (mapFolder ?? selectedRoot)?.standardizedFileURL.path else { return [] }
+        return FolderPlots.plots(files: visibleResults.map { ($0.url.standardizedFileURL.path, allocated($0)) }, under: base)
     }
+
+    private var treemapInputs: [TreemapInput] {
+        folderPlots.filter { $0.bytes > 0 }.map { TreemapInput(id: $0.path, bytes: $0.bytes, allocationIdentity: nil) }
+    }
+
+    private func isFolderPlot(_ path: String) -> Bool { folderPlots.first { $0.path == path }?.isFolder ?? false }
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -271,6 +277,7 @@ struct ExploreScanView: View {
     /// once per scan; pointing at one names it, choosing one brings its row into view.
     private var map: some View {
         VStack(alignment: .leading, spacing: 8) {
+            breadcrumb
             HStack(alignment: .firstTextBaseline) {
                 Text(copy("explore.map")).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
                 Spacer()
@@ -297,6 +304,38 @@ struct ExploreScanView: View {
         }
     }
 
+    /// Where the map stands, from the chosen folder down; each step takes you back up.
+    private var breadcrumb: some View {
+        let root = selectedRoot?.standardizedFileURL
+        let current = (mapFolder ?? root)?.standardizedFileURL
+        var steps: [URL] = []
+        if let root, let current {
+            var cursor = current
+            while cursor.path.count >= root.path.count {
+                steps.insert(cursor, at: 0)
+                if cursor.path == root.path { break }
+                cursor = cursor.deletingLastPathComponent()
+            }
+        }
+        return HStack(spacing: 4) {
+            ForEach(Array(steps.enumerated()), id: \.element.path) { index, step in
+                if index > 0 { Image(systemName: "chevron.right").font(.caption2).foregroundStyle(Palette.tertiaryInk.color) }
+                Button(step.lastPathComponent) { enter(step.path == root?.path ? nil : step) }
+                    .buttonStyle(.serre(.icon))
+                    .disabled(index == steps.count - 1)
+            }
+            Spacer()
+        }
+    }
+
+    private func enter(_ folder: URL?) {
+        withAnimation(reduceMotion ? nil : MotionCurve.sap.animation(duration: MotionToken.grow.duration)) {
+            mapFolder = folder
+            focusedPath = nil
+            mapSeed = UUID()
+        }
+    }
+
     private var hoveredLabel: String? {
         guard let hoveredTile, let input = treemapInputs.first(where: { $0.id == hoveredTile }) else { return nil }
         return "\(URL(fileURLWithPath: hoveredTile).lastPathComponent) · \(ProductFormat.bytes(input.bytes, french: french))"
@@ -310,9 +349,12 @@ struct ExploreScanView: View {
         let focused = focusedPath == tile.id
         // Larger plots are greener; the eye reads the biggest first.
         let strength = max(0.18, 0.62 - Double(min(rank, 12)) * 0.035)
+        let folder = isFolderPlot(tile.id)
         return Button {
-            focusedPath = tile.id
-            scrollTarget = "explore.list"
+            if folder { enter(URL(fileURLWithPath: tile.id, isDirectory: true)) } else {
+                focusedPath = tile.id
+                scrollTarget = "explore.list"
+            }
         } label: {
             shape
                 .fill(Palette.accent.color.opacity(hovered || focused ? strength + 0.2 : strength))
@@ -320,7 +362,7 @@ struct ExploreScanView: View {
                 .overlay(alignment: .topLeading) {
                     if tile.frame.width > 90 && tile.frame.height > 38 {
                         VStack(alignment: .leading, spacing: 1) {
-                            Text(URL(fileURLWithPath: tile.id).lastPathComponent).font(CoreTendTypography.caption.weight(.semibold))
+                            Text((folder ? "▸ " : "") + URL(fileURLWithPath: tile.id).lastPathComponent).font(CoreTendTypography.caption.weight(.semibold))
                                 .lineLimit(1)
                             Text(ProductFormat.bytes(tile.bytes, french: french)).font(CoreTendTypography.caption)
                         }
@@ -334,7 +376,7 @@ struct ExploreScanView: View {
         // Hover and click stay inside the plot: `position` below would stretch them over the map.
         .onHover { inside in hoveredTile = inside ? tile.id : (hoveredTile == tile.id ? nil : hoveredTile) }
         .accessibilityLabel("\(URL(fileURLWithPath: tile.id).lastPathComponent), \(ProductFormat.bytes(tile.bytes, french: french))")
-        .accessibilityHint(french ? "Montre ce fichier dans la liste." : "Shows this file in the list.")
+        .accessibilityHint(folder ? (french ? "Entre dans ce dossier." : "Opens this folder.") : (french ? "Montre ce fichier dans la liste." : "Shows this file in the list."))
         .serreRise(rank)
         .position(x: tile.frame.midX, y: tile.frame.midY)
     }
@@ -480,6 +522,7 @@ struct ExploreScanView: View {
         scanTask?.cancel()
         previewURL = nil
         selectedRoot = root
+        mapFolder = nil
         let scanID = UUID()
         activeScanID = scanID
         let acquiredScope = root.startAccessingSecurityScopedResource()
