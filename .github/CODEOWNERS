@@ -1,0 +1,8 @@
+# Review by the maintainer is required before merge.
+* @ahmetbsbnr
+
+# Safety-critical paths: listed separately so the requirement stays visible.
+/Sources/SafetyCore/   @ahmetbsbnr
+/Sources/Domain/       @ahmetbsbnr
+/Sources/Persistence/  @ahmetbsbnr
+/Sources/ScanCore/     @ahmetbsbnr
