@@ -7,34 +7,27 @@ en fixture, invariants et particularités de l’hôte :
 
 ## Où on en est
 
-- **Mis à jour :** 28-09-2026, fin des lots 3.9 et 3.10 ; qualification finale PASS.
-- **Phase :** P3 — Destinations → [`P3-destinations.md`](Documentation/Passation/P3-destinations.md)
-- **Lot courant :** **3.10 livré, recette groupée P3 en attente avant G3**.
-- **Lots P3 :** 3.1, 3.4, 3.5, 3.6 acceptés ; 3.2 et 3.3 livrés sans recette explicite ;
-  3.7 à 3.10 livrés avec preuves agent et limites documentées, sans acceptation du mainteneur.
-- **Commits :** 3.9 `4e573a1d`, formats menu et observations supplémentaires `53dfac36` ;
-  site `b923f013`, poussé sur `origin/next`. CI `qualify` **PASS**, terminé à 09:44:37 UTC.
-  Arrêt avant G3 ; seul le checkpoint de documentation suit cette livraison.
-- **Registre :** Must `VÉRIFIÉ` **3 / 78** (Should 0 / 11), aucun statut promu durant cette session.
-- **Apparence :** destinations, Réglages et site en Serre. Pièces partagées :
-  `Sources/CoreTendApp/SerreActionKit.swift` et `DesignSystem`.
-- **Limite de 3.9 :** Réglages haut/milieu/bas et palette FR/EN clair/sombre relus, FR → EN → FR
-  observé ; panneau MenuBarExtra non obtenu par automatisation, icône pousse visible.
-- **Preuves :** `Documentation/Evidence/P3-39-2026-09-28.md` et `P3-310-2026-09-28.md`.
+- **Mis à jour :** 28-09-2026, recette groupée P3 acceptée (« validé, continue »).
+- **Phase :** P4 — Qualification → [`P4-qualification.md`](Documentation/Passation/P4-qualification.md).
+- **Lot courant :** **4.1 en cours, recette humaine d’accessibilité préparée**.
+- **G3 :** passée ; aucune observation détaillée supplémentaire reçue, aucun statut du registre promu.
+- **Livraison P3 :** `fa9132ed` poussé, CI `qualify` PASS le 28-09 à 09:49:42 UTC.
+- **Registre :** Must `VÉRIFIÉ` **3 / 78** (Should 0 / 11), NFR-07 PARTIEL.
+- **Qualification 4.1 :** `make qualify` PASS (code 0), `git diff --check` PASS.
+- **4.1 :** revue statique et protocole dans `Documentation/Evidence/Accessibility.md`.
+  Aucun réglage d’accessibilité de l’hôte modifié ; aucune mutation du vrai HOME/store/Trash.
 
 ## Prochaine action
 
-1. **Arrêt avant G3** : demander la recette groupée P3, avec recettes explicites de 3.2
-   (vrai déplacement vers la Corbeille sur dossier jetable, réalisé par le mainteneur) et 3.3.
-2. Ne pas commencer P4 avant acceptation de G3. Les lignes du registre restent inchangées
-   jusqu’aux observations du mainteneur.
+1. Recevoir les observations du mainteneur sur la matrice 4.1 dans la preuve accessibilité.
+2. Reproduire et corriger en fixture les défauts éventuels, puis qualifier et faire accepter 4.1.
+3. Après acceptation, 4.2 : préparer macOS 14 et un second Mac ; pas de gate G4 à ce stade.
 
 ## En attente du mainteneur
 
-- Recette groupée de P3 avant G3, dont les recettes explicites de **3.2 (Nettoyage, avec un vrai
-  passage par la Corbeille sur un dossier jetable)** et **3.3 (Explorer)**, et un regard sur 3.7,
-  3.8, 3.9, 3.10. Pour 3.9 : ouvrir le panneau de la barre des menus et ses destinations,
-  essayer import ancien et export diagnostic ; ces parcours natifs restent à observer.
+- Recette 4.1 : VoiceOver parlé, focus clavier, texte agrandi/zoom, contraste des états,
+  Reduce Motion et Reduce Transparency, FR/EN clair/sombre. Protocole et critères dans
+  `Documentation/Evidence/Accessibility.md`. Ne jamais confirmer un déplacement dans l’app packagée.
 - 2 faux fichiers de test (`Safari-2026-09-23-101500.ips`, `…-24-…`, octets aléatoires) sont dans
   sa Corbeille depuis l’incident du 28-09 ; à jeter par lui.
 - Optionnel : publier 1.0.3 depuis `fix/1.x-trash-sqlite` (P5, piste 1.x).
@@ -46,8 +39,8 @@ en fixture, invariants et particularités de l’hôte :
 | P0 Remise à plat | [`P0-remise-a-plat.md`](Documentation/Passation/P0-remise-a-plat.md) | Terminée (27-09) |
 | P1 Direction visuelle (G1) | [`P1-direction-visuelle.md`](Documentation/Passation/P1-direction-visuelle.md) | Terminée (27-09) |
 | P2 Fondations Serre (G2) | [`P2-fondations-interaction.md`](Documentation/Passation/P2-fondations-interaction.md) | Terminée (27-09) |
-| P3 Destinations (G3.x) | [`P3-destinations.md`](Documentation/Passation/P3-destinations.md) | En cours |
-| P4 Qualification (G4) | [`P4-qualification.md`](Documentation/Passation/P4-qualification.md) | À faire |
+| P3 Destinations (G3.x) | [`P3-destinations.md`](Documentation/Passation/P3-destinations.md) | Terminée — G3 acceptée (28-09) |
+| P4 Qualification (G4) | [`P4-qualification.md`](Documentation/Passation/P4-qualification.md) | En cours — 4.1 |
 | P5 Release 2.0 (G5) | [`P5-release.md`](Documentation/Passation/P5-release.md) | À faire |
 
 ## Références

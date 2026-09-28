@@ -386,3 +386,14 @@
 - `make qualify` final PASS, code 0 ; `git diff --check` PASS. CI GitHub `qualify` sur
   `b923f013` PASS, terminé à 09:44:37 UTC. Registre : Must 3/78, Should 0/11 VÉRIFIÉ,
   inchangé. Recette groupée P3 due avant G3 ; aucun démarrage P4.
+
+### G3 acceptée ; P4 lot 4.1 préparé — 28-09-2026
+
+- Mainteneur : « validé, continue » après la recette groupée P3 ; G3 passée, P4 autorisée.
+  Aucun détail d’observation supplémentaire, aucun statut de traceabilité promu.
+- Lot 4.1 : revue des composants d’accessibilité et calcul des contrastes RGB exécutés ;
+  protocole humain par surface dans `Documentation/Evidence/Accessibility.md`.
+  Focus individuel Rechercher/Réglages à observer ; aucun défaut runtime affirmé.
+- VoiceOver parlé, zoom/texte agrandi et Reduce Motion/Transparency système non lancés
+  par l’agent. NFR-07 PARTIEL ; lot 4.1 ouvert jusqu’à recette humaine, G4 non passée.
+- Vérification de préparation : `make qualify` PASS (code 0), `git diff --check` PASS.

@@ -2,7 +2,7 @@
 
 **Objectif :** chaque écran complet dans tous ses états, accepté par le mainteneur, avec ses lignes du registre passées à VÉRIFIÉ pour leur part native.
 **Gate :** G3.1 → G3.9 — une recette par lot jusqu’à 3.6 ; depuis le 28-09, décision du mainteneur : lots livrés à la suite, recette groupée avant G3.
-**Statut de la phase :** En cours depuis le 27-09-2026.
+**Statut de la phase :** Terminée — G3 acceptée le 28-09-2026.
 **Plan :** `Documentation/Project/Implementation-plan.md` § Programme 2.0.
 
 ## Lots
@@ -10,15 +10,15 @@
 | Lot | Intitulé | Statut |
 |---|---|---|
 | 3.1 | Vue d’ensemble + premier lancement | Accepté 27-09-2026 (`6f66447a`) |
-| 3.2 | Nettoyage (inclut un vrai passage par la Corbeille sur dossier jetable, fait par le mainteneur) | Livré — le mainteneur a dit « continue » sans recette explicite ; lignes du registre inchangées (`4fd7fd62`) |
-| 3.3 | Explorer | Livré — le mainteneur a dit « continue » sans recette explicite (`0e9fc484`) |
+| 3.2 | Nettoyage (inclut un vrai passage par la Corbeille sur dossier jetable, fait par le mainteneur) | Accepté en recette groupée 28-09-2026 — observations détaillées non fournies |
+| 3.3 | Explorer | Accepté en recette groupée 28-09-2026 — observations détaillées non fournies |
 | 3.4 | Doublons et images proches | Accepté 28-09-2026 (`7f4b9fd7`) |
 | 3.5 | Applications | Accepté 28-09-2026 (`bb66dc75`, `2663f55d`) |
 | 3.6 | Intégrité | Accepté 28-09-2026 (`5430106d`) |
-| 3.7 | Performances | Livré, vérifié par l’agent (`52d8fd16`) |
-| 3.8 | Historique | Livré, vérifié par l’agent (`05f7aa51`) |
-| 3.9 | Réglages, ⌘K, barre de menus, langue, import ancien | Livré — recette groupée en attente (limite menu natif) |
-| 3.10 | Site : pages publiques en Serre, captures réelles de l’app, contenu pour une sortie publique (correction G2) | Livré — recette groupée en attente |
+| 3.7 | Performances | Accepté en recette groupée 28-09-2026 — observations détaillées non fournies |
+| 3.8 | Historique | Accepté en recette groupée 28-09-2026 — observations détaillées non fournies |
+| 3.9 | Réglages, ⌘K, barre de menus, langue, import ancien | Accepté en recette groupée 28-09-2026 — observations détaillées non fournies |
+| 3.10 | Site : pages publiques en Serre, captures réelles de l’app, contenu pour une sortie publique (correction G2) | Accepté en recette groupée 28-09-2026 — observations détaillées non fournies |
 
 ## Journal
 
@@ -221,19 +221,21 @@
 - **Recette :** groupée P3 avant G3, dont Nettoyage/Corbeille réelle sur dossier jetable (mainteneur)
   et Explorer ; ne pas commencer P4 avant cette gate.
 
+### 28-09-2026 — recette groupée acceptée, G3 passée
+
+- **Décision mainteneur :** « validé, continue », après présentation de la livraison et
+  des limites de la recette groupée. P3 acceptée ; poursuite vers P4 autorisée.
+- **Portée de la preuve :** aucun détail supplémentaire d’observation fourni. Ne pas
+  déduire un déplacement réel vers la Corbeille, une ouverture du panneau MenuBarExtra
+  ou un import/export effectivement exercés. Aucun statut du registre promu.
+- **Livraison :** `fa9132ed`, poussée ; CI `qualify` PASS le 28-09 à 09:49:42 UTC.
+
 ## Point d’arrêt
 
-**Lots 3.9 et 3.10 livrés le 28-09-2026 ; recette groupée P3 due avant G3.**
+**P3 acceptée en recette groupée le 28-09-2026 ; G3 passée.**
 
-- **Fait :** 3.9 `4e573a1d`, complément formats/observations `53dfac36` ; site `b923f013`, poussé sur `origin/next`.
-- **Vérifié :** qualification finale PASS (code 0, `/tmp/coretend-qualify-p3-delivery.exit`) ;
-  captures réelles, site-check et contrôles Chrome PASS.
-- **CI :** `qualify` sur `b923f013` PASS, terminé le 28-09 à 09:44:37 UTC.
-- **Prochaine action agent :** arrêt pour la recette groupée ; ne pas commencer P4.
-  Push effectué, pas de gate G3 acceptée.
-- **Prochaine action mainteneur :** recette groupée, particulièrement 3.2 avec un vrai passage
-  par la Corbeille sur dossier jetable et 3.3 ; contenu/navigation du panneau MenuBarExtra,
-  import/export natifs. Aucun déplacement n’a été confirmé par l’agent.
+La reprise se fait dans `P4-qualification.md`, lot 4.1. Les limites d’observation
+ci-dessus restent documentées ; l’acceptation ne remplace pas les preuves manquantes.
 
 ## Problèmes ouverts
 
