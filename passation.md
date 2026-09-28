@@ -7,29 +7,27 @@ en fixture, invariants et particularités de l’hôte :
 
 ## Où on en est
 
-- **Mis à jour :** 28-09-2026, reprise du lot 3.9 après synchronisation ; CI `qualify` sur `1f62627e` PASS (terminé à 09:16:57 UTC).
+- **Mis à jour :** 28-09-2026, fin des lots 3.9 et 3.10 ; qualification finale PASS.
 - **Phase :** P3 — Destinations → [`P3-destinations.md`](Documentation/Passation/P3-destinations.md)
-- **Lot courant :** 3.9 livré, recette groupée en attente ; ouverture du panneau MenuBarExtra
-  non obtenue par automatisation (à observer par le mainteneur). 3.10 à commencer.
-- **Lots P3 :** 3.1, 3.4, 3.5, 3.6 acceptés ; 3.2, 3.3 livrés sans recette explicite ; 3.7, 3.8
-  livrés et vérifiés par l’agent (décision du mainteneur du 28-09 : finir P3 sans recette par
-  lot) ; 3.9 livré avec limite menu natif ; 3.10 à faire.
-- **Branche :** `next`, synchronisée avec `origin/next` à la reprise (`1f62627e`), arbre propre. Push **autorisé
-  par le mainteneur à la fin de 3.10** (« puis push next si nécessaire »).
-- **Registre :** Must `VÉRIFIÉ` **3 / 78** (Should 0 / 11) ; tout le reste `PARTIEL` avec preuves
-  datées. Aucune ligne ne passe `VÉRIFIÉ` sans observation du mainteneur.
-- **Apparence :** Serre complète sur toutes les destinations sauf Réglages (en cours) et le site
-  (3.10). Pièces partagées : `Sources/CoreTendApp/SerreActionKit.swift` (bandeaux, feuille vers
-  la Corbeille, indicateur Corbeille, exécution élément par élément).
+- **Lot courant :** **3.10 livré, recette groupée P3 en attente avant G3**.
+- **Lots P3 :** 3.1, 3.4, 3.5, 3.6 acceptés ; 3.2 et 3.3 livrés sans recette explicite ;
+  3.7 à 3.10 livrés avec preuves agent et limites documentées, sans acceptation du mainteneur.
+- **Commits :** 3.9 `4e573a1d`, formats menu et observations supplémentaires `53dfac36` ;
+  site prêt au commit. Push `next` autorisé, résultat CI à consigner après push.
+- **Registre :** Must `VÉRIFIÉ` **3 / 78** (Should 0 / 11), aucun statut promu durant cette session.
+- **Apparence :** destinations, Réglages et site en Serre. Pièces partagées :
+  `Sources/CoreTendApp/SerreActionKit.swift` et `DesignSystem`.
+- **Limite de 3.9 :** Réglages haut/milieu/bas et palette FR/EN clair/sombre relus, FR → EN → FR
+  observé ; panneau MenuBarExtra non obtenu par automatisation, icône pousse visible.
+- **Preuves :** `Documentation/Evidence/P3-39-2026-09-28.md` et `P3-310-2026-09-28.md`.
 
 ## Prochaine action
 
-1. Protocole de démarrage (`Documentation/Passation/README.md` › Démarrer) ; vérifier
-   `git status` propre sur `next`.
-3. **3.10 — Site** : pages publiques en Serre (`Scripts/build_site.py`, `Website/site.css`),
-   captures réelles de l’app (`make capture-screens`), `make build-site site-check`.
-4. `make qualify`, puis **`git push origin next`** (autorisé), puis vérifier le check CI `qualify`.
-5. Ensuite gate **G3** : recette groupée de P3 par le mainteneur (voir « En attente »).
+1. Commit site, `git push origin next` (autorisé), vérifier le check CI `qualify` et consigner le résultat.
+2. **Arrêt avant G3** : demander la recette groupée P3, avec recettes explicites de 3.2
+   (vrai déplacement vers la Corbeille sur dossier jetable, réalisé par le mainteneur) et 3.3.
+3. Ne pas commencer P4 avant acceptation de G3. Les lignes du registre restent inchangées
+   jusqu’aux observations du mainteneur.
 
 ## En attente du mainteneur
 

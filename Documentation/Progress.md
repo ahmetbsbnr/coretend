@@ -368,4 +368,14 @@
   exclusions et événements diagnostic corrigés, nombres `ProductFormat`. Preuves et limites :
   `Documentation/Evidence/P3-39-2026-09-28.md`.
 - Le panneau MenuBarExtra n’a pas été obtenu par automatisation ; navigation du menu, import/export
-  natifs et changement de langue en interaction restent à la recette groupée. Aucun statut promu.
+  natifs restent à la recette groupée ; changement FR → EN → FR et état vide de palette observés en fixture. Aucun statut promu.
+
+### P3 — lot 3.10 — 28-09-2026
+
+- Site Serre avec vitrine réelle et 24 captures FR/EN clair/sombre, provenance et limites.
+  `make capture-screens` : 44/44 ; `make build-site site-check` PASS. Contrôle des images
+  locales/alt renforcé, contenu jamais masqué par l’animation d’entrée, commandes Développeur
+  groupées avec leur paragraphe.
+- Chrome isolé : dix pages × trois variantes, 30 contrôles sans débordement horizontal,
+  images chargées, langue correcte, sans scripts ; Reduce Motion émulé.
+  Preuves : `Documentation/Evidence/P3-310-2026-09-28.md`. Aucun statut promu.

@@ -18,7 +18,7 @@
 | 3.7 | Performances | Livré, vérifié par l’agent (`52d8fd16`) |
 | 3.8 | Historique | Livré, vérifié par l’agent (`05f7aa51`) |
 | 3.9 | Réglages, ⌘K, barre de menus, langue, import ancien | Livré — recette groupée en attente (limite menu natif) |
-| 3.10 | Site : pages publiques en Serre, captures réelles de l’app, contenu pour une sortie publique (correction G2) | À faire |
+| 3.10 | Site : pages publiques en Serre, captures réelles de l’app, contenu pour une sortie publique (correction G2) | Livré — recette groupée en attente |
 
 ## Journal
 
@@ -201,27 +201,38 @@
   `ProductFormat`. Réglages haut/milieu/bas et palette relus FR/EN clair/sombre en fixture.
 - **Vérifié :** `make qualify` après corrections PASS, code 0 ; `git diff --check` PASS.
   Bouton Terminé/Done observé via AX ; icône pousse et réglage barre des menus actif visibles.
+  FR → EN → FR et palette sans correspondance observés ensuite ; formats menu centralisés dans `53dfac36`.
 - **Limites :** ouverture du panneau MenuBarExtra non obtenue par automatisation ; contenu et
-  navigation restent à observer par le mainteneur. Import/export natifs, langue en interaction,
+  navigation restent à observer par le mainteneur. Import/export natifs,
   VoiceOver/Reduce Motion restent non qualifiés. Preuves : `Documentation/Evidence/P3-39-2026-09-28.md`.
 - **Registre :** preuves datées ajoutées, aucun statut promu. Recette groupée avant G3.
 
+### 28-09-2026 — lot 3.10, fin de livraison
+
+- **Fait :** site Serre FR/EN, vitrine réelle, 24 captures copiées sans retouche, légendes avec
+  provenance/limites ; macOS 14+, langues et statut Next non publié explicites. Captures locales
+  contrôlées (fichier + alt), contenu jamais masqué à l’entrée, commandes Développeur groupées.
+- **Vérifié :** `make capture-screens` PASS (44/44), `make build-site site-check` PASS,
+  Chrome isolé 30 contrôles PASS (10 pages × 1280 clair/sombre et 390 clair), captures relues.
+  Reduce Motion émulé : logo `0s`, toutes les images chargées, aucun débordement horizontal.
+  `make qualify` sur les dernières modifications PASS (code 0), `git diff --check` PASS.
+- **Preuves :** `Documentation/Evidence/P3-310-2026-09-28.md` ; registre et Progress datés,
+  aucun statut promu. VoiceOver, zoom réel, second navigateur et headers déployés restent ouverts.
+- **Recette :** groupée P3 avant G3, dont Nettoyage/Corbeille réelle sur dossier jetable (mainteneur)
+  et Explorer ; ne pas commencer P4 avant cette gate.
+
 ## Point d’arrêt
 
-**Lot 3.9, repris le 28-09-2026.**
+**Lots 3.9 et 3.10 livrés le 28-09-2026 ; recette groupée P3 due avant G3.**
 
-- **Fait :** synchronisation sur `1f62627e`, CI `qualify` PASS (09:16:57 UTC).
-  WIP `ab0cd928` conservé ; accords des exclusions et événements du diagnostic corrigés
-  dans `SettingsView.swift`, nombres via `ProductFormat`.
-- **Vérifié :** première exécution `make qualify` PASS (code 0). Captures Réglages haut/bas
-  et palette FR/EN clair/sombre relues dans `Artifacts/Captures/2026-09-28/`.
-  Réglages avec `CORETEND_TEST_MENU_BAR_ENABLED=1` : interrupteur actif visible, icône pousse visible.
-- **En cours :** qualification après corrections PASS (code 0), journal `/tmp/coretend-qualify-39-final.log`
-  et résultat durable `/tmp/coretend-qualify-39-final.exit` ; captures milieu Réglages.
-- **Limite :** les actions AX/clic sur l’icône de la barre des menus ne montrent pas le panneau
-  sur cet hôte ; ne pas annoncer le contenu comme observé. L’app de démonstration déjà ouverte
-  par le mainteneur n’a pas été arrêtée. Aucun déplacement confirmé.
-- **Reste :** preuves datées, clôture/commit 3.9 avec limites explicites ; puis 3.10 et push autorisé.
+- **Fait :** 3.9 `4e573a1d`, complément formats/observations `53dfac36` ; site et preuves prêts.
+- **Vérifié :** qualification finale PASS (code 0, `/tmp/coretend-qualify-p3-delivery.exit`) ;
+  captures réelles, site-check et contrôles Chrome PASS.
+- **Prochaine action agent :** commit site, `git push origin next` (autorisé), vérifier le check
+  CI `qualify`, puis consigner son résultat et s’arrêter pour la recette groupée.
+- **Prochaine action mainteneur :** recette groupée, particulièrement 3.2 avec un vrai passage
+  par la Corbeille sur dossier jetable et 3.3 ; contenu/navigation du panneau MenuBarExtra,
+  import/export natifs. Aucun déplacement n’a été confirmé par l’agent.
 
 ## Problèmes ouverts
 

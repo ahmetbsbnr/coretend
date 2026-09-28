@@ -85,7 +85,7 @@ FR/EN ; clair/sombre ; clavier ; captures ; recette ; puis passage des lignes li
 | 3.9 | Réglages, palette ⌘K, barre de menus, langue, import ancien | settings.*, ui.commandpalette, shell.menubar, FR-21, FR-22, l10n.languagepicker, migration.* |
 | 3.10 | Site : pages Fonctionnalités, Confidentialité, Développeur, Assistance en Serre, captures réelles | FR-15, NFR-11 |
 
-État au 28-09-2026 : 3.1–3.8 livrés (3.1, 3.4–3.6 acceptés), 3.9 en cours, 3.10 à faire ;
+État au 28-09-2026 : 3.1–3.8 livrés (3.1, 3.4–3.6 acceptés), 3.9 et 3.10 livrés, recette groupée P3 due avant G3 ;
 détail et commits dans `Documentation/Passation/P3-destinations.md`. Décision du mainteneur du
 28-09 : lots suivants livrés à la suite, recette groupée avant G3.
 

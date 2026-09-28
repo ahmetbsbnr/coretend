@@ -17,24 +17,21 @@ COPY = {
         "skip": "Skip to content",
         "nav_label": "Main navigation",
         "brand_note": "local care",
-        "preview": "Unreleased local reconstruction",
+        "preview": "CoreTend Next · unreleased local reconstruction",
         "preview_short": "Local preview · unreleased",
-        "no_download": "No download is published.",
+        "no_download": "No CoreTend Next download is published.",
         "language_title": "Choose your language",
-        "language_intro": "CoreTend is a macOS reconstruction in progress. Read about its direction and current limits.",
+        "language_intro": "CoreTend Next is a macOS reconstruction in progress. Read about its direction and current limits.",
         "nav": {"index": "Overview", "features": "Features", "privacy": "Privacy", "developer": "Developers", "support": "Support"},
-        "footer_note": "Local-first by design. No release is available.",
+        "footer_note": "Local-first by design. CoreTend Next is not released.",
         "footer_links": "Explore",
         "home": {
-            "title": "A clearer view of your Mac.",
+            "title": "Tend your Mac.",
             "description": "CoreTend is a local-first macOS disk and system explorer in active reconstruction. See what works today, how review stays in your hands, and what remains unqualified.",
-            "kicker": "A quieter way to inspect",
+            "kicker": "Inside the greenhouse",
             "lead": "Understand what is on your Mac before deciding what to do. CoreTend keeps folder scans read-only and asks for explicit review before a selected item can move to Trash.",
             "primary": "Explore current capabilities",
             "secondary": "Read the privacy model",
-            "scene_label": "A review flow, not a screenshot",
-            "scene_caption": "Concept diagram · The app is still being rebuilt; this is not a capture of its interface.",
-            "scene_steps": [("01", "Choose", "Select a folder to inspect."), ("02", "Understand", "Review measured items and their context."), ("03", "Decide", "Keep files, or confirm a move to macOS Trash.")],
             "section_title": "Clarity before action",
             "section_intro": "The interface is being reshaped around observable evidence, clear scope and explicit choices.",
             "sections": [
@@ -79,7 +76,7 @@ COPY = {
             "title": "Build and inspect the source",
             "description": "Developer notes for the unreleased CoreTend macOS reconstruction: local build products, interface boundaries and known qualification gaps.",
             "kicker": "For contributors",
-            "lead": "The repository contains a Swift 6 package with a native macOS app and a read-only command-line product. No external runtime package dependency is required.",
+            "lead": "The repository contains a Swift 6 package with a native macOS app and a read-only command-line product. macOS 14 or later is required. The app supports French and English. No external runtime package dependency is required.",
             "sections": [
                 ("Build locally", "From the repository root, use Swift Package Manager to build the app or command-line product. The website is generated separately with the Python scripts in Scripts/.", ["swift build --product CoreTendApp", "swift build --product CoreTendCLI", "python3 Scripts/build_site.py"]),
                 ("Keep boundaries intact", "Scan code is read-only. File actions must retain chosen-folder scope, explicit selection, proposal review, confirmation, target revalidation and macOS Trash. Do not treat signature, quarantine or login-item presence as a security verdict."),
@@ -93,7 +90,7 @@ COPY = {
             "title": "Help for a work in progress",
             "description": "Source-feedback guidance and practical notes for CoreTend's unreleased local reconstruction.",
             "kicker": "Support and feedback",
-            "lead": "CoreTend is not a released product. The repository is public source for an ongoing reconstruction, with no download or product-support commitment.",
+            "lead": "CoreTend Next is not released. The repository is public source for an ongoing reconstruction, with no download or product-support commitment.",
             "sections": [
                 ("Folder access", "Choose a folder you intend to inspect and grant only the access macOS requests for that location. A denied or partial result should be treated as incomplete, not as an empty folder."),
                 ("Unexpected scan result", "Record the macOS version, Mac architecture, selected scope and exact error message. Avoid attaching private file paths, file names or database contents to a public issue."),
@@ -110,26 +107,23 @@ COPY = {
         "skip": "Aller au contenu",
         "nav_label": "Navigation principale",
         "brand_note": "entretien local",
-        "preview": "Reconstruction locale non publiée",
-        "preview_short": "Aperçu local · non publié",
-        "no_download": "Aucun téléchargement n’est publié.",
+        "preview": "CoreTend Next · reconstruction locale non publiée",
+        "preview_short": "Aperçu Next · non publié",
+        "no_download": "Aucun téléchargement CoreTend Next n’est publié.",
         "language_title": "Choisir votre langue",
-        "language_intro": "CoreTend est une reconstruction macOS en cours. Découvrez sa direction et ses limites actuelles.",
+        "language_intro": "CoreTend Next est une reconstruction macOS en cours. Découvrez sa direction et ses limites actuelles.",
         "nav": {"index": "Vue d’ensemble", "features": "Fonctionnalités", "privacy": "Confidentialité", "developer": "Développeur", "support": "Assistance"},
-        "footer_note": "Pensé pour le local. Aucune version n’est publiée.",
+        "footer_note": "Pensé pour le local. CoreTend Next n’est pas publié.",
         "footer_links": "Explorer",
         "home": {
-            "title": "Mieux comprendre son Mac.",
+            "title": "Entretenir son Mac.",
             "description": "CoreTend est un explorateur local du disque et du système sur macOS, en reconstruction active. Découvrez les fonctions présentes, gardez la main sur chaque revue et voyez ce qui reste à qualifier.",
-            "kicker": "Inspecter avec plus de calme",
+            "kicker": "Dans la serre",
             "lead": "Comprenez le contenu de votre Mac avant de décider. CoreTend garde les analyses de dossiers en lecture seule et demande une revue explicite avant tout déplacement vers la Corbeille.",
             "primary": "Voir les fonctions actuelles",
             "secondary": "Lire le modèle de confidentialité",
-            "scene_label": "Un parcours de revue, pas une capture",
-            "scene_caption": "Schéma de principe · L’app est en reconstruction ; ceci n’est pas une capture de son interface.",
-            "scene_steps": [("01", "Choisir", "Sélectionner un dossier à inspecter."), ("02", "Comprendre", "Examiner les éléments mesurés et leur contexte."), ("03", "Décider", "Garder les fichiers ou confirmer leur envoi à la Corbeille macOS.")],
             "section_title": "Comprendre avant d’agir",
-            "section_intro": "L’interface se recentre sur les éléments observables, le périmètre clair et les choix explicites.",
+            "section_intro": "Observer le sol, examiner chaque parcelle et garder un herbier local de vos décisions.",
             "sections": [
                 ("L’espace, avec son contexte", "Explorer un dossier choisi avec recherche, tri, tailles mesurées et carte proportionnelle. Les tailles inconnues ou liées au cloud restent exclues du total mesuré."),
                 ("Des doublons à examiner", "Les doublons exacts reposent sur la comparaison du contenu. Les images similaires sont des candidates indicatives. Aucun élément n’est automatiquement sélectionné pour retrait."),
@@ -172,7 +166,7 @@ COPY = {
             "title": "Construire et examiner le code source",
             "description": "Notes pour les développeurs de la reconstruction CoreTend non publiée : produits locaux, limites d’interface et sujets de qualification.",
             "kicker": "Pour contribuer",
-            "lead": "Le dépôt contient un paquet Swift 6 avec une app macOS native et un produit en ligne de commande en lecture seule. Aucun paquet externe n’est requis à l’exécution.",
+            "lead": "Le dépôt contient un paquet Swift 6 avec une app macOS native et un produit en ligne de commande en lecture seule. macOS 14 ou ultérieur est requis. L’app propose le français et l’anglais. Aucun paquet externe n’est requis à l’exécution.",
             "sections": [
                 ("Construire en local", "Depuis la racine du dépôt, Swift Package Manager construit l’app ou le produit en ligne de commande. Le site est généré séparément par les scripts Python dans Scripts/.", ["swift build --product CoreTendApp", "swift build --product CoreTendCLI", "python3 Scripts/build_site.py"]),
                 ("Préserver les frontières", "Le code d’analyse reste en lecture seule. Toute action doit conserver le dossier choisi, la sélection explicite, la revue, la confirmation, la revalidation de la cible et la Corbeille macOS. Ne transformez pas les signaux de signature, quarantaine ou connexion en verdict de sécurité."),
@@ -186,7 +180,7 @@ COPY = {
             "title": "Aide pour un projet en cours",
             "description": "Conseils pour les retours sur le code et l’usage prudent de la reconstruction locale CoreTend non publiée.",
             "kicker": "Assistance et retours",
-            "lead": "CoreTend n’est pas un produit publié. Le dépôt est le code source public d’une reconstruction en cours, sans téléchargement ni engagement de support produit.",
+            "lead": "CoreTend Next n’est pas publié. Le dépôt est le code source public d’une reconstruction en cours, sans téléchargement ni engagement de support produit.",
             "sections": [
                 ("Accès aux dossiers", "Choisissez le dossier que vous souhaitez inspecter et accordez seulement l’accès demandé par macOS pour cet emplacement. Un refus ou résultat partiel signifie que l’inspection est incomplète, pas que le dossier est vide."),
                 ("Résultat d’analyse inattendu", "Notez la version de macOS, l’architecture du Mac, le périmètre choisi et le message d’erreur exact. Évitez de joindre chemins privés, noms de fichiers ou contenu de base de données à une issue publique."),
@@ -241,7 +235,7 @@ def section_markup(sections: list[tuple], *, ordered: bool = False) -> str:
             detail += "<ul class=\"command-list\">" + "".join(
                 f"<li><code>{escape(command)}</code></li>" for command in extra[0]
             ) + "</ul>"
-        out.append(f"<article class=\"topic\"><h3>{escape(title)}</h3>{detail}</article>")
+        out.append(f"<article class=\"topic\"><h3>{escape(title)}</h3><div class=\"topic-body\">{detail}</div></article>")
     return "\n".join(out)
 
 
@@ -278,22 +272,28 @@ def footer(lang: str, route: str) -> str:
 </footer>"""
 
 
+def app_capture(lang: str, surface: str, title: str, *, hero: bool = False) -> str:
+    caption = ("Capture réelle du paquet local, le 28 septembre 2026, en fixture isolée. "
+               "Aucun dossier personnel analysé ; mesures de l’hôte, aucune promesse d’espace récupérable."
+               if lang == "fr" else
+               "Real local app capture, September 28, 2026, in an isolated fixture. "
+               "No personal folder scanned; host measurements, no claim of reclaimable space.")
+    alt = f"CoreTend — {title}"
+    image = f"../screenshots/{surface}-{lang}"
+    return (f'<figure class="app-vitrine{ " app-vitrine-hero" if hero else ""}">'
+            f'<picture><source media="(prefers-color-scheme: light)" srcset="{image}-light.png">'
+            f'<img src="{image}-dark.png" alt="{escape(alt, quote=True)}" width="2048" height="1125" '
+            f'loading="{ "eager" if hero else "lazy"}"></picture>'
+            f'<figcaption><strong>{escape(title)}</strong><span>{escape(caption)}</span></figcaption></figure>')
+
+
 def home_content(lang: str) -> str:
     page = COPY[lang]["home"]
-    steps = "".join(
-        f'<li><span class="step-index">{escape(number.lstrip("0"))}</span><div><h3>{escape(title)}</h3><p>{escape(body)}</p></div></li>'
-        for number, title, body in page["scene_steps"]
-    )
     topics = section_markup(page["sections"])
     return f"""<main id="main">
   <section class="hero section-shell" aria-labelledby="hero-title">
     <div class="hero-copy"><p class="eyebrow"><span class="status-dot" aria-hidden="true"></span>{escape(page['kicker'])}</p><h1 id="hero-title">{escape(page['title'])}</h1><p class="hero-lead">{escape(page['lead'])}</p><div class="hero-actions"><a class="button button-primary" href="features.html">{escape(page['primary'])}<span aria-hidden="true"> ↗</span></a><a class="text-link" href="privacy.html">{escape(page['secondary'])}</a></div><p class="release-note"><span class="release-marker" aria-hidden="true">i</span>{escape(COPY[lang]['preview'])}. {escape(COPY[lang]['no_download'])}</p></div>
-    <figure class="flow-scene" aria-labelledby="scene-title" aria-describedby="scene-caption">
-      <div class="scene-heading"><span class="scene-index">{'Step by step' if lang == 'en' else 'Pas à pas'}</span><span class="scene-status"><span aria-hidden="true"></span>{'Read-only by default' if lang == 'en' else 'Lecture seule par défaut'}</span></div>
-      <ol class="flow-steps">{steps}</ol>
-      <div class="scene-baseline"><span aria-hidden="true"></span><p id="scene-title">{escape(page['scene_label'])}</p><span aria-hidden="true"></span></div>
-      <figcaption id="scene-caption">{escape(page['scene_caption'])}</figcaption>
-    </figure>
+    {app_capture(lang, "overview", "Vue d’ensemble : les strates du volume mesuré." if lang == "fr" else "Overview: layers of the measured volume.", hero=True)}
   </section>
   <section class="section-shell intro-section" aria-labelledby="intro-title"><div class="section-heading"><p class="eyebrow">{'A measured approach' if lang == 'en' else 'Une approche mesurée'}</p><h2 id="intro-title">{escape(page['section_title'])}</h2><p>{escape(page['section_intro'])}</p></div><div class="topic-grid topic-grid-three">{topics}</div></section>
   <section class="section-shell status-section" aria-labelledby="status-title"><div class="status-copy"><p class="eyebrow">{'Current status' if lang == 'en' else 'État actuel'}</p><h2 id="status-title">{escape(page['status_title'])}</h2><p>{escape(page['status_text'])}</p></div><a class="button button-secondary" href="features.html">{escape(page['status_link'])}<span aria-hidden="true"> →</span></a></section>
@@ -311,9 +311,19 @@ def content_for(lang: str, route: str) -> str:
     limit = ""
     if "limits" in page:
         limit = f'<aside class="limits-panel"><p class="eyebrow">{escape(page["limits_title"])}</p><p>{escape(page["limits"])}</p><a class="text-link" href="privacy.html">{escape(page["cta"])} <span aria-hidden="true">→</span></a></aside>'
+    surfaces = {
+        "features": ("explore", "Les parcelles : choisir un dossier." if lang == "fr" else "The plots: choose a folder."),
+        "privacy": ("settings-bottom", "Réglages : conservation et diagnostic privé." if lang == "fr" else "Settings: retention and private diagnostics."),
+        "developer": ("performance", "La sève : mesures locales, relevées à la demande." if lang == "fr" else "The sap: local readings, sampled on request."),
+        "support": ("cleanup", "Nettoyage : choisir une règle et son périmètre." if lang == "fr" else "Cleanup: choose a rule and its scope."),
+    }
+    surface, caption = surfaces[route]
+    capture = app_capture(lang, surface, caption)
+    if route == "features":
+        capture += app_capture(lang, "duplicates", "Les pousses jumelles : vous choisissez celle à garder." if lang == "fr" else "Twin sprouts: you choose which copy to keep.")
     return f"""<main id="main" class="page-main">
   <section class="page-intro section-shell" aria-labelledby="page-title"><p class="eyebrow">{escape(page['kicker'])}</p><h1 id="page-title">{escape(page['title'])}</h1><p class="page-lead">{escape(page['lead'])}</p></section>
-  <section class="page-content section-shell" aria-label="{escape(page['title'])}"><div class="topic-list">{topics}</div>{limit}{notice}</section>
+  <section class="page-content section-shell" aria-label="{escape(page['title'])}"><div class="topic-list">{topics}</div><div class="capture-gallery">{capture}</div>{limit}{notice}</section>
 </main>"""
 
 
@@ -371,7 +381,7 @@ def language_index() -> str:
     <a class="brand" href="en/index.html">""" + LOGO + """<span class="brand-name">CoreTend<small>local care · entretien local</small></span></a>
     <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span>Local preview · unreleased</p>
     <h1>Choose your language<span lang="fr">Choisir votre langue</span></h1>
-    <p class="language-lead">CoreTend is an unreleased macOS reconstruction. This local site explains current behavior and limits.<br><span lang="fr">CoreTend est une reconstruction macOS non publiée. Ce site local présente ses fonctions et limites actuelles.</span></p>
+    <p class="language-lead">CoreTend Next is an unreleased macOS reconstruction. This local site explains current behavior and limits.<br><span lang="fr">CoreTend Next est une reconstruction macOS non publiée. Ce site local présente ses fonctions et limites actuelles.</span></p>
     <nav class="language-options" aria-label="Language / Langue"><a class="button button-primary" href="en/index.html" lang="en">English <span aria-hidden="true">→</span></a><a class="button button-secondary" href="fr/index.html" lang="fr">Français <span aria-hidden="true">→</span></a></nav>
   </main>
 </body>
