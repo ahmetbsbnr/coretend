@@ -42,11 +42,15 @@ struct SavedFilesView: View {
                             .font(CoreTendTypography.secondary.monospaced())
                             .foregroundStyle(Palette.secondaryInk.color)
                             .textSelection(.enabled)
-                        Text(ProductCopy.savedFileAvailability(
-                            isPresent: FileManager.default.fileExists(atPath: record.path),
-                            french: french
-                        ))
-                            .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                        // In the App Sandbox a path outside the chosen folders cannot be checked: say nothing
+                        // rather than call a present file missing.
+                        if !SandboxAccess.isSandboxed {
+                            Text(ProductCopy.savedFileAvailability(
+                                isPresent: FileManager.default.fileExists(atPath: record.path),
+                                french: french
+                            ))
+                                .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                        }
                         Text((french ? "Dernière observation : " : "Last observed: ") +
                              record.lastSeenAt.formatted(.dateTime.day().month().year().hour().minute()))
                             .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)

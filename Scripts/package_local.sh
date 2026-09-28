@@ -37,6 +37,12 @@ cat > "$app_path/Contents/Info.plist" <<PLIST
   <key>NSPrincipalClass</key><string>NSApplication</string>
   <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>CFBundleIconName</key><string>AppIcon</string>
+  <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+  <key>CFBundleDevelopmentRegion</key><string>en</string>
+  <key>CFBundleLocalizations</key><array><string>en</string><string>fr</string></array>
+  <key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
+  <key>ITSAppUsesNonExemptEncryption</key><false/>
+  <key>NSHumanReadableCopyright</key><string>© 2026 Ahmet Basbunar · Apache 2.0</string>
 </dict>
 </plist>
 PLIST

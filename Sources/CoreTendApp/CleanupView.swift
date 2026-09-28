@@ -86,6 +86,8 @@ struct CleanupView: View {
             selectedRoot = url
             notice = nil
         }
+        // The panel opens on the rule's expected place in the person's real home.
+        .fileDialogDefaultDirectory(descriptor.map { SandboxAccess.userHome.appending(path: $0.relativePath.joined(separator: "/"), directoryHint: .isDirectory) })
         .onDisappear { task?.cancel(); activeScanID = nil; scanning = false; if actionReview != nil { cancelAction() } }
         .confirmationDialog(french ? "Déplacer vers la Corbeille macOS ?" : "Move to macOS Trash?", isPresented: $actionDialogPresented, titleVisibility: .visible) {
             Button(french ? "Déplacer vers la Corbeille" : "Move to Trash", role: .destructive) { beginExecution() }

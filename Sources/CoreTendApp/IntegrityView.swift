@@ -13,6 +13,9 @@ struct IntegrityView: View {
     let french: Bool
     @State private var selectingApp = false
     @State private var selectingAgentsFolder = false
+    @State private var selectingSurveyFolder = false
+    /// Folder the system panel opens on when a suggested folder is chosen in the App Sandbox.
+    @State private var suggestedDirectory: URL?
     @State private var inspecting = false
     @State private var scanningAgents = false
     @State private var report: CodeSignatureReport?
@@ -55,6 +58,11 @@ struct IntegrityView: View {
             guard case .success(let urls) = result, let folder = urls.first else { return }
             inspectLaunchAgents(in: folder)
         }
+        .fileImporter(isPresented: $selectingSurveyFolder, allowedContentTypes: [.folder], allowsMultipleSelection: false) { result in
+            guard case .success(let urls) = result, let folder = urls.first else { return }
+            runSurvey(folder)
+        }
+        .fileDialogDefaultDirectory(suggestedDirectory)
     }
 
     // MARK: - Plant label
@@ -151,9 +159,14 @@ struct IntegrityView: View {
                     .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 10) {
-                    ForEach(ApplicationFolders.candidates(home: URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true)), id: \.path) { folder in
+                    ForEach(ApplicationFolders.candidates(home: SandboxAccess.userHome), id: \.path) { folder in
                         Button(folder.path == "/Applications" ? "Applications" : (french ? "Applications (les vôtres)" : "Applications (yours)")) {
-                            runSurvey(folder)
+                            if SandboxAccess.isSandboxed {
+                                suggestedDirectory = folder
+                                selectingSurveyFolder = true
+                            } else {
+                                runSurvey(folder)
+                            }
                         }
                         .buttonStyle(.serre(surveyFolder == folder ? .primary : .secondary))
                         .disabled(surveying)
@@ -211,7 +224,9 @@ struct IntegrityView: View {
         surveyFolder = folder
         surveyRows = []
         surveying = true
+        let acquiredScope = folder.startAccessingSecurityScopedResource()
         Task {
+            defer { if acquiredScope { folder.stopAccessingSecurityScopedResource() } }
             let apps = ((try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? [])
                 .filter { $0.pathExtension == "app" }
                 .sorted { $0.lastPathComponent.localizedStandardCompare($1.lastPathComponent) == .orderedAscending }
@@ -232,11 +247,18 @@ struct IntegrityView: View {
                     .accessibilityAddTraits(.isHeader)
                 Text(copy("integrity.loginItems.limit")).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                     .fixedSize(horizontal: false, vertical: true)
-                let found = LaunchAgentFolders.candidates(home: URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true))
+                let found = LaunchAgentFolders.candidates(home: SandboxAccess.userHome)
                 HStack(spacing: 10) {
                     // Detected folders are offered, never read: the click is the choice.
                     ForEach(found, id: \.path) { folder in
-                        Button(folderName(folder)) { inspectLaunchAgents(in: folder) }
+                        Button(folderName(folder)) {
+                            if SandboxAccess.isSandboxed {
+                                suggestedDirectory = folder
+                                selectingAgentsFolder = true
+                            } else {
+                                inspectLaunchAgents(in: folder)
+                            }
+                        }
                             .buttonStyle(.serre(launchAgentsFolder == folder ? .primary : .secondary))
                             .help(folder.path)
                             .disabled(scanningAgents)
