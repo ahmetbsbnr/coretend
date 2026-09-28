@@ -106,17 +106,25 @@
   Réglages FR/EN clair/sombre ouvertes et relues, sans déplacement confirmé dans l’app packagée.
 - **Copie réelle :** demandée, non fournie ; recette réelle NON LANCÉE. FR-20 PARTIEL.
 - **Qualification finale :** `make qualify` PASS code 0
-  (`/tmp/coretend-p4-46-qualify.log`) ; `make traceability` et `git diff --check` PASS. Registre 3/78 Must et 0/11 Should
+  (`/tmp/coretend-p4-passation-qualify.log`, code 0 sur HEAD `ac27e45b`) ;
+  `make traceability` et `git diff --check` PASS. Registre 3/78 Must et 0/11 Should
   VÉRIFIÉ, aucun statut promu sans observation détaillée du mainteneur.
 
 ## Point d’arrêt
+
+- Dernier commit P4 de code et preuve : `ac27e45b432b72df30bdc6c487df8e8b337093cd`.
+  Six commits P4 locaux depuis la pointe distante observée ; le commit documentaire de clôture
+  suit ce bilan. Aucun push. CI `qualify` de
+  `1f62627e0c0733d285258466559dc7c7344eb0d8` SUCCESS (GitHub, terminé 09:16:57 UTC) ;
+  cette exécution CI ne couvre pas les commits locaux. Requalification locale complète
+  en cours pour cette reprise documentaire.
 
 **4.1–4.6 : travaux réalisables livrés ; G4 non passée faute de preuves restantes.**
 
 Aucun lot de code ouvert. Fournir les observations/copies/hôtes manquants pour compléter
 les preuves ci-dessous, puis décider G4. Aucun push/P5 autorisé.
 
-## Preuves restantes pour G4
+## Problèmes ouverts — preuves restantes pour G4
 
 | Lot | Limite conservée | Reprise |
 |---|---|---|

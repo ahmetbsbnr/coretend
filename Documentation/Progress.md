@@ -459,5 +459,8 @@
 - Travaux réalisables 4.1–4.6 livrés ; copie réelle non fournie, aucune donnée personnelle lue.
   G4 non passée : hôtes manquants, observations humaines, mesures natives et déploiement Next
   restent ouverts. Aucun statut promu, aucun push/P5. Qualification finale dans journal P4.
-- `make qualify` final PASS code 0 (`/tmp/coretend-p4-46-qualify.log`),
-  `make traceability` et `git diff --check` PASS.
+- Commit livré : `ac27e45b432b72df30bdc6c487df8e8b337093cd`. `make qualify` code 0,
+  `make traceability` et `git diff --check` PASS à la clôture du lot.
+- CI `qualify` sur `1f62627e0c0733d285258466559dc7c7344eb0d8` SUCCESS, terminé
+  09:16:57 UTC ; ce SHA est antérieur aux commits P4 locaux, la CI ne les couvre pas.
+  Nouvelle qualification locale lancée pendant la reprise documentaire.

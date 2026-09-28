@@ -28,6 +28,15 @@ CI GitHub : check `qualify` sur `next` (requis ; l’admin peut le contourner au
 résultat arrive ensuite). Sans `gh` authentifié, lire l’état par l’API publique :
 `curl -s https://api.github.com/repos/ahmetbsbnr/coretend/commits/<sha>/check-runs`.
 
+Base de la clôture P4 : branche locale `next`, HEAD de code `ac27e45b`
+(six commits en avance sur `origin/next`). Le commit de documentation de passation vient
+ensuite ; à sa fin, le dépôt est propre et aucun push n’a été effectué.
+Le résultat CI demandé au démarrage est maintenant connu : `qualify` SUCCESS sur
+`1f62627e0c0733d285258466559dc7c7344eb0d8` (run fini à 09:16:57 UTC). Ce SHA précède les
+six commits locaux : la CI ne les couvre pas. Une qualification locale complète a été lancée
+pendant la clôture documentaire ; consulter le journal P4 et le log local avant de la déclarer
+PASS. Les commits locaux sont déjà enregistrés ; ne pas pousser sans autorisation.
+
 ## Lancer l’app en fixture isolée
 
 ```sh
@@ -59,7 +68,31 @@ overrides : `CORETEND_TEST_LAST_DESTINATION`, `CORETEND_TEST_RECENT_FILES_ENABLE
   Animations par `MotionToken`, Reduce Motion respecté ; couleur jamais seule porteuse de sens.
 - Site : pas de JavaScript (CSP `script-src 'none'`), contenu jamais conditionné à une animation.
 
+## Import d’une copie SQLite 1.x (P4.6)
+
+- Contrat établi depuis les sources du checkout 1.x, pas depuis une base utilisateur :
+  versions `schema_migrations` 1–4 ; import de `exclusions.path` seulement. La langue 1.x
+  vit dans UserDefaults et n’est pas lue depuis SQLite. Les autres données ne migrent pas.
+- N’accepter que le chemin d’une copie déjà créée et explicitement autorisée, autonome,
+  cohérente, au plus 64 MiB. Une copie d’une base active doit être faite avec 1.x arrêtée
+  ou l’outil de sauvegarde SQLite ; ne jamais copier seulement le fichier principal en
+  abandonnant un WAL. Le lecteur refuse un WAL/journal adjacent, les versions non reconnues,
+  symlinks et chemins d’exclusion dangereux. Un WAL omis avant la copie peut laisser une base
+  qui semble valide mais dont la provenance ne peut être démontrée.
+- L’agent demande le chemin, puis travaille uniquement sur cette copie, dans une fixture
+  temporaire et un store Next temporaire. Garder le nom de la copie et son chemin hors des
+  preuves ; ne jamais chercher/coller le chemin du vrai HOME ou ouvrir l’original.
+- Recette : aperçu et exclusions attendus ; import ; octets et métadonnées source préservés ;
+  répétition retourne déjà importé sans second événement. Ne pas confirmer un déplacement
+  dans l’app packagée. Tests synthétiques et protocole détaillés dans
+  `Documentation/Evidence/P4-46-import-2026-09-28.md`.
+- Aucun store réel n’a été fourni dans la session consignée ; FR-20 reste `PARTIEL` et G4
+  ouverte jusqu’à la recette sur copie réelle autorisée.
+
 ## Particularités de l’hôte actuel (Mac arm64, macOS 27)
+
+Hôte confirmé par le mainteneur : MacBook Air M1 sous macOS 27 uniquement. macOS 14 et un
+second Mac ne sont pas disponibles ; ne pas laisser entendre qu’ils ont été testés.
 
 - `python3` système = 3.9 : `make` s’arrête sur `python-version` avec un message. Mettre `/opt/homebrew/bin` en tête.
 - Échap n’atteint pas CoreTend (probable raccourci global d’un utilitaire tiers) : fermeture

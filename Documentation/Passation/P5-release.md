@@ -2,7 +2,7 @@
 
 **Objectif :** CoreTend 2.0 signée, notarisée, publiée et installable, `next` fusionnée dans `main`.
 **Gate :** G5 — autorisation explicite du mainteneur à chaque étape irréversible.
-**Statut de la phase :** À faire — ne commence qu’après la gate précédente.
+**Statut de la phase :** À faire — G4 n’est pas passée. Ne pas commencer avant la gate précédente et une demande explicite du mainteneur.
 **Plan :** `Documentation/Project/Implementation-plan.md` § Programme 2.0.
 
 ## Lots
@@ -20,8 +20,15 @@ _(une entrée datée par lot : commits, vérifications PASS/FAIL/NON LANCÉ, ré
 
 ## Point d’arrêt
 
-Identifiants de signature hors dépôt, jamais lus ni affichés. Chaque étape irréversible (tag, publication, push vers `main`) attend une autorisation explicite.
+**Point d’arrêt actuel :** aucun lot P5 ouvert. Les travaux livrables P4 sont consignés ; G4
+reste ouverte (voir `P4-qualification.md` et sa table « Preuves restantes »). Ne préparer
+aucune étape P5 tant que cette gate n’est pas passée. La branche `next` n’a pas été poussée
+depuis le HEAD distant `1f62627e` : six commits P4 locaux puis un commit documentaire de clôture.
+
+Identifiants de signature hors dépôt, jamais lus ni affichés. Chaque étape irréversible (push,
+tag, publication, fusion ou push vers `main`) attend une autorisation explicite du mainteneur.
 
 ## Problèmes ouverts
 
-_(aucun)_
+G4 et autorisation explicite de commencer P5 sont les préalables. Hôtes et preuves manquants
+sont listés dans le journal P4 ; ils ne constituent pas une autorisation de les simuler.

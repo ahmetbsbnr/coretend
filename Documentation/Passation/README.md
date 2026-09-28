@@ -13,6 +13,11 @@ point où le précédent s’est arrêté, même si la session a été coupée a
 | `Documentation/Project/Implementation-plan.md` | le programme (quoi, dans quel ordre) | quand le mainteneur change le programme |
 | `Documentation/Traceability.csv`, `Documentation/Progress.md` | statut des exigences et preuves datées | quand une recette ou une preuve change un statut |
 
+`Documentation/Passation/P4-qualification.md` peut terminer les lots réalisables tout en
+laissant G4 explicitement ouverte. Il distingue les contrôles exécutés des observations
+humaines, copies ou hôtes manquants. `passation.md` renvoie vers ce tableau des réserves :
+« livré » ne signifie ni « accepté » ni gate passée.
+
 Il n’existe pas d’autre passation, TODO ou roadmap. Une ancienne passation va dans
 `Documentation/Archive/`.
 

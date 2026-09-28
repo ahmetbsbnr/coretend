@@ -7,7 +7,7 @@ en fixture, invariants et particularités de l’hôte :
 
 ## Où on en est
 
-- **Mis à jour :** 28-09-2026, 4.3 accepté ; poursuite de toute P4 autorisée.
+- **Mis à jour :** 28-09-2026, P4 — travaux disponibles 4.1–4.6 consignés ; G4 reste ouverte.
 - **Phase :** P4 — Qualification → [`P4-qualification.md`](Documentation/Passation/P4-qualification.md).
 - **Lot courant :** **aucun code ouvert — 4.1–4.6 livrés avec réserves, G4 non passée**.
 - **G3 :** passée ; aucune observation détaillée supplémentaire reçue, aucun statut du registre promu.
@@ -16,7 +16,8 @@ en fixture, invariants et particularités de l’hôte :
 - **4.3 :** uniform/mixed 0,873/1,069 s ; fenêtre app médiane 0,469 s.
   `PerformanceBaseline.md` et trois JSON datés ; `make qualify` PASS. NFR-09 PARTIEL.
 - **Qualification finale 4.6 :** `make qualify` PASS code 0 ; tests/captures isolés et
-  revue indépendante ; `Documentation/Evidence/P4-46-import-2026-09-28.md`.
+  revue indépendante ; commit `ac27e45b` (`feat(migration): import exclusions from standalone
+  legacy SQLite copies`) ; `Documentation/Evidence/P4-46-import-2026-09-28.md`.
 - **Qualification 4.2 :** `make qualify`, `make traceability`, paquet et runtime isolé PASS.
 - **Qualification précédente 4.1 :** `make qualify` PASS (code 0), `git diff --check` PASS.
 - **4.1 accepté :** revue statique et protocole dans `Documentation/Evidence/Accessibility.md`.
@@ -24,14 +25,20 @@ en fixture, invariants et particularités de l’hôte :
 
 ## Prochaine action
 
-1. Compléter les preuves externes listées dans P4-qualification.md : copie réelle 1.x
-   autorisée (fixture uniquement), observations d’accessibilité, autres hôtes et mesures natives.
-2. Contrôles disponibles 4.1–4.6 livrés ; aucun statut promu. Décision G4 après preuves.
-3. Aucun push ni P5 autorisé.
+1. Au prochain démarrage, lire `git status --short --branch` et la présente passation.
+   Le CI `qualify` du SHA `1f62627e` a été vérifié SUCCESS ; il ne couvre pas les commits
+   locaux. Exécuter `git pull --ff-only` seulement si la branche est en avance de zéro et propre.
+2. Si P4 reprend : traiter les réserves une par une selon `Documentation/Passation/P4-qualification.md`.
+   Pour 4.6, attendre un chemin de copie 1.x déjà créée et autorisée ; ne lire que cette copie
+   dans une fixture temporaire. Pour les autres lignes, faire consigner les observations et
+   hôtes effectivement disponibles ; conserver G4 ouverte tant qu’un critère manque.
+3. Ne pas pousser, ouvrir P5, promouvoir le registre ni déclarer G4 passée sans autorisation
+   et preuves correspondantes. Aucun code n’est actuellement ouvert.
 
 ## En attente du mainteneur
 
-- Chemin d’une copie déjà créée du store/préférences 1.x pour 4.6 ; ne pas lire l’original.
+- Chemin d’une copie cohérente, autonome, déjà créée du store 1.x pour 4.6 ; lire uniquement
+  cette copie en fixture (protocole ci-dessous), ne jamais lire l’original ni omettre son WAL.
 - Hôtes manquants 4.2 et observations d’assistance réelle restent des limites de preuve.
 - 2 faux fichiers de test (`Safari-2026-09-23-101500.ips`, `…-24-…`, octets aléatoires) sont dans
   sa Corbeille depuis l’incident du 28-09 ; à jeter par lui.
