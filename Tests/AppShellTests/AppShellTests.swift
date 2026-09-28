@@ -446,6 +446,17 @@ final class AppShellTests: XCTestCase {
         }
     }
 
+    func testApplicationStatesExistInBothLanguages() {
+        for key in ["apps.initial.title", "apps.initial.message", "apps.inventory", "apps.reading", "apps.reading.help",
+                    "apps.associated", "apps.trash", "apps.noMatch", "apps.noMatch.help", "apps.empty.help", "apps.issues.help"] {
+            let english = ProductCopy.value(for: key, french: false)
+            let french = ProductCopy.value(for: key, french: true)
+            XCTAssertNotEqual(english, key, key)
+            XCTAssertNotEqual(french, key, key)
+            XCTAssertNotEqual(english, french, key)
+        }
+    }
+
     func testCrashReportRuleNamesBothExtensionsItReads() {
         XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: false).contains(".ips"))
         XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: true).contains(".ips"))
