@@ -448,7 +448,7 @@ final class AppShellTests: XCTestCase {
 
     func testApplicationStatesExistInBothLanguages() {
         for key in ["apps.initial.title", "apps.initial.message", "apps.inventory", "apps.reading", "apps.reading.help",
-                    "apps.associated", "apps.trash", "apps.detected", "apps.other", "apps.noMatch", "apps.noMatch.help", "apps.empty.help", "apps.issues.help"] {
+                    "apps.associated", "apps.trash", "apps.detected", "apps.other", "apps.sort", "apps.sort.size", "apps.sizing", "apps.size.total", "apps.reveal", "apps.failure.protected", "apps.evidence.identifier", "apps.evidence.name", "apps.noMatch", "apps.noMatch.help", "apps.empty.help", "apps.issues.help"] {
             let english = ProductCopy.value(for: key, french: false)
             let french = ProductCopy.value(for: key, french: true)
             XCTAssertNotEqual(english, key, key)

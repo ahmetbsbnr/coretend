@@ -432,6 +432,31 @@ final class LaunchAgentFoldersTests: XCTestCase {
     }
 }
 
+final class ApplicationUpgradeTests: XCTestCase {
+    func testNameEvidenceIsExactAndSkipsGenericNames() {
+        let chrome = URL(fileURLWithPath: "/tmp/fixture/Library/Application Support/Google Chrome/Default/Prefs")
+        XCTAssertEqual(ApplicationAssociationMatcher.evidence(chrome, bundleIdentifier: "com.google.Chrome", displayName: "Google Chrome"), .name)
+        let byID = URL(fileURLWithPath: "/tmp/fixture/Library/Caches/com.google.Chrome/x")
+        XCTAssertEqual(ApplicationAssociationMatcher.evidence(byID, bundleIdentifier: "com.google.Chrome", displayName: "Google Chrome"), .identifier)
+        let unrelated = URL(fileURLWithPath: "/tmp/fixture/Library/Application Support/Google Chromebook/x")
+        XCTAssertNil(ApplicationAssociationMatcher.evidence(unrelated, bundleIdentifier: "com.google.Chrome", displayName: "Google Chrome"))
+        let generic = URL(fileURLWithPath: "/tmp/fixture/Library/Data/x")
+        XCTAssertNil(ApplicationAssociationMatcher.evidence(generic, bundleIdentifier: "org.x.data", displayName: "Data"))
+    }
+
+    func testAppSizeSumsRegularFilesAndSkipsLinks() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-size-\(UUID())", isDirectory: true)
+        let bundle = root.appendingPathComponent("Demo.app/Contents", isDirectory: true)
+        try FileManager.default.createDirectory(at: bundle, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        try Data(count: 100_000).write(to: bundle.appendingPathComponent("a.bin"))
+        try FileManager.default.createSymbolicLink(at: bundle.appendingPathComponent("link"), withDestinationURL: bundle.appendingPathComponent("a.bin"))
+        let size = try XCTUnwrap(ApplicationSizer.allocatedSize(of: root.appendingPathComponent("Demo.app")))
+        XCTAssertGreaterThanOrEqual(size, 100_000)
+        XCTAssertLessThan(size, 200_000)
+    }
+}
+
 final class DuplicateKeepersTests: XCTestCase {
     private let a = URL(fileURLWithPath: "/tmp/g/a.jpg"), b = URL(fileURLWithPath: "/tmp/g/b.jpg")
     private let c = URL(fileURLWithPath: "/tmp/g/c.jpg"), other = URL(fileURLWithPath: "/tmp/h/x.jpg")
