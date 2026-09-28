@@ -16,6 +16,7 @@ struct MenuBarMetricsView: View {
             Text(copy("menubar.metrics.title")).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
             Text(copy("menubar.metrics.help"))
                 .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                .fixedSize(horizontal: false, vertical: true)
             if let snapshot {
                 metric(copy("metrics.loadAverage"), load(snapshot.loadAverage1m), source: copy("metrics.source.load"))
                 metric(copy("metrics.memory"), ProductFormat.memory(snapshot.physicalMemoryBytes, french: french), source: copy("metrics.source.memory"))

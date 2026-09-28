@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 import AppShell
 import DesignSystem
 import Observation
@@ -156,7 +157,11 @@ private struct CoreTendRootView: View {
             if let destination { preferences.saveLastDestination(destination.rawValue) }
         }
         .onChange(of: language) { _, value in preferences.saveLanguage(value); navigation.language = value }
-        .onChange(of: appearance) { _, value in preferences.saveAppearance(value) }
+        .onChange(of: appearance) { _, value in
+            preferences.saveAppearance(value)
+            applyAppearance(value)
+        }
+        .onAppear { applyAppearance(appearance) }
         .onChange(of: onboardingCompleted) { _, value in preferences.saveOnboardingCompleted(value) }
         .onChange(of: recentFilesEnabled) { _, value in preferences.saveRecentFilesEnabled(value) }
         .onChange(of: menuBarEnabled) { _, value in preferences.saveMenuBarEnabled(value) }
@@ -320,7 +325,7 @@ private struct DestinationView: View {
                     .serreRise(destination == .overview ? 6 : 2)
             }
             .padding(32)
-            .frame(maxWidth: 960, alignment: .leading)
+            .frame(maxWidth: 1280, alignment: .leading)
             // The whole width scrolls, not only the reading column.
             .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -360,5 +365,16 @@ private struct MenuBarSprout: View {
             .stroke(Palette.ink.color, style: StrokeStyle(lineWidth: 1.6, lineCap: .round, lineJoin: .round))
             .frame(width: 16, height: 16)
             .padding(1)
+    }
+}
+
+/// Serre colours resolve against the window's appearance, not SwiftUI's colour scheme, so the
+/// chosen appearance is set on the whole app: every window, the menu bar extra included.
+@MainActor
+func applyAppearance(_ preference: AppearancePreference) {
+    switch preference {
+    case .system: NSApp.appearance = nil
+    case .light: NSApp.appearance = NSAppearance(named: .aqua)
+    case .dark: NSApp.appearance = NSAppearance(named: .darkAqua)
     }
 }
