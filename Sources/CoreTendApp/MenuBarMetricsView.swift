@@ -90,13 +90,13 @@ struct MenuBarMetricsView: View {
 
     private func load(_ value: ProductMeasurement<Double>) -> String {
         switch value {
-        case .known(let amount): amount.formatted(.number.precision(.fractionLength(2)).locale(Locale(identifier: french ? "fr_FR" : "en_US")))
+        case .known(let amount): ProductFormat.decimal(amount, french: french)
         case .unknown: copy("metrics.unknown")
         }
     }
 
     private func timestamp(_ date: Date) -> String {
-        date.formatted(.dateTime.day().month().hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US")))
+        ProductFormat.timestamp(date, french: french)
     }
 
     private func copy(_ key: String) -> String {
