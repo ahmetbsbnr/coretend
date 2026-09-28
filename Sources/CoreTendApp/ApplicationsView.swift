@@ -15,6 +15,8 @@ struct ApplicationsView: View {
     let french: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var selectingFolder = false
+    /// Folder the system panel opens on when a suggested folder is chosen in the App Sandbox.
+    @State private var suggestedDirectory: URL?
     @State private var scanning = false
     @State private var records: [ApplicationRecord] = []
     @State private var issues: [ApplicationDiscoveryIssue] = []
@@ -71,12 +73,12 @@ struct ApplicationsView: View {
                 SerreParcel {
                     SerreEmptyState(title: copy("apps.initial.title"), message: copy("apps.initial.message")) {
                         VStack(spacing: 10) {
-                            let found = ApplicationFolders.candidates(home: URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true))
+                            let found = ApplicationFolders.candidates(home: SandboxAccess.userHome)
                             if !found.isEmpty {
                                 // Detected folders are offered, never read: the click is the choice.
                                 HStack(spacing: 10) {
                                     ForEach(Array(found.enumerated()), id: \.element.path) { index, folder in
-                                        Button { discover(folder) } label: {
+                                        Button { choose(folder) } label: {
                                             Label { Text(folderName(folder)) } icon: { SerreIcon(.applications, size: 15) }
                                         }
                                         .buttonStyle(.serre(index == 0 ? .primary : .secondary))
@@ -134,6 +136,7 @@ struct ApplicationsView: View {
             guard case .success(let urls) = result, let root = urls.first else { return }
             discover(root)
         }
+        .fileDialogDefaultDirectory(suggestedDirectory)
         .fileImporter(isPresented: $selectingAssociationFolder, allowedContentTypes: [.folder], allowsMultipleSelection: false) { result in
             guard case .success(let urls) = result, let root = urls.first, let app = associationApp else { return }
             reviewAssociations(for: app, in: root)
@@ -505,6 +508,16 @@ struct ApplicationsView: View {
             } catch {
                 if !Task.isCancelled { associationStatus = french ? "Analyse impossible." : "Scan failed." }
             }
+        }
+    }
+
+    /// A suggested folder: read directly, or — in the App Sandbox — through the panel opened on it.
+    private func choose(_ folder: URL) {
+        if SandboxAccess.isSandboxed {
+            suggestedDirectory = folder
+            selectingFolder = true
+        } else {
+            discover(folder)
         }
     }
 
