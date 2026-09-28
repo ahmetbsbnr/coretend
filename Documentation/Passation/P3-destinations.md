@@ -175,6 +175,16 @@
 - **Recette 3.7 (mainteneur) :** ouvrir Performances, actualiser plusieurs fois, regarder la courbe
   se tracer et le dernier point pulser ; effacer les relevés (Entrée annule).
 
+### 28-09-2026 — décision du mainteneur : fin de P3 sans recette par lot
+
+- « continue chaque recette chaque lot une par une jusqu’à finalisation complète, pas besoin de ma
+  validation explicite. puis push next si nécessaire. »
+- Conséquence : 3.7 à 3.10 sont livrés à la suite, chacun vérifié par l’agent (`make qualify`, app
+  fixture, captures) et journalisé ici. Aucune ligne du registre ne passe `VÉRIFIÉ` sans
+  observation du mainteneur ; les preuves datées de l’agent sont ajoutées, statut `PARTIEL`.
+  La recette groupée de P3 (et les recettes explicites 3.2, 3.3) restent dues avant la gate G3.
+- `next` est poussé à la fin de 3.10 (autorisé).
+
 ## Point d’arrêt
 
 - 3.7 livré, recette en attente. Prochain lot **3.8 — Historique** (« l’herbier ») : entrées
