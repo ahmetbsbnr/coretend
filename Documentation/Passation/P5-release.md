@@ -26,6 +26,18 @@
 - 5.2 préparé en brouillon : `Documentation/Release/2.0-notes-draft.md` (FR/EN), non publié.
 - Rien de signé, tagué, publié, fusionné ni poussé.
 
+### 28-09-2026 — 5.1 commencé : identité de signature et signature locale
+
+- Compte Apple Developer du mainteneur connecté dans Xcode (équipe `NSCUV5G738`, Admin). À sa
+  demande, l'agent a créé dans Xcode › Apple Accounts › Manage Certificates le certificat
+  **Developer ID Application** ; `security find-identity` : 1 identité valide. Aucun
+  identifiant saisi par l'agent.
+- Signature locale d'une copie de `Artifacts/CoreTend.app` (`codesign --options runtime
+  --timestamp`) : `codesign --verify --strict` valide ; `spctl` : `Unnotarized Developer ID`.
+- **Manque pour finir 5.1 :** profil `notarytool` (`xcrun notarytool store-credentials
+  coretend-notary …`, mot de passe d'app saisi par le mainteneur) et **son accord pour envoyer
+  l'app à Apple** (notarisation), puis agrafage, ZIP/DMG, SHA-256.
+
 ## Point d’arrêt
 
 **Point d’arrêt actuel :** aucun lot P5 ouvert. Les travaux livrables P4 sont consignés ; G4

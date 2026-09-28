@@ -41,9 +41,8 @@ en fixture, invariants et particularités de l’hôte :
   Installer `Artifacts/CoreTend-local-unsigned.zip` par AirDrop et suivre
   `Documentation/Evidence/P4-42-second-mac-protocol.md`, puis renvoyer la liste remplie.
 - Relire le brouillon `Documentation/Release/2.0-notes-draft.md` (5.2).
-- Pour 5.1 (signature/notarisation, et TestFlight éventuel) : un compte Apple Developer et son
-  identité « Developer ID Application » installés sur l'hôte ; l'agent ne manipule jamais les
-  identifiants.
+- 5.1 : identité Developer ID installée et signature locale validée (voir P5). Reste : profil
+  `notarytool` créé par le mainteneur, puis son accord pour la notarisation (envoi à Apple).
 - Chemin d’une copie cohérente, autonome, déjà créée du store 1.x pour 4.6 ; lire uniquement
   cette copie en fixture (protocole ci-dessous), ne jamais lire l’original ni omettre son WAL.
 - Hôtes manquants 4.2 et observations d’assistance réelle restent des limites de preuve.
