@@ -436,3 +436,13 @@
   régressions fixture/faux Trash et tests ciblés PASS. `make qualify` PASS (code 0), diff PASS.
 - Preuves `Documentation/Evidence/P4-44-review-2026-09-28.md` ; aucun statut promu.
   Passage à 4.5 autorisé ; vrai format 1.x SQLite encore non pris en charge, à traiter 4.6.
+
+
+### P4 — lot 4.5, contrôles site — 28-09-2026
+
+- Chrome154 zoom natif200 % : 20 contrôles PASS FR/EN clair/sombre, skip-link visible,
+  images chargées après scroll et pas de débordement ; quatre captures relues.
+- Second moteur WebKit non persistant : 40 contrôles PASS100/200 %, clair/sombre, FR/EN.
+- Headers publics présents sur une livraison antérieure ; déploiement Next et VoiceOver parlé
+  restent ouverts. SiteAccessibilitySmoke et deux JSON datés, NFR-11 PARTIEL.
+- Qualification finale 4.5 `make qualify` PASS, code 0, diff PASS ; passage à 4.6.

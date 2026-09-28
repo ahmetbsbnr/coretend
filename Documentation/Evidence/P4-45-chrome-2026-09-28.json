@@ -1,0 +1,358 @@
+{
+  "baseline": {
+    "dpr": 1,
+    "width": 1280,
+    "outer": 1280
+  },
+  "zoom": {
+    "dpr": 2,
+    "width": 640,
+    "outer": 1280
+  },
+  "results": [
+    {
+      "lang": "fr",
+      "width": 640,
+      "scroll": 640,
+      "dpr": 2,
+      "scripts": 0,
+      "images": [
+        true
+      ],
+      "motion": "0s",
+      "page": "index",
+      "mode": "light",
+      "focus": {
+        "href": "#main",
+        "outline": "solid"
+      }
+    },
+    {
+      "lang": "fr",
+      "width": 640,
+      "scroll": 640,
+      "dpr": 2,
+      "scripts": 0,
+      "images": [
+        true
+      ],
+      "motion": "0s",
+      "page": "index",
+      "mode": "dark",
+      "focus": {
+        "href": "#main",
+        "outline": "solid"
+      }
+    },
+    {
+      "lang": "fr",
+      "width": 640,
+      "scroll": 640,
+      "dpr": 2,
+      "scripts": 0,
+      "images": [
+        true,
+        true
+      ],
+      "motion": "0s",
+      "page": "features",
+      "mode": "light",
+      "focus": {
+        "href": "#main",
+        "outline": "solid"
+      }
+    },
+    {
+      "lang": "fr",
+      "width": 640,
+      "scroll": 640,
+      "dpr": 2,
+      "scripts": 0,
+      "images": [
+        true,
+        true
+      ],
+      "motion": "0s",
+      "page": "features",
+      "mode": "dark",
+      "focus": {
+        "href": "#main",
+        "outline": "solid"
+      }
+    },
+    {
+      "lang": "fr",
+      "width": 640,
+      "scroll": 640,
+      "dpr": 2,
+      "scripts": 0,
+      "images": [
+        true
+      ],
+      "motion": "0s",
+      "page": "privacy",
+      "mode": "light",
+      "focus": {
+        "href": "#main",
+        "outline": "solid"
+      }
+    },
+    {
+      "lang": "fr",
+      "width": 640,
+      "scroll": 640,
+      "dpr": 2,
+      "scripts": 0,
+      "images": [
+        true
+      ],
+      "motion": "0s",
+      "page": "privacy",
+      "mode": "dark",
+      "focus": {
+        "href": "#main",
+        "outline": "solid"
+      }
+    },
+    {
+      "lang": "fr",
+      "width": 640,
+      "scroll": 640,
+      "dpr": 2,
+      "scripts": 0,
+      "images": [
+        true
+      ],
+      "motion": "0s",
+      "page": "developer",
+      "mode": "light",
+      "focus": {
+        "href": "#main",
+        "outline": "solid"
+      }
+    },
+    {
+      "lang": "fr",
+      "width": 640,
+      "scroll": 640,
+      "dpr": 2,
+      "scripts": 0,
+      "images": [
+        true
+      ],
+      "motion": "0s",
+      "page": "developer",
+      "mode": "dark",
+      "focus": {
+        "href": "#main",
+        "outline": "solid"
+      }
+    },
+    {
+      "lang": "fr",
+      "width": 640,
+      "scroll": 640,
+      "dpr": 2,
+      "scripts": 0,
+      "images": [
+        true
+      ],
+      "motion": "0s",
+      "page": "support",
+      "mode": "light",
+      "focus": {
+        "href": "#main",
+        "outline": "solid"
+      }
+    },
+    {
+      "lang": "fr",
+      "width": 640,
+      "scroll": 640,
+      "dpr": 2,
+      "scripts": 0,
+      "images": [
+        true
+      ],
+      "motion": "0s",
+      "page": "support",
+      "mode": "dark",
+      "focus": {
+        "href": "#main",
+        "outline": "solid"
+      }
+    },
+    {
+      "lang": "en",
+      "width": 640,
+      "scroll": 640,
+      "dpr": 2,
+      "scripts": 0,
+      "images": [
+        true
+      ],
+      "motion": "0s",
+      "page": "index",
+      "mode": "light",
+      "focus": {
+        "href": "#main",
+        "outline": "solid"
+      }
+    },
+    {
+      "lang": "en",
+      "width": 640,
+      "scroll": 640,
+      "dpr": 2,
+      "scripts": 0,
+      "images": [
+        true
+      ],
+      "motion": "0s",
+      "page": "index",
+      "mode": "dark",
+      "focus": {
+        "href": "#main",
+        "outline": "solid"
+      }
+    },
+    {
+      "lang": "en",
+      "width": 640,
+      "scroll": 640,
+      "dpr": 2,
+      "scripts": 0,
+      "images": [
+        true,
+        true
+      ],
+      "motion": "0s",
+      "page": "features",
+      "mode": "light",
+      "focus": {
+        "href": "#main",
+        "outline": "solid"
+      }
+    },
+    {
+      "lang": "en",
+      "width": 640,
+      "scroll": 640,
+      "dpr": 2,
+      "scripts": 0,
+      "images": [
+        true,
+        true
+      ],
+      "motion": "0s",
+      "page": "features",
+      "mode": "dark",
+      "focus": {
+        "href": "#main",
+        "outline": "solid"
+      }
+    },
+    {
+      "lang": "en",
+      "width": 640,
+      "scroll": 640,
+      "dpr": 2,
+      "scripts": 0,
+      "images": [
+        true
+      ],
+      "motion": "0s",
+      "page": "privacy",
+      "mode": "light",
+      "focus": {
+        "href": "#main",
+        "outline": "solid"
+      }
+    },
+    {
+      "lang": "en",
+      "width": 640,
+      "scroll": 640,
+      "dpr": 2,
+      "scripts": 0,
+      "images": [
+        true
+      ],
+      "motion": "0s",
+      "page": "privacy",
+      "mode": "dark",
+      "focus": {
+        "href": "#main",
+        "outline": "solid"
+      }
+    },
+    {
+      "lang": "en",
+      "width": 640,
+      "scroll": 640,
+      "dpr": 2,
+      "scripts": 0,
+      "images": [
+        true
+      ],
+      "motion": "0s",
+      "page": "developer",
+      "mode": "light",
+      "focus": {
+        "href": "#main",
+        "outline": "solid"
+      }
+    },
+    {
+      "lang": "en",
+      "width": 640,
+      "scroll": 640,
+      "dpr": 2,
+      "scripts": 0,
+      "images": [
+        true
+      ],
+      "motion": "0s",
+      "page": "developer",
+      "mode": "dark",
+      "focus": {
+        "href": "#main",
+        "outline": "solid"
+      }
+    },
+    {
+      "lang": "en",
+      "width": 640,
+      "scroll": 640,
+      "dpr": 2,
+      "scripts": 0,
+      "images": [
+        true
+      ],
+      "motion": "0s",
+      "page": "support",
+      "mode": "light",
+      "focus": {
+        "href": "#main",
+        "outline": "solid"
+      }
+    },
+    {
+      "lang": "en",
+      "width": 640,
+      "scroll": 640,
+      "dpr": 2,
+      "scripts": 0,
+      "images": [
+        true
+      ],
+      "motion": "0s",
+      "page": "support",
+      "mode": "dark",
+      "focus": {
+        "href": "#main",
+        "outline": "solid"
+      }
+    }
+  ]
+}

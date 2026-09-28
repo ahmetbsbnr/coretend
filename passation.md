@@ -9,7 +9,7 @@ en fixture, invariants et particularités de l’hôte :
 
 - **Mis à jour :** 28-09-2026, 4.3 accepté ; poursuite de toute P4 autorisée.
 - **Phase :** P4 — Qualification → [`P4-qualification.md`](Documentation/Passation/P4-qualification.md).
-- **Lot courant :** **4.5 en cours — qualification site**.
+- **Lot courant :** **4.6 en cours — import SQLite 1.x et copie réelle attendue**.
 - **G3 :** passée ; aucune observation détaillée supplémentaire reçue, aucun statut du registre promu.
 - **Livraison P3 :** `fa9132ed` poussé, CI `qualify` PASS le 28-09 à 09:49:42 UTC.
 - **Registre :** Must `VÉRIFIÉ` **3 / 78** (Should 0 / 11), NFR-07 PARTIEL.
@@ -22,7 +22,7 @@ en fixture, invariants et particularités de l’hôte :
 
 ## Prochaine action
 
-1. Revue 4.4 et correctifs livrés, qualification PASS ; finir les contrôles site 4.5.
+1. 4.4 et 4.5 livrés, qualification PASS ; ajouter le format SQLite 1.x à l’import 4.6.
 2. Enchaîner 4.5 site puis 4.6 import, autorisation explicite du mainteneur.
 3. Conclure P4 avec preuves et réserves ; aucun push ni P5 autorisé.
 
@@ -42,7 +42,7 @@ en fixture, invariants et particularités de l’hôte :
 | P1 Direction visuelle (G1) | [`P1-direction-visuelle.md`](Documentation/Passation/P1-direction-visuelle.md) | Terminée (27-09) |
 | P2 Fondations Serre (G2) | [`P2-fondations-interaction.md`](Documentation/Passation/P2-fondations-interaction.md) | Terminée (27-09) |
 | P3 Destinations (G3.x) | [`P3-destinations.md`](Documentation/Passation/P3-destinations.md) | Terminée — G3 acceptée (28-09) |
-| P4 Qualification (G4) | [`P4-qualification.md`](Documentation/Passation/P4-qualification.md) | En cours — 4.5 |
+| P4 Qualification (G4) | [`P4-qualification.md`](Documentation/Passation/P4-qualification.md) | En cours — 4.6 |
 | P5 Release 2.0 (G5) | [`P5-release.md`](Documentation/Passation/P5-release.md) | À faire |
 
 ## Références

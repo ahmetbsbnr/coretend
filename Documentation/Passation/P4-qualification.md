@@ -13,8 +13,8 @@
 | 4.2 | Compatibilité : hôte macOS 14 et second Mac | Accepté avec réserve 28-09-2026 ; macOS 14 et second Mac non testés |
 | 4.3 | Performance : corpus, mesures, budgets | Accepté 28-09-2026 — budgets locaux validés, réserves NFR-09 conservées |
 | 4.4 | Revue indépendante architecture/sûreté | Livré — revue indépendante et correctifs qualifiés |
-| 4.5 | Site : zoom, VoiceOver, en-têtes déployés, navigateurs ; bouton menu mobile sans JS ? | En cours |
-| 4.6 | Import 1.x sur copie d’un vrai store 1.x | À faire |
+| 4.5 | Site : zoom, VoiceOver, en-têtes déployés, navigateurs ; bouton menu mobile sans JS ? | Livré — contrôles locaux et headers antérieurs, VoiceOver/déploiement ouverts |
+| 4.6 | Import 1.x sur copie d’un vrai store 1.x | En cours — format SQLite 1.x à prendre en charge, copie réelle attendue |
 
 ## Journal
 
@@ -83,9 +83,19 @@
 - **4.5 :** NFR-11, zoom navigateur/second moteur/headers publics, preuves site existantes.
   Menu mobile reste visible sans JavaScript selon livraison Serre acceptée ; aucun redesign.
 
+### 28-09-2026 — 4.5, contrôles réalisés
+
+- Chrome zoom navigateur 200 % : 20 PASS ; WebKit non persistant 100/200 % : 40 PASS,
+  FR/EN clair/sombre, images lazy chargées après scroll, pas de débordement ni scripts.
+  Skip-link/focus Chrome observés ; quatre captures ouvertes et relues. Menu visible sans JS conservé.
+- Headers publics de l’ancienne livraison présents ; aucune preuve de déploiement Next,
+  aucun déploiement entrepris. VoiceOver parlé/Safari complet NON LANCÉS.
+- Preuve `SiteAccessibilitySmoke.md`, deux rapports JSON datés ; NFR-11 PARTIEL.
+- `make qualify` PASS code 0, `git diff --check` PASS.
+
 ## Point d’arrêt
 
-**4.4 livré ; 4.5 en cours : vérifier site au zoom réel, second moteur et headers publics.**
+**4.5 livré ; 4.6 en cours : ajouter lecture sûre du format SQLite 1.x reconnu.**
 
 Puis qualifier et journaliser 4.4, 4.5 (site), 4.6 (import). Aucun push/P5 autorisé.
 Les hôtes et observations humaines manquants ne sont pas remplacés par une validation générale.

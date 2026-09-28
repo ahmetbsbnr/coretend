@@ -1,0 +1,402 @@
+[
+  {
+    "dark" : false,
+    "images" : true,
+    "lang" : "fr",
+    "page" : "index",
+    "scripts" : 0,
+    "scroll" : 1280,
+    "width" : 1280,
+    "zoom" : 1
+  },
+  {
+    "dark" : false,
+    "images" : true,
+    "lang" : "fr",
+    "page" : "index",
+    "scripts" : 0,
+    "scroll" : 640,
+    "width" : 640,
+    "zoom" : 2
+  },
+  {
+    "dark" : true,
+    "images" : true,
+    "lang" : "fr",
+    "page" : "index",
+    "scripts" : 0,
+    "scroll" : 1280,
+    "width" : 1280,
+    "zoom" : 1
+  },
+  {
+    "dark" : true,
+    "images" : true,
+    "lang" : "fr",
+    "page" : "index",
+    "scripts" : 0,
+    "scroll" : 640,
+    "width" : 640,
+    "zoom" : 2
+  },
+  {
+    "dark" : false,
+    "images" : true,
+    "lang" : "fr",
+    "page" : "features",
+    "scripts" : 0,
+    "scroll" : 1280,
+    "width" : 1280,
+    "zoom" : 1
+  },
+  {
+    "dark" : false,
+    "images" : true,
+    "lang" : "fr",
+    "page" : "features",
+    "scripts" : 0,
+    "scroll" : 640,
+    "width" : 640,
+    "zoom" : 2
+  },
+  {
+    "dark" : true,
+    "images" : true,
+    "lang" : "fr",
+    "page" : "features",
+    "scripts" : 0,
+    "scroll" : 1280,
+    "width" : 1280,
+    "zoom" : 1
+  },
+  {
+    "dark" : true,
+    "images" : true,
+    "lang" : "fr",
+    "page" : "features",
+    "scripts" : 0,
+    "scroll" : 640,
+    "width" : 640,
+    "zoom" : 2
+  },
+  {
+    "dark" : false,
+    "images" : true,
+    "lang" : "fr",
+    "page" : "privacy",
+    "scripts" : 0,
+    "scroll" : 1280,
+    "width" : 1280,
+    "zoom" : 1
+  },
+  {
+    "dark" : false,
+    "images" : true,
+    "lang" : "fr",
+    "page" : "privacy",
+    "scripts" : 0,
+    "scroll" : 640,
+    "width" : 640,
+    "zoom" : 2
+  },
+  {
+    "dark" : true,
+    "images" : true,
+    "lang" : "fr",
+    "page" : "privacy",
+    "scripts" : 0,
+    "scroll" : 1280,
+    "width" : 1280,
+    "zoom" : 1
+  },
+  {
+    "dark" : true,
+    "images" : true,
+    "lang" : "fr",
+    "page" : "privacy",
+    "scripts" : 0,
+    "scroll" : 640,
+    "width" : 640,
+    "zoom" : 2
+  },
+  {
+    "dark" : false,
+    "images" : true,
+    "lang" : "fr",
+    "page" : "developer",
+    "scripts" : 0,
+    "scroll" : 1280,
+    "width" : 1280,
+    "zoom" : 1
+  },
+  {
+    "dark" : false,
+    "images" : true,
+    "lang" : "fr",
+    "page" : "developer",
+    "scripts" : 0,
+    "scroll" : 640,
+    "width" : 640,
+    "zoom" : 2
+  },
+  {
+    "dark" : true,
+    "images" : true,
+    "lang" : "fr",
+    "page" : "developer",
+    "scripts" : 0,
+    "scroll" : 1280,
+    "width" : 1280,
+    "zoom" : 1
+  },
+  {
+    "dark" : true,
+    "images" : true,
+    "lang" : "fr",
+    "page" : "developer",
+    "scripts" : 0,
+    "scroll" : 640,
+    "width" : 640,
+    "zoom" : 2
+  },
+  {
+    "dark" : false,
+    "images" : true,
+    "lang" : "fr",
+    "page" : "support",
+    "scripts" : 0,
+    "scroll" : 1280,
+    "width" : 1280,
+    "zoom" : 1
+  },
+  {
+    "dark" : false,
+    "images" : true,
+    "lang" : "fr",
+    "page" : "support",
+    "scripts" : 0,
+    "scroll" : 640,
+    "width" : 640,
+    "zoom" : 2
+  },
+  {
+    "dark" : true,
+    "images" : true,
+    "lang" : "fr",
+    "page" : "support",
+    "scripts" : 0,
+    "scroll" : 1280,
+    "width" : 1280,
+    "zoom" : 1
+  },
+  {
+    "dark" : true,
+    "images" : true,
+    "lang" : "fr",
+    "page" : "support",
+    "scripts" : 0,
+    "scroll" : 640,
+    "width" : 640,
+    "zoom" : 2
+  },
+  {
+    "dark" : false,
+    "images" : true,
+    "lang" : "en",
+    "page" : "index",
+    "scripts" : 0,
+    "scroll" : 1280,
+    "width" : 1280,
+    "zoom" : 1
+  },
+  {
+    "dark" : false,
+    "images" : true,
+    "lang" : "en",
+    "page" : "index",
+    "scripts" : 0,
+    "scroll" : 640,
+    "width" : 640,
+    "zoom" : 2
+  },
+  {
+    "dark" : true,
+    "images" : true,
+    "lang" : "en",
+    "page" : "index",
+    "scripts" : 0,
+    "scroll" : 1280,
+    "width" : 1280,
+    "zoom" : 1
+  },
+  {
+    "dark" : true,
+    "images" : true,
+    "lang" : "en",
+    "page" : "index",
+    "scripts" : 0,
+    "scroll" : 640,
+    "width" : 640,
+    "zoom" : 2
+  },
+  {
+    "dark" : false,
+    "images" : true,
+    "lang" : "en",
+    "page" : "features",
+    "scripts" : 0,
+    "scroll" : 1280,
+    "width" : 1280,
+    "zoom" : 1
+  },
+  {
+    "dark" : false,
+    "images" : true,
+    "lang" : "en",
+    "page" : "features",
+    "scripts" : 0,
+    "scroll" : 640,
+    "width" : 640,
+    "zoom" : 2
+  },
+  {
+    "dark" : true,
+    "images" : true,
+    "lang" : "en",
+    "page" : "features",
+    "scripts" : 0,
+    "scroll" : 1280,
+    "width" : 1280,
+    "zoom" : 1
+  },
+  {
+    "dark" : true,
+    "images" : true,
+    "lang" : "en",
+    "page" : "features",
+    "scripts" : 0,
+    "scroll" : 640,
+    "width" : 640,
+    "zoom" : 2
+  },
+  {
+    "dark" : false,
+    "images" : true,
+    "lang" : "en",
+    "page" : "privacy",
+    "scripts" : 0,
+    "scroll" : 1280,
+    "width" : 1280,
+    "zoom" : 1
+  },
+  {
+    "dark" : false,
+    "images" : true,
+    "lang" : "en",
+    "page" : "privacy",
+    "scripts" : 0,
+    "scroll" : 640,
+    "width" : 640,
+    "zoom" : 2
+  },
+  {
+    "dark" : true,
+    "images" : true,
+    "lang" : "en",
+    "page" : "privacy",
+    "scripts" : 0,
+    "scroll" : 1280,
+    "width" : 1280,
+    "zoom" : 1
+  },
+  {
+    "dark" : true,
+    "images" : true,
+    "lang" : "en",
+    "page" : "privacy",
+    "scripts" : 0,
+    "scroll" : 640,
+    "width" : 640,
+    "zoom" : 2
+  },
+  {
+    "dark" : false,
+    "images" : true,
+    "lang" : "en",
+    "page" : "developer",
+    "scripts" : 0,
+    "scroll" : 1280,
+    "width" : 1280,
+    "zoom" : 1
+  },
+  {
+    "dark" : false,
+    "images" : true,
+    "lang" : "en",
+    "page" : "developer",
+    "scripts" : 0,
+    "scroll" : 640,
+    "width" : 640,
+    "zoom" : 2
+  },
+  {
+    "dark" : true,
+    "images" : true,
+    "lang" : "en",
+    "page" : "developer",
+    "scripts" : 0,
+    "scroll" : 1280,
+    "width" : 1280,
+    "zoom" : 1
+  },
+  {
+    "dark" : true,
+    "images" : true,
+    "lang" : "en",
+    "page" : "developer",
+    "scripts" : 0,
+    "scroll" : 640,
+    "width" : 640,
+    "zoom" : 2
+  },
+  {
+    "dark" : false,
+    "images" : true,
+    "lang" : "en",
+    "page" : "support",
+    "scripts" : 0,
+    "scroll" : 1280,
+    "width" : 1280,
+    "zoom" : 1
+  },
+  {
+    "dark" : false,
+    "images" : true,
+    "lang" : "en",
+    "page" : "support",
+    "scripts" : 0,
+    "scroll" : 640,
+    "width" : 640,
+    "zoom" : 2
+  },
+  {
+    "dark" : true,
+    "images" : true,
+    "lang" : "en",
+    "page" : "support",
+    "scripts" : 0,
+    "scroll" : 1280,
+    "width" : 1280,
+    "zoom" : 1
+  },
+  {
+    "dark" : true,
+    "images" : true,
+    "lang" : "en",
+    "page" : "support",
+    "scripts" : 0,
+    "scroll" : 640,
+    "width" : 640,
+    "zoom" : 2
+  }
+]
