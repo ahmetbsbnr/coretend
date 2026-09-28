@@ -10,7 +10,7 @@
 | Lot | Intitulé | Statut |
 |---|---|---|
 | 3.1 | Vue d’ensemble + premier lancement | Accepté 27-09-2026 (`6f66447a`) |
-| 3.2 | Nettoyage (inclut un vrai passage par la Corbeille sur dossier jetable, fait par le mainteneur) | Livré — recette en attente (`a76d15b7`, `a874f4f4`) |
+| 3.2 | Nettoyage (inclut un vrai passage par la Corbeille sur dossier jetable, fait par le mainteneur) | Livré — recette en attente (`a76d15b7`, `a874f4f4`, `85d93f24`, `4fd7fd62`) |
 | 3.3 | Explorer | À faire |
 | 3.4 | Doublons et images proches | À faire |
 | 3.5 | Applications | À faire |
@@ -74,6 +74,28 @@
   chaque feuille tombe vers la Corbeille, le compteur monte, les fichiers sont dans la Corbeille
   macOS. Optionnel : supprimer un fichier sélectionné dans le Finder avant de confirmer → sa ligne
   reste avec contour rouge et la raison.
+
+### 28-09-2026 — lot 3.2, retour de recette « pas vu d’animation »
+
+- **Constat :** le mainteneur a déplacé 2 fichiers (journal : `movedToTrash`) sans voir de feuille.
+  Diagnostic (build temporaire, feuille ralentie, déclenchée par la sélection, aucun fichier
+  déplacé) : la feuille existait mais partait du rond de sélection, même vert, bougeait à peine
+  pendant la première moitié de la courbe `chute` puis s’effaçait en traversant. Les racines se
+  dessinaient sous le bord de la fenêtre et une analyse de 14–17 fichiers finit avant qu’elles
+  poussent. Le mainteneur a vu la feuille dans le build de diagnostic : « c’est bon ».
+- **Incident :** pendant le diagnostic, la fenêtre de confirmation de l’app de démonstration a été
+  validée sans clic de l’agent (le clic « Annuler » était bloqué, le Terminal était passé devant) :
+  2 faux fichiers fixture (`Safari-2026-09-23/24-101500.ips`, octets aléatoires) sont allés dans la
+  Corbeille du mainteneur. Cause : bouton destructif par défaut (Retour). Corrigé dans `85d93f24`.
+- **Fait :** `85d93f24` — Retour annule dans toutes les confirmations destructives (Corbeille ×4,
+  effacements d’historique ×2) ; `check_architecture.py` refuse une confirmation destructive sans
+  défaut non destructif (testé). `4fd7fd62` — feuille qui s’ouvre depuis le nom du fichier, reste
+  opaque en tombant, la Corbeille compte et tressaille à l’arrivée ; ligne qui se replie ; défilement
+  vers les racines au lancement ; racines qui atteignent leur profondeur avant la floraison ; tri
+  sans animation.
+- **Vérifié :** `make qualify` PASS ; app fixture : défilement vers les racines, croissance puis
+  floraison.
+- **Non vérifié :** chute de feuille à sa vitesse finale (observée seulement ralentie).
 
 ## Point d’arrêt
 
