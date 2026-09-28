@@ -8,22 +8,31 @@ import AppShell
 import SafetyCore
 import Domain
 
+/// Duplicates, "les pousses jumelles": exact copies found by content, or images that only look
+/// close. Nothing is preselected; each exact group shows which file is kept, and the "Kept" label
+/// hops to another shoot when the person keeps a different one. Only copies the person checks can
+/// go to the Trash, never the kept file.
 struct DuplicateScanView: View {
     let french: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Namespace private var keeperSpace
     @State private var selectingFolder = false
     @State private var scanning = false
     @State private var scanCompletedFiles = 0
     @State private var analysisProgress: DuplicateScanProgress?
+    @State private var rootsPhase: ScanRootsPhase?
     @State private var report: DuplicateScanReport?
-    @State private var status: String?
+    @State private var notice: PageNotice?
     @State private var scanTask: Task<Void, Never>?
     @State private var activeScanID: UUID?
     @State private var selectedRoot: URL?
     @State private var selectedCopies: Set<URL> = []
+    @State private var keepers = DuplicateKeepers()
     @State private var actionReview: ActionReview?
     @State private var actionDialogPresented = false
     @State private var actionService: FileActionService?
     @State private var actionBusy = false
+    @State private var moving = false
     @State private var actionScopeHeld = false
     @State private var actionScopedRoot: URL?
     @State private var similarMode = false
@@ -31,145 +40,67 @@ struct DuplicateScanView: View {
     @State private var previewURL: URL?
     @State private var previewScopeHeld = false
     @State private var previewScopedRoot: URL?
+    @State private var failures: [URL: String] = [:]
+    /// Copies already in the Trash; their group shows what is left, and goes when one file is left.
+    @State private var movedAway: Set<URL> = []
+    @State private var flight = LeafFlight()
+    @State private var scrollTarget: String?
+
+    private var locked: Bool { scanning || actionBusy || actionReview != nil }
+
+    /// Real work done so far: files read, then files hashed or images decoded and compared.
+    private var workDone: Int {
+        switch analysisProgress {
+        case .duplicateHashing(let completed, _), .imageCandidates(let completed, _), .imageComparisons(let completed, _):
+            scanCompletedFiles + completed
+        case nil:
+            scanCompletedFiles
+        }
+    }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
-            VStack(alignment: .leading, spacing: 10) {
-                Text(french ? "Comparer sans décider à votre place" : "Compare files without deciding for you")
-                    .font(.title3.weight(.semibold))
-                Text(french ? "Les choix de conservation et de déplacement restent manuels. Aucun fichier n’est présélectionné." : "Keep and move choices stay manual. No file is preselected.")
-                    .font(.callout).foregroundStyle(Palette.secondaryInk.color)
-            Picker(french ? "Analyse" : "Analysis", selection: $similarMode) {
-                Text(french ? "Doublons exacts" : "Exact duplicates").tag(false)
-                Text(french ? "Images similaires" : "Similar images").tag(true)
-            }
-            .pickerStyle(.segmented)
-            .disabled(scanning || actionBusy || actionReview != nil)
-            Text(similarMode
-                 ? (french ? "Candidats heuristiques : proximité visuelle possible, égalité exacte non établie." : "Heuristic candidates: visual similarity may exist; exact equality is not established.")
-                 : (french ? "Groupes exacts : contenu identique détecté. Choisissez manuellement les copies à examiner." : "Exact groups: identical content detected. Manually choose copies to review."))
-                .font(.caption).foregroundStyle(Palette.secondaryInk.color)
-            }
-            .padding(14)
-            .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 14))
-            Button { selectingFolder = true } label: {
-                Label(copy("duplicates.choose"), systemImage: similarMode ? "photo.on.rectangle.angled" : "doc.on.doc")
-            }
-            .disabled(scanning || actionBusy || actionReview != nil)
-            .accessibilityHint(copy("duplicates.choose.hint"))
-            if let selectedRoot {
-                Label(selectedRoot.path, systemImage: "folder.fill")
-                    .font(.caption.monospaced()).foregroundStyle(Palette.accent.color).textSelection(.enabled)
-                    .padding(12).frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 10))
-                    .accessibilityElement(children: .combine)
-            }
-            if scanning {
-                HStack(spacing: 14) {
-                    ProgressView()
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(progressTitle).font(.headline)
-                        Text(progressDetail).font(.caption).foregroundStyle(Palette.secondaryInk.color)
+        ScrollViewReader { proxy in
+            content
+                .onChange(of: scrollTarget) { _, target in
+                    guard let target else { return }
+                    withAnimation(reduceMotion ? nil : MotionCurve.sap.animation(duration: MotionToken.grow.duration)) {
+                        proxy.scrollTo(target, anchor: .top)
                     }
-                    Spacer()
-                    Button(copy("scan.cancel")) { cancelScan() }
+                    scrollTarget = nil
                 }
-                .padding(14).background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 12))
-                .transition(.opacity.combined(with: .move(edge: .top)))
-                .motion(.standard, value: scanning)
-            }
-            if let status {
-                Label(status, systemImage: "info.circle")
-                    .foregroundStyle(Palette.secondaryInk.color)
-                    .padding(12).frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 10))
-            }
-            if similarMode, let similarReport {
-                if similarReport.candidates.isEmpty {
-                    ContentUnavailableView(french ? "Aucune paire similaire détectée" : "No similar image pairs found", systemImage: "photo.on.rectangle.angled")
-                } else {
-                    Text(french ? "\(similarReport.candidates.count) paires candidates" : "\(similarReport.candidates.count) candidate pairs").font(.headline)
-                    Text(french ? "Comparaison visuelle heuristique. Vérifiez chaque image; aucune suppression proposée." : "Heuristic visual matching. Review every image; no deletion action offered.").foregroundStyle(Palette.secondaryInk.color)
-                    List(similarReport.candidates, id: \.id) { pair in
-                        HStack(alignment: .top, spacing: 12) {
-                            Button { showPreview(pair.first) } label: { imagePreview(pair.first) }
-                                .buttonStyle(.serre(.tile))
-                                .accessibilityLabel(previewLabel(for: pair.first))
-                                .accessibilityHint(french ? "Ouvre l’aperçu Quick Look." : "Opens the Quick Look preview.")
-                            Button { showPreview(pair.second) } label: { imagePreview(pair.second) }
-                                .buttonStyle(.serre(.tile))
-                                .accessibilityLabel(previewLabel(for: pair.second))
-                                .accessibilityHint(french ? "Ouvre l’aperçu Quick Look." : "Opens the Quick Look preview.")
-                            VStack(alignment: .leading) {
-                                Text(pair.first.lastPathComponent).font(.headline)
-                                Text(pair.second.lastPathComponent)
-                            Text(french ? "Écart perceptuel : \(pair.differingBits)/64" : "Perceptual distance: \(pair.differingBits)/64").font(.caption).foregroundStyle(Palette.secondaryInk.color)
-                            }
-                        }
-                        .padding(10)
-                        .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 12))
-                    }
-                }
-                if similarReport.skippedCount > 0 { Text(french ? "\(similarReport.skippedCount) fichiers ignorés (format ou limite)." : "\(similarReport.skippedCount) files skipped (format or limit).") .foregroundStyle(Palette.secondaryInk.color) }
-            }
-            if !similarMode, let report {
-                if report.groups.isEmpty {
-                    ContentUnavailableView(copy("duplicates.none"), systemImage: "doc.on.doc")
-                } else {
-                    Text(copy("duplicates.count", count: report.groups.count)).font(.title3.weight(.semibold))
-                    List(report.groups, id: \.digest) { group in
-                        VStack(alignment: .leading, spacing: 8) {
-                            Label(french ? "Suggestion de conservation — à vérifier" : "Suggested keeper — review before deciding", systemImage: "checkmark.circle")
-                                .font(.caption.weight(.semibold)).foregroundStyle(Palette.accent.color)
-                            Text(group.suggestedKeeper.lastPathComponent).font(.headline)
-                            Button { showPreview(group.suggestedKeeper) } label: {
-                                Label(copy("explore.preview"), systemImage: "eye")
-                            }
-                            .buttonStyle(.borderless)
-                            .accessibilityLabel(previewLabel(for: group.suggestedKeeper))
-                            .accessibilityHint(french ? "Ouvre l’aperçu Quick Look du fichier à conserver." : "Opens Quick Look for the suggested file to keep.")
-                            ForEach(group.files.filter { $0 != group.suggestedKeeper }, id: \.path) { file in
-                                HStack {
-                                    Toggle(isOn: Binding(get: { selectedCopies.contains(file) }, set: { enabled in
-                                        guard !scanning && !actionBusy && actionReview == nil else { return }
-                                        if enabled { selectedCopies.insert(file) } else { selectedCopies.remove(file) }
-                                    })) {
-                                        Label(file.lastPathComponent, systemImage: "doc.on.doc")
-                                    }
-                                    Button { showPreview(file) } label: {
-                                        Label(copy("explore.preview"), systemImage: "eye")
-                                    }
-                                    .buttonStyle(.borderless)
-                                    .accessibilityLabel(previewLabel(for: file))
-                                    .accessibilityHint(french ? "Ouvre l’aperçu Quick Look de cette copie." : "Opens Quick Look for this copy.")
-                                }
-                                .disabled(actionBusy || actionReview != nil)
-                            }
-                        }
-                        .padding(.vertical, 6)
-                    }
-                    Text(french ? "Cochez uniquement les copies que vous avez vérifiées. Elles ne seront déplacées qu’après revue et confirmation." : "Check only copies you have reviewed. They move only after review and confirmation.")
-                        .font(.caption).foregroundStyle(Palette.secondaryInk.color)
-                        .padding(12).frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 10))
-                    Button { Task { await prepareAction() } } label: {
-                        Label(french ? "Examiner \(selectedCopies.count) copies" : "Review \(selectedCopies.count) copies", systemImage: "trash")
-                    }
-                    .disabled(selectedCopies.isEmpty || scanning || actionBusy || actionReview != nil)
-                    .accessibilityHint(french ? "Les copies choisies seront revérifiées avant déplacement vers la Corbeille." : "Chosen copies are revalidated before moving to Trash.")
-                }
-                if !report.issues.isEmpty {
-                    Label(copy("scan.partial"), systemImage: "exclamationmark.triangle")
-                        .foregroundStyle(Palette.caution.color)
-                        .padding(12).frame(maxWidth: .infinity, alignment: .leading)
-                        .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 10))
-                }
-            }
-            if actionBusy { ProgressView() }
         }
+    }
+
+    private var content: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            modes
+            if let selectedRoot {
+                scope(selectedRoot)
+            } else {
+                SerreParcel {
+                    SerreEmptyState(title: copy("duplicates.initial.title"), message: copy("duplicates.initial.message")) {
+                        Button { selectingFolder = true } label: {
+                            Label { Text(copy("explore.choose")) } icon: { SerreIcon(.duplicates, size: 15) }
+                        }
+                        .buttonStyle(.serre(.primary))
+                        .accessibilityHint(copy("duplicates.choose.hint"))
+                        .padding(.top, 6)
+                    }
+                }
+            }
+            if let notice, !notice.nearActions { banner(notice) }
+            if let rootsPhase { roots(rootsPhase).id("duplicates.roots") }
+            if !scanning {
+                if similarMode, let similarReport { similarSection(similarReport) }
+                if !similarMode, let report { exactSection(report) }
+            }
+        }
+        .leafFlightLayer(flight)
+        .motion(.standard, value: notice)
+        .motion(.standard, value: rootsPhase)
         .fileImporter(isPresented: $selectingFolder, allowedContentTypes: [.folder], allowsMultipleSelection: false) { result in
             guard case .success(let urls) = result, let root = urls.first else {
-                status = copy("scan.failed"); return
+                notice = PageNotice(kind: .error, title: copy("scan.failed"), recovery: .chooseAgain); return
             }
             selectedRoot = root
             beginScan(root)
@@ -198,6 +129,260 @@ struct DuplicateScanView: View {
         }
     }
 
+    // MARK: - Sections
+
+    private var modes: some View {
+        SerreParcel {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(copy("duplicates.intro.title")).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
+                Text(copy("duplicates.intro.message")).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                    .padding(.bottom, 6)
+                modeRow(similar: false, title: "duplicates.mode.exact", help: "duplicates.mode.exact.help")
+                modeRow(similar: true, title: "duplicates.mode.similar", help: "duplicates.mode.similar.help")
+            }
+        }
+        .motion(.quick, value: similarMode)
+    }
+
+    private func modeRow(similar: Bool, title: String, help: String) -> some View {
+        let selected = similarMode == similar
+        return Button {
+            guard similarMode != similar else { return }
+            similarMode = similar
+            if let selectedRoot { beginScan(selectedRoot) }
+        } label: {
+            HStack(spacing: 12) {
+                SerreCheck(isOn: selected)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(copy(title)).font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
+                    Text(copy(help)).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                }
+                Spacer(minLength: 0)
+            }
+        }
+        .buttonStyle(.serre(.row(selected: selected)))
+        .disabled(locked)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+
+    private func scope(_ root: URL) -> some View {
+        SerreParcel {
+            HStack(alignment: .center, spacing: 12) {
+                SerreIcon(.duplicates, size: 18).foregroundStyle(Palette.accent.color)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(copy("explore.scope")).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
+                    Text(root.path).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                        .lineLimit(1).truncationMode(.middle).textSelection(.enabled)
+                }
+                .accessibilityElement(children: .combine)
+                Spacer(minLength: 8)
+                Button(copy("explore.chooseOther")) { selectingFolder = true }
+                    .buttonStyle(.serre(.secondary))
+                    .disabled(locked)
+                    .accessibilityHint(copy("duplicates.choose.hint"))
+            }
+        }
+    }
+
+    private func roots(_ phase: ScanRootsPhase) -> some View {
+        SerreParcel {
+            VStack(alignment: .leading, spacing: 12) {
+                ScanRoots(completed: workDone,
+                          count: ProductFormat.count(scanCompletedFiles, french: french),
+                          caption: ProductFormat.filesExamined(scanCompletedFiles, french: french) + "\n"
+                              + (phase == .finished ? copy("scan.finished") : progressTitle + " · " + progressDetail),
+                          phase: phase)
+                if phase == .reading {
+                    Button(copy("scan.cancel")) { cancelScan() }
+                        .buttonStyle(.serre(.secondary))
+                }
+            }
+        }
+        .transition(.opacity)
+    }
+
+    private func banner(_ notice: PageNotice) -> some View {
+        PageNoticeBanner(notice: notice, french: french, disabled: locked, chooseAgain: { selectingFolder = true },
+                         retryScan: selectedRoot.map { root in { beginScan(root) } })
+    }
+
+    /// A group as it stands now: the files still in place, if at least two remain.
+    private func standing(_ group: DuplicateGroup) -> [URL]? {
+        let files = group.files.filter { !movedAway.contains($0) }
+        return files.count > 1 ? files : nil
+    }
+
+    @ViewBuilder
+    private func exactSection(_ report: DuplicateScanReport) -> some View {
+        let groups = report.groups.filter { standing($0) != nil }
+        if report.groups.isEmpty && flight.landed == 0 {
+            SerreEmptyState(title: copy("duplicates.none"), message: copy("duplicates.none.help"))
+        } else {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(copy("duplicates.count", count: groups.count))
+                        .font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
+                    Spacer()
+                    Text(french ? "Aucune sélection automatique" : "Nothing selected automatically")
+                        .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                }
+                ForEach(Array(groups.enumerated()), id: \.element.digest) { index, group in
+                    groupParcel(group).serreRise(index)
+                }
+                Text(copy("duplicates.check"))
+                    .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .leafFlightAnchor("list")
+                HStack(spacing: 14) {
+                    TrashIndicator(landed: flight.landed, moving: moving, french: french)
+                    Spacer()
+                    Button { Task { await prepareAction() } } label: {
+                        Text(french ? "Examiner \(ProductFormat.items(selectedCopies.count, french: true))"
+                                    : "Review \(ProductFormat.items(selectedCopies.count, french: false))")
+                    }
+                    .buttonStyle(.serre(.primary))
+                    .disabled(selectedCopies.isEmpty || locked)
+                    .accessibilityHint(french ? "Les copies choisies seront revérifiées avant déplacement vers la Corbeille." : "Chosen copies are revalidated before moving to Trash.")
+                }
+                if let notice, notice.nearActions { banner(notice) }
+                if !report.issues.isEmpty {
+                    SerreBanner(.partial, title: copy("scan.partial"))
+                }
+            }
+        }
+    }
+
+    private func groupParcel(_ group: DuplicateGroup) -> some View {
+        let kept = keepers.keeper(of: group.digest, suggested: group.suggestedKeeper)
+        return SerreParcel {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("\(ProductFormat.count((standing(group) ?? group.files).count, french: french)) \(copy("duplicates.twins"))")
+                    .font(CoreTendTypography.caption.weight(.semibold)).foregroundStyle(Palette.secondaryInk.color)
+                    .padding(.bottom, 4)
+                ForEach(standing(group) ?? group.files, id: \.path) { file in
+                    shoot(file, group: group, kept: file == kept)
+                }
+            }
+        }
+    }
+
+    /// One shoot of a group: the kept one wears the "Kept" leaf; any other can be checked for the
+    /// Trash or become the kept one.
+    private func shoot(_ file: URL, group: DuplicateGroup, kept: Bool) -> some View {
+        let selected = selectedCopies.contains(file)
+        let failure = failures[file]
+        return HStack(spacing: 10) {
+            Button {
+                guard !kept, !locked else { return }
+                if selected { selectedCopies.remove(file) } else { selectedCopies.insert(file) }
+            } label: {
+                HStack(spacing: 12) {
+                    SerreCheck(isOn: selected).opacity(kept ? 0 : 1)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(file.lastPathComponent).font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
+                            .lineLimit(1).truncationMode(.middle)
+                        Text(relativeFolder(file)).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                            .lineLimit(1).truncationMode(.middle)
+                        if let failure {
+                            Text(copy(failure)).font(CoreTendTypography.caption).foregroundStyle(Palette.danger.color)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    Spacer(minLength: 8)
+                    if kept { keptLabel(group.digest) }
+                }
+            }
+            .buttonStyle(.serre(.row(selected: selected)))
+            // The kept shoot stays bright: it is chosen, not unavailable; clicking it does nothing.
+            .disabled(locked)
+            .accessibilityLabel(file.lastPathComponent)
+            .accessibilityValue(kept ? copy("duplicates.kept") : (failure.map { copy($0) } ?? ""))
+            .accessibilityAddTraits(selected ? .isSelected : [])
+            if !kept {
+                Button(copy("duplicates.keepThis")) {
+                    withAnimation(reduceMotion ? nil : MotionCurve.sprout.animation(duration: 0.38)) {
+                        keepers.keep(file, of: group.digest, files: group.files, selection: &selectedCopies)
+                    }
+                }
+                .buttonStyle(.serre(.icon))
+                .disabled(locked)
+            }
+            Button { showPreview(file) } label: {
+                Image(systemName: "eye").foregroundStyle(Palette.secondaryInk.color)
+            }
+            .buttonStyle(.serre(.icon))
+            .help(copy("explore.preview"))
+            .accessibilityLabel(previewLabel(for: file))
+        }
+        .overlay {
+            if failure != nil { LeafCorner.control.shape.strokeBorder(Palette.danger.color, lineWidth: 1) }
+        }
+        .leafFlightRow(file)
+        .transition(reduceMotion ? .identity : .asymmetric(insertion: .identity, removal: .opacity.combined(with: .scale(scale: 0.6, anchor: .leading))))
+    }
+
+    /// The "Kept" leaf. One per group; it hops to the newly kept shoot.
+    private func keptLabel(_ digest: String) -> some View {
+        HStack(spacing: 5) {
+            RiskLeafShape(level: .low).fill(Palette.onAccent.color).frame(width: 10, height: 10)
+            Text(copy("duplicates.kept")).font(CoreTendTypography.caption.weight(.semibold))
+        }
+        .foregroundStyle(Palette.onAccent.color)
+        .padding(.horizontal, 9).padding(.vertical, 3)
+        .background(Palette.accent.color, in: LeafCorner.control.shape)
+        .matchedGeometryEffect(id: "kept.\(digest)", in: keeperSpace)
+    }
+
+    @ViewBuilder
+    private func similarSection(_ report: SimilarImageReport) -> some View {
+        if report.candidates.isEmpty {
+            SerreEmptyState(title: copy("duplicates.similar.none"), message: copy("duplicates.similar.none.help"))
+        } else {
+            VStack(alignment: .leading, spacing: 14) {
+                Text(french ? "\(ProductFormat.count(report.candidates.count, french: true)) paires proches" : "\(ProductFormat.count(report.candidates.count, french: false)) close pairs")
+                    .font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
+                ForEach(Array(report.candidates.enumerated()), id: \.element.id) { index, pair in
+                    SerreParcel {
+                        HStack(alignment: .center, spacing: 14) {
+                            twin(pair.first)
+                            twin(pair.second)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(pair.first.lastPathComponent).font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
+                                Text(pair.second.lastPathComponent).font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
+                                Text(french ? "Écart perceptuel : \(pair.differingBits)/64" : "Perceptual distance: \(pair.differingBits)/64")
+                                    .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                            }
+                            Spacer(minLength: 0)
+                        }
+                    }
+                    .serreRise(index)
+                }
+                SerreBanner(.note, title: copy("duplicates.mode.similar.help"))
+            }
+        }
+        if report.skippedCount > 0 {
+            SerreBanner(.partial, title: french ? "\(report.skippedCount) fichiers ignorés (format ou limite)." : "\(report.skippedCount) files skipped (format or limit).")
+        }
+    }
+
+    private func twin(_ url: URL) -> some View {
+        Button { showPreview(url) } label: { imagePreview(url) }
+            .buttonStyle(.serre(.tile))
+            .accessibilityLabel(previewLabel(for: url))
+            .accessibilityHint(french ? "Ouvre l’aperçu Quick Look." : "Opens the Quick Look preview.")
+    }
+
+    private func relativeFolder(_ url: URL) -> String {
+        guard let root = selectedRoot else { return url.deletingLastPathComponent().path }
+        let folder = url.deletingLastPathComponent().standardizedFileURL.path
+        let base = root.standardizedFileURL.path
+        guard folder.hasPrefix(base) else { return folder }
+        let rest = folder.dropFirst(base.count).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        return rest.isEmpty ? root.lastPathComponent : root.lastPathComponent + "/" + rest
+    }
+
+    // MARK: - Scanning
+
     private func beginScan(_ root: URL) {
         scanTask?.cancel()
         previewURL = nil
@@ -205,12 +390,18 @@ struct DuplicateScanView: View {
         activeScanID = scanID
         let hasScope = root.startAccessingSecurityScopedResource()
         scanning = true
+        rootsPhase = .reading
+        scrollTarget = "duplicates.roots"
         scanCompletedFiles = 0
         analysisProgress = nil
-        status = nil
+        notice = nil
         report = nil
         similarReport = nil
         selectedCopies = []
+        keepers = DuplicateKeepers()
+        failures = [:]
+        movedAway = []
+        flight.landed = 0
         scanTask = Task {
             var rootFailure: String?
             var partialFailures = Set<String>()
@@ -234,7 +425,8 @@ struct DuplicateScanView: View {
                 try Task.checkCancellation()
                 guard activeScanID == scanID else { return }
                 if let rootFailure {
-                    status = ProductCopy.scanRootFailure(reason: rootFailure, french: french)
+                    rootsPhase = nil
+                    notice = PageNotice(kind: .denied, title: ProductCopy.scanRootFailure(reason: rootFailure, french: french), recovery: .chooseAgain)
                     return
                 }
                 if similarMode {
@@ -248,11 +440,18 @@ struct DuplicateScanView: View {
                     guard activeScanID == scanID else { return }
                     report = result
                 }
-                if !partialFailures.isEmpty { status = ProductCopy.scanPartialFailure(reasons: partialFailures, french: french) }
+                rootsPhase = .finished
+                if !partialFailures.isEmpty {
+                    notice = PageNotice(kind: .partial, title: copy("scan.partial"),
+                                        message: ProductCopy.scanPartialFailure(reasons: partialFailures, french: french))
+                }
             } catch is CancellationError {
-                if activeScanID == scanID { status = copy("scan.cancelled") }
+                if activeScanID == scanID { notice = PageNotice(kind: .note, title: copy("scan.cancelled")) }
             } catch {
-                if activeScanID == scanID { status = copy("scan.failed") }
+                if activeScanID == scanID {
+                    rootsPhase = nil
+                    notice = PageNotice(kind: .error, title: copy("scan.failed"), recovery: .retryScan)
+                }
             }
         }
     }
@@ -261,9 +460,13 @@ struct DuplicateScanView: View {
         scanTask?.cancel()
         activeScanID = nil
         scanning = false
-        scanCompletedFiles = 0
         analysisProgress = nil
-        status = copy("scan.cancelled")
+        notice = PageNotice(kind: .note, title: copy("scan.cancelled"))
+        rootsPhase = .retracted
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(reduceMotion ? 0 : 450))
+            if rootsPhase == .retracted { rootsPhase = nil; scanCompletedFiles = 0 }
+        }
     }
 
     private var progressTitle: String {
@@ -331,7 +534,7 @@ struct DuplicateScanView: View {
 
     private func showPreview(_ url: URL) {
         guard let selectedRoot else {
-            status = copy("preview.unavailable")
+            notice = PageNotice(kind: .error, title: copy("preview.unavailable"), nearActions: true)
             return
         }
         if previewScopeHeld, previewScopedRoot != selectedRoot { releasePreviewScope() }
@@ -339,7 +542,7 @@ struct DuplicateScanView: View {
         let acquiredScope = alreadyScopedToRoot ? false : selectedRoot.startAccessingSecurityScopedResource()
         guard QuickLookCandidate.isAllowed(url, within: selectedRoot) else {
             if acquiredScope { selectedRoot.stopAccessingSecurityScopedResource() }
-            status = copy("preview.unavailable")
+            notice = PageNotice(kind: .error, title: copy("preview.unavailable"), nearActions: true)
             return
         }
         if acquiredScope {
@@ -363,18 +566,20 @@ struct DuplicateScanView: View {
             let executor = SafeActionExecutor(allowedRoots: [root], allowedRules: allowed, trash: MacOSTrashClient())
             let service = FileActionService(validator: .init(), executor: executor, store: store, allowedRoots: [root], allowedRuleIDs: allowed)
             let selections = selectedCopies.sorted { $0.path < $1.path }.map { FileActionSelection(url: $0, ruleID: rule) }
-            let protectedKeepers = exactReport.groups.compactMap { group in
-                group.files.contains(where: selectedCopies.contains) ? group.suggestedKeeper : nil
-            }
+            // The kept file of every touched group is protected: the review refuses to move it and
+            // the move stops if it changed.
+            let protectedKeepers = keepers.protectedKeepers(
+                groups: exactReport.groups.map { (digest: $0.digest, files: $0.files, suggested: $0.suggestedKeeper) },
+                selection: selectedCopies)
             let review = try service.prepareReview(selections, protectedKeepers: protectedKeepers)
             guard await service.recordProposal(review) else {
-                status = french ? "Journal indisponible; action bloquée." : "History unavailable; action blocked."
+                notice = PageNotice(kind: .error, title: french ? "Journal indisponible; action bloquée." : "History unavailable; action blocked.", nearActions: true)
                 return
             }
             actionReview = review
             actionService = service
             actionDialogPresented = true
-        } catch { status = french ? "Revue impossible; aucune copie déplacée." : "Review failed; no copies moved." }
+        } catch { notice = PageNotice(kind: .error, title: french ? "Revue impossible; aucune copie déplacée." : "Review failed; no copies moved.", nearActions: true) }
     }
 
     private func beginExecution() {
@@ -386,15 +591,28 @@ struct DuplicateScanView: View {
     }
 
     @MainActor private func executeAction(_ review: ActionReview, _ service: FileActionService) async {
-        defer { actionBusy = false; releaseActionScope() }
-        do {
-            let batch = try service.confirm(review, accepted: true)
-            let report = await service.execute(batch)
-            let failed = report.items.filter { if case .movedToTrash = $0.outcome { false } else { true } }.count
-            status = french ? "\(report.movedCount) déplacées vers la Corbeille; \(failed) échec(s)." : "\(report.movedCount) copies moved to Trash; \(failed) failure(s)."
-            selectedCopies = []
-            self.report = nil
-        } catch { status = french ? "Action refusée; aucune copie déplacée." : "Action refused; no copies moved." }
+        moving = true
+        defer { moving = false; actionBusy = false; releaseActionScope() }
+        let batch: ConfirmedActionBatch
+        do { batch = try service.confirm(review, accepted: true) } catch {
+            notice = PageNotice(kind: .error, title: french ? "Action refusée; aucune copie déplacée." : "Action refused; no copies moved.", nearActions: true)
+            return
+        }
+        failures = [:]; flight.landed = 0; notice = nil
+        let outcome = await executeShowingEachItem(service, batch, reduceMotion: reduceMotion) { item in
+            let url = item.targetURL
+            guard item.moved else {
+                failures[url] = item.failureKey
+                selectedCopies.remove(url)
+                return
+            }
+            flight.send(url, reduceMotion: reduceMotion)
+            withAnimation(reduceMotion ? nil : MotionCurve.retreat.animation(duration: 0.2)) {
+                selectedCopies.remove(url)
+                movedAway.insert(url)
+            }
+        }
+        notice = .moveOutcome(outcome, french: french)
     }
 
     private func cancelAction() {
@@ -404,7 +622,7 @@ struct DuplicateScanView: View {
         actionReview = nil; actionService = nil
         Task { @MainActor in
             let saved = await service.recordCancellation(review)
-            status = saved ? (french ? "Action annulée; annulation journalisée." : "Action cancelled; cancellation recorded.") : (french ? "Action annulée; journal indisponible." : "Action history unavailable.")
+            notice = PageNotice(kind: .note, title: saved ? (french ? "Action annulée; annulation journalisée." : "Action cancelled; cancellation recorded.") : (french ? "Action annulée; journal indisponible." : "Action history unavailable."), nearActions: true)
             releaseActionScope()
             actionBusy = false
         }

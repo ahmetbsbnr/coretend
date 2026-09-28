@@ -433,6 +433,19 @@ final class AppShellTests: XCTestCase {
         }
     }
 
+    func testDuplicateStatesExistInBothLanguages() {
+        for key in ["duplicates.intro.title", "duplicates.intro.message", "duplicates.mode.exact", "duplicates.mode.exact.help",
+                    "duplicates.mode.similar", "duplicates.mode.similar.help", "duplicates.initial.title", "duplicates.initial.message",
+                    "duplicates.kept", "duplicates.keepThis", "duplicates.twins", "duplicates.similar.none",
+                    "duplicates.similar.none.help", "duplicates.none.help", "duplicates.check"] {
+            let english = ProductCopy.value(for: key, french: false)
+            let french = ProductCopy.value(for: key, french: true)
+            XCTAssertNotEqual(english, key, key)
+            XCTAssertNotEqual(french, key, key)
+            XCTAssertNotEqual(english, french, key)
+        }
+    }
+
     func testCrashReportRuleNamesBothExtensionsItReads() {
         XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: false).contains(".ips"))
         XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: true).contains(".ips"))

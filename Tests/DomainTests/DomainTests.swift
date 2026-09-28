@@ -413,6 +413,38 @@ final class CodeSignatureModelTests: XCTestCase {
     }
 }
 
+final class DuplicateKeepersTests: XCTestCase {
+    private let a = URL(fileURLWithPath: "/tmp/g/a.jpg"), b = URL(fileURLWithPath: "/tmp/g/b.jpg")
+    private let c = URL(fileURLWithPath: "/tmp/g/c.jpg"), other = URL(fileURLWithPath: "/tmp/h/x.jpg")
+
+    func testTheSuggestionIsKeptUntilThePersonPicksAnother() {
+        var keepers = DuplicateKeepers()
+        var selection: Set<URL> = [b, c]
+        XCTAssertEqual(keepers.keeper(of: "g", suggested: a), a)
+        keepers.keep(b, of: "g", files: [a, b, c], selection: &selection)
+        XCTAssertEqual(keepers.keeper(of: "g", suggested: a), b)
+        // Keeping a file takes it out of the copies chosen for the Trash.
+        XCTAssertEqual(selection, [c])
+    }
+
+    func testAFileOutsideTheGroupCannotBecomeItsKeeper() {
+        var keepers = DuplicateKeepers()
+        var selection: Set<URL> = [other]
+        keepers.keep(other, of: "g", files: [a, b, c], selection: &selection)
+        XCTAssertEqual(keepers.keeper(of: "g", suggested: a), a)
+        XCTAssertEqual(selection, [other])
+    }
+
+    func testOnlyTouchedGroupsProtectTheirKeeper() {
+        var keepers = DuplicateKeepers()
+        var selection: Set<URL> = []
+        keepers.keep(c, of: "g", files: [a, b, c], selection: &selection)
+        selection = [a]
+        let groups = [(digest: "g", files: [a, b, c], suggested: a), (digest: "h", files: [other, b], suggested: other)]
+        XCTAssertEqual(keepers.protectedKeepers(groups: groups, selection: selection), [c])
+    }
+}
+
 final class FileActionServiceTests: XCTestCase {
     func testEveryOutcomeThatKeepsTheFileHasAReason() {
         let url = URL(fileURLWithPath: "/tmp/x")
