@@ -12,7 +12,7 @@
 | 3.1 | Vue d’ensemble + premier lancement | Accepté 27-09-2026 (`6f66447a`) |
 | 3.2 | Nettoyage (inclut un vrai passage par la Corbeille sur dossier jetable, fait par le mainteneur) | Livré — le mainteneur a dit « continue » sans recette explicite ; lignes du registre inchangées (`4fd7fd62`) |
 | 3.3 | Explorer | Livré — le mainteneur a dit « continue » sans recette explicite (`0e9fc484`) |
-| 3.4 | Doublons et images proches | Livré — recette en attente (`7f4b9fd7`) |
+| 3.4 | Doublons et images proches | Accepté 28-09-2026 (`7f4b9fd7`) |
 | 3.5 | Applications | À faire |
 | 3.6 | Intégrité | À faire |
 | 3.7 | Performances | À faire |
@@ -128,11 +128,13 @@
   ligne gardée lumineuse, cocher puis « Garder celui-ci » → étiquette déplacée et coche retirée.
 - **Non vérifié :** déplacement réel ; mode images proches (pas d’images dans la fixture).
 - **Recette 3.4 (mainteneur) :** dossier de doublons, changer l’exemplaire gardé, cocher des
-  copies, optionnel : déplacer ; mode images proches sur un dossier de photos.
+  copies, optionnel : déplacer ; mode images proches sur un dossier de photos. **Acceptée le
+  28-09-2026** (« validé ») ; registre : preuves datées, lignes `PARTIEL` (déplacement et images
+  proches non observés).
 
 ## Point d’arrêt
 
-- 3.4 livré, recette en attente. Prochain lot **3.5 — Applications** : inventaire en parcelles
+- 3.4 accepté. Lot en cours **3.5 — Applications** : inventaire en parcelles
   (« la pépinière »), diagnostics d’accès, déplacement d’un bundle via `SerreActionKit`
   (données associées laissées en place, dit clairement).
 - 3.2 et 3.3 : recette explicite à obtenir avant de passer leurs lignes à `VÉRIFIÉ`.

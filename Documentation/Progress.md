@@ -3,6 +3,11 @@
 **Relevé :** 2026-09-27. **État :** reconstruction en cours, non finalisée. Derniers jalons fusionnés : favoris/récents SQLite v4, palette clavier bilingue et écriture batch des récents (PR #40–#44). UI macOS native et VoiceOver non qualifiés. Cahier et plan approuvés; développement sur lignée `next` du dépôt public historique. Le dépôt greenfield initial `rebuild/` reste copie locale de provenance.
 
 
+
+### P3 lot 3.4 — Doublons — 2026-09-28
+
+- Recette mainteneur acceptée : groupes exacts en parcelles, exemplaire gardé choisi par la personne et jamais déplaçable (`DuplicateKeepers`, 3 tests), étiquette « Gardé » qui saute. FR-07, scan.duplicates, clutter.duplicates, scan.similarimages, clutter.similarimages : preuves datées, `PARTIEL` (déplacement réel et images proches non observés).
+- Incident du 28-09 (confirmation Corbeille validée par Retour) corrigé : Retour annule toutes les confirmations destructives, contrôle d’architecture ajouté.
 ### P3 lot 3.1 — Vue d’ensemble et premier lancement — 2026-09-27
 
 - Recette mainteneur acceptée : premier lancement (logo qui germe, trois étapes, Commencer) et Vue d’ensemble Serre (chiffre héros dans la langue de l’app, bande de sol mesurée, dernière activité, chemins vers Explorer et Historique), FR/EN, clair/sombre.
