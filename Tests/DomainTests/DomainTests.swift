@@ -457,6 +457,19 @@ final class ApplicationUpgradeTests: XCTestCase {
     }
 }
 
+final class MemoryUsageTests: XCTestCase {
+    func testUsedMemoryIsMeasuredAndBounded() {
+        let physical = Int64(ProcessInfo.processInfo.physicalMemory)
+        let used = MemoryUsage.usedBytes()
+        guard case .known(let value) = used else { return XCTFail("host_statistics64 should answer on macOS") }
+        XCTAssertGreaterThan(value, 0)
+        XCTAssertLessThanOrEqual(value, physical * 2)
+        XCTAssertNotNil(MemoryUsage.fraction(used: used, physical: physical))
+        XCTAssertNil(MemoryUsage.fraction(used: .unknown(reason: "test"), physical: physical))
+        XCTAssertEqual(MemoryUsage.fraction(used: .known(physical * 3), physical: physical), 1)
+    }
+}
+
 final class DuplicateKeepersTests: XCTestCase {
     private let a = URL(fileURLWithPath: "/tmp/g/a.jpg"), b = URL(fileURLWithPath: "/tmp/g/b.jpg")
     private let c = URL(fileURLWithPath: "/tmp/g/c.jpg"), other = URL(fileURLWithPath: "/tmp/h/x.jpg")
