@@ -515,6 +515,13 @@ final class AppShellTests: XCTestCase {
         XCTAssertEqual(FolderPlots.plots(files: files, under: "/r/Photos").map(\.path), ["/r/Photos/1.jpg", "/r/Photos/2024"])
     }
 
+    func testOverviewPathsExistInBothLanguages() {
+        for key in ["overview.next.cleanup", "overview.next.cleanup.help", "overview.next.duplicates", "overview.next.duplicates.help"] {
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: false), key, key)
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: true), key, key)
+        }
+    }
+
     func testCrashReportRuleNamesBothExtensionsItReads() {
         XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: false).contains(".ips"))
         XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: true).contains(".ips"))

@@ -180,8 +180,10 @@ struct SystemSnapshotView: View {
 
     /// Where to go from here: two paths into the greenhouse.
     private var nextSteps: some View {
-        HStack(alignment: .top, spacing: 14) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 260), spacing: 14)], alignment: .leading, spacing: 14) {
             path(.explore, title: copy("overview.next.explore"), help: copy("overview.next.explore.help"))
+            path(.cleanup, title: copy("overview.next.cleanup"), help: copy("overview.next.cleanup.help"))
+            path(.duplicates, title: copy("overview.next.duplicates"), help: copy("overview.next.duplicates.help"))
             path(.record, title: copy("overview.next.record"), help: copy("overview.next.record.help"))
         }
     }
