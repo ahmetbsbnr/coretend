@@ -16,7 +16,15 @@
 
 ## Journal
 
-_(une entrée datée par lot : commits, vérifications PASS/FAIL/NON LANCÉ, résultat de recette)_
+### 28-09-2026 — préparation sans étape irréversible
+
+- Le mainteneur propose de tester sur un second Mac (M5, macOS 27) via TestFlight. **Impossible
+  en l'état** : aucune identité de signature Apple sur l'hôte (`security find-identity` : 0),
+  TestFlight exige compte Developer, App Store Connect et app signée/sandboxée (5.1). Voie
+  retenue : ZIP local non signé par AirDrop, protocole
+  `Documentation/Evidence/P4-42-second-mac-protocol.md` (SHA-256 consigné) — preuve 4.2 partielle.
+- 5.2 préparé en brouillon : `Documentation/Release/2.0-notes-draft.md` (FR/EN), non publié.
+- Rien de signé, tagué, publié, fusionné ni poussé.
 
 ## Point d’arrêt
 

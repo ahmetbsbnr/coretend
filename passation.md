@@ -37,6 +37,13 @@ en fixture, invariants et particularités de l’hôte :
 
 ## En attente du mainteneur
 
+- **Test second Mac (M5, macOS 27)** : TestFlight impossible (aucune identité de signature).
+  Installer `Artifacts/CoreTend-local-unsigned.zip` par AirDrop et suivre
+  `Documentation/Evidence/P4-42-second-mac-protocol.md`, puis renvoyer la liste remplie.
+- Relire le brouillon `Documentation/Release/2.0-notes-draft.md` (5.2).
+- Pour 5.1 (signature/notarisation, et TestFlight éventuel) : un compte Apple Developer et son
+  identité « Developer ID Application » installés sur l'hôte ; l'agent ne manipule jamais les
+  identifiants.
 - Chemin d’une copie cohérente, autonome, déjà créée du store 1.x pour 4.6 ; lire uniquement
   cette copie en fixture (protocole ci-dessous), ne jamais lire l’original ni omettre son WAL.
 - Hôtes manquants 4.2 et observations d’assistance réelle restent des limites de preuve.
