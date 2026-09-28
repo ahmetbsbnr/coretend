@@ -38,6 +38,21 @@
   coretend-notary …`, mot de passe d'app saisi par le mainteneur) et **son accord pour envoyer
   l'app à Apple** (notarisation), puis agrafage, ZIP/DMG, SHA-256.
 
+### 28-09-2026 — notarisation envoyée (accord du mainteneur : « validé »)
+
+- Le mainteneur ne peut pas créer de profil `notarytool`. Voie retenue : **Xcode Organizer**,
+  qui notarise avec le compte déjà connecté, sans mot de passe d'app. L'app SwiftPM signée est
+  placée dans une archive faite à la main
+  (`~/Library/Developer/Xcode/Archives/2026-09-28/CoreTend 28-09-2026.xcarchive`, Info.plist
+  `ApplicationProperties`), puis Distribute App › **Direct Distribution**.
+- Envoi à 16:29 ; identifiant de soumission `7FB2F08D-1823-4324-9ED3-E7BD526588FD` ; statut
+  « In Progress » au dernier relevé.
+- **Reprendre par :** ouvrir Xcode › Window › Organizer › Archives › CoreTend : si « Ready to
+  distribute », cliquer **Export Notarized App**, puis `xcrun stapler validate`, `spctl -a -vv`,
+  ZIP (`ditto -c -k --keepParent`) et SHA-256, et le consigner ici. Version encore
+  `0.1.0-local (1)`, identifiant `local.coretend.reconstruction` : build de test pour le second
+  Mac, **pas la release 2.0** (5.3 exigera version et identifiant définitifs).
+
 ## Point d’arrêt
 
 **Point d’arrêt actuel :** aucun lot P5 ouvert. Les travaux livrables P4 sont consignés ; G4
