@@ -23,6 +23,10 @@ struct IntegrityView: View {
     @State private var launchAgentsFolder: URL?
     /// Changes per inspected app, so its tags swing into place once.
     @State private var labelSeed = UUID()
+    /// Every app of a folder labelled in one pass.
+    @State private var surveyRows: [(url: URL, signature: CodeSignatureState, quarantine: QuarantineState)] = []
+    @State private var surveying = false
+    @State private var surveyFolder: URL?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -40,6 +44,7 @@ struct IntegrityView: View {
                     }
                 }
             }
+            survey
             loginItems
         }
         .fileImporter(isPresented: $selectingApp, allowedContentTypes: [.applicationBundle], allowsMultipleSelection: false) { result in
@@ -133,6 +138,92 @@ struct IntegrityView: View {
     }
 
     // MARK: - Login items
+
+    /// Labels every app at the top of a folder in one pass: signature and quarantine per app, and a
+    /// count of what macOS refused or could not read. Signals only, never a verdict.
+    private var survey: some View {
+        SerreParcel {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(french ? "Toute la pépinière" : "The whole nursery").font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
+                    .accessibilityAddTraits(.isHeader)
+                Text(french ? "Étiquette toutes les apps d’un dossier en une passe : signature et marqueur de quarantaine, sans rien modifier."
+                            : "Labels every app of a folder in one pass: signature and quarantine marker, changing nothing.")
+                    .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                    .fixedSize(horizontal: false, vertical: true)
+                HStack(spacing: 10) {
+                    ForEach(ApplicationFolders.candidates(home: URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true)), id: \.path) { folder in
+                        Button(folder.path == "/Applications" ? "Applications" : (french ? "Applications (les vôtres)" : "Applications (yours)")) {
+                            runSurvey(folder)
+                        }
+                        .buttonStyle(.serre(surveyFolder == folder ? .primary : .secondary))
+                        .disabled(surveying)
+                    }
+                    if surveying {
+                        Text(french ? "Étiquetage de \(surveyRows.count) apps…" : "Labelling \(surveyRows.count) apps…")
+                            .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                    }
+                }
+                if !surveyRows.isEmpty {
+                    let refused = surveyRows.filter { $0.signature == .invalid }.count
+                    let unreadable = surveyRows.filter { $0.signature == .unavailable }.count
+                    let marked = surveyRows.filter { $0.quarantine == .present }.count
+                    HStack(spacing: 10) {
+                        SerreRiskBadge(.low, label: french ? "\(surveyRows.count - refused - unreadable) validées" : "\(surveyRows.count - refused - unreadable) validated")
+                        if refused > 0 { SerreRiskBadge(.high, label: french ? "\(refused) refusées" : "\(refused) refused") }
+                        if unreadable > 0 { SerreRiskBadge(.medium, label: french ? "\(unreadable) illisibles" : "\(unreadable) unreadable") }
+                        Text(french ? "· \(marked) avec marqueur de quarantaine" : "· \(marked) with a quarantine marker")
+                            .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                    }
+                    VStack(spacing: 2) {
+                        ForEach(Array(surveyRows.sorted { rank($0.signature) < rank($1.signature) }.enumerated()), id: \.element.url.path) { index, row in
+                            HStack(spacing: 12) {
+                                Image(nsImage: NSWorkspace.shared.icon(forFile: row.url.path))
+                                    .resizable().frame(width: 22, height: 22).accessibilityHidden(true)
+                                Text(row.url.deletingPathExtension().lastPathComponent)
+                                    .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color).lineLimit(1)
+                                Spacer()
+                                SerreRiskBadge(row.signature == .valid ? .low : (row.signature == .invalid ? .high : .medium),
+                                               label: signatureText(row.signature))
+                                Text(row.quarantine == .present ? (french ? "quarantaine" : "quarantine")
+                                     : (row.quarantine == .absent ? "—" : (french ? "illisible" : "unreadable")))
+                                    .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                                    .frame(width: 80, alignment: .trailing)
+                                    .help(quarantineText(row.quarantine))
+                            }
+                            .padding(.vertical, 4)
+                            .serrePress(index)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func rank(_ state: CodeSignatureState) -> Int {
+        switch state {
+        case .invalid: 0
+        case .unavailable: 1
+        case .valid: 2
+        }
+    }
+
+    private func runSurvey(_ folder: URL) {
+        surveyFolder = folder
+        surveyRows = []
+        surveying = true
+        Task {
+            let apps = ((try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)) ?? [])
+                .filter { $0.pathExtension == "app" }
+                .sorted { $0.lastPathComponent.localizedStandardCompare($1.lastPathComponent) == .orderedAscending }
+            for app in apps {
+                let result = await Task.detached(priority: .utility) {
+                    (MacOSCodeSignatureInspector().inspect(at: app).state, MacOSQuarantineInspector().inspect(at: app).state)
+                }.value
+                surveyRows.append((app, result.0, result.1))
+            }
+            surveying = false
+        }
+    }
 
     private var loginItems: some View {
         SerreParcel {
