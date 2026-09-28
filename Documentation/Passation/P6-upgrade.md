@@ -8,9 +8,9 @@
 
 | Lot | Intitulé | Statut |
 |---|---|---|
-| U1 | Espace (largeur adaptative, deux colonnes) | En cours |
-| U2 | Menu de la barre des menus | À faire |
-| U3 | Vue d'ensemble « tableau de serre » | À faire |
+| U1 | Espace (largeur adaptative, deux colonnes) | Livré (`eddb70d6`) |
+| U2 | Menu de la barre des menus | En partie (`eddb70d6` : apparence, texte) |
+| U3 | Vue d'ensemble « tableau de serre » | En partie (`eddb70d6` : activité avec contexte) |
 | U4 | Applications (taille, tri, détail, échecs expliqués) | À faire |
 | U5 | Accueil | À faire |
 | U6 | Réglages en fenêtre dédiée | À faire |
@@ -28,7 +28,8 @@
 
 ## Point d'arrêt
 
-- U1 en cours.
+- `eddb70d6` : U1 livré ; U2/U3 en partie. Suite : **U4 Applications** (taille, tri, panneau de détail, échec Corbeille expliqué, « Fichiers autour » par nom), puis U2/U3 restants, U5, U6, U7, U8.
+- Capture d'écran d'une app en fixture quand le Terminal est en plein écran : `swiftc Scripts/capture_window_helper.swift`, puis `screencapture -l <fenêtre>`.
 
 ## Problèmes ouverts
 
