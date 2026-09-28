@@ -152,8 +152,9 @@ public struct ScanRoots: View {
         case .retracted:
             withAnimation(MotionCurve.retreat.animation(duration: 0.4)) { shownDepth = 0 }
         case .finished:
-            shownDepth = target
-            withAnimation(MotionCurve.sap.animation(duration: MotionToken.bloom.duration)) { bloomed = true }
+            // A quick scan ends before the roots have grown: they reach their depth, then bloom.
+            withAnimation(MotionCurve.sap.animation(duration: MotionToken.grow.duration)) { shownDepth = target }
+            withAnimation(MotionCurve.sap.animation(duration: MotionToken.bloom.duration).delay(MotionToken.grow.duration * 0.7)) { bloomed = true }
         }
     }
 }

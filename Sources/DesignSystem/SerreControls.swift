@@ -59,14 +59,20 @@ public struct SerreCheck: View {
 }
 
 /// A leaf that falls from a row to the Trash indicator (UI guide § 8, "Déplacement vers la
-/// Corbeille"): it drifts sideways with sap while it drops with the falling curve, which bends
-/// its path, and turns as it goes (500 ms). Its owner removes it after `duration`. It is only
-/// shown for a file that has actually been moved; under Reduce Motion it is never shown.
+/// Corbeille"): the row's file first becomes a leaf (it opens with a small spring), then the leaf
+/// falls, drifting sideways with sap while it drops with the falling curve, which bends its path,
+/// and turning as it goes. It stays opaque until it reaches the Trash; its owner removes it after
+/// `duration`. It is only shown for a file that has actually been moved; under Reduce Motion it is
+/// never shown.
 public struct FallingLeaf: View {
-    public static let duration = 0.5
+    /// Opening, then falling.
+    public static let opening = 0.14
+    public static let fall = 0.5
+    public static let duration = opening + fall
 
     let from: CGPoint
     let to: CGPoint
+    @State private var opened = false
     @State private var landed = false
 
     public init(from: CGPoint, to: CGPoint) {
@@ -77,21 +83,23 @@ public struct FallingLeaf: View {
     public var body: some View {
         RiskLeafShape(level: .low)
             .fill(Palette.accent.color)
-            .frame(width: 16, height: 16)
-            .rotationEffect(.degrees(landed ? 150 : 0))
-            .scaleEffect(landed ? 0.6 : 1)
-            .opacity(landed ? 0.2 : 1)
-            .animation(MotionCurve.sap.animation(duration: Self.duration)) {
+            .overlay(RiskLeafShape(level: .low).stroke(Palette.onAccent.color.opacity(0.5), lineWidth: 1))
+            .frame(width: 22, height: 22)
+            .shadow(color: Palette.deep.color.opacity(0.5), radius: 4, y: 2)
+            .scaleEffect(landed ? 0.7 : (opened ? 1 : 0.3))
+            .rotationEffect(.degrees(landed ? 140 : -20))
+            .animation(MotionCurve.sap.animation(duration: Self.fall)) {
                 $0.offset(x: landed ? to.x - from.x : 0)
             }
-            .animation(MotionCurve.fall.animation(duration: Self.duration)) {
+            .animation(MotionCurve.fall.animation(duration: Self.fall)) {
                 $0.offset(y: landed ? to.y - from.y : 0)
             }
             .position(from)
             .allowsHitTesting(false)
             .accessibilityHidden(true)
             .onAppear {
-                withAnimation(MotionCurve.fall.animation(duration: Self.duration)) { landed = true }
+                withAnimation(MotionCurve.sprout.animation(duration: Self.opening)) { opened = true }
+                withAnimation(MotionCurve.fall.animation(duration: Self.fall).delay(Self.opening)) { landed = true }
             }
     }
 }
