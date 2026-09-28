@@ -224,7 +224,7 @@ private struct CoreTendMenuBar: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 10) {
-                SerreLogo(size: 26, germinates: false)
+                SerreLogo(size: 26, germinates: false).ambientSway(degrees: 5)
                 Text("CoreTend").font(.custom("IowanOldStyle-Bold", size: 18, relativeTo: .title3)).foregroundStyle(Palette.ink.color)
             }
             MenuBarMetricsView(french: french)
@@ -240,6 +240,7 @@ private struct CoreTendMenuBar: View {
                     } label: {
                         Label { Text(ProductCopy.value(for: destination.titleKey, french: french)) } icon: {
                             SerreIcon(destination.glyph, size: 15).foregroundStyle(Palette.accent.color)
+                                .ambientSway(degrees: 4, phase: Double(destination.shortcutNumber) * 0.61)
                         }
                         .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -261,44 +262,113 @@ private struct CoreTendMenuBar: View {
         .padding(16)
         .frame(width: 360, alignment: .leading)
         .tint(Palette.accent.color)
-        .background(Palette.canvas.color)
+        .background(LivingBackdrop())
+        // The menu is only on screen while it is open: it lives while it is seen.
+        .environment(\.serreAmbientAllowed, true)
     }
 }
 
+/// The welcome, in three pages of the greenhouse: what CoreTend is, how it works, what it will
+/// never do. The scene lives here too (the sheet is the active window).
 private struct OnboardingView: View {
     let french: Bool
     let finish: () -> Void
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var page = 0
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            SerreLogo(size: 64, germinates: true)
-            Text(ProductCopy.value(for: "onboarding.title", french: french)).font(CoreTendTypography.pageTitle)
-            Text(ProductCopy.value(for: "onboarding.scope", french: french))
-                .font(CoreTendTypography.body).fixedSize(horizontal: false, vertical: true)
-            VStack(alignment: .leading, spacing: 10) {
-                ForEach(1...3, id: \.self) { step in
-                    HStack(alignment: .top, spacing: 12) {
-                        Text("\(step)")
-                            .font(.custom("IowanOldStyle-Bold", size: 16, relativeTo: .headline))
-                            .foregroundStyle(Palette.onAccent.color)
-                            .frame(width: 28, height: 28)
-                            .background(Palette.accent.color, in: LeafCorner.control.shape)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(ProductCopy.value(for: "onboarding.step\(step).title", french: french))
-                                .font(CoreTendTypography.body.weight(.semibold))
-                            Text(ProductCopy.value(for: "onboarding.step\(step).body", french: french))
-                                .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                    }
-                    .serreRise(step + 2)
+        VStack(alignment: .leading, spacing: 20) {
+            ZStack {
+                switch page {
+                case 0: welcome.transition(pageTransition)
+                case 1: how.transition(pageTransition)
+                default: never.transition(pageTransition)
                 }
+            }
+            .frame(minHeight: 380, alignment: .top)
+            HStack(spacing: 10) {
+                // One leaf per page; the current one is open.
+                ForEach(0..<3, id: \.self) { index in
+                    RiskLeafShape(level: .low)
+                        .fill(index == page ? Palette.accent.color : Palette.strongSeparator.color)
+                        .frame(width: index == page ? 14 : 10, height: index == page ? 14 : 10)
+                }
+                Spacer()
+                if page > 0 {
+                    Button(ProductCopy.value(for: "onboarding.back", french: french)) { go(page - 1) }
+                        .buttonStyle(.serre(.secondary))
+                }
+                if page < 2 {
+                    Button(ProductCopy.value(for: "onboarding.next", french: french)) { go(page + 1) }
+                        .keyboardShortcut(.defaultAction).buttonStyle(.serre(.primary))
+                } else {
+                    Button(ProductCopy.value(for: "onboarding.start", french: french), action: finish)
+                        .keyboardShortcut(.defaultAction).buttonStyle(.serre(.primary))
+                }
+            }
+        }
+        .padding(32).frame(width: 620)
+        .background(LivingBackdrop())
+        .environment(\.serreAmbientAllowed, true)
+    }
+
+    private var pageTransition: AnyTransition {
+        reduceMotion ? .opacity : .asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity),
+                                              removal: .move(edge: .leading).combined(with: .opacity))
+    }
+
+    private func go(_ next: Int) {
+        withAnimation(reduceMotion ? nil : MotionCurve.sap.animation(duration: MotionToken.grow.duration)) { page = next }
+    }
+
+    private var welcome: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 14) {
+                SerreLogo(size: 64, germinates: true).ambientSway(degrees: 5)
+                Text(ProductCopy.value(for: "onboarding.title", french: french)).font(CoreTendTypography.pageTitle)
+                    .foregroundStyle(Palette.ink.color)
+            }
+            Text(ProductCopy.value(for: "onboarding.lede", french: french))
+                .font(CoreTendTypography.lede).foregroundStyle(Palette.ink.color)
+                .fixedSize(horizontal: false, vertical: true)
+            GreenhouseScene(state: GreenhouseState(freeFraction: 0.75, lastActionFailed: false, recentlyPruned: false))
+            Text(ProductCopy.value(for: "onboarding.scope", french: french))
+                .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var how: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Text(ProductCopy.value(for: "onboarding.how", french: french)).font(CoreTendTypography.pageTitle)
+                .foregroundStyle(Palette.ink.color)
+            ForEach(Array([(SerreGlyph.explore, 1), (.search, 2), (.cleanup, 3)].enumerated()), id: \.offset) { order, item in
+                HStack(alignment: .center, spacing: 16) {
+                    DestinationPlant(item.0)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(ProductCopy.value(for: "onboarding.step\(item.1).title", french: french))
+                            .font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
+                        Text(ProductCopy.value(for: "onboarding.step\(item.1).body", french: french))
+                            .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .serreRise(order)
+            }
+        }
+    }
+
+    private var never: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(ProductCopy.value(for: "onboarding.never.title", french: french)).font(CoreTendTypography.pageTitle)
+                .foregroundStyle(Palette.ink.color)
+            ForEach(1...3, id: \.self) { index in
+                SerreSignalTag(.good, title: ProductCopy.value(for: "onboarding.never\(index)", french: french), order: index)
             }
             Text(ProductCopy.value(for: "onboarding.privacy", french: french))
                 .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-            HStack { Spacer(); Button(ProductCopy.value(for: "onboarding.start", french: french), action: finish).keyboardShortcut(.defaultAction).buttonStyle(.serre(.primary)) }
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(32).frame(width: 520)
-        .background(Palette.surface.color)
     }
 }
 

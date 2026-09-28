@@ -252,6 +252,12 @@ public enum ProductCopy {
         "onboarding.title": "Welcome to CoreTend",
         "onboarding.scope": "Choose folders yourself. Scans stay local and read-only. Any move requires selection, review and confirmation to macOS Trash.",
         "onboarding.privacy": "CoreTend does not request Full Disk Access. You can begin without granting additional access.",
+        "onboarding.lede": "CoreTend looks after your Mac like a greenhouse: it observes, explains, and only prunes what you choose.",
+        "onboarding.how": "How it grows", "onboarding.never.title": "What CoreTend will never do",
+        "onboarding.never1": "Ask for Full Disk Access or your password.",
+        "onboarding.never2": "Erase anything for good: every move goes to the macOS Trash, where you can restore it.",
+        "onboarding.never3": "Send anything anywhere: no network, no telemetry.",
+        "onboarding.next": "Continue", "onboarding.back": "Back",
         "onboarding.start": "Get started"
     ]
     public static let french: [String: String] = [
@@ -447,6 +453,12 @@ public enum ProductCopy {
         "onboarding.title": "Bienvenue dans CoreTend",
         "onboarding.scope": "Choisissez vous-même les dossiers. Les scans restent locaux et en lecture seule. Tout déplacement demande sélection, revue et confirmation vers la Corbeille macOS.",
         "onboarding.privacy": "CoreTend ne demande pas l’accès intégral au disque. Vous pouvez commencer sans autoriser d’accès supplémentaire.",
+        "onboarding.lede": "CoreTend entretient votre Mac comme une serre : il observe, explique, et ne taille que ce que vous choisissez.",
+        "onboarding.how": "Comment elle pousse", "onboarding.never.title": "Ce que CoreTend ne fera jamais",
+        "onboarding.never1": "Demander l’accès complet au disque ou votre mot de passe.",
+        "onboarding.never2": "Effacer définitivement : tout déplacement va dans la Corbeille de macOS, d’où vous pouvez le récupérer.",
+        "onboarding.never3": "Envoyer quoi que ce soit : ni réseau, ni télémétrie.",
+        "onboarding.next": "Continuer", "onboarding.back": "Retour",
         "onboarding.start": "Commencer"
     ]
     public static func value(for key: String, french isFrench: Bool) -> String {

@@ -4,6 +4,9 @@ import SwiftUI
 /// Never nest one parcel in another; use a separator inside instead.
 public struct SerreParcel<Content: View>: View {
     let content: Content
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// A parcel takes one breath when it appears: it settles into the page.
+    @State private var settled = false
 
     public init(@ViewBuilder content: () -> Content) { self.content = content() }
 
@@ -13,7 +16,13 @@ public struct SerreParcel<Content: View>: View {
             .padding(20)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Palette.surface.color, in: shape)
-            .overlay(shape.strokeBorder(Palette.separator.color, lineWidth: 1))
+            .overlay(shape.strokeBorder(settled ? Palette.separator.color : Palette.accent.color.opacity(0.5), lineWidth: 1))
+            .scaleEffect(settled ? 1 : 0.985)
+            .onAppear {
+                guard !settled else { return }
+                if reduceMotion { settled = true; return }
+                withAnimation(MotionCurve.sprout.animation(duration: 0.6)) { settled = true }
+            }
     }
 }
 
