@@ -130,3 +130,28 @@ public struct OncePulse: View {
             }
     }
 }
+
+/// A herbarium entry pressed into its page when the page appears (UI guide § 8, Record: scale
+/// 1.02 → 1, 200 ms), `order` entries after the first (35 ms apart, 240 ms at most). Under Reduce
+/// Motion it is simply there.
+public struct SerrePress: ViewModifier {
+    let order: Int
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var pressed = false
+
+    public func body(content: Content) -> some View {
+        content
+            .scaleEffect(pressed ? 1 : 1.02, anchor: .leading)
+            .opacity(pressed ? 1 : 0)
+            .onAppear {
+                guard !pressed else { return }
+                if reduceMotion { pressed = true; return }
+                withAnimation(MotionCurve.sap.animation(duration: 0.2).delay(min(Double(order) * 0.035, 0.24))) { pressed = true }
+            }
+    }
+}
+
+public extension View {
+    /// Presses the view into place as the `order`-th entry of its page.
+    func serrePress(_ order: Int) -> some View { modifier(SerrePress(order: order)) }
+}
