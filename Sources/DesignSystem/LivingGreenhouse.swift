@@ -17,7 +17,7 @@ public struct AmbientLife {
     }
 
     /// Low cadence: the greenhouse breathes, it does not flicker.
-    public static let frameInterval = 1.0 / 15.0
+    public static let frameInterval = 1.0 / 10.0
 }
 
 /// The light of the greenhouse at a given hour: a warm dawn, a clear noon, a deep evening.
