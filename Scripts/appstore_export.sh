@@ -71,5 +71,5 @@ if [[ -n "${CORETEND_ASC_KEY_PATH:-}" ]]; then
                   -authenticationKeyIssuerID "$CORETEND_ASC_ISSUER")
 fi
 xcodebuild -exportArchive -archivePath "$archive" -exportOptionsPlist "$options" -exportPath "$out" \
-  -allowProvisioningUpdates "${authentication[@]}"
+  -allowProvisioningUpdates ${authentication[@]+"${authentication[@]}"}
 printf 'Archive: %s\nOutput: %s\n' "$archive" "$out"
