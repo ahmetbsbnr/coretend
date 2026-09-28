@@ -27,6 +27,7 @@ struct SettingsView: View {
     @State private var ownSignature: CodeSignatureReport?
     @State private var status: String?
     @AppStorage("coretend.livingGreenhouse") private var livingGreenhouse = true
+    @State private var tab = "general"
 
     var body: some View {
         VStack(spacing: 0) {
@@ -38,9 +39,28 @@ struct SettingsView: View {
                 Spacer()
             }
             .padding(.horizontal, 24).padding(.top, 22).padding(.bottom, 12)
+            HStack(spacing: 8) {
+                ForEach([("general", french ? "Général" : "General", SerreGlyph.settings),
+                         ("access", french ? "Accès" : "Access", SerreGlyph.explore),
+                         ("privacy", french ? "Confidentialité" : "Privacy", SerreGlyph.integrity),
+                         ("data", french ? "Données" : "Data", SerreGlyph.record)], id: \.0) { item in
+                    Button {
+                        withAnimation(MotionToken.standard.animation(reduceMotion: false)) { tab = item.0 }
+                    } label: {
+                        Label { Text(item.1) } icon: { SerreIcon(item.2, size: 15) }
+                            .font(CoreTendTypography.body).foregroundStyle(tab == item.0 ? Palette.ink.color : Palette.secondaryInk.color)
+                    }
+                    .buttonStyle(.serre(.row(selected: tab == item.0)))
+                    .fixedSize()
+                    .accessibilityAddTraits(tab == item.0 ? .isSelected : [])
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 24).padding(.bottom, 10)
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
                     if let status { SerreBanner(.note, title: status) }
+                    if tab == "general" {
                     section(french ? "Langue" : "Language") {
                         choices([("system", ProductCopy.value(for: "settings.system", french: french)), ("fr", "Français"), ("en", "English")],
                                 selection: $language)
@@ -57,6 +77,13 @@ struct SettingsView: View {
                         Toggle(french ? "Laisser la serre vivre" : "Let the greenhouse live", isOn: $livingGreenhouse)
                             .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
                     }
+                    section(french ? "Barre des menus" : "Menu bar") {
+                        Toggle(ProductCopy.value(for: "settings.menubar.title", french: french), isOn: $menuBarEnabled)
+                            .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
+                        note(ProductCopy.value(for: "settings.menubar.help", french: french))
+                    }
+                    }
+                    if tab == "access" {
                     section(french ? "Exclusions locales" : "Local exclusions",
                             help: french ? "Les analyses ignoreront ces dossiers lors des prochains parcours. Rien n’est supprimé." : "Scans will skip these folders in future scans. Nothing is deleted.") {
                         ForEach(exclusions, id: \.self) { path in
@@ -82,6 +109,8 @@ struct SettingsView: View {
                         note(ProductCopy.value(for: "settings.folderaccess.help", french: french))
                         note(ProductCopy.value(for: "settings.fulldiskaccess.help", french: french))
                     }
+                    }
+                    if tab == "privacy" {
                     section(ProductCopy.value(for: "settings.signature.title", french: french)) {
                         SerreSignalTag(signatureTone(ownSignature?.state), title: ownSignature.map { signatureText($0.state) }
                                         ?? ProductCopy.value(for: "settings.signature.unavailable", french: french)) {
@@ -96,12 +125,13 @@ struct SettingsView: View {
                             }
                         }
                     }
-                    section(french ? "Données héritées" : "Legacy data",
-                            help: french ? "Copie SQLite 1.x : exclusions uniquement. JSON v1 : exclusions et langue. Le fichier source reste intact." : "SQLite 1.x copy: exclusions only. JSON v1: exclusions and language. The source file remains unchanged.") {
-                        Button(readingLegacy ? (french ? "Lecture…" : "Reading…") : importing ? (french ? "Import…" : "Importing…") : (french ? "Choisir une copie 1.x…" : "Choose a 1.x copy…")) { chooseLegacy = true }
+                    section(french ? "Diagnostic privé" : "Private diagnostics",
+                            help: french ? "L’aperçu contient version, schéma et compteurs d’événements. Aucun chemin, nom de fichier ni détail d’événement." : "Preview includes app version, schema and event counts. No paths, file names or event details.") {
+                        Button(french ? "Prévisualiser l’export…" : "Preview export…") { Task { await buildDiagnosticPreview() } }
                             .buttonStyle(.serre(.secondary))
-                            .disabled(importing || readingLegacy)
                     }
+                    }
+                    if tab == "data" {
                     section(french ? "Conservation des données" : "Data retention") {
                         note(french ? "L’activité reste dans la base locale jusqu’à son effacement explicite dans Historique. Les préférences et exclusions restent jusqu’à leur modification ou au retrait de la base." : "Activity stays in the local database until you explicitly clear it in Record. Preferences and exclusions remain until changed or the database is removed.")
                         note(french ? "Les relevés Performances sont conservés 30 jours et limités à 500. Vous pouvez les effacer dans Performances ; une nouvelle ouverture de cette vue créera un nouveau relevé." : "Performance readings are kept for 30 days and capped at 500. You can clear them in Performance; reopening that view creates a new reading.")
@@ -109,15 +139,12 @@ struct SettingsView: View {
                             .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
                         note(french ? "Désactivé par défaut. Activé, la dernière analyse Explorer mémorise jusqu’à 100 chemins locaux et leur dernière taille connue. Désactivez-le pour arrêter cet enregistrement ; effacez les éléments dans Vue d’ensemble." : "Off by default. When enabled, the latest Explore scan stores up to 100 local paths and their last known size. Turn it off to stop recording; remove entries in Overview.")
                     }
-                    section(french ? "Barre des menus" : "Menu bar") {
-                        Toggle(ProductCopy.value(for: "settings.menubar.title", french: french), isOn: $menuBarEnabled)
-                            .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
-                        note(ProductCopy.value(for: "settings.menubar.help", french: french))
-                    }
-                    section(french ? "Diagnostic privé" : "Private diagnostics",
-                            help: french ? "L’aperçu contient version, schéma et compteurs d’événements. Aucun chemin, nom de fichier ni détail d’événement." : "Preview includes app version, schema and event counts. No paths, file names or event details.") {
-                        Button(french ? "Prévisualiser l’export…" : "Preview export…") { Task { await buildDiagnosticPreview() } }
+                    section(french ? "Données héritées" : "Legacy data",
+                            help: french ? "Copie SQLite 1.x : exclusions uniquement. JSON v1 : exclusions et langue. Le fichier source reste intact." : "SQLite 1.x copy: exclusions only. JSON v1: exclusions and language. The source file remains unchanged.") {
+                        Button(readingLegacy ? (french ? "Lecture…" : "Reading…") : importing ? (french ? "Import…" : "Importing…") : (french ? "Choisir une copie 1.x…" : "Choose a 1.x copy…")) { chooseLegacy = true }
                             .buttonStyle(.serre(.secondary))
+                            .disabled(importing || readingLegacy)
+                    }
                     }
                 }
                 .padding(.horizontal, 24).padding(.bottom, 20)
@@ -133,7 +160,7 @@ struct SettingsView: View {
             }
             .padding(12)
         }
-        .frame(minWidth: 600, idealWidth: 660, minHeight: 440, idealHeight: 620, maxHeight: 720)
+        .frame(minWidth: 680, idealWidth: 760, minHeight: 520, idealHeight: 640, maxHeight: 760)
         .background(Palette.canvas.color)
         .task {
             await load()
