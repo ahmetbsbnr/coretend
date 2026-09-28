@@ -26,6 +26,7 @@ struct SettingsView: View {
     @State private var diagnosticSummary = ""
     @State private var ownSignature: CodeSignatureReport?
     @State private var status: String?
+    @AppStorage("coretend.livingGreenhouse") private var livingGreenhouse = true
 
     var body: some View {
         VStack(spacing: 0) {
@@ -50,6 +51,11 @@ struct SettingsView: View {
                                  (AppearancePreference.light, french ? "Clair" : "Light"),
                                  (AppearancePreference.dark, french ? "Sombre" : "Dark")], selection: $appearance)
                             .disabled(!CoreTendPreferences().usesPersistentStorage)
+                    }
+                    section(french ? "Serre vivante" : "Living greenhouse",
+                            help: french ? "Les feuilles bougent doucement quand la fenêtre est active. Tout s’arrête fenêtre inactive ou cachée, en mode économie d’énergie et avec « Réduire les animations »." : "Leaves move gently while the window is active. Everything stops when the window is inactive or hidden, in Low Power Mode and with Reduce Motion.") {
+                        Toggle(french ? "Laisser la serre vivre" : "Let the greenhouse live", isOn: $livingGreenhouse)
+                            .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
                     }
                     section(french ? "Exclusions locales" : "Local exclusions",
                             help: french ? "Les analyses ignoreront ces dossiers lors des prochains parcours. Rien n’est supprimé." : "Scans will skip these folders in future scans. Nothing is deleted.") {
