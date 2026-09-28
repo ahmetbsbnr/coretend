@@ -382,6 +382,8 @@ private struct DestinationView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
+                // Each page opens with a vine growing across its top (caused by navigation).
+                VineSweep().padding(.bottom, -12)
                 HStack(alignment: .bottom, spacing: 20) {
                     VStack(alignment: .leading, spacing: 8) {
                         Text(ProductCopy.value(for: destination.titleKey, french: french))
