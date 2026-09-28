@@ -3,41 +3,36 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex, nofollow">
-  <meta name="description" content="Developer notes for the unreleased CoreTend macOS reconstruction: local build products, interface boundaries and known qualification gaps.">
-  <link rel="canonical" href="developer.html">
-  <link rel="alternate" hreflang="en" href="developer.html">
+  <meta name="description" content="Build CoreTend 2.0 from source: a Swift 6 package with no runtime dependency, its design system, safety rules and contribution guide.">
+  <meta name="theme-color" content="#0F2019">
   <link rel="alternate" hreflang="fr" href="../fr/developer.html">
-  <link rel="alternate" hreflang="x-default" href="../index.html">
+  <link rel="icon" href="../brand/coretend-mark-dark.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../brand/coretend-app-icon-1024.png">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Build and inspect the source — CoreTend">
-  <meta property="og:description" content="Developer notes for the unreleased CoreTend macOS reconstruction: local build products, interface boundaries and known qualification gaps.">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'">
-  <title>Build and inspect the source — CoreTend</title>
+  <meta property="og:title" content="Open source, built in the open — CoreTend">
+  <meta property="og:description" content="Build CoreTend 2.0 from source: a Swift 6 package with no runtime dependency, its design system, safety rules and contribution guide.">
+  <meta property="og:image" content="../brand/coretend-app-icon-1024.png">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'">
+  <title>Open source, built in the open — CoreTend</title>
   <link rel="stylesheet" href="../design-tokens.css">
   <link rel="stylesheet" href="../site.css">
 </head>
 <body class="page-developer">
-  <svg class="scroll-root" viewBox="0 0 60 1000" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M30 0C24 90 38 160 30 250S20 400 32 480S40 640 28 720S22 880 30 1000"/><path pathLength="1" d="M31 170C40 184 46 196 52 214"/><path pathLength="1" d="M26 430C17 446 12 462 8 482"/><path pathLength="1" d="M33 650C42 664 47 680 50 700"/><path pathLength="1" d="M27 860C19 874 15 890 12 906"/></svg>
   <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header">
-  <a class="brand" href="index.html" aria-label="CoreTend — Overview">
-    <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><path class="logo-leaf logo-leaf-1" d="M20 17C14 16 11 12 11 8C16 8 20 11 20 17Z"/><path class="logo-leaf logo-leaf-2" d="M20 13C25 12 28 9 29 5C24 5 21 8 20 13Z"/><path class="logo-stem" d="M20 26C20 18 20 14 20 8" pathLength="1"/><circle class="logo-seed" cx="20" cy="30" r="5.5"/></svg><span class="brand-name">CoreTend<small>local care</small></span>
-  </a>
-  <nav class="primary-navigation" id="primary-navigation" aria-label="Main navigation"><a href="index.html">Overview</a><a href="features.html">Features</a><a href="privacy.html">Privacy</a><a href="developer.html" aria-current="page">Developers</a><a href="support.html">Support</a></nav>
-  <a class="language-link" href="../fr/developer.html" lang="fr" hreflang="fr">Français<span aria-hidden="true"> ↗</span></a>
+  <a class="brand" href="index.html" aria-label="CoreTend — Home"><svg class="mark" viewBox="200 180 624 680" aria-hidden="true" focusable="false"><path class="mark-stem" pathLength="1" d="M512 780 C 512 640, 506 520, 520 400"/><path class="mark-leaf mark-leaf-1" d="M518 470 C 430 470, 330 420, 300 300 C 410 290, 500 350, 518 470 Z"/><path class="mark-leaf mark-leaf-2" d="M524 400 C 560 290, 660 220, 770 230 C 760 350, 660 420, 524 400 Z"/><path class="mark-soil" d="M250 800 Q 512 730 774 800"/></svg><span>CoreTend<small>local care</small></span></a>
+  <nav class="primary-nav" aria-label="Main navigation"><a href="features.html">Features</a><a href="download.html">Download</a><a href="privacy.html">Privacy</a><a href="support.html">Support</a><a href="developer.html" aria-current="page">Developers</a></nav>
+  <a class="lang" href="../fr/developer.html" lang="fr" hreflang="fr">Français</a>
 </header>
-  <main id="main" class="page-main">
-  <section class="page-intro section-shell" aria-labelledby="page-title"><p class="eyebrow">For contributors</p><h1 id="page-title">Build and inspect the source</h1><p class="page-lead">The repository contains a Swift 6 package with a native macOS app and a read-only command-line product. macOS 14 or later is required. The app supports French and English. No external runtime package dependency is required.</p></section>
-  <section class="page-content section-shell" aria-label="Build and inspect the source"><div class="topic-list"><article class="topic"><h3>Build locally</h3><div class="topic-body"><p>From the repository root, use Swift Package Manager to build the app or command-line product. The website is generated separately with the Python scripts in Scripts/.</p><ul class="command-list"><li><code>swift build --product CoreTendApp</code></li><li><code>swift build --product CoreTendCLI</code></li><li><code>python3 Scripts/build_site.py</code></li></ul></div></article>
-<article class="topic"><h3>Keep boundaries intact</h3><div class="topic-body"><p>Scan code is read-only. File actions must retain chosen-folder scope, explicit selection, proposal review, confirmation, target revalidation and macOS Trash. Do not treat signature, quarantine or login-item presence as a security verdict.</p></div></article>
-<article class="topic"><h3>Report source issues safely</h3><div class="topic-body"><p>Include macOS version, architecture, command and complete error output. Use repository issues for code feedback. Remove personal file paths and database contents before sharing logs.</p></div></article>
-<article class="topic"><h3>Release status</h3><div class="topic-body"><p>This branch is an unreleased public-source reconstruction. Signing, notarization, release artifacts, download links and product support are not available or promised.</p></div></article></div><div class="capture-gallery"><figure class="app-vitrine"><picture><source media="(prefers-color-scheme: light)" srcset="../screenshots/performance-en-light.png"><img src="../screenshots/performance-en-dark.png" alt="CoreTend — The sap: local readings, sampled on request." width="2048" height="1125" loading="lazy"></picture><figcaption><strong>The sap: local readings, sampled on request.</strong><span>Real local app capture, September 28, 2026, in an isolated fixture. No personal folder scanned; host measurements, no claim of reclaimable space.</span></figcaption></figure></div><aside class="notice" aria-labelledby="notice-title"><span class="notice-symbol" aria-hidden="true">!</span><div><h2 id="notice-title">Repository scope</h2><p>No new runtime dependency, telemetry, remote asset, or account flow is part of this website rebuild.</p></div></aside></section>
+  <main id="main">
+  <section class="intro"><p class="eyebrow"><span class="dot" aria-hidden="true"></span>Developers</p><h1>Open source, built in the open</h1><p class="lead">CoreTend is a Swift 6 package: a SwiftUI app and a read-only command-line tool, with no runtime dependency. Apache 2.0.</p><svg class="vine" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M0 20 C 100 0, 200 40, 300 20 S 500 0, 600 20 S 800 40, 900 20 S 1100 0, 1200 20"/></svg></section>
+  <section class="band"><div class="cards cards-two"><article class="card reveal" style="--n:0"><span class="card-leaf" aria-hidden="true"></span><h3>Build</h3><p>Clone the repository and build with Swift Package Manager on macOS 14 or later.</p><code>swift build --product CoreTendApp</code><code>make qualify</code></article><article class="card reveal" style="--n:1"><span class="card-leaf" aria-hidden="true"></span><h3>Design system</h3><p>The Serre design system — palette, type, leaf shapes, motion tokens, the living greenhouse — lives in one module and is checked in tests.</p></article><article class="card reveal" style="--n:2"><span class="card-leaf" aria-hidden="true"></span><h3>Safety rules</h3><p>One module may move files, only to the Trash, after revalidation. The build checks that no other code can remove or rename a file.</p></article><article class="card reveal" style="--n:3"><span class="card-leaf" aria-hidden="true"></span><h3>Contribute</h3><p>Read CONTRIBUTING.md, open an issue first for larger changes, and keep every claim tied to something measured.</p></article></div></section>
 </main>
   <footer class="site-footer">
-  <div class="footer-brand"><a class="brand" href="index.html"><svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><path class="logo-leaf logo-leaf-1" d="M20 17C14 16 11 12 11 8C16 8 20 11 20 17Z"/><path class="logo-leaf logo-leaf-2" d="M20 13C25 12 28 9 29 5C24 5 21 8 20 13Z"/><path class="logo-stem" d="M20 26C20 18 20 14 20 8" pathLength="1"/><circle class="logo-seed" cx="20" cy="30" r="5.5"/></svg><span class="brand-name">CoreTend<small>local care</small></span></a><p>Local-first by design. CoreTend Next is not released.</p></div>
-  <div class="footer-nav"><h2>Explore</h2><nav aria-label="Explore"><a href="features.html">Features</a><a href="privacy.html">Privacy</a><a href="developer.html">Developers</a><a href="support.html">Support</a></nav></div>
-  <p class="footer-meta">© 2026 CoreTend · CoreTend Next · unreleased local reconstruction</p>
+  <svg class="vine" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M0 20 C 100 0, 200 40, 300 20 S 500 0, 600 20 S 800 40, 900 20 S 1100 0, 1200 20"/></svg>
+  <div class="footer-brand"><a class="brand" href="index.html"><svg class="mark" viewBox="200 180 624 680" aria-hidden="true" focusable="false"><path class="mark-stem" pathLength="1" d="M512 780 C 512 640, 506 520, 520 400"/><path class="mark-leaf mark-leaf-1" d="M518 470 C 430 470, 330 420, 300 300 C 410 290, 500 350, 518 470 Z"/><path class="mark-leaf mark-leaf-2" d="M524 400 C 560 290, 660 220, 770 230 C 760 350, 660 420, 524 400 Z"/><path class="mark-soil" d="M250 800 Q 512 730 774 800"/></svg><span>CoreTend<small>local care</small></span></a><p>A living greenhouse for your Mac. Local, open source, Apache 2.0.</p></div>
+  <nav aria-label="Explore"><a href="features.html">Features</a><a href="download.html">Download</a><a href="privacy.html">Privacy</a><a href="support.html">Support</a><a href="developer.html">Developers</a></nav>
+  <p class="footer-meta">© 2026 CoreTend · Apache 2.0</p>
 </footer>
 </body>
 </html>

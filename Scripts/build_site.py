@@ -1,388 +1,493 @@
 #!/usr/bin/env python3
-"""Generate CoreTend's small, bilingual, no-framework static website."""
+"""Generate the CoreTend 2.0 website: bilingual, static, no script, a living greenhouse in CSS.
+
+Pages: index, features, download, privacy, support, developer (EN and FR) and a language chooser.
+Release facts (version, date, download URL, SHA-256) come from Website/release.json; while it
+says the release is not published, every page says so and no download link is shown.
+"""
 
 from html import escape
+import json
 from pathlib import Path
+import shutil
 
 from export_design_tokens import export_tokens
 
 ROOT = Path(__file__).resolve().parents[1]
+SITE = ROOT / "Website"
 LANGUAGES = ("en", "fr")
-ROUTES = ("index", "features", "privacy", "developer", "support")
+ROUTES = ("index", "features", "download", "privacy", "support", "developer")
+REPO = "https://github.com/ahmetbsbnr/coretend"
+
+
+def release() -> dict:
+    return json.loads((SITE / "release.json").read_text())
+
+
+# ---------------------------------------------------------------------------------------------
+# Copy
+
+DESTINATIONS = {
+    "en": [
+        ("overview", "Overview", "The greenhouse at a glance",
+         "Free space measured by macOS, the soil band of your volume, the last things CoreTend did and why, and paths into every tool."),
+        ("explore", "Explore", "Plots in proportion",
+         "Choose a folder: CoreTend reads it without touching it, then shows every file and subfolder as a plot sized by what it takes. Walk into subfolders, search, sort, preview."),
+        ("cleanup", "Cleanup", "Known, safe pruning",
+         "Seven rules for known places — caches, logs, crash reports, Xcode data, unfinished downloads, iOS backups — each with its risk said plainly. Nothing is selected for you."),
+        ("duplicates", "Duplicates", "Twin shoots",
+         "Exact copies found by content, with the space keeping one would free. You choose which copy stays; that one can never be moved. Similar images are shown as pairs, for you to judge."),
+        ("applications", "Applications", "The plantings",
+         "Every app of a folder with its icon, version and real size; sort by size; files around an app matched by name, never claimed as proof. Move one app bundle to the Trash after review."),
+        ("integrity", "Integrity", "Plant labels",
+         "What macOS records about an app — signature, quarantine marker — one label per signal, or a whole folder in one pass. Signals, never a verdict on safety."),
+        ("performance", "Performance", "The sap",
+         "System load, memory in use, thermal state and more, each with its source, and the load drawn over time. Readings are taken when you look, never in the background."),
+        ("record", "Record", "The herbarium",
+         "Everything observed and moved, one page per day. Search it, export it to CSV or JSON, or clear it — it stays on your Mac."),
+    ],
+    "fr": [
+        ("overview", "Vue d’ensemble", "La serre d’un coup d’œil",
+         "L’espace libre mesuré par macOS, la bande de sol du volume, les dernières actions de CoreTend et leur raison, et des chemins vers chaque outil."),
+        ("explore", "Explorer", "Les parcelles en proportion",
+         "Choisissez un dossier : CoreTend le lit sans y toucher, puis montre chaque fichier et sous-dossier comme une parcelle à sa taille. Entrez dans les sous-dossiers, cherchez, triez, prévisualisez."),
+        ("cleanup", "Nettoyage", "Une taille connue et sûre",
+         "Sept règles pour des lieux connus — caches, journaux, rapports de crash, données Xcode, téléchargements inachevés, sauvegardes iOS — chacune avec son risque dit clairement. Rien n’est sélectionné à votre place."),
+        ("duplicates", "Doublons", "Les pousses jumelles",
+         "Copies exactes trouvées par leur contenu, avec l’espace qu’en garder une seule libérerait. Vous choisissez l’exemplaire gardé, qui ne peut jamais être déplacé. Les images proches sont montrées par paires, à vous d’en juger."),
+        ("applications", "Applications", "Les plantations",
+         "Chaque app d’un dossier avec son icône, sa version et sa taille réelle ; tri par taille ; fichiers autour d’une app par correspondance de nom, jamais présentés comme une preuve. Déplacez un bundle vers la Corbeille après revue."),
+        ("integrity", "Intégrité", "Les étiquettes de plant",
+         "Ce que macOS enregistre d’une app — signature, marqueur de quarantaine — une étiquette par signal, ou tout un dossier en une passe. Des signaux, jamais un verdict de sûreté."),
+        ("performance", "Performances", "La sève",
+         "Charge système, mémoire utilisée, état thermique et plus, chacun avec sa source, et la charge tracée dans le temps. Les relevés se font quand vous regardez, jamais en arrière-plan."),
+        ("record", "Historique", "L’herbier",
+         "Tout ce qui a été observé et déplacé, une page par jour. Cherchez, exportez en CSV ou JSON, ou effacez — il reste sur votre Mac."),
+    ],
+}
 
 COPY = {
     "en": {
-        "language": "English",
-        "other_language": "Français",
-        "skip": "Skip to content",
-        "nav_label": "Main navigation",
-        "brand_note": "local care",
-        "preview": "CoreTend Next · unreleased local reconstruction",
-        "preview_short": "Local preview · unreleased",
-        "no_download": "No CoreTend Next download is published.",
-        "language_title": "Choose your language",
-        "language_intro": "CoreTend Next is a macOS reconstruction in progress. Read about its direction and current limits.",
-        "nav": {"index": "Overview", "features": "Features", "privacy": "Privacy", "developer": "Developers", "support": "Support"},
-        "footer_note": "Local-first by design. CoreTend Next is not released.",
+        "skip": "Skip to content", "nav_label": "Main navigation", "other": "Français", "note": "local care",
+        "nav": {"index": "Home", "features": "Features", "download": "Download", "privacy": "Privacy",
+                "support": "Support", "developer": "Developers"},
+        "footer": "A living greenhouse for your Mac. Local, open source, Apache 2.0.",
         "footer_links": "Explore",
+        "unpublished": "CoreTend 2.0 is ready and will be published soon. The download appears here on release day.",
+        "cta_download": "Download CoreTend 2.0", "cta_features": "See what it does",
+        "requirements": "macOS 14 Sonoma or later · Apple silicon · English and French",
         "home": {
-            "title": "Tend your Mac.",
-            "description": "CoreTend is a local-first macOS disk and system explorer in active reconstruction. See what works today, how review stays in your hands, and what remains unqualified.",
-            "kicker": "Inside the greenhouse",
-            "lead": "Understand what is on your Mac before deciding what to do. CoreTend keeps folder scans read-only and asks for explicit review before a selected item can move to Trash.",
-            "primary": "Explore current capabilities",
-            "secondary": "Read the privacy model",
-            "section_title": "Clarity before action",
-            "section_intro": "The interface is being reshaped around observable evidence, clear scope and explicit choices.",
-            "sections": [
-                ("Space, with context", "Explore a chosen folder with search, sorting, measured sizes and a proportional space map. Unknown and cloud-backed sizes stay out of the measured total."),
-                ("Duplicates you can review", "Exact duplicates come from content comparison. Similar-image matches are advisory candidates. Nothing is selected for removal automatically."),
-                ("A local record", "Favorites and optional recent paths stay on this Mac. Recent paths are off by default and limited to 100 entries."),
+            "title": "Tend your Mac like a greenhouse.",
+            "description": "CoreTend 2.0: a living, local greenhouse for your Mac. See what takes space, understand it, and prune only what you choose — every move goes to the Trash.",
+            "kicker": "CoreTend 2.0",
+            "lead": "CoreTend observes your Mac, explains what it finds and prunes only what you choose. Nothing leaves your Mac; nothing is erased for good.",
+            "tools_title": "Eight tools, one greenhouse",
+            "tools_lead": "Each part of your Mac has its place in the greenhouse, and its own way of showing what matters.",
+            "alive_title": "A greenhouse that lives",
+            "alive": [
+                ("Motion with a cause", "Roots descend as files are read. A moved file falls as a leaf into the Trash. A file that stays says why."),
+                ("Alive, never busy", "Leaves sway and pollen drifts while the window is in front — drawn by macOS itself, for almost no energy — and everything rests the moment you look away."),
+                ("Calm on request", "Reduce Motion, Low Power Mode or one switch in Settings: the greenhouse stands still, every piece of information still in place."),
             ],
-            "status_title": "A work in progress",
-            "status_text": "This branch is public source for an unreleased reconstruction. Some flows work locally; accessibility, migration and distribution still need qualification. No download is published.",
-            "status_link": "See what is implemented",
+            "never_title": "What CoreTend will never do",
+            "never": [
+                ("Erase for good", "Every move goes to the macOS Trash, after your review and confirmation. You can put it back."),
+                ("Ask for full disk access", "You choose each folder CoreTend may read. No password, no system extension."),
+                ("Phone home", "No network, no account, no telemetry. Your paths and your history stay on your Mac."),
+            ],
+            "final_title": "Bring your Mac back to life.",
         },
         "features": {
-            "title": "Tools for careful inspection",
-            "description": "Current and planned CoreTend capabilities, with implemented behaviors separated from work still needing qualification.",
-            "kicker": "Product scope",
-            "lead": "The target has eight macOS destinations. This page describes implemented preview behavior and names important limits alongside it.",
-            "sections": [
-                ("Explore a chosen folder", "Read-only scans support exclusions, search and sorting, a proportional map, Quick Look, and explicit size or age filters. Partial scans say when access limits results. Unknown sizes are not presented as measured space."),
-                ("Review before cleanup", "Cleanup rules require an explicit folder and candidates stay unselected until reviewed. Exact duplicate groups use content comparison; similar-image pairs are heuristic. A move requires review, confirmation, target revalidation and macOS Trash."),
-                ("Inspect app and system signals", "A chosen-folder inventory reports app metadata and partial-read reasons. Code signature, quarantine marker and configured login-item evidence appear as separate signals, without a combined safe or malicious verdict."),
-                ("Keep a local record", "The app can store activity records, manual performance samples, favorites and optional recent paths locally. Recent paths are off by default and capped at 100. The read-only command-line interface reports partial scan status explicitly."),
+            "title": "Everything in the greenhouse",
+            "description": "The eight tools of CoreTend 2.0 — Overview, Explore, Cleanup, Duplicates, Applications, Integrity, Performance and Record — and how each keeps you in charge.",
+            "kicker": "Features",
+            "lead": "Every tool reads first and explains what it measured. Moving anything takes your selection, a review and a confirmation.",
+            "also_title": "Across the app",
+            "also": [
+                ("⌘K search", "Jump to any tool or setting from a field that grows out of the sidebar."),
+                ("Menu bar", "Optional: free space, memory and load at a glance, and every tool one click away."),
+                ("From CoreTend 1.x", "Import recognised preferences and exclusions from a 1.x copy; the source stays intact."),
+                ("Command line", "A read-only command-line tool scans a folder you name and reads the history."),
             ],
-            "limits_title": "Not yet qualified",
-            "limits": "Verified app-data attribution and complete uninstall; an App Store update source and version comparison; cloud storage details; native accessibility qualification; broader migration evidence; and signed distribution remain open work.",
-            "cta": "Read privacy and safety details",
+        },
+        "download": {
+            "title": "Get CoreTend 2.0",
+            "description": "Download CoreTend 2.0 for macOS 14 or later on Apple silicon: signed and notarized by Apple, free and open source.",
+            "kicker": "Download",
+            "lead": "CoreTend 2.0 is a free update to CoreTend. It is signed with a Developer ID and notarized by Apple.",
+            "install_title": "Install",
+            "install": [
+                ("Direct download", "Open the disk image and drag CoreTend into Applications."),
+                ("Homebrew", "brew install --cask coretend"),
+                ("Check the file", "Compare the SHA-256 of what you downloaded with the one shown here."),
+            ],
+            "new_title": "New in 2.0",
+            "new": "A complete rebuild: the living greenhouse design, eight tools, a three-page welcome, Applications with sizes and sorting, Explore that walks into folders, Integrity for a whole folder at once, recoverable space in Duplicates, memory in use, and a Settings window in four tabs.",
+            "from1": "Coming from 1.x? 2.0 replaces it. Your 1.x data are not touched; you can import its preferences and exclusions from Settings.",
+            "sha": "SHA-256",
+            "version": "Version",
         },
         "privacy": {
-            "title": "Your files stay in your hands",
-            "description": "How CoreTend's local macOS reconstruction handles scans, file contents, saved paths, history and destructive actions.",
+            "title": "Your files stay yours",
+            "description": "How CoreTend 2.0 handles your files: chosen folders only, read-only scans, every move to the Trash after review, no network and no telemetry.",
             "kicker": "Privacy and safety",
-            "lead": "This reconstruction sends no telemetry and has no account or cloud sync. Inspection is scoped to the folder you choose; any file change follows an explicit review and confirmation flow.",
+            "lead": "CoreTend works on your Mac and nowhere else. It reads the folders you choose and changes nothing until you decide.",
             "sections": [
-                ("Local inspection", "A scan reads metadata from the selected folder. It reads file contents only when needed to hash content for exact-duplicate comparison. It does not write into the scanned tree. Access is limited by the folder you select and macOS permissions."),
-                ("Paths and saved history", "Favorites and enabled recent history store paths and last known sizes locally. Recent history is off by default and limited to 100 entries. Activity records and manual performance samples are local; their retention and complete export flow still need qualification."),
-                ("Moves need your decision", "A candidate is never removed just because it was found. You select items, inspect a proposal, confirm the action, and CoreTend revalidates targets before using macOS Trash. It does not promise to remove related application data."),
-                ("Network boundary", "There is no telemetry, account, or cloud synchronization in this reconstruction. An app-declared HTTPS update-feed link can open in your browser when you choose it; the feed is not independently verified by that signal."),
+                ("Only the folders you choose", "Each tool reads the folder you pick. Usual folders like Applications are offered in one click, never read before you choose. CoreTend never asks for Full Disk Access."),
+                ("Reading is not changing", "Scans read names, sizes and dates; file contents are read only to compare copies. Nothing is written into what is scanned."),
+                ("Every move is yours", "You select, review and confirm. CoreTend checks each file again just before moving it to the macOS Trash; a file that changed stays where it is."),
+                ("Nothing leaves your Mac", "No network requests, no account, no analytics. History, favorites and readings live in a local database you can export or clear."),
             ],
-            "notice_title": "Before sharing diagnostics",
-            "notice": "Exports and event records can contain file names or paths. Review any material before sharing it. Do not include private paths or database contents in source feedback.",
-        },
-        "developer": {
-            "title": "Build and inspect the source",
-            "description": "Developer notes for the unreleased CoreTend macOS reconstruction: local build products, interface boundaries and known qualification gaps.",
-            "kicker": "For contributors",
-            "lead": "The repository contains a Swift 6 package with a native macOS app and a read-only command-line product. macOS 14 or later is required. The app supports French and English. No external runtime package dependency is required.",
-            "sections": [
-                ("Build locally", "From the repository root, use Swift Package Manager to build the app or command-line product. The website is generated separately with the Python scripts in Scripts/.", ["swift build --product CoreTendApp", "swift build --product CoreTendCLI", "python3 Scripts/build_site.py"]),
-                ("Keep boundaries intact", "Scan code is read-only. File actions must retain chosen-folder scope, explicit selection, proposal review, confirmation, target revalidation and macOS Trash. Do not treat signature, quarantine or login-item presence as a security verdict."),
-                ("Report source issues safely", "Include macOS version, architecture, command and complete error output. Use repository issues for code feedback. Remove personal file paths and database contents before sharing logs."),
-                ("Release status", "This branch is an unreleased public-source reconstruction. Signing, notarization, release artifacts, download links and product support are not available or promised."),
-            ],
-            "notice_title": "Repository scope",
-            "notice": "No new runtime dependency, telemetry, remote asset, or account flow is part of this website rebuild.",
         },
         "support": {
-            "title": "Help for a work in progress",
-            "description": "Source-feedback guidance and practical notes for CoreTend's unreleased local reconstruction.",
-            "kicker": "Support and feedback",
-            "lead": "CoreTend Next is not released. The repository is public source for an ongoing reconstruction, with no download or product-support commitment.",
+            "title": "Help in the greenhouse",
+            "description": "Help for CoreTend 2.0: first launch, folder access, moving files to the Trash, removing CoreTend and reporting a problem.",
+            "kicker": "Support",
+            "lead": "Answers to the usual questions. For anything else, open an issue on GitHub — without personal paths.",
             "sections": [
-                ("Folder access", "Choose a folder you intend to inspect and grant only the access macOS requests for that location. A denied or partial result should be treated as incomplete, not as an empty folder."),
-                ("Unexpected scan result", "Record the macOS version, Mac architecture, selected scope and exact error message. Avoid attaching private file paths, file names or database contents to a public issue."),
-                ("Before a file move", "Review the selected items and destination summary. The action should ask for confirmation and use macOS Trash. Cancel if the scope, item list or expected result is unclear."),
-                ("Source feedback", "Use the repository issue tracker for implementation feedback. There is no published download, release channel, response-time promise or commercial support contact for this reconstruction."),
+                ("First launch", "A short welcome explains what CoreTend does and never does. You can begin right away; no extra access is needed."),
+                ("A folder cannot be read", "macOS decides which folders an app may read. If a result is partial or refused, CoreTend says so — choose the folder again or pick another one."),
+                ("Getting a file back", "Everything CoreTend moves goes to the macOS Trash. Open the Trash and choose Put Back."),
+                ("An app will not move", "Some apps belong to the system or to an administrator. CoreTend leaves them in place and says so; remove them in the Finder if you are sure."),
+                ("Removing CoreTend", "Quit it and move it to the Trash. Its local data live in ~/Library/Application Support/CoreTend-Reconstruction."),
+                ("Reporting a problem", "Open a GitHub issue with your macOS version and what you saw. Leave out personal file names and paths."),
             ],
-            "notice_title": "No product download yet",
-            "notice": "Do not install a build from an unverified source or treat this website as a release announcement.",
+        },
+        "developer": {
+            "title": "Open source, built in the open",
+            "description": "Build CoreTend 2.0 from source: a Swift 6 package with no runtime dependency, its design system, safety rules and contribution guide.",
+            "kicker": "Developers",
+            "lead": "CoreTend is a Swift 6 package: a SwiftUI app and a read-only command-line tool, with no runtime dependency. Apache 2.0.",
+            "sections": [
+                ("Build", "Clone the repository and build with Swift Package Manager on macOS 14 or later.", ["swift build --product CoreTendApp", "make qualify"]),
+                ("Design system", "The Serre design system — palette, type, leaf shapes, motion tokens, the living greenhouse — lives in one module and is checked in tests."),
+                ("Safety rules", "One module may move files, only to the Trash, after revalidation. The build checks that no other code can remove or rename a file."),
+                ("Contribute", "Read CONTRIBUTING.md, open an issue first for larger changes, and keep every claim tied to something measured."),
+            ],
         },
     },
     "fr": {
-        "language": "Français",
-        "other_language": "English",
-        "skip": "Aller au contenu",
-        "nav_label": "Navigation principale",
-        "brand_note": "entretien local",
-        "preview": "CoreTend Next · reconstruction locale non publiée",
-        "preview_short": "Aperçu Next · non publié",
-        "no_download": "Aucun téléchargement CoreTend Next n’est publié.",
-        "language_title": "Choisir votre langue",
-        "language_intro": "CoreTend Next est une reconstruction macOS en cours. Découvrez sa direction et ses limites actuelles.",
-        "nav": {"index": "Vue d’ensemble", "features": "Fonctionnalités", "privacy": "Confidentialité", "developer": "Développeur", "support": "Assistance"},
-        "footer_note": "Pensé pour le local. CoreTend Next n’est pas publié.",
+        "skip": "Aller au contenu", "nav_label": "Navigation principale", "other": "English", "note": "entretien local",
+        "nav": {"index": "Accueil", "features": "Fonctionnalités", "download": "Télécharger", "privacy": "Confidentialité",
+                "support": "Assistance", "developer": "Développeurs"},
+        "footer": "Une serre vivante pour votre Mac. Locale, open source, Apache 2.0.",
         "footer_links": "Explorer",
+        "unpublished": "CoreTend 2.0 est prête et sera publiée très bientôt. Le téléchargement apparaîtra ici le jour de la sortie.",
+        "cta_download": "Télécharger CoreTend 2.0", "cta_features": "Voir ce qu’elle fait",
+        "requirements": "macOS 14 Sonoma ou plus récent · Apple silicon · français et anglais",
         "home": {
-            "title": "Entretenir son Mac.",
-            "description": "CoreTend est un explorateur local du disque et du système sur macOS, en reconstruction active. Découvrez les fonctions présentes, gardez la main sur chaque revue et voyez ce qui reste à qualifier.",
-            "kicker": "Dans la serre",
-            "lead": "Comprenez le contenu de votre Mac avant de décider. CoreTend garde les analyses de dossiers en lecture seule et demande une revue explicite avant tout déplacement vers la Corbeille.",
-            "primary": "Voir les fonctions actuelles",
-            "secondary": "Lire le modèle de confidentialité",
-            "section_title": "Comprendre avant d’agir",
-            "section_intro": "Observer le sol, examiner chaque parcelle et garder un herbier local de vos décisions.",
-            "sections": [
-                ("L’espace, avec son contexte", "Explorer un dossier choisi avec recherche, tri, tailles mesurées et carte proportionnelle. Les tailles inconnues ou liées au cloud restent exclues du total mesuré."),
-                ("Des doublons à examiner", "Les doublons exacts reposent sur la comparaison du contenu. Les images similaires sont des candidates indicatives. Aucun élément n’est automatiquement sélectionné pour retrait."),
-                ("Un historique local", "Favoris et chemins récents facultatifs restent sur ce Mac. L’historique récent est désactivé par défaut et limité à 100 entrées."),
+            "title": "Entretenez votre Mac comme une serre.",
+            "description": "CoreTend 2.0 : une serre vivante et locale pour votre Mac. Voyez ce qui prend de la place, comprenez-le, et ne taillez que ce que vous choisissez — tout déplacement va à la Corbeille.",
+            "kicker": "CoreTend 2.0",
+            "lead": "CoreTend observe votre Mac, explique ce qu’il trouve et ne taille que ce que vous choisissez. Rien ne quitte votre Mac ; rien n’est effacé définitivement.",
+            "tools_title": "Huit outils, une serre",
+            "tools_lead": "Chaque partie de votre Mac a sa place dans la serre, et sa façon de montrer ce qui compte.",
+            "alive_title": "Une serre qui vit",
+            "alive": [
+                ("Des mouvements qui ont une cause", "Les racines descendent au rythme des fichiers lus. Un fichier déplacé tombe en feuille dans la Corbeille. Un fichier resté en place dit pourquoi."),
+                ("Vivante, jamais agitée", "Les feuilles se balancent et le pollen flotte quand la fenêtre est devant — dessinés par macOS lui-même, pour presque aucune énergie — et tout se repose dès que vous regardez ailleurs."),
+                ("Calme sur demande", "« Réduire les animations », le mode économie d’énergie ou un interrupteur dans Réglages : la serre s’immobilise, toute l’information reste en place."),
             ],
-            "status_title": "Un projet en cours",
-            "status_text": "Cette branche est le code source public d’une reconstruction non publiée. Certains parcours fonctionnent en local ; accessibilité, migration et distribution restent à qualifier. Aucun téléchargement n’est publié.",
-            "status_link": "Voir ce qui est implémenté",
+            "never_title": "Ce que CoreTend ne fera jamais",
+            "never": [
+                ("Effacer définitivement", "Tout déplacement va dans la Corbeille de macOS, après votre revue et votre confirmation. Vous pouvez le remettre en place."),
+                ("Demander l’accès complet au disque", "Vous choisissez chaque dossier que CoreTend peut lire. Ni mot de passe, ni extension système."),
+                ("Envoyer quoi que ce soit", "Ni réseau, ni compte, ni télémétrie. Vos chemins et votre historique restent sur votre Mac."),
+            ],
+            "final_title": "Redonnez vie à votre Mac.",
         },
         "features": {
-            "title": "Des outils pour inspecter avec soin",
-            "description": "Fonctions présentes et prévues de CoreTend : comportements implémentés distingués des sujets qui restent à qualifier.",
-            "kicker": "Périmètre produit",
-            "lead": "La cible comporte huit destinations macOS. Cette page décrit l’aperçu implémenté et précise ses limites à proximité.",
-            "sections": [
-                ("Explorer un dossier choisi", "Les analyses en lecture seule prennent en charge exclusions, recherche, tri, carte proportionnelle, Quick Look et filtres explicites de taille ou d’âge. Un état partiel indique les limites d’accès. Les tailles inconnues ne sont pas présentées comme espace mesuré."),
-                ("Examiner avant le nettoyage", "Les règles de nettoyage exigent un dossier explicite ; les candidates restent désélectionnées jusqu’à leur revue. Les groupes de doublons exacts reposent sur le contenu ; les paires d’images similaires sont heuristiques. Un déplacement exige revue, confirmation, nouvelle validation de la cible et Corbeille macOS."),
-                ("Inspecter apps et signaux système", "L’inventaire d’un dossier choisi indique les métadonnées des apps et les raisons d’une lecture partielle. Signature, marque de quarantaine et éléments de connexion configurés apparaissent comme signaux séparés, sans verdict global de sécurité."),
-                ("Garder un historique local", "L’app peut enregistrer localement événements, mesures Performance manuelles, favoris et chemins récents facultatifs. Les chemins récents sont désactivés par défaut et limités à 100. L’interface en ligne de commande en lecture seule signale explicitement les analyses partielles."),
+            "title": "Tout ce que contient la serre",
+            "description": "Les huit outils de CoreTend 2.0 — Vue d’ensemble, Explorer, Nettoyage, Doublons, Applications, Intégrité, Performances et Historique — et comment chacun vous laisse décider.",
+            "kicker": "Fonctionnalités",
+            "lead": "Chaque outil lit d’abord et explique ce qu’il a mesuré. Déplacer quoi que ce soit demande votre sélection, une revue et une confirmation.",
+            "also_title": "Dans toute l’app",
+            "also": [
+                ("Recherche ⌘K", "Allez à n’importe quel outil ou réglage depuis un champ qui naît de la barre latérale."),
+                ("Barre des menus", "En option : espace libre, mémoire et charge d’un coup d’œil, et chaque outil à un clic."),
+                ("Depuis CoreTend 1.x", "Importez les préférences et exclusions reconnues d’une copie 1.x ; la source reste intacte."),
+                ("Ligne de commande", "Un outil en ligne de commande, en lecture seule, analyse le dossier indiqué et lit l’historique."),
             ],
-            "limits_title": "Pas encore qualifié",
-            "limits": "Attribution vérifiée des données d’apps et désinstallation complète ; source App Store et comparaison des versions ; détails du stockage cloud ; qualification native d’accessibilité ; preuves de migration plus larges et distribution signée restent à réaliser.",
-            "cta": "Lire les détails de confidentialité et de sûreté",
+        },
+        "download": {
+            "title": "Obtenir CoreTend 2.0",
+            "description": "Téléchargez CoreTend 2.0 pour macOS 14 ou plus récent sur Apple silicon : signée et notarisée par Apple, gratuite et open source.",
+            "kicker": "Télécharger",
+            "lead": "CoreTend 2.0 est une mise à jour gratuite de CoreTend. Elle est signée avec un Developer ID et notarisée par Apple.",
+            "install_title": "Installer",
+            "install": [
+                ("Téléchargement direct", "Ouvrez l’image disque et glissez CoreTend dans Applications."),
+                ("Homebrew", "brew install --cask coretend"),
+                ("Vérifier le fichier", "Comparez l’empreinte SHA-256 du fichier téléchargé avec celle affichée ici."),
+            ],
+            "new_title": "Nouveautés de la 2.0",
+            "new": "Une reconstruction complète : la serre vivante, huit outils, un accueil en trois pages, Applications avec tailles et tri, Explorer qui entre dans les dossiers, Intégrité pour tout un dossier, espace récupérable dans Doublons, mémoire utilisée, et des Réglages en quatre onglets.",
+            "from1": "Vous venez de la 1.x ? La 2.0 la remplace. Vos données 1.x ne sont pas touchées ; importez ses préférences et exclusions depuis les Réglages.",
+            "sha": "SHA-256",
+            "version": "Version",
         },
         "privacy": {
-            "title": "Vos fichiers restent sous votre contrôle",
-            "description": "Comment la reconstruction locale CoreTend sur macOS traite analyses, contenus, chemins enregistrés, historique et actions destructives.",
+            "title": "Vos fichiers restent à vous",
+            "description": "Comment CoreTend 2.0 traite vos fichiers : seulement les dossiers choisis, analyses en lecture seule, déplacements vers la Corbeille après revue, ni réseau ni télémétrie.",
             "kicker": "Confidentialité et sûreté",
-            "lead": "Cette reconstruction n’envoie aucune télémétrie et ne propose ni compte ni synchronisation cloud. L’inspection se limite au dossier choisi ; toute modification suit une revue et une confirmation explicites.",
+            "lead": "CoreTend travaille sur votre Mac et nulle part ailleurs. Il lit les dossiers que vous choisissez et ne change rien avant votre décision.",
             "sections": [
-                ("Inspection locale", "Une analyse lit les métadonnées du dossier sélectionné. Le contenu est lu uniquement si nécessaire au calcul d’empreintes comparées pour les doublons exacts. L’analyse n’écrit pas dans l’arborescence inspectée. L’accès dépend du dossier choisi et des permissions macOS."),
-                ("Chemins et historique conservés", "Les favoris et l’historique récent activé conservent localement les chemins et dernières tailles connues. L’historique récent est désactivé par défaut et limité à 100 entrées. Événements et mesures Performance manuelles restent locaux ; conservation et export complet restent à qualifier."),
-                ("Un déplacement exige votre décision", "Une candidate n’est jamais retirée du seul fait de sa détection. Vous choisissez les éléments, examinez la proposition, confirmez l’action ; CoreTend revalide ensuite les cibles avant d’utiliser la Corbeille macOS. L’app ne promet pas de retirer les données associées."),
-                ("Limite réseau", "Cette reconstruction ne comporte ni télémétrie, ni compte, ni synchronisation cloud. Un lien HTTPS de mise à jour déclaré par l’app peut s’ouvrir dans votre navigateur après votre clic ; ce signal ne vérifie pas le flux indépendamment."),
+                ("Seulement les dossiers choisis", "Chaque outil lit le dossier que vous désignez. Les dossiers habituels comme Applications sont proposés en un clic, jamais lus avant votre choix. CoreTend ne demande jamais l’accès complet au disque."),
+                ("Lire n’est pas modifier", "Les analyses lisent noms, tailles et dates ; le contenu n’est lu que pour comparer des copies. Rien n’est écrit dans ce qui est analysé."),
+                ("Chaque déplacement vous appartient", "Vous sélectionnez, revoyez et confirmez. CoreTend revérifie chaque fichier juste avant de le déplacer dans la Corbeille ; un fichier qui a changé reste en place."),
+                ("Rien ne quitte votre Mac", "Aucune requête réseau, aucun compte, aucune statistique. Historique, favoris et relevés vivent dans une base locale que vous pouvez exporter ou effacer."),
             ],
-            "notice_title": "Avant de partager un diagnostic",
-            "notice": "Les exports et événements peuvent contenir des noms de fichiers ou des chemins. Relisez tout contenu avant partage. N’incluez pas de chemins privés ou de base de données dans un retour public.",
-        },
-        "developer": {
-            "title": "Construire et examiner le code source",
-            "description": "Notes pour les développeurs de la reconstruction CoreTend non publiée : produits locaux, limites d’interface et sujets de qualification.",
-            "kicker": "Pour contribuer",
-            "lead": "Le dépôt contient un paquet Swift 6 avec une app macOS native et un produit en ligne de commande en lecture seule. macOS 14 ou ultérieur est requis. L’app propose le français et l’anglais. Aucun paquet externe n’est requis à l’exécution.",
-            "sections": [
-                ("Construire en local", "Depuis la racine du dépôt, Swift Package Manager construit l’app ou le produit en ligne de commande. Le site est généré séparément par les scripts Python dans Scripts/.", ["swift build --product CoreTendApp", "swift build --product CoreTendCLI", "python3 Scripts/build_site.py"]),
-                ("Préserver les frontières", "Le code d’analyse reste en lecture seule. Toute action doit conserver le dossier choisi, la sélection explicite, la revue, la confirmation, la revalidation de la cible et la Corbeille macOS. Ne transformez pas les signaux de signature, quarantaine ou connexion en verdict de sécurité."),
-                ("Signaler un problème sans exposer de données", "Indiquez la version de macOS, l’architecture du Mac, la commande et le message complet. Utilisez les issues du dépôt pour les retours. Retirez chemins personnels et contenu de base de données des journaux partagés."),
-                ("État de publication", "Cette branche est une reconstruction publique en source, non publiée. Signature, notarisation, artefacts, liens de téléchargement et support produit ne sont ni disponibles ni promis."),
-            ],
-            "notice_title": "Périmètre du dépôt",
-            "notice": "Cette refonte du site n’ajoute ni dépendance runtime, ni télémétrie, ni ressource distante, ni parcours de compte.",
         },
         "support": {
-            "title": "Aide pour un projet en cours",
-            "description": "Conseils pour les retours sur le code et l’usage prudent de la reconstruction locale CoreTend non publiée.",
-            "kicker": "Assistance et retours",
-            "lead": "CoreTend Next n’est pas publié. Le dépôt est le code source public d’une reconstruction en cours, sans téléchargement ni engagement de support produit.",
+            "title": "De l’aide dans la serre",
+            "description": "Aide pour CoreTend 2.0 : premier lancement, accès aux dossiers, fichiers dans la Corbeille, désinstallation et signalement d’un problème.",
+            "kicker": "Assistance",
+            "lead": "Les réponses aux questions courantes. Pour le reste, ouvrez une issue sur GitHub — sans chemins personnels.",
             "sections": [
-                ("Accès aux dossiers", "Choisissez le dossier que vous souhaitez inspecter et accordez seulement l’accès demandé par macOS pour cet emplacement. Un refus ou résultat partiel signifie que l’inspection est incomplète, pas que le dossier est vide."),
-                ("Résultat d’analyse inattendu", "Notez la version de macOS, l’architecture du Mac, le périmètre choisi et le message d’erreur exact. Évitez de joindre chemins privés, noms de fichiers ou contenu de base de données à une issue publique."),
-                ("Avant un déplacement", "Relisez les éléments choisis et le résumé de destination. L’action doit demander confirmation et utiliser la Corbeille macOS. Annulez si le périmètre, la liste ou le résultat attendu n’est pas clair."),
-                ("Retour sur le code source", "Utilisez le suivi des issues du dépôt pour parler d’implémentation. Cette reconstruction n’a ni téléchargement publié, ni canal de release, ni délai de réponse, ni contact de support commercial."),
+                ("Premier lancement", "Un court accueil explique ce que CoreTend fait et ne fait jamais. Vous pouvez commencer tout de suite ; aucun accès supplémentaire n’est nécessaire."),
+                ("Un dossier ne peut pas être lu", "macOS décide des dossiers qu’une app peut lire. Si un résultat est partiel ou refusé, CoreTend le dit — choisissez à nouveau le dossier ou un autre."),
+                ("Récupérer un fichier", "Tout ce que CoreTend déplace va dans la Corbeille de macOS. Ouvrez la Corbeille et choisissez Remettre en place."),
+                ("Une app ne se déplace pas", "Certaines apps appartiennent au système ou à un administrateur. CoreTend les laisse en place et le dit ; retirez-les dans le Finder si vous en êtes sûr."),
+                ("Retirer CoreTend", "Quittez-la et placez-la dans la Corbeille. Ses données locales sont dans ~/Library/Application Support/CoreTend-Reconstruction."),
+                ("Signaler un problème", "Ouvrez une issue GitHub avec votre version de macOS et ce que vous avez vu. Laissez de côté noms de fichiers et chemins personnels."),
             ],
-            "notice_title": "Aucun téléchargement produit",
-            "notice": "N’installez pas de build d’une source non vérifiée et ne prenez pas ce site pour une annonce de publication.",
+        },
+        "developer": {
+            "title": "Open source, construit au grand jour",
+            "description": "Construire CoreTend 2.0 depuis les sources : un paquet Swift 6 sans dépendance, son système de design, ses règles de sûreté et son guide de contribution.",
+            "kicker": "Développeurs",
+            "lead": "CoreTend est un paquet Swift 6 : une app SwiftUI et un outil en ligne de commande en lecture seule, sans dépendance à l’exécution. Apache 2.0.",
+            "sections": [
+                ("Construire", "Clonez le dépôt et construisez avec Swift Package Manager sur macOS 14 ou plus récent.", ["swift build --product CoreTendApp", "make qualify"]),
+                ("Système de design", "Le système Serre — palette, typographie, formes de feuille, jetons de mouvement, la serre vivante — vit dans un module et est vérifié par des tests."),
+                ("Règles de sûreté", "Un seul module peut déplacer des fichiers, seulement vers la Corbeille, après revalidation. La construction vérifie qu’aucun autre code ne peut supprimer ou renommer un fichier."),
+                ("Contribuer", "Lisez CONTRIBUTING.md, ouvrez d’abord une issue pour les changements importants, et reliez chaque affirmation à une mesure."),
+            ],
         },
     },
 }
 
+# ---------------------------------------------------------------------------------------------
+# Living pieces (all decorative; the content never depends on them)
 
-# The Serre logo (UI guide § 6): a seed, a stem, two leaves. site.css makes it germinate once.
-LOGO = (
-    '<svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true" focusable="false">'
-    '<path class="logo-leaf logo-leaf-1" d="M20 17C14 16 11 12 11 8C16 8 20 11 20 17Z"/>'
-    '<path class="logo-leaf logo-leaf-2" d="M20 13C25 12 28 9 29 5C24 5 21 8 20 13Z"/>'
-    '<path class="logo-stem" d="M20 26C20 18 20 14 20 8" pathLength="1"/>'
-    '<circle class="logo-seed" cx="20" cy="30" r="5.5"/>'
+MARK = (
+    '<svg class="mark" viewBox="200 180 624 680" aria-hidden="true" focusable="false">'
+    '<path class="mark-stem" pathLength="1" d="M512 780 C 512 640, 506 520, 520 400"/>'
+    '<path class="mark-leaf mark-leaf-1" d="M518 470 C 430 470, 330 420, 300 300 C 410 290, 500 350, 518 470 Z"/>'
+    '<path class="mark-leaf mark-leaf-2" d="M524 400 C 560 290, 660 220, 770 230 C 760 350, 660 420, 524 400 Z"/>'
+    '<path class="mark-soil" d="M250 800 Q 512 730 774 800"/>'
     '</svg>'
 )
 
-# A decorative root down the page margin; site.css grows it with the scroll where supported.
-SCROLL_ROOT = (
-    '<svg class="scroll-root" viewBox="0 0 60 1000" preserveAspectRatio="none" aria-hidden="true" focusable="false">'
-    '<path pathLength="1" d="M30 0C24 90 38 160 30 250S20 400 32 480S40 640 28 720S22 880 30 1000"/>'
-    '<path pathLength="1" d="M31 170C40 184 46 196 52 214"/>'
-    '<path pathLength="1" d="M26 430C17 446 12 462 8 482"/>'
-    '<path pathLength="1" d="M33 650C42 664 47 680 50 700"/>'
-    '<path pathLength="1" d="M27 860C19 874 15 890 12 906"/>'
-    '</svg>'
-)
 
+def sprout(x: float, height: float, index: int, wilted: bool = False) -> str:
+    top = 300 - height
+    return (f'<g class="shoot{" shoot-wilted" if wilted else ""}" style="--i:{index}" transform="translate({x} 0)">'
+            f'<g class="shoot-sway">'
+            f'<path class="shoot-stem" pathLength="1" d="M0 300 C 0 {300 - height * 0.5}, -4 {top + 20}, 2 {top}"/>'
+            f'<path class="shoot-leaf" d="M1 {top + height * 0.35} C -18 {top + height * 0.35}, -34 {top + height * 0.2}, -38 {top} C -20 {top - 2}, -4 {top + 10}, 1 {top + height * 0.35} Z"/>'
+            f'<path class="shoot-leaf" d="M2 {top + 8} C 10 {top - 14}, 28 {top - 26}, 44 {top - 24} C 42 {top - 4}, 24 {top + 10}, 2 {top + 8} Z"/>'
+            f'</g></g>')
+
+
+def greenhouse() -> str:
+    heights = [120, 170, 90, 200, 150, 230, 110, 185, 140, 210, 100, 160, 130]
+    shoots = "".join(sprout(60 + i * 72, h, i, wilted=(i == 11)) for i, h in enumerate(heights))
+    arches = "".join(f'<path class="glass" d="M{x} 300 Q {x + 150} {-20} {x + 300} 300"/><path class="mullion" d="M{x + 150} 300 V 140"/>'
+                     for x in (20, 330, 640))
+    pollen = "".join(f'<span style="--x:{(i * 37) % 100}%;--d:{7 + (i * 3) % 7}s;--delay:{-(i * 1.3):.1f}s"></span>' for i in range(22))
+    return (f'<div class="greenhouse" aria-hidden="true"><svg viewBox="0 0 960 330" preserveAspectRatio="xMidYMax meet" focusable="false">'
+            f'{arches}{shoots}</svg>'
+            f'<div class="pollen">{pollen}</div></div>')
+
+
+VINE = ('<svg class="vine" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true" focusable="false">'
+        '<path pathLength="1" d="M0 20 C 100 0, 200 40, 300 20 S 500 0, 600 20 S 800 40, 900 20 S 1100 0, 1200 20"/></svg>')
+
+
+# ---------------------------------------------------------------------------------------------
+# Page pieces
 
 def file_name(route: str) -> str:
     return "index.html" if route == "index" else f"{route}.html"
 
 
-def rel_path(from_route: str, to_route: str) -> str:
-    if from_route == "root":
-        return f"{to_route}/{file_name('index' if to_route == 'index' else to_route)}"
-    return file_name(to_route)
-
-
-def section_markup(sections: list[tuple], *, ordered: bool = False) -> str:
-    out = []
-    for item in sections:
-        title, body, *extra = item
-        detail = f"<p>{escape(body)}</p>"
-        if extra:
-            detail += "<ul class=\"command-list\">" + "".join(
-                f"<li><code>{escape(command)}</code></li>" for command in extra[0]
-            ) + "</ul>"
-        out.append(f"<article class=\"topic\"><h3>{escape(title)}</h3><div class=\"topic-body\">{detail}</div></article>")
-    return "\n".join(out)
-
-
 def header(lang: str, route: str) -> str:
-    copy = COPY[lang]
-    nav_items = []
-    for item in ROUTES:
-        current_attr = ' aria-current="page"' if route == item else ""
-        nav_items.append(
-            f'<a href="{escape(rel_path(route, item))}"{current_attr}>{escape(copy["nav"][item])}</a>'
-        )
-    nav_links = "".join(nav_items)
-    switch_lang = "fr" if lang == "en" else "en"
-    return f"""<a class="skip-link" href="#main">{escape(copy['skip'])}</a>
+    c = COPY[lang]
+    links = "".join(f'<a href="{file_name(r)}"{" aria-current=\"page\"" if r == route else ""}>{escape(c["nav"][r])}</a>'
+                    for r in ROUTES if r != "index")
+    other = "fr" if lang == "en" else "en"
+    return f"""<a class="skip-link" href="#main">{escape(c['skip'])}</a>
 <header class="site-header">
-  <a class="brand" href="{escape(rel_path(route, 'index'))}" aria-label="CoreTend — {escape(copy['nav']['index'])}">
-    {LOGO}<span class="brand-name">CoreTend<small>{escape(copy['brand_note'])}</small></span>
-  </a>
-  <nav class="primary-navigation" id="primary-navigation" aria-label="{escape(copy['nav_label'])}">{nav_links}</nav>
-  <a class="language-link" href="../{switch_lang}/{escape(file_name(route))}" lang="{switch_lang}" hreflang="{switch_lang}">{escape(copy['other_language'])}<span aria-hidden="true"> ↗</span></a>
+  <a class="brand" href="index.html" aria-label="CoreTend — {escape(c['nav']['index'])}">{MARK}<span>CoreTend<small>{escape(c['note'])}</small></span></a>
+  <nav class="primary-nav" aria-label="{escape(c['nav_label'])}">{links}</nav>
+  <a class="lang" href="../{other}/{file_name(route)}" lang="{other}" hreflang="{other}">{escape(c['other'])}</a>
 </header>"""
 
 
-def footer(lang: str, route: str) -> str:
-    copy = COPY[lang]
-    links = "".join(
-        f'<a href="{escape(rel_path(route, item))}">{escape(copy["nav"][item])}</a>'
-        for item in ("features", "privacy", "developer", "support")
-    )
+def footer(lang: str) -> str:
+    c = COPY[lang]
+    links = "".join(f'<a href="{file_name(r)}">{escape(c["nav"][r])}</a>' for r in ROUTES if r != "index")
     return f"""<footer class="site-footer">
-  <div class="footer-brand"><a class="brand" href="{escape(rel_path(route, 'index'))}">{LOGO}<span class="brand-name">CoreTend<small>{escape(copy['brand_note'])}</small></span></a><p>{escape(copy['footer_note'])}</p></div>
-  <div class="footer-nav"><h2>{escape(copy['footer_links'])}</h2><nav aria-label="{escape(copy['footer_links'])}">{links}</nav></div>
-  <p class="footer-meta">© 2026 CoreTend · {escape(copy['preview'])}</p>
+  {VINE}
+  <div class="footer-brand"><a class="brand" href="index.html">{MARK}<span>CoreTend<small>{escape(c['note'])}</small></span></a><p>{escape(c['footer'])}</p></div>
+  <nav aria-label="{escape(c['footer_links'])}">{links}</nav>
+  <p class="footer-meta">© 2026 CoreTend · Apache 2.0</p>
 </footer>"""
 
 
-def app_capture(lang: str, surface: str, title: str, *, hero: bool = False) -> str:
-    caption = ("Capture réelle du paquet local, le 28 septembre 2026, en fixture isolée. "
-               "Aucun dossier personnel analysé ; mesures de l’hôte, aucune promesse d’espace récupérable."
-               if lang == "fr" else
-               "Real local app capture, September 28, 2026, in an isolated fixture. "
-               "No personal folder scanned; host measurements, no claim of reclaimable space.")
-    alt = f"CoreTend — {title}"
+def download_button(lang: str, rel: dict, *, large: bool = False) -> str:
+    c = COPY[lang]
+    if rel.get("published") and rel.get("url"):
+        return (f'<a class="button button-primary{" button-large" if large else ""}" href="{escape(rel["url"], quote=True)}">'
+                f'{escape(c["cta_download"])}<span aria-hidden="true"> ↓</span></a>')
+    return f'<p class="unpublished">{escape(c["unpublished"])}</p>'
+
+
+def capture(lang: str, surface: str, title: str, *, hero: bool = False) -> str:
     image = f"../screenshots/{surface}-{lang}"
-    return (f'<figure class="app-vitrine{ " app-vitrine-hero" if hero else ""}">'
+    return (f'<figure class="capture reveal{" capture-hero" if hero else ""}">'
             f'<picture><source media="(prefers-color-scheme: light)" srcset="{image}-light.png">'
-            f'<img src="{image}-dark.png" alt="{escape(alt, quote=True)}" width="2048" height="1125" '
-            f'loading="{ "eager" if hero else "lazy"}"></picture>'
-            f'<figcaption><strong>{escape(title)}</strong><span>{escape(caption)}</span></figcaption></figure>')
+            f'<img src="{image}-dark.png" alt="CoreTend — {escape(title, quote=True)}" width="2048" height="1125" loading="{"eager" if hero else "lazy"}"></picture>'
+            f'<figcaption>{escape(title)}</figcaption></figure>')
 
 
-def home_content(lang: str) -> str:
-    page = COPY[lang]["home"]
-    topics = section_markup(page["sections"])
+def cards(items, css: str = "card") -> str:
+    out = []
+    for n, item in enumerate(items):
+        title, body, *extra = item
+        detail = f"<p>{escape(body)}</p>"
+        if extra:
+            detail += "".join(f"<code>{escape(line)}</code>" for line in extra[0])
+        out.append(f'<article class="{css} reveal" style="--n:{n}"><span class="card-leaf" aria-hidden="true"></span><h3>{escape(title)}</h3>{detail}</article>')
+    return "".join(out)
+
+
+SURFACE = {"overview": "overview", "explore": "explore", "cleanup": "cleanup", "duplicates": "duplicates",
+           "applications": "overview", "integrity": "overview", "performance": "performance", "record": "settings-bottom"}
+
+
+def home(lang: str, rel: dict) -> str:
+    c, p = COPY[lang], COPY[lang]["home"]
+    tools = "".join(
+        f'<a class="tool reveal" style="--n:{n}" href="features.html#{key}"><span class="tool-name">{escape(name)}</span>'
+        f'<strong>{escape(tag)}</strong><span class="tool-body">{escape(body)}</span></a>'
+        for n, (key, name, tag, body) in enumerate(DESTINATIONS[lang]))
     return f"""<main id="main">
-  <section class="hero section-shell" aria-labelledby="hero-title">
-    <div class="hero-copy"><p class="eyebrow"><span class="status-dot" aria-hidden="true"></span>{escape(page['kicker'])}</p><h1 id="hero-title">{escape(page['title'])}</h1><p class="hero-lead">{escape(page['lead'])}</p><div class="hero-actions"><a class="button button-primary" href="features.html">{escape(page['primary'])}<span aria-hidden="true"> ↗</span></a><a class="text-link" href="privacy.html">{escape(page['secondary'])}</a></div><p class="release-note"><span class="release-marker" aria-hidden="true">i</span>{escape(COPY[lang]['preview'])}. {escape(COPY[lang]['no_download'])}</p></div>
-    {app_capture(lang, "overview", "Vue d’ensemble : les strates du volume mesuré." if lang == "fr" else "Overview: layers of the measured volume.", hero=True)}
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow"><span class="dot" aria-hidden="true"></span>{escape(p['kicker'])}</p>
+      <h1>{escape(p['title'])}</h1>
+      <p class="lead">{escape(p['lead'])}</p>
+      <div class="actions">{download_button(lang, rel, large=True)}<a class="button button-secondary" href="features.html">{escape(c['cta_features'])}<span aria-hidden="true"> →</span></a></div>
+      <p class="requirements">{escape(c['requirements'])}</p>
+    </div>
+    {greenhouse()}
   </section>
-  <section class="section-shell intro-section" aria-labelledby="intro-title"><div class="section-heading"><p class="eyebrow">{'A measured approach' if lang == 'en' else 'Une approche mesurée'}</p><h2 id="intro-title">{escape(page['section_title'])}</h2><p>{escape(page['section_intro'])}</p></div><div class="topic-grid topic-grid-three">{topics}</div></section>
-  <section class="section-shell status-section" aria-labelledby="status-title"><div class="status-copy"><p class="eyebrow">{'Current status' if lang == 'en' else 'État actuel'}</p><h2 id="status-title">{escape(page['status_title'])}</h2><p>{escape(page['status_text'])}</p></div><a class="button button-secondary" href="features.html">{escape(page['status_link'])}<span aria-hidden="true"> →</span></a></section>
+  {capture(lang, "overview", DESTINATIONS[lang][0][1] + " — " + DESTINATIONS[lang][0][2], hero=True)}
+  <section class="band" aria-labelledby="tools-title"><div class="band-head reveal"><h2 id="tools-title">{escape(p['tools_title'])}</h2><p>{escape(p['tools_lead'])}</p></div><div class="tools">{tools}</div></section>
+  <section class="band band-alive" aria-labelledby="alive-title"><div class="band-head reveal"><h2 id="alive-title">{escape(p['alive_title'])}</h2></div><div class="cards">{cards(p['alive'])}</div></section>
+  <section class="band" aria-labelledby="never-title"><div class="band-head reveal"><h2 id="never-title">{escape(p['never_title'])}</h2></div><div class="cards">{cards(p['never'], "card card-never")}</div></section>
+  <section class="final reveal"><div class="final-mark">{MARK}</div><h2>{escape(p['final_title'])}</h2>{download_button(lang, rel, large=True)}<p class="requirements">{escape(c['requirements'])}</p></section>
 </main>"""
 
 
-def content_for(lang: str, route: str) -> str:
-    if route == "index":
-        return home_content(lang)
-    page = COPY[lang][route]
-    topics = section_markup(page["sections"])
-    notice = ""
-    if "notice" in page:
-        notice = f'<aside class="notice" aria-labelledby="notice-title"><span class="notice-symbol" aria-hidden="true">!</span><div><h2 id="notice-title">{escape(page["notice_title"])}</h2><p>{escape(page["notice"])}</p></div></aside>'
-    limit = ""
-    if "limits" in page:
-        limit = f'<aside class="limits-panel"><p class="eyebrow">{escape(page["limits_title"])}</p><p>{escape(page["limits"])}</p><a class="text-link" href="privacy.html">{escape(page["cta"])} <span aria-hidden="true">→</span></a></aside>'
-    surfaces = {
-        "features": ("explore", "Les parcelles : choisir un dossier." if lang == "fr" else "The plots: choose a folder."),
-        "privacy": ("settings-bottom", "Réglages : conservation et diagnostic privé." if lang == "fr" else "Settings: retention and private diagnostics."),
-        "developer": ("performance", "La sève : mesures locales, relevées à la demande." if lang == "fr" else "The sap: local readings, sampled on request."),
-        "support": ("cleanup", "Nettoyage : choisir une règle et son périmètre." if lang == "fr" else "Cleanup: choose a rule and its scope."),
-    }
-    surface, caption = surfaces[route]
-    capture = app_capture(lang, surface, caption)
-    if route == "features":
-        capture += app_capture(lang, "duplicates", "Les pousses jumelles : vous choisissez celle à garder." if lang == "fr" else "Twin sprouts: you choose which copy to keep.")
-    return f"""<main id="main" class="page-main">
-  <section class="page-intro section-shell" aria-labelledby="page-title"><p class="eyebrow">{escape(page['kicker'])}</p><h1 id="page-title">{escape(page['title'])}</h1><p class="page-lead">{escape(page['lead'])}</p></section>
-  <section class="page-content section-shell" aria-label="{escape(page['title'])}"><div class="topic-list">{topics}</div><div class="capture-gallery">{capture}</div>{limit}{notice}</section>
+def features(lang: str) -> str:
+    p = COPY[lang]["features"]
+    blocks = "".join(
+        f'<section class="feature" id="{key}"><div class="feature-copy reveal"><p class="eyebrow">{escape(name)}</p><h2>{escape(tag)}</h2><p>{escape(body)}</p></div>'
+        f'{capture(lang, SURFACE[key], name + " — " + tag)}</section>'
+        for key, name, tag, body in DESTINATIONS[lang])
+    return f"""<main id="main">
+  {intro(p)}
+  {blocks}
+  <section class="band"><div class="band-head reveal"><h2>{escape(p['also_title'])}</h2></div><div class="cards">{cards(p['also'])}</div></section>
 </main>"""
 
 
-def document(lang: str, route: str) -> str:
-    copy, page = COPY[lang], COPY[lang]["home" if route == "index" else route]
-    title = page["title"]
-    description = page["description"]
-    opposite = "fr" if lang == "en" else "en"
-    canonical = file_name(route)
+def download(lang: str, rel: dict) -> str:
+    c, p = COPY[lang], COPY[lang]["download"]
+    facts = f'<dl class="facts reveal"><div><dt>{escape(p["version"])}</dt><dd>{escape(rel["version"])}</dd></div>'
+    if rel.get("sha256"):
+        facts += f'<div><dt>{escape(p["sha"])}</dt><dd><code>{escape(rel["sha256"])}</code></dd></div>'
+    facts += f'<div><dt>macOS</dt><dd>{escape(c["requirements"])}</dd></div></dl>'
+    return f"""<main id="main">
+  {intro(p)}
+  <section class="band download-band"><div class="download-box reveal">{MARK}{download_button(lang, rel, large=True)}{facts}</div></section>
+  <section class="band"><div class="band-head reveal"><h2>{escape(p['install_title'])}</h2></div><div class="cards">{cards([(t, b) if t != "Homebrew" else (t, "", [b]) for t, b in p['install']])}</div></section>
+  <section class="band"><div class="band-head reveal"><h2>{escape(p['new_title'])}</h2><p>{escape(p['new'])}</p><p>{escape(p['from1'])}</p></div></section>
+</main>"""
+
+
+def intro(p: dict) -> str:
+    return (f'<section class="intro"><p class="eyebrow"><span class="dot" aria-hidden="true"></span>{escape(p["kicker"])}</p>'
+            f'<h1>{escape(p["title"])}</h1><p class="lead">{escape(p["lead"])}</p>{VINE}</section>')
+
+
+def simple(lang: str, route: str) -> str:
+    p = COPY[lang][route]
+    return f"""<main id="main">
+  {intro(p)}
+  <section class="band"><div class="cards cards-two">{cards(p['sections'])}</div></section>
+</main>"""
+
+
+def document(lang: str, route: str, rel: dict) -> str:
+    page = COPY[lang]["home" if route == "index" else route]
+    other = "fr" if lang == "en" else "en"
+    body = {"index": lambda: home(lang, rel), "features": lambda: features(lang),
+            "download": lambda: download(lang, rel)}.get(route, lambda: simple(lang, route))()
     return f"""<!doctype html>
 <html lang="{lang}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex, nofollow">
-  <meta name="description" content="{escape(description, quote=True)}">
-  <link rel="canonical" href="{escape(canonical, quote=True)}">
-  <link rel="alternate" hreflang="{lang}" href="{escape(canonical, quote=True)}">
-  <link rel="alternate" hreflang="{opposite}" href="../{opposite}/{escape(canonical, quote=True)}">
-  <link rel="alternate" hreflang="x-default" href="../index.html">
+  <meta name="description" content="{escape(page['description'], quote=True)}">
+  <meta name="theme-color" content="#0F2019">
+  <link rel="alternate" hreflang="{other}" href="../{other}/{file_name(route)}">
+  <link rel="icon" href="../brand/coretend-mark-dark.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../brand/coretend-app-icon-1024.png">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="{escape(title, quote=True)} — CoreTend">
-  <meta property="og:description" content="{escape(description, quote=True)}">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'">
-  <title>{escape(title)} — CoreTend</title>
+  <meta property="og:title" content="{escape(page['title'], quote=True)} — CoreTend">
+  <meta property="og:description" content="{escape(page['description'], quote=True)}">
+  <meta property="og:image" content="../brand/coretend-app-icon-1024.png">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'">
+  <title>{escape(page['title'])} — CoreTend</title>
   <link rel="stylesheet" href="../design-tokens.css">
   <link rel="stylesheet" href="../site.css">
 </head>
-<body class="page-{escape(route)}">
-  {SCROLL_ROOT}
+<body class="page-{route}">
   {header(lang, route)}
-  {content_for(lang, route)}
-  {footer(lang, route)}
+  {body}
+  {footer(lang)}
 </body>
 </html>
 """
 
 
 def language_index() -> str:
-    return """<!doctype html>
+    return f"""<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex, nofollow">
-  <meta name="description" content="CoreTend local reconstruction — choose English or French. Reconstruction locale CoreTend — choisir anglais ou français.">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'">
-  <title>CoreTend — choose language / choisir la langue</title>
+  <meta name="description" content="CoreTend 2.0 — a living, local greenhouse for your Mac. Une serre vivante et locale pour votre Mac.">
+  <meta name="theme-color" content="#0F2019">
+  <link rel="icon" href="brand/coretend-mark-dark.svg" type="image/svg+xml">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'">
+  <title>CoreTend — choose your language / choisir la langue</title>
   <link rel="stylesheet" href="design-tokens.css">
   <link rel="stylesheet" href="site.css">
 </head>
-<body class="language-page">
-  <a class="skip-link" href="#main">Skip to language choice / Aller au choix de langue</a>
-  <main class="language-choice" id="main">
-    <a class="brand" href="en/index.html">""" + LOGO + """<span class="brand-name">CoreTend<small>local care · entretien local</small></span></a>
-    <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span>Local preview · unreleased</p>
-    <h1>Choose your language<span lang="fr">Choisir votre langue</span></h1>
-    <p class="language-lead">CoreTend Next is an unreleased macOS reconstruction. This local site explains current behavior and limits.<br><span lang="fr">CoreTend Next est une reconstruction macOS non publiée. Ce site local présente ses fonctions et limites actuelles.</span></p>
-    <nav class="language-options" aria-label="Language / Langue"><a class="button button-primary" href="en/index.html" lang="en">English <span aria-hidden="true">→</span></a><a class="button button-secondary" href="fr/index.html" lang="fr">Français <span aria-hidden="true">→</span></a></nav>
+<body class="page-language">
+  <a class="skip-link" href="#main">Skip / Aller au contenu</a>
+  <main id="main" class="language">
+    {greenhouse()}
+    <div class="language-card">
+      <a class="brand brand-large" href="en/index.html">{MARK}<span>CoreTend<small>2.0</small></span></a>
+      <h1>A living greenhouse for your Mac.<span lang="fr">Une serre vivante pour votre Mac.</span></h1>
+      <nav class="actions" aria-label="Language / Langue"><a class="button button-primary" href="en/index.html" lang="en">English <span aria-hidden="true">→</span></a><a class="button button-secondary" href="fr/index.html" lang="fr">Français <span aria-hidden="true">→</span></a></nav>
+    </div>
   </main>
 </body>
 </html>
@@ -391,12 +496,17 @@ def language_index() -> str:
 
 def main() -> None:
     export_tokens()
+    rel = release()
+    brand = SITE / "brand"
+    brand.mkdir(exist_ok=True)
+    for name in ("coretend-mark-dark.svg", "coretend-mark-light.svg", "coretend-logotype-dark.svg",
+                 "coretend-logotype-light.svg", "coretend-app-icon-1024.png"):
+        shutil.copyfile(ROOT / "Resources/Brand/Logo" / name, brand / name)
     for lang in LANGUAGES:
+        (SITE / lang).mkdir(exist_ok=True)
         for route in ROUTES:
-            target = ROOT / "Website" / lang / file_name(route)
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_text(document(lang, route), encoding="utf-8")
-    (ROOT / "Website/index.html").write_text(language_index(), encoding="utf-8")
+            (SITE / lang / file_name(route)).write_text(document(lang, route, rel), encoding="utf-8")
+    (SITE / "index.html").write_text(language_index(), encoding="utf-8")
 
 
 if __name__ == "__main__":

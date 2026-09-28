@@ -1,0 +1,35 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "python3 Scripts/build_site.py",
+  "outputDirectory": "Website",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    { "source": "/privacy", "destination": "/en/privacy", "permanent": true },
+    { "source": "/support", "destination": "/en/support", "permanent": true },
+    { "source": "/legal", "destination": "/en/privacy", "permanent": true },
+    { "source": "/compare", "destination": "/en/features", "permanent": true },
+    { "source": "/licenses", "destination": "/en/developer", "permanent": true },
+    { "source": "/fr/legal", "destination": "/fr/privacy", "permanent": true },
+    { "source": "/fr/compare", "destination": "/fr/features", "permanent": true },
+    { "source": "/fr/licenses", "destination": "/fr/developer", "permanent": true },
+    { "source": "/en", "destination": "/en/index", "permanent": false },
+    { "source": "/fr", "destination": "/fr/index", "permanent": false },
+    { "source": "/download", "destination": "https://github.com/ahmetbsbnr/coretend/releases/latest", "permanent": false }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'" },
+        { "key": "Referrer-Policy", "value": "no-referrer" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
+        { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" }
+      ]
+    },
+    { "source": "/(screenshots|brand)/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }] }
+  ]
+}
