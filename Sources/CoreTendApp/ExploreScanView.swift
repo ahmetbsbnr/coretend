@@ -269,6 +269,8 @@ struct ExploreScanView: View {
         .confirmationDialog(copy("spacelens.delete.title"), isPresented: $actionDialogPresented, titleVisibility: .visible) {
             Button(copy("spacelens.delete.confirm"), role: .destructive) { beginDeleteExecution() }
             Button(copy("common.cancel"), role: .cancel) {}
+                // Return cancels: a move to the Trash is only ever a deliberate click.
+                .keyboardShortcut(.defaultAction)
         } message: {
             Text(deleteReviewMessage)
         }

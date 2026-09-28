@@ -57,6 +57,15 @@ class ArchitectureContractTests(unittest.TestCase):
         }
         self.assertEqual(check_architecture.design_violations(fine), [])
 
+    def test_destructive_confirmation_needs_a_safe_return_default(self):
+        risky = {"Sources/CoreTendApp/C.swift": '.confirmationDialog("Move?", isPresented: $p) {\n'
+                                                 'Button("Move", role: .destructive) {}\nButton("Cancel", role: .cancel) {}\n}\n'
+                                                 'Button("Remove row", role: .destructive) {}\n'}
+        self.assertEqual(len(check_architecture.trash_dialog_violations(risky)), 1)
+        safe = {"Sources/CoreTendApp/C.swift": '.alert("Clear?", isPresented: $p) {\nButton("Clear", role: .destructive) {}\n'
+                                                'Button("Cancel", role: .cancel) {}.keyboardShortcut(.defaultAction)\n}\n'}
+        self.assertEqual(check_architecture.trash_dialog_violations(safe), [])
+
     def test_rejects_write_capable_dependencies_in_scancore(self):
         package = package_fixture()
         package["targets"][1]["dependencies"].append({"byName": ["SafetyCore", None]})

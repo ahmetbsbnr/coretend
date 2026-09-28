@@ -97,6 +97,22 @@ def design_violations(sources):
     return errors
 
 
+
+def trash_dialog_violations(sources):
+    """A confirmation or alert with a destructive button must make another button the Return
+    default, so a stray Return never moves or clears anything."""
+    errors = []
+    for path, text in sorted(sources.items()):
+        lines = text.splitlines()
+        for number, line in enumerate(lines, start=1):
+            if ".confirmationDialog(" not in line and ".alert(" not in line:
+                continue
+            block = "\n".join(lines[number - 1:number + 8])
+            block = block.split("} message:")[0]
+            if "role: .destructive" in block and ".keyboardShortcut(.defaultAction)" not in block:
+                errors.append(f"{path}:{number}: destructive confirmation without a non-destructive Return default")
+    return errors
+
 def main():
     try:
         result = subprocess.run(
@@ -113,7 +129,7 @@ def main():
     root = Path(__file__).resolve().parents[1]
     sources = {path.relative_to(root).as_posix(): path.read_text(encoding="utf-8")
                for path in (root / "Sources").rglob("*.swift")}
-    errors = validate(package) + design_violations(sources)
+    errors = validate(package) + design_violations(sources) + trash_dialog_violations(sources)
     if errors:
         print("\n".join(errors), file=sys.stderr)
         return 1
