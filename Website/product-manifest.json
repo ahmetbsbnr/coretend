@@ -1,6 +1,7 @@
 {
   "product": "CoreTend",
-  "state": "local reconstruction, unreleased",
+  "state": "release candidate, unpublished",
+  "version": "2.0.0",
   "destinations": [
     "Overview",
     "Record",
@@ -64,18 +65,9 @@
     "ui.commandpalette",
     "uninstall.legacydata"
   ],
-  "implementedPreview": [
-    "read-only explicit-folder scan",
-    "exact duplicate identification",
-    "Trash-only action boundary",
-    "local versioned event store",
-    "read-only CLI"
-  ],
-  "notYetQualified": [
-    "cleanup review, exclusions and action flow",
-    "system integrity and performance evidence",
-    "application inventory",
-    "legacy migration UI",
-    "signed or published distribution"
+  "knownLimits": [
+    "macOS 14 and 15 not yet tested on hardware (built for macOS 14+)",
+    "VoiceOver not yet reviewed by a person",
+    "associated app files are name matches, not proof of ownership"
   ]
 }

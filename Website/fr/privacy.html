@@ -3,41 +3,36 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex, nofollow">
-  <meta name="description" content="Comment la reconstruction locale CoreTend sur macOS traite analyses, contenus, chemins enregistrés, historique et actions destructives.">
-  <link rel="canonical" href="privacy.html">
-  <link rel="alternate" hreflang="fr" href="privacy.html">
+  <meta name="description" content="Comment CoreTend 2.0 traite vos fichiers : seulement les dossiers choisis, analyses en lecture seule, déplacements vers la Corbeille après revue, ni réseau ni télémétrie.">
+  <meta name="theme-color" content="#0F2019">
   <link rel="alternate" hreflang="en" href="../en/privacy.html">
-  <link rel="alternate" hreflang="x-default" href="../index.html">
+  <link rel="icon" href="../brand/coretend-mark-dark.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../brand/coretend-app-icon-1024.png">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Vos fichiers restent sous votre contrôle — CoreTend">
-  <meta property="og:description" content="Comment la reconstruction locale CoreTend sur macOS traite analyses, contenus, chemins enregistrés, historique et actions destructives.">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'">
-  <title>Vos fichiers restent sous votre contrôle — CoreTend</title>
+  <meta property="og:title" content="Vos fichiers restent à vous — CoreTend">
+  <meta property="og:description" content="Comment CoreTend 2.0 traite vos fichiers : seulement les dossiers choisis, analyses en lecture seule, déplacements vers la Corbeille après revue, ni réseau ni télémétrie.">
+  <meta property="og:image" content="../brand/coretend-app-icon-1024.png">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'">
+  <title>Vos fichiers restent à vous — CoreTend</title>
   <link rel="stylesheet" href="../design-tokens.css">
   <link rel="stylesheet" href="../site.css">
 </head>
 <body class="page-privacy">
-  <svg class="scroll-root" viewBox="0 0 60 1000" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M30 0C24 90 38 160 30 250S20 400 32 480S40 640 28 720S22 880 30 1000"/><path pathLength="1" d="M31 170C40 184 46 196 52 214"/><path pathLength="1" d="M26 430C17 446 12 462 8 482"/><path pathLength="1" d="M33 650C42 664 47 680 50 700"/><path pathLength="1" d="M27 860C19 874 15 890 12 906"/></svg>
   <a class="skip-link" href="#main">Aller au contenu</a>
 <header class="site-header">
-  <a class="brand" href="index.html" aria-label="CoreTend — Vue d’ensemble">
-    <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><path class="logo-leaf logo-leaf-1" d="M20 17C14 16 11 12 11 8C16 8 20 11 20 17Z"/><path class="logo-leaf logo-leaf-2" d="M20 13C25 12 28 9 29 5C24 5 21 8 20 13Z"/><path class="logo-stem" d="M20 26C20 18 20 14 20 8" pathLength="1"/><circle class="logo-seed" cx="20" cy="30" r="5.5"/></svg><span class="brand-name">CoreTend<small>entretien local</small></span>
-  </a>
-  <nav class="primary-navigation" id="primary-navigation" aria-label="Navigation principale"><a href="index.html">Vue d’ensemble</a><a href="features.html">Fonctionnalités</a><a href="privacy.html" aria-current="page">Confidentialité</a><a href="developer.html">Développeur</a><a href="support.html">Assistance</a></nav>
-  <a class="language-link" href="../en/privacy.html" lang="en" hreflang="en">English<span aria-hidden="true"> ↗</span></a>
+  <a class="brand" href="index.html" aria-label="CoreTend — Accueil"><svg class="mark" viewBox="200 180 624 680" aria-hidden="true" focusable="false"><path class="mark-stem" pathLength="1" d="M512 780 C 512 640, 506 520, 520 400"/><path class="mark-leaf mark-leaf-1" d="M518 470 C 430 470, 330 420, 300 300 C 410 290, 500 350, 518 470 Z"/><path class="mark-leaf mark-leaf-2" d="M524 400 C 560 290, 660 220, 770 230 C 760 350, 660 420, 524 400 Z"/><path class="mark-soil" d="M250 800 Q 512 730 774 800"/></svg><span>CoreTend<small>entretien local</small></span></a>
+  <nav class="primary-nav" aria-label="Navigation principale"><a href="features.html">Fonctionnalités</a><a href="download.html">Télécharger</a><a href="privacy.html" aria-current="page">Confidentialité</a><a href="support.html">Assistance</a><a href="developer.html">Développeurs</a></nav>
+  <a class="lang" href="../en/privacy.html" lang="en" hreflang="en">English</a>
 </header>
-  <main id="main" class="page-main">
-  <section class="page-intro section-shell" aria-labelledby="page-title"><p class="eyebrow">Confidentialité et sûreté</p><h1 id="page-title">Vos fichiers restent sous votre contrôle</h1><p class="page-lead">Cette reconstruction n’envoie aucune télémétrie et ne propose ni compte ni synchronisation cloud. L’inspection se limite au dossier choisi ; toute modification suit une revue et une confirmation explicites.</p></section>
-  <section class="page-content section-shell" aria-label="Vos fichiers restent sous votre contrôle"><div class="topic-list"><article class="topic"><h3>Inspection locale</h3><div class="topic-body"><p>Une analyse lit les métadonnées du dossier sélectionné. Le contenu est lu uniquement si nécessaire au calcul d’empreintes comparées pour les doublons exacts. L’analyse n’écrit pas dans l’arborescence inspectée. L’accès dépend du dossier choisi et des permissions macOS.</p></div></article>
-<article class="topic"><h3>Chemins et historique conservés</h3><div class="topic-body"><p>Les favoris et l’historique récent activé conservent localement les chemins et dernières tailles connues. L’historique récent est désactivé par défaut et limité à 100 entrées. Événements et mesures Performance manuelles restent locaux ; conservation et export complet restent à qualifier.</p></div></article>
-<article class="topic"><h3>Un déplacement exige votre décision</h3><div class="topic-body"><p>Une candidate n’est jamais retirée du seul fait de sa détection. Vous choisissez les éléments, examinez la proposition, confirmez l’action ; CoreTend revalide ensuite les cibles avant d’utiliser la Corbeille macOS. L’app ne promet pas de retirer les données associées.</p></div></article>
-<article class="topic"><h3>Limite réseau</h3><div class="topic-body"><p>Cette reconstruction ne comporte ni télémétrie, ni compte, ni synchronisation cloud. Un lien HTTPS de mise à jour déclaré par l’app peut s’ouvrir dans votre navigateur après votre clic ; ce signal ne vérifie pas le flux indépendamment.</p></div></article></div><div class="capture-gallery"><figure class="app-vitrine"><picture><source media="(prefers-color-scheme: light)" srcset="../screenshots/settings-bottom-fr-light.png"><img src="../screenshots/settings-bottom-fr-dark.png" alt="CoreTend — Réglages : conservation et diagnostic privé." width="2048" height="1125" loading="lazy"></picture><figcaption><strong>Réglages : conservation et diagnostic privé.</strong><span>Capture réelle du paquet local, le 28 septembre 2026, en fixture isolée. Aucun dossier personnel analysé ; mesures de l’hôte, aucune promesse d’espace récupérable.</span></figcaption></figure></div><aside class="notice" aria-labelledby="notice-title"><span class="notice-symbol" aria-hidden="true">!</span><div><h2 id="notice-title">Avant de partager un diagnostic</h2><p>Les exports et événements peuvent contenir des noms de fichiers ou des chemins. Relisez tout contenu avant partage. N’incluez pas de chemins privés ou de base de données dans un retour public.</p></div></aside></section>
+  <main id="main">
+  <section class="intro"><p class="eyebrow"><span class="dot" aria-hidden="true"></span>Confidentialité et sûreté</p><h1>Vos fichiers restent à vous</h1><p class="lead">CoreTend travaille sur votre Mac et nulle part ailleurs. Il lit les dossiers que vous choisissez et ne change rien avant votre décision.</p><svg class="vine" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M0 20 C 100 0, 200 40, 300 20 S 500 0, 600 20 S 800 40, 900 20 S 1100 0, 1200 20"/></svg></section>
+  <section class="band"><div class="cards cards-two"><article class="card reveal" style="--n:0"><span class="card-leaf" aria-hidden="true"></span><h3>Seulement les dossiers choisis</h3><p>Chaque outil lit le dossier que vous désignez. Les dossiers habituels comme Applications sont proposés en un clic, jamais lus avant votre choix. CoreTend ne demande jamais l’accès complet au disque.</p></article><article class="card reveal" style="--n:1"><span class="card-leaf" aria-hidden="true"></span><h3>Lire n’est pas modifier</h3><p>Les analyses lisent noms, tailles et dates ; le contenu n’est lu que pour comparer des copies. Rien n’est écrit dans ce qui est analysé.</p></article><article class="card reveal" style="--n:2"><span class="card-leaf" aria-hidden="true"></span><h3>Chaque déplacement vous appartient</h3><p>Vous sélectionnez, revoyez et confirmez. CoreTend revérifie chaque fichier juste avant de le déplacer dans la Corbeille ; un fichier qui a changé reste en place.</p></article><article class="card reveal" style="--n:3"><span class="card-leaf" aria-hidden="true"></span><h3>Rien ne quitte votre Mac</h3><p>Aucune requête réseau, aucun compte, aucune statistique. Historique, favoris et relevés vivent dans une base locale que vous pouvez exporter ou effacer.</p></article></div></section>
 </main>
   <footer class="site-footer">
-  <div class="footer-brand"><a class="brand" href="index.html"><svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><path class="logo-leaf logo-leaf-1" d="M20 17C14 16 11 12 11 8C16 8 20 11 20 17Z"/><path class="logo-leaf logo-leaf-2" d="M20 13C25 12 28 9 29 5C24 5 21 8 20 13Z"/><path class="logo-stem" d="M20 26C20 18 20 14 20 8" pathLength="1"/><circle class="logo-seed" cx="20" cy="30" r="5.5"/></svg><span class="brand-name">CoreTend<small>entretien local</small></span></a><p>Pensé pour le local. CoreTend Next n’est pas publié.</p></div>
-  <div class="footer-nav"><h2>Explorer</h2><nav aria-label="Explorer"><a href="features.html">Fonctionnalités</a><a href="privacy.html">Confidentialité</a><a href="developer.html">Développeur</a><a href="support.html">Assistance</a></nav></div>
-  <p class="footer-meta">© 2026 CoreTend · CoreTend Next · reconstruction locale non publiée</p>
+  <svg class="vine" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M0 20 C 100 0, 200 40, 300 20 S 500 0, 600 20 S 800 40, 900 20 S 1100 0, 1200 20"/></svg>
+  <div class="footer-brand"><a class="brand" href="index.html"><svg class="mark" viewBox="200 180 624 680" aria-hidden="true" focusable="false"><path class="mark-stem" pathLength="1" d="M512 780 C 512 640, 506 520, 520 400"/><path class="mark-leaf mark-leaf-1" d="M518 470 C 430 470, 330 420, 300 300 C 410 290, 500 350, 518 470 Z"/><path class="mark-leaf mark-leaf-2" d="M524 400 C 560 290, 660 220, 770 230 C 760 350, 660 420, 524 400 Z"/><path class="mark-soil" d="M250 800 Q 512 730 774 800"/></svg><span>CoreTend<small>entretien local</small></span></a><p>Une serre vivante pour votre Mac. Locale, open source, Apache 2.0.</p></div>
+  <nav aria-label="Explorer"><a href="features.html">Fonctionnalités</a><a href="download.html">Télécharger</a><a href="privacy.html">Confidentialité</a><a href="support.html">Assistance</a><a href="developer.html">Développeurs</a></nav>
+  <p class="footer-meta">© 2026 CoreTend · Apache 2.0</p>
 </footer>
 </body>
 </html>

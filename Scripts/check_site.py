@@ -33,7 +33,9 @@ for file in sorted(root.rglob('*.html')):
         elif root not in target.parents or not target.is_file(): errors.append(f'{file}: missing or escaping image: {image}')
     for link in page.links:
         parsed=urlparse(link)
-        if parsed.scheme in ('http','https','javascript'): errors.append(f'{file}: external/script link {link}')
+        # The only external link allowed is the project's own GitHub (releases, source).
+        if parsed.scheme == 'javascript' or (parsed.scheme in ('http', 'https') and not link.startswith('https://github.com/ahmetbsbnr/coretend')):
+            errors.append(f'{file}: external/script link {link}')
         if parsed.scheme or link.startswith('#'): continue
         target=(file.parent / parsed.path).resolve()
         if root not in target.parents and target != root: errors.append(f'{file}: link escapes Website: {link}')
@@ -49,8 +51,10 @@ source=(root.parent/'Sources/ProductContract/Capability.swift').read_text()
 capabilities=sorted(re.findall(r'case\s+\w+\s*=\s*"([a-z][a-z0-9.]+)"',source))
 if manifest.get('capabilityIDs') != capabilities: errors.append('site manifest capability IDs differ from ProductContract')
 if len(manifest.get('destinations',[])) != 8: errors.append('site manifest must list exactly eight destinations')
-if manifest.get('state') != 'local reconstruction, unreleased': errors.append('site release state is not explicit')
-for page in ('index.html','features.html','privacy.html','support.html','developer.html'):
+release=json.loads((root/'release.json').read_text())
+if manifest.get('state') != ('released' if release.get('published') else 'release candidate, unpublished'): errors.append('site release state is not explicit')
+if release.get('published') and not (release.get('url') and release.get('sha256')): errors.append('a published release needs its download URL and SHA-256')
+for page in ('index.html','features.html','download.html','privacy.html','support.html','developer.html'):
     for lang in ('en','fr'):
         if not (root/lang/page).is_file(): errors.append(f'missing {lang}/{page}')
 if errors:
