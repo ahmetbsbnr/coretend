@@ -86,6 +86,10 @@ private struct CoreTendRootView: View {
     @State private var onboardingCompleted: Bool
     @State private var recentFilesEnabled: Bool
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.controlActiveState) private var controlActiveState
+    @Environment(\.scenePhase) private var scenePhase
+    /// Decision 0003: "Living greenhouse", on by default.
+    @AppStorage("coretend.livingGreenhouse") private var livingGreenhouse = true
     @State private var rowFrames: [Destination: CGRect] = [:]
     @Namespace private var searchSpace
     private var french: Bool { language == "fr" || (language == "system" && Locale.preferredLanguages.first?.hasPrefix("fr") == true) }
@@ -134,6 +138,8 @@ private struct CoreTendRootView: View {
         .onPreferenceChange(SidebarRowFrames.self) { rowFrames = $0 }
         // Views such as the Overview's shortcuts change destination through the navigation.
         .environment(navigation)
+        // Ambient motion only while this window is active and in front (decision 0003).
+        .environment(\.serreAmbientAllowed, livingGreenhouse && controlActiveState == .key && scenePhase == .active)
         .tint(Palette.accent.color)
         .preferredColorScheme(effectiveColorScheme)
         .toolbarBackground(Palette.canvas.color, for: .windowToolbar)

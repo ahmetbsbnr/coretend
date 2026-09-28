@@ -44,6 +44,7 @@ struct SystemSnapshotView: View {
             }
             if let snapshot {
                 if destination == .overview {
+                    GreenhouseScene(state: greenhouseState(snapshot)).serreRise(1)
                     // Side by side when the window is wide enough, stacked otherwise.
                     ViewThatFits(in: .horizontal) {
                         HStack(alignment: .top, spacing: 16) {
@@ -116,6 +117,17 @@ struct SystemSnapshotView: View {
                 measurementSource(copy("metrics.source.volume"), at: value.measuredAt)
             }
         }
+    }
+
+    /// The scene reflects measurements only: free ground, last action failed, recent pruning.
+    private func greenhouseState(_ value: SystemSnapshot) -> GreenhouseState {
+        var free: Double?
+        if case .known(let f) = value.availableBytes, case .known(let total) = value.totalBytes,
+           let soil = SoilFractions(free: f, total: total) { free = soil.free }
+        let day: TimeInterval = 86_400
+        return GreenhouseState(freeFraction: free,
+                               lastActionFailed: recentEvents.first?.kind == .failed,
+                               recentlyPruned: recentEvents.contains { $0.kind == .movedToTrash && $0.occurredAt > .now - day })
     }
 
     @ViewBuilder private func eventLeaf(_ kind: ActivityKind) -> some View {

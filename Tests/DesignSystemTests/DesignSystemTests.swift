@@ -169,6 +169,30 @@ final class SerreDrawingTests: XCTestCase {
 
 /// Renders every glyph, risk leaf and germination step to PNG for a visual check.
 /// Runs only when CORETEND_RENDER_DIR names an output folder.
+final class LivingGreenhouseTests: XCTestCase {
+    func testAmbientLifeNeedsEveryConditionOfDecision0003() {
+        XCTAssertTrue(AmbientLife.isAlive(allowed: true, reduceMotion: false, lowPower: false))
+        XCTAssertFalse(AmbientLife.isAlive(allowed: false, reduceMotion: false, lowPower: false))
+        XCTAssertFalse(AmbientLife.isAlive(allowed: true, reduceMotion: true, lowPower: false))
+        XCTAssertFalse(AmbientLife.isAlive(allowed: true, reduceMotion: false, lowPower: true))
+        XCTAssertLessThanOrEqual(1 / AmbientLife.frameInterval, 15.0001)
+    }
+
+    func testLightFollowsTheHour() {
+        XCTAssertEqual(GreenhouseLight.at(hour: 6), .dawn)
+        XCTAssertEqual(GreenhouseLight.at(hour: 12), .day)
+        XCTAssertEqual(GreenhouseLight.at(hour: 19), .dusk)
+        XCTAssertEqual(GreenhouseLight.at(hour: 2), .night)
+    }
+
+    func testShootsGrowWithMeasuredFreeGroundOnly() {
+        XCTAssertLessThan(GreenhouseState(freeFraction: 0.1, lastActionFailed: false, recentlyPruned: false).growth,
+                          GreenhouseState(freeFraction: 0.9, lastActionFailed: false, recentlyPruned: false).growth)
+        XCTAssertEqual(GreenhouseState(freeFraction: 3, lastActionFailed: false, recentlyPruned: false).freeFraction, 1)
+        XCTAssertEqual(GreenhouseState(freeFraction: nil, lastActionFailed: false, recentlyPruned: false).growth, 0.5)
+    }
+}
+
 final class SerreRenderSheet: XCTestCase {
     @MainActor
     func testRenderSheet() throws {
