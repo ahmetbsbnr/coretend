@@ -14,7 +14,7 @@
 | 3.3 | Explorer | Livré — le mainteneur a dit « continue » sans recette explicite (`0e9fc484`) |
 | 3.4 | Doublons et images proches | Accepté 28-09-2026 (`7f4b9fd7`) |
 | 3.5 | Applications | Accepté 28-09-2026 (`bb66dc75`, `2663f55d`) |
-| 3.6 | Intégrité | À faire |
+| 3.6 | Intégrité | Livré — recette en attente (`5430106d`) |
 | 3.7 | Performances | À faire |
 | 3.8 | Historique | À faire |
 | 3.9 | Réglages, ⌘K, barre de menus, langue, import ancien | À faire |
@@ -149,10 +149,24 @@
   Faite dans `2663f55d` sans lecture automatique (le registre exige un dossier explicitement choisi) :
   les dossiers trouvés sont proposés en un clic. Registre : preuves datées, `PARTIEL`.
 
+### 28-09-2026 — lot 3.6, Intégrité
+
+- **Fait :** `5430106d` — `SerreSignalTag` (étiquette de plant : œillet, feuille de ton, détails, se
+  balance une fois) ; état initial graine ; étiquette du plant avec vraie icône, une étiquette par
+  signal (signature : identifiant, équipe, code ; quarantaine : présence/absence neutre, jamais
+  un verdict), source et limites sur chacune ; LaunchAgents : dossiers trouvés proposés en un clic
+  (`LaunchAgentFolders`, testé), candidats en lignes, problèmes en bandeaux, accords corrects.
+- **Vérifié :** `make qualify` PASS ; app fixture : état initial, Calculatrice étiquetée (signature
+  validée, aucun marqueur), vos LaunchAgents (1 plist valide, 1 cassé).
+- **Non vérifié :** app non signée / en quarantaine ; VoiceOver.
+- **Recette 3.6 (mainteneur) :** étiqueter une app téléchargée (souvent en quarantaine) et une app
+  système ; lire vos LaunchAgents.
+
 ## Point d’arrêt
 
-- 3.5 accepté. Lot en cours **3.6 — Intégrité** (« l’inspection des tiges ») :
-  signatures, quarantaine, agents de lancement ; états Serre ; aucune action destructive.
+- 3.6 livré, recette en attente. Prochain lot **3.7 — Performances** (« la sève ») : courbe de
+  sève tracée de gauche à droite à l’apparition, nouveau point qui pulse une fois, mesure
+  seulement (NFR-09).
 - 3.2 et 3.3 : recette explicite à obtenir avant de passer leurs lignes à `VÉRIFIÉ`.
 
 ## Problèmes ouverts
