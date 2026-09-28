@@ -8,8 +8,8 @@ en fixture, invariants et particularités de l’hôte :
 ## Où on en est
 
 - **Mis à jour :** 28-09-2026, P4 — travaux disponibles 4.1–4.6 consignés ; G4 reste ouverte.
-- **Phase :** P7 — Sortie publique 2.0 → [`P7-release-2.0.md`](Documentation/Passation/P7-release-2.0.md).
-- **Lot courant :** 2.0.0 publiée ; suite dans `Documentation/Project/Roadmap-2.x.md` (Q0 : DMG notarisé, en attente de la clé API du mainteneur).
+- **Phase :** P8 — Mac App Store → [`P8-app-store.md`](Documentation/Passation/P8-app-store.md).
+- **Lot courant :** 8.4 build TestFlight — bloqué par le compte Xcode et la fiche App Store Connect (mainteneur).
 - **G3 :** passée ; aucune observation détaillée supplémentaire reçue, aucun statut du registre promu.
 - **Livraison P3 :** `fa9132ed` poussé, CI `qualify` PASS le 28-09 à 09:49:42 UTC.
 - **Registre :** Must `VÉRIFIÉ` **3 / 78** (Should 0 / 11), NFR-07 PARTIEL.

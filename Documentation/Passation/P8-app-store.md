@@ -17,9 +17,9 @@
 |---|---|---|
 | 8.1 | Variante sandbox : droits, paquet `make package-appstore`, lancement vérifié | Livré |
 | 8.2 | Adaptations sandbox : vrai dossier personnel, raccourcis par panneau, accès conservé jusqu'à la Corbeille, fichiers suivis | Livré |
-| 8.3 | Revue et polish de l'app entière (8 destinations, accueil, réglages, barre des menus, FR/EN, clair/sombre) | À faire |
-| 8.4 | Build App Store : archive, export `app-store-connect` (signature gérée par Xcode), envoi TestFlight | À faire |
-| 8.5 | Fiche App Store : captures 2880 × 1800, textes EN/FR, confidentialité, catégorie, export | À faire |
+| 8.3 | Revue et polish de l'app entière (8 destinations, accueil, réglages, barre des menus, FR/EN, clair/sombre) | Livré (`cc581f05`) |
+| 8.4 | Build App Store : archive, export `app-store-connect` (signature gérée par Xcode), envoi TestFlight | Script prêt ; **bloqué** : compte Xcode + fiche App Store Connect |
+| 8.5 | Fiche App Store : captures 2880 × 1800, textes EN/FR, confidentialité, catégorie, export | Livré — à coller dans App Store Connect |
 | 8.6 | Soumission à la revue — sur accord | À faire |
 
 ## Journal
@@ -70,5 +70,13 @@
 
 ## Point d'arrêt
 
-- Démarrage : audit sandbox fait (aucun sous-processus ; dossiers choisis par `fileImporter` ;
-  `NSHomeDirectory()` et accès limité à l'analyse à corriger).
+- Faits : sandbox (8.1–8.2), polish et captures en usage (8.3), fiche EN/FR + 8 captures
+  2880 × 1800 par langue dans `Artifacts/AppStore/screenshots/{en,fr}` (8.5). `make qualify` : 0.
+- **À faire par le mainteneur pour débloquer 8.4 :**
+  1. Fiche App Store Connect (voir « Prérequis »).
+  2. Signature : reconnecter le compte dans Xcode › Réglages › Comptes, **ou** lancer lui-même
+     l'envoi avec sa clé API (rôle Admin ou App Manager) :
+     `CORETEND_ASC_KEY_PATH=… CORETEND_ASC_KEY_ID=… CORETEND_ASC_ISSUER=… bash Scripts/appstore_export.sh upload`
+- Ensuite (agent) : `bash Scripts/appstore_export.sh upload` → build 201 dans TestFlight ; vérifier
+  le traitement, tester en interne ; coller la fiche ; 8.6 soumission **sur accord**.
+- Non vérifié : parcours panneau → analyse → Corbeille dans la sandbox (interaction à l'écran).
