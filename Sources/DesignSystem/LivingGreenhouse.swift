@@ -436,3 +436,56 @@ final class PollenView: NSView {
         return context.makeImage()
     }()
 }
+
+/// A vine that grows along the top of a page when it opens, from the sidebar's edge towards the
+/// page's plant, with a few leaves unfolding behind its tip, then fades (caused by navigation).
+public struct VineSweep: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var grown = 0.0
+    @State private var fade = 1.0
+
+    public init() {}
+
+    public var body: some View {
+        GeometryReader { proxy in
+            let size = proxy.size
+            ZStack(alignment: .topLeading) {
+                VinePath().trim(from: 0, to: grown)
+                    .stroke(Palette.accent.color, style: StrokeStyle(lineWidth: 1.8, lineCap: .round))
+                ForEach(0..<6, id: \.self) { index in
+                    let at = Double(index + 1) / 7
+                    RiskLeafShape(level: .low)
+                        .fill(Palette.accent.color.opacity(0.8))
+                        .frame(width: 9, height: 9)
+                        .rotationEffect(.degrees(index.isMultiple(of: 2) ? -40 : 220))
+                        .scaleEffect(grown > at ? 1 : 0.01)
+                        .position(VinePath.point(at: at, in: size))
+                        .animation(reduceMotion ? nil : MotionCurve.sprout.animation(duration: 0.35), value: grown > at)
+                }
+            }
+            .opacity(fade)
+        }
+        .frame(height: 24)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+        .onAppear {
+            guard !reduceMotion else { fade = 0; return }
+            withAnimation(MotionCurve.sap.animation(duration: 0.7)) { grown = 1 }
+            withAnimation(MotionCurve.retreat.animation(duration: 0.6).delay(1.1)) { fade = 0 }
+        }
+    }
+}
+
+struct VinePath: Shape {
+    static func point(at t: Double, in size: CGSize) -> CGPoint {
+        CGPoint(x: size.width * t, y: size.height * 0.5 + sin(t * .pi * 4) * size.height * 0.3)
+    }
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let steps = 60
+        path.move(to: Self.point(at: 0, in: rect.size))
+        for step in 1...steps { path.addLine(to: Self.point(at: Double(step) / Double(steps), in: rect.size)) }
+        return path
+    }
+}
