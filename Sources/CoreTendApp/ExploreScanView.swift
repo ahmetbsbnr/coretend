@@ -10,14 +10,21 @@ import SafetyCore
 import Domain
 import Persistence
 
+/// Explore, "les parcelles": a chosen folder surveyed file by file while its roots follow the real
+/// progress, then the files as plots in proportion (they appear largest first), a list to sort,
+/// filter, preview and mark as favorite, and a reviewed move to the macOS Trash where each moved
+/// file falls as a leaf and each file that stays says why.
 struct ExploreScanView: View {
     let french: Bool
     @Binding var recentFilesEnabled: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var selectingFolder = false
     @State private var scanning = false
     @State private var scanCompletedFiles = 0
+    @State private var rootsPhase: ScanRootsPhase?
     @State private var results: [ScanResult] = []
-    @State private var status: String?
+    @State private var notice: PageNotice?
+    @State private var scanFoundNothing = false
     @State private var scanTask: Task<Void, Never>?
     @State private var activeScanID: UUID?
     @State private var query = ""
@@ -33,12 +40,24 @@ struct ExploreScanView: View {
     @State private var actionDialogPresented = false
     @State private var actionService: FileActionService?
     @State private var actionBusy = false
+    @State private var moving = false
     @State private var actionScopeHeld = false
     @State private var actionScopedRoot: URL?
     @State private var viewVisible = false
     @State private var previewScopeHeld = false
     @State private var previewScopedRoot: URL?
     @State private var favoritePaths: Set<String> = []
+    /// Files that stayed where they were after a move, with the copy key saying why.
+    @State private var failures: [URL: String] = [:]
+    @State private var flight = LeafFlight()
+    /// The plot the reader pointed at on the map; its row is brought into view and outlined.
+    @State private var focusedPath: String?
+    /// Changes once per finished scan, so the plots appear (largest first) once per scan.
+    @State private var mapSeed = UUID()
+    @State private var scrollTarget: String?
+    @State private var hoveredTile: String?
+
+    private var locked: Bool { scanning || actionBusy || actionReview != nil }
 
     private var visibleResults: [ScanResult] {
         let filtered = results.filter {
@@ -58,7 +77,7 @@ struct ExploreScanView: View {
             case (nil, nil): return $0.url.path < $1.url.path
             }
         }
-    }
+        }
     }
 
     private var treemapInputs: [TreemapInput] {
@@ -70,187 +89,60 @@ struct ExploreScanView: View {
     }
 
     var body: some View {
+        ScrollViewReader { proxy in
+            content
+                .onChange(of: scrollTarget) { _, target in
+                    guard let target else { return }
+                    withAnimation(reduceMotion ? nil : MotionCurve.sap.animation(duration: MotionToken.grow.duration)) {
+                        proxy.scrollTo(target, anchor: .top)
+                    }
+                    scrollTarget = nil
+                }
+        }
+    }
+
+    private var content: some View {
         VStack(alignment: .leading, spacing: 20) {
-            Button {
-                selectingFolder = true
-            } label: {
-                Label(copy("scan.choose"), systemImage: "folder.badge.plus")
-            }
-            .disabled(scanning || actionBusy || actionReview != nil)
-            .accessibilityHint(copy("scan.choose.hint"))
-
             if let selectedRoot {
-                Label {
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(french ? "Périmètre mesuré" : "Measured scope").font(.caption.weight(.semibold))
-                        Text(selectedRoot.path).font(.caption.monospaced()).textSelection(.enabled)
-                    }
-                } icon: {
-                    Image(systemName: "folder.fill").foregroundStyle(Palette.accent.color)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(14)
-                .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 12))
-                .accessibilityElement(children: .combine)
-            }
-
-            if scanning {
-                HStack(spacing: 14) {
-                    ProgressView()
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(copy("scan.progress")).font(.headline)
-                        Text(ProductCopy.scanProgress(completedFiles: scanCompletedFiles, french: french))
-                            .font(.caption).foregroundStyle(Palette.secondaryInk.color)
-                    }
-                    Spacer()
-                    Button(copy("scan.cancel")) { cancelScan() }
-                }
-                .padding(14)
-                .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 12))
-                .transition(.opacity.combined(with: .move(edge: .top)))
-                .motion(.standard, value: scanning)
-            }
-            if let status {
-                Label(status, systemImage: "info.circle")
-                    .font(.callout).foregroundStyle(Palette.secondaryInk.color).textSelection(.enabled)
-                    .padding(12).frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 10))
-            }
-            if !results.isEmpty {
-                HStack(alignment: .firstTextBaseline) {
-                    Text(copy("scan.count", count: results.count)).font(.title3.weight(.semibold))
-                    Spacer()
-                    Text(french ? "Résultats de ce dossier" : "Results from this folder")
-                        .font(.caption).foregroundStyle(Palette.secondaryInk.color)
-                }
-                HStack {
-                    TextField(copy("explore.search"), text: $query).textFieldStyle(.roundedBorder)
-                    Picker(copy("explore.sort"), selection: $sortMode) {
-                        Text(copy("explore.largest")).tag("largest")
-                        Text(copy("explore.oldest")).tag("oldest")
-                        Text(copy("explore.name")).tag("name")
-                    }
-                    .frame(width: 190)
-                }
-                HStack {
-                    Picker(french ? "Catégorie" : "Category", selection: $category) {
-                        ForEach(ExploreFileCategory.allCases, id: \.self) { value in
-                            Text(categoryName(value)).tag(value)
+                scope(selectedRoot)
+            } else {
+                SerreParcel {
+                    SerreEmptyState(title: copy("explore.initial.title"), message: copy("explore.initial.message")) {
+                        Button { selectingFolder = true } label: {
+                            Label { Text(copy("explore.choose")) } icon: { SerreIcon(.explore, size: 15) }
                         }
-                    }
-                    .frame(width: 190)
-                    Picker(french ? "Filtre" : "Filter", selection: $preset) {
-                        Text(french ? "Tous" : "All files").tag(ExplorePreset.all)
-                        Text(french ? "≥ 1 Gio local" : "≥ 1 GiB local").tag(ExplorePreset.largeLocal)
-                        Text(french ? "Anciens · 365 jours" : "Older · 365 days").tag(ExplorePreset.olderThan365Days)
-                    }
-                    .frame(width: 190)
-                    .onChange(of: preset) { _, _ in presetEvaluationDate = .now }
-                }
-                VStack(alignment: .leading, spacing: 5) {
-                    Label(categoryDescription, systemImage: "tag")
-                    Label(presetDescription, systemImage: "line.3.horizontal.decrease")
-                }
-                .font(.caption).foregroundStyle(Palette.secondaryInk.color)
-                .padding(12).frame(maxWidth: .infinity, alignment: .leading)
-                .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 10))
-                let knownCount = treemapInputs.count
-                Text(french ? "Carte proportionnelle : \(knownCount) allocations distinctes connues; inconnues exclues." : "Proportional map: \(knownCount) distinct known allocations; unknown items excluded.")
-                    .font(.caption).foregroundStyle(.secondary)
-                GeometryReader { proxy in
-                    let tiles = TreemapLayout.tiles(for: treemapInputs, size: proxy.size)
-                    ZStack(alignment: .topLeading) {
-                        ForEach(Array(tiles.enumerated()), id: \.element.id) { index, tile in
-                            RoundedRectangle(cornerRadius: 5)
-                    .fill(Palette.accent.color.opacity(0.14 + Double(index % 4) * 0.08))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 5).stroke(Palette.separator.color, lineWidth: 0.5)
-                    }
-                                .overlay(alignment: .topLeading) {
-                                    if tile.frame.width > 90 && tile.frame.height > 34 {
-                                        Text(URL(fileURLWithPath: tile.id).lastPathComponent)
-                                            .font(.caption2).lineLimit(1).padding(5)
-                                    }
-                                }
-                                .frame(width: tile.frame.width, height: tile.frame.height)
-                                .position(x: tile.frame.midX, y: tile.frame.midY)
-                                .transition(.opacity)
-                                .accessibilityLabel("\(URL(fileURLWithPath: tile.id).lastPathComponent), \(ByteCountFormatter.string(fromByteCount: tile.bytes, countStyle: .file))")
-                        }
+                        .buttonStyle(.serre(.primary))
+                        .accessibilityHint(copy("scan.choose.hint"))
+                        .padding(.top, 6)
                     }
                 }
-                .frame(minHeight: 150, idealHeight: 230, maxHeight: 280)
-                .padding(8)
-                .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 12))
-                .motion(.standard, value: treemapInputs.count)
-                .accessibilityElement(children: .contain)
-                if visibleResults.isEmpty {
-                    ContentUnavailableView(french ? "Aucun fichier ne correspond au filtre" : "No files match this filter", systemImage: "line.3.horizontal.decrease.circle")
-                        .frame(minHeight: 260)
-                } else {
-                    List(visibleResults, id: \.url) { result in
-                        HStack {
-                            Toggle(isOn: Binding(get: { selectedExploreFiles.contains(result.url) }, set: { enabled in
-                                guard isSelectableExploreResult(result) else { return }
-                                if enabled { selectedExploreFiles.insert(result.url) }
-                                else { selectedExploreFiles.remove(result.url) }
-                            })) { EmptyView() }
-                                .labelsHidden()
-                                .accessibilityLabel(copy("explore.delete.select"))
-                                .disabled(!isSelectableExploreResult(result) || scanning || actionBusy || actionReview != nil)
-                            Image(systemName: "doc")
-                                .foregroundStyle(Palette.accent.color)
-                            Text(result.url.lastPathComponent).lineLimit(1)
-                            Spacer()
-                            VStack(alignment: .trailing, spacing: 2) {
-                                Text(french ? "Allouée localement : \(size(result.allocatedBytes))" : "Allocated locally: \(size(result.allocatedBytes))")
-                                Text(french ? "Taille logique : \(size(result.logicalBytes))" : "Logical size: \(size(result.logicalBytes))")
-                                Text(french ? "Modifié : \(modified(result))" : "Modified: \(modified(result))")
-                            }
-                            .monospacedDigit()
-                            .foregroundStyle(.secondary)
-                            .accessibilityElement(children: .ignore)
-                            .accessibilityLabel(ProductCopy.scanResultAccessibilitySummary(
-                                name: result.url.lastPathComponent,
-                                source: french ? "Explorer" : "Explore",
-                                state: french ? "Résultat mesuré" : "Measured result",
-                                allocated: size(result.allocatedBytes), logical: size(result.logicalBytes),
-                                modified: modified(result), french: french
-                            ))
-                            Button { Task { await toggleFavorite(result) } } label: {
-                                Image(systemName: favoritePaths.contains(result.url.path) ? "star.fill" : "star")
-                            }
-                            .buttonStyle(.borderless)
-                            .accessibilityLabel(favoritePaths.contains(result.url.path)
-                                ? (french ? "Retirer \(result.url.lastPathComponent) des favoris" : "Remove \(result.url.lastPathComponent) from favorites")
-                                : (french ? "Ajouter \(result.url.lastPathComponent) aux favoris" : "Add \(result.url.lastPathComponent) to favorites"))
-                            Button { showPreview(result.url) } label: {
-                                Label(copy("explore.preview"), systemImage: "eye")
-                            }
-                            .buttonStyle(.borderless)
-                            .accessibilityLabel(previewLabel(for: result.url))
-                            .accessibilityHint(french ? "Ouvre l’aperçu Quick Look." : "Opens the Quick Look preview.")
-                        }
-                        .accessibilityElement(children: .contain)
-                    }
-                    .frame(minHeight: 260)
-                    Button { Task { await prepareDeleteReview() } } label: {
-                        Label(copy("explore.delete.review"), systemImage: "trash")
-                    }
-                    .disabled(selectedExploreFiles.isEmpty || scanning || actionBusy || actionReview != nil)
-                    .accessibilityHint(french ? "Aucun élément n’est déplacé avant confirmation." : "No item moves before confirmation.")
-                }
-                Text(french ? "Somme des octets locaux connus : \(ByteCountFormatter.string(fromByteCount: treemapInputs.reduce(0) { $0 + $1.bytes }, countStyle: .file)). Le nuage et les tailles inconnues ne sont pas estimés." : "Known local bytes total: \(ByteCountFormatter.string(fromByteCount: treemapInputs.reduce(0) { $0 + $1.bytes }, countStyle: .file)). Cloud-backed and unknown sizes are not estimated.")
-                    .font(.caption).foregroundStyle(.secondary)
+            }
+            if let notice, !notice.nearActions { banner(notice) }
+            if let rootsPhase { roots(rootsPhase).id("explore.roots") }
+            if scanFoundNothing {
+                SerreEmptyState(title: copy("scan.empty"), message: copy("cleanup.none.help"))
+            }
+            // The files appear once the survey is done, largest plots first.
+            if !scanning, !results.isEmpty || flight.landed > 0 {
+                filters
+                map
+                list
+                if let notice, notice.nearActions { banner(notice) }
+                Text(french ? "Somme des octets locaux connus : \(ProductFormat.bytes(treemapInputs.reduce(0) { $0 + $1.bytes }, french: true)). Le nuage et les tailles inconnues ne sont pas estimés."
+                            : "Known local bytes total: \(ProductFormat.bytes(treemapInputs.reduce(0) { $0 + $1.bytes }, french: false)). Cloud-backed and unknown sizes are not estimated.")
+                    .font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
             }
         }
+        .leafFlightLayer(flight)
+        .motion(.standard, value: notice)
+        .motion(.standard, value: rootsPhase)
         .fileImporter(isPresented: $selectingFolder, allowedContentTypes: [.folder], allowsMultipleSelection: false) { outcome in
             switch outcome {
             case .success(let urls):
                 guard let url = urls.first else { return }
                 beginScan(url)
             case .failure:
-                status = copy("scan.failed")
+                notice = PageNotice(kind: .error, title: copy("scan.failed"), recovery: .chooseAgain)
             }
         }
         .onDisappear {
@@ -279,6 +171,309 @@ struct ExploreScanView: View {
         }
     }
 
+    // MARK: - Sections
+
+    private func scope(_ root: URL) -> some View {
+        SerreParcel {
+            HStack(alignment: .center, spacing: 12) {
+                SerreIcon(.explore, size: 18).foregroundStyle(Palette.accent.color)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(copy("explore.scope")).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
+                    Text(root.path).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                        .lineLimit(1).truncationMode(.middle).textSelection(.enabled)
+                }
+                .accessibilityElement(children: .combine)
+                Spacer(minLength: 8)
+                Button(copy("explore.chooseOther")) { selectingFolder = true }
+                    .buttonStyle(.serre(.secondary))
+                    .disabled(locked)
+                    .accessibilityHint(copy("scan.choose.hint"))
+            }
+        }
+    }
+
+    private func roots(_ phase: ScanRootsPhase) -> some View {
+        SerreParcel {
+            VStack(alignment: .leading, spacing: 12) {
+                ScanRoots(completed: scanCompletedFiles,
+                          count: ProductFormat.count(scanCompletedFiles, french: french),
+                          caption: ProductFormat.filesExamined(scanCompletedFiles, french: french) + "\n"
+                              + copy(phase == .finished ? "scan.finished" : "scan.reading"),
+                          phase: phase)
+                if phase == .reading {
+                    Button(copy("scan.cancel")) { cancelScan() }
+                        .buttonStyle(.serre(.secondary))
+                }
+            }
+        }
+        .transition(.opacity)
+    }
+
+    private func banner(_ notice: PageNotice) -> some View {
+        PageNoticeBanner(notice: notice, french: french, disabled: locked, chooseAgain: { selectingFolder = true },
+                         retryScan: selectedRoot.map { root in { beginScan(root) } })
+    }
+
+    private var filters: some View {
+        SerreParcel {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(copy("explore.filters")).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
+                    Spacer()
+                    Text(french ? "\(ProductFormat.items(visibleResults.count, french: true)) sur \(ProductFormat.count(results.count, french: true))"
+                                : "\(ProductFormat.items(visibleResults.count, french: false)) of \(ProductFormat.count(results.count, french: false))")
+                        .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                        .contentTransition(.numericText(value: Double(visibleResults.count)))
+                }
+                HStack(spacing: 10) {
+                    SerreIcon(.search, size: 15).foregroundStyle(Palette.accent.color).accessibilityHidden(true)
+                    TextField(copy("explore.search"), text: $query)
+                        .textFieldStyle(.plain).font(CoreTendTypography.body)
+                }
+                .padding(.horizontal, 12).padding(.vertical, 9)
+                .background(Palette.raisedSurface.color, in: LeafCorner.control.shape)
+                .overlay(LeafCorner.control.shape.strokeBorder(query.isEmpty ? Palette.strongSeparator.color : Palette.accent.color, lineWidth: 1))
+                HStack(spacing: 12) {
+                    Picker(copy("explore.sort"), selection: $sortMode) {
+                        Text(copy("explore.largest")).tag("largest")
+                        Text(copy("explore.oldest")).tag("oldest")
+                        Text(copy("explore.name")).tag("name")
+                    }
+                    Picker(french ? "Catégorie" : "Category", selection: $category) {
+                        ForEach(ExploreFileCategory.allCases, id: \.self) { value in
+                            Text(categoryName(value)).tag(value)
+                        }
+                    }
+                    Picker(french ? "Filtre" : "Filter", selection: $preset) {
+                        Text(french ? "Tous" : "All files").tag(ExplorePreset.all)
+                        Text(french ? "≥ 1 Gio local" : "≥ 1 GiB local").tag(ExplorePreset.largeLocal)
+                        Text(french ? "Anciens · 365 jours" : "Older · 365 days").tag(ExplorePreset.olderThan365Days)
+                    }
+                    .onChange(of: preset) { _, _ in presetEvaluationDate = .now }
+                }
+                .pickerStyle(.menu)
+                .font(CoreTendTypography.secondary)
+                .tint(Palette.accent.color)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(categoryDescription)
+                    Text(presetDescription)
+                }
+                .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .disabled(locked)
+    }
+
+    /// The files as plots in proportion to their known local size. They appear largest first,
+    /// once per scan; pointing at one names it, choosing one brings its row into view.
+    private var map: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(copy("explore.map")).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
+                Spacer()
+                Text(hoveredLabel ?? (french ? "\(treemapInputs.count) allocations connues" : "\(treemapInputs.count) known allocations"))
+                    .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                    .lineLimit(1).truncationMode(.middle)
+            }
+            GeometryReader { proxy in
+                let tiles = TreemapLayout.tiles(for: treemapInputs, size: proxy.size)
+                let order = Dictionary(uniqueKeysWithValues: tiles.sorted { $0.bytes > $1.bytes }.enumerated().map { ($1.id, $0) })
+                ZStack(alignment: .topLeading) {
+                    ForEach(tiles) { tile in
+                        plot(tile, rank: order[tile.id] ?? 0)
+                    }
+                }
+                .id(mapSeed)
+            }
+            .frame(height: 240)
+            .padding(8)
+            .background(Palette.deep.color, in: LeafCorner.parcel.shape)
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel(copy("explore.map"))
+            Text(copy("explore.map.help")).font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
+        }
+    }
+
+    private var hoveredLabel: String? {
+        guard let hoveredTile, let input = treemapInputs.first(where: { $0.id == hoveredTile }) else { return nil }
+        return "\(URL(fileURLWithPath: hoveredTile).lastPathComponent) · \(ProductFormat.bytes(input.bytes, french: french))"
+    }
+
+    private func plot(_ tile: TreemapTile, rank: Int) -> some View {
+        let radius = min(10, min(tile.frame.width, tile.frame.height) / 3)
+        let shape = UnevenRoundedRectangle(topLeadingRadius: radius, bottomLeadingRadius: radius / 3,
+                                           bottomTrailingRadius: radius, topTrailingRadius: radius / 3, style: .continuous)
+        let hovered = hoveredTile == tile.id
+        let focused = focusedPath == tile.id
+        // Larger plots are greener; the eye reads the biggest first.
+        let strength = max(0.18, 0.62 - Double(min(rank, 12)) * 0.035)
+        return Button {
+            focusedPath = tile.id
+            scrollTarget = "explore.list"
+        } label: {
+            shape
+                .fill(Palette.accent.color.opacity(hovered || focused ? strength + 0.2 : strength))
+                .overlay(shape.strokeBorder(focused ? Palette.ink.color : Palette.deep.color.opacity(0.6), lineWidth: focused ? 2 : 1))
+                .overlay(alignment: .topLeading) {
+                    if tile.frame.width > 90 && tile.frame.height > 38 {
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(URL(fileURLWithPath: tile.id).lastPathComponent).font(CoreTendTypography.caption.weight(.semibold))
+                                .lineLimit(1)
+                            Text(ProductFormat.bytes(tile.bytes, french: french)).font(CoreTendTypography.caption)
+                        }
+                        .foregroundStyle(Palette.ink.color)
+                        .padding(6)
+                    }
+                }
+        }
+        .buttonStyle(PlotButtonStyle())
+        .frame(width: max(tile.frame.width - 2, 1), height: max(tile.frame.height - 2, 1))
+        // Hover and click stay inside the plot: `position` below would stretch them over the map.
+        .onHover { inside in hoveredTile = inside ? tile.id : (hoveredTile == tile.id ? nil : hoveredTile) }
+        .accessibilityLabel("\(URL(fileURLWithPath: tile.id).lastPathComponent), \(ProductFormat.bytes(tile.bytes, french: french))")
+        .accessibilityHint(french ? "Montre ce fichier dans la liste." : "Shows this file in the list.")
+        .serreRise(rank)
+        .position(x: tile.frame.midX, y: tile.frame.midY)
+    }
+
+    private var list: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Color.clear.frame(height: 0).id("explore.list")
+            HStack(alignment: .firstTextBaseline) {
+                Text(copy("explore.results")).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
+                Spacer()
+                Text(french ? "Aucune sélection automatique" : "Nothing selected automatically")
+                    .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                Button(copy("cleanup.selectNone")) { selectedExploreFiles = [] }
+                    .buttonStyle(.serre(.icon)).disabled(locked || selectedExploreFiles.isEmpty)
+                    .opacity(selectedExploreFiles.isEmpty ? 0 : 1)
+            }
+            if visibleResults.isEmpty {
+                SerreEmptyState(title: copy("explore.filterEmpty"), message: copy("explore.filterEmpty.help"))
+            } else {
+                ScrollViewReader { rows in
+                    ScrollView {
+                        LazyVStack(spacing: 2) {
+                            ForEach(visibleResults, id: \.url) { row($0).id("explore.row.\($0.url.path)") }
+                        }
+                        .padding(8)
+                    }
+                    .onChange(of: focusedPath) { _, path in
+                        guard let path else { return }
+                        withAnimation(reduceMotion ? nil : MotionCurve.sap.animation(duration: MotionToken.standard.duration)) {
+                            rows.scrollTo("explore.row.\(path)", anchor: .center)
+                        }
+                    }
+                }
+                .frame(height: min(CGFloat(visibleResults.count) * 52 + 16, 380))
+                .background(Palette.surface.color, in: LeafCorner.parcel.shape)
+                .overlay(LeafCorner.parcel.shape.strokeBorder(Palette.separator.color, lineWidth: 1))
+                .leafFlightAnchor("list")
+            }
+            HStack(spacing: 14) {
+                TrashIndicator(landed: flight.landed, moving: moving, french: french)
+                Spacer()
+                Button { Task { await prepareDeleteReview() } } label: {
+                    Text(french ? "Examiner \(ProductFormat.items(selectedExploreFiles.count, french: true))"
+                                : "Review \(ProductFormat.items(selectedExploreFiles.count, french: false))")
+                }
+                .buttonStyle(.serre(.primary))
+                .disabled(selectedExploreFiles.isEmpty || locked)
+                .accessibilityHint(french ? "Aucun élément n’est déplacé avant confirmation." : "No item moves before confirmation.")
+            }
+        }
+    }
+
+    private func row(_ result: ScanResult) -> some View {
+        let selectable = isSelectableExploreResult(result)
+        let selected = selectedExploreFiles.contains(result.url)
+        let failure = failures[result.url]
+        let favorite = favoritePaths.contains(result.url.path)
+        return HStack(spacing: 8) {
+            Button {
+                guard selectable, !locked else { return }
+                if selected { selectedExploreFiles.remove(result.url) } else { selectedExploreFiles.insert(result.url) }
+            } label: {
+                rowLabel(result, selectable: selectable, selected: selected, failure: failure)
+            }
+            .buttonStyle(.serre(.row(selected: selected)))
+            .disabled(locked || !selectable)
+            .accessibilityLabel(ProductCopy.scanResultAccessibilitySummary(
+                name: result.url.lastPathComponent,
+                source: french ? "Explorer" : "Explore",
+                state: french ? "Résultat mesuré" : "Measured result",
+                allocated: size(result.allocatedBytes), logical: size(result.logicalBytes),
+                modified: modified(result), french: french
+            ))
+            .accessibilityValue(failure.map { copy($0) } ?? "")
+            .accessibilityAddTraits(selected ? .isSelected : [])
+            rowTools(result, favorite: favorite)
+        }
+        .overlay {
+            if failure != nil { LeafCorner.control.shape.strokeBorder(Palette.danger.color, lineWidth: 1) }
+            else if focusedPath == result.url.path { LeafCorner.control.shape.strokeBorder(Palette.accent.color, lineWidth: 1.5) }
+        }
+        .leafFlightRow(result.url)
+        .transition(reduceMotion ? .identity : .asymmetric(insertion: .identity, removal: .opacity.combined(with: .scale(scale: 0.6, anchor: .leading))))
+    }
+
+    private func rowLabel(_ result: ScanResult, selectable: Bool, selected: Bool, failure: String?) -> some View {
+        HStack(spacing: 12) {
+            SerreCheck(isOn: selected).opacity(selectable ? 1 : 0.35)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(result.url.lastPathComponent).font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
+                    .lineLimit(1).truncationMode(.middle)
+                Text(relativeFolder(result.url) + " · " + (french ? "modifié \(modified(result))" : "modified \(modified(result))"))
+                    .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                    .lineLimit(1).truncationMode(.middle)
+                if let failure {
+                    Text(copy(failure)).font(CoreTendTypography.caption).foregroundStyle(Palette.danger.color)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            Spacer(minLength: 8)
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(size(result.allocatedBytes)).font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
+                Text(french ? "logique \(size(result.logicalBytes))" : "logical \(size(result.logicalBytes))")
+                    .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+            }
+            .monospacedDigit()
+        }
+    }
+
+    private func rowTools(_ result: ScanResult, favorite: Bool) -> some View {
+        HStack(spacing: 8) {
+            Button { Task { await toggleFavorite(result) } } label: {
+                Image(systemName: favorite ? "star.fill" : "star")
+                    .foregroundStyle(favorite ? Palette.caution.color : Palette.secondaryInk.color)
+            }
+            .buttonStyle(.serre(.icon))
+            .help(copy(favorite ? "explore.favorite.remove" : "explore.favorite.add"))
+            .accessibilityLabel(favorite
+                ? (french ? "Retirer \(result.url.lastPathComponent) des favoris" : "Remove \(result.url.lastPathComponent) from favorites")
+                : (french ? "Ajouter \(result.url.lastPathComponent) aux favoris" : "Add \(result.url.lastPathComponent) to favorites"))
+            Button { showPreview(result.url) } label: {
+                Image(systemName: "eye").foregroundStyle(Palette.secondaryInk.color)
+            }
+            .buttonStyle(.serre(.icon))
+            .help(copy("explore.preview"))
+            .accessibilityLabel(previewLabel(for: result.url))
+            .accessibilityHint(french ? "Ouvre l’aperçu Quick Look." : "Opens the Quick Look preview.")
+        }
+    }
+
+    private func relativeFolder(_ url: URL) -> String {
+        guard let root = selectedRoot else { return url.deletingLastPathComponent().path }
+        let folder = url.deletingLastPathComponent().standardizedFileURL.path
+        let base = root.standardizedFileURL.path
+        guard folder.hasPrefix(base) else { return folder }
+        let rest = folder.dropFirst(base.count).trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        return rest.isEmpty ? root.lastPathComponent : root.lastPathComponent + "/" + rest
+    }
+
+    // MARK: - Scanning
+
     private func beginScan(_ root: URL) {
         scanTask?.cancel()
         previewURL = nil
@@ -289,9 +484,15 @@ struct ExploreScanView: View {
         selectedRootIdentity = try? FileIdentity(url: root)
         results = []
         selectedExploreFiles = []
+        failures = [:]
+        flight.landed = 0
+        focusedPath = nil
         scanCompletedFiles = 0
-        status = nil
+        notice = nil
+        scanFoundNothing = false
         scanning = true
+        rootsPhase = .reading
+        scrollTarget = "explore.roots"
         actionReview = nil
         actionService = nil
         scanTask = Task {
@@ -323,16 +524,29 @@ struct ExploreScanView: View {
                                 try? await store.recordRecentFiles(batch)
                             }
                         }
-                        if let rootFailure { status = ProductCopy.scanRootFailure(reason: rootFailure, french: french) }
-                        else if !partialFailures.isEmpty { status = ProductCopy.scanPartialFailure(reasons: partialFailures, french: french) }
-                        else { status = results.isEmpty ? copy("scan.empty") : nil }
+                        if let rootFailure {
+                            rootsPhase = nil
+                            notice = PageNotice(kind: .denied, title: ProductCopy.scanRootFailure(reason: rootFailure, french: french),
+                                                recovery: .chooseAgain)
+                        } else {
+                            rootsPhase = .finished
+                            mapSeed = UUID()
+                            if !partialFailures.isEmpty {
+                                notice = PageNotice(kind: .partial, title: copy("scan.partial"),
+                                                    message: ProductCopy.scanPartialFailure(reasons: partialFailures, french: french))
+                            }
+                            scanFoundNothing = results.isEmpty && partialFailures.isEmpty
+                        }
                     case .progress(let completed): scanCompletedFiles = completed
                     }
                 }
             } catch is CancellationError {
-                if activeScanID == scanID { status = copy("scan.cancelled") }
+                if activeScanID == scanID { notice = PageNotice(kind: .note, title: copy("scan.cancelled")) }
             } catch {
-                if activeScanID == scanID { status = copy("scan.failed") }
+                if activeScanID == scanID {
+                    rootsPhase = nil
+                    notice = PageNotice(kind: .error, title: copy("scan.failed"), recovery: .retryScan)
+                }
             }
         }
     }
@@ -341,9 +555,17 @@ struct ExploreScanView: View {
         scanTask?.cancel()
         activeScanID = nil
         scanning = false
-        scanCompletedFiles = 0
-        status = copy("scan.cancelled")
+        results = []
+        notice = PageNotice(kind: .note, title: copy("scan.cancelled"))
+        // The roots withdraw, then their parcel goes.
+        rootsPhase = .retracted
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(reduceMotion ? 0 : 450))
+            if rootsPhase == .retracted { rootsPhase = nil; scanCompletedFiles = 0 }
+        }
     }
+
+    // MARK: - Review and move
 
     @MainActor private func prepareDeleteReview() async {
         guard let root = selectedRoot, let rootIdentity = selectedRootIdentity,
@@ -360,7 +582,7 @@ struct ExploreScanView: View {
         guard !chosen.isEmpty, chosen.count == selectedExploreFiles.count,
               (try? FileIdentity(url: root)) == rootIdentity,
               chosen.allSatisfy({ isRegularFileInsideSelectedRoot($0.url, root: root) }) else {
-            status = french ? "La sélection a changé; aucune action proposée." : "The selection changed; no action was proposed."
+            notice = PageNotice(kind: .error, title: french ? "La sélection a changé; aucune action proposée." : "The selection changed; no action was proposed.", nearActions: true)
             return
         }
 
@@ -376,7 +598,7 @@ struct ExploreScanView: View {
             let selections = chosen.map { FileActionSelection(url: $0.url, ruleID: rule) }
             let review = try service.prepareReview(selections)
             guard await service.recordProposal(review) else {
-                status = copy("spacelens.delete.blocked")
+                notice = PageNotice(kind: .error, title: copy("spacelens.delete.blocked"), nearActions: true)
                 return
             }
             guard viewVisible else {
@@ -387,7 +609,7 @@ struct ExploreScanView: View {
             actionService = service
             actionDialogPresented = true
         } catch {
-            status = french ? "Impossible d’examiner la sélection; aucun fichier déplacé." : "Review failed; no files moved."
+            notice = PageNotice(kind: .error, title: french ? "Impossible d’examiner la sélection; aucun fichier déplacé." : "Review failed; no files moved.", nearActions: true)
         }
     }
 
@@ -401,28 +623,29 @@ struct ExploreScanView: View {
     }
 
     @MainActor private func executeDeleteAction(_ review: ActionReview, _ service: FileActionService) async {
-        defer { actionBusy = false; releaseDeleteScope() }
-        do {
-            let batch = try service.confirm(review, accepted: true)
-            let report = await service.execute(batch)
-            let movedURLs = Set(report.items.compactMap { item -> URL? in
-                if case .movedToTrash = item.outcome { return item.targetURL }
-                return nil
-            })
-            results.removeAll { movedURLs.contains($0.url) }
-            selectedExploreFiles.subtract(movedURLs)
-            let moved = report.movedCount
-            let failed = report.items.count - moved
-            if failed == 0 {
-                status = countedActionCopy(moved, key: "spacelens.delete.success")
-            } else if moved == 0 {
-                status = countedActionCopy(failed, key: "spacelens.delete.failed")
-            } else {
-                status = "\(countedActionCopy(moved, key: "spacelens.delete.success")); \(countedActionCopy(failed, key: "spacelens.delete.partial"))"
-            }
-        } catch {
-            status = french ? "Action refusée; aucun fichier déplacé." : "Action refused; no files moved."
+        moving = true
+        defer { moving = false; actionBusy = false; releaseDeleteScope() }
+        let batch: ConfirmedActionBatch
+        do { batch = try service.confirm(review, accepted: true) } catch {
+            notice = PageNotice(kind: .error, title: french ? "Action refusée; aucun fichier déplacé." : "Action refused; no files moved.", nearActions: true)
+            return
         }
+        failures = [:]; flight.landed = 0; notice = nil
+        // Each item arrives when its outcome is final, so a leaf falls only for a file that moved.
+        let report = await executeShowingEachItem(service, batch, reduceMotion: reduceMotion) { item in
+            let url = item.targetURL
+            guard item.moved else {
+                failures[url] = item.failureKey
+                selectedExploreFiles.remove(url)
+                return
+            }
+            flight.send(url, reduceMotion: reduceMotion)
+            withAnimation(reduceMotion ? nil : MotionCurve.retreat.animation(duration: 0.2)) {
+                results.removeAll { $0.url == url }
+                selectedExploreFiles.remove(url)
+            }
+        }
+        notice = .moveOutcome(report, french: french)
     }
 
     private func cancelDeleteAction() {
@@ -433,7 +656,7 @@ struct ExploreScanView: View {
         actionService = nil
         Task { @MainActor in
             let recorded = await service.recordCancellation(review)
-            status = copy(recorded ? "spacelens.delete.cancelled" : "spacelens.delete.cancelled.unrecorded")
+            notice = PageNotice(kind: .note, title: copy(recorded ? "spacelens.delete.cancelled" : "spacelens.delete.cancelled.unrecorded"), nearActions: true)
             releaseDeleteScope()
             actionBusy = false
         }
@@ -478,7 +701,7 @@ struct ExploreScanView: View {
 
     private func showPreview(_ url: URL) {
         guard let selectedRoot else {
-            status = copy("preview.unavailable")
+            notice = PageNotice(kind: .error, title: copy("preview.unavailable"), nearActions: true)
             return
         }
         if previewScopeHeld, previewScopedRoot != selectedRoot { releasePreviewScope() }
@@ -486,7 +709,7 @@ struct ExploreScanView: View {
         let acquiredScope = alreadyScopedToRoot ? false : selectedRoot.startAccessingSecurityScopedResource()
         guard QuickLookCandidate.isAllowed(url, within: selectedRoot) else {
             if acquiredScope { selectedRoot.stopAccessingSecurityScopedResource() }
-            status = copy("preview.unavailable")
+            notice = PageNotice(kind: .error, title: copy("preview.unavailable"), nearActions: true)
             return
         }
         if acquiredScope {
@@ -502,7 +725,7 @@ struct ExploreScanView: View {
             let isFavorite = !favoritePaths.contains(result.url.path)
             try await store.setFavorite(path: result.url.path, isFavorite: isFavorite)
             if isFavorite { favoritePaths.insert(result.url.path) } else { favoritePaths.remove(result.url.path) }
-        } catch { status = french ? "Favori non enregistré." : "Favorite was not saved." }
+        } catch { notice = PageNotice(kind: .error, title: french ? "Favori non enregistré." : "Favorite was not saved.", nearActions: true) }
     }
 
     @MainActor private func loadFavorites() async {
@@ -512,7 +735,7 @@ struct ExploreScanView: View {
 
     private func size(_ measurement: ProductMeasurement<Int64>) -> String {
         switch measurement {
-        case .known(let bytes): ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
+        case .known(let bytes): ProductFormat.bytes(bytes, french: french)
         case .unknown: copy("scan.unknownSize")
         }
     }
@@ -530,11 +753,6 @@ struct ExploreScanView: View {
     private func copy(_ key: String, count: Int? = nil) -> String {
         if key == "scan.count", let count { return french ? "\(count) fichiers mesurés" : "\(count) measured files" }
         return ProductCopy.value(for: key, french: french)
-    }
-
-    private func countedActionCopy(_ count: Int, key: String) -> String {
-        let form = count == 1 ? "one" : "many"
-        return "\(count) \(copy("\(key).\(form)"))"
     }
 
     private func previewLabel(for url: URL) -> String {
@@ -580,5 +798,17 @@ struct ExploreScanView: View {
         }
         let extensions = category.fileExtensions.map { ".\($0)" }.joined(separator: ", ")
         return french ? "Extensions incluses : \(extensions)." : "Included extensions: \(extensions)."
+    }
+}
+
+/// A plot of the map as a button: it gives a little when pressed.
+private struct PlotButtonStyle: ButtonStyle {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed && !reduceMotion ? 0.97 : 1)
+            .animation(MotionToken.press.animation(reduceMotion: reduceMotion), value: configuration.isPressed)
+            .contentShape(Rectangle())
     }
 }
