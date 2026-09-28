@@ -7,6 +7,11 @@
 #   bash Scripts/appstore_export.sh upload   # sends the build to App Store Connect (TestFlight)
 #
 # The upload needs the app record in App Store Connect (bundle ID com.ahmetbsbnr.coretend).
+#
+# Without an account signed in to Xcode, the maintainer can sign with an App Store Connect API key
+# (role Admin or App Manager) by setting, for the run only:
+#   CORETEND_ASC_KEY_PATH=<AuthKey_XXXX.p8> CORETEND_ASC_KEY_ID=<key id> CORETEND_ASC_ISSUER=<issuer id>
+# The script passes them to xcodebuild and never reads the key itself.
 set -euo pipefail
 
 mode="${1:-export}"
@@ -58,5 +63,13 @@ PLIST
 
 out="$repo_root/Artifacts/AppStore/$build"
 mkdir -p "$out"
-xcodebuild -exportArchive -archivePath "$archive" -exportOptionsPlist "$options" -exportPath "$out" -allowProvisioningUpdates
+authentication=()
+if [[ -n "${CORETEND_ASC_KEY_PATH:-}" ]]; then
+  : "${CORETEND_ASC_KEY_ID:?CORETEND_ASC_KEY_ID is required with CORETEND_ASC_KEY_PATH}"
+  : "${CORETEND_ASC_ISSUER:?CORETEND_ASC_ISSUER is required with CORETEND_ASC_KEY_PATH}"
+  authentication=(-authenticationKeyPath "$CORETEND_ASC_KEY_PATH" -authenticationKeyID "$CORETEND_ASC_KEY_ID"
+                  -authenticationKeyIssuerID "$CORETEND_ASC_ISSUER")
+fi
+xcodebuild -exportArchive -archivePath "$archive" -exportOptionsPlist "$options" -exportPath "$out" \
+  -allowProvisioningUpdates "${authentication[@]}"
 printf 'Archive: %s\nOutput: %s\n' "$archive" "$out"
