@@ -209,7 +209,7 @@
 
 ### 28-09-2026 — lot 3.10, fin de livraison
 
-- **Fait :** site Serre FR/EN, vitrine réelle, 24 captures copiées sans retouche, légendes avec
+- **Fait (`b923f013`) :** site Serre FR/EN, vitrine réelle, 24 captures copiées sans retouche, légendes avec
   provenance/limites ; macOS 14+, langues et statut Next non publié explicites. Captures locales
   contrôlées (fichier + alt), contenu jamais masqué à l’entrée, commandes Développeur groupées.
 - **Vérifié :** `make capture-screens` PASS (44/44), `make build-site site-check` PASS,
@@ -225,11 +225,12 @@
 
 **Lots 3.9 et 3.10 livrés le 28-09-2026 ; recette groupée P3 due avant G3.**
 
-- **Fait :** 3.9 `4e573a1d`, complément formats/observations `53dfac36` ; site et preuves prêts.
+- **Fait :** 3.9 `4e573a1d`, complément formats/observations `53dfac36` ; site `b923f013`, poussé sur `origin/next`.
 - **Vérifié :** qualification finale PASS (code 0, `/tmp/coretend-qualify-p3-delivery.exit`) ;
   captures réelles, site-check et contrôles Chrome PASS.
-- **Prochaine action agent :** commit site, `git push origin next` (autorisé), vérifier le check
-  CI `qualify`, puis consigner son résultat et s’arrêter pour la recette groupée.
+- **CI :** `qualify` sur `b923f013` PASS, terminé le 28-09 à 09:44:37 UTC.
+- **Prochaine action agent :** arrêt pour la recette groupée ; ne pas commencer P4.
+  Push effectué, pas de gate G3 acceptée.
 - **Prochaine action mainteneur :** recette groupée, particulièrement 3.2 avec un vrai passage
   par la Corbeille sur dossier jetable et 3.3 ; contenu/navigation du panneau MenuBarExtra,
   import/export natifs. Aucun déplacement n’a été confirmé par l’agent.

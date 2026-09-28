@@ -13,7 +13,8 @@ en fixture, invariants et particularités de l’hôte :
 - **Lots P3 :** 3.1, 3.4, 3.5, 3.6 acceptés ; 3.2 et 3.3 livrés sans recette explicite ;
   3.7 à 3.10 livrés avec preuves agent et limites documentées, sans acceptation du mainteneur.
 - **Commits :** 3.9 `4e573a1d`, formats menu et observations supplémentaires `53dfac36` ;
-  site prêt au commit. Push `next` autorisé, résultat CI à consigner après push.
+  site `b923f013`, poussé sur `origin/next`. CI `qualify` **PASS**, terminé à 09:44:37 UTC.
+  Arrêt avant G3 ; seul le checkpoint de documentation suit cette livraison.
 - **Registre :** Must `VÉRIFIÉ` **3 / 78** (Should 0 / 11), aucun statut promu durant cette session.
 - **Apparence :** destinations, Réglages et site en Serre. Pièces partagées :
   `Sources/CoreTendApp/SerreActionKit.swift` et `DesignSystem`.
@@ -23,17 +24,17 @@ en fixture, invariants et particularités de l’hôte :
 
 ## Prochaine action
 
-1. Commit site, `git push origin next` (autorisé), vérifier le check CI `qualify` et consigner le résultat.
-2. **Arrêt avant G3** : demander la recette groupée P3, avec recettes explicites de 3.2
+1. **Arrêt avant G3** : demander la recette groupée P3, avec recettes explicites de 3.2
    (vrai déplacement vers la Corbeille sur dossier jetable, réalisé par le mainteneur) et 3.3.
-3. Ne pas commencer P4 avant acceptation de G3. Les lignes du registre restent inchangées
+2. Ne pas commencer P4 avant acceptation de G3. Les lignes du registre restent inchangées
    jusqu’aux observations du mainteneur.
 
 ## En attente du mainteneur
 
 - Recette groupée de P3 avant G3, dont les recettes explicites de **3.2 (Nettoyage, avec un vrai
   passage par la Corbeille sur un dossier jetable)** et **3.3 (Explorer)**, et un regard sur 3.7,
-  3.8, 3.9, 3.10.
+  3.8, 3.9, 3.10. Pour 3.9 : ouvrir le panneau de la barre des menus et ses destinations,
+  essayer import ancien et export diagnostic ; ces parcours natifs restent à observer.
 - 2 faux fichiers de test (`Safari-2026-09-23-101500.ips`, `…-24-…`, octets aléatoires) sont dans
   sa Corbeille depuis l’incident du 28-09 ; à jeter par lui.
 - Optionnel : publier 1.0.3 depuis `fix/1.x-trash-sqlite` (P5, piste 1.x).

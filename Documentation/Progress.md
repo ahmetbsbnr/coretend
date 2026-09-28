@@ -379,3 +379,10 @@
 - Chrome isolé : dix pages × trois variantes, 30 contrôles sans débordement horizontal,
   images chargées, langue correcte, sans scripts ; Reduce Motion émulé.
   Preuves : `Documentation/Evidence/P3-310-2026-09-28.md`. Aucun statut promu.
+
+### P3 — livraison poussée, arrêt avant G3 — 28-09-2026
+
+- `next` poussé à `b923f013` (3.9 `4e573a1d`, complément `53dfac36`, 3.10 `b923f013`).
+- `make qualify` final PASS, code 0 ; `git diff --check` PASS. CI GitHub `qualify` sur
+  `b923f013` PASS, terminé à 09:44:37 UTC. Registre : Must 3/78, Should 0/11 VÉRIFIÉ,
+  inchangé. Recette groupée P3 due avant G3 ; aucun démarrage P4.
