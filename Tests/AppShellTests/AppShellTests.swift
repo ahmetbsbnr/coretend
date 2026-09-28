@@ -421,6 +421,18 @@ final class AppShellTests: XCTestCase {
         XCTAssertEqual(ProductFormat.frenchPlural(2), "s")
     }
 
+    func testExploreStatesExistInBothLanguages() {
+        for key in ["explore.initial.title", "explore.initial.message", "explore.choose", "explore.chooseOther", "explore.scope",
+                    "explore.map", "explore.map.help", "explore.filters", "explore.results", "explore.filterEmpty",
+                    "explore.filterEmpty.help", "explore.favorite.add", "explore.favorite.remove"] {
+            let english = ProductCopy.value(for: key, french: false)
+            let french = ProductCopy.value(for: key, french: true)
+            XCTAssertNotEqual(english, key, key)
+            XCTAssertNotEqual(french, key, key)
+            XCTAssertNotEqual(english, french, key)
+        }
+    }
+
     func testCrashReportRuleNamesBothExtensionsItReads() {
         XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: false).contains(".ips"))
         XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: true).contains(".ips"))
