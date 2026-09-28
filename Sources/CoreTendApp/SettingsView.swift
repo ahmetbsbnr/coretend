@@ -249,7 +249,9 @@ struct SettingsView: View {
         guard let legacyPreview else { return "" }
         let count = legacyPreview.excludedPaths.count
         let lang = legacyPreview.language ?? (french ? "langue absente" : "language absent")
-        return french ? "\(count) exclusion(s), langue \(lang). Source conservée; import réessayable." : "\(count) exclusion(s), language \(lang). Source preserved; import can be retried."
+        let number = ProductFormat.count(count, french: french)
+        let noun = french ? "exclusion\(ProductFormat.frenchPlural(count))" : (count == 1 ? "exclusion" : "exclusions")
+        return french ? "\(number) \(noun), langue \(lang). Source conservée ; import réessayable." : "\(number) \(noun), language \(lang). Source preserved; import can be retried."
     }
 
     private var diagnosticPreviewText: String {
@@ -320,7 +322,9 @@ struct SettingsView: View {
             let schema = try await local.schemaVersion()
             let data = try DiagnosticExport.json(schemaVersion: schema, events: events)
             diagnosticDocument = SettingsJSONDocument(data: data)
-            diagnosticSummary = french ? "Schéma \(schema); \(events.count) événements." : "Schema \(schema); \(events.count) events."
+            let version = ProductFormat.count(schema, french: french)
+            let count = ProductFormat.count(events.count, french: french)
+            diagnosticSummary = french ? "Schéma \(version) ; \(count) événement\(ProductFormat.frenchPlural(events.count))." : "Schema \(version); \(count) \(events.count == 1 ? "event" : "events")."
             diagnosticPreview = true
         } catch { status = french ? "Diagnostic indisponible." : "Diagnostic unavailable." }
     }

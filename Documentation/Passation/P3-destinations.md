@@ -17,7 +17,7 @@
 | 3.6 | Intégrité | Accepté 28-09-2026 (`5430106d`) |
 | 3.7 | Performances | Livré, vérifié par l’agent (`52d8fd16`) |
 | 3.8 | Historique | Livré, vérifié par l’agent (`05f7aa51`) |
-| 3.9 | Réglages, ⌘K, barre de menus, langue, import ancien | En cours, arrêté (`ab0cd928` WIP) |
+| 3.9 | Réglages, ⌘K, barre de menus, langue, import ancien | Livré — recette groupée en attente (limite menu natif) |
 | 3.10 | Site : pages publiques en Serre, captures réelles de l’app, contenu pour une sortie publique (correction G2) | À faire |
 
 ## Journal
@@ -195,29 +195,34 @@
   et heures correctes.
 - **Non vérifié :** export JSON/CSV via le panneau ; effacement ; VoiceOver.
 
+### 28-09-2026 — lot 3.9, fin de livraison
+
+- **Fait :** WIP `ab0cd928` qualifié ; accords exclusions/événements corrigés et nombres
+  `ProductFormat`. Réglages haut/milieu/bas et palette relus FR/EN clair/sombre en fixture.
+- **Vérifié :** `make qualify` après corrections PASS, code 0 ; `git diff --check` PASS.
+  Bouton Terminé/Done observé via AX ; icône pousse et réglage barre des menus actif visibles.
+- **Limites :** ouverture du panneau MenuBarExtra non obtenue par automatisation ; contenu et
+  navigation restent à observer par le mainteneur. Import/export natifs, langue en interaction,
+  VoiceOver/Reduce Motion restent non qualifiés. Preuves : `Documentation/Evidence/P3-39-2026-09-28.md`.
+- **Registre :** preuves datées ajoutées, aucun statut promu. Recette groupée avant G3.
+
 ## Point d’arrêt
 
-**Lot 3.9, arrêté le 28-09-2026 à la demande du mainteneur.**
+**Lot 3.9, repris le 28-09-2026.**
 
-- **Fait (`ab0cd928`, WIP) :**
-  - `SettingsView.swift` : `Form` remplacé par des parcelles Serre (`section(_:help:content:)`),
-    langue et apparence en lignes `SerreCheck` (`choices`), exclusions en lignes avec bouton icône,
-    signature de CoreTend en `SerreSignalTag`, interrupteurs teintés accent, statut en
-    `SerreBanner(.note)`, aperçu diagnostic en boutons Serre (JSON brut conservé en monospace :
-    c’est la donnée exacte). Toute la logique (store, import, export, exclusions) est inchangée.
-  - `MenuBarMetricsView.swift` : formats dans la langue de l’app (`ProductFormat.memory/bytes`,
-    charge localisée), chiffres en `CoreTendTypography.figure`, plus de `ProgressView`.
-  - `CoreTendApp.swift` (`CoreTendMenuBar`) : logo + « CoreTend », destinations dans l’ordre de
-    la barre latérale avec leur glyphe en lignes Serre, Réglages en ligne ; icône de barre des
-    menus = pousse Serre rendue en image modèle (`MenuBarGlyph`, vue nommée `MenuBarSprout` pour
-    éviter l’avertissement d’isolation Swift 6).
-- **Non fait / non vérifié :** `make qualify` ; rendu à l’écran (Réglages, menu) ; palette ⌘K
-  (vérification des textes seulement) ; accords FR restants dans Réglages
-  (`legacyMessage` : « exclusion(s) ») ; tests de copie pour les nouveaux textes (aucune nouvelle
-  clé n’a été ajoutée dans ce WIP) ; registre et `Progress.md` pour 3.9.
-- **Reprendre par :** Prochaine action de `passation.md`, étape 2.
-- **Ensuite :** 3.10 (site), puis push de `next` (autorisé), puis recette groupée G3.
+- **Fait :** synchronisation sur `1f62627e`, CI `qualify` PASS (09:16:57 UTC).
+  WIP `ab0cd928` conservé ; accords des exclusions et événements du diagnostic corrigés
+  dans `SettingsView.swift`, nombres via `ProductFormat`.
+- **Vérifié :** première exécution `make qualify` PASS (code 0). Captures Réglages haut/bas
+  et palette FR/EN clair/sombre relues dans `Artifacts/Captures/2026-09-28/`.
+  Réglages avec `CORETEND_TEST_MENU_BAR_ENABLED=1` : interrupteur actif visible, icône pousse visible.
+- **En cours :** qualification après corrections PASS (code 0), journal `/tmp/coretend-qualify-39-final.log`
+  et résultat durable `/tmp/coretend-qualify-39-final.exit` ; captures milieu Réglages.
+- **Limite :** les actions AX/clic sur l’icône de la barre des menus ne montrent pas le panneau
+  sur cet hôte ; ne pas annoncer le contenu comme observé. L’app de démonstration déjà ouverte
+  par le mainteneur n’a pas été arrêtée. Aucun déplacement confirmé.
+- **Reste :** preuves datées, clôture/commit 3.9 avec limites explicites ; puis 3.10 et push autorisé.
 
 ## Problèmes ouverts
 
-_(aucun)_
+- Menu de la barre des menus : ouverture par automatisation non obtenue ; contenu et navigation à observer à la recette groupée.

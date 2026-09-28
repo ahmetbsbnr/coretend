@@ -7,15 +7,14 @@ en fixture, invariants et particularités de l’hôte :
 
 ## Où on en est
 
-- **Mis à jour :** 28-09-2026, arrêt demandé par le mainteneur au milieu du lot 3.9.
+- **Mis à jour :** 28-09-2026, reprise du lot 3.9 après synchronisation ; CI `qualify` sur `1f62627e` PASS (terminé à 09:16:57 UTC).
 - **Phase :** P3 — Destinations → [`P3-destinations.md`](Documentation/Passation/P3-destinations.md)
-- **Lot courant :** **3.9** (Réglages, palette ⌘K, barre des menus, langue, import ancien) **En
-  cours, arrêté**. Dernier commit de code : `ab0cd928` (WIP : compile sans avertissement,
-  **non qualifié, non vérifié à l’écran**).
+- **Lot courant :** 3.9 livré, recette groupée en attente ; ouverture du panneau MenuBarExtra
+  non obtenue par automatisation (à observer par le mainteneur). 3.10 à commencer.
 - **Lots P3 :** 3.1, 3.4, 3.5, 3.6 acceptés ; 3.2, 3.3 livrés sans recette explicite ; 3.7, 3.8
   livrés et vérifiés par l’agent (décision du mainteneur du 28-09 : finir P3 sans recette par
-  lot) ; 3.9 en cours ; 3.10 à faire.
-- **Branche :** `next`, **49 commits d’avance** sur `origin/next`, non poussé. Push **autorisé
+  lot) ; 3.9 livré avec limite menu natif ; 3.10 à faire.
+- **Branche :** `next`, synchronisée avec `origin/next` à la reprise (`1f62627e`), arbre propre. Push **autorisé
   par le mainteneur à la fin de 3.10** (« puis push next si nécessaire »).
 - **Registre :** Must `VÉRIFIÉ` **3 / 78** (Should 0 / 11) ; tout le reste `PARTIEL` avec preuves
   datées. Aucune ligne ne passe `VÉRIFIÉ` sans observation du mainteneur.
@@ -27,15 +26,6 @@ en fixture, invariants et particularités de l’hôte :
 
 1. Protocole de démarrage (`Documentation/Passation/README.md` › Démarrer) ; vérifier
    `git status` propre sur `next`.
-2. **Finir 3.9** (détail : `P3-destinations.md` › Point d’arrêt) :
-   1. `make qualify` sur `ab0cd928` ; corriger ce qui échoue.
-   2. Vérifier à l’écran, app en fixture avec `CORETEND_TEST_MENU_BAR_ENABLED=1` : feuille
-      Réglages (clair/sombre, FR/EN), menu de la barre des menus (icône pousse, destinations).
-   3. Palette ⌘K : la passer aux mêmes composants (déjà Serre depuis P2 ; vérifier seulement
-      textes, accords, états vides).
-   4. Registre : preuves datées pour settings.*, ui.commandpalette, shell.menubar, FR-21, FR-22,
-      l10n.languagepicker, migration.* (statut `PARTIEL`).
-   5. Commit de clôture, journal 3.9 dans `P3-destinations.md`.
 3. **3.10 — Site** : pages publiques en Serre (`Scripts/build_site.py`, `Website/site.css`),
    captures réelles de l’app (`make capture-screens`), `make build-site site-check`.
 4. `make qualify`, puis **`git push origin next`** (autorisé), puis vérifier le check CI `qualify`.

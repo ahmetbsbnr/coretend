@@ -361,3 +361,11 @@
 - Chrome DevTools local a relancé Lighthouse mobile navigation sur 11 routes après refonte Porcelain / Slate / Teal et génération des meta descriptions. Chaque route obtient Accessibilité 100, Bonnes pratiques 100, Agentic Browsing 100 et SEO 60; les dix routes contenu passent 42 audits chacune, la page de choix de langue 35.
 - Les dix routes EN/FR ont été vérifiées après refonte à 640 × 900 puis 320 × 800 CSS px (DPR 1). `lang` correct, scrollWidth document/corps égal à la largeur, meta description non vide. À 320 px, premier Tab focalise lien `#main` traduit; cible présente et contour `solid 3px`.
 - Ces vues sont des émulées viewport, pas un vrai zoom navigateur/écran physique. Zoom réel, VoiceOver, Dynamic Type, contraste tous états, reduced-motion runtime, headers déployés et second navigateur restent ouverts. NFR-11 reste PARTIEL; aucun statut ne change.
+
+### P3 — lot 3.9 — 28-09-2026
+
+- Réglages Serre, palette et icône pousse relus en fixture FR/EN clair/sombre ; accords des
+  exclusions et événements diagnostic corrigés, nombres `ProductFormat`. Preuves et limites :
+  `Documentation/Evidence/P3-39-2026-09-28.md`.
+- Le panneau MenuBarExtra n’a pas été obtenu par automatisation ; navigation du menu, import/export
+  natifs et changement de langue en interaction restent à la recette groupée. Aucun statut promu.
