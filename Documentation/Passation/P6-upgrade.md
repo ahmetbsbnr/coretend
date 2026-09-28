@@ -10,11 +10,11 @@
 |---|---|---|
 | U1 | Espace (largeur adaptative, deux colonnes) | Livré (`eddb70d6`) |
 | U2 | Menu de la barre des menus | En partie (`eddb70d6` : apparence, texte) |
-| U3 | Vue d'ensemble « tableau de serre » | En partie (`eddb70d6` : activité avec contexte) |
+| U3 | Vue d'ensemble « tableau de serre » | Livré (activité avec contexte, scène, quatre chemins `296da923`) |
 | U4 | Applications (taille, tri, détail, échecs expliqués) | Livré (`cb338241`) |
 | U5 | Accueil | Livré (`035207c2`) |
 | U6 | Réglages en onglets | Livré (`b6254f74`) — feuille à onglets, pas de scène séparée (état partagé) |
-| U7 | Modules enrichis | À faire |
+| U7 | Modules enrichis | Livré en grande partie : Doublons/Nettoyage espace (`dfee09b8`), Performances mémoire, Explorer sous-dossiers (`fece24bd`), Intégrité pépinière (`3a7cf47a`) ; Historique : recherche existante suffit |
 | U8 | Qualification et retest M5 | À faire |
 | U9 | La serre vivante (thème complet, motions) | En cours — décision 0003 acceptée ; socle + scène Vue d'ensemble (`af7ba932`) |
 
@@ -29,14 +29,12 @@
 
 ## Point d'arrêt
 
-- Livrés : U1, U5 ; U9 bien avancé (`LayerSway`/`PollenField` Core Animation, scène, plantes
-  de page réactives aux analyses, fond vivant, frémissement au survol, parcelles qui respirent,
-  menu vivant) — dernier commit `035207c2`.
-- Reste U9 : transitions de page en tiges/vrilles ; souffle de pollen à l'arrivée d'une feuille
-  dans la Corbeille ; vérifier à l'écran la courbure pendant une analyse et la fleur.
-- Démos : `CORETEND_BUNDLE_ID=local.coretend.demo make package-local` (identifiant distinct de l'app installée du mainteneur).
-- Puis U2/U3 restants, U6 (Réglages en fenêtre), U7, U8 : build notarisé avec
-  `CORETEND_BUNDLE_ID=<id distinct>` (ne plus partager l'identifiant des démos) et retest M5.
+- Livrés : U1–U7 ; U9 très avancé. Dernier commit `296da923`.
+- Suite : **U8** — build notarisé avec `CORETEND_BUNDLE_ID` définitif distinct des démos
+  (proposé : `app.coretend.next`), version `2.0.0-beta.1`, signature Developer ID, archive
+  manuelle, Xcode Organizer › Direct Distribution, export, `stapler validate`, `spctl`, ZIP +
+  SHA-256 ; retest du mainteneur sur son Mac et le M5 (G6).
+- U9 restant (optionnel) : transitions de page en tiges/vrilles.
 
 ## Problèmes ouverts
 
