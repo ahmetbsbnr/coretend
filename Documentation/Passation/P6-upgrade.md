@@ -11,7 +11,7 @@
 | U1 | Espace (largeur adaptative, deux colonnes) | Livré (`eddb70d6`) |
 | U2 | Menu de la barre des menus | En partie (`eddb70d6` : apparence, texte) |
 | U3 | Vue d'ensemble « tableau de serre » | En partie (`eddb70d6` : activité avec contexte) |
-| U4 | Applications (taille, tri, détail, échecs expliqués) | À faire |
+| U4 | Applications (taille, tri, détail, échecs expliqués) | Livré (`cb338241`) |
 | U5 | Accueil | Livré (`035207c2`) |
 | U6 | Réglages en fenêtre dédiée | À faire |
 | U7 | Modules enrichis | À faire |
@@ -34,7 +34,8 @@
   menu vivant) — dernier commit `035207c2`.
 - Reste U9 : transitions de page en tiges/vrilles ; souffle de pollen à l'arrivée d'une feuille
   dans la Corbeille ; vérifier à l'écran la courbure pendant une analyse et la fleur.
-- Puis U4 (Applications), U2/U3 restants, U6 (Réglages en fenêtre), U7, U8 : build notarisé avec
+- Démos : `CORETEND_BUNDLE_ID=local.coretend.demo make package-local` (identifiant distinct de l'app installée du mainteneur).
+- Puis U2/U3 restants, U6 (Réglages en fenêtre), U7, U8 : build notarisé avec
   `CORETEND_BUNDLE_ID=<id distinct>` (ne plus partager l'identifiant des démos) et retest M5.
 
 ## Problèmes ouverts
