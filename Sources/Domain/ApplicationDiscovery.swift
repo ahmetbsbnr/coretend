@@ -138,3 +138,21 @@ public struct ApplicationDiscoveryService: Sendable {
         return Data(bytes)
     }
 }
+
+/// The usual places apps are installed, offered as one-click choices in Applications. Only their
+/// existence is checked; nothing inside is read until the person picks one.
+public enum ApplicationFolders {
+    public static func candidates(home: URL, isDirectory: (URL) -> Bool) -> [URL] {
+        [URL(fileURLWithPath: "/Applications", isDirectory: true),
+         home.appendingPathComponent("Applications", isDirectory: true)]
+            .filter(isDirectory)
+    }
+
+    /// `home` is the process's home as NSHomeDirectory() gives it, so a fixture HOME is honoured.
+    public static func candidates(home: URL) -> [URL] {
+        candidates(home: home) { url in
+            var directory: ObjCBool = false
+            return FileManager.default.fileExists(atPath: url.path, isDirectory: &directory) && directory.boolValue
+        }
+    }
+}

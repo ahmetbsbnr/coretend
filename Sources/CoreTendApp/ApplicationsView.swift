@@ -59,11 +59,26 @@ struct ApplicationsView: View {
             } else {
                 SerreParcel {
                     SerreEmptyState(title: copy("apps.initial.title"), message: copy("apps.initial.message")) {
-                        Button { selectingFolder = true } label: {
-                            Label { Text(copy("apps.choose")) } icon: { SerreIcon(.applications, size: 15) }
+                        VStack(spacing: 10) {
+                            let found = ApplicationFolders.candidates(home: URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true))
+                            if !found.isEmpty {
+                                // Detected folders are offered, never read: the click is the choice.
+                                HStack(spacing: 10) {
+                                    ForEach(Array(found.enumerated()), id: \.element.path) { index, folder in
+                                        Button { discover(folder) } label: {
+                                            Label { Text(folderName(folder)) } icon: { SerreIcon(.applications, size: 15) }
+                                        }
+                                        .buttonStyle(.serre(index == 0 ? .primary : .secondary))
+                                        .help(folder.path)
+                                        .accessibilityHint(copy("apps.choose.hint"))
+                                    }
+                                }
+                                Text(copy("apps.detected")).font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
+                            }
+                            Button(found.isEmpty ? copy("apps.choose") : copy("apps.other")) { selectingFolder = true }
+                                .buttonStyle(.serre(found.isEmpty ? .primary : .secondary))
+                                .accessibilityHint(copy("apps.choose.hint"))
                         }
-                        .buttonStyle(.serre(.primary))
-                        .accessibilityHint(copy("apps.choose.hint"))
                         .padding(.top, 6)
                     }
                 }
@@ -150,6 +165,11 @@ struct ApplicationsView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
+    }
+
+    /// "Applications" for /Applications, "Applications (yours)" for the one in the home folder.
+    private func folderName(_ folder: URL) -> String {
+        folder.path == "/Applications" ? "Applications" : (french ? "Applications (les vôtres)" : "Applications (yours)")
     }
 
     private func banner(_ notice: PageNotice) -> some View {
