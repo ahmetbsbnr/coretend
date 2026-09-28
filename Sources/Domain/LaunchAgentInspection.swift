@@ -131,3 +131,21 @@ private enum LaunchAgentReadError: Error {
     case unreadable
     case tooLarge
 }
+
+/// The usual LaunchAgents folders, offered as one-click choices in Integrity. Only their existence
+/// is checked; no plist is read until the person picks one.
+public enum LaunchAgentFolders {
+    public static func candidates(home: URL, isDirectory: (URL) -> Bool) -> [URL] {
+        [home.appendingPathComponent("Library/LaunchAgents", isDirectory: true),
+         URL(fileURLWithPath: "/Library/LaunchAgents", isDirectory: true)]
+            .filter(isDirectory)
+    }
+
+    /// `home` is the process's home as NSHomeDirectory() gives it, so a fixture HOME is honoured.
+    public static func candidates(home: URL) -> [URL] {
+        candidates(home: home) { url in
+            var directory: ObjCBool = false
+            return FileManager.default.fileExists(atPath: url.path, isDirectory: &directory) && directory.boolValue
+        }
+    }
+}

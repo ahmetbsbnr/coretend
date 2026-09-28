@@ -423,6 +423,15 @@ final class ApplicationFoldersTests: XCTestCase {
     }
 }
 
+final class LaunchAgentFoldersTests: XCTestCase {
+    func testOffersThePersonalThenTheSharedLaunchAgentsFolderWhenTheyExist() {
+        let home = URL(fileURLWithPath: "/tmp/someone", isDirectory: true)
+        XCTAssertEqual(LaunchAgentFolders.candidates(home: home) { _ in true }.map(\.path),
+                       ["/tmp/someone/Library/LaunchAgents", "/Library/LaunchAgents"])
+        XCTAssertEqual(LaunchAgentFolders.candidates(home: home) { _ in false }, [])
+    }
+}
+
 final class DuplicateKeepersTests: XCTestCase {
     private let a = URL(fileURLWithPath: "/tmp/g/a.jpg"), b = URL(fileURLWithPath: "/tmp/g/b.jpg")
     private let c = URL(fileURLWithPath: "/tmp/g/c.jpg"), other = URL(fileURLWithPath: "/tmp/h/x.jpg")

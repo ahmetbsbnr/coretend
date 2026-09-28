@@ -210,6 +210,12 @@ final class SerreRenderSheet: XCTestCase {
                     SerreCheck(isOn: false)
                     SerreCheck(isOn: true)
                 }
+                HStack(alignment: .top, spacing: 12) {
+                    SerreSignalTag(.good, title: "Signature validée") { Text("Équipe ABCDE12345").font(CoreTendTypography.caption) }
+                    SerreSignalTag(.caution, title: "Quarantaine indisponible")
+                    SerreSignalTag(.bad, title: "Signature refusée")
+                    SerreSignalTag(.neutral, title: "Aucun marqueur observé")
+                }
                 HStack(spacing: 14) {
                     ScanRoots(completed: 240, count: "240", caption: "fichiers lus", phase: .reading).frame(width: 440)
                     ScanRoots(completed: 18_000, count: "18 000", caption: "Analyse terminée", phase: .finished).frame(width: 440)
