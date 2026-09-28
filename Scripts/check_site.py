@@ -7,11 +7,15 @@ from urllib.parse import urlparse
 from site_accessibility_contract import reduced_motion_contract_errors
 root = Path(__file__).resolve().parents[1] / 'Website'
 class Page(HTMLParser):
-    def __init__(self): super().__init__(); self.links=[]; self.scripts=0; self.lang=None; self.has_main=False; self.descriptions=[]
+    def __init__(self): super().__init__(); self.links=[]; self.scripts=0; self.lang=None; self.has_main=False; self.descriptions=[]; self.images=[]
     def handle_starttag(self, tag, attrs):
         data=dict(attrs)
         if tag=='a' and data.get('href'): self.links.append(data['href'])
         if tag=='script': self.scripts+=1
+        if tag=='img':
+            self.images.append(data.get('src') or '')
+            if not (data.get('alt') or '').strip(): self.images.append('missing-alt')
+        if tag=='source' and data.get('srcset'): self.images.extend(item.strip().split()[0] for item in data['srcset'].split(','))
         if tag=='html': self.lang=data.get('lang')
         if tag=='main': self.has_main=True
         if tag=='meta' and data.get('name')=='description': self.descriptions.append((data.get('content') or '').strip())
@@ -22,6 +26,11 @@ for file in sorted(root.rglob('*.html')):
     if not page.has_main: errors.append(f'{file}: missing main landmark')
     if len(page.descriptions)!=1 or not page.descriptions[0]: errors.append(f'{file}: needs exactly one non-empty meta description')
     if page.scripts: errors.append(f'{file}: scripts are forbidden in site preview')
+    for image in page.images:
+        parsed=urlparse(image)
+        target=(file.parent / parsed.path).resolve()
+        if parsed.scheme or not image or image == 'missing-alt': errors.append(f'{file}: image must be local and have meaningful alt: {image}')
+        elif root not in target.parents or not target.is_file(): errors.append(f'{file}: missing or escaping image: {image}')
     for link in page.links:
         parsed=urlparse(link)
         if parsed.scheme in ('http','https','javascript'): errors.append(f'{file}: external/script link {link}')
