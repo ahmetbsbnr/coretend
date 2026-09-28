@@ -11,8 +11,8 @@
 |---|---|---|
 | 3.1 | Vue d’ensemble + premier lancement | Accepté 27-09-2026 (`6f66447a`) |
 | 3.2 | Nettoyage (inclut un vrai passage par la Corbeille sur dossier jetable, fait par le mainteneur) | Livré — le mainteneur a dit « continue » sans recette explicite ; lignes du registre inchangées (`4fd7fd62`) |
-| 3.3 | Explorer | Livré — recette en attente (`c4e1d97b`, `0e9fc484`) |
-| 3.4 | Doublons et images proches | À faire |
+| 3.3 | Explorer | Livré — le mainteneur a dit « continue » sans recette explicite (`0e9fc484`) |
+| 3.4 | Doublons et images proches | Livré — recette en attente (`7f4b9fd7`) |
 | 3.5 | Applications | À faire |
 | 3.6 | Intégrité | À faire |
 | 3.7 | Performances | À faire |
@@ -115,12 +115,27 @@
 - **Recette 3.3 (mainteneur) :** choisir un dossier, regarder racines et parcelles, survoler et
   cliquer une parcelle, filtrer, trier, aperçu, favori ; optionnel : déplacer un fichier jetable.
 
+### 28-09-2026 — lot 3.4, Doublons et images proches
+
+- **3.3 :** « continue » sans recette explicite ; lignes du registre inchangées.
+- **Fait :** `7f4b9fd7` — `DuplicateKeepers` (Domain, 3 tests) : la personne choisit l’exemplaire
+  gardé, jamais déplaçable (gardé = retiré de la sélection + passé comme `protectedKeepers` à la
+  revue). Modes en lignes Serre, état initial, racines sur le travail réel (lecture, hachage,
+  décodage, comparaisons), groupes en parcelles de pousses, étiquette « Gardé » qui saute
+  (`matchedGeometryEffect`, `pousse`), images proches en paires de vignettes sans action Corbeille,
+  déplacement via `SerreActionKit`.
+- **Vérifié :** `make qualify` PASS ; app fixture (3 groupes) : état initial, analyse, groupes,
+  ligne gardée lumineuse, cocher puis « Garder celui-ci » → étiquette déplacée et coche retirée.
+- **Non vérifié :** déplacement réel ; mode images proches (pas d’images dans la fixture).
+- **Recette 3.4 (mainteneur) :** dossier de doublons, changer l’exemplaire gardé, cocher des
+  copies, optionnel : déplacer ; mode images proches sur un dossier de photos.
+
 ## Point d’arrêt
 
-- 3.3 livré, recette en attente. Prochain lot **3.4 — Doublons et images proches** : racines
-  (hachage, décodage, comparaisons = progressions réelles), groupes en parcelles, étiquette
-  « gardé » qui saute d’une pousse à l’autre (`pousse`), déplacement via `SerreActionKit`.
-- 3.2 : recette explicite toujours à obtenir avant de passer ses lignes à `VÉRIFIÉ`.
+- 3.4 livré, recette en attente. Prochain lot **3.5 — Applications** : inventaire en parcelles
+  (« la pépinière »), diagnostics d’accès, déplacement d’un bundle via `SerreActionKit`
+  (données associées laissées en place, dit clairement).
+- 3.2 et 3.3 : recette explicite à obtenir avant de passer leurs lignes à `VÉRIFIÉ`.
 
 ## Problèmes ouverts
 
