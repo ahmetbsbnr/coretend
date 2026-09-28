@@ -1,36 +1,72 @@
-# CoreTend Next — reconstruction ouverte
+<p align="center">
+  <img src="Resources/Brand/Logo/coretend-app-icon-1024.png" width="160" alt="CoreTend app icon">
+</p>
 
-**État : aperçu local non publié.** Cette branche prépare la prochaine version du projet public [CoreTend](https://github.com/ahmetbsbnr/coretend). La version publique 1.x et ses tags restent sur `main`. Aucun binaire, signature, notarisation ou release de cette reconstruction n’est annoncé.
+<h1 align="center">CoreTend</h1>
 
-## Ce qui tourne déjà
+<p align="center"><strong>A living greenhouse for your Mac.</strong><br>
+See what takes space, understand it, and prune only what you choose — every move goes to the Trash.</p>
 
-- Application macOS SwiftUI, navigation des huit destinations et préférence de langue EN/FR. Overview et Performance lisent des mesures système datées; aucune note santé ni extrapolation.
-- Explore : lecture seule d’un dossier choisi explicitement.
-- Doublons : SHA-256 progressif, exclusion des hard links, exemplaire à garder et revue des copies sélectionnées avant Corbeille. Images similaires : paires consultatives heuristiques, sans action.
-- SafetyCore : approbation limitée dans le temps, revalidation de chemin/volume/identité et API Trash macOS unique. Échec sans fallback destructif.
-- SQLite local versionné; écran Record filtre, exporte CSV/JSON et efface l’historique après confirmation. Son chemin greenfield `CoreTend-Reconstruction/records.sqlite` ne réutilise pas l’ancien store. CLI ouvre un store explicitement indiqué en lecture seule.
-- CLI lecture seule; scan avec `--root` obligatoire, historique avec `--store` obligatoire.
-- Cahier QQOQCCP, MoSCoW, RACI, baseline, plan d’exécution, traçabilité et site statique EN/FR.
+<p align="center">
+  <a href="https://github.com/ahmetbsbnr/coretend/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/ahmetbsbnr/coretend?sort=semver&color=2C6E35&label=release"></a>
+  <img alt="macOS 14+" src="https://img.shields.io/badge/macOS-14%2B%20·%20Apple%20silicon-0F2019">
+  <img alt="No runtime dependency" src="https://img.shields.io/badge/runtime%20dependencies-none-2C6E35">
+  <a href="LICENSE"><img alt="Apache 2.0" src="https://img.shields.io/badge/license-Apache--2.0-0F2019"></a>
+</p>
 
-Applications inventorie les bundles d’un dossier choisi, permet le déplacement confirmé du seul bundle choisi vers la Corbeille, présente des noms de fichiers associés à titre consultatif et affiche un éventuel flux HTTPS déclaré sans vérifier les versions. Les données associées et héritées restent en place. Les autres vues restent incomplètes. Consultez `Documentation/Traceability.csv` avant toute hypothèse de parité.
+<p align="center">
+  <a href="https://coretend.ahmetbsbnr.com">Website</a> ·
+  <a href="https://coretend.ahmetbsbnr.com/en/download">Download</a> ·
+  <a href="CHANGELOG.md">What's new in 2.0</a> ·
+  <a href="https://coretend.ahmetbsbnr.com/fr/index">Français</a>
+</p>
 
-## Construire et vérifier
+<p align="center">
+  <img src="Website/screenshots/overview-en-dark.png" width="820" alt="CoreTend Overview">
+</p>
 
-Requis : Swift 6, macOS 14 ou ultérieur.
+---
+
+## Eight tools, one greenhouse
+
+| Tool | What it does |
+|---|---|
+| **Overview** | Free space measured by macOS, the soil band of your volume, recent activity and why. |
+| **Explore** | Choose a folder; every file and subfolder becomes a plot sized by what it takes. Walk into folders, search, sort, preview. |
+| **Cleanup** | Seven rules for known places (caches, logs, crash reports, Xcode data, unfinished downloads, iOS backups), each with its risk. Nothing preselected. |
+| **Duplicates** | Exact copies by content and the space keeping one would free. You choose the copy that stays — it can never be moved. |
+| **Applications** | Every app of a folder with icon, version and real size; sort by size; move one bundle to the Trash after review. |
+| **Integrity** | What macOS records about an app — signature, quarantine marker — for one app or a whole folder. Signals, never a verdict. |
+| **Performance** | Load, memory in use, thermal state, each with its source; readings only when you look. |
+| **Record** | Everything observed and moved, one page per day; export or clear it. |
+
+## What CoreTend will never do
+
+- **Erase anything for good.** Moves go to the macOS Trash, after your selection, review and confirmation, and CoreTend checks each file again just before.
+- **Ask for Full Disk Access** or your password. You choose each folder it may read.
+- **Phone home.** No network, no account, no telemetry.
+
+## Install
+
+- **Download** the notarized disk image from [Releases](https://github.com/ahmetbsbnr/coretend/releases/latest) and drag CoreTend into Applications.
+- **Homebrew:** `brew install --cask coretend`
+
+macOS 14 Sonoma or later, Apple silicon. English and French. CoreTend 2.0 replaces 1.x; your 1.x data are not touched and its preferences can be imported from Settings.
+
+## Build from source
 
 ```sh
-make qualify
-swift run CoreTendCLI help
+swift build --product CoreTendApp   # the app
+swift build --product CoreTendCLI   # a read-only command-line tool
+make qualify                        # every test, gate and check
+make package-local                  # an unsigned CoreTend.app in Artifacts/
 ```
 
-Les tests utilisent des dossiers temporaires synthétiques. Ils ne lisent ni store CoreTend ni Corbeille réelle.
+Swift 6, SwiftPM, no runtime dependency. The code is organised in modules: `DesignSystem` (the Serre
+design and the living greenhouse), `ScanCore` (read-only scanning), `SafetyCore` (the only code that
+may move a file — to the Trash), `Domain`, `Persistence`, `AppShell` and the app itself.
 
-## Projet et contributions
+## Contributing
 
-- [Pilotage du projet](Documentation/Project/Pilotage.md) et [audit du 27-09-2026](Documentation/Project/Audit-2026-09-27.md).
-- [Cahier des charges](Documentation/Project/Cahier-des-charges.md), [stratégie du dépôt](Documentation/Project/Repository-strategy.md), [passation courante](passation.md) et [traçabilité](Documentation/Traceability.csv).
-- [Contribuer](CONTRIBUTING.md), [sécurité](SECURITY.md), [licences](Documentation/LICENSING.md).
-
-## Limites actuelles
-
-Cleanup, Doublons et le bundle Applications ont des parcours de revue/Corbeille, l’historique est relié aux actions, la migration d’un format synthétique reconnu est disponible et un ZIP local non signé se construit. Attribution sûre des reliquats, désinstallation complète des composants liés, qualification native d’accessibilité et distribution signée restent ouvertes. Rien de cette reconstruction n’est publié.
+Read [CONTRIBUTING.md](CONTRIBUTING.md) and [GOVERNANCE](.github/GOVERNANCE.md). Security issues:
+[SECURITY.md](SECURITY.md). Code under [Apache 2.0](LICENSE), documentation under CC BY 4.0.
