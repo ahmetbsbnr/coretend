@@ -103,6 +103,7 @@ struct RecordView: View {
         .task { await load() }
         .alert(copy("record.clear.title"), isPresented: $confirmClear) {
             Button(copy("common.cancel"), role: .cancel) {}
+                .keyboardShortcut(.defaultAction)
             Button(copy("record.clear.confirm"), role: .destructive) { Task { await clear() } }
         } message: { Text(copy("record.clear.message")) }
         .fileExporter(isPresented: $isExporting, document: exportDocument,

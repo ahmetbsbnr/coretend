@@ -162,6 +162,8 @@ struct ApplicationsView: View {
                             isPresented: $removalDialogPresented, titleVisibility: .visible) {
             Button(french ? "Déplacer le bundle" : "Move app bundle", role: .destructive) { beginRemoval() }
             Button(copy("common.cancel"), role: .cancel) { cancelRemoval() }
+                // Return cancels: a move to the Trash is only ever a deliberate click.
+                .keyboardShortcut(.defaultAction)
         } message: {
             Text(removalMessage)
         }

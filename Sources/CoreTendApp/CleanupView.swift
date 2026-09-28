@@ -126,6 +126,8 @@ struct CleanupView: View {
         .confirmationDialog(french ? "Déplacer vers la Corbeille macOS ?" : "Move to macOS Trash?", isPresented: $actionDialogPresented, titleVisibility: .visible) {
             Button(french ? "Déplacer vers la Corbeille" : "Move to Trash", role: .destructive) { beginExecution() }
             Button(copy("common.cancel"), role: .cancel) { cancelAction() }
+                // Return cancels: a move to the Trash is only ever a deliberate click.
+                .keyboardShortcut(.defaultAction)
         } message: {
             Text(reviewMessage)
         }

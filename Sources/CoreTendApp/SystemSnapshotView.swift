@@ -57,6 +57,7 @@ struct SystemSnapshotView: View {
         .task { refresh() }
         .alert(copy("metrics.clear.title"), isPresented: $confirmClearHistory) {
             Button(copy("common.cancel"), role: .cancel) {}
+                .keyboardShortcut(.defaultAction)
             Button(copy("metrics.clear.confirm"), role: .destructive) {
                 clearingHistory = true
                 Task { await clearPerformanceHistory() }
