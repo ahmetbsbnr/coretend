@@ -15,7 +15,7 @@
 | U5 | Accueil | Livré (`035207c2`) |
 | U6 | Réglages en onglets | Livré (`b6254f74`) — feuille à onglets, pas de scène séparée (état partagé) |
 | U7 | Modules enrichis | Livré en grande partie : Doublons/Nettoyage espace (`dfee09b8`), Performances mémoire, Explorer sous-dossiers (`fece24bd`), Intégrité pépinière (`3a7cf47a`) ; Historique : recherche existante suffit |
-| U8 | Qualification et retest M5 | À faire |
+| U8 | Qualification et retest M5 | Build notarisé livré (2.0.0-beta.1) — retest du mainteneur en attente |
 | U9 | La serre vivante (thème complet, motions) | En cours — décision 0003 acceptée ; socle + scène Vue d'ensemble (`af7ba932`) |
 
 ## Journal
@@ -27,14 +27,27 @@
   des menus). Captures : `Documentation/Evidence/Captures/2026-09-28-M5/`. Preuve 4.2 (second
   Mac, même macOS) ; macOS 14 toujours non qualifié.
 
+### 28-09-2026 — U8, build 2.0.0-beta.1 notarisé
+
+- `CORETEND_BUNDLE_ID=app.coretend.next CORETEND_VERSION=2.0.0-beta.1 CORETEND_BUILD=2 make
+  package-local` (commit `8dc36b35` + paramètres de version), signé Developer ID, archive
+  manuelle, Organizer › Direct Distribution. Soumission `B38974BF-4AB4-4232-BBDD-1BF1CC837AF6`,
+  acceptée en moins de 2 min. Export Organizer (Xcode resigne : agrafer sa propre copie échoue).
+- Vérifié : `stapler validate` OK ; `spctl` : accepted, `Notarized Developer ID` ; `codesign
+  --verify --strict` OK.
+- Livrable : `~/Documents/CoreTend-2.0.0-beta.1/CoreTend-2.0.0-beta.1.zip`, SHA-256
+  `f971e4d2e3241782996037aa12e12a18cf423c0fd42ceba485647e84ed3f2f00`. Identifiant distinct des
+  démos : peut coexister avec l'ancien build de test.
+- Trousseau : deux identités « Developer ID Application » identiques (Xcode en a créé une
+  seconde) ; signer par empreinte SHA-1, jamais par nom.
+- Ancien export 0.1.0 renommé `~/Documents/CoreTend-0.1.0-local.app` (rien supprimé).
+
 ## Point d'arrêt
 
-- Livrés : U1–U7 ; U9 très avancé. Dernier commit `296da923`.
-- Suite : **U8** — build notarisé avec `CORETEND_BUNDLE_ID` définitif distinct des démos
-  (proposé : `app.coretend.next`), version `2.0.0-beta.1`, signature Developer ID, archive
-  manuelle, Xcode Organizer › Direct Distribution, export, `stapler validate`, `spctl`, ZIP +
-  SHA-256 ; retest du mainteneur sur son Mac et le M5 (G6).
+- U1–U8 livrés. **G6 : retest du mainteneur** sur son Mac et le M5 avec
+  `CoreTend-2.0.0-beta.1.zip` (protocole `Documentation/Evidence/P4-42-second-mac-protocol.md`).
 - U9 restant (optionnel) : transitions de page en tiges/vrilles.
+- Ensuite : décision G4 (réserves) et P5 (release publique) sur accord explicite.
 
 ## Problèmes ouverts
 

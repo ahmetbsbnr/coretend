@@ -9,7 +9,7 @@ en fixture, invariants et particularités de l’hôte :
 
 - **Mis à jour :** 28-09-2026, P4 — travaux disponibles 4.1–4.6 consignés ; G4 reste ouverte.
 - **Phase :** P6 — Upgrade (retour du test M5) → [`P6-upgrade.md`](Documentation/Passation/P6-upgrade.md) ; plan : `Documentation/Project/Upgrade-plan-2026-09-28.md`. P4 : réserves G4 ; P5 : après P6.
-- **Lot courant :** U9 (serre vivante) en cours (`af7ba932`), décision 0003 acceptée ; ensuite U4.
+- **Lot courant :** P6 U1–U8 livrés ; build notarisé `2.0.0-beta.1` prêt (voir P6) ; attente du retest du mainteneur (G6).
 - **G3 :** passée ; aucune observation détaillée supplémentaire reçue, aucun statut du registre promu.
 - **Livraison P3 :** `fa9132ed` poussé, CI `qualify` PASS le 28-09 à 09:49:42 UTC.
 - **Registre :** Must `VÉRIFIÉ` **3 / 78** (Should 0 / 11), NFR-07 PARTIEL.
