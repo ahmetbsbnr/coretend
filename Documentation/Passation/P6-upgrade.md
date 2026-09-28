@@ -16,7 +16,7 @@
 | U6 | Réglages en onglets | Livré (`b6254f74`) — feuille à onglets, pas de scène séparée (état partagé) |
 | U7 | Modules enrichis | Livré en grande partie : Doublons/Nettoyage espace (`dfee09b8`), Performances mémoire, Explorer sous-dossiers (`fece24bd`), Intégrité pépinière (`3a7cf47a`) ; Historique : recherche existante suffit |
 | U8 | Qualification et retest M5 | Build notarisé livré (2.0.0-beta.1) — retest du mainteneur en attente |
-| U9 | La serre vivante (thème complet, motions) | En cours — décision 0003 acceptée ; socle + scène Vue d'ensemble (`af7ba932`) |
+| U9 | La serre vivante (thème complet, motions) | Livré (dernier : vrille de page `f9d645bd`, non vue à l'écran) |
 
 ## Journal
 
@@ -46,7 +46,7 @@
 
 - U1–U8 livrés. **G6 : retest du mainteneur** sur son Mac et le M5 avec
   `CoreTend-2.0.0-beta.1.zip` (protocole `Documentation/Evidence/P4-42-second-mac-protocol.md`).
-- U9 restant (optionnel) : transitions de page en tiges/vrilles.
+- U9 : vrille de page à vérifier à l'écran (écran changé en session).
 - Ensuite : décision G4 (réserves) et P5 (release publique) sur accord explicite.
 
 ## Problèmes ouverts
