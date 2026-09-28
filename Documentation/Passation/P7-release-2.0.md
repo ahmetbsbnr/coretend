@@ -22,7 +22,7 @@ release, site, cask).
 | 7.2 | Site 2.0 recréé (serre vivante, animations CSS, sans script) | Livré (`67bd00a3`) — captures 2.0 à refaire en 7.4 |
 | 7.3 | Dépôt : README, changelog, gouvernance, workflows, cask | Livré (`dbad205a`) — workflows de release 1.x non repris (publication locale via Organizer) |
 | 7.4 | Build 2.0.0 signé, notarisé, ZIP + DMG, SHA256SUMS, captures du site | Livré — DMG signé mais non notarisé (voir journal) |
-| 7.5 | Publication (PR, tag, release, site, cask) — sur accord | À faire |
+| 7.5 | Publication (fusion, tag, release, site, cask) — sur accord | Fusion, tag, release, site faits ; cask à décider |
 
 ## Journal
 
@@ -59,12 +59,26 @@ release, site, cask).
 - Non vérifié : VineSweep à l'écran et ouverture Gatekeeper d'un téléchargement réel
   (écran indisponible pour le contrôle).
 
+### 28-09-2026 — 7.5 (accord du mainteneur : « commence une par une », puis « connecté, continue »)
+
+- **Fusion :** `main` a avancé jusqu'à `b35180fb` (depuis `14d2daa8`, sans nouveau commit de fusion), une fois la CI `qualify`
+  verte sur ce commit. Les 3 vérifications 1.x attendues par `main` ont été contournées (admin).
+  Effet de bord : Vercel a déployé le site 2.0 en production (état « bientôt publiée »).
+- **Tag :** `v2.0.0` annoté sur `b35180fb` (source du build notarisé).
+- **Release :** https://github.com/ahmetbsbnr/coretend/releases/tag/v2.0.0 — `CoreTend-2.0.0-arm64.zip`
+  + `SHA256SUMS`, notes `Documentation/Release/2.0-notes.md`, marquée latest ; DMG non joint
+  (non notarisé). ZIP retéléchargé : même SHA-256.
+- **Site :** `Website/release.json` publié (URL, SHA-256, date), cask rempli, CHANGELOG daté ;
+  `62546f5d` sur `next` et `main` (CI verte), déployé par Vercel ; la page Télécharger en ligne
+  montre le lien du ZIP et son SHA-256.
+- La commande `brew install --cask coretend` n'est plus annoncée : aucun cask officiel
+  (API Homebrew : 404) ni tap n'existe. La 1.x l'annonçait déjà à tort.
+
 ## Point d'arrêt
 
-- 7.1 à 7.4 livrés. Suite **7.5 publication**, chaque étape sur accord explicite :
-  PR `next` → `main` (avance rapide), tag `v2.0.0`, release GitHub (ZIP, DMG facultatif,
-  `SHA256SUMS`, notes `Documentation/Release/2.0-notes-draft.md`), `Website/release.json`
-  (`published`, `url`, `sha256` du ZIP, date), SHA du cask, déploiement Vercel.
+- CoreTend 2.0.0 est publiée. Reste l'étape 4, **Homebrew**, sur décision du mainteneur :
+  tap personnel `ahmetbsbnr/homebrew-coretend` (immédiat) ou PR vers `Homebrew/homebrew-cask`
+  (critères de notoriété). Ensuite, réannoncer la commande dans le README et sur le site.
 
 ## Problèmes ouverts
 
