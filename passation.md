@@ -8,8 +8,8 @@ en fixture, invariants et particularités de l’hôte :
 ## Où on en est
 
 - **Mis à jour :** 28-09-2026, P4 — travaux disponibles 4.1–4.6 consignés ; G4 reste ouverte.
-- **Phase :** P6 — Upgrade (retour du test M5) → [`P6-upgrade.md`](Documentation/Passation/P6-upgrade.md) ; plan : `Documentation/Project/Upgrade-plan-2026-09-28.md`. P4 : réserves G4 ; P5 : après P6.
-- **Lot courant :** P6 terminée (G6 acceptée) ; release 2.0 : voir `Documentation/Release/2.0-release-checklist.md`, décisions du mainteneur en attente.
+- **Phase :** P7 — Sortie publique 2.0 → [`P7-release-2.0.md`](Documentation/Passation/P7-release-2.0.md).
+- **Lot courant :** 7.1 livré (marque, icône Liquid Glass) ; suite 7.2 (site recréé).
 - **G3 :** passée ; aucune observation détaillée supplémentaire reçue, aucun statut du registre promu.
 - **Livraison P3 :** `fa9132ed` poussé, CI `qualify` PASS le 28-09 à 09:49:42 UTC.
 - **Registre :** Must `VÉRIFIÉ` **3 / 78** (Should 0 / 11), NFR-07 PARTIEL.
@@ -58,6 +58,7 @@ en fixture, invariants et particularités de l’hôte :
 | P3 Destinations (G3.x) | [`P3-destinations.md`](Documentation/Passation/P3-destinations.md) | Terminée — G3 acceptée (28-09) |
 | P4 Qualification (G4) | [`P4-qualification.md`](Documentation/Passation/P4-qualification.md) | Travaux disponibles livrés — réserves G4 |
 | P6 Upgrade (G6) | [`P6-upgrade.md`](Documentation/Passation/P6-upgrade.md) | Terminée (28-09) |
+| P7 Sortie publique 2.0 (G7) | [`P7-release-2.0.md`](Documentation/Passation/P7-release-2.0.md) | En cours |
 | P5 Release 2.0 (G5) | [`P5-release.md`](Documentation/Passation/P5-release.md) | À faire |
 
 ## Références

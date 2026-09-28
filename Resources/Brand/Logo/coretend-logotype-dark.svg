@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2600 700" role="img" aria-label="CoreTend">
+  <g transform="translate(-120 -170) scale(0.95)"><g><path d="M512 780 C 512 640, 506 520, 520 400" fill="none" stroke="#9BE36D" stroke-width="46" stroke-linecap="round"/><path d="M518 470 C 430 470, 330 420, 300 300 C 410 290, 500 350, 518 470 Z" fill="#9BE36D"/><path d="M524 400 C 560 290, 660 220, 770 230 C 760 350, 660 420, 524 400 Z" fill="#9BE36D"/><path d="M250 800 Q 512 730 774 800" fill="none" stroke="#D3E0CF" stroke-width="40" stroke-linecap="round"/><circle cx="512" cy="786" r="26" fill="#D3E0CF"/></g></g>
+  <text x="820" y="470" font-family="Iowan Old Style, Palatino, Georgia, serif" font-weight="700" font-size="300" fill="#EAF2E6" letter-spacing="-4">CoreTend</text>
+</svg>

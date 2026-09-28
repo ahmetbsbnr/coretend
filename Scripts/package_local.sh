@@ -16,6 +16,12 @@ trap 'rm -rf "$stage_dir"' EXIT
 app_path="$stage_dir/CoreTend.app"
 mkdir -p "$app_path/Contents/MacOS"
 cp "$bin_dir/CoreTendApp" "$app_path/Contents/MacOS/CoreTendApp"
+# App icon: the Icon Composer document (Liquid Glass on macOS 26+) compiled by actool, with the
+# classic .icns it also produces for macOS 14 and 15.
+mkdir -p "$app_path/Contents/Resources"
+xcrun actool "$repo_root/Resources/Brand/AppIcon.icon" --compile "$app_path/Contents/Resources" \
+  --platform macosx --minimum-deployment-target 14.0 --app-icon AppIcon \
+  --output-partial-info-plist "$stage_dir/icon-partial.plist" >/dev/null
 cat > "$app_path/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -29,6 +35,8 @@ cat > "$app_path/Contents/Info.plist" <<PLIST
   <key>CFBundleVersion</key><string>${CORETEND_BUILD:-1}</string>
   <key>LSMinimumSystemVersion</key><string>14.0</string>
   <key>NSPrincipalClass</key><string>NSApplication</string>
+  <key>CFBundleIconFile</key><string>AppIcon</string>
+  <key>CFBundleIconName</key><string>AppIcon</string>
 </dict>
 </plist>
 PLIST
