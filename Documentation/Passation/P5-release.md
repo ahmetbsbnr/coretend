@@ -53,6 +53,21 @@
   `0.1.0-local (1)`, identifiant `local.coretend.reconstruction` : build de test pour le second
   Mac, **pas la release 2.0** (5.3 exigera version et identifiant définitifs).
 
+### 28-09-2026 — build de test notarisé
+
+- Apple a accepté la soumission `7FB2F08D-1823-4324-9ED3-E7BD526588FD` (« Ready to
+  distribute », 17:14). App exportée par Organizer › Export Notarized App :
+  `~/Documents/CoreTend.app`.
+- Vérifié : `xcrun stapler validate` OK (ticket agrafé) ; `spctl -a -vv` : accepted,
+  `source=Notarized Developer ID`, `origin=Developer ID Application: Ahmet BASBUNAR
+  (NSCUV5G738)` ; `codesign --verify --strict` OK.
+- ZIP : `~/Documents/CoreTend-notarized.zip` (1 801 428 octets), SHA-256
+  `6f1c7bb3ec28cadfaff8ce0be6f6d1aed74b0b9c90c7bb9449e884e5a4f5debb`.
+- Usage : test sur le second Mac (M5, macOS 27) selon
+  `Documentation/Evidence/P4-42-second-mac-protocol.md`, sans l'étape « Ouvrir quand même ».
+- **5.1 pour la release 2.0 reste à refaire** avec version et identifiant définitifs (le
+  chemin est désormais connu : signer, archive manuelle, Organizer › Direct Distribution).
+
 ## Point d’arrêt
 
 **Point d’arrêt actuel :** aucun lot P5 ouvert. Les travaux livrables P4 sont consignés ; G4

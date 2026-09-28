@@ -37,12 +37,10 @@ en fixture, invariants et particularités de l’hôte :
 
 ## En attente du mainteneur
 
-- **Test second Mac (M5, macOS 27)** : TestFlight impossible (aucune identité de signature).
-  Installer `Artifacts/CoreTend-local-unsigned.zip` par AirDrop et suivre
-  `Documentation/Evidence/P4-42-second-mac-protocol.md`, puis renvoyer la liste remplie.
 - Relire le brouillon `Documentation/Release/2.0-notes-draft.md` (5.2).
-- 5.1 : notarisation envoyée via Xcode Organizer (soumission `7FB2F08D-…`, voir P5) ; exporter
-  l'app notarisée quand Apple l'accepte, puis la donner au mainteneur pour son Mac M5.
+- Build de test **notarisé** prêt : `~/Documents/CoreTend-notarized.zip` (SHA-256 dans P5) — à
+  installer sur le Mac M5 et tester selon `Documentation/Evidence/P4-42-second-mac-protocol.md`,
+  puis renvoyer la liste remplie (preuve 4.2).
 - Chemin d’une copie cohérente, autonome, déjà créée du store 1.x pour 4.6 ; lire uniquement
   cette copie en fixture (protocole ci-dessous), ne jamais lire l’original ni omettre son WAL.
 - Hôtes manquants 4.2 et observations d’assistance réelle restent des limites de preuve.
