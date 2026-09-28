@@ -103,3 +103,82 @@ public struct FallingLeaf: View {
             }
     }
 }
+
+/// What a signal says, as a plant label's leaf.
+public enum SerreSignalTone: Sendable {
+    /// The system validated it.
+    case good
+    /// It could not be read or is only indicative.
+    case caution
+    /// The system refused it.
+    case bad
+    /// Observed, neither good nor bad.
+    case neutral
+}
+
+/// A plant label (UI guide § 1, Integrity: "étiquettes de plant, signal par signal"): an eyelet,
+/// the tone's leaf, the signal in words and its details. It swings once into place when it
+/// appears, `order` labels after the first; under Reduce Motion it is simply there.
+public struct SerreSignalTag<Details: View>: View {
+    let tone: SerreSignalTone
+    let title: String
+    let order: Int
+    let details: Details
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var hung = false
+
+    public init(_ tone: SerreSignalTone, title: String, order: Int = 0, @ViewBuilder details: () -> Details = { EmptyView() }) {
+        self.tone = tone
+        self.title = title
+        self.order = order
+        self.details = details()
+    }
+
+    public var body: some View {
+        let shape = LeafCorner.parcel.shape
+        HStack(alignment: .top, spacing: 14) {
+            VStack(spacing: 10) {
+                Circle().strokeBorder(Palette.strongSeparator.color, lineWidth: 1.5).frame(width: 10, height: 10)
+                leaf.frame(width: 18, height: 18)
+            }
+            .padding(.top, 2)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title).font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
+                    .fixedSize(horizontal: false, vertical: true)
+                details
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(16)
+        .background(tint.opacity(0.08), in: shape)
+        .background(Palette.surface.color, in: shape)
+        .overlay(shape.strokeBorder(tint.opacity(0.45), lineWidth: 1))
+        .rotationEffect(.degrees(hung ? 0 : -5), anchor: .topLeading)
+        .opacity(hung ? 1 : 0)
+        .accessibilityElement(children: .combine)
+        .onAppear {
+            guard !hung else { return }
+            if reduceMotion { hung = true; return }
+            withAnimation(MotionCurve.sprout.animation(duration: 0.45).delay(min(Double(order) * 0.08, 0.24))) { hung = true }
+        }
+    }
+
+    @ViewBuilder private var leaf: some View {
+        switch tone {
+        case .good: RiskLeaf(.low, size: 18)
+        case .caution: RiskLeaf(.medium, size: 18)
+        case .bad: RiskLeaf(.high, size: 18)
+        case .neutral:
+            RiskLeafShape(level: .low).stroke(Palette.secondaryInk.color, lineWidth: 1.4).accessibilityHidden(true)
+        }
+    }
+
+    private var tint: Color {
+        switch tone {
+        case .good: Palette.accent.color
+        case .caution: Palette.caution.color
+        case .bad: Palette.danger.color
+        case .neutral: Palette.strongSeparator.color
+        }
+    }
+}

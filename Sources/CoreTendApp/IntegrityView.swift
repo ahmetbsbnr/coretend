@@ -1,9 +1,14 @@
 import SwiftUI
+import AppKit
 import UniformTypeIdentifiers
 import Domain
 import AppShell
 import DesignSystem
 
+/// Integrity, "les étiquettes": what macOS records about one chosen app, as a plant label with one
+/// tag per signal (signature, quarantine marker), each with its source and its limits; and the
+/// login items configured in a LaunchAgents folder the person picks. Nothing here changes a file
+/// and no signal is presented as a verdict on safety.
 struct IntegrityView: View {
     let french: Bool
     @State private var selectingApp = false
@@ -16,147 +21,27 @@ struct IntegrityView: View {
     @State private var appName: String?
     @State private var appURL: URL?
     @State private var launchAgentsFolder: URL?
-    @State private var status: String?
+    /// Changes per inspected app, so its tags swing into place once.
+    @State private var labelSeed = UUID()
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            signalCard(
-                title: french ? "Signature du code" : "Code signature",
-                symbol: "checkmark.seal",
-                description: copy("integrity.limit")
-            ) {
-                VStack(alignment: .leading, spacing: 12) {
-                    Button { selectingApp = true } label: {
-                        Label(copy("integrity.choose"), systemImage: "app.badge.checkmark")
+        VStack(alignment: .leading, spacing: 20) {
+            if let appURL {
+                plantLabel(appURL)
+            } else {
+                SerreParcel {
+                    SerreEmptyState(title: copy("integrity.initial.title"), message: copy("integrity.initial.message")) {
+                        Button { selectingApp = true } label: {
+                            Label { Text(copy("integrity.choose")) } icon: { SerreIcon(.integrity, size: 15) }
+                        }
+                        .buttonStyle(.serre(.primary))
+                        .accessibilityHint(copy("integrity.choose.hint"))
+                        .padding(.top, 6)
                     }
-                    .disabled(inspecting)
-                    .accessibilityHint(copy("integrity.choose.hint"))
-                    if let appURL {
-                        Text(appURL.path).font(CoreTendTypography.secondary.monospaced())
-                            .foregroundStyle(Palette.secondaryInk.color).textSelection(.enabled)
-                    }
-                    if inspecting { ProgressView(copy("integrity.progress")) }
-                    if let report {
-                        HStack(alignment: .top, spacing: 10) {
-                            Image(systemName: signatureIcon(report.state))
-                                .foregroundStyle(signatureColor(report.state)).accessibilityHidden(true)
-                            VStack(alignment: .leading, spacing: 5) {
-                                Text(signatureText(report.state)).font(CoreTendTypography.body.weight(.semibold))
-                                    .foregroundStyle(Palette.ink.color)
-                                if let appName { Text(appName).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color) }
-                            }
-                        }
-                        if let identifier = report.identifier {
-                            LabeledContent(copy("integrity.identifier"), value: identifier)
-                                .font(CoreTendTypography.secondary).textSelection(.enabled)
-                        }
-                        if let team = report.teamIdentifier {
-                            LabeledContent(copy("integrity.team"), value: team)
-                                .font(CoreTendTypography.secondary).textSelection(.enabled)
-                        }
-                        if report.statusCode != 0 {
-                            LabeledContent(copy("integrity.status"), value: String(report.statusCode))
-                                .font(CoreTendTypography.secondary.monospacedDigit()).textSelection(.enabled)
-                        }
-                        if report.state == .unavailable {
-                            nextStep(french
-                                ? "Vérifiez que le bundle choisi est accessible, puis choisissez-le à nouveau."
-                                : "Check that the chosen bundle is accessible, then choose it again.")
-                        }
-                    } else if !inspecting {
-                        Text(french ? "Aucune signature examinée. Choisissez un bundle .app pour lancer une vérification locale." : "No signature inspected. Choose an .app bundle to run a local check.")
-                            .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    evidenceSource(french
-                        ? "Source : validation de signature macOS pour le bundle choisi. Le résultat ne prouve ni l’identité de l’éditeur, ni l’absence de malware, ni la sûreté."
-                        : "Source: macOS signature validation for the chosen bundle. Result does not prove publisher identity, absence of malware, or safety.")
                 }
             }
-
-            signalCard(
-                title: french ? "Marqueur de quarantaine" : "Quarantine marker",
-                symbol: "arrow.down.doc",
-                description: copy("integrity.quarantine.limit")
-            ) {
-                VStack(alignment: .leading, spacing: 12) {
-                    if let appURL {
-                        Text(appURL.path).font(CoreTendTypography.secondary.monospaced())
-                            .foregroundStyle(Palette.secondaryInk.color).textSelection(.enabled)
-                    } else {
-                        Text(french ? "Choisissez un bundle dans la section Signature du code pour examiner son marqueur." : "Choose a bundle in Code signature to inspect its marker.")
-                            .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    if let quarantine {
-                        Label(quarantineText(quarantine.state), systemImage: quarantineIcon(quarantine.state))
-                            .font(CoreTendTypography.body.weight(.semibold))
-                            .foregroundStyle(quarantineColor(quarantine.state))
-                        if quarantine.state == .unavailable {
-                            nextStep(french
-                                ? "Vérifiez que le bundle existe et que macOS autorise sa lecture, puis relancez l’examen."
-                                : "Check that the bundle exists and macOS allows it to be read, then inspect it again.")
-                        }
-                        if let errorCode = quarantine.errorCode {
-                            LabeledContent(french ? "Code système" : "System code", value: String(errorCode))
-                                .font(CoreTendTypography.secondary.monospacedDigit()).textSelection(.enabled)
-                        }
-                    }
-                    evidenceSource(french
-                        ? "Source : attribut étendu com.apple.quarantine du bundle choisi, lu localement. Présence ou absence ne détermine pas l’origine ou la sûreté."
-                        : "Source: com.apple.quarantine extended attribute on the chosen bundle, read locally. Presence or absence does not establish origin or safety.")
-                }
-            }
-
-            signalCard(
-                title: french ? "Éléments de connexion configurés" : "Configured login items",
-                symbol: "person.crop.circle.badge.checkmark",
-                description: copy("integrity.loginItems.limit")
-            ) {
-                VStack(alignment: .leading, spacing: 12) {
-                    Button { selectingAgentsFolder = true } label: {
-                        Label(copy("integrity.loginItems.choose"), systemImage: "folder.badge.gearshape")
-                    }
-                    .disabled(scanningAgents)
-                    .accessibilityHint(copy("integrity.loginItems.choose.hint"))
-                    if let launchAgentsFolder {
-                        Text(launchAgentsFolder.path).font(CoreTendTypography.secondary.monospaced())
-                            .foregroundStyle(Palette.secondaryInk.color).textSelection(.enabled)
-                    }
-                    if scanningAgents { ProgressView(copy("integrity.loginItems.progress")) }
-                    if let launchAgentReport {
-                        Text(french
-                             ? "\(launchAgentReport.candidates.count) candidats configurés · \(launchAgentReport.issues.count) problèmes de lecture"
-                             : "\(launchAgentReport.candidates.count) configured candidates · \(launchAgentReport.issues.count) read issues")
-                            .font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
-                        if launchAgentReport.candidates.isEmpty && launchAgentReport.issues.isEmpty {
-                            Label(copy("integrity.loginItems.empty"), systemImage: "tray")
-                                .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-                        }
-                        ForEach(Array(launchAgentReport.candidates.enumerated()), id: \.offset) { _, candidate in
-                            candidateRow(candidate)
-                        }
-                        ForEach(Array(launchAgentReport.issues.enumerated()), id: \.offset) { _, issue in
-                            issueRow(issue)
-                        }
-                    } else if !scanningAgents {
-                        Text(french ? "Aucun dossier examiné. Choisissez un dossier précis pour lire ses fichiers plist directs." : "No folder inspected. Choose a specific folder to read its direct-child plist files.")
-                            .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    evidenceSource(french
-                        ? "Source : fichiers plist directement présents dans le dossier choisi. Les éléments ne sont pas vérifiés comme actifs ou chargés; aucune action n’est proposée."
-                        : "Source: plist files directly inside the chosen folder. Items are not checked for enabled or loaded state; no action is offered.")
-                }
-            }
-            if let status {
-                Label(status, systemImage: "exclamationmark.circle")
-                    .font(CoreTendTypography.secondary).foregroundStyle(Palette.caution.color)
-            }
+            loginItems
         }
-        .motion(.standard, value: report)
-        .motion(.standard, value: quarantine)
-        .motion(.standard, value: launchAgentReport)
         .fileImporter(isPresented: $selectingApp, allowedContentTypes: [.applicationBundle], allowsMultipleSelection: false) { result in
             guard case .success(let urls) = result, let appURL = urls.first else { return }
             inspect(appURL)
@@ -167,69 +52,169 @@ struct IntegrityView: View {
         }
     }
 
-    private func signalCard<Content: View>(title: String, symbol: String, description: String,
-                                            @ViewBuilder content: () -> Content) -> some View {
+    // MARK: - Plant label
+
+    private func plantLabel(_ url: URL) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            HStack(alignment: .firstTextBaseline, spacing: 9) {
-                Image(systemName: symbol).foregroundStyle(Palette.accent.color).accessibilityHidden(true)
-                Text(title).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
-                    .accessibilityAddTraits(.isHeader)
+            SerreParcel {
+                HStack(alignment: .center, spacing: 14) {
+                    Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
+                        .resizable().interpolation(.high).frame(width: 48, height: 48)
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(copy("integrity.label")).font(CoreTendTypography.caption.weight(.semibold)).foregroundStyle(Palette.secondaryInk.color)
+                        Text(appName ?? url.lastPathComponent).font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
+                        Text(url.path).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                            .lineLimit(1).truncationMode(.middle).textSelection(.enabled)
+                    }
+                    Spacer(minLength: 8)
+                    Button(copy("integrity.chooseOther")) { selectingApp = true }
+                        .buttonStyle(.serre(.secondary))
+                        .disabled(inspecting)
+                        .accessibilityHint(copy("integrity.choose.hint"))
+                }
             }
-            Text(description).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+            if inspecting {
+                Text(copy("integrity.progress")).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+            }
+            if let report {
+                SerreSignalTag(signatureTone(report.state), title: "\(copy("integrity.signature")) · \(signatureText(report.state))", order: 0) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        if let identifier = report.identifier { fact(copy("integrity.identifier"), identifier) }
+                        if let team = report.teamIdentifier { fact(copy("integrity.team"), team) }
+                        if report.statusCode != 0 { fact(copy("integrity.status"), String(report.statusCode)) }
+                        if report.state == .unavailable {
+                            note(french ? "Vérifiez que le bundle choisi est accessible, puis choisissez-le à nouveau."
+                                        : "Check that the chosen bundle is accessible, then choose it again.")
+                        }
+                        source(french
+                            ? "Source : validation de signature macOS pour le bundle choisi. Le résultat ne prouve ni l’identité de l’éditeur, ni l’absence de malware, ni la sûreté."
+                            : "Source: macOS signature validation for the chosen bundle. Result does not prove publisher identity, absence of malware, or safety.")
+                    }
+                }
+                .id("signature.\(labelSeed)")
+            }
+            if let quarantine {
+                SerreSignalTag(quarantineTone(quarantine.state), title: "\(copy("integrity.quarantine")) · \(quarantineText(quarantine.state))", order: 1) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        if let errorCode = quarantine.errorCode { fact(french ? "Code système" : "System code", String(errorCode)) }
+                        if quarantine.state == .unavailable {
+                            note(french ? "Vérifiez que le bundle existe et que macOS autorise sa lecture, puis relancez l’examen."
+                                        : "Check that the bundle exists and macOS allows it to be read, then inspect it again.")
+                        }
+                        source(copy("integrity.quarantine.limit"))
+                        source(french
+                            ? "Source : attribut étendu com.apple.quarantine du bundle choisi, lu localement."
+                            : "Source: com.apple.quarantine extended attribute on the chosen bundle, read locally.")
+                    }
+                }
+                .id("quarantine.\(labelSeed)")
+            }
+            Text(copy("integrity.limit")).font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
                 .fixedSize(horizontal: false, vertical: true)
-            Palette.separator.color.frame(height: 1)
-            content()
         }
-        .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Palette.surface.color, in: RoundedRectangle(cornerRadius: 16))
-        .overlay(RoundedRectangle(cornerRadius: 16).strokeBorder(Palette.separator.color.opacity(0.75), lineWidth: 1))
     }
 
-    private func evidenceSource(_ text: String) -> some View {
-        Label(text, systemImage: "info.circle")
-            .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-            .fixedSize(horizontal: false, vertical: true)
-            .padding(.top, 2)
+    private func fact(_ name: String, _ value: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(name).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+            Text(value).font(CoreTendTypography.caption.weight(.semibold)).foregroundStyle(Palette.ink.color).textSelection(.enabled)
+        }
     }
 
-    private func nextStep(_ text: String) -> some View {
-        Label(text, systemImage: "arrow.turn.down.right")
-            .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+    private func note(_ text: String) -> some View {
+        Text(text).font(CoreTendTypography.caption).foregroundStyle(Palette.ink.color)
             .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private func source(_ text: String) -> some View {
+        Text(text).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+
+    // MARK: - Login items
+
+    private var loginItems: some View {
+        SerreParcel {
+            VStack(alignment: .leading, spacing: 12) {
+                Text(copy("integrity.loginItems")).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
+                    .accessibilityAddTraits(.isHeader)
+                Text(copy("integrity.loginItems.limit")).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                    .fixedSize(horizontal: false, vertical: true)
+                let found = LaunchAgentFolders.candidates(home: URL(fileURLWithPath: NSHomeDirectory(), isDirectory: true))
+                HStack(spacing: 10) {
+                    // Detected folders are offered, never read: the click is the choice.
+                    ForEach(found, id: \.path) { folder in
+                        Button(folderName(folder)) { inspectLaunchAgents(in: folder) }
+                            .buttonStyle(.serre(launchAgentsFolder == folder ? .primary : .secondary))
+                            .help(folder.path)
+                            .disabled(scanningAgents)
+                    }
+                    Button(found.isEmpty ? copy("integrity.loginItems.choose") : copy("integrity.loginItems.other")) { selectingAgentsFolder = true }
+                        .buttonStyle(.serre(.secondary))
+                        .disabled(scanningAgents)
+                        .accessibilityHint(copy("integrity.loginItems.choose.hint"))
+                }
+                if !found.isEmpty {
+                    Text(copy("integrity.loginItems.detected")).font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
+                }
+                if let launchAgentsFolder {
+                    Text(launchAgentsFolder.path).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                        .lineLimit(1).truncationMode(.middle).textSelection(.enabled)
+                }
+                if scanningAgents {
+                    Text(copy("integrity.loginItems.progress")).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                }
+                if let launchAgentReport {
+                    Palette.separator.color.frame(height: 1)
+                    let candidates = launchAgentReport.candidates.count, problems = launchAgentReport.issues.count
+                    let p = ProductFormat.frenchPlural
+                    Text(french
+                         ? "\(ProductFormat.count(candidates, french: true)) candidat\(p(candidates)) configuré\(p(candidates)) · \(ProductFormat.count(problems, french: true)) problème\(p(problems)) de lecture"
+                         : "\(ProductFormat.count(candidates, french: false)) configured candidate\(candidates == 1 ? "" : "s") · \(ProductFormat.count(problems, french: false)) read issue\(problems == 1 ? "" : "s")")
+                        .font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
+                    if launchAgentReport.candidates.isEmpty && launchAgentReport.issues.isEmpty {
+                        Text(copy("integrity.loginItems.empty")).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                    }
+                    ForEach(Array(launchAgentReport.candidates.enumerated()), id: \.offset) { index, candidate in
+                        candidateRow(candidate).serreRise(index)
+                    }
+                    ForEach(Array(launchAgentReport.issues.enumerated()), id: \.offset) { _, issue in
+                        SerreBanner(.partial, title: loginAgentIssueText(issue.reason),
+                                    message: loginAgentNextStep(issue.reason) + (issue.plistURL.map { "\n" + $0.path } ?? ""))
+                    }
+                    source(french
+                        ? "Source : fichiers plist directement présents dans le dossier choisi. Les éléments ne sont pas vérifiés comme actifs ou chargés ; aucune action n’est proposée."
+                        : "Source: plist files directly inside the chosen folder. Items are not checked for enabled or loaded state; no action is offered.")
+                }
+            }
+        }
+        .motion(.standard, value: launchAgentReport)
+    }
+
+    private func folderName(_ folder: URL) -> String {
+        folder.path == "/Library/LaunchAgents"
+            ? (french ? "LaunchAgents partagés" : "Shared LaunchAgents")
+            : (french ? "Vos LaunchAgents" : "Your LaunchAgents")
     }
 
     private func candidateRow(_ candidate: LaunchAgentCandidate) -> some View {
-        VStack(alignment: .leading, spacing: 7) {
-            Label(candidate.label ?? copy("integrity.loginItems.unknownLabel"), systemImage: "gearshape.2")
-                .font(CoreTendTypography.body.weight(.medium)).foregroundStyle(Palette.ink.color)
-            if let executablePath = candidate.executablePath {
-                LabeledContent(copy("integrity.loginItems.executable"), value: executablePath)
-                    .font(CoreTendTypography.secondary.monospaced()).textSelection(.enabled)
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "gearshape.2").foregroundStyle(Palette.accent.color).accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(candidate.label ?? copy("integrity.loginItems.unknownLabel"))
+                    .font(CoreTendTypography.body.weight(.medium)).foregroundStyle(Palette.ink.color)
+                if let executablePath = candidate.executablePath {
+                    fact(copy("integrity.loginItems.executable"), executablePath)
+                }
+                fact(copy("integrity.loginItems.plist"), candidate.plistURL.lastPathComponent)
             }
-            LabeledContent(copy("integrity.loginItems.plist"), value: candidate.plistURL.path)
-                .font(CoreTendTypography.secondary.monospaced()).textSelection(.enabled)
+            Spacer(minLength: 0)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
-        .background(Palette.raisedSurface.color, in: RoundedRectangle(cornerRadius: 10))
-    }
-
-    private func issueRow(_ issue: LaunchAgentIssue) -> some View {
-        VStack(alignment: .leading, spacing: 5) {
-            Label(loginAgentIssueText(issue.reason), systemImage: "exclamationmark.circle")
-                .font(CoreTendTypography.secondary).foregroundStyle(Palette.caution.color)
-            Text(loginAgentNextStep(issue.reason))
-                .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-                .fixedSize(horizontal: false, vertical: true)
-            if let url = issue.plistURL {
-                Text(url.path).font(CoreTendTypography.secondary.monospaced())
-                    .foregroundStyle(Palette.secondaryInk.color).textSelection(.enabled)
-            }
-        }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(Palette.caution.color.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
+        .background(Palette.raisedSurface.color, in: LeafCorner.control.shape)
+        .accessibilityElement(children: .combine)
     }
 
     private func inspectLaunchAgents(in folder: URL) {
@@ -251,8 +236,8 @@ struct IntegrityView: View {
     private func inspect(_ url: URL) {
         report = nil
         quarantine = nil
-        status = nil
         inspecting = true
+        labelSeed = UUID()
         appName = url.deletingPathExtension().lastPathComponent
         appURL = url
         let acquiredScope = url.startAccessingSecurityScopedResource()
@@ -278,19 +263,11 @@ struct IntegrityView: View {
         }
     }
 
-    private func signatureIcon(_ state: CodeSignatureState) -> String {
+    private func signatureTone(_ state: CodeSignatureState) -> SerreSignalTone {
         switch state {
-        case .valid: "checkmark.seal"
-        case .invalid: "xmark.seal"
-        case .unavailable: "questionmark.circle"
-        }
-    }
-
-    private func signatureColor(_ state: CodeSignatureState) -> Color {
-        switch state {
-        case .valid: Palette.accent.color
-        case .invalid: Palette.danger.color
-        case .unavailable: Palette.caution.color
+        case .valid: .good
+        case .invalid: .bad
+        case .unavailable: .caution
         }
     }
 
@@ -302,19 +279,11 @@ struct IntegrityView: View {
         }
     }
 
-    private func quarantineIcon(_ state: QuarantineState) -> String {
+    /// A marker is information, not a verdict: present or absent are both neutral.
+    private func quarantineTone(_ state: QuarantineState) -> SerreSignalTone {
         switch state {
-        case .present: "arrow.down.doc.fill"
-        case .absent: "minus.circle"
-        case .unavailable: "questionmark.circle"
-        }
-    }
-
-    private func quarantineColor(_ state: QuarantineState) -> Color {
-        switch state {
-        case .present: Palette.accent.color
-        case .absent: Palette.secondaryInk.color
-        case .unavailable: Palette.caution.color
+        case .present, .absent: .neutral
+        case .unavailable: .caution
         }
     }
 
