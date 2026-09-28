@@ -13,7 +13,7 @@
 | 3.2 | Nettoyage (inclut un vrai passage par la Corbeille sur dossier jetable, fait par le mainteneur) | Livré — le mainteneur a dit « continue » sans recette explicite ; lignes du registre inchangées (`4fd7fd62`) |
 | 3.3 | Explorer | Livré — le mainteneur a dit « continue » sans recette explicite (`0e9fc484`) |
 | 3.4 | Doublons et images proches | Accepté 28-09-2026 (`7f4b9fd7`) |
-| 3.5 | Applications | À faire |
+| 3.5 | Applications | Livré — recette en attente (`bb66dc75`) |
 | 3.6 | Intégrité | À faire |
 | 3.7 | Performances | À faire |
 | 3.8 | Historique | À faire |
@@ -132,11 +132,24 @@
   28-09-2026** (« validé ») ; registre : preuves datées, lignes `PARTIEL` (déplacement et images
   proches non observés).
 
+### 28-09-2026 — lot 3.5, Applications
+
+- **Fait :** `bb66dc75` — état initial graine, parcelle mesurée avec limites, lecture sans racines
+  (aucun événement de progression réel), rangs de plantation avec vraie icône de l’app, version,
+  identifiant, adresse de mise à jour déclarée (lien léger), actions « Fichiers autour… » et
+  « Corbeille… » en boutons icône Serre, erreurs et anomalies en bandeaux, déplacement d’un bundle
+  via `SerreActionKit` (données associées laissées en place).
+- **Vérifié :** `make qualify` PASS ; app fixture : état initial ; dossier de bundles illisibles
+  (bandeau erreur + 4 anomalies) ; inventaire en lecture de `/Applications` (33 apps, icônes) en
+  sombre et clair. Aucun bundle déplacé.
+- **Non vérifié :** déplacement d’un bundle ; « Fichiers autour » ; VoiceOver.
+- **Recette 3.5 (mainteneur) :** choisir un dossier d’apps, rechercher, ouvrir « Fichiers
+  autour… » sur une app ; optionnel : déplacer une app jetable (copie d’une app sans importance).
+
 ## Point d’arrêt
 
-- 3.4 accepté. Lot en cours **3.5 — Applications** : inventaire en parcelles
-  (« la pépinière »), diagnostics d’accès, déplacement d’un bundle via `SerreActionKit`
-  (données associées laissées en place, dit clairement).
+- 3.5 livré, recette en attente. Prochain lot **3.6 — Intégrité** (« l’inspection des tiges ») :
+  signatures, quarantaine, agents de lancement ; états Serre ; aucune action destructive.
 - 3.2 et 3.3 : recette explicite à obtenir avant de passer leurs lignes à `VÉRIFIÉ`.
 
 ## Problèmes ouverts

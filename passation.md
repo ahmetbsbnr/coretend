@@ -9,7 +9,7 @@ en fixture, invariants et particularités de l’hôte :
 
 - **Mis à jour :** 27-09-2026, fin de session.
 - **Phase :** P3 — Destinations → [`P3-destinations.md`](Documentation/Passation/P3-destinations.md)
-- **Lot courant :** 3.5 (Applications) **en cours** ; 3.4 accepté ; 3.2 et 3.3 sans recette explicite.
+- **Lot courant :** 3.5 (Applications) **livré, recette en attente** (`bb66dc75`) ; 3.4 accepté ; 3.2 et 3.3 sans recette explicite ; prochain : 3.6 (Intégrité).
 - **Branche :** `next`, en avance sur `origin/next` (non poussé ; push sur demande du mainteneur).
 - **Registre :** Must `VÉRIFIÉ` **2 / 78** (Should 0 / 11). Source : `Documentation/Traceability.csv`.
 - **Apparence :** Serre en place : couleurs, typo, logo, icônes, composants, barre latérale et
@@ -22,6 +22,7 @@ en fixture, invariants et particularités de l’hôte :
 
 ## En attente du mainteneur
 
+- Recette 3.5 : Applications.
 - Recette 3.2 (Nettoyage) : explicite, non encore donnée.
 - Recette 3.3 (Explorer) : explicite, non encore donnée.
 - Optionnel : publier 1.0.3 depuis `fix/1.x-trash-sqlite` (P5, piste 1.x).
