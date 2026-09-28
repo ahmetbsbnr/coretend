@@ -49,6 +49,21 @@ sûreté assouplie (lecture seule par défaut, Corbeille après revue et confirm
 - **U8 — Qualification.** `make qualify`, captures FR/EN clair/sombre, retest sur le M5 avec un
   nouveau build notarisé.
 
+- **U9 — La serre vivante (demande du 28-09 : « meilleures motions, meilleures animations, l'app
+  est une serre vivante en elle-même, va sur ce thème en entier »).** Toute l'app devient une serre :
+  - une **scène de serre** en tête de la Vue d'ensemble dont les plantes reflètent l'état mesuré
+    (espace libre = sol et pousses, derniers échecs = feuille fanée, analyses récentes = racines) ;
+  - chaque destination a sa **plante-signature** qui réagit aux vraies actions (pousse à
+    l'analyse, taille au nettoyage, fleurit à la fin) ;
+  - **lumière du jour** : l'ambiance suit l'heure locale et l'apparence (aube, midi, soir) ;
+  - transitions entre destinations en **croissance organique** (tiges, vrilles), survols qui font
+    frémir les feuilles, pluie légère de particules lors d'un déplacement vers la Corbeille ;
+  - **respiration ambiante** (balancement lent des feuilles) : proposition de révision de la
+    règle « aucune animation au repos » → autorisée seulement fenêtre active et au premier plan,
+    à basse cadence, suspendue fenêtre cachée ou inactive, sur batterie faible et sous « Réduire
+    les animations », désactivable dans Réglages ; mesure CPU avant/après (NFR-09). **À valider
+    par le mainteneur** (amendement de la décision 0002 et du guide § 8).
+
 ## Hors périmètre
 
 Accès complet au disque, suppression définitive, désinstallation « totale » des données

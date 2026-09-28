@@ -16,6 +16,7 @@
 | U6 | Réglages en fenêtre dédiée | À faire |
 | U7 | Modules enrichis | À faire |
 | U8 | Qualification et retest M5 | À faire |
+| U9 | La serre vivante (thème complet, motions) | À faire — amendement de la règle « aucune animation au repos » à valider |
 
 ## Journal
 
