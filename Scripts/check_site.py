@@ -54,6 +54,7 @@ if len(manifest.get('destinations',[])) != 8: errors.append('site manifest must 
 release=json.loads((root/'release.json').read_text())
 if manifest.get('state') != ('released' if release.get('published') else 'release candidate, unpublished'): errors.append('site release state is not explicit')
 if release.get('published') and not (release.get('url') and release.get('sha256')): errors.append('a published release needs its download URL and SHA-256')
+if release.get('dmg') and not (release['dmg'].get('url') and release['dmg'].get('sha256')): errors.append('a published disk image needs its URL and SHA-256')
 for page in ('index.html','features.html','download.html','privacy.html','support.html','developer.html'):
     for lang in ('en','fr'):
         if not (root/lang/page).is_file(): errors.append(f'missing {lang}/{page}')

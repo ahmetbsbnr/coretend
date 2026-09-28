@@ -96,12 +96,27 @@ COPY = {
                 ("Phone home", "No network, no account, no telemetry. Your paths and your history stay on your Mac."),
             ],
             "final_title": "Bring your Mac back to life.",
+            "tools_cta": "Every feature in detail",
+            "proof": [
+                ("0", "network requests — no account, no telemetry"),
+                ("8", "tools in one calm window"),
+                ("Trash", "is where every move goes, after your review"),
+            ],
+            "show": [
+                ("onboarding", "Welcome", "It explains itself",
+                 "Three short pages say what CoreTend does, what it will never do, and where to begin. No setup, no permission to grant."),
+                ("performance", "Performance", "Readings with their source",
+                 "Load, memory in use, thermal state and free space — each value names where it comes from, measured only when you look."),
+                ("palette", "⌘K", "Everything one keystroke away",
+                 "Jump to any tool or action from the keyboard. The sidebar, the menu bar and the palette all lead to the same places."),
+            ],
         },
         "features": {
             "title": "Everything in the greenhouse",
             "description": "The eight tools of CoreTend 2.0 — Overview, Explore, Cleanup, Duplicates, Applications, Integrity, Performance and Record — and how each keeps you in charge.",
             "kicker": "Features",
             "lead": "Every tool reads first and explains what it measured. Moving anything takes your selection, a review and a confirmation.",
+            "jump": "Jump to a tool",
             "also_title": "Across the app",
             "also": [
                 ("⌘K search", "Jump to any tool or setting from a field that grows out of the sidebar."),
@@ -117,14 +132,20 @@ COPY = {
             "lead": "CoreTend 2.0 is a free update to CoreTend. It is signed with a Developer ID and notarized by Apple.",
             "install_title": "Install",
             "install": [
-                ("Direct download", "Unzip the notarized archive and move CoreTend into Applications."),
+                ("Direct download", "Unzip the archive, or open the disk image, and move CoreTend into Applications. Both are notarized by Apple."),
                 ("Homebrew", "brew install --cask ahmetbsbnr/coretend/coretend"),
                 ("Check the file", "Compare the SHA-256 of what you downloaded with the one shown here."),
             ],
             "new_title": "New in 2.0",
             "new": "A complete rebuild: the living greenhouse design, eight tools, a three-page welcome, Applications with sizes and sorting, Explore that walks into folders, Integrity for a whole folder at once, recoverable space in Duplicates, memory in use, and a Settings window in four tabs.",
             "from1": "Coming from 1.x? 2.0 replaces it. Your 1.x data are not touched; you can import its preferences and exclusions from Settings.",
-            "sha": "SHA-256",
+            "sha": "SHA-256 · ZIP",
+            "sha_dmg": "SHA-256 · DMG",
+            "dmg": "Disk image (.dmg)",
+            "zip": "ZIP archive",
+            "notarized": "Signed with Developer ID · notarized by Apple",
+            "released": "Released",
+            "files": "Files and checksums",
             "version": "Version",
         },
         "privacy": {
@@ -195,12 +216,27 @@ COPY = {
                 ("Envoyer quoi que ce soit", "Ni réseau, ni compte, ni télémétrie. Vos chemins et votre historique restent sur votre Mac."),
             ],
             "final_title": "Redonnez vie à votre Mac.",
+            "tools_cta": "Toutes les fonctionnalités en détail",
+            "proof": [
+                ("0", "requête réseau — ni compte, ni télémétrie"),
+                ("8", "outils dans une seule fenêtre, calme"),
+                ("Corbeille", "c’est là que va tout déplacement, après votre revue"),
+            ],
+            "show": [
+                ("onboarding", "Accueil", "Elle s’explique d’elle-même",
+                 "Trois pages courtes disent ce que fait CoreTend, ce qu’elle ne fera jamais et par où commencer. Aucun réglage, aucune autorisation à donner."),
+                ("performance", "Performances", "Des relevés avec leur source",
+                 "Charge, mémoire utilisée, état thermique et espace libre — chaque valeur dit d’où elle vient, mesurée seulement quand vous regardez."),
+                ("palette", "⌘K", "Tout à une touche",
+                 "Allez à n’importe quel outil ou action depuis le clavier. La barre latérale, la barre des menus et la palette mènent aux mêmes endroits."),
+            ],
         },
         "features": {
             "title": "Tout ce que contient la serre",
             "description": "Les huit outils de CoreTend 2.0 — Vue d’ensemble, Explorer, Nettoyage, Doublons, Applications, Intégrité, Performances et Historique — et comment chacun vous laisse décider.",
             "kicker": "Fonctionnalités",
             "lead": "Chaque outil lit d’abord et explique ce qu’il a mesuré. Déplacer quoi que ce soit demande votre sélection, une revue et une confirmation.",
+            "jump": "Aller à un outil",
             "also_title": "Dans toute l’app",
             "also": [
                 ("Recherche ⌘K", "Allez à n’importe quel outil ou réglage depuis un champ qui naît de la barre latérale."),
@@ -216,14 +252,20 @@ COPY = {
             "lead": "CoreTend 2.0 est une mise à jour gratuite de CoreTend. Elle est signée avec un Developer ID et notarisée par Apple.",
             "install_title": "Installer",
             "install": [
-                ("Téléchargement direct", "Décompressez l’archive notarisée et placez CoreTend dans Applications."),
+                ("Téléchargement direct", "Décompressez l’archive, ou ouvrez l’image disque, et placez CoreTend dans Applications. Les deux sont notarisées par Apple."),
                 ("Homebrew", "brew install --cask ahmetbsbnr/coretend/coretend"),
                 ("Vérifier le fichier", "Comparez l’empreinte SHA-256 du fichier téléchargé avec celle affichée ici."),
             ],
             "new_title": "Nouveautés de la 2.0",
             "new": "Une reconstruction complète : la serre vivante, huit outils, un accueil en trois pages, Applications avec tailles et tri, Explorer qui entre dans les dossiers, Intégrité pour tout un dossier, espace récupérable dans Doublons, mémoire utilisée, et des Réglages en quatre onglets.",
             "from1": "Vous venez de la 1.x ? La 2.0 la remplace. Vos données 1.x ne sont pas touchées ; importez ses préférences et exclusions depuis les Réglages.",
-            "sha": "SHA-256",
+            "sha": "SHA-256 · ZIP",
+            "sha_dmg": "SHA-256 · DMG",
+            "dmg": "Image disque (.dmg)",
+            "zip": "Archive ZIP",
+            "notarized": "Signée Developer ID · notarisée par Apple",
+            "released": "Publiée le",
+            "files": "Fichiers et empreintes",
             "version": "Version",
         },
         "privacy": {
@@ -268,7 +310,8 @@ COPY = {
 }
 
 # ---------------------------------------------------------------------------------------------
-# Living pieces (all decorative; the content never depends on them)
+# Living pieces (all decorative; the content never depends on them). No inline style attribute:
+# the site's CSP (style-src 'self') would block it, so per-item timing lives in living.css.
 
 MARK = (
     '<svg class="mark" viewBox="200 180 624 680" aria-hidden="true" focusable="false">'
@@ -279,10 +322,20 @@ MARK = (
     '</svg>'
 )
 
+SHOOT_HEIGHTS = [120, 170, 90, 200, 150, 230, 110, 185, 140, 210, 100, 160, 130, 195, 105, 175, 145, 220, 115, 165,
+                 125, 205, 95, 180, 150, 225, 110, 170]
+WILTED = 11
+POLLEN = 22
+# Narrow scenes (13 shoots, 960 wide) and wide ones (20 shoots, 1440 wide) share the same timing classes.
+# scene: (shoots, width, arch starts, shoot height factor, fit). "full" fills the width
+# ("slice") with lower shoots, so a height capped by the screen only trims the empty sky.
+SCENES = {"narrow": (13, 960, (20, 330, 640), 1.0, "meet"), "wide": (20, 1440, (20, 330, 640, 950, 1260), 1.0, "meet"),
+          "full": (28, 2016, (20, 330, 640, 950, 1260, 1570), .72, "slice")}
 
-def sprout(x: float, height: float, index: int, wilted: bool = False) -> str:
+
+def sprout(x: float, height: float, index: int) -> str:
     top = 300 - height
-    return (f'<g class="shoot{" shoot-wilted" if wilted else ""}" style="--i:{index}" transform="translate({x} 0)">'
+    return (f'<g class="shoot shoot-{index}{" shoot-wilted" if index == WILTED else ""}" transform="translate({x} 0)">'
             f'<g class="shoot-sway">'
             f'<path class="shoot-stem" pathLength="1" d="M0 300 C 0 {300 - height * 0.5}, -4 {top + 20}, 2 {top}"/>'
             f'<path class="shoot-leaf" d="M1 {top + height * 0.35} C -18 {top + height * 0.35}, -34 {top + height * 0.2}, -38 {top} C -20 {top - 2}, -4 {top + 10}, 1 {top + height * 0.35} Z"/>'
@@ -290,19 +343,34 @@ def sprout(x: float, height: float, index: int, wilted: bool = False) -> str:
             f'</g></g>')
 
 
-def greenhouse() -> str:
-    heights = [120, 170, 90, 200, 150, 230, 110, 185, 140, 210, 100, 160, 130]
-    shoots = "".join(sprout(60 + i * 72, h, i, wilted=(i == 11)) for i, h in enumerate(heights))
+def greenhouse(css: str = "", scene: str = "narrow") -> str:
+    count, width, arch_starts, factor, fit = SCENES[scene]
+    shoots = "".join(sprout(60 + i * 72, SHOOT_HEIGHTS[i] * factor, i) for i in range(count))
     arches = "".join(f'<path class="glass" d="M{x} 300 Q {x + 150} {-20} {x + 300} 300"/><path class="mullion" d="M{x + 150} 300 V 140"/>'
-                     for x in (20, 330, 640))
-    pollen = "".join(f'<span style="--x:{(i * 37) % 100}%;--d:{7 + (i * 3) % 7}s;--delay:{-(i * 1.3):.1f}s"></span>' for i in range(22))
-    return (f'<div class="greenhouse" aria-hidden="true"><svg viewBox="0 0 960 330" preserveAspectRatio="xMidYMax meet" focusable="false">'
-            f'{arches}{shoots}</svg>'
+                     for x in arch_starts if x + 300 <= width)
+    pollen = "".join(f'<span class="p{i}"></span>' for i in range(POLLEN))
+    return (f'<div class="greenhouse{" " + css if css else ""}" aria-hidden="true">'
+            f'<svg viewBox="0 0 {width} 310" preserveAspectRatio="xMidYMax {fit}" focusable="false">'
+            f'{arches}{shoots}<rect class="soil" x="0" y="300" width="{width}" height="10"/></svg>'
             f'<div class="pollen">{pollen}</div></div>')
+
+
+def living_css() -> str:
+    """Per-shoot and per-pollen timing, generated so the HTML needs no style attribute."""
+    rules = ["/* Generated by Scripts/build_site.py: per-item timing of the living greenhouse. */"]
+    for i in range(len(SHOOT_HEIGHTS)):
+        rules.append(f".shoot-{i} .shoot-sway {{ animation-duration: {2.6 + i * .17:.2f}s; animation-delay: {1.4 - i * .3:.2f}s; }}")
+        rules.append(f".shoot-{i} .shoot-stem {{ animation-delay: {.3 + i * .07:.2f}s; }}")
+        rules.append(f".shoot-{i} .shoot-leaf {{ animation-delay: {.9 + i * .07:.2f}s; }}")
+    for i in range(POLLEN):
+        rules.append(f".pollen .p{i} {{ left: {(i * 37) % 100}%; animation-duration: {7 + (i * 3) % 7}s; animation-delay: {-(i * 1.3):.1f}s; }}")
+    return "\n".join(rules) + "\n"
 
 
 VINE = ('<svg class="vine" viewBox="0 0 1200 40" preserveAspectRatio="none" aria-hidden="true" focusable="false">'
         '<path pathLength="1" d="M0 20 C 100 0, 200 40, 300 20 S 500 0, 600 20 S 800 40, 900 20 S 1100 0, 1200 20"/></svg>')
+
+LEAF = '<svg class="leaf-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 19 C 5 10, 11 4, 20 4 C 20 13, 14 19, 5 19 Z"/><path class="leaf-vein" d="M5 19 L 14 10"/></svg>'
 
 
 # ---------------------------------------------------------------------------------------------
@@ -319,9 +387,11 @@ def header(lang: str, route: str) -> str:
     other = "fr" if lang == "en" else "en"
     return f"""<a class="skip-link" href="#main">{escape(c['skip'])}</a>
 <header class="site-header">
-  <a class="brand" href="index.html" aria-label="CoreTend — {escape(c['nav']['index'])}">{MARK}<span>CoreTend<small>{escape(c['note'])}</small></span></a>
-  <nav class="primary-nav" aria-label="{escape(c['nav_label'])}">{links}</nav>
-  <a class="lang" href="../{other}/{file_name(route)}" lang="{other}" hreflang="{other}">{escape(c['other'])}</a>
+  <div class="header-inner">
+    <a class="brand" href="index.html" aria-label="CoreTend — {escape(c['nav']['index'])}">{MARK}<span>CoreTend<small>{escape(c['note'])}</small></span></a>
+    <nav class="primary-nav" aria-label="{escape(c['nav_label'])}">{links}</nav>
+    <a class="lang" href="../{other}/{file_name(route)}" lang="{other}" hreflang="{other}">{escape(c['other'])}</a>
+  </div>
 </header>"""
 
 
@@ -329,10 +399,12 @@ def footer(lang: str) -> str:
     c = COPY[lang]
     links = "".join(f'<a href="{file_name(r)}">{escape(c["nav"][r])}</a>' for r in ROUTES if r != "index")
     return f"""<footer class="site-footer">
-  {VINE}
-  <div class="footer-brand"><a class="brand" href="index.html">{MARK}<span>CoreTend<small>{escape(c['note'])}</small></span></a><p>{escape(c['footer'])}</p></div>
-  <nav aria-label="{escape(c['footer_links'])}">{links}</nav>
-  <p class="footer-meta">© 2026 CoreTend · Apache 2.0</p>
+  {greenhouse("greenhouse-footer", "full")}
+  <div class="footer-inner">
+    <div class="footer-brand"><a class="brand" href="index.html">{MARK}<span>CoreTend<small>{escape(c['note'])}</small></span></a><p>{escape(c['footer'])}</p></div>
+    <nav aria-label="{escape(c['footer_links'])}">{links}<a href="{REPO}">GitHub</a></nav>
+    <p class="footer-meta">© 2026 CoreTend · Apache 2.0</p>
+  </div>
 </footer>"""
 
 
@@ -344,77 +416,124 @@ def download_button(lang: str, rel: dict, *, large: bool = False) -> str:
     return f'<p class="unpublished">{escape(c["unpublished"])}</p>'
 
 
-def capture(lang: str, surface: str, title: str, *, hero: bool = False) -> str:
+def capture(lang: str, surface: str, title: str, *, hero: bool = False, caption: bool = True) -> str:
     image = f"../screenshots/{surface}-{lang}"
-    return (f'<figure class="capture reveal{" capture-hero" if hero else ""}">'
+    return (f'<figure class="capture{" capture-hero" if hero else " reveal"}">'
             f'<picture><source media="(prefers-color-scheme: light)" srcset="{image}-light.png">'
             f'<img src="{image}-dark.png" alt="CoreTend — {escape(title, quote=True)}" width="2240" height="1520" loading="{"eager" if hero else "lazy"}"></picture>'
-            f'<figcaption>{escape(title)}</figcaption></figure>')
+            + (f'<figcaption>{escape(title)}</figcaption>' if caption else "") + '</figure>')
 
 
 def cards(items, css: str = "card") -> str:
     out = []
-    for n, item in enumerate(items):
+    for item in items:
         title, body, *extra = item
-        detail = f"<p>{escape(body)}</p>"
+        detail = f"<p>{escape(body)}</p>" if body else ""
         if extra:
             detail += "".join(f"<code>{escape(line)}</code>" for line in extra[0])
-        out.append(f'<article class="{css} reveal" style="--n:{n}"><span class="card-leaf" aria-hidden="true"></span><h3>{escape(title)}</h3>{detail}</article>')
+        out.append(f'<article class="{css} reveal">{LEAF}<h3>{escape(title)}</h3>{detail}</article>')
     return "".join(out)
 
 
+def section_head(title: str, lead: str = "", ident: str = "") -> str:
+    return (f'<div class="section-head reveal"><h2{f" id=\"{ident}\"" if ident else ""}>{escape(title)}</h2>'
+            + (f'<p>{escape(lead)}</p>' if lead else "") + '</div>')
+
+
 SURFACE = {key: key for key in ("overview", "explore", "cleanup", "duplicates", "applications", "integrity", "performance", "record")}
+
+MONTHS = {"en": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
+          "fr": ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"]}
+
+
+def long_date(lang: str, iso: str) -> str:
+    year, month, day = (int(part) for part in iso.split("-"))
+    name = MONTHS[lang][month - 1]
+    return f"{name} {day}, {year}" if lang == "en" else f"{day} {name} {year}"
 
 
 def home(lang: str, rel: dict) -> str:
     c, p = COPY[lang], COPY[lang]["home"]
     tools = "".join(
-        f'<a class="tool reveal" style="--n:{n}" href="features.html#{key}"><span class="tool-name">{escape(name)}</span>'
+        f'<a class="tool reveal" href="features.html#{key}"><span class="tool-name">{escape(name)}</span>'
         f'<strong>{escape(tag)}</strong><span class="tool-body">{escape(body)}</span></a>'
-        for n, (key, name, tag, body) in enumerate(DESTINATIONS[lang]))
+        for key, name, tag, body in DESTINATIONS[lang])
+    proof = "".join(f'<div class="proof-item reveal"><strong>{escape(value)}</strong><span>{escape(label)}</span></div>'
+                    for value, label in p["proof"])
+    shows = "".join(
+        f'<section class="split{" split-flip" if n % 2 else ""}"><div class="split-copy reveal"><p class="eyebrow">{escape(eyebrow)}</p>'
+        f'<h2>{escape(title)}</h2><p>{escape(body)}</p></div>{capture(lang, surface, title, caption=False)}</section>'
+        for n, (surface, eyebrow, title, body) in enumerate(p["show"]))
     return f"""<main id="main">
   <section class="hero">
+    <div class="hero-inner">
     <div class="hero-copy">
       <p class="eyebrow"><span class="dot" aria-hidden="true"></span>{escape(p['kicker'])}</p>
       <h1>{escape(p['title'])}</h1>
       <p class="lead">{escape(p['lead'])}</p>
-      <div class="actions">{download_button(lang, rel, large=True)}<a class="button button-secondary" href="features.html">{escape(c['cta_features'])}<span aria-hidden="true"> →</span></a></div>
+      <div class="actions">{download_button(lang, rel, large=True)}<a class="button button-secondary button-large" href="features.html">{escape(c['cta_features'])}<span aria-hidden="true"> →</span></a></div>
       <p class="requirements">{escape(c['requirements'])}</p>
     </div>
-    {greenhouse()}
+    <div class="hero-icon"><img src="../brand/coretend-app-icon-512.png" alt="CoreTend" width="512" height="512"></div>
+    </div>
+    {greenhouse("greenhouse-hero", "full")}
   </section>
-  {capture(lang, "overview", DESTINATIONS[lang][0][1] + " — " + DESTINATIONS[lang][0][2], hero=True)}
-  <section class="band" aria-labelledby="tools-title"><div class="band-head reveal"><h2 id="tools-title">{escape(p['tools_title'])}</h2><p>{escape(p['tools_lead'])}</p></div><div class="tools">{tools}</div></section>
-  <section class="band band-alive" aria-labelledby="alive-title"><div class="band-head reveal"><h2 id="alive-title">{escape(p['alive_title'])}</h2></div><div class="cards">{cards(p['alive'])}</div></section>
-  <section class="band" aria-labelledby="never-title"><div class="band-head reveal"><h2 id="never-title">{escape(p['never_title'])}</h2></div><div class="cards">{cards(p['never'], "card card-never")}</div></section>
-  <section class="final reveal"><div class="final-mark">{MARK}</div><h2>{escape(p['final_title'])}</h2>{download_button(lang, rel, large=True)}<p class="requirements">{escape(c['requirements'])}</p></section>
+  <div class="stage">{capture(lang, "overview", DESTINATIONS[lang][0][1] + " — " + DESTINATIONS[lang][0][2], hero=True, caption=False)}</div>
+  <section class="proof" aria-label="CoreTend">{proof}</section>
+  <section class="band" aria-labelledby="tools-title">{section_head(p['tools_title'], p['tools_lead'], "tools-title")}<div class="tools">{tools}</div>
+    <p class="more reveal"><a href="features.html">{escape(p['tools_cta'])} <span aria-hidden="true">→</span></a></p></section>
+  {shows}
+  <section class="band" aria-labelledby="alive-title">{section_head(p['alive_title'], ident="alive-title")}<div class="cards cards-three">{cards(p['alive'])}</div></section>
+  <section class="band" aria-labelledby="never-title">{section_head(p['never_title'], ident="never-title")}<div class="cards cards-three">{cards(p['never'], "card card-never")}</div></section>
+  <section class="final reveal"><div class="final-mark">{MARK}</div><h2>{escape(p['final_title'])}</h2><div class="actions">{download_button(lang, rel, large=True)}</div><p class="requirements">{escape(c['requirements'])}</p></section>
 </main>"""
 
 
 def features(lang: str) -> str:
     p = COPY[lang]["features"]
+    chips = "".join(f'<a href="#{key}">{escape(name)}</a>' for key, name, _, _ in DESTINATIONS[lang])
     blocks = "".join(
-        f'<section class="feature" id="{key}"><div class="feature-copy reveal"><p class="eyebrow">{escape(name)}</p><h2>{escape(tag)}</h2><p>{escape(body)}</p></div>'
-        f'{capture(lang, SURFACE[key], name + " — " + tag)}</section>'
-        for key, name, tag, body in DESTINATIONS[lang])
+        f'<section class="split feature{" split-flip" if n % 2 else ""}" id="{key}"><div class="split-copy reveal"><p class="eyebrow">{escape(name)}</p>'
+        f'<h2>{escape(tag)}</h2><p>{escape(body)}</p></div>{capture(lang, SURFACE[key], name + " — " + tag, caption=False)}</section>'
+        for n, (key, name, tag, body) in enumerate(DESTINATIONS[lang]))
     return f"""<main id="main">
   {intro(p)}
+  <nav class="chips" aria-label="{escape(p['jump'])}">{chips}</nav>
   {blocks}
-  <section class="band"><div class="band-head reveal"><h2>{escape(p['also_title'])}</h2></div><div class="cards">{cards(p['also'])}</div></section>
+  <section class="band">{section_head(p['also_title'])}<div class="cards cards-four">{cards(p['also'])}</div></section>
 </main>"""
 
 
 def download(lang: str, rel: dict) -> str:
     c, p = COPY[lang], COPY[lang]["download"]
-    facts = f'<dl class="facts reveal"><div><dt>{escape(p["version"])}</dt><dd>{escape(rel["version"])}</dd></div>'
-    if rel.get("sha256"):
-        facts += f'<div><dt>{escape(p["sha"])}</dt><dd><code>{escape(rel["sha256"])}</code></dd></div>'
-    facts += f'<div><dt>macOS</dt><dd>{escape(c["requirements"])}</dd></div></dl>'
+    published = bool(rel.get("published") and rel.get("url"))
+    dmg = rel.get("dmg") if published else None
+    if published:
+        buttons = download_button(lang, rel, large=True)
+        if dmg:
+            buttons += f'<a class="button button-secondary button-large" href="{escape(dmg["url"], quote=True)}">{escape(p["dmg"])}</a>'
+        date = f' · {escape(p["released"])} {escape(long_date(lang, rel["date"]))}' if rel.get("date") else ""
+        panel_meta = f'<p class="panel-meta">{escape(p["notarized"])}{date}</p>'
+    else:
+        buttons, panel_meta = download_button(lang, rel), ""
+    rows = [(p["version"], escape(rel["version"])), ("macOS", escape(c["requirements"]))]
+    if published:
+        rows.append((p["sha"], f'<code>{escape(rel["sha256"])}</code>'))
+        if dmg:
+            rows.append((p["sha_dmg"], f'<code>{escape(dmg["sha256"])}</code>'))
+    facts = "".join(f'<div><dt>{escape(term)}</dt><dd>{value}</dd></div>' for term, value in rows)
+    install = cards([(t, b) if t != "Homebrew" else (t, "", [b]) for t, b in p['install']])
     return f"""<main id="main">
   {intro(p)}
-  <section class="band download-band"><div class="download-box reveal">{MARK}{download_button(lang, rel, large=True)}{facts}</div></section>
-  <section class="band"><div class="band-head reveal"><h2>{escape(p['install_title'])}</h2></div><div class="cards">{cards([(t, b) if t != "Homebrew" else (t, "", [b]) for t, b in p['install']])}</div></section>
-  <section class="band"><div class="band-head reveal"><h2>{escape(p['new_title'])}</h2><p>{escape(p['new'])}</p><p>{escape(p['from1'])}</p></div></section>
+  <section class="band band-tight">
+    <div class="download-panel reveal">
+      <div class="panel-main"><img class="panel-icon" src="../brand/coretend-app-icon-512.png" alt="CoreTend" width="512" height="512">
+        <div><h2>CoreTend {escape(rel['version'])}</h2>{panel_meta}<div class="actions">{buttons}</div></div></div>
+      <div class="panel-facts"><h3>{escape(p['files'])}</h3><dl class="facts">{facts}</dl></div>
+    </div>
+  </section>
+  <section class="band">{section_head(p['install_title'])}<div class="cards cards-three">{install}</div></section>
+  <section class="band">{section_head(p['new_title'])}<div class="prose reveal"><p>{escape(p['new'])}</p><p>{escape(p['from1'])}</p></div></section>
 </main>"""
 
 
@@ -427,7 +546,7 @@ def simple(lang: str, route: str) -> str:
     p = COPY[lang][route]
     return f"""<main id="main">
   {intro(p)}
-  <section class="band"><div class="cards cards-two">{cards(p['sections'])}</div></section>
+  <section class="band band-tight"><div class="cards cards-two">{cards(p['sections'])}</div></section>
 </main>"""
 
 
@@ -454,6 +573,7 @@ def document(lang: str, route: str, rel: dict) -> str:
   <title>{escape(page['title'])} — CoreTend</title>
   <link rel="stylesheet" href="../design-tokens.css">
   <link rel="stylesheet" href="../site.css">
+  <link rel="stylesheet" href="../living.css">
 </head>
 <body class="page-{route}">
   {header(lang, route)}
@@ -477,16 +597,18 @@ def language_index() -> str:
   <title>CoreTend — choose your language / choisir la langue</title>
   <link rel="stylesheet" href="design-tokens.css">
   <link rel="stylesheet" href="site.css">
+  <link rel="stylesheet" href="living.css">
 </head>
 <body class="page-language">
   <a class="skip-link" href="#main">Skip / Aller au contenu</a>
   <main id="main" class="language">
-    {greenhouse()}
     <div class="language-card">
-      <a class="brand brand-large" href="en/index.html">{MARK}<span>CoreTend<small>2.0</small></span></a>
+      <img class="language-icon" src="brand/coretend-app-icon-512.png" alt="CoreTend" width="512" height="512">
+      <p class="language-name">CoreTend 2.0</p>
       <h1>A living greenhouse for your Mac.<span lang="fr">Une serre vivante pour votre Mac.</span></h1>
-      <nav class="actions" aria-label="Language / Langue"><a class="button button-primary" href="en/index.html" lang="en">English <span aria-hidden="true">→</span></a><a class="button button-secondary" href="fr/index.html" lang="fr">Français <span aria-hidden="true">→</span></a></nav>
+      <nav class="actions" aria-label="Language / Langue"><a class="button button-primary button-large" href="en/index.html" lang="en">English <span aria-hidden="true">→</span></a><a class="button button-secondary button-large" href="fr/index.html" lang="fr">Français <span aria-hidden="true">→</span></a></nav>
     </div>
+    {greenhouse("greenhouse-ground", "full")}
   </main>
 </body>
 </html>
@@ -499,8 +621,9 @@ def main() -> None:
     brand = SITE / "brand"
     brand.mkdir(exist_ok=True)
     for name in ("coretend-mark-dark.svg", "coretend-mark-light.svg", "coretend-logotype-dark.svg",
-                 "coretend-logotype-light.svg", "coretend-app-icon-1024.png"):
+                 "coretend-logotype-light.svg", "coretend-app-icon-1024.png", "coretend-app-icon-512.png"):
         shutil.copyfile(ROOT / "Resources/Brand/Logo" / name, brand / name)
+    (SITE / "living.css").write_text(living_css(), encoding="utf-8")
     for lang in LANGUAGES:
         (SITE / lang).mkdir(exist_ok=True)
         for route in ROUTES:

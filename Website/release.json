@@ -1,1 +1,11 @@
-{"version":"2.0.0","published":true,"date":"2026-09-28","url":"https://github.com/ahmetbsbnr/coretend/releases/download/v2.0.0/CoreTend-2.0.0-arm64.zip","sha256":"3fd2548cf988fdecc0749f0c170764cccaf3541aa02c840c4e5c58adafcfefef"}
+{
+  "version": "2.0.0",
+  "published": true,
+  "date": "2026-09-28",
+  "url": "https://github.com/ahmetbsbnr/coretend/releases/download/v2.0.0/CoreTend-2.0.0-arm64.zip",
+  "sha256": "3fd2548cf988fdecc0749f0c170764cccaf3541aa02c840c4e5c58adafcfefef",
+  "dmg": {
+    "url": "https://github.com/ahmetbsbnr/coretend/releases/download/v2.0.0/CoreTend-2.0.0-arm64.dmg",
+    "sha256": "47b37c3846b4f7efc1fe1ec7ec6724ad8b33a1547aa6e756330188f886c71e98"
+  }
+}
