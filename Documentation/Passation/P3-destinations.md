@@ -15,8 +15,8 @@
 | 3.4 | Doublons et images proches | Accepté 28-09-2026 (`7f4b9fd7`) |
 | 3.5 | Applications | Accepté 28-09-2026 (`bb66dc75`, `2663f55d`) |
 | 3.6 | Intégrité | Accepté 28-09-2026 (`5430106d`) |
-| 3.7 | Performances | Livré — recette en attente (`52d8fd16`) |
-| 3.8 | Historique | À faire |
+| 3.7 | Performances | Livré, vérifié par l’agent (`52d8fd16`) |
+| 3.8 | Historique | Livré, vérifié par l’agent (`05f7aa51`) |
 | 3.9 | Réglages, ⌘K, barre de menus, langue, import ancien | À faire |
 | 3.10 | Site : pages publiques en Serre, captures réelles de l’app, contenu pour une sortie publique (correction G2) | À faire |
 
@@ -185,12 +185,20 @@
   La recette groupée de P3 (et les recettes explicites 3.2, 3.3) restent dues avant la gate G3.
 - `next` est poussé à la fin de 3.10 (autorisé).
 
+### 28-09-2026 — lot 3.8, Historique
+
+- **Fait :** `05f7aa51` — herbier : une page par jour (date en Iowan), feuille par type d’événement,
+  entrées pressées en place (`SerrePress`) une fois par chargement ; outils en parcelle (recherche,
+  type, période, compte accordé, Exporter…, Effacer…) ; états vide / sans résultat / erreur Serre ;
+  plus de liste imbriquée.
+- **Vérifié :** `make qualify` PASS ; base fixture de 7 événements sur 3 jours : 3 pages, feuilles
+  et heures correctes.
+- **Non vérifié :** export JSON/CSV via le panneau ; effacement ; VoiceOver.
+
 ## Point d’arrêt
 
-- 3.7 livré, recette en attente. Prochain lot **3.8 — Historique** (« l’herbier ») : entrées
-  groupées en pages par jour, qui se pressent en place (scale 1,02 → 1, 200 ms), export,
-  effacement confirmé.
-- 3.2 et 3.3 : recette explicite à obtenir avant de passer leurs lignes à `VÉRIFIÉ`.
+- Lot en cours **3.9 — Réglages, ⌘K, barre de menus, langue, import ancien**.
+- Puis **3.10 — Site**, puis push de `next` (autorisé par le mainteneur).
 
 ## Problèmes ouverts
 
