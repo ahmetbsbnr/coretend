@@ -16,7 +16,7 @@
 | U6 | Réglages en fenêtre dédiée | À faire |
 | U7 | Modules enrichis | À faire |
 | U8 | Qualification et retest M5 | À faire |
-| U9 | La serre vivante (thème complet, motions) | À faire — amendement de la règle « aucune animation au repos » à valider |
+| U9 | La serre vivante (thème complet, motions) | En cours — décision 0003 acceptée ; socle + scène Vue d'ensemble (`af7ba932`) |
 
 ## Journal
 
@@ -29,8 +29,15 @@
 
 ## Point d'arrêt
 
-- `eddb70d6` : U1 livré ; U2/U3 en partie. Suite : **U4 Applications** (taille, tri, panneau de détail, échec Corbeille expliqué, « Fichiers autour » par nom), puis U2/U3 restants, U5, U6, U7, U8.
-- Capture d'écran d'une app en fixture quand le Terminal est en plein écran : `swiftc Scripts/capture_window_helper.swift`, puis `screencapture -l <fenêtre>`.
+- U1 livré ; U2, U3 en partie ; **U9 en cours** (`af7ba932` : `AmbientLife`, `GreenhouseScene`,
+  réglage « Serre vivante »). À faire pour U9 : vérifier le balancement fenêtre active (capture
+  à 1 s d'écart avec la fenêtre devant) et mesurer le CPU au repos avant/après (NFR-09) ;
+  plante-signature par destination ; transitions organiques ; frémissement au survol ;
+  particules au déplacement vers la Corbeille.
+- Puis U4 (Applications), U5 (accueil), U6 (Réglages en fenêtre), U7, U8 (build notarisé,
+  retest M5).
+- Capture d'une fenêtre en fixture quand le Terminal est en plein écran :
+  `swiftc Scripts/capture_window_helper.swift -o cwh`, `cwh window <pid>`, `screencapture -l <n>`.
 
 ## Problèmes ouverts
 
