@@ -9,7 +9,7 @@ en fixture, invariants et particularités de l’hôte :
 
 - **Mis à jour :** 27-09-2026, fin de session.
 - **Phase :** P3 — Destinations → [`P3-destinations.md`](Documentation/Passation/P3-destinations.md)
-- **Lot courant :** 3.9 (Réglages, ⌘K, barre de menus) **en cours** ; 3.7 et 3.8 livrés sans recette par lot (décision du mainteneur).
+- **Lot courant :** 3.9 **en cours, arrêté** (`ab0cd928` WIP, non qualifié) ; voir Point d’arrêt de P3.
 - **Branche :** `next`, en avance sur `origin/next` (non poussé ; push sur demande du mainteneur).
 - **Registre :** Must `VÉRIFIÉ` **2 / 78** (Should 0 / 11). Source : `Documentation/Traceability.csv`.
 - **Apparence :** Serre en place : couleurs, typo, logo, icônes, composants, barre latérale et

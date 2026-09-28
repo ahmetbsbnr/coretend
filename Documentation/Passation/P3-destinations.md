@@ -197,8 +197,12 @@
 
 ## Point d’arrêt
 
-- Lot en cours **3.9 — Réglages, ⌘K, barre de menus, langue, import ancien**.
-- Puis **3.10 — Site**, puis push de `next` (autorisé par le mainteneur).
+- Arrêt demandé le 28-09-2026 pendant **3.9**. `ab0cd928` (WIP) : Réglages en parcelles Serre (choix en
+  lignes, exclusions, signature en étiquette, conservation, barre des menus, diagnostic), menu de
+  barre des menus Serre (logo, glyphes, formats dans la langue de l’app, icône pousse). Compile sans
+  avertissement. **Reprendre par :** `make qualify`, vérification visuelle des Réglages et du menu
+  (`CORETEND_TEST_MENU_BAR_ENABLED=1`), palette ⌘K et langue, puis clore 3.9, puis 3.10 (site),
+  puis push de `next` (autorisé).
 
 ## Problèmes ouverts
 
