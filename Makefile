@@ -1,6 +1,6 @@
 PY_TARGETS = generate-manifest build-site site-check traceability safety-audit architecture-audit uninstall-smoke app-runtime-smoke clean-release-build-smoke test-cli-interrupt benchmark-scan capture-kit-check capture-screens
 
-.PHONY: python-version capture-kit-check capture-screens test build generate-manifest build-site site-check traceability safety-audit architecture-audit install-smoke uninstall-smoke app-runtime-smoke clean-release-build-smoke test-cli-interrupt qualify package-local verify-package verify-install-package benchmark-scan
+.PHONY: package-release python-version capture-kit-check capture-screens test build generate-manifest build-site site-check traceability safety-audit architecture-audit install-smoke uninstall-smoke app-runtime-smoke clean-release-build-smoke test-cli-interrupt qualify package-local verify-package verify-install-package benchmark-scan
 
 # The scripts use Python 3.10 syntax. An older python3 (macOS ships 3.9 in /usr/bin)
 # fails deep inside a script, after others have already run, so check it first.
@@ -79,3 +79,7 @@ verify-install-package: package-local
 benchmark-scan:
 	swift build -c release --product CoreTendCLI
 	python3 Scripts/benchmark_scan.py
+
+# The public build: CoreTend 2.0 replaces 1.x, so it keeps the 1.x bundle identifier.
+package-release:
+	CORETEND_BUNDLE_ID=com.ahmetbsbnr.coretend CORETEND_VERSION=2.0.0 CORETEND_BUILD=200 bash Scripts/package_local.sh
