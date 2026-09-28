@@ -153,6 +153,7 @@ final class SerreDrawingTests: XCTestCase {
         XCTAssertTrue(box.insetBy(dx: -1, dy: -1).contains(deep))
     }
 
+    @MainActor
     func testLogoGerminationEndsInTheStillFinalState() {
         let final = SerreLogoState.grown
         XCTAssertEqual(final.seedDrop, 0); XCTAssertEqual(final.stem, 1)

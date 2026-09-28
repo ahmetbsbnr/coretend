@@ -80,3 +80,53 @@ public struct SoilBand: View {
         }
     }
 }
+
+/// Draws its content from left to right once, when it appears (UI guide § 8, Performance: "la
+/// courbe de sève se trace de gauche à droite à l'apparition"). Under Reduce Motion it is drawn
+/// at once.
+public struct TraceReveal: ViewModifier {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var revealed = false
+
+    public func body(content: Content) -> some View {
+        content
+            .mask(alignment: .leading) {
+                GeometryReader { proxy in
+                    Rectangle().frame(width: proxy.size.width * (revealed ? 1 : 0))
+                }
+            }
+            .onAppear {
+                guard !revealed else { return }
+                if reduceMotion { revealed = true; return }
+                withAnimation(MotionCurve.sap.animation(duration: MotionToken.bloom.duration)) { revealed = true }
+            }
+    }
+}
+
+public extension View {
+    /// Traces the view from left to right once when it appears.
+    func traceReveal() -> some View { modifier(TraceReveal()) }
+}
+
+/// A ring that swells and fades once, around a new point (UI guide § 8: "un nouveau point pulse
+/// une fois"). It never repeats; under Reduce Motion it is not drawn.
+public struct OncePulse: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var spread = false
+
+    public init() {}
+
+    public var body: some View {
+        Circle()
+            .stroke(Palette.accent.color, lineWidth: 2)
+            .frame(width: 14, height: 14)
+            .scaleEffect(spread ? 2.6 : 1)
+            .opacity(reduceMotion ? 0 : (spread ? 0 : 0.9))
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+            .onAppear {
+                guard !reduceMotion else { return }
+                withAnimation(MotionCurve.sap.animation(duration: 0.9)) { spread = true }
+            }
+    }
+}

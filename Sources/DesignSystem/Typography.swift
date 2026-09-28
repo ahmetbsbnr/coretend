@@ -15,6 +15,8 @@ public enum CoreTendTypography {
     public static let secondary: Font = .custom("AvenirNext-Regular", size: 13, relativeTo: .subheadline)
     /// Sources, measurement times, footnotes.
     public static let caption: Font = .custom("AvenirNext-Regular", size: 12, relativeTo: .caption)
+    /// A measured figure inside a parcel (Performance), smaller than the hero.
+    public static let figure: Font = .custom("IowanOldStyle-Roman", size: 28, relativeTo: .title2)
     public static let measurement: Font = .custom("AvenirNext-Medium", size: 20, relativeTo: .title2).monospacedDigit()
 
     /// PostScript names the styles above depend on; DesignSystemTests checks they are installed.
