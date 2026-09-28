@@ -19,6 +19,8 @@ struct SystemSnapshotView: View {
     @State private var confirmClearHistory = false
     @State private var historyNotice: String?
     @State private var latestActivity: ActivitySummary?
+    /// The last few events with their object, for the Overview.
+    @State private var recentEvents: [ActivityEvent] = []
     @State private var activityUnavailable = false
 
     var body: some View {
@@ -42,8 +44,18 @@ struct SystemSnapshotView: View {
             }
             if let snapshot {
                 if destination == .overview {
-                    storage(snapshot).serreRise(2)
-                    recentActivity.serreRise(3)
+                    // Side by side when the window is wide enough, stacked otherwise.
+                    ViewThatFits(in: .horizontal) {
+                        HStack(alignment: .top, spacing: 16) {
+                            storage(snapshot).frame(minWidth: 560)
+                            recentActivity.frame(width: 320)
+                        }
+                        VStack(alignment: .leading, spacing: 20) {
+                            storage(snapshot)
+                            recentActivity
+                        }
+                    }
+                    .serreRise(2)
                     nextSteps.serreRise(4)
                 }
                 else {
@@ -106,6 +118,14 @@ struct SystemSnapshotView: View {
         }
     }
 
+    @ViewBuilder private func eventLeaf(_ kind: ActivityKind) -> some View {
+        switch kind {
+        case .movedToTrash, .migrationImported: RiskLeaf(.low, size: 12)
+        case .failed: RiskLeaf(.high, size: 12)
+        default: RiskLeafShape(level: .low).stroke(Palette.secondaryInk.color, lineWidth: 1.2)
+        }
+    }
+
     private func legend(_ title: String, _ value: String, tone: Color) -> some View {
         HStack(spacing: 6) {
             LeafCorner.control.shape.fill(tone).frame(width: 12, height: 10)
@@ -122,11 +142,22 @@ struct SystemSnapshotView: View {
                     .font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.secondaryInk.color)
                 if activityUnavailable {
                     SerreBanner(.partial, title: copy("menubar.activity.unavailable"))
-                } else if let latestActivity {
-                    Text(copy("activity.\(latestActivity.kind.rawValue)"))
-                        .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
-                    Text(timestamp(latestActivity.occurredAt))
-                        .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                } else if !recentEvents.isEmpty {
+                    ForEach(recentEvents, id: \.id) { event in
+                        HStack(alignment: .top, spacing: 10) {
+                            eventLeaf(event.kind).frame(width: 12, height: 12).padding(.top, 3)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(copy("activity.\(event.kind.rawValue)"))
+                                    .font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
+                                // What it was about, and why it failed when it did.
+                                Text(ProductCopy.activityDetail(event.detail, failureCode: event.kind == .failed ? event.failureCode : nil, french: french))
+                                    .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                                    .lineLimit(2).truncationMode(.middle)
+                                Text(timestamp(event.occurredAt))
+                                    .font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
+                            }
+                        }
+                    }
                 } else {
                     Text(copy("menubar.activity.empty"))
                         .font(CoreTendTypography.body).foregroundStyle(Palette.secondaryInk.color)
@@ -369,6 +400,7 @@ struct SystemSnapshotView: View {
                 do {
                     let store = try await LocalStoreAccess.open()
                     latestActivity = try await store.latestActivity()
+                    recentEvents = Array(try await store.events().sorted { $0.occurredAt > $1.occurredAt }.prefix(3))
                     activityUnavailable = false
                 } catch {
                     latestActivity = nil
