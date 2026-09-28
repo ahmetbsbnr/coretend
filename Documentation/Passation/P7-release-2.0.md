@@ -20,7 +20,7 @@ release, site, cask).
 |---|---|---|
 | 7.1 | Marque : icône Icon Composer (Liquid Glass) + logotypes SVG | Livré (`a23fcd99`) |
 | 7.2 | Site 2.0 recréé (serre vivante, animations CSS, sans script) | Livré (`67bd00a3`) — captures 2.0 à refaire en 7.4 |
-| 7.3 | Dépôt : README, changelog, gouvernance, workflows, cask | À faire |
+| 7.3 | Dépôt : README, changelog, gouvernance, workflows, cask | Livré (`dbad205a`) — workflows de release 1.x non repris (publication locale via Organizer) |
 | 7.4 | Build 2.0.0 signé, notarisé, DMG, SHA256SUMS | À faire |
 | 7.5 | Publication (PR, tag, release, site, cask) — sur accord | À faire |
 
