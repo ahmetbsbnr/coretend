@@ -13,7 +13,7 @@
 | 3.2 | Nettoyage (inclut un vrai passage par la Corbeille sur dossier jetable, fait par le mainteneur) | Livré — le mainteneur a dit « continue » sans recette explicite ; lignes du registre inchangées (`4fd7fd62`) |
 | 3.3 | Explorer | Livré — le mainteneur a dit « continue » sans recette explicite (`0e9fc484`) |
 | 3.4 | Doublons et images proches | Accepté 28-09-2026 (`7f4b9fd7`) |
-| 3.5 | Applications | Livré — recette en attente (`bb66dc75`) |
+| 3.5 | Applications | Accepté 28-09-2026 (`bb66dc75`, `2663f55d`) |
 | 3.6 | Intégrité | À faire |
 | 3.7 | Performances | À faire |
 | 3.8 | Historique | À faire |
@@ -145,10 +145,13 @@
 - **Non vérifié :** déplacement d’un bundle ; « Fichiers autour » ; VoiceOver.
 - **Recette 3.5 (mainteneur) :** choisir un dossier d’apps, rechercher, ouvrir « Fichiers
   autour… » sur une app ; optionnel : déplacer une app jetable (copie d’une app sans importance).
+  **Acceptée le 28-09-2026** avec une demande : détection automatique du dossier Applications.
+  Faite dans `2663f55d` sans lecture automatique (le registre exige un dossier explicitement choisi) :
+  les dossiers trouvés sont proposés en un clic. Registre : preuves datées, `PARTIEL`.
 
 ## Point d’arrêt
 
-- 3.5 livré, recette en attente. Prochain lot **3.6 — Intégrité** (« l’inspection des tiges ») :
+- 3.5 accepté. Lot en cours **3.6 — Intégrité** (« l’inspection des tiges ») :
   signatures, quarantaine, agents de lancement ; états Serre ; aucune action destructive.
 - 3.2 et 3.3 : recette explicite à obtenir avant de passer leurs lignes à `VÉRIFIÉ`.
 
