@@ -237,7 +237,7 @@ struct CleanupView: View {
     private var resultsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline) {
-                Text(french ? "\(ProductFormat.count(results.count, french: true)) éléments mesurés" : "\(ProductFormat.count(results.count, french: false)) measured items")
+                Text(french ? "\(ProductFormat.items(results.count, french: true)) mesuré\(ProductFormat.frenchPlural(results.count))" : "\(ProductFormat.items(results.count, french: false)) measured")
                     .font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
                 Spacer()
                 Text(french ? "Aucune sélection automatique" : "Nothing selected automatically")
@@ -332,7 +332,7 @@ struct CleanupView: View {
             }
             Spacer()
             Button { Task { await prepareAction() } } label: {
-                Text(french ? "Examiner \(selectedItems.count) éléments" : "Review \(selectedItems.count) items")
+                Text(french ? "Examiner \(ProductFormat.items(selectedItems.count, french: true))" : "Review \(ProductFormat.items(selectedItems.count, french: false))")
             }
             .buttonStyle(.serre(.primary))
             .disabled(selectedItems.isEmpty || locked || selectedRoot == nil)
@@ -491,12 +491,12 @@ struct CleanupView: View {
         let stayed = report.items.count - report.movedCount
         if stayed > 0 {
             notice = CleanupNotice(kind: .error,
-                                   title: french ? "\(report.movedCount) déplacés vers la Corbeille ; \(stayed) restés en place."
+                                   title: french ? "\(report.movedCount) déplacé\(ProductFormat.frenchPlural(report.movedCount)) vers la Corbeille ; \(stayed) resté\(ProductFormat.frenchPlural(stayed)) en place."
                                                  : "\(report.movedCount) moved to Trash; \(stayed) left in place.",
                                    message: french ? "Chaque fichier resté en place dit pourquoi ; aucun n’a été effacé." : "Each file left in place says why; none was erased.",
                                    nearActions: true)
         } else {
-            notice = CleanupNotice(kind: .note, title: french ? "\(report.movedCount) déplacés vers la Corbeille." : "\(report.movedCount) moved to Trash.",
+            notice = CleanupNotice(kind: .note, title: french ? "\(report.movedCount) déplacé\(ProductFormat.frenchPlural(report.movedCount)) vers la Corbeille." : "\(report.movedCount) moved to Trash.",
                                    message: french ? "Ils restent récupérables depuis la Corbeille de macOS." : "They can be restored from the macOS Trash.",
                                    nearActions: true)
         }
@@ -548,7 +548,7 @@ struct CleanupView: View {
         let count = actionReview?.items.count ?? 0
         let extra = max(0, count - 5)
         let suffix = extra > 0 ? (french ? "\n… et \(extra) autres" : "\n… and \(extra) more") : ""
-        return french ? "\(count) éléments sélectionnés :\n\(names)\(suffix)\nAction journalisée puis revalidée. Aucun effacement définitif." : "\(count) selected items:\n\(names)\(suffix)\nAction is logged and revalidated. No permanent deletion."
+        return french ? "\(ProductFormat.items(count, french: true)) sélectionné\(ProductFormat.frenchPlural(count)) :\n\(names)\(suffix)\nAction journalisée puis revalidée. Aucun effacement définitif." : "\(ProductFormat.items(count, french: false)) selected:\n\(names)\(suffix)\nAction is logged and revalidated. No permanent deletion."
     }
 
     private func releaseActionScope() {
