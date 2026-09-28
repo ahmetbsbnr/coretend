@@ -2,7 +2,7 @@
 
 **Objectif :** preuves d’accessibilité, compatibilité, performance, revue indépendante, site et import 1.x.
 **Gate :** G4 — preuves consignées pour chaque NFR concerné.
-**Statut de la phase :** En cours — G3 acceptée par le mainteneur le 28-09-2026.
+**Statut de la phase :** Travaux disponibles 4.1–4.6 livrés ; preuves externes ouvertes, G4 non passée.
 **Plan :** `Documentation/Project/Implementation-plan.md` § Programme 2.0.
 
 ## Lots
@@ -14,7 +14,7 @@
 | 4.3 | Performance : corpus, mesures, budgets | Accepté 28-09-2026 — budgets locaux validés, réserves NFR-09 conservées |
 | 4.4 | Revue indépendante architecture/sûreté | Livré — revue indépendante et correctifs qualifiés |
 | 4.5 | Site : zoom, VoiceOver, en-têtes déployés, navigateurs ; bouton menu mobile sans JS ? | Livré — contrôles locaux et headers antérieurs, VoiceOver/déploiement ouverts |
-| 4.6 | Import 1.x sur copie d’un vrai store 1.x | En cours — format SQLite 1.x à prendre en charge, copie réelle attendue |
+| 4.6 | Import 1.x sur copie d’un vrai store 1.x | Lecteur et fixtures livrés — copie réelle non fournie |
 
 ## Journal
 
@@ -93,21 +93,39 @@
 - Preuve `SiteAccessibilitySmoke.md`, deux rapports JSON datés ; NFR-11 PARTIEL.
 - `make qualify` PASS code 0, `git diff --check` PASS.
 
+### 28-09-2026 — 4.6 livré, bilan P4
+
+- **Réalisation :** lecture d’une copie SQLite 1.x autonome, versions 1–4 reconnues d’après
+  le code publié ; exclusions uniquement. Pas de lecture UserDefaults/historique personnel.
+  JSON v1 conservé ; aperçu hors MainActor, accès security-scoped jusqu’à la fin de lecture.
+- **Sûreté :** descripteur read-only/NOFOLLOW, double fstat, snapshot privé immutable,
+  quick_check, allowlist, bornes 64 MiB/1 000 exclusions, refus WAL/journal et entrées invalides.
+  Nettoyage limité au snapshot créé ; exception textuelle étroite audit relue indépendamment.
+- **Preuves :** `Documentation/Evidence/P4-46-import-2026-09-28.md` ; tests Persistence
+  ciblés PASS (39 tests), conservation source/rollback/reprise/idempotence ; quatre captures
+  Réglages FR/EN clair/sombre ouvertes et relues, sans déplacement confirmé dans l’app packagée.
+- **Copie réelle :** demandée, non fournie ; recette réelle NON LANCÉE. FR-20 PARTIEL.
+- **Qualification finale :** `make qualify` PASS code 0
+  (`/tmp/coretend-p4-46-qualify.log`) ; `make traceability` et `git diff --check` PASS. Registre 3/78 Must et 0/11 Should
+  VÉRIFIÉ, aucun statut promu sans observation détaillée du mainteneur.
+
 ## Point d’arrêt
 
-**4.5 livré ; 4.6 en cours : ajouter lecture sûre du format SQLite 1.x reconnu.**
+**4.1–4.6 : travaux réalisables livrés ; G4 non passée faute de preuves restantes.**
 
-Puis qualifier et journaliser 4.4, 4.5 (site), 4.6 (import). Aucun push/P5 autorisé.
-Les hôtes et observations humaines manquants ne sont pas remplacés par une validation générale.
+Aucun lot de code ouvert. Fournir les observations/copies/hôtes manquants pour compléter
+les preuves ci-dessous, puis décider G4. Aucun push/P5 autorisé.
 
-## Problèmes ouverts
+## Preuves restantes pour G4
 
-- NFR-07 : VoiceOver, zoom/texte agrandi, contraste de tous les états et comportement réel
-  Reduce Motion/Transparency non qualifiés.
-- Escape n’atteignait pas l’app sur cet hôte lors des essais précédents (Reference) ;
-  ne pas modifier les raccourcis ou préférences système pour contourner ce problème.
+| Lot | Limite conservée | Reprise |
+|---|---|---|
+| 4.1 | VoiceOver parlé, agrandissement, contraste de tous états, réglages réels Reduce Motion/Transparency non observés | Recette destination par destination dans Accessibility.md |
+| 4.2 | Seul MacBook Air M1/macOS 27 ; macOS 14 et second Mac indisponibles | Qualification isolée sur ces hôtes quand disponibles |
+| 4.3 | Corpus réel, latence UI, fin scan natif, CPU instantanée au repos non qualifiés | Mesurer avec protocole identique ; budgets locaux acceptés conservés |
+| 4.4 | Agent indépendant, aucun second humain ; race résiduelle validation/API Trash | Preuve limitée explicite dans P4-44-review ; aucune mutation réelle à tenter pour la revue |
+| 4.5 | VoiceOver/Safari complet, headers de la livraison Next déployée non qualifiés | Observation humaine et contrôle après déploiement explicitement autorisé |
+| 4.6 | Copie réelle 1.x non fournie, parcours natif complet non qualifié | Copie déjà créée et autorisée, import uniquement dans fixture temporaire |
 
-- NFR-08 : seul MacBook Air M1/macOS 27 disponible (confirmation mainteneur) ;
-  macOS 14 et second Mac NON LANCÉS.
-
-- NFR-09 : corpus réel, latence UI, fin de scan natif et CPU instantanée au repos non qualifiés.
+Escape n’atteignait pas l’app sur cet hôte lors d’essais précédents (Reference) ; aucun
+raccourci ou réglage système modifié pour contourner ce problème.

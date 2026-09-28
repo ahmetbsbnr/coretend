@@ -446,3 +446,18 @@
 - Headers publics présents sur une livraison antérieure ; déploiement Next et VoiceOver parlé
   restent ouverts. SiteAccessibilitySmoke et deux JSON datés, NFR-11 PARTIEL.
 - Qualification finale 4.5 `make qualify` PASS, code 0, diff PASS ; passage à 4.6.
+
+
+### P4 — 4.6 livré, bilan de qualification — 28-09-2026
+
+- Lecteur SQLite 1.x reconnu depuis contrat source publié : copie autonome, versions 1–4,
+  exclusions uniquement, snapshot privé immutable read-only, source intacte. JSON conservé.
+- Tests Persistence ciblés : 39 PASS ; conservation source, allowlist, idempotence,
+  rollback tardif et reprise. Quatre captures Settings FR/EN clair/sombre relues.
+- Revue indépendante finale : aucun défaut concret restant ; audit PASS avec exception
+  strictement limitée au nettoyage du snapshot créé. Preuve P4-46-import-2026-09-28.md.
+- Travaux réalisables 4.1–4.6 livrés ; copie réelle non fournie, aucune donnée personnelle lue.
+  G4 non passée : hôtes manquants, observations humaines, mesures natives et déploiement Next
+  restent ouverts. Aucun statut promu, aucun push/P5. Qualification finale dans journal P4.
+- `make qualify` final PASS code 0 (`/tmp/coretend-p4-46-qualify.log`),
+  `make traceability` et `git diff --check` PASS.

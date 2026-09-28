@@ -18,6 +18,7 @@ struct SettingsView: View {
     @State private var chooseLegacy = false
     @State private var legacyPreview: LegacyPreferencesPreview?
     @State private var importing = false
+    @State private var readingLegacy = false
     @State private var exporting = false
     @State private var diagnosticPreview = false
     @State private var exportAfterPreview = false
@@ -90,10 +91,10 @@ struct SettingsView: View {
                         }
                     }
                     section(french ? "Données héritées" : "Legacy data",
-                            help: french ? "Import sur demande des préférences 1.x reconnues. Le fichier source reste intact." : "Opt-in import for recognized 1.x preferences. The source file remains unchanged.") {
-                        Button(importing ? (french ? "Import…" : "Importing…") : (french ? "Choisir le fichier d’origine…" : "Choose source file…")) { chooseLegacy = true }
+                            help: french ? "Copie SQLite 1.x : exclusions uniquement. JSON v1 : exclusions et langue. Le fichier source reste intact." : "SQLite 1.x copy: exclusions only. JSON v1: exclusions and language. The source file remains unchanged.") {
+                        Button(readingLegacy ? (french ? "Lecture…" : "Reading…") : importing ? (french ? "Import…" : "Importing…") : (french ? "Choisir une copie 1.x…" : "Choose a 1.x copy…")) { chooseLegacy = true }
                             .buttonStyle(.serre(.secondary))
-                            .disabled(importing)
+                            .disabled(importing || readingLegacy)
                     }
                     section(french ? "Conservation des données" : "Data retention") {
                         note(french ? "L’activité reste dans la base locale jusqu’à son effacement explicite dans Historique. Les préférences et exclusions restent jusqu’à leur modification ou au retrait de la base." : "Activity stays in the local database until you explicitly clear it in Record. Preferences and exclusions remain until changed or the database is removed.")
@@ -136,12 +137,21 @@ struct SettingsView: View {
             guard case .success(let urls) = result, let url = urls.first else { return }
             Task { await addExclusion(url) }
         }
-        .fileImporter(isPresented: $chooseLegacy, allowedContentTypes: [.json], allowsMultipleSelection: false) { result in
+        .fileImporter(isPresented: $chooseLegacy, allowedContentTypes: [.json, UTType(filenameExtension: "sqlite") ?? .data], allowsMultipleSelection: false) { result in
             guard case .success(let urls) = result, let url = urls.first else { return }
             let hasScope = url.startAccessingSecurityScopedResource()
-            defer { if hasScope { url.stopAccessingSecurityScopedResource() } }
-            do { legacyPreview = try LegacyPreferencesImporter().preview(sourceURL: url) }
-            catch { status = french ? "Format non reconnu ; aucune donnée importée." : "Unrecognized format; no data imported." }
+            readingLegacy = true
+            Task {
+                defer { readingLegacy = false; if hasScope { url.stopAccessingSecurityScopedResource() } }
+                do {
+                    legacyPreview = try await Task.detached(priority: .utility) {
+                        try LegacyPreferencesImporter().preview(sourceURL: url)
+                    }.value
+                } catch {
+                    status = french ? "Copie non reconnue ou incomplète ; aucune donnée importée."
+                                    : "Unrecognized or incomplete copy; no data imported."
+                }
+            }
         }
         .confirmationDialog(french ? "Importer ces préférences ?" : "Import these preferences?", isPresented: Binding(get: { legacyPreview != nil }, set: { if !$0 { legacyPreview = nil } }), titleVisibility: .visible) {
             Button(french ? "Importer les préférences" : "Import preferences") { Task { await importLegacy() } }

@@ -104,12 +104,13 @@ macOS sur un dossier jetable créé pour l’occasion**, fait par le mainteneur.
   budgets fixés (NFR-09). Mesures locales et budgets proposés le 28-09 dans
   `Documentation/Evidence/PerformanceBaseline.md` : CLI wall/CPU 2,2/2,3 s, RSS CLI 165 MiB,
   fenêtre app 1,0 s, RSS app 200 MiB (alertes sur protocole identique, 2× références).
-  Recette en attente ; fin de scan natif/latence UI/corpus réel restent ouverts, NFR-09 PARTIEL.
-- [ ] **4.4 Revue indépendante** architecture et sûreté, dans un contexte neuf, consignée ;
-  absence de second relecteur humain déclarée (NFR-10, NFR-12).
+  Budgets acceptés le 28-09 ; fin de scan natif/latence UI/corpus réel restent ouverts, NFR-09 PARTIEL.
+- [x] **4.4 Revue indépendante** architecture et sûreté, dans un contexte neuf, consignée ;
+  absence de second relecteur humain déclarée (NFR-10, NFR-12). Revue et correctifs livrés le 28-09.
 - [ ] **4.5 Site** : zoom réel, VoiceOver, en-têtes déployés, navigateurs (NFR-11) ; décider
-  si le site garde un bouton de menu mobile (sans JavaScript).
-- [ ] **4.6 Import de données 1.x** sur une copie réelle d’un store 1.x, jamais l’original (FR-20).
+  si le site garde un bouton de menu mobile (sans JavaScript). Menu visible sans JS conservé ;
+  Chrome zoom 200 % et WebKit 100/200 % PASS ; VoiceOver et headers Next déployés non qualifiés.
+- [ ] **4.6 Import de données 1.x** sur une copie réelle d’un store 1.x, jamais l’original (FR-20). Lecteur SQLite 1.x et fixtures livrés ; copie réelle non fournie.
 
 ### P5 — Release 2.0 (1 semaine) — gate G5, chaque étape sur autorisation
 
