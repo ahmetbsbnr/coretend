@@ -13,7 +13,7 @@
 | U3 | Vue d'ensemble « tableau de serre » | En partie (`eddb70d6` : activité avec contexte) |
 | U4 | Applications (taille, tri, détail, échecs expliqués) | Livré (`cb338241`) |
 | U5 | Accueil | Livré (`035207c2`) |
-| U6 | Réglages en fenêtre dédiée | À faire |
+| U6 | Réglages en onglets | Livré (`b6254f74`) — feuille à onglets, pas de scène séparée (état partagé) |
 | U7 | Modules enrichis | À faire |
 | U8 | Qualification et retest M5 | À faire |
 | U9 | La serre vivante (thème complet, motions) | En cours — décision 0003 acceptée ; socle + scène Vue d'ensemble (`af7ba932`) |
