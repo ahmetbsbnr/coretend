@@ -489,6 +489,15 @@ final class AppShellTests: XCTestCase {
         }
     }
 
+    func testWelcomePagesExistInBothLanguages() {
+        for key in ["onboarding.lede", "onboarding.how", "onboarding.never.title", "onboarding.never1",
+                    "onboarding.never2", "onboarding.never3", "onboarding.next", "onboarding.back"] {
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: false), key, key)
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: true), key, key)
+            XCTAssertNotEqual(ProductCopy.value(for: key, french: false), ProductCopy.value(for: key, french: true), key)
+        }
+    }
+
     func testCrashReportRuleNamesBothExtensionsItReads() {
         XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: false).contains(".ips"))
         XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: true).contains(".ips"))
