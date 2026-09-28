@@ -15,7 +15,7 @@
 | 3.4 | Doublons et images proches | Accepté 28-09-2026 (`7f4b9fd7`) |
 | 3.5 | Applications | Accepté 28-09-2026 (`bb66dc75`, `2663f55d`) |
 | 3.6 | Intégrité | Accepté 28-09-2026 (`5430106d`) |
-| 3.7 | Performances | À faire |
+| 3.7 | Performances | Livré — recette en attente (`52d8fd16`) |
 | 3.8 | Historique | À faire |
 | 3.9 | Réglages, ⌘K, barre de menus, langue, import ancien | À faire |
 | 3.10 | Site : pages publiques en Serre, captures réelles de l’app, contenu pour une sortie publique (correction G2) | À faire |
@@ -162,11 +162,24 @@
 - **Recette 3.6 (mainteneur) :** étiqueter une app téléchargée (souvent en quarantaine) et une app
   système ; lire vos LaunchAgents. **Acceptée le 28-09-2026** ; registre : preuves datées, `PARTIEL`.
 
+### 28-09-2026 — lot 3.7, Performances
+
+- **Fait :** `52d8fd16` — mesures en parcelles, chiffres Iowan (`CoreTendTypography.figure`), feuille de
+  ton pour l’état thermique, valeurs dans la langue de l’app ; « la sève » : courbe de charge
+  tracée de gauche à droite à l’apparition (`TraceReveal`), dernier relevé qui pulse une fois
+  (`OncePulse`) ; aucune mesure ni animation au repos (NFR-09) ; bandeaux Serre ; copie « / »
+  corrigée ; test logo isolé sur le thread principal (avertissements).
+- **Vérifié :** `make qualify` PASS ; app fixture : parcelles, courbe après 4 actualisations,
+  pulsation vue une fois puis disparue.
+- **Non vérifié :** Reduce Motion ; VoiceOver.
+- **Recette 3.7 (mainteneur) :** ouvrir Performances, actualiser plusieurs fois, regarder la courbe
+  se tracer et le dernier point pulser ; effacer les relevés (Entrée annule).
+
 ## Point d’arrêt
 
-- 3.6 accepté. Lot en cours **3.7 — Performances** (« la sève ») : courbe de
-  sève tracée de gauche à droite à l’apparition, nouveau point qui pulse une fois, mesure
-  seulement (NFR-09).
+- 3.7 livré, recette en attente. Prochain lot **3.8 — Historique** (« l’herbier ») : entrées
+  groupées en pages par jour, qui se pressent en place (scale 1,02 → 1, 200 ms), export,
+  effacement confirmé.
 - 3.2 et 3.3 : recette explicite à obtenir avant de passer leurs lignes à `VÉRIFIÉ`.
 
 ## Problèmes ouverts
