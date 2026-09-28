@@ -1,0 +1,231 @@
+{
+  "source_commit": "1c8b8c0854a410171cac45efd09bc9b43ddea77f",
+  "method": "CGWindow layer0 >200x200 polling with helper overhead; window existence only; ps lifetime CPU",
+  "samples": [
+    {
+      "window_detected_s": 0.4579870000015944,
+      "samples": [
+        {
+          "ps_lifetime_cpu_percent": 50.4,
+          "rss_mib": 98.609375
+        },
+        {
+          "ps_lifetime_cpu_percent": 33.9,
+          "rss_mib": 98.625
+        },
+        {
+          "ps_lifetime_cpu_percent": 27.4,
+          "rss_mib": 98.625
+        },
+        {
+          "ps_lifetime_cpu_percent": 8.4,
+          "rss_mib": 98.625
+        },
+        {
+          "ps_lifetime_cpu_percent": 1.2,
+          "rss_mib": 98.625
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.1,
+          "rss_mib": 98.625
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 98.625
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 98.625
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 98.625
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 98.625
+        }
+      ]
+    },
+    {
+      "window_detected_s": 0.40719075000379235,
+      "samples": [
+        {
+          "ps_lifetime_cpu_percent": 47.2,
+          "rss_mib": 96.671875
+        },
+        {
+          "ps_lifetime_cpu_percent": 39.5,
+          "rss_mib": 96.6875
+        },
+        {
+          "ps_lifetime_cpu_percent": 26.2,
+          "rss_mib": 96.6875
+        },
+        {
+          "ps_lifetime_cpu_percent": 9.3,
+          "rss_mib": 96.6875
+        },
+        {
+          "ps_lifetime_cpu_percent": 1.3,
+          "rss_mib": 96.6875
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.1,
+          "rss_mib": 96.6875
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 96.6875
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 96.6875
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 96.6875
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 91.953125
+        }
+      ]
+    },
+    {
+      "window_detected_s": 0.4801357500036829,
+      "samples": [
+        {
+          "ps_lifetime_cpu_percent": 35.0,
+          "rss_mib": 96.703125
+        },
+        {
+          "ps_lifetime_cpu_percent": 40.6,
+          "rss_mib": 96.734375
+        },
+        {
+          "ps_lifetime_cpu_percent": 24.8,
+          "rss_mib": 96.734375
+        },
+        {
+          "ps_lifetime_cpu_percent": 4.2,
+          "rss_mib": 96.734375
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.6,
+          "rss_mib": 96.734375
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 96.734375
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 96.734375
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 96.734375
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 96.734375
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 96.6875
+        }
+      ]
+    },
+    {
+      "window_detected_s": 0.46903362499870127,
+      "samples": [
+        {
+          "ps_lifetime_cpu_percent": 43.4,
+          "rss_mib": 96.53125
+        },
+        {
+          "ps_lifetime_cpu_percent": 38.8,
+          "rss_mib": 96.546875
+        },
+        {
+          "ps_lifetime_cpu_percent": 24.7,
+          "rss_mib": 96.546875
+        },
+        {
+          "ps_lifetime_cpu_percent": 4.5,
+          "rss_mib": 96.546875
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.6,
+          "rss_mib": 96.546875
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 96.546875
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 96.546875
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 96.546875
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 96.546875
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 96.40625
+        }
+      ]
+    },
+    {
+      "window_detected_s": 0.4747195419986383,
+      "samples": [
+        {
+          "ps_lifetime_cpu_percent": 44.2,
+          "rss_mib": 96.828125
+        },
+        {
+          "ps_lifetime_cpu_percent": 36.8,
+          "rss_mib": 96.84375
+        },
+        {
+          "ps_lifetime_cpu_percent": 23.7,
+          "rss_mib": 96.84375
+        },
+        {
+          "ps_lifetime_cpu_percent": 4.0,
+          "rss_mib": 96.84375
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.6,
+          "rss_mib": 96.84375
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 96.84375
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 96.84375
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 96.84375
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 96.84375
+        },
+        {
+          "ps_lifetime_cpu_percent": 0.0,
+          "rss_mib": 96.703125
+        }
+      ]
+    }
+  ]
+}

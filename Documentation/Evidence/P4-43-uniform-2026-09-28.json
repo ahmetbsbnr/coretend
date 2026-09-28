@@ -1,0 +1,46 @@
+{
+  "recorded_at_utc": "2026-09-28T10:12:17.160197+00:00",
+  "source_commit": "1c8b8c0854a410171cac45efd09bc9b43ddea77f",
+  "benchmark_modified": true,
+  "host": {
+    "architecture": "arm64",
+    "macos": "27.0"
+  },
+  "profile": "uniform",
+  "files": 10000,
+  "directories": 100,
+  "logical_bytes": 184320000,
+  "allocated_bytes": 184320000,
+  "samples": [
+    {
+      "wall_s": 0.8688659159961389,
+      "cpu_s": 0.947408,
+      "peak_rss_mib": 74.078125
+    },
+    {
+      "wall_s": 0.8771084159961902,
+      "cpu_s": 0.939648,
+      "peak_rss_mib": 74.078125
+    },
+    {
+      "wall_s": 0.8669538750036736,
+      "cpu_s": 0.9416499999999999,
+      "peak_rss_mib": 74.078125
+    },
+    {
+      "wall_s": 0.8691475410014391,
+      "cpu_s": 0.940094,
+      "peak_rss_mib": 74.15625
+    },
+    {
+      "wall_s": 0.8780973749962868,
+      "cpu_s": 0.9417949999999999,
+      "peak_rss_mib": 74.078125
+    }
+  ],
+  "warm_median": {
+    "wall_s": 0.8731279784988146,
+    "cpu_s": 0.9408719999999999,
+    "peak_rss_mib": 74.078125
+  }
+}

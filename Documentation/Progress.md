@@ -409,3 +409,18 @@
 - macOS 14 et second Mac NON LANCÉS ; NFR-08 PARTIEL. Résultat limité de 4.2 à accepter
   avant 4.3 ; G4 non passée.
 - `make qualify` PASS (code 0), `make traceability` et `git diff --check` PASS.
+
+
+### P4 — 4.2 accepté avec réserve, lot 4.3 livré — 28-09-2026
+
+- Mainteneur : « continue » après le résultat limité de 4.2 ; réserve des hôtes conservée.
+- Benchmarks CLI uniform/mixed reproductibles et JSON, sonde de fenêtre app en cinq fixtures.
+  Médians chauds wall 0,873/1,069 s ; RSS maximale médiane 74,08/81,45 MiB.
+  Fenêtre app médiane 0,469 s, RSS maximum échantillonné 98,63 MiB.
+- Corpus varié synthétique documenté, cinq budgets locaux proposés après mesure (2× référence
+  arrondie). Données brutes et réserves dans PerformanceBaseline. Aucun code produit optimisé.
+- Explorer : progression jusqu’à 9 875 fichiers, puis erreur AX -10000 ; fin non observée.
+  Réessai resté à l’état initial, sélection non confirmée. Pas de preuve de temps total natif.
+- `make qualify` PASS (code 0) ; seuils et résultat limité soumis à recette. NFR-09 PARTIEL,
+  aucun statut promu ; arrêt avant 4.4, G4 non passée.
+- Vérification finale : `make qualify` code 0, `make traceability` et `git diff --check` PASS.

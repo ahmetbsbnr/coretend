@@ -7,12 +7,14 @@ en fixture, invariants et particularités de l’hôte :
 
 ## Où on en est
 
-- **Mis à jour :** 28-09-2026, 4.1 accepté ; 4.2 limité au seul hôte disponible.
+- **Mis à jour :** 28-09-2026, 4.2 accepté avec réserve ; 4.3 livré, recette en attente.
 - **Phase :** P4 — Qualification → [`P4-qualification.md`](Documentation/Passation/P4-qualification.md).
-- **Lot courant :** **4.2 livré sur l’hôte disponible ; recette limitée en attente**.
+- **Lot courant :** **4.3 livré — mesures locales et budgets proposés, recette en attente**.
 - **G3 :** passée ; aucune observation détaillée supplémentaire reçue, aucun statut du registre promu.
 - **Livraison P3 :** `fa9132ed` poussé, CI `qualify` PASS le 28-09 à 09:49:42 UTC.
 - **Registre :** Must `VÉRIFIÉ` **3 / 78** (Should 0 / 11), NFR-07 PARTIEL.
+- **4.3 :** uniform/mixed 0,873/1,069 s ; fenêtre app médiane 0,469 s.
+  `PerformanceBaseline.md` et trois JSON datés ; `make qualify` PASS. NFR-09 PARTIEL.
 - **Qualification 4.2 :** `make qualify`, `make traceability`, paquet et runtime isolé PASS.
 - **Qualification précédente 4.1 :** `make qualify` PASS (code 0), `git diff --check` PASS.
 - **4.1 accepté :** revue statique et protocole dans `Documentation/Evidence/Accessibility.md`.
@@ -20,14 +22,15 @@ en fixture, invariants et particularités de l’hôte :
 
 ## Prochaine action
 
-1. Faire accepter le résultat limité de 4.2 consigné dans `Documentation/ReleaseEvidence.md`.
-2. Après acceptation, commencer uniquement 4.3 (corpus, mesures et budgets).
-3. macOS 14 et second Mac restent à tester quand des hôtes seront disponibles ; G4 non passée.
+1. Faire accepter les mesures, limites et cinq seuils proposés du lot 4.3.
+2. Après recette, commencer uniquement 4.4 (revue indépendante architecture/sûreté).
+3. Garder ouvertes les preuves natives UI/scan et multi-hôtes manquantes ; G4 non passée.
 
 ## En attente du mainteneur
 
-- Recette 4.2 : preuves locales et réserve de compatibilité. Seul son MacBook Air M1 sous
-  macOS 27 est disponible ; NFR-08 reste PARTIEL. Aucun second hôte testé.
+- Recette 4.3 : corpus synthétique, mesures locales, cinq budgets proposés et limites NFR-09.
+  Fin de scan Explorer non observée (erreur AX), latence UI et corpus réel non qualifiés.
+- Réserve 4.2 acceptée : macOS 14 et second Mac non disponibles, NFR-08 PARTIEL.
 - 2 faux fichiers de test (`Safari-2026-09-23-101500.ips`, `…-24-…`, octets aléatoires) sont dans
   sa Corbeille depuis l’incident du 28-09 ; à jeter par lui.
 - Optionnel : publier 1.0.3 depuis `fix/1.x-trash-sqlite` (P5, piste 1.x).
@@ -40,7 +43,7 @@ en fixture, invariants et particularités de l’hôte :
 | P1 Direction visuelle (G1) | [`P1-direction-visuelle.md`](Documentation/Passation/P1-direction-visuelle.md) | Terminée (27-09) |
 | P2 Fondations Serre (G2) | [`P2-fondations-interaction.md`](Documentation/Passation/P2-fondations-interaction.md) | Terminée (27-09) |
 | P3 Destinations (G3.x) | [`P3-destinations.md`](Documentation/Passation/P3-destinations.md) | Terminée — G3 acceptée (28-09) |
-| P4 Qualification (G4) | [`P4-qualification.md`](Documentation/Passation/P4-qualification.md) | En cours — 4.2 |
+| P4 Qualification (G4) | [`P4-qualification.md`](Documentation/Passation/P4-qualification.md) | En cours — 4.3 |
 | P5 Release 2.0 (G5) | [`P5-release.md`](Documentation/Passation/P5-release.md) | À faire |
 
 ## Références
