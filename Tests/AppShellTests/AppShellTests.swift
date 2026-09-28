@@ -504,6 +504,17 @@ final class AppShellTests: XCTestCase {
         XCTAssertNil(DuplicateSpace.recoverable(fileSize: nil, copies: 3))
     }
 
+    func testFolderPlotsGroupDeeperFilesUnderTheirSubfolder() {
+        let files: [(path: String, bytes: Int64?)] = [
+            ("/r/a.mov", 100), ("/r/Photos/1.jpg", 30), ("/r/Photos/2024/2.jpg", 20), ("/r/Docs/x.pdf", nil), ("/other/z", 999)]
+        let plots = FolderPlots.plots(files: files, under: "/r")
+        XCTAssertEqual(plots.map(\.path), ["/r/a.mov", "/r/Photos", "/r/Docs"])
+        XCTAssertEqual(plots.map(\.bytes), [100, 50, 0])
+        XCTAssertEqual(plots.map(\.isFolder), [false, true, true])
+        XCTAssertEqual(plots.first { $0.path == "/r/Photos" }?.files, 2)
+        XCTAssertEqual(FolderPlots.plots(files: files, under: "/r/Photos").map(\.path), ["/r/Photos/1.jpg", "/r/Photos/2024"])
+    }
+
     func testCrashReportRuleNamesBothExtensionsItReads() {
         XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: false).contains(".ips"))
         XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: true).contains(".ips"))

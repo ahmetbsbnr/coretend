@@ -64,3 +64,29 @@ public enum DuplicateSpace {
         return fileSize * Int64(copies - 1)
     }
 }
+
+/// Groups measured files by the entry directly under a folder: a file there is its own plot, a
+/// deeper file counts toward the subfolder that contains it. Only known sizes are counted.
+public enum FolderPlots {
+    public struct Plot: Equatable, Sendable {
+        public let path: String
+        public let bytes: Int64
+        public let isFolder: Bool
+        public let files: Int
+    }
+
+    public static func plots(files: [(path: String, bytes: Int64?)], under folder: String) -> [Plot] {
+        let base = folder.hasSuffix("/") ? folder : folder + "/"
+        var totals: [String: (bytes: Int64, folder: Bool, files: Int)] = [:]
+        for file in files where file.path.hasPrefix(base) {
+            let rest = file.path.dropFirst(base.count)
+            guard let first = rest.split(separator: "/", omittingEmptySubsequences: true).first else { continue }
+            let isFolder = rest.contains("/")
+            let key = base + first
+            let current = totals[key] ?? (0, isFolder, 0)
+            totals[key] = (current.bytes + max(file.bytes ?? 0, 0), current.folder || isFolder, current.files + 1)
+        }
+        return totals.map { Plot(path: $0.key, bytes: $0.value.bytes, isFolder: $0.value.folder, files: $0.value.files) }
+            .sorted { $0.bytes == $1.bytes ? $0.path < $1.path : $0.bytes > $1.bytes }
+    }
+}
