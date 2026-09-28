@@ -2,7 +2,7 @@
 
 **Objectif :** appliquer `Documentation/Project/Upgrade-plan-2026-09-28.md` avant la release 2.0.
 **Gate :** G6 — retest du mainteneur sur le M5 avec un nouveau build notarisé.
-**Statut de la phase :** En cours depuis le 28-09-2026.
+**Statut de la phase :** Terminée — G6 acceptée le 28-09-2026.
 
 ## Lots
 
@@ -15,7 +15,7 @@
 | U5 | Accueil | Livré (`035207c2`) |
 | U6 | Réglages en onglets | Livré (`b6254f74`) — feuille à onglets, pas de scène séparée (état partagé) |
 | U7 | Modules enrichis | Livré en grande partie : Doublons/Nettoyage espace (`dfee09b8`), Performances mémoire, Explorer sous-dossiers (`fece24bd`), Intégrité pépinière (`3a7cf47a`) ; Historique : recherche existante suffit |
-| U8 | Qualification et retest M5 | Build notarisé livré (2.0.0-beta.1) — retest du mainteneur en attente |
+| U8 | Qualification et retest M5 | Accepté 28-09-2026 (« tous les tests fonctionnent parfaitement ») |
 | U9 | La serre vivante (thème complet, motions) | Livré (dernier : vrille de page `f9d645bd`, non vue à l'écran) |
 
 ## Journal
@@ -44,10 +44,7 @@
 
 ## Point d'arrêt
 
-- U1–U8 livrés. **G6 : retest du mainteneur** sur son Mac et le M5 avec
-  `CoreTend-2.0.0-beta.1.zip` (protocole `Documentation/Evidence/P4-42-second-mac-protocol.md`).
-- U9 : vrille de page à vérifier à l'écran (écran changé en session).
-- Ensuite : décision G4 (réserves) et P5 (release publique) sur accord explicite.
+- P6 terminée. Suite : `Documentation/Release/2.0-release-checklist.md` (décisions A, puis B–E).
 
 ## Problèmes ouverts
 
