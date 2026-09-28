@@ -10,7 +10,7 @@
 | Lot | Intitulé | Statut |
 |---|---|---|
 | 3.1 | Vue d’ensemble + premier lancement | Accepté 27-09-2026 (`6f66447a`) |
-| 3.2 | Nettoyage (inclut un vrai passage par la Corbeille sur dossier jetable, fait par le mainteneur) | En cours |
+| 3.2 | Nettoyage (inclut un vrai passage par la Corbeille sur dossier jetable, fait par le mainteneur) | Livré — recette en attente (`a76d15b7`, `a874f4f4`) |
 | 3.3 | Explorer | À faire |
 | 3.4 | Doublons et images proches | À faire |
 | 3.5 | Applications | À faire |
@@ -59,14 +59,29 @@
   mainteneur) ; déplacement réel vers la Corbeille et chute de feuille (jamais confirmés par
   l’agent) ; position du bandeau d’action sous la barre Corbeille ; VoiceOver.
 
+### 28-09-2026 — lot 3.2, fin de livraison
+
+- **Fait :** `a874f4f4` — accords au singulier (« 1 élément sélectionné », « Examiner 1 élément »,
+  « 1 déplacé vers la Corbeille »), `ProductFormat.items` / `frenchPlural` testés.
+- **Vérifié :** `make qualify` PASS (après les ajustements de défilement et de hauteur de liste, et
+  après ce correctif). App fixture : bandeau d’action affiché sous la barre Corbeille après
+  Examiner → Annuler ; annulation journalisée.
+- **Non vérifié :** déplacement réel vers la Corbeille, chute de feuille, lignes restées en place
+  (à faire par le mainteneur) ; VoiceOver.
+- **Recette 3.2 (mainteneur) :** sur un dossier jetable `…/Library/Logs/DiagnosticReports` rempli de
+  faux `.ips` : choisir la règle, se tromper de dossier (bandeau + Choisir à nouveau), analyser
+  (racines, floraison), sélectionner 2–3 fichiers, Examiner, **Déplacer vers la Corbeille** :
+  chaque feuille tombe vers la Corbeille, le compteur monte, les fichiers sont dans la Corbeille
+  macOS. Optionnel : supprimer un fichier sélectionné dans le Finder avant de confirmer → sa ligne
+  reste avec contour rouge et la raison.
+
 ## Point d’arrêt
 
-- Lot **3.2 — Nettoyage** en cours, code commité (`a76d15b7`). Reprendre par : `make qualify` ; vérifier
-  en app fixture le bandeau d’action sous la barre Corbeille (sélection → Examiner → Annuler) ;
-  puis livrer pour recette. La recette inclut le vrai passage par la Corbeille sur un dossier
-  jetable, fait par le mainteneur (vérifier la chute de feuille et les lignes restées en place).
-- Fixture pratique : dossier `…/home/Library/Logs/DiagnosticReports` rempli de faux `.ips`/`.crash`
-  (la règle compare la fin du chemin).
+- 3.2 livré, recette du mainteneur en attente (vrai passage par la Corbeille). À l’acceptation :
+  registre (FR-05, FR-06, cleanup.*, safety.*, NFR-01, NFR-02 : preuves datées ; `VÉRIFIÉ`
+  seulement si la recette couvre tout le critère) et `Progress.md`.
+- Prochain lot **3.3 — Explorer** : parcelles par taille décroissante (`stagger`), racines
+  `ScanRoots` réutilisées, états Serre, déplacement avec `FallingLeaf`.
 - Non fait dans 3.2 : « nœud qui gonfle aux gros dossiers » (ScanCore ne remonte pas de taille par
   dossier pendant l’analyse).
 

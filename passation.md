@@ -9,7 +9,7 @@ en fixture, invariants et particularités de l’hôte :
 
 - **Mis à jour :** 27-09-2026, fin de session.
 - **Phase :** P3 — Destinations → [`P3-destinations.md`](Documentation/Passation/P3-destinations.md)
-- **Lot courant :** 3.2 (Nettoyage) **en cours**, code commité `a76d15b7` ; reprendre par `make qualify` puis livraison pour recette (voir Point d’arrêt de P3).
+- **Lot courant :** 3.2 (Nettoyage) **livré, recette en attente** (`a76d15b7`, `a874f4f4`) ; prochain : 3.3 (Explorer).
 - **Branche :** `next`, en avance sur `origin/next` (non poussé ; push sur demande du mainteneur).
 - **Registre :** Must `VÉRIFIÉ` **2 / 78** (Should 0 / 11). Source : `Documentation/Traceability.csv`.
 - **Apparence :** Serre en place : couleurs, typo, logo, icônes, composants, barre latérale et
@@ -22,6 +22,7 @@ en fixture, invariants et particularités de l’hôte :
 
 ## En attente du mainteneur
 
+- Recette 3.2 : Nettoyage, avec un vrai passage par la Corbeille sur un dossier jetable.
 - Optionnel : publier 1.0.3 depuis `fix/1.x-trash-sqlite` (P5, piste 1.x).
 
 ## Phases
