@@ -118,6 +118,7 @@ COPY = {
             "install_title": "Install",
             "install": [
                 ("Direct download", "Unzip the notarized archive and move CoreTend into Applications."),
+                ("Homebrew", "brew install --cask ahmetbsbnr/coretend/coretend"),
                 ("Check the file", "Compare the SHA-256 of what you downloaded with the one shown here."),
             ],
             "new_title": "New in 2.0",
@@ -216,6 +217,7 @@ COPY = {
             "install_title": "Installer",
             "install": [
                 ("Téléchargement direct", "Décompressez l’archive notarisée et placez CoreTend dans Applications."),
+                ("Homebrew", "brew install --cask ahmetbsbnr/coretend/coretend"),
                 ("Vérifier le fichier", "Comparez l’empreinte SHA-256 du fichier téléchargé avec celle affichée ici."),
             ],
             "new_title": "Nouveautés de la 2.0",
