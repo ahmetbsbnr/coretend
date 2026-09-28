@@ -156,3 +156,20 @@ public enum ApplicationFolders {
         }
     }
 }
+
+/// The disk space an app bundle takes: allocated sizes of its files, read without changing them,
+/// symbolic links not followed. Nil when the bundle cannot be read.
+public enum ApplicationSizer {
+    public static func allocatedSize(of bundle: URL) -> Int64? {
+        let keys: [URLResourceKey] = [.totalFileAllocatedSizeKey, .fileAllocatedSizeKey, .isSymbolicLinkKey, .isRegularFileKey]
+        guard let walker = FileManager.default.enumerator(at: bundle, includingPropertiesForKeys: keys, options: [],
+                                                          errorHandler: { _, _ in true }) else { return nil }
+        var total: Int64 = 0
+        for case let file as URL in walker {
+            guard let values = try? file.resourceValues(forKeys: Set(keys)), values.isSymbolicLink != true,
+                  values.isRegularFile == true else { continue }
+            total += Int64(values.totalFileAllocatedSize ?? values.fileAllocatedSize ?? 0)
+        }
+        return total
+    }
+}

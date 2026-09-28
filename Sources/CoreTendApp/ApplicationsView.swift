@@ -38,17 +38,28 @@ struct ApplicationsView: View {
     @State private var flight = LeafFlight()
     /// Changes once per inventory, so the rows appear once, one after another.
     @State private var plantingSeed = UUID()
+    /// Measured bundle sizes by app, filled in the background after the inventory.
+    @State private var sizes: [String: Int64] = [:]
+    @State private var sizing = false
+    @State private var sortMode = "name"
+    /// The app whose row is open with its actions.
+    @State private var expanded: String?
+    @State private var associationEvidence: [URL: AssociationEvidence] = [:]
 
     private var locked: Bool { scanning || removalBusy || removalReview != nil }
 
     private var visibleRecords: [ApplicationRecord] {
         let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !query.isEmpty else { return records }
-        return records.filter {
+        let found = query.isEmpty ? records : records.filter {
             $0.displayName.localizedStandardContains(query)
                 || $0.bundleIdentifier.localizedStandardContains(query)
                 || $0.url.path.localizedStandardContains(query)
                 || ($0.version?.localizedStandardContains(query) ?? false)
+        }
+        switch sortMode {
+        case "size": return found.sorted { (sizes[$0.id] ?? -1) > (sizes[$1.id] ?? -1) }
+        case "version": return found.sorted { ($0.version ?? "").localizedStandardCompare($1.version ?? "") == .orderedDescending }
+        default: return found.sorted { $0.displayName.localizedStandardCompare($1.displayName) == .orderedAscending }
         }
     }
 
@@ -200,6 +211,21 @@ struct ApplicationsView: View {
             .padding(.horizontal, 12).padding(.vertical, 9)
             .background(Palette.raisedSurface.color, in: LeafCorner.control.shape)
             .overlay(LeafCorner.control.shape.strokeBorder(searchText.isEmpty ? Palette.strongSeparator.color : Palette.accent.color, lineWidth: 1))
+            HStack(spacing: 12) {
+                Picker(copy("apps.sort"), selection: $sortMode) {
+                    Text(copy("apps.sort.name")).tag("name")
+                    Text(copy("apps.sort.size")).tag("size")
+                    Text(copy("apps.sort.version")).tag("version")
+                }
+                .pickerStyle(.menu).fixedSize().tint(Palette.accent.color).font(CoreTendTypography.secondary)
+                Spacer()
+                if sizing {
+                    Text(copy("apps.sizing")).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                } else if !sizes.isEmpty {
+                    Text("\(copy("apps.size.total")) \(ProductFormat.bytes(sizes.values.reduce(0, +), french: french))")
+                        .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                }
+            }
             if visibleRecords.isEmpty {
                 SerreEmptyState(title: copy("apps.noMatch"), message: copy("apps.noMatch.help"))
             } else {
@@ -242,31 +268,29 @@ struct ApplicationsView: View {
                     .textSelection(.enabled)
                 updateSourceView(for: app)
                 if let failure {
-                    Text(copy(failure)).font(CoreTendTypography.caption).foregroundStyle(Palette.danger.color)
+                    // An app macOS refuses to move is usually owned by the system or an administrator.
+                    Text(copy(failure == "action.failure.trash" ? "apps.failure.protected" : failure))
+                        .font(CoreTendTypography.caption).foregroundStyle(Palette.danger.color)
                         .fixedSize(horizontal: false, vertical: true)
                 }
             }
             Spacer(minLength: 8)
-            HStack(spacing: 6) {
-                Button {
-                    associationApp = app
-                    associationResults = []
-                    associationStatus = nil
-                    selectingAssociationFolder = true
-                } label: {
-                    Label { Text(copy("apps.associated")) } icon: { Image(systemName: "doc.text.magnifyingglass") }
-                }
-                .buttonStyle(.serre(.icon))
-                .disabled(locked)
-                .accessibilityHint(french ? "Choisissez un dossier précis. Aucun fichier ne sera modifié et aucune attribution ne sera déduite." : "Choose a specific folder. No files will be changed and ownership will not be inferred.")
-                Button { Task { await prepareRemoval(app) } } label: {
-                    Label { Text(copy("apps.trash")) } icon: { Image(systemName: "trash") }
-                }
-                .buttonStyle(.serre(.icon))
-                .disabled(locked)
-                .accessibilityHint(french ? "Seul ce bundle sera proposé, après revue, revalidation et confirmation." : "Only this app bundle will be proposed, after review, revalidation, and confirmation.")
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(sizes[app.id].map { ProductFormat.bytes($0, french: french) } ?? "—")
+                    .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color).monospacedDigit()
+                Image(systemName: expanded == app.id ? "chevron.up" : "chevron.down")
+                    .font(.caption).foregroundStyle(Palette.tertiaryInk.color)
             }
-            .fixedSize()
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            withAnimation(reduceMotion ? nil : MotionCurve.sprout.animation(duration: 0.35)) {
+                expanded = expanded == app.id ? nil : app.id
+            }
+        }
+        .accessibilityAddTraits(.isButton)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if expanded == app.id { actions(app).transition(.opacity.combined(with: .move(edge: .top))) }
         }
         .padding(.vertical, 10)
         .overlay {
@@ -275,6 +299,38 @@ struct ApplicationsView: View {
         .leafFlightRow(app.url)
         .transition(reduceMotion ? .identity : .asymmetric(insertion: .identity, removal: .opacity.combined(with: .scale(scale: 0.6, anchor: .leading))))
         .accessibilityElement(children: .contain)
+    }
+
+    /// The open row's actions: files around it, show in Finder, move to the Trash.
+    private func actions(_ app: ApplicationRecord) -> some View {
+        HStack(spacing: 10) {
+            Button {
+                associationApp = app
+                associationResults = []
+                associationEvidence = [:]
+                associationStatus = nil
+                selectingAssociationFolder = true
+            } label: {
+                Label { Text(copy("apps.associated")) } icon: { Image(systemName: "doc.text.magnifyingglass") }
+            }
+            .buttonStyle(.serre(.secondary))
+            .disabled(locked)
+            .accessibilityHint(french ? "Choisissez un dossier précis. Aucun fichier ne sera modifié et aucune attribution ne sera déduite." : "Choose a specific folder. No files will be changed and ownership will not be inferred.")
+            Button {
+                NSWorkspace.shared.activateFileViewerSelecting([app.url])
+            } label: {
+                Label { Text(copy("apps.reveal")) } icon: { Image(systemName: "folder") }
+            }
+            .buttonStyle(.serre(.secondary))
+            Spacer()
+            Button { Task { await prepareRemoval(app) } } label: {
+                Label { Text(copy("apps.trash")) } icon: { Image(systemName: "trash") }
+            }
+            .buttonStyle(.serre(.secondary))
+            .disabled(locked)
+            .accessibilityHint(french ? "Seul ce bundle sera proposé, après revue, revalidation et confirmation." : "Only this app bundle will be proposed, after review, revalidation, and confirmation.")
+        }
+        .padding(.leading, 54).padding(.bottom, 10)
     }
 
     private func associations(_ app: ApplicationRecord) -> some View {
@@ -293,6 +349,9 @@ struct ApplicationsView: View {
                         RiskLeaf(.medium, size: 10)
                         Text(url.path).font(CoreTendTypography.caption).foregroundStyle(Palette.ink.color)
                             .lineLimit(1).truncationMode(.middle).textSelection(.enabled)
+                        Spacer(minLength: 6)
+                        Text(copy(associationEvidence[url] == .name ? "apps.evidence.name" : "apps.evidence.identifier"))
+                            .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                     }
                 }
                 if associationResults.isEmpty && associationStatus == nil {
@@ -430,7 +489,8 @@ struct ApplicationsView: View {
                 for try await event in LocalScanEngine().scan(request) {
                     try Task.checkCancellation()
                     if case .result(let item) = event {
-                        if ApplicationAssociationMatcher.matches(item.url, bundleIdentifier: app.bundleIdentifier) {
+                        if let evidence = ApplicationAssociationMatcher.evidence(item.url, bundleIdentifier: app.bundleIdentifier, displayName: app.displayName) {
+                            associationEvidence[item.url] = evidence
                             matches.append(item.url)
                         }
                     }
@@ -463,10 +523,25 @@ struct ApplicationsView: View {
             let report = await Task.detached(priority: .utility) { service.discover(in: root) }.value
             guard !Task.isCancelled else { return }
             records = report.applications
+            measureSizes(report.applications)
             plantingSeed = UUID()
             issues = report.issues
             if report.applications.isEmpty && report.issues.isEmpty { notice = nil }
             else if report.applications.isEmpty { notice = PageNotice(kind: .error, title: copy("apps.failed"), recovery: .chooseAgain) }
+        }
+    }
+
+    /// Bundle sizes, read in the background one app at a time; the list fills in as they come.
+    private func measureSizes(_ apps: [ApplicationRecord]) {
+        sizes = [:]
+        sizing = true
+        Task {
+            for app in apps {
+                let url = app.url
+                let size = await Task.detached(priority: .utility) { ApplicationSizer.allocatedSize(of: url) }.value
+                if let size { sizes[app.id] = size }
+            }
+            sizing = false
         }
     }
 
