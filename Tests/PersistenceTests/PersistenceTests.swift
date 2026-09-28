@@ -803,3 +803,117 @@ extension PersistenceTests {
         }
     }
 }
+
+private func legacySQLiteFixture(_ url: URL, versions: [Int] = [1, 2, 3, 4], extraSQL: String = "") throws {
+    var handle: OpaquePointer?
+    guard sqlite3_open(url.path, &handle) == SQLITE_OK else { throw LegacyImportError.invalidFormat }
+    defer { sqlite3_close(handle) }
+    let sql = """
+    CREATE TABLE schema_migrations(version INTEGER PRIMARY KEY, applied REAL NOT NULL);
+    CREATE TABLE exclusions(id INTEGER PRIMARY KEY AUTOINCREMENT, path TEXT NOT NULL UNIQUE, created REAL NOT NULL);
+    CREATE TABLE settings(key TEXT PRIMARY KEY, value TEXT NOT NULL);
+    CREATE TABLE activity(id INTEGER PRIMARY KEY, summary TEXT);
+    INSERT INTO exclusions(path, created) VALUES('/fixture/keep', 123);
+    INSERT INTO settings VALUES('securityProfile', 'strict');
+    INSERT INTO activity VALUES(1, 'must not import');
+    """ + versions.map { "INSERT INTO schema_migrations VALUES(\($0), 123);" }.joined() + extraSQL
+    guard sqlite3_exec(handle, sql, nil, nil, nil) == SQLITE_OK else { throw LegacyImportError.invalidFormat }
+}
+
+extension PersistenceTests {
+    func testLegacySQLiteCopyImportsOnlyExclusionsAndPreservesSource() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-legacy-sqlite-\(UUID())")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("selected-copy.sqlite")
+        try legacySQLiteFixture(source)
+        let bytes = try Data(contentsOf: source)
+        let attributes = try FileManager.default.attributesOfItem(atPath: source.path)
+        let importer = LegacyPreferencesImporter()
+        let preview = try importer.preview(sourceURL: source)
+        XCTAssertEqual(preview.excludedPaths, ["/fixture/keep"])
+        XCTAssertNil(preview.language)
+        let store = try SQLiteStore(url: root.appendingPathComponent("next.sqlite")); try await store.migrate()
+        try await store.saveLanguagePreference("en")
+        let first = try await importer.importCopy(preview, into: store)
+        let second = try await importer.importCopy(preview, into: store)
+        XCTAssertEqual(first, .imported); XCTAssertEqual(second, .alreadyImported)
+        let exclusions = try await store.exclusions()
+        let language = try await store.languagePreference()
+        let events = try await store.events()
+        XCTAssertEqual(exclusions, ["/fixture/keep"])
+        XCTAssertEqual(language, "en")
+        XCTAssertEqual(events.map(\.kind), [.migrationImported])
+        XCTAssertEqual(try Data(contentsOf: source), bytes)
+        let after = try FileManager.default.attributesOfItem(atPath: source.path)
+        XCTAssertEqual(attributes[.modificationDate] as? Date, after[.modificationDate] as? Date)
+        XCTAssertEqual(attributes[.posixPermissions] as? NSNumber, after[.posixPermissions] as? NSNumber)
+        for suffix in ["-wal", "-shm", "-journal"] {
+            XCTAssertFalse(FileManager.default.fileExists(atPath: source.path + suffix))
+        }
+    }
+
+    func testLegacySQLiteRejectsUnknownHistoryUnsafePathsAndIncompleteCopies() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-legacy-invalid-\(UUID())")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let importer = LegacyPreferencesImporter()
+        for (index, versions) in [[1], [1, 2], [1, 2, 3], [1, 2, 3, 4, 5], [1, 3]].enumerated() {
+            let source = root.appendingPathComponent("history-\(index).sqlite")
+            try legacySQLiteFixture(source, versions: versions)
+            if index < 3 { XCTAssertEqual(try importer.preview(sourceURL: source).excludedPaths, ["/fixture/keep"]) }
+            else { XCTAssertThrowsError(try importer.preview(sourceURL: source)) }
+        }
+        for (index, sql) in ["UPDATE exclusions SET path = '/fixture/../escape';",
+                             "UPDATE exclusions SET path = '/fixture/' || char(0) || 'hidden';",
+                             "DROP TABLE settings;"].enumerated() {
+            let source = root.appendingPathComponent("invalid-\(index).sqlite")
+            try legacySQLiteFixture(source, extraSQL: sql)
+            XCTAssertThrowsError(try importer.preview(sourceURL: source))
+        }
+        let excessive = root.appendingPathComponent("excessive.sqlite")
+        try legacySQLiteFixture(excessive, extraSQL: "WITH RECURSIVE n(x) AS (SELECT 1 UNION ALL SELECT x+1 FROM n WHERE x<1000) INSERT INTO exclusions(path, created) SELECT '/fixture/item-' || x, 123 FROM n;")
+        XCTAssertThrowsError(try importer.preview(sourceURL: excessive)) { error in
+            XCTAssertEqual(error as? LegacyImportError, .tooManyPaths)
+        }
+        let source = root.appendingPathComponent("sidecar.sqlite")
+        try legacySQLiteFixture(source)
+        let link = root.appendingPathComponent("link.sqlite")
+        try FileManager.default.createSymbolicLink(at: link, withDestinationURL: source)
+        XCTAssertThrowsError(try importer.preview(sourceURL: link))
+        try Data("fixture WAL".utf8).write(to: URL(fileURLWithPath: source.path + "-wal"))
+        XCTAssertThrowsError(try importer.preview(sourceURL: source))
+        let corrupt = root.appendingPathComponent("corrupt.sqlite")
+        try Data("SQLite format 3\0not a database".utf8).write(to: corrupt)
+        XCTAssertThrowsError(try importer.preview(sourceURL: corrupt))
+    }
+
+    func testLegacySQLiteTransactionRollsBackAndRetriesSamePreview() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-legacy-sqlite-rollback-\(UUID())")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("copy.sqlite")
+        try legacySQLiteFixture(source)
+        let bytes = try Data(contentsOf: source)
+        let importer = LegacyPreferencesImporter()
+        let preview = try importer.preview(sourceURL: source)
+        let database = root.appendingPathComponent("next.sqlite")
+        let store = try SQLiteStore(url: database); try await store.migrate()
+        var handle: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(database.path, &handle), SQLITE_OK)
+        defer { sqlite3_close(handle) }
+        XCTAssertEqual(sqlite3_exec(handle, "CREATE TRIGGER reject_marker BEFORE INSERT ON legacy_imports BEGIN SELECT RAISE(ABORT, 'fixture failure'); END", nil, nil, nil), SQLITE_OK)
+        do { _ = try await importer.importCopy(preview, into: store); XCTFail("failed marker must roll back") }
+        catch { XCTAssertEqual(error as? StoreError, .statement("fixture failure")) }
+        let failedPaths = try await store.exclusions()
+        let failedEvents = try await store.events()
+        XCTAssertEqual(failedPaths, []); XCTAssertEqual(failedEvents, [])
+        XCTAssertEqual(sqlite3_exec(handle, "DROP TRIGGER reject_marker", nil, nil, nil), SQLITE_OK)
+        let retry = try await importer.importCopy(preview, into: store)
+        let repeatImport = try await importer.importCopy(preview, into: store)
+        XCTAssertEqual(retry, .imported); XCTAssertEqual(repeatImport, .alreadyImported)
+        let events = try await store.events()
+        XCTAssertEqual(events.map(\.kind), [.migrationImported])
+        XCTAssertEqual(try Data(contentsOf: source), bytes)
+    }
+}

@@ -29,6 +29,17 @@ if scan_core_mutation_findings('open(url.path, O_RDONLY | O_NOFOLLOW | O_CLOEXEC
  errors.append('ScanCore mutation audit rejects its allowlisted read-only hashing open')
 for file in (root/'Sources').rglob('*.swift'):
  text=file.read_text()
+ # The import reader owns one freshly created private snapshot directory. Only its
+ # exact defer cleanup is exempt; arbitrary removals elsewhere remain forbidden.
+ if file.relative_to(root).as_posix() == 'Sources/Persistence/LegacyPreferencesImport.swift':
+  creation = r'''let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-legacy-snapshot-\(UUID())")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: false,
+                                                attributes: [.posixPermissions: 0o700])'''
+  cleanup = 'defer { try? FileManager.default.removeItem(at: root) }'
+  if text.count(creation) != 1 or text.count(cleanup) != 1 or creation + '\n        ' + cleanup not in text:
+   errors.append('legacy snapshot cleanup must follow exclusive private-directory creation')
+  else:
+   text = text.replace(cleanup, '', 1)
  for pattern in (r'FileManager\.(?:default\.)?removeItem', r'\bunlink\s*\(', r'FileManager\.(?:default\.)?moveItem', r'\.removeItem\s*\('):
   if re.search(pattern,text): errors.append(f'production mutation API in {file.relative_to(root)}: {pattern}')
 trash=[f for f in (root/'Sources').rglob('*.swift') if 'trashItem(' in f.read_text()]
@@ -68,4 +79,4 @@ for file in scan_core_sources:
  for pattern in scan_core_mutation_findings(text):
   errors.append(f'filesystem mutation API in ScanCore: {file.relative_to(root)}: {pattern}')
 if errors: print('\n'.join(errors)); raise SystemExit(1)
-print('Safety audit passed: app Trash boundary intact; no runtime permanent-removal API; local uninstall remains explicit and separate; no personal test paths, network client, or known telemetry SDK/import.')
+print('Safety audit passed: app Trash boundary intact; no arbitrary runtime permanent-removal API (private import snapshot cleanup only); local uninstall remains explicit and separate; no personal test paths, network client, or known telemetry SDK/import.')
