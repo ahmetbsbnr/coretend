@@ -77,6 +77,8 @@ struct CleanupView: View {
     @State private var rowFrames: [URL: CGRect] = [:]
     @State private var anchors: [String: CGRect] = [:]
     @State private var falling: [FallingToken] = []
+    /// Where the page should bring the reader next (the roots when a scan starts).
+    @State private var scrollTarget: String?
 
     private static let space = "cleanup"
 
@@ -87,11 +89,24 @@ struct CleanupView: View {
     private var locked: Bool { scanning || actionBusy || actionReview != nil }
 
     var body: some View {
+        ScrollViewReader { proxy in
+            content
+                .onChange(of: scrollTarget) { _, target in
+                    guard let target else { return }
+                    withAnimation(reduceMotion ? nil : MotionCurve.sap.animation(duration: MotionToken.grow.duration)) {
+                        proxy.scrollTo(target, anchor: .top)
+                    }
+                    scrollTarget = nil
+                }
+        }
+    }
+
+    private var content: some View {
         VStack(alignment: .leading, spacing: 20) {
             rules
             if let descriptor { expectedFolder(descriptor) }
             if let notice, !notice.nearActions { banner(notice) }
-            if let rootsPhase { roots(rootsPhase) }
+            if let rootsPhase { roots(rootsPhase).id("cleanup.roots") }
             if scanFoundNothing {
                 SerreEmptyState(title: copy("cleanup.none"), message: copy("cleanup.none.help"))
             }
@@ -297,7 +312,7 @@ struct CleanupView: View {
         .background(GeometryReader { proxy in
             Color.clear.preference(key: CleanupRowFrames.self, value: [item.url: proxy.frame(in: .named(Self.space))])
         })
-        .transition(reduceMotion ? .identity : .opacity.combined(with: .scale(scale: 0.96, anchor: .leading)))
+        .transition(reduceMotion ? .identity : .asymmetric(insertion: .identity, removal: .opacity.combined(with: .scale(scale: 0.6, anchor: .leading))))
         .accessibilityLabel(ProductCopy.scanResultAccessibilitySummary(
             name: item.url.lastPathComponent,
             source: descriptor.map { copy($0.titleKey) } ?? item.ruleID.rawValue,
@@ -326,6 +341,13 @@ struct CleanupView: View {
             }
             .padding(.horizontal, 12).padding(.vertical, 8)
             .background(Palette.raisedSurface.color, in: LeafCorner.control.shape)
+            // It takes each leaf with a small start.
+            .keyframeAnimator(initialValue: 1.0, trigger: reduceMotion ? 0 : movedInAction) { content, scale in
+                content.scaleEffect(scale)
+            } keyframes: { _ in
+                CubicKeyframe(1.12, duration: 0.1)
+                SpringKeyframe(1.0, duration: 0.3)
+            }
             .background(anchorReader("trash"))
             .accessibilityElement(children: .combine)
             .accessibilityLabel(movedInAction > 0 ? "\(copy("cleanup.moved")) : \(movedInAction)" : copy("cleanup.trash"))
@@ -372,6 +394,7 @@ struct CleanupView: View {
         results = []; selectedItems = []; failures = [:]; movedInAction = 0
         scanCompletedFiles = 0; notice = nil; scanFoundNothing = false
         scanning = true; rootsPhase = .reading
+        scrollTarget = "cleanup.roots"
         let acquiredScope = root.startAccessingSecurityScopedResource()
         task = Task {
             var rootFailure: String?
@@ -396,7 +419,10 @@ struct CleanupView: View {
                         } else {
                             rootsPhase = .finished
                             // Largest known allocation first; unknown sizes last, never guessed.
-                            results.sort { allocated($0) > allocated($1) }
+                            var still = Transaction()
+                            still.disablesAnimations = true
+                            // The order settles at once; only the roots and bloom move.
+                            withTransaction(still) { results.sort { allocated($0) > allocated($1) } }
                             if !partialFailures.isEmpty {
                                 notice = CleanupNotice(kind: .partial, title: copy("cleanup.partial"),
                                                        message: ProductCopy.scanPartialFailure(reasons: partialFailures, french: french))
@@ -511,24 +537,36 @@ struct CleanupView: View {
             selectedItems.remove(url)
             return
         }
-        if !reduceMotion, let frame = rowFrames[url], let trash = anchors["trash"] {
-            let list = anchors["list"] ?? frame
-            let start = CGPoint(x: frame.minX + 30, y: min(max(frame.midY, list.minY + 12), list.maxY - 12))
-            let token = FallingToken(from: start, to: CGPoint(x: trash.minX + 18, y: trash.midY))
-            falling.append(token)
-            Task { @MainActor in
-                try? await Task.sleep(for: .seconds(FallingLeaf.duration + 0.05))
-                falling.removeAll { $0.id == token.id }
-            }
-        }
-        withAnimation(reduceMotion ? nil : MotionCurve.retreat.animation(duration: 0.18)) {
+        let fell = dropLeaf(from: url)
+        withAnimation(reduceMotion ? nil : MotionCurve.retreat.animation(duration: 0.2)) {
             results.removeAll { $0.url == url }
             selectedItems.remove(url)
         }
-        withAnimation(reduceMotion ? nil : MotionCurve.sprout.animation(duration: 0.3).delay(FallingLeaf.duration * 0.8)) {
+        if fell {
+            // The Trash counts the file when its leaf lands.
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(FallingLeaf.duration))
+                withAnimation(MotionCurve.sprout.animation(duration: 0.3)) { movedInAction += 1 }
+            }
+        } else {
             movedInAction += 1
         }
         if paced && !reduceMotion { try? await Task.sleep(for: .milliseconds(90)) }
+    }
+
+    /// A leaf falls from the row of `url` to the Trash indicator.
+    @discardableResult @MainActor private func dropLeaf(from url: URL) -> Bool {
+        guard !reduceMotion, let frame = rowFrames[url], let trash = anchors["trash"] else { return false }
+        let list = anchors["list"] ?? frame
+        // From the file's name, not from the selection mark it would hide behind.
+        let start = CGPoint(x: frame.minX + 90, y: min(max(frame.midY, list.minY + 12), list.maxY - 12))
+        let token = FallingToken(from: start, to: CGPoint(x: trash.minX + 18, y: trash.midY))
+        falling.append(token)
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(FallingLeaf.duration + 0.05))
+            falling.removeAll { $0.id == token.id }
+        }
+        return true
     }
 
     private func cancelAction() {
