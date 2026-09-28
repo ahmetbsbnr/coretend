@@ -49,7 +49,6 @@ See what takes space, understand it, and prune only what you choose — every mo
 ## Install
 
 - **Download** `CoreTend-2.0.0-arm64.zip` (notarized) from [Releases](https://github.com/ahmetbsbnr/coretend/releases/latest), unzip it and move CoreTend into Applications.
-- **Homebrew:** `brew install --cask coretend`
 
 macOS 14 Sonoma or later, Apple silicon. English and French. CoreTend 2.0 replaces 1.x; your 1.x data are not touched and its preferences can be imported from Settings.
 

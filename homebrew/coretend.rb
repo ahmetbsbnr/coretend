@@ -2,7 +2,7 @@
 # SHA256SUMS (and in Website/release.json); until publication this file is not submitted anywhere.
 cask "coretend" do
   version "2.0.0"
-  sha256 "RELEASE_SHA256"
+  sha256 "3fd2548cf988fdecc0749f0c170764cccaf3541aa02c840c4e5c58adafcfefef"
 
   url "https://github.com/ahmetbsbnr/coretend/releases/download/v#{version}/CoreTend-#{version}-arm64.zip",
       verified: "github.com/ahmetbsbnr/coretend/"
