@@ -29,6 +29,16 @@ public enum ProductFormat {
         return value == 1 ? "file examined" : "files examined"
     }
 
+    /// A measured decimal with two fractional digits in the app's language.
+    public static func decimal(_ value: Double, french: Bool) -> String {
+        value.formatted(.number.precision(.fractionLength(2)).locale(Locale(identifier: french ? "fr_FR" : "en_US")))
+    }
+
+    /// A reading timestamp using the same compact date as the product's measurements.
+    public static func timestamp(_ date: Date, french: Bool) -> String {
+        date.formatted(.dateTime.day().month().hour().minute().locale(Locale(identifier: french ? "fr_FR" : "en_US")))
+    }
+
     public static func bytes(_ count: Int64, french: Bool) -> String {
         count.formatted(.byteCount(style: .file).locale(Locale(identifier: french ? "fr_FR" : "en_US")))
     }
