@@ -25,9 +25,9 @@ en fixture, invariants et particularités de l’hôte :
 
 ## Prochaine action
 
-1. Au prochain démarrage, lire `git status --short --branch` et la présente passation.
-   Le CI `qualify` du SHA `1f62627e` a été vérifié SUCCESS ; il ne couvre pas les commits
-   locaux. Exécuter `git pull --ff-only` seulement si la branche est en avance de zéro et propre.
+1. Au prochain démarrage, exécuter `git status --short --branch && git pull --ff-only`, puis
+   lire cette passation et `Documentation/Passation/P4-qualification.md`. Le CI `qualify` du
+   SHA `1f62627e` a été vérifié SUCCESS ; il ne couvre pas les commits locaux.
 2. Si P4 reprend : traiter les réserves une par une selon `Documentation/Passation/P4-qualification.md`.
    Pour 4.6, attendre un chemin de copie 1.x déjà créée et autorisée ; ne lire que cette copie
    dans une fixture temporaire. Pour les autres lignes, faire consigner les observations et
