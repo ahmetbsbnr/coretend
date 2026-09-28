@@ -123,6 +123,15 @@ public struct SerreIcon: View {
             .frame(width: size, height: size)
             .rotationEffect(.degrees(hovered ? -6 : 0))
             .animation(MotionToken.quick.animation(.sprout, reduceMotion: reduceMotion), value: hovered)
+            // A leaf touched by the pointer shivers once (a cause: the hover).
+            .keyframeAnimator(initialValue: 0.0, trigger: reduceMotion ? false : hovered) { content, angle in
+                content.rotationEffect(.degrees(angle), anchor: .bottom)
+            } keyframes: { _ in
+                CubicKeyframe(9, duration: 0.08)
+                CubicKeyframe(-6, duration: 0.1)
+                CubicKeyframe(3, duration: 0.1)
+                SpringKeyframe(0, duration: 0.25)
+            }
             .accessibilityHidden(true)
     }
 }

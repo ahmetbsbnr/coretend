@@ -146,3 +146,12 @@ second Mac ne sont pas disponibles ; ne pas laisser entendre qu’ils ont été 
   clic ; ne **jamais** ouvrir la confirmation de déplacement dans l’app packagée (vraie
   Corbeille). Pour voir une animation de déplacement, faire un build de diagnostic temporaire
   qui la déclenche sans fichier (ex. à la sélection d’une ligne), puis le retirer.
+
+## Piège : deux CoreTend en même temps (28-09)
+
+Le mainteneur a installé le build notarisé (`local.coretend.reconstruction`) sur l'hôte. Une
+app de démo en fixture a le **même identifiant** : `open_application` (computer-use) ou
+`open -a` peut activer **son** instance réelle (vrai HOME, vrai store) au lieu de la démo. Ne
+jamais cliquer dans une fenêtre sans vérifier la langue/les données de fixture ; capturer la
+démo par PID (`cwh window <pid>` + `screencapture -l`). À terme : identifiant distinct pour
+les builds de démo.

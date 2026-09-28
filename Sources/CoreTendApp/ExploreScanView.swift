@@ -134,6 +134,8 @@ struct ExploreScanView: View {
             }
         }
         .leafFlightLayer(flight)
+        // The page's plant bends while the roots read and blooms when they are done.
+        .preference(key: PlantActivityKey.self, value: rootsPhase == .reading ? .growing : (rootsPhase == .finished ? .blooming : .resting))
         .motion(.standard, value: notice)
         .motion(.standard, value: rootsPhase)
         .fileImporter(isPresented: $selectingFolder, allowedContentTypes: [.folder], allowsMultipleSelection: false) { outcome in

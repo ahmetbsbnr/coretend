@@ -131,7 +131,7 @@ private struct CoreTendRootView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             }
-            .background(Palette.canvas.color)
+            .background(LivingBackdrop())
             // Every button in the content is a Serre button unless it says otherwise.
             .buttonStyle(.serre(.secondary))
         }
@@ -306,6 +306,8 @@ private struct DestinationView: View {
     let destination: Destination
     let french: Bool
     @Binding var recentFilesEnabled: Bool
+    /// What the page's content is doing, for its plant (a scan running, a scan done).
+    @State private var plantActivity = PlantActivity.resting
 
     var body: some View {
         ScrollView {
@@ -323,7 +325,7 @@ private struct DestinationView: View {
                     }
                     Spacer(minLength: 12)
                     // Each destination has its plant; it grows on arrival and lives while the window does.
-                    DestinationPlant(destination.glyph).id(destination)
+                    DestinationPlant(destination.glyph, activity: plantActivity).id(destination)
                 }
                 .serreRise(0)
                 if destination == .overview || destination == .performance {
@@ -340,6 +342,7 @@ private struct DestinationView: View {
             // The whole width scrolls, not only the reading column.
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .onPreferenceChange(PlantActivityKey.self) { plantActivity = $0 }
         .accessibilityIdentifier("destination-\(destination.rawValue)")
     }
 

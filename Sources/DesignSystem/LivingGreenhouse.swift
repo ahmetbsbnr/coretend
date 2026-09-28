@@ -176,12 +176,15 @@ private struct ShootView: View {
 public struct AmbientSway: ViewModifier {
     let degrees: Double
     let phase: Double
+    var period: Double = 2.6
+    /// A sway caused by an action (a scan running) runs whenever motion is allowed at all.
+    var caused = false
     @Environment(\.serreAmbientAllowed) private var allowed
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public func body(content: Content) -> some View {
-        LayerSway(content: AnyView(content), degrees: degrees, phase: phase,
-                  alive: AmbientLife.isAlive(allowed: allowed, reduceMotion: reduceMotion))
+        LayerSway(content: AnyView(content), degrees: degrees, phase: phase, period: period,
+                  alive: caused ? !reduceMotion : AmbientLife.isAlive(allowed: allowed, reduceMotion: reduceMotion))
     }
 }
 
@@ -192,6 +195,7 @@ struct LayerSway: NSViewRepresentable {
     let content: AnyView
     let degrees: Double
     let phase: Double
+    let period: Double
     let alive: Bool
 
     func makeNSView(context: Context) -> SwayHost {
@@ -200,7 +204,7 @@ struct LayerSway: NSViewRepresentable {
 
     func updateNSView(_ view: SwayHost, context: Context) {
         view.rootView = content
-        view.update(alive: alive, degrees: degrees, phase: phase)
+        view.update(alive: alive, degrees: degrees, phase: phase, period: period)
     }
 
     func sizeThatFits(_ proposal: ProposedViewSize, nsView: SwayHost, context: Context) -> CGSize? {
@@ -209,7 +213,7 @@ struct LayerSway: NSViewRepresentable {
 }
 
 final class SwayHost: NSHostingView<AnyView> {
-    private var swaying = false
+    private var current: (alive: Bool, degrees: Double, period: Double)?
 
     required init(rootView: AnyView) {
         super.init(rootView: rootView)
@@ -227,16 +231,17 @@ final class SwayHost: NSHostingView<AnyView> {
         layer.position = CGPoint(x: frame.midX, y: frame.minY)
     }
 
-    func update(alive: Bool, degrees: Double, phase: Double) {
-        guard let layer, alive != swaying else { return }
-        swaying = alive
+    func update(alive: Bool, degrees: Double, phase: Double, period: Double) {
+        guard let layer else { return }
+        if let current, current.alive == alive, current.degrees == degrees, current.period == period { return }
+        current = (alive, degrees, period)
         layer.removeAnimation(forKey: "sway")
         guard alive, degrees != 0 else { return }
         let radians = degrees * .pi / 180
         let sway = CABasicAnimation(keyPath: "transform.rotation.z")
         sway.fromValue = -radians
         sway.toValue = radians
-        sway.duration = 2.6 + phase.truncatingRemainder(dividingBy: 1.4)
+        sway.duration = period + phase.truncatingRemainder(dividingBy: period * 0.5)
         sway.beginTime = CACurrentMediaTime() - phase
         sway.autoreverses = true
         sway.repeatCount = .infinity
@@ -247,27 +252,51 @@ final class SwayHost: NSHostingView<AnyView> {
 
 public extension View {
     /// Sways slowly while the greenhouse is alive.
-    func ambientSway(degrees: Double = 3, phase: Double = 0) -> some View {
-        modifier(AmbientSway(degrees: degrees, phase: phase))
+    func ambientSway(degrees: Double = 3, phase: Double = 0, period: Double = 2.6, caused: Bool = false) -> some View {
+        modifier(AmbientSway(degrees: degrees, phase: phase, period: period, caused: caused))
+    }
+}
+
+/// What the page is doing, as its plant shows it.
+public enum PlantActivity: Equatable, Sendable {
+    case resting, growing, blooming
+}
+
+/// Lets a page tell its header plant what it is doing (a scan running, a scan finished).
+public struct PlantActivityKey: PreferenceKey {
+    public static let defaultValue = PlantActivity.resting
+    public static func reduce(value: inout PlantActivity, nextValue: () -> PlantActivity) {
+        let next = nextValue()
+        if next != .resting { value = next }
     }
 }
 
 /// The plant of a destination, beside its title: its glyph grown large on a line of soil. It
-/// grows once when the page opens and sways while the greenhouse is alive.
+/// grows once when the page opens, sways while the greenhouse is alive, bends hard while the
+/// page works (a scan running) and blooms when the work is done.
 public struct DestinationPlant: View {
     let glyph: SerreGlyph
+    let activity: PlantActivity
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var grown = false
 
-    public init(_ glyph: SerreGlyph) { self.glyph = glyph }
+    public init(_ glyph: SerreGlyph, activity: PlantActivity = .resting) {
+        self.glyph = glyph
+        self.activity = activity
+    }
 
     public var body: some View {
         VStack(spacing: 0) {
-            SerreGlyphShape(glyph: glyph)
-                .trim(from: 0, to: grown ? 1 : 0)
-                .stroke(Palette.accent.color, style: StrokeStyle(lineWidth: 2.2, lineCap: .round, lineJoin: .round))
-                .frame(width: 58, height: 58)
-                .ambientSway(degrees: 7, phase: Double(glyph.hashValue % 7))
+            ZStack(alignment: .top) {
+                SerreGlyphShape(glyph: glyph)
+                    .trim(from: 0, to: grown ? 1 : 0)
+                    .stroke(Palette.accent.color, style: StrokeStyle(lineWidth: 2.2, lineCap: .round, lineJoin: .round))
+                    .frame(width: 58, height: 58)
+                FlowerHead(open: activity == .blooming)
+                    .offset(y: -10)
+            }
+            .ambientSway(degrees: activity == .growing ? 12 : 7, phase: Double(glyph.hashValue % 7),
+                         period: activity == .growing ? 0.9 : 2.6, caused: activity == .growing)
             Capsule().fill(Palette.deep.color).frame(width: 84, height: 5)
         }
         .accessibilityHidden(true)
@@ -275,6 +304,50 @@ public struct DestinationPlant: View {
             if reduceMotion { grown = true } else {
                 withAnimation(MotionCurve.sap.animation(duration: MotionToken.bloom.duration)) { grown = true }
             }
+        }
+    }
+}
+
+/// A flower that opens once at the top of a plant when a page's work is done.
+struct FlowerHead: View {
+    let open: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        ZStack {
+            ForEach(0..<6, id: \.self) { index in
+                Ellipse().fill(Palette.accent.color.opacity(0.9)).frame(width: 7, height: 12)
+                    .offset(y: -7).rotationEffect(.degrees(Double(index) * 60))
+            }
+            Circle().fill(Palette.caution.color).frame(width: 7, height: 7)
+        }
+        .scaleEffect(open ? 1 : 0.05)
+        .rotationEffect(.degrees(open ? 0 : -90))
+        .opacity(open ? 1 : 0)
+        .animation(reduceMotion ? nil : MotionCurve.sprout.animation(duration: 0.7), value: open)
+    }
+}
+
+/// The living ground under every page: the hour's light over the canvas and pollen in the air.
+public struct LivingBackdrop: View {
+    public init() {}
+
+    public var body: some View {
+        ZStack {
+            Palette.canvas.color
+            LinearGradient(colors: [tint, .clear], startPoint: .top, endPoint: .center)
+            PollenField(density: 1.4)
+        }
+        .ignoresSafeArea()
+        .accessibilityHidden(true)
+    }
+
+    private var tint: Color {
+        switch GreenhouseLight.at(hour: Calendar.current.component(.hour, from: .now)) {
+        case .dawn: Palette.caution.color.opacity(0.07)
+        case .day: Palette.accent.color.opacity(0.06)
+        case .dusk: Palette.danger.color.opacity(0.06)
+        case .night: Palette.deep.color.opacity(0.6)
         }
     }
 }
