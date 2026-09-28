@@ -9,7 +9,7 @@ en fixture, invariants et particularités de l’hôte :
 
 - **Mis à jour :** 28-09-2026, P4 — travaux disponibles 4.1–4.6 consignés ; G4 reste ouverte.
 - **Phase :** P7 — Sortie publique 2.0 → [`P7-release-2.0.md`](Documentation/Passation/P7-release-2.0.md).
-- **Lot courant :** 7.1 livré (marque, icône Liquid Glass) ; suite 7.2 (site recréé).
+- **Lot courant :** 7.1 à 7.4 livrés (build 2.0.0 notarisé, `~/Documents/CoreTend-2.0.0/`) ; suite 7.5 publication, sur accord explicite à chaque étape.
 - **G3 :** passée ; aucune observation détaillée supplémentaire reçue, aucun statut du registre promu.
 - **Livraison P3 :** `fa9132ed` poussé, CI `qualify` PASS le 28-09 à 09:49:42 UTC.
 - **Registre :** Must `VÉRIFIÉ` **3 / 78** (Should 0 / 11), NFR-07 PARTIEL.

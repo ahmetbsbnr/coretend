@@ -21,7 +21,7 @@ release, site, cask).
 | 7.1 | Marque : icône Icon Composer (Liquid Glass) + logotypes SVG | Livré (`a23fcd99`) |
 | 7.2 | Site 2.0 recréé (serre vivante, animations CSS, sans script) | Livré (`67bd00a3`) — captures 2.0 à refaire en 7.4 |
 | 7.3 | Dépôt : README, changelog, gouvernance, workflows, cask | Livré (`dbad205a`) — workflows de release 1.x non repris (publication locale via Organizer) |
-| 7.4 | Build 2.0.0 signé, notarisé, DMG, SHA256SUMS | À faire |
+| 7.4 | Build 2.0.0 signé, notarisé, ZIP + DMG, SHA256SUMS, captures du site | Livré — DMG signé mais non notarisé (voir journal) |
 | 7.5 | Publication (PR, tag, release, site, cask) — sur accord | À faire |
 
 ## Journal
@@ -34,10 +34,37 @@ release, site, cask).
 - `Resources/Brand/Logo/` : symbole et logotype clair/sombre (SVG), icône rendue 1024 px (PNG).
 - `make package-release` : identifiant `com.ahmetbsbnr.coretend`, version `2.0.0`, build 200.
 
+### 28-09-2026 — 7.4
+
+- Site : 32 captures 2.0 réelles (8 destinations × FR/EN × clair/sombre, 2240 × 1520) copiées de
+  `Artifacts/Captures/2026-09-28/` après relecture ; `settings-bottom-*` retirées ; commit `5cbea3ab`.
+- `make package-release` : `com.ahmetbsbnr.coretend` 2.0.0 (200). Signé par empreinte
+  `02A57D6E…FAAB` (`--options runtime --timestamp`), archive manuelle
+  `~/Library/Developer/Xcode/Archives/2026-09-28/CoreTend 2.0.0.xcarchive`.
+- **Notarisation sans interface** (écran indisponible pour l'Organizer) :
+  `xcodebuild -exportArchive` avec `method=developer-id`, `destination=upload`,
+  `-allowProvisioningUpdates` (compte connecté dans Xcode, aucun mot de passe), puis
+  `xcodebuild -exportNotarizedApp` dès l'acceptation. Soumission
+  `2E6918E2-944D-4ED7-AA42-DD5532C569FB`, acceptée en ~1 min.
+- Vérifié : `stapler validate` OK ; `spctl -a -vv` : accepted, `Notarized Developer ID` ;
+  `codesign --verify --strict --deep` OK ; ZIP extrait puis revalidé (ticket agrafé présent).
+- Artefacts dans `~/Documents/CoreTend-2.0.0/` :
+  - `CoreTend-2.0.0-arm64.zip` — SHA-256 `3fd2548cf988fdecc0749f0c170764cccaf3541aa02c840c4e5c58adafcfefef` (**artefact principal**) ;
+  - `CoreTend-2.0.0-arm64.dmg` — SHA-256 `b7e3c51c49a106ddfc864702269785cdcfe6874ff02f7ce8460d28f0467be79f`,
+    signé Developer ID mais **non notarisé** (`spctl -t open` : Unnotarized) : notariser un DMG
+    demande `notarytool`, que le mainteneur ne peut pas configurer ;
+  - `SHA256SUMS`.
+- Conséquence : cask, README et page Télécharger pointent sur le ZIP. `Scripts/make_release_dmg.sh`
+  reste disponible pour un DMG notarisé plus tard.
+- Non vérifié : VineSweep à l'écran et ouverture Gatekeeper d'un téléchargement réel
+  (écran indisponible pour le contrôle).
+
 ## Point d'arrêt
 
-- 7.1, 7.2 livrés. Suite **7.3 dépôt** : README 2.0, CHANGELOG, workflows (réconcilier ceux de `main`), cask 2.0.0, gouvernance.
-- 7.4 : `make package-release`, signature, notarisation (Organizer), DMG, SHA256SUMS, nouvelles captures du site, `Website/release.json` rempli.
+- 7.1 à 7.4 livrés. Suite **7.5 publication**, chaque étape sur accord explicite :
+  PR `next` → `main` (avance rapide), tag `v2.0.0`, release GitHub (ZIP, DMG facultatif,
+  `SHA256SUMS`, notes `Documentation/Release/2.0-notes-draft.md`), `Website/release.json`
+  (`published`, `url`, `sha256` du ZIP, date), SHA du cask, déploiement Vercel.
 
 ## Problèmes ouverts
 

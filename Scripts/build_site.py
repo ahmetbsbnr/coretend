@@ -117,7 +117,7 @@ COPY = {
             "lead": "CoreTend 2.0 is a free update to CoreTend. It is signed with a Developer ID and notarized by Apple.",
             "install_title": "Install",
             "install": [
-                ("Direct download", "Open the disk image and drag CoreTend into Applications."),
+                ("Direct download", "Unzip the notarized archive and move CoreTend into Applications."),
                 ("Homebrew", "brew install --cask coretend"),
                 ("Check the file", "Compare the SHA-256 of what you downloaded with the one shown here."),
             ],
@@ -216,7 +216,7 @@ COPY = {
             "lead": "CoreTend 2.0 est une mise à jour gratuite de CoreTend. Elle est signée avec un Developer ID et notarisée par Apple.",
             "install_title": "Installer",
             "install": [
-                ("Téléchargement direct", "Ouvrez l’image disque et glissez CoreTend dans Applications."),
+                ("Téléchargement direct", "Décompressez l’archive notarisée et placez CoreTend dans Applications."),
                 ("Homebrew", "brew install --cask coretend"),
                 ("Vérifier le fichier", "Comparez l’empreinte SHA-256 du fichier téléchargé avec celle affichée ici."),
             ],

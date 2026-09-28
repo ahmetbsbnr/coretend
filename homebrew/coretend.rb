@@ -1,10 +1,10 @@
-# CoreTend 2.0 cask. The SHA-256 is filled in from Website/release.json when the DMG is
-# published (Scripts/release_facts.py); until then this file is not submitted anywhere.
+# CoreTend 2.0 cask. The SHA-256 is the one of the notarized ZIP listed in the release's
+# SHA256SUMS (and in Website/release.json); until publication this file is not submitted anywhere.
 cask "coretend" do
   version "2.0.0"
   sha256 "RELEASE_SHA256"
 
-  url "https://github.com/ahmetbsbnr/coretend/releases/download/v#{version}/CoreTend-#{version}-arm64.dmg",
+  url "https://github.com/ahmetbsbnr/coretend/releases/download/v#{version}/CoreTend-#{version}-arm64.zip",
       verified: "github.com/ahmetbsbnr/coretend/"
   name "CoreTend"
   desc "Living, local greenhouse for your Mac: see, understand, prune to the Trash"
