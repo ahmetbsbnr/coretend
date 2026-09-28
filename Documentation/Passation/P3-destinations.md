@@ -10,8 +10,8 @@
 | Lot | Intitulé | Statut |
 |---|---|---|
 | 3.1 | Vue d’ensemble + premier lancement | Accepté 27-09-2026 (`6f66447a`) |
-| 3.2 | Nettoyage (inclut un vrai passage par la Corbeille sur dossier jetable, fait par le mainteneur) | Livré — recette en attente (`a76d15b7`, `a874f4f4`, `85d93f24`, `4fd7fd62`) |
-| 3.3 | Explorer | À faire |
+| 3.2 | Nettoyage (inclut un vrai passage par la Corbeille sur dossier jetable, fait par le mainteneur) | Livré — le mainteneur a dit « continue » sans recette explicite ; lignes du registre inchangées (`4fd7fd62`) |
+| 3.3 | Explorer | Livré — recette en attente (`c4e1d97b`, `0e9fc484`) |
 | 3.4 | Doublons et images proches | À faire |
 | 3.5 | Applications | À faire |
 | 3.6 | Intégrité | À faire |
@@ -97,15 +97,30 @@
   floraison.
 - **Non vérifié :** chute de feuille à sa vitesse finale (observée seulement ralentie).
 
+### 28-09-2026 — lot 3.3, Explorer
+
+- **3.2 :** le mainteneur a vu la feuille dans le build de diagnostic (« c’est bon ») puis a dit
+  « continue » sans recette explicite du parcours complet ; FR-05, FR-06, cleanup.*, safety.* restent
+  `PARTIEL` (pas de passage à `VÉRIFIÉ` sans recette).
+- **Fait :** `c4e1d97b` — `SerreActionKit` : `PageNotice`/`PageNoticeBanner`, `LeafFlight`
+  (feuille vers la Corbeille, comptage à l’arrivée), `TrashIndicator`, `executeShowingEachItem` ;
+  Nettoyage passe dessus. `0e9fc484` — Explorer : état initial graine + « Choisir un dossier »,
+  parcelle mesurée, racines au lancement (liste masquée jusqu’à la fin de l’analyse), filtres en
+  parcelle, carte des parcelles proportionnelles (plus grandes d’abord, survol qui nomme, clic qui
+  entoure et amène la ligne), liste Serre (dossier relatif, tailles dans la langue de l’app, favori,
+  Quick Look), déplacement comme Nettoyage.
+- **Vérifié :** `make qualify` PASS ; test copie Explorer FR/EN ; app fixture (dossier varié de 23
+  fichiers) : état initial, analyse, carte, survol, clic → ligne entourée.
+- **Non vérifié :** déplacement réel et chute de feuille dans Explorer ; Quick Look ; favoris.
+- **Recette 3.3 (mainteneur) :** choisir un dossier, regarder racines et parcelles, survoler et
+  cliquer une parcelle, filtrer, trier, aperçu, favori ; optionnel : déplacer un fichier jetable.
+
 ## Point d’arrêt
 
-- 3.2 livré, recette du mainteneur en attente (vrai passage par la Corbeille). À l’acceptation :
-  registre (FR-05, FR-06, cleanup.*, safety.*, NFR-01, NFR-02 : preuves datées ; `VÉRIFIÉ`
-  seulement si la recette couvre tout le critère) et `Progress.md`.
-- Prochain lot **3.3 — Explorer** : parcelles par taille décroissante (`stagger`), racines
-  `ScanRoots` réutilisées, états Serre, déplacement avec `FallingLeaf`.
-- Non fait dans 3.2 : « nœud qui gonfle aux gros dossiers » (ScanCore ne remonte pas de taille par
-  dossier pendant l’analyse).
+- 3.3 livré, recette en attente. Prochain lot **3.4 — Doublons et images proches** : racines
+  (hachage, décodage, comparaisons = progressions réelles), groupes en parcelles, étiquette
+  « gardé » qui saute d’une pousse à l’autre (`pousse`), déplacement via `SerreActionKit`.
+- 3.2 : recette explicite toujours à obtenir avant de passer ses lignes à `VÉRIFIÉ`.
 
 ## Problèmes ouverts
 
