@@ -424,3 +424,15 @@
 - `make qualify` PASS (code 0) ; seuils et résultat limité soumis à recette. NFR-09 PARTIEL,
   aucun statut promu ; arrêt avant 4.4, G4 non passée.
 - Vérification finale : `make qualify` code 0, `make traceability` et `git diff --check` PASS.
+
+
+### P4 — 4.3 accepté, 4.4 livré — 28-09-2026
+
+- Mainteneur : « tout est validé, finit tout 4 en entier. » ; budgets 4.3 validés, suite
+  de P4 autorisée sans recette intermédiaire. Réserves de preuve conservées.
+- Revue indépendante par agent distinct en contexte neuf, absence de seconde revue humaine
+  déclarée. Trois constats corrigés : stale duplicates, JSON mal typé, références Domain manquantes.
+- Snapshots hashés reliés à copie/keeper, regularfile size/mtime/ctime revalidés ; nouvelles
+  régressions fixture/faux Trash et tests ciblés PASS. `make qualify` PASS (code 0), diff PASS.
+- Preuves `Documentation/Evidence/P4-44-review-2026-09-28.md` ; aucun statut promu.
+  Passage à 4.5 autorisé ; vrai format 1.x SQLite encore non pris en charge, à traiter 4.6.

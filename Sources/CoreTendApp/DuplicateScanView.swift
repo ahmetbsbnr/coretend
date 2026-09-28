@@ -565,13 +565,20 @@ struct DuplicateScanView: View {
             let allowed = Set([rule])
             let executor = SafeActionExecutor(allowedRoots: [root], allowedRules: allowed, trash: MacOSTrashClient())
             let service = FileActionService(validator: .init(), executor: executor, store: store, allowedRoots: [root], allowedRuleIDs: allowed)
-            let selections = selectedCopies.sorted { $0.path < $1.path }.map { FileActionSelection(url: $0, ruleID: rule) }
+            let selections = try selectedCopies.sorted { $0.path < $1.path }.map {
+                FileActionSelection(url: $0, ruleID: rule,
+                                    expectedIdentity: try scannedIdentity($0, report: exactReport))
+            }
             // The kept file of every touched group is protected: the review refuses to move it and
             // the move stops if it changed.
             let protectedKeepers = keepers.protectedKeepers(
                 groups: exactReport.groups.map { (digest: $0.digest, files: $0.files, suggested: $0.suggestedKeeper) },
                 selection: selectedCopies)
-            let review = try service.prepareReview(selections, protectedKeepers: protectedKeepers)
+            let expectedKeepers = try Dictionary(uniqueKeysWithValues: protectedKeepers.map {
+                ($0, try scannedIdentity($0, report: exactReport))
+            })
+            let review = try service.prepareReview(selections, protectedKeepers: protectedKeepers,
+                                                   expectedProtectedKeepers: expectedKeepers)
             guard await service.recordProposal(review) else {
                 notice = PageNotice(kind: .error, title: french ? "Journal indisponible; action bloquée." : "History unavailable; action blocked.", nearActions: true)
                 return
@@ -580,6 +587,21 @@ struct DuplicateScanView: View {
             actionService = service
             actionDialogPresented = true
         } catch { notice = PageNotice(kind: .error, title: french ? "Revue impossible; aucune copie déplacée." : "Review failed; no copies moved.", nearActions: true) }
+    }
+
+    /// The identity must still describe the exact bytes hashed by the engine, including
+    /// the kept copy. Review and execution continue checking this same identity.
+    private func scannedIdentity(_ url: URL, report: DuplicateScanReport) throws -> FileIdentity {
+        guard let snapshot = report.snapshots[url] else { throw PathRefusal.identityChanged }
+        let current = try FileIdentity(url: url)
+        guard current.device == snapshot.device, current.inode == snapshot.inode,
+              current.size == snapshot.size, current.modifiedSeconds == snapshot.modifiedSeconds,
+              current.modifiedNanoseconds == snapshot.modifiedNanoseconds,
+              current.changedSeconds == snapshot.changedSeconds,
+              current.changedNanoseconds == snapshot.changedNanoseconds else {
+            throw PathRefusal.identityChanged
+        }
+        return current
     }
 
     private func beginExecution() {

@@ -511,3 +511,26 @@ final class CleanupRuleCatalogTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: document.path))
     }
 }
+
+extension ScanCoreTests {
+    func testDuplicateReportRetainsHashSnapshotsAcrossLaterEdits() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-hash-snapshot-\(UUID())")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let a = root.appendingPathComponent("a.bin"), b = root.appendingPathComponent("b.bin")
+        try Data("same".utf8).write(to: a); try Data("same".utf8).write(to: b)
+        var candidates: [ScanResult] = []
+        for try await event in LocalScanEngine().scan(.init(roots: [.init(url: root, ruleID: .duplicates)])) {
+            if case .result(let value) = event { candidates.append(value) }
+        }
+        let report = try await DuplicateEngine().findGroups(in: candidates)
+        XCTAssertEqual(report.groups.count, 1)
+        let hashedB = try XCTUnwrap(report.groups.first?.files.first { $0.lastPathComponent == "b.bin" })
+        let original = try XCTUnwrap(report.snapshots[hashedB])
+        XCTAssertEqual(original, try DuplicateFileSnapshot(url: b))
+        let handle = try FileHandle(forWritingTo: b)
+        try handle.write(contentsOf: Data("new!".utf8)); try handle.close()
+        XCTAssertNotEqual(original, try DuplicateFileSnapshot(url: b))
+        XCTAssertEqual(original.inode, try DuplicateFileSnapshot(url: b).inode)
+    }
+}

@@ -11,9 +11,9 @@
 |---|---|---|
 | 4.1 | Accessibilité (mainteneur) : VoiceOver, Dynamic Type/zoom, contraste, Reduce Motion/Transparency | Accepté 28-09-2026 — détail des observations non fourni |
 | 4.2 | Compatibilité : hôte macOS 14 et second Mac | Accepté avec réserve 28-09-2026 ; macOS 14 et second Mac non testés |
-| 4.3 | Performance : corpus, mesures, budgets | Livré — mesures locales et budgets proposés, recette en attente |
-| 4.4 | Revue indépendante architecture/sûreté | À faire |
-| 4.5 | Site : zoom, VoiceOver, en-têtes déployés, navigateurs ; bouton menu mobile sans JS ? | À faire |
+| 4.3 | Performance : corpus, mesures, budgets | Accepté 28-09-2026 — budgets locaux validés, réserves NFR-09 conservées |
+| 4.4 | Revue indépendante architecture/sûreté | Livré — revue indépendante et correctifs qualifiés |
+| 4.5 | Site : zoom, VoiceOver, en-têtes déployés, navigateurs ; bouton menu mobile sans JS ? | En cours |
 | 4.6 | Import 1.x sur copie d’un vrai store 1.x | À faire |
 
 ## Journal
@@ -62,13 +62,33 @@
 - **Vérification finale :** `make traceability` et `git diff --check` PASS.
 - **Recette :** examiner corpus, mesures, limites et budgets avant acceptation ; pas de 4.4 avant recette.
 
+### 28-09-2026 — poursuite de P4 autorisée
+
+- **Mainteneur :** « tout est validé, finit tout 4 en entier. » : 4.3 et budgets locaux
+  acceptés ; autorisation d’enchaîner 4.4–4.6 sans arrêt intermédiaire pour recette.
+- **4.4 ouvert :** revue par agent distinct sans contexte d’implémentation, lecture seule.
+  Absence de second relecteur humain explicitement conservée. Corriger les constats confirmés
+  avant livraison et qualification ; NFR-10/NFR-12 concernés.
+- **4.5/4.6 :** à effectuer après 4.4. Demande de copie réelle 1.x envoyée au mainteneur ;
+  ne pas lire ni copier le store original depuis le HOME réel.
+
+### 28-09-2026 — 4.4 livré, 4.5 ouvert
+
+- **Revue :** agent distinct, contexte neuf, pas de second humain ; trois constats corrigés.
+  Preuve : `Documentation/Evidence/P4-44-review-2026-09-28.md`.
+- **Correctifs :** doublons liés aux snapshots hashés, identité regularfile taille/mtime/ctime,
+  keepers attendus à la revue/exécution ; JSON présent mal typé refusé ; références FR-07 et
+  clutter.duplicates complétées. Régressions sur fixtures/fausse Corbeille PASS.
+- **Vérifié :** tests ciblés PASS ; `make qualify` PASS code 0, `git diff --check` PASS.
+- **4.5 :** NFR-11, zoom navigateur/second moteur/headers publics, preuves site existantes.
+  Menu mobile reste visible sans JavaScript selon livraison Serre acceptée ; aucun redesign.
+
 ## Point d’arrêt
 
-**Lot 4.3 livré : mesures, données brutes et budgets proposés à recetter.**
+**4.4 livré ; 4.5 en cours : vérifier site au zoom réel, second moteur et headers publics.**
 
-Attendre l’acceptation des mesures/limites et des cinq seuils dans
-`Documentation/Evidence/PerformanceBaseline.md` avant 4.4. NFR-09 PARTIEL, G4 non passée.
-La mesure du scan natif complet et de la latence UI reste ouverte ; ne pas extrapoler le CLI.
+Puis qualifier et journaliser 4.4, 4.5 (site), 4.6 (import). Aucun push/P5 autorisé.
+Les hôtes et observations humaines manquants ne sont pas remplacés par une validation générale.
 
 ## Problèmes ouverts
 

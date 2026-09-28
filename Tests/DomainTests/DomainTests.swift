@@ -817,3 +817,62 @@ private actor KeeperRemovingTrash: TrashClient {
 
     func destination(for url: URL) -> URL? { destinations[url.path] }
 }
+
+extension FileActionServiceTests {
+    func testDuplicateReviewRejectsReplacedCopyAndEditedKeeperSinceScan() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-stale-duplicates-\(UUID())")
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let copy = root.appendingPathComponent("copy.bin")
+        let keeper = root.appendingPathComponent("keeper.bin")
+        try Data("same".utf8).write(to: copy)
+        try Data("same".utf8).write(to: keeper)
+        let copyAtScan = try FileIdentity(url: copy)
+        let keeperAtScan = try FileIdentity(url: keeper)
+        let store = try SQLiteStore(url: root.appendingPathComponent("events.sqlite"))
+        try await store.migrate()
+        let allowed = Set(["scan.duplicates"])
+        let service = FileActionService(validator: .init(),
+            executor: SafeActionExecutor(allowedRoots: [root], allowedRules: allowed,
+                                        trash: DomainFixtureTrash(trashRoot: root)),
+            store: store, allowedRoots: [root], allowedRuleIDs: allowed)
+        try FileManager.default.moveItem(at: copy, to: root.appendingPathComponent("previous.bin"))
+        try Data("unique".utf8).write(to: copy)
+        XCTAssertThrowsError(try service.prepareReview([
+            .init(url: copy, ruleID: "scan.duplicates", expectedIdentity: copyAtScan)
+        ], protectedKeepers: [keeper], expectedProtectedKeepers: [keeper: keeperAtScan])) { error in
+            XCTAssertEqual(error as? PathRefusal, .identityChanged)
+        }
+        let handle = try FileHandle(forWritingTo: keeper)
+        try handle.write(contentsOf: Data("new!".utf8)); try handle.close()
+        XCTAssertThrowsError(try service.prepareReview([
+            .init(url: copy, ruleID: "scan.duplicates", expectedIdentity: try FileIdentity(url: copy))
+        ], protectedKeepers: [keeper], expectedProtectedKeepers: [keeper: keeperAtScan])) { error in
+            XCTAssertEqual(error as? PathRefusal, .identityChanged)
+        }
+    }
+
+    func testDuplicateExecutionRejectsKeeperEditedInPlaceAfterReview() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-keeper-edit-\(UUID())")
+        let trashRoot = root.appendingPathComponent("trash")
+        try FileManager.default.createDirectory(at: trashRoot, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let copy = root.appendingPathComponent("copy.bin"), keeper = root.appendingPathComponent("keeper.bin")
+        try Data("same".utf8).write(to: copy); try Data("same".utf8).write(to: keeper)
+        let store = try SQLiteStore(url: root.appendingPathComponent("events.sqlite")); try await store.migrate()
+        let allowed = Set(["scan.duplicates"])
+        let trash = DomainFixtureTrash(trashRoot: trashRoot)
+        let service = FileActionService(validator: .init(),
+            executor: SafeActionExecutor(allowedRoots: [root], allowedRules: allowed, trash: trash),
+            store: store, allowedRoots: [root], allowedRuleIDs: allowed)
+        let review = try service.prepareReview([.init(url: copy, ruleID: "scan.duplicates")], protectedKeepers: [keeper])
+        let handle = try FileHandle(forWritingTo: keeper)
+        try handle.write(contentsOf: Data("new!".utf8)); try handle.close()
+        let report = await service.execute(try service.confirm(review, accepted: true))
+        XCTAssertEqual(report.movedCount, 0)
+        XCTAssertEqual(report.items.first?.outcome, .failed(.revalidation(.identityChanged)))
+        let calls = await trash.callCount
+        XCTAssertEqual(calls, 0)
+        XCTAssertEqual(try Data(contentsOf: copy), Data("same".utf8))
+    }
+}
