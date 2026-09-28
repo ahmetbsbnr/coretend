@@ -7,45 +7,6 @@ import AppShell
 import SafetyCore
 import Domain
 
-/// Where each result row and the Trash indicator sit, so a moved file's leaf can fall from its
-/// row to the Trash.
-private struct CleanupRowFrames: PreferenceKey {
-    static let defaultValue: [URL: CGRect] = [:]
-    static func reduce(value: inout [URL: CGRect], nextValue: () -> [URL: CGRect]) { value.merge(nextValue()) { $1 } }
-}
-
-private struct CleanupAnchorFrames: PreferenceKey {
-    static let defaultValue: [String: CGRect] = [:]
-    static func reduce(value: inout [String: CGRect], nextValue: () -> [String: CGRect]) { value.merge(nextValue()) { $1 } }
-}
-
-/// A banner of the Cleanup view and the recovery it offers.
-private struct CleanupNotice: Equatable {
-    enum Recovery: Equatable { case chooseAgain, retryScan }
-    let kind: Kind
-    let title: String
-    var message: String?
-    var recovery: Recovery?
-    /// Outcomes of a review or a move are shown under the Trash, where the action happened.
-    var nearActions = false
-
-    enum Kind: Equatable { case note, partial, denied, error }
-    var bannerKind: SerreBannerKind {
-        switch kind {
-        case .note: .note
-        case .partial: .partial
-        case .denied: .denied
-        case .error: .error
-        }
-    }
-}
-
-private struct FallingToken: Identifiable {
-    let id = UUID()
-    let from: CGPoint
-    let to: CGPoint
-}
-
 /// Cleanup, "la taille": known rules, the exact folder, a read-only scan whose roots follow the
 /// real progress, then a review, a confirmation and a move to the macOS Trash where each moved
 /// file falls as a leaf and each file that stays says why.
@@ -56,7 +17,7 @@ struct CleanupView: View {
     @State private var selectedRoot: URL?
     @State private var choosingFolder = false
     @State private var results: [ScanResult] = []
-    @State private var notice: CleanupNotice?
+    @State private var notice: PageNotice?
     @State private var scanning = false
     @State private var scanFoundNothing = false
     @State private var scanCompletedFiles = 0
@@ -73,14 +34,9 @@ struct CleanupView: View {
     @State private var actionScopedRoot: URL?
     /// Files that stayed where they were after a move, with the copy key saying why.
     @State private var failures: [URL: String] = [:]
-    @State private var movedInAction = 0
-    @State private var rowFrames: [URL: CGRect] = [:]
-    @State private var anchors: [String: CGRect] = [:]
-    @State private var falling: [FallingToken] = []
+    @State private var flight = LeafFlight()
     /// Where the page should bring the reader next (the roots when a scan starts).
     @State private var scrollTarget: String?
-
-    private static let space = "cleanup"
 
     private var descriptor: CleanupRuleDescriptor? {
         selectedRule.flatMap(CleanupRuleCatalog.rule)
@@ -110,28 +66,19 @@ struct CleanupView: View {
             if scanFoundNothing {
                 SerreEmptyState(title: copy("cleanup.none"), message: copy("cleanup.none.help"))
             }
-            if !results.isEmpty || movedInAction > 0 { resultsSection }
+            if !results.isEmpty || flight.landed > 0 { resultsSection }
             if let notice, notice.nearActions { banner(notice) }
             Text(copy("cleanup.noAction"))
                 .font(CoreTendTypography.secondary).foregroundStyle(Palette.tertiaryInk.color)
         }
-        .coordinateSpace(name: Self.space)
-        .onPreferenceChange(CleanupRowFrames.self) { rowFrames = $0 }
-        .onPreferenceChange(CleanupAnchorFrames.self) { anchors = $0 }
-        .overlay(alignment: .topLeading) {
-            ZStack(alignment: .topLeading) {
-                ForEach(falling) { FallingLeaf(from: $0.from, to: $0.to) }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .allowsHitTesting(false)
-        }
+        .leafFlightLayer(flight)
         .motion(.standard, value: notice)
         .motion(.standard, value: rootsPhase)
         .fileImporter(isPresented: $choosingFolder, allowedContentTypes: [.folder], allowsMultipleSelection: false) { outcome in
             guard case .success(let urls) = outcome else { return }
             guard let url = urls.first, let descriptor, descriptor.isExpectedRoot(url) else {
                 selectedRoot = nil
-                notice = CleanupNotice(kind: .denied, title: copy("cleanup.rootMismatch"), recovery: .chooseAgain)
+                notice = PageNotice(kind: .denied, title: copy("cleanup.rootMismatch"), recovery: .chooseAgain)
                 return
             }
             selectedRoot = url
@@ -234,21 +181,9 @@ struct CleanupView: View {
         .transition(.opacity)
     }
 
-    private func banner(_ notice: CleanupNotice) -> some View {
-        SerreBanner(notice.bannerKind, title: notice.title, message: notice.message) {
-            switch notice.recovery {
-            case .chooseAgain:
-                Button(copy("cleanup.denied.retry")) { choosingFolder = true }
-                    .buttonStyle(.serre(.secondary)).disabled(locked).padding(.top, 6)
-            case .retryScan:
-                if let descriptor, let selectedRoot {
-                    Button(copy("scan.retry")) { startScan(descriptor, root: selectedRoot) }
-                        .buttonStyle(.serre(.secondary)).disabled(locked).padding(.top, 6)
-                }
-            case nil:
-                EmptyView()
-            }
-        }
+    private func banner(_ notice: PageNotice) -> some View {
+        PageNoticeBanner(notice: notice, french: french, disabled: locked, chooseAgain: { choosingFolder = true },
+                         retryScan: descriptor.flatMap { rule in selectedRoot.map { root in { startScan(rule, root: root) } } })
     }
 
     private var resultsSection: some View {
@@ -273,7 +208,7 @@ struct CleanupView: View {
             .frame(height: min(CGFloat(max(results.count, 1)) * 50 + 16, 340))
             .background(Palette.surface.color, in: LeafCorner.parcel.shape)
             .overlay(LeafCorner.parcel.shape.strokeBorder(Palette.separator.color, lineWidth: 1))
-            .background(anchorReader("list"))
+            .leafFlightAnchor("list")
             actionBar
         }
     }
@@ -309,9 +244,7 @@ struct CleanupView: View {
             if failure != nil { LeafCorner.control.shape.strokeBorder(Palette.danger.color, lineWidth: 1) }
         }
         .disabled(locked)
-        .background(GeometryReader { proxy in
-            Color.clear.preference(key: CleanupRowFrames.self, value: [item.url: proxy.frame(in: .named(Self.space))])
-        })
+        .leafFlightRow(item.url)
         .transition(reduceMotion ? .identity : .asymmetric(insertion: .identity, removal: .opacity.combined(with: .scale(scale: 0.6, anchor: .leading))))
         .accessibilityLabel(ProductCopy.scanResultAccessibilitySummary(
             name: item.url.lastPathComponent,
@@ -327,33 +260,7 @@ struct CleanupView: View {
     /// The Trash indicator (leaves fall into it, its count grows) and the review button.
     private var actionBar: some View {
         HStack(spacing: 14) {
-            HStack(spacing: 8) {
-                Image(systemName: "trash").foregroundStyle(Palette.ink.color)
-                Text(copy("cleanup.trash")).font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
-                if movedInAction > 0 {
-                    Text(ProductFormat.count(movedInAction, french: french))
-                        .font(CoreTendTypography.caption.weight(.semibold)).foregroundStyle(Palette.onAccent.color)
-                        .padding(.horizontal, 7).padding(.vertical, 2)
-                        .background(Palette.accent.color, in: LeafCorner.control.shape)
-                        .contentTransition(.numericText(value: Double(movedInAction)))
-                        .scaleEffect(1)
-                }
-            }
-            .padding(.horizontal, 12).padding(.vertical, 8)
-            .background(Palette.raisedSurface.color, in: LeafCorner.control.shape)
-            // It takes each leaf with a small start.
-            .keyframeAnimator(initialValue: 1.0, trigger: reduceMotion ? 0 : movedInAction) { content, scale in
-                content.scaleEffect(scale)
-            } keyframes: { _ in
-                CubicKeyframe(1.12, duration: 0.1)
-                SpringKeyframe(1.0, duration: 0.3)
-            }
-            .background(anchorReader("trash"))
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel(movedInAction > 0 ? "\(copy("cleanup.moved")) : \(movedInAction)" : copy("cleanup.trash"))
-            if moving {
-                Text(copy("cleanup.moving")).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-            }
+            TrashIndicator(landed: flight.landed, moving: moving, french: french)
             Spacer()
             Button { Task { await prepareAction() } } label: {
                 Text(french ? "Examiner \(ProductFormat.items(selectedItems.count, french: true))" : "Review \(ProductFormat.items(selectedItems.count, french: false))")
@@ -362,13 +269,6 @@ struct CleanupView: View {
             .disabled(selectedItems.isEmpty || locked || selectedRoot == nil)
             .accessibilityHint(french ? "Les éléments choisis seront revérifiés avant d’être déplacés vers la Corbeille." : "Chosen items are revalidated before moving to Trash.")
         }
-        .motion(.quick, value: movedInAction)
-    }
-
-    private func anchorReader(_ name: String) -> some View {
-        GeometryReader { proxy in
-            Color.clear.preference(key: CleanupAnchorFrames.self, value: [name: proxy.frame(in: .named(Self.space))])
-        }
     }
 
     // MARK: - Choosing
@@ -376,7 +276,7 @@ struct CleanupView: View {
     private func choose(_ rule: ScanRule) {
         selectedRule = rule
         selectedRoot = nil
-        results = []; selectedItems = []; failures = [:]; movedInAction = 0
+        results = []; selectedItems = []; failures = [:]; flight.landed = 0
         notice = nil; scanFoundNothing = false; rootsPhase = nil
     }
 
@@ -391,7 +291,7 @@ struct CleanupView: View {
         task?.cancel()
         let scanID = UUID()
         activeScanID = scanID
-        results = []; selectedItems = []; failures = [:]; movedInAction = 0
+        results = []; selectedItems = []; failures = [:]; flight.landed = 0
         scanCompletedFiles = 0; notice = nil; scanFoundNothing = false
         scanning = true; rootsPhase = .reading
         scrollTarget = "cleanup.roots"
@@ -414,7 +314,7 @@ struct CleanupView: View {
                     case .finished:
                         if let rootFailure {
                             rootsPhase = nil
-                            notice = CleanupNotice(kind: .denied, title: ProductCopy.scanRootFailure(reason: rootFailure, french: french),
+                            notice = PageNotice(kind: .denied, title: ProductCopy.scanRootFailure(reason: rootFailure, french: french),
                                                    recovery: .chooseAgain)
                         } else {
                             rootsPhase = .finished
@@ -424,7 +324,7 @@ struct CleanupView: View {
                             // The order settles at once; only the roots and bloom move.
                             withTransaction(still) { results.sort { allocated($0) > allocated($1) } }
                             if !partialFailures.isEmpty {
-                                notice = CleanupNotice(kind: .partial, title: copy("cleanup.partial"),
+                                notice = PageNotice(kind: .partial, title: copy("cleanup.partial"),
                                                        message: ProductCopy.scanPartialFailure(reasons: partialFailures, french: french))
                             }
                             scanFoundNothing = results.isEmpty && partialFailures.isEmpty
@@ -433,11 +333,11 @@ struct CleanupView: View {
                     }
                 }
             } catch is CancellationError {
-                if activeScanID == scanID { notice = CleanupNotice(kind: .note, title: copy("scan.cancelled")) }
+                if activeScanID == scanID { notice = PageNotice(kind: .note, title: copy("scan.cancelled")) }
             } catch {
                 if activeScanID == scanID {
                     rootsPhase = nil
-                    notice = CleanupNotice(kind: .error, title: copy("scan.failed"), recovery: .retryScan)
+                    notice = PageNotice(kind: .error, title: copy("scan.failed"), recovery: .retryScan)
                 }
             }
         }
@@ -449,7 +349,7 @@ struct CleanupView: View {
         scanning = false
         results = []
         selectedItems = []
-        notice = CleanupNotice(kind: .note, title: copy("scan.cancelled"))
+        notice = PageNotice(kind: .note, title: copy("scan.cancelled"))
         // The roots withdraw, then their parcel goes.
         rootsPhase = .retracted
         Task { @MainActor in
@@ -475,14 +375,14 @@ struct CleanupView: View {
             let selections = selectedItems.sorted { $0.path < $1.path }.map { FileActionSelection(url: $0, ruleID: ruleID) }
             let review = try service.prepareReview(selections)
             guard await service.recordProposal(review) else {
-                notice = CleanupNotice(kind: .error, title: french ? "Journal indisponible; action bloquée." : "History unavailable; action blocked.", nearActions: true)
+                notice = PageNotice(kind: .error, title: french ? "Journal indisponible; action bloquée." : "History unavailable; action blocked.", nearActions: true)
                 return
             }
             actionReview = review
             actionService = service
             actionDialogPresented = true
         } catch {
-            notice = CleanupNotice(kind: .error, title: french ? "Revue impossible; aucun fichier déplacé." : "Review failed; no files moved.", nearActions: true)
+            notice = PageNotice(kind: .error, title: french ? "Revue impossible; aucun fichier déplacé." : "Review failed; no files moved.", nearActions: true)
         }
     }
 
@@ -499,74 +399,27 @@ struct CleanupView: View {
         defer { moving = false; actionBusy = false; releaseActionScope() }
         let batch: ConfirmedActionBatch
         do { batch = try service.confirm(review, accepted: true) } catch {
-            notice = CleanupNotice(kind: .error, title: french ? "Action refusée; aucun fichier déplacé." : "Action refused; no files moved.", nearActions: true)
+            notice = PageNotice(kind: .error, title: french ? "Action refusée; aucun fichier déplacé." : "Action refused; no files moved.", nearActions: true)
             return
         }
-        failures = [:]; movedInAction = 0; notice = nil
+        failures = [:]; flight.landed = 0; notice = nil
         // Each item arrives when its outcome is final, so a leaf falls only for a file that moved.
-        let (outcomes, continuation) = AsyncStream.makeStream(of: ActionItemResult.self)
-        let worker = Task {
-            let report = await service.execute(batch) { _ = continuation.yield($0) }
-            continuation.finish()
-            return report
-        }
-        var shown = 0
-        for await item in outcomes {
-            await show(item, paced: shown < 24)
-            shown += 1
-        }
-        let report = await worker.value
-        let stayed = report.items.count - report.movedCount
-        if stayed > 0 {
-            notice = CleanupNotice(kind: .error,
-                                   title: french ? "\(report.movedCount) déplacé\(ProductFormat.frenchPlural(report.movedCount)) vers la Corbeille ; \(stayed) resté\(ProductFormat.frenchPlural(stayed)) en place."
-                                                 : "\(report.movedCount) moved to Trash; \(stayed) left in place.",
-                                   message: french ? "Chaque fichier resté en place dit pourquoi ; aucun n’a été effacé." : "Each file left in place says why; none was erased.",
-                                   nearActions: true)
-        } else {
-            notice = CleanupNotice(kind: .note, title: french ? "\(report.movedCount) déplacé\(ProductFormat.frenchPlural(report.movedCount)) vers la Corbeille." : "\(report.movedCount) moved to Trash.",
-                                   message: french ? "Ils restent récupérables depuis la Corbeille de macOS." : "They can be restored from the macOS Trash.",
-                                   nearActions: true)
-        }
+        let report = await executeShowingEachItem(service, batch, reduceMotion: reduceMotion) { show($0) }
+        notice = .moveOutcome(report, french: french)
     }
 
-    @MainActor private func show(_ item: ActionItemResult, paced: Bool) async {
+    @MainActor private func show(_ item: ActionItemResult) {
         let url = item.targetURL
         guard item.moved else {
             failures[url] = item.failureKey
             selectedItems.remove(url)
             return
         }
-        let fell = dropLeaf(from: url)
+        flight.send(url, reduceMotion: reduceMotion)
         withAnimation(reduceMotion ? nil : MotionCurve.retreat.animation(duration: 0.2)) {
             results.removeAll { $0.url == url }
             selectedItems.remove(url)
         }
-        if fell {
-            // The Trash counts the file when its leaf lands.
-            Task { @MainActor in
-                try? await Task.sleep(for: .seconds(FallingLeaf.duration))
-                withAnimation(MotionCurve.sprout.animation(duration: 0.3)) { movedInAction += 1 }
-            }
-        } else {
-            movedInAction += 1
-        }
-        if paced && !reduceMotion { try? await Task.sleep(for: .milliseconds(90)) }
-    }
-
-    /// A leaf falls from the row of `url` to the Trash indicator.
-    @discardableResult @MainActor private func dropLeaf(from url: URL) -> Bool {
-        guard !reduceMotion, let frame = rowFrames[url], let trash = anchors["trash"] else { return false }
-        let list = anchors["list"] ?? frame
-        // From the file's name, not from the selection mark it would hide behind.
-        let start = CGPoint(x: frame.minX + 90, y: min(max(frame.midY, list.minY + 12), list.maxY - 12))
-        let token = FallingToken(from: start, to: CGPoint(x: trash.minX + 18, y: trash.midY))
-        falling.append(token)
-        Task { @MainActor in
-            try? await Task.sleep(for: .seconds(FallingLeaf.duration + 0.05))
-            falling.removeAll { $0.id == token.id }
-        }
-        return true
     }
 
     private func cancelAction() {
@@ -576,7 +429,7 @@ struct CleanupView: View {
         actionReview = nil; actionService = nil
         Task { @MainActor in
             let saved = await service.recordCancellation(review)
-            notice = CleanupNotice(kind: .note, title: saved ? (french ? "Action annulée; annulation journalisée." : "Action cancelled; cancellation recorded.")
+            notice = PageNotice(kind: .note, title: saved ? (french ? "Action annulée; annulation journalisée." : "Action cancelled; cancellation recorded.")
                                                             : (french ? "Action annulée; journal indisponible." : "Action cancelled; history unavailable."), nearActions: true)
             releaseActionScope()
             actionBusy = false
