@@ -105,3 +105,9 @@ Ces commandes n’activent pas VoiceOver et ne qualifient pas les observations h
 DesignSystemTests : 17 tests exécutés, 0 échec, 1 ignoré (`testRenderSheet`).
 Les tests de contraste, de tokens Reduce Motion et de formes de risque passent ;
 la feuille de rendu ignorée ne constitue pas une preuve visuelle nouvelle.
+
+### Acceptation du lot 4.1 — 28-09-2026
+
+Mainteneur : « validé, continue chaque lot/phase/recette une par une ». Lot accepté ;
+aucun détail supplémentaire d’observation fourni. Les réserves de preuve restent explicites,
+NFR-07 reste PARTIEL.

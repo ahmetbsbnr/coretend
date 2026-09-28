@@ -145,3 +145,52 @@ La qualification locale doit consigner commit, hôte/OS, commandes, sorties, pro
 - Hôte : macOS 27.0 arm64, Swift 6.4; exécutable `.build/debug/CoreTendApp` produit par la qualification locale de la branche de reconstruction.
 - Lancement avec `HOME`, `CFFIXED_USER_HOME` et `TMPDIR` pointant vers un profil/temporaire unique. Processus resté actif après 8 secondes; `records.sqlite` créé sous `<temporary HOME>/Library/Application Support/CoreTend-Reconstruction/` uniquement. Processus terminé explicitement après observation; profil temporaire nettoyé.
 - Cette preuve couvre démarrage du binaire et isolation du store. Fenêtre réellement visible, parcours GUI/a11y et lancement du bundle empaqueté restent non qualifiés. Aucune ouverture via profil utilisateur réel.
+
+
+## P4 — lot 4.2, compatibilité limitée — 28-09-2026
+
+### Hôtes et portée
+
+Le mainteneur confirme : seul son **MacBook Air M1 sous macOS 27** est disponible.
+L’agent observe `sw_vers` : 27.0, build 26A428 ; `uname -m` : arm64.
+Swift : Apple Swift 6.4. Aucun second Mac ou hôte macOS 14 n’a été testé.
+`tart` et `prlctl` absents du PATH ; le lanceur `VBoxManage` présent échoue car
+l’application VirtualBox est absente (code 126). Aucune VM provisionnée ou installation entreprise.
+
+| Hôte | Contrôle | Résultat |
+|---|---|---|
+| MacBook Air M1, macOS 27.0 (26A428) | Paquet et lancement en fixture isolée | PASS |
+| arm64, macOS 14 | Exécution sur OS minimum | NON LANCÉ — hôte indisponible |
+| Second Mac | Exécution sur autre machine | NON LANCÉ — hôte indisponible |
+
+### Artefact et commandes exécutées
+
+- Source : `cc23a81c` (dernières modifications de code livrées en P3).
+- `make package-local verify-package` : PASS. ZIP non signé local :
+  `Artifacts/CoreTend-local-unsigned.zip`, SHA-256
+  `224deb78e5f0647b7ed9f8e9b64dfd8a8e51a062b0bda9182665bdc21c6e8944`.
+- `file`, plist et `xcrun vtool -show-build` : exécutable arm64, minimum déclaré
+  14.0 dans le plist et Mach-O. `otool -L` examiné : dépendances système Apple/SQLite/Swift.
+  Ces métadonnées ne prouvent pas l’exécution sous macOS 14.
+- `python3 Scripts/test_app_runtime_isolation.py Artifacts/CoreTend.app` : PASS.
+  Installation temporaire, HOME/CFFIXED_USER_HOME/TMPDIR/store isolés ; processus actif
+  pendant huit secondes, SQLite sous le store prévu, aucun socket Internet dans 14 relevés.
+  Processus terminé et copie installée retirée par le script. Aucun déplacement confirmé.
+- Mesure indicative de ce smoke : création du store à 0,626 s ; RSS médiane 99,7 MiB,
+  maximum 107,0 MiB. Ce n’est pas la preuve de performance représentative du lot 4.3.
+- Journaux locaux : `/tmp/coretend-p4-42-package.log`, `/tmp/coretend-p4-42-runtime.log`.
+
+### Recette et réserve
+
+Accepter ou corriger les preuves et la portée ci-dessus. La recette des hôtes manquants
+reste à réaliser : même ZIP identifié par SHA-256, copie installée en fixture selon
+`Documentation/Passation/Reference.md`, démarrage, huit destinations, Réglages, palette,
+FR/EN clair/sombre, scan d’un corpus jetable et fermeture. Consigner OS/build, architecture,
+identifiant non sensible de machine, résultat et défauts. Ne jamais confirmer un déplacement
+vers la Corbeille dans l’app packagée.
+
+**NFR-08 reste PARTIEL. Cible déclarée macOS 14+ ; exécution observée seulement sur
+arm64/macOS 27.0, un seul Mac. Signature/notarisation/publication non réalisées.**
+
+- Qualification finale du lot local : `make qualify` PASS (code 0), `make traceability`
+  et `git diff --check` PASS. Journal `/tmp/coretend-p4-42-qualify.log`.

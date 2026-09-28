@@ -397,3 +397,15 @@
 - VoiceOver parlé, zoom/texte agrandi et Reduce Motion/Transparency système non lancés
   par l’agent. NFR-07 PARTIEL ; lot 4.1 ouvert jusqu’à recette humaine, G4 non passée.
 - Vérification de préparation : `make qualify` PASS (code 0), `git diff --check` PASS.
+
+
+### P4 — 4.1 accepté, 4.2 limité aux hôtes disponibles — 28-09-2026
+
+- Mainteneur : « validé, continue chaque lot/phase/recette une par une » ; 4.1 accepté,
+  sans observation détaillée supplémentaire. NFR-07 reste PARTIEL.
+- Seul MacBook Air M1 sous macOS 27 disponible, confirmé par le mainteneur. Paquet arm64,
+  minimum déclaré 14.0, structure et lancement isolé PASS sur macOS 27.0 (26A428).
+  Artefact et preuves dans `Documentation/ReleaseEvidence.md`, section P4 4.2.
+- macOS 14 et second Mac NON LANCÉS ; NFR-08 PARTIEL. Résultat limité de 4.2 à accepter
+  avant 4.3 ; G4 non passée.
+- `make qualify` PASS (code 0), `make traceability` et `git diff --check` PASS.

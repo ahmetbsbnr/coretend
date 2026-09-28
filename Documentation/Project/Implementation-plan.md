@@ -95,8 +95,9 @@ macOS sur un dossier jetable créé pour l’occasion**, fait par le mainteneur.
 
 ### P4 — Qualification transverse (1–2 semaines, dépend d’hôtes) — gate G4
 
-- [ ] **4.1 Accessibilité (mainteneur)** : VoiceOver parlé, Dynamic Type/zoom, contraste,
-  Reduce Motion, Reduce Transparency, destination par destination (NFR-07).
+- [x] **4.1 Accessibilité (mainteneur)** : VoiceOver parlé, Dynamic Type/zoom, contraste,
+  Reduce Motion, Reduce Transparency, destination par destination (NFR-07). Lot accepté
+  le 28-09 ; observations détaillées non fournies, NFR-07 reste PARTIEL.
 - [ ] **4.2 Compatibilité** : un hôte macOS 14 (machine ou VM) et un second Mac (NFR-08).
 - [ ] **4.3 Performance** : corpus représentatif documenté, mesures démarrage/scan/RSS, puis
   budgets fixés (NFR-09).
