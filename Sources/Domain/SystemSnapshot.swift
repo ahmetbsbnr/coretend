@@ -67,3 +67,28 @@ public struct MacOSSystemSnapshotReader: SystemSnapshotReading {
                               uptimeSeconds: process.systemUptime, thermalState: thermal, loadAverage1m: load)
     }
 }
+
+/// Memory in use as macOS reports it (active + wired + compressed pages), read with
+/// host_statistics64. Unknown when the call fails; never estimated.
+public enum MemoryUsage {
+    public static func usedBytes() -> ProductMeasurement<Int64> {
+        var stats = vm_statistics64()
+        var count = mach_msg_type_number_t(MemoryLayout<vm_statistics64_data_t>.size / MemoryLayout<integer_t>.size)
+        let result = withUnsafeMutablePointer(to: &stats) {
+            $0.withMemoryRebound(to: integer_t.self, capacity: Int(count)) {
+                host_statistics64(mach_host_self(), HOST_VM_INFO64, $0, &count)
+            }
+        }
+        guard result == KERN_SUCCESS else { return .unknown(reason: "host_statistics64_failed") }
+        var pageSize: vm_size_t = 0
+        guard host_page_size(mach_host_self(), &pageSize) == KERN_SUCCESS, pageSize > 0 else { return .unknown(reason: "host_page_size_failed") }
+        let pages = Int64(stats.active_count) + Int64(stats.wire_count) + Int64(stats.compressor_page_count)
+        return .known(pages * Int64(pageSize))
+    }
+
+    /// Used share of physical memory (0…1), only from known values.
+    public static func fraction(used: ProductMeasurement<Int64>, physical: Int64) -> Double? {
+        guard case .known(let value) = used, physical > 0, value >= 0 else { return nil }
+        return min(Double(value) / Double(physical), 1)
+    }
+}

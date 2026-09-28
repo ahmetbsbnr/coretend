@@ -56,3 +56,11 @@ public struct SoilFractions: Equatable, Sendable {
         self.used = 1 - self.free
     }
 }
+
+/// Space that removing every copy but one would free: (copies − 1) × size, only for known sizes.
+public enum DuplicateSpace {
+    public static func recoverable(fileSize: Int64?, copies: Int) -> Int64? {
+        guard let fileSize, fileSize >= 0, copies > 1 else { return nil }
+        return fileSize * Int64(copies - 1)
+    }
+}

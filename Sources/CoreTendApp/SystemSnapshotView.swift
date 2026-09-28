@@ -220,6 +220,7 @@ struct SystemSnapshotView: View {
             metric(copy("metrics.loadAverage"), load(value.loadAverage1m), source: copy("metrics.source.load"), at: value.measuredAt, order: 2)
             metric(copy("metrics.processors"), "\(value.activeProcessorCount)", source: copy("metrics.source.processors"), at: value.measuredAt, order: 3)
             metric(copy("metrics.memory"), ProductFormat.memory(value.physicalMemoryBytes, french: french), source: copy("metrics.source.memory"), at: value.measuredAt, order: 4)
+            memoryInUse(value)
             metric(copy("metrics.uptime"), uptime(value.uptimeSeconds), source: copy("metrics.source.uptime"), at: value.measuredAt, order: 5)
             metric(copy("metrics.thermal"), thermal(value.thermalState), source: copy("metrics.source.thermal"), at: value.measuredAt, order: 6,
                    tone: thermalTone(value.thermalState))
@@ -347,6 +348,34 @@ struct SystemSnapshotView: View {
         .serreRise(order)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(title): \(value). \(source). \(copy("metrics.measured")) \(timestamp(date))")
+    }
+
+    /// Memory in use, read now from macOS, with a band of the share of physical memory.
+    private func memoryInUse(_ value: SystemSnapshot) -> some View {
+        let used = MemoryUsage.usedBytes()
+        let share = MemoryUsage.fraction(used: used, physical: value.physicalMemoryBytes)
+        return VStack(alignment: .leading, spacing: 6) {
+            Text(french ? "Mémoire utilisée" : "Memory in use").font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+            Text({ if case .known(let bytes) = used { return ProductFormat.memory(bytes, french: french) }; return copy("metrics.unknown") }())
+                .font(CoreTendTypography.figure).foregroundStyle(Palette.ink.color)
+            if let share {
+                GeometryReader { proxy in
+                    ZStack(alignment: .leading) {
+                        LeafCorner.control.shape.fill(Palette.deep.color)
+                        LeafCorner.control.shape.fill(share > 0.85 ? Palette.caution.color : Palette.accent.color)
+                            .frame(width: proxy.size.width * share)
+                    }
+                }
+                .frame(height: 8)
+            }
+            Text(french ? "Source : host_statistics64 (actives + câblées + compressées)" : "Source: host_statistics64 (active + wired + compressed)")
+                .font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Palette.surface.color, in: LeafCorner.parcel.shape)
+        .overlay(LeafCorner.parcel.shape.strokeBorder(Palette.separator.color, lineWidth: 1))
+        .serreRise(5)
     }
 
     @ViewBuilder private func toneLeaf(_ tone: SerreSignalTone) -> some View {

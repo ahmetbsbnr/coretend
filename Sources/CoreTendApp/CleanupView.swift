@@ -193,6 +193,12 @@ struct CleanupView: View {
             HStack(alignment: .firstTextBaseline) {
                 Text(french ? "\(ProductFormat.items(results.count, french: true)) mesuré\(ProductFormat.frenchPlural(results.count))" : "\(ProductFormat.items(results.count, french: false)) measured")
                     .font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
+                let found = results.reduce(Int64(0)) { $0 + allocated($1).clamped() }
+                let chosen = results.filter { selectedItems.contains($0.url) }.reduce(Int64(0)) { $0 + allocated($1).clamped() }
+                Text(french ? "· \(ProductFormat.bytes(found, french: true)) trouvés" + (chosen > 0 ? " · \(ProductFormat.bytes(chosen, french: true)) sélectionnés" : "")
+                            : "· \(ProductFormat.bytes(found, french: false)) found" + (chosen > 0 ? " · \(ProductFormat.bytes(chosen, french: false)) selected" : ""))
+                    .font(CoreTendTypography.caption).foregroundStyle(Palette.accent.color)
+                    .contentTransition(.numericText())
                 Spacer()
                 Text(french ? "Aucune sélection automatique" : "Nothing selected automatically")
                     .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
@@ -483,4 +489,9 @@ struct CleanupView: View {
         return -1
     }
     private func copy(_ key: String) -> String { ProductCopy.value(for: key, french: french) }
+}
+
+private extension Int64 {
+    /// Unknown sizes (-1) count as nothing in a total.
+    func clamped() -> Int64 { Swift.max(self, 0) }
 }

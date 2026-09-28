@@ -498,6 +498,12 @@ final class AppShellTests: XCTestCase {
         }
     }
 
+    func testRecoverableSpaceCountsEveryCopyButOne() {
+        XCTAssertEqual(DuplicateSpace.recoverable(fileSize: 100, copies: 3), 200)
+        XCTAssertNil(DuplicateSpace.recoverable(fileSize: 100, copies: 1))
+        XCTAssertNil(DuplicateSpace.recoverable(fileSize: nil, copies: 3))
+    }
+
     func testCrashReportRuleNamesBothExtensionsItReads() {
         XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: false).contains(".ips"))
         XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: true).contains(".ips"))

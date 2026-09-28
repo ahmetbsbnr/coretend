@@ -224,6 +224,11 @@ struct DuplicateScanView: View {
                 HStack(alignment: .firstTextBaseline) {
                     Text(copy("duplicates.count", count: groups.count))
                         .font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
+                    let total = groups.compactMap { DuplicateSpace.recoverable(fileSize: fileSize($0.files.first), copies: (standing($0) ?? $0.files).count) }.reduce(0, +)
+                    if total > 0 {
+                        Text(french ? "· \(ProductFormat.bytes(total, french: true)) récupérables en ne gardant qu’un exemplaire" : "· \(ProductFormat.bytes(total, french: false)) recoverable keeping one copy")
+                            .font(CoreTendTypography.caption).foregroundStyle(Palette.accent.color)
+                    }
                     Spacer()
                     Text(french ? "Aucune sélection automatique" : "Nothing selected automatically")
                         .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
@@ -258,8 +263,15 @@ struct DuplicateScanView: View {
         let kept = keepers.keeper(of: group.digest, suggested: group.suggestedKeeper)
         return SerreParcel {
             VStack(alignment: .leading, spacing: 4) {
-                Text("\(ProductFormat.count((standing(group) ?? group.files).count, french: french)) \(copy("duplicates.twins"))")
-                    .font(CoreTendTypography.caption.weight(.semibold)).foregroundStyle(Palette.secondaryInk.color)
+                HStack {
+                    Text("\(ProductFormat.count((standing(group) ?? group.files).count, french: french)) \(copy("duplicates.twins"))")
+                        .font(CoreTendTypography.caption.weight(.semibold)).foregroundStyle(Palette.secondaryInk.color)
+                    Spacer()
+                    if let freed = DuplicateSpace.recoverable(fileSize: fileSize(group.files.first), copies: (standing(group) ?? group.files).count) {
+                        Text(french ? "\(ProductFormat.bytes(freed, french: true)) récupérables" : "\(ProductFormat.bytes(freed, french: false)) recoverable")
+                            .font(CoreTendTypography.caption.weight(.semibold)).foregroundStyle(Palette.accent.color)
+                    }
+                }
                     .padding(.bottom, 4)
                 ForEach(standing(group) ?? group.files, id: \.path) { file in
                     shoot(file, group: group, kept: file == kept)
@@ -372,6 +384,12 @@ struct DuplicateScanView: View {
             .buttonStyle(.serre(.tile))
             .accessibilityLabel(previewLabel(for: url))
             .accessibilityHint(french ? "Ouvre l’aperçu Quick Look." : "Opens the Quick Look preview.")
+    }
+
+    /// The allocated size of one file (every copy of a group has the same content).
+    private func fileSize(_ url: URL?) -> Int64? {
+        guard let url, let values = try? url.resourceValues(forKeys: [.totalFileAllocatedSizeKey, .fileAllocatedSizeKey]) else { return nil }
+        return (values.totalFileAllocatedSize ?? values.fileAllocatedSize).map(Int64.init)
     }
 
     private func relativeFolder(_ url: URL) -> String {
