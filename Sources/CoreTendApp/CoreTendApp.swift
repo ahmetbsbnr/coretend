@@ -27,6 +27,15 @@ struct CoreTendApp: App {
         Window("CoreTend", id: "coretend.main") {
             CoreTendRootView(navigation: navigation, menuBarEnabled: $menuBarEnabled, appearance: $appearance)
                 .frame(minWidth: 640, minHeight: 520)
+                .onAppear {
+                    // Fixture-only (store captures): the window at an exact size in points.
+                    guard let size = CoreTendPreferences().fixtureWindowSize else { return }
+                    DispatchQueue.main.async {
+                        guard let window = NSApp.windows.first(where: { $0.isVisible && $0.canBecomeMain }) else { return }
+                        window.setContentSize(NSSize(width: size.width, height: size.height))
+                        window.center()
+                    }
+                }
         }
         .defaultSize(width: 1120, height: 760)
         .commands {

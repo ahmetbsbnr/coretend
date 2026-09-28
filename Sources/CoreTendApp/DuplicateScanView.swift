@@ -107,6 +107,8 @@ struct DuplicateScanView: View {
             selectedRoot = root
             beginScan(root)
         }
+        // Fixture-only (captures): open the folder given by the environment, as if chosen.
+        .task { if selectedRoot == nil, let root = CoreTendPreferences().fixtureScanRoot { selectedRoot = root; beginScan(root) } }
         .onDisappear {
             scanTask?.cancel(); activeScanID = nil; scanning = false
             analysisProgress = nil
@@ -173,7 +175,7 @@ struct DuplicateScanView: View {
                 SerreIcon(.duplicates, size: 18).foregroundStyle(Palette.accent.color)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(copy("explore.scope")).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
-                    Text(root.path).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                    Text(SandboxAccess.displayPath(root)).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                         .lineLimit(1).truncationMode(.middle).textSelection(.enabled)
                 }
                 .accessibilityElement(children: .combine)
@@ -461,6 +463,11 @@ struct DuplicateScanView: View {
                     report = result
                 }
                 rootsPhase = .finished
+                // Bring the finished roots and the groups under them into view.
+                // A fresh request on the next turn: a quick scan can end in the same update as the one
+                // that scrolled at its start, and an unchanged value would not scroll again.
+                scrollTarget = nil
+                Task { @MainActor in scrollTarget = "duplicates.roots" }
                 if !partialFailures.isEmpty {
                     notice = PageNotice(kind: .partial, title: copy("scan.partial"),
                                         message: ProductCopy.scanPartialFailure(reasons: partialFailures, french: french))

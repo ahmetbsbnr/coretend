@@ -131,9 +131,12 @@ public struct ScanRoots: View {
                     .offset(y: 3)
             }
         }
-        .frame(height: 120)
+        // Tall while the roots grow; once the scan is done the soil settles low, so the results
+        // (plots, copies, candidates) come up into view instead of sitting under an empty band.
+        .frame(height: phase == .finished ? 64 : 120)
         .frame(maxWidth: .infinity)
         .clipShape(LeafCorner.control.shape)
+        .motion(.standard, value: phase)
         .accessibilityHidden(true)
     }
 

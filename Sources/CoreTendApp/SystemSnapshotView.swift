@@ -51,6 +51,7 @@ struct SystemSnapshotView: View {
                             storage(snapshot).frame(minWidth: 560)
                             recentActivity.frame(width: 320)
                         }
+                        .fixedSize(horizontal: false, vertical: true)
                         VStack(alignment: .leading, spacing: 20) {
                             storage(snapshot)
                             recentActivity
@@ -116,6 +117,7 @@ struct SystemSnapshotView: View {
                 Text(copy("metrics.trashNote")).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
                 measurementSource(copy("metrics.source.volume"), at: value.measuredAt)
             }
+            .frame(maxHeight: .infinity, alignment: .topLeading)
         }
     }
 
@@ -175,6 +177,7 @@ struct SystemSnapshotView: View {
                         .font(CoreTendTypography.body).foregroundStyle(Palette.secondaryInk.color)
                 }
             }
+            .frame(maxHeight: .infinity, alignment: .topLeading)
         }
     }
 
@@ -198,7 +201,7 @@ struct SystemSnapshotView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, minHeight: 96, alignment: .topLeading)
             .background(Palette.surface.color, in: LeafCorner.parcel.shape)
             .overlay(LeafCorner.parcel.shape.strokeBorder(Palette.separator.color, lineWidth: 1))
         }

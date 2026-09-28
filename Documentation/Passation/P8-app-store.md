@@ -44,6 +44,30 @@
   demande une interaction à l'écran.
 - `make qualify` : code 0.
 
+### 29-09-2026 — 8.3 (revue et polish) et 8.5 (fiche)
+
+- Captures « en usage » : `python3 Scripts/capture_screens.py --in-use` crée un dossier de
+  démonstration (photos, vidéos, projets, téléchargements, 4 paires de copies exactes, faux
+  `Library/Caches`) dans le HOME de fixture ; Explorer, Doublons, Nettoyage l'ouvrent seuls,
+  Applications et Intégrité lisent `/System/Applications`. Fenêtre à 1440 × 900 points →
+  captures 2880 × 1800 (format App Store). Crochets `CORETEND_TEST_SCAN_ROOT`,
+  `CORETEND_TEST_CLEANUP_RULE`, `CORETEND_TEST_WINDOW_SIZE` : fixture seulement, testés inactifs
+  en lancement normal (`CoreTendPreferencesTests`).
+- Polish trouvé en revue et corrigé :
+  - panneau des racines tassé (120 → 64 pt) une fois l'analyse finie ; la page défile vers les
+    racines et les résultats à la fin de l'analyse (Explorer, Doublons, Nettoyage) — avant, les
+    parcelles/groupes restaient sous la ligne de flottaison ;
+  - chemins affichés en `~/…` (chemin complet en infobulle) ;
+  - « Source de mise à jour inconnue » n'est plus répété sur chaque app (dit une fois dans la note).
+- Icône : l'`.icns` d'actool s'arrêtait à 256 px ; l'App Store exige jusqu'à 512@2x →
+  `.icns` complet (16–1024) produit depuis le rendu 1024 px ; `Assets.car` Liquid Glass inchangé.
+- Aucun lien externe ni mécanisme de mise à jour dans l'app (vérifié) ; textes d'accès des
+  Réglages déjà compatibles sandbox.
+- Fiche : `Documentation/Release/AppStore-listing.md` (EN/FR, notes de revue, confidentialité
+  « Données non collectées ») ; longueurs vérifiées par `Scripts/check_appstore_listing.py`.
+- **Bloquant 8.4 :** `xcodebuild -exportArchive` → « No Accounts » : le compte Xcode doit être
+  reconnecté (Xcode › Réglages › Comptes). La fiche App Store Connect reste à créer.
+
 ## Point d'arrêt
 
 - Démarrage : audit sandbox fait (aucun sous-processus ; dossiers choisis par `fileImporter` ;

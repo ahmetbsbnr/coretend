@@ -63,6 +63,13 @@ struct IntegrityView: View {
             runSurvey(folder)
         }
         .fileDialogDefaultDirectory(suggestedDirectory)
+        // Fixture-only (captures): open the folder given by the environment, as if chosen.
+        .task {
+            guard surveyFolder == nil, let root = CoreTendPreferences().fixtureScanRoot else { return }
+            runSurvey(root)
+            let sample = root.appending(path: "App Store.app", directoryHint: .isDirectory)
+            if FileManager.default.fileExists(atPath: sample.path) { inspect(sample) }
+        }
     }
 
     // MARK: - Plant label
@@ -77,7 +84,7 @@ struct IntegrityView: View {
                     VStack(alignment: .leading, spacing: 3) {
                         Text(copy("integrity.label")).font(CoreTendTypography.caption.weight(.semibold)).foregroundStyle(Palette.secondaryInk.color)
                         Text(appName ?? url.lastPathComponent).font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
-                        Text(url.path).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                        Text(SandboxAccess.displayPath(url)).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                             .lineLimit(1).truncationMode(.middle).textSelection(.enabled)
                     }
                     Spacer(minLength: 8)
@@ -272,7 +279,7 @@ struct IntegrityView: View {
                     Text(copy("integrity.loginItems.detected")).font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
                 }
                 if let launchAgentsFolder {
-                    Text(launchAgentsFolder.path).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                    Text(SandboxAccess.displayPath(launchAgentsFolder)).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                         .lineLimit(1).truncationMode(.middle).textSelection(.enabled)
                 }
                 if scanningAgents {

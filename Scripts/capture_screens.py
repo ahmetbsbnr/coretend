@@ -76,6 +76,48 @@ img {{ width: 320px; border: 1px solid #c9c9c4; border-radius: 6px; display: blo
 """
 
 
+# --in-use: each destination opens a folder by itself (fixture-only CORETEND_TEST_SCAN_ROOT), so the
+# captures show screens in use. Explore, Duplicates and Cleanup read a generated demo folder inside the
+# fixture HOME; Applications and Integrity read /System/Applications (the same on every Mac, read only).
+DEMO_FILES = {
+    "Greenhouse/Photos/Spring garden.heic": 6, "Greenhouse/Photos/Seedlings macro.heic": 4,
+    "Greenhouse/Photos/Glasshouse at dusk.jpg": 3, "Greenhouse/Photos/Tomato harvest.jpg": 2,
+    "Greenhouse/Videos/Timelapse — first leaves.mov": 90, "Greenhouse/Videos/Garden tour.mp4": 55,
+    "Greenhouse/Projects/Greenhouse plans.key": 42, "Greenhouse/Projects/Irrigation model.numbers": 7,
+    "Greenhouse/Projects/Seed catalogue.pdf": 12, "Greenhouse/Music/Rain on glass.m4a": 9,
+    "Greenhouse/Downloads/Planting guide.pdf": 12, "Greenhouse/Downloads/Garden app installer.dmg": 70,
+    "Greenhouse/Downloads/Old photos.zip": 64, "Greenhouse/Downloads/Spring garden copy.heic": 6,
+    "Greenhouse/Archive/Tomato harvest.jpg": 2, "Greenhouse/Archive/Timelapse — first leaves.mov": 90,
+    "Library/Caches/com.example.browser/Cache.db": 38, "Library/Caches/com.example.browser/fsCachedData/a1": 14,
+    "Library/Caches/com.example.photos/thumbnails.db": 22, "Library/Caches/com.example.music/artwork/cover-01": 6,
+    "Library/Caches/com.example.maps/tiles.cache": 31,
+}
+# Exact copies (same bytes), so Duplicates finds real pairs.
+DEMO_COPIES = {
+    "Greenhouse/Downloads/Planting guide.pdf": "Greenhouse/Projects/Seed catalogue.pdf",
+    "Greenhouse/Downloads/Spring garden copy.heic": "Greenhouse/Photos/Spring garden.heic",
+    "Greenhouse/Archive/Tomato harvest.jpg": "Greenhouse/Photos/Tomato harvest.jpg",
+    "Greenhouse/Archive/Timelapse — first leaves.mov": "Greenhouse/Videos/Timelapse — first leaves.mov",
+}
+IN_USE_ROOTS = {"explore": "Greenhouse", "duplicates": "Greenhouse", "cleanup": "Library/Caches",
+                "applications": "/System/Applications", "integrity": "/System/Applications"}
+
+
+def demo_fixture(home):
+    for relative, megabytes in DEMO_FILES.items():
+        if relative in DEMO_COPIES:
+            continue
+        path = home / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "wb") as handle:
+            for _ in range(megabytes):
+                handle.write(os.urandom(1 << 20))
+    for copy, source in DEMO_COPIES.items():
+        target = home / copy
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((home / source).read_bytes())
+
+
 def run(command, **kwargs):
     return subprocess.run(command, text=True, capture_output=True, check=False, **kwargs)
 
@@ -111,7 +153,7 @@ def send_keystroke(pid, key):
     return run(["osascript", "-e", script])
 
 
-def capture(executable, helper, fixture, shot, output):
+def capture(executable, helper, fixture, shot, output, in_use=False):
     name, destination, onboarding, key, language, appearance = shot
     store = fixture / "store"
     environment = {
@@ -126,6 +168,13 @@ def capture(executable, helper, fixture, shot, output):
         "CORETEND_TEST_APPEARANCE": appearance,
         "CORETEND_TEST_LAST_DESTINATION": destination,
     }
+    if in_use:
+        environment["CORETEND_TEST_WINDOW_SIZE"] = "1440x900"  # 2880 × 1800 px: the App Store's 16:10 size
+    root = IN_USE_ROOTS.get(name) if in_use else None
+    if root:
+        environment["CORETEND_TEST_SCAN_ROOT"] = root if root.startswith("/") else str(fixture / "home" / root)
+        if name == "cleanup":
+            environment["CORETEND_TEST_CLEANUP_RULE"] = "cleanup.usercaches"
     process = subprocess.Popen([str(executable)], env=environment, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     try:
         window = None
@@ -141,7 +190,7 @@ def capture(executable, helper, fixture, shot, output):
             sent = send_keystroke(process.pid, key)
             if sent.returncode:
                 return "keystroke refused (Accessibility permission?)"
-        time.sleep(1.5)  # let the first layout and the 0.24 s transitions settle
+        time.sleep(9 if root else 1.5)  # the first layout and transitions; a scan and its sizes when in use
         target = output / file_name(name, language, appearance)
         for attempt in range(3):
             # The window number can change while SwiftUI settles its first scene; look it up again.
@@ -165,6 +214,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--output", type=Path, default=repo / "Artifacts/Captures" / datetime.date.today().isoformat())
     parser.add_argument("--only", help="capture only this surface (e.g. overview, settings)")
+    parser.add_argument("--in-use", action="store_true", help="open a demo folder in each destination (App Store captures)")
     arguments = parser.parse_args()
 
     with tempfile.TemporaryDirectory(prefix="coretend-captures-") as temporary:
@@ -178,13 +228,15 @@ def main():
         for directory in ("home", "store", "tmp"):
             (fixture / directory).mkdir(parents=True)
         executable = install(repo, app, fixture / "home")
+        if arguments.in_use:
+            demo_fixture(fixture / "home")
         output = arguments.output.resolve()
         output.mkdir(parents=True, exist_ok=True)
         results = {}
         for shot in shots():
             if arguments.only and shot[0] != arguments.only:
                 continue
-            status = capture(executable, helper, fixture, shot, output)
+            status = capture(executable, helper, fixture, shot, output, arguments.in_use)
             results[(shot[0], shot[4], shot[5])] = status
             print(f"{status:<10} {file_name(shot[0], shot[4], shot[5])}")
         generated = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
