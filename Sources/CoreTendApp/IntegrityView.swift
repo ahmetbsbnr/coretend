@@ -84,7 +84,7 @@ struct IntegrityView: View {
                     VStack(alignment: .leading, spacing: 3) {
                         Text(copy("integrity.label")).font(CoreTendTypography.caption.weight(.semibold)).foregroundStyle(Palette.secondaryInk.color)
                         Text(appName ?? url.lastPathComponent).font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
-                        Text(SandboxAccess.displayPath(url)).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                        Text(HomeFolder.displayPath(url)).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                             .lineLimit(1).truncationMode(.middle).textSelection(.enabled)
                     }
                     Spacer(minLength: 8)
@@ -166,14 +166,9 @@ struct IntegrityView: View {
                     .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 10) {
-                    ForEach(ApplicationFolders.candidates(home: SandboxAccess.userHome), id: \.path) { folder in
+                    ForEach(ApplicationFolders.candidates(home: HomeFolder.url), id: \.path) { folder in
                         Button(folder.path == "/Applications" ? "Applications" : (french ? "Applications (les vôtres)" : "Applications (yours)")) {
-                            if SandboxAccess.isSandboxed {
-                                suggestedDirectory = folder
-                                selectingSurveyFolder = true
-                            } else {
-                                runSurvey(folder)
-                            }
+                            runSurvey(folder)
                         }
                         .buttonStyle(.serre(surveyFolder == folder ? .primary : .secondary))
                         .disabled(surveying)
@@ -254,17 +249,12 @@ struct IntegrityView: View {
                     .accessibilityAddTraits(.isHeader)
                 Text(copy("integrity.loginItems.limit")).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                     .fixedSize(horizontal: false, vertical: true)
-                let found = LaunchAgentFolders.candidates(home: SandboxAccess.userHome)
+                let found = LaunchAgentFolders.candidates(home: HomeFolder.url)
                 HStack(spacing: 10) {
                     // Detected folders are offered, never read: the click is the choice.
                     ForEach(found, id: \.path) { folder in
                         Button(folderName(folder)) {
-                            if SandboxAccess.isSandboxed {
-                                suggestedDirectory = folder
-                                selectingAgentsFolder = true
-                            } else {
-                                inspectLaunchAgents(in: folder)
-                            }
+                            inspectLaunchAgents(in: folder)
                         }
                             .buttonStyle(.serre(launchAgentsFolder == folder ? .primary : .secondary))
                             .help(folder.path)
@@ -279,7 +269,7 @@ struct IntegrityView: View {
                     Text(copy("integrity.loginItems.detected")).font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
                 }
                 if let launchAgentsFolder {
-                    Text(SandboxAccess.displayPath(launchAgentsFolder)).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                    Text(HomeFolder.displayPath(launchAgentsFolder)).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                         .lineLimit(1).truncationMode(.middle).textSelection(.enabled)
                 }
                 if scanningAgents {

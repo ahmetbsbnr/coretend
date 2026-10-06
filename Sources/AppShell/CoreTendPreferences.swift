@@ -22,9 +22,10 @@ public struct CoreTendPreferences {
         return defaults.string(forKey: "coretend.lastDestination")
     }
 
+    /// The interface language follows macOS (see `AppLanguage`); only a fixture may force one.
     public var language: String {
         if !usesPersistentStorage { return environment["CORETEND_TEST_LANGUAGE"] ?? "system" }
-        return defaults.string(forKey: "coretend.language") ?? "system"
+        return "system"
     }
 
     public var appearance: AppearancePreference {
@@ -32,9 +33,9 @@ public struct CoreTendPreferences {
         return defaults.string(forKey: "coretend.appearance").flatMap(AppearancePreference.init(rawValue:)) ?? .system
     }
 
+    /// A language stored by an earlier version is ignored: there is no language choice any more.
     public func resolvedLanguage(storedValue: String?) -> String {
-        let candidate = usesPersistentStorage ? (storedValue ?? language) : language
-        return ["system", "en", "fr"].contains(candidate) ? candidate : "system"
+        ["system", "en", "fr"].contains(language) ? language : "system"
     }
 
     public var onboardingCompleted: Bool {
@@ -83,11 +84,6 @@ public struct CoreTendPreferences {
         defaults.set(value, forKey: "coretend.lastDestination")
     }
 
-    public func saveLanguage(_ value: String) {
-        guard usesPersistentStorage else { return }
-        defaults.set(value, forKey: "coretend.language")
-    }
-
     public func saveAppearance(_ value: AppearancePreference) {
         guard usesPersistentStorage else { return }
         defaults.set(value.rawValue, forKey: "coretend.appearance")
@@ -106,5 +102,16 @@ public struct CoreTendPreferences {
     public func saveMenuBarEnabled(_ value: Bool) {
         guard usesPersistentStorage else { return }
         defaults.set(value, forKey: "coretend.menuBar.enabled")
+    }
+}
+
+/// French when the first language macOS prefers is French, English otherwise.
+public enum AppLanguage {
+    public static func usesFrench(_ setting: String, preferred: [String] = Locale.preferredLanguages) -> Bool {
+        switch setting {
+        case "fr": true
+        case "en": false
+        default: preferred.first?.hasPrefix("fr") == true
+        }
     }
 }

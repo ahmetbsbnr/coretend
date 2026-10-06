@@ -86,8 +86,8 @@ struct CleanupView: View {
             selectedRoot = url
             notice = nil
         }
-        // The panel opens on the rule's expected place in the person's real home.
-        .fileDialogDefaultDirectory(descriptor.map { SandboxAccess.userHome.appending(path: $0.relativePath.joined(separator: "/"), directoryHint: .isDirectory) })
+        // The panel opens on the rule's expected place in the home folder.
+        .fileDialogDefaultDirectory(descriptor.map { HomeFolder.url.appending(path: $0.relativePath.joined(separator: "/"), directoryHint: .isDirectory) })
         // Fixture-only (captures): open the folder given by the environment, as if chosen.
         .task {
             let preferences = CoreTendPreferences()
@@ -153,7 +153,7 @@ struct CleanupView: View {
                 if let selectedRoot {
                     HStack(spacing: 8) {
                         SerreIcon(.explore, size: 14).foregroundStyle(Palette.accent.color)
-                        Text(SandboxAccess.displayPath(selectedRoot)).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                        Text(HomeFolder.displayPath(selectedRoot)).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                             .lineLimit(1).truncationMode(.middle).textSelection(.enabled)
                     }
                     .accessibilityElement(children: .combine)

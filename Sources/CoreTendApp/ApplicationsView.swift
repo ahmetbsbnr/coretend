@@ -73,7 +73,7 @@ struct ApplicationsView: View {
                 SerreParcel {
                     SerreEmptyState(title: copy("apps.initial.title"), message: copy("apps.initial.message")) {
                         VStack(spacing: 10) {
-                            let found = ApplicationFolders.candidates(home: SandboxAccess.userHome)
+                            let found = ApplicationFolders.candidates(home: HomeFolder.url)
                             if !found.isEmpty {
                                 // Detected folders are offered, never read: the click is the choice.
                                 HStack(spacing: 10) {
@@ -167,7 +167,7 @@ struct ApplicationsView: View {
                     SerreIcon(.applications, size: 18).foregroundStyle(Palette.accent.color)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(copy("explore.scope")).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
-                        Text(SandboxAccess.displayPath(root)).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                        Text(HomeFolder.displayPath(root)).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                             .lineLimit(1).truncationMode(.middle).textSelection(.enabled)
                     }
                     .accessibilityElement(children: .combine)
@@ -352,7 +352,7 @@ struct ApplicationsView: View {
                 ForEach(associationResults, id: \.path) { url in
                     HStack(spacing: 8) {
                         RiskLeaf(.medium, size: 10)
-                        Text(SandboxAccess.displayPath(url)).font(CoreTendTypography.caption).foregroundStyle(Palette.ink.color)
+                        Text(HomeFolder.displayPath(url)).font(CoreTendTypography.caption).foregroundStyle(Palette.ink.color)
                             .lineLimit(1).truncationMode(.middle).textSelection(.enabled)
                         Spacer(minLength: 6)
                         Text(copy(associationEvidence[url] == .name ? "apps.evidence.name" : "apps.evidence.identifier"))
@@ -513,15 +513,8 @@ struct ApplicationsView: View {
         }
     }
 
-    /// A suggested folder: read directly, or — in the App Sandbox — through the panel opened on it.
-    private func choose(_ folder: URL) {
-        if SandboxAccess.isSandboxed {
-            suggestedDirectory = folder
-            selectingFolder = true
-        } else {
-            discover(folder)
-        }
-    }
+    /// A suggested folder is read directly.
+    private func choose(_ folder: URL) { discover(folder) }
 
     private func discover(_ root: URL) {
         task?.cancel()

@@ -178,7 +178,7 @@ struct ExploreScanView: View {
                 SerreIcon(.explore, size: 18).foregroundStyle(Palette.accent.color)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(copy("explore.scope")).font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
-                    Text(SandboxAccess.displayPath(root)).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
+                    Text(HomeFolder.displayPath(root)).font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                         .lineLimit(1).truncationMode(.middle).textSelection(.enabled)
                 }
                 .accessibilityElement(children: .combine)

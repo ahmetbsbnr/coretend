@@ -82,7 +82,7 @@ final class CoreTendNavigation {
     }
 
     var usesFrench: Bool {
-        language == "fr" || (language == "system" && Locale.preferredLanguages.first?.hasPrefix("fr") == true)
+        AppLanguage.usesFrench(language)
     }
 }
 
@@ -90,7 +90,7 @@ private struct CoreTendRootView: View {
     private let preferences: CoreTendPreferences
     @Bindable private var navigation: CoreTendNavigation
     @Binding private var menuBarEnabled: Bool
-    @State private var language: String
+    private let language: String
     @Binding private var appearance: AppearancePreference
     @State private var onboardingCompleted: Bool
     @State private var recentFilesEnabled: Bool
@@ -101,7 +101,7 @@ private struct CoreTendRootView: View {
     @AppStorage("coretend.livingGreenhouse") private var livingGreenhouse = true
     @State private var rowFrames: [Destination: CGRect] = [:]
     @Namespace private var searchSpace
-    private var french: Bool { language == "fr" || (language == "system" && Locale.preferredLanguages.first?.hasPrefix("fr") == true) }
+    private var french: Bool { AppLanguage.usesFrench(language) }
 
     private var effectiveColorScheme: ColorScheme? {
         if let fixture = preferences.fixtureAppearance { return fixture == .dark ? .dark : .light }
@@ -114,7 +114,7 @@ private struct CoreTendRootView: View {
         self.navigation = navigation
         _menuBarEnabled = menuBarEnabled
         _appearance = appearance
-        _language = State(initialValue: preferences.resolvedLanguage(storedValue: nil))
+        language = preferences.resolvedLanguage(storedValue: nil)
         _onboardingCompleted = State(initialValue: preferences.onboardingCompleted)
         _recentFilesEnabled = State(initialValue: preferences.recentFilesEnabled)
     }
@@ -171,7 +171,6 @@ private struct CoreTendRootView: View {
         .onChange(of: navigation.selection) { _, destination in
             if let destination { preferences.saveLastDestination(destination.rawValue) }
         }
-        .onChange(of: language) { _, value in preferences.saveLanguage(value); navigation.language = value }
         .onChange(of: appearance) { _, value in
             preferences.saveAppearance(value)
             applyAppearance(value)
@@ -181,10 +180,6 @@ private struct CoreTendRootView: View {
         .onChange(of: recentFilesEnabled) { _, value in preferences.saveRecentFilesEnabled(value) }
         .onChange(of: menuBarEnabled) { _, value in preferences.saveMenuBarEnabled(value) }
         .task {
-            if let store = try? await LocalStoreAccess.open(), preferences.usesPersistentStorage,
-               let saved = try? await store.languagePreference() {
-                language = preferences.resolvedLanguage(storedValue: saved)
-            }
             if !onboardingCompleted { navigation.activeSheet = .onboarding }
         }
     }
@@ -192,7 +187,7 @@ private struct CoreTendRootView: View {
     @ViewBuilder
     private func sheetContent(_ sheet: RootSheet) -> some View {
         switch sheet {
-        case .settings: SettingsView(french: french, language: $language, appearance: $appearance, recentFilesEnabled: $recentFilesEnabled, menuBarEnabled: $menuBarEnabled) {
+        case .settings: SettingsView(french: french, appearance: $appearance, recentFilesEnabled: $recentFilesEnabled, menuBarEnabled: $menuBarEnabled) {
             navigation.activeSheet = nil
         }
         case .onboarding: OnboardingView(french: french) { onboardingCompleted = true; navigation.activeSheet = nil }
