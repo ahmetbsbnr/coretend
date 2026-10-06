@@ -258,9 +258,10 @@ struct ExploreScanView: View {
                 .pickerStyle(.menu)
                 .font(CoreTendTypography.secondary)
                 .tint(Palette.accent.color)
+                // Only an active filter is explained; with none, nothing is said.
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(categoryDescription)
-                    Text(presetDescription)
+                    if category != .all { Text(categoryDescription) }
+                    if preset != .all { Text(presetDescription) }
                 }
                 .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                 .fixedSize(horizontal: false, vertical: true)

@@ -28,12 +28,14 @@ struct SystemSnapshotView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
+            // The Home measures on arrival; only the Performance sheet offers a refresh.
+            if destination == .performance {
             HStack {
                 Text(copy("menubar.metrics.title"))
                     .font(CoreTendTypography.sectionTitle)
                     .foregroundStyle(Palette.ink.color)
                 Spacer()
-                if destination == .performance, let snapshot {
+                if let snapshot {
                     Text("\(copy("metrics.measured")) \(timestamp(snapshot.measuredAt))")
                         .font(CoreTendTypography.caption).foregroundStyle(Palette.tertiaryInk.color)
                 }
@@ -42,6 +44,7 @@ struct SystemSnapshotView: View {
                     .disabled(loading || clearingHistory)
             }
             .serreRise(1)
+            }
             if (loading || clearingHistory) && snapshot == nil {
                 Text(copy("metrics.refresh")).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
             }
