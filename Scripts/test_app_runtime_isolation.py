@@ -115,7 +115,9 @@ def main():
             text=True,
         )
         try:
-            deadline = time.monotonic() + 8
+            # Up to 20 s for the store to appear, then a fixed 6 s sampling window from that
+            # moment, so a slower launch (a busy CI runner) cannot shorten the window.
+            deadline = time.monotonic() + 20
             next_socket_sample = time.monotonic()
             socket_samples = 0
             performance_samples = []
@@ -129,6 +131,7 @@ def main():
                 time.sleep(0.1)
                 if database.is_file() and store_ready_seconds is None:
                     store_ready_seconds = time.perf_counter() - launch_started
+                    deadline = time.monotonic() + 6
                 if database.is_file() and time.monotonic() >= next_socket_sample:
                     socket_processes = internet_socket_processes(process.pid)
                     if socket_processes:
