@@ -84,11 +84,16 @@ struct DuplicateScanView: View {
             } else {
                 SerreParcel {
                     SerreEmptyState(title: copy("duplicates.initial.title"), message: copy("duplicates.initial.message")) {
-                        Button { selectingFolder = true } label: {
-                            Label { Text(copy("explore.choose")) } icon: { SerreIcon(.duplicates, size: 15) }
+                        HStack(spacing: 10) {
+                            Button { beginScan(HomeFolder.url) } label: {
+                                Label { Text(copy("space.scanHome")) } icon: { SerreIcon(.duplicates, size: 15) }
+                            }
+                            .buttonStyle(.serre(.primary))
+                            .keyboardShortcut(.defaultAction)
+                            Button(copy("explore.choose")) { selectingFolder = true }
+                                .buttonStyle(.serre(.secondary))
+                                .accessibilityHint(copy("duplicates.choose.hint"))
                         }
-                        .buttonStyle(.serre(.primary))
-                        .accessibilityHint(copy("duplicates.choose.hint"))
                         .padding(.top, 6)
                     }
                 }

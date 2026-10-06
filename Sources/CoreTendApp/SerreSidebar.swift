@@ -11,9 +11,9 @@ struct SidebarRowFrames: PreferenceKey {
     }
 }
 
-/// The Serre sidebar, drawn by CoreTend instead of the system list: the germinating logo, two
-/// sections, and a leaf marker that glides to the chosen row whatever chose it (click, command
-/// palette, ⌘1…⌘8, arrow keys, menu bar). A vine then draws from the marker to the content edge
+/// The Serre sidebar, drawn by CoreTend instead of the system list: the germinating logo, the four
+/// spaces, History at the foot, and a leaf marker that glides to the chosen row whatever chose it (click, command
+/// palette, ⌘1…⌘5, arrow keys, menu bar). A vine then draws from the marker to the content edge
 /// and fades; nothing moves at rest.
 struct SerreSidebar: View {
     @Binding var selection: Destination?
@@ -29,23 +29,14 @@ struct SerreSidebar: View {
     @State private var vine = 0.0
     @State private var vineOpacity = 0.0
 
-    private let sections: [(key: String, destinations: [Destination])] = [
-        ("sidebar.yourMac", Array(Destination.sidebarOrder.prefix(4))),
-        ("sidebar.understand", Array(Destination.sidebarOrder.suffix(4))),
-    ]
-
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             brand
             searchButton
-            ForEach(sections, id: \.key) { section in
-                Text(ProductCopy.value(for: section.key, french: french))
-                    .font(CoreTendTypography.caption.weight(.semibold))
-                    .foregroundStyle(Palette.tertiaryInk.color)
-                    .padding(.horizontal, 12).padding(.top, 14).padding(.bottom, 4)
-                ForEach(section.destinations) { destination in row(destination) }
-            }
+            Color.clear.frame(height: 10)
+            ForEach(Destination.sidebarOrder) { destination in row(destination) }
             Spacer(minLength: 12)
+            row(.record)
             Button(action: openSettings) {
                 Label { Text(ProductCopy.value(for: "settings.title", french: french)) } icon: { SerreIcon(.settings) }
                     .font(CoreTendTypography.body)
@@ -163,7 +154,7 @@ struct SerreSidebar: View {
     }
 
     private func move(_ offset: Int) -> KeyPress.Result {
-        selection = (selection ?? .overview).step(offset)
+        selection = (selection ?? .home).step(offset)
         return .handled
     }
 }

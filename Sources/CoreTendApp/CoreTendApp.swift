@@ -3,6 +3,8 @@ import AppKit
 import AppShell
 import DesignSystem
 import Observation
+import ScanCore
+import Domain
 
 @main
 struct CoreTendApp: App {
@@ -75,6 +77,9 @@ final class CoreTendNavigation {
     /// The command palette, drawn over the window (not a sheet: a click outside closes it).
     var searchOpen = false
     var language: String
+    /// The last read of every cleanup rule, shared by the Home and Clean spaces.
+    var cleanupReport: CleanupSurveyReport?
+    var cleanupReportDate: Date?
 
     init(language: String) {
         self.language = language
@@ -236,7 +241,7 @@ private struct CoreTendMenuBar: View {
             Text(ProductCopy.value(for: "menubar.open", french: french))
                 .font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
             VStack(spacing: 2) {
-                ForEach(Destination.sidebarOrder) { destination in
+                ForEach(Destination.navigationOrder) { destination in
                     Button {
                         navigation.selection = destination
                         navigation.activeSheet = nil
@@ -272,41 +277,42 @@ private struct CoreTendMenuBar: View {
     }
 }
 
-/// The welcome, in three pages of the greenhouse: what CoreTend is, how it works, what it will
-/// never do. The scene lives here too (the sheet is the active window).
+/// The first launch, in three screens: the promise, Full Disk Access, and the start.
 private struct OnboardingView: View {
     let french: Bool
     let finish: () -> Void
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var page = 0
+    @State private var access = FullDiskAccessStatus.unknown
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             ZStack {
                 switch page {
                 case 0: welcome.transition(pageTransition)
-                case 1: how.transition(pageTransition)
-                default: never.transition(pageTransition)
+                case 1: accessPage.transition(pageTransition)
+                default: ready.transition(pageTransition)
                 }
             }
-            .frame(minHeight: 380, alignment: .top)
+            .frame(minHeight: 360, alignment: .top)
             HStack(spacing: 10) {
-                // One leaf per page; the current one is open.
+                // One leaf per screen; the current one is open.
                 ForEach(0..<3, id: \.self) { index in
                     RiskLeafShape(level: .low)
                         .fill(index == page ? Palette.accent.color : Palette.strongSeparator.color)
                         .frame(width: index == page ? 14 : 10, height: index == page ? 14 : 10)
                 }
                 Spacer()
-                if page > 0 {
-                    Button(ProductCopy.value(for: "onboarding.back", french: french)) { go(page - 1) }
-                        .buttonStyle(.serre(.secondary))
+                if page == 1 && access != .granted {
+                    Button(copy("onboarding.later")) { go(2) }.buttonStyle(.serre(.secondary))
                 }
                 if page < 2 {
-                    Button(ProductCopy.value(for: "onboarding.next", french: french)) { go(page + 1) }
-                        .keyboardShortcut(.defaultAction).buttonStyle(.serre(.primary))
+                    Button(copy(page == 1 && access != .granted ? "access.open" : "onboarding.next")) {
+                        if page == 1 && access != .granted { NSWorkspace.shared.open(FullDiskAccessProbe.settingsURL) } else { go(page + 1) }
+                    }
+                    .keyboardShortcut(.defaultAction).buttonStyle(.serre(.primary))
                 } else {
-                    Button(ProductCopy.value(for: "onboarding.start", french: french), action: finish)
+                    Button(copy("onboarding.start"), action: finish)
                         .keyboardShortcut(.defaultAction).buttonStyle(.serre(.primary))
                 }
             }
@@ -314,7 +320,11 @@ private struct OnboardingView: View {
         .padding(32).frame(width: 620)
         .background(LivingBackdrop())
         .environment(\.serreAmbientAllowed, true)
+        .onAppear(perform: refresh)
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in refresh() }
     }
+
+    private func refresh() { access = FullDiskAccessProbe(home: HomeFolder.url).status() }
 
     private var pageTransition: AnyTransition {
         reduceMotion ? .opacity : .asymmetric(insertion: .move(edge: .trailing).combined(with: .opacity),
@@ -329,51 +339,45 @@ private struct OnboardingView: View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 14) {
                 SerreLogo(size: 64, germinates: true).ambientSway(degrees: 5)
-                Text(ProductCopy.value(for: "onboarding.title", french: french)).font(CoreTendTypography.pageTitle)
-                    .foregroundStyle(Palette.ink.color)
+                Text(copy("onboarding.title")).font(CoreTendTypography.pageTitle).foregroundStyle(Palette.ink.color)
             }
-            Text(ProductCopy.value(for: "onboarding.lede", french: french))
+            Text(copy("onboarding.lede"))
+                .font(CoreTendTypography.lede).foregroundStyle(Palette.ink.color)
+                .fixedSize(horizontal: false, vertical: true)
+            ForEach(1...3, id: \.self) { index in
+                SerreSignalTag(.good, title: copy("onboarding.promise\(index)"), order: index)
+            }
+        }
+    }
+
+    private var accessPage: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(copy("access.onboarding.title")).font(CoreTendTypography.pageTitle).foregroundStyle(Palette.ink.color)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(copy("access.onboarding.body")).font(CoreTendTypography.lede).foregroundStyle(Palette.ink.color)
+                .fixedSize(horizontal: false, vertical: true)
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(1...3, id: \.self) { step in
+                    Text("\(step). " + copy("access.step\(step)")).font(CoreTendTypography.body).foregroundStyle(Palette.secondaryInk.color)
+                }
+            }
+            if access == .granted {
+                SerreSignalTag(.good, title: copy("access.granted"))
+            }
+        }
+    }
+
+    private var ready: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text(copy("onboarding.ready.title")).font(CoreTendTypography.pageTitle).foregroundStyle(Palette.ink.color)
+            Text(copy(access == .granted ? "onboarding.ready.full" : "onboarding.ready.partial"))
                 .font(CoreTendTypography.lede).foregroundStyle(Palette.ink.color)
                 .fixedSize(horizontal: false, vertical: true)
             GreenhouseScene(state: GreenhouseState(freeFraction: 0.75, lastActionFailed: false, recentlyPruned: false))
-            Text(ProductCopy.value(for: "onboarding.scope", french: french))
-                .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
-    private var how: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            Text(ProductCopy.value(for: "onboarding.how", french: french)).font(CoreTendTypography.pageTitle)
-                .foregroundStyle(Palette.ink.color)
-            ForEach(Array([(SerreGlyph.explore, 1), (.search, 2), (.cleanup, 3)].enumerated()), id: \.offset) { order, item in
-                HStack(alignment: .center, spacing: 16) {
-                    DestinationPlant(item.0)
-                    VStack(alignment: .leading, spacing: 3) {
-                        Text(ProductCopy.value(for: "onboarding.step\(item.1).title", french: french))
-                            .font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
-                        Text(ProductCopy.value(for: "onboarding.step\(item.1).body", french: french))
-                            .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                }
-                .serreRise(order)
-            }
-        }
-    }
-
-    private var never: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(ProductCopy.value(for: "onboarding.never.title", french: french)).font(CoreTendTypography.pageTitle)
-                .foregroundStyle(Palette.ink.color)
-            ForEach(1...3, id: \.self) { index in
-                SerreSignalTag(.good, title: ProductCopy.value(for: "onboarding.never\(index)", french: french), order: index)
-            }
-            Text(ProductCopy.value(for: "onboarding.privacy", french: french))
-                .font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-                .fixedSize(horizontal: false, vertical: true)
-        }
-    }
+    private func copy(_ key: String) -> String { ProductCopy.value(for: key, french: french) }
 }
 
 private struct DestinationView: View {
@@ -404,14 +408,8 @@ private struct DestinationView: View {
                     DestinationPlant(destination.glyph, activity: plantActivity).id(destination)
                 }
                 .serreRise(0)
-                if destination == .overview || destination == .performance {
-                    SystemSnapshotView(destination: destination, french: french)
-                } else if destination != .record {
-                    SerreBanner(.note, title: ProductCopy.value(for: "safety.notice", french: french))
-                        .serreRise(1)
-                }
                 destinationContent
-                    .serreRise(destination == .overview ? 6 : 2)
+                    .serreRise(2)
             }
             .padding(32)
             .frame(maxWidth: 1280, alignment: .leading)
@@ -424,14 +422,11 @@ private struct DestinationView: View {
 
     @ViewBuilder private var destinationContent: some View {
         switch destination.route {
-        case .overview: SavedFilesView(french: french)
+        case .home: HomeView(french: french)
+        case .space: SpaceView(french: french, recentFilesEnabled: $recentFilesEnabled)
+        case .clean: CleanView(french: french)
+        case .apps: AppsView(french: french)
         case .record: RecordView(french: french)
-        case .cleanup: CleanupView(french: french)
-        case .explore: ExploreScanView(french: french, recentFilesEnabled: $recentFilesEnabled)
-        case .duplicates: DuplicateScanView(french: french)
-        case .applications: ApplicationsView(french: french)
-        case .integrity: IntegrityView(french: french)
-        case .performance: EmptyView()
         }
     }
 }

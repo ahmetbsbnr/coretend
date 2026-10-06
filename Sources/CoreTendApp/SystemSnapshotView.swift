@@ -6,8 +6,11 @@ import AppShell
 import Persistence
 import Charts
 
+/// What the snapshot shows: the disk on the Home, or the live readings and their history.
+enum SnapshotMode { case overview, performance }
+
 struct SystemSnapshotView: View {
-    let destination: Destination
+    let destination: SnapshotMode
     let french: Bool
     @Environment(CoreTendNavigation.self) private var navigation
     @State private var snapshot: SystemSnapshot?
@@ -181,13 +184,12 @@ struct SystemSnapshotView: View {
         }
     }
 
-    /// Where to go from here: two paths into the greenhouse.
+    /// Where to go from here: the three other spaces.
     private var nextSteps: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 260), spacing: 14)], alignment: .leading, spacing: 14) {
-            path(.explore, title: copy("overview.next.explore"), help: copy("overview.next.explore.help"))
-            path(.cleanup, title: copy("overview.next.cleanup"), help: copy("overview.next.cleanup.help"))
-            path(.duplicates, title: copy("overview.next.duplicates"), help: copy("overview.next.duplicates.help"))
-            path(.record, title: copy("overview.next.record"), help: copy("overview.next.record.help"))
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 14)], alignment: .leading, spacing: 14) {
+            path(.space, title: copy("home.next.space"), help: copy("home.next.space.help"))
+            path(.clean, title: copy("home.next.clean"), help: copy("home.next.clean.help"))
+            path(.apps, title: copy("home.next.apps"), help: copy("home.next.apps.help"))
         }
     }
 

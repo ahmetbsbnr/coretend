@@ -2,14 +2,26 @@ import XCTest
 @testable import AppShell
 
 final class AppShellTests: XCTestCase {
-    func testNavigationHasExactlyEightProductDestinations() {
-        XCTAssertEqual(Destination.allCases.count, 8)
-        XCTAssertEqual(Set(Destination.allCases.map(\.rawValue)).count, 8)
+    func testNavigationHasFourSpacesAndHistory() {
+        XCTAssertEqual(Destination.allCases.count, 5)
+        XCTAssertEqual(Destination.sidebarOrder, [.home, .space, .clean, .apps])
+        XCTAssertEqual(Destination.navigationOrder, [.home, .space, .clean, .apps, .record])
     }
 
-    func testDestinationRestorationAndRouteMappingCoverAllEightDestinations() {
-        XCTAssertEqual(Destination.restored(from: nil), .overview)
-        XCTAssertEqual(Destination.restored(from: "obsolete-destination"), .overview)
+    func testA2_0DestinationOpensTheSpaceThatNowHoldsIt() {
+        XCTAssertEqual(Destination.restored(from: "overview"), .home)
+        XCTAssertEqual(Destination.restored(from: "performance"), .home)
+        XCTAssertEqual(Destination.restored(from: "explore"), .space)
+        XCTAssertEqual(Destination.restored(from: "duplicates"), .space)
+        XCTAssertEqual(Destination.restored(from: "cleanup"), .clean)
+        XCTAssertEqual(Destination.restored(from: "applications"), .apps)
+        XCTAssertEqual(Destination.restored(from: "integrity"), .apps)
+        XCTAssertEqual(Destination.restored(from: "record"), .record)
+    }
+
+    func testDestinationRestorationAndRouteMappingCoverEveryDestination() {
+        XCTAssertEqual(Destination.restored(from: nil), .home)
+        XCTAssertEqual(Destination.restored(from: "obsolete-destination"), .home)
         for destination in Destination.allCases {
             XCTAssertEqual(Destination.restored(from: destination.rawValue), destination)
         }
@@ -17,7 +29,7 @@ final class AppShellTests: XCTestCase {
     }
 
     func testEveryDestinationHasLocalizedTitleLedeAndOnePaletteCommand() {
-        for destination in Destination.sidebarOrder {
+        for destination in Destination.navigationOrder {
             for french in [false, true] {
                 let title = ProductCopy.value(for: destination.titleKey, french: french)
                 let lede = ProductCopy.value(for: destination.ledeKey, french: french)
@@ -288,23 +300,22 @@ final class AppShellTests: XCTestCase {
     }
 
     func testCommandPaletteSearchUsesLocalizedLabelsAndAliases() {
-        let frenchResults = CommandPaletteCatalog.search("performances", french: true)
-        XCTAssertEqual(frenchResults.map(\.target), [.destination(.performance)])
-        let aliasResults = CommandPaletteCatalog.search("favoris", french: true)
-        XCTAssertEqual(aliasResults.map(\.target), [.destination(.overview)])
+        let frenchResults = CommandPaletteCatalog.search("nettoyer", french: true)
+        XCTAssertEqual(frenchResults.map(\.target), [.destination(.clean)])
+        let aliasResults = CommandPaletteCatalog.search("doublons", french: true)
+        XCTAssertEqual(aliasResults.map(\.target), [.destination(.space)])
         XCTAssertTrue(CommandPaletteCatalog.search("sans résultat", french: false).isEmpty)
     }
 
     func testCommandPaletteSearchAcceptsEnglishAndFrenchAliasesInEitherInterfaceLanguage() {
         let aliases: [(String, String, CommandTarget)] = [
-            ("home", "accueil", .destination(.overview)),
+            ("home", "accueil", .destination(.home)),
             ("history", "historique", .destination(.record)),
-            ("clean", "nettoyer", .destination(.cleanup)),
-            ("folders", "dossiers", .destination(.explore)),
-            ("duplicate files", "doublons exacts", .destination(.duplicates)),
-            ("software", "logiciels", .destination(.applications)),
-            ("quarantine", "quarantaine", .destination(.integrity)),
-            ("measurements", "mesures", .destination(.performance)),
+            ("cleanup", "nettoyage", .destination(.clean)),
+            ("folders", "dossiers", .destination(.space)),
+            ("duplicates", "doublons", .destination(.space)),
+            ("uninstall", "désinstaller", .destination(.apps)),
+            ("login items", "démarrage", .destination(.apps)),
             ("preferences", "préférences", .settings)
         ]
         for (english, french, target) in aliases {
@@ -362,28 +373,27 @@ final class AppShellTests: XCTestCase {
             XCTAssertEqual(ProductCopy.activityDetail(detail, failureCode: "other_failure", french: false), detail)
         }
     }
-    func testSidebarOrderGroupsYourMacThenUnderstandAndCoversEveryDestination() {
-        XCTAssertEqual(Destination.sidebarOrder, [.overview, .explore, .cleanup, .duplicates, .applications, .integrity, .performance, .record])
-        XCTAssertEqual(Set(Destination.sidebarOrder), Set(Destination.allCases))
+    func testNavigationOrderCoversEveryDestination() {
+        XCTAssertEqual(Set(Destination.navigationOrder), Set(Destination.allCases))
     }
 
     func testSidebarStepMovesByOneAndStopsAtTheEnds() {
-        XCTAssertEqual(Destination.overview.step(1), .explore)
-        XCTAssertEqual(Destination.explore.step(-1), .overview)
-        XCTAssertEqual(Destination.overview.step(-1), .overview)
+        XCTAssertEqual(Destination.home.step(1), .space)
+        XCTAssertEqual(Destination.space.step(-1), .home)
+        XCTAssertEqual(Destination.home.step(-1), .home)
         XCTAssertEqual(Destination.record.step(1), .record)
-        XCTAssertEqual(Destination.duplicates.step(1), .applications, "crossing the section boundary")
+        XCTAssertEqual(Destination.apps.step(1), .record)
     }
 
     func testShortcutNumbersFollowTheSidebar() {
-        XCTAssertEqual(Destination.sidebarOrder.map(\.shortcutNumber), Array(1...8))
+        XCTAssertEqual(Destination.navigationOrder.map(\.shortcutNumber), Array(1...5))
     }
 
     func testCommandPaletteListsDestinationsInSidebarOrder() {
         let destinations = CommandPaletteCatalog.commands(french: false).compactMap { command -> Destination? in
             if case .destination(let destination) = command.target { return destination } else { return nil }
         }
-        XCTAssertEqual(destinations, Destination.sidebarOrder)
+        XCTAssertEqual(destinations, Destination.navigationOrder)
     }
 
     func testEveryDestinationHasASerreLedeInBothLanguages() {
@@ -552,9 +562,15 @@ final class AppShellTests: XCTestCase {
         }
     }
 
-    func testCrashReportRuleNamesBothExtensionsItReads() {
-        XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: false).contains(".ips"))
-        XCTAssertTrue(ProductCopy.value(for: "cleanup.crashes.help", french: true).contains(".ips"))
+    func testEveryCleanupRuleExplainsItselfInBothLanguages() {
+        let rules = ["caches", "logs", "crashes", "derived", "downloads", "deviceSupport", "iosBackups", "simulatorCaches",
+                     "xcodeArchives", "npmCache", "pnpmStore", "gradleCaches", "cargoCache", "mailDownloads"]
+        for rule in rules {
+            for key in ["cleanup.\(rule)", "cleanup.\(rule).help"] {
+                XCTAssertNotEqual(ProductCopy.value(for: key, french: false), key, key)
+                XCTAssertNotEqual(ProductCopy.value(for: key, french: true), key, key)
+            }
+        }
     }
 
     func testFirstLaunchStepsExistInBothLanguages() {

@@ -13,6 +13,33 @@ final class SafetyCoreTests: XCTestCase {
         return (root, trash, file)
     }
 
+    func testRestorePutsAnItemBackOnlyFromATrashFolderToAFreePlace() throws {
+        let f = try fixture()
+        defer { try? FileManager.default.removeItem(at: f.root) }
+        let fakeTrash = f.root.appendingPathComponent(".Trash", isDirectory: true)
+        try FileManager.default.createDirectory(at: fakeTrash, withIntermediateDirectories: true)
+        let inTrash = fakeTrash.appendingPathComponent("candidate.txt")
+        try FileManager.default.moveItem(at: f.file, to: inTrash)
+
+        try TrashRestorer().restore(inTrash, to: f.file)
+        XCTAssertEqual(try Data(contentsOf: f.file), Data("keep me".utf8))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: inTrash.path))
+
+        // Not from outside a Trash folder, and never over something that stands there.
+        XCTAssertThrowsError(try TrashRestorer().restore(f.file, to: f.root.appendingPathComponent("other.txt"))) {
+            XCTAssertEqual($0 as? RestoreRefusal, .notInTrash)
+        }
+        let second = fakeTrash.appendingPathComponent("second.txt")
+        try Data("second".utf8).write(to: second)
+        XCTAssertThrowsError(try TrashRestorer().restore(second, to: f.file)) {
+            XCTAssertEqual($0 as? RestoreRefusal, .originalOccupied)
+        }
+        XCTAssertEqual(try Data(contentsOf: f.file), Data("keep me".utf8))
+        XCTAssertThrowsError(try TrashRestorer().restore(second, to: f.root.appendingPathComponent("gone/second.txt"))) {
+            XCTAssertEqual($0 as? RestoreRefusal, .originalFolderMissing)
+        }
+    }
+
     func testTrashFailurePreservesOriginalAndReturnsFailure() async throws {
         let f = try fixture()
         defer { try? FileManager.default.removeItem(at: f.root) }

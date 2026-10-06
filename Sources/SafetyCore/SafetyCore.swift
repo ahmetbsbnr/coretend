@@ -180,3 +180,32 @@ public struct MacOSTrashClient: TrashClient {
         return resultingURL as URL
     }
 }
+
+public enum RestoreRefusal: Error, Equatable, Sendable {
+    /// The item is no longer in a Trash folder.
+    case notInTrash
+    /// Something already stands at the original place.
+    case originalOccupied
+    /// The folder that held it is gone.
+    case originalFolderMissing
+}
+
+/// Undo for a move to the Trash: puts an item CoreTend moved back where it was. It only takes an
+/// item from a Trash folder, and only to a place that is free and whose folder still exists, so it
+/// can never overwrite or erase anything.
+public struct TrashRestorer: Sendable {
+    public init() {}
+
+    public func restore(_ trashURL: URL, to original: URL) throws {
+        let trashPath = trashURL.standardizedFileURL.path
+        guard trashPath.contains("/.Trash/") || trashPath.contains("/.Trashes/") else { throw RestoreRefusal.notInTrash }
+        var info = stat()
+        guard lstat(trashPath, &info) == 0 else { throw PathRefusal.missingTarget }
+        guard lstat(original.standardizedFileURL.path, &info) != 0 else { throw RestoreRefusal.originalOccupied }
+        var folder: ObjCBool = false
+        guard FileManager.default.fileExists(atPath: original.deletingLastPathComponent().path, isDirectory: &folder), folder.boolValue else {
+            throw RestoreRefusal.originalFolderMissing
+        }
+        try FileManager.default.moveItem(at: trashURL, to: original)
+    }
+}

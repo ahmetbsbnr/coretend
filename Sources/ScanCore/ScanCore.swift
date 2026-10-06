@@ -12,6 +12,13 @@ public enum ScanRule: String, CaseIterable, Sendable {
     case incompleteDownloads = "cleanup.incompletedownloads"
     case xcodeDeviceSupport = "cleanup.xcodedevicesupport"
     case iosBackups = "cleanup.iosbackups"
+    case npmCache = "cleanup.npmcache"
+    case pnpmStore = "cleanup.pnpmstore"
+    case gradleCaches = "cleanup.gradlecaches"
+    case cargoCache = "cleanup.cargocache"
+    case xcodeArchives = "cleanup.xcodearchives"
+    case simulatorCaches = "cleanup.simulatorcaches"
+    case mailDownloads = "cleanup.maildownloads"
 }
 
 public enum CandidateRisk: String, Sendable { case low, medium, high }
@@ -277,13 +284,7 @@ public struct LocalScanEngine: ScanEngine {
         return "directory_read_failed"
     }
     private static func risk(for rule: ScanRule) -> CandidateRisk {
-        switch rule {
-        case .userCaches, .userLogs, .crashReports: return .low
-        case .xcodeDerivedData, .incompleteDownloads: return .medium
-        case .xcodeDeviceSupport, .iosBackups: return .high
-        case .explore: return .low
-        case .duplicates: return .low
-        }
+        CleanupRuleCatalog.rule(rule)?.risk ?? .low
     }
 }
 
