@@ -15,6 +15,6 @@
   "engines": { "node": ">=18" },
   "coretend": {
     "url": "https://github.com/ahmetbsbnr/coretend/releases/download/v2.1.0/coretend-cli-2.1.0-arm64.zip",
-    "sha256": "FILLED_AT_RELEASE"
+    "sha256": "027911bbff8d2b858f93b60d68bf604989ff246bf4580dff5fee6c7ffdf2d27b"
   }
 }

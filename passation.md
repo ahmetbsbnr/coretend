@@ -7,6 +7,14 @@ en fixture, invariants et particularités de l’hôte :
 
 ## Où on en est
 
+- **06-10 — CoreTend 2.1, app libre (décision 0005) :** App Store abandonné, sandbox retiré, 4 espaces
+  (Accueil, Espace, Nettoyer, Apps), accès complet au disque, Nettoyer en une passe (14 règles) avec
+  Annuler, désinstallation complète, Sparkle (clé EdDSA dans le trousseau, compte `coretend`),
+  `coretend clean`/`coretend mcp`, paquet npm, site 2.1. Build 2.1.0 (210) signé, notarisé, agrafé ;
+  artefacts dans `~/Documents/CoreTend-2.1.0/`. `make qualify` PASS à chaque lot.
+- **Reste côté mainteneur :** retirer la soumission App Store dans App Store Connect ; `npm login`
+  puis publication npm ; sauvegarder la clé Sparkle (`generate_keys --account coretend -x fichier`).
+
 - **04-10 (lenteurs) :** corrections de performance des analyses et build 202 exporté/signé ; upload bloqué par l’accès App Store Connect de Xcode ; vidéo de revue montée. Détail : journal P8 du 04-10.
 - **Reprise 04-10 :** motif confirmé (Guideline 2.1 — Information Needed, build 201) ; aucun défaut de code exigé. Audit : droits sandbox minimaux, aucun appel réseau ni URL dans `Sources`, pas de demande d’accès complet au disque. Copie de `/Applications` = PKG Organizer sans `_MASReceipt` (d’où le refus de lancement) → installer depuis TestFlight avant la vidéo. Brouillon de réponse mis à jour (macOS 27.0.1 26A434, dossier de démo). ASC non connecté dans Chrome/navigateur intégré : réponse non envoyée, rien resoumis.
 - **Mis à jour :** 02-10-2026 — site public réparé et déployé ; macOS 2.0.0 (201) reste **Rejected**, Guideline 2.1 ; invitation TestFlight acceptée par le mainteneur, vidéo physique et réponse/envoi à Apple restent à faire.
