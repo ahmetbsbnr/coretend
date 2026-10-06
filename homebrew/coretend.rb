@@ -1,6 +1,6 @@
 cask "coretend" do
-  version "2.1.1"
-  sha256 "1223a1c91e13b28054396e582d1ced4629d31bc99f6b9fc383ccac73372c0dc7"
+  version "2.1.2"
+  sha256 "10e9a45b9f540fdbd7fe9a45e8574ecfbd6af7fe47fb4d9bfda2b66d020f99f7"
 
   url "https://github.com/ahmetbsbnr/coretend/releases/download/v#{version}/CoreTend-#{version}-arm64.zip"
   name "CoreTend"
