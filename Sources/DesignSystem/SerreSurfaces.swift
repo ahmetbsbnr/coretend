@@ -57,11 +57,15 @@ public struct SerreBanner<Action: View>: View {
         HStack(alignment: .top, spacing: 12) {
             marker
             VStack(alignment: .leading, spacing: 4) {
-                Text(title).font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
-                if let message {
-                    Text(message).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
-                        .fixedSize(horizontal: false, vertical: true)
+                // The words read as one element; the action stays its own button for VoiceOver.
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title).font(CoreTendTypography.body.weight(.semibold)).foregroundStyle(Palette.ink.color)
+                    if let message {
+                        Text(message).font(CoreTendTypography.secondary).foregroundStyle(Palette.secondaryInk.color)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
                 }
+                .accessibilityElement(children: .combine)
                 action
             }
             Spacer(minLength: 0)
@@ -70,7 +74,7 @@ public struct SerreBanner<Action: View>: View {
         .background(tone.opacity(0.1), in: shape)
         .overlay(shape.strokeBorder(tone.opacity(0.55), lineWidth: 1))
         .transition(.move(edge: .top).combined(with: .opacity))
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
     }
 
     private var tone: Color {

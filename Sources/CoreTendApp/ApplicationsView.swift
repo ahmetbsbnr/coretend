@@ -372,7 +372,9 @@ struct ApplicationsView: View {
             let rule = "apps.uninstall", leftoverRule = "apps.leftovers"
             let allowed = Set([rule, leftoverRule])
             let finder = AppLeftoverFinder(home: HomeFolder.url)
-            let leftovers = await Task.detached(priority: .userInitiated) {
+            // Another copy with the same identifier still uses those files: offer the app alone.
+            let sharedIdentifier = records.contains { $0.id != app.id && $0.bundleIdentifier == app.bundleIdentifier }
+            let leftovers = sharedIdentifier ? [] : await Task.detached(priority: .userInitiated) {
                 finder.find(bundleIdentifier: app.bundleIdentifier, displayName: app.displayName)
             }.value
             let roots = [root, finder.root]

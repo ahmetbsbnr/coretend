@@ -54,12 +54,12 @@ final class CLIContractTests: XCTestCase {
         let english = OutputCapture()
         let englishExit = await CoreTendCLIRunner.run(.version, language: .en) { english.append($0) }
         XCTAssertEqual(englishExit, 0)
-        XCTAssertEqual(english.values, ["CoreTend 2.1.0"])
+        XCTAssertEqual(english.values, ["CoreTend 2.1.1"])
 
         let french = OutputCapture()
         let frenchExit = await CoreTendCLIRunner.run(.version, language: .fr) { french.append($0) }
         XCTAssertEqual(frenchExit, 0)
-        XCTAssertEqual(french.values, ["CoreTend 2.1.0"])
+        XCTAssertEqual(french.values, ["CoreTend 2.1.1"])
     }
 
     func testFrenchTextOutputAndJSONShapeStayStable() async throws {
