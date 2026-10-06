@@ -1,5 +1,29 @@
 # Changelog
 
+## 2.1.0 — 2026-10-06
+
+CoreTend leaves the Mac App Store and becomes a complete, free app without a sandbox.
+
+### New
+- **Four spaces** instead of eight tools: Home, Space, Clean, Apps; History at the sidebar's foot.
+- **Full Disk Access**, offered once at first launch and explained in one sentence; CoreTend reads
+  the whole home folder in one click, and says when macOS keeps something closed.
+- **Clean** reads 14 rules at once — app caches and logs, crash reports, Xcode build files,
+  archives and device files, simulator caches, npm, pnpm, Gradle and Cargo caches, Mail
+  attachments, iPhone backups — grouped by risk (Safe, Check first, Important). Safe items are
+  ticked; one review; **Undo** puts everything back from the Trash.
+- **Complete uninstall**: the app and the files it left in ~/Library, listed with their size.
+- **Signed automatic updates** (Sparkle), only if you allow them; Check for Updates in the menu.
+- **Command line**: `coretend clean` (dry run, `--confirm` to move safe items to the Trash) and
+  `coretend mcp`, a read-only MCP server for AI assistants. On npm as `coretend`.
+- Plain words everywhere; the interface follows macOS: French when it prefers French, English
+  otherwise.
+
+### Changed
+- Settings no longer offer a language choice.
+- No Mac App Store version (decision 0005).
+
+
 ## 2.0.0 — 2026-09-28
 
 A complete rebuild of CoreTend, in a new identity: the living greenhouse.
