@@ -13,6 +13,8 @@ let package = Package(
         .library(name: "DesignSystem", targets: ["DesignSystem"]),
         .executable(name: "CoreTendApp", targets: ["CoreTendApp"]),
         .executable(name: "CoreTendCLI", targets: ["CoreTendCLI"])],
+    // Sparkle: the one runtime dependency, for signed updates the person can turn off (decision 0005).
+    dependencies: [.package(url: "https://github.com/sparkle-project/Sparkle", from: "2.7.0")],
     targets: [
         .target(name: "ProductContract"),
         .target(name: "SafetyCore"),
@@ -20,8 +22,9 @@ let package = Package(
         .target(name: "AppShell"),
         .target(name: "DesignSystem"),
         .target(name: "Domain", dependencies: ["ProductContract", "SafetyCore", "Persistence"]),
-        .executableTarget(name: "CoreTendApp", dependencies: ["AppShell", "DesignSystem", "ProductContract", "Persistence", "ScanCore", "Domain"],
-                          linkerSettings: [.unsafeFlags(["-Xlinker", "-reproducible"], .when(configuration: .release))]),
+        .executableTarget(name: "CoreTendApp", dependencies: ["AppShell", "DesignSystem", "ProductContract", "Persistence", "ScanCore", "Domain",
+                                                              .product(name: "Sparkle", package: "Sparkle")],
+                          linkerSettings: [.unsafeFlags(["-Xlinker", "-reproducible", "-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])]),
         .target(name: "CLIContract", dependencies: ["Persistence", "ScanCore", "Domain"]),
         .executableTarget(name: "CoreTendCLI", dependencies: ["CLIContract"],
                           linkerSettings: [.unsafeFlags(["-Xlinker", "-reproducible"], .when(configuration: .release))]),

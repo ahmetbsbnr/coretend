@@ -16,6 +16,16 @@ trap 'rm -rf "$stage_dir"' EXIT
 app_path="$stage_dir/CoreTend.app"
 mkdir -p "$app_path/Contents/MacOS"
 cp "$bin_dir/CoreTendApp" "$app_path/Contents/MacOS/CoreTendApp"
+# Sparkle (updates), with its symbolic links intact.
+mkdir -p "$app_path/Contents/Frameworks"
+ditto "$bin_dir/Sparkle.framework" "$app_path/Contents/Frameworks/Sparkle.framework"
+# The public build carries the update feed and the key its updates are signed with; local builds
+# carry neither, so they never look for updates.
+sparkle_keys=""
+if [[ "${CORETEND_SPARKLE:-0}" == "1" ]]; then
+  sparkle_keys="  <key>SUFeedURL</key><string>https://coretend.ahmetbsbnr.com/appcast.xml</string>
+  <key>SUPublicEDKey</key><string>3I19rw1r6HdAyCavOs+20JXcFhi8hsUJxRphteOnEOE=</string>"
+fi
 # App icon: the Icon Composer document (Liquid Glass on macOS 26+) compiled by actool, with the
 # classic .icns it also produces for macOS 14 and 15.
 mkdir -p "$app_path/Contents/Resources"
@@ -53,6 +63,7 @@ cat > "$app_path/Contents/Info.plist" <<PLIST
   <key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
   <key>ITSAppUsesNonExemptEncryption</key><false/>
   <key>NSHumanReadableCopyright</key><string>© 2026 Ahmet Basbunar · Apache 2.0</string>
+${sparkle_keys}
 </dict>
 </plist>
 PLIST
