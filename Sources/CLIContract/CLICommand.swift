@@ -1,6 +1,8 @@
 import Foundation
 import Persistence
 import ScanCore
+import Domain
+import SafetyCore
 
 public enum CLIOutputFormat: String, Sendable { case text, json }
 public enum CLILanguage: String, Equatable, Sendable {
@@ -32,7 +34,7 @@ public enum CLILanguage: String, Equatable, Sendable {
     }
 
     public var versionMessage: String {
-        self == .fr ? "CoreTend greenfield — non publiée" : "CoreTend greenfield — unreleased"
+        "CoreTend \(CoreTendCLIRunner.version)"
     }
 
     public func fileCountMessage(_ count: Int) -> String {
@@ -68,6 +70,10 @@ public enum CLICommand: Sendable {
     case version
     case scan(root: URL, rule: ScanRule, format: CLIOutputFormat)
     case record(store: URL)
+    /// Lists what the Clean space would offer; moves it to the Trash only with `--confirm`.
+    case clean(rule: ScanRule?, confirm: Bool, format: CLIOutputFormat)
+    /// A Model Context Protocol server on standard input and output, read-only.
+    case mcp
 
     public static func parse(_ arguments: [String]) throws -> CLICommand {
         guard let command = arguments.first else { return .help }
@@ -85,6 +91,21 @@ public enum CLICommand: Sendable {
             let format = CLIOutputFormat(rawValue: values["--format"] ?? "text")
             guard let format else { throw CLIError.invalidArguments }
             return .scan(root: URL(fileURLWithPath: rootValue).standardizedFileURL, rule: rule, format: format)
+        case "clean":
+            var rest = Array(arguments.dropFirst())
+            let confirm = rest.contains("--confirm")
+            rest.removeAll { $0 == "--confirm" }
+            let values = try flags(rest, allowed: ["--rule", "--format"])
+            var rule: ScanRule?
+            if let value = values["--rule"] {
+                guard let parsed = ScanRule(rawValue: value), CleanupRuleCatalog.rule(parsed) != nil else { throw CLIError.invalidArguments }
+                rule = parsed
+            }
+            guard let format = CLIOutputFormat(rawValue: values["--format"] ?? "text") else { throw CLIError.invalidArguments }
+            return .clean(rule: rule, confirm: confirm, format: format)
+        case "mcp":
+            guard arguments.count == 1 else { throw CLIError.invalidArguments }
+            return .mcp
         case "record":
             guard arguments.dropFirst().first == "list" else { throw CLIError.invalidArguments }
             let values = try flags(Array(arguments.dropFirst(2)), allowed: ["--store"])
@@ -123,24 +144,34 @@ public extension CLIError {
 }
 
 public enum CoreTendCLIRunner {
+    public static let version = "2.1.0"
+
     public static let helpText = """
-    CoreTend — local read-only tools
+    CoreTend — see what fills your Mac, clear it safely
     Usage:
       coretend scan --root PATH --rule RULE_ID [--format text|json]
+      coretend clean [--rule RULE_ID] [--confirm] [--format text|json]
       coretend record list --store PATH
+      coretend mcp
       coretend version
-    Scans require an explicit root. CLI has no file-removal command.
-    Exit codes: 0 complete/help; 1 scan or store failure; 2 partial scan or usage error; 130 cancelled.
+    clean lists caches, logs and developer files in your home folder. Without --confirm nothing moves.
+    With --confirm, the items marked safe (or every item of the --rule given) go to the Trash; nothing is erased.
+    mcp serves read-only tools (disk usage, cleanup candidates, largest items, app leftovers) to AI assistants.
+    Exit codes: 0 complete/help; 1 failure; 2 partial scan or usage error; 130 cancelled.
     """
 
     public static let frenchHelpText = """
-    CoreTend — outils locaux en lecture seule
+    CoreTend — voyez ce qui remplit votre Mac, libérez-le sans risque
     Utilisation :
       coretend [--lang en|fr] scan --root CHEMIN --rule ID_RÈGLE [--format text|json]
+      coretend [--lang en|fr] clean [--rule ID_RÈGLE] [--confirm] [--format text|json]
       coretend [--lang en|fr] record list --store CHEMIN
+      coretend mcp
       coretend [--lang en|fr] version
-    Toute analyse exige une racine explicite. Le CLI ne propose aucune commande de retrait de fichier.
-    Codes de sortie : 0 terminé/aide; 1 échec d’analyse ou de store; 2 analyse partielle ou erreur d’usage; 130 annulation.
+    clean liste caches, journaux et fichiers de développement du dossier personnel. Sans --confirm, rien ne bouge.
+    Avec --confirm, les éléments marqués sûrs (ou tous ceux de la --rule donnée) vont à la Corbeille ; rien n’est effacé.
+    mcp fournit des outils en lecture seule (disque, candidats au nettoyage, plus gros éléments, restes d’apps) aux assistants IA.
+    Codes de sortie : 0 terminé/aide; 1 échec; 2 analyse partielle ou erreur d’usage; 130 annulation.
     """
 
     public static func run(_ command: CLICommand, language: CLILanguage = .en,
@@ -148,6 +179,10 @@ public enum CoreTendCLIRunner {
         switch command {
         case .help:
             write(language.helpText); return 0
+        case .mcp:
+            await MCPServer().serve(); return 0
+        case .clean(let rule, let confirm, let format):
+            return await CleanCommand(rule: rule, confirm: confirm, format: format, language: language).run(write: write)
         case .version:
             write(language.versionMessage); return 0
         case .record(let url):

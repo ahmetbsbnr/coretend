@@ -25,7 +25,7 @@ let package = Package(
         .executableTarget(name: "CoreTendApp", dependencies: ["AppShell", "DesignSystem", "ProductContract", "Persistence", "ScanCore", "Domain",
                                                               .product(name: "Sparkle", package: "Sparkle")],
                           linkerSettings: [.unsafeFlags(["-Xlinker", "-reproducible", "-Xlinker", "-rpath", "-Xlinker", "@executable_path/../Frameworks"])]),
-        .target(name: "CLIContract", dependencies: ["Persistence", "ScanCore", "Domain"]),
+        .target(name: "CLIContract", dependencies: ["Persistence", "ScanCore", "Domain", "SafetyCore"]),
         .executableTarget(name: "CoreTendCLI", dependencies: ["CLIContract"],
                           linkerSettings: [.unsafeFlags(["-Xlinker", "-reproducible"], .when(configuration: .release))]),
         .systemLibrary(name: "CSQLite", path: "Sources/CSQLite"),
@@ -37,6 +37,6 @@ let package = Package(
         .testTarget(name: "AppShellTests", dependencies: ["AppShell"]),
         .testTarget(name: "DesignSystemTests", dependencies: ["DesignSystem"]),
         .testTarget(name: "DomainTests", dependencies: ["Domain", "SafetyCore", "Persistence"]),
-        .testTarget(name: "CLIContractTests", dependencies: ["CLIContract"])
+        .testTarget(name: "CLIContractTests", dependencies: ["CLIContract", "SafetyCore", "ScanCore"])
     ]
 )

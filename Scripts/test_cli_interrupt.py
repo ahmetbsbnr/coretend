@@ -29,9 +29,9 @@ def verify_usage_contract(executable, root):
 
     english_version = invoke(["version"])
     french_version = invoke(["--lang", "fr", "version"])
-    if english_version.returncode != 0 or english_version.stdout != "CoreTend greenfield — unreleased\n":
+    if english_version.returncode != 0 or english_version.stdout != "CoreTend 2.1.0\n":
         raise RuntimeError(f"English version contract failed: {english_version.returncode}, {english_version.stdout!r}")
-    if french_version.returncode != 0 or french_version.stdout != "CoreTend greenfield — non publiée\n":
+    if french_version.returncode != 0 or french_version.stdout != "CoreTend 2.1.0\n":
         raise RuntimeError(f"French version contract failed: {french_version.returncode}, {french_version.stdout!r}")
 
     bad_language = invoke(["--lang", "de", "help"])
