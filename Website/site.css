@@ -267,3 +267,4 @@ img { max-width: 100%; height: auto; display: block; }
   .pollen { display: none; }
   .reveal { animation: none !important; opacity: 1 !important; transform: none !important; }
 }
+.channels a { font-weight: 600; }

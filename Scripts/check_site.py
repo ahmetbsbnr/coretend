@@ -33,8 +33,10 @@ for file in sorted(root.rglob('*.html')):
         elif root not in target.parents or not target.is_file(): errors.append(f'{file}: missing or escaping image: {image}')
     for link in page.links:
         parsed=urlparse(link)
-        # The only external link allowed is the project's own GitHub (releases, source).
-        if parsed.scheme == 'javascript' or (parsed.scheme in ('http', 'https') and not link.startswith('https://github.com/ahmetbsbnr/coretend')):
+        # External links allowed: the project's own channels — GitHub (releases, source), its
+        # Homebrew tap and its npm package page.
+        allowed=('https://github.com/ahmetbsbnr/coretend', 'https://github.com/ahmetbsbnr/homebrew-coretend', 'https://www.npmjs.com/package/coretend')
+        if parsed.scheme == 'javascript' or (parsed.scheme in ('http', 'https') and not link.startswith(allowed)):
             errors.append(f'{file}: external/script link {link}')
         if parsed.scheme or link.startswith('#'): continue
         if not parsed.path.startswith('/'):
