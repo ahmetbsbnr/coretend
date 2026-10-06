@@ -424,6 +424,10 @@
 "safetylog.unrecorded" = "%1$lld events could not be recorded";
 "safetylog.empty" = "No safety log entries yet.";
 "safetylog.unavailable" = "Local database unavailable";
+"persistence.read_failed" = "The local database could not be read.";
+"persistence.warning.degraded" = "Some local records could not be saved. Activity or safety history may be incomplete.";
+"persistence.warning.temporary" = "Local history is temporary and may not survive quitting CoreTend.";
+"persistence.warning.unavailable" = "Local storage is unavailable. Activity and safety events cannot be recorded.";
 "safetylog.purge" = "Purge Log";
 "safetylog.stage.approved" = "Approved";
 "safetylog.stage.executed" = "Executed";
@@ -608,10 +612,9 @@
 "integrity.downloads.by_agent_on_date" = "Downloaded by %@ · %@";
 "integrity.downloads.by_agent" = "Downloaded by %@";
 "integrity.downloads.on_date" = "Downloaded %@";
-||||||| 2809736
 /* Execution outcome — skipped operations were previously discarded by every
    cleanup screen, leaving partial failure invisible outside the Safety Log. */
-"cleanup.done.skipped" = "%d item(s) were skipped and left untouched. The Safety Log explains why.";
+"cleanup.done.skipped" = "%d item(s) could not be moved and were left untouched. The Safety Log explains why.";
 "sidebar.reclaim" = "Reclaim Space";
 "sidebar.apps_system" = "Apps & System";
 "sidebar.history" = "Workspace";
@@ -626,7 +629,6 @@
 "palette.hint.close" = "Close";
 "menubar.status_ok" = "All clear";
 "menubar.status_attention" = "Needs attention";
-"dashboard.eyebrow" = "This Mac";
 "dashboard.safeguards" = "Safeguards";
 "dashboard.tools" = "Tools";
 "dashboard.view_all" = "View all";

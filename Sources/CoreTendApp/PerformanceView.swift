@@ -71,7 +71,7 @@ struct PerformanceView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-        MCPageHeader(L("performance.nav_title"), eyebrow: L("sidebar.apps_system"),
+        MCPageHeader(L("performance.nav_title"),
                      subtitle: L("performance.subtitle"),
                      icon: ModuleID.performance.systemImage) {
             if model.snapshot != nil {

@@ -63,14 +63,15 @@ final class LeftoversViewModel {
         let center = SafetyCenter(
             validator: PathValidator(allowedRoots: [home.appendingPathComponent("Library")]),
             sink: AppEnvironment.shared.store)
-        var approved: [ApprovedFileOperation] = []
-        for item in items {
-            if let op = try? await center.approve(url: item.url, logicalSize: item.sizeBytes,
-                                                  ruleID: "apps.leftovers", risk: .medium) {
-                approved.append(op)
-            }
+        let candidates = items.map {
+            OperationApprovalBatch.Candidate(url: $0.url, logicalSize: $0.sizeBytes,
+                                             ruleID: "apps.leftovers", risk: .medium)
         }
-        let outcome = ExecutionOutcome(result: await center.execute(approved))
+        let batch = await OperationApprovalBatch.approve(candidates, through: center)
+        let execution = await center.execute(batch.operations)
+        await AppEnvironment.shared.refreshAuditHealth()
+        let outcome = ExecutionOutcome(result: execution,
+                                       approvalFailureCount: batch.failureCount)
         phase = .finished(outcome)
         AppEnvironment.shared.record(ActivityRecord(
             kind: .cleanup,

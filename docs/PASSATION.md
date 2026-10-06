@@ -4,7 +4,7 @@
 > (`feat/reconstruction-open-musts` → `next`; local folder `../coretend-next`).
 > This branch only carries fixes for the published 1.x release.
 
-Observed 2026-09-27 in the current worktree. This document and [TODO](TODO.md)
+Observed 2026-10-02 in the current worktree. This document and [TODO](TODO.md)
 are the active handoff/queue. Historical counts and release assertions are not
 current test or artifact evidence. No commit, publication or deployment performed.
 
@@ -52,11 +52,18 @@ These are implementation/test statements, not native UI or released-app acceptan
 
 ## What is partially implemented
 
-- Persistence durability: Store exists but AppEnvironment permits missing/in-memory
-  storage. Failed audit writes are counted, not propagated. Several views turn
-  failed reads into empty state through try?.
+- Persistence availability: Store bootstrap now distinguishes durable, temporary,
+  unavailable and degraded states. Failed database opening is visible and fails closed;
+  database reads/writes mark a global warning. Safety audit remains deliberately
+  non-throwing, with its failure tally reflected after executions.
 - UI acceptance: native XCTest source exists, excluded by Scripts/test.sh.
   Source accessibility contracts do not replace keyboard/VoiceOver checks.
+- Approval refusals from Cleanup, Applications, Leftovers, Duplicates and
+  PrivacyCleaner now appear in the outcome count; SpaceLens already showed its
+  single-item refusal. A fixture regression was added for a selected path that
+  vanishes before approval. The focused `ExecutionOutcomeTests` suite passes
+  (10 tests; 15 combined with `PersistenceAvailabilityTests`) using a fresh `/tmp` scratch path and module cache with SwiftPM's
+  subprocess sandbox disabled. Native UI acceptance remains open.
 - External application updates are links to update mechanisms, not installation.
 - Historical completeness/feature inventories need requirement-level revalidation.
 
@@ -93,23 +100,26 @@ Those failures are absent from ExecutionOutcome counts; track separately in TODO
 
 ## Known technical debt
 
-Optional audit storage, discarded UI read errors, English persisted activity
-summaries, path-based TOCTOU limits and old toolchain/test dependency warnings.
+Non-throwing audit sink, English persisted activity summaries, path-based TOCTOU
+limits and old toolchain/test dependency warnings.
 See [document reconciliation](../Documentation/Reconstruction/DOCUMENT_AUDIT.md)
 for DONE/PARTIAL/OBSOLETE/UNCLEAR distinctions and historical planning inventory.
 
 ## Current milestone
 
 M1 safety, M2 SQLite repairs and M3 source verification/handoff are complete
-within the recorded scope. M4 storage/UI failure handling remains open. [Recovery plan](../Documentation/Reconstruction/RECOVERY_PLAN.md)
+within the recorded scope. M4 approval-refusal reporting and storage-failure
+presentation are implemented with fixture regressions. Native UI acceptance
+remains open. [Recovery plan](../Documentation/Reconstruction/RECOVERY_PLAN.md)
 contains exact scopes, dependencies, acceptance criteria and later milestones.
 
 ## Next priorities
 
-1. Complete storage/UI failure handling from the verified source baseline.
-2. Make unavailable storage and audit loss visible throughout affected UI flows.
-3. Run native UI/VoiceOver and website browser checks, then compatibility/packaging.
-4. Release evidence refresh is separate from source recovery; no publish authorization.
+1. Restore/fix a project-local Xcode scheme with a UI test target (the existing untracked
+   `Xcode/CoreTend.xcodeproj` points to a missing absolute package path and declares no UI test
+   target), then run isolated native UI/VoiceOver acceptance of storage and failure states.
+2. Run website browser checks and compatibility on macOS 14; release evidence refresh remains
+   separate from source recovery.
 
 ## Risks / blockers
 
@@ -142,6 +152,43 @@ historical notes, not reproduced evidence from this session.
 - Local ephemeral logs: `/tmp/coretend-focused-green.log`,
   `/tmp/coretend-bindings-red.log`, `/tmp/coretend-full.log`,
   `/tmp/coretend-release.log`, `/tmp/coretend-doctor.log`.
+
+Revalidation on 2026-10-02 for the approval-refusal and persistence-availability changes:
+
+- PASS: `swiftc -frontend -parse` on all changed Swift source and test files.
+- PASS: focused `ExecutionOutcomeTests` and `PersistenceAvailabilityTests`; 15 tests
+  passed, including temporary fixture database open/fallback/fail-closed and unavailable-
+  warning precedence cases.
+- PASS: full `bash Scripts/test.sh` using `/tmp/coretend-approval-refusal-build`;
+  all Swift Testing suites passed (including 188 app tests and 1 accessibility
+  contract test). XCTest/native UI remains excluded by this command.
+- LIMITATION: one Developer ID code-signing case is skipped because no signing
+  identity is installed. Native UI and VoiceOver remain unverified.
+- PASS: `git diff --check`. Native UI and VoiceOver remain unverified.
+- The legacy `.build` cache was incompatible with the current checkout; tests
+  therefore used `/tmp/coretend-approval-refusal-build` and
+  `/tmp/coretend-clang-module-cache`, with SwiftPM subprocess sandbox disabled. The first
+  Release attempt named the internal target as a product and failed; rerunning with the
+  declared products `CoreTend` and `coretend-cli` succeeded.
+- PASS: current `git diff --check`, `bash Scripts/check-spdx-headers.sh` (109 Swift files),
+  and Release builds for products `CoreTend` and `coretend-cli` using scratch path
+  `/tmp/coretend-1x-release-build-20261002`.
+- PASS: `python3 Scripts/check-markdown-links.py` checked 247 internal links across
+  255 tracked Markdown files; zero broken internal links.
+- FIXED: Base/FR localization catalogues contained a stray diff3 ancestor marker.
+  Foundation stopped parsing each `.strings` plist at that line, so newer dashboard
+  and sidebar keys rendered raw. Removed the markers, added a plist-parse/key-presence
+  regression contract, confirmed both packaged catalogues parse, and visually reviewed
+  an isolated French dashboard capture with the expected localized labels.
+- PASS: complete `Scripts/test.sh` rerun in isolated HOME and fresh scratch path
+  `/tmp/coretend-full-qualify-20261002`; all reported Swift Testing suites passed,
+  including 188 app, 60 persistence, 48 safety and the localization/accessibility
+  contract. Both packaged catalogues pass `plutil -lint` and contain the newly parsed keys.
+- NOT RUN: native UI/VoiceOver. `xcodebuild -list -project Xcode/CoreTend.xcodeproj` fails because
+  the untracked local project references the absent `/Users/ahmetbasbunar/Developer/Website/…`
+  package path; its only scheme has no XCTest UI test target. The user-owned `Xcode/` files
+  were left untouched. The native capture is a visual smoke only; it does not exercise
+  navigation, cleanup confirmations, keyboard flows, or VoiceOver.
 
 ## Important commands
 

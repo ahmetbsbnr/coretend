@@ -117,7 +117,10 @@ final class OnboardingViewModel {
         let resourcesPresent = L("onboarding.step0.subtitle") != "onboarding.step0.subtitle"
         var schemaOK = false
         if let store = AppEnvironment.shared.store {
-            schemaOK = ((try? await store.schemaVersion()) ?? 0) > 0
+            do { schemaOK = try await store.schemaVersion() > 0 }
+            catch { AppEnvironment.shared.notePersistenceFailure() }
+        } else {
+            AppEnvironment.shared.notePersistenceFailure()
         }
         return SystemCheck.Inputs(
             isARM64: isARM,
@@ -137,8 +140,12 @@ final class OnboardingViewModel {
         let paths = exclusions.map(\.path)
         let profileRaw = profile.rawValue
         Task {
-            try? await store.setSetting("securityProfile", value: profileRaw)
-            for p in paths { try? await store.addExclusion(path: p) }
+            do {
+                try await store.setSetting("securityProfile", value: profileRaw)
+                for path in paths { try await store.addExclusion(path: path) }
+            } catch {
+                AppEnvironment.shared.notePersistenceFailure()
+            }
         }
     }
 

@@ -15,18 +15,20 @@ Historical release counts and greenfield task lists are not current acceptance.
 
 ## P1 — Required for current milestone
 
-- Include approval refusals in cleanup outcome counts across Cleanup, Applications,
-  Leftovers, Duplicates and PrivacyCleaner; handle SpaceLens refusal explicitly.
-  Current `try? await center.approve` drops them before ExecutionOutcome. Add a
-  regression where a selected path disappears before approval; show a failure,
-  not an apparently successful empty batch.
-- Make unavailable/volatile persistence visible from AppEnvironment through
-  Settings/SafetyLog and mutation screens. Current optional Store / :memory:
-  fallback and try? reads can hide degraded audit availability. Requires fixture
-  tests for failed open/read/write, then native UI acceptance; do not silently
-  change audit-sink failure policy.
-- Run native CoreTendUITests separately with an isolated app/store/preferences:
-  Scripts/test.sh disables XCTest. Validate all eight destinations, onboarding,
+- [x] Approval refusals now contribute to the visible not-moved outcome in Cleanup,
+  Applications, Leftovers, Duplicates and PrivacyCleaner. SpaceLens already surfaced
+  its single-operation refusal. `OperationApprovalBatch` retains rejected selections;
+  a fixture regression removes a selected file before approval and asserts a visible
+  non-success outcome. Native UI acceptance is still required.
+- [x] Persistence availability is explicit (`persistent`, `temporary`, `unavailable`,
+  `degraded`), with a global warning banner. Failed Store reads/writes mark the app
+  degraded; failed database opening no longer falls back to memory. Fixture tests
+  cover durable open, temporary fallback, fail-closed open and warning localization.
+  Native UI acceptance is still required; audit-sink failures remain non-throwing.
+- Run native CoreTendUITests separately with an isolated app/store/preferences.
+  Scripts/test.sh disables XCTest. The untracked `Xcode/CoreTend.xcodeproj` currently
+  points to an absent absolute package path and its scheme declares no UI-test target;
+  preserve those user-owned files and repair this in a separate lot. Validate all eight destinations, onboarding,
   settings, confirmations and failure outcomes in EN/FR with keyboard and VoiceOver.
 - Verify distribution/package compatibility independently from source tests before
   any release-readiness claim. Do not alter published-release.json from doc dates.
@@ -40,8 +42,8 @@ Historical release counts and greenfield task lists are not current acceptance.
   Python checks cannot establish rendered accessibility or interaction.
 - Reconcile remaining historical state JSON/feature assertions through their
   generators and evidence inputs. Never rewrite release provenance as source state.
-- Review error presentation for Store activity/settings reads after database errors
-  are propagated; distinguish empty history from failed reads.
+- [x] Store activity/settings reads distinguish failures from empty history and
+  show localized failure states or the global degraded-storage warning.
 - Localize persisted activity summaries using message keys/arguments (currently
   English sentences); migration/compatibility design required before schema edits.
 
@@ -54,8 +56,9 @@ Historical release counts and greenfield task lists are not current acceptance.
 
 - Filesystem path validation is not an atomic identity-bound OS move; document and
   evaluate TOCTOU limits before promising swap-proof operations.
-- Audit sink counts failed writes but remains non-throwing; optional store can
-  remove even that visibility. Track as P1, not as guaranteed durability.
+- Audit sink counts failed writes and remains non-throwing by design. AppEnvironment
+  now turns that count into a visible degraded state after operations; native UI
+  acceptance of the warning remains open. This does not guarantee durable logging.
 - PlaceholderView appears unreferenced; leave it until UI contract review confirms
   removal scope. No broad dead-code deletion during safety repair.
 - Safety failures remain in ExecutionResult.skipped for caller compatibility;
@@ -63,6 +66,9 @@ Historical release counts and greenfield task lists are not current acceptance.
 
 ## Completed / verified
 
+- Revalidated on 2026-10-02: full Swift Testing suite, 15 focused approval/storage
+  tests, Release builds for CoreTend and coretend-cli, SPDX headers and 247 internal
+  documentation links all pass. Native UI/VoiceOver remains a separate acceptance.
 - Independently revalidated existing Trash-only and SQLite read-error repairs:
   69 focused tests and 390 full Swift Testing tests pass on 2026-09-27.
 - SQLite binding errors now prevent execution and finalize the statement; excess

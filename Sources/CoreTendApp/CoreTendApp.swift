@@ -238,8 +238,11 @@ struct MenuBarView: View {
         }
         .task {
             guard let store = AppEnvironment.shared.store else { return }
-            let recent = (try? await store.activity(limit: 20)) ?? []
-            lastActivity = recent.first
+            do {
+                lastActivity = try await store.activity(limit: 20).first
+            } catch {
+                AppEnvironment.shared.notePersistenceFailure()
+            }
         }
     }
 
@@ -485,6 +488,11 @@ struct MainWindow: View {
             // explicitly renders as the secondary panel button.
             .buttonStyle(.mcSecondary)
             .mcCanvasBackground()
+            .safeAreaInset(edge: .top, spacing: 0) {
+                if let message = AppEnvironment.shared.persistenceWarning {
+                    PersistenceWarningBanner(message: message)
+                }
+            }
         }
         .onAppear { if !onboardingDone { showOnboarding = true } }
         .task { await disk.run() }
@@ -632,6 +640,21 @@ func paletteMatches(label: String, query: String) -> Bool {
     let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmed.isEmpty else { return true }
     return label.localizedStandardContains(trimmed)
+}
+
+private struct PersistenceWarningBanner: View {
+    let message: String
+
+    var body: some View {
+        Label(message, systemImage: "exclamationmark.triangle.fill")
+            .font(.callout)
+            .foregroundStyle(MCTheme.warning)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, MCSpacing.md)
+            .padding(.vertical, MCSpacing.xs)
+            .background(MCColor.elevatedBackground)
+            .accessibilityIdentifier("persistence.warning")
+    }
 }
 
 /// Fuzzy-filtered jump list over every sidebar destination, plus a handful

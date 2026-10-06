@@ -141,7 +141,7 @@ struct MyClutterView: View {
     // large/old files and visually-similar images.
     var body: some View {
         VStack(spacing: 0) {
-            MCPageHeader(L("clutter.title"), eyebrow: L("sidebar.reclaim"),
+            MCPageHeader(L("clutter.title"),
                          subtitle: L("clutter.subtitle"),
                          icon: ModuleID.myClutter.systemImage) {
                 Picker("", selection: $tab) {

@@ -19,8 +19,15 @@ final class SettingsViewModel {
     var notificationStatus: UNAuthorizationStatus = .notDetermined
 
     func load() async {
-        guard let store = AppEnvironment.shared.store else { return }
-        exclusions = (try? await store.exclusions()) ?? []
+        guard let store = AppEnvironment.shared.store else {
+            AppEnvironment.shared.notePersistenceFailure()
+            return
+        }
+        do {
+            exclusions = try await store.exclusions()
+        } catch {
+            AppEnvironment.shared.notePersistenceFailure()
+        }
         loaded = true
         await refreshPermissions()
     }
@@ -33,22 +40,36 @@ final class SettingsViewModel {
     func addExclusion(_ url: URL) {
         guard let store = AppEnvironment.shared.store else { return }
         Task {
-            try? await store.addExclusion(path: url.path)
-            exclusions = (try? await store.exclusions()) ?? exclusions
+            do {
+                try await store.addExclusion(path: url.path)
+                exclusions = try await store.exclusions()
+            } catch {
+                AppEnvironment.shared.notePersistenceFailure()
+            }
         }
     }
 
     func removeExclusion(_ path: String) {
         guard let store = AppEnvironment.shared.store else { return }
         Task {
-            try? await store.removeExclusion(path: path)
-            exclusions = (try? await store.exclusions()) ?? exclusions
+            do {
+                try await store.removeExclusion(path: path)
+                exclusions = try await store.exclusions()
+            } catch {
+                AppEnvironment.shared.notePersistenceFailure()
+            }
         }
     }
 
     func clearActivityHistory() {
         guard let store = AppEnvironment.shared.store else { return }
-        Task { try? await store.clearActivity() }
+        Task {
+            do {
+                try await store.clearActivity()
+            } catch {
+                AppEnvironment.shared.notePersistenceFailure()
+            }
+        }
     }
 }
 
@@ -220,7 +241,7 @@ struct MCSettingsView: View {
         .frame(maxWidth: 760)
         .frame(maxWidth: .infinity)
         .safeAreaInset(edge: .top, spacing: 0) {
-            MCPageHeader(L("settings.nav_title"), eyebrow: L("sidebar.history"),
+            MCPageHeader(L("settings.nav_title"),
                          subtitle: L("settings.subtitle"),
                          icon: ModuleID.settings.systemImage)
                 .background(MCColor.background)

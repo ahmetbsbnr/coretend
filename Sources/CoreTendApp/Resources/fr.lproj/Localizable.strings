@@ -424,6 +424,10 @@
 "safetylog.unrecorded" = "%1$lld événements n’ont pas pu être enregistrés";
 "safetylog.empty" = "Aucune entrée dans le journal de sécurité pour le moment.";
 "safetylog.unavailable" = "Base de données locale indisponible";
+"persistence.read_failed" = "La base de données locale n’a pas pu être lue.";
+"persistence.warning.degraded" = "Certains enregistrements locaux n’ont pas été sauvegardés. L’historique peut être incomplet.";
+"persistence.warning.temporary" = "L’historique local est temporaire et peut disparaître à la fermeture de CoreTend.";
+"persistence.warning.unavailable" = "Le stockage local est indisponible. Les événements d’activité et de sécurité ne peuvent pas être enregistrés.";
 "safetylog.purge" = "Purger le journal";
 "safetylog.stage.approved" = "Approuvée";
 "safetylog.stage.executed" = "Exécutée";
@@ -606,10 +610,9 @@
 "integrity.downloads.by_agent_on_date" = "Téléchargé par %@ · %@";
 "integrity.downloads.by_agent" = "Téléchargé par %@";
 "integrity.downloads.on_date" = "Téléchargé le %@";
-||||||| 2809736
 /* Issue d’exécution — les éléments ignorés étaient auparavant écartés par
    chaque écran de nettoyage, rendant un échec partiel invisible. */
-"cleanup.done.skipped" = "%d élément(s) ont été ignorés et laissés intacts. Le journal de sécurité en explique la raison.";
+"cleanup.done.skipped" = "%d élément(s) n’ont pas pu être déplacés et ont été laissés intacts. Le journal de sécurité en explique la raison.";
 "sidebar.reclaim" = "Libérer de l'espace";
 "sidebar.apps_system" = "Apps et système";
 "sidebar.history" = "Espace de travail";
@@ -624,7 +627,6 @@
 "palette.hint.close" = "Fermer";
 "menubar.status_ok" = "Tout va bien";
 "menubar.status_attention" = "Nécessite une attention";
-"dashboard.eyebrow" = "Ce Mac";
 "dashboard.safeguards" = "Garde-fous";
 "dashboard.tools" = "Outils";
 "dashboard.view_all" = "Tout afficher";

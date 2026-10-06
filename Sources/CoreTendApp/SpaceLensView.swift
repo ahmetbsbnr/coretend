@@ -135,7 +135,9 @@ final class SpaceLensViewModel {
                 lastDeleteError = node.name
                 return
             }
-            let outcome = ExecutionOutcome(result: await center.execute([op]))
+            let execution = await center.execute([op])
+            await AppEnvironment.shared.refreshAuditHealth()
+            let outcome = ExecutionOutcome(result: execution)
             AppEnvironment.shared.record(ActivityRecord(
                 kind: .cleanup,
                 summary: outcome.annotate(
@@ -269,7 +271,7 @@ struct SpaceLensView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            MCPageHeader(L("spacelens.title"), eyebrow: L("sidebar.reclaim"), subtitle: L("spacelens.subtitle"), icon: ModuleID.spaceLens.systemImage)
+            MCPageHeader(L("spacelens.title"), subtitle: L("spacelens.subtitle"), icon: ModuleID.spaceLens.systemImage)
             VStack(spacing: 0) {
                 switch model.phase {
                 case .idle: idleView

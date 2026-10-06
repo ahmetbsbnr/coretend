@@ -25,6 +25,7 @@ final class SafetyLogViewModel {
 
     func load() async {
         guard let store = AppEnvironment.shared.store else {
+            AppEnvironment.shared.notePersistenceFailure()
             phase = .failed(L("safetylog.unavailable"))
             return
         }
@@ -33,13 +34,18 @@ final class SafetyLogViewModel {
             unrecordedEvents = await store.unrecordedEventCount
             phase = records.isEmpty ? .empty : .loaded
         } catch {
-            phase = .failed("\(error)")
+            AppEnvironment.shared.notePersistenceFailure()
+            phase = .failed(L("persistence.read_failed"))
         }
     }
 
     func purge() async {
         guard let store = AppEnvironment.shared.store else { return }
-        try? await store.purgeSafetyLog()
+        do {
+            try await store.purgeSafetyLog()
+        } catch {
+            AppEnvironment.shared.notePersistenceFailure()
+        }
         await load()
     }
 }

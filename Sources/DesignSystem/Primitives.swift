@@ -272,23 +272,21 @@ public struct MCMeter: View {
 
 // MARK: - Page header
 
-/// The header every module page shares: a monospaced eyebrow naming the area,
-/// the page title, one line of context, and the page's actions on the
-/// trailing edge. A hairline closes it off from the content below.
+/// The header every module page shares: the page title, one line of context,
+/// and the page's actions on the trailing edge. A hairline closes it off from
+/// the content below. Page headers do not use eyebrow labels.
 ///
 /// On a narrow window the actions drop beneath the title rather than
 /// squeezing it (`ViewThatFits`).
 public struct MCPageHeader<Actions: View>: View {
     private let title: String
-    private let eyebrow: String?
     private let subtitle: String?
     private let icon: String?
     private let actions: Actions
 
-    public init(_ title: String, eyebrow: String? = nil, subtitle: String? = nil, icon: String? = nil,
+    public init(_ title: String, subtitle: String? = nil, icon: String? = nil,
                 @ViewBuilder actions: () -> Actions) {
         self.title = title
-        self.eyebrow = eyebrow
         self.subtitle = subtitle
         self.icon = icon
         self.actions = actions()
@@ -321,9 +319,6 @@ public struct MCPageHeader<Actions: View>: View {
                     .padding(.top, 2)
             }
             VStack(alignment: .leading, spacing: 3) {
-                if let eyebrow {
-                    MCEyebrow(eyebrow, tint: MCColor.teal)
-                }
                 Text(title)
                     .font(MCFont.pageTitle)
                     .kerning(MCTracking.title)
@@ -342,8 +337,8 @@ public struct MCPageHeader<Actions: View>: View {
 }
 
 public extension MCPageHeader where Actions == EmptyView {
-    init(_ title: String, eyebrow: String? = nil, subtitle: String? = nil, icon: String? = nil) {
-        self.init(title, eyebrow: eyebrow, subtitle: subtitle, icon: icon) { EmptyView() }
+    init(_ title: String, subtitle: String? = nil, icon: String? = nil) {
+        self.init(title, subtitle: subtitle, icon: icon) { EmptyView() }
     }
 }
 

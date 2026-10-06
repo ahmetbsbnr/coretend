@@ -2,14 +2,70 @@
 // SPDX-FileCopyrightText: The CoreTend Authors
 
 import Foundation
+import Observation
 import Persistence
+
+enum PersistenceAvailability: Equatable {
+    case persistent
+    case temporary
+    case unavailable
+    case degraded
+
+    var afterPersistenceFailure: Self {
+        self == .unavailable ? .unavailable : .degraded
+    }
+
+    var warningKey: String? {
+        switch self {
+        case .persistent: nil
+        case .temporary: "persistence.warning.temporary"
+        case .unavailable: "persistence.warning.unavailable"
+        case .degraded: "persistence.warning.degraded"
+        }
+    }
+}
+
+struct StoreBootstrapResult {
+    let store: Store?
+    let availability: PersistenceAvailability
+}
+
+enum StoreBootstrap {
+    /// Opens the durable location first. Only a failure to resolve that
+    /// location falls back to memory, matching the existing behavior; a
+    /// database that exists but cannot be opened fails closed as unavailable.
+    static func open(defaultPath: () throws -> String) -> StoreBootstrapResult {
+        let path: String
+        do {
+            path = try defaultPath()
+        } catch {
+            do {
+                return StoreBootstrapResult(store: try Store(path: ":memory:"), availability: .temporary)
+            } catch {
+                return StoreBootstrapResult(store: nil, availability: .unavailable)
+            }
+        }
+
+        do {
+            return StoreBootstrapResult(store: try Store(path: path), availability: .persistent)
+        } catch {
+            return StoreBootstrapResult(store: nil, availability: .unavailable)
+        }
+    }
+}
 
 /// Shared app services. Created once at launch; injected into view models.
 @MainActor
+@Observable
 final class AppEnvironment {
     static let shared = AppEnvironment()
 
     let store: Store?
+    private(set) var persistenceAvailability: PersistenceAvailability
+
+    var persistenceWarning: String? {
+        persistenceAvailability.warningKey.map { L($0) }
+    }
 
     /// Result of the one-time MacCare Local -> CoreTend data migration, if it
     /// had anything to do. Kept so Settings can tell the user what moved, and
@@ -20,7 +76,9 @@ final class AppEnvironment {
         // Runs before the store is opened: the migration's whole job is to put
         // the database where the store is about to look for it.
         migrationReport = Self.runLegacyMigration()
-        store = try? Store(path: (try? Store.defaultPath()) ?? ":memory:")
+        let bootstrap = StoreBootstrap.open(defaultPath: Store.defaultPath)
+        store = bootstrap.store
+        persistenceAvailability = bootstrap.availability
     }
 
     /// Migrates pre-rebrand user data on first launch under the new identity.
@@ -45,7 +103,13 @@ final class AppEnvironment {
 
     func record(_ record: ActivityRecord) {
         guard let store else { return }
-        Task { try? await store.recordActivity(record) }
+        Task {
+            do {
+                try await store.recordActivity(record)
+            } catch {
+                notePersistenceFailure()
+            }
+        }
     }
 
     /// Marks a folder as recently scanned for Favorites & Recents. Fire-and-forget
@@ -53,6 +117,26 @@ final class AppEnvironment {
     /// freshness, never data correctness.
     func recordLocationVisit(path: String, bytes: Int64) {
         guard let store else { return }
-        Task { try? await store.recordLocationVisit(path: path, bytes: bytes) }
+        Task {
+            do {
+                try await store.recordLocationVisit(path: path, bytes: bytes)
+            } catch {
+                notePersistenceFailure()
+            }
+        }
+    }
+
+    func notePersistenceFailure() {
+        persistenceAvailability = persistenceAvailability.afterPersistenceFailure
+    }
+
+    /// SafetyCore's audit sink intentionally does not throw into the file
+    /// operation. Read its in-memory failure tally afterward so audit loss is
+    /// still surfaced globally without changing that contract.
+    func refreshAuditHealth() async {
+        guard let store else { return }
+        if await store.unrecordedEventCount > 0 {
+            persistenceAvailability = .degraded
+        }
     }
 }

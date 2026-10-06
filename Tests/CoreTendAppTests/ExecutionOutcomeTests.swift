@@ -3,6 +3,7 @@
 
 import Testing
 import Foundation
+import SafetyCore
 @testable import CoreTendApp
 
 @Suite("Partial failure is reported, not discarded")
@@ -22,6 +23,40 @@ struct ExecutionOutcomeTests {
         let outcome = ExecutionOutcome(executedCount: 7, skippedCount: 3, freedBytes: 1_024)
         #expect(outcome.hasSkips)
         #expect(outcome.message?.contains("3") == true)
+    }
+
+    @Test("approval refusals are included with execution skips")
+    func approvalRefusalsAreSurfaced() {
+        let outcome = ExecutionOutcome(executedCount: 1, skippedCount: 2,
+                                       approvalFailureCount: 3, freedBytes: 128)
+        #expect(outcome.hasSkips)
+        #expect(outcome.uncompletedCount == 5)
+        #expect(outcome.message?.contains("5") == true)
+        #expect(outcome.annotate("Moved 1 item to Trash").contains("5"))
+    }
+
+    @Test("a selected path that disappears before approval is counted as not moved")
+    func vanishedPathBeforeApprovalIsReported() async throws {
+        let root = FileManager.default.temporaryDirectory
+            .appendingPathComponent("coretend-approval-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let vanished = root.appendingPathComponent("selected.cache")
+        try Data("fixture".utf8).write(to: vanished)
+        try FileManager.default.removeItem(at: vanished)
+
+        let center = SafetyCenter(validator: PathValidator(allowedRoots: [root]))
+        let batch = await OperationApprovalBatch.approve([
+            .init(url: vanished, logicalSize: 7, ruleID: "test", risk: .low)
+        ], through: center)
+        let outcome = ExecutionOutcome(
+            result: await center.execute(batch.operations), approvalFailureCount: batch.failureCount)
+
+        #expect(batch.operations.count == 1)
+        #expect(outcome.executedCount == 0)
+        #expect(outcome.skippedCount == 1)
+        #expect(outcome.uncompletedCount == 1)
+        #expect(outcome.message != nil)
     }
 
     @Test("a run where everything was skipped is not dressed up as success")

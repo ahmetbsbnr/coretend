@@ -124,8 +124,12 @@ final class ClutterExclusionsController {
     private(set) var exclusions: [String] = []
 
     func load() async {
-        guard let store = AppEnvironment.shared.store else { return }
-        exclusions = (try? await store.exclusions()) ?? []
+        guard let store = AppEnvironment.shared.store else {
+            AppEnvironment.shared.notePersistenceFailure()
+            return
+        }
+        do { exclusions = try await store.exclusions() }
+        catch { AppEnvironment.shared.notePersistenceFailure() }
     }
 
     /// Adds `path` (or its containing folder if `asFolder`) as an exclusion.
@@ -135,16 +139,24 @@ final class ClutterExclusionsController {
         guard let normalized = ClutterExclusions.targetPath(for: url, asFolder: asFolder),
               let store = AppEnvironment.shared.store else { return }
         Task {
-            try? await store.addExclusion(path: normalized)
-            exclusions = (try? await store.exclusions()) ?? exclusions
+            do {
+                try await store.addExclusion(path: normalized)
+                exclusions = try await store.exclusions()
+            } catch {
+                AppEnvironment.shared.notePersistenceFailure()
+            }
         }
     }
 
     func remove(_ path: String) {
         guard let store = AppEnvironment.shared.store else { return }
         Task {
-            try? await store.removeExclusion(path: path)
-            exclusions = (try? await store.exclusions()) ?? exclusions
+            do {
+                try await store.removeExclusion(path: path)
+                exclusions = try await store.exclusions()
+            } catch {
+                AppEnvironment.shared.notePersistenceFailure()
+            }
         }
     }
 

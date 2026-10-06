@@ -147,14 +147,15 @@ final class DuplicatesViewModel {
         let roots = scannedRoots
         Task {
             let center = SafetyCenter(validator: PathValidator(allowedRoots: roots), sink: AppEnvironment.shared.store)
-            var approved: [ApprovedFileOperation] = []
-            for (url, size) in toRemove {
-                if let op = try? await center.approve(url: url, logicalSize: size,
-                                                      ruleID: "clutter.duplicates", risk: .medium) {
-                    approved.append(op)
-                }
+            let candidates = toRemove.map {
+                OperationApprovalBatch.Candidate(url: $0.0, logicalSize: $0.1,
+                                                 ruleID: "clutter.duplicates", risk: .medium)
             }
-            let outcome = ExecutionOutcome(result: await center.execute(approved))
+            let batch = await OperationApprovalBatch.approve(candidates, through: center)
+            let execution = await center.execute(batch.operations)
+            await AppEnvironment.shared.refreshAuditHealth()
+            let outcome = ExecutionOutcome(result: execution,
+                                           approvalFailureCount: batch.failureCount)
             phase = .finished(outcome)
             AppEnvironment.shared.record(ActivityRecord(
                 kind: .cleanup,
@@ -227,7 +228,7 @@ struct DuplicatesView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            MCPageHeader(L("module.duplicates"), eyebrow: L("sidebar.reclaim"), subtitle: L("duplicates.subtitle"), icon: ModuleID.duplicates.systemImage)
+            MCPageHeader(L("module.duplicates"), subtitle: L("duplicates.subtitle"), icon: ModuleID.duplicates.systemImage)
             VStack(spacing: 0) {
                 switch model.phase {
                 case .idle: idleView

@@ -73,7 +73,7 @@ struct ProtectionView: View {
     // sidebar on macOS.
     var body: some View {
         VStack(spacing: 0) {
-            MCPageHeader(L("module.protection"), eyebrow: L("sidebar.apps_system"),
+            MCPageHeader(L("module.protection"),
                          subtitle: L("protection.subtitle"),
                          icon: ModuleID.protection.systemImage) {
                 Picker("", selection: $tab) {

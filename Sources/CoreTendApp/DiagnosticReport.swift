@@ -86,11 +86,17 @@ enum DiagnosticReport {
         var exclusionCount = 0
         var counts: [String: Int] = [:]
         if let store = AppEnvironment.shared.store {
-            schemaVersion = try? await store.schemaVersion()
-            exclusionCount = (try? await store.exclusions().count) ?? 0
-            for kind in ActivityRecord.Kind.allCases {
-                counts[kind.rawValue] = (try? await store.activity(limit: 100_000, kind: kind).count) ?? 0
+            do {
+                schemaVersion = try await store.schemaVersion()
+                exclusionCount = try await store.exclusions().count
+                for kind in ActivityRecord.Kind.allCases {
+                    counts[kind.rawValue] = try await store.activity(limit: 100_000, kind: kind).count
+                }
+            } catch {
+                AppEnvironment.shared.notePersistenceFailure()
             }
+        } else {
+            AppEnvironment.shared.notePersistenceFailure()
         }
         let inputs = Inputs(
             appVersion: AppMetadata.marketingVersion,

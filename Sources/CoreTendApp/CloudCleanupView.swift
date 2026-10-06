@@ -234,7 +234,7 @@ struct CloudCleanupView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            MCPageHeader(L("cloud.nav_title"), eyebrow: L("sidebar.reclaim"), subtitle: L("cloud.subtitle"), icon: ModuleID.cloudCleanup.systemImage)
+            MCPageHeader(L("cloud.nav_title"), subtitle: L("cloud.subtitle"), icon: ModuleID.cloudCleanup.systemImage)
             VStack(spacing: 0) {
                 switch model.phase {
                 case .detecting:

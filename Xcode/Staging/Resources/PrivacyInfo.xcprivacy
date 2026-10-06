@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!--
+	CoreTend's privacy manifest. It declares what the binary does, not what
+	the product intends, and Scripts/check-privacy-manifest.sh holds it to
+	that in both directions: a required-reason API used in Sources/ without
+	its category declared here fails the doctor, and so does a category
+	declared here that nothing in Sources/ uses any more.
+
+	No tracking, no tracking domains and no collected data: CoreTend holds
+	no network entitlement on any channel (Scripts/check-no-network.sh,
+	Scripts/check-entitlements.sh), so nothing it reads can leave the Mac.
+	It has no third-party runtime dependency that could carry a manifest of
+	its own.
+	-->
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<!-- Settings, sidebar layout, onboarding state and folder grants
+		     (security-scoped bookmarks) are CoreTend's own preferences,
+		     read and written by CoreTend alone. -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+		<!-- Modification dates of files inside folders the person granted
+		     through the open panel: the age filter of Large & Old Files, the
+		     change check before a duplicate is moved, and the dates shown
+		     beside findings (3B52.1, DDA9.1). lstat reads the (device,
+		     inode) identity that refuses a file substituted between
+		     approval and execution; its timestamp fields are not read, but
+		     the call is in the category, so it is declared. -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>3B52.1</string>
+				<string>DDA9.1</string>
+			</array>
+		</dict>
+		<!-- Volume capacity and free space, shown to the person in Overview,
+		     the sidebar footer and Performance. -->
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryDiskSpace</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>85F4.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

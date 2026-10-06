@@ -78,7 +78,17 @@ final class CleanupViewModel {
         let pauseController = ScanPauseController()
         self.pauseController = pauseController
         scanTask = Task {
-            let excluded = (try? await AppEnvironment.shared.store?.exclusions()) ?? []
+            let excluded: [String]
+            if let store = AppEnvironment.shared.store {
+                do { excluded = try await store.exclusions() }
+                catch {
+                    AppEnvironment.shared.notePersistenceFailure()
+                    excluded = []
+                }
+            } else {
+                AppEnvironment.shared.notePersistenceFailure()
+                excluded = []
+            }
             let engine = ScanEngine(configuration: ScanConfiguration(excludedPaths: excluded))
             for await event in engine.run(rules: UserCleanupRules.all, pauseController: pauseController) {
                 switch event {
@@ -136,16 +146,13 @@ final class CleanupViewModel {
             let home = FileManager.default.homeDirectoryForCurrentUser
             let validator = PathValidator(allowedRoots: UserCleanupRules.allowedRoots(home: home))
             let center = SafetyCenter(validator: validator, sink: AppEnvironment.shared.store)
-            var approved: [ApprovedFileOperation] = []
-            for finding in selected {
-                if let op = try? await center.approve(
-                    url: finding.url, logicalSize: finding.logicalSize,
-                    ruleID: finding.ruleID, risk: finding.risk
-                ) {
-                    approved.append(op)
-                }
-            }
-            let outcome = ExecutionOutcome(result: await center.execute(approved))
+            let batch = await OperationApprovalBatch.approve(selected.map {
+                .init(url: $0.url, logicalSize: $0.logicalSize, ruleID: $0.ruleID, risk: $0.risk)
+            }, through: center)
+            let execution = await center.execute(batch.operations)
+            await AppEnvironment.shared.refreshAuditHealth()
+            let outcome = ExecutionOutcome(result: execution,
+                                           approvalFailureCount: batch.failureCount)
             phase = .done(outcome)
             // Both counts reach the log, not just the successes: SafetyCore
             // skipping a path that changed between approval and execution is
@@ -200,7 +207,7 @@ struct CleanupView: View {
 
     private var idleView: some View {
         VStack(spacing: 0) {
-            MCPageHeader(L("module.storage"), eyebrow: L("sidebar.reclaim"),
+            MCPageHeader(L("module.storage"),
                          subtitle: L("cleanup.idle.safety_note"),
                          icon: ModuleID.cleanup.systemImage)
             ScrollView {
@@ -297,7 +304,7 @@ struct CleanupView: View {
 
     private var reviewView: some View {
         VStack(alignment: .leading, spacing: 0) {
-            MCPageHeader(L("module.storage"), eyebrow: L("sidebar.reclaim")) {
+            MCPageHeader(L("module.storage")) {
                 Button(L("smartcare.scan_again")) { model.startScan() }
                     .buttonStyle(.mcQuiet)
                     .disabled(model.phase == .running)

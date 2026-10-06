@@ -20,7 +20,6 @@ struct DashboardView: View {
     var body: some View {
         VStack(spacing: 0) {
             MCPageHeader(L("module.dashboard"),
-                         eyebrow: L("dashboard.eyebrow"),
                          subtitle: L("dashboard.subtitle"))
             ScrollView {
                 VStack(alignment: .leading, spacing: MCSpacing.lg) {
@@ -284,11 +283,17 @@ struct DashboardView: View {
     private func refresh() async {
         async let latestSnapshot = collector.snapshot()
         if let store = AppEnvironment.shared.store {
-            let history = (try? await store.activity(limit: 1000)) ?? []
-            activity = Array(history.prefix(5))
-            impact = ActivityImpactSummary(history)
-            impactRecordCount = history.filter { $0.kind == .cleanup }.count
-            exclusions = (try? await store.exclusions()) ?? []
+            do {
+                let history = try await store.activity(limit: 1000)
+                activity = Array(history.prefix(5))
+                impact = ActivityImpactSummary(history)
+                impactRecordCount = history.filter { $0.kind == .cleanup }.count
+                exclusions = try await store.exclusions()
+            } catch {
+                AppEnvironment.shared.notePersistenceFailure()
+            }
+        } else {
+            AppEnvironment.shared.notePersistenceFailure()
         }
         snapshot = await latestSnapshot
     }

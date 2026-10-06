@@ -240,18 +240,17 @@ final class ApplicationsViewModel {
         allowedRoots.append(URL(fileURLWithPath: "/Library/LaunchAgents"))
         allowedRoots.append(URL(fileURLWithPath: "/Library/LaunchDaemons"))
         let center = SafetyCenter(validator: PathValidator(allowedRoots: allowedRoots), sink: AppEnvironment.shared.store)
-        var approved: [ApprovedFileOperation] = []
-        if let op = try? await center.approve(url: app.path, logicalSize: app.sizeBytes,
-                                              ruleID: "apps.uninstall", risk: .medium) {
-            approved.append(op)
+        var candidates = [OperationApprovalBatch.Candidate(
+            url: app.path, logicalSize: app.sizeBytes, ruleID: "apps.uninstall", risk: .medium)]
+        candidates += items.map {
+            .init(url: $0.url, logicalSize: $0.sizeBytes,
+                  ruleID: "apps.uninstall.associated", risk: .medium)
         }
-        for item in items {
-            if let op = try? await center.approve(url: item.url, logicalSize: item.sizeBytes,
-                                                  ruleID: "apps.uninstall.associated", risk: .medium) {
-                approved.append(op)
-            }
-        }
-        let outcome = ExecutionOutcome(result: await center.execute(approved))
+        let batch = await OperationApprovalBatch.approve(candidates, through: center)
+        let execution = await center.execute(batch.operations)
+        await AppEnvironment.shared.refreshAuditHealth()
+        let outcome = ExecutionOutcome(result: execution,
+                                       approvalFailureCount: batch.failureCount)
         uninstallResult = [
             L("apps.uninstall.result", outcome.executedCount, mcFormatBytes(outcome.freedBytes)),
             outcome.message,
@@ -269,7 +268,7 @@ struct ApplicationsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            MCPageHeader(L("apps.title"), eyebrow: L("sidebar.apps_system"),
+            MCPageHeader(L("apps.title"),
                          subtitle: L("apps.subtitle"),
                          icon: ModuleID.applications.systemImage) {
                 Picker("", selection: $tab) {

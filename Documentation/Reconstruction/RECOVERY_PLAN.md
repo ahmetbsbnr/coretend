@@ -18,7 +18,8 @@ documentation without replacing the working native application.
   and 390 full Swift Testing tests pass.
 - DONE: M3 release build (exit 0, no warnings), repository doctor, final diff
   and internal-link checks; handoff synchronized. Native acceptance not claimed.
-- NEXT: M4 visible storage failures and accurate approval-refusal outcomes.
+- DONE (source/fixture scope): M4 approval-refusal reporting and visible storage failures;
+  native UI acceptance remains in M5.
 - Assumption: existing direct-distribution native product remains the scope.
 - Risks: old release claims are not artifact verification; UI acceptance is separate.
 
@@ -65,10 +66,13 @@ as PASS/FAIL/NOT RUN; outstanding UI/release gaps remain explicit.
 
 ## Later milestones
 
-- M4: durable-storage failure presentation and audit availability. Inspect
-  AppEnvironment's optional/in-memory fallback and all mutation entry points;
-  agree on behavior from existing safety contract before altering it. Exercise
-  locked/unwritable storage using fixtures; UI must surface degradation.
+- M4 (source/fixture complete, 2026-10-02): batch approval refusals are retained and included in
+  not-moved outcomes in all multi-item cleanup screens; SpaceLens presents its
+  single refusal. A fixture regression covers a selected path vanishing before
+  approval, and the focused 10-test ExecutionOutcome suite passes. Storage presentation completed 2026-10-02: bootstrap classifies durable, temporary,
+  unavailable and degraded states; failed database open fails closed, database errors
+  surface a localized global warning, and fixture tests cover bootstrap outcomes.
+  SafetyCore audit failure policy remains non-throwing; native UI acceptance is M5.
 - M5: native destination acceptance (eight destinations, settings, onboarding),
   EN/FR, keyboard/VoiceOver, loading/error/empty states, isolated launch and site
   browser gates. Preserve design. No cosmetic rewrite. Requires interactive evidence.

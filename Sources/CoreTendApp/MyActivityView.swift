@@ -80,20 +80,26 @@ final class MyActivityViewModel {
 
     func load() async {
         guard let store = AppEnvironment.shared.store else {
-            phase = .failed("Local database unavailable")
+            AppEnvironment.shared.notePersistenceFailure()
+            phase = .failed(L("safetylog.unavailable"))
             return
         }
         do {
             allRecords = try await store.activity(limit: 500, kind: filter)
             phase = allRecords.isEmpty ? .empty : .loaded
         } catch {
-            phase = .failed("\(error)")
+            AppEnvironment.shared.notePersistenceFailure()
+            phase = .failed(L("persistence.read_failed"))
         }
     }
 
     func clear() async {
         guard let store = AppEnvironment.shared.store else { return }
-        try? await store.clearActivity()
+        do {
+            try await store.clearActivity()
+        } catch {
+            AppEnvironment.shared.notePersistenceFailure()
+        }
         await load()
     }
 
@@ -137,7 +143,7 @@ struct MyActivityView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            MCPageHeader(L("activity.title"), eyebrow: L("sidebar.history"), subtitle: L("activity.subtitle"), icon: ModuleID.myActivity.systemImage)
+            MCPageHeader(L("activity.title"), subtitle: L("activity.subtitle"), icon: ModuleID.myActivity.systemImage)
             Group {
                 switch model.phase {
                 case .loading:

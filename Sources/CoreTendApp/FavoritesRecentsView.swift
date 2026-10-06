@@ -74,6 +74,7 @@ final class FavoritesRecentsViewModel {
 
     func load() async {
         guard let store = AppEnvironment.shared.store else {
+            AppEnvironment.shared.notePersistenceFailure()
             phase = .failed(L("favrec.error_no_store"))
             return
         }
@@ -82,25 +83,29 @@ final class FavoritesRecentsViewModel {
             recents = try await store.recents(limit: 10)
             phase = .loaded
         } catch {
-            phase = .failed("\(error)")
+            AppEnvironment.shared.notePersistenceFailure()
+            phase = .failed(L("persistence.read_failed"))
         }
     }
 
     func addFavorite(_ url: URL) async {
         guard let store = AppEnvironment.shared.store else { return }
-        try? await store.addFavorite(path: url.path)
+        do { try await store.addFavorite(path: url.path) }
+        catch { AppEnvironment.shared.notePersistenceFailure() }
         await load()
     }
 
     func removeFavorite(_ path: String) async {
         guard let store = AppEnvironment.shared.store else { return }
-        try? await store.removeFavorite(path: path)
+        do { try await store.removeFavorite(path: path) }
+        catch { AppEnvironment.shared.notePersistenceFailure() }
         await load()
     }
 
     func removeRecent(_ path: String) async {
         guard let store = AppEnvironment.shared.store else { return }
-        try? await store.removeRecent(path: path)
+        do { try await store.removeRecent(path: path) }
+        catch { AppEnvironment.shared.notePersistenceFailure() }
         await load()
     }
 

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Moves a 1.x installation's data into the sandbox container on the first
+  sandboxed launch, and only then.
+
+  ## What this is for
+
+  Until 2.0 CoreTend was not sandboxed, so its database lived at
+  `~/Library/Application Support/CoreTend` — outside any container. A
+  sandboxed build reads `Application Support` inside its own container, which
+  on a machine upgrading from 1.0.2 is empty. Without this file the upgrade
+  looks like a factory reset: the Record empty, every exclusion gone, every
+  favourite gone. The data would still be on disk, unreachable, which is worse
+  than deleted because nothing would say so.
+
+  macOS applies this once, at the first launch of the sandboxed build, before
+  any of the app's own code runs. It is not a fallback the app can call.
+
+  ## What moves, and what deliberately does not
+
+  `Application Support/CoreTend` holds the SQLite store: the activity table,
+  the append-only `safety_log`, exclusions, favourites and locations. All of
+  it is the user's own record of what CoreTend did on their Mac, and losing it
+  would break the one promise this product is built on.
+
+  **Locations and exclusions move, but they do not keep working by moving.**
+  They are stored as plain paths, and a plain path is not access. Under the
+  sandbox each one has to be re-granted through an open panel before CoreTend
+  may read it again. The rows are kept so the app can say *which* folders need
+  re-granting instead of silently forgetting them — see
+  `docs/APP_STORE_TRANSITION.md`, phase 4.
+
+  The preference file moves too (added 2026-09-23). This said moving the
+  preference domain was `LegacyDataMigration`'s job, in code — but inside a
+  container that code cannot read ~/Library/Preferences at all, and
+  `UserDefaults` reads the container's own copy. Without this line an upgrade
+  kept the Record and lost every setting: the menu bar item, the language,
+  the sidebar arrangement, the scheduled scan, onboarding done. Caches are
+  regenerable and stay behind.
+
+  Consequence for coexistence: this is a move, not a copy. A 1.0.2 copy left
+  installed and launched afterwards finds an empty store and default
+  settings. docs/migration/upgrade-validation.md covers it.
+
+  ## Verification
+
+  This cannot be tested on an unsandboxed build: nothing applies it. It is
+  verified on a Mac that has 1.0.2 installed, by installing the sandboxed
+  build over it and checking that the Record still lists the same operations.
+  Until that has been done on real hardware it stays unverified, and
+  `docs/APP_STORE_TRANSITION.md` says so rather than assuming.
+-->
+<plist version="1.0">
+<dict>
+	<key>Move</key>
+	<array>
+		<string>${HOME}/Library/Application Support/CoreTend</string>
+		<string>${HOME}/Library/Preferences/com.ahmetbsbnr.coretend.plist</string>
+	</array>
+</dict>
+</plist>

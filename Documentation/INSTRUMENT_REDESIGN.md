@@ -13,14 +13,14 @@ permissions) is unchanged; how it is shown is new.
 | Separation | 1pt hairlines (`MCHairline`, `MCColor.separator`) instead of boxes-in-boxes. |
 | Radii | 4 (small) / 5 (control) / 7 (panel) / 10 (hero). Capsules only for toggles. |
 | Colour | One teal signal (unchanged, shared with site and icon). Graphite neutrals. Amber = caution, coral = irreversible. `MCColor.onAccent` is the ink on filled teal (white on porcelain, near-black on slate). |
-| Type | Three voices: large light tabular numerals (`displayMetric`, `readout`), SF Pro for prose, monospaced caps for labels, tags, paths and byte counts (`eyebrow`, `badge`, `mono`). |
+| Type | Three voices: large light tabular numerals (`displayMetric`, `readout`), SF Pro for prose, monospaced caps for functional section labels, tags, paths and byte counts (`badge`, `mono`). Page titles have no eyebrow header. |
 | Gauges | Segmented linear `MCMeter` replaces rings everywhere. |
 | Motion | Short, one-shot fades (`mcAppear`), press dips, hover washes; the scan dial's read head is the only continuous motion, and it stops under Reduce Motion. |
 
 ## Primitives (`Sources/DesignSystem`)
 
 - Buttons: `.mcPrimary`, `.mcSecondary`, `.mcQuiet`, `.mcDestructive` (+ `Large`), `.mcIcon`, `.mcRow`. The window root sets `.mcSecondary` as the default, so an unstyled `Button` is never off-system.
-- Page structure: `MCPageHeader` (eyebrow, title, context, trailing actions), `MCBriefing` (module landing), `MCPanel` (titled region), `MCCard` (untitled surface), `MCActionBar` (pinned commit strip for review lists).
+- Page structure: `MCPageHeader` (title, context, trailing actions; no eyebrow header), `MCBriefing` (module landing), `MCPanel` (titled region), `MCCard` (untitled surface), `MCActionBar` (pinned commit strip for review lists).
 - Data: `MCReadout`, `MCKeyValueRow`, `MCMeter`, `MCMetricCard`, `MCStatusBadge`, `MCTag`.
 - Small parts: `MCEyebrow`, `MCIconTile`, `MCKeycap`, `MCHairline`, `MCSectionHeader`.
 - States: `MCEmptyState`, `MCSuccessState`, `MCScanStage` (graduated dial), `MCScanButton` (command bar with ↩ keycap).
