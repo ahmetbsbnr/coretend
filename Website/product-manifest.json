@@ -3,14 +3,11 @@
   "state": "released",
   "version": "2.0.0",
   "destinations": [
-    "Overview",
-    "Record",
-    "Cleanup",
-    "Explore",
-    "Duplicates",
-    "Applications",
-    "Integrity",
-    "Performance"
+    "Home",
+    "Space",
+    "Clean",
+    "Apps",
+    "History"
   ],
   "capabilityIDs": [
     "activity.grouping",
@@ -68,6 +65,6 @@
   "knownLimits": [
     "macOS 14 and 15 not yet tested on hardware (built for macOS 14+)",
     "VoiceOver not yet reviewed by a person",
-    "associated app files are name matches, not proof of ownership"
+    "app leftovers are matched by exact bundle identifier or app name at known Library places"
   ]
 }

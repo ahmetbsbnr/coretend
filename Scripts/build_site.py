@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the CoreTend 2.0 website: bilingual, static, no script, a living greenhouse in CSS.
+"""Generate the CoreTend website: bilingual, static, no script, a living greenhouse in CSS.
 
 Pages: index, features, download, privacy, support, developer (EN and FR) and a language chooser.
 Release facts (version, date, download URL, SHA-256) come from Website/release.json; while it
@@ -29,40 +29,24 @@ def release() -> dict:
 
 DESTINATIONS = {
     "en": [
-        ("overview", "Overview", "The greenhouse at a glance",
-         "Free space measured by macOS, the soil band of your volume, the last things CoreTend did and why, and paths into every tool."),
-        ("explore", "Explore", "Plots in proportion",
-         "Choose a folder: CoreTend reads it without touching it, then shows every file and subfolder as a plot sized by what it takes. Walk into subfolders, search, sort, preview."),
-        ("cleanup", "Cleanup", "Known, safe pruning",
-         "Seven rules for known places — caches, logs, crash reports, Xcode data, unfinished downloads, iOS backups — each with its risk said plainly. Nothing is selected for you."),
-        ("duplicates", "Duplicates", "Twin shoots",
-         "Exact copies found by content, with the space keeping one would free. You choose which copy stays; that one can never be moved. Similar images are shown as pairs, for you to judge."),
-        ("applications", "Applications", "The plantings",
-         "Every app of a folder with its icon, version and real size; sort by size; files around an app matched by name, never claimed as proof. Move one app bundle to the Trash after review."),
-        ("integrity", "Integrity", "Plant labels",
-         "What macOS records about an app — signature, quarantine marker — one label per signal, or a whole folder in one pass. Signals, never a verdict on safety."),
-        ("performance", "Performance", "The sap",
-         "System load, memory in use, thermal state and more, each with its source, and the load drawn over time. Readings are taken when you look, never in the background."),
-        ("record", "Record", "The herbarium",
-         "Everything observed and moved, one page per day. Search it, export it to CSV or JSON, or clear it — it stays on your Mac."),
+        ("home", "Home", "Your Mac in one sentence",
+         "How much space CoreTend can give back, with the one button that leads to it. Free space as macOS measures it, and what happened lately."),
+        ("space", "Space", "See what takes the space",
+         "Scan your home folder in one click: every folder becomes a block as large as what it takes. Walk in, search, sort, preview — and find exact duplicates in the same place."),
+        ("clean", "Clean", "Clear it safely",
+         "Caches, logs, Xcode and simulator files, npm, pnpm, Gradle and Cargo caches, Mail attachments: read at once, grouped, each with its risk. Safe items are ticked; one review, one click, and Undo puts everything back."),
+        ("apps", "Apps", "Uninstall completely",
+         "Every app with its size. Uninstall moves the app and the files it left in your Library — support files, caches, preferences, containers — to the Trash, after you see the list."),
     ],
     "fr": [
-        ("overview", "Vue d’ensemble", "La serre d’un coup d’œil",
-         "L’espace libre mesuré par macOS, la bande de sol du volume, les dernières actions de CoreTend et leur raison, et des chemins vers chaque outil."),
-        ("explore", "Explorer", "Les parcelles en proportion",
-         "Choisissez un dossier : CoreTend le lit sans y toucher, puis montre chaque fichier et sous-dossier comme une parcelle à sa taille. Entrez dans les sous-dossiers, cherchez, triez, prévisualisez."),
-        ("cleanup", "Nettoyage", "Une taille connue et sûre",
-         "Sept règles pour des lieux connus — caches, journaux, rapports de crash, données Xcode, téléchargements inachevés, sauvegardes iOS — chacune avec son risque dit clairement. Rien n’est sélectionné à votre place."),
-        ("duplicates", "Doublons", "Les pousses jumelles",
-         "Copies exactes trouvées par leur contenu, avec l’espace qu’en garder une seule libérerait. Vous choisissez l’exemplaire gardé, qui ne peut jamais être déplacé. Les images proches sont montrées par paires, à vous d’en juger."),
-        ("applications", "Applications", "Les plantations",
-         "Chaque app d’un dossier avec son icône, sa version et sa taille réelle ; tri par taille ; fichiers autour d’une app par correspondance de nom, jamais présentés comme une preuve. Déplacez un bundle vers la Corbeille après revue."),
-        ("integrity", "Intégrité", "Les étiquettes de plant",
-         "Ce que macOS enregistre d’une app — signature, marqueur de quarantaine — une étiquette par signal, ou tout un dossier en une passe. Des signaux, jamais un verdict de sûreté."),
-        ("performance", "Performances", "La sève",
-         "Charge système, mémoire utilisée, état thermique et plus, chacun avec sa source, et la charge tracée dans le temps. Les relevés se font quand vous regardez, jamais en arrière-plan."),
-        ("record", "Historique", "L’herbier",
-         "Tout ce qui a été observé et déplacé, une page par jour. Cherchez, exportez en CSV ou JSON, ou effacez — il reste sur votre Mac."),
+        ("home", "Accueil", "Votre Mac en une phrase",
+         "L’espace que CoreTend peut récupérer, avec le seul bouton qui y mène. L’espace libre mesuré par macOS, et ce qui s’est passé récemment."),
+        ("space", "Espace", "Voyez ce qui prend la place",
+         "Analysez votre dossier personnel en un clic : chaque dossier devient un bloc aussi grand que ce qu’il occupe. Entrez, cherchez, triez, prévisualisez — et trouvez les doublons exacts au même endroit."),
+        ("clean", "Nettoyer", "Libérez-le sans risque",
+         "Caches, journaux, fichiers Xcode et des simulateurs, caches npm, pnpm, Gradle et Cargo, pièces jointes de Mail : tout est lu d’un coup, regroupé, chacun avec son risque. Les éléments sûrs sont cochés ; une revue, un clic, et Annuler remet tout en place."),
+        ("apps", "Apps", "Désinstallez complètement",
+         "Chaque app avec sa taille. Désinstaller place l’app et les fichiers qu’elle a laissés dans votre Bibliothèque — fichiers de support, caches, préférences, conteneurs — à la Corbeille, après vous avoir montré la liste."),
     ],
 }
 
@@ -71,17 +55,17 @@ COPY = {
         "skip": "Skip to content", "nav_label": "Main navigation", "other": "Français", "note": "local care",
         "nav": {"index": "Home", "features": "Features", "download": "Download", "privacy": "Privacy",
                 "support": "Support", "developer": "Developers"},
-        "footer": "A living greenhouse for your Mac. Local, open source, Apache 2.0.",
+        "footer": "See what fills your Mac. Clear it safely. Free and open source, Apache 2.0.",
         "footer_links": "Explore",
-        "unpublished": "CoreTend 2.0 is ready and will be published soon. The download appears here on release day.",
-        "cta_download": "Download CoreTend 2.0", "cta_features": "See what it does",
+        "unpublished": "CoreTend 2.1 is almost ready. The download appears here on release day.",
+        "cta_download": "Download for Mac", "cta_features": "See what it does",
         "requirements": "macOS 14 Sonoma or later · Apple silicon · English and French",
         "home": {
-            "title": "Tend your Mac like a greenhouse.",
-            "description": "CoreTend 2.0: a living, local greenhouse for your Mac. See what takes space, understand it, and prune only what you choose — every move goes to the Trash.",
-            "lead": "CoreTend observes your Mac, explains what it finds and prunes only what you choose. Nothing leaves your Mac; nothing is erased for good.",
-            "tools_title": "Eight tools, one greenhouse",
-            "tools_lead": "Each part of your Mac has its place in the greenhouse, and its own way of showing what matters.",
+            "title": "See what fills your Mac. Clear it safely.",
+            "description": "CoreTend 2.1 for macOS: see what takes space, clean caches and developer files, uninstall apps completely. Everything goes to the Trash. Free, open source, no telemetry.",
+            "lead": "CoreTend reads your whole Mac, shows what takes the space and gives it back in one click — to the Trash, never erased, with Undo. Free, open source, and nothing leaves your Mac.",
+            "tools_title": "Four spaces, one question each",
+            "tools_lead": "No dashboard to decode: each space answers one question and has one main button.",
             "alive_title": "A greenhouse that lives",
             "alive": [
                 ("Motion with a cause", "Roots descend as files are read. A moved file falls as a leaf into the Trash. A file that stays says why."),
@@ -90,52 +74,48 @@ COPY = {
             ],
             "never_title": "What CoreTend will never do",
             "never": [
-                ("Erase for good", "Every move goes to the macOS Trash, after your review and confirmation. You can put it back."),
-                ("Ask for full disk access", "You choose each folder CoreTend may read. No password, no system extension."),
-                ("Phone home", "No network, no account, no telemetry. Your paths and your history stay on your Mac."),
+                ("Erase for good", "Every move goes to the macOS Trash, after your review. Undo puts it back."),
+                ("Scare you", "No health score, no alarm, no invented figure. Only what macOS measures, explained in plain words."),
+                ("Watch you", "No account, no telemetry. The only network request asks the site whether an update exists — and you can turn it off."),
             ],
-            "final_title": "Bring your Mac back to life.",
+            "final_title": "Give your Mac its space back.",
             "tools_cta": "Every feature in detail",
             "proof": [
-                ("0", "network requests — no account, no telemetry"),
-                ("8", "tools in one calm window"),
-                ("Trash", "is where every move goes, after your review"),
+                ("1 click", "from the Home to the space you can give back"),
+                ("14", "cleanup rules, each with its risk said plainly"),
+                ("Undo", "puts back what went to the Trash"),
             ],
             "show": [
-                ("onboarding", "It explains itself",
-                 "Three short pages say what CoreTend does, what it will never do, and where to begin. No setup, no permission to grant."),
-                ("performance", "Readings with their source",
-                 "Load, memory in use, thermal state and free space — each value names where it comes from, measured only when you look."),
-                ("palette", "Everything one keystroke away",
-                 "Jump to any tool or action from the keyboard. The sidebar, the menu bar and the palette all lead to the same places."),
+                ("onboarding", "Ready in three screens",
+                 "What CoreTend promises, Full Disk Access explained in one sentence (CoreTend notices when you allow it), and you start."),
             ],
         },
         "features": {
-            "title": "Everything in the greenhouse",
-            "description": "The eight tools of CoreTend 2.0 — Overview, Explore, Cleanup, Duplicates, Applications, Integrity, Performance and Record — and how each keeps you in charge.",
-            "lead": "Every tool reads first and explains what it measured. Moving anything takes your selection, a review and a confirmation.",
-            "jump": "Jump to a tool",
+            "title": "Everything CoreTend does",
+            "description": "The four spaces of CoreTend 2.1 — Home, Space, Clean and Apps — plus the command line and the MCP server for AI assistants.",
+            "lead": "Every space reads first and explains what it found. Nothing moves without your review, and everything that moves goes to the Trash.",
+            "jump": "Jump to a space",
             "also_title": "Across the app",
             "also": [
-                ("⌘K search", "Jump to any tool or setting from a field that grows out of the sidebar."),
-                ("Menu bar", "Optional: free space, memory and load at a glance, and every tool one click away."),
-                ("From CoreTend 1.x", "Import recognised preferences and exclusions from a 1.x copy; the source stays intact."),
-                ("Command line", "A read-only command-line tool scans a folder you name and reads the history."),
+                ("Command line", "coretend clean lists what can go; --confirm sends the safe items to the Trash."),
+                ("For AI assistants", "coretend mcp lets Claude, Cursor and others ask what fills your disk — read-only."),
+                ("Signed updates", "Sparkle checks the site for a new version, only if you allow it, and installs it when you accept."),
+                ("Menu bar", "Optional: free space, memory and load at a glance."),
             ],
         },
         "download": {
-            "title": "Get CoreTend 2.0",
-            "description": "Download CoreTend 2.0 for macOS 14 or later on Apple silicon: signed and notarized by Apple, free and open source.",
-            "lead": "CoreTend 2.0 is a free update to CoreTend. It is signed with a Developer ID and notarized by Apple.",
+            "title": "Get CoreTend",
+            "description": "Download CoreTend for macOS 14 or later on Apple silicon: signed and notarized by Apple, free and open source. Also on Homebrew and npm.",
+            "lead": "Free, signed with a Developer ID and notarized by Apple. It updates itself when you allow it.",
             "install_title": "Install",
             "install": [
-                ("Direct download", "Unzip the archive, or open the disk image, and move CoreTend into Applications. Both are notarized by Apple."),
+                ("Direct download", "Open the disk image and move CoreTend into Applications. On first launch, allow Full Disk Access when CoreTend asks."),
                 ("Homebrew", "brew install --cask ahmetbsbnr/coretend/coretend"),
-                ("Check the file", "Compare the SHA-256 of what you downloaded with the one shown here."),
+                ("Terminal and AI assistants", "npx coretend mcp"),
             ],
-            "new_title": "New in 2.0",
-            "new": "A complete rebuild: the living greenhouse design, eight tools, a three-page welcome, Applications with sizes and sorting, Explore that walks into folders, Integrity for a whole folder at once, recoverable space in Duplicates, memory in use, and a Settings window in four tabs.",
-            "from1": "Coming from 1.x? 2.0 replaces it. Your 1.x data are not touched; you can import its preferences and exclusions from Settings.",
+            "new_title": "New in 2.1",
+            "new": "Four spaces instead of eight tools. Your whole Mac in one click with Full Disk Access. Clean reads 14 rules at once — Xcode, simulators, npm, pnpm, Gradle, Cargo, Mail — and Undo puts things back. Apps uninstall completely. Signed automatic updates, a command line that cleans, and an MCP server for AI assistants.",
+            "from1": "Coming from 2.0? Download 2.1 once (or run brew upgrade); later versions arrive on their own.",
             "sha": "SHA-256 · ZIP",
             "sha_dmg": "SHA-256 · DMG",
             "dmg": "Disk image (.dmg)",
@@ -146,34 +126,36 @@ COPY = {
             "version": "Version",
         },
         "privacy": {
-            "title": "Your files stay yours",
-            "description": "How CoreTend 2.0 handles your files: chosen folders only, read-only scans, every move to the Trash after review, no network and no telemetry.",
-            "lead": "CoreTend works on your Mac and nowhere else. It reads the folders you choose and changes nothing until you decide.",
+            "title": "Built to be trusted",
+            "description": "How CoreTend handles your files: read-only scans, every move to the Trash after review with Undo, Full Disk Access explained, no telemetry.",
+            "lead": "CoreTend works on your Mac and nowhere else. It reads freely and changes nothing until you decide.",
             "sections": [
-                ("Only the folders you choose", "Each tool reads the folder you pick. Usual folders like Applications are offered in one click, never read before you choose. CoreTend never asks for Full Disk Access."),
+                ("Why Full Disk Access", "macOS hides Mail, Safari and app data from every app. With Full Disk Access CoreTend can measure them; without it, it reads what macOS allows and says so."),
                 ("Reading is not changing", "Scans read names, sizes and dates; file contents are read only to compare copies. Nothing is written into what is scanned."),
-                ("Every move is yours", "You select, review and confirm. CoreTend checks each file again just before moving it to the macOS Trash; a file that changed stays where it is."),
-                ("Nothing leaves your Mac", "No network requests, no account, no analytics. History, favorites and readings live in a local database you can export or clear."),
+                ("Every move is yours, and reversible", "You review, then CoreTend checks each item again just before moving it to the macOS Trash. Undo puts it back; nothing is ever erased."),
+                ("Nothing leaves your Mac", "No account, no analytics. The only request asks coretend.ahmetbsbnr.com whether an update exists, and you can turn it off. Open source, so anyone can check."),
             ],
         },
         "support": {
             "title": "Help in the greenhouse",
-            "description": "Help for CoreTend 2.0: first launch, folder access, moving files to the Trash, removing CoreTend and reporting a problem.",
+            "description": "Help for CoreTend: Full Disk Access, getting a file back, uninstalling, updates and reporting a problem.",
             "lead": "Answers to the usual questions. For anything else, open an issue on GitHub — without personal paths.",
             "sections": [
-                ("First launch", "A short welcome explains what CoreTend does and never does. You can begin right away; no extra access is needed."),
-                ("A folder cannot be read", "macOS decides which folders an app may read. If a result is partial or refused, CoreTend says so — choose the folder again or pick another one."),
-                ("Getting a file back", "Everything CoreTend moves goes to the macOS Trash. Open the Trash and choose Put Back."),
+                ("Full Disk Access", "System Settings › Privacy & Security › Full Disk Access: turn CoreTend on. macOS may ask to reopen it."),
+                ("A folder cannot be read", "Without Full Disk Access, macOS keeps some folders closed. CoreTend says when a result is partial."),
+                ("Getting a file back", "Click Undo right after a clean, or open the Trash and choose Put Back."),
                 ("An app will not move", "Some apps belong to the system or to an administrator. CoreTend leaves them in place and says so; remove them in the Finder if you are sure."),
                 ("Removing CoreTend", "Quit it and move it to the Trash. Its local data live in ~/Library/Application Support/CoreTend-Reconstruction."),
                 ("Reporting a problem", "Open a GitHub issue with your macOS version and what you saw. Leave out personal file names and paths."),
             ],
         },
         "developer": {
-            "title": "Open source, built in the open",
-            "description": "Build CoreTend 2.0 from source: a Swift 6 package with no runtime dependency, its design system, safety rules and contribution guide.",
-            "lead": "CoreTend is a Swift 6 package: a SwiftUI app and a read-only command-line tool, with no runtime dependency. Apache 2.0.",
+            "title": "For developers",
+            "description": "CoreTend from the terminal and for AI assistants: coretend clean, the read-only MCP server, npm and Homebrew; building from source.",
+            "lead": "Clean from the terminal, let your AI assistant read your disk, or build CoreTend yourself. Swift 6, Apache 2.0.",
             "sections": [
+                ("Clean from the terminal", "A dry run first; --confirm moves the safe items to the Trash.", ["coretend clean", "coretend clean --confirm"]),
+                ("MCP server for AI assistants", "Read-only tools: disk_usage, cleanup_candidates, largest_items, app_leftovers.", ["npx -y coretend mcp"]),
                 ("Build", "Clone the repository and build with Swift Package Manager on macOS 14 or later.", ["swift build --product CoreTendApp", "make qualify"]),
                 ("Design system", "The Serre design system — palette, type, leaf shapes, motion tokens, the living greenhouse — lives in one module and is checked in tests."),
                 ("Safety rules", "One module may move files, only to the Trash, after revalidation. The build checks that no other code can remove or rename a file."),
@@ -185,17 +167,17 @@ COPY = {
         "skip": "Aller au contenu", "nav_label": "Navigation principale", "other": "English", "note": "entretien local",
         "nav": {"index": "Accueil", "features": "Fonctionnalités", "download": "Télécharger", "privacy": "Confidentialité",
                 "support": "Assistance", "developer": "Développeurs"},
-        "footer": "Une serre vivante pour votre Mac. Locale, open source, Apache 2.0.",
+        "footer": "Voyez ce qui remplit votre Mac. Libérez-le sans risque. Gratuit et open source, Apache 2.0.",
         "footer_links": "Explorer",
-        "unpublished": "CoreTend 2.0 est prête et sera publiée très bientôt. Le téléchargement apparaîtra ici le jour de la sortie.",
-        "cta_download": "Télécharger CoreTend 2.0", "cta_features": "Voir ce qu’elle fait",
+        "unpublished": "CoreTend 2.1 est presque prête. Le téléchargement apparaîtra ici le jour de la sortie.",
+        "cta_download": "Télécharger pour Mac", "cta_features": "Voir ce qu’elle fait",
         "requirements": "macOS 14 Sonoma ou plus récent · Apple silicon · français et anglais",
         "home": {
-            "title": "Entretenez votre Mac comme une serre.",
-            "description": "CoreTend 2.0 : une serre vivante et locale pour votre Mac. Voyez ce qui prend de la place, comprenez-le, et ne taillez que ce que vous choisissez — tout déplacement va à la Corbeille.",
-            "lead": "CoreTend observe votre Mac, explique ce qu’il trouve et ne taille que ce que vous choisissez. Rien ne quitte votre Mac ; rien n’est effacé définitivement.",
-            "tools_title": "Huit outils, une serre",
-            "tools_lead": "Chaque partie de votre Mac a sa place dans la serre, et sa façon de montrer ce qui compte.",
+            "title": "Voyez ce qui remplit votre Mac. Libérez-le sans risque.",
+            "description": "CoreTend 2.1 pour macOS : voyez ce qui prend de la place, nettoyez caches et fichiers de développement, désinstallez complètement vos apps. Tout part à la Corbeille. Gratuit, open source, sans télémétrie.",
+            "lead": "CoreTend lit tout votre Mac, montre ce qui prend la place et vous la rend en un clic — à la Corbeille, jamais effacé, avec Annuler. Gratuit, open source, et rien ne quitte votre Mac.",
+            "tools_title": "Quatre espaces, une question chacun",
+            "tools_lead": "Pas de tableau de bord à déchiffrer : chaque espace répond à une question et a un seul bouton principal.",
             "alive_title": "Une serre qui vit",
             "alive": [
                 ("Des mouvements qui ont une cause", "Les racines descendent au rythme des fichiers lus. Un fichier déplacé tombe en feuille dans la Corbeille. Un fichier resté en place dit pourquoi."),
@@ -204,52 +186,48 @@ COPY = {
             ],
             "never_title": "Ce que CoreTend ne fera jamais",
             "never": [
-                ("Effacer définitivement", "Tout déplacement va dans la Corbeille de macOS, après votre revue et votre confirmation. Vous pouvez le remettre en place."),
-                ("Demander l’accès complet au disque", "Vous choisissez chaque dossier que CoreTend peut lire. Ni mot de passe, ni extension système."),
-                ("Envoyer quoi que ce soit", "Ni réseau, ni compte, ni télémétrie. Vos chemins et votre historique restent sur votre Mac."),
+                ("Effacer définitivement", "Tout déplacement va dans la Corbeille de macOS, après votre revue. Annuler le remet en place."),
+                ("Vous faire peur", "Ni score de santé, ni alarme, ni chiffre inventé. Seulement ce que macOS mesure, dit simplement."),
+                ("Vous surveiller", "Ni compte, ni télémétrie. La seule requête demande au site si une mise à jour existe — et vous pouvez la désactiver."),
             ],
-            "final_title": "Redonnez vie à votre Mac.",
+            "final_title": "Rendez de l’espace à votre Mac.",
             "tools_cta": "Toutes les fonctionnalités en détail",
             "proof": [
-                ("0", "requête réseau — ni compte, ni télémétrie"),
-                ("8", "outils dans une seule fenêtre, calme"),
-                ("Corbeille", "c’est là que va tout déplacement, après votre revue"),
+                ("1 clic", "de l’Accueil à l’espace récupérable"),
+                ("14", "règles de nettoyage, chacune avec son risque dit clairement"),
+                ("Annuler", "remet en place ce qui est parti à la Corbeille"),
             ],
             "show": [
-                ("onboarding", "Elle s’explique d’elle-même",
-                 "Trois pages courtes disent ce que fait CoreTend, ce qu’elle ne fera jamais et par où commencer. Aucun réglage, aucune autorisation à donner."),
-                ("performance", "Des relevés avec leur source",
-                 "Charge, mémoire utilisée, état thermique et espace libre — chaque valeur dit d’où elle vient, mesurée seulement quand vous regardez."),
-                ("palette", "Tout à une touche",
-                 "Allez à n’importe quel outil ou action depuis le clavier. La barre latérale, la barre des menus et la palette mènent aux mêmes endroits."),
+                ("onboarding", "Prête en trois écrans",
+                 "Ce que CoreTend promet, l’accès complet au disque expliqué en une phrase (CoreTend s’en aperçoit dès que vous l’autorisez), et c’est parti."),
             ],
         },
         "features": {
-            "title": "Tout ce que contient la serre",
-            "description": "Les huit outils de CoreTend 2.0 — Vue d’ensemble, Explorer, Nettoyage, Doublons, Applications, Intégrité, Performances et Historique — et comment chacun vous laisse décider.",
-            "lead": "Chaque outil lit d’abord et explique ce qu’il a mesuré. Déplacer quoi que ce soit demande votre sélection, une revue et une confirmation.",
-            "jump": "Aller à un outil",
+            "title": "Tout ce que fait CoreTend",
+            "description": "Les quatre espaces de CoreTend 2.1 — Accueil, Espace, Nettoyer et Apps — plus la ligne de commande et le serveur MCP pour les assistants IA.",
+            "lead": "Chaque espace lit d’abord et explique ce qu’il a trouvé. Rien ne bouge sans votre revue, et tout ce qui bouge part à la Corbeille.",
+            "jump": "Aller à un espace",
             "also_title": "Dans toute l’app",
             "also": [
-                ("Recherche ⌘K", "Allez à n’importe quel outil ou réglage depuis un champ qui naît de la barre latérale."),
-                ("Barre des menus", "En option : espace libre, mémoire et charge d’un coup d’œil, et chaque outil à un clic."),
-                ("Depuis CoreTend 1.x", "Importez les préférences et exclusions reconnues d’une copie 1.x ; la source reste intacte."),
-                ("Ligne de commande", "Un outil en ligne de commande, en lecture seule, analyse le dossier indiqué et lit l’historique."),
+                ("Ligne de commande", "coretend clean liste ce qui peut partir ; --confirm envoie les éléments sûrs à la Corbeille."),
+                ("Pour les assistants IA", "coretend mcp permet à Claude, Cursor et d’autres de demander ce qui remplit votre disque — en lecture seule."),
+                ("Mises à jour signées", "Sparkle demande au site s’il existe une nouvelle version, seulement si vous l’autorisez, et l’installe quand vous acceptez."),
+                ("Barre des menus", "En option : espace libre, mémoire et charge d’un coup d’œil."),
             ],
         },
         "download": {
-            "title": "Obtenir CoreTend 2.0",
-            "description": "Téléchargez CoreTend 2.0 pour macOS 14 ou plus récent sur Apple silicon : signée et notarisée par Apple, gratuite et open source.",
-            "lead": "CoreTend 2.0 est une mise à jour gratuite de CoreTend. Elle est signée avec un Developer ID et notarisée par Apple.",
+            "title": "Obtenir CoreTend",
+            "description": "Téléchargez CoreTend pour macOS 14 ou plus récent sur Apple silicon : signée et notarisée par Apple, gratuite et open source. Aussi sur Homebrew et npm.",
+            "lead": "Gratuite, signée avec un Developer ID et notarisée par Apple. Elle se met à jour seule si vous l’autorisez.",
             "install_title": "Installer",
             "install": [
-                ("Téléchargement direct", "Décompressez l’archive, ou ouvrez l’image disque, et placez CoreTend dans Applications. Les deux sont notarisées par Apple."),
+                ("Téléchargement direct", "Ouvrez l’image disque et placez CoreTend dans Applications. Au premier lancement, autorisez l’accès complet au disque quand CoreTend le demande."),
                 ("Homebrew", "brew install --cask ahmetbsbnr/coretend/coretend"),
-                ("Vérifier le fichier", "Comparez l’empreinte SHA-256 du fichier téléchargé avec celle affichée ici."),
+                ("Terminal et assistants IA", "npx coretend mcp"),
             ],
-            "new_title": "Nouveautés de la 2.0",
-            "new": "Une reconstruction complète : la serre vivante, huit outils, un accueil en trois pages, Applications avec tailles et tri, Explorer qui entre dans les dossiers, Intégrité pour tout un dossier, espace récupérable dans Doublons, mémoire utilisée, et des Réglages en quatre onglets.",
-            "from1": "Vous venez de la 1.x ? La 2.0 la remplace. Vos données 1.x ne sont pas touchées ; importez ses préférences et exclusions depuis les Réglages.",
+            "new_title": "Nouveautés de la 2.1",
+            "new": "Quatre espaces au lieu de huit outils. Tout votre Mac en un clic avec l’accès complet au disque. Nettoyer lit 14 règles d’un coup — Xcode, simulateurs, npm, pnpm, Gradle, Cargo, Mail — et Annuler remet tout en place. Apps désinstalle complètement. Mises à jour automatiques signées, une ligne de commande qui nettoie et un serveur MCP pour les assistants IA.",
+            "from1": "Vous avez la 2.0 ? Téléchargez la 2.1 une fois (ou lancez brew upgrade) ; les versions suivantes arriveront seules.",
             "sha": "SHA-256 · ZIP",
             "sha_dmg": "SHA-256 · DMG",
             "dmg": "Image disque (.dmg)",
@@ -260,34 +238,36 @@ COPY = {
             "version": "Version",
         },
         "privacy": {
-            "title": "Vos fichiers restent à vous",
-            "description": "Comment CoreTend 2.0 traite vos fichiers : seulement les dossiers choisis, analyses en lecture seule, déplacements vers la Corbeille après revue, ni réseau ni télémétrie.",
-            "lead": "CoreTend travaille sur votre Mac et nulle part ailleurs. Il lit les dossiers que vous choisissez et ne change rien avant votre décision.",
+            "title": "Conçue pour inspirer confiance",
+            "description": "Comment CoreTend traite vos fichiers : analyses en lecture seule, déplacements vers la Corbeille après revue avec Annuler, accès complet au disque expliqué, sans télémétrie.",
+            "lead": "CoreTend travaille sur votre Mac et nulle part ailleurs. Elle lit librement et ne change rien avant votre décision.",
             "sections": [
-                ("Seulement les dossiers choisis", "Chaque outil lit le dossier que vous désignez. Les dossiers habituels comme Applications sont proposés en un clic, jamais lus avant votre choix. CoreTend ne demande jamais l’accès complet au disque."),
+                ("Pourquoi l’accès complet au disque", "macOS cache Mail, Safari et les données des apps à toutes les apps. Avec l’accès complet au disque, CoreTend peut les mesurer ; sans lui, elle lit ce que macOS permet et le dit."),
                 ("Lire n’est pas modifier", "Les analyses lisent noms, tailles et dates ; le contenu n’est lu que pour comparer des copies. Rien n’est écrit dans ce qui est analysé."),
-                ("Chaque déplacement vous appartient", "Vous sélectionnez, revoyez et confirmez. CoreTend revérifie chaque fichier juste avant de le déplacer dans la Corbeille ; un fichier qui a changé reste en place."),
-                ("Rien ne quitte votre Mac", "Aucune requête réseau, aucun compte, aucune statistique. Historique, favoris et relevés vivent dans une base locale que vous pouvez exporter ou effacer."),
+                ("Chaque déplacement vous appartient, et se défait", "Vous revoyez, puis CoreTend revérifie chaque élément juste avant de le placer dans la Corbeille. Annuler le remet en place ; rien n’est jamais effacé."),
+                ("Rien ne quitte votre Mac", "Ni compte, ni statistique. La seule requête demande à coretend.ahmetbsbnr.com si une mise à jour existe, et vous pouvez la désactiver. Open source : chacun peut vérifier."),
             ],
         },
         "support": {
             "title": "De l’aide dans la serre",
-            "description": "Aide pour CoreTend 2.0 : premier lancement, accès aux dossiers, fichiers dans la Corbeille, désinstallation et signalement d’un problème.",
+            "description": "Aide pour CoreTend : accès complet au disque, récupérer un fichier, désinstaller, mises à jour et signaler un problème.",
             "lead": "Les réponses aux questions courantes. Pour le reste, ouvrez une issue sur GitHub — sans chemins personnels.",
             "sections": [
-                ("Premier lancement", "Un court accueil explique ce que CoreTend fait et ne fait jamais. Vous pouvez commencer tout de suite ; aucun accès supplémentaire n’est nécessaire."),
-                ("Un dossier ne peut pas être lu", "macOS décide des dossiers qu’une app peut lire. Si un résultat est partiel ou refusé, CoreTend le dit — choisissez à nouveau le dossier ou un autre."),
-                ("Récupérer un fichier", "Tout ce que CoreTend déplace va dans la Corbeille de macOS. Ouvrez la Corbeille et choisissez Remettre en place."),
+                ("Accès complet au disque", "Réglages Système › Confidentialité et sécurité › Accès complet au disque : activez CoreTend. macOS peut demander de la rouvrir."),
+                ("Un dossier ne peut pas être lu", "Sans l’accès complet au disque, macOS garde certains dossiers fermés. CoreTend dit quand un résultat est partiel."),
+                ("Récupérer un fichier", "Cliquez sur Annuler juste après un nettoyage, ou ouvrez la Corbeille et choisissez Remettre en place."),
                 ("Une app ne se déplace pas", "Certaines apps appartiennent au système ou à un administrateur. CoreTend les laisse en place et le dit ; retirez-les dans le Finder si vous en êtes sûr."),
                 ("Retirer CoreTend", "Quittez-la et placez-la dans la Corbeille. Ses données locales sont dans ~/Library/Application Support/CoreTend-Reconstruction."),
                 ("Signaler un problème", "Ouvrez une issue GitHub avec votre version de macOS et ce que vous avez vu. Laissez de côté noms de fichiers et chemins personnels."),
             ],
         },
         "developer": {
-            "title": "Open source, construit au grand jour",
-            "description": "Construire CoreTend 2.0 depuis les sources : un paquet Swift 6 sans dépendance, son système de design, ses règles de sûreté et son guide de contribution.",
-            "lead": "CoreTend est un paquet Swift 6 : une app SwiftUI et un outil en ligne de commande en lecture seule, sans dépendance à l’exécution. Apache 2.0.",
+            "title": "Pour les développeurs",
+            "description": "CoreTend dans le terminal et pour les assistants IA : coretend clean, le serveur MCP en lecture seule, npm et Homebrew ; construire depuis les sources.",
+            "lead": "Nettoyez depuis le terminal, laissez votre assistant IA lire votre disque, ou construisez CoreTend vous-même. Swift 6, Apache 2.0.",
             "sections": [
+                ("Nettoyer depuis le terminal", "Une simulation d’abord ; --confirm place les éléments sûrs dans la Corbeille.", ["coretend clean", "coretend clean --confirm"]),
+                ("Serveur MCP pour assistants IA", "Outils en lecture seule : disk_usage, cleanup_candidates, largest_items, app_leftovers.", ["npx -y coretend mcp"]),
                 ("Construire", "Clonez le dépôt et construisez avec Swift Package Manager sur macOS 14 ou plus récent.", ["swift build --product CoreTendApp", "make qualify"]),
                 ("Système de design", "Le système Serre — palette, typographie, formes de feuille, jetons de mouvement, la serre vivante — vit dans un module et est vérifié par des tests."),
                 ("Règles de sûreté", "Un seul module peut déplacer des fichiers, seulement vers la Corbeille, après revalidation. La construction vérifie qu’aucun autre code ne peut supprimer ou renommer un fichier."),
@@ -412,7 +392,7 @@ def capture(lang: str, surface: str, title: str, *, hero: bool = False, caption:
     image = f"../screenshots/{surface}-{lang}"
     return (f'<figure class="capture{" capture-hero" if hero else " reveal"}">'
             f'<picture><source media="(prefers-color-scheme: light)" srcset="{image}-light.png">'
-            f'<img src="{image}-dark.png" alt="CoreTend — {escape(title, quote=True)}" width="2240" height="1520" loading="{"eager" if hero else "lazy"}"></picture>'
+            f'<img src="{image}-dark.png" alt="CoreTend — {escape(title, quote=True)}" width="2880" height="1800" loading="{"eager" if hero else "lazy"}"></picture>'
             + (f'<figcaption>{escape(title)}</figcaption>' if caption else "") + '</figure>')
 
 
@@ -432,7 +412,7 @@ def section_head(title: str, lead: str = "", ident: str = "") -> str:
             + (f'<p>{escape(lead)}</p>' if lead else "") + '</div>')
 
 
-SURFACE = {key: key for key in ("overview", "explore", "cleanup", "duplicates", "applications", "integrity", "performance", "record")}
+SURFACE = {key: key for key in ("home", "space", "clean", "apps", "record")}
 
 MONTHS = {"en": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
           "fr": ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"]}
@@ -447,8 +427,8 @@ def long_date(lang: str, iso: str) -> str:
 def home(lang: str, rel: dict) -> str:
     c, p = COPY[lang], COPY[lang]["home"]
     tools = "".join(
-        f'<a class="tool reveal" href="{route_url(lang, "features")}#{key}"><span class="tool-name">{escape(name)}</span>'
-        f'<strong>{escape(tag)}</strong><span class="tool-body">{escape(body)}</span></a>'
+        f'<a class="tool reveal" href="{route_url(lang, "features")}#{key}">'
+        f'<strong>{escape(name)}</strong><span class="tool-body">{escape(tag)}. {escape(body)}</span></a>'
         for key, name, tag, body in DESTINATIONS[lang])
     proof = "".join(f'<div class="proof-item reveal"><strong>{escape(value)}</strong><span>{escape(label)}</span></div>'
                     for value, label in p["proof"])
@@ -469,7 +449,7 @@ def home(lang: str, rel: dict) -> str:
     </div>
     {greenhouse("greenhouse-hero", "full")}
   </section>
-  <div class="stage">{capture(lang, "overview", DESTINATIONS[lang][0][1] + " — " + DESTINATIONS[lang][0][2], hero=True, caption=False)}</div>
+  <div class="stage">{capture(lang, "home", DESTINATIONS[lang][0][1] + " — " + DESTINATIONS[lang][0][2], hero=True, caption=False)}</div>
   <section class="proof" aria-label="CoreTend">{proof}</section>
   <section class="band" aria-labelledby="tools-title">{section_head(p['tools_title'], p['tools_lead'], "tools-title")}<div class="tools">{tools}</div>
     <p class="more reveal"><a href="{route_url(lang, "features")}">{escape(p['tools_cta'])} <span aria-hidden="true">→</span></a></p></section>
@@ -513,7 +493,7 @@ def download(lang: str, rel: dict) -> str:
         if dmg:
             rows.append((p["sha_dmg"], f'<code>{escape(dmg["sha256"])}</code>'))
     facts = "".join(f'<div><dt>{escape(term)}</dt><dd>{value}</dd></div>' for term, value in rows)
-    install = cards([(t, b) if t != "Homebrew" else (t, "", [b]) for t, b in p['install']])
+    install = cards([(t, "", [b]) if b.startswith(("brew ", "npx ")) else (t, b) for t, b in p['install']])
     return f"""<main id="main">
   {intro(p)}
   <section class="band band-tight">
@@ -581,7 +561,7 @@ def language_index() -> str:
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="CoreTend 2.0 — a living, local greenhouse for your Mac. Une serre vivante et locale pour votre Mac.">
+  <meta name="description" content="CoreTend — see what fills your Mac, clear it safely. Voyez ce qui remplit votre Mac, libérez-le sans risque.">
   <meta name="theme-color" content="#0F2019">
   <link rel="icon" href="brand/coretend-mark-dark.svg" type="image/svg+xml">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'">
@@ -595,8 +575,8 @@ def language_index() -> str:
   <main id="main" class="language">
     <div class="language-card">
       <img class="language-icon" src="brand/coretend-app-icon-512.png" alt="CoreTend" width="512" height="512">
-      <p class="language-name">CoreTend 2.0</p>
-      <h1>A living greenhouse for your Mac.<span lang="fr">Une serre vivante pour votre Mac.</span></h1>
+      <p class="language-name">CoreTend</p>
+      <h1>See what fills your Mac. Clear it safely.<span lang="fr">Voyez ce qui remplit votre Mac. Libérez-le sans risque.</span></h1>
       <nav class="actions" aria-label="Language / Langue"><a class="button button-primary button-large" href="/en" lang="en">English <span aria-hidden="true">→</span></a><a class="button button-secondary button-large" href="/fr" lang="fr">Français <span aria-hidden="true">→</span></a></nav>
     </div>
     {greenhouse("greenhouse-ground", "full")}
