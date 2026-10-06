@@ -1,6 +1,6 @@
-PY_TARGETS = generate-manifest build-site site-check traceability safety-audit architecture-audit uninstall-smoke app-runtime-smoke clean-release-build-smoke test-cli-interrupt benchmark-scan capture-kit-check capture-screens
+PY_TARGETS = generate-manifest build-site site-check traceability safety-audit architecture-audit uninstall-smoke app-runtime-smoke clean-release-build-smoke test-cli-interrupt benchmark-scan capture-kit-check capture-screens test-native-ui appstore-check
 
-.PHONY: package-release package-appstore python-version capture-kit-check capture-screens test build generate-manifest build-site site-check traceability safety-audit architecture-audit install-smoke uninstall-smoke app-runtime-smoke clean-release-build-smoke test-cli-interrupt qualify package-local verify-package verify-install-package benchmark-scan
+.PHONY: package-release package-appstore appstore-check python-version capture-kit-check capture-screens test-native-ui test build generate-manifest build-site site-check traceability safety-audit architecture-audit install-smoke uninstall-smoke app-runtime-smoke clean-release-build-smoke test-cli-interrupt qualify package-local verify-package verify-install-package benchmark-scan
 
 # The scripts use Python 3.10 syntax. An older python3 (macOS ships 3.9 in /usr/bin)
 # fails deep inside a script, after others have already run, so check it first.
@@ -37,6 +37,11 @@ capture-kit-check:
 capture-screens:
 	python3 Scripts/capture_screens.py
 
+# Native accessibility-driven UI flows use a temporary HOME/store and require Accessibility permission.
+# Kept out of qualify because it interacts with the current desktop session.
+test-native-ui:
+	python3 -B Scripts/test_native_ui.py
+
 traceability:
 	python3 Scripts/check_traceability.py
 	python3 Scripts/test_traceability.py
@@ -62,7 +67,12 @@ clean-release-build-smoke:
 	python3 -B -m unittest Scripts.test_clean_release_builds_unit Scripts.test_runtime_sqlite_scope Scripts.test_runtime_network_scope
 	python3 Scripts/test_clean_release_builds.py
 
-qualify: generate-manifest build-site site-check capture-kit-check traceability safety-audit architecture-audit install-smoke uninstall-smoke app-runtime-smoke clean-release-build-smoke test test-cli-interrupt
+appstore-check:
+	python3 Scripts/check_appstore_listing.py
+	python3 -B -m unittest Scripts.test_appstore_export
+	bash -n Scripts/appstore_export.sh
+
+qualify: generate-manifest build-site site-check capture-kit-check appstore-check traceability safety-audit architecture-audit install-smoke uninstall-smoke app-runtime-smoke clean-release-build-smoke test test-cli-interrupt
 
 test-cli-interrupt: build
 	python3 Scripts/test_cli_interrupt.py .build/debug/CoreTendCLI

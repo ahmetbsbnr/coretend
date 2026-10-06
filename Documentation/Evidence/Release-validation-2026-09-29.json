@@ -1,0 +1,65 @@
+{
+  "version": "2.0.0",
+  "artifacts": [
+    {
+      "kind": "zip",
+      "sha256_matches_manifest": true,
+      "checks": [
+        {
+          "command": [
+            "codesign",
+            "--verify"
+          ],
+          "exit_code": 0,
+          "output": ""
+        },
+        {
+          "command": [
+            "xcrun",
+            "stapler"
+          ],
+          "exit_code": 0,
+          "output": "Processing: <fixture>/unpacked/CoreTend.app\nThe validate action worked!"
+        },
+        {
+          "command": [
+            "spctl",
+            "-a"
+          ],
+          "exit_code": 0,
+          "output": "<fixture>/unpacked/CoreTend.app: accepted\nsource=Notarized Developer ID\norigin=Developer ID Application: Ahmet BASBUNAR (NSCUV5G738)"
+        }
+      ]
+    },
+    {
+      "kind": "dmg",
+      "sha256_matches_manifest": true,
+      "checks": [
+        {
+          "command": [
+            "codesign",
+            "--verify"
+          ],
+          "exit_code": 0,
+          "output": ""
+        },
+        {
+          "command": [
+            "xcrun",
+            "stapler"
+          ],
+          "exit_code": 0,
+          "output": "Processing: <fixture>/CoreTend.dmg\nThe validate action worked!"
+        },
+        {
+          "command": [
+            "spctl",
+            "-a"
+          ],
+          "exit_code": 0,
+          "output": "<fixture>/CoreTend.dmg: accepted\nsource=Notarized Developer ID\norigin=Developer ID Application: Ahmet BASBUNAR (NSCUV5G738)"
+        }
+      ]
+    }
+  ]
+}

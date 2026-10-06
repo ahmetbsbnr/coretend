@@ -1,0 +1,46 @@
+[
+  {
+    "url": "https://coretend.ahmetbsbnr.com/",
+    "status": 200,
+    "headers": {
+      "Content-Security-Policy": "default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'",
+      "X-Content-Type-Options": "nosniff",
+      "Referrer-Policy": "no-referrer",
+      "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+    },
+    "has_script": false
+  },
+  {
+    "url": "https://coretend.ahmetbsbnr.com/en/support",
+    "status": 200,
+    "headers": {
+      "Content-Security-Policy": "default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'",
+      "X-Content-Type-Options": "nosniff",
+      "Referrer-Policy": "no-referrer",
+      "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+    },
+    "has_script": false
+  },
+  {
+    "url": "https://coretend.ahmetbsbnr.com/en/privacy",
+    "status": 200,
+    "headers": {
+      "Content-Security-Policy": "default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'",
+      "X-Content-Type-Options": "nosniff",
+      "Referrer-Policy": "no-referrer",
+      "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+    },
+    "has_script": false
+  },
+  {
+    "url": "https://coretend.ahmetbsbnr.com/fr/download",
+    "status": 200,
+    "headers": {
+      "Content-Security-Policy": "default-src 'self'; script-src 'none'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'self'",
+      "X-Content-Type-Options": "nosniff",
+      "Referrer-Policy": "no-referrer",
+      "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload"
+    },
+    "has_script": false
+  }
+]

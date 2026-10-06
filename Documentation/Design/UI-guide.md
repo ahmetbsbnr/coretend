@@ -83,6 +83,9 @@ Règles :
 
 ## 3. Typographie
 
+Les titres de page et de section commencent directement par le titre. Ne pas ajouter de
+libellé eyebrow/overline au-dessus ; un sous-titre peut suivre le titre de page.
+
 Deux familles livrées avec macOS : aucune police embarquée, aucune licence à gérer.
 
 | Rôle | Police | Taille / graisse | Usage |

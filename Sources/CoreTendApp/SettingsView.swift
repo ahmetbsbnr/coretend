@@ -76,10 +76,12 @@ struct SettingsView: View {
                             help: french ? "Les feuilles bougent doucement quand la fenêtre est active. Tout s’arrête fenêtre inactive ou cachée, en mode économie d’énergie et avec « Réduire les animations »." : "Leaves move gently while the window is active. Everything stops when the window is inactive or hidden, in Low Power Mode and with Reduce Motion.") {
                         Toggle(french ? "Laisser la serre vivre" : "Let the greenhouse live", isOn: $livingGreenhouse)
                             .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
+                            .accessibilityLabel(french ? "Laisser la serre vivre" : "Let the greenhouse live")
                     }
                     section(french ? "Barre des menus" : "Menu bar") {
                         Toggle(ProductCopy.value(for: "settings.menubar.title", french: french), isOn: $menuBarEnabled)
                             .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
+                            .accessibilityLabel(ProductCopy.value(for: "settings.menubar.title", french: french))
                         note(ProductCopy.value(for: "settings.menubar.help", french: french))
                     }
                     }
@@ -137,6 +139,7 @@ struct SettingsView: View {
                         note(french ? "Les relevés Performances sont conservés 30 jours et limités à 500. Vous pouvez les effacer dans Performances ; une nouvelle ouverture de cette vue créera un nouveau relevé." : "Performance readings are kept for 30 days and capped at 500. You can clear them in Performance; reopening that view creates a new reading.")
                         Toggle(french ? "Enregistrer les fichiers récents dans Explorer" : "Save recent files from Explore", isOn: $recentFilesEnabled)
                             .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
+                            .accessibilityLabel(french ? "Enregistrer les fichiers récents dans Explorer" : "Save recent files from Explore")
                         note(french ? "Désactivé par défaut. Activé, la dernière analyse Explorer mémorise jusqu’à 100 chemins locaux et leur dernière taille connue. Désactivez-le pour arrêter cet enregistrement ; effacez les éléments dans Vue d’ensemble." : "Off by default. When enabled, the latest Explore scan stores up to 100 local paths and their last known size. Turn it off to stop recording; remove entries in Overview.")
                     }
                     section(french ? "Données héritées" : "Legacy data",

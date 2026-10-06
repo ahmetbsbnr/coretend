@@ -1,0 +1,24 @@
+Hello,
+
+Thank you for your message. Please find the requested information below; the same text is in App Review Information > Notes.
+
+1. Screen recording
+The attached video (CoreTend-AppReview-2.1.mp4) was recorded on a physical MacBook Air (Apple M1) running macOS 27.0.1. It begins on the macOS desktop by launching CoreTend 2.0.0 from TestFlight and shows the typical flow: choosing a folder in the macOS panel, scanning and reviewing the results, moving a selected file to the macOS Trash after an explicit confirmation (the file is then visible in the Finder Trash), Cleanup and Duplicates. Some passages are played at 2x and marked on screen; captions explain each step, and the answers below are repeated at the end. CoreTend has no account, login, user-generated content or paid content.
+
+2. Purpose and audience
+CoreTend is a native macOS utility for people who want to understand their disk usage and review files and applications before acting on them. It provides folder exploration, cleanup candidates in known locations (such as user caches), exact-duplicate review, an inventory of installed applications with code-signature and quarantine information, on-demand system metrics, and a local activity history. It never claims that a file is malicious or that space has been recovered. Its audience is Mac users managing their own storage; it is not a service for a regulated industry or a business-only app.
+
+3. Setup and main features
+No account, login, subscription or sample credentials are required, and no sample files are needed. Launch the app and follow the welcome screen. In Explore, Cleanup, Duplicates, Applications or Integrity, choose a folder with the macOS folder panel and review the results. Scanning is read-only. To try the optional cleanup action, select a disposable file, choose Review, then confirm: CoreTend moves it to the macOS Trash and never deletes anything permanently. The Mac App Store build runs in the App Sandbox and only accesses folders the user selects.
+
+4. External services, tools or platforms
+None. CoreTend makes no network requests and uses no external data provider, authentication service, payment processor, analytics, telemetry or AI service. It relies only on macOS frameworks: the folder selection panel, the macOS Trash, the Security framework (code-signature information) and public system-statistics APIs. Distribution and updates are provided by the Mac App Store.
+
+5. Regional differences
+CoreTend works the same way in every territory where it is offered. The interface is available in English and French; the language does not change any functionality. The app is free and has no in-app purchases.
+
+6. Regulated industry or protected third-party material
+Not applicable. CoreTend does not operate in a regulated industry and does not include or distribute protected third-party material. It only inspects files and applications the user selects on their own Mac.
+
+Best regards,
+Ahmet Basbunar

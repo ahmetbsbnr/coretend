@@ -37,10 +37,22 @@ for file in sorted(root.rglob('*.html')):
         if parsed.scheme == 'javascript' or (parsed.scheme in ('http', 'https') and not link.startswith('https://github.com/ahmetbsbnr/coretend')):
             errors.append(f'{file}: external/script link {link}')
         if parsed.scheme or link.startswith('#'): continue
-        target=(file.parent / parsed.path).resolve()
+        if not parsed.path.startswith('/'):
+            errors.append(f'{file}: internal links must be root-relative for Vercel clean URLs: {link}')
+            continue
+        target=(root / parsed.path.lstrip('/')).resolve()
+        if not target.is_file():
+            clean_url_target=target.with_suffix('.html')
+            index_target=target/'index.html'
+            if clean_url_target.is_file(): target=clean_url_target
+            elif index_target.is_file(): target=index_target
         if root not in target.parents and target != root: errors.append(f'{file}: link escapes Website: {link}')
         elif not target.is_file(): errors.append(f'{file}: missing target: {link}')
 if not (root/'_headers').is_file(): errors.append('missing static security headers')
+vercel_config=json.loads((root.parent/'vercel.json').read_text())
+for redirect in vercel_config.get('redirects', []):
+    if redirect.get('source') in ('/en', '/fr'):
+        errors.append(f"vercel.json: {redirect['source']} must resolve to its index page under cleanUrls, not redirect to /index")
 stylesheet = root/'site.css'
 if not stylesheet.is_file():
     errors.append('missing site stylesheet')

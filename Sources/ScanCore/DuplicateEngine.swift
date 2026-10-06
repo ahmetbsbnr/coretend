@@ -82,20 +82,44 @@ public struct DuplicateEngine: Sendable {
         var issues: [DuplicateScanIssue] = []
         var snapshots: [URL: DuplicateFileSnapshot] = [:]
         var completedCandidates = 0
+        func advance() {
+            completedCandidates += 1
+            progress(.duplicateHashing(completedCandidates: completedCandidates, totalCandidates: totalCandidates))
+        }
         for (expectedSize, urls) in sizeBuckets where urls.count > 1 {
             var seenIdentities: Set<InodeIdentity> = []
+            var ready: [(url: URL, before: DuplicateFileSnapshot)] = []
             for url in urls.sorted(by: { $0.path < $1.path }) {
-                defer {
-                    completedCandidates += 1
-                    progress(.duplicateHashing(completedCandidates: completedCandidates, totalCandidates: totalCandidates))
-                }
                 try Task.checkCancellation()
                 do {
                     let before = try DuplicateFileSnapshot(url: url)
                     guard before.size == expectedSize else {
-                        issues.append(DuplicateScanIssue(path: url.path, reason: "file_size_changed_since_scan")); continue
+                        issues.append(DuplicateScanIssue(path: url.path, reason: "file_size_changed_since_scan")); advance(); continue
                     }
-                    guard seenIdentities.insert(before.identity).inserted else { continue }
+                    guard seenIdentities.insert(before.identity).inserted else { advance(); continue }
+                    ready.append((url, before))
+                } catch { issues.append(DuplicateScanIssue(path: url.path, reason: "hash_failed_or_file_changed")); advance() }
+            }
+            // Large files of the same size are first compared by their beginning: a file whose
+            // first bytes match no other cannot be a copy, and is not read in full.
+            if ready.count > 1, expectedSize > Self.headLength * 4 {
+                var heads: [String: [(url: URL, before: DuplicateFileSnapshot)]] = [:]
+                for item in ready {
+                    try Task.checkCancellation()
+                    do { heads[try hash(item.url, expected: item.before, limit: Self.headLength), default: []].append(item) }
+                    catch is CancellationError { throw CancellationError() }
+                    catch { issues.append(DuplicateScanIssue(path: item.url.path, reason: "hash_failed_or_file_changed")); advance() }
+                }
+                ready = []
+                for members in heads.values {
+                    if members.count > 1 { ready += members } else { advance() }
+                }
+                ready.sort { $0.url.path < $1.url.path }
+            }
+            for (url, before) in ready {
+                defer { advance() }
+                try Task.checkCancellation()
+                do {
                     let digest = try hash(url, expected: before)
                     let after = try DuplicateFileSnapshot(url: url)
                     guard before == after else {
@@ -115,22 +139,28 @@ public struct DuplicateEngine: Sendable {
         return DuplicateScanReport(groups: groups, issues: issues, snapshots: snapshots)
     }
 
-    private func hash(_ url: URL, expected: DuplicateFileSnapshot) throws -> String {
+    private static let headLength: Int64 = 65_536
+
+    /// SHA-256 of the file's content, or of its first `limit` bytes.
+    private func hash(_ url: URL, expected: DuplicateFileSnapshot, limit: Int64? = nil) throws -> String {
         let descriptor = open(url.path, O_RDONLY | O_NOFOLLOW | O_CLOEXEC)
         guard descriptor >= 0 else { throw CocoaError(.fileReadNoSuchFile) }
         defer { _ = close(descriptor) }
         guard try DuplicateFileSnapshot(fileDescriptor: descriptor) == expected else { throw CocoaError(.fileReadCorruptFile) }
         var hasher = SHA256()
         var buffer = [UInt8](repeating: 0, count: 1_048_576)
-        while true {
+        var remaining = limit ?? Int64.max
+        while remaining > 0 {
             try Task.checkCancellation()
-            let count = buffer.withUnsafeMutableBytes { bytes in read(descriptor, bytes.baseAddress, bytes.count) }
+            let wanted = Int(min(Int64(buffer.count), remaining))
+            let count = buffer.withUnsafeMutableBytes { bytes in read(descriptor, bytes.baseAddress, wanted) }
             if count == 0 { break }
             if count < 0 {
                 if errno == EINTR { continue }
                 throw CocoaError(.fileReadUnknown)
             }
-            hasher.update(data: Data(buffer.prefix(count)))
+            buffer.withUnsafeBytes { bytes in hasher.update(bufferPointer: UnsafeRawBufferPointer(rebasing: bytes.prefix(count))) }
+            remaining -= Int64(count)
         }
         guard try DuplicateFileSnapshot(fileDescriptor: descriptor) == expected else { throw CocoaError(.fileReadCorruptFile) }
         return hasher.finalize().map { String(format: "%02x", $0) }.joined()

@@ -1,8 +1,62 @@
 # Reconstruction progress
 
-**Relevé :** 2026-09-27. **État :** reconstruction en cours, non finalisée. Derniers jalons fusionnés : favoris/récents SQLite v4, palette clavier bilingue et écriture batch des récents (PR #40–#44). UI macOS native et VoiceOver non qualifiés. Cahier et plan approuvés; développement sur lignée `next` du dépôt public historique. Le dépôt greenfield initial `rebuild/` reste copie locale de provenance.
+**Relevé :** 2026-10-02. **État :** reconstruction en cours, non finalisée. Derniers jalons fusionnés : favoris/récents SQLite v4, palette clavier bilingue et écriture batch des récents (PR #40–#44). Recette UI native partielle; VoiceOver non qualifié. Cahier et plan approuvés; développement sur lignée `next` du dépôt public historique. Le dépôt greenfield initial `rebuild/` reste copie locale de provenance.
+
+### Couverture des modules et commandes — 2026-10-02
+
+- Deux tests AppShell ajoutés : chaque destination a un titre/sous-titre localisé FR/EN et une
+  commande palette unique; Réglages apparaît une fois et se recherche dans les deux langues.
+- `swift test --filter AppShellTests` PASS (54 tests AppShell; 66 XCTest cumulés dans le plan SwiftPM).
+- `make test-native-ui` ajoute une recette Accessibilité native sur paquet local en HOME/store
+  temporaires: 8 routes, Réglages, palette, et scénarios des 8 modules (19 points). Les parcours
+  d’action destructive s’arrêtent à Annuler; la confirmation effective reste vérifiée au niveau
+  Domain/SafetyCore sur fausse Corbeille. Permission Accessibilité requise sur l’hôte.
+- `PATH=/opt/homebrew/bin:$PATH make qualify` PASS (code 0), y compris 66 XCTest, tests Domain,
+  ScanCore, Persistence, SafetyCore, builds reproductibles, runtime fixture et CLI.
+- Matrice des comportements existants et limites d’interaction :
+  `Documentation/Evidence/ModuleTestCoverage.md`.
+- Le parcours natif inspecte les commandes et états AX représentatifs sans prétendre couvrir chaque
+  combinaison ou chaque contrôle visuel. VoiceOver, tailles d’affichage et confirmation UI effective
+  restent à qualifier sur une cible native de test dédiée; aucune suppression n’est lancée depuis le paquet.
+
+### Règle de conception — aucun eyebrow — 2026-10-02
+
+- Consigne du mainteneur ajoutée à `AGENTS.md`, la décision 0002 et au guide UI : aucun
+  surtitre eyebrow/overline au-dessus d’un titre de page ou de section dans l’app ou sur le site.
+- Le générateur retire les champs kicker et les surtitres décoratifs; les pages générées
+  FR/EN démarrent désormais par leur titre. Les paragraphes descriptifs restent sous les titres.
+- `make build-site site-check` PASS; `make qualify` PASS (code 0), dont 64 XCTest,
+  doubles builds Release reproductibles, runtime isolé et intégrations CLI. `git diff --check` PASS.
+- Le contrôle source confirme l’absence d’eyebrow dans les interfaces du site; les seules
+  occurrences restantes sont la règle écrite et le nom historique d’un tuple interne à renommer.
 
 
+
+### P8 — requalification locale et état TestFlight — 2026-10-02
+
+- Le mainteneur confirme que l’invitation TestFlight est acceptée. La vidéo physique
+  demandée par Apple et la transmission de la réponse Guideline 2.1 restent à faire.
+- `PATH=/opt/homebrew/bin:$PATH make qualify` : PASS (code 0). Contrôles site et
+  listing, export App Store (6 tests), traçabilité, sûreté, architecture, installation/
+  désinstallation fixture, runtime app isolé sans sockets réseau, test SQLite, doubles
+  builds Release reproductibles App/CLI, 64 tests XCTest, Swift Testing et interruption
+  CLI ont réussi. Logs locaux : `/tmp/coretend-next-qualify-resume.log`.
+- `git diff --check` : PASS. Aucun statut de Must/Should promu ; UI native visible,
+  VoiceOver, macOS minimum et vidéo physique ne sont pas couverts par ce gate.
+
+### Contrôle local complémentaire — 2026-10-02
+
+- Site statique : Chrome headless, 13 routes EN/FR × 3 largeurs (320/390/1440), 39
+  contrôles de géométrie PASS ; trois captures relues. Aucun contrôle clavier,
+  interaction, Axe, VoiceOver, console ou audit réseau dans cette passe.
+- `git diff --check` PASS. `make traceability` lancé après la mise à jour échoue sur
+  FR-01 : sa preuve est datée du 27-09 alors que la date générale du relevé est le 02-10.
+  Défaut de contrat corrigé dans `check_traceability.py` : la date générale est une borne
+  de journal et n’impose plus de redater chaque observation antérieure ; toute date future,
+  invalide ou non ancrée reste rejetée. Les 91 dates source et les statuts restent inchangés.
+  `make traceability` et ses fixtures passent après correction. `PATH=/opt/homebrew/bin:$PATH
+  make qualify` complet passe (code 0), y compris 64 XCTest, build/runtime fixture,
+  reproductibilité App/CLI et interruption CLI ; log `/tmp/coretend-next-qualify-traceability-fix.log`.
 
 ### P3 lot 3.4 — Doublons — 2026-09-28
 
@@ -464,3 +518,99 @@
 - CI `qualify` sur `1f62627e0c0733d285258466559dc7c7344eb0d8` SUCCESS, terminé
   09:16:57 UTC ; ce SHA est antérieur aux commits P4 locaux, la CI ne les couvre pas.
   Nouvelle qualification locale lancée pendant la reprise documentaire.
+
+
+### Clôture locale et reprise App Store — 29-09-2026
+
+- Demande du mainteneur : terminer le projet. Dépôt `next` propre au démarrage, à jour.
+- Script d'export : reprise corrigée, validation avant packaging et nettoyage des options ;
+  six tests isolés PASS, intégrés dans `make qualify` via `appstore-check`.
+- `make qualify` PASS ; fiche EN/FR et 16 captures 2880 × 1800 PASS.
+- ZIP/DMG publics : SHA-256 conformes, signature/ticket/Gatekeeper PASS ; pages et headers
+  contrôlés. Rapports datés dans ReleaseEvidence et SiteAccessibilitySmoke.
+
+### Clôture — signature et envoi App Store — 29-09-2026
+
+- Le mainteneur confirme le compte Xcode connecté et demande de conserver les recettes non
+  exécutées sans les déclarer validées. Compte/équipe Admin confirmés dans l'interface.
+- CLI `No Accounts` persiste ; Organizer fonctionne. Certificats Apple Distribution et Mac
+  Installer Distribution créés, existants préservés. Trousseau validé localement par le mainteneur.
+- Export App Store 2.0.0 (201) signé et contrôlé ; rapport AppStore-package-2026-09-29.json.
+- Organizer confirme **CoreTend 2.0.0 (201) uploaded**, delivery
+  `979affff-6f66-41df-86db-2e4bf8a825e2` ; rapport AppStore-upload-2026-09-29.json.
+- Traitement Apple à vérifier après connexion web ASC. Aucune soumission App Review,
+  aucun changement de statut du registre, commit ni push ; recettes non exécutées en réserve.
+
+
+### P8 — fiche App Store Connect préparée — 29-09-2026
+
+- Coordonnées App Review saisies et vérifiées ; Save accepté. Métadonnées FR/EN comparées
+  aux sources et enregistrées ; build 2.0.0 (201) associé.
+- Droits tiers déclarés absents ; questionnaire d’âge complété selon les fonctions documentées,
+  classification générée 4+. Catégorie Utilities et prix de base gratuit confirmés.
+- « Data Not Collected » publié, conforme à l’absence de réseau, compte et télémétrie documentée.
+- Huit captures par langue, noms 01–08 dans l’ordre, visibles après chargement et sauvegardes
+  successives. ASC indiquait encore des uploads en cours au contrôle de soumission ; attendre
+  son traitement puis revalider.
+- Aucune soumission App Review. Soumission autorisée par le mainteneur ; App Store Connect confirme **Waiting for Review**. Recettes hôte macOS 14, second
+  Mac, VoiceOver, import réel 1.x et parcours sandbox restent non exécutées/non validées ;
+  aucun statut de traçabilité promu.
+
+
+### P8 — soumission App Store — 29-09-2026
+
+- Captures anglaises et françaises remplacées, réimportées et contrôlées dans l’ordre 01–08 ;
+  App Store Connect affiche huit captures par langue (8/10). Fichiers locaux 2880 × 1800.
+- Droits de contenu et métadonnées requis enregistrés ; le contrôle Add for Review n’a plus
+  signalé de métadonnée manquante après traitement des images.
+- Le mainteneur a validé explicitement la soumission. App Store Connect affiche **macOS 2.0.0
+  Waiting for Review**, Draft Submissions (0). En attente de la décision Apple.
+
+### Réconciliation de la passation et nettoyage local — 29-09-2026
+
+- Pointeurs de passation, P5/P7/P8, stratégie de dépôt, checklist de release et roadmap
+  réconciliés avec les commits observés : `origin/main` `39eb38b1`, `origin/next` `0298fdfc`.
+  La pointe Next n’est pas intégrée à main ; aucune opération Git distante n’a été faite.
+- Checklist de release obsolète réduite à un renvoi historique vers P7 et ReleaseEvidence.
+- Retirés les `.DS_Store`, `__pycache__` et `.pyc` ignorés ; captures, artefacts et `.build`
+  conservés car ils servent aux preuves et à la reprise locale.
+- `PATH=/opt/homebrew/bin:$PATH make appstore-check traceability` : PASS ; six tests
+  d’export, validation de fiche, shellcheck syntaxique, registre et tests de registre PASS.
+  `git diff --check` PASS. `make qualify` complet non relancé pendant cette mise à jour.
+
+### App Review — demande d’informations Guideline 2.1 — 30-09-2026
+
+- Apple demande une vidéo du build soumis sur Mac physique, démarrant au lancement, et six
+  précisions sur le but/public, la configuration, les services tiers, les régions et les contenus
+  réglementés/protégés.
+- Réponse EN préparée dans `Documentation/Release/App-Review-response-2026-09-30.md`; Notes
+  App Review redirigées vers ce texte dans `Documentation/Release/AppStore-listing.md`.
+- Vidéo non enregistrée/non jointe ; champs modèle/OS à compléter après observation réelle.
+  Aucune réponse envoyée, aucune modification App Store Connect faite.
+- Vérification visuelle de Safari authentifié : soumission macOS **Unresolved Issues**, App
+  2.0.0 (201) **Rejected**, motif « 2.1.0 Performance: App Completeness » ; bouton Resubmit
+  désactivé. Une seule entrée soumise. Aucun champ ni message ASC modifié.
+- TestFlight interne : groupe `CoreTend Internal QA` créé avec distribution automatique
+  désactivée ; build 201 ajouté ; compte titulaire invité (ASC : Invited). Le 30-09, TestFlight
+  indique que l’Apple Account connecté ne correspond pas au compte lié à l’invitation. La vidéo
+  physique et la réponse App Review restent bloquées jusqu’à acceptation avec le compte correct.
+- Le PKG 201 a été installé sous `/Applications/CoreTend.app` ; son lancement direct est refusé
+  par Gatekeeper/LaunchServices, donc il ne sert pas à l’enregistrement vidéo.
+
+### Site public et audit Vercel — 30-09-2026
+
+- Contrôle des pages publiques a reproduit une boucle `/en` et `/fr` sous `cleanUrls`, puis des
+  liens 404 causés par des chemins relatifs sur l’accueil. Les règles de redirection conflictuelles
+  ont été retirées ; le générateur utilise des URL de routes absolues bilingues et le contrôle
+  statique interdit les liens internes ambigus.
+- Site republié sur le projet Vercel existant `coretend` et alias personnalisé rattaché au dernier
+  déploiement READY `dpl_65AVX5VgY33RUCB3rBRRK235h31t`. Pas de push Git.
+- Après publication : 15 chemins de route vérifiés à 200 ; 51 liens/ressources de même origine testés sans
+  erreur ; en-têtes CSP, HSTS, nosniff, Referrer-Policy, Permissions-Policy et X-Frame-Options
+  présents. `build_site.py`, 3 tests du contrat et `check_site.py` PASS.
+- Inventaire des six projets Vercel consigné dans `Documentation/Evidence/Vercel-audit-2026-09-30.md`.
+  `app` (même dépôt/racine que `coretend`) et `coretend-static-project.any8` (ancienne config)
+  sont des doublons possibles sans domaine canonique ; `dash-stage` ne déploie rien et son domaine
+  renvoie 404. Aucun projet ni historique n’a été supprimé.
+- Le dépôt GitHub `ahmetbsbnr/ahmetbsbnr` du profil est le README spécial GitHub, pas une seconde
+  source CoreTend ; sa description provisoire est maintenant explicite. Aucun dépôt supprimé.

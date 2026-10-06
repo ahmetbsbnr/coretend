@@ -1,6 +1,6 @@
 # Stratégie du dépôt public CoreTend
 
-**Décision :** conserver `ahmetbsbnr/coretend` comme dépôt public canonique. Son historique, ses tags et la ligne 1.x restent consultables. Intégrer la reconstruction dans une branche `next` issue de `origin/main`, puis fusionner par pull request lorsque les critères de qualité sont remplis. Ne pas réécrire `main` ni réutiliser un numéro de version déjà publié.
+**Décision :** conserver `ahmetbsbnr/coretend` comme dépôt public canonique. Son historique, ses tags et la ligne 1.x restent consultables. La reconstruction a été développée sur `next`, issue de `origin/main`; la release publique 2.0.0 est sortie depuis `b35180fb`. Au relevé du 29-09-2026, `origin/main` est à `39eb38b1` et `origin/next` à `0298fdfc` : les commits App Store postérieurs ne sont pas intégrés dans `main`. Toute intégration suit une revue et une autorisation explicite. Ne pas réécrire l’historique ni réutiliser un numéro de version publié.
 
 ## Branches et versions
 
@@ -29,7 +29,7 @@ La branche `develop/v2` et les branches de session anciennes ne sont pas des lig
 3. Release publique : identité Developer ID contrôlée hors dépôt, signature, notarisation, vérification du ticket, ZIP/DMG et provenance. Publication GitHub Releases puis mise à jour du site et du canal Homebrew seulement après vérification des artefacts publiés. Aucun secret de signature dans Git.
 4. Mises à jour : annoncer source et version vérifiées; jamais installer silencieusement. Conserver une page de confidentialité honnête sur scans locaux, diagnostics et accès réseau.
 
-`main` continue de représenter la version publique 1.x tant que `next` ne satisfait pas les critères de remplacement. L’aperçu `next` n’est ni signé, ni notarisé, ni qualifié comme release.
+Historique au 26-09-2026 : `main` représentait la version publique 1.x et `next` n’était qu’un aperçu. La release 2.0.0 est publiée depuis `b35180fb` ; consulter l’état des pointes plus haut avant toute opération.
 
 ## Transition locale du 26-09-2026
 

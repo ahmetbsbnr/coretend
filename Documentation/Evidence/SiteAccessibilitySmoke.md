@@ -68,3 +68,34 @@ Les contrôles locaux de zoom et les deux moteurs sont réalisés ; aucun statut
 
 `make qualify` final 4.5 PASS, code 0 (`/tmp/coretend-p4-45-qualify.log`) ;
 `git diff --check` PASS. Aucun code site modifié pour obtenir ces preuves.
+
+## Revalidation HTTP de la livraison publique — 29-09-2026
+
+- `/`, `/en/support`, `/en/privacy` et `/fr/download` : HTTP 200.
+- CSP contient `script-src 'none'`, `object-src 'none'`, `frame-ancestors 'none'` ;
+  `nosniff`, `no-referrer` et HSTS présents. Aucun élément script dans ces réponses.
+- Rapport : `Site-http-2026-09-29.json`. Cela actualise le contrôle des en-têtes de
+  livraison ; ne prouve ni le rendu, ni le zoom, ni VoiceOver/Safari.
+- Aucun déploiement effectué ; NFR-11 reste PARTIEL.
+
+## Réparation et contrôle de la livraison publique — 30-09-2026
+
+- Reproduit la boucle `/en` → `/en/index` → `/en` et l’équivalent FR, causée par des redirections
+  explicites incompatibles avec `cleanUrls`. Les redirections ont été retirées ; les URL internes
+  du générateur sont root-relative afin que la page `/en` conserve correctement son préfixe.
+- Déployé sur le projet existant `coretend`; déploiement READY
+  `dpl_65AVX5VgY33RUCB3rBRRK235h31t`, alias `coretend.ahmetbsbnr.com` vérifié.
+- Racine, `/en`, `/fr`, les pages EN/FR et les variantes `index.html` (15 chemins au total) répondent 200 après
+  redirection canonique éventuelle. 51 liens et ressources de même origine vérifiés, zéro erreur.
+  CSP, `nosniff`, Referrer-Policy, Permissions-Policy, HSTS et X-Frame-Options observés.
+- Contrôles locaux : génération du site, 3 tests du contrat reduced-motion, `check_site.py` et
+  `git diff --check` PASS. Cela vérifie les réponses publiques et les liens ; ce n’est pas une
+  recette visuelle manuelle dans un navigateur.
+- Aucun nettoyage destructif des projets Vercel séparés ; voir `Vercel-audit-2026-09-30.md`.
+
+## Rendu local headless — 2026-10-02
+
+- Chrome 154.0.8037.95 sur macOS 27, routes statiques générées depuis `Website/`, pages EN/FR. Vérification à 320, 390 et 1440 px : 13 routes × 3 largeurs, soit 39 assertions de géométrie sans débordement horizontal ni nœud principal hors viewport.
+- Captures desktop FR accueil, desktop EN fonctionnalités et mobile FR accueil relues visuellement dans `Artifacts/SiteReview/local-2026-10-02/`.
+- Cette passe vérifie le rendu et la géométrie seulement. Elle ne couvre pas les interactions, le clavier, Axe, VoiceOver, les erreurs console ni un audit réseau. Chrome a émis ses propres messages updater/GCM au démarrage ; ils ne sont pas attribués au contenu statique.
+- Aucun statut de traçabilité promu ; `git diff --check` PASS.

@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "build": "201",
+  "bundle_id": "com.ahmetbsbnr.coretend",
+  "upload_confirmed_by_organizer": true,
+  "organizer_message": "CoreTend 2.0.0 (201) uploaded",
+  "processing_status": "Complete",
+  "distribution_log_bundle": "CoreTend_2026-09-29_07-32-51.470.xcdistributionlogs",
+  "delivery_id": "979affff-6f66-41df-86db-2e4bf8a825e2",
+  "testflight_build_status": "Ready to Submit",
+  "processing_observed_in_app_store_connect": true,
+  "expires_in_days": 90
+}

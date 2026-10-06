@@ -324,37 +324,46 @@ struct CleanupView: View {
             }
             do {
                 let exclusions = try await LocalStoreAccess.exclusions()
-                for try await event in LocalScanEngine().scan(.init(roots: [.init(url: root, ruleID: rule.id)], exclusions: exclusions)) {
+                for try await batch in LocalScanEngine().scan(.init(roots: [.init(url: root, ruleID: rule.id)], exclusions: exclusions)).batched() {
                     guard !Task.isCancelled, activeScanID == scanID else { return }
-                    switch event {
-                    case .result(let result): results.append(result)
-                    case .itemFailure(let path, let reason):
-                        if path == root.path { rootFailure = reason } else { partialFailures.insert(reason) }
-                    case .finished:
-                        if let rootFailure {
-                            rootsPhase = nil
-                            notice = PageNotice(kind: .denied, title: ProductCopy.scanRootFailure(reason: rootFailure, french: french),
-                                                   recovery: .chooseAgain)
-                        } else {
-                            rootsPhase = .finished
-                            // Bring the finished roots and the candidates under them into view.
-                            // A fresh request on the next turn: a quick scan can end in the same update as the one
-                            // that scrolled at its start, and an unchanged value would not scroll again.
-                            scrollTarget = nil
-                            Task { @MainActor in scrollTarget = "cleanup.roots" }
-                            // Largest known allocation first; unknown sizes last, never guessed.
-                            var still = Transaction()
-                            still.disablesAnimations = true
-                            // The order settles at once; only the roots and bloom move.
-                            withTransaction(still) { results.sort { allocated($0) > allocated($1) } }
-                            if !partialFailures.isEmpty {
-                                notice = PageNotice(kind: .partial, title: copy("cleanup.partial"),
-                                                       message: ProductCopy.scanPartialFailure(reasons: partialFailures, french: french))
+                    var found: [ScanResult] = []
+                    var latestCompleted: Int?
+                    for event in batch {
+                        switch event {
+                        case .result(let result): found.append(result)
+                        case .itemFailure(let path, let reason):
+                            if path == root.path { rootFailure = reason } else { partialFailures.insert(reason) }
+                        case .finished:
+                            // Everything read so far is in place before the scan is called finished.
+                            results.append(contentsOf: found); found = []
+                            if let latestCompleted { scanCompletedFiles = latestCompleted }
+                            if let rootFailure {
+                                rootsPhase = nil
+                                notice = PageNotice(kind: .denied, title: ProductCopy.scanRootFailure(reason: rootFailure, french: french),
+                                                       recovery: .chooseAgain)
+                            } else {
+                                rootsPhase = .finished
+                                // Bring the finished roots and the candidates under them into view.
+                                // A fresh request on the next turn: a quick scan can end in the same update as the one
+                                // that scrolled at its start, and an unchanged value would not scroll again.
+                                scrollTarget = nil
+                                Task { @MainActor in scrollTarget = "cleanup.roots" }
+                                // Largest known allocation first; unknown sizes last, never guessed.
+                                var still = Transaction()
+                                still.disablesAnimations = true
+                                // The order settles at once; only the roots and bloom move.
+                                withTransaction(still) { results.sort { allocated($0) > allocated($1) } }
+                                if !partialFailures.isEmpty {
+                                    notice = PageNotice(kind: .partial, title: copy("cleanup.partial"),
+                                                           message: ProductCopy.scanPartialFailure(reasons: partialFailures, french: french))
+                                }
+                                scanFoundNothing = results.isEmpty && partialFailures.isEmpty
                             }
-                            scanFoundNothing = results.isEmpty && partialFailures.isEmpty
+                        case .progress(let completed): latestCompleted = completed
                         }
-                    case .progress(let completed): scanCompletedFiles = completed
                     }
+                    if !found.isEmpty { results.append(contentsOf: found) }
+                    if let latestCompleted { scanCompletedFiles = latestCompleted }
                 }
             } catch is CancellationError {
                 if activeScanID == scanID { notice = PageNotice(kind: .note, title: copy("scan.cancelled")) }
@@ -394,7 +403,7 @@ struct CleanupView: View {
             let store = try await LocalStoreAccess.open()
             let ruleID = rule.id.rawValue
             let allowed = Set([ruleID])
-            let executor = SafeActionExecutor(allowedRoots: [root], allowedRules: allowed, trash: MacOSTrashClient())
+            let executor = SafeActionExecutor(allowedRoots: [root], allowedRules: allowed, trash: AppTrashClient.make())
             let service = FileActionService(validator: .init(), executor: executor, store: store, allowedRoots: [root], allowedRuleIDs: allowed)
             let selections = selectedItems.sorted { $0.path < $1.path }.map { FileActionSelection(url: $0, ruleID: ruleID) }
             let review = try service.prepareReview(selections)

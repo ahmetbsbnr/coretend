@@ -1,17 +1,17 @@
 # P5 — Release 2.0
 
-**Objectif :** CoreTend 2.0 signée, notarisée, publiée et installable, `next` fusionnée dans `main`.
+**Objectif :** CoreTend 2.0 signée, notarisée, publiée et installable, `next` intégrée dans `main`.
 **Gate :** G5 — autorisation explicite du mainteneur à chaque étape irréversible.
-**Statut de la phase :** À faire — G4 n’est pas passée. Ne pas commencer avant la gate précédente et une demande explicite du mainteneur.
+**Statut de la phase :** historique de préparation, remplacé pour la release publique 2.0.0 par `P7-release-2.0.md`. La pointe actuelle de `next` (0298fdfc) n’est pas intégrée dans `main` (39eb38b1) ; les réserves de qualification sont décrites dans P4.
 **Plan :** `Documentation/Project/Implementation-plan.md` § Programme 2.0.
 
 ## Lots
 
 | Lot | Intitulé | Statut |
 |---|---|---|
-| 5.1 | Build signé, notarisé, agrafé ; ZIP/DMG, SHA-256, provenance | À faire |
-| 5.2 | Notes de version FR/EN, site hors `noindex`, lien de téléchargement réel | À faire |
-| 5.3 | PR `next` → `main` avec revue, tag `v2.0.0`, release GitHub, cask Homebrew | À faire |
+| 5.1 | Build signé, notarisé, agrafé ; ZIP/DMG, SHA-256, provenance | Terminé pour la release publique (P7) |
+| 5.2 | Notes de version FR/EN, site hors `noindex`, lien de téléchargement réel | Terminé pour la release publique (P7) |
+| 5.3 | PR `next` → `main` pour la pointe actuelle | En attente d’autorisation explicite ; la release v2.0.0 historique est déjà publiée (P7) |
 | 1.x | Optionnel : 1.0.3 depuis `fix/1.x-trash-sqlite` | À décider |
 
 ## Journal
@@ -69,6 +69,11 @@
   chemin est désormais connu : signer, archive manuelle, Organizer › Direct Distribution).
 
 ## Point d’arrêt
+
+> Les paragraphes ci-dessous décrivent l'arrêt du 28-09 avant P7. Ne pas les utiliser
+> pour reprendre la release : P7 consigne sa publication, `Documentation/ReleaseEvidence.md`
+> sa revalidation du 29-09 ; `passation.md` et P8 donnent la prochaine action.
+
 
 **Point d’arrêt actuel :** aucun lot P5 ouvert. Les travaux livrables P4 sont consignés ; G4
 reste ouverte (voir `P4-qualification.md` et sa table « Preuves restantes »). Ne préparer

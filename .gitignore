@@ -11,3 +11,4 @@ Website/dist/
 *.key
 *.xcuserstate
 Scripts/__pycache__/
+.vercel

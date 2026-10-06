@@ -410,6 +410,27 @@ final class ExplorePresetTests: XCTestCase {
 }
 
 final class DuplicateEngineTests: XCTestCase {
+    func testLargeFilesAreGroupedOnlyWhenWholeContentMatches() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-duplicates-large-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let size = 1_048_576
+        let base = Data(repeating: 7, count: size)
+        var differentStart = base; differentStart[0] = 8
+        var differentEnd = base; differentEnd[size - 1] = 8
+        let files = ["a.bin": base, "b.bin": base, "start.bin": differentStart, "end.bin": differentEnd]
+        for (name, data) in files { try data.write(to: root.appendingPathComponent(name)) }
+        let candidates = files.keys.map { root.appendingPathComponent($0) }.map {
+            ScanResult(url: $0, ruleID: .duplicates, logicalBytes: .known(Int64(size)), allocatedBytes: .known(Int64(size)), modifiedAt: nil, risk: .low)
+        }
+        let progress = ScanProgressRecorder()
+        let report = try await DuplicateEngine().findGroups(in: candidates, progress: progress.append)
+        XCTAssertEqual(report.groups.count, 1)
+        XCTAssertEqual(Set(report.groups[0].files.map(\.lastPathComponent)), ["a.bin", "b.bin"])
+        XCTAssertTrue(report.issues.isEmpty)
+        XCTAssertEqual(progress.values.last, .duplicateHashing(completedCandidates: 4, totalCandidates: 4))
+    }
+
     func testFindsExactCopiesAndKeepsOneCandidate() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-duplicates-\(UUID())", isDirectory: true)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
@@ -532,5 +553,32 @@ extension ScanCoreTests {
         try handle.write(contentsOf: Data("new!".utf8)); try handle.close()
         XCTAssertNotEqual(original, try DuplicateFileSnapshot(url: b))
         XCTAssertEqual(original.inode, try DuplicateFileSnapshot(url: b).inode)
+    }
+}
+
+final class BatchedScanEventTests: XCTestCase {
+    func testBatchesDeliverEveryEventInOrderAndEndWithFinished() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-batched-\(UUID())", isDirectory: true)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        for index in 0..<250 { try Data("\(index)".utf8).write(to: root.appendingPathComponent("file-\(index).txt")) }
+        var results = 0
+        var lastProgress = 0
+        var events: [ScanEvent] = []
+        for try await batch in LocalScanEngine().scan(.init(roots: [.init(url: root, ruleID: .explore)])).batched(every: .milliseconds(1)) {
+            XCTAssertFalse(batch.isEmpty)
+            events += batch
+        }
+        for event in events {
+            switch event {
+            case .result: results += 1
+            case .progress(let completed): XCTAssertEqual(completed, lastProgress + 1); lastProgress = completed
+            case .itemFailure(let path, let reason): XCTFail("\(reason) \(path)")
+            case .finished: break
+            }
+        }
+        XCTAssertEqual(results, 250)
+        XCTAssertEqual(lastProgress, 250)
+        guard case .finished = events.last else { return XCTFail("finished must come last") }
     }
 }

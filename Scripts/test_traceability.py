@@ -56,8 +56,11 @@ def main() -> None:
     current = check("Revue du registre 2026-09-27; fixture")
     assert current.returncode == 0, current.stderr
 
+    historical = check("Revue du registre 2026-09-26; unchanged evidence")
+    assert historical.returncode == 0, historical.stderr
+
     for evidence in (
-        "Revue du registre 2026-09-26; stale fixture",
+        "Revue du registre 2026-09-28; evidence after the ledger cutoff",
         "Revue du registre 2026-02-30; invalid calendar date",
         "Fixture without anchored review date 2026-09-27",
     ):
@@ -89,7 +92,7 @@ def main() -> None:
     )
     assert incomplete_should.returncode != 0, "an active Should row without test traceability must be rejected"
 
-    print("Traceability fixtures passed: current ISO date accepted; stale, invalid, unanchored and malformed-column rows rejected.")
+    print("Traceability fixtures passed: historical/current dates accepted; future, invalid, unanchored and malformed-column rows rejected.")
 
 
 if __name__ == "__main__":

@@ -88,13 +88,10 @@ Français et anglais, clair et sombre, recherche ⌘K et barre des menus en opti
 
 ## Notes pour la revue (App Review Information)
 
-> CoreTend is a local, read-only-by-default disk and app inspector. It needs no account and makes no
-> network connection. To try it: open Explore and choose any folder (for example Downloads) — the
-> scan only reads. Moving an item requires selecting it, reviewing it and confirming; items go to
-> the macOS Trash, never deleted permanently. Under the App Sandbox, every folder is chosen by the
-> user in the system panel; suggested folders (Applications, ~/Library/Caches) open that panel on
-> them. Integrity reads code signatures with the Security framework; Performance reads load and
-> memory statistics with public APIs.
+The full response to Apple's Guideline 2.1 information request is maintained in
+[`App-Review-response-2026-09-30.md`](App-Review-response-2026-09-30.md). Add the requested physical-device
+screen recording before sending the reply and copy the same six answers into App Review Information → Notes.
+Do not state that a recording is attached until it has actually been uploaded to App Store Connect.
 
 ## Captures (2880 × 1800)
 

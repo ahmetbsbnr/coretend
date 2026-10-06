@@ -4,13 +4,13 @@
 
 **Objectif :** satisfaire le cahier des charges sans dégrader la sûreté des fichiers ni affirmer des fonctions non prouvées.
 
-**Architecture :** SwiftPM/macOS 14+, modules séparés pour contrats, scan en lecture seule, sûreté, persistance, domaine, app SwiftUI et CLI. La branche `next` descend de `origin/main`; aucune réécriture de l’historique public.
+**Architecture :** SwiftPM/macOS 14+, modules séparés pour contrats, scan en lecture seule, sûreté, persistance, domaine, app SwiftUI et CLI. La branche `next` descend de `origin/main`; aucune réécriture de l’historique public. La release v2.0.0 est publiée depuis `b35180fb`; au relevé du 29-09, `origin/main` est à `39eb38b1` et `origin/next` à `0298fdfc`. La pointe Next n’est pas intégrée dans main.
 
 **Référence :** `Documentation/Project/Cahier-des-charges.md`, `Documentation/Traceability.csv`, `Documentation/Project/Repository-strategy.md`.
 
 **Pilotage :** phases, gates et lots dans `Documentation/Project/Pilotage.md`. Plans et specs sous `docs/superpowers/` ne s’appliquent que s’ils sont liés ici : [refonte Observatoire](../../docs/superpowers/plans/2026-09-27-coretend-observatoire.md) — implémentée, en attente de G1.
 
-## Programme 2.0 — à partir du 28-09-2026
+## Programme initial — état historique au 28-09-2026
 
 ### Point de départ
 
@@ -114,11 +114,12 @@ macOS sur un dossier jetable créé pour l’occasion**, fait par le mainteneur.
 
 ### P5 — Release 2.0 (1 semaine) — gate G5, chaque étape sur autorisation
 
-- [ ] Identité Developer ID et profil de notarisation (hors dépôt), build signé, notarisé,
+- [x] Identité Developer ID et profil de notarisation, build signé/notarisé,
   agrafé ; ZIP/DMG, SHA-256, provenance (NFR-14, FR-14).
-- [ ] Notes de version FR/EN, site sorti de `noindex`, lien de téléchargement réel (FR-15).
-- [ ] PR `next` → `main` avec revue, tag `v2.0.0`, release GitHub, cask Homebrew généré depuis
-  l’artefact publié (FR-17).
+- [x] Notes de version FR/EN, site sorti de `noindex`, lien de téléchargement réel (FR-15).
+- [x] Release v2.0.0 depuis la pointe publiée (voir `Documentation/Passation/P7-release-2.0.md`). La fusion de la pointe actuelle `next` → `main` reste une intégration distincte soumise à autorisation explicite.
+  Le tag, la release, le site et le tap Homebrew sont documentés dans P7. La pointe actuelle
+  de `next` n’est pas fusionnée dans `main`.
 - **Piste 1.x, optionnelle avant 2.0 :** publier 1.0.3 depuis `fix/1.x-trash-sqlite` (correctif
   du fallback de suppression) si des utilisateurs 1.x doivent être protégés d’ici là.
 

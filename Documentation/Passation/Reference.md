@@ -8,7 +8,7 @@ Ce qui ne change pas d’un lot à l’autre. `passation.md` et les fichiers de 
   `next`, commits directs (pas de branche de lot).
 - `~/Developer/projects/coretend` : maintenance 1.x, branche `fix/1.x-trash-sqlite`. Aucun
   travail produit.
-- `main` porte la 1.x publiée (1.0.2). Branches supprimées archivées sous
+- `main` est à `origin/main` (`39eb38b1`) ; `next` est à `origin/next` (`0298fdfc`). La release/tag `v2.0.0` existe sur l’ascendance de `next` (P7), mais la pointe actuelle de `next` n’est pas fusionnée dans `main`. Le checkout `coretend` garde la maintenance 1.x. Branches supprimées archivées sous
   `refs/archive/<date>/` (voir `Documentation/Project/Branch-cleanup.md`).
 
 ## Commandes
@@ -28,13 +28,10 @@ CI GitHub : check `qualify` sur `next` (requis ; l’admin peut le contourner au
 résultat arrive ensuite). Sans `gh` authentifié, lire l’état par l’API publique :
 `curl -s https://api.github.com/repos/ahmetbsbnr/coretend/commits/<sha>/check-runs`.
 
-Base de la clôture P4 : branche locale `next`, HEAD de code `ac27e45b`
-(six commits en avance sur `origin/next`). Le commit de documentation de passation vient
-ensuite ; à sa fin, le dépôt est propre et aucun push n’a été effectué.
-Le résultat CI demandé au démarrage est maintenant connu : `qualify` SUCCESS sur
-`1f62627e0c0733d285258466559dc7c7344eb0d8` (run fini à 09:16:57 UTC). Ce SHA précède les
-six commits locaux : la CI ne les couvre pas. La qualification locale complète a ensuite fini avec code 0 sur HEAD de code `ac27e45b`
-(log `/tmp/coretend-p4-passation-qualify.log`). Le commit suivant ne change que la documentation. Les commits locaux sont déjà enregistrés ; ne pas pousser sans autorisation.
+Historique de la clôture P4 (27–28-09) : les résultats détaillés sont dans
+`Documentation/Passation/P4-qualification.md` et `Documentation/Progress.md`. Les hashes,
+résultats CI et logs temporaires de cet état ne décrivent pas la pointe actuelle ; consulter
+`passation.md` et l’état Git réel avant toute reprise.
 
 ## Lancer l’app en fixture isolée
 

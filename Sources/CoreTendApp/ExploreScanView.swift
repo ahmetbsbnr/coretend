@@ -61,38 +61,27 @@ struct ExploreScanView: View {
 
     private var locked: Bool { scanning || actionBusy || actionReview != nil }
 
-    private var visibleResults: [ScanResult] {
-        let filtered = results.filter {
-            (query.isEmpty || $0.url.lastPathComponent.localizedCaseInsensitiveContains(query) || $0.url.deletingLastPathComponent().path.localizedCaseInsensitiveContains(query))
-                && category.matches($0.url)
-                && preset.matches($0, evaluatedAt: presetEvaluationDate)
-        }
-        switch sortMode {
-        case "oldest": return filtered.sorted { ($0.modifiedAt ?? .distantFuture) < ($1.modifiedAt ?? .distantFuture) }
-        case "name": return filtered.sorted { $0.url.lastPathComponent.localizedStandardCompare($1.url.lastPathComponent) == .orderedAscending }
-        default: return filtered.sorted {
-            let left = allocated($0), right = allocated($1)
-            switch (left, right) {
-            case let (a?, b?): return a == b ? $0.url.path < $1.url.path : a > b
-            case (_?, nil): return true
-            case (nil, _?): return false
-            case (nil, nil): return $0.url.path < $1.url.path
-            }
-        }
-        }
+    /// Bumped whenever `results` changes, so the derived lists below are rebuilt only then.
+    @State private var resultsVersion = 0
+    /// The filtered, sorted files and the map built from them. Recomputing them on every redraw
+    /// (each hover over a plot, each selection) is what made the page stutter after a scan.
+    @State private var derived = ExploreDerived()
+
+    private var current: ExploreDerived {
+        derived.refresh(.init(version: resultsVersion, query: query, sortMode: sortMode, preset: preset, category: category,
+                              evaluatedAt: presetEvaluationDate, base: (mapFolder ?? selectedRoot)?.standardizedFileURL.path),
+                        results: results)
+        return derived
     }
+
+    private var visibleResults: [ScanResult] { current.visible }
 
     /// The plots of the folder the map shows: files there, and each subfolder as one plot.
-    private var folderPlots: [FolderPlots.Plot] {
-        guard let base = (mapFolder ?? selectedRoot)?.standardizedFileURL.path else { return [] }
-        return FolderPlots.plots(files: visibleResults.map { ($0.url.standardizedFileURL.path, allocated($0)) }, under: base)
-    }
+    private var folderPlots: [FolderPlots.Plot] { current.plots }
 
-    private var treemapInputs: [TreemapInput] {
-        folderPlots.filter { $0.bytes > 0 }.map { TreemapInput(id: $0.path, bytes: $0.bytes, allocationIdentity: nil) }
-    }
+    private var treemapInputs: [TreemapInput] { current.inputs }
 
-    private func isFolderPlot(_ path: String) -> Bool { folderPlots.first { $0.path == path }?.isFolder ?? false }
+    private func isFolderPlot(_ path: String) -> Bool { current.folders.contains(path) }
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -288,8 +277,7 @@ struct ExploreScanView: View {
                     .lineLimit(1).truncationMode(.middle)
             }
             GeometryReader { proxy in
-                let tiles = TreemapLayout.tiles(for: treemapInputs, size: proxy.size)
-                let order = Dictionary(uniqueKeysWithValues: tiles.sorted { $0.bytes > $1.bytes }.enumerated().map { ($1.id, $0) })
+                let (tiles, order) = current.tiles(for: proxy.size)
                 ZStack(alignment: .topLeading) {
                     ForEach(tiles) { tile in
                         plot(tile, rank: order[tile.id] ?? 0)
@@ -530,6 +518,7 @@ struct ExploreScanView: View {
         let acquiredScope = root.startAccessingSecurityScopedResource()
         selectedRootIdentity = try? FileIdentity(url: root)
         results = []
+        resultsVersion += 1
         selectedExploreFiles = []
         failures = [:]
         flight.landed = 0
@@ -553,44 +542,53 @@ struct ExploreScanView: View {
                 let engine = LocalScanEngine()
                 let exclusions = try await LocalStoreAccess.exclusions()
                 let request = ScanRequest(roots: [ScanRoot(url: root, ruleID: .explore)], exclusions: exclusions)
-                for try await event in engine.scan(request) {
+                for try await batch in engine.scan(request).batched() {
                     guard !Task.isCancelled, activeScanID == scanID else { return }
-                    switch event {
-                    case .result(let result): results.append(result)
-                    case .itemFailure(let path, let reason):
-                        if path == root.path { rootFailure = reason } else { partialFailures.insert(reason) }
-                    case .finished:
-                        if recentFilesEnabled {
-                            let measured = results.suffix(SQLiteStore.maximumRecentFiles)
-                            if let store = try? await LocalStoreAccess.open() {
-                                let batch = measured.map { item in
-                                    let logical: Int64? = { if case .known(let bytes) = item.logicalBytes { return bytes }; return nil }()
-                                    let allocated: Int64? = { if case .known(let bytes) = item.allocatedBytes { return bytes }; return nil }()
-                                    return RecentFileMeasurement(path: item.url.path, logicalBytes: logical, allocatedBytes: allocated)
+                    var found: [ScanResult] = []
+                    var latestCompleted: Int?
+                    for event in batch {
+                        switch event {
+                        case .result(let result): found.append(result)
+                        case .itemFailure(let path, let reason):
+                            if path == root.path { rootFailure = reason } else { partialFailures.insert(reason) }
+                        case .finished:
+                            // Everything read so far is in place before the scan is called finished.
+                            results.append(contentsOf: found); found = []; resultsVersion += 1
+                            if let latestCompleted { scanCompletedFiles = latestCompleted }
+                            if recentFilesEnabled {
+                                let measured = results.suffix(SQLiteStore.maximumRecentFiles)
+                                if let store = try? await LocalStoreAccess.open() {
+                                    let recent = measured.map { item in
+                                        let logical: Int64? = { if case .known(let bytes) = item.logicalBytes { return bytes }; return nil }()
+                                        let allocated: Int64? = { if case .known(let bytes) = item.allocatedBytes { return bytes }; return nil }()
+                                        return RecentFileMeasurement(path: item.url.path, logicalBytes: logical, allocatedBytes: allocated)
+                                    }
+                                    try? await store.recordRecentFiles(recent)
                                 }
-                                try? await store.recordRecentFiles(batch)
                             }
-                        }
-                        if let rootFailure {
-                            rootsPhase = nil
-                            notice = PageNotice(kind: .denied, title: ProductCopy.scanRootFailure(reason: rootFailure, french: french),
-                                                recovery: .chooseAgain)
-                        } else {
-                            rootsPhase = .finished
-                            // Bring the finished roots and the plots under them into view.
-                            // A fresh request on the next turn: a quick scan can end in the same update as the one
-                            // that scrolled at its start, and an unchanged value would not scroll again.
-                            scrollTarget = nil
-                            Task { @MainActor in scrollTarget = "explore.roots" }
-                            mapSeed = UUID()
-                            if !partialFailures.isEmpty {
-                                notice = PageNotice(kind: .partial, title: copy("scan.partial"),
-                                                    message: ProductCopy.scanPartialFailure(reasons: partialFailures, french: french))
+                            if let rootFailure {
+                                rootsPhase = nil
+                                notice = PageNotice(kind: .denied, title: ProductCopy.scanRootFailure(reason: rootFailure, french: french),
+                                                    recovery: .chooseAgain)
+                            } else {
+                                rootsPhase = .finished
+                                // Bring the finished roots and the plots under them into view.
+                                // A fresh request on the next turn: a quick scan can end in the same update as the one
+                                // that scrolled at its start, and an unchanged value would not scroll again.
+                                scrollTarget = nil
+                                Task { @MainActor in scrollTarget = "explore.roots" }
+                                mapSeed = UUID()
+                                if !partialFailures.isEmpty {
+                                    notice = PageNotice(kind: .partial, title: copy("scan.partial"),
+                                                        message: ProductCopy.scanPartialFailure(reasons: partialFailures, french: french))
+                                }
+                                scanFoundNothing = results.isEmpty && partialFailures.isEmpty
                             }
-                            scanFoundNothing = results.isEmpty && partialFailures.isEmpty
+                        case .progress(let completed): latestCompleted = completed
                         }
-                    case .progress(let completed): scanCompletedFiles = completed
                     }
+                    if !found.isEmpty { results.append(contentsOf: found); resultsVersion += 1 }
+                    if let latestCompleted { scanCompletedFiles = latestCompleted }
                 }
             } catch is CancellationError {
                 if activeScanID == scanID { notice = PageNotice(kind: .note, title: copy("scan.cancelled")) }
@@ -608,6 +606,7 @@ struct ExploreScanView: View {
         activeScanID = nil
         scanning = false
         results = []
+        resultsVersion += 1
         notice = PageNotice(kind: .note, title: copy("scan.cancelled"))
         // The roots withdraw, then their parcel goes.
         rootsPhase = .retracted
@@ -643,7 +642,7 @@ struct ExploreScanView: View {
             guard viewVisible else { return }
             let rule = ScanRule.explore.rawValue
             let allowed = Set([rule])
-            let executor = SafeActionExecutor(allowedRoots: [root], allowedRules: allowed, trash: MacOSTrashClient(),
+            let executor = SafeActionExecutor(allowedRoots: [root], allowedRules: allowed, trash: AppTrashClient.make(),
                                               expectedRootIdentities: [root: rootIdentity])
             let service = FileActionService(validator: .init(), executor: executor, store: store,
                                             allowedRoots: [root], allowedRuleIDs: allowed)
@@ -694,6 +693,7 @@ struct ExploreScanView: View {
             flight.send(url, reduceMotion: reduceMotion)
             withAnimation(reduceMotion ? nil : MotionCurve.retreat.animation(duration: 0.2)) {
                 results.removeAll { $0.url == url }
+                resultsVersion += 1
                 selectedExploreFiles.remove(url)
             }
         }
@@ -850,6 +850,92 @@ struct ExploreScanView: View {
         }
         let extensions = category.fileExtensions.map { ".\($0)" }.joined(separator: ", ")
         return french ? "Extensions incluses : \(extensions)." : "Included extensions: \(extensions)."
+    }
+}
+
+/// What Explore shows, derived from the scan results and the reader's filters, kept until one of
+/// them changes. A reference held in `@State`: refreshing it during a redraw does not redraw again.
+private final class ExploreDerived {
+    struct Key: Equatable {
+        let version: Int
+        let query: String
+        let sortMode: String
+        let preset: ExplorePreset
+        let category: ExploreFileCategory
+        let evaluatedAt: Date
+        let base: String?
+    }
+
+    private var key: Key?
+    private(set) var visible: [ScanResult] = []
+    private(set) var plots: [FolderPlots.Plot] = []
+    private(set) var folders: Set<String> = []
+    private(set) var inputs: [TreemapInput] = []
+    private var layout: (size: CGSize, tiles: [TreemapTile], order: [String: Int])?
+
+    func refresh(_ newKey: Key, results: [ScanResult]) {
+        guard newKey != key else { return }
+        key = newKey
+        layout = nil
+        let filtered = results.filter {
+            (newKey.query.isEmpty || $0.url.lastPathComponent.localizedCaseInsensitiveContains(newKey.query)
+                || $0.url.deletingLastPathComponent().path.localizedCaseInsensitiveContains(newKey.query))
+                && newKey.category.matches($0.url)
+                && newKey.preset.matches($0, evaluatedAt: newKey.evaluatedAt)
+        }
+        // Sort keys are read once per file, not on each comparison (a URL's path is rebuilt on
+        // every read, and ties on size are common).
+        switch newKey.sortMode {
+        case "oldest":
+            visible = filtered.map { (result: $0, date: $0.modifiedAt ?? .distantFuture) }
+                .sorted { $0.date < $1.date }.map(\.result)
+        case "name":
+            visible = filtered.map { (result: $0, name: $0.url.lastPathComponent) }
+                .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }.map(\.result)
+        default:
+            visible = filtered.map { (result: $0, bytes: Self.allocated($0), path: $0.url.path) }
+                .sorted {
+                    switch ($0.bytes, $1.bytes) {
+                    case let (a?, b?): return a == b ? $0.path < $1.path : a > b
+                    case (_?, nil): return true
+                    case (nil, _?): return false
+                    case (nil, nil): return $0.path < $1.path
+                    }
+                }
+                .map(\.result)
+        }
+        if let base = newKey.base {
+            // Standardized once per folder, not once per file: files of a scan share few folders.
+            var folders: [String: String] = [:]
+            plots = FolderPlots.plots(files: visible.map { result in
+                let parent = result.url.deletingLastPathComponent()
+                let folder = folders[parent.path] ?? {
+                    let standardized = parent.standardizedFileURL.path
+                    folders[parent.path] = standardized
+                    return standardized
+                }()
+                let path = folder.hasSuffix("/") ? folder + result.url.lastPathComponent : folder + "/" + result.url.lastPathComponent
+                return (path, Self.allocated(result))
+            }, under: base)
+        } else {
+            plots = []
+        }
+        folders = Set(plots.filter(\.isFolder).map(\.path))
+        inputs = plots.filter { $0.bytes > 0 }.map { TreemapInput(id: $0.path, bytes: $0.bytes, allocationIdentity: nil) }
+    }
+
+    /// The map's tiles for a size, with each tile's rank by size (largest first).
+    func tiles(for size: CGSize) -> ([TreemapTile], [String: Int]) {
+        if let layout, layout.size == size { return (layout.tiles, layout.order) }
+        let tiles = TreemapLayout.tiles(for: inputs, size: size)
+        let order = Dictionary(uniqueKeysWithValues: tiles.sorted { $0.bytes > $1.bytes }.enumerated().map { ($1.id, $0) })
+        layout = (size, tiles, order)
+        return (tiles, order)
+    }
+
+    private static func allocated(_ result: ScanResult) -> Int64? {
+        if case .known(let bytes) = result.allocatedBytes { return bytes }
+        return nil
     }
 }
 

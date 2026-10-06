@@ -23,6 +23,11 @@ bon niveau dans le prototype, doit être porté plus loin.
 
 ## Conséquences
 
+- Règle du mainteneur (02-10-2026) : ne jamais placer de libellé eyebrow/overline au-dessus
+  d’un titre de page ou de section, dans l’app ni sur le site. Les titres commencent
+  directement l’en-tête ; un sous-titre reste possible.
+
+
 - `Documentation/Design/UI-guide.md` devient la seule référence d’apparence et de motion pour
   l’app et le site. Toute évolution passe par une nouvelle décision.
 - Les jetons de `Sources/DesignSystem/` prennent les valeurs Serre ; le site les reçoit par

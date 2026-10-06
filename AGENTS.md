@@ -24,6 +24,9 @@ maintenance seulement.
   mainteneur : direction visuelle, périmètre, fusion, push, release.
 - Apparence : seulement ce que couvre une décision acceptée dans
   `Documentation/Decisions/`. Une spec « à relire » n’est pas une décision.
+- Règle du mainteneur (02-10-2026) : ne jamais placer de libellé eyebrow/overline au-dessus
+  d’un titre de page ou de section, dans l’app ni sur le site. Le titre ouvre directement
+  l’en-tête ; un sous-titre reste possible.
 - Gate avant commit : `make qualify`, puis `git diff --check`. Tests ciblés :
   `swift test --filter <Suite>`.
 - Changement visible : lancer l’app en fixture isolée (protocole dans `Documentation/Passation/Reference.md`)

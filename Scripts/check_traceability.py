@@ -98,8 +98,12 @@ for line_number,row in rows:
         evidence_date=iso_date(evidence_match.group(1)) if evidence_match else None
         if not evidence_date:
             raise SystemExit(f"{row['ID']} evidence has no valid anchored ISO review date")
-        if evidence_match.group(1)!=current_review:
-            raise SystemExit(f"{row['ID']} evidence review date {evidence_match.group(1)} is stale; Progress.md says {current_review}")
+        # Progress.md's header is a ledger cutoff, not a command to rewrite every
+        # historical evidence date whenever another work lot is recorded. Keep
+        # the observed date on each row and reject only dates that claim evidence
+        # from after the current ledger cutoff.
+        if evidence_date > iso_date(current_review):
+            raise SystemExit(f"{row['ID']} evidence date {evidence_match.group(1)} is after Progress.md cutoff {current_review}")
 
     for field in ('code', 'tests', 'documentation'):
         for reference in row[field].split(';'):

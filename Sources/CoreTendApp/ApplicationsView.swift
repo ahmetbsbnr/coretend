@@ -376,7 +376,7 @@ struct ApplicationsView: View {
             let store = try await LocalStoreAccess.open()
             let rule = "apps.uninstall"
             let allowed = Set([rule])
-            let executor = SafeActionExecutor(allowedRoots: [root], allowedRules: allowed, trash: MacOSTrashClient())
+            let executor = SafeActionExecutor(allowedRoots: [root], allowedRules: allowed, trash: AppTrashClient.make())
             let service = FileActionService(validator: .init(), executor: executor, store: store,
                                             allowedRoots: [root], allowedRuleIDs: allowed)
             let review = try service.prepareReview([FileActionSelection(url: app.url, ruleID: rule, expectedIdentity: app.fileIdentity)])
@@ -491,9 +491,9 @@ struct ApplicationsView: View {
             do {
                 var matches: [URL] = []
                 let request = ScanRequest(roots: [.init(url: root, ruleID: .explore)])
-                for try await event in LocalScanEngine().scan(request) {
+                for try await batch in LocalScanEngine().scan(request).batched() {
                     try Task.checkCancellation()
-                    if case .result(let item) = event {
+                    for case .result(let item) in batch {
                         if let evidence = ApplicationAssociationMatcher.evidence(item.url, bundleIdentifier: app.bundleIdentifier, displayName: app.displayName) {
                             associationEvidence[item.url] = evidence
                             matches.append(item.url)

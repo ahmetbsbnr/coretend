@@ -1,0 +1,12 @@
+.build
+Artifacts
+Documentation
+rebuild
+.git
+.swiftpm
+.env*
+*.p12
+*.mobileprovision
+*.cer
+*.key
+*.xcuserstate

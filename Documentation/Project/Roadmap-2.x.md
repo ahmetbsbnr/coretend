@@ -1,26 +1,14 @@
-# Feuille de route après la 2.0.0 (28-09-2026)
+# Feuille de route après la 2.0.0 (mise à jour 29-09-2026)
 
 État : CoreTend 2.0.0 publiée (release GitHub, site, tap Homebrew). Tests visuels validés par le
 mainteneur le 28-09-2026 (VineSweep, ouverture Gatekeeper comprises). Méthode inchangée : un lot
 à la fois, `make qualify`, journal de passation, accord explicite avant toute étape publique.
 
-## Q0 — DMG notarisé (bloqué : identifiant Apple du mainteneur)
+## Q0 — DMG notarisé — terminé, revalidé le 29-09-2026
 
-Le DMG signé n'est pas notarisé : notariser une image disque exige `notarytool`, qui ne peut pas
-utiliser le compte connecté dans Xcode. Le profil de la 1.x (`CORETEND_NOTARY_PROFILE`, runner
-`coretend-signing`) n'existe plus sur ce Mac.
-
-1. **Mainteneur** : créer une clé API App Store Connect (Users and Access › Integrations ›
-   Team Keys, rôle *Developer*), télécharger le `.p8`, puis lancer lui-même :
-   `xcrun notarytool store-credentials coretend-notary --key <AuthKey.p8> --key-id <ID> --issuer <Issuer ID>`.
-   Aucun mot de passe d'app ; l'agent ne voit ni ne saisit la clé.
-2. **Agent** : `bash Scripts/make_release_dmg.sh --app ~/Documents/CoreTend-2.0.0/CoreTend.app
-   --identity 02A57D6E5EA4245B8BEE9622C774136C5C79FAAB --notary-profile coretend-notary
-   --output <dossier vide>` (signature, notarisation, agrafage, `spctl`, `SHA256SUMS`).
-3. Sur accord : `gh release upload v2.0.0` du DMG + `SHA256SUMS` à deux lignes ; page
-   Télécharger : DMG proposé à côté du ZIP. Le ZIP reste la source du cask.
-4. Ensuite, le même profil permet de notariser toute la release en ligne de commande
-   (plus besoin de l'archive manuelle).
+Le DMG public est désormais signé, notarisé et agrafé : SHA-256 conforme au manifeste,
+`codesign`, `stapler` et `spctl` PASS le 29-09-2026. Voir `Documentation/ReleaseEvidence.md`.
+La procédure de notarisation de DMG décrite dans l’historique de P7 est terminée. Les SHA-256 et vérifications actuels sont consignés dans `Documentation/ReleaseEvidence.md`.
 
 ## Q1 — 2.0.1, dette de release (petits lots, sans nouvelle fonction)
 
@@ -49,9 +37,11 @@ utiliser le compte connecté dans Xcode. Le profil de la 1.x (`CORETEND_NOTARY_P
 - Cask officiel `Homebrew/homebrew-cask` quand le dépôt atteint les critères de notoriété.
 - Branche 1.x (`../coretend`, `fix/1.x-trash-sqlite`) : la 2.0 la remplace ; décider de
   l'archiver ou de publier le correctif Corbeille/SQLite en 1.x finale.
-- Mac App Store : exige le bac à sable (accès aux dossiers par signets de sécurité) ; étude
-  de faisabilité avant tout engagement.
+- Mac App Store : build 201 soumis à la revue ; dernier état observé le 29-09-2026 : Waiting for Review. Consulter `Documentation/Passation/P8-app-store.md`.
+
+Cette feuille de route est prospective ; les points de phase terminés et le statut du dépôt
+sont suivis dans `passation.md`. La pointe actuelle de `next` n’est pas intégrée dans `main`.
 
 ## Ordre proposé
 
-Q0 dès que la clé existe → Q1 (2.0.1) → Q2 (2.1) → Q3 selon décisions.
+Q0 terminé → décision App Store à suivre → Q1 (2.0.1) → Q2 (2.1) → Q3 selon décisions.

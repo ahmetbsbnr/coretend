@@ -35,8 +35,16 @@ Branches restantes et rôle :
 
 | Branche | Rôle |
 | --- | --- |
-| `main` | 1.x publiée (1.0.2) |
+| `main` | Pointe publiée 2.0.0 (release source `b35180fb`, branche avancée historiquement jusqu’à `39eb38b1`); ne contient pas les commits App Store ultérieurs de `next` |
 | `next` | seule branche de développement de la reconstruction ; worktree `~/Developer/projects/coretend-next` |
 | `fix/1.x-trash-sqlite` | correctifs de sûreté 1.x, dossier `~/Developer/projects/coretend` ; release 1.0.3 à décider |
+
+## État des branches — 29-09-2026
+
+Le relevé Git du 29-09-2026 indique `origin/main` à `39eb38b1` et `origin/next` à
+`0298fdfc`. `next` contient l’ascendance de la release `v2.0.0` (`b35180fb`) et des commits
+ultérieurs, dont la piste App Store ; `main` ne contient pas ces commits ultérieurs. La release
+publique 2.0.0 existe déjà via tag, release GitHub, site et tap Homebrew. Cette section remplace
+les pointeurs de branche de l’inventaire 27-09, pas son historique de nettoyage.
 
 Restaurer : `git branch <nom> refs/archive/2026-09-27/heads/<nom>`.

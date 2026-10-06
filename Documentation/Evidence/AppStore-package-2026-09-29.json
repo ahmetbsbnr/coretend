@@ -1,0 +1,12 @@
+{
+  "package_sha256": "9d137c333b02793427af209bb60a56e66130a863acb9cced5ebf7f6aed309a65",
+  "bundle_id": "com.ahmetbsbnr.coretend",
+  "version": "2.0.0",
+  "build": "201",
+  "sandbox": true,
+  "debugging_disabled": true,
+  "profile_present": true,
+  "profile_expiration": "2027-09-29T05:16:31",
+  "app_id_matches_profile": true,
+  "signature_valid": true
+}

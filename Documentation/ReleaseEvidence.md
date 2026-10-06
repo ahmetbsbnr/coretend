@@ -1,8 +1,40 @@
 # Release evidence ledger
 
-État courant : reconstruction locale non publiée. Aucun artefact candidat n’a été signé, notarisé, envoyé ou annoncé. Aucune URL publique de téléchargement, version publiée ou somme de contrôle de release ne doit être présentée comme réelle.
+État courant vérifié le 29-09-2026 : CoreTend 2.0.0 est distribuée en ZIP et DMG
+signés, notarisés et agrafés. Les artefacts publics ont été retéléchargés dans une fixture,
+leurs SHA-256 correspondent à `Website/release.json`. `codesign --verify --strict`,
+`xcrun stapler validate` et `spctl` retournent 0 pour l'app du ZIP et pour le DMG.
+Aucune installation, ouverture du DMG ni publication effectuée pendant cette vérification.
 
-La qualification locale doit consigner commit, hôte/OS, commandes, sorties, provenance du paquet local, audits, tests, accessibilité, limites et écarts Must. Toute version publiée ou action de distribution exige une décision distincte, hors mandat courant.
+La variante App Store 2.0.0 (201) a été exportée signée depuis l'Organizer après validation
+locale du Trousseau par le mainteneur. Signature, profil et entitlements vérifiés ; envoi confirmé par Organizer.
+Traitement Apple Complete ; build 201 associé à la version 2.0.0. La soumission a été
+confirmée dans App Store Connect avec le statut **Waiting for Review**. La décision Apple est en attente.
+Le CLI retourne encore `No Accounts`, ce qui ne décrit pas l'état du compte visible dans Xcode. Les preuves de compatibilité macOS 14, VoiceOver et
+parcours sandbox restent ouvertes. Les entrées datées ci-dessous sont historiques.
+
+## Paquet App Store signé — 29-09-2026
+
+- Export Organizer Custom → App Store Connect → Export, équipe du mainteneur, signature automatique.
+- Paquet conservé : `Artifacts/AppStore/201/CoreTend-201-AppStore-signed/CoreTend.pkg`.
+- SHA-256 `9d137c333b02793427af209bb60a56e66130a863acb9cced5ebf7f6aed309a65`.
+- `pkgutil --check-signature` : certificat Apple `3rd Party Mac Developer Installer` valide.
+- Extraction temporaire via `pkgutil --expand-full`, app non installée/non lancée ;
+  `codesign --verify --strict --deep` PASS.
+- Identifiant `com.ahmetbsbnr.coretend`, version 2.0.0, build 201 ; profil embarqué conforme,
+  expiration 29-09-2027, sandbox et accès utilisateur read-write vrais, get-task-allow absent.
+- Rapport : `Documentation/Evidence/AppStore-package-2026-09-29.json`.
+- Le paquet est associé au build 201 soumis à la revue ; App Store Connect confirme Waiting for Review.
+
+## Revalidation des artefacts publics — 29-09-2026
+
+- ZIP : SHA-256 `3fd2548cf988fdecc0749f0c170764cccaf3541aa02c840c4e5c58adafcfefef`.
+- DMG : SHA-256 `47b37c3846b4f7efc1fe1ec7ec6724ad8b33a1547aa6e756330188f886c71e98`.
+- App extraite par `ditto` ; signature profonde stricte, ticket et Gatekeeper PASS.
+- DMG non monté ; signature stricte, ticket et Gatekeeper contexte primary-signature PASS.
+- Rapport nettoyé des chemins temporaires :
+  `Documentation/Evidence/Release-validation-2026-09-29.json`.
+- Ces contrôles concernent les octets publiés, pas les modifications locales de cette session.
 
 ## Paquet local installé et lancé en fixture — 2026-09-27
 

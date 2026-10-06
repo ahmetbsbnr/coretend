@@ -20,12 +20,26 @@ repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$repo_root"
 
 build="${CORETEND_BUILD:-201}"
+[[ "$build" =~ ^[1-9][0-9]*$ ]] || { printf 'CORETEND_BUILD must be a positive integer.\n' >&2; exit 64; }
+authentication=()
+if [[ -n "${CORETEND_ASC_KEY_PATH:-}${CORETEND_ASC_KEY_ID:-}${CORETEND_ASC_ISSUER:-}" ]]; then
+  : "${CORETEND_ASC_KEY_PATH:?CORETEND_ASC_KEY_PATH is required for API key authentication}"
+  : "${CORETEND_ASC_KEY_ID:?CORETEND_ASC_KEY_ID is required with CORETEND_ASC_KEY_PATH}"
+  : "${CORETEND_ASC_ISSUER:?CORETEND_ASC_ISSUER is required with CORETEND_ASC_KEY_PATH}"
+  authentication=(-authenticationKeyPath "$CORETEND_ASC_KEY_PATH" -authenticationKeyID "$CORETEND_ASC_KEY_ID"
+                  -authenticationKeyIssuerID "$CORETEND_ASC_ISSUER")
+fi
 version="2.0.0"
 team="NSCUV5G738"
 CORETEND_BUILD="$build" make package-appstore >/dev/null
 
-archive="$HOME/Library/Developer/Xcode/Archives/$(date +%Y-%m-%d)/CoreTend $version ($build) App Store.xcarchive"
-[[ ! -e "$archive" ]] || { printf 'Archive already exists: %s\n' "$archive" >&2; exit 73; }
+archive_root="$HOME/Library/Developer/Xcode/Archives/$(date +%Y-%m-%d)"
+mkdir -p "$archive_root"
+# Preserve every attempted archive; a failed export must not block a retry of the same build.
+archive_run="$(mktemp -d "$archive_root/CoreTend $version ($build) App Store.XXXXXX")"
+archive="$archive_run.xcarchive"
+mkdir "$archive"
+rmdir "$archive_run"
 mkdir -p "$archive/Products/Applications"
 ditto Artifacts/CoreTend.app "$archive/Products/Applications/CoreTend.app"
 cat > "$archive/Info.plist" <<PLIST
@@ -46,7 +60,9 @@ cat > "$archive/Info.plist" <<PLIST
 </dict></plist>
 PLIST
 
-options="$(mktemp -d)/export-options.plist"
+options_dir="$(mktemp -d)"
+trap 'rm -rf "$options_dir"' EXIT
+options="$options_dir/export-options.plist"
 destination=$([[ "$mode" == "upload" ]] && echo upload || echo export)
 cat > "$options" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -63,13 +79,6 @@ PLIST
 
 out="$repo_root/Artifacts/AppStore/$build"
 mkdir -p "$out"
-authentication=()
-if [[ -n "${CORETEND_ASC_KEY_PATH:-}" ]]; then
-  : "${CORETEND_ASC_KEY_ID:?CORETEND_ASC_KEY_ID is required with CORETEND_ASC_KEY_PATH}"
-  : "${CORETEND_ASC_ISSUER:?CORETEND_ASC_ISSUER is required with CORETEND_ASC_KEY_PATH}"
-  authentication=(-authenticationKeyPath "$CORETEND_ASC_KEY_PATH" -authenticationKeyID "$CORETEND_ASC_KEY_ID"
-                  -authenticationKeyIssuerID "$CORETEND_ASC_ISSUER")
-fi
 xcodebuild -exportArchive -archivePath "$archive" -exportOptionsPlist "$options" -exportPath "$out" \
   -allowProvisioningUpdates ${authentication[@]+"${authentication[@]}"}
 printf 'Archive: %s\nOutput: %s\n' "$archive" "$out"
