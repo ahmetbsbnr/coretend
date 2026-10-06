@@ -485,9 +485,10 @@ final class DuplicateEngineTests: XCTestCase {
 }
 
 final class CleanupRuleCatalogTests: XCTestCase {
-    func testSevenCleanupRulesStayScopedUnderInjectedHome() throws {
+    func testEveryCleanupRuleStaysScopedUnderInjectedHome() throws {
         let home = URL(fileURLWithPath: "/tmp/coretend-fixture-home", isDirectory: true)
-        XCTAssertEqual(CleanupRuleCatalog.rules.count, 7)
+        XCTAssertEqual(CleanupRuleCatalog.rules.count, 14)
+        XCTAssertEqual(Set(CleanupRuleCatalog.rules.map(\.id)).count, 14, "one descriptor per rule")
         for rule in CleanupRuleCatalog.rules {
             XCTAssertTrue(rule.root(homeDirectory: home).path.hasPrefix(home.path + "/"))
         }
@@ -580,5 +581,30 @@ final class BatchedScanEventTests: XCTestCase {
         XCTAssertEqual(results, 250)
         XCTAssertEqual(lastProgress, 250)
         guard case .finished = events.last else { return XCTFail("finished must come last") }
+    }
+
+    func testCleanupSurveyReadsEveryPresentRuleAndGroupsWholeFolderRulesByTopLevelEntry() async throws {
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent("coretend-survey-\(UUID())", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: home) }
+        let files: [(String, Int)] = [
+            ("Library/Caches/com.example.a/one", 4096), ("Library/Caches/com.example.a/deep/two", 4096),
+            ("Library/Caches/com.example.b/three", 4096),
+            ("Library/Logs/DiagnosticReports/App-2026.ips", 2048), ("Library/Logs/DiagnosticReports/notes.txt", 2048),
+            (".npm/_cacache/index-v5/x", 4096)
+        ]
+        for (path, size) in files {
+            let url = home.appendingPathComponent(path)
+            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try Data(repeating: 1, count: size).write(to: url)
+        }
+        let report = try await CleanupSurvey(home: home).run()
+        let caches = try XCTUnwrap(report.groups.first { $0.rule.id == .userCaches })
+        XCTAssertEqual(Set(caches.items.map(\.url.lastPathComponent)), ["com.example.a", "com.example.b"])
+        XCTAssertEqual(caches.items.first { $0.url.lastPathComponent == "com.example.a" }?.files, 2)
+        let crashes = try XCTUnwrap(report.groups.first { $0.rule.id == .crashReports })
+        XCTAssertEqual(crashes.items.map(\.url.lastPathComponent), ["App-2026.ips"], "a filtered rule offers matching files only")
+        XCTAssertNotNil(report.groups.first { $0.rule.id == .npmCache })
+        XCTAssertNil(report.groups.first { $0.rule.id == .iosBackups }, "a missing folder is skipped, not reported")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: home.appendingPathComponent("Library/Caches/com.example.a/one").path), "read-only")
     }
 }

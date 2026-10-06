@@ -20,10 +20,10 @@ import tempfile
 import time
 from pathlib import Path
 
-DESTINATIONS = ["overview", "explore", "cleanup", "duplicates", "applications", "integrity", "performance", "record"]
+DESTINATIONS = ["home", "space", "clean", "apps", "record"]
 LANGUAGES = ["fr", "en"]
 APPEARANCES = ["light", "dark"]
-# Extra surfaces reached from Overview: (name, onboarding completed?, keystroke after launch)
+# Extra surfaces reached from the Home: (name, onboarding completed?, keystroke after launch)
 EXTRAS = [("onboarding", "0", None), ("settings", "1", ","), ("palette", "1", "k")]
 
 
@@ -37,7 +37,7 @@ def shots():
     for name, onboarding, key in EXTRAS:
         for language in LANGUAGES:
             for appearance in APPEARANCES:
-                planned.append((name, "overview", onboarding, key, language, appearance))
+                planned.append((name, "home", onboarding, key, language, appearance))
     return planned
 
 
@@ -99,8 +99,7 @@ DEMO_COPIES = {
     "Greenhouse/Archive/Tomato harvest.jpg": "Greenhouse/Photos/Tomato harvest.jpg",
     "Greenhouse/Archive/Timelapse — first leaves.mov": "Greenhouse/Videos/Timelapse — first leaves.mov",
 }
-IN_USE_ROOTS = {"explore": "Greenhouse", "duplicates": "Greenhouse", "cleanup": "Library/Caches",
-                "applications": "/System/Applications", "integrity": "/System/Applications"}
+IN_USE_ROOTS = {"space": "Greenhouse", "apps": "/System/Applications"}
 
 
 def demo_fixture(home):
@@ -173,8 +172,6 @@ def capture(executable, helper, fixture, shot, output, in_use=False):
     root = IN_USE_ROOTS.get(name) if in_use else None
     if root:
         environment["CORETEND_TEST_SCAN_ROOT"] = root if root.startswith("/") else str(fixture / "home" / root)
-        if name == "cleanup":
-            environment["CORETEND_TEST_CLEANUP_RULE"] = "cleanup.usercaches"
     process = subprocess.Popen([str(executable)], env=environment, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     try:
         window = None

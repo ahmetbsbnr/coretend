@@ -14,7 +14,7 @@ public struct ProductCommand: Equatable, Identifiable, Sendable {
 
 public enum CommandPaletteCatalog {
     public static func commands(french: Bool) -> [ProductCommand] {
-        let destinations = Destination.sidebarOrder.map { destination in
+        let destinations = Destination.navigationOrder.map { destination in
             let aliases = searchAliases(for: destination)
             return ProductCommand(id: destination.rawValue,
                                   title: ProductCopy.value(for: destination.titleKey, french: french),
@@ -37,14 +37,11 @@ public enum CommandPaletteCatalog {
 
     private static func searchAliases(for destination: Destination) -> [String] {
         switch destination {
-        case .overview: ["home", "favorites", "recent files", "accueil", "favoris", "récents"]
-        case .record: ["history", "activity", "log", "journal", "activité", "historique"]
-        case .cleanup: ["clean", "free space", "nettoyer", "récupérer de l’espace"]
-        case .explore: ["files", "folders", "storage", "fichiers", "dossiers", "stockage"]
-        case .duplicates: ["copies", "duplicate files", "doublons exacts"]
-        case .applications: ["apps", "software", "logiciels"]
-        case .integrity: ["signature", "quarantine", "quarantaine"]
-        case .performance: ["system", "measurements", "load", "système", "mesures", "charge"]
+        case .home: ["home", "overview", "free space", "accueil", "vue d’ensemble", "espace libre"]
+        case .space: ["files", "folders", "storage", "duplicates", "large files", "fichiers", "dossiers", "stockage", "doublons", "gros fichiers"]
+        case .clean: ["cleanup", "caches", "logs", "developer", "nettoyage", "journaux", "développeur"]
+        case .apps: ["applications", "uninstall", "login items", "signature", "désinstaller", "démarrage", "logiciels"]
+        case .record: ["history", "activity", "log", "record", "journal", "activité", "historique"]
         }
     }
 

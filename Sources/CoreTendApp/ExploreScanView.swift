@@ -103,11 +103,16 @@ struct ExploreScanView: View {
             } else {
                 SerreParcel {
                     SerreEmptyState(title: copy("explore.initial.title"), message: copy("explore.initial.message")) {
-                        Button { selectingFolder = true } label: {
-                            Label { Text(copy("explore.choose")) } icon: { SerreIcon(.explore, size: 15) }
+                        HStack(spacing: 10) {
+                            Button { beginScan(HomeFolder.url) } label: {
+                                Label { Text(copy("space.scanHome")) } icon: { SerreIcon(.explore, size: 15) }
+                            }
+                            .buttonStyle(.serre(.primary))
+                            .keyboardShortcut(.defaultAction)
+                            Button(copy("explore.choose")) { selectingFolder = true }
+                                .buttonStyle(.serre(.secondary))
+                                .accessibilityHint(copy("scan.choose.hint"))
                         }
-                        .buttonStyle(.serre(.primary))
-                        .accessibilityHint(copy("scan.choose.hint"))
                         .padding(.top, 6)
                     }
                 }

@@ -1,66 +1,82 @@
 public enum Destination: String, CaseIterable, Sendable, Identifiable {
-    case overview, record, cleanup, explore, duplicates, applications, integrity, performance
+    case home, space, clean, apps, record
     public var id: String { rawValue }
+
+    /// A saved destination, including the eight of 2.0, opens the space that now holds it.
     public static func restored(from rawValue: String?) -> Destination {
-        guard let rawValue, let destination = Destination(rawValue: rawValue) else { return .overview }
-        return destination
-    }
-    public var route: DestinationRoute {
-        switch self {
-        case .overview: .overview
-        case .record: .record
-        case .cleanup: .cleanup
-        case .explore: .explore
-        case .duplicates: .duplicates
-        case .applications: .applications
-        case .integrity: .integrity
-        case .performance: .performance
+        switch rawValue {
+        case "explore", "duplicates": .space
+        case "cleanup": .clean
+        case "applications", "integrity": .apps
+        case let value?: Destination(rawValue: value) ?? .home
+        case nil: .home
         }
     }
+    public var route: DestinationRoute { DestinationRoute(rawValue: rawValue) ?? .home }
     public var titleKey: String { "\(rawValue).title" }
-    /// The sentence under the title: the destination in the Serre theme (UI guide § 1).
+    /// The sentence under the title, in plain words.
     public var ledeKey: String { "\(rawValue).lede" }
 
-    /// The sidebar's order: "Your Mac", then "Understand". Everything that lists destinations
-    /// (sidebar, command palette, ⌘1…⌘8) follows it.
-    public static let sidebarOrder: [Destination] = [.overview, .explore, .cleanup, .duplicates, .applications, .integrity, .performance, .record]
+    /// The four spaces of the sidebar. History opens from the sidebar's foot.
+    public static let sidebarOrder: [Destination] = [.home, .space, .clean, .apps]
+    /// Everything that can be reached by ⌘1…⌘5, the arrow keys and the command palette.
+    public static let navigationOrder: [Destination] = sidebarOrder + [.record]
 
-    /// The destination `offset` places away in the sidebar, stopping at the first and last.
+    /// The destination `offset` places away, stopping at the first and last.
     public func step(_ offset: Int) -> Destination {
-        let order = Self.sidebarOrder
+        let order = Self.navigationOrder
         let index = order.firstIndex(of: self) ?? 0
         return order[min(max(index + offset, 0), order.count - 1)]
     }
 
-    /// 1…8, for ⌘1…⌘8.
-    public var shortcutNumber: Int { (Self.sidebarOrder.firstIndex(of: self) ?? 0) + 1 }
-    public var sectionTitleKey: String {
-        switch self {
-        case .overview, .explore, .cleanup, .duplicates: "sidebar.yourMac"
-        case .applications, .integrity, .performance, .record: "sidebar.understand"
-        }
-    }
+    /// 1…5, for ⌘1…⌘5.
+    public var shortcutNumber: Int { (Self.navigationOrder.firstIndex(of: self) ?? 0) + 1 }
     public var symbol: String {
         switch self {
-        case .overview: "square.grid.2x2"
+        case .home: "house"
+        case .space: "externaldrive"
+        case .clean: "sparkles"
+        case .apps: "app.dashed"
         case .record: "clock.arrow.circlepath"
-        case .cleanup: "sparkles"
-        case .explore: "externaldrive"
-        case .duplicates: "doc.on.doc"
-        case .applications: "app.dashed"
-        case .integrity: "checkmark.shield"
-        case .performance: "gauge.with.dots.needle.67percent"
         }
     }
 }
 
 public enum DestinationRoute: String, CaseIterable, Hashable, Sendable {
-    case overview, record, cleanup, explore, duplicates, applications, integrity, performance
+    case home, space, clean, apps, record
 }
 
 public enum ProductCopy {
     public static let english: [String: String] = [
-        "overview.title": "Overview", "record.title": "Record", "cleanup.title": "Cleanup",
+        "clean.failed": "Your folders could not be read.", "clean.rescan": "Read again", "clean.review": "Review and clean",
+        "clean.empty.title": "Nothing to clean", "clean.empty.message": "No cache, log or developer file worth removing was found.",
+        "clean.reading": "Reading caches, logs and developer files…", "clean.noneSelected": "Tick what you want to remove.",
+        "clean.all": "all selected", "clean.none": "none selected", "clean.expand.hint": "Shows each item of this group.",
+        "clean.reveal": "Show in Finder", "clean.undo": "Undo", "clean.confirm.title": "Move to the Trash?",
+        "clean.confirm.action": "Move to Trash", "clean.reviewFailed": "Review failed; nothing was moved.",
+        "home.performance": "Performance", "home.recoverable": "can be given back safely, after your review.",
+        "home.recoverable.none": "Nothing to clean right now.", "home.review": "Review", "common.close": "Close",
+        "access.title": "CoreTend sees only part of your Mac", "access.message": "Allow Full Disk Access so it can read Mail, Safari and app data. CoreTend still moves nothing without you.",
+        "access.open": "Open System Settings", "access.hint": "Turn CoreTend on, then come back.",
+        "access.onboarding.title": "Let CoreTend see your whole Mac",
+        "access.onboarding.body": "macOS protects some folders. With Full Disk Access, CoreTend can measure all of them. It reads; it never sends anything anywhere.",
+        "access.step1": "Open System Settings.", "access.step2": "Turn CoreTend on in Full Disk Access.", "access.step3": "Come back here: CoreTend notices on its own.",
+        "access.granted": "Full Disk Access is on.",
+        "onboarding.promise1": "Everything goes to the Trash, nothing is erased.", "onboarding.promise2": "Nothing moves without you.", "onboarding.promise3": "Nothing leaves your Mac.",
+        "onboarding.later": "Later", "onboarding.ready.title": "All set",
+        "onboarding.ready.full": "CoreTend reads your Mac now. The Home tells you what you can give back.",
+        "onboarding.ready.partial": "CoreTend reads what macOS allows. You can turn on Full Disk Access later from the Home.",
+        "space.scanHome": "Scan my home folder", "space.map": "Map", "space.duplicates": "Duplicates",
+        "apps.installed": "Installed apps", "apps.startup": "Startup and signatures",
+        "home.next.space": "See what takes space", "home.next.space.help": "A map of your folders, large files and duplicates.",
+        "home.next.clean": "Clean safely", "home.next.clean.help": "Caches, logs and developer files, sorted by risk.",
+        "home.next.apps": "Uninstall apps", "home.next.apps.help": "Remove an app with the files it left around.",
+        "home.title": "Home", "space.title": "Space", "clean.title": "Clean", "apps.title": "Apps",
+        "home.lede": "How your Mac is doing, and what you can do now.",
+        "space.lede": "See what takes up space on your Mac.",
+        "clean.lede": "What you can remove safely. Everything goes to the Trash.",
+        "apps.lede": "Uninstall apps completely and see what starts with your Mac.",
+        "overview.title": "Overview", "record.title": "History", "cleanup.title": "Cleanup",
         "explore.title": "Explore", "duplicates.title": "Duplicates", "applications.title": "Applications",
         "integrity.title": "Integrity", "performance.title": "Performance",
         "sidebar.yourMac": "Your Mac", "sidebar.understand": "Understand",
@@ -73,7 +89,7 @@ public enum ProductCopy {
         "applications.lede": "What is planted, and what it leaves around it.",
         "integrity.lede": "What macOS knows about each plant: signature, provenance.",
         "performance.lede": "The machine's breath, point by point.",
-        "record.lede": "The herbarium: everything observed and pruned.",
+        "record.lede": "Everything CoreTend measured and moved, day by day.",
         "onboarding.step1.title": "Choose", "onboarding.step1.body": "You pick the folders CoreTend may look at.",
         "onboarding.step2.title": "Understand", "onboarding.step2.body": "CoreTend measures and explains, read-only.",
         "onboarding.step3.title": "Decide", "onboarding.step3.body": "Nothing moves without your review and confirmation, and only to the Trash.",
@@ -179,14 +195,21 @@ public enum ProductCopy {
         "activity.reason.trashFailed": "Could not move to Trash.",
         "activity.migrationImported": "Legacy preferences imported",
         "cleanup.intro": "Choose one known location to inspect. No rule is selected until you choose it.",
-        "cleanup.caches": "User caches", "cleanup.caches.help": "Files under ~/Library/Caches.",
-        "cleanup.logs": "User logs", "cleanup.logs.help": "Files under ~/Library/Logs.",
-        "cleanup.crashes": "Crash reports", "cleanup.crashes.help": "Only .crash and .ips reports under DiagnosticReports.",
-        "cleanup.derived": "Xcode DerivedData", "cleanup.derived.help": "Files under Xcode/DerivedData.",
-        "cleanup.downloads": "Incomplete downloads", "cleanup.downloads.help": "Only files ending in .download.",
-        "cleanup.deviceSupport": "Xcode Device Support", "cleanup.deviceSupport.help": "Files under iOS DeviceSupport.",
-        "cleanup.iosBackups": "iOS backups", "cleanup.iosBackups.help": "Files under MobileSync/Backup.",
-        "cleanup.risk.low": "Low risk", "cleanup.risk.medium": "Medium risk", "cleanup.risk.high": "High risk",
+        "cleanup.caches": "App caches", "cleanup.caches.help": "Temporary files apps rebuild when they need them.",
+        "cleanup.logs": "App logs", "cleanup.logs.help": "Activity notes written by apps; useful only when debugging.",
+        "cleanup.crashes": "Crash reports", "cleanup.crashes.help": "Reports left after an app quit unexpectedly.",
+        "cleanup.derived": "Xcode build files", "cleanup.derived.help": "Xcode rebuilds them at the next build.",
+        "cleanup.downloads": "Unfinished downloads", "cleanup.downloads.help": "Downloads that never completed.",
+        "cleanup.deviceSupport": "Xcode device files", "cleanup.deviceSupport.help": "Downloaded again when a device is connected.",
+        "cleanup.iosBackups": "iPhone and iPad backups", "cleanup.iosBackups.help": "Your only copy if the device is lost. Check before removing.",
+        "cleanup.simulatorCaches": "Simulator caches", "cleanup.simulatorCaches.help": "Rebuilt by Xcode when simulators run.",
+        "cleanup.xcodeArchives": "Xcode archives", "cleanup.xcodeArchives.help": "Past app builds; keep those you still need to debug.",
+        "cleanup.npmCache": "npm cache", "cleanup.npmCache.help": "Packages npm downloads again when needed.",
+        "cleanup.pnpmStore": "pnpm store", "cleanup.pnpmStore.help": "Packages pnpm downloads again when needed.",
+        "cleanup.gradleCaches": "Gradle caches", "cleanup.gradleCaches.help": "Dependencies Gradle downloads again when needed.",
+        "cleanup.cargoCache": "Cargo cache", "cleanup.cargoCache.help": "Crates Cargo downloads again when needed.",
+        "cleanup.mailDownloads": "Mail attachments opened", "cleanup.mailDownloads.help": "Copies Mail made when you opened attachments; the emails keep theirs.",
+        "cleanup.risk.low": "Safe", "cleanup.risk.medium": "Check first", "cleanup.risk.high": "Important",
         "cleanup.choose": "Select the rule’s folder", "cleanup.choose.hint": "Choose the exact folder shown above.",
         "cleanup.rootMismatch": "Select the exact folder shown for this rule.",
         "cleanup.scan": "Inspect selected rule", "cleanup.scan.hint": "Reads the listed folder. No files are changed.",
@@ -256,7 +279,7 @@ public enum ProductCopy {
         "onboarding.title": "Welcome to CoreTend",
         "onboarding.scope": "Choose folders yourself. Scans stay local and read-only. Any move requires selection, review and confirmation to macOS Trash.",
         "onboarding.privacy": "CoreTend does not request Full Disk Access. You can begin without granting additional access.",
-        "onboarding.lede": "CoreTend looks after your Mac like a greenhouse: it observes, explains, and only prunes what you choose.",
+        "onboarding.lede": "See what fills your Mac. Clear it safely.",
         "onboarding.how": "How it grows", "onboarding.never.title": "What CoreTend will never do",
         "onboarding.never1": "Ask for Full Disk Access or your password.",
         "onboarding.never2": "Erase anything for good: every move goes to the macOS Trash, where you can restore it.",
@@ -265,6 +288,34 @@ public enum ProductCopy {
         "onboarding.start": "Get started"
     ]
     public static let french: [String: String] = [
+        "clean.failed": "Vos dossiers n’ont pas pu être lus.", "clean.rescan": "Relire", "clean.review": "Revoir et nettoyer",
+        "clean.empty.title": "Rien à nettoyer", "clean.empty.message": "Aucun cache, journal ni fichier de développement à retirer n’a été trouvé.",
+        "clean.reading": "Lecture des caches, journaux et fichiers de développement…", "clean.noneSelected": "Cochez ce que vous voulez retirer.",
+        "clean.all": "tout sélectionné", "clean.none": "rien de sélectionné", "clean.expand.hint": "Affiche chaque élément de ce groupe.",
+        "clean.reveal": "Afficher dans le Finder", "clean.undo": "Annuler", "clean.confirm.title": "Placer dans la Corbeille ?",
+        "clean.confirm.action": "Placer dans la Corbeille", "clean.reviewFailed": "Revue impossible ; rien n’a été déplacé.",
+        "home.performance": "Performances", "home.recoverable": "peuvent être récupérés sans risque, après votre revue.",
+        "home.recoverable.none": "Rien à nettoyer pour l’instant.", "home.review": "Examiner", "common.close": "Fermer",
+        "access.title": "CoreTend ne voit qu’une partie de votre Mac", "access.message": "Autorisez l’accès complet au disque pour qu’il lise Mail, Safari et les données des apps. CoreTend ne déplace toujours rien sans vous.",
+        "access.open": "Ouvrir Réglages Système", "access.hint": "Activez CoreTend, puis revenez.",
+        "access.onboarding.title": "Laissez CoreTend voir tout votre Mac",
+        "access.onboarding.body": "macOS protège certains dossiers. Avec l’accès complet au disque, CoreTend peut tous les mesurer. Il lit ; il n’envoie jamais rien nulle part.",
+        "access.step1": "Ouvrez Réglages Système.", "access.step2": "Activez CoreTend dans Accès complet au disque.", "access.step3": "Revenez ici : CoreTend s’en aperçoit tout seul.",
+        "access.granted": "L’accès complet au disque est activé.",
+        "onboarding.promise1": "Tout part à la Corbeille, rien n’est effacé.", "onboarding.promise2": "Rien ne bouge sans vous.", "onboarding.promise3": "Rien ne quitte votre Mac.",
+        "onboarding.later": "Plus tard", "onboarding.ready.title": "C’est prêt",
+        "onboarding.ready.full": "CoreTend lit votre Mac. L’Accueil vous dit ce que vous pouvez récupérer.",
+        "onboarding.ready.partial": "CoreTend lit ce que macOS permet. Vous pourrez activer l’accès complet au disque plus tard depuis l’Accueil.",
+        "space.scanHome": "Analyser mon dossier personnel", "space.map": "Carte", "space.duplicates": "Doublons",
+        "apps.installed": "Apps installées", "apps.startup": "Démarrage et signatures",
+        "home.next.space": "Voir ce qui prend de la place", "home.next.space.help": "La carte de vos dossiers, les gros fichiers et les doublons.",
+        "home.next.clean": "Nettoyer sans risque", "home.next.clean.help": "Caches, journaux et fichiers de développement, classés par risque.",
+        "home.next.apps": "Désinstaller des apps", "home.next.apps.help": "Retirez une app avec les fichiers qu’elle a laissés.",
+        "home.title": "Accueil", "space.title": "Espace", "clean.title": "Nettoyer", "apps.title": "Apps",
+        "home.lede": "L’état de votre Mac et ce que vous pouvez faire maintenant.",
+        "space.lede": "Voyez ce qui prend de la place sur votre Mac.",
+        "clean.lede": "Ce que vous pouvez enlever sans risque. Tout part à la Corbeille.",
+        "apps.lede": "Désinstallez complètement vos apps et voyez ce qui démarre avec votre Mac.",
         "overview.title": "Vue d’ensemble", "record.title": "Historique", "cleanup.title": "Nettoyage",
         "explore.title": "Explorer", "duplicates.title": "Doublons", "applications.title": "Applications",
         "integrity.title": "Intégrité", "performance.title": "Performances",
@@ -278,7 +329,7 @@ public enum ProductCopy {
         "applications.lede": "Les plantes installées et ce qu’elles laissent autour.",
         "integrity.lede": "Ce que macOS sait de chaque plant : signature, provenance.",
         "performance.lede": "La respiration de la machine, point par point.",
-        "record.lede": "L’herbier : tout ce qui a été observé et taillé.",
+        "record.lede": "Tout ce que CoreTend a mesuré et déplacé, jour par jour.",
         "onboarding.step1.title": "Choisir", "onboarding.step1.body": "Vous choisissez les dossiers que CoreTend peut examiner.",
         "onboarding.step2.title": "Comprendre", "onboarding.step2.body": "CoreTend mesure et explique, en lecture seule.",
         "onboarding.step3.title": "Décider", "onboarding.step3.body": "Rien ne part sans votre revue et votre confirmation, et seulement vers la Corbeille.",
@@ -384,14 +435,21 @@ public enum ProductCopy {
         "activity.reason.trashFailed": "Déplacement vers la Corbeille impossible.",
         "activity.migrationImported": "Préférences héritées importées",
         "cleanup.intro": "Choisissez un emplacement connu à examiner. Aucune règle n’est sélectionnée par défaut.",
-        "cleanup.caches": "Caches utilisateur", "cleanup.caches.help": "Fichiers sous ~/Library/Caches.",
-        "cleanup.logs": "Journaux utilisateur", "cleanup.logs.help": "Fichiers sous ~/Library/Logs.",
-        "cleanup.crashes": "Rapports de crash", "cleanup.crashes.help": "Uniquement les rapports .crash et .ips de DiagnosticReports.",
-        "cleanup.derived": "Données dérivées Xcode", "cleanup.derived.help": "Fichiers sous Xcode/DerivedData.",
-        "cleanup.downloads": "Téléchargements incomplets", "cleanup.downloads.help": "Uniquement les fichiers finissant par .download.",
-        "cleanup.deviceSupport": "Support d’appareils Xcode", "cleanup.deviceSupport.help": "Fichiers sous iOS DeviceSupport.",
-        "cleanup.iosBackups": "Sauvegardes iOS", "cleanup.iosBackups.help": "Fichiers sous MobileSync/Backup.",
-        "cleanup.risk.low": "Risque faible", "cleanup.risk.medium": "Risque moyen", "cleanup.risk.high": "Risque élevé",
+        "cleanup.caches": "Caches des apps", "cleanup.caches.help": "Fichiers temporaires que les apps recréent quand elles en ont besoin.",
+        "cleanup.logs": "Journaux des apps", "cleanup.logs.help": "Notes d’activité écrites par les apps ; utiles seulement pour un dépannage.",
+        "cleanup.crashes": "Rapports de plantage", "cleanup.crashes.help": "Rapports laissés quand une app s’est fermée brusquement.",
+        "cleanup.derived": "Fichiers de compilation Xcode", "cleanup.derived.help": "Xcode les recrée à la prochaine compilation.",
+        "cleanup.downloads": "Téléchargements inachevés", "cleanup.downloads.help": "Téléchargements qui ne se sont jamais terminés.",
+        "cleanup.deviceSupport": "Fichiers d’appareils Xcode", "cleanup.deviceSupport.help": "Retéléchargés quand un appareil est branché.",
+        "cleanup.iosBackups": "Sauvegardes iPhone et iPad", "cleanup.iosBackups.help": "Votre seule copie si l’appareil est perdu. À vérifier avant de retirer.",
+        "cleanup.simulatorCaches": "Caches des simulateurs", "cleanup.simulatorCaches.help": "Recréés par Xcode quand les simulateurs tournent.",
+        "cleanup.xcodeArchives": "Archives Xcode", "cleanup.xcodeArchives.help": "Anciennes versions compilées ; gardez celles que vous devez encore déboguer.",
+        "cleanup.npmCache": "Cache npm", "cleanup.npmCache.help": "Paquets que npm retélécharge au besoin.",
+        "cleanup.pnpmStore": "Magasin pnpm", "cleanup.pnpmStore.help": "Paquets que pnpm retélécharge au besoin.",
+        "cleanup.gradleCaches": "Caches Gradle", "cleanup.gradleCaches.help": "Dépendances que Gradle retélécharge au besoin.",
+        "cleanup.cargoCache": "Cache Cargo", "cleanup.cargoCache.help": "Crates que Cargo retélécharge au besoin.",
+        "cleanup.mailDownloads": "Pièces jointes ouvertes dans Mail", "cleanup.mailDownloads.help": "Copies faites par Mail à l’ouverture ; les e-mails gardent les leurs.",
+        "cleanup.risk.low": "Sûr", "cleanup.risk.medium": "À vérifier", "cleanup.risk.high": "Important",
         "cleanup.choose": "Choisir le dossier de cette règle", "cleanup.choose.hint": "Choisissez exactement le dossier indiqué ci-dessus.",
         "cleanup.rootMismatch": "Choisissez exactement le dossier indiqué pour cette règle.",
         "cleanup.scan": "Examiner cette règle", "cleanup.scan.hint": "Lit le dossier indiqué sans modifier ses fichiers.",
@@ -461,7 +519,7 @@ public enum ProductCopy {
         "onboarding.title": "Bienvenue dans CoreTend",
         "onboarding.scope": "Choisissez vous-même les dossiers. Les scans restent locaux et en lecture seule. Tout déplacement demande sélection, revue et confirmation vers la Corbeille macOS.",
         "onboarding.privacy": "CoreTend ne demande pas l’accès intégral au disque. Vous pouvez commencer sans autoriser d’accès supplémentaire.",
-        "onboarding.lede": "CoreTend entretient votre Mac comme une serre : il observe, explique, et ne taille que ce que vous choisissez.",
+        "onboarding.lede": "Voyez ce qui remplit votre Mac. Libérez-le sans risque.",
         "onboarding.how": "Comment elle pousse", "onboarding.never.title": "Ce que CoreTend ne fera jamais",
         "onboarding.never1": "Demander l’accès complet au disque ou votre mot de passe.",
         "onboarding.never2": "Effacer définitivement : tout déplacement va dans la Corbeille de macOS, d’où vous pouvez le récupérer.",

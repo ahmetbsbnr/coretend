@@ -56,6 +56,14 @@ for file in (root/'Sources').rglob('*.swift'):
    errors.append('fixture Trash adapter no longer satisfies its validated test-only contract')
   else:
    for site in mutations: text = text.replace(site, '', 1)
+ # Undo: SafetyCore's TrashRestorer is the one place that moves an item, and only out of a Trash folder.
+ if file.relative_to(root).as_posix() == 'Sources/SafetyCore/SafetyCore.swift':
+  restore = 'try FileManager.default.moveItem(at: trashURL, to: original)'
+  guarded = ('guard trashPath.contains("/.Trash/")' in text and 'RestoreRefusal.originalOccupied' in text)
+  if text.count(restore) != 1 or not guarded:
+   errors.append('TrashRestorer no longer satisfies its out-of-Trash-only contract')
+  else:
+   text = text.replace(restore, '', 1)
  for pattern in (r'FileManager\.(?:default\.)?removeItem', r'\bunlink\s*\(', r'FileManager\.(?:default\.)?moveItem', r'\.removeItem\s*\('):
   if re.search(pattern,text): errors.append(f'production mutation API in {file.relative_to(root)}: {pattern}')
 trash=[f for f in (root/'Sources').rglob('*.swift') if 'trashItem(' in f.read_text()]
