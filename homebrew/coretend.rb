@@ -1,12 +1,10 @@
-# CoreTend 2.0 cask. Published in the tap github.com/ahmetbsbnr/homebrew-coretend (Casks/coretend.rb);
-# copy it there at each release with the SHA-256 of the notarized ZIP from SHA256SUMS.
 cask "coretend" do
-  version "2.0.0"
-  sha256 "3fd2548cf988fdecc0749f0c170764cccaf3541aa02c840c4e5c58adafcfefef"
+  version "2.1.0"
+  sha256 "0bedef80a18171af437eb8e0d6e1d3b66c86e41e5f1a7320f987453c80801701"
 
   url "https://github.com/ahmetbsbnr/coretend/releases/download/v#{version}/CoreTend-#{version}-arm64.zip"
   name "CoreTend"
-  desc "Living, local greenhouse: see what takes space, prune only to the Trash"
+  desc "See what fills the disk and clear it safely, to the Trash"
   homepage "https://coretend.ahmetbsbnr.com/"
 
   livecheck do
@@ -14,13 +12,17 @@ cask "coretend" do
     strategy :github_latest
   end
 
+  auto_updates true
   depends_on arch: :arm64
   depends_on macos: :sonoma
 
   app "CoreTend.app"
+  binary "#{appdir}/CoreTend.app/Contents/Helpers/coretend"
 
   zap trash: [
     "~/Library/Application Support/CoreTend-Reconstruction",
+    "~/Library/Caches/com.ahmetbsbnr.coretend",
+    "~/Library/HTTPStorages/com.ahmetbsbnr.coretend",
     "~/Library/Preferences/com.ahmetbsbnr.coretend.plist",
   ]
 end
