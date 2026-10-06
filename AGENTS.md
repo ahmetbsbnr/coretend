@@ -2,9 +2,9 @@
 
 CoreTend est un utilitaire macOS natif (SwiftUI, SwiftPM, macOS 14+) qui analyse le
 stockage en lecture seule et déplace vers la Corbeille, après revue et confirmation,
-ce que la personne a choisi. Ce dossier (`coretend-next`) est la reconstruction en
-cours ; `main` et le dossier `../coretend` portent la version 1.x publiée, en
-maintenance seulement.
+ce que la personne a choisi. Ce dossier (`coretend-next`, branche `next`) porte le
+développement ; `main` suit `next` à chaque release publiée. Le dossier `../coretend`
+(branche `fix/1.x-trash-sqlite`) porte la 1.x, en maintenance seulement.
 
 ## Avant toute action
 
