@@ -4,6 +4,7 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$repo_root"
 swift build -c release --product CoreTendApp
+swift build -c release --product CoreTendCLI
 bin_dir="$(swift build -c release --show-bin-path)"
 artifact_dir="${CORETEND_ARTIFACT_DIR:-$repo_root/Artifacts}"
 mkdir -p "$artifact_dir"
@@ -16,6 +17,9 @@ trap 'rm -rf "$stage_dir"' EXIT
 app_path="$stage_dir/CoreTend.app"
 mkdir -p "$app_path/Contents/MacOS"
 cp "$bin_dir/CoreTendApp" "$app_path/Contents/MacOS/CoreTendApp"
+# The command-line tool travels inside the app (Homebrew links it as `coretend`).
+mkdir -p "$app_path/Contents/Helpers"
+cp "$bin_dir/CoreTendCLI" "$app_path/Contents/Helpers/coretend"
 # Sparkle (updates), with its symbolic links intact.
 mkdir -p "$app_path/Contents/Frameworks"
 ditto "$bin_dir/Sparkle.framework" "$app_path/Contents/Frameworks/Sparkle.framework"
