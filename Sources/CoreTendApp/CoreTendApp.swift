@@ -11,6 +11,7 @@ struct CoreTendApp: App {
     @State private var navigation: CoreTendNavigation
     @State private var menuBarEnabled: Bool
     @State private var appearance: AppearancePreference
+    @State private var updater = AppUpdater()
 
     private var effectiveColorScheme: ColorScheme? {
         let preferences = CoreTendPreferences()
@@ -28,6 +29,7 @@ struct CoreTendApp: App {
     var body: some Scene {
         Window("CoreTend", id: "coretend.main") {
             CoreTendRootView(navigation: navigation, menuBarEnabled: $menuBarEnabled, appearance: $appearance)
+                .environment(updater)
                 .frame(minWidth: 640, minHeight: 520)
                 .onAppear {
                     // Fixture-only (store captures): the window at an exact size in points.
@@ -41,6 +43,11 @@ struct CoreTendApp: App {
         }
         .defaultSize(width: 1120, height: 760)
         .commands {
+            CommandGroup(after: .appInfo) {
+                if updater.isAvailable {
+                    Button(ProductCopy.value(for: "updates.check", french: navigation.usesFrench)) { updater.checkForUpdates() }
+                }
+            }
             CommandGroup(replacing: .appSettings) {
                 Button(ProductCopy.value(for: "settings.title", french: navigation.usesFrench) + "…") {
                     navigation.activeSheet = .settings
@@ -102,6 +109,7 @@ private struct CoreTendRootView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.controlActiveState) private var controlActiveState
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(AppUpdater.self) private var updater
     /// Decision 0003: "Living greenhouse", on by default.
     @AppStorage("coretend.livingGreenhouse") private var livingGreenhouse = true
     @State private var rowFrames: [Destination: CGRect] = [:]
@@ -171,7 +179,7 @@ private struct CoreTendRootView: View {
         }
         .sheet(item: $navigation.activeSheet) { sheet in
             // Sheets are separate presentations and do not inherit the window's tint.
-            sheetContent(sheet).tint(Palette.accent.color).buttonStyle(.serre(.secondary))
+            sheetContent(sheet).tint(Palette.accent.color).buttonStyle(.serre(.secondary)).environment(updater)
         }
         .onChange(of: navigation.selection) { _, destination in
             if let destination { preferences.saveLastDestination(destination.rawValue) }

@@ -53,8 +53,15 @@ def validate(package):
     if not macos_versions or min(macos_versions) < (14, 0):
         errors.append("macOS deployment target must be at least 14.0")
 
-    if package.get("dependencies"):
-        errors.append("external SwiftPM dependencies are not allowed")
+    # Decision 0005: Sparkle is the one allowed package, used by the app target only.
+    for dependency in package.get("dependencies", []):
+        identity = next(iter(dependency.get("sourceControl", [{}])), {}).get("identity")
+        if identity != "sparkle":
+            errors.append("external SwiftPM dependencies other than Sparkle are not allowed")
+    for target in package.get("targets", []):
+        uses_sparkle = any("product" in item and item["product"][0] == "Sparkle" for item in target.get("dependencies", []))
+        if uses_sparkle and target.get("name") != "CoreTendApp":
+            errors.append(f"only CoreTendApp may depend on Sparkle, not {target.get('name')}")
 
     targets = {target.get("name"): target for target in package.get("targets", [])}
     scan_core = targets.get("ScanCore")
@@ -133,7 +140,7 @@ def main():
     if errors:
         print("\n".join(errors), file=sys.stderr)
         return 1
-    print("Architecture audit passed: Swift 6+, macOS 14+, no external SwiftPM packages, ScanCore isolated from action and persistence layers, views use the Serre design system.")
+    print("Architecture audit passed: Swift 6+, macOS 14+, only Sparkle as external package (app target), ScanCore isolated from action and persistence layers, views use the Serre design system.")
     return 0
 
 

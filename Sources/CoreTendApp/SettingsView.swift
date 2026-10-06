@@ -26,6 +26,7 @@ struct SettingsView: View {
     @State private var ownSignature: CodeSignatureReport?
     @State private var status: String?
     @AppStorage("coretend.livingGreenhouse") private var livingGreenhouse = true
+    @Environment(AppUpdater.self) private var updater
     @State private var tab = "general"
 
     var body: some View {
@@ -71,6 +72,15 @@ struct SettingsView: View {
                         Toggle(french ? "Laisser la serre vivre" : "Let the greenhouse live", isOn: $livingGreenhouse)
                             .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
                             .accessibilityLabel(french ? "Laisser la serre vivre" : "Let the greenhouse live")
+                    }
+                    if updater.isAvailable {
+                    section(ProductCopy.value(for: "updates.title", french: french), help: ProductCopy.value(for: "updates.help", french: french)) {
+                        @Bindable var updater = updater
+                        Toggle(ProductCopy.value(for: "updates.automatic", french: french), isOn: $updater.automaticChecks)
+                            .font(CoreTendTypography.body).foregroundStyle(Palette.ink.color)
+                        Button(ProductCopy.value(for: "updates.check", french: french)) { updater.checkForUpdates() }
+                            .buttonStyle(.serre(.secondary))
+                    }
                     }
                     section(french ? "Barre des menus" : "Menu bar") {
                         Toggle(ProductCopy.value(for: "settings.menubar.title", french: french), isOn: $menuBarEnabled)

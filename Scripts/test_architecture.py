@@ -28,7 +28,14 @@ class ArchitectureContractTests(unittest.TestCase):
     def test_rejects_external_package_dependency(self):
         package = package_fixture()
         package["dependencies"].append({"sourceControl": [{"url": "https://example.invalid/pkg"}]})
-        self.assertIn("external SwiftPM dependencies are not allowed", check_architecture.validate(package))
+        self.assertIn("external SwiftPM dependencies other than Sparkle are not allowed", check_architecture.validate(package))
+
+    def test_allows_sparkle_for_the_app_only(self):
+        package = package_fixture()
+        package["dependencies"].append({"sourceControl": [{"identity": "sparkle"}]})
+        self.assertEqual(check_architecture.validate(package), [])
+        package["targets"][1]["dependencies"].append({"product": ["Sparkle", "sparkle", None, None]})
+        self.assertIn("only CoreTendApp may depend on Sparkle, not ScanCore", check_architecture.validate(package))
 
     def test_rejects_macos_below_supported_minimum(self):
         package = package_fixture()

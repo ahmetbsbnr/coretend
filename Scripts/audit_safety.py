@@ -88,8 +88,10 @@ for file in (root/'Sources').rglob('*.swift'):
   if re.search(pattern,text,re.MULTILINE):
    errors.append(f'network client or telemetry API in runtime: {file.relative_to(root)}: {pattern}')
 manifest=(root/'Package.swift').read_text()
-if re.search(r'\.package\s*\(\s*url\s*:',manifest):
- errors.append('external SwiftPM package dependency present; review privacy and network surface')
+# Decision 0005: Sparkle is the one allowed package (signed updates, off unless the person allows it).
+packages = re.findall(r'\.package\s*\(\s*url\s*:\s*"([^"]+)"',manifest)
+if any(url != 'https://github.com/sparkle-project/Sparkle' for url in packages):
+ errors.append('external SwiftPM package dependency other than Sparkle; review privacy and network surface')
 scan_core_target=re.search(r'\.target\(name:\s*"ScanCore",\s*dependencies:\s*\[([^\]]*)\]\)',manifest)
 if not scan_core_target:
  errors.append('ScanCore target declaration could not be checked for write-capable dependencies')
