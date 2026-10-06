@@ -49,7 +49,7 @@ History of every scan and move stays at the sidebar's foot.
 
 ## Install
 
-- **Download** `CoreTend-2.1.1-arm64.dmg` (notarized) from [Releases](https://github.com/ahmetbsbnr/coretend/releases/latest) or the [site](https://coretend.ahmetbsbnr.com).
+- **Download** `CoreTend-2.1.2-arm64.dmg` (notarized) from [Releases](https://github.com/ahmetbsbnr/coretend/releases/latest) or the [site](https://coretend.ahmetbsbnr.com).
 - **Homebrew:** `brew install --cask ahmetbsbnr/coretend/coretend` (also links `coretend` in your PATH)
 - **Terminal and AI assistants:** [`coretend` on npm](https://www.npmjs.com/package/coretend) — `npx coretend clean` · `npx -y coretend mcp`; see [CLI.md](Documentation/CLI.md).
 
