@@ -9,6 +9,7 @@ Your whole Mac in one click, caches and developer files cleaned in one review, a
 
 <p align="center">
   <a href="https://github.com/ahmetbsbnr/coretend/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/ahmetbsbnr/coretend?sort=semver&color=2C6E35&label=release"></a>
+  <a href="https://www.npmjs.com/package/coretend"><img alt="npm" src="https://img.shields.io/npm/v/coretend?color=2C6E35&label=npm"></a>
   <img alt="macOS 14+" src="https://img.shields.io/badge/macOS-14%2B%20·%20Apple%20silicon-0F2019">
   <img alt="Signed and notarized" src="https://img.shields.io/badge/Developer%20ID-notarized-2C6E35">
   <a href="LICENSE"><img alt="Apache 2.0" src="https://img.shields.io/badge/license-Apache--2.0-0F2019"></a>
@@ -50,7 +51,7 @@ History of every scan and move stays at the sidebar's foot.
 
 - **Download** `CoreTend-2.1.0-arm64.dmg` (notarized) from [Releases](https://github.com/ahmetbsbnr/coretend/releases/latest) or the [site](https://coretend.ahmetbsbnr.com).
 - **Homebrew:** `brew install --cask ahmetbsbnr/coretend/coretend` (also links `coretend` in your PATH)
-- **Terminal and AI assistants:** `npx coretend clean` · `npx -y coretend mcp` — see [CLI.md](Documentation/CLI.md).
+- **Terminal and AI assistants:** [`coretend` on npm](https://www.npmjs.com/package/coretend) — `npx coretend clean` · `npx -y coretend mcp`; see [CLI.md](Documentation/CLI.md).
 
 macOS 14 Sonoma or later, Apple silicon. English and French (follows macOS). CoreTend asks for Full
 Disk Access once, to read Mail, Safari and app data; without it, it reads what macOS allows.

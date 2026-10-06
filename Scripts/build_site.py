@@ -18,6 +18,16 @@ SITE = ROOT / "Website"
 LANGUAGES = ("en", "fr")
 ROUTES = ("index", "features", "download", "privacy", "support", "developer")
 REPO = "https://github.com/ahmetbsbnr/coretend"
+NPM = "https://www.npmjs.com/package/coretend"
+TAP = "https://github.com/ahmetbsbnr/homebrew-coretend"
+
+
+def channels(lang: str) -> str:
+    """Where else CoreTend is published: Homebrew, npm (command line and MCP), GitHub."""
+    label = "Aussi sur" if lang == "fr" else "Also on"
+    links = [("Homebrew", TAP), ("npm", NPM), ("GitHub", REPO)]
+    items = " · ".join(f'<a href="{url}">{name}</a>' for name, url in links)
+    return f'<p class="requirements channels">{label} {items}</p>'
 
 
 def release() -> dict:
@@ -113,6 +123,7 @@ COPY = {
                 ("Homebrew", "brew install --cask ahmetbsbnr/coretend/coretend"),
                 ("Terminal and AI assistants", "npx coretend mcp"),
             ],
+            "npm_link": "The coretend package on npm (command line and MCP server)",
             "new_title": "New in 2.1",
             "new": "Four spaces instead of eight tools. Your whole Mac in one click with Full Disk Access. Clean reads 14 rules at once — Xcode, simulators, npm, pnpm, Gradle, Cargo, Mail — and Undo puts things back. Apps uninstall completely. Signed automatic updates, a command line that cleans, and an MCP server for AI assistants.",
             "from1": "Coming from 2.0? Download 2.1 once (or run brew upgrade); later versions arrive on their own.",
@@ -225,6 +236,7 @@ COPY = {
                 ("Homebrew", "brew install --cask ahmetbsbnr/coretend/coretend"),
                 ("Terminal et assistants IA", "npx coretend mcp"),
             ],
+            "npm_link": "Le paquet coretend sur npm (ligne de commande et serveur MCP)",
             "new_title": "Nouveautés de la 2.1",
             "new": "Quatre espaces au lieu de huit outils. Tout votre Mac en un clic avec l’accès complet au disque. Nettoyer lit 14 règles d’un coup — Xcode, simulateurs, npm, pnpm, Gradle, Cargo, Mail — et Annuler remet tout en place. Apps désinstalle complètement. Mises à jour automatiques signées, une ligne de commande qui nettoie et un serveur MCP pour les assistants IA.",
             "from1": "Vous avez la 2.0 ? Téléchargez la 2.1 une fois (ou lancez brew upgrade) ; les versions suivantes arriveront seules.",
@@ -444,6 +456,7 @@ def home(lang: str, rel: dict) -> str:
       <p class="lead">{escape(p['lead'])}</p>
       <div class="actions">{download_button(lang, rel, large=True)}<a class="button button-secondary button-large" href="{route_url(lang, "features")}">{escape(c['cta_features'])}<span aria-hidden="true"> →</span></a></div>
       <p class="requirements">{escape(c['requirements'])}</p>
+      {channels(lang)}
     </div>
     <div class="hero-icon"><img src="../brand/coretend-app-icon-512.png" alt="CoreTend" width="512" height="512"></div>
     </div>
@@ -503,7 +516,8 @@ def download(lang: str, rel: dict) -> str:
       <div class="panel-facts"><h3>{escape(p['files'])}</h3><dl class="facts">{facts}</dl></div>
     </div>
   </section>
-  <section class="band">{section_head(p['install_title'])}<div class="cards cards-three">{install}</div></section>
+  <section class="band">{section_head(p['install_title'])}<div class="cards cards-three">{install}</div>
+    <p class="more reveal"><a href="{NPM}">{escape(p['npm_link'])} <span aria-hidden="true">→</span></a></p></section>
   <section class="band">{section_head(p['new_title'])}<div class="prose reveal"><p>{escape(p['new'])}</p><p>{escape(p['from1'])}</p></div></section>
 </main>"""
 
@@ -515,9 +529,10 @@ def intro(p: dict) -> str:
 
 def simple(lang: str, route: str) -> str:
     p = COPY[lang][route]
+    extra = channels(lang) if route == "developer" else ""
     return f"""<main id="main">
   {intro(p)}
-  <section class="band band-tight"><div class="cards cards-two">{cards(p['sections'])}</div></section>
+  <section class="band band-tight"><div class="cards cards-two">{cards(p['sections'])}</div>{extra}</section>
 </main>"""
 
 
