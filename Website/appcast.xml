@@ -3,6 +3,16 @@
     <channel>
         <title>CoreTend</title>
         <item>
+            <title>2.1.1</title>
+            <pubDate>Tue, 06 Oct 2026 20:29:13 +0200</pubDate>
+            <link>https://coretend.ahmetbsbnr.com</link>
+            <sparkle:version>211</sparkle:version>
+            <sparkle:shortVersionString>2.1.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <enclosure url="https://github.com/ahmetbsbnr/coretend/releases/download/v2.1.1/CoreTend-2.1.1-arm64.zip" length="6175631" type="application/octet-stream" sparkle:edSignature="zUM3z88oqTN7vX901tkKSXDb/4EFP/435HJJL4fJDiRKPJzAZg4NznLdslPMJEL+4JzeMdGvRW/VVYNeHQUWCg=="/>
+        </item>
+        <item>
             <title>2.1.0</title>
             <pubDate>Tue, 06 Oct 2026 13:44:56 +0200</pubDate>
             <link>https://coretend.ahmetbsbnr.com</link>
