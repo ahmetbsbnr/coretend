@@ -28,6 +28,48 @@ final class TestStoreOverrideTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: database.path))
     }
 
+    func testFixtureTrashMustBeBelowTheValidatedStoreAndCannotFollowSymlinks() throws {
+        let fixture = try Fixture()
+        var environment = fixture.environment
+        environment["CORETEND_TEST_TRASH_DIR"] = fixture.storeDirectory.appendingPathComponent("trash", isDirectory: true).path
+        let trash = try XCTUnwrap(TestStoreOverride.trashDirectory(
+            environment: environment,
+            temporaryRoot: fixture.temporaryRoot,
+            homeDirectory: fixture.home
+        ))
+        XCTAssertEqual(trash.path, environment["CORETEND_TEST_TRASH_DIR"])
+
+        environment["CORETEND_TEST_TRASH_DIR"] = fixture.root.appendingPathComponent("outside-trash").path
+        XCTAssertThrowsError(try TestStoreOverride.trashDirectory(
+            environment: environment,
+            temporaryRoot: fixture.temporaryRoot,
+            homeDirectory: fixture.home
+        ))
+
+        let real = fixture.root.appendingPathComponent("real-trash", isDirectory: true)
+        let alias = fixture.storeDirectory.appendingPathComponent("trash-link", isDirectory: true)
+        try FileManager.default.createDirectory(at: real, withIntermediateDirectories: true)
+        try FileManager.default.createSymbolicLink(at: alias, withDestinationURL: real)
+        environment["CORETEND_TEST_TRASH_DIR"] = alias.path
+        XCTAssertThrowsError(try TestStoreOverride.trashDirectory(
+            environment: environment,
+            temporaryRoot: fixture.temporaryRoot,
+            homeDirectory: fixture.home
+        ))
+    }
+
+    func testFixtureTrashRequiresCompleteFixtureProfile() throws {
+        let fixture = try Fixture()
+        var environment = fixture.environment
+        environment["CORETEND_TEST_TRASH_DIR"] = fixture.storeDirectory.appendingPathComponent("trash").path
+        environment.removeValue(forKey: "CORETEND_TEST_MODE")
+        XCTAssertThrowsError(try TestStoreOverride.trashDirectory(
+            environment: environment,
+            temporaryRoot: fixture.temporaryRoot,
+            homeDirectory: fixture.home
+        ))
+    }
+
     func testStoreCanMigrateInsideFixtureWithoutCreatingProductionLocation() async throws {
         let fixture = try Fixture()
         let database = try XCTUnwrap(TestStoreOverride.databaseURL(environment: fixture.environment, temporaryRoot: fixture.temporaryRoot, homeDirectory: fixture.home))

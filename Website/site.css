@@ -70,7 +70,6 @@ img { max-width: 100%; height: auto; display: block; }
 .actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; margin: 1.6rem 0 1rem; }
 .unpublished { border: 1px dashed var(--ct-strong-separator); border-radius: var(--leaf-sm); padding: .8rem 1.1rem; color: var(--ct-ink); max-width: 36rem; margin: 0; }
 .requirements { font-size: .88rem; color: var(--ct-tertiary-ink); margin: 0; }
-.eyebrow { font-size: .8rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--ct-accent); display: inline-flex; align-items: center; gap: .5rem; margin-bottom: .9rem; }
 .dot { width: .5rem; height: .5rem; border-radius: 50%; background: var(--ct-accent); animation: breathe 2.8s ease-in-out infinite; }
 .lead { font-size: clamp(1.08rem, 1.6vw, 1.25rem); color: var(--ct-ink); opacity: .88; max-width: 40rem; }
 

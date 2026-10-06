@@ -16,6 +16,37 @@ final class AppShellTests: XCTestCase {
         XCTAssertEqual(Set(Destination.allCases.map(\.route)), Set(DestinationRoute.allCases))
     }
 
+    func testEveryDestinationHasLocalizedTitleLedeAndOnePaletteCommand() {
+        for destination in Destination.sidebarOrder {
+            for french in [false, true] {
+                let title = ProductCopy.value(for: destination.titleKey, french: french)
+                let lede = ProductCopy.value(for: destination.ledeKey, french: french)
+                XCTAssertNotEqual(title, destination.titleKey, "Missing title: \(destination), french=\(french)")
+                XCTAssertNotEqual(lede, destination.ledeKey, "Missing lede: \(destination), french=\(french)")
+                XCTAssertFalse(title.isEmpty)
+                XCTAssertFalse(lede.isEmpty)
+
+                let matchingCommands = CommandPaletteCatalog.commands(french: french).filter { command in
+                    if case .destination(let target) = command.target { return target == destination }
+                    return false
+                }
+                XCTAssertEqual(matchingCommands.count, 1, "Palette must expose \(destination) exactly once")
+                XCTAssertEqual(matchingCommands.first?.id, destination.rawValue)
+                XCTAssertEqual(matchingCommands.first?.title, title)
+            }
+        }
+    }
+
+    func testPaletteSettingsCommandIsUniqueAndSearchableInBothLanguages() {
+        for french in [false, true] {
+            let commands = CommandPaletteCatalog.commands(french: french)
+            let settings = commands.filter { if case .settings = $0.target { return true }; return false }
+            XCTAssertEqual(settings.count, 1)
+            XCTAssertEqual(settings.first?.id, "settings")
+            XCTAssertEqual(CommandPaletteCatalog.search(french ? "préférences" : "preferences", french: french).map(\.id), ["settings"])
+        }
+    }
+
     func testCriticalCopyHasEnglishFrenchParity() {
         XCTAssertEqual(Set(ProductCopy.english.keys), Set(ProductCopy.french.keys))
         XCTAssertTrue(ProductCopy.english.keys.contains("overview.title"))
@@ -354,7 +385,6 @@ final class AppShellTests: XCTestCase {
         }
         XCTAssertEqual(destinations, Destination.sidebarOrder)
     }
-
 
     func testEveryDestinationHasASerreLedeInBothLanguages() {
         for destination in Destination.allCases {

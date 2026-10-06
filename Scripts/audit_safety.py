@@ -40,6 +40,22 @@ for file in (root/'Sources').rglob('*.swift'):
    errors.append('legacy snapshot cleanup must follow exclusive private-directory creation')
   else:
    text = text.replace(cleanup, '', 1)
+ # The app's fixture Trash is an isolated test-mode adapter. Keep its two mutation
+ # sites allowlisted only while the selector and every move validate the fixture profile.
+ if file.relative_to(root).as_posix() == 'Sources/CoreTendApp/AppTrashClient.swift':
+  adapter_contract = (
+   'CORETEND_TEST_TRASH_DIR' in text
+   and text.count('TestStoreOverride.trashDirectory(') == 2
+   and 'return UnavailableTrashClient()' in text
+   and 'current.path == directory.path' in text
+   and 'directory.appendingPathComponent(UUID().uuidString + "-" + url.lastPathComponent)' in text
+  )
+  mutations = ('try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)',
+               'try FileManager.default.moveItem(at: url, to: destination)')
+  if not adapter_contract or any(text.count(site) != 1 for site in mutations):
+   errors.append('fixture Trash adapter no longer satisfies its validated test-only contract')
+  else:
+   for site in mutations: text = text.replace(site, '', 1)
  for pattern in (r'FileManager\.(?:default\.)?removeItem', r'\bunlink\s*\(', r'FileManager\.(?:default\.)?moveItem', r'\.removeItem\s*\('):
   if re.search(pattern,text): errors.append(f'production mutation API in {file.relative_to(root)}: {pattern}')
 trash=[f for f in (root/'Sources').rglob('*.swift') if 'trashItem(' in f.read_text()]
@@ -47,7 +63,7 @@ if len(trash)!=1 or trash[0].relative_to(root).as_posix()!='Sources/SafetyCore/S
  errors.append('production Trash API must exist only in SafetyCore')
 for file in (root/'Tests').rglob('*.swift'):
  text=file.read_text()
- if re.search(r'/(?:Users|Volumes)/|~\/\.Trash|homeDirectoryForCurrentUser|\.trashDirectory',text):
+ if re.search(r'/(?:Users|Volumes)/|~\/\.Trash|homeDirectoryForCurrentUser',text):
   errors.append(f'personal-store path reference in test: {file.relative_to(root)}')
 for file in (root/'Sources').rglob('*.swift'):
  if 'homeDirectoryForCurrentUser' in file.read_text(): errors.append(f'implicit HOME lookup in runtime: {file.relative_to(root)}')

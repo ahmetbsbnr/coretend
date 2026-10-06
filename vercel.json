@@ -14,8 +14,6 @@
     { "source": "/fr/legal", "destination": "/fr/privacy", "permanent": true },
     { "source": "/fr/compare", "destination": "/fr/features", "permanent": true },
     { "source": "/fr/licenses", "destination": "/fr/developer", "permanent": true },
-    { "source": "/en", "destination": "/en/index", "permanent": false },
-    { "source": "/fr", "destination": "/fr/index", "permanent": false },
     { "source": "/download", "destination": "https://github.com/ahmetbsbnr/coretend/releases/latest", "permanent": false }
   ],
   "headers": [

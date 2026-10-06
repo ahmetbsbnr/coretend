@@ -424,7 +424,7 @@ private struct DestinationView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .onPreferenceChange(PlantActivityKey.self) { plantActivity = $0 }
-        .accessibilityIdentifier("destination-\(destination.rawValue)")
+                    .accessibilityIdentifier("destination-\(destination.rawValue)")
     }
 
     @ViewBuilder private var destinationContent: some View {

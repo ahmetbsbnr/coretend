@@ -22,6 +22,11 @@ struct DuplicateScanView: View {
     @State private var analysisProgress: DuplicateScanProgress?
     @State private var rootsPhase: ScanRootsPhase?
     @State private var report: DuplicateScanReport?
+    /// Allocated size of one copy per group (by digest), measured once off the main thread when the
+    /// report arrives; reading it from disk during each redraw is what froze the window.
+    @State private var groupSizes: [String: Int64] = [:]
+    /// Groups the reader opened in full; others show their first copies (and always the kept one).
+    @State private var expandedGroups: Set<String> = []
     @State private var notice: PageNotice?
     @State private var scanTask: Task<Void, Never>?
     @State private var activeScanID: UUID?
@@ -226,7 +231,7 @@ struct DuplicateScanView: View {
                 HStack(alignment: .firstTextBaseline) {
                     Text(copy("duplicates.count", count: groups.count))
                         .font(CoreTendTypography.sectionTitle).foregroundStyle(Palette.ink.color)
-                    let total = groups.compactMap { DuplicateSpace.recoverable(fileSize: fileSize($0.files.first), copies: (standing($0) ?? $0.files).count) }.reduce(0, +)
+                    let total = groups.compactMap { DuplicateSpace.recoverable(fileSize: groupSizes[$0.digest], copies: (standing($0) ?? $0.files).count) }.reduce(0, +)
                     if total > 0 {
                         Text(french ? "· \(ProductFormat.bytes(total, french: true)) récupérables en ne gardant qu’un exemplaire" : "· \(ProductFormat.bytes(total, french: false)) recoverable keeping one copy")
                             .font(CoreTendTypography.caption).foregroundStyle(Palette.accent.color)
@@ -235,8 +240,11 @@ struct DuplicateScanView: View {
                     Text(french ? "Aucune sélection automatique" : "Nothing selected automatically")
                         .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
                 }
-                ForEach(Array(groups.enumerated()), id: \.element.digest) { index, group in
-                    groupParcel(group).serreRise(index)
+                // Lazy: hundreds of groups are laid out as they scroll into view, not all at once.
+                LazyVStack(alignment: .leading, spacing: 14) {
+                    ForEach(Array(groups.enumerated()), id: \.element.digest) { index, group in
+                        groupParcel(group).serreRise(index)
+                    }
                 }
                 Text(copy("duplicates.check"))
                     .font(CoreTendTypography.caption).foregroundStyle(Palette.secondaryInk.color)
@@ -269,17 +277,36 @@ struct DuplicateScanView: View {
                     Text("\(ProductFormat.count((standing(group) ?? group.files).count, french: french)) \(copy("duplicates.twins"))")
                         .font(CoreTendTypography.caption.weight(.semibold)).foregroundStyle(Palette.secondaryInk.color)
                     Spacer()
-                    if let freed = DuplicateSpace.recoverable(fileSize: fileSize(group.files.first), copies: (standing(group) ?? group.files).count) {
+                    if let freed = DuplicateSpace.recoverable(fileSize: groupSizes[group.digest], copies: (standing(group) ?? group.files).count) {
                         Text(french ? "\(ProductFormat.bytes(freed, french: true)) récupérables" : "\(ProductFormat.bytes(freed, french: false)) recoverable")
                             .font(CoreTendTypography.caption.weight(.semibold)).foregroundStyle(Palette.accent.color)
                     }
                 }
                     .padding(.bottom, 4)
-                ForEach(standing(group) ?? group.files, id: \.path) { file in
+                let files = standing(group) ?? group.files
+                let shown = shownFiles(files, kept: kept, digest: group.digest)
+                ForEach(shown, id: \.path) { file in
                     shoot(file, group: group, kept: file == kept)
+                }
+                if shown.count < files.count {
+                    Button(french ? "Afficher les \(files.count - shown.count) autres copies" : "Show \(files.count - shown.count) more copies") {
+                        expandedGroups.insert(group.digest)
+                    }
+                    .buttonStyle(.serre(.icon))
+                    .padding(.top, 4)
                 }
             }
         }
+    }
+
+    /// A group with hundreds of identical copies would lay out every row at once; it shows its
+    /// first copies until opened, and the kept copy is always among them.
+    private func shownFiles(_ files: [URL], kept: URL, digest: String) -> [URL] {
+        let limit = 12
+        guard files.count > limit, !expandedGroups.contains(digest) else { return files }
+        var shown = Array(files.prefix(limit))
+        if !shown.contains(kept), files.contains(kept) { shown[limit - 1] = kept }
+        return shown
     }
 
     /// One shoot of a group: the kept one wears the "Kept" leaf; any other can be checked for the
@@ -389,7 +416,7 @@ struct DuplicateScanView: View {
     }
 
     /// The allocated size of one file (every copy of a group has the same content).
-    private func fileSize(_ url: URL?) -> Int64? {
+    nonisolated private static func fileSize(_ url: URL?) -> Int64? {
         guard let url, let values = try? url.resourceValues(forKeys: [.totalFileAllocatedSizeKey, .fileAllocatedSizeKey]) else { return nil }
         return (values.totalFileAllocatedSize ?? values.fileAllocatedSize).map(Int64.init)
     }
@@ -418,6 +445,8 @@ struct DuplicateScanView: View {
         analysisProgress = nil
         notice = nil
         report = nil
+        groupSizes = [:]
+        expandedGroups = []
         similarReport = nil
         selectedCopies = []
         keepers = DuplicateKeepers()
@@ -434,15 +463,21 @@ struct DuplicateScanView: View {
             do {
                 var candidates: [ScanResult] = []
                 let exclusions = try await LocalStoreAccess.exclusions()
-                for try await event in LocalScanEngine().scan(.init(roots: [.init(url: root, ruleID: .duplicates)], exclusions: exclusions)) {
+                for try await batch in LocalScanEngine().scan(.init(roots: [.init(url: root, ruleID: .duplicates)], exclusions: exclusions)).batched() {
                     guard !Task.isCancelled, activeScanID == scanID else { return }
-                    switch event {
-                    case .result(let result): candidates.append(result)
-                    case .itemFailure(let path, let reason):
-                        if path == root.path { rootFailure = reason } else { partialFailures.insert(reason) }
-                    case .progress(let completed): scanCompletedFiles = completed
-                    case .finished: break
+                    var found: [ScanResult] = []
+                    var latestCompleted: Int?
+                    for event in batch {
+                        switch event {
+                        case .result(let result): found.append(result)
+                        case .itemFailure(let path, let reason):
+                            if path == root.path { rootFailure = reason } else { partialFailures.insert(reason) }
+                        case .progress(let completed): latestCompleted = completed
+                        case .finished: break
+                        }
                     }
+                    if !found.isEmpty { candidates.append(contentsOf: found) }
+                    if let latestCompleted { scanCompletedFiles = latestCompleted }
                 }
                 try Task.checkCancellation()
                 guard activeScanID == scanID else { return }
@@ -460,7 +495,8 @@ struct DuplicateScanView: View {
                     let result = try await findDuplicatesWithProgress(candidates)
                     try Task.checkCancellation()
                     guard activeScanID == scanID else { return }
-                    report = result
+                    report = result.report
+                    groupSizes = result.sizes
                 }
                 rootsPhase = .finished
                 // Bring the finished roots and the groups under them into view.
@@ -517,15 +553,25 @@ struct DuplicateScanView: View {
         }
     }
 
-    private func findDuplicatesWithProgress(_ candidates: [ScanResult]) async throws -> DuplicateScanReport {
+    private func findDuplicatesWithProgress(_ candidates: [ScanResult]) async throws -> (report: DuplicateScanReport, sizes: [String: Int64]) {
         let channel = AsyncStream<DuplicateScanProgress>.makeStream(bufferingPolicy: .bufferingNewest(1))
         let worker = Task.detached(priority: .utility) {
             defer { channel.continuation.finish() }
-            return try await DuplicateEngine().findGroups(in: candidates) { channel.continuation.yield($0) }
+            let report = try await DuplicateEngine().findGroups(in: candidates) { channel.continuation.yield($0) }
+            var sizes: [String: Int64] = [:]
+            for group in report.groups {
+                try Task.checkCancellation()
+                if let size = Self.fileSize(group.files.first) { sizes[group.digest] = size }
+            }
+            return (report: report, sizes: sizes)
         }
         return try await withTaskCancellationHandler {
+            var lastShown = ContinuousClock.now - .seconds(1)
             for await progress in channel.stream {
                 try Task.checkCancellation()
+                // A few updates a second are enough to follow; one per file kept the window busy.
+                guard ContinuousClock.now - lastShown >= .milliseconds(100) else { continue }
+                lastShown = .now
                 analysisProgress = progress
             }
             try Task.checkCancellation()
@@ -542,8 +588,12 @@ struct DuplicateScanView: View {
             return try await SimilarImageEngine().findSimilar(in: urls) { channel.continuation.yield($0) }
         }
         return try await withTaskCancellationHandler {
+            var lastShown = ContinuousClock.now - .seconds(1)
             for await progress in channel.stream {
                 try Task.checkCancellation()
+                // A few updates a second are enough to follow; one per file kept the window busy.
+                guard ContinuousClock.now - lastShown >= .milliseconds(100) else { continue }
+                lastShown = .now
                 analysisProgress = progress
             }
             try Task.checkCancellation()
@@ -590,7 +640,7 @@ struct DuplicateScanView: View {
             let store = try await LocalStoreAccess.open()
             let rule = ScanRule.duplicates.rawValue
             let allowed = Set([rule])
-            let executor = SafeActionExecutor(allowedRoots: [root], allowedRules: allowed, trash: MacOSTrashClient())
+            let executor = SafeActionExecutor(allowedRoots: [root], allowedRules: allowed, trash: AppTrashClient.make())
             let service = FileActionService(validator: .init(), executor: executor, store: store, allowedRoots: [root], allowedRuleIDs: allowed)
             let selections = try selectedCopies.sorted { $0.path < $1.path }.map {
                 FileActionSelection(url: $0, ruleID: rule,

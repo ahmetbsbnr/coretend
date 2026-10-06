@@ -125,11 +125,37 @@ public protocol UbiquitousItemMetadataReading: Sendable {
     func isUbiquitousItem(at url: URL) -> Bool?
 }
 
+/// Asking Foundation whether each file is ubiquitous runs the File Provider heuristics per file and
+/// was most of a scan's time. A file whose content is not on disk (dataless) is cloud-backed; any
+/// other file is cloud-backed when its folder is, and each folder is asked once per scan.
 public struct FoundationUbiquitousItemMetadataReader: UbiquitousItemMetadataReading {
+    private let folders = FolderAnswers()
+
     public init() {}
 
     public func isUbiquitousItem(at url: URL) -> Bool? {
-        try? url.resourceValues(forKeys: [.isUbiquitousItemKey]).isUbiquitousItem
+        var info = stat()
+        if lstat(url.path, &info) == 0, info.st_flags & UInt32(SF_DATALESS) != 0 { return true }
+        let folder = url.deletingLastPathComponent()
+        if let known = folders.answer(for: folder.path) { return known }
+        let answer = try? folder.resourceValues(forKeys: [.isUbiquitousItemKey]).isUbiquitousItem
+        folders.record(answer, for: folder.path)
+        return answer
+    }
+
+    private final class FolderAnswers: @unchecked Sendable {
+        private let lock = NSLock()
+        private var answers: [String: Bool?] = [:]
+
+        func answer(for path: String) -> Bool?? {
+            lock.lock(); defer { lock.unlock() }
+            return answers[path]
+        }
+
+        func record(_ answer: Bool?, for path: String) {
+            lock.lock(); defer { lock.unlock() }
+            answers[path] = .some(answer)
+        }
     }
 }
 
@@ -178,27 +204,32 @@ public struct LocalScanEngine: ScanEngine {
                 continuation.yield(.itemFailure(path: root.url.path, reason: "root_not_directory")); continue
             }
             let canonicalRoot = root.url.resolvingSymlinksInPath().path
-            var pending = [root.url]
-            while let directory = pending.popLast() {
+            let canonicalPrefix = canonicalRoot.hasSuffix("/") ? canonicalRoot : canonicalRoot + "/"
+            // Each directory travels with its canonical path. Symbolic links are never followed, so a
+            // child's canonical path is its directory's plus its own name: no realpath call per file.
+            var pending = [(url: root.url, canonical: canonicalRoot)]
+            while let (directory, canonicalDirectory) = pending.popLast() {
                 guard !Task.isCancelled else { return }
                 let children: [URL]
-                do { children = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey, .fileSizeKey, .contentModificationDateKey], options: [.skipsPackageDescendants]) }
+                do { children = try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: Self.prefetchedKeys, options: [.skipsPackageDescendants]) }
                 catch {
                     continuation.yield(.itemFailure(path: directory.path, reason: Self.failureReason(error))); continue
                 }
                 for child in children {
                     guard !Task.isCancelled else { return }
-                    if Self.isExcluded(child, by: exclusions) { continue }
                     var info = stat()
                     guard lstat(child.path, &info) == 0 else {
                         continuation.yield(.itemFailure(path: child.path, reason: Self.failureReason(errno: errno))); continue
                     }
                     if (info.st_mode & S_IFMT) == S_IFLNK { continue }
-                    let resolved = child.resolvingSymlinksInPath().path
-                    guard resolved == canonicalRoot || resolved.hasPrefix(canonicalRoot.hasSuffix("/") ? canonicalRoot : canonicalRoot + "/") else {
-                        continuation.yield(.itemFailure(path: child.path, reason: "root_escape")); continue
+                    let childPath = child.path
+                    let name = child.lastPathComponent
+                    let resolved = canonicalDirectory.hasSuffix("/") ? canonicalDirectory + name : canonicalDirectory + "/" + name
+                    guard !name.isEmpty, name != ".", name != "..", resolved == canonicalRoot || resolved.hasPrefix(canonicalPrefix) else {
+                        continuation.yield(.itemFailure(path: childPath, reason: "root_escape")); continue
                     }
-                    if (info.st_mode & S_IFMT) == S_IFDIR { pending.append(child); continue }
+                    if !exclusions.isEmpty, Self.isExcluded(path: resolved, by: exclusions) { continue }
+                    if (info.st_mode & S_IFMT) == S_IFDIR { pending.append((child, resolved)); continue }
                     guard (info.st_mode & S_IFMT) == S_IFREG else { continue }
                     if let descriptor = CleanupRuleCatalog.rule(root.ruleID), !descriptor.includes(child, rootURL: root.url) { continue }
                     completed += 1
@@ -219,9 +250,14 @@ public struct LocalScanEngine: ScanEngine {
         if !Task.isCancelled { continuation.yield(.finished) }
     }
 
+    private static let prefetchedKeys: [URLResourceKey] = [.isDirectoryKey, .isSymbolicLinkKey, .fileSizeKey,
+                                                             .contentModificationDateKey]
+
     private static func isExcluded(_ url: URL, by exclusions: [String]) -> Bool {
-        let path = url.resolvingSymlinksInPath().standardizedFileURL.path
-        return exclusions.contains { path == $0 || path.hasPrefix($0.hasSuffix("/") ? $0 : $0 + "/") }
+        isExcluded(path: url.resolvingSymlinksInPath().standardizedFileURL.path, by: exclusions)
+    }
+    private static func isExcluded(path: String, by exclusions: [String]) -> Bool {
+        exclusions.contains { path == $0 || path.hasPrefix($0.hasSuffix("/") ? $0 : $0 + "/") }
     }
     private static func failureReason(errno value: Int32) -> String {
         switch value {
@@ -247,6 +283,38 @@ public struct LocalScanEngine: ScanEngine {
         case .xcodeDeviceSupport, .iosBackups: return .high
         case .explore: return .low
         case .duplicates: return .low
+        }
+    }
+}
+
+public extension AsyncThrowingStream where Element == ScanEvent, Failure == Error {
+    /// The same events, gathered into batches handed over at most once per `interval` (and once at
+    /// the end). A window then updates a few times a second instead of once per file read, which
+    /// is what kept the main thread busy during a scan.
+    func batched(every interval: Duration = .milliseconds(100)) -> AsyncThrowingStream<[ScanEvent], Error> {
+        AsyncThrowingStream<[ScanEvent], Error> { continuation in
+            let pump = Task {
+                let clock = ContinuousClock()
+                var buffer: [ScanEvent] = []
+                var lastHandOver = clock.now
+                do {
+                    for try await event in self {
+                        buffer.append(event)
+                        let now = clock.now
+                        if now - lastHandOver >= interval {
+                            continuation.yield(buffer)
+                            buffer = []
+                            lastHandOver = now
+                        }
+                    }
+                    if !buffer.isEmpty { continuation.yield(buffer) }
+                    continuation.finish()
+                } catch {
+                    if !buffer.isEmpty { continuation.yield(buffer) }
+                    continuation.finish(throwing: error)
+                }
+            }
+            continuation.onTermination = { _ in pump.cancel() }
         }
     }
 }

@@ -183,8 +183,11 @@ public struct AmbientSway: ViewModifier {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     public func body(content: Content) -> some View {
-        LayerSway(content: AnyView(content), degrees: degrees, phase: phase, period: period,
-                  alive: caused ? !reduceMotion : AmbientLife.isAlive(allowed: allowed, reduceMotion: reduceMotion))
+        // SwiftUI sizes the content (an invisible copy); the swaying layer takes exactly that frame.
+        content.hidden().overlay {
+            LayerSway(content: AnyView(content), degrees: degrees, phase: phase, period: period,
+                      alive: caused ? !reduceMotion : AmbientLife.isAlive(allowed: allowed, reduceMotion: reduceMotion))
+        }
     }
 }
 
@@ -207,8 +210,11 @@ struct LayerSway: NSViewRepresentable {
         view.update(alive: alive, degrees: degrees, phase: phase, period: period)
     }
 
+    /// The frame is the one SwiftUI gave the content (see `AmbientSway`). Asking the host for its
+    /// `fittingSize` built and solved an Auto Layout engine on every measure, which was most of the
+    /// main thread's work while a page laid out.
     func sizeThatFits(_ proposal: ProposedViewSize, nsView: SwayHost, context: Context) -> CGSize? {
-        nsView.fittingSize
+        proposal.replacingUnspecifiedDimensions()
     }
 }
 
@@ -217,6 +223,8 @@ final class SwayHost: NSHostingView<AnyView> {
 
     required init(rootView: AnyView) {
         super.init(rootView: rootView)
+        // The size comes from `sizeThatFits` above; no Auto Layout constraints from the hosted view.
+        sizingOptions = []
         wantsLayer = true
     }
 
