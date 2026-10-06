@@ -12,6 +12,10 @@ en fixture, invariants et particularités de l’hôte :
   Annuler, désinstallation complète, Sparkle (clé EdDSA dans le trousseau, compte `coretend`),
   `coretend clean`/`coretend mcp`, paquet npm, site 2.1. Build 2.1.0 (210) signé, notarisé, agrafé ;
   artefacts dans `~/Documents/CoreTend-2.1.0/`. `make qualify` PASS à chaque lot.
+- **06-10 — synchro portfolio :** chaque release doit porter `latest.json`
+  (`python3 Scripts/make_release_manifest.py --dir <dossier release> --version X.Y.Z --build N`,
+  puis `gh release upload vX.Y.Z <dossier>/latest.json`) ; le portfolio le lit chaque semaine.
+  Ajouté à v2.1.0 ; le portfolio affiche 2.1.0.
 - **Reste côté mainteneur :** retirer la soumission App Store dans App Store Connect ; `npm login`
   puis publication npm ; sauvegarder la clé Sparkle (`generate_keys --account coretend -x fichier`).
 
